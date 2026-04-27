@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { trackSignup } from "@/lib/logsnag";
 import { serverAnalytics } from "@/lib/analytics";
+import { isSuperAdmin } from "@/lib/super-admin";
 import {
   generateUniqueSlug,
   getDefaultPermissionsForRole,
@@ -109,6 +110,9 @@ export async function POST(request: Request) {
     // Create User + Organization + Membership + Subscription in a single transaction
     const result = await prisma.$transaction(async (tx) => {
       // 1. Create user (select only needed fields — avoid password hash in memory)
+      // Super-admin emails are auto-promoted to role="admin" at the
+      // DB level too, so the dashboard's admin features work
+      // immediately on first signup without running seed-admin.ts.
       const user = await tx.user.create({
         data: {
           name,
@@ -117,6 +121,7 @@ export async function POST(request: Request) {
           organization: invitation
             ? undefined
             : organization || `${name}'s Organization`,
+          ...(isSuperAdmin(email) && { role: "admin" }),
         },
         select: {
           id: true,

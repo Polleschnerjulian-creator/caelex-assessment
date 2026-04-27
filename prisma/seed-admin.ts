@@ -6,23 +6,32 @@
  */
 
 import { PrismaClient } from "@prisma/client";
+import { getSuperAdminEmails } from "../src/lib/super-admin";
 
 const prisma = new PrismaClient();
 
-// C9 fix: no hardcoded defaults. A staging / fork env restored from a
-// prod DB would otherwise silently elevate anyone who registered one of
-// those emails. ADMIN_EMAILS must be explicitly set as an env var
-// (comma-separated) — otherwise the script refuses to run.
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
+// Super-admin allowlist (lib/super-admin.ts) is the source of truth
+// for platform-owner accounts — those are *always* trusted at the
+// code level regardless of the DB row's role. This script promotes
+// any of those that already have User rows so the DB reflects reality.
+//
+// Additional admins via ADMIN_EMAILS env var (comma-separated). Used
+// for one-off staff promotions without a code change. The two sources
+// are merged + deduped.
+const ENV_ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
   .split(",")
   .map((e) => e.trim())
-  .filter(Boolean);
+  .filter(Boolean)
+  .map((e) => e.toLowerCase());
+
+const ADMIN_EMAILS = Array.from(
+  new Set([...getSuperAdminEmails(), ...ENV_ADMIN_EMAILS]),
+);
 
 if (ADMIN_EMAILS.length === 0) {
   console.error(
-    "\n❌ ADMIN_EMAILS environment variable is empty or unset.\n" +
-      "   Set it explicitly before running this script, e.g.:\n" +
-      '   ADMIN_EMAILS="you@example.com,ops@example.com" npx tsx prisma/seed-admin.ts\n',
+    "\n❌ No admin emails found.\n" +
+      "   Add to lib/super-admin.ts (preferred) or set ADMIN_EMAILS env var.\n",
   );
   process.exit(1);
 }

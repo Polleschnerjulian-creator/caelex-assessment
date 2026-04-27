@@ -28,6 +28,7 @@ import {
   AccountLockedError,
   TooManyAttemptsError,
 } from "@/lib/auth-errors";
+import { isSuperAdmin } from "@/lib/super-admin";
 
 // ─── Auth availability check ───
 
@@ -204,7 +205,13 @@ const authResult = isAuthConfigured
           // Initial sign in
           if (user) {
             token.id = user.id;
-            token.role = user.role || "user";
+            // Super-admin emails are auto-promoted to role="admin" in
+            // the JWT regardless of the DB row's value. Means a freshly
+            // signed-up platform owner doesn't need seed-admin.ts to
+            // run before they can use the dashboard's admin features.
+            token.role = isSuperAdmin(user.email)
+              ? "admin"
+              : user.role || "user";
             token.theme = user.theme || "system";
 
             // Propagate MFA flags — if MFA is required, session is not fully
@@ -232,14 +239,24 @@ const authResult = isAuthConfigured
               if (!prisma) throw new Error("Database not configured");
               const dbUser = await prisma.user.findUnique({
                 where: { id: token.id as string },
-                select: { role: true, isActive: true, theme: true },
+                select: {
+                  email: true,
+                  role: true,
+                  isActive: true,
+                  theme: true,
+                },
               });
 
               if (!dbUser?.isActive) {
                 throw new Error("Account deactivated");
               }
 
-              token.role = dbUser.role as string;
+              // Super-admin override sticks across token refreshes —
+              // even if the DB role got demoted accidentally, the
+              // hardcoded allowlist keeps platform owners admin.
+              token.role = isSuperAdmin(dbUser.email)
+                ? "admin"
+                : (dbUser.role as string);
               // Only update theme from DB if not being set via updateSession
               if (!updateData?.theme) {
                 token.theme = dbUser.theme || "system";

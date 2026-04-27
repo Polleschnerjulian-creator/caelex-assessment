@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isSuperAdmin } from "@/lib/super-admin";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import AtlasShell from "./AtlasShell";
 import { AtlasThemeProvider } from "./_components/AtlasThemeProvider";
@@ -49,28 +50,34 @@ export default async function AtlasLayout({
     redirect("/atlas-login?callbackUrl=%2Fatlas");
   }
 
-  // Membership check — a user with an account but no active org
-  // membership lands on /atlas-no-access which explains the situation
-  // (rather than a generic redirect loop).
-  //
-  // HIGH-1: must require an Atlas-flavored org (LAW_FIRM or BOTH),
-  // otherwise SATELLITE_OPERATOR/SPACE_AGENCY customers of the Caelex
-  // compliance platform could see the Atlas shell just because they
-  // have any org membership at all. The API layer already scopes via
-  // getAtlasAuth(), but the layout shell is the visible-to-user gate
-  // and must match that constraint.
-  const membership = await prisma.organizationMember.findFirst({
-    where: {
-      userId: session.user.id,
-      organization: {
-        isActive: true,
-        orgType: { in: ["LAW_FIRM", "BOTH"] },
+  // Super-admin bypass — platform owners reach Atlas regardless of
+  // org membership / orgType. Skips the membership query entirely so
+  // a super-admin can debug a fresh signup or an empty-DB env without
+  // first joining a LAW_FIRM org.
+  if (!isSuperAdmin(session.user.email)) {
+    // Membership check — a user with an account but no active org
+    // membership lands on /atlas-no-access which explains the situation
+    // (rather than a generic redirect loop).
+    //
+    // HIGH-1: must require an Atlas-flavored org (LAW_FIRM or BOTH),
+    // otherwise SATELLITE_OPERATOR/SPACE_AGENCY customers of the Caelex
+    // compliance platform could see the Atlas shell just because they
+    // have any org membership at all. The API layer already scopes via
+    // getAtlasAuth(), but the layout shell is the visible-to-user gate
+    // and must match that constraint.
+    const membership = await prisma.organizationMember.findFirst({
+      where: {
+        userId: session.user.id,
+        organization: {
+          isActive: true,
+          orgType: { in: ["LAW_FIRM", "BOTH"] },
+        },
       },
-    },
-    select: { id: true },
-  });
-  if (!membership) {
-    redirect("/atlas-no-access");
+      select: { id: true },
+    });
+    if (!membership) {
+      redirect("/atlas-no-access");
+    }
   }
 
   return (

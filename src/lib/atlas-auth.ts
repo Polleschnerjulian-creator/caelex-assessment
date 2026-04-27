@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isSuperAdmin } from "@/lib/super-admin";
 import type { OrganizationRole } from "@prisma/client";
 
 /** Cookie key for the user's currently-selected Atlas organisation. */
@@ -44,7 +45,13 @@ export async function getAtlasAuth(
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  const isPlatformAdmin = (session.user as { role?: string }).role === "admin";
+  // Super-admin emails always carry platform-admin rights, even if the
+  // DB row's role hasn't been promoted yet (e.g. fresh deploy where
+  // seed-admin.ts hasn't been run). Both `User.role === "admin"` and
+  // the hardcoded super-admin allowlist count.
+  const superAdminBypass = isSuperAdmin(session.user.email);
+  const isPlatformAdmin =
+    superAdminBypass || (session.user as { role?: string }).role === "admin";
 
   // Determine which organisation to scope to
   let targetOrgId = options.orgId;
@@ -77,21 +84,29 @@ export async function getAtlasAuth(
   // resolved to whichever joined first — potentially scoping data calls
   // to the OPERATOR org while the layout believed they were in the
   // LAW_FIRM (cross-org data leak risk).
+  //
+  // Super-admin override: platform owners can scope to ANY org so they
+  // can debug customer issues. They still need to belong to the org
+  // (or be passing an explicit `orgId` they have access to) — this
+  // doesn't grant arbitrary cross-org data access without consent.
   const ATLAS_ORG_TYPES = ["LAW_FIRM", "BOTH"] as const;
+  const orgTypeFilter = superAdminBypass
+    ? undefined
+    : { orgType: { in: [...ATLAS_ORG_TYPES] } };
 
   const membership = targetOrgId
     ? await prisma.organizationMember.findFirst({
         where: {
           userId: session.user.id,
           organizationId: targetOrgId,
-          organization: { orgType: { in: [...ATLAS_ORG_TYPES] } },
+          ...(orgTypeFilter && { organization: orgTypeFilter }),
         },
         include,
       })
     : await prisma.organizationMember.findFirst({
         where: {
           userId: session.user.id,
-          organization: { orgType: { in: [...ATLAS_ORG_TYPES] } },
+          ...(orgTypeFilter && { organization: orgTypeFilter }),
         },
         orderBy: { joinedAt: "asc" }, // deterministic: oldest first
         include,
@@ -130,11 +145,15 @@ export async function requirePlatformAdmin(): Promise<{
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, role: true, isActive: true },
+    select: { id: true, email: true, role: true, isActive: true },
   });
 
   if (!user || !user.isActive) return null;
-  if (user.role !== "admin") return null;
+  // Two paths to platform-admin: (a) hardcoded super-admin allowlist
+  // (lib/super-admin.ts) — the platform owners, always trusted; or
+  // (b) DB-backed `User.role === "admin"` — promoted staff via
+  // prisma/seed-admin.ts. Either qualifies.
+  if (!isSuperAdmin(user.email) && user.role !== "admin") return null;
   return { userId: user.id };
 }
 

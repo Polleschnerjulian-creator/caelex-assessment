@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isSuperAdmin } from "@/lib/super-admin";
 import { redirect } from "next/navigation";
 
 /**
@@ -9,8 +10,11 @@ import { redirect } from "next/navigation";
  * suspended/canceled subscriptions — those land on `/get-started` to contact
  * sales. Allows everyone else through.
  *
- * Bypasses:
- *   - `User.role === "admin"` — internal staff (HUB, analytics, support)
+ * Bypasses (in order):
+ *   - Super-admin email (hardcoded in lib/super-admin.ts) — platform
+ *     owners always have access. Checked from session.user.email so it
+ *     works even before the DB row hydrates.
+ *   - `User.role === "admin"` — staff admins (HUB, analytics, support)
  *     never need a paid subscription on their own user record.
  *   - Org has paid plan but no `Subscription` row — manually provisioned
  *     accounts (early customers, partners) pre-Stripe.
@@ -28,6 +32,13 @@ export default async function SubscriptionGate({
 
   if (!session?.user?.id) {
     redirect("/get-started");
+  }
+
+  // Super-admin shortcut — owners must reach /dashboard even if their
+  // user record hasn't fully hydrated (e.g. fresh signup, no
+  // membership yet). Skips the DB read entirely on the hot path.
+  if (isSuperAdmin(session.user.email)) {
+    return <>{children}</>;
   }
 
   const user = await prisma.user.findUnique({
