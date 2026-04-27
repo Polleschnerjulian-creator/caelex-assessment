@@ -11,6 +11,10 @@
  */
 
 import { ATLAS_CASES } from "./cases";
+import {
+  LEGAL_CASE_TRANSLATIONS_DE,
+  type TranslatedCase,
+} from "./translations-de";
 import type {
   LegalCase,
   CaseForum,
@@ -24,8 +28,43 @@ export type {
   CaseStatus,
   PrecedentialWeight,
 } from "./types";
+export type { TranslatedCase } from "./translations-de";
 
 export { ATLAS_CASES } from "./cases";
+
+/**
+ * Supported translation languages for case-law content. English is
+ * always the source-of-truth (the case fields themselves); other
+ * languages live in `translations-{lang}.ts` files and are looked up
+ * via getTranslatedCase().
+ */
+export const SUPPORTED_CASE_TRANSLATION_LANGUAGES = ["en", "de"] as const;
+export type CaseTranslationLanguage =
+  (typeof SUPPORTED_CASE_TRANSLATION_LANGUAGES)[number];
+
+const CASE_TRANSLATION_REGISTRY = new Map<
+  CaseTranslationLanguage,
+  Map<string, TranslatedCase>
+>([["de", LEGAL_CASE_TRANSLATIONS_DE]]);
+
+/**
+ * Returns the translated record for a case in the requested language,
+ * or `undefined` if the language is unsupported / the entry is missing.
+ *
+ * Convention: callers fall back to the source case's English fields
+ * when this returns undefined. We never invent a translation —
+ * unverified strings stay in their source-of-truth English form.
+ */
+export function getTranslatedCase(
+  caseId: string,
+  language: string,
+): TranslatedCase | undefined {
+  if (language === "en") return undefined; // English is the source-of-truth
+  const map = CASE_TRANSLATION_REGISTRY.get(
+    language as CaseTranslationLanguage,
+  );
+  return map?.get(caseId);
+}
 
 // ─── Lookup helpers ─────────────────────────────────────────────────
 

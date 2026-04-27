@@ -598,6 +598,23 @@
     "palette_navigate": "naviguer",
     "palette_open": "ouvrir",
     "palette_results_count_one": "résultat",
-    "palette_results_count_other": "résultats"
+    "palette_results_count_other": "résultats",
+    "case_facts": "Faits",
+    "case_ruling": "Décision",
+    "case_legal_holding": "Considérant juridique",
+    "case_why_it_matters": "Importance pratique",
+    "case_remedy": "Sanction",
+    "case_applied_sources": "Sources appliquées",
+    "case_peer_cases_on_same_source": "Autres affaires sur cette source",
+    "case_notes": "Notes",
+    "case_official_record": "Décision officielle",
+    "case_last_verified": "Dernière vérification",
+    "case_source_not_in_catalogue": "(absent du catalogue actuel)",
+    "cases_applying_this_source": "Affaires appliquant cette source",
+    "pill_loading": "Chargement…",
+    "pill_click_opens_source": "Cliquer pour ouvrir la source.",
+    "pill_click_opens_case": "Cliquer pour ouvrir l'affaire",
+    "pill_source_not_found": "Source absente de l'index Atlas. Le clic ouvre quand même la page.",
+    "pill_case_not_found": "Affaire absente de l'index Atlas. Le clic tente quand même l'ouverture."
   }
 }

@@ -27,7 +27,7 @@ import {
   getTranslatedSource,
   getTranslatedAuthority,
 } from "@/data/legal-sources";
-import { getCasesApplyingSource } from "@/data/legal-cases";
+import { getCasesApplyingSource, getTranslatedCase } from "@/data/legal-cases";
 import type {
   LegalSource,
   LegalSourceType,
@@ -722,33 +722,36 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
               id="cases-heading"
               className="text-[11px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.15em] uppercase"
             >
-              Cases applying this source
+              {t("atlas.cases_applying_this_source")}
               <span className="ml-2 normal-case tracking-normal text-[10px] text-[var(--atlas-text-muted)]/70">
                 ({casesApplyingThis.length})
               </span>
             </h2>
           </div>
           <div className="space-y-0 max-w-3xl">
-            {casesApplyingThis.map((c) => (
-              <Link
-                key={c.id}
-                href={`/atlas/cases/${encodeURIComponent(c.id)}`}
-                className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--atlas-bg-surface)] hover:shadow-sm transition-all duration-150 group"
-              >
-                <span className="text-[8px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded border flex-shrink-0 bg-violet-50 dark:bg-violet-900/20 border-violet-200 dark:border-violet-700/40 text-violet-700 dark:text-violet-300">
-                  {c.forum.replace(/_/g, " ")}
-                </span>
-                <span className="text-[13px] text-[var(--atlas-text-primary)] truncate flex-1 min-w-0">
-                  {c.title}
-                </span>
-                <span className="text-[11px] text-[var(--atlas-text-muted)] flex-shrink-0 font-mono">
-                  {c.date_decided.slice(0, 4)}
-                </span>
-                <span className="text-[10px] text-[var(--atlas-text-muted)] flex-shrink-0">
-                  {JURISDICTION_FLAGS[c.jurisdiction] ?? c.jurisdiction}
-                </span>
-              </Link>
-            ))}
+            {casesApplyingThis.map((c) => {
+              const caseTr = getTranslatedCase(c.id, language);
+              return (
+                <Link
+                  key={c.id}
+                  href={`/atlas/cases/${encodeURIComponent(c.id)}`}
+                  className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--atlas-bg-surface)] hover:shadow-sm transition-all duration-150 group"
+                >
+                  <span className="text-[8px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded border flex-shrink-0 bg-violet-50 dark:bg-violet-900/20 border-violet-200 dark:border-violet-700/40 text-violet-700 dark:text-violet-300">
+                    {c.forum.replace(/_/g, " ")}
+                  </span>
+                  <span className="text-[13px] text-[var(--atlas-text-primary)] truncate flex-1 min-w-0">
+                    {caseTr?.title ?? c.title}
+                  </span>
+                  <span className="text-[11px] text-[var(--atlas-text-muted)] flex-shrink-0 font-mono">
+                    {c.date_decided.slice(0, 4)}
+                  </span>
+                  <span className="text-[10px] text-[var(--atlas-text-muted)] flex-shrink-0">
+                    {JURISDICTION_FLAGS[c.jurisdiction] ?? c.jurisdiction}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}

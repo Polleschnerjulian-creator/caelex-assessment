@@ -597,6 +597,23 @@
     "palette_navigate": "navegar",
     "palette_open": "abrir",
     "palette_results_count_one": "resultado",
-    "palette_results_count_other": "resultados"
+    "palette_results_count_other": "resultados",
+    "case_facts": "Hechos",
+    "case_ruling": "Resolución",
+    "case_legal_holding": "Doctrina jurídica",
+    "case_why_it_matters": "Importancia práctica",
+    "case_remedy": "Sanción",
+    "case_applied_sources": "Fuentes aplicadas",
+    "case_peer_cases_on_same_source": "Otros casos sobre esta fuente",
+    "case_notes": "Notas",
+    "case_official_record": "Decisión oficial",
+    "case_last_verified": "Última verificación",
+    "case_source_not_in_catalogue": "(no está en el catálogo actual)",
+    "cases_applying_this_source": "Casos que aplican esta fuente",
+    "pill_loading": "Cargando…",
+    "pill_click_opens_source": "Haz clic para abrir la fuente.",
+    "pill_click_opens_case": "Haz clic para abrir el caso",
+    "pill_source_not_found": "Fuente no encontrada en el índice de Atlas. El clic abre la página de todos modos.",
+    "pill_case_not_found": "Caso no encontrado en el índice de Atlas. El clic intenta abrirlo de todos modos."
   }
 }

@@ -964,6 +964,23 @@
     "palette_navigate": "navigate",
     "palette_open": "open",
     "palette_results_count_one": "result",
-    "palette_results_count_other": "results"
+    "palette_results_count_other": "results",
+    "case_facts": "Facts",
+    "case_ruling": "Ruling",
+    "case_legal_holding": "Legal holding",
+    "case_why_it_matters": "Why it matters",
+    "case_remedy": "Remedy",
+    "case_applied_sources": "Applied sources",
+    "case_peer_cases_on_same_source": "Other cases on this source",
+    "case_notes": "Notes",
+    "case_official_record": "Official record",
+    "case_last_verified": "Last verified",
+    "case_source_not_in_catalogue": "(not in current catalogue)",
+    "cases_applying_this_source": "Cases applying this source",
+    "pill_loading": "Loading…",
+    "pill_click_opens_source": "Click to open the source.",
+    "pill_click_opens_case": "Click to open the case",
+    "pill_source_not_found": "Source not in Atlas index. Click still opens the page.",
+    "pill_case_not_found": "Case not in Atlas index. Click still tries to open."
   }
 }

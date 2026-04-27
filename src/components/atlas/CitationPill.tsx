@@ -17,6 +17,7 @@
 
 import Link from "next/link";
 import { useState, useCallback, useEffect, useRef } from "react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 type CitationKind = "source" | "case";
 
@@ -52,6 +53,7 @@ type Preview = SourcePreview | CasePreview;
 const previewCache = new Map<string, Preview | null>();
 
 export function CitationPill({ id, href, kind = "source" }: CitationPillProps) {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [preview, setPreview] = useState<Preview | null | undefined>(
     previewCache.get(`${kind}:${id}`),
@@ -139,7 +141,9 @@ export function CitationPill({ id, href, kind = "source" }: CitationPillProps) {
           className="absolute z-50 left-0 top-[120%] w-80 max-w-[20rem] p-3 rounded-lg bg-[#0d111c] border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.55)] text-[12px] leading-relaxed text-white/85 pointer-events-none"
           style={{ transform: "translateY(2px)" }}
         >
-          {loading && <span className="text-white/50">Lädt…</span>}
+          {loading && (
+            <span className="text-white/50">{t("atlas.pill_loading")}</span>
+          )}
           {!loading && preview && preview.kind === "source" && (
             <>
               <span
@@ -157,7 +161,7 @@ export function CitationPill({ id, href, kind = "source" }: CitationPillProps) {
                   : preview.scope_description}
               </span>
               <span className="block mt-2 text-[10.5px] text-white/40">
-                Klick öffnet die Quelle.
+                {t("atlas.pill_click_opens_source")}
               </span>
             </>
           )}
@@ -179,7 +183,7 @@ export function CitationPill({ id, href, kind = "source" }: CitationPillProps) {
                 {preview.ruling_summary}
               </span>
               <span className="block mt-2 text-[10.5px] text-white/40">
-                Klick öffnet den Fall ·{" "}
+                {t("atlas.pill_click_opens_case")} ·{" "}
                 {preview.precedential_weight.replace(/_/g, " ")}
               </span>
             </>
@@ -187,8 +191,8 @@ export function CitationPill({ id, href, kind = "source" }: CitationPillProps) {
           {!loading && preview === null && (
             <span className="text-white/50">
               {kind === "case"
-                ? "Fall nicht im Atlas-Index. Klick versucht trotzdem zu öffnen."
-                : "Quelle nicht im Atlas-Index. Klick öffnet die Quellseite trotzdem."}
+                ? t("atlas.pill_case_not_found")
+                : t("atlas.pill_source_not_found")}
             </span>
           )}
         </span>

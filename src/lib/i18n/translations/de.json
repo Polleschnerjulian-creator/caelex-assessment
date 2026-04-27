@@ -964,6 +964,23 @@
     "palette_navigate": "navigieren",
     "palette_open": "öffnen",
     "palette_results_count_one": "Treffer",
-    "palette_results_count_other": "Treffer"
+    "palette_results_count_other": "Treffer",
+    "case_facts": "Sachverhalt",
+    "case_ruling": "Entscheidung",
+    "case_legal_holding": "Rechtssatz",
+    "case_why_it_matters": "Bedeutung für die Praxis",
+    "case_remedy": "Rechtsfolge",
+    "case_applied_sources": "Angewandte Quellen",
+    "case_peer_cases_on_same_source": "Weitere Fälle zu dieser Quelle",
+    "case_notes": "Anmerkungen",
+    "case_official_record": "Originalentscheidung",
+    "case_last_verified": "Zuletzt geprüft",
+    "case_source_not_in_catalogue": "(nicht im aktuellen Katalog)",
+    "cases_applying_this_source": "Fälle, die diese Quelle anwenden",
+    "pill_loading": "Lädt…",
+    "pill_click_opens_source": "Klick öffnet die Quelle.",
+    "pill_click_opens_case": "Klick öffnet den Fall",
+    "pill_source_not_found": "Quelle nicht im Atlas-Index. Klick öffnet die Seite trotzdem.",
+    "pill_case_not_found": "Fall nicht im Atlas-Index. Klick versucht trotzdem zu öffnen."
   }
 }
