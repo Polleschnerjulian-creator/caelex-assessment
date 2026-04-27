@@ -539,6 +539,207 @@ html[data-atlas-preload="dark"] .atlas-themed {
   color: var(--atlas-text-primary);
 }
 
+/* ===== HUB DARK-MODE SCOPE =====
+   Internal admin HUB (projects, tasks, calendar, timesheet) ships with a
+   bright, Apple-flavoured palette (bg-white + #1d1d1f text + #f5f5f7
+   subtle bg). When the global theme flips to dark, those literal hex
+   utility classes are still authored as light, so without overrides the
+   HUB stays a glaring white island inside the dark dashboard.
+
+   Rather than dual-classing every tag in 19 files (~6k LOC), we wrap the
+   HUB layout in `.hub-darkmode` and override the exact arbitrary-value
+   classes used by the pages. Tailwind compiles e.g. `bg-[#f5f5f7]` to
+   the literal selector `.bg-\[\#f5f5f7\]` — we match it 1:1 with a more
+   specific selector (`.dark .hub-darkmode .bg-\[\#f5f5f7\]`) so it wins
+   regardless of source order.
+
+   The palette mirrors macOS dark surfaces (Apple's ZTexture / Catalyst):
+   - Surface tier:     #1c1c1e  (cards, main content)
+   - Subtle tier:      #2c2c2e  (hover bg, badges, inputs)
+   - Elevated tier:    #3a3a3c  (deeper hover, active state)
+   - Border:           #2c2c2e  (subtle), #3a3a3c (stronger)
+   - Primary text:     #f5f5f7
+   - Secondary text:   #98989d  (kept readable, not pure gray)
+   - Tertiary text:    #48484a  (icons, dividers)
+
+   The dark CTA button (bg-#1d1d1f text-white) inverts to a light pill
+   in dark mode (bg-#f5f5f7 text-#1d1d1f) — an inverse selector handles
+   the text colour where it co-occurs with the inverted background. */
+
+.dark .hub-darkmode {
+  color-scheme: dark;
+}
+
+/* ── Backgrounds ─────────────────────────────────────────────────── */
+.dark .hub-darkmode .bg-white {
+  background-color: #1c1c1e;
+}
+.dark .hub-darkmode .bg-white\/80 {
+  background-color: rgba(28, 28, 30, 0.8);
+}
+.dark .hub-darkmode .bg-\[\#f5f5f7\] {
+  background-color: #2c2c2e;
+}
+.dark .hub-darkmode .bg-\[\#fafafa\] {
+  background-color: #1a1a1c;
+}
+.dark .hub-darkmode .bg-\[\#e8e8ed\] {
+  background-color: #3a3a3c;
+}
+.dark .hub-darkmode .bg-\[\#f0f0ff\] {
+  background-color: rgba(99, 102, 241, 0.18);
+}
+.dark .hub-darkmode .hover\:bg-\[\#f5f5f7\]:hover {
+  background-color: #2c2c2e;
+}
+.dark .hub-darkmode .hover\:bg-\[\#e8e8ed\]:hover {
+  background-color: #3a3a3c;
+}
+.dark .hub-darkmode .hover\:bg-white:hover {
+  background-color: #2c2c2e;
+}
+
+/* ── Inverted CTA button (dark in light, light in dark) ──────────── */
+.dark .hub-darkmode .bg-\[\#1d1d1f\] {
+  background-color: #f5f5f7;
+}
+.dark .hub-darkmode .hover\:bg-\[\#000000\]:hover {
+  background-color: #ffffff;
+}
+.dark .hub-darkmode .bg-\[\#1d1d1f\].text-white,
+.dark .hub-darkmode .bg-\[\#1d1d1f\] .text-white {
+  color: #1d1d1f;
+}
+
+/* ── Text ────────────────────────────────────────────────────────── */
+.dark .hub-darkmode .text-\[\#1d1d1f\] {
+  color: #f5f5f7;
+}
+.dark .hub-darkmode .text-\[\#86868b\] {
+  color: #98989d;
+}
+.dark .hub-darkmode .text-\[\#86868b\]\/60 {
+  color: rgba(152, 152, 157, 0.6);
+}
+.dark .hub-darkmode .text-\[\#86868b\]\/50 {
+  color: rgba(152, 152, 157, 0.5);
+}
+.dark .hub-darkmode .text-\[\#d1d1d6\] {
+  color: #48484a;
+}
+.dark .hub-darkmode .text-\[\#b0b0b5\] {
+  color: #6c6c70;
+}
+.dark .hub-darkmode .placeholder\:text-\[\#86868b\]\/50::placeholder {
+  color: rgba(152, 152, 157, 0.5);
+}
+.dark .hub-darkmode .hover\:text-\[\#1d1d1f\]:hover {
+  color: #f5f5f7;
+}
+
+/* ── Borders ─────────────────────────────────────────────────────── */
+.dark .hub-darkmode .border-\[\#e5e5ea\] {
+  border-color: #2c2c2e;
+}
+.dark .hub-darkmode .border-\[\#f5f5f7\] {
+  border-color: #2c2c2e;
+}
+.dark .hub-darkmode .divide-\[\#f5f5f7\] > :not([hidden]) ~ :not([hidden]) {
+  border-color: #2c2c2e;
+}
+.dark .hub-darkmode .focus\:border-\[\#1d1d1f\]\/30:focus {
+  border-color: rgba(245, 245, 247, 0.3);
+}
+
+/* ── Shadows (lift the elevation in dark) ────────────────────────── */
+.dark .hub-darkmode .shadow-\[0_1px_4px_rgba\(0\,0\,0\,0\.04\)\] {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+.dark .hub-darkmode .shadow-\[0_2px_12px_rgba\(0\,0\,0\,0\.04\)\] {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+.dark .hub-darkmode .shadow-\[0_4px_24px_rgba\(0\,0\,0\,0\.08\)\] {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+}
+.dark
+  .hub-darkmode
+  .shadow-\[0_4px_24px_rgba\(0\,0\,0\,0\.08\)\,0_12px_48px_rgba\(0\,0\,0\,0\.12\)\] {
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.5),
+    0 12px 48px rgba(0, 0, 0, 0.6);
+}
+.dark .hub-darkmode .hover\:shadow-\[0_2px_12px_rgba\(0\,0\,0\,0\.06\)\]:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+.dark .hub-darkmode .hover\:shadow-\[0_4px_24px_rgba\(0\,0\,0\,0\.08\)\]:hover {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.55);
+}
+
+/* ── Focus rings + placeholder variants ──────────────────────────── */
+.dark .hub-darkmode .focus\:border-\[\#1d1d1f\]:focus {
+  border-color: #f5f5f7;
+}
+.dark .hub-darkmode .focus\:ring-\[\#1d1d1f\]:focus {
+  --tw-ring-color: #f5f5f7;
+}
+.dark .hub-darkmode .placeholder\:text-\[\#86868b\]::placeholder {
+  color: #6c6c70;
+}
+.dark .hub-darkmode .placeholder\:text-\[\#d1d1d6\]::placeholder {
+  color: #48484a;
+}
+
+/* ── Status tints (red/blue/amber/green) ─────────────────────────── */
+/* Same pattern Atlas uses: replace pastel light fills with translucent
+   dark-glass tints, swap dark text for the bright variant. */
+.dark .hub-darkmode .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.14);
+}
+.dark .hub-darkmode .bg-red-100 {
+  background-color: rgba(239, 68, 68, 0.22);
+}
+.dark .hub-darkmode .border-red-100 {
+  border-color: rgba(239, 68, 68, 0.35);
+}
+.dark .hub-darkmode .text-red-500,
+.dark .hub-darkmode .text-red-600,
+.dark .hub-darkmode .text-red-700 {
+  color: #fca5a5;
+}
+.dark .hub-darkmode .bg-blue-50 {
+  background-color: rgba(59, 130, 246, 0.14);
+}
+.dark .hub-darkmode .text-blue-500,
+.dark .hub-darkmode .text-blue-600 {
+  color: #93c5fd;
+}
+.dark .hub-darkmode .bg-amber-50 {
+  background-color: rgba(245, 158, 11, 0.14);
+}
+.dark .hub-darkmode .border-amber-100 {
+  border-color: rgba(245, 158, 11, 0.35);
+}
+.dark .hub-darkmode .text-amber-500,
+.dark .hub-darkmode .text-amber-600,
+.dark .hub-darkmode .text-amber-700,
+.dark .hub-darkmode .text-amber-800 {
+  color: #fcd34d;
+}
+.dark .hub-darkmode .bg-green-50 {
+  background-color: rgba(34, 197, 94, 0.14);
+}
+.dark .hub-darkmode .text-green-600 {
+  color: #86efac;
+}
+
+/* Native form-control surfaces (otherwise the browser paints them
+   white-on-white in dark mode and the chrome looks broken). */
+.dark .hub-darkmode select,
+.dark .hub-darkmode input,
+.dark .hub-darkmode textarea {
+  color-scheme: dark;
+}
+
 .atlas-themed ::-webkit-scrollbar {
   width: 4px;
   height: 4px;
