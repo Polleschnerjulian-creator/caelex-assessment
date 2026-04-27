@@ -3511,4 +3511,86 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     related_sources: ["INT-ISO-24113-2023", "INT-IADC-MITIGATION-2020"],
     last_verified: "2026-04-27",
   },
+
+  // ─── Verified additions: ESA + ITU debris/STM stack ────────────────
+  // Each entry below has a confirmed official reference number and a
+  // working public URL on the issuing organisation's domain.
+
+  {
+    id: "INT-ESA-SDM-POLICY-2014",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "ESA Space Debris Mitigation Policy for Agency Projects",
+    date_published: "2014-03-28",
+    official_reference: "ESA/ADMIN/IPOL(2014)2",
+    source_url:
+      "https://technology.esa.int/page/esa-space-debris-mitigation-policy-for-agency-projects",
+    issuing_body: "European Space Agency — Director General",
+    competent_authorities: [],
+    relevance_level: "fundamental",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["debris_mitigation"],
+    scope_description:
+      "ESA's binding internal debris-mitigation policy for all Agency projects, contracts, and partnerships. Mandates compliance with ECSS-U-AS-10C (and therefore ISO 24113) for every ESA mission, plus Agency-specific tailoring on disposal-reliability evidence, casualty-risk thresholds, and the SPOUA controlled-re-entry corridor. The policy delegated detailed technical requirements to the ECSS framework, making ECSS-U-AS-10C the operative standard for ESA-funded missions.",
+    key_provisions: [
+      {
+        section: "§4",
+        title: "Compliance with ECSS-U-AS-10C",
+        summary:
+          "All ESA projects shall comply with ECSS-U-AS-10C (which adopts ISO 24113) and demonstrate compliance through the project's debris-mitigation documentation.",
+      },
+      {
+        section: "§5",
+        title: "Tailoring authority",
+        summary:
+          "Project-specific tailoring is permitted only with formal Director-of-Programme approval; deviations must be documented and risk-justified.",
+      },
+    ],
+    related_sources: [
+      "INT-ECSS-U-AS-10C",
+      "INT-ISO-24113-2023",
+      "INT-IADC-MITIGATION-2020",
+    ],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "INT-ITU-RES-35",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "ITU-R Resolution 35 (WRC-19) — Milestone-based deployment of NGSO satellite systems in specific frequency bands and services",
+    date_published: "2019-11-22",
+    official_reference: "Resolution 35 (WRC-19)",
+    source_url:
+      "https://www.itu.int/dms_pub/itu-r/oth/0c/0a/R0C0A00000B0001PDFE.pdf",
+    issuing_body:
+      "International Telecommunication Union — World Radiocommunication Conference 2019",
+    competent_authorities: ["INT-ITU"],
+    relevance_level: "critical",
+    applicable_to: ["satellite_operator", "constellation_operator"],
+    compliance_areas: ["frequency_spectrum", "debris_mitigation"],
+    scope_description:
+      "Adopted at WRC-19, Resolution 35 imposes binding deployment milestones on NGSO satellite networks in specific frequency bands: at least 10% of the network deployed within 2 years of the Bringing-Into-Use date, 50% within 5 years, and 100% within 7 years. Failure to meet a milestone triggers a proportional reduction of the recorded number of satellites in the Master International Frequency Register (MIFR). Constrains constellation deployment timelines and reinforces debris-mitigation discipline by penalising paper-only filings.",
+    key_provisions: [
+      {
+        section: "Resolves 1",
+        title: "Three-stage deployment milestones",
+        summary:
+          "Milestone 1 (≥10% deployed) within 2 years of BIU; Milestone 2 (≥50%) within 5 years; Milestone 3 (≥100%) within 7 years.",
+      },
+      {
+        section: "Resolves 2",
+        title: "MIFR consequence of non-compliance",
+        summary:
+          "Failure to meet a milestone reduces the recorded number of satellites in the MIFR to the actual number deployed at that milestone date.",
+        complianceImplication:
+          "Operators of NGSO constellations must align deployment cadence with the milestone schedule or accept a permanent reduction of their ITU-recorded fleet — directly affects the lifetime spectrum-rights envelope.",
+      },
+    ],
+    related_sources: ["INT-ITU-CONST", "INT-ITU-RR", "INT-ITU-WRC-23"],
+    last_verified: "2026-04-27",
+  },
 ];

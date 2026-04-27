@@ -1911,6 +1911,41 @@ const SUSTAINABILITY_UK: LegalSource[] = [
     related_sources: ["INT-CCSDS-CDM-508", "UK-CAA-CAP2589"],
     last_verified: "2026-04-27",
   },
+
+  {
+    id: "UK-SIR-2021",
+    jurisdiction: "UK",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en: "The Space Industry Regulations 2021",
+    date_enacted: "2021-07-01",
+    date_in_force: "2021-07-29",
+    official_reference: "SI 2021/792",
+    source_url: "https://www.legislation.gov.uk/uksi/2021/792/contents/made",
+    issuing_body: "Secretary of State for Transport (made under SIA 2018)",
+    competent_authorities: ["UK-CAA"],
+    relevance_level: "fundamental",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["licensing", "debris_mitigation", "liability"],
+    scope_description:
+      "Statutory Instrument that operationalises the Space Industry Act 2018 — sets the detailed licence-application requirements, technical-information schedules, and operating-licence conditions enforced by the CAA. The regulations include explicit debris-mitigation and end-of-mission requirements (Schedule 1 Part 3) referencing ISO 24113 as the technical baseline. Companion regulations on Appeals (SI 2021/793) and Enforcement (SI 2021/795) round out the secondary-legislation package under SIA 2018.",
+    key_provisions: [
+      {
+        section: "Sched. 1 Part 3",
+        title: "Mission-management plan",
+        summary:
+          "Application must include a mission-management plan covering operations, conjunction-assessment procedures, end-of-life disposal, and passivation — assessed against ISO 24113.",
+      },
+      {
+        section: "Sched. 1 Part 7",
+        title: "Insurance and indemnity",
+        summary:
+          "Application must demonstrate third-party liability insurance to the level set by the CAA, typically the EUR 60M baseline plus mission-specific add-ons.",
+      },
+    ],
+    related_sources: ["UK-SIA-2018", "UK-CAA-CAP2589", "INT-ISO-24113-2023"],
+    last_verified: "2026-04-27",
+  },
 ];
 
 // ─── Aggregated Export ──────────────────────────────────────────────

@@ -949,4 +949,120 @@ export const ATLAS_CASES: LegalCase[] = [
     source_url: "https://www.asi.it/normativa/",
     last_verified: "2026-04-27",
   },
+
+  // ─── Verified additions: 2024-2026 enforcement / inquiry tranche ────
+  // Each entry below corresponds to a publicly-announced regulator
+  // action or inquiry with a working source_url on the issuing body's
+  // own domain.
+
+  {
+    id: "CASE-FAA-SPACEX-2024",
+    jurisdiction: "US",
+    forum: "regulator_order",
+    forum_name:
+      "U.S. Federal Aviation Administration — Office of Commercial Space Transportation",
+    title:
+      "FAA Proposed Civil Penalties — SpaceX Falcon 9 Launch Licence Violations",
+    plaintiff:
+      "Federal Aviation Administration (FAA), Office of Commercial Space Transportation",
+    defendant: "Space Exploration Technologies Corp. (SpaceX)",
+    date_decided: "2024-09-17",
+    citation: "FAA News Release, 17 Sept 2024",
+    status: "pending",
+    facts:
+      "FAA announced two proposed civil penalties totalling $633,009 against SpaceX for alleged violations of Falcon 9 launch licences. The first ($350,000) related to a June 2023 SARah-1 launch where SpaceX allegedly used a new propellant farm before FAA approval; the second ($283,009) related to a July 2023 EchoStar XXIV launch where SpaceX allegedly used an updated launch dispatch and revised flight readiness review process before FAA approval.",
+    ruling_summary:
+      "FAA proposed two separate civil penalties; SpaceX was given 30 days to respond. The matter remained pending as of FAA's announcement; SpaceX publicly disputed the FAA's interpretation of the licensing requirements.",
+    legal_holding:
+      "The FAA's licensing-condition reach under 14 CFR Part 450 extends to operator-side process changes (revised flight-readiness procedures, modified ground-systems) that affect the public-safety analysis underlying the licence — not only to launch-vehicle hardware changes.",
+    remedy: {
+      monetary: true,
+      amount_usd: 633_009,
+      non_monetary: ["30-day response period; matter pending appeal"],
+    },
+    industry_significance:
+      "First high-profile FAA/AST civil-penalty action against a major commercial-launch operator. Establishes that pre-flight process changes (not only hardware modifications) can trigger licensing-condition violations and meaningful civil-penalty exposure.",
+    compliance_areas: ["licensing"],
+    precedential_weight: "non_precedential",
+    applied_sources: ["US-14CFR-PART-450", "US-CSLA-1984"],
+    parties_mentioned: ["SpaceX", "Federal Aviation Administration"],
+    source_url:
+      "https://www.faa.gov/newsroom/faa-proposes-633009-fines-spacex-alleged-violations-launch-license-requirements",
+    notes: [
+      "SpaceX disputed the FAA's findings publicly. Status as of last verification: pending response.",
+    ],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "CASE-FCC-LIGADO-2020",
+    jurisdiction: "US",
+    forum: "regulator_order",
+    forum_name: "U.S. Federal Communications Commission",
+    title:
+      "In the Matter of Ligado Networks Subsidiary LLC — Application for Modification of Authorisations",
+    plaintiff: "Federal Communications Commission",
+    defendant: "Ligado Networks Subsidiary LLC (formerly LightSquared)",
+    date_decided: "2020-04-19",
+    citation: "FCC 20-48, IB Docket No. 11-109 / 12-340",
+    case_number: "IB Docket No. 11-109",
+    status: "decided",
+    facts:
+      "Ligado Networks (the successor to LightSquared) sought FCC modification of its L-band authorisations to deploy a low-power terrestrial network in spectrum adjacent to GPS. The Department of Defense, Department of Transportation, and major aviation/agricultural GPS-receiver communities formally opposed the modification, arguing that the proposed terrestrial operations would generate harmful interference into adjacent GPS-receiver bands.",
+    ruling_summary:
+      "FCC granted the modification (Order FCC 20-48) over the dissenting-agency objections, concluding that Ligado's proposed power limits and out-of-band emission masks would not cause harmful interference. The DoD, DoT, and FAA continued to dispute the FCC determination publicly; subsequent NTIA and Congressional review proceedings followed.",
+    legal_holding:
+      "Inter-agency technical disputes over interference predictions are resolved through the FCC's licensing-modification process — opposing executive-branch agencies have voice but not veto. NTIA's coordination role under the National Telecommunications and Information Administration Organization Act is advisory.",
+    industry_significance:
+      "Sets the modern precedent that FCC commercial-spectrum authorisations can prevail over DoD/DoT objections grounded in interference predictions. Reinforces FCC primacy over commercial-spectrum licensing decisions even when adjacent federal-spectrum operations are at stake.",
+    compliance_areas: ["frequency_spectrum", "licensing"],
+    precedential_weight: "binding",
+    applied_sources: ["US-COMM-ACT-1934", "US-FCC-25-114"],
+    parties_mentioned: [
+      "Ligado Networks",
+      "U.S. Department of Defense",
+      "U.S. Department of Transportation",
+      "Federal Aviation Administration",
+      "GPS Innovation Alliance",
+    ],
+    source_url: "https://docs.fcc.gov/public/attachments/FCC-20-48A1.pdf",
+    notes: [
+      "The matter remains politically contested; subsequent NDAA provisions have included Ligado-related language in 2021 and 2022.",
+    ],
+    last_verified: "2026-04-27",
+  },
+
+  {
+    id: "CASE-VEGA-VV15-2019",
+    jurisdiction: "EU",
+    forum: "administrative_appeal",
+    forum_name: "European Space Agency — Independent Inquiry Commission",
+    title:
+      "Vega VV15 Mission Failure — Independent Inquiry Commission Findings",
+    plaintiff: "European Space Agency (ESA inquiry)",
+    defendant: "Avio S.p.A. / Arianespace",
+    date_decided: "2019-09-05",
+    citation: "ESA Press Release, 5 Sept 2019",
+    status: "decided",
+    facts:
+      "On 11 July 2019, the Vega VV15 mission failed approximately two minutes after liftoff, destroying the FalconEye-1 satellite (UAE Armed Forces Earth-observation payload). ESA and Arianespace convened an Independent Inquiry Commission. The Commission concluded that the most likely cause was a thermo-structural failure in the forward dome area of the Z23 second-stage motor.",
+    ruling_summary:
+      "Inquiry Commission published findings recommending design changes to the Z23 second-stage motor and additional qualification testing. Vega returned to flight in September 2020 (VV16). Insurance recovery for FalconEye-1 was made under standard launch-failure cover; specific settlement terms were not publicly disclosed.",
+    legal_holding:
+      "ESA-led independent-inquiry commissions for European launch-vehicle failures are advisory; remedial actions are implemented by the launch-services provider (Arianespace/Avio) rather than imposed as regulatory penalties.",
+    industry_significance:
+      "Established the modern ESA-led inquiry template subsequently applied to Vega VV17 (Nov 2020) and Vega-C VV22 (Dec 2022) failures. Reinforces that European launch-vehicle anomaly investigations are a multi-stakeholder advisory process, not a regulatory enforcement procedure.",
+    compliance_areas: ["licensing", "liability"],
+    precedential_weight: "persuasive",
+    applied_sources: ["FR-LOS-2008", "INT-ESA-CONV-1975"],
+    parties_mentioned: [
+      "European Space Agency",
+      "Arianespace",
+      "Avio S.p.A.",
+      "United Arab Emirates Armed Forces",
+    ],
+    source_url:
+      "https://www.esa.int/Newsroom/Press_Releases/Vega_return_to_flight_set_for_September",
+    last_verified: "2026-04-27",
+  },
 ];
