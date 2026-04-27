@@ -224,4 +224,135 @@ export const LEGAL_SOURCES_AU: LegalSource[] = [
     related_sources: ["INT-OST-1967", "INT-ARTEMIS-ACCORDS-2020"],
     last_verified: "2026-04-22",
   },
+
+  {
+    id: "AU-RADIOCOM-ACT-1992",
+    jurisdiction: "AU",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Radiocommunications Act 1992",
+    title_local: "Radiocommunications Act 1992 (Cth)",
+    date_enacted: "1992-12-23",
+    date_last_amended: "2024-09-04",
+    official_reference: "Act No. 174 of 1992",
+    source_url: "https://www.legislation.gov.au/Details/C2023C00299",
+    issuing_body: "Parliament of Australia",
+    competent_authorities: ["AU-ACMA"],
+    relevance_level: "high",
+    applicable_to: [
+      "satellite_operator",
+      "constellation_operator",
+      "ground_segment",
+    ],
+    compliance_areas: ["frequency_spectrum"],
+    scope_description:
+      "Operative Australian spectrum-licensing statute administered by ACMA. Captures earth-station licensing, spectrum allocation, satellite-network coordination, and the Australian filing point for ITU procedures. Companion to the SLR Act 2018 on the spectrum side of any commercial AU satellite system.",
+    key_provisions: [
+      {
+        section: "Part 3.1",
+        title: "Spectrum licences",
+        summary:
+          "ACMA-issued spectrum licences confer exclusive rights over frequency bands; satellite earth-station licences are issued separately for individual installations.",
+      },
+    ],
+    related_sources: ["AU-SLR-ACT-2018", "INT-ITU-RR"],
+    last_verified: "2026-04-22",
+  },
+  {
+    id: "AU-PRIVACY-ACT",
+    jurisdiction: "AU",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Privacy Act 1988 (with 2024 Privacy Reform amendments)",
+    title_local: "Privacy Act 1988 (Cth)",
+    date_enacted: "1988-12-14",
+    date_last_amended: "2024-12-12",
+    official_reference: "Act No. 119 of 1988 (as amended)",
+    source_url: "https://www.legislation.gov.au/Details/C2024C00224",
+    issuing_body: "Parliament of Australia",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["satellite_operator", "data_provider", "ground_segment"],
+    compliance_areas: ["data_security"],
+    scope_description:
+      "Australia's general data-protection statute under the Australian Privacy Principles (APPs). 2024 reforms introduce a statutory right of action for serious privacy invasions, tightened cross-border-transfer rules, and significantly higher penalties. Captures Earth-observation imagery resolving identifiable individuals and satcom-subscriber data with an Australian nexus.",
+    key_provisions: [
+      {
+        section: "APP 8 (cross-border)",
+        title: "Cross-border data transfers",
+        summary:
+          "Cross-border disclosure of personal information is permitted only where the recipient is bound by substantially similar protections or the data subject has explicitly consented.",
+      },
+    ],
+    related_sources: ["EU-GDPR-2016"],
+    last_verified: "2026-04-22",
+  },
+  {
+    id: "AU-SPACEPORTS-2026",
+    jurisdiction: "AU",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "Australian Spaceports — Bowen Orbital Spaceport / Whalers Way / Arnhem Space Centre",
+    date_published: "2026-04-22",
+    source_url: "https://www.industry.gov.au/space",
+    issuing_body: "Australian Space Agency",
+    competent_authorities: ["AU-ASA"],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["licensing"],
+    scope_description:
+      "Reference catalogue of currently-operating Australian launch facilities. Bowen Orbital Spaceport (Queensland, Gilmour Space Eris-1 launches), Whalers Way Orbital Launch Complex (South Australia, Southern Launch), Arnhem Space Centre (Northern Territory, Equatorial Launch Australia, partnered with NASA for sub-orbital sounding-rocket campaigns since 2022).",
+    key_provisions: [
+      {
+        section: "Bowen — Equatorial-friendly latitude",
+        title: "Gilmour Space tenant operations",
+        summary:
+          "Tropical-latitude site favouring inclined LEO launches; ASA spaceport licence held by Gilmour Space; first orbital launch attempted with Eris in 2024.",
+      },
+      {
+        section: "Whalers Way — Polar/SSO advantage",
+        title: "Southern Launch tenant operations",
+        summary:
+          "South Australian site with clear southern-azimuth corridor for polar and SSO launches; licensed for sub-orbital and orbital operations.",
+      },
+      {
+        section: "Arnhem Space Centre",
+        title: "NASA partner-launch site",
+        summary:
+          "First commercial spaceport outside the US to host a NASA sub-orbital launch campaign (June 2022); ASA-licensed for ELA's commercial business.",
+      },
+    ],
+    related_sources: ["AU-SLR-ACT-2018", "AU-SLR-RULES-2019"],
+    last_verified: "2026-04-22",
+  },
+  {
+    id: "AU-CIVIL-AVIATION-ACT-1988",
+    jurisdiction: "AU",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Civil Aviation Act 1988 — Airspace Coordination for Launches",
+    title_local: "Civil Aviation Act 1988 (Cth)",
+    date_enacted: "1988-09-15",
+    date_last_amended: "2024-06-30",
+    official_reference: "Act No. 63 of 1988",
+    source_url: "https://www.legislation.gov.au/Details/C2024C00094",
+    issuing_body: "Parliament of Australia",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["licensing"],
+    scope_description:
+      "CASA (Civil Aviation Safety Authority) administers airspace clearances for launch-vehicle transit through Australian controlled airspace. Operators with ASA launch permits coordinate with CASA for airspace activations, NOTAMs, and danger-area declarations around spaceports. Operative complement to the SLR Act for any AU launch.",
+    key_provisions: [
+      {
+        section: "Part III — Airspace declarations",
+        title: "Restricted-area activation",
+        summary:
+          "CASA activates restricted areas for launch and re-entry windows, coordinating with AirServices Australia for airspace traffic redirection.",
+      },
+    ],
+    related_sources: ["AU-SLR-ACT-2018"],
+    last_verified: "2026-04-22",
+  },
 ];

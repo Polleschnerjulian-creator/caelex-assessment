@@ -146,4 +146,91 @@ export const LEGAL_SOURCES_IL: LegalSource[] = [
     related_sources: ["INT-OST-1967", "INT-ARTEMIS-ACCORDS-2020"],
     last_verified: "2026-04-22",
   },
+
+  {
+    id: "IL-CYBERSECURITY-LAW-2017",
+    jurisdiction: "IL",
+    type: "federal_law",
+    status: "in_force",
+    title_en:
+      "Cyber Security and the National Cyber Directorate Law (proposed) and Operative Government Resolutions 2444 / 3270",
+    title_local: "מדיניות הסייבר הלאומית",
+    date_published: "2017-02-15",
+    source_url:
+      "https://www.gov.il/en/departments/israel_national_cyber_directorate",
+    issuing_body: "Government of Israel",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["satellite_operator", "ground_segment"],
+    compliance_areas: ["cybersecurity"],
+    scope_description:
+      "Israel's national cybersecurity governance under the Israel National Cyber Directorate (INCD), operationalised by Government Resolutions 2444 (2015) and 3270 (2017). Captures satellite operators with critical-infrastructure designations and imposes incident-reporting and risk-management obligations broadly equivalent to EU NIS2 in approach.",
+    key_provisions: [
+      {
+        section: "GovRes 3270",
+        title: "Critical-infrastructure cyber-defence",
+        summary:
+          "Designated critical-infrastructure operators (which may include satellite operators) must implement INCD-mandated security baselines and report incidents within 72 hours.",
+      },
+    ],
+    related_sources: ["EU-NIS2-2022"],
+    last_verified: "2026-04-22",
+  },
+  {
+    id: "IL-PRIVACY-LAW-1981",
+    jurisdiction: "IL",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Protection of Privacy Law, 5741-1981",
+    title_local: 'חוק הגנת הפרטיות, התשמ"א-1981',
+    date_enacted: "1981-02-23",
+    date_last_amended: "2024-08-08",
+    official_reference: "Sefer HaChukim 5741, Law No. 1011",
+    source_url: "https://www.nevo.co.il/law_html/law01/p214m1_001.htm",
+    issuing_body: "Knesset",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["satellite_operator", "data_provider"],
+    compliance_areas: ["data_security"],
+    scope_description:
+      "Israel's general data-protection statute, supervised by the Privacy Protection Authority within the Ministry of Justice. Captures Earth-observation imagery resolving identifiable individuals and satcom-subscriber data. Israel is recognised by the EU as providing adequate protection under GDPR Art. 45.",
+    key_provisions: [
+      {
+        section: "§ 36",
+        title: "Cross-border data transfers",
+        summary:
+          "Transfers to non-adequate countries require either consent or one of the prescribed mechanisms; the EU adequacy decision means EU↔IL flows operate without additional safeguards.",
+      },
+    ],
+    related_sources: ["EU-GDPR-2016"],
+    last_verified: "2026-04-22",
+  },
+  {
+    id: "IL-SPACE-AGENCY-RES",
+    jurisdiction: "IL",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "ISA Establishment Resolution and 2024 Update",
+    title_local: "החלטת הממשלה להקמת סוכנות החלל הישראלית",
+    date_enacted: "1983-05-01",
+    date_last_amended: "2024-03-01",
+    source_url: "https://most.gov.il/en/units/Israel-Space-Agency",
+    issuing_body: "Government of Israel",
+    competent_authorities: ["IL-ISA"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing"],
+    scope_description:
+      "Cabinet Resolution establishing the Israel Space Agency in 1983 with its civil-space cooperation mandate, plus the 2024 update modernising ISA's mission to cover NewSpace ecosystem support, international partnerships, and educational outreach. Non-statutory but the operative governance for ISA programmes.",
+    key_provisions: [
+      {
+        section: "2024 update",
+        title: "NewSpace ecosystem mandate",
+        summary:
+          "ISA expanded mandate covers SpaceIL, IAI, Rafael, Elbit, and emerging Israeli space-tech start-ups; Government R&D matching grants administered through ISA.",
+      },
+    ],
+    related_sources: ["IL-DEC-LAW-2007"],
+    last_verified: "2026-04-22",
+  },
 ];

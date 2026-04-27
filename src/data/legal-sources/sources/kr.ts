@@ -153,4 +153,126 @@ export const LEGAL_SOURCES_KR: LegalSource[] = [
     related_sources: ["INT-OST-1967", "INT-ARTEMIS-ACCORDS-2020"],
     last_verified: "2026-04-22",
   },
+
+  {
+    id: "KR-RADIO-WAVES-ACT",
+    jurisdiction: "KR",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Radio Waves Act",
+    title_local: "전파법",
+    date_enacted: "1961-12-30",
+    date_last_amended: "2024-12-31",
+    official_reference: "Act No. 808 of 1961 (as amended)",
+    source_url:
+      "https://elaw.klri.re.kr/eng_service/lawView.do?hseq=64132&lang=ENG",
+    issuing_body: "National Assembly",
+    competent_authorities: ["KR-MSIT"],
+    relevance_level: "high",
+    applicable_to: [
+      "satellite_operator",
+      "constellation_operator",
+      "ground_segment",
+    ],
+    compliance_areas: ["frequency_spectrum"],
+    scope_description:
+      "Korea's primary radio-spectrum statute administered by MSIT. Captures satellite-spectrum licensing, ITU coordination filings, and earth-station authorisations. Companion to the Space Development Promotion Act on the spectrum side; KASA coordinates with MSIT on satellite-network spectrum allocation.",
+    key_provisions: [
+      {
+        section: "Art. 19-20",
+        title: "Radio-station licence required",
+        summary:
+          "All radio stations including satellite TT&C, ground stations, and gateway terminals require an MSIT licence; specific provisions govern satellite-spectrum use.",
+      },
+    ],
+    related_sources: ["KR-SPACE-DEV-PROMO-ACT", "INT-ITU-RR"],
+    last_verified: "2026-04-22",
+  },
+  {
+    id: "KR-PIPA-2011",
+    jurisdiction: "KR",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Personal Information Protection Act",
+    title_local: "개인정보 보호법",
+    date_enacted: "2011-03-29",
+    date_last_amended: "2024-09-15",
+    official_reference: "Act No. 10465 of 2011 (as amended)",
+    source_url:
+      "https://elaw.klri.re.kr/eng_service/lawView.do?hseq=42727&lang=ENG",
+    issuing_body: "National Assembly",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["satellite_operator", "data_provider", "ground_segment"],
+    compliance_areas: ["data_security"],
+    scope_description:
+      "Korea's general data-protection statute under the supervision of the Personal Information Protection Commission. Captures Earth-observation operators whose imagery resolves identifiable individuals and satcom-subscriber data with a Korean nexus. Korea has been recognised as providing adequate protection by the EU under GDPR Art. 45.",
+    key_provisions: [
+      {
+        section: "Art. 17-18",
+        title: "Cross-border transfers",
+        summary:
+          "Transfers permitted with consent or to jurisdictions deemed adequate by the Korean PIPC.",
+      },
+    ],
+    related_sources: ["EU-GDPR-2016"],
+    last_verified: "2026-04-22",
+  },
+  {
+    id: "KR-NARO-SPACE-CENTRE",
+    jurisdiction: "KR",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "Naro Space Center — Korean Launch Range Authorisation Reference",
+    date_published: "2025-06-01",
+    source_url: "https://kasa.go.kr/eng/main/main.do",
+    issuing_body: "Korea AeroSpace Administration",
+    competent_authorities: ["KR-KASA", "KR-KARI"],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["licensing"],
+    scope_description:
+      "Reference entry for the Naro Space Center (Goheung) — Korea's primary launch site, host of all Nuri (KSLV-II) launches. KASA administers launch authorisations under the Space Development Promotion Act; KARI operates the range. Foreign launch operators have no current commercial access; the site is reserved for Korean Government and KARI/KASA partner missions.",
+    key_provisions: [
+      {
+        section: "Site access",
+        title: "Korean Government and partner missions",
+        summary:
+          "Naro Space Center hosts Korean Government launches; commercial third-party access is being developed but not yet operational as of April 2026.",
+      },
+    ],
+    related_sources: ["KR-SPACE-DEV-PROMO-ACT"],
+    last_verified: "2026-04-22",
+  },
+  {
+    id: "KR-KASA-SPECIAL-ACT",
+    jurisdiction: "KR",
+    type: "federal_law",
+    status: "in_force",
+    title_en:
+      "Special Act on the Establishment and Operation of the Korea AeroSpace Administration",
+    title_local: "우주항공청의 설치 및 운영에 관한 특별법",
+    date_enacted: "2024-01-26",
+    date_in_force: "2024-05-27",
+    official_reference: "Act No. 19883 of 2024",
+    source_url:
+      "https://elaw.klri.re.kr/eng_service/lawView.do?hseq=66821&lang=ENG",
+    issuing_body: "National Assembly",
+    competent_authorities: ["KR-KASA"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing"],
+    scope_description:
+      "Establishment statute creating KASA in May 2024 as Korea's national space agency under the Office of the Prime Minister. Transferred core licensing and policy functions from MSIT, consolidating Korean civil-space governance into a single regulator. Operative basis for the regulatory transition that affects every commercial space-permit application from May 2024 onward.",
+    key_provisions: [
+      {
+        section: "Art. 4-9",
+        title: "KASA mandate and powers",
+        summary:
+          "KASA receives policy-coordination, licensing, and international-cooperation competences for civil space activities; supersedes MSIT in space-licensing.",
+      },
+    ],
+    related_sources: ["KR-SPACE-DEV-PROMO-ACT", "KR-SPACE-LIABILITY-ACT"],
+    last_verified: "2026-04-22",
+  },
 ];

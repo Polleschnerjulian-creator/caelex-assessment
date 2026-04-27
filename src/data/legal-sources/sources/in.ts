@@ -196,4 +196,125 @@ export const LEGAL_SOURCES_IN: LegalSource[] = [
     related_sources: ["INT-OST-1967", "IN-SPACE-POLICY-2023"],
     last_verified: "2026-04-22",
   },
+
+  {
+    id: "IN-FEMA-FDI-SPACE",
+    jurisdiction: "IN",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "FEMA Foreign Direct Investment Rules — Space Sector (2024 Amendment)",
+    title_local: "FEMA — Space FDI Rules",
+    date_enacted: "2024-04-16",
+    official_reference: "Notification S.O. 1610(E), 16 April 2024",
+    source_url:
+      "https://dpiit.gov.in/sites/default/files/SpaceFDIRules_16April2024.pdf",
+    issuing_body: "Department for Promotion of Industry and Internal Trade",
+    competent_authorities: ["IN-DOS", "IN-SPACE"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing"],
+    scope_description:
+      "April 2024 liberalisation of foreign direct investment in the Indian space sector under the Foreign Exchange Management Act. Sets the FDI ceilings and routes (automatic vs. Government approval) for satellite manufacturing/operation/data, launch vehicles and sub-systems, and satellite component manufacturing — operative for any non-Indian investor pursuing IN exposure.",
+    key_provisions: [
+      {
+        section: "FDI Schedule",
+        title: "Automatic-route ceilings",
+        summary:
+          "Up to 74 % automatic for satellite manufacturing, operation, and data products; up to 49 % automatic for launch vehicles and associated systems; up to 100 % automatic for components and sub-systems. Above-ceiling investment requires Government route approval.",
+      },
+    ],
+    related_sources: ["IN-SPACE-POLICY-2023", "IN-NGP-2024"],
+    last_verified: "2026-04-22",
+  },
+  {
+    id: "IN-DPDP-2023",
+    jurisdiction: "IN",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Digital Personal Data Protection Act 2023",
+    title_local: "Digital Personal Data Protection Act, 2023",
+    date_enacted: "2023-08-11",
+    date_in_force: "2025-09-01",
+    official_reference: "Act No. 22 of 2023",
+    source_url: "https://www.meity.gov.in/data-protection-framework",
+    issuing_body: "Parliament of India",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["satellite_operator", "data_provider", "ground_segment"],
+    compliance_areas: ["data_security"],
+    scope_description:
+      "India's first comprehensive data-protection statute. Captures Earth-observation operators whose imagery resolves identifiable individuals, satcom-subscriber data, and any cross-border transfer touching Indian data principals. Enforcement by the Data Protection Board of India established under the Act.",
+    key_provisions: [
+      {
+        section: "§ 16",
+        title: "Cross-border data transfers",
+        summary:
+          "Transfers permitted to all jurisdictions except those notified by the Central Government as restricted — a permissive regime relative to the EU GDPR adequacy framework.",
+      },
+    ],
+    related_sources: ["EU-GDPR-2016"],
+    last_verified: "2026-04-22",
+  },
+  {
+    id: "IN-ANTRIX-NSIL",
+    jurisdiction: "IN",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "Antrix-NSIL Reform — Commercial Space Procurement and Marketing",
+    date_published: "2024-12-01",
+    source_url: "https://www.nsilindia.co.in/",
+    issuing_body: "Department of Space",
+    competent_authorities: ["IN-DOS"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "launch_provider"],
+    compliance_areas: ["licensing"],
+    scope_description:
+      "Reference for the dual commercial-arm structure of Indian space: NewSpace India Limited (NSIL, est. 2019) is the public-sector commercial arm executing demand-driven satellite and launch contracts, while Antrix Corporation continues as ISRO's marketing arm. NSIL has now taken the lead role for end-to-end commercial space business; international counterparties contract through NSIL for PSLV/SSLV launches.",
+    key_provisions: [
+      {
+        section: "Demand-driven model",
+        title: "End-to-end commercial space contracting",
+        summary:
+          "NSIL contracts with private satellite operators (domestic and foreign) for build-launch-and-operate missions, transferring revenue and risk to a commercial entity rather than ISRO directly.",
+      },
+    ],
+    related_sources: ["IN-SPACE-POLICY-2023"],
+    last_verified: "2026-04-22",
+  },
+  {
+    id: "IN-ITU-TRAI-SPACE",
+    jurisdiction: "IN",
+    type: "federal_law",
+    status: "in_force",
+    title_en:
+      "Telecommunications Act 2023 + TRAI Recommendations on Satellite Spectrum",
+    title_local: "Telecommunications Act, 2023",
+    date_enacted: "2023-12-24",
+    date_in_force: "2024-06-26",
+    official_reference: "Act No. 44 of 2023",
+    source_url:
+      "https://dot.gov.in/sites/default/files/Telecommunications%20Act%2C%202023.pdf",
+    issuing_body: "Parliament of India",
+    competent_authorities: ["IN-SPACE"],
+    relevance_level: "high",
+    applicable_to: [
+      "satellite_operator",
+      "constellation_operator",
+      "ground_segment",
+    ],
+    compliance_areas: ["frequency_spectrum"],
+    scope_description:
+      "New Telecommunications Act 2023 replaces the Indian Telegraph Act 1885 and the Wireless Telegraphy Act 1933. Section 6 explicitly authorises administrative allocation of satellite spectrum (rather than auction) for specified satellite-services bands. Pairs with TRAI recommendations on commercial space-spectrum and IN-SPACe authorisation for the Indian satcom market.",
+    key_provisions: [
+      {
+        section: "§ 6",
+        title: "Administrative allocation of satellite spectrum",
+        summary:
+          "Spectrum for specified satellite-services use cases is allocated administratively under Government rules, subject to terms and conditions. Resolves a long-running debate over satellite vs. terrestrial spectrum-allocation models.",
+      },
+    ],
+    related_sources: ["INT-ITU-RR", "IN-SPACE-POLICY-2023"],
+    last_verified: "2026-04-22",
+  },
 ];

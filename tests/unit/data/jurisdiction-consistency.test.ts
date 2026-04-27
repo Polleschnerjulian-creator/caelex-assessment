@@ -17,6 +17,7 @@
 import { describe, it, expect } from "vitest";
 import {
   SPACE_LAW_COUNTRY_CODES,
+  ATLAS_EXTENDED_JURISDICTION_CODES,
   type SpaceLawCountryCode,
 } from "@/lib/space-law-types";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
@@ -70,13 +71,20 @@ describe("Jurisdiction registries — consistency", () => {
     expect(missing).toEqual([]);
   });
 
-  it("every national entry in legal-sources getAvailableJurisdictions() is in SPACE_LAW_COUNTRY_CODES (excluding INT/EU)", () => {
+  it("every national entry in legal-sources getAvailableJurisdictions() is in SPACE_LAW_COUNTRY_CODES OR ATLAS_EXTENDED_JURISDICTION_CODES (excluding INT/EU)", () => {
+    // SPACE_LAW_COUNTRY_CODES drives the National Space Law assessment
+    // wizard. ATLAS_EXTENDED_JURISDICTION_CODES catalogues strategic non-EU
+    // actors (RU/CN/IN/JP/...) that are surfaced in Atlas pages but do
+    // not have an assessment-wizard JurisdictionLaw mapping.
     const allowedMeta = new Set(["INT", "EU"]);
-    const codes = new Set(SPACE_LAW_COUNTRY_CODES as readonly string[]);
+    const wizardCodes = new Set(SPACE_LAW_COUNTRY_CODES as readonly string[]);
+    const extendedCodes = new Set(
+      ATLAS_EXTENDED_JURISDICTION_CODES as readonly string[],
+    );
     const extra: string[] = [];
     for (const code of getAvailableJurisdictions()) {
       if (allowedMeta.has(code)) continue;
-      if (!codes.has(code)) {
+      if (!wizardCodes.has(code) && !extendedCodes.has(code)) {
         extra.push(code);
       }
     }

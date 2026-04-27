@@ -94,6 +94,33 @@ export const SPACE_LAW_COUNTRY_CODES: SpaceLawCountryCode[] = [
   "NZ",
 ];
 
+/**
+ * Extended catalogue including the 11 strategic non-EU/non-UK actors added
+ * in the 2026-04 Atlas content expansion (JP, IN, AU, CA, AE, KR, IL, CN,
+ * RU, BR, ZA). These jurisdictions are catalogued in the legal-sources
+ * dataset for Atlas use, but the National Space Law assessment wizard does
+ * NOT yet support them — its UI and engine are scoped to the codes in
+ * `SPACE_LAW_COUNTRY_CODES` above. Keep the two lists separate so adding a
+ * jurisdiction to the legal-sources dataset does not silently break the
+ * assessment wizard's expectations.
+ */
+export const ATLAS_EXTENDED_JURISDICTION_CODES = [
+  "JP",
+  "IN",
+  "AU",
+  "CA",
+  "AE",
+  "KR",
+  "IL",
+  "CN",
+  "RU",
+  "BR",
+  "ZA",
+] as const;
+
+export type AtlasExtendedJurisdictionCode =
+  (typeof ATLAS_EXTENDED_JURISDICTION_CODES)[number];
+
 // ─── Activity Types ───
 
 export type SpaceLawActivityType =
