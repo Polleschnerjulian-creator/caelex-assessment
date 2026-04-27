@@ -325,6 +325,141 @@ Render inline references to other cases as [CASE-...] tokens; the UI translates 
       required: ["case_id"],
     },
   },
+
+  // ─── Drafting tools ───────────────────────────────────────────────
+  // The drafting tools turn Atlas from a research surface into a
+  // working-output surface. Each tool returns a STRUCTURED SCAFFOLD —
+  // never finished prose. The Astra agent (the model itself) composes
+  // the final draft using the scaffold, the cited sources, and the
+  // operator context the user supplied.
+  //
+  // HARD RULE — drafting outputs are first-pass scaffolds, not legal
+  // advice. ALWAYS prefix the user-facing draft with the standard
+  // legal-review disclaimer (see system prompt).
+
+  {
+    name: "draft_authorization_application",
+    description: `Builds a structured scaffold for a national space-licence / launch-authorisation application. Returns the binding legal framework, the competent authority, mandatory application sections (with what each must contain), required attachments, and the key quantitative thresholds (insurance cap, casualty-risk, PMD-timeline, disposal-reliability) for the chosen jurisdiction. Compose the actual draft in your reply using the scaffold + the operator's mission profile.
+
+Use when the user asks "draft a UK launch licence", "write an authorisation application for FR LOS", "scaffold a Genehmigungsantrag nach dem deutschen WeltraumG", "prepare a NZ OSHAA payload permit", etc.
+
+Output is BILINGUAL where DE translations exist — the agent can render in EN, DE, or both depending on the user's language. ALL section references and quantitative thresholds carry [ATLAS-ID] citations to the underlying sources. Wrap the final draft with the legal-review disclaimer from the system prompt.
+
+Returns isError=true when the jurisdiction has no operative national space-licensing regime (e.g. EE, HR, HU, IS, LI, LT, LV, RO, SI, SK — Atlas catalogues these as "no domestic implementation"). In that case explain to the user that they need to operate under the Outer Space Treaty Art. VI obligation flowing through alternative routes (administrative practice, bilateral arrangement, etc.) rather than a dedicated statute.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        jurisdiction: {
+          type: "string",
+          description:
+            "ISO alpha-2 jurisdiction code (e.g. 'UK', 'FR', 'DE', 'US', 'JP', 'AU', 'NZ', 'IN', 'KR', 'IT', 'BE', 'NL', 'LU', 'PT', 'ES'). Use 'EU' only when drafting against the future EU Space Act regime.",
+        },
+        operator_type: {
+          type: "string",
+          enum: [
+            "satellite_operator",
+            "launch_provider",
+            "ground_segment",
+            "data_provider",
+            "in_orbit_services",
+            "constellation_operator",
+            "space_resource_operator",
+          ],
+          description:
+            "Operator category — determines which sub-permit class is the right starting point (e.g. SLR Act Part 4 vs. Part 6 in Australia; UK SIA operator licence vs. orbital activity licence).",
+        },
+        mission_profile: {
+          type: "string",
+          description:
+            "Optional one-paragraph mission profile (orbit, payload mass, debris-mitigation strategy, end-customer). Helps the scaffold flag jurisdiction-specific risk areas (e.g. 5-year PMD applicability, casualty-risk threshold).",
+        },
+      },
+      required: ["jurisdiction", "operator_type"],
+    },
+  },
+
+  {
+    name: "draft_compliance_brief",
+    description: `Builds a structured scaffold for a multi-jurisdictional compliance brief / client memo. Returns the topic's regulatory map (which sources govern, in which jurisdictions), enforcement context (any cases that have applied these sources), per-jurisdiction key-points table, suggested brief structure (Executive Summary, Legal Framework, Risks, Recommendations), and the open questions the user should answer before the brief can be finalised.
+
+Use when the user asks "draft a memo on 5-year LEO PMD compliance for our LEO constellation", "compliance brief on ITAR transfers between US and France", "advise on NIS2 ground-segment obligations across DE/FR/IT", "prepare client memo on debris-mitigation across our footprint", etc.
+
+The scaffold is BILINGUAL where DE translations exist. Every cited authority/source/case in the scaffold uses ATLAS-ID/CASE-ID format so the final draft renders with hover-preview pills. Wrap the user-facing memo with the legal-review disclaimer from the system prompt.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        topic: {
+          type: "string",
+          description:
+            "Free-text compliance topic (e.g. '5-year LEO post-mission disposal', 'ITAR Cat. XV transfers to French JV partner', 'NIS2 obligations for satellite ground segment', 'Liability Convention exposure for collision in LEO'). 5-200 chars.",
+        },
+        jurisdictions: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "ISO alpha-2 jurisdictions (or 'INT'/'EU') to scope the brief. Empty array = global scope (top-7 most-relevant jurisdictions for the topic).",
+        },
+        operator_context: {
+          type: "string",
+          description:
+            "Optional one-paragraph context about the client operator (HQ, fleet profile, key counterparties). Lets the scaffold flag which provisions are most likely binding.",
+        },
+      },
+      required: ["topic"],
+    },
+  },
+
+  {
+    name: "compare_jurisdictions_for_filing",
+    description: `Generates a structured comparison matrix across jurisdictions for a chosen set of regulatory criteria — to help operators decide where to file or which JV partner to choose. Returns a per-jurisdiction × per-criterion grid with quantitative values (insurance cap, casualty-risk, PMD timeline, indemnification regime, disposal-reliability target, processing time, ITU-coordination support) and the ATLAS-ID source backing each cell.
+
+Use when the user asks "compare UK vs. France vs. Germany for satellite licensing", "where's the best jurisdiction for a small LEO Earth-observation constellation", "which European spaceport has the cheapest indemnification regime", etc.
+
+Returns the comparison as a structured payload the agent renders as a markdown table in the chat. Caveats and unknowns are flagged explicitly so lawyers don't infer presence-of-data from absence-of-warning. Wrap the final comparison with the legal-review disclaimer.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        candidate_jurisdictions: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "ISO alpha-2 jurisdictions to compare. Empty array = the eight most-active commercial-space jurisdictions (US, UK, FR, DE, IT, NL, AU, NZ).",
+        },
+        criteria: {
+          type: "array",
+          items: {
+            type: "string",
+            enum: [
+              "insurance_cap",
+              "casualty_risk_threshold",
+              "pmd_timeline",
+              "disposal_reliability",
+              "indemnification_regime",
+              "processing_time",
+              "itu_coordination_support",
+              "debris_mitigation_baseline",
+              "fdi_screening",
+              "data_protection_regime",
+            ],
+          },
+          description:
+            "Comparison axes. Empty array = a sensible default set (insurance_cap, casualty_risk_threshold, pmd_timeline, indemnification_regime, debris_mitigation_baseline). Each criterion maps onto specific source provisions; cells without data are marked as 'no data' rather than left blank.",
+        },
+        operator_type: {
+          type: "string",
+          enum: [
+            "satellite_operator",
+            "launch_provider",
+            "ground_segment",
+            "in_orbit_services",
+            "constellation_operator",
+          ],
+          description:
+            "Optional. Operator category — narrows the comparison to the rules that actually bite for this operator class.",
+        },
+      },
+    },
+  },
 ];
 
 export type AtlasToolName =
@@ -336,7 +471,10 @@ export type AtlasToolName =
   | "list_workspace_templates"
   | "list_jurisdiction_authorities"
   | "search_cases"
-  | "get_case_by_id";
+  | "get_case_by_id"
+  | "draft_authorization_application"
+  | "draft_compliance_brief"
+  | "compare_jurisdictions_for_filing";
 
 export function isAtlasToolName(name: string): name is AtlasToolName {
   return ATLAS_TOOLS.some((t) => t.name === name);

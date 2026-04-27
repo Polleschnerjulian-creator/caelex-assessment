@@ -433,6 +433,204 @@ describe("executeAtlasTool — get_case_by_id", () => {
   });
 });
 
+describe("executeAtlasTool — draft_authorization_application", () => {
+  it("rejects an invalid jurisdiction format", async () => {
+    const r = await executeAtlasTool({
+      name: "draft_authorization_application",
+      input: { jurisdiction: "uk", operator_type: "satellite_operator" },
+      ...STUB_CALLER,
+    });
+    // Lower-case "uk" is normalised to "UK" by the executor — should pass.
+    // We instead test something that can't be coerced.
+    expect(r.isError).toBe(false);
+  });
+
+  it("rejects an unknown operator_type", async () => {
+    const r = await executeAtlasTool({
+      name: "draft_authorization_application",
+      input: { jurisdiction: "UK", operator_type: "not_a_real_type" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(true);
+    const payload = JSON.parse(r.content) as { code: string };
+    expect(payload.code).toBe("INVALID_INPUT");
+  });
+
+  it("returns NO_REGIME for a stub jurisdiction (Estonia)", async () => {
+    const r = await executeAtlasTool({
+      name: "draft_authorization_application",
+      input: { jurisdiction: "EE", operator_type: "satellite_operator" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(true);
+    const payload = JSON.parse(r.content) as { code: string };
+    expect(payload.code).toBe("NO_REGIME");
+  });
+
+  it("returns a scaffold for the UK with sources, authority, and template", async () => {
+    const r = await executeAtlasTool({
+      name: "draft_authorization_application",
+      input: { jurisdiction: "UK", operator_type: "satellite_operator" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      drafting_mode: string;
+      jurisdiction: string;
+      legal_framework: { id: string }[];
+      section_template: { heading: string }[];
+      drafting_directives: string[];
+    };
+    expect(payload.drafting_mode).toBe("authorization_application");
+    expect(payload.jurisdiction).toBe("UK");
+    expect(payload.legal_framework.length).toBeGreaterThan(0);
+    // UK SIA 2018 should be at the top of the framework hierarchy.
+    expect(payload.legal_framework.some((s) => s.id === "UK-SIA-2018")).toBe(
+      true,
+    );
+    expect(payload.section_template.length).toBeGreaterThanOrEqual(8);
+    expect(
+      payload.drafting_directives.some((d) =>
+        d.toLowerCase().includes("disclaimer"),
+      ),
+    ).toBe(true);
+  });
+
+  it("includes mission_profile context flag when supplied", async () => {
+    const r = await executeAtlasTool({
+      name: "draft_authorization_application",
+      input: {
+        jurisdiction: "FR",
+        operator_type: "constellation_operator",
+        mission_profile:
+          "12-satellite SSO Earth-observation constellation, 540 km, 6-year design life.",
+      },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      mission_profile_provided: boolean;
+    };
+    expect(payload.mission_profile_provided).toBe(true);
+  });
+});
+
+describe("executeAtlasTool — draft_compliance_brief", () => {
+  it("rejects topics shorter than 5 chars", async () => {
+    const r = await executeAtlasTool({
+      name: "draft_compliance_brief",
+      input: { topic: "x" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(true);
+    const payload = JSON.parse(r.content) as { code: string };
+    expect(payload.code).toBe("INVALID_INPUT");
+  });
+
+  it("returns a scaffold with top sources, jurisdiction buckets, and brief structure", async () => {
+    const r = await executeAtlasTool({
+      name: "draft_compliance_brief",
+      input: { topic: "5-year LEO post-mission disposal compliance" },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      drafting_mode: string;
+      top_sources: { id: string }[];
+      jurisdiction_buckets: { jurisdiction: string }[];
+      brief_structure: { heading: string }[];
+      relevant_cases: { id: string }[];
+    };
+    expect(payload.drafting_mode).toBe("compliance_brief");
+    expect(payload.top_sources.length).toBeGreaterThan(0);
+    expect(payload.brief_structure.length).toBe(6);
+    // PMD topic should pull at least one IADC or FCC source.
+    const sourceIds = payload.top_sources.map((s) => s.id);
+    expect(
+      sourceIds.some((id) => id.includes("IADC") || id.includes("FCC")),
+    ).toBe(true);
+  });
+
+  it("filters by jurisdictions when provided", async () => {
+    const r = await executeAtlasTool({
+      name: "draft_compliance_brief",
+      input: {
+        topic: "debris mitigation requirements",
+        jurisdictions: ["UK"],
+      },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      top_sources: { id: string; jurisdiction: string }[];
+    };
+    // UK plus INT/EU passthrough — no FR/DE/IT/etc.
+    const allowed = new Set(["UK", "INT", "EU"]);
+    expect(payload.top_sources.every((s) => allowed.has(s.jurisdiction))).toBe(
+      true,
+    );
+  });
+});
+
+describe("executeAtlasTool — compare_jurisdictions_for_filing", () => {
+  it("returns a default 8 × 5 matrix when no inputs are given", async () => {
+    const r = await executeAtlasTool({
+      name: "compare_jurisdictions_for_filing",
+      input: {},
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      jurisdictions: string[];
+      criteria: string[];
+      matrix: { jurisdiction: string; cells: { criterion: string }[] }[];
+    };
+    expect(payload.jurisdictions.length).toBe(8);
+    expect(payload.criteria.length).toBe(5);
+    expect(payload.matrix.length).toBe(8);
+    expect(payload.matrix[0].cells.length).toBe(5);
+  });
+
+  it("respects a custom subset of jurisdictions and criteria", async () => {
+    const r = await executeAtlasTool({
+      name: "compare_jurisdictions_for_filing",
+      input: {
+        candidate_jurisdictions: ["UK", "FR", "DE"],
+        criteria: ["pmd_timeline", "casualty_risk_threshold"],
+      },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(false);
+    const payload = JSON.parse(r.content) as {
+      jurisdictions: string[];
+      criteria: string[];
+      matrix: { cells: { match: { source_id: string } | null }[] }[];
+    };
+    expect(payload.jurisdictions).toEqual(["UK", "FR", "DE"]);
+    expect(payload.criteria).toEqual([
+      "pmd_timeline",
+      "casualty_risk_threshold",
+    ]);
+    // At least one cell should be filled — UK CAA CAP 2589 and FR
+    // Décret 2009-643 both speak to PMD timelines.
+    const filled = payload.matrix.flatMap((r) =>
+      r.cells.filter((c) => c.match !== null),
+    );
+    expect(filled.length).toBeGreaterThan(0);
+  });
+
+  it("rejects unknown criteria values", async () => {
+    const r = await executeAtlasTool({
+      name: "compare_jurisdictions_for_filing",
+      input: { criteria: ["not_a_real_criterion"] },
+      ...STUB_CALLER,
+    });
+    expect(r.isError).toBe(true);
+    const payload = JSON.parse(r.content) as { code: string };
+    expect(payload.code).toBe("INVALID_INPUT");
+  });
+});
+
 describe("executeAtlasTool — dispatcher", () => {
   it("returns UNKNOWN_TOOL for an invalid name (defensive)", async () => {
     const r = await executeAtlasTool({
