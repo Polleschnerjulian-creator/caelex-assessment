@@ -73,7 +73,7 @@
     "@react-three/fiber": "~8.17.10",
     "@react-three/postprocessing": "~2.16.3",
     "@sentry/nextjs": "^10.38.0",
-    "@simplewebauthn/browser": "^13.2.2",
+    "@simplewebauthn/browser": "^13.3.0",
     "@simplewebauthn/server": "^13.2.2",
     "@stripe/stripe-js": "^8.7.0",
     "@tanstack/react-virtual": "^3.13.24",
