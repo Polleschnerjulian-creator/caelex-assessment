@@ -186,9 +186,9 @@ Tooling matrix update:
 
 ### 5.1.1 · Corrections caught by primary-source verification
 
-The verification process surfaced FOUR factual errors in the existing
-catalogue / earlier fabrications that have now been corrected against
-the primary record:
+The verification process surfaced **EIGHT** factual errors and one
+data-corruption bug in the existing catalogue / earlier fabrications
+that have now been corrected against the primary record:
 
 1. **EU-SPACE-ACT procedure number** was 2025/0185(COD) in the
    earlier draft; primary source confirms **2025/0335/COD**.
@@ -200,6 +200,20 @@ the primary record:
 4. **IT-LEGGE-89-2025 GU reference + EIF** was "GU n. 146" with
    `date_in_force: 2025-07-09` in the catalogue; Gazzetta Ufficiale
    confirms **GU Serie Generale n. 144** with **EIF 25/06/2025**.
+5. **IT-LEGGE-7-2018 EIF** was "2018-02-15" in the catalogue;
+   Normattiva confirms **EIF 25/02/2018** (off by 10 days).
+6. **IT-LEGGE-185-1990 EIF** was the GU publication date "1990-07-14"
+   in the catalogue; Normattiva confirms **EIF 29/07/1990** (vacatio
+   legis 15 days).
+7. **IT-DLGS-128-2003 GU + EIF** was triple-wrong in the catalogue:
+   "GU n. 156 del 8 luglio 2003" with `date_in_force: 2003-07-18`;
+   Normattiva confirms **GU n. 129 del 6 giugno 2003** with **EIF
+   7/6/2003** (off by 41 days — the largest single-source delta).
+8. **UK-CA-2003 legislative_history cross-contamination**: the
+   `legislative_history` array on the Communications Act 2003 was
+   describing the Wireless Telegraphy Act 2006 (Royal Assent 8 Nov 2006) — wrong instrument entirely. T20 replaced the corrupted
+   block with the actual CA-2003 history (Royal Assent 17 July 2003,
+   long title verified verbatim) and added a separate WTA-2006 block.
 
 These are exactly the kind of plausible-but-wrong details that
 made the unverified backfill dangerous. Each correction is
@@ -224,18 +238,59 @@ now carry at least one verified `legislative_history` milestone.
 **Of populated entries:** 110 of ~115 populated milestones are
 verified ≈ **96 %** verification rate within the curated subset.
 
+### 5.1.2bis · Cumulative state after Tranche 20 (last updated 2026-04-28)
+
+| Jurisdiction | Sources verified | Verified milestones        |
+| ------------ | ---------------- | -------------------------- |
+| EU           | 14               | 55                         |
+| UK           | 18               | 47                         |
+| IT           | 11               | 37                         |
+| ES           | 6                | 22                         |
+| AT           | 2                | 11                         |
+| NO           | 2                | 13                         |
+| BE           | 2                | 8                          |
+| SE           | 1                | 4                          |
+| FR           | 1                | 3                          |
+| INT          | 1                | 2                          |
+| DE           | 0                | 0 (BGBl Xaver-PDF blocked) |
+| FI           | 0                | 0 (Finlex non-text)        |
+| DK           | 0                | 0 (retsinformation 403)    |
+| NL           | 0                | 0 (wetten.overheid SPA)    |
+| CZ           | 0                | 0 (zakonyprolidi 403)      |
+| **Totals**   | **60 sources**   | **210 milestones**         |
+
+**Absolute corpus coverage:** 60 / 619 = **9.7 %** of all corpus sources
+now carry at least one verified `legislative_history` milestone.
+
+**Of populated entries:** ~200 of ~210 populated milestones are
+verified ≈ **95 %** verification rate within the curated subset
+(remaining ~10 are stamped `verified: false` with explanatory
+verification_notes — e.g. AT § 15 Inkrafttretens-Klausel, NO 1969 CAA
+delegation, ES AEE Consejo Rector first-meeting date).
+
 ### 5.1.3 · Tranche-by-tranche commit log
 
-| Tranche | Commit     | Highlights                                       |
-| ------- | ---------- | ------------------------------------------------ |
-| T1      | `abdc9b58` | UK-SIA-2018 + INT-OST-1967 (partial)             |
-| T2      | `3c5242de` | EU-NIS2-2022 + EU-SPACE-ACT + Browser-MCP unlock |
-| T3+T4   | `32fbd111` | 8 EU + 6 UK sources                              |
-| T5      | `45a4f159` | FR-LOS-2008 + ES-LEY-17-2022 + IT-LEGGE-89-2025  |
-| T6      | `515f3258` | 6 more EU instruments                            |
-| T7      | `bb04fecb` | ES-RD-158-2023 + 4 UK acts                       |
-| T8      | `4284f814` | 5 UK SIs                                         |
-| T9      | `04b79193` | UK-SI-2021-815, UK-SI-2021-879                   |
+| Tranche | Commit     | Highlights                                                      |
+| ------- | ---------- | --------------------------------------------------------------- |
+| T1      | `abdc9b58` | UK-SIA-2018 + INT-OST-1967 (partial)                            |
+| T2      | `3c5242de` | EU-NIS2-2022 + EU-SPACE-ACT + Browser-MCP unlock                |
+| T3+T4   | `32fbd111` | 8 EU + 6 UK sources                                             |
+| T5      | `45a4f159` | FR-LOS-2008 + ES-LEY-17-2022 + IT-LEGGE-89-2025                 |
+| T6      | `515f3258` | 6 more EU instruments                                           |
+| T7      | `bb04fecb` | ES-RD-158-2023 + 4 UK acts                                      |
+| T8      | `4284f814` | 5 UK SIs                                                        |
+| T9      | `04b79193` | UK-SI-2021-815, UK-SI-2021-879                                  |
+| T10     | `8925dabf` | 2 UK export-control sources                                     |
+| T11     | `ee9c23bc` | 3 IT sources via Normattiva                                     |
+| T12     | `a7705977` | 2 IT (DLgs 128/2003 + DLgs 66/2010-SPACE)                       |
+| T13     | `f51b59b3` | 5 IT (CCE + CCE-Reform + NIS2 + Privacy + Ambiente)             |
+| T14     | `991f4d08` | 2 AT (Weltraumgesetz + Verordnung) via RIS+parlament            |
+| T15     | `90494f2e` | 2 NO (1969 + 2025 LOV-128) via Lovdata                          |
+| T16     | `e4684aa5` | 1 SE (Lag 1982:963) via Riksdagen + lagen.nu                    |
+| T17     | `f137df7c` | 2 BE (Loi 2005-09-17 + amendement 2013) via ejustice            |
+| T18     | `379baaf4` | 3 ES (Ley 11/2022 + Ley 53/2007 + RDL 12/2018) via BOE          |
+| T19     | `808021d1` | 2 ES defence (RD 524/2022 + Orden DEF/264/2023) + RD 158 refine |
+| T20     | `def510c7` | UK lh fix (CA-2003 cross-contamination) + WTA-2006 add          |
 
 ### 5.1.4 · Tooling-gap diary (additional registers tested)
 
