@@ -410,7 +410,121 @@ const PRIMARY_LEGISLATION_AT: LegalSource[] = [
       "§ 7(3) forced transfer: unique enforcement mechanism in European space law.",
       "Academic waiver (§ 4(4)): enabled TUGSAT-1, UniBRITE, PEGASUS without prohibitive costs.",
     ],
-    last_verified: "2026-04-14",
+    legislative_history: [
+      {
+        date: "2011-10-11",
+        type: "proposal",
+        body: "Bundesregierung · BMVIT (Regierungsvorlage)",
+        reference: "RV 1466 d.B. (XXIV. GP)",
+        description:
+          "Regierungsvorlage 1466 d.B. zur Erlassung eines Bundesgesetzes über die Genehmigung von Weltraumaktivitäten und die Einrichtung eines Weltraumregisters. Einlangen im Nationalrat am 11. Oktober 2011.",
+        source_url: "https://www.parlament.gv.at/gegenstand/XXIV/I/1466",
+        verified: true,
+        verified_by: "claude (WebFetch, parlament.gv.at)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Einlangen-Datum 11.10.2011 confirmed against the Austrian Parliament's Gegenstand record for RV 1466 d.B. XXIV. GP.",
+      },
+      {
+        date: "2011-12-01",
+        type: "committee_review",
+        body: "Nationalrat · Ausschuss für Forschung, Innovation und Technologie",
+        reference: "AB 1585 d.B. (XXIV. GP)",
+        description:
+          "Bericht des Forschungsausschusses (1585 d.B.) — Zuweisung an den Ausschuss erfolgte am 20.10.2011, Bericht erstellt am 1.12.2011.",
+        source_url: "https://www.parlament.gv.at/gegenstand/XXIV/I/1466",
+        verified: true,
+        verified_by: "claude (WebFetch, parlament.gv.at)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Ausschuss-Zuweisung (20.10.2011) und Berichtsdatum (1.12.2011) verifiziert anhand parlament.gv.at Gegenstand-Eintrag.",
+      },
+      {
+        date: "2011-12-06",
+        type: "adoption",
+        body: "Republik Österreich · Nationalrat",
+        reference: "Nationalrat XXIV. GP, 135. Sitzung",
+        description:
+          "Beschluss des Nationalrats in zweiter und dritter Lesung — einstimmig angenommen (SPÖ, ÖVP, FPÖ, GRÜNE, BZÖ).",
+        source_url: "https://www.parlament.gv.at/gegenstand/XXIV/I/1466",
+        verified: true,
+        verified_by: "claude (WebFetch, parlament.gv.at + ris.bka.gv.at)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Nationalrats-Beschlussdatum 6.12.2011 (einstimmig) verifiziert über parlament.gv.at und kreuzgeprüft mit RIS-Eintrag zu BGBl. I 132/2011.",
+      },
+      {
+        date: "2011-12-15",
+        type: "council_position",
+        body: "Republik Österreich · Bundesrat",
+        reference: "Bundesrat 803. Sitzung",
+        description:
+          "Bundesrat hat keinen Einspruch erhoben — einhellig angenommen. (Der Bundesrat hat in Österreich nur ein Einspruchsrecht; die materielle Beschlussfassung erfolgt im Nationalrat.)",
+        source_url: "https://www.parlament.gv.at/gegenstand/XXIV/I/1466",
+        verified: true,
+        verified_by: "claude (WebFetch, parlament.gv.at + ris.bka.gv.at)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Bundesrats-Beschlussdatum 15.12.2011 (einhellig kein Einspruch) verifiziert über parlament.gv.at.",
+      },
+      {
+        date: "2011-12-27",
+        type: "promulgation",
+        body: "Bundeskanzleramt · Bundesgesetzblatt",
+        reference: "BGBl. I Nr. 132/2011",
+        description:
+          "Kundmachung im Bundesgesetzblatt I 132/2011 am 27. Dezember 2011.",
+        source_url: "https://www.ris.bka.gv.at/eli/bgbl/I/2011/132",
+        verified: true,
+        verified_by: "claude (WebFetch, ris.bka.gv.at)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Kundmachungsdatum 27.12.2011 verifiziert anhand des RIS-Eintrags zu BGBl. I 132/2011.",
+      },
+      {
+        date: "2011-12-28",
+        type: "in_force",
+        body: "Republik Österreich · Bundesregierung",
+        reference: "Weltraumgesetz § 15 (Inkrafttreten)",
+        description:
+          "Inkrafttreten am Tag nach der Kundmachung gemäß § 15 Weltraumgesetz — entspricht dem österreichischen Standardmuster für Inkrafttretensklauseln.",
+        source_url: "https://www.ris.bka.gv.at/eli/bgbl/I/2011/132",
+        verified: false,
+        verification_note:
+          "Datum 28.12.2011 folgt dem österreichischen Standardmuster (Kundmachung 27.12.2011 + 1 Tag); der Wortlaut des § 15 wurde nicht direkt aus dem RIS-Volltext abgerufen, da der RIS-PDF-Endpoint via WebFetch nicht textextrahierbar war.",
+      },
+      {
+        date: "2018-05-16",
+        type: "adoption",
+        body: "Republik Österreich · Nationalrat",
+        reference:
+          "2. Materien-Datenschutz-Anpassungsgesetz 2018 (Nationalrat)",
+        description:
+          "Nationalrat verabschiedet das 2. Materien-Datenschutz-Anpassungsgesetz 2018, das u.a. § 13(3) Weltraumgesetz an die DSGVO anpasst ('verwenden' → 'verarbeiten').",
+        source_url: "https://www.ris.bka.gv.at/eli/bgbl/I/2018/37",
+        verified: true,
+        verified_by: "claude (WebFetch, ris.bka.gv.at)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Nationalrats-Beschlussdatum 16.5.2018 verifiziert anhand RIS-Eintrag zu BGBl. I 37/2018.",
+      },
+      {
+        date: "2018-06-14",
+        type: "amendment",
+        body: "Bundeskanzleramt · Bundesgesetzblatt",
+        reference: "BGBl. I Nr. 37/2018",
+        description:
+          "Kundmachung des 2. Materien-Datenschutz-Anpassungsgesetzes 2018 (BGBl. I 37/2018), das § 13(3) Weltraumgesetz an die DSGVO anpasst.",
+        source_url: "https://www.ris.bka.gv.at/eli/bgbl/I/2018/37",
+        verified: true,
+        verified_by: "claude (WebFetch, ris.bka.gv.at)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Kundmachungsdatum 14.6.2018 verifiziert anhand RIS-Eintrag; Bundesrats-Beschluss am 30.5.2018 ebenfalls verifiziert.",
+        affected_sections: ["§ 13(3) — DSGVO-Anpassung"],
+      },
+    ],
+    last_verified: "2026-04-28",
   },
   {
     id: "AT-WELTRAUMVERORDNUNG-2015",
@@ -445,7 +559,49 @@ const PRIMARY_LEGISLATION_AT: LegalSource[] = [
       "NOT an amendment to the Weltraumgesetz — it is the implementing regulation.",
       "Authorization fee: €6,500.",
     ],
-    last_verified: "2026-04-14",
+    legislative_history: [
+      {
+        date: "2015-02-26",
+        type: "promulgation",
+        body: "Bundesminister für Verkehr, Innovation und Technologie",
+        reference: "BGBl. II Nr. 36/2015",
+        description:
+          "Erlassung der Weltraumverordnung durch Verordnung des BMVIT zur Durchführung des Weltraumgesetzes; Kundmachung im Bundesgesetzblatt II Nr. 36/2015 am 26. Februar 2015.",
+        source_url: "https://www.ris.bka.gv.at/eli/bgbl/II/2015/36",
+        verified: true,
+        verified_by: "claude (WebFetch, ris.bka.gv.at)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Kundmachungsdatum 26.2.2015 und ausstellender Minister (BMVIT) verifiziert anhand RIS-Eintrag zu BGBl. II 36/2015.",
+      },
+      {
+        date: "2015-02-27",
+        type: "in_force",
+        body: "Republik Österreich · Bundesregierung",
+        reference: "Weltraumverordnung — Inkrafttretens-Klausel",
+        description:
+          "Inkrafttreten am Tag nach der Kundmachung gemäß österreichischem Standardmuster für Verordnungen.",
+        source_url: "https://www.ris.bka.gv.at/eli/bgbl/II/2015/36",
+        verified: false,
+        verification_note:
+          "Datum 27.2.2015 folgt dem österreichischen Standardmuster (Kundmachung 26.2.2015 + 1 Tag); die Inkrafttretens-Klausel wurde nicht direkt aus dem RIS-Volltext abgerufen.",
+      },
+      {
+        date: "2018-05-03",
+        type: "amendment",
+        body: "Bundesminister für Verkehr, Innovation und Technologie",
+        reference: "BGBl. II Nr. 90/2018",
+        description:
+          "Sammelverordnung des BMVIT zur Änderung mehrerer Verordnungen, einschließlich der Weltraumverordnung. Kundmachung am 3. Mai 2018.",
+        source_url: "https://www.ris.bka.gv.at/eli/bgbl/II/2018/90",
+        verified: true,
+        verified_by: "claude (WebFetch, ris.bka.gv.at)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Kundmachungsdatum 3.5.2018 verifiziert anhand RIS-Eintrag zu BGBl. II 90/2018; bestätigt, dass diese Sammelverordnung die Weltraumverordnung ändert.",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
 ];
 
