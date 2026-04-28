@@ -390,7 +390,69 @@ const PRIMARY_LEGISLATION_SE: LegalSource[] = [
       "SOU 2021:91 reform (455 pages) stalled — possibly superseded by EU Space Act.",
       "Last amended SFS 2021:1025.",
     ],
-    last_verified: "2026-04-14",
+    legislative_history: [
+      {
+        date: "1982-04-29",
+        type: "proposal",
+        body: "Sveriges Regering · Statsrådet (Fälldin / Petri)",
+        reference: "Prop. 1981/82:226 om rymdverksamhet",
+        description:
+          "Regeringen Fälldin (statsminister Thorbjörn Fälldin, justitieminister Carl Axel Petri) lägger fram Prop. 1981/82:226 till Riksdagen — propositionen genomför Sveriges OST-1967 förpliktelser i nationell rätt.",
+        source_url:
+          "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/proposition/om-rymdverksamhet_g503226",
+        verified: true,
+        verified_by: "claude (WebFetch, riksdagen.se)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Datum 29.4.1982 och undertecknande statsråd (Fälldin/Petri) verifierade mot Riksdagens primärkälla för Prop. 1981/82:226.",
+      },
+      {
+        date: "1982-11-18",
+        type: "promulgation",
+        body: "Sveriges Regering",
+        reference: "SFS 1982:963 — Lag (1982:963) om rymdverksamhet",
+        description:
+          "Lagen utfärdas i Svensk författningssamling som SFS 1982:963 den 18 november 1982 efter Riksdagens beslut.",
+        source_url:
+          "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/lag-1982963-om-rymdverksamhet_sfs-1982-963",
+        verified: true,
+        verified_by: "claude (WebFetch, riksdagen.se + lagen.nu)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Utfärdandedatum 18.11.1982 och SFS-nummer 1982:963 verifierade mot Riksdagens SFS-eintrag samt lagen.nu primärtext.",
+      },
+      {
+        date: "1983-01-01",
+        type: "in_force",
+        body: "Sveriges Regering",
+        reference: "Lag (1982:963) — ikraftträdandebestämmelse",
+        description:
+          "Lagen träder i kraft den 1 januari 1983 enligt sedvanlig svensk 'nyår-efter-utfärdande' praxis.",
+        source_url:
+          "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/lag-1982963-om-rymdverksamhet_sfs-1982-963",
+        verified: false,
+        verification_note:
+          "Datum 1.1.1983 följer den svenska standardpraxisen (utfärdande november → nyår-EIF) och stämmer överens med katalogens date_in_force; ikraftträdandebestämmelsens exakta ordalydelse har inte direkt extraherats från Riksdagens SFS-eintrag.",
+      },
+      {
+        date: "2021-12-09",
+        type: "amendment",
+        body: "Sveriges Riksdag",
+        reference: "SFS 2021:1025 — ändring av § 5",
+        description:
+          "Riksdagen ändrar § 5 (åtalsförordnande och extraterritoriell jurisdiktion) genom SFS 2021:1025; ändringen träder i kraft 1 januari 2022.",
+        source_url: "https://lagen.nu/1982:963",
+        verified: true,
+        verified_by: "claude (WebFetch, lagen.nu)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "SFS 2021:1025 ändring av § 5 och ikraftträdande 1.1.2022 verifierade mot lagen.nu primärtext.",
+        affected_sections: [
+          "§ 5 — åtalsförordnande, extraterritoriell jurisdiktion",
+        ],
+      },
+    ],
+    last_verified: "2026-04-28",
   },
   {
     id: "SE-SPACE-ORDINANCE-1982",
