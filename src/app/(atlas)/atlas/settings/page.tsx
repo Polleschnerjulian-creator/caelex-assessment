@@ -22,7 +22,9 @@ import {
   XCircle,
   Key,
   ArrowRight,
+  LogOut,
 } from "lucide-react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { Language } from "@/lib/i18n";
@@ -781,6 +783,57 @@ export default function SettingsPage() {
                 Applies to Atlas only — your dashboard theme is unchanged.
                 Stored in this browser.
               </p>
+            </section>
+
+            {/* Sign out — explicit account-action below the
+                Appearance/Language preferences. Sits at the bottom
+                of the personal tab so it doesn't compete visually
+                with the configuration sections. Calls next-auth's
+                signOut and lands the user on /atlas-login (the
+                Atlas-flavored sign-in, not the dashboard's). */}
+            <section>
+              <div className="flex items-center gap-2 mb-4">
+                <LogOut
+                  className="h-4 w-4 text-[var(--atlas-text-faint)]"
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
+                <h2 className="text-[12px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.1em] uppercase">
+                  {t("sidebar.signOut")}
+                </h2>
+              </div>
+              <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] p-5 flex items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-medium text-[var(--atlas-text-primary)]">
+                    {t("sidebar.signOut")}
+                  </p>
+                  <p className="text-[11px] text-[var(--atlas-text-faint)] mt-1">
+                    {profile?.email
+                      ? language === "de"
+                        ? `Sie sind als ${profile.email} angemeldet.`
+                        : `You are signed in as ${profile.email}.`
+                      : language === "de"
+                        ? "Sitzung beenden und zur Atlas-Anmeldeseite zurückkehren."
+                        : "End your session and return to the Atlas sign-in screen."}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    signOut({ callbackUrl: "/atlas-login" }).catch(() => {
+                      // Defensive: signOut rarely throws, but if the
+                      // server call fails we still want a user-driven
+                      // fallback so the lawyer isn't left wondering
+                      // why the click did nothing.
+                      window.location.href = "/atlas-login";
+                    })
+                  }
+                  className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--atlas-border-strong)] bg-[var(--atlas-bg-surface)] text-[13px] font-medium text-[var(--atlas-text-primary)] hover:bg-[var(--atlas-bg-surface-muted)] transition-colors"
+                >
+                  <LogOut size={14} strokeWidth={1.75} aria-hidden="true" />
+                  {t("sidebar.signOut")}
+                </button>
+              </div>
             </section>
           </div>
         )}
