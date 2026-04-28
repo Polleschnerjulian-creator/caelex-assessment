@@ -13,6 +13,15 @@ interface Message {
   content: string;
 }
 
+/**
+ * Astra chat panel — theme-aware. Adapts to Atlas's light/dark theme via
+ * the `--atlas-*` CSS custom properties defined on the `.atlas-themed`
+ * shell root (see globals.css). The dark Astra orb (AtlasEntityMini) is
+ * kept verbatim in both themes because it IS the brand mark — a dark
+ * sphere on a light card reads as a premium logo, on a dark card it
+ * blends into the stage. Only the surrounding chrome (header, body,
+ * bubbles, input, footer) flips with the theme.
+ */
 export default function AtlasAstraChat() {
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -153,6 +162,16 @@ export default function AtlasAstraChat() {
     setTimeout(() => setOpen(false), 250);
   }, []);
 
+  // Brand orb disc — dark sphere stamp kept verbatim across themes.
+  // Reads as "premium dark logo on premium white surface" in light
+  // mode, blends into the stage in dark mode.
+  const orbDiscStyle = {
+    background:
+      "radial-gradient(circle at 30% 25%, rgba(35,46,72,0.95) 0%, rgba(15,19,32,1) 70%, rgba(8,12,22,1) 100%)",
+    boxShadow:
+      "inset 0 1px 0 rgba(255,255,255,0.08), inset 0 0 0 1px rgba(255,255,255,0.04), 0 2px 8px rgba(0,0,0,0.18)",
+  };
+
   return (
     <>
       {/* ─── Floating Orb ───
@@ -180,13 +199,13 @@ export default function AtlasAstraChat() {
         </button>
       )}
 
-      {/* ─── Dark Chat Panel ───
-          Slightly taller (600px) and a deeper border + subtle inner
-          highlight give the panel more presence on the dark Atlas
-          stage. */}
+      {/* ─── Chat Panel ───
+          Theme-aware via Atlas CSS tokens. Card background, borders,
+          text, bubbles all flip with `[data-atlas-theme]`. Drop-shadow
+          stays neutral (deeper in dark, softer in light). */}
       {open && (
         <div
-          className="fixed bottom-5 right-5 z-50 w-[420px] h-[600px] flex flex-col rounded-2xl overflow-hidden border border-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.04)]"
+          className="fixed bottom-5 right-5 z-50 w-[420px] h-[600px] flex flex-col rounded-2xl overflow-hidden"
           style={{
             opacity: visible ? 1 : 0,
             transform: visible
@@ -194,28 +213,27 @@ export default function AtlasAstraChat() {
               : "translateY(16px) scale(0.97)",
             transition:
               "opacity 0.3s cubic-bezier(0.16,1,0.3,1), transform 0.3s cubic-bezier(0.16,1,0.3,1)",
+            background: "var(--atlas-bg-surface)",
+            border: "1px solid var(--atlas-border)",
+            boxShadow:
+              "0 25px 60px -15px rgba(15, 23, 42, 0.18), 0 8px 25px -8px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(15, 23, 42, 0.02)",
           }}
         >
-          {/* Header — navy gradient base + the mini-orb in a glass disc.
-              The orb's `active` prop wires to `loading` so the lawyer
-              sees a live "Astra is thinking" pulse without a separate
-              spinner-icon competing for attention. */}
+          {/* Header — theme-aware surface + border. The orb's `active`
+              prop wires to `loading` so the lawyer sees a live "Astra
+              is thinking" pulse without a separate spinner-icon
+              competing for attention. */}
           <div
-            className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06]"
+            className="flex items-center justify-between px-5 py-3.5"
             style={{
-              background:
-                "linear-gradient(180deg, rgba(20,28,44,0.98) 0%, rgba(15,19,32,0.98) 100%)",
+              borderBottom: "1px solid var(--atlas-border)",
+              background: "var(--atlas-bg-surface)",
             }}
           >
             <div className="flex items-center gap-3">
               <div
                 className="h-9 w-9 rounded-xl flex items-center justify-center"
-                style={{
-                  background:
-                    "radial-gradient(circle at 30% 25%, rgba(40,52,80,0.95) 0%, rgba(15,20,35,1) 70%, rgba(8,12,22,1) 100%)",
-                  boxShadow:
-                    "inset 0 1px 0 rgba(255,255,255,0.08), inset 0 0 0 1px rgba(255,255,255,0.04), 0 2px 8px rgba(0,0,0,0.35)",
-                }}
+                style={orbDiscStyle}
               >
                 <span
                   style={{ width: 22, height: 22, display: "inline-block" }}
@@ -225,10 +243,16 @@ export default function AtlasAstraChat() {
                 </span>
               </div>
               <div>
-                <span className="text-[13px] font-semibold text-white/95 block leading-tight tracking-wider">
+                <span
+                  className="text-[13px] font-semibold block leading-tight tracking-wide"
+                  style={{ color: "var(--atlas-text-primary)" }}
+                >
                   Astra
                 </span>
-                <span className="text-[10px] text-white/45 leading-tight">
+                <span
+                  className="text-[10px] leading-tight"
+                  style={{ color: "var(--atlas-text-muted)" }}
+                >
                   {loading
                     ? language === "de"
                       ? "denkt..."
@@ -239,51 +263,53 @@ export default function AtlasAstraChat() {
             </div>
             <button
               onClick={handleClose}
-              className="h-7 w-7 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center transition-colors"
+              className="h-7 w-7 rounded-lg flex items-center justify-center transition-colors"
+              style={{
+                background: "var(--atlas-bg-surface-muted)",
+                color: "var(--atlas-text-muted)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "var(--atlas-bg-inset)";
+                e.currentTarget.style.color = "var(--atlas-text-primary)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background =
+                  "var(--atlas-bg-surface-muted)";
+                e.currentTarget.style.color = "var(--atlas-text-muted)";
+              }}
               aria-label={t("common.close")}
             >
-              <X
-                size={13}
-                strokeWidth={2}
-                className="text-white/50"
-                aria-hidden="true"
-              />
+              <X size={13} strokeWidth={2} aria-hidden="true" />
             </button>
           </div>
 
-          {/* Messages — body uses a slight radial-gradient toward
-              the orb so the eye is drawn upward to Astra's presence.
-              Custom scrollbar styled below in scoped CSS. */}
+          {/* Messages — body uses the page-bg token so the panel
+              reads as nested-on-page rather than disjoint. Custom
+              scrollbar styled below in scoped CSS. */}
           <div
             className="flex-1 overflow-y-auto px-4 py-5 space-y-3 atlas-astra-scroll"
             style={{
-              background:
-                "radial-gradient(ellipse 600px 400px at 50% -20%, rgba(120,160,255,0.06) 0%, transparent 70%), #0d111c",
+              background: "var(--atlas-bg-page)",
             }}
           >
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center h-full px-2">
                 {/* Hero-orb — the big version of the same brand-object.
-                    Sits in a soft glow container so it looks like a
-                    spotlight is on it. */}
+                    Sits in a soft emerald-tinted glow container so it
+                    reads as the brand-action focus, theme-agnostic. */}
                 <div className="relative mb-5">
                   <div
                     className="absolute inset-0 -m-4 rounded-full"
                     style={{
                       background:
-                        "radial-gradient(circle, rgba(140,220,200,0.18) 0%, rgba(120,180,220,0.10) 35%, transparent 70%)",
+                        "radial-gradient(circle, rgba(16,185,129,0.16) 0%, rgba(16,185,129,0.06) 35%, transparent 70%)",
                       filter: "blur(8px)",
                     }}
                     aria-hidden
                   />
                   <div
                     className="relative h-16 w-16 rounded-2xl flex items-center justify-center"
-                    style={{
-                      background:
-                        "radial-gradient(circle at 30% 25%, rgba(35,46,72,0.95) 0%, rgba(15,19,32,1) 70%, rgba(8,12,22,1) 100%)",
-                      boxShadow:
-                        "inset 0 1px 0 rgba(255,255,255,0.08), inset 0 0 0 1px rgba(255,255,255,0.06), 0 8px 24px rgba(0,0,0,0.5)",
-                    }}
+                    style={orbDiscStyle}
                   >
                     <span
                       style={{ width: 56, height: 56, display: "inline-block" }}
@@ -293,10 +319,16 @@ export default function AtlasAstraChat() {
                     </span>
                   </div>
                 </div>
-                <p className="text-[16px] font-semibold text-white/95 mb-1.5 tracking-tight">
+                <p
+                  className="text-[16px] font-semibold mb-1.5 tracking-tight"
+                  style={{ color: "var(--atlas-text-primary)" }}
+                >
                   {t("atlas.astra_ask_space_law")}
                 </p>
-                <p className="text-[11px] text-white/40 mb-7 tracking-wide">
+                <p
+                  className="text-[11px] mb-7 tracking-wide"
+                  style={{ color: "var(--atlas-text-muted)" }}
+                >
                   {t("atlas.astra_stats_line")}
                 </p>
                 <div className="space-y-2 w-full">
@@ -307,11 +339,38 @@ export default function AtlasAstraChat() {
                         setInput(s);
                         setTimeout(() => inputRef.current?.focus(), 50);
                       }}
-                      className="group w-full flex items-center gap-3 text-left px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-[12.5px] text-white/65 hover:bg-white/[0.06] hover:border-white/[0.14] hover:text-white/95 hover:translate-x-[2px] transition-all duration-200"
+                      className="group w-full flex items-center gap-3 text-left px-4 py-3 rounded-xl text-[12.5px] hover:translate-x-[2px] transition-all duration-200"
+                      style={{
+                        background: "var(--atlas-bg-surface)",
+                        border: "1px solid var(--atlas-border)",
+                        color: "var(--atlas-text-secondary)",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background =
+                          "var(--atlas-bg-surface-muted)";
+                        e.currentTarget.style.borderColor =
+                          "var(--atlas-border-strong)";
+                        e.currentTarget.style.color =
+                          "var(--atlas-text-primary)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background =
+                          "var(--atlas-bg-surface)";
+                        e.currentTarget.style.borderColor =
+                          "var(--atlas-border)";
+                        e.currentTarget.style.color =
+                          "var(--atlas-text-secondary)";
+                      }}
                     >
-                      <span className="h-1 w-1 rounded-full bg-white/30 group-hover:bg-emerald-300/80 transition-colors flex-shrink-0" />
+                      <span
+                        className="h-1 w-1 rounded-full flex-shrink-0 transition-colors"
+                        style={{ background: "var(--atlas-text-faint)" }}
+                      />
                       <span className="flex-1">{s}</span>
-                      <span className="text-white/20 group-hover:text-white/60 transition-colors">
+                      <span
+                        className="transition-colors"
+                        style={{ color: "var(--atlas-text-faint)" }}
+                      >
                         →
                       </span>
                     </button>
@@ -325,9 +384,19 @@ export default function AtlasAstraChat() {
               const isLastAssistant =
                 !isUser && idx === messages.length - 1 && loading;
               if (isUser) {
+                // User bubble — invert the theme tokens so the bubble
+                // is "self-color" in both modes (dark-on-light/light-
+                // on-dark, iMessage-style).
                 return (
                   <div key={msg.id} className="flex justify-end">
-                    <div className="max-w-[85%] px-4 py-2.5 text-[13px] leading-relaxed bg-white/[0.95] text-[#0a0f1e] rounded-[18px] rounded-br-md shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
+                    <div
+                      className="max-w-[85%] px-4 py-2.5 text-[13px] leading-relaxed rounded-[18px] rounded-br-md"
+                      style={{
+                        background: "var(--atlas-text-primary)",
+                        color: "var(--atlas-bg-surface)",
+                        boxShadow: "0 2px 8px rgba(15, 23, 42, 0.10)",
+                      }}
+                    >
                       <p className="whitespace-pre-wrap break-words">
                         {msg.content}
                       </p>
@@ -337,17 +406,12 @@ export default function AtlasAstraChat() {
               }
               return (
                 <div key={msg.id} className="flex gap-2.5 items-start">
-                  {/* Astra avatar — same navy disc + mini-orb as the
-                      header; pulses on the LAST assistant message
-                      while loading to signal "writing now". */}
+                  {/* Astra avatar — same dark brand-disc + mini-orb;
+                      pulses on the LAST assistant message while
+                      loading to signal "writing now". */}
                   <div
                     className="h-7 w-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={{
-                      background:
-                        "radial-gradient(circle at 30% 25%, rgba(35,46,72,0.95) 0%, rgba(15,20,35,1) 70%, rgba(8,12,22,1) 100%)",
-                      boxShadow:
-                        "inset 0 1px 0 rgba(255,255,255,0.08), 0 1px 2px rgba(0,0,0,0.35)",
-                    }}
+                    style={orbDiscStyle}
                   >
                     <span
                       style={{ width: 22, height: 22, display: "inline-block" }}
@@ -358,7 +422,14 @@ export default function AtlasAstraChat() {
                       />
                     </span>
                   </div>
-                  <div className="flex-1 max-w-[85%] px-4 py-2.5 text-[13px] leading-relaxed bg-white/[0.06] border border-white/[0.08] text-white/95 rounded-[18px] rounded-tl-md break-words">
+                  <div
+                    className="flex-1 max-w-[85%] px-4 py-2.5 text-[13px] leading-relaxed rounded-[18px] rounded-tl-md break-words"
+                    style={{
+                      background: "var(--atlas-bg-surface)",
+                      border: "1px solid var(--atlas-border)",
+                      color: "var(--atlas-text-primary)",
+                    }}
+                  >
                     {/* Assistant messages are rendered through
                         AtlasMessageRenderer so that [ATLAS-ID] citations
                         injected by the system prompt become clickable
@@ -375,12 +446,7 @@ export default function AtlasAstraChat() {
               <div className="flex gap-2.5 items-start">
                 <div
                   className="h-7 w-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                  style={{
-                    background:
-                      "radial-gradient(circle at 30% 25%, rgba(35,46,72,0.95) 0%, rgba(15,20,35,1) 70%, rgba(8,12,22,1) 100%)",
-                    boxShadow:
-                      "inset 0 1px 0 rgba(255,255,255,0.08), 0 1px 2px rgba(0,0,0,0.35)",
-                  }}
+                  style={orbDiscStyle}
                 >
                   <span
                     style={{ width: 22, height: 22, display: "inline-block" }}
@@ -389,19 +455,34 @@ export default function AtlasAstraChat() {
                     <AtlasEntityMini mode="thinking" />
                   </span>
                 </div>
-                <div className="bg-white/[0.06] border border-white/[0.08] px-4 py-3 rounded-[18px] rounded-tl-md">
+                <div
+                  className="px-4 py-3 rounded-[18px] rounded-tl-md"
+                  style={{
+                    background: "var(--atlas-bg-surface)",
+                    border: "1px solid var(--atlas-border)",
+                  }}
+                >
                   <div className="flex gap-1.5 items-center">
                     <div
-                      className="h-1.5 w-1.5 rounded-full bg-white/35 animate-bounce"
-                      style={{ animationDelay: "0ms" }}
+                      className="h-1.5 w-1.5 rounded-full animate-bounce"
+                      style={{
+                        background: "var(--atlas-text-muted)",
+                        animationDelay: "0ms",
+                      }}
                     />
                     <div
-                      className="h-1.5 w-1.5 rounded-full bg-white/35 animate-bounce"
-                      style={{ animationDelay: "150ms" }}
+                      className="h-1.5 w-1.5 rounded-full animate-bounce"
+                      style={{
+                        background: "var(--atlas-text-muted)",
+                        animationDelay: "150ms",
+                      }}
                     />
                     <div
-                      className="h-1.5 w-1.5 rounded-full bg-white/35 animate-bounce"
-                      style={{ animationDelay: "300ms" }}
+                      className="h-1.5 w-1.5 rounded-full animate-bounce"
+                      style={{
+                        background: "var(--atlas-text-muted)",
+                        animationDelay: "300ms",
+                      }}
                     />
                   </div>
                 </div>
@@ -410,18 +491,24 @@ export default function AtlasAstraChat() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input — slightly elevated bg + emerald-tinted focus glow
-              so the active state reads as Astra-branded rather than
-              just "another input". The send-button switches to white
-              when something's typed (positive-action affordance). */}
+          {/* Input — theme-aware surface + emerald focus ring. The
+              send-button switches to filled emerald when something's
+              typed (positive-action affordance, brand-color in both
+              modes). */}
           <div
-            className="px-3 pb-3 pt-2.5 border-t border-white/[0.05]"
+            className="px-3 pb-3 pt-2.5"
             style={{
-              background:
-                "linear-gradient(180deg, rgba(13,17,28,1) 0%, rgba(10,14,24,1) 100%)",
+              borderTop: "1px solid var(--atlas-border)",
+              background: "var(--atlas-bg-surface)",
             }}
           >
-            <div className="flex items-end gap-2 px-3.5 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] focus-within:border-white/[0.18] focus-within:bg-white/[0.07] focus-within:shadow-[0_0_0_3px_rgba(140,220,200,0.08)] transition-all duration-200">
+            <div
+              className="atlas-astra-input flex items-end gap-2 px-3.5 py-2.5 rounded-xl transition-all duration-200"
+              style={{
+                background: "var(--atlas-bg-input)",
+                border: "1px solid var(--atlas-border)",
+              }}
+            >
               <textarea
                 ref={inputRef}
                 value={input}
@@ -430,7 +517,8 @@ export default function AtlasAstraChat() {
                 placeholder={t("atlas.astra_input_placeholder")}
                 disabled={loading}
                 rows={1}
-                className="flex-1 resize-none text-[13px] text-white/95 placeholder:text-white/30 bg-transparent border-0 outline-none disabled:opacity-50 max-h-[120px] py-0.5"
+                className="flex-1 resize-none text-[13px] bg-transparent border-0 outline-none disabled:opacity-50 max-h-[120px] py-0.5"
+                style={{ color: "var(--atlas-text-primary)" }}
                 aria-label={t("atlas.astra_input_aria")}
               />
               <button
@@ -438,9 +526,23 @@ export default function AtlasAstraChat() {
                 disabled={!input.trim() || loading}
                 className={`flex-shrink-0 h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-150 ${
                   input.trim() && !loading
-                    ? "bg-white text-[#0a0f1e] hover:bg-white/95 hover:-translate-y-px active:scale-95 shadow-[0_2px_8px_rgba(255,255,255,0.15)]"
-                    : "bg-white/[0.06] text-white/25 cursor-default"
+                    ? "hover:opacity-90 hover:-translate-y-px active:scale-95"
+                    : "cursor-default"
                 }`}
+                style={{
+                  background:
+                    input.trim() && !loading
+                      ? "var(--atlas-accent)"
+                      : "var(--atlas-bg-surface-muted)",
+                  color:
+                    input.trim() && !loading
+                      ? "#ffffff"
+                      : "var(--atlas-text-faint)",
+                  boxShadow:
+                    input.trim() && !loading
+                      ? "0 2px 8px rgba(16, 185, 129, 0.25)"
+                      : "none",
+                }}
                 aria-label={t("common.send")}
               >
                 {loading ? (
@@ -454,23 +556,30 @@ export default function AtlasAstraChat() {
                 )}
               </button>
             </div>
-            <div className="text-center text-[9.5px] text-white/30 mt-2 tracking-wide">
+            <div
+              className="text-center text-[9.5px] mt-2 tracking-wide"
+              style={{ color: "var(--atlas-text-faint)" }}
+            >
               {t("atlas.astra_subtitle")} · DSGVO-konform
             </div>
           </div>
 
-          {/* Scoped scrollbar — subtle white-ish thumb visible only on
-              hover. Matches the dark Atlas aesthetic. */}
+          {/* Scoped scrollbar + focus-glow — uses theme tokens so it
+              reads correctly in both modes. */}
           <style>{`
             .atlas-astra-scroll::-webkit-scrollbar { width: 5px; }
             .atlas-astra-scroll::-webkit-scrollbar-track { background: transparent; }
             .atlas-astra-scroll::-webkit-scrollbar-thumb {
-              background: rgba(255,255,255,0.06);
+              background: var(--atlas-scrollbar-thumb);
               border-radius: 3px;
               transition: background 0.15s ease;
             }
             .atlas-astra-scroll::-webkit-scrollbar-thumb:hover {
-              background: rgba(255,255,255,0.16);
+              background: var(--atlas-scrollbar-thumb-hover);
+            }
+            .atlas-astra-input:focus-within {
+              border-color: var(--atlas-accent) !important;
+              box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
             }
           `}</style>
         </div>
