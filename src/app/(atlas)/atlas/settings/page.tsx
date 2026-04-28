@@ -23,6 +23,9 @@ import {
   Key,
   ArrowRight,
   LogOut,
+  Eye,
+  EyeOff,
+  Lock,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
@@ -226,6 +229,107 @@ export default function SettingsPage() {
   const [revokingId, setRevokingId] = useState<string | null>(null);
   const [confirmRevokeId, setConfirmRevokeId] = useState<string | null>(null);
   const [resentId, setResentId] = useState<string | null>(null);
+
+  // Password change state — three controlled inputs + per-input visibility
+  // toggle. `passwordStatus` carries the same idle/saving/saved/error
+  // semantics as `profileSave` so the SaveIndicator pattern stays
+  // consistent across sections. `passwordError` is the human-readable
+  // server message shown in the form when the change is rejected.
+  const [currentPwd, setCurrentPwd] = useState("");
+  const [newPwd, setNewPwd] = useState("");
+  const [confirmPwd, setConfirmPwd] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [passwordStatus, setPasswordStatus] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
+  const [passwordError, setPasswordError] = useState<string>("");
+
+  // Password-change submit handler — POST to the new
+  // /api/atlas/settings/password endpoint (PATCH semantically; current
+  // pwd verified server-side, new hashed bcrypt-12 there). On success
+  // wipes all three inputs so the form returns to its empty state and
+  // the user can't accidentally submit twice with stale values.
+  const handleChangePassword = useCallback(async () => {
+    setPasswordError("");
+
+    // Client-side pre-check that mirrors the Zod schema on the server,
+    // so the user gets instant feedback without a round-trip. The server
+    // is still the authoritative gate (defence in depth).
+    if (!currentPwd) {
+      setPasswordError(
+        language === "de"
+          ? "Bitte aktuelles Passwort eingeben."
+          : "Please enter your current password.",
+      );
+      return;
+    }
+    if (newPwd.length < 12) {
+      setPasswordError(
+        language === "de"
+          ? "Neues Passwort muss mindestens 12 Zeichen lang sein."
+          : "New password must be at least 12 characters.",
+      );
+      return;
+    }
+    if (newPwd !== confirmPwd) {
+      setPasswordError(
+        language === "de"
+          ? "Die beiden neuen Passwörter stimmen nicht überein."
+          : "The two new passwords do not match.",
+      );
+      return;
+    }
+    if (newPwd === currentPwd) {
+      setPasswordError(
+        language === "de"
+          ? "Neues Passwort muss sich vom aktuellen unterscheiden."
+          : "New password must differ from current password.",
+      );
+      return;
+    }
+
+    setPasswordStatus("saving");
+    try {
+      const res = await fetch("/api/atlas/settings/password", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentPassword: currentPwd,
+          newPassword: newPwd,
+          confirmPassword: confirmPwd,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        setPasswordStatus("error");
+        setPasswordError(
+          (data?.error as string) ||
+            (language === "de"
+              ? "Passwortänderung fehlgeschlagen."
+              : "Password change failed."),
+        );
+        return;
+      }
+      setPasswordStatus("saved");
+      setCurrentPwd("");
+      setNewPwd("");
+      setConfirmPwd("");
+      setShowCurrent(false);
+      setShowNew(false);
+      setShowConfirm(false);
+      // Auto-clear the success indicator after 3s.
+      setTimeout(() => setPasswordStatus("idle"), 3000);
+    } catch {
+      setPasswordStatus("error");
+      setPasswordError(
+        language === "de"
+          ? "Netzwerkfehler. Bitte erneut versuchen."
+          : "Network error. Please try again.",
+      );
+    }
+  }, [currentPwd, newPwd, confirmPwd, language]);
 
   /* ──── Fetch profile + firm on mount ──── */
   useEffect(() => {
@@ -654,6 +758,201 @@ export default function SettingsPage() {
                   </div>
                 </div>
               )}
+            </section>
+
+            {/* Password — three controlled inputs (current / new / confirm)
+                with show/hide toggles. Server is /api/atlas/settings/password
+                (PATCH, sensitive-tier rate-limit, bcrypt-12 hash). Reuses
+                the SaveIndicator pattern from the Profile section so the
+                visual rhythm stays consistent. */}
+            <section>
+              <div className="flex items-center gap-2 mb-4">
+                <Lock
+                  className="h-4 w-4 text-[var(--atlas-text-faint)]"
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
+                <h2 className="text-[12px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.1em] uppercase">
+                  {language === "de" ? "Passwort" : "Password"}
+                </h2>
+                <div className="ml-auto">
+                  <SaveIndicator status={passwordStatus} t={t} />
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] p-5 space-y-4">
+                {/* Current password */}
+                <div>
+                  <label className="block text-[12px] font-medium text-[var(--atlas-text-secondary)] mb-1.5">
+                    {language === "de"
+                      ? "Aktuelles Passwort"
+                      : "Current password"}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showCurrent ? "text" : "password"}
+                      value={currentPwd}
+                      onChange={(e) => setCurrentPwd(e.target.value)}
+                      autoComplete="current-password"
+                      className="w-full px-3 py-2.5 pr-10 rounded-lg border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] text-[14px] text-[var(--atlas-text-primary)] placeholder:text-[var(--atlas-text-faint)] focus:border-[var(--atlas-border-strong)] focus:outline-none transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrent((v) => !v)}
+                      tabIndex={-1}
+                      aria-label={
+                        showCurrent
+                          ? language === "de"
+                            ? "Passwort verbergen"
+                            : "Hide password"
+                          : language === "de"
+                            ? "Passwort anzeigen"
+                            : "Show password"
+                      }
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-secondary)]"
+                    >
+                      {showCurrent ? (
+                        <EyeOff
+                          size={16}
+                          strokeWidth={1.5}
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <Eye size={16} strokeWidth={1.5} aria-hidden="true" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* New password */}
+                <div>
+                  <label className="block text-[12px] font-medium text-[var(--atlas-text-secondary)] mb-1.5">
+                    {language === "de" ? "Neues Passwort" : "New password"}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showNew ? "text" : "password"}
+                      value={newPwd}
+                      onChange={(e) => setNewPwd(e.target.value)}
+                      autoComplete="new-password"
+                      className="w-full px-3 py-2.5 pr-10 rounded-lg border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] text-[14px] text-[var(--atlas-text-primary)] placeholder:text-[var(--atlas-text-faint)] focus:border-[var(--atlas-border-strong)] focus:outline-none transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNew((v) => !v)}
+                      tabIndex={-1}
+                      aria-label={
+                        showNew
+                          ? language === "de"
+                            ? "Passwort verbergen"
+                            : "Hide password"
+                          : language === "de"
+                            ? "Passwort anzeigen"
+                            : "Show password"
+                      }
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-secondary)]"
+                    >
+                      {showNew ? (
+                        <EyeOff
+                          size={16}
+                          strokeWidth={1.5}
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <Eye size={16} strokeWidth={1.5} aria-hidden="true" />
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-[var(--atlas-text-faint)] mt-1.5">
+                    {language === "de"
+                      ? "Mindestens 12 Zeichen, mit Groß- und Kleinbuchstaben, Zahl und Sonderzeichen."
+                      : "At least 12 characters with upper-/lowercase, a number and a special character."}
+                  </p>
+                </div>
+
+                {/* Confirm new password */}
+                <div>
+                  <label className="block text-[12px] font-medium text-[var(--atlas-text-secondary)] mb-1.5">
+                    {language === "de"
+                      ? "Neues Passwort bestätigen"
+                      : "Confirm new password"}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showConfirm ? "text" : "password"}
+                      value={confirmPwd}
+                      onChange={(e) => setConfirmPwd(e.target.value)}
+                      autoComplete="new-password"
+                      className="w-full px-3 py-2.5 pr-10 rounded-lg border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] text-[14px] text-[var(--atlas-text-primary)] placeholder:text-[var(--atlas-text-faint)] focus:border-[var(--atlas-border-strong)] focus:outline-none transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirm((v) => !v)}
+                      tabIndex={-1}
+                      aria-label={
+                        showConfirm
+                          ? language === "de"
+                            ? "Passwort verbergen"
+                            : "Hide password"
+                          : language === "de"
+                            ? "Passwort anzeigen"
+                            : "Show password"
+                      }
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-secondary)]"
+                    >
+                      {showConfirm ? (
+                        <EyeOff
+                          size={16}
+                          strokeWidth={1.5}
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <Eye size={16} strokeWidth={1.5} aria-hidden="true" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Error display */}
+                {passwordError && (
+                  <p className="text-[12px] text-red-500" role="alert">
+                    {passwordError}
+                  </p>
+                )}
+
+                {/* Submit */}
+                <div className="flex justify-end pt-1">
+                  <button
+                    type="button"
+                    onClick={handleChangePassword}
+                    disabled={
+                      passwordStatus === "saving" ||
+                      !currentPwd ||
+                      !newPwd ||
+                      !confirmPwd
+                    }
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white text-[13px] font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {passwordStatus === "saving" ? (
+                      <>
+                        <Loader2
+                          size={14}
+                          className="animate-spin"
+                          aria-hidden="true"
+                        />
+                        {language === "de" ? "Speichern…" : "Saving…"}
+                      </>
+                    ) : (
+                      <>
+                        <Key size={14} strokeWidth={1.75} aria-hidden="true" />
+                        {language === "de"
+                          ? "Passwort ändern"
+                          : "Change password"}
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
             </section>
 
             {/* Language */}
