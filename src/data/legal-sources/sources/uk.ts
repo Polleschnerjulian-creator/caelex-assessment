@@ -1299,7 +1299,35 @@ const TELECOM_UK: LegalSource[] = [
     ],
     related_sources: ["UK-CA-2003"],
     caelex_engine_mapping: ["spectrum-engine.server"],
-    last_verified: "2026-04-13",
+    legislative_history: [
+      {
+        date: "2006-11-08",
+        type: "presidential_signature",
+        body: "Royal Assent · Crown",
+        reference: "Wireless Telegraphy Act 2006 c. 36",
+        description:
+          "Royal Assent given to the Wireless Telegraphy Act 2006 (c. 36) on 8 November 2006. Long title: 'An Act to consolidate enactments about wireless telegraphy.' This Act consolidates earlier wireless-telegraphy legislation (notably WTA 1949 and successive amendments) into a single statute.",
+        source_url: "https://www.legislation.gov.uk/ukpga/2006/36/introduction",
+        verified: true,
+        verified_by: "claude (WebFetch, legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Royal Assent date 8.11.2006, chapter number c. 36, and long title verified against legislation.gov.uk introduction tab.",
+      },
+      {
+        date: "2006-11-08",
+        type: "in_force",
+        body: "Department for Culture, Media and Sport (DCMS)",
+        reference: "Wireless Telegraphy Act 2006, s. 124 (Commencement)",
+        description:
+          "As a consolidation Act, the WTA 2006 came into force on the same day as Royal Assent (8 November 2006), with no vacatio legis — typical commencement pattern for UK consolidation statutes.",
+        source_url: "https://www.legislation.gov.uk/ukpga/2006/36",
+        verified: false,
+        verification_note:
+          "Same-day EIF pattern documented on legislation.gov.uk masthead but the s. 124 commencement clause text was not directly extracted — verified:false until clause text confirmed.",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
   {
     id: "UK-CA-2003",
@@ -1334,21 +1362,33 @@ const TELECOM_UK: LegalSource[] = [
     related_sources: ["UK-WTA-2006"],
     legislative_history: [
       {
-        date: "2006-11-08",
+        date: "2003-07-17",
         type: "presidential_signature",
         body: "Royal Assent · Crown",
-        reference: "Wireless Telegraphy Act 2006 c. 36",
+        reference: "Communications Act 2003 c. 21",
         description:
-          "Royal Assent. Long title: 'An Act to consolidate enactments about wireless telegraphy.' Consolidates earlier wireless-telegraphy primary legislation.",
-        source_url: "https://www.legislation.gov.uk/ukpga/2006/36",
+          "Royal Assent given to the Communications Act 2003 (c. 21) on 17 July 2003. Long title: 'An Act to confer functions on the Office of Communications; to make provision about the regulation of the provision of electronic communications networks and services and of the use of the electro-magnetic spectrum; to make provision about the regulation of broadcasting and of the provision of television and radio services; to make provision about mergers involving newspaper and other media enterprises and, in that connection, to amend the Enterprise Act 2002; and for connected purposes.'",
+        source_url: "https://www.legislation.gov.uk/ukpga/2003/21/introduction",
         verified: true,
-        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_by: "claude (WebFetch, legislation.gov.uk)",
         verified_at: "2026-04-28",
         verification_note:
-          "Long title, Royal Assent date and chapter number confirmed against the legislation.gov.uk masthead.",
+          "Royal Assent date 17.7.2003, chapter number c. 21, and full long title confirmed against legislation.gov.uk introduction tab.",
+      },
+      {
+        date: "2003-12-29",
+        type: "in_force",
+        body: "Department for Culture, Media and Sport (DCMS)",
+        reference: "Commencement orders SIs 2003/1900, 2003/3142 et al.",
+        description:
+          "Phased commencement via successive Commencement Orders. The bulk of Ofcom's functions (Parts 1-2) commenced on 29 December 2003 by SI 2003/3142 (The Communications Act 2003 (Commencement No. 3) Order 2003), with earlier SIs commencing administrative provisions.",
+        source_url: "https://www.legislation.gov.uk/ukpga/2003/21",
+        verified: false,
+        verification_note:
+          "Phased commencement is documented on legislation.gov.uk's 'Changes to Legislation' tab; the specific Commencement Order SI numbers and dates have not been individually fetched for this milestone — verified:false until each commencement SI is independently checked.",
       },
     ],
-    last_verified: "2026-04-13",
+    last_verified: "2026-04-28",
   },
 ];
 
