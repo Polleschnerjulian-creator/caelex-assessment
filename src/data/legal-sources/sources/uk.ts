@@ -850,6 +850,37 @@ const PRIMARY_LEGISLATION_UK: LegalSource[] = [
       "UK-SIA-INDEMNITIES-2025",
       "UK-LIABILITY-ARCHITECTURE",
     ],
+    legislative_history: [
+      {
+        date: "2015-03-26",
+        type: "presidential_signature",
+        body: "Royal Assent · Crown",
+        reference: "Deregulation Act 2015 c. 20",
+        description:
+          "Royal Assent. Long title: 'An Act to make provision for the reduction of burdens resulting from legislation for businesses or other organisations or for individuals; make provision for the repeal of legislation which no longer has practical use; make provision about the exercise of regulatory functions; and for connected purposes.'",
+        source_url: "https://www.legislation.gov.uk/ukpga/2015/20",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Long title, Royal Assent date and chapter number confirmed against the legislation.gov.uk masthead.",
+      },
+      {
+        date: "2015-10-01",
+        type: "in_force",
+        body: "Secretary of State · Commencement Order",
+        reference: "S.I. 2015/1732, art. 11(f)",
+        description:
+          "Section 12 (cap on operator liability for OSA 1986 licences) commenced via The Deregulation Act 2015 (Commencement) (England) Order 2015. Specific commencement of the space-activity provisions on indemnity-limit reform.",
+        source_url: "https://www.legislation.gov.uk/ukpga/2015/20/section/12",
+        affected_sections: ["s.12 (Deregulation Act) → OSA 1986 s.10"],
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Commencement of s.12 on 01/10/2015 via S.I. 2015/1732 art. 11(f) confirmed against the Deregulation Act 2015 commencement-information block on legislation.gov.uk.",
+      },
+    ],
     last_verified: "2026-04-13",
   },
 ];
@@ -1421,6 +1452,36 @@ const EXPORT_CONTROL_UK: LegalSource[] = [
     related_sources: ["UK-ECA-2002"],
     notes: [
       "Extensively amended — latest amendment SI 2025/532. Post-Brexit, the UK maintains its own control lists aligned with Wassenaar but independent from the EU Dual-Use Regulation.",
+    ],
+    legislative_history: [
+      {
+        date: "2008-12-15",
+        type: "promulgation",
+        body: "Secretary of State for Business, Enterprise and Regulatory Reform",
+        reference: "S.I. 2008/3231",
+        description:
+          "The Export Control Order 2008 made 15/12/2008. Made under Export Control Act 2002 ss. 1, 2, 3, 4, 5, 7 and ECA 1972 s.2(2) + Sch. 2 para. 1A. Establishes UK Military List + Dual-Use List with detailed control entries.",
+        source_url: "https://www.legislation.gov.uk/uksi/2008/3231",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Made date 15/12/2008, SI number, parent statutes (ECA 2002 + ECA 1972) confirmed against legislation.gov.uk masthead.",
+      },
+      {
+        date: "2009-04-06",
+        type: "in_force",
+        body: "Secretary of State for Business, Enterprise and Regulatory Reform",
+        reference: "S.I. 2008/3231",
+        description:
+          "Coming into force date — establishes UK's modern dual-use export control regime.",
+        source_url: "https://www.legislation.gov.uk/uksi/2008/3231",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Coming-into-force date 06/04/2009 confirmed against legislation.gov.uk.",
+      },
     ],
     last_verified: "2026-04-13",
   },
