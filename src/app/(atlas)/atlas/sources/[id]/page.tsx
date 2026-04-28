@@ -24,6 +24,7 @@ import { CiteThisButton } from "@/components/atlas/CiteThisButton";
 import { QuoteProvisionButton } from "@/components/atlas/QuoteProvisionButton";
 import { VerbatimProvisionText } from "@/components/atlas/VerbatimProvisionText";
 import { TranslationProvenanceNotice } from "@/components/atlas/TranslationProvenanceNotice";
+import { LegislativeTimeline } from "@/components/atlas/LegislativeTimeline";
 import {
   getLegalSourceById,
   getAuthorityById,
@@ -473,6 +474,17 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
             </a>
           )}
         </nav>
+      )}
+
+      {/* ─── Legislative History (Gesetzgebungsverlauf) ───
+          Sparsely populated for now — only "showcase" sources have a
+          full lifecycle timeline curated. The component returns null
+          when the field is absent so other sources show no gap. */}
+      {source.legislative_history && source.legislative_history.length > 0 && (
+        <LegislativeTimeline
+          milestones={source.legislative_history}
+          language={language}
+        />
       )}
 
       {/* ─── Key Provisions ─── */}

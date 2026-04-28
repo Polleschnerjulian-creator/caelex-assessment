@@ -121,6 +121,109 @@ export interface Amendment {
   source_url?: string;
 }
 
+/**
+ * Type of milestone in a law's legislative history. The vocabulary
+ * covers the typical lifecycle from "first proposed" through "in
+ * force" and beyond. UI maps each type to a tone (grey for proposal
+ * stages, emerald for in-force, red for repealed) and to a label
+ * localised per language.
+ *
+ * Values cover both EU/national legislative procedures and UN-treaty
+ * lifecycles — the same field rendered differently per jurisdiction.
+ */
+export type LegislativeMilestoneType =
+  // ─── Pre-adoption ─────────────────────────────────────────────────
+  | "proposal" // Bill/proposal introduced (BT-Drucksache, COM document)
+  | "first_reading" // First parliamentary reading
+  | "committee_review" // Committee/rapporteur stage
+  | "council_position" // Council general approach (EU)
+  | "second_reading" // Second parliamentary reading
+  | "trilogue" // EU trilogue negotiations
+  | "interservice" // Cross-ministry consultation (DE Ressortabstimmung etc.)
+  | "consultation" // Public/stakeholder consultation
+  // ─── Adoption ─────────────────────────────────────────────────────
+  | "adoption" // Formally adopted/passed/voted through
+  | "presidential_signature" // Federal-President signature (DE), Royal Assent (UK), Presidential signing (US)
+  | "promulgation" // Published in the official gazette (BGBl., OJ, BOE, …)
+  // ─── Post-adoption ────────────────────────────────────────────────
+  | "in_force" // Entered into force / commencement
+  | "transition_phase" // Transitional regime in effect, full provisions phased in
+  | "amendment" // Subsequent amending act
+  | "consolidation" // Consolidated/codified version released
+  | "implementation_act" // National transposition (for EU directives) or implementing regulation
+  // ─── Treaty-specific ──────────────────────────────────────────────
+  | "signed" // Treaty opened for signature / first signatures
+  | "ratification" // Specific country ratifies
+  | "deposit" // Instruments deposited with depositary
+  | "entry_into_force_treaty" // Treaty enters into force globally
+  // ─── Termination ──────────────────────────────────────────────────
+  | "repeal" // Formally repealed
+  | "supersession" // Superseded by a successor instrument
+  | "sunset"; // Automatic expiry date reached
+
+/**
+ * Issuing body / actor responsible for a milestone — drives the
+ * "by whom" line in the timeline. Free-form string because the
+ * exact body name varies by jurisdiction (Bundestag, Bundesrat,
+ * European Parliament, ITRE Committee, Conseil constitutionnel,
+ * UN Secretary-General, etc.). Render as-is — do not translate.
+ */
+export type LegislativeBody = string;
+
+/**
+ * One step in a law's legislative history. The collection
+ * `LegalSource.legislative_history` is intended to be the canonical
+ * "this is how this law came to be" timeline that lawyers consult
+ * to argue from legislative intent — distinct from `amendments[]`
+ * which only tracks post-adoption changes.
+ *
+ * Provenance: every entry should be backed by a source-URL pointing
+ * at the official document (BT-Drucksache, COM-document, BGBl. issue,
+ * EUR-Lex procedure file, Bundestag video archive, etc.) so a lawyer
+ * who clicks through lands on the canonical record, not a Caelex
+ * paraphrase. Description is Caelex-curated but flagged as such in
+ * the UI.
+ */
+export interface LegislativeMilestone {
+  /** ISO date of the milestone. For dated-but-not-day-precise events
+   *  (e.g. "October 2024 — committee phase"), use the first day of
+   *  the month and disclose the granularity in `description`. */
+  date: string;
+
+  /** Milestone-type — drives icon + tone in the UI. */
+  type: LegislativeMilestoneType;
+
+  /** Issuing body / actor (Bundestag, EP-ITRE, Council, UN-SG, etc.).
+   *  Free-form, render verbatim. */
+  body: LegislativeBody;
+
+  /** Parliamentary / official reference. Examples:
+   *  - "BT-Drucksache 20/12345"
+   *  - "COM(2025) 335 final"
+   *  - "Council doc. 12345/24"
+   *  - "BGBl. I 2024 S. 234"
+   *  - "OJ EU L 2026/xxx"
+   *  - "UN doc. A/RES/2222 (XXI)"
+   *  Optional because not every step has a published reference. */
+  reference?: string;
+
+  /** Caelex-authored 1-sentence description of what happened in this
+   *  step. Marked as Caelex-curated in the UI. Omit when the type +
+   *  body + reference combination already self-explains (e.g. an
+   *  `in_force` entry with a date is self-explanatory). */
+  description?: string;
+
+  /** Direct link to the official record of this step. STRONGLY
+   *  preferred — without a URL, the entry is harder for a lawyer to
+   *  audit. Use the canonical archive URL when available. */
+  source_url?: string;
+
+  /** Optional articles/sections especially affected by this step.
+   *  Useful for amendment milestones where only specific provisions
+   *  changed. */
+  affected_sections?: string[];
+}
+
 export interface LegalSource {
   id: string;
   jurisdiction: string;
@@ -164,6 +267,25 @@ export interface LegalSource {
    * render convention; the UI sorts by date descending regardless.
    */
   amendments?: Amendment[];
+
+  /**
+   * Full legislative-history timeline — covers the lifecycle of the
+   * law from first proposal through committee, adoption, promulgation,
+   * commencement, and any later amendments. Distinct from
+   * `amendments[]` (which is post-adoption-only) and richer than
+   * `date_enacted` / `date_in_force` (which are single milestones).
+   *
+   * Sparsely populated: only "showcase" laws have full timelines for
+   * the first ship. Backfilled progressively. Entries with `type ===
+   * 'amendment'` should also appear in `amendments[]` for backward
+   * compatibility — the timeline is the new canonical surface, the
+   * legacy `amendments[]` array stays for the redline / cron-detected
+   * change-history view.
+   *
+   * UI: rendered as a vertical timeline above the key-provisions
+   * section on `/atlas/sources/[id]`.
+   */
+  legislative_history?: LegislativeMilestone[];
 
   /**
    * For jurisdiction "INT" or "EU" records: list of ISO-alpha-2 country

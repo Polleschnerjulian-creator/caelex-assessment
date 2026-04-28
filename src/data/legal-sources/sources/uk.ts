@@ -615,6 +615,77 @@ const PRIMARY_LEGISLATION_UK: LegalSource[] = [
       "In force 29 July 2021. Enabled by SI 2021/792 (the principal implementing regulations, 287 regulations across 6 Schedules).",
       "Five licence types: operator, spaceport, range control, orbital operator, mission management.",
     ],
+    legislative_history: [
+      {
+        date: "2017-06-21",
+        type: "consultation",
+        body: "Department for Transport / UK Space Agency",
+        reference: "Spaceflight Programme — public consultation",
+        description:
+          "12-week public consultation on a draft Spaceflight Bill. Industry and academia responses shape the licence-type architecture (operator / spaceport / range / orbital / mission management).",
+        source_url:
+          "https://www.gov.uk/government/consultations/spaceflight-creating-a-regulatory-framework",
+      },
+      {
+        date: "2017-06-27",
+        type: "proposal",
+        body: "House of Lords",
+        reference: "HL Bill 4 (2017-19)",
+        description:
+          "Space Industry Bill introduced in the House of Lords as a Government Bill. Sponsored by Baroness Sugg.",
+        source_url: "https://bills.parliament.uk/bills/2155",
+      },
+      {
+        date: "2017-10-23",
+        type: "second_reading",
+        body: "House of Lords · Second Reading",
+        description:
+          "Second Reading debate. Cross-party support; main concerns raised on liability cap, environmental impact assessment, and accident investigation.",
+      },
+      {
+        date: "2018-01-15",
+        type: "first_reading",
+        body: "House of Commons · First Reading",
+        description:
+          "Bill transferred from the Lords; First Reading in the Commons.",
+      },
+      {
+        date: "2018-01-29",
+        type: "committee_review",
+        body: "Public Bill Committee",
+        description:
+          "Committee Stage in the Commons. 36 amendments tabled; significant amendments to insurance and liability provisions in clauses 33-37.",
+      },
+      {
+        date: "2018-03-15",
+        type: "presidential_signature",
+        body: "Royal Assent",
+        reference: "Space Industry Act 2018 c.5",
+        description:
+          "Royal Assent received. Act enters statute book but commencement is staggered via secondary legislation.",
+        source_url: "https://www.legislation.gov.uk/ukpga/2018/5",
+      },
+      {
+        date: "2021-07-29",
+        type: "in_force",
+        body: "Department for Transport · Commencement Order",
+        reference: "SI 2021/874 (Commencement No. 1)",
+        description:
+          "Substantive provisions commenced by The Space Industry Act 2018 (Commencement No. 1) Regulations 2021. Same day as SI 2021/792 (principal regulations).",
+        source_url:
+          "https://www.legislation.gov.uk/uksi/2021/874/contents/made",
+      },
+      {
+        date: "2025-06-18",
+        type: "amendment",
+        body: "Parliament of the United Kingdom",
+        reference: "Space Industry (Indemnities) Act 2025",
+        description:
+          "Amended s.12(2) of the SIA 2018 to require all operator licences to specify a liability limit (mandatory cap regime). Closes a perceived gap in the original Act and aligns the UK with EU and US liability practice.",
+        source_url: "https://www.legislation.gov.uk/ukpga/2025/12",
+        affected_sections: ["s.12(2)", "s.34"],
+      },
+    ],
     last_verified: "2026-04-13",
   },
   {

@@ -173,6 +173,54 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
       "INT-REGISTRATION-1975",
       "INT-RESCUE-1968",
     ],
+    legislative_history: [
+      {
+        date: "1966-12-19",
+        type: "adoption",
+        body: "UN General Assembly · 21st Session",
+        reference: "Resolution 2222 (XXI)",
+        description:
+          "Treaty on Principles Governing the Activities of States in the Exploration and Use of Outer Space adopted unanimously by the General Assembly. Drafted by COPUOS Legal Subcommittee.",
+        source_url:
+          "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/introouterspacetreaty.html",
+      },
+      {
+        date: "1967-01-27",
+        type: "signed",
+        body: "United Kingdom / United States / Soviet Union (depositaries)",
+        description:
+          "Treaty opened for signature simultaneously in London, Washington and Moscow. 60+ initial signatures including all major spacefaring states.",
+        source_url:
+          "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/outerspacetreaty.html",
+      },
+      {
+        date: "1967-10-10",
+        type: "entry_into_force_treaty",
+        body: "United Nations",
+        reference: "Art. XIV OST",
+        description:
+          "Treaty entered into force after deposit of instruments of ratification by five governments, including the three depositaries (UK, US, USSR).",
+      },
+      {
+        date: "1971-02-10",
+        type: "ratification",
+        body: "Bundesrepublik Deutschland",
+        reference: "BGBl. II 1971 S. 237",
+        description:
+          "Deutsche Ratifikation des Weltraumvertrags. Vertragsgesetz vom 10. Februar 1971; deutscher Beitritt am 10. Februar 1971.",
+        source_url:
+          "https://www.bgbl.de/xaver/bgbl/start.xav?startbk=Bundesanzeiger_BGBl",
+      },
+      {
+        date: "2024-01-01",
+        type: "consolidation",
+        body: "UN Office for Outer Space Affairs (UNOOSA)",
+        description:
+          "As of January 2024: 115 States Parties, 23 additional signatories. Treaty remains unmodified since 1967 — interpretive evolution via UN COPUOS guidelines and state practice.",
+        source_url:
+          "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/status/index.html",
+      },
+    ],
     last_verified: "2026-04-13",
   },
   {
@@ -303,6 +351,62 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
       },
     ],
     related_sources: ["INT-OST-1967", "DE-SATDSIG-2007"],
+    legislative_history: [
+      {
+        date: "1971-11-29",
+        type: "adoption",
+        body: "UN General Assembly · 26th Session",
+        reference: "Resolution 2777 (XXVI)",
+        description:
+          "Convention adopted by the General Assembly. Drafted over 8 years by COPUOS Legal Subcommittee in response to need for a liability regime more concrete than OST Art. VII.",
+        source_url:
+          "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/introliability-convention.html",
+      },
+      {
+        date: "1972-03-29",
+        type: "signed",
+        body: "United Kingdom / United States / Soviet Union (depositaries)",
+        description:
+          "Convention opened for signature. Establishes absolute liability for damage on the surface of the Earth or to aircraft in flight (Art. II), fault-based liability for damage in outer space (Art. III).",
+        source_url:
+          "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/liability-convention.html",
+      },
+      {
+        date: "1972-09-01",
+        type: "entry_into_force_treaty",
+        body: "United Nations",
+        reference: "Art. XIV Liability Convention",
+        description:
+          "Convention entered into force after deposit of fifth instrument of ratification.",
+      },
+      {
+        date: "1979-12-18",
+        type: "ratification",
+        body: "Bundesrepublik Deutschland",
+        reference: "BGBl. II 1975 S. 1209",
+        description:
+          "Deutsche Ratifikation des Weltraumhaftungsübereinkommens. Vertragsgesetz vom 5. Dezember 1975; Beitritt am 18. Dezember 1979.",
+      },
+      {
+        date: "1981-04-02",
+        type: "amendment",
+        body: "USSR ↔ Canada",
+        reference: "Cosmos 954 settlement protocol",
+        description:
+          "Erste praktische Anwendung der Liability Convention: USSR zahlt Kanada CAD 3 Mio. nach dem Absturz des Kernreaktor-Satelliten Cosmos 954 (1978). Etablierte 'absolute liability' als nutzbares Rechtsinstitut.",
+        source_url:
+          "https://www.unoosa.org/oosa/oosadoc/data/documents/1981/aac.105/aac.105c.2sr.397.html",
+      },
+      {
+        date: "2024-01-01",
+        type: "consolidation",
+        body: "UN Office for Outer Space Affairs (UNOOSA)",
+        description:
+          "As of January 2024: 99 States Parties, 19 additional signatories. Convention text unchanged since 1972 — interpretive practice via Cosmos-954-style state-to-state settlements.",
+        source_url:
+          "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/status/index.html",
+      },
+    ],
     last_verified: "2026-04-13",
   },
   {
