@@ -638,6 +638,53 @@ const PRIMARY_LEGISLATION_IT: LegalSource[] = [
       "Governance framework — NOT a comprehensive space law. Established COMINT and PdCM space authority.",
       "Superseded in scope by Legge 89/2025 but remains in force for institutional provisions.",
     ],
+    legislative_history: [
+      {
+        date: "2018-01-11",
+        type: "presidential_signature",
+        body: "Repubblica Italiana · Parlamento (Camera + Senato)",
+        reference: "Legge 11 gennaio 2018, n. 7",
+        description:
+          "Promulgazione della Legge 11 gennaio 2018, n. 7 — Misure per il coordinamento della politica spaziale e aerospaziale e disposizioni concernenti l'organizzazione e il funzionamento dell'Agenzia spaziale italiana. Identificativo gazzetta: 18G00025.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2018-01-11;7",
+        verified: true,
+        verified_by: "claude (claude-in-chrome MCP, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Title and signature date confirmed against Normattiva primary record. Gazzetta identifier 18G00025 confirmed.",
+      },
+      {
+        date: "2018-02-10",
+        type: "promulgation",
+        body: "Gazzetta Ufficiale della Repubblica Italiana",
+        reference: "GU n. 34 del 10-02-2018",
+        description:
+          "Pubblicazione nella Gazzetta Ufficiale Serie Generale n. 34 del 10 febbraio 2018.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2018-01-11;7",
+        verified: true,
+        verified_by: "claude (claude-in-chrome MCP, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "GU reference (n. 34, 10-02-2018) confirmed against the Normattiva metadata block.",
+      },
+      {
+        date: "2018-02-25",
+        type: "in_force",
+        body: "Repubblica Italiana",
+        reference: "Entrata in vigore",
+        description:
+          "Entrata in vigore del provvedimento — 15 giorni dopo la pubblicazione in Gazzetta Ufficiale.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2018-01-11;7",
+        verified: true,
+        verified_by: "claude (claude-in-chrome MCP, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entrata-in-vigore date 25/02/2018 confirmed against Normattiva — corrects the catalogue's date_in_force '2018-02-15' which was off by 10 days.",
+      },
+    ],
     last_verified: "2026-04-09",
   },
   {
@@ -900,6 +947,38 @@ const EXPORT_CONTROL_IT: LegalSource[] = [
       "Amended by DL 69/2023 increasing sanctions up to 6 years imprisonment.",
       "Italy adopted a national control list in 2024 that goes beyond EU Annex I, adding additional space-relevant items.",
     ],
+    legislative_history: [
+      {
+        date: "2017-12-15",
+        type: "presidential_signature",
+        body: "Repubblica Italiana · Governo (delegated legislation)",
+        reference: "Decreto Legislativo 15 dicembre 2017, n. 221",
+        description:
+          "Promulgazione del D.Lgs. 15 dicembre 2017, n. 221 — Attuazione della delega al Governo (Art. 7 Legge 12 agosto 2016, n. 170) per l'adeguamento della normativa nazionale al regolamento UE dual-use. Identificativo gazzetta: 18G00007.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2017-12-15;221",
+        verified: true,
+        verified_by: "claude (claude-in-chrome MCP, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Title and signature date confirmed against Normattiva. Gazzetta identifier 18G00007 confirmed. Delega base: Art. 7 Legge 170/2016.",
+      },
+      {
+        date: "2018-02-01",
+        type: "in_force",
+        body: "Repubblica Italiana",
+        reference: "Entrata in vigore",
+        description:
+          "Entrata in vigore del provvedimento — disciplina sanzionatoria per la violazione del regolamento UE dual-use.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2017-12-15;221",
+        verified: true,
+        verified_by: "claude (claude-in-chrome MCP, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entrata-in-vigore date 01/02/2018 confirmed against Normattiva primary record.",
+      },
+    ],
     last_verified: "2026-04-09",
   },
   {
@@ -934,6 +1013,67 @@ const EXPORT_CONTROL_IT: LegalSource[] = [
     notes: [
       "Key legislation for military satellite exports. COSMO-SkyMed components fall under this regime.",
       "Works alongside D.Lgs. 221/2017 (dual-use) — the two regimes are complementary but have separate authorization streams.",
+    ],
+    legislative_history: [
+      {
+        date: "1990-07-09",
+        type: "presidential_signature",
+        body: "Repubblica Italiana · Parlamento (Camera + Senato)",
+        reference: "Legge 9 luglio 1990, n. 185",
+        description:
+          "Promulgazione della Legge 9 luglio 1990, n. 185 — Nuove norme sul controllo dell'esportazione, importazione e transito dei materiali di armamento.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1990-07-09;185",
+        verified: true,
+        verified_by: "claude (claude-in-chrome MCP, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Title and signature date confirmed against Normattiva primary record.",
+      },
+      {
+        date: "1990-07-14",
+        type: "promulgation",
+        body: "Gazzetta Ufficiale della Repubblica Italiana",
+        reference: "GU n. 163 del 14-07-1990",
+        description:
+          "Pubblicazione nella Gazzetta Ufficiale Serie Generale n. 163 del 14 luglio 1990.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1990-07-09;185",
+        verified: true,
+        verified_by: "claude (claude-in-chrome MCP, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "GU reference (n. 163, 14-07-1990) confirmed against the Normattiva metadata block.",
+      },
+      {
+        date: "1990-07-29",
+        type: "in_force",
+        body: "Repubblica Italiana",
+        reference: "Entrata in vigore",
+        description:
+          "Entrata in vigore della legge — 15 giorni dopo la pubblicazione in Gazzetta Ufficiale.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1990-07-09;185",
+        verified: true,
+        verified_by: "claude (claude-in-chrome MCP, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entrata-in-vigore date 29/07/1990 confirmed against Normattiva — corrects the catalogue's date_in_force '1990-07-14' which was the GU publication date, not the entry-into-force date.",
+      },
+      {
+        date: "2013-10-10",
+        type: "amendment",
+        body: "Repubblica Italiana · Parlamento",
+        description:
+          "Last consolidated update of the text on Normattiva: 10/10/2013. Subsequent amendments through DL 69/2023 (sanctions increased to 6 years) tracked in Normattiva's multivigente view.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1990-07-09;185",
+        verified: true,
+        verified_by: "claude (claude-in-chrome MCP, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Last-update date 10/10/2013 confirmed against Normattiva metadata block (likely the last major consolidation; later amendments may not yet be reflected in the consolidated text).",
+      },
     ],
     last_verified: "2026-04-09",
   },
