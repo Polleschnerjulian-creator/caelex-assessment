@@ -222,6 +222,41 @@ export interface LegislativeMilestone {
    *  Useful for amendment milestones where only specific provisions
    *  changed. */
   affected_sections?: string[];
+
+  /**
+   * Verification flag — gates whether this milestone can be rendered
+   * publicly without a "Prüfung ausstehend" badge.
+   *
+   * **Hard rule (audit close-out):** every milestone must be verified
+   * against the primary source before being marked `verified: true`.
+   * The verification protocol lives in
+   * `docs/legal-templates/legislative-history-verification.md`. Until
+   * an entry is verified, the UI surfaces it with an amber
+   * "PRÜFUNG AUSSTEHEND" badge so neither lawyers nor BHO/pilot
+   * customers mistake it for a Caelex-attested fact.
+   *
+   * Defaults to `false` when omitted — the safe default is "not yet
+   * verified". A milestone is considered verified ONLY when (a) every
+   * field (date, body, reference) is confirmed against the primary
+   * source linked at `source_url`, AND (b) a named human reviewer
+   * has stamped this record. */
+  verified?: boolean;
+
+  /** Email or initials of the human reviewer who verified the
+   *  milestone against the primary source. Required when `verified`
+   *  is true; ignored otherwise. */
+  verified_by?: string;
+
+  /** ISO date the verification was performed. Required when
+   *  `verified` is true. Re-verify whenever the underlying primary
+   *  source is amended (e.g. consolidated text gets a new edition). */
+  verified_at?: string;
+
+  /** Free-form reviewer note — useful when the primary source is
+   *  ambiguous (e.g. "BGBl. issue confirmed; exact page number not
+   *  yet checked — see PRINT version") or when the entry depends on
+   *  multiple primary sources. */
+  verification_note?: string;
 }
 
 export interface LegalSource {

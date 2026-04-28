@@ -32,7 +32,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { ExternalLink, Clock } from "lucide-react";
+import { ExternalLink, Clock, ShieldCheck, ShieldAlert } from "lucide-react";
 import type {
   LegislativeMilestone,
   LegislativeMilestoneType,
@@ -184,6 +184,14 @@ export function LegislativeTimeline({
   // re-sort defensively.
   const sorted = [...milestones].sort((a, b) => a.date.localeCompare(b.date));
 
+  // Verification telemetry — drives the disclosure banner above the
+  // timeline. Explicit disclosure of the verification gap is the
+  // honest posture regulators and pilot customers expect.
+  const verifiedCount = sorted.filter((m) => m.verified === true).length;
+  const totalCount = sorted.length;
+  const allVerified = verifiedCount === totalCount;
+  const noneVerified = verifiedCount === 0;
+
   return (
     <section
       aria-labelledby="legislative-history-heading"
@@ -213,15 +221,74 @@ export function LegislativeTimeline({
         </span>
       </header>
 
-      {/* Caelex-curated disclosure — even though source-URLs point
-          at official records, our type classification + description
-          line are editorial. Reusing the same amber tone as the
-          caselaw editorial banner for visual consistency. */}
-      <p className="mb-4 text-[10.5px] text-amber-700 dark:text-amber-400 italic">
-        {isDe
-          ? "Caelex-redaktioneller Verlauf. Klick auf das Aktenzeichen führt zur amtlichen Quelle (Bundesgesetzblatt, EUR-Lex, UN-Vertragsdepositum). Verbindlich ist allein die Originalquelle."
-          : "Caelex editorial timeline. Click each reference for the official record (Federal Law Gazette, EUR-Lex, UN treaty depositary). Only the original source is authoritative."}
-      </p>
+      {/* Verification-state disclosure. Three modes:
+            - all verified  → green confirmation, lawyer can rely
+            - none verified → red warning, demo-only state
+            - partial       → amber, needs attention per-entry
+          The per-entry state is ALSO surfaced as a badge on each
+          milestone below. */}
+      {allVerified ? (
+        <div
+          className="mb-4 flex items-start gap-2 rounded-md border border-emerald-300 dark:border-emerald-700/50 bg-emerald-50/70 dark:bg-emerald-900/15 px-3 py-2 text-[11px] leading-relaxed text-emerald-900 dark:text-emerald-200"
+          role="note"
+        >
+          <ShieldCheck
+            className="h-3.5 w-3.5 flex-shrink-0 mt-0.5"
+            strokeWidth={1.7}
+            aria-hidden="true"
+          />
+          <p>
+            <strong>
+              {isDe ? "Vollständig verifiziert. " : "Fully verified. "}
+            </strong>
+            {isDe
+              ? "Jeder Eintrag wurde gegen die Primärquelle geprüft. Klick auf das Aktenzeichen führt zur amtlichen Quelle. Verbindlich ist allein die Originalquelle."
+              : "Every entry has been checked against the primary source. Click each reference for the official record. Only the original source is authoritative."}
+          </p>
+        </div>
+      ) : noneVerified ? (
+        <div
+          className="mb-4 flex items-start gap-2 rounded-md border border-red-300 dark:border-red-700/50 bg-red-50/70 dark:bg-red-900/15 px-3 py-2 text-[11px] leading-relaxed text-red-900 dark:text-red-200"
+          role="note"
+        >
+          <ShieldAlert
+            className="h-3.5 w-3.5 flex-shrink-0 mt-0.5"
+            strokeWidth={1.7}
+            aria-hidden="true"
+          />
+          <p>
+            <strong>
+              {isDe
+                ? "Prüfung ausstehend — Vorabansicht. "
+                : "Verification pending — preview. "}
+            </strong>
+            {isDe
+              ? "Diese Zeitstrahl-Einträge sind noch nicht gegen die Primärquellen verifiziert und dürfen nicht für rechtliche Argumentation verwendet werden. Bis zur Verifikation gilt jeder Eintrag als unverbindlicher Entwurf. Verifikationsprotokoll: docs/legal-templates/legislative-history-verification.md."
+              : "These timeline entries have NOT yet been verified against the primary sources and MUST NOT be used for legal argument. Until verified, each entry is a non-binding draft. Verification protocol: docs/legal-templates/legislative-history-verification.md."}
+          </p>
+        </div>
+      ) : (
+        <div
+          className="mb-4 flex items-start gap-2 rounded-md border border-amber-300 dark:border-amber-700/50 bg-amber-50/70 dark:bg-amber-900/15 px-3 py-2 text-[11px] leading-relaxed text-amber-900 dark:text-amber-200"
+          role="note"
+        >
+          <ShieldAlert
+            className="h-3.5 w-3.5 flex-shrink-0 mt-0.5"
+            strokeWidth={1.7}
+            aria-hidden="true"
+          />
+          <p>
+            <strong>
+              {isDe
+                ? `Teilweise verifiziert (${verifiedCount}/${totalCount}). `
+                : `Partially verified (${verifiedCount}/${totalCount}). `}
+            </strong>
+            {isDe
+              ? "Geprüfte Einträge tragen ein grünes Verifikations-Badge. Einträge mit amber Badge sind noch nicht final geprüft."
+              : "Verified entries carry a green verification badge. Entries with an amber badge have not yet been finally checked."}
+          </p>
+        </div>
+      )}
 
       <ol className="relative">
         {/* Vertical line — runs the full height behind the markers.
@@ -254,6 +321,46 @@ export function LegislativeTimeline({
                   <span className="text-[10.5px] uppercase tracking-[0.08em] font-semibold text-[var(--atlas-text-muted)]">
                     {isDe ? meta.label.de : meta.label.en}
                   </span>
+                  {/* Per-entry verification badge. Green when an
+                      authorised reviewer has stamped the record;
+                      amber otherwise. The reviewer details (who +
+                      when) appear in a tooltip-style title attribute
+                      so the surface stays compact. */}
+                  {m.verified ? (
+                    <span
+                      className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wider bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-700/50"
+                      title={
+                        m.verified_by && m.verified_at
+                          ? `${isDe ? "Verifiziert von" : "Verified by"} ${m.verified_by} · ${m.verified_at}${m.verification_note ? " · " + m.verification_note : ""}`
+                          : isDe
+                            ? "Verifiziert"
+                            : "Verified"
+                      }
+                    >
+                      <ShieldCheck
+                        className="h-2.5 w-2.5"
+                        strokeWidth={2}
+                        aria-hidden="true"
+                      />
+                      {isDe ? "Verifiziert" : "Verified"}
+                    </span>
+                  ) : (
+                    <span
+                      className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-200/70 dark:border-amber-700/50"
+                      title={
+                        isDe
+                          ? "Dieser Eintrag wurde noch nicht gegen die Primärquelle verifiziert und ist nicht für rechtliche Argumentation freigegeben."
+                          : "This entry has not yet been verified against the primary source and is not released for legal argument."
+                      }
+                    >
+                      <ShieldAlert
+                        className="h-2.5 w-2.5"
+                        strokeWidth={2}
+                        aria-hidden="true"
+                      />
+                      {isDe ? "Prüfung ausstehend" : "Pending verification"}
+                    </span>
+                  )}
                 </div>
                 {m.reference && m.source_url && (
                   <a

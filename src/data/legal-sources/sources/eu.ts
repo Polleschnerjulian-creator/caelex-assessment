@@ -143,60 +143,37 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
       "Will be directly applicable as EU Regulation — no national transposition needed.",
     ],
     legislative_history: [
-      {
-        date: "2024-09-15",
-        type: "consultation",
-        body: "European Commission · DG DEFIS",
-        reference: "Public consultation on EU Space Law",
-        description:
-          "Twelve-week public consultation on the design of the EU Space Law. 198 responses received from operators, member-state authorities, ESA, and standardisation bodies.",
-        source_url:
-          "https://defence-industry-space.ec.europa.eu/consultations/eu-space-law-public-consultation_en",
-      },
+      // ⚠️ Audit-honesty note (2026-04-28): structural placeholders.
+      // Specific procedural numbers (rapporteur names, response/vote
+      // counts, exact compromise-text doc references) were stripped
+      // out pending hand-verification against the EUR-Lex procedure
+      // file 2025/0185(COD). The remaining entries name only facts
+      // that are firmly attested. See verification protocol at
+      // docs/legal-templates/legislative-history-verification.md.
       {
         date: "2025-06-25",
         type: "proposal",
         body: "European Commission",
         reference: "COM(2025) 335 final",
         description:
-          "Commission proposal published. 119 articles across nine chapters covering authorisation, registration, debris mitigation, cybersecurity, environmental footprint, and a third-country-operator regime.",
+          "Commission proposal published — Regulation on the European Space Economy. Covers authorisation, registration, debris mitigation, cybersecurity, environmental footprint, and a third-country-operator regime.",
         source_url:
           "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=COM:2025:335:FIN",
+        // verified: false — pending hand-check against EUR-Lex.
       },
       {
-        date: "2025-10-08",
+        date: "2025-07-01",
         type: "first_reading",
-        body: "European Parliament · ITRE Committee",
-        reference: "2025/0185(COD)",
+        body: "European Parliament — referral to lead committee",
         description:
-          "Industry, Research and Energy Committee (ITRE) designated as lead committee. Rapporteur Donazzan (EPP, IT) appointed. Shadow rapporteurs from S&D, Renew, Greens/EFA, ECR, The Left.",
+          "Proposal referred to the European Parliament under the ordinary legislative procedure (Art. 294 TFEU). Lead-committee designation, rapporteur appointment, and exact dates pending verification against EUR-Lex procedure file 2025/0185(COD).",
         source_url:
           "https://oeil.secure.europarl.europa.eu/oeil/popups/ficheprocedure.do?reference=2025/0185(COD)",
       },
-      {
-        date: "2026-03-12",
-        type: "committee_review",
-        body: "European Parliament · ITRE Committee",
-        reference: "PE 765.123 (Donazzan report)",
-        description:
-          "ITRE rapporteur draft report published. 412 amendments tabled. Key debates: third-country-operator threshold, mutual-recognition triggers, debris-mitigation hard limits.",
-        source_url:
-          "https://www.europarl.europa.eu/committees/en/itre/home/highlights",
-      },
-      {
-        date: "2026-03-25",
-        type: "council_position",
-        body: "Council of the EU · Cyprus Presidency",
-        reference: "ST 7234/26",
-        description:
-          "Cyprus Council Presidency compromise text circulated. Diverges from Commission proposal on third-country-operator threshold (60% vs 40% revenue share).",
-        source_url:
-          "https://data.consilium.europa.eu/doc/document/ST-7234-2026-INIT/en/pdf",
-      },
-      // Forward-looking entries are intentionally NOT included here —
-      // this timeline only records what has already happened. When the
-      // trilogue starts / concludes / OJ publication occurs, append
-      // those entries.
+      // Further milestones (committee report, council general
+      // approach, trilogue, adoption, promulgation, entry into
+      // force) will be appended once each step has been verified
+      // against the EUR-Lex procedure file.
     ],
     last_verified: "2026-04-13",
   },
@@ -313,6 +290,12 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     caelex_data_file_mapping: ["nis2-requirements.ts"],
     notes: ["Transposed in DE via NIS2UmsuCG → BSIG §§ 30-31."],
     legislative_history: [
+      // ⚠️ Audit-honesty note (2026-04-28): vote counts, exact council
+      // document numbers and trilogue dates were removed pending
+      // hand-verification against the EUR-Lex procedure file
+      // 2020/0359(COD) and the Council public-register. Remaining
+      // entries are limited to facts attested by the directive's
+      // own preamble + final OJ citation.
       {
         date: "2020-12-16",
         type: "proposal",
@@ -324,42 +307,11 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
           "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52020PC0823",
       },
       {
-        date: "2021-12-03",
-        type: "council_position",
-        body: "Council of the EU · Slovenian Presidency",
-        reference: "ST 14337/21",
-        description:
-          "Council general approach adopted. Tightened scope (added space sector to high-criticality Annex I), kept the 24h/72h reporting cascade.",
-        source_url:
-          "https://data.consilium.europa.eu/doc/document/ST-14337-2021-INIT/en/pdf",
-      },
-      {
-        date: "2022-05-13",
-        type: "trilogue",
-        body: "European Parliament / Council / Commission",
-        reference: "Inter-institutional file 2020/0359(COD)",
-        description:
-          "Trilogue political agreement reached. Final compromise on critical-vs-important entity criteria, fine ceilings (EUR 10M / 2% of global turnover), and management-board accountability.",
-        source_url:
-          "https://oeil.secure.europarl.europa.eu/oeil/popups/ficheprocedure.do?reference=2020/0359(COD)",
-      },
-      {
-        date: "2022-11-10",
-        type: "adoption",
-        body: "European Parliament · Plenary",
-        reference: "P9_TA(2022)0383",
-        description:
-          "European Parliament plenary vote: 577 in favour, 6 against, 31 abstentions.",
-        source_url:
-          "https://www.europarl.europa.eu/doceo/document/TA-9-2022-0383_EN.html",
-      },
-      {
-        date: "2022-12-14",
+        date: "2022-12-27",
         type: "promulgation",
         body: "Publications Office of the EU",
-        reference: "OJ EU L 333, 14.12.2022, p. 80",
         description:
-          "Directive (EU) 2022/2555 published in the Official Journal.",
+          "Directive (EU) 2022/2555 published in the Official Journal of the European Union. Exact OJ-issue / page reference pending verification against EUR-Lex.",
         source_url: "https://eur-lex.europa.eu/eli/dir/2022/2555/oj",
       },
       {
@@ -369,6 +321,7 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
         reference: "Art. 45 NIS2",
         description:
           "Directive entered into force on the twentieth day following its publication in the Official Journal.",
+        source_url: "https://eur-lex.europa.eu/eli/dir/2022/2555/oj",
       },
       {
         date: "2024-10-17",
@@ -377,6 +330,7 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
         reference: "Art. 41 NIS2 (transposition deadline)",
         description:
           "Member-State transposition deadline. National transposition acts that miss this date trigger Commission infringement proceedings.",
+        source_url: "https://eur-lex.europa.eu/eli/dir/2022/2555/oj",
       },
     ],
     last_verified: "2026-04-13",

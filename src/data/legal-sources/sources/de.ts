@@ -481,106 +481,31 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
       "§§ 30-31 BSIG are the German equivalents of NIS2 Art. 21 (risk management) and Art. 23 (incident reporting).",
     ],
     legislative_history: [
-      // Original BSIG enactment ─────────────────────────────────────────
+      // ⚠️ Audit-honesty note (2026-04-28): the NIS2UmsuCG legislative
+      // path was stripped down to entries that can be hand-verified.
+      // Specific BR-Drs. / BT-Drs. / BGBl. references and committee
+      // protocol numbers were removed because they were drafted from
+      // plausibility, not from the parliamentary record. The actual
+      // status of the NIS2UmsuCG (as of April 2026) requires
+      // verification against `dipbt.bundestag.de` and `bgbl.de`.
+      //
+      // The original BSIG 2009 enactment is a stable historical fact
+      // and can be left as a placeholder pending exact-page lookup
+      // in the Bundesgesetzblatt archive.
       {
         date: "2009-08-14",
         type: "promulgation",
         body: "Bundesgesetzblatt",
-        reference: "BGBl. I 2009 S. 2821",
         description:
-          "BSI-Errichtungsgesetz im Bundesgesetzblatt verkündet — Schaffung des Bundesamtes für Sicherheit in der Informationstechnik als selbstständige Bundesoberbehörde.",
+          "BSI-Errichtungsgesetz verkündet — Schaffung des Bundesamtes für Sicherheit in der Informationstechnik. Exakte BGBl.-Fundstelle (Ausgabe + Seite) ist beim Bundesanzeiger-Verlag zu verifizieren.",
         source_url:
-          "https://www.bgbl.de/xaver/bgbl/start.xav?startbk=Bundesanzeiger_BGBl&jumpTo=bgbl109s2821.pdf",
+          "https://www.bgbl.de/xaver/bgbl/start.xav?startbk=Bundesanzeiger_BGBl",
       },
-      {
-        date: "2009-08-20",
-        type: "in_force",
-        body: "Bundesrepublik Deutschland",
-        reference: "BSIG 2009 Art. 4",
-        description: "BSI-Gesetz tritt in Kraft.",
-      },
-      // NIS2-Umsetzungsgesetz ──────────────────────────────────────────
-      {
-        date: "2024-07-22",
-        type: "proposal",
-        body: "Bundeskabinett",
-        reference: "BR-Drs. 393/24",
-        description:
-          "Kabinettbeschluss zum Entwurf eines Gesetzes zur Umsetzung der NIS-2-Richtlinie und zur Regelung wesentlicher Grundzüge des Informationssicherheitsmanagements in der Bundesverwaltung (NIS2UmsuCG).",
-        source_url:
-          "https://www.bundesrat.de/SharedDocs/drucksachen/2024/0301-0400/393-24.html",
-      },
-      {
-        date: "2024-09-27",
-        type: "first_reading",
-        body: "Bundesrat",
-        reference: "BR-Drs. 393/24 (B)",
-        description:
-          "Erster Durchgang im Bundesrat — Stellungnahme zum Entwurf, insbesondere zu Aufsichts- und Kostenfragen.",
-        source_url:
-          "https://www.bundesrat.de/SharedDocs/drucksachen/2024/0301-0400/393-24(B).pdf",
-      },
-      {
-        date: "2024-10-08",
-        type: "first_reading",
-        body: "Deutscher Bundestag · 1. Lesung",
-        reference: "BT-Drs. 20/13230",
-        description:
-          "Erste Lesung im Bundestag, Überweisung an den Innenausschuss (federführend) sowie an Wirtschafts-, Digital-, Verteidigungs- und Rechtsausschuss.",
-        source_url: "https://dserver.bundestag.de/btd/20/132/2013230.pdf",
-      },
-      {
-        date: "2025-01-29",
-        type: "committee_review",
-        body: "Innenausschuss · Sachverständigenanhörung",
-        reference: "Protokoll 20/132",
-        description:
-          "Öffentliche Anhörung mit Sachverständigen aus Industrie, BSI, Datenschutz und Wissenschaft. Diskussion über Schwellenwerte, Sektor-Zuschnitt und Sanktionen.",
-        source_url:
-          "https://www.bundestag.de/ausschuesse/a04_innen/anhoerungen",
-      },
-      {
-        date: "2025-02-13",
-        type: "adoption",
-        body: "Deutscher Bundestag · 2./3. Lesung",
-        reference: "BT-PlPr 20/198",
-        description:
-          "Verabschiedung in 2. und 3. Lesung; Schlussabstimmung mit Mehrheit der Koalitionsfraktionen.",
-        source_url: "https://www.bundestag.de/dokumente/textarchiv",
-      },
-      {
-        date: "2025-02-21",
-        type: "adoption",
-        body: "Bundesrat · 2. Durchgang",
-        reference: "BR-Drs. 75/25 (B)",
-        description:
-          "Zustimmung des Bundesrates — Gesetz nicht zustimmungsbedürftig, aber Bundesrat ruft den Vermittlungsausschuss nicht an.",
-      },
-      {
-        date: "2025-02-28",
-        type: "presidential_signature",
-        body: "Bundespräsidialamt",
-        description:
-          "Ausfertigung durch den Bundespräsidenten gemäß Art. 82 GG.",
-      },
-      {
-        date: "2025-03-01",
-        type: "promulgation",
-        body: "Bundesgesetzblatt",
-        reference: "BGBl. I 2025 Nr. 47",
-        description:
-          "NIS-2-Umsetzungs- und Cybersicherheitsstärkungsgesetz (NIS2UmsuCG) verkündet — fügt §§ 30-65 in das BSIG ein.",
-        source_url: "https://www.bgbl.de/",
-        affected_sections: ["§§ 30-65 BSIG"],
-      },
-      {
-        date: "2025-03-02",
-        type: "in_force",
-        body: "Bundesrepublik Deutschland",
-        reference: "Art. 24 NIS2UmsuCG",
-        description:
-          "NIS2-Pflichten treten in Kraft. Übergangsregelungen für Registrierung (§ 33) und Risikomanagement (§ 30) bis Ende 2025.",
-      },
+      // Further milestones for the NIS2UmsuCG — Kabinettsentwurf,
+      // Bundesrat 1. Durchgang, Bundestag 1.-3. Lesung, Bundesrat
+      // 2. Durchgang, Ausfertigung, Verkündung, Inkrafttreten —
+      // pending hand-verification against dipbt.bundestag.de
+      // (Drucksachen) and bgbl.de (Verkündungsblatt).
     ],
     last_verified: "2026-04-13",
   },
