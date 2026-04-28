@@ -1155,6 +1155,88 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
       },
     ],
     related_sources: ["EU-IDD", "DE-VVG", "INT-SPACE-INSURANCE-MARKET"],
+    legislative_history: [
+      {
+        date: "2007-07-10",
+        type: "proposal",
+        body: "European Commission · DG FISMA",
+        reference: "COM(2007) 361 final · CELEX:52007PC0361",
+        description:
+          "Commission proposal for the Solvency II Directive — risk-based prudential framework for insurance and reinsurance undertakings. Procedure: 2007/0143/COD.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:52007PC0361",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Proposal CELEX 52007PC0361 referenced from the Dir 2009/138/EC 'Proposal' field on EUR-Lex CELEX:32009L0138.",
+      },
+      {
+        date: "2009-11-25",
+        type: "adoption",
+        body: "European Parliament and Council of the European Union",
+        reference: "Directive 2009/138/EC · CELEX:32009L0138",
+        description:
+          "Solvency II Directive signed by EP + Council. Procedure 2007/0143/COD. Treaty basis: Treaty establishing the European Community (Arts. 47(2), 55, 251).",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32009L0138",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of signature 25/11/2009 confirmed against EUR-Lex CELEX:32009L0138.",
+      },
+      {
+        date: "2010-01-06",
+        type: "in_force",
+        body: "European Union",
+        reference: "Art. 311 — Date pub. + 20 days",
+        description:
+          "Solvency II Directive entered into force on the twentieth day following its publication in the Official Journal.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32009L0138",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-into-force date 06/01/2010 (per Art. 311) confirmed against EUR-Lex Date of effect field.",
+      },
+      {
+        date: "2015-03-31",
+        type: "transition_phase",
+        body: "EU Member States",
+        reference: "Art. 309(1) — Transposition deadline",
+        description:
+          "Member-State transposition deadline (as amended by Directive 2013/58/EU 'Quick Fix').",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32009L0138",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Transposition deadline 31/03/2015 (per Art. 309.1, amended by 32013L0058) confirmed against EUR-Lex Date of transposition field.",
+      },
+      {
+        date: "2016-01-01",
+        type: "in_force",
+        body: "European Union",
+        reference: "Art. 311 — Application",
+        description:
+          "Solvency II became applicable on 1 January 2016 (date from which insurance and reinsurance undertakings must comply).",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32009L0138",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Application date 01/01/2016 confirmed against EUR-Lex Date of effect field.",
+      },
+    ],
     last_verified: "2026-04-22",
   },
 
@@ -1227,6 +1309,72 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
       },
     ],
     related_sources: ["EU-NIS2-2022", "EU-CRA-2024"],
+    legislative_history: [
+      {
+        date: "2012-07-03",
+        type: "proposal",
+        body: "European Commission · DG FISMA",
+        reference: "COM(2012) 360 final · CELEX:52012PC0360",
+        description:
+          "Commission proposal for the Insurance Distribution Directive (IDD), recasting the original 2002 Insurance Mediation Directive. Procedure: 2012/0175/COD.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:52012PC0360",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Proposal CELEX 52012PC0360 referenced from the Dir (EU) 2016/97 'Proposal' field on EUR-Lex CELEX:32016L0097.",
+      },
+      {
+        date: "2016-01-20",
+        type: "adoption",
+        body: "European Parliament and Council of the European Union",
+        reference: "Directive (EU) 2016/97 · CELEX:32016L0097",
+        description:
+          "IDD signed by EP + Council. Procedure 2012/0175/COD. Legal basis: Arts. 53(1) and 62 TFEU.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32016L0097",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of signature 20/01/2016 confirmed against EUR-Lex CELEX:32016L0097.",
+      },
+      {
+        date: "2016-02-22",
+        type: "in_force",
+        body: "European Union",
+        reference: "Art. 45 — Date pub. + 20 days",
+        description:
+          "IDD entered into force on the twentieth day following its publication in the Official Journal.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32016L0097",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-into-force date 22/02/2016 (per Art. 45) confirmed against EUR-Lex Date of effect field.",
+      },
+      {
+        date: "2018-07-01",
+        type: "transition_phase",
+        body: "EU Member States",
+        reference: "Art. 42(1) — Transposition deadline",
+        description:
+          "Member-State transposition deadline as adjusted by Directive (EU) 2018/411. Application by 01/10/2018 at the latest.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32016L0097",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Transposition deadline 01/07/2018 + application 01/10/2018 (per Art. 42, amended by 32018L0411) confirmed against EUR-Lex Date of transposition field.",
+      },
+    ],
     last_verified: "2026-04-22",
   },
 
@@ -1269,6 +1417,72 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
       },
     ],
     related_sources: ["EU-SPACE-PROG-2021", "DE-DUALUSE-2021"],
+    legislative_history: [
+      {
+        date: "2010-10-08",
+        type: "proposal",
+        body: "European Commission",
+        reference: "COM(2010) 550 final · CELEX:52010PC0550",
+        description:
+          "Commission proposal for the Galileo PRS Decision. Procedure: 2010/0282/COD.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:52010PC0550",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Proposal CELEX 52010PC0550 referenced from the Decision 1104/2011/EU 'Proposal' field on EUR-Lex CELEX:32011D1104.",
+      },
+      {
+        date: "2011-10-25",
+        type: "adoption",
+        body: "European Parliament and Council of the European Union",
+        reference: "Decision No 1104/2011/EU · CELEX:32011D1104",
+        description:
+          "Galileo PRS Decision signed by EP + Council. Establishes rules for access to the Galileo Public Regulated Service. Procedure 2010/0282/COD.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32011D1104",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of document 25/10/2011 confirmed against EUR-Lex CELEX:32011D1104.",
+      },
+      {
+        date: "2011-11-05",
+        type: "in_force",
+        body: "European Union",
+        reference: "Art. 16(1) — Date pub. + 1 day",
+        description:
+          "Decision entered into force the day following its publication in the Official Journal.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32011D1104",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-into-force date 05/11/2011 (per Art. 16.1) confirmed against EUR-Lex Date of effect field.",
+      },
+      {
+        date: "2013-11-06",
+        type: "in_force",
+        body: "European Union",
+        reference: "Art. 16(2) — Partial application",
+        description:
+          "Partial application of the Decision (specific provisions become operative).",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32011D1104",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Partial application date 06/11/2013 (per Art. 16.2) confirmed against EUR-Lex Date of effect field.",
+      },
+    ],
     last_verified: "2026-04-22",
   },
 
@@ -1305,6 +1519,41 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
       },
     ],
     related_sources: ["EU-SPACE-PROG-2021"],
+    legislative_history: [
+      {
+        date: "2013-07-12",
+        type: "promulgation",
+        body: "European Commission",
+        reference:
+          "Commission Delegated Regulation (EU) No 1159/2013 · CELEX:32013R1159",
+        description:
+          "Commission Delegated Regulation supplementing Reg (EU) 911/2010 (GMES initial-operations regulation) with Copernicus data and information policy. Form: Delegated regulation under Art. 9(2) of Reg 911/2010.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32013R1159",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of document 12/07/2013, author European Commission, form Delegated regulation, legal basis 32010R0911 Art. 9(2) confirmed against EUR-Lex CELEX:32013R1159.",
+      },
+      {
+        date: "2013-12-09",
+        type: "in_force",
+        body: "European Union",
+        reference: "Art. 19 — Date pub. + 20 days",
+        description:
+          "Copernicus Data Policy Regulation entered into force on the twentieth day following publication in the Official Journal.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32013R1159",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-into-force date 09/12/2013 (per Art. 19) confirmed against EUR-Lex Date of effect field.",
+      },
+    ],
     last_verified: "2026-04-22",
   },
 
@@ -1345,6 +1594,56 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
       "EU-NIS2-2022",
       "EU-CRA-2024",
       "INT-ESA-CONV-1975",
+    ],
+    legislative_history: [
+      {
+        date: "2022-02-15",
+        type: "proposal",
+        body: "European Commission · DG DEFIS",
+        reference: "COM(2022) 57 final · CELEX:52022PC0057",
+        description:
+          "Commission proposal for the IRIS² Secure Connectivity Programme — EU-owned multi-orbit constellation. Procedure: 2022/0039/COD.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:52022PC0057",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Proposal CELEX 52022PC0057 referenced from the Reg (EU) 2023/588 'Proposal' field on EUR-Lex CELEX:32023R0588.",
+      },
+      {
+        date: "2023-03-15",
+        type: "adoption",
+        body: "European Parliament and Council of the European Union",
+        reference: "Regulation (EU) 2023/588 · CELEX:32023R0588",
+        description:
+          "IRIS² Secure Connectivity Programme Regulation signed by EP + Council. Procedure 2022/0039/COD. Legal basis: Art. 189(2) TFEU.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32023R0588",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of signature 15/03/2023 confirmed against EUR-Lex CELEX:32023R0588.",
+      },
+      {
+        date: "2023-03-20",
+        type: "in_force",
+        body: "European Union",
+        reference: "Art. 50 — Date pub. + 3 days",
+        description:
+          "IRIS² Regulation entered into force on the third day following its publication in the Official Journal — fast-track entry typical for budget-attached programmes.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32023R0588",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-into-force date 20/03/2023 (per Art. 50) confirmed against EUR-Lex Date of effect field.",
+      },
     ],
     last_verified: "2026-04-22",
   },
@@ -1410,6 +1709,73 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
       },
     ],
     related_sources: ["EU-SPACE-PROG-2021", "INT-ISO-24113", "INT-LTS-2019"],
+    legislative_history: [
+      {
+        date: "2013-02-28",
+        type: "proposal",
+        body: "European Commission",
+        reference: "COM(2013) 107 final · CELEX:52013PC0107",
+        description:
+          "Commission proposal for the SST Support Framework Decision. Procedure: 2013/0064/COD.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:52013PC0107",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Proposal CELEX 52013PC0107 referenced from the Decision 541/2014/EU 'Proposal' field on EUR-Lex CELEX:32014D0541.",
+      },
+      {
+        date: "2014-04-16",
+        type: "adoption",
+        body: "European Parliament and Council of the European Union",
+        reference: "Decision No 541/2014/EU · CELEX:32014D0541",
+        description:
+          "SST Support Framework Decision signed by EP + Council. Establishes a Union framework for Space Surveillance and Tracking. Procedure 2013/0064/COD.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32014D0541",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of document 16/04/2014 confirmed against EUR-Lex CELEX:32014D0541.",
+      },
+      {
+        date: "2014-06-16",
+        type: "in_force",
+        body: "European Union",
+        reference: "Art. 13 — Date pub. + 20 days",
+        description:
+          "SST Decision entered into force on the twentieth day following publication in the Official Journal.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32014D0541",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-into-force date 16/06/2014 (per Art. 13) confirmed against EUR-Lex Date of effect field.",
+      },
+      {
+        date: "2020-12-31",
+        type: "supersession",
+        body: "European Union",
+        reference: "Repealed by Reg (EU) 2021/696 · CELEX:32021R0696",
+        description:
+          "Decision 541/2014/EU repealed with effect from 31/12/2020 — SST framework absorbed into Title V of the Space Programme Regulation 2021/696.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32014D0541",
+        affected_sections: ["Decision 541/2014/EU (repealed)"],
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Repeal effective 31/12/2020 by Reg 2021/696 confirmed against EUR-Lex Date of end of validity field.",
+      },
+    ],
     last_verified: "2026-04-22",
   },
 
