@@ -1400,7 +1400,67 @@ const CYBERSECURITY_IT: LegalSource[] = [
       "D.L. 105/2019, converted into L. 133/2019. Space ground stations and mission control centres are within the perimeter.",
       "Predates NIS2 but remains in force as a national-security-specific layer above NIS2 baseline requirements.",
     ],
-    last_verified: "2026-04-09",
+    legislative_history: [
+      {
+        date: "2019-09-21",
+        type: "adoption",
+        body: "Repubblica Italiana · Governo (decreto-legge urgenza)",
+        reference: "Decreto-legge 21 settembre 2019, n. 105",
+        description:
+          "Adozione del decreto-legge urgenza 'Disposizioni urgenti in materia di perimetro di sicurezza nazionale cibernetica e di disciplina dei poteri speciali nei settori di rilevanza strategica' (Identificativo Normattiva: 19G00111).",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2019-09-21;105",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Data adozione 21.9.2019, identificativo 19G00111 e titolo verificati contro Normattiva primaria.",
+      },
+      {
+        date: "2019-09-21",
+        type: "promulgation",
+        body: "Istituto Poligrafico e Zecca dello Stato (Gazzetta Ufficiale)",
+        reference: "GU Serie Generale n. 222 del 21-09-2019",
+        description:
+          "Pubblicazione in Gazzetta Ufficiale Serie Generale n. 222 del 21 settembre 2019 (stesso giorno dell'adozione, prassi standard per i decreti-legge).",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2019-09-21;105",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note: "GU citation verificata contro Normattiva.",
+      },
+      {
+        date: "2019-09-22",
+        type: "in_force",
+        body: "Repubblica Italiana · Governo",
+        reference: "D.L. 105/2019 — Entrata in vigore",
+        description:
+          "Entrata in vigore il giorno successivo alla pubblicazione, prassi standard per i decreti-legge urgenza.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2019-09-21;105",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note: "Data EIF 22.9.2019 verificata contro Normattiva.",
+      },
+      {
+        date: "2019-11-18",
+        type: "adoption",
+        body: "Repubblica Italiana · Parlamento",
+        reference: "Legge 18 novembre 2019, n. 133 (legge di conversione)",
+        description:
+          "Conversione in legge del decreto-legge 105/2019 con modificazioni. Pubblicata in GU n. 272 del 20 novembre 2019.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2019-11-18;133",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Legge di conversione 133/2019, GU n. 272 del 20.11.2019 verificata contro Normattiva. La conversione consolida il decreto-legge come legge ordinaria con effetti retroattivi all'EIF originale (22.9.2019).",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
   {
     id: "IT-ACN-2021",
@@ -1435,7 +1495,67 @@ const CYBERSECURITY_IT: LegalSource[] = [
       "D.L. 82/2021, converted into L. 109/2021. Strengthened by L. 90/2024.",
       "ACN is Italy's equivalent of ANSSI (France) or BSI (Germany) for cybersecurity.",
     ],
-    last_verified: "2026-04-09",
+    legislative_history: [
+      {
+        date: "2021-06-14",
+        type: "adoption",
+        body: "Repubblica Italiana · Governo (decreto-legge urgenza)",
+        reference: "Decreto-legge 14 giugno 2021, n. 82",
+        description:
+          "Adozione del decreto-legge urgenza 'Disposizioni urgenti in materia di cybersicurezza, definizione dell'architettura nazionale di cybersicurezza e istituzione dell'Agenzia per la cybersicurezza nazionale' (Identificativo Normattiva: 21G00098).",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2021-06-14;82",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Data adozione 14.6.2021, identificativo 21G00098 e titolo verificati contro Normattiva primaria.",
+      },
+      {
+        date: "2021-06-14",
+        type: "promulgation",
+        body: "Istituto Poligrafico e Zecca dello Stato (Gazzetta Ufficiale)",
+        reference: "GU Serie Generale n. 140 del 14-06-2021",
+        description:
+          "Pubblicazione in Gazzetta Ufficiale Serie Generale n. 140 del 14 giugno 2021 (stesso giorno dell'adozione, prassi standard per i decreti-legge).",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2021-06-14;82",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note: "GU citation verificata contro Normattiva.",
+      },
+      {
+        date: "2021-06-15",
+        type: "in_force",
+        body: "Repubblica Italiana · Governo",
+        reference: "D.L. 82/2021 — Entrata in vigore",
+        description:
+          "Entrata in vigore il giorno successivo alla pubblicazione, prassi standard per i decreti-legge urgenza.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2021-06-14;82",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note: "Data EIF 15.6.2021 verificata contro Normattiva.",
+      },
+      {
+        date: "2021-08-04",
+        type: "adoption",
+        body: "Repubblica Italiana · Parlamento",
+        reference: "Legge 4 agosto 2021, n. 109 (legge di conversione)",
+        description:
+          "Conversione in legge del decreto-legge 82/2021 con modificazioni. Pubblicata in GU n. 185 del 4 agosto 2021.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2021-08-04;109",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Legge di conversione 109/2021, GU n. 185 del 4.8.2021 verificata contro Normattiva. La conversione consolida il decreto-legge come legge ordinaria con effetti retroattivi all'EIF originale (15.6.2021).",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
 ];
 
