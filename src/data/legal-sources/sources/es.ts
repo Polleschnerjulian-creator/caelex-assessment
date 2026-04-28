@@ -586,20 +586,33 @@ const AEE_LEGISLATION_ES: LegalSource[] = [
           "BOE issue (núm. 57, 8 marzo 2023) and exact page range (34514-34549) confirmed against the BOE record.",
       },
       {
-        date: "2023-04-20",
+        date: "2023-03-09",
         type: "in_force",
-        body: "Agencia Espacial Española (Sevilla)",
+        body: "Reino de España",
+        reference: "RD 158/2023, Disposición final segunda (Entrada en vigor)",
         description:
-          "Reunión constitutiva del Consejo Rector de la AEE en Sevilla — fecha en que la Agencia se considera operativa.",
+          "Entrada en vigor jurídica del Real Decreto 158/2023 el 9 de marzo de 2023 (día siguiente a la publicación en el BOE) según la Disposición final segunda: « El presente real decreto entrará en vigor el día siguiente al de su publicación ».",
         source_url: "https://www.boe.es/buscar/doc.php?id=BOE-A-2023-6082",
         verified: true,
-        verified_by: "claude (cross-checked against catalogue notes)",
+        verified_by: "claude (WebFetch, BOE)",
         verified_at: "2026-04-28",
         verification_note:
-          "Constitutive-meeting date 20/04/2023 documented in the catalogue notes (likely sourced from AEE official communications). Not confirmed against BOE itself but consistent with the RD's commencement provisions.",
+          "Texto de la Disposición final segunda y fecha 9.3.2023 verificados contra el BOE.",
+      },
+      {
+        date: "2023-04-20",
+        type: "transition_phase",
+        body: "Agencia Espacial Española (Sevilla)",
+        reference: "RD 158/2023, Disposición adicional primera",
+        description:
+          "Reunión constitutiva del Consejo Rector de la AEE en Sevilla — la Agencia se considera operativa según la Disp. adicional primera (que requiere la sesión inaugural del Consejo Rector dentro de los tres meses siguientes a la EIF).",
+        source_url: "https://www.boe.es/buscar/doc.php?id=BOE-A-2023-6082",
+        verified: false,
+        verification_note:
+          "Fecha de la reunión constitutiva (20.4.2023) documentada en las notas del catálogo (probablemente desde comunicaciones oficiales de la AEE); no verificada directamente contra el BOE — se mantiene como verified:false hasta verificación primaria.",
       },
     ],
-    last_verified: "2026-04-14",
+    last_verified: "2026-04-28",
   },
 ];
 
@@ -612,9 +625,12 @@ const DEFENCE_ES: LegalSource[] = [
     type: "federal_regulation",
     status: "in_force",
     title_en: "Royal Decree 524/2022 — Air and Space Force Rename",
-    title_local: "Real Decreto 524/2022, de 27 de junio",
+    title_local:
+      "Real Decreto 524/2022, de 27 de junio, por el que se dispone el cambio de denominación del Ejército del Aire por la de Ejército del Aire y del Espacio",
     date_enacted: "2022-06-27",
-    source_url: "https://www.boe.es",
+    date_in_force: "2022-06-30",
+    official_reference: "BOE-A-2022-10787 · BOE núm. 155 del 29-06-2022",
+    source_url: "https://www.boe.es/eli/es/rd/2022/06/27/524",
     issuing_body: "Consejo de Ministros",
     competent_authorities: ["ES-MOD"],
     relevance_level: "medium",
@@ -629,7 +645,51 @@ const DEFENCE_ES: LegalSource[] = [
       },
     ],
     related_sources: ["ES-DEF-264-2023"],
-    last_verified: "2026-04-14",
+    legislative_history: [
+      {
+        date: "2022-06-27",
+        type: "presidential_signature",
+        body: "Reino de España · Consejo de Ministros",
+        reference: "Real Decreto 524/2022 · BOE-A-2022-10787",
+        description:
+          "Aprobación del Real Decreto 524/2022 por el Consejo de Ministros — cambio de denominación del Ejército del Aire por la de Ejército del Aire y del Espacio.",
+        source_url: "https://www.boe.es/eli/es/rd/2022/06/27/524",
+        verified: true,
+        verified_by: "claude (WebFetch, BOE)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Fecha de aprobación 27.6.2022 y referencia BOE-A-2022-10787 verificadas contra el BOE.",
+      },
+      {
+        date: "2022-06-29",
+        type: "promulgation",
+        body: "Boletín Oficial del Estado",
+        reference: "BOE núm. 155 del 29-06-2022, pp. 91580-91587",
+        description:
+          "Publicación en el BOE núm. 155 del 29 de junio de 2022, páginas 91580 a 91587.",
+        source_url: "https://www.boe.es/eli/es/rd/2022/06/27/524",
+        verified: true,
+        verified_by: "claude (WebFetch, BOE)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "BOE núm. 155 del 29.6.2022 con paginación 91580-91587 verificado contra el BOE.",
+      },
+      {
+        date: "2022-06-30",
+        type: "in_force",
+        body: "Reino de España",
+        reference: "RD 524/2022 — entrada en vigor (día siguiente)",
+        description:
+          "Entrada en vigor el 30 de junio de 2022 (día siguiente a la publicación en el BOE).",
+        source_url: "https://www.boe.es/eli/es/rd/2022/06/27/524",
+        verified: true,
+        verified_by: "claude (WebFetch, BOE)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Fecha de entrada en vigor 30.6.2022 verificada contra el BOE.",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
   {
     id: "ES-DEF-264-2023",
@@ -661,7 +721,51 @@ const DEFENCE_ES: LegalSource[] = [
       "BOE-A-2023-7332.",
       "MESPA provides SSA and satellite protection to the Armed Forces.",
     ],
-    last_verified: "2026-04-14",
+    legislative_history: [
+      {
+        date: "2023-03-16",
+        type: "promulgation",
+        body: "Reino de España · Ministerio de Defensa",
+        reference: "Orden DEF/264/2023 · BOE-A-2023-7332",
+        description:
+          "Firma de la Orden DEF/264/2023 por el Ministerio de Defensa — desarrolla la organización básica del Ejército del Aire y del Espacio, creando entre otras estructuras el Mando del Espacio (MESPA).",
+        source_url: "https://www.boe.es/buscar/doc.php?id=BOE-A-2023-7332",
+        verified: true,
+        verified_by: "claude (WebFetch, BOE)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Fecha de la orden ministerial 16.3.2023 y referencia BOE-A-2023-7332 verificadas contra el BOE.",
+      },
+      {
+        date: "2023-03-21",
+        type: "promulgation",
+        body: "Boletín Oficial del Estado",
+        reference: "BOE núm. 68 del 21-03-2023, pp. 41857-41864",
+        description:
+          "Publicación en el BOE núm. 68 del 21 de marzo de 2023, páginas 41857 a 41864.",
+        source_url: "https://www.boe.es/buscar/doc.php?id=BOE-A-2023-7332",
+        verified: true,
+        verified_by: "claude (WebFetch, BOE)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "BOE núm. 68 del 21.3.2023 con paginación 41857-41864 verificado contra el BOE.",
+      },
+      {
+        date: "2023-03-22",
+        type: "in_force",
+        body: "Reino de España",
+        reference: "Orden DEF/264/2023 — entrada en vigor (día siguiente)",
+        description:
+          "Entrada en vigor el 22 de marzo de 2023 (día siguiente a la publicación en el BOE).",
+        source_url: "https://www.boe.es/buscar/doc.php?id=BOE-A-2023-7332",
+        verified: true,
+        verified_by: "claude (WebFetch, BOE)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Fecha de entrada en vigor 22.3.2023 verificada contra el BOE.",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
   {
     id: "ES-ESAN-2025",
