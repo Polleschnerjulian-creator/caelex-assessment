@@ -1,5 +1,5 @@
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * /pharos/oversights/new — initiate a new oversight relationship.
  * The form posts to /api/pharos/oversight (POST) and on success

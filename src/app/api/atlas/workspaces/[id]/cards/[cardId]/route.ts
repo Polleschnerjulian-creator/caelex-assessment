@@ -1,5 +1,5 @@
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  *   PATCH  /api/atlas/workspaces/[id]/cards/[cardId]   edit a card
  *   DELETE /api/atlas/workspaces/[id]/cards/[cardId]   remove a card

@@ -1,7 +1,7 @@
 // src/data/legal-sources/sources/ae.ts
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * United Arab Emirates — space-law sources and authorities.
  *

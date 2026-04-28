@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * OversightConsentCard — operator-side client component for accepting
  * (or disputing) an inbound Pharos oversight invitation.

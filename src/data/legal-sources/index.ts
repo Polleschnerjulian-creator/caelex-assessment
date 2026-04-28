@@ -1,7 +1,7 @@
 // src/data/legal-sources/index.ts
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * Legal Sources Aggregation and Lookup Functions.
  * Entry point for consuming legal source data across the application.

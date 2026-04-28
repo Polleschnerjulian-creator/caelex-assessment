@@ -1,7 +1,7 @@
 import "server-only";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * Atlas Tool Executor — runs the workspace-level tools defined in
  * atlas-tools.ts. Distinct from matter-tool-executor (which operates

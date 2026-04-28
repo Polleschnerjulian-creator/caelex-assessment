@@ -20,6 +20,7 @@ import {
   type KeyProvision,
 } from "@/data/legal-sources";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { getVerbatimAttribution } from "@/lib/atlas/verbatim-attribution";
 
 /**
  * /atlas/compare-articles — side-by-side article reader.
@@ -458,6 +459,41 @@ function ArticleColumn({
             >
               {verbatim}
             </blockquote>
+            {/* Per-jurisdiction attribution — same source-of-truth helper
+                as VerbatimProvisionText (lib/atlas/verbatim-attribution.ts).
+                Inline render here because the column-card has its own
+                visual chassis distinct from the source-detail-page
+                disclosure, so we mirror the wording but adapt the layout
+                to the narrow column context. */}
+            {(() => {
+              const attribution = getVerbatimAttribution(source.jurisdiction);
+              return (
+                <div
+                  className="mt-3 pt-2 border-t border-[var(--atlas-border-subtle)] text-[10px] leading-[1.55] text-[var(--atlas-text-muted)]"
+                  role="note"
+                >
+                  <p className="mb-0.5">
+                    <span className="font-semibold text-[var(--atlas-text-secondary)]">
+                      {isDe ? "Quelle: " : "Source: "}
+                    </span>
+                    {attribution.publisher}
+                    {source.last_verified && (
+                      <span className="text-[var(--atlas-text-faint)]">
+                        {" · "}
+                        {isDe
+                          ? `Caelex-Stand: ${source.last_verified}`
+                          : `Caelex retrieval: ${source.last_verified}`}
+                      </span>
+                    )}
+                  </p>
+                  <p className="italic">
+                    {isDe
+                      ? attribution.licenseClause.de
+                      : attribution.licenseClause.en}
+                  </p>
+                </div>
+              );
+            })()}
             {provision.summary && (
               <div className="mt-4 pt-3 border-t border-[var(--atlas-border-subtle)]">
                 <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--atlas-text-muted)] font-semibold mb-1">

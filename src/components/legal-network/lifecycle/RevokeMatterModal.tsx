@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * RevokeMatterModal — confirmation flow for the destructive revoke
  * action. Replaces the previous `prompt()`-based flow with a proper

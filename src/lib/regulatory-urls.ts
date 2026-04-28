@@ -1,5 +1,5 @@
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  *
  * Shared helper: resolves a regulatory citation string (e.g.

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * SystemCards — pinned at the top of the Pinboard, ABOVE the masonry
  * grid of MatterArtifact rows. Two cards:

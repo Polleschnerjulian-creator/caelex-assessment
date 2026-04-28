@@ -1,7 +1,7 @@
 import "server-only";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * Anthropic-Client-Bauer — single source of truth für die Wahl
  * zwischen direktem Anthropic API und Vercel AI Gateway (mit

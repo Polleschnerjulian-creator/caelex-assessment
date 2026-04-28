@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * LibrarySaveButton — Phase 5 Personal Research Library save action.
  *

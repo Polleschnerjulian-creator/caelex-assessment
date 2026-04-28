@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * InboxList — presents pending LegalMatterInvitations for the caller's
  * active org. Each row opens into an expanded detail view with three

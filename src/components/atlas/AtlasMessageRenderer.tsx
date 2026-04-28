@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * Renders an Astra answer with inline Atlas-ID deep-links. Each
  * `[INT-WASSENAAR]`, `[DE-VVG]`, etc. token becomes a clickable link

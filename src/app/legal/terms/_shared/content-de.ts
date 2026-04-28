@@ -176,6 +176,18 @@ export const TERMS_DE: LegalDocument = {
           type: "p",
           text: "(6) Der Anbieter übernimmt keine Haftung für Entscheidungen, die der Kunde oder Dritte auf Basis von Plattform-Ausgaben treffen, soweit gesetzlich zulässig. Die weitergehenden Haftungsregelungen in § 26 bleiben unberührt.",
         },
+        {
+          type: "p",
+          text: "(7) Internationale Klarstellung — Unauthorized Practice of Law (UPL). Wenn der Kunde seinen Sitz in einer Jurisdiktion außerhalb Deutschlands hat, gelten dortige Berufsrechts- und UPL-Regelungen kumulativ neben den deutschen. Caelex ist nicht zugelassen als 'solicitor', 'barrister', 'avocat', 'abogado', 'advocaat' oder funktional vergleichbare Stellung in anderen Jurisdiktionen, insbesondere nicht als Rechtsdienstleister im Sinne folgender Regime: (a) Vereinigtes Königreich — Legal Services Act 2007 ('reserved legal activities'); (b) Vereinigte Staaten — bundesstaatliche Bar-Zulassungsregeln einschließlich ABA Model Rule 5.5 (multijurisdictional practice); (c) Frankreich — Loi n° 71-1130 vom 31. Dezember 1971; (d) Italien — DPR 138/2012; (e) Spanien — Ley 34/2006 sobre el acceso a las profesiones de Abogado y Procurador; (f) Niederlande — Advocatenwet; (g) Österreich, Schweiz und alle weiteren Jurisdiktionen, in denen Rechtsberatung berufsrechtlich reglementiert ist. Die Plattform erbringt in keiner dieser Jurisdiktionen Rechtsdienstleistungen.",
+        },
+        {
+          type: "p",
+          text: "(8) Rollenbasierte Verantwortungsverteilung. Caelex bietet zwei Hauptzugänge mit unterschiedlichen Verantwortungsprofilen: (a) Caelex Comply (Betreiber-Workspace) — der Kunde ist für die Einholung qualifizierten Rates selbst verantwortlich (Abs. 4); (b) Atlas (Anwalts-Workspace) — die nutzende Anwältin / der nutzende Anwalt bleibt allein verantwortliche Berufsträgerin bzw. allein verantwortlicher Berufsträger gegenüber ihren bzw. seinen Mandanten und führt für jede KI-Ausgabe eine eigenständige fachliche Prüfung durch (siehe Anhang E sowie /legal/ai-disclosure § 5a). Atlas-Ausgaben sind anwaltliche Hilfsmittel; sie ersetzen weder die anwaltliche Sorgfaltspflicht noch die berufsrechtlichen Pflichten gegenüber dem Mandanten.",
+        },
+        {
+          type: "p",
+          text: "(9) Reichweite der Compliance-Tools. Module wie Authorization Workflow, NCA-Portal, Deadline-Tracker und ähnliche operative Hilfen unterstützen die interne Vorbereitung. Die finale Verantwortung für Vollständigkeit und Richtigkeit jeder Behörden-Einreichung liegt beim Kunden bzw. bei der/dem zugelassenen Berufsträger:in, die/der die Einreichung autorisiert. Caelex ist weder bevollmächtigt noch zugelassen, Einreichungen im Namen des Kunden zu unterzeichnen oder als Verfahrensbevollmächtigte:r aufzutreten.",
+        },
       ],
     },
     {
@@ -742,7 +754,7 @@ TERMS_DE.sections.push(
       },
       {
         type: "p",
-        text: "(3) Der Kunde stimmt zu, dass der Anbieter folgende Kategorien von Sub-Auftragsverarbeitern einsetzt: (a) Hosting und Edge Network (Vercel Inc., USA; Neon Inc., USA, mit EU-Datenhaltung); (b) Rate Limiting und Caching (Upstash Inc., USA); (c) Zahlungsabwicklung (Stripe Payments Europe Ltd., Irland); (d) E-Mail-Versand (Resend Inc., USA); (e) Fehler- und Performance-Monitoring (Functional Software Inc. dba Sentry, USA); (f) KI-Inferenz (Anthropic PBC, USA). Die jeweils aktuelle Liste wird unter caelex.eu/legal/sub-processors veröffentlicht.",
+        text: "(3) Der Kunde stimmt zu, dass der Anbieter folgende Kategorien von Sub-Auftragsverarbeitern einsetzt: (a) Hosting und Edge Network (Vercel Inc., USA; Neon Inc., USA, mit EU-Datenhaltung); (b) Rate Limiting und Caching (Upstash Inc., USA); (c) Zahlungsabwicklung (Stripe Payments Europe Ltd., Irland); (d) E-Mail-Versand (Resend Inc., USA); (e) Fehler- und Performance-Monitoring (Functional Software Inc. dba Sentry, USA); (f) KI-Inferenz für Astra, Atlas und Generate 2.0 (Anthropic PBC; bevorzugte Verarbeitung in der EU über AWS Bedrock Frankfurt/Irland via Vercel AI Gateway, Fallback in den USA abgesichert durch EU-US Data Privacy Framework + Standardvertragsklauseln + Zero-Data-Retention-Zusage); (g) KI-Embeddings für die Atlas-Library-Suche (OpenAI L.L.C., USA, als Sub-Sub-Auftragsverarbeiter unter Vercel — keine direkte Vertragsbeziehung zwischen Anbieter und OpenAI). Die jeweils aktuelle Liste mit Transfergrundlagen je Auftragsverarbeiter wird unter caelex.eu/legal/sub-processors veröffentlicht und in caelex.eu/legal/privacy § 5 sowie caelex.eu/legal/dpa § 5(5) referenziert.",
       },
       {
         type: "p",

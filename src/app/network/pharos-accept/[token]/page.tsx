@@ -1,5 +1,5 @@
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * /network/pharos-accept/[token] — operator consent landing for an
  * inbound Pharos oversight invitation.

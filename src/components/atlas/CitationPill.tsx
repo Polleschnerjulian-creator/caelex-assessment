@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * CitationPill — clickable Atlas-ID OR Case-ID with hover-preview
  * tooltip. Single component, two backing endpoints:
@@ -18,6 +18,7 @@
 import Link from "next/link";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { getVerbatimAttribution } from "@/lib/atlas/verbatim-attribution";
 
 type CitationKind = "source" | "case";
 
@@ -59,7 +60,7 @@ type Preview = SourcePreview | CasePreview;
 const previewCache = new Map<string, Preview | null>();
 
 export function CitationPill({ id, href, kind = "source" }: CitationPillProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [open, setOpen] = useState(false);
   const [preview, setPreview] = useState<Preview | null | undefined>(
     previewCache.get(`${kind}:${id}`),
@@ -178,6 +179,17 @@ export function CitationPill({ id, href, kind = "source" }: CitationPillProps) {
                     }}
                   >
                     “{preview.verbatim_snippet}”
+                  </span>
+                  {/* Per-jurisdiction publisher attribution — minimal in
+                      the tooltip context (tight on space). The full
+                      licence-clause is on the source-detail page; here
+                      we just name the publisher so the lawyer can tell
+                      this is genuinely-quoted text, not Caelex prose.
+                      Helper is the same single-source as the
+                      source-detail / compare-articles surfaces. */}
+                  <span className="mt-1.5 block text-[9.5px] text-white/40 leading-tight">
+                    {language === "de" ? "Quelle: " : "Source: "}
+                    {getVerbatimAttribution(preview.jurisdiction).publisher}
                   </span>
                 </>
               ) : (

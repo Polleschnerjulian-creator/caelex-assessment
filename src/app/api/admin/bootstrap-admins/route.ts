@@ -1,5 +1,5 @@
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * One-shot HTTP wrapper around prisma/fix-admin-access.ts. Exists so
  * the fix can be applied on prod without local DB credentials — hit

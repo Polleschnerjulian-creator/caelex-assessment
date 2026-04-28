@@ -15,7 +15,7 @@ import { ALL_SOURCES } from "@/data/legal-sources";
 import { openAIMode } from "@/components/atlas/AIModeLauncher";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * /atlas/drafting — Drafting Studio. Dedicated entry-point for the
  * three Astra drafting tools shipped in atlas-tool-executor.ts:

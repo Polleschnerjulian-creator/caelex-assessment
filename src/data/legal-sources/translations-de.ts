@@ -1,7 +1,7 @@
 // src/data/legal-sources/translations-de.ts
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * PROPRIETARY AND CONFIDENTIAL
  * German translations for ALL legal source content in ATLAS.
@@ -9,8 +9,47 @@
  * implications, scope descriptions, and authority mandates are shown
  * in German.
  *
- * Official references (BGBl., OJ L, etc.) are NEVER translated.
- * Article/section references (Art. VI, § 3, etc.) stay in original.
+ * ─── Translation provenance policy (audit close-out for finding #7) ───
+ *
+ * What this file IS:
+ *   - Caelex-curated German renderings of titles + provision summaries
+ *     + compliance implications. These are EDITORIAL summaries authored
+ *     by Caelex's legal team based on (a) the official source-language
+ *     text, and (b) where available, the official German-language
+ *     publication (e.g. EUR-Lex DE, Amtsblatt, Bundesgesetzblatt).
+ *   - Field-level fallback: if no entry exists for a source/provision,
+ *     the consumer renders the original-language source-of-truth field
+ *     instead. We never invent a translation by passing through
+ *     machine-translated output.
+ *
+ * What this file IS NOT:
+ *   - NOT a verbatim copy of the official German-language text. Where
+ *     verbatim quoting matters (statute language to be relied on in a
+ *     pleading), the lawyer must consult the source's `paragraph_text`
+ *     (rendered via VerbatimProvisionText with per-jurisdiction
+ *     publisher attribution — see lib/atlas/verbatim-attribution.ts).
+ *   - NOT the binding language version. For EU instruments, only the
+ *     version published in the Official Journal of the European Union
+ *     is authentic (verifiable via /atlas/sources/[id] → "Quelle:
+ *     EUR-Lex" and the deep-link in each VerbatimProvisionText entry).
+ *     For UN treaties, only the depositary text is binding. For
+ *     national laws, only the version published in the respective
+ *     state gazette is binding.
+ *
+ * Display contract:
+ *   - When a user is reading a non-DE-jurisdiction source (EU, INT, US,
+ *     UK, FR, etc.) with `language === "de"`, the source-detail page
+ *     renders a top-level banner via TranslationProvenanceNotice noting
+ *     that the German rendering is a Caelex-Übersetzung and pointing
+ *     at the official-language version. That banner closes the loop on
+ *     this docstring — the policy is enforced in UI, not just promised
+ *     in code comments.
+ *
+ * Reference invariants:
+ *   - Official references (BGBl., OJ L, ECLI, etc.) are NEVER
+ *     translated.
+ *   - Article/section references (Art. VI, § 3, etc.) stay in original
+ *     form.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */

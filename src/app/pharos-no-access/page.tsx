@@ -1,5 +1,5 @@
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * /pharos-no-access — fallback for authenticated users who don't
  * (yet) belong to an active AUTHORITY organisation. Reached via the

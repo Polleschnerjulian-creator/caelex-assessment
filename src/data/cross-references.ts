@@ -1,5 +1,5 @@
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * PROPRIETARY AND CONFIDENTIAL
  * Cross-regulation reference mappings between NIS2 Directive, EU Space Act,

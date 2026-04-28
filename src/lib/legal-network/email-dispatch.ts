@@ -1,7 +1,7 @@
 import "server-only";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * Best-effort email dispatchers for the bilateral handshake. Both
  * routes (/api/network/accept token-flow and /api/network/invitations

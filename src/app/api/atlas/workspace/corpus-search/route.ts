@@ -1,5 +1,5 @@
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * GET /api/atlas/workspace/corpus-search?q=<query>&kinds=eu,nis2,nat&limit=20
  *

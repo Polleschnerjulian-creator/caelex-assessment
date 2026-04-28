@@ -1,5 +1,5 @@
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * Atlas Case-Law index — barrel export with the same lookup ergonomics
  * as `legal-sources/index.ts`. Astra and the workspace UI consume both

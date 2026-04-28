@@ -1,5 +1,5 @@
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * Humaniser for matter-scoped tool inputs (chat in workspace).
  * Mirrors src/lib/atlas/tool-input-display.ts but for the three

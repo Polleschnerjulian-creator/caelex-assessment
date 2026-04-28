@@ -174,6 +174,18 @@ export const TERMS_EN: LegalDocument = {
           type: "p",
           text: "(6) The Provider does not assume liability for decisions taken by the customer or third parties on the basis of Platform outputs, to the extent permitted by law. Section 26 remains unaffected.",
         },
+        {
+          type: "p",
+          text: '(7) International clarification — Unauthorized Practice of Law (UPL). Where the customer is established in a jurisdiction other than Germany, that jurisdiction\'s bar/admission and UPL rules apply cumulatively alongside German rules. Caelex is not admitted as a "solicitor", "barrister", "avocat", "abogado", "advocaat" or in a functionally comparable status in other jurisdictions, in particular not as a regulated legal-services provider under the following regimes: (a) United Kingdom — Legal Services Act 2007 ("reserved legal activities"); (b) United States — state bar admission rules including ABA Model Rule 5.5 (multi-jurisdictional practice); (c) France — Loi n° 71-1130 of 31 December 1971; (d) Italy — DPR 138/2012; (e) Spain — Ley 34/2006 on access to the professions of Abogado and Procurador; (f) Netherlands — Advocatenwet; (g) Austria, Switzerland and any other jurisdiction in which the practice of law is regulated. The Platform does not provide legal services in any of these jurisdictions.',
+        },
+        {
+          type: "p",
+          text: "(8) Role-based responsibility allocation. Caelex offers two principal access modes with different responsibility profiles: (a) Caelex Comply (operator workspace) — the customer is itself responsible for obtaining qualified advice (paragraph 4); (b) Atlas (lawyer workspace) — the using lawyer remains the sole responsible regulated practitioner vis-à-vis their clients and performs an independent professional review of every AI output (see Annex E and /legal/ai-disclosure-en § 5a). Atlas outputs are lawyer's tools; they do not replace the lawyer's duty of care or the lawyer's professional obligations toward their client.",
+        },
+        {
+          type: "p",
+          text: "(9) Scope of compliance tools. Modules such as Authorization Workflow, NCA Portal, Deadline Tracker and similar operational aids support internal preparation. Final responsibility for completeness and accuracy of any regulatory filing rests with the customer or the admitted professional authorising the filing. Caelex is neither authorised nor admitted to sign filings on behalf of the customer or to appear as procedural representative.",
+        },
       ],
     },
     {
@@ -559,7 +571,7 @@ TERMS_EN.sections.push(
       },
       {
         type: "p",
-        text: "(3) The customer consents to the Provider's use of the following categories of sub-processors: (a) hosting and edge network (Vercel Inc., USA; Neon Inc., USA, with EU data residency); (b) rate limiting and caching (Upstash Inc., USA); (c) payments (Stripe Payments Europe Ltd., Ireland); (d) email delivery (Resend Inc., USA); (e) error and performance monitoring (Functional Software Inc. dba Sentry, USA); (f) AI inference (Anthropic PBC, USA). The current list is published at caelex.eu/legal/sub-processors.",
+        text: "(3) The customer consents to the Provider's use of the following categories of sub-processors: (a) hosting and edge network (Vercel Inc., USA; Neon Inc., USA, with EU data residency); (b) rate limiting and caching (Upstash Inc., USA); (c) payments (Stripe Payments Europe Ltd., Ireland); (d) email delivery (Resend Inc., USA); (e) error and performance monitoring (Functional Software Inc. dba Sentry, USA); (f) AI inference for Astra, Atlas and Generate 2.0 (Anthropic PBC; preferred processing in the EU via AWS Bedrock Frankfurt/Ireland routed through Vercel AI Gateway, fallback in the USA safeguarded by EU-US Data Privacy Framework + Standard Contractual Clauses + zero-data-retention commitment); (g) AI embeddings for the Atlas Library search (OpenAI L.L.C., USA, as sub-sub-processor under Vercel — no direct contractual relationship between Provider and OpenAI). The current list with the transfer mechanism per processor is published at caelex.eu/legal/sub-processors and referenced in caelex.eu/legal/privacy § 5 and caelex.eu/legal/dpa § 5(5).",
       },
       {
         type: "p",

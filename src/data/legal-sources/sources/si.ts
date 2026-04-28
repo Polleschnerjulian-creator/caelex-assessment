@@ -1,7 +1,7 @@
 // src/data/legal-sources/sources/si.ts
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * PROPRIETARY AND CONFIDENTIAL
  * Slovenia space law sources — complete legal framework for jurisdiction SI.

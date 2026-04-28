@@ -1,5 +1,5 @@
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * Atlas Citation Parser — shared utility for detecting legal citations
  * in plaintext (Atlas-streamed answers, lawyer-typed memos, etc.) and

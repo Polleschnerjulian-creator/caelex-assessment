@@ -1,5 +1,5 @@
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * German translations for the Atlas case-law dataset. Mirrors the
  * shape of `legal-sources/translations-de.ts` but for the LegalCase

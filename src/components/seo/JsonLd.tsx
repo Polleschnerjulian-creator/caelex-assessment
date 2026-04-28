@@ -36,8 +36,12 @@ export function OrganizationJsonLd() {
     "@type": ["Organization", "SoftwareCompany"],
     "@id": `${siteConfig.url}/#organization`,
     name: siteConfig.name,
-    legalName: "Caelex GmbH",
-    alternateName: ["Caelex GmbH", "caelex.eu"],
+    // Legal entity: sole proprietorship (Einzelunternehmen) registered
+    // to Julian Polleschner — see /legal/impressum. Using the formal
+    // legal-form-suffixed string here keeps schema.org legalName in
+    // sync with the Impressum and the DPA party-block.
+    legalName: "Caelex (Einzelunternehmen Julian Polleschner)",
+    alternateName: ["Caelex", "caelex.eu"],
     slogan: siteConfig.tagline,
     url: siteConfig.url,
     logo: {
@@ -162,7 +166,7 @@ export function WebSiteJsonLd() {
     "@type": "WebSite",
     "@id": `${siteConfig.url}/#website`,
     name: siteConfig.name,
-    alternateName: ["Caelex", "Caelex GmbH", "caelex.eu"],
+    alternateName: ["Caelex", "caelex.eu"],
     url: siteConfig.url,
     description: siteConfig.description,
     inLanguage: ["en", "de"],

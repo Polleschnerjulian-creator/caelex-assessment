@@ -127,7 +127,7 @@ describe("pdf", () => {
       expect(mockDoc.setProperties).toHaveBeenCalledWith(
         expect.objectContaining({
           title: "EU Space Act Compliance Report - Caelex",
-          author: "Caelex GmbH",
+          author: "Caelex (Julian Polleschner)",
           creator: "Caelex Compliance Platform (caelex.eu)",
         }),
       );

@@ -1,5 +1,5 @@
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * Type definitions for the Atlas case-law / enforcement-action knowledge
  * base. Sits alongside `legal-sources/` and shares the `ComplianceArea`

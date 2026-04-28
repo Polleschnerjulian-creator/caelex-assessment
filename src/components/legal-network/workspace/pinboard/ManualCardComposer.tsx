@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * ManualCardComposer — collapsible inline editor for adding free-form
  * TEXT cards to the pinboard. Distinct from Claude-generated artifacts:

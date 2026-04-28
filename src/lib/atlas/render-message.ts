@@ -1,5 +1,5 @@
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * Atlas message renderer — splits a streamed Astra answer into typed
  * tokens so the chat UI can render Atlas-IDs as clickable deep-links

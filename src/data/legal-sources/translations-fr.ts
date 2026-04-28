@@ -1,7 +1,7 @@
 // src/data/legal-sources/translations-fr.ts
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * French translations for ATLAS legal-source content. Mirrors the
  * shape of translations-de.ts so the registry pattern in index.ts

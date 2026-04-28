@@ -1,7 +1,7 @@
 // src/data/legal-sources/sources/se.ts
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * PROPRIETARY AND CONFIDENTIAL
  * Sweden space law sources — complete legal framework for jurisdiction SE.

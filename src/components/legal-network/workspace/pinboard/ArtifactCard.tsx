@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * ArtifactCard — renders a pinboard card for any of the four
  * `ArtifactKind` values Claude produces via tool calls:

@@ -23,7 +23,7 @@ import {
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * /atlas/cases — case-law index. Browseable surface for the 28-case
  * caselaw database that was previously reachable only via source-detail
@@ -234,6 +234,45 @@ export default function CasesIndexPage() {
             — they are not verbatim court text. For citation purposes use only
             the official decision, linked from every detail page (&quot;Official
             record&quot;).
+          </>
+        )}
+      </div>
+
+      {/* GDPR Art. 6(1)(f) balancing disclosure for caselaw party names.
+          Internal LIA at docs/legal-templates/caselaw-lia.md. Audit
+          close-out for finding #16 (LIA review note). */}
+      <div
+        className="rounded-md border border-slate-200 dark:border-slate-700/50 bg-slate-50/70 dark:bg-slate-900/30 px-3 py-2 text-[11px] leading-relaxed text-slate-700 dark:text-slate-300"
+        role="note"
+      >
+        {isDe ? (
+          <>
+            Personenbezogene Parteienangaben werden auf Grundlage von Art. 6
+            Abs. 1 lit. f DSGVO verarbeitet (berechtigtes Interesse an
+            regulatorischer Transparenz). Quellenmaterial entstammt amtlichen
+            Veröffentlichungskanälen. Betroffenenrechte (Auskunft, Löschung,
+            Widerspruch) können unter{" "}
+            <a
+              href="mailto:privacy@caelex.eu"
+              className="underline hover:text-emerald-700 dark:hover:text-emerald-400"
+            >
+              privacy@caelex.eu
+            </a>{" "}
+            geltend gemacht werden.
+          </>
+        ) : (
+          <>
+            Personal-data fields (party names) are processed under Art. 6(1)(f)
+            GDPR (legitimate interest in regulatory transparency). Source
+            material is drawn from official publication channels. Data-subject
+            rights (access, erasure, objection) may be exercised via{" "}
+            <a
+              href="mailto:privacy@caelex.eu"
+              className="underline hover:text-emerald-700 dark:hover:text-emerald-400"
+            >
+              privacy@caelex.eu
+            </a>
+            .
           </>
         )}
       </div>

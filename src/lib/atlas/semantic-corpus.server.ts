@@ -1,7 +1,7 @@
 import "server-only";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * Server-side semantic-search helper that loads the prebuilt Atlas
  * embeddings catalogue (src/data/atlas/embeddings.json) into memory,

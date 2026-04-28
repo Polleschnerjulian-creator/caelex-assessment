@@ -1,5 +1,5 @@
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * /pharos/operators/[oversightId] — operator detail with full
  * oversight metadata, MDF/VDF breakdown, and a live audit-log feed.

@@ -1,5 +1,5 @@
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * /pharos route-group layout. Auth-gated to AUTHORITY-type orgs only.
  * A user belonging to multiple orgs uses the first ACTIVE membership;

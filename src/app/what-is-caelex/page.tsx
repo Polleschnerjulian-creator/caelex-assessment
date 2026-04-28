@@ -66,7 +66,7 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Is Caelex the same as Atlas?",
-    a: "No. Atlas is a separate Caelex product — a searchable space-law database built for law firms, with deep-linked primary-source references and firm-wide shared annotations. Comply is the compliance workspace for space operators. Both products are made by the same company (Caelex GmbH, Berlin) and share security and AI infrastructure but serve different user bases.",
+    a: "No. Atlas is a separate Caelex product — a searchable space-law database built for law firms, with deep-linked primary-source references and firm-wide shared annotations. Comply is the compliance workspace for space operators. Both products are made by the same company (Caelex, Berlin — sole proprietorship of Julian Polleschner; see /legal/impressum) and share security and AI infrastructure but serve different user bases.",
   },
   {
     q: "How does Caelex compare to a compliance consultant?",
@@ -125,8 +125,9 @@ export default function WhatIsCaelexPage() {
               It is a Berlin-based compliance platform that satellite operators,
               launch providers, ground-segment operators, and space-sector law
               firms use to navigate the EU Space Act, the NIS2 Directive, and
-              national space laws across 10+ European jurisdictions. Caelex GmbH
-              was founded in 2025.
+              national space laws across 10+ European jurisdictions. Caelex was
+              founded in 2025 and is operated as a sole proprietorship of Julian
+              Polleschner (Berlin) — see /legal/impressum.
             </p>
           </header>
 

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * useAtlasSemanticSearch — client hook wrapping the `/api/atlas/
  * semantic-search` endpoint. Debounces the query, cancels in-flight

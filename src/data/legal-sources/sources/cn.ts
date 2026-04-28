@@ -1,7 +1,7 @@
 // src/data/legal-sources/sources/cn.ts
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * China — space-law sources and authorities.
  *

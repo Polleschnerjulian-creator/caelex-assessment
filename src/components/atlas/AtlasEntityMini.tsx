@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * AtlasEntityMini — visually identical to the full AI-Mode
  * AtlasEntity, just rendered into a container-sized canvas instead

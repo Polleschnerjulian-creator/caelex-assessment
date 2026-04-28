@@ -21,7 +21,7 @@ import { getLegalSourceById } from "@/data/legal-sources";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * Atlas case-law detail page. Client component so it can consume
  * useLanguage(); data is static so the only round-trip is the initial

@@ -1,5 +1,5 @@
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * GET  /api/pharos/oversight  — list authority's oversight relationships
  * POST /api/pharos/oversight  — initiate a new oversight (authority-side)

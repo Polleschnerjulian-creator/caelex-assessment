@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * LifecycleActionsPanel — bottom-of-MatterDetail "danger zone" for
  * lifecycle actions. Mirrors the Stripe/GitHub pattern: a quiet

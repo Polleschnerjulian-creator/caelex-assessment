@@ -23,6 +23,7 @@ import { WatchButton } from "@/components/atlas/WatchButton";
 import { CiteThisButton } from "@/components/atlas/CiteThisButton";
 import { QuoteProvisionButton } from "@/components/atlas/QuoteProvisionButton";
 import { VerbatimProvisionText } from "@/components/atlas/VerbatimProvisionText";
+import { TranslationProvenanceNotice } from "@/components/atlas/TranslationProvenanceNotice";
 import {
   getLegalSourceById,
   getAuthorityById,
@@ -287,6 +288,19 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
         <span>{jurisdictionName}</span>
       </nav>
 
+      {/* Translation-provenance banner — only renders when the user is
+          reading in a language that doesn't match the source's
+          authentic-language jurisdiction (e.g. DE viewing an EU
+          directive). Tells the lawyer up-front that title + provision
+          summaries below are Caelex editorial renderings, not the
+          binding language version. Audit close-out for finding #7. */}
+      <div className="mt-4 max-w-4xl">
+        <TranslationProvenanceNotice
+          jurisdiction={source.jurisdiction}
+          language={language}
+        />
+      </div>
+
       {/* ─── Title block ─── */}
       <header className="mt-4 max-w-4xl">
         <h1 className="text-[24px] lg:text-[28px] font-semibold text-[var(--atlas-text-primary)] tracking-tight leading-[1.25]">
@@ -546,6 +560,8 @@ export default function SourceDetailPage({ params }: SourceDetailPageProps) {
                     paragraphText={provision.paragraph_text}
                     paragraphUrl={provision.paragraph_url}
                     fallbackUrl={source.source_url}
+                    jurisdiction={source.jurisdiction}
+                    lastVerified={source.last_verified}
                     language={language}
                   />
                 </div>

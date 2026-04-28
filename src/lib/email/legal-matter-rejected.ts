@@ -1,7 +1,7 @@
 import "server-only";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * Rejection email — sent to the OTHER side when a matter is rejected
  * (either the original invite or a counter-amendment). Recipient is
@@ -134,7 +134,7 @@ export function renderLegalMatterRejectedEmail(
           Falls der Button nicht funktioniert: <span style="word-break:break-all;">${urlText}</span>
         </td></tr>
         <tr><td style="padding:24px 0 0;font-size:10px;color:#999;letter-spacing:0.04em;">
-          Caelex GmbH · hi@caelex.eu · <a href="https://www.caelex.eu" style="color:#999;text-decoration:underline;">caelex.eu</a>
+          Caelex (Julian Polleschner, Berlin) · hi@caelex.eu · <a href="https://www.caelex.eu" style="color:#999;text-decoration:underline;">caelex.eu</a>
         </td></tr>
       </table>
     </td></tr>

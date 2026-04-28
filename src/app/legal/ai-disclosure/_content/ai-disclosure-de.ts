@@ -40,14 +40,15 @@ export const AI_DISCLOSURE_DE: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Als primären Inferenz-Anbieter setzen wir Anthropic PBC (USA) mit dem Modell Claude Sonnet 4.6 (bzw. Nachfolgeversionen) ein. Details:",
+          text: "Als primären Inferenz-Anbieter für Konversations- und Generierungs-Features setzen wir Anthropic PBC mit dem Modell Claude Sonnet 4.6 (bzw. Nachfolgeversionen) ein. Für Embeddings (Atlas-Library-Suche, semantische Recall-Funktionen) setzen wir OpenAI text-embedding-3-small @ 512 Dimensionen über das Vercel AI Gateway als Sub-Sub-Auftragsverarbeiter unter Vercel ein. Details:",
         },
         {
           type: "ul",
           items: [
-            "Anbieter: Anthropic PBC — Sub-Auftragsverarbeiter (siehe /legal/sub-processors)",
-            "Zero-Data-Retention: Eingaben werden nach Beantwortung nicht gespeichert und nicht zum Modelltraining verwendet",
-            "Transfergrundlage: EU-Standardvertragsklauseln Modul 3, USA",
+            "Anbieter (Inferenz): Anthropic PBC — Sub-Auftragsverarbeiter (siehe /legal/sub-processors)",
+            "Anbieter (Embeddings): OpenAI L.L.C. — Sub-Sub-Auftragsverarbeiter unter Vercel; keine direkte Vertragsbeziehung zwischen Caelex und OpenAI",
+            "Routing für Anthropic Claude: bevorzugte Verarbeitung in der EU (AWS Bedrock Frankfurt/Irland via Vercel AI Gateway — kein Drittlandtransfer); Fallback in den USA (direkte Anthropic-API) abgesichert durch EU-US Data Privacy Framework + EU-Standardvertragsklauseln Modul 3 + Zero-Data-Retention-Zusage",
+            "Zero-Data-Retention bei beiden Anbietern: Eingaben werden nach Beantwortung bzw. Embedding-Berechnung nicht gespeichert und nicht zum Modelltraining verwendet",
             "Kategorie im Sinne der KI-VO (Verordnung (EU) 2024/1689): Allzweck-KI-Modell (GPAI) — Caelex ist Betreiber (deployer)",
           ],
         },
@@ -176,6 +177,10 @@ export const AI_DISCLOSURE_DE: LegalDocument = {
           type: "p",
           text: "(6) Wir dokumentieren diese Bewertung intern und stellen sie auf Anfrage Aufsichtsbehörden bereit. Bei wesentlichen funktionalen Erweiterungen wird die Bewertung neu durchgeführt.",
         },
+        {
+          type: "p",
+          text: "(7) Auslegungsvorbehalt. Die Auslegung in (1)-(2) ist eine vertretbare, aber nicht abschließend gerichtlich oder aufsichtsbehördlich bestätigte Position. Vor (a) der ersten zahlenden Pilotnutzung in einem regulierten Sektor (Finanzdienstleistungen, Gesundheitswesen, Anhang-III-Sektoren der KI-VO), (b) dem Atlas-General-Availability-Start oder (c) jeder produktseitigen Änderung mit autonomer Rechtswirkung wird die Bewertung durch externen, auf die KI-VO spezialisierten Rechtsbeistand geprüft und das Ergebnis intern attestiert. Caelex stellt Aufsichtsbehörden auf Anfrage Auskunft über den jeweiligen Stand dieses Reviews zur Verfügung.",
+        },
       ],
     },
     {
@@ -214,6 +219,7 @@ export const AI_DISCLOSURE_DE: LegalDocument = {
     "mailto:legal@caelex.eu",
   ],
   links: [
+    { label: "English Version →", href: "/legal/ai-disclosure-en" },
     { label: "AGB § 7 & Anhang E", href: "/legal/terms#s7" },
     { label: "Datenschutzerklärung", href: "/legal/privacy" },
     { label: "Sub-Auftragsverarbeiter", href: "/legal/sub-processors" },

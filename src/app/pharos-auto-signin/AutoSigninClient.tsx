@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * AutoSigninClient — fires NextAuth signIn() once on mount with the
  * preview-mode demo credentials, then NextAuth redirects to callbackUrl.

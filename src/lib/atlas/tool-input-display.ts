@@ -1,5 +1,5 @@
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * Humanises Atlas tool inputs into short, lawyer-readable strings
  * for the tool-chip display in AIMode. We deliberately keep this

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * MatterDetail — shared detail view for a LegalMatter. Shows scope
  * breakdown, timeline, status controls (revoke + suspend), and the

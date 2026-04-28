@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * MatterStatusBanner — explains why chat is disabled when a matter
  * is not in ACTIVE state, and points the user to the next action.

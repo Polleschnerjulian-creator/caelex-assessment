@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * ConsentCard — client component that loads the invitation preview
  * and lets the user accept, amend, or reject. Visually equal buttons

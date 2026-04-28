@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * MatterTable — shared list view for LegalMatter records, used from
  * both the Atlas law-firm side and the Caelex operator side. The

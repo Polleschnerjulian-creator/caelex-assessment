@@ -1,7 +1,7 @@
 // src/data/legal-sources/sources/ro.ts
 
 /**
- * Copyright 2026 Caelex GmbH. All rights reserved.
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
  * PROPRIETARY AND CONFIDENTIAL
  * Romania space law sources — complete legal framework for jurisdiction RO.
