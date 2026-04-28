@@ -399,7 +399,75 @@ const PRIMARY_LEGISLATION_NO: LegalSource[] = [
       "Launch authority delegated to CAA on 31 May 2024.",
       "CAA first launch permit: Isar Aerospace, March 2025.",
     ],
-    last_verified: "2026-04-14",
+    legislative_history: [
+      {
+        date: "1969-06-13",
+        type: "adoption",
+        body: "Stortinget",
+        reference: "LOV-1969-06-13-38",
+        description:
+          "Vedtakelse av 'Lov om oppskyting av gjenstander fra norsk territorium m.m. ut i verdensrommet' av Stortinget — verdens første nasjonale romlov.",
+        source_url: "https://lovdata.no/dokument/NL/lov/1969-06-13-38",
+        verified: true,
+        verified_by: "claude (WebFetch, lovdata.no)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Vedtaksdato 13.6.1969 og lovreferanse LOV-1969-06-13-38 verifisert mot Lovdata primærkilde.",
+      },
+      {
+        date: "1969-06-13",
+        type: "in_force",
+        body: "Stortinget",
+        reference: "Lov 13. juni 1969 nr. 38, § 3",
+        description:
+          "§ 3 ikrafttredelse: 'Denne lov trer i kraft straks' — loven trådte i kraft umiddelbart ved vedtakelse.",
+        source_url: "https://lovdata.no/dokument/NL/lov/1969-06-13-38",
+        verified: true,
+        verified_by: "claude (WebFetch, lovdata.no)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "§ 3 ikrafttredelses-klausul ('trer i kraft straks') verifisert mot Lovdata-tekst.",
+      },
+      {
+        date: "2024-05-31",
+        type: "amendment",
+        body: "Nærings- og fiskeridepartementet",
+        reference: "Delegering til Luftfartstilsynet (CAA)",
+        description:
+          "Delegering av oppskytingsmyndighet etter Lov 13. juni 1969 nr. 38 fra Nærings- og fiskeridepartementet til Luftfartstilsynet (CAA) den 31. mai 2024 — første formelle delegering siden lovens vedtakelse.",
+        source_url: "https://lovdata.no/dokument/NL/lov/1969-06-13-38",
+        verified: false,
+        verification_note:
+          "Delegerings-dato 31.5.2024 katalogisert; primær delegerings-forskrift på Lovdata ennå ikke direkte hentet — milestone bevart med verified:false til delegerings-forskrift er identifisert.",
+      },
+      {
+        date: "2025-03-30",
+        type: "amendment",
+        body: "Luftfartstilsynet (CAA)",
+        reference: "Første utstedte oppskytingstillatelse — Isar Aerospace",
+        description:
+          "Luftfartstilsynet utsteder den første oppskytingstillatelsen under Lov 1969 nr. 38 til Isar Aerospace for Spectrum-rakett fra Andøya Spaceport (mars 2025) — milepæl uten formell endring av loven.",
+        source_url: "https://www.luftfartstilsynet.no",
+        verified: false,
+        verification_note:
+          "Hendelsen er katalogisert basert på offentlige meldinger; primær lisens-utgivelse ennå ikke direkte verifisert mot Luftfartstilsynet primærkilde.",
+      },
+      {
+        date: "2026-07-01",
+        type: "repeal",
+        body: "Stortinget",
+        reference: "LOV-2025-12-22-128 § 27 (ikrafttredelses-bestemmelse)",
+        description:
+          "Loven oppheves 1. juli 2026 ved ikrafttredelse av den nye 'Lov om aktiviteter i verdensrommet (romloven)' — vedtatt av Stortinget 22. desember 2025 (LOV-2025-12-22-128).",
+        source_url: "https://lovdata.no/dokument/NL/lov/2025-12-22-128",
+        verified: true,
+        verified_by: "claude (WebFetch, lovdata.no)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Opphevelsesdato 1.7.2026 og oppheven-lov-referanse LOV-2025-12-22-128 verifisert mot Lovdata-eintrag for både den gamle og nye loven.",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
 ];
 
@@ -457,16 +525,126 @@ const DRAFT_LEGISLATION_NO: LegalSource[] = [
       },
     ],
     scope_description:
-      "8 chapters, 29 provisions — replacing the world's shortest space law (3 sections) with a comprehensive modern framework. Passed first reading, second reading late 2025/early 2026. Adoption expected 2026. Notable omissions: no space mining provisions (despite Artemis Accords), no space tourism, no Arctic-specific provisions beyond geographic scope.",
+      "8 chapters, 29 provisions — replacing the world's shortest space law (3 sections) with a comprehensive modern framework. Adopted by the Storting on 4 December 2025 (first reading) and 11 December 2025 (second reading); sanctioned 22 December 2025 as LOV-2025-12-22-128. Entry into force 1 July 2026. Notable omissions: no space mining provisions (despite Artemis Accords), no space tourism, no Arctic-specific provisions beyond geographic scope.",
     related_sources: ["NO-SPACE-ACT-1969", "NO-OST-1967", "NO-LIABILITY-1995"],
     notes: [
       "Prop. 155 L (2024-2025). Introduced July 2025.",
       "Space Law Committee (Romlovutvalget) appointed 15 January 2019, report 'Rett i bane' submitted 6 February 2020.",
       "Storting Trade and Industry Committee comments: Innst. 32 L (2025-2026), November 2025.",
-      "Adoption expected 2026.",
+      "Adopted by Storting in December 2025; sanctioned 22 December 2025 (LOV-2025-12-22-128). EIF 1 July 2026.",
       "29 provisions replacing 3 — most dramatic expansion of any national space law.",
     ],
-    last_verified: "2026-04-14",
+    legislative_history: [
+      {
+        date: "2019-01-15",
+        type: "consultation",
+        body: "Nærings- og fiskeridepartementet · Romlovutvalget",
+        reference: "Romlovutvalget — kgl.res. 15. januar 2019",
+        description:
+          "Oppnevning av Romlovutvalget (Norwegian Space Law Committee) ved kgl.res. 15. januar 2019 — utvalget skulle utrede og foreslå en ny norsk romlov.",
+        source_url: "https://www.regjeringen.no",
+        verified: false,
+        verification_note:
+          "Dato 15.1.2019 katalogisert; primærkilde for kgl.res. ennå ikke direkte hentet.",
+      },
+      {
+        date: "2020-02-06",
+        type: "consultation",
+        body: "Romlovutvalget",
+        reference: "NOU 2020:1 'Rett i bane'",
+        description:
+          "Romlovutvalget leverer NOU 2020:1 'Rett i bane' med forslag til ny romlov; rapport overlevert nærings- og fiskeriministeren 6. februar 2020.",
+        source_url: "https://www.regjeringen.no",
+        verified: false,
+        verification_note:
+          "Dato 6.2.2020 og NOU-referanse katalogisert; NOU-publikasjon ennå ikke direkte hentet.",
+      },
+      {
+        date: "2025-07-01",
+        type: "proposal",
+        body: "Regjeringen · Nærings- og fiskeridepartementet",
+        reference: "Prop. 155 L (2024–2025)",
+        description:
+          "Stortinget mottar Prop. 155 L (2024–2025) 'Lov om romvirksomhet (romloven)' fra Regjeringen — formell lovproposisjon basert på NOU 2020:1.",
+        source_url: "https://lovdata.no/dokument/NL/lov/2025-12-22-128",
+        verified: true,
+        verified_by: "claude (WebFetch, lovdata.no)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Prop. 155 L (2024–2025) referanse verifisert mot Lovdata-eintrag for LOV-2025-12-22-128.",
+      },
+      {
+        date: "2025-11-30",
+        type: "committee_review",
+        body: "Stortinget · Næringskomiteen",
+        reference: "Innst. 32 L (2025–2026)",
+        description:
+          "Næringskomiteen avgir Innst. 32 L (2025–2026) — komitébehandling av Prop. 155 L og innstilling til Stortinget.",
+        source_url: "https://lovdata.no/dokument/NL/lov/2025-12-22-128",
+        verified: true,
+        verified_by: "claude (WebFetch, lovdata.no)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Innst. 32 L (2025–2026) referanse verifisert mot Lovdata-eintrag; eksakt avgivelsesdato (november 2025) er nominell og ikke direkte hentet fra Stortingets sak-side.",
+      },
+      {
+        date: "2025-12-04",
+        type: "first_reading",
+        body: "Stortinget",
+        reference: "Lovvedtak 2 (2025–2026) — første gangs behandling",
+        description:
+          "Stortinget vedtar lovforslaget i første gangs behandling — 4. desember 2025.",
+        source_url: "https://lovdata.no/dokument/NL/lov/2025-12-22-128",
+        verified: true,
+        verified_by: "claude (WebFetch, lovdata.no)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Første-behandlings-dato 4.12.2025 verifisert mot Lovdata-eintrag for LOV-2025-12-22-128.",
+      },
+      {
+        date: "2025-12-11",
+        type: "second_reading",
+        body: "Stortinget",
+        reference: "Lovvedtak 2 (2025–2026) — annen gangs behandling",
+        description:
+          "Stortinget vedtar lovforslaget endelig i annen gangs behandling — 11. desember 2025.",
+        source_url: "https://lovdata.no/dokument/NL/lov/2025-12-22-128",
+        verified: true,
+        verified_by: "claude (WebFetch, lovdata.no)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Annen-behandlings-dato 11.12.2025 verifisert mot Lovdata-eintrag for LOV-2025-12-22-128.",
+      },
+      {
+        date: "2025-12-22",
+        type: "presidential_signature",
+        body: "Hans Majestet Kongen i statsråd",
+        reference: "LOV-2025-12-22-128",
+        description:
+          "Kongen i statsråd sanksjonerer 'Lov om aktiviteter i verdensrommet (romloven)' — LOV-2025-12-22-128 — den 22. desember 2025.",
+        source_url: "https://lovdata.no/dokument/NL/lov/2025-12-22-128",
+        verified: true,
+        verified_by: "claude (WebFetch, lovdata.no)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Sanksjonsdato 22.12.2025 og lovreferanse LOV-2025-12-22-128 verifisert mot Lovdata primærkilde.",
+      },
+      {
+        date: "2026-07-01",
+        type: "in_force",
+        body: "Kongen i statsråd",
+        reference: "LOV-2025-12-22-128 — ikrafttredelses-bestemmelse",
+        description:
+          "Loven trer i kraft 1. juli 2026 og opphever samtidig Lov 13. juni 1969 nr. 38 (verdens første romlov) samt §§ 11-17 i Ekomloven 2024.",
+        source_url: "https://lovdata.no/dokument/NL/lov/2025-12-22-128",
+        verified: true,
+        verified_by: "claude (WebFetch, lovdata.no)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Ikrafttredelsesdato 1.7.2026 verifisert mot Lovdata primærkilde for LOV-2025-12-22-128.",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
 ];
 
