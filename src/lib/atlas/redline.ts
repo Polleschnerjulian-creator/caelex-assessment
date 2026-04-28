@@ -25,18 +25,25 @@ export interface DiffSegment {
  * so nav/script noise doesn't pollute the redline.
  */
 export function cleanForRedline(raw: string): string {
-  return raw
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/<style[\s\S]*?<\/style>/gi, "")
-    .replace(/<!--[\s\S]*?-->/g, "")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/\s+/g, " ")
-    .trim();
+  return (
+    raw
+      .replace(/<script[\s\S]*?<\/script>/gi, "")
+      .replace(/<style[\s\S]*?<\/style>/gi, "")
+      .replace(/<!--[\s\S]*?-->/g, "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/\s+/g, " ")
+      // Tag-replacement injects a space wherever a tag was, which is
+      // correct for `Cap<br>1` → `Cap 1` but produces "here ." for
+      // `here</em>.`. Strip the artificial space before standard
+      // punctuation so the redline reads naturally.
+      .replace(/\s+([.,;:!?])/g, "$1")
+      .trim()
+  );
 }
 
 /**
@@ -126,8 +133,19 @@ export function diffWords(before: string, after: string): DiffSegment[] {
     pushBack("insert", b[--j > 0 ? j : 0]);
     if (j === 0) break;
   }
-  // The traceback pushed in reverse; the pushBack helper undid it, so
-  // no further reverse is needed.
+  // The traceback walks (n,m) → (0,0), so the segments[] array is in
+  // reverse temporal order — the LAST segment in the array represents
+  // the FIRST tokens of the diff. The pushBack helper coalesces text
+  // within a same-op run (prepending to last.text), which yields the
+  // correct text WITHIN each segment. But the segment array itself
+  // must be reversed before returning so consumers (renderTextRedline,
+  // RedlineView) read it left-to-right.
+  //
+  // BUG-FIX 2026-04-28: previously we returned `segments` directly,
+  // claiming "the pushBack helper undid the reverse". That was wrong
+  // — pushBack only undoes the reverse WITHIN a single same-op run,
+  // not across the array. Caught by tests/unit/lib/atlas/redline.test.ts.
+  segments.reverse();
   return segments;
 }
 

@@ -1355,6 +1355,22 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
         verification_note:
           "Transposition deadline 01/07/2018 + application 01/10/2018 (per Art. 42, amended by 32018L0411) confirmed against EUR-Lex Date of transposition field.",
       },
+      {
+        date: "2018-10-01",
+        type: "transition_phase",
+        body: "EU Member States",
+        reference: "Art. 42(1) — Application date",
+        description:
+          "Application of the IDD obligations to insurance distributors begins. This is the operational compliance date that drives the catalogue's top-level date_in_force.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32016L0097",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Application date 01/10/2018 (per Art. 42, amended by 32018L0411) confirmed against EUR-Lex Date of transposition field — separated from the 01/07/2018 transposition-deadline milestone for chronological precision.",
+      },
     ],
     last_verified: "2026-04-28",
   },

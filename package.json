@@ -32,6 +32,8 @@
     "test:unit": "vitest run --dir tests/unit",
     "test:integration": "vitest run --dir tests/integration",
     "test:contracts": "vitest run --dir tests/contracts",
+    "test:atlas": "vitest run --config vitest.atlas.config.ts",
+    "test:atlas:coverage": "vitest run --coverage --config vitest.atlas.config.ts",
     "test:all": "vitest run && playwright test",
     "test:ci": "vitest run --coverage --reporter=default --reporter=junit --outputFile=test-results/junit.xml",
     "test:e2e:a11y": "playwright test tests/e2e/accessibility.spec.ts",

@@ -51,8 +51,16 @@ function extractTag(block: string, tag: string): string | undefined {
 function extractAtomLink(block: string): string | undefined {
   // Atom feeds express links as <link href="…" rel="alternate"/>. Prefer
   // rel="alternate" or links without a rel attribute; skip rel="self".
+  //
+  // BUG-FIX 2026-04-28: previous regex used `[^/>]` for the attrs char
+  // class to "stop at the self-closing slash". But every Atom href is
+  // a URL like `https://example.com/x` — the embedded `/` in `://`
+  // terminated the match before any href could be captured, so atom
+  // feeds returned 0 items in practice. Switched to `[^>]` which
+  // tolerates URL-internal slashes; the optional `/?` before `>` still
+  // handles self-closing tags. Caught by tests/unit/lib/atlas/feed-parser.test.ts.
   const candidates: { href: string; rel?: string }[] = [];
-  const re = /<link\b([^/>]*?)\/?>|<link\b([^>]*)>\s*<\/link>/gi;
+  const re = /<link\b([^>]*?)\/?>|<link\b([^>]*)>\s*<\/link>/gi;
   let m: RegExpExecArray | null;
   while ((m = re.exec(block)) !== null) {
     const attrs = m[1] ?? m[2] ?? "";
