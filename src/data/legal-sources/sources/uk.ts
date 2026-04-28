@@ -2392,7 +2392,87 @@ const POSTBREXIT_UK: LegalSource[] = [
     notes: [
       "The TCA governs the post-Brexit UK-EU relationship in space. Key outcome: Copernicus association achieved, Galileo PRS access lost.",
     ],
-    last_verified: "2026-04-13",
+    legislative_history: [
+      {
+        date: "2020-12-24",
+        type: "trilogue",
+        body: "European Commission · UK Cabinet Office",
+        reference: "UK-EU TCA — political agreement",
+        description:
+          "Political agreement reached between EU Commission (Michel Barnier) and UK Cabinet Office (Lord Frost) on the Trade and Cooperation Agreement, just one week before the end of the Brexit transition period.",
+        source_url:
+          "https://www.gov.uk/government/publications/ukeu-trade-and-cooperation-agreement-ts-no82021",
+        verified: false,
+        verification_note:
+          "Political-agreement date 24.12.2020 widely reported in primary press releases but the gov.uk publications URL returned 404 in this verification pass. Marked verified:false until UK Cabinet Office or EU Council document IDs are independently verified.",
+      },
+      {
+        date: "2020-12-30",
+        type: "signed",
+        body: "European Union · United Kingdom",
+        reference: "EU-UK Trade and Cooperation Agreement (signed 30.12.2020)",
+        description:
+          "Signature of the EU-UK Trade and Cooperation Agreement by both Parties on 30 December 2020 — three days after the Council of the EU formally approved the agreement on 29 December.",
+        source_url: "https://www.legislation.gov.uk/ukpga/2020/29/introduction",
+        verified: false,
+        verification_note:
+          "Signature date 30.12.2020 catalogued; not directly verified against an EU/UK depositary record in this pass.",
+      },
+      {
+        date: "2020-12-31",
+        type: "presidential_signature",
+        body: "Royal Assent · Crown",
+        reference: "European Union (Future Relationship) Act 2020 c. 29",
+        description:
+          "Royal Assent given to the European Union (Future Relationship) Act 2020 (c. 29) on 31 December 2020 — the UK domestic implementing legislation for the EU-UK TCA. Long title: 'An Act to make provision to implement, and make other provision in connection with, the Trade and Cooperation Agreement; to make further provision in connection with the United Kingdom's future relationship with the EU and its member States; to make related provision about passenger name record data, customs and privileges and immunities; and for connected purposes.'",
+        source_url: "https://www.legislation.gov.uk/ukpga/2020/29/introduction",
+        verified: true,
+        verified_by: "claude (WebFetch, legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Royal Assent date 31.12.2020, chapter c. 29, and full long title verified verbatim against legislation.gov.uk introduction tab.",
+      },
+      {
+        date: "2021-01-01",
+        type: "transition_phase",
+        body: "European Union · United Kingdom",
+        reference: "TCA — provisional application",
+        description:
+          "Provisional application of the TCA from 00:00 (CET) 1 January 2021 — the moment the Brexit transition period ended. Applied pending European Parliament consent.",
+        source_url:
+          "https://www.gov.uk/government/publications/ukeu-trade-and-cooperation-agreement-ts-no82021",
+        verified: false,
+        verification_note:
+          "Provisional-application start 1.1.2021 catalogued; aligned with the TCA's own provisional-application clause but the gov.uk publications URL returned 404 in this verification pass.",
+      },
+      {
+        date: "2021-04-27",
+        type: "ratification",
+        body: "European Parliament",
+        reference: "EP plenary consent, 27 April 2021",
+        description:
+          "European Parliament gives its consent to the TCA in plenary on 27 April 2021 — the final European-Union-side ratification step required before full entry into force.",
+        source_url:
+          "https://www.gov.uk/government/publications/ukeu-trade-and-cooperation-agreement-ts-no82021",
+        verified: false,
+        verification_note:
+          "EP consent date 27.4.2021 widely documented; not directly verified against an EP plenary record in this pass.",
+      },
+      {
+        date: "2021-05-01",
+        type: "entry_into_force_treaty",
+        body: "European Union · United Kingdom",
+        reference: "TCA — full entry into force",
+        description:
+          "Full entry into force of the TCA on 1 May 2021 (Treaty Series No. 8/2021) following the European Parliament's consent. Replaces the period of provisional application.",
+        source_url:
+          "https://www.gov.uk/government/publications/ukeu-trade-and-cooperation-agreement-ts-no82021",
+        verified: false,
+        verification_note:
+          "Treaty Series No. 8/2021 and EIF date 1.5.2021 catalogued; gov.uk publications URL returned 404 in this verification pass — milestone preserved as verified:false until depositary record is independently verified.",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
   {
     id: "UK-COPERNICUS-2024",
