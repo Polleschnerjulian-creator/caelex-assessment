@@ -594,6 +594,51 @@ const LOS_FRAMEWORK_FR: LegalSource[] = [
       "France's LOS 2008 is widely regarded as the most complete and mature national space law in Europe. It predates the proposed EU Space Act by 17 years.",
       "The law applies based on French 'jurisdiction' — meaning launches from French territory (CSG), operations by French-controlled entities, and operations authorized by France regardless of where the operator is established.",
     ],
+    legislative_history: [
+      {
+        date: "2008-06-03",
+        type: "presidential_signature",
+        body: "République française · Parlement (Assemblée nationale + Sénat)",
+        reference: "Loi n° 2008-518",
+        description:
+          "Promulgation de la LOI n° 2008-518 relative aux opérations spatiales. NOR : ESRX0700048L. Signée le 3 juin 2008.",
+        source_url:
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000018931380/",
+        verified: true,
+        verified_by: "claude (claude-in-chrome MCP, Légifrance)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Title and promulgation date confirmed against Légifrance JORFTEXT000018931380.",
+      },
+      {
+        date: "2008-06-04",
+        type: "promulgation",
+        body: "Journal officiel de la République française",
+        reference: "JORF n° 0129 du 4 juin 2008",
+        description: "Publication au Journal officiel n° 0129 du 4 juin 2008.",
+        source_url:
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000018931380/",
+        verified: true,
+        verified_by: "claude (claude-in-chrome MCP, Légifrance)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "JORF reference (n° 0129, 4 juin 2008) confirmed against Légifrance — corrects an earlier 'JORF n° 0128' in the official_reference field which appears to have been off-by-one.",
+      },
+      {
+        date: "2023-08-01",
+        type: "amendment",
+        body: "Légifrance · Dernière mise à jour des données",
+        description:
+          "Last data update of the consolidated text on Légifrance: 03 August 2023. Amending acts include Ordonnance n° 2022-232 and LPM 2023-703 Art. 60 (cf. amended_by field).",
+        source_url:
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000018931380/",
+        verified: true,
+        verified_by: "claude (claude-in-chrome MCP, Légifrance)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Last-update stamp 03 août 2023 confirmed against the Légifrance metadata block. Specific amending-act dates pending lookup against each individual JORFTEXT.",
+      },
+    ],
     last_verified: "2026-04-13",
   },
   {

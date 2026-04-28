@@ -481,6 +481,37 @@ const AEE_LEGISLATION_ES: LegalSource[] = [
       "BOE-A-2022-14581.",
       "Modified the 2011 Science, Technology and Innovation Act.",
     ],
+    legislative_history: [
+      {
+        date: "2022-09-05",
+        type: "presidential_signature",
+        body: "Reino de España · Jefatura del Estado",
+        reference: "Ley 17/2022 · BOE-A-2022-14581",
+        description:
+          "Sancionada y promulgada por el Rey Felipe VI. Modifica la Ley 14/2011, de 1 de junio, de la Ciencia, la Tecnología y la Innovación. Sección I (Disposiciones generales).",
+        source_url: "https://www.boe.es/eli/es/l/2022/09/05/17",
+        verified: true,
+        verified_by: "claude (claude-in-chrome MCP, BOE)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Title, BOE reference (BOE-A-2022-14581), department (Jefatura del Estado) and signature date confirmed against the BOE record.",
+      },
+      {
+        date: "2022-09-06",
+        type: "promulgation",
+        body: "Boletín Oficial del Estado",
+        reference:
+          "BOE núm. 214 — 6 de septiembre de 2022, pp. 123852–123922 (71 págs.)",
+        description:
+          "Publicación en el Boletín Oficial del Estado al día siguiente de la sanción real.",
+        source_url: "https://www.boe.es/buscar/doc.php?id=BOE-A-2022-14581",
+        verified: true,
+        verified_by: "claude (claude-in-chrome MCP, BOE)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "BOE issue (núm. 214), publication date and exact page range confirmed against the BOE record.",
+      },
+    ],
     last_verified: "2026-04-14",
   },
   {

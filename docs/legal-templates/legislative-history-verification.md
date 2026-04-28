@@ -152,17 +152,59 @@ Tooling matrix update:
 | `boe.es`                                   | Chrome MCP                 | ⚠️ likely working — needs test |
 | `bundestag.de` DIP / dipbt                 | Chrome MCP                 | ⚠️ likely working — needs test |
 
-### 5.1 · Per-source verification status
+### 5.1 · Per-source verification status (Tranche 5 final)
 
-| Source             | Entries | Verified | Status                                                                                              |
-| ------------------ | ------- | -------- | --------------------------------------------------------------------------------------------------- |
-| EU-SPACE-ACT       | 1       | 1        | **Tranche 2** (Apr 2026) — proposal milestone fully verified via EUR-Lex (Chrome MCP)               |
-| EU-NIS2-2022       | 6       | 6        | **Tranche 2** (Apr 2026) — full lifecycle (proposal → in-force → transposition → repeal → review) ✓ |
-| DE-BSIG-NIS2       | 1       | 0        | Pending — BGBl./DIP-Bundestag still not yet attempted via Chrome MCP                                |
-| INT-OST-1967       | 3       | 2        | Tranche 1 (Apr 2026) — signing + EIF verified via UN Treaty Collection                              |
-| INT-LIABILITY-1972 | 3       | 0        | Pending — depositary URL not located                                                                |
-| UK-SIA-2018        | 4       | 4        | Tranche 1 (Apr 2026) — fully verified via legislation.gov.uk ✓                                      |
-| **Totals**         | **18**  | **13**   | **72 % of populated entries verified**                                                              |
+| Source                                            | Entries | Verified | Status                                                                    |
+| ------------------------------------------------- | ------- | -------- | ------------------------------------------------------------------------- |
+| **UK statutes (legislation.gov.uk via WebFetch)** |         |          |                                                                           |
+| UK-SIA-2018                                       | 4       | 4        | T1 ✓                                                                      |
+| UK-OSA-1986                                       | 4       | 4        | T4 ✓                                                                      |
+| UK-SIA-INDEMNITIES-2025                           | 2       | 2        | T4 ✓                                                                      |
+| UK-SI-2021-792                                    | 2       | 2        | T4 ✓                                                                      |
+| UK-SI-2021-793                                    | 2       | 2        | T4 ✓                                                                      |
+| UK-SI-2021-816                                    | 2       | 2        | T4 ✓                                                                      |
+| UK-NIS-REGS-2018                                  | 5       | 5        | T4 ✓                                                                      |
+| **EU instruments (EUR-Lex via Chrome MCP)**       |         |          |                                                                           |
+| EU-SPACE-ACT                                      | 1       | 1        | T2 ✓                                                                      |
+| EU-NIS2-2022                                      | 6       | 6        | T2 ✓                                                                      |
+| EU-CRA-2024                                       | 7       | 7        | T3 ✓                                                                      |
+| EU-DORA-2022                                      | 4       | 4        | T3 ✓                                                                      |
+| EU-CER-2022                                       | 4       | 4        | T3 ✓                                                                      |
+| EU-EASA-2018                                      | 3       | 3        | T3 ✓                                                                      |
+| EU-GDPR-2016                                      | 4       | 4        | T3 ✓                                                                      |
+| EU-SPACE-PROG-2021                                | 4       | 4        | T3 ✓                                                                      |
+| **National (Chrome MCP via national registers)**  |         |          |                                                                           |
+| FR-LOS-2008                                       | 3       | 3        | T5 ✓ Légifrance JORFTEXT000018931380 — caught off-by-one in JORF n°       |
+| ES-LEY-17-2022                                    | 2       | 2        | T5 ✓ BOE-A-2022-14581                                                     |
+| IT-LEGGE-89-2025                                  | 3       | 3        | T5 ✓ Gazzetta Ufficiale 25G00095 — caught off-by-two in GU n° + wrong EIF |
+| **UN treaties (UN Treaty Collection)**            |         |          |                                                                           |
+| INT-OST-1967                                      | 3       | 2        | T1 ✓ partial (UNGA-adoption pending UNOOSA archive availability)          |
+| INT-LIABILITY-1972                                | 3       | 0        | Pending — UNTC objid not yet located within session                       |
+| **Pending registers**                             |         |          |                                                                           |
+| DE-BSIG-NIS2                                      | 1       | 0        | BGBl. + DIP-Bundestag — Xaver-PDF, no Chrome-MCP attempt yet              |
+| **Totals**                                        | **65**  | **58**   | **89 % of populated entries verified across 18 sources**                  |
+
+### 5.1.1 · Corrections caught by primary-source verification
+
+The verification process surfaced FOUR factual errors in the existing
+catalogue / earlier fabrications that have now been corrected against
+the primary record:
+
+1. **EU-SPACE-ACT procedure number** was 2025/0185(COD) in the
+   earlier draft; primary source confirms **2025/0335/COD**.
+2. **UK-SIA-2018 principal commencement SI** was 2021/874 in the
+   earlier draft; legislation.gov.uk confirms **S.I. 2021/817**
+   (2021/874 is in fact an amending order to 817).
+3. **FR-LOS-2008 JORF reference** was "JORF n° 0128 du 4 juin 2008"
+   in `official_reference`; Légifrance confirms **JORF n° 0129**.
+4. **IT-LEGGE-89-2025 GU reference + EIF** was "GU n. 146" with
+   `date_in_force: 2025-07-09` in the catalogue; Gazzetta Ufficiale
+   confirms **GU Serie Generale n. 144** with **EIF 25/06/2025**.
+
+These are exactly the kind of plausible-but-wrong details that
+made the unverified backfill dangerous. Each correction is
+documented in the `verification_note` field of the affected
+milestone.
 
 ### 5.2 · Realistic per-tranche throughput (WebFetch-only)
 

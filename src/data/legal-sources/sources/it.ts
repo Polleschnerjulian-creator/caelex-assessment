@@ -547,6 +547,53 @@ const PRIMARY_LEGISLATION_IT: LegalSource[] = [
       "NO government backstop — unlike UK (mandatory backstop under SIA Indemnities Act 2025) and France (guaranteed state indemnification under LOS 2008).",
       "Implementing decrees under Art. 13 NOT YET ADOPTED as of April 2026 — critical regulatory gap that leaves detailed requirements undefined.",
     ],
+    legislative_history: [
+      {
+        date: "2025-06-13",
+        type: "presidential_signature",
+        body: "Repubblica Italiana · Parlamento",
+        reference: "Legge 13 giugno 2025, n. 89",
+        description:
+          "Promulgazione della Legge 13 giugno 2025, n. 89 — Disposizioni in materia di economia dello spazio. Identificativo: 25G00095.",
+        source_url:
+          "https://www.gazzettaufficiale.it/eli/id/2025/06/24/25G00095/sg",
+        verified: true,
+        verified_by: "claude (claude-in-chrome MCP, Gazzetta Ufficiale)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Title and signature date confirmed against Gazzetta Ufficiale 25G00095. Identifier 25G00095 matches the eli/id URL.",
+      },
+      {
+        date: "2025-06-24",
+        type: "promulgation",
+        body: "Gazzetta Ufficiale della Repubblica Italiana",
+        reference: "GU Serie Generale n. 144 del 24-06-2025",
+        description:
+          "Pubblicazione nella Gazzetta Ufficiale Serie Generale n. 144 del 24 giugno 2025.",
+        source_url:
+          "https://www.gazzettaufficiale.it/eli/id/2025/06/24/25G00095/sg",
+        verified: true,
+        verified_by: "claude (claude-in-chrome MCP, Gazzetta Ufficiale)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "GU reference 'Serie Generale n. 144 del 24-06-2025' confirmed against the Gazzetta Ufficiale primary record — corrects an earlier 'GU n. 146' in the official_reference field which was off by two.",
+      },
+      {
+        date: "2025-06-25",
+        type: "in_force",
+        body: "Repubblica Italiana",
+        reference: "Entrata in vigore del provvedimento",
+        description:
+          "Entrata in vigore del provvedimento — il giorno successivo alla pubblicazione in Gazzetta Ufficiale.",
+        source_url:
+          "https://www.gazzettaufficiale.it/eli/id/2025/06/24/25G00095/sg",
+        verified: true,
+        verified_by: "claude (claude-in-chrome MCP, Gazzetta Ufficiale)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entrata-in-vigore date 25/06/2025 confirmed against the Gazzetta Ufficiale primary record. Corrects an earlier date_in_force '2025-07-09' in this catalogue entry — the basic entry-into-force is the day after publication; later dates may apply to specific Articles via vacatio.",
+      },
+    ],
     last_verified: "2026-04-09",
   },
   {
