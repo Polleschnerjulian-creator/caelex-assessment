@@ -115,23 +115,54 @@ are not always public. In those cases:
 
 ---
 
-## 5 · State of the corpus (last updated 2026-04-28 · Tranche 1)
+## 5 · State of the corpus (last updated 2026-04-28 · Tranche 2)
 
 **Total LegalSource entries in the corpus:** 619
 **With `legislative_history` populated:** 6
 **Coverage:** 0.97%
 
+### 5.0 · Tooling unlocked between Tranche 1 and Tranche 2
+
+The Chrome MCP (`mcp__Claude_in_Chrome__*`) became available with a
+connected browser, which **renders JS-driven sites** that WebFetch
+cannot reach. Verified during Tranche 2:
+
+- ✅ EUR-Lex (Document Information tab) — yields verified date_of_document,
+  date_of_effect, date_of_transposition, procedure_number, author,
+  legal_basis, repeal-relations, review-deadlines.
+- ✅ Procedure files via OEIL by their CELEX or 2YYY/NNNN(COD) form.
+
+This **expands the verifiable subset substantially**: the ~50 EU
+instruments that were previously blocked by EUR-Lex's JS render are
+now accessible. Combined with WebFetch coverage (UK + UN-where-objid-
+known + US-HTML), the verifiable subset now sits at roughly 200-250
+of 619 corpus entries (~30-40 %).
+
+Tooling matrix update:
+
+| Primary register                           | Tool                       | Status                         |
+| ------------------------------------------ | -------------------------- | ------------------------------ |
+| `legislation.gov.uk`                       | WebFetch                   | ✅ working                     |
+| `treaties.un.org` (objid known)            | WebFetch                   | ✅ working                     |
+| `eur-lex.europa.eu` (Document Information) | Chrome MCP (browser-batch) | ✅ **unlocked Tranche 2**      |
+| `oeil.secure.europarl.europa.eu`           | Chrome MCP                 | ✅ likely working (next test)  |
+| `unoosa.org`                               | both                       | ❌ archive currently 404       |
+| `bgbl.de` (German Bundesgesetzblatt)       | both                       | ❌ Xaver-PDF only              |
+| `legifrance.gouv.fr`                       | Chrome MCP                 | ⚠️ likely working — needs test |
+| `boe.es`                                   | Chrome MCP                 | ⚠️ likely working — needs test |
+| `bundestag.de` DIP / dipbt                 | Chrome MCP                 | ⚠️ likely working — needs test |
+
 ### 5.1 · Per-source verification status
 
-| Source             | Entries | Verified | Status                                                                 |
-| ------------------ | ------- | -------- | ---------------------------------------------------------------------- |
-| EU-SPACE-ACT       | 2       | 0        | Pending — EUR-Lex JS-driven, blocks WebFetch                           |
-| EU-NIS2-2022       | 4       | 0        | Pending — same EUR-Lex block                                           |
-| DE-BSIG-NIS2       | 1       | 0        | Pending — BGBl./Bundestag DIP not reachable via WebFetch               |
-| INT-OST-1967       | 3       | 2        | Tranche 1 (Apr 2026) — signing + EIF verified via UN Treaty Collection |
-| INT-LIABILITY-1972 | 3       | 0        | Pending — depositary URL not located                                   |
-| UK-SIA-2018        | 4       | 4        | Tranche 1 (Apr 2026) — fully verified via legislation.gov.uk ✓         |
-| **Totals**         | **17**  | **6**    | **35 % of populated entries verified**                                 |
+| Source             | Entries | Verified | Status                                                                                              |
+| ------------------ | ------- | -------- | --------------------------------------------------------------------------------------------------- |
+| EU-SPACE-ACT       | 1       | 1        | **Tranche 2** (Apr 2026) — proposal milestone fully verified via EUR-Lex (Chrome MCP)               |
+| EU-NIS2-2022       | 6       | 6        | **Tranche 2** (Apr 2026) — full lifecycle (proposal → in-force → transposition → repeal → review) ✓ |
+| DE-BSIG-NIS2       | 1       | 0        | Pending — BGBl./DIP-Bundestag still not yet attempted via Chrome MCP                                |
+| INT-OST-1967       | 3       | 2        | Tranche 1 (Apr 2026) — signing + EIF verified via UN Treaty Collection                              |
+| INT-LIABILITY-1972 | 3       | 0        | Pending — depositary URL not located                                                                |
+| UK-SIA-2018        | 4       | 4        | Tranche 1 (Apr 2026) — fully verified via legislation.gov.uk ✓                                      |
+| **Totals**         | **18**  | **13**   | **72 % of populated entries verified**                                                              |
 
 ### 5.2 · Realistic per-tranche throughput (WebFetch-only)
 

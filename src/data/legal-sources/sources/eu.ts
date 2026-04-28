@@ -143,37 +143,33 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
       "Will be directly applicable as EU Regulation — no national transposition needed.",
     ],
     legislative_history: [
-      // ⚠️ Audit-honesty note (2026-04-28): structural placeholders.
-      // Specific procedural numbers (rapporteur names, response/vote
-      // counts, exact compromise-text doc references) were stripped
-      // out pending hand-verification against the EUR-Lex procedure
-      // file 2025/0185(COD). The remaining entries name only facts
-      // that are firmly attested. See verification protocol at
-      // docs/legal-templates/legislative-history-verification.md.
+      // Verification trail: EUR-Lex CELEX:52025PC0335 fetched via
+      // Chrome MCP on 2026-04-28 (claude-in-chrome). Procedure file
+      // confirmed as 2025/0335/COD (corrected from earlier draft
+      // which had 2025/0185(COD) — that number was a placeholder
+      // guess and was wrong). DG DEFIS confirmed as the
+      // commission-side responsible body.
       {
         date: "2025-06-25",
         type: "proposal",
-        body: "European Commission",
-        reference: "COM(2025) 335 final",
+        body: "European Commission · DG DEFIS (Defence Industry and Space)",
+        reference: "COM(2025) 335 final · CELEX:52025PC0335",
         description:
-          "Commission proposal published — Regulation on the European Space Economy. Covers authorisation, registration, debris mitigation, cybersecurity, environmental footprint, and a third-country-operator regime.",
+          "Commission proposal published — Regulation on the European Space Economy. Form: Proposal for a regulation. Legal basis: Art. 114 TFEU. Forwarded to Council and Parliament on the same day. Procedure file: 2025/0335/COD.",
         source_url:
-          "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=COM:2025:335:FIN",
-        // verified: false — pending hand-check against EUR-Lex.
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:52025PC0335",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of document, dispatch dates to Council + Parliament, procedure number, author/responsible body, form, and legal basis confirmed against EUR-Lex CELEX:52025PC0335 'Document information' tab.",
       },
-      {
-        date: "2025-07-01",
-        type: "first_reading",
-        body: "European Parliament — referral to lead committee",
-        description:
-          "Proposal referred to the European Parliament under the ordinary legislative procedure (Art. 294 TFEU). Lead-committee designation, rapporteur appointment, and exact dates pending verification against EUR-Lex procedure file 2025/0185(COD).",
-        source_url:
-          "https://oeil.secure.europarl.europa.eu/oeil/popups/ficheprocedure.do?reference=2025/0185(COD)",
-      },
-      // Further milestones (committee report, council general
+      // Forward milestones (committee designation, council general
       // approach, trilogue, adoption, promulgation, entry into
-      // force) will be appended once each step has been verified
-      // against the EUR-Lex procedure file.
+      // force) will be appended progressively as the legislative
+      // procedure advances. Procedure tracker is OEIL via
+      // 2025/0335/COD.
     ],
     last_verified: "2026-04-13",
   },
@@ -290,47 +286,106 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     caelex_data_file_mapping: ["nis2-requirements.ts"],
     notes: ["Transposed in DE via NIS2UmsuCG → BSIG §§ 30-31."],
     legislative_history: [
-      // ⚠️ Audit-honesty note (2026-04-28): vote counts, exact council
-      // document numbers and trilogue dates were removed pending
-      // hand-verification against the EUR-Lex procedure file
-      // 2020/0359(COD) and the Council public-register. Remaining
-      // entries are limited to facts attested by the directive's
-      // own preamble + final OJ citation.
+      // Verification trail: EUR-Lex CELEX:52020PC0823 (proposal) and
+      // CELEX:32022L2555 (adopted directive) fetched via Chrome MCP
+      // on 2026-04-28 (claude-in-chrome). Procedure file confirmed
+      // as 2020/0359/COD. All milestone dates extracted from
+      // EUR-Lex 'Document information' tab.
       {
         date: "2020-12-16",
         type: "proposal",
-        body: "European Commission",
-        reference: "COM(2020) 823 final",
+        body: "European Commission · DG CNECT",
+        reference: "COM(2020) 823 final · CELEX:52020PC0823",
         description:
-          "Commission proposal for a directive on measures for a high common level of cybersecurity across the Union, repealing NIS Directive 2016/1148.",
+          "Commission proposal for a directive on measures for a high common level of cybersecurity across the Union, repealing NIS Directive 2016/1148. Forwarded to Council and Parliament on the same day. Procedure: 2020/0359/COD. Legal basis: Art. 114 TFEU.",
         source_url:
-          "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52020PC0823",
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:52020PC0823",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Document date 16/12/2020, dispatch dates to Council + Parliament, author DG CNECT, procedure 2020/0359/COD all confirmed against EUR-Lex CELEX:52020PC0823.",
       },
       {
-        date: "2022-12-27",
-        type: "promulgation",
-        body: "Publications Office of the EU",
+        date: "2022-12-14",
+        type: "adoption",
+        body: "European Parliament and Council of the European Union",
+        reference: "Directive (EU) 2022/2555 · CELEX:32022L2555",
         description:
-          "Directive (EU) 2022/2555 published in the Official Journal of the European Union. Exact OJ-issue / page reference pending verification against EUR-Lex.",
-        source_url: "https://eur-lex.europa.eu/eli/dir/2022/2555/oj",
+          "Directive (EU) 2022/2555 signed by the co-legislators (date of document = date of signature). Author: European Parliament + Council. Procedure: 2020/0359/COD.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32022L2555",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of signature 14/12/2022 confirmed against EUR-Lex CELEX:32022L2555.",
       },
       {
         date: "2023-01-16",
         type: "in_force",
-        body: "European Union",
-        reference: "Art. 45 NIS2",
+        body: "European Union · Publications Office",
+        reference: "Art. 45 NIS2 (Date pub. + 20 days)",
         description:
-          "Directive entered into force on the twentieth day following its publication in the Official Journal.",
+          "Directive entered into force on the twentieth day following publication in the Official Journal — implies OJ publication around 27 December 2022.",
         source_url: "https://eur-lex.europa.eu/eli/dir/2022/2555/oj",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of effect 16/01/2023 (per Art. 45) confirmed against EUR-Lex CELEX:32022L2555.",
       },
       {
         date: "2024-10-17",
         type: "transition_phase",
         body: "EU Member States",
-        reference: "Art. 41 NIS2 (transposition deadline)",
+        reference: "Art. 41(1) NIS2 — transposition deadline",
         description:
-          "Member-State transposition deadline. National transposition acts that miss this date trigger Commission infringement proceedings.",
-        source_url: "https://eur-lex.europa.eu/eli/dir/2022/2555/oj",
+          "Member-State transposition deadline (date by which Member States must adopt the national measures). Application of those measures begins 18/10/2024 per Art. 41(1).",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32022L2555",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Transposition deadline 17/10/2024 (adoption) and application 18/10/2024 confirmed against EUR-Lex CELEX:32022L2555 'Date of transposition' field.",
+      },
+      {
+        date: "2024-10-18",
+        type: "repeal",
+        body: "European Union",
+        reference: "Art. 44 NIS2 — repeal of Directive (EU) 2016/1148",
+        description:
+          "NIS Directive 2016/1148 (the original NIS) repealed with effect from 18/10/2024 — replaced by NIS2 from this date.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32022L2555",
+        affected_sections: ["Directive (EU) 2016/1148 (repealed)"],
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Repeal of 32016L1148 with effect 18/10/2024 confirmed against EUR-Lex CELEX:32022L2555 'Modifies' field.",
+      },
+      {
+        date: "2027-10-17",
+        type: "consolidation",
+        body: "European Commission",
+        reference: "Art. 40 NIS2 — review",
+        description:
+          "Commission review deadline — by this date the Commission shall periodically review the functioning of the directive and report to the European Parliament and the Council.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32022L2555",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Review deadline 17/10/2027 (per Art. 40) confirmed against EUR-Lex CELEX:32022L2555 'Deadline' field.",
       },
     ],
     last_verified: "2026-04-13",
