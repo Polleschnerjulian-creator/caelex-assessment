@@ -1139,6 +1139,36 @@ const SECONDARY_LEGISLATION_UK: LegalSource[] = [
       },
     ],
     related_sources: ["UK-SIA-2018"],
+    legislative_history: [
+      {
+        date: "2025-02-27",
+        type: "promulgation",
+        body: "Secretary of State for Transport",
+        reference: "S.I. 2025/222",
+        description:
+          "The Space Industry (Licence Exemption for Military Activities of Allies) Regulations 2025 made on 27 February 2025. Made under Space Industry Act 2018.",
+        source_url: "https://www.legislation.gov.uk/uksi/2025/222",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Made date and SI number confirmed against legislation.gov.uk masthead.",
+      },
+      {
+        date: "2025-02-28",
+        type: "in_force",
+        body: "Secretary of State for Transport",
+        reference: "S.I. 2025/222",
+        description:
+          "Coming into force the day after being made — exempts allied armed forces from operator-licence and range-control-licence requirements for sub-orbital military activities on Crown land or HM Forces controlled premises.",
+        source_url: "https://www.legislation.gov.uk/uksi/2025/222",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Coming-into-force date 28/02/2025 confirmed against legislation.gov.uk.",
+      },
+    ],
     last_verified: "2026-04-13",
   },
 ];
@@ -1457,6 +1487,35 @@ const ENVIRONMENTAL_UK: LegalSource[] = [
       },
     ],
     related_sources: ["UK-EXPLOSIVES-2014"],
+    legislative_history: [
+      {
+        date: "2015-03-02",
+        type: "promulgation",
+        body: "Secretary of State for Work and Pensions",
+        reference: "S.I. 2015/483",
+        description:
+          "The Control of Major Accident Hazards Regulations 2015 made 02/03/2015. Made under the Health and Safety at Work etc. Act 1974 and ECA 1972 s.2(2). Implements EU Directive 2012/18/EU (Seveso III).",
+        source_url: "https://www.legislation.gov.uk/uksi/2015/483",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Made date 02/03/2015, laid before Parliament 09/03/2015, SI number confirmed against legislation.gov.uk masthead.",
+      },
+      {
+        date: "2015-06-01",
+        type: "in_force",
+        body: "Secretary of State for Work and Pensions",
+        reference: "S.I. 2015/483",
+        description: "Coming into force date.",
+        source_url: "https://www.legislation.gov.uk/uksi/2015/483",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Coming-into-force date 01/06/2015 confirmed against legislation.gov.uk.",
+      },
+    ],
     last_verified: "2026-04-13",
   },
   {
@@ -1485,6 +1544,36 @@ const ENVIRONMENTAL_UK: LegalSource[] = [
       },
     ],
     related_sources: ["UK-COMAH-2015"],
+    legislative_history: [
+      {
+        date: "2014-06-23",
+        type: "promulgation",
+        body: "Secretary of State for Work and Pensions",
+        reference: "S.I. 2014/1638",
+        description:
+          "The Explosives Regulations 2014 made 23/06/2014. Made under Health and Safety at Work etc. Act 1974 and ECA 1972 s.2(2).",
+        source_url: "https://www.legislation.gov.uk/uksi/2014/1638",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Made date 23/06/2014, laid before Parliament 01/07/2014, SI number confirmed against legislation.gov.uk masthead.",
+      },
+      {
+        date: "2014-10-01",
+        type: "in_force",
+        body: "Secretary of State for Work and Pensions",
+        reference: "S.I. 2014/1638",
+        description:
+          "Main commencement (with exceptions for regulations 33(7), 36, 43-44 and Sch. 11 in part — those provisions deferred to 05/04/2015).",
+        source_url: "https://www.legislation.gov.uk/uksi/2014/1638",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Coming-into-force date 01/10/2014 + deferred reg 33(7)/36 etc. on 05/04/2015 confirmed against legislation.gov.uk.",
+      },
+    ],
     last_verified: "2026-04-13",
   },
 
@@ -1528,6 +1617,36 @@ const ENVIRONMENTAL_UK: LegalSource[] = [
       },
     ],
     related_sources: ["UK-SIA-S11-AEE", "EU-EIA-DIR-2011-92"],
+    legislative_history: [
+      {
+        date: "2017-04-18",
+        type: "promulgation",
+        body: "Secretary of State for Communities and Local Government",
+        reference: "S.I. 2017/571",
+        description:
+          "The Town and Country Planning (Environmental Impact Assessment) Regulations 2017 made 18/04/2017. Made under TCPA 1990 ss. 71A(1)-(2) and 298A(2). Implements EU EIA Directive 2011/92/EU as amended by 2014/52/EU.",
+        source_url: "https://www.legislation.gov.uk/uksi/2017/571",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Made date 18/04/2017 and SI number confirmed against legislation.gov.uk masthead.",
+      },
+      {
+        date: "2017-05-16",
+        type: "in_force",
+        body: "Secretary of State for Communities and Local Government",
+        reference: "S.I. 2017/571",
+        description:
+          "Coming into force date — replaces the 2011 EIA Regulations.",
+        source_url: "https://www.legislation.gov.uk/uksi/2017/571",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Coming-into-force date 16/05/2017 confirmed against legislation.gov.uk.",
+      },
+    ],
     last_verified: "2026-04-27",
   },
 
@@ -1558,6 +1677,36 @@ const ENVIRONMENTAL_UK: LegalSource[] = [
       },
     ],
     related_sources: ["UK-SIA-S11-AEE", "EU-HABITATS-DIR-92-43"],
+    legislative_history: [
+      {
+        date: "2017-10-30",
+        type: "promulgation",
+        body: "Secretary of State for Environment, Food and Rural Affairs",
+        reference: "S.I. 2017/1012",
+        description:
+          "The Conservation of Habitats and Species Regulations 2017 made 30/10/2017. Consolidates and replaces the 2010 Habitats Regulations. Made under ECA 1972 s.2(2) + Sch. 2 para. 1A and CJA 2003 s.307(3),(5). Implements EU Habitats Directive 92/43/EEC.",
+        source_url: "https://www.legislation.gov.uk/uksi/2017/1012",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Made date 30/10/2017, laid before Parliament 31/10/2017, SI number confirmed against legislation.gov.uk masthead.",
+      },
+      {
+        date: "2017-11-30",
+        type: "in_force",
+        body: "Secretary of State for Environment, Food and Rural Affairs",
+        reference: "S.I. 2017/1012",
+        description:
+          "Coming into force date — extends to England and Wales primarily, with specific provisions to Scotland and Northern Ireland.",
+        source_url: "https://www.legislation.gov.uk/uksi/2017/1012",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Coming-into-force date 30/11/2017 confirmed against legislation.gov.uk.",
+      },
+    ],
     last_verified: "2026-04-27",
   },
 ];
