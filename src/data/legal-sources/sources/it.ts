@@ -696,9 +696,9 @@ const PRIMARY_LEGISLATION_IT: LegalSource[] = [
     title_local:
       "Decreto legislativo 4 giugno 2003, n. 128 — Riordino dell'Agenzia Spaziale Italiana",
     date_enacted: "2003-06-04",
-    date_in_force: "2003-07-18",
+    date_in_force: "2003-06-07",
     date_last_amended: "2022-05-01",
-    official_reference: "GU n. 156 del 8 luglio 2003",
+    official_reference: "GU n. 129 del 6 giugno 2003",
     source_url:
       "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2003-06-04;128",
     issuing_body: "Governo della Repubblica Italiana",
@@ -722,7 +722,73 @@ const PRIMARY_LEGISLATION_IT: LegalSource[] = [
       "ASI organic law (riordino). As amended by L. 7/2018, DL 86/2018, DL 36/2022.",
       "Establishes ASI's institutional framework that underpins its regulatory role under Legge 89/2025.",
     ],
-    last_verified: "2026-04-09",
+    legislative_history: [
+      {
+        date: "2003-06-04",
+        type: "adoption",
+        body: "Repubblica Italiana · Governo (legislazione delegata)",
+        reference: "Decreto legislativo 4 giugno 2003, n. 128",
+        description:
+          "Adoption of D.Lgs. 4 giugno 2003, n. 128 — Riordino dell'Agenzia spaziale italiana — issued by the Government under delegated legislative powers. Identificativo Normattiva: 003G0156.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2003-06-04;128",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of adoption 4 giugno 2003 and identifier 003G0156 confirmed against Normattiva primary source.",
+      },
+      {
+        date: "2003-06-06",
+        type: "promulgation",
+        body: "Istituto Poligrafico e Zecca dello Stato (Gazzetta Ufficiale)",
+        reference: "GU Serie Generale n. 129 del 06-06-2003",
+        description:
+          "Pubblicazione in Gazzetta Ufficiale Serie Generale n. 129 del 6 giugno 2003.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2003-06-04;128",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "GU citation 'GU Serie Generale n. 129 del 06-06-2003' confirmed against Normattiva — corrects the catalogue's prior citation 'GU n. 156 del 8 luglio 2003' which was incorrect on both number and date.",
+      },
+      {
+        date: "2003-06-07",
+        type: "in_force",
+        body: "Repubblica Italiana · Governo",
+        reference: "Normattiva — Testo in vigore dal: 7-6-2003",
+        description:
+          "Entrata in vigore del D.Lgs. 128/2003 il giorno successivo alla pubblicazione, come confermato da Normattiva.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2003-06-04;128",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-in-force date 7 giugno 2003 confirmed against Normattiva — corrects the catalogue's prior 'date_in_force: 2003-07-18' (off by 41 days).",
+      },
+      {
+        date: "2018-02-25",
+        type: "amendment",
+        body: "Parlamento Italiano",
+        reference: "Legge 11 gennaio 2018, n. 7",
+        description:
+          "Modifiche al D.Lgs. 128/2003 introdotte dalla Legge 11 gennaio 2018, n. 7, per allineare il ruolo dell'ASI al nuovo quadro di governance spaziale (COMINT e Tavolo di coordinamento).",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2018-01-11;7",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Amendment relationship cross-referenced against the L. 7/2018 verified milestone in IT-LEGGE-7-2018; effective date 25/02/2018 matches the entrata-in-vigore of L. 7/2018.",
+        affected_sections: [
+          "Art. 2",
+          "Governance / Consiglio di Amministrazione",
+        ],
+      },
+    ],
+    last_verified: "2026-04-28",
   },
   {
     id: "IT-DLGS-66-2010-SPACE",
@@ -763,7 +829,55 @@ const PRIMARY_LEGISLATION_IT: LegalSource[] = [
       "The Military Code's space provisions are the legal basis for the Comando delle Operazioni Spaziali (COS), established June 2020.",
       "Art. 88 defines the aero-spatial domain. Art. 798-bis assigns space responsibilities to the Aeronautica Militare.",
     ],
-    last_verified: "2026-04-09",
+    legislative_history: [
+      {
+        date: "2010-03-15",
+        type: "adoption",
+        body: "Repubblica Italiana · Governo (legislazione delegata)",
+        reference: "Decreto legislativo 15 marzo 2010, n. 66",
+        description:
+          "Adoption of D.Lgs. 15 marzo 2010, n. 66 — Codice dell'ordinamento militare — issued under delegated legislative authority (delega L. 246/2005 e L. 196/2009), consolidating the body of military-administration law into a seven-book code. Identificativo: 10G0089.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2010-03-15;66",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of adoption 15 marzo 2010 and identifier 10G0089 confirmed against Normattiva primary source.",
+      },
+      {
+        date: "2010-05-08",
+        type: "promulgation",
+        body: "Istituto Poligrafico e Zecca dello Stato (Gazzetta Ufficiale)",
+        reference:
+          "GU Serie Generale n. 106 del 08-05-2010 — Suppl. Ordinario n. 84",
+        description:
+          "Pubblicazione in Gazzetta Ufficiale Serie Generale n. 106 del 8 maggio 2010, Supplemento Ordinario n. 84.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2010-03-15;66",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "GU citation including Suppl. Ordinario n. 84 confirmed against Normattiva.",
+      },
+      {
+        date: "2010-10-09",
+        type: "in_force",
+        body: "Repubblica Italiana · Governo",
+        reference: "Normattiva — Testo in vigore dal: 9/10/2010",
+        description:
+          "Entrata in vigore del Codice dell'ordinamento militare con vacatio di cinque mesi per consentire al Ministero della Difesa l'allineamento dei regolamenti interni.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2010-03-15;66",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-in-force date 9 ottobre 2010 confirmed against Normattiva — matches the catalogue's prior 'date_in_force: 2010-10-09'.",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
   {
     id: "IT-SASO-2023",
