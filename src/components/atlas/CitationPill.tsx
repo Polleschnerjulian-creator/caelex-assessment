@@ -156,8 +156,14 @@ export function CitationPill({ id, href, kind = "source" }: CitationPillProps) {
               <span
                 className={`block ${accentText} font-mono text-[11px] mb-1`}
               >
-                {preview.jurisdiction} · {preview.type.replace(/_/g, " ")} ·{" "}
-                {preview.status}
+                {/* Defensive nullish-coalescing so a malformed
+                    /api/atlas/source-preview/[id] response (missing
+                    type/status/jurisdiction) doesn't crash the
+                    tooltip with `undefined.replace()`. Caught by
+                    tests/unit/components/atlas/CitationPill.test.tsx. */}
+                {preview.jurisdiction ?? "—"} ·{" "}
+                {(preview.type ?? "").replace(/_/g, " ") || "—"} ·{" "}
+                {preview.status ?? "—"}
               </span>
               <span className="block font-semibold text-white mb-1.5">
                 {preview.title}
