@@ -1111,8 +1111,11 @@ const POLICY_BE: LegalSource[] = [
     type: "policy_document",
     status: "in_force",
     title_en: "Belgium CM25 ESA Commitment (November 2025, Bremen)",
+    title_local: "Engagement de la Belgique au CM25 (Bremen, novembre 2025)",
     date_published: "2025-11-01",
-    source_url: "https://www.belspo.be",
+    // Policy/announcement document — canonical reference is the BELSPO
+    // space portal section (no per-CM page exists).
+    source_url: "https://www.belspo.be/belspo/space/index_en.stm",
     issuing_body: "BELSPO / Federal Government",
     competent_authorities: ["BE-BELSPO"],
     relevance_level: "medium",
@@ -1137,8 +1140,11 @@ const POLICY_BE: LegalSource[] = [
     type: "policy_document",
     status: "in_force",
     title_en: "Benelux Space Cooperation MOU (September 2024)",
+    title_local: "Mémorandum de coopération spatiale Benelux (septembre 2024)",
     date_published: "2024-09-01",
-    source_url: "https://www.belspo.be",
+    // Inter-governmental MOU — canonical reference is BELSPO's policy index
+    // (no per-MOU page published in primary register).
+    source_url: "https://www.belspo.be/belspo/space/index_en.stm",
     issuing_body: "SpaceNed / VRI / BAG / Wallonie Espace",
     competent_authorities: ["BE-BELSPO"],
     relevance_level: "medium",
@@ -1167,6 +1173,8 @@ const EU_BE: LegalSource[] = [
     status: "in_force",
     title_en:
       "Cyber Resilience Act (Regulation (EU) 2024/2847) — Belgian Application",
+    title_local:
+      "Cyber Resilience Act — Verordening (EU) 2024/2847 (Belgian implementation context)",
     date_enacted: "2024-10-23",
     date_in_force: "2024-12-10",
     source_url: "https://eur-lex.europa.eu/eli/reg/2024/2847/oj",

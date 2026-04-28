@@ -280,7 +280,10 @@ const SECTORAL_EE: LegalSource[] = [
     relevance_level: "high",
     applicable_to: ["all"],
     compliance_areas: ["cybersecurity"],
-    implements: "EU-NIS-2016",
+    // Note: implements the original NIS Directive (EU 2016/1148), which is
+    // not a separate Atlas catalogue entry (NIS1 was repealed by EU-NIS2-2022
+    // Art. 44 effective 18.10.2024). The transposition relationship is
+    // captured in prose in key_provisions and the EU-NIS2-2022 lh repeal milestone.
     key_provisions: [
       {
         section: "Full instrument",

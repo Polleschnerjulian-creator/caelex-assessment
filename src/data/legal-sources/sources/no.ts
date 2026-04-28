@@ -477,12 +477,23 @@ const DRAFT_LEGISLATION_NO: LegalSource[] = [
   {
     id: "NO-NEW-SPACE-ACT-DRAFT",
     jurisdiction: "NO",
+    // Schema caveat: status="draft" is operationally accurate (NOT YET in force,
+    // EIF 1.7.2026) but legally imprecise — the Act has been formally adopted
+    // by Stortinget on 11.12.2025 and sanctioned 22.12.2025 as LOV-2025-12-22-128.
+    // The Atlas LegalSourceStatus enum lacks an "adopted_pending_eif" value;
+    // staying with "draft" until EIF to keep compliance surfaces correct.
     type: "draft_legislation",
     status: "draft",
-    title_en: "Proposed New Space Activities Act — Prop. 155 L (2024-2025)",
-    title_local: "Prop. 155 L (2024–2025) Lov om romvirksomhet",
-    date_published: "2025-07-01",
-    source_url: "https://www.regjeringen.no",
+    title_en:
+      "Proposed New Space Activities Act — Prop. 155 L (2024-2025), now LOV-2025-12-22-128",
+    title_local:
+      "Lov om aktiviteter i verdensrommet (romloven) — LOV-2025-12-22-128",
+    date_enacted: "2025-12-22",
+    date_in_force: "2026-07-01",
+    date_published: "2025-12-22",
+    official_reference:
+      "LOV-2025-12-22-128 · Prop. 155 L (2024-2025) · Innst. 32 L (2025-2026) · Lovvedtak 2 (2025-2026)",
+    source_url: "https://lovdata.no/dokument/NL/lov/2025-12-22-128",
     issuing_body: "Regjeringen / Stortinget",
     competent_authorities: ["NO-CAA", "NO-NFD", "NO-NOSA"],
     relevance_level: "critical",
@@ -813,7 +824,7 @@ const CYBERSECURITY_NO: LegalSource[] = [
     title_local: "Digitalsikkerhetsloven",
     date_enacted: "2025-06-23",
     date_in_force: "2025-10-01",
-    source_url: "https://lovdata.no",
+    source_url: "https://lovdata.no/dokument/NL/lov/2025-06-23",
     issuing_body: "Stortinget",
     competent_authorities: ["NO-NSM", "NO-JUSTISDEP"],
     relevance_level: "high",
@@ -880,7 +891,10 @@ const BILATERAL_NO: LegalSource[] = [
     status: "in_force",
     title_en: "US-Norway Technology Safeguards Agreement (Andøya Spaceport)",
     date_enacted: "2025-01-16",
-    source_url: "https://www.regjeringen.no",
+    // Bilateral treaty — canonical reference is the Norwegian Foreign Ministry's
+    // treaty index. Per-treaty deep-link not published as of 2026-04-28.
+    source_url:
+      "https://www.regjeringen.no/no/tema/utenrikssaker/folkerett/innsikt/folkerettslige_avtaler/id105828/",
     issuing_body: "Kingdom of Norway / United States",
     competent_authorities: ["NO-MAEC", "NO-CAA"],
     relevance_level: "high",
@@ -915,6 +929,8 @@ const POLICY_NO: LegalSource[] = [
     status: "in_force",
     title_en:
       "Norway CM25 ESA Commitment — €292 Million (November 2025, Bremen)",
+    title_local:
+      "Norges forpliktelser ved ESA Ministerrådsmøtet 2025 (CM25, Bremen)",
     date_published: "2025-11-01",
     source_url: "https://www.romsenter.no",
     issuing_body: "Norwegian Space Agency / Government of Norway",
@@ -941,7 +957,8 @@ const POLICY_NO: LegalSource[] = [
     title_en: "White Paper: Between Heaven and Earth — Norwegian Space Policy",
     title_local: "Meld. St. 32 (2012-2013) Mellom himmel og jord",
     date_published: "2013-06-01",
-    source_url: "https://www.regjeringen.no",
+    source_url:
+      "https://www.regjeringen.no/no/dokumenter/meld-st-32-20122013/id724014/",
     issuing_body: "Ministry of Trade, Industry and Fisheries",
     competent_authorities: ["NO-NFD", "NO-NOSA"],
     relevance_level: "medium",

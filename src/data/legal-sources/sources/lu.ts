@@ -264,6 +264,9 @@ const TREATIES_LU: LegalSource[] = [
   {
     id: "LU-INT-MOON-1979",
     jurisdiction: "LU",
+    // Semantics caveat: status="not_ratified" reflects LUXEMBOURG's non-party
+    // status. date_in_force="1984-07-11" is the TREATY's GENERAL EIF (per
+    // Art. 19(3)); Luxembourg is not bound.
     type: "international_treaty",
     status: "not_ratified",
     title_en:
@@ -858,6 +861,7 @@ const EU_LU: LegalSource[] = [
     type: "policy_document",
     status: "in_force",
     title_en: "IRIS\u00B2 — Luxembourg Participation and Control Centre",
+    title_local: "Programme IRIS² — engagement luxembourgeois",
     date_published: "2024-01-01",
     source_url:
       "https://defence-industry-space.ec.europa.eu/eu-space-policy/iris2_en",
@@ -926,6 +930,8 @@ const POLICY_LU: LegalSource[] = [
     type: "policy_document",
     status: "in_force",
     title_en: "SpaceResources.lu Initiative",
+    title_local:
+      "SpaceResources.lu — Initiative luxembourgeoise sur les ressources spatiales",
     date_published: "2016-02-01",
     source_url: "https://space-agency.public.lu/en/space-resources.html",
     issuing_body: "Luxembourg Space Agency / Ministry of the Economy",
@@ -957,6 +963,8 @@ const POLICY_LU: LegalSource[] = [
     type: "policy_document",
     status: "in_force",
     title_en: "LuxIMPULSE National Programme",
+    title_local:
+      "LuxIMPULSE — Programme national luxembourgeois de financement spatial",
     date_published: "2025-01-01",
     source_url: "https://space-agency.public.lu/en/agency/luximpulse.html",
     issuing_body: "Luxembourg Space Agency",
@@ -988,6 +996,8 @@ const MILITARY_LU: LegalSource[] = [
     type: "policy_document",
     status: "in_force",
     title_en: "GovSat — Luxembourg Government Satellite Communications",
+    title_local:
+      "GovSat S.A. — Joint-venture luxembourgeoise (État + SES) pour communications gouvernementales",
     date_published: "2018-01-31",
     date_last_amended: "2026-01-01",
     source_url: "https://www.govsat.lu",

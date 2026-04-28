@@ -262,6 +262,8 @@ export const LEGAL_SOURCES_IN: LegalSource[] = [
     type: "policy_document",
     status: "in_force",
     title_en: "Antrix-NSIL Reform — Commercial Space Procurement and Marketing",
+    title_local:
+      "Antrix Corporation Limited / NewSpace India Limited (NSIL) — Operational Mandates",
     date_published: "2024-12-01",
     source_url: "https://www.nsilindia.co.in/",
     issuing_body: "Department of Space",
@@ -327,6 +329,7 @@ export const LEGAL_SOURCES_IN: LegalSource[] = [
     status: "in_force",
     title_en:
       "ISRO System for Safe and Sustainable Operations Management (IS4OM) — Debris Mitigation Framework",
+    title_local: "ISRO Space Debris Mitigation Policy",
     date_published: "2022-07-27",
     date_last_amended: "2024-12-01",
     official_reference: "IS4OM-DEBRIS-2022",

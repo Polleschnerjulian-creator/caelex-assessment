@@ -1137,7 +1137,10 @@ const CYBERSECURITY_ES: LegalSource[] = [
     title_local:
       "Anteproyecto de Ley de Coordinación y Gobernanza de la Ciberseguridad",
     date_published: "2025-01-14",
-    source_url: "https://www.boe.es",
+    // Anteproyecto in public consultation — no BOE-A id assigned yet (will be
+    // assigned at Real Decreto-ley issuance or upon Cortes adoption).
+    source_url:
+      "https://www.lamoncloa.gob.es/consejodeministros/Paginas/enlaces/140125-enlace-ciberseguridad.aspx",
     issuing_body: "Consejo de Ministros",
     competent_authorities: ["ES-CCN"],
     relevance_level: "high",
@@ -1247,6 +1250,7 @@ const POLICY_ES: LegalSource[] = [
     status: "in_force",
     title_en:
       "Spain CM25 ESA Commitment — €1.85 Billion (November 2025, Bremen)",
+    title_local: "Compromiso de España en el CM25 ESA (Bremen, noviembre 2025)",
     date_published: "2025-11-01",
     source_url: "https://www.aee.gob.es",
     issuing_body: "AEE / Government of Spain",

@@ -449,6 +449,8 @@ const POLICY_GR: LegalSource[] = [
     type: "policy_document",
     status: "in_force",
     title_en: "Greek National Small Satellite Programme (€200M)",
+    title_local:
+      "Εθνικό Δορυφορικό Πρόγραμμα Ελλάδας (HellasSat / National Satellite Programme)",
     date_published: "2021-01-01",
     source_url: "https://hsc.gov.gr",
     issuing_body: "HSC / Ministry of Digital Governance",

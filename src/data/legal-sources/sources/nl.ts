@@ -977,6 +977,8 @@ const POLICY_NL: LegalSource[] = [
     status: "in_force",
     title_en:
       "The Hague International Space Resources Governance Working Group — Building Blocks",
+    title_local:
+      "Hague Building Blocks for Space Resource Activities (Den Haag, 2019)",
     date_published: "2019-11-12",
     source_url:
       "https://www.universiteitleiden.nl/en/law/institute-of-public-law/institute-of-air-space-law/the-hague-space-resources-governance-working-group",

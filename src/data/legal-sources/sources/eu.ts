@@ -253,27 +253,12 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
           "Date of signature 28/04/2021, author EP + Council, procedure 2018/0236/COD all confirmed against EUR-Lex CELEX:32021R0696.",
       },
       {
-        date: "2021-01-01",
-        type: "in_force",
-        body: "European Union",
-        reference: "Art. 111 — retroactive application",
-        description:
-          "Application date applies retroactively from 1 January 2021. The regulation entered into force on 12 May 2021 (date of OJ publication) but its operative provisions apply from 1 January 2021.",
-        source_url:
-          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32021R0696",
-        verified: true,
-        verified_by:
-          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
-        verified_at: "2026-04-28",
-        verification_note:
-          "Application date 01/01/2021 (per Art. 111) confirmed against EUR-Lex Date of effect field.",
-      },
-      {
         date: "2021-05-12",
         type: "promulgation",
         body: "Publications Office of the EU",
+        reference: "OJ L 170, 12.5.2021, p. 69",
         description:
-          "Regulation (EU) 2021/696 published in the Official Journal — entry-into-force date.",
+          "Regulation (EU) 2021/696 published in the Official Journal of the European Union (OJ L 170 of 12 May 2021, p. 69).",
         source_url:
           "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32021R0696",
         verified: true,
@@ -281,7 +266,39 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
           "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
         verified_at: "2026-04-28",
         verification_note:
-          "Entry-into-force date 12/05/2021 (per Art. 111 — date of publication) confirmed against EUR-Lex Date of effect field.",
+          "Publication date 12/05/2021 in OJ L 170 confirmed against EUR-Lex.",
+      },
+      {
+        date: "2021-05-12",
+        type: "in_force",
+        body: "European Union",
+        reference: "Art. 111(1) — entry into force on day of publication",
+        description:
+          "Regulation entered into force on the day of its publication in the Official Journal (12 May 2021), per Art. 111(1).",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32021R0696",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-into-force date 12/05/2021 (per Art. 111(1)) confirmed against EUR-Lex Date of effect field.",
+      },
+      {
+        date: "2021-01-01",
+        type: "transition_phase",
+        body: "European Union",
+        reference: "Art. 111(2) — retroactive applicability",
+        description:
+          "Operative provisions of the Regulation apply retroactively from 1 January 2021 (start of the 2021-2027 Multiannual Financial Framework), per Art. 111(2). This is NOT the entry-into-force date (which is 12 May 2021) but the date from which the Regulation is operationally applicable.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32021R0696",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Applicability date 01/01/2021 (per Art. 111(2)) — distinct from EIF (12.5.2021). Type changed from 'in_force' to 'transition_phase' to disambiguate; the top-level date_in_force field correctly reflects the EIF date 2021-05-12.",
       },
     ],
     last_verified: "2026-04-13",
@@ -1273,42 +1290,6 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
       },
     ],
     related_sources: ["EU-SOLVENCY-II", "INT-SPACE-INSURANCE-MARKET"],
-    last_verified: "2026-04-22",
-  },
-
-  {
-    id: "EU-DORA-2022",
-    jurisdiction: "EU",
-    type: "eu_regulation",
-    status: "in_force",
-    title_en:
-      "Digital Operational Resilience Act (DORA) — Financial-Sector Cyber Resilience",
-    date_enacted: "2022-12-14",
-    date_in_force: "2025-01-17",
-    official_reference: "Regulation (EU) 2022/2554",
-    source_url: "https://eur-lex.europa.eu/eli/reg/2022/2554/oj",
-    issuing_body: "European Parliament and Council",
-    competent_authorities: ["EU-EC"],
-    relevance_level: "medium",
-    applicable_to: ["satellite_operator", "constellation_operator"],
-    compliance_areas: ["cybersecurity"],
-    scope_description:
-      "Sector-specific cyber-resilience regulation for EU financial entities (banks, insurers, investment firms) — supersedes NIS2 sectoral rules for them. Indirectly relevant to space operators in two ways: (1) financial-sector clients of satcom/data services impose DORA-driven contractual requirements on their providers, including space-segment availability and incident-reporting obligations; (2) space operators that issue credit-default-swap-style sustainability instruments fall within DORA's perimeter.",
-    key_provisions: [
-      {
-        section: "Art. 28-30",
-        title: "ICT third-party risk management",
-        summary:
-          "Financial entities must oversee their ICT third-party providers (which can include satcom and ground-station operators) under prescriptive contractual and risk-management standards.",
-      },
-      {
-        section: "Art. 31-44",
-        title: "Critical ICT third-party providers",
-        summary:
-          "Designation regime for critical providers — when triggered, brings space-sector providers under direct ESA-led supervision via the European Supervisory Authorities.",
-      },
-    ],
-    related_sources: ["EU-NIS2-2022", "EU-CRA-2024"],
     legislative_history: [
       {
         date: "2012-07-03",
@@ -1356,7 +1337,7 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
           "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
         verified_at: "2026-04-28",
         verification_note:
-          "Entry-into-force date 22/02/2016 (per Art. 45) confirmed against EUR-Lex Date of effect field.",
+          "Entry-in-force date 22/02/2016 (per Art. 45) confirmed against EUR-Lex Date of effect field.",
       },
       {
         date: "2018-07-01",
@@ -1375,7 +1356,7 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
           "Transposition deadline 01/07/2018 + application 01/10/2018 (per Art. 42, amended by 32018L0411) confirmed against EUR-Lex Date of transposition field.",
       },
     ],
-    last_verified: "2026-04-22",
+    last_verified: "2026-04-28",
   },
 
   // ─── EU Space Programme deep-dive ──────────────────────────────────
@@ -1392,7 +1373,7 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     title_en:
       "Decision No 1104/2011/EU on the Galileo Public Regulated Service (PRS)",
     date_enacted: "2011-10-25",
-    date_in_force: "2011-11-21",
+    date_in_force: "2011-11-05",
     official_reference: "Decision 1104/2011/EU",
     source_url: "https://eur-lex.europa.eu/eli/dec/2011/1104/oj",
     issuing_body: "European Parliament and Council",
@@ -1564,7 +1545,7 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     status: "in_force",
     title_en: "Regulation (EU) 2023/588 — IRIS² Secure Connectivity Programme",
     date_enacted: "2023-03-15",
-    date_in_force: "2023-03-21",
+    date_in_force: "2023-03-20",
     official_reference: "Regulation (EU) 2023/588",
     source_url: "https://eur-lex.europa.eu/eli/reg/2023/588/oj",
     issuing_body: "European Parliament and Council",

@@ -467,6 +467,8 @@ const EXPORT_CONTROL_DK: LegalSource[] = [
     type: "federal_law",
     status: "in_force",
     title_en: "Dual-Use Export Control — Danish Enabling Legislation",
+    title_local:
+      "Bekendtgørelse om udførsel af produkter med dobbelt anvendelse og af visse non-listed dual-use items",
     date_enacted: "2011-06-09",
     date_last_amended: "2021-12-10",
     source_url: "https://www.retsinformation.dk/eli/lta/2011/635",

@@ -6822,28 +6822,9 @@ export const LEGAL_SOURCE_TRANSLATIONS_DE = new Map<string, TranslatedSource>([
     },
   ],
 
-  // ─── UK: SIR 2021, CAP 2589 ─────────────────────────────────────────
-
-  [
-    "UK-SIR-2021",
-    {
-      title: "Space Industry Regulations 2021",
-      scopeDescription:
-        "Statutory Instrument zur Operationalisierung des Space Industry Act 2018 — legt die detaillierten Lizenzantrags-Anforderungen, Technical-Information-Schedules und Operating-Licence-Bedingungen fest, die durch die CAA durchgesetzt werden. Die Verordnungen enthalten ausdrückliche Trümmer-Vermeidungs- und End-of-Mission-Anforderungen (Schedule 1 Part 3) mit ISO 24113 als technischer Basis. Begleitverordnungen zu Rechtsbehelfen (SI 2021/793) und Vollzug (SI 2021/795) vervollständigen das Sekundärrechts-Paket unter SIA 2018.",
-      provisions: {
-        "Sched. 1 Part 3": {
-          title: "Mission-Management-Plan",
-          summary:
-            "Antrag muss einen Mission-Management-Plan enthalten, der Betrieb, Konjunktions-Bewertungs-Verfahren, End-of-Life-Entsorgung und Passivierung abdeckt — gemessen an ISO 24113.",
-        },
-        "Sched. 1 Part 7": {
-          title: "Versicherung und Indemnifikation",
-          summary:
-            "Antrag muss Drittpartie-Haftpflicht-Versicherung in der von der CAA festgesetzten Höhe nachweisen — typisch EUR 60M Basisbetrag plus missions-spezifische Aufschläge.",
-        },
-      },
-    },
-  ],
+  // ─── UK: CAP 2589 ─────────────────────────────────────────────────
+  // (UK-SIR-2021 removed in the 2026-04-28 catalogue-consistency audit; the
+  //  canonical SI 2021/792 entry is translated under id "UK-SI-2021-792" above.)
 
   [
     "UK-CAA-CAP2589",

@@ -224,6 +224,7 @@ export const LEGAL_SOURCES_KR: LegalSource[] = [
     type: "policy_document",
     status: "in_force",
     title_en: "Naro Space Center — Korean Launch Range Authorisation Reference",
+    title_local: "나로우주센터 운영 정책 (Naro Space Center Operating Policy)",
     date_published: "2025-06-01",
     source_url: "https://kasa.go.kr/eng/main/main.do",
     issuing_body: "Korea AeroSpace Administration",

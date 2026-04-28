@@ -473,6 +473,9 @@ const TREATIES_IT: LegalSource[] = [
   {
     id: "IT-INT-MOON-1979",
     jurisdiction: "IT",
+    // Semantics caveat: status="not_ratified" reflects ITALY's non-party status.
+    // date_in_force="1984-07-11" is the TREATY's GENERAL EIF (per Art. 19(3));
+    // Italy is not bound. Schema-level disambiguation pending (see Atlas roadmap).
     type: "international_treaty",
     status: "not_ratified",
     title_en:
@@ -624,9 +627,9 @@ const PRIMARY_LEGISLATION_IT: LegalSource[] = [
     title_local:
       "Legge 13 giugno 2025, n. 89 — Disposizioni in materia di economia dello spazio",
     date_enacted: "2025-06-13",
-    date_in_force: "2025-07-09",
+    date_in_force: "2025-06-25",
     date_published: "2025-06-24",
-    official_reference: "GU n. 146 del 24 giugno 2025",
+    official_reference: "GU Serie Generale n. 144 del 24 giugno 2025",
     source_url:
       "https://www.gazzettaufficiale.it/eli/id/2025/06/24/25G00095/sg",
     issuing_body: "Parlamento della Repubblica Italiana",
@@ -760,7 +763,7 @@ const PRIMARY_LEGISLATION_IT: LegalSource[] = [
     title_local:
       "Legge 11 gennaio 2018, n. 7 — Misure per il coordinamento della politica spaziale e aerospaziale",
     date_enacted: "2018-01-11",
-    date_in_force: "2018-02-15",
+    date_in_force: "2018-02-25",
     official_reference: "GU n. 22 del 27 gennaio 2018",
     source_url:
       "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2018-01-11;7",
@@ -1322,7 +1325,7 @@ const EXPORT_CONTROL_IT: LegalSource[] = [
     title_local:
       "Legge 9 luglio 1990, n. 185 — Nuove norme sul controllo dell'esportazione, importazione e transito dei materiali di armamento",
     date_enacted: "1990-07-09",
-    date_in_force: "1990-07-14",
+    date_in_force: "1990-07-29",
     official_reference: "GU n. 163 del 14 luglio 1990",
     source_url:
       "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1990-07-09;185",

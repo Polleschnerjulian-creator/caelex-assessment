@@ -471,6 +471,11 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     applies_to_jurisdictions: ["AT", "BE", "NL"],
     signed_by_jurisdictions: ["FR"],
     jurisdiction: "INT",
+    // Semantics caveat: status="not_ratified" reflects the curation-context state
+    // (here: Germany / DACH) NOT being a party. date_in_force="1984-07-11" is the
+    // TREATY's GENERAL entry-into-force (per Art. 19(3), upon 5th ratification —
+    // Austria triggered). The schema currently conflates state-specific ratification
+    // with treaty-general EIF; both are factually correct in their own reading.
     type: "international_treaty",
     status: "not_ratified",
     title_en:
@@ -2301,7 +2306,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
 
   {
     id: "INT-UK-RUSSIA-REGS-2019",
-    jurisdiction: "INT",
+    jurisdiction: "UK",
     type: "federal_regulation",
     status: "in_force",
     title_en:
@@ -2397,7 +2402,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
 
   {
     id: "INT-CN-EXPORT-LAW-2020",
-    jurisdiction: "INT",
+    jurisdiction: "CN",
     type: "federal_law",
     status: "in_force",
     title_en:

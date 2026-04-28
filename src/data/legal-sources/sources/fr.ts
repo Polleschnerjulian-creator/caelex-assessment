@@ -651,7 +651,8 @@ const LOS_FRAMEWORK_FR: LegalSource[] = [
       "Ordonnance n° 2022-232 du 23 février 2022 relative aux opérations spatiales conduites au titre de la défense nationale",
     date_enacted: "2022-02-23",
     date_in_force: "2022-02-25",
-    official_reference: "JORF n° 0046 du 24 février 2022",
+    official_reference:
+      "Ordonnance n° 2022-232 · JORF n° 0046 du 24 février 2022",
     source_url: "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000045230287",
     issuing_body: "Gouvernement (par habilitation du Parlement)",
     competent_authorities: ["FR-MINARMES", "FR-CDE"],
@@ -707,7 +708,8 @@ const LOS_FRAMEWORK_FR: LegalSource[] = [
       "Loi n° 2023-703 du 1er août 2023 relative à la programmation militaire pour les années 2024 à 2030 — Article 60",
     date_enacted: "2023-08-01",
     date_in_force: "2023-08-03",
-    official_reference: "JORF n° 0178 du 2 août 2023",
+    official_reference:
+      "Loi n° 2023-703, Art. 60 (counter-space) · JORF n° 0178 du 2 août 2023",
     source_url: "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000047914986",
     issuing_body: "Parlement (Assemblée nationale + Sénat)",
     competent_authorities: ["FR-CNES", "FR-MINARMES"],
@@ -764,7 +766,7 @@ const LOS_FRAMEWORK_FR: LegalSource[] = [
       "Décret n° 2009-643 du 9 juin 2009 relatif aux autorisations délivrées en application de la loi n° 2008-518",
     date_enacted: "2009-06-09",
     date_last_amended: "2024-06-28",
-    official_reference: "JORF n° 0133 du 10 juin 2009",
+    official_reference: "Décret n° 2009-643 · JORF n° 0133 du 10 juin 2009",
     source_url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000020714558",
     issuing_body: "Premier ministre",
     competent_authorities: ["FR-CNES", "FR-MINARMES", "FR-MINECO"],
@@ -815,7 +817,7 @@ const LOS_FRAMEWORK_FR: LegalSource[] = [
     title_local:
       "Décret n° 2009-644 du 9 juin 2009 relatif aux obligations mises à la charge du Centre national d'études spatiales",
     date_enacted: "2009-06-09",
-    official_reference: "JORF n° 0133 du 10 juin 2009",
+    official_reference: "Décret n° 2009-644 · JORF n° 0133 du 10 juin 2009",
     source_url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000020714590",
     issuing_body: "Premier ministre",
     amended_by: ["FR-DECRET-2024-625"],
@@ -857,7 +859,7 @@ const LOS_FRAMEWORK_FR: LegalSource[] = [
     title_local:
       "Décret n° 2009-640 du 9 juin 2009 portant application des dispositions prévues au titre VI de la loi n° 2008-518 (données d'observation de la Terre)",
     date_enacted: "2009-06-09",
-    official_reference: "JORF n° 0133 du 10 juin 2009",
+    official_reference: "Décret n° 2009-640 · JORF n° 0133 du 10 juin 2009",
     source_url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000020714481",
     issuing_body: "Premier ministre",
     competent_authorities: ["FR-SGDSN", "FR-CNES"],
@@ -1034,7 +1036,8 @@ const TECHNICAL_FR: LegalSource[] = [
       "Arrêté du 23 février 2022 relatif à la composition du dossier de demande d'autorisation",
     date_enacted: "2022-02-23",
     date_last_amended: "2024-06-28",
-    official_reference: "JORF n° 0046 du 24 février 2022",
+    official_reference:
+      "Arrêté du 23 février 2022 (composition dossier) · JORF n° 0046 du 24 février 2022",
     source_url: "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000045230346",
     issuing_body: "Ministre chargé de l'espace",
     competent_authorities: ["FR-CNES", "FR-MINARMES"],
@@ -1246,7 +1249,8 @@ const DEFENSE_FR: LegalSource[] = [
       "Loi n° 2023-703 du 1er août 2023 relative à la programmation militaire pour les années 2024 à 2030",
     date_enacted: "2023-08-01",
     date_in_force: "2023-08-03",
-    official_reference: "JORF n° 0178 du 2 août 2023",
+    official_reference:
+      "Loi n° 2023-703 (LPM 2024-2030, espace-investissement) · JORF n° 0178 du 2 août 2023",
     source_url: "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000047914986",
     issuing_body: "Parlement (Assemblée nationale + Sénat)",
     competent_authorities: ["FR-MINARMES", "FR-CDE", "FR-DGA"],

@@ -435,6 +435,9 @@ const TREATIES_UK: LegalSource[] = [
   {
     id: "UK-INT-MOON-1979",
     jurisdiction: "UK",
+    // Semantics caveat: status="not_ratified" reflects the UK's non-party status.
+    // date_in_force="1984-07-11" is the TREATY's GENERAL EIF (per Art. 19(3));
+    // the UK is neither a signatory nor a party (UN MTDSG Chapter XXIV-2).
     type: "international_treaty",
     status: "not_ratified",
     title_en:
@@ -1312,7 +1315,7 @@ const SECONDARY_LEGISLATION_UK: LegalSource[] = [
     type: "federal_regulation",
     status: "in_force",
     title_en: "Air Navigation (Amendment) Order 2021",
-    date_in_force: "2021-07-29",
+    date_in_force: "2021-08-19",
     official_reference: "SI 2021/879",
     source_url: "https://www.legislation.gov.uk/uksi/2021/879",
     issuing_body: "Secretary of State",
@@ -1370,7 +1373,7 @@ const SECONDARY_LEGISLATION_UK: LegalSource[] = [
     status: "in_force",
     title_en:
       "Space Industry (Licence Exemption for Military Activities of Allies) Regulations 2025",
-    date_in_force: "2025-03-01",
+    date_in_force: "2025-02-28",
     official_reference: "SI 2025/222",
     source_url: "https://www.legislation.gov.uk/uksi/2025/222",
     issuing_body: "Secretary of State",
@@ -2960,40 +2963,9 @@ const SUSTAINABILITY_UK: LegalSource[] = [
     last_verified: "2026-04-27",
   },
 
-  {
-    id: "UK-SIR-2021",
-    jurisdiction: "UK",
-    type: "federal_regulation",
-    status: "in_force",
-    title_en: "The Space Industry Regulations 2021",
-    date_enacted: "2021-07-01",
-    date_in_force: "2021-07-29",
-    official_reference: "SI 2021/792",
-    source_url: "https://www.legislation.gov.uk/uksi/2021/792/contents/made",
-    issuing_body: "Secretary of State for Transport (made under SIA 2018)",
-    competent_authorities: ["UK-CAA"],
-    relevance_level: "fundamental",
-    applicable_to: ["satellite_operator", "launch_provider"],
-    compliance_areas: ["licensing", "debris_mitigation", "liability"],
-    scope_description:
-      "Statutory Instrument that operationalises the Space Industry Act 2018 — sets the detailed licence-application requirements, technical-information schedules, and operating-licence conditions enforced by the CAA. The regulations include explicit debris-mitigation and end-of-mission requirements (Schedule 1 Part 3) referencing ISO 24113 as the technical baseline. Companion regulations on Appeals (SI 2021/793) and Enforcement (SI 2021/795) round out the secondary-legislation package under SIA 2018.",
-    key_provisions: [
-      {
-        section: "Sched. 1 Part 3",
-        title: "Mission-management plan",
-        summary:
-          "Application must include a mission-management plan covering operations, conjunction-assessment procedures, end-of-life disposal, and passivation — assessed against ISO 24113.",
-      },
-      {
-        section: "Sched. 1 Part 7",
-        title: "Insurance and indemnity",
-        summary:
-          "Application must demonstrate third-party liability insurance to the level set by the CAA, typically the EUR 60M baseline plus mission-specific add-ons.",
-      },
-    ],
-    related_sources: ["UK-SIA-2018", "UK-CAA-CAP2589", "INT-ISO-24113-2023"],
-    last_verified: "2026-04-27",
-  },
+  // NOTE: A redundant duplicate of SI 2021/792 (under id "UK-SIR-2021") was
+  // removed during the 2026-04-28 catalogue-consistency audit. The canonical
+  // entry for the Space Industry Regulations 2021 is UK-SI-2021-792 above.
 ];
 
 // ─── Aggregated Export ──────────────────────────────────────────────

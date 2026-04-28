@@ -3,6 +3,15 @@
 > **Status.** Internal compliance instruction. Mandatory before any
 > `LegislativeMilestone` is marked `verified: true` on a public-facing
 > Atlas source-detail page.
+
+> **2026-04-28 catalogue-consistency audit close-out.** A systematic
+> 8-pass scan of all 617 LegalSource entries was conducted. All
+> 🔴 critical findings (1× duplicate ID, 1× broken cross-reference, 10×
+> top-level/lh date mismatches, 1× cross-contamination) and all 🟡
+> significant findings (4× duplicate official_reference, 2×
+> jurisdiction misclassification, 4× Moon-Agreement status semantics,
+> 1× NO-NEW-SPACE-ACT status caveat) were resolved in a single pass.
+> Remaining 🟢 cosmetic items: see §6 Open Backlog.
 >
 > **Why this exists.** A legislative-history timeline is only useful
 > to a lawyer if every entry can be relied on. Any single fabricated
@@ -409,3 +418,65 @@ analogous protocol):
 External-counsel sign-off is itself recorded in
 `verification_note` (e.g. _"Verified against EUR-Lex procedure
 file; external review by [Firm Name] on [Date]"_).
+
+---
+
+## 8 · Open backlog (post-2026-04-28 audit)
+
+The 2026-04-28 catalogue-consistency audit closed all 🔴 critical and
+🟡 significant findings. The remaining 🟢 cosmetic backlog is tracked
+here for follow-up:
+
+### 8.1 · Missing `date_in_force` on 334 sources marked `status: "in_force"`
+
+A scan of the 617-entry corpus identified **334 sources** that have
+`status: "in_force"` but no `date_in_force` value. This is permitted
+by the schema and reflects the heterogeneity of the catalogue:
+
+- **Standards & soft-law (large share)**: ISO/CCSDS/ECSS standards,
+  IADC guidelines, ITU recommendations, NATO policies. These have
+  publication years but rarely a binding "in-force" date in the
+  legal sense.
+- **Policy documents**: National space strategies, white papers,
+  ministerial communications. Their "in-force" semantics are
+  programmatic, not statutory.
+- **Codices & consolidated framework laws**: Where the original
+  Act's date_enacted is in the catalogue but the consolidated text
+  has accreted dozens of amendments — the canonical "in-force" date
+  becomes ambiguous.
+
+**Recommendation.** This is a verification expansion task, not a
+correction task. Fix forward via the legislative-history protocol
+in §3 above: each `legislative_history` block that gets a verified
+`in_force` milestone naturally produces a primary-source-confirmed
+EIF that can be promoted to `date_in_force`. As of 2026-04-28, 73
+sources have `legislative_history` blocks — meaning ~261 of the
+334 still need primary-source verification before their EIF can be
+asserted with confidence.
+
+### 8.2 · 18 sources fixed: `title_local` added in audit close-out
+
+All 18 sources flagged in the audit pass now carry `title_local`
+values. Note that the IL entries (3 Hebrew laws) re-used existing
+single-quoted Hebrew titles; the audit had falsely reported them as
+missing because the regex pattern matched only double-quoted
+strings.
+
+### 8.3 · Schema extensions deferred (to a separate design)
+
+Two semantic gaps surfaced during the audit but were not resolved
+schema-side because they require deliberate design:
+
+1. **Treaty ratification status.** The `LegalSourceStatus` enum
+   conflates state-specific ratification with treaty-general EIF.
+   Moon-Agreement entries (4×) carry inline comments documenting
+   the disambiguation; a future schema revision should split into
+   `treaty_status` (signed/ratified/not_ratified per state) and
+   `treaty_eif` (general in-force date).
+
+2. **"Adopted but not yet in force" enum value.** NO-NEW-SPACE-ACT-
+   DRAFT was adopted as LOV-2025-12-22-128 on 22.12.2025 but does
+   not enter into force until 1.7.2026. Currently retained under
+   `status: "draft"` with an inline caveat; a future schema
+   revision should add `enacted_pending_eif` (or similar) to this
+   enum.
