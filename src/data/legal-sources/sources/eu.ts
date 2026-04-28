@@ -219,6 +219,71 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
       },
     ],
     related_sources: ["EU-SPACE-ACT"],
+    legislative_history: [
+      {
+        date: "2018-06-06",
+        type: "proposal",
+        body: "European Commission · DG GROW / DG DEFIS",
+        reference: "COM(2018) 447 final · CELEX:52018PC0447",
+        description:
+          "Commission proposal for the EU Space Programme Regulation, consolidating Galileo, EGNOS, Copernicus, GOVSATCOM and SSA/SST under a single legal framework. Procedure: 2018/0236/COD. Legal basis: Art. 189(2) TFEU.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:52018PC0447",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Proposal CELEX 52018PC0447 referenced from the Reg (EU) 2021/696 'Adopted act' field on EUR-Lex CELEX:32021R0696. Proposal date matches signature date of adopted regulation (28/04/2021); the actual proposal date (commission adoption) is 06/06/2018 per the EUR-Lex procedure file 2018/0236/COD.",
+      },
+      {
+        date: "2021-04-28",
+        type: "adoption",
+        body: "European Parliament and Council of the European Union",
+        reference: "Regulation (EU) 2021/696 · CELEX:32021R0696",
+        description:
+          "Regulation establishing the Union Space Programme and the European Union Agency for the Space Programme (EUSPA), and repealing Regulations (EU) 912/2010, (EU) 1285/2013 and (EU) 377/2014 and Decision 541/2014/EU.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32021R0696",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of signature 28/04/2021, author EP + Council, procedure 2018/0236/COD all confirmed against EUR-Lex CELEX:32021R0696.",
+      },
+      {
+        date: "2021-01-01",
+        type: "in_force",
+        body: "European Union",
+        reference: "Art. 111 — retroactive application",
+        description:
+          "Application date applies retroactively from 1 January 2021. The regulation entered into force on 12 May 2021 (date of OJ publication) but its operative provisions apply from 1 January 2021.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32021R0696",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Application date 01/01/2021 (per Art. 111) confirmed against EUR-Lex Date of effect field.",
+      },
+      {
+        date: "2021-05-12",
+        type: "promulgation",
+        body: "Publications Office of the EU",
+        description:
+          "Regulation (EU) 2021/696 published in the Official Journal — entry-into-force date.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32021R0696",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-into-force date 12/05/2021 (per Art. 111 — date of publication) confirmed against EUR-Lex Date of effect field.",
+      },
+    ],
     last_verified: "2026-04-13",
   },
   {
@@ -454,6 +519,120 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
       "CRA is the only enacted EU law (not proposal) that directly affects space hardware/software cybersecurity.",
       "Full application from 11 December 2027. Reporting obligations apply from 11 September 2026.",
     ],
+    legislative_history: [
+      {
+        date: "2022-09-15",
+        type: "proposal",
+        body: "European Commission · DG CNECT",
+        reference: "COM(2022) 454 final · CELEX:52022PC0454",
+        description:
+          "Commission proposal for a Cyber Resilience Act — horizontal cybersecurity requirements for products with digital elements. Procedure: 2022/0272/COD.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:52022PC0454",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Proposal CELEX 52022PC0454 referenced from the Reg (EU) 2024/2847 'Proposal' field on EUR-Lex CELEX:32024R2847. Procedure file 2022/0272/COD confirmed.",
+      },
+      {
+        date: "2024-10-23",
+        type: "adoption",
+        body: "European Parliament and Council of the European Union",
+        reference: "Regulation (EU) 2024/2847 · CELEX:32024R2847",
+        description:
+          "Cyber Resilience Act signed by EP + Council. Procedure 2022/0272/COD. Legal basis: Art. 114 TFEU.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32024R2847",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of signature 23/10/2024 confirmed against EUR-Lex CELEX:32024R2847 'Date of signature' field.",
+      },
+      {
+        date: "2024-12-10",
+        type: "in_force",
+        body: "European Union · Publications Office",
+        reference: "Art. 71(1) — Date pub. + 20 days",
+        description:
+          "CRA entered into force on the twentieth day following its publication in the Official Journal — implies OJ publication 20/11/2024.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32024R2847",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-into-force date 10/12/2024 (per Art. 71.1) confirmed against EUR-Lex Date of effect field.",
+      },
+      {
+        date: "2026-06-11",
+        type: "transition_phase",
+        body: "European Union",
+        reference: "Art. 71(2) — Partial application",
+        description:
+          "First partial application of CRA provisions. Per Art. 71(2), this is the date from which certain provisions apply.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32024R2847",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Partial application date 11/06/2026 (per Art. 71.2) confirmed against EUR-Lex Date of effect field.",
+      },
+      {
+        date: "2026-09-11",
+        type: "transition_phase",
+        body: "European Union",
+        reference: "Art. 71(2) — Reporting obligations",
+        description:
+          "Second partial application — incident-reporting obligations under Chapter IV apply from this date.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32024R2847",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Partial application date 11/09/2026 (per Art. 71.2) confirmed against EUR-Lex Date of effect field.",
+      },
+      {
+        date: "2027-12-11",
+        type: "in_force",
+        body: "European Union",
+        reference: "Art. 71(2) — Full application",
+        description:
+          "Full application of all CRA provisions — date from which the regulation applies in its entirety.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32024R2847",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Full-application date 11/12/2027 (per Art. 71.2) confirmed against EUR-Lex Date of effect field.",
+      },
+      {
+        date: "2030-12-11",
+        type: "consolidation",
+        body: "European Commission",
+        reference: "Art. 70(1) — Review",
+        description:
+          "Commission review deadline — by this date the Commission shall periodically evaluate the CRA and report to the European Parliament and the Council.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32024R2847",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Review deadline 11/12/2030 (per Art. 70.1) confirmed against EUR-Lex Deadline field.",
+      },
+    ],
     last_verified: "2026-04-13",
   },
   {
@@ -499,6 +678,72 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     scope_description:
       "Only relevant for space operators that provide critical ICT services to the financial sector (e.g., SATCOM for trading platforms, timing services for financial networks).",
     related_sources: ["EU-NIS2-2022"],
+    legislative_history: [
+      {
+        date: "2020-09-24",
+        type: "proposal",
+        body: "European Commission · DG FISMA",
+        reference: "COM(2020) 595 final · CELEX:52020PC0595",
+        description:
+          "Commission proposal for a Regulation on digital operational resilience for the financial sector (DORA). Procedure: 2020/0266/COD. Legal basis: Art. 114 TFEU.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:52020PC0595",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Proposal CELEX 52020PC0595 referenced from the Reg (EU) 2022/2554 'Proposal' field on EUR-Lex CELEX:32022R2554.",
+      },
+      {
+        date: "2022-12-14",
+        type: "adoption",
+        body: "European Parliament and Council of the European Union",
+        reference: "Regulation (EU) 2022/2554 · CELEX:32022R2554",
+        description:
+          "DORA signed by EP + Council. Procedure: 2020/0266/COD. Author: DG FISMA.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32022R2554",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of signature 14/12/2022 confirmed against EUR-Lex CELEX:32022R2554.",
+      },
+      {
+        date: "2023-01-16",
+        type: "in_force",
+        body: "European Union",
+        reference: "Art. 64 — Date pub. + 20 days",
+        description:
+          "DORA entered into force on the twentieth day following its publication in the Official Journal.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32022R2554",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-into-force date 16/01/2023 (per Art. 64) confirmed against EUR-Lex Date of effect field.",
+      },
+      {
+        date: "2025-01-17",
+        type: "in_force",
+        body: "European Union",
+        reference: "Art. 64 — Application",
+        description:
+          "DORA fully applicable — financial entities must comply with the operative provisions from this date.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32022R2554",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Full-application date 17/01/2025 (per Art. 64) confirmed against EUR-Lex Date of effect field.",
+      },
+    ],
     last_verified: "2026-04-13",
   },
   {
@@ -546,6 +791,56 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
       },
     ],
     related_sources: ["DE-LUFTVG"],
+    legislative_history: [
+      {
+        date: "2015-12-07",
+        type: "proposal",
+        body: "European Commission · DG MOVE",
+        reference: "COM(2015) 613 final · CELEX:52015PC0613",
+        description:
+          "Commission proposal for a new EASA Regulation, replacing Reg (EC) 216/2008. Procedure: 2015/0277/COD. Legal basis: Art. 100(2) TFEU. Includes provisions on suborbital flight transit through controlled airspace.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:52015PC0613",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Proposal CELEX 52015PC0613 referenced from the Reg (EU) 2018/1139 'Proposal' field on EUR-Lex CELEX:32018R1139.",
+      },
+      {
+        date: "2018-07-04",
+        type: "adoption",
+        body: "European Parliament and Council of the European Union",
+        reference: "Regulation (EU) 2018/1139 · CELEX:32018R1139",
+        description:
+          "EASA Regulation signed by EP + Council. Establishes common rules in civil aviation including the European Union Aviation Safety Agency. Procedure: 2015/0277/COD.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32018R1139",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of signature 04/07/2018 confirmed against EUR-Lex CELEX:32018R1139.",
+      },
+      {
+        date: "2018-09-11",
+        type: "in_force",
+        body: "European Union",
+        reference: "Art. 141 — Date pub. + 20 days",
+        description:
+          "EASA Regulation entered into force on the twentieth day following its publication in the Official Journal.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32018R1139",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-into-force date 11/09/2018 (per Art. 141) confirmed against EUR-Lex Date of effect field.",
+      },
+    ],
     last_verified: "2026-04-13",
   },
 
@@ -616,6 +911,72 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
       },
     ],
     related_sources: ["EU-NIS2-2022", "DE-KRITIS-DACHG-2026"],
+    legislative_history: [
+      {
+        date: "2020-12-16",
+        type: "proposal",
+        body: "European Commission · DG HOME",
+        reference: "COM(2020) 829 final · CELEX:52020PC0829",
+        description:
+          "Commission proposal for the CER Directive — resilience of critical entities. Procedure: 2020/0365/COD. Legal basis: Art. 114 TFEU. Companion proposal to NIS2.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:52020PC0829",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Proposal CELEX 52020PC0829 referenced from the Dir (EU) 2022/2557 'Proposal' field on EUR-Lex CELEX:32022L2557.",
+      },
+      {
+        date: "2022-12-14",
+        type: "adoption",
+        body: "European Parliament and Council of the European Union",
+        reference: "Directive (EU) 2022/2557 · CELEX:32022L2557",
+        description:
+          "CER Directive signed by EP + Council. Procedure: 2020/0365/COD. Author: DG HOME.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32022L2557",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of signature 14/12/2022 confirmed against EUR-Lex CELEX:32022L2557.",
+      },
+      {
+        date: "2023-01-16",
+        type: "in_force",
+        body: "European Union",
+        reference: "Art. 28 — Date pub. + 20 days",
+        description:
+          "CER Directive entered into force on the twentieth day following its publication in the Official Journal.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32022L2557",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-into-force date 16/01/2023 (per Art. 28) confirmed against EUR-Lex Date of effect field.",
+      },
+      {
+        date: "2024-10-17",
+        type: "transition_phase",
+        body: "EU Member States",
+        reference: "Art. 26(1) — Adoption of national measures",
+        description:
+          "Member States must adopt national transposition measures by this date. Application begins 18/10/2024 per Art. 26(2).",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32022L2557",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Transposition deadline 17/10/2024 + application 18/10/2024 (per Art. 26) confirmed against EUR-Lex Date of transposition field.",
+      },
+    ],
     last_verified: "2026-04-22",
   },
 
@@ -681,6 +1042,73 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
       },
     ],
     related_sources: ["EU-NIS2-2022"],
+    legislative_history: [
+      {
+        date: "2012-01-25",
+        type: "proposal",
+        body: "European Commission · DG JUST",
+        reference: "COM(2012) 11 final · CELEX:52012PC0011",
+        description:
+          "Commission proposal for the General Data Protection Regulation, replacing Directive 95/46/EC. Procedure: 2012/0011/COD. Legal basis: Art. 16 TFEU.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:52012PC0011",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Proposal CELEX 52012PC0011 referenced from the Reg (EU) 2016/679 'Proposal' field on EUR-Lex CELEX:32016R0679.",
+      },
+      {
+        date: "2016-04-27",
+        type: "adoption",
+        body: "European Parliament and Council of the European Union",
+        reference: "Regulation (EU) 2016/679 · CELEX:32016R0679",
+        description:
+          "GDPR signed by EP + Council. Procedure: 2012/0011/COD. Author: DG JUST.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32016R0679",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of signature 27/04/2016 confirmed against EUR-Lex CELEX:32016R0679.",
+      },
+      {
+        date: "2016-05-24",
+        type: "in_force",
+        body: "European Union",
+        reference: "Art. 99 — Date pub. + 20 days",
+        description:
+          "GDPR entered into force on the twentieth day following its publication in the Official Journal.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32016R0679",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-into-force date 24/05/2016 (per Art. 99) confirmed against EUR-Lex Date of effect field.",
+      },
+      {
+        date: "2018-05-25",
+        type: "in_force",
+        body: "European Union",
+        reference: "Art. 99 — Application",
+        description:
+          "GDPR became fully applicable. Same date as the repeal of Directive 95/46/EC (per Art. 94).",
+        affected_sections: ["Directive 95/46/EC (repealed)"],
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32016R0679",
+        verified: true,
+        verified_by:
+          "claude (claude-in-chrome MCP, EUR-Lex Document Information tab)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Application date 25/05/2018 (per Art. 99) and repeal of 31995L0046 confirmed against EUR-Lex Date of effect + Modifies fields.",
+      },
+    ],
     last_verified: "2026-04-22",
   },
 

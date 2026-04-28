@@ -511,6 +511,65 @@ const PRIMARY_LEGISLATION_UK: LegalSource[] = [
       "Since July 2021, scope reduced to overseas activities only. UK-based activities are covered by SIA 2018.",
       "Extended to Crown Dependencies and Overseas Territories: Isle of Man, Gibraltar, Cayman Islands, Bermuda.",
     ],
+    legislative_history: [
+      {
+        date: "1986-07-18",
+        type: "presidential_signature",
+        body: "Royal Assent · Crown",
+        reference: "Outer Space Act 1986 c. 38",
+        description:
+          "Royal Assent. Long title: 'An Act to confer licensing and other powers on the Secretary of State to secure compliance with the international obligations of the United Kingdom with respect to the launching and operation of space objects and the carrying on of other activities in outer space by persons connected with this country.'",
+        source_url: "https://www.legislation.gov.uk/ukpga/1986/38",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Long title, Royal Assent date and chapter number confirmed against the legislation.gov.uk masthead.",
+      },
+      {
+        date: "2004-07-22",
+        type: "amendment",
+        body: "Parliament of the United Kingdom",
+        reference: "Statute Law (Repeals) Act 2004 c. 14",
+        description:
+          "Repeal of subsections 15(2)-(4) of the Outer Space Act 1986.",
+        source_url: "https://www.legislation.gov.uk/ukpga/2004/14",
+        affected_sections: ["s.15(2)", "s.15(3)", "s.15(4)"],
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Amendment listed in the OSA 1986 'amending acts' block on legislation.gov.uk.",
+      },
+      {
+        date: "2015-10-01",
+        type: "amendment",
+        body: "Parliament of the United Kingdom",
+        reference: "Deregulation Act 2015 c. 20",
+        description:
+          "Amendment to the OSA 1986 effective 1 October 2015 (cap on operator liability under s.10).",
+        source_url: "https://www.legislation.gov.uk/ukpga/2015/20",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Amending act and effective date listed in the OSA 1986 'amending acts' block on legislation.gov.uk.",
+      },
+      {
+        date: "2021-07-29",
+        type: "amendment",
+        body: "Parliament of the United Kingdom",
+        reference: "Space Industry Act 2018 c. 5",
+        description:
+          "SIA 2018 amendments take effect on the principal-commencement date — UK-based activities from this date fall under SIA 2018; OSA 1986 retains scope only for overseas activities by UK persons.",
+        source_url: "https://www.legislation.gov.uk/ukpga/2018/5",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Amending act and effective date listed in the OSA 1986 'amending acts' block on legislation.gov.uk; date matches SIA 2018 principal commencement (S.I. 2021/817).",
+      },
+    ],
     last_verified: "2026-04-13",
   },
   {
@@ -724,6 +783,36 @@ const PRIMARY_LEGISLATION_UK: LegalSource[] = [
       "Royal Assent 18 December 2025, in force 18 February 2026.",
       "Key reform: ensures all operators have defined liability caps, addressing industry concerns about uncapped indemnification exposure.",
     ],
+    legislative_history: [
+      {
+        date: "2025-12-18",
+        type: "presidential_signature",
+        body: "Royal Assent · Crown",
+        reference: "Space Industry (Indemnities) Act 2025 c. 35",
+        description:
+          "Royal Assent. Long title: 'An Act to require operator licences authorising the carrying out of spaceflight activities to specify the licensee's indemnity limit.' Amends SIA 2018 s.12(2) to make liability caps mandatory.",
+        source_url: "https://www.legislation.gov.uk/ukpga/2025/35",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Long title, Royal Assent date and chapter number confirmed against the legislation.gov.uk masthead.",
+      },
+      {
+        date: "2026-02-18",
+        type: "in_force",
+        body: "Parliament of the United Kingdom",
+        reference: "Section 4 SIA-Indemnities-Act (commencement)",
+        description:
+          "Came into force at the end of the period of two months beginning with the day on which it was passed (18 December 2025 + 2 months).",
+        source_url: "https://www.legislation.gov.uk/ukpga/2025/35",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Commencement date 18 February 2026 confirmed against the SIA-Indemnities-Act commencement information block on legislation.gov.uk.",
+      },
+    ],
     last_verified: "2026-04-13",
   },
   {
@@ -825,6 +914,36 @@ const SECONDARY_LEGISLATION_UK: LegalSource[] = [
     notes: [
       "The most important secondary legislation for UK space activities. 287 regulations across 17 Parts — the operational detail behind the SIA 2018.",
     ],
+    legislative_history: [
+      {
+        date: "2021-07-08",
+        type: "promulgation",
+        body: "Secretary of State for Transport",
+        reference: "S.I. 2021/792",
+        description:
+          "The Space Industry Regulations 2021 made on 8 July 2021 at 9.40 a.m. Made under the Space Industry Act 2018 (extensive enabling powers across ss. 2-68 and Schedules 2, 3 and 5).",
+        source_url: "https://www.legislation.gov.uk/uksi/2021/792",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Made date and time, SI number, parent statute (SIA 2018) confirmed against the legislation.gov.uk masthead.",
+      },
+      {
+        date: "2021-07-29",
+        type: "in_force",
+        body: "Secretary of State for Transport",
+        reference: "S.I. 2021/792",
+        description:
+          "Coming into force date — same as SIA 2018 principal commencement (S.I. 2021/817).",
+        source_url: "https://www.legislation.gov.uk/uksi/2021/792",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Coming-into-force date 29 July 2021 confirmed against legislation.gov.uk.",
+      },
+    ],
     last_verified: "2026-04-13",
   },
   {
@@ -853,6 +972,35 @@ const SECONDARY_LEGISLATION_UK: LegalSource[] = [
       },
     ],
     related_sources: ["UK-SIA-2018", "UK-SI-2021-792"],
+    legislative_history: [
+      {
+        date: "2021-07-08",
+        type: "promulgation",
+        body: "Secretary of State for Transport",
+        reference: "S.I. 2021/793",
+        description:
+          "The Spaceflight Activities (Investigation of Spaceflight Accidents) Regulations 2021 made on 8 July 2021 at 9.40 a.m. Made under SIA 2018 ss. 20(1) and (2), 54, 68(1) to (3).",
+        source_url: "https://www.legislation.gov.uk/uksi/2021/793",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Made date, SI number, parent statute confirmed against legislation.gov.uk.",
+      },
+      {
+        date: "2021-07-29",
+        type: "in_force",
+        body: "Secretary of State for Transport",
+        reference: "S.I. 2021/793",
+        description: "Coming into force date — same day as SI 2021/792.",
+        source_url: "https://www.legislation.gov.uk/uksi/2021/793",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Coming-into-force date 29 July 2021 confirmed against legislation.gov.uk.",
+      },
+    ],
     last_verified: "2026-04-13",
   },
   {
@@ -880,6 +1028,35 @@ const SECONDARY_LEGISLATION_UK: LegalSource[] = [
       },
     ],
     related_sources: ["UK-SIA-2018", "UK-SI-2021-792"],
+    legislative_history: [
+      {
+        date: "2021-07-08",
+        type: "promulgation",
+        body: "Secretary of State for Transport",
+        reference: "S.I. 2021/816",
+        description:
+          "The Space Industry (Appeals) Regulations 2021 made on 8 July 2021 at 9.40 a.m. Made under SIA 2018 ss. 54, 60, 66 and various paragraphs of Schedule 10.",
+        source_url: "https://www.legislation.gov.uk/uksi/2021/816",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Made date, SI number, parent statute confirmed against legislation.gov.uk.",
+      },
+      {
+        date: "2021-07-29",
+        type: "in_force",
+        body: "Secretary of State for Transport",
+        reference: "S.I. 2021/816",
+        description: "Coming into force — same day as SI 2021/792.",
+        source_url: "https://www.legislation.gov.uk/uksi/2021/816",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Coming-into-force date 29 July 2021 confirmed against legislation.gov.uk.",
+      },
+    ],
     last_verified: "2026-04-13",
   },
   {
@@ -1344,6 +1521,78 @@ const CYBERSECURITY_UK: LegalSource[] = [
     related_sources: ["UK-SI-2021-792"],
     notes: [
       "The UK's NIS framework is separate from the EU NIS2 Directive. Post-Brexit, the UK is developing its own Cyber Security and Resilience Bill (progressing through Parliament 2025-2026) which will update this framework.",
+    ],
+    legislative_history: [
+      {
+        date: "2018-04-19",
+        type: "promulgation",
+        body: "Secretary of State for Digital, Culture, Media and Sport",
+        reference: "S.I. 2018/506",
+        description:
+          "The Network and Information Systems Regulations 2018 made on 19 April 2018. Pre-Brexit transposition of the EU NIS Directive 2016/1148.",
+        source_url: "https://www.legislation.gov.uk/uksi/2018/506",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Made date and SI number confirmed against legislation.gov.uk.",
+      },
+      {
+        date: "2018-05-10",
+        type: "in_force",
+        body: "Secretary of State for Digital, Culture, Media and Sport",
+        reference: "S.I. 2018/506",
+        description:
+          "Coming into force — meets the EU NIS-Directive transposition deadline of 9 May 2018.",
+        source_url: "https://www.legislation.gov.uk/uksi/2018/506",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Coming-into-force date 10 May 2018 confirmed against legislation.gov.uk.",
+      },
+      {
+        date: "2018-05-30",
+        type: "amendment",
+        body: "Secretary of State",
+        reference: "S.I. 2018/629",
+        description:
+          "Network and Information Systems (Amendment) Regulations 2018 — first amendment SI.",
+        source_url: "https://www.legislation.gov.uk/uksi/2018/629",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk amending-list)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Amending SI listed in the NIS-Regs-2018 amending-instruments block on legislation.gov.uk.",
+      },
+      {
+        date: "2019-04-01",
+        type: "amendment",
+        body: "Secretary of State",
+        reference: "S.I. 2019/653",
+        description:
+          "Network and Information Systems (Amendment etc.) (EU Exit) Regulations 2019 — Brexit-related transposition adjustments.",
+        source_url: "https://www.legislation.gov.uk/uksi/2019/653",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk amending-list)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Amending SI listed in the NIS-Regs-2018 amending-instruments block on legislation.gov.uk.",
+      },
+      {
+        date: "2020-12-31",
+        type: "amendment",
+        body: "Secretary of State",
+        reference: "S.I. 2020/1245",
+        description:
+          "Network and Information Systems (Amendment and Transitional Provision etc.) Regulations 2020 — end-of-transition-period amendments.",
+        source_url: "https://www.legislation.gov.uk/uksi/2020/1245",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk amending-list)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Amending SI listed in the NIS-Regs-2018 amending-instruments block on legislation.gov.uk.",
+      },
     ],
     last_verified: "2026-04-13",
   },
