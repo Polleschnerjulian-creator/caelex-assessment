@@ -162,15 +162,15 @@ export default function AtlasAstraChat() {
     setTimeout(() => setOpen(false), 250);
   }, []);
 
-  // Brand orb disc — dark sphere stamp kept verbatim across themes.
-  // Reads as "premium dark logo on premium white surface" in light
-  // mode, blends into the stage in dark mode.
-  const orbDiscStyle = {
-    background:
-      "radial-gradient(circle at 30% 25%, rgba(35,46,72,0.95) 0%, rgba(15,19,32,1) 70%, rgba(8,12,22,1) 100%)",
-    boxShadow:
-      "inset 0 1px 0 rgba(255,255,255,0.08), inset 0 0 0 1px rgba(255,255,255,0.04), 0 2px 8px rgba(0,0,0,0.18)",
-  };
+  // The Astra orb canvas (AtlasEntityMini) renders with `alpha: true`
+  // and uses mix-blend-mode: difference internally, so it auto-tints to
+  // match the surrounding background (gray particles on light surfaces,
+  // white particles on dark). NO disc wrapper needed — the orb floats
+  // freely on whatever the page-bg is, identical to the closed-state
+  // floating button. Earlier iteration wrapped it in a dark navy disc
+  // for "premium brand stamp" effect on dark theme; that read as a
+  // black blot on light theme. Cleaner: trust the canvas's native
+  // tinting. Theme-aware "for free."
 
   return (
     <>
@@ -231,16 +231,13 @@ export default function AtlasAstraChat() {
             }}
           >
             <div className="flex items-center gap-3">
+              {/* Floating orb — no disc wrapper, the canvas's
+                  mix-blend-mode handles theme-aware tinting natively. */}
               <div
-                className="h-9 w-9 rounded-xl flex items-center justify-center"
-                style={orbDiscStyle}
+                className="flex items-center justify-center"
+                style={{ width: 32, height: 32 }}
               >
-                <span
-                  style={{ width: 22, height: 22, display: "inline-block" }}
-                  aria-hidden
-                >
-                  <AtlasEntityMini mode={loading ? "thinking" : "idle"} />
-                </span>
+                <AtlasEntityMini mode={loading ? "thinking" : "idle"} />
               </div>
               <div>
                 <span
@@ -294,29 +291,25 @@ export default function AtlasAstraChat() {
           >
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center h-full px-2">
-                {/* Hero-orb — the big version of the same brand-object.
-                    Sits in a soft emerald-tinted glow container so it
-                    reads as the brand-action focus, theme-agnostic. */}
+                {/* Hero-orb — floating freely with a soft emerald glow
+                    halo behind it. No dark disc; the canvas's
+                    mix-blend-mode tints particles to match the panel
+                    surface in either theme. */}
                 <div className="relative mb-5">
                   <div
-                    className="absolute inset-0 -m-4 rounded-full"
+                    className="absolute inset-0 -m-6 rounded-full pointer-events-none"
                     style={{
                       background:
-                        "radial-gradient(circle, rgba(16,185,129,0.16) 0%, rgba(16,185,129,0.06) 35%, transparent 70%)",
-                      filter: "blur(8px)",
+                        "radial-gradient(circle, rgba(16,185,129,0.18) 0%, rgba(16,185,129,0.08) 35%, transparent 70%)",
+                      filter: "blur(10px)",
                     }}
                     aria-hidden
                   />
                   <div
-                    className="relative h-16 w-16 rounded-2xl flex items-center justify-center"
-                    style={orbDiscStyle}
+                    className="relative flex items-center justify-center"
+                    style={{ width: 72, height: 72 }}
                   >
-                    <span
-                      style={{ width: 56, height: 56, display: "inline-block" }}
-                      aria-hidden
-                    >
-                      <AtlasEntityMini />
-                    </span>
+                    <AtlasEntityMini />
                   </div>
                 </div>
                 <p
@@ -406,21 +399,16 @@ export default function AtlasAstraChat() {
               }
               return (
                 <div key={msg.id} className="flex gap-2.5 items-start">
-                  {/* Astra avatar — same dark brand-disc + mini-orb;
-                      pulses on the LAST assistant message while
+                  {/* Astra avatar — floating mini-orb, no disc.
+                      Pulses on the LAST assistant message while
                       loading to signal "writing now". */}
                   <div
-                    className="h-7 w-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={orbDiscStyle}
+                    className="flex items-center justify-center flex-shrink-0 mt-0.5"
+                    style={{ width: 28, height: 28 }}
                   >
-                    <span
-                      style={{ width: 22, height: 22, display: "inline-block" }}
-                      aria-hidden
-                    >
-                      <AtlasEntityMini
-                        mode={isLastAssistant ? "thinking" : "idle"}
-                      />
-                    </span>
+                    <AtlasEntityMini
+                      mode={isLastAssistant ? "thinking" : "idle"}
+                    />
                   </div>
                   <div
                     className="flex-1 max-w-[85%] px-4 py-2.5 text-[13px] leading-relaxed rounded-[18px] rounded-tl-md break-words"
@@ -445,15 +433,10 @@ export default function AtlasAstraChat() {
             {loading && (
               <div className="flex gap-2.5 items-start">
                 <div
-                  className="h-7 w-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                  style={orbDiscStyle}
+                  className="flex items-center justify-center flex-shrink-0 mt-0.5"
+                  style={{ width: 28, height: 28 }}
                 >
-                  <span
-                    style={{ width: 22, height: 22, display: "inline-block" }}
-                    aria-hidden
-                  >
-                    <AtlasEntityMini mode="thinking" />
-                  </span>
+                  <AtlasEntityMini mode="thinking" />
                 </div>
                 <div
                   className="px-4 py-3 rounded-[18px] rounded-tl-md"
