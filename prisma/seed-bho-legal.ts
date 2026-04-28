@@ -12,25 +12,36 @@
  * Re-running ist safe: alle Steps verwenden upsert / findUnique-then-create.
  *
  * Run:
- *   # Default (Platzhalter-User bho-pilot@caelex.eu, generiertes Passwort):
+ *   # Default (Platzhalter-User bho-pilot@caelex.eu, OWNER, gen. Passwort):
  *   npx tsx prisma/seed-bho-legal.ts
  *
- *   # Mit konkretem BHO-Partner-Account:
- *   BHO_PILOT_EMAIL="vorname.nachname@bho-legal.de" \
+ *   # Mit konkretem BHO-Partner als OWNER:
+ *   BHO_PILOT_EMAIL="vorname.nachname@bho-legal.com" \
  *   BHO_PILOT_NAME="Vorname Nachname" \
  *   BHO_PILOT_PASSWORD="ChooseAStrongOne1!" \
+ *   npx tsx prisma/seed-bho-legal.ts
+ *
+ *   # Member statt OWNER (Atlas-Zugriff bleibt, aber keine Org-Verwaltung):
+ *   BHO_PILOT_EMAIL="anwalt@bho-legal.com" \
+ *   BHO_PILOT_NAME="Vorname Nachname" \
+ *   BHO_PILOT_PASSWORD="Changeme123!" \
+ *   BHO_PILOT_ROLE=MEMBER \
  *   npx tsx prisma/seed-bho-legal.ts
  *
  *   # Pilot-Dauer überschreiben (Default: 180 Tage):
  *   BHO_PILOT_DAYS=120 npx tsx prisma/seed-bho-legal.ts
  *
+ * Gültige Rollen: OWNER, ADMIN, MANAGER, MEMBER, VIEWER. Atlas-Zugriff hängt
+ * NICHT an der Rolle (sondern an org.orgType=LAW_FIRM); Rolle steuert nur
+ * Org-Management-Rechte (Settings, Member einladen, Billing).
+ *
  * Wenn der User mit der angegebenen E-Mail bereits existiert, bleibt sein
- * Passwort unverändert — er wird nur als OWNER der BHO-Legal-Org gehängt.
+ * Passwort unverändert — er wird nur an die Org mit der gewählten Rolle gehängt.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { PrismaClient } from "@prisma/client";
+import { OrganizationRole, PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "node:crypto";
 
@@ -48,6 +59,27 @@ const PILOT_PASSWORD =
   process.env.BHO_PILOT_PASSWORD ??
   "BHOLegalPilot" + randomBytes(4).toString("hex") + "!";
 const PILOT_DAYS = Number(process.env.BHO_PILOT_DAYS ?? "180");
+
+// Validierte Rolle (OWNER/ADMIN/MANAGER/MEMBER/VIEWER). Default OWNER für
+// Backwards-Kompatibilität — Pilot-User die nicht die Org verwalten sollen
+// bekommen MEMBER (oder MANAGER für eingeschränktes Rechtemanagement).
+function parseRole(raw: string | undefined): OrganizationRole {
+  const value = (raw ?? "OWNER").toUpperCase();
+  const valid: OrganizationRole[] = [
+    "OWNER",
+    "ADMIN",
+    "MANAGER",
+    "MEMBER",
+    "VIEWER",
+  ];
+  if (!valid.includes(value as OrganizationRole)) {
+    throw new Error(
+      `Invalid BHO_PILOT_ROLE="${raw}" — must be one of ${valid.join(", ")}.`,
+    );
+  }
+  return value as OrganizationRole;
+}
+const PILOT_ROLE = parseRole(process.env.BHO_PILOT_ROLE);
 
 const FIRM_CITY = process.env.BHO_FIRM_CITY ?? "Bremen";
 const FIRM_COUNTRY = process.env.BHO_FIRM_COUNTRY ?? "DE";
@@ -169,8 +201,8 @@ async function main() {
   }
   console.log(`     · user.id = ${user.id}`);
 
-  // ─── 4. OrganizationMember (OWNER) ───────────────────────────────────
-  console.log(`\n4/5  Membership · ${user.email} → OWNER`);
+  // ─── 4. OrganizationMember (Rolle via BHO_PILOT_ROLE, default OWNER) ─
+  console.log(`\n4/5  Membership · ${user.email} → ${PILOT_ROLE}`);
   await prisma.organizationMember.upsert({
     where: {
       organizationId_userId: {
@@ -178,14 +210,28 @@ async function main() {
         userId: user.id,
       },
     },
-    update: { role: "OWNER" },
+    update: { role: PILOT_ROLE },
     create: {
       organizationId: org.id,
       userId: user.id,
-      role: "OWNER",
+      role: PILOT_ROLE,
     },
   });
-  console.log(`     ✓ membership: OWNER of ${org.name}`);
+  console.log(`     ✓ membership: ${PILOT_ROLE} of ${org.name}`);
+
+  // Sanity-Check: Org sollte mindestens einen OWNER haben — sonst kann sie
+  // niemand intern verwalten. Super-admins (lib/super-admin.ts) haben zwar
+  // Bypass-Zugriff, aber für Org-interne Self-Service-Operations (Members
+  // einladen, Plan ändern) braucht es einen OWNER innerhalb der Org.
+  const ownerCount = await prisma.organizationMember.count({
+    where: { organizationId: org.id, role: "OWNER" },
+  });
+  if (ownerCount === 0) {
+    console.log(
+      `     ⚠  Org ${org.name} hat aktuell KEINEN OWNER. Promote einen Member ` +
+        `oder seede einen weiteren Pilot-User mit BHO_PILOT_ROLE=OWNER.`,
+    );
+  }
 
   // ─── 5. Subscription (Pilot-Trial) ───────────────────────────────────
   console.log(`\n5/5  Subscription · TRIALING (${PILOT_DAYS} Tage)`);
@@ -231,7 +277,7 @@ async function main() {
   console.log(`   orgType:  LAW_FIRM`);
   console.log(`   Plan:     PROFESSIONAL (Pilot-Trial)`);
   console.log(`   Trial-End: ${trialEnd.toISOString().slice(0, 10)}`);
-  console.log(`   Rolle:    OWNER`);
+  console.log(`   Rolle:    ${PILOT_ROLE}`);
   console.log(
     "\n   👉  Nach dem Login → /atlas (Atlas-Workspace für LAW_FIRM)\n",
   );
