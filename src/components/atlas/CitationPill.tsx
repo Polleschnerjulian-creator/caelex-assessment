@@ -200,9 +200,12 @@ export function CitationPill({ id, href, kind = "source" }: CitationPillProps) {
                 </>
               ) : (
                 <span className="block text-white/70 text-[11.5px]">
-                  {preview.scope_description.length > 320
-                    ? preview.scope_description.slice(0, 320) + "…"
-                    : preview.scope_description}
+                  {/* Same nullish-defence as the metadata line above: a
+                      malformed source-preview response (no scope_description)
+                      would otherwise crash with `undefined.length`. */}
+                  {(preview.scope_description ?? "").length > 320
+                    ? (preview.scope_description ?? "").slice(0, 320) + "…"
+                    : (preview.scope_description ?? "")}
                 </span>
               )}
               <span className="block mt-2 text-[10.5px] text-white/40">
@@ -215,21 +218,24 @@ export function CitationPill({ id, href, kind = "source" }: CitationPillProps) {
               <span
                 className={`block ${accentText} font-mono text-[11px] mb-1`}
               >
-                {preview.jurisdiction} · {preview.forum.replace(/_/g, " ")} ·{" "}
-                {preview.date_decided}
+                {/* Mirror the source-mode defence: malformed
+                    case-preview responses must not crash the tooltip. */}
+                {preview.jurisdiction ?? "—"} ·{" "}
+                {(preview.forum ?? "").replace(/_/g, " ") || "—"} ·{" "}
+                {preview.date_decided ?? "—"}
               </span>
               <span className="block font-semibold text-white mb-1.5">
                 {preview.title}
               </span>
               <span className="block text-white/60 text-[11px] mb-1.5">
-                {preview.plaintiff} v. {preview.defendant}
+                {preview.plaintiff ?? "—"} v. {preview.defendant ?? "—"}
               </span>
               <span className="block text-white/70 text-[11.5px]">
                 {preview.ruling_summary}
               </span>
               <span className="block mt-2 text-[10.5px] text-white/40">
                 {t("atlas.pill_click_opens_case")} ·{" "}
-                {preview.precedential_weight.replace(/_/g, " ")}
+                {(preview.precedential_weight ?? "").replace(/_/g, " ") || "—"}
               </span>
             </>
           )}
