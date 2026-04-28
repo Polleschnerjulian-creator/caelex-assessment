@@ -782,7 +782,66 @@ const TELECOM_ES: LegalSource[] = [
       "BOE-A-2022-10757.",
       "Replaced Ley 9/2014. Transposes EU Electronic Communications Code (Directive 2018/1972).",
     ],
-    last_verified: "2026-04-14",
+    legislative_history: [
+      {
+        date: "2022-06-28",
+        type: "presidential_signature",
+        body: "Reino de España · Cortes Generales / S.M. el Rey",
+        reference: "Ley 11/2022, de 28 de junio (BOE-A-2022-10757)",
+        description:
+          "Sanción y promulgación de la Ley 11/2022, General de Telecomunicaciones, tras aprobación por las Cortes Generales — transposición del European Electronic Communications Code (Directiva 2018/1972).",
+        source_url: "https://www.boe.es/buscar/doc.php?id=BOE-A-2022-10757",
+        verified: true,
+        verified_by: "claude (WebFetch, BOE)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Fecha de sanción 28.6.2022 verificada contra el BOE (BOE-A-2022-10757).",
+      },
+      {
+        date: "2022-06-29",
+        type: "promulgation",
+        body: "Boletín Oficial del Estado",
+        reference: "BOE núm. 155 del 29 de junio de 2022, pp. 91253-91411",
+        description:
+          "Publicación en el BOE núm. 155 del 29 de junio de 2022 (páginas 91253 a 91411).",
+        source_url: "https://www.boe.es/buscar/doc.php?id=BOE-A-2022-10757",
+        verified: true,
+        verified_by: "claude (WebFetch, BOE)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Cita BOE núm. 155 del 29.6.2022 con paginación 91253-91411 verificada — augmenta la cita catálogo BOE-A-2022-10757.",
+      },
+      {
+        date: "2022-06-30",
+        type: "in_force",
+        body: "Reino de España · Cortes Generales",
+        reference: "Ley 11/2022, Disposición final sexta (Entrada en vigor)",
+        description:
+          "Entrada en vigor el 30 de junio de 2022 (día siguiente a la publicación en el BOE) según la Disposición final sexta.",
+        source_url: "https://www.boe.es/buscar/act.php?id=BOE-A-2022-10757",
+        verified: true,
+        verified_by: "claude (WebFetch, BOE)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Fecha de entrada en vigor 30.6.2022 verificada contra el campo de metadatos del BOE 'Entrada en vigor: 30/06/2022'.",
+      },
+      {
+        date: "2018-12-11",
+        type: "implementation_act",
+        body: "Parlamento europeo + Consejo de la UE",
+        reference: "Directiva (UE) 2018/1972 — EECC",
+        description:
+          "Directiva UE objeto de transposición: European Electronic Communications Code (refundición). Plazo de transposición: 21 de diciembre de 2020 — España transpuso con ~18 meses de retraso.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32018L1972",
+        verified: true,
+        verified_by: "claude (WebFetch, EUR-Lex)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Identidad de la directiva (CELEX 32018L1972) verificada — confirma cross-reference con IT-CCE-REFORM-2021 (T13).",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
 ];
 
@@ -822,7 +881,51 @@ const EXPORT_CONTROL_ES: LegalSource[] = [
       "Implementing regulation: RD 679/2014 (BOE-A-2014-8926), amended by RD 494/2020 and RD 414/2022.",
       "Space-relevant categories: Category 7 (navigation/avionics), Category 9 (aerospace/propulsion).",
     ],
-    last_verified: "2026-04-14",
+    legislative_history: [
+      {
+        date: "2007-12-28",
+        type: "presidential_signature",
+        body: "Reino de España · Cortes Generales / S.M. el Rey",
+        reference: "Ley 53/2007, de 28 de diciembre (BOE-A-2007-22437)",
+        description:
+          "Sanción y promulgación de la Ley 53/2007 sobre el control del comercio exterior de material de defensa y de doble uso.",
+        source_url: "https://www.boe.es/buscar/doc.php?id=BOE-A-2007-22437",
+        verified: true,
+        verified_by: "claude (WebFetch, BOE)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Fecha de sanción 28.12.2007 verificada contra el BOE (BOE-A-2007-22437).",
+      },
+      {
+        date: "2007-12-29",
+        type: "promulgation",
+        body: "Boletín Oficial del Estado",
+        reference: "BOE núm. 312 del 29 de diciembre de 2007",
+        description:
+          "Publicación en el BOE núm. 312 del 29 de diciembre de 2007.",
+        source_url: "https://www.boe.es/buscar/doc.php?id=BOE-A-2007-22437",
+        verified: true,
+        verified_by: "claude (WebFetch, BOE)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "BOE núm. 312 del 29.12.2007 verificado contra el BOE.",
+      },
+      {
+        date: "2008-01-29",
+        type: "in_force",
+        body: "Reino de España",
+        reference: "Ley 53/2007, Disposición final séptima",
+        description:
+          "Entrada en vigor el 29 de enero de 2008 (un mes después de la publicación en el BOE) según la Disposición final séptima: « La presente Ley entrará en vigor un mes después de su publicación en el Boletín Oficial del Estado ».",
+        source_url: "https://www.boe.es/buscar/doc.php?id=BOE-A-2007-22437",
+        verified: true,
+        verified_by: "claude (WebFetch, BOE)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Texto de la Disposición final séptima y fecha 29.1.2008 verificados contra el BOE.",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
 ];
 
@@ -860,7 +963,65 @@ const CYBERSECURITY_ES: LegalSource[] = [
       "EC opened infringement proceedings November 2024; reasoned opinion (dictamen motivado) May 2025.",
       "RD-ley 12/2018 remains applicable until NIS2 transposition complete.",
     ],
-    last_verified: "2026-04-14",
+    legislative_history: [
+      {
+        date: "2018-09-07",
+        type: "adoption",
+        body: "Reino de España · Consejo de Ministros",
+        reference: "Real Decreto-ley 12/2018 (BOE-A-2018-12257)",
+        description:
+          "Aprobación del Real Decreto-ley 12/2018 por el Consejo de Ministros — transposición urgente de la Directiva NIS1 (UE) 2016/1148.",
+        source_url: "https://www.boe.es/buscar/doc.php?id=BOE-A-2018-12257",
+        verified: true,
+        verified_by: "claude (WebFetch, BOE)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Fecha de aprobación 7.9.2018 verificada contra el BOE.",
+      },
+      {
+        date: "2018-09-08",
+        type: "promulgation",
+        body: "Boletín Oficial del Estado",
+        reference: "BOE núm. 218 del 8 de septiembre de 2018",
+        description:
+          "Publicación en el BOE núm. 218 del 8 de septiembre de 2018.",
+        source_url: "https://www.boe.es/buscar/doc.php?id=BOE-A-2018-12257",
+        verified: true,
+        verified_by: "claude (WebFetch, BOE)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "BOE núm. 218 del 8.9.2018 verificado contra el BOE.",
+      },
+      {
+        date: "2018-09-09",
+        type: "in_force",
+        body: "Reino de España",
+        reference: "RD-ley 12/2018 — Disposición final entrada en vigor",
+        description:
+          "Entrada en vigor el 9 de septiembre de 2018 (día siguiente a la publicación en el BOE).",
+        source_url: "https://www.boe.es/buscar/doc.php?id=BOE-A-2018-12257",
+        verified: true,
+        verified_by: "claude (WebFetch, BOE)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Fecha de entrada en vigor 9.9.2018 verificada contra el BOE.",
+      },
+      {
+        date: "2018-09-20",
+        type: "adoption",
+        body: "Reino de España · Congreso de los Diputados",
+        reference: "Resolución de convalidación (BOE-A-2018-13182)",
+        description:
+          "Convalidación del Real Decreto-ley 12/2018 por el Congreso de los Diputados — el RD-ley adquiere rango legislativo permanente.",
+        source_url: "https://www.boe.es/buscar/doc.php?id=BOE-A-2018-13182",
+        verified: true,
+        verified_by: "claude (WebFetch, BOE)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Fecha de convalidación parlamentaria 20.9.2018 y referencia BOE-A-2018-13182 verificadas contra el BOE.",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
   {
     id: "ES-NIS2-DRAFT",
