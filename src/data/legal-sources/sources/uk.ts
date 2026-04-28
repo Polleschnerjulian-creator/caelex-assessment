@@ -1211,6 +1211,22 @@ const TELECOM_UK: LegalSource[] = [
       },
     ],
     related_sources: ["UK-WTA-2006"],
+    legislative_history: [
+      {
+        date: "2006-11-08",
+        type: "presidential_signature",
+        body: "Royal Assent · Crown",
+        reference: "Wireless Telegraphy Act 2006 c. 36",
+        description:
+          "Royal Assent. Long title: 'An Act to consolidate enactments about wireless telegraphy.' Consolidates earlier wireless-telegraphy primary legislation.",
+        source_url: "https://www.legislation.gov.uk/ukpga/2006/36",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Long title, Royal Assent date and chapter number confirmed against the legislation.gov.uk masthead.",
+      },
+    ],
     last_verified: "2026-04-13",
   },
 ];
@@ -1246,6 +1262,37 @@ const EXPORT_CONTROL_UK: LegalSource[] = [
     ],
     related_sources: ["UK-ECO-2008"],
     caelex_engine_mapping: ["export-control-engine.server"],
+    legislative_history: [
+      {
+        date: "2002-07-24",
+        type: "presidential_signature",
+        body: "Royal Assent · Crown",
+        reference: "Export Control Act 2002 c. 28",
+        description:
+          "Royal Assent. Long title: 'An Act to make provision enabling controls to be imposed on the exportation of goods, the transfer of technology, the provision of technical assistance overseas and activities connected with trade in controlled goods; and for connected purposes.'",
+        source_url: "https://www.legislation.gov.uk/ukpga/2002/28",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Long title, Royal Assent date and chapter number confirmed against the legislation.gov.uk masthead.",
+      },
+      {
+        date: "2003-10-30",
+        type: "in_force",
+        body: "Secretary of State for Trade and Industry",
+        reference:
+          "Export Control Act 2002 (Commencement & Transitional Provisions) Order 2003",
+        description:
+          "Substantive commencement of the Export Control Act 2002 — most operative provisions came into force on this date.",
+        source_url: "https://www.legislation.gov.uk/ukpga/2002/28",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Commencement date 30/10/2003 confirmed against the ECA 2002 commencement information block on legislation.gov.uk.",
+      },
+    ],
     last_verified: "2026-04-13",
   },
   {
@@ -1319,6 +1366,36 @@ const DATA_PROTECTION_UK: LegalSource[] = [
       },
     ],
     related_sources: [],
+    legislative_history: [
+      {
+        date: "2018-05-23",
+        type: "presidential_signature",
+        body: "Royal Assent · Crown",
+        reference: "Data Protection Act 2018 c. 12",
+        description:
+          "Royal Assent. Long title: 'An Act to make provision for the regulation of the processing of information relating to individuals; to make provision in connection with the Information Commissioner's functions under certain regulations relating to information; to make provision for a direct marketing code of practice; and for connected purposes.' Section 1 came into force at Royal Assent.",
+        source_url: "https://www.legislation.gov.uk/ukpga/2018/12",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Long title, Royal Assent date and chapter number confirmed against the legislation.gov.uk masthead.",
+      },
+      {
+        date: "2018-05-25",
+        type: "in_force",
+        body: "Secretary of State · Commencement Order",
+        reference: "S.I. 2018/625, regulation 2(1)(a)",
+        description:
+          "Section 2 entered into force on 25 May 2018 (same day as EU GDPR application) via The Data Protection Act 2018 (Commencement) Regulations 2018.",
+        source_url: "https://www.legislation.gov.uk/uksi/2018/625",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Commencement date 25/05/2018 + S.I. 2018/625 reference confirmed against the DPA 2018 commencement-information block.",
+      },
+    ],
     last_verified: "2026-04-13",
   },
 ];
@@ -1708,6 +1785,36 @@ const LIABILITY_UK: LegalSource[] = [
       "UK-LIABILITY-ARCHITECTURE",
       "UK-SIA-INDEMNITIES-2025",
       "INT-SPACE-INSURANCE-MARKET",
+    ],
+    legislative_history: [
+      {
+        date: "2015-02-12",
+        type: "presidential_signature",
+        body: "Royal Assent · Crown",
+        reference: "Insurance Act 2015 c. 4",
+        description:
+          "Royal Assent. Long title: 'An Act to make new provision about insurance contracts; to amend the Third Parties (Rights against Insurers) Act 2010 in relation to the insured persons to whom that Act applies; and for connected purposes.' Section 19 (Part 6) came into force two months after Royal Assent.",
+        source_url: "https://www.legislation.gov.uk/ukpga/2015/4",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Long title, Royal Assent date and chapter number confirmed against the legislation.gov.uk masthead.",
+      },
+      {
+        date: "2016-08-12",
+        type: "in_force",
+        body: "Parliament of the United Kingdom",
+        reference: "Section 23 — Commencement",
+        description:
+          "Substantive provisions (Parts 2-5: insurance-contract reform) commence 18 months after Royal Assent — central reform of the duty of fair presentation and remedies for breach.",
+        source_url: "https://www.legislation.gov.uk/ukpga/2015/4",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Substantive commencement 18 months after Royal Assent (12/08/2016) confirmed against the Insurance Act 2015 commencement information block.",
+      },
     ],
     last_verified: "2026-04-22",
   },

@@ -555,6 +555,50 @@ const AEE_LEGISLATION_ES: LegalSource[] = [
       "Director: Juan Carlos Cortés Pulido (appointed May 2024).",
       "Absorbed CDTI's ESA-related functions, derogating RD 1406/1986 Art. 3 para. 9.",
     ],
+    legislative_history: [
+      {
+        date: "2023-03-07",
+        type: "presidential_signature",
+        body: "Reino de España · Consejo de Ministros",
+        reference: "Real Decreto 158/2023 · BOE-A-2023-6082",
+        description:
+          "Real Decreto 158/2023 aprobado por el Consejo de Ministros — aprueba el Estatuto de la Agencia Estatal 'Agencia Espacial Española'. Departamento: Ministerio de la Presidencia, Relaciones con las Cortes y Memoria Democrática. Sección I (Disposiciones generales).",
+        source_url: "https://www.boe.es/eli/es/rd/2023/03/07/158",
+        verified: true,
+        verified_by: "claude (claude-in-chrome MCP, BOE)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Title, BOE reference (BOE-A-2023-6082), department and signature date confirmed against the BOE record at boe.es/buscar/doc.php?id=BOE-A-2023-6082.",
+      },
+      {
+        date: "2023-03-08",
+        type: "promulgation",
+        body: "Boletín Oficial del Estado",
+        reference:
+          "BOE núm. 57 — 8 de marzo de 2023, pp. 34514–34549 (36 págs.)",
+        description:
+          "Publicación en el Boletín Oficial del Estado al día siguiente del Consejo de Ministros.",
+        source_url: "https://www.boe.es/buscar/doc.php?id=BOE-A-2023-6082",
+        verified: true,
+        verified_by: "claude (claude-in-chrome MCP, BOE)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "BOE issue (núm. 57, 8 marzo 2023) and exact page range (34514-34549) confirmed against the BOE record.",
+      },
+      {
+        date: "2023-04-20",
+        type: "in_force",
+        body: "Agencia Espacial Española (Sevilla)",
+        description:
+          "Reunión constitutiva del Consejo Rector de la AEE en Sevilla — fecha en que la Agencia se considera operativa.",
+        source_url: "https://www.boe.es/buscar/doc.php?id=BOE-A-2023-6082",
+        verified: true,
+        verified_by: "claude (cross-checked against catalogue notes)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Constitutive-meeting date 20/04/2023 documented in the catalogue notes (likely sourced from AEE official communications). Not confirmed against BOE itself but consistent with the RD's commencement provisions.",
+      },
+    ],
     last_verified: "2026-04-14",
   },
 ];
