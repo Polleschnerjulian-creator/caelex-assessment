@@ -1012,7 +1012,71 @@ const TELECOM_IT: LegalSource[] = [
       "Reformed substantially by D.Lgs. 207/2021 transposing EU Directive 2018/1972 (European Electronic Communications Code).",
       "Art. 11 (satellite authorization) and Art. 27 (spectrum) are the key provisions for space operators.",
     ],
-    last_verified: "2026-04-09",
+    legislative_history: [
+      {
+        date: "2003-08-01",
+        type: "adoption",
+        body: "Repubblica Italiana · Governo (legislazione delegata)",
+        reference: "Decreto legislativo 1 agosto 2003, n. 259",
+        description:
+          "Adoption of the Codice delle comunicazioni elettroniche under delegated legislative authority. Identificativo Normattiva: 003G0280.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2003-08-01;259",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of adoption 1 agosto 2003 and identifier 003G0280 confirmed against Normattiva primary source.",
+      },
+      {
+        date: "2003-09-15",
+        type: "promulgation",
+        body: "Istituto Poligrafico e Zecca dello Stato (Gazzetta Ufficiale)",
+        reference:
+          "GU Serie Generale n. 214 del 15-09-2003 — Suppl. Ordinario n. 150",
+        description:
+          "Pubblicazione in Gazzetta Ufficiale Serie Generale n. 214 del 15 settembre 2003, Supplemento Ordinario n. 150.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2003-08-01;259",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "GU citation including Suppl. Ordinario n. 150 confirmed against Normattiva — augments the catalogue's 'GU n. 214 Suppl. Ord. del 15 settembre 2003' with the Suppl.Ord. number.",
+      },
+      {
+        date: "2003-09-16",
+        type: "in_force",
+        body: "Repubblica Italiana · Governo",
+        reference: "Normattiva — Testo in vigore dal: 16-9-2003",
+        description:
+          "Entrata in vigore del Codice delle comunicazioni elettroniche il giorno successivo alla pubblicazione in GU.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2003-08-01;259",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-in-force date 16 settembre 2003 confirmed against Normattiva — matches the catalogue's prior 'date_in_force: 2003-09-16'.",
+      },
+      {
+        date: "2021-12-24",
+        type: "amendment",
+        body: "Repubblica Italiana · Governo (legislazione delegata)",
+        reference: "Decreto legislativo 8 novembre 2021, n. 207",
+        description:
+          "Riforma sostanziale del Codice tramite D.Lgs. 207/2021 di recepimento della direttiva (UE) 2018/1972 (EECC). Identificativo: 21G00230.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2021-11-08;207",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Cross-referenced against the verified IT-CCE-REFORM-2021 milestone in this same file. Effective date 24 dicembre 2021 matches.",
+        affected_sections: ["Art. 11", "Art. 27", "Capo II"],
+      },
+    ],
+    last_verified: "2026-04-28",
   },
 ];
 
@@ -1239,7 +1303,69 @@ const CYBERSECURITY_IT: LegalSource[] = [
       "ACN is the single national competent authority for NIS2 in Italy.",
       "Registration deadline: February 2025. First compliance assessments expected mid-2026.",
     ],
-    last_verified: "2026-04-09",
+    legislative_history: [
+      {
+        date: "2024-09-04",
+        type: "adoption",
+        body: "Repubblica Italiana · Governo (legislazione delegata)",
+        reference: "Decreto legislativo 4 settembre 2024, n. 138",
+        description:
+          "Adoption of the NIS2 transposition decree under delegated legislative authority (delega Legge 21/2024). Identificativo Normattiva: 24G00155.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2024-09-04;138",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of adoption 4 settembre 2024 and identifier 24G00155 confirmed against Normattiva primary source.",
+      },
+      {
+        date: "2024-10-01",
+        type: "promulgation",
+        body: "Istituto Poligrafico e Zecca dello Stato (Gazzetta Ufficiale)",
+        reference: "GU Serie Generale n. 230 del 01-10-2024",
+        description:
+          "Pubblicazione in Gazzetta Ufficiale Serie Generale n. 230 del 1 ottobre 2024.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2024-09-04;138",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "GU citation confirmed against Normattiva — matches catalogue's 'GU n. 230 del 1 ottobre 2024'.",
+      },
+      {
+        date: "2024-10-16",
+        type: "in_force",
+        body: "Repubblica Italiana · Governo",
+        reference: "Normattiva — Testo in vigore dal: 16-10-2024",
+        description:
+          "Entrata in vigore con vacatio legis di 15 giorni dalla pubblicazione, recependo la NIS2 entro il termine UE del 17 ottobre 2024.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2024-09-04;138",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-in-force date 16 ottobre 2024 confirmed against Normattiva — matches catalogue's 'date_in_force: 2024-10-16'.",
+      },
+      {
+        date: "2024-10-17",
+        type: "implementation_act",
+        body: "Repubblica Italiana · Governo (recepimento UE)",
+        reference: "Direttiva (UE) 2022/2555 — termine di recepimento",
+        description:
+          "Italy's NIS2 transposition entered into force just before the EU directive's transposition deadline of 17 October 2024 — Italy is therefore not in default.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2024-09-04;138",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Cross-referenced against the verified EU-NIS2-2022 milestone (transposition deadline 17 October 2024).",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
   {
     id: "IT-PERIMETRO-2019",
@@ -1349,7 +1475,55 @@ const ENVIRONMENTAL_IT: LegalSource[] = [
       "Avio's Colleferro solid rocket motor facility is subject to Seveso III (D.Lgs. 105/2015) requirements.",
       "Legge 89/2025 Art. 5 integrates environmental sustainability into the space activity authorization criteria.",
     ],
-    last_verified: "2026-04-09",
+    legislative_history: [
+      {
+        date: "2006-04-03",
+        type: "adoption",
+        body: "Repubblica Italiana · Governo (legislazione delegata)",
+        reference: "Decreto legislativo 3 aprile 2006, n. 152",
+        description:
+          "Adoption of the Codice dell'Ambiente — comprehensive environmental code consolidating VIA, VAS, AIA, water, waste, and air-quality regimes. Identificativo Normattiva: 006G0171.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2006-04-03;152",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of adoption 3 aprile 2006 and identifier 006G0171 confirmed against Normattiva primary source.",
+      },
+      {
+        date: "2006-04-14",
+        type: "promulgation",
+        body: "Istituto Poligrafico e Zecca dello Stato (Gazzetta Ufficiale)",
+        reference:
+          "GU Serie Generale n. 88 del 14-04-2006 — Suppl. Ordinario n. 96",
+        description:
+          "Pubblicazione in Gazzetta Ufficiale Serie Generale n. 88 del 14 aprile 2006, Supplemento Ordinario n. 96.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2006-04-03;152",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "GU citation including Suppl. Ordinario n. 96 confirmed against Normattiva — augments the catalogue's 'GU n. 88 Suppl. Ord. del 14 aprile 2006' with the Suppl.Ord. number.",
+      },
+      {
+        date: "2006-04-29",
+        type: "in_force",
+        body: "Repubblica Italiana · Governo",
+        reference: "Normattiva — Testo in vigore dal: 29-4-2006",
+        description:
+          "Entrata in vigore generale con vacatio legis di 15 giorni; le disposizioni della Parte Seconda (VIA/VAS/AIA) sono entrate in vigore il 12 agosto 2006.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2006-04-03;152",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-in-force date 29 aprile 2006 confirmed against Normattiva (with delayed entry of Parte Seconda on 12 agosto 2006) — matches catalogue's 'date_in_force: 2006-04-29'.",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
 ];
 
@@ -1390,7 +1564,71 @@ const DATA_PROTECTION_IT: LegalSource[] = [
       "D.Lgs. 196/2003 substantially amended by D.Lgs. 101/2018 to adapt to GDPR.",
       "Garante Decision 467/2018 on DPIA requirements — relevant for EO operators.",
     ],
-    last_verified: "2026-04-09",
+    legislative_history: [
+      {
+        date: "2003-06-30",
+        type: "adoption",
+        body: "Repubblica Italiana · Governo (legislazione delegata)",
+        reference: "Decreto legislativo 30 giugno 2003, n. 196",
+        description:
+          "Adoption of the Codice in materia di protezione dei dati personali under delegated legislative authority. Identificativo Normattiva: 003G0218.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2003-06-30;196",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of adoption 30 giugno 2003 and identifier 003G0218 confirmed against Normattiva primary source.",
+      },
+      {
+        date: "2003-07-29",
+        type: "promulgation",
+        body: "Istituto Poligrafico e Zecca dello Stato (Gazzetta Ufficiale)",
+        reference:
+          "GU Serie Generale n. 174 del 29-07-2003 — Suppl. Ordinario n. 123",
+        description:
+          "Pubblicazione in Gazzetta Ufficiale Serie Generale n. 174 del 29 luglio 2003, Supplemento Ordinario n. 123.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2003-06-30;196",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "GU citation including Suppl. Ordinario n. 123 confirmed against Normattiva — augments the catalogue's 'GU n. 174 Suppl. Ord. del 29 luglio 2003' with the Suppl.Ord. number.",
+      },
+      {
+        date: "2004-01-01",
+        type: "in_force",
+        body: "Repubblica Italiana · Governo",
+        reference: "Normattiva — Testo in vigore dal: 1-1-2004",
+        description:
+          "Entrata in vigore generale del Codice il 1° gennaio 2004 (con eccezioni: artt. 156, 176 commi 3-6, e 182 entrati in vigore il 30 luglio 2003).",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2003-06-30;196",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-in-force date 1 gennaio 2004 confirmed against Normattiva — matches catalogue's 'date_in_force: 2004-01-01'.",
+      },
+      {
+        date: "2018-09-19",
+        type: "amendment",
+        body: "Repubblica Italiana · Governo (legislazione delegata)",
+        reference: "Decreto legislativo 10 agosto 2018, n. 101",
+        description:
+          "Adeguamento del Codice al GDPR (Regolamento (UE) 2016/679) tramite D.Lgs. 101/2018. Sostituisce gran parte degli articoli del Codice; mantiene le disposizioni nazionali specifiche (Garante, sanzioni penali).",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2018-08-10;101",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Cross-referenced against catalogue's 'date_last_amended: 2018-09-19' which matches D.Lgs. 101/2018 entrata-in-vigore.",
+        affected_sections: ["Parte I (riformulata)", "Art. 2-bis ff."],
+      },
+    ],
+    last_verified: "2026-04-28",
   },
 ];
 
@@ -1741,7 +1979,70 @@ const TELECOM_REFORM_IT: LegalSource[] = [
     notes: [
       "Transposes EU Directive 2018/1972 into Italian law, substantially reforming D.Lgs. 259/2003.",
     ],
-    last_verified: "2026-04-09",
+    legislative_history: [
+      {
+        date: "2021-11-08",
+        type: "adoption",
+        body: "Repubblica Italiana · Governo (legislazione delegata)",
+        reference: "Decreto legislativo 8 novembre 2021, n. 207",
+        description:
+          "Adoption of D.Lgs. 207/2021 — Attuazione della direttiva (UE) 2018/1972 (European Electronic Communications Code). Identificativo Normattiva: 21G00230.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2021-11-08;207",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of adoption 8 novembre 2021 and identifier 21G00230 confirmed against Normattiva primary source.",
+      },
+      {
+        date: "2021-12-09",
+        type: "promulgation",
+        body: "Istituto Poligrafico e Zecca dello Stato (Gazzetta Ufficiale)",
+        reference:
+          "GU Serie Generale n. 292 del 09-12-2021 — Suppl. Ordinario n. 43",
+        description:
+          "Pubblicazione in Gazzetta Ufficiale Serie Generale n. 292 del 9 dicembre 2021, Supplemento Ordinario n. 43.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2021-11-08;207",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "GU citation including Suppl. Ordinario n. 43 confirmed against Normattiva — augments the catalogue's 'GU n. 292 del 9 dicembre 2021' with the Suppl.Ord. number.",
+      },
+      {
+        date: "2021-12-24",
+        type: "in_force",
+        body: "Repubblica Italiana · Governo",
+        reference: "Normattiva — Testo in vigore dal: 24-12-2021",
+        description:
+          "Entrata in vigore con vacatio legis di 15 giorni dalla pubblicazione in GU.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2021-11-08;207",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-in-force date 24 dicembre 2021 confirmed against Normattiva — matches catalogue's 'date_in_force: 2021-12-24'.",
+      },
+      {
+        date: "2018-12-11",
+        type: "implementation_act",
+        body: "Parlamento europeo + Consiglio dell'UE",
+        reference: "Direttiva (UE) 2018/1972 — EECC",
+        description:
+          "Direttiva UE oggetto del recepimento: European Electronic Communications Code (rifusione). Recepimento entro il 21 dicembre 2020 ai sensi della direttiva.",
+        source_url:
+          "https://eur-lex.europa.eu/legal-content/IT/TXT/?uri=CELEX:32018L1972",
+        verified: true,
+        verified_by: "claude (WebFetch, EUR-Lex)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Identità della direttiva di recepimento confermata via EUR-Lex (CELEX 32018L1972). Italia ha recepito con ~12 mesi di ritardo rispetto al termine UE del 21 dicembre 2020.",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
 ];
 
