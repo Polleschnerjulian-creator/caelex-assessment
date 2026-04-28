@@ -22,7 +22,6 @@ import {
   Library,
   Gavel,
   PenSquare,
-  Columns,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import AtlasAstraChat from "@/components/atlas/AtlasAstraChat";
@@ -31,7 +30,20 @@ import { CommandPalette } from "./_components/CommandPalette";
 import { useAtlasTheme } from "./_components/AtlasThemeProvider";
 import { useAtlasUnreadCount } from "@/hooks/useAtlasUnreadCount";
 
-const MAIN_NAV = [
+/** Sidebar navigation item shape. The optional `comingSoon` flag
+ *  renders the entry as a disabled, greyed-out preview with a "Soon"
+ *  pill — used for surfaces whose UX is still being polished but
+ *  whose existence we want to telegraph to users. Click is suppressed
+ *  on `comingSoon` items so the broken/incomplete page never loads. */
+type NavItem = {
+  labelKey: string;
+  href: string;
+  icon: typeof Search;
+  exact?: boolean;
+  comingSoon?: boolean;
+};
+
+const MAIN_NAV: readonly NavItem[] = [
   {
     labelKey: "atlas.search",
     href: "/atlas",
@@ -39,13 +51,9 @@ const MAIN_NAV = [
     exact: true,
   },
   { labelKey: "atlas.comparator", href: "/atlas/comparator", icon: BarChart3 },
-  // Side-by-side article reader — table comparator gives cells-per-criterion;
-  // this gives the law's own words in 2-4 columns, the deepest research move.
-  {
-    labelKey: "atlas.compare_articles",
-    href: "/atlas/compare-articles",
-    icon: Columns,
-  },
+  // Side-by-side article reader was removed from the sidebar on
+  // request — page still ships at /atlas/compare-articles for
+  // direct-link access but is no longer surfaced as primary nav.
   { labelKey: "atlas.jurisdictions", href: "/atlas/jurisdictions", icon: Map },
   {
     labelKey: "atlas.international",
@@ -62,16 +70,24 @@ const MAIN_NAV = [
   // citation pills. Distinct icon (Gavel) to read as adjudication-
   // outcomes vs the statutory text under "sources".
   { labelKey: "atlas.cases", href: "/atlas/cases", icon: Gavel },
-  // Drafting Studio — dedicated entry-point for the three drafting
-  // tools (authorization application, compliance brief, jurisdictional
-  // comparison). Without this nav item the tools could only be reached
-  // by stumbling into AI Mode and typing the right command.
-  { labelKey: "atlas.drafting", href: "/atlas/drafting", icon: PenSquare },
+  // Drafting Studio — surface kept visible as a "coming soon" preview.
+  // The actual drafting tools live in AI Mode; the standalone /atlas/
+  // drafting page is being polished and is intentionally non-clickable
+  // until ready. comingSoon: true → greyed + "Soon" pill, click guarded.
+  {
+    labelKey: "atlas.drafting",
+    href: "/atlas/drafting",
+    icon: PenSquare,
+    comingSoon: true,
+  },
   { labelKey: "atlas.eu", href: "/atlas/eu", icon: Landmark },
+  // Landing-Rights: same "coming soon" treatment as Drafting — content
+  // exists but is being staged before public release.
   {
     labelKey: "atlas.landing_rights",
     href: "/atlas/landing-rights",
     icon: Ticket,
+    comingSoon: true,
   },
   { labelKey: "atlas.updates", href: "/atlas/updates", icon: Newspaper },
   // Legal Network: Kanzlei-Mandanten-Bridge zu Caelex. Zwischen
@@ -87,7 +103,7 @@ const MAIN_NAV = [
   // (rendered inline below) is what makes this item more than
   // decorative: without it, users wouldn't know new alerts had landed.
   { labelKey: "atlas.alerts", href: "/atlas/alerts", icon: Bell },
-] as const;
+];
 
 const COLLAPSED_W = 58;
 const EXPANDED_W = 250;
@@ -250,6 +266,43 @@ export default function AtlasShell({
                 );
                 const showUnreadBadge =
                   item.href === "/atlas/alerts" && unreadCount > 0;
+
+                // Coming-soon items render as a non-interactive `<span>`
+                // (not a Link) so the underlying page never loads. The
+                // tooltip still shows the label + a "Soon" suffix so
+                // users know what to expect.
+                if (item.comingSoon) {
+                  return (
+                    <span
+                      key={item.href}
+                      role="link"
+                      aria-disabled="true"
+                      tabIndex={-1}
+                      title={`${t(item.labelKey)} — Soon`}
+                      aria-label={`${t(item.labelKey)} — coming soon`}
+                      className="group relative flex items-center justify-center h-8 w-8 rounded-lg mb-0.5 text-white/35 cursor-not-allowed"
+                    >
+                      <Icon
+                        className="h-[15px] w-[15px]"
+                        strokeWidth={1.5}
+                        aria-hidden="true"
+                      />
+                      {/* Tiny corner dot signals "preview" in collapsed
+                          mode, mirroring the alert-unread dot's place. */}
+                      <span
+                        aria-hidden="true"
+                        className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-amber-400/70 ring-1 ring-[#1a1a1a]"
+                      />
+                      <span className="pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-lg bg-[#1a1a1a] px-3 py-1.5 text-[11px] font-medium text-white/90 opacity-0 shadow-xl border border-white/10 transition-opacity duration-150 group-hover:opacity-100">
+                        {t(item.labelKey)}
+                        <span className="ml-2 inline-flex items-center justify-center rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-semibold tracking-wide px-1.5 py-0.5 ring-1 ring-amber-500/30">
+                          Soon
+                        </span>
+                      </span>
+                    </span>
+                  );
+                }
+
                 return (
                   <Link
                     key={item.href}
@@ -310,6 +363,34 @@ export default function AtlasShell({
                 );
                 const showUnreadBadge =
                   item.href === "/atlas/alerts" && unreadCount > 0;
+
+                // Coming-soon: greyed row with "Soon" pill, no link.
+                if (item.comingSoon) {
+                  return (
+                    <li key={item.href}>
+                      <span
+                        role="link"
+                        aria-disabled="true"
+                        tabIndex={-1}
+                        title={`${t(item.labelKey)} — Soon`}
+                        className="flex items-center gap-3 h-9 px-3 rounded-xl whitespace-nowrap text-white/35 cursor-not-allowed select-none"
+                      >
+                        <Icon
+                          className="h-4 w-4 flex-shrink-0"
+                          strokeWidth={1.5}
+                          aria-hidden="true"
+                        />
+                        <span className="text-[12px] tracking-wide flex-1 italic">
+                          {t(item.labelKey)}
+                        </span>
+                        <span className="inline-flex items-center justify-center h-4 px-1.5 rounded-full bg-amber-500/15 text-amber-300 text-[10px] font-semibold tracking-wide ring-1 ring-amber-500/30">
+                          Soon
+                        </span>
+                      </span>
+                    </li>
+                  );
+                }
+
                 return (
                   <li key={item.href}>
                     <Link

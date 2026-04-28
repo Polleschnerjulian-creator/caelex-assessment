@@ -27,7 +27,6 @@ import {
   Library,
   ShieldCheck,
   Key,
-  PenSquare,
   type LucideIcon,
 } from "lucide-react";
 import { JURISDICTION_DATA as NATIONAL_DATA } from "@/data/national-space-laws";
@@ -87,16 +86,10 @@ const NAV_ITEMS: Item[] = [
     icon: BarChart3,
     haystack: "comparator vergleich",
   },
-  {
-    id: "nav-compare-articles",
-    group: "Navigation",
-    title: "Side-by-side articles",
-    subtitle: "Read 2-4 statutory provisions next to each other",
-    href: "/atlas/compare-articles",
-    icon: BarChart3,
-    haystack:
-      "compare articles side-by-side artikel vergleich verbatim wortlaut paragraph",
-  },
+  // Side-by-side articles is removed from the command palette in lockstep
+  // with its removal from the sidebar — the page still ships at
+  // /atlas/compare-articles for direct-link access but is no longer
+  // surfaced as discoverable nav.
   {
     id: "nav-jurisdictions",
     group: "Navigation",
@@ -134,16 +127,10 @@ const NAV_ITEMS: Item[] = [
     haystack:
       "cases rechtsprechung caselaw urteile settlements precedent gerichte",
   },
-  {
-    id: "nav-drafting",
-    group: "Navigation",
-    title: "Drafting Studio",
-    subtitle: "Authorization application, compliance brief, comparison matrix",
-    href: "/atlas/drafting",
-    icon: PenSquare,
-    haystack:
-      "drafting studio anträge brief comparison memo draft scaffold filing",
-  },
+  // Drafting Studio is intentionally not surfaced via the command palette
+  // while the surface is being polished pre-release — matches the
+  // sidebar's "coming soon" gating. Power-users with the URL can still
+  // reach /atlas/drafting directly. AI-Mode drafting tools remain available.
   {
     id: "nav-eu",
     group: "Navigation",
@@ -181,15 +168,10 @@ const NAV_ITEMS: Item[] = [
     icon: Key,
     haystack: "api access keys integration token developer",
   },
-  {
-    id: "nav-landing-rights",
-    group: "Navigation",
-    title: "Landing Rights",
-    subtitle: "Market-access & data landing rights",
-    href: "/atlas/landing-rights",
-    icon: Ticket,
-    haystack: "landing rights market access",
-  },
+  // Landing Rights index is hidden from the command palette while the
+  // surface is being polished pre-release — matches the sidebar's
+  // "coming soon" gating. The per-jurisdiction Landing-Rights items
+  // generated below are also excluded for the same reason.
   {
     id: "nav-updates",
     group: "Navigation",
@@ -275,16 +257,25 @@ const AUTHORITY_ITEMS: Item[] = ALL_AUTHORITIES.map((a) => ({
     `${a.id} ${a.name_en} ${a.name_local ?? ""} ${a.abbreviation ?? ""} ${a.space_mandate}`.toLowerCase(),
 }));
 
-const LANDING_RIGHTS_ITEMS: Item[] = ALL_LANDING_RIGHTS_PROFILES.map((p) => ({
-  id: `lr-${p.jurisdiction}`,
-  group: "Landing Rights" as const,
-  title: `${p.jurisdiction} — Landing Rights`,
-  subtitle: `${p.overview.regime_type.replace("_", " ")} regime · ${p.depth} coverage`,
-  href: `/atlas/landing-rights/${p.jurisdiction.toLowerCase()}`,
-  icon: Ticket,
-  haystack:
-    `${p.jurisdiction} landing rights market access ${p.overview.regime_type} ${p.overview.summary}`.toLowerCase(),
-}));
+// Landing-Rights per-jurisdiction palette items are gated behind the
+// same release toggle as the sidebar entry — kept in code so re-enabling
+// is a one-line flip when the surface ships, but excluded from
+// `ALL_ITEMS` below so users can't reach them via Cmd-K. The data file
+// import is still needed because the TypeScript narrowing relies on it
+// elsewhere in the file (group label).
+const _LANDING_RIGHTS_ITEMS_HIDDEN: Item[] = ALL_LANDING_RIGHTS_PROFILES.map(
+  (p) => ({
+    id: `lr-${p.jurisdiction}`,
+    group: "Landing Rights" as const,
+    title: `${p.jurisdiction} — Landing Rights`,
+    subtitle: `${p.overview.regime_type.replace("_", " ")} regime · ${p.depth} coverage`,
+    href: `/atlas/landing-rights/${p.jurisdiction.toLowerCase()}`,
+    icon: Ticket,
+    haystack:
+      `${p.jurisdiction} landing rights market access ${p.overview.regime_type} ${p.overview.summary}`.toLowerCase(),
+  }),
+);
+void _LANDING_RIGHTS_ITEMS_HIDDEN; // Suppress unused-var until release.
 
 // Caselaw — every entry in the 28-case database becomes a palette
 // hit so a free-text query like "Cosmos", "Iridium", "FCC Swarm"
@@ -308,7 +299,8 @@ const ALL_ITEMS: Item[] = [
   ...SOURCE_ITEMS,
   ...CASE_ITEMS,
   ...AUTHORITY_ITEMS,
-  ...LANDING_RIGHTS_ITEMS,
+  // Landing-Rights items intentionally excluded — re-enable by adding
+  // `..._LANDING_RIGHTS_ITEMS_HIDDEN` here when the surface ships.
 ];
 
 const GROUP_ORDER: ItemGroup[] = [
