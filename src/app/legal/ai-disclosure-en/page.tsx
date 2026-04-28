@@ -20,5 +20,7 @@ export const metadata: Metadata = {
 };
 
 export default function AIDisclosureEnPage() {
-  return <LegalRenderer doc={AI_DISCLOSURE_EN} />;
+  return (
+    <LegalRenderer doc={AI_DISCLOSURE_EN} altLangHref="/legal/ai-disclosure" />
+  );
 }

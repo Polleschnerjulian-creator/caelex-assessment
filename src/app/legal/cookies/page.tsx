@@ -18,5 +18,5 @@ export const metadata: Metadata = {
 };
 
 export default function CookiesPage() {
-  return <LegalRenderer doc={COOKIES_DE} />;
+  return <LegalRenderer doc={COOKIES_DE} altLangHref="/legal/cookies-en" />;
 }

@@ -75,7 +75,21 @@ function Section({ section }: { section: LegalSection }) {
   );
 }
 
-export function LegalRenderer({ doc }: { doc: LegalDocument }) {
+export function LegalRenderer({
+  doc,
+  altLangHref,
+}: {
+  doc: LegalDocument;
+  /** Path of the equivalent legal document in the OTHER language.
+   *  e.g. on /legal/privacy this is "/legal/privacy-en", on
+   *  /legal/privacy-en this is "/legal/privacy". When undefined the
+   *  language toggle is hidden — used for documents that exist in
+   *  one language only (security, content-policy, impressum,
+   *  widerruf). Previously the toggle hard-coded "/legal/terms" as
+   *  the target which silently shipped users from any DE legal
+   *  page to the EN AGB. */
+  altLangHref?: string;
+}) {
   return (
     <main className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827]">
       <div className="pt-32 pb-20 px-6 md:px-12">
@@ -84,15 +98,19 @@ export function LegalRenderer({ doc }: { doc: LegalDocument }) {
           <div className="flex-1 min-w-0 max-w-[820px]">
             <LegalBreadcrumbs lang={doc.lang} />
 
-            {/* Language toggle */}
-            <div className="flex justify-end mb-6">
-              <Link
-                href={doc.lang === "de" ? "/legal/terms-en" : "/legal/terms"}
-                className="text-small text-[#4B5563] hover:text-[#111827] transition-colors border border-[#E5E7EB] rounded-full px-3 py-1"
-              >
-                {doc.lang === "de" ? "English Version" : "Deutsche Version"}
-              </Link>
-            </div>
+            {/* Language toggle — only shown when an equivalent in the
+                other language exists. The href is supplied by the
+                page component so each route knows its own pair. */}
+            {altLangHref && (
+              <div className="flex justify-end mb-6">
+                <Link
+                  href={altLangHref}
+                  className="text-small text-[#4B5563] hover:text-[#111827] transition-colors border border-[#E5E7EB] rounded-full px-3 py-1"
+                >
+                  {doc.lang === "de" ? "English Version" : "Deutsche Version"}
+                </Link>
+              </div>
+            )}
 
             {/* Header */}
             <h1 className="text-display font-light tracking-[-0.02em] mb-2">

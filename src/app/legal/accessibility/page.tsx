@@ -21,5 +21,5 @@ export const metadata: Metadata = {
 };
 
 export default function AccessibilityPage() {
-  return <LegalRenderer doc={A11Y_EN} />;
+  return <LegalRenderer doc={A11Y_EN} altLangHref="/legal/barrierefreiheit" />;
 }

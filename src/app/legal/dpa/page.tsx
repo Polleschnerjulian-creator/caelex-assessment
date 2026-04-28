@@ -24,5 +24,5 @@ export const metadata: Metadata = {
 };
 
 export default function DPAPage() {
-  return <LegalRenderer doc={DPA_DE} />;
+  return <LegalRenderer doc={DPA_DE} altLangHref="/legal/dpa-en" />;
 }

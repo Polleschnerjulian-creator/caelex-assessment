@@ -24,5 +24,5 @@ export const metadata: Metadata = {
 };
 
 export default function TermsPage() {
-  return <LegalRenderer doc={TERMS_DE} />;
+  return <LegalRenderer doc={TERMS_DE} altLangHref="/legal/terms-en" />;
 }

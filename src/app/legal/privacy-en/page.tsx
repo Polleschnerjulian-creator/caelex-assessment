@@ -18,5 +18,5 @@ export const metadata: Metadata = {
 };
 
 export default function PrivacyEnPage() {
-  return <LegalRenderer doc={PRIVACY_EN} />;
+  return <LegalRenderer doc={PRIVACY_EN} altLangHref="/legal/privacy" />;
 }
