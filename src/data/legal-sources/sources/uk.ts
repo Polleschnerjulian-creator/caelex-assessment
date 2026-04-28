@@ -1084,6 +1084,36 @@ const SECONDARY_LEGISLATION_UK: LegalSource[] = [
       },
     ],
     related_sources: ["UK-SIA-2018"],
+    legislative_history: [
+      {
+        date: "2021-07-08",
+        type: "promulgation",
+        body: "Secretary of State for Transport",
+        reference: "S.I. 2021/815",
+        description:
+          "The Contracting Out (Functions in Relation to Space) Order 2021 made 08/07/2021. Made under the Deregulation and Contracting Out Act 1994 s.69(2),(4), the Outer Space Act 1986, and the Space Industry Act 2018. Authorises delegation of spaceflight regulatory functions from the Secretary of State to the CAA.",
+        source_url: "https://www.legislation.gov.uk/uksi/2021/815",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Made date 08/07/2021, SI number, parent statutes (DCOA 1994, OSA 1986, SIA 2018) confirmed against legislation.gov.uk masthead.",
+      },
+      {
+        date: "2021-07-29",
+        type: "in_force",
+        body: "Secretary of State for Transport",
+        reference: "S.I. 2021/815",
+        description:
+          "Coming into force same day as the Space Industry Regulations 2021 (S.I. 2021/792).",
+        source_url: "https://www.legislation.gov.uk/uksi/2021/815",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Coming-into-force date tied to SI 2021/792 commencement (29/07/2021) confirmed against legislation.gov.uk.",
+      },
+    ],
     last_verified: "2026-04-13",
   },
   {
@@ -1111,6 +1141,36 @@ const SECONDARY_LEGISLATION_UK: LegalSource[] = [
       },
     ],
     related_sources: ["UK-SIA-2018", "UK-SI-2021-792"],
+    legislative_history: [
+      {
+        date: "2021-07-21",
+        type: "promulgation",
+        body: "Secretary of State for Transport",
+        reference: "S.I. 2021/879",
+        description:
+          "The Air Navigation (Amendment) Order 2021 made 21/07/2021. Made under Civil Aviation Act 1982 ss. 60, 61 and Sch. 13. Amends the Air Navigation Order 2016 — adds Art. 94BA (space-site flight restrictions for unmanned aircraft) and amends Art. 96 (rocket regulations now exclude rockets regulated under SIA 2018).",
+        source_url: "https://www.legislation.gov.uk/uksi/2021/879",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Made date 21/07/2021, SI number, parent statute (Civil Aviation Act 1982) confirmed against legislation.gov.uk masthead.",
+      },
+      {
+        date: "2021-08-19",
+        type: "in_force",
+        body: "Secretary of State for Transport",
+        reference: "S.I. 2021/879",
+        description:
+          "Main commencement (Articles 8 and 12(b) deferred to 06/09/2021).",
+        source_url: "https://www.legislation.gov.uk/uksi/2021/879",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Coming-into-force date 19/08/2021 + deferred Arts 8 and 12(b) on 06/09/2021 confirmed against legislation.gov.uk.",
+      },
+    ],
     last_verified: "2026-04-13",
   },
   {
