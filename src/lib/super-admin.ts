@@ -1,6 +1,6 @@
 /**
- * Super-Admin allowlist — three accounts that bypass every access gate
- * in the platform regardless of org membership, plan, orgType, or
+ * Super-Admin allowlist — accounts that bypass every access gate in
+ * the platform regardless of org membership, plan, orgType, or
  * subscription state.
  *
  * Why hardcoded: These are the platform owners. They need to debug any
@@ -15,11 +15,24 @@
  * mis-configured. Shipping the list in version control means changes
  * leave a code-review trail.
  *
+ * ─── Privacy & DPA disclosure ─────────────────────────────────────
+ *
+ * The existence of platform-owner accounts with cross-tenant
+ * administrative access is disclosed to data controllers in:
+ *   - /legal/privacy § 5  (sub-processors + internal access)
+ *   - /legal/dpa § 4.3    (TOMs — Restricted Administrative Access)
+ *   - /legal/sub-processors (Caelex Platform Operations entry)
+ *
+ * Use of this bypass against a customer's data is REQUIRED to be
+ * audit-logged via `logSuperAdminAccess()` below. This produces a
+ * tamper-evident trail (audit-log SHA-256 hash chain) the customer
+ * can review on request under DPA § 5.
+ *
  * The check is intentionally case-insensitive — Postgres email columns
  * are stored lowercase by the signup flow, but defensive double-check.
  *
- * Add new addresses by editing the literal array, opening a PR, and
- * deploying. Removal works the same way.
+ * Add/remove addresses by editing the literal array, opening a PR,
+ * and deploying.
  */
 
 const SUPER_ADMIN_EMAILS_RAW = [

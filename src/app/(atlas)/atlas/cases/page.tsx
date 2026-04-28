@@ -208,6 +208,36 @@ export default function CasesIndexPage() {
         </p>
       </div>
 
+      {/* Editorial-content disclosure
+          Caselaw entries below are Caelex-curated editorial summaries (facts,
+          ruling, holding, industry significance), NOT verbatim court text.
+          The detail page links to the official record on every entry — that
+          remains the only authoritative citation source. Audit close-out
+          for finding #5 (Caselaw editorial-banner). */}
+      <div
+        className="rounded-md border border-amber-300 dark:border-amber-700/50 bg-amber-50/70 dark:bg-amber-900/15 px-3 py-2 text-[11.5px] leading-relaxed text-amber-900 dark:text-amber-200"
+        role="note"
+      >
+        {isDe ? (
+          <>
+            <strong>Redaktioneller Hinweis.</strong> Die untenstehenden
+            Sachverhalte, Urteilstenore, Leitsätze und Bewertungen sind von
+            Caelex erstellte Kurzfassungen — sie ersetzen nicht den Originaltext
+            der Entscheidung. Für Zitate verwenden Sie bitte ausschließlich den
+            offiziellen Volltext, verlinkt auf jeder Detailseite
+            („Originalentscheidung").
+          </>
+        ) : (
+          <>
+            <strong>Editorial note.</strong> The facts, rulings, holdings, and
+            industry-significance commentary below are Caelex-authored summaries
+            — they are not verbatim court text. For citation purposes use only
+            the official decision, linked from every detail page (&quot;Official
+            record&quot;).
+          </>
+        )}
+      </div>
+
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex items-center gap-1.5 rounded-md bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2.5 py-1.5 shadow-sm flex-1 min-w-[240px] max-w-md">

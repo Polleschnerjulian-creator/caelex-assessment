@@ -191,16 +191,17 @@ export const SUB_PROCESSORS: SubProcessor[] = [
       en: "AI inference (Claude)",
     },
     purpose: {
-      de: "Ausführung der Large-Language-Model-Anfragen für Astra, Generate 2.0 und automatische Dokumentengenerierung.",
-      en: "Running large-language-model requests for Astra, Generate 2.0 and automated document generation.",
+      de: "Ausführung der Large-Language-Model-Anfragen für Astra (Compliance-Copilot), Atlas (Anwalts-Modus), Generate 2.0 und automatische Dokumentengenerierung.",
+      en: "Running large-language-model requests for Astra (compliance copilot), Atlas (legal-counsel mode), Generate 2.0 and automated document generation.",
     },
     dataTypes: {
-      de: "Nutzer-Prompt, vom Nutzer bereitgestellter Kontext, Astra-Konversations-ID. Zero-Data-Retention-Vereinbarung aktiv: keine Speicherung bei Anthropic nach Beantwortung, keine Nutzung zum Modelltraining.",
-      en: "User prompt, user-provided context, Astra conversation ID. Zero-data-retention agreement active: no storage at Anthropic after response, no use for model training.",
+      de: "Nutzer-Prompt, vom Nutzer bereitgestellter Kontext, Konversations-ID (nur Astra). Zero-Data-Retention-Vereinbarung aktiv: keine Speicherung bei Anthropic nach Beantwortung, keine Nutzung zum Modelltraining.",
+      en: "User prompt, user-provided context, conversation ID (Astra only). Zero-data-retention agreement active: no storage at Anthropic after response, no use for model training.",
     },
-    location: "USA",
+    location:
+      "Primär EU (Frankfurt/Irland, AWS Bedrock via Vercel AI Gateway); Fallback USA (Anthropic Direkt-API) — siehe `src/lib/atlas/anthropic-client.ts`",
     transferMechanism:
-      "EU-Standardvertragsklauseln Modul 3 · Zero-Data-Retention-Zusage (Anthropic Enterprise)",
+      "Primärer Pfad (EU-Bedrock): kein Drittlandtransfer — Verarbeitung in der EU. Fallback-Pfad (USA): EU-US Data Privacy Framework (Anthropic ist DPF-zertifiziert) · EU-Standardvertragsklauseln Modul 3 · Zero-Data-Retention-Zusage (Anthropic Enterprise).",
     website: "https://www.anthropic.com",
     dpaUrl: "https://www.anthropic.com/legal/dpa",
     addedOn: "2024-03-01",

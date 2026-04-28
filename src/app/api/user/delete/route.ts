@@ -142,12 +142,16 @@ export async function DELETE(req: Request) {
       timestamp: new Date().toISOString(),
     });
 
-    // Delete user — anonymize audit logs first (GDPR Art. 5(1)(e): 7-year retention)
-    // AuditLog uses onDelete: SetNull so userId becomes null on user deletion.
-    // We additionally store a pseudonymized identifier for traceability.
+    // Delete user — anonymise audit logs first (privacy § 3(3)).
+    // AuditLog uses `onDelete: SetNull` at schema level, but we explicitly
+    // nullify inside the transaction so the timing is observable to the
+    // caller (e.g. for DSAR confirmation reports). The hash chain stays
+    // intact because only the foreign key is dropped — the entry hash and
+    // previousHash are preserved for tamper-evidence. Retention is up to
+    // 7 years per privacy § 3(3) (Art. 6(1)(f) DSGVO compliance evidence
+    // in conjunction with Art. 5(1)(e) DSGVO storage limitation).
     await prisma.$transaction(async (tx) => {
-      // Anonymize audit logs — nullify userId, preserve logs for 7-year retention (GDPR Art. 5(1)(e))
-      // AuditLog.onDelete is SetNull, but we explicitly nullify here within the transaction
+      // Pseudonymise audit logs — nullify userId. Hash chain is preserved.
       await tx.auditLog.updateMany({
         where: { userId },
         data: { userId: null },

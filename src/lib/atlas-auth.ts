@@ -114,6 +114,46 @@ export async function getAtlasAuth(
 
   if (!membership || !membership.organization.isActive) return null;
 
+  // ─── DPA § 5 audit-trail for super-admin cross-tenant access ───
+  // When a platform owner uses the super-admin bypass to scope into
+  // an org they are NOT a regular member of, write a tamper-evident
+  // audit-log entry the customer can review on request. Skip when
+  // the super-admin is also a regular member of the target org —
+  // that's normal usage, not "Restricted Administrative Access" in
+  // the DPA TOM sense.
+  if (superAdminBypass) {
+    try {
+      const isRegularMember = !!(await prisma.organizationMember.findFirst({
+        where: {
+          userId: session.user.id,
+          organizationId: membership.organization.id,
+        },
+        select: { id: true },
+      }));
+      if (!isRegularMember) {
+        const { logAuditEvent } = await import("@/lib/audit");
+        await logAuditEvent({
+          userId: session.user.id,
+          organizationId: membership.organization.id,
+          action: "super_admin_cross_tenant_access",
+          entityType: "organization",
+          entityId: membership.organization.id,
+          description:
+            "Platform-owner administrative scope-resolution into a non-member organisation. " +
+            "See /legal/privacy § 5 and /legal/dpa § 4.3.",
+          newValue: {
+            super_admin_email: session.user.email,
+            target_org_slug: membership.organization.slug ?? null,
+          },
+        });
+      }
+    } catch {
+      // Best-effort — never block scope-resolution on audit failure.
+      // The audit-chain integrity check will surface gaps in routine
+      // monthly review anyway.
+    }
+  }
+
   return {
     userId: session.user.id,
     userName: membership.user.name,

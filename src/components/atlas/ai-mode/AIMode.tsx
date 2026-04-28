@@ -180,12 +180,33 @@ interface ToolTrace {
   inputSummary?: string;
 }
 
+/**
+ * Compliance-meta the server attaches to a streamed Atlas message.
+ * Drives the legal-review banner + citation-verification footer the
+ * audit (T1, T13) required for the lawyer-facing UI.
+ */
+interface ComplianceFlags {
+  /** Server back-stop fired — disclaimer was missing from the model's
+   *  output and was force-prepended/appended. The bubble shows a
+   *  "Legal review required" banner above the text. */
+  disclaimerInjected?: boolean;
+  /** Locale of the injected disclaimer; used for the banner label. */
+  disclaimerLocale?: "de" | "en";
+  /** Citation IDs Astra emitted that don't match the catalogue.
+   *  Renders a "N of M citations could not be verified" footer. */
+  unverifiedCitations?: string[];
+  /** Total bracket-citations counted in the message — context for the
+   *  footer ("N of M"). */
+  totalCitations?: number;
+}
+
 interface ChatMsg {
   id: string;
   role: "user" | "atlas";
   text: string;
   streaming?: boolean;
   tools?: ToolTrace[];
+  compliance?: ComplianceFlags;
 }
 
 /** Atlas tool → human label for the transparency chip. */
@@ -762,7 +783,31 @@ export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
                     isError?: boolean;
                   }
                 | { type: "navigate"; url: string; tool?: string }
-                | { type: "tool_limit_reached"; iterations: number };
+                | { type: "tool_limit_reached"; iterations: number }
+                | {
+                    // Compliance back-stop fired — the route's
+                    // disclaimer/citation guards in
+                    // src/app/api/atlas/ai-chat/route.ts found
+                    // something the lawyer needs to see. Two kinds:
+                    //   - "disclaimer_injected" — model omitted the
+                    //     legal-review wrap; server appended it. UI
+                    //     surfaces a "Legal review required" banner.
+                    //   - "citation_check" — every bracket-citation
+                    //     was matched against the catalogue. Unknown
+                    //     IDs land in the message footer so a
+                    //     hallucinated citation is VISIBLE rather
+                    //     than silently passed through.
+                    type: "compliance";
+                    kind: "disclaimer_injected";
+                    locale: "de" | "en";
+                  }
+                | {
+                    type: "compliance";
+                    kind: "citation_check";
+                    total: number;
+                    unverified: string[];
+                    verified_count: number;
+                  };
               if (evt.type === "text") {
                 receivedAny = true;
                 textBuffer += evt.text;
@@ -852,6 +897,28 @@ export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
                   (t) =>
                     t +
                     "\n\n_Hinweis: Tool-Loop-Limit erreicht, Antwort evtl. unvollständig._",
+                );
+              } else if (evt.type === "compliance") {
+                // Compliance meta-events from the server back-stops.
+                // Persist them onto the message so the bubble can
+                // render the legal-review banner (top) + citation-
+                // verification footer (bottom). Non-removable — the
+                // user can scroll past but not dismiss.
+                setMessages((prev) =>
+                  prev.map((m) => {
+                    if (m.id !== atlasId) return m;
+                    const compliance: ComplianceFlags = {
+                      ...(m.compliance ?? {}),
+                    };
+                    if (evt.kind === "disclaimer_injected") {
+                      compliance.disclaimerInjected = true;
+                      compliance.disclaimerLocale = evt.locale;
+                    } else if (evt.kind === "citation_check") {
+                      compliance.totalCitations = evt.total;
+                      compliance.unverifiedCitations = evt.unverified;
+                    }
+                    return { ...m, compliance };
+                  }),
                 );
               }
             } catch {
@@ -1548,6 +1615,36 @@ export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
               key={m.id}
               className={`${styles.msg} ${m.role === "user" ? styles.msgUser : styles.msgAtlas} ${m.streaming ? styles.msgStreaming : ""}`}
             >
+              {/* Compliance banner — pre-message warning when the
+                  server's legal-review back-stop fired (the assistant
+                  drafted an artifact and the disclaimer was force-
+                  injected). Non-removable so a partner can't share
+                  the message screenshot without the banner. */}
+              {m.role === "atlas" && m.compliance?.disclaimerInjected && (
+                <div
+                  role="note"
+                  style={{
+                    margin: "0 0 8px 0",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    background: "rgba(245, 158, 11, 0.08)",
+                    border: "1px solid rgba(245, 158, 11, 0.32)",
+                    fontSize: "11px",
+                    lineHeight: 1.5,
+                    color: "rgba(245, 158, 11, 0.95)",
+                  }}
+                >
+                  <strong>
+                    {m.compliance.disclaimerLocale === "de"
+                      ? "Legal review required"
+                      : "Legal review required"}
+                  </strong>
+                  {" — "}
+                  {m.compliance.disclaimerLocale === "de"
+                    ? "Dieser Entwurf ist KI-generiert. Vor Einreichung an Behörde oder Mandant durch zugelassene/n Anwältin/Anwalt prüfen lassen."
+                    : "This draft is AI-generated. Have qualified counsel review before submission to any authority or client."}
+                </div>
+              )}
               {/* Tool-use transparency chips — rendered above the message
                 text so users see what Atlas actually did (searches,
                 navigations). Same pattern as ContextPanel's data-source
@@ -1597,6 +1694,42 @@ export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
               ) : (
                 m.text
               )}
+              {/* Citation-verification footer — only when the server
+                  found at least one bracket-citation that didn't
+                  match the catalogue. The IDs themselves are listed
+                  so the partner can cross-check rather than guess
+                  which one is suspect. */}
+              {m.role === "atlas" &&
+                !m.streaming &&
+                m.compliance?.unverifiedCitations &&
+                m.compliance.unverifiedCitations.length > 0 && (
+                  <div
+                    role="note"
+                    style={{
+                      marginTop: "10px",
+                      padding: "6px 10px",
+                      borderRadius: "6px",
+                      background: "rgba(239, 68, 68, 0.06)",
+                      border: "1px solid rgba(239, 68, 68, 0.25)",
+                      fontSize: "10.5px",
+                      lineHeight: 1.55,
+                      color: "rgba(252, 165, 165, 0.95)",
+                    }}
+                  >
+                    <strong>
+                      {m.compliance.unverifiedCitations.length} of{" "}
+                      {m.compliance.totalCitations ??
+                        m.compliance.unverifiedCitations.length}{" "}
+                      citations could not be verified
+                    </strong>
+                    <span style={{ opacity: 0.85 }}>
+                      {" — "}cross-check before relying:{" "}
+                      <span style={{ fontFamily: "ui-monospace, monospace" }}>
+                        {m.compliance.unverifiedCitations.join(", ")}
+                      </span>
+                    </span>
+                  </div>
+                )}
               {/* Phase 5 — Library save chip on completed Atlas messages.
                 Compact icon-only variant; sits inside the bubble at
                 the bottom-right corner so it doesn't compete with

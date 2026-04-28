@@ -67,7 +67,7 @@ export function DraftExportButton({
     setTimeout(() => setExported(null), 1800);
   };
   const handleMarkdown = () => {
-    exportDraftAsMarkdown({ markdown: content, title });
+    exportDraftAsMarkdown({ markdown: content, title, locale: exportLocale });
     setExported("markdown");
     setOpen(false);
     setTimeout(() => setExported(null), 1800);

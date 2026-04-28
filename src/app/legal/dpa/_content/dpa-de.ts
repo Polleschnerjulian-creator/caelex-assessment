@@ -290,7 +290,7 @@ export const DPA_DE: LegalDocument = {
         },
         {
           type: "p",
-          text: "(5) Drittlandtransfer. KI-Inferenz-Anbieter und Embedding-Anbieter mit Sitz in den USA (insbesondere Anthropic PBC und OpenAI L.L.C.) verarbeiten Mandantengeheimnisse nur unter zertifiziertem EU-US Data Privacy Framework, ergänzt um Standardvertragsklauseln und Zero-Data-Retention-Zusagen. Auf Wunsch des Kunden kann für Mandate mit erhöhter Sensibilität eine Verarbeitung ausschließlich in EU-Regionen vereinbart werden (z.B. Anthropic via AWS Bedrock Frankfurt).",
+          text: "(5) Drittlandtransfer. Caelex routet die KI-Inferenz für Anthropic Claude im Standard bevorzugt über das Vercel AI Gateway an AWS Bedrock in der EU (Frankfurt / Irland) — auf diesem Pfad findet kein Drittlandtransfer statt. Erst beim Fallback (Bedrock-Region nicht verfügbar oder Gateway nicht konfiguriert) verarbeitet die direkte Anthropic-API in den USA Mandantendaten; in diesem Fall greift das zertifizierte EU-US Data Privacy Framework (Anthropic ist DPF-zertifiziert), ergänzt um Standardvertragsklauseln Modul 3 und die Zero-Data-Retention-Zusage (Anthropic Enterprise). Embedding-Aufrufe an OpenAI L.L.C. (USA) laufen ausschließlich über das Vercel AI Gateway und unterliegen DPF + SCC + Zero-Data-Retention. Auf Wunsch des Kunden kann für Mandate mit erhöhter Sensibilität die Verarbeitung vertraglich auf den EU-Bedrock-Pfad eingegrenzt werden (Pilot-Side-Letter); der Code-Pfad ist in `src/lib/atlas/anthropic-client.ts` einsehbar.",
         },
         {
           type: "p",
@@ -612,7 +612,8 @@ export const DPA_DE: LegalDocument = {
             "Zahlungsabwicklung: Stripe Payments Europe Ltd. (Irland) — eigenverantwortlich für Zahlungsdaten; Caelex speichert keine Kartendaten.",
             "E-Mail-Versand: Resend Inc. (USA) — Standardvertragsklauseln Modul 3.",
             "Fehler- und Performance-Monitoring: Functional Software Inc. (dba Sentry, USA) — konfiguriert mit PII-Scrubbing.",
-            "KI-Inferenz: Anthropic PBC (USA) — Standardvertragsklauseln Modul 3; Eingaben werden nicht zum Modell-Training genutzt (Zero-Data-Retention-Vereinbarung).",
+            "KI-Inferenz (Astra, Atlas, Generate 2.0): Anthropic PBC — bevorzugte Verarbeitung in der EU (AWS Bedrock Frankfurt/Irland via Vercel AI Gateway); Fallback in den USA (Anthropic Direkt-API) abgesichert durch EU-US DPF (Anthropic ist DPF-zertifiziert) + Standardvertragsklauseln Modul 3. In beiden Pfaden gilt eine Zero-Data-Retention-Vereinbarung (Anthropic Enterprise) — Eingaben werden nicht zum Modell-Training genutzt.",
+            "KI-Embeddings (Atlas-Library-Suche, semantische Recall-Funktionen): OpenAI L.L.C. (USA) als Sub-Sub-Auftragsverarbeiter unter Vercel — keine direkte Vertragsbeziehung zwischen Caelex und OpenAI. Routing über Vercel AI Gateway. EU-US DPF (zertifiziert) + Standardvertragsklauseln + Zero-Data-Retention für API-Aufrufe.",
           ],
         },
         {

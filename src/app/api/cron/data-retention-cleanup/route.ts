@@ -19,17 +19,38 @@ function isValidCronSecret(header: string, secret: string): boolean {
 }
 
 /**
- * Cron endpoint for GDPR Art. 5(1)(e) data retention cleanup
- * Schedule: Daily at 3:00 AM UTC
+ * Cron endpoint for GDPR Art. 5(1)(e) data retention cleanup.
+ * Schedule: Daily at 3:00 AM UTC.
  *
- * Cleans up:
- * - Expired sessions (expires < now)
- * - Expired verification tokens (expires < now)
- * - Analytics events older than 90 days
- * - ASTRA conversations (+ cascaded messages) older than 6 months
+ * Each batch below is the *enforcement* layer for a retention period
+ * promised in /legal/privacy § 3. The privacy policy is only true if
+ * this job runs reliably — keep the two in sync. Periods chosen to
+ * match the privacy text exactly:
  *
- * This endpoint is protected by CRON_SECRET to prevent unauthorized access.
- * Vercel Cron automatically adds the Authorization header.
+ *   - Expired sessions / verification tokens     → deleted on expiry
+ *   - AnalyticsEvent.userAgent                   → anonymised after  30 days
+ *   - AnalyticsEvent                             → deleted after     90 days
+ *   - LoginAttempt (brute-force buffer)          → deleted after     90 days
+ *   - LoginEvent (security telemetry)            → deleted after    365 days
+ *   - SecurityEvent (resolved, low/medium)       → deleted after    365 days
+ *                  (unresolved / high / critical → retained for forensics)
+ *   - SecurityAuditLog (low/medium)              → deleted after    365 days
+ *                      (high / critical          → retained for forensics)
+ *   - AstraConversation (+ messages)             → deleted after     6 months
+ *   - CrossVerification                          → deleted after     6 months
+ *   - SentinelPacket                             → deleted after     1 year
+ *   - ComplianceEvidence past validUntil         → flipped to EXPIRED
+ *   - DataRoom past expiresAt                    → closed
+ *
+ * Note: AuditLog (hash-chained compliance trail) is intentionally
+ * NOT deleted here. Per privacy § 3(3) and DPA § 4.3 it is retained
+ * pseudonymised (userId nulled on user deletion) for up to 7 years
+ * as legitimate-interest evidence (Art. 6(1)(f) DSGVO). A future
+ * 7-year sweep can be added once the chain-anchoring scheme supports
+ * partial deletion without breaking the chain.
+ *
+ * This endpoint is protected by CRON_SECRET to prevent unauthorized
+ * access. Vercel Cron automatically adds the Authorization header.
  */
 export async function GET(req: Request) {
   const startTime = Date.now();
@@ -60,6 +81,10 @@ export async function GET(req: Request) {
     expiredSessions: 0,
     expiredVerificationTokens: 0,
     oldAnalyticsEvents: 0,
+    oldLoginAttempts: 0,
+    oldLoginEvents: 0,
+    oldSecurityEvents: 0,
+    oldSecurityAuditLogs: 0,
     oldAstraConversations: 0,
     oldAstraMessages: 0,
     oldSentinelPackets: 0,
@@ -131,7 +156,56 @@ export async function GET(req: Request) {
       messages: oldAstraMessages,
     });
 
-    // Batch 4: Sentinel data retention
+    // Batch 4: Security telemetry retention (privacy § 3(6) enforcement)
+    //
+    // ─ LoginAttempt: 90-day rolling window. The brute-force detector
+    //   (lib/auth.ts) only consults the last 15-minute slice — anything
+    //   older is dead weight. 90 days gives DSAR-response head-room.
+    // ─ LoginEvent: 365 days. Keeps a year of "where did I log in from?"
+    //   visible to the user under /dashboard/settings/security.
+    // ─ SecurityEvent / SecurityAuditLog: 365 days for LOW/MEDIUM only.
+    //   HIGH/CRITICAL events stay forever — those are the breach-evidence
+    //   records the customer may need years later for an investigation.
+    //   Kept "resolved" filter on SecurityEvent so an unresolved alert
+    //   never silently disappears.
+    const [
+      oldLoginAttempts,
+      oldLoginEvents,
+      oldSecurityEvents,
+      oldSecurityAuditLogs,
+    ] = await prisma.$transaction([
+      prisma.loginAttempt.deleteMany({
+        where: { createdAt: { lt: ninetyDaysAgo } },
+      }),
+      prisma.loginEvent.deleteMany({
+        where: { createdAt: { lt: oneYearAgo } },
+      }),
+      prisma.securityEvent.deleteMany({
+        where: {
+          createdAt: { lt: oneYearAgo },
+          resolved: true,
+          severity: { in: ["LOW", "MEDIUM", "low", "medium"] },
+        },
+      }),
+      prisma.securityAuditLog.deleteMany({
+        where: {
+          createdAt: { lt: oneYearAgo },
+          riskLevel: { in: ["LOW", "MEDIUM"] },
+        },
+      }),
+    ]);
+    results.oldLoginAttempts = oldLoginAttempts.count;
+    results.oldLoginEvents = oldLoginEvents.count;
+    results.oldSecurityEvents = oldSecurityEvents.count;
+    results.oldSecurityAuditLogs = oldSecurityAuditLogs.count;
+    logger.info("Security telemetry retention cleanup", {
+      loginAttempts: oldLoginAttempts.count,
+      loginEvents: oldLoginEvents.count,
+      securityEvents: oldSecurityEvents.count,
+      securityAuditLogs: oldSecurityAuditLogs.count,
+    });
+
+    // Batch 5: Sentinel data retention
     // CrossVerification records >6 months (derived data, can be recomputed)
     // SentinelPacket records >1 year (keep audit-relevant window)
     const [oldCrossVerifications, oldSentinelPackets] =
@@ -150,7 +224,7 @@ export async function GET(req: Request) {
       sentinelPackets: oldSentinelPackets.count,
     });
 
-    // Batch 5: Close expired data rooms
+    // Batch 6: Close expired data rooms
     try {
       const { closeExpiredDataRooms } =
         await import("@/lib/services/data-room");
@@ -166,7 +240,7 @@ export async function GET(req: Request) {
       );
     }
 
-    // Batch 6: Expire evidence past validUntil date
+    // Batch 7: Expire evidence past validUntil date
     const expiredEvidence = await prisma.complianceEvidence.updateMany({
       where: {
         status: "ACCEPTED",
@@ -186,6 +260,10 @@ export async function GET(req: Request) {
       results.expiredSessions +
       results.expiredVerificationTokens +
       results.oldAnalyticsEvents +
+      results.oldLoginAttempts +
+      results.oldLoginEvents +
+      results.oldSecurityEvents +
+      results.oldSecurityAuditLogs +
       results.oldAstraConversations +
       results.oldAstraMessages +
       results.oldSentinelPackets +

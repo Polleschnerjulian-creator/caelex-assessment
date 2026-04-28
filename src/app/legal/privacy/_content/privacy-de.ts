@@ -77,7 +77,22 @@ export const PRIVACY_DE: LegalDocument = {
         },
         {
           type: "p",
-          text: "(3) Nutzungsdaten der Plattform: Assessment-Antworten, Dokumentuploads, API-Aufrufe, Compliance-Status, Audit-Logs, Astra-Konversationen, Bookmarks. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO. Speicherdauer: bis 30 Tage nach Vertragsende (Export-Fenster), danach Löschung vorbehaltlich gesetzlicher Pflichten.",
+          text: "(3) Nutzungsdaten der Plattform. Wir verarbeiten unterschiedliche Datenkategorien mit unterschiedlichen Speicherfristen, die wir technisch durch unseren täglichen Aufbewahrungsjob (`/api/cron/data-retention-cleanup`) durchsetzen:",
+        },
+        {
+          type: "ul",
+          items: [
+            "Compliance-Inhalte (Assessments, Dokumente, Workflows, Bookmarks): bis 30 Tage nach Vertragsende (Export-Fenster), danach Löschung; bei aktiver gesetzlicher Aufbewahrungspflicht erfolgt eine Sperrung statt Löschung (Art. 17 Abs. 3 DSGVO).",
+            "Astra-Konversationen und -Nachrichten: rollierendes 6-Monats-Fenster, automatische Löschung beim täglichen Aufbewahrungsjob.",
+            "Analytics-Events (Nutzungs-Telemetrie): 90 Tage; User-Agent wird nach 30 Tagen anonymisiert.",
+            "Sessions und Verifizierungs-Token: bei Ablauf gelöscht.",
+            "Audit-Trail (manipulationssicher hash-verkettet, Pflicht-Compliance-Nachweis): bei Account-Löschung pseudonymisiert (`userId` entfernt, Hash-Kette bleibt intakt); aufbewahrt bis zu 7 Jahre als Beleg gegenüber Aufsichts- und Steuerbehörden, danach Löschung. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (Compliance-Nachweise) i.V.m. Art. 5 Abs. 1 lit. e DSGVO. Über mandanten-übergreifende administrative Zugriffe protokollierte Einträge fallen unter dieselbe Frist; siehe § 5 (2).",
+            "Sentinel-Telemetrie (CrossVerification 6 Monate, SentinelPacket 12 Monate).",
+          ],
+        },
+        {
+          type: "p",
+          text: "Rechtsgrundlage für (3): Art. 6 Abs. 1 lit. b DSGVO, ergänzt um Art. 6 Abs. 1 lit. f DSGVO für den Audit-Trail.",
         },
         {
           type: "p",
@@ -89,7 +104,21 @@ export const PRIVACY_DE: LegalDocument = {
         },
         {
           type: "p",
-          text: "(6) Sicherheits- und Missbrauchsdaten: Login-Events, MFA-Setup, fehlgeschlagene Login-Versuche, Anomalieerkennung, Honey-Tokens. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (IT-Sicherheit). Speicherdauer: 12 Monate.",
+          text: "(6) Sicherheits- und Missbrauchsdaten. Wir trennen zwischen kurzlebigen Brute-Force-Erkennungsdaten und länger aufbewahrten Forensik-Daten:",
+        },
+        {
+          type: "ul",
+          items: [
+            "Login-Versuche (LoginAttempt): 90 Tage. Die Brute-Force-Erkennung wertet ohnehin nur das letzte 15-Minuten-Fenster aus; die längere Frist deckt DSAR-Antworten ab.",
+            "Login-Ereignisse (LoginEvent, einschließlich Geräte- und Standortinformationen): 12 Monate, sichtbar für Sie unter Sicherheitseinstellungen.",
+            "Sicherheits-Events (SecurityEvent, SecurityAuditLog) der Stufen LOW und MEDIUM: 12 Monate ab Auflösung. Events der Stufen HIGH oder CRITICAL bleiben für forensische Untersuchungen erhalten, bis die Ursache vollständig dokumentiert wurde, längstens jedoch bis Ende der gesetzlichen Verjährungsfristen.",
+            "Honey-Token-Trigger und Ergebnisse der Anomalieerkennung: dauerhaft, da diese als Indizien für Sicherheitsvorfälle dienen können (Art. 6 Abs. 1 lit. f DSGVO i.V.m. Art. 32 DSGVO).",
+            "MFA-Konfiguration und WebAuthn-Credentials: bis Account-Löschung.",
+          ],
+        },
+        {
+          type: "p",
+          text: "Rechtsgrundlage für (6): Art. 6 Abs. 1 lit. f DSGVO (IT-Sicherheit, Missbrauchsprävention) i.V.m. Art. 32 DSGVO.",
         },
         {
           type: "p",
@@ -131,11 +160,16 @@ export const PRIVACY_DE: LegalDocument = {
             "Resend Inc. (Transaktionale E-Mails)",
             "Sentry / Functional Software Inc. (Fehler-Monitoring mit PII-Scrubbing)",
             "Anthropic PBC (KI-Inferenz für Astra, Zero-Data-Retention)",
+            "OpenAI L.L.C. (Embedding-Modelle für die Atlas-Library-Volltextsuche, Zero-Data-Retention)",
           ],
         },
         {
           type: "p",
           text: "Gegenüber Steuerberatern, Wirtschaftsprüfern und Strafverfolgungsbehörden übermitteln wir nur, soweit wir dazu gesetzlich verpflichtet sind. Gegenüber Dritten (Werbepartner, Datenhändler etc.) erfolgt keine Übermittlung.",
+        },
+        {
+          type: "p",
+          text: "(2) Eingeschränkter administrativer Zugriff durch Plattform-Inhaber. Eine eng begrenzte Anzahl interner Caelex-Konten (Plattform-Inhaber, derzeit vier Konten — Stand der jeweils aktuellen Allowlist in src/lib/super-admin.ts im Repository) verfügt über mandanten-übergreifenden administrativen Lesezugriff. Dieser Zugriff dient ausschließlich (a) der Fehlersuche bei konkreten Kundenanfragen, (b) der Wiederherstellung nach Fehlkonfigurationen und (c) der Erfüllung gesetzlicher Mitwirkungspflichten. Jede mandanten-übergreifende Scope-Auflösung wird in der manipulationssicheren Audit-Chain (`super_admin_cross_tenant_access`) protokolliert; das Protokoll kann auf schriftliche Anfrage gemäß Art. 28 Abs. 3 lit. h DSGVO durch den Verantwortlichen eingesehen werden.",
         },
       ],
     },
@@ -146,26 +180,38 @@ export const PRIVACY_DE: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "(1) Einige Auftragsverarbeiter haben ihren Sitz in den USA oder verarbeiten dort Daten. In diesen Fällen erfolgt der Transfer ausschließlich auf Grundlage der EU-Standardvertragsklauseln (Durchführungsbeschluss (EU) 2021/914) und, soweit anwendbar, im Rahmen des EU-US Data Privacy Framework (Durchführungsbeschluss (EU) 2023/1795).",
+          text: "(1) Einige Auftragsverarbeiter haben ihren Sitz in den USA oder verarbeiten dort Daten. In diesen Fällen erfolgt der Transfer ausschließlich auf Grundlage der EU-Standardvertragsklauseln (Durchführungsbeschluss (EU) 2021/914) und, soweit anwendbar, im Rahmen des EU-US Data Privacy Framework (Durchführungsbeschluss (EU) 2023/1795). Die jeweils geltende Transfergrundlage je Auftragsverarbeiter ist in /legal/sub-processors einzeln ausgewiesen.",
         },
         {
           type: "p",
-          text: "(2) Ergänzende Schutzmaßnahmen umfassen Transport- und Ruhezustand-Verschlüsselung, Pseudonymisierung, PII-Scrubbing (Sentry) und Zero-Data-Retention-Zusagen (Anthropic).",
+          text: "(2) Wo möglich, wählen wir EU-Regionen statt US-Regionen. Konkret: für KI-Inferenz wird Anthropic-Claude bevorzugt über das Vercel AI Gateway an AWS Bedrock in der EU (Frankfurt / Irland) geroutet — in diesem Pfad findet KEIN Drittlandtransfer statt. Erst beim Fallback (Bedrock nicht verfügbar oder Gateway nicht konfiguriert) greift der direkte Anthropic-USA-Pfad mit DPF + SCC. Details: § 7 (1).",
+        },
+        {
+          type: "p",
+          text: "(3) Ergänzende Schutzmaßnahmen umfassen Transport- und Ruhezustand-Verschlüsselung, Pseudonymisierung, PII-Scrubbing (Sentry) und Zero-Data-Retention-Zusagen (Anthropic, OpenAI).",
         },
       ],
     },
     {
       id: "p7",
       number: "§ 7",
-      title: "KI-Funktionen (Astra, Generate)",
+      title: "KI-Funktionen (Astra, Atlas, Generate)",
       blocks: [
         {
           type: "p",
-          text: "(1) Unsere Plattform enthält KI-gestützte Funktionen. Anfragen werden über gesicherte Verbindungen an Anthropic PBC (USA) übermittelt und dort zur Antwortgenerierung verarbeitet.",
+          text: "(1) Unsere Plattform enthält KI-gestützte Funktionen. Anfragen werden über gesicherte Verbindungen an Anthropic PBC für die Konversations-Antworten (Astra-Compliance-Copilot, Atlas-Anwalts-Modus, Generate 2.0) und an OpenAI L.L.C. ausschließlich für Embeddings der Atlas-Library-Suche übermittelt.",
         },
         {
           type: "p",
-          text: "(2) Wir haben mit Anthropic eine Zero-Data-Retention-Vereinbarung: Ihre Eingaben werden nach Beantwortung nicht gespeichert und nicht zum Training der Modelle verwendet.",
+          text: "Routing für Anthropic (Vorzugspfad EU): Anfragen werden bevorzugt über das Vercel AI Gateway an Anthropic via AWS Bedrock in der EU (Frankfurt / Irland) geroutet — in diesem Pfad findet kein Drittlandtransfer statt. Nur falls das Gateway nicht konfiguriert oder die EU-Bedrock-Region nicht verfügbar ist, fallen wir auf die direkte Anthropic-API (USA) zurück. Welcher Pfad aktiv ist, ergibt sich aus der Konfiguration in `src/lib/atlas/anthropic-client.ts` und kann über das Vercel-Project-Settings-Dashboard nachvollzogen werden.",
+        },
+        {
+          type: "p",
+          text: "Routing für OpenAI: Embedding-Aufrufe laufen ausschließlich über das Vercel AI Gateway. OpenAI agiert als Sub-Sub-Auftragsverarbeiter unter Vercel; eine direkte Vertragsbeziehung zwischen Caelex und OpenAI besteht nicht.",
+        },
+        {
+          type: "p",
+          text: "(2) Wir haben mit Anthropic und OpenAI Zero-Data-Retention-Vereinbarungen: Ihre Eingaben werden nach Beantwortung bzw. Embedding-Berechnung nicht gespeichert und nicht zum Training der Modelle verwendet.",
         },
         {
           type: "p",
@@ -173,7 +219,24 @@ export const PRIVACY_DE: LegalDocument = {
         },
         {
           type: "p",
-          text: "(4) Wir folgen den Anforderungen der Verordnung (EU) 2024/1689 (KI-Verordnung). Astra-Ausgaben werden als KI-generiert gekennzeichnet (§ 7 AGB, Anhang E AGB).",
+          text: "(4) Wir folgen den Anforderungen der Verordnung (EU) 2024/1689 (KI-Verordnung). Astra- und Atlas-Ausgaben werden als KI-generiert gekennzeichnet (§ 7 AGB, Anhang E AGB).",
+        },
+        {
+          type: "p",
+          text: "(5) Persistenzverhalten in Atlas (Anwalts-/Compliance-Modus). Atlas-Konversationen werden serverseitig nicht in der Datenbank gespeichert. Während eines Chat-Turns existieren Ihre Eingabe und die generierte Antwort ausschließlich (a) im Speicher des verarbeitenden Serverless-Funktionsaufrufs für die Dauer der SSE-Verbindung und (b) im Browser-Speicher Ihres Endgeräts. Brechen Sie eine Antwort ab oder bricht die Verbindung mit einem Fehler ab, gilt das Folgende:",
+        },
+        {
+          type: "ul",
+          items: [
+            "Auf Caelex-Seite: Es wird KEIN Konversations- oder Nachrichtendatensatz angelegt. Die unvollständige Antwort verbleibt allenfalls im Browser-Cache Ihres Endgeräts und wird beim nächsten Seiten-Reload entfernt.",
+            "Auf Anthropic-Seite: Aufgrund der Zero-Data-Retention-Zusage werden Eingabe und (Teil-)Ausgabe nicht persistiert.",
+            "Audit-Trail: Wir protokollieren ausschließlich Meta-Daten (Aufruf, Tool-Nutzung, Compliance-Flags wie eingespielte Disclaimer-Banner oder unverifizierte Zitationen). Die Inhalte der Konversation werden nicht in die Audit-Logs aufgenommen.",
+            "Manuelle Persistenz: Eine Speicherung erfolgt erst, wenn Sie aktiv eine Aktion auslösen (Speichern in der Atlas-Library als `AtlasResearchEntry`, Pinnen in einem Workspace als `AtlasWorkspaceCard`, Setzen eines Bookmarks oder Erstellen einer Annotation). Diese gespeicherten Inhalte werden nach den Fristen in § 3 (3) verarbeitet und unterliegen Ihrem Lösch-Recht (Art. 17 DSGVO).",
+          ],
+        },
+        {
+          type: "p",
+          text: "(6) Persistenzverhalten in Astra (Compliance-Copilot, dashboard-seitig). Astra-Konversationen werden in den Modellen `AstraConversation` und `AstraMessage` gespeichert, damit die Konversation über Sessions hinweg fortgeführt werden kann. Die Speicherdauer beträgt 6 Monate ab letzter Aktivität (siehe § 3 (3)).",
         },
       ],
     },

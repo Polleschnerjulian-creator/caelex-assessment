@@ -20,6 +20,8 @@
  * Atlas-chat re-resolves them.
  */
 
+import { exportPrefix, hasDisclaimer } from "./legal-disclaimers";
+
 export type ExportLocale = "en" | "de";
 
 const ATLAS_BASE_URL = "https://www.caelex.eu";
@@ -477,7 +479,19 @@ export function exportDraftAsWord(opts: {
     "Atlas draft";
   // Drop a leading H1 so we don't render the title twice.
   const cleanedBody = stripLeadingH1(opts.markdown);
-  const body = markdownToWordHtml(cleanedBody);
+  // ─── Compliance back-stop: legal-review disclaimer ───
+  // The Astra route already injects the disclaimer at the end of
+  // every drafting-tool turn (see app/api/atlas/ai-chat/route.ts).
+  // But: the user could have pasted the answer into Notion, edited
+  // it, deleted the disclaimer block, and then re-imported via the
+  // markdown export path. To make the disclaimer truly mandatory in
+  // every artifact a partner shares with their client, we ALWAYS
+  // ensure it leads the document — adding it back if the source
+  // text dropped it.
+  const bodyWithDisclaimer = hasDisclaimer(cleanedBody)
+    ? cleanedBody
+    : exportPrefix(locale) + cleanedBody;
+  const body = markdownToWordHtml(bodyWithDisclaimer);
   const stamp = formatStamp(new Date(), locale);
   const html = `${wordHead(locale)}
 <h1>${escapeHtml(inferredTitle)}</h1>
@@ -496,7 +510,12 @@ ${WORD_FOOT}`;
 export function exportDraftAsMarkdown(opts: {
   markdown: string;
   title?: string;
+  /** Locale for the legal-review disclaimer prepended when missing.
+   *  Defaults to "en". Match the user's session language for the DE
+   *  pilot. */
+  locale?: ExportLocale;
 }) {
+  const locale: ExportLocale = opts.locale ?? "en";
   const inferredTitle =
     opts.title ||
     opts.markdown
@@ -504,7 +523,13 @@ export function exportDraftAsMarkdown(opts: {
       .map((l) => l.replace(/^#+\s*/, "").trim())
       .find((l) => l.length > 0) ||
     "atlas-draft";
-  const blob = new Blob([opts.markdown], {
+  // Same back-stop as the .doc path — guarantee the legal-review
+  // disclaimer leads every exported markdown file regardless of
+  // whether the source text already carried one.
+  const finalMarkdown = hasDisclaimer(opts.markdown)
+    ? opts.markdown
+    : exportPrefix(locale) + opts.markdown;
+  const blob = new Blob([finalMarkdown], {
     type: "text/markdown;charset=utf-8",
   });
   const filename = `${withDatedSuffix(safeFilename(inferredTitle))}.md`;

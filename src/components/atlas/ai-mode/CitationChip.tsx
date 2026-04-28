@@ -26,9 +26,22 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ExternalLink, ShieldAlert } from "lucide-react";
 import type { Citation } from "@/lib/atlas/citations";
 import styles from "./ai-mode.module.css";
+
+/** Format an ISO date string ("2026-04-12") into a user-readable
+ *  German date ("12.04.2026"). Falls back to the raw string when
+ *  parsing fails so we never show "Invalid Date" to a lawyer. */
+function formatVerifiedDate(iso: string | undefined): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${dd}.${mm}.${yyyy}`;
+}
 
 interface CitationChipProps {
   citation: Citation;
@@ -102,6 +115,43 @@ export function CitationChip({
           <span className={styles.citationPopoverLabel}>{citation.label}</span>
           {citation.hint && (
             <span className={styles.citationPopoverHint}>{citation.hint}</span>
+          )}
+          {/* Always-shown verify-warning. The Atlas chat is an AI-generated
+              first draft (§ 7 AGB / Annex E) — this banner reminds the
+              lawyer that any citation MUST be checked against the official
+              source before being relied on, regardless of whether Caelex
+              has a catalogue entry for it. Audit-finding #4 close-out. */}
+          <span
+            className={styles.citationPopoverVerifyHint}
+            role="note"
+            aria-label="Hinweis: Quelle vor Verwendung am offiziellen Text prüfen"
+          >
+            <ShieldAlert size={11} strokeWidth={1.7} aria-hidden />
+            Vor Verwendung am offiziellen Text prüfen — KI-Ausgabe ohne
+            Rechtsberatungsgewähr.
+          </span>
+          {/* When the citation regex resolved to a known catalogue source
+              (lib/atlas/citations.ts → CITATION_RULES.catalogueSourceId),
+              we also show the last_verified date and a deep-link to the
+              official source. Only renders when both fields are present
+              so unmapped citations stay visually clean. */}
+          {citation.lastVerified && (
+            <span className={styles.citationPopoverMeta}>
+              Caelex-Atlas-Katalog zuletzt geprüft am{" "}
+              <strong>{formatVerifiedDate(citation.lastVerified)}</strong>
+            </span>
+          )}
+          {citation.sourceUrl && (
+            <a
+              className={styles.citationPopoverSourceLink}
+              href={citation.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+            >
+              Am offiziellen Text prüfen
+              <ExternalLink size={11} strokeWidth={1.7} aria-hidden />
+            </a>
           )}
           <button
             type="button"

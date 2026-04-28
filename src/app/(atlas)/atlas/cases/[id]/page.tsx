@@ -70,6 +70,17 @@ export default function AtlasCaseDetailPage({ params }: PageProps) {
           .slice(0, 5)
       : [];
 
+  const isDe = language === "de";
+
+  // i18n micro-strings local to this page. The shared `t()` keys cover the
+  // section headings; these one-shot phrases (editorial banner + per-section
+  // "Editorial summary" badge) are inlined to keep the audit-close-out diff
+  // small and avoid touching all four locale JSON files for a label that
+  // only appears on this surface.
+  const editorialBadge = isDe
+    ? "Caelex-Zusammenfassung"
+    : "Caelex editorial summary";
+
   return (
     <div className="min-h-screen bg-[var(--atlas-bg-base)] text-[var(--atlas-text-primary)]">
       <div className="max-w-4xl mx-auto px-6 py-8">
@@ -80,6 +91,34 @@ export default function AtlasCaseDetailPage({ params }: PageProps) {
           <ArrowLeft className="w-3.5 h-3.5" />
           Atlas
         </Link>
+
+        {/* Editorial-content disclosure — pinned at top of every case page.
+            Mirror of the listing-page banner for readers who deep-link
+            directly to a case via [CASE-…] citation. Tells the lawyer
+            that facts/ruling/holding/significance are Caelex summaries
+            and that the official record link in the footer is the only
+            citation-safe source. Audit close-out for finding #5. */}
+        <div
+          className="mb-6 rounded-md border border-amber-300 dark:border-amber-700/50 bg-amber-50/70 dark:bg-amber-900/15 px-3 py-2 text-[11.5px] leading-relaxed text-amber-900 dark:text-amber-200"
+          role="note"
+        >
+          {isDe ? (
+            <>
+              <strong>Redaktioneller Hinweis.</strong> Sachverhalt,
+              Urteilstenor, Leitsatz und Bewertung auf dieser Seite sind von
+              Caelex erstellte Kurzfassungen — kein Originaltext der
+              Entscheidung. Für Zitate ausschließlich die unten verlinkte
+              Originalentscheidung verwenden.
+            </>
+          ) : (
+            <>
+              <strong>Editorial note.</strong> The facts, ruling, holding, and
+              industry-significance commentary on this page are Caelex-authored
+              summaries — not verbatim court text. For citation purposes use
+              only the official record linked in the footer below.
+            </>
+          )}
+        </div>
 
         {/* Header — case caption */}
         <div className="mb-8">
@@ -128,6 +167,9 @@ export default function AtlasCaseDetailPage({ params }: PageProps) {
           <h2 className="flex items-center gap-2 text-[13px] font-semibold uppercase tracking-wider text-[var(--atlas-text-muted)] mb-2">
             <Scale className="w-3.5 h-3.5" />
             {t("atlas.case_facts")}
+            <span className="ml-1 px-1.5 py-0.5 rounded text-[9.5px] font-medium uppercase tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border border-amber-200/60 dark:border-amber-700/40">
+              {editorialBadge}
+            </span>
           </h2>
           <p className="text-[14px] leading-relaxed text-[var(--atlas-text-primary)]">
             {facts}
@@ -139,20 +181,35 @@ export default function AtlasCaseDetailPage({ params }: PageProps) {
           <h2 className="flex items-center gap-2 text-[13px] font-semibold uppercase tracking-wider text-[var(--atlas-text-muted)] mb-2">
             <Gavel className="w-3.5 h-3.5" />
             {t("atlas.case_ruling")}
+            <span className="ml-1 px-1.5 py-0.5 rounded text-[9.5px] font-medium uppercase tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border border-amber-200/60 dark:border-amber-700/40">
+              {editorialBadge}
+            </span>
           </h2>
           <p className="text-[14px] leading-relaxed text-[var(--atlas-text-primary)]">
             {ruling}
           </p>
         </section>
 
-        {/* Legal holding */}
+        {/* Legal holding (ratio decidendi — Caelex's distilled one-liner).
+            Visually emphasised because this is the field most likely to be
+            quoted in a brief, but exactly for that reason it carries the
+            strongest editorial-summary badge: a court's holding distilled
+            in one sentence is interpretive work, not transcription. */}
         <section className="mb-6 rounded-lg border border-[var(--atlas-border-strong)] bg-[var(--atlas-bg-inset)] p-4">
           <h2 className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-wider text-[var(--atlas-text-muted)] mb-2">
             <AlertCircle className="w-3.5 h-3.5" />
             {t("atlas.case_legal_holding")}
+            <span className="ml-1 px-1.5 py-0.5 rounded text-[9.5px] font-medium uppercase tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border border-amber-200/60 dark:border-amber-700/40">
+              {editorialBadge}
+            </span>
           </h2>
           <p className="text-[14px] leading-relaxed text-[var(--atlas-text-primary)]">
             {holding}
+          </p>
+          <p className="mt-3 text-[11px] italic text-[var(--atlas-text-muted)] border-t border-[var(--atlas-border)] pt-2">
+            {isDe
+              ? "Diese Ein-Satz-Fassung des Leitsatzes ist eine Caelex-Interpretation. Vor Verwendung in Schriftsätzen am Originaltext der Entscheidung verifizieren."
+              : "This one-sentence rendering of the holding is a Caelex interpretation. Verify against the original decision before relying on it in pleadings."}
           </p>
         </section>
 
@@ -188,10 +245,17 @@ export default function AtlasCaseDetailPage({ params }: PageProps) {
           </section>
         )}
 
-        {/* Industry significance */}
+        {/* Industry significance — the most editorial section: this is
+            Caelex commentary on why the matter is operationally relevant.
+            Carries the same editorial-summary badge as the holding so
+            readers don't mistake it for an officially-recognised
+            "significance" finding from the forum itself. */}
         <section className="mb-6">
           <h2 className="flex items-center gap-2 text-[13px] font-semibold uppercase tracking-wider text-[var(--atlas-text-muted)] mb-2">
             {t("atlas.case_why_it_matters")}
+            <span className="ml-1 px-1.5 py-0.5 rounded text-[9.5px] font-medium uppercase tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border border-amber-200/60 dark:border-amber-700/40">
+              {editorialBadge}
+            </span>
           </h2>
           <p className="text-[14px] leading-relaxed text-[var(--atlas-text-secondary)] italic">
             {significance}

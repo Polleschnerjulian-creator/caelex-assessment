@@ -25,6 +25,13 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { getAtlasAuth } from "@/lib/atlas-auth";
+import {
+  DISCLAIMER_TRIGGER_TOOLS,
+  disclaimerFor,
+  hasDisclaimer,
+  type DisclaimerLocale,
+} from "@/lib/atlas/legal-disclaimers";
+import { validateCitations } from "@/lib/atlas/citation-validator";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 import { ATLAS_TOOLS, isAtlasToolName } from "@/lib/atlas/atlas-tools";
@@ -269,6 +276,25 @@ export async function POST(request: NextRequest) {
           content: m.content,
         }));
 
+      // Locale for the legal-review disclaimer back-stop. Pulled from
+      // the user's profile (atlas-auth surface) — we don't accept it
+      // from the request to prevent a malicious client from forcing
+      // an EN disclaimer into a DE memo. Fallback EN.
+      const disclaimerLocale: DisclaimerLocale =
+        atlas.userLanguage === "de" ? "de" : "en";
+
+      // ─── Compliance guards ─────────────────────────────────────────
+      // Track whether ANY drafting tool fired during this turn — drives
+      // the legal-review disclaimer back-stop at the end of the stream.
+      // The disclaimer is also a HARD RULE in the system prompt; this
+      // is the server-side enforcement layer that fires even if the
+      // model drifts away from the prompt.
+      let draftingToolUsed = false;
+      // Accumulate every text delta so we can run the disclaimer +
+      // citation-validation checks against the FULL assistant response
+      // when the stream completes. Buffer is per-request, GC'd at end.
+      let assistantTextBuffer = "";
+
       let iterations = 0;
 
       try {
@@ -295,6 +321,11 @@ export async function POST(request: NextRequest) {
 
           turnStream.on("text", (delta) => {
             bump();
+            // Mirror the delta into our server-side buffer for the
+            // end-of-stream compliance checks (disclaimer back-stop +
+            // citation-ID validator). Tracked PER REQUEST; the buffer
+            // is GC'd when the stream closes.
+            assistantTextBuffer += delta;
             send({ type: "text", text: delta });
           });
 
@@ -303,6 +334,55 @@ export async function POST(request: NextRequest) {
 
           // Text-only response? → we're done.
           if (response.stop_reason !== "tool_use") {
+            // ─── Compliance back-stop #1: legal-review disclaimer ───
+            // If a drafting tool fired during this conversation AND the
+            // assistant's accumulated text doesn't carry the disclaimer
+            // marker (HARD RULE 1 — prompt instruction the model can
+            // drift away from at temperature > 0), append the canonical
+            // disclaimer block as one final text chunk. Lands at the
+            // end of the user's message bubble. Combined with the
+            // export-pipeline back-stop (lib/atlas/draft-export.ts),
+            // this guarantees the disclaimer is in the artifact the
+            // partner shares with their client.
+            if (draftingToolUsed && !hasDisclaimer(assistantTextBuffer)) {
+              const disclaimerText =
+                "\n\n---\n\n" + disclaimerFor(disclaimerLocale);
+              assistantTextBuffer += disclaimerText;
+              send({ type: "text", text: disclaimerText });
+              send({
+                type: "compliance",
+                kind: "disclaimer_injected",
+                locale: disclaimerLocale,
+              });
+            }
+
+            // ─── Compliance back-stop #2: citation validation ───
+            // Every [ATLAS-…] / [CASE-…] bracket-citation Astra emitted
+            // is checked against the static catalogue. Unverified IDs
+            // are reported to the client as a meta event — the AIMode
+            // bubble renders a discreet "N of M citations could not
+            // be verified" footer so hallucinated citations are
+            // VISIBLE rather than silently passed through.
+            const citationCheck = validateCitations(assistantTextBuffer);
+            if (citationCheck.total > 0) {
+              send({
+                type: "compliance",
+                kind: "citation_check",
+                total: citationCheck.total,
+                unverified: citationCheck.unverified,
+                verified_count: citationCheck.verified.length,
+              });
+              if (citationCheck.unverified.length > 0) {
+                logger.warn(
+                  `Atlas AI chat: ${citationCheck.unverified.length} unverified citations`,
+                  {
+                    userId: atlas.userId,
+                    unverified: citationCheck.unverified,
+                  },
+                );
+              }
+            }
+
             send({
               type: "done",
               usage: {
@@ -318,6 +398,17 @@ export async function POST(request: NextRequest) {
           const toolUses = response.content.filter(
             (c): c is Anthropic.ToolUseBlock => c.type === "tool_use",
           );
+
+          // Flag drafting-tool usage for the legal-review back-stop.
+          // Once flagged for the request, it stays flagged — a second
+          // user turn that uses only research tools still inherits
+          // the disclaimer because the conversation is now anchored
+          // to a drafted artifact.
+          for (const tu of toolUses) {
+            if (DISCLAIMER_TRIGGER_TOOLS.has(tu.name)) {
+              draftingToolUsed = true;
+            }
+          }
 
           conversationMessages.push({
             role: "assistant",

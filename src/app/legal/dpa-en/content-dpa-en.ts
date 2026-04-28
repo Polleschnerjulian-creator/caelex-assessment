@@ -573,7 +573,8 @@ export const DPA_EN: LegalDocument = {
             "Payments: Stripe Payments Europe Ltd. (Ireland) — independently responsible for payment data; Caelex does not store card data.",
             "Email delivery: Resend Inc. (USA) — SCC Module 3.",
             "Error and performance monitoring: Functional Software Inc. (dba Sentry, USA) — configured with PII scrubbing.",
-            "AI inference: Anthropic PBC (USA) — SCC Module 3; inputs not used for model training (zero data retention).",
+            "AI inference (Astra, Atlas, Generate 2.0): Anthropic PBC — preferred processing in the EU (AWS Bedrock Frankfurt/Ireland via Vercel AI Gateway); fallback in the USA (Anthropic direct API) safeguarded by EU-US DPF (Anthropic is DPF-certified) + SCC Module 3. A zero-data-retention agreement (Anthropic Enterprise) applies on both paths — inputs are not used for model training.",
+            "AI embeddings (Atlas Library search, semantic recall): OpenAI L.L.C. (USA) as a sub-sub-processor under Vercel — no direct contractual relationship between Caelex and OpenAI. Routed via Vercel AI Gateway. EU-US DPF (certified) + SCC + zero-data-retention for API calls.",
           ],
         },
         {

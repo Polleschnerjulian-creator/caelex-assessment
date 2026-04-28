@@ -1,8 +1,9 @@
 /**
  * Data Retention Cleanup Cron Tests (GDPR Art. 5(1)(e))
  *
- * Tests: missing CRON_SECRET (503), unauthorized (401), happy path cleanup,
- * POST delegates to GET, database error, no stack trace leakage.
+ * Tests: missing CRON_SECRET (503), unauthorized (401), happy path cleanup
+ * (incl. security telemetry batch added in privacy § 3 alignment), database
+ * error, no stack trace leakage.
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -18,6 +19,10 @@ vi.mock("@/lib/prisma", () => ({
       deleteMany: vi.fn(),
       count: vi.fn(),
     },
+    loginAttempt: { deleteMany: vi.fn() },
+    loginEvent: { deleteMany: vi.fn() },
+    securityEvent: { deleteMany: vi.fn() },
+    securityAuditLog: { deleteMany: vi.fn() },
     astraMessage: { count: vi.fn() },
     astraConversation: { deleteMany: vi.fn() },
     crossVerification: { deleteMany: vi.fn() },
@@ -39,7 +44,7 @@ vi.mock("@/lib/logger", () => ({
   logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
 }));
 
-import { GET, POST } from "./route";
+import { GET } from "./route";
 import { prisma } from "@/lib/prisma";
 
 const mockPrisma = prisma as unknown as {
@@ -50,6 +55,10 @@ const mockPrisma = prisma as unknown as {
     deleteMany: ReturnType<typeof vi.fn>;
     count: ReturnType<typeof vi.fn>;
   };
+  loginAttempt: { deleteMany: ReturnType<typeof vi.fn> };
+  loginEvent: { deleteMany: ReturnType<typeof vi.fn> };
+  securityEvent: { deleteMany: ReturnType<typeof vi.fn> };
+  securityAuditLog: { deleteMany: ReturnType<typeof vi.fn> };
   astraMessage: { count: ReturnType<typeof vi.fn> };
   astraConversation: { deleteMany: ReturnType<typeof vi.fn> };
   crossVerification: { deleteMany: ReturnType<typeof vi.fn> };
@@ -96,18 +105,25 @@ describe("GET /api/cron/data-retention-cleanup", () => {
 
   describe("Happy path", () => {
     it("cleans up expired data and returns counts", async () => {
-      // Transaction 1: expired auth data
+      // Transaction 1: expired auth data (sessions + tokens)
       mockPrisma.$transaction
         .mockResolvedValueOnce([
           { count: 5 }, // expired sessions
           { count: 3 }, // expired tokens
         ])
-        // Transaction 2: analytics cleanup
+        // Transaction 2: analytics cleanup (anonymise + delete)
         .mockResolvedValueOnce([
-          { count: 10 }, // anonymized IPs
+          { count: 10 }, // anonymized userAgent rows
           { count: 50 }, // deleted old analytics
         ])
-        // Transaction 3: sentinel data retention
+        // Transaction 3: security telemetry retention
+        .mockResolvedValueOnce([
+          { count: 7 }, // old loginAttempts
+          { count: 12 }, // old loginEvents
+          { count: 3 }, // old resolved low/medium securityEvents
+          { count: 4 }, // old low/medium securityAuditLogs
+        ])
+        // Transaction 4: sentinel data retention
         .mockResolvedValueOnce([
           { count: 2 }, // old cross verifications
           { count: 1 }, // old sentinel packets
@@ -127,27 +143,14 @@ describe("GET /api/cron/data-retention-cleanup", () => {
       expect(body.deleted.expiredSessions).toBe(5);
       expect(body.deleted.expiredVerificationTokens).toBe(3);
       expect(body.deleted.oldAnalyticsEvents).toBe(50);
+      expect(body.deleted.oldLoginAttempts).toBe(7);
+      expect(body.deleted.oldLoginEvents).toBe(12);
+      expect(body.deleted.oldSecurityEvents).toBe(3);
+      expect(body.deleted.oldSecurityAuditLogs).toBe(4);
       expect(body.deleted.oldAstraConversations).toBe(4);
       expect(body.deleted.oldAstraMessages).toBe(20);
-      // totalDeleted now includes sentinel data + closed data rooms
-      expect(body.totalDeleted).toBe(85); // 5+3+50+4+20+1+2+0
-    });
-  });
-
-  describe("POST delegates to GET", () => {
-    it("POST returns same result as GET", async () => {
-      mockPrisma.$transaction
-        .mockResolvedValueOnce([{ count: 0 }, { count: 0 }])
-        .mockResolvedValueOnce([{ count: 0 }, { count: 0 }])
-        .mockResolvedValueOnce([{ count: 0 }, { count: 0 }]);
-      mockPrisma.astraMessage.count.mockResolvedValue(0);
-      mockPrisma.astraConversation.deleteMany.mockResolvedValue({ count: 0 });
-      mockPrisma.complianceEvidence.updateMany.mockResolvedValue({ count: 0 });
-
-      const res = await POST(makeRequest("Bearer test-secret"));
-      expect(res.status).toBe(200);
-      const body = await res.json();
-      expect(body.success).toBe(true);
+      // totalDeleted = 5+3+50+7+12+3+4+4+20+1+2+0 = 111
+      expect(body.totalDeleted).toBe(111);
     });
   });
 

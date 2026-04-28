@@ -2107,6 +2107,89 @@
   color: rgba(255, 255, 255, 0.42);
 }
 
+/* Verify-warning banner — always shown inside the popover. Amber tint
+   to read as caution without screaming "error". The shield-alert icon
+   inherits color from the parent so we get the same hue across icon
+   and text. */
+.citationPopoverVerifyHint {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 5px;
+  margin-top: 2px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(245, 158, 11, 0.08);
+  box-shadow: 0 0 0 0.5px rgba(245, 158, 11, 0.18);
+  color: rgba(252, 211, 77, 0.92);
+  font-size: 10.5px;
+  line-height: 1.42;
+  font-weight: 500;
+  letter-spacing: -0.002em;
+}
+
+.citationPopoverVerifyHint svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Catalogue-resolved metadata (last_verified date). Subtle, secondary
+   to the verify-warning so the lawyer's eye lands on the warning first
+   and on the timestamp only when looking for it. */
+.citationPopoverMeta {
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: rgba(255, 255, 255, 0.55);
+  font-variant-numeric: tabular-nums;
+}
+
+.citationPopoverMeta strong {
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 600;
+}
+
+/* Direct deep-link to the official source (EUR-Lex, Bundesgesetzblatt,
+   etc.). Same visual chassis as the action button, but with an emerald
+   underline-on-hover so it reads as "go-to-external" instead of
+   "trigger-internal-action". */
+.citationPopoverSourceLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 2px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 11.5px;
+  font-weight: 500;
+  text-decoration: none;
+  letter-spacing: -0.003em;
+  transition:
+    background 0.18s var(--ease),
+    box-shadow 0.18s var(--ease),
+    color 0.18s var(--ease);
+}
+
+.citationPopoverSourceLink:hover {
+  background: rgba(16, 185, 129, 0.12);
+  box-shadow:
+    0 0 0 0.5px rgba(16, 185, 129, 0.4),
+    0 0 14px rgba(16, 185, 129, 0.16);
+  color: #fff;
+}
+
+.citationPopoverSourceLink svg {
+  color: rgba(110, 231, 183, 0.85);
+}
+
+.citationPopoverSourceLink:hover svg {
+  color: rgba(110, 231, 183, 1);
+}
+
 .citationPopoverAction {
   display: inline-flex;
   align-items: center;
