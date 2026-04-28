@@ -206,6 +206,56 @@ made the unverified backfill dangerous. Each correction is
 documented in the `verification_note` field of the affected
 milestone.
 
+### 5.1.2 · Cumulative state after Tranche 9 (last updated 2026-04-28)
+
+| Jurisdiction | Sources verified | Verified milestones |
+| ------------ | ---------------- | ------------------- |
+| EU           | 14               | 55                  |
+| UK           | 16               | 42                  |
+| ES           | 2                | 5                   |
+| IT           | 1                | 3                   |
+| FR           | 1                | 3                   |
+| INT          | 1                | 2                   |
+| **Totals**   | **35 sources**   | **110 milestones**  |
+
+**Absolute corpus coverage:** 35 / 619 = **5.7 %** of all corpus sources
+now carry at least one verified `legislative_history` milestone.
+
+**Of populated entries:** 110 of ~115 populated milestones are
+verified ≈ **96 %** verification rate within the curated subset.
+
+### 5.1.3 · Tranche-by-tranche commit log
+
+| Tranche | Commit     | Highlights                                       |
+| ------- | ---------- | ------------------------------------------------ |
+| T1      | `abdc9b58` | UK-SIA-2018 + INT-OST-1967 (partial)             |
+| T2      | `3c5242de` | EU-NIS2-2022 + EU-SPACE-ACT + Browser-MCP unlock |
+| T3+T4   | `32fbd111` | 8 EU + 6 UK sources                              |
+| T5      | `45a4f159` | FR-LOS-2008 + ES-LEY-17-2022 + IT-LEGGE-89-2025  |
+| T6      | `515f3258` | 6 more EU instruments                            |
+| T7      | `bb04fecb` | ES-RD-158-2023 + 4 UK acts                       |
+| T8      | `4284f814` | 5 UK SIs                                         |
+| T9      | `04b79193` | UK-SI-2021-815, UK-SI-2021-879                   |
+
+### 5.1.4 · Tooling-gap diary (additional registers tested)
+
+In Tranche-9 follow-up, additional national registers were tested
+and their reachability assessed:
+
+| Register                      | Tool                  | Status                                                      |
+| ----------------------------- | --------------------- | ----------------------------------------------------------- |
+| `wetten.overheid.nl` (NL)     | Chrome MCP            | ❌ Title loads but `document.body` is null — JS-driven SPA  |
+| `fedlex.admin.ch` (CH)        | Chrome MCP            | ❌ Catalogue URL returns 404; needs URL discovery           |
+| `ecfr.gov` (US Federal Reg)   | Chrome MCP / WebFetch | ❌ CAPTCHA / programmatic-access protections                |
+| `law.cornell.edu` (US LII)    | WebFetch              | ⚠️ Partial — chapter-level metadata yes, original PL no     |
+| `gazzettaufficiale.it` eli/id | Chrome MCP            | ⚠️ Works only with known eli code; no algorithmic discovery |
+| `legifrance.gouv.fr` LODA     | Chrome MCP            | ⚠️ Works for primary statute; some catalogue URLs broken    |
+
+Practical implication: WebFetch + Chrome MCP can reliably reach
+~5-7 jurisdictions' primary registers (UK, EU, FR statutes,
+ES national, IT national, partial UN treaties). Other registers
+need additional tooling or human-curated URL discovery.
+
 ### 5.2 · Realistic per-tranche throughput (WebFetch-only)
 
 The verification mechanism in §3 above is mechanically achievable
