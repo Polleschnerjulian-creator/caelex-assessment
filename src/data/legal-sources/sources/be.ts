@@ -531,7 +531,85 @@ const PRIMARY_LEGISLATION_BE: LegalSource[] = [
       "Between 2014 and 2020, 7 national activities authorized and 36 objects registered.",
       "Ministerial authorizations issued for: OUFTI-1 (2016), QB50 (2017), QARMAN (2019), ARTHUR-1 (2020), PVCC (2022), VANILLA/SPIP/CASTORS/ROSE (2023).",
     ],
-    last_verified: "2026-04-14",
+    legislative_history: [
+      {
+        date: "2005-09-17",
+        type: "presidential_signature",
+        body: "Royaume de Belgique · Roi Albert II",
+        reference: "Loi du 17 septembre 2005 — Numac 2005011439",
+        description:
+          "Sanction royale par S.M. le Roi Albert II de la 'Loi relative aux activités de lancement, d'opération de vol ou de guidage d'objets spatiaux'.",
+        source_url:
+          "http://www.ejustice.just.fgov.be/eli/loi/2005/09/17/2005011439/justel",
+        verified: true,
+        verified_by: "claude (WebFetch, ejustice.just.fgov.be)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date de sanction royale 17.9.2005 et Numac 2005011439 vérifiés contre la base ejustice (eli/loi/2005/09/17/2005011439/justel).",
+      },
+      {
+        date: "2005-11-16",
+        type: "promulgation",
+        body: "Service Public Fédéral Justice · Moniteur belge",
+        reference: "Moniteur belge du 16 novembre 2005",
+        description:
+          "Publication de la loi au Moniteur belge le 16 novembre 2005.",
+        source_url:
+          "http://www.ejustice.just.fgov.be/eli/loi/2005/09/17/2005011439/justel",
+        verified: true,
+        verified_by: "claude (WebFetch, ejustice.just.fgov.be)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date de publication 16.11.2005 confirmée contre la base ejustice.",
+      },
+      {
+        date: "2006-01-01",
+        type: "in_force",
+        body: "Royaume de Belgique",
+        reference: "Loi du 17 septembre 2005, art. 20 (entrée en vigueur)",
+        description:
+          "Entrée en vigueur le 1er janvier 2006 conformément à l'art. 20 : « La présente loi entre en vigueur le premier jour du deuxième mois qui suit celui au cours duquel elle aura été publiée au Moniteur belge » — publication 16.11.2005 → EIF 1.1.2006.",
+        source_url:
+          "http://www.ejustice.just.fgov.be/eli/loi/2005/09/17/2005011439/justel",
+        verified: true,
+        verified_by: "claude (WebFetch, ejustice.just.fgov.be)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date d'entrée en vigueur 1.1.2006 et le texte de l'art. 20 vérifiés contre la base ejustice.",
+      },
+      {
+        date: "2006-03-06",
+        type: "amendment",
+        body: "Service Public Fédéral Justice · Moniteur belge",
+        reference: "Erratum — Numac 2006011075",
+        description:
+          "Erratum à la loi du 17 septembre 2005 publié au Moniteur belge le 6 mars 2006 (Numac 2006011075, p. 13442) — corrections rédactionnelles sans modification substantielle.",
+        source_url:
+          "http://www.ejustice.just.fgov.be/eli/loi/2005/09/17/2005011439/justel",
+        verified: true,
+        verified_by: "claude (WebFetch, ejustice.just.fgov.be)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Numac de l'erratum 2006011075 et date 6.3.2006 confirmés contre la base ejustice.",
+      },
+      {
+        date: "2013-12-01",
+        type: "amendment",
+        body: "Royaume de Belgique · Parlement fédéral",
+        reference: "Loi du 1er décembre 2013 — Numac 2014021002",
+        description:
+          "Modification de l'art. 3 (définitions) pour adapter la loi aux objets spatiaux non manœuvrables (cubesats, nanosatellites). Sanction royale 1.12.2013, publication au Moniteur belge 15.1.2014, EIF 15.1.2014.",
+        source_url:
+          "http://www.ejustice.just.fgov.be/eli/loi/2013/12/01/2014021002/justel",
+        verified: true,
+        verified_by: "claude (WebFetch, ejustice.just.fgov.be)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Cross-référence vérifiée contre la fiche BE-SPACE-LAW-AMENDMENT-2013 (Numac 2014021002) — sanction royale 1.12.2013, publication MB 15.1.2014, EIF 15.1.2014 confirmés contre la base ejustice.",
+        affected_sections: ["Art. 3 §§ 1, 2, 3, 5 — définitions"],
+      },
+    ],
+    last_verified: "2026-04-28",
   },
   {
     id: "BE-SPACE-LAW-AMENDMENT-2013",
@@ -580,7 +658,54 @@ const PRIMARY_LEGISLATION_BE: LegalSource[] = [
       "Only substantive amendment to the 2005 law in its 20+ year history.",
       "Three changes to Art. 3: operator definition, effective control, and positioning concept.",
     ],
-    last_verified: "2026-04-14",
+    legislative_history: [
+      {
+        date: "2013-12-01",
+        type: "presidential_signature",
+        body: "Royaume de Belgique · Roi Philippe",
+        reference: "Loi du 1er décembre 2013 — Numac 2014021002",
+        description:
+          "Sanction royale par S.M. le Roi Philippe de la 'Loi modifiant la loi du 17 septembre 2005 relative aux activités de lancement, d'opération de vol ou de guidage d'objets spatiaux'.",
+        source_url:
+          "http://www.ejustice.just.fgov.be/eli/loi/2013/12/01/2014021002/justel",
+        verified: true,
+        verified_by: "claude (WebFetch, ejustice.just.fgov.be)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date de sanction royale 1.12.2013 et Numac 2014021002 vérifiés contre la base ejustice (eli/loi/2013/12/01/2014021002/justel).",
+      },
+      {
+        date: "2014-01-15",
+        type: "promulgation",
+        body: "Service Public Fédéral Justice · Moniteur belge",
+        reference: "Moniteur belge du 15 janvier 2014",
+        description:
+          "Publication de la loi modificative au Moniteur belge le 15 janvier 2014.",
+        source_url:
+          "http://www.ejustice.just.fgov.be/eli/loi/2013/12/01/2014021002/justel",
+        verified: true,
+        verified_by: "claude (WebFetch, ejustice.just.fgov.be)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date de publication 15.1.2014 confirmée contre la base ejustice.",
+      },
+      {
+        date: "2014-01-15",
+        type: "in_force",
+        body: "Royaume de Belgique",
+        reference: "Loi du 1er décembre 2013 — entrée en vigueur",
+        description:
+          "Entrée en vigueur le jour de la publication au Moniteur belge (15 janvier 2014) — pas de vacatio legis spécifiée.",
+        source_url:
+          "http://www.ejustice.just.fgov.be/eli/loi/2013/12/01/2014021002/justel",
+        verified: true,
+        verified_by: "claude (WebFetch, ejustice.just.fgov.be)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "EIF 15.1.2014 (même date que publication) confirmée contre la base ejustice.",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
 ];
 
