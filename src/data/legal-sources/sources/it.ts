@@ -208,8 +208,8 @@ const TREATIES_IT: LegalSource[] = [
     title_local:
       "Legge 28 gennaio 1970, n. 87 — Ratifica del Trattato sullo spazio extra-atmosferico",
     date_enacted: "1970-01-28",
-    date_in_force: "1970-02-12",
-    official_reference: "Legge n. 87/1970",
+    date_in_force: "1970-04-05",
+    official_reference: "Legge n. 87/1970 · GU n. 72 del 21-03-1970",
     source_url:
       "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1970-01-28;87",
     issuing_body: "Parlamento della Repubblica Italiana",
@@ -233,10 +233,70 @@ const TREATIES_IT: LegalSource[] = [
       "IT-REGISTRATION-RATIFICA",
     ],
     notes: [
-      "Italy ratified the Outer Space Treaty on 4 May 1972 (deposit). Ratification law enacted 28 January 1970.",
+      "Italy ratified the Outer Space Treaty on 4 May 1972 (deposit with co-depositaries UK/US/USSR). Ratification law L. 87/1970 enacted 28 January 1970, EIF 5 April 1970.",
       "Art. VI is the foundational legal basis for the Italian authorization regime established by Legge 89/2025.",
     ],
-    last_verified: "2026-04-09",
+    legislative_history: [
+      {
+        date: "1970-01-28",
+        type: "adoption",
+        body: "Repubblica Italiana · Parlamento",
+        reference: "Legge 28 gennaio 1970, n. 87",
+        description:
+          "Adozione della legge di ratifica ed esecuzione del Trattato sullo spazio extra-atmosferico (OST 1967), aperto alla firma a Londra, Mosca e Washington il 27 gennaio 1967. Identificativo Normattiva: 070U0087.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1970-01-28;87",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Data adozione 28.1.1970 e identificativo 070U0087 verificati contro Normattiva primaria.",
+      },
+      {
+        date: "1970-03-21",
+        type: "promulgation",
+        body: "Istituto Poligrafico e Zecca dello Stato (Gazzetta Ufficiale)",
+        reference: "GU Serie Generale n. 72 del 21-03-1970",
+        description:
+          "Pubblicazione in Gazzetta Ufficiale Serie Generale n. 72 del 21 marzo 1970.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1970-01-28;87",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "GU citation 'GU Serie Generale n. 72 del 21-03-1970' verificata contro Normattiva.",
+      },
+      {
+        date: "1970-04-05",
+        type: "in_force",
+        body: "Repubblica Italiana · Parlamento",
+        reference: "L. 87/1970 — Entrata in vigore",
+        description:
+          "Entrata in vigore con vacatio legis di 15 giorni dalla pubblicazione in GU.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1970-01-28;87",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Data EIF 5.4.1970 verificata contro Normattiva — corregge la voce catalogo precedente 'date_in_force: 1970-02-12' (errata di circa 7 settimane).",
+      },
+      {
+        date: "1972-05-04",
+        type: "deposit",
+        body: "Italian Foreign Ministry · UN/UK/US co-depositaries",
+        reference: "Italian instrument of ratification deposited 4 May 1972",
+        description:
+          "Deposito dello strumento di ratifica del Trattato OST presso i co-depositari (UN, Regno Unito, Stati Uniti, URSS) il 4 maggio 1972 — circa 2 anni dopo l'EIF della legge nazionale di ratifica.",
+        source_url:
+          "https://treaties.un.org/Pages/showDetails.aspx?objid=0800000280128cbd",
+        verified: false,
+        verification_note:
+          "Data deposito 4.5.1972 documentata in note del catalogo (probabile fonte: rapporti UNOOSA); non direttamente verificata contro UN Treaty Collection in questa passata.",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
   {
     id: "IT-LIABILITY-RATIFICA",
@@ -247,8 +307,8 @@ const TREATIES_IT: LegalSource[] = [
     title_local:
       "Legge 5 maggio 1976, n. 426 — Ratifica della Convenzione sulla responsabilità",
     date_enacted: "1976-05-05",
-    date_in_force: "1976-06-10",
-    official_reference: "Legge n. 426/1976; Legge n. 23/1983",
+    date_in_force: "1976-07-04",
+    official_reference: "Legge n. 426/1976 · GU n. 160 del 19-06-1976",
     source_url:
       "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1976-05-05;426",
     issuing_body: "Parlamento della Repubblica Italiana",
@@ -272,10 +332,57 @@ const TREATIES_IT: LegalSource[] = [
       "IT-REGISTRATION-RATIFICA",
     ],
     notes: [
-      "Ratified via Legge 426/1976. Implementing legislation via Legge 23/1983.",
+      "Ratified via Legge 426/1976 (EIF 4 luglio 1976). Implementing legislation via Legge 23/1983.",
       "The Convention's absolute liability regime drives Legge 89/2025's strict liability framework and the €100M insurance cap.",
     ],
-    last_verified: "2026-04-09",
+    legislative_history: [
+      {
+        date: "1976-05-05",
+        type: "adoption",
+        body: "Repubblica Italiana · Parlamento",
+        reference: "Legge 5 maggio 1976, n. 426",
+        description:
+          "Adozione della legge di ratifica ed esecuzione della Convenzione sulla responsabilità internazionale per i danni causati da oggetti spaziali (LIAB 1972). Identificativo Normattiva: 076U0426.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1976-05-05;426",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Data adozione 5.5.1976 e identificativo 076U0426 verificati contro Normattiva primaria.",
+      },
+      {
+        date: "1976-06-19",
+        type: "promulgation",
+        body: "Istituto Poligrafico e Zecca dello Stato (Gazzetta Ufficiale)",
+        reference: "GU Serie Generale n. 160 del 19-06-1976",
+        description:
+          "Pubblicazione in Gazzetta Ufficiale Serie Generale n. 160 del 19 giugno 1976.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1976-05-05;426",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "GU citation verificata contro Normattiva — augmenta la voce catalogo precedente 'Legge n. 426/1976'.",
+      },
+      {
+        date: "1976-07-04",
+        type: "in_force",
+        body: "Repubblica Italiana · Parlamento",
+        reference: "L. 426/1976 — Entrata in vigore",
+        description:
+          "Entrata in vigore con vacatio legis di 15 giorni dalla pubblicazione in GU.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1976-05-05;426",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Data EIF 4.7.1976 verificata contro Normattiva — corregge la voce catalogo precedente 'date_in_force: 1976-06-10' (errata di circa 24 giorni).",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
   {
     id: "IT-REGISTRATION-RATIFICA",
@@ -286,8 +393,8 @@ const TREATIES_IT: LegalSource[] = [
     title_local:
       "Legge 12 luglio 2005, n. 153 — Adesione alla Convenzione sull'immatricolazione",
     date_enacted: "2005-07-12",
-    date_in_force: "2005-10-13",
-    official_reference: "Legge n. 153/2005",
+    date_in_force: "2005-08-02",
+    official_reference: "Legge n. 153/2005 · GU n. 177 del 01-08-2005",
     source_url:
       "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2005-07-12;153",
     issuing_body: "Parlamento della Repubblica Italiana",
@@ -311,10 +418,57 @@ const TREATIES_IT: LegalSource[] = [
       "IT-LIABILITY-RATIFICA",
     ],
     notes: [
-      "Italy acceded to the Registration Convention extremely late — 12 July 2005, nearly 30 years after its entry into force (1976).",
+      "Italy acceded to the Registration Convention extremely late — adoption 12 July 2005, EIF 2 August 2005, nearly 30 years after the treaty's entry into force (1976).",
       "ASI was designated custodian of the national space object register.",
     ],
-    last_verified: "2026-04-09",
+    legislative_history: [
+      {
+        date: "2005-07-12",
+        type: "adoption",
+        body: "Repubblica Italiana · Parlamento",
+        reference: "Legge 12 luglio 2005, n. 153",
+        description:
+          "Adozione della legge di adesione ed esecuzione della Convenzione sull'immatricolazione (REG 1975) — quasi 30 anni di ritardo rispetto all'EIF generale del trattato (1976). Identificativo Normattiva: 005G0174.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2005-07-12;153",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Data adozione 12.7.2005 e identificativo 005G0174 verificati contro Normattiva primaria.",
+      },
+      {
+        date: "2005-08-01",
+        type: "promulgation",
+        body: "Istituto Poligrafico e Zecca dello Stato (Gazzetta Ufficiale)",
+        reference: "GU Serie Generale n. 177 del 01-08-2005",
+        description:
+          "Pubblicazione in Gazzetta Ufficiale Serie Generale n. 177 del 1 agosto 2005.",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2005-07-12;153",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "GU citation verificata contro Normattiva — augmenta la voce catalogo precedente 'Legge n. 153/2005'.",
+      },
+      {
+        date: "2005-08-02",
+        type: "in_force",
+        body: "Repubblica Italiana · Parlamento",
+        reference: "L. 153/2005 — Entrata in vigore",
+        description:
+          "Entrata in vigore il giorno successivo alla pubblicazione (atypical pattern — vacatio di soli 1 giorno invece dei consueti 15).",
+        source_url:
+          "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2005-07-12;153",
+        verified: true,
+        verified_by: "claude (WebFetch, Normattiva)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Data EIF 2.8.2005 verificata contro Normattiva — corregge la voce catalogo precedente 'date_in_force: 2005-10-13' (errata di circa 10 settimane).",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
   {
     id: "IT-INT-MOON-1979",
