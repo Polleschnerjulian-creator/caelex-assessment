@@ -616,32 +616,73 @@ const PRIMARY_LEGISLATION_UK: LegalSource[] = [
       "Five licence types: operator, spaceport, range control, orbital operator, mission management.",
     ],
     legislative_history: [
-      // ⚠️ Audit-honesty note (2026-04-28): pre-Royal-Assent steps
-      // (consultation, Lords introduction, Lords/Commons readings,
-      // Public Bill Committee) had specific bill numbers / sponsor
-      // names / amendment counts that I drafted from plausibility,
-      // not from the parliamentary record. Stripped pending
-      // verification against bills.parliament.uk and Hansard. The
-      // 2025 Indemnities Act amendment is captured separately as a
-      // standalone LegalSource record (UK-SIA-INDEMNITIES-2025) and
-      // will be cross-linked here via amended_by once a verified
-      // amendment milestone is added.
+      // Verification trail: this block was hand-verified against
+      // legislation.gov.uk on 2026-04-28 (claude/WebFetch) — the
+      // Royal Assent date, chapter number, commencement-order SIs
+      // and the 2025 Indemnities Act amendment effective-date were
+      // confirmed against the legislation.gov.uk masthead.
+      // Pre-Royal-Assent legislative path (consultation, bill
+      // numbers, Lords/Commons readings, Public Bill Committee) is
+      // intentionally NOT yet listed — those facts require
+      // verification against bills.parliament.uk and Hansard which
+      // weren't fetched in this verification pass and will be
+      // appended in a later tranche.
       {
         date: "2018-03-15",
         type: "presidential_signature",
-        body: "Royal Assent",
-        reference: "Space Industry Act 2018 c.5",
+        body: "Royal Assent · Crown",
+        reference: "Space Industry Act 2018 c. 5",
         description:
-          "Royal Assent received. Act enters the statute book; substantive commencement is staggered via secondary legislation.",
+          "Royal Assent. Long title: 'An Act to make provision about space activities and sub-orbital activities, and for connected purposes.' Substantive commencement is staggered via subsequent commencement orders.",
         source_url: "https://www.legislation.gov.uk/ukpga/2018/5",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Long title, Royal Assent date and chapter number confirmed against the legislation.gov.uk masthead.",
+      },
+      {
+        date: "2018-11-26",
+        type: "in_force",
+        body: "Secretary of State · 1st Commencement Order",
+        reference: "S.I. 2018/1224",
+        description:
+          "First provisions commenced (preliminary / consultation framework) under the SIA 2018 (Commencement No. 1) Regulations 2018.",
+        source_url: "https://www.legislation.gov.uk/uksi/2018/1224",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "SI number and commencement date listed in the SIA 2018 commencement-order metadata on legislation.gov.uk.",
       },
       {
         date: "2021-07-29",
         type: "in_force",
-        body: "Department for Transport · Commencement Order",
+        body: "Secretary of State · Principal Commencement Order",
+        reference: "S.I. 2021/817",
         description:
-          "Principal commencement of substantive provisions. Exact SI reference (Commencement No. 1) pending verification against the UK SI register at legislation.gov.uk.",
-        source_url: "https://www.legislation.gov.uk/ukpga/2018/5/contents",
+          "Principal commencement of substantive Space Industry Act 2018 provisions — licensing, spaceport, range-control and accident-investigation provisions brought into force on the same day as the principal SIA-implementing regulations (S.I. 2021/792).",
+        source_url: "https://www.legislation.gov.uk/uksi/2021/817",
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Principal commencement SI is 2021/817 (corrected — earlier draft stated 2021/874, which is in fact an amending order to 817).",
+      },
+      {
+        date: "2026-02-18",
+        type: "amendment",
+        body: "Parliament of the United Kingdom",
+        reference: "Space Industry (Indemnities) Act 2025 c. 35",
+        description:
+          "Amendment to s.12(2) SIA 2018 takes effect — the Indemnities Act introduces the mandatory liability-cap regime for operator licences.",
+        source_url: "https://www.legislation.gov.uk/ukpga/2025/35",
+        affected_sections: ["s.12(2)"],
+        verified: true,
+        verified_by: "claude (WebFetch from legislation.gov.uk)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Indemnities Act chapter number 2025 c. 35 verified against the SIA 2018 amending-acts list; amendment effective-date 18 Feb 2026 confirmed against the SIA 2018 commencement-information block on legislation.gov.uk.",
       },
     ],
     last_verified: "2026-04-13",

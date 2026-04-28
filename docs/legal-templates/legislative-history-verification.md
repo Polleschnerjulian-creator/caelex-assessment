@@ -115,29 +115,80 @@ are not always public. In those cases:
 
 ---
 
-## 5 · State of the corpus (snapshot 2026-04-28)
+## 5 · State of the corpus (last updated 2026-04-28 · Tranche 1)
 
-After the audit-honesty cleanup that produced this protocol, **NO
-`LegislativeMilestone` entry in the corpus is currently marked
-`verified: true`.** The 6 showcase sources retain a small number of
-high-confidence placeholder entries (Royal Assent dates, OJ
-publication dates, UNGA resolution numbers) but each entry awaits
-formal stamping.
+**Total LegalSource entries in the corpus:** 619
+**With `legislative_history` populated:** 6
+**Coverage:** 0.97%
 
-The user-visible UI surfaces this state with a red "Verification
-pending — preview" banner and per-entry amber badges (see
-`src/components/atlas/LegislativeTimeline.tsx`).
+### 5.1 · Per-source verification status
 
-The verification backlog (showcase sources):
+| Source             | Entries | Verified | Status                                                                 |
+| ------------------ | ------- | -------- | ---------------------------------------------------------------------- |
+| EU-SPACE-ACT       | 2       | 0        | Pending — EUR-Lex JS-driven, blocks WebFetch                           |
+| EU-NIS2-2022       | 4       | 0        | Pending — same EUR-Lex block                                           |
+| DE-BSIG-NIS2       | 1       | 0        | Pending — BGBl./Bundestag DIP not reachable via WebFetch               |
+| INT-OST-1967       | 3       | 2        | Tranche 1 (Apr 2026) — signing + EIF verified via UN Treaty Collection |
+| INT-LIABILITY-1972 | 3       | 0        | Pending — depositary URL not located                                   |
+| UK-SIA-2018        | 4       | 4        | Tranche 1 (Apr 2026) — fully verified via legislation.gov.uk ✓         |
+| **Totals**         | **17**  | **6**    | **35 % of populated entries verified**                                 |
 
-| Source             | Entries        | Status                   |
-| ------------------ | -------------- | ------------------------ |
-| EU-SPACE-ACT       | 2 placeholders | All pending verification |
-| EU-NIS2-2022       | 4 placeholders | All pending verification |
-| DE-BSIG-NIS2       | 1 placeholder  | Pending verification     |
-| INT-OST-1967       | 3 placeholders | All pending verification |
-| INT-LIABILITY-1972 | 3 placeholders | All pending verification |
-| UK-SIA-2018        | 2 placeholders | All pending verification |
+### 5.2 · Realistic per-tranche throughput (WebFetch-only)
+
+The verification mechanism in §3 above is mechanically achievable
+via WebFetch only for primary registers that serve **static HTML**.
+The April 2026 Tranche-1 verification pass produced this throughput:
+
+| Primary register                         | WebFetch-fetchable?         | Sources verifiable per session |
+| ---------------------------------------- | --------------------------- | ------------------------------ |
+| `legislation.gov.uk` (UK statutes + SIs) | ✅ excellent                | ~5-10                          |
+| `treaties.un.org` (UN Treaty Collection) | ⚠️ only when objid known    | ~1-2                           |
+| `eur-lex.europa.eu` (EU OJ)              | ❌ JS-driven, returns empty | 0                              |
+| `unoosa.org` (treaty status, COPUOS)     | ❌ currently 404            | 0                              |
+| `govinfo.gov` (US Federal Register)      | ⚠️ HTML pages OK, PDFs no   | ~1-3                           |
+| `bgbl.de` (German Bundesgesetzblatt)     | ❌ Xaver-PDF only           | 0                              |
+| `legifrance.gouv.fr` (FR JORF)           | ❌ JS-driven for historical | 0                              |
+| `boe.es` (Spanish BOE)                   | ❌ PDF-heavy archive        | 0                              |
+| `bills.parliament.uk` (UK bills tracker) | ⚠️ needs testing            | ?                              |
+
+**Implication.** WebFetch can mechanically verify approximately 70-80
+of the 619 corpus entries (UK statutes, the subset of UN treaties
+where the objid is known, and a handful of US Federal-Register HTML
+pages). The remaining ~540 entries require either (a) a human
+researcher with PDF reader and archive-viewer access, or (b) a more
+capable rendering tool than WebFetch (e.g. headless-browser
+automation that can execute the EUR-Lex / Légifrance JS bundles).
+
+### 5.3 · Tranche schedule
+
+| Tranche          | Primary register                     | Target sources                                                                                                                                  | Capacity                     |
+| ---------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| **1 — Apr 2026** | legislation.gov.uk + treaties.un.org | UK-SIA-2018 (full), INT-OST-1967 (partial)                                                                                                      | ✅ shipped                   |
+| **2**            | legislation.gov.uk                   | UK-OSA-1986, UK-NIS-REGS-2018, UK SIs 2021/792 + 2021/793 + 2021/816, UK-SIA-INDEMNITIES-2025                                                   | ~5-7 sources                 |
+| **3**            | govinfo.gov + treaties.un.org        | US-COMMERCIAL-SPACE-LAUNCH-ACT, US-OUTER-SPACE-COMMERCIALIZATION-ACT, INT-RESCUE-1968, INT-LIABILITY-1972, INT-REGISTRATION-1975, INT-MOON-1979 | ~5-7 sources                 |
+| **4**            | legislation.gov.uk                   | remaining ~50 UK national-space + telecoms sources                                                                                              | ~10/session × ~5 sessions    |
+| **5+**           | mixed                                | All EU instruments (~50), DE/FR/IT/ES/NL/SE/NO/JP/KR/CN national, every other gap                                                               | NEEDS NEW TOOLING — see §5.4 |
+
+### 5.4 · Tooling gap for Tranche 5+
+
+The remaining ~540 corpus entries cannot be verified mechanically
+with the current toolset. Three options to unblock:
+
+1. **Headless-browser automation tool** (e.g. Playwright via an MCP)
+   that can execute the EUR-Lex / Légifrance / OEIL JS bundles and
+   parse the rendered DOM. Would unblock all EU instruments,
+   French national, and most national procedure trackers.
+
+2. **PDF-OCR pipeline** for BGBl., JORF and BOE archives — these
+   register publications are PDF-only and need text extraction plus
+   structured-citation parsing.
+
+3. **External-researcher contract** — a paralegal or law-student
+   contractor with archive access; ~12 person-weeks for a thorough
+   pass per the earlier estimate.
+
+Until one of (1)-(3) is in place, the verified portion of the
+corpus stays bounded at ~70-80 entries (~13 % of total).
 
 ---
 

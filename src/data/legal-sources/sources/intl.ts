@@ -174,11 +174,14 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
       "INT-RESCUE-1968",
     ],
     legislative_history: [
-      // ⚠️ Audit-honesty note (2026-04-28): UNGA-resolution number,
-      // adoption / signing / entry-into-force dates are well-attested
-      // primary historical facts. Per-state ratification details and
-      // current parties-counts removed pending hand-verification
-      // against the UNOOSA depositary register.
+      // Verification trail: signing date, entry-into-force date, and
+      // depositary identification confirmed against the UN Treaty
+      // Collection record (objid 0800000280128cbd) on 2026-04-28
+      // (claude/WebFetch). The UNGA-adoption entry remains
+      // unverified because UNOOSA was unreachable at verification
+      // time; the resolution number 2222 (XXI) is well-attested in
+      // Caelex's historical-treaties file but should be
+      // cross-checked against the UN GA archive when accessible.
       {
         date: "1966-12-19",
         type: "adoption",
@@ -188,30 +191,40 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
           "Treaty on Principles Governing the Activities of States in the Exploration and Use of Outer Space adopted by the General Assembly. Drafted by the COPUOS Legal Subcommittee.",
         source_url:
           "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/introouterspacetreaty.html",
+        // verified: false — UNOOSA archive currently unreachable.
       },
       {
         date: "1967-01-27",
         type: "signed",
-        body: "United Kingdom / United States / Soviet Union (depositaries)",
+        body: "Depositaries: United States, United Kingdom, Union of Soviet Socialist Republics",
         description:
-          "Treaty opened for signature in London, Washington and Moscow.",
+          "Treaty opened for signature simultaneously in Washington, Moscow and London.",
         source_url:
-          "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/outerspacetreaty.html",
+          "https://treaties.un.org/Pages/showDetails.aspx?objid=0800000280128cbd",
+        verified: true,
+        verified_by: "claude (WebFetch from treaties.un.org)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Date of opening for signature and the three depositary states confirmed against the UN Treaty Collection record.",
       },
       {
         date: "1967-10-10",
         type: "entry_into_force_treaty",
         body: "United Nations",
-        reference: "Art. XIV OST",
+        reference: "UN Treaty Series Vol. 610, p. 205 · UN Reg. No. 8843",
         description:
-          "Treaty entered into force after deposit of instruments of ratification by five governments, including the three depositaries.",
+          "Treaty entered into force after deposit of instruments of ratification by five governments including the three depositaries. Registered with the UN Secretariat on 30 November 1967.",
         source_url:
-          "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/outerspacetreaty.html",
+          "https://treaties.un.org/Pages/showDetails.aspx?objid=0800000280128cbd",
+        verified: true,
+        verified_by: "claude (WebFetch from treaties.un.org)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Entry-into-force date 10 Oct 1967, UN registration number 8843 and UNTS Volume 610 page 205 confirmed against the UN Treaty Collection record.",
       },
-      // Per-state ratification milestones (incl. Germany) and current
-      // parties-count to be appended once verified against the UNOOSA
-      // depositary register at
-      // https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/status/index.html
+      // Per-state ratifications and current parties-count remain
+      // pending verification once the UNOOSA depositary register
+      // becomes reachable again.
     ],
     last_verified: "2026-04-13",
   },
