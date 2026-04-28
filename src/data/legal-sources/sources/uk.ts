@@ -367,7 +367,70 @@ const TREATIES_UK: LegalSource[] = [
       },
     ],
     related_sources: ["UK-INT-OST-RATIFICATION", "UK-OSA-1986", "UK-SIA-2018"],
-    last_verified: "2026-04-13",
+    legislative_history: [
+      {
+        date: "1975-01-14",
+        type: "signed",
+        body: "United Nations General Assembly",
+        reference:
+          "Registration Convention — opened for signature 14 January 1975, New York",
+        description:
+          "Convention on Registration of Objects Launched into Outer Space opened for signature in New York on 14 January 1975 (UN MTDSG Chapter XXIV-1).",
+        source_url:
+          "https://treaties.un.org/Pages/ViewDetails.aspx?src=TREATY&mtdsg_no=XXIV-1&chapter=24&clang=_en",
+        verified: true,
+        verified_by: "claude (WebFetch, treaties.un.org)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Opening-for-signature date 14.1.1975 verified against UN MTDSG Chapter XXIV-1.",
+      },
+      {
+        date: "1975-05-06",
+        type: "signed",
+        body: "United Kingdom · Foreign and Commonwealth Office",
+        reference: "UK signature — 6 May 1975",
+        description:
+          "The United Kingdom signed the Registration Convention on 6 May 1975 — about four months after it opened for signature.",
+        source_url:
+          "https://treaties.un.org/Pages/ViewDetails.aspx?src=TREATY&mtdsg_no=XXIV-1&chapter=24&clang=_en",
+        verified: true,
+        verified_by: "claude (WebFetch, treaties.un.org)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "UK signature date 6.5.1975 verified against UN MTDSG Chapter XXIV-1 status table.",
+      },
+      {
+        date: "1976-09-15",
+        type: "entry_into_force_treaty",
+        body: "United Nations · Office of Legal Affairs",
+        reference: "Registration Convention general EIF per Article VIII(3)",
+        description:
+          "The Registration Convention entered into force generally on 15 September 1976, in accordance with Article VIII(3), upon deposit of the fifth required instrument of ratification.",
+        source_url:
+          "https://treaties.un.org/Pages/ViewDetails.aspx?src=TREATY&mtdsg_no=XXIV-1&chapter=24&clang=_en",
+        verified: true,
+        verified_by: "claude (WebFetch, treaties.un.org)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Treaty general EIF 15.9.1976 verified against UN MTDSG Chapter XXIV-1 (matches catalogue's date_in_force).",
+      },
+      {
+        date: "1978-03-30",
+        type: "ratification",
+        body: "United Kingdom · Foreign and Commonwealth Office",
+        reference: "UK ratification deposited 30 March 1978",
+        description:
+          "The UK deposited its instrument of ratification on 30 March 1978 — almost 18 months after the treaty's general entry into force on 15 September 1976. The UK became bound from this date.",
+        source_url:
+          "https://treaties.un.org/Pages/ViewDetails.aspx?src=TREATY&mtdsg_no=XXIV-1&chapter=24&clang=_en",
+        verified: true,
+        verified_by: "claude (WebFetch, treaties.un.org)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "UK ratification deposit date 30.3.1978 verified against UN MTDSG Chapter XXIV-1 — important caveat: catalogue's date_in_force (1976-09-15) reflects treaty general EIF, not UK-specific binding date.",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
   {
     id: "UK-INT-MOON-1979",
@@ -400,7 +463,56 @@ const TREATIES_UK: LegalSource[] = [
       "The UK has NOT ratified the Moon Agreement — no binding obligations for UK entities.",
       "The UK's signing of the Artemis Accords (2020) as a founding member signals preference for the Accords' approach to space resource utilization.",
     ],
-    last_verified: "2026-04-13",
+    legislative_history: [
+      {
+        date: "1979-12-18",
+        type: "signed",
+        body: "United Nations General Assembly",
+        reference:
+          "Moon Agreement — opened for signature 18 December 1979, New York",
+        description:
+          "Agreement Governing the Activities of States on the Moon and Other Celestial Bodies opened for signature in New York on 18 December 1979 (UN MTDSG Chapter XXIV-2).",
+        source_url:
+          "https://treaties.un.org/pages/ViewDetails.aspx?src=TREATY&mtdsg_no=XXIV-2&chapter=24&clang=_en",
+        verified: true,
+        verified_by: "claude (WebFetch, treaties.un.org)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Opening-for-signature date 18.12.1979 verified against UN MTDSG Chapter XXIV-2.",
+      },
+      {
+        date: "1984-07-11",
+        type: "entry_into_force_treaty",
+        body: "United Nations · Office of Legal Affairs",
+        reference:
+          "Moon Agreement general EIF per Article 19(3); UNTS Vol. 1363, p. 3, reg. 23002",
+        description:
+          "The Moon Agreement entered into force generally on 11 July 1984, in accordance with Article 19(3), upon deposit of the fifth instrument of ratification (Austria's was the trigger).",
+        source_url:
+          "https://treaties.un.org/pages/ViewDetails.aspx?src=TREATY&mtdsg_no=XXIV-2&chapter=24&clang=_en",
+        verified: true,
+        verified_by: "claude (WebFetch, treaties.un.org)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Treaty general EIF 11.7.1984 and UNTS reference (Vol. 1363 p. 3, reg. 23002) verified against UN MTDSG Chapter XXIV-2 (matches catalogue's date_in_force).",
+      },
+      {
+        date: "2026-04-28",
+        type: "consultation",
+        body: "United Kingdom — non-party status maintained",
+        reference: "UN MTDSG Chapter XXIV-2 status (as of 28 April 2026)",
+        description:
+          "As of 28 April 2026 the United Kingdom remains neither a signatory nor a party to the Moon Agreement. Status confirmed against UN MTDSG (11 signatories / 17 parties; the US and UK are notable non-signers).",
+        source_url:
+          "https://treaties.un.org/pages/ViewDetails.aspx?src=TREATY&mtdsg_no=XXIV-2&chapter=24&clang=_en",
+        verified: true,
+        verified_by: "claude (WebFetch, treaties.un.org)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "UK non-party status verified against UN MTDSG Chapter XXIV-2 status table — confirms catalogue's status:'not_ratified'.",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
   {
     id: "INT-ARTEMIS-ACCORDS-2020",
