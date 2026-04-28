@@ -246,7 +246,54 @@ const TREATIES_UK: LegalSource[] = [
       "The UK was one of the original signatories and depositary states of the Outer Space Treaty (along with the USA and USSR). Ratified 10 October 1967.",
       "Art. VI is the foundational legal basis for the UK's entire dual-statute space authorization framework (OSA 1986 + SIA 2018).",
     ],
-    last_verified: "2026-04-13",
+    legislative_history: [
+      {
+        date: "1967-01-27",
+        type: "signed",
+        body: "United Kingdom · United States · Soviet Union (co-depositaries)",
+        reference: "Outer Space Treaty — opened for signature 27 January 1967",
+        description:
+          "The UK signed the Outer Space Treaty in London on 27 January 1967 — same date the Treaty was opened for signature simultaneously in London, Washington and Moscow. The UK is one of three co-depositaries (alongside the USA and USSR).",
+        source_url:
+          "https://treaties.un.org/Pages/showDetails.aspx?objid=0800000280128cbd",
+        verified: true,
+        verified_by: "claude (WebFetch, treaties.un.org)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "UK signature date 27.1.1967 verified against the UN Treaty Collection record (objid=0800000280128cbd).",
+      },
+      {
+        date: "1967-10-10",
+        type: "ratification",
+        body: "United Kingdom · Foreign and Commonwealth Office",
+        reference: "UK ratification deposited 10 October 1967",
+        description:
+          "The UK deposited its instrument of ratification on 10 October 1967 — the same date the Treaty entered into force globally (the UK was one of the five States whose ratification triggered general EIF).",
+        source_url:
+          "https://treaties.un.org/Pages/showDetails.aspx?objid=0800000280128cbd",
+        verified: true,
+        verified_by: "claude (WebFetch, treaties.un.org)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "UK ratification deposit date 10.10.1967 verified against the UN Treaty Collection record.",
+      },
+      {
+        date: "1967-10-10",
+        type: "entry_into_force_treaty",
+        body: "United Nations · Office of Legal Affairs",
+        reference: "UNTS Vol. 610, p. 205, registration no. 8843",
+        description:
+          "The Outer Space Treaty entered into force globally on 10 October 1967 upon deposit of the fifth required instrument of ratification (concurrent with UK ratification).",
+        source_url:
+          "https://treaties.un.org/Pages/showDetails.aspx?objid=0800000280128cbd",
+        verified: true,
+        verified_by: "claude (WebFetch, treaties.un.org)",
+        verified_at: "2026-04-28",
+        verification_note:
+          "Treaty EIF date 10.10.1967 and UNTS reference (Vol. 610 p. 205, reg. 8843) verified against the UN Treaty Collection record.",
+      },
+    ],
+    last_verified: "2026-04-28",
   },
   {
     id: "UK-INT-LIABILITY-1972",
