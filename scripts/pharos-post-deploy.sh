@@ -21,7 +21,21 @@
 
 set -euo pipefail
 
+# PROD_URL — set this to your Vercel production URL. Defaults to a
+# placeholder; if DNS doesn't resolve we skip the smoke-check gracefully.
 PROD_URL="${PROD_URL:-https://caelex.app}"
+
+# Helper — only runs the curl probe if the host resolves.
+_can_resolve() {
+  local url="$1"
+  local host
+  host=$(echo "$url" | awk -F[/:] '{print $4}')
+  if command -v dscacheutil >/dev/null 2>&1; then
+    dscacheutil -q host -a name "$host" 2>/dev/null | grep -q "ip_address"
+  else
+    getent hosts "$host" >/dev/null 2>&1
+  fi
+}
 ENV_FILE=".env.pharos-deploy.tmp"
 
 echo "Pharos 2.0 Post-Deploy"
@@ -56,7 +70,20 @@ if [[ -z "${DATABASE_URL:-}" ]]; then
 fi
 export DATABASE_URL
 
-# 3. Seed NormAnchor
+# 3a. Regenerate the Prisma client locally — the migration ran on Vercel,
+#     but the local node_modules/.prisma/client is stale and won't know
+#     about NormAnchor / NormDriftAlert until `prisma generate` runs.
+echo
+echo "→ Regenerating local Prisma client ..."
+if npx prisma generate >/dev/null 2>&1; then
+  echo "  ✓ Prisma client regenerated"
+else
+  echo "  ✗ prisma generate failed"
+  rm -f "$ENV_FILE"
+  exit 1
+fi
+
+# 3b. Seed NormAnchor
 echo
 echo "→ Seeding Pharos NormAnchor index ..."
 if npx tsx scripts/seed-pharos-norms.ts; then
@@ -67,18 +94,18 @@ else
   exit 1
 fi
 
-# 4. Verify endpoints
+# 4. Verify endpoints — only if PROD_URL resolves
 echo
-echo "→ Smoke-checking public endpoints ..."
-
-# We don't yet have a known entryId/authorityProfileId, so we just probe
-# that the routes are registered (404 is the expected response on
-# unknown ID; 5xx would indicate a deploy regression).
-RECEIPT_PROBE=$(curl -sS -o /dev/null -w "%{http_code}" -m 10 "$PROD_URL/api/pharos/receipt/probe-nonexistent" || echo "000")
-KEYS_PROBE=$(curl -sS -o /dev/null -w "%{http_code}" -m 10 "$PROD_URL/api/pharos/.well-known/keys/probe-nonexistent" || echo "000")
-
-echo "  /api/pharos/receipt/<id>       → HTTP $RECEIPT_PROBE   $([ "$RECEIPT_PROBE" = "404" ] && echo '(expected — unknown id)')"
-echo "  /api/pharos/.well-known/keys/  → HTTP $KEYS_PROBE   $([ "$KEYS_PROBE" = "404" ] && echo '(expected — unknown id)')"
+if _can_resolve "$PROD_URL"; then
+  echo "→ Smoke-checking public endpoints at $PROD_URL ..."
+  RECEIPT_PROBE=$(curl -sS -o /dev/null -w "%{http_code}" -m 10 "$PROD_URL/api/pharos/receipt/probe-nonexistent" || echo "000")
+  KEYS_PROBE=$(curl -sS -o /dev/null -w "%{http_code}" -m 10 "$PROD_URL/api/pharos/.well-known/keys/probe-nonexistent" || echo "000")
+  echo "  /api/pharos/receipt/<id>       → HTTP $RECEIPT_PROBE   $([ "$RECEIPT_PROBE" = "404" ] && echo '(expected — unknown id)')"
+  echo "  /api/pharos/.well-known/keys/  → HTTP $KEYS_PROBE   $([ "$KEYS_PROBE" = "404" ] && echo '(expected — unknown id)')"
+else
+  echo "→ Smoke-check skipped — $PROD_URL doesn't resolve."
+  echo "  Set PROD_URL=https://<your-vercel-domain> in the env if you want this check."
+fi
 
 # 5. Cleanup + summary
 echo
