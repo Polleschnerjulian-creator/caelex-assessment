@@ -9498,3 +9498,81 @@ model ApprovalSignature {
   @@index([requestId])
   @@index([approverUserId])
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHAROS EXTERNAL WEBHOOK
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Erlaubt Operatoren, die NICHT Caelex-User sind, Vorfälle an Pharos
+// zu reporten (z.B. ein OHB- oder Airbus-Operator mit eigener Compliance-
+// Stack). Pro Operator legt die Behörde einen WebhookEndpoint an mit
+// HMAC-Secret. Operator signiert sein POST mit `x-pharos-signature`,
+// Pharos verifiziert die Signatur, replay-protection via
+// `x-pharos-nonce` + `x-pharos-timestamp` (5min Window).
+
+/// Pro registriertem Operator-Endpoint ein Eintrag.
+model PharosWebhookEndpoint {
+  id String @id @default(cuid())
+
+  /// Welche Aufsicht / Behörde authorisiert diesen Endpoint?
+  oversightId         String
+  authorityProfileId  String
+
+  /// Externer Operator-Identifier (DID-style oder org-name).
+  externalOperatorId  String
+  externalOperatorName String
+
+  /// HMAC-Secret für Signatur-Verifikation. Hashed at rest.
+  /// Format: scrypt(rawSecret, salt, 64).
+  secretHash      String
+  secretSalt      String
+
+  /// Welche Event-Typen darf dieser Endpoint senden?
+  /// JSON-Array, z.B. ["nis2.early_warning", "nis2.notification", "nis2.final_report"]
+  allowedEvents Json
+
+  status String @default("ACTIVE")  // ACTIVE | PAUSED | REVOKED
+
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  revokedAt   DateTime?
+
+  invocations PharosWebhookInvocation[]
+
+  @@index([oversightId])
+  @@index([authorityProfileId])
+  @@index([externalOperatorId])
+  @@unique([oversightId, externalOperatorId])
+}
+
+/// Pro Webhook-Aufruf ein Eintrag — replay-protection + audit-trail.
+/// `nonce` ist UNIQUE → Replay-Schutz auf Datenbank-Ebene.
+model PharosWebhookInvocation {
+  id String @id @default(cuid())
+
+  endpointId String
+  /// Anti-Replay-Nonce vom Operator. UNIQUE pro Endpoint.
+  nonce      String
+  /// `x-pharos-timestamp` ISO-8601, vom Pharos verifiziert (±5min).
+  receivedAt DateTime @default(now())
+
+  eventType  String  // z.B. "nis2.early_warning"
+  /// Hash über den Body — kann später mit Operator-side hash verifiziert
+  /// werden (incident-integrity-Check).
+  bodyHash   String
+  payloadJson Json
+
+  /// Status der Verarbeitung
+  status     String  // ACCEPTED | REJECTED_SIGNATURE | REJECTED_REPLAY | REJECTED_EVENT | REJECTED_PAUSED | ERROR
+  reason     String?
+
+  /// Falls erfolgreich: ID des erzeugten WorkflowCase.
+  workflowCaseId String?
+
+  endpoint PharosWebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+
+  @@unique([endpointId, nonce])
+  @@index([endpointId, receivedAt])
+  @@index([status])
+}
