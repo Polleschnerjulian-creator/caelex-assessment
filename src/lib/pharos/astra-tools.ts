@@ -34,6 +34,7 @@ import {
   EU_SPACE_ACT_AUTH_FSM_DEF,
   NIS2_INCIDENT_FSM_DEF,
 } from "./workflow-fsm";
+import { consultAtlasLegalOpinion } from "./astra-bridge";
 
 export const PHAROS_ASTRA_TOOLS: Anthropic.Tool[] = [
   {
@@ -101,6 +102,49 @@ export const PHAROS_ASTRA_TOOLS: Anthropic.Tool[] = [
         },
       },
       required: ["metric"],
+    },
+  },
+  {
+    name: "consult_atlas_legal_opinion",
+    description:
+      "Konsultiert Atlas-Astra (Anwalts-AI) für eine ANONYMISIERTE juristische Auslegungsfrage als Second-Opinion. WICHTIG: Frage darf KEINE Operator-Identifier, KEINE Aufsichts-IDs, KEINE personenbezogenen Daten enthalten — die Bridge verweigert sonst. Eingang einer Atlas-Antwort wird als ATLAS:-prefixed Citation in deiner Antwort referenziert. Nutze das wenn die Behörden-Frage eine rein juristisch-akademische Auslegung erfordert (z.B. 'Wie ist die Reichweite von NIS2 Art. 21(2)(d) für Down-Stream-Operatoren?').",
+    input_schema: {
+      type: "object",
+      properties: {
+        question: {
+          type: "string",
+          minLength: 30,
+          maxLength: 1000,
+          description:
+            "Anonymisierte Frage. KEIN Operator-Name, KEINE cuid, KEINE Email, KEIN Aktenzeichen.",
+        },
+        jurisdiction: {
+          type: "string",
+          enum: [
+            "EU",
+            "DE",
+            "FR",
+            "UK",
+            "IT",
+            "ES",
+            "LU",
+            "NL",
+            "PL",
+            "AT",
+            "BE",
+            "SE",
+            "NATO",
+            "INT",
+          ],
+          description: "Optional: Kontext für Atlas-Library-Suche.",
+        },
+        instrument: {
+          type: "string",
+          description:
+            "Optional: Norm-Code, z.B. 'EU_SPACE_ACT', 'NIS2', 'BWRG'.",
+        },
+      },
+      required: ["question"],
     },
   },
   {
@@ -656,6 +700,66 @@ export async function executePharosAstraTool(
           },
           privacyGuarantee:
             "ε-Differential-Privacy mit Laplace-Mechanismus. Eine Veränderung der Daten eines beliebigen einzelnen Operators ändert die Output-Verteilung um maximal exp(ε).",
+        },
+      };
+    }
+
+    if (name === "consult_atlas_legal_opinion") {
+      const question = String(input.question ?? "").trim();
+      if (question.length < 30) {
+        return {
+          ok: false,
+          citations: [],
+          error: "question muss mindestens 30 Zeichen sein",
+        };
+      }
+      const jurisdiction =
+        typeof input.jurisdiction === "string" ? input.jurisdiction : undefined;
+      const instrument =
+        typeof input.instrument === "string" ? input.instrument : undefined;
+
+      const result = await consultAtlasLegalOpinion({
+        question,
+        jurisdiction,
+        instrument,
+      });
+
+      if (!result.ok || !result.legalOpinion || !result.citation) {
+        return {
+          ok: false,
+          citations: [],
+          error: result.error ?? "Atlas-Bridge fehlgeschlagen",
+        };
+      }
+
+      // Atlas hat sich enthalten → strukturierte Abstention propagieren.
+      if (result.abstained) {
+        return {
+          ok: true,
+          abstain: true,
+          abstainReason: `Atlas-Astra hat sich der juristischen Auslegung enthalten. Original-Antwort: ${result.legalOpinion.slice(0, 300)}`,
+          citations: [result.citation],
+          data: {
+            queryHash: result.queryHash,
+            legalOpinion: result.legalOpinion,
+            jurisdiction,
+            instrument,
+          },
+        };
+      }
+
+      return {
+        ok: true,
+        citations: [result.citation],
+        data: {
+          queryHash: result.queryHash,
+          legalOpinion: result.legalOpinion,
+          jurisdiction,
+          instrument,
+          source: "atlas-astra",
+          _citation: result.citation.id,
+          disclaimer:
+            "Atlas-Astra liefert akademische Auslegungs-Hilfe — KEINE juristische Endentscheidung. Behörden-Bescheid bleibt §35a/§39 VwVfG-konform Sache des Sachbearbeiters.",
         },
       };
     }
