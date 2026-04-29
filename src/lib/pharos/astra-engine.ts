@@ -35,6 +35,7 @@ import {
   systemPromptHash,
   type SignedReceipt,
 } from "./receipt";
+import { runJudge, type JudgeVerdict } from "./llm-judge";
 
 const MAX_TOOL_ITERATIONS = 5;
 const MAX_OUTPUT_TOKENS = 2048;
@@ -110,6 +111,16 @@ export interface PharosAstraRequest {
 export interface PharosAstraResponse {
   ok: boolean;
   reply?: string;
+  /** LLM-as-a-Judge verdict — "accepted" | "rejected" | "abstained".
+   *  Defense-in-depth nach der Schema-Citation-Enforcement der Engine.
+   *  Bei rejected wird die Antwort ausgeliefert ABER mit Warnung im UI;
+   *  bei accepted-low-confidence rendered die UI das als Hinweis. */
+  judge?: {
+    verdict: JudgeVerdict["verdict"];
+    confidence: number;
+    reasonsRejected: string[];
+    unsupportedClaims: string[];
+  };
   /** True wenn die Antwort eine strukturierte Abstention war
    *  (Pharos hat sich geweigert eine Aussage zu treffen — das ist
    *  rechtlich sauber und wird wie eine reguläre Antwort behandelt). */
@@ -221,6 +232,43 @@ export async function runPharosAstra(
         };
       }
 
+      // LLM-AS-A-JUDGE: zweite, unabhängige Inferenz prüft ob der
+      // Output gegen die gelieferten Citations textuell standhält.
+      // Defense-in-depth zur Schema-Enforcement.
+      let judgeVerdict: JudgeVerdict | undefined;
+      try {
+        judgeVerdict = await runJudge({
+          question: req.userMessage,
+          answer: text,
+          citations: allCitations,
+        });
+        if (
+          judgeVerdict.verdict === "rejected" &&
+          judgeVerdict.confidence > 0.7
+        ) {
+          logger.warn(
+            `[pharos-astra] judge rejected with confidence ${judgeVerdict.confidence}: ${judgeVerdict.reasonsRejected.join("; ")}`,
+          );
+          return {
+            ok: false,
+            error: `Pharos-Judge hat die Antwort abgewiesen: ${judgeVerdict.reasonsRejected.join("; ") || "Aussagen nicht durch Citations gestützt."}`,
+            toolCalls: toolCallTrace,
+            citations: allCitations,
+            judge: {
+              verdict: judgeVerdict.verdict,
+              confidence: judgeVerdict.confidence,
+              reasonsRejected: judgeVerdict.reasonsRejected,
+              unsupportedClaims: judgeVerdict.unsupportedClaims,
+            },
+          };
+        }
+      } catch (err) {
+        // Judge transient outage → don't block the user. Schema-enforcement
+        // is the primary guard.
+        const msg = err instanceof Error ? err.message : String(err);
+        logger.error(`[pharos-judge] unhandled: ${msg}`);
+      }
+
       // TRIPLE-HASH-RECEIPT: signiere den Output kryptografisch und
       // hänge ihn in die OversightAccessLog-Hash-Chain jeder berührten
       // Aufsicht ein. Wenn ENCRYPTION_KEY fehlt oder DB nicht erreichbar:
@@ -263,6 +311,14 @@ export async function runPharosAstra(
         citations: allCitations,
         receipt,
         chainEntries,
+        judge: judgeVerdict
+          ? {
+              verdict: judgeVerdict.verdict,
+              confidence: judgeVerdict.confidence,
+              reasonsRejected: judgeVerdict.reasonsRejected,
+              unsupportedClaims: judgeVerdict.unsupportedClaims,
+            }
+          : undefined,
       };
     }
 

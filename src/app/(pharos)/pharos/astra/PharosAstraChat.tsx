@@ -59,6 +59,13 @@ interface ChainEntry {
   entryHash: string;
 }
 
+interface JudgeVerdict {
+  verdict: "accepted" | "rejected" | "abstained";
+  confidence: number;
+  reasonsRejected: string[];
+  unsupportedClaims: string[];
+}
+
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -67,6 +74,7 @@ interface Message {
   receipt?: ReceiptInfo | null;
   chainEntries?: ChainEntry[];
   abstained?: boolean;
+  judge?: JudgeVerdict | null;
   error?: string;
 }
 
@@ -124,6 +132,7 @@ export function PharosAstraChat({
             receipt: json.receipt,
             chainEntries: json.chainEntries,
             abstained: json.abstained,
+            judge: json.judge,
           },
         ]);
       } catch (err) {
@@ -296,6 +305,8 @@ function MessageBubble({ message }: { message: Message }) {
           </>
         )}
 
+        {message.judge && <JudgeBadge judge={message.judge} />}
+
         {message.citations && message.citations.length > 0 && (
           <CitationStrip citations={message.citations} />
         )}
@@ -351,6 +362,53 @@ function renderWithCitationLinks(text: string, citations: Citation[]) {
   }
   if (lastIdx < text.length) parts.push(text.slice(lastIdx));
   return parts;
+}
+
+function JudgeBadge({ judge }: { judge: JudgeVerdict }) {
+  const isAccepted = judge.verdict === "accepted";
+  const isRejected = judge.verdict === "rejected";
+  const isAbstained = judge.verdict === "abstained";
+
+  const tone = isAccepted
+    ? "bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-500/10 dark:border-emerald-500/30 dark:text-emerald-300"
+    : isRejected
+      ? "bg-red-50 border-red-200 text-red-800 dark:bg-red-500/10 dark:border-red-500/30 dark:text-red-300"
+      : "bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-500/10 dark:border-yellow-500/30 dark:text-yellow-300";
+
+  const label = isAccepted
+    ? "Pharos-Judge ✓ verifiziert"
+    : isRejected
+      ? "Pharos-Judge ✗ Antwort beanstandet"
+      : "Pharos-Judge — Abstention bestätigt";
+
+  return (
+    <div className={`mt-3 pt-3 border-t border-slate-200 dark:border-white/5`}>
+      <div
+        className={`inline-flex items-center gap-2 text-[10px] tracking-wider uppercase px-2 py-1 rounded border font-semibold ${tone}`}
+      >
+        <CheckCircle2 className="w-3 h-3" />
+        {label} · Confidence {(judge.confidence * 100).toFixed(0)}%
+      </div>
+      {judge.reasonsRejected.length > 0 && (
+        <ul className="mt-2 space-y-0.5 text-[11px] text-red-700 dark:text-red-300">
+          {judge.reasonsRejected.map((r, i) => (
+            <li key={i}>• {r}</li>
+          ))}
+        </ul>
+      )}
+      {judge.unsupportedClaims.length > 0 && (
+        <div className="mt-1 text-[10px] text-slate-600 dark:text-slate-400">
+          Unbelegt:{" "}
+          {judge.unsupportedClaims.slice(0, 3).map((c, i) => (
+            <span key={i} className="italic">
+              {i > 0 ? " · " : ""}
+              {c}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function CitationStrip({ citations }: { citations: Citation[] }) {

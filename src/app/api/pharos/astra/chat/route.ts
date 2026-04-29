@@ -125,6 +125,9 @@ export async function POST(request: NextRequest) {
       // Hash-Chain-Entries pro berührter Aufsicht — Operator sieht
       // diese Einträge live in seinem Audit-Center.
       chainEntries: result.chainEntries ?? [],
+      // LLM-as-a-Judge zweite-Pass-Bewertung. UI rendert das als
+      // Confidence-Badge ("verifiziert" / "low-confidence" / "rejected").
+      judge: result.judge ?? null,
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
