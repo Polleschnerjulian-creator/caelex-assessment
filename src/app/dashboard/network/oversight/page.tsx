@@ -19,6 +19,7 @@ import { redirect } from "next/navigation";
 import { listOversightsByOperator } from "@/lib/pharos/oversight-service";
 import { Lightbulb, Shield, AlertTriangle, FileSearch } from "lucide-react";
 import { OversightMirrorStream } from "@/components/network/OversightMirrorStream";
+import { PharosIncidentReporter } from "@/components/dashboard/PharosIncidentReporter";
 
 export const dynamic = "force-dynamic";
 
@@ -75,6 +76,18 @@ export default async function OperatorOversightPage() {
           und wie oft die Behörde bisher zugegriffen hat.
         </p>
       </div>
+
+      {/* NIS2-Incident-Reporter — operator triggers Pharos workflow with one click */}
+      {active.length > 0 && (
+        <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-500/30 dark:bg-amber-500/10">
+          <div className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
+            <strong>Vorfall melden:</strong> erzeugt einen signierten
+            NIS2-Incident- Workflow direkt bei der gewählten Aufsichtsbehörde.
+            24h-Frist wird sofort erfüllt, 72h-Notification-Frist startet.
+          </div>
+          <PharosIncidentReporter />
+        </div>
+      )}
 
       {/* Live-Mirror — Server-Sent-Events Feed jedes Behörden-Zugriffs in Echtzeit */}
       <OversightMirrorStream />
