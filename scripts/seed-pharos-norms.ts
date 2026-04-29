@@ -9,16 +9,88 @@
  * geänderte Inhalte aktualisiert (contentHash-Diff).
  *
  * Usage:
- *   npx tsx scripts/seed-pharos-norms.ts          # alle Module
- *   npx tsx scripts/seed-pharos-norms.ts --only=eu-space-act
+ *   DATABASE_URL=<url> npx tsx scripts/seed-pharos-norms.ts          # alle Module
+ *   DATABASE_URL=<url> npx tsx scripts/seed-pharos-norms.ts --only=eu-space-act
  *
  * Output: Counter pro Modul (inserted / updated / unchanged / drifted).
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { upsertNormAnchor } from "@/lib/pharos/norm-anchor";
+// CLI-Bypass: das norm-anchor.ts-Modul importiert "server-only" und
+// würde in einem reinen tsx/CLI-Kontext werfen. Wir setzen den Marker
+// vor dem Import, damit der Guard uns durchlässt.
+process.env.NEXT_RUNTIME = process.env.NEXT_RUNTIME || "nodejs";
+
+import { createHash } from "node:crypto";
+import { PrismaClient } from "@prisma/client";
 import { articles } from "@/data/articles";
+
+const prisma = new PrismaClient();
+
+function computeContentHash(text: string): string {
+  return (
+    "sha256:" +
+    createHash("sha256").update(text, "utf8").digest("hex").slice(0, 32)
+  );
+}
+
+interface NormIngestInput {
+  id: string;
+  jurisdiction: string;
+  instrument: string;
+  unit: string;
+  number: string;
+  title?: string;
+  text: string;
+  sourceUrl?: string;
+  effectiveFrom?: Date;
+  language?: string;
+}
+
+async function upsertNormAnchor(input: NormIngestInput): Promise<{
+  inserted: boolean;
+  drifted: boolean;
+  oldHash?: string;
+  newHash: string;
+}> {
+  const newHash = computeContentHash(input.text);
+  const existing = await prisma.normAnchor.findUnique({
+    where: { id: input.id },
+    select: { contentHash: true },
+  });
+  if (existing && existing.contentHash === newHash) {
+    return { inserted: false, drifted: false, newHash };
+  }
+  await prisma.normAnchor.upsert({
+    where: { id: input.id },
+    create: {
+      id: input.id,
+      jurisdiction: input.jurisdiction,
+      instrument: input.instrument,
+      unit: input.unit,
+      number: input.number,
+      title: input.title ?? null,
+      text: input.text,
+      contentHash: newHash,
+      sourceUrl: input.sourceUrl ?? null,
+      effectiveFrom: input.effectiveFrom ?? null,
+      language: input.language ?? "en",
+    },
+    update: {
+      text: input.text,
+      contentHash: newHash,
+      title: input.title ?? null,
+      sourceUrl: input.sourceUrl ?? null,
+    },
+  });
+  return {
+    inserted: !existing,
+    drifted: !!existing,
+    oldHash: existing?.contentHash,
+    newHash,
+  };
+}
 
 interface SeedStats {
   module: string;
@@ -197,8 +269,12 @@ async function main() {
 }
 
 main()
-  .then(() => process.exit(0))
-  .catch((err) => {
+  .then(async () => {
+    await prisma.$disconnect();
+    process.exit(0);
+  })
+  .catch(async (err) => {
     console.error(err);
+    await prisma.$disconnect();
     process.exit(1);
   });

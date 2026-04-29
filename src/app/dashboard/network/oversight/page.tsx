@@ -18,6 +18,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { listOversightsByOperator } from "@/lib/pharos/oversight-service";
 import { Lightbulb, Shield, AlertTriangle, FileSearch } from "lucide-react";
+import { OversightMirrorStream } from "@/components/network/OversightMirrorStream";
 
 export const dynamic = "force-dynamic";
 
@@ -74,6 +75,9 @@ export default async function OperatorOversightPage() {
           und wie oft die Behörde bisher zugegriffen hat.
         </p>
       </div>
+
+      {/* Live-Mirror — Server-Sent-Events Feed jedes Behörden-Zugriffs in Echtzeit */}
+      <OversightMirrorStream />
 
       {/* Pending — needs action */}
       {pending.length > 0 && (
