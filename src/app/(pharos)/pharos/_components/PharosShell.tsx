@@ -15,6 +15,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Calendar,
   Eye,
   Gavel,
   GitBranch,
@@ -49,6 +50,7 @@ interface PharosShellProps {
 
 const NAV_ITEMS = [
   { href: "/pharos", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/pharos/briefing", label: "Tagesbriefing", icon: Calendar },
   { href: "/pharos/operators", label: "Operatoren", icon: Users },
   { href: "/pharos/oversights", label: "Aufsichten", icon: Gavel },
   { href: "/pharos/workflow", label: "Workflows & Fristen", icon: GitBranch },

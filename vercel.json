@@ -137,6 +137,10 @@
     {
       "path": "/api/cron/pharos-approval-expiry",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/pharos-daily-briefing",
+      "schedule": "0 6 * * *"
     }
   ]
 }
