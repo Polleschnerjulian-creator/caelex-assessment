@@ -71,11 +71,19 @@ export default async function BriefingPage() {
       {briefings.map(({ profile, briefing }) => (
         <BriefingCard
           key={profile.id}
+          authorityProfileId={profile.id}
           authorityName={profile.organization.name}
           authorityType={profile.authorityType}
           briefing={briefing}
         />
       ))}
+
+      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-[11px] text-slate-600 dark:border-white/5 dark:bg-white/[0.02] dark:text-slate-500 leading-relaxed">
+        Briefing wird täglich um 06:00 UTC per E-Mail (Resend) an alle aktiven
+        Mitglieder der Behörde verschickt — sofern <code>RESEND_API_KEY</code>{" "}
+        konfiguriert ist. Die exakte HTML- Vorschau bekommst du über den
+        "Vorschau"-Link auf jeder Card.
+      </div>
     </div>
   );
 }
@@ -102,10 +110,12 @@ interface BriefingCardData {
 }
 
 function BriefingCard({
+  authorityProfileId,
   authorityName,
   authorityType,
   briefing,
 }: {
+  authorityProfileId: string;
   authorityName: string;
   authorityType: string;
   briefing: BriefingCardData;
@@ -164,8 +174,19 @@ function BriefingCard({
         )}
       </div>
 
-      <footer className="px-5 py-2 border-t border-slate-200 dark:border-white/5 text-[10px] font-mono text-slate-500">
-        briefingHash: {briefing.briefingHash.slice(0, 32)}…
+      <footer className="px-5 py-2 border-t border-slate-200 dark:border-white/5 flex items-center justify-between gap-3">
+        <code className="text-[10px] font-mono text-slate-500">
+          briefingHash: {briefing.briefingHash.slice(0, 32)}…
+        </code>
+        <a
+          href={`/api/pharos/briefing/preview?authorityProfileId=${authorityProfileId}`}
+          target="_blank"
+          rel="noreferrer"
+          className="text-[11px] text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300 inline-flex items-center gap-1"
+        >
+          E-Mail-Vorschau
+          <ArrowRight className="w-3 h-3" />
+        </a>
       </footer>
     </div>
   );
