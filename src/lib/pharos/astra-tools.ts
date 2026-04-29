@@ -30,6 +30,10 @@ import {
 } from "./citation";
 import { searchNormAnchors, normHitToCitation } from "./norm-anchor";
 import { noisifyAggregate, getBudgetStatus } from "./differential-privacy";
+import {
+  EU_SPACE_ACT_AUTH_FSM_DEF,
+  NIS2_INCIDENT_FSM_DEF,
+} from "./workflow-fsm";
 
 export const PHAROS_ASTRA_TOOLS: Anthropic.Tool[] = [
   {
@@ -97,6 +101,27 @@ export const PHAROS_ASTRA_TOOLS: Anthropic.Tool[] = [
         },
       },
       required: ["metric"],
+    },
+  },
+  {
+    name: "list_open_workflows",
+    description:
+      "Listet alle offenen Workflow-Cases (NIS2-Incidents, EU-Space-Act-Authorisations) der callenden Behörde mit aktuellem State, Zeit-im-State und SLA-Restzeit. Hilft Sachbearbeitern bei Triage: 'Welche Vorfälle nähern sich der 24h-Frist?'",
+    input_schema: {
+      type: "object",
+      properties: {
+        fsmId: {
+          type: "string",
+          enum: ["nis2-incident-v1", "eu-space-act-authorisation-v1"],
+          description: "Optional: nur einen FSM-Typ.",
+        },
+        slaTone: {
+          type: "string",
+          enum: ["all", "alert", "warn"],
+          description:
+            "all = alle, alert = nur frist-verletzte, warn = SLA-rest < 6h",
+        },
+      },
     },
   },
   {
@@ -600,6 +625,126 @@ export async function executePharosAstraTool(
           },
           privacyGuarantee:
             "ε-Differential-Privacy mit Laplace-Mechanismus. Eine Veränderung der Daten eines beliebigen einzelnen Operators ändert die Output-Verteilung um maximal exp(ε).",
+        },
+      };
+    }
+
+    if (name === "list_open_workflows") {
+      const fsmId = typeof input.fsmId === "string" ? input.fsmId : undefined;
+      const slaTone = typeof input.slaTone === "string" ? input.slaTone : "all";
+
+      // Lookup the authority profile to map back to the callerOrg.
+      const authProfile = await prisma.authorityProfile.findUnique({
+        where: { id: ctx.authorityProfileId },
+        select: { id: true, organizationId: true },
+      });
+      if (!authProfile) {
+        return {
+          ok: false,
+          citations: [],
+          error: "Authority-Profil nicht gefunden",
+        };
+      }
+
+      const cases = await prisma.workflowCase.findMany({
+        where: {
+          closedAt: null,
+          authorityProfileId: ctx.authorityProfileId,
+          ...(fsmId ? { fsmId } : {}),
+        },
+        orderBy: { enteredStateAt: "asc" },
+        take: 100,
+        select: {
+          id: true,
+          fsmId: true,
+          caseRef: true,
+          currentState: true,
+          enteredStateAt: true,
+          oversightId: true,
+          operatorOrgId: true,
+        },
+      });
+
+      // Compute SLA-tone per case
+      const fsmDefs: Record<string, typeof NIS2_INCIDENT_FSM_DEF> = {
+        "nis2-incident-v1": NIS2_INCIDENT_FSM_DEF,
+        "eu-space-act-authorisation-v1": EU_SPACE_ACT_AUTH_FSM_DEF,
+      };
+      const enriched = cases.map((c) => {
+        const def = fsmDefs[c.fsmId];
+        const stateDef = def?.states[
+          c.currentState as keyof typeof def.states
+        ] as { after?: { afterMs: number } } | undefined;
+        const elapsed = Date.now() - c.enteredStateAt.getTime();
+        const slaRemaining = stateDef?.after
+          ? stateDef.after.afterMs - elapsed
+          : null;
+        const tone =
+          slaRemaining === null
+            ? "neutral"
+            : slaRemaining <= 0
+              ? "alert"
+              : slaRemaining < 6 * 3600_000
+                ? "warn"
+                : "ok";
+        return {
+          ...c,
+          slaRemainingMs: slaRemaining,
+          slaTone: tone,
+        };
+      });
+
+      const filtered = enriched.filter((c) => {
+        if (slaTone === "alert") return c.slaTone === "alert";
+        if (slaTone === "warn")
+          return c.slaTone === "warn" || c.slaTone === "alert";
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        return {
+          ok: true,
+          abstain: true,
+          abstainReason: `Keine offenen Workflows${fsmId ? ` vom Typ ${fsmId}` : ""}${slaTone !== "all" ? ` mit SLA-Tone ${slaTone}` : ""}.`,
+          citations: [],
+          data: { fsmId, slaTone, count: 0 },
+        };
+      }
+
+      const citations: Citation[] = filtered.map((c) =>
+        dataRowCitation({
+          table: "WorkflowCase",
+          id: c.id,
+          span: c.currentState,
+          content: {
+            currentState: c.currentState,
+            enteredStateAt: c.enteredStateAt.toISOString(),
+            fsmId: c.fsmId,
+          },
+        }),
+      );
+
+      return {
+        ok: true,
+        citations,
+        data: {
+          count: filtered.length,
+          cases: filtered.map((c, idx) => ({
+            id: c.id,
+            caseRef: c.caseRef,
+            fsmId: c.fsmId,
+            currentState: c.currentState,
+            enteredStateAt: c.enteredStateAt,
+            slaRemainingMs: c.slaRemainingMs,
+            slaTone: c.slaTone,
+            slaRemainingHumanReadable:
+              c.slaRemainingMs === null
+                ? "kein SLA"
+                : c.slaRemainingMs <= 0
+                  ? `verletzt seit ${Math.round(-c.slaRemainingMs / 3600_000)}h`
+                  : `${Math.round(c.slaRemainingMs / 3600_000)}h verbleibend`,
+            _citation: citations[idx].id,
+          })),
         },
       };
     }
