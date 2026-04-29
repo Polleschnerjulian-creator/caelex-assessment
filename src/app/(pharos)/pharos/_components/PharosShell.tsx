@@ -15,6 +15,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Eye,
   Gavel,
   LayoutDashboard,
   Lightbulb,
@@ -48,6 +49,7 @@ const NAV_ITEMS = [
   { href: "/pharos/operators", label: "Operatoren", icon: Users },
   { href: "/pharos/oversights", label: "Aufsichten", icon: Gavel },
   { href: "/pharos/astra", label: "Astra · KI-Assistent", icon: Sparkles },
+  { href: "/pharos/transparency", label: "Glass-Box · Live", icon: Eye },
   { href: "/pharos/setup", label: "Profil & Einstellungen", icon: Settings },
 ];
 
