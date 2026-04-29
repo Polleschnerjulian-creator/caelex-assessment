@@ -186,7 +186,7 @@ export function InitiateForm({
         <div className="flex gap-3">
           <Link
             href={`/pharos/operators/${result.oversightId}`}
-            className="inline-flex items-center h-9 px-4 rounded-md border border-white/10 hover:bg-white/[0.04] text-sm"
+            className="inline-flex items-center h-9 px-4 rounded-md border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/[0.04] text-sm"
           >
             Zur Aufsichts-Detailansicht
           </Link>
@@ -210,7 +210,7 @@ export function InitiateForm({
           value={operatorOrgId}
           onChange={(e) => setOperatorOrgId(e.target.value)}
           required
-          className="w-full bg-navy-900 border border-white/10 rounded-md px-3 h-10 text-sm"
+          className="w-full bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
         >
           <option value="" disabled>
             — Operator wählen —
@@ -232,7 +232,7 @@ export function InitiateForm({
           minLength={3}
           required
           placeholder="z.B. EU-Space-Act Aufsicht 2026 — Galileo Operations"
-          className="w-full bg-navy-900 border border-white/10 rounded-md px-3 h-10 text-sm"
+          className="w-full bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
         />
       </Field>
 
@@ -243,7 +243,7 @@ export function InitiateForm({
           onChange={(e) => setOversightReference(e.target.value)}
           maxLength={50}
           placeholder="z.B. BAFA-2026-LRSP-014"
-          className="w-full bg-navy-900 border border-white/10 rounded-md px-3 h-10 text-sm font-mono"
+          className="w-full bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm font-mono"
         />
       </Field>
 
@@ -259,7 +259,7 @@ export function InitiateForm({
           minLength={2}
           required
           placeholder="z.B. § 14 WRV i.V.m. Art. 7 EU Space Act"
-          className="w-full bg-navy-900 border border-white/10 rounded-md px-3 h-10 text-sm"
+          className="w-full bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
         />
       </Field>
 
@@ -277,7 +277,7 @@ export function InitiateForm({
                 className={`rounded-md border ${
                   on
                     ? "border-amber-500/40 bg-amber-500/5"
-                    : "border-white/10 bg-navy-900/30"
+                    : "border-slate-200 dark:border-white/10 bg-navy-900/30"
                 }`}
               >
                 <button
@@ -285,7 +285,13 @@ export function InitiateForm({
                   onClick={() => toggleMdfCategory(c.value)}
                   className="w-full text-left flex items-center justify-between px-3 py-2 text-sm"
                 >
-                  <span className={on ? "text-amber-200" : "text-slate-300"}>
+                  <span
+                    className={
+                      on
+                        ? "text-amber-200"
+                        : "text-slate-700 dark:text-slate-300"
+                    }
+                  >
                     {c.label}
                   </span>
                   <span
@@ -313,7 +319,7 @@ export function InitiateForm({
                           className={`text-[11px] px-2 py-1 rounded border ${
                             perm_on
                               ? "border-amber-400/50 bg-amber-400/10 text-amber-200"
-                              : "border-white/10 text-slate-400 hover:border-white/20"
+                              : "border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:border-white/20"
                           }`}
                         >
                           {p.label}
@@ -356,7 +362,7 @@ export function InitiateForm({
                 className={`text-xs px-3 py-2 rounded-md border text-left transition-colors ${
                   on
                     ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-200"
-                    : "border-white/10 bg-navy-900/40 text-slate-400 hover:border-white/20"
+                    : "border-slate-200 dark:border-white/10 bg-white dark:bg-navy-900/40 text-slate-600 dark:text-slate-400 hover:border-white/20"
                 }`}
               >
                 {c.label}
@@ -375,7 +381,7 @@ export function InitiateForm({
       <div className="flex justify-end pt-2 gap-3">
         <Link
           href="/pharos/oversights"
-          className="inline-flex items-center h-10 px-4 rounded-md border border-white/10 text-sm text-slate-300 hover:bg-white/[0.04]"
+          className="inline-flex items-center h-10 px-4 rounded-md border border-slate-200 dark:border-white/10 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.04]"
         >
           Abbrechen
         </Link>
@@ -402,7 +408,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-slate-300 mb-1.5 uppercase tracking-wide">
+      <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wide">
         {label}
       </label>
       {children}

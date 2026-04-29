@@ -81,12 +81,12 @@ export default async function PharosOversightsPage() {
             <h2 className="text-xs uppercase tracking-wider text-slate-500 mb-2">
               {g.label} · {g.items.length}
             </h2>
-            <div className="rounded-lg border border-white/5 bg-navy-900/30 divide-y divide-white/5">
+            <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-navy-900/30 divide-y divide-slate-200 dark:divide-white/5">
               {g.items.map((ov) => (
                 <Link
                   key={ov.id}
                   href={`/pharos/operators/${ov.id}`}
-                  className="flex items-center justify-between px-4 py-3 hover:bg-white/[0.03]"
+                  className="flex items-center justify-between px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/[0.03]"
                 >
                   <div className="min-w-0">
                     <div className="text-sm font-medium truncate">
@@ -106,7 +106,7 @@ export default async function PharosOversightsPage() {
         ))}
 
       {oversights.length === 0 && (
-        <div className="rounded-lg border border-white/5 bg-navy-900/30 px-6 py-10 text-center text-sm text-slate-500">
+        <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-navy-900/30 px-6 py-10 text-center text-sm text-slate-500">
           Du hast noch keine Aufsichten. Klicke „Neue Aufsicht", um die erste
           anzulegen.
         </div>

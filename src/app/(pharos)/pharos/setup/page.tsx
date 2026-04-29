@@ -41,7 +41,7 @@ export default async function PharosSetupPage() {
           {profile ? "Profil bearbeiten" : "Erst-Konfiguration"}
         </div>
         <h1 className="text-2xl font-semibold mt-1">Behörden-Profil</h1>
-        <p className="text-sm text-slate-400 mt-1">
+        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
           Hier konfigurierst du Aufsichts-Bereich, Jurisdiktion und Kontakt.
           Operatoren sehen diese Angaben in jeder Aufsichts-Einladung.
         </p>

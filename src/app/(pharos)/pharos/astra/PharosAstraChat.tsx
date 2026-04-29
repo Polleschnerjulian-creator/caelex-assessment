@@ -152,10 +152,10 @@ export function PharosAstraChat({
   if (messages.length === 0) {
     return (
       <div className="space-y-4">
-        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-5">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-500/20 dark:bg-amber-500/5 p-5">
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="w-4 h-4 text-amber-400" />
-            <h2 className="text-sm font-semibold text-amber-200">
+            <h2 className="text-sm font-semibold text-amber-800 dark:text-amber-200">
               Beispiel-Fragen
             </h2>
           </div>
@@ -205,7 +205,7 @@ export function PharosAstraChat({
           <MessageBubble key={i} message={m} />
         ))}
         {submitting && (
-          <div className="flex items-center gap-2 text-sm text-slate-500">
+          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-500">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
             Analysiere…
           </div>
@@ -225,16 +225,16 @@ export function PharosAstraChat({
 
 function GlassBoxNotice() {
   return (
-    <div className="rounded-lg border border-white/5 bg-navy-900/30 p-4 text-[12px] text-slate-400 leading-relaxed">
-      <div className="flex items-center gap-2 text-slate-300 font-medium mb-1">
-        <Fingerprint className="w-3.5 h-3.5 text-emerald-400" />
+    <div className="rounded-lg border border-slate-200 bg-white p-4 text-[12px] text-slate-600 leading-relaxed dark:border-white/5 dark:bg-navy-900/30 dark:text-slate-400">
+      <div className="flex items-center gap-2 text-slate-800 dark:text-slate-300 font-medium mb-1">
+        <Fingerprint className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
         Verifiable Refusal — Glass-Box-Garantie
       </div>
       Jede Antwort enthält klickbare Citations zu jeder Aussage und einen
       Ed25519-signierten Receipt. Wenn keine belastbare Quelle vorliegt,
       verweigert Pharos strukturiert die Antwort —{" "}
-      <span className="text-amber-300">[ABSTAIN]</span> ist Feature, nicht Bug.
-      Halluzinationen sind architektonisch unmöglich.
+      <span className="text-amber-700 dark:text-amber-300">[ABSTAIN]</span> ist
+      Feature, nicht Bug. Halluzinationen sind architektonisch unmöglich.
     </div>
   );
 }
@@ -251,7 +251,7 @@ function SuggestionButton({
       <button
         type="button"
         onClick={() => onClick(text)}
-        className="w-full text-left text-sm text-slate-300 hover:text-amber-200 px-3 py-2 rounded-md border border-white/10 hover:border-amber-500/40 hover:bg-amber-500/5 transition-colors"
+        className="w-full text-left text-sm text-slate-700 hover:text-amber-800 dark:text-slate-300 dark:hover:text-amber-200 px-3 py-2 rounded-md border border-slate-200 hover:border-amber-400 hover:bg-amber-50 dark:border-white/10 dark:hover:border-amber-500/40 dark:hover:bg-amber-500/5 transition-colors"
       >
         {text}
       </button>
@@ -268,10 +268,10 @@ function MessageBubble({ message }: { message: Message }) {
       <div
         className={`max-w-[85%] rounded-lg px-4 py-3 ${
           isUser
-            ? "bg-amber-500/15 border border-amber-500/30 text-amber-50"
+            ? "bg-amber-100 border border-amber-300 text-amber-900 dark:bg-amber-500/15 dark:border-amber-500/30 dark:text-amber-50"
             : isAbstention
-              ? "bg-yellow-500/10 border border-yellow-500/30 text-yellow-50"
-              : "bg-navy-900/50 border border-white/5 text-slate-200"
+              ? "bg-yellow-50 border border-yellow-300 text-yellow-900 dark:bg-yellow-500/10 dark:border-yellow-500/30 dark:text-yellow-50"
+              : "bg-white border border-slate-200 text-slate-800 shadow-sm dark:bg-navy-900/50 dark:border-white/5 dark:text-slate-200 dark:shadow-none"
         }`}
       >
         {message.error ? (
@@ -355,8 +355,8 @@ function renderWithCitationLinks(text: string, citations: Citation[]) {
 
 function CitationStrip({ citations }: { citations: Citation[] }) {
   return (
-    <div className="mt-3 pt-3 border-t border-white/5">
-      <div className="text-[10px] tracking-wider uppercase text-slate-500 mb-2 font-medium">
+    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/5">
+      <div className="text-[10px] tracking-wider uppercase text-slate-500 dark:text-slate-500 mb-2 font-medium">
         Provenance · {citations.length} Citation
         {citations.length === 1 ? "" : "s"}
       </div>
@@ -371,10 +371,13 @@ function CitationStrip({ citations }: { citations: Citation[] }) {
 
 function CitationChip({ citation }: { citation: Citation }) {
   const kindColor = {
-    "data-row": "text-blue-300 border-blue-500/30 bg-blue-500/10",
-    computation: "text-violet-300 border-violet-500/30 bg-violet-500/10",
-    "audit-entry": "text-amber-300 border-amber-500/30 bg-amber-500/10",
-    norm: "text-emerald-300 border-emerald-500/30 bg-emerald-500/10",
+    "data-row":
+      "text-blue-800 border-blue-200 bg-blue-50 dark:text-blue-300 dark:border-blue-500/30 dark:bg-blue-500/10",
+    computation:
+      "text-violet-800 border-violet-200 bg-violet-50 dark:text-violet-300 dark:border-violet-500/30 dark:bg-violet-500/10",
+    "audit-entry":
+      "text-amber-800 border-amber-200 bg-amber-50 dark:text-amber-300 dark:border-amber-500/30 dark:bg-amber-500/10",
+    norm: "text-emerald-800 border-emerald-200 bg-emerald-50 dark:text-emerald-300 dark:border-emerald-500/30 dark:bg-emerald-500/10",
   }[citation.kind];
 
   return (
@@ -385,7 +388,10 @@ function CitationChip({ citation }: { citation: Citation }) {
         {citation.kind}
       </span>
       <div className="min-w-0 flex-1">
-        <div className="text-slate-300 truncate" title={citation.id}>
+        <div
+          className="text-slate-700 dark:text-slate-300 truncate"
+          title={citation.id}
+        >
           {citation.source}
           {citation.span && (
             <span className="text-slate-500"> · {citation.span}</span>
@@ -401,7 +407,7 @@ function CitationChip({ citation }: { citation: Citation }) {
           href={citation.url}
           target="_blank"
           rel="noreferrer"
-          className="shrink-0 text-slate-500 hover:text-amber-300"
+          className="shrink-0 text-slate-500 hover:text-amber-700 dark:hover:text-amber-300"
         >
           <ExternalLink className="w-3 h-3" />
         </a>
@@ -422,38 +428,52 @@ function ReceiptStrip({
     : null;
 
   return (
-    <div className="mt-3 pt-3 border-t border-white/5">
+    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/5">
       <div className="flex items-center gap-2 mb-2">
-        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-        <span className="text-[10px] tracking-wider uppercase text-emerald-400 font-semibold">
+        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+        <span className="text-[10px] tracking-wider uppercase text-emerald-600 dark:text-emerald-400 font-semibold">
           Ed25519-Signed Receipt
         </span>
       </div>
-      <div className="space-y-1 text-[10px] font-mono text-slate-500">
+      <div className="space-y-1 text-[10px] font-mono text-slate-600 dark:text-slate-500 dark:text-slate-500">
         <div className="flex gap-2">
-          <span className="text-slate-600 w-20 shrink-0">receiptHash</span>
-          <span className="text-slate-400 truncate" title={receipt.receiptHash}>
+          <span className="text-slate-500 dark:text-slate-600 w-20 shrink-0">
+            receiptHash
+          </span>
+          <span
+            className="text-slate-700 dark:text-slate-400 truncate"
+            title={receipt.receiptHash}
+          >
             {receipt.receiptHash.slice(0, 32)}…
           </span>
         </div>
         <div className="flex gap-2">
-          <span className="text-slate-600 w-20 shrink-0">signature</span>
-          <span className="text-slate-400 truncate" title={receipt.signature}>
+          <span className="text-slate-500 dark:text-slate-600 w-20 shrink-0">
+            signature
+          </span>
+          <span
+            className="text-slate-700 dark:text-slate-400 truncate"
+            title={receipt.signature}
+          >
             {receipt.signature.slice(0, 32)}…
           </span>
         </div>
         <div className="flex gap-2">
-          <span className="text-slate-600 w-20 shrink-0">publicKey</span>
+          <span className="text-slate-500 dark:text-slate-600 w-20 shrink-0">
+            publicKey
+          </span>
           <span
-            className="text-slate-400 truncate"
+            className="text-slate-700 dark:text-slate-400 truncate"
             title={receipt.publicKeyBase64}
           >
             {receipt.publicKeyBase64.slice(0, 32)}…
           </span>
         </div>
         <div className="flex gap-2">
-          <span className="text-slate-600 w-20 shrink-0">signedAt</span>
-          <span className="text-slate-400">
+          <span className="text-slate-500 dark:text-slate-600 w-20 shrink-0">
+            signedAt
+          </span>
+          <span className="text-slate-700 dark:text-slate-400">
             {new Date(receipt.signedAt).toLocaleString()}
           </span>
         </div>
@@ -471,12 +491,12 @@ function ReceiptStrip({
             href={verifyUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
+            className="inline-flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20"
           >
             <ExternalLink className="w-3 h-3" />
             Receipt JSON
           </a>
-          <code className="text-[10px] text-slate-600 font-mono">
+          <code className="text-[10px] text-slate-500 dark:text-slate-600 font-mono">
             npx pharos-verify {chainEntries[0].entryId}
           </code>
         </div>
@@ -491,15 +511,21 @@ function ToolCallStrip({
   toolCalls: { tool: string; input: unknown; ok: boolean }[];
 }) {
   return (
-    <div className="mt-3 pt-3 border-t border-white/5 space-y-1">
+    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/5 space-y-1">
       {toolCalls.map((tc, i) => (
         <div
           key={i}
-          className="flex items-center gap-2 text-[11px] text-slate-500"
+          className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-500"
         >
           <Wrench className="w-3 h-3" />
           <span className="font-mono">{tc.tool}</span>
-          <span className={tc.ok ? "text-emerald-400" : "text-red-400"}>
+          <span
+            className={
+              tc.ok
+                ? "text-emerald-600 dark:text-emerald-400"
+                : "text-red-600 dark:text-red-400"
+            }
+          >
             {tc.ok ? "ok" : "error"}
           </span>
         </div>
@@ -525,7 +551,7 @@ function ChatInput({
 }) {
   return (
     <form onSubmit={onSubmit}>
-      <div className="rounded-lg border border-white/10 bg-navy-900/50 focus-within:border-amber-500/40 transition-colors">
+      <div className="rounded-lg border border-slate-200 bg-white shadow-sm focus-within:border-amber-400 dark:border-white/10 dark:bg-navy-900/50 dark:shadow-none dark:focus-within:border-amber-500/40 transition-colors">
         <textarea
           ref={(node) => {
             inputRef.current = node;
@@ -541,10 +567,10 @@ function ChatInput({
           placeholder="Frage eine regulatorische Frage oder eine Operator-Auswertung…"
           rows={2}
           maxLength={4000}
-          className="w-full bg-transparent px-4 py-3 text-sm placeholder:text-slate-500 resize-none outline-none"
+          className="w-full bg-transparent px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 resize-none outline-none"
         />
         <div className="flex items-center justify-between px-3 pb-2">
-          <span className="text-[10px] text-slate-600">
+          <span className="text-[10px] text-slate-400 dark:text-slate-600">
             Enter = Senden · Shift+Enter = Neue Zeile · {input.length}/4000
           </span>
           <button

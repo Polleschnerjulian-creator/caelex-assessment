@@ -146,7 +146,7 @@ export function SetupForm({
         <select
           value={authorityType}
           onChange={(e) => setAuthorityType(e.target.value)}
-          className="w-full bg-navy-900 border border-white/10 rounded-md px-3 h-10 text-sm"
+          className="w-full bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
         >
           {AUTHORITY_TYPES.map((t) => (
             <option key={t.value} value={t.value}>
@@ -165,7 +165,7 @@ export function SetupForm({
           value={jurisdiction}
           onChange={(e) => setJurisdiction(e.target.value.toUpperCase())}
           maxLength={20}
-          className="w-full bg-navy-900 border border-white/10 rounded-md px-3 h-10 text-sm font-mono"
+          className="w-full bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm font-mono"
           required
         />
       </Field>
@@ -185,7 +185,7 @@ export function SetupForm({
                 className={`text-xs px-3 py-2 rounded-md border text-left transition-colors ${
                   on
                     ? "border-amber-500/40 bg-amber-500/10 text-amber-200"
-                    : "border-white/10 bg-navy-900/40 text-slate-400 hover:border-white/20"
+                    : "border-slate-200 dark:border-white/10 bg-white dark:bg-navy-900/40 text-slate-600 dark:text-slate-400 hover:border-white/20"
                 }`}
               >
                 {c.label}
@@ -201,7 +201,7 @@ export function SetupForm({
           value={contactEmail}
           onChange={(e) => setContactEmail(e.target.value)}
           placeholder="aufsicht@behoerde.de"
-          className="w-full bg-navy-900 border border-white/10 rounded-md px-3 h-10 text-sm"
+          className="w-full bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
           required
         />
       </Field>
@@ -215,7 +215,7 @@ export function SetupForm({
           value={publicWebsite}
           onChange={(e) => setPublicWebsite(e.target.value)}
           placeholder="https://www.bafa.de"
-          className="w-full bg-navy-900 border border-white/10 rounded-md px-3 h-10 text-sm"
+          className="w-full bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
         />
       </Field>
 
@@ -229,7 +229,7 @@ export function SetupForm({
           maxLength={500}
           rows={3}
           placeholder="z.B. § 3 WRV (Weltraumgesetz, BGBl. 2025 I S. 1234)"
-          className="w-full bg-navy-900 border border-white/10 rounded-md px-3 py-2 text-sm"
+          className="w-full bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-md px-3 py-2 text-sm"
         />
       </Field>
 
@@ -272,7 +272,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-slate-300 mb-1.5 uppercase tracking-wide">
+      <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wide">
         {label}
       </label>
       {children}

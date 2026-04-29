@@ -61,7 +61,7 @@ export default async function PharosNewOversightPage() {
         <h1 className="text-2xl font-semibold mt-1">
           Aufsichts-Beziehung initiieren
         </h1>
-        <p className="text-sm text-slate-400 mt-1">
+        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
           Du erstellst hiermit eine Aufsicht im Status „Wartet auf Annahme". Der
           Operator bekommt einen einmaligen Token-Link, mit dem er die Aufsicht
           prüfen und annehmen oder anfechten kann.

@@ -147,7 +147,7 @@ export default async function PharosOperatorsPage() {
           {rows.length}{" "}
           {rows.length === 1 ? "Aufsichts-Beziehung" : "Aufsichts-Beziehungen"}
         </h1>
-        <p className="text-sm text-slate-400 mt-1">
+        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
           Live-Compliance-Heatmap, basierend auf offenen Vorfällen und
           überfälligen Fristen.
         </p>
@@ -161,12 +161,12 @@ export default async function PharosOperatorsPage() {
       </div>
 
       {rows.length === 0 ? (
-        <div className="rounded-lg border border-white/5 bg-navy-900/30 px-6 py-10 text-center text-sm text-slate-500">
+        <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-navy-900/30 px-6 py-10 text-center text-sm text-slate-500">
           Du hast noch keine Aufsichts-Beziehungen. Über „Aufsicht initiieren"
           (oben links im Nav-Rail) lädst du den ersten Operator ein.
         </div>
       ) : (
-        <div className="rounded-lg border border-white/5 bg-navy-900/30 overflow-hidden">
+        <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-navy-900/30 overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-navy-900/60 text-[10px] tracking-wider uppercase text-slate-500">
               <tr>
@@ -182,22 +182,22 @@ export default async function PharosOperatorsPage() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
               {rows.map((r) => (
                 <tr
                   key={r.oversightId}
-                  className="hover:bg-white/[0.03] transition-colors"
+                  className="hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
                 >
                   <td className="px-4 py-3">
                     <Link
                       href={`/pharos/operators/${r.oversightId}`}
-                      className="font-medium text-slate-100 hover:text-amber-300"
+                      className="font-medium text-slate-900 dark:text-slate-100 hover:text-amber-300"
                     >
                       {r.operator.name}
                     </Link>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="text-slate-300 truncate max-w-[20ch]">
+                    <div className="text-slate-700 dark:text-slate-300 truncate max-w-[20ch]">
                       {r.oversightTitle}
                     </div>
                     <div className="text-[11px] text-slate-500">
@@ -217,10 +217,10 @@ export default async function PharosOperatorsPage() {
                       <span className="text-xs text-slate-600">—</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-right tabular-nums text-slate-300">
+                  <td className="px-4 py-3 text-right tabular-nums text-slate-700 dark:text-slate-300">
                     {r.openIncidents}
                   </td>
-                  <td className="px-4 py-3 text-right tabular-nums text-slate-300">
+                  <td className="px-4 py-3 text-right tabular-nums text-slate-700 dark:text-slate-300">
                     {r.overdueDeadlines}
                   </td>
                 </tr>
@@ -249,7 +249,7 @@ function TierTile({
   };
   return (
     <div
-      className={`rounded-lg border ${tones[tone]} bg-navy-900/30 px-4 py-3`}
+      className={`rounded-lg border ${tones[tone]} bg-white dark:bg-navy-900/30 px-4 py-3`}
     >
       <div className="text-[11px] tracking-wider uppercase text-slate-500 font-medium">
         {label}
@@ -287,7 +287,8 @@ function StatusPill({ status }: { status: string }) {
   };
   const v = variants[status] ?? {
     label: status,
-    classes: "bg-slate-500/10 text-slate-300 border-slate-500/20",
+    classes:
+      "bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20",
   };
   return (
     <span

@@ -81,7 +81,7 @@ export default async function PharosOperatorDetailPage({
       <div>
         <Link
           href="/pharos/operators"
-          className="text-xs text-slate-500 hover:text-slate-300"
+          className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-300"
         >
           ← Zurück zur Operatoren-Liste
         </Link>
@@ -93,7 +93,7 @@ export default async function PharosOperatorDetailPage({
             <h1 className="text-2xl font-semibold mt-1 truncate">
               {oversight.oversightTitle}
             </h1>
-            <p className="text-sm text-slate-400 mt-1">
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
               Operator: <strong>{oversight.operatorOrg.name}</strong>
               {oversight.oversightReference &&
                 ` · Aktenzeichen: ${oversight.oversightReference}`}
@@ -144,7 +144,7 @@ export default async function PharosOperatorDetailPage({
               {mdf.map((item, i) => (
                 <li key={i} className="text-sm flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                  <span className="text-slate-200">
+                  <span className="text-slate-800 dark:text-slate-200">
                     {CATEGORY_LABEL[item.category]}
                   </span>
                   <span className="text-[11px] text-slate-500 ml-auto">
@@ -171,7 +171,7 @@ export default async function PharosOperatorDetailPage({
               {vdf.map((item, i) => (
                 <li key={i} className="text-sm flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  <span className="text-slate-200">
+                  <span className="text-slate-800 dark:text-slate-200">
                     {CATEGORY_LABEL[item.category]}
                   </span>
                   <span className="text-[11px] text-slate-500 ml-auto">
@@ -186,11 +186,11 @@ export default async function PharosOperatorDetailPage({
 
       {/* Hash chain footer */}
       {oversight.handshakeHash && (
-        <div className="rounded-lg border border-white/5 bg-navy-900/30 px-4 py-3">
+        <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-navy-900/30 px-4 py-3">
           <div className="text-[10px] tracking-wider uppercase text-slate-500 font-medium mb-1">
             Handshake-Hash · SHA-256
           </div>
-          <div className="text-xs font-mono text-slate-300 break-all">
+          <div className="text-xs font-mono text-slate-700 dark:text-slate-300 break-all">
             {oversight.handshakeHash}
           </div>
           <p className="text-[10px] text-slate-500 mt-1.5">
@@ -222,8 +222,8 @@ export default async function PharosOperatorDetailPage({
       )}
 
       {/* Audit log */}
-      <div className="rounded-lg border border-white/5 bg-navy-900/30">
-        <div className="px-4 py-3 border-b border-white/5">
+      <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-navy-900/30">
+        <div className="px-4 py-3 border-b border-slate-200 dark:border-white/5">
           <h2 className="text-sm font-semibold">
             Audit-Log · letzte {auditLog.length} Einträge
           </h2>
@@ -233,14 +233,14 @@ export default async function PharosOperatorDetailPage({
             Noch keine Audit-Einträge.
           </div>
         ) : (
-          <ul className="divide-y divide-white/5">
+          <ul className="divide-y divide-slate-200 dark:divide-white/5">
             {auditLog.map((entry) => (
               <li
                 key={entry.id}
                 className="px-4 py-2.5 flex items-center justify-between text-xs"
               >
                 <div>
-                  <span className="font-medium text-slate-200">
+                  <span className="font-medium text-slate-800 dark:text-slate-200">
                     {entry.action}
                   </span>
                   <span className="text-slate-500 ml-2">
@@ -270,12 +270,12 @@ function Meta({
   mono?: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-white/5 bg-navy-900/30 px-3 py-2">
+    <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-navy-900/30 px-3 py-2">
       <div className="text-[10px] tracking-wider uppercase text-slate-500 font-medium">
         {label}
       </div>
       <div
-        className={`text-sm text-slate-200 mt-0.5 truncate ${mono ? "font-mono" : ""}`}
+        className={`text-sm text-slate-800 dark:text-slate-200 mt-0.5 truncate ${mono ? "font-mono" : ""}`}
       >
         {value}
       </div>
@@ -299,7 +299,8 @@ function StatusBadge({ status }: { status: string }) {
     },
     CLOSED: {
       label: "Beendet",
-      classes: "bg-slate-500/15 text-slate-300 border-slate-500/30",
+      classes:
+        "bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30",
     },
     REVOKED: {
       label: "Entzogen",
@@ -307,12 +308,14 @@ function StatusBadge({ status }: { status: string }) {
     },
     SUSPENDED: {
       label: "Pausiert",
-      classes: "bg-slate-500/10 text-slate-400 border-slate-500/20",
+      classes:
+        "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20",
     },
   };
   const v = variants[status] ?? {
     label: status,
-    classes: "bg-slate-500/10 text-slate-300 border-slate-500/20",
+    classes:
+      "bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20",
   };
   return (
     <span

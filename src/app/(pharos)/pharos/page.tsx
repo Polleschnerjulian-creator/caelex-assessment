@@ -85,18 +85,20 @@ export default async function PharosDashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-[10px] tracking-[0.22em] uppercase text-amber-400/70 font-semibold">
+          <div className="text-[10px] tracking-[0.22em] uppercase text-amber-700 dark:text-amber-400/70 font-semibold">
             Aufsichts-Dashboard
           </div>
-          <h1 className="text-2xl font-semibold mt-1">Willkommen zurück.</h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <h1 className="text-2xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
+            Willkommen zurück.
+          </h1>
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
             {profile.authorityType.replace("_", " ")} · Zuständigkeit{" "}
             {profile.jurisdiction}
           </p>
         </div>
         <Link
           href="/pharos/oversights/new"
-          className="inline-flex items-center gap-2 h-9 px-4 rounded-md bg-amber-500 hover:bg-amber-400 text-amber-950 text-sm font-medium"
+          className="inline-flex items-center gap-2 h-9 px-4 rounded-md bg-amber-500 hover:bg-amber-400 text-amber-950 text-sm font-medium shadow-sm"
         >
           <Plus className="w-4 h-4" />
           Aufsicht initiieren
@@ -124,31 +126,33 @@ export default async function PharosDashboardPage() {
       </div>
 
       {/* Recent oversights */}
-      <div className="rounded-lg border border-white/5 bg-navy-900/30">
-        <div className="px-5 py-3 border-b border-white/5 flex items-center justify-between">
-          <h2 className="text-sm font-semibold">Aktuelle Aufsichten</h2>
+      <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-navy-900/30">
+        <div className="px-5 py-3 border-b border-slate-200 dark:border-white/5 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+            Aktuelle Aufsichten
+          </h2>
           <Link
             href="/pharos/oversights"
-            className="text-xs text-amber-400 hover:text-amber-300 inline-flex items-center gap-1"
+            className="text-xs text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300 inline-flex items-center gap-1"
           >
             Alle anzeigen
             <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
         {data.recentOversights.length === 0 ? (
-          <div className="px-5 py-10 text-center text-sm text-slate-500">
+          <div className="px-5 py-10 text-center text-sm text-slate-500 dark:text-slate-500">
             Noch keine Aufsichten. Klicke „Aufsicht initiieren" oben rechts, um
             die erste Beziehung zu einem Operator anzulegen.
           </div>
         ) : (
-          <ul className="divide-y divide-white/5">
+          <ul className="divide-y divide-slate-200 dark:divide-white/5">
             {data.recentOversights.map((ov) => (
               <li
                 key={ov.id}
-                className="px-5 py-3 flex items-center justify-between hover:bg-white/[0.03] transition-colors"
+                className="px-5 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
               >
                 <div className="min-w-0">
-                  <div className="text-sm font-medium truncate">
+                  <div className="text-sm font-medium truncate text-slate-900 dark:text-slate-100">
                     {ov.oversightTitle}
                   </div>
                   <div className="text-xs text-slate-500 mt-0.5">
@@ -160,7 +164,7 @@ export default async function PharosDashboardPage() {
                   <StatusPill status={ov.status} />
                   <Link
                     href={`/pharos/operators/${ov.id}`}
-                    className="text-xs text-slate-400 hover:text-amber-300"
+                    className="text-xs text-slate-600 hover:text-amber-700 dark:text-slate-400 dark:hover:text-amber-300"
                   >
                     Öffnen →
                   </Link>
@@ -186,13 +190,13 @@ function KpiCard({
   tone: "emerald" | "amber" | "red" | "slate";
 }) {
   const toneClasses = {
-    emerald: "text-emerald-300",
-    amber: "text-amber-300",
-    red: "text-red-300",
-    slate: "text-slate-300",
+    emerald: "text-emerald-700 dark:text-emerald-300",
+    amber: "text-amber-700 dark:text-amber-300",
+    red: "text-red-700 dark:text-red-300",
+    slate: "text-slate-700 dark:text-slate-300",
   };
   return (
-    <div className="rounded-lg border border-white/5 bg-navy-900/30 px-4 py-3">
+    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-white/5 dark:bg-navy-900/30">
       <div className="text-[11px] tracking-wider uppercase text-slate-500 font-medium">
         {label}
       </div>
@@ -212,34 +216,41 @@ function StatusPill({ status }: { status: string }) {
   > = {
     ACTIVE: {
       label: "Aktiv",
-      classes: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
+      classes:
+        "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30",
       Icon: ShieldCheck,
     },
     PENDING_OPERATOR_ACCEPT: {
       label: "Wartet auf Annahme",
-      classes: "bg-amber-500/15 text-amber-300 border-amber-500/30",
+      classes:
+        "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30",
     },
     DISPUTED: {
       label: "Streit",
-      classes: "bg-red-500/15 text-red-300 border-red-500/30",
+      classes:
+        "bg-red-50 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30",
       Icon: AlertTriangle,
     },
     CLOSED: {
       label: "Beendet",
-      classes: "bg-slate-500/15 text-slate-300 border-slate-500/30",
+      classes:
+        "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-500/15 dark:text-slate-300 dark:border-slate-500/30",
     },
     REVOKED: {
       label: "Entzogen",
-      classes: "bg-red-500/10 text-red-300 border-red-500/20",
+      classes:
+        "bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/20",
     },
     SUSPENDED: {
       label: "Pausiert",
-      classes: "bg-slate-500/10 text-slate-400 border-slate-500/20",
+      classes:
+        "bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20",
     },
   };
   const v = variants[status] ?? {
     label: status,
-    classes: "bg-slate-500/10 text-slate-300 border-slate-500/20",
+    classes:
+      "bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-500/10 dark:text-slate-300 dark:border-slate-500/20",
   };
   const Icon = v.Icon;
   return (
