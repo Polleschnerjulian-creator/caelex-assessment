@@ -112,10 +112,10 @@ export function OversightMirrorStream() {
   }, []);
 
   return (
-    <div className="rounded-lg border border-white/5 bg-navy-900/30">
+    <div className="rounded-lg border border-white/5 bg-slate-900/30">
       <header className="px-5 py-3 border-b border-white/5 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-emerald-400" />
+          <Activity className="w-4 h-4 text-slate-400" />
           <h2 className="text-sm font-semibold">Behörden-Aktivität · Live</h2>
         </div>
         <ConnectionBadge state={conn} />
@@ -152,17 +152,17 @@ function ConnectionBadge({ state }: { state: ConnectionState }) {
     open: {
       label: "Live",
       Icon: Wifi,
-      classes: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
+      classes: "bg-slate-700/15 text-slate-300 border-slate-700/30",
     },
     reconnecting: {
       label: "Reconnect…",
       Icon: WifiOff,
-      classes: "bg-amber-500/15 text-amber-300 border-amber-500/30",
+      classes: "bg-slate-700/15 text-slate-300 border-slate-700/30",
     },
     closed: {
       label: "Getrennt",
       Icon: WifiOff,
-      classes: "bg-red-500/15 text-red-300 border-red-500/30",
+      classes: "bg-slate-700/15 text-slate-300 border-slate-700/30",
     },
   } as const;
   const v = map[state];
@@ -193,11 +193,11 @@ function EventRow({ event }: { event: AuditEvent }) {
     <li className="px-5 py-3 flex items-start gap-3 hover:bg-white/[0.02] transition-colors">
       <div className="mt-0.5">
         {isAi ? (
-          <Sparkles className="w-4 h-4 text-amber-400" />
+          <Sparkles className="w-4 h-4 text-slate-400" />
         ) : isAuthority ? (
-          <Eye className="w-4 h-4 text-blue-400" />
+          <Eye className="w-4 h-4 text-slate-500" />
         ) : (
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <CheckCircle2 className="w-4 h-4 text-slate-400" />
         )}
       </div>
       <div className="flex-1 min-w-0">
@@ -223,7 +223,7 @@ function EventRow({ event }: { event: AuditEvent }) {
               href={event.verifyUrl}
               target="_blank"
               rel="noreferrer"
-              className="ml-auto inline-flex items-center gap-1 text-[10px] text-emerald-400 hover:text-emerald-300"
+              className="ml-auto inline-flex items-center gap-1 text-[10px] text-slate-400 hover:text-slate-300"
             >
               <ExternalLink className="w-2.5 h-2.5" />
               Verify

@@ -71,7 +71,7 @@ export default async function WebhooksPage() {
   return (
     <div className="space-y-6 max-w-6xl">
       <div>
-        <div className="text-[10px] tracking-[0.22em] uppercase text-amber-700 dark:text-amber-400/70 font-semibold">
+        <div className="text-[10px] tracking-[0.22em] uppercase text-slate-700 dark:text-slate-400/70 font-semibold">
           External Operator Webhooks · Pharos
         </div>
         <h1 className="text-2xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
@@ -113,7 +113,7 @@ export default async function WebhooksPage() {
         <div className="font-medium text-slate-700 dark:text-slate-300 mb-1">
           Signing-Recipe für externe Operatoren
         </div>
-        <pre className="bg-slate-900 text-emerald-300 p-3 rounded overflow-x-auto text-[10px]">
+        <pre className="bg-slate-900 text-slate-300 p-3 rounded overflow-x-auto text-[10px]">
           {`HMAC-SHA256(secret, timestamp + nonce + sha256(body))`}
         </pre>
         Header pro Request: <code>x-pharos-timestamp</code> ·{" "}
@@ -139,10 +139,10 @@ function Kpi({
 }) {
   const valueCls =
     tone === "ok"
-      ? "text-emerald-700 dark:text-emerald-300"
+      ? "text-slate-800 dark:text-slate-300"
       : "text-slate-900 dark:text-slate-100";
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-white/5 dark:bg-navy-900/30">
+    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-white/5 dark:bg-slate-900/30">
       <div className="flex items-center gap-2">
         <Icon className="w-3.5 h-3.5 text-slate-500" />
         <div className="text-[11px] tracking-wider uppercase text-slate-500 font-medium">

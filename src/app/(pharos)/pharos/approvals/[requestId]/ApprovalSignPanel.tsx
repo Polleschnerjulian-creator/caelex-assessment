@@ -77,9 +77,9 @@ export function ApprovalSignPanel({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-5 dark:border-white/5 dark:bg-navy-900/30">
+    <div className="rounded-lg border border-slate-200 bg-white p-5 dark:border-white/5 dark:bg-slate-900/30">
       <div className="flex items-center gap-2 mb-3">
-        <PenSquare className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+        <PenSquare className="w-4 h-4 text-slate-700 dark:text-slate-400" />
         <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
           Mitzeichnen
         </h2>
@@ -94,7 +94,7 @@ export function ApprovalSignPanel({
           value={role}
           onChange={(e) => setRole(e.target.value)}
           disabled={submitting}
-          className="text-xs px-3 py-2 rounded border border-slate-300 bg-white text-slate-800 dark:bg-navy-900/40 dark:border-white/10 dark:text-slate-200"
+          className="text-xs px-3 py-2 rounded border border-slate-300 bg-white text-slate-800 dark:bg-slate-900/40 dark:border-white/10 dark:text-slate-200"
         >
           {ALL_ROLES.map((r) => (
             <option key={r} value={r}>
@@ -110,7 +110,7 @@ export function ApprovalSignPanel({
           type="button"
           disabled={submitting}
           onClick={sign}
-          className="inline-flex items-center gap-1.5 text-xs font-medium px-4 py-2 rounded border border-emerald-600 bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 text-xs font-medium px-4 py-2 rounded border border-slate-700 bg-slate-700 hover:bg-slate-700 text-white disabled:opacity-50"
         >
           {submitting ? (
             <span className="inline-block w-3 h-3 rounded-full bg-current opacity-60 animate-pulse" />
@@ -122,13 +122,13 @@ export function ApprovalSignPanel({
       </div>
 
       {error && (
-        <div className="mt-3 inline-flex items-start gap-2 text-xs text-red-700 dark:text-red-300">
+        <div className="mt-3 inline-flex items-start gap-2 text-xs text-slate-900 dark:text-slate-300">
           <AlertCircle className="w-3.5 h-3.5 mt-0.5" />
           {error}
         </div>
       )}
       {success && (
-        <div className="mt-3 inline-flex items-start gap-2 text-xs text-emerald-700 dark:text-emerald-300">
+        <div className="mt-3 inline-flex items-start gap-2 text-xs text-slate-800 dark:text-slate-300">
           <CheckCircle2 className="w-3.5 h-3.5 mt-0.5" />
           {success}
         </div>

@@ -58,7 +58,7 @@ export default async function PharosOversightsPage() {
     <div className="space-y-6 max-w-6xl">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-[10px] tracking-[0.22em] uppercase text-amber-400/70 font-semibold">
+          <div className="text-[10px] tracking-[0.22em] uppercase text-slate-400/70 font-semibold">
             Aufsichten
           </div>
           <h1 className="text-2xl font-semibold mt-1">
@@ -68,7 +68,7 @@ export default async function PharosOversightsPage() {
         </div>
         <Link
           href="/pharos/oversights/new"
-          className="inline-flex items-center h-9 px-4 rounded-md bg-amber-500 hover:bg-amber-400 text-amber-950 text-sm font-medium"
+          className="inline-flex items-center h-9 px-4 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium"
         >
           Neue Aufsicht
         </Link>
@@ -81,7 +81,7 @@ export default async function PharosOversightsPage() {
             <h2 className="text-xs uppercase tracking-wider text-slate-500 mb-2">
               {g.label} · {g.items.length}
             </h2>
-            <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-navy-900/30 divide-y divide-slate-200 dark:divide-white/5">
+            <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/30 divide-y divide-slate-200 dark:divide-white/5">
               {g.items.map((ov) => (
                 <Link
                   key={ov.id}
@@ -106,7 +106,7 @@ export default async function PharosOversightsPage() {
         ))}
 
       {oversights.length === 0 && (
-        <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-navy-900/30 px-6 py-10 text-center text-sm text-slate-500">
+        <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/30 px-6 py-10 text-center text-sm text-slate-500">
           Du hast noch keine Aufsichten. Klicke „Neue Aufsicht", um die erste
           anzulegen.
         </div>

@@ -111,7 +111,7 @@ export function PharosIncidentReporter() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/20"
+        className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded border border-slate-300 bg-slate-50 text-slate-800 hover:bg-slate-100 dark:border-white/15 dark:bg-white/[0.04] dark:text-slate-300 dark:hover:bg-slate-700/20"
       >
         <Siren className="w-3.5 h-3.5" />
         Pharos-Vorfall melden
@@ -119,10 +119,10 @@ export function PharosIncidentReporter() {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-lg border border-slate-200 bg-white shadow-xl dark:border-white/10 dark:bg-navy-900">
+          <div className="w-full max-w-lg rounded-lg border border-slate-200 bg-white shadow-xl dark:border-white/10 dark:bg-slate-900">
             <header className="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-white/5">
               <div className="flex items-center gap-2">
-                <Siren className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <Siren className="w-4 h-4 text-slate-800 dark:text-slate-400" />
                 <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                   NIS2-Vorfall an Aufsicht melden
                 </h2>
@@ -150,7 +150,7 @@ export function PharosIncidentReporter() {
                   value={oversightId}
                   onChange={(e) => setOversightId(e.target.value)}
                   disabled={submitting}
-                  className="w-full text-sm px-3 py-2 rounded border border-slate-300 bg-white text-slate-800 dark:bg-navy-900/40 dark:border-white/10 dark:text-slate-200"
+                  className="w-full text-sm px-3 py-2 rounded border border-slate-300 bg-white text-slate-800 dark:bg-slate-900/40 dark:border-white/10 dark:text-slate-200"
                 >
                   <option value="">— bitte wählen —</option>
                   {oversights?.map((o) => (
@@ -168,7 +168,7 @@ export function PharosIncidentReporter() {
                   onChange={(e) => setCaseRef(e.target.value)}
                   placeholder="z.B. ACME-NIS2-2026-001"
                   disabled={submitting}
-                  className="w-full text-sm px-3 py-2 rounded border border-slate-300 bg-white text-slate-800 placeholder:text-slate-400 dark:bg-navy-900/40 dark:border-white/10 dark:text-slate-200 dark:placeholder:text-slate-500"
+                  className="w-full text-sm px-3 py-2 rounded border border-slate-300 bg-white text-slate-800 placeholder:text-slate-400 dark:bg-slate-900/40 dark:border-white/10 dark:text-slate-200 dark:placeholder:text-slate-500"
                 />
               </Field>
 
@@ -183,8 +183,8 @@ export function PharosIncidentReporter() {
                         disabled={submitting}
                         className={`text-xs px-3 py-1.5 rounded border ${
                           severity === s
-                            ? "bg-amber-500 text-white border-amber-600"
-                            : "bg-white text-slate-700 border-slate-300 dark:bg-navy-900/40 dark:text-slate-300 dark:border-white/10"
+                            ? "bg-slate-700 text-white border-slate-800"
+                            : "bg-white text-slate-700 border-slate-300 dark:bg-slate-900/40 dark:text-slate-300 dark:border-white/10"
                         }`}
                       >
                         {s}
@@ -202,18 +202,18 @@ export function PharosIncidentReporter() {
                   maxLength={2000}
                   disabled={submitting}
                   placeholder="z.B. TT&C-Link-Anomalie auf LEO-Mission, IDS hat erhöhte Latenz erkannt …"
-                  className="w-full text-sm px-3 py-2 rounded border border-slate-300 bg-white text-slate-800 placeholder:text-slate-400 dark:bg-navy-900/40 dark:border-white/10 dark:text-slate-200 dark:placeholder:text-slate-500 resize-none"
+                  className="w-full text-sm px-3 py-2 rounded border border-slate-300 bg-white text-slate-800 placeholder:text-slate-400 dark:bg-slate-900/40 dark:border-white/10 dark:text-slate-200 dark:placeholder:text-slate-500 resize-none"
                 />
               </Field>
 
               {error && (
-                <div className="inline-flex items-start gap-2 text-xs text-red-700 dark:text-red-300">
+                <div className="inline-flex items-start gap-2 text-xs text-slate-900 dark:text-slate-300">
                   <AlertCircle className="w-3.5 h-3.5 mt-0.5" />
                   {error}
                 </div>
               )}
               {success && (
-                <div className="inline-flex items-start gap-2 text-xs text-emerald-700 dark:text-emerald-300">
+                <div className="inline-flex items-start gap-2 text-xs text-slate-800 dark:text-slate-300">
                   <CheckCircle2 className="w-3.5 h-3.5 mt-0.5" />
                   {success}
                 </div>
@@ -224,7 +224,7 @@ export function PharosIncidentReporter() {
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="text-xs px-3 py-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 dark:bg-navy-900/40 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/[0.05]"
+                className="text-xs px-3 py-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 dark:bg-slate-900/40 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/[0.05]"
               >
                 Abbrechen
               </button>
@@ -232,7 +232,7 @@ export function PharosIncidentReporter() {
                 type="button"
                 onClick={submit}
                 disabled={submitting || !oversightId || !caseRef}
-                className="text-xs px-3 py-1.5 rounded border border-amber-600 bg-amber-500 hover:bg-amber-600 text-white inline-flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="text-xs px-3 py-1.5 rounded border border-slate-800 bg-slate-900 hover:bg-slate-800 text-white inline-flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Send className="w-3.5 h-3.5" />
                 Signiert melden

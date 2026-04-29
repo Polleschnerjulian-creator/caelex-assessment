@@ -81,7 +81,7 @@ export default async function ApprovalsInboxPage() {
   return (
     <div className="space-y-6 max-w-6xl">
       <div>
-        <div className="text-[10px] tracking-[0.22em] uppercase text-amber-700 dark:text-amber-400/70 font-semibold">
+        <div className="text-[10px] tracking-[0.22em] uppercase text-slate-700 dark:text-slate-400/70 font-semibold">
           Multi-Party-Approval · Pharos
         </div>
         <h1 className="text-2xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
@@ -124,7 +124,7 @@ export default async function ApprovalsInboxPage() {
         </Section>
       )}
       {open.length === 0 && (
-        <div className="rounded-lg border border-slate-200 bg-white px-6 py-10 text-center text-sm text-slate-500 dark:border-white/5 dark:bg-navy-900/30">
+        <div className="rounded-lg border border-slate-200 bg-white px-6 py-10 text-center text-sm text-slate-500 dark:border-white/5 dark:bg-slate-900/30">
           Keine offenen Approval-Requests.
         </div>
       )}
@@ -154,12 +154,12 @@ function Kpi({
 }) {
   const cls =
     tone === "alert"
-      ? "text-red-700 dark:text-red-300"
+      ? "text-slate-900 dark:text-slate-300"
       : tone === "warn"
-        ? "text-amber-700 dark:text-amber-300"
+        ? "text-slate-700 dark:text-slate-300"
         : "text-slate-900 dark:text-slate-100";
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-white/5 dark:bg-navy-900/30">
+    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-white/5 dark:bg-slate-900/30">
       <div className="text-[11px] tracking-wider uppercase text-slate-500 font-medium">
         {label}
       </div>
@@ -181,20 +181,20 @@ function Section({
 }) {
   const headerCls = {
     ok: "text-slate-900 dark:text-slate-100",
-    warn: "text-amber-700 dark:text-amber-300",
-    alert: "text-red-700 dark:text-red-300",
+    warn: "text-slate-700 dark:text-slate-300",
+    alert: "text-slate-900 dark:text-slate-300",
   }[tone];
   return (
-    <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-navy-900/30">
+    <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/30">
       <div className="px-5 py-3 border-b border-slate-200 dark:border-white/5 flex items-center gap-2">
         {tone === "alert" && (
-          <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
+          <AlertTriangle className="w-4 h-4 text-slate-800 dark:text-slate-500" />
         )}
         {tone === "warn" && (
-          <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+          <Clock className="w-4 h-4 text-slate-800 dark:text-slate-400" />
         )}
         {tone === "ok" && (
-          <CheckCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          <CheckCheck className="w-4 h-4 text-slate-700 dark:text-slate-400" />
         )}
         <h2 className={`text-sm font-semibold ${headerCls}`}>{title}</h2>
       </div>
@@ -239,7 +239,7 @@ function RequestRow({ r }: { r: ApprovalRowData }) {
             initiiert von {r.initiatedBy.slice(0, 10)}…
           </div>
           {rolesMissing.length > 0 && (
-            <div className="text-[10px] text-amber-700 dark:text-amber-400 mt-0.5">
+            <div className="text-[10px] text-slate-700 dark:text-slate-400 mt-0.5">
               Fehlende Pflicht-Rollen: {rolesMissing.join(", ")}
             </div>
           )}
@@ -252,9 +252,9 @@ function RequestRow({ r }: { r: ApprovalRowData }) {
         <span
           className={`text-[10px] tracking-wide uppercase px-2 py-0.5 rounded-full border ${
             remainingMs < 2 * 3600_000
-              ? "bg-red-50 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30"
+              ? "bg-slate-50 text-slate-900 border-slate-300 dark:bg-white/[0.06] dark:text-slate-300 dark:border-white/15"
               : remainingMs < 24 * 3600_000
-                ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30"
+                ? "bg-slate-100 text-slate-900 border-slate-300 dark:bg-white/[0.06] dark:text-slate-200 dark:border-white/15"
                 : "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-500/15 dark:text-slate-300 dark:border-slate-500/30"
           }`}
         >
@@ -262,7 +262,7 @@ function RequestRow({ r }: { r: ApprovalRowData }) {
         </span>
         <Link
           href={`/pharos/approvals/${r.id}`}
-          className="text-xs text-slate-600 hover:text-amber-700 dark:text-slate-400 dark:hover:text-amber-300 inline-flex items-center gap-1"
+          className="text-xs text-slate-600 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 inline-flex items-center gap-1"
         >
           Öffnen
           <ArrowRight className="w-3 h-3" />

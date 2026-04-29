@@ -59,7 +59,7 @@ export default async function ApprovalDetailPage({
         </h1>
         <Link
           href="/pharos/approvals"
-          className="inline-flex items-center gap-1.5 text-sm text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-700 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-300"
         >
           <ArrowLeft className="w-3.5 h-3.5" /> Zurück zur Inbox
         </Link>
@@ -85,21 +85,21 @@ export default async function ApprovalDetailPage({
       <div>
         <Link
           href="/pharos/approvals"
-          className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-amber-700 dark:hover:text-amber-300"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
         >
           <ArrowLeft className="w-3 h-3" /> Zurück zur Approval-Inbox
         </Link>
         <div className="mt-2 flex items-center gap-3">
-          <Scale className="w-5 h-5 text-amber-700 dark:text-amber-400" />
+          <Scale className="w-5 h-5 text-slate-700 dark:text-slate-400" />
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
             {KIND_LABELS[r.kind] ?? r.kind}
           </h1>
           <span
             className={`text-[10px] tracking-wider uppercase px-2 py-0.5 rounded border font-semibold ${
               r.status === "APPROVED"
-                ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30"
+                ? "bg-slate-50 text-slate-800 border-slate-300 dark:bg-white/[0.06] dark:text-slate-300 dark:border-white/15"
                 : r.status === "OPEN" && !expired
-                  ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30"
+                  ? "bg-slate-100 text-slate-900 border-slate-300 dark:bg-white/[0.06] dark:text-slate-200 dark:border-white/15"
                   : "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-500/15 dark:text-slate-300 dark:border-slate-500/30"
             }`}
           >
@@ -112,9 +112,9 @@ export default async function ApprovalDetailPage({
       </div>
 
       {/* Quorum-Status */}
-      <div className="rounded-lg border border-slate-200 bg-white p-5 dark:border-white/5 dark:bg-navy-900/30">
+      <div className="rounded-lg border border-slate-200 bg-white p-5 dark:border-white/5 dark:bg-slate-900/30">
         <h2 className="text-sm font-semibold mb-3 text-slate-900 dark:text-slate-100 flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          <CheckCircle2 className="w-4 h-4 text-slate-700 dark:text-slate-400" />
           Quorum-Status
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px]">
@@ -125,18 +125,20 @@ export default async function ApprovalDetailPage({
           </Field>
           <Field label="Pflicht-Rollen">
             {rolesMissing.length === 0 ? (
-              <span className="text-emerald-700 dark:text-emerald-300">
+              <span className="text-slate-800 dark:text-slate-300">
                 vollständig
               </span>
             ) : (
-              <span className="text-amber-700 dark:text-amber-300">
+              <span className="text-slate-700 dark:text-slate-300">
                 fehlt: {rolesMissing.join(", ")}
               </span>
             )}
           </Field>
           <Field label="Frist">
             {remainingMs <= 0 ? (
-              <span className="text-red-700 dark:text-red-300">abgelaufen</span>
+              <span className="text-slate-900 dark:text-slate-300">
+                abgelaufen
+              </span>
             ) : (
               <span className="text-slate-700 dark:text-slate-300">
                 {formatDuration(remainingMs)}
@@ -160,14 +162,14 @@ export default async function ApprovalDetailPage({
         />
       )}
       {alreadySigned && (
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
+        <div className="rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-xs text-slate-900 dark:border-white/15 dark:bg-white/[0.04] dark:text-slate-300">
           Du hast bereits signiert. Eine erneute Signatur ist nicht möglich
           (Constraint @@unique([requestId, approverUserId])).
         </div>
       )}
 
       {/* Payload */}
-      <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-navy-900/30">
+      <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/30">
         <div className="px-5 py-3 border-b border-slate-200 dark:border-white/5">
           <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             Inhalt der Mitzeichnung
@@ -183,7 +185,7 @@ export default async function ApprovalDetailPage({
       </div>
 
       {/* Signatures */}
-      <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-navy-900/30">
+      <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/30">
         <div className="px-5 py-3 border-b border-slate-200 dark:border-white/5">
           <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             Signaturen ({r.signatures.length})
@@ -210,7 +212,7 @@ export default async function ApprovalDetailPage({
                     {new Date(s.signedAt).toLocaleString()}
                   </div>
                 </div>
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-slate-700 dark:text-slate-400 shrink-0" />
               </li>
             ))}
           </ul>

@@ -168,10 +168,10 @@ export function PharosAstraChat({
   if (messages.length === 0) {
     return (
       <div className="space-y-4">
-        <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-500/20 dark:bg-amber-500/5 p-5">
+        <div className="rounded-lg border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/[0.02] p-5">
           <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="w-4 h-4 text-amber-400" />
-            <h2 className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+            <Sparkles className="w-4 h-4 text-slate-400" />
+            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
               Beispiel-Fragen
             </h2>
           </div>
@@ -222,7 +222,7 @@ export function PharosAstraChat({
         ))}
         {submitting && (
           <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-500">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse" />
             Analysiere…
           </div>
         )}
@@ -241,15 +241,15 @@ export function PharosAstraChat({
 
 function GlassBoxNotice() {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 text-[12px] text-slate-600 leading-relaxed dark:border-white/5 dark:bg-navy-900/30 dark:text-slate-400">
+    <div className="rounded-lg border border-slate-200 bg-white p-4 text-[12px] text-slate-600 leading-relaxed dark:border-white/5 dark:bg-slate-900/30 dark:text-slate-400">
       <div className="flex items-center gap-2 text-slate-800 dark:text-slate-300 font-medium mb-1">
-        <Fingerprint className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+        <Fingerprint className="w-3.5 h-3.5 text-slate-700 dark:text-slate-400" />
         Verifiable Refusal — Glass-Box-Garantie
       </div>
       Jede Antwort enthält klickbare Citations zu jeder Aussage und einen
       Ed25519-signierten Receipt. Wenn keine belastbare Quelle vorliegt,
       verweigert Pharos strukturiert die Antwort —{" "}
-      <span className="text-amber-700 dark:text-amber-300">[ABSTAIN]</span> ist
+      <span className="text-slate-700 dark:text-slate-300">[ABSTAIN]</span> ist
       Feature, nicht Bug. Halluzinationen sind architektonisch unmöglich.
     </div>
   );
@@ -267,7 +267,7 @@ function SuggestionButton({
       <button
         type="button"
         onClick={() => onClick(text)}
-        className="w-full text-left text-sm text-slate-700 hover:text-amber-800 dark:text-slate-300 dark:hover:text-amber-200 px-3 py-2 rounded-md border border-slate-200 hover:border-amber-400 hover:bg-amber-50 dark:border-white/10 dark:hover:border-amber-500/40 dark:hover:bg-amber-500/5 transition-colors"
+        className="w-full text-left text-sm text-slate-700 hover:text-slate-800 dark:text-slate-300 dark:hover:text-slate-200 px-3 py-2 rounded-md border border-slate-200 hover:border-slate-400 hover:bg-slate-50 dark:border-white/10 dark:hover:border-slate-700/40 dark:hover:bg-slate-700/5 transition-colors"
       >
         {text}
       </button>
@@ -284,21 +284,21 @@ function MessageBubble({ message }: { message: Message }) {
       <div
         className={`max-w-[85%] rounded-lg px-4 py-3 ${
           isUser
-            ? "bg-amber-100 border border-amber-300 text-amber-900 dark:bg-amber-500/15 dark:border-amber-500/30 dark:text-amber-50"
+            ? "bg-slate-100 border border-slate-300 text-slate-900 dark:bg-white/[0.06] dark:border-white/15 dark:text-slate-50"
             : isAbstention
-              ? "bg-yellow-50 border border-yellow-300 text-yellow-900 dark:bg-yellow-500/10 dark:border-yellow-500/30 dark:text-yellow-50"
-              : "bg-white border border-slate-200 text-slate-800 shadow-sm dark:bg-navy-900/50 dark:border-white/5 dark:text-slate-200 dark:shadow-none"
+              ? "bg-slate-50 border border-slate-400 text-slate-950 dark:bg-white/[0.04] dark:border-white/15 dark:text-slate-50"
+              : "bg-white border border-slate-200 text-slate-800 shadow-sm dark:bg-slate-900/50 dark:border-white/5 dark:text-slate-200 dark:shadow-none"
         }`}
       >
         {message.error ? (
-          <div className="flex items-start gap-2 text-red-300">
+          <div className="flex items-start gap-2 text-slate-300">
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <span className="text-sm">{message.error}</span>
           </div>
         ) : (
           <>
             {isAbstention && (
-              <div className="flex items-center gap-2 text-[11px] tracking-wider uppercase text-yellow-400 font-semibold mb-2">
+              <div className="flex items-center gap-2 text-[11px] tracking-wider uppercase text-slate-500 font-semibold mb-2">
                 <Lightbulb className="w-3.5 h-3.5" />
                 Strukturierte Verweigerung
               </div>
@@ -357,8 +357,8 @@ function renderWithCitationLinks(text: string, citations: Citation[]) {
         key={`cite-${key++}`}
         className={`inline-flex items-baseline px-1 mx-0.5 rounded text-[10px] font-mono ${
           known
-            ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
-            : "bg-red-500/15 text-red-300 border border-red-500/30"
+            ? "bg-slate-700/15 text-slate-300 border border-slate-700/30"
+            : "bg-slate-700/15 text-slate-300 border border-slate-700/30"
         }`}
         title={
           known
@@ -383,7 +383,7 @@ function ReasoningGraphToggle({ message }: { message: Message }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium"
+        className="inline-flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-400 font-medium"
       >
         {open ? (
           <ChevronDown className="w-3.5 h-3.5" />
@@ -415,10 +415,10 @@ function JudgeBadge({ judge }: { judge: JudgeVerdict }) {
   const isAbstained = judge.verdict === "abstained";
 
   const tone = isAccepted
-    ? "bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-500/10 dark:border-emerald-500/30 dark:text-emerald-300"
+    ? "bg-slate-50 border-slate-300 text-slate-900 dark:bg-white/[0.04] dark:border-white/15 dark:text-slate-300"
     : isRejected
-      ? "bg-red-50 border-red-200 text-red-800 dark:bg-red-500/10 dark:border-red-500/30 dark:text-red-300"
-      : "bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-500/10 dark:border-yellow-500/30 dark:text-yellow-300";
+      ? "bg-slate-50 border-slate-300 text-slate-900 dark:bg-white/[0.04] dark:border-white/15 dark:text-slate-300"
+      : "bg-slate-50 border-slate-300 text-slate-900 dark:bg-white/[0.04] dark:border-white/15 dark:text-slate-400";
 
   const label = isAccepted
     ? "Pharos-Judge ✓ verifiziert"
@@ -435,7 +435,7 @@ function JudgeBadge({ judge }: { judge: JudgeVerdict }) {
         {label} · Confidence {(judge.confidence * 100).toFixed(0)}%
       </div>
       {judge.reasonsRejected.length > 0 && (
-        <ul className="mt-2 space-y-0.5 text-[11px] text-red-700 dark:text-red-300">
+        <ul className="mt-2 space-y-0.5 text-[11px] text-slate-900 dark:text-slate-300">
           {judge.reasonsRejected.map((r, i) => (
             <li key={i}>• {r}</li>
           ))}
@@ -475,12 +475,12 @@ function CitationStrip({ citations }: { citations: Citation[] }) {
 function CitationChip({ citation }: { citation: Citation }) {
   const kindColor = {
     "data-row":
-      "text-blue-800 border-blue-200 bg-blue-50 dark:text-blue-300 dark:border-blue-500/30 dark:bg-blue-500/10",
+      "text-slate-900 border-slate-300 bg-slate-50 dark:text-slate-400 dark:border-white/15 dark:bg-white/[0.04]",
     computation:
-      "text-violet-800 border-violet-200 bg-violet-50 dark:text-violet-300 dark:border-violet-500/30 dark:bg-violet-500/10",
+      "text-slate-900 border-slate-300 bg-slate-50 dark:text-slate-400 dark:border-white/15 dark:bg-white/[0.04]",
     "audit-entry":
-      "text-amber-800 border-amber-200 bg-amber-50 dark:text-amber-300 dark:border-amber-500/30 dark:bg-amber-500/10",
-    norm: "text-emerald-800 border-emerald-200 bg-emerald-50 dark:text-emerald-300 dark:border-emerald-500/30 dark:bg-emerald-500/10",
+      "text-slate-800 border-slate-200 bg-slate-50 dark:text-slate-300 dark:border-white/15 dark:bg-white/[0.04]",
+    norm: "text-slate-900 border-slate-300 bg-slate-50 dark:text-slate-300 dark:border-white/15 dark:bg-white/[0.04]",
   }[citation.kind];
 
   return (
@@ -510,7 +510,7 @@ function CitationChip({ citation }: { citation: Citation }) {
           href={citation.url}
           target="_blank"
           rel="noreferrer"
-          className="shrink-0 text-slate-500 hover:text-amber-700 dark:hover:text-amber-300"
+          className="shrink-0 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
         >
           <ExternalLink className="w-3 h-3" />
         </a>
@@ -533,8 +533,8 @@ function ReceiptStrip({
   return (
     <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/5">
       <div className="flex items-center gap-2 mb-2">
-        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-        <span className="text-[10px] tracking-wider uppercase text-emerald-600 dark:text-emerald-400 font-semibold">
+        <CheckCircle2 className="w-3.5 h-3.5 text-slate-700 dark:text-slate-400" />
+        <span className="text-[10px] tracking-wider uppercase text-slate-700 dark:text-slate-400 font-semibold">
           Ed25519-Signed Receipt
         </span>
       </div>
@@ -594,7 +594,7 @@ function ReceiptStrip({
             href={verifyUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20"
+            className="inline-flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded border border-slate-300 bg-slate-50 text-slate-900 hover:bg-slate-100 dark:border-white/15 dark:bg-white/[0.04] dark:text-slate-300 dark:hover:bg-slate-700/20"
           >
             <ExternalLink className="w-3 h-3" />
             Receipt JSON
@@ -625,8 +625,8 @@ function ToolCallStrip({
           <span
             className={
               tc.ok
-                ? "text-emerald-600 dark:text-emerald-400"
-                : "text-red-600 dark:text-red-400"
+                ? "text-slate-700 dark:text-slate-400"
+                : "text-slate-800 dark:text-slate-500"
             }
           >
             {tc.ok ? "ok" : "error"}
@@ -654,7 +654,7 @@ function ChatInput({
 }) {
   return (
     <form onSubmit={onSubmit}>
-      <div className="rounded-lg border border-slate-200 bg-white shadow-sm focus-within:border-amber-400 dark:border-white/10 dark:bg-navy-900/50 dark:shadow-none dark:focus-within:border-amber-500/40 transition-colors">
+      <div className="rounded-lg border border-slate-200 bg-white shadow-sm focus-within:border-slate-400 dark:border-white/10 dark:bg-slate-900/50 dark:shadow-none dark:focus-within:border-slate-700/40 transition-colors">
         <textarea
           ref={(node) => {
             inputRef.current = node;
@@ -679,7 +679,7 @@ function ChatInput({
           <button
             type="submit"
             disabled={submitting || input.trim().length === 0}
-            className="inline-flex items-center gap-2 h-8 px-3 rounded-md bg-amber-500 hover:bg-amber-400 text-amber-950 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 h-8 px-3 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Send className="w-3.5 h-3.5" />
             Senden

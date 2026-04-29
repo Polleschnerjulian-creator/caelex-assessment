@@ -56,7 +56,7 @@ export default async function BriefingPage() {
   return (
     <div className="space-y-6 max-w-5xl">
       <div>
-        <div className="text-[10px] tracking-[0.22em] uppercase text-amber-700 dark:text-amber-400/70 font-semibold">
+        <div className="text-[10px] tracking-[0.22em] uppercase text-slate-700 dark:text-slate-400/70 font-semibold">
           Tagesbriefing · Pharos
         </div>
         <h1 className="text-2xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
@@ -121,7 +121,7 @@ function BriefingCard({
   briefing: BriefingCardData;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-navy-900/30">
+    <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/30">
       <header className="px-5 py-3 border-b border-slate-200 dark:border-white/5">
         <div className="flex items-center justify-between">
           <div>
@@ -133,7 +133,7 @@ function BriefingCard({
               {new Date(briefing.generatedAt).toLocaleString()}
             </div>
           </div>
-          <Calendar className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+          <Calendar className="w-4 h-4 text-slate-700 dark:text-slate-400" />
         </div>
       </header>
 
@@ -162,7 +162,7 @@ function BriefingCard({
         </div>
         {briefing.topPriorities.length === 0 ? (
           <div className="text-sm text-slate-500 dark:text-slate-400 inline-flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <CheckCircle2 className="w-4 h-4 text-slate-700 dark:text-slate-400" />
             Keine kritischen Vorgänge — saubere Lage.
           </div>
         ) : (
@@ -182,7 +182,7 @@ function BriefingCard({
           href={`/api/pharos/briefing/preview?authorityProfileId=${authorityProfileId}`}
           target="_blank"
           rel="noreferrer"
-          className="text-[11px] text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300 inline-flex items-center gap-1"
+          className="text-[11px] text-slate-700 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-300 inline-flex items-center gap-1"
         >
           E-Mail-Vorschau
           <ArrowRight className="w-3 h-3" />
@@ -203,9 +203,9 @@ function Stat({
 }) {
   const cls =
     tone === "alert"
-      ? "text-red-700 dark:text-red-300"
+      ? "text-slate-900 dark:text-slate-300"
       : tone === "warn"
-        ? "text-amber-700 dark:text-amber-300"
+        ? "text-slate-700 dark:text-slate-300"
         : "text-slate-900 dark:text-slate-100";
   return (
     <div>
@@ -231,8 +231,8 @@ function PriorityRow({
 }) {
   const tone = {
     critical:
-      "border-red-200 bg-red-50 text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300",
-    warn: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300",
+      "border-slate-300 bg-slate-50 text-slate-900 dark:border-white/15 dark:bg-white/[0.04] dark:text-slate-300",
+    warn: "border-slate-200 bg-slate-50 text-slate-800 dark:border-white/15 dark:bg-white/[0.04] dark:text-slate-300",
     info: "border-slate-200 bg-slate-50 text-slate-700 dark:border-white/10 dark:bg-white/[0.02] dark:text-slate-300",
   }[p.severity];
 

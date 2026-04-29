@@ -140,7 +140,7 @@ export default async function PharosOperatorsPage() {
   return (
     <div className="space-y-5 max-w-6xl">
       <div>
-        <div className="text-[10px] tracking-[0.22em] uppercase text-amber-400/70 font-semibold">
+        <div className="text-[10px] tracking-[0.22em] uppercase text-slate-400/70 font-semibold">
           Operatoren
         </div>
         <h1 className="text-2xl font-semibold mt-1">
@@ -161,14 +161,14 @@ export default async function PharosOperatorsPage() {
       </div>
 
       {rows.length === 0 ? (
-        <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-navy-900/30 px-6 py-10 text-center text-sm text-slate-500">
+        <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/30 px-6 py-10 text-center text-sm text-slate-500">
           Du hast noch keine Aufsichts-Beziehungen. Über „Aufsicht initiieren"
           (oben links im Nav-Rail) lädst du den ersten Operator ein.
         </div>
       ) : (
-        <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-navy-900/30 overflow-hidden">
+        <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/30 overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-navy-900/60 text-[10px] tracking-wider uppercase text-slate-500">
+            <thead className="bg-slate-900/60 text-[10px] tracking-wider uppercase text-slate-500">
               <tr>
                 <th className="px-4 py-2.5 text-left font-medium">Operator</th>
                 <th className="px-4 py-2.5 text-left font-medium">Aufsicht</th>
@@ -191,7 +191,7 @@ export default async function PharosOperatorsPage() {
                   <td className="px-4 py-3">
                     <Link
                       href={`/pharos/operators/${r.oversightId}`}
-                      className="font-medium text-slate-900 dark:text-slate-100 hover:text-amber-300"
+                      className="font-medium text-slate-900 dark:text-slate-100 hover:text-slate-300"
                     >
                       {r.operator.name}
                     </Link>
@@ -243,13 +243,13 @@ function TierTile({
   tone: "emerald" | "amber" | "red";
 }) {
   const tones = {
-    emerald: "border-emerald-500/30 text-emerald-300",
-    amber: "border-amber-500/30 text-amber-300",
-    red: "border-red-500/30 text-red-300",
+    emerald: "border-slate-700/30 text-slate-300",
+    amber: "border-slate-700/30 text-slate-300",
+    red: "border-slate-700/30 text-slate-300",
   };
   return (
     <div
-      className={`rounded-lg border ${tones[tone]} bg-white dark:bg-navy-900/30 px-4 py-3`}
+      className={`rounded-lg border ${tones[tone]} bg-white dark:bg-slate-900/30 px-4 py-3`}
     >
       <div className="text-[11px] tracking-wider uppercase text-slate-500 font-medium">
         {label}
@@ -261,9 +261,9 @@ function TierTile({
 
 function ScoreCell({ score, tier }: { score: number; tier: Tier }) {
   const tones = {
-    good: "text-emerald-300",
-    drift: "text-amber-300",
-    alert: "text-red-300",
+    good: "text-slate-300",
+    drift: "text-slate-300",
+    alert: "text-slate-300",
   };
   return (
     <span className={`font-semibold tabular-nums ${tones[tier]}`}>{score}</span>
@@ -274,15 +274,15 @@ function StatusPill({ status }: { status: string }) {
   const variants: Record<string, { label: string; classes: string }> = {
     ACTIVE: {
       label: "Aktiv",
-      classes: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
+      classes: "bg-slate-700/15 text-slate-300 border-slate-700/30",
     },
     PENDING_OPERATOR_ACCEPT: {
       label: "Wartet",
-      classes: "bg-amber-500/15 text-amber-300 border-amber-500/30",
+      classes: "bg-slate-700/15 text-slate-300 border-slate-700/30",
     },
     DISPUTED: {
       label: "Streit",
-      classes: "bg-red-500/15 text-red-300 border-red-500/30",
+      classes: "bg-slate-700/15 text-slate-300 border-slate-700/30",
     },
   };
   const v = variants[status] ?? {

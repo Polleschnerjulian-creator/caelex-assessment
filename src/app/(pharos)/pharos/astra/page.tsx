@@ -51,7 +51,7 @@ export default async function PharosAstraPage() {
   return (
     <div className="space-y-5 max-w-4xl">
       <div>
-        <div className="text-[10px] tracking-[0.22em] uppercase text-amber-400/70 font-semibold">
+        <div className="text-[10px] tracking-[0.22em] uppercase text-slate-400/70 font-semibold">
           Pharos-Astra
         </div>
         <h1 className="text-2xl font-semibold mt-1">

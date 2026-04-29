@@ -87,7 +87,7 @@ export default async function PharosOperatorDetailPage({
         </Link>
         <div className="mt-2 flex items-start justify-between">
           <div className="min-w-0">
-            <div className="text-[10px] tracking-[0.22em] uppercase text-amber-400/70 font-semibold">
+            <div className="text-[10px] tracking-[0.22em] uppercase text-slate-400/70 font-semibold">
               Aufsichts-Detail
             </div>
             <h1 className="text-2xl font-semibold mt-1 truncate">
@@ -130,10 +130,10 @@ export default async function PharosOperatorDetailPage({
 
       {/* MDF + VDF panels */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+        <div className="rounded-lg border border-slate-700/20 bg-slate-700/5 p-4">
           <div className="flex items-center gap-2 mb-3">
-            <Lock className="w-3.5 h-3.5 text-amber-400" />
-            <h2 className="text-sm font-semibold text-amber-200">
+            <Lock className="w-3.5 h-3.5 text-slate-400" />
+            <h2 className="text-sm font-semibold text-slate-200">
               MDF · Pflicht-Offenlegung
             </h2>
           </div>
@@ -143,7 +143,7 @@ export default async function PharosOperatorDetailPage({
             <ul className="space-y-1.5">
               {mdf.map((item, i) => (
                 <li key={i} className="text-sm flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                   <span className="text-slate-800 dark:text-slate-200">
                     {CATEGORY_LABEL[item.category]}
                   </span>
@@ -155,10 +155,10 @@ export default async function PharosOperatorDetailPage({
             </ul>
           )}
         </div>
-        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4">
+        <div className="rounded-lg border border-slate-700/20 bg-slate-700/5 p-4">
           <div className="flex items-center gap-2 mb-3">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <h2 className="text-sm font-semibold text-emerald-200">
+            <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
+            <h2 className="text-sm font-semibold text-slate-300">
               VDF · Freiwillige Erweiterung
             </h2>
           </div>
@@ -170,7 +170,7 @@ export default async function PharosOperatorDetailPage({
             <ul className="space-y-1.5">
               {vdf.map((item, i) => (
                 <li key={i} className="text-sm flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                   <span className="text-slate-800 dark:text-slate-200">
                     {CATEGORY_LABEL[item.category]}
                   </span>
@@ -186,7 +186,7 @@ export default async function PharosOperatorDetailPage({
 
       {/* Hash chain footer */}
       {oversight.handshakeHash && (
-        <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-navy-900/30 px-4 py-3">
+        <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/30 px-4 py-3">
           <div className="text-[10px] tracking-wider uppercase text-slate-500 font-medium mb-1">
             Handshake-Hash · SHA-256
           </div>
@@ -202,18 +202,18 @@ export default async function PharosOperatorDetailPage({
 
       {/* Dispute reason if applicable */}
       {oversight.status === "DISPUTED" && oversight.disputeReason && (
-        <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-4">
+        <div className="rounded-lg border border-slate-700/30 bg-slate-700/5 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="w-3.5 h-3.5 text-red-300" />
-            <h2 className="text-sm font-semibold text-red-200">
+            <AlertTriangle className="w-3.5 h-3.5 text-slate-300" />
+            <h2 className="text-sm font-semibold text-slate-300">
               Widerspruch des Operators
             </h2>
           </div>
-          <p className="text-sm text-red-100/90 whitespace-pre-wrap">
+          <p className="text-sm text-slate-100/90 whitespace-pre-wrap">
             {oversight.disputeReason}
           </p>
           {oversight.disputedAt && (
-            <p className="text-[11px] text-red-300/60 mt-2">
+            <p className="text-[11px] text-slate-300/60 mt-2">
               Eingelegt am{" "}
               {new Date(oversight.disputedAt).toLocaleString("de-DE")}
             </p>
@@ -222,7 +222,7 @@ export default async function PharosOperatorDetailPage({
       )}
 
       {/* Audit log */}
-      <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-navy-900/30">
+      <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-slate-900/30">
         <div className="px-4 py-3 border-b border-slate-200 dark:border-white/5">
           <h2 className="text-sm font-semibold">
             Audit-Log · letzte {auditLog.length} Einträge
@@ -270,7 +270,7 @@ function Meta({
   mono?: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-navy-900/30 px-3 py-2">
+    <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/30 px-3 py-2">
       <div className="text-[10px] tracking-wider uppercase text-slate-500 font-medium">
         {label}
       </div>
@@ -287,15 +287,15 @@ function StatusBadge({ status }: { status: string }) {
   const variants: Record<string, { label: string; classes: string }> = {
     ACTIVE: {
       label: "Aktiv",
-      classes: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
+      classes: "bg-slate-700/15 text-slate-300 border-slate-700/30",
     },
     PENDING_OPERATOR_ACCEPT: {
       label: "Wartet auf Annahme",
-      classes: "bg-amber-500/15 text-amber-300 border-amber-500/30",
+      classes: "bg-slate-700/15 text-slate-300 border-slate-700/30",
     },
     DISPUTED: {
       label: "Streit",
-      classes: "bg-red-500/15 text-red-300 border-red-500/30",
+      classes: "bg-slate-700/15 text-slate-300 border-slate-700/30",
     },
     CLOSED: {
       label: "Beendet",
@@ -304,7 +304,7 @@ function StatusBadge({ status }: { status: string }) {
     },
     REVOKED: {
       label: "Entzogen",
-      classes: "bg-red-500/10 text-red-300 border-red-500/20",
+      classes: "bg-slate-700/10 text-slate-300 border-slate-700/20",
     },
     SUSPENDED: {
       label: "Pausiert",

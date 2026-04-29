@@ -135,11 +135,11 @@ export function InitiateForm({
         : result.acceptUrl;
     return (
       <div className="space-y-5">
-        <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-4">
-          <div className="text-emerald-300 font-medium mb-1">
+        <div className="rounded-lg border border-slate-700/30 bg-slate-700/5 p-4">
+          <div className="text-slate-300 font-medium mb-1">
             Aufsicht ist initiiert.
           </div>
-          <p className="text-sm text-emerald-100/80">
+          <p className="text-sm text-slate-100/80">
             Status: <span className="font-mono">PENDING_OPERATOR_ACCEPT</span>.
             Der Operator hat bis zur unten genannten Frist Zeit, die Aufsicht
             über den einmaligen Token-Link zu prüfen und zu akzeptieren oder
@@ -147,18 +147,18 @@ export function InitiateForm({
           </p>
         </div>
 
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
-          <div className="text-[10px] tracking-[0.18em] uppercase text-amber-300 font-semibold">
+        <div className="rounded-lg border border-slate-700/30 bg-slate-700/5 p-4 space-y-3">
+          <div className="text-[10px] tracking-[0.18em] uppercase text-slate-300 font-semibold">
             Einladungs-Link · einmalig
           </div>
-          <div className="rounded-md bg-navy-950/60 border border-amber-500/30 px-3 py-2 text-xs font-mono text-amber-100 break-all">
+          <div className="rounded-md bg-slate-950/60 border border-slate-700/30 px-3 py-2 text-xs font-mono text-slate-100 break-all">
             {fullUrl}
           </div>
           <div className="flex items-center justify-between">
             <button
               type="button"
               onClick={copyAcceptUrl}
-              className="inline-flex items-center gap-2 h-9 px-3 rounded-md bg-amber-500 hover:bg-amber-400 text-amber-950 text-xs font-medium"
+              className="inline-flex items-center gap-2 h-9 px-3 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium"
             >
               {copied ? (
                 <>
@@ -176,7 +176,7 @@ export function InitiateForm({
               Läuft ab am {new Date(result.expiresAt).toLocaleString("de-DE")}
             </div>
           </div>
-          <p className="text-[11px] text-amber-200/70 leading-relaxed">
+          <p className="text-[11px] text-slate-200/70 leading-relaxed">
             Schicke diesen Link per dienstlicher E-Mail an den Compliance-
             Verantwortlichen des Operators. Der Token wird beim ersten
             erfolgreichen Aufruf konsumiert.
@@ -192,7 +192,7 @@ export function InitiateForm({
           </Link>
           <Link
             href="/pharos/oversights/new"
-            className="inline-flex items-center h-9 px-4 rounded-md bg-amber-500 hover:bg-amber-400 text-amber-950 text-sm font-medium"
+            className="inline-flex items-center h-9 px-4 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium"
           >
             Weitere Aufsicht initiieren
           </Link>
@@ -210,7 +210,7 @@ export function InitiateForm({
           value={operatorOrgId}
           onChange={(e) => setOperatorOrgId(e.target.value)}
           required
-          className="w-full bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
         >
           <option value="" disabled>
             — Operator wählen —
@@ -232,7 +232,7 @@ export function InitiateForm({
           minLength={3}
           required
           placeholder="z.B. EU-Space-Act Aufsicht 2026 — Galileo Operations"
-          className="w-full bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
         />
       </Field>
 
@@ -243,7 +243,7 @@ export function InitiateForm({
           onChange={(e) => setOversightReference(e.target.value)}
           maxLength={50}
           placeholder="z.B. BAFA-2026-LRSP-014"
-          className="w-full bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm font-mono"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm font-mono"
         />
       </Field>
 
@@ -259,7 +259,7 @@ export function InitiateForm({
           minLength={2}
           required
           placeholder="z.B. § 14 WRV i.V.m. Art. 7 EU Space Act"
-          className="w-full bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
         />
       </Field>
 
@@ -276,8 +276,8 @@ export function InitiateForm({
                 key={c.value}
                 className={`rounded-md border ${
                   on
-                    ? "border-amber-500/40 bg-amber-500/5"
-                    : "border-slate-200 dark:border-white/10 bg-navy-900/30"
+                    ? "border-slate-700/40 bg-slate-700/5"
+                    : "border-slate-200 dark:border-white/10 bg-slate-900/30"
                 }`}
               >
                 <button
@@ -288,7 +288,7 @@ export function InitiateForm({
                   <span
                     className={
                       on
-                        ? "text-amber-200"
+                        ? "text-slate-200"
                         : "text-slate-700 dark:text-slate-300"
                     }
                   >
@@ -296,7 +296,7 @@ export function InitiateForm({
                   </span>
                   <span
                     className={`text-[10px] uppercase tracking-wide ${
-                      on ? "text-amber-300" : "text-slate-500"
+                      on ? "text-slate-300" : "text-slate-500"
                     }`}
                   >
                     {on ? "MDF" : "—"}
@@ -318,7 +318,7 @@ export function InitiateForm({
                           }}
                           className={`text-[11px] px-2 py-1 rounded border ${
                             perm_on
-                              ? "border-amber-400/50 bg-amber-400/10 text-amber-200"
+                              ? "border-slate-400/50 bg-slate-400/10 text-slate-200"
                               : "border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:border-white/20"
                           }`}
                         >
@@ -361,8 +361,8 @@ export function InitiateForm({
                 }}
                 className={`text-xs px-3 py-2 rounded-md border text-left transition-colors ${
                   on
-                    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-200"
-                    : "border-slate-200 dark:border-white/10 bg-white dark:bg-navy-900/40 text-slate-600 dark:text-slate-400 hover:border-white/20"
+                    ? "border-slate-700/40 bg-slate-700/10 text-slate-300"
+                    : "border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/40 text-slate-600 dark:text-slate-400 hover:border-white/20"
                 }`}
               >
                 {c.label}
@@ -373,7 +373,7 @@ export function InitiateForm({
       </Field>
 
       {error && (
-        <div className="text-sm text-red-400 px-3 py-2 rounded-md bg-red-500/10 border border-red-500/20">
+        <div className="text-sm text-slate-500 px-3 py-2 rounded-md bg-slate-700/10 border border-slate-700/20">
           {error}
         </div>
       )}
@@ -388,7 +388,7 @@ export function InitiateForm({
         <button
           type="submit"
           disabled={submitting || mdfCategories.length === 0}
-          className="inline-flex items-center h-10 px-5 rounded-md bg-amber-500 hover:bg-amber-400 text-amber-950 text-sm font-medium disabled:opacity-50"
+          className="inline-flex items-center h-10 px-5 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium disabled:opacity-50"
         >
           {submitting ? "Initiiere…" : "Aufsicht erstellen & Token erzeugen"}
         </button>

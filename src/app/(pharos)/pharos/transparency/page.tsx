@@ -132,7 +132,7 @@ export default async function TransparencyPage() {
   return (
     <div className="space-y-6 max-w-5xl">
       <div>
-        <div className="text-[10px] tracking-[0.22em] uppercase text-amber-700 dark:text-amber-400/70 font-semibold">
+        <div className="text-[10px] tracking-[0.22em] uppercase text-slate-700 dark:text-slate-400/70 font-semibold">
           Glass Lighthouse · Transparenz-Dashboard
         </div>
         <h1 className="text-2xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
@@ -161,9 +161,9 @@ export default async function TransparencyPage() {
       </div>
 
       {/* Chain-Tip */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-white/5 dark:bg-navy-900/30">
+      <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-white/5 dark:bg-slate-900/30">
         <div className="flex items-center gap-2 mb-2">
-          <Activity className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          <Activity className="w-4 h-4 text-slate-700 dark:text-slate-400" />
           <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             Hash-Chain-Tip
           </h2>
@@ -190,7 +190,7 @@ export default async function TransparencyPage() {
             href="/api/pharos/witness-checkpoint"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded border border-slate-300 bg-slate-50 text-slate-900 hover:bg-slate-100 dark:border-white/15 dark:bg-white/[0.04] dark:text-slate-300"
           >
             <ExternalLink className="w-3 h-3" />
             Witness-Checkpoint JSON
@@ -199,7 +199,7 @@ export default async function TransparencyPage() {
             href="/api/pharos/citizen-audit"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded border border-blue-300 bg-blue-50 text-blue-800 hover:bg-blue-100 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300"
+            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded border border-slate-400 bg-slate-50 text-slate-900 hover:bg-slate-100 dark:border-white/15 dark:bg-white/[0.04] dark:text-slate-400"
           >
             <ExternalLink className="w-3 h-3" />
             DSGVO-Auskunft
@@ -218,11 +218,11 @@ export default async function TransparencyPage() {
             return (
               <div
                 key={p.title}
-                className="rounded-lg border border-slate-200 bg-white p-4 dark:border-white/5 dark:bg-navy-900/30"
+                className="rounded-lg border border-slate-200 bg-white p-4 dark:border-white/5 dark:bg-slate-900/30"
               >
                 <div className="flex items-start gap-3">
-                  <div className="shrink-0 w-9 h-9 rounded-lg bg-amber-50 border border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/30 flex items-center justify-center">
-                    <Icon className="w-4 h-4 text-amber-700 dark:text-amber-300" />
+                  <div className="shrink-0 w-9 h-9 rounded-lg bg-slate-50 border border-slate-200 dark:bg-white/[0.04] dark:border-white/15 flex items-center justify-center">
+                    <Icon className="w-4 h-4 text-slate-700 dark:text-slate-300" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-2">
@@ -241,7 +241,7 @@ export default async function TransparencyPage() {
                         href={p.verifyHref}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-2 inline-flex items-center gap-1 text-[11px] text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
+                        className="mt-2 inline-flex items-center gap-1 text-[11px] text-slate-800 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-300"
                       >
                         <ExternalLink className="w-3 h-3" />
                         {p.verifyLabel}
@@ -267,7 +267,7 @@ export default async function TransparencyPage() {
           Jeder Pharos-Receipt ist mit reinen Node.js-Stdlib-Mitteln lokal
           verifizierbar — ohne Caelex-Software:
         </p>
-        <pre className="mt-2 px-3 py-2 rounded bg-slate-900 text-emerald-300 text-[11px] font-mono overflow-x-auto">
+        <pre className="mt-2 px-3 py-2 rounded bg-slate-900 text-slate-300 text-[11px] font-mono overflow-x-auto">
           npx pharos-verify &lt;entryId&gt;
         </pre>
         <p className="text-[11px] text-slate-500 dark:text-slate-500 mt-2">
@@ -275,7 +275,7 @@ export default async function TransparencyPage() {
           <Link
             href="https://github.com/Polleschnerjulian-creator/caelex-assessment/tree/main/packages/pharos-verify"
             target="_blank"
-            className="underline hover:text-amber-700 dark:hover:text-amber-300"
+            className="underline hover:text-slate-700 dark:hover:text-slate-300"
           >
             github · packages/pharos-verify
           </Link>
@@ -296,11 +296,11 @@ function Stat({
 }) {
   const valueClasses = {
     default: "text-slate-900 dark:text-slate-100",
-    ok: "text-emerald-700 dark:text-emerald-300",
-    warn: "text-amber-700 dark:text-amber-300",
+    ok: "text-slate-800 dark:text-slate-300",
+    warn: "text-slate-700 dark:text-slate-300",
   }[tone];
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-white/5 dark:bg-navy-900/30">
+    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-white/5 dark:bg-slate-900/30">
       <div className="text-[11px] tracking-wider uppercase text-slate-500 font-medium">
         {label}
       </div>

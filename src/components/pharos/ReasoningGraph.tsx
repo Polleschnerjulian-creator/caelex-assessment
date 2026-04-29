@@ -95,10 +95,10 @@ export function ReasoningGraph({
   const width = COL_X.answer + NODE_W.answer + 40;
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-navy-900/30 overflow-x-auto">
+    <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/30 overflow-x-auto">
       <header className="px-5 py-3 border-b border-slate-200 dark:border-white/5 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Brain className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+          <Brain className="w-4 h-4 text-violet-600 dark:text-slate-500" />
           <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             Reasoning-Graph
           </h3>
@@ -106,10 +106,10 @@ export function ReasoningGraph({
             <span
               className={`text-[10px] px-2 py-0.5 rounded border tracking-wider uppercase font-semibold ${
                 judge.verdict === "accepted"
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30"
+                  ? "bg-slate-50 text-slate-800 border-slate-300 dark:bg-white/[0.06] dark:text-slate-300 dark:border-white/15"
                   : judge.verdict === "rejected"
-                    ? "bg-red-50 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30"
-                    : "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-500/15 dark:text-yellow-300 dark:border-yellow-500/30"
+                    ? "bg-slate-50 text-slate-900 border-slate-300 dark:bg-white/[0.06] dark:text-slate-300 dark:border-white/15"
+                    : "bg-slate-50 text-slate-800 border-slate-300 dark:bg-white/[0.06] dark:text-slate-400 dark:border-white/15"
               }`}
             >
               Judge: {judge.verdict} · {(judge.confidence * 100).toFixed(0)}%
@@ -307,45 +307,45 @@ function nodeTone(tone: Node["tone"]) {
   switch (tone) {
     case "question":
       return {
-        fill: "fill-blue-50 dark:fill-blue-500/10",
+        fill: "fill-slate-50 dark:fill-slate-700/10",
         strokeColor: "rgb(147 197 253)",
-        text: "fill-blue-900 dark:fill-blue-200",
-        subtext: "fill-blue-700 dark:fill-blue-400",
+        text: "fill-slate-900 dark:fill-slate-300",
+        subtext: "fill-slate-800 dark:fill-slate-500",
       };
     case "tool-ok":
       return {
-        fill: "fill-violet-50 dark:fill-violet-500/10",
+        fill: "fill-slate-50 dark:fill-slate-700/10",
         strokeColor: "rgb(196 181 253)",
-        text: "fill-violet-900 dark:fill-violet-200",
-        subtext: "fill-emerald-700 dark:fill-emerald-400",
+        text: "fill-violet-900 dark:fill-slate-300",
+        subtext: "fill-slate-800 dark:fill-slate-400",
       };
     case "tool-fail":
       return {
-        fill: "fill-red-50 dark:fill-red-500/10",
+        fill: "fill-slate-50 dark:fill-slate-700/10",
         strokeColor: "rgb(252 165 165)",
-        text: "fill-red-900 dark:fill-red-200",
-        subtext: "fill-red-700 dark:fill-red-400",
+        text: "fill-red-900 dark:fill-slate-300",
+        subtext: "fill-slate-900 dark:fill-slate-500",
       };
     case "citation":
       return {
-        fill: "fill-emerald-50 dark:fill-emerald-500/10",
+        fill: "fill-slate-50 dark:fill-slate-700/10",
         strokeColor: "rgb(110 231 183)",
-        text: "fill-emerald-900 dark:fill-emerald-200",
-        subtext: "fill-emerald-700 dark:fill-emerald-400",
+        text: "fill-emerald-900 dark:fill-slate-300",
+        subtext: "fill-slate-800 dark:fill-slate-400",
       };
     case "answer":
       return {
-        fill: "fill-amber-50 dark:fill-amber-500/10",
+        fill: "fill-slate-50 dark:fill-slate-700/10",
         strokeColor: "rgb(252 211 77)",
-        text: "fill-amber-900 dark:fill-amber-200",
-        subtext: "fill-amber-700 dark:fill-amber-400",
+        text: "fill-slate-900 dark:fill-slate-200",
+        subtext: "fill-slate-700 dark:fill-slate-400",
       };
     case "abstain":
       return {
-        fill: "fill-yellow-50 dark:fill-yellow-500/10",
+        fill: "fill-slate-50 dark:fill-slate-700/10",
         strokeColor: "rgb(253 224 71)",
-        text: "fill-yellow-900 dark:fill-yellow-200",
-        subtext: "fill-yellow-700 dark:fill-yellow-400",
+        text: "fill-slate-950 dark:fill-slate-300",
+        subtext: "fill-slate-800 dark:fill-slate-500",
       };
   }
 }

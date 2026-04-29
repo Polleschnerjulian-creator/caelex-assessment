@@ -37,7 +37,7 @@ export default async function PharosSetupPage() {
   return (
     <div className="space-y-5 max-w-2xl">
       <div>
-        <div className="text-[10px] tracking-[0.22em] uppercase text-amber-400/70 font-semibold">
+        <div className="text-[10px] tracking-[0.22em] uppercase text-slate-400/70 font-semibold">
           {profile ? "Profil bearbeiten" : "Erst-Konfiguration"}
         </div>
         <h1 className="text-2xl font-semibold mt-1">Behörden-Profil</h1>

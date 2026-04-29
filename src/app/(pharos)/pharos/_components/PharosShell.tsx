@@ -74,13 +74,13 @@ function PharosShellInner({ children, org, role, profile }: PharosShellProps) {
   const needsSetup = profile === null;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-navy-950 dark:text-slate-100 transition-colors">
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors">
       {/* Top strip */}
-      <header className="border-b border-slate-200 bg-white/80 backdrop-blur-sm dark:border-white/5 dark:bg-navy-900/40">
+      <header className="border-b border-slate-200 bg-white/80 backdrop-blur-sm dark:border-white/5 dark:bg-slate-900/40">
         <div className="px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-md bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-sm">
-              <Lightbulb className="w-4 h-4 text-amber-950" />
+            <div className="w-7 h-7 rounded-md bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center shadow-sm">
+              <Lightbulb className="w-4 h-4 text-white" />
             </div>
             <div>
               <div className="text-sm font-semibold tracking-tight">PHAROS</div>
@@ -108,7 +108,7 @@ function PharosShellInner({ children, org, role, profile }: PharosShellProps) {
 
       <div className="flex">
         {/* Nav rail */}
-        <aside className="w-60 border-r border-slate-200 bg-white min-h-[calc(100vh-57px)] py-4 px-3 dark:border-white/5 dark:bg-navy-900/30">
+        <aside className="w-60 border-r border-slate-200 bg-white min-h-[calc(100vh-57px)] py-4 px-3 dark:border-white/5 dark:bg-slate-900/30">
           <nav className="space-y-0.5">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
@@ -121,7 +121,7 @@ function PharosShellInner({ children, org, role, profile }: PharosShellProps) {
                   href={item.href}
                   className={`flex items-center gap-2.5 px-3 h-9 rounded-md text-sm transition-colors ${
                     active
-                      ? "bg-amber-50 text-amber-900 border border-amber-200 dark:bg-amber-500/15 dark:text-amber-200 dark:border-amber-500/20"
+                      ? "bg-slate-50 text-slate-900 border border-slate-200 dark:bg-white/[0.06] dark:text-slate-200 dark:border-white/10"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-white/[0.04]"
                   }`}
                 >
@@ -134,7 +134,7 @@ function PharosShellInner({ children, org, role, profile }: PharosShellProps) {
             {profile && (
               <Link
                 href="/pharos/oversights/new"
-                className="mt-3 flex items-center gap-2 px-3 h-9 rounded-md bg-amber-500 hover:bg-amber-400 text-amber-950 text-sm font-medium transition-colors shadow-sm"
+                className="mt-3 flex items-center gap-2 px-3 h-9 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium transition-colors shadow-sm"
               >
                 <Plus className="w-4 h-4" />
                 Aufsicht initiieren
@@ -154,19 +154,19 @@ function PharosShellInner({ children, org, role, profile }: PharosShellProps) {
         {/* Content */}
         <main className="flex-1 px-6 py-6">
           {needsSetup && !pathname.startsWith("/pharos/setup") && (
-            <div className="mb-5 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 flex items-center justify-between dark:border-amber-500/30 dark:bg-amber-500/10">
+            <div className="mb-5 rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 flex items-center justify-between dark:border-white/15 dark:bg-white/[0.04]">
               <div>
-                <div className="text-sm font-medium text-amber-900 dark:text-amber-200">
+                <div className="text-sm font-medium text-slate-900 dark:text-slate-200">
                   Behörden-Profil nicht konfiguriert
                 </div>
-                <p className="text-xs text-amber-800/80 dark:text-amber-100/70 mt-0.5">
+                <p className="text-xs text-slate-800/80 dark:text-slate-100/70 mt-0.5">
                   Lege Aufsichts-Bereich, Jurisdiktion und Kontakt fest, bevor
                   du Aufsichten initiierst.
                 </p>
               </div>
               <Link
                 href="/pharos/setup"
-                className="text-sm px-3 h-8 rounded-md bg-amber-500 hover:bg-amber-400 text-amber-950 font-medium inline-flex items-center"
+                className="text-sm px-3 h-8 rounded-md bg-slate-900 hover:bg-slate-800 text-white font-medium inline-flex items-center"
               >
                 Profil einrichten
               </Link>
@@ -193,7 +193,7 @@ function ThemeToggle() {
     { value: "system", label: "System", Icon: Monitor },
   ];
   return (
-    <div className="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 p-0.5 dark:border-white/10 dark:bg-navy-900/40">
+    <div className="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 p-0.5 dark:border-white/10 dark:bg-slate-900/40">
       {options.map(({ value, label, Icon }) => {
         const active = theme === value;
         return (
@@ -206,7 +206,7 @@ function ThemeToggle() {
             aria-pressed={active}
             className={`flex items-center justify-center w-7 h-7 rounded transition-colors ${
               active
-                ? "bg-white text-slate-900 shadow-sm dark:bg-navy-700 dark:text-slate-100"
+                ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100"
                 : "text-slate-500 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300"
             }`}
           >

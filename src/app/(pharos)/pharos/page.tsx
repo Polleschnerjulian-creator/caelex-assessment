@@ -85,7 +85,7 @@ export default async function PharosDashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-[10px] tracking-[0.22em] uppercase text-amber-700 dark:text-amber-400/70 font-semibold">
+          <div className="text-[10px] tracking-[0.22em] uppercase text-slate-700 dark:text-slate-400/70 font-semibold">
             Aufsichts-Dashboard
           </div>
           <h1 className="text-2xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
@@ -98,7 +98,7 @@ export default async function PharosDashboardPage() {
         </div>
         <Link
           href="/pharos/oversights/new"
-          className="inline-flex items-center gap-2 h-9 px-4 rounded-md bg-amber-500 hover:bg-amber-400 text-amber-950 text-sm font-medium shadow-sm"
+          className="inline-flex items-center gap-2 h-9 px-4 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium shadow-sm"
         >
           <Plus className="w-4 h-4" />
           Aufsicht initiieren
@@ -126,14 +126,14 @@ export default async function PharosDashboardPage() {
       </div>
 
       {/* Recent oversights */}
-      <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-navy-900/30">
+      <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/30">
         <div className="px-5 py-3 border-b border-slate-200 dark:border-white/5 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             Aktuelle Aufsichten
           </h2>
           <Link
             href="/pharos/oversights"
-            className="text-xs text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300 inline-flex items-center gap-1"
+            className="text-xs text-slate-700 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-300 inline-flex items-center gap-1"
           >
             Alle anzeigen
             <ArrowRight className="w-3 h-3" />
@@ -164,7 +164,7 @@ export default async function PharosDashboardPage() {
                   <StatusPill status={ov.status} />
                   <Link
                     href={`/pharos/operators/${ov.id}`}
-                    className="text-xs text-slate-600 hover:text-amber-700 dark:text-slate-400 dark:hover:text-amber-300"
+                    className="text-xs text-slate-600 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
                   >
                     Öffnen →
                   </Link>
@@ -190,13 +190,13 @@ function KpiCard({
   tone: "emerald" | "amber" | "red" | "slate";
 }) {
   const toneClasses = {
-    emerald: "text-emerald-700 dark:text-emerald-300",
-    amber: "text-amber-700 dark:text-amber-300",
-    red: "text-red-700 dark:text-red-300",
+    emerald: "text-slate-800 dark:text-slate-300",
+    amber: "text-slate-700 dark:text-slate-300",
+    red: "text-slate-900 dark:text-slate-300",
     slate: "text-slate-700 dark:text-slate-300",
   };
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-white/5 dark:bg-navy-900/30">
+    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-white/5 dark:bg-slate-900/30">
       <div className="text-[11px] tracking-wider uppercase text-slate-500 font-medium">
         {label}
       </div>
@@ -217,18 +217,18 @@ function StatusPill({ status }: { status: string }) {
     ACTIVE: {
       label: "Aktiv",
       classes:
-        "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30",
+        "bg-slate-50 text-slate-800 border-slate-300 dark:bg-white/[0.06] dark:text-slate-300 dark:border-white/15",
       Icon: ShieldCheck,
     },
     PENDING_OPERATOR_ACCEPT: {
       label: "Wartet auf Annahme",
       classes:
-        "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30",
+        "bg-slate-100 text-slate-900 border-slate-300 dark:bg-white/[0.06] dark:text-slate-200 dark:border-white/15",
     },
     DISPUTED: {
       label: "Streit",
       classes:
-        "bg-red-50 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30",
+        "bg-slate-50 text-slate-900 border-slate-300 dark:bg-white/[0.06] dark:text-slate-300 dark:border-white/15",
       Icon: AlertTriangle,
     },
     CLOSED: {
@@ -239,7 +239,7 @@ function StatusPill({ status }: { status: string }) {
     REVOKED: {
       label: "Entzogen",
       classes:
-        "bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/20",
+        "bg-slate-50 text-slate-900 border-slate-300 dark:bg-white/[0.04] dark:text-slate-300 dark:border-white/10",
     },
     SUSPENDED: {
       label: "Pausiert",

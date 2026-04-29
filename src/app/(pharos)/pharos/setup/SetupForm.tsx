@@ -132,7 +132,7 @@ export function SetupForm({
 
   if (!canEdit) {
     return (
-      <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-sm text-amber-200">
+      <div className="rounded-lg border border-slate-700/20 bg-slate-700/5 px-4 py-3 text-sm text-slate-200">
         Nur Owner und Admins der Behörden-Organisation dürfen das Profil
         bearbeiten. Kontaktiere die Person, die diese Behörde in Caelex
         aufgesetzt hat.
@@ -146,7 +146,7 @@ export function SetupForm({
         <select
           value={authorityType}
           onChange={(e) => setAuthorityType(e.target.value)}
-          className="w-full bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
         >
           {AUTHORITY_TYPES.map((t) => (
             <option key={t.value} value={t.value}>
@@ -165,7 +165,7 @@ export function SetupForm({
           value={jurisdiction}
           onChange={(e) => setJurisdiction(e.target.value.toUpperCase())}
           maxLength={20}
-          className="w-full bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm font-mono"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm font-mono"
           required
         />
       </Field>
@@ -184,8 +184,8 @@ export function SetupForm({
                 onClick={() => toggleCategory(c.value)}
                 className={`text-xs px-3 py-2 rounded-md border text-left transition-colors ${
                   on
-                    ? "border-amber-500/40 bg-amber-500/10 text-amber-200"
-                    : "border-slate-200 dark:border-white/10 bg-white dark:bg-navy-900/40 text-slate-600 dark:text-slate-400 hover:border-white/20"
+                    ? "border-slate-700/40 bg-slate-700/10 text-slate-200"
+                    : "border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/40 text-slate-600 dark:text-slate-400 hover:border-white/20"
                 }`}
               >
                 {c.label}
@@ -201,7 +201,7 @@ export function SetupForm({
           value={contactEmail}
           onChange={(e) => setContactEmail(e.target.value)}
           placeholder="aufsicht@behoerde.de"
-          className="w-full bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
           required
         />
       </Field>
@@ -215,7 +215,7 @@ export function SetupForm({
           value={publicWebsite}
           onChange={(e) => setPublicWebsite(e.target.value)}
           placeholder="https://www.bafa.de"
-          className="w-full bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
         />
       </Field>
 
@@ -229,17 +229,17 @@ export function SetupForm({
           maxLength={500}
           rows={3}
           placeholder="z.B. § 3 WRV (Weltraumgesetz, BGBl. 2025 I S. 1234)"
-          className="w-full bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-md px-3 py-2 text-sm"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-md px-3 py-2 text-sm"
         />
       </Field>
 
       {error && (
-        <div className="text-sm text-red-400 px-3 py-2 rounded-md bg-red-500/10 border border-red-500/20">
+        <div className="text-sm text-slate-500 px-3 py-2 rounded-md bg-slate-700/10 border border-slate-700/20">
           {error}
         </div>
       )}
       {success && (
-        <div className="text-sm text-emerald-300 px-3 py-2 rounded-md bg-emerald-500/10 border border-emerald-500/20">
+        <div className="text-sm text-slate-300 px-3 py-2 rounded-md bg-slate-700/10 border border-slate-700/20">
           Profil gespeichert.
         </div>
       )}
@@ -248,7 +248,7 @@ export function SetupForm({
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex items-center h-10 px-5 rounded-md bg-amber-500 hover:bg-amber-400 text-amber-950 text-sm font-medium disabled:opacity-50"
+          className="inline-flex items-center h-10 px-5 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium disabled:opacity-50"
         >
           {submitting
             ? "Speichere…"

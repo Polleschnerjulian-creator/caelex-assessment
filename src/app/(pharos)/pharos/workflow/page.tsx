@@ -91,7 +91,7 @@ export default async function WorkflowInboxPage() {
     <div className="space-y-6 max-w-6xl">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-[10px] tracking-[0.22em] uppercase text-amber-700 dark:text-amber-400/70 font-semibold">
+          <div className="text-[10px] tracking-[0.22em] uppercase text-slate-700 dark:text-slate-400/70 font-semibold">
             Verfahrens-Inbox · Pharos
           </div>
           <h1 className="text-2xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
@@ -171,10 +171,10 @@ function Kpi({
 }) {
   const valueClass =
     tone === "alert"
-      ? "text-red-700 dark:text-red-300"
+      ? "text-slate-900 dark:text-slate-300"
       : "text-slate-900 dark:text-slate-100";
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-white/5 dark:bg-navy-900/30">
+    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-white/5 dark:bg-slate-900/30">
       <div className="text-[11px] tracking-wider uppercase text-slate-500 font-medium">
         {label}
       </div>
@@ -195,7 +195,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-navy-900/30">
+    <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/30">
       <div className="px-5 py-3 border-b border-slate-200 dark:border-white/5">
         <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
           {title}
@@ -230,10 +230,10 @@ function CaseRow({ c }: { c: CaseRowData }) {
   const fsmLabel = FSM_LABELS[c.fsmId] ?? c.fsmId;
 
   const toneClasses = {
-    ok: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30",
-    warn: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30",
+    ok: "bg-slate-50 text-slate-800 border-slate-300 dark:bg-white/[0.06] dark:text-slate-300 dark:border-white/15",
+    warn: "bg-slate-100 text-slate-900 border-slate-300 dark:bg-white/[0.06] dark:text-slate-200 dark:border-white/15",
     alert:
-      "bg-red-50 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30",
+      "bg-slate-50 text-slate-900 border-slate-300 dark:bg-white/[0.06] dark:text-slate-300 dark:border-white/15",
     neutral:
       "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-500/15 dark:text-slate-300 dark:border-slate-500/30",
   }[tone];
@@ -253,7 +253,7 @@ function CaseRow({ c }: { c: CaseRowData }) {
       </div>
       <div className="flex items-center gap-3">
         {tone === "alert" && (
-          <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
+          <AlertTriangle className="w-4 h-4 text-slate-800 dark:text-slate-500" />
         )}
         <span
           className={`inline-flex items-center gap-1 text-[10px] tracking-wide uppercase px-2 py-0.5 rounded-full border ${toneClasses}`}
@@ -262,7 +262,7 @@ function CaseRow({ c }: { c: CaseRowData }) {
         </span>
         <Link
           href={`/pharos/workflow/${c.id}`}
-          className="text-xs text-slate-600 hover:text-amber-700 dark:text-slate-400 dark:hover:text-amber-300 inline-flex items-center gap-1"
+          className="text-xs text-slate-600 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 inline-flex items-center gap-1"
         >
           Öffnen
           <ArrowRight className="w-3 h-3" />

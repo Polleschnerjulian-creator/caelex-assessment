@@ -72,7 +72,7 @@ export default async function WorkflowCaseDetailPage({
         </p>
         <Link
           href="/pharos/workflow"
-          className="inline-flex items-center gap-1.5 text-sm text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-700 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-300"
         >
           <ArrowLeft className="w-3.5 h-3.5" /> Zurück zur Inbox
         </Link>
@@ -106,7 +106,7 @@ export default async function WorkflowCaseDetailPage({
       <div>
         <Link
           href="/pharos/workflow"
-          className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-amber-700 dark:hover:text-amber-300"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
         >
           <ArrowLeft className="w-3 h-3" /> Zurück zur Verfahrens-Inbox
         </Link>
@@ -119,9 +119,9 @@ export default async function WorkflowCaseDetailPage({
       </div>
 
       {/* Current State Card */}
-      <div className="rounded-lg border border-slate-200 bg-white p-5 dark:border-white/5 dark:bg-navy-900/30">
+      <div className="rounded-lg border border-slate-200 bg-white p-5 dark:border-white/5 dark:bg-slate-900/30">
         <div className="flex items-center gap-2 mb-3">
-          <GitBranch className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+          <GitBranch className="w-4 h-4 text-slate-700 dark:text-slate-400" />
           <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             Aktueller State
           </h2>
@@ -141,14 +141,14 @@ export default async function WorkflowCaseDetailPage({
             {slaRemainingMs === null ? (
               "kein SLA"
             ) : slaRemainingMs <= 0 ? (
-              <span className="text-red-700 dark:text-red-300 font-semibold">
+              <span className="text-slate-900 dark:text-slate-300 font-semibold">
                 Verletzt seit {formatDuration(-slaRemainingMs)}
               </span>
             ) : (
               <span
                 className={
                   slaRemainingMs < 6 * 3600_000
-                    ? "text-amber-700 dark:text-amber-300 font-semibold"
+                    ? "text-slate-700 dark:text-slate-300 font-semibold"
                     : "text-slate-700 dark:text-slate-300"
                 }
               >
@@ -175,7 +175,7 @@ export default async function WorkflowCaseDetailPage({
       )}
 
       {/* Transition Timeline */}
-      <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-navy-900/30">
+      <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/30">
         <div className="px-5 py-3 border-b border-slate-200 dark:border-white/5">
           <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             Transition-Hash-Chain ({c.transitions.length} Einträge)
@@ -250,8 +250,8 @@ function TransitionRow({ t, index }: { t: TransitionRowData; index: number }) {
           <span
             className={`text-[10px] tracking-wide uppercase px-1.5 py-0.5 rounded font-mono ${
               isAuto
-                ? "bg-amber-50 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300"
-                : "bg-blue-50 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300"
+                ? "bg-slate-50 text-slate-800 dark:bg-white/[0.06] dark:text-slate-300"
+                : "bg-slate-50 text-slate-900 dark:bg-white/[0.06] dark:text-slate-400"
             }`}
           >
             {t.event}
