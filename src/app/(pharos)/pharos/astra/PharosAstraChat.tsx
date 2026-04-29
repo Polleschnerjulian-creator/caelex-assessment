@@ -18,6 +18,8 @@ import { useCallback, useRef, useState } from "react";
 import {
   AlertCircle,
   CheckCircle2,
+  ChevronDown,
+  ChevronRight,
   ExternalLink,
   Fingerprint,
   Lightbulb,
@@ -25,6 +27,7 @@ import {
   Sparkles,
   Wrench,
 } from "lucide-react";
+import { ReasoningGraph } from "@/components/pharos/ReasoningGraph";
 
 interface Suggestion {
   oversightId: string;
@@ -69,6 +72,9 @@ interface JudgeVerdict {
 interface Message {
   role: "user" | "assistant";
   content: string;
+  /** The user's question — captured at send time so the assistant
+   *  message can pass it to ReasoningGraph without state lookup. */
+  parentQuestion?: string;
   toolCalls?: { tool: string; input: unknown; ok: boolean }[];
   citations?: Citation[];
   receipt?: ReceiptInfo | null;
@@ -127,6 +133,7 @@ export function PharosAstraChat({
           {
             role: "assistant",
             content: json.reply ?? "",
+            parentQuestion: trimmed,
             toolCalls: json.toolCalls,
             citations: json.citations,
             receipt: json.receipt,
@@ -307,6 +314,10 @@ function MessageBubble({ message }: { message: Message }) {
 
         {message.judge && <JudgeBadge judge={message.judge} />}
 
+        {message.parentQuestion && (message.toolCalls?.length ?? 0) > 0 && (
+          <ReasoningGraphToggle message={message} />
+        )}
+
         {message.citations && message.citations.length > 0 && (
           <CitationStrip citations={message.citations} />
         )}
@@ -362,6 +373,40 @@ function renderWithCitationLinks(text: string, citations: Citation[]) {
   }
   if (lastIdx < text.length) parts.push(text.slice(lastIdx));
   return parts;
+}
+
+function ReasoningGraphToggle({ message }: { message: Message }) {
+  const [open, setOpen] = useState(false);
+  if (!message.parentQuestion) return null;
+  return (
+    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/5">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium"
+      >
+        {open ? (
+          <ChevronDown className="w-3.5 h-3.5" />
+        ) : (
+          <ChevronRight className="w-3.5 h-3.5" />
+        )}
+        Reasoning-Graph anzeigen ({message.toolCalls?.length ?? 0} Tools ·{" "}
+        {message.citations?.length ?? 0} Citations)
+      </button>
+      {open && (
+        <div className="mt-2">
+          <ReasoningGraph
+            question={message.parentQuestion}
+            toolCalls={message.toolCalls ?? []}
+            citations={message.citations ?? []}
+            answer={message.content}
+            abstained={message.abstained}
+            judge={message.judge ?? null}
+          />
+        </div>
+      )}
+    </div>
+  );
 }
 
 function JudgeBadge({ judge }: { judge: JudgeVerdict }) {
