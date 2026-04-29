@@ -106,49 +106,49 @@ export default async function WorkflowCaseDetailPage({
       <div>
         <Link
           href="/pharos/workflow"
-          className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
         >
           <ArrowLeft className="w-3 h-3" /> Zurück zur Verfahrens-Inbox
         </Link>
-        <h1 className="text-2xl font-semibold mt-2 text-slate-900 dark:text-slate-100">
+        <h1 className="pharos-display text-3xl font-semibold mt-2 text-slate-900 dark:text-slate-100">
           {c.caseRef}
         </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-          {c.fsmId} · ID <code className="text-[11px]">{c.id}</code>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5">
+          {c.fsmId} · ID <span className="pharos-code">{c.id}</span>
         </p>
       </div>
 
       {/* Current State Card */}
-      <div className="rounded-lg border border-slate-200 bg-white p-5 dark:border-white/5 dark:bg-slate-900/30">
+      <div className="pharos-card p-5">
         <div className="flex items-center gap-2 mb-3">
           <GitBranch className="w-4 h-4 text-slate-700 dark:text-slate-400" />
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+          <h2 className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100">
             Aktueller State
           </h2>
         </div>
         <div className="flex items-baseline gap-3">
-          <span className="text-2xl font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+          <span className="pharos-display text-3xl font-semibold tabular-nums text-slate-900 dark:text-slate-100">
             {c.currentState}
           </span>
           <span className="text-sm text-slate-600 dark:text-slate-400">
             {stateDef?.label ?? "—"}
           </span>
         </div>
-        <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px]">
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px]">
           <Field label="Im State seit">{enteredAt.toLocaleString()}</Field>
           <Field label="Verstrichen">{formatDuration(elapsedMs)}</Field>
           <Field label="SLA-Rest">
             {slaRemainingMs === null ? (
               "kein SLA"
             ) : slaRemainingMs <= 0 ? (
-              <span className="text-slate-900 dark:text-slate-300 font-semibold">
+              <span className="text-slate-900 dark:text-slate-200 font-semibold">
                 Verletzt seit {formatDuration(-slaRemainingMs)}
               </span>
             ) : (
               <span
                 className={
                   slaRemainingMs < 6 * 3600_000
-                    ? "text-slate-700 dark:text-slate-300 font-semibold"
+                    ? "text-slate-800 dark:text-slate-200 font-semibold"
                     : "text-slate-700 dark:text-slate-300"
                 }
               >
@@ -158,7 +158,7 @@ export default async function WorkflowCaseDetailPage({
           </Field>
         </div>
         {stateDef?.final && (
-          <div className="mt-3 inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded border border-slate-300 bg-slate-100 text-slate-700 dark:border-white/10 dark:bg-white/[0.05] dark:text-slate-300">
+          <div className="mt-4 inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-slate-100/70 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-white/10 backdrop-blur-md font-medium">
             <CheckCircle2 className="w-3 h-3" />
             Final State — keine Transitions mehr möglich
           </div>
@@ -175,9 +175,9 @@ export default async function WorkflowCaseDetailPage({
       )}
 
       {/* Transition Timeline */}
-      <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/30">
-        <div className="px-5 py-3 border-b border-slate-200 dark:border-white/5">
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+      <div className="pharos-card overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-slate-200/60 dark:border-white/5">
+          <h2 className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100">
             Transition-Hash-Chain ({c.transitions.length} Einträge)
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -185,11 +185,11 @@ export default async function WorkflowCaseDetailPage({
           </p>
         </div>
         {c.transitions.length === 0 ? (
-          <div className="px-5 py-10 text-center text-sm text-slate-500">
+          <div className="px-5 py-12 text-center text-sm text-slate-500">
             Genesis-State — noch keine Transitions.
           </div>
         ) : (
-          <ol className="divide-y divide-slate-200 dark:divide-white/5">
+          <ol className="divide-y divide-slate-200/60 dark:divide-white/5">
             {c.transitions.map((t, i) => (
               <TransitionRow key={t.id} t={t} index={i} />
             ))}
@@ -209,10 +209,10 @@ function Field({
 }) {
   return (
     <div>
-      <div className="text-[10px] tracking-wider uppercase text-slate-500 font-medium">
+      <div className="text-[10px] tracking-[0.18em] uppercase text-slate-500 font-semibold">
         {label}
       </div>
-      <div className="text-slate-700 dark:text-slate-300 mt-0.5">
+      <div className="text-slate-700 dark:text-slate-300 mt-1 text-[13px]">
         {children}
       </div>
     </div>
@@ -232,37 +232,30 @@ interface TransitionRowData {
 }
 
 function TransitionRow({ t, index }: { t: TransitionRowData; index: number }) {
-  const isAuto = t.event === "_AFTER";
   return (
-    <li className="px-5 py-3 flex items-start gap-3">
-      <div className="shrink-0 w-7 h-7 rounded-full bg-slate-100 dark:bg-white/[0.05] text-slate-700 dark:text-slate-300 flex items-center justify-center text-[11px] font-semibold tabular-nums">
+    <li className="px-5 py-3.5 flex items-start gap-3 hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors">
+      <div className="shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-slate-100 to-slate-50 dark:from-white/[0.06] dark:to-white/[0.02] border border-slate-200/60 dark:border-white/10 text-slate-700 dark:text-slate-300 flex items-center justify-center text-[11px] font-semibold tabular-nums shadow-[0_1px_0_rgba(255,255,255,0.6)_inset]">
         {index + 1}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2 flex-wrap">
-          <code className="text-[11px] font-mono text-slate-700 dark:text-slate-300">
+          <span className="pharos-code text-[11px] text-slate-700 dark:text-slate-300">
             {t.fromState}
-          </code>
+          </span>
           <span className="text-slate-400">→</span>
-          <code className="text-[11px] font-mono font-semibold text-slate-900 dark:text-slate-100">
+          <span className="pharos-code text-[11px] font-semibold text-slate-900 dark:text-slate-100">
             {t.toState}
-          </code>
-          <span
-            className={`text-[10px] tracking-wide uppercase px-1.5 py-0.5 rounded font-mono ${
-              isAuto
-                ? "bg-slate-50 text-slate-800 dark:bg-white/[0.06] dark:text-slate-300"
-                : "bg-slate-50 text-slate-900 dark:bg-white/[0.06] dark:text-slate-400"
-            }`}
-          >
+          </span>
+          <span className="pharos-code text-[10px] tracking-wide uppercase">
             {t.event}
           </span>
         </div>
         {t.reason && (
-          <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+          <div className="text-xs text-slate-600 dark:text-slate-400 mt-1.5">
             {t.reason}
           </div>
         )}
-        <div className="mt-1 flex items-center gap-3 text-[10px] text-slate-500 dark:text-slate-500 font-mono">
+        <div className="mt-1.5 flex items-center gap-3 text-[10px] text-slate-500 dark:text-slate-500 font-mono tabular-nums">
           <span>
             <Clock className="inline w-2.5 h-2.5 mr-0.5" />
             {new Date(t.occurredAt).toLocaleString()}

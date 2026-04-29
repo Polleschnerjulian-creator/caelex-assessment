@@ -59,10 +59,10 @@ export default async function BriefingPage() {
         <div className="text-[10px] tracking-[0.22em] uppercase text-slate-700 dark:text-slate-400/70 font-semibold">
           Tagesbriefing · Pharos
         </div>
-        <h1 className="text-2xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
+        <h1 className="pharos-display text-3xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
           Heute auf dem Tisch
         </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed max-w-3xl">
           Generiert täglich um 06:00 UTC. Frist-kritische Vorgänge zuerst —
           jeder Eintrag kryptografisch hash-versioniert.
         </p>
@@ -78,11 +78,12 @@ export default async function BriefingPage() {
         />
       ))}
 
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-[11px] text-slate-600 dark:border-white/5 dark:bg-white/[0.02] dark:text-slate-500 leading-relaxed">
+      <div className="pharos-card p-4 text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
         Briefing wird täglich um 06:00 UTC per E-Mail (Resend) an alle aktiven
-        Mitglieder der Behörde verschickt — sofern <code>RESEND_API_KEY</code>{" "}
-        konfiguriert ist. Die exakte HTML- Vorschau bekommst du über den
-        "Vorschau"-Link auf jeder Card.
+        Mitglieder der Behörde verschickt — sofern{" "}
+        <span className="pharos-code">RESEND_API_KEY</span> konfiguriert ist.
+        Die exakte HTML-Vorschau bekommst du über den "Vorschau"-Link auf jeder
+        Card.
       </div>
     </div>
   );
@@ -121,14 +122,14 @@ function BriefingCard({
   briefing: BriefingCardData;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/30">
-      <header className="px-5 py-3 border-b border-slate-200 dark:border-white/5">
+    <div className="pharos-card overflow-hidden">
+      <header className="px-5 py-3.5 border-b border-slate-200/60 dark:border-white/5">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+            <div className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100">
               {authorityName}
             </div>
-            <div className="text-[11px] text-slate-500 mt-0.5">
+            <div className="text-[11px] text-slate-500 mt-0.5 tabular-nums">
               {authorityType.replace("_", " ")} · generiert{" "}
               {new Date(briefing.generatedAt).toLocaleString()}
             </div>
@@ -137,7 +138,7 @@ function BriefingCard({
         </div>
       </header>
 
-      <div className="px-5 py-4 grid grid-cols-2 md:grid-cols-4 gap-3 border-b border-slate-200 dark:border-white/5">
+      <div className="px-5 py-4 grid grid-cols-2 md:grid-cols-4 gap-3 border-b border-slate-200/60 dark:border-white/5">
         <Stat label="Workflows offen" value={briefing.summary.workflowsTotal} />
         <Stat
           label="Frist verletzt"
@@ -157,11 +158,11 @@ function BriefingCard({
       </div>
 
       <div className="px-5 py-4">
-        <div className="text-[10px] tracking-wider uppercase text-slate-500 font-medium mb-3">
+        <div className="text-[10px] tracking-[0.18em] uppercase text-slate-500 font-semibold mb-3">
           Top Prioritäten
         </div>
         {briefing.topPriorities.length === 0 ? (
-          <div className="text-sm text-slate-500 dark:text-slate-400 inline-flex items-center gap-2">
+          <div className="text-sm text-slate-600 dark:text-slate-400 inline-flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-slate-700 dark:text-slate-400" />
             Keine kritischen Vorgänge — saubere Lage.
           </div>
@@ -174,15 +175,15 @@ function BriefingCard({
         )}
       </div>
 
-      <footer className="px-5 py-2 border-t border-slate-200 dark:border-white/5 flex items-center justify-between gap-3">
-        <code className="text-[10px] font-mono text-slate-500">
+      <footer className="px-5 py-2.5 border-t border-slate-200/60 dark:border-white/5 flex items-center justify-between gap-3 bg-slate-50/40 dark:bg-white/[0.01]">
+        <code className="pharos-code text-[10px]">
           briefingHash: {briefing.briefingHash.slice(0, 32)}…
         </code>
         <a
           href={`/api/pharos/briefing/preview?authorityProfileId=${authorityProfileId}`}
           target="_blank"
           rel="noreferrer"
-          className="text-[11px] text-slate-700 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-300 inline-flex items-center gap-1"
+          className="text-[11px] text-slate-700 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 inline-flex items-center gap-1 transition-colors font-medium"
         >
           E-Mail-Vorschau
           <ArrowRight className="w-3 h-3" />
@@ -203,16 +204,18 @@ function Stat({
 }) {
   const cls =
     tone === "alert"
-      ? "text-slate-900 dark:text-slate-300"
+      ? "text-slate-900 dark:text-slate-200"
       : tone === "warn"
-        ? "text-slate-700 dark:text-slate-300"
+        ? "text-slate-800 dark:text-slate-200"
         : "text-slate-900 dark:text-slate-100";
   return (
     <div>
-      <div className="text-[10px] tracking-wider uppercase text-slate-500 font-medium">
+      <div className="text-[10px] tracking-[0.18em] uppercase text-slate-500 font-semibold">
         {label}
       </div>
-      <div className={`text-xl font-semibold mt-0.5 tabular-nums ${cls}`}>
+      <div
+        className={`pharos-display text-xl font-semibold mt-1 tabular-nums ${cls}`}
+      >
         {value}
       </div>
     </div>
@@ -231,9 +234,9 @@ function PriorityRow({
 }) {
   const tone = {
     critical:
-      "border-slate-300 bg-slate-50 text-slate-900 dark:border-white/15 dark:bg-white/[0.04] dark:text-slate-300",
-    warn: "border-slate-200 bg-slate-50 text-slate-800 dark:border-white/15 dark:bg-white/[0.04] dark:text-slate-300",
-    info: "border-slate-200 bg-slate-50 text-slate-700 dark:border-white/10 dark:bg-white/[0.02] dark:text-slate-300",
+      "border-slate-300/70 bg-white/70 text-slate-900 dark:border-white/15 dark:bg-white/[0.04] dark:text-slate-200 shadow-[0_2px_8px_-2px_rgba(15,23,42,0.08)]",
+    warn: "border-slate-200/70 bg-white/60 text-slate-800 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-300",
+    info: "border-slate-200/60 bg-slate-50/40 text-slate-700 dark:border-white/8 dark:bg-white/[0.02] dark:text-slate-400",
   }[p.severity];
 
   const Icon =
@@ -247,13 +250,13 @@ function PriorityRow({
     p.href ? (
       <Link
         href={p.href}
-        className={`flex items-center justify-between gap-3 rounded border px-3 py-2 ${tone} hover:opacity-90 transition-opacity`}
+        className={`flex items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 backdrop-blur-md ${tone} hover:scale-[1.005] hover:shadow-[0_4px_12px_-2px_rgba(15,23,42,0.1)] transition-all`}
       >
         {children}
       </Link>
     ) : (
       <div
-        className={`flex items-center justify-between gap-3 rounded border px-3 py-2 ${tone}`}
+        className={`flex items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 backdrop-blur-md ${tone}`}
       >
         {children}
       </div>

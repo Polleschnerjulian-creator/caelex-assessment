@@ -100,16 +100,16 @@ export function WebhookManager({
 
   return (
     <>
-      <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/30">
-        <header className="px-5 py-3 border-b border-slate-200 dark:border-white/5 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+      <div className="pharos-card overflow-hidden">
+        <header className="px-5 py-3.5 border-b border-slate-200/60 dark:border-white/5 flex items-center justify-between">
+          <h2 className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100">
             Provisionierte Endpoints
           </h2>
           <button
             type="button"
             onClick={() => setShowProvision(true)}
             disabled={oversights.length === 0}
-            className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded border border-slate-800 bg-slate-900 hover:bg-slate-800 text-white disabled:opacity-40 disabled:cursor-not-allowed"
+            className="pharos-btn-primary inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Plus className="w-3.5 h-3.5" />
             Neuen Endpoint anlegen
@@ -120,11 +120,11 @@ export function WebhookManager({
             Lade …
           </div>
         ) : endpoints.length === 0 ? (
-          <div className="px-5 py-10 text-center text-sm text-slate-500">
+          <div className="px-5 py-12 text-center text-sm text-slate-500">
             Noch keine Webhook-Endpoints provisioniert.
           </div>
         ) : (
-          <ul className="divide-y divide-slate-200 dark:divide-white/5">
+          <ul className="divide-y divide-slate-200/60 dark:divide-white/5">
             {endpoints.map((e) => (
               <EndpointRow
                 key={e.id}
@@ -168,17 +168,8 @@ function EndpointRow({
     status: "ACTIVE" | "PAUSED" | "REVOKED",
   ) => Promise<void>;
 }) {
-  const toneClasses = {
-    ACTIVE:
-      "bg-slate-50 text-slate-800 border-slate-300 dark:bg-white/[0.06] dark:text-slate-300 dark:border-white/15",
-    PAUSED:
-      "bg-slate-100 text-slate-900 border-slate-300 dark:bg-white/[0.06] dark:text-slate-200 dark:border-white/15",
-    REVOKED:
-      "bg-slate-50 text-slate-900 border-slate-300 dark:bg-white/[0.06] dark:text-slate-300 dark:border-white/15",
-  }[endpoint.status as "ACTIVE" | "PAUSED" | "REVOKED"];
-
   return (
-    <li className="px-5 py-4">
+    <li className="px-5 py-4 hover:bg-slate-50/40 dark:hover:bg-white/[0.02] transition-colors">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex items-start gap-3 flex-1">
           <Globe className="w-4 h-4 text-slate-500 mt-0.5 shrink-0" />
@@ -187,29 +178,24 @@ function EndpointRow({
               <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
                 {endpoint.externalOperatorName}
               </span>
-              <code className="text-[10px] text-slate-500">
+              <span className="pharos-code text-[10px] text-slate-500">
                 {endpoint.externalOperatorId}
-              </code>
-              <span
-                className={`text-[10px] tracking-wider uppercase px-2 py-0.5 rounded border ${toneClasses}`}
-              >
+              </span>
+              <span className="inline-flex items-center text-[10px] tracking-[0.16em] uppercase px-2.5 py-0.5 rounded-full bg-slate-100/70 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-white/10 backdrop-blur-md font-semibold">
                 {endpoint.status}
               </span>
             </div>
-            <div className="text-[11px] text-slate-500 mt-0.5">
+            <div className="text-[11px] text-slate-500 mt-1">
               Aufsicht: {oversightTitle}
             </div>
-            <div className="text-[10px] text-slate-500 mt-1 flex flex-wrap gap-1">
+            <div className="text-[10px] text-slate-500 mt-1.5 flex flex-wrap gap-1">
               {endpoint.allowedEvents.map((ev) => (
-                <code
-                  key={ev}
-                  className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/[0.05]"
-                >
+                <span key={ev} className="pharos-code">
                   {ev}
-                </code>
+                </span>
               ))}
             </div>
-            <div className="text-[10px] text-slate-500 mt-1">
+            <div className="text-[10px] text-slate-500 mt-1.5 tabular-nums">
               {endpoint.invocationCount} Invocations · seit{" "}
               {new Date(endpoint.createdAt).toLocaleDateString()}
             </div>
@@ -246,7 +232,7 @@ function EndpointRow({
               type="button"
               onClick={() => onChangeStatus(endpoint.id, "PAUSED")}
               title="Pausieren"
-              className="p-1.5 rounded text-slate-700 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/10"
+              className="p-1.5 rounded-lg text-slate-700 hover:bg-slate-100/60 dark:text-slate-400 dark:hover:bg-white/[0.06] transition-colors"
             >
               <Pause className="w-3.5 h-3.5" />
             </button>
@@ -256,7 +242,7 @@ function EndpointRow({
               type="button"
               onClick={() => onChangeStatus(endpoint.id, "ACTIVE")}
               title="Aktivieren"
-              className="p-1.5 rounded text-slate-800 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/10"
+              className="p-1.5 rounded-lg text-slate-700 hover:bg-slate-100/60 dark:text-slate-400 dark:hover:bg-white/[0.06] transition-colors"
             >
               <Play className="w-3.5 h-3.5" />
             </button>
@@ -269,7 +255,7 @@ function EndpointRow({
                   void onChangeStatus(endpoint.id, "REVOKED");
               }}
               title="Widerrufen"
-              className="p-1.5 rounded text-slate-900 hover:bg-slate-50 dark:text-slate-500 dark:hover:bg-slate-700/10"
+              className="p-1.5 rounded-lg text-slate-700 hover:bg-slate-100/60 dark:text-slate-400 dark:hover:bg-white/[0.06] transition-colors"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -354,10 +340,10 @@ function ProvisionModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto">
-      <div className="w-full max-w-2xl rounded-lg border border-slate-200 bg-white shadow-xl dark:border-white/10 dark:bg-slate-900 my-8">
-        <header className="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-white/5">
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 overflow-y-auto">
+      <div className="pharos-floating w-full max-w-2xl my-8">
+        <header className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200/60 dark:border-white/5">
+          <h2 className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100">
             {provisionResult
               ? "Endpoint provisioniert — Secret anzeigen"
               : "Neuen Webhook-Endpoint anlegen"}
@@ -365,7 +351,7 @@ function ProvisionModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+            className="p-1 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100/60 dark:hover:text-slate-200 dark:hover:bg-white/[0.06] transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -373,27 +359,30 @@ function ProvisionModal({
 
         {provisionResult ? (
           <div className="px-5 py-4 space-y-4">
-            <div className="rounded-md border border-slate-300 bg-slate-50 p-3 text-xs text-slate-900 dark:border-white/15 dark:bg-white/[0.04] dark:text-slate-300 leading-relaxed">
-              <strong>Endpoint angelegt.</strong> Das Raw-Secret wird NUR EINMAL
-              angezeigt — speichere es jetzt im Operator-Safe. Bei Verlust muss
-              der Endpoint neu provisioniert werden.
+            <div className="rounded-xl bg-slate-100/60 dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/10 p-3 text-xs text-slate-700 dark:text-slate-300 leading-relaxed backdrop-blur-md">
+              <strong className="text-slate-900 dark:text-slate-100">
+                Endpoint angelegt.
+              </strong>{" "}
+              Das Raw-Secret wird NUR EINMAL angezeigt — speichere es jetzt im
+              Operator-Safe. Bei Verlust muss der Endpoint neu provisioniert
+              werden.
             </div>
 
             <Field label="Endpoint-URL">
-              <code className="block px-3 py-2 rounded border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/[0.02] text-[11px] font-mono break-all">
+              <code className="pharos-code block px-3 py-2 text-[11px] break-all">
                 /api/pharos/webhooks/{provisionResult.endpointId}
               </code>
             </Field>
 
             <Field label="Raw-Secret (HMAC-Key)">
               <div className="flex items-center gap-2">
-                <code className="flex-1 px-3 py-2 rounded border border-slate-200 bg-slate-50 dark:border-white/15 dark:bg-white/[0.04] text-[11px] font-mono break-all text-slate-800 dark:text-slate-200">
+                <code className="pharos-code flex-1 px-3 py-2 text-[11px] break-all text-slate-800 dark:text-slate-200">
                   {provisionResult.rawSecret}
                 </code>
                 <button
                   type="button"
                   onClick={() => copy(provisionResult.rawSecret, "secret")}
-                  className="text-xs px-2 py-1.5 rounded border border-slate-300 hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/[0.05]"
+                  className="pharos-btn-ghost text-xs px-2 py-1.5"
                 >
                   {copied === "secret" ? (
                     <CheckCircle2 className="w-3.5 h-3.5 text-slate-700" />
@@ -406,7 +395,7 @@ function ProvisionModal({
 
             <Field label="Beispiel-Aufruf (curl)">
               <div className="relative">
-                <pre className="px-3 py-2 rounded bg-slate-900 text-slate-300 text-[10px] font-mono overflow-x-auto whitespace-pre">
+                <pre className="px-3 py-2.5 rounded-xl bg-gradient-to-br from-slate-900 to-slate-950 text-slate-300 text-[10px] font-mono overflow-x-auto whitespace-pre border border-slate-800 shadow-[0_1px_0_rgba(255,255,255,0.04)_inset]">
                   {provisionResult.signedExampleCurl}
                 </pre>
                 <button
@@ -414,7 +403,7 @@ function ProvisionModal({
                   onClick={() =>
                     copy(provisionResult.signedExampleCurl, "curl")
                   }
-                  className="absolute top-2 right-2 text-xs px-2 py-1 rounded bg-slate-800 text-slate-200 hover:bg-slate-700"
+                  className="absolute top-2 right-2 text-xs px-2 py-1 rounded-lg bg-slate-800 text-slate-200 hover:bg-slate-700 transition-colors"
                 >
                   {copied === "curl" ? "✓" : <Clipboard className="w-3 h-3" />}
                 </button>
@@ -425,7 +414,7 @@ function ProvisionModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="text-xs px-3 py-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50 dark:bg-slate-900/40 dark:border-white/10 dark:hover:bg-white/[0.05]"
+                className="pharos-btn-ghost text-xs px-3 py-1.5"
               >
                 Schließen
               </button>
@@ -438,7 +427,7 @@ function ProvisionModal({
                 value={oversightId}
                 onChange={(e) => setOversightId(e.target.value)}
                 disabled={submitting}
-                className="w-full text-sm px-3 py-2 rounded border border-slate-300 bg-white text-slate-800 dark:bg-slate-900/40 dark:border-white/10 dark:text-slate-200"
+                className="pharos-input w-full text-sm px-3 py-2 text-slate-800 dark:text-slate-200"
               >
                 <option value="">— bitte wählen —</option>
                 {oversights.map((o) => (
@@ -457,7 +446,7 @@ function ProvisionModal({
                   onChange={(e) => setExternalOperatorId(e.target.value)}
                   placeholder="z.B. did:web:airbus-defense.com"
                   disabled={submitting}
-                  className="w-full text-sm px-3 py-2 rounded border border-slate-300 bg-white text-slate-800 placeholder:text-slate-400 dark:bg-slate-900/40 dark:border-white/10 dark:text-slate-200 dark:placeholder:text-slate-500"
+                  className="pharos-input w-full text-sm px-3 py-2 text-slate-800 placeholder:text-slate-400 dark:text-slate-200 dark:placeholder:text-slate-500"
                 />
               </Field>
               <Field label="External Operator Name">
@@ -467,7 +456,7 @@ function ProvisionModal({
                   onChange={(e) => setExternalOperatorName(e.target.value)}
                   placeholder="z.B. Airbus Defence and Space"
                   disabled={submitting}
-                  className="w-full text-sm px-3 py-2 rounded border border-slate-300 bg-white text-slate-800 placeholder:text-slate-400 dark:bg-slate-900/40 dark:border-white/10 dark:text-slate-200 dark:placeholder:text-slate-500"
+                  className="pharos-input w-full text-sm px-3 py-2 text-slate-800 placeholder:text-slate-400 dark:text-slate-200 dark:placeholder:text-slate-500"
                 />
               </Field>
             </div>
@@ -482,10 +471,10 @@ function ProvisionModal({
                       type="button"
                       onClick={() => toggleEvent(ev)}
                       disabled={submitting}
-                      className={`text-[11px] px-2 py-1 rounded border font-mono ${
+                      className={`text-[11px] px-2 py-1 rounded-lg border font-mono transition-colors ${
                         active
-                          ? "bg-slate-700 text-white border-slate-800"
-                          : "bg-white text-slate-700 border-slate-300 dark:bg-slate-900/40 dark:text-slate-300 dark:border-white/10"
+                          ? "bg-slate-900 text-white border-slate-900 shadow-[0_1px_0_rgba(255,255,255,0.12)_inset]"
+                          : "bg-white/60 text-slate-700 border-slate-200/70 hover:bg-slate-100/60 dark:bg-white/[0.04] dark:text-slate-300 dark:border-white/10 dark:hover:bg-white/[0.08]"
                       }`}
                     >
                       {ev}
@@ -506,7 +495,7 @@ function ProvisionModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="text-xs px-3 py-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50 dark:bg-slate-900/40 dark:border-white/10 dark:hover:bg-white/[0.05]"
+                className="pharos-btn-ghost text-xs px-3 py-1.5"
               >
                 Abbrechen
               </button>
@@ -520,7 +509,7 @@ function ProvisionModal({
                   !externalOperatorName ||
                   allowedEvents.length === 0
                 }
-                className="text-xs px-3 py-1.5 rounded border border-slate-800 bg-slate-900 hover:bg-slate-800 text-white disabled:opacity-40 disabled:cursor-not-allowed"
+                className="pharos-btn-primary text-xs px-3 py-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Provisionieren
               </button>
@@ -541,7 +530,7 @@ function Field({
 }) {
   return (
     <div>
-      <div className="text-[10px] tracking-wider uppercase text-slate-500 font-medium mb-1">
+      <div className="text-[10px] tracking-[0.18em] uppercase text-slate-500 font-semibold mb-1.5">
         {label}
       </div>
       {children}

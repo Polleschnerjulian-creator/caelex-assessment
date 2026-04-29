@@ -74,17 +74,17 @@ function PharosShellInner({ children, org, role, profile }: PharosShellProps) {
   const needsSetup = profile === null;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors">
+    <div className="pharos-canvas min-h-screen text-slate-900 dark:text-slate-100 transition-colors">
       {/* Top strip */}
-      <header className="border-b border-slate-200 bg-white/80 backdrop-blur-sm dark:border-white/5 dark:bg-slate-900/40">
+      <header className="pharos-header">
         <div className="px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-md bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center shadow-sm">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-700 via-slate-800 to-slate-950 flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(15,23,42,0.4),inset_0_1px_0_0_rgba(255,255,255,0.12)]">
               <Lightbulb className="w-4 h-4 text-white" />
             </div>
             <div>
-              <div className="text-sm font-semibold tracking-tight">PHAROS</div>
-              <div className="text-[10px] tracking-[0.2em] uppercase text-slate-500 dark:text-slate-500">
+              <div className="pharos-display text-sm font-semibold">PHAROS</div>
+              <div className="text-[10px] tracking-[0.22em] uppercase text-slate-500 dark:text-slate-500 font-medium">
                 Aufsichtsplattform
               </div>
             </div>
@@ -96,7 +96,7 @@ function PharosShellInner({ children, org, role, profile }: PharosShellProps) {
                 {org.name}
               </div>
               {profile && (
-                <div className="text-[11px] text-slate-500">
+                <div className="text-[11px] text-slate-500 tracking-wide">
                   {profile.authorityType.replace("_", " ")} ·{" "}
                   {profile.jurisdiction} · {role}
                 </div>
@@ -108,7 +108,7 @@ function PharosShellInner({ children, org, role, profile }: PharosShellProps) {
 
       <div className="flex">
         {/* Nav rail */}
-        <aside className="w-60 border-r border-slate-200 bg-white min-h-[calc(100vh-57px)] py-4 px-3 dark:border-white/5 dark:bg-slate-900/30">
+        <aside className="pharos-sidebar w-60 min-h-[calc(100vh-57px)] py-4 px-3">
           <nav className="space-y-0.5">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
@@ -119,10 +119,10 @@ function PharosShellInner({ children, org, role, profile }: PharosShellProps) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-2.5 px-3 h-9 rounded-md text-sm transition-colors ${
+                  className={`flex items-center gap-2.5 px-3 h-9 rounded-lg text-sm transition-all ${
                     active
-                      ? "bg-slate-50 text-slate-900 border border-slate-200 dark:bg-white/[0.06] dark:text-slate-200 dark:border-white/10"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-white/[0.04]"
+                      ? "pharos-nav-active text-slate-900 dark:text-slate-100 font-medium"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-white/[0.04]"
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -134,7 +134,7 @@ function PharosShellInner({ children, org, role, profile }: PharosShellProps) {
             {profile && (
               <Link
                 href="/pharos/oversights/new"
-                className="mt-3 flex items-center gap-2 px-3 h-9 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium transition-colors shadow-sm"
+                className="pharos-btn-primary mt-3 flex items-center gap-2 px-3 h-9 text-sm font-medium"
               >
                 <Plus className="w-4 h-4" />
                 Aufsicht initiieren
@@ -142,7 +142,7 @@ function PharosShellInner({ children, org, role, profile }: PharosShellProps) {
             )}
           </nav>
 
-          <div className="mt-8 pt-4 border-t border-slate-200 dark:border-white/5 px-3 text-[10px] tracking-[0.18em] uppercase text-slate-500 dark:text-slate-600">
+          <div className="mt-8 pt-4 border-t border-slate-200/60 dark:border-white/5 px-3 text-[10px] tracking-[0.22em] uppercase text-slate-500 dark:text-slate-600 font-semibold">
             Audit · Hash-Chain
           </div>
           <p className="text-[11px] text-slate-500 dark:text-slate-500 px-3 mt-2 leading-relaxed">
@@ -154,19 +154,19 @@ function PharosShellInner({ children, org, role, profile }: PharosShellProps) {
         {/* Content */}
         <main className="flex-1 px-6 py-6">
           {needsSetup && !pathname.startsWith("/pharos/setup") && (
-            <div className="mb-5 rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 flex items-center justify-between dark:border-white/15 dark:bg-white/[0.04]">
+            <div className="pharos-card mb-5 px-4 py-3 flex items-center justify-between">
               <div>
                 <div className="text-sm font-medium text-slate-900 dark:text-slate-200">
                   Behörden-Profil nicht konfiguriert
                 </div>
-                <p className="text-xs text-slate-800/80 dark:text-slate-100/70 mt-0.5">
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
                   Lege Aufsichts-Bereich, Jurisdiktion und Kontakt fest, bevor
                   du Aufsichten initiierst.
                 </p>
               </div>
               <Link
                 href="/pharos/setup"
-                className="text-sm px-3 h-8 rounded-md bg-slate-900 hover:bg-slate-800 text-white font-medium inline-flex items-center"
+                className="pharos-btn-primary text-sm px-4 h-8 font-medium inline-flex items-center"
               >
                 Profil einrichten
               </Link>

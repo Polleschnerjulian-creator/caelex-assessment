@@ -135,30 +135,30 @@ export function InitiateForm({
         : result.acceptUrl;
     return (
       <div className="space-y-5">
-        <div className="rounded-lg border border-slate-700/30 bg-slate-700/5 p-4">
-          <div className="text-slate-300 font-medium mb-1">
+        <div className="pharos-card p-5">
+          <div className="pharos-display text-slate-900 dark:text-slate-100 font-semibold mb-1">
             Aufsicht ist initiiert.
           </div>
-          <p className="text-sm text-slate-100/80">
-            Status: <span className="font-mono">PENDING_OPERATOR_ACCEPT</span>.
-            Der Operator hat bis zur unten genannten Frist Zeit, die Aufsicht
+          <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+            Status: <span className="pharos-code">PENDING_OPERATOR_ACCEPT</span>
+            . Der Operator hat bis zur unten genannten Frist Zeit, die Aufsicht
             über den einmaligen Token-Link zu prüfen und zu akzeptieren oder
             anzufechten.
           </p>
         </div>
 
-        <div className="rounded-lg border border-slate-700/30 bg-slate-700/5 p-4 space-y-3">
-          <div className="text-[10px] tracking-[0.18em] uppercase text-slate-300 font-semibold">
+        <div className="pharos-card p-5 space-y-3">
+          <div className="text-[10px] tracking-[0.22em] uppercase text-slate-700 dark:text-slate-300 font-semibold">
             Einladungs-Link · einmalig
           </div>
-          <div className="rounded-md bg-slate-950/60 border border-slate-700/30 px-3 py-2 text-xs font-mono text-slate-100 break-all">
+          <div className="rounded-xl bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 px-3 py-2.5 text-xs font-mono text-slate-100 break-all shadow-[0_1px_0_rgba(255,255,255,0.04)_inset]">
             {fullUrl}
           </div>
           <div className="flex items-center justify-between">
             <button
               type="button"
               onClick={copyAcceptUrl}
-              className="inline-flex items-center gap-2 h-9 px-3 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium"
+              className="pharos-btn-primary inline-flex items-center gap-2 h-9 px-3 text-xs font-medium"
             >
               {copied ? (
                 <>
@@ -172,11 +172,11 @@ export function InitiateForm({
                 </>
               )}
             </button>
-            <div className="text-[11px] text-slate-500">
+            <div className="text-[11px] text-slate-500 tabular-nums">
               Läuft ab am {new Date(result.expiresAt).toLocaleString("de-DE")}
             </div>
           </div>
-          <p className="text-[11px] text-slate-200/70 leading-relaxed">
+          <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
             Schicke diesen Link per dienstlicher E-Mail an den Compliance-
             Verantwortlichen des Operators. Der Token wird beim ersten
             erfolgreichen Aufruf konsumiert.
@@ -186,13 +186,13 @@ export function InitiateForm({
         <div className="flex gap-3">
           <Link
             href={`/pharos/operators/${result.oversightId}`}
-            className="inline-flex items-center h-9 px-4 rounded-md border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/[0.04] text-sm"
+            className="pharos-btn-ghost inline-flex items-center h-9 px-4 text-sm"
           >
             Zur Aufsichts-Detailansicht
           </Link>
           <Link
             href="/pharos/oversights/new"
-            className="inline-flex items-center h-9 px-4 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium"
+            className="pharos-btn-primary inline-flex items-center h-9 px-4 text-sm font-medium"
           >
             Weitere Aufsicht initiieren
           </Link>
@@ -210,7 +210,7 @@ export function InitiateForm({
           value={operatorOrgId}
           onChange={(e) => setOperatorOrgId(e.target.value)}
           required
-          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
+          className="pharos-input w-full px-3 h-10 text-sm text-slate-800 dark:text-slate-200"
         >
           <option value="" disabled>
             — Operator wählen —
@@ -232,7 +232,7 @@ export function InitiateForm({
           minLength={3}
           required
           placeholder="z.B. EU-Space-Act Aufsicht 2026 — Galileo Operations"
-          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
+          className="pharos-input w-full px-3 h-10 text-sm text-slate-800 dark:text-slate-200"
         />
       </Field>
 
@@ -243,7 +243,7 @@ export function InitiateForm({
           onChange={(e) => setOversightReference(e.target.value)}
           maxLength={50}
           placeholder="z.B. BAFA-2026-LRSP-014"
-          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm font-mono"
+          className="pharos-input w-full px-3 h-10 text-sm font-mono text-slate-800 dark:text-slate-200"
         />
       </Field>
 
@@ -259,7 +259,7 @@ export function InitiateForm({
           minLength={2}
           required
           placeholder="z.B. § 14 WRV i.V.m. Art. 7 EU Space Act"
-          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
+          className="pharos-input w-full px-3 h-10 text-sm text-slate-800 dark:text-slate-200"
         />
       </Field>
 
@@ -373,7 +373,7 @@ export function InitiateForm({
       </Field>
 
       {error && (
-        <div className="text-sm text-slate-500 px-3 py-2 rounded-md bg-slate-700/10 border border-slate-700/20">
+        <div className="text-sm text-slate-700 dark:text-slate-300 px-3 py-2 rounded-xl bg-slate-100/60 dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/10">
           {error}
         </div>
       )}
@@ -381,14 +381,14 @@ export function InitiateForm({
       <div className="flex justify-end pt-2 gap-3">
         <Link
           href="/pharos/oversights"
-          className="inline-flex items-center h-10 px-4 rounded-md border border-slate-200 dark:border-white/10 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.04]"
+          className="pharos-btn-ghost inline-flex items-center h-10 px-4 text-sm"
         >
           Abbrechen
         </Link>
         <button
           type="submit"
           disabled={submitting || mdfCategories.length === 0}
-          className="inline-flex items-center h-10 px-5 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium disabled:opacity-50"
+          className="pharos-btn-primary inline-flex items-center h-10 px-5 text-sm font-medium disabled:opacity-50"
         >
           {submitting ? "Initiiere…" : "Aufsicht erstellen & Token erzeugen"}
         </button>

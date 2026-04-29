@@ -140,14 +140,14 @@ export default async function PharosOperatorsPage() {
   return (
     <div className="space-y-5 max-w-6xl">
       <div>
-        <div className="text-[10px] tracking-[0.22em] uppercase text-slate-400/70 font-semibold">
+        <div className="text-[10px] tracking-[0.22em] uppercase text-slate-700 dark:text-slate-400/70 font-semibold">
           Operatoren
         </div>
-        <h1 className="text-2xl font-semibold mt-1">
+        <h1 className="pharos-display text-3xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
           {rows.length}{" "}
           {rows.length === 1 ? "Aufsichts-Beziehung" : "Aufsichts-Beziehungen"}
         </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5">
           Live-Compliance-Heatmap, basierend auf offenen Vorfällen und
           überfälligen Fristen.
         </p>
@@ -161,37 +161,33 @@ export default async function PharosOperatorsPage() {
       </div>
 
       {rows.length === 0 ? (
-        <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/30 px-6 py-10 text-center text-sm text-slate-500">
+        <div className="pharos-card px-6 py-12 text-center text-sm text-slate-500">
           Du hast noch keine Aufsichts-Beziehungen. Über „Aufsicht initiieren"
           (oben links im Nav-Rail) lädst du den ersten Operator ein.
         </div>
       ) : (
-        <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/30 overflow-hidden">
+        <div className="pharos-card overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-slate-900/60 text-[10px] tracking-wider uppercase text-slate-500">
+            <thead className="bg-slate-50/60 dark:bg-white/[0.02] text-[10px] tracking-[0.18em] uppercase text-slate-500 font-semibold border-b border-slate-200/60 dark:border-white/5">
               <tr>
-                <th className="px-4 py-2.5 text-left font-medium">Operator</th>
-                <th className="px-4 py-2.5 text-left font-medium">Aufsicht</th>
-                <th className="px-4 py-2.5 text-left font-medium">Status</th>
-                <th className="px-4 py-2.5 text-right font-medium">
-                  Compliance
-                </th>
-                <th className="px-4 py-2.5 text-right font-medium">Vorfälle</th>
-                <th className="px-4 py-2.5 text-right font-medium">
-                  Fristen überfällig
-                </th>
+                <th className="px-4 py-3 text-left">Operator</th>
+                <th className="px-4 py-3 text-left">Aufsicht</th>
+                <th className="px-4 py-3 text-left">Status</th>
+                <th className="px-4 py-3 text-right">Compliance</th>
+                <th className="px-4 py-3 text-right">Vorfälle</th>
+                <th className="px-4 py-3 text-right">Fristen überfällig</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
+            <tbody className="divide-y divide-slate-200/60 dark:divide-white/5">
               {rows.map((r) => (
                 <tr
                   key={r.oversightId}
-                  className="hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
+                  className="hover:bg-slate-50/60 dark:hover:bg-white/[0.03] transition-colors"
                 >
                   <td className="px-4 py-3">
                     <Link
                       href={`/pharos/operators/${r.oversightId}`}
-                      className="font-medium text-slate-900 dark:text-slate-100 hover:text-slate-300"
+                      className="font-medium text-slate-900 dark:text-slate-100 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
                     >
                       {r.operator.name}
                     </Link>
@@ -214,7 +210,7 @@ export default async function PharosOperatorsPage() {
                         tier={r.complianceTier}
                       />
                     ) : (
-                      <span className="text-xs text-slate-600">—</span>
+                      <span className="text-xs text-slate-500">—</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums text-slate-700 dark:text-slate-300">
@@ -236,25 +232,19 @@ export default async function PharosOperatorsPage() {
 function TierTile({
   label,
   count,
-  tone,
 }: {
   label: string;
   count: number;
-  tone: "emerald" | "amber" | "red";
+  tone?: "emerald" | "amber" | "red";
 }) {
-  const tones = {
-    emerald: "border-slate-700/30 text-slate-300",
-    amber: "border-slate-700/30 text-slate-300",
-    red: "border-slate-700/30 text-slate-300",
-  };
   return (
-    <div
-      className={`rounded-lg border ${tones[tone]} bg-white dark:bg-slate-900/30 px-4 py-3`}
-    >
-      <div className="text-[11px] tracking-wider uppercase text-slate-500 font-medium">
+    <div className="pharos-stat px-4 py-3.5">
+      <div className="text-[10px] tracking-[0.18em] uppercase text-slate-500 font-semibold">
         {label}
       </div>
-      <div className="text-2xl font-semibold mt-1 tabular-nums">{count}</div>
+      <div className="pharos-display text-2xl font-semibold mt-1 tabular-nums text-slate-900 dark:text-slate-100">
+        {count}
+      </div>
     </div>
   );
 }

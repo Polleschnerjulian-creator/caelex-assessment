@@ -81,20 +81,23 @@ export default async function PharosOperatorDetailPage({
       <div>
         <Link
           href="/pharos/operators"
-          className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-300"
+          className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
         >
           ← Zurück zur Operatoren-Liste
         </Link>
         <div className="mt-2 flex items-start justify-between">
           <div className="min-w-0">
-            <div className="text-[10px] tracking-[0.22em] uppercase text-slate-400/70 font-semibold">
+            <div className="text-[10px] tracking-[0.22em] uppercase text-slate-700 dark:text-slate-400/70 font-semibold">
               Aufsichts-Detail
             </div>
-            <h1 className="text-2xl font-semibold mt-1 truncate">
+            <h1 className="pharos-display text-3xl font-semibold mt-1 truncate text-slate-900 dark:text-slate-100">
               {oversight.oversightTitle}
             </h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-              Operator: <strong>{oversight.operatorOrg.name}</strong>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5">
+              Operator:{" "}
+              <strong className="text-slate-800 dark:text-slate-200">
+                {oversight.operatorOrg.name}
+              </strong>
               {oversight.oversightReference &&
                 ` · Aktenzeichen: ${oversight.oversightReference}`}
             </p>
@@ -130,10 +133,10 @@ export default async function PharosOperatorDetailPage({
 
       {/* MDF + VDF panels */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-lg border border-slate-700/20 bg-slate-700/5 p-4">
+        <div className="pharos-card p-5">
           <div className="flex items-center gap-2 mb-3">
-            <Lock className="w-3.5 h-3.5 text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-200">
+            <Lock className="w-3.5 h-3.5 text-slate-700 dark:text-slate-400" />
+            <h2 className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100">
               MDF · Pflicht-Offenlegung
             </h2>
           </div>
@@ -147,7 +150,7 @@ export default async function PharosOperatorDetailPage({
                   <span className="text-slate-800 dark:text-slate-200">
                     {CATEGORY_LABEL[item.category]}
                   </span>
-                  <span className="text-[11px] text-slate-500 ml-auto">
+                  <span className="text-[11px] text-slate-500 ml-auto tabular-nums">
                     {item.permissions.join(" / ")}
                   </span>
                 </li>
@@ -155,10 +158,10 @@ export default async function PharosOperatorDetailPage({
             </ul>
           )}
         </div>
-        <div className="rounded-lg border border-slate-700/20 bg-slate-700/5 p-4">
+        <div className="pharos-card p-5">
           <div className="flex items-center gap-2 mb-3">
-            <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-300">
+            <ShieldCheck className="w-3.5 h-3.5 text-slate-700 dark:text-slate-400" />
+            <h2 className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100">
               VDF · Freiwillige Erweiterung
             </h2>
           </div>
@@ -174,7 +177,7 @@ export default async function PharosOperatorDetailPage({
                   <span className="text-slate-800 dark:text-slate-200">
                     {CATEGORY_LABEL[item.category]}
                   </span>
-                  <span className="text-[11px] text-slate-500 ml-auto">
+                  <span className="text-[11px] text-slate-500 ml-auto tabular-nums">
                     {item.permissions.join(" / ")}
                   </span>
                 </li>
@@ -186,14 +189,14 @@ export default async function PharosOperatorDetailPage({
 
       {/* Hash chain footer */}
       {oversight.handshakeHash && (
-        <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/30 px-4 py-3">
-          <div className="text-[10px] tracking-wider uppercase text-slate-500 font-medium mb-1">
+        <div className="pharos-card px-4 py-3">
+          <div className="text-[10px] tracking-[0.18em] uppercase text-slate-500 font-semibold mb-1.5">
             Handshake-Hash · SHA-256
           </div>
-          <div className="text-xs font-mono text-slate-700 dark:text-slate-300 break-all">
+          <code className="pharos-code block text-xs text-slate-700 dark:text-slate-300 break-all px-3 py-2 mt-1">
             {oversight.handshakeHash}
-          </div>
-          <p className="text-[10px] text-slate-500 mt-1.5">
+          </code>
+          <p className="text-[10px] text-slate-500 mt-2 leading-relaxed">
             Wurzel der Audit-Chain — jeder Behörden-Zugriff verkettet sich an
             diesem Wert. Manipulationen brechen die Chain technisch erkennbar.
           </p>
@@ -202,18 +205,18 @@ export default async function PharosOperatorDetailPage({
 
       {/* Dispute reason if applicable */}
       {oversight.status === "DISPUTED" && oversight.disputeReason && (
-        <div className="rounded-lg border border-slate-700/30 bg-slate-700/5 p-4">
+        <div className="pharos-card p-5">
           <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="w-3.5 h-3.5 text-slate-300" />
-            <h2 className="text-sm font-semibold text-slate-300">
+            <AlertTriangle className="w-3.5 h-3.5 text-slate-700 dark:text-slate-300" />
+            <h2 className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100">
               Widerspruch des Operators
             </h2>
           </div>
-          <p className="text-sm text-slate-100/90 whitespace-pre-wrap">
+          <p className="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">
             {oversight.disputeReason}
           </p>
           {oversight.disputedAt && (
-            <p className="text-[11px] text-slate-300/60 mt-2">
+            <p className="text-[11px] text-slate-500 mt-2 tabular-nums">
               Eingelegt am{" "}
               {new Date(oversight.disputedAt).toLocaleString("de-DE")}
             </p>
@@ -222,22 +225,22 @@ export default async function PharosOperatorDetailPage({
       )}
 
       {/* Audit log */}
-      <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-slate-900/30">
-        <div className="px-4 py-3 border-b border-slate-200 dark:border-white/5">
-          <h2 className="text-sm font-semibold">
+      <div className="pharos-card overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-200/60 dark:border-white/5">
+          <h2 className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100">
             Audit-Log · letzte {auditLog.length} Einträge
           </h2>
         </div>
         {auditLog.length === 0 ? (
-          <div className="px-4 py-8 text-center text-sm text-slate-500">
+          <div className="px-4 py-10 text-center text-sm text-slate-500">
             Noch keine Audit-Einträge.
           </div>
         ) : (
-          <ul className="divide-y divide-slate-200 dark:divide-white/5">
+          <ul className="divide-y divide-slate-200/60 dark:divide-white/5">
             {auditLog.map((entry) => (
               <li
                 key={entry.id}
-                className="px-4 py-2.5 flex items-center justify-between text-xs"
+                className="px-4 py-2.5 flex items-center justify-between text-xs hover:bg-slate-50/60 dark:hover:bg-white/[0.02] transition-colors"
               >
                 <div>
                   <span className="font-medium text-slate-800 dark:text-slate-200">
@@ -270,8 +273,8 @@ function Meta({
   mono?: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/30 px-3 py-2">
-      <div className="text-[10px] tracking-wider uppercase text-slate-500 font-medium">
+    <div className="pharos-stat px-3 py-2.5">
+      <div className="text-[10px] tracking-[0.18em] uppercase text-slate-500 font-semibold">
         {label}
       </div>
       <div
@@ -284,43 +287,17 @@ function Meta({
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const variants: Record<string, { label: string; classes: string }> = {
-    ACTIVE: {
-      label: "Aktiv",
-      classes: "bg-slate-700/15 text-slate-300 border-slate-700/30",
-    },
-    PENDING_OPERATOR_ACCEPT: {
-      label: "Wartet auf Annahme",
-      classes: "bg-slate-700/15 text-slate-300 border-slate-700/30",
-    },
-    DISPUTED: {
-      label: "Streit",
-      classes: "bg-slate-700/15 text-slate-300 border-slate-700/30",
-    },
-    CLOSED: {
-      label: "Beendet",
-      classes:
-        "bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30",
-    },
-    REVOKED: {
-      label: "Entzogen",
-      classes: "bg-slate-700/10 text-slate-300 border-slate-700/20",
-    },
-    SUSPENDED: {
-      label: "Pausiert",
-      classes:
-        "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20",
-    },
+  const variants: Record<string, { label: string }> = {
+    ACTIVE: { label: "Aktiv" },
+    PENDING_OPERATOR_ACCEPT: { label: "Wartet auf Annahme" },
+    DISPUTED: { label: "Streit" },
+    CLOSED: { label: "Beendet" },
+    REVOKED: { label: "Entzogen" },
+    SUSPENDED: { label: "Pausiert" },
   };
-  const v = variants[status] ?? {
-    label: status,
-    classes:
-      "bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20",
-  };
+  const v = variants[status] ?? { label: status };
   return (
-    <span
-      className={`inline-flex items-center text-[11px] tracking-wide uppercase px-3 py-1 rounded-full border ${v.classes}`}
-    >
+    <span className="inline-flex items-center text-[10px] tracking-[0.16em] uppercase px-3 py-1 rounded-full bg-slate-100/70 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200/70 dark:border-white/10 backdrop-blur-md font-semibold">
       {v.label}
     </span>
   );

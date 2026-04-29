@@ -85,47 +85,39 @@ export default async function ApprovalDetailPage({
       <div>
         <Link
           href="/pharos/approvals"
-          className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
         >
           <ArrowLeft className="w-3 h-3" /> Zurück zur Approval-Inbox
         </Link>
-        <div className="mt-2 flex items-center gap-3">
+        <div className="mt-2 flex items-center gap-3 flex-wrap">
           <Scale className="w-5 h-5 text-slate-700 dark:text-slate-400" />
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+          <h1 className="pharos-display text-3xl font-semibold text-slate-900 dark:text-slate-100">
             {KIND_LABELS[r.kind] ?? r.kind}
           </h1>
-          <span
-            className={`text-[10px] tracking-wider uppercase px-2 py-0.5 rounded border font-semibold ${
-              r.status === "APPROVED"
-                ? "bg-slate-50 text-slate-800 border-slate-300 dark:bg-white/[0.06] dark:text-slate-300 dark:border-white/15"
-                : r.status === "OPEN" && !expired
-                  ? "bg-slate-100 text-slate-900 border-slate-300 dark:bg-white/[0.06] dark:text-slate-200 dark:border-white/15"
-                  : "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-500/15 dark:text-slate-300 dark:border-slate-500/30"
-            }`}
-          >
+          <span className="inline-flex items-center text-[10px] tracking-[0.16em] uppercase px-3 py-1 rounded-full bg-slate-100/70 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-white/10 backdrop-blur-md font-semibold">
             {r.status}
           </span>
         </div>
-        <div className="text-[11px] text-slate-500 mt-1 font-mono">
+        <div className="text-[11px] text-slate-500 mt-2 font-mono tabular-nums">
           ID {r.id} · payloadHash {r.payloadHash.slice(0, 16)}…
         </div>
       </div>
 
       {/* Quorum-Status */}
-      <div className="rounded-lg border border-slate-200 bg-white p-5 dark:border-white/5 dark:bg-slate-900/30">
-        <h2 className="text-sm font-semibold mb-3 text-slate-900 dark:text-slate-100 flex items-center gap-2">
+      <div className="pharos-card p-5">
+        <h2 className="pharos-display text-sm font-semibold mb-3 text-slate-900 dark:text-slate-100 flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-slate-700 dark:text-slate-400" />
           Quorum-Status
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-[11px]">
           <Field label="Signaturen">
-            <span className="text-base font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+            <span className="pharos-display text-2xl font-semibold tabular-nums text-slate-900 dark:text-slate-100">
               {have}/{need}
             </span>
           </Field>
           <Field label="Pflicht-Rollen">
             {rolesMissing.length === 0 ? (
-              <span className="text-slate-800 dark:text-slate-300">
+              <span className="text-slate-800 dark:text-slate-200 font-medium">
                 vollständig
               </span>
             ) : (
@@ -136,7 +128,7 @@ export default async function ApprovalDetailPage({
           </Field>
           <Field label="Frist">
             {remainingMs <= 0 ? (
-              <span className="text-slate-900 dark:text-slate-300">
+              <span className="text-slate-900 dark:text-slate-200 font-medium">
                 abgelaufen
               </span>
             ) : (
@@ -147,8 +139,13 @@ export default async function ApprovalDetailPage({
           </Field>
         </div>
         {r.aggregateHash && (
-          <div className="mt-4 text-[11px] text-slate-600 dark:text-slate-400 font-mono break-all">
-            <strong>aggregateHash:</strong> {r.aggregateHash}
+          <div className="mt-4">
+            <div className="text-[10px] tracking-[0.18em] uppercase text-slate-500 font-semibold mb-1.5">
+              aggregateHash
+            </div>
+            <code className="pharos-code block text-[11px] text-slate-700 dark:text-slate-300 break-all px-3 py-2">
+              {r.aggregateHash}
+            </code>
           </div>
         )}
       </div>
@@ -162,16 +159,20 @@ export default async function ApprovalDetailPage({
         />
       )}
       {alreadySigned && (
-        <div className="rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-xs text-slate-900 dark:border-white/15 dark:bg-white/[0.04] dark:text-slate-300">
+        <div className="pharos-card px-4 py-3 text-xs text-slate-700 dark:text-slate-300">
           Du hast bereits signiert. Eine erneute Signatur ist nicht möglich
-          (Constraint @@unique([requestId, approverUserId])).
+          (Constraint{" "}
+          <span className="pharos-code">
+            @@unique([requestId, approverUserId])
+          </span>
+          ).
         </div>
       )}
 
       {/* Payload */}
-      <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/30">
-        <div className="px-5 py-3 border-b border-slate-200 dark:border-white/5">
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+      <div className="pharos-card overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-slate-200/60 dark:border-white/5">
+          <h2 className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100">
             Inhalt der Mitzeichnung
           </h2>
           <p className="text-[11px] text-slate-500 mt-0.5">
@@ -179,34 +180,34 @@ export default async function ApprovalDetailPage({
             alle bisherigen Signaturen.
           </p>
         </div>
-        <pre className="p-4 text-[11px] font-mono whitespace-pre-wrap break-words text-slate-700 dark:text-slate-300 overflow-x-auto">
+        <pre className="p-4 text-[11px] font-mono whitespace-pre-wrap break-words text-slate-700 dark:text-slate-300 overflow-x-auto bg-slate-50/40 dark:bg-white/[0.02]">
           {JSON.stringify(r.payload, null, 2)}
         </pre>
       </div>
 
       {/* Signatures */}
-      <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/30">
-        <div className="px-5 py-3 border-b border-slate-200 dark:border-white/5">
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+      <div className="pharos-card overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-slate-200/60 dark:border-white/5">
+          <h2 className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100">
             Signaturen ({r.signatures.length})
           </h2>
         </div>
         {r.signatures.length === 0 ? (
-          <div className="px-5 py-8 text-center text-sm text-slate-500">
+          <div className="px-5 py-10 text-center text-sm text-slate-500">
             Noch keine Signaturen.
           </div>
         ) : (
-          <ul className="divide-y divide-slate-200 dark:divide-white/5">
+          <ul className="divide-y divide-slate-200/60 dark:divide-white/5">
             {r.signatures.map((s) => (
               <li
                 key={s.id}
-                className="px-5 py-3 flex items-center justify-between"
+                className="px-5 py-3 flex items-center justify-between hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors"
               >
                 <div className="min-w-0">
                   <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
                     {s.approverRole}
                   </div>
-                  <div className="text-[10px] text-slate-500 font-mono mt-0.5">
+                  <div className="text-[10px] text-slate-500 font-mono mt-0.5 tabular-nums">
                     user {s.approverUserId.slice(0, 16)}… · sig{" "}
                     {s.signature.slice(0, 24)}… ·{" "}
                     {new Date(s.signedAt).toLocaleString()}
@@ -231,10 +232,10 @@ function Field({
 }) {
   return (
     <div>
-      <div className="text-[10px] tracking-wider uppercase text-slate-500 font-medium">
+      <div className="text-[10px] tracking-[0.18em] uppercase text-slate-500 font-semibold">
         {label}
       </div>
-      <div className="mt-0.5">{children}</div>
+      <div className="mt-1">{children}</div>
     </div>
   );
 }

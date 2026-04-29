@@ -132,7 +132,7 @@ export function SetupForm({
 
   if (!canEdit) {
     return (
-      <div className="rounded-lg border border-slate-700/20 bg-slate-700/5 px-4 py-3 text-sm text-slate-200">
+      <div className="pharos-card px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
         Nur Owner und Admins der Behörden-Organisation dürfen das Profil
         bearbeiten. Kontaktiere die Person, die diese Behörde in Caelex
         aufgesetzt hat.
@@ -146,7 +146,7 @@ export function SetupForm({
         <select
           value={authorityType}
           onChange={(e) => setAuthorityType(e.target.value)}
-          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
+          className="pharos-input w-full px-3 h-10 text-sm text-slate-800 dark:text-slate-200"
         >
           {AUTHORITY_TYPES.map((t) => (
             <option key={t.value} value={t.value}>
@@ -165,7 +165,7 @@ export function SetupForm({
           value={jurisdiction}
           onChange={(e) => setJurisdiction(e.target.value.toUpperCase())}
           maxLength={20}
-          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm font-mono"
+          className="pharos-input w-full px-3 h-10 text-sm font-mono text-slate-800 dark:text-slate-200"
           required
         />
       </Field>
@@ -182,10 +182,10 @@ export function SetupForm({
                 type="button"
                 key={c.value}
                 onClick={() => toggleCategory(c.value)}
-                className={`text-xs px-3 py-2 rounded-md border text-left transition-colors ${
+                className={`text-xs px-3 py-2 rounded-xl border text-left transition-all backdrop-blur-md ${
                   on
-                    ? "border-slate-700/40 bg-slate-700/10 text-slate-200"
-                    : "border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/40 text-slate-600 dark:text-slate-400 hover:border-white/20"
+                    ? "border-slate-900/20 bg-slate-900 text-white shadow-[0_2px_8px_-2px_rgba(15,23,42,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] dark:bg-white/[0.1] dark:border-white/15"
+                    : "border-slate-200/70 bg-white/60 text-slate-700 hover:bg-white/90 hover:border-slate-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300 dark:hover:bg-white/[0.08]"
                 }`}
               >
                 {c.label}
@@ -201,7 +201,7 @@ export function SetupForm({
           value={contactEmail}
           onChange={(e) => setContactEmail(e.target.value)}
           placeholder="aufsicht@behoerde.de"
-          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
+          className="pharos-input w-full px-3 h-10 text-sm text-slate-800 dark:text-slate-200"
           required
         />
       </Field>
@@ -215,7 +215,7 @@ export function SetupForm({
           value={publicWebsite}
           onChange={(e) => setPublicWebsite(e.target.value)}
           placeholder="https://www.bafa.de"
-          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-md px-3 h-10 text-sm"
+          className="pharos-input w-full px-3 h-10 text-sm text-slate-800 dark:text-slate-200"
         />
       </Field>
 
@@ -229,17 +229,17 @@ export function SetupForm({
           maxLength={500}
           rows={3}
           placeholder="z.B. § 3 WRV (Weltraumgesetz, BGBl. 2025 I S. 1234)"
-          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-md px-3 py-2 text-sm"
+          className="pharos-input w-full px-3 py-2 text-sm text-slate-800 dark:text-slate-200"
         />
       </Field>
 
       {error && (
-        <div className="text-sm text-slate-500 px-3 py-2 rounded-md bg-slate-700/10 border border-slate-700/20">
+        <div className="text-sm text-slate-700 dark:text-slate-300 px-3 py-2 rounded-xl bg-slate-100/60 dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/10 backdrop-blur-md">
           {error}
         </div>
       )}
       {success && (
-        <div className="text-sm text-slate-300 px-3 py-2 rounded-md bg-slate-700/10 border border-slate-700/20">
+        <div className="text-sm text-slate-700 dark:text-slate-300 px-3 py-2 rounded-xl bg-slate-100/60 dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/10 backdrop-blur-md">
           Profil gespeichert.
         </div>
       )}
@@ -248,7 +248,7 @@ export function SetupForm({
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex items-center h-10 px-5 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium disabled:opacity-50"
+          className="pharos-btn-primary inline-flex items-center h-10 px-5 text-sm font-medium disabled:opacity-50"
         >
           {submitting
             ? "Speichere…"
@@ -272,11 +272,15 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wide">
+      <label className="block text-[10px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-[0.18em]">
         {label}
       </label>
       {children}
-      {hint && <p className="text-[11px] text-slate-500 mt-1">{hint}</p>}
+      {hint && (
+        <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
+          {hint}
+        </p>
+      )}
     </div>
   );
 }

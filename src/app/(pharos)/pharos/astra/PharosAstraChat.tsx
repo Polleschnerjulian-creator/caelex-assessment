@@ -168,10 +168,10 @@ export function PharosAstraChat({
   if (messages.length === 0) {
     return (
       <div className="space-y-4">
-        <div className="rounded-lg border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/[0.02] p-5">
+        <div className="pharos-card p-5">
           <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="w-4 h-4 text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+            <Sparkles className="w-4 h-4 text-slate-700 dark:text-slate-400" />
+            <h2 className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100">
               Beispiel-Fragen
             </h2>
           </div>
@@ -241,16 +241,16 @@ export function PharosAstraChat({
 
 function GlassBoxNotice() {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 text-[12px] text-slate-600 leading-relaxed dark:border-white/5 dark:bg-slate-900/30 dark:text-slate-400">
-      <div className="flex items-center gap-2 text-slate-800 dark:text-slate-300 font-medium mb-1">
+    <div className="pharos-card p-4 text-[12px] text-slate-600 leading-relaxed dark:text-slate-400">
+      <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 font-semibold mb-1.5">
         <Fingerprint className="w-3.5 h-3.5 text-slate-700 dark:text-slate-400" />
         Verifiable Refusal — Glass-Box-Garantie
       </div>
       Jede Antwort enthält klickbare Citations zu jeder Aussage und einen
       Ed25519-signierten Receipt. Wenn keine belastbare Quelle vorliegt,
       verweigert Pharos strukturiert die Antwort —{" "}
-      <span className="text-slate-700 dark:text-slate-300">[ABSTAIN]</span> ist
-      Feature, nicht Bug. Halluzinationen sind architektonisch unmöglich.
+      <span className="pharos-code">[ABSTAIN]</span> ist Feature, nicht Bug.
+      Halluzinationen sind architektonisch unmöglich.
     </div>
   );
 }
@@ -267,7 +267,7 @@ function SuggestionButton({
       <button
         type="button"
         onClick={() => onClick(text)}
-        className="w-full text-left text-sm text-slate-700 hover:text-slate-800 dark:text-slate-300 dark:hover:text-slate-200 px-3 py-2 rounded-md border border-slate-200 hover:border-slate-400 hover:bg-slate-50 dark:border-white/10 dark:hover:border-slate-700/40 dark:hover:bg-slate-700/5 transition-colors"
+        className="w-full text-left text-sm text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 px-3 py-2 rounded-xl border border-slate-200/70 hover:border-slate-300 bg-white/40 hover:bg-white/80 dark:border-white/10 dark:hover:border-white/20 dark:bg-white/[0.02] dark:hover:bg-white/[0.06] backdrop-blur-md transition-all"
       >
         {text}
       </button>
@@ -282,12 +282,12 @@ function MessageBubble({ message }: { message: Message }) {
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[85%] rounded-lg px-4 py-3 ${
+        className={`max-w-[85%] rounded-2xl px-4 py-3 backdrop-blur-md transition-all ${
           isUser
-            ? "bg-slate-100 border border-slate-300 text-slate-900 dark:bg-white/[0.06] dark:border-white/15 dark:text-slate-50"
+            ? "bg-slate-900 text-white border border-slate-900 shadow-[0_4px_12px_-4px_rgba(15,23,42,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] dark:bg-white/[0.08] dark:border-white/15 dark:text-slate-50"
             : isAbstention
-              ? "bg-slate-50 border border-slate-400 text-slate-950 dark:bg-white/[0.04] dark:border-white/15 dark:text-slate-50"
-              : "bg-white border border-slate-200 text-slate-800 shadow-sm dark:bg-slate-900/50 dark:border-white/5 dark:text-slate-200 dark:shadow-none"
+              ? "bg-amber-50/40 border border-slate-300/70 text-slate-900 dark:bg-white/[0.04] dark:border-white/15 dark:text-slate-50 shadow-[0_2px_8px_-2px_rgba(15,23,42,0.06)]"
+              : "pharos-card text-slate-800 dark:text-slate-200"
         }`}
       >
         {message.error ? (
@@ -355,11 +355,7 @@ function renderWithCitationLinks(text: string, citations: Citation[]) {
     parts.push(
       <span
         key={`cite-${key++}`}
-        className={`inline-flex items-baseline px-1 mx-0.5 rounded text-[10px] font-mono ${
-          known
-            ? "bg-slate-700/15 text-slate-300 border border-slate-700/30"
-            : "bg-slate-700/15 text-slate-300 border border-slate-700/30"
-        }`}
+        className="pharos-code inline-flex items-baseline px-1.5 mx-0.5 text-[10px]"
         title={
           known
             ? `Citation: ${id}`
@@ -379,11 +375,11 @@ function ReasoningGraphToggle({ message }: { message: Message }) {
   const [open, setOpen] = useState(false);
   if (!message.parentQuestion) return null;
   return (
-    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/5">
+    <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-white/5">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-400 font-medium"
+        className="inline-flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 font-medium transition-colors"
       >
         {open ? (
           <ChevronDown className="w-3.5 h-3.5" />
@@ -412,13 +408,6 @@ function ReasoningGraphToggle({ message }: { message: Message }) {
 function JudgeBadge({ judge }: { judge: JudgeVerdict }) {
   const isAccepted = judge.verdict === "accepted";
   const isRejected = judge.verdict === "rejected";
-  const isAbstained = judge.verdict === "abstained";
-
-  const tone = isAccepted
-    ? "bg-slate-50 border-slate-300 text-slate-900 dark:bg-white/[0.04] dark:border-white/15 dark:text-slate-300"
-    : isRejected
-      ? "bg-slate-50 border-slate-300 text-slate-900 dark:bg-white/[0.04] dark:border-white/15 dark:text-slate-300"
-      : "bg-slate-50 border-slate-300 text-slate-900 dark:bg-white/[0.04] dark:border-white/15 dark:text-slate-400";
 
   const label = isAccepted
     ? "Pharos-Judge ✓ verifiziert"
@@ -427,10 +416,8 @@ function JudgeBadge({ judge }: { judge: JudgeVerdict }) {
       : "Pharos-Judge — Abstention bestätigt";
 
   return (
-    <div className={`mt-3 pt-3 border-t border-slate-200 dark:border-white/5`}>
-      <div
-        className={`inline-flex items-center gap-2 text-[10px] tracking-wider uppercase px-2 py-1 rounded border font-semibold ${tone}`}
-      >
+    <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-white/5">
+      <div className="inline-flex items-center gap-2 text-[10px] tracking-[0.16em] uppercase px-2.5 py-1 rounded-full bg-slate-100/70 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-white/10 backdrop-blur-md font-semibold">
         <CheckCircle2 className="w-3 h-3" />
         {label} · Confidence {(judge.confidence * 100).toFixed(0)}%
       </div>
@@ -458,8 +445,8 @@ function JudgeBadge({ judge }: { judge: JudgeVerdict }) {
 
 function CitationStrip({ citations }: { citations: Citation[] }) {
   return (
-    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/5">
-      <div className="text-[10px] tracking-wider uppercase text-slate-500 dark:text-slate-500 mb-2 font-medium">
+    <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-white/5">
+      <div className="text-[10px] tracking-[0.18em] uppercase text-slate-500 dark:text-slate-500 mb-2 font-semibold">
         Provenance · {citations.length} Citation
         {citations.length === 1 ? "" : "s"}
       </div>
@@ -473,21 +460,9 @@ function CitationStrip({ citations }: { citations: Citation[] }) {
 }
 
 function CitationChip({ citation }: { citation: Citation }) {
-  const kindColor = {
-    "data-row":
-      "text-slate-900 border-slate-300 bg-slate-50 dark:text-slate-400 dark:border-white/15 dark:bg-white/[0.04]",
-    computation:
-      "text-slate-900 border-slate-300 bg-slate-50 dark:text-slate-400 dark:border-white/15 dark:bg-white/[0.04]",
-    "audit-entry":
-      "text-slate-800 border-slate-200 bg-slate-50 dark:text-slate-300 dark:border-white/15 dark:bg-white/[0.04]",
-    norm: "text-slate-900 border-slate-300 bg-slate-50 dark:text-slate-300 dark:border-white/15 dark:bg-white/[0.04]",
-  }[citation.kind];
-
   return (
     <div className="flex items-start gap-2 text-[11px]">
-      <span
-        className={`shrink-0 inline-flex items-center px-1.5 py-0.5 rounded border font-mono ${kindColor}`}
-      >
+      <span className="pharos-code shrink-0 inline-flex items-center px-1.5 py-0.5">
         {citation.kind}
       </span>
       <div className="min-w-0 flex-1">
@@ -500,7 +475,7 @@ function CitationChip({ citation }: { citation: Citation }) {
             <span className="text-slate-500"> · {citation.span}</span>
           )}
         </div>
-        <div className="text-[10px] text-slate-500 font-mono">
+        <div className="text-[10px] text-slate-500 font-mono tabular-nums">
           {citation.contentHash} ·{" "}
           {new Date(citation.retrievedAt).toLocaleString()}
         </div>
@@ -510,7 +485,7 @@ function CitationChip({ citation }: { citation: Citation }) {
           href={citation.url}
           target="_blank"
           rel="noreferrer"
-          className="shrink-0 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+          className="shrink-0 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
         >
           <ExternalLink className="w-3 h-3" />
         </a>
@@ -531,14 +506,14 @@ function ReceiptStrip({
     : null;
 
   return (
-    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/5">
-      <div className="flex items-center gap-2 mb-2">
+    <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-white/5">
+      <div className="flex items-center gap-2 mb-2.5">
         <CheckCircle2 className="w-3.5 h-3.5 text-slate-700 dark:text-slate-400" />
-        <span className="text-[10px] tracking-wider uppercase text-slate-700 dark:text-slate-400 font-semibold">
+        <span className="text-[10px] tracking-[0.18em] uppercase text-slate-700 dark:text-slate-300 font-semibold">
           Ed25519-Signed Receipt
         </span>
       </div>
-      <div className="space-y-1 text-[10px] font-mono text-slate-600 dark:text-slate-500 dark:text-slate-500">
+      <div className="space-y-1 text-[10px] font-mono text-slate-600 dark:text-slate-500 tabular-nums">
         <div className="flex gap-2">
           <span className="text-slate-500 dark:text-slate-600 w-20 shrink-0">
             receiptHash
@@ -582,24 +557,24 @@ function ReceiptStrip({
         </div>
       </div>
       {chainEntries.length > 0 && (
-        <div className="mt-2 text-[10px] text-slate-500">
+        <div className="mt-2 text-[10px] text-slate-500 leading-relaxed">
           In {chainEntries.length} Aufsicht-Hash-Chain
           {chainEntries.length === 1 ? "" : "s"} eingetragen — Operator sieht
           jeden Eintrag live in seinem Audit-Center.
         </div>
       )}
       {verifyUrl && (
-        <div className="mt-2 flex items-center gap-2">
+        <div className="mt-2.5 flex items-center gap-2 flex-wrap">
           <a
             href={verifyUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded border border-slate-300 bg-slate-50 text-slate-900 hover:bg-slate-100 dark:border-white/15 dark:bg-white/[0.04] dark:text-slate-300 dark:hover:bg-slate-700/20"
+            className="pharos-btn-ghost inline-flex items-center gap-1.5 text-[11px] px-2 py-1"
           >
             <ExternalLink className="w-3 h-3" />
             Receipt JSON
           </a>
-          <code className="text-[10px] text-slate-500 dark:text-slate-600 font-mono">
+          <code className="pharos-code text-[10px]">
             npx pharos-verify {chainEntries[0].entryId}
           </code>
         </div>
@@ -614,19 +589,19 @@ function ToolCallStrip({
   toolCalls: { tool: string; input: unknown; ok: boolean }[];
 }) {
   return (
-    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/5 space-y-1">
+    <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-white/5 space-y-1">
       {toolCalls.map((tc, i) => (
         <div
           key={i}
           className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-500"
         >
           <Wrench className="w-3 h-3" />
-          <span className="font-mono">{tc.tool}</span>
+          <span className="pharos-code text-[10px]">{tc.tool}</span>
           <span
             className={
               tc.ok
                 ? "text-slate-700 dark:text-slate-400"
-                : "text-slate-800 dark:text-slate-500"
+                : "text-slate-800 dark:text-slate-300 font-semibold"
             }
           >
             {tc.ok ? "ok" : "error"}
@@ -654,7 +629,7 @@ function ChatInput({
 }) {
   return (
     <form onSubmit={onSubmit}>
-      <div className="rounded-lg border border-slate-200 bg-white shadow-sm focus-within:border-slate-400 dark:border-white/10 dark:bg-slate-900/50 dark:shadow-none dark:focus-within:border-slate-700/40 transition-colors">
+      <div className="pharos-input">
         <textarea
           ref={(node) => {
             inputRef.current = node;
@@ -673,13 +648,13 @@ function ChatInput({
           className="w-full bg-transparent px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 resize-none outline-none"
         />
         <div className="flex items-center justify-between px-3 pb-2">
-          <span className="text-[10px] text-slate-400 dark:text-slate-600">
+          <span className="text-[10px] text-slate-500 dark:text-slate-600 tabular-nums">
             Enter = Senden · Shift+Enter = Neue Zeile · {input.length}/4000
           </span>
           <button
             type="submit"
             disabled={submitting || input.trim().length === 0}
-            className="inline-flex items-center gap-2 h-8 px-3 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+            className="pharos-btn-primary inline-flex items-center gap-2 h-8 px-3 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Send className="w-3.5 h-3.5" />
             Senden

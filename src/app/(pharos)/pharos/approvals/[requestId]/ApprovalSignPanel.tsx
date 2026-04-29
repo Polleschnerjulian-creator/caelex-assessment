@@ -77,14 +77,14 @@ export function ApprovalSignPanel({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-5 dark:border-white/5 dark:bg-slate-900/30">
+    <div className="pharos-card p-5">
       <div className="flex items-center gap-2 mb-3">
         <PenSquare className="w-4 h-4 text-slate-700 dark:text-slate-400" />
-        <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+        <h2 className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100">
           Mitzeichnen
         </h2>
       </div>
-      <p className="text-xs text-slate-600 dark:text-slate-400 mb-3 leading-relaxed">
+      <p className="text-xs text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">
         Deine Ed25519-Signatur wird unwiderruflich in die Hash-Chain
         eingetragen. Wähle die Rolle, in der du diesen Vorgang signierst.
       </p>
@@ -94,7 +94,7 @@ export function ApprovalSignPanel({
           value={role}
           onChange={(e) => setRole(e.target.value)}
           disabled={submitting}
-          className="text-xs px-3 py-2 rounded border border-slate-300 bg-white text-slate-800 dark:bg-slate-900/40 dark:border-white/10 dark:text-slate-200"
+          className="pharos-input text-xs px-3 py-2 text-slate-800 dark:text-slate-200"
         >
           {ALL_ROLES.map((r) => (
             <option key={r} value={r}>
@@ -110,7 +110,7 @@ export function ApprovalSignPanel({
           type="button"
           disabled={submitting}
           onClick={sign}
-          className="inline-flex items-center gap-1.5 text-xs font-medium px-4 py-2 rounded border border-slate-700 bg-slate-700 hover:bg-slate-700 text-white disabled:opacity-50"
+          className="pharos-btn-primary inline-flex items-center gap-1.5 text-xs font-medium px-4 py-2 disabled:opacity-50"
         >
           {submitting ? (
             <span className="inline-block w-3 h-3 rounded-full bg-current opacity-60 animate-pulse" />

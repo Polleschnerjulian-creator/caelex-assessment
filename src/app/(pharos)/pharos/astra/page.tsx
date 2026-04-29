@@ -51,13 +51,13 @@ export default async function PharosAstraPage() {
   return (
     <div className="space-y-5 max-w-4xl">
       <div>
-        <div className="text-[10px] tracking-[0.22em] uppercase text-slate-400/70 font-semibold">
+        <div className="text-[10px] tracking-[0.22em] uppercase text-slate-700 dark:text-slate-400/70 font-semibold">
           Pharos-Astra
         </div>
-        <h1 className="text-2xl font-semibold mt-1">
+        <h1 className="pharos-display text-3xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
           KI-Assistent für regulatorische Aufsicht
         </h1>
-        <p className="text-sm text-slate-400 mt-1">
+        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed max-w-3xl">
           Stelle Fragen zu Operatoren, Audit-Logs oder Compliance-Trends. Der
           Assistent ruft scope-gegated Tools auf — fremde Aufsichten sind
           unsichtbar. Jeder Tool-Call wird transparent angezeigt.

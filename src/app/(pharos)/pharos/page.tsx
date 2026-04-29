@@ -88,17 +88,17 @@ export default async function PharosDashboardPage() {
           <div className="text-[10px] tracking-[0.22em] uppercase text-slate-700 dark:text-slate-400/70 font-semibold">
             Aufsichts-Dashboard
           </div>
-          <h1 className="text-2xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
+          <h1 className="pharos-display text-3xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
             Willkommen zurück.
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5">
             {profile.authorityType.replace("_", " ")} · Zuständigkeit{" "}
             {profile.jurisdiction}
           </p>
         </div>
         <Link
           href="/pharos/oversights/new"
-          className="inline-flex items-center gap-2 h-9 px-4 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium shadow-sm"
+          className="pharos-btn-primary inline-flex items-center gap-2 h-9 px-4 text-sm font-medium"
         >
           <Plus className="w-4 h-4" />
           Aufsicht initiieren
@@ -126,30 +126,30 @@ export default async function PharosDashboardPage() {
       </div>
 
       {/* Recent oversights */}
-      <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/30">
-        <div className="px-5 py-3 border-b border-slate-200 dark:border-white/5 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+      <div className="pharos-card overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-slate-200/60 dark:border-white/5 flex items-center justify-between">
+          <h2 className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100">
             Aktuelle Aufsichten
           </h2>
           <Link
             href="/pharos/oversights"
-            className="text-xs text-slate-700 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-300 inline-flex items-center gap-1"
+            className="text-xs text-slate-700 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 inline-flex items-center gap-1 transition-colors"
           >
             Alle anzeigen
             <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
         {data.recentOversights.length === 0 ? (
-          <div className="px-5 py-10 text-center text-sm text-slate-500 dark:text-slate-500">
+          <div className="px-5 py-12 text-center text-sm text-slate-500 dark:text-slate-500">
             Noch keine Aufsichten. Klicke „Aufsicht initiieren" oben rechts, um
             die erste Beziehung zu einem Operator anzulegen.
           </div>
         ) : (
-          <ul className="divide-y divide-slate-200 dark:divide-white/5">
+          <ul className="divide-y divide-slate-200/60 dark:divide-white/5">
             {data.recentOversights.map((ov) => (
               <li
                 key={ov.id}
-                className="px-5 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
+                className="px-5 py-3.5 flex items-center justify-between hover:bg-slate-50/60 dark:hover:bg-white/[0.03] transition-colors"
               >
                 <div className="min-w-0">
                   <div className="text-sm font-medium truncate text-slate-900 dark:text-slate-100">
@@ -164,7 +164,7 @@ export default async function PharosDashboardPage() {
                   <StatusPill status={ov.status} />
                   <Link
                     href={`/pharos/operators/${ov.id}`}
-                    className="text-xs text-slate-600 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+                    className="text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
                   >
                     Öffnen →
                   </Link>
@@ -196,12 +196,12 @@ function KpiCard({
     slate: "text-slate-700 dark:text-slate-300",
   };
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-white/5 dark:bg-slate-900/30">
-      <div className="text-[11px] tracking-wider uppercase text-slate-500 font-medium">
+    <div className="pharos-stat px-4 py-3.5">
+      <div className="text-[10px] tracking-[0.18em] uppercase text-slate-500 font-semibold">
         {label}
       </div>
       <div
-        className={`text-2xl font-semibold mt-1 tabular-nums ${toneClasses[tone]}`}
+        className={`pharos-display text-2xl font-semibold mt-1 tabular-nums ${toneClasses[tone]}`}
       >
         {value}
       </div>

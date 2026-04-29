@@ -94,10 +94,10 @@ export default async function WorkflowInboxPage() {
           <div className="text-[10px] tracking-[0.22em] uppercase text-slate-700 dark:text-slate-400/70 font-semibold">
             Verfahrens-Inbox · Pharos
           </div>
-          <h1 className="text-2xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
+          <h1 className="pharos-display text-3xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
             Workflows & Fristen
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed max-w-3xl">
             Alle laufenden NIS2-Incident- und EU-Space-Act-Authorisations-
             Verfahren. SLA-Fristen werden automatisch alle 5 Min. geprüft;
             Breach-Transitions sind Ed25519-signiert in der Hash-Chain.
@@ -144,15 +144,19 @@ export default async function WorkflowInboxPage() {
         )}
       </Section>
 
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-[11px] text-slate-600 dark:border-white/5 dark:bg-white/[0.02] dark:text-slate-500 leading-relaxed">
-        <div className="flex items-center gap-2 mb-1 text-slate-700 dark:text-slate-400 font-medium">
+      <div className="pharos-card p-4 text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+        <div className="flex items-center gap-2 mb-1.5 text-slate-700 dark:text-slate-300 font-semibold">
           <Clock className="w-3.5 h-3.5" />
           SLA-Watchdog
         </div>
-        Cron <code>/api/cron/pharos-workflow-sla</code> läuft alle 5 Min. und
-        erzeugt automatische <code>_AFTER</code>-Transitions wenn Fristen
+        Cron <span className="pharos-code">
+          /api/cron/pharos-workflow-sla
+        </span>{" "}
+        läuft alle 5 Min. und erzeugt automatische{" "}
+        <span className="pharos-code">_AFTER</span>-Transitions wenn Fristen
         verstrichen sind. Jede Auto-Transition wird mit dem System-Schlüssel
-        signiert und in <code>WorkflowTransition</code> persistiert.
+        signiert und in <span className="pharos-code">WorkflowTransition</span>{" "}
+        persistiert.
       </div>
     </div>
   );
@@ -171,14 +175,16 @@ function Kpi({
 }) {
   const valueClass =
     tone === "alert"
-      ? "text-slate-900 dark:text-slate-300"
+      ? "text-slate-900 dark:text-slate-200"
       : "text-slate-900 dark:text-slate-100";
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-white/5 dark:bg-slate-900/30">
-      <div className="text-[11px] tracking-wider uppercase text-slate-500 font-medium">
+    <div className="pharos-stat px-4 py-3.5">
+      <div className="text-[10px] tracking-[0.18em] uppercase text-slate-500 font-semibold">
         {label}
       </div>
-      <div className={`text-2xl font-semibold mt-1 tabular-nums ${valueClass}`}>
+      <div
+        className={`pharos-display text-2xl font-semibold mt-1 tabular-nums ${valueClass}`}
+      >
         {value}
       </div>
     </div>
@@ -195,14 +201,14 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/30">
-      <div className="px-5 py-3 border-b border-slate-200 dark:border-white/5">
-        <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+    <div className="pharos-card overflow-hidden">
+      <div className="px-5 py-3.5 border-b border-slate-200/60 dark:border-white/5">
+        <h2 className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100">
           {title}
         </h2>
         <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>
       </div>
-      <ul className="divide-y divide-slate-200 dark:divide-white/5">
+      <ul className="divide-y divide-slate-200/60 dark:divide-white/5">
         {children}
       </ul>
     </div>
@@ -239,7 +245,7 @@ function CaseRow({ c }: { c: CaseRowData }) {
   }[tone];
 
   return (
-    <li className="px-5 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors">
+    <li className="px-5 py-3.5 flex items-center justify-between hover:bg-slate-50/60 dark:hover:bg-white/[0.03] transition-colors">
       <div className="min-w-0 flex items-center gap-3">
         <GitBranch className="w-4 h-4 text-slate-500 shrink-0" />
         <div className="min-w-0">
@@ -253,16 +259,16 @@ function CaseRow({ c }: { c: CaseRowData }) {
       </div>
       <div className="flex items-center gap-3">
         {tone === "alert" && (
-          <AlertTriangle className="w-4 h-4 text-slate-800 dark:text-slate-500" />
+          <AlertTriangle className="w-4 h-4 text-slate-700 dark:text-slate-400" />
         )}
         <span
-          className={`inline-flex items-center gap-1 text-[10px] tracking-wide uppercase px-2 py-0.5 rounded-full border ${toneClasses}`}
+          className={`inline-flex items-center gap-1 text-[10px] tracking-[0.16em] uppercase px-2.5 py-1 rounded-full border backdrop-blur-md font-semibold ${toneClasses}`}
         >
           {stateLabel}
         </span>
         <Link
           href={`/pharos/workflow/${c.id}`}
-          className="text-xs text-slate-600 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 inline-flex items-center gap-1"
+          className="text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 inline-flex items-center gap-1 transition-colors"
         >
           Öffnen
           <ArrowRight className="w-3 h-3" />

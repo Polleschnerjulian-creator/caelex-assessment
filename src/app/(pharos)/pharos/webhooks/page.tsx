@@ -74,10 +74,10 @@ export default async function WebhooksPage() {
         <div className="text-[10px] tracking-[0.22em] uppercase text-slate-700 dark:text-slate-400/70 font-semibold">
           External Operator Webhooks · Pharos
         </div>
-        <h1 className="text-2xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
+        <h1 className="pharos-display text-3xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
           Webhook-Endpoints
         </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed max-w-3xl">
           Externe Operatoren (= keine Caelex-User) können NIS2-Vorfälle und
           Compliance-Events per HMAC-signiertem Webhook an Pharos schicken. Pro
           Aufsicht ein Endpoint pro Operator. Anti-Replay via Nonce + ±5min
@@ -109,18 +109,24 @@ export default async function WebhooksPage() {
         }))}
       />
 
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-[11px] text-slate-600 leading-relaxed dark:border-white/5 dark:bg-white/[0.02] dark:text-slate-500">
-        <div className="font-medium text-slate-700 dark:text-slate-300 mb-1">
+      <div className="pharos-card p-5 text-[11px] text-slate-600 leading-relaxed dark:text-slate-400">
+        <div className="pharos-display font-semibold text-slate-900 dark:text-slate-100 mb-2">
           Signing-Recipe für externe Operatoren
         </div>
-        <pre className="bg-slate-900 text-slate-300 p-3 rounded overflow-x-auto text-[10px]">
+        <pre className="bg-gradient-to-br from-slate-900 to-slate-950 text-slate-300 p-3 rounded-xl overflow-x-auto text-[11px] border border-slate-800 shadow-[0_1px_0_rgba(255,255,255,0.04)_inset]">
           {`HMAC-SHA256(secret, timestamp + nonce + sha256(body))`}
         </pre>
-        Header pro Request: <code>x-pharos-timestamp</code> ·{" "}
-        <code>x-pharos-nonce</code> · <code>x-pharos-signature</code>. Body:
-        JSON mit Pflicht-Feld <code>eventType</code>. Erlaubte Events:{" "}
-        <code>nis2.early_warning</code>, <code>nis2.notification</code>,{" "}
-        <code>nis2.final_report</code>.
+        <p className="mt-3">
+          Header pro Request:{" "}
+          <span className="pharos-code">x-pharos-timestamp</span> ·{" "}
+          <span className="pharos-code">x-pharos-nonce</span> ·{" "}
+          <span className="pharos-code">x-pharos-signature</span>. Body: JSON
+          mit Pflicht-Feld <span className="pharos-code">eventType</span>.
+          Erlaubte Events:{" "}
+          <span className="pharos-code">nis2.early_warning</span>,{" "}
+          <span className="pharos-code">nis2.notification</span>,{" "}
+          <span className="pharos-code">nis2.final_report</span>.
+        </p>
       </div>
     </div>
   );
@@ -139,17 +145,19 @@ function Kpi({
 }) {
   const valueCls =
     tone === "ok"
-      ? "text-slate-800 dark:text-slate-300"
+      ? "text-slate-800 dark:text-slate-200"
       : "text-slate-900 dark:text-slate-100";
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-white/5 dark:bg-slate-900/30">
+    <div className="pharos-stat px-4 py-3.5">
       <div className="flex items-center gap-2">
         <Icon className="w-3.5 h-3.5 text-slate-500" />
-        <div className="text-[11px] tracking-wider uppercase text-slate-500 font-medium">
+        <div className="text-[10px] tracking-[0.18em] uppercase text-slate-500 font-semibold">
           {label}
         </div>
       </div>
-      <div className={`text-2xl font-semibold mt-1 tabular-nums ${valueCls}`}>
+      <div
+        className={`pharos-display text-2xl font-semibold mt-1 tabular-nums ${valueCls}`}
+      >
         {value}
       </div>
     </div>

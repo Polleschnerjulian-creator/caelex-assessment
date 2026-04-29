@@ -84,10 +84,10 @@ export default async function ApprovalsInboxPage() {
         <div className="text-[10px] tracking-[0.22em] uppercase text-slate-700 dark:text-slate-400/70 font-semibold">
           Multi-Party-Approval · Pharos
         </div>
-        <h1 className="text-2xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
+        <h1 className="pharos-display text-3xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
           Offene Mitzeichnungen
         </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed max-w-3xl">
           Substanzielle Behörden-Entscheidungen erfordern Ed25519-Signaturen von
           mehreren Approvern (k-of-n) mit Pflicht-Rollen. Jede Signatur deckt
           den unveränderten Payload ab — Manipulation invalidiert die
@@ -124,20 +124,23 @@ export default async function ApprovalsInboxPage() {
         </Section>
       )}
       {open.length === 0 && (
-        <div className="rounded-lg border border-slate-200 bg-white px-6 py-10 text-center text-sm text-slate-500 dark:border-white/5 dark:bg-slate-900/30">
+        <div className="pharos-card px-6 py-12 text-center text-sm text-slate-500">
           Keine offenen Approval-Requests.
         </div>
       )}
 
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-[11px] text-slate-600 dark:border-white/5 dark:bg-white/[0.02] dark:text-slate-500 leading-relaxed">
-        <div className="flex items-center gap-2 mb-1 text-slate-700 dark:text-slate-400 font-medium">
+      <div className="pharos-card p-4 text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+        <div className="flex items-center gap-2 mb-1.5 text-slate-700 dark:text-slate-300 font-semibold">
           <Clock className="w-3.5 h-3.5" />
           Auto-Expiry
         </div>
-        Stündlich läuft <code>/api/cron/pharos-approval-expiry</code> und
-        markiert nicht-abgeschlossene Requests nach Ablauf der ttl als EXPIRED.
-        Default-TTLs sind je ApprovalKind unterschiedlich (z.B. SANCTION_ORDER
-        240h, MDF_AMENDMENT 72h).
+        Stündlich läuft{" "}
+        <span className="pharos-code">
+          /api/cron/pharos-approval-expiry
+        </span>{" "}
+        und markiert nicht-abgeschlossene Requests nach Ablauf der ttl als
+        EXPIRED. Default-TTLs sind je ApprovalKind unterschiedlich (z.B.
+        SANCTION_ORDER 240h, MDF_AMENDMENT 72h).
       </div>
     </div>
   );
@@ -154,16 +157,18 @@ function Kpi({
 }) {
   const cls =
     tone === "alert"
-      ? "text-slate-900 dark:text-slate-300"
+      ? "text-slate-900 dark:text-slate-200"
       : tone === "warn"
-        ? "text-slate-700 dark:text-slate-300"
+        ? "text-slate-800 dark:text-slate-200"
         : "text-slate-900 dark:text-slate-100";
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-white/5 dark:bg-slate-900/30">
-      <div className="text-[11px] tracking-wider uppercase text-slate-500 font-medium">
+    <div className="pharos-stat px-4 py-3.5">
+      <div className="text-[10px] tracking-[0.18em] uppercase text-slate-500 font-semibold">
         {label}
       </div>
-      <div className={`text-2xl font-semibold mt-1 tabular-nums ${cls}`}>
+      <div
+        className={`pharos-display text-2xl font-semibold mt-1 tabular-nums ${cls}`}
+      >
         {value}
       </div>
     </div>
@@ -179,26 +184,23 @@ function Section({
   tone: "ok" | "warn" | "alert";
   children: React.ReactNode;
 }) {
-  const headerCls = {
-    ok: "text-slate-900 dark:text-slate-100",
-    warn: "text-slate-700 dark:text-slate-300",
-    alert: "text-slate-900 dark:text-slate-300",
-  }[tone];
   return (
-    <div className="rounded-lg border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/30">
-      <div className="px-5 py-3 border-b border-slate-200 dark:border-white/5 flex items-center gap-2">
+    <div className="pharos-card overflow-hidden">
+      <div className="px-5 py-3.5 border-b border-slate-200/60 dark:border-white/5 flex items-center gap-2">
         {tone === "alert" && (
-          <AlertTriangle className="w-4 h-4 text-slate-800 dark:text-slate-500" />
+          <AlertTriangle className="w-4 h-4 text-slate-700 dark:text-slate-400" />
         )}
         {tone === "warn" && (
-          <Clock className="w-4 h-4 text-slate-800 dark:text-slate-400" />
+          <Clock className="w-4 h-4 text-slate-700 dark:text-slate-400" />
         )}
         {tone === "ok" && (
           <CheckCheck className="w-4 h-4 text-slate-700 dark:text-slate-400" />
         )}
-        <h2 className={`text-sm font-semibold ${headerCls}`}>{title}</h2>
+        <h2 className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100">
+          {title}
+        </h2>
       </div>
-      <ul className="divide-y divide-slate-200 dark:divide-white/5">
+      <ul className="divide-y divide-slate-200/60 dark:divide-white/5">
         {children}
       </ul>
     </div>
@@ -226,7 +228,7 @@ function RequestRow({ r }: { r: ApprovalRowData }) {
   const remainingMs = r.expiresAt.getTime() - Date.now();
 
   return (
-    <li className="px-5 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/[0.03]">
+    <li className="px-5 py-3.5 flex items-center justify-between hover:bg-slate-50/60 dark:hover:bg-white/[0.03] transition-colors">
       <div className="min-w-0 flex items-center gap-3">
         <Scale className="w-4 h-4 text-slate-500 shrink-0" />
         <div className="min-w-0">
@@ -234,35 +236,35 @@ function RequestRow({ r }: { r: ApprovalRowData }) {
             {KIND_LABELS[r.kind] ?? r.kind}
           </div>
           <div className="text-[11px] text-slate-500 mt-0.5">
-            ID <code>{r.id.slice(0, 12)}…</code>
-            {r.oversightId && ` · Aufsicht ${r.oversightId.slice(0, 12)}…`} ·
-            initiiert von {r.initiatedBy.slice(0, 10)}…
+            ID <span className="pharos-code">{r.id.slice(0, 12)}…</span>
+            {r.oversightId && (
+              <>
+                {" "}
+                · Aufsicht{" "}
+                <span className="pharos-code">
+                  {r.oversightId.slice(0, 12)}…
+                </span>
+              </>
+            )}{" "}
+            · initiiert von {r.initiatedBy.slice(0, 10)}…
           </div>
           {rolesMissing.length > 0 && (
-            <div className="text-[10px] text-slate-700 dark:text-slate-400 mt-0.5">
+            <div className="text-[10px] text-slate-700 dark:text-slate-300 mt-1 font-medium">
               Fehlende Pflicht-Rollen: {rolesMissing.join(", ")}
             </div>
           )}
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <span className="text-[11px] text-slate-600 dark:text-slate-400 font-mono tabular-nums">
+        <span className="pharos-code text-[11px] tabular-nums">
           {have}/{need}
         </span>
-        <span
-          className={`text-[10px] tracking-wide uppercase px-2 py-0.5 rounded-full border ${
-            remainingMs < 2 * 3600_000
-              ? "bg-slate-50 text-slate-900 border-slate-300 dark:bg-white/[0.06] dark:text-slate-300 dark:border-white/15"
-              : remainingMs < 24 * 3600_000
-                ? "bg-slate-100 text-slate-900 border-slate-300 dark:bg-white/[0.06] dark:text-slate-200 dark:border-white/15"
-                : "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-500/15 dark:text-slate-300 dark:border-slate-500/30"
-          }`}
-        >
+        <span className="inline-flex items-center text-[10px] tracking-[0.16em] uppercase px-2.5 py-1 rounded-full bg-slate-100/70 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-white/10 backdrop-blur-md font-semibold">
           {formatDuration(remainingMs)}
         </span>
         <Link
           href={`/pharos/approvals/${r.id}`}
-          className="text-xs text-slate-600 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 inline-flex items-center gap-1"
+          className="text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 inline-flex items-center gap-1 transition-colors"
         >
           Öffnen
           <ArrowRight className="w-3 h-3" />

@@ -77,17 +77,18 @@ export function CaseDispatchPanel({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-5 dark:border-white/5 dark:bg-slate-900/30">
+    <div className="pharos-card p-5">
       <div className="flex items-center gap-2 mb-3">
         <Send className="w-4 h-4 text-slate-700 dark:text-slate-400" />
-        <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+        <h2 className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100">
           Erlaubte Aktionen
         </h2>
       </div>
-      <p className="text-xs text-slate-600 dark:text-slate-400 mb-3 leading-relaxed">
+      <p className="text-xs text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">
         Jede Aktion erzeugt eine Ed25519-signierte Transition in der Hash-Chain
-        des Vorgangs ({fsmId}). Aktionen können nicht rückgängig gemacht werden
-        — sie sind Teil des permanenten Audit-Trails.
+        des Vorgangs (<span className="pharos-code">{fsmId}</span>). Aktionen
+        können nicht rückgängig gemacht werden — sie sind Teil des permanenten
+        Audit-Trails.
       </p>
 
       <div className="flex flex-wrap gap-2">
@@ -95,25 +96,23 @@ export function CaseDispatchPanel({
           const tone = EVENT_TONES[ev] ?? "neutral";
           const label = EVENT_LABELS[ev] ?? ev;
           const isLoading = submitting === ev;
+          const btnClass =
+            tone === "approve" || tone === "danger"
+              ? "pharos-btn-primary"
+              : "pharos-btn-ghost";
           return (
             <button
               key={ev}
               type="button"
               disabled={!!submitting}
               onClick={() => dispatch(ev)}
-              className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                tone === "approve"
-                  ? "bg-slate-900 hover:bg-slate-800 text-white border-slate-900"
-                  : tone === "danger"
-                    ? "bg-slate-900 hover:bg-slate-800 text-white border-slate-800"
-                    : "bg-white hover:bg-slate-50 text-slate-800 border-slate-300 dark:bg-slate-900/40 dark:hover:bg-white/[0.06] dark:text-slate-200 dark:border-white/10"
-              }`}
+              className={`${btnClass} inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {isLoading ? (
                 <span className="inline-block w-3 h-3 rounded-full bg-current opacity-50 animate-pulse" />
               ) : null}
               {label}
-              <code className="text-[9px] opacity-70">{ev}</code>
+              <span className="pharos-code text-[9px] opacity-70">{ev}</span>
             </button>
           );
         })}

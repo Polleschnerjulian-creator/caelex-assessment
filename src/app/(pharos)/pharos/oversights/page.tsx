@@ -58,17 +58,17 @@ export default async function PharosOversightsPage() {
     <div className="space-y-6 max-w-6xl">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-[10px] tracking-[0.22em] uppercase text-slate-400/70 font-semibold">
+          <div className="text-[10px] tracking-[0.22em] uppercase text-slate-700 dark:text-slate-400/70 font-semibold">
             Aufsichten
           </div>
-          <h1 className="text-2xl font-semibold mt-1">
+          <h1 className="pharos-display text-3xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
             {oversights.length}{" "}
             {oversights.length === 1 ? "Aufsicht" : "Aufsichten"} insgesamt
           </h1>
         </div>
         <Link
           href="/pharos/oversights/new"
-          className="inline-flex items-center h-9 px-4 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium"
+          className="pharos-btn-primary inline-flex items-center h-9 px-4 text-sm font-medium"
         >
           Neue Aufsicht
         </Link>
@@ -78,25 +78,25 @@ export default async function PharosOversightsPage() {
         .filter((g) => g.items.length > 0)
         .map((g) => (
           <section key={g.key}>
-            <h2 className="text-xs uppercase tracking-wider text-slate-500 mb-2">
+            <h2 className="text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2 font-semibold">
               {g.label} · {g.items.length}
             </h2>
-            <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/30 divide-y divide-slate-200 dark:divide-white/5">
+            <div className="pharos-card divide-y divide-slate-200/60 dark:divide-white/5 overflow-hidden">
               {g.items.map((ov) => (
                 <Link
                   key={ov.id}
                   href={`/pharos/operators/${ov.id}`}
-                  className="flex items-center justify-between px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/[0.03]"
+                  className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-50/60 dark:hover:bg-white/[0.03] transition-colors"
                 >
                   <div className="min-w-0">
-                    <div className="text-sm font-medium truncate">
+                    <div className="text-sm font-medium truncate text-slate-900 dark:text-slate-100">
                       {ov.oversightTitle}
                     </div>
                     <div className="text-xs text-slate-500 mt-0.5">
                       {ov.operatorOrg.name} · {ov.legalReference}
                     </div>
                   </div>
-                  <div className="text-[11px] text-slate-500 ml-4 flex-shrink-0">
+                  <div className="text-[11px] text-slate-500 ml-4 flex-shrink-0 tabular-nums">
                     {new Date(ov.initiatedAt).toLocaleDateString("de-DE")}
                   </div>
                 </Link>
@@ -106,7 +106,7 @@ export default async function PharosOversightsPage() {
         ))}
 
       {oversights.length === 0 && (
-        <div className="rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/30 px-6 py-10 text-center text-sm text-slate-500">
+        <div className="pharos-card px-6 py-12 text-center text-sm text-slate-500">
           Du hast noch keine Aufsichten. Klicke „Neue Aufsicht", um die erste
           anzulegen.
         </div>

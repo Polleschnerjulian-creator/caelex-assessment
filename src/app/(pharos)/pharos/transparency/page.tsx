@@ -135,10 +135,10 @@ export default async function TransparencyPage() {
         <div className="text-[10px] tracking-[0.22em] uppercase text-slate-700 dark:text-slate-400/70 font-semibold">
           Glass Lighthouse · Transparenz-Dashboard
         </div>
-        <h1 className="text-2xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
+        <h1 className="pharos-display text-3xl font-semibold mt-1 text-slate-900 dark:text-slate-100">
           Verifiable Refusal — live verifizierbar.
         </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5 max-w-2xl leading-relaxed">
           Pharos macht jede AI-Antwort kryptografisch überprüfbar. Diese Seite
           fasst die sechs Schichten zusammen, die das garantieren.
         </p>
@@ -161,19 +161,19 @@ export default async function TransparencyPage() {
       </div>
 
       {/* Chain-Tip */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-white/5 dark:bg-slate-900/30">
+      <div className="pharos-card p-5">
         <div className="flex items-center gap-2 mb-2">
           <Activity className="w-4 h-4 text-slate-700 dark:text-slate-400" />
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+          <h2 className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100">
             Hash-Chain-Tip
           </h2>
         </div>
         {stats.chainTip ? (
           <>
-            <code className="block text-[11px] font-mono break-all text-slate-700 dark:text-slate-300">
+            <code className="pharos-code block text-[11px] break-all text-slate-700 dark:text-slate-300 mt-2 px-3 py-2 leading-relaxed">
               {stats.chainTip}
             </code>
-            <div className="text-[10px] text-slate-500 mt-1">
+            <div className="text-[10px] text-slate-500 mt-2 tracking-wide">
               Letzter Eintrag:{" "}
               {stats.chainTipAt
                 ? new Date(stats.chainTipAt).toLocaleString()
@@ -190,7 +190,7 @@ export default async function TransparencyPage() {
             href="/api/pharos/witness-checkpoint"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded border border-slate-300 bg-slate-50 text-slate-900 hover:bg-slate-100 dark:border-white/15 dark:bg-white/[0.04] dark:text-slate-300"
+            className="pharos-btn-ghost inline-flex items-center gap-1.5 text-xs px-3 py-1.5 text-slate-900 dark:text-slate-300"
           >
             <ExternalLink className="w-3 h-3" />
             Witness-Checkpoint JSON
@@ -199,7 +199,7 @@ export default async function TransparencyPage() {
             href="/api/pharos/citizen-audit"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded border border-slate-400 bg-slate-50 text-slate-900 hover:bg-slate-100 dark:border-white/15 dark:bg-white/[0.04] dark:text-slate-400"
+            className="pharos-btn-ghost inline-flex items-center gap-1.5 text-xs px-3 py-1.5 text-slate-900 dark:text-slate-400"
           >
             <ExternalLink className="w-3 h-3" />
             DSGVO-Auskunft
@@ -209,7 +209,7 @@ export default async function TransparencyPage() {
 
       {/* Pillars */}
       <div>
-        <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">
+        <h2 className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3 tracking-wide">
           Sechs Schichten
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -218,22 +218,22 @@ export default async function TransparencyPage() {
             return (
               <div
                 key={p.title}
-                className="rounded-lg border border-slate-200 bg-white p-4 dark:border-white/5 dark:bg-slate-900/30"
+                className="pharos-card pharos-card-interactive p-4"
               >
                 <div className="flex items-start gap-3">
-                  <div className="shrink-0 w-9 h-9 rounded-lg bg-slate-50 border border-slate-200 dark:bg-white/[0.04] dark:border-white/15 flex items-center justify-center">
+                  <div className="shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 border border-slate-200/70 dark:from-white/[0.06] dark:to-white/[0.02] dark:border-white/10 flex items-center justify-center shadow-[0_1px_0_rgba(255,255,255,0.6)_inset]">
                     <Icon className="w-4 h-4 text-slate-700 dark:text-slate-300" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-[10px] tracking-wider uppercase text-slate-500 font-semibold">
+                      <span className="text-[10px] tracking-[0.18em] uppercase text-slate-500 font-semibold">
                         Schicht {p.layer}
                       </span>
-                      <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                      <h3 className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100">
                         {p.title}
                       </h3>
                     </div>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed">
                       {p.description}
                     </p>
                     {p.verifyHref && (
@@ -241,7 +241,7 @@ export default async function TransparencyPage() {
                         href={p.verifyHref}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-2 inline-flex items-center gap-1 text-[11px] text-slate-800 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-300"
+                        className="mt-2 inline-flex items-center gap-1 text-[11px] text-slate-800 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-300 transition-colors"
                       >
                         <ExternalLink className="w-3 h-3" />
                         {p.verifyLabel}
@@ -256,10 +256,10 @@ export default async function TransparencyPage() {
       </div>
 
       {/* CLI hint */}
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-white/5 dark:bg-white/[0.02]">
+      <div className="pharos-card p-5">
         <div className="flex items-center gap-2 mb-2">
           <Database className="w-4 h-4 text-slate-600 dark:text-slate-400" />
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+          <h2 className="pharos-display text-sm font-semibold text-slate-900 dark:text-slate-100">
             Externe Verifikation
           </h2>
         </div>
@@ -267,10 +267,11 @@ export default async function TransparencyPage() {
           Jeder Pharos-Receipt ist mit reinen Node.js-Stdlib-Mitteln lokal
           verifizierbar — ohne Caelex-Software:
         </p>
-        <pre className="mt-2 px-3 py-2 rounded bg-slate-900 text-slate-300 text-[11px] font-mono overflow-x-auto">
-          npx pharos-verify &lt;entryId&gt;
+        <pre className="mt-3 px-4 py-3 rounded-xl bg-gradient-to-br from-slate-900 to-slate-950 text-slate-300 text-[11px] font-mono overflow-x-auto border border-slate-800 shadow-[0_1px_0_rgba(255,255,255,0.04)_inset,0_8px_24px_-8px_rgba(0,0,0,0.3)]">
+          <span className="text-slate-500">$ </span>npx pharos-verify
+          &lt;entryId&gt;
         </pre>
-        <p className="text-[11px] text-slate-500 dark:text-slate-500 mt-2">
+        <p className="text-[11px] text-slate-500 dark:text-slate-500 mt-3">
           Source:{" "}
           <Link
             href="https://github.com/Polleschnerjulian-creator/caelex-assessment/tree/main/packages/pharos-verify"
@@ -300,12 +301,12 @@ function Stat({
     warn: "text-slate-700 dark:text-slate-300",
   }[tone];
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-white/5 dark:bg-slate-900/30">
-      <div className="text-[11px] tracking-wider uppercase text-slate-500 font-medium">
+    <div className="pharos-stat px-4 py-3.5">
+      <div className="text-[10px] tracking-[0.18em] uppercase text-slate-500 font-semibold">
         {label}
       </div>
       <div
-        className={`text-2xl font-semibold mt-1 tabular-nums ${valueClasses}`}
+        className={`pharos-display text-2xl font-semibold mt-1 tabular-nums ${valueClasses}`}
       >
         {value}
       </div>

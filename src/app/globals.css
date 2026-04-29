@@ -124,6 +124,344 @@
       pointer-events: none;
     }
   }
+
+  /* ===== PHAROS LIQUID GLASS — ultra-modern monochrome ===== */
+  /* Light + dark, frosted-glass cards with edge-glow and noise tint. */
+
+  .pharos-canvas {
+    background:
+      radial-gradient(
+        ellipse 1200px 800px at 50% -100px,
+        rgba(15, 23, 42, 0.06) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 800px 600px at 100% 100%,
+        rgba(15, 23, 42, 0.04) 0%,
+        transparent 50%
+      ),
+      linear-gradient(180deg, #fafbfc 0%, #f1f5f9 100%);
+    min-height: 100vh;
+    position: relative;
+  }
+  .pharos-canvas.dark,
+  .dark .pharos-canvas {
+    background:
+      radial-gradient(
+        ellipse 1200px 800px at 50% -100px,
+        rgba(255, 255, 255, 0.06) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 800px 600px at 100% 100%,
+        rgba(255, 255, 255, 0.03) 0%,
+        transparent 50%
+      ),
+      linear-gradient(180deg, #060810 0%, #0a0f1a 100%);
+  }
+
+  /* Subtle grid pattern overlay — gives depth without color */
+  .pharos-canvas::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(15, 23, 42, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15, 23, 42, 0.025) 1px, transparent 1px);
+    background-size: 64px 64px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .dark .pharos-canvas::before {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  }
+  .pharos-canvas > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Pharos card — frosted, edge-glowing, ultra-modern */
+  .pharos-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.62);
+    backdrop-filter: blur(32px) saturate(1.4);
+    -webkit-backdrop-filter: blur(32px) saturate(1.4);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 16px;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.9) inset,
+      0 12px 40px -12px rgba(15, 23, 42, 0.18),
+      0 4px 12px -4px rgba(15, 23, 42, 0.08);
+    transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .pharos-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.45) 0%,
+      transparent 30%
+    );
+    pointer-events: none;
+  }
+  .dark .pharos-card {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.06) inset,
+      0 24px 64px -16px rgba(0, 0, 0, 0.6),
+      0 8px 24px -4px rgba(0, 0, 0, 0.3);
+  }
+  .dark .pharos-card::before {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.04) 0%,
+      transparent 30%
+    );
+  }
+
+  /* Interactive variant — lifts on hover */
+  .pharos-card-interactive {
+    transition: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .pharos-card-interactive:hover {
+    border-color: rgba(15, 23, 42, 0.16);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.95) inset,
+      0 24px 60px -12px rgba(15, 23, 42, 0.25),
+      0 8px 20px -4px rgba(15, 23, 42, 0.1);
+    transform: translateY(-1px);
+  }
+  .dark .pharos-card-interactive:hover {
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.1) inset,
+      0 32px 80px -16px rgba(0, 0, 0, 0.7),
+      0 12px 28px -4px rgba(0, 0, 0, 0.35);
+  }
+
+  /* Floating tier — for modals & dropdowns */
+  .pharos-floating {
+    position: relative;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(48px) saturate(1.6);
+    -webkit-backdrop-filter: blur(48px) saturate(1.6);
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    border-radius: 20px;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.95) inset,
+      0 32px 80px -20px rgba(15, 23, 42, 0.32),
+      0 12px 32px -8px rgba(15, 23, 42, 0.16);
+  }
+  .dark .pharos-floating {
+    background: rgba(20, 24, 36, 0.7);
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.1) inset,
+      0 48px 120px -24px rgba(0, 0, 0, 0.8),
+      0 16px 40px -8px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Pharos sidebar — heavy frosted glass */
+  .pharos-sidebar {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(40px) saturate(1.5);
+    -webkit-backdrop-filter: blur(40px) saturate(1.5);
+    border-right: 1px solid rgba(15, 23, 42, 0.06);
+  }
+  .dark .pharos-sidebar {
+    background: rgba(10, 14, 24, 0.55);
+    border-right-color: rgba(255, 255, 255, 0.06);
+  }
+
+  /* Pharos header — sticky frosted with edge-fade */
+  .pharos-header {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(32px) saturate(1.4);
+    -webkit-backdrop-filter: blur(32px) saturate(1.4);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  }
+  .dark .pharos-header {
+    background: rgba(10, 14, 24, 0.7);
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+  }
+
+  /* Pharos primary button — high-contrast pill with subtle glow */
+  .pharos-btn-primary {
+    position: relative;
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    color: white;
+    border: 1px solid #0f172a;
+    border-radius: 10px;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.12) inset,
+      0 4px 12px -2px rgba(15, 23, 42, 0.4),
+      0 2px 4px rgba(15, 23, 42, 0.2);
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .pharos-btn-primary:hover {
+    background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.16) inset,
+      0 6px 16px -2px rgba(15, 23, 42, 0.5),
+      0 3px 6px rgba(15, 23, 42, 0.25);
+    transform: translateY(-0.5px);
+  }
+  .dark .pharos-btn-primary {
+    background: linear-gradient(180deg, #f8fafc 0%, #cbd5e1 100%);
+    color: #0f172a;
+    border-color: #cbd5e1;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.6) inset,
+      0 4px 12px -2px rgba(0, 0, 0, 0.5);
+  }
+  .dark .pharos-btn-primary:hover {
+    background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
+  }
+
+  /* Pharos secondary button — ghost with hover-fill */
+  .pharos-btn-ghost {
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    border-radius: 10px;
+    color: #0f172a;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .pharos-btn-ghost:hover {
+    background: rgba(15, 23, 42, 0.04);
+    border-color: rgba(15, 23, 42, 0.2);
+  }
+  .dark .pharos-btn-ghost {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f1f5f9;
+  }
+  .dark .pharos-btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Pharos display heading — ultra-modern serif-like display feel */
+  .pharos-display {
+    font-feature-settings:
+      "ss01" on,
+      "cv11" on;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+
+  /* Edge-light effect on focused/active inputs */
+  .pharos-input {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    border-radius: 10px;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .pharos-input:focus,
+  .pharos-input:focus-within {
+    border-color: rgba(15, 23, 42, 0.4);
+    box-shadow:
+      0 0 0 3px rgba(15, 23, 42, 0.06),
+      0 1px 0 rgba(255, 255, 255, 0.5) inset;
+    outline: none;
+  }
+  .dark .pharos-input {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  .dark .pharos-input:focus,
+  .dark .pharos-input:focus-within {
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow:
+      0 0 0 3px rgba(255, 255, 255, 0.08),
+      0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  }
+
+  /* Sidebar nav: active state with frosted glass + edge highlight */
+  .pharos-nav-active {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.85) 0%,
+      rgba(248, 250, 252, 0.6) 100%
+    );
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.04),
+      0 1px 0 rgba(255, 255, 255, 0.8) inset,
+      0 -1px 0 rgba(15, 23, 42, 0.02) inset;
+  }
+  .dark .pharos-nav-active {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(255, 255, 255, 0.04) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.3),
+      0 1px 0 rgba(255, 255, 255, 0.08) inset;
+  }
+
+  /* Stat-card: tabular display surface for big numbers */
+  .pharos-stat {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.72) 0%,
+      rgba(255, 255, 255, 0.55) 100%
+    );
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    border-radius: 14px;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.85) inset,
+      0 8px 24px -8px rgba(15, 23, 42, 0.08);
+    transition: all 240ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .pharos-stat:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.9) inset,
+      0 12px 32px -8px rgba(15, 23, 42, 0.12);
+  }
+  .dark .pharos-stat {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.02) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.06) inset,
+      0 8px 24px -8px rgba(0, 0, 0, 0.4);
+  }
+  .dark .pharos-stat:hover {
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.08) inset,
+      0 12px 32px -8px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Inline code chip — for hashes, IDs, hex values */
+  .pharos-code {
+    font-family: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-feature-settings: "ss01", "cv11", "tnum";
+    background: rgba(15, 23, 42, 0.04);
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    border-radius: 6px;
+    padding: 1px 6px;
+    font-size: 0.78em;
+    letter-spacing: -0.01em;
+  }
+  .dark .pharos-code {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
 }
 
 @layer base {
