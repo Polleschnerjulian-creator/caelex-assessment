@@ -111,7 +111,20 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       reply: result.reply,
+      abstained: result.abstained ?? false,
       toolCalls: result.toolCalls,
+      // Citations werden zur UI durchgereicht und von ihr als
+      // klickbare Provenance-Liste unter der Antwort gerendert.
+      // Jede Citation enthält contentHash + retrievedAt — der Behörden-
+      // User kann jede Aussage später kryptografisch verifizieren.
+      citations: result.citations ?? [],
+      // Triple-Hash-Receipt: Ed25519-signierte kryptografische Quittung
+      // über die gesamte Inferenz. Extern via `npx pharos-verify`
+      // verifizierbar — der UI-Layer rendert eine "Verify"-Aktion.
+      receipt: result.receipt ?? null,
+      // Hash-Chain-Entries pro berührter Aufsicht — Operator sieht
+      // diese Einträge live in seinem Audit-Center.
+      chainEntries: result.chainEntries ?? [],
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

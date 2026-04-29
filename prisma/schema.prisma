@@ -9246,3 +9246,120 @@ model AtlasWorkspaceCard {
 
   @@index([workspaceId, createdAt])
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHAROS NORM-ANCHOR INDEX
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Deterministischer Norm-Index für die Pharos-AI Citation-Layer. KEIN
+// Vector-DB, KEIN Embedding-API-Call — wir nutzen Postgres-Volltext
+// (tsvector / GIN-Index) und hashen jeden Norm-Inhalt mit sha256, damit
+// jede Citation kryptografisch an einer konkreten Norm-Version hängt.
+//
+// Wenn EUR-Lex eine Norm ändert, ändert sich contentHash → der Norm-
+// Drift-Sentinel (Cron) erkennt das und feuert NormDriftAlert. Operator-
+// und Behörden-Receipt für die alte Norm bleiben verifizierbar (Hash
+// in der Aufsichts-Hash-Chain), aber als "superseded" markiert.
+
+/// Eine atomare Norm-Einheit (Artikel, Paragraph, Erwägungsgrund).
+/// Granularität bewusst grob: "EUSPACEACT.ART.7" statt jeden Absatz —
+/// die span-Property der Citation deckt feinere Verweise ab.
+model NormAnchor {
+  /// Stable Identifier — z.B. "EUSPACEACT.ART.7" oder "BWRG.PARA.5".
+  /// Form: "<JURISDICTION>.<INSTRUMENT>.<UNIT>.<NUMBER>" — alle
+  /// uppercase, dot-separated. Wird zur Citation-ID konkateniert
+  /// als "NORM:<id>".
+  id String @id
+
+  /// ISO country / jurisdiction code: "EU", "DE", "FR", "UK", "IT",
+  /// "ES", "LU", "NL", "PL", "AT", "BE", "SE", "NATO".
+  jurisdiction String
+
+  /// Welches Rechtsinstrument: "EU_SPACE_ACT", "NIS2", "BWRG", "LOS",
+  /// "OSA_2018", "DSA", "AI_ACT", etc. Frei-text aber geclustert.
+  instrument String
+
+  /// Welche Einheit ist das? "ARTICLE", "PARAGRAPH", "RECITAL",
+  /// "ANNEX". Treibt UI-Rendering ("Art. 7" vs "§ 5" vs "Erwgr. 12").
+  unit String
+
+  /// Ordnungs-Nummer wie sie in der Norm steht — kann "7" oder "7a"
+  /// oder "7(2)(b)" sein.
+  number String
+
+  /// Menschen-lesbarer Titel, z.B. "Authorisation requirements for
+  /// space activities".
+  title String?
+
+  /// Voller Norm-Text. Lang erlaubt — Postgres tsvector packt das.
+  text String @db.Text
+
+  /// SHA-256 prefix über den Text. Wird in Citation.contentHash
+  /// embedded. Norm-Drift-Sentinel vergleicht regelmäßig gegen die
+  /// EUR-Lex/Bundesgesetzblatt-Quelle.
+  contentHash String
+
+  /// Generated tsvector column für Volltext-Suche. Postgres-spezifisch,
+  /// in der Migration als `GENERATED ALWAYS AS (...)` materialisiert.
+  /// In Prisma als Unsupported markiert — wird nur per Raw-SQL gequeried.
+  textSearch Unsupported("tsvector")?
+
+  /// Deeplink zur kanonischen Quelle (EUR-Lex, gesetze-im-internet.de,
+  /// legifrance.gouv.fr, etc.).
+  sourceUrl String?
+
+  /// Wann ist die Norm in Kraft getreten?
+  effectiveFrom DateTime?
+
+  /// Wenn ersetzt: id der Nachfolgerom (self-reference). Old Norm
+  /// bleibt für die Verifikation alter Receipts erhalten, aber neue
+  /// Citations werden auf die Nachfolgerin gemappt.
+  supersededById String?
+  supersededBy   NormAnchor?  @relation("NormSupersession", fields: [supersededById], references: [id])
+  supersedes     NormAnchor[] @relation("NormSupersession")
+
+  /// Sprach-Code des Texts. "de", "en", "fr", "it" etc. Eine Norm
+  /// kann mehrere Sprachversionen als separate Anchors haben (gleiche
+  /// id-Wurzel + ".de" / ".en" Suffix? — oder als parallel rows).
+  /// Phase-1: nur EN + DE.
+  language String @default("en")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([jurisdiction, instrument])
+  @@index([contentHash])
+  // GIN-Index auf textSearch wird per Raw-SQL Migration ergänzt — Prisma
+  // versteht GIN nativ noch nicht via @@index.
+}
+
+/// Wenn die Norm-Drift-Sentinel-Cron-Route eine Änderung im Quelltext
+/// erkennt, wird ein Alert pro betroffener Aufsicht erzeugt. Behörde
+/// bekommt Push-Notification, kann Re-Review-Workflow starten.
+model NormDriftAlert {
+  id String @id @default(cuid())
+
+  normAnchorId String
+  /// Hash zum Zeitpunkt der Erkennung — was hat sich geändert?
+  oldContentHash String
+  newContentHash String
+  /// Welche Aufsicht ist betroffen? (Best-Effort-Match über Citation-IDs
+  /// in OversightAccessLog.context — Audit-Schreiber sieht das.)
+  oversightId String?
+
+  /// Status der Behörden-Reaktion auf den Drift.
+  status String @default("OPEN") // OPEN | ACKNOWLEDGED | RESOLVED | DISMISSED
+
+  /// Snapshot des alten Texts (für Diff-Anzeige). Optional damit
+  /// große Norm-Texte nicht unbegrenzt wachsen — bei alten Alerts
+  /// löschen wir das hier weg.
+  oldTextSnapshot String? @db.Text
+
+  detectedAt    DateTime  @default(now())
+  acknowledgedAt DateTime?
+  resolvedAt    DateTime?
+
+  @@index([normAnchorId])
+  @@index([oversightId, status])
+  @@index([status, detectedAt])
+}

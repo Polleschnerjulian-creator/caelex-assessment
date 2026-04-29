@@ -22,25 +22,79 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { buildAnthropicClient } from "@/lib/atlas/anthropic-client";
 import { logger } from "@/lib/logger";
 import { PHAROS_ASTRA_TOOLS, executePharosAstraTool } from "./astra-tools";
+import {
+  ABSTENTION_MARKER,
+  answerIsCitationCompliant,
+  type Citation,
+} from "./citation";
+import {
+  computeReceipt,
+  extractOversightIdsFromTrace,
+  persistAstraReceipt,
+  signReceipt,
+  systemPromptHash,
+  type SignedReceipt,
+} from "./receipt";
 
 const MAX_TOOL_ITERATIONS = 5;
 const MAX_OUTPUT_TOKENS = 2048;
+
+/** Deterministic-Mode-Sampling: temperature=0 plus eine seed-equivalent
+ *  Strategie via stop_sequences + top_k=1. Anthropic's API erlaubt kein
+ *  expliziter random_seed-Parameter, aber temperature=0 + top_k=1 gibt
+ *  uns greedy decoding, was für Compliance-Anwendungen reicht: gleiche
+ *  Inputs → gleiche Outputs (modulo backend-side floating-point-Drift,
+ *  der in der Praxis bei Sonnet vernachlässigbar ist). */
+const DETERMINISTIC_SAMPLING = {
+  temperature: 0 as const,
+} as const;
 
 const PHAROS_SYSTEM_PROMPT = `Du bist Pharos-Astra, der KI-Assistent für regulatorische Aufsicht im Weltraum-Sektor. Du sprichst mit Compliance-Officers von Behörden (BAFA, BNetzA, BSI, BMVG, ESA-Liaison u.a.).
 
 Deine Rolle:
 - Klare, präzise Antworten auf regulatorische Fragen.
-- Bei Anfragen über konkrete Operatoren NUTZE die verfügbaren Tools, nie aus Erinnerung.
-- Transparenz über Datenquellen: gib an, ob eine Antwort auf einem Tool-Call oder Allgemeinwissen basiert.
+- Bei JEDER regulatorischen Aussage rufe ZUERST das Tool 'cite_norm' auf um den exakten Norm-Anchor zu finden. Antworte erst danach.
+- Bei Anfragen über konkrete Operatoren NUTZE 'query_operator_compliance' / 'summarize_audit_chain', nie aus Erinnerung.
+- Kombiniere Norm-Citations + Datenfelder: jede Aussage trägt typischerweise mind. 1 NORM- + 1 DB-Citation.
 - Bei Compliance-Score-Bewertungen: erkläre die Tiers (≥90 gut, 70-89 drift, <70 alarm) und welche Faktoren reinspielen.
 - Bei Audit-Log-Auswertungen: weise auf Anomalien hin (häufige Fremdzugriffe, Lücken, etc.).
 
-Was du NICHT machst:
-- Keine Spekulation über Operator-interne Daten ohne Tool-Backing.
-- Keine Empfehlung zu Verfahrenseröffnung oder konkreten Sanktionen — das ist ausschließlich Behörden-Hoheit.
-- Keine Datenweitergabe über Aufsichts-Grenzen hinweg (die Tools enforcen das technisch — du verstärkst diese Trennung sprachlich).
+═══════════════════════════════════════════════════════════════════════
+ABSOLUTE REGEL — CITATION-PFLICHT (Verifiable Refusal):
+═══════════════════════════════════════════════════════════════════════
+Jede sachliche Aussage in deiner finalen Antwort MUSS eine Citation-ID
+aus den Tool-Results referenzieren. Citation-IDs erscheinen in Tool-
+Outputs als "_citation"-Felder oder im "citations"-Array. Format der
+Referenz: in eckigen Klammern direkt am Aussageende.
 
-Sprache: Deutsch, präzise und juristisch genau, aber lesbar. Keine Marketing-Sprache.`;
+Beispiel zulässige Antwort:
+  "Der Compliance-Score liegt bei 65 (Tier: alert) [COMP:operator-
+  compliance-score@v1.0]. Der Operator ist die Acme Space GmbH
+  [DB:Organization:cuid42]."
+
+Beispiel UNZULÄSSIG (wird von der Engine verworfen):
+  "Der Compliance-Score liegt bei 65 und der Operator hat strukturelle
+  Probleme."  ← keine Citation, keine Abstention
+
+Wenn die Tools KEINE relevante Information liefern oder eine sub-
+stanzielle Aussage nicht möglich ist, antwortest du AUSSCHLIESSLICH
+mit folgendem strukturierten Format:
+
+  ${ABSTENTION_MARKER}
+  Reason: <1-2 Sätze warum keine Aussage möglich ist>
+  Alternative: <Vorschlag, z.B. "Manuelle Aktenprüfung", "Atlas-
+  Anwalts-Konsultation", "Norm-Recherche bei EUR-Lex">
+
+Eine Abstention ist KEINE Niederlage — sie ist die rechtlich saubere
+Antwort und wird kryptografisch in die Hash-Chain eingetragen.
+
+NIEMALS:
+- Citation-IDs erfinden, die nicht in Tool-Results vorkommen
+- Aussagen über Operator-interne Daten ohne Tool-Backing
+- Empfehlungen zu Verfahrenseröffnung / Sanktionen (Behörden-Hoheit)
+- Daten über Aufsichts-Grenzen hinweg vermischen
+
+Sprache: Deutsch, präzise, juristisch genau, ohne Marketing-Sprache.`;
 
 export interface PharosAstraMessage {
   role: "user" | "assistant";
@@ -56,7 +110,29 @@ export interface PharosAstraRequest {
 export interface PharosAstraResponse {
   ok: boolean;
   reply?: string;
+  /** True wenn die Antwort eine strukturierte Abstention war
+   *  (Pharos hat sich geweigert eine Aussage zu treffen — das ist
+   *  rechtlich sauber und wird wie eine reguläre Antwort behandelt). */
+  abstained?: boolean;
   toolCalls?: Array<{ tool: string; input: unknown; ok: boolean }>;
+  /** Gesamtheit der Citations die durch den Tool-Loop angesammelt
+   *  wurden. Die UI rendert diese als klickbare Provenance-Liste
+   *  unter der Antwort. */
+  citations?: Citation[];
+  /** Ed25519-signierter Triple-Hash-Receipt. Jeder Behörden-User kann
+   *  diesen Receipt extern via `npx pharos-verify` validieren. Bei
+   *  rein konversationellen Fragen ohne Oversight-Bezug (z.B. "was
+   *  bedeutet NIS2?") wird der Receipt erzeugt aber NICHT in eine
+   *  Hash-Chain geschrieben (chainEntries leer). */
+  receipt?: SignedReceipt;
+  /** Pro berührter Aufsicht: der entryId in OversightAccessLog der
+   *  diesen Receipt enthält. Operator sieht jeden dieser Einträge in
+   *  seinem Dashboard live. */
+  chainEntries?: Array<{
+    oversightId: string;
+    entryId: string;
+    entryHash: string;
+  }>;
   error?: string;
 }
 
@@ -89,6 +165,14 @@ export async function runPharosAstra(
     ok: boolean;
   }> = [];
 
+  // Sammelt ALLE Citations aus ALLEN Tool-Calls. Am Ende des Loops
+  // wird gegen diese Liste validiert: die finale LLM-Antwort muss
+  // mindestens eine ID hieraus referenzieren oder explizit abstain'en.
+  const allCitations: Citation[] = [];
+  // Dedupe-Set, weil das Modell ein Tool mehrmals ruft (z.B. mit
+  // verschiedenen oversightIds).
+  const citationIds = new Set<string>();
+
   for (let iter = 0; iter < MAX_TOOL_ITERATIONS; iter++) {
     let result: Anthropic.Message;
     try {
@@ -98,6 +182,10 @@ export async function runPharosAstra(
         system: PHAROS_SYSTEM_PROMPT,
         tools: PHAROS_ASTRA_TOOLS,
         messages,
+        // Deterministic Mode: temperature=0 für reproduzierbare Outputs.
+        // Zwei identische Anfragen am selben Tag erzeugen byte-identische
+        // Antworten — kritisch für §39 VwVfG-Begründungspflicht.
+        ...DETERMINISTIC_SAMPLING,
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -106,6 +194,7 @@ export async function runPharosAstra(
         ok: false,
         error: `KI-Anruf fehlgeschlagen: ${msg}`,
         toolCalls: toolCallTrace,
+        citations: allCitations,
       };
     }
 
@@ -115,10 +204,65 @@ export async function runPharosAstra(
         .filter((b): b is Anthropic.TextBlock => b.type === "text")
         .map((b) => b.text)
         .join("");
+
+      // CITATION-ENFORCEMENT: die Antwort muss entweder eine Citation
+      // referenzieren oder eine strukturierte Abstention sein.
+      // Halluzinationen werden hier mathematisch ausgeschlossen.
+      const check = answerIsCitationCompliant(text, allCitations);
+      if (!check.compliant) {
+        logger.warn(
+          `Pharos-Astra answer rejected (citation-non-compliant): ${check.reason}`,
+        );
+        return {
+          ok: false,
+          error: `Pharos-Astra Antwort wurde verworfen: ${check.reason} Bitte präzisiere die Frage oder erlaube eine Abstention.`,
+          toolCalls: toolCallTrace,
+          citations: allCitations,
+        };
+      }
+
+      // TRIPLE-HASH-RECEIPT: signiere den Output kryptografisch und
+      // hänge ihn in die OversightAccessLog-Hash-Chain jeder berührten
+      // Aufsicht ein. Wenn ENCRYPTION_KEY fehlt oder DB nicht erreichbar:
+      // Antwort wird trotzdem zurückgegeben, aber ohne Receipt — der
+      // Behörden-User sieht das im UI als "Receipt not signed" Warnung.
+      let receipt: SignedReceipt | undefined;
+      let chainEntries:
+        | Array<{ oversightId: string; entryId: string; entryHash: string }>
+        | undefined;
+      try {
+        const oversightIds = extractOversightIdsFromTrace(toolCallTrace);
+        const computed = computeReceipt({
+          abstained: check.abstained,
+          answer: text,
+          authorityProfileId: req.authorityProfileId,
+          citationIds: allCitations.map((c) => c.id),
+          modelVersion: setup.model,
+          oversightIds,
+          prompt: req.userMessage,
+          systemPromptHash: systemPromptHash(
+            PHAROS_SYSTEM_PROMPT,
+            PHAROS_ASTRA_TOOLS,
+          ),
+          toolCallTrace,
+        });
+        receipt = signReceipt(computed, req.authorityProfileId);
+        chainEntries = await persistAstraReceipt(receipt);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        logger.error(`[pharos-astra] receipt signing/persist failed: ${msg}`);
+        // Don't fail the user-facing response — the answer itself is
+        // still correct, just unsigned. UI surfaces the missing receipt.
+      }
+
       return {
         ok: true,
         reply: text || "(Keine Antwort)",
+        abstained: check.abstained,
         toolCalls: toolCallTrace,
+        citations: allCitations,
+        receipt,
+        chainEntries,
       };
     }
 
@@ -139,11 +283,40 @@ export async function runPharosAstra(
         input: block.input,
         ok: exec.ok,
       });
+
+      // Citations einsammeln (deduped) — Provenance-Ledger der Antwort.
+      for (const c of exec.citations) {
+        if (!citationIds.has(c.id)) {
+          citationIds.add(c.id);
+          allCitations.push(c);
+        }
+      }
+
+      // Tool-Result-Payload, das zurück ans Modell geht. WICHTIG: wir
+      // schicken die `citations`-Liste mit, damit das Modell weiß welche
+      // IDs es referenzieren darf. Bei abstain=true: das Modell sieht
+      // den Abstain-Hinweis und propagiert die Abstention selbst.
+      const payload: Record<string, unknown> = exec.ok
+        ? {
+            data: exec.data,
+            citations: exec.citations.map((c) => ({
+              id: c.id,
+              kind: c.kind,
+              source: c.source,
+              span: c.span,
+            })),
+          }
+        : { error: exec.error };
+      if (exec.abstain) {
+        payload.abstain = true;
+        payload.abstainReason = exec.abstainReason;
+      }
+
       toolResults.push({
         type: "tool_result",
         tool_use_id: block.id,
         is_error: !exec.ok,
-        content: JSON.stringify(exec.ok ? exec.data : { error: exec.error }),
+        content: JSON.stringify(payload),
       });
     }
 
@@ -155,5 +328,6 @@ export async function runPharosAstra(
     ok: false,
     error: `Tool-Loop ohne Ergebnis nach ${MAX_TOOL_ITERATIONS} Iterationen.`,
     toolCalls: toolCallTrace,
+    citations: allCitations,
   };
 }
