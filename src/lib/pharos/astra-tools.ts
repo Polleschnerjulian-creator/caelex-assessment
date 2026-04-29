@@ -104,6 +104,22 @@ export const PHAROS_ASTRA_TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: "webhook_health_stats",
+    description:
+      "Liefert Webhook-Health-Aggregate für die callende Behörde: Anzahl aktive Endpoints, Invocations letzte 24h, Anteil ACCEPTED vs REJECTED, häufigste Reject-Gründe. Hilft Sachbearbeitern bei Operator-Anomalie-Detection ('hat ein Operator wiederholt mit falscher Signatur gepingt?').",
+    input_schema: {
+      type: "object",
+      properties: {
+        windowHours: {
+          type: "integer",
+          minimum: 1,
+          maximum: 720,
+          description: "Zeitfenster für Aggregate (default 24h).",
+        },
+      },
+    },
+  },
+  {
     name: "list_pending_approvals",
     description:
       "Listet offene k-of-n Mitzeichnungen (Approval-Requests) der callenden Behörde — mit Quorum-Status (have/need), fehlenden Pflicht-Rollen, Restzeit bis Expiry. Hilft dem Sachbearbeiter zu sehen wo seine Signatur fehlt oder wer noch fehlt.",
@@ -640,6 +656,82 @@ export async function executePharosAstraTool(
           },
           privacyGuarantee:
             "ε-Differential-Privacy mit Laplace-Mechanismus. Eine Veränderung der Daten eines beliebigen einzelnen Operators ändert die Output-Verteilung um maximal exp(ε).",
+        },
+      };
+    }
+
+    if (name === "webhook_health_stats") {
+      const windowHours =
+        typeof input.windowHours === "number" ? input.windowHours : 24;
+      const since = new Date(Date.now() - windowHours * 3600_000);
+
+      const [endpoints, invocations] = await Promise.all([
+        prisma.pharosWebhookEndpoint.findMany({
+          where: { authorityProfileId: ctx.authorityProfileId },
+          select: { id: true, status: true, externalOperatorName: true },
+        }),
+        prisma.pharosWebhookInvocation.findMany({
+          where: {
+            endpoint: { authorityProfileId: ctx.authorityProfileId },
+            receivedAt: { gte: since },
+          },
+          select: {
+            id: true,
+            endpointId: true,
+            status: true,
+            eventType: true,
+            receivedAt: true,
+          },
+          take: 1000,
+        }),
+      ]);
+
+      const total = invocations.length;
+      const accepted = invocations.filter(
+        (i) => i.status === "ACCEPTED",
+      ).length;
+      const rejectedByReason: Record<string, number> = {};
+      for (const i of invocations) {
+        if (i.status !== "ACCEPTED") {
+          rejectedByReason[i.status] = (rejectedByReason[i.status] ?? 0) + 1;
+        }
+      }
+      const activeEndpoints = endpoints.filter(
+        (e) => e.status === "ACTIVE",
+      ).length;
+
+      const citations: Citation[] = [
+        computationCitation({
+          name: "webhook-health-aggregate",
+          version: "v1.0",
+          inputs: {
+            windowHours,
+            totalEndpoints: endpoints.length,
+            totalInvocations: total,
+          },
+        }),
+      ];
+
+      return {
+        ok: true,
+        citations,
+        data: {
+          windowHours,
+          totalEndpoints: endpoints.length,
+          activeEndpoints,
+          totalInvocations: total,
+          acceptedCount: accepted,
+          rejectedCount: total - accepted,
+          acceptedRate:
+            total === 0 ? null : Number((accepted / total).toFixed(3)),
+          rejectionsByReason: rejectedByReason,
+          _citation: citations[0].id,
+          interpretation:
+            total === 0
+              ? "Keine Webhook-Aufrufe im Zeitfenster — Operator-Aktivität gering oder nicht eingerichtet."
+              : (total - accepted) / total > 0.1
+                ? "Auffällig: > 10% der Aufrufe wurden abgewiesen. Anomalie-Verdacht."
+                : "Webhook-Health unauffällig.",
         },
       };
     }

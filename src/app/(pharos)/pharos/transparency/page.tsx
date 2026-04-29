@@ -40,12 +40,20 @@ async function loadStats() {
     openDriftAlerts,
     activeOversights,
     authorityCount,
+    workflowOpen,
+    approvalOpen,
+    webhookActive,
   ] = await Promise.all([
     prisma.oversightAccessLog.count(),
     prisma.normAnchor.count(),
     prisma.normDriftAlert.count({ where: { status: "OPEN" } }),
     prisma.oversightRelationship.count({ where: { status: "ACTIVE" } }),
     prisma.authorityProfile.count(),
+    prisma.workflowCase.count({ where: { closedAt: null } }),
+    prisma.approvalRequest.count({
+      where: { status: "OPEN", expiresAt: { gt: new Date() } },
+    }),
+    prisma.pharosWebhookEndpoint.count({ where: { status: "ACTIVE" } }),
   ]);
   const latest = await prisma.oversightAccessLog.findFirst({
     orderBy: { createdAt: "desc" },
@@ -57,6 +65,9 @@ async function loadStats() {
     openDriftAlerts,
     activeOversights,
     authorityCount,
+    workflowOpen,
+    approvalOpen,
+    webhookActive,
     chainTip: latest?.entryHash ?? null,
     chainTipAt: latest?.createdAt ?? null,
   };
@@ -134,11 +145,14 @@ export default async function TransparencyPage() {
       </div>
 
       {/* Live-Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Stat label="Behörden" value={stats.authorityCount} />
         <Stat label="Aktive Aufsichten" value={stats.activeOversights} />
         <Stat label="Hash-Chain-Größe" value={stats.accessLogCount} />
         <Stat label="Norm-Anchors" value={stats.normAnchorCount} />
+        <Stat label="Offene Workflows" value={stats.workflowOpen} />
+        <Stat label="Offene Mitzeichnungen" value={stats.approvalOpen} />
+        <Stat label="Aktive Webhooks" value={stats.webhookActive} />
         <Stat
           label="Offene Drift-Alerts"
           value={stats.openDriftAlerts}
