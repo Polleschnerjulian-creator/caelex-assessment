@@ -14,6 +14,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { logger } from "@/lib/logger";
 import { autoTransitionDueCases } from "@/lib/pharos/workflow-service";
+import { runBridgeSweep } from "@/lib/pharos/workflow-approval-bridge";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,10 +28,12 @@ export async function GET(request: NextRequest) {
 
   const startedAt = Date.now();
   try {
-    const stats = await autoTransitionDueCases();
+    const slaStats = await autoTransitionDueCases();
+    const bridgeStats = await runBridgeSweep();
     return NextResponse.json({
       ok: true,
-      stats,
+      sla: slaStats,
+      bridge: bridgeStats,
       durationMs: Date.now() - startedAt,
     });
   } catch (err) {
