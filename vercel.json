@@ -129,6 +129,10 @@
     {
       "path": "/api/cron/pharos-witness-quorum",
       "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/pharos-workflow-sla",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

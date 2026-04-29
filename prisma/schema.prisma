@@ -9363,3 +9363,138 @@ model NormDriftAlert {
   @@index([oversightId, status])
   @@index([status, detectedAt])
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHAROS WORKFLOW PERSISTENCE
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Persistent storage für die WorkflowFSM (NIS2-Incident, EU-Space-Act-Auth).
+// Phase-2-Erweiterung der reinen In-Memory-FSMs aus
+// src/lib/pharos/workflow-fsm.ts. Jede State-Transition bekommt einen
+// Eintrag in WorkflowTransition (Hash-Chain pro caseRef + Ed25519-Signatur),
+// der aktuelle State lebt in WorkflowCase.
+
+/// Ein laufender Verfahrens-Vorgang (z.B. "BNetzA-Spektrum-Antrag-2026-04711"
+/// oder "BSI-NIS2-Incident-X"). Kein 1:1 zu OversightRelationship —
+/// ein Operator kann mehrere parallele Vorgänge in derselben Aufsicht haben.
+model WorkflowCase {
+  id          String  @id @default(cuid())
+  fsmId       String  // z.B. "nis2-incident-v1" oder "eu-space-act-authorisation-v1"
+  caseRef     String  // human-readable z.B. "BSI-NIS2-2026-00471"
+  oversightId String?
+  authorityProfileId String?
+  operatorOrgId      String?
+
+  /// Aktueller State der FSM. Geprüft gegen WorkflowFSM.def beim Insert/Update.
+  currentState String
+  /// Wann hat der Vorgang den aktuellen State erreicht? (für after-Trigger)
+  enteredStateAt DateTime @default(now())
+
+  /// Frei-Form-Metadaten (Operator-Identität, Vorfall-Schweregrad, etc.).
+  metadata Json?
+
+  /// Letzter Hash in der WorkflowTransition-Chain — für Insert-Performance.
+  lastTransitionHash String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  closedAt  DateTime?
+
+  transitions WorkflowTransition[]
+
+  @@unique([caseRef, fsmId])
+  @@index([fsmId, currentState])
+  @@index([oversightId])
+  @@index([authorityProfileId])
+  @@index([operatorOrgId])
+  @@index([enteredStateAt]) // for SLA-watchdog cron
+}
+
+/// Eine signierte Zustands-Transition. Identisches Pattern wie
+/// OversightAccessLog — Hash-Chain pro caseRef, Ed25519-Signatur,
+/// tamper-evident.
+model WorkflowTransition {
+  id           String @id @default(cuid())
+  caseId       String
+
+  fromState    String
+  toState      String
+  event        String // "EARLY_WARNING_RECEIVED", "_AFTER", etc.
+  reason       String?
+  payload      Json?
+
+  /// Wer hat den Übergang ausgelöst? Null = System (after-Trigger).
+  actorUserId  String?
+
+  /// Hash-Chain
+  previousHash String?
+  transitionHash String
+
+  /// Ed25519-Signatur über transitionHash (raw bytes).
+  signature       String
+  publicKeyBase64 String
+
+  occurredAt DateTime @default(now())
+
+  case WorkflowCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([caseId, occurredAt])
+  @@index([transitionHash])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHAROS k-of-n APPROVAL PERSISTENCE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Eine offene oder abgeschlossene Multi-Party-Approval-Anfrage. Phase 2:
+/// dauerhafte Speicherung der Approval-Lifecycle für Audit + Recovery.
+model ApprovalRequest {
+  id String @id @default(cuid())
+
+  kind                String  // ApprovalKind enum als String (sieht src/lib/pharos/multi-party-approval.ts)
+  authorityProfileId  String
+  oversightId         String?
+  /// Welcher User hat den Approval-Request angestoßen?
+  initiatedBy         String
+
+  /// Frei-Form-Payload (Vorgangs-Inhalt, Bescheid-Entwurf, etc.). Wird im
+  /// payloadHash gehasht — Änderungen invalidieren alle bisherigen Signaturen.
+  payload     Json
+  payloadHash String
+
+  status      String  // OPEN | APPROVED | REJECTED | EXPIRED | CANCELLED
+  /// Aggregierter Quorum-Hash, gesetzt wenn approved.
+  aggregateHash String?
+
+  initiatedAt DateTime @default(now())
+  expiresAt   DateTime
+  closedAt    DateTime?
+
+  signatures ApprovalSignature[]
+
+  @@index([authorityProfileId, status])
+  @@index([oversightId])
+  @@index([status, expiresAt])
+  @@index([payloadHash])
+}
+
+/// Eine einzelne Ed25519-Signatur eines Approvers auf einen ApprovalRequest.
+model ApprovalSignature {
+  id String @id @default(cuid())
+
+  requestId       String
+  approverUserId  String
+  approverRole    String  // SACHBEARBEITER | REFERATSLEITER | DATENSCHUTZBEAUFTRAGTER | ...
+
+  payloadHash     String  // muss mit ApprovalRequest.payloadHash matchen
+  signature       String  // base64 Ed25519
+  publicKeyBase64 String
+
+  signedAt DateTime @default(now())
+
+  request ApprovalRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@unique([requestId, approverUserId])  // pro User max 1 Signatur pro Request
+  @@index([requestId])
+  @@index([approverUserId])
+}

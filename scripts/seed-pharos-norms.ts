@@ -160,19 +160,35 @@ async function seedEuSpaceAct(): Promise<SeedStats> {
   return stats;
 }
 
-// ─── NIS2 stub — schema for nis2-requirements.ts varies; we wire it
-// up minimally to demonstrate the pattern. Full mapping is a Phase 2
-// task once the data shape is finalised.
+// ─── NIS2 — wired against NIS2_REQUIREMENTS from src/data/nis2-requirements.ts.
+//   Each requirement becomes a separate NormAnchor with id "NIS2.<id>" and
+//   the official articleRef (e.g. "NIS2 Art. 21(2)(a)") as title.
+
+interface NIS2RequirementShape {
+  id?: string;
+  articleRef?: string;
+  category?: string;
+  title?: string;
+  description?: string;
+  spaceSpecificGuidance?: string;
+  complianceQuestion?: string;
+  officialUrl?: string;
+}
 
 async function seedNis2(): Promise<SeedStats | null> {
-  // Lazy-load so the script doesn't fail if the file's shape changes.
-  let nis2Mod: typeof import("@/data/nis2-requirements");
+  let mod: { NIS2_REQUIREMENTS?: NIS2RequirementShape[] };
   try {
-    nis2Mod = await import("@/data/nis2-requirements");
+    mod = await import("@/data/nis2-requirements");
   } catch (err) {
     console.error(
       `  · NIS2 module not loadable: ${err instanceof Error ? err.message : err}`,
     );
+    return null;
+  }
+
+  const reqs = mod.NIS2_REQUIREMENTS ?? [];
+  if (!Array.isArray(reqs) || reqs.length === 0) {
+    console.error(`  · NIS2_REQUIREMENTS empty or wrong shape — skipping`);
     return null;
   }
 
@@ -185,40 +201,133 @@ async function seedNis2(): Promise<SeedStats | null> {
     errors: 0,
   };
 
-  // Try a few common export names; tolerate variation.
-  const reqs =
-    (nis2Mod as Record<string, unknown>).nis2Requirements ??
-    (nis2Mod as Record<string, unknown>).requirements ??
-    (nis2Mod as Record<string, unknown>).default;
-  if (!Array.isArray(reqs)) {
-    console.error(`  · NIS2 export shape unrecognised — skipping`);
-    return null;
-  }
-
-  for (const r of reqs as Array<Record<string, unknown>>) {
+  for (const r of reqs) {
     try {
-      const articleNum = String(r.article ?? r.number ?? r.id ?? "?");
-      const title = String(r.title ?? r.name ?? "");
-      const summary = String(r.summary ?? r.description ?? r.text ?? "");
-      if (!articleNum || articleNum === "?" || !summary) continue;
+      const id = r.id ?? "";
+      const articleRef = r.articleRef ?? "";
+      const title = r.title ?? "";
+      const description = r.description ?? "";
+      if (!id || !title || !description) continue;
 
-      const id = `NIS2.ART.${articleNum}`;
+      // Extract just the article number/clause part from articleRef
+      // ("NIS2 Art. 21(2)(a)" → "21(2)(a)") for display + URL anchor.
+      const numberMatch = articleRef.match(/Art\.?\s*([\d\w()]+)/i);
+      const number = numberMatch ? numberMatch[1] : id;
+
       const text = [
-        `NIS2 Directive Article ${articleNum} — ${title}`,
+        `${articleRef} — ${title}`,
         ``,
-        summary,
+        `Category: ${r.category ?? "—"}`,
+        ``,
+        `Description: ${description}`,
+        ...(r.spaceSpecificGuidance
+          ? [``, `Space-specific guidance: ${r.spaceSpecificGuidance}`]
+          : []),
+        ...(r.complianceQuestion
+          ? [``, `Compliance question: ${r.complianceQuestion}`]
+          : []),
       ].join("\n");
 
+      const anchorId = `NIS2.${id.toUpperCase().replace(/-/g, ".")}`;
       const result = await upsertNormAnchor({
-        id,
+        id: anchorId,
         jurisdiction: "EU",
         instrument: "NIS2",
         unit: "ARTICLE",
-        number: articleNum,
+        number,
         title,
         text,
         sourceUrl:
+          r.officialUrl ??
           "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555",
+        language: "en",
+      });
+
+      if (result.inserted) stats.inserted++;
+      else if (result.drifted) {
+        stats.updated++;
+        stats.drifted++;
+      } else stats.unchanged++;
+    } catch (err) {
+      stats.errors++;
+      console.error(`  ✗ ${r.id}: ${err instanceof Error ? err.message : err}`);
+    }
+  }
+
+  return stats;
+}
+
+// ─── National Space Laws — load from national-space-laws.ts ──────────
+
+interface NationalSpaceLawShape {
+  jurisdiction?: string;
+  jurisdictionName?: string;
+  countryCode?: string;
+  lawName?: string;
+  lawShortName?: string;
+  status?: string;
+  // Allow flexible shape; we extract what we can.
+  [key: string]: unknown;
+}
+
+async function seedNationalSpaceLaws(): Promise<SeedStats | null> {
+  let mod: Record<string, unknown>;
+  try {
+    mod = (await import("@/data/national-space-laws")) as Record<
+      string,
+      unknown
+    >;
+  } catch (err) {
+    console.error(
+      `  · National space laws module not loadable: ${err instanceof Error ? err.message : err}`,
+    );
+    return null;
+  }
+
+  const stats: SeedStats = {
+    module: "NATIONAL_SPACE_LAWS",
+    inserted: 0,
+    updated: 0,
+    unchanged: 0,
+    drifted: 0,
+    errors: 0,
+  };
+
+  const candidates = [
+    mod.NATIONAL_SPACE_LAWS,
+    mod.nationalSpaceLaws,
+    mod.default,
+  ].find((c) => Array.isArray(c)) as NationalSpaceLawShape[] | undefined;
+
+  if (!candidates) {
+    console.error(`  · NATIONAL_SPACE_LAWS export not found — skipping`);
+    return null;
+  }
+
+  for (const law of candidates) {
+    try {
+      const country = String(
+        law.countryCode ?? law.jurisdiction ?? "INT",
+      ).toUpperCase();
+      const name = String(law.lawName ?? law.lawShortName ?? "");
+      if (!name) continue;
+      const code = String(law.lawShortName ?? law.lawName ?? "LAW")
+        .replace(/[^A-Z0-9]/gi, "_")
+        .toUpperCase()
+        .slice(0, 24);
+
+      const id = `${country}.${code}`;
+      // Build text from available fields.
+      const text = JSON.stringify(law, null, 2);
+
+      const result = await upsertNormAnchor({
+        id,
+        jurisdiction: country,
+        instrument: code,
+        unit: "ARTICLE",
+        number: code,
+        title: name,
+        text,
         language: "en",
       });
 
@@ -253,6 +362,11 @@ async function main() {
   if (!only || only === "nis2") {
     console.log("\n→ NIS2 requirements");
     const s = await seedNis2();
+    if (s) allStats.push(s);
+  }
+  if (!only || only === "national-space-laws") {
+    console.log("\n→ National Space Laws (10 jurisdictions)");
+    const s = await seedNationalSpaceLaws();
     if (s) allStats.push(s);
   }
 
