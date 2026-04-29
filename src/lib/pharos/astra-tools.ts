@@ -104,6 +104,21 @@ export const PHAROS_ASTRA_TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: "list_pending_approvals",
+    description:
+      "Listet offene k-of-n Mitzeichnungen (Approval-Requests) der callenden Behörde — mit Quorum-Status (have/need), fehlenden Pflicht-Rollen, Restzeit bis Expiry. Hilft dem Sachbearbeiter zu sehen wo seine Signatur fehlt oder wer noch fehlt.",
+    input_schema: {
+      type: "object",
+      properties: {
+        urgency: {
+          type: "string",
+          enum: ["all", "urgent", "today"],
+          description: "all = alle, urgent = < 2h Frist, today = < 24h Frist",
+        },
+      },
+    },
+  },
+  {
     name: "list_open_workflows",
     description:
       "Listet alle offenen Workflow-Cases (NIS2-Incidents, EU-Space-Act-Authorisations) der callenden Behörde mit aktuellem State, Zeit-im-State und SLA-Restzeit. Hilft Sachbearbeitern bei Triage: 'Welche Vorfälle nähern sich der 24h-Frist?'",
@@ -625,6 +640,80 @@ export async function executePharosAstraTool(
           },
           privacyGuarantee:
             "ε-Differential-Privacy mit Laplace-Mechanismus. Eine Veränderung der Daten eines beliebigen einzelnen Operators ändert die Output-Verteilung um maximal exp(ε).",
+        },
+      };
+    }
+
+    if (name === "list_pending_approvals") {
+      const urgency = typeof input.urgency === "string" ? input.urgency : "all";
+
+      const requests = await prisma.approvalRequest.findMany({
+        where: {
+          authorityProfileId: ctx.authorityProfileId,
+          status: "OPEN",
+          expiresAt: { gt: new Date() },
+        },
+        include: {
+          signatures: {
+            select: { approverRole: true, approverUserId: true },
+          },
+        },
+        orderBy: { expiresAt: "asc" },
+        take: 100,
+      });
+
+      const now = Date.now();
+      const filtered = requests.filter((r) => {
+        const ms = r.expiresAt.getTime() - now;
+        if (urgency === "urgent") return ms < 2 * 3600_000;
+        if (urgency === "today") return ms < 24 * 3600_000;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        return {
+          ok: true,
+          abstain: true,
+          abstainReason: `Keine offenen Mitzeichnungen${urgency === "urgent" ? " mit < 2h Frist" : urgency === "today" ? " mit < 24h Frist" : ""}.`,
+          citations: [],
+          data: { urgency, count: 0 },
+        };
+      }
+
+      const citations: Citation[] = filtered.map((r) =>
+        dataRowCitation({
+          table: "ApprovalRequest",
+          id: r.id,
+          span: r.kind,
+          content: {
+            kind: r.kind,
+            payloadHash: r.payloadHash,
+            status: r.status,
+          },
+        }),
+      );
+
+      return {
+        ok: true,
+        citations,
+        data: {
+          count: filtered.length,
+          requests: filtered.map((r, idx) => {
+            const remainingMs = r.expiresAt.getTime() - now;
+            return {
+              id: r.id,
+              kind: r.kind,
+              oversightId: r.oversightId,
+              signaturesCount: r.signatures.length,
+              rolesPresent: r.signatures.map((s) => s.approverRole),
+              remainingMs,
+              remainingHumanReadable:
+                remainingMs < 3600_000
+                  ? `${Math.round(remainingMs / 60_000)}m verbleibend`
+                  : `${Math.round(remainingMs / 3600_000)}h verbleibend`,
+              _citation: citations[idx].id,
+            };
+          }),
         },
       };
     }
