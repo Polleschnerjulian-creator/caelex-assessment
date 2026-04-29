@@ -232,21 +232,32 @@ export async function generateBriefing(
   return { ...payload, briefingHash };
 }
 
-/** Cron-style sweep: generate briefing for every authority-profile.
- *  Returns stats so the cron can log progress. Phase 1: in-memory
- *  briefing only (logger + endpoint). Phase 2: Resend email-send +
- *  signed receipt persisted in OversightAccessLog. */
+/** Cron-style sweep: generate briefing for every authority-profile +
+ *  send Resend-Email an alle aktiven Mitglieder.
+ *
+ *  Wenn RESEND_API_KEY fehlt, läuft das Generieren trotzdem durch
+ *  (für Logging) — nur kein Email-Versand. */
 export async function generateBriefingForAllAuthorities(): Promise<{
   generated: number;
   errors: number;
+  emailsSent: number;
+  emailsSkipped: number;
+  emailErrors: number;
 }> {
   const profiles = await prisma.authorityProfile.findMany({
     select: { id: true },
     where: { organization: { isActive: true } },
   });
 
+  // Lazy-import to avoid loading Resend on cold paths if disabled.
+  const { sendBriefingEmails } = await import("./briefing-email");
+
   let generated = 0;
   let errors = 0;
+  let emailsSent = 0;
+  let emailsSkipped = 0;
+  let emailErrors = 0;
+
   for (const p of profiles) {
     try {
       const briefing = await generateBriefing(p.id);
@@ -254,11 +265,21 @@ export async function generateBriefingForAllAuthorities(): Promise<{
         `[pharos-briefing] ${p.id}: ${briefing.summary.workflowsBreached} breached, ${briefing.summary.approvalsUrgent} urgent approvals, ${briefing.summary.newDriftAlerts} drift, hash=${briefing.briefingHash.slice(0, 16)}`,
       );
       generated++;
+
+      const sendResult = await sendBriefingEmails(briefing);
+      emailsSent += sendResult.sent;
+      emailsSkipped += sendResult.skipped;
+      emailErrors += sendResult.errors;
+      if (!sendResult.ok && sendResult.reason) {
+        logger.warn(
+          `[pharos-briefing] email send for ${p.id} reason=${sendResult.reason}`,
+        );
+      }
     } catch (err) {
       errors++;
       const msg = err instanceof Error ? err.message : String(err);
       logger.error(`[pharos-briefing] ${p.id} failed: ${msg}`);
     }
   }
-  return { generated, errors };
+  return { generated, errors, emailsSent, emailsSkipped, emailErrors };
 }
