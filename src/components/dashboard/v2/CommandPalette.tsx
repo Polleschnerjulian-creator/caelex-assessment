@@ -169,12 +169,20 @@ const VERBS: PaletteVerb[] = [
 
   // ─── AI ─────────────────────────────────────────────────────────────
   {
-    id: "ai-astra",
-    label: "Ask Astra",
-    hint: "Open the AI compliance copilot",
+    id: "ai-astra-v2",
+    label: "Ask Astra V2",
+    hint: "Action-layer copilot · proposals routed for review",
     icon: Bot,
     group: "ai",
     shortcut: ["⌘", "/"],
+    run: (r) => r.push("/dashboard/astra-v2"),
+  },
+  {
+    id: "ai-astra-v1",
+    label: "Ask Astra (legacy V1)",
+    hint: "47-tool engine in /dashboard/astra",
+    icon: Bot,
+    group: "ai",
     run: (r) => r.push("/dashboard/astra"),
   },
   {
