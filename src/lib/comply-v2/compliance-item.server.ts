@@ -304,26 +304,62 @@ export async function getComplianceItemsForUser(
 }
 
 /**
+ * Look up active snoozes for a user. Returns a Map keyed by
+ * cross-regime itemId → Date when the snooze ends. Expired snoozes
+ * are filtered at query time.
+ */
+async function getActiveSnoozes(userId: string): Promise<Map<string, Date>> {
+  const rows = await prisma.complianceItemSnooze.findMany({
+    where: { userId, snoozedUntil: { gt: new Date() } },
+    select: { itemId: true, snoozedUntil: true },
+  });
+  const map = new Map<string, Date>();
+  for (const r of rows) map.set(r.itemId, r.snoozedUntil);
+  return map;
+}
+
+/**
  * Convenience wrapper for the Today inbox: items that need attention
- * this week. Encapsulates the filter so every page renders the same
+ * this week, plus snooze metadata so the UI can render snoozed-state
+ * pills. Encapsulates the filter so every page renders the same
  * shape.
+ *
+ * Snoozed items are pulled OUT of `urgent` and `thisWeek` (the user
+ * explicitly deferred them) but appear in `watching` so they don't
+ * vanish completely — the user can wake them from there.
  */
 export async function getTodayInboxForUser(userId: string): Promise<{
   urgent: ComplianceItem[];
   thisWeek: ComplianceItem[];
   watching: ComplianceItem[];
+  snoozedUntilByItemId: Record<string, string>;
 }> {
-  const all = await getComplianceItemsForUser(userId, { limit: 500 });
+  const [all, snoozes] = await Promise.all([
+    getComplianceItemsForUser(userId, { limit: 500 }),
+    getActiveSnoozes(userId),
+  ]);
+
+  const isSnoozed = (id: string) => snoozes.has(id);
+  const snoozedUntilByItemId: Record<string, string> = {};
+  for (const [id, date] of snoozes) {
+    snoozedUntilByItemId[id] = date.toISOString();
+  }
 
   return {
-    urgent: all.filter((i) => i.priority === "URGENT").slice(0, 25),
-    thisWeek: all.filter((i) => i.priority === "HIGH").slice(0, 25),
+    urgent: all
+      .filter((i) => i.priority === "URGENT" && !isSnoozed(i.id))
+      .slice(0, 25),
+    thisWeek: all
+      .filter((i) => i.priority === "HIGH" && !isSnoozed(i.id))
+      .slice(0, 25),
     watching: all
       .filter(
         (i) =>
-          i.priority === "MEDIUM" &&
-          (i.status === "UNDER_REVIEW" || i.status === "DRAFT"),
+          (i.priority === "MEDIUM" &&
+            (i.status === "UNDER_REVIEW" || i.status === "DRAFT")) ||
+          isSnoozed(i.id),
       )
-      .slice(0, 15),
+      .slice(0, 25),
+    snoozedUntilByItemId,
   };
 }

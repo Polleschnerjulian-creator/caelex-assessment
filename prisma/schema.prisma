@@ -30,6 +30,12 @@ model User {
   // See docs/CAELEX-COMPLY-CONCEPT.md § Rollback-Strategie.
   complyUiVersion String? // null | "v1" | "v2"
 
+  // Comply v2 — per-user state on ComplianceItems (snoozes, notes,
+  // Astra-proposed actions awaiting approval).
+  complianceItemSnoozes ComplianceItemSnooze[]
+  complianceItemNotes   ComplianceItemNote[]
+  astraProposals        AstraProposal[]
+
   accounts                 Account[]
   sessions                 Session[]
   articleStatuses          ArticleStatus[]
@@ -9587,4 +9593,131 @@ model PharosWebhookInvocation {
   @@unique([endpointId, nonce])
   @@index([endpointId, receivedAt])
   @@index([status])
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// ─── Comply v2 — Action-Layer Side-Tables ──────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+//
+// These models are additive Phase 0/1 scaffolding for the V2 Action layer
+// described in docs/CAELEX-COMPLY-CONCEPT.md. They support per-user state
+// (snoozes, notes) on the unified ComplianceItem atom WITHOUT modifying
+// any of the 8 existing *RequirementStatus tables. That keeps Atlas/Pharos
+// schemas untouched and lets us roll back V2 without destructive
+// migrations.
+//
+// Cross-regime ID format: `${regulationKey}:${rowId}` — e.g.
+// "NIS2:cl9k2j8...". The fetcher in src/lib/comply-v2/compliance-item.server.ts
+// produces these IDs; this table stores them as the JOIN key.
+
+/// Per-user snooze on a ComplianceItem. When `snoozedUntil > now()`, the
+/// V2 Today inbox hides the item from the Urgent / This-Week sections
+/// (it still appears in Reference views). Snoozes auto-expire — no
+/// cleanup cron needed.
+model ComplianceItemSnooze {
+  id String @id @default(cuid())
+
+  /// Cross-regime ID format `${regulationKey}:${rowId}`.
+  itemId String
+
+  /// Owner of the snooze. Each user snoozes independently.
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// When the snooze ends. After this point, the item reappears in
+  /// the active inbox views.
+  snoozedUntil DateTime
+
+  /// Optional human reason ("waiting on counsel", "pre-filed PDF",
+  /// "blocked on supplier"). Helps audit-trail for "why was this
+  /// quiet for two weeks?".
+  reason String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([itemId, userId])
+  @@index([userId, snoozedUntil])
+}
+
+/// V2 markdown note attached to a ComplianceItem. Replaces the
+/// per-table `notes` field for V2 surfaces — those legacy fields
+/// remain readable for back-compat. New notes go here so they survive
+/// regulation-table-schema churn and so multiple users can co-author.
+model ComplianceItemNote {
+  id String @id @default(cuid())
+
+  /// Cross-regime ID format `${regulationKey}:${rowId}`.
+  itemId String
+
+  /// Author.
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Markdown body.
+  body String @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([itemId, createdAt])
+  @@index([userId])
+}
+
+/// Astra-proposed action awaiting human approval. Phase 1 wires this
+/// up — when Astra wants to perform a high-impact action (submit-NCA,
+/// approve-authorization, send-stakeholder-email), it writes a
+/// proposal here instead of executing directly.
+///
+/// Status transitions:
+///   PENDING -> APPLIED  (user clicked Approve)
+///   PENDING -> REJECTED (user clicked Reject)
+///   PENDING -> EXPIRED  (proposal aged out without decision)
+///
+/// `decisionLog` captures the Astra reasoning trail (which tools were
+/// called, what data was read) so a reviewer can audit *why* before
+/// approving — Palantir AIP Logic decision-log pattern.
+model AstraProposal {
+  id String @id @default(cuid())
+
+  /// Owning user. The user who would execute the action manually.
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Action name from src/lib/comply-v2/actions/* registry.
+  actionName String
+
+  /// The action's parameters as a typed JSON blob, validated against
+  /// the action's Zod schema before persistence.
+  params Json
+
+  /// Current status.
+  status String @default("PENDING") // PENDING | APPLIED | REJECTED | EXPIRED
+
+  /// Optional ComplianceItem this proposal targets — denormalized so
+  /// we can render proposal cards alongside their items in /today.
+  itemId String?
+
+  /// Astra's chain-of-thought leading to this proposal — array of
+  /// { tool, args, result } entries. Renders as an expandable trail
+  /// in the proposal card.
+  decisionLog Json?
+
+  /// Human-readable summary Astra wrote ("I want to mark Art. 7 as
+  /// attested because evidence X passes all checks").
+  rationale String? @db.Text
+
+  /// Optional reviewer feedback when rejected ("Wait until counsel
+  /// signs off", "Actually applies to sat-23 not sat-22").
+  reviewerNote String? @db.Text
+
+  /// Auto-expire window so stale proposals don't pile up forever.
+  expiresAt DateTime
+
+  createdAt DateTime  @default(now())
+  decidedAt DateTime?
+  appliedAt DateTime?
+
+  @@index([userId, status, expiresAt])
+  @@index([itemId])
 }
