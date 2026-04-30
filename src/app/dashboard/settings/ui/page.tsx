@@ -4,7 +4,8 @@ import {
   resolveComplyUiVersion,
   type ComplyUiVersion,
 } from "@/lib/comply-ui-version.server";
-import { setComplyUiVersion } from "./actions";
+import { getDensity, type Density } from "@/lib/comply-v2/density.server";
+import { setComplyUiVersion, setDensity } from "./actions";
 
 export const metadata = {
   title: "Comply UI version — Settings",
@@ -12,7 +13,7 @@ export const metadata = {
 };
 
 interface PageProps {
-  searchParams: Promise<{ changed?: string }>;
+  searchParams: Promise<{ changed?: string; density?: string }>;
 }
 
 export default async function ComplyUiSettingsPage({
@@ -20,7 +21,13 @@ export default async function ComplyUiSettingsPage({
 }: PageProps) {
   const sp = await searchParams;
   const justChanged = sp.changed === "1";
-  const current: ComplyUiVersion = await resolveComplyUiVersion();
+  const densityChanged = sp.density === "1";
+  const [current, currentDensity] = await Promise.all([
+    resolveComplyUiVersion(),
+    getDensity(),
+  ]);
+  const _ui: ComplyUiVersion = current;
+  void _ui;
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
@@ -87,7 +94,92 @@ export default async function ComplyUiSettingsPage({
         Your choice is stored on your account and synced across devices. If your
         organization sets a default later, your personal choice wins.
       </p>
+
+      <div className="mt-12 border-t border-slate-200 pt-8 dark:border-slate-800">
+        <h2 className="text-base font-semibold text-slate-900 dark:text-slate-50">
+          Density
+        </h2>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+          How tightly do you want the V2 surfaces to render? Affects card
+          padding, list-row heights, and font sizes across /dashboard/today,
+          /dashboard/triage, and item detail pages.
+        </p>
+        {densityChanged ? (
+          <div className="mt-4 flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-900 dark:border-emerald-700/50 dark:bg-emerald-950/30 dark:text-emerald-100">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0" />
+            Density saved. Reload any V2 page to see the change.
+          </div>
+        ) : null}
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <DensityCard
+            density="cozy"
+            current={currentDensity}
+            title="Cozy"
+            description="Linear-spacious. Generous padding, comfortable reading distance. Default for new users."
+          />
+          <DensityCard
+            density="compact"
+            current={currentDensity}
+            title="Compact"
+            description="Middle ground. Best for power-users mixing reading and scanning."
+          />
+          <DensityCard
+            density="dense"
+            current={currentDensity}
+            title="Dense"
+            description="Bloomberg-tight. Maximum info per viewport. Mission-Control style."
+          />
+        </div>
+      </div>
     </div>
+  );
+}
+
+function DensityCard({
+  density,
+  current,
+  title,
+  description,
+}: {
+  density: Density;
+  current: Density;
+  title: string;
+  description: string;
+}) {
+  const active = density === current;
+  return (
+    <form
+      action={setDensity}
+      className={`flex flex-col gap-2 rounded-xl border p-4 transition ${
+        active
+          ? "border-emerald-300 bg-emerald-50/30 ring-2 ring-emerald-500 dark:border-emerald-700 dark:bg-emerald-950/20"
+          : "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
+      }`}
+    >
+      <input type="hidden" name="density" value={density} />
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+          {title}
+        </h3>
+        {active ? (
+          <span className="inline-flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+            <CheckCircle2 className="h-3 w-3" />
+            Active
+          </span>
+        ) : null}
+      </div>
+      <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+        {description}
+      </p>
+      {!active ? (
+        <button
+          type="submit"
+          className="mt-auto inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-900 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50 dark:hover:bg-slate-700"
+        >
+          Switch to {title}
+        </button>
+      ) : null}
+    </form>
   );
 }
 

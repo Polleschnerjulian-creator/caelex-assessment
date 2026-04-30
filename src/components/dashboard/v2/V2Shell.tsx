@@ -4,6 +4,7 @@ import { Kbd } from "@/components/ui/v2/kbd";
 import { CommandPalette } from "./CommandPalette";
 import { getPendingProposalCount } from "@/lib/comply-v2/proposal-stats.server";
 import { getServerActionVerbs } from "@/lib/comply-v2/actions/palette-verbs.server";
+import { getDensity } from "@/lib/comply-v2/density.server";
 
 /**
  * Comply V2 Shell
@@ -26,14 +27,15 @@ export default async function V2Shell({
 }: {
   children: React.ReactNode;
 }) {
-  const [pendingProposals, serverVerbs] = await Promise.all([
+  const [pendingProposals, serverVerbs, density] = await Promise.all([
     getPendingProposalCount(),
     Promise.resolve(getServerActionVerbs()),
+    getDensity(),
   ]);
 
   return (
     <div
-      data-density="cozy"
+      data-density={density}
       className="min-h-screen bg-light-bg dark:bg-slate-950"
     >
       {/* ⌘K palette — client island, mounts globally for the V2 surface.
