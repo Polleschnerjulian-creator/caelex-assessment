@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import {
   Calendar,
   MoreHorizontal,
@@ -8,6 +9,7 @@ import {
   BellRing,
   Pencil,
   ShieldCheck,
+  ExternalLink,
 } from "lucide-react";
 import {
   Card,
@@ -97,6 +99,7 @@ export function ComplianceItemCard({
     item.notes?.slice(0, 140) || item.evidenceNotes?.slice(0, 140);
 
   const isSnoozed = Boolean(snoozedUntil);
+  const detailHref = `/dashboard/items/${item.regulation}/${item.rowId}`;
 
   return (
     <Card tone={tone} className="group/card relative flex flex-col">
@@ -106,6 +109,13 @@ export function ComplianceItemCard({
             {STATUS_LABELS[item.status]}
           </Badge>
           <div className="flex items-center gap-1">
+            <Link
+              href={detailHref}
+              aria-label="Open item detail"
+              className="rounded-md p-1 text-slate-400 opacity-0 transition group-hover/card:opacity-100 hover:bg-slate-100 hover:text-slate-700 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+            </Link>
             <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400">
               {item.regulation}
             </span>
@@ -218,7 +228,14 @@ export function ComplianceItemCard({
             </Popover>
           </div>
         </div>
-        <CardTitle className="leading-snug">{item.requirementId}</CardTitle>
+        <CardTitle className="leading-snug">
+          <Link
+            href={detailHref}
+            className="text-slate-900 transition hover:text-emerald-700 dark:text-slate-50 dark:hover:text-emerald-300"
+          >
+            {item.requirementId}
+          </Link>
+        </CardTitle>
         <CardDescription className="text-xs">
           {REGULATION_LABELS[item.regulation]}
         </CardDescription>

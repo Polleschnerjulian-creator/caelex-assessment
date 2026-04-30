@@ -304,6 +304,215 @@ export async function getComplianceItemsForUser(
 }
 
 /**
+ * Fetch a single ComplianceItem by regulation + row ID. Auth-checked
+ * via assessment-side userId match. Returns null if not found or
+ * not owned by `userId` — defense in depth, never leak another
+ * user's items by ID guess.
+ *
+ * Used by the Per-Item detail page (/dashboard/items/[reg]/[id]).
+ */
+export async function getComplianceItemById(
+  regulation: RegulationKey,
+  rowId: string,
+  userId: string,
+): Promise<ComplianceItem | null> {
+  type Row = {
+    id: string;
+    requirementId: string;
+    status: string | null;
+    notes: string | null;
+    evidenceNotes: string | null;
+    updatedAt: Date;
+    targetDate?: Date | null;
+    assessment: { userId: string };
+  };
+  let row: Row | null = null;
+
+  switch (regulation) {
+    case "DEBRIS":
+      row = await prisma.debrisRequirementStatus.findUnique({
+        where: { id: rowId },
+        select: {
+          id: true,
+          requirementId: true,
+          status: true,
+          notes: true,
+          evidenceNotes: true,
+          updatedAt: true,
+          assessment: { select: { userId: true } },
+        },
+      });
+      break;
+    case "CYBERSECURITY":
+      row = await prisma.cybersecurityRequirementStatus.findUnique({
+        where: { id: rowId },
+        select: {
+          id: true,
+          requirementId: true,
+          status: true,
+          notes: true,
+          evidenceNotes: true,
+          targetDate: true,
+          updatedAt: true,
+          assessment: { select: { userId: true } },
+        },
+      });
+      break;
+    case "NIS2":
+      row = await prisma.nIS2RequirementStatus.findUnique({
+        where: { id: rowId },
+        select: {
+          id: true,
+          requirementId: true,
+          status: true,
+          notes: true,
+          evidenceNotes: true,
+          targetDate: true,
+          updatedAt: true,
+          assessment: { select: { userId: true } },
+        },
+      });
+      break;
+    case "CRA":
+      row = await prisma.cRARequirementStatus.findUnique({
+        where: { id: rowId },
+        select: {
+          id: true,
+          requirementId: true,
+          status: true,
+          notes: true,
+          evidenceNotes: true,
+          updatedAt: true,
+          assessment: { select: { userId: true } },
+        },
+      });
+      break;
+    case "UK_SPACE_ACT":
+      row = await prisma.ukRequirementStatus.findUnique({
+        where: { id: rowId },
+        select: {
+          id: true,
+          requirementId: true,
+          status: true,
+          notes: true,
+          evidenceNotes: true,
+          updatedAt: true,
+          assessment: { select: { userId: true } },
+        },
+      });
+      break;
+    case "US_REGULATORY":
+      row = await prisma.usRequirementStatus.findUnique({
+        where: { id: rowId },
+        select: {
+          id: true,
+          requirementId: true,
+          status: true,
+          notes: true,
+          evidenceNotes: true,
+          updatedAt: true,
+          assessment: { select: { userId: true } },
+        },
+      });
+      break;
+    case "EXPORT_CONTROL":
+      row = await prisma.exportControlRequirementStatus.findUnique({
+        where: { id: rowId },
+        select: {
+          id: true,
+          requirementId: true,
+          status: true,
+          notes: true,
+          evidenceNotes: true,
+          updatedAt: true,
+          assessment: { select: { userId: true } },
+        },
+      });
+      break;
+    case "SPECTRUM":
+      row = await prisma.spectrumRequirementStatus.findUnique({
+        where: { id: rowId },
+        select: {
+          id: true,
+          requirementId: true,
+          status: true,
+          notes: true,
+          evidenceNotes: true,
+          updatedAt: true,
+          assessment: { select: { userId: true } },
+        },
+      });
+      break;
+    default: {
+      const exhaustive: never = regulation;
+      throw new Error(`Unhandled regulation: ${exhaustive as string}`);
+    }
+  }
+
+  if (!row || row.assessment.userId !== userId) return null;
+
+  return toItem(regulation, userId, row);
+}
+
+/**
+ * Fetch the V2 notes timeline for an item (newest first), plus
+ * active snooze metadata. Used by the detail page.
+ */
+export async function getItemDetailExtras(
+  itemId: string,
+  userId: string,
+): Promise<{
+  notes: Array<{
+    id: string;
+    body: string;
+    createdAt: Date;
+    authorId: string;
+    authorEmail: string | null;
+    authorName: string | null;
+  }>;
+  snoozedUntil: Date | null;
+  snoozeReason: string | null;
+}> {
+  const [notes, snooze] = await Promise.all([
+    prisma.complianceItemNote.findMany({
+      where: { itemId },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+      select: {
+        id: true,
+        body: true,
+        createdAt: true,
+        userId: true,
+        user: { select: { email: true, name: true } },
+      },
+    }),
+    prisma.complianceItemSnooze.findUnique({
+      where: { itemId_userId: { itemId, userId } },
+      select: { snoozedUntil: true, reason: true },
+    }),
+  ]);
+
+  return {
+    notes: notes.map((n) => ({
+      id: n.id,
+      body: n.body,
+      createdAt: n.createdAt,
+      authorId: n.userId,
+      authorEmail: n.user.email,
+      authorName: n.user.name,
+    })),
+    snoozedUntil:
+      snooze && snooze.snoozedUntil.getTime() > Date.now()
+        ? snooze.snoozedUntil
+        : null,
+    snoozeReason:
+      snooze && snooze.snoozedUntil.getTime() > Date.now()
+        ? snooze.reason
+        : null,
+  };
+}
+
+/**
  * Look up active snoozes for a user. Returns a Map keyed by
  * cross-regime itemId → Date when the snooze ends. Expired snoozes
  * are filtered at query time.
