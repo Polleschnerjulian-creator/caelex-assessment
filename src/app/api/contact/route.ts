@@ -18,6 +18,10 @@ import { z } from "zod";
 import { Resend } from "resend";
 import { prisma } from "@/lib/prisma";
 import {
+  isEmailDispatchHalted,
+  logHaltedEmail,
+} from "@/lib/email/dispatch-halt";
+import {
   checkRateLimit,
   getIdentifier,
   createRateLimitResponse,
@@ -117,7 +121,7 @@ export async function POST(request: NextRequest) {
 
     // ─── Send notification email ─────────────────────────────────────────
     const resendApiKey = process.env.RESEND_API_KEY;
-    if (resendApiKey) {
+    if (resendApiKey && !isEmailDispatchHalted()) {
       try {
         const resend = new Resend(resendApiKey);
         await resend.emails.send({
@@ -154,6 +158,12 @@ export async function POST(request: NextRequest) {
           contactRequestId: contactRequest.id,
         });
       }
+    } else if (isEmailDispatchHalted()) {
+      logHaltedEmail({
+        to: "cs@caelex.eu",
+        subject: `New Contact: ${name}`,
+        origin: "api/contact",
+      });
     } else {
       logger.warn(
         "RESEND_API_KEY not configured — contact request saved without email",

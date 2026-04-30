@@ -376,15 +376,25 @@ export async function POST(request: NextRequest) {
     // is unset — a failed prospect email doesn't roll back the booking;
     // admins can resend manually from the CRM).
     try {
-      const { Resend } = await import("resend");
-      const resend = new Resend(process.env.RESEND_API_KEY);
-      await resend.emails.send({
-        from: "Caelex ATLAS <noreply@caelex.eu>",
-        to: email,
-        replyTo: "hi@caelex.eu",
-        subject: prospectSubject,
-        html: prospectHtml,
-      });
+      const { isEmailDispatchHalted, logHaltedEmail } =
+        await import("@/lib/email/dispatch-halt");
+      if (isEmailDispatchHalted()) {
+        logHaltedEmail({
+          to: email,
+          subject: prospectSubject,
+          origin: "api/atlas-access (prospect)",
+        });
+      } else {
+        const { Resend } = await import("resend");
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        await resend.emails.send({
+          from: "Caelex ATLAS <noreply@caelex.eu>",
+          to: email,
+          replyTo: "hi@caelex.eu",
+          subject: prospectSubject,
+          html: prospectHtml,
+        });
+      }
     } catch (emailErr) {
       logger.warn("Atlas access prospect email failed (non-blocking)", {
         error: emailErr,

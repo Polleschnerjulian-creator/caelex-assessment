@@ -97,8 +97,8 @@ export async function POST(
     // outage doesn't unwind the token rotation — the owner can still
     // share the returned inviteUrl manually from the UI.
     try {
-      const { Resend } = await import("resend");
-      const resend = new Resend(process.env.RESEND_API_KEY);
+      const { isEmailDispatchHalted, logHaltedEmail } =
+        await import("@/lib/email/dispatch-halt");
       const { subject, html, text } = renderInvitationEmail({
         organizationName: atlas.organizationName,
         inviterName: atlas.userName || atlas.userEmail || "Ein Kollege",
@@ -106,14 +106,24 @@ export async function POST(
         recipientEmail: invitation.email,
         expiresInDays: INVITE_EXPIRY_DAYS,
       });
-      await resend.emails.send({
-        from: "Caelex ATLAS <noreply@caelex.eu>",
-        to: invitation.email,
-        replyTo: "hi@caelex.eu",
-        subject,
-        html,
-        text,
-      });
+      if (isEmailDispatchHalted()) {
+        logHaltedEmail({
+          to: invitation.email,
+          subject,
+          origin: "api/atlas/team/invitations/[id]/resend",
+        });
+      } else {
+        const { Resend } = await import("resend");
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        await resend.emails.send({
+          from: "Caelex ATLAS <noreply@caelex.eu>",
+          to: invitation.email,
+          replyTo: "hi@caelex.eu",
+          subject,
+          html,
+          text,
+        });
+      }
     } catch (emailErr) {
       logger.warn("Atlas invitation resend — email failed (non-blocking)", {
         error: emailErr,

@@ -120,12 +120,22 @@ async function sendRevokeNotification(params: {
   organizationName: string;
 }): Promise<void> {
   try {
-    const { Resend } = await import("resend");
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const { isEmailDispatchHalted, logHaltedEmail } =
+      await import("@/lib/email/dispatch-halt");
     const { subject, html, text } = renderRevokeNotificationEmail({
       organizationName: params.organizationName,
       recipientEmail: params.recipientEmail,
     });
+    if (isEmailDispatchHalted()) {
+      logHaltedEmail({
+        to: params.recipientEmail,
+        subject,
+        origin: "api/atlas/team/invitations/[id] (revoke)",
+      });
+      return;
+    }
+    const { Resend } = await import("resend");
+    const resend = new Resend(process.env.RESEND_API_KEY);
     await resend.emails.send({
       from: "Caelex ATLAS <noreply@caelex.eu>",
       to: params.recipientEmail,

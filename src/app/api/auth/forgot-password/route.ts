@@ -105,6 +105,16 @@ export async function POST(request: NextRequest) {
     // Send via Resend directly so we can stamp the Caelex ATLAS
     // sender + hi@caelex.eu reply-to (matches the invite flow).
     try {
+      const { isEmailDispatchHalted, logHaltedEmail } =
+        await import("@/lib/email/dispatch-halt");
+      if (isEmailDispatchHalted()) {
+        logHaltedEmail({
+          to: email,
+          subject: `Reset your ${productLabel} password`,
+          origin: "api/auth/forgot-password",
+        });
+        return NextResponse.json({ ok: true }, { status: 200 });
+      }
       const { Resend } = await import("resend");
       const resend = new Resend(process.env.RESEND_API_KEY);
       const greeting = user.name ? `Hi ${user.name.split(" ")[0]},` : "Hi,";

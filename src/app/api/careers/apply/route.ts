@@ -3,6 +3,10 @@ import { z } from "zod";
 import { Resend } from "resend";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
+import {
+  isEmailDispatchHalted,
+  logHaltedEmail,
+} from "@/lib/email/dispatch-halt";
 
 function escapeHtml(str: string): string {
   if (!str) return "";
@@ -147,6 +151,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Send email
+    if (isEmailDispatchHalted()) {
+      logHaltedEmail({
+        to: "careers@caelex.eu",
+        subject: `New Application: ${position} - ${firstName} ${lastName}`,
+        origin: "api/careers/apply (internal)",
+      });
+      return NextResponse.json({ ok: true }, { status: 200 });
+    }
     const resend = getResend();
     await resend.emails.send({
       from: "Caelex Careers <careers@caelex.eu>",

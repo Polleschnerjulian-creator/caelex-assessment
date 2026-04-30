@@ -134,8 +134,8 @@ export async function POST(request: Request) {
     // Template + placeholder substitution + HTML-escaping all happen
     // inside renderInvitationEmail() so this call site stays minimal.
     try {
-      const { Resend } = await import("resend");
-      const resend = new Resend(process.env.RESEND_API_KEY);
+      const { isEmailDispatchHalted, logHaltedEmail } =
+        await import("@/lib/email/dispatch-halt");
       const { subject, html, text } = renderInvitationEmail({
         organizationName: atlas.organizationName,
         inviterName: atlas.userName || atlas.userEmail || "Ein Kollege",
@@ -143,17 +143,27 @@ export async function POST(request: Request) {
         recipientEmail: email,
         expiresInDays: INVITE_EXPIRY_DAYS,
       });
-      await resend.emails.send({
-        // Sender name per brand guidelines ("Caelex ATLAS"), sender
-        // address noreply@caelex.eu (verified domain). Replies route
-        // to hi@caelex.eu so the shared inbox catches human questions.
-        from: "Caelex ATLAS <noreply@caelex.eu>",
-        to: email,
-        replyTo: "hi@caelex.eu",
-        subject,
-        html,
-        text,
-      });
+      if (isEmailDispatchHalted()) {
+        logHaltedEmail({
+          to: email,
+          subject,
+          origin: "api/atlas/team (invite)",
+        });
+      } else {
+        const { Resend } = await import("resend");
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        await resend.emails.send({
+          // Sender name per brand guidelines ("Caelex ATLAS"), sender
+          // address noreply@caelex.eu (verified domain). Replies route
+          // to hi@caelex.eu so the shared inbox catches human questions.
+          from: "Caelex ATLAS <noreply@caelex.eu>",
+          to: email,
+          replyTo: "hi@caelex.eu",
+          subject,
+          html,
+          text,
+        });
+      }
     } catch (emailErr) {
       logger.warn("Atlas team invite email failed (non-blocking)", {
         error: emailErr,

@@ -21,6 +21,7 @@ import { renderDeadlineReminder } from "./templates/deadline-reminder";
 import { renderDocumentExpiry } from "./templates/document-expiry";
 import { renderWeeklyDigest } from "./templates/weekly-digest";
 import { renderIncidentAlert } from "./templates/incident-alert";
+import { isEmailDispatchHalted, logHaltedEmail } from "./dispatch-halt";
 
 // ─── Email Provider Type ───
 
@@ -210,6 +211,11 @@ export async function sendEmail(
     entityId,
     metadata,
   } = options;
+
+  if (isEmailDispatchHalted()) {
+    logHaltedEmail({ to, subject, origin: "lib/email/sendEmail" });
+    return { success: false, error: "Email dispatch halted" };
+  }
 
   const provider = getEmailProvider();
 

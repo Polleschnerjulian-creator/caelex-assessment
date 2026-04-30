@@ -1,9 +1,18 @@
 import { Resend } from "resend";
+import { isEmailDispatchHalted, logHaltedEmail } from "./dispatch-halt";
 
 // Singleton Resend client
 let resendClient: Resend | null = null;
 
 export function getResendClient(): Resend | null {
+  if (isEmailDispatchHalted()) {
+    logHaltedEmail({
+      to: null,
+      origin: "lib/email/resend-client.getResendClient",
+    });
+    return null;
+  }
+
   const apiKey = process.env.RESEND_API_KEY;
 
   if (!apiKey) {
@@ -18,6 +27,7 @@ export function getResendClient(): Resend | null {
 }
 
 export function isResendConfigured(): boolean {
+  if (isEmailDispatchHalted()) return false;
   return !!process.env.RESEND_API_KEY;
 }
 
