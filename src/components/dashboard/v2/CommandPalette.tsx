@@ -1,0 +1,289 @@
+"use client";
+
+import * as React from "react";
+import { useRouter } from "next/navigation";
+import {
+  LayoutDashboard,
+  Inbox,
+  ListChecks,
+  ShieldCheck,
+  Bot,
+  FileSearch,
+  Workflow,
+  Globe,
+  Sparkles,
+  Settings,
+  ScrollText,
+  Network,
+  Satellite,
+  AlertTriangle,
+  Orbit,
+  ToggleLeft,
+} from "lucide-react";
+import {
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandShortcut,
+} from "@/components/ui/v2/command";
+import { Kbd } from "@/components/ui/v2/kbd";
+
+/**
+ * Comply v2 Command Palette
+ *
+ * Cmd-K (or Ctrl-K on Windows/Linux) opens this. It's the universal
+ * verb-engine for the Comply workspace — every navigation target,
+ * every action, every Astra prompt is reachable from here in two
+ * keystrokes.
+ *
+ * For Phase 0, we register only navigation verbs and meta-actions
+ * (toggle UI version, open Astra, jump to settings). Real action
+ * verbs (mark-evidence-accepted, snooze-deadline, submit-NCA,
+ * generate-document) get wired in Phase 1 once src/lib/actions/
+ * exists — every defineAction() entry will auto-register here.
+ *
+ * The palette lives at the V2Shell level so it's always available
+ * regardless of which dashboard sub-route the user is on. Atlas and
+ * Pharos do not see this palette.
+ */
+
+interface PaletteVerb {
+  id: string;
+  label: string;
+  hint?: string;
+  icon: React.ComponentType<{ className?: string }>;
+  shortcut?: string[];
+  group: "navigate" | "create" | "ai" | "settings";
+  run: (router: ReturnType<typeof useRouter>) => void;
+}
+
+const VERBS: PaletteVerb[] = [
+  // ─── Navigate ───────────────────────────────────────────────────────
+  {
+    id: "nav-today",
+    label: "Open Today inbox",
+    hint: "Tasks that need you this week",
+    icon: Inbox,
+    group: "navigate",
+    run: (r) => r.push("/dashboard/today"),
+  },
+  {
+    id: "nav-triage",
+    label: "Open Triage",
+    hint: "Incoming compliance signals",
+    icon: ListChecks,
+    group: "navigate",
+    run: (r) => r.push("/dashboard/triage"),
+  },
+  {
+    id: "nav-review-queue",
+    label: "Open Review Queue",
+    hint: "Astra-flagged items awaiting decision",
+    icon: ShieldCheck,
+    group: "navigate",
+    run: (r) => r.push("/dashboard/review-queue"),
+  },
+  {
+    id: "nav-dashboard",
+    label: "Open Dashboard (legacy v1)",
+    icon: LayoutDashboard,
+    group: "navigate",
+    run: (r) => r.push("/dashboard"),
+  },
+  {
+    id: "nav-mission-control",
+    label: "Open Mission Control",
+    hint: "3D fleet visualization",
+    icon: Globe,
+    group: "navigate",
+    run: (r) => r.push("/dashboard/mission-control"),
+  },
+  {
+    id: "nav-ephemeris",
+    label: "Open Ephemeris",
+    hint: "Compliance forecast & digital twins",
+    icon: Orbit,
+    group: "navigate",
+    run: (r) => r.push("/dashboard/ephemeris"),
+  },
+  {
+    id: "nav-sentinel",
+    label: "Open Sentinel",
+    hint: "Telemetry-evidence chain",
+    icon: Satellite,
+    group: "navigate",
+    run: (r) => r.push("/dashboard/sentinel"),
+  },
+  {
+    id: "nav-network",
+    label: "Open Compliance Network",
+    icon: Network,
+    group: "navigate",
+    run: (r) => r.push("/dashboard/network"),
+  },
+  {
+    id: "nav-incidents",
+    label: "Open Incidents",
+    icon: AlertTriangle,
+    group: "navigate",
+    run: (r) => r.push("/dashboard/incidents"),
+  },
+  {
+    id: "nav-audit-center",
+    label: "Open Audit Center",
+    icon: ScrollText,
+    group: "navigate",
+    run: (r) => r.push("/dashboard/audit-center"),
+  },
+  {
+    id: "nav-tracker",
+    label: "Open Article Tracker",
+    icon: FileSearch,
+    group: "navigate",
+    run: (r) => r.push("/dashboard/tracker"),
+  },
+  {
+    id: "nav-workflow",
+    label: "Open Workflow",
+    icon: Workflow,
+    group: "navigate",
+    run: (r) => r.push("/dashboard/timeline"),
+  },
+
+  // ─── AI ─────────────────────────────────────────────────────────────
+  {
+    id: "ai-astra",
+    label: "Ask Astra",
+    hint: "Open the AI compliance copilot",
+    icon: Bot,
+    group: "ai",
+    shortcut: ["⌘", "/"],
+    run: (r) => r.push("/dashboard/astra"),
+  },
+  {
+    id: "ai-generate",
+    label: "Generate document",
+    hint: "Authorization, NIS2 register, attestation…",
+    icon: Sparkles,
+    group: "ai",
+    run: (r) => r.push("/dashboard/generate"),
+  },
+
+  // ─── Settings ───────────────────────────────────────────────────────
+  {
+    id: "settings-ui-version",
+    label: "Switch Comply UI version",
+    hint: "v1 (legacy) or v2 (preview)",
+    icon: ToggleLeft,
+    group: "settings",
+    run: (r) => r.push("/dashboard/settings/ui"),
+  },
+  {
+    id: "settings-main",
+    label: "Open Settings",
+    icon: Settings,
+    group: "settings",
+    run: (r) => r.push("/dashboard/settings"),
+  },
+];
+
+const GROUP_LABELS: Record<PaletteVerb["group"], string> = {
+  navigate: "Navigate",
+  create: "Create",
+  ai: "Astra & AI",
+  settings: "Settings",
+};
+
+export function CommandPalette() {
+  const router = useRouter();
+  const [open, setOpen] = React.useState(false);
+
+  // ⌘K / Ctrl-K to toggle.
+  React.useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "k" && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        setOpen((current) => !current);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const grouped = React.useMemo(() => {
+    const map = new Map<PaletteVerb["group"], PaletteVerb[]>();
+    for (const v of VERBS) {
+      if (!map.has(v.group)) map.set(v.group, []);
+      map.get(v.group)!.push(v);
+    }
+    return map;
+  }, []);
+
+  const runVerb = React.useCallback(
+    (verb: PaletteVerb) => {
+      setOpen(false);
+      // Defer so the dialog's close-animation doesn't fight the route change
+      setTimeout(() => verb.run(router), 0);
+    },
+    [router],
+  );
+
+  return (
+    <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandInput placeholder="Search actions, navigate to a surface, ask Astra…" />
+      <CommandList>
+        <CommandEmpty>
+          No matching action.{" "}
+          <span className="text-xs text-slate-400">
+            Try &ldquo;astra&rdquo;, &ldquo;today&rdquo;, or
+            &ldquo;sentinel&rdquo;.
+          </span>
+        </CommandEmpty>
+        {Array.from(grouped.entries()).map(([group, verbs]) => (
+          <CommandGroup key={group} heading={GROUP_LABELS[group]}>
+            {verbs.map((verb) => {
+              const Icon = verb.icon;
+              return (
+                <CommandItem
+                  key={verb.id}
+                  value={`${verb.label} ${verb.hint ?? ""} ${group}`}
+                  onSelect={() => runVerb(verb)}
+                >
+                  <Icon className="text-slate-500" />
+                  <div className="flex min-w-0 flex-col">
+                    <span className="truncate text-sm">{verb.label}</span>
+                    {verb.hint ? (
+                      <span className="truncate text-xs text-slate-500 dark:text-slate-400">
+                        {verb.hint}
+                      </span>
+                    ) : null}
+                  </div>
+                  {verb.shortcut ? (
+                    <CommandShortcut>
+                      {verb.shortcut.map((s, i) => (
+                        <Kbd key={i} className="text-[10px]">
+                          {s}
+                        </Kbd>
+                      ))}
+                    </CommandShortcut>
+                  ) : null}
+                </CommandItem>
+              );
+            })}
+          </CommandGroup>
+        ))}
+      </CommandList>
+      <div className="flex items-center justify-between border-t border-slate-200 px-3 py-2 text-[11px] text-slate-500 dark:border-slate-800 dark:text-slate-400">
+        <span className="flex items-center gap-2">
+          Tip: type to filter, press <Kbd>↵</Kbd> to run
+        </span>
+        <span className="flex items-center gap-1">
+          <Kbd>esc</Kbd> close
+        </span>
+      </div>
+    </CommandDialog>
+  );
+}
