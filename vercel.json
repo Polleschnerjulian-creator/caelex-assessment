@@ -141,6 +141,10 @@
     {
       "path": "/api/cron/pharos-daily-briefing",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/comply-v2-lifecycle",
+      "schedule": "30 2 * * *"
     }
   ]
 }
