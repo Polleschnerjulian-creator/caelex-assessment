@@ -579,6 +579,24 @@ export async function checkFeatureAccess(
     include: { organization: true },
   });
 
+  // Super-admin bypass — if any super-admin is a member of this org,
+  // unlock every feature. Lets platform owners debug customer flows
+  // without being blocked by their personal subscription tier.
+  const { getSuperAdminEmails } = await import("@/lib/super-admin");
+  const superAdminEmails = [...getSuperAdminEmails()];
+  if (superAdminEmails.length > 0) {
+    const superMember = await prisma.organizationMember.findFirst({
+      where: {
+        organizationId,
+        user: { email: { in: superAdminEmails } },
+      },
+      select: { id: true },
+    });
+    if (superMember) {
+      return { allowed: true };
+    }
+  }
+
   const plan = (subscription?.plan || "FREE") as PlanType;
   const features = PRICING_TIERS[plan].features;
 
