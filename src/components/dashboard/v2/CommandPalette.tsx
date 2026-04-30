@@ -25,9 +25,13 @@ import {
   FileQuestion,
   Check,
   X,
+  FileSearch as FileSearchIcon,
+  Loader2,
   type LucideIcon,
 } from "lucide-react";
 import type { ServerActionVerb } from "@/lib/comply-v2/actions/palette-verbs.server";
+import type { PaletteSearchResult } from "@/lib/comply-v2/compliance-item.server";
+import { searchPalette } from "@/app/dashboard/(palette-search)/actions";
 import {
   CommandDialog,
   CommandInput,
@@ -258,6 +262,11 @@ export interface CommandPaletteProps {
 export function CommandPalette({ serverVerbs = [] }: CommandPaletteProps) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [searchResults, setSearchResults] = React.useState<
+    PaletteSearchResult[]
+  >([]);
+  const [isSearching, startSearch] = React.useTransition();
 
   // ⌘K / Ctrl-K to toggle.
   React.useEffect(() => {
@@ -270,6 +279,36 @@ export function CommandPalette({ serverVerbs = [] }: CommandPaletteProps) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  // Reset search when palette closes — fresh state every open.
+  React.useEffect(() => {
+    if (!open) {
+      setSearchQuery("");
+      setSearchResults([]);
+    }
+  }, [open]);
+
+  // Debounced ComplianceItem search. Triggers on every keystroke
+  // after a 200ms quiet period, queries length ≥ 2.
+  React.useEffect(() => {
+    if (!open) return;
+    const trimmed = searchQuery.trim();
+    if (trimmed.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    const t = setTimeout(() => {
+      startSearch(async () => {
+        try {
+          const hits = await searchPalette(trimmed);
+          setSearchResults(hits);
+        } catch {
+          setSearchResults([]);
+        }
+      });
+    }, 200);
+    return () => clearTimeout(t);
+  }, [searchQuery, open]);
 
   const grouped = React.useMemo(() => {
     const map = new Map<Group, PaletteVerb[]>();
@@ -321,17 +360,75 @@ export function CommandPalette({ serverVerbs = [] }: CommandPaletteProps) {
     [router],
   );
 
+  const openItem = React.useCallback(
+    (result: PaletteSearchResult) => {
+      setOpen(false);
+      setTimeout(
+        () =>
+          router.push(`/dashboard/items/${result.regulation}/${result.rowId}`),
+        0,
+      );
+    },
+    [router],
+  );
+
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder="Search actions, navigate to a surface, ask Astra…" />
+      <CommandInput
+        value={searchQuery}
+        onValueChange={setSearchQuery}
+        placeholder="Search actions, navigate, ask Astra, or find a ComplianceItem…"
+      />
       <CommandList>
         <CommandEmpty>
-          No matching action.{" "}
-          <span className="text-xs text-slate-400">
-            Try &ldquo;astra&rdquo;, &ldquo;today&rdquo;, or
-            &ldquo;sentinel&rdquo;.
-          </span>
+          {isSearching ? (
+            <span className="inline-flex items-center gap-2 text-xs text-slate-500">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Searching items…
+            </span>
+          ) : (
+            <span className="text-xs text-slate-400">
+              No match. Try a regulation (&ldquo;NIS2&rdquo;), an article
+              (&ldquo;Art.32&rdquo;), or a verb (&ldquo;snooze&rdquo;).
+            </span>
+          )}
         </CommandEmpty>
+
+        {searchResults.length > 0 ? (
+          <CommandGroup
+            heading={
+              isSearching
+                ? "ComplianceItems · searching…"
+                : `ComplianceItems (${searchResults.length})`
+            }
+          >
+            {searchResults.map((result) => (
+              <CommandItem
+                key={result.id}
+                value={`item-${result.id} ${result.requirementId} ${result.regulation} ${result.snippet ?? ""}`}
+                onSelect={() => openItem(result)}
+              >
+                <FileSearchIcon className="text-emerald-500" />
+                <div className="flex min-w-0 flex-col">
+                  <div className="flex items-center gap-2">
+                    <span className="truncate text-sm font-medium">
+                      {result.requirementId}
+                    </span>
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400">
+                      {result.regulation} · {result.status}
+                    </span>
+                  </div>
+                  {result.snippet ? (
+                    <span className="truncate text-xs text-slate-500 dark:text-slate-400">
+                      {result.snippet}
+                    </span>
+                  ) : null}
+                </div>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        ) : null}
+
         {Array.from(grouped.entries()).map(([group, verbs]) => (
           <CommandGroup key={group} heading={GROUP_LABELS[group]}>
             {verbs.map((verb) => {

@@ -304,6 +304,171 @@ export async function getComplianceItemsForUser(
 }
 
 /**
+ * Lean projection of a ComplianceItem for the Cmd-K search results
+ * list. Does not need priority computation, target-date math, or
+ * full notes — just enough to render a palette row that links to
+ * the detail page.
+ */
+export interface PaletteSearchResult {
+  /** Cross-regime ID `${regulation}:${rowId}`. */
+  id: string;
+  regulation: RegulationKey;
+  rowId: string;
+  requirementId: string;
+  status: ComplianceStatus;
+  /** Best-match snippet (notes or evidenceNotes), trimmed to 120 chars.
+   *  Null when no notes exist on either field. */
+  snippet: string | null;
+}
+
+/**
+ * Search across a user's ComplianceItems for the Cmd-K palette.
+ *
+ * Phase 2 implementation: case-insensitive substring match across
+ * `requirementId`, `notes`, and `evidenceNotes` columns of the 8
+ * `*RequirementStatus` tables. Postgres `contains` mode.
+ *
+ * Phase 3 may upgrade to full-text search via Postgres GIN index
+ * or a dedicated search service, but we don't need that yet — most
+ * users will have <1000 items per regime, so substring matching on
+ * indexed assessment-id ranges runs in <50ms.
+ *
+ * Returns up to 8 hits, prioritized by:
+ *   1. Exact requirementId match (case-insensitive)
+ *   2. requirementId substring match
+ *   3. Notes / evidenceNotes substring match
+ *
+ * The result shape stays lean — UI converts to palette rows directly
+ * without needing the full ComplianceItem with priority/target-date.
+ */
+export async function searchComplianceItemsForPalette(
+  userId: string,
+  rawQuery: string,
+): Promise<PaletteSearchResult[]> {
+  const query = rawQuery.trim();
+  if (query.length < 2) return [];
+
+  const limit = 8;
+
+  // Run 8 parallel queries with the same shape — Postgres uses the
+  // assessmentId index per table; the substring filter scans the
+  // matching rows for that user.
+  type Hit = {
+    id: string;
+    requirementId: string;
+    status: string | null;
+    notes: string | null;
+    evidenceNotes: string | null;
+  };
+
+  const filter = (q: string) => ({
+    assessment: { userId },
+    OR: [
+      { requirementId: { contains: q, mode: "insensitive" as const } },
+      { notes: { contains: q, mode: "insensitive" as const } },
+      { evidenceNotes: { contains: q, mode: "insensitive" as const } },
+    ],
+  });
+
+  const select = {
+    id: true,
+    requirementId: true,
+    status: true,
+    notes: true,
+    evidenceNotes: true,
+  };
+
+  const [debris, cyber, nis2, cra, uk, us, exportControl, spectrum] =
+    await Promise.all([
+      prisma.debrisRequirementStatus.findMany({
+        where: filter(query),
+        select,
+        take: limit,
+      }),
+      prisma.cybersecurityRequirementStatus.findMany({
+        where: filter(query),
+        select,
+        take: limit,
+      }),
+      prisma.nIS2RequirementStatus.findMany({
+        where: filter(query),
+        select,
+        take: limit,
+      }),
+      prisma.cRARequirementStatus.findMany({
+        where: filter(query),
+        select,
+        take: limit,
+      }),
+      prisma.ukRequirementStatus.findMany({
+        where: filter(query),
+        select,
+        take: limit,
+      }),
+      prisma.usRequirementStatus.findMany({
+        where: filter(query),
+        select,
+        take: limit,
+      }),
+      prisma.exportControlRequirementStatus.findMany({
+        where: filter(query),
+        select,
+        take: limit,
+      }),
+      prisma.spectrumRequirementStatus.findMany({
+        where: filter(query),
+        select,
+        take: limit,
+      }),
+    ]);
+
+  const buckets: Array<{ regulation: RegulationKey; rows: Hit[] }> = [
+    { regulation: "DEBRIS", rows: debris },
+    { regulation: "CYBERSECURITY", rows: cyber },
+    { regulation: "NIS2", rows: nis2 },
+    { regulation: "CRA", rows: cra },
+    { regulation: "UK_SPACE_ACT", rows: uk },
+    { regulation: "US_REGULATORY", rows: us },
+    { regulation: "EXPORT_CONTROL", rows: exportControl },
+    { regulation: "SPECTRUM", rows: spectrum },
+  ];
+
+  const lower = query.toLowerCase();
+  const score = (row: Hit): number => {
+    const reqLower = row.requirementId.toLowerCase();
+    if (reqLower === lower) return 0; // exact match
+    if (reqLower.startsWith(lower)) return 1;
+    if (reqLower.includes(lower)) return 2;
+    if (row.notes?.toLowerCase().includes(lower)) return 3;
+    if (row.evidenceNotes?.toLowerCase().includes(lower)) return 4;
+    return 5;
+  };
+
+  const results: Array<PaletteSearchResult & { _rank: number }> = [];
+  for (const { regulation, rows } of buckets) {
+    for (const row of rows) {
+      const snippetSource = row.notes ?? row.evidenceNotes;
+      const snippet = snippetSource ? snippetSource.trim().slice(0, 120) : null;
+      results.push({
+        id: `${regulation}:${row.id}`,
+        regulation,
+        rowId: row.id,
+        requirementId: row.requirementId,
+        status: normalizeStatus(row.status),
+        snippet,
+        _rank: score(row),
+      });
+    }
+  }
+
+  results.sort((a, b) => a._rank - b._rank);
+  return results.slice(0, limit).map(({ _rank, ...rest }) => {
+    void _rank;
+    return rest;
+  });
+}
+
+/**
  * Fetch a single ComplianceItem by regulation + row ID. Auth-checked
  * via assessment-side userId match. Returns null if not found or
  * not owned by `userId` — defense in depth, never leak another
