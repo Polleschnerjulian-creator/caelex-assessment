@@ -12,6 +12,10 @@
 // `new Resend(...)` site under src/app/api/**.
 
 export function isEmailDispatchHalted(): boolean {
+  // Vitest test runs bypass the halt — tests own their own Resend/SMTP
+  // mocks and assert on send-success. The kill-switch is a runtime
+  // production guard, not a test fixture.
+  if (process.env.VITEST) return false;
   const flag = process.env.EMAIL_DISPATCH_HALTED;
   if (flag === undefined) return true;
   const normalized = flag.trim().toLowerCase();
