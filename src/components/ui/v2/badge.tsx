@@ -8,36 +8,37 @@ import { cn } from "@/lib/utils";
  * pill pattern (USER_ACTION_REQUIRED / RUNNING / COMPLETE).
  */
 const badgeVariants = cva(
-  "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium uppercase tracking-wider",
+  // Palantir-style terminal pills: sharp corners, font-mono,
+  // uppercase, tracked-out, with a small leading dot for status
+  // semantics. Tighter padding than typical shadcn pills.
+  "inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10px] font-mono font-medium uppercase tracking-[0.08em]",
   {
     variants: {
       variant: {
-        // Compliance status pills
+        // Compliance status pills — terminal output aesthetic
         pending:
-          "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+          "bg-slate-500/10 text-slate-300 ring-1 ring-inset ring-slate-500/20",
         draft:
-          "bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300",
+          "bg-blue-500/10 text-blue-300 ring-1 ring-inset ring-blue-500/30",
         evidenceRequired:
-          "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300",
+          "bg-amber-500/10 text-amber-300 ring-1 ring-inset ring-amber-500/30",
         underReview:
-          "bg-violet-100 text-violet-800 dark:bg-violet-950/40 dark:text-violet-300",
+          "bg-violet-500/10 text-violet-300 ring-1 ring-inset ring-violet-500/30",
         attested:
-          "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300",
-        expired: "bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300",
+          "bg-emerald-500/10 text-emerald-300 ring-1 ring-inset ring-emerald-500/30",
+        expired: "bg-red-500/10 text-red-300 ring-1 ring-inset ring-red-500/30",
 
         // Actor pills
         operator:
-          "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300",
+          "bg-emerald-500/10 text-emerald-300 ring-1 ring-inset ring-emerald-500/30",
         counsel:
-          "bg-cyan-100 text-cyan-800 dark:bg-cyan-950/40 dark:text-cyan-300",
+          "bg-cyan-500/10 text-cyan-300 ring-1 ring-inset ring-cyan-500/30",
         authority:
-          "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300",
+          "bg-amber-500/10 text-amber-300 ring-1 ring-inset ring-amber-500/30",
 
         // Generic
-        default:
-          "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200",
-        outline:
-          "border border-slate-300 text-slate-700 dark:border-slate-700 dark:text-slate-300",
+        default: "bg-white/5 text-slate-300 ring-1 ring-inset ring-white/10",
+        outline: "text-slate-400 ring-1 ring-inset ring-white/15",
       },
     },
     defaultVariants: {

@@ -30,11 +30,14 @@ export function isDensity(value: unknown): value is Density {
 
 /**
  * Read the user's density preference from the cookie. Falls back to
- * "cozy" — the V2 onboarding default.
+ * "compact" — the V2 default after the Palantir-aesthetic cutover.
+ * Compact gives the Bloomberg-ish information density we want without
+ * being overwhelming. Users who want the airier reading-room feel can
+ * switch to "cozy" via Settings.
  */
 export async function getDensity(): Promise<Density> {
   const store = await cookies();
   const raw = store.get(DENSITY_COOKIE_NAME)?.value;
   if (isDensity(raw)) return raw;
-  return "cozy";
+  return "compact";
 }

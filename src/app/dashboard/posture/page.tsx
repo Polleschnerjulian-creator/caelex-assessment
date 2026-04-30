@@ -49,19 +49,25 @@ export default async function PosturePage() {
   const posture = await getPostureForUser(session.user.id);
 
   return (
-    <div className="mx-auto max-w-screen-xl px-6 py-8">
-      <header className="mb-8">
-        <div className="mb-2 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-          <Gauge className="h-3.5 w-3.5" />
-          Posture
+    <div className="mx-auto max-w-screen-2xl px-6 py-6">
+      <header className="mb-6 flex items-end justify-between gap-6 border-b border-white/[0.06] pb-4">
+        <div>
+          <div className="mb-1.5 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-400">
+            <Gauge className="h-3 w-3" />
+            POSTURE · LIVE
+          </div>
+          <h1 className="text-xl font-semibold tracking-tight text-slate-100">
+            Compliance command center
+          </h1>
+          <p className="mt-1 max-w-2xl text-xs text-slate-500">
+            Executive overview of where you stand right now. Click any tile to
+            drill into the underlying ComplianceItems.
+          </p>
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-          Compliance posture
-        </h1>
-        <p className="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
-          Executive overview of where you stand right now. Click any tile to
-          drill into the underlying ComplianceItems.
-        </p>
+        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">
+          <span className="inline-flex h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+          UPDATED LIVE
+        </div>
       </header>
 
       {/* KPI strip */}
@@ -125,22 +131,22 @@ export default async function PosturePage() {
 
       {/* Regulation table */}
       <section>
-        <h2 className="mb-3 text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        <h2 className="mb-3 font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-slate-500">
           Regulation breakdown
         </h2>
         {posture.regulationBreakdown.length === 0 ? (
-          <p className="rounded-md border border-dashed border-slate-200 p-6 text-center text-xs text-slate-400 dark:border-slate-800 dark:text-slate-500">
+          <p className="palantir-surface rounded-md p-6 text-center text-xs text-slate-500">
             No regulatory items yet. Start a module assessment to populate.
           </p>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-            <table className="w-full text-sm">
-              <thead className="border-b border-slate-200 bg-slate-50 text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400">
+          <div className="palantir-surface overflow-hidden rounded-md">
+            <table className="w-full text-xs">
+              <thead className="border-b border-white/[0.06] bg-white/[0.02] font-mono text-[9px] font-medium uppercase tracking-[0.18em] text-slate-500">
                 <tr>
                   <th className="px-4 py-2 text-left">Regulation</th>
                   <th className="px-4 py-2 text-right">Score</th>
                   <th className="px-4 py-2 text-right">Attested</th>
-                  <th className="px-4 py-2 text-right">Evidence req.</th>
+                  <th className="px-4 py-2 text-right">Evidence</th>
                   <th className="px-4 py-2 text-right">Pending</th>
                   <th className="px-4 py-2 text-right">Total</th>
                   <th className="px-4 py-2"></th>
@@ -150,33 +156,36 @@ export default async function PosturePage() {
                 {posture.regulationBreakdown.map((r) => (
                   <tr
                     key={r.regulation}
-                    className="border-b border-slate-100 last:border-b-0 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50"
+                    className="border-b border-white/[0.04] last:border-b-0 transition hover:bg-white/[0.03]"
                   >
-                    <td className="px-4 py-2 text-slate-900 dark:text-slate-100">
+                    <td className="px-4 py-2.5 text-slate-200">
                       <div className="flex items-center gap-2">
                         <ScoreDot score={r.score} />
-                        {REGULATION_LABELS[r.regulation]}
+                        <span>{REGULATION_LABELS[r.regulation]}</span>
+                        <span className="font-mono text-[9px] uppercase tracking-wider text-slate-500">
+                          {r.regulation}
+                        </span>
                       </div>
                     </td>
-                    <td className="px-4 py-2 text-right font-mono text-xs">
+                    <td className="px-4 py-2.5 text-right font-mono tabular-nums text-slate-100">
                       {r.score}%
                     </td>
-                    <td className="px-4 py-2 text-right text-emerald-700 dark:text-emerald-300">
+                    <td className="px-4 py-2.5 text-right font-mono tabular-nums text-emerald-400">
                       {r.attested}
                     </td>
-                    <td className="px-4 py-2 text-right text-amber-700 dark:text-amber-300">
+                    <td className="px-4 py-2.5 text-right font-mono tabular-nums text-amber-400">
                       {r.evidenceRequired}
                     </td>
-                    <td className="px-4 py-2 text-right text-slate-500 dark:text-slate-400">
+                    <td className="px-4 py-2.5 text-right font-mono tabular-nums text-slate-500">
                       {r.pending}
                     </td>
-                    <td className="px-4 py-2 text-right text-slate-500 dark:text-slate-400">
+                    <td className="px-4 py-2.5 text-right font-mono tabular-nums text-slate-500">
                       {r.total}
                     </td>
-                    <td className="px-4 py-2 text-right">
+                    <td className="px-4 py-2.5 text-right">
                       <Link
                         href={`/dashboard/today?regulation=${r.regulation}`}
-                        className="inline-flex items-center gap-1 text-[11px] text-emerald-700 transition hover:text-emerald-900 dark:text-emerald-300 dark:hover:text-emerald-200"
+                        className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-emerald-400 transition hover:text-emerald-300"
                       >
                         Open
                         <ArrowRight className="h-3 w-3" />
@@ -196,23 +205,17 @@ export default async function PosturePage() {
 // ─── Subcomponents ───────────────────────────────────────────────────────
 
 function Card({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-      {children}
-    </div>
-  );
+  return <div className="palantir-surface rounded-md p-4">{children}</div>;
 }
 
 function CardHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
-    <header className="mb-4">
-      <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+    <header className="mb-3 border-b border-white/[0.06] pb-3">
+      <h3 className="font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-slate-300">
         {title}
       </h3>
       {subtitle ? (
-        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-          {subtitle}
-        </p>
+        <p className="mt-1 font-mono text-[10px] text-slate-500">{subtitle}</p>
       ) : null}
     </header>
   );
@@ -235,23 +238,32 @@ function Kpi({
 }) {
   const accentClass =
     tone === "emerald"
-      ? "text-emerald-600 dark:text-emerald-400"
+      ? "text-emerald-400"
       : tone === "amber"
-        ? "text-amber-600 dark:text-amber-400"
-        : "text-slate-500 dark:text-slate-400";
+        ? "text-amber-400"
+        : "text-slate-500";
+
+  const stripe =
+    tone === "emerald"
+      ? "palantir-stripe-emerald"
+      : tone === "amber"
+        ? "palantir-stripe-amber"
+        : "";
 
   const inner = (
-    <div className="flex flex-col gap-1.5 rounded-xl border border-slate-200 bg-white p-4 transition dark:border-slate-800 dark:bg-slate-900">
+    <div
+      className={`palantir-surface group flex flex-col gap-2 rounded-md p-4 transition ${stripe}`}
+    >
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        <span className="font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-slate-500">
           {label}
         </span>
-        <Icon className={`h-3.5 w-3.5 ${accentClass}`} />
+        <Icon className={`h-3 w-3 ${accentClass}`} />
       </div>
-      <div className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+      <div className="font-mono text-3xl font-bold tracking-tight text-slate-50 tabular-nums">
         {value}
       </div>
-      <div className="text-[11px] text-slate-500 dark:text-slate-400">
+      <div className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
         {subline}
       </div>
     </div>
@@ -259,7 +271,7 @@ function Kpi({
 
   if (href) {
     return (
-      <Link href={href} className="block hover:shadow-md">
+      <Link href={href} className="block">
         {inner}
       </Link>
     );

@@ -39,7 +39,11 @@ export default async function V2Shell({
   return (
     <div
       data-density={density}
-      className="flex min-h-screen bg-slate-50 dark:bg-slate-950"
+      // V2 forces the dark Palantir-inspired chrome regardless of
+      // system color-scheme. Adding `dark` class lights up all
+      // nested `dark:*` Tailwind rules. The palantir-canvas utility
+      // applies the deep-navy background + subtle dot-grid texture.
+      className="dark palantir-canvas flex min-h-screen text-slate-100"
     >
       {/* ⌘K palette — client island, mounts globally */}
       <CommandPalette serverVerbs={serverVerbs} />

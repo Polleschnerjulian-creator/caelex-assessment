@@ -2,6 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== COMPLY V2 PALANTIR-INSPIRED SURFACES ===== */
+/* Dark-mode only V2 chrome, evoking Palantir AI Hivemind look:
+ *  - palantir-canvas: deep navy/black background with subtle dot-grid
+ *  - palantir-surface: backdrop-blurred card with sharp 1px border
+ *  - palantir-elevated: slightly brighter card, used for active states
+ *
+ * Applied via plain Tailwind classnames — no @apply because we want
+ * tree-shakable per-component styling. Dot grid uses radial-gradient
+ * CSS, no asset.
+ */
+@layer utilities {
+  .palantir-canvas {
+    background-color: #0a0e1a;
+    background-image: radial-gradient(
+      circle at 1px 1px,
+      rgba(255, 255, 255, 0.04) 1px,
+      transparent 0
+    );
+    background-size: 24px 24px;
+  }
+  .palantir-surface {
+    background-color: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(20px) saturate(1.2);
+    -webkit-backdrop-filter: blur(20px) saturate(1.2);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .palantir-surface:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+  .palantir-elevated {
+    background-color: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(24px) saturate(1.4);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .palantir-stripe-emerald {
+    box-shadow: inset 2px 0 0 0 rgb(16 185 129);
+  }
+  .palantir-stripe-amber {
+    box-shadow: inset 2px 0 0 0 rgb(245 158 11);
+  }
+  .palantir-stripe-violet {
+    box-shadow: inset 2px 0 0 0 rgb(139 92 246);
+  }
+  .palantir-stripe-red {
+    box-shadow: inset 2px 0 0 0 rgb(239 68 68);
+  }
+}
+
 /* ===== LIQUID GLASS DESIGN SYSTEM ===== */
 /* 3-tier elevation system + 2 modifiers. Dark-mode only (no-op in light). */
 @layer utilities {

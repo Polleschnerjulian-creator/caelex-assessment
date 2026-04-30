@@ -113,31 +113,29 @@ export function V2Sidebar({
   return (
     <nav
       aria-label="Comply navigation"
-      className="flex h-full w-60 shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
+      className="flex h-full w-56 shrink-0 flex-col border-r border-white/[0.06] bg-black/30 backdrop-blur-xl"
     >
       {/* Brand */}
-      <div className="flex h-14 items-center gap-2 border-b border-slate-200 px-4 dark:border-slate-800">
-        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-500 text-white">
-          <span className="font-mono text-xs font-bold">C</span>
+      <div className="flex h-12 items-center gap-2 border-b border-white/[0.06] px-3">
+        <div className="flex h-6 w-6 items-center justify-center rounded bg-emerald-500/90 text-slate-950 ring-1 ring-emerald-400/50">
+          <span className="font-mono text-[11px] font-bold">C</span>
         </div>
-        <div className="flex flex-col leading-tight">
-          <span className="text-sm font-semibold text-slate-900 dark:text-slate-50">
-            Caelex
+        <div className="flex items-baseline gap-1.5 leading-none">
+          <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-100">
+            CAELEX
           </span>
-          <span className="text-[10px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-            Comply
+          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-emerald-400">
+            COMPLY
           </span>
         </div>
       </div>
 
       {/* Cmd-K hint */}
-      <div className="border-b border-slate-200 px-4 py-2 dark:border-slate-800">
+      <div className="border-b border-white/[0.06] px-3 py-2">
         <button
           type="button"
-          className="flex w-full items-center justify-between gap-2 rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-500 transition hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
+          className="flex w-full items-center justify-between gap-2 rounded border border-white/[0.06] bg-white/[0.02] px-2 py-1 text-[11px] text-slate-400 transition hover:border-white/10 hover:bg-white/[0.04]"
           onClick={() => {
-            // Trigger ⌘K via synthetic keypress so we don't have to
-            // pass the open-state setter all the way down.
             const event = new KeyboardEvent("keydown", {
               key: "k",
               metaKey: true,
@@ -146,16 +144,25 @@ export function V2Sidebar({
             window.dispatchEvent(event);
           }}
         >
-          <span>Search…</span>
+          <span className="font-mono uppercase tracking-wider">Search</span>
           <span className="flex items-center gap-0.5">
-            <Kbd className="text-[9px]">⌘</Kbd>
-            <Kbd className="text-[9px]">K</Kbd>
+            <Kbd className="border-white/10 bg-white/5 text-[9px] text-slate-300">
+              ⌘
+            </Kbd>
+            <Kbd className="border-white/10 bg-white/5 text-[9px] text-slate-300">
+              K
+            </Kbd>
           </span>
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2 py-3">
+      <div className="flex-1 overflow-y-auto px-2 py-2">
         {/* Primary */}
+        <div className="mb-1 px-2 py-1">
+          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500">
+            Primary
+          </span>
+        </div>
         <ul className="space-y-0.5">
           {primary.map((item) => (
             <li key={item.href}>
@@ -168,7 +175,7 @@ export function V2Sidebar({
         <button
           type="button"
           onClick={() => setReferenceOpen((o) => !o)}
-          className="mt-6 flex w-full items-center justify-between gap-2 px-2 py-1 text-[10px] font-medium uppercase tracking-wider text-slate-500 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          className="mt-5 flex w-full items-center justify-between gap-2 rounded px-2 py-1 font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500 transition hover:text-slate-300"
         >
           <span>Reference</span>
           {referenceOpen ? (
@@ -189,29 +196,31 @@ export function V2Sidebar({
       </div>
 
       {/* User footer */}
-      <div className="border-t border-slate-200 px-2 py-2 dark:border-slate-800">
+      <div className="border-t border-white/[0.06] px-2 py-2">
         <Link
           href="/dashboard/settings/ui"
           className={cn(
-            "flex items-center gap-2 rounded-md px-2 py-1.5 text-xs transition",
+            "flex items-center gap-2 rounded px-2 py-1.5 text-xs transition",
             pathname.startsWith("/dashboard/settings")
-              ? "bg-emerald-50 text-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200"
-              : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800",
+              ? "bg-emerald-500/10 text-emerald-300 ring-1 ring-inset ring-emerald-500/30"
+              : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200",
           )}
         >
           <Settings className="h-3.5 w-3.5" />
-          Settings
+          <span className="font-mono uppercase tracking-wider text-[10px]">
+            Settings
+          </span>
         </Link>
         {userEmail || userName ? (
-          <div className="mt-2 flex items-center gap-2 px-2 py-1.5">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-[10px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+          <div className="mt-1.5 flex items-center gap-2 rounded px-2 py-1.5">
+            <div className="flex h-6 w-6 items-center justify-center rounded bg-white/[0.06] text-[10px] font-mono font-medium text-slate-300 ring-1 ring-white/10">
               {(userName ?? userEmail ?? "?").slice(0, 1).toUpperCase()}
             </div>
             <div className="min-w-0 leading-tight">
-              <div className="truncate text-xs font-medium text-slate-900 dark:text-slate-100">
+              <div className="truncate text-[11px] font-medium text-slate-200">
                 {userName ?? "User"}
               </div>
-              <div className="truncate text-[10px] text-slate-500 dark:text-slate-400">
+              <div className="truncate font-mono text-[9px] text-slate-500">
                 {userEmail}
               </div>
             </div>
@@ -236,25 +245,25 @@ function NavLink({
     <Link
       href={item.href}
       className={cn(
-        "group flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition",
+        "group relative flex items-center gap-2.5 rounded px-2 py-1.5 text-[12px] transition",
         active
-          ? "bg-emerald-50 text-emerald-900 font-medium dark:bg-emerald-950/30 dark:text-emerald-200"
+          ? "bg-emerald-500/10 text-emerald-200 ring-1 ring-inset ring-emerald-500/30 palantir-stripe-emerald"
           : dim
-            ? "text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-            : "text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100",
+            ? "text-slate-500 hover:bg-white/[0.03] hover:text-slate-300"
+            : "text-slate-300 hover:bg-white/[0.04] hover:text-slate-100",
       )}
     >
       <Icon
         className={cn(
-          "h-4 w-4 shrink-0",
+          "h-3.5 w-3.5 shrink-0",
           active
-            ? "text-emerald-600 dark:text-emerald-400"
-            : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300",
+            ? "text-emerald-400"
+            : "text-slate-500 group-hover:text-slate-300",
         )}
       />
-      <span className="flex-1 truncate">{item.label}</span>
+      <span className="flex-1 truncate font-medium">{item.label}</span>
       {item.badge && item.badge > 0 ? (
-        <span className="inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-emerald-500 px-1.5 text-[10px] font-medium text-white">
+        <span className="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-sm bg-emerald-500 px-1 font-mono text-[9px] font-bold text-slate-950">
           {item.badge}
         </span>
       ) : null}

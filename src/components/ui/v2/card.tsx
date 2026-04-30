@@ -15,8 +15,38 @@ const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
     tone?: "slate" | "emerald" | "cyan" | "amber";
+    /** Visual treatment.
+     *  - "default": subtle borders + soft shadow (legacy look)
+     *  - "palantir": glass-morphic, no shadow, sharp 1px border with
+     *    optional left-edge accent stripe (driven by `tone`).
+     *    Recommended for V2 surfaces. */
+    variant?: "default" | "palantir";
   }
->(({ className, tone = "slate", ...props }, ref) => {
+>(({ className, tone = "slate", variant = "palantir", ...props }, ref) => {
+  if (variant === "palantir") {
+    const stripe =
+      tone === "emerald"
+        ? "palantir-stripe-emerald"
+        : tone === "cyan"
+          ? "palantir-stripe-violet" // cyan reuses violet stripe in dark
+          : tone === "amber"
+            ? "palantir-stripe-amber"
+            : "";
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          "palantir-surface rounded-md transition-colors",
+          "[&[data-density=compact]]:rounded-md [&[data-density=dense]]:rounded",
+          stripe,
+          className,
+        )}
+        {...props}
+      />
+    );
+  }
+
+  // Legacy "default" variant — soft cards for marketing/landing.
   const toneClass = {
     slate:
       "border-slate-200/80 bg-white dark:border-slate-800/80 dark:bg-slate-900",
@@ -49,8 +79,10 @@ const CardHeader = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "flex flex-col space-y-1.5 p-5",
-      "[&[data-density=compact]]:p-4 [&[data-density=dense]]:p-3 [&[data-density=dense]]:space-y-1",
+      "flex flex-col space-y-1.5 p-4",
+      "[&[data-density=cozy]]:p-5",
+      "[&[data-density=compact]]:p-3 [&[data-density=compact]]:space-y-1",
+      "[&[data-density=dense]]:p-2.5 [&[data-density=dense]]:space-y-0.5",
       className,
     )}
     {...props}
@@ -97,9 +129,10 @@ const CardContent = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "p-5 pt-0",
-      "[&[data-density=compact]]:p-4 [&[data-density=compact]]:pt-0",
-      "[&[data-density=dense]]:p-3 [&[data-density=dense]]:pt-0",
+      "p-4 pt-0",
+      "[&[data-density=cozy]]:p-5 [&[data-density=cozy]]:pt-0",
+      "[&[data-density=compact]]:p-3 [&[data-density=compact]]:pt-0",
+      "[&[data-density=dense]]:p-2.5 [&[data-density=dense]]:pt-0",
       className,
     )}
     {...props}
