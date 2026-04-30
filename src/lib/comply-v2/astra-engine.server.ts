@@ -4,6 +4,7 @@ import {
   getAstraToolDefinitions,
   executeAstraAction,
 } from "./actions/astra-bridge.server";
+import type { ProposalDecisionLogEntry } from "./actions/define-action";
 
 /**
  * Comply v2 Astra Engine — isolated from the shared src/lib/astra/engine.ts.
@@ -261,9 +262,31 @@ export async function runV2AstraTurn(
       break;
     }
 
-    // Execute every new tool call and stash the result.
+    // Execute every new tool call and stash the result. For
+    // approval-gated tools, we hand the engine's accumulated
+    // chain-of-thought to executeAstraAction so the AstraProposal
+    // row captures Astra's reasoning trail. The reviewer sees
+    // every prior tool + Astra's narrative on /dashboard/proposals
+    // before approving.
     for (const tc of newToolCalls) {
-      const out = await executeAstraAction(tc.name, tc.input);
+      const decisionLog = buildDecisionLog(assistantToolCalls, assistantText);
+      const rationale =
+        assistantText.length > 0
+          ? assistantText.join("\n").slice(0, 2000)
+          : undefined;
+      // Heuristic: surface a targeted itemId when the tool's input
+      // includes one. Astra's tools all take `itemId` as the param
+      // name where applicable.
+      const inputItemId =
+        typeof (tc.input as { itemId?: unknown }).itemId === "string"
+          ? ((tc.input as { itemId: string }).itemId as string)
+          : null;
+
+      const out = await executeAstraAction(tc.name, tc.input, {
+        rationale,
+        itemId: inputItemId,
+        decisionLog,
+      });
       tc.result = out.ok
         ? { ok: true, data: out.result }
         : { ok: false, error: out.error };
@@ -283,4 +306,37 @@ export async function runV2AstraTurn(
   });
 
   return updatedHistory;
+}
+
+/**
+ * Convert the engine's in-flight state into the ProposalDecisionLogEntry
+ * shape that AstraProposal.decisionLog persists. Interleaves the
+ * accumulated narrative thoughts with prior tool calls + their results.
+ *
+ * Layout: [thought*, tool, tool, …] so the reviewer reads in roughly
+ * causal order. Truncates each `text` to 1000 chars so a verbose model
+ * doesn't blow up the JSON column size.
+ */
+function buildDecisionLog(
+  priorToolCalls: V2ToolCall[],
+  thoughts: string[],
+): ProposalDecisionLogEntry[] {
+  const entries: ProposalDecisionLogEntry[] = [];
+  for (const t of thoughts) {
+    const trimmed = t.trim();
+    if (trimmed.length === 0) continue;
+    entries.push({
+      kind: "thought",
+      text: trimmed.length > 1000 ? trimmed.slice(0, 1000) + "…" : trimmed,
+    });
+  }
+  for (const tc of priorToolCalls) {
+    entries.push({
+      kind: "tool",
+      tool: tc.name,
+      input: tc.input,
+      result: tc.result,
+    });
+  }
+  return entries;
 }

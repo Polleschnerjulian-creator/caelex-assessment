@@ -124,6 +124,48 @@ export interface ProposalDeferral {
   expiresAt: Date;
 }
 
+/**
+ * One step in Astra's chain-of-thought leading up to a proposal.
+ * The engine accumulates these as it walks the tool-use loop, and
+ * passes them as `decisionLog` when calling a `requiresApproval`
+ * action. The reviewer sees the full reasoning trail in the
+ * ProposalCard before they approve.
+ *
+ * `kind` discriminates:
+ *   - "tool"  — a prior tool that ran successfully or failed
+ *   - "thought" — a snippet of Astra's narrative reply
+ *
+ * Stored as JSON in AstraProposal.decisionLog. Schema-loose by
+ * design — the LLM can produce many shapes and we want to preserve
+ * them; the renderer side handles unknowns gracefully.
+ */
+export interface ProposalDecisionLogEntry {
+  kind: "tool" | "thought";
+  /** Tool name if kind=tool, omitted for thought. */
+  tool?: string;
+  /** Tool input args if kind=tool. */
+  input?: unknown;
+  /** Tool result if kind=tool — { ok, data } or { ok: false, error }. */
+  result?: unknown;
+  /** Free text if kind=thought. */
+  text?: string;
+}
+
+/**
+ * Options accepted by both `call()` and `writeProposal()`. Lifted
+ * to a top-level type so callers (the Astra bridge in particular)
+ * can spread structured context cleanly.
+ */
+export interface ProposalCallOptions {
+  /** Human-readable note for the proposal — Astra's TL;DR or the
+   *  user-supplied "_rationale" form field. */
+  rationale?: string;
+  /** Optional ComplianceItem this proposal targets. */
+  itemId?: string | null;
+  /** Astra's chain-of-thought as an ordered list of steps. */
+  decisionLog?: ProposalDecisionLogEntry[];
+}
+
 export interface DefinedAction<TSchema extends z.ZodTypeAny> {
   /** Source config (read-only). */
   readonly config: ActionConfig<TSchema>;
@@ -139,7 +181,7 @@ export interface DefinedAction<TSchema extends z.ZodTypeAny> {
    */
   call: (
     params: z.infer<TSchema>,
-    options?: { rationale?: string; itemId?: string | null },
+    options?: ProposalCallOptions,
   ) => Promise<unknown | ProposalDeferral>;
   /**
    * Server Action callable from forms (`<form action={action.serverAction}>`).
@@ -242,13 +284,21 @@ export function defineAction<TSchema extends z.ZodTypeAny>(
   /**
    * Write an AstraProposal row instead of executing immediately.
    * Default expiry: 7 days from now.
+   *
+   * decisionLog is persisted only if it's a non-empty array — empty
+   * arrays would render an empty "Reasoning" section in the proposal
+   * UI, which is uglier than just omitting it entirely.
    */
   const writeProposal = async (
     params: z.infer<TSchema>,
     ctx: ActionContext,
-    options?: { rationale?: string; itemId?: string | null },
+    options?: ProposalCallOptions,
   ): Promise<ProposalDeferral> => {
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const decisionLog =
+      options?.decisionLog && options.decisionLog.length > 0
+        ? (options.decisionLog as unknown as Prisma.InputJsonValue)
+        : undefined;
     const proposal = await prisma.astraProposal.create({
       data: {
         userId: ctx.userId,
@@ -256,9 +306,10 @@ export function defineAction<TSchema extends z.ZodTypeAny>(
         params: params as Prisma.InputJsonValue,
         itemId: options?.itemId ?? null,
         rationale: options?.rationale ?? null,
-        // decisionLog left undefined → DB defaults to NULL via the
-        // Prisma JSON nullable-field semantics (Prisma.JsonNull would
-        // store JSON null literal, which is different).
+        // Setting `decisionLog: undefined` lets Prisma omit the column
+        // from the INSERT entirely (DB default = NULL). Distinct from
+        // Prisma.JsonNull which would write the JSON null literal.
+        decisionLog,
         expiresAt,
       },
       select: { id: true, expiresAt: true },

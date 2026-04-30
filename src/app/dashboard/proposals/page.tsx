@@ -175,6 +175,7 @@ export default async function ProposalsPage({ searchParams }: PageProps) {
                   itemId: p.itemId,
                   rationale: p.rationale,
                   reviewerNote: p.reviewerNote,
+                  decisionLog: p.decisionLog,
                   createdAt: p.createdAt.toISOString(),
                   expiresAt: p.expiresAt.toISOString(),
                   decidedAt: p.decidedAt ? p.decidedAt.toISOString() : null,

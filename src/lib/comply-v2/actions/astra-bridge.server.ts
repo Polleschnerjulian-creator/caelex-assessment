@@ -1,7 +1,11 @@
 import "server-only";
 import { z } from "zod";
 import type { AstraToolDefinition } from "@/lib/astra/types";
-import { getActionRegistry, type DefinedAction } from "./define-action";
+import {
+  getActionRegistry,
+  type DefinedAction,
+  type ProposalCallOptions,
+} from "./define-action";
 // Side-effect imports — register actions with the registry.
 import "./compliance-item-actions";
 import "./triage-actions";
@@ -189,6 +193,11 @@ export function getAstraToolDefinitions(): AstraToolDefinition[] {
  *                    back to the registry's kebab-case action name.
  * @param input       The LLM-supplied params object. Validated against
  *                    the action's Zod schema before execution.
+ * @param context     Optional reasoning context for approval-gated
+ *                    actions — rationale + decision-log entries from
+ *                    the engine's tool-use loop. Persisted into the
+ *                    AstraProposal row so the reviewer sees Astra's
+ *                    chain-of-thought before approving.
  * @returns `{ ok: true, result }` on success, `{ ok: false, error }`
  *          on auth/validation failure. For approval-gated actions,
  *          `result` will be a `ProposalDeferral` shape — Astra should
@@ -198,6 +207,7 @@ export function getAstraToolDefinitions(): AstraToolDefinition[] {
 export async function executeAstraAction(
   toolName: string,
   input: unknown,
+  context?: ProposalCallOptions,
 ): Promise<{ ok: true; result: unknown } | { ok: false; error: string }> {
   // Astra uses snake_case; the registry uses kebab-case.
   const actionName = toolName.replace(/_/g, "-");
@@ -214,7 +224,10 @@ export async function executeAstraAction(
     };
   }
   try {
-    const result = await action.call(input);
+    // Context is only meaningful for requiresApproval actions, but
+    // it's safe to pass through unconditionally — call() ignores it
+    // when not gated.
+    const result = await action.call(input, context);
     return { ok: true, result };
   } catch (err) {
     const message =
