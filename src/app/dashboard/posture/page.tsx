@@ -12,11 +12,13 @@ import {
 import { auth } from "@/lib/auth";
 import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
 import { getPostureForUser } from "@/lib/comply-v2/posture.server";
+import { getPostureTrend } from "@/lib/comply-v2/posture-snapshot.server";
 import { REGULATION_LABELS } from "@/lib/comply-v2/types";
 import {
   StatusDonut,
   RegulationBars,
 } from "@/components/dashboard/v2/PostureCharts";
+import { PostureSparkline } from "@/components/dashboard/v2/PostureSparkline";
 
 export const metadata = {
   title: "Posture — Caelex Comply",
@@ -46,7 +48,29 @@ export default async function PosturePage() {
   const ui = await resolveComplyUiVersion();
   if (ui === "v1") redirect("/dashboard");
 
-  const posture = await getPostureForUser(session.user.id);
+  const [posture, trend] = await Promise.all([
+    getPostureForUser(session.user.id),
+    getPostureTrend(session.user.id, 30),
+  ]);
+
+  // Project the trend points into per-KPI series the sparklines need.
+  // Each picks one numeric column from the snapshot history.
+  const scoreSeries = trend.map((p) => ({
+    date: p.date,
+    value: p.overallScore,
+  }));
+  const proposalsSeries = trend.map((p) => ({
+    date: p.date,
+    value: p.openProposals,
+  }));
+  const triageSeries = trend.map((p) => ({
+    date: p.date,
+    value: p.openTriage,
+  }));
+  const snoozesSeries = trend.map((p) => ({
+    date: p.date,
+    value: p.activeSnoozes,
+  }));
 
   return (
     <div className="mx-auto max-w-screen-2xl px-6 py-6">
@@ -78,6 +102,8 @@ export default async function PosturePage() {
           subline={`${posture.attestedItems} of ${posture.countableItems} attested`}
           tone="emerald"
           icon={Gauge}
+          sparkline={scoreSeries}
+          sparklineDirection="up"
         />
         <Kpi
           label="Open proposals"
@@ -86,6 +112,8 @@ export default async function PosturePage() {
           tone={posture.workflow.openProposals > 0 ? "amber" : "slate"}
           icon={ShieldCheck}
           href="/dashboard/proposals"
+          sparkline={proposalsSeries}
+          sparklineDirection="down"
         />
         <Kpi
           label="Triage signals"
@@ -94,6 +122,8 @@ export default async function PosturePage() {
           tone={posture.workflow.openTriage > 0 ? "amber" : "slate"}
           icon={AlertTriangle}
           href="/dashboard/triage"
+          sparkline={triageSeries}
+          sparklineDirection="down"
         />
         <Kpi
           label="Snoozed items"
@@ -101,6 +131,8 @@ export default async function PosturePage() {
           subline="Deferred"
           tone="slate"
           icon={Clock}
+          sparkline={snoozesSeries}
+          sparklineNeutral
         />
         <Kpi
           label="Attested · 7d"
@@ -228,6 +260,9 @@ function Kpi({
   tone,
   icon: Icon,
   href,
+  sparkline,
+  sparklineDirection = "up",
+  sparklineNeutral = false,
 }: {
   label: string;
   value: string;
@@ -235,6 +270,9 @@ function Kpi({
   tone: "emerald" | "amber" | "slate";
   icon: React.ComponentType<{ className?: string }>;
   href?: string;
+  sparkline?: Array<{ date: string; value: number }>;
+  sparklineDirection?: "up" | "down";
+  sparklineNeutral?: boolean;
 }) {
   const accentClass =
     tone === "emerald"
@@ -266,6 +304,14 @@ function Kpi({
       <div className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
         {subline}
       </div>
+      {sparkline ? (
+        <PostureSparkline
+          data={sparkline}
+          direction={sparklineDirection}
+          neutral={sparklineNeutral}
+          className="mt-1"
+        />
+      ) : null}
     </div>
   );
 

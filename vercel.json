@@ -145,6 +145,10 @@
     {
       "path": "/api/cron/comply-v2-lifecycle",
       "schedule": "30 2 * * *"
+    },
+    {
+      "path": "/api/cron/posture-snapshot",
+      "schedule": "30 0 * * *"
     }
   ]
 }

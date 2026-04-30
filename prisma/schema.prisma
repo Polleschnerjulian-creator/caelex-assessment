@@ -31,11 +31,13 @@ model User {
   complyUiVersion String? // null | "v1" | "v2"
 
   // Comply v2 — per-user state on ComplianceItems (snoozes, notes,
-  // Astra-proposed actions awaiting approval, V2 Astra chats).
+  // Astra-proposed actions awaiting approval, V2 Astra chats,
+  // daily posture snapshots for sparkline trends).
   complianceItemSnoozes ComplianceItemSnooze[]
   complianceItemNotes   ComplianceItemNote[]
   astraProposals        AstraProposal[]
   v2AstraConversations  V2AstraConversation[]
+  v2PostureSnapshots    V2PostureSnapshot[]
 
   accounts                 Account[]
   sessions                 Session[]
@@ -9641,6 +9643,57 @@ model ComplianceItemSnooze {
 
   @@unique([itemId, userId])
   @@index([userId, snoozedUntil])
+}
+
+/// V2 Posture daily snapshot — one row per user per UTC day.
+///
+/// Captured by the /api/cron/posture-snapshot job at midnight UTC.
+/// Powers the sparkline trends on /dashboard/posture (overall score
+/// over time, open-proposals over time, etc.).
+///
+/// Disjoint from the legacy `ComplianceSnapshot` (digital-twin) model:
+/// V1 has different status ontology (compliant/partial/non-compliant)
+/// and different module groupings (modules.* vs RegulationKey). Mixing
+/// them would either lose V2 fidelity or pollute V1 schemas — so V2
+/// gets its own table that tracks the 7-state ComplianceItem
+/// distribution and the V2 workflow KPIs verbatim.
+///
+/// Headline KPIs are stored as columns for cheap sparkline column-scan;
+/// the full PostureSnapshot blob is preserved as JSON so we can
+/// retroactively trend per-status or per-regulation breakdowns later
+/// without backfilling.
+model V2PostureSnapshot {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// UTC midnight of the day this snapshot covers. The unique
+  /// constraint with userId means re-running the cron same-day is
+  /// a no-op (upsert semantics).
+  snapshotDate DateTime
+
+  // ─── Headline metrics (column-stored for sparkline queries) ──────
+  overallScore   Int /// 0–100, % of countable items attested
+  totalItems     Int /// All ComplianceItems including N/A
+  countableItems Int /// Denominator for overallScore
+  attestedItems  Int /// Numerator for overallScore
+
+  openProposals    Int /// status=PENDING and not expired
+  openTriage       Int /// pending Triage signals
+  activeSnoozes    Int /// non-expired ComplianceItemSnoozes
+  attestedThisWeek Int /// items that flipped to ATTESTED in last 7d
+
+  // ─── Full snapshot blob ──────────────────────────────────────────
+  /// Full PostureSnapshot serialized — statusCounts +
+  /// regulationBreakdown for retroactive per-status / per-regulation
+  /// trending without backfill.
+  fullSnapshot Json
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, snapshotDate])
+  @@index([userId, snapshotDate])
 }
 
 /// V2 markdown note attached to a ComplianceItem. Replaces the
