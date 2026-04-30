@@ -10,19 +10,21 @@
 ## Inhalt
 
 1. [Die These in einem Satz](#these)
-2. [Ist-Zustand der Codebasis](#ist-zustand)
-3. [Forschungsgrundlage — Patterns aus 13 Tech-Plattformen](#forschungsgrundlage)
-4. [Das Atom — `ComplianceItem`](#atom)
-5. [Die fünf Architekturebenen](#architektur)
-6. [Die sieben Surfaces](#surfaces)
-7. [AI-Native — die fünf Astra-Surfaces](#ai-native)
-8. [Das Differenzierungs-Triangle](#differenzierung)
-9. [Was wir explizit nicht bauen — Tar-Pit-Liste](#tar-pit)
-10. [18-Monats-Roadmap](#roadmap)
-11. [Pricing-Modell](#pricing)
-12. [Drei strategische Entscheidungen](#entscheidungen)
-13. [Anhang: Pattern-Library nach Quelle](#pattern-library)
-14. [Anhang: Quellen & Referenzen](#quellen)
+2. [Scope: nur Comply — Atlas und Pharos sind tabu](#scope)
+3. [Rollback-Strategie: V1 bleibt parallel](#rollback)
+4. [Ist-Zustand der Codebasis](#ist-zustand)
+5. [Forschungsgrundlage — Patterns aus 13 Tech-Plattformen](#forschungsgrundlage)
+6. [Das Atom — `ComplianceItem`](#atom)
+7. [Die fünf Architekturebenen](#architektur)
+8. [Die sieben Surfaces](#surfaces)
+9. [AI-Native — die fünf Astra-Surfaces](#ai-native)
+10. [Das Differenzierungs-Triangle](#differenzierung)
+11. [Was wir explizit nicht bauen — Tar-Pit-Liste](#tar-pit)
+12. [18-Monats-Roadmap](#roadmap)
+13. [Pricing-Modell](#pricing)
+14. [Drei strategische Entscheidungen](#entscheidungen)
+15. [Anhang: Pattern-Library nach Quelle](#pattern-library)
+16. [Anhang: Quellen & Referenzen](#quellen)
 
 ---
 
@@ -41,9 +43,163 @@
 
 ---
 
+<a id="scope"></a>
+
+## 2. Scope: nur Comply — Atlas und Pharos sind tabu
+
+**Wichtigster Constraint dieses Re-Designs:** Es betrifft **ausschließlich Caelex Comply** (die Operator-Surface unter `/dashboard/*`). Atlas (Anwalts-Surface) und Pharos (Behörden-Surface) bleiben in Phase 0–4 **vollständig unangetastet**.
+
+### Begründung
+
+- **Atlas läuft produktiv für BHO Legal Pilot.** Persistierte Workspaces, 46 Jurisdiktionen mit prebuilt Embeddings, Team-Invites — bestehende Customer-Verträge.
+- **Pharos ist 50 von 52 letzten Commits** — gerade in aktiver Beta-Stabilisierung mit BAFA / BNetzA / BSI Pilot-Targets.
+- **Beide haben eigene UX-Sprache, eigene Akteurs-Farben, eigene Reife.** Sie zu "harmonisieren" wäre Mehrarbeit ohne Customer-Wert.
+- **Marketing-Disziplin:** Der Re-Design heißt "Caelex Comply 2.0", nicht "Caelex 2.0". Atlas-Customer und Pharos-Pilot-Behörden sollen nicht denken, dass ihre Surface mit-rebrand-betroffen ist.
+
+### TABU — wird in keiner einzigen Datei während Phase 0–4 angefasst
+
+```
+src/app/atlas/**                       # Atlas Routes
+src/app/atlas-access/**                # Atlas Sales-Funnel
+src/app/legal-network/**               # Anwalts-Marketing-Page
+src/components/atlas/**                # Atlas Components
+src/lib/atlas/**                       # Atlas Engines
+src/lib/legal-network/**               # Matter-Service
+src/data/atlas/**                      # Embeddings + Sources
+src/data/legal-sources/**              # 46 Jurisdiktionen
+src/app/api/atlas/**                   # Atlas APIs (43 Routes)
+src/app/api/legal-network/**           # Matter APIs
+src/app/api/atlas-access/**            # Booking
+src/app/api/network/matter/**          # Matter sub-tree
+
+src/app/(pharos)/**                    # Pharos Route-Group
+src/app/pharos/**
+src/components/pharos/**               # Pharos Components
+src/lib/pharos/**                      # Pharos Engines
+src/app/api/pharos/**                  # Pharos APIs
+```
+
+**Schema-Modelle, die nicht geändert werden:**
+`AtlasWorkspace`, `AtlasWorkspaceCard`, `AtlasAnnotation`, `AtlasAlertSubscription`, `AtlasNotification`, `AtlasSourceCheck`, `LegalMatter`, `LegalAttorney`, `LegalEngagementAttorney`, `AuthorityProfile`, `OversightRelationship`, `AuthorizationApproval`, plus alle Pharos-spezifischen Modelle.
+
+### FAIR GAME — Comply-Surface
+
+```
+src/app/dashboard/**                   # alle 96 Operator-Routes
+src/components/dashboard/**            # Operator-Components
+src/app/api/v1/compliance/**           # Compliance API
+src/app/api/assessment/**
+src/app/api/authorization/**
+src/app/api/audit/**
+src/app/api/dashboard/**
+src/app/api/documents/**
+src/app/api/incidents/**
+src/app/api/notifications/**
+src/app/api/timeline/**
+src/app/api/tracker/**
+```
+
+### Neue, additive Bereiche (Comply-V2)
+
+```
+src/lib/ontology/**                    # NEU — Ontology Registry (Phase 1)
+src/lib/actions/**                     # NEU — Action Layer (Phase 1)
+src/components/v2/**                   # NEU — V2-Components (parallel zu v1)
+src/components/ui/v2/**                # NEU — shadcn/ui Pattern parallel
+src/app/dashboard/today/**             # NEU — Mercury-Inbox
+src/app/dashboard/triage/**            # NEU — Linear-Triage
+src/app/dashboard/review-queue/**      # NEU — Stripe-Radar-Queue
+src/app/dashboard/lineage/**           # NEU — Score-Lineage
+src/app/dashboard/proposals/**         # NEU — AstraProposal Queue
+```
+
+### Heikle Shared-Bereiche — Regeln
+
+| Bereich                                                   | Regel                                                                                                                                                                      |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/components/ui/*` (16 UI-Primitives, überall genutzt) | **Parallel-Set:** `src/components/ui/v2/*` neu mit shadcn/ui-Pattern. Bestehende Files bleiben byte-identisch. Atlas/Pharos importieren weiter aus altem Pfad.             |
+| `src/lib/astra/*` (auch von Pharos-Astra benutzt)         | **Nur additive Änderungen.** Neue Files (`proposals.server.ts`, `ghost-text.server.ts`) okay. Bestehende `tool-definitions.ts` und `tool-executor.ts` bleiben unverändert. |
+| `prisma/schema.prisma`                                    | **Nur additive Migrations.** Neue Models, neue Spalten mit Defaults. Keine Änderungen an bestehenden Atlas/Pharos-Models.                                                  |
+| `src/app/layout.tsx` (Root)                               | **Wird nicht angefasst.** V1/V2-Switch lebt in `src/app/dashboard/layout.tsx` — Comply-spezifisch.                                                                         |
+
+### Durchsetzung
+
+Husky-Pre-Commit-Hook (`/.husky/pre-commit`) prüft staged Files gegen die TABU-Liste und blockt Commits, die Atlas/Pharos berühren. Override für legitime Cross-Cutting-Arbeit:
+
+```bash
+ALLOW_CROSS_SURFACE=1 git commit -m "..."
+```
+
+---
+
+<a id="rollback"></a>
+
+## 3. Rollback-Strategie: V1 bleibt parallel
+
+**Drei Sicherheitsnetze:**
+
+### 3.1 Code-Level — keine destruktiven Löschungen während Phase 0–4
+
+- Alte Pages (`/dashboard/page.tsx`, alte Sidebar) bleiben byte-identisch im Repo
+- Neue Pages bekommen neue Pfade (`/dashboard/today`, neue V2Sidebar)
+- Erst nach Stabilitätsphase (Phase 5+) wird in einer separaten, klar revertierbaren Cleanup-PR V1-Code entfernt
+
+### 3.2 Feature-Flag — `Organization.complyUiVersion`
+
+```ts
+Organization.complyUiVersion: "v1" | "v2"  // default "v1" während Bauphase
+User.preferences.complyUiVersion: optional Override per User
+URL-Param: ?ui=v1 oder ?ui=v2 für Quick-Test
+```
+
+**Wirkung:**
+
+- `/dashboard/*` → respektiert das Flag, zeigt v1 oder v2
+- `/atlas/*` → ignoriert das Flag komplett, zeigt unverändert Atlas
+- `/pharos/*` → ignoriert das Flag komplett
+- `/assure/*` → ignoriert das Flag
+
+**Default-Sequenz:**
+
+- **Phase 0–3 (Bauzeit, ~12 Wochen):** Default `v1`. V2 via Settings-Toggle aktivierbar (für willige Pilots).
+- **Phase 3 fertig + stabil:** Default-Flip auf `v2` (eine Zeile Code). Alle sehen sofort die neue Welt.
+- **Phase 5 fertig + 4 Wochen ohne Beschwerden:** Cleanup-PR entfernt V1-Code endgültig.
+
+### 3.3 Git-Level — Phase-revertierbar
+
+Jede Phase ist ein clean revertierbarer Branch-Merge:
+
+```
+phase-0-foundation       shadcn parallel + tokens-codemod (Comply only) + cmd-k
+phase-1-architecture     ontology + actions (additive only)
+phase-2-trust            proposals + approvals + purpose
+phase-3-surfaces         today + triage + review-queue + lineage + audit-rebuild
+phase-4-ai-substrate     ghost-text + autofill + ai-blocks + mcp-server
+phase-5-polish           density + slides + method-docs
+phase-6-ecosystem        api-versioning + integrations + sandbox
+```
+
+Wenn Phase 3 sich als Reinfall erweist:
+
+```bash
+git revert <phase-3-merge-commit>
+```
+
+→ alle neuen Surfaces sind weg, V2-Toggle zeigt Layout-Shell, V1 läuft normal weiter.
+
+### 3.4 Datenbank — additive Migrations
+
+- **Neue Tabellen:** `AstraProposal`, `ApprovalRule`, `Purpose`
+- **Neue Spalten mit Default:** `Organization.complyUiVersion = "v1"`
+- **Niemals** `DROP TABLE`, `DROP COLUMN`, `RENAME` während Phase 0–4
+
+Bei Rollback bleiben zusätzliche Tabellen leer in der DB. Kein Schema-Rollback nötig. Kein Datenverlust-Risiko. Plus: **Neon Point-in-Time-Recovery** als ultimative letzte Linie.
+
+---
+
 <a id="ist-zustand"></a>
 
-## 2. Ist-Zustand der Codebasis
+## 4. Ist-Zustand der Codebasis
 
 ### Reife pro Surface
 
@@ -75,7 +231,7 @@ Liquid Glass + 3-Tier-Elevation + Pharos-Amber-Differenzierung sind state-of-the
 
 <a id="forschungsgrundlage"></a>
 
-## 3. Forschungsgrundlage — Patterns aus 13 Tech-Plattformen
+## 5. Forschungsgrundlage — Patterns aus 13 Tech-Plattformen
 
 | Domäne                 | Plattformen                                                                     | Kern-Pattern für Caelex                                                                                    |
 | ---------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -91,7 +247,7 @@ Volltext der einzelnen Recherchen liegt in den Conversation-Transcripts vor und 
 
 <a id="atom"></a>
 
-## 4. Das Atom — `ComplianceItem`
+## 6. Das Atom — `ComplianceItem`
 
 Jedes State-of-the-Art-Tool hat **ein Atom**:
 
@@ -143,7 +299,7 @@ type ComplianceItem = {
 
 <a id="architektur"></a>
 
-## 5. Die fünf Architekturebenen
+## 7. Die fünf Architekturebenen
 
 ```
 ┌────────────────────────────────────────────────────────────┐
@@ -226,7 +382,7 @@ defineAction({
 
 <a id="surfaces"></a>
 
-## 6. Die sieben Surfaces
+## 8. Die sieben Surfaces
 
 ### 6.1 `/dashboard/today` — Mercury-Inbox als Default-Landing
 
@@ -284,7 +440,7 @@ Auf jeder Page. Immer ein Tastendruck weg. Linear-Verb-Engine über alle Actions
 
 <a id="ai-native"></a>
 
-## 7. AI-Native — die fünf Astra-Surfaces
+## 9. AI-Native — die fünf Astra-Surfaces
 
 Cursor/Notion's wichtigste Lehre: **AI ist nicht ein Panel, AI ist verschiedene Surfaces**.
 
@@ -330,7 +486,7 @@ Hochrisiko-Actions (Submit-NCA, Approve-Authorization, Send-Stakeholder-Email) f
 
 <a id="differenzierung"></a>
 
-## 8. Das Differenzierungs-Triangle
+## 10. Das Differenzierungs-Triangle
 
 Drei Achsen, in denen kein Wettbewerber alle drei hat:
 
@@ -385,7 +541,7 @@ einer Quelle        │
 
 <a id="tar-pit"></a>
 
-## 9. Was wir explizit nicht bauen — Tar-Pit-Liste
+## 11. Was wir explizit nicht bauen — Tar-Pit-Liste
 
 1. **OneTrust-Style universal workflow builder** — 9-Monate-3-FTE-Black-Hole. Caelex's Edge ist _opinionierte regulatorische Pfade_, nicht generische Workflow-Primitives.
 2. **400+ generische SaaS-Integrationen** (GitHub/Slack/Okta-Evidence-Collectors) — Operator hat dafür Drata. Wir bauen **10 space-spezifische Integrationen**.
@@ -402,7 +558,7 @@ einer Quelle        │
 
 <a id="roadmap"></a>
 
-## 10. 18-Monats-Roadmap
+## 12. 18-Monats-Roadmap
 
 ### Phase 0 — Foundation (Wochen 1-3)
 
@@ -485,7 +641,7 @@ einer Quelle        │
 
 <a id="pricing"></a>
 
-## 11. Pricing-Modell
+## 13. Pricing-Modell
 
 ### Problem mit Wettbewerbern
 
@@ -514,7 +670,7 @@ Macht Caelex **billiger pro Operator als Drata pro Org**, aber profitabler weil 
 
 <a id="entscheidungen"></a>
 
-## 12. Drei strategische Entscheidungen
+## 14. Drei strategische Entscheidungen
 
 ### Entscheidung 1: Linear-First vs. Bloomberg-Density?
 
@@ -557,7 +713,7 @@ Wenn Cursor-User Caelex MCP benutzen — wer zahlt?
 
 <a id="pattern-library"></a>
 
-## 13. Anhang: Pattern-Library nach Quelle
+## 15. Anhang: Pattern-Library nach Quelle
 
 ### Palantir
 
@@ -660,7 +816,7 @@ Wenn Cursor-User Caelex MCP benutzen — wer zahlt?
 
 <a id="quellen"></a>
 
-## 14. Anhang: Quellen & Referenzen
+## 16. Anhang: Quellen & Referenzen
 
 ### Palantir
 

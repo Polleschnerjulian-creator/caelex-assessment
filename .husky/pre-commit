@@ -64,5 +64,36 @@ fi
 
 echo "Security checks passed"
 
+# ─── Comply v2 Re-Design Scope Guard ───────────────────────────────
+# The Comply v2 redesign (see docs/CAELEX-COMPLY-CONCEPT.md) MUST NOT
+# touch Atlas (lawyer surface) or Pharos (authority surface) during
+# Phase 0–4. Both are running pilot customers and have separate UX,
+# product, and customer commitments.
+#
+# Override (only for legitimate cross-cutting work — bug fixes,
+# shared-library changes, schema migrations that genuinely need to
+# touch all surfaces): set ALLOW_CROSS_SURFACE=1 in the environment.
+#
+#   ALLOW_CROSS_SURFACE=1 git commit -m "..."
+#
+# This is a discipline check, not a security check. Bypass is logged
+# implicitly via the env-var requirement.
+FORBIDDEN=$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null | grep -E '^src/(app/atlas|app/atlas-access|app/legal-network|app/\(pharos\)|app/pharos|components/atlas|components/pharos|lib/atlas|lib/pharos|lib/legal-network|data/atlas|data/legal-sources|app/api/atlas|app/api/atlas-access|app/api/legal-network|app/api/pharos|app/api/network/matter)/' || true)
+if [ -n "$FORBIDDEN" ] && [ "$ALLOW_CROSS_SURFACE" != "1" ]; then
+  echo ""
+  echo "❌ Comply v2 redesign scope violation."
+  echo ""
+  echo "   The following staged files belong to Atlas or Pharos:"
+  echo "$FORBIDDEN" | sed 's/^/      /'
+  echo ""
+  echo "   These surfaces are explicitly out of scope for the Comply v2"
+  echo "   redesign. See docs/CAELEX-COMPLY-CONCEPT.md § Scope."
+  echo ""
+  echo "   If this is legitimate cross-cutting work, override with:"
+  echo "      ALLOW_CROSS_SURFACE=1 git commit ..."
+  echo ""
+  exit 1
+fi
+
 # Run lint-staged for code quality
 npx lint-staged

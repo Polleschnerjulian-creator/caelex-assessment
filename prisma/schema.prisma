@@ -10,20 +10,26 @@ datasource db {
 // NextAuth Required Tables
 
 model User {
-  id                       String                    @id @default(cuid())
-  name                     String?
-  email                    String?                   @unique
-  emailVerified            DateTime?
-  image                    String?
-  password                 String? // hashed password, null for OAuth-only users
-  organization             String? // Legacy: organization name as string
-  operatorType             String? // from assessment: SCO, LO, TCO, etc.
-  establishmentCountry     String? // ISO country code
-  isThirdCountry           Boolean                   @default(false)
-  role                     String                    @default("user") // user, admin, auditor
-  isActive                 Boolean                   @default(true)
-  theme                    String                    @default("system") // "light" | "dark" | "system"
-  language                 String                    @default("en") // en, de, fr, es
+  id                   String    @id @default(cuid())
+  name                 String?
+  email                String?   @unique
+  emailVerified        DateTime?
+  image                String?
+  password             String? // hashed password, null for OAuth-only users
+  organization         String? // Legacy: organization name as string
+  operatorType         String? // from assessment: SCO, LO, TCO, etc.
+  establishmentCountry String? // ISO country code
+  isThirdCountry       Boolean   @default(false)
+  role                 String    @default("user") // user, admin, auditor
+  isActive             Boolean   @default(true)
+  theme                String    @default("system") // "light" | "dark" | "system"
+  language             String    @default("en") // en, de, fr, es
+
+  // Comply v2 redesign — per-user override for org-level complyUiVersion.
+  // null = follow org default; "v1" or "v2" = explicit user choice.
+  // See docs/CAELEX-COMPLY-CONCEPT.md § Rollback-Strategie.
+  complyUiVersion String? // null | "v1" | "v2"
+
   accounts                 Account[]
   sessions                 Session[]
   articleStatuses          ArticleStatus[]
@@ -2618,6 +2624,12 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Comply v2 redesign — see docs/CAELEX-COMPLY-CONCEPT.md
+  // Controls which Comply (Operator-Surface) UI version this org sees.
+  // Affects ONLY /dashboard/* routes; Atlas, Pharos, Assure ignore this flag.
+  // Default "v1" during build phase (Phase 0–3); flips to "v2" once stable.
+  complyUiVersion String @default("v1") // "v1" | "v2"
+
   // Relations
   members                OrganizationMember[]
   invitations            OrganizationInvitation[]
@@ -2650,12 +2662,12 @@ model Organization {
   // Legal Network Phase 1 — trust bridge between Atlas (law firms)
   // and Caelex (operators). An Organization may be an operator, a
   // law firm, or both. See 2026-04-23-legal-network-phase-1-design.md.
-  orgType                OrganizationType   @default(OPERATOR)
-  legalMattersAsFirm     LegalMatter[]      @relation("LegalMatterFirm")
-  legalMattersAsClient   LegalMatter[]      @relation("LegalMatterClient")
+  orgType              OrganizationType        @default(OPERATOR)
+  legalMattersAsFirm   LegalMatter[]           @relation("LegalMatterFirm")
+  legalMattersAsClient LegalMatter[]           @relation("LegalMatterClient")
   // Pharos — bilateral authority oversight (siehe docs/PHAROS-CONCEPT.md)
-  authorityProfile       AuthorityProfile?  // 1:1 wenn orgType=AUTHORITY
-  oversightsAsOperator   OversightRelationship[] @relation("OversightOperator")
+  authorityProfile     AuthorityProfile? // 1:1 wenn orgType=AUTHORITY
+  oversightsAsOperator OversightRelationship[] @relation("OversightOperator")
 
   // Context Omnipresence: provenance & signed snapshots
   derivationTraces DerivationTrace[] // Per-field provenance chain (append-only)
@@ -8300,7 +8312,7 @@ model AtlasSourceCheckHistory {
   /// the admin-review and public-history redline viewers can render the
   /// before/after diff without re-fetching the source URL — important
   /// when the URL has since been amended again or gone 404.
-  newContent     String?
+  newContent      String?
   /// Text snapshot at the PREVIOUS hash. Paired with newContent so each
   /// history row is self-contained for diffing. null on the first-ever
   /// detection for that sourceId (no prior state existed).
@@ -8309,18 +8321,18 @@ model AtlasSourceCheckHistory {
   /// Claude-generated 1-2 sentence summary of what changed. Written
   /// asynchronously after the check; null until the summariser runs.
   /// "COSMETIC_ONLY" signals no substantive legal change.
-  diffSummaryAi   String?
+  diffSummaryAi  String?
   /// Optional structured tags like ["article-added", "date-change"].
-  diffKeyChanges  Json?
+  diffKeyChanges Json?
   /// Review state for this specific amendment candidate.
-  reviewStatus    AtlasAmendmentReviewStatus @default(PENDING)
-  reviewedAt      DateTime?
-  reviewedBy      String?
-  reviewNote      String?
+  reviewStatus   AtlasAmendmentReviewStatus @default(PENDING)
+  reviewedAt     DateTime?
+  reviewedBy     String?
+  reviewNote     String?
   /// Flag set by the reviewer when an amendment has been written back
   /// into the static LegalSource.amendments[] array (via PR/data-file
   /// edit). Lets the admin queue mark entries as 'already integrated'.
-  integratedAt    DateTime?
+  integratedAt   DateTime?
 
   @@index([sourceId, detectedAt])
   @@index([jurisdiction, detectedAt])
@@ -8340,25 +8352,25 @@ enum AtlasAmendmentReviewStatus {
 /// it as out-of-scope (REJECTED). dedupKey prevents the same entry from
 /// being queued twice across runs.
 model AtlasPendingSourceCandidate {
-  id             String                             @id @default(cuid())
+  id            String                     @id @default(cuid())
   /// ISO code or "INT" / "EU" when supranational.
-  jurisdiction   String
+  jurisdiction  String
   /// Which feed this came from — "UNOOSA", "GESETZE_IM_INTERNET", "EUR_LEX", etc.
-  feedSource     String
-  title          String
-  url            String
-  description    String?
-  publishedAt    DateTime?
+  feedSource    String
+  title         String
+  url           String
+  description   String?
+  publishedAt   DateTime?
   /// Keywords that matched the space-law filter.
-  matchKeywords  Json?
-  detectedAt     DateTime                           @default(now())
-  reviewStatus   AtlasAmendmentReviewStatus         @default(PENDING)
-  reviewedAt     DateTime?
-  reviewedBy     String?
-  reviewNote     String?
+  matchKeywords Json?
+  detectedAt    DateTime                   @default(now())
+  reviewStatus  AtlasAmendmentReviewStatus @default(PENDING)
+  reviewedAt    DateTime?
+  reviewedBy    String?
+  reviewNote    String?
   /// Unique dedupe key — feed identifier ∶∶ normalized URL. Stops the
   /// same entry from re-inserting on every poll.
-  dedupKey       String                             @unique
+  dedupKey      String                     @unique
 
   @@index([reviewStatus, detectedAt])
   @@index([jurisdiction, detectedAt])
@@ -8645,7 +8657,7 @@ enum OrganizationType {
 }
 
 enum MatterStatus {
-  STANDALONE       // solo workspace, kein client, kein handshake
+  STANDALONE // solo workspace, kein client, kein handshake
   PENDING_INVITE // token sent, no acceptance yet
   PENDING_CONSENT // token accepted with amendment; awaiting counter-signature
   ACTIVE
@@ -8680,7 +8692,7 @@ model LegalMatter {
 
   // Identities — both sides of the relationship
   lawFirmOrgId String
-  clientOrgId  String?  // null im STANDALONE-State (workspace ohne Mandant)
+  clientOrgId  String? // null im STANDALONE-State (workspace ohne Mandant)
 
   // Human labels
   name        String
@@ -8696,7 +8708,7 @@ model LegalMatter {
   status           MatterStatus
   invitedBy        String // userId of the initiator
   invitedFrom      NetworkSide
-  invitedAt        DateTime    @default(now())
+  invitedAt        DateTime     @default(now())
   acceptedAt       DateTime?
   acceptedBy       String? // userId of the counter-signer
   revokedAt        DateTime?
@@ -8717,7 +8729,7 @@ model LegalMatter {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  lawFirmOrg Organization @relation("LegalMatterFirm", fields: [lawFirmOrgId], references: [id], onDelete: Cascade)
+  lawFirmOrg Organization  @relation("LegalMatterFirm", fields: [lawFirmOrgId], references: [id], onDelete: Cascade)
   clientOrg  Organization? @relation("LegalMatterClient", fields: [clientOrgId], references: [id], onDelete: Cascade)
 
   accessLogs  LegalMatterAccessLog[]
@@ -8988,12 +9000,12 @@ model LegalMatterAccessLog {
 /// Trägt Behörden-Metadaten (Jurisdiktion, Behördentyp, Aufsichtsbereich)
 /// + die kryptografischen Signing-Keys für Public Attestations (Phase P4).
 model AuthorityProfile {
-  id             String  @id @default(cuid())
-  organizationId String  @unique
+  id             String @id @default(cuid())
+  organizationId String @unique
 
   // Behörden-Identität
-  authorityType   AuthorityType
-  jurisdiction    String // ISO country code: "DE", "FR", "EU", "NATO"
+  authorityType       AuthorityType
+  jurisdiction        String // ISO country code: "DE", "FR", "EU", "NATO"
   /// Welche Scope-Kategorien beaufsichtigt diese Behörde?
   /// z.B. BNetzA: ["SPECTRUM"], BSI: ["INCIDENTS","COMPLIANCE_ASSESSMENTS"]
   /// Stored as Json array of ScopeCategory strings (validated app-side).
@@ -9010,8 +9022,8 @@ model AuthorityProfile {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  organization           Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  initiatedOversights    OversightRelationship[]
+  organization        Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  initiatedOversights OversightRelationship[]
 
   @@index([authorityType])
   @@index([jurisdiction])
@@ -9057,7 +9069,7 @@ model OversightRelationship {
   // Status + Lifecycle
   status      OversightStatus
   initiatedBy String // userId (authority-side)
-  initiatedAt DateTime  @default(now())
+  initiatedAt DateTime        @default(now())
   acceptedAt  DateTime?
   acceptedBy  String? // userId (operator-side)
   endedAt     DateTime?
@@ -9077,7 +9089,7 @@ model OversightRelationship {
   handshakeHash String
 
   // Acceptance token (one-time, hashed) — operator clicks /network/pharos-accept/[token]
-  acceptanceTokenHash String?  @unique
+  acceptanceTokenHash      String?   @unique
   acceptanceTokenExpiresAt DateTime?
 
   createdAt DateTime @default(now())
@@ -9108,12 +9120,12 @@ enum OversightStatus {
 /// eigenen Caelex-Dashboard. Tamper-evident via SHA-256 chain rooted
 /// in OversightRelationship.handshakeHash.
 model OversightAccessLog {
-  id            String @id @default(cuid())
-  oversightId   String
+  id          String @id @default(cuid())
+  oversightId String
 
   // Wer
   actorUserId String? // null wenn System-Aktion (z.B. Cron)
-  actorOrgId  String  // immer authority-side für reads, operator-side für consent-actions
+  actorOrgId  String // immer authority-side für reads, operator-side für consent-actions
 
   // Was
   action       OversightAccessAction
@@ -9326,11 +9338,11 @@ model NormAnchor {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  // GIN-Index auf textSearch wird per Raw-SQL Migration ergänzt — Prisma
+  // versteht GIN nativ noch nicht via @@index.
 
   @@index([jurisdiction, instrument])
   @@index([contentHash])
-  // GIN-Index auf textSearch wird per Raw-SQL Migration ergänzt — Prisma
-  // versteht GIN nativ noch nicht via @@index.
 }
 
 /// Wenn die Norm-Drift-Sentinel-Cron-Route eine Änderung im Quelltext
@@ -9339,13 +9351,13 @@ model NormAnchor {
 model NormDriftAlert {
   id String @id @default(cuid())
 
-  normAnchorId String
+  normAnchorId   String
   /// Hash zum Zeitpunkt der Erkennung — was hat sich geändert?
   oldContentHash String
   newContentHash String
   /// Welche Aufsicht ist betroffen? (Best-Effort-Match über Citation-IDs
   /// in OversightAccessLog.context — Audit-Schreiber sieht das.)
-  oversightId String?
+  oversightId    String?
 
   /// Status der Behörden-Reaktion auf den Drift.
   status String @default("OPEN") // OPEN | ACKNOWLEDGED | RESOLVED | DISMISSED
@@ -9355,9 +9367,9 @@ model NormDriftAlert {
   /// löschen wir das hier weg.
   oldTextSnapshot String? @db.Text
 
-  detectedAt    DateTime  @default(now())
+  detectedAt     DateTime  @default(now())
   acknowledgedAt DateTime?
-  resolvedAt    DateTime?
+  resolvedAt     DateTime?
 
   @@index([normAnchorId])
   @@index([oversightId, status])
@@ -9378,15 +9390,15 @@ model NormDriftAlert {
 /// oder "BSI-NIS2-Incident-X"). Kein 1:1 zu OversightRelationship —
 /// ein Operator kann mehrere parallele Vorgänge in derselben Aufsicht haben.
 model WorkflowCase {
-  id          String  @id @default(cuid())
-  fsmId       String  // z.B. "nis2-incident-v1" oder "eu-space-act-authorisation-v1"
-  caseRef     String  // human-readable z.B. "BSI-NIS2-2026-00471"
-  oversightId String?
+  id                 String  @id @default(cuid())
+  fsmId              String // z.B. "nis2-incident-v1" oder "eu-space-act-authorisation-v1"
+  caseRef            String // human-readable z.B. "BSI-NIS2-2026-00471"
+  oversightId        String?
   authorityProfileId String?
   operatorOrgId      String?
 
   /// Aktueller State der FSM. Geprüft gegen WorkflowFSM.def beim Insert/Update.
-  currentState String
+  currentState   String
   /// Wann hat der Vorgang den aktuellen State erreicht? (für after-Trigger)
   enteredStateAt DateTime @default(now())
 
@@ -9396,8 +9408,8 @@ model WorkflowCase {
   /// Letzter Hash in der WorkflowTransition-Chain — für Insert-Performance.
   lastTransitionHash String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   closedAt  DateTime?
 
   transitions WorkflowTransition[]
@@ -9414,20 +9426,20 @@ model WorkflowCase {
 /// OversightAccessLog — Hash-Chain pro caseRef, Ed25519-Signatur,
 /// tamper-evident.
 model WorkflowTransition {
-  id           String @id @default(cuid())
-  caseId       String
+  id     String @id @default(cuid())
+  caseId String
 
-  fromState    String
-  toState      String
-  event        String // "EARLY_WARNING_RECEIVED", "_AFTER", etc.
-  reason       String?
-  payload      Json?
+  fromState String
+  toState   String
+  event     String // "EARLY_WARNING_RECEIVED", "_AFTER", etc.
+  reason    String?
+  payload   Json?
 
   /// Wer hat den Übergang ausgelöst? Null = System (after-Trigger).
-  actorUserId  String?
+  actorUserId String?
 
   /// Hash-Chain
-  previousHash String?
+  previousHash   String?
   transitionHash String
 
   /// Ed25519-Signatur über transitionHash (raw bytes).
@@ -9451,22 +9463,22 @@ model WorkflowTransition {
 model ApprovalRequest {
   id String @id @default(cuid())
 
-  kind                String  // ApprovalKind enum als String (sieht src/lib/pharos/multi-party-approval.ts)
-  authorityProfileId  String
-  oversightId         String?
+  kind               String // ApprovalKind enum als String (sieht src/lib/pharos/multi-party-approval.ts)
+  authorityProfileId String
+  oversightId        String?
   /// Welcher User hat den Approval-Request angestoßen?
-  initiatedBy         String
+  initiatedBy        String
 
   /// Frei-Form-Payload (Vorgangs-Inhalt, Bescheid-Entwurf, etc.). Wird im
   /// payloadHash gehasht — Änderungen invalidieren alle bisherigen Signaturen.
   payload     Json
   payloadHash String
 
-  status      String  // OPEN | APPROVED | REJECTED | EXPIRED | CANCELLED
+  status        String // OPEN | APPROVED | REJECTED | EXPIRED | CANCELLED
   /// Aggregierter Quorum-Hash, gesetzt wenn approved.
   aggregateHash String?
 
-  initiatedAt DateTime @default(now())
+  initiatedAt DateTime  @default(now())
   expiresAt   DateTime
   closedAt    DateTime?
 
@@ -9482,19 +9494,19 @@ model ApprovalRequest {
 model ApprovalSignature {
   id String @id @default(cuid())
 
-  requestId       String
-  approverUserId  String
-  approverRole    String  // SACHBEARBEITER | REFERATSLEITER | DATENSCHUTZBEAUFTRAGTER | ...
+  requestId      String
+  approverUserId String
+  approverRole   String // SACHBEARBEITER | REFERATSLEITER | DATENSCHUTZBEAUFTRAGTER | ...
 
-  payloadHash     String  // muss mit ApprovalRequest.payloadHash matchen
-  signature       String  // base64 Ed25519
+  payloadHash     String // muss mit ApprovalRequest.payloadHash matchen
+  signature       String // base64 Ed25519
   publicKeyBase64 String
 
   signedAt DateTime @default(now())
 
   request ApprovalRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
 
-  @@unique([requestId, approverUserId])  // pro User max 1 Signatur pro Request
+  @@unique([requestId, approverUserId]) // pro User max 1 Signatur pro Request
   @@index([requestId])
   @@index([approverUserId])
 }
@@ -9515,35 +9527,35 @@ model PharosWebhookEndpoint {
   id String @id @default(cuid())
 
   /// Welche Aufsicht / Behörde authorisiert diesen Endpoint?
-  oversightId         String
-  authorityProfileId  String
+  oversightId        String
+  authorityProfileId String
 
   /// Externer Operator-Identifier (DID-style oder org-name).
-  externalOperatorId  String
+  externalOperatorId   String
   externalOperatorName String
 
   /// HMAC-Secret für Signatur-Verifikation. Hashed at rest.
   /// Format: scrypt(rawSecret, salt, 64).
-  secretHash      String
-  secretSalt      String
+  secretHash String
+  secretSalt String
 
   /// Welche Event-Typen darf dieser Endpoint senden?
   /// JSON-Array, z.B. ["nis2.early_warning", "nis2.notification", "nis2.final_report"]
   allowedEvents Json
 
-  status String @default("ACTIVE")  // ACTIVE | PAUSED | REVOKED
+  status String @default("ACTIVE") // ACTIVE | PAUSED | REVOKED
 
-  createdBy   String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  revokedAt   DateTime?
+  createdBy String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  revokedAt DateTime?
 
   invocations PharosWebhookInvocation[]
 
+  @@unique([oversightId, externalOperatorId])
   @@index([oversightId])
   @@index([authorityProfileId])
   @@index([externalOperatorId])
-  @@unique([oversightId, externalOperatorId])
 }
 
 /// Pro Webhook-Aufruf ein Eintrag — replay-protection + audit-trail.
@@ -9557,15 +9569,15 @@ model PharosWebhookInvocation {
   /// `x-pharos-timestamp` ISO-8601, vom Pharos verifiziert (±5min).
   receivedAt DateTime @default(now())
 
-  eventType  String  // z.B. "nis2.early_warning"
+  eventType   String // z.B. "nis2.early_warning"
   /// Hash über den Body — kann später mit Operator-side hash verifiziert
   /// werden (incident-integrity-Check).
-  bodyHash   String
+  bodyHash    String
   payloadJson Json
 
   /// Status der Verarbeitung
-  status     String  // ACCEPTED | REJECTED_SIGNATURE | REJECTED_REPLAY | REJECTED_EVENT | REJECTED_PAUSED | ERROR
-  reason     String?
+  status String // ACCEPTED | REJECTED_SIGNATURE | REJECTED_REPLAY | REJECTED_EVENT | REJECTED_PAUSED | ERROR
+  reason String?
 
   /// Falls erfolgreich: ID des erzeugten WorkflowCase.
   workflowCaseId String?
