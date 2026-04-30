@@ -1,7 +1,10 @@
 import "server-only";
 import { z } from "zod";
+import type { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { isSuperAdmin } from "@/lib/super-admin";
+import { revalidatePath } from "next/cache";
 
 /**
  * defineAction() — the Palantir-style Action framework for Comply v2.
@@ -109,6 +112,18 @@ export interface ActionConfig<TSchema extends z.ZodTypeAny> {
   astra?: AstraToolConfig;
 }
 
+/**
+ * The shape returned by `call()` and `serverAction()` when an action
+ * is gated by `requiresApproval`. Instead of executing, the action
+ * writes an `AstraProposal` row that a human reviewer can later
+ * approve or reject from `/dashboard/proposals`.
+ */
+export interface ProposalDeferral {
+  status: "PROPOSED";
+  proposalId: string;
+  expiresAt: Date;
+}
+
 export interface DefinedAction<TSchema extends z.ZodTypeAny> {
   /** Source config (read-only). */
   readonly config: ActionConfig<TSchema>;
@@ -116,16 +131,41 @@ export interface DefinedAction<TSchema extends z.ZodTypeAny> {
    * Direct server-side call — for cron jobs, Astra-tool execution,
    * webhook handlers. Does the same auth + validation as serverAction
    * but takes typed params instead of FormData.
+   *
+   * If the action is gated by `requiresApproval`, this writes an
+   * AstraProposal row and returns `{ status: "PROPOSED", ... }`
+   * instead of executing the handler. The proposal can then be
+   * approved/rejected from /dashboard/proposals.
    */
-  call: (params: z.infer<TSchema>) => Promise<unknown>;
+  call: (
+    params: z.infer<TSchema>,
+    options?: { rationale?: string; itemId?: string | null },
+  ) => Promise<unknown | ProposalDeferral>;
   /**
    * Server Action callable from forms (`<form action={action.serverAction}>`).
    * Reads FormData, parses according to schema, runs handler.
    * Returns either { ok: true, result } or { ok: false, error }.
+   *
+   * `requiresApproval` actions return { ok: true, result: ProposalDeferral }
+   * — the form should redirect or show a "submitted for approval"
+   * confirmation rather than treat the action as completed.
    */
   serverAction: (
     formData: FormData,
   ) => Promise<{ ok: true; result: unknown } | { ok: false; error: string }>;
+  /**
+   * Internal escape-hatch used by the proposal-approval flow. Skips
+   * the `requiresApproval` gate (otherwise approving a proposal would
+   * just create another proposal and loop forever). Still enforces
+   * Zod validation and auth.
+   *
+   * Do NOT call this from feature code — it bypasses the trust layer.
+   * Only the proposal-apply server action should use it.
+   */
+  applyApprovedProposal: (
+    params: z.infer<TSchema>,
+    asUserId: string,
+  ) => Promise<unknown>;
 }
 
 const REGISTRY = new Map<string, DefinedAction<z.ZodTypeAny>>();
@@ -199,22 +239,92 @@ export function defineAction<TSchema extends z.ZodTypeAny>(
     return parsed.data;
   };
 
+  /**
+   * Write an AstraProposal row instead of executing immediately.
+   * Default expiry: 7 days from now.
+   */
+  const writeProposal = async (
+    params: z.infer<TSchema>,
+    ctx: ActionContext,
+    options?: { rationale?: string; itemId?: string | null },
+  ): Promise<ProposalDeferral> => {
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const proposal = await prisma.astraProposal.create({
+      data: {
+        userId: ctx.userId,
+        actionName: config.name,
+        params: params as Prisma.InputJsonValue,
+        itemId: options?.itemId ?? null,
+        rationale: options?.rationale ?? null,
+        // decisionLog left undefined → DB defaults to NULL via the
+        // Prisma JSON nullable-field semantics (Prisma.JsonNull would
+        // store JSON null literal, which is different).
+        expiresAt,
+      },
+      select: { id: true, expiresAt: true },
+    });
+    revalidatePath("/dashboard/proposals");
+    revalidatePath("/dashboard/today");
+    return {
+      status: "PROPOSED",
+      proposalId: proposal.id,
+      expiresAt: proposal.expiresAt,
+    };
+  };
+
   const action: DefinedAction<TSchema> = {
     config,
-    async call(params) {
+    async call(params, options) {
       const ctx = await enforceCriteria();
       const validated = validate(params);
-      // Phase 2 hook — when requiresApproval, write AstraProposal
-      // instead of running. Phase 1 always executes.
+      if (config.requiresApproval) {
+        return writeProposal(validated, ctx, options);
+      }
+      return config.handler(validated, ctx);
+    },
+    async applyApprovedProposal(params, asUserId) {
+      // Bypasses requiresApproval gate AND the auth-session lookup
+      // — the proposal-apply flow has already verified the approver's
+      // session. We construct a synthetic context based on the
+      // proposal's owner (`asUserId`) so the handler runs with the
+      // *original requester's* permissions, not the approver's.
+      const validated = validate(params);
+      const owner = await prisma.user.findUnique({
+        where: { id: asUserId },
+        select: { id: true, email: true, role: true },
+      });
+      if (!owner) {
+        throw new ActionAuthError("Proposal owner no longer exists");
+      }
+      const ctx: ActionContext = {
+        userId: owner.id,
+        userEmail: owner.email,
+        userRole: owner.role,
+        isSuperAdmin: isSuperAdmin(owner.email),
+      };
       return config.handler(validated, ctx);
     },
     async serverAction(formData) {
       try {
         const ctx = await enforceCriteria();
         // FormData → object (single-value fields). For complex types
-        // pass JSON in a single "payload" field.
+        // pass JSON in a single "payload" field. Two reserved fields:
+        //   _rationale  → optional human-readable note for the
+        //                 proposal trail (only used when
+        //                 requiresApproval=true)
+        //   _itemId     → optional ComplianceItem the proposal targets
         const raw: Record<string, unknown> = {};
+        let rationale: string | undefined;
+        let proposalItemId: string | null | undefined;
         for (const [k, v] of formData.entries()) {
+          if (k === "_rationale" && typeof v === "string") {
+            rationale = v;
+            continue;
+          }
+          if (k === "_itemId" && typeof v === "string") {
+            proposalItemId = v;
+            continue;
+          }
           if (k === "payload" && typeof v === "string") {
             try {
               Object.assign(raw, JSON.parse(v));
@@ -226,6 +336,13 @@ export function defineAction<TSchema extends z.ZodTypeAny>(
           raw[k] = v;
         }
         const validated = validate(raw);
+        if (config.requiresApproval) {
+          const deferral = await writeProposal(validated, ctx, {
+            rationale,
+            itemId: proposalItemId ?? null,
+          });
+          return { ok: true, result: deferral };
+        }
         const result = await config.handler(validated, ctx);
         return { ok: true, result };
       } catch (err) {

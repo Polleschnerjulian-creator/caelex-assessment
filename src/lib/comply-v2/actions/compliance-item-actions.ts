@@ -240,9 +240,128 @@ export const addComplianceItemNote = defineAction({
   },
 });
 
+// ─── markAsAttested (requiresApproval) ────────────────────────────────────
+
+/**
+ * Mark a ComplianceItem as ATTESTED — the V2-native equivalent of
+ * the legacy "compliant" status.
+ *
+ * This is the first action gated by `requiresApproval: true`. When
+ * called by Astra (or by a non-OWNER user), it writes an AstraProposal
+ * row instead of executing immediately. A reviewer with appropriate
+ * permission can approve or reject from /dashboard/proposals.
+ *
+ * Approving runs the same handler with the *original requester's*
+ * permissions, so a super-admin approving an Astra proposal does not
+ * elevate the resulting write.
+ *
+ * Implementation: writes "compliant" into the legacy *RequirementStatus
+ * row's `status` column (preserves V1 read paths), AND adds a "marked
+ * attested" note via the V2 ComplianceItemNote table for audit trail.
+ */
+export const markAsAttested = defineAction({
+  name: "mark-compliance-item-attested",
+  description:
+    "Mark a ComplianceItem as ATTESTED (V1-equivalent: compliant). Persists into the underlying *RequirementStatus row + adds a V2 audit note.",
+  schema: z.object({
+    itemId: z.string().min(3),
+    evidenceSummary: z.string().min(10).max(2000),
+  }),
+  requiresApproval: true,
+  async handler({ itemId, evidenceSummary }, ctx) {
+    const { regulation, rowId } = parseItemId(itemId);
+    await assertOwnership(regulation, rowId, ctx.userId);
+
+    // Update the legacy status field. Each table has the same
+    // shape for `status` so the call is uniform.
+    const data = { status: "compliant" };
+    switch (regulation) {
+      case "DEBRIS":
+        await prisma.debrisRequirementStatus.update({
+          where: { id: rowId },
+          data,
+        });
+        break;
+      case "CYBERSECURITY":
+        await prisma.cybersecurityRequirementStatus.update({
+          where: { id: rowId },
+          data,
+        });
+        break;
+      case "NIS2":
+        await prisma.nIS2RequirementStatus.update({
+          where: { id: rowId },
+          data,
+        });
+        break;
+      case "CRA":
+        await prisma.cRARequirementStatus.update({
+          where: { id: rowId },
+          data,
+        });
+        break;
+      case "UK_SPACE_ACT":
+        await prisma.ukRequirementStatus.update({
+          where: { id: rowId },
+          data,
+        });
+        break;
+      case "US_REGULATORY":
+        await prisma.usRequirementStatus.update({
+          where: { id: rowId },
+          data,
+        });
+        break;
+      case "EXPORT_CONTROL":
+        await prisma.exportControlRequirementStatus.update({
+          where: { id: rowId },
+          data,
+        });
+        break;
+      case "SPECTRUM":
+        await prisma.spectrumRequirementStatus.update({
+          where: { id: rowId },
+          data,
+        });
+        break;
+      default: {
+        const exhaustive: never = regulation;
+        throw new Error(`Unhandled regulation: ${exhaustive as string}`);
+      }
+    }
+
+    // V2 audit-trail note so the attestation event survives even if
+    // the underlying row is modified later.
+    await prisma.complianceItemNote.create({
+      data: {
+        itemId,
+        userId: ctx.userId,
+        body: `**Marked attested.** Evidence summary:\n\n${evidenceSummary}`,
+      },
+    });
+
+    revalidatePath("/dashboard/today");
+    return { itemId, status: "ATTESTED" };
+  },
+  paletteVerb: {
+    label: "Mark item attested",
+    hint: "Requires reviewer approval before applying",
+    group: "item",
+    iconName: "ShieldCheck",
+    contextual: true,
+  },
+  astra: {
+    enabled: true,
+    description:
+      "Mark a ComplianceItem as ATTESTED (compliant). High-impact — writes a proposal that a reviewer must approve.",
+    requiresProposal: true,
+  },
+});
+
 // Re-export for index aggregation.
 export const COMPLIANCE_ITEM_ACTIONS = {
   snoozeComplianceItem,
   unsnoozeComplianceItem,
   addComplianceItemNote,
+  markAsAttested,
 } as const;

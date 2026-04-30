@@ -7,6 +7,7 @@ import {
   Clock,
   BellRing,
   Pencil,
+  ShieldCheck,
 } from "lucide-react";
 import {
   Card,
@@ -33,6 +34,7 @@ import {
   snoozeAction,
   unsnoozeAction,
   addNoteAction,
+  markAttestedAction,
 } from "@/app/dashboard/today/server-actions";
 
 /**
@@ -150,6 +152,44 @@ export function ComplianceItemCard({
                 )}
 
                 <MenuSeparator />
+
+                {item.status !== "ATTESTED" ? (
+                  <form
+                    action={markAttestedAction}
+                    onSubmit={(e) => {
+                      const form = e.currentTarget;
+                      const summary = window.prompt(
+                        "Briefly summarize the evidence supporting attestation (≥10 chars):",
+                      );
+                      if (!summary || summary.trim().length < 10) {
+                        e.preventDefault();
+                        return;
+                      }
+                      const input = form.elements.namedItem(
+                        "evidenceSummary",
+                      ) as HTMLInputElement | null;
+                      if (input) input.value = summary;
+                      const rationale = form.elements.namedItem(
+                        "_rationale",
+                      ) as HTMLInputElement | null;
+                      if (rationale)
+                        rationale.value = `User-initiated attestation request. Evidence: ${summary.slice(0, 200)}`;
+                      setOpen(false);
+                    }}
+                  >
+                    <input type="hidden" name="itemId" value={item.id} />
+                    <input type="hidden" name="evidenceSummary" value="" />
+                    <input type="hidden" name="_itemId" value={item.id} />
+                    <input type="hidden" name="_rationale" value="" />
+                    <MenuItem>
+                      <ShieldCheck />
+                      Mark as attested…
+                      <span className="ml-auto text-[10px] text-amber-600 dark:text-amber-400">
+                        needs approval
+                      </span>
+                    </MenuItem>
+                  </form>
+                ) : null}
 
                 <form
                   action={addNoteAction}

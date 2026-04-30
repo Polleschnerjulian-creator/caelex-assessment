@@ -4,6 +4,7 @@ import {
   snoozeComplianceItem,
   unsnoozeComplianceItem,
   addComplianceItemNote,
+  markAsAttested,
 } from "@/lib/comply-v2/actions/compliance-item-actions";
 
 /**
@@ -45,5 +46,20 @@ export async function addNoteAction(formData: FormData): Promise<void> {
   const result = await addComplianceItemNote.serverAction(formData);
   if (!result.ok) {
     console.warn("[comply-v2] add-note action failed:", result.error);
+  }
+}
+
+/**
+ * Mark-attested has `requiresApproval: true` in its action config —
+ * calling it from the form posts a proposal to /dashboard/proposals
+ * instead of immediately changing the underlying status. The Today
+ * card UI shows "Submitted for approval" feedback (Phase 2 — for now
+ * the user sees the inbox refresh and the pending-proposal badge
+ * tick up in the V2Shell header).
+ */
+export async function markAttestedAction(formData: FormData): Promise<void> {
+  const result = await markAsAttested.serverAction(formData);
+  if (!result.ok) {
+    console.warn("[comply-v2] mark-attested action failed:", result.error);
   }
 }

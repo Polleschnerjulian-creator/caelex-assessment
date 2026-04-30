@@ -79,6 +79,14 @@ const VERBS: PaletteVerb[] = [
     run: (r) => r.push("/dashboard/triage"),
   },
   {
+    id: "nav-proposals",
+    label: "Open Astra Proposals",
+    hint: "Approve, reject, or review proposed actions",
+    icon: ShieldCheck,
+    group: "navigate",
+    run: (r) => r.push("/dashboard/proposals"),
+  },
+  {
     id: "nav-review-queue",
     label: "Open Review Queue",
     hint: "Astra-flagged items awaiting decision",
