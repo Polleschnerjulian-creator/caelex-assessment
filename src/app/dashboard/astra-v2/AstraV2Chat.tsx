@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/v2/button";
 import { Badge } from "@/components/ui/v2/badge";
-import { sendV2AstraMessage } from "./server-actions";
+import { sendV2AstraMessage, sendInConversation } from "./server-actions";
 import type {
   V2AstraMessage,
   V2ToolCall,
@@ -61,14 +61,39 @@ const SUGGESTIONS = [
   "Open the Proposals page",
 ];
 
-export function AstraV2Chat() {
-  const [history, setHistory] = React.useState<V2AstraMessage[]>([
-    INITIAL_MESSAGE,
-  ]);
+export interface AstraV2ChatProps {
+  /** When provided, all sends go through the persisted-conversation
+   *  path; engine-side fetch ensures we always work against the
+   *  authoritative DB history. When null, the chat is ephemeral
+   *  ("scratchpad" mode). */
+  initialConversationId?: string | null;
+  /** Pre-loaded messages for the conversation, server-rendered. */
+  initialMessages?: V2AstraMessage[] | null;
+}
+
+export function AstraV2Chat({
+  initialConversationId = null,
+  initialMessages = null,
+}: AstraV2ChatProps = {}) {
+  const seedHistory =
+    initialMessages && initialMessages.length > 0
+      ? initialMessages
+      : [INITIAL_MESSAGE];
+  const [history, setHistory] = React.useState<V2AstraMessage[]>(seedHistory);
   const [input, setInput] = React.useState("");
   const [pending, setPending] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  // When the user clicks a different conversation in the sidebar
+  // (Server Component re-renders with new initialMessages), reset
+  // local state to match.
+  React.useEffect(() => {
+    setHistory(seedHistory);
+    setError(null);
+    setInput("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialConversationId]);
 
   React.useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -87,7 +112,12 @@ export function AstraV2Chat() {
       setHistory((prev) => [...prev, { role: "user", content: trimmed }]);
       setInput("");
       try {
-        const result = await sendV2AstraMessage(history, trimmed);
+        // Persisted path: conversation lives in DB. Server loads
+        // history itself so we don't have to round-trip it.
+        // Ephemeral path: send the local history.
+        const result = initialConversationId
+          ? await sendInConversation(initialConversationId, trimmed)
+          : await sendV2AstraMessage(history, trimmed);
         if (result.ok) {
           setHistory(result.history);
         } else {
@@ -103,7 +133,7 @@ export function AstraV2Chat() {
         setPending(false);
       }
     },
-    [history, pending],
+    [history, pending, initialConversationId],
   );
 
   return (

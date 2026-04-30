@@ -31,10 +31,11 @@ model User {
   complyUiVersion String? // null | "v1" | "v2"
 
   // Comply v2 — per-user state on ComplianceItems (snoozes, notes,
-  // Astra-proposed actions awaiting approval).
+  // Astra-proposed actions awaiting approval, V2 Astra chats).
   complianceItemSnoozes ComplianceItemSnooze[]
   complianceItemNotes   ComplianceItemNote[]
   astraProposals        AstraProposal[]
+  v2AstraConversations  V2AstraConversation[]
 
   accounts                 Account[]
   sessions                 Session[]
@@ -9720,4 +9721,65 @@ model AstraProposal {
 
   @@index([userId, status, expiresAt])
   @@index([itemId])
+}
+
+// ─── Comply v2 — Astra V2 Conversations ─────────────────────────────────
+//
+// Persistence for /dashboard/astra-v2. Lives separately from the legacy
+// AstraConversation / AstraMessage models that power /dashboard/astra
+// (V1) so V1 + Pharos-Astra schemas stay byte-identical. Phase 2 may
+// merge these schemas if the surfaces converge.
+
+/// One V2 Astra chat session for a user.
+model V2AstraConversation {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Auto-derived from the first user message (truncated). Editable
+  /// by the user; defaults to "Untitled chat" if empty.
+  title String @default("Untitled chat")
+
+  /// Soft-delete: archived conversations don't show in the sidebar
+  /// but are still queryable for audit.
+  archivedAt DateTime?
+
+  messages V2AstraConversationMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, archivedAt, updatedAt(sort: Desc)])
+}
+
+/// One message inside a V2 Astra conversation. The schema mirrors the
+/// V2AstraMessage TypeScript type exposed by the engine — `role` plus
+/// either text content or a tool-call array, never both.
+model V2AstraConversationMessage {
+  id String @id @default(cuid())
+
+  conversationId String
+  conversation   V2AstraConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  /// "user" | "assistant"
+  role String
+
+  /// Free-text body. Empty string allowed for assistant messages
+  /// that only carry tool calls.
+  content String @db.Text
+
+  /// Array of V2ToolCall — name, input, result. Stored as JSON since
+  /// the Anthropic tool-use shape is opaque-ish and we don't query
+  /// inside it. Phase 3 may normalize for analytics.
+  toolCalls Json?
+
+  /// Position in the conversation, 0-indexed. Used for ordering
+  /// without depending on createdAt collisions.
+  position Int
+
+  createdAt DateTime @default(now())
+
+  @@unique([conversationId, position])
+  @@index([conversationId, position])
 }
