@@ -16,29 +16,47 @@ import { cn } from "@/lib/utils";
  *   </Button>
  */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  // Palantir base — sharper corners (rounded), tighter focus ring (no
+  // offset), monospace not on the button itself but on `outline` variants
+  // so action labels feel terminal-like. ring-1 instead of ring-2 for
+  // the inset look.
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded text-[12px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500/60 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-3.5 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
+        // Default — subtle slate fill that reads on the deep navy
+        // canvas. Used for neutral CTAs.
         default:
-          "bg-slate-900 text-slate-50 hover:bg-slate-800 dark:bg-slate-50 dark:text-slate-900 dark:hover:bg-slate-200",
+          "bg-white/[0.06] text-slate-100 ring-1 ring-inset ring-white/10 hover:bg-white/[0.10] hover:text-white",
+        // Primary action — emerald with subtle glow, matches the
+        // "operator brand color" stripe used on Posture KPI tiles.
         emerald:
-          "bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm shadow-emerald-500/20",
+          "bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-sm shadow-emerald-500/30 ring-1 ring-inset ring-emerald-400/40",
+        // Secondary action — ghost button with a thin ring that
+        // matches palantir-surface borders. Reads clearly on
+        // palantir-surface cards.
         outline:
-          "border border-slate-200 bg-white text-slate-900 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50 dark:hover:bg-slate-800",
-        ghost:
-          "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-50",
+          "bg-transparent text-slate-200 ring-1 ring-inset ring-white/[0.10] hover:bg-white/[0.04] hover:text-slate-50 hover:ring-white/[0.16]",
+        // Tertiary — no background, used inside dense UI where a
+        // button visually competes for space.
+        ghost: "text-slate-400 hover:bg-white/[0.04] hover:text-slate-100",
+        // Glass — for surfaces that already have a stripe accent,
+        // matches palantir-surface pattern. Mostly here for parity
+        // with the legacy V1 usage in case any V1 component leaks in.
         glass:
-          "bg-white/[0.06] text-white border border-white/10 backdrop-blur-md hover:bg-white/[0.10] hover:border-white/20",
+          "bg-white/[0.06] text-white ring-1 ring-inset ring-white/10 backdrop-blur-md hover:bg-white/[0.10] hover:ring-white/20",
+        // Destructive — red with the same glow language as emerald.
         danger:
-          "bg-red-500 text-white hover:bg-red-600 shadow-sm shadow-red-500/20",
-        link: "text-emerald-600 underline-offset-4 hover:underline dark:text-emerald-400",
+          "bg-red-500 text-white hover:bg-red-400 shadow-sm shadow-red-500/30 ring-1 ring-inset ring-red-400/40",
+        // Inline link — minimal styling, used for "review", "open",
+        // "see more" CTAs inline with text.
+        link: "text-emerald-400 underline-offset-4 hover:text-emerald-300 hover:underline",
       },
       size: {
-        sm: "h-8 px-3 text-xs",
-        default: "h-9 px-4",
-        lg: "h-10 px-6 text-base",
-        icon: "h-9 w-9",
+        sm: "h-7 px-2.5 text-[11px]",
+        default: "h-8 px-3",
+        lg: "h-9 px-4 text-[13px]",
+        icon: "h-8 w-8",
       },
     },
     defaultVariants: {

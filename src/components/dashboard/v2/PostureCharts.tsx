@@ -35,15 +35,32 @@ import {
  * passes plain JSON.
  */
 
+// Palantir-tuned chart palette — slightly shifted from raw Tailwind
+// so the colors read clean against the deep navy canvas. Saturation
+// trimmed on the bright accents (amber/red) so they don't burn out.
 const STATUS_COLORS: Record<ComplianceStatus, string> = {
-  ATTESTED: "#10b981", // emerald-500
-  UNDER_REVIEW: "#8b5cf6", // violet-500
-  DRAFT: "#3b82f6", // blue-500
-  EVIDENCE_REQUIRED: "#f59e0b", // amber-500
-  PENDING: "#94a3b8", // slate-400
-  EXPIRED: "#ef4444", // red-500
-  NOT_APPLICABLE: "#cbd5e1", // slate-300
+  ATTESTED: "#34d399", // emerald-400 — brighter on dark
+  UNDER_REVIEW: "#a78bfa", // violet-400
+  DRAFT: "#60a5fa", // blue-400
+  EVIDENCE_REQUIRED: "#fbbf24", // amber-400
+  PENDING: "#64748b", // slate-500 — subdued
+  EXPIRED: "#f87171", // red-400 — softer than 500 for dark bg
+  NOT_APPLICABLE: "#475569", // slate-600
 };
+
+// Palantir tooltip — backdrop-blurred near-black with thin ring,
+// monospace small caps for the values. Recharts inlines styles so we
+// pass them via contentStyle.
+const TOOLTIP_STYLE = {
+  backgroundColor: "rgba(10, 14, 26, 0.95)",
+  border: "1px solid rgba(255, 255, 255, 0.08)",
+  borderRadius: 4,
+  color: "#e2e8f0",
+  fontSize: 11,
+  fontFamily:
+    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+  boxShadow: "0 10px 40px -10px rgba(0, 0, 0, 0.7)",
+} as const;
 
 const STATUS_LABELS: Record<ComplianceStatus, string> = {
   ATTESTED: "Attested",
@@ -78,9 +95,8 @@ export function StatusDonut({
 
   if (data.length === 0) {
     return (
-      <p className="text-sm text-slate-400 dark:text-slate-500">
-        No items yet — once you start an assessment, the distribution renders
-        here.
+      <p className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
+        {"// no items yet — start an assessment to populate"}
       </p>
     );
   }
@@ -94,31 +110,27 @@ export function StatusDonut({
           nameKey="name"
           cx="50%"
           cy="50%"
-          innerRadius={60}
-          outerRadius={90}
+          innerRadius={62}
+          outerRadius={92}
           paddingAngle={2}
-          stroke="none"
+          stroke="rgba(10, 14, 26, 0.6)"
+          strokeWidth={1}
         >
           {data.map((entry, idx) => (
             <Cell key={idx} fill={entry.fill} />
           ))}
         </Pie>
         <Tooltip
-          contentStyle={{
-            backgroundColor: "rgba(15, 23, 42, 0.92)",
-            border: "none",
-            borderRadius: 8,
-            color: "#f8fafc",
-            fontSize: 12,
-          }}
+          contentStyle={TOOLTIP_STYLE}
+          cursor={{ fill: "transparent" }}
         />
         <Legend
           verticalAlign="bottom"
           height={36}
-          iconType="circle"
+          iconType="square"
           iconSize={8}
           formatter={(value: string) => (
-            <span className="text-xs text-slate-700 dark:text-slate-300">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400">
               {value}
             </span>
           )}
@@ -135,8 +147,8 @@ export function RegulationBars({
 }) {
   if (breakdown.length === 0) {
     return (
-      <p className="text-sm text-slate-400 dark:text-slate-500">
-        No regulatory items yet. Start a module assessment to populate.
+      <p className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
+        {"// no regulatory items yet"}
       </p>
     );
   }
@@ -155,35 +167,40 @@ export function RegulationBars({
       <BarChart
         data={data}
         margin={{ top: 8, right: 8, bottom: 24, left: 0 }}
-        barSize={28}
+        barSize={24}
       >
         <XAxis
           dataKey="name"
-          tick={{ fontSize: 10, fill: "currentColor" }}
+          tick={{
+            fontSize: 9,
+            fill: "#64748b",
+            fontFamily:
+              "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+          }}
           interval={0}
           angle={-25}
           textAnchor="end"
           height={60}
-          stroke="currentColor"
-          className="text-slate-500 dark:text-slate-400"
+          stroke="rgba(255, 255, 255, 0.06)"
+          tickLine={false}
         />
         <YAxis
           domain={[0, 100]}
           unit="%"
-          tick={{ fontSize: 10, fill: "currentColor" }}
-          stroke="currentColor"
-          className="text-slate-500 dark:text-slate-400"
+          tick={{
+            fontSize: 9,
+            fill: "#64748b",
+            fontFamily:
+              "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+          }}
+          stroke="rgba(255, 255, 255, 0.06)"
+          tickLine={false}
         />
         <Tooltip
-          contentStyle={{
-            backgroundColor: "rgba(15, 23, 42, 0.92)",
-            border: "none",
-            borderRadius: 8,
-            color: "#f8fafc",
-            fontSize: 12,
-          }}
+          contentStyle={TOOLTIP_STYLE}
+          cursor={{ fill: "rgba(16, 185, 129, 0.06)" }}
         />
-        <Bar dataKey="score" fill="#10b981" radius={[4, 4, 0, 0]} />
+        <Bar dataKey="score" fill="#34d399" radius={[2, 2, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
