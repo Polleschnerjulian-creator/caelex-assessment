@@ -19,7 +19,13 @@ import {
   AlertTriangle,
   Orbit,
   ToggleLeft,
+  Clock,
+  BellRing,
+  Pencil,
+  FileQuestion,
+  type LucideIcon,
 } from "lucide-react";
+import type { ServerActionVerb } from "@/lib/comply-v2/actions/palette-verbs.server";
 import {
   CommandDialog,
   CommandInput,
@@ -56,7 +62,7 @@ interface PaletteVerb {
   hint?: string;
   icon: React.ComponentType<{ className?: string }>;
   shortcut?: string[];
-  group: "navigate" | "create" | "ai" | "settings";
+  group: "navigate" | "create" | "ai" | "settings" | "item";
   run: (router: ReturnType<typeof useRouter>) => void;
 }
 
@@ -198,14 +204,46 @@ const VERBS: PaletteVerb[] = [
   },
 ];
 
-const GROUP_LABELS: Record<PaletteVerb["group"], string> = {
+type Group = "navigate" | "create" | "ai" | "settings" | "item";
+
+const GROUP_LABELS: Record<Group, string> = {
   navigate: "Navigate",
+  item: "Item actions",
   create: "Create",
   ai: "Astra & AI",
   settings: "Settings",
 };
 
-export function CommandPalette() {
+/**
+ * Icon registry for server-action verbs. Server-side palette-verb
+ * configs use string icon names (Lucide module isn't tree-shakable
+ * across the RSC boundary), so the client maps the string back to
+ * the actual icon component here. Add new icons as new actions need
+ * them.
+ */
+const ICON_MAP: Record<string, LucideIcon> = {
+  Clock,
+  BellRing,
+  Pencil,
+  ShieldCheck,
+  FileQuestion,
+};
+
+function iconFor(name: string): LucideIcon {
+  return ICON_MAP[name] ?? Sparkles;
+}
+
+export interface CommandPaletteProps {
+  /**
+   * Server-discovered verbs from src/lib/comply-v2/actions/palette-verbs.server.ts.
+   * Each defineAction() entry with a paletteVerb config shows up here
+   * automatically — Cmd-K stays in sync with the action layer
+   * without manual registration.
+   */
+  serverVerbs?: ServerActionVerb[];
+}
+
+export function CommandPalette({ serverVerbs = [] }: CommandPaletteProps) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
 
@@ -222,13 +260,45 @@ export function CommandPalette() {
   }, []);
 
   const grouped = React.useMemo(() => {
-    const map = new Map<PaletteVerb["group"], PaletteVerb[]>();
+    const map = new Map<Group, PaletteVerb[]>();
+    // Hardcoded navigation / AI / settings verbs.
     for (const v of VERBS) {
       if (!map.has(v.group)) map.set(v.group, []);
       map.get(v.group)!.push(v);
     }
+    // Server-discovered action verbs (item-contextual actions).
+    // Phase 1: clicking these routes to /dashboard/today where the
+    // user can pick an item; Phase 2 will plumb item-context through
+    // a global PinnedItem store.
+    for (const sv of serverVerbs) {
+      const Icon = iconFor(sv.iconName);
+      const verb: PaletteVerb = {
+        id: `action-${sv.name}`,
+        label: sv.label,
+        hint: sv.hint
+          ? sv.requiresApproval
+            ? `${sv.hint} · needs approval`
+            : sv.hint
+          : sv.requiresApproval
+            ? "Needs reviewer approval"
+            : undefined,
+        icon: Icon,
+        group: sv.group,
+        run: (r) => {
+          // Item-contextual verbs always land on Today first so the
+          // user can pick the item to act on.
+          if (sv.contextual) {
+            r.push(`/dashboard/today?action=${encodeURIComponent(sv.name)}`);
+          } else {
+            r.push("/dashboard/today");
+          }
+        },
+      };
+      if (!map.has(sv.group)) map.set(sv.group, []);
+      map.get(sv.group)!.push(verb);
+    }
     return map;
-  }, []);
+  }, [serverVerbs]);
 
   const runVerb = React.useCallback(
     (verb: PaletteVerb) => {

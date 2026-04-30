@@ -3,6 +3,7 @@ import { Sparkles, ShieldCheck } from "lucide-react";
 import { Kbd } from "@/components/ui/v2/kbd";
 import { CommandPalette } from "./CommandPalette";
 import { getPendingProposalCount } from "@/lib/comply-v2/proposal-stats.server";
+import { getServerActionVerbs } from "@/lib/comply-v2/actions/palette-verbs.server";
 
 /**
  * Comply V2 Shell
@@ -25,15 +26,20 @@ export default async function V2Shell({
 }: {
   children: React.ReactNode;
 }) {
-  const pendingProposals = await getPendingProposalCount();
+  const [pendingProposals, serverVerbs] = await Promise.all([
+    getPendingProposalCount(),
+    Promise.resolve(getServerActionVerbs()),
+  ]);
 
   return (
     <div
       data-density="cozy"
       className="min-h-screen bg-light-bg dark:bg-slate-950"
     >
-      {/* ⌘K palette — client island, mounts globally for the V2 surface */}
-      <CommandPalette />
+      {/* ⌘K palette — client island, mounts globally for the V2 surface.
+          Server verbs are auto-discovered from the action registry so
+          new actions appear in the palette without UI updates. */}
+      <CommandPalette serverVerbs={serverVerbs} />
 
       {/* Preview banner */}
       <div className="border-b border-amber-300/40 bg-amber-50/80 backdrop-blur-sm dark:border-amber-500/20 dark:bg-amber-950/30">

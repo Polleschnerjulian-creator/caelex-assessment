@@ -358,10 +358,131 @@ export const markAsAttested = defineAction({
   },
 });
 
+// ─── requestEvidence (requiresApproval) ───────────────────────────────────
+
+/**
+ * Flag that a ComplianceItem needs additional evidence before it can
+ * be attested. Sets the legacy status to "non_compliant" (which our
+ * normalizer maps to EVIDENCE_REQUIRED in the V2 vocabulary) and
+ * records who asked, why, and what evidence is expected.
+ *
+ * Approval-gated because flipping a previously-compliant item back to
+ * EVIDENCE_REQUIRED is the kind of decision a counsel or auditor
+ * should sign off on — it changes the org's compliance posture and
+ * surfaces in audits.
+ *
+ * Astra typically calls this when its scan detects:
+ *   - evidence document expired
+ *   - regulation amendment changes the bar
+ *   - linked spacecraft state contradicts an earlier attestation
+ */
+export const requestEvidence = defineAction({
+  name: "request-compliance-item-evidence",
+  description:
+    "Flag a ComplianceItem as requiring additional evidence. Routes the item back to EVIDENCE_REQUIRED status and records the request in the V2 audit-trail notes.",
+  schema: z.object({
+    itemId: z.string().min(3),
+    reason: z.string().min(10).max(2000),
+    expectedEvidence: z.string().min(5).max(1000).optional(),
+  }),
+  requiresApproval: true,
+  async handler({ itemId, reason, expectedEvidence }, ctx) {
+    const { regulation, rowId } = parseItemId(itemId);
+    await assertOwnership(regulation, rowId, ctx.userId);
+
+    // Update the legacy status field to "non_compliant" — our
+    // normalizer maps this to EVIDENCE_REQUIRED in V2.
+    const data = { status: "non_compliant" };
+    switch (regulation) {
+      case "DEBRIS":
+        await prisma.debrisRequirementStatus.update({
+          where: { id: rowId },
+          data,
+        });
+        break;
+      case "CYBERSECURITY":
+        await prisma.cybersecurityRequirementStatus.update({
+          where: { id: rowId },
+          data,
+        });
+        break;
+      case "NIS2":
+        await prisma.nIS2RequirementStatus.update({
+          where: { id: rowId },
+          data,
+        });
+        break;
+      case "CRA":
+        await prisma.cRARequirementStatus.update({
+          where: { id: rowId },
+          data,
+        });
+        break;
+      case "UK_SPACE_ACT":
+        await prisma.ukRequirementStatus.update({
+          where: { id: rowId },
+          data,
+        });
+        break;
+      case "US_REGULATORY":
+        await prisma.usRequirementStatus.update({
+          where: { id: rowId },
+          data,
+        });
+        break;
+      case "EXPORT_CONTROL":
+        await prisma.exportControlRequirementStatus.update({
+          where: { id: rowId },
+          data,
+        });
+        break;
+      case "SPECTRUM":
+        await prisma.spectrumRequirementStatus.update({
+          where: { id: rowId },
+          data,
+        });
+        break;
+      default: {
+        const exhaustive: never = regulation;
+        throw new Error(`Unhandled regulation: ${exhaustive as string}`);
+      }
+    }
+
+    const noteBody = expectedEvidence
+      ? `**Evidence requested.**\n\nReason: ${reason}\n\nExpected evidence: ${expectedEvidence}`
+      : `**Evidence requested.**\n\nReason: ${reason}`;
+
+    await prisma.complianceItemNote.create({
+      data: {
+        itemId,
+        userId: ctx.userId,
+        body: noteBody,
+      },
+    });
+
+    revalidatePath("/dashboard/today");
+    return { itemId, status: "EVIDENCE_REQUIRED" };
+  },
+  paletteVerb: {
+    label: "Request evidence",
+    hint: "Flag an item for re-attestation",
+    group: "item",
+    iconName: "FileQuestion",
+    contextual: true,
+  },
+  astra: {
+    enabled: true,
+    description:
+      "Flag a ComplianceItem as requiring additional evidence. High-impact — writes a proposal that a reviewer must approve.",
+    requiresProposal: true,
+  },
+});
+
 // Re-export for index aggregation.
 export const COMPLIANCE_ITEM_ACTIONS = {
   snoozeComplianceItem,
   unsnoozeComplianceItem,
   addComplianceItemNote,
   markAsAttested,
+  requestEvidence,
 } as const;
