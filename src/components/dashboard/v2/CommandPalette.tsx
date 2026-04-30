@@ -27,6 +27,7 @@ import {
   X,
   FileSearch as FileSearchIcon,
   Loader2,
+  Gauge,
   type LucideIcon,
 } from "lucide-react";
 import type { ServerActionVerb } from "@/lib/comply-v2/actions/palette-verbs.server";
@@ -74,6 +75,14 @@ interface PaletteVerb {
 
 const VERBS: PaletteVerb[] = [
   // ─── Navigate ───────────────────────────────────────────────────────
+  {
+    id: "nav-posture",
+    label: "Open Compliance Posture",
+    hint: "Score, distribution, open work — executive overview",
+    icon: Gauge,
+    group: "navigate",
+    run: (r) => r.push("/dashboard/posture"),
+  },
   {
     id: "nav-today",
     label: "Open Today inbox",
