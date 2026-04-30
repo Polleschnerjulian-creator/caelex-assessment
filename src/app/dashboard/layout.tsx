@@ -34,15 +34,18 @@ export default async function DashboardLayout({
   const uiVersion = await resolveComplyUiVersion();
 
   if (uiVersion === "v2") {
+    // V2 = full chrome. V2Shell renders its own sidebar + topbar
+    // and does NOT wrap the legacy DashboardShell — v2 users see
+    // only V2 surfaces. Legacy DashboardShell stays in the repo
+    // for v1 fallback + emergency rollback (see concept doc § 3).
     return (
       <SubscriptionGate>
-        <V2Shell>
-          <DashboardShell>{children}</DashboardShell>
-        </V2Shell>
+        <V2Shell>{children}</V2Shell>
       </SubscriptionGate>
     );
   }
 
+  // V1 — legacy chrome, byte-identical to pre-redesign behavior.
   return (
     <SubscriptionGate>
       <DashboardShell>{children}</DashboardShell>

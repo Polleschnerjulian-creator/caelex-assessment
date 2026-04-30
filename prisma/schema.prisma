@@ -2634,8 +2634,10 @@ model Organization {
   // Comply v2 redesign — see docs/CAELEX-COMPLY-CONCEPT.md
   // Controls which Comply (Operator-Surface) UI version this org sees.
   // Affects ONLY /dashboard/* routes; Atlas, Pharos, Assure ignore this flag.
-  // Default "v1" during build phase (Phase 0–3); flips to "v2" once stable.
-  complyUiVersion String @default("v1") // "v1" | "v2"
+  // Default flipped to "v2" at the Phase 3 cutover. Existing orgs keep
+  // whatever they had set; only fresh inserts pick up the new default.
+  // V1 stays in the codebase for emergency rollback (concept doc § 3).
+  complyUiVersion String @default("v2") // "v1" | "v2"
 
   // Relations
   members                OrganizationMember[]

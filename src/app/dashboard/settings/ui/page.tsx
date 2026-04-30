@@ -47,10 +47,9 @@ export default async function ComplyUiSettingsPage({
           </h1>
         </div>
         <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-          We&apos;re rebuilding the Comply (operator) workspace into a faster,
-          more focused experience. While we ship the new surfaces, you can opt
-          in early — or stay on the proven legacy view. Switching back is a
-          single click. This setting only affects the dashboard at{" "}
+          Comply v2 is the default Comply experience. The legacy v1 view is kept
+          available as an emergency fallback — switch back if v2 is broken for
+          you, otherwise stay on v2. This setting only affects the dashboard at{" "}
           <code className="rounded bg-slate-100 px-1 py-0.5 text-xs dark:bg-slate-800">
             /dashboard
           </code>
@@ -71,22 +70,22 @@ export default async function ComplyUiSettingsPage({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <VersionCard
+          version="v2"
+          current={current}
+          title="Comply (v2)"
+          tag="Default"
+          description="The current Comply experience — Posture overview, Today inbox, Triage queue, AstraProposal trust layer, Cmd-K command palette."
+          recommended="Recommended for everyone."
+          accent="emerald"
+        />
+        <VersionCard
           version="v1"
           current={current}
           title="Legacy (v1)"
-          tag="Stable"
-          description="The Comply experience you've been using. 96 routes, 15 modules, the existing sidebar. Nothing changes."
-          recommended="Recommended for production work today."
+          tag="Fallback"
+          description="The pre-redesign client-side dashboard. Kept as an emergency fallback only — most surfaces have been rebuilt and improved in v2."
+          recommended="Use only if v2 is broken for you."
           accent="slate"
-        />
-        <VersionCard
-          version="v2"
-          current={current}
-          title="Redesign (v2)"
-          tag="Preview"
-          description="The new shell — Today inbox, Cmd-K palette, AstraProposal queue, Bloomberg-density toggle. Surfaces ship over the next 12 weeks."
-          recommended="For pilot users who want to follow along."
-          accent="emerald"
         />
       </div>
 

@@ -94,6 +94,9 @@ export async function resolveComplyUiVersion(
   );
   if (fromOrg) return fromOrg;
 
-  // Build-phase fallback. Flip to "v2" when Phase 3 stabilizes.
-  return "v1";
+  // Phase 3 cutover: V2 is now the default for users without an
+  // explicit override. V1 stays in the codebase as a fallback —
+  // anyone with `User.complyUiVersion = "v1"` (set via Settings or
+  // SQL) keeps seeing the legacy chrome.
+  return "v2";
 }
