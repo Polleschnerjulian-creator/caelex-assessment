@@ -14,8 +14,9 @@ const Kbd = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
       <kbd
         ref={ref}
         className={cn(
-          "inline-flex h-5 min-w-[1.25rem] select-none items-center justify-center rounded border border-slate-200 bg-slate-50 px-1.5 font-mono text-[10px] font-medium text-slate-600",
-          "dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300",
+          // Palantir terminal-pill — sharper corners, ring-inset border,
+          // monospace, slightly tighter height.
+          "inline-flex h-4 min-w-[1rem] select-none items-center justify-center rounded-sm bg-white/[0.04] px-1 font-mono text-[9px] font-medium text-slate-300 ring-1 ring-inset ring-white/10",
           className,
         )}
         {...props}

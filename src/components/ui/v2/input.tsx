@@ -15,7 +15,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       <input
         type={type}
         className={cn(
-          "flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm text-slate-900 placeholder:text-slate-400 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-50 dark:placeholder:text-slate-500",
+          // Palantir terminal-input style — black bg with thin ring-inset
+          // border, emerald focus ring (no offset), tighter height,
+          // tabular numbers if numeric.
+          "flex h-9 w-full rounded bg-black/30 px-2.5 py-1 text-[13px] text-slate-100 placeholder:text-slate-600 ring-1 ring-inset ring-white/[0.06] transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500/60 disabled:cursor-not-allowed disabled:opacity-50",
           className,
         )}
         ref={ref}

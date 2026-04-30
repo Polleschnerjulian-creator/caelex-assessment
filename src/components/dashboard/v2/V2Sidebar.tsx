@@ -134,7 +134,7 @@ export function V2Sidebar({
       <div className="border-b border-white/[0.06] px-3 py-2">
         <button
           type="button"
-          className="flex w-full items-center justify-between gap-2 rounded border border-white/[0.06] bg-white/[0.02] px-2 py-1 text-[11px] text-slate-400 transition hover:border-white/10 hover:bg-white/[0.04]"
+          className="flex w-full items-center justify-between gap-2 rounded bg-white/[0.02] px-2 py-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 ring-1 ring-inset ring-white/[0.06] transition hover:bg-white/[0.04] hover:text-slate-300"
           onClick={() => {
             const event = new KeyboardEvent("keydown", {
               key: "k",
@@ -144,14 +144,10 @@ export function V2Sidebar({
             window.dispatchEvent(event);
           }}
         >
-          <span className="font-mono uppercase tracking-wider">Search</span>
+          <span>Search</span>
           <span className="flex items-center gap-0.5">
-            <Kbd className="border-white/10 bg-white/5 text-[9px] text-slate-300">
-              ⌘
-            </Kbd>
-            <Kbd className="border-white/10 bg-white/5 text-[9px] text-slate-300">
-              K
-            </Kbd>
+            <Kbd>⌘</Kbd>
+            <Kbd>K</Kbd>
           </span>
         </button>
       </div>

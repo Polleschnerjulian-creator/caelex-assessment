@@ -391,12 +391,12 @@ export function CommandPalette({ serverVerbs = [] }: CommandPaletteProps) {
       <CommandList>
         <CommandEmpty>
           {isSearching ? (
-            <span className="inline-flex items-center gap-2 text-xs text-slate-500">
+            <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-emerald-400">
               <Loader2 className="h-3 w-3 animate-spin" />
-              Searching items…
+              SEARCHING ITEMS
             </span>
           ) : (
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-slate-500">
               No match. Try a regulation (&ldquo;NIS2&rdquo;), an article
               (&ldquo;Art.32&rdquo;), or a verb (&ldquo;snooze&rdquo;).
             </span>
@@ -417,18 +417,18 @@ export function CommandPalette({ serverVerbs = [] }: CommandPaletteProps) {
                 value={`item-${result.id} ${result.requirementId} ${result.regulation} ${result.snippet ?? ""}`}
                 onSelect={() => openItem(result)}
               >
-                <FileSearchIcon className="text-emerald-500" />
+                <FileSearchIcon className="text-emerald-400" />
                 <div className="flex min-w-0 flex-col">
                   <div className="flex items-center gap-2">
-                    <span className="truncate text-sm font-medium">
+                    <span className="truncate font-mono text-[12px] font-medium text-slate-100">
                       {result.requirementId}
                     </span>
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400">
+                    <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">
                       {result.regulation} · {result.status}
                     </span>
                   </div>
                   {result.snippet ? (
-                    <span className="truncate text-xs text-slate-500 dark:text-slate-400">
+                    <span className="truncate text-[11px] text-slate-500">
                       {result.snippet}
                     </span>
                   ) : null}
@@ -450,9 +450,9 @@ export function CommandPalette({ serverVerbs = [] }: CommandPaletteProps) {
                 >
                   <Icon className="text-slate-500" />
                   <div className="flex min-w-0 flex-col">
-                    <span className="truncate text-sm">{verb.label}</span>
+                    <span className="truncate text-[13px]">{verb.label}</span>
                     {verb.hint ? (
-                      <span className="truncate text-xs text-slate-500 dark:text-slate-400">
+                      <span className="truncate text-[11px] text-slate-500">
                         {verb.hint}
                       </span>
                     ) : null}
@@ -472,12 +472,12 @@ export function CommandPalette({ serverVerbs = [] }: CommandPaletteProps) {
           </CommandGroup>
         ))}
       </CommandList>
-      <div className="flex items-center justify-between border-t border-slate-200 px-3 py-2 text-[11px] text-slate-500 dark:border-slate-800 dark:text-slate-400">
-        <span className="flex items-center gap-2">
-          Tip: type to filter, press <Kbd>↵</Kbd> to run
+      <div className="flex items-center justify-between border-t border-white/[0.06] bg-white/[0.01] px-3 py-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">
+        <span className="flex items-center gap-1.5">
+          TYPE TO FILTER · <Kbd>↵</Kbd> RUN
         </span>
         <span className="flex items-center gap-1">
-          <Kbd>esc</Kbd> close
+          <Kbd>esc</Kbd> CLOSE
         </span>
       </div>
     </CommandDialog>

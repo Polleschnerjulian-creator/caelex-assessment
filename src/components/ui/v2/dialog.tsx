@@ -23,7 +23,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/40 backdrop-blur-sm",
+      "fixed inset-0 z-50 bg-black/70 backdrop-blur-md",
       "data-[state=open]:animate-in data-[state=closed]:animate-out",
       "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className,
@@ -44,9 +44,12 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-1/2 top-[12vh] z-50 w-full max-w-2xl -translate-x-1/2",
-        "rounded-xl border border-slate-200 bg-white shadow-2xl",
-        "dark:border-slate-800 dark:bg-slate-950",
+        "dark fixed left-1/2 top-[12vh] z-50 w-full max-w-2xl -translate-x-1/2",
+        // Palantir treatment — backdrop-blurred surface on a near-black
+        // canvas, sharp 1px border, no rounded corners overload, emerald
+        // glow ring on the inner edge for depth.
+        "rounded-md bg-[#0a0e1a]/95 backdrop-blur-xl shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)]",
+        "ring-1 ring-inset ring-white/[0.08]",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -59,12 +62,11 @@ const DialogContent = React.forwardRef<
       {showClose ? (
         <DialogPrimitive.Close
           className={cn(
-            "absolute right-4 top-4 rounded-md p-1 text-slate-400 transition",
-            "hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500",
-            "dark:hover:bg-slate-800 dark:hover:text-slate-200",
+            "absolute right-3 top-3 rounded p-1 text-slate-500 transition",
+            "hover:bg-white/[0.06] hover:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/60",
           )}
         >
-          <X className="h-4 w-4" />
+          <X className="h-3.5 w-3.5" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>
       ) : null}
@@ -79,10 +81,7 @@ const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn(
-      "text-base font-semibold text-slate-900 dark:text-slate-50",
-      className,
-    )}
+    className={cn("text-base font-semibold text-slate-100", className)}
     {...props}
   />
 ));
@@ -94,7 +93,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-sm text-slate-500 dark:text-slate-400", className)}
+    className={cn("text-sm text-slate-400", className)}
     {...props}
   />
 ));

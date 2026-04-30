@@ -26,8 +26,11 @@ const PopoverContent = React.forwardRef<
       align={align}
       sideOffset={sideOffset}
       className={cn(
-        "z-50 min-w-[10rem] overflow-hidden rounded-lg border border-slate-200 bg-white p-1 shadow-lg",
-        "dark:border-slate-800 dark:bg-slate-950",
+        // Palantir treatment — backdrop-blurred near-black surface with
+        // sharp 1px ring-inset border. Sharper corners than legacy
+        // shadcn (rounded-md, not rounded-lg).
+        "z-50 min-w-[10rem] overflow-hidden rounded-md bg-[#0a0e1a]/95 backdrop-blur-xl p-1",
+        "ring-1 ring-inset ring-white/[0.08] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.7)]",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -41,8 +44,9 @@ const PopoverContent = React.forwardRef<
 PopoverContent.displayName = PopoverPrimitive.Content.displayName;
 
 /**
- * MenuItem — a button-like row inside a PopoverContent. Same visual
- * idiom as a shadcn DropdownMenuItem.
+ * MenuItem — a button-like row inside a PopoverContent. Palantir
+ * terminal-row aesthetic: tighter padding, smaller text, mono-glow on
+ * hover, emerald stripe on focus.
  */
 const MenuItem = React.forwardRef<
   HTMLButtonElement,
@@ -54,12 +58,12 @@ const MenuItem = React.forwardRef<
     ref={ref}
     type={type}
     className={cn(
-      "flex w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm transition-colors",
-      "outline-none focus-visible:ring-2 focus-visible:ring-emerald-500",
-      "[&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0",
+      "flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-[12px] transition-colors",
+      "outline-none focus-visible:ring-1 focus-visible:ring-emerald-500/60",
+      "[&_svg]:h-3.5 [&_svg]:w-3.5 [&_svg]:shrink-0",
       danger
-        ? "text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
-        : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800",
+        ? "text-red-300 hover:bg-red-500/15"
+        : "text-slate-200 hover:bg-white/[0.06] hover:text-slate-100",
       className,
     )}
     {...props}
@@ -73,7 +77,7 @@ const MenuLabel = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "px-2.5 py-1.5 text-[10px] font-medium uppercase tracking-wider text-slate-400",
+      "px-2 py-1.5 font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-slate-500",
       className,
     )}
     {...props}
@@ -86,7 +90,7 @@ const MenuSeparator = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     role="separator"
-    className={cn("-mx-1 my-1 h-px bg-slate-200 dark:bg-slate-800", className)}
+    className={cn("-mx-1 my-1 h-px bg-white/[0.06]", className)}
     {...props}
   />
 );
