@@ -3,6 +3,7 @@ import { getActionRegistry } from "./define-action";
 // Side-effect imports — registers each action with the registry.
 // Without these the palette starts empty.
 import "./compliance-item-actions";
+import "./triage-actions";
 
 /**
  * Project the action registry into a serializable, client-safe shape

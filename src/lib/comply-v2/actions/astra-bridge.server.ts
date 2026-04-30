@@ -4,6 +4,7 @@ import type { AstraToolDefinition } from "@/lib/astra/types";
 import { getActionRegistry, type DefinedAction } from "./define-action";
 // Side-effect imports — register actions with the registry.
 import "./compliance-item-actions";
+import "./triage-actions";
 
 /**
  * Astra ↔ Action-Layer Bridge

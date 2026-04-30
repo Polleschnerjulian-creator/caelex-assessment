@@ -23,6 +23,8 @@ import {
   BellRing,
   Pencil,
   FileQuestion,
+  Check,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import type { ServerActionVerb } from "@/lib/comply-v2/actions/palette-verbs.server";
@@ -235,6 +237,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Pencil,
   ShieldCheck,
   FileQuestion,
+  Check,
+  X,
 };
 
 function iconFor(name: string): LucideIcon {
