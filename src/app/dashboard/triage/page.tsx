@@ -46,26 +46,20 @@ export default async function TriagePage() {
   }));
 
   return (
-    <div className="mx-auto max-w-screen-xl px-6 py-8">
-      <header className="mb-8 flex items-end justify-between gap-6">
+    <div className="mx-auto max-w-screen-2xl px-6 py-6">
+      <header className="mb-6 flex items-end justify-between gap-6 border-b border-white/[0.06] pb-4">
         <div>
-          <div className="mb-2 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-            <ListChecks className="h-3.5 w-3.5" />
-            Triage
+          <div className="mb-1.5 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-400">
+            <ListChecks className="h-3 w-3" />
+            TRIAGE · QUEUE
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+          <h1 className="text-xl font-semibold tracking-tight text-slate-100">
             One inbox for everything incoming
           </h1>
-          <p className="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
-            {items.length === 0 ? (
-              "No new signals."
-            ) : (
-              <>
-                {items.length} signal{items.length === 1 ? "" : "s"} from
-                notifications, regulator publications, and satellite alerts. Use
-                the keyboard — it&apos;s faster.
-              </>
-            )}
+          <p className="mt-1 max-w-2xl text-xs text-slate-500">
+            {items.length === 0
+              ? "No new signals. The keyboard is fastest — J/K to navigate, A to acknowledge, D to dismiss."
+              : `${items.length} signal${items.length === 1 ? "" : "s"} from notifications, regulator publications, and satellite alerts. J/K to navigate, A to acknowledge, D to dismiss.`}
           </p>
         </div>
         <Button variant="outline" asChild size="sm">

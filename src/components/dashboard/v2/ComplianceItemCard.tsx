@@ -102,21 +102,21 @@ export function ComplianceItemCard({
   const detailHref = `/dashboard/items/${item.regulation}/${item.rowId}`;
 
   return (
-    <Card tone={tone} className="group/card relative flex flex-col">
-      <CardHeader className="pb-2">
+    <Card tone={tone} className="group/card relative flex flex-col p-3">
+      <CardHeader className="p-0 pb-2 space-y-1">
         <div className="mb-1 flex items-start justify-between gap-2">
           <Badge variant={statusVariant(item.status)}>
             {STATUS_LABELS[item.status]}
           </Badge>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             <Link
               href={detailHref}
               aria-label="Open item detail"
-              className="rounded-md p-1 text-slate-400 opacity-0 transition group-hover/card:opacity-100 hover:bg-slate-100 hover:text-slate-700 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              className="rounded p-1 text-slate-500 opacity-0 transition group-hover/card:opacity-100 hover:bg-white/[0.06] hover:text-emerald-300 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500/50"
             >
-              <ExternalLink className="h-3.5 w-3.5" />
+              <ExternalLink className="h-3 w-3" />
             </Link>
-            <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400">
+            <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">
               {item.regulation}
             </span>
             <Popover open={open} onOpenChange={setOpen}>
@@ -124,9 +124,9 @@ export function ComplianceItemCard({
                 <button
                   type="button"
                   aria-label="Open item actions"
-                  className="rounded-md p-1 text-slate-400 opacity-0 transition group-hover/card:opacity-100 hover:bg-slate-100 hover:text-slate-700 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                  className="rounded p-1 text-slate-500 opacity-0 transition group-hover/card:opacity-100 hover:bg-white/[0.06] hover:text-slate-200 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500/50"
                 >
-                  <MoreHorizontal className="h-4 w-4" />
+                  <MoreHorizontal className="h-3.5 w-3.5" />
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-56 p-1">
@@ -228,39 +228,39 @@ export function ComplianceItemCard({
             </Popover>
           </div>
         </div>
-        <CardTitle className="leading-snug">
+        <CardTitle className="text-[13px] font-mono leading-snug tracking-tight">
           <Link
             href={detailHref}
-            className="text-slate-900 transition hover:text-emerald-700 dark:text-slate-50 dark:hover:text-emerald-300"
+            className="text-slate-100 transition hover:text-emerald-300"
           >
             {item.requirementId}
           </Link>
         </CardTitle>
-        <CardDescription className="text-xs">
+        <CardDescription className="text-[11px] text-slate-500">
           {REGULATION_LABELS[item.regulation]}
         </CardDescription>
       </CardHeader>
-      <CardContent className="pb-4 pt-1">
+      <CardContent className="p-0 pt-1">
         {noteSnippet ? (
-          <p className="line-clamp-3 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+          <p className="line-clamp-2 text-[11px] leading-relaxed text-slate-400">
             {noteSnippet}
           </p>
         ) : (
-          <p className="text-xs italic text-slate-400 dark:text-slate-500">
-            No notes yet.
+          <p className="font-mono text-[10px] uppercase tracking-wider text-slate-600">
+            {"// no notes"}
           </p>
         )}
-        <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400">
+        <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-white/[0.04] pt-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">
           {item.targetDate ? (
             <span className="inline-flex items-center gap-1">
               <Calendar className="h-3 w-3" />
-              Due {new Date(item.targetDate).toLocaleDateString()}
+              {new Date(item.targetDate).toLocaleDateString()}
             </span>
           ) : null}
           {isSnoozed ? (
-            <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400">
+            <span className="inline-flex items-center gap-1 text-amber-400">
               <Clock className="h-3 w-3" />
-              Snoozed until {new Date(snoozedUntil!).toLocaleDateString()}
+              SNOOZED · {new Date(snoozedUntil!).toLocaleDateString()}
             </span>
           ) : null}
         </div>

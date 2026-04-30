@@ -109,25 +109,29 @@ export default async function ProposalsPage({ searchParams }: PageProps) {
   const registry = getActionRegistry();
 
   return (
-    <div className="mx-auto max-w-screen-xl px-6 py-8">
-      <header className="mb-8 flex items-end justify-between gap-6">
+    <div className="mx-auto max-w-screen-2xl px-6 py-6">
+      <header className="mb-6 flex items-end justify-between gap-6 border-b border-white/[0.06] pb-4">
         <div>
-          <div className="mb-2 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-            <ShieldCheck className="h-3.5 w-3.5" />
-            Astra proposals
+          <div className="mb-1.5 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-400">
+            <ShieldCheck className="h-3 w-3" />
+            ASTRA · PROPOSAL QUEUE
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+          <h1 className="text-xl font-semibold tracking-tight text-slate-100">
             Review what Astra wants to do
           </h1>
-          <p className="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-1 max-w-2xl text-xs text-slate-500">
             High-impact actions are queued for human approval before they touch
             your compliance state. Approve to apply, reject to dismiss, or let
             them expire after seven days.
           </p>
         </div>
+        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">
+          <span className="inline-flex h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+          {counts.pending} PENDING
+        </div>
       </header>
 
-      <nav className="mb-6 flex gap-1 border-b border-slate-200 dark:border-slate-800">
+      <nav className="mb-6 flex gap-0 border-b border-white/[0.06]">
         {TABS.map((t) => {
           const isActive = activeTab === t.key;
           const Icon = t.icon;
@@ -137,13 +141,13 @@ export default async function ProposalsPage({ searchParams }: PageProps) {
               href={`/dashboard/proposals?tab=${t.key}`}
               className={
                 isActive
-                  ? "inline-flex items-center gap-2 border-b-2 border-emerald-500 px-3 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-300"
-                  : "inline-flex items-center gap-2 border-b-2 border-transparent px-3 py-2 text-sm text-slate-500 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                  ? "inline-flex items-center gap-2 border-b-2 border-emerald-500 px-3 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.15em] text-emerald-300"
+                  : "inline-flex items-center gap-2 border-b-2 border-transparent px-3 py-2 font-mono text-[11px] uppercase tracking-[0.15em] text-slate-500 transition hover:text-slate-200"
               }
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-3 w-3" />
               {t.label}
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              <span className="rounded-sm bg-white/[0.04] px-1.5 py-0.5 font-mono text-[9px] tabular-nums text-slate-300 ring-1 ring-inset ring-white/10">
                 {counts[t.key]}
               </span>
             </a>
@@ -214,11 +218,13 @@ function EmptyState({ tab }: { tab: "pending" | "applied" | "rejected" }) {
   return (
     <Card className="text-center">
       <CardHeader>
-        <Sparkles className="mx-auto h-6 w-6 text-emerald-500" />
-        <CardTitle className="mt-2">{message.title}</CardTitle>
+        <Sparkles className="mx-auto h-5 w-5 text-emerald-400" />
+        <CardTitle className="mt-2 font-mono text-[12px] uppercase tracking-[0.18em] text-slate-200">
+          {message.title}
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="mx-auto max-w-sm text-sm text-slate-500 dark:text-slate-400">
+        <p className="mx-auto max-w-sm text-xs text-slate-500">
           {message.hint}
         </p>
         <div className="mt-4">

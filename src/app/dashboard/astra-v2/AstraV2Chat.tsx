@@ -137,16 +137,16 @@ export function AstraV2Chat({
   );
 
   return (
-    <div className="flex h-[calc(100vh-180px)] max-w-3xl flex-col rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-6">
+    <div className="palantir-surface flex h-[calc(100vh-180px)] max-w-3xl flex-col rounded-md">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-5">
         <div className="flex flex-col gap-5">
           {history.map((msg, i) => (
             <MessageBubble key={i} message={msg} />
           ))}
           {pending ? (
-            <div className="ml-9 inline-flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Astra is thinking…
+            <div className="ml-9 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-emerald-400">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              ASTRA · THINKING
             </div>
           ) : null}
         </div>
@@ -159,7 +159,7 @@ export function AstraV2Chat({
                 type="button"
                 disabled={pending}
                 onClick={() => submit(s)}
-                className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-700 transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-800 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-300"
+                className="rounded bg-white/[0.02] px-2.5 py-1.5 text-[11px] text-slate-300 ring-1 ring-inset ring-white/[0.06] transition hover:bg-emerald-500/10 hover:text-emerald-300 hover:ring-emerald-500/30 disabled:opacity-50"
               >
                 {s}
               </button>
@@ -169,8 +169,8 @@ export function AstraV2Chat({
       </div>
 
       {error ? (
-        <div className="border-t border-red-200 bg-red-50 px-6 py-2 text-xs text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300">
-          <AlertCircle className="mr-1 inline-block h-3.5 w-3.5 align-text-bottom" />
+        <div className="border-t border-red-500/30 bg-red-500/[0.06] px-5 py-2 font-mono text-[11px] text-red-300">
+          <AlertCircle className="mr-1 inline-block h-3 w-3 align-text-bottom" />
           {error}
         </div>
       ) : null}
@@ -180,7 +180,7 @@ export function AstraV2Chat({
           e.preventDefault();
           submit(input);
         }}
-        className="flex items-center gap-2 border-t border-slate-200 p-3 dark:border-slate-800"
+        className="flex items-center gap-2 border-t border-white/[0.06] p-3"
       >
         <input
           type="text"
@@ -188,7 +188,7 @@ export function AstraV2Chat({
           onChange={(e) => setInput(e.target.value)}
           disabled={pending}
           placeholder="Ask Astra to triage compliance, snooze items, request evidence…"
-          className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50 dark:placeholder:text-slate-500"
+          className="flex-1 rounded bg-black/30 px-3 py-2 text-[13px] text-slate-100 placeholder:text-slate-600 ring-1 ring-inset ring-white/[0.06] focus:outline-none focus:ring-1 focus:ring-emerald-500/60 disabled:opacity-50"
         />
         <Button
           type="submit"
@@ -208,14 +208,14 @@ function MessageBubble({ message }: { message: V2AstraMessage }) {
   if (message.role === "user") {
     return (
       <div className="flex items-start gap-3">
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-          <UserIcon className="h-3.5 w-3.5" />
+        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm bg-white/[0.06] text-slate-300 ring-1 ring-inset ring-white/10">
+          <UserIcon className="h-3 w-3" />
         </div>
         <div className="flex-1 pt-0.5">
-          <div className="text-[10px] font-medium uppercase tracking-wider text-slate-400">
-            You
+          <div className="font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-slate-500">
+            YOU
           </div>
-          <p className="mt-1 whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100">
+          <p className="mt-1 whitespace-pre-wrap text-[13px] text-slate-100">
             {message.content}
           </p>
         </div>
@@ -226,15 +226,15 @@ function MessageBubble({ message }: { message: V2AstraMessage }) {
   // Assistant
   return (
     <div className="flex items-start gap-3">
-      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300">
-        <Bot className="h-3.5 w-3.5" />
+      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm bg-emerald-500/15 text-emerald-300 ring-1 ring-inset ring-emerald-500/30">
+        <Bot className="h-3 w-3" />
       </div>
       <div className="flex-1 space-y-3 pt-0.5">
-        <div className="text-[10px] font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-          Astra
+        <div className="font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-emerald-400">
+          ASTRA
         </div>
         {message.content.length > 0 ? (
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-800 dark:text-slate-200">
+          <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-slate-200">
             {message.content}
           </p>
         ) : null}
@@ -269,17 +269,17 @@ function ToolCallCard({
 
   return (
     <div
-      className={`rounded-lg border p-3 text-xs ${
+      className={`rounded-md p-3 text-xs ring-1 ring-inset ${
         isError
-          ? "border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-950/30"
+          ? "bg-red-500/[0.06] ring-red-500/30"
           : isProposal
-            ? "border-amber-300 bg-amber-50 dark:border-amber-700/50 dark:bg-amber-950/30"
-            : "border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50"
+            ? "bg-amber-500/[0.06] ring-amber-500/30 palantir-stripe-amber"
+            : "bg-white/[0.02] ring-white/[0.06]"
       }`}
     >
       <div className="mb-1.5 flex items-center justify-between gap-2">
-        <div className="inline-flex items-center gap-1.5 font-mono text-[11px] font-medium text-slate-700 dark:text-slate-200">
-          <Wrench className="h-3 w-3" />
+        <div className="inline-flex items-center gap-1.5 font-mono text-[11px] font-medium text-slate-200">
+          <Wrench className="h-3 w-3 text-emerald-400" />
           {name}
         </div>
         {isProposal ? (
@@ -293,41 +293,43 @@ function ToolCallCard({
         )}
       </div>
 
-      <details className="text-[11px] text-slate-600 dark:text-slate-400">
-        <summary className="cursor-pointer select-none">Parameters</summary>
-        <pre className="mt-1 overflow-x-auto rounded bg-white px-2 py-1 font-mono leading-relaxed dark:bg-slate-950">
+      <details className="text-[10px] text-slate-500">
+        <summary className="cursor-pointer select-none font-mono uppercase tracking-wider">
+          parameters
+        </summary>
+        <pre className="mt-1 overflow-x-auto rounded bg-black/40 px-2 py-1 font-mono leading-relaxed text-emerald-200 ring-1 ring-inset ring-white/[0.06]">
           {JSON.stringify(input, null, 2)}
         </pre>
       </details>
 
       {result?.ok ? (
         isProposal && isProposalDeferral(result.data) ? (
-          <div className="mt-2 flex items-center gap-2 rounded-md border border-amber-300 bg-white px-3 py-2 text-amber-900 dark:border-amber-700/40 dark:bg-amber-950/40 dark:text-amber-100">
-            <ShieldCheck className="h-4 w-4" />
+          <div className="mt-2 flex items-center gap-2 rounded bg-amber-500/[0.08] px-3 py-2 text-amber-100 ring-1 ring-inset ring-amber-500/30">
+            <ShieldCheck className="h-4 w-4 shrink-0 text-amber-300" />
             <div className="flex-1">
-              <div className="text-xs font-medium">
-                Proposal queued for review
+              <div className="font-mono text-[11px] font-medium uppercase tracking-wider text-amber-200">
+                PROPOSAL QUEUED
               </div>
-              <div className="text-[10px] text-amber-700 dark:text-amber-300">
-                Approve at /dashboard/proposals · expires{" "}
+              <div className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-amber-400">
+                Approve · expires{" "}
                 {new Date(result.data.expiresAt).toLocaleDateString()}
               </div>
             </div>
             <a
               href={`/dashboard/proposals?tab=pending`}
-              className="rounded-md border border-amber-400 bg-amber-100 px-2 py-1 text-[10px] font-medium text-amber-900 transition hover:bg-amber-200 dark:border-amber-700 dark:bg-amber-900/40 dark:text-amber-100"
+              className="rounded bg-amber-500/15 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-amber-200 ring-1 ring-inset ring-amber-500/40 transition hover:bg-amber-500/25"
             >
               Review
             </a>
           </div>
         ) : (
-          <div className="mt-2 inline-flex items-center gap-1.5 text-[10px] text-emerald-700 dark:text-emerald-400">
+          <div className="mt-2 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-emerald-400">
             <CheckCircle2 className="h-3 w-3" />
-            Tool ran successfully
+            tool ran successfully
           </div>
         )
       ) : isError ? (
-        <div className="mt-2 inline-flex items-center gap-1.5 text-[10px] text-red-700 dark:text-red-400">
+        <div className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-red-300">
           <AlertCircle className="h-3 w-3" />
           {result.error}
         </div>

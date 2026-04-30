@@ -94,65 +94,70 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
           : "slate";
 
   return (
-    <Card tone={tone} className="flex flex-col">
-      <CardHeader className="pb-3">
+    <Card tone={tone} className="flex flex-col p-4">
+      <CardHeader className="p-0 pb-3 space-y-1">
         <div className="mb-2 flex items-start justify-between gap-3">
           <Badge variant={statusBadgeVariant(proposal.status)}>
             {proposal.status}
           </Badge>
-          <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400">
+          <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-slate-500">
             {proposal.actionName}
           </span>
         </div>
-        <CardTitle className="leading-snug">{proposal.actionLabel}</CardTitle>
+        <CardTitle className="text-[15px] leading-snug text-slate-100">
+          {proposal.actionLabel}
+        </CardTitle>
         {proposal.actionDescription ? (
-          <CardDescription className="text-xs leading-relaxed">
+          <CardDescription className="text-[11px] leading-relaxed text-slate-500">
             {proposal.actionDescription}
           </CardDescription>
         ) : null}
       </CardHeader>
 
-      <CardContent className="flex flex-1 flex-col gap-3 pb-4 pt-0">
+      <CardContent className="flex flex-1 flex-col gap-3 p-0">
         {proposal.itemId ? (
-          <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-            <Sparkles className="h-3 w-3 text-emerald-500" />
-            Targets <code className="font-mono text-xs">{proposal.itemId}</code>
+          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">
+            <Sparkles className="h-3 w-3 text-emerald-400" />
+            TARGET{" "}
+            <code className="font-mono text-[11px] tracking-normal text-emerald-300">
+              {proposal.itemId}
+            </code>
           </div>
         ) : null}
 
         {proposal.rationale ? (
-          <section className="rounded-md border border-slate-200 bg-slate-50/60 p-3 dark:border-slate-800 dark:bg-slate-900/40">
-            <div className="mb-1 text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Rationale
+          <section className="rounded-md bg-white/[0.02] p-3 ring-1 ring-inset ring-white/[0.06]">
+            <div className="mb-1.5 font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-slate-500">
+              RATIONALE
             </div>
-            <p className="whitespace-pre-wrap text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+            <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-slate-300">
               {proposal.rationale}
             </p>
           </section>
         ) : null}
 
         {decisionLog.length > 0 ? (
-          <div className="rounded-md border border-emerald-200 bg-emerald-50/40 p-3 dark:border-emerald-800/40 dark:bg-emerald-950/20">
+          <div className="rounded-md bg-emerald-500/[0.04] p-3 ring-1 ring-inset ring-emerald-500/20">
             <button
               type="button"
               onClick={() => setLogOpen((o) => !o)}
               className="flex w-full items-center justify-between gap-2 text-left"
             >
               <span className="inline-flex items-center gap-2">
-                <Sparkles className="h-3 w-3 text-emerald-500" />
-                <span className="text-[10px] font-medium uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-                  Astra reasoning · {decisionLog.length} step
-                  {decisionLog.length === 1 ? "" : "s"}
+                <Sparkles className="h-3 w-3 text-emerald-400" />
+                <span className="font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-emerald-300">
+                  ASTRA REASONING · {decisionLog.length} STEP
+                  {decisionLog.length === 1 ? "" : "S"}
                 </span>
               </span>
               {logOpen ? (
-                <ChevronDown className="h-3 w-3 text-emerald-700 dark:text-emerald-400" />
+                <ChevronDown className="h-3 w-3 text-emerald-400" />
               ) : (
-                <ChevronRight className="h-3 w-3 text-emerald-700 dark:text-emerald-400" />
+                <ChevronRight className="h-3 w-3 text-emerald-400" />
               )}
             </button>
             {logOpen ? (
-              <ol className="mt-3 space-y-2 border-t border-emerald-200/60 pt-3 dark:border-emerald-800/40">
+              <ol className="mt-3 space-y-2 border-t border-emerald-500/15 pt-3">
                 {decisionLog.map((entry, idx) => (
                   <DecisionLogStep key={idx} index={idx} entry={entry} />
                 ))}
@@ -164,50 +169,50 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
         <button
           type="button"
           onClick={() => setParamsOpen((o) => !o)}
-          className="inline-flex items-center gap-1 self-start text-[11px] text-slate-500 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          className="inline-flex items-center gap-1 self-start font-mono text-[10px] uppercase tracking-wider text-slate-500 transition hover:text-slate-300"
         >
           {paramsOpen ? (
             <ChevronDown className="h-3 w-3" />
           ) : (
             <ChevronRight className="h-3 w-3" />
           )}
-          Parameters
+          PARAMETERS
         </button>
         {paramsOpen ? (
-          <pre className="overflow-x-auto rounded-md border border-slate-200 bg-slate-50 p-3 text-[11px] leading-relaxed dark:border-slate-800 dark:bg-slate-900">
+          <pre className="overflow-x-auto rounded-md bg-black/40 p-3 font-mono text-[11px] leading-relaxed text-emerald-200 ring-1 ring-inset ring-white/[0.06]">
             {JSON.stringify(proposal.params, null, 2)}
           </pre>
         ) : null}
 
         {proposal.reviewerNote ? (
-          <section className="rounded-md border border-amber-200 bg-amber-50/60 p-3 dark:border-amber-700/40 dark:bg-amber-950/20">
-            <div className="mb-1 text-[10px] font-medium uppercase tracking-wider text-amber-700 dark:text-amber-300">
-              Reviewer note
+          <section className="rounded-md bg-amber-500/[0.06] p-3 ring-1 ring-inset ring-amber-500/30">
+            <div className="mb-1.5 font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-amber-300">
+              REVIEWER NOTE
             </div>
-            <p className="whitespace-pre-wrap text-xs leading-relaxed text-amber-900 dark:text-amber-100">
+            <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-amber-100">
               {proposal.reviewerNote}
             </p>
           </section>
         ) : null}
 
-        <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400">
+        <div className="mt-2 flex flex-wrap items-center gap-3 font-mono text-[10px] uppercase tracking-wider text-slate-500">
           <span className="inline-flex items-center gap-1">
             <Clock className="h-3 w-3" />
-            Proposed {formatRelative(proposal.createdAt)}
+            PROPOSED {formatRelative(proposal.createdAt)}
           </span>
           {isPending ? (
-            <span className="inline-flex items-center gap-1">
-              Expires {formatRelative(proposal.expiresAt)}
+            <span className="inline-flex items-center gap-1 text-amber-400">
+              EXPIRES {formatRelative(proposal.expiresAt)}
             </span>
           ) : proposal.decidedAt ? (
             <span className="inline-flex items-center gap-1">
-              Decided {formatRelative(proposal.decidedAt)}
+              DECIDED {formatRelative(proposal.decidedAt)}
             </span>
           ) : null}
         </div>
 
         {isPending ? (
-          <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3 dark:border-slate-800">
+          <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-white/[0.06] pt-3">
             <form action={applyProposalAction}>
               <input type="hidden" name="proposalId" value={proposal.id} />
               <Button type="submit" variant="emerald" size="sm">
@@ -236,7 +241,7 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
                   name="reviewerNote"
                   type="text"
                   placeholder="Optional reason for rejection"
-                  className="flex-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50"
+                  className="flex-1 rounded bg-white/[0.04] px-2.5 py-1 text-[12px] text-slate-100 placeholder:text-slate-500 ring-1 ring-inset ring-white/[0.08] focus:outline-none focus:ring-1 focus:ring-emerald-500/60"
                   maxLength={500}
                 />
                 <Button type="submit" variant="danger" size="sm">
@@ -283,43 +288,45 @@ function DecisionLogStep({
 
   return (
     <li className="flex items-start gap-2 text-xs leading-relaxed">
-      <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-emerald-500/15 font-mono text-[9px] font-bold tabular-nums text-emerald-300 ring-1 ring-inset ring-emerald-500/30">
         {index + 1}
       </span>
       <div className="min-w-0 flex-1">
         {isTool ? (
           <div>
             <div className="flex items-center gap-1.5">
-              <Wrench className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-              <span className="font-mono text-[11px] font-medium text-slate-800 dark:text-slate-200">
+              <Wrench className="h-3 w-3 text-emerald-400" />
+              <span className="font-mono text-[11px] font-medium text-slate-200">
                 {entry.tool ?? "(unknown tool)"}
               </span>
               {resultOk ? (
                 isProposal ? (
-                  <span className="text-[9px] uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                  <span className="font-mono text-[9px] uppercase tracking-wider text-amber-400">
                     queued
                   </span>
                 ) : (
-                  <span className="text-[9px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                  <span className="font-mono text-[9px] uppercase tracking-wider text-emerald-400">
                     ok
                   </span>
                 )
               ) : resultError ? (
-                <span className="text-[9px] uppercase tracking-wider text-red-600 dark:text-red-400">
+                <span className="font-mono text-[9px] uppercase tracking-wider text-red-400">
                   failed
                 </span>
               ) : null}
             </div>
             {entry.input !== undefined ? (
-              <details className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">
-                <summary className="cursor-pointer select-none">input</summary>
-                <pre className="mt-1 overflow-x-auto rounded bg-white px-2 py-1 font-mono leading-relaxed dark:bg-slate-950">
+              <details className="mt-0.5 text-[10px] text-slate-500">
+                <summary className="cursor-pointer select-none font-mono uppercase tracking-wider">
+                  input
+                </summary>
+                <pre className="mt-1 overflow-x-auto rounded bg-black/40 px-2 py-1 font-mono leading-relaxed text-emerald-200 ring-1 ring-inset ring-white/[0.06]">
                   {JSON.stringify(entry.input, null, 2)}
                 </pre>
               </details>
             ) : null}
             {resultError ? (
-              <p className="mt-0.5 text-[10px] text-red-600 dark:text-red-400">
+              <p className="mt-0.5 text-[10px] text-red-400">
                 {String(
                   (result as { error?: unknown })?.error ?? "Unknown error",
                 )}
@@ -328,8 +335,8 @@ function DecisionLogStep({
           </div>
         ) : (
           <div className="flex items-start gap-1.5">
-            <MessageSquare className="mt-0.5 h-3 w-3 shrink-0 text-slate-400" />
-            <p className="whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+            <MessageSquare className="mt-0.5 h-3 w-3 shrink-0 text-slate-500" />
+            <p className="whitespace-pre-wrap text-slate-300">
               {entry.text ?? ""}
             </p>
           </div>

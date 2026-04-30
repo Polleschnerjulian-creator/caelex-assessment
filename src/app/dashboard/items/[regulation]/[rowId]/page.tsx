@@ -2,7 +2,6 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
-  Calendar,
   Clock,
   ShieldCheck,
   FileQuestion,
@@ -105,24 +104,24 @@ export default async function ItemDetailPage({ params }: PageProps) {
   const isSnoozed = extras.snoozedUntil !== null;
 
   return (
-    <div className="mx-auto max-w-screen-xl px-6 py-8">
-      <div className="mb-6">
+    <div className="mx-auto max-w-screen-2xl px-6 py-6">
+      <div className="mb-4">
         <Link
           href="/dashboard/today"
-          className="inline-flex items-center gap-1 text-xs text-slate-500 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-slate-500 transition hover:text-emerald-400"
         >
           <ArrowLeft className="h-3 w-3" />
-          Back to Today
+          BACK TO TODAY
         </Link>
       </div>
 
-      <header className="mb-8 flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 pb-6 dark:border-slate-800">
+      <header className="mb-6 flex flex-wrap items-start justify-between gap-4 border-b border-white/[0.06] pb-4">
         <div>
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <Badge variant={statusVariant(item.status)}>
               {STATUS_LABELS[item.status]}
             </Badge>
-            <span className="font-mono text-[11px] uppercase tracking-wider text-slate-400">
+            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
               {item.regulation} · {item.requirementId}
             </span>
             {isSnoozed ? (
@@ -132,10 +131,10 @@ export default async function ItemDetailPage({ params }: PageProps) {
               </Badge>
             ) : null}
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+          <h1 className="font-mono text-xl font-semibold tracking-tight text-slate-100">
             {item.requirementId}
           </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-1 text-xs text-slate-500">
             {REGULATION_LABELS[item.regulation]}
           </p>
         </div>
@@ -277,7 +276,7 @@ export default async function ItemDetailPage({ params }: PageProps) {
             {/* Add-note composer */}
             <form
               action={addNoteAction}
-              className="mb-6 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900/50"
+              className="palantir-surface mb-6 rounded-md p-3"
             >
               <input type="hidden" name="itemId" value={item.id} />
               <input
@@ -287,9 +286,9 @@ export default async function ItemDetailPage({ params }: PageProps) {
               />
               <label
                 htmlFor="note-body"
-                className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                className="mb-1.5 block font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-slate-500"
               >
-                Add note
+                ADD NOTE
               </label>
               <textarea
                 id="note-body"
@@ -299,7 +298,7 @@ export default async function ItemDetailPage({ params }: PageProps) {
                 minLength={1}
                 maxLength={8000}
                 placeholder="Type a note. Markdown supported. Linked to this ComplianceItem forever."
-                className="w-full resize-y rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50 dark:placeholder:text-slate-500"
+                className="w-full resize-y rounded bg-black/30 px-3 py-2 text-[12px] text-slate-100 placeholder:text-slate-600 ring-1 ring-inset ring-white/[0.06] focus:outline-none focus:ring-1 focus:ring-emerald-500/60"
               />
               <div className="mt-2 flex justify-end">
                 <Button type="submit" variant="emerald" size="sm">
@@ -311,27 +310,27 @@ export default async function ItemDetailPage({ params }: PageProps) {
 
             {/* Timeline */}
             {extras.notes.length === 0 ? (
-              <p className="rounded-md border border-dashed border-slate-200 p-6 text-center text-xs text-slate-400 dark:border-slate-800 dark:text-slate-500">
-                No notes yet. Add the first one above.
+              <p className="palantir-surface rounded-md p-6 text-center font-mono text-[10px] uppercase tracking-wider text-slate-500">
+                {"// no notes yet"}
               </p>
             ) : (
-              <ol className="space-y-4">
+              <ol className="space-y-2">
                 {extras.notes.map((note) => (
-                  <li
-                    key={note.id}
-                    className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
-                  >
-                    <div className="mb-2 flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+                  <li key={note.id} className="palantir-surface rounded-md p-4">
+                    <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">
                       <UserIcon className="h-3 w-3" />
-                      <span className="font-medium text-slate-700 dark:text-slate-200">
+                      <span className="font-medium text-slate-300">
                         {note.authorName ?? note.authorEmail ?? "Unknown user"}
                       </span>
                       <span>·</span>
-                      <span title={note.createdAt.toISOString()}>
+                      <span
+                        title={note.createdAt.toISOString()}
+                        className="tabular-nums"
+                      >
                         {note.createdAt.toLocaleString()}
                       </span>
                     </div>
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-800 dark:text-slate-200">
+                    <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-slate-200">
                       {note.body}
                     </p>
                   </li>
@@ -341,18 +340,20 @@ export default async function ItemDetailPage({ params }: PageProps) {
 
             {/* Legacy V1 notes if present */}
             {item.notes || item.evidenceNotes ? (
-              <div className="mt-6 rounded-md border border-slate-200 bg-slate-50/40 p-3 dark:border-slate-800 dark:bg-slate-900/30">
-                <div className="mb-1 text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Legacy V1 notes
+              <div className="palantir-surface mt-6 rounded-md p-3">
+                <div className="mb-1.5 font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-slate-500">
+                  LEGACY V1 NOTES
                 </div>
                 {item.notes ? (
-                  <p className="mb-2 whitespace-pre-wrap text-xs text-slate-600 dark:text-slate-400">
-                    <strong>Notes:</strong> {item.notes}
+                  <p className="mb-2 whitespace-pre-wrap text-xs text-slate-400">
+                    <strong className="text-slate-300">Notes:</strong>{" "}
+                    {item.notes}
                   </p>
                 ) : null}
                 {item.evidenceNotes ? (
-                  <p className="whitespace-pre-wrap text-xs text-slate-600 dark:text-slate-400">
-                    <strong>Evidence notes:</strong> {item.evidenceNotes}
+                  <p className="whitespace-pre-wrap text-xs text-slate-400">
+                    <strong className="text-slate-300">Evidence notes:</strong>{" "}
+                    {item.evidenceNotes}
                   </p>
                 ) : null}
               </div>
@@ -375,10 +376,10 @@ function Section({
 }) {
   return (
     <section>
-      <h2 className="mb-3 text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+      <h2 className="mb-3 font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-slate-500">
         {title}
       </h2>
-      <div className="space-y-3">{children}</div>
+      <div className="space-y-2.5">{children}</div>
     </section>
   );
 }
@@ -393,14 +394,12 @@ function Meta({
   mono?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 text-sm">
-      <span className="text-slate-500 dark:text-slate-400">{label}</span>
+    <div className="palantir-surface flex items-center justify-between gap-3 rounded-md px-3 py-2 text-xs">
+      <span className="font-mono uppercase tracking-wider text-slate-500">
+        {label}
+      </span>
       <span
-        className={
-          mono
-            ? "font-mono text-xs text-slate-700 dark:text-slate-200"
-            : "text-slate-700 dark:text-slate-200"
-        }
+        className={mono ? "font-mono text-xs text-slate-200" : "text-slate-200"}
       >
         {value}
       </span>
@@ -447,10 +446,7 @@ function ActionForm({
   badge?: string;
 }) {
   return (
-    <form
-      action={action}
-      className="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900"
-    >
+    <form action={action} className="palantir-surface rounded-md p-3">
       <input type="hidden" name="itemId" value={itemId} />
       <input type="hidden" name="_itemId" value={itemId} />
       <input
@@ -459,17 +455,15 @@ function ActionForm({
         value={`/dashboard/items/${regulation}/${rowId}`}
       />
 
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
-          {title}
-        </h3>
+      <div className="mb-1 flex items-center justify-between gap-2">
+        <h3 className="text-[13px] font-semibold text-slate-100">{title}</h3>
         {badge ? (
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+          <span className="rounded-sm bg-amber-500/15 px-1.5 py-0.5 font-mono text-[9px] font-medium uppercase tracking-wider text-amber-300 ring-1 ring-inset ring-amber-500/30">
             {badge}
           </span>
         ) : null}
       </div>
-      <p className="mb-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+      <p className="mb-3 text-[11px] leading-relaxed text-slate-500">
         {description}
       </p>
 
@@ -478,7 +472,7 @@ function ActionForm({
           <div key={field.name}>
             <label
               htmlFor={`${title}-${field.name}`}
-              className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+              className="mb-1 block font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-slate-500"
             >
               {field.label}
             </label>
@@ -491,7 +485,7 @@ function ActionForm({
                 minLength={field.minLength}
                 placeholder={field.placeholder}
                 defaultValue={field.defaultValue}
-                className="w-full resize-y rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50"
+                className="w-full resize-y rounded bg-black/30 px-2.5 py-1.5 text-[12px] text-slate-100 placeholder:text-slate-600 ring-1 ring-inset ring-white/[0.06] focus:outline-none focus:ring-1 focus:ring-emerald-500/60"
               />
             ) : (
               <input
@@ -504,7 +498,7 @@ function ActionForm({
                 max={field.max}
                 placeholder={field.placeholder}
                 defaultValue={field.defaultValue}
-                className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50"
+                className="w-full rounded bg-black/30 px-2.5 py-1.5 text-[12px] text-slate-100 placeholder:text-slate-600 ring-1 ring-inset ring-white/[0.06] focus:outline-none focus:ring-1 focus:ring-emerald-500/60"
               />
             )}
           </div>
@@ -537,17 +531,10 @@ function SimpleAction({
   submitIcon: React.ComponentType<{ className?: string }>;
 }) {
   return (
-    <form
-      action={action}
-      className="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900"
-    >
+    <form action={action} className="palantir-surface rounded-md p-3">
       <input type="hidden" name="itemId" value={itemId} />
-      <h3 className="mb-1 text-sm font-semibold text-slate-900 dark:text-slate-50">
-        {title}
-      </h3>
-      <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
-        {description}
-      </p>
+      <h3 className="mb-1 text-[13px] font-semibold text-slate-100">{title}</h3>
+      <p className="mb-3 text-[11px] text-slate-500">{description}</p>
       <Button type="submit" variant="outline" size="sm">
         <Icon />
         {submitLabel}

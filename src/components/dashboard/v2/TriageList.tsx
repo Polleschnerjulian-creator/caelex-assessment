@@ -133,12 +133,12 @@ export function TriageList({ items }: TriageListProps) {
 
   if (items.length === 0) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900">
-        <AlertCircle className="mx-auto mb-3 h-8 w-8 text-slate-300 dark:text-slate-600" />
-        <h2 className="text-base font-semibold text-slate-700 dark:text-slate-200">
-          Inbox zero.
+      <div className="palantir-surface rounded-md p-12 text-center">
+        <AlertCircle className="mx-auto mb-3 h-7 w-7 text-slate-700" />
+        <h2 className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-slate-300">
+          INBOX ZERO
         </h2>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        <p className="mt-1.5 text-xs text-slate-500">
           No new signals to triage. Nicely done.
         </p>
       </div>
@@ -149,7 +149,7 @@ export function TriageList({ items }: TriageListProps) {
     <div
       role="list"
       onKeyDown={onKeyDown}
-      className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
+      className="palantir-surface overflow-hidden rounded-md"
     >
       {items.map((item, idx) => {
         const visual = SOURCE_VISUALS[item.source];
@@ -164,56 +164,56 @@ export function TriageList({ items }: TriageListProps) {
             tabIndex={0}
             role="listitem"
             onClick={() => focusRow(idx)}
-            className={`group flex items-start gap-3 border-b border-slate-100 px-4 py-3 transition outline-none last:border-b-0 dark:border-slate-800 ${
+            className={`group flex items-start gap-3 border-b border-white/[0.04] px-4 py-2.5 transition outline-none last:border-b-0 ${
               isFocused
-                ? "bg-emerald-50 dark:bg-emerald-950/20"
-                : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
-            } focus:bg-emerald-100/60 dark:focus:bg-emerald-900/30`}
+                ? "bg-emerald-500/[0.08] palantir-stripe-emerald"
+                : "hover:bg-white/[0.02]"
+            } focus:bg-emerald-500/[0.10] focus:palantir-stripe-emerald`}
           >
             {/* Severity dot */}
             <div className="flex flex-col items-center pt-1">
               <span
-                className={`h-2 w-2 rounded-full ${SEV_COLOR[item.severity]}`}
+                className={`h-1.5 w-1.5 rounded-full ${SEV_COLOR[item.severity]}`}
                 aria-label={`${SEV_LABEL[item.severity]} severity`}
               />
             </div>
 
             {/* Source icon */}
-            <Icon className="h-4 w-4 shrink-0 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300" />
+            <Icon className="h-3.5 w-3.5 shrink-0 text-slate-500 group-hover:text-slate-300" />
 
             {/* Body */}
             <div className="min-w-0 flex-1">
               <div className="mb-0.5 flex items-center gap-2">
                 <Badge variant={visual.badge}>{visual.label}</Badge>
                 {item.tag ? (
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400">
+                  <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">
                     {item.tag}
                   </span>
                 ) : null}
-                <span className="ml-auto text-[10px] text-slate-400">
+                <span className="ml-auto font-mono text-[9px] uppercase tracking-wider text-slate-500">
                   {formatRelative(item.receivedAt)}
                 </span>
               </div>
-              <h3 className="truncate text-sm font-medium text-slate-900 dark:text-slate-50">
+              <h3 className="truncate text-[13px] font-medium text-slate-100">
                 {item.title}
               </h3>
-              <p className="line-clamp-1 text-xs text-slate-500 dark:text-slate-400">
+              <p className="line-clamp-1 text-[11px] text-slate-500">
                 {item.body}
               </p>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-1 self-center">
+            <div className="flex items-center gap-0.5 self-center">
               {item.actionUrl ? (
                 <a
                   href={item.actionUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-md p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                  className="rounded p-1 text-slate-500 transition hover:bg-white/[0.06] hover:text-slate-200"
                   aria-label="Open source"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <ExternalLink className="h-3.5 w-3.5" />
+                  <ExternalLink className="h-3 w-3" />
                 </a>
               ) : null}
 
@@ -229,9 +229,9 @@ export function TriageList({ items }: TriageListProps) {
                 <button
                   type="submit"
                   aria-label={`Acknowledge "${item.title}"`}
-                  className="rounded-md p-1.5 text-emerald-600 transition hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40"
+                  className="rounded p-1 text-emerald-400 transition hover:bg-emerald-500/15 hover:text-emerald-300"
                 >
-                  <Check className="h-3.5 w-3.5" />
+                  <Check className="h-3 w-3" />
                 </button>
               </form>
 
@@ -247,9 +247,9 @@ export function TriageList({ items }: TriageListProps) {
                 <button
                   type="submit"
                   aria-label={`Dismiss "${item.title}"`}
-                  className="rounded-md p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40"
+                  className="rounded p-1 text-slate-500 transition hover:bg-red-500/15 hover:text-red-300"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-3 w-3" />
                 </button>
               </form>
             </div>
@@ -258,19 +258,19 @@ export function TriageList({ items }: TriageListProps) {
       })}
 
       {/* Keyboard help footer */}
-      <div className="flex items-center gap-3 border-t border-slate-100 bg-slate-50 px-4 py-2 text-[10px] text-slate-500 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-400">
+      <div className="flex items-center gap-3 border-t border-white/[0.04] bg-white/[0.01] px-4 py-2 font-mono text-[9px] uppercase tracking-wider text-slate-500">
         <span className="inline-flex items-center gap-1">
           <Kbd>J</Kbd>
-          <Kbd>K</Kbd> navigate
+          <Kbd>K</Kbd> nav
         </span>
         <span className="inline-flex items-center gap-1">
-          <Kbd>A</Kbd> acknowledge
+          <Kbd>A</Kbd> ack
         </span>
         <span className="inline-flex items-center gap-1">
           <Kbd>D</Kbd> dismiss
         </span>
         <span className="inline-flex items-center gap-1">
-          <Kbd>↵</Kbd> open source
+          <Kbd>↵</Kbd> open
         </span>
       </div>
     </div>

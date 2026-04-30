@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Inbox, Calendar, Eye, ArrowRight, X } from "lucide-react";
+import { Inbox, Calendar, Eye, X } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
 import {
@@ -14,7 +14,6 @@ import {
   REGULATIONS,
   REGULATION_LABELS,
 } from "@/lib/comply-v2/types";
-import { Button } from "@/components/ui/v2/button";
 import { Badge } from "@/components/ui/v2/badge";
 import { ComplianceItemCard } from "@/components/dashboard/v2/ComplianceItemCard";
 
@@ -96,28 +95,26 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
   }
 
   return (
-    <div className="mx-auto max-w-screen-xl px-6 py-8">
-      <header className="mb-8 flex items-end justify-between gap-6">
+    <div className="mx-auto max-w-screen-2xl px-6 py-6">
+      <header className="mb-6 flex items-end justify-between gap-6 border-b border-white/[0.06] pb-4">
         <div>
-          <div className="mb-2 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-            <Inbox className="h-3.5 w-3.5" />
-            Today
+          <div className="mb-1.5 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-400">
+            <Inbox className="h-3 w-3" />
+            INBOX · TODAY
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+          <h1 className="text-xl font-semibold tracking-tight text-slate-100">
             What needs you this week
           </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-1 max-w-2xl text-xs text-slate-500">
             {filterActive
               ? `${total} item${total === 1 ? "" : "s"} matching filters.`
-              : `${total} item${total === 1 ? "" : "s"} across ${Object.keys(REGULATION_LABELS).length} compliance regimes.`}
+              : `${total} item${total === 1 ? "" : "s"} across ${Object.keys(REGULATION_LABELS).length} compliance regimes. Use Cmd-K to search the full set.`}
           </p>
         </div>
-        <Button variant="outline" asChild size="sm">
-          <Link href="/dashboard">
-            Open legacy dashboard
-            <ArrowRight />
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">
+          <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          {total} ACTIVE
+        </div>
       </header>
 
       <FilterBar
@@ -226,22 +223,20 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="mb-10">
-      <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+    <section className="mb-8">
+      <h2 className="mb-3 flex items-center gap-2 font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-slate-500">
         <Icon
           className={
-            accent === "emerald"
-              ? "h-4 w-4 text-emerald-500"
-              : "h-4 w-4 text-slate-400"
+            accent === "emerald" ? "h-3 w-3 text-emerald-400" : "h-3 w-3"
           }
         />
         {title}
-        <span className="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+        <span className="rounded-sm bg-white/[0.04] px-1.5 py-0.5 font-mono text-[9px] tabular-nums text-slate-300 ring-1 ring-inset ring-white/10">
           {count}
         </span>
       </h2>
       {count === 0 ? (
-        <p className="ml-6 text-sm text-slate-400 dark:text-slate-500">
+        <p className="palantir-surface rounded-md p-4 text-center text-xs text-slate-500">
           {emptyMessage}
         </p>
       ) : (
@@ -307,15 +302,15 @@ function FilterBar({
   const filterActive = regulationFilter !== null || statusFilter !== null;
 
   return (
-    <div className="mb-6 space-y-2">
+    <div className="palantir-surface mb-6 rounded-md p-3 space-y-2">
       <div className="flex flex-wrap items-center gap-1.5">
-        <span className="mr-2 text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          Regulation
+        <span className="mr-2 font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-slate-500">
+          REG
         </span>
         <FilterChip
           href={buildHref(null, statusFilter)}
           active={regulationFilter === null}
-          label="All"
+          label="ALL"
         />
         {REGULATIONS.map((reg) => (
           <FilterChip
@@ -328,13 +323,13 @@ function FilterBar({
       </div>
 
       <div className="flex flex-wrap items-center gap-1.5">
-        <span className="mr-2 text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          Status
+        <span className="mr-2 font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-slate-500">
+          STATUS
         </span>
         <FilterChip
           href={buildHref(regulationFilter, null)}
           active={statusFilter === null}
-          label="All"
+          label="ALL"
         />
         {STATUS_OPTIONS.map((s) => (
           <FilterChip
@@ -347,9 +342,9 @@ function FilterBar({
       </div>
 
       {filterActive ? (
-        <div className="flex flex-wrap items-center gap-2 pt-1">
-          <span className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Active
+        <div className="flex flex-wrap items-center gap-2 border-t border-white/[0.04] pt-2">
+          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500">
+            ACTIVE
           </span>
           {regulationFilter ? (
             <Badge variant="default">
@@ -377,9 +372,9 @@ function FilterBar({
           ) : null}
           <Link
             href={baseHref}
-            className="text-[11px] text-slate-500 underline-offset-2 transition hover:text-slate-900 hover:underline dark:text-slate-400 dark:hover:text-slate-100"
+            className="font-mono text-[10px] uppercase tracking-wider text-emerald-400 underline-offset-2 transition hover:text-emerald-300 hover:underline"
           >
-            Clear all
+            CLEAR ALL
           </Link>
         </div>
       ) : null}
@@ -401,8 +396,8 @@ function FilterChip({
       href={href}
       className={
         active
-          ? "rounded-full border border-emerald-500 bg-emerald-500 px-2.5 py-0.5 text-[11px] font-medium text-white dark:border-emerald-400 dark:bg-emerald-500/80"
-          : "rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[11px] text-slate-700 transition hover:border-emerald-400 hover:text-emerald-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-emerald-500 dark:hover:text-emerald-300"
+          ? "rounded bg-emerald-500/15 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-emerald-300 ring-1 ring-inset ring-emerald-500/40"
+          : "rounded bg-white/[0.02] px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-slate-400 ring-1 ring-inset ring-white/[0.06] transition hover:bg-white/[0.04] hover:text-slate-200 hover:ring-white/15"
       }
     >
       {label}

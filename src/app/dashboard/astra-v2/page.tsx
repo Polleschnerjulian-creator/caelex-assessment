@@ -67,29 +67,27 @@ export default async function AstraV2Page({ searchParams }: PageProps) {
   }
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-80px)] max-w-screen-2xl gap-6 px-6 py-6">
+    <div className="mx-auto flex h-[calc(100vh-80px)] max-w-screen-2xl gap-5 px-6 py-6">
       {/* Sidebar */}
-      <aside className="hidden w-64 shrink-0 flex-col lg:flex">
-        <div className="mb-3 flex items-center justify-between">
-          <div className="text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Conversations
+      <aside className="hidden w-60 shrink-0 flex-col lg:flex">
+        <div className="mb-2 flex items-center justify-between px-1">
+          <div className="font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-slate-500">
+            CONVERSATIONS
           </div>
           <form action={createNewConversation}>
             <button
               type="submit"
-              className="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-1 text-[11px] font-medium text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-950/60"
+              className="inline-flex items-center gap-1 rounded bg-emerald-500/10 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-emerald-300 ring-1 ring-inset ring-emerald-500/30 transition hover:bg-emerald-500/15"
             >
               <Plus className="h-3 w-3" />
-              New
+              NEW
             </button>
           </form>
         </div>
-        <nav className="flex-1 overflow-y-auto rounded-lg border border-slate-200 bg-white p-1.5 dark:border-slate-800 dark:bg-slate-900">
+        <nav className="palantir-surface flex-1 overflow-y-auto rounded-md p-1.5">
           {conversations.length === 0 ? (
-            <p className="px-2 py-4 text-center text-xs text-slate-400 dark:text-slate-500">
-              No saved chats yet.
-              <br />
-              Click <strong>New</strong> to start one.
+            <p className="px-2 py-4 text-center font-mono text-[10px] uppercase tracking-wider text-slate-500">
+              {"// no saved chats"}
             </p>
           ) : (
             <ul className="space-y-0.5">
@@ -102,16 +100,16 @@ export default async function AstraV2Page({ searchParams }: PageProps) {
                         href={`/dashboard/astra-v2?c=${c.id}`}
                         className={
                           isActive
-                            ? "flex-1 rounded-md bg-emerald-100 px-2.5 py-1.5 text-xs font-medium text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200"
-                            : "flex-1 rounded-md px-2.5 py-1.5 text-xs text-slate-700 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                            ? "flex-1 rounded bg-emerald-500/10 px-2 py-1.5 text-[11px] font-medium text-emerald-200 ring-1 ring-inset ring-emerald-500/30 palantir-stripe-emerald"
+                            : "flex-1 rounded px-2 py-1.5 text-[11px] text-slate-300 transition hover:bg-white/[0.03] hover:text-slate-100"
                         }
                       >
                         <div className="line-clamp-1 flex items-center gap-1.5">
                           <MessageSquare className="h-3 w-3 shrink-0" />
                           <span className="truncate">{c.title}</span>
                         </div>
-                        <div className="mt-0.5 pl-4 text-[10px] text-slate-400 dark:text-slate-500">
-                          {c.messageCount} msg · {formatRelative(c.updatedAt)}
+                        <div className="mt-0.5 pl-4 font-mono text-[9px] uppercase tracking-wider text-slate-500">
+                          {c.messageCount} MSG · {formatRelative(c.updatedAt)}
                         </div>
                       </Link>
                       <form action={archiveConversationAction}>
@@ -123,7 +121,7 @@ export default async function AstraV2Page({ searchParams }: PageProps) {
                         <button
                           type="submit"
                           aria-label="Archive conversation"
-                          className="opacity-0 transition group-hover/conv:opacity-100 rounded-md p-1 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40"
+                          className="opacity-0 transition group-hover/conv:opacity-100 rounded p-1 text-slate-500 hover:bg-red-500/15 hover:text-red-300"
                         >
                           <Trash2 className="h-3 w-3" />
                         </button>
@@ -139,35 +137,37 @@ export default async function AstraV2Page({ searchParams }: PageProps) {
 
       {/* Main */}
       <section className="flex flex-1 flex-col">
-        <header className="mb-4 flex items-end justify-between gap-6">
+        <header className="mb-4 flex items-end justify-between gap-6 border-b border-white/[0.06] pb-3">
           <div>
-            <div className="mb-2 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-              <Bot className="h-3.5 w-3.5" />
-              Astra V2
+            <div className="mb-1.5 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-400">
+              <Bot className="h-3 w-3" />
+              ASTRA · V2
             </div>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+            <h1 className="text-xl font-semibold tracking-tight text-slate-100">
               {activeConv ? activeConv.title : "Compliance copilot"}
             </h1>
-            <p className="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-1 max-w-2xl text-xs text-slate-500">
               {activeConv
                 ? "This conversation is saved. Continue where you left off."
                 : "High-impact tools (mark attested, request evidence) write proposals to your review queue instead of executing directly."}
             </p>
           </div>
-          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-            <Badge variant="default">{tools.length} tools</Badge>
+          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">
+            <Badge variant="default">{tools.length} TOOLS</Badge>
             {apiKeyConfigured ? (
-              <Badge variant="attested">API key</Badge>
+              <Badge variant="attested">ONLINE</Badge>
             ) : (
-              <Badge variant="expired">Missing API key</Badge>
+              <Badge variant="expired">NO API KEY</Badge>
             )}
           </div>
         </header>
 
         {!apiKeyConfigured ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-200">
-            <strong>ANTHROPIC_API_KEY is not set.</strong> Add it to your Vercel
-            environment to enable Astra V2.
+          <div className="rounded-md bg-red-500/[0.08] p-4 text-sm text-red-200 ring-1 ring-inset ring-red-500/30">
+            <strong className="font-mono uppercase tracking-wider">
+              ANTHROPIC_API_KEY NOT SET.
+            </strong>{" "}
+            Add it to your Vercel environment to enable Astra V2.
           </div>
         ) : (
           <AstraV2Chat
