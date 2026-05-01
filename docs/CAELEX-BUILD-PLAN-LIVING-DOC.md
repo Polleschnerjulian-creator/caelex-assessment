@@ -127,9 +127,9 @@ User klickt Browser-Refresh → ist auf V1 — **30 Sekunden Recovery-Zeit**.
 **Sprint 3 — COWF Foundation** [IN PROGRESS]
 
 - Sprint 3A: 6 Workflow-Tabellen + hash-chain service ✅ COMPLETED 2026-05-01
-- Sprint 3B: defineWorkflow() DSL [PENDING]
+- Sprint 3B: defineWorkflow() DSL + W3 first concrete workflow ✅ COMPLETED 2026-05-01
 - Sprint 3C: Heartbeat-Cron + Hash-Chain-Integration [PENDING]
-- Sprint 3D: 7 Step-Types (action/form/approval/astra/waitFor/decision/qes) [PENDING]
+- Sprint 3D: 7 Step-Type executors (action/form/approval/astra/waitFor/decision/qes) [PENDING]
 - **Ziel:** Workflow-Engine läuft, ein erster Workflow durchgespielt
 - **Aufwand:** 3-4 Wochen
 - **V1-Impact:** Null (parallel zu existing State-Machine)
@@ -379,6 +379,40 @@ Handelsregister-DE bleibt offen (nur via fragiles HTML scraping zero-cost machba
 - 13 Konzept-Docs in `docs/` committed
 - Master-Plan (dieses Doc) erstellt
 - V1-Preservation-Strategie definiert
+
+### 2026-05-01: Sprint 3B — COWF DSL + erstes Workflow (W3) ✅
+
+**Geliefert:**
+
+- **Step-Factories** in `src/lib/cowf/steps.ts` — alle 7 step-types als TypeScript factory functions:
+  - `step.action({ key, from, to, run })` — synchron Code-Run
+  - `step.form({ key, from, to, schema, requireRoles, validate })` — wartet auf User-Form
+  - `step.approval({ key, from, to, requireRoles, qesRequired, slaBy, escalations })` — multi-actor mit SLA
+  - `step.astra({ key, from, to, promptTemplate, requiredCitations, maxLoops })` — AI-reasoning
+  - `step.waitForEvent({ key, from, to, eventType, predicate, timeout, onTimeout })` — event-driven wait
+  - `step.decision({ key, from, to, branches })` — conditional branching
+  - `step.qes({ key, from, to, documentRefs, signingProfile })` — D-Trust QES sign
+  - Jede Factory validiert Required-Felder (z.B. `step.approval` rejected leeres requireRoles)
+- **`defineWorkflow()`-Factory** in `src/lib/cowf/define-workflow.ts` — produziert WorkflowDef mit:
+  - `storedInput` — JSONB-serialisierbar, fed to `registerWorkflowDef()`
+  - `handlers` — in-memory Map<stepKey, handlers> für Sprint-3D-Executor
+  - `meta` — accessor für engine + UI
+  - **Graph-Validation at definition-time:** name+version validity, initialState ∈ states, step.from/.to ∈ states, decision branch step refs, waitForEvent.onTimeout refs, mindestens ein step exits initialState. Aggregiert mehrere Issues in einem `WorkflowDefinitionError`.
+- **Erstes konkretes Workflow** in `src/lib/cowf/workflows/continuous-heartbeat.ts` — **W3 Continuous Compliance Heartbeat**:
+  - 8 states: SCANNING → SNAPSHOT_TAKEN → DRIFT_CHECK_DONE → (NO_CHANGE | DRIFT_DETECTED) → ASTRA_REASONED → PROPOSALS_GENERATED → CLOSED
+  - 7 steps mixing action + decision + astra
+  - Demonstriert die DSL für die einfachste der 9 kanonischen Workflows
+- 35 neue Tests (17 step-factories + 18 defineWorkflow incl. W3 self-validation), 238/238 cumulative
+
+**Validation in Action:** wenn Sprint 3D-Executor versehentlich einen falschen `to`-state schreibt, wirft die Validation in CI bevor der Workflow registriert wird. Gleich für `decision.branches[*].step` references — keine Stuck-Workflows aus Tippfehlern.
+
+**Honest scope:**
+
+- W3-Action-Bodies sind purposely empty in Sprint 3B (set `ctx.state.snapshotComputedAt` only) — Sprint 3D verdrahtet sie an `compliance-snapshot-service.ts` und Astra V2 engine
+- Step.action's `run`-handler wird vom Engine-Executor invoked (Sprint 3D), Sprint 3B persistiert nur die Stored-Shape
+- W1 (Authorization Submission) und W2 (Cyber-Incident-Response) folgen wenn Sprint 3D's Executor steht
+
+**Cumulative status:** 238/238 vitest pass (35 evidence + 15 profile + 11 cron + 22 VIES + 25 CelesTrak + 22 GLEIF + 26 UNOOSA + 12 cross-verifier + 11 dispatcher + 18 cowf-events + 17 cowf-instances + 17 cowf-steps + 18 cowf-define-workflow). Zero net new TypeScript errors.
 
 ### 2026-05-01: Sprint 3A — COWF Schema Foundation ✅
 
