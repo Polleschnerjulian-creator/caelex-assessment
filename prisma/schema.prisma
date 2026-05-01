@@ -9902,3 +9902,253 @@ model V2AstraConversationMessage {
   @@unique([conversationId, position])
   @@index([conversationId, position])
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CAELEX OPERATOR WORKFLOW FOUNDATION (COWF) — Sprint 3A
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// COWF is the v2 workflow engine described in `docs/CAELEX-OPERATOR-WORKFLOW-
+// FOUNDATION.md`. It runs on Postgres (Neon) only — no Inngest, no Temporal,
+// no external workflow vendor. A 1-minute Vercel cron polls WorkflowSchedule
+// to fire due steps; an append-only WorkflowEvent stream is hash-chained per
+// instance for tamper-evident audit.
+//
+// Why these models live alongside the V1 workflow:
+//   - V1 has `WorkflowCase` + `WorkflowTransition` (Pharos-side authority FSMs)
+//     and `AuthorizationWorkflow` (per-org authorization state). They are NOT
+//     deleted, NOT modified, and continue to operate.
+//   - COWF lives under the `OperatorWorkflow*` and standalone-`Workflow*`
+//     namespace below. The names don't collide with V1.
+//   - Per ADR-002 + ADR-013 (additive only), the sprint 3A migration adds
+//     these tables without touching anything that exists today.
+//
+// Six tables in total:
+//   1. OperatorWorkflowDef          — Workflow templates (versioned)
+//   2. OperatorWorkflowInstance     — Concrete running executions
+//   3. WorkflowEvent                — Append-only hash-chained event stream
+//   4. WorkflowSchedule             — Time-based wakeups (Vercel cron polled)
+//   5. WorkflowEventListener        — Event-based wakeups
+//   6. WorkflowApprovalSlot         — Multi-actor approval slots (OPERATOR + CISO etc.)
+
+/// Workflow definition (versioned). Code-defined via `defineWorkflow()`,
+/// registered into this table on app startup so the engine can join
+/// workflow-state to its definition for debugging + observability. Old
+/// instances stay on their original version even after the code-defined
+/// definition bumps `version` — replay safety.
+model OperatorWorkflowDef {
+  id          String   @id @default(cuid())
+  name        String
+  version     Int
+  description String   @db.Text
+  /// Ordered list of state names: ["DRAFT", "METADATA_COMPLETE", ...]
+  states      Json
+  /// Step DSL serialised — stored for observability + UI rendering.
+  /// Actual handler code lives in TypeScript; the DSL is a flat
+  /// representation for joins / rendering.
+  steps       Json
+  /// Optional polymorphic subject type the workflow operates on
+  /// ("Spacecraft" | "ComplianceItem" | "Incident" | null).
+  subjectType String?
+  createdAt   DateTime @default(now())
+
+  instances OperatorWorkflowInstance[]
+
+  @@unique([name, version])
+  @@index([name])
+}
+
+/// One concrete workflow run. State at any moment = result of replaying
+/// all WorkflowEvents up to now, but `currentState` is materialised for
+/// fast list views.
+model OperatorWorkflowInstance {
+  id    String              @id @default(cuid())
+  defId String
+  def   OperatorWorkflowDef @relation(fields: [defId], references: [id])
+
+  /// Owner — the operator-user who started the workflow. Free-form FK
+  /// (User.id) so the engine doesn't depend on User-model evolution.
+  userId String
+  /// Multi-tenant scope.
+  organizationId String
+
+  /// What this workflow operates on. Optional polymorphic FK.
+  subjectType String?
+  subjectId   String?
+
+  /// Materialised current state. Mirrors the latest WorkflowEvent's
+  /// resultingState — always re-derivable by replay if the chain is intact.
+  currentState String
+
+  /// What kind of action is needed RIGHT NOW (pre-computed for inbox
+  /// rendering — saves a join). Free-form JSON: { roles, userIds, hint }.
+  actionableBy Json?
+
+  /// Soft-paused (operator hits "snooze workflow"). Heartbeat-cron skips
+  /// instances whose pausedUntil > now.
+  pausedUntil DateTime?
+
+  /// Hard deadline if applicable (NIS2 24h, launch-date, etc).
+  hardDeadline DateTime?
+
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  archivedAt  DateTime?
+
+  events     WorkflowEvent[]
+  schedules  WorkflowSchedule[]
+  listeners  WorkflowEventListener[]
+  approvals  WorkflowApprovalSlot[]
+
+  @@index([userId, currentState])
+  @@index([hardDeadline])
+  @@index([organizationId, currentState])
+  @@index([defId, currentState])
+  @@index([archivedAt])
+}
+
+/// Append-only event stream. ANY state change writes one row.
+/// Replayable for audit-reconstruction. Hash-chained for tamper-evidence
+/// — same pattern as `audit-hash.server.ts` and `evidence.server.ts`.
+model WorkflowEvent {
+  id         String                   @id @default(cuid())
+  workflowId String
+  workflow   OperatorWorkflowInstance @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  /// Sequence number per workflow — strict-increment, no gaps.
+  /// Together with workflowId forms the unique chain ordering.
+  sequence Int
+
+  /// Event type discriminator. Free-form string so adding new event
+  /// types doesn't require a schema migration. Canonical values:
+  /// STATE_TRANSITION | STEP_STARTED | STEP_COMPLETED | ASTRA_PROPOSED |
+  /// WAIT_REGISTERED | TIMEOUT_FIRED | ERROR | APPROVAL_GRANTED |
+  /// APPROVAL_REJECTED | LISTENER_FIRED | SCHEDULE_FIRED | ARCHIVED
+  eventType String
+
+  /// Causation: what triggered this event?
+  /// "user:<userId>" | "cron:<cronName>" | "astra:<promptTemplate>" |
+  /// "system" | "listener:<eventType>"
+  causedBy String
+
+  /// Typed via TypeScript discriminated union, JSONB at rest.
+  payload Json
+
+  /// State at the time of this event (after-image). Lets us recover
+  /// `currentState` from any single row.
+  resultingState String?
+
+  /// Hash-chain (per-workflow, mirrors evidence-server pattern).
+  /// prevHash = previous WorkflowEvent.entryHash for this workflowId,
+  /// or "GENESIS_<workflowId>" if first event.
+  prevHash  String  @db.VarChar(80)
+  entryHash String  @db.VarChar(64)
+
+  occurredAt DateTime @default(now())
+
+  @@unique([workflowId, sequence])
+  @@index([workflowId, occurredAt])
+  @@index([eventType])
+  @@index([entryHash])
+}
+
+/// Time-based wakeups. Vercel cron polls every minute and fires due rows.
+/// Created by `step.scheduleAt(...)` or `step.sleepUntil(...)` in the DSL.
+model WorkflowSchedule {
+  id         String                   @id @default(cuid())
+  workflowId String
+  workflow   OperatorWorkflowInstance @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  /// Which step in the workflow's def to fire when due.
+  stepKey String
+
+  /// When to fire (UTC).
+  fireAt DateTime
+
+  /// Lifecycle status:
+  ///   PENDING   — created, not yet fired
+  ///   FIRED     — heartbeat-cron picked it up + invoked step
+  ///   CANCELLED — superseded by a state change before firing
+  ///   FAILED    — step execution threw; lastError captures details
+  status       String  @default("PENDING")
+  attemptCount Int     @default(0)
+  lastError    String? @db.Text
+
+  createdAt DateTime  @default(now())
+  firedAt   DateTime?
+
+  @@index([status, fireAt])
+  @@index([workflowId, status])
+}
+
+/// Event-based wakeups. A workflow can register: "wake me when an event
+/// of type X with predicate Y occurs". The event-publisher checks this
+/// table when emitting events and fires the matching listeners.
+model WorkflowEventListener {
+  id         String                   @id @default(cuid())
+  workflowId String
+  workflow   OperatorWorkflowInstance @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  /// Which step to fire when this listener matches.
+  stepKey String
+
+  /// Event-type to listen for: "astra-proposal.approved",
+  /// "tle.removed-from-catalog", "incident.investigation-complete", etc.
+  eventType String
+
+  /// Optional predicate (Postgres JSON-path query template).
+  /// Engine substitutes "{{subjectId}}" etc. before matching.
+  predicate Json?
+
+  /// "deliver-once" — when fired, the listener self-disables.
+  ///   ACTIVE  — listening
+  ///   FIRED   — matched and fired (single-use)
+  ///   EXPIRED — passed expiresAt without firing
+  status String @default("ACTIVE")
+
+  /// Optional auto-expire (e.g. "wait 7d for approval, else expire").
+  expiresAt DateTime?
+
+  createdAt DateTime  @default(now())
+  firedAt   DateTime?
+
+  @@index([eventType, status])
+  @@index([expiresAt, status])
+  @@index([workflowId, status])
+}
+
+/// Multi-actor approval slot. A `step.approval` step that requires
+/// multiple roles writes one row per required role. The transition to
+/// the next state only triggers when ALL slots for the step are filled
+/// (approvedBy non-null + rejectedAt null).
+model WorkflowApprovalSlot {
+  id         String                   @id @default(cuid())
+  workflowId String
+  workflow   OperatorWorkflowInstance @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  stepKey    String
+
+  /// Required role for THIS slot (one role per row). E.g. for a step
+  /// requiring OPERATOR + CISO, two rows exist with requiredRole "OPERATOR"
+  /// and "CISO" respectively.
+  requiredRole String
+
+  /// Filled by which user (User.id, free-form FK).
+  approvedBy String?
+  approvedAt DateTime?
+
+  /// QES (qualified electronic signature) blob if step demanded one.
+  /// Bytes-encoded D-Trust signature; verified at acceptance.
+  signature String? @db.Text
+
+  /// Operator-supplied rationale for the approval decision (audit field).
+  rationale String? @db.Text
+
+  /// Rejection path — sets the workflow back to the prior draft state.
+  rejectedAt      DateTime?
+  rejectedBy      String?
+  rejectionReason String? @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@index([workflowId, stepKey])
+  @@unique([workflowId, stepKey, requiredRole])
+}

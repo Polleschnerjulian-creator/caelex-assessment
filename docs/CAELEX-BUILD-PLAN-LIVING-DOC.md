@@ -124,12 +124,12 @@ User klickt Browser-Refresh → ist auf V1 — **30 Sekunden Recovery-Zeit**.
 - **Aufwand:** 3-4 Wochen
 - **V1-Impact:** Null
 
-**Sprint 3 — COWF Foundation** [PENDING]
+**Sprint 3 — COWF Foundation** [IN PROGRESS]
 
-- Sprint 3A: 6 Workflow-Tabellen (Def, Instance, Event, Schedule, Listener, ApprovalSlot)
-- Sprint 3B: defineWorkflow() DSL
-- Sprint 3C: Heartbeat-Cron + Hash-Chain-Integration
-- Sprint 3D: 7 Step-Types (action/form/approval/astra/waitFor/decision/qes)
+- Sprint 3A: 6 Workflow-Tabellen + hash-chain service ✅ COMPLETED 2026-05-01
+- Sprint 3B: defineWorkflow() DSL [PENDING]
+- Sprint 3C: Heartbeat-Cron + Hash-Chain-Integration [PENDING]
+- Sprint 3D: 7 Step-Types (action/form/approval/astra/waitFor/decision/qes) [PENDING]
 - **Ziel:** Workflow-Engine läuft, ein erster Workflow durchgespielt
 - **Aufwand:** 3-4 Wochen
 - **V1-Impact:** Null (parallel zu existing State-Machine)
@@ -380,6 +380,38 @@ Handelsregister-DE bleibt offen (nur via fragiles HTML scraping zero-cost machba
 - Master-Plan (dieses Doc) erstellt
 - V1-Preservation-Strategie definiert
 
+### 2026-05-01: Sprint 3A — COWF Schema Foundation ✅
+
+**Architektur-Entscheidung:** ADR-013 — COWF-Modelle additiv neben V1 (`AuthorizationWorkflow` + `WorkflowCase` bleiben unangetastet)
+
+**Geliefert:**
+
+- **6 neue Prisma-Modelle** in `schema.prisma` (additiv, FRESH-CREATE only):
+  1. `OperatorWorkflowDef` — versioned templates (name + version unique, replay-safe)
+  2. `OperatorWorkflowInstance` — concrete runs, materialised currentState + actionableBy
+  3. `WorkflowEvent` — append-only hash-chained event stream (per-workflowId chain)
+  4. `WorkflowSchedule` — time-based wakeups (Vercel-cron polled)
+  5. `WorkflowEventListener` — event-based wakeups
+  6. `WorkflowApprovalSlot` — multi-actor approvals (one row per required role)
+- **Migration** `prisma/migrations/20260501203902_cowf_foundation/migration.sql` — pure CREATE TABLE + INDEX
+- **Type-Modul** `src/lib/cowf/types.ts` — StepType (7 kinds), WorkflowEventType (16 values), StoredStep discriminated union, AdapterInput/Output shapes
+- **Hash-Chain Service** `src/lib/cowf/events.server.ts` — `appendWorkflowEvent`, `verifyChain`, `getLatestEvent`, `loadEvents`. Mirrors `evidence.server.ts` pattern (Serializable txn + fallback row + CRITICAL SecurityEvent on degradation)
+- **CRUD Service** `src/lib/cowf/instances.server.ts` — `registerWorkflowDef`, `findWorkflowDef`, `startWorkflow`, `advanceState`, `completeWorkflow`, `pauseWorkflow`, `loadInstance`, `listActiveInstances`, `listInboxForUser`. Atomicity rule: event-append before column-update (chain wins on disagreement).
+- 35 neue Tests (18 events + 17 instances), 203/203 cumulative pass
+
+**V1-Impact:** Null. Purely additive — no V1 modifications, no migrations on existing tables, no shared code paths.
+
+**Honest scope:**
+
+- Sprint 3A ist **schema + service-foundation only**. Keine DSL (3B), kein Heartbeat-Cron (3C), keine Step-Executors (3D)
+- `OperatorWorkflowDef.steps` ist serialised JSON — actual handler-code lives in TypeScript, registered separately in Sprint 3B
+- `WorkflowEventListener.predicate` ist JSON — predicate-evaluator landet in Sprint 3D
+- `WorkflowApprovalSlot` schema ready aber ohne UI in 3A — Sprint 5
+
+**Hash-Chain-Properties:** per-workflow-instance chain (genesis = `GENESIS_<workflowId>`), strict-increment sequence (no gaps), SHA-256 over canonical JSON of all relevant fields including prevHash. Tamper-detection covers: prevHash mismatch, sequence gap, payload-tamper.
+
+**Ready for Sprint 3B:** `defineWorkflow()` DSL — TypeScript factory that produces `StoredStep[]` and registers via `registerWorkflowDef()`.
+
 ### 2026-05-01: Sprint 2D — UNOOSA Online Index Adapter (Zero-Cost) ✅
 
 **Architektur-Entscheidung:** ADR-012 — Pivot von BAFA auf UNOOSA. Begründung: BAFA hat keine public-API für Lizenz-Lookups (Lizenzdaten sind vertraulich). UNOOSA dagegen ist die UN-Authoritäts-Registry für Space-Objects — frei zugänglich, hochrelevant für Caelex's Zielgruppe.
@@ -596,6 +628,34 @@ Handelsregister-DE bleibt offen (nur via fragiles HTML scraping zero-cost machba
 **Datum:** 2026-05-01
 **Begründung:** Compliance-Workflows sind 6-12 Monate lang. Trial-Expire mid-workflow = garantierter Customer-Loss.
 **Konsequenz:** Free-Tier mit harten Limits (1 Mission, 2 Workflows, 100 Astra-Calls/mo). Keine Trial-Expiry.
+
+### ADR-013: Sprint 3A — COWF-Schema additiv neben V1-Workflow
+
+**Datum:** 2026-05-01 (Sprint 3A)
+**Kontext:** Caelex hat bereits zwei Workflow-Subsysteme:
+
+- **`AuthorizationWorkflow`** + **`AuthorizationDocument`** (V1, line 234+ schema.prisma) — operator-side Authorization-state-machine
+- **`WorkflowCase`** + **`WorkflowTransition`** (V1, line 9467+) — Pharos-side Authority-FSMs (z.B. BNetzA-Spektrum-Antrag)
+
+COWF v2 (per `CAELEX-OPERATOR-WORKFLOW-FOUNDATION.md`) ist eine **dritte, parallele** Workflow-Engine mit anderen Anforderungen: AI-aware (AstraStep first-class), multi-actor, durable ohne externe Vendor.
+
+**Entscheidung:** COWF läuft additiv neben V1. Keine Modifikationen, keine Migrationen, keine Replacements.
+
+**Begründung:**
+
+1. **V1 bleibt funktional** — Authorization-Workflows + Pharos-FSMs sind seit Jahren in Production
+2. **Naming-Disjunktheit** — COWF nutzt `OperatorWorkflowDef`, `OperatorWorkflowInstance`, `WorkflowEvent`, `WorkflowSchedule`, `WorkflowEventListener`, `WorkflowApprovalSlot` — null Konflikte mit V1
+3. **Code-Pfad-Disjunktheit** — V1 lebt unter `src/lib/workflow/`, COWF unter `src/lib/cowf/`
+4. **Schema-Pfad** — alle 6 neuen Tabellen sind FRESH-CREATE (keine ALTER auf existing tables)
+
+**Konsequenz:**
+
+- 6 neue Prisma-Modelle in einer neuen "COWF" Schema-Section am Ende von `schema.prisma`
+- Migration `20260501203902_cowf_foundation` ist purely additive (`CREATE TABLE` only, no ALTER)
+- Sprint 3B-D bauen Engine on top of dieses Schemas
+- V1-Workflow-Engine bleibt unangetastet — kann theoretisch parallel laufen
+
+**Trade-off:** Drei Workflow-Subsysteme im Repo (V1-Operator + V1-Pharos + V2-COWF). Code-Cohesion suboptimal aber V1-Coexistence ist non-negotiable. Sprint 5+ entscheidet ggf. Migration-Path (COWF wird zur primary-Engine, V1 wird über complyUiVersion-Toggle deprecated).
 
 ### ADR-012: Sprint 2D = UNOOSA, NICHT BAFA (kein public BAFA-Lookup)
 
