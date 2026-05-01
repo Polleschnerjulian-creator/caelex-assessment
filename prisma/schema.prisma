@@ -4622,12 +4622,22 @@ model PulseLead {
   convertedToUserId String?
   convertedAt       DateTime?
 
+  // Sprint 4E — nurture-sequence tracking
+  // The cron walks unconverted+unsubscribed-false leads and sends day-1
+  // / day-3 / day-7 emails based on `createdAt` age. `lastEmailStage`
+  // stores the highest stage already sent so re-runs are idempotent.
+  unsubscribed     Boolean   @default(false)
+  unsubscribedAt   DateTime?
+  lastEmailStage   String? // "day0" | "day1" | "day3" | "day7"
+  lastEmailSentAt  DateTime?
+
   createdAt DateTime @default(now())
 
   @@index([email])
   @@index([status])
   @@index([createdAt])
   @@index([vatId])
+  @@index([lastEmailStage, createdAt])
 }
 
 // ─── Contact Requests ───

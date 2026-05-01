@@ -156,7 +156,10 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 - Sprint 4B: /pulse public-page UI ✅ COMPLETED 2026-05-01
 - Sprint 4C: Source-Verification-Stream-UI ✅ COMPLETED 2026-05-01
 - Sprint 4D: 15-Page-PDF-Report ✅ COMPLETED 2026-05-01 (local — pending batch-deploy)
-- Sprint 4E: Email-Capture-Flow + nurture sequence [PENDING] (next)
+- Sprint 4E: Email-Capture-Flow + nurture sequence ✅ COMPLETED 2026-05-01 (local — pending batch-deploy)
+
+**Sprint 4 (Phase 2 funnel-stage-1+2) ist damit komplett.**
+
 - **Ziel:** Funnel-Stage-1+2 live, Lead-Generation aktiv
 - **Aufwand:** 3 Wochen total (4A done in 1 day)
 - **V1-Impact:** Null
@@ -247,7 +250,7 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 ### Pending Deploy-Batch — Tracker
 
 **Last main-push:** `b29dacfb` (Sprint 4C — 2026-05-01)
-**Sprints in pending batch:** 1 of 6-8
+**Sprints in pending batch:** 2 of 6-8
 **Next deploy:** when batch reaches 6-8 sprints OR user says "deploy now"
 
 When you finish a sprint and commit it, increment this counter. When it
@@ -255,7 +258,8 @@ hits 6-8, run the deploy chain. Skip pushing the feature branch.
 
 Sprints in current batch (chronological):
 
-1. Sprint 4D — 15-page-PDF-Report (PulsePdfReport + /api/public/pulse/report/[leadId] + download button on /pulse + 12 route tests + 1 page test)
+1. Sprint 4D — 15-page PDF Report (PulsePdfReport + /api/public/pulse/report/[leadId] + download button + 13 tests)
+2. Sprint 4E — Email-Capture-Flow + 4-stage nurture sequence (day-0 delivery email + day-1/3/7 templates + sendPulseEmail dispatcher + PulseLead nurture-fields migration + /api/cron/pulse-nurture + 37 tests)
 
 ### Sprint 2 — Auto-Detection-Engine [IN PROGRESS]
 
@@ -406,6 +410,33 @@ Handelsregister-DE bleibt offen (nur via fragiles HTML scraping zero-cost machba
 - 13 Konzept-Docs in `docs/` committed
 - Master-Plan (dieses Doc) erstellt
 - V1-Preservation-Strategie definiert
+
+### 2026-05-01: Sprint 4E — Email-Capture-Flow + Nurture Sequence ✅ (LOCAL — not yet deployed)
+
+**Sprint 4 ist damit komplett.** Phase 2 funnel-stage-1+2 funktioniert end-to-end: prospect submit → Pulse-Run → PDF-Download → email-delivery → 4-stage nurture sequence.
+
+**Geliefert:**
+
+- **Email-Templates** `src/lib/email/pulse/templates.ts` — 4 stages (day-0 delivery + day-1 highlights + day-3 pitfalls + day-7 final nudge). HTML + plaintext fallback per template. Personalisierung mit legalName + detected establishment + field-counts. T0/T2 unterschiedliches copy. XSS-safe via escapeHtml() für operator-input. Brand-konformes Layout mit Caelex navy + emerald.
+- **Dispatcher** `src/lib/email/pulse/dispatcher.server.ts`:
+  - `sendPulseEmail(leadId, stage)` — builds context aus lead+detectionResult, routes durch existing `sendEmail()` (Resend/SMTP fallback), schreibt `lastEmailStage` + `lastEmailSentAt` für idempotenz
+  - `fireDay0Delivery(leadId)` — fire-and-forget wrapper für die Pulse-API-routes (catches throws)
+  - Skip-paths: lead-not-found, unsubscribed, already-sent (stage-order check)
+- **Schema-Migration** `20260501224330_pulse_lead_nurture_fields/` — additive: `unsubscribed`, `unsubscribedAt`, `lastEmailStage`, `lastEmailSentAt` + composite index `(lastEmailStage, createdAt)` für cron query performance
+- **Day-0-Trigger** in `/api/public/pulse/detect` und `/api/public/pulse/stream` — `void fireDay0Delivery(lead.id)` nach lead-create / nach `complete` event. Email-fail blockiert API response nicht.
+- **Daily Cron** `/api/cron/pulse-nurture`:
+  - Schedule: 30 10 \* \* \* (10:30 UTC, zwischen onboarding-emails 10:00 und churn-detection 10:00)
+  - Env-flag `PULSE_NURTURE_ENABLED=1` (default OFF, conservative rollout)
+  - Auth via CRON_SECRET timing-safe equality
+  - Queries day-1/day-3/day-7 candidates separately, ordered, MAX_EMAILS_PER_TICK=200
+  - Filters: unsubscribed=false AND convertedAt=null AND age >= N days AND lastEmailStage in [previous stages]
+  - Returns structured response: totalCandidates, byStage, sent, skipped, failed, truncated, durationMs
+- **NotificationType + EntityType union extensions** — `pulse_nurture` + `pulse_lead` purely additive
+- **37 neue Tests:** 16 templates (subject/html/text shape, T0/T2 copy variation, XSS escape, dispatcher routing) + 10 dispatcher (skip paths, happy path, stage-update, URL personalisation, throw-safety, fireDay0Delivery never-throws contract) + 11 cron (auth, env-flag-gate, candidate query per stage, send dispatch, skipped/failed counting, truncation, error path)
+
+**Cumulative status:** 606/606 vitest pass across 42 test files. Zero net new TypeScript errors (864 baseline).
+
+**Deploy-Batch:** 2/6-8. Letzter main-push: `b29dacfb` (Sprint 4C).
 
 ### 2026-05-01: Sprint 4D — 15-Page-PDF-Report ✅ (LOCAL — not yet deployed)
 

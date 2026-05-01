@@ -71,6 +71,10 @@
       "schedule": "*/5 * * * *"
     },
     {
+      "path": "/api/cron/pulse-nurture",
+      "schedule": "30 10 * * *"
+    },
+    {
       "path": "/api/cron/celestrak-polling",
       "schedule": "0 5 * * *"
     },

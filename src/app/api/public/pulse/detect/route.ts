@@ -47,6 +47,7 @@ import {
 } from "@/lib/validations/pulse";
 import { dispatchAnonymous } from "@/lib/operator-profile/auto-detection/dispatcher.server";
 import type { CrossVerificationResult } from "@/lib/operator-profile/auto-detection/types";
+import { fireDay0Delivery } from "@/lib/email/pulse/dispatcher.server";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -224,6 +225,12 @@ export async function POST(request: NextRequest) {
     warnings,
     bestPossibleTier,
   };
+
+  // Sprint 4E — fire-and-forget the day-0 delivery email. Wrapped so a
+  // misconfigured email provider doesn't block the API response. The
+  // promise is intentionally NOT awaited beyond the void wrap; if the
+  // function throws synchronously it's caught inside fireDay0Delivery.
+  void fireDay0Delivery(lead.id);
 
   const corsResponse = applyCorsHeaders(
     NextResponse.json(response, { status: 200 }),

@@ -51,6 +51,7 @@ import {
 import { PulseDetectSchema } from "@/lib/validations/pulse";
 import { ADAPTERS } from "@/lib/operator-profile/auto-detection/registry";
 import { mergeFields } from "@/lib/operator-profile/auto-detection/cross-verifier.server";
+import { fireDay0Delivery } from "@/lib/email/pulse/dispatcher.server";
 import type {
   AdapterInput,
   AdapterOutcome,
@@ -270,6 +271,11 @@ export async function POST(request: NextRequest) {
           bestPossibleTier:
             merged.length > 0 ? "T2_SOURCE_VERIFIED" : "T0_UNVERIFIED",
         });
+
+        // 5f. Sprint 4E — fire day-0 delivery email after the stream
+        //     completes (lead.detectionResult is now populated, so the
+        //     email can include a real fields-summary). Fire-and-forget.
+        void fireDay0Delivery(lead.id);
       } catch (err) {
         logger.error("[pulse-stream] orchestration error", err);
         send("error", {

@@ -44,7 +44,8 @@ export type NotificationType =
   | "weekly_digest"
   | "authorization_update"
   | "compliance_gap"
-  | "scheduled_report";
+  | "scheduled_report"
+  | "pulse_nurture"; // Sprint 4E
 
 export type EntityType =
   | "deadline"
@@ -52,7 +53,8 @@ export type EntityType =
   | "incident"
   | "authorization"
   | "summary"
-  | "report_archive";
+  | "report_archive"
+  | "pulse_lead"; // Sprint 4E
 
 export interface EmailResult {
   success: boolean;
