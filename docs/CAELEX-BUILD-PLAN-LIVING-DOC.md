@@ -155,8 +155,8 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 - Sprint 4A: API endpoint (POST /api/public/pulse/detect) ✅ COMPLETED 2026-05-01
 - Sprint 4B: /pulse public-page UI ✅ COMPLETED 2026-05-01
 - Sprint 4C: Source-Verification-Stream-UI ✅ COMPLETED 2026-05-01
-- Sprint 4D: 15-Page-PDF-Report [PENDING] (next)
-- Sprint 4E: Email-Capture-Flow + nurture sequence [PENDING]
+- Sprint 4D: 15-Page-PDF-Report ✅ COMPLETED 2026-05-01 (local — pending batch-deploy)
+- Sprint 4E: Email-Capture-Flow + nurture sequence [PENDING] (next)
 - **Ziel:** Funnel-Stage-1+2 live, Lead-Generation aktiv
 - **Aufwand:** 3 Wochen total (4A done in 1 day)
 - **V1-Impact:** Null
@@ -247,7 +247,7 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 ### Pending Deploy-Batch — Tracker
 
 **Last main-push:** `b29dacfb` (Sprint 4C — 2026-05-01)
-**Sprints in pending batch:** 0 of 6-8
+**Sprints in pending batch:** 1 of 6-8
 **Next deploy:** when batch reaches 6-8 sprints OR user says "deploy now"
 
 When you finish a sprint and commit it, increment this counter. When it
@@ -255,7 +255,7 @@ hits 6-8, run the deploy chain. Skip pushing the feature branch.
 
 Sprints in current batch (chronological):
 
-- (none yet — Sprint 4C just deployed)
+1. Sprint 4D — 15-page-PDF-Report (PulsePdfReport + /api/public/pulse/report/[leadId] + download button on /pulse + 12 route tests + 1 page test)
 
 ### Sprint 2 — Auto-Detection-Engine [IN PROGRESS]
 
@@ -406,6 +406,27 @@ Handelsregister-DE bleibt offen (nur via fragiles HTML scraping zero-cost machba
 - 13 Konzept-Docs in `docs/` committed
 - Master-Plan (dieses Doc) erstellt
 - V1-Preservation-Strategie definiert
+
+### 2026-05-01: Sprint 4D — 15-Page-PDF-Report ✅ (LOCAL — not yet deployed)
+
+**Geliefert:**
+
+- **`src/lib/pdf/reports/pulse/pulse-report.tsx`** — 15-Page React-PDF Document mit kompletter Caelex-Markenidentität (navy + emerald palette). Pages: Cover → Executive Summary → Methodology → 4× Source-Detail → Cross-Verification-Matrix → EU-Space-Act-Overview → NIS2-Overview → Jurisdictional-Authorities → COPUOS-Debris → Gaps + Next-Steps → Platform-Overview → Next-Steps + CTA. Fixed page-header + footer mit Lead-ID + page numbering.
+- **`/api/public/pulse/report/[leadId]/route.tsx`** (GET) — streamed application/pdf response via `renderToBuffer`. Auth: leadId itself ist der access token (CUIDs sind opaque). Rate-limit re-uses `pulse` tier (3/hr per IP). Filename sanitisation aus legalName. Defensive null-snapshot handling für edge case "lead created but detection never ran".
+- **Download-Button** auf `/pulse` result-panel — `<a target="_blank" rel="noopener" href="/api/public/pulse/report/{leadId}">` mit FileDown-Icon.
+- **Tests** (13 neue + 1 page test): rate-limit 429, leadId-validation 404, missing-lead 404, lookup-error 500, render-error 500, happy-path content-type + content-disposition + filename sanitisation (incl. all-non-alphanumeric fallback), T0 + null-snapshot defensive paths, page download link assertion.
+
+**V1-Impact:** Null. Reine Additionen.
+
+**Honest scope:**
+
+- PDF rendert from stored `PulseLead.detectionResult` snapshot — keine externe-API hits beim Download. Re-runs vom selben leadId zeigen dieselben Daten.
+- Jurisdiction-page hardcoded-DE-detail wenn detection ergibt establishment=DE; sonst generic. Sprint 5+ kann das auf alle 27 NCAs ausdehnen.
+- Methodology-page erklärt zero-cost-direktive + privacy-posture (PII bleibt server-side)
+
+**Cumulative status:** 356/356 vitest pass across 23 test files. Zero net new TypeScript errors (864 baseline). V1 untouched.
+
+**Deploy-Batch:** 1/6-8 (Sprint 4D nur lokal commited; warten auf weitere Sprints bevor batch-deploy). Letzter main-push: `b29dacfb` (Sprint 4C).
 
 ### 2026-05-01: Sprint 4C — Source-Verification-Stream-UI ✅
 

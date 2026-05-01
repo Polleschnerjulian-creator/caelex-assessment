@@ -15,6 +15,7 @@ import {
   Satellite,
   Building2,
   RefreshCw,
+  FileDown,
 } from "lucide-react";
 
 /**
@@ -735,6 +736,16 @@ function PulseResult({
             <Shield className="w-4 h-4" />
             Sign up to lock this in
           </Link>
+          <a
+            href={`/api/public/pulse/report/${result.leadId}`}
+            target="_blank"
+            rel="noopener"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-navy-800 hover:bg-navy-700 border border-navy-700 text-slate-200 text-subtitle font-medium transition-colors"
+            aria-label="Download 15-page PDF report"
+          >
+            <FileDown className="w-4 h-4" />
+            Download PDF
+          </a>
           <button
             type="button"
             onClick={onReset}

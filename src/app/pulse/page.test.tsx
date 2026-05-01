@@ -29,11 +29,35 @@ import {
 
 // Mock framer-motion to avoid animation-related test flakiness — render
 // children straight through so assertions still see the DOM.
+//
+// Note: framer-motion's special props (initial / animate / exit / layout
+// etc.) are stripped before passing to the underlying DOM tag — otherwise
+// React warns about unknown DOM attributes.
+const FRAMER_MOTION_PROPS = new Set([
+  "initial",
+  "animate",
+  "exit",
+  "transition",
+  "layout",
+  "layoutId",
+  "variants",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+]);
 vi.mock("framer-motion", () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const passthrough = (tag: string) => {
-    const Comp = (props: any) =>
-      React.createElement(tag, props, props.children);
+    const Comp = (props: any) => {
+      const cleaned: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(props)) {
+        if (!FRAMER_MOTION_PROPS.has(k)) cleaned[k] = v;
+      }
+      return React.createElement(tag, cleaned, props.children);
+    };
     Comp.displayName = `motion.${tag}`;
     return Comp;
   };
@@ -71,6 +95,7 @@ vi.mock("lucide-react", () => {
     Satellite: icon("Satellite"),
     Building2: icon("Building2"),
     RefreshCw: icon("RefreshCw"),
+    FileDown: icon("FileDown"),
   };
 });
 
@@ -515,6 +540,28 @@ describe("PulsePage — error handling", () => {
     await waitFor(() => {
       expect(screen.getByText(/Network error/i)).toBeTruthy();
     });
+  });
+});
+
+// ─── Sprint 4D: Download PDF button ────────────────────────────────────────
+
+describe("PulsePage — download PDF button (Sprint 4D)", () => {
+  it("renders a download link to /api/public/pulse/report/[leadId] after success", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+      happyStreamResponse(),
+    );
+    render(<PulsePage />);
+    await submitForm();
+
+    await waitFor(() => {
+      expect(screen.getByText(/Verification result/i)).toBeTruthy();
+    });
+
+    const link = screen.getByRole("link", {
+      name: /Download 15-page PDF report/i,
+    }) as HTMLAnchorElement;
+    expect(link.href).toContain("/api/public/pulse/report/lead_xyz");
+    expect(link.target).toBe("_blank");
   });
 });
 
