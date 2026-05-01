@@ -5761,11 +5761,75 @@ model DerivationTrace {
   // Upstream dependencies — IDs of traces that caused this one
   upstreamTraceIds String[] @default([])
 
+  // ─── Sprint 1A: Verification-Tier + Hash-Chain (ADR-008) ───
+  //
+  // The fields below promote DerivationTrace from "where did this value come
+  // from" to "how trustworthy is the chain that produced it". All fields are
+  // nullable for V1-coexistence — existing rows continue to work, existing
+  // consumers (trust-tokens.ts, cybersecurity-provenance.ts,
+  // derivation-trace-service.ts) read them as null.
+  //
+  // verificationTier maps onto T0_UNVERIFIED..T5_CRYPTOGRAPHIC_PROOF (see
+  // VerificationTier enum below). It expresses the operator-trust-level of
+  // the derived value, independent of `origin` (which expresses *kind*).
+  //
+  // sourceHash, prevHash, entryHash form a SHA-256 chain mirroring the
+  // AuditLog hash-chain pattern (see src/lib/audit-hash.server.ts). Chain
+  // is per-organization, scoped via the existing organizationId FK. Genesis
+  // is the literal string "GENESIS_<organizationId>".
+  //
+  // verifiedAt / verifiedBy / attestationRef capture WHO verified and WHEN.
+  // attestationRef is a free-form pointer (e.g. VerityAttestation.id for
+  // T5 cryptographic-proof entries; counsel-engagement-id for T3 Counsel-
+  // Attested entries; authority-decision-id for T4 Authority-Verified).
+  //
+  // revokedAt / revokedReason are filled when an evidence row is invalidated
+  // by a newer counter-evidence write — but the row itself is never deleted
+  // (append-only; revocation is itself an audit event).
+  verificationTier VerificationTier? // T0..T5 (see enum)
+  sourceHash       String?           @db.VarChar(64) // SHA-256 hex of upstream artifact
+  prevHash         String?           @db.VarChar(72) // SHA-256 hex (or "GENESIS_<orgId>")
+  entryHash        String?           @db.VarChar(64) // SHA-256 hex of THIS row's payload + prevHash
+  verifiedAt       DateTime?
+  verifiedBy       String? // User.id (free-form FK — operator, counsel, authority, system)
+  attestationRef   Json? // structured pointer to outer attestation (Verity, NCA, Counsel, etc.)
+  revokedAt        DateTime?
+  revokedReason    String? @db.Text
+
   @@index([organizationId])
   @@index([entityType, entityId])
   @@index([fieldName])
   @@index([derivedAt])
   @@index([origin])
+  @@index([verificationTier])
+  @@index([entryHash])
+  @@index([revokedAt])
+}
+
+// VerificationTier — operator-trust-tier of a derived value.
+//
+// This is the T0-T5 ladder from CAELEX-PRECISION-COMPLIANCE-ENGINE.md.
+// Higher tier = stronger evidence that the value is correct AND that the
+// chain that produced it is auditable. Drives:
+//   - UI Trust-Chips (T0 = grey, T1 = sand, T2 = sky, T3 = emerald, T4 = navy, T5 = gold)
+//   - Workflow gating (some steps require ≥ T3 evidence to advance)
+//   - Re-verification cron priority (T1 SELF re-verifies sooner than T4 AUTHORITY)
+//   - Snapshot inclusion (T2+ evidence is included in signed ProfileSnapshots)
+//
+// Contract:
+//   T0_UNVERIFIED        — placeholder, no evidence yet (default for newly-detected fields)
+//   T1_SELF_CONFIRMED    — operator clicked "yes this is correct"
+//   T2_SOURCE_VERIFIED   — backed by a public source (Handelsregister, UNOOSA, BAFA)
+//   T3_COUNSEL_ATTESTED  — external counsel digitally signed the value
+//   T4_AUTHORITY_VERIFIED — NCA / regulator / customs has confirmed in writing
+//   T5_CRYPTOGRAPHIC_PROOF — Ed25519-signed VerityAttestation, root-of-trust anchored
+enum VerificationTier {
+  T0_UNVERIFIED
+  T1_SELF_CONFIRMED
+  T2_SOURCE_VERIFIED
+  T3_COUNSEL_ATTESTED
+  T4_AUTHORITY_VERIFIED
+  T5_CRYPTOGRAPHIC_PROOF
 }
 
 // ProfileSnapshot — a frozen, signed snapshot of an OperatorProfile plus

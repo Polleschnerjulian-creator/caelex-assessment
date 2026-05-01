@@ -229,34 +229,46 @@ User klickt Browser-Refresh → ist auf V1 — **30 Sekunden Recovery-Zeit**.
 
 ## Section 4: Current Sprint
 
-### Sprint 1 — Verified-Profile-Foundation [STARTING NOW]
+### Sprint 1 — Verified-Profile-Foundation [IN PROGRESS]
 
-**Status:** In progress
+**Status:** Sprint 1A done. Sprint 1B next.
 **Started:** 2026-05-01
 **Sub-Sprints:**
 
-#### Sprint 1A — ProfileEvidence Schema + Hash-Chain [STARTING]
+#### Sprint 1A — DerivationTrace-Extension + Verification-Tier-Hash-Chain ✅ COMPLETED 2026-05-01
+
+**Architektur-Entscheidung (siehe ADR-008):** Extend existing `DerivationTrace` table statt neue ProfileEvidence-Tabelle.
 
 **Goals:**
 
-- [ ] `ProfileEvidence` Prisma-Model mit Hash-Chain (analog AuditLog)
-- [ ] `OperatorProfile` Prisma-Model
-- [ ] Verification-Tier-Enum (T0-T5)
-- [ ] Schema-Migration commit
-- [ ] Service-Layer für Profile-Evidence-Append (`src/lib/operator-profile/evidence.server.ts`)
-- [ ] Tests für Hash-Chain-Integrität
+- [x] ADR-008 dokumentiert (DerivationTrace-Extension statt parallele Tabelle)
+- [x] `VerificationTier` Prisma-Enum (T0_UNVERIFIED bis T5_CRYPTOGRAPHIC_PROOF)
+- [x] Additive Spalten auf `DerivationTrace`: verificationTier, sourceHash, prevHash, entryHash, verifiedAt, verifiedBy, attestationRef, revokedAt, revokedReason
+- [x] Schema-Migration SQL (additive ALTER TABLE only)
+- [x] Service-Layer `src/lib/operator-profile/evidence.server.ts` — append-with-hash-chain
+- [x] Service-Shell `src/lib/operator-profile/profile.server.ts` — placeholder für Sprint 1B
+- [x] Type-Modul `src/lib/operator-profile/types.ts` — Tier-System + Adapter-Types
+- [x] Tests `src/lib/operator-profile/evidence.test.ts` — 24/24 pass (Hash-Chain-Integrität, Tier-Validation, Tamper-Detection)
 
 **Files to create:**
 
-- `prisma/migrations/<timestamp>_verified_profile_foundation/migration.sql`
+- `prisma/migrations/20260501XXXXXX_verified_profile_tier_extension/migration.sql`
 - `src/lib/operator-profile/types.ts`
 - `src/lib/operator-profile/evidence.server.ts`
 - `src/lib/operator-profile/profile.server.ts`
 - `src/lib/operator-profile/evidence.test.ts`
 
-**V1-Impact:** Null (additive)
+**Files to extend:**
 
-**Estimated time:** 5-7 Tage
+- `prisma/schema.prisma` — VerificationTier enum + DerivationTrace fields
+
+**V1-Impact:** Null
+
+- Existing `DerivationTrace`-Konsumer (`trust-tokens.ts`, `cybersecurity-provenance.ts`, `derivation-trace-service.ts`) lesen weiter — neue Felder sind alle nullable
+- `OperatorProfile` bleibt unangetastet (existiert bereits mit operatorType, euOperatorCode etc.)
+- Existing `derivation-trace-service.ts` bleibt unverändert
+
+**Estimated time:** 2-3 Tage
 
 #### Sprint 1B — OperatorProfile Model + Verification-Tiers [PENDING]
 
@@ -275,6 +287,29 @@ After 1B.
 - 13 Konzept-Docs in `docs/` committed
 - Master-Plan (dieses Doc) erstellt
 - V1-Preservation-Strategie definiert
+
+### 2026-05-01: Sprint 1A — DerivationTrace-Extension + Verification-Tier-Hash-Chain ✅
+
+**Architektur-Entscheidung:** ADR-008 (extend existing DerivationTrace, do not create parallel ProfileEvidence table)
+
+**Geliefert:**
+
+- Schema-Migration `20260501192647_verified_profile_tier_extension`:
+  - VerificationTier enum (T0_UNVERIFIED .. T5_CRYPTOGRAPHIC_PROOF)
+  - 9 additive nullable columns auf DerivationTrace (verificationTier, sourceHash, prevHash, entryHash, verifiedAt, verifiedBy, attestationRef, revokedAt, revokedReason)
+  - 3 neue Indices (verificationTier, entryHash, revokedAt)
+- `src/lib/operator-profile/types.ts` — Tier-System + AttestationRef discriminated union + UI palette
+- `src/lib/operator-profile/evidence.server.ts` — append-only hash-chain service mirroring audit-hash.server.ts pattern (Serializable transaction, fallback row, SecurityEvent on degradation)
+- `src/lib/operator-profile/profile.server.ts` — read-side shell mit `loadVerifiedOperatorProfile()` + `loadVerifiedField()`
+- `src/lib/operator-profile/evidence.test.ts` — 24 tests (canonicalization, source-hash, entry-hash, happy path, tier validation, fallback path, chain verification — including tampered-prev + tampered-value detection)
+
+**V1-Impact:** Null. Existing DerivationTrace-Konsumer (`trust-tokens.ts`, `cybersecurity-provenance.ts`, `derivation-trace-service.ts`, `operator-profile-service.ts`) lesen weiter — alle neuen Felder sind nullable.
+
+**Test-Status:**
+
+- 24/24 vitest-Tests pass
+- TypeScript clean auf Sprint-1A-Files
+- Existing DerivationTrace-Konsumer typecheck weiter
 
 (Updates kommen pro Sprint hier rein)
 
@@ -323,6 +358,36 @@ After 1B.
 **Datum:** 2026-05-01
 **Begründung:** Compliance-Workflows sind 6-12 Monate lang. Trial-Expire mid-workflow = garantierter Customer-Loss.
 **Konsequenz:** Free-Tier mit harten Limits (1 Mission, 2 Workflows, 100 Astra-Calls/mo). Keine Trial-Expiry.
+
+### ADR-008: DerivationTrace-Extension statt parallele ProfileEvidence-Tabelle
+
+**Datum:** 2026-05-01 (Sprint 1A)
+**Kontext:** Sprint 1A schlug ursprünglich vor, eine neue `ProfileEvidence` Prisma-Tabelle zu schaffen. Bei der Investigation der existing schema fanden wir:
+
+- `DerivationTrace` (line 5738+) existiert bereits als append-only provenance-ledger
+- `derivation-trace-service.ts` existiert mit kompletter Read/Write API
+- `DerivationTrace` hat bereits `origin` (deterministic | source-backed | assessment | user-asserted | ai-inferred), `confidence`, `modelVersion`, `sourceRef`, `expiresAt`, `upstreamTraceIds`
+- Das ist exakt die provenance-foundation, die ProfileEvidence aufbauen wollte
+- Konsumer existieren in 3+ Files (`trust-tokens.ts`, `cybersecurity-provenance.ts`, `derivation-trace-service.ts`)
+
+**Entscheidung:** `DerivationTrace` wird mit Verification-Tier-Feldern + Hash-Chain erweitert, statt eine parallele Tabelle zu schaffen.
+
+**Begründung:**
+
+1. **V1-Coexistence-Pflicht** (siehe ADR-002): Additive Spalten = null Breaking-Changes für 3+ existing Consumers
+2. **Trust-Scaffold ist da**: origin/confidence/sourceRef sind bereits da — nur Tier-Mapping + Hash-Chain fehlen
+3. **Single-Source-of-Truth**: Eine Provenance-Tabelle statt zwei = einfachere Queries, einfacheres Mental Model
+4. **Service-Reuse**: `derivation-trace-service.ts` Read-API kann unverändert bleiben
+
+**Konsequenz:**
+
+- Neue Spalten auf `DerivationTrace`: `verificationTier`, `sourceHash`, `prevHash`, `entryHash`, `verifiedAt`, `verifiedBy`, `attestationRef`, `revokedAt`, `revokedReason`
+- Neuer Enum: `VerificationTier` (T0_UNVERIFIED bis T5_CRYPTOGRAPHIC_PROOF)
+- Neuer Service: `src/lib/operator-profile/evidence.server.ts` mirrors `audit-hash.server.ts` Pattern (computeEntryHash + getLatestHash + Serializable Transaction)
+- Existing `derivation-trace-service.ts` bleibt unverändert — Sprint 1B kann es optional erweitern um Tier-Awareness
+- ADR-005 (Hash-Chain auf jedem schreibenden Layer) bleibt: jetzt zusätzlich auf DerivationTrace-Schreibvorgängen
+
+**Trade-off bewusst akzeptiert:** `DerivationTrace` wird zur "fat table" mit verification + provenance. Aber Cohesion ist hoch — alles dreht sich um "wie kam dieser Wert zustande?". Splitting wäre premature optimization.
 
 (weitere ADRs werden hier ergänzt)
 
