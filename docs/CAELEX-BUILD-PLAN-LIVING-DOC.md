@@ -229,10 +229,11 @@ User klickt Browser-Refresh → ist auf V1 — **30 Sekunden Recovery-Zeit**.
 
 ## Section 4: Current Sprint
 
-### Sprint 1 — Verified-Profile-Foundation [IN PROGRESS]
+### Sprint 1 — Verified-Profile-Foundation ✅ COMPLETED 2026-05-01
 
-**Status:** Sprint 1A done. Sprint 1B next.
+**Status:** All sub-sprints (1A, 1B, 1C) done. Next: Sprint 2 — Auto-Detection-Engine.
 **Started:** 2026-05-01
+**Completed:** 2026-05-01
 **Sub-Sprints:**
 
 #### Sprint 1A — DerivationTrace-Extension + Verification-Tier-Hash-Chain ✅ COMPLETED 2026-05-01
@@ -270,13 +271,44 @@ User klickt Browser-Refresh → ist auf V1 — **30 Sekunden Recovery-Zeit**.
 
 **Estimated time:** 2-3 Tage
 
-#### Sprint 1B — OperatorProfile Model + Verification-Tiers [PENDING]
+#### Sprint 1B — Verified-Field Write-API ✅ COMPLETED 2026-05-01
 
-After 1A is committed.
+**Goals:**
 
-#### Sprint 1C — Re-Verification-Cron-Skeleton [PENDING]
+- [x] `setVerifiedField()` — appends evidence row + mirrors to legacy column
+- [x] `bulkSetVerifiedFields()` — sequential append for auto-detection adapters
+- [x] `revokeFieldEvidence()` — flips revokedAt without deleting the row
+- [x] Tier-revocation via `revokeOlderEvidence` flag on setVerifiedField
+- [x] Tests: 15/15 vitest pass (legacy-mirror, hash-chain link, revocation, idempotent no-op writes)
 
-After 1B.
+**Files extended:**
+
+- `src/lib/operator-profile/profile.server.ts` — write API added (~280 LOC appended)
+- `src/lib/operator-profile/profile.test.ts` — new test file
+
+**V1-Impact:** Null. Writes go through new code path; old `operator-profile-service.ts` continues to work for callers that haven't migrated.
+
+#### Sprint 1C — Re-Verification-Cron-Skeleton ✅ COMPLETED 2026-05-01
+
+**Goals:**
+
+- [x] Cron route `/api/cron/evidence-reverification` (auth + enumeration + tier-breakdown logging)
+- [x] `findStaleEvidence()` + `countStaleEvidenceByTier()` helpers in evidence.server.ts
+- [x] Schedule registered in `vercel.json` (04:15 UTC daily, between solar-flux and celestrak)
+- [x] Hard caps: 1000 rows/page, 5 pages/run (5000 rows max, prevents runaway)
+- [x] Tests: 8/8 vitest pass (auth gates including timing-safe-equality, happy path, cap behaviour, error path)
+
+**Skeleton scope:** enumerates + logs structured per-batch telemetry. Sprint 2 plugs in T1 (self-confirm email), T2 (re-fetch public source), T3 (re-engage counsel) adapters that consume this enumeration.
+
+**Files created:**
+
+- `src/app/api/cron/evidence-reverification/route.ts`
+- `src/app/api/cron/evidence-reverification/route.test.ts`
+
+**Files extended:**
+
+- `vercel.json` — added cron schedule entry
+- `src/lib/operator-profile/evidence.server.ts` — added findStaleEvidence + countStaleEvidenceByTier
 
 ---
 
@@ -287,6 +319,29 @@ After 1B.
 - 13 Konzept-Docs in `docs/` committed
 - Master-Plan (dieses Doc) erstellt
 - V1-Preservation-Strategie definiert
+
+### 2026-05-01: Sprint 1B — Verified-Field Write-API + Sprint 1C — Re-Verification-Cron-Skeleton ✅
+
+**Sprint 1B:**
+
+- `setVerifiedField()` + `bulkSetVerifiedFields()` + `revokeFieldEvidence()` added to `profile.server.ts`
+- Each write produces a hash-chained evidence row AND mirrors into the legacy OperatorProfile column → V1 readers see new values without migration
+- `revokeOlderEvidence` flag on setVerifiedField for tier-supersession (e.g. T4 BAFA decision supersedes T2 Handelsregister entry)
+- 15/15 vitest pass
+
+**Sprint 1C:**
+
+- `/api/cron/evidence-reverification` Vercel cron route (auth-gated, page-capped, structured logging)
+- `findStaleEvidence()` + `countStaleEvidenceByTier()` helpers in evidence.server.ts
+- Scheduled at 04:15 UTC daily — quiet window between solar-flux and celestrak polling
+- 8/8 vitest pass (including timing-safe-equality)
+- Skeleton ready for Sprint 2 adapter dispatch
+
+**Combined Sprint 1 totals:**
+
+- 47/47 tests pass across evidence.test.ts (24) + profile.test.ts (15) + route.test.ts (8)
+- Sprint 1 (1A + 1B + 1C) complete in 1 day vs estimated 3 weeks — on track
+- V1-coexistence preserved throughout: zero modifications to existing models, services, or read paths
 
 ### 2026-05-01: Sprint 1A — DerivationTrace-Extension + Verification-Tier-Hash-Chain ✅
 

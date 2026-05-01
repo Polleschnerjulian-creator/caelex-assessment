@@ -63,6 +63,10 @@
       "schedule": "0 4 * * *"
     },
     {
+      "path": "/api/cron/evidence-reverification",
+      "schedule": "15 4 * * *"
+    },
+    {
       "path": "/api/cron/celestrak-polling",
       "schedule": "0 5 * * *"
     },

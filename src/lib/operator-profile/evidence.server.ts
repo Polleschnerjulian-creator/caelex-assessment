@@ -690,6 +690,108 @@ function toEvidenceRow(row: RawDerivationTraceRow): EvidenceRow {
   };
 }
 
+// ─── Stale Evidence Query (Sprint 1C) ──────────────────────────────────────
+
+/**
+ * Stale evidence row — needs re-verification because its expiresAt has
+ * passed. Used by `/api/cron/evidence-reverification`.
+ */
+export interface StaleEvidenceRow {
+  id: string;
+  organizationId: string;
+  entityType: string;
+  entityId: string;
+  fieldName: string;
+  verificationTier: VerificationTier;
+  expiresAt: Date;
+  derivedAt: Date;
+  attestationRef: AttestationRef | null;
+}
+
+/**
+ * Find evidence rows whose `expiresAt` is in the past, i.e. their tier-
+ * default re-verification window has lapsed. Skips revoked rows and rows
+ * without a tier (pre-1A provenance rows).
+ *
+ * Pagination via `limit` + `offset` to keep cron invocations bounded.
+ * Sprint 2's auto-detection adapters will iterate this and re-fetch each
+ * source. Sprint 1C just enumerates + logs.
+ */
+export async function findStaleEvidence(
+  options: { limit?: number; offset?: number; now?: Date } = {},
+): Promise<StaleEvidenceRow[]> {
+  const limit = options.limit ?? 1000;
+  const offset = options.offset ?? 0;
+  const now = options.now ?? new Date();
+
+  const rows = await derivationTrace.findMany({
+    where: {
+      verificationTier: { not: null },
+      revokedAt: null,
+      expiresAt: { lt: now, not: null },
+    },
+    orderBy: [{ expiresAt: "asc" }, { id: "asc" }],
+    skip: offset,
+    take: limit,
+    select: {
+      id: true,
+      organizationId: true,
+      entityType: true,
+      entityId: true,
+      fieldName: true,
+      verificationTier: true,
+      expiresAt: true,
+      derivedAt: true,
+      attestationRef: true,
+    },
+  });
+
+  return rows.map((row: Record<string, unknown>) => ({
+    id: row.id as string,
+    organizationId: row.organizationId as string,
+    entityType: row.entityType as string,
+    entityId: row.entityId as string,
+    fieldName: row.fieldName as string,
+    verificationTier: row.verificationTier as VerificationTier,
+    expiresAt: row.expiresAt as Date,
+    derivedAt: row.derivedAt as Date,
+    attestationRef: (row.attestationRef as AttestationRef | null) ?? null,
+  }));
+}
+
+/**
+ * Count stale evidence by tier. Shape: { T1_SELF_CONFIRMED: 12, ... }.
+ * Used for cron telemetry — tells operators whether the re-verification
+ * backlog is mostly self-confirmed (cheap to re-poke) or authority-verified
+ * (expensive to re-fetch).
+ */
+export async function countStaleEvidenceByTier(
+  now: Date = new Date(),
+): Promise<Record<VerificationTier, number>> {
+  const rows = await derivationTrace.findMany({
+    where: {
+      verificationTier: { not: null },
+      revokedAt: null,
+      expiresAt: { lt: now, not: null },
+    },
+    select: { verificationTier: true },
+  });
+
+  const counts: Record<VerificationTier, number> = {
+    T0_UNVERIFIED: 0,
+    T1_SELF_CONFIRMED: 0,
+    T2_SOURCE_VERIFIED: 0,
+    T3_COUNSEL_ATTESTED: 0,
+    T4_AUTHORITY_VERIFIED: 0,
+    T5_CRYPTOGRAPHIC_PROOF: 0,
+  };
+
+  for (const row of rows as { verificationTier: VerificationTier | null }[]) {
+    if (row.verificationTier) counts[row.verificationTier] += 1;
+  }
+  return counts;
+}
+
 // ─── Test-Hook Exports ─────────────────────────────────────────────────────
 // Internal helpers exposed for unit tests. Not intended for runtime callers.
 export const __test = {
