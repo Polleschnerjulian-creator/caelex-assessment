@@ -142,8 +142,8 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 **Sprint 4 — Public-Pulse-Tool** [IN PROGRESS]
 
 - Sprint 4A: API endpoint (POST /api/public/pulse/detect) ✅ COMPLETED 2026-05-01
-- Sprint 4B: caelex.eu/pulse public-page UI [PENDING]
-- Sprint 4C: Source-Verification-Stream-UI + Hypothesen-Compliance-Map [PENDING]
+- Sprint 4B: /pulse public-page UI ✅ COMPLETED 2026-05-01
+- Sprint 4C: Source-Verification-Stream-UI + Hypothesen-Compliance-Map [PENDING] (next)
 - Sprint 4D: 15-Page-PDF-Report [PENDING]
 - Sprint 4E: Email-Capture-Flow + nurture sequence [PENDING]
 - **Ziel:** Funnel-Stage-1+2 live, Lead-Generation aktiv
@@ -382,6 +382,69 @@ Handelsregister-DE bleibt offen (nur via fragiles HTML scraping zero-cost machba
 - 13 Konzept-Docs in `docs/` committed
 - Master-Plan (dieses Doc) erstellt
 - V1-Preservation-Strategie definiert
+
+### 2026-05-01: Sprint 4B — /pulse Public UI Page ✅
+
+**Funnel-Stage-1 ist live.** Anonyme Operatoren können jetzt unter `/pulse` ihren legalName + email + VAT-ID eingeben, einen Echtzeit-Cross-Verification-Run gegen 4 öffentliche Quellen auslösen, und das Ergebnis als strukturiertes UI sehen.
+
+**Geliefert:**
+
+- **`src/app/pulse/page.tsx`** — Client-Component (`"use client"`):
+  - **Hero-Section** mit Caelex-branded heading, free-no-signup badge, claim "your compliance posture in 30 seconds"
+  - **Form** mit 3 fields (legalName _, vatId optional, email _), client-side disabling des submit-buttons until required fields filled, autocomplete-attributes per field
+  - **Source-Preview-Grid** unter dem Formular (4 cards: VIES, GLEIF, UNOOSA, CelesTrak SATCAT) mit icon + label + 1-line-description — setzt expectations
+  - **Loading-State** mit `Checking 4 sources…` + spinner während fetch
+  - **PulseResult Sub-Component** — rendered via AnimatePresence:
+    - Source-outcomes-Grid (4 cards mit Status-Indicator: success ✓ / failed mit errorKind / not-applicable)
+    - Merged-Fields-List (field name → value mit "X/Y sources confirmed" agreement-count)
+    - Warnings-List (top 5 warnings)
+    - Tier-Badge (T2 emerald "Source-verified" / T0 amber "manual setup needed")
+    - Footer-CTAs (signup + reset)
+    - Lead-ID footer für support
+  - **Error-Handling**: 429 rate-limit message, 400 validation-issues message, network-error fallback
+  - **Reset-Flow**: "Run another check" button clears result + error, returns to form
+  - **A11y**: aria-label auf form + result region, role="alert" auf error, autocomplete attributes
+
+**Design-System-Compliance** (per CLAUDE.md):
+
+- Dark navy palette (bg-navy-950 / 900 / 800 / 700)
+- Emerald-500 accent for primary CTAs + success badges
+- Amber-500 for warnings + soft-fail badges
+- Lucide React icons (Sparkles, ArrowRight, CheckCircle2, AlertTriangle, Shield, Globe2, Building2, Satellite, Database, Loader2, RefreshCw)
+- Framer-Motion for entrance + result-swap transitions
+- Semantic type tokens (text-display, text-display-lg, text-heading, text-body-lg, text-body, text-small, text-caption)
+- Focus-visible styles on inputs + buttons
+- Mobile-responsive grid (sm:grid-cols-2, md:grid-cols-4)
+
+**Tests** (15 new RTL tests):
+
+- Initial render: hero + form + 4 source cards
+- Form validation: button disabled without legalName + email
+- Submit calls `/api/public/pulse/detect` with right body
+- Empty vatId omitted from body
+- T2_SOURCE_VERIFIED renders emerald badge
+- T0_UNVERIFIED renders amber badge
+- Merged fields rendered with agreement-count
+- Failed sources render errorKind
+- Warnings list rendered
+- Lead ID rendered in footer
+- 429 → rate-limit message
+- 400 with issues → validation message
+- Network error → "Network error" fallback
+- "Run another check" resets to form
+
+**V1-Impact:** Null. Reine Additionen — neue Public-Route `/pulse`, kein V1-Code modifiziert.
+
+**Honest scope:**
+
+- **Sprint 4B = static result rendering** — nicht streaming. Sprint 4C (laut Master Plan + Section 4) wird Server-Sent-Events einführen für progressive source-by-source reveal animation. Sprint 4B's "Loading 4 sources…" wartet auf alle 4 Adapter parallel und rendert dann das fertige Ergebnis.
+- **15-Page-PDF-Report** ist Sprint 4D
+- **Email-nurture-Flow** ist Sprint 4E
+- **No SEO meta yet** — `metadata` export könnte als follow-up PR ergänzt werden
+
+**Cumulative status:** 334/334 vitest pass across 21 test files. Zero net new TypeScript errors (864 baseline). V1 untouched.
+
+**Live-Demo:** sobald deployed wird, ist `https://app.caelex.com/pulse` (oder unter custom domain `caelex.eu/pulse`) public-zugreifbar. Operator kann `OneWeb Limited` + `anna@example.com` + `DE123456789` eingeben → sieht 4-source-cross-verification-result.
 
 ### 2026-05-01: Sprint 4A — Public Pulse-Tool API endpoint ✅
 
