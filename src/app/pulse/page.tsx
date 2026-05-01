@@ -86,6 +86,61 @@ interface PulseResponse {
   bestPossibleTier: "T0_UNVERIFIED" | "T2_SOURCE_VERIFIED";
 }
 
+// ─── Sprint 4C: per-source streaming state ────────────────────────────────
+//
+// As each `source-result` event arrives over SSE, we update the UI card for
+// that source. Possible per-source states:
+//   - "idle"     — initial, before submit
+//   - "checking" — the adapter is in flight (got a `source-checking` event)
+//   - "success"  — got an `ok: true` source-result event
+//   - "failed"   — got an `ok: false` source-result event
+type SourceStatus = "idle" | "checking" | "success" | "failed";
+
+interface SourceState {
+  status: SourceStatus;
+  errorKind?: string;
+}
+
+const SOURCE_KEYS = [
+  "vies-eu-vat",
+  "gleif-lei",
+  "unoosa-online-index",
+  "celestrak-satcat",
+] as const;
+
+function initSourceStates(): Record<string, SourceState> {
+  return Object.fromEntries(
+    SOURCE_KEYS.map((s) => [s, { status: "idle" as const }]),
+  );
+}
+
+/**
+ * Parse a single SSE-formatted event block. Returns null on garbage so
+ * the consumer can keep streaming instead of throwing on partial data.
+ *
+ *   event: source-result
+ *   data: {"source":"vies-eu-vat","ok":true}
+ */
+function parseSseEvent(
+  raw: string,
+): { event: string; data: Record<string, unknown> } | null {
+  const lines = raw.split("\n");
+  let event = "message";
+  const dataParts: string[] = [];
+  for (const line of lines) {
+    if (line.startsWith(":")) continue; // comment
+    if (line.startsWith("event:")) event = line.slice(6).trim();
+    else if (line.startsWith("data:")) dataParts.push(line.slice(5).trim());
+  }
+  if (dataParts.length === 0) return null;
+  try {
+    const data = JSON.parse(dataParts.join("\n")) as Record<string, unknown>;
+    return { event, data };
+  } catch {
+    return null;
+  }
+}
+
 export default function PulsePage() {
   const [legalName, setLegalName] = useState("");
   const [vatId, setVatId] = useState("");
@@ -93,28 +148,48 @@ export default function PulsePage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PulseResponse | null>(null);
+  const [sourceStates, setSourceStates] =
+    useState<Record<string, SourceState>>(initSourceStates);
+  const [leadId, setLeadId] = useState<string | null>(null);
 
+  /**
+   * Submit handler — Sprint 4C streaming flow:
+   *
+   *   1. POST to /api/public/pulse/stream
+   *   2. Read response body as a stream
+   *   3. Parse SSE events (event: <name>\ndata: <json>\n\n)
+   *   4. Update UI per-source as `source-result` events arrive
+   *   5. Render full result panel on `complete` event
+   *
+   * Falls back to non-streaming `/api/public/pulse/detect` if the
+   * browser lacks ReadableStream — prevents the page from breaking on
+   * very old browsers (we get the all-at-once render instead).
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return;
     setError(null);
     setResult(null);
+    setSourceStates(initSourceStates());
+    setLeadId(null);
     setSubmitting(true);
 
+    const requestBody = JSON.stringify({
+      legalName,
+      email,
+      vatId: vatId || undefined,
+    });
+
     try {
-      const res = await fetch("/api/public/pulse/detect", {
+      const res = await fetch("/api/public/pulse/stream", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          legalName,
-          email,
-          vatId: vatId || undefined,
-        }),
+        body: requestBody,
       });
 
-      const data = await res.json().catch(() => ({}));
-
+      // Validation / rate-limit failures are JSON, not SSE
       if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
         if (res.status === 429) {
           setError(
             "You've reached the per-hour rate limit for this tool. Please try again later or sign up for a free Caelex account.",
@@ -130,7 +205,14 @@ export default function PulsePage() {
         return;
       }
 
-      setResult(data as PulseResponse);
+      // Streaming path
+      if (!res.body) {
+        // Older browsers — fall back to non-streaming /detect
+        await fallbackToDetect(requestBody);
+        return;
+      }
+
+      await consumeStream(res.body);
     } catch {
       setError("Network error. Please try again.");
     } finally {
@@ -138,9 +220,152 @@ export default function PulsePage() {
     }
   };
 
+  /**
+   * Consume the SSE stream from /api/public/pulse/stream. Updates
+   * `sourceStates` and `result` reactively as events arrive.
+   */
+  const consumeStream = async (body: ReadableStream<Uint8Array>) => {
+    const reader = body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    // Live aggregates so we can emit a final PulseResponse when the
+    // `complete` event arrives. We DON'T set `result` until then —
+    // the streaming UI shows source-by-source progress instead.
+    const liveSourceResults: Record<
+      string,
+      {
+        ok: boolean;
+        errorKind?: string;
+        message?: string;
+        fields?: Array<{ fieldName: string; value: unknown }>;
+      }
+    > = {};
+    let liveLeadId: string | null = null;
+    let liveReceivedAt = "";
+    let liveMerged: PulseField[] = [];
+    let liveWarnings: string[] = [];
+    let liveTier: "T0_UNVERIFIED" | "T2_SOURCE_VERIFIED" = "T0_UNVERIFIED";
+    let liveStreamError: string | null = null;
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      // Parse complete events (\n\n delimited)
+      let split: number;
+      while ((split = buffer.indexOf("\n\n")) >= 0) {
+        const rawEvent = buffer.slice(0, split);
+        buffer = buffer.slice(split + 2);
+        const parsed = parseSseEvent(rawEvent);
+        if (!parsed) continue;
+        const { event, data } = parsed;
+
+        switch (event) {
+          case "lead": {
+            liveLeadId = data.leadId as string;
+            liveReceivedAt = data.receivedAt as string;
+            setLeadId(liveLeadId);
+            break;
+          }
+          case "source-checking": {
+            const source = data.source as string;
+            setSourceStates((prev) => ({
+              ...prev,
+              [source]: { status: "checking" },
+            }));
+            break;
+          }
+          case "source-result": {
+            const source = data.source as string;
+            const ok = data.ok as boolean;
+            liveSourceResults[source] = {
+              ok,
+              errorKind: data.errorKind as string | undefined,
+              message: data.message as string | undefined,
+              fields: data.fields as
+                | Array<{ fieldName: string; value: unknown }>
+                | undefined,
+            };
+            setSourceStates((prev) => ({
+              ...prev,
+              [source]: {
+                status: ok ? "success" : "failed",
+                errorKind: ok ? undefined : (data.errorKind as string),
+              },
+            }));
+            break;
+          }
+          case "complete": {
+            liveMerged = (data.mergedFields as PulseField[]) ?? [];
+            liveWarnings = (data.warnings as string[]) ?? [];
+            liveTier =
+              (data.bestPossibleTier as
+                | "T0_UNVERIFIED"
+                | "T2_SOURCE_VERIFIED") ?? "T0_UNVERIFIED";
+            break;
+          }
+          case "error": {
+            liveStreamError = (data.message as string) ?? "Stream error";
+            break;
+          }
+        }
+      }
+    }
+
+    if (liveStreamError) {
+      setError(liveStreamError);
+      return;
+    }
+
+    // Build the canonical PulseResponse from live aggregates so the result
+    // panel can render with the same shape as Sprint 4A's /detect endpoint.
+    const successfulSources = Object.entries(liveSourceResults)
+      .filter(([, r]) => r.ok)
+      .map(([s]) => s);
+    const failedSources = Object.entries(liveSourceResults)
+      .filter(([, r]) => !r.ok)
+      .map(([s, r]) => ({
+        source: s,
+        errorKind: r.errorKind ?? "unknown",
+        message: r.message ?? "",
+      }));
+
+    setResult({
+      leadId: liveLeadId ?? "",
+      receivedAt: liveReceivedAt || new Date().toISOString(),
+      successfulSources,
+      failedSources,
+      mergedFields: liveMerged,
+      warnings: liveWarnings,
+      bestPossibleTier: liveTier,
+    });
+  };
+
+  /**
+   * Fallback path for browsers without ReadableStream support. Calls the
+   * non-streaming /detect endpoint and renders the result all-at-once.
+   */
+  const fallbackToDetect = async (requestBody: string) => {
+    const res = await fetch("/api/public/pulse/detect", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: requestBody,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setError(data.error || "Something went wrong. Please try again.");
+      return;
+    }
+    setResult(data as PulseResponse);
+  };
+
   const handleReset = () => {
     setResult(null);
     setError(null);
+    setSourceStates(initSourceStates());
+    setLeadId(null);
   };
 
   return (
@@ -303,26 +528,38 @@ export default function PulsePage() {
                 </p>
               </form>
 
-              {/* Source list — set the expectation for what's about to happen */}
-              <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3">
+              {/* Source grid — Sprint 4C: progressive reveal during submit.
+                   Cards stay descriptive while idle, transition through
+                   "checking…" → "✓ verified" / "✗ failed" as SSE events
+                   arrive. */}
+              <div
+                className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3"
+                aria-label="Source verification progress"
+                aria-live="polite"
+              >
                 {Object.entries(SOURCE_LABELS).map(([key, src]) => {
                   const Icon = src.icon;
+                  const state = sourceStates[key] ?? { status: "idle" };
                   return (
-                    <div
+                    <SourceCard
                       key={key}
-                      className="p-4 rounded-xl bg-navy-900/50 border border-navy-700/50"
-                    >
-                      <Icon className="w-5 h-5 text-emerald-400 mb-2" />
-                      <div className="text-small font-semibold text-slate-200 mb-1">
-                        {src.label}
-                      </div>
-                      <div className="text-caption text-slate-500">
-                        {src.description}
-                      </div>
-                    </div>
+                      sourceKey={key}
+                      label={src.label}
+                      description={src.description}
+                      Icon={Icon}
+                      state={state}
+                    />
                   );
                 })}
               </div>
+              {leadId && submitting && (
+                <p
+                  className="mt-4 text-caption text-slate-500 text-center"
+                  aria-live="polite"
+                >
+                  Lead captured ({leadId.slice(0, 12)}…) — verifying sources…
+                </p>
+              )}
             </motion.div>
           ) : (
             <PulseResult result={result} email={email} onReset={handleReset} />
@@ -512,6 +749,76 @@ function PulseResult({
       <p className="mt-6 text-caption text-slate-500 text-center">
         Lead ID: <span className="font-mono">{result.leadId}</span>
       </p>
+    </motion.div>
+  );
+}
+
+// ─── Source Card (Sprint 4C — progressive reveal) ─────────────────────────
+
+function SourceCard({
+  sourceKey,
+  label,
+  description,
+  Icon,
+  state,
+}: {
+  sourceKey: string;
+  label: string;
+  description: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Icon: any;
+  state: SourceState;
+}) {
+  const idle = state.status === "idle";
+  const checking = state.status === "checking";
+  const success = state.status === "success";
+  const failed = state.status === "failed";
+
+  // Border + bg shade per state
+  const tone = success
+    ? "bg-emerald-500/10 border-emerald-500/30"
+    : failed
+      ? "bg-amber-500/10 border-amber-500/30"
+      : checking
+        ? "bg-emerald-500/5 border-emerald-500/20"
+        : "bg-navy-900/50 border-navy-700/50";
+
+  return (
+    <motion.div
+      layout
+      data-source={sourceKey}
+      data-state={state.status}
+      className={`p-4 rounded-xl border ${tone} transition-colors`}
+    >
+      <div className="flex items-start justify-between mb-2">
+        <Icon
+          className={`w-5 h-5 ${
+            success
+              ? "text-emerald-400"
+              : failed
+                ? "text-amber-400"
+                : "text-emerald-400"
+          }`}
+        />
+        {checking && (
+          <Loader2 className="w-3.5 h-3.5 text-emerald-300 animate-spin" />
+        )}
+        {success && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+        {failed && <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />}
+      </div>
+      <div className="text-small font-semibold text-slate-200 mb-1">
+        {label}
+      </div>
+      <div className="text-caption text-slate-500 min-h-[2.25rem]">
+        {idle && description}
+        {checking && <span className="text-emerald-300/80">Querying…</span>}
+        {success && <span className="text-emerald-300/80">Confirmed ✓</span>}
+        {failed && (
+          <span className="text-amber-300/80">
+            {state.errorKind ?? "unavailable"}
+          </span>
+        )}
+      </div>
     </motion.div>
   );
 }

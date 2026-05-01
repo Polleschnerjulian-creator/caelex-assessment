@@ -119,6 +119,167 @@ beforeEach(() => {
   global.fetch = vi.fn();
 });
 
+// ─── SSE stream helpers ────────────────────────────────────────────────────
+//
+// Sprint 4C: the submit handler hits /api/public/pulse/stream which
+// returns SSE. Tests must mock the response with a real ReadableStream
+// containing the event sequence the page expects.
+//
+// `makeStreamResponse([...events])` returns an object compatible with
+// the mocked `fetch` — `ok: true`, `status: 200`, `body: ReadableStream`.
+
+interface SseEvent {
+  event: string;
+  data: Record<string, unknown>;
+}
+
+function makeStreamResponse(events: SseEvent[]): Response {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      for (const e of events) {
+        controller.enqueue(
+          encoder.encode(
+            `event: ${e.event}\ndata: ${JSON.stringify(e.data)}\n\n`,
+          ),
+        );
+      }
+      controller.close();
+    },
+  });
+  return new Response(stream, {
+    status: 200,
+    headers: { "content-type": "text/event-stream" },
+  });
+}
+
+/** Default happy-path SSE stream for tests: lead → 2 source-results → complete. */
+function happyStreamResponse(): Response {
+  return makeStreamResponse([
+    {
+      event: "lead",
+      data: {
+        leadId: "lead_xyz",
+        receivedAt: "2026-04-30T10:00:00.000Z",
+        sources: ["vies-eu-vat", "gleif-lei"],
+      },
+    },
+    { event: "source-checking", data: { source: "vies-eu-vat" } },
+    {
+      event: "source-result",
+      data: {
+        source: "vies-eu-vat",
+        ok: true,
+        fields: [{ fieldName: "establishment", value: "DE" }],
+        warnings: ["DE VAT regulations forbid name-disclosure via VIES"],
+      },
+    },
+    { event: "source-checking", data: { source: "gleif-lei" } },
+    {
+      event: "source-result",
+      data: {
+        source: "gleif-lei",
+        ok: true,
+        fields: [{ fieldName: "establishment", value: "DE" }],
+        warnings: [],
+      },
+    },
+    {
+      event: "complete",
+      data: {
+        mergedFields: [
+          {
+            fieldName: "establishment",
+            value: "DE",
+            agreementCount: 2,
+            contributingAdapters: ["vies-eu-vat", "gleif-lei"],
+          },
+        ],
+        warnings: ["DE VAT regulations forbid name-disclosure via VIES"],
+        bestPossibleTier: "T2_SOURCE_VERIFIED",
+      },
+    },
+  ]);
+}
+
+/** Mixed stream — one success + one failure, for testing failed-source UI. */
+function mixedStreamResponse(): Response {
+  return makeStreamResponse([
+    {
+      event: "lead",
+      data: {
+        leadId: "lead_xyz",
+        receivedAt: "2026-04-30T10:00:00.000Z",
+        sources: ["vies-eu-vat", "celestrak-satcat"],
+      },
+    },
+    {
+      event: "source-result",
+      data: {
+        source: "vies-eu-vat",
+        ok: true,
+        fields: [{ fieldName: "establishment", value: "DE" }],
+        warnings: [],
+      },
+    },
+    {
+      event: "source-result",
+      data: {
+        source: "celestrak-satcat",
+        ok: false,
+        errorKind: "remote-error",
+        message: "CelesTrak returned HTTP 503",
+      },
+    },
+    {
+      event: "complete",
+      data: {
+        mergedFields: [
+          {
+            fieldName: "establishment",
+            value: "DE",
+            agreementCount: 1,
+            contributingAdapters: ["vies-eu-vat"],
+          },
+        ],
+        warnings: [],
+        bestPossibleTier: "T2_SOURCE_VERIFIED",
+      },
+    },
+  ]);
+}
+
+/** T0 stream — adapters didn't find anything. */
+function t0StreamResponse(): Response {
+  return makeStreamResponse([
+    {
+      event: "lead",
+      data: {
+        leadId: "lead_xyz",
+        receivedAt: "2026-04-30T10:00:00.000Z",
+        sources: ["vies-eu-vat"],
+      },
+    },
+    {
+      event: "source-result",
+      data: {
+        source: "vies-eu-vat",
+        ok: false,
+        errorKind: "missing-input",
+        message: "no vatId",
+      },
+    },
+    {
+      event: "complete",
+      data: {
+        mergedFields: [],
+        warnings: [],
+        bestPossibleTier: "T0_UNVERIFIED",
+      },
+    },
+  ]);
+}
+
 // ─── Initial render ────────────────────────────────────────────────────────
 
 describe("PulsePage — initial render", () => {
@@ -162,11 +323,9 @@ describe("PulsePage — initial render", () => {
 
 describe("PulsePage — submit flow", () => {
   it("POSTs the form data to /api/public/pulse/detect with the right body", async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => HAPPY_RESPONSE,
-    });
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+      happyStreamResponse(),
+    );
 
     render(<PulsePage />);
     fireEvent.change(screen.getByLabelText(/Legal name/i), {
@@ -184,7 +343,7 @@ describe("PulsePage — submit flow", () => {
     });
 
     expect(global.fetch).toHaveBeenCalledWith(
-      "/api/public/pulse/detect",
+      "/api/public/pulse/stream",
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({
@@ -202,11 +361,9 @@ describe("PulsePage — submit flow", () => {
   });
 
   it("omits vatId from the body when blank", async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => HAPPY_RESPONSE,
-    });
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+      happyStreamResponse(),
+    );
 
     render(<PulsePage />);
     fireEvent.change(screen.getByLabelText(/Legal name/i), {
@@ -228,11 +385,9 @@ describe("PulsePage — submit flow", () => {
 
 describe("PulsePage — successful result", () => {
   it("renders the source-verified badge for T2_SOURCE_VERIFIED", async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => HAPPY_RESPONSE,
-    });
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+      happyStreamResponse(),
+    );
 
     render(<PulsePage />);
     await submitForm();
@@ -244,11 +399,9 @@ describe("PulsePage — successful result", () => {
   });
 
   it("renders the manual-setup badge for T0_UNVERIFIED", async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => T0_RESPONSE,
-    });
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+      t0StreamResponse(),
+    );
 
     render(<PulsePage />);
     await submitForm();
@@ -259,11 +412,9 @@ describe("PulsePage — successful result", () => {
   });
 
   it("renders the merged fields with agreement count", async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => HAPPY_RESPONSE,
-    });
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+      happyStreamResponse(),
+    );
     render(<PulsePage />);
     await submitForm();
 
@@ -275,25 +426,21 @@ describe("PulsePage — successful result", () => {
   });
 
   it("renders the failed-source errorKind", async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => HAPPY_RESPONSE,
-    });
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+      mixedStreamResponse(),
+    );
     render(<PulsePage />);
     await submitForm();
 
     await waitFor(() => {
-      expect(screen.getByText(/remote-error/i)).toBeTruthy();
+      expect(screen.getAllByText(/remote-error/i).length).toBeGreaterThan(0);
     });
   });
 
   it("renders the warnings list", async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => HAPPY_RESPONSE,
-    });
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+      happyStreamResponse(),
+    );
     render(<PulsePage />);
     await submitForm();
 
@@ -305,11 +452,9 @@ describe("PulsePage — successful result", () => {
   });
 
   it("renders the lead ID", async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => HAPPY_RESPONSE,
-    });
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+      happyStreamResponse(),
+    );
     render(<PulsePage />);
     await submitForm();
 
@@ -377,11 +522,9 @@ describe("PulsePage — error handling", () => {
 
 describe("PulsePage — reset flow", () => {
   it("returns to the form when 'Run another check' is clicked", async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => HAPPY_RESPONSE,
-    });
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+      happyStreamResponse(),
+    );
 
     render(<PulsePage />);
     await submitForm();

@@ -143,8 +143,8 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 
 - Sprint 4A: API endpoint (POST /api/public/pulse/detect) ✅ COMPLETED 2026-05-01
 - Sprint 4B: /pulse public-page UI ✅ COMPLETED 2026-05-01
-- Sprint 4C: Source-Verification-Stream-UI + Hypothesen-Compliance-Map [PENDING] (next)
-- Sprint 4D: 15-Page-PDF-Report [PENDING]
+- Sprint 4C: Source-Verification-Stream-UI ✅ COMPLETED 2026-05-01
+- Sprint 4D: 15-Page-PDF-Report [PENDING] (next)
 - Sprint 4E: Email-Capture-Flow + nurture sequence [PENDING]
 - **Ziel:** Funnel-Stage-1+2 live, Lead-Generation aktiv
 - **Aufwand:** 3 Wochen total (4A done in 1 day)
@@ -382,6 +382,44 @@ Handelsregister-DE bleibt offen (nur via fragiles HTML scraping zero-cost machba
 - 13 Konzept-Docs in `docs/` committed
 - Master-Plan (dieses Doc) erstellt
 - V1-Preservation-Strategie definiert
+
+### 2026-05-01: Sprint 4C — Source-Verification-Stream-UI ✅
+
+**Wow-Effekt aktiv.** Anonyme Operatoren sehen jetzt nicht mehr ein 4-Sekunden-Stillstand und dann das Ergebnis — sie sehen jeden Adapter LIVE: VIES "Querying…" → ✓ Confirmed; GLEIF "Querying…" → ✗ remote-error; UNOOSA "Querying…" → ✓ Confirmed; CelesTrak "Querying…" → ✓ Confirmed. Strukturelle Vorlage für Sprint 7's Live-Streaming-Backbone.
+
+**Geliefert:**
+
+- **SSE-Endpoint** `src/app/api/public/pulse/stream/route.ts` (POST):
+  - Gleicher Auth + Rate-limit + Validation + Lead-Capture wie `/detect`
+  - Returns `Content-Type: text/event-stream` mit ReadableStream-body
+  - Event-Sequenz: `lead` → `source-checking` × N → `source-result` × N → `complete`
+  - Promise.allSettled über alle adapters parallel — events feuern in completion-order, NICHT registry-order (organisches Reveal)
+  - Adapter-throw → ok:false event mit errorKind:"remote-error" (defensive)
+  - x-accel-buffering:no header verhindert Vercel/nginx-buffering
+- **Updated `/pulse/page.tsx`** mit progressivem UI:
+  - **`SourceCard` sub-component** mit 4 states: idle/checking/success/failed mit state-spezifischer Tone + Icon
+  - **Layout-Animation** via framer-motion `layout` prop
+  - **`consumeStream(body)`** liest `body.getReader()`, decodes UTF-8, splits auf `\n\n`, dispatches per event-type
+  - **`parseSseEvent(raw)`** pure helper, handhabt comments + multi-line-data + missing-data
+  - **Fallback-Path** zu `/detect` wenn `res.body` fehlt (alte Browser)
+  - **aria-live="polite"** auf source-grid
+
+**Tests** (9 stream-route + 5 page-test updates):
+
+- Stream-route: auth-gates, validation 400s, lead-create 500, response headers, event sequence (lead first, complete last), adapter-throw → ok:false, T0_UNVERIFIED on empty merge, canDetect filtering
+- Page tests: stream-mock helpers (`makeStreamResponse`, `happyStreamResponse`, `mixedStreamResponse`, `t0StreamResponse`), URL assertion auf `/stream`, failed-source test mit mixed-stream
+- 38/38 pulse-related tests pass
+
+**V1-Impact:** Null. `/api/public/pulse/detect` (Sprint 4A) bleibt funktional als Fallback.
+
+**Honest scope:**
+
+- Stream-events feuern wenn Promise.allSettled-Adapter resolven — kein artificial throttling
+- Browser support: Chrome 105+ / Firefox 113+ / Safari 15.4+; ältere fallen auf `/detect` zurück
+- Keine reconnection logic — Sprint 7 macht das robust
+- Lead-row wird VOR adapter-runs erstellt, bleibt bei adapter-fails erhalten
+
+**Cumulative status:** 343/343 vitest pass across 22 test files. Zero net new TypeScript errors (864 baseline). V1 untouched.
 
 ### 2026-05-01: Sprint 4B — /pulse Public UI Page ✅
 
