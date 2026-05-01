@@ -139,15 +139,47 @@ export async function dispatchReverificationForStaleRows(
 }
 
 /**
- * One-shot dispatch for a single org. Used by Sprint 4's pulse-tool which
- * captures a VAT-ID + name from a public form and runs detection live.
+ * One-shot dispatch for a single org. Used by:
+ *
+ *   - Sprint 4's pulse-tool: captures a VAT-ID + name from a public form
+ *     and runs detection live with `persist: false` (no evidence rows
+ *     written, since the prospect doesn't have a real Caelex account yet)
+ *   - Future inline-detection flows (re-verify-now button in dashboard)
  */
 export async function dispatchOne(
   organizationId: string,
   hintsOverride?: Partial<AdapterInput>,
+  options: { persist?: boolean } = {},
 ): Promise<CrossVerificationResult> {
   const input = await buildAdapterInput(organizationId);
-  return runAutoDetection({ ...input, ...hintsOverride });
+  return runAutoDetection({ ...input, ...hintsOverride }, options);
+}
+
+/**
+ * Pulse-flavoured anonymous detection — Sprint 4A. Used by
+ * `/api/public/pulse/detect` to run cross-verification for a prospect
+ * who has NO Caelex organisation yet. Skips `buildAdapterInput()` (which
+ * needs an organizationId) and instead constructs the AdapterInput
+ * directly from the form submission.
+ *
+ * Persists nothing — `persist: false` is hard-coded. The result is
+ * returned to the caller (route writes it into PulseLead.detectionResult
+ * for analytics + replay).
+ */
+export async function dispatchAnonymous(
+  hints: Pick<AdapterInput, "legalName" | "vatId" | "establishment">,
+): Promise<CrossVerificationResult> {
+  return runAutoDetection(
+    {
+      // Synthetic organisationId — never written to the DB because of
+      // persist:false. Used only as a correlation token in adapter logs.
+      organizationId: `pulse-anon-${Date.now()}`,
+      legalName: hints.legalName,
+      vatId: hints.vatId,
+      establishment: hints.establishment,
+    },
+    { persist: false },
+  );
 }
 
 // ─── Internals ─────────────────────────────────────────────────────────────

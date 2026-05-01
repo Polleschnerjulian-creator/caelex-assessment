@@ -139,15 +139,15 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 
 ### Phase 2: Public-Funnel + UI-Reorg (Sprints 4-5, ~6 Wochen)
 
-**Sprint 4 — Public-Pulse-Tool** [PENDING]
+**Sprint 4 — Public-Pulse-Tool** [IN PROGRESS]
 
-- caelex.eu/pulse Public-Page
-- Source-Verification-Stream-UI
-- Hypothesen-Compliance-Map
-- 15-Page-PDF-Report
-- Email-Capture-Flow
+- Sprint 4A: API endpoint (POST /api/public/pulse/detect) ✅ COMPLETED 2026-05-01
+- Sprint 4B: caelex.eu/pulse public-page UI [PENDING]
+- Sprint 4C: Source-Verification-Stream-UI + Hypothesen-Compliance-Map [PENDING]
+- Sprint 4D: 15-Page-PDF-Report [PENDING]
+- Sprint 4E: Email-Capture-Flow + nurture sequence [PENDING]
 - **Ziel:** Funnel-Stage-1+2 live, Lead-Generation aktiv
-- **Aufwand:** 3 Wochen
+- **Aufwand:** 3 Wochen total (4A done in 1 day)
 - **V1-Impact:** Null
 
 **Sprint 5 — Mission-First-UI** [PENDING]
@@ -382,6 +382,41 @@ Handelsregister-DE bleibt offen (nur via fragiles HTML scraping zero-cost machba
 - 13 Konzept-Docs in `docs/` committed
 - Master-Plan (dieses Doc) erstellt
 - V1-Preservation-Strategie definiert
+
+### 2026-05-01: Sprint 4A — Public Pulse-Tool API endpoint ✅
+
+**Phase 2 — Public-Funnel + UI-Reorg ist gestartet.** Sprint 4A liefert das Backend für die `caelex.eu/pulse` Public-Page: anonyme Cross-Verification über 4 freie öffentliche Quellen, ohne Auth, ohne Caelex-Account.
+
+**Geliefert:**
+
+- **Schema** (purely additive — V1 untouched):
+  - `PulseLead` Prisma-Model — captures every pulse-detection run als sales lead (legalName, vatId, email, IP, UA, UTM-tracking, detection-snapshot, status NEW/DEMO_BOOKED/SIGNED_UP/CONVERTED)
+  - Migration `20260501214511_pulse_lead/migration.sql`
+- **Rate limiting** — neuer `pulse` tier in `src/lib/ratelimit.ts`: 3/hr per IP (Redis), 1/hr in-memory fallback. Strikt weil jeder Call 4 externe Quellen trifft + DB-Row schreibt.
+- **Validation** `src/lib/validations/pulse.ts` — Zod-Schema mit length bounds, normalisation, format checks, empty→undefined coercion
+- **Dispatcher extension** `dispatcher.server.ts`:
+  - `dispatchOne()` now accepts `options.persist`
+  - **`dispatchAnonymous()`** new — no orgId required, hard-codes `persist: false`, builds AdapterInput directly
+- **Public route** `/api/public/pulse/detect`:
+  - POST + OPTIONS (CORS)
+  - Rate-limit gate → Zod validation → create PulseLead → dispatchAnonymous → update lead with snapshot → return sanitized PulseDetectResponse
+  - Strips rawArtifact from response (privacy + payload size)
+  - Surfaces rate-limit headers for frontend countdown
+- **Tests** (40 new): 12 validation + 14 route + 14 dispatcher (incl. dispatchAnonymous)
+
+**V1-Impact:** Null. Reine Additionen — neue Prisma-Tabelle, neuer Rate-Limit-Tier, neue Route, neue Validierung. V1 unangetastet.
+
+**Honest scope:**
+
+- **Sprint 4A ist BACKEND only.** Sprint 4B baut die UI-Seite, Sprint 4C den 15-Page-PDF-Report, Sprint 4D den Email-Capture-Flow.
+- **Idempotenz:** jeder POST erzeugt eine neue PulseLead-Row, auch von derselben Email. Intentional — Per-Attempt Funnel-Daten.
+- **Privacy:** keine Cookies, keine Tracking-Pixel, keine Third-Party-Calls. Nur email + legalName + vatId + UTM.
+- **bestPossibleTier:** T2_SOURCE_VERIFIED wenn ≥1 field merged, T0_UNVERIFIED sonst.
+
+**Cumulative status:** 319/319 vitest pass across 20 test files. Zero net new TypeScript errors (864 baseline). V1 untouched.
+
+**Funnel-Stage-1 ist live** sobald Sprint 4B (UI) deployed wird. Backend bereit:
+`curl -X POST https://app.caelex.com/api/public/pulse/detect -d '{"legalName":"OneWeb Limited","email":"x@y.com","vatId":"DE123456789"}'` produziert eine Cross-Verification-Antwort.
 
 ### 2026-05-01: Sprint 3D — COWF Step Executors + Registry ✅
 

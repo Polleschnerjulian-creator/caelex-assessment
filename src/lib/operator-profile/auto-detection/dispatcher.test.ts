@@ -44,6 +44,7 @@ vi.mock("@/lib/logger", () => ({
 }));
 
 import {
+  dispatchAnonymous,
   dispatchOne,
   dispatchReverificationForStaleRows,
   MAX_ORGS_PER_DISPATCH,
@@ -227,5 +228,34 @@ describe("dispatchOne", () => {
     expect(input.organizationId).toBe("org_1");
     expect(input.establishment).toBe("DE");
     expect(input.vatId).toBe("DE123456789");
+  });
+
+  it("forwards options.persist to runAutoDetection", async () => {
+    mockOperatorProfile.findUnique.mockResolvedValue({ establishment: "DE" });
+    await dispatchOne("org_1", undefined, { persist: false });
+    const [, options] = mockRunAutoDetection.mock.calls[0];
+    expect(options).toEqual({ persist: false });
+  });
+});
+
+describe("dispatchAnonymous", () => {
+  it("calls runAutoDetection with synthetic orgId + persist:false", async () => {
+    await dispatchAnonymous({
+      legalName: "OneWeb Limited",
+      vatId: "DE123456789",
+    });
+    expect(mockRunAutoDetection).toHaveBeenCalledTimes(1);
+    const [input, options] = mockRunAutoDetection.mock.calls[0];
+    expect(input.organizationId).toMatch(/^pulse-anon-\d+$/);
+    expect(input.legalName).toBe("OneWeb Limited");
+    expect(input.vatId).toBe("DE123456789");
+    expect(options).toEqual({ persist: false });
+  });
+
+  it("does NOT consult buildAdapterInput / Prisma (truly anonymous)", async () => {
+    await dispatchAnonymous({ legalName: "Acme" });
+    expect(mockOrganization.findUnique).not.toHaveBeenCalled();
+    expect(mockOperatorProfile.findUnique).not.toHaveBeenCalled();
+    expect(mockDerivationTrace.findFirst).not.toHaveBeenCalled();
   });
 });

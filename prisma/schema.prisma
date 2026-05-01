@@ -4577,6 +4577,59 @@ model DemoRequest {
   @@index([createdAt])
 }
 
+// PulseLead — Sprint 4A. Captures every public /pulse cross-verification
+// run as a sales lead. The detection result is stored as a frozen snapshot
+// so we can replay what the operator saw without re-hitting external
+// sources (avoids stale data + counts toward the daily VIES rate limit).
+//
+// **Privacy note:** rawArtifact from each adapter (HTML pages, full LEI
+// records) is NOT stored — only the merged-fields summary + per-source
+// success/failure outcome. That keeps the lead row under ~5 KB.
+//
+// **No org link:** prospects don't have an organizationId yet. If they
+// later sign up with the same email, we can correlate via the email
+// column for analytics, but the PulseLead is independent of any
+// `Organization` row.
+model PulseLead {
+  id String @id @default(cuid())
+
+  // Operator-supplied identity
+  legalName String
+  vatId     String?
+  email     String
+
+  // Source attribution + abuse signals
+  ipAddress String?
+  userAgent String? @db.Text
+
+  // Detection result snapshot
+  // Shape: { successfulSources: SourceKey[], failedSources: SourceKey[],
+  //          mergedFields: Array<{ fieldName, value, agreementCount }>,
+  //          startedAt, finishedAt }
+  detectionResult Json?
+
+  // Funnel attribution: which UTM campaign / landing page brought them here
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  referrer    String? @db.Text
+
+  // Lead lifecycle: NEW → DEMO_BOOKED → SIGNED_UP → CONVERTED
+  status String @default("NEW")
+
+  // Linked records once they sign up (set later by webhook / cron)
+  convertedToOrgId  String?
+  convertedToUserId String?
+  convertedAt       DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+  @@index([vatId])
+}
+
 // ─── Contact Requests ───
 
 enum ContactRequestStatus {

@@ -153,6 +153,18 @@ export const rateLimiters = redis
         prefix: "ratelimit:widget",
       }),
 
+      // Pulse public detection: 3 per hour per IP. Strict because each call
+      // hits 4 external public sources (VIES + GLEIF + UNOOSA + CelesTrak)
+      // and stores a PulseLead. Funnel-stage-1 — operator types VAT-ID once,
+      // gets a verification result, then signs up. Repeated probing should
+      // be blocked.
+      pulse: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(3, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:pulse",
+      }),
+
       // MFA operations: 5 per minute (strict to prevent brute force on TOTP/backup codes)
       mfa: new Ratelimit({
         redis,
@@ -407,6 +419,7 @@ const fallbackLimiters = {
   nca_package: new InMemoryRateLimiter(3, 3600000), // 3/hr vs 10/hr (Redis)
   public_api: new InMemoryRateLimiter(2, 3600000), // 2/hr vs 5/hr (Redis)
   widget: new InMemoryRateLimiter(10, 3600000), // 10/hr vs 30/hr (Redis)
+  pulse: new InMemoryRateLimiter(1, 3600000), // 1/hr vs 3/hr (Redis)
   mfa: new InMemoryRateLimiter(3, 60000), // 3/min vs 5/min (Redis)
   generate2: new InMemoryRateLimiter(150, 3600000), // 150/hr vs 300/hr (Redis)
   admin: new InMemoryRateLimiter(10, 60000), // 10/min vs 30/min (Redis)
@@ -445,6 +458,7 @@ export type RateLimitType =
   | "nca_package"
   | "public_api"
   | "widget"
+  | "pulse"
   | "generate2"
   | "mfa"
   | "admin"
