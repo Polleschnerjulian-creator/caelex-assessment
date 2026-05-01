@@ -67,6 +67,10 @@
       "schedule": "15 4 * * *"
     },
     {
+      "path": "/api/cron/cowf-heartbeat",
+      "schedule": "*/5 * * * *"
+    },
+    {
       "path": "/api/cron/celestrak-polling",
       "schedule": "0 5 * * *"
     },

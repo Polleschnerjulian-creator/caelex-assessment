@@ -128,8 +128,8 @@ User klickt Browser-Refresh → ist auf V1 — **30 Sekunden Recovery-Zeit**.
 
 - Sprint 3A: 6 Workflow-Tabellen + hash-chain service ✅ COMPLETED 2026-05-01
 - Sprint 3B: defineWorkflow() DSL + W3 first concrete workflow ✅ COMPLETED 2026-05-01
-- Sprint 3C: Heartbeat-Cron + Hash-Chain-Integration [PENDING]
-- Sprint 3D: 7 Step-Type executors (action/form/approval/astra/waitFor/decision/qes) [PENDING]
+- Sprint 3C: Heartbeat-Cron + scheduling service ✅ COMPLETED 2026-05-01
+- Sprint 3D: 7 Step-Type executors (action/form/approval/astra/waitFor/decision/qes) [PENDING] (next)
 - **Ziel:** Workflow-Engine läuft, ein erster Workflow durchgespielt
 - **Aufwand:** 3-4 Wochen
 - **V1-Impact:** Null (parallel zu existing State-Machine)
@@ -379,6 +379,41 @@ Handelsregister-DE bleibt offen (nur via fragiles HTML scraping zero-cost machba
 - 13 Konzept-Docs in `docs/` committed
 - Master-Plan (dieses Doc) erstellt
 - V1-Preservation-Strategie definiert
+
+### 2026-05-01: Sprint 3C — COWF Heartbeat-Cron ✅
+
+**Geliefert:**
+
+- **Scheduling-Service** `src/lib/cowf/scheduling.server.ts`:
+  - `createSchedule({ workflowId, stepKey, fireAt })` — neue PENDING-Row
+  - `cancelSchedule(id, reason?)` — idempotent (no-op auf already-FIRED)
+  - `cancelSchedulesForStep(workflowId, stepKey)` — bulk cancel für completed step
+  - `listDueSchedules({ now, limit })` — fetch PENDING + fireAt≤now + attemptCount<MAX, ordered by fireAt ASC
+  - `markScheduleFired(id)` — atomic PENDING→FIRED transition
+  - `recordScheduleFailure(id, error)` — increments attemptCount, flips to FAILED beim Cap (5 attempts)
+- **Heartbeat-Poller** `src/lib/cowf/heartbeat.server.ts`:
+  - `runHeartbeatTick()` — pure async, no setTimeout. Kein transactional batching (jede schedule unabhängig).
+  - Per-schedule: emits SCHEDULE_FIRED WorkflowEvent (hash-chained!) + flips zu FIRED
+  - Try/catch isolation — eine fehlgeschlagene schedule blockiert nicht den restlichen tick
+  - Race-tolerance: markFired no-op (status≠PENDING) wird trotzdem als "fired" gezählt (event ging raus)
+  - Returns `HeartbeatTickResult` mit totalDue, fired, failed, retryQueued, durationMs, sample (capped at 10)
+- **Cron-Route** `/api/cron/cowf-heartbeat`:
+  - Auth via CRON_SECRET (timing-safe equality)
+  - Env-flag-gated: `COWF_HEARTBEAT_ENABLED=1` aktiviert tatsächlichen tick. Default OFF in Production bis Sprint 3D's Executor live ist (sonst emittieren wir SCHEDULE_FIRED-Events, die niemand konsumiert).
+  - 503 wenn CRON_SECRET nicht gesetzt, 401 ohne / falscher auth, 200 sonst
+- **Vercel.json**: Cron-Schedule hinzugefügt — `*/5 * * * *` (alle 5 Minuten). Sprint 3D wird auf 1-Minute hochsetzen wenn Executor stable ist.
+- 26 neue Tests (11 scheduling + 8 heartbeat + 7 cron-route)
+
+**V1-Impact:** Null. Reine Additionen — kein V1-Code modifiziert.
+
+**Honest scope:**
+
+- Sprint 3C emits SCHEDULE_FIRED events; Sprint 3D's executor consumes them und ruft tatsächlich `step.action.run`, `step.astra.execute`, etc. auf
+- Default-OFF env-flag = sicherer Rollout (cron läuft, no-ops bis 3D landed)
+- 5-Minute cron statt 1-Minute (Vercel Pro+ braucht's für 1-min, plus compliance-workflows haben tag/woche-deadlines — 5 min reicht)
+- Race-handling: cron-at-most-once von Vercel sollte race verhindern, aber updateMany WHERE status='PENDING' macht uns idempotent gegen edge-cases
+
+**Cumulative status:** 264/264 vitest pass across 16 test files. Zero net new TypeScript errors (864 baseline unchanged).
 
 ### 2026-05-01: Sprint 3B — COWF DSL + erstes Workflow (W3) ✅
 
