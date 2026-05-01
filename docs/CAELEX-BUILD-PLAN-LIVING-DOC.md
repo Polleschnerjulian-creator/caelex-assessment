@@ -164,14 +164,14 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 - **Aufwand:** 3 Wochen total (4A done in 1 day)
 - **V1-Impact:** Null
 
-**Sprint 5 — Mission-First-UI** [PENDING]
+**Sprint 5 — Mission-First-UI** [IN PROGRESS]
 
-- /dashboard/missions als V2-Landing
-- Mission-Detail-Page mit Phase-Roadmap
-- Sidebar-Reorganisation (Mission/Workflows/Compliance/Reference)
+- Sprint 5A: /dashboard/missions list view + V2Sidebar entry ✅ COMPLETED 2026-05-01
+- Sprint 5B: Mission-Detail-Page mit Phase-Roadmap [PENDING]
+- Sprint 5C: Sidebar-Reorganisation (Mission/Workflows/Compliance/Reference) [PENDING]
 - V1-Sidebar bleibt für `complyUiVersion="v1"`-User
 - **Ziel:** UX-Sprung sichtbar
-- **Aufwand:** 4 Wochen
+- **Aufwand:** 4 Wochen (≈1 Tag pro Sub-Sprint im Caelex-Tempo)
 - **V1-Impact:** Null (V1-Sidebar bleibt für V1-User)
 
 ### Phase 3: AI-Härtung + Live-Streaming (Sprints 6-7, ~6-8 Wochen)
@@ -250,7 +250,7 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 ### Pending Deploy-Batch — Tracker
 
 **Last main-push:** `b29dacfb` (Sprint 4C — 2026-05-01)
-**Sprints in pending batch:** 2 of 6-8
+**Sprints in pending batch:** 3 of 6-8
 **Next deploy:** when batch reaches 6-8 sprints OR user says "deploy now"
 
 When you finish a sprint and commit it, increment this counter. When it
@@ -260,6 +260,7 @@ Sprints in current batch (chronological):
 
 1. Sprint 4D — 15-page PDF Report (PulsePdfReport + /api/public/pulse/report/[leadId] + download button + 13 tests)
 2. Sprint 4E — Email-Capture-Flow + 4-stage nurture sequence (day-0 delivery email + day-1/3/7 templates + sendPulseEmail dispatcher + PulseLead nurture-fields migration + /api/cron/pulse-nurture + 37 tests)
+3. Sprint 5A — Mission-First-UI list view (getMissionsForUser aggregator + /dashboard/missions list page + V2Sidebar Missions entry + 12 tests)
 
 ### Sprint 2 — Auto-Detection-Engine [IN PROGRESS]
 

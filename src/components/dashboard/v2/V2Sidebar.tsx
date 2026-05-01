@@ -19,6 +19,7 @@ import {
   FileSearch,
   ChevronDown,
   ChevronRight,
+  Rocket,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -68,6 +69,12 @@ export function V2Sidebar({
 
   const primary: NavItem[] = [
     { href: "/dashboard/posture", label: "Posture", icon: Gauge },
+    {
+      href: "/dashboard/missions",
+      label: "Missions",
+      icon: Rocket,
+      match: (p) => p.startsWith("/dashboard/missions"),
+    },
     { href: "/dashboard/today", label: "Today", icon: Inbox },
     { href: "/dashboard/triage", label: "Triage", icon: ListChecks },
     {
