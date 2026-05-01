@@ -16,6 +16,28 @@
  * Reference: docs/CAELEX-PRECISION-COMPLIANCE-ENGINE.md (T0-T5 semantics)
  */
 
+// ─── Writable Field Names ──────────────────────────────────────────────────
+
+/**
+ * Set of OperatorProfile fields that can be verified through the tier
+ * system. Maps 1:1 onto OperatorProfile columns. Defined here (in the
+ * isomorphic types module) so non-server callers like the auto-detection
+ * adapter framework can reference it without dragging in `server-only`.
+ */
+export type WritableVerifiedField =
+  | "operatorType"
+  | "euOperatorCode"
+  | "entitySize"
+  | "establishment"
+  | "primaryOrbit"
+  | "orbitAltitudeKm"
+  | "satelliteMassKg"
+  | "isConstellation"
+  | "constellationSize"
+  | "missionDurationMonths"
+  | "plannedLaunchDate"
+  | "offersEUServices";
+
 // ─── Verification Tier ─────────────────────────────────────────────────────
 
 /**

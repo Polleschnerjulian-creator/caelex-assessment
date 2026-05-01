@@ -37,8 +37,12 @@ import {
   type AttestationRef,
   type EvidenceRow,
   type VerificationTier,
+  type WritableVerifiedField,
   TIER_RANK,
 } from "./types";
+
+// Re-export for callers that import the write-side types from profile.server.
+export type { WritableVerifiedField };
 
 /** Stable entityType used for OperatorProfile-scoped evidence rows. */
 export const OPERATOR_PROFILE_ENTITY_TYPE = "operator_profile";
@@ -323,24 +327,9 @@ function emptyVerifiedProfile(organizationId: string): VerifiedOperatorProfile {
 // `loadVerifiedField()` is Sprint 5+ work. Until then, the write path keeps
 // both stores synchronised so callers can pick whichever read API fits.
 
-/**
- * Set of OperatorProfile fields that can be verified through Sprint 1A's
- * tier system. Maps to the same names already used in
- * `VERIFIED_FIELD_NAMES` and matches columns on the OperatorProfile table.
- */
-export type WritableVerifiedField =
-  | "operatorType"
-  | "euOperatorCode"
-  | "entitySize"
-  | "establishment"
-  | "primaryOrbit"
-  | "orbitAltitudeKm"
-  | "satelliteMassKg"
-  | "isConstellation"
-  | "constellationSize"
-  | "missionDurationMonths"
-  | "plannedLaunchDate"
-  | "offersEUServices";
+// Note: `WritableVerifiedField` lives in `./types.ts` (isomorphic) and is
+// re-exported above for backward-compat with callers that imported it from
+// here.
 
 export interface SetVerifiedFieldInput {
   organizationId: string;

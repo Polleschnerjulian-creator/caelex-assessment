@@ -8,14 +8,20 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { mockFindStaleEvidence, mockCountStaleByTier } = vi.hoisted(() => ({
-  mockFindStaleEvidence: vi.fn(),
-  mockCountStaleByTier: vi.fn(),
-}));
+const { mockFindStaleEvidence, mockCountStaleByTier, mockDispatch } =
+  vi.hoisted(() => ({
+    mockFindStaleEvidence: vi.fn(),
+    mockCountStaleByTier: vi.fn(),
+    mockDispatch: vi.fn(),
+  }));
 
 vi.mock("@/lib/operator-profile/evidence.server", () => ({
   findStaleEvidence: mockFindStaleEvidence,
   countStaleEvidenceByTier: mockCountStaleByTier,
+}));
+
+vi.mock("@/lib/operator-profile/auto-detection/dispatcher.server", () => ({
+  dispatchReverificationForStaleRows: mockDispatch,
 }));
 
 vi.mock("@/lib/logger", () => ({
@@ -36,6 +42,7 @@ function makeRequest(auth?: string): Request {
 beforeEach(() => {
   vi.clearAllMocks();
   process.env.CRON_SECRET = "test-secret";
+  delete process.env.EVIDENCE_REVERIFICATION_AUTODISPATCH;
   mockCountStaleByTier.mockResolvedValue({
     T0_UNVERIFIED: 0,
     T1_SELF_CONFIRMED: 5,
@@ -45,6 +52,15 @@ beforeEach(() => {
     T5_CRYPTOGRAPHIC_PROOF: 0,
   });
   mockFindStaleEvidence.mockResolvedValue([]);
+  mockDispatch.mockResolvedValue({
+    orgsProcessed: 0,
+    orgsSkipped: 0,
+    adaptersInvoked: 0,
+    fieldsRefreshed: 0,
+    failures: 0,
+    truncated: false,
+    perOrg: [],
+  });
 });
 
 describe("GET /api/cron/evidence-reverification — auth", () => {
@@ -138,5 +154,85 @@ describe("GET /api/cron/evidence-reverification — happy path", () => {
     const body = await res.json();
     expect(body.success).toBe(false);
     expect(body.error).toBe("internal");
+  });
+});
+
+describe("GET /api/cron/evidence-reverification — auto-dispatch", () => {
+  it("does NOT call the dispatcher when the env flag is unset", async () => {
+    mockFindStaleEvidence
+      .mockResolvedValueOnce([
+        {
+          id: "e1",
+          organizationId: "org_1",
+          entityType: "operator_profile",
+          entityId: "p1",
+          fieldName: "establishment",
+          verificationTier: "T2_SOURCE_VERIFIED",
+          expiresAt: new Date("2026-04-01T00:00:00Z"),
+          derivedAt: new Date("2025-12-01T00:00:00Z"),
+          attestationRef: null,
+        },
+      ])
+      .mockResolvedValue([]);
+    const res = await GET(makeRequest("Bearer test-secret"));
+    const body = await res.json();
+    expect(body.dispatchEnabled).toBe(false);
+    expect(body.dispatch).toBeUndefined();
+    expect(mockDispatch).not.toHaveBeenCalled();
+  });
+
+  it("calls the dispatcher when EVIDENCE_REVERIFICATION_AUTODISPATCH=1", async () => {
+    process.env.EVIDENCE_REVERIFICATION_AUTODISPATCH = "1";
+    mockFindStaleEvidence
+      .mockResolvedValueOnce([
+        {
+          id: "e1",
+          organizationId: "org_1",
+          entityType: "operator_profile",
+          entityId: "p1",
+          fieldName: "establishment",
+          verificationTier: "T2_SOURCE_VERIFIED",
+          expiresAt: new Date("2026-04-01T00:00:00Z"),
+          derivedAt: new Date("2025-12-01T00:00:00Z"),
+          attestationRef: null,
+        },
+      ])
+      .mockResolvedValue([]);
+    mockDispatch.mockResolvedValueOnce({
+      orgsProcessed: 1,
+      orgsSkipped: 0,
+      adaptersInvoked: 1,
+      fieldsRefreshed: 1,
+      failures: 0,
+      truncated: false,
+      perOrg: [
+        {
+          organizationId: "org_1",
+          adaptersRun: 1,
+          fieldsRefreshed: 1,
+          failures: 0,
+        },
+      ],
+    });
+
+    const res = await GET(makeRequest("Bearer test-secret"));
+    const body = await res.json();
+    expect(body.dispatchEnabled).toBe(true);
+    expect(body.dispatch).toBeDefined();
+    expect(body.dispatch.orgsProcessed).toBe(1);
+    expect(body.dispatch.fieldsRefreshed).toBe(1);
+    expect(mockDispatch).toHaveBeenCalledTimes(1);
+    const [staleRows] = mockDispatch.mock.calls[0];
+    expect(staleRows).toHaveLength(1);
+  });
+
+  it("skips dispatcher when dispatch enabled but no stale rows", async () => {
+    process.env.EVIDENCE_REVERIFICATION_AUTODISPATCH = "1";
+    mockFindStaleEvidence.mockResolvedValue([]);
+    const res = await GET(makeRequest("Bearer test-secret"));
+    const body = await res.json();
+    expect(body.dispatchEnabled).toBe(true);
+    expect(body.dispatch).toBeUndefined(); // no rows, no dispatch
+    expect(mockDispatch).not.toHaveBeenCalled();
   });
 });

@@ -6,6 +6,10 @@ import {
   findStaleEvidence,
   type StaleEvidenceRow,
 } from "@/lib/operator-profile/evidence.server";
+import {
+  dispatchReverificationForStaleRows,
+  type DispatchSummary,
+} from "@/lib/operator-profile/auto-detection/dispatcher.server";
 import type { VerificationTier } from "@/lib/operator-profile/types";
 
 export const runtime = "nodejs";
@@ -52,6 +56,19 @@ interface CronResponseBody {
   durationMs: number;
   pages: number;
   cappedAtMaxPages: boolean;
+  dispatchEnabled: boolean;
+  dispatch?: DispatchSummary;
+}
+
+/**
+ * Auto-dispatch is gated by an env flag during early Sprint 2 rollout.
+ * Default-off in production until we've watched the cron logs across at
+ * least one full day to confirm enumeration is stable.
+ *
+ * Set EVIDENCE_REVERIFICATION_AUTODISPATCH=1 in Vercel env to enable.
+ */
+function autodispatchEnabled(): boolean {
+  return process.env.EVIDENCE_REVERIFICATION_AUTODISPATCH === "1";
 }
 
 function isValidCronSecret(header: string, secret: string): boolean {
@@ -86,12 +103,13 @@ export async function GET(request: Request) {
     const byTier = await countStaleEvidenceByTier(now);
     const totalStale = Object.values(byTier).reduce((a, b) => a + b, 0);
 
-    // 2. Enumerate stale rows page-by-page. The skeleton logs each batch
-    //    structured for downstream consumers (Sprint 2 adapters will dispatch
-    //    on these log lines or call the same enumerator directly).
+    // 2. Enumerate stale rows page-by-page. We collect all rows up to the
+    //    max-pages cap, then optionally dispatch to the adapter framework
+    //    in step 3 below.
     let pages = 0;
     let totalEnumerated = 0;
     let cappedAtMaxPages = false;
+    const allStale: StaleEvidenceRow[] = [];
 
     while (pages < MAX_PAGES_PER_RUN) {
       const batch: StaleEvidenceRow[] = await findStaleEvidence({
@@ -117,6 +135,7 @@ export async function GET(request: Request) {
         })),
       });
 
+      allStale.push(...batch);
       totalEnumerated += batch.length;
       pages += 1;
       if (batch.length < PAGE_LIMIT) break;
@@ -130,6 +149,16 @@ export async function GET(request: Request) {
       );
     }
 
+    // 3. Optionally dispatch to the auto-detection framework. Gated by
+    //    EVIDENCE_REVERIFICATION_AUTODISPATCH env var so the cron can run
+    //    in observe-only mode in production until we have watched it for a
+    //    day. Sprint 2A: VIES adapter only; Sprint 2B-2D add more.
+    let dispatch: DispatchSummary | undefined;
+    const dispatchEnabled = autodispatchEnabled();
+    if (dispatchEnabled && allStale.length > 0) {
+      dispatch = await dispatchReverificationForStaleRows(allStale);
+    }
+
     const durationMs = Date.now() - startedAt;
 
     logger.info("[evidence-reverification] cron complete", {
@@ -139,6 +168,8 @@ export async function GET(request: Request) {
       durationMs,
       pages,
       cappedAtMaxPages,
+      dispatchEnabled,
+      dispatch,
     });
 
     const body: CronResponseBody = {
@@ -149,6 +180,8 @@ export async function GET(request: Request) {
       durationMs,
       pages,
       cappedAtMaxPages,
+      dispatchEnabled,
+      dispatch,
     };
     return NextResponse.json(body);
   } catch (err) {

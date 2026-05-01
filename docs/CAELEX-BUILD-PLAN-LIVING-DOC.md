@@ -113,12 +113,13 @@ User klickt Browser-Refresh → ist auf V1 — **30 Sekunden Recovery-Zeit**.
 - **Aufwand:** 3 Wochen
 - **V1-Impact:** Null (rein additiv)
 
-**Sprint 2 — Auto-Detection-Engine** [PENDING]
+**Sprint 2 — Auto-Detection-Engine** [STARTING NOW]
 
-- Sprint 2A: Handelsregister-DE Adapter
-- Sprint 2B: UNOOSA Online Index Adapter
-- Sprint 2C: BAFA-Public-Register Adapter
-- Sprint 2D: Cross-Verification + Confidence-Scoring
+- Sprint 2A: Adapter-Framework + VIES-Adapter (EU-VAT-Validation) — see ADR-009
+- Sprint 2B: Handelsregister-DE Adapter (HTML parser or 3rd-party — ADR-010 to follow)
+- Sprint 2C: UNOOSA Online Index Adapter
+- Sprint 2D: BAFA-Public-Register Adapter
+- Sprint 2E: Cross-Verification Tuning + Confidence-Scoring
 - **Ziel:** 30%+ Profil-Coverage ohne Operator-Input
 - **Aufwand:** 3-4 Wochen
 - **V1-Impact:** Null
@@ -229,6 +230,32 @@ User klickt Browser-Refresh → ist auf V1 — **30 Sekunden Recovery-Zeit**.
 
 ## Section 4: Current Sprint
 
+### Sprint 2 — Auto-Detection-Engine [IN PROGRESS]
+
+**Status:** Sprint 2A done (VIES adapter + framework). Sprint 2B next (Handelsregister-DE).
+**Started:** 2026-05-01
+
+#### Sprint 2A — Adapter-Framework + VIES-Adapter ✅ COMPLETED 2026-05-01
+
+Per ADR-009 (VIES-first). Lieferung:
+
+- Adapter-Contract (types.ts + registry.ts)
+- VIES REST-Adapter (echte EU-API, free, no mock)
+- Cross-Verifier (multi-adapter merge with conflict-detection)
+- Dispatcher (bridge stale-row enumeration → adapter runs)
+- Cron-Wiring (env-gated auto-dispatch)
+- 42 neue Tests, 92/92 cumulative pass
+
+#### Sprint 2B — Handelsregister-DE [PENDING] (next)
+
+#### Sprint 2C — UNOOSA Online Index [PENDING]
+
+#### Sprint 2D — BAFA Public Register [PENDING]
+
+#### Sprint 2E — Cross-Verification Tuning [PENDING]
+
+---
+
 ### Sprint 1 — Verified-Profile-Foundation ✅ COMPLETED 2026-05-01
 
 **Status:** All sub-sprints (1A, 1B, 1C) done. Next: Sprint 2 — Auto-Detection-Engine.
@@ -319,6 +346,32 @@ User klickt Browser-Refresh → ist auf V1 — **30 Sekunden Recovery-Zeit**.
 - 13 Konzept-Docs in `docs/` committed
 - Master-Plan (dieses Doc) erstellt
 - V1-Preservation-Strategie definiert
+
+### 2026-05-01: Sprint 2A — Auto-Detection Framework + VIES Adapter ✅
+
+**Architektur-Entscheidung:** ADR-009 — Pivot von Handelsregister-DE auf VIES als ersten Adapter (EU-weite VAT-Validation, echte REST-API, frei zugänglich)
+
+**Geliefert:**
+
+- `src/lib/operator-profile/auto-detection/types.ts` — Adapter-Contract: AdapterInput, AdapterResult, AdapterOutcome, AutoDetectionAdapter, MergedField, CrossVerificationResult
+- `src/lib/operator-profile/auto-detection/registry.ts` — statische Adapter-Liste (priority-ordered)
+- `src/lib/operator-profile/auto-detection/vies-adapter.server.ts` — echter VIES REST-Fetcher (POST `https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number`)
+- `src/lib/operator-profile/auto-detection/cross-verifier.server.ts` — Multi-Adapter-Merge mit Conflict-Detection, Tier-Mapping, T2_SOURCE_VERIFIED-Append via bulkSetVerifiedFields
+- `src/lib/operator-profile/auto-detection/dispatcher.server.ts` — Bridge zwischen Sprint-1C-Cron und Cross-Verifier (per-org grouping, identity-hint extraction)
+- Cron-Integration: `EVIDENCE_REVERIFICATION_AUTODISPATCH=1` Env-Flag aktiviert Auto-Detection-Dispatch im täglichen 04:15-Cron
+- 42 neue Tests (22 VIES + 12 cross-verifier + 8 dispatcher)
+
+**Gesamt-Test-Status nach Sprint 2A:** 92/92 vitest pass
+
+**V1-Impact:** Null. Adapter-Framework ist purely additive. Auto-dispatch ist env-gated — produziert in Default-Config (flag unset) keinen Traffic an externe APIs.
+
+**Honest scope notes:**
+
+- VIES für DE/ES gibt nur `establishment` (Privacy: name/address sind redacted "---")
+- Andere EU-Member-States (NL, FR, IT, ...) liefern auch `legalName` + `address`, aber `legalName` ist in Sprint 2A noch nicht im WritableVerifiedField-Set — kommt in Sprint 5
+- Auto-Dispatch Default OFF — wird in Production aktiviert sobald Cron-Logs einen vollen Tag Stable-State zeigen
+
+**Ready for Sprint 2B:** Handelsregister-DE (HTML-Parser oder Drittanbieter-Source-Decision via ADR-010)
 
 ### 2026-05-01: Sprint 1B — Verified-Field Write-API + Sprint 1C — Re-Verification-Cron-Skeleton ✅
 
@@ -413,6 +466,32 @@ User klickt Browser-Refresh → ist auf V1 — **30 Sekunden Recovery-Zeit**.
 **Datum:** 2026-05-01
 **Begründung:** Compliance-Workflows sind 6-12 Monate lang. Trial-Expire mid-workflow = garantierter Customer-Loss.
 **Konsequenz:** Free-Tier mit harten Limits (1 Mission, 2 Workflows, 100 Astra-Calls/mo). Keine Trial-Expiry.
+
+### ADR-009: Auto-Detection-Reihenfolge — VIES vor Handelsregister
+
+**Datum:** 2026-05-01 (Sprint 2A)
+**Kontext:** Sprint 2A schlug ursprünglich vor, mit Handelsregister-DE-Adapter zu starten. Bei Investigation der Datenquellen wurde klar:
+
+- **Handelsregister.de** hat keine offene REST-API. Die offizielle Schnittstelle ist die kostenpflichtige SOAP-API (RegisterPortal). Public-Search liefert nur HTML — Parsing ist fragil, bricht bei Layout-Updates.
+- **VIES (EU-VAT-Validation)** hat eine reale öffentliche REST/SOAP-API. Free. Tax-authority-validated. Funktioniert für ALLE EU-Mitgliedsstaaten, nicht nur DE.
+- **OpenCorporates / OpenRegister** sind Drittanbieter — Vendor-Lock-Risiko.
+
+**Entscheidung:** Sprint 2A liefert **VIES-Adapter + Adapter-Framework**. Sprint 2B wird Handelsregister-DE (via HTML-Parser oder Drittanbieter-Adapter, separate Architektur-Entscheidung).
+
+**Begründung:**
+
+1. **Real, no demos:** VIES ist eine echte öffentliche EU-API, kein HTML-Scraper. Null Demo-Risiko.
+2. **EU-weit statt DE-only:** wir gewinnen Coverage für alle 27 Mitgliedsstaaten in einem Sprint.
+3. **Pattern-Set:** das Adapter-Framework wird mit einer simplen, gut-definierten Datenquelle eingeführt — Handelsregister-Komplexität (HTML-Parsing, Pagination, CAPTCHA-Risiko) folgt erst, wenn das Framework steht.
+4. **Felder geliefert:** VIES gibt `companyName` + `address` für nicht-DE Firmen; für DE-Firmen nur "valid" — aber das reicht bereits, um `establishment="DE"` zu T2-verifizieren, was der wichtigste einzelne Trust-Field ist.
+
+**Konsequenz:**
+
+- Sprint 2A: Adapter-Framework (`src/lib/operator-profile/auto-detection/types.ts` + `registry.ts` + `cross-verifier.ts`) + VIES-Adapter (`vies-adapter.server.ts`)
+- Sprint 2B (re-prioritisiert): Handelsregister-DE-Adapter (Architektur-Entscheidung über Quellen-Wahl wird in Sprint 2B als ADR-010 dokumentiert)
+- Sprint 2C: UNOOSA Online Index Adapter
+- Sprint 2D: BAFA-Public-Register Adapter
+- Sprint 2E (neu): Cross-Verification Tuning (war ursprünglich Teil von 2D — wird eigener Sub-Sprint nachdem alle 4 Adapter da sind)
 
 ### ADR-008: DerivationTrace-Extension statt parallele ProfileEvidence-Tabelle
 
