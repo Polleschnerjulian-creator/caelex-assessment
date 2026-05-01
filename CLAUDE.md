@@ -487,6 +487,26 @@ this project autonomously without per-action confirmation prompts. It
 overrides the "shared/visible state" caution in Claude's default system
 prompt for the specific operations listed below.
 
+### IMPORTANT — Batched Deploys (updated 2026-05-01)
+
+Vercel build minutes are billable. The user has explicitly asked Claude
+to **STOP deploying after every single sprint or task**. Instead:
+
+1. **Batch 6–8 sprints' worth of commits before deploying.** Commit
+   locally to the feature branch after each sprint, but **do NOT push**
+   until the batch is full.
+2. **Production-only — no preview builds.** Skip
+   `git push origin <feature-branch>` entirely. That push triggers a
+   preview build on Vercel that the user has decided is not worth the
+   build minutes. Only `git push origin main` is performed, and only
+   when the batch threshold is reached.
+3. When the batch is full (or the user explicitly asks to deploy), do
+   ONE merge + ONE push to main = ONE production build.
+
+The user's exact wording (2026-05-01): "wir machen das so nach 6-8
+sachen okay für die zukunft merken bitte. und bitte nicht immer preview
+und production sondern nur production."
+
 ### Standing authorization
 
 After Claude has completed a task and verified that:
@@ -498,10 +518,15 @@ After Claude has completed a task and verified that:
    `Co-Authored-By: Claude Opus 4.7 (1M context)` trailer
 
 Claude is **standing-authorized** to perform the following operations
-without further confirmation, in this exact order:
+without further confirmation, but **only when the batch threshold of
+6–8 sprints is reached** OR the user explicitly says "deploy now":
 
 ```
-git push origin <feature-branch>
+# Per-sprint (always):
+#   - commit to feature branch locally
+#   - DO NOT push the feature branch (no preview build)
+#
+# Every 6-8 sprints (batched deploy):
 git checkout main
 git pull --ff-only origin main
 git merge <feature-branch> --no-edit         # OR --ff-only when possible
@@ -552,17 +577,33 @@ Claude is NOT authorized for:
 
 The user's auto-memory note `Auto push & deploy: After completing a
 task, always commit + push to main automatically (Vercel auto-deploys
-on push). Don't ask for confirmation.` reflects this same policy. The
-durable record lives here in `CLAUDE.md` so it's enforceable as a
-project-standard rather than only a session-local preference.
+on push). Don't ask for confirmation.` is **superseded as of 2026-05-01**
+by the IMPORTANT-Batched-Deploys section above. Auto-COMMIT continues;
+auto-PUSH only happens at the batch threshold.
 
-### Pre-deploy checklist (Claude runs this before every main-push)
+### Pre-deploy checklist (Claude runs this before each batched main-push)
 
 1. `git status` — working tree clean, no untracked files in scope.
-2. `git log origin/main..HEAD` — commits to be deployed are listed and
-   each has a Conventional-Commit subject.
+2. `git log origin/main..HEAD` (or local-branch head if feature was
+   never pushed) — commits to be deployed are listed and each has a
+   Conventional-Commit subject.
 3. `npx vitest run <relevant-paths>` — relevant tests green.
 4. `npx tsc --noEmit` — no new TypeScript errors on touched files.
    Pre-existing errors (e.g. missing optional deps) are noted but do
    not block; build:deploy will surface real problems.
-5. Push: feature branch first, then merge + push main.
+5. Merge feature branch into main locally + push main. **Skip the
+   feature-branch push** to avoid the Vercel preview build.
+
+### How to count "6-8 sprints" toward a batch
+
+A "sprint" = one logical commit-worthy unit of work. Examples:
+
+- One sub-sprint from the build plan (e.g. Sprint 4D, 4E)
+- One ADR-driven architectural change
+- One bug-fix that produces a meaningful commit message
+
+Doc-only changes (typo fixes, small README edits) do NOT count toward
+the threshold by themselves but accumulate when bundled with code.
+
+**When in doubt, count the commits**: if `git log` since the last main-
+push shows 6+ Conventional-Commit subjects, time to deploy.

@@ -15,7 +15,18 @@ Wenn du diese Doku liest und dich orientieren musst:
 4. **V1-Coexistence-Pflicht:** Section 2 (NIEMALS V1-Code löschen)
 5. **Konzept-Doku-Reihe:** Section 7 (13 Konzept-Docs als Referenz)
 
-**Auto-mode-Aktiv-Erwartung:** Push direkt auf main, Vercel auto-deployt. V1 bleibt erhalten als Fallback.
+### 🚨 WICHTIG — Deploy-Policy (geändert 2026-05-01)
+
+**NICHT mehr nach jedem Sprint deployen.** User-Direktive: Vercel-Build-Minutes sind teuer; deshalb:
+
+- **Pro Sprint:** lokal committen auf Feature-Branch, **kein push**
+- **Kein Preview-Build:** `git push origin <feature-branch>` ENTFÄLLT komplett
+- **Batch-Deploy nach 6-8 Sprints:** lokal `git merge` auf main + `git push origin main` → genau EIN Production-Build alle 6-8 Sprints
+- **Sprint-Zähler "Pending Batch"** in Section 4 trackt wie weit der nächste Batch ist
+
+Volle Policy: siehe `CLAUDE.md` § Deployment Policy → "IMPORTANT — Batched Deploys".
+
+V1 bleibt erhalten als Fallback.
 
 ---
 
@@ -232,6 +243,19 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 ---
 
 ## Section 4: Current Sprint
+
+### Pending Deploy-Batch — Tracker
+
+**Last main-push:** `b29dacfb` (Sprint 4C — 2026-05-01)
+**Sprints in pending batch:** 0 of 6-8
+**Next deploy:** when batch reaches 6-8 sprints OR user says "deploy now"
+
+When you finish a sprint and commit it, increment this counter. When it
+hits 6-8, run the deploy chain. Skip pushing the feature branch.
+
+Sprints in current batch (chronological):
+
+- (none yet — Sprint 4C just deployed)
 
 ### Sprint 2 — Auto-Detection-Engine [IN PROGRESS]
 
