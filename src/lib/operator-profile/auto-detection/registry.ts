@@ -20,6 +20,7 @@ import type { AutoDetectionAdapter, SourceKey } from "./types";
 import { viesAdapter } from "./vies-adapter.server";
 import { celesTrakAdapter } from "./celestrak-adapter.server";
 import { gleifAdapter } from "./gleif-adapter.server";
+import { unoosaAdapter } from "./unoosa-adapter.server";
 
 /**
  * Static, ordered list of adapters. Order = priority for tie-breaks.
@@ -29,14 +30,15 @@ import { gleifAdapter } from "./gleif-adapter.server";
  * Priority rationale:
  *   1. VIES — tax-authority-validated, deterministic, highest trust
  *   2. GLEIF — G20/ISO LEI registry, jurisdictionally-corroborated
- *   3. CelesTrak SATCAT — Air-Force-derived, fuzzy name match
- *   4. (future) BAFA / UNOOSA — secondary corroboration sources
+ *   3. UNOOSA — UN registry of space objects, filed by national governments
+ *   4. CelesTrak SATCAT — Air-Force-derived, fuzzy name match (lowest prio
+ *      because OWNER ≠ operator-jurisdiction can drift)
  */
 export const ADAPTERS: AutoDetectionAdapter[] = [
   viesAdapter,
   gleifAdapter,
+  unoosaAdapter,
   celesTrakAdapter,
-  // Sprint 2D+: BAFA / UNOOSA
 ];
 
 /** Map keyed by source for fast lookup. */

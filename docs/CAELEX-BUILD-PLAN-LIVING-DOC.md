@@ -268,13 +268,19 @@ Per ADR-011 (GLEIF statt Bundesanzeiger). Lieferung:
 - Adapter-Priority: VIES → GLEIF → CelesTrak
 - 22 neue Tests, 142/142 cumulative pass
 
-#### Sprint 2D — BAFA Public Register [PENDING] (next)
+#### Sprint 2D — UNOOSA Online Index Adapter ✅ COMPLETED 2026-05-01
 
-Zero-cost: BAFA-Public-Register-Suche → `isDefenseOnly` Hint, Export-Lizenz-Status. Public Search ohne Auth via `https://www.bafa.de/...`.
+Per ADR-012 (UNOOSA statt BAFA — kein public BAFA-Lookup-API). Lieferung:
 
-#### Sprint 2E — Cross-Verification Tuning [PENDING]
+- Real HTTP fetcher gegen UNOOSA-search-Page
+- HTML-Parser für Results-Table (defensive, dependency-free)
+- `establishment` extraction (conf 0.7-0.9 dependent auf agreement ratio)
+- Function + Launch-Date-Range surface'd in warnings für Sprint 5
+- 26 neue Tests, 168/168 cumulative pass
 
-Wenn alle 4 Adapter (VIES, GLEIF, CelesTrak, BAFA) da sind: Confidence-Weighting per Source-Authoritativeness, Conflict-Resolution-UI, entitySize-Heuristik aus legal form + employee count.
+#### Sprint 2E — Cross-Verification Tuning [PENDING] (next)
+
+Wenn alle 4 Adapter (VIES, GLEIF, UNOOSA, CelesTrak) live: Confidence-Weighting per Source-Authoritativeness, Conflict-Resolution-UI, entitySize-Heuristik aus legal form. Auto-Dispatch in Production aktivieren (`EVIDENCE_REVERIFICATION_AUTODISPATCH=1`).
 
 #### (Later — out of Sprint-2-scope) — Bundesanzeiger / Handelsregister-DE
 
@@ -373,6 +379,40 @@ Handelsregister-DE bleibt offen (nur via fragiles HTML scraping zero-cost machba
 - 13 Konzept-Docs in `docs/` committed
 - Master-Plan (dieses Doc) erstellt
 - V1-Preservation-Strategie definiert
+
+### 2026-05-01: Sprint 2D — UNOOSA Online Index Adapter (Zero-Cost) ✅
+
+**Architektur-Entscheidung:** ADR-012 — Pivot von BAFA auf UNOOSA. Begründung: BAFA hat keine public-API für Lizenz-Lookups (Lizenzdaten sind vertraulich). UNOOSA dagegen ist die UN-Authoritäts-Registry für Space-Objects — frei zugänglich, hochrelevant für Caelex's Zielgruppe.
+
+**Geliefert:**
+
+- `src/lib/operator-profile/auto-detection/unoosa-adapter.server.ts` — echter HTTP-Fetcher gegen `https://www.unoosa.org/oosa/osoindex/search-ng.jspx`
+- HTML-Parser für Search-Results-Table (defensive — gibt empty array zurück bei Layout-Anomalien, kein throw)
+- Field-Extraction:
+  - `establishment` (T2, conf 0.7-0.9) — aus State-of-Registry-Spalte; confidence steigt mit Anteil unanimous matches
+  - Function-Distribution (Communications/Earth-Obs/Military) → warnings (für Sprint 5 isDefenseOnly-Heuristik)
+  - Launch-Date-Range → warnings ("Operator aktiv seit YYYY")
+- Helpers:
+  - `parseUnoosaHtml()` — exported für Tests
+  - `mapStateOfRegistryToIso2()` — handles 3-letter UN codes (DEU/FRA/USA/ESA), full English names ("Germany"/"United Kingdom"), und alpha-2 unchanged
+  - `stripHtml()` — entity-decoding + tag-stripping für Cell-Inhalte
+- Adapter-Priorität: VIES → GLEIF → UNOOSA → CelesTrak (UN-Authoritäts-Daten vor satellite-OWNER-Hint)
+- 26 neue Tests (heavy parser coverage)
+
+**Cross-Verification jetzt 4-fach:** Wenn VIES + GLEIF + UNOOSA + CelesTrak alle dieselbe Jurisdiction melden → agreementCount=4, stärkstes mögliches Signal. Operator UI: "Tax-Authority + Corporate-Registry + UN-Registry + Satellite-Catalog — vier unabhängige Authoritäten bestätigen DE."
+
+**Honest scope — UNOOSA fragility:**
+
+- HTML-Parsing ist regex-based ohne externe Lib (keine Dependencies hinzugefügt)
+- Bei UN-Layout-Änderung returnt der Parser empty array → kein system-wide failure, sondern adapter wird in cross-verifier ignoriert für diesen run
+- UN-Filings können Wochen nach Launch erscheinen (filing-delay) — UNOOSA-Daten sind nicht real-time
+- Service Unavailable Pages werden als zero-records behandelt (graceful)
+
+**Gesamt-Test-Status nach Sprint 2D:** 168/168 vitest pass
+
+**V1-Impact:** Null. Adapter-Framework bleibt purely additive.
+
+**Sprint 2 ist damit weitgehend abgeschlossen** — 4 echte Zero-Cost-Adapter live (VIES, GLEIF, UNOOSA, CelesTrak). Sprint 2E folgt für Cross-Verification-Tuning + Auto-Dispatch-Aktivierung in Production.
 
 ### 2026-05-01: Sprint 2C — GLEIF LEI-Adapter (Zero-Cost) ✅
 
@@ -556,6 +596,44 @@ Handelsregister-DE bleibt offen (nur via fragiles HTML scraping zero-cost machba
 **Datum:** 2026-05-01
 **Begründung:** Compliance-Workflows sind 6-12 Monate lang. Trial-Expire mid-workflow = garantierter Customer-Loss.
 **Konsequenz:** Free-Tier mit harten Limits (1 Mission, 2 Workflows, 100 Astra-Calls/mo). Keine Trial-Expiry.
+
+### ADR-012: Sprint 2D = UNOOSA, NICHT BAFA (kein public BAFA-Lookup)
+
+**Datum:** 2026-05-01 (Sprint 2D)
+**Kontext:** Sprint 2D war im Master-Plan als BAFA-Public-Register-Adapter geplant. Bei näherer Betrachtung:
+
+- BAFA hat **keine public-API** für Export-Lizenz-Lookups — Lizenzdaten sind vertraulich
+- BAFA publiziert nur Sanktionslisten + Embargo-Listen + Statistik-Reports
+- Die Liste **autorisierter Zoll-Spediteure** ist public aber nicht relevant für Compliance-Auto-Detection
+- Es gibt kein BAFA-äquivalent zu VIES/GLEIF/CelesTrak für Operator-Profil-Felder
+
+**Bessere Quelle: UNOOSA Online Index**
+
+UNOOSA (UN Office for Outer Space Affairs) führt das offizielle UN-Registry für space objects unter dem Registration Convention von 1976. Vorteile:
+
+- **Free, public, no auth, no API key**
+- **UN-authoritative** — höchste Authoritation für satellite-registration-Daten
+- **Operator-spezifisch** — direkt relevant für Caelex's Zielgruppe
+- **Cross-verifies CelesTrak** — wenn beide melden DE-registrierter Satellit, agreementCount=2
+- **Felder die wir kriegen:**
+  - `establishment` (jurisdiction of registry) — primäre Authoritäts-Quelle
+  - `plannedLaunchDate` (für past launches: tatsächliches Launch-Datum)
+  - `satelliteMassKg` (sometimes — abhängig vom Filing der Member-State)
+  - Function/Purpose (military / commercial / research)
+
+**Limitation:** UNOOSA's Search-Page ist JSF-basiert mit ViewState-Tokens und PrimeFaces AJAX-Forms. HTML-Parsing ist nicht trivial. Wir bauen den Adapter mit:
+
+1. Defensives Parsing — bei HTML-Layout-Änderungen `errorKind: parse-error` graceful
+2. Fallback auf UNOOSA's annual JSON-Export für static lookups (falls verfügbar)
+3. Strict-Timeout — UNOOSA-Server sind manchmal langsam (1-3 sec response)
+
+**Konsequenz:**
+
+- Sprint 2D: UNOOSA-Adapter via HTML-Parsing der Search-Page
+- BAFA entfällt aus Sprint-2-Fenster
+- Sprint 2E: Cross-Verification-Tuning + entitySize-Heuristik aus den 4 Quellen (VIES + GLEIF + CelesTrak + UNOOSA)
+
+**Trade-off:** UNOOSA-Parsing ist fragiler als die anderen 3 Adapter. Mitigation: graceful-error-handling-pattern, plus die anderen 3 Adapter ergänzen sich auch ohne UNOOSA.
 
 ### ADR-011: Sprint 2C = GLEIF, NICHT Bundesanzeiger
 
