@@ -16,13 +16,19 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { mockListDue, mockMarkFired, mockRecordFailure, mockAppendEvent } =
-  vi.hoisted(() => ({
-    mockListDue: vi.fn(),
-    mockMarkFired: vi.fn(),
-    mockRecordFailure: vi.fn(),
-    mockAppendEvent: vi.fn(),
-  }));
+const {
+  mockListDue,
+  mockMarkFired,
+  mockRecordFailure,
+  mockAppendEvent,
+  mockExecuteStep,
+} = vi.hoisted(() => ({
+  mockListDue: vi.fn(),
+  mockMarkFired: vi.fn(),
+  mockRecordFailure: vi.fn(),
+  mockAppendEvent: vi.fn(),
+  mockExecuteStep: vi.fn(),
+}));
 
 vi.mock("server-only", () => ({}));
 
@@ -34,6 +40,10 @@ vi.mock("./scheduling.server", () => ({
 
 vi.mock("./events.server", () => ({
   appendWorkflowEvent: mockAppendEvent,
+}));
+
+vi.mock("./executor.server", () => ({
+  executeStep: mockExecuteStep,
 }));
 
 vi.mock("@/lib/logger", () => ({
@@ -53,6 +63,12 @@ beforeEach(() => {
     prevHash: "g",
     entryHash: "h",
     occurredAt: new Date(),
+  });
+  // Sprint 3D: heartbeat now also calls executeStep after SCHEDULE_FIRED.
+  // Default to success so existing tests still observe "fired" outcomes.
+  mockExecuteStep.mockResolvedValue({
+    fired: true,
+    autoFiredNext: false,
   });
 });
 
@@ -191,5 +207,25 @@ describe("runHeartbeatTick", () => {
     const result = await runHeartbeatTick();
     expect(result.fired).toBe(25);
     expect(result.sample.length).toBe(10);
+  });
+
+  it("invokes executeStep after emitting SCHEDULE_FIRED (Sprint 3D)", async () => {
+    mockListDue.mockResolvedValue([
+      {
+        id: "sch_x",
+        workflowId: "wf_x",
+        stepKey: "step-a",
+        fireAt: new Date(),
+        attemptCount: 0,
+      },
+    ]);
+    await runHeartbeatTick();
+    expect(mockExecuteStep).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workflowId: "wf_x",
+        stepKey: "step-a",
+        causedBy: expect.stringContaining("cron:cowf-heartbeat"),
+      }),
+    );
   });
 });

@@ -33,6 +33,22 @@ import {
   WorkflowEventType,
 } from "./types";
 
+// Lazy-imported to avoid circular dependency:
+//   instances.server <-> executor.server <-> events.server
+//
+// The executor module imports from instances.server (advanceState), so
+// instances.server cannot statically import executor.server. We resolve
+// the import inside `maybeAutoFireInitialStep()` at call time.
+type AutoFireResult = { fired: boolean };
+async function lazyExecuteStep(input: {
+  workflowId: string;
+  stepKey: string;
+  causedBy: string;
+}): Promise<AutoFireResult> {
+  const { executeStep } = await import("./executor.server");
+  return executeStep(input);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const operatorWorkflowDef = (prisma as any).operatorWorkflowDef;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -172,6 +188,19 @@ export async function startWorkflow(
       defVersion: def.version,
       initialState: input.initialState,
     });
+
+    // Sprint 3D: if the initial state has an auto-fire step, kick it off
+    // immediately. This is what makes a workflow "self-driving" — the
+    // operator clicks "start" and the heartbeat / decision chain takes
+    // over from there. Failures here are logged but do NOT roll back
+    // the instance — the workflow is created, the user can manually
+    // trigger steps later if the auto-fire failed transiently.
+    await maybeAutoFireInitialStep(
+      instance.id,
+      input.defId,
+      input.initialState,
+    );
+
     return { instanceId: instance.id, eventId: event.id };
   } catch (err) {
     // Roll back the instance row — the chain never got its first event,
@@ -182,6 +211,47 @@ export async function startWorkflow(
         /* swallow — best-effort rollback */
       });
     throw err;
+  }
+}
+
+/**
+ * If the initialState has a step with `autoFireOnEnter: true`, run it
+ * via the executor. Looks up the registered WorkflowDef (Sprint 3D
+ * registry) — if the def is not registered (test environment, code
+ * removed, etc.) we silently skip without throwing. The workflow
+ * instance still exists and can be advanced manually.
+ */
+async function maybeAutoFireInitialStep(
+  workflowId: string,
+  defId: string,
+  initialState: string,
+): Promise<void> {
+  try {
+    const { getWorkflowDefById } = await import("./registry.server");
+    const def = getWorkflowDefById(defId);
+    if (!def) {
+      logger.info(
+        "[cowf] startWorkflow: def not in registry — skipping auto-fire",
+        { workflowId, defId },
+      );
+      return;
+    }
+    const { findAutoFireStepFor } = await import("./executor.server");
+    const stepKey = findAutoFireStepFor(def.storedInput.steps, initialState);
+    if (!stepKey) return;
+
+    await lazyExecuteStep({
+      workflowId,
+      stepKey,
+      causedBy: "system:auto-fire-initial",
+    });
+  } catch (err) {
+    logger.error("[cowf] auto-fire initial step failed (instance kept)", {
+      workflowId,
+      defId,
+      initialState,
+      error: (err as Error).message ?? String(err),
+    });
   }
 }
 

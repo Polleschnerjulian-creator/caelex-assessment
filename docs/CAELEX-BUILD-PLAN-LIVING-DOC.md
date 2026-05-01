@@ -124,12 +124,15 @@ User klickt Browser-Refresh → ist auf V1 — **30 Sekunden Recovery-Zeit**.
 - **Aufwand:** 3-4 Wochen
 - **V1-Impact:** Null
 
-**Sprint 3 — COWF Foundation** [IN PROGRESS]
+**Sprint 3 — COWF Foundation** ✅ COMPLETED 2026-05-01
 
 - Sprint 3A: 6 Workflow-Tabellen + hash-chain service ✅ COMPLETED 2026-05-01
 - Sprint 3B: defineWorkflow() DSL + W3 first concrete workflow ✅ COMPLETED 2026-05-01
 - Sprint 3C: Heartbeat-Cron + scheduling service ✅ COMPLETED 2026-05-01
-- Sprint 3D: 7 Step-Type executors (action/form/approval/astra/waitFor/decision/qes) [PENDING] (next)
+- Sprint 3D: Step executors + registry + auto-fire chain ✅ COMPLETED 2026-05-01
+
+Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch action+decision steps laufen, vom Heartbeat-Cron weiter getrieben werden, und tamper-evident-audited werden via WorkflowEvent hash-chain. Astra/QES/Form executors sind Stubs (Integration in spätere Sprints).
+
 - **Ziel:** Workflow-Engine läuft, ein erster Workflow durchgespielt
 - **Aufwand:** 3-4 Wochen
 - **V1-Impact:** Null (parallel zu existing State-Machine)
@@ -379,6 +382,44 @@ Handelsregister-DE bleibt offen (nur via fragiles HTML scraping zero-cost machba
 - 13 Konzept-Docs in `docs/` committed
 - Master-Plan (dieses Doc) erstellt
 - V1-Preservation-Strategie definiert
+
+### 2026-05-01: Sprint 3D — COWF Step Executors + Registry ✅
+
+**Sprint 3 ist damit komplett.** Workflows können jetzt registriert werden, automatisch starten, durch ihre States laufen, und werden vom Heartbeat-Cron weiter getrieben.
+
+**Geliefert:**
+
+- **Registry** `src/lib/cowf/registry.server.ts` — globaler Singleton-Lookup für in-memory `WorkflowDef` Handlers. Persistiert die `storedInput`-Hälfte via `registerWorkflowDef()` (Sprint 3A) + cached die `handlers`-Map (Sprint 3B) im Modul-State. Indexed by `defId` und `name+version`. App-Boot ruft `registerCanonicalWorkflows()` (Sprint 3D registriert nur W3; W1/W2/W4-W9 folgen).
+- **Executor-Dispatcher** `src/lib/cowf/executor.server.ts` — `executeStep({ workflowId, stepKey, causedBy })`:
+  1. Loads instance + def + step (mit clean skip-paths für not-found / state-mismatch / max-depth)
+  2. Builds `StepContext` (workflow + subject + state-bag)
+  3. Emits STEP_STARTED event (hash-chained)
+  4. Dispatches via switch(step.kind) zu kind-specific handler
+  5. On success: emits STEP_COMPLETED + advances state via `advanceState()`
+  6. **Auto-fire chain** — wenn der nächste State einen `autoFireOnEnter:true`-Step hat, recurse mit `_depth+1`. Hard cap MAX_AUTO_CHAIN_DEPTH=20 als defense-in-depth.
+  7. On handler throw: emits ERROR event + KEIN state-advance
+- **Action executor** — vollständig wired: ruft `handlers.run(ctx)`, transitions zu `step.to`
+- **Decision executor** — vollständig wired: `evaluatePredicate(branch.predicate, ctx.state)` für jede branch in order, picks first match, routes zu `branch.step` mit `branch.to ?? step.to`. Predicate-language: `{ key: literal }` (equals shortcut), `{ key: { equals: x } }`, `{ key: { not: x } }`. ALL keys must match.
+- **Stubs** für astra/form/approval/waitForEvent/qes — emit STEP_STARTED but don't transition. Stubs differ per kind:
+  - `astra` — stub log only (Astra-V2 integration in next sprint)
+  - `form` — stub log only (form-submit API integration deferred)
+  - `approval` — **upserts WorkflowApprovalSlot per `requireRoles[]`** (Sprint 3D wires the slot-creation; UI-driven approval click + transition wires later)
+  - `waitForEvent` — **creates WorkflowEventListener row** + emits WAIT_REGISTERED event (listener-firing-on-event-publish wires later)
+  - `qes` — stub log only (D-Trust integration in Sprint 8)
+- **Heartbeat-Integration** — extended `runHeartbeatTick`-internal to call `executeStep` AFTER emitting SCHEDULE_FIRED + marking schedule fired. Race-tolerant via executor's state-mismatch skip.
+- **startWorkflow auto-fire** — extended `startWorkflow()` to call `maybeAutoFireInitialStep()` immediately after first STATE_TRANSITION event. Lazy-imports executor.server to avoid circular dep instances↔executor↔events. If def not in registry (test environment), gracefully skips.
+- **Tests:** 26 neue Tests (6 registry + 19 executor + 1 heartbeat-integration). Cumulative 290/290.
+
+**V1-Impact:** Null. Reine Additionen.
+
+**Honest scope:**
+
+- Astra/Form/QES: stubs only — emit STEP_STARTED but no transition. Workflows that hit these steps "wait" until external integration arrives.
+- Approval/WaitForEvent: stubs PLUS DB-side effects (create slots/listener rows). UI/event-publisher wires the transition trigger separately.
+- W3 today: SCANNING → SNAPSHOT_TAKEN → DRIFT_CHECK_DONE → drift-decision (no branch matches because run handlers are empty; `ctx.state.driftDelta` never set) → workflow stays at DRIFT_CHECK_DONE. To make W3 fully drive end-to-end, the action handlers (compute-snapshot, diff-against-prior) need to populate `ctx.state` — that wiring lands in a "Sprint 3E — W3 production-wiring" or similar.
+- Astra-step transition: needs Astra-V2 callback path that emits STEP_COMPLETED on AstraProposal completion. Lands when comply-v2/astra-engine integration is wired.
+
+**Cumulative status:** 290/290 vitest pass across 18 test files. Zero net new TypeScript errors (864 baseline). V1 untouched.
 
 ### 2026-05-01: Sprint 3C — COWF Heartbeat-Cron ✅
 

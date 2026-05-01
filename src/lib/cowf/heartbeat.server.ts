@@ -30,6 +30,7 @@ import "server-only";
 
 import { logger } from "@/lib/logger";
 import { appendWorkflowEvent } from "./events.server";
+import { executeStep } from "./executor.server";
 import {
   listDueSchedules,
   markScheduleFired,
@@ -115,8 +116,7 @@ async function processSchedule(
 ): Promise<"fired" | "retry" | "failed"> {
   try {
     // 1. Emit the SCHEDULE_FIRED event into the workflow's chain. This is
-    //    the canonical "we noticed your schedule was due" record. Sprint 3D
-    //    will subscribe to these events and execute the actual step.
+    //    the canonical "we noticed your schedule was due" record.
     await appendWorkflowEvent({
       workflowId: schedule.workflowId,
       eventType: WorkflowEventType.SCHEDULE_FIRED,
@@ -135,13 +135,25 @@ async function processSchedule(
     const { fired } = await markScheduleFired(schedule.id);
     if (!fired) {
       // Already FIRED by another tick (rare under cron-at-most-once but
-      // defensive). The event was emitted twice — Sprint 3D's executor
-      // must dedup on (workflowId, scheduleId).
+      // defensive). The event was emitted twice — the executor's state-
+      // mismatch guard prevents double-execution (the second invocation
+      // sees the workflow has already advanced past step.from).
       logger.warn(
-        "[cowf-heartbeat] schedule already fired (race) — event was emitted but markFired no-op",
+        "[cowf-heartbeat] schedule already fired (race) — proceeding to execute defensively",
         { scheduleId: schedule.id },
       );
     }
+
+    // 3. Dispatch the step. The executor handles state-mismatch gracefully
+    //    (returns skipReason: "state-mismatch" without erroring), so racing
+    //    ticks can't double-execute. Failures here log + emit ERROR event
+    //    inside the executor itself.
+    await executeStep({
+      workflowId: schedule.workflowId,
+      stepKey: schedule.stepKey,
+      causedBy: `cron:cowf-heartbeat:schedule:${schedule.id}`,
+    });
+
     return "fired";
   } catch (err) {
     const message = (err as Error).message ?? String(err);
