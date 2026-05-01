@@ -19,6 +19,7 @@
 import type { AutoDetectionAdapter, SourceKey } from "./types";
 import { viesAdapter } from "./vies-adapter.server";
 import { celesTrakAdapter } from "./celestrak-adapter.server";
+import { gleifAdapter } from "./gleif-adapter.server";
 
 /**
  * Static, ordered list of adapters. Order = priority for tie-breaks.
@@ -27,14 +28,15 @@ import { celesTrakAdapter } from "./celestrak-adapter.server";
  *
  * Priority rationale:
  *   1. VIES — tax-authority-validated, deterministic, highest trust
- *   2. CelesTrak SATCAT — Air-Force-derived, public, reliable
- *   3. (future) Bundesanzeiger / handelsregister.de — fragile HTML, fallback
- *   4. (future) UNOOSA / BAFA — secondary corroboration sources
+ *   2. GLEIF — G20/ISO LEI registry, jurisdictionally-corroborated
+ *   3. CelesTrak SATCAT — Air-Force-derived, fuzzy name match
+ *   4. (future) BAFA / UNOOSA — secondary corroboration sources
  */
 export const ADAPTERS: AutoDetectionAdapter[] = [
   viesAdapter,
+  gleifAdapter,
   celesTrakAdapter,
-  // Sprint 2C+: bundesanzeiger / handelsregister / UNOOSA / BAFA
+  // Sprint 2D+: BAFA / UNOOSA
 ];
 
 /** Map keyed by source for fast lookup. */

@@ -256,21 +256,30 @@ Per ADR-010 (zero-cost pivot from Handelsregister). Lieferung:
 - Dispatcher-Erweiterung: Organization.name → AdapterInput.legalName, Organization.vatNumber Fallback
 - 25 neue Adapter-Tests + 3 Dispatcher-Tests, 120/120 cumulative pass
 
-#### Sprint 2C — Bundesanzeiger-Adapter [PENDING] (next)
+#### Sprint 2C — GLEIF LEI-Adapter ✅ COMPLETED 2026-05-01
 
-Zero-cost: Bundesanzeiger.de Public-Search → `entitySize` (Bilanz-Größenklassen: micro / small / medium / large per § 267 HGB).
+Per ADR-011 (GLEIF statt Bundesanzeiger). Lieferung:
 
-#### Sprint 2D — BAFA Public Register [PENDING]
+- Real GLEIF-Fetcher gegen `api.gleif.org/api/v1/lei-records`
+- `establishment`-Feld mit FULLY_CORROBORATED-Boost (0.95) vs ENTITY_SUPPLIED_ONLY (0.85)
+- Multi-match disambiguation: gleich-Jurisdiction = promote, mixed = kein promote
+- Status-Detection: INACTIVE/LAPSED records → no promote + warning
+- Helpers: isActiveRecord, elfLabel mit 12+ EU legal forms (GmbH, AG, SARL, BV, Ltd, ...)
+- Adapter-Priority: VIES → GLEIF → CelesTrak
+- 22 neue Tests, 142/142 cumulative pass
 
-Zero-cost: BAFA-Public-Register Suche → `isDefenseOnly` Hint, Export-Lizenz-Status.
+#### Sprint 2D — BAFA Public Register [PENDING] (next)
+
+Zero-cost: BAFA-Public-Register-Suche → `isDefenseOnly` Hint, Export-Lizenz-Status. Public Search ohne Auth via `https://www.bafa.de/...`.
 
 #### Sprint 2E — Cross-Verification Tuning [PENDING]
 
-Wenn alle Adapter da sind: Confidence-Weighting per Source-Authoritativeness, Conflict-Resolution-UI für Operator-Reviews.
+Wenn alle 4 Adapter (VIES, GLEIF, CelesTrak, BAFA) da sind: Confidence-Weighting per Source-Authoritativeness, Conflict-Resolution-UI, entitySize-Heuristik aus legal form + employee count.
 
-#### (Later) — Handelsregister-DE
+#### (Later — out of Sprint-2-scope) — Bundesanzeiger / Handelsregister-DE
 
-Nur via fragiles HTML-Scraping zero-cost machbar. Verschoben bis nach Sprint 2D, ggf. komplett aus Sprint-2-Fenster gestrichen wenn Bundesanzeiger + BAFA + UNOOSA bereits 30%+ Coverage liefern.
+Bundesanzeiger entfällt (durch GLEIF abgedeckt — der LOU IST Bundesanzeiger Verlag).
+Handelsregister-DE bleibt offen (nur via fragiles HTML scraping zero-cost machbar). Wenn nach Sprint 2D+2E die Coverage bei 30%+ liegt, wird Handelsregister gestrichen.
 
 ---
 
@@ -364,6 +373,39 @@ Nur via fragiles HTML-Scraping zero-cost machbar. Verschoben bis nach Sprint 2D,
 - 13 Konzept-Docs in `docs/` committed
 - Master-Plan (dieses Doc) erstellt
 - V1-Preservation-Strategie definiert
+
+### 2026-05-01: Sprint 2C — GLEIF LEI-Adapter (Zero-Cost) ✅
+
+**Architektur-Entscheidung:** ADR-011 — Pivot von Bundesanzeiger auf GLEIF. Begründung: Bundesanzeiger.de hat CAPTCHAs + ist DE-only + scraping ist fragil. GLEIF ist die G20/ISO-mandatierte Authoritäts-Registry — saubere REST-API, free, EU-weit, JSON:API-konform. Der deutsche LOU für GLEIF ist tatsächlich Bundesanzeiger Verlag selbst, also bekommen wir dieselben Quelldaten in besser strukturierter Form.
+
+**Geliefert:**
+
+- `src/lib/operator-profile/auto-detection/gleif-adapter.server.ts` — echter GLEIF-Fetcher (`https://api.gleif.org/api/v1/lei-records?filter[entity.legalName]=<name>`)
+- Field-Extraction:
+  - `establishment` (T2, conf 0.85-0.95) — aus `entity.jurisdiction`. Confidence-Boost (0.95) wenn `validatedAs: FULLY_CORROBORATED`, sonst 0.85 für `ENTITY_SUPPLIED_ONLY`
+  - Status-Warning wenn alle Records inactive/dissolved/lapsed sind
+  - LEI surface'd in warnings (für UI in Sprint 5)
+  - Legal-Form (ELF-Code → Label) surface'd in warnings (für Sprint 5 wenn legalForm ein WritableVerifiedField wird)
+- Multi-Match-Logik:
+  - Multiple records mit gleicher Jurisdiction → promote, mit "needs disambiguation"-warning
+  - Multiple records mit unterschiedlichen Jurisdictions → KEIN promote, warning für manual review
+- Helpers: `isActiveRecord()`, `elfLabel()`, ELF_LABELS dictionary (12+ EU forms)
+- Adapter-Priorität: VIES → GLEIF → CelesTrak (LEI-Registry vor Satellite-Owner-Hint)
+- 22 neue Tests
+
+**Cross-Verification-Synergie:** Wenn VIES + GLEIF + CelesTrak alle dieselbe Jurisdiction melden → 3-way agreement, stärkstes Signal das Sprint 2 produzieren kann. Cross-Verifier setzt agreementCount=3 → operator UI sieht "3 unabhängige Authoritäten bestätigen DE".
+
+**Gesamt-Test-Status nach Sprint 2C:** 142/142 vitest pass
+
+**V1-Impact:** Null. Adapter-Framework bleibt purely additive.
+
+**Honest scope:**
+
+- GLEIF liefert KEINEN direkten `entitySize` — Sprint 2D/2E müssen das via BAFA-Mitarbeiterzahl + Heuristik aus legal form klären
+- LEI-Code wird noch nicht persistiert — wird in Sprint 5 als writable field hinzugefügt
+- Operator-Name muss exakt-substring matchen (Acme≠ACME GMBH); GLEIF ist case-sensitive aber wir uppercased automatisch
+
+**Ready for Sprint 2D:** BAFA Public Register — `isDefenseOnly`, Export-Lizenz-Status
 
 ### 2026-05-01: Sprint 2B — CelesTrak SATCAT Adapter (Zero-Cost) ✅
 
@@ -514,6 +556,46 @@ Nur via fragiles HTML-Scraping zero-cost machbar. Verschoben bis nach Sprint 2D,
 **Datum:** 2026-05-01
 **Begründung:** Compliance-Workflows sind 6-12 Monate lang. Trial-Expire mid-workflow = garantierter Customer-Loss.
 **Konsequenz:** Free-Tier mit harten Limits (1 Mission, 2 Workflows, 100 Astra-Calls/mo). Keine Trial-Expiry.
+
+### ADR-011: Sprint 2C = GLEIF, NICHT Bundesanzeiger
+
+**Datum:** 2026-05-01 (Sprint 2C)
+**Kontext:** Sprint 2C war im Master-Plan als Bundesanzeiger-Adapter geplant. Bei näherer Betrachtung ist Bundesanzeiger.de eine schlechte Wahl:
+
+- **CAPTCHA auf Detail-Seiten** — Bundesanzeiger blockt aktiv automation
+- **DE-only** — wir wollen EU-weit
+- **HTML-Search ohne API** — fragiles Parsing
+- **Implicit ToS-Risiken** für scraping public services
+- **Würde "korrekt und echt"-Direktive verletzen** wenn der Parser bei Layout-Änderungen kaputt geht
+
+**Bessere Quelle: GLEIF (Global Legal Entity Identifier Foundation)**
+
+GLEIF ist die G20/ISO-mandatierte Authoritätsregistry für Legal Entity Identifiers (LEI). Vorteile:
+
+- **Free, no auth, no API key** — pure öffentliche REST-API
+- **JSON:API-konform** — sauberes Parsing
+- **EU-weit + global** — funktioniert für alle Mitgliedsstaaten plus UK/US/etc.
+- **Authoritative** — Daten stammen direkt von den Local Operating Units (LOUs) in jedem Land (für DE: Bundesanzeiger Verlag selbst!)
+- **Felder die wir kriegen:**
+  - `legalName` (canonical, with language tag)
+  - `jurisdiction` (ISO-Code) — confirmt VIES + CelesTrak
+  - `legalForm` (ELF-Code: GmbH/AG/Ltd/SARL/etc.)
+  - Entity status (ACTIVE/INACTIVE/DISSOLVED) — Warning-Signal
+  - Registration authority (für DE = Handelsregister!)
+- **Stable Endpoint:** `https://api.gleif.org/api/v1/lei-records?filter[entity.legalName]=<name>`
+
+**Entscheidung:** Sprint 2C liefert GLEIF-Adapter. Bundesanzeiger entfällt — was Bundesanzeiger an Daten hätte liefern können, kommt indirekt via GLEIF (weil der Bundesanzeiger Verlag die deutsche LOU für GLEIF ist, also dieselben Quelldaten in besser strukturiertem Format).
+
+**Trade-off:** GLEIF liefert KEINEN direkten `entitySize`-Wert. Wir bekommen aber `legalForm` (GmbH/AG/etc.), woraus sich grobe Größenklassen-Heuristiken ableiten lassen — das wird erst in Sprint 2E (Cross-Verification Tuning) finalisiert wenn wir alle Quellen kennen.
+
+**Konsequenz:**
+
+- Sprint 2C: GLEIF-Adapter
+- Sprint 2D: BAFA Public Register (entitySize via Mitarbeiter/Umsatz aus Public-Register)
+- Sprint 2E: Cross-Verification + entitySize-Heuristik aus den 4 Quellen
+- Bundesanzeiger entfällt komplett aus dem Sprint-2-Fenster
+
+**Erweiterung WritableVerifiedField:** legalForm wird in Sprint 5 (UI-Reorg) hinzugefügt; Sprint 2C nutzt das Feld noch nicht direkt sondern surfaced es in `warnings` ähnlich wie VIES das mit legalName macht.
 
 ### ADR-010: Sprint 2B = CelesTrak-Adapter, NICHT Handelsregister-DE
 
