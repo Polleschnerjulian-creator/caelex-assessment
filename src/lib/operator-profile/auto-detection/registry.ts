@@ -18,17 +18,23 @@
 
 import type { AutoDetectionAdapter, SourceKey } from "./types";
 import { viesAdapter } from "./vies-adapter.server";
+import { celesTrakAdapter } from "./celestrak-adapter.server";
 
 /**
  * Static, ordered list of adapters. Order = priority for tie-breaks.
  * Adapters listed first win when two adapters return the same field with
  * the same confidence.
+ *
+ * Priority rationale:
+ *   1. VIES — tax-authority-validated, deterministic, highest trust
+ *   2. CelesTrak SATCAT — Air-Force-derived, public, reliable
+ *   3. (future) Bundesanzeiger / handelsregister.de — fragile HTML, fallback
+ *   4. (future) UNOOSA / BAFA — secondary corroboration sources
  */
 export const ADAPTERS: AutoDetectionAdapter[] = [
   viesAdapter,
-  // Sprint 2B: handelsregisterDeAdapter,
-  // Sprint 2C: unoosaAdapter,
-  // Sprint 2D: bafaAdapter,
+  celesTrakAdapter,
+  // Sprint 2C+: bundesanzeiger / handelsregister / UNOOSA / BAFA
 ];
 
 /** Map keyed by source for fast lookup. */

@@ -167,18 +167,24 @@ async function buildAdapterInput(
   organizationId: string,
 ): Promise<AdapterInput> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const organizationModel = (prisma as any).organization;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const operatorProfile = (prisma as any).operatorProfile;
-  const profile = await operatorProfile.findUnique({
-    where: { organizationId },
-    select: {
-      establishment: true,
-    },
-  });
 
-  // VAT-ID is not currently a column on OperatorProfile. We look for it in
-  // DerivationTrace evidence rows under fieldName="vatId" (set when an
-  // earlier adapter run or operator-input flagged it). If none found, the
-  // VIES adapter will reject with errorKind:missing-input — which is fine.
+  const [org, profile] = await Promise.all([
+    organizationModel.findUnique({
+      where: { id: organizationId },
+      select: { name: true, vatNumber: true },
+    }),
+    operatorProfile.findUnique({
+      where: { organizationId },
+      select: { establishment: true },
+    }),
+  ]);
+
+  // VAT-ID precedence: prior evidence row (operator-confirmed) > Organization.vatNumber column.
+  // The evidence row is more authoritative because it was tier-validated; the column may be
+  // user-typed without verification.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const derivationTrace = (prisma as any).derivationTrace;
   const vatTrace = await derivationTrace.findFirst({
@@ -202,9 +208,14 @@ async function buildAdapterInput(
       vatId = String(vatTrace.value);
     }
   }
+  // Fall back to the Organization.vatNumber column when no evidence row exists yet
+  if (!vatId && org?.vatNumber) {
+    vatId = String(org.vatNumber);
+  }
 
   return {
     organizationId,
+    legalName: org?.name ?? undefined,
     establishment: profile?.establishment ?? undefined,
     vatId,
   };

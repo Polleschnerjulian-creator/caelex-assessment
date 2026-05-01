@@ -13,18 +13,24 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { mockOperatorProfile, mockDerivationTrace, mockRunAutoDetection } =
-  vi.hoisted(() => ({
-    mockOperatorProfile: { findUnique: vi.fn() },
-    mockDerivationTrace: { findFirst: vi.fn() },
-    mockRunAutoDetection: vi.fn(),
-  }));
+const {
+  mockOperatorProfile,
+  mockOrganization,
+  mockDerivationTrace,
+  mockRunAutoDetection,
+} = vi.hoisted(() => ({
+  mockOperatorProfile: { findUnique: vi.fn() },
+  mockOrganization: { findUnique: vi.fn() },
+  mockDerivationTrace: { findFirst: vi.fn() },
+  mockRunAutoDetection: vi.fn(),
+}));
 
 vi.mock("server-only", () => ({}));
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     operatorProfile: mockOperatorProfile,
+    organization: mockOrganization,
     derivationTrace: mockDerivationTrace,
   },
 }));
@@ -47,6 +53,10 @@ import type { StaleEvidenceRow } from "../evidence.server";
 beforeEach(() => {
   vi.clearAllMocks();
   mockOperatorProfile.findUnique.mockResolvedValue({ establishment: "DE" });
+  mockOrganization.findUnique.mockResolvedValue({
+    name: "Acme Aerospace GmbH",
+    vatNumber: null,
+  });
   mockDerivationTrace.findFirst.mockResolvedValue(null);
   mockRunAutoDetection.mockResolvedValue({
     organizationId: "org_x",
@@ -111,8 +121,12 @@ describe("dispatchReverificationForStaleRows", () => {
     );
   });
 
-  it("skips orgs with no identity hints (no vatId, no establishment)", async () => {
+  it("skips orgs with no identity hints (no vatId, no name, no establishment)", async () => {
     mockOperatorProfile.findUnique.mockResolvedValue({ establishment: null });
+    mockOrganization.findUnique.mockResolvedValue({
+      name: null,
+      vatNumber: null,
+    });
     mockDerivationTrace.findFirst.mockResolvedValue(null);
     const rows = [makeStaleRow("org_skip")];
     const summary = await dispatchReverificationForStaleRows(rows);
@@ -130,6 +144,43 @@ describe("dispatchReverificationForStaleRows", () => {
     expect(mockRunAutoDetection).toHaveBeenCalledTimes(1);
     const [input] = mockRunAutoDetection.mock.calls[0];
     expect(input.vatId).toBe("DE123456789");
+  });
+
+  it("falls back to Organization.vatNumber when no evidence row exists", async () => {
+    mockOrganization.findUnique.mockResolvedValue({
+      name: "Acme",
+      vatNumber: "DE987654321",
+    });
+    mockDerivationTrace.findFirst.mockResolvedValue(null);
+    const rows = [makeStaleRow("org_orgvat")];
+    await dispatchReverificationForStaleRows(rows);
+    const [input] = mockRunAutoDetection.mock.calls[0];
+    expect(input.vatId).toBe("DE987654321");
+  });
+
+  it("evidence-row vatId wins over Organization.vatNumber column", async () => {
+    mockOrganization.findUnique.mockResolvedValue({
+      name: "Acme",
+      vatNumber: "DE000000000",
+    });
+    mockDerivationTrace.findFirst.mockResolvedValue({
+      value: '"DE111111111"',
+    });
+    const rows = [makeStaleRow("org_both")];
+    await dispatchReverificationForStaleRows(rows);
+    const [input] = mockRunAutoDetection.mock.calls[0];
+    expect(input.vatId).toBe("DE111111111");
+  });
+
+  it("surfaces Organization.name as legalName for CelesTrak adapter", async () => {
+    mockOrganization.findUnique.mockResolvedValue({
+      name: "OneWeb Limited",
+      vatNumber: null,
+    });
+    const rows = [makeStaleRow("org_named")];
+    await dispatchReverificationForStaleRows(rows);
+    const [input] = mockRunAutoDetection.mock.calls[0];
+    expect(input.legalName).toBe("OneWeb Limited");
   });
 
   it("counts failures from runAutoDetection failures array", async () => {

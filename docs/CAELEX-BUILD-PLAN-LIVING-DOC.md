@@ -246,13 +246,31 @@ Per ADR-009 (VIES-first). Lieferung:
 - Cron-Wiring (env-gated auto-dispatch)
 - 42 neue Tests, 92/92 cumulative pass
 
-#### Sprint 2B — Handelsregister-DE [PENDING] (next)
+#### Sprint 2B — CelesTrak SATCAT-Adapter ✅ COMPLETED 2026-05-01
 
-#### Sprint 2C — UNOOSA Online Index [PENDING]
+Per ADR-010 (zero-cost pivot from Handelsregister). Lieferung:
+
+- CelesTrak SATCAT REST-Fetcher (free, no auth, already polled by Caelex)
+- 4 Felder: isConstellation, constellationSize, primaryOrbit, establishment-hint
+- Helpers: classifyOrbit (LEO/MEO/GEO/HEO), celestrak3LetterToIso2 (40+ codes)
+- Dispatcher-Erweiterung: Organization.name → AdapterInput.legalName, Organization.vatNumber Fallback
+- 25 neue Adapter-Tests + 3 Dispatcher-Tests, 120/120 cumulative pass
+
+#### Sprint 2C — Bundesanzeiger-Adapter [PENDING] (next)
+
+Zero-cost: Bundesanzeiger.de Public-Search → `entitySize` (Bilanz-Größenklassen: micro / small / medium / large per § 267 HGB).
 
 #### Sprint 2D — BAFA Public Register [PENDING]
 
+Zero-cost: BAFA-Public-Register Suche → `isDefenseOnly` Hint, Export-Lizenz-Status.
+
 #### Sprint 2E — Cross-Verification Tuning [PENDING]
+
+Wenn alle Adapter da sind: Confidence-Weighting per Source-Authoritativeness, Conflict-Resolution-UI für Operator-Reviews.
+
+#### (Later) — Handelsregister-DE
+
+Nur via fragiles HTML-Scraping zero-cost machbar. Verschoben bis nach Sprint 2D, ggf. komplett aus Sprint-2-Fenster gestrichen wenn Bundesanzeiger + BAFA + UNOOSA bereits 30%+ Coverage liefern.
 
 ---
 
@@ -346,6 +364,36 @@ Per ADR-009 (VIES-first). Lieferung:
 - 13 Konzept-Docs in `docs/` committed
 - Master-Plan (dieses Doc) erstellt
 - V1-Preservation-Strategie definiert
+
+### 2026-05-01: Sprint 2B — CelesTrak SATCAT Adapter (Zero-Cost) ✅
+
+**Architektur-Entscheidung:** ADR-010 — Pivot von Handelsregister-DE auf CelesTrak. Begründung: User-Direktive "wichtig ist keine externe Kosten" + Caelex pollt CelesTrak bereits via `/api/cron/celestrak-polling` → null neue Vendor-Beziehungen.
+
+**Geliefert:**
+
+- `src/lib/operator-profile/auto-detection/celestrak-adapter.server.ts` — echter CelesTrak-SATCAT-Fetcher (`https://celestrak.org/satcat/records.php?NAME=<query>&FORMAT=json`)
+- Field-Extraction:
+  - `isConstellation` (T2, conf 0.85) — true ab 2 active payloads
+  - `constellationSize` (T2, conf 0.85) — count active payloads
+  - `primaryOrbit` (T2, conf 0.6-0.85) — LEO/MEO/GEO/HEO from APOGEE/PERIGEE majority
+  - `establishment` (T2, conf 0.5-0.7) — most-common OWNER country
+- Filter-Logic: rocket bodies, debris, decayed objects, inactive payloads excluded
+- Helper-Functions: `classifyOrbit()`, `celestrak3LetterToIso2()` (40+ country codes)
+- Registry-Integration: VIES → CelesTrak priority order
+- Dispatcher-Erweiterung: Organization.name → AdapterInput.legalName, Organization.vatNumber als Fallback wenn keine Evidence-Row für vatId
+- 25 neue Tests + 3 dispatcher-Erweiterungs-Tests
+
+**Gesamt-Test-Status nach Sprint 2B:** 120/120 vitest pass
+
+**V1-Impact:** Null. Kein neuer Cron, keine neue API, keine neue DB-Tabelle. CelesTrak-Adapter ist purely additive Implementation an der bestehenden adapter-framework Schnittstelle.
+
+**Honest scope:**
+
+- Operator-Name-Matching ist fuzzy — "SpaceX" matched nicht "STARLINK-\*". Confidence ist deshalb moderat (0.5-0.85), nicht 0.98 wie VIES
+- Cross-Verifier erkennt `establishment`-Übereinstimmung VIES↔CelesTrak — wenn beide Quellen dasselbe Land melden, ist das ein Signal-Boost (agreementCount=2 → höheres Vertrauen)
+- `primaryOrbit` ist neu — VIES kann das nicht liefern, CelesTrak liefert es authoritativ aus Bahn-Daten
+
+**Ready for Sprint 2C:** Bundesanzeiger HTML-Adapter (für `entitySize` aus Bilanz-Größenklassen) — zero-cost via Bundesanzeiger.de Public-Search
 
 ### 2026-05-01: Sprint 2A — Auto-Detection Framework + VIES Adapter ✅
 
@@ -466,6 +514,38 @@ Per ADR-009 (VIES-first). Lieferung:
 **Datum:** 2026-05-01
 **Begründung:** Compliance-Workflows sind 6-12 Monate lang. Trial-Expire mid-workflow = garantierter Customer-Loss.
 **Konsequenz:** Free-Tier mit harten Limits (1 Mission, 2 Workflows, 100 Astra-Calls/mo). Keine Trial-Expiry.
+
+### ADR-010: Sprint 2B = CelesTrak-Adapter, NICHT Handelsregister-DE
+
+**Datum:** 2026-05-01 (Sprint 2B)
+**Kontext:** Nach ADR-009 war Sprint 2B als Handelsregister-DE-Adapter geplant. User-Direktive "wichtig ist keine externe Kosten" zwingt Re-Evaluation:
+
+**Handelsregister-DE Optionen — alle problematisch:**
+
+- **RegisterPortal SOAP-API** (offiziell): kostenpflichtig — RAUS
+- **handelsregister.de Public-Search**: kostenlos, ABER nur HTML-Form (keine API), JSF-basiert, fragiles Parsing, robots.txt-Restrictions
+- **OpenCorporates** (Drittanbieter): kostenlos bis 500 Req/Monat, ABER API-Key-Pflicht und Drittanbieter-Lock-In — gegen "keine externe Kosten" Geist
+- **OpenRegister.de** (Drittanbieter-Scraper): Free-Tier-Limit, Drittanbieter-Risiko
+- **Bundesanzeiger.de**: kostenlos, ABER nur Publikationen/Bilanzen, nicht Live-Registry-Search
+
+**Pivot-Entscheidung:** Sprint 2B liefert stattdessen **CelesTrak SATCAT-Adapter**.
+
+**Begründung:**
+
+1. **Echt zero-cost:** CelesTrak ist free, public, no auth, no third-party-broker. Wird bereits von Caelex genutzt (`/api/cron/celestrak-polling`, `src/lib/ephemeris/data/celestrak-adapter.ts`).
+2. **Operator-Spezifisch:** CelesTrak-Daten sind Satellite-Operator-Daten. Caelex's Zielgruppe = Satellite-Operators. Direkt relevant.
+3. **Felder, die VIES nicht hat:** `isConstellation`, `constellationSize`, `primaryOrbit` aus Apogee/Perigee, country-of-registry-Hinweis aus OWNER. VIES liefert nur `establishment` — CelesTrak ergänzt orbital + constellation-Felder.
+4. **Authoritative Quelle:** SATCAT ist von US-Air-Force/CSpOC abgeleitet, public. Höchste Daten-Authoritation für Satellite-Daten.
+5. **Stabiles Endpoint:** `https://celestrak.org/satcat/records.php?NAME=<name>&FORMAT=json` ist seit Jahren stabil. Wartungsarm.
+
+**Konsequenz:**
+
+- Sprint 2B: CelesTrak-SATCAT-Adapter — fuzzy operator-name match → constellation detection
+- Sprint 2C wird statt UNOOSA → **Bundesanzeiger HTML-Adapter** (für `entitySize` aus Bilanz-Größenklassen) ODER **EuroCAS / EU sanctions list scan**
+- Handelsregister-DE wird als "later"-Sprint markiert oder entfällt — re-evaluiert nach Sprint 2C+2D Erfahrung
+- ADR-009's Reihenfolge wird teilweise revidiert: VIES → CelesTrak → (Bundesanzeiger ODER EuroCAS) → BAFA-Public-Register
+
+**Trade-off:** Operator-Name-Matching ist fuzzy (operators benennen Satelliten oft nicht mit ihrem Firmennamen). Confidence des Adapters ist niedriger als VIES (~0.6-0.8 statt 0.98). Aber als zusätzliche Quelle in der Cross-Verification trotzdem wertvoll.
 
 ### ADR-009: Auto-Detection-Reihenfolge — VIES vor Handelsregister
 

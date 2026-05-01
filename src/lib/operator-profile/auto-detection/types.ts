@@ -28,7 +28,9 @@ export type { WritableVerifiedField };
  */
 export type SourceKey =
   | "vies-eu-vat"
+  | "celestrak-satcat"
   | "handelsregister-de"
+  | "bundesanzeiger-de"
   | "unoosa-online-index"
   | "bafa-public-register"
   | "opencorporates"
