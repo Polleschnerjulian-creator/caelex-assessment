@@ -192,7 +192,7 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 
 - Sprint 7A: Generic SSE infrastructure helper ✅ COMPLETED 2026-05-02
 - Sprint 7B: Postgres LISTEN/NOTIFY Setup ✅ COMPLETED 2026-05-02
-- Sprint 7C: Anthropic Streaming-API Integration [PENDING]
+- Sprint 7C: Anthropic Streaming-API Integration ✅ COMPLETED 2026-05-02
 - Sprint 7D: Mission-Operations-Console UI (Wow-Pattern #3) [PENDING]
 - Sprint 7E: Live-Astra-Reasoning-Stream UI (Wow-Pattern #5) [PENDING]
 - **Ziel:** Sichtbarer Wow-Effekt für Demo
@@ -250,7 +250,7 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 ### Pending Deploy-Batch — Tracker
 
 **Last main-push:** `fe05b701` (Sprint 6A — 2026-05-02, 6-sprint batch)
-**Sprints in pending batch:** 5 of 6-8
+**Sprints in pending batch:** 6 of 6-8 (deploy threshold reached)
 **Next deploy:** when batch reaches 6-8 sprints OR user says "deploy now"
 
 When you finish a sprint and commit it, increment this counter. When it
@@ -263,6 +263,7 @@ Sprints in current batch (chronological):
 3. Sprint 6D — Anti-Rubber-Stamping UI / EU AI Act Art. 14 (ProposalReviewGate enforces 8-second review window + acknowledgment checkbox before Approve enables; reproducibility-strip footer surfaces model/engine/captured-at/hash on proposal card; rationale citation-validator warning; ProposalCard wired with both surfaces + 11 tests)
 4. Sprint 7A — Generic SSE infrastructure (createSseStream helper extracts SSE pattern from pulse-stream into reusable form; safe send/close/comment API + heartbeat + abort-signal handling; pulse-stream route refactored to use helper; 14 helper tests + 9 existing pulse-stream tests still pass)
 5. Sprint 7B — Postgres LISTEN/NOTIFY pub-sub (db-events.server.ts with typed DbChannel union + emitDbEvent() using pg_notify with 7900-byte payload guard + listenForDbEvents() opening per-subscription Neon WebSocket Client; abort-signal + dispose lifecycle + JSON parse + onError/onClose hooks + 15 tests)
+6. Sprint 7C — Anthropic Streaming-API integration (V2 engine refactored to messages.stream() with optional onDelta callback for incremental token forwarding; abort-signal aborts the stream; citationCheck identical with/without onDelta; 8 tests with mocked stream)
 
 ### Previous batch (deployed `fe05b701` on 2026-05-02)
 

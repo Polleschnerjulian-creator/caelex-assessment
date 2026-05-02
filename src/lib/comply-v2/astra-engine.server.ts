@@ -186,6 +186,33 @@ function toAnthropicMessages(history: V2AstraMessage[]): AnthropicMessage[] {
 // ─── Public engine entrypoint ────────────────────────────────────────────
 
 /**
+ * Sprint 7C — Streaming options. Pass `onDelta` to receive each
+ * incremental text chunk as Anthropic generates it. The final
+ * return value is identical to the non-streaming path; the only
+ * behaviour difference is that text arrives at the caller in
+ * pieces rather than all at once.
+ */
+export interface RunV2AstraTurnOptions {
+  /**
+   * Called with each text delta from the model as it streams. The
+   * delta is the *new* text added since the previous call (not the
+   * accumulated text). Tool-call activity does NOT emit deltas; the
+   * caller learns about tool calls from the final V2AstraMessage.
+   *
+   * If undefined, the engine still uses Anthropic's streaming API
+   * under the hood (single code path is cheaper to maintain), but
+   * deltas are silently discarded and the caller sees only the
+   * final message — identical to the pre-7C behaviour.
+   */
+  onDelta?: (delta: string) => void;
+  /**
+   * Optional abort signal. When fired, the in-flight Anthropic
+   * stream is aborted and the partial response is returned.
+   */
+  signal?: AbortSignal;
+}
+
+/**
  * Run one V2 Astra turn — accepts the full prior history plus the
  * new user message, returns the updated history with the assistant's
  * reply (and any tool calls + results executed during the loop).
@@ -197,13 +224,20 @@ function toAnthropicMessages(history: V2AstraMessage[]): AnthropicMessage[] {
  *   3. Loop up to MAX_TOOL_LOOPS times until Claude responds with
  *      stop_reason="end_turn".
  *   4. Return the consolidated assistant message.
+ *
+ * Sprint 7C: optional `onDelta` callback receives text chunks as
+ * they stream from Anthropic. With or without it, the engine uses
+ * the streaming API under the hood — single code path, identical
+ * final result.
  */
 export async function runV2AstraTurn(
   history: V2AstraMessage[],
   userMessage: string,
+  options: RunV2AstraTurnOptions = {},
 ): Promise<V2AstraMessage[]> {
   const client = getClient();
   const tools = getAstraToolDefinitions();
+  const { onDelta, signal } = options;
 
   const updatedHistory: V2AstraMessage[] = [
     ...history,
@@ -254,13 +288,35 @@ export async function runV2AstraTurn(
       }
     }
 
-    const response = await client.messages.create({
+    // Sprint 7C — use streaming API. Anthropic's `messages.stream`
+    // resolves to the same Message shape as `messages.create` via
+    // `finalMessage()`. The stream ALSO emits "text" events for each
+    // incremental chunk that we forward to onDelta when present.
+    // Single code path: streaming-without-subscriber is functionally
+    // equivalent to non-streaming.
+    const stream = client.messages.stream({
       model: MODEL,
       max_tokens: 1500,
       system: SYSTEM_PROMPT,
       tools: tools.length > 0 ? tools : undefined,
       messages: baseMessages,
     });
+    if (onDelta) {
+      stream.on("text", (delta) => {
+        // Anthropic's stream sometimes emits empty deltas at block
+        // boundaries — skip those so the consumer doesn't get noisy
+        // empty-update churn.
+        if (delta.length > 0) onDelta(delta);
+      });
+    }
+    if (signal) {
+      if (signal.aborted) {
+        stream.abort();
+      } else {
+        signal.addEventListener("abort", () => stream.abort(), { once: true });
+      }
+    }
+    const response = await stream.finalMessage();
 
     // Collect text + tool_use blocks from this response.
     const newToolCalls: V2ToolCall[] = [];
