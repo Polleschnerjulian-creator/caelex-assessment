@@ -164,11 +164,11 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 - **Aufwand:** 3 Wochen total (4A done in 1 day)
 - **V1-Impact:** Null
 
-**Sprint 5 — Mission-First-UI** [IN PROGRESS]
+**Sprint 5 — Mission-First-UI** ✅ COMPLETED 2026-05-02
 
 - Sprint 5A: /dashboard/missions list view + V2Sidebar entry ✅ COMPLETED 2026-05-01
 - Sprint 5B: Mission-Detail-Page mit Phase-Roadmap ✅ COMPLETED 2026-05-02
-- Sprint 5C: Sidebar-Reorganisation (Mission/Workflows/Compliance/Reference) [PENDING]
+- Sprint 5C: Sidebar-Reorganisation (Mission/Workflows/Compliance/Reference) ✅ COMPLETED 2026-05-02
 - V1-Sidebar bleibt für `complyUiVersion="v1"`-User
 - **Ziel:** UX-Sprung sichtbar
 - **Aufwand:** 4 Wochen (≈1 Tag pro Sub-Sprint im Caelex-Tempo)
@@ -250,7 +250,7 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 ### Pending Deploy-Batch — Tracker
 
 **Last main-push:** `b29dacfb` (Sprint 4C — 2026-05-01)
-**Sprints in pending batch:** 4 of 6-8
+**Sprints in pending batch:** 5 of 6-8
 **Next deploy:** when batch reaches 6-8 sprints OR user says "deploy now"
 
 When you finish a sprint and commit it, increment this counter. When it
@@ -262,6 +262,7 @@ Sprints in current batch (chronological):
 2. Sprint 4E — Email-Capture-Flow + 4-stage nurture sequence (day-0 delivery email + day-1/3/7 templates + sendPulseEmail dispatcher + PulseLead nurture-fields migration + /api/cron/pulse-nurture + 37 tests)
 3. Sprint 5A — Mission-First-UI list view (getMissionsForUser aggregator + /dashboard/missions list page + V2Sidebar Missions entry + 12 tests)
 4. Sprint 5B — Mission detail page (getMissionDetail aggregator with tenant guard + /dashboard/missions/[id] phase-roadmap UI + milestone tracker + 10 tests)
+5. Sprint 5C — V2Sidebar reorg into Mission/Workflows/Compliance/Reference 4-section taxonomy (SidebarSection extracted + 12 structure tests)
 
 ### Sprint 2 — Auto-Detection-Engine [IN PROGRESS]
 

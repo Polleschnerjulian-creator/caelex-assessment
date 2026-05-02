@@ -28,16 +28,21 @@ import { Kbd } from "@/components/ui/v2/kbd";
 /**
  * V2Sidebar — the Linear-style permanent left rail for Comply v2.
  *
- * Three sections, each styled as a flat, density-aware vertical list:
+ * Sprint 5C reorganises the rail into a 4-section taxonomy that
+ * mirrors the operator's mental model:
  *
- *   1. PRIMARY      — V2-native surfaces (Posture, Today, Triage,
- *                     Proposals, Astra V2). Always expanded.
- *   2. REFERENCE    — links to legacy modules / Atlas / Documents.
- *                     Collapsible by default to keep focus on V2.
- *   3. USER         — Settings, sign out.
+ *   1. MISSION     — your spacecraft world. Always expanded. Top of
+ *                    the rail because Caelex is a mission-first tool.
+ *   2. WORKFLOWS   — daily action items (Today, Triage, Proposals,
+ *                    Astra). Always expanded — this is where work
+ *                    happens.
+ *   3. COMPLIANCE  — regulatory state, audit, attestations, network.
+ *                    Always expanded.
+ *   4. REFERENCE   — collapsible catch-all (currently empty until
+ *                    we promote V1 module links here).
  *
- * Active route gets emerald highlight; pendingProposals badge mirrors
- * the V2Shell-header badge so it's visible from any surface.
+ * Active route gets emerald highlight; pendingProposals badge shows
+ * on the Proposals link from any surface.
  *
  * Replaces the legacy DashboardShell sidebar entirely for V2 users.
  * V1 users still see DashboardShell (kept in the repo for rollback
@@ -67,14 +72,23 @@ export function V2Sidebar({
   const pathname = usePathname();
   const [referenceOpen, setReferenceOpen] = React.useState(false);
 
-  const primary: NavItem[] = [
-    { href: "/dashboard/posture", label: "Posture", icon: Gauge },
+  const mission: NavItem[] = [
     {
       href: "/dashboard/missions",
       label: "Missions",
       icon: Rocket,
       match: (p) => p.startsWith("/dashboard/missions"),
     },
+    {
+      href: "/dashboard/mission-control",
+      label: "Mission Control",
+      icon: Globe,
+    },
+    { href: "/dashboard/ephemeris", label: "Ephemeris", icon: Orbit },
+    { href: "/dashboard/sentinel", label: "Sentinel", icon: Satellite },
+  ];
+
+  const workflows: NavItem[] = [
     { href: "/dashboard/today", label: "Today", icon: Inbox },
     { href: "/dashboard/triage", label: "Triage", icon: ListChecks },
     {
@@ -91,29 +105,27 @@ export function V2Sidebar({
     },
   ];
 
-  const reference: NavItem[] = [
-    {
-      href: "/dashboard/mission-control",
-      label: "Mission Control",
-      icon: Globe,
-    },
-    { href: "/dashboard/ephemeris", label: "Ephemeris", icon: Orbit },
-    { href: "/dashboard/sentinel", label: "Sentinel", icon: Satellite },
-    { href: "/dashboard/network", label: "Network", icon: Network },
+  const compliance: NavItem[] = [
+    { href: "/dashboard/posture", label: "Posture", icon: Gauge },
+    { href: "/dashboard/tracker", label: "Article Tracker", icon: FileSearch },
     { href: "/dashboard/incidents", label: "Incidents", icon: AlertTriangle },
     {
       href: "/dashboard/audit-center",
       label: "Audit Center",
       icon: ScrollText,
     },
-    { href: "/dashboard/tracker", label: "Article Tracker", icon: FileSearch },
+    { href: "/dashboard/network", label: "Network", icon: Network },
   ];
+
+  // Reference is intentionally empty in Sprint 5C — V1 modules will
+  // be promoted here in a follow-up once we know which surfaces
+  // operators still hit. Kept as a section so the collapse-toggle
+  // exists and we can add items without re-laying-out.
+  const reference: NavItem[] = [];
 
   const isActive = (item: NavItem): boolean => {
     if (item.match) return item.match(pathname);
     if (pathname === item.href) return true;
-    // Sub-route match: /dashboard/items/... is a child of nothing in
-    // primary, but /dashboard/today?regulation=X stays "Today active".
     return pathname.startsWith(item.href + "/");
   };
 
@@ -160,41 +172,47 @@ export function V2Sidebar({
       </div>
 
       <div className="flex-1 overflow-y-auto px-2 py-2">
-        {/* Primary */}
-        <div className="mb-1 px-2 py-1">
-          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500">
-            Primary
-          </span>
-        </div>
-        <ul className="space-y-0.5">
-          {primary.map((item) => (
-            <li key={item.href}>
-              <NavLink item={item} active={isActive(item)} />
-            </li>
-          ))}
-        </ul>
+        <SidebarSection label="Mission" items={mission} isActive={isActive} />
+        <SidebarSection
+          label="Workflows"
+          items={workflows}
+          isActive={isActive}
+          className="mt-5"
+        />
+        <SidebarSection
+          label="Compliance"
+          items={compliance}
+          isActive={isActive}
+          className="mt-5"
+        />
 
-        {/* Reference (collapsible) */}
-        <button
-          type="button"
-          onClick={() => setReferenceOpen((o) => !o)}
-          className="mt-5 flex w-full items-center justify-between gap-2 rounded px-2 py-1 font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500 transition hover:text-slate-300"
-        >
-          <span>Reference</span>
-          {referenceOpen ? (
-            <ChevronDown className="h-3 w-3" />
-          ) : (
-            <ChevronRight className="h-3 w-3" />
-          )}
-        </button>
-        {referenceOpen ? (
-          <ul className="mt-1 space-y-0.5">
-            {reference.map((item) => (
-              <li key={item.href}>
-                <NavLink item={item} active={isActive(item)} dim />
-              </li>
-            ))}
-          </ul>
+        {/* Reference (collapsible). Hidden when empty so we don't
+            ship an empty disclosure widget. */}
+        {reference.length > 0 ? (
+          <>
+            <button
+              type="button"
+              onClick={() => setReferenceOpen((o) => !o)}
+              aria-expanded={referenceOpen}
+              className="mt-5 flex w-full items-center justify-between gap-2 rounded px-2 py-1 font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500 transition hover:text-slate-300"
+            >
+              <span>Reference</span>
+              {referenceOpen ? (
+                <ChevronDown className="h-3 w-3" />
+              ) : (
+                <ChevronRight className="h-3 w-3" />
+              )}
+            </button>
+            {referenceOpen ? (
+              <ul className="mt-1 space-y-0.5">
+                {reference.map((item) => (
+                  <li key={item.href}>
+                    <NavLink item={item} active={isActive(item)} dim />
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </>
         ) : null}
       </div>
 
@@ -231,6 +249,37 @@ export function V2Sidebar({
         ) : null}
       </div>
     </nav>
+  );
+}
+
+// ─── Subcomponents ───────────────────────────────────────────────────────
+
+function SidebarSection({
+  label,
+  items,
+  isActive,
+  className,
+}: {
+  label: string;
+  items: NavItem[];
+  isActive: (item: NavItem) => boolean;
+  className?: string;
+}) {
+  return (
+    <section className={className} aria-label={label}>
+      <div className="mb-1 px-2 py-1">
+        <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500">
+          {label}
+        </span>
+      </div>
+      <ul className="space-y-0.5">
+        {items.map((item) => (
+          <li key={item.href}>
+            <NavLink item={item} active={isActive(item)} />
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
