@@ -249,14 +249,18 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 
 ### Pending Deploy-Batch — Tracker
 
-**Last main-push:** `b29dacfb` (Sprint 4C — 2026-05-01)
-**Sprints in pending batch:** 6 of 6-8 (deploy threshold reached)
+**Last main-push:** `fe05b701` (Sprint 6A — 2026-05-02, 6-sprint batch)
+**Sprints in pending batch:** 0 of 6-8
 **Next deploy:** when batch reaches 6-8 sprints OR user says "deploy now"
 
 When you finish a sprint and commit it, increment this counter. When it
 hits 6-8, run the deploy chain. Skip pushing the feature branch.
 
 Sprints in current batch (chronological):
+
+_(empty — batch flushed at 6 on 2026-05-02; deploy `fe05b701`)_
+
+### Previous batch (deployed `fe05b701` on 2026-05-02)
 
 1. Sprint 4D — 15-page PDF Report (PulsePdfReport + /api/public/pulse/report/[leadId] + download button + 13 tests)
 2. Sprint 4E — Email-Capture-Flow + 4-stage nurture sequence (day-0 delivery email + day-1/3/7 templates + sendPulseEmail dispatcher + PulseLead nurture-fields migration + /api/cron/pulse-nurture + 37 tests)
