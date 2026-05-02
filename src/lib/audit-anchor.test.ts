@@ -15,12 +15,21 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { mockGetLatestHash, mockAuditLogFindMany, mockAnchorCreate } =
-  vi.hoisted(() => ({
-    mockGetLatestHash: vi.fn(),
-    mockAuditLogFindMany: vi.fn(),
-    mockAnchorCreate: vi.fn(),
-  }));
+const {
+  mockGetLatestHash,
+  mockAuditLogFindMany,
+  mockAnchorCreate,
+  mockAnchorFindUnique,
+  mockAnchorFindMany,
+  mockAnchorUpdate,
+} = vi.hoisted(() => ({
+  mockGetLatestHash: vi.fn(),
+  mockAuditLogFindMany: vi.fn(),
+  mockAnchorCreate: vi.fn(),
+  mockAnchorFindUnique: vi.fn(),
+  mockAnchorFindMany: vi.fn(),
+  mockAnchorUpdate: vi.fn(),
+}));
 
 vi.mock("./audit-hash.server", () => ({
   getLatestHash: mockGetLatestHash,
@@ -29,7 +38,12 @@ vi.mock("./audit-hash.server", () => ({
 vi.mock("./prisma", () => ({
   prisma: {
     auditLog: { findMany: mockAuditLogFindMany },
-    auditTimestampAnchor: { create: mockAnchorCreate },
+    auditTimestampAnchor: {
+      create: mockAnchorCreate,
+      findUnique: mockAnchorFindUnique,
+      findMany: mockAnchorFindMany,
+      update: mockAnchorUpdate,
+    },
   },
 }));
 
@@ -40,6 +54,10 @@ vi.mock("./logger", () => ({
 import {
   submitAuditAnchor,
   submitAuditAnchorsForAllActiveOrgs,
+  upgradeAuditAnchor,
+  upgradeAllPendingAnchors,
+  UPGRADE_AGE_THRESHOLD_MS,
+  UPGRADE_GIVE_UP_MS,
   DEFAULT_OTS_CALENDARS,
 } from "./audit-anchor.server";
 
@@ -223,5 +241,248 @@ describe("submitAuditAnchorsForAllActiveOrgs", () => {
     });
     expect(results).toEqual([]);
     expect(fetchImpl).not.toHaveBeenCalled();
+  });
+});
+
+// ─── upgradeAuditAnchor ──────────────────────────────────────────────────
+
+describe("upgradeAuditAnchor — single-anchor lifecycle", () => {
+  const NOW = new Date("2026-05-02T12:00:00.000Z");
+
+  function makePending(
+    overrides: Partial<{ submittedAt: Date; status: string }> = {},
+  ) {
+    return {
+      id: "anchor_1",
+      anchorHash: "deadbeef",
+      calendarUrl: "https://cal.test",
+      status: "PENDING",
+      submittedAt: new Date(NOW.getTime() - 8 * 3600 * 1000), // 8h ago by default
+      ...overrides,
+    };
+  }
+
+  it("UPGRADED — calendar returns proof bytes; row updated to UPGRADED", async () => {
+    mockAnchorFindUnique.mockResolvedValue(makePending());
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => new Uint8Array([0x55, 0x66, 0x77, 0x88]).buffer,
+    })) as unknown as typeof fetch;
+
+    const out = await upgradeAuditAnchor("anchor_1", { fetchImpl, now: NOW });
+    expect(out.status).toBe("UPGRADED");
+    if (out.status === "UPGRADED") expect(out.proofBytes).toBe(4);
+    expect(mockAnchorUpdate).toHaveBeenCalledOnce();
+    const updateArgs = mockAnchorUpdate.mock.calls[0][0] as {
+      where: { id: string };
+      data: { status: string; upgradedAt: Date };
+    };
+    expect(updateArgs.where.id).toBe("anchor_1");
+    expect(updateArgs.data.status).toBe("UPGRADED");
+    expect(updateArgs.data.upgradedAt).toEqual(NOW);
+  });
+
+  it("STILL_PENDING — calendar returns 404; row left alone", async () => {
+    mockAnchorFindUnique.mockResolvedValue(makePending());
+    const fetchImpl = vi.fn(async () => ({
+      ok: false,
+      status: 404,
+      statusText: "Not Found",
+      arrayBuffer: async () => new ArrayBuffer(0),
+    })) as unknown as typeof fetch;
+
+    const out = await upgradeAuditAnchor("anchor_1", { fetchImpl, now: NOW });
+    expect(out.status).toBe("STILL_PENDING");
+    expect(mockAnchorUpdate).not.toHaveBeenCalled();
+  });
+
+  it("ERROR — calendar returns 5xx; row left alone for next tick retry", async () => {
+    mockAnchorFindUnique.mockResolvedValue(makePending());
+    const fetchImpl = vi.fn(async () => ({
+      ok: false,
+      status: 503,
+      statusText: "Service Unavailable",
+      arrayBuffer: async () => new ArrayBuffer(0),
+    })) as unknown as typeof fetch;
+
+    const out = await upgradeAuditAnchor("anchor_1", { fetchImpl, now: NOW });
+    expect(out.status).toBe("ERROR");
+    expect(mockAnchorUpdate).not.toHaveBeenCalled();
+  });
+
+  it("ERROR — fetch rejects; row left alone for retry", async () => {
+    mockAnchorFindUnique.mockResolvedValue(makePending());
+    const fetchImpl = vi.fn(async () => {
+      throw new Error("ETIMEDOUT");
+    }) as unknown as typeof fetch;
+
+    const out = await upgradeAuditAnchor("anchor_1", { fetchImpl, now: NOW });
+    expect(out.status).toBe("ERROR");
+    if (out.status === "ERROR") expect(out.error).toMatch(/ETIMEDOUT/);
+    expect(mockAnchorUpdate).not.toHaveBeenCalled();
+  });
+
+  it("ERROR — calendar returns empty body on 200", async () => {
+    mockAnchorFindUnique.mockResolvedValue(makePending());
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => new ArrayBuffer(0),
+    })) as unknown as typeof fetch;
+
+    const out = await upgradeAuditAnchor("anchor_1", { fetchImpl, now: NOW });
+    expect(out.status).toBe("ERROR");
+    if (out.status === "ERROR") expect(out.error).toMatch(/empty proof/);
+    expect(mockAnchorUpdate).not.toHaveBeenCalled();
+  });
+
+  it("GAVE_UP — anchor older than UPGRADE_GIVE_UP_MS; row marked FAILED", async () => {
+    mockAnchorFindUnique.mockResolvedValue(
+      makePending({
+        submittedAt: new Date(NOW.getTime() - UPGRADE_GIVE_UP_MS - 1000),
+      }),
+    );
+    const fetchImpl = vi.fn() as unknown as typeof fetch;
+
+    const out = await upgradeAuditAnchor("anchor_1", { fetchImpl, now: NOW });
+    expect(out.status).toBe("GAVE_UP");
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(mockAnchorUpdate).toHaveBeenCalledOnce();
+    const args = mockAnchorUpdate.mock.calls[0][0] as {
+      data: { status: string; errorMessage: string };
+    };
+    expect(args.data.status).toBe("FAILED");
+    expect(args.data.errorMessage).toMatch(/give-up/);
+  });
+
+  it("ERROR — anchor not found", async () => {
+    mockAnchorFindUnique.mockResolvedValue(null);
+    const fetchImpl = vi.fn() as unknown as typeof fetch;
+    const out = await upgradeAuditAnchor("ghost", { fetchImpl, now: NOW });
+    expect(out.status).toBe("ERROR");
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("ERROR — anchor already UPGRADED (programming bug guard)", async () => {
+    mockAnchorFindUnique.mockResolvedValue(makePending({ status: "UPGRADED" }));
+    const fetchImpl = vi.fn() as unknown as typeof fetch;
+    const out = await upgradeAuditAnchor("anchor_1", { fetchImpl, now: NOW });
+    expect(out.status).toBe("ERROR");
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("strips trailing slashes from calendarUrl when building the upgrade URL", async () => {
+    mockAnchorFindUnique.mockResolvedValue(
+      makePending() as unknown as { calendarUrl: string },
+    );
+    // Override the URL to include trailing slashes
+    mockAnchorFindUnique.mockResolvedValue({
+      ...makePending(),
+      calendarUrl: "https://cal.test///",
+    });
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => new Uint8Array([1]).buffer,
+    })) as unknown as typeof fetch;
+    await upgradeAuditAnchor("anchor_1", { fetchImpl, now: NOW });
+    expect((fetchImpl as ReturnType<typeof vi.fn>).mock.calls[0][0]).toBe(
+      "https://cal.test/timestamp/deadbeef",
+    );
+  });
+});
+
+// ─── upgradeAllPendingAnchors ────────────────────────────────────────────
+
+describe("upgradeAllPendingAnchors — batch walker", () => {
+  const NOW = new Date("2026-05-02T12:00:00.000Z");
+
+  it("queries PENDING anchors older than UPGRADE_AGE_THRESHOLD_MS", async () => {
+    mockAnchorFindMany.mockResolvedValue([]);
+    await upgradeAllPendingAnchors({ now: NOW });
+    expect(mockAnchorFindMany).toHaveBeenCalledOnce();
+    const args = mockAnchorFindMany.mock.calls[0][0] as {
+      where: { status: string; submittedAt: { lte: Date } };
+      take: number;
+    };
+    expect(args.where.status).toBe("PENDING");
+    expect(args.where.submittedAt.lte.getTime()).toBe(
+      NOW.getTime() - UPGRADE_AGE_THRESHOLD_MS,
+    );
+    expect(args.take).toBe(200);
+  });
+
+  it("aggregates upgrade outcomes across multiple anchors", async () => {
+    mockAnchorFindMany.mockResolvedValue([
+      { id: "a1" },
+      { id: "a2" },
+      { id: "a3" },
+      { id: "a4" },
+    ]);
+    // Anchor row lookups always succeed; per-call fetch behaviour
+    // controlled by the call counter.
+    let call = 0;
+    mockAnchorFindUnique.mockImplementation(async () => ({
+      id: `a${call + 1}`,
+      anchorHash: "h",
+      calendarUrl: "https://cal.test",
+      status: "PENDING",
+      submittedAt: new Date(NOW.getTime() - 8 * 3600 * 1000),
+    }));
+    const responses: Array<Partial<Response>> = [
+      // a1 → UPGRADED
+      {
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => new Uint8Array([1, 2]).buffer,
+      },
+      // a2 → STILL_PENDING (404)
+      {
+        ok: false,
+        status: 404,
+        statusText: "Not Found",
+        arrayBuffer: async () => new ArrayBuffer(0),
+      },
+      // a3 → ERROR (5xx)
+      {
+        ok: false,
+        status: 503,
+        statusText: "Service Unavailable",
+        arrayBuffer: async () => new ArrayBuffer(0),
+      },
+      // a4 → UPGRADED
+      {
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => new Uint8Array([9]).buffer,
+      },
+    ];
+    const fetchImpl = vi.fn(async () => {
+      const r = responses[call];
+      call += 1;
+      return r as Response;
+    }) as unknown as typeof fetch;
+
+    const result = await upgradeAllPendingAnchors({ fetchImpl, now: NOW });
+    expect(result).toEqual({
+      scanned: 4,
+      upgraded: 2,
+      stillPending: 1,
+      gaveUp: 0,
+      errored: 1,
+    });
+  });
+
+  it("returns zeros when no candidates", async () => {
+    mockAnchorFindMany.mockResolvedValue([]);
+    const result = await upgradeAllPendingAnchors({ now: NOW });
+    expect(result).toEqual({
+      scanned: 0,
+      upgraded: 0,
+      stillPending: 0,
+      gaveUp: 0,
+      errored: 0,
+    });
   });
 });

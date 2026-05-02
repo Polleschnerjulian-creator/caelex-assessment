@@ -47,8 +47,30 @@ import { prisma } from "./prisma";
 import { getLatestHash } from "./audit-hash.server";
 import { logger } from "./logger";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const auditTimestampAnchor = (prisma as any).auditTimestampAnchor;
+/**
+ * Lazily-resolve the auditTimestampAnchor delegate so test mocks
+ * that vi.mock("./prisma") AFTER this module loads still see their
+ * stubs. Prisma's generated types lag the schema until db:generate
+ * runs, so we reach through `as any` for the writable surface.
+ */
+function getAnchorDelegate(): {
+  create: (args: unknown) => Promise<{ id: string }>;
+  findUnique: (args: unknown) => Promise<unknown>;
+  findMany: (args: unknown) => Promise<unknown>;
+  update: (args: unknown) => Promise<unknown>;
+} {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (prisma as any).auditTimestampAnchor;
+}
+
+const auditTimestampAnchor = new Proxy(
+  {} as ReturnType<typeof getAnchorDelegate>,
+  {
+    get(_target, prop) {
+      return (getAnchorDelegate() as Record<string | symbol, unknown>)[prop];
+    },
+  },
+);
 
 /**
  * Default OpenTimestamps public calendar servers. Same set as the
@@ -236,4 +258,184 @@ export async function submitAuditAnchorsForAllActiveOrgs(
     results.push(r);
   }
   return results;
+}
+
+// ─── Upgrade ──────────────────────────────────────────────────────────────
+
+/**
+ * Sprint 8B — Window an anchor must wait before it's eligible for
+ * upgrade. Bitcoin block intervals average ~10 minutes; OpenTimestamps
+ * calendars roll up many digests into a Merkle tree before each
+ * commitment, so confirmed proofs typically appear ~3-6 hours after
+ * submit. Six hours is the safe lower bound.
+ */
+export const UPGRADE_AGE_THRESHOLD_MS = 6 * 60 * 60 * 1000;
+
+/**
+ * Upper bound on the upgrade poll. Anchors older than this without
+ * a confirmed proof are likely lost (calendar permanently down,
+ * digest discarded, etc.) — they get marked FAILED so the cron
+ * stops re-polling them every day.
+ */
+export const UPGRADE_GIVE_UP_MS = 30 * 24 * 60 * 60 * 1000;
+
+export type UpgradeOutcome =
+  | { status: "UPGRADED"; proofBytes: number }
+  | { status: "STILL_PENDING" }
+  | { status: "GAVE_UP"; reason: string }
+  | { status: "ERROR"; error: string };
+
+export interface UpgradeAuditAnchorOptions {
+  fetchImpl?: typeof fetch;
+  signal?: AbortSignal;
+  /** Now-clock injection point for tests. */
+  now?: Date;
+}
+
+/**
+ * Upgrade a single PENDING anchor by fetching the calendar's
+ * confirmed proof at GET <calendar>/timestamp/<hex-digest>.
+ *
+ *   - **200 OK + non-empty body** → calendar has confirmed; replace
+ *     otsProof with the new bytes, set status=UPGRADED + upgradedAt.
+ *   - **404 Not Found** → calendar hasn't confirmed yet (Bitcoin
+ *     hasn't mined the rollup block); leave the row alone, return
+ *     STILL_PENDING.
+ *   - **other** → transient (5xx, network error). Leave PENDING so
+ *     the next tick retries. Returns ERROR for the cron to log.
+ *   - **age > UPGRADE_GIVE_UP_MS** → mark GAVE_UP (status=FAILED)
+ *     so we stop re-polling.
+ */
+export async function upgradeAuditAnchor(
+  anchorId: string,
+  opts: UpgradeAuditAnchorOptions = {},
+): Promise<UpgradeOutcome> {
+  const fetchImpl = opts.fetchImpl ?? fetch;
+  const now = opts.now ?? new Date();
+
+  const anchor = (await auditTimestampAnchor.findUnique({
+    where: { id: anchorId },
+    select: {
+      id: true,
+      anchorHash: true,
+      calendarUrl: true,
+      status: true,
+      submittedAt: true,
+    },
+  })) as {
+    id: string;
+    anchorHash: string;
+    calendarUrl: string;
+    status: string;
+    submittedAt: Date;
+  } | null;
+
+  if (!anchor) {
+    return { status: "ERROR", error: "anchor-not-found" };
+  }
+  if (anchor.status !== "PENDING") {
+    return { status: "ERROR", error: `unexpected-status:${anchor.status}` };
+  }
+
+  const ageMs = now.getTime() - anchor.submittedAt.getTime();
+  if (ageMs > UPGRADE_GIVE_UP_MS) {
+    await auditTimestampAnchor.update({
+      where: { id: anchor.id },
+      data: {
+        status: "FAILED",
+        errorMessage: `give-up after ${Math.round(ageMs / (24 * 3600 * 1000))} days`,
+      },
+    });
+    return {
+      status: "GAVE_UP",
+      reason: `> ${UPGRADE_GIVE_UP_MS / (24 * 3600 * 1000)}d without confirmation`,
+    };
+  }
+
+  const url = `${anchor.calendarUrl.replace(/\/+$/, "")}/timestamp/${anchor.anchorHash}`;
+  let res: Response;
+  try {
+    res = await fetchImpl(url, { method: "GET", signal: opts.signal });
+  } catch (err) {
+    return {
+      status: "ERROR",
+      error: (err as Error).message ?? String(err),
+    };
+  }
+
+  if (res.status === 404) {
+    return { status: "STILL_PENDING" };
+  }
+  if (!res.ok) {
+    return {
+      status: "ERROR",
+      error: `HTTP ${res.status} ${res.statusText}`,
+    };
+  }
+
+  const proofArrayBuffer = await res.arrayBuffer();
+  const proofBuffer = Buffer.from(proofArrayBuffer);
+  if (proofBuffer.length === 0) {
+    return { status: "ERROR", error: "calendar returned empty proof" };
+  }
+
+  await auditTimestampAnchor.update({
+    where: { id: anchor.id },
+    data: {
+      otsProof: proofBuffer,
+      status: "UPGRADED",
+      upgradedAt: now,
+    },
+  });
+  return { status: "UPGRADED", proofBytes: proofBuffer.length };
+}
+
+export interface UpgradeAllResult {
+  scanned: number;
+  upgraded: number;
+  stillPending: number;
+  gaveUp: number;
+  errored: number;
+}
+
+/**
+ * Walk every PENDING anchor older than UPGRADE_AGE_THRESHOLD_MS
+ * and try to upgrade it. Cap at 200 per tick — heavier fan-out
+ * would risk hammering the calendars; daily cadence + the 6h
+ * eligibility window means each anchor gets one upgrade attempt
+ * per day on average, plenty after the typical 3-6h confirmation
+ * window.
+ */
+export async function upgradeAllPendingAnchors(
+  opts: UpgradeAuditAnchorOptions = {},
+): Promise<UpgradeAllResult> {
+  const now = opts.now ?? new Date();
+  const cutoff = new Date(now.getTime() - UPGRADE_AGE_THRESHOLD_MS);
+  const candidates = (await auditTimestampAnchor.findMany({
+    where: { status: "PENDING", submittedAt: { lte: cutoff } },
+    select: { id: true },
+    orderBy: { submittedAt: "asc" },
+    take: 200,
+  })) as Array<{ id: string }>;
+
+  let upgraded = 0;
+  let stillPending = 0;
+  let gaveUp = 0;
+  let errored = 0;
+
+  for (const a of candidates) {
+    const out = await upgradeAuditAnchor(a.id, opts);
+    if (out.status === "UPGRADED") upgraded += 1;
+    else if (out.status === "STILL_PENDING") stillPending += 1;
+    else if (out.status === "GAVE_UP") gaveUp += 1;
+    else errored += 1;
+  }
+
+  return {
+    scanned: candidates.length,
+    upgraded,
+    stillPending,
+    gaveUp,
+    errored,
+  };
 }
