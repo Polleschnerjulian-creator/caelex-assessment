@@ -348,6 +348,63 @@ model AuditLog {
   @@index([entryHash])
 }
 
+// ─── Audit Timestamp Anchor (Sprint 8A) ────────────────────────────────────
+//
+// Quarterly snapshot of an organization's audit-log chain head, anchored
+// to Bitcoin via OpenTimestamps' free public calendar servers. Proves
+// "this audit row existed at this Bitcoin block height" to anyone — no
+// Caelex trust required.
+//
+// Lifecycle:
+//   1. Cron submits the chain head SHA-256 to OpenTimestamps; gets back
+//      a PENDING proof (not yet in Bitcoin).
+//   2. ~6h later, an upgrade-cron (Sprint 8B) re-fetches the proof to
+//      get the confirmed Bitcoin block height. status → UPGRADED.
+//   3. Public-Verify-Page (Sprint 8C) lets regulators paste a
+//      candidate hash + proof and verify against Bitcoin without
+//      trusting Caelex.
+
+model AuditTimestampAnchor {
+  id String @id @default(cuid())
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  /// Hex-encoded SHA-256 of the chain head AuditLog.entryHash at the
+  /// moment this anchor was created. The proof verifies that this
+  /// hash existed at the OpenTimestamps-recorded block height.
+  anchorHash String
+
+  /// OpenTimestamps proof bytes returned from the calendar's /digest
+  /// endpoint. Initially PENDING (Bitcoin not yet confirmed); after
+  /// upgrade contains the full Merkle path to a Bitcoin block header.
+  otsProof Bytes
+
+  /// Calendar server URL used. Anchored multiple times across servers
+  /// for redundancy — losing one calendar doesn't kill the proof.
+  calendarUrl String
+
+  /// PENDING (just submitted) | UPGRADED (Bitcoin-confirmed) | FAILED
+  status String @default("PENDING")
+
+  /// Bitcoin block height when confirmed. NULL while PENDING.
+  blockHeight Int?
+
+  /// Set once the upgrade-cron pulls a Bitcoin-confirmed proof.
+  upgradedAt DateTime?
+
+  /// Free-text on the FAILED path so operators can diagnose without
+  /// digging through cron logs.
+  errorMessage String? @db.Text
+
+  submittedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([organizationId, submittedAt])
+  @@index([status, submittedAt])
+}
+
 // ─── Debris Assessment ───
 
 model DebrisAssessment {
@@ -2702,6 +2759,7 @@ model Organization {
 
   // Multi-tenancy: org-scoped models
   auditLogs                AuditLog[]
+  auditTimestampAnchors    AuditTimestampAnchor[] // Sprint 8A — OpenTimestamps audit anchors
   documents                Document[]
   debrisAssessments        DebrisAssessment[]
   cybersecurityAssessments CybersecurityAssessment[]
