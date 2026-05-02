@@ -183,6 +183,25 @@ export default async function ProposalsPage({ searchParams }: PageProps) {
                   createdAt: p.createdAt.toISOString(),
                   expiresAt: p.expiresAt.toISOString(),
                   decidedAt: p.decidedAt ? p.decidedAt.toISOString() : null,
+                  // Sprint 6B fields — surfaced by Sprint 6D card.
+                  // The Prisma client may not yet emit these on the
+                  // returned row type until `npm run db:generate`
+                  // runs in the deploy environment, so we use a
+                  // structural cast.
+                  modelName:
+                    (p as unknown as { modelName?: string | null }).modelName ??
+                    null,
+                  engineVersion:
+                    (p as unknown as { engineVersion?: string | null })
+                      .engineVersion ?? null,
+                  reproducibility:
+                    (
+                      p as unknown as {
+                        reproducibility?:
+                          | import("@/components/dashboard/v2/ProposalCard").ProposalCardProps["proposal"]["reproducibility"]
+                          | null;
+                      }
+                    ).reproducibility ?? null,
                 }}
               />
             );

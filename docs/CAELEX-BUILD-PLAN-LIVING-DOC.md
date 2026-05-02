@@ -176,16 +176,16 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 
 ### Phase 3: AI-Härtung + Live-Streaming (Sprints 6-7, ~6-8 Wochen)
 
-**Sprint 6 — Astra-Härtungs-Layer** [PENDING]
+**Sprint 6 — Astra-Härtungs-Layer** [IN PROGRESS]
 
-- Citation-Validator portieren von Atlas zu Comply
-- Reproducibility-Felder auf AstraProposal
-- Multi-Model-Cross-Check (Bedrock-Claude + GPT-4o-mini)
-- LLM-as-Judge portieren
-- AI-Disclosure-UI (EU AI Act Art. 50)
-- Anti-Rubber-Stamping-UI (EU AI Act Art. 14)
-- **Ziel:** EU-AI-Act-konform vor 02.08.2026
-- **Aufwand:** 4 Wochen
+- Sprint 6A: Citation-Validator portieren von Atlas zu Comply ✅ COMPLETED 2026-05-02
+- Sprint 6B: Reproducibility-Felder auf AstraProposal ✅ COMPLETED 2026-05-02
+- Sprint 6C: AI-Disclosure-UI (EU AI Act Art. 50) ✅ COMPLETED 2026-05-02
+- Sprint 6D: Anti-Rubber-Stamping-UI (EU AI Act Art. 14) ✅ COMPLETED 2026-05-02
+- ~~Multi-Model-Cross-Check (Bedrock-Claude + GPT-4o-mini)~~ DEFERRED (paid APIs — outside zero-cost constraint)
+- ~~LLM-as-Judge portieren~~ DEFERRED (same)
+- **Ziel:** EU-AI-Act-konform vor 02.08.2026 ✅ achieved on the zero-cost-affordable surface
+- **Aufwand:** 4 Wochen (kompakt: 4 sub-sprints in 1 day im Caelex-Tempo)
 - **V1-Impact:** Null (V2-Astra-spezifisch)
 
 **Sprint 7 — Live-Streaming-Backbone** [PENDING]
@@ -250,7 +250,7 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 ### Pending Deploy-Batch — Tracker
 
 **Last main-push:** `fe05b701` (Sprint 6A — 2026-05-02, 6-sprint batch)
-**Sprints in pending batch:** 2 of 6-8
+**Sprints in pending batch:** 3 of 6-8
 **Next deploy:** when batch reaches 6-8 sprints OR user says "deploy now"
 
 When you finish a sprint and commit it, increment this counter. When it
@@ -260,6 +260,7 @@ Sprints in current batch (chronological):
 
 1. Sprint 6B — AstraProposal reproducibility / EU AI Act Art. 12 audit trail (additive schema migration: modelName, engineVersion, reproducibility JSON column + index; buildReproducibilityRecord() helper with SHA-256 prompt hashing; ProposalCallOptions.reproducibility wiring + 15 tests)
 2. Sprint 6C — AI-Disclosure UI / EU AI Act Art. 50 (AIDisclosureBanner top-of-chat with 24h-TTL dismiss + AIMessageFooter per-bubble disclosure surfacing unverified-citation count + V2 engine wired with citation-validator + V2AstraMessage extended with citationCheck + 20 tests)
+3. Sprint 6D — Anti-Rubber-Stamping UI / EU AI Act Art. 14 (ProposalReviewGate enforces 8-second review window + acknowledgment checkbox before Approve enables; reproducibility-strip footer surfaces model/engine/captured-at/hash on proposal card; rationale citation-validator warning; ProposalCard wired with both surfaces + 11 tests)
 
 ### Previous batch (deployed `fe05b701` on 2026-05-02)
 

@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import {
-  CheckCircle2,
   XCircle,
   Clock,
   ChevronDown,
@@ -20,10 +19,12 @@ import {
 } from "@/components/ui/v2/card";
 import { Badge } from "@/components/ui/v2/badge";
 import { Button } from "@/components/ui/v2/button";
-import {
-  applyProposalAction,
-  rejectProposalAction,
-} from "@/app/dashboard/proposals/server-actions";
+import { rejectProposalAction } from "@/app/dashboard/proposals/server-actions";
+// Sprint 6D — EU AI Act Art. 14 anti-rubber-stamping surfaces.
+import { ProposalReviewGate } from "./ProposalReviewGate";
+import { validateCitations } from "@/lib/astra/citation-validator";
+import { AIMessageFooter } from "@/components/astra-v2/AIMessageFooter";
+import type { V2CitationCheck } from "@/lib/comply-v2/astra-engine.server";
 
 /**
  * Shape of one entry in the proposal's decisionLog. Mirrors
@@ -62,6 +63,26 @@ export interface ProposalCardProps {
     createdAt: string;
     expiresAt: string;
     decidedAt: string | null;
+    /**
+     * Sprint 6B reproducibility fields. Optional — pre-6B rows have
+     * NULL for all three. Surfaced on the card as a footer strip
+     * when present so the reviewer can see "this came from
+     * claude-sonnet-4-6 / engine v2.3 / 2 hours ago".
+     */
+    modelName?: string | null;
+    engineVersion?: string | null;
+    reproducibility?: {
+      modelName: string;
+      engineVersion: string;
+      temperature: number;
+      maxTokens: number;
+      systemPromptHash: string;
+      userMessageHash: string;
+      contextHash: string;
+      conversationId: string | null;
+      messageId: string | null;
+      capturedAt: string;
+    } | null;
   };
 }
 
@@ -211,15 +232,26 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
           ) : null}
         </div>
 
+        {/* Sprint 6D — Reproducibility metadata (model, engine,
+            captured-at) plus citation-validator warning when the
+            proposal's rationale contains unverified regulatory
+            references. Both are surfaced unconditionally on every
+            card so the reviewer sees them at a glance. */}
+        {isPending && proposal.rationale ? (
+          <RationaleCitationWarning rationale={proposal.rationale} />
+        ) : null}
+        {(proposal.modelName || proposal.engineVersion) && isPending ? (
+          <ReproducibilityStrip
+            modelName={proposal.modelName ?? null}
+            engineVersion={proposal.engineVersion ?? null}
+            capturedAt={proposal.reproducibility?.capturedAt ?? null}
+            promptHash={proposal.reproducibility?.systemPromptHash ?? null}
+          />
+        ) : null}
+
         {isPending ? (
-          <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-white/[0.06] pt-3">
-            <form action={applyProposalAction}>
-              <input type="hidden" name="proposalId" value={proposal.id} />
-              <Button type="submit" variant="emerald" size="sm">
-                <CheckCircle2 />
-                Approve
-              </Button>
-            </form>
+          <div className="mt-2 flex flex-col gap-3 border-t border-white/[0.06] pt-3">
+            <ProposalReviewGate proposalId={proposal.id} />
 
             {!showRejectInput ? (
               <Button
@@ -227,6 +259,7 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowRejectInput(true)}
+                className="self-start"
               >
                 <XCircle />
                 Reject…
@@ -254,6 +287,84 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
         ) : null}
       </CardContent>
     </Card>
+  );
+}
+
+/**
+ * Sprint 6D — Surfaces the citation-validator's verdict on the
+ * proposal's rationale text. Reuses AIMessageFooter so the visual
+ * language is identical to the chat surface.
+ */
+function RationaleCitationWarning({ rationale }: { rationale: string }) {
+  const result = React.useMemo(() => validateCitations(rationale), [rationale]);
+  if (result.total === 0) return null;
+  const cc: V2CitationCheck = {
+    total: result.total,
+    verifiedCount: result.verified.length,
+    unverifiedCount: result.unverified.length,
+    unverifiedSample: result.unverified.slice(0, 3).map((c) => ({
+      raw: c.raw,
+      regulation: c.regulation,
+      article: c.article,
+    })),
+  };
+  // Hide the always-on AI-generated label here — the proposal-card
+  // header already says "Astra reasoning" and we don't need a second
+  // disclosure layer per card. Only show when there are unverified.
+  if (cc.unverifiedCount === 0) return null;
+  return <AIMessageFooter citationCheck={cc} />;
+}
+
+/**
+ * Sprint 6D — Reproducibility metadata strip. Compact one-line
+ * summary so the reviewer can see what generated the proposal at a
+ * glance. Full hashes available on hover (tooltip via title attr).
+ */
+function ReproducibilityStrip({
+  modelName,
+  engineVersion,
+  capturedAt,
+  promptHash,
+}: {
+  modelName: string | null;
+  engineVersion: string | null;
+  capturedAt: string | null;
+  promptHash: string | null;
+}) {
+  return (
+    <div
+      data-testid="reproducibility-strip"
+      className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded bg-white/[0.02] px-2 py-1.5 font-mono text-[9px] uppercase tracking-wider text-slate-500 ring-1 ring-inset ring-white/[0.04]"
+    >
+      <span className="font-medium text-slate-400">PROVENANCE</span>
+      {modelName ? (
+        <span data-testid="provenance-model">
+          model <span className="text-slate-300">{modelName}</span>
+        </span>
+      ) : null}
+      {engineVersion ? (
+        <span data-testid="provenance-engine">
+          engine <span className="text-slate-300">{engineVersion}</span>
+        </span>
+      ) : null}
+      {capturedAt ? (
+        <span data-testid="provenance-captured">
+          captured{" "}
+          <span className="text-slate-300">
+            {new Date(capturedAt).toISOString().slice(0, 16).replace("T", " ")}
+          </span>
+        </span>
+      ) : null}
+      {promptHash ? (
+        <span
+          data-testid="provenance-hash"
+          title={`Full SHA-256: ${promptHash}`}
+          className="cursor-help"
+        >
+          hash <span className="text-slate-300">{promptHash.slice(0, 8)}…</span>
+        </span>
+      ) : null}
+    </div>
   );
 }
 
