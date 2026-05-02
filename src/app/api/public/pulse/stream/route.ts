@@ -52,6 +52,7 @@ import { PulseDetectSchema } from "@/lib/validations/pulse";
 import { ADAPTERS } from "@/lib/operator-profile/auto-detection/registry";
 import { mergeFields } from "@/lib/operator-profile/auto-detection/cross-verifier.server";
 import { fireDay0Delivery } from "@/lib/email/pulse/dispatcher.server";
+import { createSseStream } from "@/lib/sse";
 import type {
   AdapterInput,
   AdapterOutcome,
@@ -153,149 +154,106 @@ export async function POST(request: NextRequest) {
   };
   const applicable = ADAPTERS.filter((a) => a.canDetect(adapterInput));
 
-  // 5. Build streaming response
-  const encoder = new TextEncoder();
-  const stream = new ReadableStream<Uint8Array>({
-    async start(controller) {
-      let closed = false;
-      const send = (event: string, data: unknown) => {
-        if (closed) return;
+  // 5. Build streaming response via Sprint 7A generic SSE helper.
+  //    The helper handles encoding, abort-cleanup, heartbeat, and
+  //    error-event emission — this route just orchestrates the
+  //    business logic.
+  const response = createSseStream({
+    signal: request.signal,
+    onError: (err) => logger.error("[pulse-stream] orchestration error", err),
+    async onStart(channel) {
+      // 5a. Initial 'lead' event
+      channel.send("lead", {
+        leadId: lead.id,
+        receivedAt: lead.createdAt.toISOString(),
+        sources: applicable.map((a) => a.source),
+      });
+
+      // 5b. Run each applicable adapter, emit source-checking + source-result
+      const successful: AdapterResult[] = [];
+      const allWarnings: string[] = [];
+
+      const tasks = applicable.map(async (adapter) => {
+        channel.send("source-checking", { source: adapter.source });
+        let outcome: AdapterOutcome;
         try {
-          controller.enqueue(
-            encoder.encode(
-              `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`,
-            ),
-          );
-        } catch {
-          closed = true;
-        }
-      };
-
-      const cleanup = () => {
-        closed = true;
-        try {
-          controller.close();
-        } catch {
-          // already closed
-        }
-      };
-
-      request.signal.addEventListener("abort", cleanup);
-
-      try {
-        // 5a. Initial 'lead' event with leadId + which sources will be checked
-        send("lead", {
-          leadId: lead.id,
-          receivedAt: lead.createdAt.toISOString(),
-          sources: applicable.map((a) => a.source),
-        });
-
-        // 5b. Run each applicable adapter, emit source-checking + source-result
-        //     in parallel via Promise.allSettled; events are emitted as each
-        //     resolves so the UI fills in cards as data arrives.
-        const successful: AdapterResult[] = [];
-        const allWarnings: string[] = [];
-
-        const tasks = applicable.map(async (adapter) => {
-          send("source-checking", { source: adapter.source });
-          let outcome: AdapterOutcome;
-          try {
-            outcome = await adapter.detect(adapterInput);
-          } catch (err) {
-            // Adapter contract says detect() shouldn't throw, but defend.
-            outcome = {
-              ok: false,
-              source: adapter.source,
-              errorKind: "remote-error",
-              message:
-                (err as Error).message ?? String(err) ?? "adapter exploded",
-            };
-          }
-          if (outcome.ok) {
-            successful.push(outcome.result);
-            allWarnings.push(...outcome.result.warnings);
-            send("source-result", {
-              source: adapter.source,
-              ok: true,
-              fields: outcome.result.fields,
-              warnings: outcome.result.warnings,
-            });
-          } else {
-            send("source-result", {
-              source: adapter.source,
-              ok: false,
-              errorKind: outcome.errorKind,
-              message: outcome.message,
-            });
-          }
-        });
-
-        await Promise.allSettled(tasks);
-
-        // 5c. Cross-verify the successful results
-        const merged = mergeFields(successful);
-
-        // 5d. Update lead with snapshot
-        try {
-          await pulseLead.update({
-            where: { id: lead.id },
-            data: {
-              detectionResult: {
-                successfulSources: successful.map((s) => s.source),
-                mergedFields: merged.map((m) => ({
-                  fieldName: m.fieldName,
-                  value: m.chosenValue,
-                  agreementCount: m.agreementCount,
-                  contributingAdapters: m.contributingAdapters,
-                })),
-                warnings: allWarnings,
-                streamedAt: new Date().toISOString(),
-              },
-            },
-          });
+          outcome = await adapter.detect(adapterInput);
         } catch (err) {
-          logger.warn("[pulse-stream] lead-update failed (non-fatal)", {
-            error: (err as Error).message ?? String(err),
+          outcome = {
+            ok: false,
+            source: adapter.source,
+            errorKind: "remote-error",
+            message:
+              (err as Error).message ?? String(err) ?? "adapter exploded",
+          };
+        }
+        if (outcome.ok) {
+          successful.push(outcome.result);
+          allWarnings.push(...outcome.result.warnings);
+          channel.send("source-result", {
+            source: adapter.source,
+            ok: true,
+            fields: outcome.result.fields,
+            warnings: outcome.result.warnings,
+          });
+        } else {
+          channel.send("source-result", {
+            source: adapter.source,
+            ok: false,
+            errorKind: outcome.errorKind,
+            message: outcome.message,
           });
         }
+      });
 
-        // 5e. Final 'complete' event with merged fields + best-possible-tier
-        send("complete", {
-          mergedFields: merged.map((m) => ({
-            fieldName: m.fieldName,
-            value: m.chosenValue,
-            agreementCount: m.agreementCount,
-            contributingAdapters: m.contributingAdapters,
-          })),
-          warnings: allWarnings,
-          bestPossibleTier:
-            merged.length > 0 ? "T2_SOURCE_VERIFIED" : "T0_UNVERIFIED",
+      await Promise.allSettled(tasks);
+
+      // 5c. Cross-verify the successful results
+      const merged = mergeFields(successful);
+
+      // 5d. Update lead with snapshot
+      try {
+        await pulseLead.update({
+          where: { id: lead.id },
+          data: {
+            detectionResult: {
+              successfulSources: successful.map((s) => s.source),
+              mergedFields: merged.map((m) => ({
+                fieldName: m.fieldName,
+                value: m.chosenValue,
+                agreementCount: m.agreementCount,
+                contributingAdapters: m.contributingAdapters,
+              })),
+              warnings: allWarnings,
+              streamedAt: new Date().toISOString(),
+            },
+          },
         });
-
-        // 5f. Sprint 4E — fire day-0 delivery email after the stream
-        //     completes (lead.detectionResult is now populated, so the
-        //     email can include a real fields-summary). Fire-and-forget.
-        void fireDay0Delivery(lead.id);
       } catch (err) {
-        logger.error("[pulse-stream] orchestration error", err);
-        send("error", {
-          message: (err as Error).message ?? "internal error",
+        logger.warn("[pulse-stream] lead-update failed (non-fatal)", {
+          error: (err as Error).message ?? String(err),
         });
-      } finally {
-        cleanup();
       }
+
+      // 5e. Final 'complete' event
+      channel.send("complete", {
+        mergedFields: merged.map((m) => ({
+          fieldName: m.fieldName,
+          value: m.chosenValue,
+          agreementCount: m.agreementCount,
+          contributingAdapters: m.contributingAdapters,
+        })),
+        warnings: allWarnings,
+        bestPossibleTier:
+          merged.length > 0 ? "T2_SOURCE_VERIFIED" : "T0_UNVERIFIED",
+      });
+
+      // 5f. Sprint 4E — fire day-0 delivery email after the stream
+      //     completes (lead.detectionResult is now populated). Fire-and-forget.
+      void fireDay0Delivery(lead.id);
     },
   });
 
-  const response = new Response(stream, {
-    status: 200,
-    headers: {
-      "content-type": "text/event-stream; charset=utf-8",
-      "cache-control": "no-cache, no-transform",
-      connection: "keep-alive",
-      "x-accel-buffering": "no", // disable nginx-style buffering
-    },
-  });
   // applyCorsHeaders is typed for NextResponse but at runtime only uses
   // .headers.set() — Response has the same shape. Safe cast.
   return applyCorsHeaders(response as unknown as NextResponse, origin, "*");
