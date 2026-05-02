@@ -65,6 +65,7 @@ vi.mock("lucide-react", () => {
     ChevronDown: icon("ChevronDown"),
     ChevronRight: icon("ChevronRight"),
     Rocket: icon("Rocket"),
+    Activity: icon("Activity"),
   };
 });
 
@@ -87,12 +88,13 @@ describe("V2Sidebar — section structure", () => {
     expect(screen.queryByText("Reference")).toBeNull();
   });
 
-  it("Mission section contains Missions, Mission Control, Ephemeris, Sentinel in that order", () => {
+  it("Mission section contains Missions, Ops Console, Mission Control, Ephemeris, Sentinel in that order", () => {
     render(<V2Sidebar pendingProposals={0} />);
     const section = screen.getByLabelText("Mission");
     const links = within(section).getAllByRole("link");
     expect(links.map((a) => a.getAttribute("href"))).toEqual([
       "/dashboard/missions",
+      "/dashboard/ops-console",
       "/dashboard/mission-control",
       "/dashboard/ephemeris",
       "/dashboard/sentinel",

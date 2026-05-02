@@ -193,7 +193,7 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 - Sprint 7A: Generic SSE infrastructure helper ✅ COMPLETED 2026-05-02
 - Sprint 7B: Postgres LISTEN/NOTIFY Setup ✅ COMPLETED 2026-05-02
 - Sprint 7C: Anthropic Streaming-API Integration ✅ COMPLETED 2026-05-02
-- Sprint 7D: Mission-Operations-Console UI (Wow-Pattern #3) [PENDING]
+- Sprint 7D: Mission-Operations-Console UI (Wow-Pattern #3) ✅ COMPLETED 2026-05-02
 - Sprint 7E: Live-Astra-Reasoning-Stream UI (Wow-Pattern #5) [PENDING]
 - **Ziel:** Sichtbarer Wow-Effekt für Demo
 - **Aufwand:** 4 Wochen
@@ -250,7 +250,7 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 ### Pending Deploy-Batch — Tracker
 
 **Last main-push:** `8c8c4428` (Sprint 7C — 2026-05-02, 6-sprint batch)
-**Sprints in pending batch:** 0 of 6-8
+**Sprints in pending batch:** 1 of 6-8
 **Next deploy:** when batch reaches 6-8 sprints OR user says "deploy now"
 
 When you finish a sprint and commit it, increment this counter. When it
@@ -258,7 +258,7 @@ hits 6-8, run the deploy chain. Skip pushing the feature branch.
 
 Sprints in current batch (chronological):
 
-_(empty — batch flushed at 6 on 2026-05-02; deploy `8c8c4428`)_
+1. Sprint 7D — Mission Ops Console UI (Wow-Pattern #3) (auth-gated SSE endpoint at /api/dashboard/ops-console/stream forwarding all 4 DbChannels via createSseStream + listenForDbEvents; /dashboard/ops-console V2 page with OpsConsoleClient EventSource consumer + status bar + pause/resume + 200-entry buffer cap; V2Sidebar Mission section gets Ops Console entry; 7 endpoint tests + 9 client tests)
 
 ### Previous batch (deployed `8c8c4428` on 2026-05-02)
 

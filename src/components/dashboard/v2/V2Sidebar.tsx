@@ -20,6 +20,7 @@ import {
   ChevronDown,
   ChevronRight,
   Rocket,
+  Activity,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -78,6 +79,11 @@ export function V2Sidebar({
       label: "Missions",
       icon: Rocket,
       match: (p) => p.startsWith("/dashboard/missions"),
+    },
+    {
+      href: "/dashboard/ops-console",
+      label: "Ops Console",
+      icon: Activity,
     },
     {
       href: "/dashboard/mission-control",
