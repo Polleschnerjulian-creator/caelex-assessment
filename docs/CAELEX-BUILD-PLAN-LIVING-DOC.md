@@ -250,7 +250,7 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 ### Pending Deploy-Batch — Tracker
 
 **Last main-push:** `fe05b701` (Sprint 6A — 2026-05-02, 6-sprint batch)
-**Sprints in pending batch:** 0 of 6-8
+**Sprints in pending batch:** 1 of 6-8
 **Next deploy:** when batch reaches 6-8 sprints OR user says "deploy now"
 
 When you finish a sprint and commit it, increment this counter. When it
@@ -258,7 +258,7 @@ hits 6-8, run the deploy chain. Skip pushing the feature branch.
 
 Sprints in current batch (chronological):
 
-_(empty — batch flushed at 6 on 2026-05-02; deploy `fe05b701`)_
+1. Sprint 6B — AstraProposal reproducibility / EU AI Act Art. 12 audit trail (additive schema migration: modelName, engineVersion, reproducibility JSON column + index; buildReproducibilityRecord() helper with SHA-256 prompt hashing; ProposalCallOptions.reproducibility wiring + 15 tests)
 
 ### Previous batch (deployed `fe05b701` on 2026-05-02)
 

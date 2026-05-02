@@ -164,6 +164,15 @@ export interface ProposalCallOptions {
   itemId?: string | null;
   /** Astra's chain-of-thought as an ordered list of steps. */
   decisionLog?: ProposalDecisionLogEntry[];
+  /**
+   * Sprint 6B — EU AI Act Art. 12 audit trail. The Astra bridge
+   * populates this when a proposal originates from a model run;
+   * non-Astra paths leave it undefined and the column stays NULL.
+   *
+   * Stored as JSON; surfaced separately via indexed `modelName` +
+   * `engineVersion` columns for fast filtering.
+   */
+  reproducibility?: import("@/lib/astra/reproducibility").ReproducibilityRecord;
 }
 
 export interface DefinedAction<TSchema extends z.ZodTypeAny> {
@@ -299,6 +308,11 @@ export function defineAction<TSchema extends z.ZodTypeAny>(
       options?.decisionLog && options.decisionLog.length > 0
         ? (options.decisionLog as unknown as Prisma.InputJsonValue)
         : undefined;
+    // Sprint 6B — denormalize the indexable parts of the
+    // reproducibility record into top-level columns so we can filter
+    // proposals by model / engine without scanning JSON. Full record
+    // still goes into the `reproducibility` JSON column.
+    const repro = options?.reproducibility;
     const proposal = await prisma.astraProposal.create({
       data: {
         userId: ctx.userId,
@@ -311,6 +325,11 @@ export function defineAction<TSchema extends z.ZodTypeAny>(
         // Prisma.JsonNull which would write the JSON null literal.
         decisionLog,
         expiresAt,
+        modelName: repro?.modelName ?? null,
+        engineVersion: repro?.engineVersion ?? null,
+        reproducibility: repro
+          ? (repro as unknown as Prisma.InputJsonValue)
+          : undefined,
       },
       select: { id: true, expiresAt: true },
     });

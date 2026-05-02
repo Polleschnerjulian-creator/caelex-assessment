@@ -9897,12 +9897,29 @@ model AstraProposal {
   /// Auto-expire window so stale proposals don't pile up forever.
   expiresAt DateTime
 
+  /// Sprint 6B — Reproducibility / EU AI Act audit-trail fields.
+  ///
+  /// Each AstraProposal carries a snapshot of the inputs that
+  /// produced it: model name + engine version are surfaced for
+  /// fast filtering ("show me everything from claude-sonnet-4-6"
+  /// or "everything since engine v2.3"); `reproducibility` is the
+  /// full structured record (hashed prompts + sampling params +
+  /// conversation context) for forensic replay.
+  ///
+  /// All three are nullable — pre-Sprint-6B rows get NULL, and
+  /// non-Astra paths (manual user submissions, cron-fired actions)
+  /// don't populate these.
+  modelName       String? // e.g. "claude-sonnet-4-6"
+  engineVersion   String? // e.g. "v2.3.0" or git SHA
+  reproducibility Json? // ReproducibilityRecord — see citation-validator.ts
+
   createdAt DateTime  @default(now())
   decidedAt DateTime?
   appliedAt DateTime?
 
   @@index([userId, status, expiresAt])
   @@index([itemId])
+  @@index([modelName, createdAt])
 }
 
 // ─── Comply v2 — Astra V2 Conversations ─────────────────────────────────
