@@ -18,6 +18,9 @@ import type {
   V2AstraMessage,
   V2ToolCall,
 } from "@/lib/comply-v2/astra-engine.server";
+// Sprint 6C — EU AI Act Art. 50 disclosure surfaces.
+import { AIDisclosureBanner } from "@/components/astra-v2/AIDisclosureBanner";
+import { AIMessageFooter } from "@/components/astra-v2/AIMessageFooter";
 
 /**
  * Comply V2 Astra chat UI — isolated from the legacy Astra panel.
@@ -139,6 +142,8 @@ export function AstraV2Chat({
   return (
     <div className="palantir-surface flex h-[calc(100vh-180px)] max-w-3xl flex-col rounded-md">
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-5">
+        {/* Sprint 6C — EU AI Act Art. 50(1) disclosure */}
+        <AIDisclosureBanner />
         <div className="flex flex-col gap-5">
           {history.map((msg, i) => (
             <MessageBubble key={i} message={msg} />
@@ -249,6 +254,15 @@ function MessageBubble({ message }: { message: V2AstraMessage }) {
               />
             ))}
           </div>
+        ) : null}
+        {/* Sprint 6C — EU AI Act Art. 50(4) per-message disclosure +
+            citation-validator surface. Hide on the seed greeting
+            (toolCalls is empty AND content is the canned hi text)
+            so the very first paint isn't visually noisy; once the
+            first tool call or new assistant turn happens, every
+            subsequent assistant bubble carries it. */}
+        {message.toolCalls.length > 0 || message.citationCheck ? (
+          <AIMessageFooter citationCheck={message.citationCheck} />
         ) : null}
       </div>
     </div>

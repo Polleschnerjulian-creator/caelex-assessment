@@ -5,6 +5,7 @@ import {
   executeAstraAction,
 } from "./actions/astra-bridge.server";
 import type { ProposalDecisionLogEntry } from "./actions/define-action";
+import { validateCitations } from "@/lib/astra/citation-validator";
 
 /**
  * Comply v2 Astra Engine — isolated from the shared src/lib/astra/engine.ts.
@@ -76,7 +77,26 @@ export type V2AstraMessage =
       role: "assistant";
       content: string;
       toolCalls: V2ToolCall[];
+      /**
+       * Sprint 6C — citation-validator output for the assistant turn.
+       * Surfaced as a footer on the message bubble when
+       * `unverifiedCount > 0`. Optional so old persisted messages
+       * (pre-6C) don't need a migration.
+       */
+      citationCheck?: V2CitationCheck;
     };
+
+export interface V2CitationCheck {
+  total: number;
+  verifiedCount: number;
+  unverifiedCount: number;
+  /** First 3 unverified citations for the footer. */
+  unverifiedSample: Array<{
+    raw: string;
+    regulation: "eu_space_act" | "nis2";
+    article: string;
+  }>;
+}
 
 export interface V2ToolCall {
   id: string;
@@ -299,10 +319,30 @@ export async function runV2AstraTurn(
     }
   }
 
+  // Sprint 6C — run the citation validator on the assistant text.
+  // Same partition shape as the V1 engine; the message bubble shows
+  // a footer when `unverifiedCount > 0`.
+  const assistantContent = assistantText.join("\n");
+  const citationResult = validateCitations(assistantContent);
+  const citationCheck: V2CitationCheck | undefined =
+    citationResult.total > 0
+      ? {
+          total: citationResult.total,
+          verifiedCount: citationResult.verified.length,
+          unverifiedCount: citationResult.unverified.length,
+          unverifiedSample: citationResult.unverified.slice(0, 3).map((c) => ({
+            raw: c.raw,
+            regulation: c.regulation,
+            article: c.article,
+          })),
+        }
+      : undefined;
+
   updatedHistory.push({
     role: "assistant",
-    content: assistantText.join("\n"),
+    content: assistantContent,
     toolCalls: assistantToolCalls,
+    citationCheck,
   });
 
   return updatedHistory;
