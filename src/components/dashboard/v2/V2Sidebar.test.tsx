@@ -78,10 +78,13 @@ beforeEach(() => {
 describe("V2Sidebar — section structure", () => {
   it("renders Mission, Workflows, Compliance section labels (Reference hidden when empty)", () => {
     render(<V2Sidebar pendingProposals={0} />);
-    expect(screen.getByText("Mission")).toBeInTheDocument();
-    expect(screen.getByText("Workflows")).toBeInTheDocument();
-    expect(screen.getByText("Compliance")).toBeInTheDocument();
-    expect(screen.queryByText("Reference")).not.toBeInTheDocument();
+    // getByText throws when the element isn't present — calling without
+    // expect() is sufficient. Avoiding `.toBeInTheDocument()` because
+    // the matcher's types aren't picked up under this tsconfig.
+    screen.getByText("Mission");
+    screen.getByText("Workflows");
+    screen.getByText("Compliance");
+    expect(screen.queryByText("Reference")).toBeNull();
   });
 
   it("Mission section contains Missions, Mission Control, Ephemeris, Sentinel in that order", () => {
@@ -156,13 +159,13 @@ describe("V2Sidebar — pendingProposals badge", () => {
   it("renders the badge count when pendingProposals > 0", () => {
     render(<V2Sidebar pendingProposals={7} />);
     const proposals = screen.getByRole("link", { name: /Proposals/i });
-    expect(within(proposals).getByText("7")).toBeInTheDocument();
+    within(proposals).getByText("7"); // throws if absent
   });
 
   it("hides the badge when pendingProposals = 0", () => {
     render(<V2Sidebar pendingProposals={0} />);
     const proposals = screen.getByRole("link", { name: /Proposals/i });
-    expect(within(proposals).queryByText("0")).not.toBeInTheDocument();
+    expect(within(proposals).queryByText("0")).toBeNull();
   });
 });
 
@@ -175,12 +178,12 @@ describe("V2Sidebar — user footer", () => {
         userEmail="anna@example.com"
       />,
     );
-    expect(screen.getByText("Anna Operator")).toBeInTheDocument();
-    expect(screen.getByText("anna@example.com")).toBeInTheDocument();
+    screen.getByText("Anna Operator");
+    screen.getByText("anna@example.com");
   });
 
   it("omits the user block when no email and no name", () => {
     render(<V2Sidebar pendingProposals={0} />);
-    expect(screen.queryByText(/@/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/@/)).toBeNull();
   });
 });

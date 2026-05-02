@@ -38,6 +38,7 @@ import {
   MAX_MESSAGE_LENGTH,
 } from "./conversation-manager";
 import type { AddMessageResult } from "./conversation-manager";
+import { validateCitations } from "./citation-validator";
 
 // ─── Retry Utility ───
 
@@ -158,6 +159,38 @@ interface AnthropicResponse {
   };
 }
 
+/**
+ * Sprint 6A — Citation-validator integration.
+ *
+ * Mutates `response.metadata.citationCheck` with the verified +
+ * unverified count from scanning the message text. Idempotent — if
+ * called twice, the second call overwrites with the same values.
+ *
+ * Kept at module scope (not on the engine class) so the streaming
+ * branch + the fallback-response path can both use it.
+ */
+function attachCitationCheck(response: AstraResponse): void {
+  const result = validateCitations(response.message ?? "");
+  if (result.total === 0) {
+    // No citations at all — clear any prior value but don't add the
+    // metadata field (keeps payload smaller for the common case of
+    // greeting/clarification turns).
+    if (response.metadata) delete response.metadata.citationCheck;
+    return;
+  }
+  response.metadata = response.metadata ?? {};
+  response.metadata.citationCheck = {
+    total: result.total,
+    verifiedCount: result.verified.length,
+    unverifiedCount: result.unverified.length,
+    unverifiedSample: result.unverified.slice(0, 3).map((c) => ({
+      raw: c.raw,
+      regulation: c.regulation,
+      article: c.article,
+    })),
+  };
+}
+
 // ─── Main Engine Class ───
 
 export class AstraEngine implements IAstraEngine {
@@ -233,6 +266,10 @@ export class AstraEngine implements IAstraEngine {
       if (formattedResponse.metadata) {
         formattedResponse.metadata.tokensUsed = tokensUsed;
       }
+
+      // Sprint 6A — attach citation check so the UI can flag any
+      // hallucinated regulatory references on the message bubble.
+      attachCitationCheck(formattedResponse);
 
       return formattedResponse;
     } catch (error) {
@@ -726,6 +763,9 @@ export class AstraEngine implements IAstraEngine {
       if (response.metadata) {
         response.metadata.tokensUsed = tokensUsed;
       }
+
+      // Sprint 6A — same citation guard as the non-streaming path.
+      attachCitationCheck(response);
 
       await addAssistantMessage(conversation.id, response.message, {
         sources: response.sources,

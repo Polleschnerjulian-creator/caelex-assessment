@@ -250,7 +250,7 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 ### Pending Deploy-Batch — Tracker
 
 **Last main-push:** `b29dacfb` (Sprint 4C — 2026-05-01)
-**Sprints in pending batch:** 5 of 6-8
+**Sprints in pending batch:** 6 of 6-8 (deploy threshold reached)
 **Next deploy:** when batch reaches 6-8 sprints OR user says "deploy now"
 
 When you finish a sprint and commit it, increment this counter. When it
@@ -263,6 +263,7 @@ Sprints in current batch (chronological):
 3. Sprint 5A — Mission-First-UI list view (getMissionsForUser aggregator + /dashboard/missions list page + V2Sidebar Missions entry + 12 tests)
 4. Sprint 5B — Mission detail page (getMissionDetail aggregator with tenant guard + /dashboard/missions/[id] phase-roadmap UI + milestone tracker + 10 tests)
 5. Sprint 5C — V2Sidebar reorg into Mission/Workflows/Compliance/Reference 4-section taxonomy (SidebarSection extracted + 12 structure tests)
+6. Sprint 6A — Astra citation-validator (regex + canonical-source lookup for EU Space Act + NIS2 article numbers, range expansion for grouped article entries, attached to AstraResponse.metadata.citationCheck for UI footer surfacing + 13 tests)
 
 ### Sprint 2 — Auto-Detection-Engine [IN PROGRESS]
 

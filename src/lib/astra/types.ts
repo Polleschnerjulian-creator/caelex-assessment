@@ -129,6 +129,23 @@ export interface AstraResponse {
     processingTimeMs?: number;
     /** Language detected/used */
     language?: "en" | "de";
+    /**
+     * Sprint 6A — citation-validator output. Surfaced to the UI as a
+     * "N of M citations could not be verified" footer when
+     * `unverified.length > 0`. Never used to rewrite the message.
+     */
+    citationCheck?: {
+      total: number;
+      verifiedCount: number;
+      unverifiedCount: number;
+      /** First few unverified citations for the footer (max 3 — keep
+       *  the metadata small for the response payload). */
+      unverifiedSample: Array<{
+        raw: string;
+        regulation: "eu_space_act" | "nis2";
+        article: string;
+      }>;
+    };
   };
 }
 
