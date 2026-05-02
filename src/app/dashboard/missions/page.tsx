@@ -26,9 +26,9 @@ export const dynamic = "force-dynamic";
 /**
  * Missions list — the V2 mission-first landing.
  *
- * Sprint 5A: list view only. Cards show Spacecraft + active-phase
- * summary. The phase Gantt + per-mission detail page lands in 5B
- * (the cards link there, and the route exists as a stub).
+ * Sprint 5A: list view + V2Sidebar entry.
+ * Sprint 5B: per-mission detail page (`/dashboard/missions/[id]`)
+ *           — cards link there.
  *
  * V1 users get redirected to the legacy /dashboard. The page is
  * V2-exclusive — there's no equivalent in V1 chrome.
@@ -58,9 +58,8 @@ export default async function MissionsPage() {
             Mission overview
           </h1>
           <p className="mt-1 max-w-2xl text-xs text-slate-500">
-            Each spacecraft is one mission. The card surfaces its operational
-            status and the active regulatory phase. Detail view with full phase
-            Gantt lands in Sprint 5B.
+            Each spacecraft is one mission. Click any card to drill into its
+            phase roadmap and milestones.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -113,7 +112,10 @@ export default async function MissionsPage() {
 
 function MissionCard({ mission }: { mission: MissionSummary }) {
   return (
-    <article className="palantir-surface group flex flex-col gap-3 rounded-md p-4 transition hover:bg-white/[0.04]">
+    <Link
+      href={`/dashboard/missions/${mission.id}`}
+      className="palantir-surface group flex flex-col gap-3 rounded-md p-4 transition hover:bg-white/[0.04] hover:ring-1 hover:ring-emerald-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40"
+    >
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="truncate text-sm font-semibold tracking-tight text-slate-100">
@@ -201,16 +203,13 @@ function MissionCard({ mission }: { mission: MissionSummary }) {
       </div>
 
       <footer className="mt-1 flex items-center justify-between border-t border-white/[0.04] pt-3 font-mono text-[9px] uppercase tracking-wider">
-        <span className="text-slate-600">Detail view in Sprint 5B</span>
-        <Link
-          href="/dashboard/timeline"
-          className="inline-flex items-center gap-1 text-slate-500 transition hover:text-emerald-300"
-        >
-          Timeline
+        <span className="text-slate-600">View roadmap</span>
+        <span className="inline-flex items-center gap-1 text-slate-500 transition group-hover:text-emerald-300">
+          Open
           <ArrowRight className="h-3 w-3" />
-        </Link>
+        </span>
       </footer>
-    </article>
+    </Link>
   );
 }
 
