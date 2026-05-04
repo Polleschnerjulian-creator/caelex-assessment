@@ -201,34 +201,11 @@ export function V2Sidebar({
         </div>
       </div>
 
-      {/* Cmd-K hint — single most important affordance per the brief */}
-      <div
-        className="px-3 py-2"
-        style={{ borderBottom: "1px solid var(--caelex-divider)" }}
-      >
-        <button
-          type="button"
-          className="caelex-focusable caelex-text-tertiary flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-colors duration-tp-quick ease-tp-apple"
-          style={{
-            background: "var(--caelex-content-sunken)",
-            border: "1px solid var(--caelex-content-border)",
-          }}
-          onClick={() => {
-            const event = new KeyboardEvent("keydown", {
-              key: "k",
-              metaKey: true,
-              bubbles: true,
-            });
-            window.dispatchEvent(event);
-          }}
-        >
-          <span>Search Caelex…</span>
-          <span className="flex items-center gap-0.5">
-            <Kbd>⌘</Kbd>
-            <Kbd>K</Kbd>
-          </span>
-        </button>
-      </div>
+      {/* Sprint 12B: cmd-K trigger relocated to V2TopBar (the brief
+          calls it "the single most important affordance" — top bar
+          is its proper home). The CommandPalette still listens for
+          ⌘K on window, so the keyboard shortcut works from anywhere
+          inside the sidebar. */}
 
       <div className="flex-1 overflow-y-auto px-2 py-2">
         <SidebarSection label="Mission" items={mission} isActive={isActive} />

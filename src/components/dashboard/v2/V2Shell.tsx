@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { CommandPalette } from "./CommandPalette";
 import { V2Sidebar } from "./V2Sidebar";
+import { V2TopBar } from "./V2TopBar";
 import { CaelexLensDefs } from "./CaelexLensDefs";
 import { getPendingProposalCount } from "@/lib/comply-v2/proposal-stats.server";
 import { getServerActionVerbs } from "@/lib/comply-v2/actions/palette-verbs.server";
@@ -41,14 +42,16 @@ import { getDensity } from "@/lib/comply-v2/density.server";
  * with V1 surfaces (atlas, pharos, hub) that have their own scoped
  * dark/light logic.
  *
- * # Layout
+ * # Layout (Sprint 12B adds V2TopBar)
  *
  *   data-density + data-caelex-theme root
  *   ├── CaelexLensDefs (SVG defs, hidden, Chromium refraction)
- *   ├── CommandPalette (⌘K, fixed-position dialog)
- *   ├── V2Sidebar (Glass-Regular chrome, 224px wide, sticky)
- *   └── main (caelex-canvas — opaque)
- *       └── {children} — the page content
+ *   ├── CommandPalette (⌘K, fixed-position dialog — invisible until invoked)
+ *   ├── V2Sidebar (Glass-Regular left rail, 224px wide, sticky)
+ *   └── content column
+ *       ├── V2TopBar (Glass-Regular, 48px sticky, breadcrumbs+⌘K+avatar)
+ *       └── main (caelex-canvas — opaque page bodies)
+ *           └── {children}
  *
  * V1 users see DashboardShell directly via dashboard/layout.tsx
  * (kept untouched for emergency rollback per
@@ -90,8 +93,14 @@ export default async function V2Shell({
         />
       </aside>
 
-      {/* Main content area */}
-      <main className="flex-1 overflow-x-hidden">{children}</main>
+      {/* Content column — top bar above main page area */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <V2TopBar
+          userEmail={session?.user?.email ?? null}
+          userName={session?.user?.name ?? null}
+        />
+        <main className="flex-1 overflow-x-hidden">{children}</main>
+      </div>
     </div>
   );
 }
