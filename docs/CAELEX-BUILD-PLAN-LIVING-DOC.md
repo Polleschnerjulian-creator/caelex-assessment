@@ -250,8 +250,8 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 
 ### Pending Deploy-Batch — Tracker
 
-**Last main-push:** `8c8c4428` (Sprint 7C — 2026-05-02, 6-sprint batch)
-**Sprints in pending batch:** 6 of 6-8 (deploy threshold reached)
+**Last main-push:** `6d2fd6a3` (Sprint 10A — 2026-05-02, 6-sprint batch)
+**Sprints in pending batch:** 0 of 6-8
 **Next deploy:** when batch reaches 6-8 sprints OR user says "deploy now"
 
 When you finish a sprint and commit it, increment this counter. When it
@@ -259,12 +259,16 @@ hits 6-8, run the deploy chain. Skip pushing the feature branch.
 
 Sprints in current batch (chronological):
 
-1. Sprint 7D — Mission Ops Console UI (Wow-Pattern #3) (auth-gated SSE endpoint at /api/dashboard/ops-console/stream forwarding all 4 DbChannels via createSseStream + listenForDbEvents; /dashboard/ops-console V2 page with OpsConsoleClient EventSource consumer + status bar + pause/resume + 200-entry buffer cap; V2Sidebar Mission section gets Ops Console entry; 7 endpoint tests + 9 client tests)
-2. Sprint 7E — Live Astra Reasoning Stream (Wow-Pattern #5) (delta-buffer.ts batches Anthropic streaming deltas with 250ms timer + 200-char size flush + serialised onFlush; V2 server-actions sendV2AstraMessage + sendInConversation pipe runV2AstraTurn onDelta → emitDbEvent astra.reasoning so the Ops Console feed shows reasoning live; 13 buffer tests covering throttle/size/done/idempotency/serialisation)
-3. Sprint 8A — OpenTimestamps audit-anchor cron (additive AuditTimestampAnchor schema + migration; submitAuditAnchor service posts SHA-256 of audit chain head to default OpenTimestamps calendars in parallel, persists PENDING/FAILED rows per calendar; quarterly cron at 03:00 UTC 1st of every 3rd month gated by AUDIT_ANCHOR_ENABLED env flag; 16 tests covering digest encoding + calendar fan-out + per-org walking + cron auth/disabled/enabled paths)
-4. Sprint 8B — OpenTimestamps audit-anchor upgrade-cron (upgradeAuditAnchor() polls calendar /timestamp/<digest> for confirmed proofs after 6h; 200/404/5xx/empty/give-up paths; upgradeAllPendingAnchors batch walker with 200-row budget; daily 04:00 UTC cron; 18 new tests covering single-anchor lifecycle + batch aggregation + cron auth/disabled/enabled paths)
-5. Sprint 8C — Public verify page (rate-limited /api/public/verify-anchor POST endpoint exposes anchor proof bytes via base64 lookup, hides FAILED rows + organizationId for privacy; /verify static page with VerifyAnchorClient — paste hash → POST → render UPGRADED/PENDING badge + calendar hostname + block height + .ots download button + "how to verify yourself" CLI walkthrough; 14 endpoint tests + 11 client tests)
-6. Sprint 10A — Hash-Chain-Block-Visualizer (Wow-Pattern #7, pulled forward; 8D deferred) (audit-chain-view.server.ts getAuditChainSegment with cursor pagination + SHA-256(entryHash)→anchorHash join hiding FAILED + UPGRADED-beats-PENDING; /dashboard/audit-chain page with AuditChainVisualizer client island, blockchain-style block cards with prev/this hash links + emerald BTC#height markers deep-linking to /verify; loadMoreAuditChainSegment Server Action with org-rebind anti-IDOR guard; V2Sidebar Compliance section adds Audit Chain entry; 11 service tests + V2Sidebar order test updated)
+_(empty — batch flushed at 6 on 2026-05-02; deploy `6d2fd6a3`)_
+
+### Previous batch (deployed `6d2fd6a3` on 2026-05-02)
+
+1. Sprint 7D — Mission Ops Console UI (Wow-Pattern #3)
+2. Sprint 7E — Live Astra Reasoning Stream (Wow-Pattern #5)
+3. Sprint 8A — OpenTimestamps audit-anchor cron
+4. Sprint 8B — OpenTimestamps audit-anchor upgrade-cron
+5. Sprint 8C — Public verify page (no Caelex trust required)
+6. Sprint 10A — Hash-Chain-Block-Visualizer (Wow-Pattern #7; pulled forward, 8D deferred)
 
 ### Previous batch (deployed `8c8c4428` on 2026-05-02)
 
