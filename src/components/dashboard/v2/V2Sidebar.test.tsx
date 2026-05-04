@@ -67,6 +67,7 @@ vi.mock("lucide-react", () => {
     Rocket: icon("Rocket"),
     Activity: icon("Activity"),
     Link2: icon("Link2"),
+    Heart: icon("Heart"),
   };
 });
 
@@ -114,7 +115,7 @@ describe("V2Sidebar — section structure", () => {
     ]);
   });
 
-  it("Compliance section contains Posture, Tracker, Incidents, Audit Center, Audit Chain, Network", () => {
+  it("Compliance section contains Posture, Tracker, Incidents, Audit Center, Audit Chain, Health Pulse, Network", () => {
     render(<V2Sidebar pendingProposals={0} />);
     const section = screen.getByLabelText("Compliance");
     const links = within(section).getAllByRole("link");
@@ -124,6 +125,7 @@ describe("V2Sidebar — section structure", () => {
       "/dashboard/incidents",
       "/dashboard/audit-center",
       "/dashboard/audit-chain",
+      "/dashboard/health-pulse",
       "/dashboard/network",
     ]);
   });

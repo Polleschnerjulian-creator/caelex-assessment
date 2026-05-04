@@ -22,6 +22,7 @@ import {
   Rocket,
   Activity,
   Link2,
+  Heart,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -125,6 +126,11 @@ export function V2Sidebar({
       href: "/dashboard/audit-chain",
       label: "Audit Chain",
       icon: Link2,
+    },
+    {
+      href: "/dashboard/health-pulse",
+      label: "Health Pulse",
+      icon: Heart,
     },
     { href: "/dashboard/network", label: "Network", icon: Network },
   ];
