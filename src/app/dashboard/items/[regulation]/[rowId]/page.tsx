@@ -15,6 +15,8 @@ import {
   getComplianceItemById,
   getItemDetailExtras,
 } from "@/lib/comply-v2/compliance-item.server";
+import { getProvenanceTimeline } from "@/lib/comply-v2/provenance.server";
+import { ProvenanceTimeline } from "@/components/dashboard/v2/ProvenanceTimeline";
 import {
   REGULATIONS,
   REGULATION_LABELS,
@@ -102,6 +104,11 @@ export default async function ItemDetailPage({ params }: PageProps) {
 
   const extras = await getItemDetailExtras(item.id, session.user.id);
   const isSnoozed = extras.snoozedUntil !== null;
+
+  // Sprint 10C — fetch the per-item lifecycle timeline (joined with
+  // OpenTimestamps anchors via Sprint 10A's anchor-hash logic). The
+  // pull is parallel to extras above; small enough to be unconditional.
+  const provenance = await getProvenanceTimeline(rowId, session.user.id);
 
   return (
     <div className="mx-auto max-w-screen-2xl px-6 py-6">
@@ -359,6 +366,11 @@ export default async function ItemDetailPage({ params }: PageProps) {
               </div>
             ) : null}
           </Section>
+
+          {/* Sprint 10C — per-item provenance timeline + Bitcoin anchors */}
+          <div className="mt-6">
+            <ProvenanceTimeline data={provenance} />
+          </div>
         </main>
       </div>
     </div>
