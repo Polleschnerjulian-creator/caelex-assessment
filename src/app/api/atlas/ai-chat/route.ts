@@ -292,9 +292,17 @@ export async function POST(request: NextRequest) {
       // Locale for the legal-review disclaimer back-stop. Pulled from
       // the user's profile (atlas-auth surface) — we don't accept it
       // from the request to prevent a malicious client from forcing
-      // an EN disclaimer into a DE memo. Fallback EN.
+      // an EN disclaimer into a DE memo. FR-coverage extension: now
+      // covers all four supported Language values; falls back to EN
+      // for any unrecognised profile value.
       const disclaimerLocale: DisclaimerLocale =
-        atlas.userLanguage === "de" ? "de" : "en";
+        atlas.userLanguage === "de"
+          ? "de"
+          : atlas.userLanguage === "fr"
+            ? "fr"
+            : atlas.userLanguage === "es"
+              ? "es"
+              : "en";
 
       // ─── Compliance guards ─────────────────────────────────────────
       // Track whether ANY drafting tool fired during this turn — drives

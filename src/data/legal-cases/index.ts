@@ -15,6 +15,7 @@ import {
   LEGAL_CASE_TRANSLATIONS_DE,
   type TranslatedCase,
 } from "./translations-de";
+import { LEGAL_CASE_TRANSLATIONS_FR } from "./translations-fr";
 import type {
   LegalCase,
   CaseForum,
@@ -37,15 +38,23 @@ export { ATLAS_CASES } from "./cases";
  * always the source-of-truth (the case fields themselves); other
  * languages live in `translations-{lang}.ts` files and are looked up
  * via getTranslatedCase().
+ *
+ * FR-coverage extension: French translations now live in
+ * translations-fr.ts and cover the same 28 cases as the German set.
+ * Legacy cases without an FR entry transparently fall back to EN
+ * via the undefined-return contract on getTranslatedCase().
  */
-export const SUPPORTED_CASE_TRANSLATION_LANGUAGES = ["en", "de"] as const;
+export const SUPPORTED_CASE_TRANSLATION_LANGUAGES = ["en", "de", "fr"] as const;
 export type CaseTranslationLanguage =
   (typeof SUPPORTED_CASE_TRANSLATION_LANGUAGES)[number];
 
 const CASE_TRANSLATION_REGISTRY = new Map<
   CaseTranslationLanguage,
   Map<string, TranslatedCase>
->([["de", LEGAL_CASE_TRANSLATIONS_DE]]);
+>([
+  ["de", LEGAL_CASE_TRANSLATIONS_DE],
+  ["fr", LEGAL_CASE_TRANSLATIONS_FR],
+]);
 
 /**
  * Returns the translated record for a case in the requested language,
