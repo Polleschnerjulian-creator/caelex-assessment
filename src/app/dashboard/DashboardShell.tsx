@@ -14,6 +14,7 @@ import { AstraProvider } from "@/components/astra/AstraProvider";
 import AstraWidget from "@/components/astra/AstraWidget";
 import { AtlasEntityMini } from "@/components/atlas/AtlasEntityMini";
 import GlassSpecular from "@/components/dashboard/GlassSpecular";
+import { TryV2Banner } from "@/components/dashboard/TryV2Banner";
 import DemoTour from "@/components/demo/DemoTour";
 import { useAnalyticsTracking } from "@/hooks/useAnalyticsTracking";
 import {
@@ -298,6 +299,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         data-content="caelex"
         className="sidebar-content-area flex flex-col min-h-screen lg:my-3 lg:mr-3 lg:rounded-[var(--glass-radius-xl)] lg:overflow-hidden glass-subtle relative z-[1]"
       >
+        {/* Sprint 10G — One-click V1→V2 nudge for users still on V1 */}
+        <TryV2Banner />
         {/* Company Profile Bar — only on main dashboard */}
         {pathname === "/dashboard" && (
           <CompanyProfileBar

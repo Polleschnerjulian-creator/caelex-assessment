@@ -99,6 +99,7 @@ type SectionId =
   | "account"
   | "notifications"
   | "appearance"
+  | "ui-version"
   | "language"
   | "astra-ai"
   | "api-keys"
@@ -137,6 +138,14 @@ const NAV_ITEMS: NavItem[] = [
     label: "Appearance",
     labelKey: "settings.appearance",
     icon: Palette,
+  },
+  {
+    id: "ui-version",
+    label: "UI Version",
+    labelKey: "settings.uiVersion",
+    icon: Sparkles,
+    isLink: true,
+    href: "/dashboard/settings/ui",
   },
   {
     id: "language",
