@@ -211,12 +211,17 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 - **Aufwand:** 4 Wochen
 - **V1-Impact:** Null
 
-**Sprint 9 — COE Full Implementation** [PENDING]
+**Sprint 9 — COE Full Implementation** [IN PROGRESS]
 
-- 6 Sub-Engines (Dependency, Stakeholder, Time, Re-Use, Constraints, Risk)
-- Personalized-DAG-Generation
-- DAG-Re-Generation-Triggers
-- Workflow-DAG-Force-Graph UI (Wow-Pattern #4)
+- Sprint 9A: Dependency-Engine (foundation: graph + topoSort + criticalPath + cycle-detect) ✅ COMPLETED 2026-05-04
+- Sprint 9B: Stakeholder-Engine [PENDING]
+- Sprint 9C: Time-Engine [PENDING]
+- Sprint 9D: Re-Use-Engine [PENDING]
+- Sprint 9E: Constraints-Engine [PENDING]
+- Sprint 9F: Risk-Engine [PENDING]
+- Sprint 9G: Personalized-DAG-Generator (orchestrates all 6 engines) [PENDING]
+- Sprint 9H: DAG-Re-Generation-Triggers [PENDING]
+- Sprint 9X: Workflow-DAG-Force-Graph UI (Wow-Pattern #4) [PENDING]
 - **Aufwand:** 6-8 Wochen
 - **V1-Impact:** Null
 
@@ -251,7 +256,7 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 ### Pending Deploy-Batch — Tracker
 
 **Last main-push:** `d17069bb` (Sprint 10G hotfix — 2026-05-02, NextResponse cookie fix)
-**Sprints in pending batch:** 5 of 6-8
+**Sprints in pending batch:** 6 of 6-8
 **Next deploy:** when batch reaches 6-8 sprints OR user says "deploy now"
 
 When you finish a sprint and commit it, increment this counter. When it
@@ -264,6 +269,7 @@ Sprints in current batch (chronological):
 3. Sprint 10E — Stakeholder Network Graph (Wow-Pattern #11) (radial SVG ecosystem map at /dashboard/network/graph; getStakeholderNetwork server fetcher with operator + OrganizationMember + StakeholderEngagement nodes + radial edges + perType histogram + isRevoked/status=ACTIVE/INVITED filter; deterministic radial layout (no D3, no force sim) — operator centre, internal members on inner ring 110px, externals on outer ring 230px; per-type colour palette (LEGAL_COUNSEL blue, NCA amber, INSURER violet, etc.) + dot-size = dataRoomCount + attestationCount weight; 11 fetcher tests covering empty + node-shape + edge-shape + perType + filter paths; reachable via direct URL — V1-flavored /dashboard/network landing left untouched)
 4. Sprint 10F — Time Travel Slider (Wow-Pattern #12) (/dashboard/time-travel server-fetches 90 days of getPostureTrend; TimeTravelClient slider scrubs the array index, posture cards (score/attested/proposals/triage) reflect the scrubbed day with day-over-day delta toning (emerald improvement, red regression, slate=0; inverted for proposals+triage where MORE is bad); Play button autoplays at 200ms-per-day cadence with auto-pause at end; Skip-back/forward buttons; sparkline below shows full 90-day score trajectory with vertical cursor + highlight dot at the scrubbed index; V2Sidebar Compliance section adds Time Travel entry; 11 client tests covering empty + slider + skip + autoplay + delta-toning paths)
 5. Sprint 10B — 3D Operator-Universe (Wow-Pattern #6) (`/dashboard/universe` cinematic R3F scene rendering operator's mission ecosystem; `getOperatorUniverse(orgId)` server fetcher reads org + ≤50 spacecraft + ≤50 active stakeholder engagements; per-craft `orbitRadius` keyed off `orbitType` enum (LEO 2.5 → MEO 4.0 → GEO 5.5 → HEO 7.0 scene units) with sigmoid altitude nudge; deterministic `initialAngle` + `yOffset` via FNV-1a hash of spacecraft id so universe doesn't reshuffle on refresh; `speedMultiplier` LEO→HEO descending; OperatorUniverse R3F client (next/dynamic ssr:false) with pulsing emerald operator star, status-flavoured emissive icosahedron spacecraft (OPERATIONAL emerald, LAUNCHED cyan, PRE_LAUNCH amber, DECOMMISSIONING orange, DEORBITED slate, LOST red), per-type stakeholder moon ring matching network-graph palette, 800-point starfield, drei OrbitControls autoRotate flyover; V2Sidebar Mission section gets Universe entry with Sparkles icon between Mission Control and Ephemeris; 16 fetcher tests + 12 sidebar regression)
+6. Sprint 9A — COE Dependency-Engine foundation (`src/lib/comply-v2/coe/dependency-engine.ts` with curated `DEPENDENCY_EDGES` graph: hard prereqs Environmental+Debris+Insurance → Authorization → Registration+Supervision; soft chain Cybersecurity → NIS2 → CRA + Regulatory-Intel → Authorization; every edge cites EU Space Act / NIS2 / CRA articles + plain-English rationale; `topologicalSort` Kahn's-algorithm with declaration-order tie-breaker for stable output, parameterizable edge set for unit-testing cycle paths; `getCriticalPath` DAG longest-path on hard edges with predecessor reconstruction; `getPrerequisites` + `getDependents` with hard/all filters; `missingPrereqs` reports prereqs referenced but not in operator's applicable subset; pure module — no I/O — so the eventual force-graph UI client can import directly; 22 tests covering empty + single-node + 2/3-node cycles + critical path on full set + missing-prereqs + soft-edge filtering)
 
 ### Previous batch (deployed `6d2fd6a3` on 2026-05-02)
 
