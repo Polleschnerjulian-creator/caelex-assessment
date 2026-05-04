@@ -250,8 +250,8 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 
 ### Pending Deploy-Batch — Tracker
 
-**Last main-push:** `6d2fd6a3` (Sprint 10A — 2026-05-02, 6-sprint batch)
-**Sprints in pending batch:** 1 of 6-8
+**Last main-push:** `c9dd5577` (Sprint 10G — 2026-05-02, out-of-batch UX-blocker fix)
+**Sprints in pending batch:** 0 of 6-8
 **Next deploy:** when batch reaches 6-8 sprints OR user says "deploy now"
 
 When you finish a sprint and commit it, increment this counter. When it
@@ -259,7 +259,7 @@ hits 6-8, run the deploy chain. Skip pushing the feature branch.
 
 Sprints in current batch (chronological):
 
-1. Sprint 10G — V1→V2 quick-toggle UX (founder report: still seeing V1 on app.caelex.com despite default-v2 cutover, blocked from seeing built work) (GET /ui/v1 + /ui/v2 bookmarkable one-click route writes user.complyUiVersion + cookie + structured logger.info on success / logger.error + 500 on DB failure / redirect to /login on anon; "Try v2" dismissible banner in V1 DashboardShell with 24h-TTL localStorage; UI Version card surfaced in /dashboard/settings parent grid; 8 route tests covering validation/auth/happy-path/DB-error)
+_(empty — Sprint 10G shipped solo on 2026-05-02 as a UX-blocker hotfix; deploy `c9dd5577`)_
 
 ### Previous batch (deployed `6d2fd6a3` on 2026-05-02)
 
