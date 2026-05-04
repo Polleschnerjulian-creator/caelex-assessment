@@ -24,6 +24,7 @@ import {
   Link2,
   Heart,
   Clock,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -92,6 +93,11 @@ export function V2Sidebar({
       href: "/dashboard/mission-control",
       label: "Mission Control",
       icon: Globe,
+    },
+    {
+      href: "/dashboard/universe",
+      label: "Universe",
+      icon: Sparkles,
     },
     { href: "/dashboard/ephemeris", label: "Ephemeris", icon: Orbit },
     { href: "/dashboard/sentinel", label: "Sentinel", icon: Satellite },
