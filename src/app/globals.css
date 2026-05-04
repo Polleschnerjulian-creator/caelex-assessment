@@ -3575,3 +3575,381 @@ html:not(.dark) .caelex-v2 .glass-card::after {
     max-width: 95%;
   }
 }
+
+/* ===== CAELEX LIQUID GLASS DESIGN SYSTEM (Sprint 12) ============== */
+/*
+ * One coherent material + colour + typography system for the Comply v2
+ * dashboard, applied via the `[data-caelex-theme]` attribute. Sibling
+ * to (not replacement for) the legacy `light`/`.dark` system so V1
+ * surfaces and existing pharos/atlas/palantir scopes are untouched.
+ *
+ * Architecture (per the WWDC 2025 §219 brief):
+ *
+ *   1. CANVAS (z=0)         — page background. Solid, no glass.
+ *   2. CONTENT (z=2)        — opaque cards, tables, evidence rows.
+ *                              NO blur. Apple's rule: "Liquid Glass is
+ *                              best reserved for the navigation layer."
+ *   3. GLASS-REGULAR (z=3)  — the chrome layer. Sidebar, top bar,
+ *                              command palette trigger, floating bubbles.
+ *   4. GLASS-CLEAR (z=4)    — modals + sheets over data-rich pages.
+ *                              Always preceded by a dim layer.
+ *
+ * Default = LIGHT MODE. Dark mode is opt-in via
+ * `[data-caelex-theme="dark"]` on the V2Shell root.
+ *
+ * Accessibility:
+ *   - Honours prefers-reduced-transparency (swaps glass → solid)
+ *   - Honours prefers-contrast: more (stronger borders, no transparency)
+ *   - Honours prefers-reduced-motion (caller wraps in motion-safe)
+ *
+ * Browser support:
+ *   - backdrop-filter: 95.79% global (caniuse, May 2026)
+ *   - SVG-displacement refraction: Chromium-only — gated behind
+ *     @supports (backdrop-filter: url(...)) so Safari/Firefox get
+ *     the flat-blur fallback automatically.
+ */
+
+/* — Light mode tokens (default for [data-caelex-theme="light"]) — */
+[data-caelex-theme="light"] {
+  /* Canvas + content surfaces */
+  --caelex-canvas: #f6f7fa;
+  --caelex-canvas-noise-opacity: 0.015;
+  --caelex-content: #ffffff;
+  --caelex-content-raised: #ffffff;
+  --caelex-content-sunken: #f1f3f6;
+  --caelex-content-border: rgba(15, 23, 42, 0.08);
+  --caelex-content-border-strong: rgba(15, 23, 42, 0.14);
+  --caelex-divider: rgba(15, 23, 42, 0.06);
+
+  /* Glass-Regular tokens — chrome layer */
+  --caelex-glass-bg: rgba(255, 255, 255, 0.62);
+  --caelex-glass-border: rgba(15, 23, 42, 0.08);
+  --caelex-glass-border-strong: rgba(15, 23, 42, 0.14);
+  --caelex-glass-rim: rgba(255, 255, 255, 0.9); /* top-edge highlight */
+  --caelex-glass-shadow:
+    0 12px 40px rgba(15, 23, 42, 0.14), 0 1px 2px rgba(15, 23, 42, 0.06);
+
+  /* Glass-Clear tokens — modal layer */
+  --caelex-glass-clear-bg: rgba(255, 255, 255, 0.78);
+  --caelex-glass-clear-border: rgba(15, 23, 42, 0.1);
+  --caelex-glass-clear-dim: rgba(15, 23, 42, 0.32);
+
+  /* Text — Apple visionOS vibrancy hierarchy translated to alpha */
+  --caelex-text-primary: rgba(15, 23, 42, 0.92);
+  --caelex-text-secondary: rgba(15, 23, 42, 0.64);
+  --caelex-text-tertiary: rgba(15, 23, 42, 0.44);
+  --caelex-text-disabled: rgba(15, 23, 42, 0.26);
+  --caelex-text-on-tint: #ffffff;
+
+  /* Brand accent — Arctic Teal (replaces emerald in V2) */
+  --caelex-accent: #2ecfc0;
+  --caelex-accent-hover: #25b9ac;
+  --caelex-accent-soft: rgba(46, 207, 192, 0.12);
+  --caelex-accent-rim: rgba(46, 207, 192, 0.42);
+  --caelex-accent-text: #0f8e85; /* readable on light bg */
+
+  /* Status colours (calibrated to read on light + dark canvas) */
+  --caelex-status-success: #16a34a;
+  --caelex-status-success-soft: rgba(22, 163, 74, 0.1);
+  --caelex-status-warning: #d97706;
+  --caelex-status-warning-soft: rgba(217, 119, 6, 0.12);
+  --caelex-status-danger: #dc2626;
+  --caelex-status-danger-soft: rgba(220, 38, 38, 0.1);
+  --caelex-status-info: #2563eb;
+  --caelex-status-info-soft: rgba(37, 99, 235, 0.1);
+
+  /* Focus ring — 2px Arctic Teal with 2px gap, animated in via tokens */
+  --caelex-focus-ring:
+    0 0 0 2px var(--caelex-canvas), 0 0 0 4px var(--caelex-accent);
+
+  /* Default colour-scheme so form controls + scrollbars match */
+  color-scheme: light;
+}
+
+/* — Dark mode tokens — */
+[data-caelex-theme="dark"] {
+  --caelex-canvas: #0a0e1a;
+  --caelex-canvas-noise-opacity: 0.03;
+  --caelex-content: #0f1421;
+  --caelex-content-raised: #131a2a;
+  --caelex-content-sunken: #080c14;
+  --caelex-content-border: rgba(255, 255, 255, 0.08);
+  --caelex-content-border-strong: rgba(255, 255, 255, 0.16);
+  --caelex-divider: rgba(255, 255, 255, 0.06);
+
+  --caelex-glass-bg: rgba(14, 18, 28, 0.62);
+  --caelex-glass-border: rgba(255, 255, 255, 0.08);
+  --caelex-glass-border-strong: rgba(255, 255, 255, 0.18);
+  --caelex-glass-rim: rgba(255, 255, 255, 0.06);
+  --caelex-glass-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.6);
+
+  --caelex-glass-clear-bg: rgba(14, 18, 28, 0.78);
+  --caelex-glass-clear-border: rgba(255, 255, 255, 0.12);
+  --caelex-glass-clear-dim: rgba(0, 0, 0, 0.5);
+
+  --caelex-text-primary: rgba(248, 250, 252, 0.92);
+  --caelex-text-secondary: rgba(248, 250, 252, 0.64);
+  --caelex-text-tertiary: rgba(248, 250, 252, 0.44);
+  --caelex-text-disabled: rgba(248, 250, 252, 0.26);
+  --caelex-text-on-tint: #0a0e1a;
+
+  --caelex-accent: #2ecfc0;
+  --caelex-accent-hover: #4cd9cb;
+  --caelex-accent-soft: rgba(46, 207, 192, 0.16);
+  --caelex-accent-rim: rgba(46, 207, 192, 0.55);
+  --caelex-accent-text: #6ee7d9; /* lighter for dark bg readability */
+
+  --caelex-status-success: #34d399;
+  --caelex-status-success-soft: rgba(52, 211, 153, 0.16);
+  --caelex-status-warning: #fbbf24;
+  --caelex-status-warning-soft: rgba(251, 191, 36, 0.16);
+  --caelex-status-danger: #f87171;
+  --caelex-status-danger-soft: rgba(248, 113, 113, 0.16);
+  --caelex-status-info: #60a5fa;
+  --caelex-status-info-soft: rgba(96, 165, 250, 0.16);
+
+  --caelex-focus-ring:
+    0 0 0 2px var(--caelex-canvas), 0 0 0 4px var(--caelex-accent);
+  color-scheme: dark;
+}
+
+/* — Canvas — page background, solid, no glass — */
+.caelex-canvas {
+  background-color: var(--caelex-canvas);
+  /* Optional noise so glass has something to refract; layered as a
+     gradient PNG-flavoured overlay generated via radial-gradient.
+     Stays cheap because it's a single repeating background. */
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    rgba(15, 23, 42, var(--caelex-canvas-noise-opacity)) 1px,
+    transparent 0
+  );
+  background-size: 24px 24px;
+  color: var(--caelex-text-primary);
+  min-height: 100vh;
+}
+[data-caelex-theme="dark"] .caelex-canvas,
+.caelex-canvas[data-caelex-theme="dark"] {
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    rgba(255, 255, 255, var(--caelex-canvas-noise-opacity)) 1px,
+    transparent 0
+  );
+}
+
+/* — Content — opaque card / row / inspector. NO blur. — */
+.caelex-content {
+  background-color: var(--caelex-content);
+  border: 1px solid var(--caelex-content-border);
+  border-radius: 10px;
+  color: var(--caelex-text-primary);
+}
+.caelex-content-raised {
+  background-color: var(--caelex-content-raised);
+  border: 1px solid var(--caelex-content-border);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+.caelex-content-sunken {
+  background-color: var(--caelex-content-sunken);
+  border: 1px solid var(--caelex-content-border);
+  border-radius: 8px;
+}
+.caelex-divider {
+  border-top: 1px solid var(--caelex-divider);
+}
+
+/* — Glass-Regular — chrome layer (sidebar, top bar, palette trigger) — */
+.caelex-glass-regular {
+  position: relative;
+  background: var(--caelex-glass-bg);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--caelex-glass-border);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1px 0 var(--caelex-glass-rim),
+    var(--caelex-glass-shadow);
+  /* Promote to its own compositor layer — keeps blur cost off the
+     content scroll. WebKit blog: "the engine performs more rendering
+     passes" on backdrop-filter; isolating the layer mitigates this. */
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+}
+
+/* — Glass-Clear — modal / sheet over data-rich pages — */
+.caelex-glass-clear {
+  position: relative;
+  background: var(--caelex-glass-clear-bg);
+  -webkit-backdrop-filter: blur(40px) saturate(160%);
+  backdrop-filter: blur(40px) saturate(160%);
+  border: 1px solid var(--caelex-glass-clear-border);
+  border-radius: 24px;
+  box-shadow:
+    inset 0 1px 0 var(--caelex-glass-rim),
+    0 24px 64px rgba(15, 23, 42, 0.18),
+    0 6px 16px rgba(15, 23, 42, 0.08);
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+}
+
+/* — Tint modifier — Arctic Teal accent for active/primary regions — */
+.caelex-tint-accent {
+  background: linear-gradient(
+    180deg,
+    var(--caelex-accent-soft),
+    transparent 70%
+  );
+  border-color: var(--caelex-accent-rim);
+  box-shadow: inset 2px 0 0 0 var(--caelex-accent);
+}
+
+/* — Lensing / refraction (Chromium-only progressive enhancement) — */
+@supports (backdrop-filter: url(#caelex-lens)) {
+  .caelex-glass-regular,
+  .caelex-glass-clear {
+    -webkit-backdrop-filter: blur(20px) url(#caelex-lens) saturate(180%);
+    backdrop-filter: blur(20px) url(#caelex-lens) saturate(180%);
+  }
+}
+
+/* — Reduced-transparency fallback (Apple HIG hard rule) — */
+@media (prefers-reduced-transparency: reduce) {
+  .caelex-glass-regular,
+  .caelex-glass-clear {
+    background: var(--caelex-content);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-color: var(--caelex-content-border-strong);
+  }
+}
+
+/* — High-contrast fallback — */
+@media (prefers-contrast: more) {
+  .caelex-glass-regular,
+  .caelex-glass-clear,
+  .caelex-content,
+  .caelex-content-raised,
+  .caelex-content-sunken {
+    border-color: var(--caelex-text-primary);
+    border-width: 1.5px;
+  }
+}
+
+/* — Text utilities mapped to vibrancy hierarchy — */
+.caelex-text-primary {
+  color: var(--caelex-text-primary);
+}
+.caelex-text-secondary {
+  color: var(--caelex-text-secondary);
+}
+.caelex-text-tertiary {
+  color: var(--caelex-text-tertiary);
+}
+.caelex-text-disabled {
+  color: var(--caelex-text-disabled);
+}
+.caelex-text-accent {
+  color: var(--caelex-accent-text);
+}
+
+/*
+ * Vibrancy bump for body text on glass surfaces. visionOS rule:
+ * "the body text style uses medium weight instead of regular, and
+ * titles use bold instead of semibold" on translucent materials.
+ * Apply only inside glass containers, not globally — content-layer
+ * cards retain the regular weight.
+ */
+.caelex-glass-regular,
+.caelex-glass-clear {
+  font-weight: 500;
+}
+.caelex-glass-regular :where(h1, h2, h3, h4, h5, h6),
+.caelex-glass-clear :where(h1, h2, h3, h4, h5, h6) {
+  font-weight: 700;
+}
+
+/* — Focus ring (keyboard users only via :focus-visible) — */
+.caelex-focusable:focus-visible {
+  outline: none;
+  box-shadow: var(--caelex-focus-ring);
+}
+
+/* — Defensive light-mode bridge for legacy palantir-* surfaces.
+ *   When [data-caelex-theme="light"] is on the V2Shell root, any
+ *   nested `palantir-canvas` / `palantir-surface` / `palantir-elevated`
+ *   gets a readable white-flavoured override. Pages migrate to
+ *   .caelex-content over time (Sprint 12B+); this keeps them visible
+ *   in the meantime instead of rendering dark cards on a light canvas.
+ */
+[data-caelex-theme="light"] .palantir-canvas {
+  background-color: var(--caelex-canvas);
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    rgba(15, 23, 42, var(--caelex-canvas-noise-opacity)) 1px,
+    transparent 0
+  );
+  color: var(--caelex-text-primary);
+}
+[data-caelex-theme="light"] .palantir-surface {
+  background-color: var(--caelex-content);
+  border-color: var(--caelex-content-border);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+[data-caelex-theme="light"] .palantir-surface:hover {
+  background-color: var(--caelex-content);
+  border-color: var(--caelex-content-border-strong);
+}
+[data-caelex-theme="light"] .palantir-elevated {
+  background-color: var(--caelex-content-raised);
+  border-color: var(--caelex-content-border);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+[data-caelex-theme="light"] .palantir-stripe-emerald {
+  box-shadow: inset 2px 0 0 0 var(--caelex-accent);
+}
+
+/* — Defensive light-mode bridge for hardcoded slate text utilities.
+ *   Many V2 pages use `text-slate-100/200/300/400/500` assuming dark
+ *   background. Under [data-caelex-theme="light"] those become
+ *   washed-out / invisible. Remap them to the vibrancy hierarchy.
+ *   Pages migrating to caelex-text-* drop these via specificity. */
+[data-caelex-theme="light"]
+  :where(.text-slate-50, .text-slate-100, .text-white) {
+  color: var(--caelex-text-primary);
+}
+[data-caelex-theme="light"] :where(.text-slate-200, .text-slate-300) {
+  color: var(--caelex-text-primary);
+}
+[data-caelex-theme="light"] :where(.text-slate-400) {
+  color: var(--caelex-text-secondary);
+}
+[data-caelex-theme="light"] :where(.text-slate-500, .text-slate-600) {
+  color: var(--caelex-text-tertiary);
+}
+
+/* — Defensive light-mode bridge for emerald accents → Arctic Teal. */
+[data-caelex-theme="light"] :where(.text-emerald-300, .text-emerald-400) {
+  color: var(--caelex-accent-text);
+}
+[data-caelex-theme="light"] :where(.bg-emerald-500\/10, .bg-emerald-500\/15) {
+  background-color: var(--caelex-accent-soft);
+}
+[data-caelex-theme="light"]
+  :where(.ring-emerald-500\/30, .ring-emerald-500\/40) {
+  --tw-ring-color: var(--caelex-accent-rim);
+}
+
+/* — Reduced-motion fallback for the spec-mandated micro-feedback — */
+@media (prefers-reduced-motion: reduce) {
+  .caelex-glass-regular,
+  .caelex-glass-clear,
+  .caelex-content,
+  .caelex-tint-accent {
+    transition: none !important;
+    animation: none !important;
+  }
+}

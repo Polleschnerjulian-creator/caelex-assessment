@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { CommandPalette } from "./CommandPalette";
 import { V2Sidebar } from "./V2Sidebar";
+import { CaelexLensDefs } from "./CaelexLensDefs";
 import { getPendingProposalCount } from "@/lib/comply-v2/proposal-stats.server";
 import { getServerActionVerbs } from "@/lib/comply-v2/actions/palette-verbs.server";
 import { getDensity } from "@/lib/comply-v2/density.server";
@@ -9,20 +10,49 @@ import { getDensity } from "@/lib/comply-v2/density.server";
  * Comply V2 Shell — full chrome that replaces the legacy
  * DashboardShell for v2 users.
  *
- * Layout:
- *   data-density root
+ * # Sprint 12 — Caelex Liquid Glass migration
+ *
+ * Pre-Sprint-12 the shell forced `dark palantir-canvas` and the
+ * whole UI rendered as dark Palantir-style chrome with translucent
+ * cards everywhere. Per the Sprint 12 design brief and Apple's WWDC
+ * 2025 §219 rules ("Liquid Glass is best reserved for the
+ * navigation layer that floats above the content"), V2 now renders
+ * with:
+ *
+ *   - LIGHT mode by default (`data-caelex-theme="light"`)
+ *   - CaelexLensDefs SVG filter injected once at the root for
+ *     Chromium-only refraction; non-Chromium browsers fall through
+ *     to flat blur via the @supports gate in globals.css
+ *   - `caelex-canvas` page background (solid + subtle noise)
+ *   - Chrome (sidebar, command palette) opts into
+ *     `caelex-glass-regular`; content layer (page bodies, cards,
+ *     tables) uses `caelex-content` — opaque, NO blur
+ *
+ * Dark mode is opt-in via `data-caelex-theme="dark"` (future:
+ * surfaced as a Settings toggle alongside the existing UI-version
+ * toggle).
+ *
+ * # Why no longer `dark` Tailwind class
+ *
+ * The legacy `dark` class lights up Tailwind `dark:*` selectors
+ * across the whole subtree. Under Sprint 12's light-default model
+ * we drop that — the new Caelex tokens use `[data-caelex-theme]`
+ * which is independent from Tailwind dark mode and doesn't fight
+ * with V1 surfaces (atlas, pharos, hub) that have their own scoped
+ * dark/light logic.
+ *
+ * # Layout
+ *
+ *   data-density + data-caelex-theme root
+ *   ├── CaelexLensDefs (SVG defs, hidden, Chromium refraction)
  *   ├── CommandPalette (⌘K, fixed-position dialog)
- *   ├── V2Sidebar (Linear-style left rail, 240px wide, sticky)
- *   └── main
+ *   ├── V2Sidebar (Glass-Regular chrome, 224px wide, sticky)
+ *   └── main (caelex-canvas — opaque)
  *       └── {children} — the page content
  *
  * V1 users see DashboardShell directly via dashboard/layout.tsx
- * (kept untouched in the repo for emergency rollback per
+ * (kept untouched for emergency rollback per
  * docs/CAELEX-COMPLY-CONCEPT.md § 3 Rollback-Strategie).
- *
- * The shell is data-driven from server-side caches — palette verbs
- * + pending-proposal count + density preference are all resolved
- * once per request. Sub-pages don't need to re-fetch this.
  */
 export default async function V2Shell({
   children,
@@ -39,12 +69,14 @@ export default async function V2Shell({
   return (
     <div
       data-density={density}
-      // V2 forces the dark Palantir-inspired chrome regardless of
-      // system color-scheme. Adding `dark` class lights up all
-      // nested `dark:*` Tailwind rules. The palantir-canvas utility
-      // applies the deep-navy background + subtle dot-grid texture.
-      className="dark palantir-canvas flex min-h-screen text-slate-100"
+      data-caelex-theme="light"
+      className="caelex-canvas flex min-h-screen"
     >
+      {/* SVG displacement filter — Chromium-only refraction. Non-
+          Chromium browsers ignore the @supports-gated CSS rule and
+          fall through to flat blur. */}
+      <CaelexLensDefs />
+
       {/* ⌘K palette — client island, mounts globally */}
       <CommandPalette serverVerbs={serverVerbs} />
 

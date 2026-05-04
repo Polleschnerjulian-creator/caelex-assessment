@@ -247,7 +247,62 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 - **Aufwand:** 4 Wochen
 - **V1-Impact:** Pharos+Atlas existing, nur Bridges neu
 
-**Total: ~50-60 Wochen mit 1 Engineer, ~24-30 Wochen mit 2-3 Engineers parallel**
+### Phase 6: Caelex Liquid Glass Design System (Sprint 12, ~4-6 Wochen, NEW per 2026-05-04 brief)
+
+**Sprint 12 — Liquid Glass × Pro-App** [IN PROGRESS]
+
+Per the 2026-05-04 design brief: full V2 dashboard pivot from
+"dark Palantir-glassmorphism-everywhere" to "Apple WWDC 2025 §219
+Liquid Glass × Pro-App-first" — light mode default, glass strictly
+on the navigation/control layer, opaque content layer, Arctic Teal
+(#2ECFC0) accent, vibrancy hierarchy on translucent surfaces.
+
+- Sprint 12A: Foundation — token CSS, glass utilities, V2Shell + V2Sidebar migration ✅ COMPLETED 2026-05-04
+- Sprint 12B: Top bar + breadcrumbs + cmd-K palette trigger to Glass-Regular [PENDING]
+- Sprint 12C: Page-body migration — caelex-content opaque cards, JetBrains Mono table headers, density-tightened tables [PENDING]
+- Sprint 12D: Inspector tab system (Final Cut tri-pane skeleton) [PENDING]
+- Sprint 12E: Modal + sheet system (Glass-Clear via Vaul + Radix Dialog) [PENDING]
+- Sprint 12F: Motion system + micro-feedback (Motion springs, focus rings, reduced-motion) [PENDING]
+- Sprint 12G: Signature move — SpaceX-launch-style telemetry strip on Sentinel + ASTRA streaming cursor [PENDING]
+- **Aufwand:** 4-6 Wochen
+- **V1-Impact:** Null (V1 surfaces untouched — caelex-\* tokens scoped under [data-caelex-theme])
+
+**ADR-014 — Caelex Liquid Glass Namespace (2026-05-04)**
+
+The brief asks for a new design system that's _Apple-grammar-compatible_
+without infringing trade dress. Three architectural decisions:
+
+1. **Scoped namespace via `[data-caelex-theme]` attribute, not the
+   global `light`/`.dark` class.** The codebase already has six
+   competing theming systems (palantir-, pharos-, atlas-, hub-,
+   landing-, dn-). Adding a seventh as a sibling — gated on
+   a single attribute on V2Shell — keeps V1 (`/dashboard` legacy
+   chrome) and the marketing surfaces untouched. Light is the
+   default value; dark is opt-in via `[data-caelex-theme="dark"]`.
+2. **Glass = chrome only.** Per Apple's WWDC 219 hard rule
+   ("Liquid Glass is best reserved for the navigation layer that
+   floats above the content of your app"), `.caelex-glass-regular`
+   and `.caelex-glass-clear` are reserved for sidebar / top bar /
+   command palette / modals. The content layer (page bodies,
+   tables, cards) uses `.caelex-content` which is opaque — _no_
+   backdrop-filter. This is the inverse of the pre-Sprint-12 V2
+   pattern where `palantir-surface` (a glass card) was used
+   everywhere.
+3. **Defensive light-mode bridge for legacy palantir-_ + slate-_
+   utilities.** Hundreds of V2 page surfaces hardcode
+   `text-slate-100`, `palantir-surface`, `bg-emerald-500/10`. Rather
+   than a 1000-line search-replace migration in one sprint, the
+   token CSS bridges those classes to the new vibrancy hierarchy
+   under `[data-caelex-theme="light"]` so legacy pages stay
+   readable while we migrate them in 12C+. Specificity is kept low
+   (`:where(...)`) so any explicit override wins.
+
+Trade-dress safety: emulate the _grammar_ (depth, lensing, vibrancy,
+concentricity), avoid the _signature assets_ (no SF Pro, no SF
+Symbols, no pixel-identical squircle). See Apple Third-Party
+Trademark Guidelines + Sprint 12 brief § "Caveats".
+
+**Total: ~54-66 Wochen mit 1 Engineer (Sprint 12 added), ~26-32 Wochen mit 2-3 Engineers parallel**
 
 ---
 
@@ -256,7 +311,7 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 ### Pending Deploy-Batch — Tracker
 
 **Last main-push:** `d17069bb` (Sprint 10G hotfix — 2026-05-02, NextResponse cookie fix)
-**Sprints in pending batch:** 6 of 6-8
+**Sprints in pending batch:** 7 of 6-8
 **Next deploy:** when batch reaches 6-8 sprints OR user says "deploy now"
 
 When you finish a sprint and commit it, increment this counter. When it
@@ -270,6 +325,7 @@ Sprints in current batch (chronological):
 4. Sprint 10F — Time Travel Slider (Wow-Pattern #12) (/dashboard/time-travel server-fetches 90 days of getPostureTrend; TimeTravelClient slider scrubs the array index, posture cards (score/attested/proposals/triage) reflect the scrubbed day with day-over-day delta toning (emerald improvement, red regression, slate=0; inverted for proposals+triage where MORE is bad); Play button autoplays at 200ms-per-day cadence with auto-pause at end; Skip-back/forward buttons; sparkline below shows full 90-day score trajectory with vertical cursor + highlight dot at the scrubbed index; V2Sidebar Compliance section adds Time Travel entry; 11 client tests covering empty + slider + skip + autoplay + delta-toning paths)
 5. Sprint 10B — 3D Operator-Universe (Wow-Pattern #6) (`/dashboard/universe` cinematic R3F scene rendering operator's mission ecosystem; `getOperatorUniverse(orgId)` server fetcher reads org + ≤50 spacecraft + ≤50 active stakeholder engagements; per-craft `orbitRadius` keyed off `orbitType` enum (LEO 2.5 → MEO 4.0 → GEO 5.5 → HEO 7.0 scene units) with sigmoid altitude nudge; deterministic `initialAngle` + `yOffset` via FNV-1a hash of spacecraft id so universe doesn't reshuffle on refresh; `speedMultiplier` LEO→HEO descending; OperatorUniverse R3F client (next/dynamic ssr:false) with pulsing emerald operator star, status-flavoured emissive icosahedron spacecraft (OPERATIONAL emerald, LAUNCHED cyan, PRE_LAUNCH amber, DECOMMISSIONING orange, DEORBITED slate, LOST red), per-type stakeholder moon ring matching network-graph palette, 800-point starfield, drei OrbitControls autoRotate flyover; V2Sidebar Mission section gets Universe entry with Sparkles icon between Mission Control and Ephemeris; 16 fetcher tests + 12 sidebar regression)
 6. Sprint 9A — COE Dependency-Engine foundation (`src/lib/comply-v2/coe/dependency-engine.ts` with curated `DEPENDENCY_EDGES` graph: hard prereqs Environmental+Debris+Insurance → Authorization → Registration+Supervision; soft chain Cybersecurity → NIS2 → CRA + Regulatory-Intel → Authorization; every edge cites EU Space Act / NIS2 / CRA articles + plain-English rationale; `topologicalSort` Kahn's-algorithm with declaration-order tie-breaker for stable output, parameterizable edge set for unit-testing cycle paths; `getCriticalPath` DAG longest-path on hard edges with predecessor reconstruction; `getPrerequisites` + `getDependents` with hard/all filters; `missingPrereqs` reports prereqs referenced but not in operator's applicable subset; pure module — no I/O — so the eventual force-graph UI client can import directly; 22 tests covering empty + single-node + 2/3-node cycles + critical path on full set + missing-prereqs + soft-edge filtering)
+7. Sprint 12A — Caelex Liquid Glass Foundation (per 2026-05-04 brief: V2 dashboard pivot from dark-Palantir-everywhere to Apple WWDC 2025 §219 Liquid Glass × Pro-App-first; ADR-014 establishes scoped `[data-caelex-theme]` namespace sibling to legacy light/dark, glass-on-chrome-only rule, defensive bridge for legacy palantir-_ + slate-_ + emerald-\* utilities so legacy pages stay readable while we migrate; `globals.css` adds light+dark token CSS, `.caelex-canvas` + `.caelex-content` + `.caelex-glass-regular` + `.caelex-glass-clear` + `.caelex-tint-accent` utilities, vibrancy-hierarchy text utilities, focus ring, prefers-reduced-transparency/contrast/motion fallbacks, Chromium-only SVG-displacement refraction via @supports gate; `CaelexLensDefs` injects the radial-gradient displacement filter once at the V2Shell root; V2Shell flips from `dark palantir-canvas text-slate-100` to light-default `data-caelex-theme="light" caelex-canvas`; V2Sidebar migrated to `caelex-glass-regular` chrome with Arctic Teal (#2ECFC0) active-row tint and Arctic Teal brand-mark; 12 V2Sidebar tests still pass without modification because `ring-emerald-500/30` + `palantir-stripe-emerald` are kept on the active branch and the CSS bridge remaps them to Arctic Teal under `[data-caelex-theme="light"]`; Sprint 12B-G defined for top bar, page-body migration, inspector tab system, modals, motion, and the Sentinel signature move)
 
 ### Previous batch (deployed `6d2fd6a3` on 2026-05-02)
 

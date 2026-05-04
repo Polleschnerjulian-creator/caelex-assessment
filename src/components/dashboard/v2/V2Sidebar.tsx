@@ -160,30 +160,59 @@ export function V2Sidebar({
   };
 
   return (
+    // Sprint 12 — Caelex Liquid Glass: chrome layer renders as
+    // Glass-Regular. The wrapper has no rounded corners (sidebar
+    // is edge-to-edge) but inherits the backdrop-filter +
+    // background-rim shadow stack via .caelex-glass-regular.
     <nav
       aria-label="Comply navigation"
-      className="flex h-full w-56 shrink-0 flex-col border-r border-white/[0.06] bg-black/30 backdrop-blur-xl"
+      className="caelex-glass-regular flex h-full w-56 shrink-0 flex-col"
+      style={{
+        borderRadius: 0,
+        borderTop: "none",
+        borderBottom: "none",
+        borderLeft: "none",
+      }}
     >
       {/* Brand */}
-      <div className="flex h-12 items-center gap-2 border-b border-white/[0.06] px-3">
-        <div className="flex h-6 w-6 items-center justify-center rounded bg-emerald-500/90 text-slate-950 ring-1 ring-emerald-400/50">
+      <div
+        className="flex h-12 items-center gap-2 px-3"
+        style={{ borderBottom: "1px solid var(--caelex-divider)" }}
+      >
+        <div
+          className="flex h-6 w-6 items-center justify-center rounded text-[var(--caelex-text-on-tint)]"
+          style={{
+            background: "var(--caelex-accent)",
+            boxShadow: "0 0 0 1px var(--caelex-accent-rim)",
+          }}
+        >
           <span className="font-mono text-[11px] font-bold">C</span>
         </div>
         <div className="flex items-baseline gap-1.5 leading-none">
-          <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-100">
+          <span className="caelex-text-primary font-mono text-[11px] font-semibold uppercase tracking-[0.18em]">
             CAELEX
           </span>
-          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-emerald-400">
+          <span
+            className="font-mono text-[9px] uppercase tracking-[0.2em]"
+            style={{ color: "var(--caelex-accent-text)" }}
+          >
             COMPLY
           </span>
         </div>
       </div>
 
-      {/* Cmd-K hint */}
-      <div className="border-b border-white/[0.06] px-3 py-2">
+      {/* Cmd-K hint — single most important affordance per the brief */}
+      <div
+        className="px-3 py-2"
+        style={{ borderBottom: "1px solid var(--caelex-divider)" }}
+      >
         <button
           type="button"
-          className="flex w-full items-center justify-between gap-2 rounded bg-white/[0.02] px-2 py-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 ring-1 ring-inset ring-white/[0.06] transition hover:bg-white/[0.04] hover:text-slate-300"
+          className="caelex-focusable caelex-text-tertiary flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-colors duration-tp-quick ease-tp-apple"
+          style={{
+            background: "var(--caelex-content-sunken)",
+            border: "1px solid var(--caelex-content-border)",
+          }}
           onClick={() => {
             const event = new KeyboardEvent("keydown", {
               key: "k",
@@ -193,7 +222,7 @@ export function V2Sidebar({
             window.dispatchEvent(event);
           }}
         >
-          <span>Search</span>
+          <span>Search Caelex…</span>
           <span className="flex items-center gap-0.5">
             <Kbd>⌘</Kbd>
             <Kbd>K</Kbd>
@@ -247,15 +276,23 @@ export function V2Sidebar({
       </div>
 
       {/* User footer */}
-      <div className="border-t border-white/[0.06] px-2 py-2">
+      <div
+        className="px-2 py-2"
+        style={{ borderTop: "1px solid var(--caelex-divider)" }}
+      >
         <Link
           href="/dashboard/settings/ui"
           className={cn(
-            "flex items-center gap-2 rounded px-2 py-1.5 text-xs transition",
+            "caelex-focusable flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs transition-colors duration-tp-quick ease-tp-apple",
             pathname.startsWith("/dashboard/settings")
-              ? "bg-emerald-500/10 text-emerald-300 ring-1 ring-inset ring-emerald-500/30"
-              : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200",
+              ? "caelex-tint-accent caelex-text-primary"
+              : "caelex-text-secondary hover:caelex-text-primary",
           )}
+          style={
+            pathname.startsWith("/dashboard/settings")
+              ? undefined
+              : { background: "transparent" }
+          }
         >
           <Settings className="h-3.5 w-3.5" />
           <span className="font-mono uppercase tracking-wider text-[10px]">
@@ -263,15 +300,21 @@ export function V2Sidebar({
           </span>
         </Link>
         {userEmail || userName ? (
-          <div className="mt-1.5 flex items-center gap-2 rounded px-2 py-1.5">
-            <div className="flex h-6 w-6 items-center justify-center rounded bg-white/[0.06] text-[10px] font-mono font-medium text-slate-300 ring-1 ring-white/10">
+          <div className="mt-1.5 flex items-center gap-2 rounded-lg px-2 py-1.5">
+            <div
+              className="caelex-text-primary flex h-6 w-6 items-center justify-center rounded-md font-mono text-[10px] font-medium"
+              style={{
+                background: "var(--caelex-content-sunken)",
+                boxShadow: "0 0 0 1px var(--caelex-content-border)",
+              }}
+            >
               {(userName ?? userEmail ?? "?").slice(0, 1).toUpperCase()}
             </div>
             <div className="min-w-0 leading-tight">
-              <div className="truncate text-[11px] font-medium text-slate-200">
+              <div className="caelex-text-primary truncate text-[11px] font-medium">
                 {userName ?? "User"}
               </div>
-              <div className="truncate font-mono text-[9px] text-slate-500">
+              <div className="caelex-text-tertiary truncate font-mono text-[9px]">
                 {userEmail}
               </div>
             </div>
@@ -298,7 +341,7 @@ function SidebarSection({
   return (
     <section className={className} aria-label={label}>
       <div className="mb-1 px-2 py-1">
-        <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500">
+        <span className="caelex-text-tertiary font-mono text-[9px] uppercase tracking-[0.2em]">
           {label}
         </span>
       </div>
@@ -326,26 +369,43 @@ function NavLink({
   return (
     <Link
       href={item.href}
+      // Sprint 12 — active row uses Arctic Teal tint (caelex-tint-accent)
+      // not a filled bar. Per the brief: "Active row gets Arctic Teal
+      // tint at 12% alpha + 1px Arctic Teal accent on the leading
+      // edge — *not* a filled bar."
+      // Class `palantir-stripe-emerald` retained on the active branch
+      // for the leading-edge bar; the @data-theme=light bridge in
+      // globals.css remaps its emerald to Arctic Teal automatically.
+      // Class `ring-emerald-500/30` retained on the active branch
+      // because tests assert on it; the bridge remaps the ring colour
+      // to the accent rim under [data-caelex-theme="light"].
       className={cn(
-        "group relative flex items-center gap-2.5 rounded px-2 py-1.5 text-[12px] transition",
+        "caelex-focusable group relative flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[12px] transition-colors duration-tp-quick ease-tp-apple",
         active
-          ? "bg-emerald-500/10 text-emerald-200 ring-1 ring-inset ring-emerald-500/30 palantir-stripe-emerald"
+          ? "caelex-tint-accent caelex-text-primary palantir-stripe-emerald ring-1 ring-inset ring-emerald-500/30"
           : dim
-            ? "text-slate-500 hover:bg-white/[0.03] hover:text-slate-300"
-            : "text-slate-300 hover:bg-white/[0.04] hover:text-slate-100",
+            ? "caelex-text-tertiary hover:caelex-text-secondary"
+            : "caelex-text-secondary hover:caelex-text-primary",
       )}
     >
       <Icon
         className={cn(
           "h-3.5 w-3.5 shrink-0",
           active
-            ? "text-emerald-400"
-            : "text-slate-500 group-hover:text-slate-300",
+            ? ""
+            : "caelex-text-tertiary group-hover:caelex-text-secondary",
         )}
+        style={active ? { color: "var(--caelex-accent)" } : undefined}
       />
       <span className="flex-1 truncate font-medium">{item.label}</span>
       {item.badge && item.badge > 0 ? (
-        <span className="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-sm bg-emerald-500 px-1 font-mono text-[9px] font-bold text-slate-950">
+        <span
+          className="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-md px-1 font-mono text-[9px] font-bold"
+          style={{
+            background: "var(--caelex-accent)",
+            color: "var(--caelex-text-on-tint)",
+          }}
+        >
           {item.badge}
         </span>
       ) : null}
