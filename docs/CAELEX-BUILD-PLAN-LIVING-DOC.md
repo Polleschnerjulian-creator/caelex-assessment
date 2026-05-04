@@ -227,7 +227,7 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 - Sprint 10C: Provenance-Timeline (Wow-Pattern #8) ✅ COMPLETED 2026-05-02
 - Sprint 10D: Compliance-Health-Pulse (Wow-Pattern #9) ✅ COMPLETED 2026-05-02
 - Sprint 10E: Stakeholder-Network-Graph (Wow-Pattern #11) ✅ COMPLETED 2026-05-02
-- Sprint 10F: Time-Travel-Slider (Wow-Pattern #12) [PENDING]
+- Sprint 10F: Time-Travel-Slider (Wow-Pattern #12) ✅ COMPLETED 2026-05-02
 - **Aufwand:** 6-8 Wochen
 - **V1-Impact:** Null
 
@@ -251,7 +251,7 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 ### Pending Deploy-Batch — Tracker
 
 **Last main-push:** `d17069bb` (Sprint 10G hotfix — 2026-05-02, NextResponse cookie fix)
-**Sprints in pending batch:** 3 of 6-8
+**Sprints in pending batch:** 4 of 6-8
 **Next deploy:** when batch reaches 6-8 sprints OR user says "deploy now"
 
 When you finish a sprint and commit it, increment this counter. When it
@@ -262,6 +262,7 @@ Sprints in current batch (chronological):
 1. Sprint 10C — Provenance Timeline (Wow-Pattern #8) (per-item lifecycle visualization joining AuditLog rows with Sprint 8A+B Bitcoin anchors via SHA-256(entryHash) lookup; getProvenanceTimeline server fetcher with userId AND entityId filter for cross-user isolation, optional entityType narrowing, [timestamp DESC, id DESC] order, 200-row cap, anchoredCount aggregation; ProvenanceTimeline server component with action→icon mapping, vertical connector line, 8-char head + 6-char tail entryHash display, BTC#height anchor badges deep-linking to /verify; wired into /dashboard/items/[regulation]/[rowId] item-detail page below Notes section; 11 service tests covering empty + query-shape + event-shape + anchor-join + anchoredCount paths)
 2. Sprint 10D — Compliance Health Pulse (Wow-Pattern #9) (heartbeat-style pulse-line over last hour with 12 × 5-min buckets; getHealthPulseSnapshot server fetcher with always-12-buckets scaffold + 5-min alignment + boundary-clamp + 24h-baseline; reuses Sprint 7D ops-console SSE endpoint instead of building a new one — single connection per browser tab; HealthPulseClient with EventSource subscription, increments latest bucket on each event, animate-pulse Heart icon + animate-ping flash on the rightmost dot; SVG polyline pulse-line + bucket dots with hover-title; status row shows above/below 24h-baseline; V2Sidebar Compliance section adds Health Pulse entry; 12 snapshot tests + 12 sidebar regression)
 3. Sprint 10E — Stakeholder Network Graph (Wow-Pattern #11) (radial SVG ecosystem map at /dashboard/network/graph; getStakeholderNetwork server fetcher with operator + OrganizationMember + StakeholderEngagement nodes + radial edges + perType histogram + isRevoked/status=ACTIVE/INVITED filter; deterministic radial layout (no D3, no force sim) — operator centre, internal members on inner ring 110px, externals on outer ring 230px; per-type colour palette (LEGAL_COUNSEL blue, NCA amber, INSURER violet, etc.) + dot-size = dataRoomCount + attestationCount weight; 11 fetcher tests covering empty + node-shape + edge-shape + perType + filter paths; reachable via direct URL — V1-flavored /dashboard/network landing left untouched)
+4. Sprint 10F — Time Travel Slider (Wow-Pattern #12) (/dashboard/time-travel server-fetches 90 days of getPostureTrend; TimeTravelClient slider scrubs the array index, posture cards (score/attested/proposals/triage) reflect the scrubbed day with day-over-day delta toning (emerald improvement, red regression, slate=0; inverted for proposals+triage where MORE is bad); Play button autoplays at 200ms-per-day cadence with auto-pause at end; Skip-back/forward buttons; sparkline below shows full 90-day score trajectory with vertical cursor + highlight dot at the scrubbed index; V2Sidebar Compliance section adds Time Travel entry; 11 client tests covering empty + slider + skip + autoplay + delta-toning paths)
 
 ### Previous batch (deployed `6d2fd6a3` on 2026-05-02)
 

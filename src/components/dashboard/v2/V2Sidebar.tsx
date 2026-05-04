@@ -23,6 +23,7 @@ import {
   Activity,
   Link2,
   Heart,
+  Clock,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -131,6 +132,11 @@ export function V2Sidebar({
       href: "/dashboard/health-pulse",
       label: "Health Pulse",
       icon: Heart,
+    },
+    {
+      href: "/dashboard/time-travel",
+      label: "Time Travel",
+      icon: Clock,
     },
     { href: "/dashboard/network", label: "Network", icon: Network },
   ];
