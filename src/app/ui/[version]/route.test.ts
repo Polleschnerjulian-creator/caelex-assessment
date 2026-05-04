@@ -4,14 +4,18 @@
  * Coverage:
  *
  *   1. Invalid version → 400
- *   2. Anonymous → redirect to /login?next=/ui/<version>
- *   3. Authed v2 → user.update + cookie set + redirect to /dashboard/posture
- *   4. Authed v1 → user.update + cookie set + redirect to /dashboard
+ *   2. Anonymous → 307 redirect to /login?next=/ui/<version>
+ *   3. Authed v2 → user.update + cookie on response + 307 to /dashboard/posture
+ *   4. Authed v1 → user.update + cookie on response + 307 to /dashboard
  *   5. Case-insensitive version handling
- *   6. DB write failure → 500 + structured logger.error, no redirect
+ *   6. DB write failure → 500 + structured logger.error, no redirect, no cookie
+ *   7. revalidatePath called for /dashboard layout on success
  *
- * Both `redirect` and `cookies` are mocked because Next.js hooks
- * throw outside a request scope. We assert against the mock calls.
+ * Why we inspect the NextResponse object directly:
+ * The route uses `NextResponse.redirect(...)` + `response.cookies.set(...)`
+ * for guaranteed Set-Cookie persistence (the `next/headers` + nav-redirect
+ * combo dropped Set-Cookie on the redirect response in some Next.js 15
+ * versions, producing the V1-chrome-wraps-V2-page bug we hit on prod).
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -19,20 +23,13 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const {
   mockAuth,
   mockUserUpdate,
-  mockCookieSet,
-  mockRedirect,
+  mockRevalidatePath,
   mockLoggerInfo,
   mockLoggerError,
 } = vi.hoisted(() => ({
   mockAuth: vi.fn(),
   mockUserUpdate: vi.fn(),
-  mockCookieSet: vi.fn(),
-  mockRedirect: vi.fn(() => {
-    // Match Next.js semantics — redirect throws so the function
-    // doesn't continue. The test catches and inspects the recorded
-    // call.
-    throw new Error("__NEXT_REDIRECT__");
-  }),
+  mockRevalidatePath: vi.fn(),
   mockLoggerInfo: vi.fn(),
   mockLoggerError: vi.fn(),
 }));
@@ -48,17 +45,17 @@ vi.mock("@/lib/logger", () => ({
     warn: vi.fn(),
   },
 }));
-vi.mock("next/headers", () => ({
-  cookies: async () => ({ set: mockCookieSet }),
-}));
-vi.mock("next/navigation", () => ({
-  redirect: mockRedirect,
+vi.mock("next/cache", () => ({
+  revalidatePath: mockRevalidatePath,
 }));
 
 import { GET } from "./route";
 
-function makeReq(): Request {
-  return new Request("http://localhost/ui/v2");
+// NextRequest-shaped helper. The route only reads `request.url` to
+// build the absolute URL for redirects, so a plain Request object
+// works for every test path.
+function makeReq(path = "/ui/v2"): Request {
+  return new Request(`http://localhost${path}`);
 }
 
 beforeEach(() => {
@@ -69,7 +66,7 @@ beforeEach(() => {
 
 describe("ui-toggle — version validation", () => {
   it("returns 400 on unknown version", async () => {
-    const res = await GET(makeReq(), {
+    const res = await GET(makeReq() as never, {
       params: Promise.resolve({ version: "v3" }),
     });
     expect(res.status).toBe(400);
@@ -77,7 +74,7 @@ describe("ui-toggle — version validation", () => {
   });
 
   it("returns 400 on empty version", async () => {
-    const res = await GET(makeReq(), {
+    const res = await GET(makeReq() as never, {
       params: Promise.resolve({ version: "" }),
     });
     expect(res.status).toBe(400);
@@ -86,9 +83,10 @@ describe("ui-toggle — version validation", () => {
   it("normalises uppercase and accepts V2", async () => {
     mockAuth.mockResolvedValueOnce({ user: { id: "u_1" } });
     mockUserUpdate.mockResolvedValueOnce({});
-    await expect(
-      GET(makeReq(), { params: Promise.resolve({ version: "V2" }) }),
-    ).rejects.toThrow("__NEXT_REDIRECT__");
+    const res = await GET(makeReq() as never, {
+      params: Promise.resolve({ version: "V2" }),
+    });
+    expect(res.status).toBe(307);
     expect(mockUserUpdate).toHaveBeenCalledWith({
       where: { id: "u_1" },
       data: { complyUiVersion: "v2" },
@@ -99,77 +97,91 @@ describe("ui-toggle — version validation", () => {
 // ─── Auth ────────────────────────────────────────────────────────────────
 
 describe("ui-toggle — auth", () => {
-  it("anonymous → redirects to /login with next=/ui/v2", async () => {
+  it("anonymous → 307 redirect to /login?next=/ui/v2", async () => {
     mockAuth.mockResolvedValueOnce(null);
-    await expect(
-      GET(makeReq(), { params: Promise.resolve({ version: "v2" }) }),
-    ).rejects.toThrow("__NEXT_REDIRECT__");
-    expect(mockRedirect).toHaveBeenCalledWith("/login?next=/ui/v2");
+    const res = await GET(makeReq() as never, {
+      params: Promise.resolve({ version: "v2" }),
+    });
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe(
+      "http://localhost/login?next=/ui/v2",
+    );
     expect(mockUserUpdate).not.toHaveBeenCalled();
-    expect(mockCookieSet).not.toHaveBeenCalled();
   });
 
   it("session w/o user.id → also redirects to /login", async () => {
     mockAuth.mockResolvedValueOnce({ user: { email: "x@example.com" } });
-    await expect(
-      GET(makeReq(), { params: Promise.resolve({ version: "v2" }) }),
-    ).rejects.toThrow("__NEXT_REDIRECT__");
-    expect(mockRedirect).toHaveBeenCalledWith("/login?next=/ui/v2");
+    const res = await GET(makeReq() as never, {
+      params: Promise.resolve({ version: "v2" }),
+    });
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toContain("/login?next=/ui/v2");
   });
 });
 
 // ─── Persist + redirect ─────────────────────────────────────────────────
 
 describe("ui-toggle — happy path", () => {
-  it("v2 → updates user, sets cookie, redirects to /dashboard/posture", async () => {
+  it("v2 → updates user, sets cookie on response, redirects to /dashboard/posture", async () => {
     mockAuth.mockResolvedValueOnce({ user: { id: "u_42" } });
     mockUserUpdate.mockResolvedValueOnce({});
-    await expect(
-      GET(makeReq(), { params: Promise.resolve({ version: "v2" }) }),
-    ).rejects.toThrow("__NEXT_REDIRECT__");
+    const res = await GET(makeReq() as never, {
+      params: Promise.resolve({ version: "v2" }),
+    });
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe(
+      "http://localhost/dashboard/posture",
+    );
+
+    // Cookie is on the redirect response (NOT lost across redirect).
+    const setCookie = res.headers.get("set-cookie");
+    expect(setCookie).toContain("caelex-comply-ui=v2");
+    expect(setCookie).toContain("Path=/");
+    expect(setCookie?.toLowerCase()).toContain("samesite=lax");
+
     expect(mockUserUpdate).toHaveBeenCalledWith({
       where: { id: "u_42" },
       data: { complyUiVersion: "v2" },
     });
-    expect(mockCookieSet).toHaveBeenCalledWith(
-      "caelex-comply-ui",
-      "v2",
-      expect.objectContaining({ path: "/", sameSite: "lax" }),
-    );
-    expect(mockRedirect).toHaveBeenCalledWith("/dashboard/posture");
     expect(mockLoggerInfo).toHaveBeenCalledWith(
       "[ui-toggle] switched",
       expect.objectContaining({ userId: "u_42", target: "v2" }),
     );
   });
 
-  it("v1 → updates user, sets cookie, redirects to /dashboard", async () => {
+  it("v1 → cookie + redirect to /dashboard", async () => {
     mockAuth.mockResolvedValueOnce({ user: { id: "u_42" } });
     mockUserUpdate.mockResolvedValueOnce({});
-    await expect(
-      GET(makeReq(), { params: Promise.resolve({ version: "v1" }) }),
-    ).rejects.toThrow("__NEXT_REDIRECT__");
-    expect(mockCookieSet).toHaveBeenCalledWith(
-      "caelex-comply-ui",
-      "v1",
-      expect.any(Object),
-    );
-    expect(mockRedirect).toHaveBeenCalledWith("/dashboard");
+    const res = await GET(makeReq("/ui/v1") as never, {
+      params: Promise.resolve({ version: "v1" }),
+    });
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe("http://localhost/dashboard");
+    expect(res.headers.get("set-cookie")).toContain("caelex-comply-ui=v1");
+  });
+
+  it("calls revalidatePath('/dashboard', 'layout') on success", async () => {
+    mockAuth.mockResolvedValueOnce({ user: { id: "u_1" } });
+    mockUserUpdate.mockResolvedValueOnce({});
+    await GET(makeReq() as never, {
+      params: Promise.resolve({ version: "v2" }),
+    });
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/dashboard", "layout");
   });
 });
 
 // ─── DB error handling ──────────────────────────────────────────────────
 
 describe("ui-toggle — DB failure", () => {
-  it("user.update throws → 500 + logger.error, NO redirect, NO cookie set", async () => {
+  it("user.update throws → 500, no cookie, no revalidate, logger.error fires", async () => {
     mockAuth.mockResolvedValueOnce({ user: { id: "u_1" } });
     mockUserUpdate.mockRejectedValueOnce(new Error("DB down"));
-    const res = await GET(makeReq(), {
+    const res = await GET(makeReq() as never, {
       params: Promise.resolve({ version: "v2" }),
     });
     expect(res.status).toBe(500);
-    expect(mockCookieSet).not.toHaveBeenCalled();
-    expect(mockRedirect).not.toHaveBeenCalled();
+    expect(res.headers.get("set-cookie")).toBeNull();
+    expect(mockRevalidatePath).not.toHaveBeenCalled();
     expect(mockLoggerError).toHaveBeenCalledWith(
       "[ui-toggle] persist failed",
       expect.objectContaining({
