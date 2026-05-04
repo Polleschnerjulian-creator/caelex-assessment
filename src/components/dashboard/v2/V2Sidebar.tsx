@@ -21,6 +21,7 @@ import {
   ChevronRight,
   Rocket,
   Activity,
+  Link2,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -119,6 +120,11 @@ export function V2Sidebar({
       href: "/dashboard/audit-center",
       label: "Audit Center",
       icon: ScrollText,
+    },
+    {
+      href: "/dashboard/audit-chain",
+      label: "Audit Chain",
+      icon: Link2,
     },
     { href: "/dashboard/network", label: "Network", icon: Network },
   ];

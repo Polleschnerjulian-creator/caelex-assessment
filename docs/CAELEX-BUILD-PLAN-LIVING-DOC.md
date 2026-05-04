@@ -206,7 +206,7 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 - Sprint 8A: OpenTimestamps audit-anchor cron (per-org chain-head anchoring) ✅ COMPLETED 2026-05-02
 - Sprint 8B: OpenTimestamps upgrade-cron (re-fetches PENDING anchors after Bitcoin confirmation) ✅ COMPLETED 2026-05-02
 - Sprint 8C: Public-Verify-Page (regulator pastes hash + proof, gets verified) ✅ COMPLETED 2026-05-02
-- Sprint 8D: C2SP tlog-witness endpoint (Caelex acts as a witness) [PENDING]
+- Sprint 8D: C2SP tlog-witness endpoint (Caelex acts as a witness) ⏸ DEFERRED — needs Ed25519 key infrastructure + signed-note format parsing + Merkle-tree consistency-proof verification (sumdb-style). Not session-scoped; revisit when a partner log requests Caelex as a witness.
 - ~~D-Trust QES integration~~ DEFERRED (paid — outside zero-cost constraint)
 - **Aufwand:** 4 Wochen
 - **V1-Impact:** Null
@@ -220,14 +220,14 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 - **Aufwand:** 6-8 Wochen
 - **V1-Impact:** Null
 
-**Sprint 10 — Wow-Effekt-Patterns + Polish** [PENDING]
+**Sprint 10 — Wow-Effekt-Patterns + Polish** [IN PROGRESS]
 
-- 3D Operator-Universe (Wow-Pattern #6)
-- Hash-Chain-Block-Visualizer (Wow-Pattern #7)
-- Provenance-Timeline (Wow-Pattern #8)
-- Compliance-Health-Pulse (Wow-Pattern #9)
-- Stakeholder-Network-Graph (Wow-Pattern #11)
-- Time-Travel-Slider (Wow-Pattern #12)
+- Sprint 10A: Hash-Chain-Block-Visualizer (Wow-Pattern #7) ✅ COMPLETED 2026-05-02 (pulled forward — Sprint 8D deferred; visualizer continues the verifiability USP narrative)
+- Sprint 10B: 3D Operator-Universe (Wow-Pattern #6) [PENDING]
+- Sprint 10C: Provenance-Timeline (Wow-Pattern #8) [PENDING]
+- Sprint 10D: Compliance-Health-Pulse (Wow-Pattern #9) [PENDING]
+- Sprint 10E: Stakeholder-Network-Graph (Wow-Pattern #11) [PENDING]
+- Sprint 10F: Time-Travel-Slider (Wow-Pattern #12) [PENDING]
 - **Aufwand:** 6-8 Wochen
 - **V1-Impact:** Null
 
@@ -251,7 +251,7 @@ Workflows können jetzt registriert werden, von startWorkflow auto-firen, durch 
 ### Pending Deploy-Batch — Tracker
 
 **Last main-push:** `8c8c4428` (Sprint 7C — 2026-05-02, 6-sprint batch)
-**Sprints in pending batch:** 5 of 6-8
+**Sprints in pending batch:** 6 of 6-8 (deploy threshold reached)
 **Next deploy:** when batch reaches 6-8 sprints OR user says "deploy now"
 
 When you finish a sprint and commit it, increment this counter. When it
@@ -264,6 +264,7 @@ Sprints in current batch (chronological):
 3. Sprint 8A — OpenTimestamps audit-anchor cron (additive AuditTimestampAnchor schema + migration; submitAuditAnchor service posts SHA-256 of audit chain head to default OpenTimestamps calendars in parallel, persists PENDING/FAILED rows per calendar; quarterly cron at 03:00 UTC 1st of every 3rd month gated by AUDIT_ANCHOR_ENABLED env flag; 16 tests covering digest encoding + calendar fan-out + per-org walking + cron auth/disabled/enabled paths)
 4. Sprint 8B — OpenTimestamps audit-anchor upgrade-cron (upgradeAuditAnchor() polls calendar /timestamp/<digest> for confirmed proofs after 6h; 200/404/5xx/empty/give-up paths; upgradeAllPendingAnchors batch walker with 200-row budget; daily 04:00 UTC cron; 18 new tests covering single-anchor lifecycle + batch aggregation + cron auth/disabled/enabled paths)
 5. Sprint 8C — Public verify page (rate-limited /api/public/verify-anchor POST endpoint exposes anchor proof bytes via base64 lookup, hides FAILED rows + organizationId for privacy; /verify static page with VerifyAnchorClient — paste hash → POST → render UPGRADED/PENDING badge + calendar hostname + block height + .ots download button + "how to verify yourself" CLI walkthrough; 14 endpoint tests + 11 client tests)
+6. Sprint 10A — Hash-Chain-Block-Visualizer (Wow-Pattern #7, pulled forward; 8D deferred) (audit-chain-view.server.ts getAuditChainSegment with cursor pagination + SHA-256(entryHash)→anchorHash join hiding FAILED + UPGRADED-beats-PENDING; /dashboard/audit-chain page with AuditChainVisualizer client island, blockchain-style block cards with prev/this hash links + emerald BTC#height markers deep-linking to /verify; loadMoreAuditChainSegment Server Action with org-rebind anti-IDOR guard; V2Sidebar Compliance section adds Audit Chain entry; 11 service tests + V2Sidebar order test updated)
 
 ### Previous batch (deployed `8c8c4428` on 2026-05-02)
 
