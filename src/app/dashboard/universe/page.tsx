@@ -1,14 +1,14 @@
 import { redirect } from "next/navigation";
 import { Orbit } from "lucide-react";
-// Renamed to avoid collision with the `dynamic` route-segment-config
-// export below — Next.js inspects the literal name `dynamic` so we
-// can't shadow it with the import.
-import nextDynamic from "next/dynamic";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
 import { getOperatorUniverse } from "@/lib/comply-v2/operator-universe.server";
+// Hotfix 2026-05-04: the dynamic import with ssr:false now lives in a
+// "use client" wrapper (`OperatorUniverseLazy`) — Next.js 15.5+ refuses
+// `ssr: false` on `next/dynamic` from a Server Component.
+import { OperatorUniverseLazy } from "@/components/dashboard/v2/OperatorUniverseLazy";
 
 export const dynamic = "force-dynamic";
 
@@ -22,37 +22,20 @@ export const metadata = {
  * /dashboard/universe — Sprint 10B (Wow-Pattern #6)
  *
  * 3D scene rendering the operator's mission as a star system. The
- * page itself is a server component (auth + data fetch + meta), and
- * the heavy R3F renderer is a client component loaded via
- * `next/dynamic` with `ssr: false` so Three.js doesn't trip up
- * Next.js's RSC boundary.
+ * page itself is a Server Component (auth + data fetch + meta), and
+ * the heavy R3F renderer mounts inside the OperatorUniverseLazy
+ * client wrapper — that wrapper does the `next/dynamic({ ssr: false })`
+ * call which Next.js 15.5+ only accepts from inside a Client Component.
  *
- * # Why ssr:false on the R3F component
+ * # Why ssr:false at all
  *
  * R3F initialises a WebGL context in the constructor of <Canvas>,
  * which does `document.createElement("canvas")` — that throws on
  * the server. Marking the import as `dynamic({ ssr: false })` tells
- * Next.js to skip server rendering for this child and only mount it
- * after hydration on the client. The page shell is still server-
- * rendered for fast TTFB + correct meta.
+ * Next.js to skip server rendering for the R3F subtree and only
+ * mount it after hydration on the client. The page shell is still
+ * server-rendered for fast TTFB + correct meta.
  */
-
-// Heavy R3F bundle — load client-side only.
-const OperatorUniverse = nextDynamic(
-  () =>
-    import("@/components/dashboard/v2/OperatorUniverse").then(
-      (m) => m.OperatorUniverse,
-    ),
-  {
-    ssr: false,
-    loading: () => (
-      <div
-        data-testid="universe-skeleton"
-        className="palantir-surface h-[640px] w-full animate-pulse rounded-md"
-      />
-    ),
-  },
-);
 
 export default async function UniversePage() {
   const session = await auth();
@@ -109,7 +92,7 @@ export default async function UniversePage() {
         </div>
       ) : (
         <div className="space-y-4">
-          <OperatorUniverse universe={universe} />
+          <OperatorUniverseLazy universe={universe} />
           <UniverseSummary universe={universe} />
         </div>
       )}

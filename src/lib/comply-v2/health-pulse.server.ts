@@ -34,29 +34,26 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 
-export const PULSE_BUCKET_COUNT = 12;
-export const PULSE_BUCKET_MINUTES = 5;
-export const PULSE_WINDOW_MINUTES = PULSE_BUCKET_COUNT * PULSE_BUCKET_MINUTES;
+// Constants + types live in a non-server file so the client component
+// (`HealthPulseClient.tsx`) can import them without webpack rejecting
+// the `import "server-only"` chain. Re-exported here for backward
+// compatibility with anything that imported from this file before the
+// 2026-05-04 hotfix.
+export {
+  PULSE_BUCKET_COUNT,
+  PULSE_BUCKET_MINUTES,
+  PULSE_WINDOW_MINUTES,
+  type HealthPulseBucket,
+  type HealthPulseSnapshot,
+} from "./health-pulse-types";
 
-export interface HealthPulseBucket {
-  /** ISO timestamp of the bucket's start (5-min aligned, UTC). */
-  bucketStart: string;
-  /** Count of audit-log rows that landed in this bucket. */
-  count: number;
-}
-
-export interface HealthPulseSnapshot {
-  /** Total events across the last hour. */
-  totalEvents: number;
-  /** Buckets ordered oldest → newest. Always exactly 12 entries. */
-  buckets: HealthPulseBucket[];
-  /** ISO timestamp of the most recent audit-log row (any time). Null
-   *  when the org has no audit history at all. */
-  lastEventAt: string | null;
-  /** Average events / hour over the last 24h — context number for
-   *  "is this hour quiet or busy?". */
-  baselineEventsPerHour: number;
-}
+import {
+  PULSE_BUCKET_COUNT,
+  PULSE_BUCKET_MINUTES,
+  PULSE_WINDOW_MINUTES,
+  type HealthPulseBucket,
+  type HealthPulseSnapshot,
+} from "./health-pulse-types";
 
 export interface GetHealthPulseSnapshotOptions {
   /** Override "now" for deterministic tests. */

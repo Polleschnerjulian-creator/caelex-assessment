@@ -3,11 +3,14 @@
 import * as React from "react";
 import { Activity, Clock, Heart, Zap } from "lucide-react";
 
+// Hotfix 2026-05-04: import from the non-server types module so we
+// don't pull `import "server-only"` into a client-component bundle.
+// Behaviour is identical — same constants, same types.
 import {
   PULSE_BUCKET_COUNT,
   PULSE_BUCKET_MINUTES,
   type HealthPulseSnapshot,
-} from "@/lib/comply-v2/health-pulse.server";
+} from "@/lib/comply-v2/health-pulse-types";
 
 /**
  * HealthPulseClient — Sprint 10D (Wow-Pattern #9)
