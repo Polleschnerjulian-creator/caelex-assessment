@@ -20,7 +20,8 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
+import { getAtlasAuth } from "@/lib/atlas-auth";
+import { prisma } from "@/lib/prisma";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 import { recallLibrary } from "@/lib/atlas/library-recall";
@@ -39,14 +40,16 @@ const BodySchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    // C-1: Use getAtlasAuth instead of auth() so the endpoint is gated to
+    // LAW_FIRM/BOTH org members — same gate as the rest of /api/atlas/*.
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const rl = await checkRateLimit(
       "atlas_semantic",
-      getIdentifier(request, session.user.id),
+      getIdentifier(request, atlas.userId),
     );
     if (!rl.success) {
       return NextResponse.json(
@@ -65,9 +68,25 @@ export async function POST(request: NextRequest) {
     }
     const { query, limit, matterId } = parsed.data;
 
-    const result = await recallLibrary(session.user.id, query, {
+    // C-1: Validate that matterId — when supplied — belongs to the caller's
+    // active law-firm org. Otherwise the score-bonus pipeline can be used as
+    // an oracle to confirm the existence of foreign matters' library
+    // associations. Drop the matterId rather than rejecting the whole request
+    // so the recall still works without the boost.
+    let safeMatterId: string | undefined;
+    if (matterId) {
+      const owned = await prisma.legalMatter.findFirst({
+        where: { id: matterId, lawFirmOrgId: atlas.organizationId },
+        select: { id: true },
+      });
+      if (owned) {
+        safeMatterId = matterId;
+      }
+    }
+
+    const result = await recallLibrary(atlas.userId, query, {
       limit,
-      matterId,
+      matterId: safeMatterId,
     });
 
     return NextResponse.json(result);

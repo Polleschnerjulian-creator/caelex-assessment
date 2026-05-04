@@ -182,23 +182,12 @@ async function findOperatorOrganization(args: {
   }
   const q = parsed.data.query.trim();
 
-  // Schema-drift resilient lookup. Try the orgType-filtered query
-  // first; on column-missing, retry without the filter so the tool
-  // still returns matches. The role-shape filter resumes once the
-  // migration lands. See src/lib/legal-network/org-type.ts for the
-  // full pattern.
-  const buildSelect = () => ({
-    id: true,
-    name: true,
-    slug: true,
-    orgType: true,
-  });
-  const buildFallbackSelect = () => ({
-    id: true,
-    name: true,
-    slug: true,
-  });
-
+  // H-2: orgType filter is enforced — the previous schema-drift fallback
+  // silently re-ran the query without the orgType filter, which meant
+  // that immediately after a deploy where the migration hadn't run, the
+  // tool would return ANY active org (including LAW_FIRMs) as
+  // counterparty candidates. We now hard-fail loudly so the operator
+  // notices instead of letting the tool continue in an unsafe mode.
   let orgs: Array<{
     id: string;
     name: string;
@@ -217,25 +206,26 @@ async function findOperatorOrganization(args: {
           { slug: { contains: q, mode: "insensitive" } },
         ],
       },
-      select: buildSelect(),
+      select: { id: true, name: true, slug: true, orgType: true },
       orderBy: { name: "asc" },
       take: OPERATOR_LIMIT,
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (!/orgtype.*does not exist|column.*orgtype/i.test(msg)) throw err;
-    orgs = await prisma.organization.findMany({
-      where: {
-        isActive: true,
-        OR: [
-          { name: { contains: q, mode: "insensitive" } },
-          { slug: { contains: q, mode: "insensitive" } },
-        ],
-      },
-      select: buildFallbackSelect(),
-      orderBy: { name: "asc" },
-      take: OPERATOR_LIMIT,
-    });
+    if (/orgtype.*does not exist|column.*orgtype/i.test(msg)) {
+      logger.error(
+        "[atlas/find_operator_organization] Organization.orgType column missing — migration not applied. Refusing the lookup so we don't accidentally surface law-firm orgs as counterparty candidates.",
+      );
+      return {
+        content: JSON.stringify({
+          error:
+            "Operator directory temporarily unavailable — migration pending. Please contact support.",
+          code: "ORG_TYPE_MIGRATION_PENDING",
+        }),
+        isError: true,
+      };
+    }
+    throw err;
   }
 
   return {
@@ -291,11 +281,10 @@ async function createMatterInviteTool(args: {
     duration_months,
   } = parsed.data;
 
-  // Resolve the operator org. Schema-drift resilient: tries with
-  // orgType, falls back to a select without it so the existence +
-  // isActive checks still apply. The "is this org actually a
-  // LAW_FIRM" wrong-type check is conditional on having orgType
-  // available.
+  // H-2: Resolve the operator org with orgType strictly enforced. The
+  // previous schema-drift fallback re-ran the query without orgType,
+  // meaning the wrong-type guard could be skipped and a LAW_FIRM org
+  // could be invited as "operator counterparty". We now hard-fail.
   let operator: {
     id: string;
     name: string;
@@ -316,11 +305,20 @@ async function createMatterInviteTool(args: {
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (!/orgtype.*does not exist|column.*orgtype/i.test(msg)) throw err;
-    operator = await prisma.organization.findUnique({
-      where: { id: operator_org_id },
-      select: { id: true, name: true, slug: true, isActive: true },
-    });
+    if (/orgtype.*does not exist|column.*orgtype/i.test(msg)) {
+      logger.error(
+        "[atlas/create_matter_invite] Organization.orgType column missing — refusing the invite create. Migration must be applied before matter invites can be safely processed.",
+      );
+      return {
+        content: JSON.stringify({
+          error:
+            "Matter invites temporarily unavailable — migration pending. Please contact support.",
+          code: "ORG_TYPE_MIGRATION_PENDING",
+        }),
+        isError: true,
+      };
+    }
+    throw err;
   }
 
   if (!operator) {

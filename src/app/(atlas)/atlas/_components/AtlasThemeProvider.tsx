@@ -53,9 +53,13 @@ export function AtlasThemeProvider({
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const initial = readInitial();
-    setThemeState(initial);
-    setResolvedTheme(resolve(initial));
+    // L-5: Only seed `theme` here. The second effect (below) is keyed
+    // off [theme, mounted] and resolves resolvedTheme on its own —
+    // setting it twice in the same commit caused the briefly-mounted
+    // shell to flicker between the prior render and the resolved
+    // value. Letting the second effect run after `mounted` flips
+    // produces a single resolvedTheme update.
+    setThemeState(readInitial());
     setMounted(true);
   }, []);
 

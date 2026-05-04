@@ -11,7 +11,7 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAtlasAuth } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 
@@ -24,8 +24,9 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const session = await auth();
-    if (!session?.user?.id) {
+    // M-5: Atlas-only gate matches the rest of /api/atlas/*.
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -36,7 +37,7 @@ export async function DELETE(
       where: { id },
       select: { userId: true },
     });
-    if (!entry || entry.userId !== session.user.id) {
+    if (!entry || entry.userId !== atlas.userId) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
@@ -55,8 +56,9 @@ export async function DELETE(
         { status: 503 },
       );
     }
+    // M-6: don't expose raw Prisma message to client.
     return NextResponse.json(
-      { error: "Failed to delete", code: errName, detail: errMsg },
+      { error: "Failed to delete", code: errName },
       { status: 500 },
     );
   }

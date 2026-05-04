@@ -198,12 +198,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Single-bookmark path reads the count once up-front; upsert-on-
-    // existing doesn't grow the count so the race window here is tiny.
-    const currentCount = await prisma.atlasBookmark.count({
-      where: { userId: session.user.id },
-    });
-
     const single = BookmarkSchema.safeParse(body);
     if (!single.success) {
       return NextResponse.json(
@@ -212,62 +206,83 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // M10: per-user quota check (count here is approximate — upsert may
-    // replace an existing row, in which case count doesn't grow)
-    if (currentCount >= MAX_BOOKMARKS_PER_USER) {
-      const existing = await prisma.atlasBookmark.findUnique({
-        where: {
-          userId_itemId: {
-            userId: session.user.id,
-            itemId: single.data.itemId,
-          },
+    // M-2: All four DB ops (existence-check → quota-check → upsert) run
+    // inside a Serializable transaction, matching the bulk-path pattern
+    // above. Without this, two parallel POSTs with the same itemId saw
+    // existedBefore=null in both, both attempted INSERT, one crashed
+    // with P2002 surfaced as a 500 to the client. Now: one creates, the
+    // other becomes a no-op update under serialisation.
+    const userId = session.user.id;
+    let row: Awaited<ReturnType<typeof prisma.atlasBookmark.upsert>>;
+    let existedBefore: { id: string } | null = null;
+    try {
+      const txResult = await prisma.$transaction(
+        async (tx) => {
+          existedBefore = await tx.atlasBookmark.findUnique({
+            where: { userId_itemId: { userId, itemId: single.data.itemId } },
+            select: { id: true },
+          });
+          if (!existedBefore) {
+            const currentCount = await tx.atlasBookmark.count({
+              where: { userId },
+            });
+            if (currentCount >= MAX_BOOKMARKS_PER_USER) {
+              throw new QuotaExceededError(currentCount);
+            }
+          }
+          return tx.atlasBookmark.upsert({
+            where: { userId_itemId: { userId, itemId: single.data.itemId } },
+            create: {
+              userId,
+              itemId: single.data.itemId,
+              itemType: single.data.itemType,
+              title: single.data.title,
+              subtitle: single.data.subtitle ?? null,
+              href: single.data.href,
+              note: single.data.note ?? null,
+            },
+            update: {
+              title: single.data.title,
+              subtitle: single.data.subtitle ?? null,
+              href: single.data.href,
+            },
+          });
         },
-        select: { id: true },
-      });
-      if (!existing) {
+        { isolationLevel: "Serializable" },
+      );
+      row = txResult;
+    } catch (err) {
+      if (err instanceof QuotaExceededError) {
         return NextResponse.json(
           {
             error: "Bookmark quota exceeded",
             limit: MAX_BOOKMARKS_PER_USER,
-            current: currentCount,
+            current: err.currentCount,
           },
           { status: 409 },
         );
       }
+      // Even with Serializable isolation, two writers can race and one
+      // gets a P2002 unique-constraint violation — treat it as
+      // idempotent: refetch the row that won and return it.
+      const code =
+        err && typeof err === "object" && "code" in err
+          ? (err as { code?: string }).code
+          : undefined;
+      if (code === "P2002") {
+        const winner = await prisma.atlasBookmark.findUnique({
+          where: { userId_itemId: { userId, itemId: single.data.itemId } },
+        });
+        if (winner) {
+          row = winner;
+          existedBefore = { id: winner.id };
+        } else {
+          throw err;
+        }
+      } else {
+        throw err;
+      }
     }
-
-    const existedBefore = await prisma.atlasBookmark.findUnique({
-      where: {
-        userId_itemId: {
-          userId: session.user.id,
-          itemId: single.data.itemId,
-        },
-      },
-      select: { id: true },
-    });
-
-    const row = await prisma.atlasBookmark.upsert({
-      where: {
-        userId_itemId: {
-          userId: session.user.id,
-          itemId: single.data.itemId,
-        },
-      },
-      create: {
-        userId: session.user.id,
-        itemId: single.data.itemId,
-        itemType: single.data.itemType,
-        title: single.data.title,
-        subtitle: single.data.subtitle ?? null,
-        href: single.data.href,
-        note: single.data.note ?? null,
-      },
-      update: {
-        title: single.data.title,
-        subtitle: single.data.subtitle ?? null,
-        href: single.data.href,
-      },
-    });
 
     // H-2 fix: only audit-log true creates so updating a title in
     // place (common for a stale cached label) doesn't spam the chain.

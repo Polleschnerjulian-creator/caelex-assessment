@@ -79,8 +79,12 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // H-4: dedicated tier with a tighter budget (10/h vs astra_chat 60/h).
+    // Each suggest call sends the full workspace content to Claude — far
+    // more expensive than a normal chat turn — so a separate cost-DoS
+    // guardrail is warranted.
     const rl = await checkRateLimit(
-      "astra_chat",
+      "atlas_workspace_ai",
       getIdentifier(request, session.user.id),
     );
     if (!rl.success) {
@@ -143,18 +147,39 @@ export async function POST(
       );
     }
 
-    const cardsBlock = ws.cards
-      .map(
-        (c, i) =>
-          `### Karte ${i + 1} (${c.kind ?? "user"}): ${c.title}\n${c.content || "(kein Inhalt)"}`,
-      )
+    // H-4: cap the prompt size — each card's content is truncated to
+    // ~600 chars and only the first 20 cards are included. Suggestions
+    // are based on the cards' SHAPE, not their full text — the lawyer
+    // doesn't need Claude to re-read every paragraph to see what's
+    // missing. Without these caps, 50 cards × 8000 chars each could
+    // push the input prompt past 400k chars at $3/M input tokens.
+    const SUGGEST_CARD_LIMIT = 20;
+    const SUGGEST_CARD_CHAR_BUDGET = 600;
+    const cardsForPrompt = ws.cards.slice(0, SUGGEST_CARD_LIMIT);
+    const cardsBlock = cardsForPrompt
+      .map((c, i) => {
+        const content = c.content ?? "";
+        const truncated =
+          content.length > SUGGEST_CARD_CHAR_BUDGET
+            ? `${content.slice(0, SUGGEST_CARD_CHAR_BUDGET).trimEnd()}…`
+            : content || "(kein Inhalt)";
+        return `### Karte ${i + 1} (${c.kind ?? "user"}): ${c.title}\n${truncated}`;
+      })
       .join("\n\n");
 
-    const userPrompt = `Workspace-Titel: "${ws.title}"\n\nGepinnte Karten (${ws.cards.length}):\n\n${cardsBlock}\n\nWas fehlt diesem Workspace?`;
+    const overflowNote =
+      ws.cards.length > SUGGEST_CARD_LIMIT
+        ? `\n\n(Hinweis: Workspace enthält ${ws.cards.length} Karten — analysiert wurden die ersten ${SUGGEST_CARD_LIMIT}.)`
+        : "";
+
+    const userPrompt = `Workspace-Titel: "${ws.title}"\n\nGepinnte Karten (${ws.cards.length}):\n\n${cardsBlock}${overflowNote}\n\nWas fehlt diesem Workspace?`;
 
     const result = await setup.client.messages.create({
       model: setup.model,
-      max_tokens: 1536,
+      // H-4: 512 output tokens — suggestions are 5 short JSON objects, no
+      // need for 1536. Reduces both completion cost and the chance of
+      // generating garbage filler past the JSON the parser actually wants.
+      max_tokens: 512,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: userPrompt }],
     });

@@ -513,6 +513,35 @@ export default function CommandPaletteModal({
     return m;
   }, [grouped]);
 
+  // M-12: focus-trap. Without this, Tab inside the dialog escapes into
+  // the page underneath — visually the lawyer is still in the modal,
+  // semantically focus is on a hidden Atlas-shell button. Tab cycles
+  // between the search input (start) and the last visible result-row
+  // (end). Shift+Tab cycles backwards.
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const onDialogKeyDown = useCallback(
+    (e: ReactKeyboardEvent<HTMLDivElement>) => {
+      if (e.key !== "Tab") return;
+      const root = dialogRef.current;
+      if (!root) return;
+      const focusables = root.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input, [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    },
+    [],
+  );
+
   return (
     <div
       className="fixed inset-0 z-[100] flex items-start justify-center pt-[12vh] bg-black/40 backdrop-blur-sm"
@@ -522,6 +551,8 @@ export default function CommandPaletteModal({
       aria-modal="true"
     >
       <div
+        ref={dialogRef}
+        onKeyDown={onDialogKeyDown}
         className="w-[640px] max-w-[92vw] max-h-[70vh] rounded-2xl bg-[var(--atlas-bg-surface)] shadow-2xl border border-[var(--atlas-border)] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >

@@ -63,7 +63,12 @@ export async function POST(
     const { id } = await context.params;
     const ws = await prisma.atlasWorkspace.findFirst({
       where: { id, userId: session.user.id },
-      select: { id: true, shareToken: true, shareEnabledAt: true },
+      select: {
+        id: true,
+        shareToken: true,
+        shareEnabledAt: true,
+        shareExpiresAt: true,
+      },
     });
     if (!ws) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -91,34 +96,57 @@ export async function POST(
       "https://caelex.app"
     ).replace(/\/+$/, "");
 
+    // M-4: 90-day expiry default. Re-clicking "Teilen" on a workspace
+    // whose link has already expired is treated as a refresh — token
+    // stays the same (so existing pasted-around URLs keep working
+    // until lawyers explicitly revoke), but the expiry slides forward
+    // by another 90 days.
+    const SHARE_TTL_MS = 90 * 24 * 60 * 60 * 1000;
+
     if (parsed.data.enabled) {
-      // If sharing is already on, return the existing token rather
-      // than regenerating — otherwise old links would break every
-      // time the lawyer re-clicks "Teilen".
+      // If sharing is already on AND not expired, return the existing
+      // token rather than regenerating.
+      const expired =
+        ws.shareExpiresAt && ws.shareExpiresAt.getTime() < Date.now();
       const token = ws.shareToken ?? generateShareToken();
-      const enabledAt = ws.shareEnabledAt ?? new Date();
-      if (!ws.shareToken) {
+      const enabledAt =
+        !expired && ws.shareEnabledAt ? ws.shareEnabledAt : new Date();
+      const expiresAt = new Date(Date.now() + SHARE_TTL_MS);
+      if (!ws.shareToken || expired) {
         await prisma.atlasWorkspace.update({
           where: { id: ws.id },
-          data: { shareToken: token, shareEnabledAt: enabledAt },
+          data: {
+            shareToken: token,
+            shareEnabledAt: enabledAt,
+            shareExpiresAt: expiresAt,
+          },
+        });
+      } else if (!ws.shareExpiresAt) {
+        // Existing share that pre-dates the expiry feature — backfill
+        // an expiry so it doesn't stay live forever.
+        await prisma.atlasWorkspace.update({
+          where: { id: ws.id },
+          data: { shareExpiresAt: expiresAt },
         });
       }
       return NextResponse.json({
         shareToken: token,
         shareEnabledAt: enabledAt.toISOString(),
+        shareExpiresAt: expiresAt.toISOString(),
         shareUrl: `${origin}/atlas/share/${token}`,
       });
     }
 
-    // Disable: null both fields. The token becomes immediately
+    // Disable: null all share fields. The token becomes immediately
     // invalid — the public route returns 404 from this point on.
     await prisma.atlasWorkspace.update({
       where: { id: ws.id },
-      data: { shareToken: null, shareEnabledAt: null },
+      data: { shareToken: null, shareEnabledAt: null, shareExpiresAt: null },
     });
     return NextResponse.json({
       shareToken: null,
       shareEnabledAt: null,
+      shareExpiresAt: null,
       shareUrl: null,
     });
   } catch (err) {

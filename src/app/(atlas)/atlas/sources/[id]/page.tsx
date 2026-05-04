@@ -47,10 +47,15 @@ import {
   getAreaLabels,
   getJurisdictionNames,
 } from "../../i18n-labels";
+import { LEGAL_SOURCE_TYPE_STYLES } from "@/lib/atlas/legal-source-styles";
 
 // ─── Style maps ─────────────────────────────────────────────────────
 
-const TYPE_STYLES: Record<LegalSourceType, { bg: string; text: string }> = {
+// L-14: shared with jurisdictions/[code]/page.tsx via the lib helper.
+// Page-specific overrides used to drift between the two copies; if a
+// page needs to tweak a single entry, do so via spread.
+const TYPE_STYLES = {
+  ...LEGAL_SOURCE_TYPE_STYLES,
   international_treaty: {
     bg: "bg-[var(--atlas-bg-inset)] border-[var(--atlas-border-strong)]",
     text: "text-[var(--atlas-text-primary)]",
@@ -59,31 +64,7 @@ const TYPE_STYLES: Record<LegalSourceType, { bg: string; text: string }> = {
     bg: "bg-emerald-50 border-emerald-200",
     text: "text-[var(--atlas-text-primary)]",
   },
-  federal_regulation: {
-    bg: "bg-teal-50 border-teal-200",
-    text: "text-teal-700",
-  },
-  technical_standard: {
-    bg: "bg-amber-50 border-amber-200",
-    text: "text-amber-700",
-  },
-  eu_regulation: {
-    bg: "bg-purple-50 border-purple-200",
-    text: "text-purple-700",
-  },
-  eu_directive: {
-    bg: "bg-violet-50 border-violet-200",
-    text: "text-violet-700",
-  },
-  policy_document: {
-    bg: "bg-[var(--atlas-bg-surface-muted)] border-[var(--atlas-border)]",
-    text: "text-[var(--atlas-text-secondary)]",
-  },
-  draft_legislation: {
-    bg: "bg-orange-50 border-orange-200",
-    text: "text-orange-700",
-  },
-};
+} as const satisfies Record<LegalSourceType, { bg: string; text: string }>;
 
 const RELEVANCE_STYLES: Record<RelevanceLevel, string> = {
   fundamental:

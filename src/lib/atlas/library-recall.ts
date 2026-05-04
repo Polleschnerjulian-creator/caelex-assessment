@@ -22,7 +22,11 @@ import "server-only";
 import { cosineSimilarity } from "ai";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
-import { embedLibraryText, composeEmbeddingInput } from "./library-embeddings";
+import {
+  embedLibraryText,
+  composeEmbeddingInput,
+  EMBEDDING_DIMENSIONS,
+} from "./library-embeddings";
 
 export interface LibraryHit {
   id: string;
@@ -144,7 +148,16 @@ export async function recallLibrary(
   }
 
   const scored = entries
-    .filter((e) => Array.isArray(e.embedding) && e.embedding.length > 0)
+    // H-3: Strict dimension match — entries embedded with a different
+    // model (e.g. text-embedding-3-large @ 1536 dims) silently produce
+    // garbage scores when fed into a 512-dim cosine loop. Drop them
+    // so they don't pollute the ranking; they get re-embedded on the
+    // next backfill cycle anyway.
+    .filter(
+      (e) =>
+        Array.isArray(e.embedding) &&
+        e.embedding.length === EMBEDDING_DIMENSIONS,
+    )
     .map((e) => {
       let score = cosineSimilarity(queryVector, e.embedding);
       if (opts.matterId && e.sourceMatterId === opts.matterId) {

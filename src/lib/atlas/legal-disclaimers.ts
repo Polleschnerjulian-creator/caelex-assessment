@@ -87,6 +87,10 @@ export const DISCLAIMER_TRIGGER_TOOLS: ReadonlySet<string> = new Set([
   "draft_compliance_brief",
   "compare_jurisdictions_for_filing",
   "get_filing_deadlines",
+  // M-3 fix: regulatory-change reports produced by summarize_changes_since
+  // are drafting outputs that lawyers may forward verbatim — they need the
+  // same EU-AI-Act disclaimer back-stop as the explicit drafting tools.
+  "summarize_changes_since",
 ]);
 
 /**

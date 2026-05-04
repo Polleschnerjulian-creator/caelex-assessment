@@ -561,6 +561,7 @@
   },
   "atlas": {
     "abbr": "Abbr.",
+    "coming_soon": "Soon",
     "add_country": "Add country",
     "alerts": "Alerts",
     "amended": "amended {year}",

@@ -51,13 +51,26 @@ export const maxDuration = 120; // tool-use loops may take longer
 // direct Anthropic id when ANTHROPIC_API_KEY is set
 // ("claude-sonnet-4-6"). Same upstream model, different addressing.
 
-const MAX_TOKENS = 1024;
+// L-1: 1024 tokens fits research turns (~750 words, leaves slack for
+// JSON formatting), but truncates 9-section drafting outputs mid-sentence.
+// We use the smaller cap until we know a drafting tool fired in the
+// turn, then bump for subsequent iterations so the actual draft has
+// room to land in one shot.
+const MAX_TOKENS_RESEARCH = 1024;
+const MAX_TOKENS_DRAFTING = 4096;
 const TEMPERATURE = 0.6;
 // 8 iterations covers the longest realistic chain: search_legal_sources →
 // get_legal_source_by_id → list_jurisdiction_authorities (multi-JD
 // research), or find_operator_organization → preview → create. Bumped
 // from 5 in 2026-04 when the legal-source navigation tools landed.
 const MAX_TOOL_ITERATIONS = 8;
+// L-2: Hard cap on cumulative input tokens across all iterations of a
+// single user turn. Tool results (e.g. search_legal_sources hit lists)
+// re-enter the prompt of the next iteration; without a budget, an
+// 8-iteration chain can push past 100k input tokens at $3/M. 50k is
+// generous (40+ pages of input) and still keeps a single complex turn
+// well under $0.20.
+const MAX_CUMULATIVE_INPUT_TOKENS = 50_000;
 
 const SYSTEM_PROMPT = `You are Atlas, a specialised AI assistant for space-law practitioners at law firms that advise satellite operators, launch providers, and space-service companies.
 
@@ -296,14 +309,24 @@ export async function POST(request: NextRequest) {
       let assistantTextBuffer = "";
 
       let iterations = 0;
+      // L-2: cumulative input-token tracker, summed across iterations.
+      let cumulativeInputTokens = 0;
 
       try {
         while (iterations < MAX_TOOL_ITERATIONS) {
           iterations++;
 
+          // L-1: adaptive max_tokens. Once the conversation has fired a
+          // drafting tool, subsequent assistant turns get the full
+          // 4096-token budget so the actual draft doesn't get cut off
+          // mid-section. Research-only chains stay on the smaller cap.
+          const turnMaxTokens = draftingToolUsed
+            ? MAX_TOKENS_DRAFTING
+            : MAX_TOKENS_RESEARCH;
+
           const turnStream = anthropic.messages.stream({
             model: MODEL,
-            max_tokens: MAX_TOKENS,
+            max_tokens: turnMaxTokens,
             temperature: TEMPERATURE,
             system: SYSTEM_PROMPT,
             messages: conversationMessages,
@@ -331,6 +354,34 @@ export async function POST(request: NextRequest) {
 
           const response = await turnStream.finalMessage();
           if (inactivityTimer) clearTimeout(inactivityTimer);
+
+          // L-2: track cumulative input cost. Each iteration's input
+          // tokens come from the prior tool_results re-entered into
+          // the prompt — they grow non-linearly when tool outputs are
+          // large (e.g. search_legal_sources hit lists).
+          cumulativeInputTokens += response.usage.input_tokens;
+          if (cumulativeInputTokens > MAX_CUMULATIVE_INPUT_TOKENS) {
+            send({
+              type: "compliance",
+              kind: "token_budget_reached",
+              cumulativeInputTokens,
+              limit: MAX_CUMULATIVE_INPUT_TOKENS,
+            });
+            logger.warn(
+              `Atlas AI chat: token budget exceeded (${cumulativeInputTokens} > ${MAX_CUMULATIVE_INPUT_TOKENS})`,
+              { userId: atlas.userId, iterations },
+            );
+            send({
+              type: "done",
+              usage: {
+                input: response.usage.input_tokens,
+                output: response.usage.output_tokens,
+                cumulative_input: cumulativeInputTokens,
+                truncated: true,
+              },
+            });
+            break;
+          }
 
           // Text-only response? → we're done.
           if (response.stop_reason !== "tool_use") {

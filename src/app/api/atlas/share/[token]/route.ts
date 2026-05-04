@@ -53,6 +53,7 @@ export async function GET(
         id: true,
         title: true,
         shareEnabledAt: true,
+        shareExpiresAt: true,
         createdAt: true,
         updatedAt: true,
         cards: {
@@ -71,8 +72,21 @@ export async function GET(
     });
     // Return 404 (not 401) for missing tokens — we don't want to
     // leak "this token used to exist but the lawyer revoked it".
+    // M-4: same 404 if shareEnabledAt was never set (token persisted
+    // in DB but sharing was never properly activated) or if the link
+    // has expired. The lawyer can re-enable sharing to mint a fresh
+    // expiry window without rotating the token.
     if (!ws) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    if (!ws.shareEnabledAt) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    if (ws.shareExpiresAt && ws.shareExpiresAt.getTime() < Date.now()) {
+      return NextResponse.json(
+        { error: "Share link expired" },
+        { status: 410 },
+      );
     }
 
     return NextResponse.json({

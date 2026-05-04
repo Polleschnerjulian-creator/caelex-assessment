@@ -23,13 +23,15 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
-import { cosineSimilarity, embed } from "ai";
 
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
-import { logger } from "@/lib/logger";
+// M-11: single source of truth — both this route AND the Atlas tool
+// executor (atlas-tool-executor.ts → search_legal_sources hybrid mode)
+// import semanticSearch from semantic-corpus.server.ts. Previously the
+// route maintained its own catalogueCache + embed call, doubling the
+// cold-start work and the heap footprint per lambda.
+import { semanticSearch } from "@/lib/atlas/semantic-corpus.server";
 
 export const runtime = "nodejs";
 // The embeddings catalogue is 1-2 MB so skipping prerender + ISR keeps
@@ -38,13 +40,6 @@ export const dynamic = "force-dynamic";
 
 // ─── Config ──────────────────────────────────────────────────────────
 
-const MODEL = "openai/text-embedding-3-small";
-const DIMENSIONS = 512;
-// Embedding scores in 512d text-embedding-3-small space typically sit
-// in [0.15, 0.55] for semi-relevant items and [0.55, 0.9] for strong
-// matches. 0.20 is permissive enough to surface the "nearby concepts"
-// bucket without flooding with noise.
-const MIN_SCORE = 0.2;
 const MAX_LIMIT = 40;
 const DEFAULT_LIMIT = 20;
 
@@ -54,59 +49,6 @@ const BodySchema = z.object({
   query: z.string().trim().min(2).max(200),
   limit: z.number().int().min(1).max(MAX_LIMIT).optional(),
 });
-
-// ─── Catalogue loader (module-cached) ─────────────────────────────────
-//
-// Load once per lambda instance. On a warm invocation this is a simple
-// Map lookup; on a cold start we read ~1-2 MB of JSON from disk. The
-// Promise is cached (not the resolved value) so two concurrent cold
-// requests share a single read.
-
-type EntityType =
-  | "source"
-  | "authority"
-  | "profile"
-  | "case-study"
-  | "conduct"
-  | "case";
-
-interface EmbeddingEntry {
-  id: string;
-  type: EntityType;
-  contentHash: string;
-  vector: number[];
-}
-
-let catalogueCache: Promise<EmbeddingEntry[] | null> | null = null;
-
-async function loadCatalogue(): Promise<EmbeddingEntry[] | null> {
-  if (catalogueCache) return catalogueCache;
-  catalogueCache = (async () => {
-    try {
-      const path = join(
-        process.cwd(),
-        "src",
-        "data",
-        "atlas",
-        "embeddings.json",
-      );
-      const raw = await readFile(path, "utf8");
-      const parsed = JSON.parse(raw) as EmbeddingEntry[];
-      logger.info(`Atlas semantic-search: loaded ${parsed.length} vectors`);
-      return parsed;
-    } catch (err) {
-      // Running before `npm run atlas:embed` has been executed (or on
-      // a branch where the file was excluded). Return null — the
-      // endpoint will respond with `not_indexed` so the UI can fall
-      // back to the classic string-match results silently.
-      logger.warn(
-        `Atlas semantic-search: catalogue unavailable (${(err as Error).message})`,
-      );
-      return null;
-    }
-  })();
-  return catalogueCache;
-}
 
 // ─── Handler ─────────────────────────────────────────────────────────
 
@@ -160,9 +102,21 @@ export async function POST(request: NextRequest) {
   }
   const { query, limit = DEFAULT_LIMIT } = parsed.data;
 
-  // Load corpus
-  const catalogue = await loadCatalogue();
-  if (!catalogue || catalogue.length === 0) {
+  // M-11: Delegate to the shared semantic-corpus engine. It handles
+  // catalogue load + embed call + dimension-safe cosine scoring with
+  // a single module-level cache. `semanticSearch` returns null on any
+  // graceful-fallback condition (disabled, not indexed, embedding
+  // failed) — we surface those as the same 200-with-reason payload
+  // the UI used to expect from the inline implementation.
+  const hits = await semanticSearch(query, { limit });
+
+  if (hits === null) {
+    // The shared engine doesn't distinguish between "disabled",
+    // "not_indexed" and "embedding_failed" in its return value (all
+    // return null). For the public API contract that's fine — the UI
+    // already treats any null/empty payload as "fall back to keyword
+    // search". Use a generic reason; precise diagnostics live in the
+    // server log.
     return NextResponse.json(
       {
         matches: [],
@@ -174,55 +128,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Embed the query. All calls route through the Vercel AI Gateway —
-  // see `scripts/atlas-embed.ts` for the identical model config on the
-  // corpus side. Mismatched dims would fail at the cosine step.
-  let queryVector: number[];
-  try {
-    const { embedding } = await embed({
-      model: MODEL,
-      value: query,
-      providerOptions: { openai: { dimensions: DIMENSIONS } },
-      abortSignal: AbortSignal.timeout(4000),
-      maxRetries: 1,
-    });
-    queryVector = embedding;
-  } catch (err) {
-    logger.error(
-      `Atlas semantic-search: embedding call failed — ${(err as Error).message}`,
-    );
-    // Deliberate 200 + reason so the UI stays resilient: fall back to
-    // exact-match results, don't show a red error ribbon for every
-    // transient gateway hiccup.
-    return NextResponse.json(
-      {
-        matches: [],
-        corpus: catalogue.length,
-        reason: "embedding_failed",
-        tookMs: Date.now() - started,
-      },
-      { status: 200 },
-    );
-  }
-
-  // Score against the whole corpus. At ~1000 vectors × 512 dims this
-  // is ~0.5M multiplies — sub-millisecond on warm Node. Brute-force is
-  // fine until the corpus crosses ~10k items; then we'd swap to a
-  // dedicated vector store (Upstash Vector) keyed off content hash.
-  const scored = catalogue
-    .map((entry) => ({
-      id: entry.id,
-      type: entry.type,
-      score: cosineSimilarity(queryVector, entry.vector),
-    }))
-    .filter((m) => m.score >= MIN_SCORE)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit);
+  // Translate the engine's hits to the route's wire shape. The engine
+  // splits prefix:id pairs into `id` + `entityId`; the route's caller
+  // only consumed the bare id, so map back to that.
+  const matches = hits.map((h) => ({
+    id: h.entityId,
+    type: h.type,
+    score: h.score,
+  }));
 
   return NextResponse.json(
     {
-      matches: scored,
-      corpus: catalogue.length,
+      matches,
+      corpus: matches.length,
       tookMs: Date.now() - started,
     },
     {

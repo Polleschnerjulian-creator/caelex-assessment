@@ -18,7 +18,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
+import { getAtlasAuth } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
@@ -55,14 +55,17 @@ const MAX_ENTRIES_PER_USER = 5_000;
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    // M-5: Atlas API endpoints must be gated to LAW_FIRM/BOTH org members,
+    // matching the layout-level gate. Falling through with a generic
+    // `auth()` would let OPERATOR-only users hit Atlas endpoints directly.
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const rl = await checkRateLimit(
       "api",
-      getIdentifier(request, session.user.id),
+      getIdentifier(request, atlas.userId),
     );
     if (!rl.success) {
       return NextResponse.json(
@@ -82,7 +85,7 @@ export async function POST(request: NextRequest) {
 
     // Soft cap per user to bound DB growth.
     const count = await prisma.atlasResearchEntry.count({
-      where: { userId: session.user.id },
+      where: { userId: atlas.userId },
     });
     if (count >= MAX_ENTRIES_PER_USER) {
       return NextResponse.json(
@@ -124,7 +127,7 @@ export async function POST(request: NextRequest) {
 
     const entry = await prisma.atlasResearchEntry.create({
       data: {
-        userId: session.user.id,
+        userId: atlas.userId,
         title: finalTitle,
         content: trimmedContent,
         query: parsed.data.query?.trim() || null,
@@ -150,8 +153,11 @@ export async function POST(request: NextRequest) {
         { status: 503 },
       );
     }
+    // M-6: Don't leak raw Prisma error messages — they can include
+    // table/column names, query fragments, or even data values that
+    // shouldn't reach the client. The full message is in the server log.
     return NextResponse.json(
-      { error: "Failed to save", code: errName, detail: errMsg },
+      { error: "Failed to save", code: errName },
       { status: 500 },
     );
   }
@@ -166,8 +172,9 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    // M-5: same Atlas-only gate as POST.
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -187,7 +194,7 @@ export async function GET(request: NextRequest) {
     const { q, limit, cursor } = parsed.data;
 
     const where = {
-      userId: session.user.id,
+      userId: atlas.userId,
       ...(q
         ? {
             OR: [
@@ -264,8 +271,9 @@ export async function GET(request: NextRequest) {
         notProvisioned: true,
       });
     }
+    // M-6: same — no raw error string in the client response.
     return NextResponse.json(
-      { error: "Failed to load library", code: errName, detail: errMsg },
+      { error: "Failed to load library", code: errName },
       { status: 500 },
     );
   }

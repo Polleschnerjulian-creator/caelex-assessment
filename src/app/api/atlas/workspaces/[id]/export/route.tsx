@@ -258,8 +258,12 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // H-4: Server-side PDF render (react-pdf/renderer) is CPU-heavy and
+    // can be triggered repeatedly by the same user. The shared astra_chat
+    // tier (60/h) was too generous for this; the dedicated workspace-AI
+    // tier (10/h) is the right ceiling.
     const rl = await checkRateLimit(
-      "astra_chat",
+      "atlas_workspace_ai",
       getIdentifier(request, session.user.id),
     );
     if (!rl.success) {

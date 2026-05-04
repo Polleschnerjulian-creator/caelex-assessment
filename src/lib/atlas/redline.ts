@@ -125,13 +125,20 @@ export function diffWords(before: string, after: string): DiffSegment[] {
       j--;
     }
   }
+  // M-1 fix: previous form `a[--i > 0 ? i : 0]` evaluated `--i` first,
+  // so when `i` was 1 it correctly indexed `a[0]`, but the `if(i===0)
+  // break` came AFTER pushBack — meaning `a[0]` was already pushed
+  // once via pushBack inside the same iteration. Splitting the
+  // decrement and the push makes the intent obvious and removes the
+  // off-by-one that duplicated the first token in the delete/insert
+  // tail segment.
   while (i > 0) {
-    pushBack("delete", a[--i > 0 ? i : 0]);
-    if (i === 0) break;
+    i--;
+    pushBack("delete", a[i]);
   }
   while (j > 0) {
-    pushBack("insert", b[--j > 0 ? j : 0]);
-    if (j === 0) break;
+    j--;
+    pushBack("insert", b[j]);
   }
   // The traceback walks (n,m) → (0,0), so the segments[] array is in
   // reverse temporal order — the LAST segment in the array represents

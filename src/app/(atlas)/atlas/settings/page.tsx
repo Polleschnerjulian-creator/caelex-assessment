@@ -366,8 +366,17 @@ export default function SettingsPage() {
   }, [activeTab, teamFetched]);
 
   /* ──── Debounced name save (profile) ──── */
+  // M-14: skip the very first time `profile.name` lands in state — that
+  // run corresponds to the GET response populating the form, not a user
+  // edit. Without this guard, every page load fired an unsolicited
+  // PATCH 400ms after mount with the unchanged name.
+  const profileNameInitialRef = useRef(true);
   useEffect(() => {
     if (!profile || profileLoading) return;
+    if (profileNameInitialRef.current) {
+      profileNameInitialRef.current = false;
+      return;
+    }
     const timer = setTimeout(() => {
       setProfileSave("saving");
       fetch("/api/atlas/settings/profile", {
@@ -415,8 +424,16 @@ export default function SettingsPage() {
   );
 
   /* ──── Firm name save (debounced) ──── */
+  // M-14: same initial-load guard as the profile-name path above —
+  // skip the first commit of firm.name so GET-then-PATCH doesn't
+  // round-trip on every page load.
+  const firmNameInitialRef = useRef(true);
   useEffect(() => {
     if (!firm || firmLoading || !firm.isOwner) return;
+    if (firmNameInitialRef.current) {
+      firmNameInitialRef.current = false;
+      return;
+    }
     const timer = setTimeout(() => {
       setFirmSave("saving");
       fetch("/api/atlas/settings/firm", {

@@ -561,6 +561,7 @@
   },
   "atlas": {
     "abbr": "Kürzel",
+    "coming_soon": "Bald",
     "add_country": "Land hinzufügen",
     "alerts": "Benachrichtigungen",
     "amended": "geändert {year}",

@@ -27,6 +27,10 @@
       "schedule": "0 3 * * *"
     },
     {
+      "path": "/api/cron/atlas-notification-cleanup",
+      "schedule": "30 3 * * *"
+    },
+    {
       "path": "/api/cron/onboarding-emails",
       "schedule": "0 10 * * *"
     },

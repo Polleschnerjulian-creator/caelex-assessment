@@ -44,40 +44,10 @@ import { WatchButton } from "@/components/atlas/WatchButton";
 
 // ─── Style maps (matching the search page) ──────────────────────────
 
-const TYPE_STYLES: Record<LegalSourceType, { bg: string; text: string }> = {
-  international_treaty: {
-    bg: "bg-blue-50 border-blue-200",
-    text: "text-blue-700",
-  },
-  federal_law: {
-    bg: "bg-emerald-50 border-emerald-200",
-    text: "text-emerald-700",
-  },
-  federal_regulation: {
-    bg: "bg-teal-50 border-teal-200",
-    text: "text-teal-700",
-  },
-  technical_standard: {
-    bg: "bg-amber-50 border-amber-200",
-    text: "text-amber-700",
-  },
-  eu_regulation: {
-    bg: "bg-purple-50 border-purple-200",
-    text: "text-purple-700",
-  },
-  eu_directive: {
-    bg: "bg-violet-50 border-violet-200",
-    text: "text-violet-700",
-  },
-  policy_document: {
-    bg: "bg-[var(--atlas-bg-surface-muted)] border-[var(--atlas-border)]",
-    text: "text-[var(--atlas-text-secondary)]",
-  },
-  draft_legislation: {
-    bg: "bg-orange-50 border-orange-200",
-    text: "text-orange-700",
-  },
-};
+// L-14: shared with sources/[id]/page.tsx via the lib helper. The
+// jurisdictions-page has no local overrides, so the import is a
+// straight re-export.
+import { LEGAL_SOURCE_TYPE_STYLES as TYPE_STYLES } from "@/lib/atlas/legal-source-styles";
 
 const RELEVANCE_STYLES: Record<RelevanceLevel, string> = {
   fundamental:

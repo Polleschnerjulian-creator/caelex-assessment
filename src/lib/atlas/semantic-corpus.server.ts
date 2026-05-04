@@ -193,9 +193,14 @@ export async function semanticSearch(
   const scored: SemanticHit[] = [];
   for (const entry of catalogue) {
     if (typeFilter && !typeFilter.has(entry.type)) continue;
+    const vec = entry.vector;
+    // H-3: Skip entries with mismatched dimensions — otherwise
+    // `vec[i]` past the array length is `undefined`, `undefined ** 2`
+    // is `NaN`, and the entry lands in the result set with a NaN score
+    // that sorts unstably.
+    if (vec.length !== queryVector.length) continue;
     let dot = 0;
     let eNorm = 0;
-    const vec = entry.vector;
     for (let i = 0; i < queryVector.length; i++) {
       dot += queryVector[i] * vec[i];
       eNorm += vec[i] ** 2;

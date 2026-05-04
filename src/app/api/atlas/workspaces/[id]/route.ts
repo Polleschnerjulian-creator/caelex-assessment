@@ -102,6 +102,8 @@ export async function GET(
         content: c.content,
         question: c.question,
         sourceCardIds: c.sourceCardIds,
+        positionX: c.positionX,
+        positionY: c.positionY,
         createdAt: c.createdAt.getTime(),
       })),
     });

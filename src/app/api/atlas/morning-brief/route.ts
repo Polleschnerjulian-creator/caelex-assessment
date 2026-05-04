@@ -35,7 +35,7 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAtlasAuth } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 
@@ -45,6 +45,15 @@ export const dynamic = "force-dynamic";
 const ACTIVITY_LOOKBACK_HOURS = 24;
 const TASK_LOOKAHEAD_DAYS = 7;
 const RECENT_MATTER_LIMIT = 5;
+
+// M-7: per-user in-memory cache keyed by (userId, orgId, hour-bucket).
+// 5min TTL covers idle-mode reopens — the cards inside the brief don't
+// move that fast, and the hour-bucket forces a fresh greeting/brief
+// when the lawyer crosses 12:00 / 18:00 boundaries even if they
+// haven't crossed the 5min TTL.
+type CachedBrief = { brief: BriefResponse; expiresAt: number };
+const briefCache = new Map<string, CachedBrief>();
+const BRIEF_TTL_MS = 5 * 60 * 1000;
 
 interface BriefCta {
   label: string;
@@ -80,29 +89,33 @@ function relativeDays(target: Date, from: Date): string {
 
 export async function GET(_request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    // M-7: getAtlasAuth honours the LAW_FIRM/BOTH org-type gate AND the
+    // active-org cookie, so a lawyer in two firms gets the briefing
+    // for whichever firm they're currently working in — not for
+    // whichever they joined first.
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const membership = await prisma.organizationMember.findFirst({
-      where: { userId: session.user.id },
-      select: { organizationId: true },
-      orderBy: { joinedAt: "asc" },
-    });
-    if (!membership) {
-      return NextResponse.json({ error: "No active org" }, { status: 403 });
     }
 
     const now = new Date();
     const greeting = greetingForHour(now.getHours());
+
+    // M-7: Cache hit short-circuits all DB work. The hour-bucket key
+    // ensures the greeting flips when the lawyer crosses time-of-day
+    // boundaries even if the rest of the data could be reused.
+    const cacheKey = `${atlas.userId}:${atlas.organizationId}:${now.getHours()}`;
+    const cached = briefCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      return NextResponse.json(cached.brief);
+    }
 
     // Active matters where caller's org is on the LAW_FIRM side.
     // Atlas-side briefing only — operator-side has its own dashboard
     // for the same data.
     const activeMatters = await prisma.legalMatter.findMany({
       where: {
-        lawFirmOrgId: membership.organizationId,
+        lawFirmOrgId: atlas.organizationId,
         status: "ACTIVE",
       },
       select: {
@@ -116,9 +129,11 @@ export async function GET(_request: NextRequest) {
       take: 30,
     });
 
-    // Empty / new firm — friendly default message.
+    // Empty / new firm — friendly default message. Note: we cache this
+    // too (5min) to avoid hammering the matters table on every idle
+    // re-open from a fresh-signup user.
     if (activeMatters.length === 0) {
-      return NextResponse.json<BriefResponse>({
+      const empty: BriefResponse = {
         greeting,
         brief:
           "Noch keine aktiven Mandate. Lade einen Mandanten ein um zu starten.",
@@ -126,47 +141,65 @@ export async function GET(_request: NextRequest) {
           label: "Mandant einladen",
           href: "/atlas/network/invite",
         },
+      };
+      briefCache.set(cacheKey, {
+        brief: empty,
+        expiresAt: Date.now() + BRIEF_TTL_MS,
       });
+      return NextResponse.json(empty);
     }
 
     const matterIds = activeMatters.map((m) => m.id);
 
-    // Signal 1: open tasks due in the next 7 days, sorted by proximity.
+    // Signals 1 + 2 in parallel — both filter on matterIds which is
+    // already known, no data dependency between them. Saves one Neon
+    // round-trip on the hot idle-mode-open path.
     const lookaheadEnd = new Date(
       now.getTime() + TASK_LOOKAHEAD_DAYS * 86_400_000,
     );
-    const upcomingTasks = await prisma.matterTask.findMany({
-      where: {
-        matterId: { in: matterIds },
-        status: { in: ["OPEN", "IN_PROGRESS"] },
-        dueDate: { not: null, lte: lookaheadEnd },
-      },
-      select: {
-        id: true,
-        matterId: true,
-        title: true,
-        dueDate: true,
-        priority: true,
-      },
-      orderBy: { dueDate: "asc" },
-      take: 5,
-    });
-
-    // Signal 2: recent counterparty (CAELEX) activity in the last 24h.
-    // Tells the lawyer "the operator is reading" without forcing them
-    // to open the audit log.
     const lookbackStart = new Date(
       now.getTime() - ACTIVITY_LOOKBACK_HOURS * 3_600_000,
     );
-    const recentCaelexActivity = await prisma.legalMatterAccessLog.groupBy({
-      by: ["matterId"],
-      where: {
-        matterId: { in: matterIds },
-        actorSide: "CAELEX",
-        createdAt: { gte: lookbackStart },
-      },
-      _count: { _all: true },
-    });
+    const [upcomingTasks, recentCaelexActivity] = await Promise.all([
+      // Signal 1: open tasks due in the next 7 days, sorted by proximity.
+      prisma.matterTask.findMany({
+        where: {
+          matterId: { in: matterIds },
+          status: { in: ["OPEN", "IN_PROGRESS"] },
+          dueDate: { not: null, lte: lookaheadEnd },
+        },
+        select: {
+          id: true,
+          matterId: true,
+          title: true,
+          dueDate: true,
+          priority: true,
+        },
+        orderBy: { dueDate: "asc" },
+        take: 5,
+      }),
+      // Signal 2: recent counterparty (CAELEX) activity in the last 24h.
+      // Tells the lawyer "the operator is reading" without forcing them
+      // to open the audit log.
+      prisma.legalMatterAccessLog.groupBy({
+        by: ["matterId"],
+        where: {
+          matterId: { in: matterIds },
+          actorSide: "CAELEX",
+          createdAt: { gte: lookbackStart },
+        },
+        _count: { _all: true },
+      }),
+    ]);
+
+    // Helper: cache + return one shot so all branches end the same way.
+    const respond = (brief: BriefResponse) => {
+      briefCache.set(cacheKey, {
+        brief,
+        expiresAt: Date.now() + BRIEF_TTL_MS,
+      });
+      return NextResponse.json(brief);
+    };
 
     // ── Synthesis ───────────────────────────────────────────────
     // Pick the highest-priority signal. Tasks beat activity because
@@ -178,7 +211,7 @@ export async function GET(_request: NextRequest) {
       const matter = activeMatters.find((m) => m.id === t.matterId);
       const matterName = matter?.name ?? "Mandat";
       const when = t.dueDate ? relativeDays(t.dueDate, now) : "demnächst";
-      return NextResponse.json<BriefResponse>({
+      return respond({
         greeting,
         brief: `${matterName}: „${t.title}" ${when}.`,
         cta: matter
@@ -199,7 +232,7 @@ export async function GET(_request: NextRequest) {
       const matterName = matter?.name ?? "Ein Mandat";
       const clientName = matter?.clientOrg?.name ?? "Mandant";
       const count = top._count._all;
-      return NextResponse.json<BriefResponse>({
+      return respond({
         greeting,
         brief: `${clientName} war seit gestern ${count} Mal in „${matterName}" aktiv.`,
         cta: matter
@@ -217,7 +250,7 @@ export async function GET(_request: NextRequest) {
     const others = recent.length - 1;
     const tail =
       others > 0 ? ` · ${others} weitere${others === 1 ? "s" : ""}` : "";
-    return NextResponse.json<BriefResponse>({
+    return respond({
       greeting,
       brief: `${activeMatters.length} aktive Mandat${
         activeMatters.length === 1 ? "" : "e"

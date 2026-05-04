@@ -99,11 +99,35 @@ function buildSourceHaystack(s: LegalSource): string {
   return foldText(`${en} ${deText}`);
 }
 
+// L-6: cache haystacks at module-load. Without this every keystroke
+// reruns ~937 string concatenations × foldText. The id is the natural
+// key — sources are static data so the cache never invalidates within
+// a session. Lazy fill (rather than eager Map<id, …> at import time)
+// keeps the initial bundle parse cheap.
+const sourceHaystackCache = new Map<string, string>();
+function getSourceHaystack(s: LegalSource): string {
+  const cached = sourceHaystackCache.get(s.id);
+  if (cached !== undefined) return cached;
+  const built = buildSourceHaystack(s);
+  sourceHaystackCache.set(s.id, built);
+  return built;
+}
+
 function buildAuthorityHaystack(a: Authority): string {
   const en = `${a.id} ${a.name_en} ${a.name_local ?? ""} ${a.abbreviation ?? ""} ${a.space_mandate}`;
   const de = AUTHORITY_TRANSLATIONS_DE.get(a.id);
   const deText = de ? `${de.name} ${de.mandate}` : "";
   return foldText(`${en} ${deText}`);
+}
+
+// L-6: same cache pattern for authority haystacks.
+const authorityHaystackCache = new Map<string, string>();
+function getAuthorityHaystack(a: Authority): string {
+  const cached = authorityHaystackCache.get(a.id);
+  if (cached !== undefined) return cached;
+  const built = buildAuthorityHaystack(a);
+  authorityHaystackCache.set(a.id, built);
+  return built;
 }
 
 /**
@@ -122,7 +146,7 @@ function sourceMatchSnippet(
   const token = q.split(/\s+/)[0];
   if (!token) return null;
   if (foldText(source.title_en).includes(token)) return null;
-  const haystack = buildSourceHaystack(source);
+  const haystack = getSourceHaystack(source);
   const idx = haystack.indexOf(token);
   if (idx === -1) return null;
   const start = Math.max(0, idx - radius);
@@ -233,7 +257,7 @@ function performSearch(query: string): SearchResults | null {
   );
 
   const scoredSources = ALL_SOURCES.map((s) => {
-    const haystack = buildSourceHaystack(s);
+    const haystack = getSourceHaystack(s);
     return { source: s, score: scoreMatch(foldText(s.title_en), haystack, q) };
   })
     .filter(({ score }) => score > -Infinity)
@@ -241,7 +265,7 @@ function performSearch(query: string): SearchResults | null {
   const sources = scoredSources.map(({ source }) => source);
 
   const scoredAuthorities = ALL_AUTHORITIES.map((a) => {
-    const haystack = buildAuthorityHaystack(a);
+    const haystack = getAuthorityHaystack(a);
     return {
       authority: a,
       score: scoreMatch(foldText(a.name_en), haystack, q),
@@ -403,7 +427,10 @@ function SemanticSearchBadge({
 export default function CommandCenterPage() {
   const router = useRouter();
   const { t, language } = useLanguage();
-  const TYPE_LABELS = getTypeLabels(t);
+  // L-7: stable reference — without useMemo this object is recreated on
+  // every render, which cascades into prop-instability for downstream
+  // result rows that pattern-match against TYPE_LABELS[source.type].
+  const TYPE_LABELS = useMemo(() => getTypeLabels(t), [t]);
   const JURISDICTION_NAMES: Record<string, string> = useMemo(
     () => ({
       DE: t("atlas.jurisdiction_de"),
@@ -1006,7 +1033,7 @@ export default function CommandCenterPage() {
                   aria-hidden="true"
                 />
                 <h2 className="text-[10px] font-semibold text-[var(--atlas-text-faint)] tracking-[0.2em] uppercase">
-                  {language === "de" ? "Rechtsprechung" : "Caselaw"}
+                  {t("atlas.cases")}
                 </h2>
               </div>
               <div className="space-y-1">

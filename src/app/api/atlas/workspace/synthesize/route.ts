@@ -71,10 +71,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Reuse the standard Atlas chat tier — synthesis is roughly the
-    // same cost profile as a chat turn (one round-trip, ≤2k output).
+    // H-4: Use the dedicated workspace-AI tier. Synthesis sends the full
+    // matter context (cards + question history) into Claude — much
+    // larger input footprint than a normal chat turn, so it warrants its
+    // own tighter cost-DoS guardrail rather than sharing astra_chat.
     const rl = await checkRateLimit(
-      "astra_chat",
+      "atlas_workspace_ai",
       getIdentifier(request, session.user.id),
     );
     if (!rl.success) {

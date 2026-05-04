@@ -278,8 +278,8 @@ export default function AtlasShell({
                       role="link"
                       aria-disabled="true"
                       tabIndex={-1}
-                      title={`${t(item.labelKey)} — Soon`}
-                      aria-label={`${t(item.labelKey)} — coming soon`}
+                      title={`${t(item.labelKey)} — ${t("atlas.coming_soon")}`}
+                      aria-label={`${t(item.labelKey)} — ${t("atlas.coming_soon")}`}
                       className="group relative flex items-center justify-center h-8 w-8 rounded-lg mb-0.5 text-white/35 cursor-not-allowed"
                     >
                       <Icon
@@ -296,7 +296,7 @@ export default function AtlasShell({
                       <span className="pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-lg bg-[#1a1a1a] px-3 py-1.5 text-[11px] font-medium text-white/90 opacity-0 shadow-xl border border-white/10 transition-opacity duration-150 group-hover:opacity-100">
                         {t(item.labelKey)}
                         <span className="ml-2 inline-flex items-center justify-center rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-semibold tracking-wide px-1.5 py-0.5 ring-1 ring-amber-500/30">
-                          Soon
+                          {t("atlas.coming_soon")}
                         </span>
                       </span>
                     </span>
@@ -372,7 +372,7 @@ export default function AtlasShell({
                         role="link"
                         aria-disabled="true"
                         tabIndex={-1}
-                        title={`${t(item.labelKey)} — Soon`}
+                        title={`${t(item.labelKey)} — ${t("atlas.coming_soon")}`}
                         className="flex items-center gap-3 h-9 px-3 rounded-xl whitespace-nowrap text-white/35 cursor-not-allowed select-none"
                       >
                         <Icon
@@ -384,7 +384,7 @@ export default function AtlasShell({
                           {t(item.labelKey)}
                         </span>
                         <span className="inline-flex items-center justify-center h-4 px-1.5 rounded-full bg-amber-500/15 text-amber-300 text-[10px] font-semibold tracking-wide ring-1 ring-amber-500/30">
-                          Soon
+                          {t("atlas.coming_soon")}
                         </span>
                       </span>
                     </li>

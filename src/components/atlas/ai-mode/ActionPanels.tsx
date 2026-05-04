@@ -110,10 +110,45 @@ function ActionPanelShell({
       window.removeEventListener("keydown", onKey, { capture: true });
   }, [open, onClose]);
 
+  // M-13: focus management on open. The panel doesn't unmount between
+  // toggles (CSS-driven slide animation), so `autoFocus` on a child
+  // input only fires once on initial mount — every subsequent open
+  // would land focus nowhere. We pull focus into the first interactive
+  // element inside the body when `open` flips true. Falls back to the
+  // close-button if the body has no input/button (e.g. an empty panel).
+  const asideRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    // Defer until after the slide-in animation kicks off so the
+    // browser doesn't scroll the panel into view mid-animation.
+    const t = setTimeout(() => {
+      const root = asideRef.current;
+      if (!root) return;
+      const target = root.querySelector<HTMLElement>(
+        "input:not([disabled]), textarea:not([disabled]), [data-autofocus]",
+      );
+      if (target) {
+        target.focus();
+      } else {
+        const closeBtn = root.querySelector<HTMLElement>(
+          'button[aria-label="Schließen"]',
+        );
+        closeBtn?.focus();
+      }
+    }, 60);
+    return () => clearTimeout(t);
+  }, [open]);
+
   return (
     <aside
+      ref={asideRef}
       className={`${styles.actionPanel} ${open ? styles.actionPanelOpen : ""}`}
       aria-hidden={!open}
+      // M-13: when aria-hidden=true the inert attribute also blocks
+      // tabbing into the panel from the page underneath, even though
+      // the DOM stays mounted. Without inert, screen-readers correctly
+      // skip the closed panel but Tab can still reach its buttons.
+      inert={!open}
     >
       <header className={styles.actionPanelHeader}>
         <span className={styles.actionPanelTag}>{tag}</span>

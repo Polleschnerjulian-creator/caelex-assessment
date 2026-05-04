@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { X, ArrowUp, Loader2 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -133,7 +133,12 @@ export default function AtlasAstraChat() {
     [handleSend],
   );
 
-  const suggestions = useCallback((): string[] => {
+  // L-3: useMemo, not useCallback — the call site below renders the
+  // result directly into JSX (`{suggestions.map(...)}`), so we want
+  // the array memoised, not the function. Switching avoids a fresh
+  // array allocation on every render and keeps suggestion-button
+  // children stable until pathname/language actually change.
+  const suggestions = useMemo<string[]>(() => {
     if (pathname.includes("/jurisdictions/")) {
       const code = pathname
         .split("/jurisdictions/")[1]
@@ -325,7 +330,7 @@ export default function AtlasAstraChat() {
                   {t("atlas.astra_stats_line")}
                 </p>
                 <div className="space-y-2 w-full">
-                  {suggestions().map((s) => (
+                  {suggestions.map((s) => (
                     <button
                       key={s}
                       onClick={() => {
@@ -356,11 +361,16 @@ export default function AtlasAstraChat() {
                       }}
                     >
                       <span
+                        aria-hidden="true"
                         className="h-1 w-1 rounded-full flex-shrink-0 transition-colors"
                         style={{ background: "var(--atlas-text-faint)" }}
                       />
                       <span className="flex-1">{s}</span>
+                      {/* L-13: arrow is decorative — without aria-hidden,
+                          screen-readers announce the suggestion text plus
+                          the literal "right arrow" character at the end. */}
                       <span
+                        aria-hidden="true"
                         className="transition-colors"
                         style={{ color: "var(--atlas-text-faint)" }}
                       >
@@ -543,7 +553,12 @@ export default function AtlasAstraChat() {
               className="text-center text-[9.5px] mt-2 tracking-wide"
               style={{ color: "var(--atlas-text-faint)" }}
             >
-              {t("atlas.astra_subtitle")} · DSGVO-konform
+              {/* L-11: switch on language so EN users don't see a stray
+                  "DSGVO-konform" trailing the otherwise-translated
+                  subtitle. Compact inline conditional matches the
+                  pattern used 200 lines up in the loading-state. */}
+              {t("atlas.astra_subtitle")} ·{" "}
+              {language === "de" ? "DSGVO-konform" : "GDPR-compliant"}
             </div>
           </div>
 

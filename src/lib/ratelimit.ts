@@ -306,6 +306,18 @@ export const rateLimiters = redis
         prefix: "ratelimit:atlas_semantic",
       }),
 
+      // Atlas workspace AI ops (suggest, synthesize, ask, export-PDF):
+      // 10/h per user. Each call sends the full workspace content to
+      // Claude with up to ~50 cards × 8k chars each — significantly more
+      // expensive per request than normal chat. Tight tier prevents
+      // cost-DoS via rapid repeated workspace-ai invocations.
+      atlas_workspace_ai: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(10, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:atlas_workspace_ai",
+      }),
+
       // Legal Network — Phase 1. Each tier targets one abuse vector:
       //   invite: stop invite-spam flooding operators
       //   accept: stop brute-force on one-time tokens
@@ -437,6 +449,7 @@ const fallbackLimiters = {
   hub: new InMemoryRateLimiter(30, 60000), // 30/min vs 60/min (Redis)
   astra_chat: new InMemoryRateLimiter(30, 3600000), // 30/hr vs 60/hr (Redis)
   atlas_semantic: new InMemoryRateLimiter(20, 60000), // 20/min dev vs 40/min (Redis)
+  atlas_workspace_ai: new InMemoryRateLimiter(5, 3600000), // 5/hr dev vs 10/hr (Redis)
   legal_matter_invite: new InMemoryRateLimiter(5, 3600000), // 5/hr dev vs 10/hr (Redis)
   legal_matter_accept: new InMemoryRateLimiter(10, 86400000), // 10/day dev vs 20/day
   legal_matter_amendment: new InMemoryRateLimiter(3, 86400000), // 3/day dev vs 5/day
@@ -476,6 +489,7 @@ export type RateLimitType =
   | "hub"
   | "astra_chat"
   | "atlas_semantic"
+  | "atlas_workspace_ai"
   | "legal_matter_invite"
   | "legal_matter_accept"
   | "legal_matter_amendment"

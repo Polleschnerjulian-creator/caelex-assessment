@@ -233,7 +233,12 @@ export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
   const [mode, setMode] = useState<AtlasMode>("idle");
   const [inputValue, setInputValue] = useState("");
   const [messages, setMessages] = useState<ChatMsg[]>([]);
-  const [totalTokens, setTotalTokens] = useState(8234);
+  // L-10: starting token count = an estimate of the system-prompt
+  // footprint (Atlas system prompt + tool definitions + opening
+  // user-context block, all-in ≈8.2k tokens). Real per-turn input/
+  // output deltas are added on top as the conversation runs.
+  const SYSTEM_PROMPT_TOKEN_ESTIMATE = 8234;
+  const [totalTokens, setTotalTokens] = useState(SYSTEM_PROMPT_TOKEN_ESTIMATE);
   const [modelName, setModelName] = useState<ModelName>("ATLAS-1");
   const [modelMenuOpen, setModelMenuOpen] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
@@ -1073,7 +1078,10 @@ export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
       }
       setActivePanel((prev) => (prev === action.panel ? null : action.panel));
     },
-    [playSound, router, toast],
+    // L-4: previously [playSound, router, toast] — router/toast were
+    // never used in the body. Stripped so the lint-rule actually
+    // enforces real dependencies if the body ever picks them up.
+    [playSound],
   );
   // Keep the ref-based bridge fresh — the keyboard useEffect (declared
   // earlier in the component body) reads from this ref to fire ⌘1-4

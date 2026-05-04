@@ -121,6 +121,11 @@ export function CitationPill({ id, href, kind = "source" }: CitationPillProps) {
       : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400";
 
   const accentText = kind === "case" ? "text-violet-400" : "text-emerald-400";
+  // L-12: stable tooltip id so the link can be wired up via
+  // aria-describedby. Otherwise screen-reader users only hear the
+  // citation id ("INT-OST-1967") with no preview content — sighted
+  // users get the full title + scope on hover.
+  const tooltipId = `citation-tip-${kind}-${id}`;
 
   return (
     <span
@@ -138,12 +143,14 @@ export function CitationPill({ id, href, kind = "source" }: CitationPillProps) {
     >
       <Link
         href={href}
+        aria-describedby={open ? tooltipId : undefined}
         className={`atlas-citation-link inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md ${palette} text-[12px] font-mono no-underline transition-colors`}
       >
         {id}
       </Link>
       {open && (
         <span
+          id={tooltipId}
           role="tooltip"
           className="absolute z-50 left-0 top-[120%] w-80 max-w-[20rem] p-3 rounded-lg bg-[#0d111c] border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.55)] text-[12px] leading-relaxed text-white/85 pointer-events-none"
           style={{ transform: "translateY(2px)" }}

@@ -8450,7 +8450,8 @@ model AtlasSourceCheck {
   /// Latest fetched body, truncated to ~200 KB. Retained so that when the
   /// next fetch differs we can diff current-vs-previous for the Claude
   /// summary without re-fetching the original URL again.
-  currentContent String? // @db.Text
+  /// L-15: explicit @db.Text — Postgres TEXT, no implied length cap.
+  currentContent String? @db.Text
   status         AtlasCheckStatus @default(PENDING)
   httpStatus     Int? // HTTP status code from fetch
   errorMessage   String? // Error details if fetch failed
@@ -8508,11 +8509,14 @@ model AtlasSourceCheckHistory {
   /// the admin-review and public-history redline viewers can render the
   /// before/after diff without re-fetching the source URL — important
   /// when the URL has since been amended again or gone 404.
-  newContent      String?
+  /// L-15: @db.Text — without this Prisma generates a default VARCHAR
+  /// which Postgres treats as TEXT but tooling-side caps at 65535. With
+  /// 200 KB snapshots we explicitly want the unlimited TEXT type.
+  newContent      String? @db.Text
   /// Text snapshot at the PREVIOUS hash. Paired with newContent so each
   /// history row is self-contained for diffing. null on the first-ever
   /// detection for that sourceId (no prior state existed).
-  previousContent String?
+  previousContent String? @db.Text
 
   /// Claude-generated 1-2 sentence summary of what changed. Written
   /// asynchronously after the check; null until the summariser runs.
@@ -8533,6 +8537,12 @@ model AtlasSourceCheckHistory {
   @@index([sourceId, detectedAt])
   @@index([jurisdiction, detectedAt])
   @@index([reviewStatus, detectedAt])
+  /// M-9: idempotency guard — the cron writes a history row per detected
+  /// hash change. A retry (Neon timeout, Vercel re-invocation) would
+  /// otherwise duplicate the row and pollute the admin-review queue
+  /// with two entries for the same diff. With this constraint, retry
+  /// becomes a P2002 the cron can swallow as "already recorded".
+  @@unique([sourceId, contentHash])
 }
 
 enum AtlasAmendmentReviewStatus {
@@ -8801,6 +8811,13 @@ model AtlasNotification {
   @@index([userId, readAt]) // "unread count" + "unread list" queries
   @@index([userId, createdAt]) // "latest N for this user"
   @@index([createdAt]) // retention-cleanup cron
+  /// M-8: org-scoped listing path — the alerts page filters on
+  /// (organizationId, userId) ordered by createdAt. Without this,
+  /// PostgreSQL can only use the (userId, createdAt) index and then
+  /// re-filters per row on organizationId. For a lawyer in two firms
+  /// this would let one firm's notifications bleed into the other's
+  /// listing query plan; the composite forces the right partition.
+  @@index([organizationId, userId, createdAt])
 }
 
 // ============================================
@@ -9400,8 +9417,14 @@ model AtlasWorkspace {
   shareToken String? @unique
 
   /// When sharing was enabled — useful for "Vor 2 Tagen freigegeben"
-  /// labelling and future expiry policies.
+  /// labelling and expiry policies.
   shareEnabledAt DateTime?
+
+  /// M-4: Optional auto-expiry for share links. When non-null, the
+  /// public /atlas/share/[token] route returns 404 after this point
+  /// even if the shareToken still exists, so a forgotten link can't
+  /// stay live forever. Set by the server to `now + 90d` on enable.
+  shareExpiresAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
