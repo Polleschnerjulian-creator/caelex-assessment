@@ -32,9 +32,25 @@ export const EPH = {
   warning: "#f0883e",
   critical: "#f85149",
 
+  // Brand / accent
+  accent: "#7B8CFF",
+  brand: "#7B8CFF",
+
   // Typography
   mono: "ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Code', monospace",
   sans: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+
+  // ── Legacy short-name aliases ────────────────────────────────────
+  // Pre-rename consumers (page.tsx, dependency-graph-view.tsx,
+  // dependency-management.tsx, ForecastChart.tsx, ForecastHeader.tsx)
+  // referenced these short names. Kept as aliases so the rename
+  // doesn't require touching ~180 call sites; new code should use the
+  // canonical long names above.
+  bg: "#000000", // = pageBg
+  border: "rgba(255, 255, 255, 0.06)", // = cardBorder
+  textMuted: "rgba(255, 255, 255, 0.3)", // = textTertiary
+  elevated: "rgba(255, 255, 255, 0.05)", // = cardBgHover
+  sunken: "rgba(255, 255, 255, 0.02)", // = rowAlt
 } as const;
 
 export type EphemerisColors = typeof EPH;
