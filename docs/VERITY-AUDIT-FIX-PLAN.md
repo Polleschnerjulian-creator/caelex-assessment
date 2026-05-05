@@ -196,9 +196,10 @@ const offset = Number.isNaN(rawOffset) ? 0 : Math.max(rawOffset, 0);
 - New leaves arrive → recompute only the changed frontier path → rebuild root from frontier. O(log N) per leaf.
 - Backfill becomes: process leaves since `latestSTH.treeSize` in batches, no full table scan.
 
-**T1-H4d — backfillMissingLeaves chunking**
+**[x] T1-H4d — backfillMissingLeaves chunking** (commit pending)
 
-- Until T1-H4c is in place, at minimum: paginate the `findMany` calls (e.g., chunks of 1000) so the cron does not OOM on a single fetch.
+- Keyset-cursor pagination over `(issuedAt, attestationId)` in BATCH_SIZE=500 chunks. Leaf-existence set fetched per batch (small `IN`-clause) instead of full `VerityLogLeaf` scan. Memory now O(BATCH_SIZE) instead of O(N total attestations).
+- Sub-steps a/b/c (inclusion-proof + consistency-proof + incremental STH-signing) require schema changes (new `VerityLogInnerNode` table + frontier persistence in `VerityLogSTH`) and are scheduled for a separate sprint — see `[!]` notice in the Tier-1 closing section below.
 
 **Verification:**
 

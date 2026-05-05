@@ -126,39 +126,104 @@ export async function appendToLog(
  * tick after deploy covers pre-existing attestations deterministically.
  *
  * Order: issuedAt ASC, tiebreak by attestationId ASC.
+ *
+ * T1-H4d (audit fix 2026-05-05): Memory-bomb mitigation. The previous
+ * implementation did two unbounded `findMany` calls — one over the
+ * entire VerityAttestation table and one over the entire VerityLogLeaf
+ * table — pulling both into RAM as JS objects. With ~50k attestations
+ * the second findMany alone is ~3 MB; with 1M it is ~64 MB and OOMs
+ * the Vercel function. The full attestation table additionally
+ * deserialises the `fullAttestation` JSON (multi-KB per row) into JS
+ * objects.
+ *
+ * The replacement processes attestations in batches and only loads
+ * the leaf-existence set for the IDs actually in flight. Memory now
+ * scales as O(BATCH_SIZE) instead of O(N total attestations).
+ *
+ * Note: H4a/b/c (inclusion-proof / consistency-proof / incremental
+ * STH-signing) still load the full leaf set and require a separate
+ * VerityLogInnerNode table + frontier persistence. Tracked in
+ * docs/VERITY-AUDIT-FIX-PLAN.md as a follow-up sprint — see Tier 1
+ * H-4 sub-steps a/b/c.
  */
+const BACKFILL_BATCH_SIZE = 500;
+
 export async function backfillMissingLeaves(
   prisma: PrismaClient,
 ): Promise<{ added: number; total: number; skipped: number }> {
-  const allAtts = await prisma.verityAttestation.findMany({
-    orderBy: [{ issuedAt: "asc" }, { attestationId: "asc" }],
-    select: { attestationId: true, fullAttestation: true },
-  });
-
-  const existing = await prisma.verityLogLeaf.findMany({
-    select: { attestationId: true },
-  });
-  const have = new Set(existing.map((r) => r.attestationId));
-
   let added = 0;
   let skipped = 0;
-  for (const a of allAtts) {
-    if (have.has(a.attestationId)) continue;
-    try {
-      await appendToLog(prisma, a.fullAttestation as Record<string, unknown>);
-      added++;
-    } catch (err) {
-      // Malformed fullAttestation (e.g. pre-signature demo/seed rows).
-      // We skip rather than fail the whole backfill — the log remains
-      // authoritative for well-formed attestations.
-      skipped++;
-      safeLog("Transparency log backfill skipped malformed row", {
-        attestationId: a.attestationId,
-        error: String(err),
-      });
+  let total = 0;
+  let cursorIssuedAt: Date | undefined;
+  let cursorAttId: string | undefined;
+
+  // Outer loop: page through VerityAttestation in BATCH_SIZE chunks
+  // ordered by (issuedAt ASC, attestationId ASC).
+  // The keyset cursor avoids OFFSET (which Postgres re-counts on every
+  // page) and stays correct under concurrent inserts.
+  while (true) {
+    const batch = await prisma.verityAttestation.findMany({
+      where: cursorIssuedAt
+        ? {
+            OR: [
+              { issuedAt: { gt: cursorIssuedAt } },
+              {
+                issuedAt: cursorIssuedAt,
+                attestationId: { gt: cursorAttId! },
+              },
+            ],
+          }
+        : undefined,
+      orderBy: [{ issuedAt: "asc" }, { attestationId: "asc" }],
+      take: BACKFILL_BATCH_SIZE,
+      select: {
+        attestationId: true,
+        issuedAt: true,
+        fullAttestation: true,
+      },
+    });
+
+    if (batch.length === 0) break;
+    total += batch.length;
+
+    // Only check leaf existence for THIS batch's IDs (small IN-clause)
+    // instead of loading the whole VerityLogLeaf table.
+    const have = new Set(
+      (
+        await prisma.verityLogLeaf.findMany({
+          where: { attestationId: { in: batch.map((a) => a.attestationId) } },
+          select: { attestationId: true },
+        })
+      ).map((r) => r.attestationId),
+    );
+
+    for (const a of batch) {
+      if (have.has(a.attestationId)) continue;
+      try {
+        await appendToLog(prisma, a.fullAttestation as Record<string, unknown>);
+        added++;
+      } catch (err) {
+        // Malformed fullAttestation (e.g. pre-signature demo/seed rows).
+        // We skip rather than fail the whole backfill — the log remains
+        // authoritative for well-formed attestations.
+        skipped++;
+        safeLog("Transparency log backfill skipped malformed row", {
+          attestationId: a.attestationId,
+          error: String(err),
+        });
+      }
     }
+
+    // Advance cursor to the last (issuedAt, attestationId) seen
+    const last = batch[batch.length - 1];
+    cursorIssuedAt = last.issuedAt;
+    cursorAttId = last.attestationId;
+
+    // Final batch (smaller than BATCH_SIZE) means we've reached the end.
+    if (batch.length < BACKFILL_BATCH_SIZE) break;
   }
-  return { added, total: allAtts.length, skipped };
+
+  return { added, total, skipped };
 }
 
 // ─── STH signing ─────────────────────────────────────────────────────
