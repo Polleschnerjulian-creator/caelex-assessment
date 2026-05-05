@@ -2,7 +2,7 @@
 
 **Created:** 2026-05-05
 **Source:** 4-agent parallel audit (Crypto+Security, Backend Bugs, Data Layer, Architecture)
-**Status:** Tier 1 completed (8/8; H4a/b/c deferred). Tier 2 completed (5/10 done with 96 tests + 2 known-bug todos; T2-4/T2-5/T2-6/T2-8/T2-10 deferred to a test-infra sprint). Tier 3 completed (4/4: Phase-2 crypto activation behind default-v1 fallback). Tier 5 completed (13/13). Tier 4 partial — 4/10 done (T4-6/T4-8/T4-9/T4-10, all code-only); T4-1/T4-2/T4-3/T4-4/T4-5/T4-7 deferred (need DB-state inspection + explicit confirmation before running migrations).
+**Status:** Tier 1 completed (8/8; H4a/b/c deferred). Tier 2 completed (5/10 done with 96 tests + 2 known-bug todos; T2-4/T2-5/T2-6/T2-8/T2-10 deferred to a test-infra sprint). Tier 3 completed (4/4: Phase-2 crypto activation behind default-v1 fallback). Tier 5 completed (13/13). Tier 4 partial — 4/10 done (T4-6/T4-8/T4-9/T4-10, all code-only); T4-1/T4-2/T4-3/T4-4/T4-5/T4-7 designed in `docs/VERITY-TIER-4-MIGRATION-PLAN.md` and awaiting per-migration approval (each section includes the pre-flight prod-query the user needs to run).
 **Survives:** Conversation compaction. This file is the single source of truth for the Verity remediation work.
 
 ---
