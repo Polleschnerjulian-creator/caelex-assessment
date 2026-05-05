@@ -123,7 +123,7 @@ When `keyInfo` is null (key-id not in DB), the code uses the public key embedded
 
 ---
 
-### [ ] T1-H3 — Move status filter into DB where-clause in `/attestation/list`
+### [x] T1-H3 — Move status filter into DB where-clause in `/attestation/list` (commit pending)
 
 **Severity:** HIGH
 **Effort:** 30min

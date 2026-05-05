@@ -38,15 +38,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Parse query params
+    // Parse query params.
+    // T1-H3 (audit fix 2026-05-05): guard against NaN from non-numeric
+    // input. Previously `parseInt("abc")` returned NaN which Prisma
+    // rejects with an opaque "Invalid argument" error; now it falls
+    // back to the default values.
     const { searchParams } = new URL(request.url);
     const regulationFilter = searchParams.get("regulation");
     const statusFilter = searchParams.get("status") as AttestationStatus | null;
-    const limit = Math.min(
-      parseInt(searchParams.get("limit") ?? "50", 10),
-      200,
-    );
-    const offset = parseInt(searchParams.get("offset") ?? "0", 10);
+    const rawLimit = parseInt(searchParams.get("limit") ?? "50", 10);
+    const rawOffset = parseInt(searchParams.get("offset") ?? "0", 10);
+    const limit = Number.isNaN(rawLimit)
+      ? 50
+      : Math.min(Math.max(rawLimit, 1), 200);
+    const offset = Number.isNaN(rawOffset) ? 0 : Math.max(rawOffset, 0);
 
     // Find all org members to get attestations across the org
     const orgMembers = await prisma.organizationMember.findMany({
@@ -55,12 +60,27 @@ export async function GET(request: NextRequest) {
     });
     const orgUserIds = orgMembers.map((m) => m.userId);
 
-    // Build where clause
+    // Build where clause.
+    // T1-H3: status filter must run in the DB so `total` and the
+    // returned page agree. Previously the filter ran client-side after
+    // the DB returned `take: limit` rows — which made `total` count
+    // unfiltered while `items` was filtered, breaking pagination
+    // (Client navigates to page 2, finds 0 results).
+    const now = new Date();
     const where: Record<string, unknown> = {
       operatorId: { in: orgUserIds },
     };
     if (regulationFilter) {
       where.regulationRef = regulationFilter;
+    }
+    if (statusFilter === "VALID") {
+      where.revokedAt = null;
+      where.expiresAt = { gt: now };
+    } else if (statusFilter === "REVOKED") {
+      where.revokedAt = { not: null };
+    } else if (statusFilter === "EXPIRED") {
+      where.revokedAt = null;
+      where.expiresAt = { lte: now };
     }
 
     // Fetch attestations
@@ -93,33 +113,33 @@ export async function GET(request: NextRequest) {
       prisma.verityAttestation.count({ where }),
     ]);
 
-    // Map to response format with status
-    const items = attestations
-      .map((a) => {
-        const status = getAttestationStatus(a.expiresAt, a.revokedAt);
-        return {
-          id: a.id,
-          attestationId: a.attestationId,
-          operatorId: a.operatorId,
-          satelliteNorad: a.satelliteNorad,
-          regulationRef: a.regulationRef,
-          dataPoint: a.dataPoint,
-          result: a.result,
-          claimStatement: a.claimStatement,
-          evidenceSource: a.evidenceSource,
-          trustLevel: a.trustLevel,
-          status,
-          issuedAt: a.issuedAt.toISOString(),
-          expiresAt: a.expiresAt.toISOString(),
-          revokedAt: a.revokedAt?.toISOString() ?? null,
-          revokedReason: a.revokedReason,
-          description: a.description,
-          entityId: a.entityId,
-          isManual: a.evidenceSource === "manual",
-          verifyUrl: `https://www.caelex.eu/verity/verify?id=${a.attestationId}`,
-        };
-      })
-      .filter((a) => !statusFilter || a.status === statusFilter);
+    // Map to response format with status.
+    // T1-H3: client-side `.filter(statusFilter)` removed — the status
+    // is now in the where-clause above so `total` and `items` agree.
+    const items = attestations.map((a) => {
+      const status = getAttestationStatus(a.expiresAt, a.revokedAt);
+      return {
+        id: a.id,
+        attestationId: a.attestationId,
+        operatorId: a.operatorId,
+        satelliteNorad: a.satelliteNorad,
+        regulationRef: a.regulationRef,
+        dataPoint: a.dataPoint,
+        result: a.result,
+        claimStatement: a.claimStatement,
+        evidenceSource: a.evidenceSource,
+        trustLevel: a.trustLevel,
+        status,
+        issuedAt: a.issuedAt.toISOString(),
+        expiresAt: a.expiresAt.toISOString(),
+        revokedAt: a.revokedAt?.toISOString() ?? null,
+        revokedReason: a.revokedReason,
+        description: a.description,
+        entityId: a.entityId,
+        isManual: a.evidenceSource === "manual",
+        verifyUrl: `https://www.caelex.eu/verity/verify?id=${a.attestationId}`,
+      };
+    });
 
     return NextResponse.json({
       items,
