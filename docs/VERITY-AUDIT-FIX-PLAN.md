@@ -47,7 +47,7 @@ If conversation context is compacted, re-read this file from the top — every T
 
 8 steps, ~6h total. Required before Verity is safe to use in production.
 
-### [ ] T1-C1 — Fix IDOR in `/api/v1/verity/score/[operatorId]`
+### [x] T1-C1 — Fix IDOR in `/api/v1/verity/score/[operatorId]` (commit dfd0e4c5)
 
 **Severity:** CRITICAL
 **Effort:** 30min
@@ -74,7 +74,7 @@ The endpoint is unauthenticated and accepts `operatorId` from the URL ungeprüft
 
 ---
 
-### [ ] T1-C2 — Wrap `appendToChain` in serializable transaction
+### [x] T1-C2 — Wrap `appendToChain` in serializable transaction (commit pending)
 
 **Severity:** CRITICAL
 **Effort:** 1h

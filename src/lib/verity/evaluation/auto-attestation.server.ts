@@ -238,7 +238,10 @@ async function processThreshold(
     return "skipped"; // No evidence available
   }
 
-  // Append to compliance audit chain (non-blocking)
+  // Append to compliance audit chain (non-blocking).
+  // T1-C2: surface failures instead of silently dropping audit entries.
+  // NOTE: this duplicates the entry written by evaluateAndAttest above
+  // (see L-1 in audit) — to be deduplicated in T5-4.
   appendToChain({
     organizationId,
     eventType: "ATTESTATION_CREATED",
@@ -249,7 +252,15 @@ async function processThreshold(
       result: attestation.claim.result,
       trustLevel: attestation.evidence.trust_level,
     },
-  }).catch(() => {});
+  }).catch((err) => {
+    logger.error(
+      "verity audit-chain append failed (auto-attestation processThreshold)",
+      {
+        attestationId: attestation.attestation_id,
+        error: err instanceof Error ? err.message : String(err),
+      },
+    );
+  });
 
   // Handle PASS↔FAIL revocation
   const revoked = await revokeSupersededAttestations(prisma, {
@@ -338,7 +349,13 @@ async function revokeSupersededAttestations(
       entityId: att.attestationId,
       entityType: "attestation",
       eventData: { reason: "threshold_flip", regulationRef },
-    }).catch(() => {});
+    }).catch((err) => {
+      // T1-C2: surface revocation audit-chain failures.
+      logger.error("verity audit-chain append failed (revoke superseded)", {
+        attestationId: att.attestationId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    });
   }
 
   return superseded.length;

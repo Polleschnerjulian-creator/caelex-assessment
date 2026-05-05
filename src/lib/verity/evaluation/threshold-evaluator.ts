@@ -7,6 +7,7 @@ import { safeLog } from "../utils/redaction";
 import type { ThresholdAttestation } from "../core/types";
 import { appendToChain } from "../audit-chain/chain-writer.server";
 import { appendToLog } from "../transparency/log-store";
+import { logger } from "@/lib/logger";
 
 /**
  * Server-side threshold evaluation.
@@ -127,7 +128,11 @@ export async function evaluateAndAttest(
     });
   }
 
-  // Append to compliance audit chain (non-blocking)
+  // Append to compliance audit chain (non-blocking).
+  // T1-C2: log failures instead of swallowing them. The new
+  // chain-writer.server.ts retries on race conditions, so a real
+  // failure here is something else (DB outage, schema mismatch,
+  // out-of-org organizationId) that operators need to see.
   appendToChain({
     organizationId: params.organizationId ?? params.operatorId,
     eventType: "ATTESTATION_CREATED",
@@ -138,7 +143,12 @@ export async function evaluateAndAttest(
       result: attestation.claim.result,
       trustLevel: attestation.evidence.trust_level,
     },
-  }).catch(() => {});
+  }).catch((err) => {
+    logger.error("verity audit-chain append failed (threshold-evaluator)", {
+      attestationId: attestation.attestation_id,
+      error: err instanceof Error ? err.message : String(err),
+    });
+  });
 
   return attestation;
 }
