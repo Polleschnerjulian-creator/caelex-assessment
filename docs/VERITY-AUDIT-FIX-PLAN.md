@@ -2,7 +2,7 @@
 
 **Created:** 2026-05-05
 **Source:** 4-agent parallel audit (Crypto+Security, Backend Bugs, Data Layer, Architecture)
-**Status:** Tier 1 completed (8/8; H4a/b/c deferred). Tier 2 completed (7/10 done with 143 tests + 3 known-bug todos; T2-6/T2-8/T2-10 still deferred to a future sprint). Tier 3 completed (4/4: Phase-2 crypto activation behind default-v1 fallback). Tier 5 completed (13/13). Tier 4 partial — 4/10 done (T4-6/T4-8/T4-9/T4-10, all code-only); T4-1/T4-2/T4-3/T4-4/T4-5/T4-7 designed in `docs/VERITY-TIER-4-MIGRATION-PLAN.md` and awaiting per-migration approval.
+**Status:** Tier 1 completed (8/8; H4a/b/c deferred). Tier 2 **completed (10/10)** — 180 tests + 3 known-bug todos. Tier 3 completed (4/4: Phase-2 crypto activation behind default-v1 fallback). Tier 5 completed (13/13). Tier 4 partial — 4/10 done (T4-6/T4-8/T4-9/T4-10, all code-only); T4-1/T4-2/T4-3/T4-4/T4-5/T4-7 designed in `docs/VERITY-TIER-4-MIGRATION-PLAN.md` and awaiting per-migration approval.
 **Survives:** Conversation compaction. This file is the single source of truth for the Verity remediation work.
 
 ---
@@ -406,27 +406,65 @@ direction) for FAIL paths
 (c) Defer to Bulletproofs in Phase 3
 Parked as `it.todo` in the new test file.
 
-### [⏭] T2-6 — Certificate-Generator + verifier tests (deferred)
+### [x] T2-6 — Certificate-Generator + verifier tests (commit pending)
 
-DEFERRED. See T2-5 — bundles with T2-5 in the next test-infra sprint.
+File: `src/lib/verity/certificates/generator.test.ts` — 13 passing.
+Pure crypto roundtrip, mirrors T2-5. Coverage:
+
+- Bundle 1, 3, 10 attestations and verify offline.
+- evidence_summary aggregation (sentinel_backed, cross_verified,
+  min_trust_level across HIGH/MEDIUM/LOW mix).
+- Claim↔attestation cross-reference integrity.
+- Empty attestation list throws at issue time.
+- Reject paths: tampered cert sig, tampered embedded
+  claim_statement, wrong public key, expired cert, claim referencing
+  non-embedded attestation_id, length mismatch claims vs
+  embedded_attestations, attestation signed by a different key with
+  spoofed key_id advertisement.
 
 ### [x] T2-7 — Evidence-Resolver tests (commit pending)
 
 File: `src/lib/verity/evaluation/evidence-resolver.test.ts` — 9 passing tests + 1 known-bug `it.todo` for T5-1.
 Existing tests updated to expect the T1-H5 trust-score fix (0.92 instead of 0.8 for Sentinel-without-cross). New test confirms MISMATCH crossChecks fall back to single-source trust 0.92. Known-bug todo for T5-1 (`!metaValue` skipping `value: 0` legitimate measurements).
 
-### [⏭] T2-8 — Bundle-Builder tests (deferred)
+### [x] T2-8 — Bundle-Builder tests (commit pending)
 
-DEFERRED. Bundle-builder reads 5+ tables in `Promise.all` plus per-attestation inclusion proofs — same DB-mocking complexity as T2-4. Bundle into the next test-infra sprint.
+File: `src/lib/verity/bundle/bundle-builder.test.ts` — 16 passing.
+Reuses the same in-memory Prisma fake pattern from T2-4, extended
+with `verityAttestation`, `organization`, and an STH `findMany`
+method. Coverage:
+
+- Happy path: bundle with all primitives present (entries, sth,
+  issuerKeys, didDocument, consistencyChain, readme, deterministic
+  bundleId).
+- Selectors: `ids` / `satellite` / `regulation` filter correctly.
+- Operator scoping: empty `ids`, mismatched `attestationId`, and
+  > MAX_BUNDLE_SIZE all throw loudly (no silent drops).
+- Status: revoked beats expired; injected `clockNow` honoured for
+  expiry evaluation (T5-5 regression).
+- Exported `resolveStatus(row, now?)`: valid / expired / revoked
+  paths with default and injected clocks.
 
 ### [x] T2-9 — Score-Calculator tests (commit pending)
 
 File: `src/lib/verity/score/calculator.test.ts` — 15 passing tests (existing 13 + 2 added).
 Added: `[L-4 DRIFT GUARD]` test that reads the literal `KNOWN_REGULATION_COUNT = 9` from calculator.ts and asserts it equals `REGULATION_THRESHOLDS.length`. Fails loudly the moment a new threshold is added without updating the constant. Plus a documenting test that confirms `trend` is currently always `"stable"` (placeholder; not a bug, but worth being visible to a future change).
 
-### [⏭] T2-10 — Key-Rotation tests (deferred)
+### [x] T2-10 — Key-Rotation tests (commit pending)
 
-DEFERRED. Key rotation has DB side-effects (new key insertion + active-flag flip + rotated-key archival) and the most useful tests cover concurrent-access race conditions. Same DB-mocking complexity as T2-4. Bundle with the next test-infra sprint.
+File: `src/lib/verity/keys/concurrent.test.ts` — 8 passing.
+Covers behaviour the prior unit-mock tests can't reach:
+
+- T4-6 cache: second `getActiveIssuerKey` doesn't hit the DB; cache
+  invalidation forces a re-query; idempotent on empty cache.
+- Cold-start auto-generate when DB has no keys.
+- Rotation invalidates cache, prior active key gets `active=false` +
+  `rotatedAt` set, exactly one active after rotation, sequential
+  rotations produce N+1 keys.
+- Concurrent rotation: two parallel `rotateIssuerKey` calls don't
+  corrupt state (the platform's bar is "no corruption" since
+  rotation is operator-triggered and rare; production also has the
+  Prisma `@unique` on `active` to enforce single-active).
 
 ---
 
@@ -660,12 +698,16 @@ verifyAttestation had already populated the array).
   - `9892255e` — T1-H4d chunked backfill
     Verification: typecheck shows 863 pre-existing errors codebase-wide,
     zero in any Verity file. P2P + audit-anchor tests 28/28 pass.
-- **Tier 2: 7/10 completed (2026-05-05); T2-6/T2-8/T2-10 still deferred.**
-  Tests added across 4 commits on branch `claude/crazy-pascal-065793`:
-  - `880754ee` — T2-1 + T2-2 (Pedersen + Range-Proof, 39 cases)
-  - (commit pending) — T2-3 (Merkle RFC 6962, 36 cases)
-  - (commit pending) — T2-7 (evidence-resolver: T1-H5 regression + 1 todo for T5-1)
-  - (commit pending) — T2-9 (score-calculator: + L-4 drift guard + trend placeholder doc-test)
+- **Tier 2: 10/10 completed (2026-05-05).** 180 passing tests
+  - 3 known-bug `it.todo`s (T2-CRYPTO-1, T2-CRYPTO-2, T5-1).
+    T2-6/T2-8/T2-10 closed in the final commit using the in-memory
+    Prisma fake from T2-4 (extended for orgs + STH findMany). 271/271
+    Verity tests green.
+    Tests added across 4 commits on branch `claude/crazy-pascal-065793`:
+  * `880754ee` — T2-1 + T2-2 (Pedersen + Range-Proof, 39 cases)
+  * (commit pending) — T2-3 (Merkle RFC 6962, 36 cases)
+  * (commit pending) — T2-7 (evidence-resolver: T1-H5 regression + 1 todo for T5-1)
+  * (commit pending) — T2-9 (score-calculator: + L-4 drift guard + trend placeholder doc-test)
     Total Tier-2 test cases added: **96 passing + 2 known-bug todos** (T2-CRYPTO-1, T5-1).
     Deferred (5 sub-steps): all need DB mocking infrastructure or full
     attestation-roundtrip fixtures. To be bundled into a separate
