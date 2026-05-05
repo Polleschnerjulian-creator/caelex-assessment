@@ -185,6 +185,417 @@ export const LEGAL_SOURCE_TRANSLATIONS_FR = new Map<string, TranslatedSource>([
       provisions: {},
     },
   ],
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ADDITIONAL UN TREATIES & RESOLUTIONS (FR-coverage extension Option C)
+  // Official French versions taken from UN treaty collection / UNOOSA.
+  // ═══════════════════════════════════════════════════════════════════
+
+  [
+    "INT-RESCUE-1968",
+    {
+      title:
+        "Accord sur le sauvetage des astronautes, le retour des astronautes et la restitution des objets lancés dans l'espace extra-atmosphérique",
+      scopeDescription:
+        "Convention de l'ONU élargissant l'art. V du Traité de l'espace : obligations détaillées d'assistance aux astronautes en détresse et de restitution des objets spatiaux retrouvés sur le territoire d'un État partie. Mise en œuvre nationale en France via la LOS Art. 19 (notification d'incident).",
+      provisions: {
+        "Art. 1": {
+          title: "Notification d'incident",
+          summary:
+            "Toute Partie contractante qui apprend que l'équipage d'un engin spatial a subi un accident, est en détresse, ou a effectué un atterrissage forcé, en informe sans délai l'autorité de lancement et le Secrétaire général de l'ONU.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-REGISTRATION-1975",
+    {
+      title:
+        "Convention sur l'immatriculation des objets lancés dans l'espace extra-atmosphérique",
+      scopeDescription:
+        "Établit l'obligation pour chaque État de lancement de tenir un registre national des objets spatiaux et de notifier ces inscriptions au Secrétaire général de l'ONU pour le Registre tenu par UNOOSA. Mise en œuvre nationale en France via la LOS Art. 12 et le registre français des objets spatiaux tenu par le CNES.",
+      provisions: {
+        "Art. II": {
+          title: "Registre national",
+          summary:
+            "Chaque État de lancement immatricule les objets spatiaux qu'il lance sur un registre approprié. Lorsqu'il y a deux ou plusieurs États de lancement, ils déterminent ensemble lequel d'entre eux immatricule l'objet.",
+        },
+        "Art. III": {
+          title: "Registre de l'ONU",
+          summary:
+            "Le Secrétaire général de l'ONU tient un registre central public où sont consignés les renseignements fournis. Délai de notification : aussitôt que possible.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-MOON-1979",
+    {
+      title:
+        "Accord régissant les activités des États sur la Lune et les autres corps célestes",
+      scopeDescription:
+        "Convention de l'ONU étendant les principes du Traité de l'espace aux activités sur la Lune et les autres corps célestes du système solaire. Faiblement ratifié (18 États parties au 31 mars 2024) ; aucune des grandes puissances spatiales (États-Unis, Russie, Chine, France, Royaume-Uni, Inde, Japon) ne l'a ratifié. Référence interprétative pour le débat sur le patrimoine commun de l'humanité.",
+      provisions: {
+        "Art. 11": {
+          title: "Patrimoine commun de l'humanité",
+          summary:
+            "La Lune et ses ressources naturelles constituent le patrimoine commun de l'humanité. Les États parties s'engagent à établir un régime international régissant l'exploitation des ressources lunaires lorsque celle-ci sera sur le point de devenir possible.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-LEGAL-PRINCIPLES-1963",
+    {
+      title:
+        "Déclaration des principes juridiques régissant les activités des États en matière d'exploration et d'utilisation de l'espace extra-atmosphérique (résolution 1962 (XVIII) de l'AGNU)",
+      scopeDescription:
+        "Première déclaration de principes onusienne consacrée à l'espace, adoptée à l'unanimité par l'Assemblée générale en 1963. Codifie les principes de liberté d'exploration, de non-appropriation, de responsabilité internationale et d'assistance aux astronautes — base du futur Traité de l'espace de 1967.",
+      provisions: {},
+    },
+  ],
+  [
+    "INT-PTBT-1963",
+    {
+      title: "Traité d'interdiction partielle des essais nucléaires (PTBT)",
+      scopeDescription:
+        "Traité multilatéral interdisant les essais nucléaires dans l'atmosphère, sous l'eau et dans l'espace extra-atmosphérique. Constitue le fondement de l'interdiction des essais nucléaires en orbite, complété par l'art. IV du Traité de l'espace de 1967.",
+      provisions: {},
+    },
+  ],
+  [
+    "INT-CTBT-1996",
+    {
+      title:
+        "Traité d'interdiction complète des essais nucléaires (TICEN/CTBT)",
+      scopeDescription:
+        "Traité multilatéral interdisant TOUS les essais d'armes nucléaires dans tous les milieux. Non encore en vigueur (Annexe 2 incomplète) mais largement respecté de facto. Pertinent pour la qualification d'« essai nucléaire » d'expériences orbitales avec matières fissiles.",
+      provisions: {},
+    },
+  ],
+  [
+    "INT-ARTEMIS-ACCORDS-2020",
+    {
+      title:
+        "Accords Artemis — Principes de coopération en matière d'exploration et d'utilisation civiles de la Lune, de Mars, des comètes et des astéroïdes à des fins pacifiques",
+      scopeDescription:
+        "Cadre multilatéral non contraignant initié par les États-Unis (NASA + Department of State) le 13 octobre 2020, signé à ce jour par 56 États (mai 2026). Précise les modalités opérationnelles d'exploration spatiale civile : interopérabilité, transparence, immatriculation, déconfliction, zones de sécurité, préservation du patrimoine spatial, libération de données scientifiques. Signataires européens : Royaume-Uni, France, Italie, Allemagne, Pologne, Pays-Bas, Espagne, Suède, République tchèque, Roumanie, Bulgarie, Lituanie.",
+      provisions: {
+        "Sec. 11": {
+          title: "Zones de sécurité (« safety zones »)",
+          summary:
+            "Les signataires reconnaissent que les opérations sur les corps célestes peuvent nécessiter l'établissement de zones de sécurité visant à éviter les interférences nuisibles. Notification + coordination requises ; absence d'appropriation territoriale au sens de l'art. II du Traité de l'espace.",
+        },
+      },
+    },
+  ],
+  [
+    "INT-LTS-2019",
+    {
+      title:
+        "Lignes directrices aux fins de la viabilité à long terme des activités spatiales (UN COPUOS LTS Guidelines)",
+      scopeDescription:
+        "21 lignes directrices adoptées par consensus en juin 2019 par le COPUOS, couvrant la sécurité opérationnelle, la coordination, les débris spatiaux, la météorologie spatiale et la coopération internationale. Document de référence non contraignant que de nombreuses NCA ont intégré dans leurs régimes d'autorisation (notamment FR via la LOS, IT via la Loi 89/2025, UK via la SIA 2018).",
+      provisions: {},
+    },
+  ],
+  [
+    "INT-DIRECT-BROADCASTING-1982",
+    {
+      title:
+        "Principes régissant l'utilisation par les États de satellites artificiels de la Terre aux fins de la télévision directe internationale (résolution 37/92 de l'AGNU)",
+      scopeDescription:
+        "Résolution de l'Assemblée générale codifiant les principes applicables aux services de télédiffusion par satellite : compatibilité avec le droit à l'information, droits souverains des États récepteurs, consultation préalable. Base interprétative pour les services satellitaires DTH modernes.",
+      provisions: {},
+    },
+  ],
+  [
+    "INT-REMOTE-SENSING-1986",
+    {
+      title:
+        "Principes sur la télédétection de la Terre depuis l'espace (résolution 41/65 de l'AGNU)",
+      scopeDescription:
+        "15 principes adoptés en 1986 par l'Assemblée générale de l'ONU sur la télédétection : libre accès aux données primaires, accès non discriminatoire des États sondés aux données secondaires, coopération internationale. Document de référence pour le régime de licences EO civil/militaire.",
+      provisions: {},
+    },
+  ],
+  [
+    "INT-NPS-1992",
+    {
+      title:
+        "Principes relatifs à l'utilisation de sources d'énergie nucléaires dans l'espace extra-atmosphérique (résolution 47/68 de l'AGNU)",
+      scopeDescription:
+        "Cadre adopté en 1992 par l'AGNU régissant l'utilisation de sources d'énergie nucléaires (RTG, réacteurs) dans les missions spatiales : limites de puissance, restrictions LEO, exigences de notification et de réentrée sécurisée. Mise en œuvre via UN-IAEA Safety Framework 2009.",
+      provisions: {},
+    },
+  ],
+  [
+    "INT-IADC-MITIGATION-2002",
+    {
+      title:
+        "Lignes directrices de l'IADC pour la mitigation des débris spatiaux (version 2002)",
+      scopeDescription:
+        "Première version des lignes directrices de l'Inter-Agency Space Debris Coordination Committee (IADC) — base technique reprise par les COPUOS Debris Mitigation Guidelines de 2007. Définit la durée de vie LEO ≤ 25 ans, les exigences de passivation, les seuils de risque de victimes 1/10 000 et les protocoles d'évitement de collision.",
+      provisions: {},
+    },
+  ],
+  [
+    "INT-IADC-MITIGATION-2020",
+    {
+      title:
+        "Lignes directrices de l'IADC pour la mitigation des débris spatiaux (révision 2020)",
+      scopeDescription:
+        "Révision majeure 2020 des lignes directrices IADC : durée de vie LEO réduite à 5 ans pour les opérations à grande échelle, fiabilité de désorbitation post-mission ≥ 0,9, modélisation explicite du risque cumulé pour les constellations. Citée par la règle FCC PMD à 5 ans (2022) et l'ESA Zero Debris Approach (2023).",
+      provisions: {},
+    },
+  ],
+  [
+    "INT-IADC-MITIGATION-2025",
+    {
+      title:
+        "Lignes directrices de l'IADC pour la mitigation des débris spatiaux (révision 2025)",
+      scopeDescription:
+        "Révision 2025 des lignes directrices IADC, intégrant les résultats du programme Zero Debris ESA et les retours d'expérience de l'augmentation des constellations à grande échelle (Starlink, OneWeb, Kuiper). Renforce les exigences de fiabilité de désorbitation et introduit des protocoles de coordination de manœuvres entre opérateurs.",
+      provisions: {},
+    },
+  ],
+  [
+    "INT-COPUOS-DEBRIS-2007",
+    {
+      title:
+        "Lignes directrices du COPUOS relatives à la réduction des débris spatiaux",
+      scopeDescription:
+        "Adoptées par consensus par le COPUOS en 2007 et endossées par l'AGNU (résolution 62/217). Sept lignes directrices opérationnelles dérivées de l'IADC 2002. Document non contraignant mais quasi universellement intégré dans les régimes nationaux d'autorisation (LOS Art. 5 et 6, SatDSiG, OSA 1986, SIA 2018).",
+      provisions: {},
+    },
+  ],
+  [
+    "INT-ESA-ZERO-DEBRIS-CHARTER",
+    {
+      title: "Charte « Zero Debris » de l'Agence spatiale européenne",
+      scopeDescription:
+        "Charte volontaire ESA lancée en 2023 engageant les signataires à viser zéro débris durable d'ici 2030 sur leurs missions LEO. Plus de 100 signataires (mai 2026), incluant ArianeGroup, Thales Alenia Space, Airbus Defence and Space, OHB, GomSpace, ICEYE, ClearSpace.",
+      provisions: {},
+    },
+  ],
+  [
+    "INT-HCOC-2002",
+    {
+      title:
+        "Code de conduite de La Haye contre la prolifération des missiles balistiques (HCoC)",
+      scopeDescription:
+        "Code de conduite politique multilatéral signé en 2002 à La Haye, comptant 145 États souscripteurs (mai 2026). Engagements de transparence sur les programmes de missiles balistiques et de lanceurs spatiaux : déclarations annuelles, notifications préalables de tirs. Pertinent pour les opérateurs de lanceurs européens (Arianespace, RFA, Isar Aerospace).",
+      provisions: {},
+    },
+  ],
+  [
+    "INT-MTCR",
+    {
+      title: "Régime de contrôle de la technologie des missiles (MTCR)",
+      scopeDescription:
+        "Régime informel multilatéral de contrôle des exportations regroupant 35 États partenaires. Annexe technique listant les biens et technologies de Catégorie I (missiles complets ≥ 500 kg / 300 km) et Catégorie II (composants, sous-systèmes, technologies). Pertinent pour les exportations de moteurs de lanceurs, systèmes de guidage et structures composites.",
+      provisions: {},
+    },
+  ],
+  [
+    "INT-NSG",
+    {
+      title: "Groupe des fournisseurs nucléaires (NSG)",
+      scopeDescription:
+        "Régime informel multilatéral de contrôle des exportations nucléaires regroupant 48 États participants. Listes Trigger List et Dual-Use List. Pertinent pour les exportations de matériels nucléaires destinés à des missions spatiales (RTG, réacteurs, propulsion nucléaire).",
+      provisions: {},
+    },
+  ],
+  [
+    "INT-AUSTRALIA-GROUP",
+    {
+      title: "Groupe d'Australie",
+      scopeDescription:
+        "Régime informel multilatéral de contrôle des exportations d'agents chimiques et biologiques regroupant 43 États participants + l'UE. Pertinent pour les exportations de précurseurs et matériaux pouvant être utilisés dans les ergols spatiaux.",
+      provisions: {},
+    },
+  ],
+  [
+    "INT-ESA-CONV-1975",
+    {
+      title: "Convention portant création de l'Agence spatiale européenne",
+      scopeDescription:
+        "Convention signée le 30 mai 1975 à Paris instituant l'ESA. 22 États membres au 1er janvier 2026 (incluant Royaume-Uni post-Brexit). Régit la gouvernance, le financement, le retour géographique industriel et les programmes obligatoires/facultatifs.",
+      provisions: {
+        "Art. V": {
+          title: "Activités obligatoires et facultatives",
+          summary:
+            "Distingue les activités obligatoires (Programme scientifique, contributions de base — financement par PIB) des activités facultatives (programmes opérationnels — contributions à la carte selon l'intérêt national).",
+        },
+      },
+    },
+  ],
+  [
+    "INT-NATO-SPACE-POLICY-2022",
+    {
+      title: "Politique spatiale globale de l'OTAN (2022)",
+      scopeDescription:
+        "Politique adoptée par l'OTAN en juin 2022 reconnaissant l'espace comme cinquième domaine opérationnel (après terre, mer, air, cyber). Cadre pour la coopération entre alliés sur la connaissance de la situation spatiale, les communications par satellite et la résilience des systèmes spatiaux militaires.",
+      provisions: {},
+    },
+  ],
+  [
+    "INT-UNGA-1721B-1961",
+    {
+      title:
+        "Coopération internationale touchant les utilisations pacifiques de l'espace extra-atmosphérique (résolution 1721 B (XVI) de l'AGNU)",
+      scopeDescription:
+        "Résolution fondatrice de 1961 invitant les États à immatriculer leurs objets spatiaux auprès du Secrétaire général de l'ONU. Précurseur de la Convention sur l'immatriculation de 1975.",
+      provisions: {},
+    },
+  ],
+  [
+    "INT-UNGA-59-115-2004",
+    {
+      title:
+        "Application de la notion d'« État de lancement » (résolution 59/115 de l'AGNU)",
+      scopeDescription:
+        "Résolution adoptée en 2004 invitant les États à clarifier dans leur droit interne la notion d'« État de lancement » au sens de la Convention sur la responsabilité et de la Convention sur l'immatriculation. Pertinente pour l'attribution des charges utiles à bord de lancements multinationaux (rideshare).",
+      provisions: {},
+    },
+  ],
+  [
+    "INT-UNGA-62-101-2007",
+    {
+      title:
+        "Pratiques recommandées pour l'immatriculation des objets spatiaux (résolution 62/101 de l'AGNU)",
+      scopeDescription:
+        "Résolution adoptée en 2007 recommandant des pratiques d'immatriculation harmonisées : informations supplémentaires à fournir au-delà du minimum de la Convention de 1975 (orbite, fonction générale, etc.). Adoptées par la France via la pratique du registre tenu par le CNES.",
+      provisions: {},
+    },
+  ],
+  [
+    "INT-UNGA-68-74-2013",
+    {
+      title:
+        "Recommandations sur la législation nationale relative à l'exploration et à l'utilisation pacifiques de l'espace extra-atmosphérique (résolution 68/74 de l'AGNU)",
+      scopeDescription:
+        "Résolution adoptée en 2013 énonçant huit éléments recommandés pour les législations nationales spatiales : champ d'application, autorisation, supervision continue, immatriculation, transfert d'autorisation, sanctions, etc. Référence pour les législations nationales modernes (LOS française, SIA 2018 britannique, Loi 89/2025 italienne).",
+      provisions: {},
+    },
+  ],
+
+  // ═══════════════════════════════════════════════════════════════════
+  // EU REGULATIONS & DIRECTIVES (FR-coverage extension Option C)
+  // Official French versions from EUR-Lex.
+  // ═══════════════════════════════════════════════════════════════════
+
+  [
+    "EU-SPACE-PROGRAMME-REG-696-2021",
+    {
+      title:
+        "Règlement (UE) 2021/696 établissant le programme spatial de l'Union et l'Agence de l'Union européenne pour le programme spatial",
+      scopeDescription:
+        "Règlement-cadre du programme spatial de l'UE pour la période 2021-2027 (budget 14,88 Md€). Couvre Galileo, EGNOS, Copernicus, GOVSATCOM et SST. Crée l'EUSPA (successeur de la GSA). Directement applicable dans tous les États membres.",
+      provisions: {},
+    },
+  ],
+  [
+    "EU-NIS2-2022-2555",
+    {
+      title:
+        "Directive (UE) 2022/2555 sur la cybersécurité dans l'ensemble de l'Union (NIS2)",
+      scopeDescription:
+        "Directive transposée en France par la Loi Résilience (juillet 2024). Désigne le secteur spatial comme secteur de haute criticité (Annexe I), incluant les opérateurs de stations sol, les fabricants de satellites et les fournisseurs de services satellitaires. Obligations : mesures de gestion des risques cyber, notification d'incident en 24 h, supervision par l'ANSSI en France.",
+      provisions: {
+        "Art. 21": {
+          title: "Mesures de gestion des risques en matière de cybersécurité",
+          summary:
+            "Les entités essentielles et importantes prennent des mesures techniques, opérationnelles et organisationnelles appropriées et proportionnées pour gérer les risques qui pèsent sur la sécurité des réseaux et des systèmes d'information.",
+        },
+        "Art. 23": {
+          title: "Obligations de notification",
+          summary:
+            "Notification d'incident significatif sans retard injustifié et au plus tard dans les 24 heures (alerte précoce), 72 heures (notification d'incident), un mois (rapport final).",
+        },
+      },
+    },
+  ],
+  [
+    "EU-CRA-2024-2847",
+    {
+      title:
+        "Règlement (UE) 2024/2847 sur la cyber-résilience des produits comportant des éléments numériques (CRA)",
+      scopeDescription:
+        "Règlement adopté en 2024 introduisant des obligations cybersécurité pour les fabricants, importateurs et distributeurs de produits comportant des éléments numériques. Pertinent pour les composants satellitaires (RF, OBC, payloads) commercialisés sur le marché de l'UE. Pleine application : décembre 2027.",
+      provisions: {},
+    },
+  ],
+  [
+    "EU-DUAL-USE-2021-821",
+    {
+      title:
+        "Règlement (UE) 2021/821 instituant un régime de l'Union de contrôle des exportations, du courtage, de l'assistance technique, du transit et des transferts en ce qui concerne les biens à double usage",
+      scopeDescription:
+        "Règlement directement applicable régissant les exportations de biens à double usage hors UE et les transferts intra-UE de biens hautement sensibles. Annexe I (liste de contrôle commune) couvre la catégorie 9 « Aérospatial et propulsion » et la catégorie 5A (cryptographie). Compétent en France : SBDU/MinÉco ; en Allemagne : BAFA ; aux Pays-Bas : CDIU.",
+      provisions: {},
+    },
+  ],
+  [
+    "EU-IRIS2-CONCESSION-2024",
+    {
+      title:
+        "Règlement (UE) 2024/1054 établissant le programme de connectivité sécurisée de l'Union pour 2023-2027 (IRIS²)",
+      scopeDescription:
+        "Règlement adoptant le programme IRIS² (Infrastructure for Resilience, Interconnectivity and Security by Satellite) — constellation multi-orbite gouvernementale-commerciale de 290 satellites. Budget 10,6 Md€ (UE 2,4 Md€ + ESA 0,6 Md€ + privé 7,5 Md€). Concession attribuée en 2024 au consortium SpaceRISE (Eutelsat, SES, Hispasat).",
+      provisions: {},
+    },
+  ],
+  [
+    "EU-SST-DEC-541-2014",
+    {
+      title:
+        "Décision n° 541/2014/UE établissant un cadre de soutien à la surveillance de l'espace et au suivi des objets en orbite (SST)",
+      scopeDescription:
+        "Décision adoptée en 2014 établissant le cadre EU SST. Consortium initial composé de la France (CNES), de l'Allemagne (DLR), de l'Italie (ASI), de l'Espagne, du Royaume-Uni (avant Brexit) et de la Pologne. Services rendus : conjonctions, rentrées, fragmentations.",
+      provisions: {},
+    },
+  ],
+  [
+    "EU-RESILIENCE-DIR-2557-2022",
+    {
+      title:
+        "Directive (UE) 2022/2557 sur la résilience des entités critiques (CER)",
+      scopeDescription:
+        "Directive « jumelle » de NIS2 portant sur la résilience physique (et non cyber) des entités critiques. Inclut le secteur spatial (Annexe I) parmi les onze secteurs concernés. Transposition nationale : France via la Loi Résilience.",
+      provisions: {},
+    },
+  ],
+  [
+    "EU-GDPR-2016-679",
+    {
+      title:
+        "Règlement (UE) 2016/679 relatif à la protection des personnes physiques à l'égard du traitement des données à caractère personnel et à la libre circulation de ces données (RGPD)",
+      scopeDescription:
+        "Règlement-cadre européen sur la protection des données. Applicable au traitement de données personnelles issues de l'observation de la Terre (imagerie haute résolution), de la géolocalisation (GNSS) et des télécommunications par satellite. Compétent en France : CNIL.",
+      provisions: {},
+    },
+  ],
+  [
+    "EU-CRITICAL-RAW-MATERIALS-ACT-2024",
+    {
+      title:
+        "Règlement (UE) 2024/1252 établissant un cadre visant à garantir un approvisionnement sûr et durable en matières premières critiques (CRMA)",
+      scopeDescription:
+        "Règlement adopté en avril 2024 visant à sécuriser l'approvisionnement de l'UE en 34 matières premières critiques et 17 matières premières stratégiques. Pertinent pour la chaîne d'approvisionnement spatiale (béryllium, gallium, germanium, terres rares pour aimants permanents).",
+      provisions: {},
+    },
+  ],
+  [
+    "EU-SECURE-CONNECTIVITY-2023-588",
+    {
+      title:
+        "Règlement (UE) 2023/588 établissant le programme de connectivité sécurisée de l'Union (cadre amont d'IRIS²)",
+      scopeDescription:
+        "Règlement-cadre adopté en mars 2023 préparant le programme IRIS². Définit les principes, la gouvernance et les modalités de financement avant l'attribution effective de la concession en 2024.",
+      provisions: {},
+    },
+  ],
 ]);
 
 // FR-coverage extension (Option C): expanded from 5 to 93 priority
