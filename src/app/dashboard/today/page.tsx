@@ -1,6 +1,17 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Inbox, Calendar, Eye, X, BarChart3 } from "lucide-react";
+import {
+  Inbox,
+  Calendar,
+  Eye,
+  X,
+  BarChart3,
+  Radio,
+  ListChecks,
+  FolderOpen,
+  ArrowRight,
+  Sparkles,
+} from "lucide-react";
 import { auth } from "@/lib/auth";
 import {
   getTodayInboxForUser,
@@ -104,123 +115,235 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
     total = inbox.urgent.length + inbox.thisWeek.length + inbox.watching.length;
   }
 
+  // True empty-state: no items in any bucket AND no filter applied.
+  // Surfaces the onboarding hero instead of three sad "Nothing X" cards.
+  const isOnboardingEmpty = !filterActive && total === 0;
+
   return (
-    <div className="mx-auto max-w-screen-2xl px-6 py-6">
-      <header className="mb-6 flex items-end justify-between gap-6 border-b border-white/[0.06] pb-4">
-        <div>
-          <div className="mb-1.5 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-400">
-            <Inbox className="h-3 w-3" />
-            INBOX · TODAY
-          </div>
-          <h1 className="text-xl font-semibold tracking-tight text-slate-100">
-            What needs you this week
+    <div className="mx-auto max-w-screen-2xl px-6 py-8 sm:px-8">
+      <header className="mb-8 flex flex-wrap items-end justify-between gap-6 border-b border-slate-200/80 pb-5 dark:border-white/[0.08]">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-50">
+            Today
           </h1>
-          <p className="mt-1 max-w-2xl text-xs text-slate-500">
+          <p className="mt-1.5 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
             {filterActive
-              ? `${total} item${total === 1 ? "" : "s"} matching filters.`
-              : `${total} item${total === 1 ? "" : "s"} across ${Object.keys(REGULATION_LABELS).length} compliance regimes. Use Cmd-K to search the full set.`}
+              ? `${total} item${total === 1 ? "" : "s"} matching the active filters.`
+              : isOnboardingEmpty
+                ? "Welcome — let's set up your compliance workspace."
+                : `${total} open item${total === 1 ? "" : "s"} across ${Object.keys(REGULATION_LABELS).length} regimes. Press ⌘K to search the full set.`}
           </p>
         </div>
-        {/* Inbox-Zero KPI cluster — Sprint 1 #1: makes the "I cleared
-            X items today" feedback loop visible. Plus an escape hatch
-            to the legacy chart dashboard. */}
-        <div className="flex flex-col items-end gap-1.5">
-          <div className="flex items-baseline gap-3 font-mono text-[10px] uppercase tracking-wider">
-            <span className="inline-flex items-center gap-1.5 text-slate-400">
-              <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              <span className="tabular-nums text-slate-200">{total}</span>
-              <span>in inbox</span>
-            </span>
-            <span className="text-slate-600">·</span>
-            <span className="inline-flex items-center gap-1.5 text-slate-400">
-              <span className="tabular-nums text-emerald-300">
-                {clearedToday}
+        {/* KPI chips — visible feedback loop for "I cleared X today".
+            Hidden in the onboarding-empty state since 0/0 isn't a useful
+            signal at zero items. */}
+        {!isOnboardingEmpty ? (
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-baseline gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-200">
+                <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                <span className="tabular-nums">{total}</span>
+                <span className="text-slate-500 dark:text-slate-400">
+                  in inbox
+                </span>
               </span>
-              <span>cleared today</span>
-            </span>
+              <span className="inline-flex items-baseline gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+                <span className="tabular-nums">{clearedToday}</span>
+                <span className="text-emerald-700/80 dark:text-emerald-400/80">
+                  cleared today
+                </span>
+              </span>
+            </div>
+            <Link
+              href="/dashboard/legacy"
+              className="inline-flex items-center gap-1 text-[11px] text-slate-500 underline-offset-4 transition hover:text-slate-700 hover:underline dark:text-slate-500 dark:hover:text-slate-300"
+            >
+              <BarChart3 className="h-3 w-3" />
+              View legacy charts
+            </Link>
           </div>
-          <Link
-            href="/dashboard/legacy"
-            className="inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500 underline-offset-2 transition hover:text-slate-300 hover:underline"
-          >
-            <BarChart3 className="h-2.5 w-2.5" />
-            Skip to legacy charts
-          </Link>
-        </div>
+        ) : null}
       </header>
 
-      <FilterBar
-        regulationFilter={filterRegulation}
-        statusFilter={filterStatus}
-      />
-
-      {filterActive ? (
-        <Section
-          title="Filtered results"
-          count={filteredItems.length}
-          emptyMessage="No items match the current filters."
-          accent="emerald"
-          icon={Inbox}
-        >
-          {filteredItems.map((item) => (
-            <ComplianceItemCard
-              key={item.id}
-              item={serializableItem(item)}
-              snoozedUntil={null}
-            />
-          ))}
-        </Section>
-      ) : inbox ? (
+      {isOnboardingEmpty ? (
+        <OnboardingHero />
+      ) : (
         <>
-          <Section
-            title="Urgent"
-            count={inbox.urgent.length}
-            emptyMessage="Nothing urgent. Take a breath."
-            accent="emerald"
-            icon={Inbox}
-          >
-            {inbox.urgent.map((item) => (
-              <ComplianceItemCard
-                key={item.id}
-                item={serializableItem(item)}
-                snoozedUntil={inbox!.snoozedUntilByItemId[item.id] ?? null}
-              />
-            ))}
-          </Section>
+          <FilterBar
+            regulationFilter={filterRegulation}
+            statusFilter={filterStatus}
+          />
 
-          <Section
-            title="This week"
-            count={inbox.thisWeek.length}
-            emptyMessage="Nothing on the radar this week."
-            accent="slate"
-            icon={Calendar}
-          >
-            {inbox.thisWeek.map((item) => (
-              <ComplianceItemCard
-                key={item.id}
-                item={serializableItem(item)}
-                snoozedUntil={inbox!.snoozedUntilByItemId[item.id] ?? null}
-              />
-            ))}
-          </Section>
+          {filterActive ? (
+            <Section
+              title="Filtered results"
+              count={filteredItems.length}
+              emptyMessage="No items match the current filters."
+              accent="emerald"
+              icon={Inbox}
+            >
+              {filteredItems.map((item) => (
+                <ComplianceItemCard
+                  key={item.id}
+                  item={serializableItem(item)}
+                  snoozedUntil={null}
+                />
+              ))}
+            </Section>
+          ) : inbox ? (
+            <>
+              <Section
+                title="Urgent"
+                count={inbox.urgent.length}
+                emptyMessage="Nothing urgent. Take a breath."
+                accent="emerald"
+                icon={Inbox}
+              >
+                {inbox.urgent.map((item) => (
+                  <ComplianceItemCard
+                    key={item.id}
+                    item={serializableItem(item)}
+                    snoozedUntil={inbox!.snoozedUntilByItemId[item.id] ?? null}
+                  />
+                ))}
+              </Section>
 
-          <Section
-            title="Watching"
-            count={inbox.watching.length}
-            emptyMessage="Nothing in flight."
-            accent="slate"
-            icon={Eye}
-          >
-            {inbox.watching.map((item) => (
-              <ComplianceItemCard
-                key={item.id}
-                item={serializableItem(item)}
-                snoozedUntil={inbox!.snoozedUntilByItemId[item.id] ?? null}
-              />
-            ))}
-          </Section>
+              <Section
+                title="This week"
+                count={inbox.thisWeek.length}
+                emptyMessage="Nothing on the radar this week."
+                accent="slate"
+                icon={Calendar}
+              >
+                {inbox.thisWeek.map((item) => (
+                  <ComplianceItemCard
+                    key={item.id}
+                    item={serializableItem(item)}
+                    snoozedUntil={inbox!.snoozedUntilByItemId[item.id] ?? null}
+                  />
+                ))}
+              </Section>
+
+              <Section
+                title="Watching"
+                count={inbox.watching.length}
+                emptyMessage="Nothing in flight."
+                accent="slate"
+                icon={Eye}
+              >
+                {inbox.watching.map((item) => (
+                  <ComplianceItemCard
+                    key={item.id}
+                    item={serializableItem(item)}
+                    snoozedUntil={inbox!.snoozedUntilByItemId[item.id] ?? null}
+                  />
+                ))}
+              </Section>
+            </>
+          ) : null}
         </>
-      ) : null}
+      )}
+    </div>
+  );
+}
+
+/**
+ * Onboarding hero — shown when the user has zero compliance items
+ * across all 3 buckets. Replaces the previous three-empty-cards
+ * layout (which made an empty-state user feel like the page was
+ * broken). Three quick-start CTAs cover the actual onboarding paths:
+ * connect telemetry (auto-attest), run an assessment (determine
+ * applicability), or browse the regulation modules (manual setup).
+ */
+function OnboardingHero() {
+  const cards: Array<{
+    href: string;
+    label: string;
+    description: string;
+    icon: React.ComponentType<{ className?: string }>;
+    primary?: boolean;
+  }> = [
+    {
+      href: "/dashboard/sentinel",
+      label: "Connect Sentinel",
+      description:
+        "Auto-attest cybersecurity, NIS2 and debris controls from your telemetry. ~5 min.",
+      icon: Radio,
+      primary: true,
+    },
+    {
+      href: "/assessment",
+      label: "Run an assessment",
+      description:
+        "Answer ~15 questions to see which EU Space Act, UK Space Act and NIS2 articles apply to you.",
+      icon: ListChecks,
+    },
+    {
+      href: "/dashboard/modules",
+      label: "Browse modules",
+      description:
+        "Skim the 8 regulation regimes Caelex tracks and pick the one most relevant to you.",
+      icon: FolderOpen,
+    },
+  ];
+
+  return (
+    <div className="space-y-8">
+      <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-emerald-50/30 to-white p-8 shadow-sm sm:p-10 dark:border-white/[0.08] dark:from-white/[0.03] dark:via-emerald-500/[0.04] dark:to-white/[0.03]">
+        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300">
+          <Sparkles className="h-3 w-3" />
+          New here
+        </div>
+        <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl dark:text-slate-50">
+          You're all caught up — because we haven't started yet.
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+          Caelex Comply tracks 8 regulatory regimes for satellite operators — EU
+          Space Act, NIS2, debris mitigation, cybersecurity, spectrum, export
+          control, and the UK + US frameworks. Pick how you'd like to start.
+        </p>
+      </section>
+
+      <section className="grid gap-3 sm:grid-cols-3">
+        {cards.map((card) => {
+          const Icon = card.icon;
+          return (
+            <Link
+              key={card.href}
+              href={card.href}
+              className={
+                card.primary
+                  ? "group flex flex-col rounded-xl border border-emerald-300 bg-emerald-50 p-5 shadow-sm transition hover:border-emerald-400 hover:bg-emerald-100/70 dark:border-emerald-500/30 dark:bg-emerald-500/[0.08] dark:hover:border-emerald-500/50 dark:hover:bg-emerald-500/[0.12]"
+                  : "group flex flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 dark:border-white/[0.08] dark:bg-white/[0.02] dark:hover:border-white/15 dark:hover:bg-white/[0.04]"
+              }
+            >
+              <div className="flex items-start justify-between">
+                <div
+                  className={
+                    card.primary
+                      ? "flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-200 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
+                      : "flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-white/[0.06] dark:text-slate-400"
+                  }
+                >
+                  <Icon className="h-4 w-4" />
+                </div>
+                <ArrowRight className="h-4 w-4 text-slate-400 opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100 dark:text-slate-500" />
+              </div>
+              <h3 className="mt-4 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                {card.label}
+              </h3>
+              <p className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                {card.description}
+              </p>
+            </Link>
+          );
+        })}
+      </section>
+
+      <p className="text-center text-xs text-slate-500 dark:text-slate-500">
+        Once you have items in flight, this page becomes your daily inbox. Press
+        ⌘K anytime to search across everything.
+      </p>
     </div>
   );
 }
@@ -254,21 +377,22 @@ function Section({
   icon: React.ComponentType<{ className?: string }>;
   children: React.ReactNode;
 }) {
+  const iconClass =
+    accent === "emerald"
+      ? "h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400"
+      : "h-3.5 w-3.5 text-slate-500 dark:text-slate-400";
+
   return (
-    <section className="mb-8">
-      <h2 className="mb-3 flex items-center gap-2 font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-slate-500">
-        <Icon
-          className={
-            accent === "emerald" ? "h-3 w-3 text-emerald-400" : "h-3 w-3"
-          }
-        />
-        {title}
-        <span className="rounded-sm bg-white/[0.04] px-1.5 py-0.5 font-mono text-[9px] tabular-nums text-slate-300 ring-1 ring-inset ring-white/10">
+    <section className="mb-7">
+      <h2 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+        <Icon className={iconClass} />
+        <span>{title}</span>
+        <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-slate-100 px-1.5 text-[10px] font-medium tabular-nums text-slate-600 dark:bg-white/[0.06] dark:text-slate-300">
           {count}
         </span>
       </h2>
       {count === 0 ? (
-        <p className="palantir-surface rounded-md p-4 text-center text-xs text-slate-500">
+        <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 px-4 py-5 text-center text-sm text-slate-500 dark:border-white/[0.08] dark:bg-white/[0.02] dark:text-slate-500">
           {emptyMessage}
         </p>
       ) : (
@@ -334,15 +458,15 @@ function FilterBar({
   const filterActive = regulationFilter !== null || statusFilter !== null;
 
   return (
-    <div className="palantir-surface mb-6 rounded-md p-3 space-y-2">
+    <div className="mb-6 space-y-2.5 rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-white/[0.08] dark:bg-white/[0.02]">
       <div className="flex flex-wrap items-center gap-1.5">
-        <span className="mr-2 font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-slate-500">
-          REG
+        <span className="mr-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-500">
+          Regime
         </span>
         <FilterChip
           href={buildHref(null, statusFilter)}
           active={regulationFilter === null}
-          label="ALL"
+          label="All"
         />
         {REGULATIONS.map((reg) => (
           <FilterChip
@@ -355,13 +479,13 @@ function FilterBar({
       </div>
 
       <div className="flex flex-wrap items-center gap-1.5">
-        <span className="mr-2 font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-slate-500">
-          STATUS
+        <span className="mr-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-500">
+          Status
         </span>
         <FilterChip
           href={buildHref(regulationFilter, null)}
           active={statusFilter === null}
-          label="ALL"
+          label="All"
         />
         {STATUS_OPTIONS.map((s) => (
           <FilterChip
@@ -374,9 +498,9 @@ function FilterBar({
       </div>
 
       {filterActive ? (
-        <div className="flex flex-wrap items-center gap-2 border-t border-white/[0.04] pt-2">
-          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500">
-            ACTIVE
+        <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-2.5 dark:border-white/[0.06]">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-500">
+            Active
           </span>
           {regulationFilter ? (
             <Badge variant="default">
@@ -404,9 +528,9 @@ function FilterBar({
           ) : null}
           <Link
             href={baseHref}
-            className="font-mono text-[10px] uppercase tracking-wider text-emerald-400 underline-offset-2 transition hover:text-emerald-300 hover:underline"
+            className="text-[11px] font-medium text-emerald-600 underline-offset-4 transition hover:text-emerald-700 hover:underline dark:text-emerald-400 dark:hover:text-emerald-300"
           >
-            CLEAR ALL
+            Clear all
           </Link>
         </div>
       ) : null}
@@ -428,8 +552,8 @@ function FilterChip({
       href={href}
       className={
         active
-          ? "rounded bg-emerald-500/15 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-emerald-300 ring-1 ring-inset ring-emerald-500/40"
-          : "rounded bg-white/[0.02] px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-slate-400 ring-1 ring-inset ring-white/[0.06] transition hover:bg-white/[0.04] hover:text-slate-200 hover:ring-white/15"
+          ? "rounded-md bg-emerald-100 px-2 py-1 text-[11px] font-medium text-emerald-800 ring-1 ring-inset ring-emerald-300 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-500/40"
+          : "rounded-md bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-600 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-100 hover:text-slate-900 hover:ring-slate-300 dark:bg-white/[0.03] dark:text-slate-400 dark:ring-white/[0.08] dark:hover:bg-white/[0.06] dark:hover:text-slate-200 dark:hover:ring-white/15"
       }
     >
       {label}
