@@ -99,7 +99,7 @@ The endpoint is unauthenticated and accepts `operatorId` from the URL ungeprüft
 
 ---
 
-### [ ] T1-H1 — Remove embedded-public-key fallback in `/certificate/verify`
+### [x] T1-H1 — Remove embedded-public-key fallback in `/certificate/verify` (commit pending)
 
 **Severity:** HIGH
 **Effort:** 30min

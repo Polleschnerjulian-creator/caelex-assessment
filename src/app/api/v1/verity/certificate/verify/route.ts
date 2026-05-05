@@ -36,20 +36,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Look up key by key_id in DB
+    // T1-H1 (audit fix 2026-05-05): strict trust gate — reject before
+    // signature verification when the key_id is not in the issuer DB.
+    //
+    // Previously the code fell back to `certificate.issuer.public_key`
+    // (the key embedded in the cert itself) and only later marked the
+    // result as invalid. That left `checks.certificate_signature_valid:
+    // true` in the response if the embedded key happened to verify the
+    // payload — confusing for downstream clients that read partial
+    // checks. Mirror the strict pattern from /api/v1/verity/attestation/
+    // verify which never falls back to embedded keys.
     const keyInfo = await getKeyByKeyId(prisma, certificate.issuer.key_id);
-    const publicKeyHex = keyInfo?.publicKeyHex ?? certificate.issuer.public_key;
-
-    // Verify certificate
-    const result = verifyCertificate(certificate, publicKeyHex);
-
-    // If key not in our keyset, mark as invalid
     if (!keyInfo) {
-      result.valid = false;
-      result.errors.push("Issuer key_id not found in Caelex keyset");
-      if (!result.reason)
-        result.reason = "Issuer key_id not found in Caelex keyset";
+      safeLog("Certificate verification rejected — unknown key_id", {
+        certificateId: certificate.certificate_id,
+        keyId: certificate.issuer.key_id,
+      });
+      return NextResponse.json({
+        valid: false,
+        certificate_id: certificate.certificate_id,
+        checks: {
+          certificate_signature_valid: false,
+          all_attestations_valid: false,
+          claims_match_attestations: false,
+          issuer_key_known: false,
+        },
+        issuer: certificate.issuer?.name,
+        issuer_key_id: certificate.issuer.key_id,
+        verified_at: new Date().toISOString(),
+        reason: "Issuer key_id not found in Caelex keyset",
+        errors: ["Issuer key_id not found in Caelex keyset"],
+      });
     }
+
+    // Verify certificate against the trusted public key from the DB.
+    const result = verifyCertificate(certificate, keyInfo.publicKeyHex);
 
     // Increment verification count
     try {
