@@ -8,7 +8,9 @@ describe("buildVerificationRequest", () => {
       regulationRefs: ["eu_art70_debris"],
       purpose: "conjunction_coordination",
     });
-    expect(result.requestId).toMatch(/^vr_\d+_[a-z0-9]{6}$/);
+    // T1-M2: requestId now uses 16-byte CSPRNG (32 hex chars) suffix
+    // instead of the previous 6-char Math.random() suffix.
+    expect(result.requestId).toMatch(/^vr_\d+_[a-f0-9]{32}$/);
   });
 
   it("returns a unique requestId on each call", () => {

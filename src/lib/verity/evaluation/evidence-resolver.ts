@@ -86,7 +86,15 @@ export async function resolveEvidence(
               actual_value: rawValue,
               data_point: dataPoint,
               source: "sentinel",
-              trust_score: hasCrossVerification ? 0.98 : 0.8,
+              // T1-H5 (audit fix 2026-05-05): Sentinel without cross-
+              // verification is HIGH (0.92) per the doc-comment at the
+              // top of this function, NOT MEDIUM (0.8). The previous
+              // 0.8 wrongly downgraded all single-source Sentinel
+              // attestations to MEDIUM, which both reduces the
+              // compliance score (MEDIUM weight 0.7 vs HIGH 1.0) and
+              // surfaces a misleading min_trust_level warning to
+              // regulators on the certificate.
+              trust_score: hasCrossVerification ? 0.98 : 0.92,
               collected_at: packet.collectedAt.toISOString(),
               sentinel_anchor: {
                 sentinel_id: agent.sentinelId,

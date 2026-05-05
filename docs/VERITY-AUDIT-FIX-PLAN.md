@@ -212,7 +212,7 @@ const offset = Number.isNaN(rawOffset) ? 0 : Math.max(rawOffset, 0);
 
 ---
 
-### [ ] T1-H5 — Trust-Score 0.8 → 0.92 for Sentinel without CrossVerification
+### [x] T1-H5 — Trust-Score 0.8 → 0.92 for Sentinel without CrossVerification (commit pending)
 
 **Severity:** HIGH (correctness)
 **Effort:** 5min
@@ -243,7 +243,7 @@ trust_score: hasCrossVerification ? 0.98 : 0.92,
 
 ---
 
-### [ ] T1-M2 — Replace `Math.random()` with CSPRNG in P2P request-builder
+### [x] T1-M2 — Replace `Math.random()` with CSPRNG in P2P request-builder (commit pending)
 
 **Severity:** MEDIUM (security-relevant)
 **Effort:** 15min
