@@ -124,29 +124,38 @@ describe("attestation roundtrip — happy path × scheme × threshold", () => {
         expect(result.checks.range_proof_valid).toBe(true);
       });
 
-      if (scheme !== "v3") {
-        it(`${scheme} ${tt}: generate→verify=valid (result=false)`, () => {
-          // result=false: claim NOT satisfied. The attestation is
-          // still verifiable — it just records "this operator did NOT
-          // meet the threshold". For v1/v2 this works fine.
-          //
-          // v3 cannot issue an attestation when result=false (the
-          // zero-knowledge range proof refuses to prove a false
-          // statement) — see the new Tier-2 finding T2-CRYPTO-2 below
-          // and the v3 negative-claim it.todo at the bottom of this
-          // file.
-          const actual = tt === "ABOVE" ? 5 : 95;
-          const threshold = 10;
-          const att = generateAttestation(
-            makeParams(scheme, tt, actual, threshold, key),
-          );
-          expect(att.claim.result).toBe(false);
+      it(`${scheme} ${tt}: generate→verify=valid (result=false)`, () => {
+        // result=false: claim NOT satisfied. The attestation is
+        // still verifiable — it just records "this operator did NOT
+        // meet the threshold".
+        //
+        // T2-CRYPTO-2 (audit fix 2026-05-05): v3 fall-back lets v3
+        // issue FAIL attestations as v2 (Pedersen + Schnorr PoK).
+        // The attestation's `evidence.scheme_fallback` field flags
+        // the downgrade so the verifier knows trust dropped from
+        // "trustless threshold check" to "trust Caelex's threshold
+        // computation" — but the cryptographic verification still
+        // succeeds end-to-end.
+        const actual = tt === "ABOVE" ? 5 : 95;
+        const threshold = 10;
+        const att = generateAttestation(
+          makeParams(scheme, tt, actual, threshold, key),
+        );
+        expect(att.claim.result).toBe(false);
+        if (scheme === "v3") {
+          // v3 falls back to v2 for FAIL.
+          expect(att.version).toBe("2.0");
+          expect(att.evidence.scheme_fallback).toBe("v3-pass-only");
+          expect(att.evidence.commitment_proof).toBeDefined();
+          expect(att.evidence.range_proof).toBeUndefined();
+        } else {
+          expect(att.evidence.scheme_fallback).toBeUndefined();
+        }
 
-          const result = verifyAttestation(att, key.publicKeyHex, true);
-          expect(result.valid).toBe(true);
-          expect(result.errors).toEqual([]);
-        });
-      }
+        const result = verifyAttestation(att, key.publicKeyHex, true);
+        expect(result.valid).toBe(true);
+        expect(result.errors).toEqual([]);
+      });
     }
   }
 
@@ -322,28 +331,31 @@ describe("attestation tamper rejection", () => {
     expect(result.checks.structure_valid).toBe(false);
   });
 
-  // 🔴 NEW Tier-2 finding T2-CRYPTO-2 (audit fix 2026-05-05):
-  // v3 generation throws when the claim is false because the
-  // bit-decomposition range proof refuses to prove a false statement
-  // (which is correct ZK behaviour — but the platform's whole point
-  // is to attest BOTH compliance and non-compliance). Today v3 can
-  // only ever issue PASS attestations. Sentinel-driven non-compliance
-  // readings would crash the attestation pipeline if v3 were the
-  // active scheme.
-  //
-  // Fix options for the design call:
-  //   (a) v3 issues ONLY when result=true; non-compliance falls back
-  //       to v2 (Pedersen + Schnorr PoK, which doesn't constrain the
-  //       value to satisfy any claim). Verifier learns trust=v2 for
-  //       PASS-FAIL pairs, trust=v3 for PASS-only.
-  //   (b) Generate a "negation proof" — proveThreshold of the
-  //       OPPOSITE direction (e.g. for failed-ABOVE, prove BELOW
-  //       T-1). Doubles the proof size for FAIL paths but keeps
-  //       trust-level uniform.
-  //   (c) Drop v3 entirely; ship Bulletproofs in Phase 3 instead.
-  //
-  // Tracked in docs/VERITY-AUDIT-FIX-PLAN.md.
-  it.todo(
-    "[T2-CRYPTO-2] v3 generates a verifiable attestation for a non-compliant claim (result=false)",
-  );
+  // T2-CRYPTO-2 (audit fix 2026-05-05): v3 FAIL fallback. The
+  // happy-path tests above already exercise the v3-FAIL → v2 path
+  // for both ABOVE and BELOW. This block adds two extra assertions:
+  // the fallback bumps `version` and `evidence.scheme_fallback`
+  // visibly so verifiers + dashboards can highlight the trust
+  // downgrade, and the verifier accepts the result without warnings.
+
+  it("[T2-CRYPTO-2 fixed] v3 ABOVE FAIL produces v2 with scheme_fallback marker", () => {
+    const att = generateAttestation(makeParams("v3", "ABOVE", 5, 10, key));
+    expect(att.claim.result).toBe(false);
+    expect(att.version).toBe("2.0");
+    expect(att.evidence.scheme_fallback).toBe("v3-pass-only");
+    expect(att.evidence.commitment_proof).toBeDefined();
+    expect(att.evidence.range_proof).toBeUndefined();
+
+    const result = verifyAttestation(att, key.publicKeyHex, true);
+    expect(result.valid).toBe(true);
+    expect(result.checks.commitment_proof_valid).toBe(true);
+  });
+
+  it("[T2-CRYPTO-2 fixed] v3 PASS still ships native v3 (no fallback marker)", () => {
+    const att = generateAttestation(makeParams("v3", "ABOVE", 95, 10, key));
+    expect(att.claim.result).toBe(true);
+    expect(att.version).toBe("3.0");
+    expect(att.evidence.scheme_fallback).toBeUndefined();
+    expect(att.evidence.range_proof).toBeDefined();
+  });
 });

@@ -13,7 +13,7 @@ import { toExternalTrust } from "../utils/trust-level";
 import { safeLog } from "../utils/redaction";
 import { createCommitment } from "./commitment";
 import {
-  pedersenCommit,
+  commitScaled,
   proveOpening,
   verifyOpeningProof,
   type PedersenCommitment,
@@ -81,7 +81,18 @@ export function generateAttestation(
       : params.actual_value <= params.threshold_value;
 
   // 2. Pick the commitment scheme (default: v1 SHA-256 for backwards compat)
-  const scheme = params.commitment_scheme ?? "v1";
+  const requestedScheme = params.commitment_scheme ?? "v1";
+
+  // T2-CRYPTO-2 (audit fix 2026-05-05): v3 range proof refuses to
+  // construct a zero-knowledge proof of a false statement (which is
+  // correct ZK behaviour). For non-compliant readings (result=false)
+  // under a v3 request we fall back to v2 (Pedersen + Schnorr PoK)
+  // so the attestation is still issuable. The verifier-relevant
+  // trust drops from "trustless threshold check" to "trust Caelex's
+  // threshold computation" — `evidence.scheme_fallback` flags the
+  // downgrade. Tracked in docs/VERITY-DEFERRED-FINDINGS-DESIGN.md.
+  const isV3Fallback = requestedScheme === "v3" && !result;
+  const scheme: "v1" | "v2" | "v3" = isV3Fallback ? "v2" : requestedScheme;
   const version =
     scheme === "v3"
       ? ("3.0" as const)
@@ -127,8 +138,17 @@ export function generateAttestation(
     commitment_scheme_tag = "v3-pedersen-range";
     // blinding is NOT stored, NOT logged, NOT returned
   } else if (scheme === "v2") {
-    // Pedersen commitment (binding + hiding) + Schnorr PoK
-    const { commitment: pc, opening } = pedersenCommit(params.actual_value);
+    // Pedersen commitment (binding + hiding) + Schnorr PoK.
+    // T2-CRYPTO-1 (audit fix 2026-05-05): scale fractional measurements
+    // to integers before commit so the Pedersen homomorphism actually
+    // holds. Encoding matches the v3 default — three decimal places
+    // covers fuel %, miss-distance km, etc. Use range_encoding.scale
+    // when supplied so v2/v3 stay consistent for the same caller.
+    const v2Scale = params.range_encoding?.scale ?? 1000;
+    const { commitment: pc, opening } = commitScaled(
+      params.actual_value,
+      v2Scale,
+    );
     const pokContext = buildPoKContext(
       attestation_id,
       params.regulation_ref,
@@ -189,6 +209,7 @@ export function generateAttestation(
       commitment_scheme: commitment_scheme_tag,
       ...(commitment_proof ? { commitment_proof } : {}),
       ...(range_proof ? { range_proof } : {}),
+      ...(isV3Fallback ? { scheme_fallback: "v3-pass-only" as const } : {}),
       source: params.evidence_source,
       trust_level: trust_info.level,
       trust_range: trust_info.range,

@@ -20,6 +20,15 @@
  *   knows the discrete log of H with respect to G, the commitment is
  *   computationally binding under the DDH assumption in Ristretto255.
  *
+ * T2-CRYPTO-1 (audit fix 2026-05-05): values are encoded as
+ * INTEGERS — `valueToScalar(v: bigint) = v mod q` — to preserve the
+ * additive homomorphism that the doc-comment promises. The previous
+ * SHA-512 mapping was non-linear (H(a) + H(b) ≠ H(a + b)), so
+ * `pedersenAdd` produced commitments with no useful opening. Callers
+ * with fractional measurements (fuel %, miss-distance km, etc.) must
+ * use `commitScaled(value, scale)` which scales to an integer first
+ * — matching how the v3 range proof has always done it.
+ *
  * What we ship in this version:
  *   • Pedersen commitments (real, homomorphic)
  *   • Schnorr σ-protocol proof of knowledge of (v, r) for C
@@ -74,15 +83,35 @@ export function reduceToScalar(bytes: Uint8Array): bigint {
 }
 
 /**
- * Deterministically map a number to a Ristretto scalar.
- * Uses IEEE-754 double encoding so two callers committing to the same
- * float produce the same scalar.
+ * Map an integer value to a Ristretto scalar in [0, q) preserving
+ * additive linearity:
+ *   valueToScalar(a) + valueToScalar(b) ≡ valueToScalar(a + b) (mod q)
+ *
+ * T2-CRYPTO-1 (audit fix 2026-05-05): the previous implementation
+ * used `SHA-512(IEEE-754(value))` which broke linearity, making the
+ * documented `pedersenAdd` homomorphism a no-op. Direct integer
+ * encoding restores it. Fractional measurements should be scaled to
+ * an integer first via `commitScaled`.
  */
-function valueToScalar(value: number): bigint {
-  const buf = new ArrayBuffer(8);
-  new DataView(buf).setFloat64(0, value, false); // big-endian for stability
-  const hash = sha512(new Uint8Array(buf));
-  return reduceToScalar(hash);
+function valueToScalar(value: bigint): bigint {
+  // Normalise into [0, q). Negative values fold into the positive
+  // residue class via a single addition of CURVE_ORDER.
+  return ((value % CURVE_ORDER) + CURVE_ORDER) % CURVE_ORDER;
+}
+
+/**
+ * Compute `s·P` returning the identity for s = 0.
+ *
+ * @noble/curves rejects scalar 0 with `expected 1 <= sc < curve.n`,
+ * which the previous SHA-512-based valueToScalar happened to dodge
+ * because the hash output is essentially never 0. Now that the
+ * mapping is linear, value 0 (and the rare r=0) reach this code
+ * path legitimately. Identity-as-fallback preserves the algebra:
+ * `0·P = O` for any P, and adding O is a no-op.
+ */
+function safeMul(point: RPoint, scalar: bigint): RPoint {
+  if (scalar === 0n) return ristretto255.Point.ZERO;
+  return point.multiply(scalar);
 }
 
 /** Random scalar in [0, q). */
@@ -119,22 +148,40 @@ export interface PedersenCommitment {
 }
 
 export interface PedersenOpening {
-  value: number;
+  /**
+   * Committed integer value as a decimal string (so JSON round-trips
+   * are exact for values larger than 2^53). Always non-negative; the
+   * scaling done by `commitScaled` ensures fractional measurements
+   * become positive integers before commit.
+   */
+  value: string;
   /** Hex-encoded blinding scalar r */
   blinding: string;
 }
 
-export function pedersenCommit(value: number): {
+/**
+ * Commit to an integer value `v ∈ [0, q)`.
+ *
+ * T2-CRYPTO-1: callers with fractional measurements MUST use
+ * `commitScaled` instead — the bare integer API exists so the
+ * homomorphism `pedersenAdd(C(a), C(b)) = C(a + b)` is unambiguous
+ * about its scalar arithmetic.
+ *
+ * Accepts `bigint` or `number` (number must be a finite non-negative
+ * integer; throws otherwise).
+ */
+export function pedersenCommit(value: number | bigint): {
   commitment: PedersenCommitment;
   opening: PedersenOpening;
 } {
+  const v_int = normaliseInteger(value);
   const G = ristretto255.Point.BASE;
   const H = getH();
-  const v = valueToScalar(value);
+  const v = valueToScalar(v_int);
   const r = randomScalar();
 
   // C = r·G + v·H
-  const C = G.multiply(r).add(H.multiply(v));
+  const C = safeMul(G, r).add(safeMul(H, v));
 
   return {
     commitment: {
@@ -142,10 +189,52 @@ export function pedersenCommit(value: number): {
       algorithm: "pedersen-ristretto255",
     },
     opening: {
-      value,
+      value: v_int.toString(),
       blinding: scalarToHex(r),
     },
   };
+}
+
+/**
+ * T2-CRYPTO-1: commit to `Math.round(value * scale)` so a
+ * fractional measurement becomes a non-negative integer that the
+ * homomorphism actually preserves.
+ *
+ * Mirrors `commitScaledValue` from `range-proof.ts:435-450`. Pick
+ * `scale = 1000` for three decimal places (the v3 default).
+ */
+export function commitScaled(
+  value: number,
+  scale: number,
+): {
+  commitment: PedersenCommitment;
+  opening: PedersenOpening;
+} {
+  if (!Number.isInteger(scale) || scale <= 0) {
+    throw new Error("commitScaled: scale must be a positive integer");
+  }
+  if (!Number.isFinite(value)) {
+    throw new Error("commitScaled: value must be finite");
+  }
+  if (value < 0) {
+    throw new Error(
+      "commitScaled: value must be non-negative (Pedersen scalar requires positive integer)",
+    );
+  }
+  return pedersenCommit(BigInt(Math.round(value * scale)));
+}
+
+function normaliseInteger(value: number | bigint): bigint {
+  if (typeof value === "bigint") return value;
+  if (!Number.isFinite(value)) {
+    throw new Error("pedersenCommit: value must be finite");
+  }
+  if (!Number.isInteger(value)) {
+    throw new Error(
+      "pedersenCommit: value must be an integer; use commitScaled for fractional inputs",
+    );
+  }
+  return BigInt(value);
 }
 
 export function pedersenOpen(
@@ -155,10 +244,12 @@ export function pedersenOpen(
   try {
     const G = ristretto255.Point.BASE;
     const H = getH();
-    const v = valueToScalar(opening.value);
+    // T2-CRYPTO-1: opening.value is a decimal-string integer; parse
+    // through BigInt so values larger than 2^53 round-trip exactly.
+    const v = valueToScalar(BigInt(opening.value));
     const r = hexToScalar(opening.blinding);
 
-    const expected = G.multiply(r).add(H.multiply(v));
+    const expected = safeMul(G, r).add(safeMul(H, v));
     const supplied = hexToPoint(commitment.commitment);
     return expected.equals(supplied);
   } catch {
@@ -219,13 +310,14 @@ export function proveOpening(
 ): PoKProof {
   const G = ristretto255.Point.BASE;
   const H = getH();
-  const v = valueToScalar(opening.value);
+  // T2-CRYPTO-1: opening.value is a decimal-string integer.
+  const v = valueToScalar(BigInt(opening.value));
   const r = hexToScalar(opening.blinding);
 
   // 1. random nonces
   const a_r = randomScalar();
   const a_v = randomScalar();
-  const A = G.multiply(a_r).add(H.multiply(a_v));
+  const A = safeMul(G, a_r).add(safeMul(H, a_v));
 
   // 2. Fiat-Shamir challenge
   const challengeBytes = sha512(
@@ -264,8 +356,8 @@ export function verifyOpeningProof(
     const c = reduceToScalar(challengeBytes);
 
     // Check: z_r·G + z_v·H == A + c·C
-    const lhs = G.multiply(z_r).add(H.multiply(z_v));
-    const rhs = A.add(C.multiply(c));
+    const lhs = safeMul(G, z_r).add(safeMul(H, z_v));
+    const rhs = A.add(safeMul(C, c));
     return lhs.equals(rhs);
   } catch {
     return false;

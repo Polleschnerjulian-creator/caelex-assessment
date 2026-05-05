@@ -83,6 +83,15 @@ export interface ThresholdAttestation {
     commitment_proof?: CommitmentPoKProof;
     /** Zero-knowledge range proof of the threshold claim. Present only when version = "3.0". */
     range_proof?: ThresholdRangeProof;
+    /**
+     * T2-CRYPTO-2 (audit fix 2026-05-05): set on a v2 attestation
+     * that was issued under a v3 request because the claim was FAIL
+     * and v3's range proof can't construct a zero-knowledge proof of
+     * a false statement. Verifier-relevant: trust drops from
+     * "trustless threshold check" (v3) to "trust Caelex's threshold
+     * computation" (v2). Absent on native v2 / native v3 attestations.
+     */
+    scheme_fallback?: "v3-pass-only";
     source: "sentinel" | "assessment" | "evidence_record" | "manual";
     trust_level: TrustLevel; // HIGH / MEDIUM / LOW (NOT the float!)
     trust_range: string;

@@ -15,6 +15,7 @@
 import { describe, it, expect } from "vitest";
 import {
   pedersenCommit,
+  commitScaled,
   pedersenOpen,
   pedersenAdd,
   proveOpening,
@@ -34,7 +35,7 @@ describe("pedersenCommit / pedersenOpen", () => {
 
   it("rejects opening with the wrong value", () => {
     const { commitment, opening } = pedersenCommit(100);
-    const tampered = { value: 101, blinding: opening.blinding };
+    const tampered = { value: "101", blinding: opening.blinding };
     expect(pedersenOpen(commitment, tampered)).toBe(false);
   });
 
@@ -62,33 +63,57 @@ describe("pedersenCommit / pedersenOpen", () => {
     expect(pedersenOpen(commitment, opening)).toBe(true);
     // Wrong value should still fail
     expect(
-      pedersenOpen(commitment, { value: 1, blinding: opening.blinding }),
+      pedersenOpen(commitment, { value: "1", blinding: opening.blinding }),
     ).toBe(false);
   });
 
-  it("commits to a negative value correctly (IEEE-754 stable)", () => {
-    const { commitment, opening } = pedersenCommit(-3.14);
-    expect(pedersenOpen(commitment, opening)).toBe(true);
-    // The encoding must distinguish -3.14 from +3.14
-    expect(
-      pedersenOpen(commitment, { value: 3.14, blinding: opening.blinding }),
-    ).toBe(false);
+  // T2-CRYPTO-1 (audit fix 2026-05-05): the bare integer API now
+  // rejects fractional inputs. Callers with measurements like fuel %
+  // or miss-distance km MUST use commitScaled so the homomorphism
+  // holds. The previous SHA-512 fallback was non-linear and broke
+  // pedersenAdd silently.
+  it("rejects fractional value (use commitScaled instead)", () => {
+    expect(() => pedersenCommit(3.14)).toThrow(/must be an integer/);
   });
 
-  it("commits to a large positive value correctly", () => {
-    const big = 1_234_567_890.12345;
+  it("rejects non-finite value", () => {
+    expect(() => pedersenCommit(Number.NaN)).toThrow(/must be finite/);
+    expect(() => pedersenCommit(Number.POSITIVE_INFINITY)).toThrow(
+      /must be finite/,
+    );
+  });
+
+  it("commits to a large bigint value (beyond 2^53)", () => {
+    const big = 9_007_199_254_740_993n; // 2^53 + 1, unrepresentable as JS number
     const { commitment, opening } = pedersenCommit(big);
     expect(pedersenOpen(commitment, opening)).toBe(true);
+    expect(opening.value).toBe(big.toString());
   });
 });
 
-describe("pedersenAdd — additive homomorphism", () => {
-  it("returns a valid Ristretto point (raw point-addition works)", () => {
-    // Pedersen point-addition is mathematically valid — the IST-Zustand
-    // we can verify is that the resulting commitment is a well-formed
-    // Ristretto255 point. Whether it semantically equals C(v_a + v_b)
-    // depends on whether `valueToScalar` is linear, which it currently
-    // is NOT (see the .todo below — KNOWN BUG).
+describe("commitScaled — fractional measurement helper (T2-CRYPTO-1)", () => {
+  it("commits to a fuel-% style fractional value via scale=1000", () => {
+    // 95.5% fuel: scale=1000 → integer 95500 in the commitment.
+    const { commitment, opening } = commitScaled(95.5, 1000);
+    expect(pedersenOpen(commitment, opening)).toBe(true);
+    expect(opening.value).toBe("95500");
+  });
+
+  it("rejects non-integer scale", () => {
+    expect(() => commitScaled(95, 1.5)).toThrow(/positive integer/);
+  });
+
+  it("rejects negative value", () => {
+    expect(() => commitScaled(-5, 1000)).toThrow(/non-negative/);
+  });
+
+  it("rejects non-finite value", () => {
+    expect(() => commitScaled(Number.NaN, 1000)).toThrow(/finite/);
+  });
+});
+
+describe("pedersenAdd — additive homomorphism (T2-CRYPTO-1 fixed)", () => {
+  it("returns a valid Ristretto point (point-addition works)", () => {
     const a = pedersenCommit(10);
     const b = pedersenCommit(15);
     const sum = pedersenAdd(a.commitment, b.commitment);
@@ -96,26 +121,61 @@ describe("pedersenAdd — additive homomorphism", () => {
     expect(sum.algorithm).toBe("pedersen-ristretto255");
   });
 
-  // ❌ KNOWN BUG (T2-CRYPTO-1, audit fix plan Tier 2):
-  // The doc-comment at the top of pedersen-provider.ts promises
-  //   "homomorphic — C(v₁) + C(v₂) = C(v₁ + v₂)"
-  // but the implementation breaks this property because
-  // `valueToScalar(v) = SHA-512(IEEE-754(v)) mod q` is non-linear.
-  // C(a) + C(b) on the curve sums (a_scalar + b_scalar) on H, but
-  // (a_scalar + b_scalar) ≠ valueToScalar(a + b) for almost all inputs.
-  // The "aggregate proofs across attestations" use case in the doc
-  // therefore does NOT work with this implementation.
-  //
-  // Two ways to fix (need design decision):
-  //   (a) Use the value directly as a scalar (`BigInt(value) mod q`)
-  //       — restores homomorphism but loses IEEE-754 number support.
-  //   (b) Drop the homomorphism claim from the doc-comment, since
-  //       v1/v2/v3 attestations don't actually use pedersenAdd today.
-  //
-  // Tracked as T2-CRYPTO-1 in docs/VERITY-AUDIT-FIX-PLAN.md.
-  it.todo(
-    "[KNOWN BUG] commitment(a) + commitment(b) opens to (a + b) — non-linear valueToScalar breaks this",
-  );
+  // T2-CRYPTO-1 fix: the linear valueToScalar restores the documented
+  // homomorphism. C(a) + C(b) now opens to (a + b) under the SUM of
+  // the two blinding factors — confirming the math holds end-to-end.
+  it("[T2-CRYPTO-1 fixed] C(a) + C(b) opens to (a + b) with summed blindings", () => {
+    const a = pedersenCommit(10);
+    const b = pedersenCommit(15);
+    const sum = pedersenAdd(a.commitment, b.commitment);
+
+    // Sum the openings: value adds in the integers, blinding adds
+    // mod CURVE_ORDER.
+    const a_blind = BigInt("0x" + a.opening.blinding);
+    const b_blind = BigInt("0x" + b.opening.blinding);
+    const sum_blind_hex = ((a_blind + b_blind) % CURVE_ORDER)
+      .toString(16)
+      .padStart(64, "0");
+    const sum_value = (
+      BigInt(a.opening.value) + BigInt(b.opening.value)
+    ).toString();
+
+    expect(
+      pedersenOpen(sum, { value: sum_value, blinding: sum_blind_hex }),
+    ).toBe(true);
+    expect(sum_value).toBe("25");
+  });
+
+  it("[T2-CRYPTO-1 fixed] homomorphism is associative: (a+b)+c == a+(b+c)", () => {
+    const a = pedersenCommit(7);
+    const b = pedersenCommit(11);
+    const c = pedersenCommit(13);
+
+    const ab = pedersenAdd(a.commitment, b.commitment);
+    const ab_then_c = pedersenAdd(ab, c.commitment);
+
+    const bc = pedersenAdd(b.commitment, c.commitment);
+    const a_then_bc = pedersenAdd(a.commitment, bc);
+
+    expect(ab_then_c.commitment).toBe(a_then_bc.commitment);
+  });
+
+  it("[T2-CRYPTO-1 fixed] commitScaled values are also additive", () => {
+    // Scaled commitments add correctly because the scaling is linear.
+    const a = commitScaled(2.5, 1000); // → 2500
+    const b = commitScaled(3.5, 1000); // → 3500
+    const sum = pedersenAdd(a.commitment, b.commitment);
+
+    // Open with (2500 + 3500) = 6000 and summed blindings.
+    const a_blind = BigInt("0x" + a.opening.blinding);
+    const b_blind = BigInt("0x" + b.opening.blinding);
+    const sum_blind_hex = ((a_blind + b_blind) % CURVE_ORDER)
+      .toString(16)
+      .padStart(64, "0");
+    expect(pedersenOpen(sum, { value: "6000", blinding: sum_blind_hex })).toBe(
+      true,
+    );
+  });
 });
 
 describe("proveOpening / verifyOpeningProof", () => {
