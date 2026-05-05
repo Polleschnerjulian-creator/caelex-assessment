@@ -8,6 +8,7 @@ import {
   decryptPrivateKey,
   getActiveIssuerKey,
   getKeyByKeyId,
+  invalidateActiveIssuerKeyCache,
 } from "./issuer-keys";
 
 describe("issuer-keys", () => {
@@ -17,6 +18,9 @@ describe("issuer-keys", () => {
   beforeEach(() => {
     originalEnv = process.env.VERITY_MASTER_KEY;
     process.env.VERITY_MASTER_KEY = VALID_MASTER_KEY;
+    // T4-6: clear the per-process active-key cache between tests
+    // so each test exercises the DB lookup path independently.
+    invalidateActiveIssuerKeyCache();
   });
 
   afterEach(() => {

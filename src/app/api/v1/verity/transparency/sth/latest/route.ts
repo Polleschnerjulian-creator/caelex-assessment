@@ -30,12 +30,27 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  return NextResponse.json({
-    treeSize: sth.treeSize,
-    rootHash: sth.rootHash,
-    issuerKeyId: sth.issuerKeyId,
-    signature: sth.signature,
-    timestamp: sth.timestamp.toISOString(),
-    version: sth.version,
-  });
+  // T4-9 (audit fix 2026-05-05): cache the latest STH for 5 minutes
+  // at the edge with a 1-hour stale-while-revalidate window. STHs
+  // are signed periodically by the cron, so a 5-minute lag is well
+  // within the consistency tolerance — the consistency-proof endpoint
+  // covers any gap a verifier needs to reconcile. Greatly reduces
+  // load on `/sth/latest`, which monitoring services and pinning
+  // infrastructure poll regularly.
+  return NextResponse.json(
+    {
+      treeSize: sth.treeSize,
+      rootHash: sth.rootHash,
+      issuerKeyId: sth.issuerKeyId,
+      signature: sth.signature,
+      timestamp: sth.timestamp.toISOString(),
+      version: sth.version,
+    },
+    {
+      headers: {
+        "Cache-Control":
+          "public, max-age=300, s-maxage=300, stale-while-revalidate=3600",
+      },
+    },
+  );
 }

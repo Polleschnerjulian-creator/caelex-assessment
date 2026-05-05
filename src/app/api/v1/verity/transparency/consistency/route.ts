@@ -58,6 +58,22 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // T4-10 (audit fix 2026-05-05): cap the gap between snapshots so a
+  // pathological client can't request a 1B-leaf consistency proof and
+  // OOM the server. Real-world verifiers chain proofs across snapshots
+  // they actually pinned — gaps of millions of leaves indicate either
+  // a bug or an attack. 10M is a generous ceiling that covers years
+  // of normal log growth at projected attestation volumes.
+  const MAX_CONSISTENCY_SPAN = 10_000_000;
+  if (newSize - oldSize > MAX_CONSISTENCY_SPAN) {
+    return NextResponse.json(
+      {
+        error: `consistency span too large (${newSize - oldSize} leaves > ${MAX_CONSISTENCY_SPAN} max). Chain multiple smaller proofs instead.`,
+      },
+      { status: 400 },
+    );
+  }
+
   const bundle = await getConsistencyFromStore(prisma, oldSize, newSize);
   if (!bundle) {
     return NextResponse.json(

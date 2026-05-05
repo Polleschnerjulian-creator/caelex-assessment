@@ -2,7 +2,7 @@
 
 **Created:** 2026-05-05
 **Source:** 4-agent parallel audit (Crypto+Security, Backend Bugs, Data Layer, Architecture)
-**Status:** Tier 1 completed (8/8; H4a/b/c deferred). Tier 2 completed (5/10 done with 96 tests + 2 known-bug todos; T2-4/T2-5/T2-6/T2-8/T2-10 deferred to a test-infra sprint). Tier 3 completed (4/4: Phase-2 crypto activation behind default-v1 fallback). Tier 5 completed (13/13). Tier 4 pending (DB schema migrations).
+**Status:** Tier 1 completed (8/8; H4a/b/c deferred). Tier 2 completed (5/10 done with 96 tests + 2 known-bug todos; T2-4/T2-5/T2-6/T2-8/T2-10 deferred to a test-infra sprint). Tier 3 completed (4/4: Phase-2 crypto activation behind default-v1 fallback). Tier 5 completed (13/13). Tier 4 partial — 4/10 done (T4-6/T4-8/T4-9/T4-10, all code-only); T4-1/T4-2/T4-3/T4-4/T4-5/T4-7 deferred (need DB-state inspection + explicit confirmation before running migrations).
 **Survives:** Conversation compaction. This file is the single source of truth for the Verity remediation work.
 
 ---
@@ -434,45 +434,66 @@ Documented in the same `UPGRADE_PATH.md` rewrite under a "Migration plan (forwar
 
 ## Tier 4 — Schema + scaling refactor
 
+Code-only items landed in one batched commit. Schema migrations
+(T4-1/T4-2/T4-3/T4-4/T4-5/T4-7) deferred — they need DB-state
+inspection (orphan rows, oversized values) and an explicit deploy
+plan before being run against production data.
+
 ### [ ] T4-1 — `VerityAttestation.organizationId` from nullable to NOT NULL
 
-Migration. Backfill from `operatorId`-→User-→Org join. Update `evaluateAndAttest` to always pass `organizationId`. Update `attestation/list/route.ts` to filter on `organizationId` directly (removes the IN-clause workaround). Removes the dead `@@index([organizationId])` problem.
+DEFERRED. Migration. Backfill from `operatorId`→User→Org join. Update `evaluateAndAttest` to always pass `organizationId`. Update `attestation/list/route.ts` to filter on `organizationId` directly (removes the IN-clause workaround). Removes the dead `@@index([organizationId])` problem.
 
 ### [ ] T4-2 — `VerityCertificate` add `organizationId` + FK
 
-Schema change with cascade rules: `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`. NOTE: Audit-chain entries must NOT cascade — keep their `String organizationId` without FK or use `onDelete: Restrict`.
+DEFERRED. Schema change with cascade rules: `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`. NOTE: Audit-chain entries must NOT cascade — keep their `String organizationId` without FK or use `onDelete: Restrict`.
 
 ### [ ] T4-3 — `VerityAuditChainEntry` add `onDelete: Restrict` constraint
 
-Prevent accidental deletion via org cleanup. Document explicitly that audit chain is immutable.
+DEFERRED. Prevent accidental deletion via org cleanup. Document explicitly that audit chain is immutable.
 
 ### [ ] T4-4 — `@@index([attestationId])` on `VerityCertificateClaim`
 
-Single-line schema add. Fixes O(N) lookup for revoke flows.
+DEFERRED. Single-line schema add. Fixes O(N) lookup for revoke flows.
 
 ### [ ] T4-5 — `@db.VarChar(N)` length constraints on crypto fields
 
-`signature`, `valueCommitment`, `issuerPublicKey`, `encryptedSecret` — bound size to prevent unbounded payload DoS.
+DEFERRED. `signature`, `valueCommitment`, `issuerPublicKey`, `encryptedSecret` — bound size to prevent unbounded payload DoS. Needs a one-shot `MAX(LENGTH(...))` query against prod first to confirm the cap is large enough for existing data.
 
-### [ ] T4-6 — In-memory cache for `getActiveIssuerKey`
+### [x] T4-6 — In-memory cache for `getActiveIssuerKey`
 
-Module-level cache, 5min TTL. Saves 1 DB-roundtrip per attestation. Handle key-rotation by invalidating on `rotate*` calls.
+`src/lib/verity/keys/issuer-keys.ts` — module-level cache (5-minute
+TTL) plus `invalidateActiveIssuerKeyCache()` export. `rotateIssuerKey`
+now calls the invalidator after the new active key is committed so
+the next attestation in the same process picks up immediately.
+Multi-instance staleness is bounded by the TTL (acceptable: the old
+key stays valid for verification, rotation is rare). Test fixture
+clears the cache between cases.
 
 ### [ ] T4-7 — BLS-aggregated signatures in cert bundles
 
-Currently bundles embed N×64-byte Ed25519 sigs. BLS aggregate is 96 bytes total. `bls-aggregator.ts` is implemented but unused.
+DEFERRED. Currently bundles embed N×64-byte Ed25519 sigs. BLS aggregate is 96 bytes total. `bls-aggregator.ts` is implemented but unused. Needs verifier-side support before flipping the cert format.
 
-### [ ] T4-8 — Rate-limit tier `verity_bundle` and `verity_public` registration
+### [x] T4-8 — Rate-limit tier `verity_bundle` and `verity_public` registration
 
-File: `src/lib/ratelimit.ts`. Confirm both tiers are defined; if not, add them with sensible budgets (5/h for bundle, 30/h for public).
+`src/lib/ratelimit.ts:258-274,446-447` — both tiers already present
+in Redis (5/h bundle, 30/h public) and in-memory fallback (3/h, 10/h).
+Verified during T5-12; ticked complete here for completeness.
 
-### [ ] T4-9 — HTTP cache headers on `/transparency/sth/latest` and `/public-key`
+### [x] T4-9 — HTTP cache headers on `/transparency/sth/latest` and `/public-key`
 
-Add `Cache-Control: public, max-age=300, stale-while-revalidate=3600` (sth/latest) and `max-age=3600` (public-key).
+- `/transparency/sth/latest`: `public, max-age=300, s-maxage=300,
+stale-while-revalidate=3600` — STH cron publishes periodically; a
+  5-minute lag is well within consistency tolerance.
+- `/public-key`: `public, max-age=3600, s-maxage=3600,
+stale-while-revalidate=86400` — issuer keys rotate at most every
+  few months; an hour of cache + 24h SWR is fine.
 
-### [ ] T4-10 — `/transparency/consistency` size sanity check
+### [x] T4-10 — `/transparency/consistency` size sanity check
 
-Reject `newSize - oldSize > 10_000_000` with 400.
+`src/app/api/v1/verity/transparency/consistency/route.ts` — reject
+`newSize - oldSize > 10_000_000` with 400. Real verifiers chain
+proofs across snapshots they actually pinned; a million-leaf gap is
+either a bug or an attack.
 
 ---
 
@@ -626,8 +647,21 @@ verifyAttestation had already populated the array).
     test fixture updated with `commitment_scheme: "v1"` +
     `range_encoding: undefined`. Typecheck shows no new errors
     introduced — the 2 Prisma JSON-type warnings are preexisting.
-- Tier 4: not started — note: add T4-11 "VerityLogInnerNode + frontier
-  persistence" prerequisite for H4a/b/c lazy-sibling lookup
+- **Tier 4: partial 2026-05-05 (4/10).**
+  Code-only fixes landed: T4-6 (issuer-key cache), T4-8 (rate-limit
+  verified), T4-9 (HTTP cache headers), T4-10 (consistency size cap).
+  Single batched commit on branch `claude/crazy-pascal-065793`:
+  - (commit pending) — T4-6/T4-8/T4-9/T4-10.
+    Verified: 187/187 Verity tests pass after key-rotation test
+    fixture updated to mock the new `invalidateActiveIssuerKeyCache`
+    export and issuer-keys test fixture clears the cache between
+    cases.
+    Schema migrations (T4-1/T4-2/T4-3/T4-4/T4-5) and BLS aggregation
+    (T4-7) deferred — they need DB-state inspection (orphan rows for
+    FK Restrict, oversized values for VarChar caps) and an explicit
+    deploy plan. Note: still add T4-11 "VerityLogInnerNode + frontier
+    persistence" as the prerequisite for H4a/b/c lazy-sibling lookup
+    when the schema sprint runs.
 - **Tier 5: completed 2026-05-05 (13/13).**
   Single batched commit on branch `claude/crazy-pascal-065793`:
   - (commit pending) — T5-1..T5-13.

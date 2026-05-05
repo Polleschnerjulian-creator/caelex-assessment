@@ -100,6 +100,34 @@ export function decryptPrivateKey(encryptedHex: string): Buffer {
 }
 
 /**
+ * T4-6 (audit fix 2026-05-05): module-level cache for the active
+ * issuer key. Saves one DB roundtrip + one AES-256-GCM decrypt per
+ * attestation. The active key changes only on operator-initiated
+ * rotation; the cache TTL caps any stale read at 5 minutes even
+ * without an explicit invalidation. `invalidateActiveIssuerKeyCache`
+ * is called from `rotateIssuerKey` for instant invalidation in the
+ * same process.
+ *
+ * Cache scope is per Node.js process (Vercel serverless instance).
+ * Each cold start refills it on first hit; multi-instance staleness
+ * is bounded by the TTL.
+ */
+const ACTIVE_KEY_CACHE_TTL_MS = 5 * 60 * 1000;
+
+interface ActiveKeyCacheEntry {
+  keyId: string;
+  publicKeyHex: string;
+  privateKeyDer: Buffer;
+  expiresAt: number;
+}
+
+let activeKeyCache: ActiveKeyCacheEntry | null = null;
+
+export function invalidateActiveIssuerKeyCache(): void {
+  activeKeyCache = null;
+}
+
+/**
  * Load the active issuer key. If none exists, generate one.
  */
 export async function getActiveIssuerKey(prisma: PrismaClient): Promise<{
@@ -107,6 +135,15 @@ export async function getActiveIssuerKey(prisma: PrismaClient): Promise<{
   publicKeyHex: string;
   privateKeyDer: Buffer;
 }> {
+  const now = Date.now();
+  if (activeKeyCache && activeKeyCache.expiresAt > now) {
+    return {
+      keyId: activeKeyCache.keyId,
+      publicKeyHex: activeKeyCache.publicKeyHex,
+      privateKeyDer: activeKeyCache.privateKeyDer,
+    };
+  }
+
   // 1. Find active key in VerityIssuerKey
   let key = await prisma.verityIssuerKey.findFirst({
     where: { active: true },
@@ -129,6 +166,13 @@ export async function getActiveIssuerKey(prisma: PrismaClient): Promise<{
 
   // 3. Decrypt private key
   const privateKeyDer = decryptPrivateKey(key.encryptedPrivKey);
+
+  activeKeyCache = {
+    keyId: key.keyId,
+    publicKeyHex: key.publicKeyHex,
+    privateKeyDer,
+    expiresAt: now + ACTIVE_KEY_CACHE_TTL_MS,
+  };
 
   return {
     keyId: key.keyId,

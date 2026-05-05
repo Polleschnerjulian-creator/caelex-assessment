@@ -4,6 +4,10 @@ import { rotateIssuerKey, listAllIssuerKeys } from "./key-rotation";
 // Mock dependencies
 vi.mock("./issuer-keys", () => ({
   generateIssuerKeyPair: vi.fn(),
+  // T4-6: rotateIssuerKey now invalidates the active-key cache.
+  // The mock can be a no-op — we just need the export to exist so
+  // the import doesn't throw.
+  invalidateActiveIssuerKeyCache: vi.fn(),
 }));
 
 vi.mock("../utils/redaction", () => ({

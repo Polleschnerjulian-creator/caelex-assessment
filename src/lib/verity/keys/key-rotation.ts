@@ -1,5 +1,8 @@
 import type { PrismaClient } from "@prisma/client";
-import { generateIssuerKeyPair } from "./issuer-keys";
+import {
+  generateIssuerKeyPair,
+  invalidateActiveIssuerKeyCache,
+} from "./issuer-keys";
 import { safeLog } from "../utils/redaction";
 
 /**
@@ -31,6 +34,13 @@ export async function rotateIssuerKey(
       active: true,
     },
   });
+
+  // T4-6: invalidate the per-process active-key cache so the next
+  // attestation immediately picks up the rotated key. Same-process
+  // bound — other Vercel instances see the new key after their
+  // 5-minute TTL elapses (acceptable; old key stays valid for
+  // verification and rotation is rare).
+  invalidateActiveIssuerKeyCache();
 
   safeLog("Issuer key rotated", {
     newKeyId: newKey.keyId,
