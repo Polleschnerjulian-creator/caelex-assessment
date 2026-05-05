@@ -14,6 +14,10 @@ export type AuditEventType =
   | "ATTESTATION_REVOKED"
   | "CERTIFICATE_ISSUED"
   | "CERTIFICATE_REVOKED"
+  // T1-M9: visibility flips change the external trust profile of a
+  // certificate (public ↔ private) and must be tracked in the
+  // tamper-evident chain so a regulator can see every state change.
+  | "CERTIFICATE_VISIBILITY_CHANGED"
   | "SCORE_COMPUTED"
   | "PASSPORT_GENERATED"
   | "P2P_REQUEST_CREATED"

@@ -2,6 +2,7 @@ import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { appendToChain } from "@/lib/verity/audit-chain/chain-writer.server";
 
 /**
  * PATCH /api/v1/verity/certificate/[id]/visibility
@@ -80,6 +81,27 @@ export async function PATCH(
     const updated = await prisma.verityCertificate.update({
       where: { id },
       data: { isPublic: body.isPublic },
+    });
+
+    // T1-M9: tamper-evident audit-chain entry. Visibility flips
+    // change the external trust profile of a certificate (a once-
+    // public cert flipped to private remains physically queryable
+    // by anyone who saved the URL — regulators need a trail).
+    await appendToChain({
+      organizationId: membership.organizationId,
+      eventType: "CERTIFICATE_VISIBILITY_CHANGED",
+      entityId: certificate.certificateId,
+      entityType: "certificate",
+      eventData: {
+        changedBy: session.user.id,
+        previousVisibility: certificate.isPublic ? "public" : "private",
+        newVisibility: body.isPublic ? "public" : "private",
+      },
+    }).catch((err) => {
+      logger.error("verity audit-chain append failed (cert visibility)", {
+        certificateId: certificate.certificateId,
+        error: err instanceof Error ? err.message : String(err),
+      });
     });
 
     return NextResponse.json({ certificate: updated });

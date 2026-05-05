@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { evaluateAndAttest } from "@/lib/verity/evaluation/threshold-evaluator";
 import { issueCertificate } from "@/lib/verity/certificates/generator";
 import { getActiveIssuerKey } from "@/lib/verity/keys/issuer-keys";
 import { safeLog } from "@/lib/verity/utils/redaction";
+import { appendToChain } from "@/lib/verity/audit-chain/chain-writer.server";
 import type { ThresholdAttestation } from "@/lib/verity/core/types";
 
 /**
@@ -148,6 +150,30 @@ export async function POST(request: NextRequest) {
     safeLog("Certificate issued via API", {
       certificateId: certificate.certificate_id,
       claims: String(certificate.claims.length),
+    });
+
+    // T1-M9: tamper-evident audit-chain entry for cert issuance.
+    // The doc-comment at the top of certificates/generator.ts notes
+    // explicitly that "audit chain entry for CERTIFICATE_ISSUED should
+    // be appended by the caller (API route) after persisting the
+    // certificate to DB" — this implements that contract.
+    await appendToChain({
+      organizationId: membership.organizationId,
+      eventType: "CERTIFICATE_ISSUED",
+      entityId: certificate.certificate_id,
+      entityType: "certificate",
+      eventData: {
+        issuedBy: session.user.id,
+        claimsCount: certificate.claims.length,
+        regulationRefs: certificate.claims.map((c) => c.regulation_ref),
+        minTrustLevel: certificate.evidence_summary.min_trust_level,
+        isPublic,
+      },
+    }).catch((err) => {
+      logger.error("verity audit-chain append failed (cert issue)", {
+        certificateId: certificate.certificate_id,
+        error: err instanceof Error ? err.message : String(err),
+      });
     });
 
     return NextResponse.json({

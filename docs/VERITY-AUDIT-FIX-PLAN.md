@@ -269,7 +269,7 @@ requestId: `vr_${randomBytes(16).toString("hex")}`,
 
 ---
 
-### [ ] T1-M9 — Audit-chain entries for cert revoke + visibility-toggle
+### [x] T1-M9 — Audit-chain entries for cert revoke + visibility-toggle (commit pending)
 
 **Severity:** MEDIUM
 **Effort:** 30min

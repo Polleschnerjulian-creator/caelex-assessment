@@ -2,6 +2,7 @@ import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { appendToChain } from "@/lib/verity/audit-chain/chain-writer.server";
 
 /**
  * POST /api/v1/verity/certificate/[id]/revoke
@@ -72,6 +73,24 @@ export async function POST(
     await prisma.verityCertificate.update({
       where: { id },
       data: { revokedAt: new Date() },
+    });
+
+    // T1-M9: tamper-evident audit-chain entry. Without this, a
+    // regulator auditing the chain sees no trace of the revocation.
+    await appendToChain({
+      organizationId: membership.organizationId,
+      eventType: "CERTIFICATE_REVOKED",
+      entityId: certificate.certificateId,
+      entityType: "certificate",
+      eventData: {
+        revokedBy: session.user.id,
+        regulationRefs: certificate.regulationRefs,
+      },
+    }).catch((err) => {
+      logger.error("verity audit-chain append failed (cert revoke)", {
+        certificateId: certificate.certificateId,
+        error: err instanceof Error ? err.message : String(err),
+      });
     });
 
     return NextResponse.json({ success: true });
