@@ -10,6 +10,13 @@ import {
   Pencil,
   ShieldCheck,
   ExternalLink,
+  Upload,
+  Radio,
+  ListChecks,
+  FileSignature,
+  UserPlus,
+  Hourglass,
+  type LucideIcon,
 } from "lucide-react";
 import {
   Card,
@@ -32,6 +39,7 @@ import {
   type ComplianceStatus,
   REGULATION_LABELS,
 } from "@/lib/comply-v2/types";
+import { deriveNextStep, type NextStepKind } from "@/lib/comply-v2/next-step";
 import {
   snoozeAction,
   unsnoozeAction,
@@ -89,17 +97,36 @@ export interface ComplianceItemCardProps {
   snoozedUntil: string | null;
 }
 
+// Sprint 1.2: icon registry for the NextStep CTA. Keeps the icon
+// choice in one place — the next-step.ts module exposes the kind +
+// the name, the card maps the name to the lucide component.
+const NEXT_STEP_ICONS: Record<NextStepKind, LucideIcon> = {
+  UPLOAD_EVIDENCE: Upload,
+  CONNECT_SENTINEL: Radio,
+  RUN_ASSESSMENT: ListChecks,
+  REVIEW_DRAFT: FileSignature,
+  ATTEST: ShieldCheck,
+  REQUEST_FROM_TEAM: UserPlus,
+  WAIT_FOR_APPROVAL: Hourglass,
+};
+
 export function ComplianceItemCard({
   item,
   snoozedUntil,
 }: ComplianceItemCardProps) {
   const [open, setOpen] = React.useState(false);
-  const tone = item.priority === "URGENT" ? "emerald" : "slate";
   const noteSnippet =
     item.notes?.slice(0, 140) || item.evidenceNotes?.slice(0, 140);
 
   const isSnoozed = Boolean(snoozedUntil);
   const detailHref = `/dashboard/items/${item.regulation}/${item.rowId}`;
+
+  // Sprint 1.2: replace the opaque status pill with a concrete next-
+  // step CTA. tone drives the card border colour so URGENT actions
+  // visually pop.
+  const nextStep = deriveNextStep(item);
+  const NextStepIcon = NEXT_STEP_ICONS[nextStep.kind];
+  const tone = nextStep.tone === "amber" ? "emerald" : nextStep.tone;
 
   return (
     <Card tone={tone} className="group/card relative flex flex-col p-3">
@@ -250,6 +277,19 @@ export function ComplianceItemCard({
             {"// no notes"}
           </p>
         )}
+
+        {/* Sprint 1.2: Next-Step CTA. Primary action for the user
+            on this item — replaces "stare at status pill, click into
+            detail page, figure out what to do" with one click. */}
+        <NextStepCta
+          href={nextStep.href}
+          label={nextStep.ctaLabel}
+          helper={nextStep.helper}
+          tone={nextStep.tone}
+          selfActionable={nextStep.selfActionable}
+          Icon={NextStepIcon}
+        />
+
         <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-white/[0.04] pt-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">
           {item.targetDate ? (
             <span className="inline-flex items-center gap-1">
@@ -266,5 +306,56 @@ export function ComplianceItemCard({
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+/**
+ * Renders the Sprint-1.2 primary CTA on each card. Three tones:
+ *   emerald  — user-actionable, high-visibility (URGENT-bucket items)
+ *   amber    — user-actionable, urgent-attention (EXPIRED items)
+ *   slate    — informational or waiting-on-someone-else
+ *
+ * `selfActionable=false` reduces opacity so the user sees at a glance
+ * "this isn't on me right now."
+ */
+function NextStepCta({
+  href,
+  label,
+  helper,
+  tone,
+  selfActionable,
+  Icon,
+}: {
+  href: string;
+  label: string;
+  helper: string;
+  tone: "emerald" | "amber" | "slate";
+  selfActionable: boolean;
+  Icon: LucideIcon;
+}) {
+  const toneClass =
+    tone === "amber"
+      ? "bg-amber-500/15 text-amber-200 ring-amber-500/40 hover:bg-amber-500/25 hover:text-amber-100"
+      : tone === "emerald"
+        ? "bg-emerald-500/15 text-emerald-200 ring-emerald-500/40 hover:bg-emerald-500/25 hover:text-emerald-100"
+        : "bg-white/[0.04] text-slate-300 ring-white/10 hover:bg-white/[0.08] hover:text-slate-100";
+
+  return (
+    <Link
+      href={href}
+      className={`mt-2 group/cta block rounded-md px-2.5 py-2 ring-1 ring-inset transition ${toneClass} ${selfActionable ? "" : "opacity-60 hover:opacity-100"}`}
+      aria-label={`${label} — ${helper}`}
+    >
+      <div className="flex items-center gap-2">
+        <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden />
+        <span className="font-mono text-[11px] font-semibold uppercase tracking-wider">
+          {label}
+        </span>
+        <ExternalLink className="ml-auto h-3 w-3 opacity-0 transition group-hover/cta:opacity-100" />
+      </div>
+      <p className="mt-1 line-clamp-2 text-[10px] leading-snug text-slate-400">
+        {helper}
+      </p>
+    </Link>
   );
 }
