@@ -7,6 +7,7 @@ import type {
   ObjectCatalogEntry,
   ProviderInfo,
 } from "@/lib/data-sources/types";
+import { logger } from "@/lib/logger";
 
 // ─── Configuration ──────────────────────────────────────────────────────────
 
@@ -199,14 +200,14 @@ async function discosFetch<T>(
     };
 
     if (res.status === 429) {
-      console.warn(
+      logger.warn(
         `[DISCOS] Rate limited (429). Remaining: ${rateLimit.remaining}, Reset: ${rateLimit.reset}`,
       );
       return { data: null, rateLimit };
     }
 
     if (res.status === 401 || res.status === 403) {
-      console.warn(
+      logger.warn(
         `[DISCOS] Auth error: ${res.status}. Check EU_DISCOS_API_KEY.`,
       );
       return { data: null, rateLimit };
@@ -214,14 +215,14 @@ async function discosFetch<T>(
 
     if (res.status === 400) {
       const body = await res.json().catch(() => null);
-      console.warn(
+      logger.warn(
         `[DISCOS] Bad request (400): ${JSON.stringify(body?.errors ?? body)}`,
       );
       return { data: null, rateLimit };
     }
 
     if (!res.ok) {
-      console.warn(`[DISCOS] HTTP ${res.status} for ${path}`);
+      logger.warn(`[DISCOS] HTTP ${res.status} for ${path}`);
       return { data: null, rateLimit };
     }
 
@@ -230,7 +231,7 @@ async function discosFetch<T>(
   } catch (err) {
     clearTimeout(timer);
     const msg = err instanceof Error ? err.message : "unknown";
-    console.warn(`[DISCOS] Fetch failed for ${path}: ${msg}`);
+    logger.warn(`[DISCOS] Fetch failed for ${path}: ${msg}`);
     return {
       data: null,
       rateLimit: { limit: null, remaining: null, reset: null },

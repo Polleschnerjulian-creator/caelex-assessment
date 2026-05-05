@@ -7,6 +7,7 @@ import type {
   SpaceWeatherData,
   ProviderInfo,
 } from "@/lib/data-sources/types";
+import { logger } from "@/lib/logger";
 
 // ─── Configuration ──────────────────────────────────────────────────────────
 
@@ -57,7 +58,7 @@ async function fetchWithTimeout<T>(url: string): Promise<T | null> {
     clearTimeout(timer);
 
     if (!res.ok) {
-      console.warn(`[ESA-SWE] HTTP error: ${res.status} for ${url}`);
+      logger.warn(`[ESA-SWE] HTTP error: ${res.status} for ${url}`);
       return null;
     }
 
@@ -65,7 +66,7 @@ async function fetchWithTimeout<T>(url: string): Promise<T | null> {
   } catch (err) {
     clearTimeout(timer);
     const message = err instanceof Error ? err.message : "unknown error";
-    console.warn(`[ESA-SWE] Fetch failed for ${url}: ${message}`);
+    logger.warn(`[ESA-SWE] Fetch failed for ${url}: ${message}`);
     return null;
   }
 }
@@ -146,7 +147,7 @@ export const esaSweProvider: SpaceWeatherProvider = {
       // Step 1: Verify F10.7 dataset exists in HAPI catalog
       const f107DatasetFound = await datasetExistsInCatalog(F107_DATASET_ID);
       if (!f107DatasetFound) {
-        console.warn(
+        logger.warn(
           `[ESA-SWE] F10.7 dataset "${F107_DATASET_ID}" not found in HAPI catalog. ` +
             `The catalog may have changed — see TODO at top of file.`,
         );
@@ -156,13 +157,13 @@ export const esaSweProvider: SpaceWeatherProvider = {
       // Step 2: Fetch latest F10.7 data point
       const f107Response = await fetchLatestHAPIData(F107_DATASET_ID);
       if (!f107Response) {
-        console.warn("[ESA-SWE] Failed to fetch F10.7 data from HAPI");
+        logger.warn("[ESA-SWE] Failed to fetch F10.7 data from HAPI");
         return null;
       }
 
       const f107 = extractLastValue(f107Response, 1);
       if (f107 === null) {
-        console.warn("[ESA-SWE] No valid F10.7 value found in HAPI response");
+        logger.warn("[ESA-SWE] No valid F10.7 value found in HAPI response");
         return null;
       }
 
@@ -180,10 +181,10 @@ export const esaSweProvider: SpaceWeatherProvider = {
         }
       } catch {
         // Kp is optional — swallow error gracefully
-        console.warn("[ESA-SWE] Kp index fetch failed (non-critical)");
+        logger.warn("[ESA-SWE] Kp index fetch failed (non-critical)");
       }
 
-      console.info(
+      logger.info(
         `[ESA-SWE] Fetched space weather: F10.7=${f107}, Kp=${kpIndex ?? "n/a"}, ` +
           `observedAt=${observedAt}`,
       );
@@ -197,7 +198,7 @@ export const esaSweProvider: SpaceWeatherProvider = {
       };
     } catch (err) {
       const message = err instanceof Error ? err.message : "unknown error";
-      console.warn(
+      logger.warn(
         `[ESA-SWE] fetchCurrentConditions failed gracefully: ${message}`,
       );
       return null;

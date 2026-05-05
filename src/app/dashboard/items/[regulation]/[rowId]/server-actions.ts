@@ -7,6 +7,7 @@ import {
   markAsAttested,
   requestEvidence,
 } from "@/lib/comply-v2/actions/compliance-item-actions";
+import { logger } from "@/lib/logger";
 
 /**
  * Server-action wrappers for the Per-Item detail page. Same pattern
@@ -22,34 +23,34 @@ import {
 export async function snoozeAction(formData: FormData): Promise<void> {
   const result = await snoozeComplianceItem.serverAction(formData);
   if (!result.ok) {
-    console.warn("[comply-v2] snooze failed:", result.error);
+    logger.warn("[comply-v2] snooze failed", { error: result.error });
   }
 }
 
 export async function unsnoozeAction(formData: FormData): Promise<void> {
   const result = await unsnoozeComplianceItem.serverAction(formData);
   if (!result.ok) {
-    console.warn("[comply-v2] unsnooze failed:", result.error);
+    logger.warn("[comply-v2] unsnooze failed", { error: result.error });
   }
 }
 
 export async function addNoteAction(formData: FormData): Promise<void> {
   const result = await addComplianceItemNote.serverAction(formData);
   if (!result.ok) {
-    console.warn("[comply-v2] add-note failed:", result.error);
+    logger.warn("[comply-v2] add-note failed", { error: result.error });
   }
 }
 
 export async function markAttestedAction(formData: FormData): Promise<void> {
   const result = await markAsAttested.serverAction(formData);
   if (!result.ok) {
-    console.warn("[comply-v2] mark-attested failed:", result.error);
+    logger.warn("[comply-v2] mark-attested failed", { error: result.error });
   }
 }
 
 export async function requestEvidenceAction(formData: FormData): Promise<void> {
   const result = await requestEvidence.serverAction(formData);
   if (!result.ok) {
-    console.warn("[comply-v2] request-evidence failed:", result.error);
+    logger.warn("[comply-v2] request-evidence failed", { error: result.error });
   }
 }

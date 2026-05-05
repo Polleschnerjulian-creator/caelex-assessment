@@ -6,6 +6,7 @@ import {
   addComplianceItemNote,
   markAsAttested,
 } from "@/lib/comply-v2/actions/compliance-item-actions";
+import { logger } from "@/lib/logger";
 
 /**
  * Thin Server Action wrappers that the Today inbox client components
@@ -31,21 +32,21 @@ import {
 export async function snoozeAction(formData: FormData): Promise<void> {
   const result = await snoozeComplianceItem.serverAction(formData);
   if (!result.ok) {
-    console.warn("[comply-v2] snooze action failed:", result.error);
+    logger.warn("[comply-v2] snooze action failed", { error: result.error });
   }
 }
 
 export async function unsnoozeAction(formData: FormData): Promise<void> {
   const result = await unsnoozeComplianceItem.serverAction(formData);
   if (!result.ok) {
-    console.warn("[comply-v2] unsnooze action failed:", result.error);
+    logger.warn("[comply-v2] unsnooze action failed", { error: result.error });
   }
 }
 
 export async function addNoteAction(formData: FormData): Promise<void> {
   const result = await addComplianceItemNote.serverAction(formData);
   if (!result.ok) {
-    console.warn("[comply-v2] add-note action failed:", result.error);
+    logger.warn("[comply-v2] add-note action failed", { error: result.error });
   }
 }
 
@@ -60,6 +61,8 @@ export async function addNoteAction(formData: FormData): Promise<void> {
 export async function markAttestedAction(formData: FormData): Promise<void> {
   const result = await markAsAttested.serverAction(formData);
   if (!result.ok) {
-    console.warn("[comply-v2] mark-attested action failed:", result.error);
+    logger.warn("[comply-v2] mark-attested action failed", {
+      error: result.error,
+    });
   }
 }

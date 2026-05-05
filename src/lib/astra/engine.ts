@@ -39,6 +39,7 @@ import {
 } from "./conversation-manager";
 import type { AddMessageResult } from "./conversation-manager";
 import { validateCitations } from "./citation-validator";
+import { logger } from "@/lib/logger";
 
 // ─── Retry Utility ───
 
@@ -68,7 +69,7 @@ async function withRetry<T>(
 
       // Exponential backoff: 1s, 2s
       const delay = RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
-      console.warn(
+      logger.warn(
         `[ASTRA] Retrying after ${error.status} error (attempt ${attempt + 1}/${retries}), waiting ${delay}ms`,
       );
       await new Promise((resolve) => setTimeout(resolve, delay));
@@ -273,7 +274,7 @@ export class AstraEngine implements IAstraEngine {
 
       return formattedResponse;
     } catch (error) {
-      console.error("ASTRA Engine error:", error);
+      logger.error("ASTRA Engine error:", error);
 
       // Check for specific Anthropic API errors
       if (error instanceof Anthropic.APIError) {
@@ -395,7 +396,7 @@ export class AstraEngine implements IAstraEngine {
     }
 
     // Hit max iterations - return what we have
-    console.warn(
+    logger.warn(
       `ASTRA: Hit max tool iterations (${ASTRA_CONFIG.maxToolIterations})`,
     );
     return {
@@ -468,7 +469,7 @@ export class AstraEngine implements IAstraEngine {
             error.name === "AbortError" ||
             error.message.includes("aborted"))
         ) {
-          console.warn("ASTRA: Stream aborted due to inactivity timeout");
+          logger.warn("ASTRA: Stream aborted due to inactivity timeout");
           return {
             responseText:
               "The AI response timed out. Please try again with a simpler question.",
@@ -532,7 +533,7 @@ export class AstraEngine implements IAstraEngine {
       });
     }
 
-    console.warn(
+    logger.warn(
       `ASTRA: Hit max tool iterations (${ASTRA_CONFIG.maxToolIterations})`,
     );
     return {
@@ -787,7 +788,7 @@ export class AstraEngine implements IAstraEngine {
         originalLength: addResult.originalLength,
       };
     } catch (error) {
-      console.error("ASTRA Engine streaming error:", error);
+      logger.error("ASTRA Engine streaming error:", error);
 
       let errorResponse: AstraResponse;
       if (error instanceof Anthropic.APIError) {

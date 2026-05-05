@@ -37,6 +37,7 @@ import { esaSweProvider } from "./providers/esa-swe-provider.server";
 import { euSstProvider } from "./providers/eu-sst-provider.server";
 import { noaaProvider } from "./providers/noaa-provider.server";
 import { spaceTrackProvider } from "./providers/spacetrack-provider.server";
+import { logger } from "@/lib/logger";
 
 // ─── Internal Helpers ────────────────────────────────────────────────────────
 
@@ -60,7 +61,7 @@ export async function fetchOrbitalElementsWithFallback(
   const start = Date.now();
   const provider = celestrakProvider;
 
-  console.info(
+  logger.info(
     `[DataRouter] fetchOrbitalElements noradId=${noradId} ` +
       `source=${provider.getInfo().name} (CelesTrak is sole TLE source; ` +
       `DISCOS has catalog metadata only — no EU TLE fallback currently available)`,
@@ -70,7 +71,7 @@ export async function fetchOrbitalElementsWithFallback(
     const data = await provider.fetchOrbitalElements(noradId);
     const durationMs = Date.now() - start;
 
-    console.info(
+    logger.info(
       `[DataRouter] fetchOrbitalElements noradId=${noradId} ` +
         `source=${provider.getInfo().name} found=${data !== null} durationMs=${durationMs}`,
     );
@@ -87,7 +88,7 @@ export async function fetchOrbitalElementsWithFallback(
     const durationMs = Date.now() - start;
     const reason = err instanceof Error ? err.message : "unknown error";
 
-    console.info(
+    logger.info(
       `[DataRouter] fetchOrbitalElements noradId=${noradId} ` +
         `source=${provider.getInfo().name} failed: ${reason} durationMs=${durationMs}`,
     );
@@ -122,7 +123,7 @@ export async function fetchCDMsWithFallback(
 
   // ── Try EU SST first ──────────────────────────────────────────────────────
   if (euSstProvider.isConfigured()) {
-    console.info(
+    logger.info(
       `[DataRouter] fetchCDMs primarySource=${euSstProvider.getInfo().name} ` +
         `noradIds=${noradIds.length} sinceDays=${sinceDays ?? 7}`,
     );
@@ -133,7 +134,7 @@ export async function fetchCDMsWithFallback(
 
       // EU SST returning a non-empty result — use it
       if (data.length > 0) {
-        console.info(
+        logger.info(
           `[DataRouter] fetchCDMs source=${euSstProvider.getInfo().name} ` +
             `cdms=${data.length} durationMs=${durationMs}`,
         );
@@ -148,18 +149,18 @@ export async function fetchCDMsWithFallback(
       }
 
       // EU SST returned empty (expected until registration) — fall through to Space-Track
-      console.info(
+      logger.info(
         `[DataRouter] fetchCDMs EU SST returned empty (registration pending), ` +
           `falling back to Space-Track durationMs=${durationMs}`,
       );
     } catch (err) {
       const reason = err instanceof Error ? err.message : "unknown error";
-      console.info(
+      logger.info(
         `[DataRouter] fetchCDMs EU SST error: ${reason}, falling back to Space-Track`,
       );
     }
   } else {
-    console.info(
+    logger.info(
       `[DataRouter] fetchCDMs EU SST not configured (EU_SST_API_KEY missing), ` +
         `using Space-Track fallback`,
     );
@@ -172,7 +173,7 @@ export async function fetchCDMsWithFallback(
 
   const fallbackStart = Date.now();
 
-  console.info(
+  logger.info(
     `[DataRouter] fetchCDMs fallbackSource=${spaceTrackProvider.getInfo().name} ` +
       `noradIds=${noradIds.length} sinceDays=${sinceDays ?? 7}`,
   );
@@ -181,7 +182,7 @@ export async function fetchCDMsWithFallback(
     const data = await spaceTrackProvider.fetchCDMs(noradIds, sinceDays);
     const durationMs = Date.now() - start;
 
-    console.info(
+    logger.info(
       `[DataRouter] fetchCDMs fallback=${spaceTrackProvider.getInfo().name} ` +
         `cdms=${data.length} fallbackDurationMs=${Date.now() - fallbackStart} totalMs=${durationMs}`,
     );
@@ -198,7 +199,7 @@ export async function fetchCDMsWithFallback(
     const durationMs = Date.now() - start;
     const reason = err instanceof Error ? err.message : "unknown error";
 
-    console.info(
+    logger.info(
       `[DataRouter] fetchCDMs fallback=${spaceTrackProvider.getInfo().name} ` +
         `also failed: ${reason} durationMs=${durationMs}`,
     );
@@ -228,7 +229,7 @@ export async function fetchSpaceWeatherWithFallback(): Promise<
   const start = Date.now();
 
   // ── Try ESA SWE first (EU primary) ───────────────────────────────────────
-  console.info(
+  logger.info(
     `[DataRouter] fetchSpaceWeather primarySource=${esaSweProvider.getInfo().name}`,
   );
 
@@ -237,7 +238,7 @@ export async function fetchSpaceWeatherWithFallback(): Promise<
     const durationMs = Date.now() - start;
 
     if (data !== null) {
-      console.info(
+      logger.info(
         `[DataRouter] fetchSpaceWeather source=${esaSweProvider.getInfo().name} ` +
           `f107=${data.f107} kp=${data.kpIndex ?? "n/a"} durationMs=${durationMs}`,
       );
@@ -251,13 +252,13 @@ export async function fetchSpaceWeatherWithFallback(): Promise<
       };
     }
 
-    console.info(
+    logger.info(
       `[DataRouter] fetchSpaceWeather ESA SWE returned null (HAPI unavailable or dataset changed), ` +
         `falling back to NOAA durationMs=${durationMs}`,
     );
   } catch (err) {
     const reason = err instanceof Error ? err.message : "unknown error";
-    console.info(
+    logger.info(
       `[DataRouter] fetchSpaceWeather ESA SWE error: ${reason}, falling back to NOAA`,
     );
   }
@@ -266,7 +267,7 @@ export async function fetchSpaceWeatherWithFallback(): Promise<
   const primaryFailureReason =
     "ESA SWE HAPI returned null — endpoint may be unavailable or dataset IDs changed";
 
-  console.info(
+  logger.info(
     `[DataRouter] fetchSpaceWeather fallbackSource=${noaaProvider.getInfo().name}`,
   );
 
@@ -274,7 +275,7 @@ export async function fetchSpaceWeatherWithFallback(): Promise<
     const data = await noaaProvider.fetchCurrentConditions();
     const durationMs = Date.now() - start;
 
-    console.info(
+    logger.info(
       `[DataRouter] fetchSpaceWeather fallback=${noaaProvider.getInfo().name} ` +
         `f107=${data?.f107 ?? "n/a"} durationMs=${durationMs}`,
     );
@@ -291,7 +292,7 @@ export async function fetchSpaceWeatherWithFallback(): Promise<
     const durationMs = Date.now() - start;
     const reason = err instanceof Error ? err.message : "unknown error";
 
-    console.info(
+    logger.info(
       `[DataRouter] fetchSpaceWeather NOAA fallback also failed: ${reason} durationMs=${durationMs}`,
     );
 
@@ -320,7 +321,7 @@ export async function fetchObjectCatalog(
 ): Promise<DataFetchResult<ObjectCatalogEntry>> {
   const start = Date.now();
 
-  console.info(
+  logger.info(
     `[DataRouter] fetchObjectCatalog noradId=${noradId} ` +
       `source=${discosProvider.getInfo().name}`,
   );
@@ -331,7 +332,7 @@ export async function fetchObjectCatalog(
       "ESA DISCOS not configured — EU_DISCOS_API_KEY not set. " +
       "Register at https://cosmos.esa.int for API access.";
 
-    console.info(
+    logger.info(
       `[DataRouter] fetchObjectCatalog DISCOS not configured durationMs=${durationMs}`,
     );
 
@@ -349,7 +350,7 @@ export async function fetchObjectCatalog(
     const data = await discosProvider.fetchObject(noradId);
     const durationMs = Date.now() - start;
 
-    console.info(
+    logger.info(
       `[DataRouter] fetchObjectCatalog noradId=${noradId} ` +
         `source=${discosProvider.getInfo().name} found=${data !== null} durationMs=${durationMs}`,
     );
@@ -366,7 +367,7 @@ export async function fetchObjectCatalog(
     const durationMs = Date.now() - start;
     const reason = err instanceof Error ? err.message : "unknown error";
 
-    console.info(
+    logger.info(
       `[DataRouter] fetchObjectCatalog noradId=${noradId} ` +
         `source=${discosProvider.getInfo().name} failed: ${reason} durationMs=${durationMs}`,
     );
@@ -422,7 +423,7 @@ export async function fetchAtmosphericData(
     );
     const durationMs = Date.now() - start;
 
-    console.info(
+    logger.info(
       `[DataRouter] fetchAtmosphericData lat=${lat} lon=${lon} ` +
         `source=${copernicusProvider.getInfo().name} ` +
         `measurements=${data?.measurements.length ?? 0} durationMs=${durationMs}`,
@@ -440,7 +441,7 @@ export async function fetchAtmosphericData(
     const durationMs = Date.now() - start;
     const reason = err instanceof Error ? err.message : "unknown error";
 
-    console.error(
+    logger.error(
       `[DataRouter] fetchAtmosphericData failed: ${reason} durationMs=${durationMs}`,
     );
 

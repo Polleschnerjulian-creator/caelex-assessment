@@ -22,6 +22,7 @@ import { renderDocumentExpiry } from "./templates/document-expiry";
 import { renderWeeklyDigest } from "./templates/weekly-digest";
 import { renderIncidentAlert } from "./templates/incident-alert";
 import { isEmailDispatchHalted, logHaltedEmail } from "./dispatch-halt";
+import { logger } from "@/lib/logger";
 
 // ─── Email Provider Type ───
 
@@ -107,7 +108,7 @@ export async function verifyEmailConnection(): Promise<boolean> {
       await transport.verify();
       return true;
     } catch (error) {
-      console.error("SMTP connection verification failed:", error);
+      logger.error("SMTP connection verification failed:", error);
       return false;
     }
   }
@@ -221,7 +222,7 @@ export async function sendEmail(
 
   // Check if email is configured
   if (provider === "none") {
-    console.warn("Email not configured, skipping send");
+    logger.warn("Email not configured, skipping send");
     return { success: false, error: "Email not configured" };
   }
 
@@ -252,14 +253,14 @@ export async function sendEmail(
     }
 
     if (!result.success) {
-      console.error(`Failed to send email via ${provider}:`, result.error);
+      logger.error(`Failed to send email via ${provider}:`, result.error);
     }
 
     return result;
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    console.error(`Failed to send email via ${provider}:`, errorMessage);
+    logger.error(`Failed to send email via ${provider}:`, errorMessage);
 
     // Log failed send
     if (userId && notificationType && entityType) {
@@ -312,7 +313,7 @@ async function logNotification(params: LogNotificationParams): Promise<void> {
       },
     });
   } catch (error) {
-    console.error("Failed to log notification:", error);
+    logger.error("Failed to log notification:", error);
   }
 }
 
