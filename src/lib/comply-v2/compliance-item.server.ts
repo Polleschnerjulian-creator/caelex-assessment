@@ -737,3 +737,30 @@ export async function getTodayInboxForUser(userId: string): Promise<{
     snoozedUntilByItemId,
   };
 }
+
+/**
+ * Count the number of distinct items the user has cleared today,
+ * where "cleared" = took an action that moves the item out of the
+ * URGENT bucket (snoozed). Phase 1 only counts snoozes because they
+ * are the only action with a per-user timestamped row today;
+ * Phase 2 will fold in mark-attested + add-note via a unified
+ * `ComplianceItemActivity` log.
+ *
+ * Used by the Today inbox header KPI: `12 in inbox · 8 cleared today`.
+ *
+ * "Today" = since 00:00 UTC. Local-time semantics intentionally
+ * deferred — UTC is consistent across the user's devices and the
+ * cron-published posture snapshot.
+ */
+export async function getClearedTodayCountForUser(
+  userId: string,
+): Promise<number> {
+  const startOfToday = new Date();
+  startOfToday.setUTCHours(0, 0, 0, 0);
+  return prisma.complianceItemSnooze.count({
+    where: {
+      userId,
+      createdAt: { gte: startOfToday },
+    },
+  });
+}

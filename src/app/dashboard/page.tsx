@@ -1,27 +1,21 @@
 import { redirect } from "next/navigation";
-import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
-import V1DashboardClient from "./V1DashboardClient";
 
 /**
- * /dashboard route entry — V2-aware.
+ * /dashboard route entry — universal Today inbox.
  *
- * V2 users (default since the cutover): redirect to /dashboard/posture
- * — the executive overview is the V2-native home. V1's old dashboard
- * (charts + assessment-import + compliance-score widgets) is kept in
- * V1DashboardClient.tsx for emergency rollback per the concept doc.
+ * Sprint 1 of the Comply workflow redesign (see
+ * docs/COMPLY-WORKFLOW-PLAN.md): both V1 and V2 users land on
+ * /dashboard/today. The legacy V1 chart-heavy dashboard is reachable
+ * via /dashboard/legacy for users who want it back.
  *
- * V1 users (anyone who explicitly opted back via /dashboard/settings/ui):
- * see the legacy client-side dashboard, byte-identical to before.
+ * Previously V2 redirected to /dashboard/posture and V1 rendered the
+ * chart dashboard inline. The new story: "What needs you today?" is
+ * the only first-impression question — Posture and Missions are
+ * one click away in the nav.
  *
- * Why a thin server wrapper instead of the prior all-client page:
- * the V2-redirect needs to happen on the server BEFORE any HTML
- * streams down, otherwise V2 users would briefly see the V1
- * dashboard layout before client-side navigation kicks in.
+ * V1 users still see V1 chrome around the Today page (resolver-driven
+ * layout), V2 users see V2 chrome. The /today route works under both.
  */
 export default async function DashboardPage() {
-  const ui = await resolveComplyUiVersion();
-  if (ui === "v2") {
-    redirect("/dashboard/posture");
-  }
-  return <V1DashboardClient />;
+  redirect("/dashboard/today");
 }

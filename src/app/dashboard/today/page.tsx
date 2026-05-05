@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Inbox, Calendar, Eye, X } from "lucide-react";
+import { Inbox, Calendar, Eye, X, BarChart3 } from "lucide-react";
 import { auth } from "@/lib/auth";
-import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
 import {
   getTodayInboxForUser,
   getComplianceItemsForUser,
+  getClearedTodayCountForUser,
 } from "@/lib/comply-v2/compliance-item.server";
 import {
   type ComplianceItem,
@@ -58,11 +58,11 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
     redirect("/login?next=/dashboard/today");
   }
 
-  const ui = await resolveComplyUiVersion();
-  if (ui === "v1") {
-    // Today is V2-only. V1 users land back on the legacy dashboard.
-    redirect("/dashboard");
-  }
+  // Sprint 1 (2026-05-05): /dashboard/today is now the universal
+  // landing for both V1 and V2 users. The previous V1-redirect to
+  // /dashboard is gone — instead /dashboard now redirects HERE, and
+  // /dashboard/legacy preserves the V1 chart dashboard for users who
+  // want it back. See docs/COMPLY-WORKFLOW-PLAN.md.
 
   // Parse URL filter params. Filter mode = filtered flat list,
   // unfiltered mode = the 3-section Mercury inbox.
@@ -82,15 +82,25 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
   let inbox: Awaited<ReturnType<typeof getTodayInboxForUser>> | null = null;
   let total: number;
 
+  // Cleared-today KPI runs in parallel with the inbox query so it
+  // doesn't add latency. Counts ComplianceItemSnoozes created since
+  // 00:00 UTC — the cleanest "user took an action" signal we have today.
+  let clearedToday = 0;
   if (filterActive) {
-    filteredItems = await getComplianceItemsForUser(session.user.id, {
-      regulations: filterRegulation ? [filterRegulation] : undefined,
-      statuses: filterStatus ? [filterStatus] : undefined,
-      limit: 200,
-    });
+    [filteredItems, clearedToday] = await Promise.all([
+      getComplianceItemsForUser(session.user.id, {
+        regulations: filterRegulation ? [filterRegulation] : undefined,
+        statuses: filterStatus ? [filterStatus] : undefined,
+        limit: 200,
+      }),
+      getClearedTodayCountForUser(session.user.id),
+    ]);
     total = filteredItems.length;
   } else {
-    inbox = await getTodayInboxForUser(session.user.id);
+    [inbox, clearedToday] = await Promise.all([
+      getTodayInboxForUser(session.user.id),
+      getClearedTodayCountForUser(session.user.id),
+    ]);
     total = inbox.urgent.length + inbox.thisWeek.length + inbox.watching.length;
   }
 
@@ -111,9 +121,31 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
               : `${total} item${total === 1 ? "" : "s"} across ${Object.keys(REGULATION_LABELS).length} compliance regimes. Use Cmd-K to search the full set.`}
           </p>
         </div>
-        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">
-          <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-          {total} ACTIVE
+        {/* Inbox-Zero KPI cluster — Sprint 1 #1: makes the "I cleared
+            X items today" feedback loop visible. Plus an escape hatch
+            to the legacy chart dashboard. */}
+        <div className="flex flex-col items-end gap-1.5">
+          <div className="flex items-baseline gap-3 font-mono text-[10px] uppercase tracking-wider">
+            <span className="inline-flex items-center gap-1.5 text-slate-400">
+              <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              <span className="tabular-nums text-slate-200">{total}</span>
+              <span>in inbox</span>
+            </span>
+            <span className="text-slate-600">·</span>
+            <span className="inline-flex items-center gap-1.5 text-slate-400">
+              <span className="tabular-nums text-emerald-300">
+                {clearedToday}
+              </span>
+              <span>cleared today</span>
+            </span>
+          </div>
+          <Link
+            href="/dashboard/legacy"
+            className="inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500 underline-offset-2 transition hover:text-slate-300 hover:underline"
+          >
+            <BarChart3 className="h-2.5 w-2.5" />
+            Skip to legacy charts
+          </Link>
         </div>
       </header>
 
