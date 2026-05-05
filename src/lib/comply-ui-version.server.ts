@@ -94,9 +94,10 @@ export async function resolveComplyUiVersion(
   );
   if (fromOrg) return fromOrg;
 
-  // Phase 3 cutover: V2 is now the default for users without an
-  // explicit override. V1 stays in the codebase as a fallback —
-  // anyone with `User.complyUiVersion = "v1"` (set via Settings or
-  // SQL) keeps seeing the legacy chrome.
-  return "v2";
+  // 2026-05-05 reset: V1 is the default again while we redesign the
+  // workflow story. V2 stays fully reachable via Settings → UI, the
+  // Cmd-K palette, and the bookmarkable `/ui/v2` route — only the
+  // implicit default for unset users + orgs flips back to V1.
+  // Super-admins still see V2 above (line 90).
+  return "v1";
 }
