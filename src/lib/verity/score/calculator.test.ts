@@ -227,4 +227,48 @@ describe("computeComplianceScore", () => {
     expect(computedAt.getTime()).toBeLessThanOrEqual(now.getTime() + 1000);
     expect(computedAt.getTime()).toBeGreaterThan(now.getTime() - 5000);
   });
+
+  // T2-9 (audit fix 2026-05-05): drift-detection regression for L-4.
+  // calculator.ts hardcodes `KNOWN_REGULATION_COUNT = 9` while
+  // REGULATION_THRESHOLDS lives in evaluation/regulation-thresholds.ts.
+  // If a new threshold is added without updating the constant, the
+  // coveragePercent silently overshoots (or undershoots). T5-6 will
+  // replace the literal with `REGULATION_THRESHOLDS.length`. Until
+  // then, this test fails loudly when they diverge.
+  it("[L-4 DRIFT GUARD] KNOWN_REGULATION_COUNT must equal REGULATION_THRESHOLDS.length", async () => {
+    // Read the constant via parsing the source — we deliberately do
+    // NOT export it from calculator.ts since coupling that constant
+    // to scope is the bug. The test file does the cross-check.
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const calculatorSrc = fs.readFileSync(
+      path.resolve(__dirname, "calculator.ts"),
+      "utf8",
+    );
+    const m = calculatorSrc.match(/KNOWN_REGULATION_COUNT\s*=\s*(\d+)/);
+    expect(m).not.toBeNull();
+    const knownCount = Number.parseInt(m![1]!, 10);
+
+    const { REGULATION_THRESHOLDS } =
+      await import("../evaluation/regulation-thresholds");
+    expect(knownCount).toBe(REGULATION_THRESHOLDS.length);
+  });
+
+  it("hardcodes 'stable' as trend (placeholder, not actual computation)", () => {
+    // Documents the IST-Zustand: trend is always 'stable' regardless
+    // of the input. T5-6 follow-up may replace this with an actual
+    // historical-comparison computation. Until then, the
+    // hardcoded value is deliberate (not a bug, but worth a test
+    // so a future change is visible).
+    const attestations: AttestationInput[] = [
+      {
+        regulationRef: "eu_art70_debris",
+        result: true,
+        trustLevel: "HIGH",
+        expiresAt: future(),
+      },
+    ];
+    const score = computeComplianceScore(attestations);
+    expect(score.trend).toBe("stable");
+  });
 });
