@@ -1,4 +1,5 @@
 import type { ComplianceScore, ScoreBreakdown } from "./types";
+import { REGULATION_THRESHOLDS } from "../evaluation/regulation-thresholds";
 
 // ─── Trust Level Weights ──────────────────────────────────────────────────────
 const TRUST_WEIGHTS: Record<string, number> = {
@@ -8,7 +9,12 @@ const TRUST_WEIGHTS: Record<string, number> = {
 };
 
 // ─── Known Regulation Thresholds (for coverage %) ────────────────────────────
-const KNOWN_REGULATION_COUNT = 9;
+// T5-6 (audit fix 2026-05-05): derived from the threshold list itself
+// instead of a hardcoded `9`. The previous literal silently desynced
+// from REGULATION_THRESHOLDS whenever a threshold was added — coverage
+// then over- or under-reported by the missed delta. Deriving here
+// makes that drift impossible by construction.
+const KNOWN_REGULATION_COUNT = REGULATION_THRESHOLDS.length;
 
 // ─── Category Mapping ────────────────────────────────────────────────────────
 type Category = keyof ScoreBreakdown;

@@ -123,6 +123,12 @@ export async function submitAuditAnchor(
 ): Promise<AnchorResult> {
   const calendars = opts.calendars ?? DEFAULT_OTS_CALENDARS;
   const fetchImpl = opts.fetchImpl ?? fetch;
+  // T5-9 (audit fix 2026-05-05): default 15-second timeout so a stuck
+  // calendar can't hang the cron tick indefinitely. The official
+  // OTS calendars typically respond within 200ms, so 15s is generous
+  // even under bad network conditions. Caller can override by passing
+  // an explicit `signal`.
+  const signal = opts.signal ?? AbortSignal.timeout(15_000);
 
   // 1. Compute the chain head digest — SHA-256 of the latest entry
   //    hash hex string. We hash the hex (not raw bytes) so the proof
@@ -141,7 +147,7 @@ export async function submitAuditAnchor(
         method: "POST",
         headers: { "Content-Type": "application/octet-stream" },
         body: digest,
-        signal: opts.signal,
+        signal,
       });
       if (!res.ok) {
         throw new Error(`HTTP ${res.status} ${res.statusText}`);
@@ -306,12 +312,35 @@ export interface UpgradeAuditAnchorOptions {
  *   - **age > UPGRADE_GIVE_UP_MS** → mark GAVE_UP (status=FAILED)
  *     so we stop re-polling.
  */
+/**
+ * T5-10 (audit fix 2026-05-05): minimum upgraded-proof size sanity.
+ * A confirmed OTS path proof carries the original 32-byte digest, the
+ * sequence of hash/append/prepend operations that lift it to the
+ * calendar's commitment, and a Bitcoin attestation header — even the
+ * sparsest realistic proof exceeds 100 bytes. Anything below this is
+ * either a server bug or a malicious truncation. The pending proof
+ * (typically ~140 bytes) is also a lower bound — an upgrade only
+ * grows the proof, never shrinks it.
+ */
+const MIN_OTS_UPGRADE_BYTES = 100;
+/**
+ * T5-10: ceiling on accepted proof size. A real OTS path proof for
+ * a single digest is typically 1-10 KB after Bitcoin confirmation;
+ * anything substantially larger is suspicious. 1 MB is a generous
+ * ceiling that prevents a malicious calendar from stuffing the row
+ * (and downstream bundle exports) with arbitrary garbage.
+ */
+const MAX_OTS_UPGRADE_BYTES = 1024 * 1024;
+
 export async function upgradeAuditAnchor(
   anchorId: string,
   opts: UpgradeAuditAnchorOptions = {},
 ): Promise<UpgradeOutcome> {
   const fetchImpl = opts.fetchImpl ?? fetch;
   const now = opts.now ?? new Date();
+  // T5-9: default 15s timeout so a stuck calendar can't block the
+  // upgrade cron. Caller can override.
+  const signal = opts.signal ?? AbortSignal.timeout(15_000);
 
   const anchor = (await auditTimestampAnchor.findUnique({
     where: { id: anchorId },
@@ -321,6 +350,9 @@ export async function upgradeAuditAnchor(
       calendarUrl: true,
       status: true,
       submittedAt: true,
+      // T5-10: pull the pending-proof bytes so we can sanity-check
+      // that the upgrade-response is at least as large.
+      otsProof: true,
     },
   })) as {
     id: string;
@@ -328,6 +360,7 @@ export async function upgradeAuditAnchor(
     calendarUrl: string;
     status: string;
     submittedAt: Date;
+    otsProof: Buffer;
   } | null;
 
   if (!anchor) {
@@ -355,7 +388,7 @@ export async function upgradeAuditAnchor(
   const url = `${anchor.calendarUrl.replace(/\/+$/, "")}/timestamp/${anchor.anchorHash}`;
   let res: Response;
   try {
-    res = await fetchImpl(url, { method: "GET", signal: opts.signal });
+    res = await fetchImpl(url, { method: "GET", signal });
   } catch (err) {
     return {
       status: "ERROR",
@@ -377,6 +410,35 @@ export async function upgradeAuditAnchor(
   const proofBuffer = Buffer.from(proofArrayBuffer);
   if (proofBuffer.length === 0) {
     return { status: "ERROR", error: "calendar returned empty proof" };
+  }
+
+  // T5-10 (audit fix 2026-05-05): basic structural validation BEFORE
+  // overwriting the trusted pending proof. Without a full OTS proof-
+  // chain validator we cannot verify the Bitcoin attestation chain
+  // here — that needs a library like javascript-opentimestamps and is
+  // tracked as future work — but we can at least enforce that the
+  // calendar's response looks like a real upgrade rather than empty
+  // bytes, junk, or a truncated ping. Three checks:
+  //   1. min absolute size — under 100 bytes is structurally invalid
+  //   2. monotonic-in-size — upgrades ADD operations, never shrink
+  //   3. max ceiling — defends against a malicious 100MB response
+  if (proofBuffer.length < MIN_OTS_UPGRADE_BYTES) {
+    return {
+      status: "ERROR",
+      error: `proof too small (${proofBuffer.length} bytes < ${MIN_OTS_UPGRADE_BYTES} min)`,
+    };
+  }
+  if (proofBuffer.length < anchor.otsProof.length) {
+    return {
+      status: "ERROR",
+      error: `proof shrank (${proofBuffer.length} < pending ${anchor.otsProof.length}) — calendar response is not a valid upgrade`,
+    };
+  }
+  if (proofBuffer.length > MAX_OTS_UPGRADE_BYTES) {
+    return {
+      status: "ERROR",
+      error: `proof too large (${proofBuffer.length} bytes > ${MAX_OTS_UPGRADE_BYTES} max)`,
+    };
   }
 
   await auditTimestampAnchor.update({

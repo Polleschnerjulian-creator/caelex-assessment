@@ -1,5 +1,5 @@
 import type { AuditChainEntry, ChainVerificationResult } from "./types";
-import { computeEntryHash } from "./hash-utils";
+import { computeEntryHash, computeLegacyEntryHash } from "./hash-utils";
 
 /**
  * Verifies the integrity of an audit chain by recomputing each entry's hash
@@ -40,7 +40,10 @@ export function verifyChain(
   for (let i = 0; i < sorted.length; i++) {
     const entry = sorted[i];
 
-    // Recompute hash and compare
+    // Recompute hash and compare. T5-2: try canonical first (post-fix
+    // entries), fall back to legacy non-canonical JSON.stringify (entries
+    // written before the canonical-JSON migration). Either match means
+    // the entry is intact — only when both fail is it a real tamper.
     const recomputed = computeEntryHash(
       entry.sequenceNumber,
       entry.eventType,
@@ -48,8 +51,17 @@ export function verifyChain(
       entry.eventData,
       entry.previousHash,
     );
+    const matches =
+      recomputed === entry.entryHash ||
+      computeLegacyEntryHash(
+        entry.sequenceNumber,
+        entry.eventType,
+        entry.entityId,
+        entry.eventData,
+        entry.previousHash,
+      ) === entry.entryHash;
 
-    if (recomputed !== entry.entryHash) {
+    if (!matches) {
       errors.push(
         `Entry ${entry.sequenceNumber}: hash mismatch (stored: ${entry.entryHash}, computed: ${recomputed})`,
       );

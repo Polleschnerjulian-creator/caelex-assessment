@@ -170,7 +170,11 @@ export async function resolveEvidence(
         const m = meta as Record<string, unknown>;
         const metaPoint = typeof m.dataPoint === "string" ? m.dataPoint : null;
         const metaValue = typeof m.value === "number" ? m.value : null;
-        if (!metaValue || Number.isNaN(metaValue)) continue;
+        // T5-1 (audit fix 2026-05-05): `!metaValue` previously skipped
+        // legitimate `value: 0` measurements (debris-flag = 0 = compliant,
+        // remaining-fuel = 0 = depleted, etc.). Use explicit null check
+        // plus Number.isFinite (rejects NaN, ±Infinity) so 0 is allowed.
+        if (metaValue === null || !Number.isFinite(metaValue)) continue;
         if (metaPoint && metaPoint !== dataPoint) continue;
         // Clamp trust to [0.50, 0.90] so evidence_record never outranks
         // Sentinel (0.92) even if confidence is reported as 1.0.

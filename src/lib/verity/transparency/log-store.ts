@@ -255,7 +255,7 @@ export async function signNewSTH(
 
   const latest = await prisma.verityLogSTH.findFirst({
     orderBy: { treeSize: "desc" },
-    select: { treeSize: true },
+    select: { treeSize: true, timestamp: true },
   });
   if (latest && latest.treeSize === treeSize) {
     return null; // nothing new to sign
@@ -271,8 +271,15 @@ export async function signNewSTH(
   const leafBytes = leaves.map((l) => hexToBytes(l.leafHash));
   const tree = buildTreeFromHashes(leafBytes);
 
-  // Pin timestamp once — keeps STH signing bytes deterministic for the run.
-  const timestamp = new Date().toISOString();
+  // T5-8 (audit fix 2026-05-05): force the STH timestamp to be strictly
+  // monotonic. RFC 6962 § 3.5 requires `timestamp >= prior STH timestamp`
+  // for the log to be considered consistent — clock skew on serverless
+  // hosts (or a manual clock-rollback during incident response) would
+  // otherwise produce a non-monotonic chain that downstream verifiers
+  // flag as a fork. Pin once; deterministic for the rest of the run.
+  const nowMs = Date.now();
+  const minMs = latest ? latest.timestamp.getTime() + 1 : nowMs;
+  const timestamp = new Date(Math.max(nowMs, minMs)).toISOString();
   const rootHex = bytesToHex(tree.root);
 
   const active = await prisma.verityIssuerKey.findFirst({

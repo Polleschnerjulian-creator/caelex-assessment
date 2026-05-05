@@ -70,7 +70,13 @@ export async function POST(request: NextRequest) {
       result.valid = false;
       result.checks.issuer_key_matches = false;
       result.errors.push("Embedded public key does not match keyset");
-      if (!result.reason) result.reason = result.errors[0];
+      // T5-13 (audit fix 2026-05-05): set reason from the literal we
+      // just pushed instead of pulling `errors[0]`. If verifyAttestation
+      // had appended any prior errors, `errors[0]` would be a stale
+      // earlier message — the reason should match THIS check.
+      if (!result.reason) {
+        result.reason = "Embedded public key does not match keyset";
+      }
     }
 
     // Increment verification count if attestation is in DB

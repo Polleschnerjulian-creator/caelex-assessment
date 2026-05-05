@@ -238,29 +238,12 @@ async function processThreshold(
     return "skipped"; // No evidence available
   }
 
-  // Append to compliance audit chain (non-blocking).
-  // T1-C2: surface failures instead of silently dropping audit entries.
-  // NOTE: this duplicates the entry written by evaluateAndAttest above
-  // (see L-1 in audit) — to be deduplicated in T5-4.
-  appendToChain({
-    organizationId,
-    eventType: "ATTESTATION_CREATED",
-    entityId: attestation.attestation_id,
-    entityType: "attestation",
-    eventData: {
-      regulationRef: attestation.claim.regulation_ref,
-      result: attestation.claim.result,
-      trustLevel: attestation.evidence.trust_level,
-    },
-  }).catch((err) => {
-    logger.error(
-      "verity audit-chain append failed (auto-attestation processThreshold)",
-      {
-        attestationId: attestation.attestation_id,
-        error: err instanceof Error ? err.message : String(err),
-      },
-    );
-  });
+  // T5-4 (audit fix 2026-05-05): the ATTESTATION_CREATED audit-chain
+  // entry is written by `evaluateAndAttest` already. Calling it again
+  // here would either duplicate the entry or hit the
+  // `@@unique(organizationId, sequenceNumber)` constraint after the
+  // T1-C2 race fix, depending on call ordering. The revoke path below
+  // still emits ATTESTATION_REVOKED — that's a distinct event, kept.
 
   // Handle PASS↔FAIL revocation
   const revoked = await revokeSupersededAttestations(prisma, {

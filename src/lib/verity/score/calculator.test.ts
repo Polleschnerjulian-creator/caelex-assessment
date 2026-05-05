@@ -228,30 +228,22 @@ describe("computeComplianceScore", () => {
     expect(computedAt.getTime()).toBeGreaterThan(now.getTime() - 5000);
   });
 
-  // T2-9 (audit fix 2026-05-05): drift-detection regression for L-4.
-  // calculator.ts hardcodes `KNOWN_REGULATION_COUNT = 9` while
-  // REGULATION_THRESHOLDS lives in evaluation/regulation-thresholds.ts.
-  // If a new threshold is added without updating the constant, the
-  // coveragePercent silently overshoots (or undershoots). T5-6 will
-  // replace the literal with `REGULATION_THRESHOLDS.length`. Until
-  // then, this test fails loudly when they diverge.
-  it("[L-4 DRIFT GUARD] KNOWN_REGULATION_COUNT must equal REGULATION_THRESHOLDS.length", async () => {
-    // Read the constant via parsing the source — we deliberately do
-    // NOT export it from calculator.ts since coupling that constant
-    // to scope is the bug. The test file does the cross-check.
+  // T5-6 (audit fix 2026-05-05): the L-4 drift bug is now fixed by
+  // construction — calculator.ts derives KNOWN_REGULATION_COUNT from
+  // REGULATION_THRESHOLDS.length so the two CANNOT diverge. This test
+  // pins that derivation in place: a future PR that re-introduces a
+  // hardcoded literal will fail here.
+  it("[L-4 fixed] KNOWN_REGULATION_COUNT is derived from REGULATION_THRESHOLDS.length", async () => {
     const fs = await import("node:fs");
     const path = await import("node:path");
     const calculatorSrc = fs.readFileSync(
       path.resolve(__dirname, "calculator.ts"),
       "utf8",
     );
-    const m = calculatorSrc.match(/KNOWN_REGULATION_COUNT\s*=\s*(\d+)/);
-    expect(m).not.toBeNull();
-    const knownCount = Number.parseInt(m![1]!, 10);
-
-    const { REGULATION_THRESHOLDS } =
-      await import("../evaluation/regulation-thresholds");
-    expect(knownCount).toBe(REGULATION_THRESHOLDS.length);
+    expect(calculatorSrc).toMatch(
+      /KNOWN_REGULATION_COUNT\s*=\s*REGULATION_THRESHOLDS\.length/,
+    );
+    expect(calculatorSrc).not.toMatch(/KNOWN_REGULATION_COUNT\s*=\s*\d+/);
   });
 
   it("hardcodes 'stable' as trend (placeholder, not actual computation)", () => {

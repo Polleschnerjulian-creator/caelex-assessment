@@ -56,12 +56,22 @@ export interface BuildBundleInput {
 
 // ─── Status resolution ─────────────────────────────────────────────
 
-function resolveStatus(row: {
-  issuedAt: Date;
-  expiresAt: Date;
-  revokedAt: Date | null;
-  revokedReason: string | null;
-}): BundleEntryStatus {
+/**
+ * Map a stored attestation row to a bundle status. T5-5 consolidates
+ * the two prior variants into this single clock-injected function:
+ * `now` defaults to the system clock for ad-hoc callers, and the
+ * bundle builder passes its pinned `clockNow` so an entire bundle
+ * resolves against one consistent timestamp.
+ */
+export function resolveStatus(
+  row: {
+    issuedAt: Date;
+    expiresAt: Date;
+    revokedAt: Date | null;
+    revokedReason: string | null;
+  },
+  now: Date = new Date(),
+): BundleEntryStatus {
   if (row.revokedAt) {
     return {
       state: "revoked",
@@ -71,7 +81,7 @@ function resolveStatus(row: {
       revocationReason: row.revokedReason ?? null,
     };
   }
-  if (row.expiresAt.getTime() < Date.now()) {
+  if (row.expiresAt.getTime() < now.getTime()) {
     return {
       state: "expired",
       issuedAt: row.issuedAt.toISOString(),
@@ -357,7 +367,7 @@ export async function buildBundle(
     const inclusionBundle = sth
       ? await getInclusionForAttestation(prisma, row.attestationId)
       : null;
-    const status = resolveStatusRelativeTo(row, clockNow);
+    const status = resolveStatus(row, clockNow);
     entries.push({
       attestation,
       vc,
@@ -381,48 +391,6 @@ export async function buildBundle(
   const bundleId = computeBundleId(bundleWithoutId);
   return { bundleId, ...bundleWithoutId };
 }
-
-// ─── Status helper (internal) ───────────────────────────────────────
-
-function resolveStatusRelativeTo(
-  row: {
-    issuedAt: Date;
-    expiresAt: Date;
-    revokedAt: Date | null;
-    revokedReason: string | null;
-  },
-  now: Date,
-): BundleEntryStatus {
-  if (row.revokedAt) {
-    return {
-      state: "revoked",
-      issuedAt: row.issuedAt.toISOString(),
-      expiresAt: row.expiresAt.toISOString(),
-      revokedAt: row.revokedAt.toISOString(),
-      revocationReason: row.revokedReason ?? null,
-    };
-  }
-  if (row.expiresAt.getTime() < now.getTime()) {
-    return {
-      state: "expired",
-      issuedAt: row.issuedAt.toISOString(),
-      expiresAt: row.expiresAt.toISOString(),
-      revokedAt: null,
-      revocationReason: null,
-    };
-  }
-  return {
-    state: "valid",
-    issuedAt: row.issuedAt.toISOString(),
-    expiresAt: row.expiresAt.toISOString(),
-    revokedAt: null,
-    revocationReason: null,
-  };
-}
-
-// Keep the time-insensitive variant exported in case callers need it —
-// the live revocation endpoint uses this shape.
-export { resolveStatus };
 
 // ─── Type-only re-export (prevents "unused import" noise) ───────────
 

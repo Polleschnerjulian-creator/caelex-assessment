@@ -162,11 +162,16 @@ export function attestationToVC(
       created: attestation.issued_at,
       verificationMethod: keyRef,
       proofPurpose: "assertionMethod",
-      // We carry the same Ed25519 signature that guards the native
-      // attestation. A VC-aware verifier that ONLY speaks VC can
-      // still check by canonicalising the credentialSubject per the
-      // ed25519-2020 suite — or fall back to /attestation/verify.
-      proofValue: `z${attestation.signature}`,
+      // T5-7 (audit fix 2026-05-05): encode the raw signature bytes as
+      // multibase base58btc per the W3C Data Integrity spec (the `z`
+      // prefix declares base58btc; the suffix MUST be base58btc-encoded
+      // bytes, not hex). Previously this emitted hex with a `z` prefix,
+      // which any VC-spec-compliant verifier would reject. The native
+      // /attestation/verify path still works either way (it parses
+      // attestation.signature directly), but VC-only consumers like
+      // EUDIW or Microsoft Entra Verified ID need this to be valid
+      // multibase.
+      proofValue: `z${base58btcEncode(hexToBytes(attestation.signature))}`,
     },
   };
 }

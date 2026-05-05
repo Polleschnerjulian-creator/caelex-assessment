@@ -249,8 +249,19 @@ describe("submitAuditAnchorsForAllActiveOrgs", () => {
 describe("upgradeAuditAnchor — single-anchor lifecycle", () => {
   const NOW = new Date("2026-05-02T12:00:00.000Z");
 
+  // T5-10: pending proofs are typically ~140 bytes; the upgraded
+  // proof must be at least 100 bytes AND no smaller than the pending.
+  const PENDING_PROOF_SIZE = 140;
+  const VALID_UPGRADE_SIZE = 1024; // realistic post-Bitcoin proof
+  const validUpgradeBytes = () =>
+    new Uint8Array(VALID_UPGRADE_SIZE).fill(0x42).buffer;
+
   function makePending(
-    overrides: Partial<{ submittedAt: Date; status: string }> = {},
+    overrides: Partial<{
+      submittedAt: Date;
+      status: string;
+      otsProof: Buffer;
+    }> = {},
   ) {
     return {
       id: "anchor_1",
@@ -258,6 +269,7 @@ describe("upgradeAuditAnchor — single-anchor lifecycle", () => {
       calendarUrl: "https://cal.test",
       status: "PENDING",
       submittedAt: new Date(NOW.getTime() - 8 * 3600 * 1000), // 8h ago by default
+      otsProof: Buffer.alloc(PENDING_PROOF_SIZE),
       ...overrides,
     };
   }
@@ -267,12 +279,13 @@ describe("upgradeAuditAnchor — single-anchor lifecycle", () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
       status: 200,
-      arrayBuffer: async () => new Uint8Array([0x55, 0x66, 0x77, 0x88]).buffer,
+      arrayBuffer: async () => validUpgradeBytes(),
     })) as unknown as typeof fetch;
 
     const out = await upgradeAuditAnchor("anchor_1", { fetchImpl, now: NOW });
     expect(out.status).toBe("UPGRADED");
-    if (out.status === "UPGRADED") expect(out.proofBytes).toBe(4);
+    if (out.status === "UPGRADED")
+      expect(out.proofBytes).toBe(VALID_UPGRADE_SIZE);
     expect(mockAnchorUpdate).toHaveBeenCalledOnce();
     const updateArgs = mockAnchorUpdate.mock.calls[0][0] as {
       where: { id: string };
@@ -281,6 +294,41 @@ describe("upgradeAuditAnchor — single-anchor lifecycle", () => {
     expect(updateArgs.where.id).toBe("anchor_1");
     expect(updateArgs.data.status).toBe("UPGRADED");
     expect(updateArgs.data.upgradedAt).toEqual(NOW);
+  });
+
+  // T5-10 (audit fix 2026-05-05): reject upgrade responses that are
+  // structurally too small to be a real OTS path proof, even if the
+  // response is otherwise well-formed.
+  it("ERROR — calendar returns a too-small proof (< 100 bytes)", async () => {
+    mockAnchorFindUnique.mockResolvedValue(makePending());
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => new Uint8Array(50).fill(0x99).buffer,
+    })) as unknown as typeof fetch;
+
+    const out = await upgradeAuditAnchor("anchor_1", { fetchImpl, now: NOW });
+    expect(out.status).toBe("ERROR");
+    if (out.status === "ERROR") expect(out.error).toMatch(/too small/);
+    expect(mockAnchorUpdate).not.toHaveBeenCalled();
+  });
+
+  // T5-10: reject upgrade responses that are smaller than the pending
+  // proof — an upgrade only adds Bitcoin-attestation operations.
+  it("ERROR — calendar returns a shorter proof than the pending one", async () => {
+    mockAnchorFindUnique.mockResolvedValue(
+      makePending({ otsProof: Buffer.alloc(2000) }),
+    );
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => new Uint8Array(500).fill(0x77).buffer,
+    })) as unknown as typeof fetch;
+
+    const out = await upgradeAuditAnchor("anchor_1", { fetchImpl, now: NOW });
+    expect(out.status).toBe("ERROR");
+    if (out.status === "ERROR") expect(out.error).toMatch(/shrank/);
+    expect(mockAnchorUpdate).not.toHaveBeenCalled();
   });
 
   it("STILL_PENDING — calendar returns 404; row left alone", async () => {
@@ -384,7 +432,7 @@ describe("upgradeAuditAnchor — single-anchor lifecycle", () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
       status: 200,
-      arrayBuffer: async () => new Uint8Array([1]).buffer,
+      arrayBuffer: async () => validUpgradeBytes(),
     })) as unknown as typeof fetch;
     await upgradeAuditAnchor("anchor_1", { fetchImpl, now: NOW });
     expect((fetchImpl as ReturnType<typeof vi.fn>).mock.calls[0][0]).toBe(
@@ -421,7 +469,8 @@ describe("upgradeAllPendingAnchors — batch walker", () => {
       { id: "a4" },
     ]);
     // Anchor row lookups always succeed; per-call fetch behaviour
-    // controlled by the call counter.
+    // controlled by the call counter. T5-10: include otsProof of a
+    // realistic pending size so size-monotonic check passes.
     let call = 0;
     mockAnchorFindUnique.mockImplementation(async () => ({
       id: `a${call + 1}`,
@@ -429,13 +478,16 @@ describe("upgradeAllPendingAnchors — batch walker", () => {
       calendarUrl: "https://cal.test",
       status: "PENDING",
       submittedAt: new Date(NOW.getTime() - 8 * 3600 * 1000),
+      otsProof: Buffer.alloc(140),
     }));
+    // T5-10: UPGRADED responses must be ≥100 bytes AND ≥ pending size.
+    const upgradedProof = () => new Uint8Array(1024).fill(0xab).buffer;
     const responses: Array<Partial<Response>> = [
       // a1 → UPGRADED
       {
         ok: true,
         status: 200,
-        arrayBuffer: async () => new Uint8Array([1, 2]).buffer,
+        arrayBuffer: async () => upgradedProof(),
       },
       // a2 → STILL_PENDING (404)
       {
@@ -455,7 +507,7 @@ describe("upgradeAllPendingAnchors — batch walker", () => {
       {
         ok: true,
         status: 200,
-        arrayBuffer: async () => new Uint8Array([9]).buffer,
+        arrayBuffer: async () => upgradedProof(),
       },
     ];
     const fetchImpl = vi.fn(async () => {

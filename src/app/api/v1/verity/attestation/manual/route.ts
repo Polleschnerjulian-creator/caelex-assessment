@@ -83,6 +83,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // T5-11 (audit fix 2026-05-05): VIEWER role is read-only by
+    // policy. Manual attestations create persistent compliance
+    // claims attributable to the organization, so they require at
+    // least MEMBER write access. Without this check a VIEWER could
+    // self-issue LOW-trust attestations against the org's name.
+    if (membership.role === "VIEWER") {
+      return NextResponse.json(
+        { error: "VIEWER role cannot issue attestations" },
+        { status: 403 },
+      );
+    }
+
     // Get satellite name if NORAD ID provided
     let satelliteName: string | null = null;
     if (satellite_norad_id) {
@@ -145,6 +157,13 @@ export async function POST(request: NextRequest) {
       data: {
         attestationId: attestation.attestation_id,
         operatorId: session.user.id,
+        // T5-3 (audit fix 2026-05-05): every other attestation-create
+        // path (threshold-evaluator, auto-attestation) writes
+        // organizationId — manual was the only one missing it. Without
+        // it, list/revoke/visibility queries that filter by
+        // organizationId silently dropped manual attestations from the
+        // org's view, breaking T4-1's planned NOT NULL migration.
+        organizationId: membership.organizationId,
         satelliteNorad: satellite_norad_id ?? null,
         regulationRef: regulation_ref,
         dataPoint: "manual_declaration",
