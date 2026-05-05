@@ -343,13 +343,17 @@ schema work becomes blocking.
 
 10 steps, ~8–12h total. Verity-Core has effectively 0 tests today; this Tier creates the safety net before further refactor.
 
-### [ ] T2-1 — Pedersen-Provider tests (`src/lib/verity/core/pedersen-provider.test.ts`)
+### [x] T2-1 — Pedersen-Provider tests (commit pending)
 
-Test commit/open roundtrip; test Schnorr PoK verifies; test homomorphic property `commit(a) + commit(b) == commit(a+b)`; test rejection of invalid points.
+File: `src/lib/verity/core/pedersen-provider.test.ts` — 15 passing + 1 known-bug `it.todo`.
+Covers commit/open roundtrip, hiding via blinding (same value → different commitments, both open correctly), edge values (0, negative, large fractional), Schnorr PoK verify, PoK rejection (mutated A / z_r / z_v, wrong context, wrong commitment, malformed bytes).
 
-### [ ] T2-2 — Range-Proof tests (`src/lib/verity/core/range-proof.test.ts`)
+**🔴 NEW Tier-2 finding T2-CRYPTO-1: Pedersen homomorphism broken.** The doc-comment on `pedersen-provider.ts` promises `C(a) + C(b) = C(a + b)`. The test exposed that `valueToScalar(v) = SHA-512(IEEE-754(v)) mod q` is non-linear, so the homomorphism property does NOT hold. Parked as `it.todo` — needs design call: (a) use `BigInt(value) mod q` as scalar (restores homomorphism, loses fractional support), or (b) drop the homomorphism claim from the doc since no caller uses `pedersenAdd` today. Triage: low impact (no production caller), high embarrassment value (the claim is in the doc).
 
-Test ABOVE proof for value=threshold (boundary); test BELOW proof for value=threshold; test proof rejects out-of-range values; test bit-decomposition correctness for n=8, n=32, n=52.
+### [x] T2-2 — Range-Proof tests (commit pending)
+
+File: `src/lib/verity/core/range-proof.test.ts` — 24 passing tests.
+Covers proveNonNegative happy path (0 / 1 / max / mid-range bit-pattern); rejection of out-of-range or negative inputs; rejection of bits<1 or bits>52; verifyNonNegative rejection of mutated proofs (bit count, context, commitment, malformed point bytes); proveThreshold ABOVE at-boundary + interior; rejection of false ABOVE claims (v < T); proveThreshold BELOW at-boundary + interior; rejection of false BELOW claims (v > T); verifyThreshold tampering rejection (type-swap, threshold-value tamper, decoy commitment, wrong context); commitScaledValue input validation (non-int scale, negative value, NaN/Infinity, fractional rounding).
 
 ### [ ] T2-3 — Merkle-Tree tests (`src/lib/verity/transparency/merkle-tree.test.ts`)
 
