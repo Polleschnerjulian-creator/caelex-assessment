@@ -278,32 +278,32 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
   const isOnboardingEmpty = !filterActive && total === 0;
 
   return (
-    <div className="px-6 py-8 sm:px-10 lg:px-14">
+    <div className="mx-auto max-w-[1600px] px-6 py-8 sm:px-10 lg:px-14">
       {demoMode ? (
-        <div className="mb-5 flex items-center justify-between gap-4 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+        <div className="comply-glass-pill mb-6 flex items-center justify-between gap-4 px-4 py-2 text-xs text-amber-200/90">
           <span className="inline-flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5" />
-            <strong className="font-semibold">Demo mode</strong>
-            <span className="opacity-80">
+            <Sparkles className="h-3.5 w-3.5 text-amber-300" />
+            <strong className="font-semibold text-amber-100">Demo mode</strong>
+            <span className="text-white/60">
               Showing 7 mock items so you can preview the populated UI. Snooze /
               attest actions on demo items are no-ops.
             </span>
           </span>
           <Link
             href="/dashboard/today"
-            className="font-semibold underline-offset-4 hover:underline"
+            className="font-semibold text-amber-100 underline-offset-4 hover:underline"
           >
             Exit demo
           </Link>
         </div>
       ) : null}
 
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-6 border-b border-slate-200/80 pb-5 dark:border-white/[0.08]">
+      <header className="mb-8 flex flex-wrap items-end justify-between gap-6 border-b border-white/[0.06] pb-5">
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-50">
+          <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
             Today
           </h1>
-          <p className="mt-1.5 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-1.5 max-w-2xl text-sm text-white/55">
             {filterActive
               ? `${total} item${total === 1 ? "" : "s"} matching the active filters.`
               : isOnboardingEmpty
@@ -311,29 +311,22 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
                 : `${total} open item${total === 1 ? "" : "s"} across ${Object.keys(REGULATION_LABELS).length} regimes. Press ⌘K to search the full set.`}
           </p>
         </div>
-        {/* KPI chips — visible feedback loop for "I cleared X today".
-            Hidden in the onboarding-empty state since 0/0 isn't a useful
-            signal at zero items. */}
         {!isOnboardingEmpty ? (
           <div className="flex flex-col items-end gap-2">
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-baseline gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-200">
-                <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                <span className="tabular-nums">{total}</span>
-                <span className="text-slate-500 dark:text-slate-400">
-                  in inbox
-                </span>
+              <span className="comply-glass-pill inline-flex items-baseline gap-1.5 px-3 py-1 text-xs font-medium">
+                <span className="inline-flex h-1.5 w-1.5 rounded-full bg-white/80" />
+                <span className="tabular-nums text-white">{total}</span>
+                <span className="text-white/55">in inbox</span>
               </span>
-              <span className="inline-flex items-baseline gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
-                <span className="tabular-nums">{clearedToday}</span>
-                <span className="text-emerald-700/80 dark:text-emerald-400/80">
-                  cleared today
-                </span>
+              <span className="comply-glass-pill inline-flex items-baseline gap-1.5 px-3 py-1 text-xs font-medium">
+                <span className="tabular-nums text-white">{clearedToday}</span>
+                <span className="text-white/55">cleared today</span>
               </span>
             </div>
             <Link
               href="/dashboard/legacy"
-              className="inline-flex items-center gap-1 text-[11px] text-slate-500 underline-offset-4 transition hover:text-slate-700 hover:underline dark:text-slate-500 dark:hover:text-slate-300"
+              className="inline-flex items-center gap-1 text-[11px] text-white/40 underline-offset-4 transition hover:text-white/80 hover:underline"
             >
               <BarChart3 className="h-3 w-3" />
               View legacy charts
@@ -466,15 +459,15 @@ function OnboardingHero() {
 
   return (
     <div className="space-y-8">
-      <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-emerald-50/30 to-white p-8 shadow-sm sm:p-10 dark:border-white/[0.08] dark:from-white/[0.03] dark:via-emerald-500/[0.04] dark:to-white/[0.03]">
-        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300">
+      <section className="comply-glass-shell p-8 sm:p-10">
+        <div className="comply-glass-pill mb-3 inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-white/80">
           <Sparkles className="h-3 w-3" />
           New here
         </div>
-        <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl dark:text-slate-50">
+        <h2 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
           You're all caught up — because we haven't started yet.
         </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/55">
           Caelex Comply tracks 8 regulatory regimes for satellite operators — EU
           Space Act, NIS2, debris mitigation, cybersecurity, spectrum, export
           control, and the UK + US frameworks. Pick how you'd like to start.
@@ -490,26 +483,26 @@ function OnboardingHero() {
               href={card.href}
               className={
                 card.primary
-                  ? "group flex flex-col rounded-xl border border-emerald-300 bg-emerald-50 p-5 shadow-sm transition hover:border-emerald-400 hover:bg-emerald-100/70 dark:border-emerald-500/30 dark:bg-emerald-500/[0.08] dark:hover:border-emerald-500/50 dark:hover:bg-emerald-500/[0.12]"
-                  : "group flex flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 dark:border-white/[0.08] dark:bg-white/[0.02] dark:hover:border-white/15 dark:hover:bg-white/[0.04]"
+                  ? "comply-glass-card group flex flex-col p-5 ring-1 ring-inset ring-white/15 hover:ring-white/25"
+                  : "comply-glass-card group flex flex-col p-5"
               }
             >
               <div className="flex items-start justify-between">
                 <div
                   className={
                     card.primary
-                      ? "flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-200 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
-                      : "flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-white/[0.06] dark:text-slate-400"
+                      ? "flex h-9 w-9 items-center justify-center rounded-lg bg-white/[0.12] text-white"
+                      : "flex h-9 w-9 items-center justify-center rounded-lg bg-white/[0.06] text-white/70"
                   }
                 >
                   <Icon className="h-4 w-4" />
                 </div>
-                <ArrowRight className="h-4 w-4 text-slate-400 opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100 dark:text-slate-500" />
+                <ArrowRight className="h-4 w-4 text-white/30 opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" />
               </div>
-              <h3 className="mt-4 text-sm font-semibold text-slate-900 dark:text-slate-100">
+              <h3 className="mt-4 text-sm font-semibold text-white">
                 {card.label}
               </h3>
-              <p className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+              <p className="mt-1.5 text-xs leading-relaxed text-white/55">
                 {card.description}
               </p>
             </Link>
@@ -517,12 +510,12 @@ function OnboardingHero() {
         })}
       </section>
 
-      <p className="text-center text-xs text-slate-500 dark:text-slate-500">
+      <p className="text-center text-xs text-white/40">
         Once you have items in flight, this page becomes your daily inbox. Press
         ⌘K anytime to search across everything. Or{" "}
         <Link
           href="/dashboard/today?demo=1"
-          className="font-medium text-emerald-700 underline-offset-4 hover:underline dark:text-emerald-400"
+          className="font-medium text-white/80 underline-offset-4 hover:underline hover:text-white"
         >
           preview the populated UI with demo items
         </Link>
@@ -563,20 +556,20 @@ function Section({
 }) {
   const iconClass =
     accent === "emerald"
-      ? "h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400"
-      : "h-3.5 w-3.5 text-slate-500 dark:text-slate-400";
+      ? "h-3.5 w-3.5 text-white/80"
+      : "h-3.5 w-3.5 text-white/45";
 
   return (
-    <section className="mb-7">
-      <h2 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+    <section className="mb-8">
+      <h2 className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
         <Icon className={iconClass} />
         <span>{title}</span>
-        <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-slate-100 px-1.5 text-[10px] font-medium tabular-nums text-slate-600 dark:bg-white/[0.06] dark:text-slate-300">
+        <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-white/[0.06] px-1.5 text-[10px] font-medium tabular-nums text-white/70 ring-1 ring-inset ring-white/[0.08]">
           {count}
         </span>
       </h2>
       {count === 0 ? (
-        <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 px-4 py-5 text-center text-sm text-slate-500 dark:border-white/[0.08] dark:bg-white/[0.02] dark:text-slate-500">
+        <p className="rounded-lg border border-dashed border-white/[0.08] bg-white/[0.015] px-4 py-5 text-center text-sm text-white/40">
           {emptyMessage}
         </p>
       ) : (
@@ -642,9 +635,9 @@ function FilterBar({
   const filterActive = regulationFilter !== null || statusFilter !== null;
 
   return (
-    <div className="mb-6 space-y-2.5 rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-white/[0.08] dark:bg-white/[0.02]">
+    <div className="comply-glass-shell mb-6 space-y-2.5 p-3">
       <div className="flex flex-wrap items-center gap-1.5">
-        <span className="mr-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-500">
+        <span className="mr-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
           Regime
         </span>
         <FilterChip
@@ -663,7 +656,7 @@ function FilterBar({
       </div>
 
       <div className="flex flex-wrap items-center gap-1.5">
-        <span className="mr-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-500">
+        <span className="mr-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
           Status
         </span>
         <FilterChip
@@ -682,8 +675,8 @@ function FilterBar({
       </div>
 
       {filterActive ? (
-        <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-2.5 dark:border-white/[0.06]">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-500">
+        <div className="flex flex-wrap items-center gap-2 border-t border-white/[0.06] pt-2.5">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
             Active
           </span>
           {regulationFilter ? (
@@ -712,7 +705,7 @@ function FilterBar({
           ) : null}
           <Link
             href={baseHref}
-            className="text-[11px] font-medium text-emerald-600 underline-offset-4 transition hover:text-emerald-700 hover:underline dark:text-emerald-400 dark:hover:text-emerald-300"
+            className="text-[11px] font-medium text-white/70 underline-offset-4 transition hover:text-white hover:underline"
           >
             Clear all
           </Link>
@@ -736,8 +729,8 @@ function FilterChip({
       href={href}
       className={
         active
-          ? "rounded-md bg-emerald-100 px-2 py-1 text-[11px] font-medium text-emerald-800 ring-1 ring-inset ring-emerald-300 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-500/40"
-          : "rounded-md bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-600 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-100 hover:text-slate-900 hover:ring-slate-300 dark:bg-white/[0.03] dark:text-slate-400 dark:ring-white/[0.08] dark:hover:bg-white/[0.06] dark:hover:text-slate-200 dark:hover:ring-white/15"
+          ? "rounded-md bg-white/[0.12] px-2 py-1 text-[11px] font-medium text-white ring-1 ring-inset ring-white/30 backdrop-blur-sm transition hover:bg-white/[0.18]"
+          : "rounded-md bg-white/[0.025] px-2 py-1 text-[11px] font-medium text-white/55 ring-1 ring-inset ring-white/[0.08] transition hover:bg-white/[0.06] hover:text-white hover:ring-white/15"
       }
     >
       {label}

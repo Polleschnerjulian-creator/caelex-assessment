@@ -213,12 +213,18 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("astra-toggle", handler);
   }, []);
 
+  // Cinema mode: real-photo wallpaper + forced dark glass surfaces.
+  // Currently activated for the new Today inbox so the redesigned
+  // dark-glass aesthetic isn't shoehorned over light-mode legacy pages.
+  const cinemaMode = pathname === "/dashboard/today";
+
   return (
     <div
       data-shell="caelex"
-      className="caelex-v2 dashboard-wallpaper relative overflow-hidden"
+      data-comply-cinema={cinemaMode ? "on" : "off"}
+      className={`caelex-v2 ${cinemaMode ? "dark comply-photo-wallpaper" : "dashboard-wallpaper"} relative overflow-hidden`}
     >
-      <GlassSpecular />
+      {!cinemaMode ? <GlassSpecular /> : null}
 
       {/* Gradient Mesh Orbs — subtle refraction background for glass surfaces */}
       <div
