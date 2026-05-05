@@ -2,7 +2,7 @@
 
 **Created:** 2026-05-05
 **Source:** 4-agent parallel audit (Crypto+Security, Backend Bugs, Data Layer, Architecture)
-**Status:** Active — Tier 1 in progress
+**Status:** Tier 1 completed (8/8 boxes; H4a/b/c deferred to a follow-up sprint that needs schema migration). Tier 2-5 pending.
 **Survives:** Conversation compaction. This file is the single source of truth for the Verity remediation work.
 
 ---
@@ -313,6 +313,30 @@ After all 8 Tier-1 boxes are checked:
 3. Update the **Tier completion log** at the bottom of this file with date + commit hash
 4. Decide with user: continue to Tier 2, push to main, or pause
 
+### `[!]` Tier-1 closing notice — H4a/b/c deferred
+
+H4d (chunked backfill) was completed and ships the daily STH cron from
+OOMing on >100k attestations. The remaining sub-steps:
+
+- **H4a — Inclusion-proof lazy-sibling lookup**: still loads full leaf
+  set on every `/transparency/inclusion/[id]` request.
+- **H4b — Consistency-proof lazy-sibling lookup**: still loads full
+  leaf set on every `/transparency/consistency` request.
+- **H4c — Incremental STH-signing**: still rebuilds the full Merkle
+  tree on every cron tick.
+
+These need a schema migration (new `VerityLogInnerNode` table + a
+frontier-state field on `VerityLogSTH`) before the lazy-sibling
+algorithms can land. They are out of scope for the Tier-1 commit-
+batch and tracked as their own follow-up sprint:
+
+→ see Tier-2 step T2-4 (log-store tests) and Tier-4 step T4-?
+(suggest adding T4-11: VerityLogInnerNode + frontier persistence)
+
+The H4d chunked backfill alone is enough to keep the daily cron safe
+through the ~100k-attestation horizon. Beyond that, the H4a/b/c
+schema work becomes blocking.
+
 ---
 
 ## Tier 2 — Test coverage build-out
@@ -487,10 +511,22 @@ File: `src/app/api/v1/verity/attestation/verify/route.ts:69-73`. Set `result.rea
 
 ## Tier completion log
 
-- Tier 1: not started
+- **Tier 1: completed 2026-05-05 except H4a/b/c (deferred to follow-up sprint).**
+  Commits on branch `claude/crazy-pascal-065793`:
+  - `df5093af` — docs: persist audit fix plan
+  - `dfd0e4c5` — T1-C1 IDOR /score/[operatorId]
+  - `53ef4676` — T1-C2 appendToChain Serializable + retry
+  - `7b3b55ac` — T1-H1 cert-verify embedded-key fallback removed
+  - `4b943326` — T1-H3 attestation/list pagination + NaN guard
+  - `1964025a` — T1-H5 trust-score 0.92 + T1-M2 P2P CSPRNG
+  - `76fdf9fb` — T1-M9 cert audit-chain entries (issue/revoke/visibility)
+  - `9892255e` — T1-H4d chunked backfill
+    Verification: typecheck shows 863 pre-existing errors codebase-wide,
+    zero in any Verity file. P2P + audit-anchor tests 28/28 pass.
 - Tier 2: not started
 - Tier 3: not started
-- Tier 4: not started
+- Tier 4: not started — note: add T4-11 "VerityLogInnerNode + frontier
+  persistence" prerequisite for H4a/b/c lazy-sibling lookup
 - Tier 5: not started
 
 ---
