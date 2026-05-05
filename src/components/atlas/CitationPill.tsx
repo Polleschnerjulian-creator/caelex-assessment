@@ -6,7 +6,7 @@
  * CitationPill — clickable Atlas-ID OR Case-ID with hover-preview
  * tooltip. Single component, two backing endpoints:
  *   - kind="source" → /api/atlas/source-preview/[id]   (legal sources)
- *   - kind="case"   → /api/atlas/case-preview/[id]     (case-law)
+ *   - kind="case"   → /api/atlas/case-preview/[id]     (case law)
  *
  * Lazy fetch on first hover/focus, in-memory cache for the rest of the
  * page life. Resilient to 404s (tooltip says "nicht gefunden", link

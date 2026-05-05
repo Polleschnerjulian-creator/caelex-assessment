@@ -23,7 +23,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
- * Atlas case-law detail page. Client component so it can consume
+ * Atlas case law detail page. Client component so it can consume
  * useLanguage(); data is static so the only round-trip is the initial
  * RSC payload. Mirrors the visual language of /atlas/sources/[id] but
  * tailored to litigation/enforcement records.

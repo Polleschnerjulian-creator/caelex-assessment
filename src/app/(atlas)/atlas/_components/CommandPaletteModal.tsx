@@ -36,7 +36,7 @@ import { JURISDICTION_DATA as NATIONAL_DATA } from "@/data/national-space-laws";
 import { ALL_SOURCES, ALL_AUTHORITIES } from "@/data/legal-sources";
 import { slugForTreatyId } from "@/data/treaties";
 import { ALL_LANDING_RIGHTS_PROFILES } from "@/data/landing-rights";
-// Caselaw + the index pages were previously absent from the palette,
+// Case law + the index pages were previously absent from the palette,
 // making the 28-case dataset and 937-source corpus discoverable only
 // via deep-link or homepage search.
 import { ATLAS_CASES } from "@/data/legal-cases";
@@ -120,12 +120,12 @@ const NAV_ITEMS: Item[] = [
   {
     id: "nav-cases",
     group: "Navigation",
-    title: "Caselaw",
+    title: "Case law",
     subtitle: "Court rulings, settlements, regulator orders",
     href: "/atlas/cases",
     icon: Gavel,
     haystack:
-      "cases rechtsprechung caselaw urteile settlements precedent gerichte",
+      "cases rechtsprechung case law caselaw urteile settlements precedent gerichte",
   },
   // Drafting Studio is intentionally not surfaced via the command palette
   // while the surface is being polished pre-release — matches the
@@ -277,7 +277,7 @@ const _LANDING_RIGHTS_ITEMS_HIDDEN: Item[] = ALL_LANDING_RIGHTS_PROFILES.map(
 );
 void _LANDING_RIGHTS_ITEMS_HIDDEN; // Suppress unused-var until release.
 
-// Caselaw — every entry in the 28-case database becomes a palette
+// Case law — every entry in the 28-case database becomes a palette
 // hit so a free-text query like "Cosmos", "Iridium", "FCC Swarm"
 // jumps straight to /atlas/cases/[id]. Without this the only way to
 // reach a case was via a source-detail backlink or an Astra pill.
@@ -439,7 +439,7 @@ export default function CommandPaletteModal({
       case "Treaties":
         return "Treaties";
       case "Cases":
-        return t("atlas.cases") ?? "Caselaw";
+        return t("atlas.cases") ?? "Case law";
       case "Landing Rights":
         return "Landing Rights";
     }

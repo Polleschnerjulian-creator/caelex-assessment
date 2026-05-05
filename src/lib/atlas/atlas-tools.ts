@@ -263,7 +263,7 @@ For ISO-2/3 country codes the response covers the national regulatory landscape;
 
   {
     name: "search_cases",
-    description: `Searches the Atlas case-law / enforcement-action knowledge base. Returns leading court decisions, regulator settlements, and Liability-Convention awards that operators must read alongside the statutes — Cosmos-954, Iridium-Cosmos-2009, FCC Swarm/$900K, FCC DISH/$150K, ITT/$100M ITAR, BAE/$79M, ZTE/$1.19B, Loral-Long-March, Viasat-v-FCC, FAA-SpaceX-2024, FCC-Ligado-2020, Vega VV15/VV22 inquiries, BAFA dual-use Bußgelder, etc.
+    description: `Searches the Atlas case law / enforcement-action knowledge base. Returns leading court decisions, regulator settlements, and Liability-Convention awards that operators must read alongside the statutes — Cosmos-954, Iridium-Cosmos-2009, FCC Swarm/$900K, FCC DISH/$150K, ITT/$100M ITAR, BAE/$79M, ZTE/$1.19B, Loral-Long-March, Viasat-v-FCC, FAA-SpaceX-2024, FCC-Ligado-2020, Vega VV15/VV22 inquiries, BAFA dual-use Bußgelder, etc.
 
 Use this when:
   - User asks about ENFORCEMENT precedents ("welche Strafen gibt es für ITAR-Verstöße?", "what are FCC debris penalties?")
@@ -308,7 +308,7 @@ Returns empty array if no matches — say so honestly, do NOT invent cases.`,
 
   {
     name: "get_case_by_id",
-    description: `Retrieves a single Atlas case-law entry by its canonical id (always 'CASE-' prefix). Returns the full record: title, parties, date_decided, citation, facts, ruling_summary, legal_holding, remedy (monetary + non-monetary), industry_significance, compliance_areas, applied_sources[], parties_mentioned, notes, source_url.
+    description: `Retrieves a single Atlas case law entry by its canonical id (always 'CASE-' prefix). Returns the full record: title, parties, date_decided, citation, facts, ruling_summary, legal_holding, remedy (monetary + non-monetary), industry_significance, compliance_areas, applied_sources[], parties_mentioned, notes, source_url.
 
 Use this AFTER search_cases has identified the entry the user wants to drill into, OR when the user mentions a case id directly. Returns isError=true with NOT_FOUND if the id does not resolve — never invent.
 

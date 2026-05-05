@@ -1,10 +1,10 @@
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
- * Atlas Case-Law index — barrel export with the same lookup ergonomics
+ * Atlas Case Law index — barrel export with the same lookup ergonomics
  * as `legal-sources/index.ts`. Astra and the workspace UI consume both
  * datasets through analogous helpers (`getCasesByJurisdiction`,
- * `getCasesApplyingSource`, `searchCases`) so that case-law surfaces
+ * `getCasesApplyingSource`, `searchCases`) so that case law surfaces
  * show up wherever a legal source is rendered.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
@@ -34,7 +34,7 @@ export type { TranslatedCase } from "./translations-de";
 export { ATLAS_CASES } from "./cases";
 
 /**
- * Supported translation languages for case-law content. English is
+ * Supported translation languages for case law content. English is
  * always the source-of-truth (the case fields themselves); other
  * languages live in `translations-{lang}.ts` files and are looked up
  * via getTranslatedCase().

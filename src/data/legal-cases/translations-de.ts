@@ -1,7 +1,7 @@
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
- * German translations for the Atlas case-law dataset. Mirrors the
+ * German translations for the Atlas case law dataset. Mirrors the
  * shape of `legal-sources/translations-de.ts` but for the LegalCase
  * record type. Every case in cases.ts has a corresponding entry here;
  * the case-detail UI consumes whichever language the user has selected.

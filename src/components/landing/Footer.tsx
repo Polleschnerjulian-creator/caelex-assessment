@@ -60,7 +60,7 @@ const solutionLinks = [
   // regime status, comparator entry-point), which is what users
   // expected to find at /atlas/map.
   { label: "Jurisdiction Map", href: "/atlas/jurisdictions" },
-  { label: "Caselaw Database", href: "/atlas/cases" },
+  { label: "Case Law Database", href: "/atlas/cases" },
 ];
 
 const industryLinks = [

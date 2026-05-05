@@ -296,7 +296,7 @@ function performSearch(query: string): SearchResults | null {
     (c) => foldText(c.title).includes(q) || foldText(c.requirement).includes(q),
   );
 
-  // Caselaw search — folds title, parties, citation, jurisdiction,
+  // Case law search — folds title, parties, citation, jurisdiction,
   // and EN+DE translations into one haystack so a German-language
   // query matches German case captions. Sorts most-recent-first.
   const cases = ATLAS_CASES.filter((c) => {

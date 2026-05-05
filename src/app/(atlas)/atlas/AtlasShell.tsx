@@ -65,7 +65,7 @@ const MAIN_NAV: readonly NavItem[] = [
   // corpus. Without this entry the catalogue was browsable only via
   // free-text search, which hid the depth of the dataset.
   { labelKey: "atlas.sources", href: "/atlas/sources", icon: Library },
-  // Cases index — surfaces the 28-case caselaw database that was
+  // Cases index — surfaces the 28-case case law database that was
   // previously only reachable via source-detail backlinks or Astra
   // citation pills. Distinct icon (Gavel) to read as adjudication-
   // outcomes vs the statutory text under "sources".

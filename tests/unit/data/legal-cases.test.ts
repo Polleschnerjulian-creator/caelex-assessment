@@ -1,7 +1,7 @@
 /**
  * Copyright 2026 Caelex GmbH. All rights reserved.
  *
- * Smoke tests for the Atlas case-law dataset and lookup helpers.
+ * Smoke tests for the Atlas case law dataset and lookup helpers.
  * Mirrors the invariants we enforce on legal-sources: id uniqueness,
  * URL hygiene, every applied_sources reference points at a real
  * legal-source id, and last_verified is a valid ISO date in the past.
@@ -23,7 +23,7 @@ import {
 } from "@/data/legal-cases";
 import { getLegalSourceById } from "@/data/legal-sources";
 
-describe("Atlas Case-Law dataset", () => {
+describe("Atlas Case Law dataset", () => {
   it("has at least 20 leading cases", () => {
     expect(ATLAS_CASES_COUNT).toBeGreaterThanOrEqual(20);
   });

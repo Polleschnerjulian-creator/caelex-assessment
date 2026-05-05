@@ -9,7 +9,7 @@
  * date_decided, ruling-summary excerpt) so the payload stays tiny and
  * the response is HTTP-cacheable for an hour.
  *
- * Auth: requires getAtlasAuth (org-scoped). Case-law data is
+ * Auth: requires getAtlasAuth (org-scoped). Case law data is
  * reference content, not user-scoped — gating by org keeps the surface
  * consistent with the rest of /api/atlas/*.
  *

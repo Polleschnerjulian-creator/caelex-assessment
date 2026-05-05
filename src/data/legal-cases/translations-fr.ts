@@ -1,7 +1,7 @@
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
- * French translations for the Atlas case-law dataset. Mirrors the
+ * French translations for the Atlas case law dataset. Mirrors the
  * shape of `translations-de.ts` for parity — same 28 cases, same
  * field structure (TranslatedCase type), so the case-detail UI
  * picks the right map without any FR-specific branching.

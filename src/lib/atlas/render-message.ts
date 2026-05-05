@@ -61,7 +61,7 @@ export function tokenizeAtlasMessage(text: string): AtlasMessageToken[] {
   // Single-pass tokenizer: scan for either pattern, take the earliest
   // match, advance cursor. Handling both regexes in one pass keeps the
   // output token order stable when both kinds appear in the same
-  // sentence (common in case-law citations).
+  // sentence (common in case law citations).
   const tokens: AtlasMessageToken[] = [];
   let cursor = 0;
   const atlasRe = new RegExp(ATLAS_ID_PATTERN.source, "g");

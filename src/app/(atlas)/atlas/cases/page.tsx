@@ -25,8 +25,8 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
- * /atlas/cases — case-law index. Browseable surface for the 28-case
- * caselaw database that was previously reachable only via source-detail
+ * /atlas/cases — case law index. Browseable surface for the 28-case
+ * case law database that was previously reachable only via source-detail
  * backlinks or Astra `[CASE-…]` citation pills.
  *
  * Filters:
@@ -171,7 +171,7 @@ export default function CasesIndexPage() {
         <div className="flex items-center gap-3">
           <Gavel className="h-5 w-5 text-violet-600" strokeWidth={1.5} />
           <h1 className="text-[18px] font-semibold tracking-tight text-[var(--atlas-text-primary)]">
-            {isDe ? "Rechtsprechung" : "Caselaw"}
+            {isDe ? "Rechtsprechung" : "Case law"}
           </h1>
           <span className="text-[11px] text-[var(--atlas-text-faint)]">
             {ATLAS_CASES_COUNT}{" "}
@@ -209,11 +209,11 @@ export default function CasesIndexPage() {
       </div>
 
       {/* Editorial-content disclosure
-          Caselaw entries below are Caelex-curated editorial summaries (facts,
+          Case law entries below are Caelex-curated editorial summaries (facts,
           ruling, holding, industry significance), NOT verbatim court text.
           The detail page links to the official record on every entry — that
           remains the only authoritative citation source. Audit close-out
-          for finding #5 (Caselaw editorial-banner). */}
+          for finding #5 (Case law editorial-banner). */}
       <div
         className="rounded-md border border-amber-300 dark:border-amber-700/50 bg-amber-50/70 dark:bg-amber-900/15 px-3 py-2 text-[11.5px] leading-relaxed text-amber-900 dark:text-amber-200"
         role="note"
@@ -238,7 +238,7 @@ export default function CasesIndexPage() {
         )}
       </div>
 
-      {/* GDPR Art. 6(1)(f) balancing disclosure for caselaw party names.
+      {/* GDPR Art. 6(1)(f) balancing disclosure for case law party names.
           Internal LIA at docs/legal-templates/caselaw-lia.md. Audit
           close-out for finding #16 (LIA review note). */}
       <div

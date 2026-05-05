@@ -35,7 +35,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
  *   - Compliance area
  *   - Status (in_force / draft / superseded / …)
  *
- * Visual language matches /atlas/cases (the caselaw counterpart) but
+ * Visual language matches /atlas/cases (the case law counterpart) but
  * uses emerald accents (the same hue as `[ATLAS-…]` citation pills) to
  * read as statutory-text sources rather than adjudication outcomes.
  *
@@ -231,7 +231,7 @@ export default function SourcesIndexPage() {
               The complete statutory corpus Atlas indexes — UN treaties, EU
               regulations, national space acts, ITU spectrum allocations, and
               ISO/CCSDS standards. Each entry links to a detail page with
-              translated provisions and cross-references to relevant caselaw.
+              translated provisions and cross-references to relevant case law.
               Browseable here, or grouped by{" "}
               <Link
                 href="/atlas/jurisdictions"

@@ -999,7 +999,7 @@ async function searchCasesTool(args: {
     };
   }
 
-  // ── Semantic pass for case-law (best-effort, fail-soft) ───────────
+  // ── Semantic pass for case law (best-effort, fail-soft) ──────────
   // Same hybrid pattern as searchLegalSources — embedding-driven
   // recall + keyword precision. Returns null when embeddings or AI
   // Gateway are unavailable; we fall back to keyword-only without a

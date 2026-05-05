@@ -1,7 +1,7 @@
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
- * Type definitions for the Atlas case-law / enforcement-action knowledge
+ * Type definitions for the Atlas case law / enforcement-action knowledge
  * base. Sits alongside `legal-sources/` and shares the `ComplianceArea`
  * vocabulary so that both surfaces are filterable by the same axes.
  *
@@ -123,7 +123,7 @@ export interface LegalCase {
   /**
    * Legal-source IDs (matching `LegalSource.id` in the legal-sources/
    * dataset) that the matter applied or interpreted. This is the join
-   * column linking case-law to statute.
+   * column linking case law to statute.
    */
   applied_sources: string[];
 
