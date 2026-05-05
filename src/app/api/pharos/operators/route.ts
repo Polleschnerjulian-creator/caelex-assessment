@@ -27,17 +27,31 @@ async function resolveAuthorityCaller(userId: string) {
     where: { userId },
     select: {
       organizationId: true,
+      role: true,
       organization: { select: { orgType: true } },
     },
     orderBy: { joinedAt: "asc" },
   });
   if (!membership) return null;
   if (membership.organization.orgType !== "AUTHORITY") return null;
+  // T1-P3 (Pharos audit fix 2026-05-05): the operator roster surfaces
+  // every operator under oversight + their incident counts +
+  // compliance summaries. That's PII-adjacent regulator data — gate
+  // it behind MANAGER+ so a VIEWER or basic MEMBER of an authority
+  // org cannot list it. The previous gate accepted any org member
+  // regardless of role.
+  if (
+    membership.role !== "OWNER" &&
+    membership.role !== "ADMIN" &&
+    membership.role !== "MANAGER"
+  ) {
+    return { membership, profile: null, insufficientRole: true as const };
+  }
   const profile = await prisma.authorityProfile.findUnique({
     where: { organizationId: membership.organizationId },
   });
   if (!profile) return null;
-  return { membership, profile };
+  return { membership, profile, insufficientRole: false as const };
 }
 
 export async function GET() {
@@ -51,6 +65,16 @@ export async function GET() {
     if (!caller) {
       return NextResponse.json(
         { error: "Authority profile not configured" },
+        { status: 403 },
+      );
+    }
+    if (caller.insufficientRole || !caller.profile) {
+      // T1-P3: caller is in an authority org but not at MANAGER+.
+      return NextResponse.json(
+        {
+          error:
+            "Insufficient permissions — operator roster requires MANAGER role or higher.",
+        },
         { status: 403 },
       );
     }

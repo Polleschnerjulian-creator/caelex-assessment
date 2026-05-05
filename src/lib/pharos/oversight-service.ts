@@ -24,11 +24,13 @@ import "server-only";
  */
 
 import { prisma } from "@/lib/prisma";
-import type {
-  OversightStatus,
-  OversightAccessAction,
-  Prisma,
-} from "@prisma/client";
+// Prisma is imported as a VALUE (not type-only) so we can reference
+// Prisma.TransactionIsolationLevel.Serializable at runtime — the
+// Prisma.InputJsonValue uses elsewhere in this file are still
+// satisfied because the value import provides both the namespace
+// types and the runtime members.
+import { Prisma } from "@prisma/client";
+import type { OversightStatus, OversightAccessAction } from "@prisma/client";
 import { ScopeSchema, type ScopeItem } from "@/lib/legal-network/scope";
 import {
   mintInviteToken,
@@ -533,7 +535,20 @@ export async function setOversightStatus(input: {
  * On the FIRST entry of a chain, previousHash is the relationship's
  * handshakeHash (passed as `rootHash`). For all subsequent entries it
  * comes from the previous log entry's entryHash.
+ *
+ * T1-P2 (Pharos audit fix 2026-05-05): the previous-hash lookup +
+ * entry create are wrapped in `prisma.$transaction({isolationLevel:
+ * "Serializable"})` with retry on serialization failure (P2034).
+ * Without this, two concurrent calls for the same oversight could
+ * both read the same chain head and append two entries with an
+ * identical previousHash — splitting the hash chain and breaking
+ * tamper-evidence. Mirrors the correct pattern in
+ * src/lib/pharos/workflow-service.ts:dispatchEvent and
+ * src/lib/verity/audit-chain/chain-writer.server.ts.
  */
+const CHAIN_RETRY_MAX_ATTEMPTS = 5;
+const PRISMA_SERIALIZATION_FAILURE = "P2034";
+
 export async function emitOversightAccessLog(input: {
   oversightId: string;
   actorUserId: string | null;
@@ -549,73 +564,93 @@ export async function emitOversightAccessLog(input: {
    *  omitted, the prior log entry's entryHash is fetched. */
   rootHash?: string;
 }) {
-  // Lookup the prior chain head — either provided rootHash, or the
-  // most recent log entry's entryHash, or fall back to the relationship's
-  // handshakeHash.
-  let previousHash: string;
-  if (input.rootHash) {
-    previousHash = input.rootHash;
-  } else {
-    const prior = await prisma.oversightAccessLog.findFirst({
-      where: { oversightId: input.oversightId },
-      orderBy: { createdAt: "desc" },
-      select: { entryHash: true },
-    });
-    if (prior) {
-      previousHash = prior.entryHash;
-    } else {
-      const ov = await prisma.oversightRelationship.findUnique({
-        where: { id: input.oversightId },
-        select: { handshakeHash: true },
-      });
-      if (!ov) {
-        throw new OversightServiceError(
-          "OVERSIGHT_NOT_FOUND",
-          "Cannot emit log — oversight not found",
-        );
+  for (let attempt = 1; attempt <= CHAIN_RETRY_MAX_ATTEMPTS; attempt++) {
+    try {
+      await prisma.$transaction(
+        async (tx) => {
+          // Lookup the prior chain head INSIDE the transaction — under
+          // serializable isolation, a concurrent writer can't slip an
+          // entry between this read and our create.
+          let previousHash: string;
+          if (input.rootHash) {
+            previousHash = input.rootHash;
+          } else {
+            const prior = await tx.oversightAccessLog.findFirst({
+              where: { oversightId: input.oversightId },
+              orderBy: { createdAt: "desc" },
+              select: { entryHash: true },
+            });
+            if (prior) {
+              previousHash = prior.entryHash;
+            } else {
+              const ov = await tx.oversightRelationship.findUnique({
+                where: { id: input.oversightId },
+                select: { handshakeHash: true },
+              });
+              if (!ov) {
+                throw new OversightServiceError(
+                  "OVERSIGHT_NOT_FOUND",
+                  "Cannot emit log — oversight not found",
+                );
+              }
+              previousHash = ov.handshakeHash;
+            }
+          }
+
+          const createdAt = new Date();
+          const entryHash = computeOversightAccessLogEntryHash({
+            previousHash,
+            oversightId: input.oversightId,
+            actorUserId: input.actorUserId,
+            actorOrgId: input.actorOrgId,
+            action: input.action,
+            resourceType: input.resourceType,
+            resourceId: input.resourceId ?? null,
+            matterScope: input.matterScope,
+            context: input.context,
+            createdAt,
+          });
+
+          await tx.oversightAccessLog.create({
+            data: {
+              oversightId: input.oversightId,
+              actorUserId: input.actorUserId,
+              actorOrgId: input.actorOrgId,
+              action: input.action,
+              resourceType: input.resourceType,
+              resourceId: input.resourceId ?? null,
+              matterScope: input.matterScope,
+              context: input.context as Prisma.InputJsonValue,
+              ipAddress: input.ipAddress ?? null,
+              userAgent: input.userAgent ?? null,
+              previousHash,
+              entryHash,
+              createdAt,
+            },
+          });
+        },
+        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      );
+      return; // success
+    } catch (err) {
+      const code =
+        typeof err === "object" && err !== null && "code" in err
+          ? (err as { code: string }).code
+          : undefined;
+      // Serialization failure → retry up to MAX_ATTEMPTS times. Real
+      // domain errors (OVERSIGHT_NOT_FOUND, FK violations) bubble out
+      // without retrying.
+      if (
+        code === PRISMA_SERIALIZATION_FAILURE &&
+        attempt < CHAIN_RETRY_MAX_ATTEMPTS
+      ) {
+        continue;
       }
-      previousHash = ov.handshakeHash;
+      logger.error(
+        `OversightAccessLog write failed (attempt ${attempt}/${CHAIN_RETRY_MAX_ATTEMPTS}): ${err instanceof Error ? err.message : String(err)}`,
+      );
+      throw err;
     }
-  }
-
-  const createdAt = new Date();
-  const entryHash = computeOversightAccessLogEntryHash({
-    previousHash,
-    oversightId: input.oversightId,
-    actorUserId: input.actorUserId,
-    actorOrgId: input.actorOrgId,
-    action: input.action,
-    resourceType: input.resourceType,
-    resourceId: input.resourceId ?? null,
-    matterScope: input.matterScope,
-    context: input.context,
-    createdAt,
-  });
-
-  try {
-    await prisma.oversightAccessLog.create({
-      data: {
-        oversightId: input.oversightId,
-        actorUserId: input.actorUserId,
-        actorOrgId: input.actorOrgId,
-        action: input.action,
-        resourceType: input.resourceType,
-        resourceId: input.resourceId ?? null,
-        matterScope: input.matterScope,
-        context: input.context as Prisma.InputJsonValue,
-        ipAddress: input.ipAddress ?? null,
-        userAgent: input.userAgent ?? null,
-        previousHash,
-        entryHash,
-        createdAt,
-      },
-    });
-  } catch (err) {
-    // Audit log writes are best-effort but failures should be loud
-    logger.error(
-      `OversightAccessLog write failed: ${err instanceof Error ? err.message : String(err)}`,
-    );
-    throw err;
   }
 }
 

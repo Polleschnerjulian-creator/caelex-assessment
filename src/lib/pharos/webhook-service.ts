@@ -36,6 +36,7 @@ import {
 } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { encrypt, isEncrypted, decrypt } from "@/lib/encryption";
 import { createWorkflowCase, dispatchEvent } from "./workflow-service";
 
 const TIMESTAMP_WINDOW_MS = 5 * 60_000; // ±5 min
@@ -70,13 +71,18 @@ export async function provisionWebhook(input: {
 }> {
   const rawSecret = generateRawSecret();
   const salt = generateSalt();
-  // Phase-1: store raw secret in `secretHash` (HMAC needs symmetric
-  // key both sides — Pharos can't HMAC-verify without the raw secret).
-  // Field-name is legacy; phase-2 wraps with AES-256-GCM at-rest.
-  // The accompanying scryptSync-fingerprint stays in secretSalt for
-  // future migrations / leak-detection (so we can grep "did this raw
-  // secret leak" by re-hashing candidate strings against the salts).
+  // T1-P1 (Pharos audit fix 2026-05-05): wrap the raw secret with
+  // AES-256-GCM at-rest via the platform encryption module
+  // (src/lib/encryption.ts). HMAC verification needs the symmetric
+  // key on the Pharos side, so the secret cannot be one-way hashed
+  // — but we can encrypt-at-rest so a DB read (SQL injection,
+  // insider, backup leak) doesn't expose every operator's signing
+  // secret. The scryptSync fingerprint stays in `secretSalt` for
+  // leak-grep ("re-hash candidate strings against the salts").
+  // Backwards-compat: deriveSecret() smart-detects encrypted vs
+  // legacy raw, so existing endpoints keep working until migrated.
   const fingerprint = hashSecret(rawSecret, salt);
+  const encryptedSecret = await encrypt(rawSecret);
 
   const ep = await prisma.pharosWebhookEndpoint.create({
     data: {
@@ -84,7 +90,7 @@ export async function provisionWebhook(input: {
       authorityProfileId: input.authorityProfileId,
       externalOperatorId: input.externalOperatorId,
       externalOperatorName: input.externalOperatorName,
-      secretHash: rawSecret, // see comment above — phase-1 raw, phase-2 AES-GCM
+      secretHash: encryptedSecret, // AES-256-GCM ciphertext, T1-P1
       secretSalt: salt + ":" + fingerprint.slice(0, 32),
       allowedEvents: input.allowedEvents,
       createdBy: input.createdBy,
@@ -205,10 +211,10 @@ export async function verifyAndProcess(
 
   // 4. HMAC verification
   const bodyHash = sha256Hex(inbound.rawBody);
-  const expected = createHmac(
-    "sha256",
-    deriveSecret(ep.secretHash, ep.secretSalt),
-  )
+  // T1-P1: deriveSecret is async (smart-decrypts AES-256-GCM
+  // ciphertext or returns legacy raw).
+  const hmacKey = await deriveSecret(ep.secretHash, ep.secretSalt);
+  const expected = createHmac("sha256", hmacKey)
     .update(inbound.timestamp + inbound.nonce + bodyHash)
     .digest("hex");
   if (!safeEqual(expected, inbound.signature)) {
@@ -412,15 +418,25 @@ function sha256Hex(input: string): string {
  *  because we don't have the raw secret server-side.
  *
  *  Final design: at provisioning we generate raw secret, return it
- *  to the operator (one-time), store BOTH the rawSecret-hash (for
- *  authentication-display) AND we store the rawSecret encrypted with
- *  ENCRYPTION_KEY so we CAN decrypt server-side. Phase 1: store raw
- *  secret in secretHash field directly (it's already a long random
- *  string with high entropy + the secretHash field is internal).
+ *  to the operator (one-time), store the rawSecret AES-256-GCM
+ *  encrypted in `secretHash`. The scryptSync fingerprint in
+ *  secretSalt is kept for leak-grep ("did this raw secret leak").
  *
- *  TL;DR: phase 1 stores raw secret in secretHash. Phase 2 wraps with
- *  AES-GCM. The deriveSecret() helper just returns it. */
-function deriveSecret(secretHash: string, _salt: string): string {
+ *  T1-P1 (Pharos audit fix 2026-05-05): deriveSecret is now async +
+ *  smart-decrypt. If the stored value matches the encryption format
+ *  (`iv:authTag:ciphertext` hex, validated by isEncrypted()), decrypt
+ *  it. Otherwise treat it as legacy raw — pre-T1-P1 endpoints stay
+ *  functional until migrated. Backwards compatibility is one-way:
+ *  any new endpoint goes through provisionWebhook → encrypted at-rest. */
+async function deriveSecret(
+  secretHash: string,
+  _salt: string,
+): Promise<string> {
+  if (isEncrypted(secretHash)) {
+    return decrypt(secretHash);
+  }
+  // Legacy raw secret (pre-T1-P1). Returns as-is so HMAC verification
+  // continues to work for endpoints provisioned before this fix.
   return secretHash;
 }
 
