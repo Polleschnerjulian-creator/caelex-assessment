@@ -4684,10 +4684,10 @@ model PulseLead {
   // The cron walks unconverted+unsubscribed-false leads and sends day-1
   // / day-3 / day-7 emails based on `createdAt` age. `lastEmailStage`
   // stores the highest stage already sent so re-runs are idempotent.
-  unsubscribed     Boolean   @default(false)
-  unsubscribedAt   DateTime?
-  lastEmailStage   String? // "day0" | "day1" | "day3" | "day7"
-  lastEmailSentAt  DateTime?
+  unsubscribed    Boolean   @default(false)
+  unsubscribedAt  DateTime?
+  lastEmailStage  String? // "day0" | "day1" | "day3" | "day7"
+  lastEmailSentAt DateTime?
 
   createdAt DateTime @default(now())
 
@@ -5915,7 +5915,7 @@ model DerivationTrace {
   verifiedBy       String? // User.id (free-form FK — operator, counsel, authority, system)
   attestationRef   Json? // structured pointer to outer attestation (Verity, NCA, Counsel, etc.)
   revokedAt        DateTime?
-  revokedReason    String? @db.Text
+  revokedReason    String?           @db.Text
 
   @@index([organizationId])
   @@index([entityType, entityId])
@@ -7290,6 +7290,11 @@ model VerityCertificateClaim {
   attestation VerityAttestation @relation(fields: [attestationId], references: [id])
 
   @@id([certificateId, attestationId])
+  // T4-4 (audit fix 2026-05-05): the composite PK left-prefixes
+  // certificateId, so attestation-side lookups (revoke flow:
+  // "which certificates reference this attestation?") were O(N).
+  // Single covering index makes them O(log N).
+  @@index([attestationId])
 }
 
 model VerityPassport {
@@ -8451,7 +8456,7 @@ model AtlasSourceCheck {
   /// next fetch differs we can diff current-vs-previous for the Claude
   /// summary without re-fetching the original URL again.
   /// L-15: explicit @db.Text — Postgres TEXT, no implied length cap.
-  currentContent String? @db.Text
+  currentContent String?          @db.Text
   status         AtlasCheckStatus @default(PENDING)
   httpStatus     Int? // HTTP status code from fetch
   errorMessage   String? // Error details if fetch failed
@@ -8534,15 +8539,15 @@ model AtlasSourceCheckHistory {
   /// edit). Lets the admin queue mark entries as 'already integrated'.
   integratedAt   DateTime?
 
-  @@index([sourceId, detectedAt])
-  @@index([jurisdiction, detectedAt])
-  @@index([reviewStatus, detectedAt])
   /// M-9: idempotency guard — the cron writes a history row per detected
   /// hash change. A retry (Neon timeout, Vercel re-invocation) would
   /// otherwise duplicate the row and pollute the admin-review queue
   /// with two entries for the same diff. With this constraint, retry
   /// becomes a P2002 the cron can swallow as "already recorded".
   @@unique([sourceId, contentHash])
+  @@index([sourceId, detectedAt])
+  @@index([jurisdiction, detectedAt])
+  @@index([reviewStatus, detectedAt])
 }
 
 enum AtlasAmendmentReviewStatus {
@@ -10128,7 +10133,7 @@ model OperatorWorkflowInstance {
 
   /// Owner — the operator-user who started the workflow. Free-form FK
   /// (User.id) so the engine doesn't depend on User-model evolution.
-  userId String
+  userId         String
   /// Multi-tenant scope.
   organizationId String
 
@@ -10155,10 +10160,10 @@ model OperatorWorkflowInstance {
   completedAt DateTime?
   archivedAt  DateTime?
 
-  events     WorkflowEvent[]
-  schedules  WorkflowSchedule[]
-  listeners  WorkflowEventListener[]
-  approvals  WorkflowApprovalSlot[]
+  events    WorkflowEvent[]
+  schedules WorkflowSchedule[]
+  listeners WorkflowEventListener[]
+  approvals WorkflowApprovalSlot[]
 
   @@index([userId, currentState])
   @@index([hardDeadline])
@@ -10201,8 +10206,8 @@ model WorkflowEvent {
   /// Hash-chain (per-workflow, mirrors evidence-server pattern).
   /// prevHash = previous WorkflowEvent.entryHash for this workflowId,
   /// or "GENESIS_<workflowId>" if first event.
-  prevHash  String  @db.VarChar(80)
-  entryHash String  @db.VarChar(64)
+  prevHash  String @db.VarChar(80)
+  entryHash String @db.VarChar(64)
 
   occurredAt DateTime @default(now())
 
@@ -10306,10 +10311,10 @@ model WorkflowApprovalSlot {
   /// Rejection path — sets the workflow back to the prior draft state.
   rejectedAt      DateTime?
   rejectedBy      String?
-  rejectionReason String? @db.Text
+  rejectionReason String?   @db.Text
 
   createdAt DateTime @default(now())
 
-  @@index([workflowId, stepKey])
   @@unique([workflowId, stepKey, requiredRole])
+  @@index([workflowId, stepKey])
 }

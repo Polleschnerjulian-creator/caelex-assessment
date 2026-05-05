@@ -2,7 +2,7 @@
 
 **Created:** 2026-05-05
 **Source:** 4-agent parallel audit (Crypto+Security, Backend Bugs, Data Layer, Architecture)
-**Status:** Tier 1 completed (8/8; H4a/b/c deferred — designed in `docs/VERITY-DEFERRED-FINDINGS-DESIGN.md`). Tier 2 **completed (10/10)** — 285 tests, **0 todos remaining**. T2-CRYPTO-1 + T2-CRYPTO-2 + T5-1 all closed end-to-end. Tier 3 completed (4/4: Phase-2 crypto activation behind default-v1 fallback). Tier 5 completed (13/13). Tier 4 partial — 4/10 done (T4-6/T4-8/T4-9/T4-10, all code-only); T4-1/T4-2/T4-3/T4-4/T4-5/T4-7 designed in `docs/VERITY-TIER-4-MIGRATION-PLAN.md` and awaiting per-migration approval.
+**Status:** Tier 1 completed (8/8; H4a/b/c deferred — designed in `docs/VERITY-DEFERRED-FINDINGS-DESIGN.md`). Tier 2 **completed (10/10)** — 285 tests, **0 todos remaining**. T2-CRYPTO-1 + T2-CRYPTO-2 + T5-1 all closed end-to-end. Tier 3 completed (4/4: Phase-2 crypto activation behind default-v1 fallback). Tier 5 completed (13/13). Tier 4 5/10 done (T4-4/T4-6/T4-8/T4-9/T4-10); T4-1/T4-2/T4-3/T4-5/T4-7 still designed in `docs/VERITY-TIER-4-MIGRATION-PLAN.md` and awaiting per-migration approval (need DB pre-flight queries).
 **Survives:** Conversation compaction. This file is the single source of truth for the Verity remediation work.
 
 ---
@@ -527,9 +527,14 @@ DEFERRED. Schema change with cascade rules: `organization Organization @relation
 
 DEFERRED. Prevent accidental deletion via org cleanup. Document explicitly that audit chain is immutable.
 
-### [ ] T4-4 — `@@index([attestationId])` on `VerityCertificateClaim`
+### [x] T4-4 — `@@index([attestationId])` on `VerityCertificateClaim` (commit pending)
 
-DEFERRED. Single-line schema add. Fixes O(N) lookup for revoke flows.
+`prisma/schema.prisma:7293` — added covering index. Composite PK
+`[certificateId, attestationId]` already left-prefixes certId, so
+attestation-side lookups (revoke flow) used to scan the table.
+Single CREATE INDEX, no data motion, no pre-flight needed. Applies
+on next deploy via `prisma db push` in the Vercel `build:deploy`
+script.
 
 ### [ ] T4-5 — `@db.VarChar(N)` length constraints on crypto fields
 
