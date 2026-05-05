@@ -4,6 +4,11 @@ import { verifyCertificate } from "@/lib/verity/certificates/verifier";
 import { getKeyByKeyId } from "@/lib/verity/keys/issuer-keys";
 import { parseCertificate } from "@/lib/verity/certificates/serializer";
 import { safeLog } from "@/lib/verity/utils/redaction";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 
 /**
  * POST /api/v1/verity/certificate/verify
@@ -12,9 +17,17 @@ import { safeLog } from "@/lib/verity/utils/redaction";
  *
  * Offline-capable logic: only needs the certificate JSON and public key.
  * DB lookup is for key trust validation.
+ *
+ * Rate-limited via the conservative `verity_public` tier (30/h per IP)
+ * — verification is heavier than `public-key` (parses + signature
+ * verifies + walks embedded attestations) so the same tier as
+ * /attestation/verify keeps the cost ceiling consistent.
  */
 export async function POST(request: NextRequest) {
   try {
+    const rl = await checkRateLimit("verity_public", getIdentifier(request));
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const body = await request.json();
     const { certificate: rawCert } = body;
 

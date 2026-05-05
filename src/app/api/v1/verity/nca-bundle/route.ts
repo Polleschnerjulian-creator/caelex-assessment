@@ -4,11 +4,21 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { computeComplianceScore } from "@/lib/verity/score/calculator";
 import { buildNCABundle } from "@/lib/verity/nca-bridge/submission-builder.server";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 
 /**
  * POST /api/v1/verity/nca-bundle
  * Builds an NCA submission bundle for a given jurisdiction.
  * Auth: Session required.
+ *
+ * Rate-limited via the conservative `verity_bundle` tier (5/h per user).
+ * Bundle build is heavy — full leaf scan + tree rebuild + bundling
+ * — so the same tier as /bundle/export keeps the cost ceiling
+ * consistent.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -16,6 +26,12 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rl = await checkRateLimit(
+      "verity_bundle",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
 
     const body = (await request.json()) as {
       jurisdiction: string;

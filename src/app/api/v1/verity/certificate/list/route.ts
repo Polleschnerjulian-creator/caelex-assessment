@@ -1,19 +1,34 @@
 import { logger } from "@/lib/logger";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 
 /**
  * GET /api/v1/verity/certificate/list
  * Returns all Verity certificates for the current user's organisation.
  * Auth: Session required.
+ *
+ * Rate-limited via the general `api` tier (100/min per user) — list
+ * is a session-only read but worth bounding so a misbehaving client
+ * can't poll the org's full cert set in a tight loop.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
 
     // Resolve organisation
     const membership = await prisma.organizationMember.findFirst({

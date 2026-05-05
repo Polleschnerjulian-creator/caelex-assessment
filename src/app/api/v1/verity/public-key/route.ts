@@ -1,7 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { listAllIssuerKeys } from "@/lib/verity/keys/key-rotation";
 import { safeLog } from "@/lib/verity/utils/redaction";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 
 /**
  * GET /api/v1/verity/public-key
@@ -9,9 +14,17 @@ import { safeLog } from "@/lib/verity/utils/redaction";
  * Auth: NONE (public endpoint)
  *
  * Returns ALL keys so old attestations remain verifiable after key rotation.
+ *
+ * Rate-limited via the `verity_public` tier (30/h per IP) on top of
+ * the 1-hour HTTP cache from T4-9. The cache-headers handle the
+ * common case (most clients pin the key once a day); rate-limit is
+ * the last line of defence for clients that defeat caching.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const rl = await checkRateLimit("verity_public", getIdentifier(request));
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const keys = await listAllIssuerKeys(prisma);
 
     const activeKey = keys.find((k) => k.active);

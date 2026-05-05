@@ -2,17 +2,31 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { safeLog } from "@/lib/verity/utils/redaction";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 
 /**
  * GET /api/v1/verity/certificate/[id]
  * Retrieves a certificate by ID.
  * Auth: NONE for public certificates, Session for private.
+ *
+ * Rate-limited via the `verity_public` tier (30/h per IP). The endpoint
+ * is mixed-auth — public certs leak through without a session — so
+ * the public budget applies pre-auth. Authenticated callers fetching
+ * private certs share the same bucket; that's acceptable since 30/h
+ * is generous for real cert-detail viewing.
  */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const rl = await checkRateLimit("verity_public", getIdentifier(request));
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const { id } = await params;
 
     const cert = await prisma.verityCertificate.findFirst({

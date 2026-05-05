@@ -3,11 +3,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { buildPassportData } from "@/lib/verity/passport/builder.server";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 
 /**
  * POST /api/v1/verity/passport/generate
  * Generates a compliance passport from the organisation's active attestations.
  * Auth: Session required.
+ *
+ * Rate-limited via `verity_bundle` (5/h per user). Passport-generation
+ * walks all org attestations and writes a new VerityPassport row, so
+ * the conservative budget keeps a single user from burning through
+ * DB capacity.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -15,6 +25,12 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rl = await checkRateLimit(
+      "verity_bundle",
+      getIdentifier(request, session.user.id),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
 
     const body = (await request.json()) as {
       label?: string;

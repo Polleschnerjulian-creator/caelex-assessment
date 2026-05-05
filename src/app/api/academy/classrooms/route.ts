@@ -11,16 +11,25 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
+import { randomInt } from "node:crypto";
 
 /**
  * Generate a unique join code in the format "XXXX-YYYY".
+ *
+ * Uses node:crypto.randomInt — a CSPRNG. The earlier Math.random()
+ * implementation produced ~31 bits of guessable entropy, making
+ * brute-forcing a valid classroom code feasible for an attacker
+ * who could iterate through the 32^8 = 2^40 keyspace
+ * (~10^12 codes). With CSPRNG the per-bit entropy is full, so the
+ * keyspace is genuinely uniform and joining a stranger's classroom
+ * by guessing the code is no longer practical.
  */
 function generateJoinCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Exclude confusing chars (0, O, 1, I)
   let code = "";
   for (let i = 0; i < 8; i++) {
     if (i === 4) code += "-";
-    code += chars[Math.floor(Math.random() * chars.length)];
+    code += chars[randomInt(chars.length)];
   }
   return code;
 }

@@ -1,17 +1,30 @@
 import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 
 /**
  * GET /api/v1/verity/passport/[passportId]
  * Public endpoint — returns passport data for the given ID.
  * No authentication required; passport must be public and not revoked/expired.
+ *
+ * Rate-limited via the `verity_public` tier (30/h per IP). The endpoint
+ * touches the DB on every hit (read + fire-and-forget view-count
+ * update) so the conservative public budget keeps a passport-ID
+ * brute-force from running up DB cost.
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ passportId: string }> },
 ) {
   try {
+    const rl = await checkRateLimit("verity_public", getIdentifier(request));
+    if (!rl.success) return createRateLimitResponse(rl);
+
     const { passportId } = await params;
 
     const record = await prisma.verityPassport.findFirst({
