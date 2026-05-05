@@ -173,6 +173,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
   const isFullscreenPage =
     pathname === "/dashboard" ||
+    pathname === "/dashboard/today" || // Sprint 1: Today owns its own header
     pathname === "/dashboard/generate" ||
     pathname === "/dashboard/documents" ||
     pathname === "/dashboard/tracker" ||

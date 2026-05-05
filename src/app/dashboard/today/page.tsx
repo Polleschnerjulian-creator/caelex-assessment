@@ -51,7 +51,15 @@ export const metadata = {
  * the defineAction() framework in src/lib/comply-v2/actions/.
  */
 interface TodayPageProps {
-  searchParams: Promise<{ regulation?: string; status?: string }>;
+  searchParams: Promise<{
+    regulation?: string;
+    status?: string;
+    /** Set to "1" to render mock items so the populated UI is visible
+     *  before any real ComplianceItems exist. Sprint-1 dev aid only —
+     *  no DB writes happen, snooze/attest actions on demo items are
+     *  no-ops. */
+    demo?: string;
+  }>;
 }
 
 const STATUS_PARAM_VALUES: Record<string, ComplianceStatus> = {
@@ -62,6 +70,138 @@ const STATUS_PARAM_VALUES: Record<string, ComplianceStatus> = {
   attested: "ATTESTED",
   expired: "EXPIRED",
 };
+
+/**
+ * Mock ComplianceItem fixtures used when ?demo=1. Cover all 3 buckets,
+ * mix of regulations + statuses so every NextStep CTA variant from
+ * Sprint 1.2 (CONNECT_SENTINEL / UPLOAD_EVIDENCE / RUN_ASSESSMENT /
+ * REVIEW_DRAFT / ATTEST / WAIT_FOR_APPROVAL) renders at least once.
+ *
+ * Targets are absolute dates relative to now() so the priority-bucket
+ * computation places them in the buckets we want.
+ */
+function buildDemoInbox(userId: string): {
+  urgent: ComplianceItem[];
+  thisWeek: ComplianceItem[];
+  watching: ComplianceItem[];
+  snoozedUntilByItemId: Record<string, string>;
+} {
+  const now = Date.now();
+  const day = 24 * 60 * 60 * 1000;
+  const future = (days: number) => new Date(now + days * day);
+
+  const urgent: ComplianceItem[] = [
+    {
+      id: "DEBRIS:demo_1",
+      rowId: "demo_1",
+      regulation: "DEBRIS",
+      userId,
+      requirementId: "Art. 70",
+      status: "EVIDENCE_REQUIRED",
+      notes: null,
+      evidenceNotes: null,
+      targetDate: future(2),
+      updatedAt: new Date(now - 6 * 60 * 60 * 1000),
+      priority: "URGENT",
+    },
+    {
+      id: "NIS2:demo_2",
+      rowId: "demo_2",
+      regulation: "NIS2",
+      userId,
+      requirementId: "Art. 23",
+      status: "EVIDENCE_REQUIRED",
+      notes: "24-hour incident notification — last drill confirmed gap.",
+      evidenceNotes: null,
+      targetDate: future(4),
+      updatedAt: new Date(now - 18 * 60 * 60 * 1000),
+      priority: "URGENT",
+    },
+    {
+      id: "CYBERSECURITY:demo_3",
+      rowId: "demo_3",
+      regulation: "CYBERSECURITY",
+      userId,
+      requirementId: "Art. 21.2.e",
+      status: "EXPIRED",
+      notes: null,
+      evidenceNotes: null,
+      targetDate: future(-3),
+      updatedAt: new Date(now - 4 * day),
+      priority: "URGENT",
+    },
+  ];
+
+  const thisWeek: ComplianceItem[] = [
+    {
+      id: "UK_SPACE_ACT:demo_4",
+      rowId: "demo_4",
+      regulation: "UK_SPACE_ACT",
+      userId,
+      requirementId: "Sec. 5",
+      status: "PENDING",
+      notes: null,
+      evidenceNotes: null,
+      targetDate: future(12),
+      updatedAt: new Date(now - 2 * day),
+      priority: "HIGH",
+    },
+    {
+      id: "EXPORT_CONTROL:demo_5",
+      rowId: "demo_5",
+      regulation: "EXPORT_CONTROL",
+      userId,
+      requirementId: "EAR §734",
+      status: "DRAFT",
+      notes:
+        "Astra prepared an EAR commodity classification draft based on your bus data — review the proposed ECCN.",
+      evidenceNotes: null,
+      targetDate: future(18),
+      updatedAt: new Date(now - 12 * 60 * 60 * 1000),
+      priority: "HIGH",
+    },
+  ];
+
+  const watching: ComplianceItem[] = [
+    {
+      id: "SPECTRUM:demo_6",
+      rowId: "demo_6",
+      regulation: "SPECTRUM",
+      userId,
+      requirementId: "ITU §11.2",
+      status: "UNDER_REVIEW",
+      notes: "Submitted to BNetzA last Friday — typical review window 14 days.",
+      evidenceNotes: null,
+      targetDate: future(28),
+      updatedAt: new Date(now - 5 * day),
+      priority: "MEDIUM",
+    },
+    {
+      id: "CRA:demo_7",
+      rowId: "demo_7",
+      regulation: "CRA",
+      userId,
+      requirementId: "Annex I.1",
+      status: "DRAFT",
+      notes:
+        "Cyber Resilience Act applicability assessment — ground-segment software falls under Class II per @niklas's analysis.",
+      evidenceNotes: null,
+      targetDate: future(40),
+      updatedAt: new Date(now - 3 * day),
+      priority: "MEDIUM",
+    },
+  ];
+
+  return {
+    urgent,
+    thisWeek,
+    watching,
+    // One item explicitly snoozed for 7d to show the "snoozed" badge.
+    snoozedUntilByItemId: {
+      "CRA:demo_7": new Date(now + 7 * day).toISOString(),
+    },
+  };
+}
 
 export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
   const session = await auth();
@@ -87,6 +227,7 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
       ? STATUS_PARAM_VALUES[sp.status]
       : null;
   const filterActive = filterRegulation !== null || filterStatus !== null;
+  const demoMode = sp.demo === "1";
 
   // Branch: filtered = flat list; unfiltered = 3-section inbox.
   let filteredItems: ComplianceItem[] = [];
@@ -97,7 +238,24 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
   // doesn't add latency. Counts ComplianceItemSnoozes created since
   // 00:00 UTC — the cleanest "user took an action" signal we have today.
   let clearedToday = 0;
-  if (filterActive) {
+
+  if (demoMode) {
+    // Demo path — bypass DB entirely. Filters still apply to the demo
+    // set so the user can poke at the FilterBar with realistic data.
+    const demo = buildDemoInbox(session.user.id);
+    inbox = demo;
+    total = demo.urgent.length + demo.thisWeek.length + demo.watching.length;
+    clearedToday = 4; // sample value to show the KPI chip populated
+    if (filterActive) {
+      const all = [...demo.urgent, ...demo.thisWeek, ...demo.watching];
+      filteredItems = all.filter(
+        (i) =>
+          (!filterRegulation || i.regulation === filterRegulation) &&
+          (!filterStatus || i.status === filterStatus),
+      );
+      total = filteredItems.length;
+    }
+  } else if (filterActive) {
     [filteredItems, clearedToday] = await Promise.all([
       getComplianceItemsForUser(session.user.id, {
         regulations: filterRegulation ? [filterRegulation] : undefined,
@@ -120,7 +278,26 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
   const isOnboardingEmpty = !filterActive && total === 0;
 
   return (
-    <div className="mx-auto max-w-screen-2xl px-6 py-8 sm:px-8">
+    <div className="px-6 py-8 sm:px-10 lg:px-14">
+      {demoMode ? (
+        <div className="mb-5 flex items-center justify-between gap-4 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+          <span className="inline-flex items-center gap-2">
+            <Sparkles className="h-3.5 w-3.5" />
+            <strong className="font-semibold">Demo mode</strong>
+            <span className="opacity-80">
+              Showing 7 mock items so you can preview the populated UI. Snooze /
+              attest actions on demo items are no-ops.
+            </span>
+          </span>
+          <Link
+            href="/dashboard/today"
+            className="font-semibold underline-offset-4 hover:underline"
+          >
+            Exit demo
+          </Link>
+        </div>
+      ) : null}
+
       <header className="mb-8 flex flex-wrap items-end justify-between gap-6 border-b border-slate-200/80 pb-5 dark:border-white/[0.08]">
         <div className="min-w-0">
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-50">
@@ -342,7 +519,14 @@ function OnboardingHero() {
 
       <p className="text-center text-xs text-slate-500 dark:text-slate-500">
         Once you have items in flight, this page becomes your daily inbox. Press
-        ⌘K anytime to search across everything.
+        ⌘K anytime to search across everything. Or{" "}
+        <Link
+          href="/dashboard/today?demo=1"
+          className="font-medium text-emerald-700 underline-offset-4 hover:underline dark:text-emerald-400"
+        >
+          preview the populated UI with demo items
+        </Link>
+        .
       </p>
     </div>
   );
