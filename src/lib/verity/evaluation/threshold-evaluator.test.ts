@@ -194,6 +194,12 @@ describe("threshold-evaluator", () => {
       issuer_private_key_der: sampleIssuerKey.privateKeyDer,
       issuer_public_key_hex: "pub_key_hex",
       expires_in_days: 90,
+      // T3-1 (audit fix 2026-05-05): pass-through params from the
+      // route layer to support Phase-2 crypto opt-in. With no
+      // commitment_scheme passed and no VERITY_CRYPTO_VERSION env
+      // var set, resolveCommitmentScheme defaults to "v1".
+      commitment_scheme: "v1",
+      range_encoding: undefined,
     });
   });
 

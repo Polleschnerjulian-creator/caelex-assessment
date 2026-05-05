@@ -2,7 +2,7 @@
 
 **Created:** 2026-05-05
 **Source:** 4-agent parallel audit (Crypto+Security, Backend Bugs, Data Layer, Architecture)
-**Status:** Tier 1 completed (8/8; H4a/b/c deferred). Tier 2 completed (5/10 done with 96 tests + 2 known-bug todos; T2-4/T2-5/T2-6/T2-8/T2-10 deferred to a test-infra sprint). Tier 3-5 pending.
+**Status:** Tier 1 completed (8/8; H4a/b/c deferred). Tier 2 completed (5/10 done with 96 tests + 2 known-bug todos; T2-4/T2-5/T2-6/T2-8/T2-10 deferred to a test-infra sprint). Tier 3 completed (4/4: Phase-2 crypto activation behind default-v1 fallback). Tier 4-5 pending.
 **Survives:** Conversation compaction. This file is the single source of truth for the Verity remediation work.
 
 ---
@@ -396,21 +396,39 @@ DEFERRED. Key rotation has DB side-effects (new key insertion + active-flag flip
 
 Currently v3 (Pedersen + Range Proof) is implemented but inactive — no caller passes `commitment_scheme: "v3"`.
 
-### [ ] T3-1 — API parameter `commitment_scheme` in issue routes
+### [x] T3-1 — API parameter `commitment_scheme` in issue routes (commit pending)
 
-Files: `src/app/api/v1/verity/attestation/{issue,manual,generate}/route.ts`, `src/app/api/v1/verity/certificate/issue/route.ts`. Accept optional `commitment_scheme: "v1" | "v2" | "v3"`. Default to env-flag.
+Added `commitment_scheme` (and optional `range_encoding`) to:
 
-### [ ] T3-2 — Feature-flag `VERITY_CRYPTO_VERSION`
+- `src/app/api/v1/verity/attestation/generate/route.ts` — destructured from body, validated (`v1`|`v2`|`v3`|undefined), passed through to `evaluateAndAttest`.
+- `src/app/api/v1/verity/attestation/manual/route.ts` — added to the existing Zod schema, plumbed into the direct `generateAttestation` call (manual route doesn't go through `evaluateAndAttest`).
+- `src/app/api/v1/verity/certificate/issue/route.ts` — same pattern as `generate`; the same scheme is applied to every attestation bundled into the cert.
+  Note: the `attestation/issue/route.ts` referenced in the original plan does not exist in the codebase — only `generate` + `manual`. Updated.
 
-File: `src/lib/feature-flags.ts` (existing) or new `src/lib/verity/feature-flags.ts`. Reads env var, defaults to `"v1"` for backward compat. Suggest staging deploy with `"v2"` for one week, then `"v3"`.
+### [x] T3-2 — Feature-flag `VERITY_CRYPTO_VERSION` (commit pending)
 
-### [ ] T3-3 — Documentation update in `UPGRADE_PATH.md`
+NEW file: `src/lib/verity/feature-flags.ts` (server-only). Exports `getDefaultCryptoVersion()` and `resolveCommitmentScheme()`. Distinct from `src/lib/feature-flags.ts` (client-bundled `NEXT_PUBLIC_*` flags) because the crypto-version choice (a) affects DB-write content and (b) shouldn't ship to the client bundle. Default is `"v1"` for any unset/unknown value (fail-safe — never silently weakens trust).
+Existing `threshold-evaluator.ts` rewired to call `resolveCommitmentScheme()` so caller-supplied schemes win, otherwise the env-var default applies.
 
-Add v3 section. Document ~12KB JSON-overhead-per-attestation implications. Document mobile-client implications. Document signature-size implications for cert bundles.
+### [x] T3-3 — Documentation update in `UPGRADE_PATH.md` (commit pending)
 
-### [ ] T3-4 — Migration plan: existing v1 attestations stay v1
+Rewrote `src/lib/verity/UPGRADE_PATH.md`:
 
-Document that the upgrade is forward-only — existing v1 attestations remain verifiable, new ones use the configured version.
+- Three-version coexistence table (v1/v2/v3) with wire-size comparison.
+- v3 size implications section: per-attestation ~12 KB JSON proof, 50-claim cert ~600 KB, ~16 ms per-proof verifier CPU, range-cap behaviour at different `bits` values, Bulletproofs as the next step (Phase 3 future work).
+- "How to opt in" section with concrete JSON request example for `commitment_scheme` + `range_encoding`, plus the env-var override.
+- Implementation-checklist updated with T3-1/2/3/4 status + parked T2-CRYPTO-1 (Pedersen homomorphism mismatch).
+
+### [x] T3-4 — Migration plan: existing v1 attestations stay v1 (commit pending)
+
+Documented in the same `UPGRADE_PATH.md` rewrite under a "Migration plan (forward-only)" header. Four-step rollout with explicit attestation-cycle (90 day) waits between steps:
+
+- Step 0: code lands behind default-v1 fallback (this Tier 3).
+- Step 1: staging soak with `VERITY_CRYPTO_VERSION=v2` for one week.
+- Step 2: production v2 default; wait one full 90-day expiry cycle.
+- Step 3: staging soak with `VERITY_CRYPTO_VERSION=v3`, watch payload + verifier CPU.
+- Step 4: production v3 default.
+  Rollback at any step: single env-var change reverts the default; previously-issued attestations of higher versions continue to verify via version-dispatch.
 
 ---
 
@@ -545,7 +563,16 @@ File: `src/app/api/v1/verity/attestation/verify/route.ts:69-73`. Set `result.rea
     uses SHA-512 (non-linear). Parked as `it.todo`. No production caller
     uses `pedersenAdd` today, but the doc-comment is a real claim that
     needs either implementation fix or doc revision.
-- Tier 3: not started
+- **Tier 3: completed 2026-05-05 (4/4).**
+  Phase-2 crypto activation behind a default-v1 fallback. No
+  behaviour change for existing integrators.
+  Single commit on branch `claude/crazy-pascal-065793`:
+  - (commit pending) — T3-1 + T3-2 + T3-3 + T3-4 (route params,
+    feature-flag, UPGRADE_PATH.md rewrite with rollout plan).
+    Verified: 187/187 Verity tests pass after threshold-evaluator
+    test fixture updated with `commitment_scheme: "v1"` +
+    `range_encoding: undefined`. Typecheck shows no new errors
+    introduced — the 2 Prisma JSON-type warnings are preexisting.
 - Tier 4: not started — note: add T4-11 "VerityLogInnerNode + frontier
   persistence" prerequisite for H4a/b/c lazy-sibling lookup
 - Tier 5: not started

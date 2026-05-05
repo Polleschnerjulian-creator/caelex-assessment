@@ -7,6 +7,7 @@ import { safeLog } from "../utils/redaction";
 import type { ThresholdAttestation } from "../core/types";
 import { appendToChain } from "../audit-chain/chain-writer.server";
 import { appendToLog } from "../transparency/log-store";
+import { resolveCommitmentScheme } from "../feature-flags";
 import { logger } from "@/lib/logger";
 
 /**
@@ -24,6 +25,16 @@ export async function evaluateAndAttest(
     satelliteName: string | null;
     regulationRef: string;
     expiresInDays: number;
+    /**
+     * T3-1 (Tier 3 — Phase-2 activation, audit fix 2026-05-05):
+     * Pass-through to `generateAttestation`. Resolved against the
+     * VERITY_CRYPTO_VERSION env var if not supplied here. See
+     * `src/lib/verity/feature-flags.ts` for the precedence rules and
+     * migration plan. Default behaviour (no callers passing this
+     * param + no env var set) remains v1 — backwards-compatible.
+     */
+    commitment_scheme?: "v1" | "v2" | "v3";
+    range_encoding?: { scale: number; bits: number };
   },
 ): Promise<ThresholdAttestation | null> {
   // 1. Find regulation threshold
@@ -76,6 +87,10 @@ export async function evaluateAndAttest(
     issuer_private_key_der: issuerKey.privateKeyDer,
     issuer_public_key_hex: issuerKey.publicKeyHex,
     expires_in_days: params.expiresInDays,
+    // T3-1: route caller's choice → resolveCommitmentScheme → server
+    // default. Range encoding is only consulted when scheme === "v3".
+    commitment_scheme: resolveCommitmentScheme(params.commitment_scheme),
+    range_encoding: params.range_encoding,
   });
 
   // 5. Store in DB (actual_value is NOT stored, only commitment)

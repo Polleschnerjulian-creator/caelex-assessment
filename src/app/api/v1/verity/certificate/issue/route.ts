@@ -27,6 +27,12 @@ export async function POST(request: NextRequest) {
       regulations,
       expires_in_days = 90,
       public: isPublic = false,
+      // T3-1 (audit fix 2026-05-05): same Phase-2 opt-in as the
+      // generate route. Applied to all attestations bundled into this
+      // cert. See src/lib/verity/feature-flags.ts and Tier 3 / T3-4
+      // in docs/VERITY-AUDIT-FIX-PLAN.md.
+      commitment_scheme,
+      range_encoding,
     } = body;
 
     if (
@@ -36,6 +42,20 @@ export async function POST(request: NextRequest) {
     ) {
       return NextResponse.json(
         { error: "regulations array is required" },
+        { status: 400 },
+      );
+    }
+
+    if (
+      commitment_scheme !== undefined &&
+      commitment_scheme !== "v1" &&
+      commitment_scheme !== "v2" &&
+      commitment_scheme !== "v3"
+    ) {
+      return NextResponse.json(
+        {
+          error: "Invalid commitment_scheme — must be 'v1', 'v2', or 'v3'",
+        },
         { status: 400 },
       );
     }
@@ -78,6 +98,9 @@ export async function POST(request: NextRequest) {
         satelliteName,
         regulationRef: reg,
         expiresInDays: expires_in_days,
+        // T3-1: every attestation in this cert uses the same scheme.
+        commitment_scheme,
+        range_encoding,
       });
       if (attestation) {
         attestations.push(attestation);

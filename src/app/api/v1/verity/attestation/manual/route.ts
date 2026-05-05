@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateAttestation } from "@/lib/verity/core/attestation";
 import { getActiveIssuerKey } from "@/lib/verity/keys/issuer-keys";
+import { resolveCommitmentScheme } from "@/lib/verity/feature-flags";
 import { safeLog } from "@/lib/verity/utils/redaction";
 import { appendToLog } from "@/lib/verity/transparency/log-store";
 import { createHash, randomBytes } from "node:crypto";
@@ -24,6 +25,18 @@ const ManualAttestationSchema = z.object({
   expires_in_days: z.number().int().min(1).max(365).default(90),
   threshold_type: z.enum(["ABOVE", "BELOW"]).default("ABOVE"),
   threshold_value: z.number().default(1),
+  // T3-1 (audit fix 2026-05-05): Phase-2 crypto opt-in. Default
+  // resolves via the VERITY_CRYPTO_VERSION env var (currently "v1").
+  // Manual attestations are LOW-trust by definition (self-declared),
+  // but the commitment scheme they use is the same as auto-attested
+  // ones — this keeps the verifier path uniform across sources.
+  commitment_scheme: z.enum(["v1", "v2", "v3"]).optional(),
+  range_encoding: z
+    .object({
+      scale: z.number().int().positive(),
+      bits: z.number().int().min(1).max(52),
+    })
+    .optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -52,6 +65,8 @@ export async function POST(request: NextRequest) {
       expires_in_days,
       threshold_type,
       threshold_value,
+      commitment_scheme,
+      range_encoding,
     } = parsed.data;
 
     // Get operator info
@@ -109,6 +124,12 @@ export async function POST(request: NextRequest) {
       issuer_private_key_der: issuerKey.privateKeyDer,
       issuer_public_key_hex: issuerKey.publicKeyHex,
       expires_in_days,
+      // T3-1: route caller's choice → resolveCommitmentScheme → server
+      // default (VERITY_CRYPTO_VERSION). Manual attestations are
+      // self-declared (LOW trust) but the commitment scheme is the
+      // same as auto-attested ones for verifier-path uniformity.
+      commitment_scheme: resolveCommitmentScheme(commitment_scheme),
+      range_encoding,
     });
 
     // Generate encryption of the commitment secret for manual attestations
