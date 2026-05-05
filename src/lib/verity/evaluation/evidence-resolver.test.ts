@@ -16,10 +16,14 @@ function createMockPrisma() {
     sentinelPacket: {
       findFirst: vi.fn(),
     },
+    complianceEvidence: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
   } as unknown as PrismaClient & {
     organizationMember: { findFirst: ReturnType<typeof vi.fn> };
     sentinelAgent: { findFirst: ReturnType<typeof vi.fn> };
     sentinelPacket: { findFirst: ReturnType<typeof vi.fn> };
+    complianceEvidence: { findMany: ReturnType<typeof vi.fn> };
   };
 }
 
@@ -203,17 +207,65 @@ describe("evidence-resolver", () => {
     expect(result!.cross_verification?.verification_result).toBe("MISMATCH");
   });
 
-  // ❌ KNOWN BUG (T5-1, audit fix plan Tier 5): the metaValue check at
-  // evidence-resolver.ts:173 uses `if (!metaValue || ...)` which treats
-  // `value: 0` as falsy and skips the row. Legitimate measurements like
-  // `critical_vulns_count: 0` (BELOW-threshold rule
-  // `nis2_art21_zero_critical_vulns`) get dropped. The fix is
-  // `metaValue === null || Number.isNaN(metaValue)` instead.
-  //
-  // This regression test is parked until T5-1 lands.
-  it.todo(
-    "[T5-1 KNOWN BUG] accepts ComplianceEvidence value === 0 (regression for `!metaValue` truthy bug)",
-  );
+  // T5-1 (audit fix 2026-05-05, landed): the metaValue check used
+  // `if (!metaValue || ...)` which treated `value: 0` as falsy and
+  // dropped legitimate measurements like `critical_vulns_count: 0`
+  // (BELOW-threshold rule `nis2_art21_zero_critical_vulns`). The fix
+  // changed it to `metaValue === null || !Number.isFinite(metaValue)`,
+  // accepting 0 while still rejecting null / NaN / ±Infinity.
+  // This regression locks the fix in place.
+  it("[T5-1 fixed] accepts ComplianceEvidence value === 0 (BELOW-threshold case)", async () => {
+    mockPrisma.organizationMember.findFirst.mockResolvedValue({
+      organizationId: "org_1",
+    });
+    // Sentinel path returns nothing so we fall through to ComplianceEvidence.
+    mockPrisma.sentinelAgent.findFirst.mockResolvedValue(null);
+    mockPrisma.complianceEvidence.findMany.mockResolvedValue([
+      {
+        id: "ce_zero",
+        metadata: { value: 0, dataPoint: "critical_vulns_count" },
+        confidence: 0.85,
+        createdAt: new Date("2026-04-30T12:00:00Z"),
+        validUntil: null,
+      },
+    ]);
+
+    const result = await resolveEvidence(
+      mockPrisma as unknown as PrismaClient,
+      "op_1",
+      null,
+      "critical_vulns_count",
+    );
+    expect(result).not.toBeNull();
+    expect(result!.actual_value).toBe(0);
+    expect(result!.source).toBe("evidence_record");
+    // Trust clamps to [0.50, 0.90], capped strictly below Sentinel's 0.92.
+    expect(result!.trust_score).toBeCloseTo(0.85);
+  });
+
+  it("[T5-1 fixed] still rejects ComplianceEvidence with NaN value", async () => {
+    mockPrisma.organizationMember.findFirst.mockResolvedValue({
+      organizationId: "org_1",
+    });
+    mockPrisma.sentinelAgent.findFirst.mockResolvedValue(null);
+    mockPrisma.complianceEvidence.findMany.mockResolvedValue([
+      {
+        id: "ce_nan",
+        metadata: { value: Number.NaN, dataPoint: "critical_vulns_count" },
+        confidence: 0.85,
+        createdAt: new Date(),
+        validUntil: null,
+      },
+    ]);
+
+    const result = await resolveEvidence(
+      mockPrisma as unknown as PrismaClient,
+      "op_1",
+      null,
+      "critical_vulns_count",
+    );
+    expect(result).toBeNull();
+  });
 
   it("returns null when packet value is not a number", async () => {
     const collectedAt = new Date("2026-02-01T12:00:00Z");

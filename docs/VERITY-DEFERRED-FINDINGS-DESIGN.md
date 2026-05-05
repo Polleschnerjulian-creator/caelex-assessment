@@ -1,22 +1,25 @@
 # Verity Deferred Findings — Design Notes
 
 **Created:** 2026-05-05 (read-only design; no code changes made)
-**Status:** Awaiting approval per finding before implementation.
-**Scope:** Three crypto/persistence findings deferred from Tier 1 / Tier 2:
+**Status:** T2-CRYPTO-1 + T2-CRYPTO-2 LANDED in commit `04d8d4e4`.
+T1-H4a/b/c still awaiting approval (needs schema migration).
 
-| ID          | Surface                    | Severity                           | Effort      |
-| ----------- | -------------------------- | ---------------------------------- | ----------- |
-| T2-CRYPTO-1 | Pedersen homomorphism      | LOW (no production caller today)   | 1 day or 1h |
-| T2-CRYPTO-2 | v3 range proof — PASS-only | HIGH (blocks v3 as default scheme) | 3-5 days    |
-| T1-H4a/b/c  | Merkle proof memory cost   | HIGH at >100k attestations         | 1-2 weeks   |
+| ID          | Surface                    | Severity                           | Status                                  |
+| ----------- | -------------------------- | ---------------------------------- | --------------------------------------- |
+| T2-CRYPTO-1 | Pedersen homomorphism      | LOW (no production caller today)   | ✓ closed (Option A landed)              |
+| T2-CRYPTO-2 | v3 range proof — PASS-only | HIGH (blocks v3 as default scheme) | ✓ closed (Option A: v2 fallback landed) |
+| T1-H4a/b/c  | Merkle proof memory cost   | HIGH at >100k attestations         | designed; needs schema-migration sprint |
 
-All three were surfaced by tests written during the Tier-2 sprint
-and parked as `it.todo`. Each section below tells you the options,
-the recommendation, and the deploy shape so you can pick a path.
+All three were surfaced by tests written during the Tier-2 sprint.
+T2-CRYPTO-1 + T2-CRYPTO-2 fixes are in `04d8d4e4` — both `it.todo`
+markers were flipped to active assertions. T1-H4a/b/c is the only
+finding here still awaiting implementation.
 
 ---
 
-## T2-CRYPTO-1 — Pedersen homomorphism docs vs implementation mismatch
+## T2-CRYPTO-1 — Pedersen homomorphism docs vs implementation mismatch ✓ CLOSED
+
+**Landed in commit `04d8d4e4` via Option A (linear scalar).** The sections below remain for future-historian reference. Net change: `valueToScalar` now `BigInt(value) mod q`, new `commitScaled(value, scale)` helper, v2 path scales via `range_encoding.scale` (default 1000), `safeMul` guards 0-scalar edge. Tests: `it.todo` flipped to passing homomorphism + associativity assertions.
 
 ### Problem
 
@@ -135,7 +138,9 @@ Single batched commit. No migration needed.
 
 ---
 
-## T2-CRYPTO-2 — v3 range proof can't issue FAIL attestations
+## T2-CRYPTO-2 — v3 range proof can't issue FAIL attestations ✓ CLOSED
+
+**Landed in commit `04d8d4e4` via Option A (v2 fallback).** The sections below remain for future-historian reference. Net change: `generateAttestation` falls back from v3 to v2 when `result === false`, marking the downgrade with `evidence.scheme_fallback: "v3-pass-only"`. Verifier needs no special handling — v2-fallback ships as version "2.0" and runs the existing v2 verification path. Option C (Bulletproofs) remains the long-term Phase-3 fix to restore trustless FAIL.
 
 ### Problem
 
@@ -539,12 +544,12 @@ The in-memory Prisma fake from T2-4 already supports
 
 ## Summary table
 
-| Finding     | Recommended option       | Effort   | Migration?          |
-| ----------- | ------------------------ | -------- | ------------------- |
-| T2-CRYPTO-1 | Option A (linear scalar) | 1 day    | No                  |
-| T2-CRYPTO-2 | Option A (v2 fallback)   | 1 day    | No                  |
-| T1-H4a/b/c  | Bundled deploy A→E       | ~2 weeks | Yes (additive only) |
+| Finding     | Recommended option       | Status                      | Migration?          |
+| ----------- | ------------------------ | --------------------------- | ------------------- |
+| T2-CRYPTO-1 | Option A (linear scalar) | ✓ closed in `04d8d4e4`      | No                  |
+| T2-CRYPTO-2 | Option A (v2 fallback)   | ✓ closed in `04d8d4e4`      | No                  |
+| T1-H4a/b/c  | Bundled deploy A→E       | designed; awaiting approval | Yes (additive only) |
 
-T2-CRYPTO-1 + T2-CRYPTO-2 can land together in a single commit
-(both pure crypto changes, both flip a known `it.todo` to `it`).
-T1-H4a/b/c is its own sprint with five deploys.
+T2-CRYPTO-1 + T2-CRYPTO-2 landed together in a single ~2-day batch
+(both pure crypto changes, both flipped their `it.todo` markers).
+T1-H4a/b/c remains its own ~2-week sprint with five deploys.

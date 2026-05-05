@@ -2,7 +2,7 @@
 
 **Created:** 2026-05-05
 **Source:** 4-agent parallel audit (Crypto+Security, Backend Bugs, Data Layer, Architecture)
-**Status:** Tier 1 completed (8/8; H4a/b/c deferred — designed in `docs/VERITY-DEFERRED-FINDINGS-DESIGN.md`). Tier 2 **completed (10/10)** — 283 tests + 1 known-bug todo (T5-1, doc-only). T2-CRYPTO-1 + T2-CRYPTO-2 **closed** (Pedersen homomorphism restored + v3 FAIL fallback). Tier 3 completed (4/4: Phase-2 crypto activation behind default-v1 fallback). Tier 5 completed (13/13). Tier 4 partial — 4/10 done (T4-6/T4-8/T4-9/T4-10, all code-only); T4-1/T4-2/T4-3/T4-4/T4-5/T4-7 designed in `docs/VERITY-TIER-4-MIGRATION-PLAN.md` and awaiting per-migration approval.
+**Status:** Tier 1 completed (8/8; H4a/b/c deferred — designed in `docs/VERITY-DEFERRED-FINDINGS-DESIGN.md`). Tier 2 **completed (10/10)** — 285 tests, **0 todos remaining**. T2-CRYPTO-1 + T2-CRYPTO-2 + T5-1 all closed end-to-end. Tier 3 completed (4/4: Phase-2 crypto activation behind default-v1 fallback). Tier 5 completed (13/13). Tier 4 partial — 4/10 done (T4-6/T4-8/T4-9/T4-10, all code-only); T4-1/T4-2/T4-3/T4-4/T4-5/T4-7 designed in `docs/VERITY-TIER-4-MIGRATION-PLAN.md` and awaiting per-migration approval.
 **Survives:** Conversation compaction. This file is the single source of truth for the Verity remediation work.
 
 ---
