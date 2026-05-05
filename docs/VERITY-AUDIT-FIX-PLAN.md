@@ -2,7 +2,7 @@
 
 **Created:** 2026-05-05
 **Source:** 4-agent parallel audit (Crypto+Security, Backend Bugs, Data Layer, Architecture)
-**Status:** Tier 1 completed (8/8; H4a/b/c deferred). Tier 2 completed (5/10 done with 96 tests + 2 known-bug todos; T2-4/T2-5/T2-6/T2-8/T2-10 deferred to a test-infra sprint). Tier 3 completed (4/4: Phase-2 crypto activation behind default-v1 fallback). Tier 5 completed (13/13). Tier 4 partial — 4/10 done (T4-6/T4-8/T4-9/T4-10, all code-only); T4-1/T4-2/T4-3/T4-4/T4-5/T4-7 designed in `docs/VERITY-TIER-4-MIGRATION-PLAN.md` and awaiting per-migration approval (each section includes the pre-flight prod-query the user needs to run).
+**Status:** Tier 1 completed (8/8; H4a/b/c deferred). Tier 2 completed (7/10 done with 143 tests + 3 known-bug todos; T2-6/T2-8/T2-10 still deferred to a future sprint). Tier 3 completed (4/4: Phase-2 crypto activation behind default-v1 fallback). Tier 5 completed (13/13). Tier 4 partial — 4/10 done (T4-6/T4-8/T4-9/T4-10, all code-only); T4-1/T4-2/T4-3/T4-4/T4-5/T4-7 designed in `docs/VERITY-TIER-4-MIGRATION-PLAN.md` and awaiting per-migration approval.
 **Survives:** Conversation compaction. This file is the single source of truth for the Verity remediation work.
 
 ---
@@ -360,13 +360,51 @@ Covers proveNonNegative happy path (0 / 1 / max / mid-range bit-pattern); reject
 File: `src/lib/verity/transparency/merkle-tree.test.ts` — 36 passing tests.
 Covers RFC-6962 domain-separation (0x00 leaf / 0x01 inner) including the second-preimage protection check (`hashLeaf(x) ≠ hashInner(L, R)` even when `x = concat(L, R)`); root calculation against hand-computed expected values for 1/2/3/4-leaf trees; inclusion-proof + verify roundtrip for every leaf in trees of size 1, 2, 3, 4, 7, 8, 16, 100; inclusion-proof rejection (wrong root, wrong leaf data, mutated path, mutated leafIndex); consistency-proof + verify for canonical transitions 0→8, 1→2, 2→4, 3→4, 3→5, 5→8, 7→8, 256→257; consistency rejection (tampered oldRoot, extra trailing bytes); STH signing-bytes determinism + uniqueness across timestamp/treeSize/rootHash/keyId.
 
-### [⏭] T2-4 — log-store tests (deferred)
+### [x] T2-4 — log-store tests (commit pending)
 
-DEFERRED to a separate test-infra sprint. Needs a fixture-based Prisma test setup or a richer Vitest mock harness — log-store.ts orchestrates 5+ Prisma calls inside transactions for `appendToLog`/`signNewSTH`/`backfill`/`getInclusionForAttestation` and the H4d chunked backfill we landed in Tier 1 makes the call graph wider. Best deferred until Tier 4 schema work (T4-? `VerityLogInnerNode` + frontier persistence) is in flight, since several queries will change shape then.
+File: `src/lib/verity/transparency/log-store.test.ts` — 25 passing.
+Built a small in-memory Prisma fake (`verityLogLeaf`, `verityLogSTH`,
+`verityIssuerKey`, `verityAttestation`, `$transaction`) so the real
+`log-store.ts` orchestration runs end-to-end. Crypto (Ed25519 + RFC
+6962 hashing) executes for real; only the persistence boundary is
+mocked. Coverage:
 
-### [⏭] T2-5 — Attestation verify-path tests (deferred)
+- `appendToLog`: sequential indexing, idempotent re-append, missing-id
+  rejection, missing-signature rejection, deterministic leaf-hash
+- `signNewSTH`: empty-log skip, treeSize-unchanged skip, growth path,
+  T5-8 monotonic-timestamp regression, no-active-key skip
+- `getInclusionForAttestation`: null on no-STH, null on missing leaf,
+  proof root matches latest STH, null when leaf > STH treeSize
+- `getConsistencyFromStore`: input validation (non-int / negative /
+  reversed), missing-STH null, valid bundle returns proof + roots
+- `backfillMissingLeaves` (H4d): empty case, append for missing,
+  idempotency on re-run, malformed-row skip
 
-DEFERRED. Same reason as T2-4: full v1/v2/v3 attestation roundtrips need a key-setup fixture that synthesises an Ed25519 issuer key, signs an attestation, and runs the verifier. Possible to do without DB, but the realistic test setup is non-trivial and overlaps T2-6 (certificate-roundtrip). Bundle them together in a follow-up sprint.
+### [x] T2-5 — Attestation verify-path tests (commit pending)
+
+File: `src/lib/verity/core/attestation.test.ts` — 22 passing + 1 todo.
+Pure crypto roundtrip, no Prisma. Generates a fresh Ed25519 keypair
+per suite via `node:crypto.generateKeyPairSync`. Coverage:
+
+- generate→verify happy path × {v1, v2, v3} × {ABOVE, BELOW} × {result=true, result=false except v3}
+- default scheme (no `commitment_scheme` param) is v1
+- reject: `issuer_known=false`, wrong public key, expired (-1d),
+  flipped signature byte, tampered claim_statement, tampered
+  value_commitment, v2 PoK A-mutation, v3 range-proof threshold-type
+  swap, downgrade v3-shape to v1 version, unknown version, mismatched
+  commitment prefix vs version
+
+**🔴 NEW Tier-2 finding T2-CRYPTO-2: v3 can't attest non-compliance.**
+`proveThreshold` correctly refuses to construct a zero-knowledge
+proof of a false statement, but the attestation pipeline calls it
+unconditionally — so an actual Sentinel reading of FAIL crashes v3
+generation. Today v3 can only ever issue PASS attestations. Fix
+options (need design call):
+(a) v3 PASS-only, v2 fallback for FAIL
+(b) Generate a "negation proof" (proveThreshold of the opposite
+direction) for FAIL paths
+(c) Defer to Bulletproofs in Phase 3
+Parked as `it.todo` in the new test file.
 
 ### [⏭] T2-6 — Certificate-Generator + verifier tests (deferred)
 
@@ -622,7 +660,7 @@ verifyAttestation had already populated the array).
   - `9892255e` — T1-H4d chunked backfill
     Verification: typecheck shows 863 pre-existing errors codebase-wide,
     zero in any Verity file. P2P + audit-anchor tests 28/28 pass.
-- **Tier 2: completed 2026-05-05 except T2-4/T2-5/T2-6/T2-8/T2-10 (deferred to a follow-up test-infra sprint).**
+- **Tier 2: 7/10 completed (2026-05-05); T2-6/T2-8/T2-10 still deferred.**
   Tests added across 4 commits on branch `claude/crazy-pascal-065793`:
   - `880754ee` — T2-1 + T2-2 (Pedersen + Range-Proof, 39 cases)
   - (commit pending) — T2-3 (Merkle RFC 6962, 36 cases)
