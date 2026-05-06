@@ -1962,6 +1962,123 @@ html:not(.dark) .dashboard-wallpaper {
   display: none;
 }
 
+/* ─── COMPLY DARK CANVAS — Apple-HIG-aligned non-photo backdrop ─────── */
+/* Used on every V2 dashboard route OTHER than /today. Pure dark with a
+ * subtle radial accent so the chrome reads as Liquid Glass against
+ * something — but no recognizable image, no contrast competition with
+ * the page content. Matches the same dark token-palette as
+ * comply-photo-wallpaper so navigating between routes is invisible.   */
+
+.comply-dark-canvas {
+  position: relative;
+  background-color: #0a0c12;
+  min-height: 100vh;
+  isolation: isolate;
+}
+
+.comply-dark-canvas::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(
+      ellipse 1200px 800px at 20% 0%,
+      rgba(40, 50, 75, 0.18) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 1000px 700px at 100% 100%,
+      rgba(50, 35, 60, 0.14) 0%,
+      transparent 50%
+    );
+  pointer-events: none;
+}
+
+.comply-dark-canvas > * {
+  position: relative;
+  z-index: 1;
+}
+
+.comply-dark-canvas .glass-mesh-orb {
+  display: none;
+}
+
+/* ─── APPLE CHROME TOKENS — Sidebar / TopBar in dark ────────────────── */
+/* Apple HIG: chrome should be deferential to content. Translucent,
+ * hairline borders, selection-tint actives (no chunky stripes), tight
+ * SF-style typography. These classes are dark-only — light mode
+ * (when reintroduced) will get its own bridge.                          */
+
+.apple-chrome-surface {
+  background: rgba(18, 20, 28, 0.62);
+  backdrop-filter: blur(40px) saturate(1.6);
+  -webkit-backdrop-filter: blur(40px) saturate(1.6);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.apple-chrome-divider {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Selection-tint for active nav rows. Apple's active-row treatment is a
+ * subtle white wash — never an accent stripe, never a colored border.   */
+.apple-nav-active {
+  background-color: rgba(255, 255, 255, 0.085);
+  color: rgba(255, 255, 255, 0.98);
+}
+
+.apple-nav-idle {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.apple-nav-idle:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.apple-nav-section-label {
+  color: rgba(255, 255, 255, 0.36);
+  letter-spacing: 0.04em;
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.apple-icon-btn {
+  color: rgba(255, 255, 255, 0.55);
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
+}
+
+.apple-icon-btn:hover {
+  color: rgba(255, 255, 255, 0.95);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.apple-search-pill {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.55);
+  transition: background-color 160ms ease;
+}
+
+.apple-search-pill:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.apple-kbd {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-size: 10px;
+  font-family: -apple-system, system-ui, sans-serif;
+  font-weight: 500;
+  line-height: 1;
+}
+
 /* ─── Light Mode Liquid Glass Classes ─── */
 
 .light .caelex-v2 .glass-light,

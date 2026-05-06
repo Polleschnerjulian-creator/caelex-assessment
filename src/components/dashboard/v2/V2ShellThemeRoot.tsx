@@ -27,16 +27,18 @@ export function V2ShellThemeRoot({
   const pathname = usePathname();
   const cinema = pathname === "/dashboard/today";
 
+  // 2026-05-06: V2 is now uniformly dark across all routes (per the
+  // Apple-HIG redesign of the chrome — Sidebar/TopBar look broken in
+  // light mode under the new aesthetic). /dashboard/today gets the
+  // photo wallpaper as a "hero" surface; every other dashboard
+  // route gets the same pure dark canvas with the same Apple chrome,
+  // so navigating between routes never flashes a theme change.
   return (
     <div
       data-density={density}
-      data-caelex-theme={cinema ? "dark" : "light"}
+      data-caelex-theme="dark"
       data-comply-cinema={cinema ? "on" : "off"}
-      className={
-        cinema
-          ? "dark comply-photo-wallpaper flex min-h-screen"
-          : "caelex-canvas flex min-h-screen"
-      }
+      className={`dark flex min-h-screen ${cinema ? "comply-photo-wallpaper" : "comply-dark-canvas"}`}
     >
       {children}
     </div>

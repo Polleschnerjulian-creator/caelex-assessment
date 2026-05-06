@@ -6,8 +6,6 @@ import { usePathname } from "next/navigation";
 import { Bell, ChevronRight } from "lucide-react";
 
 import { breadcrumbsFromPath } from "./breadcrumbs";
-import { Kbd } from "@/components/ui/v2/kbd";
-import { cn } from "@/lib/utils";
 
 /**
  * V2TopBar — Sprint 12B (Caelex Liquid Glass top chrome)
@@ -63,42 +61,39 @@ export function V2TopBar({ userName, userEmail }: V2TopBarProps) {
   return (
     <header
       data-testid="v2-topbar"
-      className="caelex-glass-regular sticky top-0 z-30 flex h-12 items-center gap-3 px-4"
+      className="apple-chrome-surface sticky top-0 z-30 flex h-12 items-center gap-3 border-b px-4"
       style={{
-        borderRadius: 0,
-        borderTop: "none",
-        borderLeft: "none",
-        borderRight: "none",
+        fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
       }}
     >
-      {/* Left — breadcrumbs */}
+      {/* Left — breadcrumbs (Apple-style: hairline chevrons, current
+          page in white, trail in white/60) */}
       <nav
         aria-label="Breadcrumb"
         data-testid="v2-topbar-breadcrumbs"
         className="flex min-w-0 flex-1 items-center gap-1.5 text-[13px] leading-none"
+        style={{ letterSpacing: "-0.011em" }}
       >
         {crumbs.map((c, i) => (
           <React.Fragment key={c.href}>
             {i > 0 ? (
               <ChevronRight
                 aria-hidden="true"
-                className="h-3 w-3 shrink-0"
-                style={{ color: "var(--caelex-text-tertiary)" }}
+                className="h-3 w-3 shrink-0 text-white/25"
+                strokeWidth={1.6}
               />
             ) : null}
             {c.isCurrent ? (
               <span
                 aria-current="page"
-                className="caelex-text-primary truncate font-body font-medium"
+                className="truncate font-medium text-white"
               >
                 {c.label}
               </span>
             ) : (
               <Link
                 href={c.href}
-                className={cn(
-                  "caelex-text-secondary caelex-focusable truncate rounded font-body font-normal transition-colors duration-tp-quick ease-tp-apple",
-                )}
+                className="truncate text-white/55 transition-colors hover:text-white"
               >
                 {c.label}
               </Link>
@@ -107,7 +102,8 @@ export function V2TopBar({ userName, userEmail }: V2TopBarProps) {
         ))}
       </nav>
 
-      {/* Center — ⌘K pill (the single most important affordance) */}
+      {/* Center — Apple-style search pill: rounded-full, no border,
+          translucent, with subtle keyboard-shortcut chips */}
       <button
         type="button"
         data-testid="v2-topbar-cmdk"
@@ -120,54 +116,43 @@ export function V2TopBar({ userName, userEmail }: V2TopBarProps) {
           });
           window.dispatchEvent(event);
         }}
-        className="caelex-focusable hidden h-8 w-[320px] shrink-0 items-center justify-between gap-3 rounded-lg px-3 font-body text-[13px] transition-colors duration-tp-quick ease-tp-apple md:inline-flex"
-        style={{
-          background: "var(--caelex-content-sunken)",
-          border: "1px solid var(--caelex-content-border)",
-          color: "var(--caelex-text-tertiary)",
-        }}
+        className="apple-search-pill hidden h-8 w-[320px] shrink-0 items-center justify-between gap-3 rounded-full px-4 text-[13px] md:inline-flex"
+        style={{ letterSpacing: "-0.011em" }}
       >
-        <span className="truncate">Search Caelex…</span>
+        <span className="truncate">Search Caelex</span>
         <span className="flex items-center gap-0.5">
-          <Kbd>⌘</Kbd>
-          <Kbd>K</Kbd>
+          <span className="apple-kbd">⌘</span>
+          <span className="apple-kbd">K</span>
         </span>
       </button>
 
-      {/* Right — notification bell + avatar pill */}
-      <div className="flex shrink-0 items-center gap-2">
+      {/* Right — notification bell + bare avatar circle (no bordered
+          pill, no name overlay; user identity is already in sidebar) */}
+      <div className="flex shrink-0 items-center gap-1">
         <button
           type="button"
           aria-label="Notifications"
           data-testid="v2-topbar-bell"
-          className="caelex-focusable caelex-text-secondary hover:caelex-text-primary inline-flex h-8 w-8 items-center justify-center rounded-lg transition-colors duration-tp-quick ease-tp-apple"
-          style={{ background: "transparent" }}
+          className="apple-icon-btn inline-flex h-8 w-8 items-center justify-center rounded-full"
         >
-          <Bell className="h-3.5 w-3.5" />
+          <Bell className="h-4 w-4" strokeWidth={1.6} />
         </button>
 
         {userEmail || userName ? (
-          <div
+          <button
+            type="button"
+            aria-label={`Account: ${userName ?? userEmail}`}
             data-testid="v2-topbar-avatar"
-            className="caelex-focusable flex h-8 items-center gap-2 rounded-lg pl-1 pr-2.5"
+            className="ml-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold text-white transition-transform hover:scale-105"
             style={{
-              background: "var(--caelex-content-sunken)",
-              border: "1px solid var(--caelex-content-border)",
+              background:
+                "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 100%)",
+              boxShadow: "0 0 0 1px rgba(255,255,255,0.08)",
+              letterSpacing: 0,
             }}
           >
-            <div
-              className="caelex-text-primary flex h-6 w-6 shrink-0 items-center justify-center rounded-md font-mono text-[10px] font-medium"
-              style={{
-                background: "var(--caelex-content)",
-                boxShadow: "0 0 0 1px var(--caelex-content-border)",
-              }}
-            >
-              {(userName ?? userEmail ?? "?").slice(0, 1).toUpperCase()}
-            </div>
-            <span className="caelex-text-primary hidden max-w-[140px] truncate font-body text-[12px] font-medium md:inline">
-              {userName ?? userEmail}
-            </span>
-          </div>
+            {(userName ?? userEmail ?? "?").slice(0, 1).toUpperCase()}
+          </button>
         ) : null}
       </div>
     </header>

@@ -166,39 +166,30 @@ export function V2Sidebar({
     // background-rim shadow stack via .caelex-glass-regular.
     <nav
       aria-label="Comply navigation"
-      className="caelex-glass-regular flex h-full w-56 shrink-0 flex-col"
-      style={{
-        borderRadius: 0,
-        borderTop: "none",
-        borderBottom: "none",
-        borderLeft: "none",
-      }}
+      className="apple-chrome-surface flex h-full w-60 shrink-0 flex-col border-r"
     >
-      {/* Brand */}
-      <div
-        className="flex h-12 items-center gap-2 px-3"
-        style={{ borderBottom: "1px solid var(--caelex-divider)" }}
-      >
-        <div
-          className="flex h-6 w-6 items-center justify-center rounded text-[var(--caelex-text-on-tint)]"
+      {/* Brand — Apple-style wordmark, no chunky icon, just type */}
+      <div className="flex h-12 items-center px-4">
+        <span
+          className="text-[15px] font-semibold tracking-tight text-white"
           style={{
-            background: "var(--caelex-accent)",
-            boxShadow: "0 0 0 1px var(--caelex-accent-rim)",
+            fontFamily:
+              '-apple-system, "SF Pro Display", system-ui, sans-serif',
+            letterSpacing: "-0.018em",
           }}
         >
-          <span className="font-mono text-[11px] font-bold">C</span>
-        </div>
-        <div className="flex items-baseline gap-1.5 leading-none">
-          <span className="caelex-text-primary font-mono text-[11px] font-semibold uppercase tracking-[0.18em]">
-            CAELEX
-          </span>
-          <span
-            className="font-mono text-[9px] uppercase tracking-[0.2em]"
-            style={{ color: "var(--caelex-accent-text)" }}
-          >
-            COMPLY
-          </span>
-        </div>
+          Caelex
+        </span>
+        <span
+          className="ml-1.5 text-[12px] font-medium text-white/35"
+          style={{
+            fontFamily:
+              '-apple-system, "SF Pro Display", system-ui, sans-serif',
+            letterSpacing: "-0.011em",
+          }}
+        >
+          Comply
+        </span>
       </div>
 
       {/* Sprint 12B: cmd-K trigger relocated to V2TopBar (the brief
@@ -207,19 +198,24 @@ export function V2Sidebar({
           ⌘K on window, so the keyboard shortcut works from anywhere
           inside the sidebar. */}
 
-      <div className="flex-1 overflow-y-auto px-2 py-2">
+      <div
+        className="flex-1 overflow-y-auto px-3 py-3"
+        style={{
+          fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+        }}
+      >
         <SidebarSection label="Mission" items={mission} isActive={isActive} />
         <SidebarSection
           label="Workflows"
           items={workflows}
           isActive={isActive}
-          className="mt-5"
+          className="mt-6"
         />
         <SidebarSection
           label="Compliance"
           items={compliance}
           isActive={isActive}
-          className="mt-5"
+          className="mt-6"
         />
 
         {/* Reference (collapsible). Hidden when empty so we don't
@@ -230,7 +226,7 @@ export function V2Sidebar({
               type="button"
               onClick={() => setReferenceOpen((o) => !o)}
               aria-expanded={referenceOpen}
-              className="mt-5 flex w-full items-center justify-between gap-2 rounded px-2 py-1 font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500 transition hover:text-slate-300"
+              className="apple-nav-section-label mt-6 flex w-full items-center justify-between gap-2 rounded px-2 py-1 transition hover:text-white/60"
             >
               <span>Reference</span>
               {referenceOpen ? (
@@ -240,7 +236,7 @@ export function V2Sidebar({
               )}
             </button>
             {referenceOpen ? (
-              <ul className="mt-1 space-y-0.5">
+              <ul className="mt-1 space-y-px">
                 {reference.map((item) => (
                   <li key={item.href}>
                     <NavLink item={item} active={isActive(item)} dim />
@@ -252,47 +248,63 @@ export function V2Sidebar({
         ) : null}
       </div>
 
-      {/* User footer */}
+      {/* User footer — Apple-style: borderless, settings as nav row,
+          account as avatar circle + name */}
       <div
-        className="px-2 py-2"
-        style={{ borderTop: "1px solid var(--caelex-divider)" }}
+        className="apple-chrome-divider px-3 py-3"
+        style={{
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+          fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+        }}
       >
         <Link
           href="/dashboard/settings/ui"
           prefetch={true}
           className={cn(
-            "caelex-focusable flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs transition-colors duration-tp-quick ease-tp-apple",
+            "group flex items-center gap-2.5 rounded-lg px-2 py-2 text-[13px] transition-colors duration-150",
             pathname.startsWith("/dashboard/settings")
-              ? "caelex-tint-accent caelex-text-primary"
-              : "caelex-text-secondary hover:caelex-text-primary",
+              ? "apple-nav-active font-medium"
+              : "apple-nav-idle",
           )}
-          style={
-            pathname.startsWith("/dashboard/settings")
-              ? undefined
-              : { background: "transparent" }
-          }
+          style={{
+            letterSpacing: "-0.011em",
+          }}
         >
-          <Settings className="h-3.5 w-3.5" />
-          <span className="font-mono uppercase tracking-wider text-[10px]">
-            Settings
-          </span>
+          <Settings
+            className={cn(
+              "h-4 w-4 shrink-0 transition-colors",
+              pathname.startsWith("/dashboard/settings")
+                ? "text-white"
+                : "text-white/55 group-hover:text-white/85",
+            )}
+            strokeWidth={1.6}
+          />
+          <span>Settings</span>
         </Link>
         {userEmail || userName ? (
-          <div className="mt-1.5 flex items-center gap-2 rounded-lg px-2 py-1.5">
+          <div className="mt-1 flex items-center gap-2.5 rounded-lg px-2 py-2">
             <div
-              className="caelex-text-primary flex h-6 w-6 items-center justify-center rounded-md font-mono text-[10px] font-medium"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white"
               style={{
-                background: "var(--caelex-content-sunken)",
-                boxShadow: "0 0 0 1px var(--caelex-content-border)",
+                background:
+                  "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 100%)",
+                boxShadow: "0 0 0 1px rgba(255,255,255,0.08)",
+                letterSpacing: 0,
               }}
             >
               {(userName ?? userEmail ?? "?").slice(0, 1).toUpperCase()}
             </div>
             <div className="min-w-0 leading-tight">
-              <div className="caelex-text-primary truncate text-[11px] font-medium">
+              <div
+                className="truncate text-[12.5px] font-medium text-white/90"
+                style={{ letterSpacing: "-0.011em" }}
+              >
                 {userName ?? "User"}
               </div>
-              <div className="caelex-text-tertiary truncate font-mono text-[9px]">
+              <div
+                className="truncate text-[11px] text-white/40"
+                style={{ letterSpacing: 0 }}
+              >
                 {userEmail}
               </div>
             </div>
@@ -319,11 +331,9 @@ function SidebarSection({
   return (
     <section className={className} aria-label={label}>
       <div className="mb-1 px-2 py-1">
-        <span className="caelex-text-tertiary font-mono text-[9px] uppercase tracking-[0.2em]">
-          {label}
-        </span>
+        <span className="apple-nav-section-label">{label}</span>
       </div>
-      <ul className="space-y-0.5">
+      <ul className="space-y-px">
         {items.map((item) => (
           <li key={item.href}>
             <NavLink item={item} active={isActive(item)} />
@@ -357,41 +367,37 @@ function NavLink({
       // hovering a sidebar item warms the cache so click feels
       // instant.
       prefetch={true}
-      // Sprint 12 — active row uses Arctic Teal tint (caelex-tint-accent)
-      // not a filled bar. Per the brief: "Active row gets Arctic Teal
-      // tint at 12% alpha + 1px Arctic Teal accent on the leading
-      // edge — *not* a filled bar."
-      // Class `palantir-stripe-emerald` retained on the active branch
-      // for the leading-edge bar; the @data-theme=light bridge in
-      // globals.css remaps its emerald to Arctic Teal automatically.
-      // Class `ring-emerald-500/30` retained on the active branch
-      // because tests assert on it; the bridge remaps the ring colour
-      // to the accent rim under [data-caelex-theme="light"].
+      // Apple HIG: active row = subtle white selection-tint (8.5% alpha).
+      // No accent stripe, no ring, no colored icon. Hover = 4% white wash.
+      // Icon uses 1.6 stroke weight (between Lucide default 2 and SF
+      // Symbols' thin 1.5) so it reads as Apple-system-icon-feel.
       className={cn(
-        "caelex-focusable group relative flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[12px] transition-colors duration-tp-quick ease-tp-apple",
+        "group relative flex items-center gap-2.5 rounded-lg px-2 py-2 text-[13px] transition-colors duration-150",
         active
-          ? "caelex-tint-accent caelex-text-primary palantir-stripe-emerald ring-1 ring-inset ring-emerald-500/30"
+          ? "apple-nav-active font-medium"
           : dim
-            ? "caelex-text-tertiary hover:caelex-text-secondary"
-            : "caelex-text-secondary hover:caelex-text-primary",
+            ? "apple-nav-idle text-white/40"
+            : "apple-nav-idle",
       )}
+      style={{
+        letterSpacing: "-0.011em",
+      }}
     >
       <Icon
         className={cn(
-          "h-3.5 w-3.5 shrink-0",
-          active
-            ? ""
-            : "caelex-text-tertiary group-hover:caelex-text-secondary",
+          "h-4 w-4 shrink-0 transition-colors",
+          active ? "text-white" : "text-white/55 group-hover:text-white/85",
         )}
-        style={active ? { color: "var(--caelex-accent)" } : undefined}
+        strokeWidth={1.6}
       />
-      <span className="flex-1 truncate font-medium">{item.label}</span>
+      <span className="flex-1 truncate">{item.label}</span>
       {item.badge && item.badge > 0 ? (
         <span
-          className="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-md px-1 font-mono text-[9px] font-bold"
+          className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1.5 text-[10px] font-semibold tabular-nums"
           style={{
-            background: "var(--caelex-accent)",
-            color: "var(--caelex-text-on-tint)",
+            background: "rgba(255,255,255,0.16)",
+            color: "rgba(255,255,255,0.92)",
+            letterSpacing: 0,
           }}
         >
           {item.badge}
