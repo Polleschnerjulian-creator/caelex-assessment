@@ -324,152 +324,204 @@ function RegistrationPageContent() {
     );
   }
 
+  const sansFont =
+    'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif';
+  const displayFont =
+    'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif';
+
   return (
-    <div className="p-6 space-y-6">
+    <div
+      className="px-8 py-8 space-y-7 max-w-screen-2xl mx-auto"
+      style={{ fontFamily: sansFont, letterSpacing: "-0.005em" }}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-medium text-[var(--text-primary)] flex items-center gap-3">
-            <Satellite
-              className="w-7 h-7 text-[var(--accent-primary)]"
-              aria-hidden="true"
-            />
+      <header
+        className="flex items-end justify-between gap-6 pb-5"
+        style={{ borderBottom: "0.5px solid rgba(255, 255, 255, 0.08)" }}
+      >
+        <div className="min-w-0">
+          <h1
+            className="text-[28px] font-semibold text-white"
+            style={{
+              fontFamily: displayFont,
+              letterSpacing: "-0.022em",
+              lineHeight: 1.15,
+            }}
+          >
             URSO Registration
           </h1>
-          <p className="text-[var(--text-tertiary)] mt-1">
-            UN Registry of Space Objects - Art. 24 EU Space Act
+          <p
+            className="mt-1.5 text-[14px]"
+            style={{ color: "rgba(255, 255, 255, 0.55)" }}
+          >
+            UN Registry of Space Objects · Art. 24 EU Space Act
+          </p>
+          <p
+            className="mt-2 text-[12.5px]"
+            style={{ color: "rgba(255, 255, 255, 0.4)" }}
+          >
+            Based on EU Space Act draft (COM(2025) 335) — not yet in force.{" "}
+            <a
+              href="/resources/eu-space-act"
+              className="underline-offset-2 hover:underline"
+              style={{ color: "rgba(255, 255, 255, 0.65)" }}
+            >
+              Learn more
+            </a>
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2">
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--surface-sunken)] text-[var(--text-tertiary)] rounded-lg hover:bg-[var(--surface-sunken)] transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[13px] font-medium transition-colors"
+            style={{
+              background: "rgba(255, 255, 255, 0.06)",
+              color: "rgba(255, 255, 255, 0.85)",
+            }}
           >
-            <Download className="w-4 h-4" aria-hidden="true" />
+            <Download className="h-3.5 w-3.5" strokeWidth={2} />
             Export for UNOOSA
           </button>
           <button
             onClick={() => setShowCreateForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary-hover)] transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[13px] font-medium transition-colors"
+            style={{
+              background: "rgba(255, 255, 255, 0.92)",
+              color: "rgb(20, 20, 22)",
+            }}
           >
-            <Plus className="w-4 h-4" aria-hidden="true" />
-            New Registration
+            <Plus className="h-3.5 w-3.5" strokeWidth={2.2} />
+            New registration
           </button>
         </div>
-      </div>
-
-      {/* Regulatory Status */}
-      <p className="text-small text-[var(--text-tertiary)] mb-4 flex items-center gap-1.5">
-        <span>ℹ</span>
-        Basierend auf dem EU Space Act Vorschlag (COM(2025) 335) — noch nicht in
-        Kraft.{" "}
-        <a
-          href="/resources/eu-space-act"
-          className="underline hover:text-[var(--text-secondary)]"
-        >
-          Mehr erfahren
-        </a>
-      </p>
+      </header>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatCard
-          title="Total Registrations"
-          value={stats.total}
-          icon={Satellite}
-          color="blue"
-        />
-        <StatCard
-          title="In Draft"
-          value={stats.draft}
-          icon={FileText}
-          color="slate"
-        />
-        <StatCard
-          title="Submitted"
-          value={stats.submitted}
-          icon={Globe}
-          color="amber"
-        />
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+        <StatCard title="Total" value={stats.total} icon={Satellite} />
+        <StatCard title="In draft" value={stats.draft} icon={FileText} />
+        <StatCard title="Submitted" value={stats.submitted} icon={Globe} />
         <StatCard
           title="Registered"
           value={stats.registered}
           icon={CheckCircle}
-          color="green"
         />
       </div>
 
-      {/* Filters */}
-      <div className="flex items-center gap-4 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl p-4">
-        <div className="flex-1 relative">
+      {/* Filter bar */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
           <label htmlFor="registration-search" className="sr-only">
             Search registrations
           </label>
           <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]"
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5"
+            strokeWidth={2}
+            style={{ color: "rgba(255, 255, 255, 0.45)" }}
             aria-hidden="true"
           />
           <input
             id="registration-search"
             type="text"
-            placeholder="Search by name, COSPAR ID, or spacecraft..."
+            placeholder="Search by name, COSPAR ID, or spacecraft"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] placeholder-slate-500 focus:outline-none focus:border-[var(--border-focus)]"
+            className="w-full rounded-lg pl-9 pr-3 py-2 text-[13px] outline-none transition-colors placeholder:text-white/35"
+            style={{
+              background: "rgba(255, 255, 255, 0.04)",
+              color: "rgba(255, 255, 255, 0.92)",
+              boxShadow: "inset 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+            }}
           />
         </div>
-        <div className="flex items-center gap-2">
-          <Filter
-            className="w-4 h-4 text-[var(--text-secondary)]"
-            aria-hidden="true"
-          />
-          <label htmlFor="registration-status-filter" className="sr-only">
-            Filter by status
-          </label>
-          <select
-            id="registration-status-filter"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
-          >
-            <option value="all">All Status</option>
-            <option value="DRAFT">Draft</option>
-            <option value="SUBMITTED">Submitted</option>
-            <option value="UNDER_REVIEW">Under Review</option>
-            <option value="REGISTERED">Registered</option>
-            <option value="AMENDMENT_REQUIRED">Amendment Required</option>
-          </select>
-        </div>
+        <label htmlFor="registration-status-filter" className="sr-only">
+          Filter by status
+        </label>
+        <select
+          id="registration-status-filter"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="rounded-lg px-3 py-2 text-[13px] outline-none transition-colors"
+          style={{
+            background: "rgba(255, 255, 255, 0.04)",
+            color: "rgba(255, 255, 255, 0.92)",
+            boxShadow: "inset 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+          }}
+        >
+          <option value="all">All status</option>
+          <option value="DRAFT">Draft</option>
+          <option value="SUBMITTED">Submitted</option>
+          <option value="UNDER_REVIEW">Under review</option>
+          <option value="REGISTERED">Registered</option>
+          <option value="AMENDMENT_REQUIRED">Amendment required</option>
+        </select>
         <button
           onClick={fetchRegistrations}
-          className="p-2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]:text-white hover:bg-[var(--surface-sunken)] rounded-lg transition-colors"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-lg transition-colors"
+          style={{
+            background: "rgba(255, 255, 255, 0.04)",
+            color: "rgba(255, 255, 255, 0.55)",
+            boxShadow: "inset 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+          }}
           aria-label="Refresh registrations"
         >
-          <RefreshCw className="w-4 h-4" aria-hidden="true" />
+          <RefreshCw
+            className="h-3.5 w-3.5"
+            strokeWidth={2}
+            aria-hidden="true"
+          />
         </button>
       </div>
 
-      {/* Registrations List */}
+      {/* Registrations list / empty state */}
       {filteredRegistrations.length === 0 ? (
-        <div className="text-center py-16 bg-[var(--surface-sunken)]/50 border border-[var(--border-default)] rounded-xl">
-          <Orbit
-            className="w-16 h-16 text-[var(--text-secondary)] mx-auto mb-4"
-            aria-hidden="true"
-          />
-          <h3 className="text-xl font-medium text-[var(--text-primary)] mb-2">
-            No registrations found
+        <div
+          className="max-w-xl rounded-2xl p-8"
+          style={{
+            background: "rgba(255, 255, 255, 0.03)",
+            boxShadow:
+              "inset 0 1px 0 0 rgba(255, 255, 255, 0.06), 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+          }}
+        >
+          <div
+            className="mb-5 flex h-10 w-10 items-center justify-center rounded-xl"
+            style={{
+              background: "rgba(255, 255, 255, 0.06)",
+              boxShadow:
+                "inset 0 1px 0 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 0 rgba(0, 0, 0, 0.25)",
+            }}
+          >
+            <Orbit
+              className="h-[18px] w-[18px]"
+              strokeWidth={1.75}
+              style={{ color: "rgba(255, 255, 255, 0.85)" }}
+            />
+          </div>
+          <h3
+            className="mb-1.5 text-[17px] font-semibold text-white"
+            style={{ letterSpacing: "-0.018em" }}
+          >
+            {registrations.length === 0 ? "No registrations yet" : "No matches"}
           </h3>
-          <p className="text-[var(--text-tertiary)] mb-6 max-w-md mx-auto">
+          <p
+            className="mb-5 max-w-md text-[13px] leading-relaxed"
+            style={{ color: "rgba(255, 255, 255, 0.55)" }}
+          >
             {registrations.length === 0
-              ? "Start by registering your space objects with the UN Registry."
-              : "No registrations match your current filters."}
+              ? "Register your space objects with the UN Registry to start tracking compliance under EU Space Act Art. 24."
+              : "No registrations match the current search or filter. Try clearing them."}
           </p>
           {registrations.length === 0 && (
             <button
               onClick={() => setShowCreateForm(true)}
-              className="px-6 py-3 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary-hover)] transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[13px] font-medium transition-colors"
+              style={{
+                background: "rgba(255, 255, 255, 0.92)",
+                color: "rgb(20, 20, 22)",
+              }}
             >
-              Create First Registration
+              <Plus className="h-3.5 w-3.5" strokeWidth={2.2} />
+              Create first registration
             </button>
           )}
         </div>
@@ -526,32 +578,46 @@ function StatCard({
   title,
   value,
   icon: Icon,
-  color,
 }: {
   title: string;
   value: number;
   icon: typeof Satellite;
-  color: "blue" | "slate" | "amber" | "green";
 }) {
-  const colors = {
-    blue: "text-[var(--accent-primary)] bg-[var(--accent-primary-soft)]",
-    slate: "text-[var(--text-tertiary)] bg-[var(--surface-sunken)]0/10",
-    amber: "text-[var(--accent-warning)] bg-[var(--accent-warning-soft)]",
-    green: "text-[var(--accent-success)] bg-[var(--accent-success)]/10",
-  };
-
   return (
-    <div className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl p-4">
+    <div
+      className="rounded-xl px-4 py-3.5"
+      style={{
+        background: "rgba(255, 255, 255, 0.03)",
+        boxShadow:
+          "inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+      }}
+    >
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-[var(--text-tertiary)]">{title}</p>
-          <p className="text-2xl font-bold text-[var(--text-primary)] mt-1">
+        <div className="min-w-0">
+          <p
+            className="text-[11px]"
+            style={{
+              color: "rgba(255, 255, 255, 0.45)",
+              fontWeight: 600,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+            }}
+          >
+            {title}
+          </p>
+          <p
+            className="mt-1.5 text-[24px] font-semibold tabular-nums text-white"
+            style={{ letterSpacing: "-0.018em" }}
+          >
             {value}
           </p>
         </div>
-        <div className={`p-3 rounded-lg ${colors[color]}`}>
-          <Icon className="w-5 h-5" aria-hidden="true" />
-        </div>
+        <Icon
+          className="h-4 w-4 shrink-0"
+          strokeWidth={1.75}
+          style={{ color: "rgba(255, 255, 255, 0.35)" }}
+          aria-hidden="true"
+        />
       </div>
     </div>
   );
