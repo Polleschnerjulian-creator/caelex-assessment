@@ -137,6 +137,17 @@ const nextConfig = {
   // Enable React strict mode
   reactStrictMode: true,
 
+  // Per-page SSG timeout. Default in Next.js 15 is 60s; we bump to
+  // 180s because some of our marketing + atlas pages with heavy
+  // MDX + ImageResponse generation legitimately exceed 60s on the
+  // 4-core/8GB Vercel build container. With 60s, slow pages were
+  // silently killing the build at "Generating static pages
+  // (0/918)..." with no diagnostic line printed before the cancel
+  // — a 3-minute budget gives slow pages room to complete while
+  // still failing fast on a genuine hang (external fetch with
+  // no timeout, deadlocked promise, etc.).
+  staticPageGenerationTimeout: 180,
+
   // H-I3: on CI (github actions) run strict type + lint gates. On the
   // Vercel build container we still skip to avoid 8GB-OOM during the
   // giant production bundle — but github actions ci.yml runs the same

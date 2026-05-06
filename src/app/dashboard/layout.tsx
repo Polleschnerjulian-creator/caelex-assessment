@@ -4,6 +4,24 @@ import V2Shell from "@/components/dashboard/v2/V2Shell";
 import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
 
 /**
+ * Force every /dashboard/* route to render dynamically (no SSG).
+ *
+ * This is implicit anyway — V2Shell + DashboardShell call `cookies()`
+ * via `getDensity()` and `auth()`, which auto-marks the segment
+ * dynamic in Next.js 15. But making it explicit prevents the build
+ * from ever wasting time trying to prerender an auth-gated page
+ * that would always be a useless empty shell. Saves ~30-60s of
+ * build time and avoids the "Generating static pages..." silent
+ * hang on the few dashboard routes that don't naturally trip the
+ * dynamic-API auto-detection (e.g. layouts that delegate to client
+ * components).
+ *
+ * Public marketing routes (/, /assessment, /blog, /docs, etc.) keep
+ * their SSG — only this dashboard segment opts out.
+ */
+export const dynamic = "force-dynamic";
+
+/**
  * Dashboard Layout (Server Component)
  *
  * Wraps the client-side DashboardShell with a server-side SubscriptionGate
