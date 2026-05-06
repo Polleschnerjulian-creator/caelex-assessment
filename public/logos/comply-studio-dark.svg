@@ -1,0 +1,54 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 290 130"
+  fill="none"
+>
+  <!-- Bar pattern — vertical-bars wordmark, dark-mode (white) variant.
+       30 bars of varying widths with consistent 5px gaps, full-height
+       80px. Approximation of the user-supplied "caelex comply studio"
+       barcode logo; replace this file with the actual SVG/PNG asset
+       when available. -->
+  <g fill="currentColor" color="#FFFFFF">
+    <rect x="0" y="0" width="3" height="80" />
+    <rect x="8" y="0" width="3" height="80" />
+    <rect x="16" y="0" width="3" height="80" />
+    <rect x="24" y="0" width="10" height="80" />
+    <rect x="39" y="0" width="3" height="80" />
+    <rect x="47" y="0" width="3" height="80" />
+    <rect x="55" y="0" width="6" height="80" />
+    <rect x="66" y="0" width="3" height="80" />
+    <rect x="74" y="0" width="3" height="80" />
+    <rect x="82" y="0" width="3" height="80" />
+    <rect x="90" y="0" width="3" height="80" />
+    <rect x="98" y="0" width="10" height="80" />
+    <rect x="113" y="0" width="3" height="80" />
+    <rect x="121" y="0" width="6" height="80" />
+    <rect x="132" y="0" width="3" height="80" />
+    <rect x="140" y="0" width="3" height="80" />
+    <rect x="148" y="0" width="3" height="80" />
+    <rect x="156" y="0" width="10" height="80" />
+    <rect x="171" y="0" width="3" height="80" />
+    <rect x="179" y="0" width="3" height="80" />
+    <rect x="187" y="0" width="6" height="80" />
+    <rect x="198" y="0" width="3" height="80" />
+    <rect x="206" y="0" width="3" height="80" />
+    <rect x="214" y="0" width="3" height="80" />
+    <rect x="222" y="0" width="10" height="80" />
+    <rect x="237" y="0" width="3" height="80" />
+    <rect x="245" y="0" width="6" height="80" />
+    <rect x="256" y="0" width="3" height="80" />
+    <rect x="264" y="0" width="3" height="80" />
+    <rect x="272" y="0" width="3" height="80" />
+  </g>
+  <text
+    x="0"
+    y="116"
+    font-family="Inter, -apple-system, system-ui, sans-serif"
+    font-weight="600"
+    font-size="22"
+    fill="#FFFFFF"
+    letter-spacing="-0.6"
+  >
+    caelex comply studio
+  </text>
+</svg>

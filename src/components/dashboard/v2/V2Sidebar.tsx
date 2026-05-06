@@ -188,37 +188,41 @@ export function V2Sidebar({
         fontFamily: sidebarFont,
       }}
     >
-      {/* Brand — Caelex Comply Studio logo. Two variants stacked
-          with CSS theme-driven visibility:
-            - Dark mode → white-on-transparent logo shown
-            - Light mode → black-on-transparent logo shown
-          (Tailwind's `dark:` modifier toggles them based on the
-          `dark` class set by V2ShellThemeRoot.) */}
-      <div className="flex h-14 items-center px-4">
+      {/* Brand — Caelex Comply Studio logo (the real comply wordmark,
+          NOT the generic Caelex C-mark). Two SVG variants:
+            - Dark mode → white-on-transparent logo
+            - Light mode → black-on-transparent logo
+          Switched via Tailwind's `dark:` modifier (the V2ShellThemeRoot
+          sets `dark` class for V2). Logo is the largest visual element
+          in the sidebar header — 40px height — so it carries the brand
+          presence per the user feedback "deutlich größer". */}
+      <div className="flex h-[72px] items-center px-4">
         <Link
           href="/dashboard/today"
           className="block"
-          aria-label="Caelex Comply — go to Today"
+          aria-label="Caelex Comply Studio — go to Today"
         >
           {/* Light-mode variant (black logo) */}
           <Image
-            src="/logos/comply-studio-light.png"
+            src="/logos/comply-studio-light.svg"
             alt="Caelex Comply Studio"
-            width={140}
-            height={32}
+            width={290}
+            height={130}
             priority
+            unoptimized
             className="block dark:hidden"
-            style={{ width: "auto", height: 22 }}
+            style={{ width: "auto", height: 40 }}
           />
           {/* Dark-mode variant (white logo) */}
           <Image
-            src="/logos/comply-studio-dark.png"
+            src="/logos/comply-studio-dark.svg"
             alt="Caelex Comply Studio"
-            width={140}
-            height={32}
+            width={290}
+            height={130}
             priority
+            unoptimized
             className="hidden dark:block"
-            style={{ width: "auto", height: 22 }}
+            style={{ width: "auto", height: 40 }}
           />
         </Link>
       </div>
