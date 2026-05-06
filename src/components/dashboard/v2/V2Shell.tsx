@@ -3,6 +3,7 @@ import { CommandPalette } from "./CommandPalette";
 import { V2Sidebar } from "./V2Sidebar";
 import { V2TopBar } from "./V2TopBar";
 import { CaelexLensDefs } from "./CaelexLensDefs";
+import { V2ShellThemeRoot } from "./V2ShellThemeRoot";
 import { getPendingProposalCount } from "@/lib/comply-v2/proposal-stats.server";
 import { getServerActionVerbs } from "@/lib/comply-v2/actions/palette-verbs.server";
 import { getDensity } from "@/lib/comply-v2/density.server";
@@ -70,11 +71,7 @@ export default async function V2Shell({
   ]);
 
   return (
-    <div
-      data-density={density}
-      data-caelex-theme="light"
-      className="caelex-canvas flex min-h-screen"
-    >
+    <V2ShellThemeRoot density={density}>
       {/* SVG displacement filter — Chromium-only refraction. Non-
           Chromium browsers ignore the @supports-gated CSS rule and
           fall through to flat blur. */}
@@ -101,6 +98,6 @@ export default async function V2Shell({
         />
         <main className="flex-1 overflow-x-hidden">{children}</main>
       </div>
-    </div>
+    </V2ShellThemeRoot>
   );
 }

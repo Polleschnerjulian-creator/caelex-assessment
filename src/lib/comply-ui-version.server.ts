@@ -63,7 +63,10 @@ export async function resolveComplyUiVersion(
 
   // 3 + 4 + 5: Auth-aware lookup.
   const session = await auth();
-  if (!session?.user?.id) return "v1";
+  // Unauthenticated visitors hitting /dashboard/* hit the auth gate
+  // anyway. We still return a sensible default so the (very brief)
+  // pre-redirect render uses the new V2 chrome instead of legacy V1.
+  if (!session?.user?.id) return "v2";
 
   const superAdmin = isSuperAdmin(session.user.email);
 
@@ -94,10 +97,16 @@ export async function resolveComplyUiVersion(
   );
   if (fromOrg) return fromOrg;
 
-  // 2026-05-05 reset: V1 is the default again while we redesign the
-  // workflow story. V2 stays fully reachable via Settings → UI, the
-  // Cmd-K palette, and the bookmarkable `/ui/v2` route — only the
-  // implicit default for unset users + orgs flips back to V1.
-  // Super-admins still see V2 above (line 90).
-  return "v1";
+  // 2026-05-06: V2 is now the implicit default for users + orgs that
+  // have no stored preference. The Today inbox + Cinema-Mode dark
+  // glass redesign has stabilized enough that new sessions should
+  // land on the new chrome by default. V1 stays fully reachable for
+  // anyone who needs the old charts:
+  //   - `?ui=v1` quick override (line 56)
+  //   - "Use legacy UI" toggle in Settings (writes the cookie)
+  //   - bookmarkable `/dashboard/legacy` route (renders V1 chrome
+  //     directly without going through this resolver)
+  // Existing users + orgs with an explicit override keep their
+  // preference. Only fresh sessions see the flip.
+  return "v2";
 }
