@@ -259,6 +259,7 @@ export function V2Sidebar({
       >
         <Link
           href="/dashboard/settings/ui"
+          prefetch={true}
           className={cn(
             "caelex-focusable flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs transition-colors duration-tp-quick ease-tp-apple",
             pathname.startsWith("/dashboard/settings")
@@ -346,6 +347,16 @@ function NavLink({
   return (
     <Link
       href={item.href}
+      // 2026-05-06: prefetch={true} forces a full route prefetch on
+      // hover/viewport-entry — required because all dashboard
+      // routes are now `force-dynamic` (see dashboard/layout.tsx),
+      // and Next.js 15's default Link only prefetches static routes
+      // + the loading.tsx fallback for dynamic ones. Without this,
+      // every sidebar click triggered a fresh server roundtrip
+      // (300-600ms perceived as "the app is hanging"). With it,
+      // hovering a sidebar item warms the cache so click feels
+      // instant.
+      prefetch={true}
       // Sprint 12 — active row uses Arctic Teal tint (caelex-tint-accent)
       // not a filled bar. Per the brief: "Active row gets Arctic Teal
       // tint at 12% alpha + 1px Arctic Teal accent on the leading
