@@ -159,51 +159,51 @@ export function V2Sidebar({
     return pathname.startsWith(item.href + "/");
   };
 
+  // Premium-Sidebar Typography: Inter (already loaded via /app/layout.tsx
+  // as --font-inter) for cross-platform consistency. Inter's metrics
+  // are deliberately tuned to be near-identical to SF Pro — this is
+  // the same trick Linear, Vercel, Cal.com, and Raycast all use to
+  // get a Mac-native feel that survives Windows/Linux.
+  const sidebarFont =
+    'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif';
+
   return (
-    // Sprint 12 — Caelex Liquid Glass: chrome layer renders as
-    // Glass-Regular. The wrapper has no rounded corners (sidebar
-    // is edge-to-edge) but inherits the backdrop-filter +
-    // background-rim shadow stack via .caelex-glass-regular.
     <nav
       aria-label="Comply navigation"
-      className="apple-chrome-surface flex h-full w-60 shrink-0 flex-col border-r"
+      className="flex h-full w-[244px] shrink-0 flex-col"
+      style={{
+        // Solid premium dark surface — drop the aggressive translucency.
+        // Linear / Raycast / macOS Mail use a near-opaque dark surface
+        // (~92% opacity) with a hairline right-edge separator, NOT a
+        // see-through frosted glass. The "depth" comes from the
+        // specular rim + drop shadow, not from blur.
+        background: "rgb(20, 20, 22)",
+        borderRight: "0.5px solid rgba(255, 255, 255, 0.06)",
+        // Specular rim — visible inner top edge, the macOS Tahoe detail.
+        boxShadow: "inset 0 1px 0 0 rgba(255, 255, 255, 0.06)",
+        fontFamily: sidebarFont,
+      }}
     >
-      {/* Brand — Apple-style wordmark, no chunky icon, just type */}
-      <div className="flex h-12 items-center px-4">
+      {/* Brand — clean, tight, no second-color "Comply" badge */}
+      <div className="flex h-14 items-center px-5">
         <span
-          className="text-[15px] font-semibold tracking-tight text-white"
-          style={{
-            fontFamily:
-              '-apple-system, "SF Pro Display", system-ui, sans-serif',
-            letterSpacing: "-0.018em",
-          }}
+          className="text-[15px] font-semibold text-white"
+          style={{ letterSpacing: "-0.02em" }}
         >
           Caelex
         </span>
         <span
-          className="ml-1.5 text-[12px] font-medium text-white/35"
+          className="ml-1.5 text-[15px] font-normal"
           style={{
-            fontFamily:
-              '-apple-system, "SF Pro Display", system-ui, sans-serif',
-            letterSpacing: "-0.011em",
+            color: "rgba(255, 255, 255, 0.4)",
+            letterSpacing: "-0.018em",
           }}
         >
           Comply
         </span>
       </div>
 
-      {/* Sprint 12B: cmd-K trigger relocated to V2TopBar (the brief
-          calls it "the single most important affordance" — top bar
-          is its proper home). The CommandPalette still listens for
-          ⌘K on window, so the keyboard shortcut works from anywhere
-          inside the sidebar. */}
-
-      <div
-        className="flex-1 overflow-y-auto px-3 py-3"
-        style={{
-          fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-        }}
-      >
+      <div className="flex-1 overflow-y-auto px-2.5 pb-4">
         <SidebarSection label="Mission" items={mission} isActive={isActive} />
         <SidebarSection
           label="Workflows"
@@ -218,21 +218,26 @@ export function V2Sidebar({
           className="mt-6"
         />
 
-        {/* Reference (collapsible). Hidden when empty so we don't
-            ship an empty disclosure widget. */}
         {reference.length > 0 ? (
           <>
             <button
               type="button"
               onClick={() => setReferenceOpen((o) => !o)}
               aria-expanded={referenceOpen}
-              className="apple-nav-section-label mt-6 flex w-full items-center justify-between gap-2 rounded px-2 py-1 transition hover:text-white/60"
+              className="mt-6 flex w-full items-center justify-between gap-2 rounded px-2.5 py-1.5 transition-colors"
+              style={{
+                color: "rgba(255, 255, 255, 0.45)",
+                fontSize: "11px",
+                fontWeight: 600,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+              }}
             >
               <span>Reference</span>
               {referenceOpen ? (
-                <ChevronDown className="h-3 w-3" />
+                <ChevronDown className="h-3 w-3" strokeWidth={2} />
               ) : (
-                <ChevronRight className="h-3 w-3" />
+                <ChevronRight className="h-3 w-3" strokeWidth={2} />
               )}
             </button>
             {referenceOpen ? (
@@ -248,47 +253,48 @@ export function V2Sidebar({
         ) : null}
       </div>
 
-      {/* User footer — Apple-style: borderless, settings as nav row,
-          account as avatar circle + name */}
+      {/* Footer — hairline divider, Settings row + Account row.
+          No bordered pill, no email line. Just the essentials. */}
       <div
-        className="apple-chrome-divider px-3 py-3"
-        style={{
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-          fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-        }}
+        className="px-2.5 py-3"
+        style={{ borderTop: "0.5px solid rgba(255, 255, 255, 0.06)" }}
       >
         <Link
           href="/dashboard/settings/ui"
           prefetch={true}
           className={cn(
-            "group flex items-center gap-2.5 rounded-lg px-2 py-2 text-[13px] transition-colors duration-150",
-            pathname.startsWith("/dashboard/settings")
-              ? "apple-nav-active font-medium"
-              : "apple-nav-idle",
+            "group flex items-center gap-3 rounded-md px-2.5 py-1.5 transition-colors duration-150",
           )}
           style={{
-            letterSpacing: "-0.011em",
+            background: pathname.startsWith("/dashboard/settings")
+              ? "rgba(255, 255, 255, 0.07)"
+              : "transparent",
+            color: pathname.startsWith("/dashboard/settings")
+              ? "rgba(255, 255, 255, 0.96)"
+              : "rgba(255, 255, 255, 0.65)",
+            fontSize: "13px",
+            fontWeight: pathname.startsWith("/dashboard/settings") ? 500 : 450,
+            letterSpacing: "-0.005em",
           }}
         >
           <Settings
-            className={cn(
-              "h-4 w-4 shrink-0 transition-colors",
-              pathname.startsWith("/dashboard/settings")
-                ? "text-white"
-                : "text-white/55 group-hover:text-white/85",
-            )}
-            strokeWidth={1.6}
+            className="h-[15px] w-[15px] shrink-0"
+            strokeWidth={1.75}
+            style={{
+              color: pathname.startsWith("/dashboard/settings")
+                ? "rgba(255, 255, 255, 0.96)"
+                : "rgba(255, 255, 255, 0.55)",
+            }}
           />
           <span>Settings</span>
         </Link>
         {userEmail || userName ? (
-          <div className="mt-1 flex items-center gap-2.5 rounded-lg px-2 py-2">
+          <div className="mt-1 flex items-center gap-3 rounded-md px-2.5 py-1.5">
             <div
               className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white"
               style={{
-                background:
-                  "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 100%)",
-                boxShadow: "0 0 0 1px rgba(255,255,255,0.08)",
+                background: "rgba(255, 255, 255, 0.08)",
+                boxShadow: "inset 0 0 0 0.5px rgba(255, 255, 255, 0.12)",
                 letterSpacing: 0,
               }}
             >
@@ -296,14 +302,20 @@ export function V2Sidebar({
             </div>
             <div className="min-w-0 leading-tight">
               <div
-                className="truncate text-[12.5px] font-medium text-white/90"
-                style={{ letterSpacing: "-0.011em" }}
+                className="truncate text-[13px] font-medium"
+                style={{
+                  color: "rgba(255, 255, 255, 0.92)",
+                  letterSpacing: "-0.005em",
+                }}
               >
                 {userName ?? "User"}
               </div>
               <div
-                className="truncate text-[11px] text-white/40"
-                style={{ letterSpacing: 0 }}
+                className="truncate text-[11px]"
+                style={{
+                  color: "rgba(255, 255, 255, 0.4)",
+                  letterSpacing: 0,
+                }}
               >
                 {userEmail}
               </div>
@@ -330,8 +342,18 @@ function SidebarSection({
 }) {
   return (
     <section className={className} aria-label={label}>
-      <div className="mb-1 px-2 py-1">
-        <span className="apple-nav-section-label">{label}</span>
+      <div className="mb-1.5 px-2.5 pt-2">
+        <span
+          style={{
+            color: "rgba(255, 255, 255, 0.45)",
+            fontSize: "11px",
+            fontWeight: 600,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+          }}
+        >
+          {label}
+        </span>
       </div>
       <ul className="space-y-px">
         {items.map((item) => (
@@ -367,36 +389,51 @@ function NavLink({
       // hovering a sidebar item warms the cache so click feels
       // instant.
       prefetch={true}
-      // Apple HIG: active row = subtle white selection-tint (8.5% alpha).
-      // No accent stripe, no ring, no colored icon. Hover = 4% white wash.
-      // Icon uses 1.6 stroke weight (between Lucide default 2 and SF
-      // Symbols' thin 1.5) so it reads as Apple-system-icon-feel.
+      // Linear/Raycast-style active row: subtle 7% white wash, NO blue
+      // tint, NO ring. Active text gets bumped to weight 500 for the
+      // hierarchy cue. Icons use strokeWidth 1.75 (Lucide native is 2;
+      // 1.75 is between SF Symbols and Lucide and reads premium).
+      // Sub-pixel letter-spacing (-0.005em) is the difference between
+      // "feels native" and "feels like Inter on a Windows machine".
       className={cn(
-        "group relative flex items-center gap-2.5 rounded-lg px-2 py-2 text-[13px] transition-colors duration-150",
-        active
-          ? "apple-nav-active font-medium"
-          : dim
-            ? "apple-nav-idle text-white/40"
-            : "apple-nav-idle",
+        "group relative flex items-center gap-3 rounded-md transition-colors duration-150",
       )}
       style={{
-        letterSpacing: "-0.011em",
+        background: active ? "rgba(255, 255, 255, 0.07)" : "transparent",
+        color: active
+          ? "rgba(255, 255, 255, 0.96)"
+          : dim
+            ? "rgba(255, 255, 255, 0.4)"
+            : "rgba(255, 255, 255, 0.65)",
+        fontSize: "13px",
+        fontWeight: active ? 500 : 450,
+        letterSpacing: "-0.005em",
+        padding: "5px 10px",
+      }}
+      onMouseEnter={(e) => {
+        if (!active)
+          e.currentTarget.style.background = "rgba(255, 255, 255, 0.04)";
+      }}
+      onMouseLeave={(e) => {
+        if (!active) e.currentTarget.style.background = "transparent";
       }}
     >
       <Icon
-        className={cn(
-          "h-4 w-4 shrink-0 transition-colors",
-          active ? "text-white" : "text-white/55 group-hover:text-white/85",
-        )}
-        strokeWidth={1.6}
+        className="h-[15px] w-[15px] shrink-0"
+        strokeWidth={1.75}
+        style={{
+          color: active
+            ? "rgba(255, 255, 255, 0.96)"
+            : "rgba(255, 255, 255, 0.55)",
+        }}
       />
       <span className="flex-1 truncate">{item.label}</span>
       {item.badge && item.badge > 0 ? (
         <span
           className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1.5 text-[10px] font-semibold tabular-nums"
           style={{
-            background: "rgba(255,255,255,0.16)",
-            color: "rgba(255,255,255,0.92)",
+            background: "rgba(255, 255, 255, 0.12)",
+            color: "rgba(255, 255, 255, 0.9)",
             letterSpacing: 0,
           }}
         >

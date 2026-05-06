@@ -542,13 +542,16 @@ function OnboardingHero() {
         <div
           className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl"
           style={{
-            background:
-              "linear-gradient(135deg, var(--ios-blue) 0%, var(--ios-indigo) 100%)",
+            background: "rgba(255, 255, 255, 0.06)",
             boxShadow:
-              "inset 0 1px 0 0 rgba(255,255,255,0.4), 0 8px 24px -8px rgba(10,132,255,0.55)",
+              "inset 0 1px 0 0 rgba(255, 255, 255, 0.18), inset 0 -1px 0 0 rgba(0, 0, 0, 0.3)",
           }}
         >
-          <Sparkles className="h-7 w-7 text-white" strokeWidth={2.2} />
+          <Sparkles
+            className="h-6 w-6"
+            strokeWidth={1.75}
+            style={{ color: "rgba(255, 255, 255, 0.85)" }}
+          />
         </div>
         <h2
           className="text-[28px] font-semibold tracking-tight text-white"

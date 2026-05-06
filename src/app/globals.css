@@ -2087,25 +2087,21 @@ html:not(.dark) .dashboard-wallpaper {
   position: fixed;
   inset: 0;
   z-index: 0;
-  /* Stronger gradients so backdrop-filter has visible color to blur.
-     Without something to refract, "glass" surfaces look like opaque
-     dark rectangles. These gradients fake the macOS-Tahoe wallpaper-
-     glow effect that's normally provided by a real photo wallpaper. */
+  /* Subtle neutral depth — dropped the blue/purple radial glows that
+     read as "loud and gamer-y" per user feedback. Linear / Raycast /
+     macOS Tahoe use almost pure black with at most a 2-4% white lift
+     in one corner. The chrome's specular rim does the heavy lifting
+     for "premium glass" feeling, not the canvas tint.                 */
   background:
     radial-gradient(
-      ellipse 1400px 900px at 15% 5%,
-      rgba(60, 100, 180, 0.28) 0%,
-      transparent 55%
-    ),
-    radial-gradient(
-      ellipse 1100px 800px at 95% 90%,
-      rgba(140, 60, 180, 0.22) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      ellipse 800px 600px at 50% 50%,
-      rgba(40, 80, 120, 0.12) 0%,
+      ellipse 1200px 800px at 100% 0%,
+      rgba(255, 255, 255, 0.025) 0%,
       transparent 60%
+    ),
+    radial-gradient(
+      ellipse 900px 700px at 0% 100%,
+      rgba(255, 255, 255, 0.015) 0%,
+      transparent 55%
     );
   pointer-events: none;
 }
