@@ -7,6 +7,7 @@ import { V2ShellThemeRoot } from "./V2ShellThemeRoot";
 import { getPendingProposalCount } from "@/lib/comply-v2/proposal-stats.server";
 import { getServerActionVerbs } from "@/lib/comply-v2/actions/palette-verbs.server";
 import { getDensity } from "@/lib/comply-v2/density.server";
+import { getOnboardingSetupState } from "@/lib/comply-v2/onboarding-state.server";
 
 /**
  * Comply V2 Shell — full chrome that replaces the legacy
@@ -70,6 +71,13 @@ export default async function V2Shell({
     auth(),
   ]);
 
+  // Setup state powers the "Setup N/4" badge in the sidebar footer.
+  // Only fetched when authenticated. Cheap (~30-60ms, 4 parallel
+  // bounded queries) so the always-on cost is acceptable.
+  const setupState = session?.user?.id
+    ? await getOnboardingSetupState(session.user.id)
+    : null;
+
   return (
     <V2ShellThemeRoot density={density}>
       {/* SVG displacement filter — Chromium-only refraction. Non-
@@ -87,6 +95,7 @@ export default async function V2Shell({
           pendingProposals={pendingProposals}
           userEmail={session?.user?.email ?? null}
           userName={session?.user?.name ?? null}
+          setupState={setupState}
         />
       </aside>
 

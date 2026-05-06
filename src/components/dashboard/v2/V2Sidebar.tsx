@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Gauge,
@@ -29,6 +30,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Kbd } from "@/components/ui/v2/kbd";
+import type { OnboardingSetupState } from "@/lib/comply-v2/onboarding-state.server";
 
 /**
  * V2Sidebar — the Linear-style permanent left rail for Comply v2.
@@ -67,12 +69,14 @@ export interface V2SidebarProps {
   pendingProposals: number;
   userEmail?: string | null;
   userName?: string | null;
+  setupState?: OnboardingSetupState | null;
 }
 
 export function V2Sidebar({
   pendingProposals,
   userEmail,
   userName,
+  setupState,
 }: V2SidebarProps) {
   const pathname = usePathname();
   const [referenceOpen, setReferenceOpen] = React.useState(false);
@@ -184,23 +188,39 @@ export function V2Sidebar({
         fontFamily: sidebarFont,
       }}
     >
-      {/* Brand — clean, tight, no second-color "Comply" badge */}
-      <div className="flex h-14 items-center px-5">
-        <span
-          className="text-[15px] font-semibold text-white"
-          style={{ letterSpacing: "-0.02em" }}
+      {/* Brand — Caelex Comply Studio logo. Two variants stacked
+          with CSS theme-driven visibility:
+            - Dark mode → white-on-transparent logo shown
+            - Light mode → black-on-transparent logo shown
+          (Tailwind's `dark:` modifier toggles them based on the
+          `dark` class set by V2ShellThemeRoot.) */}
+      <div className="flex h-14 items-center px-4">
+        <Link
+          href="/dashboard/today"
+          className="block"
+          aria-label="Caelex Comply — go to Today"
         >
-          Caelex
-        </span>
-        <span
-          className="ml-1.5 text-[15px] font-normal"
-          style={{
-            color: "rgba(255, 255, 255, 0.4)",
-            letterSpacing: "-0.018em",
-          }}
-        >
-          Comply
-        </span>
+          {/* Light-mode variant (black logo) */}
+          <Image
+            src="/logos/comply-studio-light.png"
+            alt="Caelex Comply Studio"
+            width={140}
+            height={32}
+            priority
+            className="block dark:hidden"
+            style={{ width: "auto", height: 22 }}
+          />
+          {/* Dark-mode variant (white logo) */}
+          <Image
+            src="/logos/comply-studio-dark.png"
+            alt="Caelex Comply Studio"
+            width={140}
+            height={32}
+            priority
+            className="hidden dark:block"
+            style={{ width: "auto", height: 22 }}
+          />
+        </Link>
       </div>
 
       <div className="flex-1 overflow-y-auto px-2.5 pb-4">
@@ -252,6 +272,15 @@ export function V2Sidebar({
           </>
         ) : null}
       </div>
+
+      {/* Setup-progress badge — only renders when onboarding is
+          incomplete. Tapping it returns the user to the wizard
+          which resumes at the next incomplete step. Disappears
+          entirely once setup is done so it doesn't permanently
+          steal sidebar real estate. */}
+      {setupState && setupState.completedSteps < setupState.totalSteps ? (
+        <SetupProgressBadge state={setupState} />
+      ) : null}
 
       {/* Footer — hairline divider, Settings row + Account row.
           No bordered pill, no email line. Just the essentials. */}
@@ -441,5 +470,91 @@ function NavLink({
         </span>
       ) : null}
     </Link>
+  );
+}
+
+/**
+ * Setup-progress badge — sidebar footer block above the Settings
+ * row. Shows N/4 dots filled, the next-action label, and routes to
+ * the right place when clicked. Hidden once all 4 steps are done.
+ */
+function SetupProgressBadge({ state }: { state: OnboardingSetupState }) {
+  const labels: Record<OnboardingSetupState["nextAction"], string> = {
+    set_up_organization: "Set up organization",
+    add_spacecraft: "Add your spacecraft",
+    run_assessment: "Run assessment",
+    open_first_item: "Open first item",
+    all_done: "All set",
+  };
+  const hrefs: Record<OnboardingSetupState["nextAction"], string> = {
+    set_up_organization: "/onboarding",
+    add_spacecraft: "/onboarding",
+    run_assessment: "/assessment/unified",
+    open_first_item: "/dashboard/today",
+    all_done: "/dashboard/today",
+  };
+
+  return (
+    <div
+      className="mx-2.5 my-2 rounded-xl p-3"
+      style={{
+        background: "rgba(255, 255, 255, 0.03)",
+        boxShadow:
+          "inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+      }}
+    >
+      <div className="mb-2 flex items-center justify-between">
+        <span
+          style={{
+            color: "rgba(255, 255, 255, 0.45)",
+            fontSize: "10px",
+            fontWeight: 600,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+          }}
+        >
+          Setup
+        </span>
+        <span
+          className="tabular-nums"
+          style={{
+            color: "rgba(255, 255, 255, 0.7)",
+            fontSize: "11px",
+            fontWeight: 500,
+          }}
+        >
+          {state.completedSteps}/{state.totalSteps}
+        </span>
+      </div>
+      <div className="mb-2.5 flex gap-1">
+        {Array.from({ length: state.totalSteps }, (_, i) => (
+          <span
+            key={i}
+            aria-hidden
+            className="h-1 flex-1 rounded-full"
+            style={{
+              background:
+                i < state.completedSteps
+                  ? "rgba(255, 255, 255, 0.92)"
+                  : "rgba(255, 255, 255, 0.12)",
+            }}
+          />
+        ))}
+      </div>
+      <Link
+        href={hrefs[state.nextAction]}
+        prefetch={true}
+        className="block w-full rounded-md px-2 py-1.5 text-center transition-colors"
+        style={{
+          background: "rgba(255, 255, 255, 0.92)",
+          color: "rgb(20, 20, 22)",
+          fontSize: "12px",
+          fontWeight: 500,
+          letterSpacing: "-0.005em",
+        }}
+      >
+        {labels[state.nextAction]}
+      </Link>
+    </div>
   );
 }

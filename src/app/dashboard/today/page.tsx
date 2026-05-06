@@ -11,6 +11,7 @@ import {
   FolderOpen,
   ArrowRight,
   Sparkles,
+  type LucideIcon,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import {
@@ -18,6 +19,10 @@ import {
   getComplianceItemsForUser,
   getClearedTodayCountForUser,
 } from "@/lib/comply-v2/compliance-item.server";
+import {
+  getOnboardingSetupState,
+  type OnboardingSetupState,
+} from "@/lib/comply-v2/onboarding-state.server";
 import {
   type ComplianceItem,
   type ComplianceStatus,
@@ -277,6 +282,15 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
   // Surfaces the onboarding hero instead of three sad "Nothing X" cards.
   const isOnboardingEmpty = !filterActive && total === 0;
 
+  // Setup-state powers the smart Today empty state. Only fetched when
+  // we'd actually render the empty state (saves a query on the
+  // populated path). Demo mode is always "all_done" since it pretends
+  // the user has data.
+  const setupState: OnboardingSetupState | null =
+    isOnboardingEmpty && !demoMode
+      ? await getOnboardingSetupState(session.user.id)
+      : null;
+
   // When the user has no items at all, render a centered narrower
   // layout per Apple HIG empty-state convention. The populated state
   // gets the wide max-w-[1600px] inbox layout.
@@ -378,7 +392,7 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
       ) : null}
 
       {isOnboardingEmpty ? (
-        <OnboardingHero />
+        <OnboardingHero setupState={setupState} />
       ) : (
         <>
           <FilterBar
@@ -460,97 +474,58 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
 }
 
 /**
- * Onboarding hero — shown when the user has zero compliance items
- * across all 3 buckets. Replaces the previous three-empty-cards
- * layout (which made an empty-state user feel like the page was
- * broken). Three quick-start CTAs cover the actual onboarding paths:
- * connect telemetry (auto-attest), run an assessment (determine
- * applicability), or browse the regulation modules (manual setup).
+ * Smart Onboarding Hero — branches on the user's setup state.
+ *
+ * Per Apple HIG empty-state convention, an empty-state should have
+ * ONE primary action that's actually correct for the user, not a
+ * 3-tile gallery of "maybe try one of these". The setupState.
+ * nextAction tells us which one:
+ *
+ *   set_up_organization → "Set up your organization" → /onboarding
+ *   add_spacecraft      → "Add your spacecraft"      → /onboarding
+ *   run_assessment      → "Run applicability assessment" → /assessment/unified
+ *   open_first_item     → fallback: items must exist somewhere
+ *   all_done            → user genuinely caught up (can't reach if
+ *                         total === 0 unless edge case)
+ *
+ * If setupState is null (demo mode), falls back to the legacy
+ * 3-tile pattern.
  */
-function OnboardingHero() {
-  const cards: Array<{
-    href: string;
-    label: string;
-    description: string;
-    icon: React.ComponentType<{ className?: string }>;
-    primary?: boolean;
-  }> = [
-    {
-      href: "/dashboard/sentinel",
-      label: "Connect Sentinel",
-      description:
-        "Auto-attest cybersecurity, NIS2 and debris controls from your telemetry. ~5 min.",
-      icon: Radio,
-      primary: true,
-    },
-    {
-      href: "/assessment",
-      label: "Run an assessment",
-      description:
-        "Answer ~15 questions to see which EU Space Act, UK Space Act and NIS2 articles apply to you.",
-      icon: ListChecks,
-    },
-    {
-      href: "/dashboard/modules",
-      label: "Browse modules",
-      description:
-        "Skim the 8 regulation regimes Caelex tracks and pick the one most relevant to you.",
-      icon: FolderOpen,
-    },
-  ];
+function OnboardingHero({
+  setupState,
+}: {
+  setupState: OnboardingSetupState | null;
+}) {
+  // Determine the primary CTA based on setup state. Each action
+  // gets: headline, body, button label, button href, icon.
+  const primary = pickPrimaryAction(setupState);
 
-  // Apple-Settings-cell color mapping per CTA — one tint per row,
-  // following iOS Settings convention (e.g. Bluetooth = blue,
-  // Notifications = red, etc.). Primary action gets the iOS-blue
-  // tint to match the systemBlue Continue button below it.
-  const cardsWithTint: Array<{
-    href: string;
-    label: string;
-    description: string;
-    icon: React.ComponentType<{ className?: string }>;
-    tint: "blue" | "purple" | "teal";
-    primary?: boolean;
-  }> = [
-    {
-      ...cards[0],
-      tint: "blue",
-      primary: true,
-    },
-    {
-      ...cards[1],
-      tint: "purple",
-    },
-    {
-      ...cards[2],
-      tint: "teal",
-    },
-  ];
+  const PrimaryIcon = primary.icon;
 
   return (
     <div
-      className="mx-auto max-w-2xl space-y-7"
+      className="mx-auto max-w-xl space-y-6 pt-4"
       style={{
-        fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+        fontFamily:
+          'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
+        letterSpacing: "-0.005em",
       }}
     >
-      {/* Hero — proper Apple Settings empty-state. Centered, narrow,
-          single bold headline + body + primary CTA. No glass card
-          around the hero text itself (Apple uses unframed copy on
-          empty states; the framing comes from the Settings cells
-          below). */}
-      <section className="text-center pt-6">
+      {/* Hero — left-aligned per Apple HIG empty-state convention.
+          Single icon-tile + headline + body + ONE primary CTA. */}
+      <section>
         <div
-          className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl"
+          className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl"
           style={{
             background: "rgba(255, 255, 255, 0.06)",
             boxShadow:
-              "inset 0 1px 0 0 rgba(255, 255, 255, 0.18), inset 0 -1px 0 0 rgba(0, 0, 0, 0.3)",
+              "inset 0 1px 0 0 rgba(255, 255, 255, 0.16), inset 0 -1px 0 0 rgba(0, 0, 0, 0.3)",
           }}
         >
-          <Sparkles
-            className="h-6 w-6"
+          <PrimaryIcon
+            className="h-5 w-5"
             strokeWidth={1.75}
-            style={{ color: "rgba(255, 255, 255, 0.85)" }}
+            style={{ color: "rgba(255, 255, 255, 0.92)" }}
           />
         </div>
         <h2
@@ -558,96 +533,119 @@ function OnboardingHero() {
           style={{
             letterSpacing: "-0.022em",
             fontFamily:
-              '-apple-system, "SF Pro Display", system-ui, sans-serif',
+              'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif',
             lineHeight: 1.15,
           }}
         >
-          You&apos;re all caught up
+          {primary.title}
         </h2>
         <p
-          className="mx-auto mt-2 max-w-md text-[15px] leading-snug"
-          style={{
-            color: "var(--ios-label-secondary)",
-            letterSpacing: "-0.011em",
-          }}
+          className="mt-2 max-w-md text-[14.5px] leading-relaxed"
+          style={{ color: "rgba(255, 255, 255, 0.6)" }}
         >
-          Caelex Comply tracks 8 regulatory regimes for satellite operators.
-          Pick how you&apos;d like to get started.
+          {primary.body}
         </p>
+
+        <div className="mt-6 flex items-center gap-2">
+          <Link
+            href={primary.href}
+            className="inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[13px] font-medium transition-colors"
+            style={{
+              background: "rgba(255, 255, 255, 0.92)",
+              color: "rgb(20, 20, 22)",
+            }}
+          >
+            {primary.buttonLabel}
+            <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.2} />
+          </Link>
+          {primary.secondary ? (
+            <Link
+              href={primary.secondary.href}
+              className="inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[13px] font-medium transition-colors"
+              style={{
+                background: "rgba(255, 255, 255, 0.06)",
+                color: "rgba(255, 255, 255, 0.85)",
+              }}
+            >
+              {primary.secondary.label}
+            </Link>
+          ) : null}
+        </div>
       </section>
 
-      {/* Apple Settings cell list — true iOS Settings-app pattern.
-          Inset-grouped: cards on a glass surface, one cell per row,
-          colored icon-tile + title/subtitle + chevron. */}
-      <section className="apple-glass-card overflow-hidden p-1.5">
-        <ul
-          className="divide-y"
-          style={{ borderColor: "var(--ios-separator)" }}
-        >
-          {cardsWithTint.map((card) => {
-            const Icon = card.icon;
-            return (
-              <li key={card.href}>
-                <Link
-                  href={card.href}
-                  className="apple-settings-cell group"
-                  style={{ background: "transparent" }}
-                >
-                  <span
-                    className={`apple-icon-tile apple-icon-tile-${card.tint}`}
-                  >
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div
-                      className="text-[15px] font-medium text-white"
-                      style={{ letterSpacing: "-0.011em" }}
-                    >
-                      {card.label}
-                    </div>
-                    <div
-                      className="mt-0.5 truncate text-[13px]"
-                      style={{
-                        color: "var(--ios-label-secondary)",
-                        letterSpacing: "-0.005em",
-                      }}
-                    >
-                      {card.description}
-                    </div>
-                  </div>
-                  <ArrowRight
-                    className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5"
-                    style={{ color: "var(--ios-label-tertiary)" }}
-                    strokeWidth={2}
-                  />
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
-
-      {/* Primary CTA — single tinted action per HIG ("one tint per
-          screen"). The Sentinel-connect path is the recommended one,
-          surfaced separately as the prominent next step. */}
-      <div className="flex flex-col items-center gap-3 pt-2">
-        <Link href="/dashboard/sentinel" className="apple-btn-primary">
-          <Radio className="h-4 w-4" strokeWidth={2.2} />
-          <span>Connect Sentinel to start</span>
-        </Link>
+      {/* Demo-mode escape hatch — quiet text link, doesn't compete
+          with the primary CTA. */}
+      <p
+        className="pt-2 text-[12.5px]"
+        style={{ color: "rgba(255, 255, 255, 0.4)" }}
+      >
+        Or{" "}
         <Link
           href="/dashboard/today?demo=1"
-          className="text-[13px] font-medium transition-colors"
-          style={{
-            color: "var(--ios-label-secondary)",
-            letterSpacing: "-0.005em",
-          }}
+          className="font-medium underline-offset-2 hover:underline"
+          style={{ color: "rgba(255, 255, 255, 0.65)" }}
         >
-          Preview the populated UI with demo items
+          preview the populated UI with demo items
         </Link>
-      </div>
+        .
+      </p>
     </div>
   );
+}
+
+/**
+ * Pick the right primary action for the user's setup state. Falls
+ * back to the assessment path when setupState is null (demo mode or
+ * unauthenticated edge case) so the empty state never shows nothing.
+ */
+function pickPrimaryAction(setupState: OnboardingSetupState | null): {
+  title: string;
+  body: string;
+  buttonLabel: string;
+  href: string;
+  icon: LucideIcon;
+  secondary?: { label: string; href: string };
+} {
+  const action = setupState?.nextAction ?? "run_assessment";
+
+  switch (action) {
+    case "set_up_organization":
+      return {
+        title: "Set up your organization",
+        body: "Caelex needs to know your operator type and jurisdiction before it can model which regulations apply to you. Takes about a minute.",
+        buttonLabel: "Continue setup",
+        href: "/onboarding",
+        icon: FolderOpen,
+      };
+    case "add_spacecraft":
+      return {
+        title: "Add your spacecraft",
+        body: "Each spacecraft becomes one mission with its own compliance roadmap. Add the satellites you operate (or plan to launch).",
+        buttonLabel: "Add spacecraft",
+        href: "/onboarding",
+        icon: Radio,
+        secondary: { label: "Browse modules", href: "/dashboard/modules" },
+      };
+    case "run_assessment":
+      return {
+        title: "Run an applicability assessment",
+        body: "Answer ~15 questions to determine which EU Space Act, NIS2, debris and national-law articles apply to you. We'll generate your compliance roadmap.",
+        buttonLabel: "Start assessment",
+        href: "/assessment/unified",
+        icon: ListChecks,
+        secondary: { label: "Browse modules", href: "/dashboard/modules" },
+      };
+    case "open_first_item":
+    case "all_done":
+    default:
+      return {
+        title: "You're all caught up",
+        body: "No pending items right now. Astra will surface new compliance work here when it lands.",
+        buttonLabel: "Browse modules",
+        href: "/dashboard/modules",
+        icon: ListChecks,
+      };
+  }
 }
 
 /**
