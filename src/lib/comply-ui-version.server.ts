@@ -41,6 +41,35 @@ function normalize(value: string | null | undefined): ComplyUiVersion | null {
   return trimmed as ComplyUiVersion;
 }
 
+/**
+ * Migration-window override (2026-05-06 → V2-cutover):
+ *
+ * Stored "v1" preferences (from cookies, user.complyUiVersion, and
+ * org.complyUiVersion) are treated as null while we migrate the
+ * fleet to V2. This is intentional: the user-facing instruction was
+ * "make V2 the default everywhere", which only works in practice if
+ * we also override stale opt-ins from the prior phase when V1 was
+ * the default and people clicked through the Settings toggle just
+ * to see the V2 preview.
+ *
+ * Escape hatches that still produce V1:
+ *   - `?ui=v1` URL query (always honored — line 56 below, called
+ *     before this filter)
+ *   - `/dashboard/legacy` route (renders V1 chrome directly without
+ *     going through this resolver at all)
+ *
+ * Once the migration window closes (~2 weeks of monitoring V2 in
+ * prod), delete this filter — at that point V1 is fully retired
+ * and the resolver simplifies to "always return v2" before getting
+ * deleted entirely.
+ */
+function applyMigrationFilter(
+  value: ComplyUiVersion | null,
+): ComplyUiVersion | null {
+  if (value === "v1") return null;
+  return value;
+}
+
 interface ResolveOptions {
   /**
    * The `?ui=` search param if present. Pass through from the page's
@@ -57,8 +86,12 @@ export async function resolveComplyUiVersion(
   if (fromUrl) return fromUrl;
 
   // 2. Cookie set by the Settings toggle.
+  // Pass through the migration filter — stale "v1" cookies from the
+  // pre-cutover era are treated as null so V2 default kicks in.
   const cookieStore = await cookies();
-  const fromCookie = normalize(cookieStore.get(COMPLY_UI_COOKIE_NAME)?.value);
+  const fromCookie = applyMigrationFilter(
+    normalize(cookieStore.get(COMPLY_UI_COOKIE_NAME)?.value),
+  );
   if (fromCookie) return fromCookie;
 
   // 3 + 4 + 5: Auth-aware lookup.
@@ -84,16 +117,20 @@ export async function resolveComplyUiVersion(
     },
   });
 
-  // User override wins over org-default.
-  const fromUser = normalize(user?.complyUiVersion);
+  // User override — also passed through the migration filter so
+  // stale `complyUiVersion = "v1"` rows (typically set by users who
+  // toggled the V2-preview opt-in months ago) don't pin them to V1
+  // forever after the V2-default cutover.
+  const fromUser = applyMigrationFilter(normalize(user?.complyUiVersion));
   if (fromUser) return fromUser;
 
   // Super-admins default to v2 even without an explicit override —
   // platform owners see what's being built without flag-juggling.
   if (superAdmin) return "v2";
 
-  const fromOrg = normalize(
-    user?.organizationMemberships[0]?.organization?.complyUiVersion,
+  // Org default — same migration filter applies.
+  const fromOrg = applyMigrationFilter(
+    normalize(user?.organizationMemberships[0]?.organization?.complyUiVersion),
   );
   if (fromOrg) return fromOrg;
 
