@@ -2087,16 +2087,25 @@ html:not(.dark) .dashboard-wallpaper {
   position: fixed;
   inset: 0;
   z-index: 0;
+  /* Stronger gradients so backdrop-filter has visible color to blur.
+     Without something to refract, "glass" surfaces look like opaque
+     dark rectangles. These gradients fake the macOS-Tahoe wallpaper-
+     glow effect that's normally provided by a real photo wallpaper. */
   background:
     radial-gradient(
-      ellipse 1200px 800px at 20% 0%,
-      rgba(40, 50, 75, 0.18) 0%,
+      ellipse 1400px 900px at 15% 5%,
+      rgba(60, 100, 180, 0.28) 0%,
       transparent 55%
     ),
     radial-gradient(
-      ellipse 1000px 700px at 100% 100%,
-      rgba(50, 35, 60, 0.14) 0%,
+      ellipse 1100px 800px at 95% 90%,
+      rgba(140, 60, 180, 0.22) 0%,
       transparent 50%
+    ),
+    radial-gradient(
+      ellipse 800px 600px at 50% 50%,
+      rgba(40, 80, 120, 0.12) 0%,
+      transparent 60%
     );
   pointer-events: none;
 }
@@ -2125,19 +2134,190 @@ html:not(.dark) .dashboard-wallpaper {
  *     palette instead of generic white opacity.                          */
 
 .apple-chrome-surface {
-  background: rgba(28, 28, 30, 0.55); /* secondarySystemBackground @ 55% */
+  background: rgba(28, 28, 30, 0.45);
+  backdrop-filter: blur(36px) saturate(180%);
+  -webkit-backdrop-filter: blur(36px) saturate(180%);
+  border-color: rgba(255, 255, 255, 0.12);
+  /* SPECULAR RIM — visible this time. The defining Apple Liquid Glass
+     detail per WWDC25-219: "light catches the bezel". 0.4 alpha on the
+     top inner edge reads as a real specular highlight; 0.08 (previous)
+     was invisible against dark surroundings. Bottom edge is dark for
+     volumetric depth (the glass has thickness). Side edges get a hint
+     of light too, completing the rim treatment.                        */
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.6),
+    inset 1px 0 0 0 rgba(255, 255, 255, 0.06),
+    inset -1px 0 0 0 rgba(255, 255, 255, 0.06),
+    0 24px 48px -12px rgba(0, 0, 0, 0.6);
+}
+
+/* Glass card surface — used for content cards (OnboardingHero,
+   action cards). Same Liquid Glass material as chrome but slightly
+   less translucent (cards sit ON content, chrome floats above it).
+   The specular rim is what makes it read as Apple-native.            */
+.apple-glass-card {
+  position: relative;
+  background: rgba(28, 28, 30, 0.5);
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border-color: rgba(255, 255, 255, 0.08);
-  /* Specular rim — the defining Apple detail.
-     Top edge: bright white inner highlight ("light catches the bezel").
-     Bottom edge: dark inner hint (volumetric depth).
-     Plus subtle 0.5px hairline outline + soft drop-shadow.              */
+  border-radius: var(--radius-xl);
   box-shadow:
-    0 0 0 0.5px rgba(255, 255, 255, 0.06),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
-    inset 0 -0.5px 0 0 rgba(0, 0, 0, 0.5),
+    0 0 0 0.5px rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.55),
+    inset 1px 0 0 0 rgba(255, 255, 255, 0.05),
+    inset -1px 0 0 0 rgba(255, 255, 255, 0.05),
     0 16px 40px -8px rgba(0, 0, 0, 0.55);
+  isolation: isolate;
+  transition:
+    transform var(--duration-base) var(--ease-smooth),
+    box-shadow var(--duration-base) var(--ease-smooth);
+}
+
+.apple-glass-card:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.12),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.55),
+    inset 1px 0 0 0 rgba(255, 255, 255, 0.06),
+    inset -1px 0 0 0 rgba(255, 255, 255, 0.06),
+    0 20px 48px -8px rgba(0, 0, 0, 0.65);
+}
+
+/* iOS Settings-cell pattern — for action cards in OnboardingHero.
+   This is the canonical iOS layout: 30x30 rounded-square icon on
+   the left in a system-color tint, multi-line text in the middle,
+   chevron on the right. Used for every Settings row in iOS.          */
+.apple-settings-cell {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--ios-fill-quaternary);
+  transition:
+    background-color var(--duration-base) var(--ease-smooth),
+    transform var(--duration-fast) var(--ease-smooth);
+  cursor: pointer;
+}
+
+.apple-settings-cell:hover {
+  background: var(--ios-fill-tertiary);
+}
+
+.apple-settings-cell:active {
+  transform: scale(0.985);
+}
+
+/* Tinted icon container — 30x30 rounded-square in iOS-system-color
+   tint. The signature iOS Settings icon-cell treatment.              */
+.apple-icon-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.apple-icon-tile-blue {
+  background: var(--ios-blue);
+  color: white;
+}
+.apple-icon-tile-green {
+  background: var(--ios-green);
+  color: white;
+}
+.apple-icon-tile-orange {
+  background: var(--ios-orange);
+  color: white;
+}
+.apple-icon-tile-purple {
+  background: var(--ios-purple);
+  color: white;
+}
+.apple-icon-tile-red {
+  background: var(--ios-red);
+  color: white;
+}
+.apple-icon-tile-teal {
+  background: var(--ios-teal);
+  color: white;
+}
+.apple-icon-tile-gray {
+  background: rgba(118, 118, 128, 0.36);
+  color: white;
+}
+
+/* iOS primary CTA — Capsule, system-blue tint. Per HIG: ONE primary
+   per screen. Press feedback: 0.97 scale + brightness shift.         */
+.apple-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 22px;
+  border-radius: var(--radius-pill);
+  background: var(--ios-blue);
+  color: white;
+  font-family: -apple-system, "SF Pro Text", system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.011em;
+  border: none;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.25),
+    0 1px 2px rgba(10, 132, 255, 0.4),
+    0 8px 24px -8px rgba(10, 132, 255, 0.45);
+  transition:
+    transform var(--duration-fast) var(--ease-smooth),
+    filter var(--duration-fast) var(--ease-smooth);
+}
+
+.apple-btn-primary:hover {
+  filter: brightness(1.08);
+}
+
+.apple-btn-primary:active {
+  transform: scale(0.97);
+  filter: brightness(0.95);
+}
+
+/* iOS secondary CTA — Capsule, glass surface (no fill, no tint).
+   Used for "Maybe later" / "Cancel" type actions next to a primary. */
+.apple-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 22px;
+  border-radius: var(--radius-pill);
+  background: var(--ios-fill-tertiary);
+  color: var(--ios-label);
+  font-family: -apple-system, "SF Pro Text", system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.011em;
+  border: none;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-base) var(--ease-smooth),
+    transform var(--duration-fast) var(--ease-smooth);
+}
+
+.apple-btn-secondary:hover {
+  background: var(--ios-fill-secondary);
+}
+
+.apple-btn-secondary:active {
+  transform: scale(0.97);
 }
 
 .apple-chrome-divider {
@@ -2215,6 +2395,9 @@ html:not(.dark) .dashboard-wallpaper {
    Falls through to standard rounded-rect on Safari/Firefox.            */
 @supports (corner-shape: squircle) {
   .apple-chrome-surface,
+  .apple-glass-card,
+  .apple-settings-cell,
+  .apple-icon-tile,
   .apple-search-pill,
   .apple-icon-btn,
   .apple-kbd,

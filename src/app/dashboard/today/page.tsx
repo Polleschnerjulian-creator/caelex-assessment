@@ -277,63 +277,105 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
   // Surfaces the onboarding hero instead of three sad "Nothing X" cards.
   const isOnboardingEmpty = !filterActive && total === 0;
 
+  // When the user has no items at all, render a centered narrower
+  // layout per Apple HIG empty-state convention. The populated state
+  // gets the wide max-w-[1600px] inbox layout.
+  const containerClass = isOnboardingEmpty
+    ? "mx-auto max-w-3xl px-6 py-12 sm:px-10"
+    : "mx-auto max-w-[1600px] px-6 py-8 sm:px-10 lg:px-14";
+
   return (
-    <div className="mx-auto max-w-[1600px] px-6 py-8 sm:px-10 lg:px-14">
+    <div className={containerClass}>
       {demoMode ? (
-        <div className="comply-glass-pill mb-6 flex items-center justify-between gap-4 px-4 py-2 text-xs text-amber-200/90">
+        <div className="apple-glass-card mb-6 flex items-center justify-between gap-4 px-4 py-2 text-[13px]">
           <span className="inline-flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-amber-300" />
-            <strong className="font-semibold text-amber-100">Demo mode</strong>
-            <span className="text-white/60">
-              Showing 7 mock items so you can preview the populated UI. Snooze /
-              attest actions on demo items are no-ops.
+            <Sparkles
+              className="h-3.5 w-3.5"
+              style={{ color: "var(--ios-yellow)" }}
+              strokeWidth={2}
+            />
+            <strong className="font-semibold text-white">Demo mode</strong>
+            <span style={{ color: "var(--ios-label-secondary)" }}>
+              Showing 7 mock items. Snooze / attest actions are no-ops.
             </span>
           </span>
           <Link
             href="/dashboard/today"
-            className="font-semibold text-amber-100 underline-offset-4 hover:underline"
+            className="font-medium text-white underline-offset-4 hover:underline"
           >
             Exit demo
           </Link>
         </div>
       ) : null}
 
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-6 border-b border-white/[0.06] pb-5">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-            Today
-          </h1>
-          <p className="mt-1.5 max-w-2xl text-sm text-white/55">
-            {filterActive
-              ? `${total} item${total === 1 ? "" : "s"} matching the active filters.`
-              : isOnboardingEmpty
-                ? "Welcome — let's set up your compliance workspace."
+      {!isOnboardingEmpty ? (
+        <header className="mb-8 flex flex-wrap items-end justify-between gap-6 border-b border-white/[0.06] pb-5">
+          <div className="min-w-0">
+            <h1
+              className="text-[34px] font-semibold tracking-tight text-white sm:text-[34px]"
+              style={{
+                letterSpacing: "-0.022em",
+                fontFamily:
+                  '-apple-system, "SF Pro Display", system-ui, sans-serif',
+                lineHeight: 1.1,
+              }}
+            >
+              Today
+            </h1>
+            <p
+              className="mt-1.5 max-w-2xl text-[15px]"
+              style={{
+                color: "var(--ios-label-secondary)",
+                letterSpacing: "-0.011em",
+              }}
+            >
+              {filterActive
+                ? `${total} item${total === 1 ? "" : "s"} matching the active filters.`
                 : `${total} open item${total === 1 ? "" : "s"} across ${Object.keys(REGULATION_LABELS).length} regimes. Press ⌘K to search the full set.`}
-          </p>
-        </div>
-        {!isOnboardingEmpty ? (
+            </p>
+          </div>
           <div className="flex flex-col items-end gap-2">
             <div className="flex items-center gap-2">
-              <span className="comply-glass-pill inline-flex items-baseline gap-1.5 px-3 py-1 text-xs font-medium">
-                <span className="inline-flex h-1.5 w-1.5 rounded-full bg-white/80" />
-                <span className="tabular-nums text-white">{total}</span>
-                <span className="text-white/55">in inbox</span>
+              <span
+                className="inline-flex items-baseline gap-1.5 rounded-full px-3 py-1 text-[12px] font-medium"
+                style={{
+                  background: "var(--ios-fill-tertiary)",
+                  color: "var(--ios-label)",
+                }}
+              >
+                <span
+                  className="inline-flex h-1.5 w-1.5 rounded-full"
+                  style={{ background: "var(--ios-blue)" }}
+                />
+                <span className="tabular-nums">{total}</span>
+                <span style={{ color: "var(--ios-label-secondary)" }}>
+                  in inbox
+                </span>
               </span>
-              <span className="comply-glass-pill inline-flex items-baseline gap-1.5 px-3 py-1 text-xs font-medium">
-                <span className="tabular-nums text-white">{clearedToday}</span>
-                <span className="text-white/55">cleared today</span>
+              <span
+                className="inline-flex items-baseline gap-1.5 rounded-full px-3 py-1 text-[12px] font-medium"
+                style={{
+                  background: "var(--ios-fill-tertiary)",
+                  color: "var(--ios-label)",
+                }}
+              >
+                <span className="tabular-nums">{clearedToday}</span>
+                <span style={{ color: "var(--ios-label-secondary)" }}>
+                  cleared today
+                </span>
               </span>
             </div>
             <Link
               href="/dashboard/legacy"
-              className="inline-flex items-center gap-1 text-[11px] text-white/40 underline-offset-4 transition hover:text-white/80 hover:underline"
+              className="inline-flex items-center gap-1 text-[11px] underline-offset-4 transition hover:underline"
+              style={{ color: "var(--ios-label-tertiary)" }}
             >
               <BarChart3 className="h-3 w-3" />
               View legacy charts
             </Link>
           </div>
-        ) : null}
-      </header>
+        </header>
+      ) : null}
 
       {isOnboardingEmpty ? (
         <OnboardingHero />
@@ -457,70 +499,150 @@ function OnboardingHero() {
     },
   ];
 
+  // Apple-Settings-cell color mapping per CTA — one tint per row,
+  // following iOS Settings convention (e.g. Bluetooth = blue,
+  // Notifications = red, etc.). Primary action gets the iOS-blue
+  // tint to match the systemBlue Continue button below it.
+  const cardsWithTint: Array<{
+    href: string;
+    label: string;
+    description: string;
+    icon: React.ComponentType<{ className?: string }>;
+    tint: "blue" | "purple" | "teal";
+    primary?: boolean;
+  }> = [
+    {
+      ...cards[0],
+      tint: "blue",
+      primary: true,
+    },
+    {
+      ...cards[1],
+      tint: "purple",
+    },
+    {
+      ...cards[2],
+      tint: "teal",
+    },
+  ];
+
   return (
-    <div className="space-y-8">
-      <section className="comply-glass-shell p-8 sm:p-10">
-        <div className="comply-glass-pill mb-3 inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-white/80">
-          <Sparkles className="h-3 w-3" />
-          New here
+    <div
+      className="mx-auto max-w-2xl space-y-7"
+      style={{
+        fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+      }}
+    >
+      {/* Hero — proper Apple Settings empty-state. Centered, narrow,
+          single bold headline + body + primary CTA. No glass card
+          around the hero text itself (Apple uses unframed copy on
+          empty states; the framing comes from the Settings cells
+          below). */}
+      <section className="text-center pt-6">
+        <div
+          className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl"
+          style={{
+            background:
+              "linear-gradient(135deg, var(--ios-blue) 0%, var(--ios-indigo) 100%)",
+            boxShadow:
+              "inset 0 1px 0 0 rgba(255,255,255,0.4), 0 8px 24px -8px rgba(10,132,255,0.55)",
+          }}
+        >
+          <Sparkles className="h-7 w-7 text-white" strokeWidth={2.2} />
         </div>
-        <h2 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
-          You're all caught up — because we haven't started yet.
+        <h2
+          className="text-[28px] font-semibold tracking-tight text-white"
+          style={{
+            letterSpacing: "-0.022em",
+            fontFamily:
+              '-apple-system, "SF Pro Display", system-ui, sans-serif',
+            lineHeight: 1.15,
+          }}
+        >
+          You&apos;re all caught up
         </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/55">
-          Caelex Comply tracks 8 regulatory regimes for satellite operators — EU
-          Space Act, NIS2, debris mitigation, cybersecurity, spectrum, export
-          control, and the UK + US frameworks. Pick how you'd like to start.
+        <p
+          className="mx-auto mt-2 max-w-md text-[15px] leading-snug"
+          style={{
+            color: "var(--ios-label-secondary)",
+            letterSpacing: "-0.011em",
+          }}
+        >
+          Caelex Comply tracks 8 regulatory regimes for satellite operators.
+          Pick how you&apos;d like to get started.
         </p>
       </section>
 
-      <section className="grid gap-3 sm:grid-cols-3">
-        {cards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <Link
-              key={card.href}
-              href={card.href}
-              className={
-                card.primary
-                  ? "comply-glass-card group flex flex-col p-5 ring-1 ring-inset ring-white/15 hover:ring-white/25"
-                  : "comply-glass-card group flex flex-col p-5"
-              }
-            >
-              <div className="flex items-start justify-between">
-                <div
-                  className={
-                    card.primary
-                      ? "flex h-9 w-9 items-center justify-center rounded-lg bg-white/[0.12] text-white"
-                      : "flex h-9 w-9 items-center justify-center rounded-lg bg-white/[0.06] text-white/70"
-                  }
+      {/* Apple Settings cell list — true iOS Settings-app pattern.
+          Inset-grouped: cards on a glass surface, one cell per row,
+          colored icon-tile + title/subtitle + chevron. */}
+      <section className="apple-glass-card overflow-hidden p-1.5">
+        <ul
+          className="divide-y"
+          style={{ borderColor: "var(--ios-separator)" }}
+        >
+          {cardsWithTint.map((card) => {
+            const Icon = card.icon;
+            return (
+              <li key={card.href}>
+                <Link
+                  href={card.href}
+                  className="apple-settings-cell group"
+                  style={{ background: "transparent" }}
                 >
-                  <Icon className="h-4 w-4" />
-                </div>
-                <ArrowRight className="h-4 w-4 text-white/30 opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" />
-              </div>
-              <h3 className="mt-4 text-sm font-semibold text-white">
-                {card.label}
-              </h3>
-              <p className="mt-1.5 text-xs leading-relaxed text-white/55">
-                {card.description}
-              </p>
-            </Link>
-          );
-        })}
+                  <span
+                    className={`apple-icon-tile apple-icon-tile-${card.tint}`}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div
+                      className="text-[15px] font-medium text-white"
+                      style={{ letterSpacing: "-0.011em" }}
+                    >
+                      {card.label}
+                    </div>
+                    <div
+                      className="mt-0.5 truncate text-[13px]"
+                      style={{
+                        color: "var(--ios-label-secondary)",
+                        letterSpacing: "-0.005em",
+                      }}
+                    >
+                      {card.description}
+                    </div>
+                  </div>
+                  <ArrowRight
+                    className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5"
+                    style={{ color: "var(--ios-label-tertiary)" }}
+                    strokeWidth={2}
+                  />
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </section>
 
-      <p className="text-center text-xs text-white/40">
-        Once you have items in flight, this page becomes your daily inbox. Press
-        ⌘K anytime to search across everything. Or{" "}
+      {/* Primary CTA — single tinted action per HIG ("one tint per
+          screen"). The Sentinel-connect path is the recommended one,
+          surfaced separately as the prominent next step. */}
+      <div className="flex flex-col items-center gap-3 pt-2">
+        <Link href="/dashboard/sentinel" className="apple-btn-primary">
+          <Radio className="h-4 w-4" strokeWidth={2.2} />
+          <span>Connect Sentinel to start</span>
+        </Link>
         <Link
           href="/dashboard/today?demo=1"
-          className="font-medium text-white/80 underline-offset-4 hover:underline hover:text-white"
+          className="text-[13px] font-medium transition-colors"
+          style={{
+            color: "var(--ios-label-secondary)",
+            letterSpacing: "-0.005em",
+          }}
         >
-          preview the populated UI with demo items
+          Preview the populated UI with demo items
         </Link>
-        .
-      </p>
+      </div>
     </div>
   );
 }
