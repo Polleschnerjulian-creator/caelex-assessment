@@ -531,32 +531,41 @@ export default function TrackerPage() {
       <style>{`.dark .tracker-ambient { background: #0B0F1A !important; }`}</style>
       <div className="tracker-ambient h-full overflow-y-auto">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-8">
-          {/* ═══ Header (Fix #3: Readiness Ring) ═══ */}
-          <header className="flex items-end justify-between mb-10">
-            <div>
-              <p
-                className="text-[11px] font-medium uppercase tracking-[0.2em] mb-2"
-                style={{ color: "var(--cx-text-tertiary, #9CA3AF)" }}
-              >
-                Compliance
-              </p>
+          {/* Header — Apple HIG: drop the uppercase "COMPLIANCE" overline,
+              just title + subtitle. Inter font, -0.022em tracking, 28px. */}
+          <header
+            className="flex items-end justify-between mb-9 pb-5"
+            style={{
+              borderBottom: "0.5px solid rgba(255, 255, 255, 0.08)",
+              fontFamily:
+                'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
+            }}
+          >
+            <div className="min-w-0">
               <h1
-                className="text-[28px] font-semibold tracking-tight leading-none"
-                style={{ color: "var(--cx-text-primary, #1A1A1A)" }}
+                className="text-[28px] font-semibold tracking-tight"
+                style={{
+                  color: "rgba(255, 255, 255, 0.96)",
+                  letterSpacing: "-0.022em",
+                  fontFamily:
+                    'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif',
+                  lineHeight: 1.15,
+                }}
               >
-                Regulatory Tracker
+                Article Tracker
               </h1>
-            </div>
-            <div className="flex flex-col items-center">
-              <ReadinessRing score={overallScore} />
               <p
-                className="text-[13px] mt-2 text-center"
-                style={{ color: "var(--cx-text-secondary, #6B7280)" }}
+                className="mt-1.5 text-[14px]"
+                style={{
+                  color: "rgba(255, 255, 255, 0.55)",
+                  letterSpacing: "-0.005em",
+                }}
               >
                 {unifiedStatus?.assessedCount ?? 0} of {REGULATIONS.length}{" "}
-                assessed · {totalReqs}+ requirements
+                regimes assessed · {totalReqs}+ requirements
               </p>
             </div>
+            <ReadinessRing score={overallScore} />
           </header>
 
           {/* ═══ Pill Tabs (Fix #4) ═══ */}

@@ -1,10 +1,9 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Inbox, ListChecks, ArrowRight } from "lucide-react";
+import { Inbox, ArrowRight } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
 import { getTriageItemsForUser } from "@/lib/comply-v2/triage-service.server";
-import { Button } from "@/components/ui/v2/button";
 import { TriageList } from "@/components/dashboard/v2/TriageList";
 
 export const metadata = {
@@ -45,30 +44,52 @@ export default async function TriagePage() {
     receivedAt: it.receivedAt.toISOString(),
   }));
 
+  const sansFont =
+    'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif';
+  const displayFont =
+    'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif';
+
   return (
-    <div className="mx-auto max-w-screen-2xl px-6 py-6">
-      <header className="mb-6 flex items-end justify-between gap-6 border-b border-white/[0.06] pb-4">
-        <div>
-          <div className="mb-1.5 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-400">
-            <ListChecks className="h-3 w-3" />
-            TRIAGE · QUEUE
-          </div>
-          <h1 className="text-xl font-semibold tracking-tight text-slate-100">
-            One inbox for everything incoming
+    <div
+      className="mx-auto max-w-screen-2xl px-8 py-8"
+      style={{ fontFamily: sansFont, letterSpacing: "-0.005em" }}
+    >
+      <header
+        className="mb-7 flex items-end justify-between gap-6 pb-5"
+        style={{ borderBottom: "0.5px solid rgba(255, 255, 255, 0.08)" }}
+      >
+        <div className="min-w-0">
+          <h1
+            className="text-[28px] font-semibold text-white"
+            style={{
+              fontFamily: displayFont,
+              letterSpacing: "-0.022em",
+              lineHeight: 1.15,
+            }}
+          >
+            Triage
           </h1>
-          <p className="mt-1 max-w-2xl text-xs text-slate-500">
+          <p
+            className="mt-1.5 max-w-2xl text-[14px]"
+            style={{ color: "rgba(255, 255, 255, 0.55)" }}
+          >
             {items.length === 0
               ? "No new signals. The keyboard is fastest — J/K to navigate, A to acknowledge, D to dismiss."
-              : `${items.length} signal${items.length === 1 ? "" : "s"} from notifications, regulator publications, and satellite alerts. J/K to navigate, A to acknowledge, D to dismiss.`}
+              : `${items.length} signal${items.length === 1 ? "" : "s"} from notifications, regulator publications, and satellite alerts. Use J/K to navigate, A to acknowledge, D to dismiss.`}
           </p>
         </div>
-        <Button variant="outline" asChild size="sm">
-          <Link href="/dashboard/today">
-            <Inbox />
-            Open Today
-            <ArrowRight />
-          </Link>
-        </Button>
+        <Link
+          href="/dashboard/today"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-2 text-[13px] font-medium transition-colors"
+          style={{
+            background: "rgba(255, 255, 255, 0.06)",
+            color: "rgba(255, 255, 255, 0.85)",
+          }}
+        >
+          <Inbox className="h-3.5 w-3.5" strokeWidth={2} />
+          Open Today
+          <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.2} />
+        </Link>
       </header>
 
       <TriageList items={serialized} />

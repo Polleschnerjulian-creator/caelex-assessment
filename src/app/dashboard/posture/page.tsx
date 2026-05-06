@@ -4,10 +4,10 @@ import {
   Gauge,
   ShieldCheck,
   AlertTriangle,
-  Inbox,
   Clock,
   CheckCircle2,
   ArrowRight,
+  type LucideIcon,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
@@ -72,26 +72,53 @@ export default async function PosturePage() {
     value: p.activeSnoozes,
   }));
 
+  const sansFont =
+    'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif';
+  const displayFont =
+    'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif';
+
   return (
-    <div className="mx-auto max-w-screen-2xl px-6 py-6">
-      <header className="mb-6 flex items-end justify-between gap-6 border-b border-white/[0.06] pb-4">
-        <div>
-          <div className="mb-1.5 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-400">
-            <Gauge className="h-3 w-3" />
-            POSTURE · LIVE
-          </div>
-          <h1 className="text-xl font-semibold tracking-tight text-slate-100">
-            Compliance command center
+    <div
+      className="mx-auto max-w-screen-2xl px-8 py-8"
+      style={{ fontFamily: sansFont, letterSpacing: "-0.005em" }}
+    >
+      <header
+        className="mb-7 flex items-end justify-between gap-6 pb-5"
+        style={{ borderBottom: "0.5px solid rgba(255, 255, 255, 0.08)" }}
+      >
+        <div className="min-w-0">
+          <h1
+            className="text-[28px] font-semibold text-white"
+            style={{
+              fontFamily: displayFont,
+              letterSpacing: "-0.022em",
+              lineHeight: 1.15,
+            }}
+          >
+            Posture
           </h1>
-          <p className="mt-1 max-w-2xl text-xs text-slate-500">
+          <p
+            className="mt-1.5 max-w-2xl text-[14px]"
+            style={{ color: "rgba(255, 255, 255, 0.55)" }}
+          >
             Executive overview of where you stand right now. Click any tile to
             drill into the underlying ComplianceItems.
           </p>
         </div>
-        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">
-          <span className="inline-flex h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-          UPDATED LIVE
-        </div>
+        <span
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-medium"
+          style={{
+            background: "rgba(255, 255, 255, 0.05)",
+            color: "rgba(255, 255, 255, 0.85)",
+          }}
+        >
+          <span
+            aria-hidden
+            className="h-1.5 w-1.5 animate-pulse rounded-full"
+            style={{ background: "var(--ios-green)" }}
+          />
+          Live
+        </span>
       </header>
 
       {/* KPI strip */}
@@ -163,64 +190,126 @@ export default async function PosturePage() {
 
       {/* Regulation table */}
       <section>
-        <h2 className="mb-3 font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-slate-500">
+        <h2
+          className="mb-3 px-0.5"
+          style={{
+            color: "rgba(255, 255, 255, 0.45)",
+            fontSize: "11px",
+            fontWeight: 600,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+          }}
+        >
           Regulation breakdown
         </h2>
         {posture.regulationBreakdown.length === 0 ? (
-          <p className="palantir-surface rounded-md p-6 text-center text-xs text-slate-500">
-            No regulatory items yet. Start a module assessment to populate.
-          </p>
+          <div
+            className="max-w-xl rounded-2xl p-8"
+            style={{
+              background: "rgba(255, 255, 255, 0.03)",
+              boxShadow:
+                "inset 0 1px 0 0 rgba(255, 255, 255, 0.06), 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+            }}
+          >
+            <p
+              className="text-[13px]"
+              style={{ color: "rgba(255, 255, 255, 0.55)" }}
+            >
+              No regulatory items yet. Start a module assessment to populate.
+            </p>
+          </div>
         ) : (
-          <div className="palantir-surface overflow-hidden rounded-md">
-            <table className="w-full text-xs">
-              <thead className="border-b border-white/[0.06] bg-white/[0.02] font-mono text-[9px] font-medium uppercase tracking-[0.18em] text-slate-500">
-                <tr>
-                  <th className="px-4 py-2 text-left">Regulation</th>
-                  <th className="px-4 py-2 text-right">Score</th>
-                  <th className="px-4 py-2 text-right">Attested</th>
-                  <th className="px-4 py-2 text-right">Evidence</th>
-                  <th className="px-4 py-2 text-right">Pending</th>
-                  <th className="px-4 py-2 text-right">Total</th>
-                  <th className="px-4 py-2"></th>
+          <div
+            className="overflow-hidden rounded-xl"
+            style={{
+              background: "rgba(255, 255, 255, 0.03)",
+              boxShadow:
+                "inset 0 1px 0 0 rgba(255, 255, 255, 0.06), 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+            }}
+          >
+            <table className="w-full text-[13px]">
+              <thead>
+                <tr
+                  style={{
+                    borderBottom: "0.5px solid rgba(255, 255, 255, 0.06)",
+                    color: "rgba(255, 255, 255, 0.45)",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  <th className="px-4 py-3 text-left">Regulation</th>
+                  <th className="px-4 py-3 text-right">Score</th>
+                  <th className="px-4 py-3 text-right">Attested</th>
+                  <th className="px-4 py-3 text-right">Evidence</th>
+                  <th className="px-4 py-3 text-right">Pending</th>
+                  <th className="px-4 py-3 text-right">Total</th>
+                  <th className="px-4 py-3"></th>
                 </tr>
               </thead>
               <tbody>
                 {posture.regulationBreakdown.map((r) => (
                   <tr
                     key={r.regulation}
-                    className="border-b border-white/[0.04] last:border-b-0 transition hover:bg-white/[0.03]"
+                    className="transition-colors hover:bg-white/[0.025]"
+                    style={{
+                      borderBottom: "0.5px solid rgba(255, 255, 255, 0.04)",
+                    }}
                   >
-                    <td className="px-4 py-2.5 text-slate-200">
+                    <td
+                      className="px-4 py-3"
+                      style={{ color: "rgba(255, 255, 255, 0.92)" }}
+                    >
                       <div className="flex items-center gap-2">
                         <ScoreDot score={r.score} />
                         <span>{REGULATION_LABELS[r.regulation]}</span>
-                        <span className="font-mono text-[9px] uppercase tracking-wider text-slate-500">
+                        <span
+                          className="text-[11px]"
+                          style={{ color: "rgba(255, 255, 255, 0.4)" }}
+                        >
                           {r.regulation}
                         </span>
                       </div>
                     </td>
-                    <td className="px-4 py-2.5 text-right font-mono tabular-nums text-slate-100">
+                    <td
+                      className="px-4 py-3 text-right tabular-nums font-medium"
+                      style={{ color: "rgba(255, 255, 255, 0.92)" }}
+                    >
                       {r.score}%
                     </td>
-                    <td className="px-4 py-2.5 text-right font-mono tabular-nums text-emerald-400">
+                    <td
+                      className="px-4 py-3 text-right tabular-nums"
+                      style={{ color: "rgba(255, 255, 255, 0.85)" }}
+                    >
                       {r.attested}
                     </td>
-                    <td className="px-4 py-2.5 text-right font-mono tabular-nums text-amber-400">
+                    <td
+                      className="px-4 py-3 text-right tabular-nums"
+                      style={{ color: "rgba(255, 255, 255, 0.85)" }}
+                    >
                       {r.evidenceRequired}
                     </td>
-                    <td className="px-4 py-2.5 text-right font-mono tabular-nums text-slate-500">
+                    <td
+                      className="px-4 py-3 text-right tabular-nums"
+                      style={{ color: "rgba(255, 255, 255, 0.55)" }}
+                    >
                       {r.pending}
                     </td>
-                    <td className="px-4 py-2.5 text-right font-mono tabular-nums text-slate-500">
+                    <td
+                      className="px-4 py-3 text-right tabular-nums"
+                      style={{ color: "rgba(255, 255, 255, 0.55)" }}
+                    >
                       {r.total}
                     </td>
-                    <td className="px-4 py-2.5 text-right">
+                    <td className="px-4 py-3 text-right">
                       <Link
                         href={`/dashboard/today?regulation=${r.regulation}`}
-                        className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-emerald-400 transition hover:text-emerald-300"
+                        className="inline-flex items-center gap-1 text-[12.5px] font-medium transition-colors hover:text-white"
+                        style={{ color: "rgba(255, 255, 255, 0.65)" }}
                       >
                         Open
-                        <ArrowRight className="h-3 w-3" />
+                        <ArrowRight className="h-3 w-3" strokeWidth={2.2} />
                       </Link>
                     </td>
                   </tr>
@@ -237,17 +326,39 @@ export default async function PosturePage() {
 // ─── Subcomponents ───────────────────────────────────────────────────────
 
 function Card({ children }: { children: React.ReactNode }) {
-  return <div className="palantir-surface rounded-md p-4">{children}</div>;
+  return (
+    <div
+      className="rounded-xl p-5"
+      style={{
+        background: "rgba(255, 255, 255, 0.03)",
+        boxShadow:
+          "inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+      }}
+    >
+      {children}
+    </div>
+  );
 }
 
 function CardHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
-    <header className="mb-3 border-b border-white/[0.06] pb-3">
-      <h3 className="font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-slate-300">
+    <header
+      className="mb-4 pb-3"
+      style={{ borderBottom: "0.5px solid rgba(255, 255, 255, 0.06)" }}
+    >
+      <h3
+        className="text-[14px] font-semibold text-white"
+        style={{ letterSpacing: "-0.011em" }}
+      >
         {title}
       </h3>
       {subtitle ? (
-        <p className="mt-1 font-mono text-[10px] text-slate-500">{subtitle}</p>
+        <p
+          className="mt-0.5 text-[12px]"
+          style={{ color: "rgba(255, 255, 255, 0.5)" }}
+        >
+          {subtitle}
+        </p>
       ) : null}
     </header>
   );
@@ -257,7 +368,6 @@ function Kpi({
   label,
   value,
   subline,
-  tone,
   icon: Icon,
   href,
   sparkline,
@@ -267,41 +377,53 @@ function Kpi({
   label: string;
   value: string;
   subline: string;
-  tone: "emerald" | "amber" | "slate";
-  icon: React.ComponentType<{ className?: string }>;
+  tone?: "emerald" | "amber" | "slate";
+  icon: LucideIcon;
   href?: string;
   sparkline?: Array<{ date: string; value: number }>;
   sparklineDirection?: "up" | "down";
   sparklineNeutral?: boolean;
 }) {
-  const accentClass =
-    tone === "emerald"
-      ? "text-emerald-400"
-      : tone === "amber"
-        ? "text-amber-400"
-        : "text-slate-500";
-
-  const stripe =
-    tone === "emerald"
-      ? "palantir-stripe-emerald"
-      : tone === "amber"
-        ? "palantir-stripe-amber"
-        : "";
-
+  // Apple HIG: drop tone-based accent stripes + colored icons. All
+  // KPIs use the same neutral surface; the value itself carries the
+  // information. Hover lift on linked cards (translateY + brighter rim).
   const inner = (
     <div
-      className={`palantir-surface group flex flex-col gap-2 rounded-md p-4 transition ${stripe}`}
+      className="group flex flex-col gap-2 rounded-xl p-4 transition-transform"
+      style={{
+        background: "rgba(255, 255, 255, 0.03)",
+        boxShadow:
+          "inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+      }}
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-slate-500">
+        <span
+          style={{
+            color: "rgba(255, 255, 255, 0.45)",
+            fontSize: "11px",
+            fontWeight: 600,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+          }}
+        >
           {label}
         </span>
-        <Icon className={`h-3 w-3 ${accentClass}`} />
+        <Icon
+          className="h-3.5 w-3.5"
+          strokeWidth={1.75}
+          style={{ color: "rgba(255, 255, 255, 0.35)" }}
+        />
       </div>
-      <div className="font-mono text-3xl font-bold tracking-tight text-slate-50 tabular-nums">
+      <div
+        className="text-[28px] font-semibold tabular-nums text-white"
+        style={{ letterSpacing: "-0.022em", lineHeight: 1.1 }}
+      >
         {value}
       </div>
-      <div className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
+      <div
+        className="text-[12px]"
+        style={{ color: "rgba(255, 255, 255, 0.45)" }}
+      >
         {subline}
       </div>
       {sparkline ? (
@@ -326,11 +448,19 @@ function Kpi({
 }
 
 function ScoreDot({ score }: { score: number }) {
-  const cls =
+  // Three-tier score dot: green (good), amber (warning), red (bad).
+  // These are semantic indicators where Apple WOULD use color —
+  // status communication, not decoration.
+  const color =
     score >= 80
-      ? "bg-emerald-500"
+      ? "var(--ios-green)"
       : score >= 50
-        ? "bg-amber-500"
-        : "bg-red-500";
-  return <span className={`inline-block h-2 w-2 rounded-full ${cls}`} />;
+        ? "var(--ios-orange)"
+        : "var(--ios-red)";
+  return (
+    <span
+      className="inline-block h-2 w-2 rounded-full"
+      style={{ background: color }}
+    />
+  );
 }

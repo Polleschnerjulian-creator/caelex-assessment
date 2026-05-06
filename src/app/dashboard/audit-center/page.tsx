@@ -395,7 +395,14 @@ function AuditCenterContent() {
   // ─── Render ───
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent p-3 gap-3">
+    <div
+      className="flex flex-col lg:flex-row h-screen p-3 gap-3"
+      style={{
+        fontFamily:
+          'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
+        letterSpacing: "-0.005em",
+      }}
+    >
       {/* ─── Mobile Tab Bar (visible < lg) ─── */}
       <div
         className={`lg:hidden flex items-center gap-2 p-2 rounded-xl shrink-0 ${glassPanelDarkClass}`}
@@ -411,7 +418,7 @@ function AuditCenterContent() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 activeTab === tab.id
-                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  ? "bg-white/[0.08] text-slate-900 dark:text-white"
                   : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white"
               }`}
             >
@@ -451,7 +458,7 @@ function AuditCenterContent() {
               onClick={() => setActiveTab(tab.id)}
               className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                 activeTab === tab.id
-                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  ? "bg-white/[0.08] text-slate-900 dark:text-white"
                   : "text-slate-500 hover:text-slate-700 hover:bg-white/40 dark:text-slate-400 dark:hover:text-white"
               }`}
             >
@@ -1189,7 +1196,7 @@ function FilterButton({
       onClick={onClick}
       className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
         active
-          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+          ? "bg-white/[0.08] text-slate-900 dark:text-white"
           : "text-slate-500 hover:text-slate-700 hover:bg-white/40 dark:text-slate-400 dark:hover:text-white"
       }`}
     >
