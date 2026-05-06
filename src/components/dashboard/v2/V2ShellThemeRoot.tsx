@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { OrganizationProvider } from "@/components/providers/OrganizationProvider";
 
 /**
  * V2ShellThemeRoot — Client wrapper that owns the V2Shell's outer
@@ -33,46 +34,59 @@ export function V2ShellThemeRoot({
   // photo wallpaper as a "hero" surface; every other dashboard
   // route gets the same pure dark canvas with the same Apple chrome,
   // so navigating between routes never flashes a theme change.
+  //
+  // OrganizationProvider mounted here in V2 (was V1-only via
+  // DashboardShell). Without it, every component that calls
+  // useOrganization() — FeatureGate gates on every module page,
+  // billing widgets, RBAC checks — falls through to the default
+  // context value `{ isLoading: true, ... }` and renders an
+  // infinite spinner forever. Bug surfaced when V2 became default
+  // and a user with no organization clicked into /modules/*.
   return (
-    <div
-      data-density={density}
-      data-caelex-theme="dark"
-      data-comply-cinema={cinema ? "on" : "off"}
-      className={`dark flex min-h-screen ${cinema ? "comply-photo-wallpaper" : "comply-dark-canvas"}`}
-    >
-      {/* Apple Liquid Glass — SVG displacement filter for true edge
-          lensing on chrome over the photo wallpaper. Chromium-only
-          progressive enhancement: Safari/Firefox ignore the
-          @supports-gated CSS rule and fall through to flat blur.
-          Mounted once at shell level so every chrome surface in the
-          tree can reference url(#caelex-liquid-lens).                  */}
-      {cinema ? (
-        <svg aria-hidden style={{ position: "absolute", width: 0, height: 0 }}>
-          <defs>
-            <filter
-              id="caelex-liquid-lens"
-              x="0"
-              y="0"
-              width="100%"
-              height="100%"
-            >
-              <feTurbulence
-                type="fractalNoise"
-                baseFrequency="0.008"
-                numOctaves="2"
-                seed="7"
-              />
-              <feDisplacementMap
-                in="SourceGraphic"
-                scale="12"
-                xChannelSelector="R"
-                yChannelSelector="G"
-              />
-            </filter>
-          </defs>
-        </svg>
-      ) : null}
-      {children}
-    </div>
+    <OrganizationProvider>
+      <div
+        data-density={density}
+        data-caelex-theme="dark"
+        data-comply-cinema={cinema ? "on" : "off"}
+        className={`dark flex min-h-screen ${cinema ? "comply-photo-wallpaper" : "comply-dark-canvas"}`}
+      >
+        {/* Apple Liquid Glass — SVG displacement filter for true edge
+            lensing on chrome over the photo wallpaper. Chromium-only
+            progressive enhancement: Safari/Firefox ignore the
+            @supports-gated CSS rule and fall through to flat blur.
+            Mounted once at shell level so every chrome surface in the
+            tree can reference url(#caelex-liquid-lens).                */}
+        {cinema ? (
+          <svg
+            aria-hidden
+            style={{ position: "absolute", width: 0, height: 0 }}
+          >
+            <defs>
+              <filter
+                id="caelex-liquid-lens"
+                x="0"
+                y="0"
+                width="100%"
+                height="100%"
+              >
+                <feTurbulence
+                  type="fractalNoise"
+                  baseFrequency="0.008"
+                  numOctaves="2"
+                  seed="7"
+                />
+                <feDisplacementMap
+                  in="SourceGraphic"
+                  scale="12"
+                  xChannelSelector="R"
+                  yChannelSelector="G"
+                />
+              </filter>
+            </defs>
+          </svg>
+        ) : null}
+        {children}
+      </div>
+    </OrganizationProvider>
   );
 }
