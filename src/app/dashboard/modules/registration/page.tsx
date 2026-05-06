@@ -116,7 +116,13 @@ function RegistrationPageContent() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Get organization ID from first membership
+  // Get organization ID from first membership.
+  // FIX 2026-05-06: previously this never set loading=false when the
+  // user had no organization (which is the default state for fresh
+  // sign-ups + Anton's account). Result: infinite spinner. Now we
+  // always flip loading off once the org-fetch resolves, so the
+  // "no organization" branch below renders a real empty state
+  // instead of trapping the user in a loading skeleton forever.
   useEffect(() => {
     async function fetchOrganization() {
       try {
@@ -125,11 +131,17 @@ function RegistrationPageContent() {
           const data = await response.json();
           if (data.organizations?.length > 0) {
             setOrganizationId(data.organizations[0].id);
+            // organizationId is set — fetchRegistrations effect below
+            // will fire, set loading=false in its finally block.
+            return;
           }
         }
       } catch (error) {
         console.error("Error fetching organization:", error);
       }
+      // No org found (or fetch failed). Flip loading off so the
+      // "no organization" empty state renders.
+      setLoading(false);
     }
     fetchOrganization();
   }, []);
@@ -236,6 +248,78 @@ function RegistrationPageContent() {
         </div>
         <div className="h-96 bg-[var(--surface-sunken)] rounded-xl"></div>
         <span className="sr-only">Loading registration data...</span>
+      </div>
+    );
+  }
+
+  // No-organization empty state. The user has finished loading but
+  // belongs to no org, so no API call here can return real data.
+  // Apple-style left-aligned empty state with a single primary CTA
+  // pointing at the org-creation flow (currently /onboarding which
+  // wires the user into a fresh organization).
+  if (!loading && !organizationId) {
+    return (
+      <div
+        className="px-8 py-10 max-w-2xl"
+        style={{
+          fontFamily:
+            'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
+          letterSpacing: "-0.005em",
+        }}
+      >
+        <div
+          className="mb-5 flex h-10 w-10 items-center justify-center rounded-xl"
+          style={{
+            background: "rgba(255, 255, 255, 0.06)",
+            boxShadow:
+              "inset 0 1px 0 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 0 rgba(0, 0, 0, 0.25)",
+          }}
+        >
+          <Satellite
+            className="h-[18px] w-[18px]"
+            strokeWidth={1.75}
+            style={{ color: "rgba(255, 255, 255, 0.85)" }}
+          />
+        </div>
+        <h1
+          className="mb-1.5 text-[22px] font-semibold text-white"
+          style={{ letterSpacing: "-0.018em" }}
+        >
+          You need an organization first
+        </h1>
+        <p
+          className="mb-5 max-w-md text-[13.5px] leading-relaxed"
+          style={{
+            color: "rgba(255, 255, 255, 0.55)",
+          }}
+        >
+          URSO registrations belong to an organization, not an individual
+          account. Set up your organization to register spacecraft under EU
+          Space Act Art. 24.
+        </p>
+        <div className="flex items-center gap-2">
+          <a
+            href="/onboarding"
+            className="inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[13px] font-medium transition-colors"
+            style={{
+              background: "rgba(255, 255, 255, 0.92)",
+              color: "rgb(20, 20, 22)",
+            }}
+          >
+            Set up organization
+            <ChevronRight className="h-3.5 w-3.5" strokeWidth={2.2} />
+          </a>
+          <a
+            href="/dashboard/today"
+            className="inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[13px] font-medium transition-colors"
+            style={{
+              background: "rgba(255, 255, 255, 0.06)",
+              color: "rgba(255, 255, 255, 0.85)",
+            }}
+          >
+            Back to Today
+          </a>
+        </div>
       </div>
     );
   }
