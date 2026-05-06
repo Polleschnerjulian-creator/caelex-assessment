@@ -2,6 +2,97 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═════════════════════════════════════════════════════════════════════
+ * APPLE LIQUID GLASS DESIGN TOKENS — ios 26 / macOS Tahoe 26 spec
+ * ─────────────────────────────────────────────────────────────────────
+ * Source: WWDC 2025 sessions 219, 323, 356 + iOS HIG + community
+ * measurements (donnywals.com, NGSystemColorComparison, kube.io).
+ * Light/dark color pairs are the canonical iOS 13+ values, retuned
+ * subtly in iOS 26 but unchanged in spirit (per session 356).
+ * ═════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── iOS system colors (light mode) ── */
+  --ios-blue: #007aff;
+  --ios-green: #34c759;
+  --ios-indigo: #5856d6;
+  --ios-orange: #ff9500;
+  --ios-pink: #ff2d55;
+  --ios-purple: #af52de;
+  --ios-red: #ff3b30;
+  --ios-teal: #5ac8fa;
+  --ios-yellow: #ffcc00;
+
+  /* ── iOS labels (foreground text — light mode) ── */
+  --ios-label: rgb(0, 0, 0);
+  --ios-label-secondary: rgba(60, 60, 67, 0.6);
+  --ios-label-tertiary: rgba(60, 60, 67, 0.3);
+  --ios-label-quaternary: rgba(60, 60, 67, 0.18);
+
+  /* ── iOS fills (non-text controls — light mode) ── */
+  --ios-fill: rgba(120, 120, 128, 0.2);
+  --ios-fill-secondary: rgba(120, 120, 128, 0.16);
+  --ios-fill-tertiary: rgba(118, 118, 128, 0.12);
+  --ios-fill-quaternary: rgba(116, 116, 128, 0.08);
+
+  /* ── iOS separators (light mode) ── */
+  --ios-separator: rgba(60, 60, 67, 0.29);
+  --ios-separator-opaque: #c6c6c8;
+
+  /* ── Apple-spec spring easing curves ── */
+  --ease-smooth: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-snappy: cubic-bezier(0.2, 0.9, 0.1, 1.05);
+  --ease-bouncy: cubic-bezier(0.5, 1.6, 0.4, 1);
+  --ease-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.6, 1);
+
+  /* Standard durations (per HIG) */
+  --duration-fast: 100ms; /* feedback */
+  --duration-base: 200ms; /* small state */
+  --duration-slow: 300ms; /* content transition */
+  --duration-modal: 500ms; /* full-screen */
+
+  /* ── Concentric corner radii (iOS scale) ── */
+  --radius-xs: 6px; /* tag, badge */
+  --radius-sm: 10px; /* small button, input */
+  --radius-md: 12px; /* default button, list row */
+  --radius-lg: 16px; /* card */
+  --radius-xl: 20px; /* container, panel */
+  --radius-2xl: 28px; /* sheet, modal */
+  --radius-pill: 9999px; /* capsule */
+}
+
+/* iOS system colors — dark mode pairs */
+.dark,
+[data-caelex-theme="dark"] {
+  --ios-blue: #0a84ff;
+  --ios-green: #30d158;
+  --ios-indigo: #5e5ce6;
+  --ios-orange: #ff9f0a;
+  --ios-pink: #ff375f;
+  --ios-purple: #bf5af2;
+  --ios-red: #ff453a;
+  --ios-teal: #64d2ff;
+  --ios-yellow: #ffd60a;
+
+  /* Labels — dark mode (neutral white with a faint blue tint, not pure white) */
+  --ios-label: rgb(255, 255, 255);
+  --ios-label-secondary: rgba(235, 235, 245, 0.6);
+  --ios-label-tertiary: rgba(235, 235, 245, 0.3);
+  --ios-label-quaternary: rgba(235, 235, 245, 0.18);
+
+  /* Fills — dark mode (slightly higher alpha for legibility) */
+  --ios-fill: rgba(120, 120, 128, 0.36);
+  --ios-fill-secondary: rgba(120, 120, 128, 0.32);
+  --ios-fill-tertiary: rgba(118, 118, 128, 0.24);
+  --ios-fill-quaternary: rgba(118, 118, 128, 0.18);
+
+  --ios-separator: rgba(84, 84, 88, 0.6);
+  --ios-separator-opaque: #38383a;
+}
+
+/* ───────────────────────────────────────────────────────────────────── */
+
 /* ===== COMPLY V2 PALANTIR-INSPIRED SURFACES ===== */
 /* Dark-mode only V2 chrome, evoking Palantir AI Hivemind look:
  *  - palantir-canvas: deep navy/black background with subtle dot-grid
@@ -1962,6 +2053,21 @@ html:not(.dark) .dashboard-wallpaper {
   display: none;
 }
 
+/* ─── SVG-DISPLACEMENT LENS — Chromium progressive enhancement ──────── */
+/* True Apple Lensing: refracts the photo wallpaper through the chrome
+ * edges (not just blurs it). Backdrop-filter url() is Chromium-only;
+ * Safari/Firefox fall through to the regular blur+saturate stack via
+ * the @supports gate. The displacement is intentionally subtle (scale
+ * 12) — Apple's own Liquid Glass refraction is barely perceptible
+ * unless you're watching for it.                                        */
+@supports (backdrop-filter: url("#caelex-liquid-lens")) {
+  .comply-photo-wallpaper .apple-chrome-surface {
+    backdrop-filter: url("#caelex-liquid-lens") blur(28px) saturate(180%);
+    -webkit-backdrop-filter: url("#caelex-liquid-lens") blur(28px)
+      saturate(180%);
+  }
+}
+
 /* ─── COMPLY DARK CANVAS — Apple-HIG-aligned non-photo backdrop ─────── */
 /* Used on every V2 dashboard route OTHER than /today. Pure dark with a
  * subtle radial accent so the chrome reads as Liquid Glass against
@@ -2004,41 +2110,62 @@ html:not(.dark) .dashboard-wallpaper {
   display: none;
 }
 
-/* ─── APPLE CHROME TOKENS — Sidebar / TopBar in dark ────────────────── */
-/* Apple HIG: chrome should be deferential to content. Translucent,
- * hairline borders, selection-tint actives (no chunky stripes), tight
- * SF-style typography. These classes are dark-only — light mode
- * (when reintroduced) will get its own bridge.                          */
+/* ─── APPLE LIQUID GLASS — Sidebar / TopBar (dark mode) ─────────────── */
+/* True Apple Liquid Glass per WWDC25 sessions 219/356:
+ *   - Translucent material (Regular Glass) — never solid.
+ *   - Specular rim highlight (the inset 1px white top edge —
+ *     the single most "Apple" detail, missing from 99% of
+ *     glassmorphism on the web).
+ *   - Concentric squircle corners via corner-shape (Chrome 139+),
+ *     plain rounded-rect fallback elsewhere.
+ *   - saturate(180%) — Apple-spec, not the generic 1.2-1.4 most
+ *     glassmorphism libraries use.
+ *   - iOS color tokens (--ios-label-*, --ios-fill-*) so the active
+ *     state and hover wash use the canonical neutral-with-blue-tint
+ *     palette instead of generic white opacity.                          */
 
 .apple-chrome-surface {
-  background: rgba(18, 20, 28, 0.62);
-  backdrop-filter: blur(40px) saturate(1.6);
-  -webkit-backdrop-filter: blur(40px) saturate(1.6);
-  border-color: rgba(255, 255, 255, 0.06);
+  background: rgba(28, 28, 30, 0.55); /* secondarySystemBackground @ 55% */
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-color: rgba(255, 255, 255, 0.08);
+  /* Specular rim — the defining Apple detail.
+     Top edge: bright white inner highlight ("light catches the bezel").
+     Bottom edge: dark inner hint (volumetric depth).
+     Plus subtle 0.5px hairline outline + soft drop-shadow.              */
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.06),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
+    inset 0 -0.5px 0 0 rgba(0, 0, 0, 0.5),
+    0 16px 40px -8px rgba(0, 0, 0, 0.55);
 }
 
 .apple-chrome-divider {
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: var(--ios-separator);
 }
 
 /* Selection-tint for active nav rows. Apple's active-row treatment is a
- * subtle white wash — never an accent stripe, never a colored border.   */
+ * subtle white wash — never an accent stripe, never a colored border.
+ * Mapped to --ios-fill-tertiary for dark-mode-correct legibility.       */
 .apple-nav-active {
-  background-color: rgba(255, 255, 255, 0.085);
-  color: rgba(255, 255, 255, 0.98);
+  background-color: var(--ios-fill-tertiary);
+  color: var(--ios-label);
 }
 
 .apple-nav-idle {
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--ios-label-secondary);
+  transition:
+    color var(--duration-base) var(--ease-smooth),
+    background-color var(--duration-base) var(--ease-smooth);
 }
 
 .apple-nav-idle:hover {
-  background-color: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.92);
+  background-color: var(--ios-fill-quaternary);
+  color: var(--ios-label);
 }
 
 .apple-nav-section-label {
-  color: rgba(255, 255, 255, 0.36);
+  color: var(--ios-label-tertiary);
   letter-spacing: 0.04em;
   font-size: 10px;
   text-transform: uppercase;
@@ -2046,37 +2173,93 @@ html:not(.dark) .dashboard-wallpaper {
 }
 
 .apple-icon-btn {
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--ios-label-secondary);
   transition:
-    color 160ms ease,
-    background-color 160ms ease;
+    color var(--duration-base) var(--ease-smooth),
+    background-color var(--duration-base) var(--ease-smooth),
+    transform var(--duration-fast) var(--ease-smooth);
 }
 
 .apple-icon-btn:hover {
-  color: rgba(255, 255, 255, 0.95);
-  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--ios-label);
+  background-color: var(--ios-fill-quaternary);
+}
+
+.apple-icon-btn:active {
+  transform: scale(0.94);
 }
 
 .apple-search-pill {
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.55);
-  transition: background-color 160ms ease;
+  background: var(--ios-fill-quaternary);
+  color: var(--ios-label-secondary);
+  transition: background-color var(--duration-base) var(--ease-smooth);
 }
 
 .apple-search-pill:hover {
-  background: rgba(255, 255, 255, 0.07);
-  color: rgba(255, 255, 255, 0.85);
+  background: var(--ios-fill-tertiary);
+  color: var(--ios-label);
 }
 
 .apple-kbd {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.7);
+  background: var(--ios-fill-secondary);
+  color: var(--ios-label-secondary);
   border-radius: 4px;
   padding: 2px 5px;
   font-size: 10px;
-  font-family: -apple-system, system-ui, sans-serif;
+  font-family: -apple-system, "SF Pro Text", system-ui, sans-serif;
   font-weight: 500;
   line-height: 1;
+}
+
+/* Concentric squircle corners — Chrome 139+ progressive enhancement.
+   Falls through to standard rounded-rect on Safari/Firefox.            */
+@supports (corner-shape: squircle) {
+  .apple-chrome-surface,
+  .apple-search-pill,
+  .apple-icon-btn,
+  .apple-kbd,
+  .apple-nav-active,
+  .apple-nav-idle {
+    corner-shape: squircle;
+  }
+}
+
+/* ─── ACCESSIBILITY — Liquid Glass fallbacks ────────────────────────── */
+
+/* Reduced transparency: per Apple HIG, swap glass for opaque surface.
+   Per session 219: "Reduced Transparency makes Liquid Glass frostier
+   and obscures more of the content behind it."                         */
+@media (prefers-reduced-transparency: reduce) {
+  .apple-chrome-surface {
+    background: rgb(28, 28, 30);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* Increased contrast: opaque labels + stronger borders. */
+@media (prefers-contrast: more) {
+  .apple-chrome-surface {
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+  .apple-nav-active {
+    background-color: rgba(255, 255, 255, 0.18);
+  }
+  .apple-nav-idle {
+    color: rgba(255, 255, 255, 0.85);
+  }
+}
+
+/* Reduced motion: drop springs, keep crossfades. */
+@media (prefers-reduced-motion: reduce) {
+  .apple-nav-idle,
+  .apple-icon-btn,
+  .apple-search-pill {
+    transition-duration: 0ms !important;
+  }
+  .apple-icon-btn:active {
+    transform: none !important;
+  }
 }
 
 /* ─── Light Mode Liquid Glass Classes ─── */
