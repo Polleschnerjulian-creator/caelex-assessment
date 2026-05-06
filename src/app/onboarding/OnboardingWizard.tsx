@@ -15,11 +15,27 @@ import {
   Database,
   Radio,
   Check,
-  User,
-  Briefcase,
+  Plus,
+  Trash2,
+  Sparkles,
 } from "lucide-react";
 
-// ─── Operator type definitions ───
+/**
+ * Comply onboarding wizard — Apple-HIG dark theme.
+ *
+ * Four steps:
+ *   1. Profile        — name + job title
+ *   2. Organization   — name + jurisdiction + operator type
+ *   3. Spacecraft     — N rows of {name, missionType, orbitType,
+ *                       status, optional NORAD-id}
+ *   4. Done           — summary card + "Open Today" CTA
+ *
+ * After step 4 we POST /api/onboarding/complete and redirect.
+ *
+ * Step 3 (Spacecraft) lets the user skip if they're not yet
+ * pre-launch. Skipping still completes the wizard but the Today
+ * inbox will surface "Add your spacecraft" as the next CTA.
+ */
 
 const OPERATOR_TYPES = [
   {
@@ -80,61 +96,101 @@ const COUNTRIES = [
   { code: "OTHER", label: "Other" },
 ] as const;
 
-// ─── Step indicator ───
+const MISSION_TYPES = [
+  { value: "communication", label: "Communications" },
+  { value: "earth_observation", label: "Earth observation" },
+  { value: "navigation", label: "Navigation / PNT" },
+  { value: "science", label: "Science" },
+  { value: "sar", label: "Synthetic Aperture Radar" },
+  { value: "technology_demonstration", label: "Technology demo" },
+  { value: "other", label: "Other" },
+] as const;
+
+const ORBIT_TYPES = [
+  { value: "LEO", label: "LEO (Low Earth Orbit)" },
+  { value: "MEO", label: "MEO (Medium Earth Orbit)" },
+  { value: "GEO", label: "GEO (Geostationary)" },
+  { value: "HEO", label: "Highly Elliptical Orbit" },
+] as const;
+
+interface SpacecraftDraft {
+  id: string; // local-only key for React
+  name: string;
+  missionType: string;
+  orbitType: string;
+  status: "PRE_LAUNCH" | "LAUNCHED" | "OPERATIONAL";
+  noradId: string;
+  launchDate: string;
+}
+
+const SANS_FONT =
+  'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif';
+const DISPLAY_FONT =
+  'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif';
+
+function emptySpacecraft(): SpacecraftDraft {
+  return {
+    id: Math.random().toString(36).slice(2),
+    name: "",
+    missionType: "communication",
+    orbitType: "LEO",
+    status: "PRE_LAUNCH",
+    noradId: "",
+    launchDate: "",
+  };
+}
+
+// ─── Step indicator (Apple-style: dots, no green ticks) ──────────────
 
 function StepIndicator({ current, total }: { current: number; total: number }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5">
       {Array.from({ length: total }, (_, i) => (
-        <div key={i} className="flex items-center gap-2">
-          <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors duration-300 ${
-              i < current
-                ? "bg-emerald-500 text-white"
-                : i === current
-                  ? "bg-[#111827] text-white"
-                  : "bg-[#E5E7EB] text-[#9CA3AF]"
-            }`}
-          >
-            {i < current ? <Check className="w-4 h-4" /> : i + 1}
-          </div>
-          {i < total - 1 && (
-            <div
-              className={`w-12 h-[2px] transition-colors duration-300 ${
-                i < current ? "bg-emerald-500" : "bg-[#E5E7EB]"
-              }`}
-            />
-          )}
-        </div>
+        <span
+          key={i}
+          aria-hidden
+          className="h-1.5 rounded-full transition-all duration-300"
+          style={{
+            width: i === current ? 18 : 6,
+            background:
+              i <= current
+                ? "rgba(255, 255, 255, 0.92)"
+                : "rgba(255, 255, 255, 0.16)",
+          }}
+        />
       ))}
     </div>
   );
 }
 
-// ─── Main wizard ───
+// ─── Main wizard ─────────────────────────────────────────────────────
 
 export default function OnboardingWizard() {
   const { data: session } = useSession();
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [direction, setDirection] = useState(1);
 
-  // Step 1 state
   const firstName = session?.user?.name?.split(" ")[0] || "";
-  const [fullName, setFullName] = useState("");
+
+  // Step 1
+  const [fullName, setFullName] = useState(session?.user?.name || "");
   const [jobTitle, setJobTitle] = useState("");
 
-  // Step 2 state
+  // Step 2
   const [orgName, setOrgName] = useState("");
   const [country, setCountry] = useState("");
   const [operatorType, setOperatorType] = useState("");
 
-  // Initialize from session once available
-  const [initialized, setInitialized] = useState(false);
-  if (session?.user && !initialized) {
-    if (session.user.name && !fullName) setFullName(session.user.name);
-    setInitialized(true);
-  }
+  // Step 3
+  const [spacecraft, setSpacecraft] = useState<SpacecraftDraft[]>([
+    emptySpacecraft(),
+  ]);
+  const [skippedSpacecraft, setSkippedSpacecraft] = useState(false);
+  const [savedSpacecraftCount, setSavedSpacecraftCount] = useState(0);
+
+  // ── Step transitions ──
 
   const handleStep1Next = async () => {
     if (!fullName.trim()) return;
@@ -148,20 +204,19 @@ export default function OnboardingWizard() {
           jobTitle: jobTitle.trim() || undefined,
         }),
       });
-      setStep(1);
     } catch {
-      // Silently continue — profile update is non-critical
-      setStep(1);
-    } finally {
-      setSaving(false);
+      // Non-critical; continue.
     }
+    setSaving(false);
+    setDirection(1);
+    setStep(1);
   };
 
   const handleStep2Next = async () => {
     if (!orgName.trim() || !country || !operatorType) return;
     setSaving(true);
     try {
-      const res = await fetch("/api/onboarding/organization", {
+      await fetch("/api/onboarding/organization", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -170,14 +225,64 @@ export default function OnboardingWizard() {
           operatorType,
         }),
       });
-      if (!res.ok) throw new Error("Failed to save");
-      setStep(2);
     } catch {
-      // Still allow proceeding
-      setStep(2);
-    } finally {
-      setSaving(false);
+      // Continue regardless.
     }
+    setSaving(false);
+    setDirection(1);
+    setStep(2);
+  };
+
+  const handleStep3Next = async (skip = false) => {
+    if (skip) {
+      setSkippedSpacecraft(true);
+      setSavedSpacecraftCount(0);
+      setDirection(1);
+      setStep(3);
+      return;
+    }
+
+    const valid = spacecraft.filter((s) => s.name.trim().length > 0);
+    if (valid.length === 0) {
+      // Treat as skip if all rows empty.
+      setSkippedSpacecraft(true);
+      setSavedSpacecraftCount(0);
+      setDirection(1);
+      setStep(3);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const payload = {
+        spacecraft: valid.map((s) => ({
+          name: s.name.trim(),
+          missionType: s.missionType,
+          orbitType: s.orbitType,
+          status: s.status,
+          launchDate: s.launchDate
+            ? new Date(s.launchDate).toISOString()
+            : null,
+          noradId: s.noradId.trim() || null,
+        })),
+      };
+      const res = await fetch("/api/onboarding/spacecraft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSavedSpacecraftCount(data.count ?? valid.length);
+      } else {
+        setSavedSpacecraftCount(0);
+      }
+    } catch {
+      setSavedSpacecraftCount(0);
+    }
+    setSaving(false);
+    setDirection(1);
+    setStep(3);
   };
 
   const handleComplete = async (destination: string) => {
@@ -190,29 +295,15 @@ export default function OnboardingWizard() {
     router.push(destination);
   };
 
-  const slideVariants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? 80 : -80,
-      opacity: 0,
-    }),
-    center: { x: 0, opacity: 1 },
-    exit: (direction: number) => ({
-      x: direction > 0 ? -80 : 80,
-      opacity: 0,
-    }),
-  };
-
-  const [direction, setDirection] = useState(1);
-
-  const goNext = () => {
-    setDirection(1);
-    if (step === 0) handleStep1Next();
-    else if (step === 1) handleStep2Next();
-  };
-
   const goBack = () => {
     setDirection(-1);
     setStep((s) => Math.max(0, s - 1));
+  };
+
+  const goNext = () => {
+    if (step === 0) handleStep1Next();
+    else if (step === 1) handleStep2Next();
+    else if (step === 2) handleStep3Next(false);
   };
 
   const canContinue =
@@ -220,22 +311,73 @@ export default function OnboardingWizard() {
       ? fullName.trim().length > 0
       : step === 1
         ? orgName.trim().length > 0 && country && operatorType
-        : true;
+        : true; // Step 2 (Spacecraft) always allows continue (skip path)
+
+  // ── Spacecraft helpers ──
+
+  const addSpacecraft = () => {
+    if (spacecraft.length >= 12) return;
+    setSpacecraft((sc) => [...sc, emptySpacecraft()]);
+  };
+
+  const removeSpacecraft = (id: string) => {
+    setSpacecraft((sc) =>
+      sc.length === 1 ? sc : sc.filter((s) => s.id !== id),
+    );
+  };
+
+  const updateSpacecraft = (id: string, patch: Partial<SpacecraftDraft>) => {
+    setSpacecraft((sc) =>
+      sc.map((s) => (s.id === id ? { ...s, ...patch } : s)),
+    );
+  };
+
+  const slideVariants = {
+    enter: (dir: number) => ({ x: dir > 0 ? 60 : -60, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (dir: number) => ({ x: dir > 0 ? -60 : 60, opacity: 0 }),
+  };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div
+      className="dark min-h-screen flex flex-col"
+      style={{
+        fontFamily: SANS_FONT,
+        letterSpacing: "-0.005em",
+        background:
+          "radial-gradient(ellipse 1400px 900px at 100% 0%, rgba(255,255,255,0.04) 0%, transparent 60%), radial-gradient(ellipse 1100px 800px at 0% 100%, rgba(255,255,255,0.025) 0%, transparent 55%), #0a0c12",
+        color: "rgba(255, 255, 255, 0.92)",
+      }}
+    >
       {/* Top bar */}
-      <header className="flex items-center justify-between px-8 py-6 border-b border-[#F0F1F3]">
-        <span className="text-[15px] font-semibold tracking-[-0.02em] text-[#111827]">
-          CAELEX
+      <header
+        className="flex items-center justify-between px-8 py-6"
+        style={{ borderBottom: "0.5px solid rgba(255, 255, 255, 0.08)" }}
+      >
+        <span
+          className="text-[15px] font-semibold text-white"
+          style={{ letterSpacing: "-0.02em" }}
+        >
+          Caelex
+          <span
+            className="ml-1.5 font-normal"
+            style={{ color: "rgba(255, 255, 255, 0.4)" }}
+          >
+            Comply
+          </span>
         </span>
-        <StepIndicator current={step} total={3} />
-        <span className="text-[13px] text-[#9CA3AF]">Step {step + 1} of 3</span>
+        <StepIndicator current={step} total={4} />
+        <span
+          className="text-[12px]"
+          style={{ color: "rgba(255, 255, 255, 0.45)" }}
+        >
+          Step {step + 1} of 4
+        </span>
       </header>
 
       {/* Content */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-[560px]">
+      <div className="flex-1 flex items-start justify-center px-6 py-12">
+        <div className="w-full max-w-[600px]">
           <AnimatePresence mode="wait" custom={direction}>
             {step === 0 && (
               <motion.div
@@ -245,50 +387,41 @@ export default function OnboardingWizard() {
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
               >
-                <div className="mb-2">
-                  <span className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.2em] text-[#9CA3AF]">
-                    <User className="w-3.5 h-3.5" />
-                    Your Profile
-                  </span>
-                </div>
-                <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-[-0.03em] text-[#111827] leading-[1.1] mb-3">
+                <h1
+                  className="text-[34px] font-semibold text-white"
+                  style={{
+                    fontFamily: DISPLAY_FONT,
+                    letterSpacing: "-0.022em",
+                    lineHeight: 1.1,
+                  }}
+                >
                   Welcome{firstName ? `, ${firstName}` : ""}
                 </h1>
-                <p className="text-[15px] text-[#6B7280] mb-10 leading-relaxed">
-                  Let&apos;s set up your compliance workspace. This takes about
-                  30 seconds.
+                <p
+                  className="mt-2 mb-10 text-[15px] leading-relaxed"
+                  style={{ color: "rgba(255, 255, 255, 0.55)" }}
+                >
+                  Let&apos;s set up your compliance workspace. Takes about a
+                  minute.
                 </p>
 
                 <div className="space-y-5">
-                  <div>
-                    <label className="block text-[13px] font-medium text-[#374151] mb-1.5">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg border border-[#E5E7EB] text-[14px] text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
-                      placeholder="Your full name"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[13px] font-medium text-[#374151] mb-1.5">
-                      Job Title{" "}
-                      <span className="text-[#9CA3AF] font-normal">
-                        (optional)
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      value={jobTitle}
-                      onChange={(e) => setJobTitle(e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg border border-[#E5E7EB] text-[14px] text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
-                      placeholder="e.g. Compliance Officer"
-                    />
-                  </div>
+                  <FormField
+                    label="Full name"
+                    value={fullName}
+                    onChange={setFullName}
+                    placeholder="Your full name"
+                    autoFocus
+                  />
+                  <FormField
+                    label="Job title"
+                    optional
+                    value={jobTitle}
+                    onChange={setJobTitle}
+                    placeholder="e.g. Compliance Officer"
+                  />
                 </div>
               </motion.div>
             )}
@@ -301,59 +434,50 @@ export default function OnboardingWizard() {
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
               >
-                <div className="mb-2">
-                  <span className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.2em] text-[#9CA3AF]">
-                    <Briefcase className="w-3.5 h-3.5" />
-                    Organization
-                  </span>
-                </div>
-                <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-[-0.03em] text-[#111827] leading-[1.1] mb-3">
+                <h1
+                  className="text-[34px] font-semibold text-white"
+                  style={{
+                    fontFamily: DISPLAY_FONT,
+                    letterSpacing: "-0.022em",
+                    lineHeight: 1.1,
+                  }}
+                >
                   Your organization
                 </h1>
-                <p className="text-[15px] text-[#6B7280] mb-10 leading-relaxed">
-                  This helps us tailor your compliance assessment to your
-                  specific regulatory requirements.
+                <p
+                  className="mt-2 mb-8 text-[15px] leading-relaxed"
+                  style={{ color: "rgba(255, 255, 255, 0.55)" }}
+                >
+                  This tailors your compliance assessment to the regulations
+                  that actually apply to you.
                 </p>
 
-                <div className="space-y-6">
+                <div className="space-y-5">
+                  <FormField
+                    label="Organization name"
+                    value={orgName}
+                    onChange={setOrgName}
+                    placeholder="Your company name"
+                    autoFocus
+                  />
+                  <SelectField
+                    label="Primary jurisdiction"
+                    value={country}
+                    onChange={setCountry}
+                    options={COUNTRIES.map((c) => ({
+                      value: c.code,
+                      label: c.label,
+                    }))}
+                    placeholder="Select country"
+                  />
                   <div>
-                    <label className="block text-[13px] font-medium text-[#374151] mb-1.5">
-                      Organization Name
-                    </label>
-                    <input
-                      type="text"
-                      value={orgName}
-                      onChange={(e) => setOrgName(e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg border border-[#E5E7EB] text-[14px] text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
-                      placeholder="Your company name"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[13px] font-medium text-[#374151] mb-1.5">
-                      Primary Jurisdiction
-                    </label>
-                    <select
-                      value={country}
-                      onChange={(e) => setCountry(e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg border border-[#E5E7EB] text-[14px] text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors appearance-none"
+                    <label
+                      className="mb-2 block text-[13px] font-medium"
+                      style={{ color: "rgba(255, 255, 255, 0.85)" }}
                     >
-                      <option value="" disabled>
-                        Select country
-                      </option>
-                      {COUNTRIES.map((c) => (
-                        <option key={c.code} value={c.code}>
-                          {c.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-[13px] font-medium text-[#374151] mb-3">
-                      Operator Type
+                      Operator type
                     </label>
                     <div className="grid grid-cols-1 gap-2">
                       {OPERATOR_TYPES.map((op) => {
@@ -364,32 +488,53 @@ export default function OnboardingWizard() {
                             key={op.code}
                             type="button"
                             onClick={() => setOperatorType(op.code)}
-                            className={`flex items-center gap-4 px-4 py-3 rounded-lg border text-left transition-all duration-200 ${
-                              selected
-                                ? "border-emerald-500 bg-emerald-50 ring-2 ring-emerald-500/20"
-                                : "border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-[#FAFAFA]"
-                            }`}
+                            className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-left transition-colors"
+                            style={{
+                              background: selected
+                                ? "rgba(255, 255, 255, 0.08)"
+                                : "rgba(255, 255, 255, 0.03)",
+                              boxShadow: selected
+                                ? "inset 0 1px 0 0 rgba(255, 255, 255, 0.18), 0 0 0 0.5px rgba(255, 255, 255, 0.18)"
+                                : "inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+                            }}
                           >
                             <Icon
-                              className={`w-5 h-5 flex-shrink-0 ${selected ? "text-emerald-600" : "text-[#9CA3AF]"}`}
-                              strokeWidth={1.5}
+                              className="h-4 w-4 shrink-0"
+                              strokeWidth={1.75}
+                              style={{
+                                color: selected
+                                  ? "rgba(255, 255, 255, 0.95)"
+                                  : "rgba(255, 255, 255, 0.5)",
+                              }}
                             />
-                            <div className="min-w-0">
+                            <div className="min-w-0 flex-1">
                               <div
-                                className={`text-[13px] font-medium ${selected ? "text-emerald-900" : "text-[#111827]"}`}
+                                className="text-[13.5px] font-medium"
+                                style={{
+                                  color: selected
+                                    ? "rgba(255, 255, 255, 0.95)"
+                                    : "rgba(255, 255, 255, 0.85)",
+                                  letterSpacing: "-0.005em",
+                                }}
                               >
                                 {op.label}
-                                <span className="ml-2 text-[11px] font-mono text-[#9CA3AF]">
-                                  {op.code}
-                                </span>
                               </div>
-                              <div className="text-[12px] text-[#6B7280]">
+                              <div
+                                className="text-[12px]"
+                                style={{
+                                  color: "rgba(255, 255, 255, 0.45)",
+                                }}
+                              >
                                 {op.description}
                               </div>
                             </div>
-                            {selected && (
-                              <Check className="w-4 h-4 text-emerald-500 flex-shrink-0 ml-auto" />
-                            )}
+                            {selected ? (
+                              <Check
+                                className="h-3.5 w-3.5 shrink-0"
+                                strokeWidth={2.2}
+                                style={{ color: "rgba(255, 255, 255, 0.95)" }}
+                              />
+                            ) : null}
                           </button>
                         );
                       })}
@@ -407,79 +552,172 @@ export default function OnboardingWizard() {
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
               >
-                <div className="mb-2">
-                  <span className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.2em] text-[#9CA3AF]">
-                    <Check className="w-3.5 h-3.5" />
-                    Ready
-                  </span>
-                </div>
-                <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-[-0.03em] text-[#111827] leading-[1.1] mb-3">
-                  You&apos;re all set
+                <h1
+                  className="text-[34px] font-semibold text-white"
+                  style={{
+                    fontFamily: DISPLAY_FONT,
+                    letterSpacing: "-0.022em",
+                    lineHeight: 1.1,
+                  }}
+                >
+                  Your spacecraft
                 </h1>
-                <p className="text-[15px] text-[#6B7280] mb-10 leading-relaxed">
-                  Your workspace is configured. Start your compliance assessment
-                  to get a full regulatory profile.
+                <p
+                  className="mt-2 mb-8 text-[15px] leading-relaxed"
+                  style={{ color: "rgba(255, 255, 255, 0.55)" }}
+                >
+                  Add the spacecraft you operate (or plan to). We&apos;ll
+                  generate compliance items for each one based on your
+                  jurisdiction.
                 </p>
 
-                {/* Summary card */}
-                <div className="rounded-xl border border-[#E5E7EB] bg-[#FAFAFA] p-6 mb-10">
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-[13px]">
-                      <span className="text-[#6B7280]">Name</span>
-                      <span className="font-medium text-[#111827]">
-                        {fullName}
-                      </span>
-                    </div>
-                    {jobTitle && (
-                      <div className="flex justify-between text-[13px]">
-                        <span className="text-[#6B7280]">Role</span>
-                        <span className="font-medium text-[#111827]">
-                          {jobTitle}
-                        </span>
-                      </div>
-                    )}
-                    <div className="border-t border-[#E5E7EB]" />
-                    <div className="flex justify-between text-[13px]">
-                      <span className="text-[#6B7280]">Organization</span>
-                      <span className="font-medium text-[#111827]">
-                        {orgName}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-[13px]">
-                      <span className="text-[#6B7280]">Jurisdiction</span>
-                      <span className="font-medium text-[#111827]">
-                        {COUNTRIES.find((c) => c.code === country)?.label ||
-                          country}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-[13px]">
-                      <span className="text-[#6B7280]">Operator Type</span>
-                      <span className="font-medium text-[#111827]">
-                        {OPERATOR_TYPES.find((o) => o.code === operatorType)
-                          ?.label || operatorType}
-                      </span>
-                    </div>
-                  </div>
+                <div className="space-y-3">
+                  {spacecraft.map((sc, idx) => (
+                    <SpacecraftRow
+                      key={sc.id}
+                      index={idx}
+                      total={spacecraft.length}
+                      data={sc}
+                      onChange={(patch) => updateSpacecraft(sc.id, patch)}
+                      onRemove={() => removeSpacecraft(sc.id)}
+                      removable={spacecraft.length > 1}
+                    />
+                  ))}
                 </div>
 
-                {/* CTAs */}
-                <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={addSpacecraft}
+                  disabled={spacecraft.length >= 12}
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors disabled:opacity-40"
+                  style={{
+                    background: "rgba(255, 255, 255, 0.04)",
+                    color: "rgba(255, 255, 255, 0.85)",
+                  }}
+                >
+                  <Plus className="h-3.5 w-3.5" strokeWidth={2.2} />
+                  Add another spacecraft
+                  {spacecraft.length >= 12 ? " (max 12)" : ""}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleStep3Next(true)}
+                  className="mt-3 ml-3 text-[13px] font-medium underline-offset-4 hover:underline"
+                  style={{ color: "rgba(255, 255, 255, 0.5)" }}
+                >
+                  Skip — I&apos;ll add later
+                </button>
+              </motion.div>
+            )}
+
+            {step === 3 && (
+              <motion.div
+                key="step-3"
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+              >
+                <div
+                  className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl"
+                  style={{
+                    background: "rgba(255, 255, 255, 0.06)",
+                    boxShadow:
+                      "inset 0 1px 0 0 rgba(255, 255, 255, 0.18), inset 0 -1px 0 0 rgba(0, 0, 0, 0.3)",
+                  }}
+                >
+                  <Sparkles
+                    className="h-6 w-6"
+                    strokeWidth={1.75}
+                    style={{ color: "rgba(255, 255, 255, 0.92)" }}
+                  />
+                </div>
+                <h1
+                  className="text-[34px] font-semibold text-white"
+                  style={{
+                    fontFamily: DISPLAY_FONT,
+                    letterSpacing: "-0.022em",
+                    lineHeight: 1.1,
+                  }}
+                >
+                  You&apos;re all set
+                </h1>
+                <p
+                  className="mt-2 mb-8 text-[15px] leading-relaxed"
+                  style={{ color: "rgba(255, 255, 255, 0.55)" }}
+                >
+                  {savedSpacecraftCount > 0
+                    ? `Workspace configured with ${savedSpacecraftCount} spacecraft. Run an applicability assessment next to populate your Today inbox with compliance items.`
+                    : skippedSpacecraft
+                      ? "Workspace configured. Add spacecraft anytime from the Missions tab. Run an applicability assessment to start tracking compliance."
+                      : "Workspace configured. Run an applicability assessment to start tracking compliance."}
+                </p>
+
+                <div
+                  className="rounded-2xl p-5 mb-8"
+                  style={{
+                    background: "rgba(255, 255, 255, 0.03)",
+                    boxShadow:
+                      "inset 0 1px 0 0 rgba(255, 255, 255, 0.06), 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+                  }}
+                >
+                  <SummaryRow label="Name" value={fullName} />
+                  {jobTitle ? (
+                    <SummaryRow label="Role" value={jobTitle} />
+                  ) : null}
+                  <SummaryDivider />
+                  <SummaryRow label="Organization" value={orgName} />
+                  <SummaryRow
+                    label="Jurisdiction"
+                    value={
+                      COUNTRIES.find((c) => c.code === country)?.label ||
+                      country
+                    }
+                  />
+                  <SummaryRow
+                    label="Operator type"
+                    value={
+                      OPERATOR_TYPES.find((o) => o.code === operatorType)
+                        ?.label || operatorType
+                    }
+                  />
+                  <SummaryDivider />
+                  <SummaryRow
+                    label="Spacecraft"
+                    value={
+                      savedSpacecraftCount > 0
+                        ? `${savedSpacecraftCount} added`
+                        : "None yet"
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
                   <button
                     onClick={() => handleComplete("/assessment/unified")}
                     disabled={saving}
-                    className="w-full flex items-center justify-center gap-3 bg-[#111827] text-white rounded-lg px-6 py-4 text-[15px] font-medium hover:bg-[#1E293B] transition-colors disabled:opacity-50"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-[15px] font-semibold transition-colors disabled:opacity-50"
+                    style={{
+                      background: "rgba(255, 255, 255, 0.92)",
+                      color: "rgb(20, 20, 22)",
+                      letterSpacing: "-0.011em",
+                    }}
                   >
-                    Start Compliance Assessment
-                    <ArrowRight className="w-4 h-4" />
+                    Run applicability assessment
+                    <ArrowRight className="h-4 w-4" strokeWidth={2.2} />
                   </button>
                   <button
-                    onClick={() => handleComplete("/dashboard")}
+                    onClick={() => handleComplete("/dashboard/today")}
                     disabled={saving}
-                    className="w-full text-center text-[13px] text-[#6B7280] hover:text-[#111827] transition-colors py-2"
+                    className="w-full text-center text-[13px] font-medium py-2 transition-colors hover:text-white"
+                    style={{ color: "rgba(255, 255, 255, 0.55)" }}
                   >
-                    Skip to Dashboard
+                    Skip — open my Today inbox
                   </button>
                 </div>
               </motion.div>
@@ -488,30 +726,317 @@ export default function OnboardingWizard() {
         </div>
       </div>
 
-      {/* Bottom bar */}
-      {step < 2 && (
-        <footer className="flex items-center justify-between px-8 py-6 border-t border-[#F0F1F3]">
+      {/* Bottom bar — only shown on steps 0-2 (step 3 has its own CTAs) */}
+      {step < 3 ? (
+        <footer
+          className="flex items-center justify-between px-8 py-5"
+          style={{ borderTop: "0.5px solid rgba(255, 255, 255, 0.08)" }}
+        >
           <div>
-            {step > 0 && (
+            {step > 0 ? (
               <button
                 onClick={goBack}
-                className="flex items-center gap-2 text-[13px] text-[#6B7280] hover:text-[#111827] transition-colors"
+                className="inline-flex items-center gap-1.5 text-[13px] font-medium transition-colors hover:text-white"
+                style={{ color: "rgba(255, 255, 255, 0.55)" }}
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2.2} />
                 Back
               </button>
-            )}
+            ) : null}
           </div>
           <button
             onClick={goNext}
             disabled={!canContinue || saving}
-            className="flex items-center gap-2 bg-[#111827] text-white rounded-lg px-6 py-2.5 text-[14px] font-medium hover:bg-[#1E293B] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-[14px] font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{
+              background: "rgba(255, 255, 255, 0.92)",
+              color: "rgb(20, 20, 22)",
+              letterSpacing: "-0.011em",
+            }}
           >
-            {saving ? "Saving..." : "Continue"}
-            <ArrowRight className="w-4 h-4" />
+            {saving ? "Saving…" : "Continue"}
+            <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.2} />
           </button>
         </footer>
-      )}
+      ) : null}
     </div>
+  );
+}
+
+// ─── Small subcomponents ─────────────────────────────────────────────
+
+function FormField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  optional,
+  autoFocus,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  optional?: boolean;
+  autoFocus?: boolean;
+}) {
+  return (
+    <div>
+      <label
+        className="mb-1.5 block text-[13px] font-medium"
+        style={{ color: "rgba(255, 255, 255, 0.85)" }}
+      >
+        {label}
+        {optional ? (
+          <span
+            className="ml-1.5 font-normal"
+            style={{ color: "rgba(255, 255, 255, 0.4)" }}
+          >
+            (optional)
+          </span>
+        ) : null}
+      </label>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        autoFocus={autoFocus}
+        className="w-full rounded-lg px-3.5 py-2.5 text-[14px] outline-none transition-colors placeholder:text-white/30"
+        style={{
+          background: "rgba(255, 255, 255, 0.04)",
+          color: "rgba(255, 255, 255, 0.95)",
+          boxShadow: "inset 0 0 0 0.5px rgba(255, 255, 255, 0.08)",
+        }}
+      />
+    </div>
+  );
+}
+
+function SelectField({
+  label,
+  value,
+  onChange,
+  options,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: Array<{ value: string; label: string }>;
+  placeholder?: string;
+}) {
+  return (
+    <div>
+      <label
+        className="mb-1.5 block text-[13px] font-medium"
+        style={{ color: "rgba(255, 255, 255, 0.85)" }}
+      >
+        {label}
+      </label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-lg px-3.5 py-2.5 text-[14px] outline-none transition-colors"
+        style={{
+          background: "rgba(255, 255, 255, 0.04)",
+          color: value
+            ? "rgba(255, 255, 255, 0.95)"
+            : "rgba(255, 255, 255, 0.4)",
+          boxShadow: "inset 0 0 0 0.5px rgba(255, 255, 255, 0.08)",
+        }}
+      >
+        <option value="" disabled>
+          {placeholder ?? "Select…"}
+        </option>
+        {options.map((o) => (
+          <option key={o.value} value={o.value} style={{ color: "#000" }}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function SpacecraftRow({
+  index,
+  total,
+  data,
+  onChange,
+  onRemove,
+  removable,
+}: {
+  index: number;
+  total: number;
+  data: SpacecraftDraft;
+  onChange: (patch: Partial<SpacecraftDraft>) => void;
+  onRemove: () => void;
+  removable: boolean;
+}) {
+  return (
+    <div
+      className="rounded-xl p-4"
+      style={{
+        background: "rgba(255, 255, 255, 0.03)",
+        boxShadow:
+          "inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+      }}
+    >
+      <div className="mb-3 flex items-center justify-between">
+        <span
+          className="text-[11px] font-semibold uppercase"
+          style={{
+            color: "rgba(255, 255, 255, 0.45)",
+            letterSpacing: "0.06em",
+          }}
+        >
+          Spacecraft {index + 1}
+          {total > 1 ? ` of ${total}` : ""}
+        </span>
+        {removable ? (
+          <button
+            type="button"
+            onClick={onRemove}
+            aria-label="Remove spacecraft"
+            className="rounded p-1 transition-colors"
+            style={{ color: "rgba(255, 255, 255, 0.4)" }}
+          >
+            <Trash2 className="h-3.5 w-3.5" strokeWidth={2} />
+          </button>
+        ) : null}
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="sm:col-span-2">
+          <FormField
+            label="Name"
+            value={data.name}
+            onChange={(v) => onChange({ name: v })}
+            placeholder='e.g. "Bluebird-1"'
+          />
+        </div>
+        <SelectField
+          label="Mission type"
+          value={data.missionType}
+          onChange={(v) => onChange({ missionType: v })}
+          options={MISSION_TYPES.map((m) => ({
+            value: m.value,
+            label: m.label,
+          }))}
+        />
+        <SelectField
+          label="Orbit"
+          value={data.orbitType}
+          onChange={(v) => onChange({ orbitType: v })}
+          options={ORBIT_TYPES.map((o) => ({ value: o.value, label: o.label }))}
+        />
+        <div className="sm:col-span-2">
+          <label
+            className="mb-1.5 block text-[13px] font-medium"
+            style={{ color: "rgba(255, 255, 255, 0.85)" }}
+          >
+            Status
+          </label>
+          <div className="grid grid-cols-3 gap-1.5">
+            {(
+              [
+                { v: "PRE_LAUNCH", label: "Pre-launch" },
+                { v: "LAUNCHED", label: "Launched" },
+                { v: "OPERATIONAL", label: "Operational" },
+              ] as const
+            ).map((opt) => {
+              const selected = data.status === opt.v;
+              return (
+                <button
+                  key={opt.v}
+                  type="button"
+                  onClick={() => onChange({ status: opt.v })}
+                  className="rounded-lg px-3 py-2 text-[12.5px] font-medium transition-colors"
+                  style={{
+                    background: selected
+                      ? "rgba(255, 255, 255, 0.1)"
+                      : "rgba(255, 255, 255, 0.03)",
+                    color: selected
+                      ? "rgba(255, 255, 255, 0.95)"
+                      : "rgba(255, 255, 255, 0.55)",
+                    boxShadow: "inset 0 0 0 0.5px rgba(255, 255, 255, 0.08)",
+                  }}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        {data.status === "OPERATIONAL" || data.status === "LAUNCHED" ? (
+          <FormField
+            label="NORAD ID"
+            optional
+            value={data.noradId}
+            onChange={(v) => onChange({ noradId: v })}
+            placeholder="e.g. 25544"
+          />
+        ) : null}
+        {data.status === "PRE_LAUNCH" ? (
+          <div>
+            <label
+              className="mb-1.5 block text-[13px] font-medium"
+              style={{ color: "rgba(255, 255, 255, 0.85)" }}
+            >
+              Target launch
+              <span
+                className="ml-1.5 font-normal"
+                style={{ color: "rgba(255, 255, 255, 0.4)" }}
+              >
+                (optional)
+              </span>
+            </label>
+            <input
+              type="date"
+              value={data.launchDate}
+              onChange={(e) => onChange({ launchDate: e.target.value })}
+              className="w-full rounded-lg px-3.5 py-2.5 text-[14px] outline-none"
+              style={{
+                background: "rgba(255, 255, 255, 0.04)",
+                color: "rgba(255, 255, 255, 0.95)",
+                boxShadow: "inset 0 0 0 0.5px rgba(255, 255, 255, 0.08)",
+                colorScheme: "dark",
+              }}
+            />
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function SummaryRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 py-1.5">
+      <span
+        className="text-[13px]"
+        style={{ color: "rgba(255, 255, 255, 0.5)" }}
+      >
+        {label}
+      </span>
+      <span
+        className="text-[13px] font-medium text-right"
+        style={{
+          color: "rgba(255, 255, 255, 0.95)",
+          letterSpacing: "-0.005em",
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function SummaryDivider() {
+  return (
+    <div
+      className="my-2"
+      style={{ borderTop: "0.5px solid rgba(255, 255, 255, 0.08)" }}
+    />
   );
 }
