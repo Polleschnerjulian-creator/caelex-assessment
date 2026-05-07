@@ -398,16 +398,34 @@ Jede Trade-Surface zeigt einen Disclaimer:
 
 ## 7. Status-Tracker (auto-updated commit-by-commit)
 
-| Sprint | Status  | Commit        | Tests added               | Date       |
-| ------ | ------- | ------------- | ------------------------- | ---------- |
-| B1     | ✅ done | (this commit) | +4 (types: 3, sidebar: 1) | 2026-05-07 |
-| B2     | pending | —             | —                         | —          |
-| B3     | pending | —             | —                         | —          |
-| B4     | pending | —             | —                         | —          |
-| B5     | pending | —             | —                         | —          |
-| B6     | pending | —             | —                         | —          |
-| B7     | pending | —             | —                         | —          |
-| B8     | pending | —             | —                         | —          |
+| Sprint | Status  | Commit   | Tests added                                   | Date       |
+| ------ | ------- | -------- | --------------------------------------------- | ---------- |
+| B1     | ✅ done | bc5f6b81 | +4 (types: 3, sidebar: 1)                     | 2026-05-07 |
+| B2     | ✅ done | 1c38cf39 | +108 (classification reference data)          | 2026-05-07 |
+| B3     | ✅ done | 19099741 | +45 (property-trigger: rules + edge cases)    | 2026-05-07 |
+| B4     | ✅ done | 08f60a2f | (Astra tools — exec coverage via integration) | 2026-05-07 |
+| B5     | ✅ done | f6d51a82 | +43 (de-minimis + FDPR)                       | 2026-05-07 |
+| B6     | ✅ done | 81d7e11f | +48 (license-determination, 4 gates)          | 2026-05-07 |
+| B7     | ✅ done | d114abc2 | (UI — visual coverage)                        | 2026-05-07 |
+| B8     | ✅ done | 51b68b34 | +73 (full pipeline integration)               | 2026-05-07 |
+| A1     | ✅ done | af2509be | (schema only — no test surface)               | 2026-05-07 |
+| A2     | ✅ done | 30164421 | +43 (canonicalize + parseCsv + OFAC SDN)      | 2026-05-07 |
+| A3     | pending | —        | EU FSF + UK OFSI + UN parsers                 | —          |
+| A4     | ✅ done | 0b0bd8d2 | +18 (trade.gov consolidated CSV)              | 2026-05-07 |
+| A5     | ✅ done | 35dfcdcc | +34 (Jaro-Winkler + scoring + screening)      | 2026-05-07 |
+| A6     | ✅ done | 332280b0 | +18 (cascade engine, diamond aggregation)     | 2026-05-07 |
+| A6-UI  | ✅ done | 28a23554 | (UI — visual coverage)                        | 2026-05-07 |
+| A7     | ✅ done | ebd7aeea | (Astra tool — exec coverage via integration)  | 2026-05-07 |
+| A7+    | ✅ done | 871e2fb3 | (cascade exposure in Astra response)          | 2026-05-07 |
+| A8     | ✅ done | 9b5bc1a9 | (UI — visual coverage)                        | 2026-05-07 |
+| triage | ✅ done | 8566cfb2 | (decision API — exec coverage via UI)         | 2026-05-07 |
+
+**Wave A: 8/9 sprints done. A3 (EU FSF + UK OFSI + UN parsers) is the
+sole pending item — different format (XML for EU, CSV for UK, XML for
+UN), each with their own parser. Functionally Wave A is operational
+end-to-end with US sanctions; EU/UK/UN are coverage expansion.**
+
+**Wave B: 8/8 done. Wave A: 8/9 done. Total: 16/17 trade sprints.**
 
 (Update this table im selben commit, der den Sprint abschließt.)
 
