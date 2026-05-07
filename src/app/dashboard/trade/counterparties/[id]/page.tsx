@@ -346,7 +346,12 @@ export default function CounterpartyDetailPage({
             ) : (
               <ul>
                 {party.screenings.map((s) => (
-                  <ScreeningRowItem key={s.id} row={s} />
+                  <ScreeningRowItem
+                    key={s.id}
+                    row={s}
+                    partyId={party.id}
+                    onDecided={reload}
+                  />
                 ))}
               </ul>
             )}
@@ -457,10 +462,53 @@ function statusExplain(status: PartyDetail["screeningStatus"]): string {
   }[status];
 }
 
-function ScreeningRowItem({ row }: { row: ScreeningRow }) {
+function ScreeningRowItem({
+  row,
+  partyId,
+  onDecided,
+}: {
+  row: ScreeningRow;
+  partyId: string;
+  onDecided: () => void;
+}) {
   const [expanded, setExpanded] = useState(false);
+  const [triageMode, setTriageMode] = useState<
+    "CONFIRMED_HIT" | "FALSE_POSITIVE_DISMISSED" | null
+  >(null);
+  const [notes, setNotes] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
   const topScore =
     row.hits.length > 0 ? Math.max(...row.hits.map((h) => h.score)) : 0;
+  const isPending = row.decision === "POTENTIAL_MATCH" && !row.decidedAt;
+
+  async function submitDecision() {
+    if (!triageMode || notes.trim().length === 0) return;
+    setSubmitting(true);
+    setErr(null);
+    try {
+      const res = await fetch(
+        `/api/trade/parties/${partyId}/screenings/${row.id}/decide`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ decision: triageMode, notes: notes.trim() }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        setErr(data.error ?? "Failed to record decision");
+        return;
+      }
+      setTriageMode(null);
+      setNotes("");
+      onDecided();
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Network error");
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <li
@@ -482,6 +530,25 @@ function ScreeningRowItem({ row }: { row: ScreeningRow }) {
               · {row.hits.length} {row.hits.length === 1 ? "hit" : "hits"}
               {row.hits.length > 0 && ` · top ${topScore.toFixed(3)}`}
             </span>
+            {isPending && (
+              <span
+                className="ml-2 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest"
+                style={{
+                  background: "rgba(251,191,36,0.15)",
+                  color: "rgb(251,191,36)",
+                }}
+              >
+                Needs review
+              </span>
+            )}
+            {row.decidedBy && row.decidedAt && (
+              <span
+                className="ml-2 text-[10px]"
+                style={{ color: "rgba(255,255,255,0.4)" }}
+              >
+                · decided by {row.decidedBy.name ?? row.decidedBy.email}
+              </span>
+            )}
           </div>
           <div
             className="mt-0.5 flex items-center gap-1.5 text-[10px] font-mono"
@@ -497,8 +564,8 @@ function ScreeningRowItem({ row }: { row: ScreeningRow }) {
         />
       </button>
 
-      {expanded && row.hits.length > 0 && (
-        <div className="mt-3 space-y-1.5">
+      {expanded && (
+        <div className="mt-3 space-y-2">
           {row.hits.slice(0, 10).map((h, i) => (
             <div
               key={`${h.list}-${h.entryId}-${i}`}
@@ -533,6 +600,130 @@ function ScreeningRowItem({ row }: { row: ScreeningRow }) {
               </span>
             </div>
           ))}
+
+          {row.notes && (
+            <div
+              className="rounded-md px-3 py-2 text-[11px]"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                color: "rgba(255,255,255,0.65)",
+              }}
+            >
+              <div
+                className="mb-1 text-[9px] font-semibold uppercase tracking-widest"
+                style={{ color: "rgba(255,255,255,0.45)" }}
+              >
+                Reviewer notes
+              </div>
+              {row.notes}
+            </div>
+          )}
+
+          {isPending && triageMode === null && (
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={() => setTriageMode("CONFIRMED_HIT")}
+                className="rounded-md px-3 py-1.5 text-[11px] font-semibold transition-all"
+                style={{
+                  background: "rgba(239,68,68,0.12)",
+                  color: "rgb(248,113,113)",
+                  boxShadow: "inset 0 0 0 0.5px rgba(239,68,68,0.3)",
+                }}
+              >
+                Confirm sanctions hit (block)
+              </button>
+              <button
+                onClick={() => setTriageMode("FALSE_POSITIVE_DISMISSED")}
+                className="rounded-md px-3 py-1.5 text-[11px] font-semibold transition-all"
+                style={{
+                  background: "rgba(255,255,255,0.06)",
+                  color: "rgba(255,255,255,0.7)",
+                  boxShadow: "inset 0 0 0 0.5px rgba(255,255,255,0.1)",
+                }}
+              >
+                Dismiss as false positive
+              </button>
+            </div>
+          )}
+
+          {triageMode && (
+            <div
+              className="rounded-md p-3"
+              style={{
+                background: "rgba(0,0,0,0.25)",
+                boxShadow: "inset 0 0 0 0.5px rgba(255,255,255,0.08)",
+              }}
+            >
+              <div
+                className="mb-2 text-[11px]"
+                style={{ color: "rgba(255,255,255,0.85)" }}
+              >
+                {triageMode === "CONFIRMED_HIT"
+                  ? "Confirming a sanctions match will BLOCK this counterparty. Document your reasoning (entity matched on name + identifier X, address verified via Y, etc):"
+                  : "Dismissing as false positive returns this counterparty to CLEAR. Document why this hit is NOT the same person/entity (different DOB, different address, different identifier, etc):"}
+              </div>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={3}
+                placeholder="Required: reasoning for the audit trail (1-2000 chars)"
+                className="w-full rounded-md px-3 py-2 text-[12px] outline-none"
+                style={{
+                  background: "rgba(0,0,0,0.30)",
+                  boxShadow: "inset 0 0 0 0.5px rgba(255,255,255,0.10)",
+                  color: "rgba(255,255,255,0.92)",
+                  fontFamily: "inherit",
+                  resize: "vertical",
+                }}
+              />
+              {err && (
+                <div
+                  className="mt-2 text-[11px]"
+                  style={{ color: "rgb(248,113,113)" }}
+                >
+                  {err}
+                </div>
+              )}
+              <div className="mt-2 flex justify-end gap-2">
+                <button
+                  onClick={() => {
+                    setTriageMode(null);
+                    setNotes("");
+                    setErr(null);
+                  }}
+                  className="rounded-md px-3 py-1.5 text-[11px]"
+                  style={{ color: "rgba(255,255,255,0.6)" }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={submitDecision}
+                  disabled={submitting || notes.trim().length === 0}
+                  className="rounded-md px-3 py-1.5 text-[11px] font-semibold transition-all disabled:opacity-50"
+                  style={{
+                    background:
+                      triageMode === "CONFIRMED_HIT"
+                        ? "rgba(239,68,68,0.18)"
+                        : "rgba(16,185,129,0.18)",
+                    color:
+                      triageMode === "CONFIRMED_HIT"
+                        ? "rgb(248,113,113)"
+                        : "rgb(52,211,153)",
+                    boxShadow:
+                      triageMode === "CONFIRMED_HIT"
+                        ? "inset 0 0 0 0.5px rgba(239,68,68,0.4)"
+                        : "inset 0 0 0 0.5px rgba(16,185,129,0.4)",
+                  }}
+                >
+                  {submitting
+                    ? "Saving…"
+                    : triageMode === "CONFIRMED_HIT"
+                      ? "Confirm hit & block"
+                      : "Dismiss as false positive"}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </li>
