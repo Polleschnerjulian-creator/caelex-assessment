@@ -148,15 +148,31 @@ export async function syncOneList(
 /**
  * Sync every registered list. Independent failures — one bad source
  * does not abort the others.
+ *
+ * Optimization: parsers that share the same defaultSourceUrl (e.g. BIS
+ * + DDTC both pull from the trade.gov consolidated CSV in Sprint A4)
+ * have their fetch deduplicated — one HTTP call, multiple parses. This
+ * cuts ~10 MB of redundant traffic per cron run and respects the
+ * upstream's bandwidth.
  */
 export async function syncAllLists(): Promise<SyncAllResult> {
   const start = Date.now();
-  // Run in series to avoid hammering treasury/commerce simultaneously
-  // and to keep memory low. The total cost is dominated by the largest
-  // list (OFAC, ~3 MB), not by parallelism.
+  // Memoize fetches by URL — fetch each unique URL exactly once
+  const fetchCache = new Map<string, Promise<string>>();
+  const fetchOnce = (url: string): Promise<string> => {
+    let p = fetchCache.get(url);
+    if (!p) {
+      p = fetchWithTimeout(url, FETCH_TIMEOUT_MS);
+      fetchCache.set(url, p);
+    }
+    return p;
+  };
+
+  // Run in series to keep memory low. Total cost is dominated by the
+  // largest list (consolidated CSV, ~10 MB), not by parallelism.
   const results: SyncOneResult[] = [];
   for (const parser of REGISTERED_PARSERS) {
-    results.push(await syncOneList(parser));
+    results.push(await syncOneList(parser, { fetchOverride: fetchOnce }));
   }
   return {
     totalElapsedMs: Date.now() - start,

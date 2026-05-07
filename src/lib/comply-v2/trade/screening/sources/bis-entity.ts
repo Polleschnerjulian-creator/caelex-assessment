@@ -4,36 +4,31 @@
  * BIS Entity List parser.
  *
  * Source: US Commerce Bureau of Industry and Security
- * URL:    https://www.bis.doc.gov/index.php/documents/regulations-docs/2326-supplement-no-4-to-part-744-entity-list-4/file
- * Format: CSV (with header row), updated ~weekly.
+ * URL:    Same as OFAC + DDTC — the trade.gov consolidated CSV that
+ *         bundles all three US lists into one fetch.
  *
- * Status: STUB. Sprint A2 ships OFAC SDN parser end-to-end. BIS uses
- * the trade.gov consolidated CSV (covered in A4 aggregation sprint)
- * which bundles OFAC + BIS + DDTC + FBI in one file with a `source`
- * column. Until then this parser returns [] so the orchestrator
- * gracefully no-ops when called.
+ * Implementation: delegates to parseConsolidatedCsv() which parses the
+ * full consolidated CSV once, then we extract the BIS_ENTITY bucket.
+ * Per-source filtering is done by the shared parser via the `source`
+ * column matching SOURCE_TO_LIST entries.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
 import { TradeSanctionsList } from "@prisma/client";
 import type { CanonicalSanctionsEntry, SanctionsSourceParser } from "./types";
+import {
+  CONSOLIDATED_URL,
+  parseConsolidatedCsv,
+} from "./trade-gov-consolidated";
 
-const DEFAULT_URL =
-  "https://data.trade.gov/downloadable_consolidated_screening_list/v1/consolidated.csv";
-
-/**
- * BIS Entity List parser — returns empty until A4 aggregation sprint
- * implements the consolidated-CSV path that filters on source="EL".
- */
-export function parseBisEntity(_raw: string): CanonicalSanctionsEntry[] {
-  // TODO(A4): parse trade.gov consolidated CSV, filter rows where
-  // `source` column === "Entity List (EL) - Bureau of Industry and Security".
-  return [];
+export function parseBisEntity(raw: string): CanonicalSanctionsEntry[] {
+  const result = parseConsolidatedCsv(raw);
+  return result.byList.get(TradeSanctionsList.BIS_ENTITY) ?? [];
 }
 
 export const bisEntityParser: SanctionsSourceParser = {
   list: TradeSanctionsList.BIS_ENTITY,
-  defaultSourceUrl: DEFAULT_URL,
+  defaultSourceUrl: CONSOLIDATED_URL,
   parse: parseBisEntity,
 };
