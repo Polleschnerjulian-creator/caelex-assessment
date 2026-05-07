@@ -222,15 +222,23 @@ const nextConfig = {
       bodySizeLimit: "10mb",
     },
     // Build-memory guard: cap webpack workers so the 8 GB Vercel build
-    // container isn't exhausted by 4 parallel webpack threads each
-    // consuming ~1 GB on top of the main Node.js heap.
+    // container isn't exhausted by parallel threads each consuming
+    // ~1 GB on top of the main Node.js heap.
     //
-    // Math: 4 GB main heap + 3 × 1 GB workers + ~0.5 GB OS = 7.5 GB,
-    // leaving 0.5 GB safety margin. With cpus: 4 (default) the peak
-    // hit 11+ GB and the build exited with SIGKILL during webpack
-    // compilation. cpus: 2 fixed the OOM but ~doubled compile time
-    // from ~2 min → ~4 min. cpus: 3 is the sweet spot.
-    cpus: 3,
+    // History:
+    //   - cpus: 4 (default) — peaked >11 GB → SIGKILL at compile
+    //   - cpus: 2 — fixed OOM but ~doubled compile time
+    //   - cpus: 3 — first try after Sentry externalize, was green WITH
+    //     cached build state. But with COLD cache (cache invalidated
+    //     by Vercel for being too large), 3 parallel workers each
+    //     opening Neon serverless connections at static-gen time
+    //     exhausts Neon's connection cap around page 200/847 →
+    //     subsequent pages hang.
+    //   - cpus: 2 — current. Math: 4 GB main + 2 × 1 GB workers +
+    //     0.5 GB OS = 6.5 GB. Less Neon connection pressure (2
+    //     concurrent vs 3). Compile slows by ~30s but static-gen
+    //     completes reliably even on cold-cache builds.
+    cpus: 2,
   },
 
   // Webpack configuration
