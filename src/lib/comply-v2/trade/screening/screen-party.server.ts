@@ -45,6 +45,8 @@ import {
 } from "./fuzzy-match";
 import { allLatestSnapshots } from "./snapshot-store.server";
 import type { CanonicalSanctionsEntry } from "./sources/types";
+import { runCascadeForParty } from "./cascade-50pct.server";
+import type { CascadeResult } from "./cascade-50pct";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -79,6 +81,13 @@ export interface ScreenPartyResult {
   screeningResult: TradeScreeningResult;
   /** Updated party (with new denormalized status fields). */
   party: TradeParty;
+  /**
+   * Cascade analysis result, if the party has any beneficial owners
+   * in the org's graph. Null if no edges exist for this party (cascade
+   * couldn't compute anything meaningful — common for newly-added
+   * counterparties before ownership is captured).
+   */
+  cascade: CascadeResult | null;
   /** Summary for logging/UI. */
   summary: {
     hitCount: number;
@@ -86,6 +95,10 @@ export interface ScreenPartyResult {
     decision: TradeScreeningDecision;
     listsConsulted: TradeSanctionsList[];
     snapshotsMissing: TradeSanctionsList[];
+    /** Whether the 50%-rule cascade triggered (≥50% sanctioned ownership). */
+    cascadeHit: boolean;
+    /** Number of CONFIRMED_HIT ancestors found via cascade traversal. */
+    sanctionedAncestorCount: number;
   };
 }
 
@@ -133,19 +146,31 @@ export async function screenParty(
   // Sort all hits across lists by score descending
   allHits.sort((a, b) => b.score - a.score);
 
-  // Determine overall decision from the highest score
+  // ── 50%-Rule Cascade Analysis (Sprint A6) ─────────────────────────
+  // Independent of fuzzy match: even if the party's name doesn't match
+  // any sanctions list directly, it may be sanctioned by virtue of
+  // beneficial ownership ≥50% by sanctioned entities.
+  const cascade = await runCascadeForParty(partyId, party.organizationId);
+
+  // Determine overall decision: triggered by EITHER fuzzy hits OR
+  // cascade. Cascade hit alone is sufficient to escalate to
+  // POTENTIAL_MATCH (in fact more decisive than a 0.85 name match).
   const topScore = allHits.length > 0 ? allHits[0].score : 0;
   const band = classifyScore(topScore);
+  const cascadeHit = cascade?.cascadeHit ?? false;
+  const cascadeAncestorCount = cascade?.sanctionedAncestorCount ?? 0;
 
   let decision: TradeScreeningDecision;
   let newStatus: TradeScreeningStatus;
-  if (band === "confirmed" || band === "potential") {
-    // Both require human review before final confirmation
-    decision = TradeScreeningDecision.POTENTIAL_MATCH;
-    newStatus = TradeScreeningStatus.POTENTIAL_MATCH;
-  } else if (band === "weak") {
-    // Weak hit recorded but not surfaced as POTENTIAL — user can opt
-    // into stricter threshold for these
+  if (
+    band === "confirmed" ||
+    band === "potential" ||
+    band === "weak" ||
+    cascadeHit ||
+    cascadeAncestorCount > 0
+  ) {
+    // Any of: name match (any band) OR cascade-detected sanctioned
+    // ownership requires human review before clearing.
     decision = TradeScreeningDecision.POTENTIAL_MATCH;
     newStatus = TradeScreeningStatus.POTENTIAL_MATCH;
   } else {
@@ -192,9 +217,12 @@ export async function screenParty(
     partyId,
     screeningResult,
     party: updatedParty,
+    cascade,
     summary: {
       hitCount: allHits.length,
       topScore,
+      cascadeHit,
+      sanctionedAncestorCount: cascadeAncestorCount,
       decision,
       listsConsulted,
       snapshotsMissing: missingLists(listsConsulted),
@@ -208,6 +236,9 @@ export async function screenParty(
       hitCount: allHits.length,
       topScore: topScore.toFixed(3),
       listsConsulted: listsConsulted.length,
+      cascadeHit,
+      sanctionedAncestorCount: cascadeAncestorCount,
+      cascadeAggregate: cascade?.aggregateSanctionedOwnership.toFixed(3),
     },
     "screenParty: completed",
   );
