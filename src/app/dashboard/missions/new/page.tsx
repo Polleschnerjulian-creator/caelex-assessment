@@ -28,41 +28,48 @@ export default async function NewMissionPage() {
 
   return (
     <div
-      className="mx-auto max-w-3xl px-6 py-8"
+      className="mx-auto max-w-6xl px-6 py-8 sm:px-8"
       style={{ fontFamily: sansFont }}
     >
-      <nav className="mb-4 flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">
+      <nav className="mb-5 flex items-center gap-2 text-[11px] font-medium tracking-wide text-slate-500">
         <Link
           href="/dashboard/missions"
-          className="inline-flex items-center gap-1 transition hover:text-emerald-300"
+          className="inline-flex items-center gap-1.5 text-slate-400 transition hover:text-slate-200"
         >
           <ArrowLeft className="h-3 w-3" />
           Missions
         </Link>
-        <span aria-hidden>·</span>
+        <span aria-hidden className="text-slate-600">
+          /
+        </span>
         <span className="truncate text-slate-300">New mission</span>
       </nav>
 
-      <header className="mb-6 border-b border-white/[0.06] pb-4">
-        <div className="mb-1.5 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-400">
-          <Rocket className="h-3 w-3" />
-          NEW MISSION
+      <header className="mb-8 flex flex-col gap-3 border-b border-white/[0.06] pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/[0.08] px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-emerald-300 ring-1 ring-inset ring-emerald-500/20">
+            <Rocket className="h-3 w-3" />
+            New mission
+          </div>
+          <h1
+            className="text-[28px] font-semibold text-slate-50"
+            style={{
+              fontFamily: displayFont,
+              letterSpacing: "-0.022em",
+              lineHeight: 1.15,
+            }}
+          >
+            Create a new mission
+          </h1>
+          <p className="mt-2 max-w-2xl text-[13.5px] leading-relaxed text-slate-400">
+            A mission groups one or more spacecraft serving the same operational
+            program — constellations, single satellites, launch campaigns, or
+            multi-mission hardware. Only the{" "}
+            <em className="not-italic font-medium text-slate-300">name</em> is
+            required; you can edit everything else later and assign spacecraft
+            from the mission&apos;s detail page.
+          </p>
         </div>
-        <h1
-          className="text-[24px] font-semibold text-slate-100"
-          style={{
-            fontFamily: displayFont,
-            letterSpacing: "-0.022em",
-            lineHeight: 1.15,
-          }}
-        >
-          Create a new mission
-        </h1>
-        <p className="mt-1.5 max-w-xl text-[13px] text-slate-400">
-          A mission groups one or more spacecraft serving the same operational
-          program. You can assign spacecraft after creating the mission. All
-          fields except <em>name</em> are optional and editable later.
-        </p>
       </header>
 
       <NewMissionForm />

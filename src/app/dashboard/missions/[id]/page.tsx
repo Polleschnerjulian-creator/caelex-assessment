@@ -106,7 +106,7 @@ export default async function MissionDetailPage({
 
   return (
     <div
-      className="mx-auto max-w-screen-2xl px-6 py-6"
+      className="mx-auto max-w-7xl px-6 py-8 sm:px-8"
       style={{ fontFamily: sansFont }}
     >
       <Breadcrumb missionName={mission.name} />
@@ -161,15 +161,17 @@ export default async function MissionDetailPage({
 
 function Breadcrumb({ missionName }: { missionName: string }) {
   return (
-    <nav className="mb-4 flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">
+    <nav className="mb-5 flex items-center gap-2 text-[11px] font-medium tracking-wide text-slate-500">
       <Link
         href="/dashboard/missions"
-        className="inline-flex items-center gap-1 transition hover:text-emerald-300"
+        className="inline-flex items-center gap-1.5 text-slate-400 transition hover:text-slate-200"
       >
         <ArrowLeft className="h-3 w-3" />
         Missions
       </Link>
-      <span aria-hidden>·</span>
+      <span aria-hidden className="text-slate-600">
+        /
+      </span>
       <span className="truncate text-slate-300">{missionName}</span>
     </nav>
   );
@@ -183,22 +185,30 @@ function DetailHeader({
   displayFont: string;
 }) {
   return (
-    <header className="mb-5 flex items-end justify-between gap-6 border-b border-white/[0.06] pb-4">
+    <header className="mb-6 flex flex-col gap-4 border-b border-white/[0.06] pb-6 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
-        <div className="mb-1.5 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-400">
+        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/[0.08] px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-emerald-300 ring-1 ring-inset ring-emerald-500/20">
           <Rocket className="h-3 w-3" />
-          MISSION
+          Mission
         </div>
         <h1
-          className="truncate text-[24px] font-semibold tracking-tight text-slate-100"
-          style={{ fontFamily: displayFont, letterSpacing: "-0.022em" }}
+          className="truncate text-[28px] font-semibold text-slate-50"
+          style={{
+            fontFamily: displayFont,
+            letterSpacing: "-0.022em",
+            lineHeight: 1.15,
+          }}
         >
           {mission.name}
         </h1>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-wider text-slate-500">
-          {mission.reference ? <span>REF · {mission.reference}</span> : null}
-          <span>{phaseLabel(mission.programPhase)}</span>
-          <span>{missionTypeLabel(mission.missionType)}</span>
+        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[12px] text-slate-400">
+          {mission.reference ? (
+            <span className="rounded bg-white/[0.04] px-2 py-0.5 font-mono text-[11px] text-slate-300 ring-1 ring-inset ring-white/[0.06]">
+              {mission.reference}
+            </span>
+          ) : null}
+          <Chip>{missionTypeLabel(mission.missionType)}</Chip>
+          <Chip>{phaseLabel(mission.programPhase)}</Chip>
         </div>
       </div>
       <BigStatusPill status={mission.status} />
@@ -206,36 +216,77 @@ function DetailHeader({
   );
 }
 
+function Chip({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center rounded-full bg-white/[0.04] px-2 py-0.5 text-[11.5px] text-slate-300 ring-1 ring-inset ring-white/[0.06]">
+      {children}
+    </span>
+  );
+}
+
 function BigStatusPill({ status }: { status: MissionDetail["status"] }) {
   const tone =
     status === "ACTIVE"
-      ? "bg-emerald-500/10 text-emerald-300 ring-emerald-500/30"
+      ? {
+          bg: "bg-emerald-500/[0.08]",
+          text: "text-emerald-300",
+          ring: "ring-emerald-500/25",
+          dot: "bg-emerald-400",
+        }
       : status === "PLANNED"
-        ? "bg-amber-500/10 text-amber-300 ring-amber-500/30"
+        ? {
+            bg: "bg-amber-500/[0.08]",
+            text: "text-amber-300",
+            ring: "ring-amber-500/25",
+            dot: "bg-amber-400",
+          }
         : status === "PAUSED"
-          ? "bg-orange-500/10 text-orange-300 ring-orange-500/30"
+          ? {
+              bg: "bg-orange-500/[0.08]",
+              text: "text-orange-300",
+              ring: "ring-orange-500/25",
+              dot: "bg-orange-400",
+            }
           : status === "COMPLETED"
-            ? "bg-cyan-500/10 text-cyan-300 ring-cyan-500/30"
+            ? {
+                bg: "bg-cyan-500/[0.08]",
+                text: "text-cyan-300",
+                ring: "ring-cyan-500/25",
+                dot: "bg-cyan-400",
+              }
             : status === "CANCELLED"
-              ? "bg-red-500/10 text-red-300 ring-red-500/30"
-              : "bg-slate-500/10 text-slate-400 ring-slate-500/30";
+              ? {
+                  bg: "bg-rose-500/[0.08]",
+                  text: "text-rose-300",
+                  ring: "ring-rose-500/25",
+                  dot: "bg-rose-400",
+                }
+              : {
+                  bg: "bg-slate-500/[0.08]",
+                  text: "text-slate-400",
+                  ring: "ring-slate-500/25",
+                  dot: "bg-slate-400",
+                };
   return (
     <span
-      className={`inline-flex shrink-0 items-center gap-1.5 rounded px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.18em] ring-1 ring-inset ${tone}`}
+      className={`inline-flex shrink-0 items-center gap-2 rounded-full px-3 py-1.5 text-[12px] font-semibold ring-1 ring-inset ${tone.bg} ${tone.text} ${tone.ring}`}
     >
-      <span className="inline-block h-1.5 w-1.5 rounded-full bg-current" />
-      {status}
+      <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
+      {status.charAt(0) + status.slice(1).toLowerCase()}
     </span>
   );
 }
 
 function FactsCard({ mission }: { mission: MissionDetail }) {
   return (
-    <section className="mb-5 rounded-md p-4 ring-1 ring-inset ring-white/[0.06]">
-      <h2 className="mb-3 font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-slate-300">
-        Mission profile
-      </h2>
-      <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-4">
+    <section className="mb-6 overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-white/[0.025] to-white/[0.012] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+      <header className="flex items-center gap-2 border-b border-white/[0.05] bg-white/[0.012] px-5 py-3">
+        <Satellite className="h-3.5 w-3.5 text-slate-400" />
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+          Mission profile
+        </h2>
+      </header>
+      <dl className="grid grid-cols-2 gap-x-6 gap-y-4 px-5 py-5 sm:grid-cols-3 lg:grid-cols-4">
         <DefItem
           label="Type"
           value={missionTypeLabel(mission.missionType)}
@@ -278,9 +329,11 @@ function FactsCard({ mission }: { mission: MissionDetail }) {
         />
       </dl>
       {mission.description ? (
-        <p className="mt-4 border-t border-white/[0.06] pt-3 text-xs text-slate-400">
-          {mission.description}
-        </p>
+        <div className="border-t border-white/[0.05] bg-white/[0.012] px-5 py-4">
+          <p className="text-[12.5px] leading-relaxed text-slate-300">
+            {mission.description}
+          </p>
+        </div>
       ) : null}
     </section>
   );
@@ -298,14 +351,14 @@ function DefItem({
   const display =
     value === null || value === undefined || value === "" ? "—" : value;
   return (
-    <div>
-      <dt className="mb-1 inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">
+    <div className="min-w-0">
+      <dt className="mb-1 inline-flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-slate-500">
         {Icon ? <Icon className="h-3 w-3" /> : null}
         {label}
       </dt>
       <dd
-        className={`text-xs ${
-          display === "—" ? "text-slate-600" : "text-slate-100"
+        className={`truncate text-[13px] ${
+          display === "—" ? "text-slate-600" : "font-medium text-slate-100"
         }`}
       >
         {display}
@@ -356,21 +409,33 @@ function StatTile({
   icon: React.ComponentType<{ className?: string }>;
   tone: "emerald" | "amber" | "slate";
 }) {
-  const accent =
-    tone === "emerald"
-      ? "text-emerald-400"
-      : tone === "amber"
-        ? "text-amber-400"
-        : "text-slate-500";
+  const tones = {
+    emerald: {
+      icon: "text-emerald-400",
+      iconBg: "bg-emerald-500/10 ring-emerald-500/15",
+    },
+    amber: {
+      icon: "text-amber-400",
+      iconBg: "bg-amber-500/10 ring-amber-500/15",
+    },
+    slate: {
+      icon: "text-slate-400",
+      iconBg: "bg-white/[0.04] ring-white/[0.06]",
+    },
+  } as const;
   return (
-    <div className="flex flex-col gap-1.5 rounded-md p-4 ring-1 ring-inset ring-white/[0.06]">
+    <div className="overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-white/[0.025] to-white/[0.012] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
       <div className="flex items-center justify-between gap-2">
-        <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500">
+        <span className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-slate-500">
           {label}
         </span>
-        <Icon className={`h-3 w-3 ${accent}`} />
+        <span
+          className={`flex h-6 w-6 items-center justify-center rounded-md ring-1 ring-inset ${tones[tone].iconBg}`}
+        >
+          <Icon className={`h-3 w-3 ${tones[tone].icon}`} />
+        </span>
       </div>
-      <div className="font-mono text-2xl font-bold tracking-tight tabular-nums text-slate-50">
+      <div className="mt-3 text-[26px] font-semibold tabular-nums leading-none tracking-tight text-slate-50">
         {value}
       </div>
     </div>
@@ -385,93 +450,134 @@ function AssignedSpacecraftSection({
   past: MissionDetail["pastSpacecraft"];
 }) {
   return (
-    <section className="mb-6 rounded-md ring-1 ring-inset ring-white/[0.06]">
-      <header className="border-b border-white/[0.06] px-4 py-3">
-        <h2 className="font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-slate-300">
-          Spacecraft assignments
-        </h2>
-        <p className="mt-1 text-[11px] text-slate-500">
-          Use the &quot;Assign spacecraft&quot; control above to add a
-          spacecraft to this mission. Detach when the spacecraft retires from
-          the mission (history is preserved).
-        </p>
+    <section className="mb-6 overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-white/[0.025] to-white/[0.012] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+      <header className="flex items-start justify-between gap-3 border-b border-white/[0.05] bg-white/[0.012] px-5 py-4">
+        <div className="min-w-0">
+          <h2 className="flex items-center gap-2 text-[14px] font-semibold tracking-tight text-slate-100">
+            <Rocket className="h-3.5 w-3.5 text-slate-400" />
+            Spacecraft assignments
+          </h2>
+          <p className="mt-0.5 text-[12px] text-slate-400">
+            Use &ldquo;Assign spacecraft&rdquo; above to add hardware. Detach
+            preserves history; ended assignments stay on record.
+          </p>
+        </div>
+        <span className="shrink-0 rounded-full bg-white/[0.05] px-2.5 py-0.5 text-[11px] font-medium text-slate-300 ring-1 ring-inset ring-white/[0.06]">
+          {active.length} active
+        </span>
       </header>
       {active.length === 0 ? (
-        <div className="px-4 py-6 text-center text-[11px] text-slate-500">
-          No spacecraft currently assigned.
+        <div className="px-5 py-10 text-center">
+          <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.04] ring-1 ring-inset ring-white/[0.06]">
+            <Rocket className="h-4 w-4 text-slate-500" />
+          </div>
+          <p className="text-[12.5px] text-slate-400">
+            No spacecraft currently assigned.
+          </p>
+          <p className="mt-1 text-[11px] text-slate-500">
+            Click &ldquo;Assign spacecraft&rdquo; to bring hardware under this
+            mission.
+          </p>
         </div>
       ) : (
-        <table className="w-full text-left text-xs">
-          <thead className="text-slate-500">
-            <tr className="border-b border-white/[0.06]">
-              <Th>Spacecraft</Th>
-              <Th>Role</Th>
-              <Th>Slot</Th>
-              <Th>COSPAR / NORAD</Th>
-              <Th>Orbit</Th>
-              <Th>Since</Th>
-              <Th>Status</Th>
-              <Th>
-                <span className="sr-only">Action</span>
-              </Th>
-            </tr>
-          </thead>
-          <tbody>
-            {active.map((a) => (
-              <tr
-                key={a.assignmentId}
-                className="border-b border-white/[0.04] last:border-b-0"
-                data-assignment-id={a.assignmentId}
-              >
-                <Td className="font-medium text-slate-100">
-                  {a.spacecraftName}
-                </Td>
-                <Td>{a.role}</Td>
-                <Td>{a.constellationSlot ?? "—"}</Td>
-                <Td className="font-mono text-[10px] text-slate-400">
-                  {[a.cosparId, a.noradId].filter(Boolean).join(" · ") || "—"}
-                </Td>
-                <Td>
-                  {a.orbitType}
-                  {a.altitudeKm ? ` · ${Math.round(a.altitudeKm)} km` : ""}
-                </Td>
-                <Td>{a.startedAt.toISOString().slice(0, 10)}</Td>
-                <Td>
-                  <span className="font-mono text-[9px] uppercase tracking-wider text-slate-400">
-                    {a.status}
-                  </span>
-                </Td>
-                <Td>
-                  <button
-                    type="button"
-                    data-detach-assignment={a.assignmentId}
-                    className="rounded px-2 py-0.5 text-[10px] uppercase tracking-wider text-rose-400 ring-1 ring-inset ring-rose-500/30 transition hover:bg-rose-500/10"
-                  >
-                    Detach
-                  </button>
-                </Td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-[12.5px]">
+            <thead>
+              <tr className="border-b border-white/[0.05] bg-white/[0.012]">
+                <Th>Spacecraft</Th>
+                <Th>Role</Th>
+                <Th>Slot</Th>
+                <Th>COSPAR / NORAD</Th>
+                <Th>Orbit</Th>
+                <Th>Since</Th>
+                <Th>Status</Th>
+                <Th>
+                  <span className="sr-only">Action</span>
+                </Th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {active.map((a) => (
+                <tr
+                  key={a.assignmentId}
+                  className="border-b border-white/[0.04] transition last:border-b-0 hover:bg-white/[0.015]"
+                  data-assignment-id={a.assignmentId}
+                >
+                  <Td className="font-medium text-slate-100">
+                    {a.spacecraftName}
+                  </Td>
+                  <Td>
+                    <span className="rounded-full bg-white/[0.04] px-2 py-0.5 text-[11px] text-slate-300 ring-1 ring-inset ring-white/[0.06]">
+                      {a.role.replace(/_/g, " ")}
+                    </span>
+                  </Td>
+                  <Td className="tabular-nums">
+                    {a.constellationSlot ?? (
+                      <span className="text-slate-600">—</span>
+                    )}
+                  </Td>
+                  <Td>
+                    {[a.cosparId, a.noradId].filter(Boolean).length > 0 ? (
+                      <span className="font-mono text-[11px] text-slate-400">
+                        {[a.cosparId, a.noradId].filter(Boolean).join(" · ")}
+                      </span>
+                    ) : (
+                      <span className="text-slate-600">—</span>
+                    )}
+                  </Td>
+                  <Td>
+                    {a.orbitType}
+                    {a.altitudeKm ? (
+                      <span className="text-slate-500">
+                        {" "}
+                        · {Math.round(a.altitudeKm)} km
+                      </span>
+                    ) : null}
+                  </Td>
+                  <Td className="tabular-nums text-slate-400">
+                    {a.startedAt.toISOString().slice(0, 10)}
+                  </Td>
+                  <Td>
+                    <SpacecraftStatusPill status={a.status} />
+                  </Td>
+                  <Td>
+                    <button
+                      type="button"
+                      data-detach-assignment={a.assignmentId}
+                      className="rounded-md px-2.5 py-1 text-[11px] font-medium text-rose-300 ring-1 ring-inset ring-rose-500/25 transition hover:bg-rose-500/10"
+                    >
+                      Detach
+                    </button>
+                  </Td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       {past.length > 0 ? (
-        <details className="border-t border-white/[0.06] px-4 py-3">
-          <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-wider text-slate-500">
-            <History className="mr-1 inline h-3 w-3" />
-            Past assignments ({past.length})
+        <details className="border-t border-white/[0.05] bg-white/[0.012] px-5 py-3">
+          <summary className="flex cursor-pointer items-center gap-2 text-[11.5px] font-medium text-slate-400 transition hover:text-slate-200">
+            <History className="h-3 w-3" />
+            Past assignments
+            <span className="rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] tabular-nums text-slate-400">
+              {past.length}
+            </span>
           </summary>
-          <ul className="mt-3 space-y-1 text-xs text-slate-500">
+          <ul className="mt-3 space-y-1.5 text-[12px] text-slate-400">
             {past.map((a) => (
               <li
                 key={a.assignmentId}
                 className="flex items-center justify-between gap-3"
               >
-                <span>
-                  {a.spacecraftName}{" "}
-                  <span className="text-slate-600">· {a.role}</span>
+                <span className="truncate">
+                  <span className="font-medium text-slate-300">
+                    {a.spacecraftName}
+                  </span>
+                  <span className="ml-1.5 text-slate-600">·</span>
+                  <span className="ml-1.5">{a.role.replace(/_/g, " ")}</span>
                 </span>
-                <span className="font-mono text-[10px] text-slate-600">
+                <span className="shrink-0 font-mono text-[10.5px] tabular-nums text-slate-500">
                   {a.startedAt.toISOString().slice(0, 10)} →{" "}
                   {a.endedAt ? a.endedAt.toISOString().slice(0, 10) : "?"}
                 </span>
@@ -486,7 +592,7 @@ function AssignedSpacecraftSection({
 
 function Th({ children }: { children: React.ReactNode }) {
   return (
-    <th className="px-3 py-2 font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">
+    <th className="px-4 py-2.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-slate-500">
       {children}
     </th>
   );
@@ -500,25 +606,87 @@ function Td({
   className?: string;
 }) {
   return (
-    <td className={`px-3 py-2 align-middle text-slate-300 ${className ?? ""}`}>
+    <td className={`px-4 py-3 align-middle text-slate-300 ${className ?? ""}`}>
       {children}
     </td>
+  );
+}
+
+function SpacecraftStatusPill({
+  status,
+}: {
+  status: MissionDetail["assignedSpacecraft"][number]["status"];
+}) {
+  const tones: Record<
+    string,
+    { bg: string; text: string; ring: string; dot: string }
+  > = {
+    OPERATIONAL: {
+      bg: "bg-emerald-500/[0.08]",
+      text: "text-emerald-300",
+      ring: "ring-emerald-500/20",
+      dot: "bg-emerald-400",
+    },
+    LAUNCHED: {
+      bg: "bg-cyan-500/[0.08]",
+      text: "text-cyan-300",
+      ring: "ring-cyan-500/20",
+      dot: "bg-cyan-400",
+    },
+    PRE_LAUNCH: {
+      bg: "bg-amber-500/[0.08]",
+      text: "text-amber-300",
+      ring: "ring-amber-500/20",
+      dot: "bg-amber-400",
+    },
+    DECOMMISSIONING: {
+      bg: "bg-orange-500/[0.08]",
+      text: "text-orange-300",
+      ring: "ring-orange-500/20",
+      dot: "bg-orange-400",
+    },
+    DEORBITED: {
+      bg: "bg-slate-500/[0.08]",
+      text: "text-slate-400",
+      ring: "ring-slate-500/20",
+      dot: "bg-slate-400",
+    },
+    LOST: {
+      bg: "bg-rose-500/[0.08]",
+      text: "text-rose-300",
+      ring: "ring-rose-500/20",
+      dot: "bg-rose-400",
+    },
+  };
+  const t = tones[status] ?? tones.DEORBITED;
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ring-inset ${t.bg} ${t.text} ${t.ring}`}
+    >
+      <span aria-hidden className={`h-1 w-1 rounded-full ${t.dot}`} />
+      {status.charAt(0) + status.slice(1).toLowerCase().replace(/_/g, " ")}
+    </span>
   );
 }
 
 function AuthorityRefsCard({ refs }: { refs: string[] }) {
   if (refs.length === 0) return null;
   return (
-    <section className="mb-6 rounded-md p-4 ring-1 ring-inset ring-white/[0.06]">
-      <h2 className="mb-3 inline-flex items-center gap-2 font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-slate-300">
-        <FileText className="h-3 w-3" />
-        Authority references
-      </h2>
-      <ul className="flex flex-wrap gap-2">
+    <section className="mb-6 overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-white/[0.025] to-white/[0.012] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+      <header className="flex items-center justify-between gap-2 border-b border-white/[0.05] bg-white/[0.012] px-5 py-3">
+        <h2 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+          <FileText className="h-3.5 w-3.5" />
+          Authority references
+        </h2>
+        <span className="rounded-full bg-white/[0.05] px-2 py-0.5 text-[10.5px] tabular-nums text-slate-400 ring-1 ring-inset ring-white/[0.06]">
+          {refs.length}
+        </span>
+      </header>
+      <ul className="flex flex-wrap gap-2 px-5 py-4">
         {refs.map((ref, i) => (
           <li
             key={`${ref}-${i}`}
-            className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.05] px-2.5 py-1 font-mono text-[11px] text-slate-200 ring-1 ring-inset ring-white/[0.06]"
+            className="inline-flex items-center gap-1.5 rounded-md bg-white/[0.04] px-2.5 py-1.5 font-mono text-[11.5px] text-slate-200 ring-1 ring-inset ring-white/[0.07]"
           >
             <ShieldCheck className="h-3 w-3 text-emerald-400" />
             {ref}
@@ -532,16 +700,22 @@ function AuthorityRefsCard({ refs }: { refs: string[] }) {
 function PhaseRoadmap({ phases }: { phases: MissionPhaseDetail[] }) {
   if (phases.length === 0) {
     return (
-      <section>
-        <h2 className="mb-3 font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-slate-500">
-          Phase roadmap
-        </h2>
-        <div className="rounded-md p-8 text-center ring-1 ring-inset ring-white/[0.06]">
-          <p className="text-xs text-slate-500">
+      <section className="overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-white/[0.025] to-white/[0.012] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+        <header className="flex items-center gap-2 border-b border-white/[0.05] bg-white/[0.012] px-5 py-3">
+          <ListChecks className="h-3.5 w-3.5 text-slate-400" />
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+            Phase roadmap
+          </h2>
+        </header>
+        <div className="px-5 py-10 text-center">
+          <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.04] ring-1 ring-inset ring-white/[0.06]">
+            <ListChecks className="h-4 w-4 text-slate-500" />
+          </div>
+          <p className="text-[12.5px] text-slate-400">
             No phases yet. Add planning phases via{" "}
             <Link
               href="/dashboard/timeline"
-              className="text-emerald-400 transition hover:text-emerald-300"
+              className="font-medium text-emerald-300 underline-offset-4 transition hover:text-emerald-200 hover:underline"
             >
               Timeline
             </Link>
@@ -553,11 +727,17 @@ function PhaseRoadmap({ phases }: { phases: MissionPhaseDetail[] }) {
   }
 
   return (
-    <section>
-      <h2 className="mb-3 font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-slate-500">
-        Phase roadmap
-      </h2>
-      <ol className="space-y-3">
+    <section className="overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-white/[0.025] to-white/[0.012] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+      <header className="flex items-center justify-between gap-2 border-b border-white/[0.05] bg-white/[0.012] px-5 py-3">
+        <h2 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+          <ListChecks className="h-3.5 w-3.5" />
+          Phase roadmap
+        </h2>
+        <span className="rounded-full bg-white/[0.05] px-2 py-0.5 text-[10.5px] tabular-nums text-slate-400 ring-1 ring-inset ring-white/[0.06]">
+          {phases.length} {phases.length === 1 ? "phase" : "phases"}
+        </span>
+      </header>
+      <ol className="divide-y divide-white/[0.04]">
         {phases.map((phase, idx) => (
           <PhaseRow key={phase.id} phase={phase} order={idx + 1} />
         ))}
@@ -575,57 +755,57 @@ function PhaseRow({
 }) {
   const statusTone =
     phase.status === "IN_PROGRESS"
-      ? "border-l-emerald-500/60 bg-emerald-500/[0.03]"
+      ? "border-l-emerald-500/60 bg-emerald-500/[0.025]"
       : phase.status === "COMPLETED"
         ? "border-l-cyan-500/40"
         : phase.status === "DELAYED"
-          ? "border-l-red-500/60 bg-red-500/[0.03]"
+          ? "border-l-rose-500/60 bg-rose-500/[0.025]"
           : phase.status === "ON_HOLD"
-            ? "border-l-slate-500/30 opacity-60"
+            ? "border-l-slate-500/30 opacity-70"
             : "border-l-amber-500/40";
 
   return (
-    <li
-      className={`rounded-md border-l-2 p-4 ring-1 ring-inset ring-white/[0.06] ${statusTone}`}
-    >
+    <li className={`border-l-2 px-5 py-4 ${statusTone}`}>
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">
+            <span className="rounded-full bg-white/[0.05] px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-slate-400 ring-1 ring-inset ring-white/[0.06]">
               Phase {order}
             </span>
             <PhaseStatusPill status={phase.status} />
           </div>
-          <h3 className="mt-1 truncate text-sm font-semibold text-slate-100">
+          <h3 className="mt-1.5 truncate text-[14px] font-semibold text-slate-100">
             {phase.name}
           </h3>
           {phase.description ? (
-            <p className="mt-1 text-xs text-slate-400">{phase.description}</p>
+            <p className="mt-1 text-[12.5px] leading-relaxed text-slate-400">
+              {phase.description}
+            </p>
           ) : null}
         </div>
         <div className="shrink-0 text-right">
-          <div className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
+          <div className="font-mono text-[10.5px] tabular-nums text-slate-400">
             {phase.startDate.toISOString().slice(0, 10)}
           </div>
-          <div className="font-mono text-[10px] text-slate-600">
+          <div className="font-mono text-[10.5px] tabular-nums text-slate-600">
             → {phase.endDate.toISOString().slice(0, 10)}
           </div>
         </div>
       </header>
 
       <div className="mt-3">
-        <div className="mb-1 flex items-center justify-between font-mono text-[9px] uppercase tracking-wider">
+        <div className="mb-1.5 flex items-center justify-between text-[10.5px] font-semibold uppercase tracking-[0.12em]">
           <span className="text-slate-500">Progress</span>
           <span className="tabular-nums text-slate-300">{phase.progress}%</span>
         </div>
-        <div className="h-1 w-full overflow-hidden rounded-full bg-white/[0.06]">
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/[0.06]">
           <div
             className={`h-full transition-all duration-500 ${
               phase.progress >= 75
-                ? "bg-emerald-500"
+                ? "bg-emerald-400"
                 : phase.progress >= 30
-                  ? "bg-amber-500"
-                  : "bg-slate-500"
+                  ? "bg-amber-400"
+                  : "bg-slate-400"
             }`}
             style={{ width: `${Math.max(0, Math.min(100, phase.progress))}%` }}
             role="progressbar"
@@ -638,7 +818,7 @@ function PhaseRow({
       </div>
 
       {phase.milestones.length > 0 ? (
-        <ul className="mt-4 space-y-2 border-t border-white/[0.06] pt-3">
+        <ul className="mt-4 space-y-2.5 border-t border-white/[0.05] pt-3">
           {phase.milestones.map((m) => (
             <MilestoneRow key={m.id} milestone={m} />
           ))}

@@ -343,13 +343,13 @@ function ToolbarButton({
 }) {
   const colors =
     tone === "rose"
-      ? "ring-rose-500/30 text-rose-300 hover:bg-rose-500/10"
-      : "ring-white/[0.08] text-slate-200 hover:bg-white/[0.04]";
+      ? "border-rose-500/25 bg-rose-500/[0.04] text-rose-300 hover:bg-rose-500/10"
+      : "border-white/[0.08] bg-white/[0.025] text-slate-200 hover:bg-white/[0.05] hover:border-white/[0.14]";
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12px] font-medium ring-1 ring-inset transition ${colors}`}
+      className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12.5px] font-medium transition ${colors}`}
     >
       <Icon className="h-3.5 w-3.5" />
       {label}
@@ -367,21 +367,21 @@ function PanelShell({
   onClose: () => void;
 }) {
   return (
-    <div className="mb-5 rounded-md p-4 ring-1 ring-inset ring-emerald-500/30">
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <h3 className="font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-emerald-300">
+    <div className="mb-6 overflow-hidden rounded-xl border border-emerald-500/20 bg-gradient-to-b from-emerald-500/[0.04] to-emerald-500/[0.012] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+      <div className="flex items-center justify-between gap-2 border-b border-emerald-500/15 bg-emerald-500/[0.04] px-5 py-3">
+        <h3 className="text-[12.5px] font-semibold tracking-tight text-emerald-200">
           {title}
         </h3>
         <button
           type="button"
           onClick={onClose}
-          className="rounded p-1 text-slate-400 transition hover:bg-white/[0.05]"
+          className="rounded-md p-1 text-slate-400 transition hover:bg-white/[0.06] hover:text-slate-200"
           aria-label="Close panel"
         >
           <X className="h-3.5 w-3.5" />
         </button>
       </div>
-      {children}
+      <div className="px-5 py-5">{children}</div>
     </div>
   );
 }
@@ -892,7 +892,7 @@ function Field({
 }) {
   return (
     <label className={`flex flex-col gap-1 ${full ? "sm:col-span-2" : ""}`}>
-      <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">
+      <span className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-slate-400">
         {label}
         {required ? <span className="ml-1 text-rose-400">*</span> : null}
       </span>
@@ -902,7 +902,7 @@ function Field({
 }
 
 const inputClass =
-  "rounded-md bg-white/[0.04] px-2.5 py-1.5 text-[12px] text-slate-100 ring-1 ring-inset ring-white/[0.08] transition focus:outline-none focus:ring-emerald-500/40";
+  "w-full rounded-lg border border-white/[0.07] bg-white/[0.025] px-3 py-2 text-[13px] text-slate-100 placeholder:text-slate-600 transition outline-none hover:bg-white/[0.04] focus:border-emerald-500/40 focus:bg-white/[0.04] focus:ring-2 focus:ring-emerald-500/15";
 
 async function safeJson(res: Response): Promise<{ error?: string } | null> {
   try {
