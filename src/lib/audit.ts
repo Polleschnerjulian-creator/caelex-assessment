@@ -116,7 +116,22 @@ export type AuditAction =
   | "nexus_supplier_updated"
   | "nexus_personnel_added"
   | "nexus_personnel_updated"
-  | "nexus_scores_recalculated";
+  | "nexus_scores_recalculated"
+
+  // Comply V2 action framework — every defineAction()-backed action
+  // writes one of these. Aligns with the action.config.name in
+  // src/lib/comply-v2/actions/*. Adding a new defineAction also
+  // means adding its corresponding audit verb here.
+  | "comply_v2_item_snoozed"
+  | "comply_v2_item_unsnoozed"
+  | "comply_v2_item_note_added"
+  | "comply_v2_item_attestation_requested"
+  | "comply_v2_item_evidence_requested"
+  | "comply_v2_proposal_approved"
+  | "comply_v2_proposal_rejected"
+  | "comply_v2_triage_acknowledged"
+  | "comply_v2_triage_dismissed"
+  | "comply_v2_action_executed";
 
 // Entity types for audit logging
 export type AuditEntityType =
@@ -162,7 +177,14 @@ export type AuditEntityType =
   | "nexus_dependency"
   | "nexus_vulnerability"
   | "nexus_supplier"
-  | "nexus_personnel";
+  | "nexus_personnel"
+
+  // Comply V2 entities — `comply_compliance_item` is the synthetic
+  // ComplianceItem (resolved to a per-regulation requirement-status
+  // row); `comply_proposal` is the AstraProposal pending-queue row.
+  | "comply_compliance_item"
+  | "comply_proposal"
+  | "comply_triage_signal";
 
 export interface AuditLogEntry {
   userId: string;

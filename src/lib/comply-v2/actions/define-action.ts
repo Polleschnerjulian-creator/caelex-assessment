@@ -5,6 +5,14 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isSuperAdmin } from "@/lib/super-admin";
 import { revalidatePath } from "next/cache";
+import { checkRateLimit } from "@/lib/ratelimit";
+import {
+  logAuditEvent,
+  type AuditAction,
+  type AuditEntityType,
+} from "@/lib/audit";
+import { getSafeErrorMessage } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 /**
  * defineAction() — the Palantir-style Action framework for Comply v2.
@@ -61,6 +69,13 @@ export class ActionValidationError extends Error {
   }
 }
 
+export class ActionRateLimitError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ActionRateLimitError";
+  }
+}
+
 interface ActionCriteria {
   requireAuthenticated?: boolean;
   requireRoles?: string[];
@@ -110,6 +125,32 @@ export interface ActionConfig<TSchema extends z.ZodTypeAny> {
   paletteVerb?: PaletteVerbConfig;
   /** Astra tool registration. Omit to hide from AI. */
   astra?: AstraToolConfig;
+  /**
+   * Audit-log configuration. The action framework writes one
+   * AuditLog row after each successful execution (and after each
+   * proposal write for `requiresApproval` actions). If omitted,
+   * defaults to `{ action: "comply_v2_action_executed",
+   * entityType: "comply_compliance_item" }` — better-than-nothing
+   * coverage even for actions whose author forgot to specify.
+   *
+   * Per CLAUDE.md: every state-changing op MUST write an audit
+   * row. The framework enforces this so feature code can't forget.
+   */
+  audit?: {
+    /** Verb to write to AuditLog.action. */
+    action: AuditAction;
+    /** Entity-type to write to AuditLog.entityType. */
+    entityType: AuditEntityType;
+    /** Optional resolver — extract the entity-id from the validated
+     *  params to write to AuditLog.entityId. Falls back to null. */
+    entityIdFromParams?: (params: z.infer<TSchema>) => string | null;
+  };
+  /**
+   * Rate-limit override. Defaults to the `comply_v2_action` tier
+   * (30/min per user). Set to `false` to disable rate-limiting on
+   * this action — DO NOT do this without strong justification.
+   */
+  rateLimit?: false | { tier: "comply_v2_action" };
 }
 
 /**
@@ -342,15 +383,83 @@ export function defineAction<TSchema extends z.ZodTypeAny>(
     };
   };
 
+  // ── Rate-limit gate ──
+  // Defaults to the comply_v2_action tier; opt-out via rateLimit:false.
+  // Throws ActionRateLimitError on quota exceeded so callers can
+  // distinguish from auth/validation/unknown errors.
+  const enforceRateLimit = async (ctx: ActionContext): Promise<void> => {
+    if (config.rateLimit === false) return;
+    const tier = config.rateLimit?.tier ?? "comply_v2_action";
+    const result = await checkRateLimit(tier, `user:${ctx.userId}`);
+    if (!result.success) {
+      throw new ActionRateLimitError(
+        `Rate limit exceeded for action "${config.name}". Try again in ${Math.ceil((result.reset - Date.now()) / 1000)}s.`,
+      );
+    }
+  };
+
+  // ── Audit-log writer ──
+  // Writes a single AuditLog row after a successful action. Per
+  // CLAUDE.md every state-changing op MUST be audited. Failures
+  // here are logged but never block the action — the action is
+  // already complete by the time we get here.
+  const writeAudit = async (
+    ctx: ActionContext,
+    params: z.infer<TSchema>,
+    outcome: "executed" | "proposed",
+  ): Promise<void> => {
+    try {
+      const audit = config.audit;
+      const auditAction: AuditAction =
+        audit?.action ?? "comply_v2_action_executed";
+      const entityType: AuditEntityType =
+        audit?.entityType ?? "comply_compliance_item";
+      const entityId =
+        audit?.entityIdFromParams?.(params) ??
+        // Fallback: try params.itemId / params.id if present.
+        (typeof params === "object" && params !== null
+          ? ((params as Record<string, unknown>).itemId as
+              | string
+              | undefined) ||
+            ((params as Record<string, unknown>).id as string | undefined) ||
+            null
+          : null);
+
+      await logAuditEvent({
+        userId: ctx.userId,
+        action: auditAction,
+        entityType,
+        entityId: entityId ?? "n/a",
+        description:
+          outcome === "proposed"
+            ? `${config.description} — submitted for approval`
+            : config.description,
+        metadata: {
+          actionName: config.name,
+          outcome,
+        },
+      });
+    } catch (err) {
+      // Never let an audit-write failure mask the underlying action.
+      // Just log so we can investigate stuck-audit problems later.
+      logger.error(`[define-action ${config.name}] audit write failed`, err);
+    }
+  };
+
   const action: DefinedAction<TSchema> = {
     config,
     async call(params, options) {
       const ctx = await enforceCriteria();
+      await enforceRateLimit(ctx);
       const validated = validate(params);
       if (config.requiresApproval) {
-        return writeProposal(validated, ctx, options);
+        const deferral = await writeProposal(validated, ctx, options);
+        await writeAudit(ctx, validated, "proposed");
+        return deferral;
       }
-      return config.handler(validated, ctx);
+      const result = await config.handler(validated, ctx);
+      await writeAudit(ctx, validated, "executed");
+      return result;
     },
     async applyApprovedProposal(params, asUserId) {
       // Bypasses requiresApproval gate AND the auth-session lookup
@@ -358,6 +467,10 @@ export function defineAction<TSchema extends z.ZodTypeAny>(
       // session. We construct a synthetic context based on the
       // proposal's owner (`asUserId`) so the handler runs with the
       // *original requester's* permissions, not the approver's.
+      // We DO still write an audit log (the proposal-apply flow
+      // ALSO writes one, but they record different things — the
+      // apply flow records "approved by reviewer X", we record
+      // "the underlying mutation happened").
       const validated = validate(params);
       const owner = await prisma.user.findUnique({
         where: { id: asUserId },
@@ -372,11 +485,14 @@ export function defineAction<TSchema extends z.ZodTypeAny>(
         userRole: owner.role,
         isSuperAdmin: isSuperAdmin(owner.email),
       };
-      return config.handler(validated, ctx);
+      const result = await config.handler(validated, ctx);
+      await writeAudit(ctx, validated, "executed");
+      return result;
     },
     async serverAction(formData) {
       try {
         const ctx = await enforceCriteria();
+        await enforceRateLimit(ctx);
         // FormData → object (single-value fields). For complex types
         // pass JSON in a single "payload" field. Two reserved fields:
         //   _rationale  → optional human-readable note for the
@@ -411,11 +527,19 @@ export function defineAction<TSchema extends z.ZodTypeAny>(
             rationale,
             itemId: proposalItemId ?? null,
           });
+          await writeAudit(ctx, validated, "proposed");
           return { ok: true, result: deferral };
         }
         const result = await config.handler(validated, ctx);
+        await writeAudit(ctx, validated, "executed");
         return { ok: true, result };
       } catch (err) {
+        // User-safe error classification:
+        //   ActionAuthError      → safe to surface (auth gate failed)
+        //   ActionValidationError→ safe to surface (Zod messages)
+        //   ActionRateLimitError → safe to surface (timing info)
+        //   anything else        → use getSafeErrorMessage to mask
+        //                          DB / library internals in prod
         if (err instanceof ActionAuthError) {
           return { ok: false, error: err.message };
         }
@@ -425,9 +549,17 @@ export function defineAction<TSchema extends z.ZodTypeAny>(
             error: `Validation failed: ${err.issues.map((i) => i.message).join("; ")}`,
           };
         }
-        const message =
-          err instanceof Error ? err.message : "Action failed unexpectedly";
-        return { ok: false, error: message };
+        if (err instanceof ActionRateLimitError) {
+          return { ok: false, error: err.message };
+        }
+        // Log the raw error for ops debugging, return a safe-to-show
+        // message to the form. In dev: the actual message; in prod:
+        // a generic "Action failed" string.
+        logger.error(`[define-action ${config.name}] handler failed`, err);
+        return {
+          ok: false,
+          error: getSafeErrorMessage(err, "Action failed unexpectedly"),
+        };
       }
     },
   };

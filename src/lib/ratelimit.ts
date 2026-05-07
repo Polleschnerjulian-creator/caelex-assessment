@@ -346,6 +346,17 @@ export const rateLimiters = redis
         limiter: Ratelimit.slidingWindow(30, "1 m"),
         prefix: "ratelimit:legal_matter_audit_read",
       }),
+
+      // Comply V2 action framework — every defineAction() server
+      // action runs through this. 30/min per user covers power-user
+      // bursts (rapid snooze of multiple items) without enabling
+      // brute-force abuse of the proposal/attestation surface.
+      comply_v2_action: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(30, "1 m"),
+        analytics: true,
+        prefix: "ratelimit:comply_v2_action",
+      }),
     }
   : null;
 
@@ -454,6 +465,7 @@ const fallbackLimiters = {
   legal_matter_accept: new InMemoryRateLimiter(10, 86400000), // 10/day dev vs 20/day
   legal_matter_amendment: new InMemoryRateLimiter(3, 86400000), // 3/day dev vs 5/day
   legal_matter_audit_read: new InMemoryRateLimiter(15, 60000), // 15/min dev vs 30/min
+  comply_v2_action: new InMemoryRateLimiter(15, 60000), // 15/min dev vs 30/min prod
 };
 
 // ─── Public API ───
@@ -493,7 +505,8 @@ export type RateLimitType =
   | "legal_matter_invite"
   | "legal_matter_accept"
   | "legal_matter_amendment"
-  | "legal_matter_audit_read";
+  | "legal_matter_audit_read"
+  | "comply_v2_action";
 
 /**
  * Check rate limit for an identifier.

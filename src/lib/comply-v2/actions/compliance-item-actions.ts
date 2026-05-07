@@ -173,6 +173,11 @@ export const snoozeComplianceItem = defineAction({
     description:
       "Snooze a ComplianceItem for N days. Use when the user wants to defer attention without changing compliance status.",
   },
+  audit: {
+    action: "comply_v2_item_snoozed",
+    entityType: "comply_compliance_item",
+    entityIdFromParams: (p) => p.itemId,
+  },
 });
 
 // ─── unsnoozeComplianceItem ───────────────────────────────────────────────
@@ -202,6 +207,11 @@ export const unsnoozeComplianceItem = defineAction({
   astra: {
     enabled: true,
     description: "Wake a snoozed ComplianceItem back up immediately.",
+  },
+  audit: {
+    action: "comply_v2_item_unsnoozed",
+    entityType: "comply_compliance_item",
+    entityIdFromParams: (p) => p.itemId,
   },
 });
 
@@ -237,6 +247,11 @@ export const addComplianceItemNote = defineAction({
   astra: {
     enabled: true,
     description: "Append a markdown note to a ComplianceItem.",
+  },
+  audit: {
+    action: "comply_v2_item_note_added",
+    entityType: "comply_compliance_item",
+    entityIdFromParams: (p) => p.itemId,
   },
 });
 
@@ -355,6 +370,11 @@ export const markAsAttested = defineAction({
     description:
       "Mark a ComplianceItem as ATTESTED (compliant). High-impact — writes a proposal that a reviewer must approve.",
     requiresProposal: true,
+  },
+  audit: {
+    action: "comply_v2_item_attestation_requested",
+    entityType: "comply_compliance_item",
+    entityIdFromParams: (p) => p.itemId,
   },
 });
 
@@ -475,6 +495,11 @@ export const requestEvidence = defineAction({
     description:
       "Flag a ComplianceItem as requiring additional evidence. High-impact — writes a proposal that a reviewer must approve.",
     requiresProposal: true,
+  },
+  audit: {
+    action: "comply_v2_item_evidence_requested",
+    entityType: "comply_compliance_item",
+    entityIdFromParams: (p) => p.itemId,
   },
 });
 

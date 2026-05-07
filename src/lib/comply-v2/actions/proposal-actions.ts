@@ -4,6 +4,10 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isSuperAdmin } from "@/lib/super-admin";
 import { getActionRegistry } from "./define-action";
+import { logAuditEvent } from "@/lib/audit";
+import { checkRateLimit } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
+import { getSafeErrorMessage } from "@/lib/validations";
 
 /**
  * Proposal lifecycle operations.
@@ -82,7 +86,21 @@ export async function applyProposal(
   proposalId: string,
 ): Promise<DecisionResult> {
   try {
-    const { proposal } = await loadAuthorizedProposal(proposalId);
+    const { proposal, approverUserId } =
+      await loadAuthorizedProposal(proposalId);
+
+    // Rate-limit on the approver — prevents abuse of bulk-approve.
+    const rl = await checkRateLimit(
+      "comply_v2_action",
+      `user:${approverUserId}`,
+    );
+    if (!rl.success) {
+      return {
+        ok: false,
+        status: "RATE_LIMITED",
+        message: `Rate limit exceeded. Try again in ${Math.ceil((rl.reset - Date.now()) / 1000)}s.`,
+      };
+    }
 
     const action = getActionRegistry().get(proposal.actionName);
     if (!action) {
@@ -105,12 +123,36 @@ export async function applyProposal(
       },
     });
 
+    // Reviewer-side audit row — records who approved (separate from
+    // the underlying action audit which records the actual mutation
+    // owned by the proposal originator).
+    try {
+      await logAuditEvent({
+        userId: approverUserId,
+        action: "comply_v2_proposal_approved",
+        entityType: "comply_proposal",
+        entityId: proposalId,
+        description: `Approved proposal "${proposal.actionName}"`,
+        metadata: {
+          actionName: proposal.actionName,
+          proposalOwnerId: proposal.userId,
+          itemId: proposal.itemId,
+        },
+      });
+    } catch (err) {
+      logger.error(`[applyProposal ${proposalId}] audit write failed`, err);
+    }
+
     revalidatePath("/dashboard/proposals");
     revalidatePath("/dashboard/today");
     return { ok: true, status: "APPLIED" };
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Apply failed";
-    return { ok: false, status: "ERROR", message };
+    logger.error(`[applyProposal ${proposalId}] failed`, err);
+    return {
+      ok: false,
+      status: "ERROR",
+      message: getSafeErrorMessage(err, "Apply failed"),
+    };
   }
 }
 
@@ -122,21 +164,53 @@ export async function rejectProposal(
   reviewerNote?: string,
 ): Promise<DecisionResult> {
   try {
-    await loadAuthorizedProposal(proposalId);
+    const { approverUserId } = await loadAuthorizedProposal(proposalId);
+
+    // Rate-limit on the approver.
+    const rl = await checkRateLimit(
+      "comply_v2_action",
+      `user:${approverUserId}`,
+    );
+    if (!rl.success) {
+      return {
+        ok: false,
+        status: "RATE_LIMITED",
+        message: `Rate limit exceeded. Try again in ${Math.ceil((rl.reset - Date.now()) / 1000)}s.`,
+      };
+    }
+
+    const trimmedNote = reviewerNote?.trim() || null;
 
     await prisma.astraProposal.update({
       where: { id: proposalId },
       data: {
         status: "REJECTED",
         decidedAt: new Date(),
-        reviewerNote: reviewerNote?.trim() || null,
+        reviewerNote: trimmedNote,
       },
     });
+
+    try {
+      await logAuditEvent({
+        userId: approverUserId,
+        action: "comply_v2_proposal_rejected",
+        entityType: "comply_proposal",
+        entityId: proposalId,
+        description: `Rejected proposal`,
+        metadata: { reviewerNote: trimmedNote },
+      });
+    } catch (err) {
+      logger.error(`[rejectProposal ${proposalId}] audit write failed`, err);
+    }
 
     revalidatePath("/dashboard/proposals");
     return { ok: true, status: "REJECTED" };
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Reject failed";
-    return { ok: false, status: "ERROR", message };
+    logger.error(`[rejectProposal ${proposalId}] failed`, err);
+    return {
+      ok: false,
+      status: "ERROR",
+      message: getSafeErrorMessage(err, "Reject failed"),
+    };
   }
 }

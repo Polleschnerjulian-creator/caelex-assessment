@@ -46,6 +46,11 @@ export const acknowledgeTriageItem = defineAction({
     description:
       "Mark a triage item as acknowledged. The item is hidden from the active queue but the source signal is preserved.",
   },
+  audit: {
+    action: "comply_v2_triage_acknowledged",
+    entityType: "comply_triage_signal",
+    entityIdFromParams: (p) => p.itemId,
+  },
 });
 
 export const dismissTriageItem = defineAction({
@@ -71,6 +76,11 @@ export const dismissTriageItem = defineAction({
     enabled: true,
     description:
       "Dismiss a triage item as not actionable. Marks the underlying signal resolved across its native surface.",
+  },
+  audit: {
+    action: "comply_v2_triage_dismissed",
+    entityType: "comply_triage_signal",
+    entityIdFromParams: (p) => p.itemId,
   },
 });
 
