@@ -180,10 +180,22 @@ const nextConfig = {
     ],
   },
 
-  // Prevent Next.js from bundling @react-pdf packages server-side.
-  // v3.4.5 embeds react-reconciler v0.23.0 which breaks when Next.js
-  // resolves React via the "react-server" condition (missing __SECRET_INTERNALS).
-  // Using native Node.js require() resolves React via the "default" condition.
+  // Prevent Next.js from bundling problematic packages server-side.
+  //
+  // @react-pdf v3.4.5 embeds react-reconciler v0.23.0 which breaks when
+  // Next.js resolves React via the "react-server" condition (missing
+  // __SECRET_INTERNALS). Using native Node.js require() resolves React
+  // via the "default" condition.
+  //
+  // @sentry/* + @opentelemetry/instrumentation + @prisma/instrumentation:
+  // these use a "dynamic require" pattern that webpack flags as
+  // "Critical dependency: the request of a dependency is an expression"
+  // and that, in production builds on the 8 GB Vercel container, causes
+  // static-page-generation worker processes to deadlock at
+  // "Generating static pages (0/845)..." with no progress and no
+  // diagnostic. Loading these as native Node modules (not webpack
+  // bundles) bypasses the static analysis entirely and unblocks SSG.
+  // Recommended fix from Sentry GitHub issue #11067.
   serverExternalPackages: [
     "@react-pdf/renderer",
     "@react-pdf/layout",
@@ -195,6 +207,10 @@ const nextConfig = {
     "@react-pdf/primitives",
     "jsdom",
     "isomorphic-dompurify",
+    "@sentry/node",
+    "@sentry/nextjs",
+    "@opentelemetry/instrumentation",
+    "@prisma/instrumentation",
   ],
 
   // Experimental features
