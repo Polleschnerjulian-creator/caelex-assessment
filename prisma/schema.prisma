@@ -44,6 +44,10 @@ model User {
   tradeItemsCreated TradeItem[]     @relation("TradeItemAuthor")
   tradeItemNotes    TradeItemNote[]
 
+  // Comply Trade v2 (Wave A Sprint A1) — counterparty screening back-refs.
+  tradePartiesCreated     TradeParty[]           @relation("TradePartyAuthor")
+  tradeScreeningsDecided  TradeScreeningResult[] @relation("TradeScreeningDecider")
+
   accounts                 Account[]
   sessions                 Session[]
   articleStatuses          ArticleStatus[]
@@ -2764,7 +2768,9 @@ model Organization {
 
   // Comply Trade v2 (Wave B Sprint B1) — operations-layer items.
   // Counterparties + Operations + Licenses kommen in Wave A/C.
-  tradeItems TradeItem[]
+  tradeItems   TradeItem[]
+  // Comply Trade v2 (Wave A Sprint A1) — counterparty screening.
+  tradeParties TradeParty[]
 
   // Multi-tenancy: org-scoped models
   auditLogs                AuditLog[]
@@ -10443,4 +10449,206 @@ model TradeItemNote {
 
   @@index([itemId, createdAt])
   @@index([userId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMPLY TRADE v2 — Wave A Sprint A1: Counterparty Screening Foundation
+// ═══════════════════════════════════════════════════════════════════════════════
+// Strategischer Kontext: docs/COMPLY-EXPORT-CONTROL-CONCEPT.md § 3.1
+// Operativer Sprint-Plan: docs/COMPLY-EXPORT-CONTROL-PLAN.md § 4
+//
+// Wave A baut die Counterparty-Schicht: Operatoren legen TradeParty-
+// Records an (Käufer, End-User, Intermediates), das System screent gegen
+// OFAC SDN + BIS Entity List + DDTC Debarred + EU FSF + UK OFSI + UN
+// (alle frei via offizielle URLs in Sprint A2-A3) und persistiert
+// zeitlich indizierte Screening-Ergebnisse mit Snapshot-Hash.
+//
+// Wave B (TradeItem) ist bereits live. Wave C (TradeOperation +
+// TradeLicense Lifecycle) folgt nach Wave A. Operation-Relations sind
+// hier vorbereitet (kommentiert), aktiviert in Wave C Sprint C1.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Eine Counterparty in einer Trade-Operation: Buyer, End-User, Consignee,
+/// Intermediate. Ein TradeParty-Record kann in mehreren Operations
+/// referenziert werden — derselbe Käufer für mehrere Sendungen, derselbe
+/// End-User für mehrere Lieferungen.
+///
+/// Screening läuft kontinuierlich (Cron in Sprint A7) gegen alle Listen:
+/// OFAC SDN, BIS Entity List, DDTC Debarred Parties, EU FSF, UK OFSI,
+/// UN-Sanctions. Plus 50%-Rule-Cascade über `beneficialOwners` wenn
+/// indirekte Eigentumsverhältnisse zu sanktionierten Entities bestehen.
+model TradeParty {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdById    String
+  createdBy      User         @relation("TradePartyAuthor", fields: [createdById], references: [id], onDelete: Cascade)
+
+  // ── Identity ──
+  legalName    String
+  tradeName    String?
+  /// ISO 3166-1 alpha-2 (DE, US, CN, RU, ...)
+  countryCode  String
+  addressLines String[] @default([])
+
+  /// Normalized lowercase form for fuzzy matching against sanctions lists.
+  /// "ICEYE Polska sp. z o.o." → "iceye polska". Maintained by entity-
+  /// resolution job (Sprint A5). Stored separate from legalName so we
+  /// preserve original spelling for display while comparing on canonical.
+  canonicalName String @db.Text
+
+  // ── External identifiers (for high-confidence matching) ──
+  vatNumber     String?
+  ducnsNumber   String? // D-U-N-S
+  leiCode       String? // Legal Entity Identifier (ISO 17442)
+  cageCode      String? // US DoD CAGE
+  iso3166Region String?
+
+  // ── Beneficial-Ownership Graph (for OFAC 50%-Rule cascade) ──
+  beneficialOwners TradePartyOwnership[] @relation("OwnedEntity")
+  ownershipIn      TradePartyOwnership[] @relation("OwnerEntity")
+
+  // ── Latest screening result (denormalized for list queries) ──
+  lastScreenedAt  DateTime?
+  screeningStatus TradeScreeningStatus @default(NOT_SCREENED)
+  /// Top-N raw hits for quick UI rendering. Full set persists in
+  /// TradeScreeningResult. Shape: [{ list, entryId, score, matchedFields }]
+  screeningHits   Json?
+
+  // ── Risk markers ──
+  /// True if this party is a "US person" per 22 CFR §120.62 — relevant
+  /// for ITAR §126 deemed-export rules.
+  isUSPerson        Boolean @default(false)
+  /// True if countryCode is on a high-risk list (CN, RU, IR, KP, BY, ...).
+  /// Computed from countryCode by application logic, persisted for fast
+  /// filter queries.
+  isHighRiskCountry Boolean @default(false)
+
+  // ── Audit + lifecycle ──
+  status        TradePartyStatus @default(ACTIVE)
+  blockedReason String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  // Wave C — TradeOperation back-refs (kommentiert bis Sprint C1):
+  // operations    TradeOperation[] @relation("OperationCounterparty")
+  // intermediates TradeOperation[] @relation("OperationIntermediates")
+
+  screenings TradeScreeningResult[]
+
+  @@index([organizationId, canonicalName])
+  @@index([organizationId, screeningStatus])
+  @@index([organizationId, status])
+  @@index([organizationId, createdAt])
+  @@index([countryCode])
+}
+
+/// Beneficial-Ownership-Edge zwischen zwei TradeParty-Knoten. Ein
+/// gerichteter Graph mit `owner` → `owned`. Dient der OFAC-50%-Rule-
+/// Cascade in Sprint A6: wenn Sanctions-Hit auf einen Owner → cascade
+/// auf alle owned mit kumuliertem Eigentumsanteil ≥ 50%.
+///
+/// Plus: post-Dec-2025 OFAC-Trustee-Doctrine (controlType = "control_no_equity")
+/// erlaubt es, Kontrolle ohne Eigentum zu modellieren — z.B. wenn eine
+/// sanktionierte Person Treuhänder eines nicht-sanktionierten Trusts ist.
+model TradePartyOwnership {
+  id      String     @id @default(cuid())
+  ownerId String
+  owner   TradeParty @relation("OwnerEntity", fields: [ownerId], references: [id], onDelete: Cascade)
+  ownedId String
+  owned   TradeParty @relation("OwnedEntity", fields: [ownedId], references: [id], onDelete: Cascade)
+
+  /// Direct equity percentage as decimal (0.0 – 1.0). 0.5 = 50%.
+  /// Cascade engine in Sprint A6 multiplies this along ownership chains.
+  percent Float
+
+  /// "voting" — voting rights without economic interest
+  /// "economic" — equity ownership (default)
+  /// "control_no_equity" — post-Dec-2025 OFAC trustee/control doctrine
+  controlType String @default("economic")
+
+  notes     String?
+  createdAt DateTime @default(now())
+
+  @@unique([ownerId, ownedId])
+  @@index([ownedId])
+}
+
+/// Time-indexed screening result for a TradeParty. Each call to the
+/// screening engine produces one row — never updated, only inserted.
+/// This gives us a complete history: when did we screen this party,
+/// against which list version (snapshotHash), what was the outcome,
+/// who decided how to triage hits.
+///
+/// Decisions recorded here drive `TradeParty.screeningStatus` and
+/// `TradeParty.lastScreenedAt` denormalized fields for fast list views.
+///
+/// Retention: 5+ years per §22 AWV / 15 CFR Part 762 — never delete.
+model TradeScreeningResult {
+  id      String     @id @default(cuid())
+  partyId String
+  party   TradeParty @relation(fields: [partyId], references: [id], onDelete: Cascade)
+
+  /// All hits at screening time. Shape:
+  /// [{ list: "OFAC_SDN", entryId: "12345", score: 0.97, matchedFields: ["name", "address"] }]
+  /// Empty array = CLEAR result.
+  hits Json
+
+  decision    TradeScreeningDecision
+  decidedById String?
+  decidedBy   User?                  @relation("TradeScreeningDecider", fields: [decidedById], references: [id], onDelete: SetNull)
+  decidedAt   DateTime?
+
+  notes String? @db.Text
+
+  /// SHA-256 of the OFAC/BIS/etc snapshot used for this screening.
+  /// Lets us prove later WHICH list version was checked when an audit
+  /// asks "did you screen against the up-to-date list on date X?".
+  /// Snapshot itself is stored in object storage — hash here is the
+  /// integrity-proof + cache-key.
+  snapshotHash String
+
+  createdAt DateTime @default(now())
+
+  @@index([partyId, createdAt])
+  @@index([decision])
+  @@index([snapshotHash])
+}
+
+/// Lifecycle status of a TradeParty. NOT_SCREENED → either CLEAR or
+/// POTENTIAL_MATCH after first screening run. POTENTIAL_MATCH requires
+/// human triage (decidedBy on TradeScreeningResult) which resolves to
+/// CONFIRMED_HIT (block) or back to CLEAR (false positive).
+/// STALE = no screening within 30 days, needs refresh by Sprint A7 cron.
+enum TradeScreeningStatus {
+  NOT_SCREENED
+  CLEAR
+  POTENTIAL_MATCH
+  CONFIRMED_HIT
+  STALE
+}
+
+/// Decision recorded by a human reviewer (or system "CLEAR" automatic)
+/// on each TradeScreeningResult. Drives the TradeParty.screeningStatus.
+enum TradeScreeningDecision {
+  /// No hits found — system-recorded, no human review needed.
+  CLEAR
+  /// At least one hit above the fuzzy-match threshold; needs human review.
+  POTENTIAL_MATCH
+  /// Human reviewer confirmed the hit is a real match. Party should be
+  /// blocked from new operations. Existing operations need re-evaluation.
+  CONFIRMED_HIT
+  /// Human reviewer dismissed the hit as a false positive (different
+  /// person, different entity). Party returns to CLEAR status.
+  FALSE_POSITIVE_DISMISSED
+}
+
+/// Lifecycle status of a TradeParty record itself, independent of
+/// screening status. ACTIVE = operational. ARCHIVED = no longer used
+/// (kept for audit trail, no new operations). BLOCKED = sanctions hit
+/// or operator decision to block (with blockedReason populated).
+enum TradePartyStatus {
+  ACTIVE
+  ARCHIVED
+  BLOCKED
 }
