@@ -94,10 +94,11 @@ export default async function TradeOverviewPage() {
             live: true,
           },
           {
-            href: "#",
+            href: "/dashboard/trade/operations",
             label: "Operations Lifecycle",
-            sublabel: "License stack per shipment — Wave C",
-            live: false,
+            sublabel:
+              "Items × Counterparty × Route × License — Wave C (C1+C2 live)",
+            live: true,
           },
         ].map((card) => (
           <Link key={card.href} href={card.href}>
@@ -224,8 +225,8 @@ export default async function TradeOverviewPage() {
           <RoadmapRow
             icon={ListChecks}
             label="Wave C — Operations-Lifecycle"
-            description="TradeOperation als atomarer Liefer-Vorgang mit License-Stack und BAFA-ELAN-K2-Vorbereitung."
-            tone="planned"
+            description="TradeOperation als atomarer Liefer-Vorgang mit License-Stack. C1 (schema), C2 (list+detail+create) live. C3 (status transitions, lines mgmt, drawdown engine) und C4 (BAFA-ELAN-K2 PDF prefill) folgen."
+            tone="active"
           />
         </ul>
       </div>
