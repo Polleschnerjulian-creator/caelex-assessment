@@ -10608,6 +10608,24 @@ model TradeScreeningResult {
   /// integrity-proof + cache-key.
   snapshotHash String
 
+  /// 50%-rule cascade analysis snapshot at screening time (Sprint A6).
+  /// Shape (matches CascadeResult from cascade-50pct.ts):
+  ///   {
+  ///     ancestors: [
+  ///       { ancestorId, ancestorName, countryCode, effectivePercent,
+  ///         screeningStatus, isBlocked, pathCount }
+  ///     ],
+  ///     aggregateSanctionedOwnership: number 0.0-1.0,
+  ///     cascadeHit: boolean,
+  ///     sanctionedAncestorCount: number,
+  ///     totalCascadedOwnership: number,
+  ///   }
+  /// Null if cascade engine returned null (party absent from graph).
+  /// Persisted so the screening-history UI can display the ancestor
+  /// chain weeks/months after the run, and the audit-trail captures
+  /// WHICH ownership graph state was analyzed.
+  cascade Json?
+
   createdAt DateTime @default(now())
 
   @@index([partyId, createdAt])

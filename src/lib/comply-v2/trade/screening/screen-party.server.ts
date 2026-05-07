@@ -198,6 +198,10 @@ export async function screenParty(
             : null,
         decidedAt: decision === TradeScreeningDecision.CLEAR ? now : null,
         snapshotHash: combinedHash,
+        // Sprint A6: persist cascade snapshot so the UI can display
+        // ancestor chains weeks later, and audit captures the exact
+        // ownership-graph state used.
+        cascade: cascade ? (cascade as unknown as object) : undefined,
       },
     }),
     prisma.tradeParty.update({

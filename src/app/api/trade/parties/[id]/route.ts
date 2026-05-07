@@ -78,6 +78,7 @@ export async function GET(
             createdAt: true,
             snapshotHash: true,
             hits: true,
+            cascade: true,
             notes: true,
             decidedBy: { select: { id: true, name: true, email: true } },
           },

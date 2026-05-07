@@ -36,6 +36,29 @@ interface ScreeningHit {
   matchedFields: string[];
 }
 
+interface CascadeAncestorView {
+  ancestorId: string;
+  ancestorName: string;
+  countryCode: string;
+  effectivePercent: number;
+  screeningStatus:
+    | "NOT_SCREENED"
+    | "CLEAR"
+    | "POTENTIAL_MATCH"
+    | "CONFIRMED_HIT"
+    | "STALE";
+  isBlocked: boolean;
+  pathCount: number;
+}
+
+interface CascadeView {
+  ancestors: CascadeAncestorView[];
+  aggregateSanctionedOwnership: number;
+  cascadeHit: boolean;
+  sanctionedAncestorCount: number;
+  totalCascadedOwnership: number;
+}
+
 interface ScreeningRow {
   id: string;
   decision:
@@ -47,6 +70,7 @@ interface ScreeningRow {
   createdAt: string;
   snapshotHash: string;
   hits: ScreeningHit[];
+  cascade: CascadeView | null;
   notes: string | null;
   decidedBy: { id: string; name: string | null; email: string } | null;
 }
@@ -607,6 +631,10 @@ function ScreeningRowItem({
             </div>
           ))}
 
+          {row.cascade && row.cascade.ancestors.length > 0 && (
+            <CascadeChainView cascade={row.cascade} />
+          )}
+
           {row.notes && (
             <div
               className="rounded-md px-3 py-2 text-[11px]"
@@ -766,5 +794,117 @@ function DecisionPill({ decision }: { decision: ScreeningRow["decision"] }) {
     >
       {s.label}
     </span>
+  );
+}
+
+function CascadeChainView({ cascade }: { cascade: CascadeView }) {
+  const sanctionedAncestors = cascade.ancestors.filter(
+    (a) => a.screeningStatus === "CONFIRMED_HIT" || a.isBlocked,
+  );
+  const cleanAncestors = cascade.ancestors.filter(
+    (a) => a.screeningStatus !== "CONFIRMED_HIT" && !a.isBlocked,
+  );
+
+  return (
+    <div
+      className="rounded-md p-3"
+      style={{
+        background: cascade.cascadeHit
+          ? "rgba(239,68,68,0.10)"
+          : sanctionedAncestors.length > 0
+            ? "rgba(251,191,36,0.08)"
+            : "rgba(255,255,255,0.04)",
+        boxShadow: cascade.cascadeHit
+          ? "inset 0 0 0 0.5px rgba(239,68,68,0.30)"
+          : "inset 0 0 0 0.5px rgba(255,255,255,0.07)",
+      }}
+    >
+      <div
+        className="mb-2 flex items-center justify-between text-[10px] font-semibold uppercase tracking-widest"
+        style={{
+          color: cascade.cascadeHit
+            ? "rgb(248,113,113)"
+            : "rgba(255,255,255,0.5)",
+        }}
+      >
+        <span>50%-Rule Cascade</span>
+        <span style={{ color: "rgba(255,255,255,0.55)" }}>
+          {(cascade.aggregateSanctionedOwnership * 100).toFixed(1)}% sanctioned
+          {cascade.cascadeHit && " · TRIGGERED"}
+        </span>
+      </div>
+
+      {sanctionedAncestors.length > 0 && (
+        <div className="mb-2 space-y-1">
+          {sanctionedAncestors.map((a) => (
+            <CascadeAncestorRow
+              key={a.ancestorId}
+              ancestor={a}
+              tone="sanctioned"
+            />
+          ))}
+        </div>
+      )}
+
+      {cleanAncestors.length > 0 && (
+        <div className="space-y-1">
+          {cleanAncestors.slice(0, 5).map((a) => (
+            <CascadeAncestorRow key={a.ancestorId} ancestor={a} tone="clean" />
+          ))}
+          {cleanAncestors.length > 5 && (
+            <div
+              className="px-2 text-[10px]"
+              style={{ color: "rgba(255,255,255,0.4)" }}
+            >
+              +{cleanAncestors.length - 5} more clean ancestors
+            </div>
+          )}
+        </div>
+      )}
+
+      {cascade.totalCascadedOwnership < 0.999 && (
+        <div
+          className="mt-2 text-[10px]"
+          style={{ color: "rgba(255,255,255,0.4)" }}
+        >
+          {(cascade.totalCascadedOwnership * 100).toFixed(1)}% of equity modeled
+          in graph; remainder held by parties not (yet) added as counterparties.
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CascadeAncestorRow({
+  ancestor,
+  tone,
+}: {
+  ancestor: CascadeAncestorView;
+  tone: "sanctioned" | "clean";
+}) {
+  const isSanctioned = tone === "sanctioned";
+  return (
+    <div
+      className="flex items-center gap-2 rounded px-2 py-1.5 text-[11px]"
+      style={{
+        background: isSanctioned ? "rgba(239,68,68,0.12)" : "rgba(0,0,0,0.20)",
+        color: "rgba(255,255,255,0.75)",
+      }}
+    >
+      <span
+        className="font-mono"
+        style={{
+          color: isSanctioned ? "rgb(248,113,113)" : "rgba(255,255,255,0.45)",
+          minWidth: "4ch",
+        }}
+      >
+        {(ancestor.effectivePercent * 100).toFixed(1)}%
+      </span>
+      <span className="flex-1 truncate">{ancestor.ancestorName}</span>
+      <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>
+        {ancestor.countryCode}
+        {ancestor.pathCount > 1 && ` · ${ancestor.pathCount} paths`}
+      </span>
+    </div>
   );
 }
