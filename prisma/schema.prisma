@@ -51,6 +51,11 @@ model User {
   // Comply Trade v2 (Wave C Sprint C1) — operations + license back-refs.
   tradeOperationsCreated  TradeOperation[]       @relation("TradeOperationAuthor")
 
+  // Mission domain (Sprint Mission-1) — first-class Mission entity
+  // back-ref. Author of the Mission (creator). Distinct from
+  // MissionSpacecraft / MissionPhase which have their own lifecycles.
+  missionsCreated         Mission[]              @relation("MissionAuthor")
+
   accounts                 Account[]
   sessions                 Session[]
   articleStatuses          ArticleStatus[]
@@ -1888,8 +1893,21 @@ model MissionPhase {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  /// Legacy free-form mission identifier (string). Pre-Sprint-Mission-1
+  /// this was the canonical link from a phase to "the mission" (which
+  /// was implicitly the Spacecraft.id). Kept for backward compat — the
+  /// auto-migration in missions.server.ts populates missionRefId on
+  /// first list-fetch.
   missionId   String
   missionName String?
+
+  /// New first-class FK to Mission. Nullable during transition; new
+  /// code should set this when creating phases. Once all phases have
+  /// missionRefId backfilled, missionId/missionName can be dropped in
+  /// a future migration.
+  missionRefId String?
+  missionRef   Mission? @relation(fields: [missionRefId], references: [id], onDelete: SetNull)
+
   name        String
   description String?     @db.Text
   startDate   DateTime
@@ -1910,6 +1928,7 @@ model MissionPhase {
   updatedAt DateTime @updatedAt
 
   @@index([userId, missionId])
+  @@index([missionRefId])
   @@index([status])
 }
 
@@ -1977,6 +1996,210 @@ enum MilestoneStatus {
   COMPLETED
   MISSED
   RESCHEDULED
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MISSION DOMAIN — first-class Mission entity (Sprint Mission-1 refactor)
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Background: Pre-refactor the platform treated each Spacecraft as
+// equivalent to one Mission (1:1 hardcoded). That broke for:
+//   - Constellation operators (ICEYE, Kepler, Iridium): 1 mission with
+//     N spacecraft serving the same operational program
+//   - Launchers (Isar, RFA, Rocket Lab): 1 vehicle TYPE flying many
+//     missions (Spectrum #1 = maiden flight, #2 = cubesat cluster…)
+//   - Multi-mission spacecraft: a GEO sat at end-of-life can be moved
+//     to inclined orbit for a second mission
+//   - Pre-launch planning: mission exists conceptually (NASA Phase A/B)
+//     before any spacecraft is registered
+//   - Sequential customers: same hardware, different end-user = new
+//     compliance mission with its own auth-workflow
+//
+// New model:
+//   Mission (1) ──── MissionSpacecraft (M:N) ──── Spacecraft
+//      │                  (role, time-bounded)
+//      └── MissionPhase (now FK'd via missionRefId)
+//             └── Milestone
+//
+// Backward compat: legacy MissionPhase.missionId (string) is kept;
+// missionRefId is the new FK. Server logic in missions.server.ts
+// auto-migrates: for each existing Spacecraft without a Mission row,
+// creates a default 1:1 Mission on first list-fetch.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Top-level Mission entity. Independent of any specific spacecraft —
+/// supports planning-only missions, multi-spacecraft constellations,
+/// and sequential missions on shared hardware.
+model Mission {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdById    String
+  createdBy      User         @relation("MissionAuthor", fields: [createdById], references: [id], onDelete: Cascade)
+
+  // ── Identity ──
+  name        String
+  description String? @db.Text
+  /// User-friendly external reference (e.g. "ICEYE-FY26-OPS",
+  /// "SPECTRUM-MAIDEN-001"). Unique per org.
+  reference   String?
+
+  // ── Domain classification ──
+  /// Drives applicable regulations + compliance requirements. EARTH_OBSERVATION
+  /// triggers EU Space Act § 14 (data-distribution licensing); LAUNCH adds
+  /// ITAR Part 121 + Outer Space Treaty registration; SCIENCE has reduced
+  /// frequency-coordination duties; HUMAN_SPACEFLIGHT adds liability tier.
+  missionType MissionType @default(EARTH_OBSERVATION)
+
+  /// NASA-standard program lifecycle (Phase A-F). Independent of the
+  /// spacecraft hardware lifecycle — a mission can be in Phase D
+  /// (Implementation) while the spacecraft is still PRE_LAUNCH, or in
+  /// Phase F (Closeout) while the spacecraft is being deorbited.
+  programPhase MissionProgramPhase @default(PHASE_A)
+
+  /// Operational status — broader than programPhase (which tracks
+  /// progression through Phase A/B/C/D/E/F). status answers "is this
+  /// mission active right now?" at a glance.
+  status MissionStatus @default(PLANNED)
+
+  // ── End-user / customer ──
+  /// Primary end-user organization name (e.g. "ESA EOP-S",
+  /// "BMVg / Bundeswehr", "Iceye Government Solutions"). Drives
+  /// counterparty screening + catch-all-evaluation (military-end-use
+  /// keyword match). May differ from the operator's organization for
+  /// service-provider missions (Iceye delivers data to government
+  /// customers).
+  primaryEndUser    String?
+  primaryEndUserCountryCode String?  // ISO 3166-1 alpha-2
+
+  // ── Lifecycle dates ──
+  plannedStartAt DateTime?
+  startedAt      DateTime?
+  endedAt        DateTime?
+
+  // ── Authority references (free-text) ──
+  /// Permit / license numbers from BAFA, FCC, BNetzA, etc that apply
+  /// to the WHOLE mission (vs per-spacecraft licenses tracked elsewhere).
+  authorityRefs  String[] @default([])
+
+  // ── Audit ──
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ── Relations ──
+  spacecraft MissionSpacecraft[]
+  phases     MissionPhase[]
+
+  @@unique([organizationId, reference])
+  @@index([organizationId, status])
+  @@index([organizationId, programPhase])
+  @@index([organizationId, missionType])
+  @@index([createdAt])
+}
+
+/// Junction table for the Mission ↔ Spacecraft M:N relationship.
+/// Time-bounded — a spacecraft can join a mission, leave, and rejoin
+/// (or join multiple missions sequentially across its lifetime).
+model MissionSpacecraft {
+  id           String     @id @default(cuid())
+  missionId    String
+  mission      Mission    @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  spacecraftId String
+  spacecraft   Spacecraft @relation(fields: [spacecraftId], references: [id], onDelete: Cascade)
+
+  /// Role of this spacecraft in this mission. Common values:
+  ///   "primary"             — the main operating asset
+  ///   "backup"              — hot/cold standby
+  ///   "constellation_member" — one of N satellites in a constellation
+  ///   "drone"               — formation-flying drone/chaser
+  ///   "rideshare"           — secondary payload on a primary mission
+  role String @default("primary")
+
+  /// When this spacecraft was assigned to this mission. Defaults to
+  /// the row's createdAt — explicit field lets us backdate historical
+  /// assignments during data import.
+  startedAt DateTime @default(now())
+
+  /// When this spacecraft left this mission. Null = still active.
+  /// Mission-end + spacecraft-decommission are tracked separately —
+  /// this is the assignment-relationship lifecycle.
+  endedAt DateTime?
+
+  /// For constellations: 1-indexed slot number (orbital plane / phasing
+  /// position). Helps disambiguate "satellite #5" in a fleet.
+  constellationSlot Int?
+
+  /// Free-text notes about this assignment (e.g. "primary until Phase E
+  /// starts, then backup").
+  notes String? @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@unique([missionId, spacecraftId, startedAt])
+  @@index([missionId])
+  @@index([spacecraftId])
+}
+
+/// Mission classification driving applicable compliance regimes.
+/// New types are additive — never remove a value (would break enum
+/// columns in production).
+enum MissionType {
+  /// Launch vehicles + their development flights
+  LAUNCH
+  /// Earth observation (optical, SAR, hyperspectral, etc)
+  EARTH_OBSERVATION
+  /// Communications (broadband, IoT, broadcast, government)
+  COMMUNICATIONS
+  /// PNT (positioning / navigation / timing)
+  NAVIGATION
+  /// Scientific / research missions
+  SCIENCE
+  /// In-Orbit Demonstration (technology validation)
+  IOD
+  /// Pure technology demo (subset of IOD, focused on TRL advancement)
+  TECH_DEMO
+  /// Human spaceflight (crew transport, station ops)
+  HUMAN_SPACEFLIGHT
+  /// On-Orbit Servicing / Active Debris Removal
+  OOS_ADR
+  /// Other (free-text in description recommended)
+  OTHER
+}
+
+/// NASA-standard mission program lifecycle. Each phase has well-known
+/// review gates (SRR, MDR, PDR, CDR, ORR, FRR, MRR, DRR…) and gating
+/// criteria. The compliance system surfaces phase-appropriate
+/// regulatory requirements (e.g. spectrum coordination opens at
+/// Phase B, debris-mitigation plan due by Phase C end).
+enum MissionProgramPhase {
+  /// Concept Studies — feasibility, mission needs, system trade studies
+  PHASE_A
+  /// Concept & Technology Development — preliminary design, key tech maturation
+  PHASE_B
+  /// Preliminary Design & Technology Completion — PDR, system design freeze
+  PHASE_C
+  /// System Assembly, Integration, Test & Launch — manufacture, AIT, launch readiness
+  PHASE_D
+  /// Operations & Sustainment — primary mission ops
+  PHASE_E
+  /// Closeout — decommissioning, deorbit, archive
+  PHASE_F
+}
+
+/// Mission operational status. Independent of programPhase — a mission
+/// can be ACTIVE in PHASE_E (operating normally), PAUSED in PHASE_E
+/// (anomaly investigation), or COMPLETED in PHASE_F.
+enum MissionStatus {
+  /// Concept / planning, not yet started
+  PLANNED
+  /// In active execution (any program phase A-E)
+  ACTIVE
+  /// Mission completed nominally (typically PHASE_F)
+  COMPLETED
+  /// Temporarily paused (anomaly, regulatory hold, customer pause)
+  PAUSED
+  /// Permanently cancelled before completion
+  CANCELLED
 }
 
 enum ModuleType {
@@ -2778,6 +3001,10 @@ model Organization {
   tradeOperations TradeOperation[]
   tradeLicenses   TradeLicense[]
 
+  // Mission domain (Sprint Mission-1) — first-class Mission rows
+  // (vs the legacy 1:1 Spacecraft=Mission collapse). Org-scoped.
+  missions Mission[]
+
   // Multi-tenancy: org-scoped models
   auditLogs                AuditLog[]
   auditTimestampAnchors    AuditTimestampAnchor[] // Sprint 8A — OpenTimestamps audit anchors
@@ -2984,6 +3211,11 @@ model Spacecraft {
   assets              Asset[]
   hazardEntries       HazardEntry[]
   debrisAssessments   DebrisAssessment[]
+
+  // Mission domain (Sprint Mission-1) — Spacecraft can serve N missions
+  // across its lifetime (sequential customers, GEO end-of-life relocation,
+  // etc). Time-bounded via MissionSpacecraft.startedAt / endedAt.
+  missionAssignments MissionSpacecraft[]
 
   @@index([organizationId])
   @@index([cosparId])
