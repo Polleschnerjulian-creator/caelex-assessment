@@ -31,6 +31,7 @@ import {
 import { OperationLinesPanel } from "@/components/trade/OperationLinesPanel";
 import { OperationLifecyclePanel } from "@/components/trade/OperationLifecyclePanel";
 import { OperationLicensesPanel } from "@/components/trade/OperationLicensesPanel";
+import { BafaPdfButton } from "@/components/trade/BafaPdfButton";
 
 interface RiskFactorView {
   key: string;
@@ -393,6 +394,16 @@ export default function OperationDetailPage({
           </ul>
         </div>
       )}
+
+      {/* Action bar — BAFA-PDF + future BAFA-direct-submit (Sprint C4) */}
+      <div className="mb-6 flex flex-wrap items-center justify-end gap-3">
+        <BafaPdfButton
+          operation={op}
+          applicant={{
+            legalName: "Caelex-Operator",
+          }}
+        />
+      </div>
 
       {/* Lifecycle pipeline + transition buttons (Sprint C3b) */}
       <div className="mb-6">
