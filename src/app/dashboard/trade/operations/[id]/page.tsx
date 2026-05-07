@@ -24,15 +24,12 @@ import {
   ArrowLeft,
   ArrowRight,
   Truck,
-  Package,
   FileText,
   Globe,
-  Calendar,
   AlertTriangle,
-  Clock,
-  CheckCircle2,
-  XCircle,
+  Calendar,
 } from "lucide-react";
+import { OperationLinesPanel } from "@/components/trade/OperationLinesPanel";
 
 interface OperationLine {
   id: string;
@@ -465,49 +462,25 @@ export default function OperationDetailPage({
           </div>
         </section>
 
-        {/* Lines */}
-        <section
-          className="lg:col-span-3 rounded-2xl"
-          style={{
-            boxShadow: "inset 0 0 0 0.5px rgba(255,255,255,0.07)",
-          }}
-        >
-          <div
-            className="border-b px-5 py-3"
-            style={{ borderColor: "rgba(255,255,255,0.06)" }}
-          >
-            <h2
-              className="text-[10px] font-semibold uppercase tracking-[0.14em]"
-              style={{ color: "rgba(255,255,255,0.5)" }}
-            >
-              Operation Lines ({op.lines.length})
-            </h2>
-            <p
-              className="mt-0.5 text-[11px]"
-              style={{ color: "rgba(255,255,255,0.4)" }}
-            >
-              Adding/removing lines + license assignment lands in Sprint C3.
-            </p>
-          </div>
-          {op.lines.length === 0 ? (
-            <div
-              className="px-5 py-8 text-center text-[12px]"
-              style={{ color: "rgba(255,255,255,0.4)" }}
-            >
-              <Package
-                className="mx-auto mb-2 h-6 w-6 opacity-50"
-                strokeWidth={1.5}
-              />
-              No lines yet. Items + quantities can be added in Sprint C3.
-            </div>
-          ) : (
-            <ul>
-              {op.lines.map((line) => (
-                <LineRow key={line.id} line={line} />
-              ))}
-            </ul>
-          )}
-        </section>
+        {/* Lines — managed by OperationLinesPanel (Sprint C3a) */}
+        <div className="lg:col-span-3">
+          <OperationLinesPanel
+            operationId={op.id}
+            initialLines={op.lines}
+            isReadOnly={
+              op.status === "EXECUTED" ||
+              op.status === "VOLUNTARY_DISCLOSURE_FILED" ||
+              op.status === "BLOCKED"
+            }
+            onLinesChanged={() => {
+              // Reload to refresh denormalized counts + summary stats
+              fetch(`/api/trade/operations/${op.id}`)
+                .then((r) => r.json())
+                .then((data) => setOp(data.operation ?? null))
+                .catch(() => {});
+            }}
+          />
+        </div>
 
         {/* Licenses */}
         <section
@@ -622,93 +595,6 @@ function KV({
         {value}
       </div>
     </div>
-  );
-}
-
-function LineRow({ line }: { line: OperationLine }) {
-  const lineTotal = line.quantity * line.unitValue;
-  const codes = [
-    line.item.eccnEU,
-    line.item.eccnUS,
-    line.item.usmlCategory,
-    line.item.mtcrCategory,
-    line.item.germanAlEntry,
-  ].filter(Boolean);
-
-  return (
-    <li
-      className="flex items-center gap-4 border-b px-5 py-3 last:border-0"
-      style={{ borderColor: "rgba(255,255,255,0.04)" }}
-    >
-      <Package
-        className="h-4 w-4 shrink-0"
-        strokeWidth={1.75}
-        style={{ color: "rgba(255,255,255,0.5)" }}
-      />
-      <div className="min-w-0 flex-1">
-        <div
-          className="truncate text-[13px] font-semibold"
-          style={{ color: "rgba(255,255,255,0.92)" }}
-        >
-          {line.item.name}
-        </div>
-        <div
-          className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px]"
-          style={{ color: "rgba(255,255,255,0.45)" }}
-        >
-          {line.item.internalSku && <span>SKU {line.item.internalSku}</span>}
-          {codes.length > 0 && (
-            <>
-              {line.item.internalSku && <span>·</span>}
-              {codes.map((c) => (
-                <span
-                  key={c}
-                  className="rounded px-1.5 py-0.5 font-mono text-[10px]"
-                  style={{
-                    background: "rgba(255,255,255,0.06)",
-                    color: "rgba(255,255,255,0.7)",
-                  }}
-                >
-                  {c}
-                </span>
-              ))}
-            </>
-          )}
-        </div>
-      </div>
-      <div
-        className="shrink-0 text-right text-[12px] font-mono"
-        style={{ color: "rgba(255,255,255,0.85)" }}
-      >
-        {line.quantity} × {line.unitValue.toFixed(2)} {line.unitCurrency}
-        <div className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>
-          = {lineTotal.toFixed(2)} {line.unitCurrency}
-        </div>
-      </div>
-      <div className="shrink-0">
-        {line.appliedLicense ? (
-          <span
-            className="rounded px-2 py-1 text-[10px] font-mono"
-            style={{
-              background: "rgba(96,165,250,0.12)",
-              color: "rgb(96,165,250)",
-            }}
-          >
-            {line.appliedLicense.licenseType.replace(/_/g, " ")}
-          </span>
-        ) : (
-          <span
-            className="rounded px-2 py-1 text-[10px]"
-            style={{
-              background: "rgba(251,191,36,0.10)",
-              color: "rgb(251,191,36)",
-            }}
-          >
-            no license
-          </span>
-        )}
-      </div>
-    </li>
   );
 }
 
