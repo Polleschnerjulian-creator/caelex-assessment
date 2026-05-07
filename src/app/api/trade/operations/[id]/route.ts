@@ -17,6 +17,7 @@ import {
   getIdentifier,
 } from "@/lib/ratelimit";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { z } from "zod";
 import {
   TradeEndUseClass,
@@ -101,6 +102,13 @@ export async function GET(
     const operation = await prisma.tradeOperation.findFirst({
       where: { id, organizationId: org.organizationId },
       include: {
+        organization: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
         counterparty: {
           select: {
             id: true,
@@ -261,6 +269,37 @@ export async function PATCH(
       },
       "trade operation updated",
     );
+
+    // AuditLog — separate verb for status transitions vs other updates.
+    // Status transitions are the legally-significant event (gating
+    // movement through the lifecycle); other updates are routine.
+    const reqCtx = getRequestContext(req);
+    if (data.status && data.status !== existing.status) {
+      await logAuditEvent({
+        userId,
+        organizationId: org.organizationId,
+        action: "trade_operation_status_changed",
+        entityType: "trade_operation",
+        entityId: id,
+        previousValue: { status: existing.status },
+        newValue: { status: data.status },
+        description: `Trade operation ${existing.reference}: ${existing.status} → ${data.status}`,
+        ipAddress: reqCtx.ipAddress,
+        userAgent: reqCtx.userAgent,
+      });
+    } else {
+      await logAuditEvent({
+        userId,
+        organizationId: org.organizationId,
+        action: "trade_operation_updated",
+        entityType: "trade_operation",
+        entityId: id,
+        newValue: data,
+        description: `Trade operation ${existing.reference} updated (${Object.keys(data).join(", ")})`,
+        ipAddress: reqCtx.ipAddress,
+        userAgent: reqCtx.userAgent,
+      });
+    }
 
     return NextResponse.json({ operation });
   } catch (err) {

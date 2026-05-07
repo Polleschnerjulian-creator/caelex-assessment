@@ -26,6 +26,7 @@ import {
   getIdentifier,
 } from "@/lib/ratelimit";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { recomputeOperation } from "@/lib/comply-v2/trade/operations/recompute.server";
 
 export async function POST(
@@ -74,6 +75,30 @@ export async function POST(
       },
       "trade operation risk + catch-all recomputed",
     );
+
+    const reqCtx = getRequestContext(req);
+    await logAuditEvent({
+      userId,
+      organizationId: org.organizationId,
+      action: "trade_operation_risk_recomputed",
+      entityType: "trade_operation",
+      entityId: id,
+      newValue: {
+        riskScore: result.risk.score,
+        band: result.risk.band,
+        factorCount: result.risk.factors.length,
+        catchAll: {
+          art4: result.catchAll.art4,
+          art5: result.catchAll.art5,
+          art9: result.catchAll.art9,
+          art10: result.catchAll.art10,
+          notificationDuty: result.catchAll.notificationDuty,
+        },
+      },
+      description: `Risk recomputed: ${result.risk.score}/100 (${result.risk.band})${result.catchAll.notificationDuty ? " + Anzeigepflicht" : ""}`,
+      ipAddress: reqCtx.ipAddress,
+      userAgent: reqCtx.userAgent,
+    });
 
     // Backwards-compatible response shape: top-level `result` matches
     // the previous risk-only contract; new `catchAll` field is an

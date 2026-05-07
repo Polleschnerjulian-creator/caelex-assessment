@@ -21,6 +21,7 @@ import {
   getIdentifier,
 } from "@/lib/ratelimit";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { z } from "zod";
 
 const AttachLicenseSchema = z.object({
@@ -125,6 +126,19 @@ export async function POST(
       },
       "trade license attached to operation",
     );
+
+    const reqCtx = getRequestContext(req);
+    await logAuditEvent({
+      userId,
+      organizationId: org.organizationId,
+      action: "trade_license_attached",
+      entityType: "trade_license",
+      entityId: licenseId,
+      newValue: { operationId, licenseType: license.licenseType },
+      description: `License ${license.licenseType} attached to operation ${operation.reference}`,
+      ipAddress: reqCtx.ipAddress,
+      userAgent: reqCtx.userAgent,
+    });
 
     return NextResponse.json({ attached: true });
   } catch (err) {

@@ -24,6 +24,7 @@ import {
   getIdentifier,
 } from "@/lib/ratelimit";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { z } from "zod";
 import {
   Prisma,
@@ -247,6 +248,27 @@ export async function POST(req: Request) {
         },
         "trade operation created",
       );
+
+      // AuditLog: hash-chained 5+yr-retention trail per §22 AWV / 15 CFR 762
+      const reqCtx = getRequestContext(req);
+      await logAuditEvent({
+        userId,
+        organizationId: org.organizationId,
+        action: "trade_operation_created",
+        entityType: "trade_operation",
+        entityId: operation.id,
+        newValue: {
+          reference: operation.reference,
+          operationType: operation.operationType,
+          counterpartyId: operation.counterpartyId,
+          shipFromCountry: operation.shipFromCountry,
+          shipToCountry: operation.shipToCountry,
+          declaredEndUse: operation.declaredEndUse,
+        },
+        description: `Trade operation ${operation.reference} created (${operation.operationType})`,
+        ipAddress: reqCtx.ipAddress,
+        userAgent: reqCtx.userAgent,
+      });
 
       return NextResponse.json({ operation }, { status: 201 });
     } catch (e) {

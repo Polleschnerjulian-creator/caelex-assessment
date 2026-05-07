@@ -139,7 +139,27 @@ export type AuditAction =
   | "trade_item_created"
   | "trade_item_classified"
   | "trade_item_archived"
-  | "trade_item_note_added";
+  | "trade_item_note_added"
+  // Comply Trade v2 (Wave A) — counterparty + screening verbs.
+  | "trade_party_created"
+  | "trade_party_updated"
+  | "trade_party_screened"
+  | "trade_party_blocked"
+  | "trade_party_unblocked"
+  | "trade_screening_decided"
+  | "trade_party_owner_added"
+  | "trade_party_owner_removed"
+  // Comply Trade v2 (Wave C) — operation + license verbs.
+  | "trade_operation_created"
+  | "trade_operation_updated"
+  | "trade_operation_status_changed"
+  | "trade_operation_line_added"
+  | "trade_operation_line_removed"
+  | "trade_operation_line_license_assigned"
+  | "trade_operation_risk_recomputed"
+  | "trade_license_created"
+  | "trade_license_attached"
+  | "trade_license_detached";
 
 // Entity types for audit logging
 export type AuditEntityType =
@@ -194,7 +214,14 @@ export type AuditEntityType =
   | "comply_proposal"
   | "comply_triage_signal"
   // Comply Trade v2 (Wave B Sprint B1).
-  | "trade_item";
+  | "trade_item"
+  // Comply Trade v2 (Wave A + C).
+  | "trade_party"
+  | "trade_party_ownership"
+  | "trade_screening_result"
+  | "trade_operation"
+  | "trade_operation_line"
+  | "trade_license";
 
 export interface AuditLogEntry {
   userId: string;

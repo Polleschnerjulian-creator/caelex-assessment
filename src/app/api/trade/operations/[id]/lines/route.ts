@@ -27,6 +27,7 @@ import {
   getIdentifier,
 } from "@/lib/ratelimit";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { z } from "zod";
 
 const AddLineSchema = z.object({
@@ -159,6 +160,26 @@ export async function POST(
       },
       "trade operation line added",
     );
+
+    const reqCtx = getRequestContext(req);
+    await logAuditEvent({
+      userId,
+      organizationId: org.organizationId,
+      action: "trade_operation_line_added",
+      entityType: "trade_operation_line",
+      entityId: line.id,
+      newValue: {
+        operationId,
+        itemId: data.itemId,
+        itemName: item.name,
+        quantity: data.quantity,
+        unitValue: data.unitValue,
+        unitCurrency: data.unitCurrency,
+      },
+      description: `Line added to operation ${operation.reference}: ${item.name} × ${data.quantity}`,
+      ipAddress: reqCtx.ipAddress,
+      userAgent: reqCtx.userAgent,
+    });
 
     return NextResponse.json({ line }, { status: 201 });
   } catch (err) {

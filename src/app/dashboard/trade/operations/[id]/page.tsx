@@ -83,11 +83,18 @@ interface OperationLicense {
   capCurrency: string;
 }
 
+interface OperationOrg {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 interface Operation {
   id: string;
   reference: string;
   description: string;
   operationType: string;
+  organization?: OperationOrg;
   status:
     | "DRAFT"
     | "AWAITING_CLASSIFICATION"
@@ -400,7 +407,7 @@ export default function OperationDetailPage({
         <BafaPdfButton
           operation={op}
           applicant={{
-            legalName: "Caelex-Operator",
+            legalName: op.organization?.name ?? "(Organisation unknown)",
           }}
         />
       </div>
