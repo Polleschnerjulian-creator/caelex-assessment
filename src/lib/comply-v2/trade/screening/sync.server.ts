@@ -28,18 +28,19 @@ import type { TradeSanctionsList } from "@prisma/client";
 import { ofacSdnParser } from "./sources/ofac-sdn";
 import { bisEntityParser } from "./sources/bis-entity";
 import { ddtcDebarredParser } from "./sources/ddtc-debarred";
+import { euFsfParser } from "./sources/eu-fsf";
 import type { SanctionsSourceParser } from "./sources/types";
 import { upsertSnapshot } from "./snapshot-store.server";
 
 /**
- * Registered parsers for the orchestrator. Adding A3 (EU/UK/UN) is
- * a one-line append — same SanctionsSourceParser interface, no orchestrator
- * change needed.
+ * Registered parsers for the orchestrator. Adding more sources (UK
+ * OFSI / UN Consolidated) is a one-line append.
  */
 export const REGISTERED_PARSERS: readonly SanctionsSourceParser[] = [
   ofacSdnParser,
   bisEntityParser,
   ddtcDebarredParser,
+  euFsfParser,
 ] as const;
 
 const FETCH_TIMEOUT_MS = 30_000;

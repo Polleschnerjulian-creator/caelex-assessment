@@ -283,6 +283,7 @@ export function missingLists(
     "OFAC_SDN",
     "BIS_ENTITY",
     "DDTC_DEBARRED",
+    "EU_FSF",
   ] as TradeSanctionsList[];
   const consultedSet = new Set(consulted);
   return expected.filter((l) => !consultedSet.has(l));
