@@ -2895,6 +2895,160 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
       sbomRequirements: sbomReqs,
     };
   },
+
+  // ─── Trade Classification Tools (Sprint B4) ──────────────────────
+
+  classify_trade_item: async (input, userContext) => {
+    // Import the trigger engine (pure — no DB needed for computation)
+    const { evaluateTradeItemSubset } =
+      await import("@/lib/comply-v2/trade/property-trigger-engine");
+
+    let signals: Parameters<typeof evaluateTradeItemSubset>[0] = {};
+
+    // If tradeItemId provided, fetch item from DB first
+    const tradeItemId = getString(input, "tradeItemId");
+    if (tradeItemId) {
+      const item = await prisma.tradeItem.findFirst({
+        where: {
+          id: tradeItemId,
+          organizationId: userContext.organizationId,
+        },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          apertureMeters: true,
+          rangeKm: true,
+          payloadKg: true,
+          isRadHardened: true,
+          isMilSpec: true,
+          isAntiJam: true,
+          eccnEU: true,
+          eccnUS: true,
+          usmlCategory: true,
+        },
+      });
+
+      if (!item) {
+        return {
+          error: `Trade item ${tradeItemId} not found in your organization.`,
+          tradeItemId,
+        };
+      }
+      signals = item;
+    }
+
+    // Override/supplement with any explicitly provided signals
+    const rawAperture = getNumber(input, "apertureMeters");
+    const rawRange = getNumber(input, "rangeKm");
+    const rawPayload = getNumber(input, "payloadKg");
+    const rawRadHard = getBoolean(input, "isRadHardened");
+    const rawMilSpec = getBoolean(input, "isMilSpec");
+    const rawAntiJam = getBoolean(input, "isAntiJam");
+    const rawDesc = getString(input, "description");
+
+    if (rawAperture !== null) signals.apertureMeters = rawAperture;
+    if (rawRange !== null) signals.rangeKm = rawRange;
+    if (rawPayload !== null) signals.payloadKg = rawPayload;
+    if (rawRadHard !== null) signals.isRadHardened = rawRadHard;
+    if (rawMilSpec !== null) signals.isMilSpec = rawMilSpec;
+    if (rawAntiJam !== null) signals.isAntiJam = rawAntiJam;
+    if (rawDesc) signals.description = rawDesc;
+
+    const evaluation = evaluateTradeItemSubset(signals);
+
+    return {
+      triggeredRuleCount: evaluation.triggeredRuleCount,
+      hasItarFlag: evaluation.hasItarFlag,
+      hasMtcrCatIFlag: evaluation.hasMtcrCatIFlag,
+      requiresHumanReview: evaluation.requiresHumanReview,
+      maxConfidence: evaluation.maxConfidence,
+      results: evaluation.results.map((r) => ({
+        ruleId: r.ruleId,
+        reason: r.reason,
+        topicSlug: r.topicSlug,
+        confidence: r.confidence,
+        requiresHumanReview: r.requiresHumanReview,
+        advisory: r.advisory,
+        suggestedCodes: r.suggestedCodes.map((c) => ({
+          jurisdiction: c.jurisdiction,
+          code: c.code,
+          itar: c.itar,
+          mtcrCatI: c.mtcrCatI,
+        })),
+      })),
+      disclaimer:
+        "Caelex Trade classification suggestions are informational only. Before any export decision, verify with qualified export-control legal counsel. Violations of EAR/ITAR/AWG can result in criminal penalties.",
+    };
+  },
+
+  lookup_classification_code: async (input, _userContext) => {
+    const {
+      findEntry,
+      findEntriesAllJurisdictions,
+      findRelatedClassifications,
+    } = await import("@/lib/comply-v2/trade/classification-lookup");
+    const { getTopic } =
+      await import("@/lib/comply-v2/trade/classification-lookup");
+
+    const code = getString(input, "code");
+    if (!code) {
+      return { error: "code is required" };
+    }
+
+    const jurisdiction = getString(input, "jurisdiction") as
+      | Parameters<typeof findEntry>[1]
+      | null;
+
+    const includeRelated = getBoolean(input, "includeRelated") !== false;
+
+    // Fetch the entry (or entries if jurisdiction omitted)
+    const entries = jurisdiction
+      ? [findEntry(code, jurisdiction)].filter(Boolean)
+      : findEntriesAllJurisdictions(code);
+
+    if (entries.length === 0) {
+      return {
+        found: false,
+        code,
+        jurisdiction: jurisdiction ?? "all",
+        message: `No classification entry found for code '${code}'${jurisdiction ? ` in ${jurisdiction}` : ""}.`,
+      };
+    }
+
+    const enriched = entries.map((e) => {
+      const related = includeRelated ? findRelatedClassifications(e!) : [];
+      const topic = e?.crossReferenceTopic
+        ? getTopic(e.crossReferenceTopic)
+        : null;
+      return {
+        jurisdiction: e?.jurisdiction,
+        code: e?.code,
+        title: e?.title,
+        description: e?.description,
+        controlReasons: e?.controlReasons,
+        mtcrCategory: e?.mtcrCategory ?? null,
+        sourceUrl: e?.sourceUrl,
+        asOfDate: e?.asOfDate,
+        notes: e?.notes ?? null,
+        crossReferenceTopic: e?.crossReferenceTopic ?? null,
+        topicTitle: topic?.title ?? null,
+        relatedCodes: related.map((r) => ({
+          jurisdiction: r.jurisdiction,
+          code: r.code,
+          title: r.title,
+        })),
+      };
+    });
+
+    return {
+      found: true,
+      count: enriched.length,
+      entries: enriched,
+      disclaimer:
+        "Classification data is informational. Consult the official source URL and qualified export-control counsel before making licensing decisions.",
+    };
+  },
 };
 
 // ─── Export ───

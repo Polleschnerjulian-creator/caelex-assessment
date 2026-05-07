@@ -1284,6 +1284,88 @@ export const auditDocument: AstraToolDefinition = {
   },
 };
 
+// ─── Trade Classification Tools (Sprint B4) ───
+
+export const classifyTradeItem: AstraToolDefinition = {
+  name: "classify_trade_item",
+  description:
+    "Runs the Caelex Property-Trigger Engine to suggest multi-jurisdiction export-control classifications (EU Annex I ECCN, US CCL ECCN, USML, MTCR, DE Anlage AL) for a trade item. Accepts either a tradeItemId (to look up an existing item) or raw item signals. Returns triggered classification rules with suggested codes, confidence tiers, ITAR/MTCR Cat. I flags, and per-rule advisory notes. Use when the user asks to classify an item, check what ECCN or USML category applies, or wants to know if an item is ITAR-controlled.",
+  input_schema: {
+    type: "object",
+    properties: {
+      tradeItemId: {
+        type: "string",
+        description:
+          "Optional: ID of an existing TradeItem to classify. If provided, the item's properties are fetched from the database and used as signals.",
+      },
+      apertureMeters: {
+        type: "number",
+        description:
+          "Optional: Optical aperture in metres (for EO/optical payloads). Threshold: ≥ 0.50 m → USML XV(a)(7)(i). Required for optical sensor classification.",
+      },
+      rangeKm: {
+        type: "number",
+        description:
+          "Optional: Maximum system range in km. Threshold: ≥ 300 km triggers MTCR analysis. Required for launch vehicle / propulsion classification.",
+      },
+      payloadKg: {
+        type: "number",
+        description:
+          "Optional: Maximum payload capacity in kg. Threshold: ≥ 500 kg combined with range ≥ 300 km → MTCR Cat. I. Required for launch vehicle classification.",
+      },
+      isRadHardened: {
+        type: "boolean",
+        description:
+          "Optional: true if the item is radiation-hardened (designed/rated for TID ≥ 5×10⁴ rad(Si)). Triggers 3A001.a.1 and 9A515.d analysis.",
+      },
+      isMilSpec: {
+        type: "boolean",
+        description:
+          "Optional: true if the item is designed to military specifications. Triggers spacecraft bus USML XV(a)(1) analysis.",
+      },
+      isAntiJam: {
+        type: "boolean",
+        description:
+          "Optional: true if the item has anti-jamming or anti-spoofing capabilities. Triggers USML XII(d) and XI(c)(2) analysis.",
+      },
+      description: {
+        type: "string",
+        description:
+          "Optional: Free-text description of the item. Used for keyword-based low-confidence heuristic classification (Hall thruster, SAR, launch vehicle keywords).",
+      },
+    },
+    required: [],
+  },
+};
+
+export const lookupClassificationCode: AstraToolDefinition = {
+  name: "lookup_classification_code",
+  description:
+    "Looks up details for a specific export-control classification code in one or more jurisdictions. Returns the entry title, description, control reasons, MTCR category, source URL, and all related codes from other jurisdictions via the cross-reference topic. Use when the user asks 'what is ECCN 9A515.a?', 'what does USML XV cover?', or 'show me all codes related to Hall thrusters'.",
+  input_schema: {
+    type: "object",
+    properties: {
+      code: {
+        type: "string",
+        description:
+          "The classification code to look up. Examples: '9A515.a' (US CCL), 'XV(a)(7)(i)' (USML), '9A004' (EU Annex I or US CCL), '1.A.1' (MTCR).",
+      },
+      jurisdiction: {
+        type: "string",
+        description:
+          "Optional: Jurisdiction to search in. Values: 'EU_ANNEX_I', 'US_CCL', 'USML', 'MTCR_ANNEX', 'DE_ANLAGE_AL'. If omitted, searches all jurisdictions.",
+        enum: ["EU_ANNEX_I", "US_CCL", "USML", "MTCR_ANNEX", "DE_ANLAGE_AL"],
+      },
+      includeRelated: {
+        type: "boolean",
+        description:
+          "If true, include related codes from all jurisdictions that share the same cross-reference topic. Default: true.",
+      },
+    },
+    required: ["code"],
+  },
+};
+
 export const ALL_TOOLS: AstraToolDefinition[] = [
   // Compliance Tools
   checkComplianceStatus,
@@ -1350,6 +1432,10 @@ export const ALL_TOOLS: AstraToolDefinition[] = [
   getCRARequirementGaps,
   getCRANIS2Overlap,
   getCRASBOMAnalysis,
+
+  // Trade Classification Tools (Sprint B4)
+  classifyTradeItem,
+  lookupClassificationCode,
 ];
 
 // ─── Tool Name Lookup ───
@@ -1427,4 +1513,5 @@ export const TOOL_CATEGORIES = {
     "get_cra_nis2_overlap",
     "get_cra_sbom_analysis",
   ],
+  trade: ["classify_trade_item", "lookup_classification_code"],
 } as const;
