@@ -205,6 +205,12 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: "10mb",
     },
+    // Build-memory guard: cap webpack workers to 2 so the 8 GB Vercel
+    // build container isn't exhausted by 4 parallel webpack threads
+    // each consuming 1–2 GB on top of the main Node.js heap.
+    // Without this cap the build exits with SIGKILL (OOM) immediately
+    // after "Creating an optimized production build..." starts.
+    cpus: 2,
   },
 
   // Webpack configuration
@@ -272,12 +278,16 @@ const sentryWebpackPluginOptions = {
   // For all available options, see:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
-  // Upload a larger set of source maps for prettier stack traces (increases build time)
-  widenClientFileUpload: true,
+  // Wider source map upload is memory-intensive and pushes the 8 GB Vercel
+  // build container over the OOM threshold. Default upload (false) still
+  // captures stack traces for all routes — just with shorter module paths.
+  widenClientFileUpload: false,
 
-  // Automatically annotate React components to show their full name in breadcrumbs and session replay
+  // React component annotation adds a Babel transform pass over every
+  // component file which spikes peak memory by ~300–500 MB on large apps.
+  // Disabled to keep the build within the 8 GB container limit.
   reactComponentAnnotation: {
-    enabled: true,
+    enabled: false,
   },
 
   // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
