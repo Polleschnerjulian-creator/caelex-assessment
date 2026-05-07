@@ -52,6 +52,7 @@ import {
   MissionType,
   type SpacecraftStatus,
   type PhaseStatus,
+  type MilestoneStatus,
   type Prisma,
 } from "@prisma/client";
 
@@ -64,6 +65,26 @@ export interface MissionPhaseSummary {
   progress: number; // 0-100
   startDate: Date;
   endDate: Date;
+}
+
+export interface MissionMilestone {
+  id: string;
+  name: string;
+  description: string | null;
+  targetDate: Date;
+  completedDate: Date | null;
+  status: MilestoneStatus;
+  isCritical: boolean;
+  isRegulatory: boolean;
+  regulatoryRef: string | null;
+  icon: string | null;
+}
+
+export interface MissionPhaseDetail extends MissionPhaseSummary {
+  description: string | null;
+  color: string | null;
+  dependsOn: string[];
+  milestones: MissionMilestone[];
 }
 
 export interface AssignedSpacecraftSummary {
@@ -113,8 +134,11 @@ export interface MissionDetail extends MissionSummary {
   assignedSpacecraft: AssignedSpacecraftSummary[];
   /** All historical assignments (endedAt set). */
   pastSpacecraft: AssignedSpacecraftSummary[];
-  /** All phases (chronological). */
-  phases: MissionPhaseSummary[];
+  /** All phases (chronological) with milestones embedded. */
+  phases: MissionPhaseDetail[];
+  /** Aggregate milestone counts across all phases. */
+  totalMilestones: number;
+  regulatoryMilestones: number;
 }
 
 export interface CreateMissionInput {
@@ -241,13 +265,10 @@ export async function getMissionDetail(
         orderBy: [{ endedAt: "asc" }, { startedAt: "asc" }],
       },
       phases: {
-        select: {
-          id: true,
-          name: true,
-          status: true,
-          progress: true,
-          startDate: true,
-          endDate: true,
+        include: {
+          milestones: {
+            orderBy: { targetDate: "asc" },
+          },
         },
         orderBy: { startDate: "asc" },
       },
@@ -259,16 +280,32 @@ export async function getMissionDetail(
   const assigned = mission.spacecraft.filter((a) => a.endedAt === null);
   const past = mission.spacecraft.filter((a) => a.endedAt !== null);
 
+  const phaseDetails = mission.phases.map(phaseRowToDetail);
+  const totalMilestones = phaseDetails.reduce(
+    (acc, p) => acc + p.milestones.length,
+    0,
+  );
+  const regulatoryMilestones = phaseDetails.reduce(
+    (acc, p) => acc + p.milestones.filter((m) => m.isRegulatory).length,
+    0,
+  );
+
+  // Build summary using a phase shape compatible with the shared
+  // missionToSummary (it only reads id/status/progress/startDate/endDate
+  // — the phase records here include all those).
+  const summary = missionToSummary({
+    ...mission,
+    spacecraft: assigned,
+    phases: phaseDetails,
+  });
+
   return {
-    ...missionToSummary({
-      ...mission,
-      // For the summary we want only-active assignments to compute
-      // primarySpacecraft + spacecraftCount.
-      spacecraft: assigned,
-    }),
+    ...summary,
     assignedSpacecraft: assigned.map(assignmentToSummary),
     pastSpacecraft: past.map(assignmentToSummary),
-    phases: mission.phases.map(phaseToSummary),
+    phases: phaseDetails,
+    totalMilestones,
+    regulatoryMilestones,
   };
 }
 
@@ -767,7 +804,42 @@ type MissionWithIncludes = Prisma.MissionGetPayload<{
   };
 }>;
 
-function missionToSummary(m: MissionWithIncludes): MissionSummary {
+type AssignmentRow = MissionWithIncludes["spacecraft"][number];
+
+/**
+ * Structural shape used by `missionToSummary`. The detail-page query
+ * pulls richer phase data (including milestones); both that shape
+ * and the list-page `MissionWithIncludes` are assignable to this
+ * minimal contract.
+ */
+interface MissionForSummary {
+  id: string;
+  name: string;
+  reference: string | null;
+  description: string | null;
+  missionType: MissionType;
+  programPhase: MissionProgramPhase;
+  status: MissionStatus;
+  primaryEndUser: string | null;
+  primaryEndUserCountryCode: string | null;
+  plannedStartAt: Date | null;
+  startedAt: Date | null;
+  endedAt: Date | null;
+  authorityRefs: string[];
+  spacecraft: AssignmentRow[];
+  phases: Array<{
+    id: string;
+    name: string;
+    status: PhaseStatus;
+    progress: number;
+    startDate: Date;
+    endDate: Date;
+  }>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+function missionToSummary(m: MissionForSummary): MissionSummary {
   const activeAssignments = m.spacecraft.filter((a) => a.endedAt === null);
   const primary =
     activeAssignments.find((a) => a.role === "primary") ?? activeAssignments[0];
@@ -796,9 +868,7 @@ function missionToSummary(m: MissionWithIncludes): MissionSummary {
   };
 }
 
-type AssignmentWithSc = MissionWithIncludes["spacecraft"][number];
-
-function assignmentToSummary(a: AssignmentWithSc): AssignedSpacecraftSummary {
+function assignmentToSummary(a: AssignmentRow): AssignedSpacecraftSummary {
   return {
     assignmentId: a.id,
     spacecraftId: a.spacecraftId,
@@ -865,4 +935,34 @@ function avgProgress(phases: Array<{ progress: number }>): number {
   if (phases.length === 0) return 0;
   const sum = phases.reduce((acc, p) => acc + (p.progress ?? 0), 0);
   return Math.round(sum / phases.length);
+}
+
+type PhaseDetailRow = Prisma.MissionPhaseGetPayload<{
+  include: { milestones: true };
+}>;
+
+function phaseRowToDetail(p: PhaseDetailRow): MissionPhaseDetail {
+  return {
+    id: p.id,
+    name: p.name,
+    status: p.status,
+    progress: p.progress,
+    startDate: p.startDate,
+    endDate: p.endDate,
+    description: p.description,
+    color: p.color,
+    dependsOn: p.dependsOn,
+    milestones: p.milestones.map((m) => ({
+      id: m.id,
+      name: m.name,
+      description: m.description,
+      targetDate: m.targetDate,
+      completedDate: m.completedDate,
+      status: m.status,
+      isCritical: m.isCritical,
+      isRegulatory: m.isRegulatory,
+      regulatoryRef: m.regulatoryRef,
+      icon: m.icon,
+    })),
+  };
 }
