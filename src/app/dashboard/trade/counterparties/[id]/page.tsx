@@ -14,6 +14,7 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
+import { BeneficialOwnersPanel } from "@/components/trade/BeneficialOwnersPanel";
 import {
   ArrowLeft,
   Globe,
@@ -357,6 +358,11 @@ export default function CounterpartyDetailPage({
             )}
           </div>
         </section>
+      </div>
+
+      {/* Beneficial Owners — Wave A Sprint A6 (50%-rule cascade input) */}
+      <div className="mt-6">
+        <BeneficialOwnersPanel partyId={party.id} partyName={party.legalName} />
       </div>
 
       {/* Disclaimer */}
