@@ -1,6 +1,12 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Globe2, FileSearch, ScanSearch, ListChecks } from "lucide-react";
+import {
+  Globe2,
+  FileSearch,
+  ScanSearch,
+  ListChecks,
+  ArrowRight,
+} from "lucide-react";
 
 import { auth } from "@/lib/auth";
 import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
@@ -14,12 +20,11 @@ export const metadata = {
 };
 
 /**
- * Trade Operations — Wave B Sprint B1 stub.
+ * Trade Operations — overview / landing page.
  *
- * Empty-State-Page für die neue `/dashboard/trade`-Surface. In Sprint
- * B7 wird das die Item-Liste, in Wave A die Counterparty-Liste, in
- * Wave C die Operations-Liste. Sprint B1 zeigt nur den Hero, damit
- * die Navigation + Routing-Foundation steht.
+ * Sprint B1 stub upgraded by Sprint B7: now links to the live Item
+ * Classification list (/dashboard/trade/items). Wave A adds the
+ * Counterparty-Screening list; Wave C adds the Operations-Lifecycle.
  *
  * Strategischer Kontext: docs/COMPLY-EXPORT-CONTROL-CONCEPT.md
  * Operativer Sprint-Plan: docs/COMPLY-EXPORT-CONTROL-PLAN.md
@@ -73,8 +78,85 @@ export default async function TradeOverviewPage() {
         </div>
       </header>
 
-      {/* Sprint-B1 hero: roadmap-vorschau, kein funktionaler Inhalt
-          noch. Sprint B7 ersetzt das mit der Item-Liste. */}
+      {/* Quick-access to live sections */}
+      <div className="mb-6 grid gap-3 sm:grid-cols-3">
+        {[
+          {
+            href: "/dashboard/trade/items",
+            label: "Item Classification",
+            sublabel: "Classify BoM items across 5 jurisdictions",
+            live: true,
+          },
+          {
+            href: "#",
+            label: "Counterparty Screening",
+            sublabel: "OFAC, BIS, DDTC, EU FSF — Wave A",
+            live: false,
+          },
+          {
+            href: "#",
+            label: "Operations Lifecycle",
+            sublabel: "License stack per shipment — Wave C",
+            live: false,
+          },
+        ].map((card) => (
+          <Link key={card.href} href={card.href}>
+            <div
+              className="group flex items-center gap-3 rounded-2xl px-4 py-4 transition-all"
+              style={{
+                background: card.live
+                  ? "rgba(16, 185, 129, 0.06)"
+                  : "rgba(255,255,255,0.025)",
+                boxShadow: card.live
+                  ? "inset 0 0 0 0.5px rgba(16,185,129,0.20)"
+                  : "inset 0 0 0 0.5px rgba(255,255,255,0.07)",
+                cursor: card.live ? "pointer" : "default",
+                pointerEvents: card.live ? "auto" : "none",
+              }}
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="text-[13px] font-semibold"
+                    style={{
+                      color: card.live
+                        ? "rgba(255,255,255,0.92)"
+                        : "rgba(255,255,255,0.55)",
+                    }}
+                  >
+                    {card.label}
+                  </span>
+                  {card.live && (
+                    <span
+                      className="rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest"
+                      style={{
+                        background: "rgba(16,185,129,0.15)",
+                        color: "rgb(52,211,153)",
+                      }}
+                    >
+                      Live
+                    </span>
+                  )}
+                </div>
+                <p
+                  className="mt-0.5 text-[11px]"
+                  style={{ color: "rgba(255,255,255,0.4)" }}
+                >
+                  {card.sublabel}
+                </p>
+              </div>
+              {card.live && (
+                <ArrowRight
+                  className="h-4 w-4 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+                  style={{ color: "rgba(16,185,129,0.8)" }}
+                />
+              )}
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* Roadmap */}
       <div
         className="max-w-3xl rounded-2xl p-8"
         style={{
