@@ -177,6 +177,10 @@
     {
       "path": "/api/cron/trade-sync-sanctions",
       "schedule": "30 4 * * *"
+    },
+    {
+      "path": "/api/cron/trade-rescreen-stale",
+      "schedule": "0 5 * * *"
     }
   ]
 }
