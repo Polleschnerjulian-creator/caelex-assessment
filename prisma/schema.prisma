@@ -48,6 +48,9 @@ model User {
   tradePartiesCreated     TradeParty[]           @relation("TradePartyAuthor")
   tradeScreeningsDecided  TradeScreeningResult[] @relation("TradeScreeningDecider")
 
+  // Comply Trade v2 (Wave C Sprint C1) — operations + license back-refs.
+  tradeOperationsCreated  TradeOperation[]       @relation("TradeOperationAuthor")
+
   accounts                 Account[]
   sessions                 Session[]
   articleStatuses          ArticleStatus[]
@@ -2771,6 +2774,9 @@ model Organization {
   tradeItems   TradeItem[]
   // Comply Trade v2 (Wave A Sprint A1) — counterparty screening.
   tradeParties TradeParty[]
+  // Comply Trade v2 (Wave C Sprint C1) — operations lifecycle + licenses.
+  tradeOperations TradeOperation[]
+  tradeLicenses   TradeLicense[]
 
   // Multi-tenancy: org-scoped models
   auditLogs                AuditLog[]
@@ -10411,6 +10417,9 @@ model TradeItem {
 
   notes TradeItemNote[]
 
+  // Wave C Sprint C1 — items appear in operation lines
+  operationLines TradeOperationLine[]
+
   @@index([organizationId, status])
   @@index([organizationId, createdAt])
   @@index([eccnEU])
@@ -10530,9 +10539,9 @@ model TradeParty {
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
-  // Wave C — TradeOperation back-refs (kommentiert bis Sprint C1):
-  // operations    TradeOperation[] @relation("OperationCounterparty")
-  // intermediates TradeOperation[] @relation("OperationIntermediates")
+  // Wave C Sprint C1 — TradeOperation back-refs (now active)
+  operations    TradeOperation[] @relation("OperationCounterparty")
+  intermediates TradeOperation[] @relation("OperationIntermediates")
 
   screenings TradeScreeningResult[]
 
@@ -10739,4 +10748,323 @@ enum TradeSanctionsList {
   UK_OFSI
   /// UN Security Council Consolidated Sanctions
   UN_CONSOLIDATED
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMPLY TRADE v2 — Wave C Sprint C1: Operations Lifecycle Foundation
+// ═══════════════════════════════════════════════════════════════════════════════
+// Strategischer Kontext: docs/COMPLY-EXPORT-CONTROL-CONCEPT.md § 3.3
+// Operativer Sprint-Plan: docs/COMPLY-EXPORT-CONTROL-PLAN.md § 5
+//
+// Wave C verbindet Wave B (Items) + Wave A (Counterparties) zu konkreten
+// Sendungen mit Lizenz-Stack. Ein TradeOperation ist eine atomare
+// Liefer-Entscheidung: "diese Items, an diese Firma, in dieses Land,
+// unter diesen Lizenzen, an diesem Datum". Lifecycle:
+//
+//   DRAFT
+//     ↓ (alle Items klassifiziert?)
+//   AWAITING_CLASSIFICATION  ←──┐
+//     ↓                          │
+//   SCREENING                    │
+//     ↓ (Counterparty CLEAR?)    │
+//   AWAITING_LICENSE             │ (Re-screen wenn STALE)
+//     ↓ (License-Stack komplett?)│
+//   LICENSED                     │
+//     ↓                          │
+//   EXECUTED ───────── BLOCKED ──┘
+//     ↓                  ↓
+//   (closedAt)     VOLUNTARY_DISCLOSURE_FILED
+//
+// Catch-all-Felder (Art. 4-10 EU 2021/821 / §8 AWV) sind boolean-Flags
+// die der License-Determination-Engine setzt. Sie sind unabhängig vom
+// status — eine Operation kann LICENSED sein UND catchAll-Hits haben
+// (z.B. WMD-End-Use-Concern bei zivilem Item — Anzeigepflicht).
+//
+// Die License-Stack-Beziehung ist M:N (mehrere AGGen + Einzelgenehmigung
+// können zusammen eine Operation decken; eine Lizenz kann mehrere
+// Operations decken via drawdown).
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Eine atomare Liefer-Entscheidung: welche Items gehen wann an welche
+/// Counterparty in welches Land unter welchen Lizenzen. Erzeugt
+/// vom AV (Ausfuhrverantwortlicher) im Operation-Wizard (Sprint C2).
+///
+/// Lifecycle wird via status-Feld + denormalized Computed-Felder
+/// (riskScore, catchAll-Flags) getrackt. Zustands-Übergänge laufen
+/// durch defineAction() → AuditLog + AstraProposal-Gates.
+model TradeOperation {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdById    String
+  createdBy      User         @relation("TradeOperationAuthor", fields: [createdById], references: [id], onDelete: Cascade)
+
+  // ── Operation identity ──
+  /// User-friendly reference, e.g. "ISAR-2026-Q1-001" or
+  /// "Spectrum-Avionics-to-AeroJet". Eindeutig pro Org via @@unique.
+  reference     String
+  description   String              @db.Text
+  operationType TradeOperationType
+
+  // ── Counterparty + intermediaries ──
+  counterpartyId String
+  counterparty   TradeParty   @relation("OperationCounterparty", fields: [counterpartyId], references: [id])
+  intermediates  TradeParty[] @relation("OperationIntermediates")
+
+  // ── Geography (ISO 3166-1 alpha-2 codes) ──
+  shipFromCountry String
+  shipToCountry   String
+  /// Optional: end-use country (kann ≠ ship-to sein bei
+  /// Re-Export-Szenarien oder Triangle-Trade)
+  endUseCountry   String?
+  /// Transit-Stops (für Routen-Risk-Assessment)
+  routeStops      String[] @default([])
+
+  // ── End-use + end-user ──
+  declaredEndUse TradeEndUseClass @default(CIVIL)
+  endUserName    String?
+  endUserSector  String?
+
+  // ── Items in this operation ──
+  lines TradeOperationLine[]
+
+  // ── Computed risk fields (denormalized for fast list queries) ──
+  /// 0-100 score from risk-aggregation engine (Sprint C3).
+  /// Combines: counterparty.screeningStatus + cascade,
+  /// shipToCountry risk-tier, item ECCN/USML-density, posture-score.
+  riskScore Int?
+
+  /// Catch-all-Trigger flags. Set by license-determination engine.
+  /// Each is independent — multiple can fire on one operation.
+  /// Art. 4 EU 2021/821 / §4(1) AWV: WMD/Military end-use catch-all
+  catchAllArt4Hit  Boolean @default(false)
+  /// Art. 5 EU 2021/821: Cyber-surveillance / Human Rights catch-all
+  catchAllArt5Hit  Boolean @default(false)
+  /// §8 AWV: National (DE) catch-all — narrower than Art. 4
+  catchAllArt9Hit  Boolean @default(false)
+  /// Art. 10 EU 2021/821: Intra-EU sensitive transfers (Annex IV)
+  catchAllArt10Hit Boolean @default(false)
+  /// §8 AWV-Anzeigepflicht (notification duty)
+  notificationDuty Boolean @default(false)
+
+  // ── Lifecycle ──
+  status TradeOperationStatus @default(DRAFT)
+
+  // ── License stack (M:N — see TradeLicense for full lifecycle) ──
+  licenses TradeLicense[]
+
+  // ── Lifecycle timestamps ──
+  scheduledShipDate DateTime?
+  actualShipDate    DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  /// Set when status transitions to a terminal state (EXECUTED + closedAt)
+  /// or BLOCKED-after-disclosure. Drives 5+ year audit retention windows.
+  closedAt DateTime?
+
+  @@unique([organizationId, reference])
+  @@index([organizationId, status])
+  @@index([organizationId, scheduledShipDate])
+  @@index([organizationId, createdAt])
+  @@index([counterpartyId])
+}
+
+/// One line item in a TradeOperation. Links a TradeItem to the operation
+/// with quantity + unit value. The applied-license cross-reference lets
+/// us track WHICH license out of the operation's stack covers THIS line
+/// — important when multiple licenses each cover a subset (e.g. AGG-12
+/// for hardware + DSP-5 for ITAR-classified subassembly).
+model TradeOperationLine {
+  id          String         @id @default(cuid())
+  operationId String
+  operation   TradeOperation @relation(fields: [operationId], references: [id], onDelete: Cascade)
+  itemId      String
+  item        TradeItem      @relation(fields: [itemId], references: [id], onDelete: Restrict)
+
+  quantity     Float
+  unitValue    Float
+  /// ISO 4217 currency code (EUR, USD, GBP, ...)
+  unitCurrency String @default("EUR")
+
+  /// Reference to the specific TradeLicense in the operation's stack
+  /// that covers this line. Null = not yet assigned (e.g. operation
+  /// status = AWAITING_LICENSE, lines pending license assignment).
+  appliedLicenseId String?
+  appliedLicense   TradeLicense? @relation(fields: [appliedLicenseId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([operationId])
+  @@index([itemId])
+  @@index([appliedLicenseId])
+}
+
+/// A license that authorizes (part of) an operation. Multiple licenses
+/// can stack on one operation; one license can cover multiple operations
+/// (with drawdown tracking).
+///
+/// Conditions JSON shape (varies by licenseType):
+///   {
+///     coveredCodes: string[],       // ECCN/USML covered (e.g. ["9A515.a", "9A515.d"])
+///     coveredCountries: string[],   // ISO-2 countries (empty = unrestricted)
+///     endUseRestrictions: string[], // free-text restrictions
+///     volumeCap?: { quantity: number, unit: string },
+///     valueCap?: { amount: number, currency: string },
+///     validity?: { from: string, until: string }, // ISO dates
+///   }
+model TradeLicense {
+  id             String           @id @default(cuid())
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  licenseType    TradeLicenseType
+  /// External license number (BAFA-Bescheid, BIS-License-No., DDTC-DSP-No.).
+  /// Null until issued (license can exist as DRAFT before submission).
+  licenseNumber  String?
+  issuedAt       DateTime?
+  validUntil     DateTime?
+  conditions     Json
+
+  /// Sum of (quantity × unitValue × FX-converted) drawn down by all
+  /// operations referencing this license. Updated atomically by the
+  /// license-drawdown engine (Sprint C3) on operation status changes.
+  drawnDownValue Float  @default(0)
+  /// The cap from the underlying license document (BAFA-Bescheid value
+  /// limit, BIS-license value limit). Null = no cap (e.g. unrestricted
+  /// AGG for low-risk codes).
+  totalCapValue  Float?
+  /// Cap currency (matches conditions.valueCap.currency typically)
+  capCurrency    String @default("EUR")
+
+  /// Path in document vault to the actual license PDF (BAFA-Bescheid scan,
+  /// BIS-license PDF, etc). Null until the document is uploaded.
+  documentId String?
+
+  status    TradeLicenseStatus @default(ACTIVE)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  // Operations this license covers (M:N via implicit join table)
+  operations TradeOperation[]
+  // Per-line license-application back-refs
+  lines      TradeOperationLine[]
+
+  @@index([organizationId, status])
+  @@index([organizationId, licenseType])
+  @@index([validUntil])
+}
+
+/// Type of trade operation. Drives applicable regulation set + UI flow.
+enum TradeOperationType {
+  /// Physical export of dual-use or military goods to outside EU
+  EXPORT
+  /// Re-export of US-origin items (FDPR + de-minimis trigger)
+  REEXPORT
+  /// Intra-EU transfer (Annex IV items only require auth)
+  INTRA_EU
+  /// Goods transit through EU territory without entering EU customs
+  TRANSIT
+  /// Technology transfer (drawings, blueprints, source code) — non-physical
+  TECH_TRANSFER
+  /// Deemed export — disclosure of US-origin tech to non-US person on US soil
+  DEEMED_EXPORT
+  /// Cloud-based provisioning of controlled software/services across borders
+  CLOUD_PROVISION
+}
+
+/// Declared end-use classification. Drives catch-all article evaluation.
+enum TradeEndUseClass {
+  /// Civilian / commercial use only
+  CIVIL
+  /// Dual-use (civilian + potential military application)
+  DUAL_USE
+  /// Military end-use declared
+  MILITARY
+  /// WMD-related concern (Art. 4(1)(a) catch-all trigger)
+  WMD_RELATED
+  /// End-use undeclared or unknown — operation should not proceed without clarification
+  UNKNOWN
+}
+
+/// Lifecycle status of a TradeOperation. State machine transitions:
+///   DRAFT → AWAITING_CLASSIFICATION → SCREENING → AWAITING_LICENSE
+///        → LICENSED → EXECUTED (terminal)
+///   any → BLOCKED (terminal-ish; can transition to VDISCL_FILED)
+///   BLOCKED → VOLUNTARY_DISCLOSURE_FILED (final)
+enum TradeOperationStatus {
+  /// Initial state — operator is still composing the operation
+  DRAFT
+  /// One or more items lack classification codes (eccnEU/eccnUS/USML/etc)
+  AWAITING_CLASSIFICATION
+  /// Counterparty screening in progress or has stale screening
+  SCREENING
+  /// Classified + screened, but license-stack not yet complete
+  AWAITING_LICENSE
+  /// All items have applied-license; ready to execute
+  LICENSED
+  /// Goods physically shipped (actualShipDate set)
+  EXECUTED
+  /// Sanctions hit, license denied, or operator-blocked. No further ship.
+  BLOCKED
+  /// Operator filed voluntary self-disclosure with BAFA/BIS for a past
+  /// non-compliance — operation moved into review; final-state.
+  VOLUNTARY_DISCLOSURE_FILED
+}
+
+/// License type taxonomy. Maps to authority + form-number references.
+/// New license programs added here as enum values + license-determination
+/// engine rules in src/lib/comply-v2/trade/license-determination.ts.
+enum TradeLicenseType {
+  // ─── DE (BAFA) ───
+  /// Einzelausfuhrgenehmigung (single-shipment license)
+  BAFA_EINZEL
+  /// Allgemeine Genehmigung Nr. 12 (intra-EU dual-use)
+  BAFA_AGG_12
+  /// Allgemeine Genehmigung Nr. 16 (intra-EU dual-use Annex IV)
+  BAFA_AGG_16
+  /// Allgemeine Genehmigung Nr. 27 (computer software)
+  BAFA_AGG_27
+  /// Allgemeine Genehmigung Nr. 47 (Annex IV intra-EU large value)
+  BAFA_AGG_47
+  /// EU General Export Authorisation EU001 (low-risk countries)
+  BAFA_EUGEA_EU001
+  /// EU General Export Authorisation EU002 (export of certain dual-use to certain destinations)
+  BAFA_EUGEA_EU002
+  // ─── US (BIS) ───
+  /// Standard EAR license
+  BIS_EAR
+  /// License Exception STA (Strategic Trade Authorization)
+  BIS_LICENSE_EXCEPTION_STA
+  /// License Exception CSA (Cyber Security Activities)
+  BIS_LICENSE_EXCEPTION_CSA
+  /// License Exception ENC (Encryption Commodities, Software, Technology)
+  BIS_LICENSE_EXCEPTION_ENC
+  // ─── US (DDTC) ───
+  /// DDTC DSP-5 (permanent export of unclassified defense articles)
+  DDTC_DSP5
+  /// DDTC DSP-73 (temporary export)
+  DDTC_DSP73
+  /// DDTC TAA (Technical Assistance Agreement)
+  DDTC_TAA
+  /// DDTC MLA (Manufacturing License Agreement)
+  DDTC_MLA
+  // ─── Other / placeholder ───
+  /// License from another jurisdiction not yet modeled in detail
+  OTHER
+}
+
+/// Lifecycle of a TradeLicense.
+enum TradeLicenseStatus {
+  /// License draft (created in Caelex, not yet submitted)
+  DRAFT
+  /// Submitted to authority, awaiting issuance
+  PENDING
+  /// Issued and currently usable
+  ACTIVE
+  /// No longer usable (revoked or expired)
+  REVOKED
+  /// Validity period ended
+  EXPIRED
+  /// Drawn-down to capacity (totalCapValue reached)
+  EXHAUSTED
 }
