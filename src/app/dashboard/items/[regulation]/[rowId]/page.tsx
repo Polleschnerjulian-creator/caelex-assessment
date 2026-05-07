@@ -17,6 +17,7 @@ import {
   getItemDetailExtras,
 } from "@/lib/comply-v2/compliance-item.server";
 import { getProvenanceTimeline } from "@/lib/comply-v2/provenance.server";
+import { getRecentDocumentsForPicker } from "@/lib/comply-v2/document-picker.server";
 import { ProvenanceTimeline } from "@/components/dashboard/v2/ProvenanceTimeline";
 import { NextStepActionPanel } from "@/components/dashboard/v2/NextStepActionPanel";
 import {
@@ -141,6 +142,11 @@ export default async function ItemDetailPage({ params }: PageProps) {
     email: m.user.email ?? "(no email)",
   }));
 
+  // Sprint 10I — fetch recent vault docs for the UPLOAD_EVIDENCE picker.
+  // 25 most recent across user-owned + org-owned. Empty array is fine —
+  // the picker shows an empty-state nudge to /dashboard/documents.
+  const documents = await getRecentDocumentsForPicker(session.user.id, 25);
+
   const sansFont =
     'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif';
   const displayFont =
@@ -205,8 +211,13 @@ export default async function ItemDetailPage({ params }: PageProps) {
 
       {/* Sprint 10H — the recommended next step rendered as a
           kind-specific affordance. Sits at the top so users see
-          "what to do" before "what metadata exists." */}
-      <NextStepActionPanel item={item} teammates={teammatesShaped} />
+          "what to do" before "what metadata exists." Sprint 10I added
+          the inline document picker for UPLOAD_EVIDENCE. */}
+      <NextStepActionPanel
+        item={item}
+        teammates={teammatesShaped}
+        documents={documents}
+      />
 
       <div className="grid gap-8 lg:grid-cols-[1fr_2fr]">
         {/* Sidebar — metadata + actions */}

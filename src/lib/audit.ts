@@ -128,6 +128,7 @@ export type AuditAction =
   | "comply_v2_item_attestation_requested"
   | "comply_v2_item_evidence_requested"
   | "comply_v2_item_delegated"
+  | "comply_v2_item_evidence_attached"
   | "comply_v2_proposal_approved"
   | "comply_v2_proposal_rejected"
   | "comply_v2_triage_acknowledged"

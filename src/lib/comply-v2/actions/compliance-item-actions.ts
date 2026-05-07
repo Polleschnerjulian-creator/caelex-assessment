@@ -613,6 +613,105 @@ export const delegateComplianceItem = defineAction({
   },
 });
 
+// ─── attachDocumentToItem ───────────────────────────────────────────────
+
+/**
+ * Sprint 10I — UPLOAD_EVIDENCE inline picker.
+ *
+ * Attach a Document (from the user's vault) to a ComplianceItem. We
+ * keep it simple in V2: instead of writing a full ComplianceEvidence
+ * row (that surface lives at /dashboard/audit-center with its own UX
+ * and review workflow), we write a structured ComplianceItemNote that
+ * cites the document by name + ID. The note appears in the item's
+ * timeline and Astra can read it as evidence on the next pass.
+ *
+ * Ownership checks:
+ *   1. The ComplianceItem belongs to the requester (assertOwnership).
+ *   2. The Document either belongs to the requester directly, OR is
+ *      in the same organization. Cross-tenant attachment is impossible.
+ *
+ * No approval gate — attaching evidence is a read-and-cite action,
+ * not a status change. The user still has to go through markAttested
+ * (which IS approval-gated) before the item flips to ATTESTED.
+ */
+export const attachDocumentToItem = defineAction({
+  name: "attach-document-to-compliance-item",
+  description:
+    "Cite a vault document as evidence on a ComplianceItem. Writes a structured note linking the document; does not change compliance status.",
+  schema: z.object({
+    itemId: z.string().min(3),
+    documentId: z.string().min(3),
+  }),
+  async handler({ itemId, documentId }, ctx) {
+    const { regulation, rowId } = parseItemId(itemId);
+    await assertOwnership(regulation, rowId, ctx.userId);
+
+    // Document ownership / org-membership check. We allow:
+    //   - Documents owned directly by the user (userId match)
+    //   - Documents in any organization the user belongs to
+    const doc = await prisma.document.findUnique({
+      where: { id: documentId },
+      select: {
+        id: true,
+        name: true,
+        fileName: true,
+        userId: true,
+        organizationId: true,
+      },
+    });
+    if (!doc) {
+      throw new Error("Document not found");
+    }
+    const userOwnsDoc = doc.userId === ctx.userId;
+    let sharedOrg = userOwnsDoc;
+    if (!sharedOrg && doc.organizationId) {
+      const membership = await prisma.organizationMember.findFirst({
+        where: {
+          userId: ctx.userId,
+          organizationId: doc.organizationId,
+        },
+        select: { id: true },
+      });
+      sharedOrg = membership !== null;
+    }
+    if (!sharedOrg) {
+      throw new Error("Document is not in your organization");
+    }
+
+    // Write the citation note. Markdown so the existing renderer picks
+    // it up. The /dashboard/documents page can later support a deep-
+    // link query param (?selectedId=...) — for now we keep the link
+    // generic to avoid a feature dependency.
+    await prisma.complianceItemNote.create({
+      data: {
+        itemId,
+        userId: ctx.userId,
+        body: `**Attached evidence:** [${doc.name}](/dashboard/documents) — \`${doc.fileName}\``,
+      },
+    });
+
+    revalidatePath("/dashboard/today");
+    return { itemId, documentId };
+  },
+  paletteVerb: {
+    label: "Attach document",
+    hint: "Cite a vault document as evidence",
+    group: "item",
+    iconName: "Paperclip",
+    contextual: true,
+  },
+  astra: {
+    enabled: true,
+    description:
+      "Cite a vault document as evidence on a ComplianceItem. Use when the user has a relevant document already uploaded and wants to reference it. Does not change compliance status.",
+  },
+  audit: {
+    action: "comply_v2_item_evidence_attached",
+    entityType: "comply_compliance_item",
+    entityIdFromParams: (p) => p.itemId,
+  },
+});
+
 // Re-export for index aggregation.
 export const COMPLIANCE_ITEM_ACTIONS = {
   snoozeComplianceItem,
@@ -621,4 +720,5 @@ export const COMPLIANCE_ITEM_ACTIONS = {
   markAsAttested,
   requestEvidence,
   delegateComplianceItem,
+  attachDocumentToItem,
 } as const;

@@ -7,6 +7,7 @@ import {
   markAsAttested,
   requestEvidence,
   delegateComplianceItem,
+  attachDocumentToItem,
 } from "@/lib/comply-v2/actions/compliance-item-actions";
 import { logger } from "@/lib/logger";
 
@@ -60,5 +61,12 @@ export async function delegateAction(formData: FormData): Promise<void> {
   const result = await delegateComplianceItem.serverAction(formData);
   if (!result.ok) {
     logger.warn("[comply-v2] delegate failed", { error: result.error });
+  }
+}
+
+export async function attachDocumentAction(formData: FormData): Promise<void> {
+  const result = await attachDocumentToItem.serverAction(formData);
+  if (!result.ok) {
+    logger.warn("[comply-v2] attach-document failed", { error: result.error });
   }
 }

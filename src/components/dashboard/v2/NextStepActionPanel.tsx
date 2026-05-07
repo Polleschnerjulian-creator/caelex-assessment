@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { deriveNextStep, type NextStepKind } from "@/lib/comply-v2/next-step";
+import type { PickerDocument } from "@/lib/comply-v2/document-picker.server";
 import {
   REGULATION_LABELS,
   type ComplianceItem,
@@ -19,6 +20,7 @@ import {
 } from "@/lib/comply-v2/types";
 
 import { DelegateForm } from "./DelegateForm";
+import { DocumentPicker } from "./DocumentPicker";
 
 /**
  * Sprint 10H — NextStep CTA wiring on the item-detail page.
@@ -56,6 +58,8 @@ interface TeamMember {
 interface NextStepActionPanelProps {
   item: ComplianceItem;
   teammates: TeamMember[];
+  /** Recent vault documents for the UPLOAD_EVIDENCE inline picker. */
+  documents: PickerDocument[];
 }
 
 // ─── Regulation → assessment route map ───────────────────────────────
@@ -110,6 +114,7 @@ const ICONS: Record<NextStepKind, LucideIcon> = {
 export function NextStepActionPanel({
   item,
   teammates,
+  documents,
 }: NextStepActionPanelProps) {
   const nextStep = deriveNextStep(item);
   const Icon = ICONS[nextStep.kind];
@@ -186,6 +191,7 @@ export function NextStepActionPanel({
           kind={nextStep.kind}
           item={item}
           teammates={teammates}
+          documents={documents}
         />
       </div>
     </section>
@@ -198,25 +204,22 @@ function KindAffordance({
   kind,
   item,
   teammates,
+  documents,
 }: {
   kind: NextStepKind;
   item: ComplianceItem;
   teammates: TeamMember[];
+  documents: PickerDocument[];
 }) {
   switch (kind) {
     case "UPLOAD_EVIDENCE":
       return (
-        <div className="flex flex-col gap-3">
-          <PrimaryLink
-            href="/dashboard/documents"
-            label="Open Document Vault"
-            icon={Upload}
-          />
-          <SecondaryAnchor
-            href="#add-note"
-            label="Or jot a quick note for now"
-          />
-        </div>
+        <DocumentPicker
+          itemId={item.id}
+          regulation={item.regulation}
+          rowId={item.rowId}
+          documents={documents}
+        />
       );
 
     case "CONNECT_SENTINEL":
