@@ -4,8 +4,11 @@
 
 import * as Sentry from "@sentry/nextjs";
 
-// Only initialize Sentry if DSN is configured
-if (process.env.SENTRY_DSN) {
+// Only initialize Sentry if DSN is configured AND we're NOT in build phase.
+// See sentry.server.config.ts for full rationale (avoids static-gen hang).
+const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+
+if (process.env.SENTRY_DSN && !isBuildPhase) {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
 

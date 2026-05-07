@@ -4,8 +4,27 @@
 
 import * as Sentry from "@sentry/nextjs";
 
-// Only initialize Sentry if DSN is configured
-if (process.env.SENTRY_DSN) {
+// Only initialize Sentry if DSN is configured AND we're NOT in build phase.
+//
+// Why skip during build:
+//   Next.js 15's `instrumentation.ts` calls register() at every worker-process
+//   startup — including the static-gen worker pool that prerenders 845 pages.
+//   That triggers Sentry.init() → loads @opentelemetry/instrumentation auto-
+//   instrumentations → tries to wrap @prisma/client methods at import time.
+//   On Vercel's 8 GB build container this deadlocks: the build hangs
+//   indefinitely at "Generating static pages (0/845)..." with no progress
+//   and no diagnostic. The previous green build (sprint G) escaped this only
+//   because Sentry/OpenTelemetry transitive deps were a bumped version.
+//
+// Skipping init during build is safe: the webpack plugin still uploads
+// source maps (separate process), and Sentry initializes normally when
+// real user requests hit the deployed serverless functions. We just lose
+// the ability to capture errors that occur DURING the build itself —
+// which was never useful anyway (build errors surface in Vercel logs).
+const NEXT_PHASE = process.env.NEXT_PHASE;
+const isBuildPhase = NEXT_PHASE === "phase-production-build";
+
+if (process.env.SENTRY_DSN && !isBuildPhase) {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
 
