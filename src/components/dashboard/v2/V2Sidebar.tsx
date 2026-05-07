@@ -26,6 +26,7 @@ import {
   Heart,
   Clock,
   Sparkles,
+  Globe2,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -149,6 +150,18 @@ export function V2Sidebar({
       icon: Clock,
     },
     { href: "/dashboard/network", label: "Network", icon: Network },
+    // Wave B Sprint B1 — Trade Operations Layer (siehe
+    // docs/COMPLY-EXPORT-CONTROL-PLAN.md). Sub-routes:
+    //   /dashboard/trade/items       (Sprint B7)
+    //   /dashboard/trade/counterparties (Wave A)
+    //   /dashboard/trade/operations  (Wave C)
+    //   /dashboard/trade/licenses    (Wave C)
+    {
+      href: "/dashboard/trade",
+      label: "Trade",
+      icon: Globe2,
+      match: (p) => p.startsWith("/dashboard/trade"),
+    },
   ];
 
   // Reference is intentionally empty in Sprint 5C — V1 modules will

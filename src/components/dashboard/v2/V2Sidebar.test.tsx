@@ -94,6 +94,7 @@ vi.mock("lucide-react", () => {
     Heart: icon("Heart"),
     Clock: icon("Clock"),
     Sparkles: icon("Sparkles"),
+    Globe2: icon("Globe2"),
   };
 });
 
@@ -142,7 +143,7 @@ describe("V2Sidebar — section structure", () => {
     ]);
   });
 
-  it("Compliance section contains Posture, Tracker, Incidents, Audit Center, Audit Chain, Health Pulse, Time Travel, Network", () => {
+  it("Compliance section contains Posture, Tracker, Incidents, Audit Center, Audit Chain, Health Pulse, Time Travel, Network, Trade", () => {
     render(<V2Sidebar pendingProposals={0} />);
     const section = screen.getByLabelText("Compliance");
     const links = within(section).getAllByRole("link");
@@ -155,7 +156,17 @@ describe("V2Sidebar — section structure", () => {
       "/dashboard/health-pulse",
       "/dashboard/time-travel",
       "/dashboard/network",
+      "/dashboard/trade",
     ]);
+  });
+
+  // Wave B Sprint B1 — Trade nav-item with sub-route matching so any
+  // /dashboard/trade/* URL keeps the parent active.
+  it("Trade nav item activates on /dashboard/trade/items sub-route", () => {
+    pathnameMock.mockReturnValue("/dashboard/trade/items");
+    render(<V2Sidebar pendingProposals={0} />);
+    const link = screen.getByRole("link", { name: /^Trade$/i });
+    expect(link.getAttribute("aria-current")).toBe("page");
   });
 });
 

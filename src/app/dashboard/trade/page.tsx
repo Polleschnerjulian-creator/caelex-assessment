@@ -1,0 +1,243 @@
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import { Globe2, FileSearch, ScanSearch, ListChecks } from "lucide-react";
+
+import { auth } from "@/lib/auth";
+import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
+
+export const dynamic = "force-dynamic";
+
+export const metadata = {
+  title: "Trade Operations — Caelex Comply",
+  description:
+    "Klassifizieren, screenen, lizenzieren — der operations-layer für Export-Kontrolle.",
+};
+
+/**
+ * Trade Operations — Wave B Sprint B1 stub.
+ *
+ * Empty-State-Page für die neue `/dashboard/trade`-Surface. In Sprint
+ * B7 wird das die Item-Liste, in Wave A die Counterparty-Liste, in
+ * Wave C die Operations-Liste. Sprint B1 zeigt nur den Hero, damit
+ * die Navigation + Routing-Foundation steht.
+ *
+ * Strategischer Kontext: docs/COMPLY-EXPORT-CONTROL-CONCEPT.md
+ * Operativer Sprint-Plan: docs/COMPLY-EXPORT-CONTROL-PLAN.md
+ *
+ * Two-Layer-Split (siehe Konzept § 2):
+ *   - Layer 1 (Posture, existiert): /dashboard/modules/export-control
+ *     beantwortet "Wie reif ist unser ICP?"
+ *   - Layer 2 (Operations, hier): /dashboard/trade beantwortet
+ *     "Was darf ich mit DIESER Sendung an DIESE Firma morgen tun?"
+ */
+export default async function TradeOverviewPage() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/login?next=/dashboard/trade");
+  }
+  const ui = await resolveComplyUiVersion();
+  if (ui === "v1") redirect("/dashboard");
+
+  const sansFont =
+    'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif';
+  const displayFont =
+    'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif';
+
+  return (
+    <div
+      className="mx-auto max-w-screen-2xl px-8 py-8"
+      style={{ fontFamily: sansFont, letterSpacing: "-0.005em" }}
+    >
+      <header
+        className="mb-7 flex items-end justify-between gap-6 pb-5"
+        style={{ borderBottom: "0.5px solid rgba(255, 255, 255, 0.08)" }}
+      >
+        <div className="min-w-0">
+          <h1
+            className="text-[28px] font-semibold text-white"
+            style={{
+              fontFamily: displayFont,
+              letterSpacing: "-0.022em",
+              lineHeight: 1.15,
+            }}
+          >
+            Trade Operations
+          </h1>
+          <p
+            className="mt-1.5 max-w-2xl text-[14px]"
+            style={{ color: "rgba(255, 255, 255, 0.55)" }}
+          >
+            Klassifizieren, screenen, lizenzieren — der Operations-Layer neben
+            deinem Export-Control-Posture.
+          </p>
+        </div>
+      </header>
+
+      {/* Sprint-B1 hero: roadmap-vorschau, kein funktionaler Inhalt
+          noch. Sprint B7 ersetzt das mit der Item-Liste. */}
+      <div
+        className="max-w-3xl rounded-2xl p-8"
+        style={{
+          background: "rgba(255, 255, 255, 0.03)",
+          boxShadow:
+            "inset 0 1px 0 0 rgba(255, 255, 255, 0.06), 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+        }}
+      >
+        <div
+          className="mb-5 flex h-10 w-10 items-center justify-center rounded-xl"
+          style={{
+            background: "rgba(255, 255, 255, 0.06)",
+            boxShadow:
+              "inset 0 1px 0 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 0 rgba(0, 0, 0, 0.25)",
+          }}
+        >
+          <Globe2
+            className="h-[18px] w-[18px]"
+            strokeWidth={1.75}
+            style={{ color: "rgba(255, 255, 255, 0.85)" }}
+          />
+        </div>
+        <h2
+          className="mb-1.5 text-[17px] font-semibold text-white"
+          style={{ letterSpacing: "-0.018em" }}
+        >
+          Trade-Layer im Aufbau
+        </h2>
+        <p
+          className="mb-6 text-[13px] leading-relaxed"
+          style={{ color: "rgba(255, 255, 255, 0.65)" }}
+        >
+          Diese Surface bringt Caelex Comply auf die zweite Compliance- Ebene:
+          pro Sendung, pro Counterparty, pro BoM-Zeile. Der Posture-Layer
+          (ICP-Reife, AV-Bestellung, Schulungen) bleibt unter{" "}
+          <Link
+            href="/dashboard/modules/export-control"
+            className="underline decoration-dotted underline-offset-2 hover:text-white"
+            style={{ color: "rgba(255, 255, 255, 0.85)" }}
+          >
+            Export Control
+          </Link>{" "}
+          erreichbar.
+        </p>
+
+        <div
+          className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em]"
+          style={{ color: "rgba(255, 255, 255, 0.45)" }}
+        >
+          Roadmap
+        </div>
+        <ul className="space-y-3">
+          <RoadmapRow
+            icon={ScanSearch}
+            label="Wave B — Item-Klassifikation"
+            description="ECCN, USML, MTCR, AL — parallel-Klassifikation mit Astra-Vorschlag und Property-Trigger-Override."
+            tone="active"
+          />
+          <RoadmapRow
+            icon={FileSearch}
+            label="Wave A — Sanctions-Screening"
+            description="Free-Stack: OFAC, BIS, DDTC, EU FSF, UK OFSI, UN. 50%-Rule-Cascade durch Beneficial-Ownership-Graph."
+            tone="planned"
+          />
+          <RoadmapRow
+            icon={ListChecks}
+            label="Wave C — Operations-Lifecycle"
+            description="TradeOperation als atomarer Liefer-Vorgang mit License-Stack und BAFA-ELAN-K2-Vorbereitung."
+            tone="planned"
+          />
+        </ul>
+      </div>
+
+      {/* Disclaimer — Pflicht auf jeder Trade-Page (Plan § 6). */}
+      <p
+        className="mt-8 max-w-3xl text-[11px] leading-relaxed"
+        style={{ color: "rgba(255, 255, 255, 0.4)" }}
+      >
+        Caelex Comply Trade ist ein Compliance-Werkzeug, kein Counsel. Vor jeder
+        Export-Entscheidung mit qualifizierter Exportkontroll- Rechtsberatung
+        verifizieren. Verstöße gegen AWG/EAR/ITAR können zu Freiheitsstrafen bis
+        zu 10/20 Jahren und Bußen bis zu 40 Mio. € (DE) bzw. USD 1 Mio. (US)
+        führen.
+      </p>
+    </div>
+  );
+}
+
+// ─── Subcomponents ───────────────────────────────────────────────────
+
+function RoadmapRow({
+  icon: Icon,
+  label,
+  description,
+  tone,
+}: {
+  icon: React.ComponentType<{
+    className?: string;
+    strokeWidth?: number;
+    style?: React.CSSProperties;
+  }>;
+  label: string;
+  description: string;
+  tone: "active" | "planned";
+}) {
+  const isActive = tone === "active";
+  return (
+    <li
+      className="flex items-start gap-3 rounded-xl p-3.5"
+      style={{
+        background: isActive
+          ? "rgba(255, 255, 255, 0.04)"
+          : "rgba(255, 255, 255, 0.02)",
+        boxShadow: "inset 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+      }}
+    >
+      <div
+        className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
+        style={{
+          background: isActive
+            ? "rgba(255, 255, 255, 0.08)"
+            : "rgba(255, 255, 255, 0.04)",
+        }}
+      >
+        <Icon
+          className="h-3.5 w-3.5"
+          strokeWidth={1.75}
+          style={{
+            color: isActive
+              ? "rgba(255, 255, 255, 0.92)"
+              : "rgba(255, 255, 255, 0.55)",
+          }}
+        />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div
+          className="text-[13px] font-medium"
+          style={{
+            color: isActive
+              ? "rgba(255, 255, 255, 0.92)"
+              : "rgba(255, 255, 255, 0.7)",
+          }}
+        >
+          {label}
+        </div>
+        <p
+          className="mt-0.5 text-[12px] leading-relaxed"
+          style={{ color: "rgba(255, 255, 255, 0.55)" }}
+        >
+          {description}
+        </p>
+      </div>
+      <span
+        className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em]"
+        style={{
+          background: isActive
+            ? "rgba(120, 220, 160, 0.12)"
+            : "rgba(255, 255, 255, 0.04)",
+          color: isActive ? "rgb(120, 220, 160)" : "rgba(255, 255, 255, 0.45)",
+        }}
+      >
+        {isActive ? "In progress" : "Planned"}
+      </span>
+    </li>
+  );
+}

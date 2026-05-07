@@ -39,6 +39,11 @@ model User {
   v2AstraConversations  V2AstraConversation[]
   v2PostureSnapshots    V2PostureSnapshot[]
 
+  // Comply Trade v2 (Wave B Sprint B1) — author back-refs for the
+  // operations-layer side-tables.
+  tradeItemsCreated TradeItem[]     @relation("TradeItemAuthor")
+  tradeItemNotes    TradeItemNote[]
+
   accounts                 Account[]
   sessions                 Session[]
   articleStatuses          ArticleStatus[]
@@ -2756,6 +2761,10 @@ model Organization {
   assureDataRooms           AssureDataRoom[]
   investmentReadinessScores InvestmentReadinessScore[]
   assureMilestones          AssureMilestone[]
+
+  // Comply Trade v2 (Wave B Sprint B1) — operations-layer items.
+  // Counterparties + Operations + Licenses kommen in Wave A/C.
+  tradeItems TradeItem[]
 
   // Multi-tenancy: org-scoped models
   auditLogs                AuditLog[]
@@ -10317,4 +10326,121 @@ model WorkflowApprovalSlot {
 
   @@unique([workflowId, stepKey, requiredRole])
   @@index([workflowId, stepKey])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMPLY TRADE V2 — Operations Layer (Wave B Sprint B1)
+//
+// See docs/COMPLY-EXPORT-CONTROL-CONCEPT.md and
+// docs/COMPLY-EXPORT-CONTROL-PLAN.md.
+//
+// Sprint B1 lays only the foundation models (TradeItem +
+// TradeItemNote). TradeParty / TradeOperation / TradeLicense come in
+// Wave A and Wave C — adding them now would be premature schema
+// surface-area without consumers.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// One BoM line item that the operator wants classified for export.
+/// May be hardware (a star tracker, a fuel pump) or software/firmware
+/// (a flight-software stack, a TT&C protocol). The same TradeItem can
+/// hold parallel classifications under EU Annex I, US CCL, USML, MTCR,
+/// and German Anlage AL — that's the whole point of being a multi-
+/// jurisdiction tool.
+model TradeItem {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdById    String
+  createdBy      User         @relation("TradeItemAuthor", fields: [createdById], references: [id], onDelete: Cascade)
+
+  // ── Identity ──
+  name               String
+  internalSku        String?
+  manufacturerName   String?
+  manufacturerPartNo String?
+  /// Free-text description for Astra to consume during classification.
+  description        String  @db.Text
+
+  // ── Multi-jurisdiction classifications (all parallel, all optional) ──
+  /// EU Annex I — z.B. "9A515.a", "9A101", "5A001.f"
+  eccnEU        String?
+  /// US CCL — z.B. "9A515.a", "5A002.a.1.a"
+  eccnUS        String?
+  /// USML — z.B. "XV(a)(7)(i)", "IV(h)"
+  usmlCategory  String?
+  /// MTCR Annex — z.B. "9A101", "1.A.1"
+  mtcrCategory  String?
+  /// DE Anlage AL — z.B. "0001", Übergangskennung "4A1906"
+  germanAlEntry String?
+
+  // ── Origin + Composition (für De-minimis + FDPR in Sprint B5) ──
+  countryOfOrigin             String?
+  /// % US-content by value — drives 25% / 10% / 0% De-minimis decision.
+  usContentPercent            Float?
+  /// True wenn US-Software in Design verwendet (FDPR-Trigger).
+  designedWithUSTech          Boolean @default(false)
+  /// True wenn US-Equipment im Manufacturing verwendet.
+  manufacturedWithUSEquipment Boolean @default(false)
+
+  // ── Property flags für die Property-Trigger-Engine (Sprint B3) ──
+  /// Aperture-Größe für Optik (USML XV(a)(7)(i) Schwelle 0.50 m).
+  apertureMeters Float?
+  rangeKm        Float?
+  payloadKg      Float?
+  isRadHardened  Boolean? @default(false)
+  isMilSpec      Boolean? @default(false)
+  isAntiJam      Boolean? @default(false)
+
+  // ── Classification provenance ──
+  classificationSource      TradeClassificationSource @default(USER_DECLARED)
+  classifiedAt              DateTime?
+  classifiedById            String?
+  /// Reference to BAFA "Auskunft zur Güterliste" letter, attorney memo,
+  /// or CJ-determination (US Commodity Jurisdiction) if available.
+  classificationEvidenceUrl String?
+
+  status    TradeItemStatus @default(DRAFT)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  notes TradeItemNote[]
+
+  @@index([organizationId, status])
+  @@index([organizationId, createdAt])
+  @@index([eccnEU])
+  @@index([usmlCategory])
+}
+
+enum TradeItemStatus {
+  DRAFT
+  CLASSIFIED
+  REQUIRES_REVIEW
+  ARCHIVED
+}
+
+enum TradeClassificationSource {
+  USER_DECLARED
+  ASTRA_SUGGESTED
+  ATTORNEY_OPINION
+  BAFA_AUSKUNFT_GUETERLISTE
+  CJ_DETERMINATION
+}
+
+/// Markdown-fähige Notiz auf einem TradeItem. Pattern wie
+/// ComplianceItemNote — mehrere Co-Author-User möglich, Audit-Trail
+/// erhalten bleibt unabhängig vom Item-Status.
+model TradeItemNote {
+  id     String    @id @default(cuid())
+  itemId String
+  item   TradeItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  userId String
+  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  body String @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([itemId, createdAt])
+  @@index([userId])
 }

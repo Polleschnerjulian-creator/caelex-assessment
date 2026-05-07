@@ -133,7 +133,13 @@ export type AuditAction =
   | "comply_v2_proposal_rejected"
   | "comply_v2_triage_acknowledged"
   | "comply_v2_triage_dismissed"
-  | "comply_v2_action_executed";
+  | "comply_v2_action_executed"
+  // Comply Trade v2 (Wave B Sprint B1) — operations-layer items.
+  // Counterparty/Operation/License verbs follow in Wave A/C.
+  | "trade_item_created"
+  | "trade_item_classified"
+  | "trade_item_archived"
+  | "trade_item_note_added";
 
 // Entity types for audit logging
 export type AuditEntityType =
@@ -186,7 +192,9 @@ export type AuditEntityType =
   // row); `comply_proposal` is the AstraProposal pending-queue row.
   | "comply_compliance_item"
   | "comply_proposal"
-  | "comply_triage_signal";
+  | "comply_triage_signal"
+  // Comply Trade v2 (Wave B Sprint B1).
+  | "trade_item";
 
 export interface AuditLogEntry {
   userId: string;
