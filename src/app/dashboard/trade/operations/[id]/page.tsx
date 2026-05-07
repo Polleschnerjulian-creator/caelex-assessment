@@ -28,9 +28,23 @@ import {
   Globe,
   AlertTriangle,
   Calendar,
+  RefreshCw,
 } from "lucide-react";
 import { OperationLinesPanel } from "@/components/trade/OperationLinesPanel";
 import { OperationLifecyclePanel } from "@/components/trade/OperationLifecyclePanel";
+
+interface RiskFactorView {
+  key: string;
+  reason: string;
+  weight: number;
+  severity: "low" | "medium" | "high" | "critical";
+}
+
+interface RiskScoreView {
+  score: number;
+  band: "low" | "medium" | "high";
+  factors: RiskFactorView[];
+}
 
 interface OperationLine {
   id: string;
@@ -134,6 +148,35 @@ export default function OperationDetailPage({
   const { id } = use(params);
   const [op, setOp] = useState<Operation | null>(null);
   const [loading, setLoading] = useState(true);
+  const [risk, setRisk] = useState<RiskScoreView | null>(null);
+  const [recomputingRisk, setRecomputingRisk] = useState(false);
+  const [riskError, setRiskError] = useState<string | null>(null);
+
+  async function recomputeRisk() {
+    setRecomputingRisk(true);
+    setRiskError(null);
+    try {
+      const res = await fetch(`/api/trade/operations/${id}/recompute-risk`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setRiskError(data.error ?? "Failed to recompute risk");
+        return;
+      }
+      setRisk(data.result);
+      // Refresh op to get the persisted score
+      const refresh = await fetch(`/api/trade/operations/${id}`);
+      if (refresh.ok) {
+        const refreshData = await refresh.json();
+        setOp(refreshData.operation ?? null);
+      }
+    } catch (e) {
+      setRiskError(e instanceof Error ? e.message : "Network error");
+    } finally {
+      setRecomputingRisk(false);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -249,30 +292,60 @@ export default function OperationDetailPage({
             </p>
           )}
         </div>
-        {op.riskScore !== null && (
-          <div className="shrink-0 text-right">
-            <div
-              className="text-[40px] font-bold leading-none tabular-nums"
-              style={{
-                color:
-                  op.riskScore >= 70
+        <div className="shrink-0 text-right">
+          <div
+            className="text-[40px] font-bold leading-none tabular-nums"
+            style={{
+              color:
+                op.riskScore === null
+                  ? "rgba(255,255,255,0.3)"
+                  : op.riskScore >= 70
                     ? "rgb(248,113,113)"
                     : op.riskScore >= 40
                       ? "rgb(251,191,36)"
                       : "rgb(52,211,153)",
-              }}
-            >
-              {op.riskScore}
-            </div>
-            <div
-              className="mt-1 text-[10px] font-semibold uppercase tracking-widest"
-              style={{ color: "rgba(255,255,255,0.4)" }}
-            >
-              Risk Score
-            </div>
+            }}
+          >
+            {op.riskScore ?? "—"}
           </div>
-        )}
+          <div
+            className="mt-1 text-[10px] font-semibold uppercase tracking-widest"
+            style={{ color: "rgba(255,255,255,0.4)" }}
+          >
+            Risk Score
+          </div>
+          <button
+            onClick={recomputeRisk}
+            disabled={recomputingRisk}
+            className="mt-2 inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-semibold transition-all disabled:opacity-50"
+            style={{
+              background: "rgba(255,255,255,0.06)",
+              color: "rgba(255,255,255,0.7)",
+              boxShadow: "inset 0 0 0 0.5px rgba(255,255,255,0.10)",
+            }}
+          >
+            <RefreshCw
+              className={`h-2.5 w-2.5 ${recomputingRisk ? "animate-spin" : ""}`}
+            />
+            {recomputingRisk ? "Computing…" : "Recompute"}
+          </button>
+        </div>
       </header>
+
+      {riskError && (
+        <div
+          className="mb-6 rounded-lg px-4 py-3 text-[13px]"
+          style={{
+            background: "rgba(239,68,68,0.10)",
+            color: "rgb(248,113,113)",
+          }}
+        >
+          {riskError}
+        </div>
+      )}
+
+      {/* Risk Factors Breakdown (shown after recompute) */}
+      {risk && risk.factors.length > 0 && <RiskFactorsPanel risk={risk} />}
 
       {/* Catch-all banner if any triggered */}
       {(catchAllHits.length > 0 || op.notificationDuty) && (
@@ -705,6 +778,100 @@ function LicenseRow({ license }: { license: OperationLicense }) {
           </div>
         </div>
       )}
+    </li>
+  );
+}
+
+function RiskFactorsPanel({ risk }: { risk: RiskScoreView }) {
+  const bandColor =
+    risk.band === "high"
+      ? "rgb(248,113,113)"
+      : risk.band === "medium"
+        ? "rgb(251,191,36)"
+        : "rgb(52,211,153)";
+  const bandBg =
+    risk.band === "high"
+      ? "rgba(239,68,68,0.08)"
+      : risk.band === "medium"
+        ? "rgba(251,191,36,0.06)"
+        : "rgba(16,185,129,0.06)";
+
+  return (
+    <section
+      className="mb-6 rounded-2xl"
+      style={{
+        background: bandBg,
+        boxShadow: `inset 0 0 0 0.5px ${bandColor.replace("rgb(", "rgba(").replace(")", ", 0.25)")}`,
+      }}
+    >
+      <div
+        className="flex items-center justify-between border-b px-5 py-3"
+        style={{ borderColor: "rgba(255,255,255,0.06)" }}
+      >
+        <h2
+          className="text-[10px] font-semibold uppercase tracking-[0.14em]"
+          style={{ color: bandColor }}
+        >
+          Risk Score Breakdown — {risk.score}/100 ({risk.band.toUpperCase()})
+        </h2>
+        <span
+          className="text-[11px]"
+          style={{ color: "rgba(255,255,255,0.55)" }}
+        >
+          {risk.factors.length}{" "}
+          {risk.factors.length === 1 ? "contributing factor" : "factors"}
+        </span>
+      </div>
+      <ul>
+        {risk.factors.map((f) => (
+          <RiskFactorRow key={f.key} factor={f} />
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function RiskFactorRow({ factor }: { factor: RiskFactorView }) {
+  const sevColor =
+    factor.severity === "critical"
+      ? "rgb(248,113,113)"
+      : factor.severity === "high"
+        ? "rgb(251,146,60)"
+        : factor.severity === "medium"
+          ? "rgb(251,191,36)"
+          : "rgba(255,255,255,0.55)";
+  return (
+    <li
+      className="flex items-center gap-3 border-b px-5 py-2.5 last:border-0"
+      style={{ borderColor: "rgba(255,255,255,0.04)" }}
+    >
+      <div
+        className="shrink-0 rounded px-2 py-1 text-center font-mono text-[12px] font-bold tabular-nums"
+        style={{
+          background: sevColor.replace("rgb(", "rgba(").replace(")", ", 0.12)"),
+          color: sevColor,
+          minWidth: "3.5ch",
+        }}
+      >
+        +{factor.weight}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div
+          className="text-[12px]"
+          style={{ color: "rgba(255,255,255,0.85)" }}
+        >
+          {factor.reason}
+        </div>
+      </div>
+      <span
+        className="shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest"
+        style={{
+          background: sevColor.replace("rgb(", "rgba(").replace(")", ", 0.10)"),
+          color: sevColor,
+        }}
+      >
+        {factor.severity}
+      </span>
     </li>
   );
 }
