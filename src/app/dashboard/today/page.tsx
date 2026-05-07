@@ -38,6 +38,13 @@ export const metadata = {
   description: "What needs your attention this week.",
 };
 
+// Auth-gated + uses session-keyed DB queries via Promise.all. The
+// dashboard layout already exports force-dynamic which would cover
+// us implicitly, but every other V2 server page sets it explicitly
+// — making it explicit here keeps the convention uniform and protects
+// against accidental SSG if the layout flag is ever dropped.
+export const dynamic = "force-dynamic";
+
 /**
  * Today inbox — the Mercury-pattern landing surface for Comply v2.
  *

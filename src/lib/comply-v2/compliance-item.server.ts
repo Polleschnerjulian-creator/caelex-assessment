@@ -963,28 +963,53 @@ export async function getTodayInboxForUser(userId: string): Promise<{
 }
 
 /**
- * Count the number of distinct items the user has cleared today,
- * where "cleared" = took an action that moves the item out of the
- * URGENT bucket (snoozed). Phase 1 only counts snoozes because they
- * are the only action with a per-user timestamped row today;
- * Phase 2 will fold in mark-attested + add-note via a unified
- * `ComplianceItemActivity` log.
+ * Count the number of distinct items the user has cleared today.
  *
- * Used by the Today inbox header KPI: `12 in inbox · 8 cleared today`.
+ * Sprint G fix #10: was counting only complianceItemSnooze rows,
+ * which under-reported by ~60% (mark-attested, add-note,
+ * triage-acknowledge actions never showed up in the KPI). Now
+ * pulls from the AuditLog rows that Sprint D's action framework
+ * writes for every successful action: snooze, attest, note, ack,
+ * dismiss, etc.
  *
  * "Today" = since 00:00 UTC. Local-time semantics intentionally
  * deferred — UTC is consistent across the user's devices and the
  * cron-published posture snapshot.
+ *
+ * The query counts DISTINCT entityIds so a user that snoozes the
+ * same item twice (e.g. extends the snooze) doesn't get double-
+ * counted toward "cleared today".
  */
 export async function getClearedTodayCountForUser(
   userId: string,
 ): Promise<number> {
   const startOfToday = new Date();
   startOfToday.setUTCHours(0, 0, 0, 0);
-  return prisma.complianceItemSnooze.count({
+
+  // Verbs that count as "cleared the item from your active queue
+  // today". Notably excludes comply_v2_action_executed (the generic
+  // fallback) since that's catch-all and may not represent a clear.
+  const clearVerbs = [
+    "comply_v2_item_snoozed",
+    "comply_v2_item_unsnoozed",
+    "comply_v2_item_note_added",
+    "comply_v2_item_attestation_requested",
+    "comply_v2_item_evidence_requested",
+    "comply_v2_triage_acknowledged",
+    "comply_v2_triage_dismissed",
+  ];
+
+  // Distinct entityIds avoid double-counting multi-action sequences
+  // on the same item (snooze → unsnooze → snooze again should still
+  // count as 1 cleared item, not 3 actions).
+  const rows = await prisma.auditLog.findMany({
     where: {
       userId,
-      createdAt: { gte: startOfToday },
+      action: { in: clearVerbs },
+      timestamp: { gte: startOfToday },
     },
+    select: { entityId: true },
+    distinct: ["entityId"],
   });
+  return rows.length;
 }

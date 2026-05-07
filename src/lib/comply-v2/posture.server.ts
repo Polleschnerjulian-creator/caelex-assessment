@@ -79,26 +79,64 @@ const COUNTABLE_STATUSES: ReadonlySet<ComplianceStatus> = new Set([
 export async function getPostureForUser(
   userId: string,
 ): Promise<PostureSnapshot> {
-  const [aggregate, openProposals, openSnoozes, regulatoryUpdatesUnread] =
-    await Promise.all([
-      getComplianceStatusAggregateForUser(userId),
-      prisma.astraProposal.count({
-        where: {
-          userId,
-          status: "PENDING",
-          expiresAt: { gt: new Date() },
-        },
-      }),
-      prisma.complianceItemSnooze.count({
-        where: { userId, snoozedUntil: { gt: new Date() } },
-      }),
-      // Open Triage approximation: open notifications. Sprint G will
-      // expand this to also count satellite-alerts + unread regulatory
-      // updates (the comment lied about its scope — see audit #11).
-      prisma.notification.count({
-        where: { userId, dismissed: false, read: false },
-      }),
-    ]);
+  // Sprint G fix #11: openTriage now actually sums all 3 sources
+  // the comment had always claimed (notifications + satellite alerts
+  // + unread regulatory updates), not just notifications. We need
+  // the user's org memberships first because alerts + reg-updates
+  // are org-scoped, not user-scoped.
+  const orgMemberships = await prisma.organizationMember.findMany({
+    where: { userId },
+    select: { organizationId: true },
+  });
+  const orgIds = orgMemberships.map((m) => m.organizationId);
+
+  const [
+    aggregate,
+    openProposals,
+    openSnoozes,
+    notificationCount,
+    satelliteAlertCount,
+    unreadRegulatoryUpdates,
+  ] = await Promise.all([
+    getComplianceStatusAggregateForUser(userId),
+    prisma.astraProposal.count({
+      where: {
+        userId,
+        status: "PENDING",
+        expiresAt: { gt: new Date() },
+      },
+    }),
+    prisma.complianceItemSnooze.count({
+      where: { userId, snoozedUntil: { gt: new Date() } },
+    }),
+    prisma.notification.count({
+      where: { userId, dismissed: false, read: false },
+    }),
+    // Satellite alerts open across user's orgs (NOT acknowledged).
+    orgIds.length > 0
+      ? prisma.satelliteAlert.count({
+          where: { operatorId: { in: orgIds }, acknowledged: false },
+        })
+      : Promise.resolve(0),
+    // Regulatory updates that exist but no RegulatoryUpdateRead row
+    // for any of the user's orgs. Approximation: count published
+    // updates minus the user's read ones. Cap at 50 — past that the
+    // KPI just says "lots".
+    orgIds.length > 0
+      ? (async () => {
+          const totalPublished = await prisma.regulatoryUpdate.count({
+            where: { publishedAt: { gt: new Date(0) } },
+          });
+          const userReadCount = await prisma.regulatoryUpdateRead.count({
+            where: { organizationId: { in: orgIds } },
+          });
+          return Math.max(0, totalPublished - userReadCount);
+        })()
+      : Promise.resolve(0),
+  ]);
+
+  const regulatoryUpdatesUnread =
+    notificationCount + satelliteAlertCount + unreadRegulatoryUpdates;
 
   // Status distribution comes straight from the aggregate.
   const statusCounts = aggregate.totalByStatus;
