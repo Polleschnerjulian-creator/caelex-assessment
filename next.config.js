@@ -205,12 +205,16 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: "10mb",
     },
-    // Build-memory guard: cap webpack workers to 2 so the 8 GB Vercel
-    // build container isn't exhausted by 4 parallel webpack threads
-    // each consuming 1–2 GB on top of the main Node.js heap.
-    // Without this cap the build exits with SIGKILL (OOM) immediately
-    // after "Creating an optimized production build..." starts.
-    cpus: 2,
+    // Build-memory guard: cap webpack workers so the 8 GB Vercel build
+    // container isn't exhausted by 4 parallel webpack threads each
+    // consuming ~1 GB on top of the main Node.js heap.
+    //
+    // Math: 4 GB main heap + 3 × 1 GB workers + ~0.5 GB OS = 7.5 GB,
+    // leaving 0.5 GB safety margin. With cpus: 4 (default) the peak
+    // hit 11+ GB and the build exited with SIGKILL during webpack
+    // compilation. cpus: 2 fixed the OOM but ~doubled compile time
+    // from ~2 min → ~4 min. cpus: 3 is the sweet spot.
+    cpus: 3,
   },
 
   // Webpack configuration
