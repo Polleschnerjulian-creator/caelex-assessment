@@ -10,6 +10,7 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
 import {
   getComplianceItemById,
@@ -17,6 +18,7 @@ import {
 } from "@/lib/comply-v2/compliance-item.server";
 import { getProvenanceTimeline } from "@/lib/comply-v2/provenance.server";
 import { ProvenanceTimeline } from "@/components/dashboard/v2/ProvenanceTimeline";
+import { NextStepActionPanel } from "@/components/dashboard/v2/NextStepActionPanel";
 import {
   REGULATIONS,
   REGULATION_LABELS,
@@ -73,14 +75,20 @@ function statusVariant(status: ComplianceStatus) {
 /**
  * Per-Item detail page — full-page drilldown of a ComplianceItem.
  *
- * Two-column layout:
- *   - Left (sidebar): metadata + action panel with inline forms
- *     (snooze, mark-attested, request-evidence — no window.prompt)
- *   - Right (main): notes timeline (newest first) + add-note composer
+ * Layout (top-to-bottom):
+ *   1. Back-link + status header (regulation, status pill, snooze badge)
+ *   2. NextStepActionPanel — the *recommended* next step rendered as a
+ *      kind-specific affordance (Sprint 10H). The whole point of the
+ *      page: don't show the user generic options, show them the one
+ *      thing they're here to do.
+ *   3. Two-column body:
+ *      - Left: metadata + the existing static action panel (Snooze /
+ *        Mark-attested / Request-evidence / Add-note) — kept as the
+ *        comprehensive "do anything" surface.
+ *      - Right: notes timeline + provenance.
  *
- * Accessed from /dashboard/today, /dashboard/triage (later), and
- * /dashboard/proposals (the proposed-item link). Cards on Today
- * link here for full context.
+ * Apple HIG dark theme, Inter font — same visual system as the rest
+ * of V2 (today, time-travel, ops-console, missions).
  */
 export default async function ItemDetailPage({ params }: PageProps) {
   const { regulation: regParam, rowId } = await params;
@@ -110,25 +118,63 @@ export default async function ItemDetailPage({ params }: PageProps) {
   // pull is parallel to extras above; small enough to be unconditional.
   const provenance = await getProvenanceTimeline(rowId, session.user.id);
 
+  // Sprint 10H — fetch teammates for the REQUEST_FROM_TEAM affordance.
+  // Limit to direct organization members (not invitees), exclude self.
+  // Caps at 50 to keep the dropdown sane; orgs larger than that should
+  // get a search affordance in a follow-up sprint.
+  const teammates = await prisma.organizationMember.findMany({
+    where: {
+      organization: {
+        members: { some: { userId: session.user.id } },
+      },
+      userId: { not: session.user.id },
+    },
+    select: {
+      userId: true,
+      user: { select: { id: true, name: true, email: true } },
+    },
+    take: 50,
+  });
+  const teammatesShaped = teammates.map((m) => ({
+    id: m.user.id,
+    name: m.user.name,
+    email: m.user.email ?? "(no email)",
+  }));
+
+  const sansFont =
+    'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif';
+  const displayFont =
+    'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif';
+
   return (
-    <div className="mx-auto max-w-screen-2xl px-6 py-6">
+    <div
+      className="mx-auto max-w-screen-2xl px-8 py-8"
+      style={{ fontFamily: sansFont, letterSpacing: "-0.005em" }}
+    >
       <div className="mb-4">
         <Link
           href="/dashboard/today"
-          className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-slate-500 transition hover:text-emerald-400"
+          className="inline-flex items-center gap-1.5 text-[12px] font-medium transition-colors"
+          style={{ color: "rgba(255, 255, 255, 0.55)" }}
         >
-          <ArrowLeft className="h-3 w-3" />
-          BACK TO TODAY
+          <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
+          Back to Today
         </Link>
       </div>
 
-      <header className="mb-6 flex flex-wrap items-start justify-between gap-4 border-b border-white/[0.06] pb-4">
-        <div>
+      <header
+        className="mb-7 flex flex-wrap items-end justify-between gap-4 pb-5"
+        style={{ borderBottom: "0.5px solid rgba(255, 255, 255, 0.08)" }}
+      >
+        <div className="min-w-0">
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <Badge variant={statusVariant(item.status)}>
               {STATUS_LABELS[item.status]}
             </Badge>
-            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+            <span
+              className="text-[10px] font-semibold uppercase tracking-[0.14em]"
+              style={{ color: "rgba(255, 255, 255, 0.45)" }}
+            >
               {item.regulation} · {item.requirementId}
             </span>
             {isSnoozed ? (
@@ -138,14 +184,29 @@ export default async function ItemDetailPage({ params }: PageProps) {
               </Badge>
             ) : null}
           </div>
-          <h1 className="font-mono text-xl font-semibold tracking-tight text-slate-100">
+          <h1
+            className="text-[28px] font-semibold text-white"
+            style={{
+              fontFamily: displayFont,
+              letterSpacing: "-0.022em",
+              lineHeight: 1.15,
+            }}
+          >
             {item.requirementId}
           </h1>
-          <p className="mt-1 text-xs text-slate-500">
+          <p
+            className="mt-1.5 text-[14px]"
+            style={{ color: "rgba(255, 255, 255, 0.55)" }}
+          >
             {REGULATION_LABELS[item.regulation]}
           </p>
         </div>
       </header>
+
+      {/* Sprint 10H — the recommended next step rendered as a
+          kind-specific affordance. Sits at the top so users see
+          "what to do" before "what metadata exists." */}
+      <NextStepActionPanel item={item} teammates={teammatesShaped} />
 
       <div className="grid gap-8 lg:grid-cols-[1fr_2fr]">
         {/* Sidebar — metadata + actions */}
@@ -173,6 +234,7 @@ export default async function ItemDetailPage({ params }: PageProps) {
           <Section title="Actions">
             {item.status !== "ATTESTED" ? (
               <ActionForm
+                anchorId="mark-attested"
                 action={markAttestedAction}
                 itemId={item.id}
                 regulation={regParam}
@@ -282,6 +344,7 @@ export default async function ItemDetailPage({ params }: PageProps) {
           <Section title={`Notes (${extras.notes.length})`}>
             {/* Add-note composer */}
             <form
+              id="add-note"
               action={addNoteAction}
               className="palantir-surface mb-6 rounded-md p-3"
             >
@@ -444,6 +507,7 @@ function ActionForm({
   submitIcon: Icon,
   submitVariant = "default",
   badge,
+  anchorId,
 }: {
   action: (formData: FormData) => Promise<void>;
   itemId: string;
@@ -456,9 +520,16 @@ function ActionForm({
   submitIcon: React.ComponentType<{ className?: string }>;
   submitVariant?: "default" | "emerald" | "outline";
   badge?: string;
+  /** When provided, the form gets `id={anchorId}` so the
+   *  NextStepActionPanel's "#mark-attested" link can scroll to it. */
+  anchorId?: string;
 }) {
   return (
-    <form action={action} className="palantir-surface rounded-md p-3">
+    <form
+      id={anchorId}
+      action={action}
+      className="palantir-surface rounded-md p-3"
+    >
       <input type="hidden" name="itemId" value={itemId} />
       <input type="hidden" name="_itemId" value={itemId} />
       <input

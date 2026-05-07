@@ -503,6 +503,116 @@ export const requestEvidence = defineAction({
   },
 });
 
+// ─── delegateComplianceItem ───────────────────────────────────────────────
+
+/**
+ * Sprint 10H — REQUEST_FROM_TEAM next-step wiring.
+ *
+ * Delegate a ComplianceItem to a teammate. Concretely:
+ *   1. Verify both requester and assignee belong to the same organization
+ *      (defense in depth — you cannot ping users outside your tenant).
+ *   2. Write a Notification row to the assignee with type
+ *      `COMPLIANCE_ACTION_REQUIRED`. The notification's `actionUrl`
+ *      lands them directly on this item-detail page.
+ *   3. Add a V2 audit-trail note on the item: "Delegated to <name> —
+ *      <reason>". Survives even if the notification is dismissed.
+ *
+ * No approval gate. Delegation is a low-stakes coordination action;
+ * the assignee can always decline by adding a counter-note. The
+ * existing requestEvidence / markAttested actions remain the
+ * compliance-state-changing high-trust paths.
+ *
+ * Why use the existing Notification table instead of building a
+ * tasks/assignments inbox: the assignee already checks their notif
+ * bell in V2 chrome. A dedicated tasks model would be one more place
+ * to forget — single source-of-truth wins here.
+ */
+export const delegateComplianceItem = defineAction({
+  name: "delegate-compliance-item",
+  description:
+    "Request a teammate to take action on a ComplianceItem. Sends them a notification with a link back to the item.",
+  schema: z.object({
+    itemId: z.string().min(3),
+    assigneeUserId: z.string().min(3),
+    reason: z.string().min(10).max(2000),
+  }),
+  async handler({ itemId, assigneeUserId, reason }, ctx) {
+    const { regulation, rowId } = parseItemId(itemId);
+    await assertOwnership(regulation, rowId, ctx.userId);
+
+    if (assigneeUserId === ctx.userId) {
+      throw new Error("Cannot delegate an item to yourself");
+    }
+
+    // Defense in depth: requester and assignee must share an org.
+    // We allow ANY shared org — most users have one but multi-org
+    // members get to delegate to any teammate they share a tenant with.
+    const sharedOrg = await prisma.organizationMember.findFirst({
+      where: {
+        userId: ctx.userId,
+        organization: {
+          members: { some: { userId: assigneeUserId } },
+        },
+      },
+      select: { organizationId: true },
+    });
+    if (!sharedOrg) {
+      throw new Error("Assignee is not in your organization");
+    }
+
+    // Fetch assignee profile for the audit-note display name.
+    const assignee = await prisma.user.findUnique({
+      where: { id: assigneeUserId },
+      select: { name: true, email: true },
+    });
+    const assigneeLabel = assignee?.name ?? assignee?.email ?? assigneeUserId;
+
+    // 1. Notification — actionUrl lands them directly on the item.
+    await prisma.notification.create({
+      data: {
+        userId: assigneeUserId,
+        organizationId: sharedOrg.organizationId,
+        type: "COMPLIANCE_ACTION_REQUIRED",
+        title: `Action requested on ${regulation} ${rowId.slice(0, 8)}`,
+        message: reason,
+        actionUrl: `/dashboard/items/${regulation}/${rowId}`,
+        entityType: "compliance",
+        entityId: itemId,
+        severity: "INFO",
+      },
+    });
+
+    // 2. V2 audit-trail note — survives notification dismissal.
+    await prisma.complianceItemNote.create({
+      data: {
+        itemId,
+        userId: ctx.userId,
+        body: `**Delegated to ${assigneeLabel}.**\n\nReason: ${reason}`,
+      },
+    });
+
+    revalidatePath("/dashboard/today");
+    return { itemId, assigneeUserId };
+  },
+  paletteVerb: {
+    label: "Delegate to teammate",
+    hint: "Send a teammate a request to action this item",
+    group: "item",
+    iconName: "UserPlus",
+    contextual: true,
+  },
+  astra: {
+    enabled: true,
+    description:
+      "Delegate a ComplianceItem to a teammate. Sends them a notification with a link back to the item. Use when the user wants to ask a colleague to handle a specific compliance item.",
+  },
+  audit: {
+    action: "comply_v2_item_delegated",
+    entityType: "comply_compliance_item",
+    entityIdFromParams: (p) => p.itemId,
+  },
+});
+
 // Re-export for index aggregation.
 export const COMPLIANCE_ITEM_ACTIONS = {
   snoozeComplianceItem,
@@ -510,4 +620,5 @@ export const COMPLIANCE_ITEM_ACTIONS = {
   addComplianceItemNote,
   markAsAttested,
   requestEvidence,
+  delegateComplianceItem,
 } as const;
