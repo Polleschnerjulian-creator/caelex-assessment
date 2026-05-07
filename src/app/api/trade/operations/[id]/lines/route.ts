@@ -28,6 +28,7 @@ import {
 } from "@/lib/ratelimit";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { emitTradeEvent } from "@/lib/comply-v2/trade/ops-events.server";
 import { z } from "zod";
 
 const AddLineSchema = z.object({
@@ -179,6 +180,20 @@ export async function POST(
       description: `Line added to operation ${operation.reference}: ${item.name} × ${data.quantity}`,
       ipAddress: reqCtx.ipAddress,
       userAgent: reqCtx.userAgent,
+    });
+    await emitTradeEvent("trade.operation.line_added", {
+      organizationId: org.organizationId,
+      summary: `${operation.reference} · +${item.name} × ${data.quantity} ${data.unitCurrency}`,
+      data: {
+        operationId,
+        reference: operation.reference,
+        lineId: line.id,
+        itemName: item.name,
+        quantity: data.quantity,
+        unitValue: data.unitValue,
+        unitCurrency: data.unitCurrency,
+        userId,
+      },
     });
 
     return NextResponse.json({ line }, { status: 201 });

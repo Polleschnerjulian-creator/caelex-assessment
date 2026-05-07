@@ -22,6 +22,7 @@ import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { logger } from "@/lib/logger";
 import { syncAllLists } from "@/lib/comply-v2/trade/screening/sync.server";
+import { emitDbEvent } from "@/lib/db-events.server";
 
 export const runtime = "nodejs";
 // OFAC alone is ~3 MB and the parser is single-pass, but DB writes
@@ -69,6 +70,29 @@ export async function GET(request: Request) {
     };
 
     logger.info(summary, "trade-sync-sanctions completed");
+
+    // Broadcast to Ops Console — only when something actually changed
+    // (idempotent runs are common when upstream content hasn't moved).
+    const changedLists = result.results.filter((r) => r.changed);
+    if (changedLists.length > 0) {
+      try {
+        await emitDbEvent("trade.sanctions.synced", {
+          summary: `Sanctions sync: ${changedLists.length} list(s) updated · ${changedLists.map((r) => `${r.list}(+${r.entryCount})`).join(", ")}`,
+          totalElapsedMs: result.totalElapsedMs,
+          changedLists: changedLists.map((r) => ({
+            list: r.list,
+            entryCount: r.entryCount,
+            hashPrefix: r.hash?.slice(0, 12),
+          })),
+          emittedAt: new Date().toISOString(),
+        });
+      } catch (e) {
+        logger.warn(
+          { err: e instanceof Error ? e.message : String(e) },
+          "[trade-sync-sanctions] notify failed (non-fatal)",
+        );
+      }
+    }
 
     return NextResponse.json(summary);
   } catch (err) {

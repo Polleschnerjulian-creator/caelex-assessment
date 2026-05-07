@@ -34,6 +34,7 @@ import {
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { z } from "zod";
 import { TradeScreeningStatus, TradePartyStatus } from "@prisma/client";
+import { emitTradeEvent } from "@/lib/comply-v2/trade/ops-events.server";
 
 const DecideSchema = z.object({
   decision: z.enum(["CONFIRMED_HIT", "FALSE_POSITIVE_DISMISSED"]),
@@ -144,6 +145,31 @@ export async function POST(
       },
       "screening decision recorded",
     );
+
+    await emitTradeEvent("trade.screening.decided", {
+      organizationId: org.organizationId,
+      summary: `${updatedParty.legalName} · screening triaged → ${decision}${decision === "CONFIRMED_HIT" ? " (BLOCKED)" : ""}`,
+      data: {
+        partyId,
+        legalName: updatedParty.legalName,
+        screeningId,
+        decision,
+        partyStatusAfter: updatedParty.status,
+        userId,
+      },
+    });
+    if (decision === "CONFIRMED_HIT") {
+      await emitTradeEvent("trade.party.blocked", {
+        organizationId: org.organizationId,
+        summary: `${updatedParty.legalName} BLOCKED — confirmed sanctions hit`,
+        data: {
+          partyId,
+          legalName: updatedParty.legalName,
+          reason: "Sanctions match confirmed by reviewer",
+          userId,
+        },
+      });
+    }
 
     return NextResponse.json({
       screening: updatedScreening,

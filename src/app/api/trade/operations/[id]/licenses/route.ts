@@ -22,6 +22,7 @@ import {
 } from "@/lib/ratelimit";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { emitTradeEvent } from "@/lib/comply-v2/trade/ops-events.server";
 import { z } from "zod";
 
 const AttachLicenseSchema = z.object({
@@ -138,6 +139,17 @@ export async function POST(
       description: `License ${license.licenseType} attached to operation ${operation.reference}`,
       ipAddress: reqCtx.ipAddress,
       userAgent: reqCtx.userAgent,
+    });
+    await emitTradeEvent("trade.license.attached", {
+      organizationId: org.organizationId,
+      summary: `${operation.reference} · +license ${license.licenseType.replace(/_/g, " ")}`,
+      data: {
+        operationId,
+        reference: operation.reference,
+        licenseId,
+        licenseType: license.licenseType,
+        userId,
+      },
     });
 
     return NextResponse.json({ attached: true });

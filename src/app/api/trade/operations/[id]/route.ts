@@ -18,6 +18,7 @@ import {
 } from "@/lib/ratelimit";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { emitTradeEvent } from "@/lib/comply-v2/trade/ops-events.server";
 import { z } from "zod";
 import {
   TradeEndUseClass,
@@ -286,6 +287,17 @@ export async function PATCH(
         description: `Trade operation ${existing.reference}: ${existing.status} → ${data.status}`,
         ipAddress: reqCtx.ipAddress,
         userAgent: reqCtx.userAgent,
+      });
+      await emitTradeEvent("trade.operation.status_changed", {
+        organizationId: org.organizationId,
+        summary: `${existing.reference} · ${existing.status} → ${data.status}`,
+        data: {
+          operationId: id,
+          reference: existing.reference,
+          from: existing.status,
+          to: data.status,
+          userId,
+        },
       });
     } else {
       await logAuditEvent({

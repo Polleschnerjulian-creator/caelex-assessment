@@ -34,7 +34,17 @@ vi.mock("lucide-react", () => {
     Bot: icon("Bot"),
     Rocket: icon("Rocket"),
     ShieldCheck: icon("ShieldCheck"),
+    ShieldAlert: icon("ShieldAlert"),
     Sparkles: icon("Sparkles"),
+    // New icons for trade + filter chips
+    Globe: icon("Globe"),
+    Truck: icon("Truck"),
+    Package: icon("Package"),
+    FileText: icon("FileText"),
+    RefreshCw: icon("RefreshCw"),
+    AlertTriangle: icon("AlertTriangle"),
+    Database: icon("Database"),
+    Filter: icon("Filter"),
   };
 });
 

@@ -51,6 +51,20 @@ const ALL_CHANNELS: DbChannel[] = [
   "comply.proposal.applied",
   "comply.mission.phase_updated",
   "astra.reasoning",
+  // Trade Operations (Wave C)
+  "trade.operation.created",
+  "trade.operation.status_changed",
+  "trade.operation.line_added",
+  "trade.operation.line_removed",
+  "trade.operation.risk_recomputed",
+  "trade.license.attached",
+  "trade.license.detached",
+  // Trade Counterparty Screening (Wave A)
+  "trade.party.created",
+  "trade.party.screened",
+  "trade.party.blocked",
+  "trade.screening.decided",
+  "trade.sanctions.synced",
 ];
 
 export async function GET(request: Request) {

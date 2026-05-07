@@ -25,6 +25,7 @@ import {
 } from "@/lib/ratelimit";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { emitTradeEvent } from "@/lib/comply-v2/trade/ops-events.server";
 import { z } from "zod";
 import {
   Prisma,
@@ -268,6 +269,21 @@ export async function POST(req: Request) {
         description: `Trade operation ${operation.reference} created (${operation.operationType})`,
         ipAddress: reqCtx.ipAddress,
         userAgent: reqCtx.userAgent,
+      });
+
+      // Live feed: Ops Console SSE stream
+      await emitTradeEvent("trade.operation.created", {
+        organizationId: org.organizationId,
+        summary: `${operation.reference} · ${operation.operationType.replace(/_/g, " ")} · ${operation.shipFromCountry}→${operation.shipToCountry}`,
+        data: {
+          operationId: operation.id,
+          reference: operation.reference,
+          operationType: operation.operationType,
+          counterpartyId: operation.counterpartyId,
+          shipFromCountry: operation.shipFromCountry,
+          shipToCountry: operation.shipToCountry,
+          userId,
+        },
       });
 
       return NextResponse.json({ operation }, { status: 201 });

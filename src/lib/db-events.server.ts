@@ -68,13 +68,39 @@ export type DbChannel =
   | "comply.proposal.created"
   | "comply.proposal.applied"
   | "comply.mission.phase_updated"
-  | "astra.reasoning";
+  | "astra.reasoning"
+  // Comply Trade v2 — Operations Lifecycle (Wave C)
+  | "trade.operation.created"
+  | "trade.operation.status_changed"
+  | "trade.operation.line_added"
+  | "trade.operation.line_removed"
+  | "trade.operation.risk_recomputed"
+  | "trade.license.attached"
+  | "trade.license.detached"
+  // Comply Trade v2 — Counterparty Screening (Wave A)
+  | "trade.party.created"
+  | "trade.party.screened"
+  | "trade.party.blocked"
+  | "trade.screening.decided"
+  | "trade.sanctions.synced";
 
 const VALID_CHANNELS: ReadonlySet<DbChannel> = new Set<DbChannel>([
   "comply.proposal.created",
   "comply.proposal.applied",
   "comply.mission.phase_updated",
   "astra.reasoning",
+  "trade.operation.created",
+  "trade.operation.status_changed",
+  "trade.operation.line_added",
+  "trade.operation.line_removed",
+  "trade.operation.risk_recomputed",
+  "trade.license.attached",
+  "trade.license.detached",
+  "trade.party.created",
+  "trade.party.screened",
+  "trade.party.blocked",
+  "trade.screening.decided",
+  "trade.sanctions.synced",
 ]);
 
 const PAYLOAD_BYTE_LIMIT = 7900;

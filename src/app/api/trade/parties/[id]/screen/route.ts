@@ -26,6 +26,7 @@ import {
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 
 import { screenParty } from "@/lib/comply-v2/trade/screening/screen-party.server";
+import { emitTradeEvent } from "@/lib/comply-v2/trade/ops-events.server";
 
 export async function POST(
   req: Request,
@@ -74,6 +75,20 @@ export async function POST(
       },
       "trade party screened",
     );
+
+    await emitTradeEvent("trade.party.screened", {
+      organizationId: org.organizationId,
+      summary: `${result.party.legalName} · ${result.summary.decision}${result.summary.hitCount > 0 ? ` · ${result.summary.hitCount} hits, top ${result.summary.topScore.toFixed(2)}` : ""}${result.summary.cascadeHit ? " · 50%-rule cascade hit" : ""}`,
+      data: {
+        partyId: id,
+        legalName: result.party.legalName,
+        decision: result.summary.decision,
+        hitCount: result.summary.hitCount,
+        topScore: result.summary.topScore,
+        cascadeHit: result.summary.cascadeHit,
+        userId,
+      },
+    });
 
     return NextResponse.json({
       screeningResult: result.screeningResult,

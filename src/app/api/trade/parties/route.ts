@@ -24,6 +24,7 @@ import { z } from "zod";
 import { TradePartyStatus, TradeScreeningStatus, Prisma } from "@prisma/client";
 
 import { canonicalizeName } from "@/lib/comply-v2/trade/screening/sources/types";
+import { emitTradeEvent } from "@/lib/comply-v2/trade/ops-events.server";
 
 // ─── Validation ───────────────────────────────────────────────────────
 
@@ -191,6 +192,18 @@ export async function POST(req: Request) {
         isUSPerson: data.isUSPerson ?? false,
         isHighRiskCountry: isHighRisk,
         // status defaults ACTIVE; screeningStatus defaults NOT_SCREENED
+      },
+    });
+
+    await emitTradeEvent("trade.party.created", {
+      organizationId: org.organizationId,
+      summary: `${party.legalName} · ${party.countryCode}${isHighRisk ? " · high-risk country" : ""}`,
+      data: {
+        partyId: party.id,
+        legalName: party.legalName,
+        countryCode: party.countryCode,
+        isHighRiskCountry: isHighRisk,
+        userId,
       },
     });
 
