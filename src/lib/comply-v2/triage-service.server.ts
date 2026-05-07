@@ -294,25 +294,21 @@ export async function acknowledgeTriageItemAtSource(
       });
       const orgIds = memberships.map((m) => m.organizationId);
       if (orgIds.length === 0) return;
-      // Create read rows for each org membership idempotently.
-      // We can only create one per (regulatoryUpdateId, organizationId)
-      // due to the @@unique constraint, so we upsert per org.
-      for (const organizationId of orgIds) {
-        await prisma.regulatoryUpdateRead.upsert({
-          where: {
-            regulatoryUpdateId_organizationId: {
-              regulatoryUpdateId: parsed.rowId,
-              organizationId,
-            },
-          },
-          create: {
-            regulatoryUpdateId: parsed.rowId,
-            organizationId,
-            readByUserId: userId,
-          },
-          update: {},
-        });
-      }
+      // Sprint E perf fix: single batched createMany with skipDuplicates
+      // replaces the previous sequential N-roundtrip upsert loop. The
+      // @@unique([regulatoryUpdateId, organizationId]) constraint
+      // makes skipDuplicates safe — Prisma silently skips conflicts
+      // instead of erroring, which is the idempotent semantics we want.
+      // For a user with 5 org memberships this drops from 5 sequential
+      // upserts to 1 createMany.
+      await prisma.regulatoryUpdateRead.createMany({
+        data: orgIds.map((organizationId) => ({
+          regulatoryUpdateId: parsed.rowId,
+          organizationId,
+          readByUserId: userId,
+        })),
+        skipDuplicates: true,
+      });
       return;
     }
     case "SATELLITE_ALERT": {

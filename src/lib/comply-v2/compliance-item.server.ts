@@ -303,6 +303,230 @@ export async function getComplianceItemsForUser(
   return items.slice(0, limit);
 }
 
+// ─── Aggregate-only path (Sprint E performance fix) ───────────────────────
+
+/**
+ * Per-regulation status-count aggregate. The Posture page consumes
+ * this instead of fetching all rows and counting in JS. Returns
+ * counts in the V2 ComplianceStatus vocabulary (after legacy
+ * normalization).
+ */
+export interface ComplianceStatusAggregate {
+  /** Total count across ALL regulations and ALL statuses. */
+  totalItems: number;
+  /** Count by V2 status across all regulations. */
+  totalByStatus: Record<ComplianceStatus, number>;
+  /** Per-regulation × per-status breakdown. */
+  perRegulation: Record<RegulationKey, Record<ComplianceStatus, number>>;
+  /** Items attested in the last 7 days (status=ATTESTED + updated
+   *  in window). Total across all regs. */
+  attestedThisWeek: number;
+}
+
+function emptyStatusCounts(): Record<ComplianceStatus, number> {
+  return {
+    PENDING: 0,
+    DRAFT: 0,
+    EVIDENCE_REQUIRED: 0,
+    UNDER_REVIEW: 0,
+    ATTESTED: 0,
+    EXPIRED: 0,
+    NOT_APPLICABLE: 0,
+  };
+}
+
+/**
+ * Sprint E perf fix: replace the 5000-row fetch + JS filter with 16
+ * aggregate-only Prisma queries. Each is a `groupBy` returning at
+ * most 7 rows (one per legacy-status string), plus 8 `count`s for the
+ * "attested this week" window. Total transferred rows: ~64 vs ~5000.
+ *
+ * Used by /dashboard/posture. The full-row fetch is still used by
+ * other surfaces (Today, Triage, Search) that need per-item data.
+ */
+export async function getComplianceStatusAggregateForUser(
+  userId: string,
+): Promise<ComplianceStatusAggregate> {
+  const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  // Each tuple: [regulation, groupBy promise, attestedThisWeek count promise]
+  // Eight regulations, two queries each.
+  const groupByPromises: Promise<
+    Record<RegulationKey, Record<ComplianceStatus, number>>
+  > = (async () => {
+    const out: Record<RegulationKey, Record<ComplianceStatus, number>> = {
+      DEBRIS: emptyStatusCounts(),
+      CYBERSECURITY: emptyStatusCounts(),
+      NIS2: emptyStatusCounts(),
+      CRA: emptyStatusCounts(),
+      UK_SPACE_ACT: emptyStatusCounts(),
+      US_REGULATORY: emptyStatusCounts(),
+      EXPORT_CONTROL: emptyStatusCounts(),
+      SPECTRUM: emptyStatusCounts(),
+    };
+
+    const [
+      debrisGroups,
+      cyberGroups,
+      nis2Groups,
+      craGroups,
+      ukGroups,
+      usGroups,
+      exportGroups,
+      spectrumGroups,
+    ] = await Promise.all([
+      prisma.debrisRequirementStatus.groupBy({
+        by: ["status"],
+        where: { assessment: { userId } },
+        _count: { _all: true },
+      }),
+      prisma.cybersecurityRequirementStatus.groupBy({
+        by: ["status"],
+        where: { assessment: { userId } },
+        _count: { _all: true },
+      }),
+      prisma.nIS2RequirementStatus.groupBy({
+        by: ["status"],
+        where: { assessment: { userId } },
+        _count: { _all: true },
+      }),
+      prisma.cRARequirementStatus.groupBy({
+        by: ["status"],
+        where: { assessment: { userId } },
+        _count: { _all: true },
+      }),
+      prisma.ukRequirementStatus.groupBy({
+        by: ["status"],
+        where: { assessment: { userId } },
+        _count: { _all: true },
+      }),
+      prisma.usRequirementStatus.groupBy({
+        by: ["status"],
+        where: { assessment: { userId } },
+        _count: { _all: true },
+      }),
+      prisma.exportControlRequirementStatus.groupBy({
+        by: ["status"],
+        where: { assessment: { userId } },
+        _count: { _all: true },
+      }),
+      prisma.spectrumRequirementStatus.groupBy({
+        by: ["status"],
+        where: { assessment: { userId } },
+        _count: { _all: true },
+      }),
+    ]);
+
+    const fold = (
+      reg: RegulationKey,
+      groups: Array<{ status: string | null; _count: { _all: number } }>,
+    ) => {
+      for (const g of groups) {
+        const v2Status = normalizeStatus(g.status);
+        out[reg][v2Status] += g._count._all;
+      }
+    };
+    fold("DEBRIS", debrisGroups);
+    fold("CYBERSECURITY", cyberGroups);
+    fold("NIS2", nis2Groups);
+    fold("CRA", craGroups);
+    fold("UK_SPACE_ACT", ukGroups);
+    fold("US_REGULATORY", usGroups);
+    fold("EXPORT_CONTROL", exportGroups);
+    fold("SPECTRUM", spectrumGroups);
+    return out;
+  })();
+
+  // Attested-this-week: 8 simple counts where status=compliant
+  // AND updatedAt > oneWeekAgo.
+  const attestedThisWeekPromise = (async (): Promise<number> => {
+    const counts = await Promise.all([
+      prisma.debrisRequirementStatus.count({
+        where: {
+          assessment: { userId },
+          status: "compliant",
+          updatedAt: { gt: oneWeekAgo },
+        },
+      }),
+      prisma.cybersecurityRequirementStatus.count({
+        where: {
+          assessment: { userId },
+          status: "compliant",
+          updatedAt: { gt: oneWeekAgo },
+        },
+      }),
+      prisma.nIS2RequirementStatus.count({
+        where: {
+          assessment: { userId },
+          status: "compliant",
+          updatedAt: { gt: oneWeekAgo },
+        },
+      }),
+      prisma.cRARequirementStatus.count({
+        where: {
+          assessment: { userId },
+          status: "compliant",
+          updatedAt: { gt: oneWeekAgo },
+        },
+      }),
+      prisma.ukRequirementStatus.count({
+        where: {
+          assessment: { userId },
+          status: "compliant",
+          updatedAt: { gt: oneWeekAgo },
+        },
+      }),
+      prisma.usRequirementStatus.count({
+        where: {
+          assessment: { userId },
+          status: "compliant",
+          updatedAt: { gt: oneWeekAgo },
+        },
+      }),
+      prisma.exportControlRequirementStatus.count({
+        where: {
+          assessment: { userId },
+          status: "compliant",
+          updatedAt: { gt: oneWeekAgo },
+        },
+      }),
+      prisma.spectrumRequirementStatus.count({
+        where: {
+          assessment: { userId },
+          status: "compliant",
+          updatedAt: { gt: oneWeekAgo },
+        },
+      }),
+    ]);
+    return counts.reduce((s, c) => s + c, 0);
+  })();
+
+  const [perRegulation, attestedThisWeek] = await Promise.all([
+    groupByPromises,
+    attestedThisWeekPromise,
+  ]);
+
+  // Roll up totalByStatus from per-regulation buckets.
+  const totalByStatus = emptyStatusCounts();
+  let totalItems = 0;
+  for (const reg of Object.keys(perRegulation) as RegulationKey[]) {
+    for (const status of Object.keys(
+      perRegulation[reg],
+    ) as ComplianceStatus[]) {
+      const n = perRegulation[reg][status];
+      totalByStatus[status] += n;
+      totalItems += n;
+    }
+  }
+
+  return {
+    totalItems,
+    totalByStatus,
+    perRegulation,
+    attestedThisWeek,
+  };
+}
+
 /**
  * Lean projection of a ComplianceItem for the Cmd-K search results
  * list. Does not need priority computation, target-date math, or

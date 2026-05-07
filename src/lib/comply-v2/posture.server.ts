@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
-import { getComplianceItemsForUser } from "./compliance-item.server";
+import { getComplianceStatusAggregateForUser } from "./compliance-item.server";
 import {
   type ComplianceStatus,
   type RegulationKey,
@@ -68,18 +68,20 @@ const COUNTABLE_STATUSES: ReadonlySet<ComplianceStatus> = new Set([
 ]);
 
 /**
- * Build the full posture snapshot for a user. Single multi-query
- * fan-out: one big ComplianceItem fetch (capped at 5000) plus four
- * count queries for the workflow KPIs. All in parallel.
+ * Build the full posture snapshot for a user.
+ *
+ * Sprint E perf fix: was fetching up to 5000 ComplianceItems and
+ * looping in JS to compute aggregates. Now uses
+ * getComplianceStatusAggregateForUser which does 16 small Prisma
+ * groupBy/count queries returning ~64 rows total (vs ~5000). At
+ * 10k+ items per user this is ~80x less data over the wire.
  */
 export async function getPostureForUser(
   userId: string,
 ): Promise<PostureSnapshot> {
-  const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-
-  const [items, openProposals, openSnoozes, regulatoryUpdatesUnread] =
+  const [aggregate, openProposals, openSnoozes, regulatoryUpdatesUnread] =
     await Promise.all([
-      getComplianceItemsForUser(userId, { limit: 5000 }),
+      getComplianceStatusAggregateForUser(userId),
       prisma.astraProposal.count({
         where: {
           userId,
@@ -90,74 +92,45 @@ export async function getPostureForUser(
       prisma.complianceItemSnooze.count({
         where: { userId, snoozedUntil: { gt: new Date() } },
       }),
-      // Open Triage approximation: open notifications + open
-      // satellite-alerts + unread regulatory updates for any of
-      // the user's orgs. We use a lighter query than Triage's full
-      // fetcher.
+      // Open Triage approximation: open notifications. Sprint G will
+      // expand this to also count satellite-alerts + unread regulatory
+      // updates (the comment lied about its scope — see audit #11).
       prisma.notification.count({
         where: { userId, dismissed: false, read: false },
       }),
     ]);
 
-  // ─── Status distribution ───────────────────────────────────────────
-  const statusCounts: Record<ComplianceStatus, number> = {
-    PENDING: 0,
-    DRAFT: 0,
-    EVIDENCE_REQUIRED: 0,
-    UNDER_REVIEW: 0,
-    ATTESTED: 0,
-    EXPIRED: 0,
-    NOT_APPLICABLE: 0,
-  };
-  let attestedThisWeek = 0;
-  for (const item of items) {
-    statusCounts[item.status] += 1;
-    if (
-      item.status === "ATTESTED" &&
-      item.updatedAt.getTime() >= oneWeekAgo.getTime()
-    ) {
-      attestedThisWeek += 1;
-    }
-  }
+  // Status distribution comes straight from the aggregate.
+  const statusCounts = aggregate.totalByStatus;
+  const attestedThisWeek = aggregate.attestedThisWeek;
 
-  const totalItems = items.length;
-  const countableItems = items.filter((i) =>
-    COUNTABLE_STATUSES.has(i.status),
-  ).length;
+  const totalItems = aggregate.totalItems;
+  // countable = total minus NOT_APPLICABLE.
+  const countableItems = totalItems - statusCounts.NOT_APPLICABLE;
   const attestedItems = statusCounts.ATTESTED;
   const overallScore =
     countableItems > 0 ? Math.round((attestedItems / countableItems) * 100) : 0;
 
-  // ─── Per-regulation breakdown ──────────────────────────────────────
-  const byReg: Record<RegulationKey, RegulationStats> = Object.fromEntries(
-    REGULATIONS.map((reg) => [
-      reg,
-      {
-        regulation: reg,
-        total: 0,
-        countable: 0,
-        attested: 0,
-        evidenceRequired: 0,
-        pending: 0,
-        score: 0,
-      },
-    ]),
-  ) as Record<RegulationKey, RegulationStats>;
-
-  for (const item of items) {
-    const stats = byReg[item.regulation];
-    stats.total += 1;
-    if (COUNTABLE_STATUSES.has(item.status)) stats.countable += 1;
-    if (item.status === "ATTESTED") stats.attested += 1;
-    if (item.status === "EVIDENCE_REQUIRED") stats.evidenceRequired += 1;
-    if (item.status === "PENDING") stats.pending += 1;
-  }
-
-  const regulationBreakdown = Object.values(byReg)
-    .map((s) => ({
-      ...s,
-      score: s.countable > 0 ? Math.round((s.attested / s.countable) * 100) : 0,
-    }))
+  // Per-regulation breakdown — read directly from aggregate.perRegulation.
+  const regulationBreakdown: RegulationStats[] = REGULATIONS.map((reg) => {
+    const counts = aggregate.perRegulation[reg];
+    let total = 0;
+    let countable = 0;
+    for (const status of Object.keys(counts) as ComplianceStatus[]) {
+      total += counts[status];
+      if (COUNTABLE_STATUSES.has(status)) countable += counts[status];
+    }
+    return {
+      regulation: reg,
+      total,
+      countable,
+      attested: counts.ATTESTED,
+      evidenceRequired: counts.EVIDENCE_REQUIRED,
+      pending: counts.PENDING,
+      score:
+        countable > 0 ? Math.round((counts.ATTESTED / countable) * 100) : 0,
+    };
+  })
     .filter((s) => s.total > 0)
     .sort((a, b) => b.score - a.score || b.total - a.total);
 

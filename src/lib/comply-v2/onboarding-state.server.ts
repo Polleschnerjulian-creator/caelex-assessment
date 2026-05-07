@@ -60,6 +60,10 @@ export async function getOnboardingSetupState(
   }
 
   // Parallel: spacecraft count + assessment-existence + items-existence.
+  // Sprint E fix: was checking only 3 of 8 assessment tables and
+  // 2 of 8 status tables. Users who only ran a UK_SPACE / SPECTRUM
+  // / EXPORT_CONTROL / CRA / US_REGULATORY assessment got "run
+  // assessment" prompted forever. Now checks all 8 of each.
   const [spacecraftCount, anyAssessmentRows, anyItemRows] = await Promise.all([
     prisma.spacecraft.count({
       where: { organizationId: orgId! },
@@ -77,6 +81,26 @@ export async function getOnboardingSetupState(
         where: { userId },
         select: { id: true },
       }),
+      prisma.cRAAssessment.findFirst({
+        where: { userId },
+        select: { id: true },
+      }),
+      prisma.ukSpaceAssessment.findFirst({
+        where: { userId },
+        select: { id: true },
+      }),
+      prisma.usRegulatoryAssessment.findFirst({
+        where: { userId },
+        select: { id: true },
+      }),
+      prisma.exportControlAssessment.findFirst({
+        where: { userId },
+        select: { id: true },
+      }),
+      prisma.spectrumAssessment.findFirst({
+        where: { userId },
+        select: { id: true },
+      }),
     ]),
     Promise.all([
       prisma.debrisRequirementStatus.findFirst({
@@ -84,6 +108,30 @@ export async function getOnboardingSetupState(
         select: { id: true },
       }),
       prisma.nIS2RequirementStatus.findFirst({
+        where: { assessment: { userId } },
+        select: { id: true },
+      }),
+      prisma.cybersecurityRequirementStatus.findFirst({
+        where: { assessment: { userId } },
+        select: { id: true },
+      }),
+      prisma.cRARequirementStatus.findFirst({
+        where: { assessment: { userId } },
+        select: { id: true },
+      }),
+      prisma.ukRequirementStatus.findFirst({
+        where: { assessment: { userId } },
+        select: { id: true },
+      }),
+      prisma.usRequirementStatus.findFirst({
+        where: { assessment: { userId } },
+        select: { id: true },
+      }),
+      prisma.exportControlRequirementStatus.findFirst({
+        where: { assessment: { userId } },
+        select: { id: true },
+      }),
+      prisma.spectrumRequirementStatus.findFirst({
         where: { assessment: { userId } },
         select: { id: true },
       }),
