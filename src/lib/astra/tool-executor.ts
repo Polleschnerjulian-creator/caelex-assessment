@@ -3049,6 +3049,149 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
         "Classification data is informational. Consult the official source URL and qualified export-control counsel before making licensing decisions.",
     };
   },
+
+  // ─── Trade Counterparty Screening Tools (Wave A Sprint A7) ────────
+
+  screen_trade_party: async (input, userContext) => {
+    const partyId = getString(input, "partyId");
+    if (!partyId) {
+      return {
+        error:
+          "partyId is required. Use lookup_trade_party first to find the partyId by name.",
+      };
+    }
+
+    // Org-scope check before invoking the screening engine
+    const party = await prisma.tradeParty.findFirst({
+      where: { id: partyId, organizationId: userContext.organizationId },
+      select: { id: true, legalName: true },
+    });
+    if (!party) {
+      return {
+        error: `TradeParty '${partyId}' not found in your organization.`,
+      };
+    }
+
+    const { screenParty } =
+      await import("@/lib/comply-v2/trade/screening/screen-party.server");
+
+    const result = await screenParty(partyId, {
+      systemDecisionUserId: userContext.userId,
+    });
+
+    return {
+      partyId: result.partyId,
+      partyName: party.legalName,
+      decision: result.summary.decision,
+      newScreeningStatus: result.party.screeningStatus,
+      hitCount: result.summary.hitCount,
+      topScore: Number(result.summary.topScore.toFixed(4)),
+      listsConsulted: result.summary.listsConsulted,
+      snapshotsMissing: result.summary.snapshotsMissing,
+      // Top 5 hits for the model to summarize back to the user
+      topHits: (
+        (result.screeningResult.hits as unknown as Array<{
+          list: string;
+          entryId: string;
+          matchedName: string;
+          score: number;
+        }>) ?? []
+      )
+        .slice(0, 5)
+        .map((h) => ({
+          list: h.list,
+          entryId: h.entryId,
+          matchedName: h.matchedName,
+          score: Number(h.score.toFixed(4)),
+        })),
+      snapshotHash: result.screeningResult.snapshotHash,
+      disclaimer:
+        "Sanctions hits require human triage by a qualified export-control officer. Score bands follow FATF/Wolfsberg standard: ≥0.95 confirmed, ≥0.85 potential, ≥0.75 weak. Snapshot hash documents the exact list versions used at screening time for audit (5+ years per §22 AWV / 15 CFR Part 762).",
+    };
+  },
+
+  lookup_trade_party: async (input, userContext) => {
+    const query = getString(input, "query");
+    const countryCode = getString(input, "countryCode");
+    const screeningStatus = getString(input, "screeningStatus");
+    const limitRaw = getNumber(input, "limit");
+    const limit = limitRaw
+      ? Math.min(50, Math.max(1, Math.floor(limitRaw)))
+      : 10;
+
+    const where: Parameters<typeof prisma.tradeParty.findMany>[0]["where"] = {
+      organizationId: userContext.organizationId,
+    };
+
+    if (countryCode) {
+      where.countryCode = countryCode.toUpperCase();
+    }
+
+    if (
+      screeningStatus &&
+      [
+        "NOT_SCREENED",
+        "CLEAR",
+        "POTENTIAL_MATCH",
+        "CONFIRMED_HIT",
+        "STALE",
+      ].includes(screeningStatus)
+    ) {
+      where.screeningStatus = screeningStatus as
+        | "NOT_SCREENED"
+        | "CLEAR"
+        | "POTENTIAL_MATCH"
+        | "CONFIRMED_HIT"
+        | "STALE";
+    }
+
+    if (query) {
+      // Try canonical match first; fall back to legalName contains
+      const { canonicalizeName } =
+        await import("@/lib/comply-v2/trade/screening/sources/types");
+      const canonical = canonicalizeName(query);
+      where.OR = [
+        { legalName: { contains: query, mode: "insensitive" } },
+        { tradeName: { contains: query, mode: "insensitive" } },
+        { canonicalName: { contains: canonical } },
+      ];
+    }
+
+    const parties = await prisma.tradeParty.findMany({
+      where,
+      orderBy: [{ updatedAt: "desc" }],
+      take: limit,
+      select: {
+        id: true,
+        legalName: true,
+        tradeName: true,
+        countryCode: true,
+        status: true,
+        screeningStatus: true,
+        isUSPerson: true,
+        isHighRiskCountry: true,
+        lastScreenedAt: true,
+        blockedReason: true,
+      },
+    });
+
+    return {
+      count: parties.length,
+      filters: { query, countryCode, screeningStatus, limit },
+      parties: parties.map((p) => ({
+        id: p.id,
+        legalName: p.legalName,
+        tradeName: p.tradeName,
+        country: p.countryCode,
+        status: p.status,
+        screeningStatus: p.screeningStatus,
+        isUSPerson: p.isUSPerson,
+        isHighRiskCountry: p.isHighRiskCountry,
+        lastScreenedAt: p.lastScreenedAt?.toISOString() ?? null,
+        blockedReason: p.blockedReason,
+      })),
+    };
+  },
 };
 
 // ─── Export ───

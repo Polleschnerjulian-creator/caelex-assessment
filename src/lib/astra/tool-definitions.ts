@@ -1284,6 +1284,63 @@ export const auditDocument: AstraToolDefinition = {
   },
 };
 
+// ─── Trade Counterparty Screening Tools (Wave A Sprint A7) ───
+
+export const screenTradeParty: AstraToolDefinition = {
+  name: "screen_trade_party",
+  description:
+    "Runs sanctions screening on a TradeParty (counterparty) against the latest snapshots of OFAC SDN, BIS Entity List, and DDTC Debarred Parties using Jaro-Winkler fuzzy matching. Persists a TradeScreeningResult with audit-grade snapshot hash. Returns the decision (CLEAR or POTENTIAL_MATCH), top hits with scores + matched names + source list, and the new screeningStatus on the party. Use when the user asks 'screen ICEYE Polska', 'check counterparty X against sanctions', or wants to verify a party is not on a sanctions list before a transaction. Requires an existing TradeParty — use lookup_trade_party first if you only have a name.",
+  input_schema: {
+    type: "object",
+    properties: {
+      partyId: {
+        type: "string",
+        description:
+          "ID of an existing TradeParty in the user's organization. Use lookup_trade_party to find party IDs by name.",
+      },
+    },
+    required: ["partyId"],
+  },
+};
+
+export const lookupTradeParty: AstraToolDefinition = {
+  name: "lookup_trade_party",
+  description:
+    "Looks up TradeParty records (counterparties) in the user's organization by name fragment or country code. Returns matching parties with their id, legalName, country, status, and current screeningStatus. Use this to find the partyId before calling screen_trade_party, or when the user asks 'do we have a counterparty called X?', 'show me all our parties in country Y', or 'which counterparties have potential sanctions matches?'.",
+  input_schema: {
+    type: "object",
+    properties: {
+      query: {
+        type: "string",
+        description:
+          "Optional name fragment to search for (case-insensitive, partial match). E.g. 'iceye' matches 'ICEYE Polska sp. z o.o.'.",
+      },
+      countryCode: {
+        type: "string",
+        description:
+          "Optional ISO 3166-1 alpha-2 country code (uppercase) to filter by. E.g. 'DE', 'US', 'CN'.",
+      },
+      screeningStatus: {
+        type: "string",
+        description:
+          "Optional filter by current screening status. Useful for finding parties that need triage.",
+        enum: [
+          "NOT_SCREENED",
+          "CLEAR",
+          "POTENTIAL_MATCH",
+          "CONFIRMED_HIT",
+          "STALE",
+        ],
+      },
+      limit: {
+        type: "number",
+        description: "Max number of results to return (default 10, max 50).",
+      },
+    },
+    required: [],
+  },
+};
+
 // ─── Trade Classification Tools (Sprint B4) ───
 
 export const classifyTradeItem: AstraToolDefinition = {
@@ -1436,6 +1493,10 @@ export const ALL_TOOLS: AstraToolDefinition[] = [
   // Trade Classification Tools (Sprint B4)
   classifyTradeItem,
   lookupClassificationCode,
+
+  // Trade Counterparty Screening Tools (Wave A Sprint A7)
+  screenTradeParty,
+  lookupTradeParty,
 ];
 
 // ─── Tool Name Lookup ───
@@ -1513,5 +1574,10 @@ export const TOOL_CATEGORIES = {
     "get_cra_nis2_overlap",
     "get_cra_sbom_analysis",
   ],
-  trade: ["classify_trade_item", "lookup_classification_code"],
+  trade: [
+    "classify_trade_item",
+    "lookup_classification_code",
+    "screen_trade_party",
+    "lookup_trade_party",
+  ],
 } as const;
