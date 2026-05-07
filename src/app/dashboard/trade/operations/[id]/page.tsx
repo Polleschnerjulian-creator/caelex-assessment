@@ -24,14 +24,13 @@ import {
   ArrowLeft,
   ArrowRight,
   Truck,
-  FileText,
   Globe,
   AlertTriangle,
-  Calendar,
   RefreshCw,
 } from "lucide-react";
 import { OperationLinesPanel } from "@/components/trade/OperationLinesPanel";
 import { OperationLifecyclePanel } from "@/components/trade/OperationLifecyclePanel";
+import { OperationLicensesPanel } from "@/components/trade/OperationLicensesPanel";
 
 interface RiskFactorView {
   key: string;
@@ -570,43 +569,24 @@ export default function OperationDetailPage({
           />
         </div>
 
-        {/* Licenses */}
-        <section
-          className="lg:col-span-3 rounded-2xl"
-          style={{
-            boxShadow: "inset 0 0 0 0.5px rgba(255,255,255,0.07)",
-          }}
-        >
-          <div
-            className="border-b px-5 py-3"
-            style={{ borderColor: "rgba(255,255,255,0.06)" }}
-          >
-            <h2
-              className="text-[10px] font-semibold uppercase tracking-[0.14em]"
-              style={{ color: "rgba(255,255,255,0.5)" }}
-            >
-              License Stack ({op.licenses.length})
-            </h2>
-          </div>
-          {op.licenses.length === 0 ? (
-            <div
-              className="px-5 py-8 text-center text-[12px]"
-              style={{ color: "rgba(255,255,255,0.4)" }}
-            >
-              <FileText
-                className="mx-auto mb-2 h-6 w-6 opacity-50"
-                strokeWidth={1.5}
-              />
-              No licenses attached. License-stack management lands in Sprint C3.
-            </div>
-          ) : (
-            <ul>
-              {op.licenses.map((lic) => (
-                <LicenseRow key={lic.id} license={lic} />
-              ))}
-            </ul>
-          )}
-        </section>
+        {/* Licenses — managed by OperationLicensesPanel (Sprint C3-licenses) */}
+        <div className="lg:col-span-3">
+          <OperationLicensesPanel
+            operationId={op.id}
+            initialLicenses={op.licenses}
+            isReadOnly={
+              op.status === "EXECUTED" ||
+              op.status === "VOLUNTARY_DISCLOSURE_FILED" ||
+              op.status === "BLOCKED"
+            }
+            onLicensesChanged={() => {
+              fetch(`/api/trade/operations/${op.id}`)
+                .then((r) => r.json())
+                .then((data) => setOp(data.operation ?? null))
+                .catch(() => {});
+            }}
+          />
+        </div>
       </div>
 
       <p
@@ -683,102 +663,6 @@ function KV({
         {value}
       </div>
     </div>
-  );
-}
-
-function LicenseRow({ license }: { license: OperationLicense }) {
-  const drawdown = license.totalCapValue
-    ? (license.drawnDownValue / license.totalCapValue) * 100
-    : null;
-
-  return (
-    <li
-      className="flex items-center gap-4 border-b px-5 py-3 last:border-0"
-      style={{ borderColor: "rgba(255,255,255,0.04)" }}
-    >
-      <FileText
-        className="h-4 w-4 shrink-0"
-        strokeWidth={1.75}
-        style={{ color: "rgba(255,255,255,0.55)" }}
-      />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span
-            className="font-mono text-[12px] font-semibold"
-            style={{ color: "rgba(255,255,255,0.92)" }}
-          >
-            {license.licenseType.replace(/_/g, " ")}
-          </span>
-          {license.licenseNumber && (
-            <span
-              className="text-[11px]"
-              style={{ color: "rgba(255,255,255,0.55)" }}
-            >
-              #{license.licenseNumber}
-            </span>
-          )}
-          <span
-            className="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest"
-            style={{
-              background: "rgba(255,255,255,0.06)",
-              color:
-                license.status === "ACTIVE"
-                  ? "rgb(52,211,153)"
-                  : license.status === "EXPIRED" || license.status === "REVOKED"
-                    ? "rgb(248,113,113)"
-                    : "rgba(255,255,255,0.55)",
-            }}
-          >
-            {license.status}
-          </span>
-        </div>
-        <div
-          className="mt-0.5 flex items-center gap-2 text-[11px]"
-          style={{ color: "rgba(255,255,255,0.45)" }}
-        >
-          {license.issuedAt && (
-            <>
-              <Calendar className="h-3 w-3" />
-              <span>
-                Issued {new Date(license.issuedAt).toLocaleDateString("en-GB")}
-              </span>
-            </>
-          )}
-          {license.validUntil && (
-            <>
-              <span>·</span>
-              <span>
-                Valid until{" "}
-                {new Date(license.validUntil).toLocaleDateString("en-GB")}
-              </span>
-            </>
-          )}
-        </div>
-      </div>
-      {drawdown !== null && (
-        <div className="shrink-0 text-right">
-          <div
-            className="text-[12px] font-mono tabular-nums"
-            style={{
-              color:
-                drawdown >= 90
-                  ? "rgb(248,113,113)"
-                  : drawdown >= 70
-                    ? "rgb(251,191,36)"
-                    : "rgba(255,255,255,0.85)",
-            }}
-          >
-            {drawdown.toFixed(1)}%
-          </div>
-          <div
-            className="text-[9px]"
-            style={{ color: "rgba(255,255,255,0.4)" }}
-          >
-            drawn down
-          </div>
-        </div>
-      )}
-    </li>
   );
 }
 
