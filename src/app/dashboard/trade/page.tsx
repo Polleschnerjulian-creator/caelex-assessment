@@ -88,10 +88,10 @@ export default async function TradeOverviewPage() {
             live: true,
           },
           {
-            href: "#",
+            href: "/dashboard/trade/counterparties",
             label: "Counterparty Screening",
-            sublabel: "OFAC, BIS, DDTC, EU FSF — Wave A",
-            live: false,
+            sublabel: "OFAC, BIS, DDTC fuzzy-match — Wave A",
+            live: true,
           },
           {
             href: "#",
@@ -218,8 +218,8 @@ export default async function TradeOverviewPage() {
           <RoadmapRow
             icon={FileSearch}
             label="Wave A — Sanctions-Screening"
-            description="Free-Stack: OFAC, BIS, DDTC, EU FSF, UK OFSI, UN. 50%-Rule-Cascade durch Beneficial-Ownership-Graph."
-            tone="planned"
+            description="OFAC SDN live mit Jaro-Winkler-Fuzzy-Match. Daily-Cron mit Snapshot-Hash für Audit. BIS/DDTC/EU/UK/UN folgen via trade.gov consolidated CSV (A4)."
+            tone="active"
           />
           <RoadmapRow
             icon={ListChecks}
