@@ -3,9 +3,14 @@
  *
  * POST /api/trade/operations/[id]/recompute-risk
  *
- * Recomputes the risk score for an operation and persists it on
- * TradeOperation.riskScore. Returns the full breakdown (score, band,
- * factors with reasons + weights) for UI display.
+ * Recomputes BOTH:
+ *   - risk score (TradeOperation.riskScore)
+ *   - catch-all flags (catchAllArt4Hit/Art5Hit/Art9Hit/Art10Hit + notificationDuty)
+ *
+ * Despite the legacy "recompute-risk" path, this endpoint is the
+ * single entrypoint for re-running both engines (Sprint C3d combined
+ * catch-all into the same call so the UI fetches once and shows both
+ * the risk breakdown AND any newly-set catch-all flags atomically).
  *
  * Rate-limited under "api" tier.
  *
@@ -21,7 +26,7 @@ import {
   getIdentifier,
 } from "@/lib/ratelimit";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
-import { recomputeRiskScore } from "@/lib/comply-v2/trade/operations/risk-score.server";
+import { recomputeOperation } from "@/lib/comply-v2/trade/operations/recompute.server";
 
 export async function POST(
   req: Request,
@@ -47,7 +52,7 @@ export async function POST(
 
     const { id } = await context.params;
 
-    const result = await recomputeRiskScore(id, org.organizationId);
+    const result = await recomputeOperation(id, org.organizationId);
 
     if (!result) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -56,15 +61,27 @@ export async function POST(
     logger.info(
       {
         operationId: id,
-        score: result.score,
-        band: result.band,
-        factorCount: result.factors.length,
+        score: result.risk.score,
+        band: result.risk.band,
+        factorCount: result.risk.factors.length,
+        catchAllArt4: result.catchAll.art4,
+        catchAllArt5: result.catchAll.art5,
+        catchAllArt9: result.catchAll.art9,
+        catchAllArt10: result.catchAll.art10,
+        notificationDuty: result.catchAll.notificationDuty,
+        triggerCount: result.catchAll.triggers.length,
         userId,
       },
-      "trade operation risk score recomputed",
+      "trade operation risk + catch-all recomputed",
     );
 
-    return NextResponse.json({ result });
+    // Backwards-compatible response shape: top-level `result` matches
+    // the previous risk-only contract; new `catchAll` field is an
+    // additive extension the UI can opt into.
+    return NextResponse.json({
+      result: result.risk,
+      catchAll: result.catchAll,
+    });
   } catch (err) {
     logger.error(
       { err },
