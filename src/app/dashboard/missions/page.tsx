@@ -7,6 +7,9 @@ import {
   Calendar,
   ListChecks,
   ArrowRight,
+  Users,
+  Plus,
+  Layers,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
@@ -18,7 +21,7 @@ import {
 export const metadata = {
   title: "Missions — Caelex Comply",
   description:
-    "Your spacecraft missions and the regulatory phase roadmap that wraps each one.",
+    "Mission portfolio: programs, customers, spacecraft assignments, and the regulatory phase roadmap that wraps each one.",
 };
 
 export const dynamic = "force-dynamic";
@@ -26,12 +29,11 @@ export const dynamic = "force-dynamic";
 /**
  * Missions list — the V2 mission-first landing.
  *
- * Sprint 5A: list view + V2Sidebar entry.
- * Sprint 5B: per-mission detail page (`/dashboard/missions/[id]`)
- *           — cards link there.
- *
- * V1 users get redirected to the legacy /dashboard. The page is
- * V2-exclusive — there's no equivalent in V1 chrome.
+ * Sprint Mission-3 refactor: missions are now first-class entities
+ * (vs the old Spacecraft=Mission collapse). The list groups by
+ * status (Active / Planned / Completed-or-Cancelled) and surfaces
+ * mission-level metadata: missionType, programPhase, primaryEndUser,
+ * spacecraft count. Each card links to the mission detail.
  */
 export default async function MissionsPage() {
   const session = await auth();
@@ -43,8 +45,12 @@ export default async function MissionsPage() {
 
   const missions = await getMissionsForUser(session.user.id);
 
-  const linked = missions.filter((m) => m.linked);
-  const unlinked = missions.filter((m) => !m.linked);
+  const active = missions.filter((m) => m.status === "ACTIVE");
+  const planned = missions.filter((m) => m.status === "PLANNED");
+  const archived = missions.filter(
+    (m) => m.status === "COMPLETED" || m.status === "CANCELLED",
+  );
+  const paused = missions.filter((m) => m.status === "PAUSED");
 
   const sansFont =
     'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif';
@@ -78,13 +84,28 @@ export default async function MissionsPage() {
               letterSpacing: "-0.005em",
             }}
           >
-            Each spacecraft is one mission. Click any card to drill into its
-            phase roadmap and milestones.
+            Each mission groups one or more spacecraft serving the same program
+            — constellations, single satellites, launch campaigns, or
+            multi-mission hardware. Click any card to drill into its phase
+            roadmap, customers, and regulatory references.
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-5">
-          <Stat label="Linked" value={linked.length} />
-          <Stat label="Unlinked" value={unlinked.length} />
+          <Stat label="Active" value={active.length} />
+          <Stat label="Planned" value={planned.length} />
+          <Stat label="Total" value={missions.length} />
+          <Link
+            href="/dashboard/missions/new"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-2 text-[13px] font-medium transition-colors"
+            style={{
+              background: "rgba(255, 255, 255, 0.92)",
+              color: "rgb(20, 20, 22)",
+              letterSpacing: "-0.005em",
+            }}
+          >
+            <Plus className="h-3.5 w-3.5" strokeWidth={2.2} />
+            New mission
+          </Link>
         </div>
       </header>
 
@@ -92,56 +113,21 @@ export default async function MissionsPage() {
         <EmptyState />
       ) : (
         <>
-          {linked.length > 0 ? (
-            <section className="mb-10">
-              <h2
-                className="mb-3 px-0.5"
-                style={{
-                  color: "rgba(255, 255, 255, 0.45)",
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                }}
-              >
-                Active spacecraft
-              </h2>
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                {linked.map((m) => (
-                  <MissionCard key={m.id} mission={m} />
-                ))}
-              </div>
-            </section>
+          {active.length > 0 ? (
+            <MissionGroup label="Active" missions={active} tone="emerald" />
           ) : null}
-
-          {unlinked.length > 0 ? (
-            <section>
-              <h2
-                className="mb-3 px-0.5"
-                style={{
-                  color: "rgba(255, 255, 255, 0.45)",
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                }}
-              >
-                Unlinked phases
-              </h2>
-              <p
-                className="mb-3 text-[13px]"
-                style={{ color: "rgba(255, 255, 255, 0.45)" }}
-              >
-                Mission phases without a backing spacecraft. Likely legacy
-                planning rows; link them by setting the spacecraft id on the
-                phase.
-              </p>
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                {unlinked.map((m) => (
-                  <MissionCard key={m.id} mission={m} />
-                ))}
-              </div>
-            </section>
+          {planned.length > 0 ? (
+            <MissionGroup label="Planned" missions={planned} tone="amber" />
+          ) : null}
+          {paused.length > 0 ? (
+            <MissionGroup label="Paused" missions={paused} tone="orange" />
+          ) : null}
+          {archived.length > 0 ? (
+            <MissionGroup
+              label="Completed / Cancelled"
+              missions={archived}
+              tone="slate"
+            />
           ) : null}
         </>
       )}
@@ -150,6 +136,65 @@ export default async function MissionsPage() {
 }
 
 // ─── Subcomponents ───────────────────────────────────────────────────────
+
+function MissionGroup({
+  label,
+  missions,
+  tone,
+}: {
+  label: string;
+  missions: MissionSummary[];
+  tone: "emerald" | "amber" | "orange" | "slate";
+}) {
+  return (
+    <section className="mb-10">
+      <h2
+        className="mb-3 flex items-center gap-2 px-0.5"
+        style={{
+          color: "rgba(255, 255, 255, 0.55)",
+          fontSize: "11px",
+          fontWeight: 600,
+          letterSpacing: "0.06em",
+          textTransform: "uppercase",
+        }}
+      >
+        <span
+          aria-hidden
+          className="h-1.5 w-1.5 rounded-full"
+          style={{ background: toneColor(tone) }}
+        />
+        {label}
+        <span
+          className="ml-1 inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums"
+          style={{
+            background: "rgba(255, 255, 255, 0.06)",
+            color: "rgba(255, 255, 255, 0.65)",
+          }}
+        >
+          {missions.length}
+        </span>
+      </h2>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {missions.map((m) => (
+          <MissionCard key={m.id} mission={m} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function toneColor(tone: "emerald" | "amber" | "orange" | "slate"): string {
+  switch (tone) {
+    case "emerald":
+      return "rgba(52, 199, 89, 0.85)"; // ios-green
+    case "amber":
+      return "rgba(255, 204, 0, 0.85)"; // ios-yellow
+    case "orange":
+      return "rgba(255, 149, 0, 0.85)"; // ios-orange
+    case "slate":
+      return "rgba(255, 255, 255, 0.4)";
+  }
+}
 
 function MissionCard({ mission }: { mission: MissionSummary }) {
   return (
@@ -175,22 +220,16 @@ function MissionCard({ mission }: { mission: MissionSummary }) {
             className="mt-0.5 flex items-center gap-1.5 text-[11px]"
             style={{ color: "rgba(255, 255, 255, 0.45)" }}
           >
-            {mission.cosparId ? (
-              <span>{mission.cosparId}</span>
-            ) : mission.linked ? (
-              <span>No COSPAR yet</span>
+            {mission.reference ? (
+              <span className="truncate font-mono">{mission.reference}</span>
             ) : (
-              <span>Unlinked</span>
+              <span>No reference</span>
             )}
-            {mission.noradId ? (
-              <>
-                <span aria-hidden>·</span>
-                <span>NORAD {mission.noradId}</span>
-              </>
-            ) : null}
+            <span aria-hidden>·</span>
+            <span>{phaseLabel(mission.programPhase)}</span>
           </div>
         </div>
-        {mission.status ? <StatusPill status={mission.status} /> : null}
+        <StatusPill status={mission.status} />
       </header>
 
       {/* Mission characteristics */}
@@ -198,48 +237,125 @@ function MissionCard({ mission }: { mission: MissionSummary }) {
         className="flex flex-wrap gap-x-3 gap-y-1 text-[11.5px]"
         style={{ color: "rgba(255, 255, 255, 0.55)" }}
       >
-        {mission.missionType ? (
-          <li className="inline-flex items-center gap-1.5">
-            <Satellite
-              className="h-3.5 w-3.5"
+        <li className="inline-flex items-center gap-1.5">
+          <Satellite
+            className="h-3.5 w-3.5"
+            strokeWidth={1.75}
+            style={{ color: "rgba(255, 255, 255, 0.4)" }}
+          />
+          <span>{missionTypeLabel(mission.missionType)}</span>
+        </li>
+        <li className="inline-flex items-center gap-1.5">
+          <Layers
+            className="h-3.5 w-3.5"
+            strokeWidth={1.75}
+            style={{ color: "rgba(255, 255, 255, 0.4)" }}
+          />
+          <span>
+            {mission.spacecraftCount} spacecraft
+            {mission.spacecraftCount === 1 ? "" : "s"}
+          </span>
+        </li>
+        {mission.primaryEndUser ? (
+          <li className="inline-flex max-w-[180px] items-center gap-1.5">
+            <Users
+              className="h-3.5 w-3.5 shrink-0"
               strokeWidth={1.75}
               style={{ color: "rgba(255, 255, 255, 0.4)" }}
             />
-            <span className="capitalize">
-              {mission.missionType.replace(/_/g, " ")}
-            </span>
+            <span className="truncate">{mission.primaryEndUser}</span>
           </li>
         ) : null}
-        {mission.orbitType ? (
-          <li className="inline-flex items-center gap-1.5">
-            <Globe
-              className="h-3.5 w-3.5"
-              strokeWidth={1.75}
-              style={{ color: "rgba(255, 255, 255, 0.4)" }}
-            />
-            <span>
-              {mission.orbitType}
-              {mission.altitudeKm
-                ? ` · ${Math.round(mission.altitudeKm)} km`
-                : ""}
-            </span>
-          </li>
-        ) : null}
-        {mission.launchDate ? (
+        {mission.startedAt ? (
           <li className="inline-flex items-center gap-1.5">
             <Calendar
               className="h-3.5 w-3.5"
               strokeWidth={1.75}
               style={{ color: "rgba(255, 255, 255, 0.4)" }}
             />
-            <time dateTime={mission.launchDate.toISOString()}>
-              {mission.launchDate.toISOString().slice(0, 10)}
+            <time dateTime={mission.startedAt.toISOString()}>
+              Started {mission.startedAt.toISOString().slice(0, 10)}
+            </time>
+          </li>
+        ) : mission.plannedStartAt ? (
+          <li className="inline-flex items-center gap-1.5">
+            <Calendar
+              className="h-3.5 w-3.5"
+              strokeWidth={1.75}
+              style={{ color: "rgba(255, 255, 255, 0.4)" }}
+            />
+            <time dateTime={mission.plannedStartAt.toISOString()}>
+              Planned {mission.plannedStartAt.toISOString().slice(0, 10)}
             </time>
           </li>
         ) : null}
       </ul>
 
-      {/* Active phase + progress */}
+      {/* Primary spacecraft strip */}
+      {mission.primarySpacecraft ? (
+        <div
+          className="flex items-center justify-between gap-2 rounded-lg px-3 py-2"
+          style={{
+            background: "rgba(255, 255, 255, 0.04)",
+          }}
+        >
+          <div className="min-w-0 leading-tight">
+            <div
+              className="truncate text-[12px] font-medium"
+              style={{ color: "rgba(255, 255, 255, 0.92)" }}
+            >
+              {mission.primarySpacecraft.spacecraftName}
+            </div>
+            <div
+              className="mt-0.5 flex items-center gap-1.5 text-[10.5px]"
+              style={{ color: "rgba(255, 255, 255, 0.5)" }}
+            >
+              <Globe
+                className="h-3 w-3"
+                strokeWidth={1.75}
+                style={{ color: "rgba(255, 255, 255, 0.4)" }}
+              />
+              <span>
+                {mission.primarySpacecraft.orbitType}
+                {mission.primarySpacecraft.altitudeKm
+                  ? ` · ${Math.round(mission.primarySpacecraft.altitudeKm)} km`
+                  : ""}
+              </span>
+              {mission.primarySpacecraft.cosparId ? (
+                <>
+                  <span aria-hidden>·</span>
+                  <span className="font-mono">
+                    {mission.primarySpacecraft.cosparId}
+                  </span>
+                </>
+              ) : null}
+            </div>
+          </div>
+          {mission.spacecraftCount > 1 ? (
+            <span
+              className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold tabular-nums"
+              style={{
+                background: "rgba(255, 255, 255, 0.06)",
+                color: "rgba(255, 255, 255, 0.65)",
+              }}
+            >
+              +{mission.spacecraftCount - 1}
+            </span>
+          ) : null}
+        </div>
+      ) : (
+        <div
+          className="rounded-lg px-3 py-2 text-[11.5px]"
+          style={{
+            background: "rgba(255, 255, 255, 0.02)",
+            color: "rgba(255, 255, 255, 0.4)",
+          }}
+        >
+          No spacecraft assigned yet — assign one from the detail page.
+        </div>
+      )}
+
+      {/* Phase roadmap progress */}
       <div
         className="mt-1 pt-3"
         style={{ borderTop: "0.5px solid rgba(255, 255, 255, 0.06)" }}
@@ -300,7 +416,7 @@ function MissionCard({ mission }: { mission: MissionSummary }) {
         className="mt-1 flex items-center justify-between pt-3 text-[11.5px]"
         style={{ borderTop: "0.5px solid rgba(255, 255, 255, 0.04)" }}
       >
-        <span style={{ color: "rgba(255, 255, 255, 0.4)" }}>View roadmap</span>
+        <span style={{ color: "rgba(255, 255, 255, 0.4)" }}>View detail</span>
         <span
           className="inline-flex items-center gap-1 transition-transform group-hover:translate-x-0.5"
           style={{ color: "rgba(255, 255, 255, 0.7)" }}
@@ -313,24 +429,19 @@ function MissionCard({ mission }: { mission: MissionSummary }) {
   );
 }
 
-function StatusPill({
-  status,
-}: {
-  status: NonNullable<MissionSummary["status"]>;
-}) {
-  // Apple HIG: status indicators use a colored DOT + neutral label,
-  // not a fully-tinted pill. Drops the loud emerald/cyan backgrounds
-  // for a subtle dot color + monochrome white text.
+function StatusPill({ status }: { status: MissionSummary["status"] }) {
   const dotColor =
-    status === "OPERATIONAL"
-      ? "rgba(255, 255, 255, 0.85)" // operational = neutral bright
-      : status === "LAUNCHED"
-        ? "var(--ios-teal)"
-        : status === "PRE_LAUNCH"
-          ? "var(--ios-orange)"
-          : status === "DECOMMISSIONING"
-            ? "var(--ios-red)"
-            : "rgba(255, 255, 255, 0.4)";
+    status === "ACTIVE"
+      ? "var(--ios-green, rgba(52, 199, 89, 0.95))"
+      : status === "PLANNED"
+        ? "var(--ios-yellow, rgba(255, 204, 0, 0.95))"
+        : status === "PAUSED"
+          ? "var(--ios-orange, rgba(255, 149, 0, 0.95))"
+          : status === "COMPLETED"
+            ? "rgba(255, 255, 255, 0.65)"
+            : status === "CANCELLED"
+              ? "var(--ios-red, rgba(255, 69, 58, 0.85))"
+              : "rgba(255, 255, 255, 0.4)";
   return (
     <span
       className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium"
@@ -345,15 +456,12 @@ function StatusPill({
         className="h-1.5 w-1.5 rounded-full"
         style={{ background: dotColor }}
       />
-      {status.replace(/_/g, " ").toLowerCase()}
+      {status.toLowerCase()}
     </span>
   );
 }
 
 function ProgressBar({ value }: { value: number }) {
-  // Single neutral fill — no green/amber tone-shifting. Apple's
-  // progress bars are always white/system-tint regardless of value;
-  // the value itself communicates the state.
   const clamped = Math.max(0, Math.min(100, value));
   return (
     <div
@@ -436,12 +544,13 @@ function EmptyState() {
           letterSpacing: "-0.005em",
         }}
       >
-        Add a spacecraft from the registration module or import a CelesTrak TLE.
-        Each spacecraft becomes one mission with its own phase roadmap.
+        Create your first mission to group spacecraft, track regulatory phases,
+        and link customers / authority references. A mission can be a single
+        satellite, a constellation, or a launch campaign.
       </p>
       <div className="flex items-center gap-2">
         <Link
-          href="/dashboard/modules/registration"
+          href="/dashboard/missions/new"
           className="inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[13px] font-medium text-white transition-colors"
           style={{
             background: "rgba(255, 255, 255, 0.92)",
@@ -449,11 +558,11 @@ function EmptyState() {
             letterSpacing: "-0.005em",
           }}
         >
-          Register spacecraft
+          New mission
           <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.2} />
         </Link>
         <Link
-          href="/dashboard/ephemeris"
+          href="/dashboard/modules/registration"
           className="inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[13px] font-medium transition-colors"
           style={{
             background: "rgba(255, 255, 255, 0.06)",
@@ -461,10 +570,57 @@ function EmptyState() {
             letterSpacing: "-0.005em",
           }}
         >
-          Import TLE
+          Register spacecraft first
           <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.2} />
         </Link>
       </div>
     </div>
   );
+}
+
+// ─── Label helpers ───────────────────────────────────────────────────────
+
+function missionTypeLabel(t: MissionSummary["missionType"]): string {
+  switch (t) {
+    case "EARTH_OBSERVATION":
+      return "Earth observation";
+    case "COMMUNICATIONS":
+      return "Communications";
+    case "NAVIGATION":
+      return "Navigation";
+    case "SCIENCE":
+      return "Science";
+    case "IOD":
+      return "In-orbit demonstration";
+    case "TECH_DEMO":
+      return "Technology demo";
+    case "HUMAN_SPACEFLIGHT":
+      return "Human spaceflight";
+    case "OOS_ADR":
+      return "On-orbit servicing";
+    case "LAUNCH":
+      return "Launch";
+    case "OTHER":
+    default:
+      return "Other";
+  }
+}
+
+function phaseLabel(p: MissionSummary["programPhase"]): string {
+  switch (p) {
+    case "PHASE_A":
+      return "Phase A · Concept studies";
+    case "PHASE_B":
+      return "Phase B · Concept dev.";
+    case "PHASE_C":
+      return "Phase C · Prelim. design";
+    case "PHASE_D":
+      return "Phase D · Build & launch";
+    case "PHASE_E":
+      return "Phase E · Operations";
+    case "PHASE_F":
+      return "Phase F · Closeout";
+    default:
+      return p;
+  }
 }

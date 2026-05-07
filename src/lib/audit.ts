@@ -159,7 +159,17 @@ export type AuditAction =
   | "trade_operation_risk_recomputed"
   | "trade_license_created"
   | "trade_license_attached"
-  | "trade_license_detached";
+  | "trade_license_detached"
+  // Mission domain (Sprint Mission-2) — first-class Mission entity.
+  | "mission_created"
+  | "mission_updated"
+  | "mission_archived"
+  | "mission_status_changed"
+  | "mission_phase_advanced"
+  | "mission_spacecraft_assigned"
+  | "mission_spacecraft_detached"
+  | "mission_spacecraft_role_changed"
+  | "mission_auto_migrated";
 
 // Entity types for audit logging
 export type AuditEntityType =
@@ -221,7 +231,10 @@ export type AuditEntityType =
   | "trade_screening_result"
   | "trade_operation"
   | "trade_operation_line"
-  | "trade_license";
+  | "trade_license"
+  // Mission domain (Sprint Mission-2).
+  | "mission"
+  | "mission_spacecraft";
 
 export interface AuditLogEntry {
   userId: string;
