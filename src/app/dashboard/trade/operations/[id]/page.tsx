@@ -30,6 +30,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { OperationLinesPanel } from "@/components/trade/OperationLinesPanel";
+import { OperationLifecyclePanel } from "@/components/trade/OperationLifecyclePanel";
 
 interface OperationLine {
   id: string;
@@ -320,6 +321,20 @@ export default function OperationDetailPage({
           </ul>
         </div>
       )}
+
+      {/* Lifecycle pipeline + transition buttons (Sprint C3b) */}
+      <div className="mb-6">
+        <OperationLifecyclePanel
+          operationId={op.id}
+          status={op.status}
+          onStatusChanged={() => {
+            fetch(`/api/trade/operations/${op.id}`)
+              .then((r) => r.json())
+              .then((data) => setOp(data.operation ?? null))
+              .catch(() => {});
+          }}
+        />
+      </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Left col: Counterparty + Route */}
