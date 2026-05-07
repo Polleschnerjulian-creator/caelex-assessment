@@ -10652,3 +10652,73 @@ enum TradePartyStatus {
   ARCHIVED
   BLOCKED
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMPLY TRADE v2 — Wave A Sprint A2: Sanctions List Snapshots
+// ═══════════════════════════════════════════════════════════════════════════════
+// Persistent snapshots of OFAC/BIS/DDTC/EU/UK/UN sanctions lists, fetched
+// by daily cron jobs from official free URLs. Each snapshot is a parsed,
+// canonicalized JSON blob — never the raw upstream format. Snapshots are
+// content-addressable via SHA-256 hash: if upstream hasn't changed,
+// hash matches and we skip re-write (idempotent cron).
+//
+// Why JSONB and not R2:
+//   ~15K total entries × ~500 bytes = ~7.5 MB. Fits cheaply in Postgres,
+//   atomic upserts, instant queries for Re-Screening cron. R2 only
+//   becomes worth it at >100K entries (e.g. full OpenSanctions consolidated).
+//
+// Multi-tenancy: snapshots are SHARED across all tenants — there's one
+// canonical OFAC list at any moment, not one per org. organizationId
+// is therefore absent. Org-scoped data is in TradeParty.screeningHits.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// One snapshot of one sanctions list, content-addressable by SHA-256
+/// of the canonicalized entries. New rows are inserted only when upstream
+/// content changes (hash differs from the latest snapshot of same list).
+///
+/// `entries` shape (canonical):
+/// [
+///   {
+///     entryId: string,         // upstream-stable ID (OFAC sdn_id, BIS entity id, ...)
+///     names: string[],         // primary + AKAs, all canonicalized lowercase
+///     addresses: { country: string, lines: string[] }[],
+///     identifiers: { type: string, value: string }[],  // VAT, LEI, passport, ...
+///     listMetadata: object,    // list-specific (program tags, sanctions reasons)
+///   },
+///   ...
+/// ]
+model TradeSanctionsSnapshot {
+  id           String              @id @default(cuid())
+  list         TradeSanctionsList
+  /// SHA-256 of canonicalized entries JSON. Same content → same hash.
+  hash         String
+  entryCount   Int
+  /// The full parsed canonical entry array. Indexed via GIN where useful.
+  entries      Json
+  /// URL the snapshot was fetched from (for audit + re-fetch).
+  sourceUrl    String
+  /// Upstream's own version/timestamp if exposed, for traceability.
+  upstreamVersion String?
+  fetchedAt    DateTime            @default(now())
+
+  @@unique([list, hash])
+  @@index([list, fetchedAt])
+}
+
+/// The canonical set of free sanctions sources we sync. Each value maps
+/// to one source-parser file under src/lib/comply-v2/trade/screening/sources/.
+/// Order: most-impactful US sources first (Sprint A2), then EU/UK/UN (A3).
+enum TradeSanctionsList {
+  /// US Treasury OFAC Specially Designated Nationals (SDN)
+  OFAC_SDN
+  /// US Commerce BIS Entity List
+  BIS_ENTITY
+  /// US State DDTC Debarred Parties (ITAR §127.7)
+  DDTC_DEBARRED
+  /// EU Financial Sanctions File (consolidated)
+  EU_FSF
+  /// UK Office of Financial Sanctions Implementation
+  UK_OFSI
+  /// UN Security Council Consolidated Sanctions
+  UN_CONSOLIDATED
+}

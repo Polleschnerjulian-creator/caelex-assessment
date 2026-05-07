@@ -173,6 +173,10 @@
     {
       "path": "/api/cron/posture-snapshot",
       "schedule": "30 0 * * *"
+    },
+    {
+      "path": "/api/cron/trade-sync-sanctions",
+      "schedule": "30 4 * * *"
     }
   ]
 }
