@@ -3105,8 +3105,30 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
           score: Number(h.score.toFixed(4)),
         })),
       snapshotHash: result.screeningResult.snapshotHash,
+
+      // 50%-rule cascade analysis (Sprint A6)
+      cascade: result.cascade
+        ? {
+            hit: result.summary.cascadeHit,
+            aggregateSanctionedOwnership: Number(
+              result.cascade.aggregateSanctionedOwnership.toFixed(4),
+            ),
+            sanctionedAncestorCount: result.summary.sanctionedAncestorCount,
+            // Top 5 ancestors with biggest effective ownership
+            topAncestors: result.cascade.ancestors.slice(0, 5).map((a) => ({
+              id: a.ancestorId,
+              name: a.ancestorName,
+              country: a.countryCode,
+              effectivePercent: Number(a.effectivePercent.toFixed(4)),
+              screeningStatus: a.screeningStatus,
+              isBlocked: a.isBlocked,
+              pathCount: a.pathCount,
+            })),
+          }
+        : null,
+
       disclaimer:
-        "Sanctions hits require human triage by a qualified export-control officer. Score bands follow FATF/Wolfsberg standard: ≥0.95 confirmed, ≥0.85 potential, ≥0.75 weak. Snapshot hash documents the exact list versions used at screening time for audit (5+ years per §22 AWV / 15 CFR Part 762).",
+        "Sanctions hits require human triage by a qualified export-control officer. Score bands follow FATF/Wolfsberg standard: ≥0.95 confirmed, ≥0.85 potential, ≥0.75 weak. The 50%-rule cascade applies when sanctioned ancestors hold ≥50% combined ownership (31 CFR § 510). Snapshot hash documents the exact list versions used at screening time for audit (5+ years per §22 AWV / 15 CFR Part 762).",
     };
   },
 

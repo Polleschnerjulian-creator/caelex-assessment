@@ -1289,7 +1289,7 @@ export const auditDocument: AstraToolDefinition = {
 export const screenTradeParty: AstraToolDefinition = {
   name: "screen_trade_party",
   description:
-    "Runs sanctions screening on a TradeParty (counterparty) against the latest snapshots of OFAC SDN, BIS Entity List, and DDTC Debarred Parties using Jaro-Winkler fuzzy matching. Persists a TradeScreeningResult with audit-grade snapshot hash. Returns the decision (CLEAR or POTENTIAL_MATCH), top hits with scores + matched names + source list, and the new screeningStatus on the party. Use when the user asks 'screen ICEYE Polska', 'check counterparty X against sanctions', or wants to verify a party is not on a sanctions list before a transaction. Requires an existing TradeParty — use lookup_trade_party first if you only have a name.",
+    "Runs sanctions screening on a TradeParty (counterparty) against OFAC SDN, BIS Entity List, and DDTC Debarred Parties using Jaro-Winkler fuzzy matching. ALSO runs 50%-rule cascade analysis: traverses the beneficial-ownership graph upward and aggregates effective ownership from sanctioned ancestors per 31 CFR § 510 (sum-of-paths, capped at depth 5). Persists a TradeScreeningResult with audit-grade snapshot hash. Returns: decision, hits, top-5 cascade ancestors with effective % ownership, and whether the cascade triggered (≥50% sanctioned ownership = automatic legal sanction even if name doesn't match any list). Use when the user asks 'screen ICEYE Polska', 'check counterparty X against sanctions', or 'is this party indirectly sanctioned via its owners'. Requires an existing TradeParty — use lookup_trade_party first if you only have a name.",
   input_schema: {
     type: "object",
     properties: {
