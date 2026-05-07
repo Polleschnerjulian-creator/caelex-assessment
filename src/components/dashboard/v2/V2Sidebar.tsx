@@ -422,6 +422,13 @@ function NavLink({
       // hovering a sidebar item warms the cache so click feels
       // instant.
       prefetch={true}
+      // Active state communicated TWO ways:
+      //   1. aria-current="page" — accessibility + test hook
+      //   2. inline `background` style — visual selection-tint
+      // The aria attribute is the canonical signal; the visual is
+      // derived from it. Tests assert on aria-current, not the
+      // inline style which is volatile.
+      aria-current={active ? "page" : undefined}
       // Linear/Raycast-style active row: subtle 7% white wash, NO blue
       // tint, NO ring. Active text gets bumped to weight 500 for the
       // hierarchy cue. Icons use strokeWidth 1.75 (Lucide native is 2;

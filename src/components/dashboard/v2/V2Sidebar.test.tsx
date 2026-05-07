@@ -39,6 +39,30 @@ vi.mock("next/link", () => ({
     React.createElement("a", { href, ...rest }, children),
 }));
 
+// next/image uses an internal optimizer pipeline that hangs in jsdom
+// when the src points at an SVG (the V2Sidebar logo brand uses two
+// SVGs — comply-studio-{light,dark}.svg). Render as a plain <img>
+// for assertion-friendly DOM.
+vi.mock("next/image", () => ({
+  default: ({
+    src,
+    alt,
+    ...rest
+  }: {
+    src: string;
+    alt?: string;
+  } & Record<string, unknown>) =>
+    React.createElement("img", { src, alt: alt ?? "", ...rest }),
+}));
+
+// server-only modules can't be imported under vitest/node without
+// the "server-only" package's runtime-throw kicking in. The
+// OnboardingSetupState type-only import in V2Sidebar would otherwise
+// trigger that — but since we import only the *type*, this mock
+// stub is technically unused at runtime. Keeping it explicit
+// documents the dependency for future readers.
+vi.mock("@/lib/comply-v2/onboarding-state.server", () => ({}));
+
 // Lucide icons — explicit named exports (proven pattern from pulse test).
 // Proxy-based mocks caused indefinite hang in vitest fork workers.
 vi.mock("lucide-react", () => {
@@ -136,32 +160,37 @@ describe("V2Sidebar — section structure", () => {
 });
 
 describe("V2Sidebar — active state", () => {
-  it("highlights the link matching the current pathname (emerald ring)", () => {
+  // Apple-HIG redesign (Sprint commits e277bbbb / c50e7718) replaced
+  // the loud emerald-ring active marker with a quiet white selection
+  // tint + `aria-current="page"`. Tests now assert on the aria
+  // attribute which is stable across visual restyles.
+
+  it("marks the link matching the current pathname with aria-current='page'", () => {
     pathnameMock.mockReturnValue("/dashboard/posture");
     render(<V2Sidebar pendingProposals={0} />);
     const link = screen.getByRole("link", { name: /Posture/i });
-    expect(link.className).toContain("ring-emerald-500/30");
+    expect(link.getAttribute("aria-current")).toBe("page");
   });
 
   it("/dashboard/missions/abc123 keeps Missions active (sub-route match)", () => {
     pathnameMock.mockReturnValue("/dashboard/missions/abc123");
     render(<V2Sidebar pendingProposals={0} />);
     const link = screen.getByRole("link", { name: /^Missions$/i });
-    expect(link.className).toContain("ring-emerald-500/30");
+    expect(link.getAttribute("aria-current")).toBe("page");
   });
 
   it("/dashboard/astra-v2/conversations keeps Astra active", () => {
     pathnameMock.mockReturnValue("/dashboard/astra-v2/conversations");
     render(<V2Sidebar pendingProposals={0} />);
     const link = screen.getByRole("link", { name: /^Astra$/i });
-    expect(link.className).toContain("ring-emerald-500/30");
+    expect(link.getAttribute("aria-current")).toBe("page");
   });
 
-  it("non-active links don't get the emerald-ring class", () => {
+  it("non-active links don't get aria-current", () => {
     pathnameMock.mockReturnValue("/dashboard/posture");
     render(<V2Sidebar pendingProposals={0} />);
     const link = screen.getByRole("link", { name: /^Missions$/i });
-    expect(link.className).not.toContain("ring-emerald-500/30");
+    expect(link.getAttribute("aria-current")).toBeNull();
   });
 });
 

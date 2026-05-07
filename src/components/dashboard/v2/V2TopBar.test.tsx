@@ -103,18 +103,32 @@ describe("V2TopBar — ⌘K pill", () => {
   });
 });
 
-describe("V2TopBar — avatar pill", () => {
-  it("renders when userName provided", () => {
+describe("V2TopBar — avatar circle", () => {
+  // Apple HIG redesign (commit e277bbbb): the bordered avatar pill
+  // with name overlay is gone — replaced by a bare 32px gradient
+  // circle showing only the initial. The user's full name + email
+  // now live in the sidebar footer where they belong (one
+  // identity-display per screen, not two).
+
+  it("renders the initial when userName provided", () => {
     render(<V2TopBar userName="Anna Operator" userEmail="anna@example.com" />);
     const avatar = screen.getByTestId("v2-topbar-avatar");
-    expect(avatar.textContent).toContain("A"); // initial
-    expect(avatar.textContent).toContain("Anna Operator");
+    expect(avatar.textContent).toContain("A");
+    // Full name is NO LONGER rendered in the topbar — sidebar owns it.
+    expect(avatar.textContent).not.toContain("Anna Operator");
   });
 
   it("falls back to email initial when no name", () => {
     render(<V2TopBar userEmail="bob@example.com" />);
     const avatar = screen.getByTestId("v2-topbar-avatar");
     expect(avatar.textContent).toContain("B");
+  });
+
+  it("aria-label exposes the full identity for screen readers", () => {
+    render(<V2TopBar userName="Anna Operator" />);
+    const avatar = screen.getByTestId("v2-topbar-avatar");
+    // Visual is just "A" but the aria-label carries the name for AT.
+    expect(avatar.getAttribute("aria-label")).toContain("Anna Operator");
   });
 
   it("renders nothing when neither name nor email provided", () => {
