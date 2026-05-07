@@ -260,6 +260,32 @@ export function MissionDetailActions(props: Props) {
               setBusy(false);
             }
           }}
+          onBulkSubmit={async (input) => {
+            setBusy(true);
+            setError(null);
+            try {
+              const res = await fetch(
+                `/api/missions/${props.missionId}/spacecraft/bulk`,
+                {
+                  method: "POST",
+                  headers: { "content-type": "application/json" },
+                  body: JSON.stringify(input),
+                },
+              );
+              if (!res.ok) {
+                const body = await safeJson(res);
+                throw new Error(
+                  body?.error ?? `Bulk-assign failed (HTTP ${res.status})`,
+                );
+              }
+              setMode("view");
+              router.refresh();
+            } catch (e) {
+              setError(e instanceof Error ? e.message : "Bulk-assign failed");
+            } finally {
+              setBusy(false);
+            }
+          }}
         />
       ) : null}
 
@@ -576,20 +602,56 @@ function AssignPanel({
   busy,
   onCancel,
   onSubmit,
+  onBulkSubmit,
 }: {
   missionId: string;
   available: AvailableSpacecraft[];
   busy: boolean;
   onCancel: () => void;
   onSubmit: (input: Record<string, unknown>) => Promise<void>;
+  onBulkSubmit: (input: Record<string, unknown>) => Promise<void>;
 }) {
-  const [spacecraftId, setSpacecraftId] = React.useState(
-    available[0]?.id ?? "",
-  );
+  // Multi-select set of spacecraft ids to assign in this batch.
+  const [selected, setSelected] = React.useState<Set<string>>(new Set());
   const [role, setRole] =
     React.useState<(typeof ROLE_OPTIONS)[number]>("primary");
-  const [slot, setSlot] = React.useState<string>("");
+  const [startingSlot, setStartingSlot] = React.useState<string>("");
   const [notes, setNotes] = React.useState("");
+  const [filter, setFilter] = React.useState("");
+
+  const filtered = React.useMemo(() => {
+    const f = filter.trim().toLowerCase();
+    if (!f) return available;
+    return available.filter(
+      (s) =>
+        s.name.toLowerCase().includes(f) ||
+        s.cosparId?.toLowerCase().includes(f) ||
+        s.noradId?.toLowerCase().includes(f) ||
+        s.orbitType.toLowerCase().includes(f) ||
+        s.status.toLowerCase().includes(f),
+    );
+  }, [available, filter]);
+
+  function toggle(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function selectAll(visibleIds: string[]) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      for (const id of visibleIds) next.add(id);
+      return next;
+    });
+  }
+
+  function clearAll() {
+    setSelected(new Set());
+  }
 
   return (
     <PanelShell title="Assign spacecraft" onClose={onCancel}>
@@ -602,85 +664,167 @@ function AssignPanel({
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            void onSubmit({
-              spacecraftId,
-              role,
-              constellationSlot: slot ? parseInt(slot, 10) : null,
-              notes: notes.trim() || null,
-            });
+            const ids = Array.from(selected);
+            if (ids.length === 0) return;
+            const slot = startingSlot ? parseInt(startingSlot, 10) : null;
+            if (ids.length === 1) {
+              void onSubmit({
+                spacecraftId: ids[0],
+                role,
+                constellationSlot: slot,
+                notes: notes.trim() || null,
+              });
+            } else {
+              void onBulkSubmit({
+                spacecraftIds: ids,
+                role,
+                startingSlot: slot,
+                notes: notes.trim() || null,
+              });
+            }
           }}
-          className="grid grid-cols-1 gap-3 sm:grid-cols-2"
+          className="space-y-3"
         >
-          <Field label="Spacecraft" full>
-            <select
-              value={spacecraftId}
-              onChange={(e) => setSpacecraftId(e.target.value)}
-              required
-              className={inputClass}
-            >
-              {available.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                  {s.cosparId ? ` · ${s.cosparId}` : ""}
-                  {` · ${s.orbitType}`}
-                  {s.altitudeKm ? ` · ${Math.round(s.altitudeKm)} km` : ""}
-                  {` · ${s.status}`}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Role">
-            <select
-              value={role}
-              onChange={(e) =>
-                setRole(e.target.value as (typeof ROLE_OPTIONS)[number])
-              }
-              className={inputClass}
-            >
-              {ROLE_OPTIONS.map((r) => (
-                <option key={r} value={r}>
-                  {r.replace(/_/g, " ")}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Constellation slot (optional)">
+          <div className="flex items-center justify-between gap-3">
             <input
-              type="number"
-              min={1}
-              max={10000}
-              value={slot}
-              onChange={(e) => setSlot(e.target.value)}
-              className={inputClass}
+              type="search"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder={`Filter ${available.length} spacecraft…`}
+              className={`flex-1 ${inputClass}`}
             />
-          </Field>
-          <Field label="Notes" full>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              maxLength={2000}
-              rows={2}
-              placeholder="e.g. Primary until Phase E starts, then backup."
-              className={`${inputClass} resize-y`}
-            />
-          </Field>
-          <div className="flex items-center justify-end gap-2 sm:col-span-2">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
+              {selected.size} selected
+            </span>
             <button
               type="button"
-              onClick={onCancel}
-              disabled={busy}
-              className="rounded-md px-3 py-1.5 text-[12px] text-slate-300 ring-1 ring-inset ring-white/[0.08] transition hover:bg-white/[0.04] disabled:opacity-50"
+              onClick={() => selectAll(filtered.map((s) => s.id))}
+              className="rounded px-2 py-1 text-[10px] text-emerald-300 ring-1 ring-inset ring-emerald-500/30 transition hover:bg-emerald-500/10"
             >
-              Cancel
+              Select all visible
             </button>
-            <button
-              type="submit"
-              disabled={busy || !spacecraftId}
-              className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500 px-3 py-1.5 text-[12px] font-medium text-emerald-950 transition hover:bg-emerald-400 disabled:opacity-50"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Assign
-            </button>
+            {selected.size > 0 ? (
+              <button
+                type="button"
+                onClick={clearAll}
+                className="rounded px-2 py-1 text-[10px] text-slate-400 ring-1 ring-inset ring-white/[0.08] transition hover:bg-white/[0.04]"
+              >
+                Clear
+              </button>
+            ) : null}
+          </div>
+
+          <ul className="max-h-72 overflow-y-auto rounded-md ring-1 ring-inset ring-white/[0.06]">
+            {filtered.length === 0 ? (
+              <li className="px-3 py-4 text-center text-[11px] text-slate-500">
+                No spacecraft match this filter.
+              </li>
+            ) : (
+              filtered.map((s) => {
+                const isOn = selected.has(s.id);
+                return (
+                  <li key={s.id}>
+                    <label
+                      className={`flex cursor-pointer items-center gap-3 border-b border-white/[0.04] px-3 py-2 text-xs transition last:border-b-0 hover:bg-white/[0.03] ${
+                        isOn ? "bg-emerald-500/[0.04]" : ""
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isOn}
+                        onChange={() => toggle(s.id)}
+                        className="h-3.5 w-3.5 cursor-pointer accent-emerald-500"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate font-medium text-slate-100">
+                          {s.name}
+                        </div>
+                        <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 font-mono text-[10px] text-slate-500">
+                          <span>{s.orbitType}</span>
+                          {s.altitudeKm ? (
+                            <span>· {Math.round(s.altitudeKm)} km</span>
+                          ) : null}
+                          {s.cosparId ? <span>· {s.cosparId}</span> : null}
+                          {s.noradId ? <span>· NORAD {s.noradId}</span> : null}
+                          <span>· {s.status}</span>
+                        </div>
+                      </div>
+                    </label>
+                  </li>
+                );
+              })
+            )}
+          </ul>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <Field label="Role (applied to all)">
+              <select
+                value={role}
+                onChange={(e) =>
+                  setRole(e.target.value as (typeof ROLE_OPTIONS)[number])
+                }
+                className={inputClass}
+              >
+                {ROLE_OPTIONS.map((r) => (
+                  <option key={r} value={r}>
+                    {r.replace(/_/g, " ")}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Starting slot (auto-increment)">
+              <input
+                type="number"
+                min={1}
+                max={10000}
+                value={startingSlot}
+                onChange={(e) => setStartingSlot(e.target.value)}
+                placeholder="e.g. 1"
+                className={inputClass}
+              />
+            </Field>
+            <Field label="Notes (applied to all)" full>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                maxLength={2000}
+                rows={2}
+                placeholder="e.g. Primary fleet for Iceye-FY26."
+                className={`${inputClass} resize-y`}
+              />
+            </Field>
+          </div>
+
+          <div className="flex items-center justify-between gap-2 border-t border-white/[0.06] pt-3">
+            <p className="text-[11px] text-slate-500">
+              {selected.size === 0
+                ? "Pick one or more spacecraft."
+                : selected.size === 1
+                  ? "1 spacecraft will be assigned."
+                  : `${selected.size} spacecraft will be assigned${
+                      startingSlot
+                        ? ` (slots ${startingSlot}…${parseInt(startingSlot, 10) + selected.size - 1})`
+                        : ""
+                    }.`}
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={busy}
+                className="rounded-md px-3 py-1.5 text-[12px] text-slate-300 ring-1 ring-inset ring-white/[0.08] transition hover:bg-white/[0.04] disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={busy || selected.size === 0}
+                className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500 px-3 py-1.5 text-[12px] font-medium text-emerald-950 transition hover:bg-emerald-400 disabled:opacity-50"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Assign {selected.size > 1 ? `${selected.size} spacecraft` : ""}
+              </button>
+            </div>
           </div>
         </form>
       )}

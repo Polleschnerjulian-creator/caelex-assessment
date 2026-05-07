@@ -524,6 +524,116 @@ export async function assignSpacecraft(
   return detail;
 }
 
+export interface BulkAssignSpacecraftInput {
+  spacecraftIds: string[];
+  /** Role applied to every assignment in this batch. */
+  role?: string;
+  startedAt?: Date;
+  /** When provided, slot numbers auto-increment from this value
+   *  (matches order of spacecraftIds). Useful for constellations:
+   *  pass startingSlot=1 to get 1, 2, 3, … */
+  startingSlot?: number | null;
+  notes?: string | null;
+}
+
+/**
+ * Assign N spacecraft to one mission in a single transaction.
+ * Useful for constellation operators bringing up a fleet — one
+ * round-trip + one audit-batch instead of N. Skips spacecraft that
+ * are already actively assigned to this mission (idempotent re-run
+ * safe), reports the skip count back to the caller.
+ */
+export async function bulkAssignSpacecraft(
+  userId: string,
+  missionId: string,
+  input: BulkAssignSpacecraftInput,
+): Promise<{
+  mission: MissionDetail;
+  assigned: number;
+  skipped: number;
+  skippedIds: string[];
+}> {
+  const orgId = await resolvePrimaryOrgId(userId);
+  if (!orgId) throw new Error("User has no primary organization");
+
+  if (!input.spacecraftIds.length) {
+    throw new Error("Provide at least one spacecraft id");
+  }
+  if (input.spacecraftIds.length > 100) {
+    throw new Error("Cannot assign more than 100 spacecraft in one batch");
+  }
+
+  // Verify mission belongs to user's org
+  const mission = await prisma.mission.findFirst({
+    where: { id: missionId, organizationId: orgId },
+    select: { id: true },
+  });
+  if (!mission) throw new Error("Mission not found");
+
+  // Verify all spacecraft belong to user's org. Find the matching IDs;
+  // anything missing means at least one s/c is wrong-org.
+  const spacecraft = await prisma.spacecraft.findMany({
+    where: {
+      organizationId: orgId,
+      id: { in: input.spacecraftIds },
+    },
+    select: { id: true },
+  });
+  if (spacecraft.length !== input.spacecraftIds.length) {
+    const found = new Set(spacecraft.map((s) => s.id));
+    const missing = input.spacecraftIds.filter((id) => !found.has(id));
+    throw new Error(
+      `Spacecraft not found in this organization: ${missing.join(", ")}`,
+    );
+  }
+
+  // Find which spacecraft are ALREADY actively assigned to this mission.
+  // We skip those (idempotent), but track them so the caller can warn.
+  const existing = await prisma.missionSpacecraft.findMany({
+    where: {
+      missionId,
+      spacecraftId: { in: input.spacecraftIds },
+      endedAt: null,
+    },
+    select: { spacecraftId: true },
+  });
+  const alreadyAssigned = new Set(existing.map((e) => e.spacecraftId));
+  const toAssign = input.spacecraftIds.filter((id) => !alreadyAssigned.has(id));
+
+  const role = input.role?.trim() || "primary";
+  const startedAt = input.startedAt ?? new Date();
+  const baseSlot = input.startingSlot ?? null;
+  const notes = input.notes?.trim() || null;
+
+  // Bulk-create in a transaction so partial failure rolls back.
+  if (toAssign.length > 0) {
+    await prisma.$transaction(
+      toAssign.map((spacecraftId, idx) =>
+        prisma.missionSpacecraft.create({
+          data: {
+            missionId,
+            spacecraftId,
+            role,
+            startedAt,
+            constellationSlot: baseSlot !== null ? baseSlot + idx : null,
+            notes,
+          },
+        }),
+      ),
+    );
+  }
+
+  const detail = await getMissionDetail(userId, missionId);
+  if (!detail) throw new Error("Bulk-assign succeeded but read-back failed");
+
+  return {
+    mission: detail,
+    assigned: toAssign.length,
+    skipped: alreadyAssigned.size,
+    skippedIds: Array.from(alreadyAssigned),
+  };
+}
+
 export async function detachSpacecraft(
   userId: string,
   missionId: string,
