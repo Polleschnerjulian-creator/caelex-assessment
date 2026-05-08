@@ -18,14 +18,12 @@ import {
   AlertTriangle,
   ScrollText,
   FileSearch,
-  ChevronDown,
-  ChevronRight,
   Rocket,
   Activity,
-  Link2,
-  Heart,
-  Clock,
-  Sparkles,
+  FileText,
+  Bell,
+  Fingerprint,
+  Newspaper,
   Globe2,
   type LucideIcon,
 } from "lucide-react";
@@ -36,18 +34,25 @@ import type { OnboardingSetupState } from "@/lib/comply-v2/onboarding-state.serv
 /**
  * V2Sidebar — the Linear-style permanent left rail for Comply v2.
  *
- * Sprint 5C reorganises the rail into a 4-section taxonomy that
- * mirrors the operator's mental model:
+ * Sprint Sidebar-Refactor (post all-V2-builds): regrouped into 4
+ * sections matching the operator's actual workflow patterns. Net
+ * effect: 19 → 19 items, but better-bucketed and the 5 newly-built
+ * surfaces (Notifications, Documents, Regulatory Feed, Audit Log,
+ * System Health) are reachable from the rail. Four wow-features
+ * (Universe, Time Travel, Health Pulse, Audit Chain) moved out of
+ * primary nav — they remain reachable by URL + are candidates for
+ * tab integration into their parent surfaces.
  *
- *   1. MISSION     — your spacecraft world. Always expanded. Top of
- *                    the rail because Caelex is a mission-first tool.
- *   2. WORKFLOWS   — daily action items (Today, Triage, Proposals,
- *                    Astra). Always expanded — this is where work
- *                    happens.
- *   3. COMPLIANCE  — regulatory state, audit, attestations, network.
- *                    Always expanded.
- *   4. REFERENCE   — collapsible catch-all (currently empty until
- *                    we promote V1 module links here).
+ *   1. TODAY'S WORK — daily inbox/queue surfaces. Top of the rail
+ *                     because this is where the user starts every
+ *                     morning.
+ *   2. OPERATIONS   — missions, hardware, autonomous monitoring.
+ *                     The "what's flying" view.
+ *   3. COMPLIANCE   — regulatory state, evidence, network, trade.
+ *                     The "what we owe regulators" view.
+ *   4. AUDIT &      — audit trails, system observability. The
+ *      SYSTEM        "show your work + verify it's running" view
+ *                    (regulators + ops).
  *
  * Active route gets emerald highlight; pendingProposals badge shows
  * on the Proposals link from any surface.
@@ -80,35 +85,13 @@ export function V2Sidebar({
   setupState,
 }: V2SidebarProps) {
   const pathname = usePathname();
-  const [referenceOpen, setReferenceOpen] = React.useState(false);
 
-  const mission: NavItem[] = [
-    {
-      href: "/dashboard/missions",
-      label: "Missions",
-      icon: Rocket,
-      match: (p) => p.startsWith("/dashboard/missions"),
-    },
-    {
-      href: "/dashboard/ops-console",
-      label: "Ops Console",
-      icon: Activity,
-    },
-    {
-      href: "/dashboard/mission-control",
-      label: "Mission Control",
-      icon: Globe,
-    },
-    {
-      href: "/dashboard/universe",
-      label: "Universe",
-      icon: Sparkles,
-    },
-    { href: "/dashboard/ephemeris", label: "Ephemeris", icon: Orbit },
-    { href: "/dashboard/sentinel", label: "Sentinel", icon: Satellite },
-  ];
+  // Sprint Sidebar-Refactor — sections regrouped per workflow pattern.
+  // Wow-features (Universe / Time Travel / Health Pulse / Audit Chain)
+  // moved out of primary nav — still URL-reachable, candidates for
+  // tab integration into parent surfaces in a follow-up.
 
-  const workflows: NavItem[] = [
+  const todaysWork: NavItem[] = [
     { href: "/dashboard/today", label: "Today", icon: Inbox },
     { href: "/dashboard/triage", label: "Triage", icon: ListChecks },
     {
@@ -118,6 +101,11 @@ export function V2Sidebar({
       badge: pendingProposals,
     },
     {
+      href: "/dashboard/notifications",
+      label: "Notifications",
+      icon: Bell,
+    },
+    {
       href: "/dashboard/astra-v2",
       label: "Astra",
       icon: Bot,
@@ -125,37 +113,39 @@ export function V2Sidebar({
     },
   ];
 
+  const operations: NavItem[] = [
+    {
+      href: "/dashboard/missions",
+      label: "Missions",
+      icon: Rocket,
+      match: (p) => p.startsWith("/dashboard/missions"),
+    },
+    {
+      href: "/dashboard/mission-control",
+      label: "Mission Control",
+      icon: Globe,
+    },
+    { href: "/dashboard/ephemeris", label: "Ephemeris", icon: Orbit },
+    { href: "/dashboard/sentinel", label: "Sentinel", icon: Satellite },
+  ];
+
   const compliance: NavItem[] = [
     { href: "/dashboard/posture", label: "Posture", icon: Gauge },
     { href: "/dashboard/tracker", label: "Article Tracker", icon: FileSearch },
     { href: "/dashboard/incidents", label: "Incidents", icon: AlertTriangle },
     {
-      href: "/dashboard/audit-center",
-      label: "Audit Center",
-      icon: ScrollText,
+      href: "/dashboard/documents",
+      label: "Documents",
+      icon: FileText,
     },
     {
-      href: "/dashboard/audit-chain",
-      label: "Audit Chain",
-      icon: Link2,
-    },
-    {
-      href: "/dashboard/health-pulse",
-      label: "Health Pulse",
-      icon: Heart,
-    },
-    {
-      href: "/dashboard/time-travel",
-      label: "Time Travel",
-      icon: Clock,
+      href: "/dashboard/regulatory-feed",
+      label: "Regulatory Feed",
+      icon: Newspaper,
     },
     { href: "/dashboard/network", label: "Network", icon: Network },
-    // Wave B Sprint B1 — Trade Operations Layer (siehe
-    // docs/COMPLY-EXPORT-CONTROL-PLAN.md). Sub-routes:
-    //   /dashboard/trade/items       (Sprint B7)
-    //   /dashboard/trade/counterparties (Wave A)
-    //   /dashboard/trade/operations  (Wave C)
-    //   /dashboard/trade/licenses    (Wave C)
+    // Trade Operations Layer (siehe docs/COMPLY-EXPORT-CONTROL-PLAN.md).
+    // Sub-routes: /dashboard/trade/{items,counterparties,operations,licenses}
     {
       href: "/dashboard/trade",
       label: "Trade",
@@ -164,11 +154,28 @@ export function V2Sidebar({
     },
   ];
 
-  // Reference is intentionally empty in Sprint 5C — V1 modules will
-  // be promoted here in a follow-up once we know which surfaces
-  // operators still hit. Kept as a section so the collapse-toggle
-  // exists and we can add items without re-laying-out.
-  const reference: NavItem[] = [];
+  const auditAndSystem: NavItem[] = [
+    {
+      href: "/dashboard/audit-center",
+      label: "Audit Center",
+      icon: ScrollText,
+    },
+    {
+      href: "/dashboard/audit-log",
+      label: "Audit Log",
+      icon: Fingerprint,
+    },
+    {
+      href: "/dashboard/ops-console",
+      label: "Ops Console",
+      icon: Activity,
+    },
+    {
+      href: "/dashboard/system-health",
+      label: "System Health",
+      icon: Gauge,
+    },
+  ];
 
   const isActive = (item: NavItem): boolean => {
     if (item.match) return item.match(pathname);
@@ -241,10 +248,14 @@ export function V2Sidebar({
       </div>
 
       <div className="flex-1 overflow-y-auto px-2.5 pb-4">
-        <SidebarSection label="Mission" items={mission} isActive={isActive} />
         <SidebarSection
-          label="Workflows"
-          items={workflows}
+          label="Today's Work"
+          items={todaysWork}
+          isActive={isActive}
+        />
+        <SidebarSection
+          label="Operations"
+          items={operations}
           isActive={isActive}
           className="mt-6"
         />
@@ -254,40 +265,12 @@ export function V2Sidebar({
           isActive={isActive}
           className="mt-6"
         />
-
-        {reference.length > 0 ? (
-          <>
-            <button
-              type="button"
-              onClick={() => setReferenceOpen((o) => !o)}
-              aria-expanded={referenceOpen}
-              className="mt-6 flex w-full items-center justify-between gap-2 rounded px-2.5 py-1.5 transition-colors"
-              style={{
-                color: "rgba(255, 255, 255, 0.45)",
-                fontSize: "11px",
-                fontWeight: 600,
-                letterSpacing: "0.06em",
-                textTransform: "uppercase",
-              }}
-            >
-              <span>Reference</span>
-              {referenceOpen ? (
-                <ChevronDown className="h-3 w-3" strokeWidth={2} />
-              ) : (
-                <ChevronRight className="h-3 w-3" strokeWidth={2} />
-              )}
-            </button>
-            {referenceOpen ? (
-              <ul className="mt-1 space-y-px">
-                {reference.map((item) => (
-                  <li key={item.href}>
-                    <NavLink item={item} active={isActive(item)} dim />
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </>
-        ) : null}
+        <SidebarSection
+          label="Audit & System"
+          items={auditAndSystem}
+          isActive={isActive}
+          className="mt-6"
+        />
       </div>
 
       {/* Setup-progress badge — only renders when onboarding is

@@ -95,6 +95,11 @@ vi.mock("lucide-react", () => {
     Clock: icon("Clock"),
     Sparkles: icon("Sparkles"),
     Globe2: icon("Globe2"),
+    // Sprint Sidebar-Refactor — new icons after the 4-section restructure
+    Bell: icon("Bell"),
+    FileText: icon("FileText"),
+    Fingerprint: icon("Fingerprint"),
+    Newspaper: icon("Newspaper"),
   };
 });
 
@@ -106,44 +111,44 @@ beforeEach(() => {
 });
 
 describe("V2Sidebar — section structure", () => {
-  it("renders Mission, Workflows, Compliance section labels (Reference hidden when empty)", () => {
+  it("renders the 4 section labels: Today's Work / Operations / Compliance / Audit & System", () => {
     render(<V2Sidebar pendingProposals={0} />);
-    // getByText throws when the element isn't present — calling without
-    // expect() is sufficient. Avoiding `.toBeInTheDocument()` because
-    // the matcher's types aren't picked up under this tsconfig.
-    screen.getByText("Mission");
-    screen.getByText("Workflows");
+    screen.getByText("Today's Work");
+    screen.getByText("Operations");
     screen.getByText("Compliance");
+    screen.getByText("Audit & System");
+    // Pre-refactor labels removed
+    expect(screen.queryByText("Mission")).toBeNull();
+    expect(screen.queryByText("Workflows")).toBeNull();
     expect(screen.queryByText("Reference")).toBeNull();
   });
 
-  it("Mission section contains Missions, Ops Console, Mission Control, Universe, Ephemeris, Sentinel in that order", () => {
+  it("Today's Work section contains Today, Triage, Proposals, Notifications, Astra in that order", () => {
     render(<V2Sidebar pendingProposals={0} />);
-    const section = screen.getByLabelText("Mission");
-    const links = within(section).getAllByRole("link");
-    expect(links.map((a) => a.getAttribute("href"))).toEqual([
-      "/dashboard/missions",
-      "/dashboard/ops-console",
-      "/dashboard/mission-control",
-      "/dashboard/universe",
-      "/dashboard/ephemeris",
-      "/dashboard/sentinel",
-    ]);
-  });
-
-  it("Workflows section contains Today, Triage, Proposals, Astra in that order", () => {
-    render(<V2Sidebar pendingProposals={0} />);
-    const section = screen.getByLabelText("Workflows");
+    const section = screen.getByLabelText("Today's Work");
     const links = within(section).getAllByRole("link");
     expect(links.map((a) => a.getAttribute("href"))).toEqual([
       "/dashboard/today",
       "/dashboard/triage",
       "/dashboard/proposals",
+      "/dashboard/notifications",
       "/dashboard/astra-v2",
     ]);
   });
 
-  it("Compliance section contains Posture, Tracker, Incidents, Audit Center, Audit Chain, Health Pulse, Time Travel, Network, Trade", () => {
+  it("Operations section contains Missions, Mission Control, Ephemeris, Sentinel (Universe removed from primary nav)", () => {
+    render(<V2Sidebar pendingProposals={0} />);
+    const section = screen.getByLabelText("Operations");
+    const links = within(section).getAllByRole("link");
+    expect(links.map((a) => a.getAttribute("href"))).toEqual([
+      "/dashboard/missions",
+      "/dashboard/mission-control",
+      "/dashboard/ephemeris",
+      "/dashboard/sentinel",
+    ]);
+  });
+
+  it("Compliance section contains Posture, Tracker, Incidents, Documents, Regulatory Feed, Network, Trade (Audit Chain / Health Pulse / Time Travel removed from primary nav)", () => {
     render(<V2Sidebar pendingProposals={0} />);
     const section = screen.getByLabelText("Compliance");
     const links = within(section).getAllByRole("link");
@@ -151,12 +156,22 @@ describe("V2Sidebar — section structure", () => {
       "/dashboard/posture",
       "/dashboard/tracker",
       "/dashboard/incidents",
-      "/dashboard/audit-center",
-      "/dashboard/audit-chain",
-      "/dashboard/health-pulse",
-      "/dashboard/time-travel",
+      "/dashboard/documents",
+      "/dashboard/regulatory-feed",
       "/dashboard/network",
       "/dashboard/trade",
+    ]);
+  });
+
+  it("Audit & System section contains Audit Center, Audit Log, Ops Console, System Health", () => {
+    render(<V2Sidebar pendingProposals={0} />);
+    const section = screen.getByLabelText("Audit & System");
+    const links = within(section).getAllByRole("link");
+    expect(links.map((a) => a.getAttribute("href"))).toEqual([
+      "/dashboard/audit-center",
+      "/dashboard/audit-log",
+      "/dashboard/ops-console",
+      "/dashboard/system-health",
     ]);
   });
 
