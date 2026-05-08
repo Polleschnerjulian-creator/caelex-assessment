@@ -114,6 +114,7 @@ export default async function ProposalsPage({ searchParams }: PageProps) {
         eyebrow="Trust layer"
         eyebrowIcon={ShieldCheck}
         title="Proposals"
+        helpTerm="Proposals"
         description="Review what Astra wants to do. High-impact actions are queued for human approval before they touch your compliance state. Approve, reject, or let them expire after seven days."
         actions={
           counts.pending > 0 ? (

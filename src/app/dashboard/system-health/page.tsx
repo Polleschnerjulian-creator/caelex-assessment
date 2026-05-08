@@ -91,7 +91,8 @@ export default async function SystemHealthPage() {
       <PageHeader
         eyebrow="System health"
         eyebrowIcon={Activity}
-        title="System health"
+        title="System Health"
+        helpTerm="System Health"
         description={
           <>
             Heartbeat of the data pipelines feeding your compliance posture.

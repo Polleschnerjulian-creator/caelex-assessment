@@ -65,7 +65,7 @@ export default async function AuditLogPage({ searchParams }: PageProps) {
         <PageHeader
           eyebrow="Audit log"
           eyebrowIcon={Fingerprint}
-          title="Audit log"
+          title="Audit Log"
           description="Chronological filterable view of every audit event in your organization. 5+ year retention per §22 AWV / 15 CFR 762."
         />
         <Card className="max-w-xl">
@@ -118,7 +118,8 @@ export default async function AuditLogPage({ searchParams }: PageProps) {
       <PageHeader
         eyebrow="Audit log"
         eyebrowIcon={Fingerprint}
-        title="Audit log"
+        title="Audit Log"
+        helpTerm="Audit Log"
         description={
           <>
             Chronological filterable view of every audit event in your

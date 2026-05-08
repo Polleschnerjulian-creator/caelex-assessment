@@ -52,6 +52,7 @@ export default async function TriagePage() {
         eyebrow="Triage"
         eyebrowIcon={Inbox}
         title="Triage"
+        helpTerm="Triage"
         description={
           items.length === 0
             ? "No new signals. The keyboard is fastest — J/K to navigate, A to acknowledge, D to dismiss."

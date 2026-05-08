@@ -22,7 +22,12 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowUpRight } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  HelpCircle as HelpCircleIcon,
+} from "lucide-react";
+import { HelpTooltip } from "./HelpTooltip";
 
 // ─── Page header ─────────────────────────────────────────────────────────
 
@@ -74,6 +79,11 @@ export interface PageHeaderProps {
   eyebrowTone?: "emerald" | "cyan" | "amber" | "slate" | "violet";
   /** The main page title. */
   title: string;
+  /** Sprint UF1 — optional glossary term key. When set, a (?) icon
+   *  appears next to the title with a hover-card definition. Lookup
+   *  is via the central GLOSSARY in HelpTooltip.tsx — see entries
+   *  there. */
+  helpTerm?: string;
   /** Optional subtitle / description below the title. */
   description?: React.ReactNode;
   /** Right-aligned actions (CTAs, stats, etc). */
@@ -85,6 +95,7 @@ export function PageHeader({
   eyebrowIcon: EyebrowIcon,
   eyebrowTone = "emerald",
   title,
+  helpTerm,
   description,
   actions,
 }: PageHeaderProps) {
@@ -107,14 +118,31 @@ export function PageHeader({
           </div>
         ) : null}
         <h1
-          className="truncate text-[28px] font-semibold text-slate-50"
+          className="flex items-center gap-2 truncate text-[28px] font-semibold text-slate-50"
           style={{
             fontFamily: DISPLAY_FONT,
             letterSpacing: "-0.022em",
             lineHeight: 1.15,
           }}
         >
-          {title}
+          {helpTerm ? (
+            <HelpTooltip term={helpTerm} showIcon={false}>
+              <span>{title}</span>
+            </HelpTooltip>
+          ) : (
+            title
+          )}
+          {helpTerm ? (
+            <HelpTooltip term={helpTerm} showIcon={false}>
+              <button
+                type="button"
+                aria-label={`What is ${title}?`}
+                className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/[0.04] text-slate-500 transition hover:bg-white/[0.08] hover:text-slate-300"
+              >
+                <HelpCircleIcon className="h-3 w-3" />
+              </button>
+            </HelpTooltip>
+          ) : null}
         </h1>
         {description ? (
           <div className="mt-2 max-w-2xl text-[13.5px] leading-relaxed text-slate-400">

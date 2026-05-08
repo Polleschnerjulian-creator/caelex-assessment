@@ -71,6 +71,7 @@ export default async function OpsConsolePage() {
         eyebrow="Ops Console"
         eyebrowIcon={Activity}
         title="Ops Console"
+        helpTerm="Ops Console"
         description="Real-time feed of proposals, mission phases, and Astra reasoning. Events stream via Server-Sent-Events from Postgres LISTEN/NOTIFY."
         actions={<StatusPill tone="emerald">Live</StatusPill>}
       />

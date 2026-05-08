@@ -83,6 +83,7 @@ export default async function PosturePage() {
         eyebrow="Posture"
         eyebrowIcon={Gauge}
         title="Posture"
+        helpTerm="Posture"
         description="Executive overview of where you stand right now. Click any tile to drill into the underlying ComplianceItems."
         actions={<StatusPill tone="emerald">Live</StatusPill>}
       />
