@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Bot, Plus, MessageSquare, Trash2 } from "lucide-react";
+import { Bot, Plus, MessageSquare } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
 import { getAstraToolDefinitions } from "@/lib/comply-v2/actions/astra-bridge.server";
@@ -10,10 +10,11 @@ import {
 } from "@/lib/comply-v2/conversation-service.server";
 import { Badge } from "@/components/ui/v2/badge";
 import { AstraV2Chat } from "./AstraV2Chat";
-import {
-  createNewConversation,
-  archiveConversationAction,
-} from "./server-actions";
+// Sprint UF36 (P1-D6) — confirmation step before archiving.
+// archiveConversationAction is now consumed only inside the client
+// island, not here.
+import { ArchiveConversationButton } from "./ArchiveConversationButton";
+import { createNewConversation } from "./server-actions";
 
 export const metadata = {
   title: "Astra V2 — Caelex Comply",
@@ -112,20 +113,13 @@ export default async function AstraV2Page({ searchParams }: PageProps) {
                           {c.messageCount} MSG · {formatRelative(c.updatedAt)}
                         </div>
                       </Link>
-                      <form action={archiveConversationAction}>
-                        <input
-                          type="hidden"
-                          name="conversationId"
-                          value={c.id}
-                        />
-                        <button
-                          type="submit"
-                          aria-label="Archive conversation"
-                          className="opacity-0 transition group-hover/conv:opacity-100 rounded p-1 text-slate-500 hover:bg-red-500/15 hover:text-red-300"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      </form>
+                      {/* Sprint UF36 (P1-D6) — 2-stage confirmation
+                          replaces the previous one-click destructive
+                          archive. */}
+                      <ArchiveConversationButton
+                        conversationId={c.id}
+                        conversationTitle={c.title}
+                      />
                     </div>
                   </li>
                 );

@@ -107,6 +107,34 @@ export function AstraV2Chat({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialConversationId]);
 
+  // Sprint UF36 (P1-D5) — warn before tab close when scratchpad has
+  // unsaved messages. Audit found that closing a tab during a fresh
+  // (non-persisted) chat silently discarded the entire conversation
+  // — operators expected they'd be able to come back later. Now: a
+  // beforeunload listener fires when (a) we're in scratchpad mode
+  // (no initialConversationId means the Astra page entered without
+  // ?c=... → ephemeral) AND (b) history has user messages beyond
+  // the initial Astra greeting.
+  //
+  // Browsers strip custom messages from beforeunload (post-Chrome-60),
+  // but the listener still triggers the native "Leave / Stay" dialog.
+  // That's the intended behaviour: lose the data only after explicit
+  // confirmation.
+  React.useEffect(() => {
+    if (initialConversationId) return; // persisted — no warning needed
+    const hasUserMessages = history.some((m) => m.role === "user");
+    if (!hasUserMessages) return;
+
+    const handler = (e: BeforeUnloadEvent) => {
+      // Spec-compliant: setting returnValue + preventDefault triggers
+      // the dialog. Custom message is ignored by modern browsers.
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [history, initialConversationId]);
+
   React.useEffect(() => {
     scrollRef.current?.scrollTo({
       top: scrollRef.current.scrollHeight,
@@ -159,6 +187,26 @@ export function AstraV2Chat({
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-5">
         {/* Sprint 6C — EU AI Act Art. 50(1) disclosure */}
         <AIDisclosureBanner />
+        {/* Sprint UF36 (P1-D5) — Scratchpad-loss warning banner.
+            Visible only when in ephemeral mode (no conversationId)
+            AND there's at least one user message. Tells the
+            operator BEFORE they invest 10 minutes typing that the
+            chat will disappear on tab close. */}
+        {!initialConversationId && history.some((m) => m.role === "user") ? (
+          <div
+            role="status"
+            className="mb-4 inline-flex items-center gap-2 rounded-md border border-amber-500/25 bg-amber-500/[0.05] px-2.5 py-1.5 text-[11px] text-amber-200"
+          >
+            <span className="font-mono text-[9px] font-semibold uppercase tracking-wider text-amber-300">
+              scratchpad
+            </span>
+            <span className="text-amber-200/80">
+              This chat is ephemeral — closing the tab loses it. Click{" "}
+              <span className="font-mono">NEW</span> in the sidebar to persist +
+              share.
+            </span>
+          </div>
+        ) : null}
         <div className="flex flex-col gap-5">
           {history.map((msg, i) => (
             <MessageBubble key={i} message={msg} />
