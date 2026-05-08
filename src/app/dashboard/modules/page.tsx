@@ -15,6 +15,7 @@ import {
   Radio,
   Building2,
   ArrowUpRight,
+  AlertTriangle,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
@@ -22,6 +23,8 @@ import {
   PageContainer,
   PageHeader,
 } from "@/components/dashboard/v2/ui/PageChrome";
+import { getPostureForUser } from "@/lib/comply-v2/posture.server";
+import type { RegulationKey } from "@/lib/comply-v2/types";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +42,16 @@ interface ModuleEntry {
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   category: "core" | "operational" | "specialised";
   jurisdictions: string[];
+  /**
+   * Sprint UF31 (P1-P3) — link from a module entry to the V2
+   * RegulationKey it aggregates from. When set, ModuleCard shows
+   * live counts (open / attested / total / score). When null,
+   * the card stays brochure-style (those modules don't map to a
+   * V2 ComplianceItem table — authorization, registration,
+   * environmental, insurance, copuos use their own
+   * *Assessment-Status models that aren't in posture aggregator).
+   */
+  regulationKey: RegulationKey | null;
 }
 
 const MODULES: ModuleEntry[] = [
@@ -50,6 +63,7 @@ const MODULES: ModuleEntry[] = [
     icon: ShieldCheck,
     category: "core",
     jurisdictions: ["EU", "DE", "FR", "IT", "ES", "+5"],
+    regulationKey: null, // workflow-state-machine, not ComplianceItem-backed
   },
   {
     href: "/dashboard/modules/registration",
@@ -59,6 +73,7 @@ const MODULES: ModuleEntry[] = [
     icon: Building2,
     category: "core",
     jurisdictions: ["UN", "EU"],
+    regulationKey: null,
   },
   {
     href: "/dashboard/modules/debris",
@@ -68,6 +83,7 @@ const MODULES: ModuleEntry[] = [
     icon: Trash2,
     category: "core",
     jurisdictions: ["EU", "UN-IADC", "ISO"],
+    regulationKey: "DEBRIS",
   },
   {
     href: "/dashboard/modules/cybersecurity",
@@ -77,6 +93,7 @@ const MODULES: ModuleEntry[] = [
     icon: Lock,
     category: "core",
     jurisdictions: ["EU", "ENISA", "ISO"],
+    regulationKey: "CYBERSECURITY",
   },
   {
     href: "/dashboard/modules/nis2",
@@ -86,6 +103,7 @@ const MODULES: ModuleEntry[] = [
     icon: ShieldCheck,
     category: "core",
     jurisdictions: ["EU"],
+    regulationKey: "NIS2",
   },
   {
     href: "/dashboard/modules/insurance",
@@ -95,6 +113,7 @@ const MODULES: ModuleEntry[] = [
     icon: Coins,
     category: "core",
     jurisdictions: ["EU", "national"],
+    regulationKey: null,
   },
   {
     href: "/dashboard/modules/environmental",
@@ -104,6 +123,7 @@ const MODULES: ModuleEntry[] = [
     icon: Wind,
     category: "core",
     jurisdictions: ["EU", "ICAO"],
+    regulationKey: null,
   },
   {
     href: "/dashboard/modules/supervision",
@@ -113,6 +133,7 @@ const MODULES: ModuleEntry[] = [
     icon: Eye,
     category: "operational",
     jurisdictions: ["EU", "national"],
+    regulationKey: null,
   },
   {
     href: "/dashboard/modules/copuos",
@@ -122,6 +143,7 @@ const MODULES: ModuleEntry[] = [
     icon: Globe,
     category: "specialised",
     jurisdictions: ["UN"],
+    regulationKey: null,
   },
   {
     href: "/dashboard/modules/export-control",
@@ -131,6 +153,7 @@ const MODULES: ModuleEntry[] = [
     icon: Briefcase,
     category: "specialised",
     jurisdictions: ["US", "international"],
+    regulationKey: "EXPORT_CONTROL",
   },
   {
     href: "/dashboard/modules/spectrum",
@@ -140,6 +163,7 @@ const MODULES: ModuleEntry[] = [
     icon: Radio,
     category: "specialised",
     jurisdictions: ["ITU", "national"],
+    regulationKey: "SPECTRUM",
   },
   {
     href: "/dashboard/modules/uk-space",
@@ -149,6 +173,7 @@ const MODULES: ModuleEntry[] = [
     icon: Scale,
     category: "specialised",
     jurisdictions: ["UK"],
+    regulationKey: "UK_SPACE_ACT",
   },
   {
     href: "/dashboard/modules/us-regulatory",
@@ -158,6 +183,7 @@ const MODULES: ModuleEntry[] = [
     icon: Plane,
     category: "specialised",
     jurisdictions: ["US"],
+    regulationKey: "US_REGULATORY",
   },
   {
     href: "/dashboard/modules/cra",
@@ -167,6 +193,7 @@ const MODULES: ModuleEntry[] = [
     icon: ShieldCheck,
     category: "specialised",
     jurisdictions: ["EU"],
+    regulationKey: "CRA",
   },
 ];
 
@@ -191,6 +218,51 @@ const CATEGORY_META: Record<
   },
 };
 
+// Sprint UF31 (P1-P3) — live per-module stats source.
+//
+// Returns a Map keyed by RegulationKey so the renderer can lookup
+// stats per module in O(1). Entries that don't exist mean "no live
+// data for this regulation" → card stays brochure-style.
+//
+// We don't try to mix in the legacy *Assessment tables for
+// authorization/registration/insurance/etc. Those use a different
+// data-shape (single-record-per-user, status-text fields) that
+// would need a separate aggregator. UF31 ships with the V2-mapped
+// 7 modules; the brochure 7 retain the previous behaviour.
+interface ModuleLiveStats {
+  total: number;
+  countable: number;
+  attested: number;
+  evidenceRequired: number;
+  pending: number;
+  /** 0-100. Same formula as Posture: attested / (total - N/A). */
+  score: number;
+}
+
+async function getModuleLiveStats(
+  userId: string,
+): Promise<Map<RegulationKey, ModuleLiveStats>> {
+  const map = new Map<RegulationKey, ModuleLiveStats>();
+  try {
+    const posture = await getPostureForUser(userId);
+    for (const r of posture.regulationBreakdown) {
+      map.set(r.regulation, {
+        total: r.total,
+        countable: r.countable,
+        attested: r.attested,
+        evidenceRequired: r.evidenceRequired,
+        pending: r.pending,
+        score: r.score,
+      });
+    }
+  } catch {
+    // Defensive: if the posture aggregator throws (e.g. on a fresh
+    // org with no items + edge-case), the modules page should still
+    // render the brochure-style cards. Just return empty map.
+  }
+  return map;
+}
+
 export default async function ModulesIndexPage() {
   const session = await auth();
   if (!session?.user?.id) {
@@ -198,6 +270,9 @@ export default async function ModulesIndexPage() {
   }
   const ui = await resolveComplyUiVersion();
   if (ui === "v1") redirect("/dashboard");
+
+  // Sprint UF31 — fetch live stats once for the page load.
+  const liveStats = await getModuleLiveStats(session.user.id);
 
   const grouped = {
     core: MODULES.filter((m) => m.category === "core"),
@@ -235,7 +310,15 @@ export default async function ModulesIndexPage() {
           </header>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {grouped[cat].map((m) => (
-              <ModuleCard key={m.href} module={m} />
+              <ModuleCard
+                key={m.href}
+                module={m}
+                stats={
+                  m.regulationKey
+                    ? (liveStats.get(m.regulationKey) ?? null)
+                    : null
+                }
+              />
             ))}
           </div>
         </section>
@@ -244,8 +327,42 @@ export default async function ModulesIndexPage() {
   );
 }
 
-function ModuleCard({ module: m }: { module: ModuleEntry }) {
+function ModuleCard({
+  module: m,
+  stats,
+}: {
+  module: ModuleEntry;
+  stats: ModuleLiveStats | null;
+}) {
   const Icon = m.icon;
+
+  // Sprint UF31 — derive a tier-color for the score badge so the
+  // module index turns into a triage surface, not just a directory.
+  // <50 = rose (urgent attention), 50-79 = amber, ≥80 = emerald,
+  // 0/0 (no items yet) → slate (neutral hint, not "bad").
+  const scoreTier =
+    !stats || stats.total === 0
+      ? "neutral"
+      : stats.score >= 80
+        ? "emerald"
+        : stats.score >= 50
+          ? "amber"
+          : "rose";
+
+  const scoreColor =
+    scoreTier === "emerald"
+      ? "text-emerald-300"
+      : scoreTier === "amber"
+        ? "text-amber-300"
+        : scoreTier === "rose"
+          ? "text-rose-300"
+          : "text-slate-500";
+
+  // Open work counter — items that aren't attested. Drives the
+  // "X open" pill at the top of the card. Includes pending,
+  // evidence_required, draft, under_review.
+  const openCount = stats ? stats.countable - stats.attested : 0;
+
   return (
     <Link
       href={m.href}
@@ -255,13 +372,74 @@ function ModuleCard({ module: m }: { module: ModuleEntry }) {
         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-300 ring-1 ring-inset ring-emerald-500/20">
           <Icon className="h-3.5 w-3.5" />
         </div>
-        <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-slate-500 transition group-hover:text-slate-300" />
+        {/* Sprint UF31 (P1-P3) — live status pills.
+            For V2-mapped modules: score (color-tier) + open-count.
+            For brochure modules: just the chevron as before, plus a
+            small italic "browse" hint so the user knows live data
+            isn't available here yet.
+
+            Audit P1-P3 said the index was "pure brochure" with no
+            triage signal. Now: a CO scanning the modules can spot
+            "Cybersecurity 32% · 18 open" and prioritize. */}
+        <div className="flex items-center gap-2">
+          {stats ? (
+            stats.total > 0 ? (
+              <>
+                {openCount > 0 ? (
+                  <span
+                    className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300 ring-1 ring-inset ring-amber-500/20"
+                    title={`${openCount} requirement${openCount === 1 ? "" : "s"} still open`}
+                  >
+                    <AlertTriangle className="h-2.5 w-2.5" strokeWidth={2.4} />
+                    {openCount}
+                  </span>
+                ) : null}
+                <span
+                  className={`text-[12px] font-semibold tabular-nums ${scoreColor}`}
+                  title={`${stats.attested} of ${stats.countable} attested`}
+                >
+                  {stats.score}%
+                </span>
+              </>
+            ) : (
+              <span className="text-[10px] italic text-slate-600">
+                no items yet
+              </span>
+            )
+          ) : null}
+          <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-slate-500 transition group-hover:text-slate-300" />
+        </div>
       </header>
       <h3 className="text-[14px] font-semibold tracking-tight text-slate-100">
         {m.title}
       </h3>
       <p className="text-[12px] font-medium text-slate-300">{m.short}</p>
       <p className="text-[11.5px] leading-relaxed text-slate-500">{m.body}</p>
+
+      {/* Sprint UF31 — live counters row, only when stats present
+          and there are items. Compact mono-formatted numbers with
+          slate semantics: "12/27 attested · 5 evidence-required ·
+          2 pending". Auditor can read this in 2 seconds. */}
+      {stats && stats.total > 0 ? (
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px] text-slate-500">
+          <span className="tabular-nums">
+            <span className="text-slate-300">{stats.attested}</span>
+            <span className="text-slate-600">/{stats.countable}</span> attested
+          </span>
+          {stats.evidenceRequired > 0 ? (
+            <span className="tabular-nums">
+              <span className="text-amber-300">{stats.evidenceRequired}</span>{" "}
+              evidence-required
+            </span>
+          ) : null}
+          {stats.pending > 0 ? (
+            <span className="tabular-nums">
+              <span className="text-slate-300">{stats.pending}</span> pending
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className="mt-1 flex flex-wrap gap-1.5 border-t border-white/[0.04] pt-2">
         {m.jurisdictions.map((j) => (
           <span
