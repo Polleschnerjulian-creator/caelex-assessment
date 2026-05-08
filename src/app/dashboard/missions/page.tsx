@@ -10,6 +10,8 @@ import {
   Users,
   Plus,
   Layers,
+  Search,
+  X,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
@@ -17,6 +19,8 @@ import {
   getMissionsForUser,
   type MissionSummary,
 } from "@/lib/comply-v2/missions.server";
+import { getPostureForUser } from "@/lib/comply-v2/posture.server";
+import { SortSelect } from "./SortSelect";
 
 export const metadata = {
   title: "Missions — Caelex Comply",
@@ -26,6 +30,40 @@ export const metadata = {
 
 export const dynamic = "force-dynamic";
 
+// Sprint UF51 (P1-M1) — URL-param driven filters/sort.
+type StatusFilter =
+  | "all"
+  | "ACTIVE"
+  | "PLANNED"
+  | "PAUSED"
+  | "COMPLETED"
+  | "CANCELLED";
+type SortKey = "recent" | "name" | "planned" | "started";
+
+const STATUS_FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "ACTIVE", label: "Active" },
+  { value: "PLANNED", label: "Planned" },
+  { value: "PAUSED", label: "Paused" },
+  { value: "COMPLETED", label: "Completed" },
+  { value: "CANCELLED", label: "Cancelled" },
+];
+
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: "recent", label: "Recently updated" },
+  { value: "name", label: "Name (A→Z)" },
+  { value: "planned", label: "Planned start" },
+  { value: "started", label: "Actually started" },
+];
+
+interface PageProps {
+  searchParams: Promise<{
+    q?: string;
+    status?: string;
+    sort?: string;
+  }>;
+}
+
 /**
  * Missions list — the V2 mission-first landing.
  *
@@ -34,8 +72,14 @@ export const dynamic = "force-dynamic";
  * status (Active / Planned / Completed-or-Cancelled) and surfaces
  * mission-level metadata: missionType, programPhase, primaryEndUser,
  * spacecraft count. Each card links to the mission detail.
+ *
+ * Sprint UF51-52 (P1-M1+M2) — added search/filter/sort + compliance
+ * score header KPI. The grouped-by-status default render still
+ * works when the user hasn't filtered; setting `?status=ACTIVE`
+ * (or any non-"all") flips to a flat sorted list within that status
+ * cohort. Sort applies in both modes.
  */
-export default async function MissionsPage() {
+export default async function MissionsPage({ searchParams }: PageProps) {
   const session = await auth();
   if (!session?.user?.id) {
     redirect("/login?next=/dashboard/missions");
@@ -43,14 +87,74 @@ export default async function MissionsPage() {
   const ui = await resolveComplyUiVersion();
   if (ui === "v1") redirect("/dashboard");
 
-  const missions = await getMissionsForUser(session.user.id);
+  const sp = await searchParams;
+  const q = (sp.q ?? "").trim().toLowerCase();
+  const status: StatusFilter = STATUS_FILTER_OPTIONS.some(
+    (o) => o.value === sp.status,
+  )
+    ? (sp.status as StatusFilter)
+    : "all";
+  const sort: SortKey = SORT_OPTIONS.some((o) => o.value === sp.sort)
+    ? (sp.sort as SortKey)
+    : "recent";
 
+  // Fetch missions + posture (for the compliance-score KPI in the
+  // header). These run in parallel; posture is cheap because the
+  // aggregate query is the same one Posture page uses.
+  const [allMissions, posture] = await Promise.all([
+    getMissionsForUser(session.user.id),
+    getPostureForUser(session.user.id).catch(() => null),
+  ]);
+
+  // Apply search filter (across name + reference + primaryEndUser).
+  // Server-side because the list is small enough to fit in memory and
+  // server filtering means initial render is correct (no flash).
+  const searchFiltered = q
+    ? allMissions.filter((m) => {
+        const hay =
+          `${m.name} ${m.reference ?? ""} ${m.primaryEndUser ?? ""}`.toLowerCase();
+        return hay.includes(q);
+      })
+    : allMissions;
+
+  // Apply sort. We sort the full search-filtered set; status grouping
+  // happens after this so the per-bucket order is consistent.
+  const sortFn = (a: MissionSummary, b: MissionSummary): number => {
+    switch (sort) {
+      case "name":
+        return a.name.localeCompare(b.name);
+      case "planned": {
+        const at = a.plannedStartAt?.getTime() ?? Number.POSITIVE_INFINITY;
+        const bt = b.plannedStartAt?.getTime() ?? Number.POSITIVE_INFINITY;
+        return at - bt;
+      }
+      case "started": {
+        // Most-recently-started first; missions never started fall to bottom.
+        const at = a.startedAt?.getTime() ?? -Infinity;
+        const bt = b.startedAt?.getTime() ?? -Infinity;
+        return bt - at;
+      }
+      case "recent":
+      default:
+        return b.updatedAt.getTime() - a.updatedAt.getTime();
+    }
+  };
+  const sorted = [...searchFiltered].sort(sortFn);
+
+  const missions = sorted; // post-filter, post-sort
   const active = missions.filter((m) => m.status === "ACTIVE");
   const planned = missions.filter((m) => m.status === "PLANNED");
   const archived = missions.filter(
     (m) => m.status === "COMPLETED" || m.status === "CANCELLED",
   );
   const paused = missions.filter((m) => m.status === "PAUSED");
+
+  const filterActive = q !== "" || status !== "all" || sort !== "recent";
+  // When a status filter is set, render a flat list of THAT bucket.
+  // Default (status === "all") preserves the grouped-by-status layout
+  // — better at-a-glance view of the whole portfolio.
+  const filteredFlatList: MissionSummary[] | null =
+    status !== "all" ? missions.filter((m) => m.status === status) : null;
 
   const sansFont =
     'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif';
@@ -62,7 +166,7 @@ export default async function MissionsPage() {
       className="mx-auto max-w-screen-2xl px-8 py-8"
       style={{ fontFamily: sansFont }}
     >
-      <header className="mb-8 flex flex-col gap-4 border-b border-white/[0.06] pb-6 sm:flex-row sm:items-end sm:justify-between">
+      <header className="mb-6 flex flex-col gap-4 border-b border-white/[0.06] pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/[0.08] px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-emerald-300 ring-1 ring-inset ring-emerald-500/20">
             <Rocket className="h-3 w-3" />
@@ -86,9 +190,17 @@ export default async function MissionsPage() {
         </div>
         <div className="flex shrink-0 items-center gap-3">
           <div className="flex items-center gap-1.5">
+            {/* Sprint UF52 (P1-M2) — Compliance-score KPI replaces the
+                schedule-counts-only header. Counts kept as secondary
+                so the operator still sees portfolio shape at a glance,
+                but the headline number is now the *compliance signal*
+                they actually act on. */}
+            {posture ? (
+              <ScoreStat label="Compliance" value={posture.overallScore} />
+            ) : null}
             <Stat label="Active" value={active.length} tone="emerald" />
             <Stat label="Planned" value={planned.length} tone="amber" />
-            <Stat label="Total" value={missions.length} tone="slate" />
+            <Stat label="Total" value={allMissions.length} tone="slate" />
           </div>
           <Link
             href="/dashboard/missions/new"
@@ -100,9 +212,37 @@ export default async function MissionsPage() {
         </div>
       </header>
 
-      {missions.length === 0 ? (
+      {/* Sprint UF51 (P1-M1) — Search + filter + sort toolbar.
+          GET-form so search updates the URL on submit (back/forward
+          works), no client JS needed. */}
+      {allMissions.length > 0 ? (
+        <FilterToolbar q={q} status={status} sort={sort} />
+      ) : null}
+
+      {allMissions.length === 0 ? (
         <EmptyState />
+      ) : missions.length === 0 ? (
+        <NoResultsState filterActive={filterActive} />
+      ) : filteredFlatList ? (
+        // Status-filtered: flat sorted list within that bucket.
+        <MissionGroup
+          label={
+            STATUS_FILTER_OPTIONS.find((o) => o.value === status)?.label ??
+            String(status)
+          }
+          missions={filteredFlatList}
+          tone={
+            status === "ACTIVE"
+              ? "emerald"
+              : status === "PLANNED"
+                ? "amber"
+                : status === "PAUSED"
+                  ? "orange"
+                  : "slate"
+          }
+        />
       ) : (
+        // Default: status-grouped layout.
         <>
           {active.length > 0 ? (
             <MissionGroup label="Active" missions={active} tone="emerald" />
@@ -391,6 +531,166 @@ function ProgressBar({ value }: { value: number }) {
         aria-valuemin={0}
         aria-valuemax={100}
       />
+    </div>
+  );
+}
+
+/**
+ * Sprint UF51 (P1-M1) — search/filter/sort toolbar.
+ *
+ * Pure GET-form so URL updates on submit and the server re-renders
+ * with the new filter state. No client JS required. Keeps the
+ * existing filter pills clickable as plain Link <a>s.
+ */
+function FilterToolbar({
+  q,
+  status,
+  sort,
+}: {
+  q: string;
+  status: StatusFilter;
+  sort: SortKey;
+}) {
+  // Helper for building filter-pill hrefs that preserve OTHER params.
+  const hrefWith = (next: {
+    q?: string;
+    status?: StatusFilter;
+    sort?: SortKey;
+  }): string => {
+    const params = new URLSearchParams();
+    const finalQ = next.q !== undefined ? next.q : q;
+    const finalStatus = next.status !== undefined ? next.status : status;
+    const finalSort = next.sort !== undefined ? next.sort : sort;
+    if (finalQ) params.set("q", finalQ);
+    if (finalStatus !== "all") params.set("status", finalStatus);
+    if (finalSort !== "recent") params.set("sort", finalSort);
+    const qs = params.toString();
+    return qs ? `/dashboard/missions?${qs}` : "/dashboard/missions";
+  };
+
+  return (
+    <section className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <form
+        action="/dashboard/missions"
+        method="get"
+        className="relative flex min-w-0 flex-1 items-center"
+      >
+        <Search
+          className="pointer-events-none absolute left-3 h-3.5 w-3.5 text-slate-500"
+          strokeWidth={2}
+        />
+        <input
+          type="search"
+          name="q"
+          defaultValue={q}
+          placeholder="Search by name, reference, or end-user…"
+          className="w-full max-w-md rounded-lg border border-white/[0.06] bg-white/[0.02] py-1.5 pl-9 pr-9 text-[12.5px] text-slate-200 placeholder:text-slate-500 focus:border-emerald-500/40 focus:outline-none focus:ring-1 focus:ring-emerald-500/40"
+          aria-label="Search missions"
+        />
+        {/* Hidden inputs preserve the other filter state on submit. */}
+        {status !== "all" ? (
+          <input type="hidden" name="status" value={status} />
+        ) : null}
+        {sort !== "recent" ? (
+          <input type="hidden" name="sort" value={sort} />
+        ) : null}
+        {q ? (
+          <Link
+            href={hrefWith({ q: "" })}
+            className="absolute right-2 inline-flex h-5 w-5 items-center justify-center rounded text-slate-400 hover:bg-white/[0.06] hover:text-slate-200"
+            aria-label="Clear search"
+          >
+            <X className="h-3 w-3" />
+          </Link>
+        ) : null}
+      </form>
+
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Status pills */}
+        <nav className="flex items-center gap-1 rounded-lg border border-white/[0.06] bg-white/[0.02] p-0.5">
+          {STATUS_FILTER_OPTIONS.map((opt) => {
+            const isActive = status === opt.value;
+            return (
+              <Link
+                key={opt.value}
+                href={hrefWith({ status: opt.value })}
+                className={`rounded-md px-2.5 py-1 text-[11.5px] font-medium transition ${
+                  isActive
+                    ? "bg-white/[0.06] text-slate-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                    : "text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                {opt.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Sort dropdown — submits as the parent form's `sort` field.
+            SortSelect is a tiny client component since RSC can't carry
+            the onChange event handler that auto-submits on change. */}
+        <form action="/dashboard/missions" method="get" className="flex">
+          {q ? <input type="hidden" name="q" value={q} /> : null}
+          {status !== "all" ? (
+            <input type="hidden" name="status" value={status} />
+          ) : null}
+          <SortSelect defaultValue={sort} options={[...SORT_OPTIONS]} />
+        </form>
+      </div>
+    </section>
+  );
+}
+
+function NoResultsState({ filterActive }: { filterActive: boolean }) {
+  return (
+    <div className="rounded-2xl border border-dashed border-white/[0.08] bg-white/[0.015] px-6 py-10 text-center">
+      <p className="text-[13px] font-medium text-slate-200">
+        No missions match these filters.
+      </p>
+      <p className="mt-1 text-[12px] text-slate-500">
+        {filterActive
+          ? "Adjust the search, status, or sort above — or clear them to see your full portfolio."
+          : "Try a different search."}
+      </p>
+      {filterActive ? (
+        <Link
+          href="/dashboard/missions"
+          className="mt-4 inline-flex items-center gap-1 rounded-lg border border-white/[0.08] bg-white/[0.025] px-3 py-1.5 text-[12px] font-medium text-slate-200 transition hover:border-white/[0.14] hover:bg-white/[0.05]"
+        >
+          <X className="h-3 w-3" />
+          Clear filters
+        </Link>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * Sprint UF52 (P1-M2) — Compliance-score KPI tile.
+ * Visually distinct from the count-Stat tiles so the operator's eye
+ * lands on the real signal first. Color tier: ≥80 emerald, ≥60 amber,
+ * <60 rose — matches the rest of the platform's score grading.
+ */
+function ScoreStat({ label, value }: { label: string; value: number }) {
+  const accent =
+    value >= 80
+      ? "text-emerald-300"
+      : value >= 60
+        ? "text-amber-300"
+        : "text-rose-300";
+  return (
+    <div className="flex min-w-[80px] flex-col items-end rounded-lg border border-emerald-500/15 bg-gradient-to-b from-emerald-500/[0.05] to-emerald-500/[0.012] px-3 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+      <span className="text-[9.5px] font-semibold uppercase tracking-[0.12em] text-emerald-400/70">
+        {label}
+      </span>
+      <span
+        className={`text-[18px] font-semibold tabular-nums leading-tight tracking-tight ${accent}`}
+      >
+        {value}
+        <span className="ml-0.5 text-[12px] font-medium text-slate-500">
+          /100
+        </span>
+      </span>
     </div>
   );
 }

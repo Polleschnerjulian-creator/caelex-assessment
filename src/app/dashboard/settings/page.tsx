@@ -32,6 +32,7 @@ import {
   Puzzle,
   Download,
   LockKeyhole,
+  CreditCard,
 } from "lucide-react";
 import NotificationPreferencesCard from "@/components/settings/NotificationPreferencesCard";
 import { ThemeSettingsCard } from "@/components/settings/ThemeSettingsCard";
@@ -113,6 +114,9 @@ type SectionId =
   | "mfa"
   | "passkeys"
   | "data-export"
+  // Sprint UF53 (P1-S7) — billing is a deep-link only (isLink: true);
+  // no inline section. Listed here so the NAV_ITEMS array typechecks.
+  | "billing"
   | "danger";
 
 interface NavItem {
@@ -174,6 +178,19 @@ const NAV_ITEMS: NavItem[] = [
     icon: Code2,
     isLink: true,
     href: "/dashboard/settings/widget",
+  },
+  // Sprint UF53 (P1-S7) — Billing nav entry. The page at
+  // /dashboard/settings/billing has existed since the original Stripe
+  // integration but had no nav surface — operators reached it only by
+  // typing the URL or via a Stripe email deeplink. Now it lives next
+  // to the other administrative settings (Organization, SSO, etc.).
+  {
+    id: "billing",
+    label: "Billing",
+    labelKey: "settings.billing",
+    icon: CreditCard,
+    isLink: true,
+    href: "/dashboard/settings/billing",
   },
   {
     id: "webhooks",
