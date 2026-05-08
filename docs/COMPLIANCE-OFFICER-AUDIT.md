@@ -1,6 +1,6 @@
 # Caelex Comply v2 — Compliance-Officer-Audit (Living Document)
 
-**Status:** Aktiv · **Letztes Update:** 2026-05-08 (Batch UF41-43) · **Eigentümer:** Claude + Julian
+**Status:** Aktiv · **Letztes Update:** 2026-05-08 (Batch UF44-45) · **Eigentümer:** Claude + Julian
 
 > Living document — wird nach jedem implementierten Sprint upgedated.
 > Überlebt Kontext-Kompression: alle Findings + Sprint-Mapping +
@@ -54,8 +54,8 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 | Modules-Index   | 3/10  | Brochure→Control-Panel (P1-P3)             |
 | Article-Tracker | 6/10  | Notes/Assignee/Bulk (P1-T1+T2+T3)          |
 | Documents       | 5/10  | Article-FK (P1-P4)                         |
-| Regulatory-Feed | 6/10  | UF40 closed P1-P7; Module-Filter (P1-P8)   |
-| Incidents       | 5/10  | NIS2-Dialog-Wiring (P0-A)                  |
+| Regulatory-Feed | 7/10  | UF40+UF45 closed P1-P7+P1-P8               |
+| Incidents       | 7/10  | UF28+UF44 closed P0-A+P1-H2; H1 detail TBD |
 | NCA Portal      | 6/10  | Generate-Handoff (P1-H6)                   |
 | Audit Center    | 8/10  | ZIP-Evidence-Bundling verifizieren         |
 | Audit Log       | 8/10  | CSV-Export-Pagination (P1-H3)              |
@@ -193,7 +193,7 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 | P1-P5 | "Renew" öffnet Upload-Modal cold ohne Pre-fill         | `documents/page.tsx:985-991, 889-894` | später       | ⏳                                                                                                                                                                                     |
 | P1-P6 | Documents-Pagination cap bei 50                        | `documents/page.tsx:207-228`          | später       | ⏳                                                                                                                                                                                     |
 | P1-P7 | Regulatory-Feed kein "Convert to ComplianceItem"-CTA   | `regulatory-feed/page.tsx`            | UF40         | ✅ Done (Forward-to-Inbox Button → POST /api/regulatory-feed/forward → erzeugt Notification + markiert Update als read; idempotent via entityType:"regulatory_update", entityId guard) |
-| P1-P8 | Regulatory-Feed Module-Filter deckt nur 8/14 Module ab | `regulatory-feed/page.tsx:124-133`    | später       | ⏳                                                                                                                                                                                     |
+| P1-P8 | Regulatory-Feed Module-Filter deckt nur 8/14 Module ab | `regulatory-feed/page.tsx:124-133`    | UF45         | ✅ Done (extended to 10 — added `cra` (eurlex-service tags it) + `regulatory`; now mirrors crawler MODULE_KEYWORDS)                                                                    |
 
 ### Daily-Driver
 
@@ -208,14 +208,14 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ### Hot-Path
 
-| ID    | Was                                                        | File:Line                       | Sprint   | Status                                                                                            |
-| ----- | ---------------------------------------------------------- | ------------------------------- | -------- | ------------------------------------------------------------------------------------------------- |
-| P1-H1 | Keine `incidents/[id]/page.tsx` (nur Listing)              | Filesystem                      | später   | ⏳                                                                                                |
-| P1-H2 | Incidents-Page: kein Status-Filter trotz 6 Workflow-States | `incidents/page.tsx:139-146`    | später   | ⏳                                                                                                |
-| P1-H3 | CSV-Export Audit-Log nur loaded rows (silent footgun)      | `AuditLogClient.tsx:195-235`    | später   | ⏳                                                                                                |
-| P1-H4 | Audit-Pack ZIP Evidence-Bundling unverifiziert             | `audit-center/page.tsx:288-290` | UF35 V-2 | ✅ Verified (R2-stream evidence/regulation/filename in /api/audit-center/export route.ts:155-184) |
-| P1-H5 | NCA Portal kein Inline-Reply                               | `nca-portal/page.tsx:339-388`   | später   | ⏳                                                                                                |
-| P1-H6 | Generate ↔ NCA-Portal-Handoff fehlt                        | Cross-page                      | später   | ⏳                                                                                                |
+| ID    | Was                                                        | File:Line                       | Sprint   | Status                                                                                                          |
+| ----- | ---------------------------------------------------------- | ------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------- |
+| P1-H1 | Keine `incidents/[id]/page.tsx` (nur Listing)              | Filesystem                      | später   | ⏳                                                                                                              |
+| P1-H2 | Incidents-Page: kein Status-Filter trotz 6 Workflow-States | `incidents/page.tsx:139-146`    | UF44     | ✅ Done (workflow-state filter row in sidebar; API `workflowState` query param; Reported→Closed pipeline order) |
+| P1-H3 | CSV-Export Audit-Log nur loaded rows (silent footgun)      | `AuditLogClient.tsx:195-235`    | später   | ⏳                                                                                                              |
+| P1-H4 | Audit-Pack ZIP Evidence-Bundling unverifiziert             | `audit-center/page.tsx:288-290` | UF35 V-2 | ✅ Verified (R2-stream evidence/regulation/filename in /api/audit-center/export route.ts:155-184)               |
+| P1-H5 | NCA Portal kein Inline-Reply                               | `nca-portal/page.tsx:339-388`   | später   | ⏳                                                                                                              |
+| P1-H6 | Generate ↔ NCA-Portal-Handoff fehlt                        | Cross-page                      | später   | ⏳                                                                                                              |
 
 ### Side-Surfaces
 
@@ -319,6 +319,8 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 | **UF41**    | P1-D4 — Notifications severity + category filters                                 | ✅ Done (URL-mirrored dropdowns; server-resolved category→type)           |
 | **UF42**    | P1-T8 — Tracker `expandedArticles` regression on regulation switch                | ✅ Done (useEffect resets all 3 selection Sets on regulation change)      |
 | **UF43**    | P1-S4 — Network engagement hardcoded counts                                       | ✅ Done (use `eng._count.{dataRooms,attestations}` from API)              |
+| **UF44**    | P1-H2 — Incidents page workflow-state filter                                      | ✅ Done (sidebar row + API `workflowState` query param)                   |
+| **UF45**    | P1-P8 — Regulatory-Feed module filter coverage (added `cra` + `regulatory`)       | ✅ Done (mirrors eurlex-service MODULE_KEYWORDS)                          |
 | **(later)** | P0-F (full) — Onboarding Bulk-Spacecraft-Import + CelesTrak-Pull                  | ⏳ pending (escape hatch live in UF38; full impl deferred)                |
 | **(later)** | P1-S6 — Holiday/Delegate-Mode (Settings)                                          | ⏳ pending                                                                |
 | **(later)** | P2 Polish-Bundle Rest (P2-2, P2-7, P2-13, P2-17, P2-18, P2-20)                    | ⏳ pending (deferred — bigger or contested)                               |
