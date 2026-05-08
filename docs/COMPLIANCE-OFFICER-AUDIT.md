@@ -1,6 +1,6 @@
 # Caelex Comply v2 — Compliance-Officer-Audit (Living Document)
 
-**Status:** Aktiv · **Letztes Update:** 2026-05-08 (Batch UF46-50) · **Eigentümer:** Claude + Julian
+**Status:** Aktiv · **Letztes Update:** 2026-05-08 (Batch UF51-53) · **Eigentümer:** Claude + Julian
 
 > Living document — wird nach jedem implementierten Sprint upgedated.
 > Überlebt Kontext-Kompression: alle Findings + Sprint-Mapping +
@@ -45,7 +45,7 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 | Proposals       | 6/10  | 50-Cap (Pending) Pagination                     |
 | Notifications   | 6/10  | UF41 added severity + category filters          |
 | Astra V2        | 5/10  | Scratchpad-Loss-Warning, Archive-Confirm        |
-| Missions-Liste  | 3/10  | Search/Filter/Compliance-Score (P1-M1+M2)       |
+| Missions-Liste  | 7/10  | UF51+UF52 closed P1-M1+M2; M3-9 deferred        |
 | Mission-Detail  | 6/10  | Spacecraft-Detail-Page (P0-D)                   |
 | Mission Control | ?/10  | MissionControlView ungeprüft                    |
 | Ephemeris       | 7/10  | Pre-Launch-Sats unsichtbar (P1-M7)              |
@@ -64,7 +64,7 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 | Trade           | 6/10  | UF39 verified Wave A + C live; nicht stub       |
 | Digital Twin    | 7/10  | Optimizer-Cross-Link (P1-S8)                    |
 | Optimizer       | 5/10  | Auto-Profile (P1-S9)                            |
-| Settings        | 6/10  | Holiday/Delegate (P1-S6)                        |
+| Settings        | 7/10  | UF53 closed billing nav; Holiday (P1-S6) TBD    |
 | Onboarding      | 6/10  | UF38: cap 50 + escape hatch; full P0-F TBD      |
 | Timeline        | 3/10  | Hardcoded Phases + Dead Buttons (P0-G)          |
 
@@ -170,17 +170,17 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ### Missions-Domäne
 
-| ID    | Was                                                              | File:Line                          | Sprint | Status |
-| ----- | ---------------------------------------------------------------- | ---------------------------------- | ------ | ------ |
-| P1-M1 | Missions-Liste hat kein Search/Filter/Sort                       | `missions/page.tsx:60-127`         | später | ⏳     |
-| P1-M2 | Header-KPIs sind Counts, kein Compliance-Score                   | `missions/page.tsx:88-92`          | später | ⏳     |
-| P1-M3 | Kein EU-Space-Act-Article-Status pro Mission                     | `missions/[id]/page.tsx:155-176`   | später | ⏳     |
-| P1-M4 | StatsRow misst `roadmapProgressPct` (Schedule!) statt Compliance | `missions/[id]/page.tsx:454-527`   | später | ⏳     |
-| P1-M5 | Kein Jurisdictional View pro Mission                             | `missions/[id]/page.tsx:155-176`   | später | ⏳     |
-| P1-M6 | Kein Decommissioning-Workflow (nur Status-Toggle)                | Mission-Detail                     | später | ⏳     |
-| P1-M7 | Pre-Launch-Sats unsichtbar in Ephemeris (no NORAD)               | `ephemeris/page.tsx:43-46`         | später | ⏳     |
-| P1-M8 | `primaryEndUserCountryCode` nur Pattern, keine ISO-3166-Liste    | `MissionDetailActions.tsx:561-572` | später | ⏳     |
-| P1-M9 | `authorityRefs` silently `slice(0,50)` ohne Warning              | `MissionDetailActions.tsx:485-491` | später | ⏳     |
+| ID    | Was                                                              | File:Line                          | Sprint | Status                                                                                                                |
+| ----- | ---------------------------------------------------------------- | ---------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------- |
+| P1-M1 | Missions-Liste hat kein Search/Filter/Sort                       | `missions/page.tsx:60-127`         | UF51   | ✅ Done (URL-param `?q=`, `?status=`, `?sort=`; SortSelect client island; flat or grouped layout depending on filter) |
+| P1-M2 | Header-KPIs sind Counts, kein Compliance-Score                   | `missions/page.tsx:88-92`          | UF52   | ✅ Done (ScoreStat tile pulls `getPostureForUser().overallScore`; tier-coded emerald/amber/rose)                      |
+| P1-M3 | Kein EU-Space-Act-Article-Status pro Mission                     | `missions/[id]/page.tsx:155-176`   | später | ⏳                                                                                                                    |
+| P1-M4 | StatsRow misst `roadmapProgressPct` (Schedule!) statt Compliance | `missions/[id]/page.tsx:454-527`   | später | ⏳                                                                                                                    |
+| P1-M5 | Kein Jurisdictional View pro Mission                             | `missions/[id]/page.tsx:155-176`   | später | ⏳                                                                                                                    |
+| P1-M6 | Kein Decommissioning-Workflow (nur Status-Toggle)                | Mission-Detail                     | später | ⏳                                                                                                                    |
+| P1-M7 | Pre-Launch-Sats unsichtbar in Ephemeris (no NORAD)               | `ephemeris/page.tsx:43-46`         | später | ⏳                                                                                                                    |
+| P1-M8 | `primaryEndUserCountryCode` nur Pattern, keine ISO-3166-Liste    | `MissionDetailActions.tsx:561-572` | später | ⏳                                                                                                                    |
+| P1-M9 | `authorityRefs` silently `slice(0,50)` ohne Warning              | `MissionDetailActions.tsx:485-491` | später | ⏳                                                                                                                    |
 
 ### Posture / Modules / Documents / Feed
 
@@ -227,7 +227,7 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 | P1-S4  | Network `dataRoomCount: 0`/`attestationCount: 0` hardcoded    | `network/page.tsx:479-480`  | UF43   | ✅ Done (read from `eng._count.{dataRooms,attestations}` — Prisma include was already there)            |
 | P1-S5  | Network Activity-Feed nicht pro Stakeholder gefiltert         | `network/page.tsx:501-512`  | später | ⏳                                                                                                      |
 | P1-S6  | Settings: kein Holiday/Delegate-Mode                          | Settings allgemein          | später | ⏳                                                                                                      |
-| P1-S7  | Settings: Billing-Folder ohne Nav-Eintrag (toter Pfad)        | `settings/page.tsx:128-239` | später | ⏳                                                                                                      |
+| P1-S7  | Settings: Billing-Folder ohne Nav-Eintrag (toter Pfad)        | `settings/page.tsx:128-239` | UF53   | ✅ Done (Billing nav entry with CreditCard icon; deep-links to /dashboard/settings/billing)             |
 | P1-S8  | Digital Twin ↔ Optimizer keine Cross-Links                    | Beide Pages                 | später | ⏳                                                                                                      |
 | P1-S9  | Optimizer: kein Auto-Profile vom Onboarding                   | `optimizer/page.tsx:55-60`  | später | ⏳                                                                                                      |
 | P1-S10 | Optimizer: kein "Save Comparison" / "Generate Migration Plan" | Optimizer                   | später | ⏳                                                                                                      |
@@ -326,6 +326,9 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 | **UF48**    | P1-D3 — `clearedToday` timezone-aware (Org.timezone, default Berlin)              | ✅ Done (date-fns-tz fromZonedTime/toZonedTime; resolveUserTimezone helper) |
 | **UF49**    | P1-T7 verification — audit reference stale (no slice-cap-20 in current code)      | ⚠️ Closed not-reproducible until next audit                                 |
 | **UF50**    | P1-S3 — Sentinel polling pauses on document.hidden                                | ✅ Done (visibilitychange listener; immediate refetch on visible)           |
+| **UF51**    | P1-M1 — Missions list search/filter/sort                                          | ✅ Done (URL-param driven + SortSelect client island)                       |
+| **UF52**    | P1-M2 — Missions header compliance-score KPI                                      | ✅ Done (getPostureForUser().overallScore; tier-coded color)                |
+| **UF53**    | P1-S7 — Settings billing nav entry                                                | ✅ Done (CreditCard nav item; deep-link to existing /settings/billing page) |
 | **(later)** | P0-F (full) — Onboarding Bulk-Spacecraft-Import + CelesTrak-Pull                  | ⏳ pending (escape hatch live in UF38; full impl deferred)                  |
 | **(later)** | P1-S6 — Holiday/Delegate-Mode (Settings)                                          | ⏳ pending                                                                  |
 | **(later)** | P2 Polish-Bundle Rest (P2-2, P2-7, P2-13, P2-17, P2-18, P2-20)                    | ⏳ pending (deferred — bigger or contested)                                 |
