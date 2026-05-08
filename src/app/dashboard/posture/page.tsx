@@ -103,7 +103,11 @@ export default async function PosturePage() {
         actions={<StatusPill tone="emerald">Live</StatusPill>}
       />
 
-      {/* KPI strip */}
+      {/* Sprint UF25 — KPI strip, all 5 tiles now clickable. Audit
+          P2-1 found the header copy "Click any tile to drill into"
+          was a broken promise: 3/5 tiles had no href. Each missing
+          target maps to a Today-inbox filter so the user lands on
+          the relevant subset of items. */}
       <section className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <Kpi
           label="Overall score"
@@ -111,6 +115,10 @@ export default async function PosturePage() {
           subline={`${posture.attestedItems} of ${posture.countableItems} attested`}
           tone="emerald"
           icon={Gauge}
+          // Score has no specific filter-target — but linking to the
+          // unfiltered Today inbox is still useful: the user wanted
+          // to "drill into the score" → see all items contributing.
+          href="/dashboard/today"
           sparkline={scoreSeries}
           sparklineDirection="up"
         />
@@ -140,6 +148,9 @@ export default async function PosturePage() {
           subline="Deferred"
           tone="slate"
           icon={Clock}
+          // Today inbox supports a status filter; "snoozed" items
+          // surface in the Watching bucket. Pre-filter the URL.
+          href="/dashboard/today?status=snoozed"
           sparkline={snoozesSeries}
           sparklineNeutral
         />
@@ -148,6 +159,9 @@ export default async function PosturePage() {
           value={posture.workflow.attestedThisWeek.toString()}
           subline="This week"
           tone="emerald"
+          // Drill into items attested in the last 7d via the
+          // existing attested-status filter on Today.
+          href="/dashboard/today?status=ATTESTED"
           icon={CheckCircle2}
         />
       </section>
