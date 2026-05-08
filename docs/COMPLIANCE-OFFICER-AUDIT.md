@@ -1,6 +1,6 @@
 # Caelex Comply v2 — Compliance-Officer-Audit (Living Document)
 
-**Status:** Aktiv · **Letztes Update:** 2026-05-08 (Batch UF27-32) · **Eigentümer:** Claude + Julian
+**Status:** Aktiv · **Letztes Update:** 2026-05-08 (Batch UF33-35 + V-2 verified) · **Eigentümer:** Claude + Julian
 
 > Living document — wird nach jedem implementierten Sprint upgedated.
 > Überlebt Kontext-Kompression: alle Findings + Sprint-Mapping +
@@ -112,8 +112,8 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
   Compliance-State, keine Decommissioning-Plan pro Hardware. Bei Konstellationen
   kritisch.
 - **Reproduzieren:** Mission-Detail → Spacecraft-Liste → Klick auf Sat-Name
-- **Sprint:** UF32 (separate, größerer Scope)
-- **Status:** ⏳ Pending
+- **Sprint:** UF33
+- **Status:** ✅ Done (commit 2eec01c5 — server component with org-scope, mission assignments, debris assessments, roadmap card)
 
 ### P0-E — Trade-Module Counterparties + Operations sind Stubs
 
@@ -149,16 +149,16 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ### Article-Tracker (operative Hauptfläche)
 
-| ID    | Was                                                             | File:Line                    | Sprint             | Status                                         |
-| ----- | --------------------------------------------------------------- | ---------------------------- | ------------------ | ---------------------------------------------- |
-| P1-T1 | Keine Notes inline (Schema hat sie, UI rendert nicht)           | `tracker/page.tsx:86-89`     | UF32               | ✅ Done (commit 0a5ce832 — ArticleNotesEditor) |
-| P1-T2 | Kein Assignee/Due-Date/Priority pro Article                     | `tracker/page.tsx:1328-1456` | später             | ⏳                                             |
-| P1-T3 | Keine Bulk-Actions (51 NIS2-Items = 51 Klicks)                  | `tracker/page.tsx:1399-1435` | UF31               | ⏳                                             |
-| P1-T4 | NIS2/Cyber/Debris Sub-Pages haben keinen Article-Detail         | `tracker/page.tsx:1640-1781` | später             | ⏳                                             |
-| P1-T5 | Light-Mode-Kontrast-Bug (`rgba(255,255,255,0.96)` ohne theme)   | `tracker/page.tsx:599-632`   | später             | ⏳                                             |
-| P1-T6 | V1↔V2 Vocabulary-Mismatch (Tracker-Statuses ≠ Posture-Statuses) | `tracker/page.tsx:237-249`   | später (X-1 below) | ⏳                                             |
-| P1-T7 | Action-Items-Cap bei 20 ohne Pagination                         | `tracker/page.tsx:849`       | später             | ⏳                                             |
-| P1-T8 | `expandedArticles` persistiert über Regulation-Switch           | `tracker/page.tsx:383-385`   | später             | ⏳                                             |
+| ID    | Was                                                             | File:Line                    | Sprint             | Status                                                                 |
+| ----- | --------------------------------------------------------------- | ---------------------------- | ------------------ | ---------------------------------------------------------------------- |
+| P1-T1 | Keine Notes inline (Schema hat sie, UI rendert nicht)           | `tracker/page.tsx:86-89`     | UF32               | ✅ Done (commit 0a5ce832 — ArticleNotesEditor)                         |
+| P1-T2 | Kein Assignee/Due-Date/Priority pro Article                     | `tracker/page.tsx:1328-1456` | später             | ⏳                                                                     |
+| P1-T3 | Keine Bulk-Actions (51 NIS2-Items = 51 Klicks)                  | `tracker/page.tsx:1399-1435` | UF34               | ✅ Done (commit c599dea4 — checkbox + select-all + BulkActionsToolbar) |
+| P1-T4 | NIS2/Cyber/Debris Sub-Pages haben keinen Article-Detail         | `tracker/page.tsx:1640-1781` | später             | ⏳                                                                     |
+| P1-T5 | Light-Mode-Kontrast-Bug (`rgba(255,255,255,0.96)` ohne theme)   | `tracker/page.tsx:599-632`   | später             | ⏳                                                                     |
+| P1-T6 | V1↔V2 Vocabulary-Mismatch (Tracker-Statuses ≠ Posture-Statuses) | `tracker/page.tsx:237-249`   | später (X-1 below) | ⏳                                                                     |
+| P1-T7 | Action-Items-Cap bei 20 ohne Pagination                         | `tracker/page.tsx:849`       | später             | ⏳                                                                     |
+| P1-T8 | `expandedArticles` persistiert über Regulation-Switch           | `tracker/page.tsx:383-385`   | später             | ⏳                                                                     |
 
 ### Missions-Domäne
 
@@ -176,16 +176,16 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ### Posture / Modules / Documents / Feed
 
-| ID    | Was                                                    | File:Line                             | Sprint       | Status                    |
-| ----- | ------------------------------------------------------ | ------------------------------------- | ------------ | ------------------------- |
-| P1-P1 | Kein Top-Risks-Card auf Posture                        | `posture/page.tsx:106-167`            | später       | ⏳                        |
-| P1-P2 | V1↔V2 Score-Diskrepanz möglich, kein Reconciliation    | `posture/page.tsx:266-329`            | später (X-1) | ⏳                        |
-| P1-P3 | Modules-Index ist Brochure (keine Live-Daten)          | `modules/page.tsx:173-192, 247-277`   | UF31         | ✅ Done (commit 325c0f68) |
-| P1-P4 | Documents `regulatoryRef` Plain-Text statt Article-FK  | `documents/page.tsx:781-791, 635-639` | später       | ⏳                        |
-| P1-P5 | "Renew" öffnet Upload-Modal cold ohne Pre-fill         | `documents/page.tsx:985-991, 889-894` | später       | ⏳                        |
-| P1-P6 | Documents-Pagination cap bei 50                        | `documents/page.tsx:207-228`          | später       | ⏳                        |
-| P1-P7 | Regulatory-Feed kein "Convert to ComplianceItem"-CTA   | `regulatory-feed/page.tsx`            | später       | ⏳                        |
-| P1-P8 | Regulatory-Feed Module-Filter deckt nur 8/14 Module ab | `regulatory-feed/page.tsx:124-133`    | später       | ⏳                        |
+| ID    | Was                                                    | File:Line                             | Sprint       | Status                                                                          |
+| ----- | ------------------------------------------------------ | ------------------------------------- | ------------ | ------------------------------------------------------------------------------- |
+| P1-P1 | Kein Top-Risks-Card auf Posture                        | `posture/page.tsx:106-167`            | UF35         | ✅ Done (commit ac0de037 — Top-5 urgent items inline, empty-state für 0 urgent) |
+| P1-P2 | V1↔V2 Score-Diskrepanz möglich, kein Reconciliation    | `posture/page.tsx:266-329`            | später (X-1) | ⏳                                                                              |
+| P1-P3 | Modules-Index ist Brochure (keine Live-Daten)          | `modules/page.tsx:173-192, 247-277`   | UF31         | ✅ Done (commit 325c0f68)                                                       |
+| P1-P4 | Documents `regulatoryRef` Plain-Text statt Article-FK  | `documents/page.tsx:781-791, 635-639` | später       | ⏳                                                                              |
+| P1-P5 | "Renew" öffnet Upload-Modal cold ohne Pre-fill         | `documents/page.tsx:985-991, 889-894` | später       | ⏳                                                                              |
+| P1-P6 | Documents-Pagination cap bei 50                        | `documents/page.tsx:207-228`          | später       | ⏳                                                                              |
+| P1-P7 | Regulatory-Feed kein "Convert to ComplianceItem"-CTA   | `regulatory-feed/page.tsx`            | später       | ⏳                                                                              |
+| P1-P8 | Regulatory-Feed Module-Filter deckt nur 8/14 Module ab | `regulatory-feed/page.tsx:124-133`    | später       | ⏳                                                                              |
 
 ### Daily-Driver
 
@@ -200,14 +200,14 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ### Hot-Path
 
-| ID    | Was                                                        | File:Line                       | Sprint           | Status |
-| ----- | ---------------------------------------------------------- | ------------------------------- | ---------------- | ------ |
-| P1-H1 | Keine `incidents/[id]/page.tsx` (nur Listing)              | Filesystem                      | später           | ⏳     |
-| P1-H2 | Incidents-Page: kein Status-Filter trotz 6 Workflow-States | `incidents/page.tsx:139-146`    | später           | ⏳     |
-| P1-H3 | CSV-Export Audit-Log nur loaded rows (silent footgun)      | `AuditLogClient.tsx:195-235`    | später           | ⏳     |
-| P1-H4 | Audit-Pack ZIP Evidence-Bundling unverifiziert             | `audit-center/page.tsx:288-290` | **VERIFIKATION** | ⏳     |
-| P1-H5 | NCA Portal kein Inline-Reply                               | `nca-portal/page.tsx:339-388`   | später           | ⏳     |
-| P1-H6 | Generate ↔ NCA-Portal-Handoff fehlt                        | Cross-page                      | später           | ⏳     |
+| ID    | Was                                                        | File:Line                       | Sprint   | Status                                                                                            |
+| ----- | ---------------------------------------------------------- | ------------------------------- | -------- | ------------------------------------------------------------------------------------------------- |
+| P1-H1 | Keine `incidents/[id]/page.tsx` (nur Listing)              | Filesystem                      | später   | ⏳                                                                                                |
+| P1-H2 | Incidents-Page: kein Status-Filter trotz 6 Workflow-States | `incidents/page.tsx:139-146`    | später   | ⏳                                                                                                |
+| P1-H3 | CSV-Export Audit-Log nur loaded rows (silent footgun)      | `AuditLogClient.tsx:195-235`    | später   | ⏳                                                                                                |
+| P1-H4 | Audit-Pack ZIP Evidence-Bundling unverifiziert             | `audit-center/page.tsx:288-290` | UF35 V-2 | ✅ Verified (R2-stream evidence/regulation/filename in /api/audit-center/export route.ts:155-184) |
+| P1-H5 | NCA Portal kein Inline-Reply                               | `nca-portal/page.tsx:339-388`   | später   | ⏳                                                                                                |
+| P1-H6 | Generate ↔ NCA-Portal-Handoff fehlt                        | Cross-page                      | später   | ⏳                                                                                                |
 
 ### Side-Surfaces
 
@@ -300,8 +300,10 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 | **UF30**     | P0-G — Timeline-Page Cleanup                                      | ✅ Done (commit 4aee6ea0)                                      |
 | **UF31**     | P1-P3 — Modules-Index Live-Daten                                  | ✅ Done (commit 325c0f68)                                      |
 | **UF32**     | P1-T1 — Tracker Notes inline (P1-T3 Bulk deferred to UF33)        | ✅ Done (commit 0a5ce832, Notes only — Bulk separated to UF33) |
-| **UF33**     | P0-D — Spacecraft-Detail-Page (separat, größerer Scope)           | ⏳ pending                                                     |
-| **UF34**     | P0-E — Trade Counterparty/Operations (oder aus Sidebar entfernen) | ⏳ pending                                                     |
+| **UF33**     | P0-D — Spacecraft-Detail-Page                                     | ✅ Done (commit 2eec01c5)                                      |
+| **UF34**     | P1-T3 — Tracker Bulk-Actions (was P0-E, retasked)                 | ✅ Done (commit c599dea4)                                      |
+| **UF35**     | P1-P1 — Posture Top-Risks-Card + V-2 verified                     | ✅ Done (commit ac0de037)                                      |
+| **UF36**     | P0-E — Trade Counterparty/Operations (oder aus Sidebar entfernen) | ⏳ pending                                                     |
 | **UF35**     | P0-F — Onboarding Bulk-Spacecraft-Import                          | ⏳ pending                                                     |
 | **UF36**     | P1-S6 — Holiday/Delegate-Mode (Settings)                          | ⏳ pending                                                     |
 | **UF37**     | P1-P7 — Regulatory-Feed "Convert to ComplianceItem"               | ⏳ pending                                                     |
