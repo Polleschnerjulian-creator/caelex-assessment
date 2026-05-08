@@ -224,6 +224,20 @@ export interface AstraUserContext {
   jurisdiction?: string;
   /** Operator type classification */
   operatorType?: string;
+  /**
+   * Sprint UF15 — User's self-described use-case persona, captured
+   * during onboarding (Sprint UF6). Drives Astra's tonality + tool
+   * suggestions:
+   *   - operator    → daily compliance workflow assistant
+   *   - consultant  → multi-client advisory tone, NCA submission help
+   *   - auditor     → read-only investigative tone, no write actions
+   *   - investor    → score/benchmark/risk-focused, no operational
+   *
+   * Optional because legacy server-side context-builders don't yet
+   * read it (it lives in client localStorage). The astra-v2 chat
+   * page reads useCase via useUseCase() and passes it through.
+   */
+  useCase?: "operator" | "consultant" | "auditor" | "investor";
   /** NIS2 entity classification */
   nis2Classification?: "essential" | "important" | "out_of_scope";
   /** Current compliance scores by module */
@@ -351,6 +365,13 @@ export interface AstraChatRequest {
   missionData?: AstraMissionData;
   /** Request streaming response via SSE */
   stream?: boolean;
+  /**
+   * Sprint UF15 — User's persona from localStorage (Sprint UF6).
+   * Optional — if missing, Astra falls back to its persona-blind
+   * default. Server validates: only the 4 known values pass, else
+   * we drop it silently (defense against client tampering).
+   */
+  useCase?: "operator" | "consultant" | "auditor" | "investor";
 }
 
 export interface AstraChatResponse {

@@ -74,9 +74,27 @@ function makeReasoningPipe(
   };
 }
 
+// Sprint UF15 — accept persona via the client. Server validates
+// against the 4 known values (defense against tampering) and falls
+// back to undefined for anything else.
+type ClientUseCase = "operator" | "consultant" | "auditor" | "investor";
+const VALID_USE_CASES: readonly ClientUseCase[] = [
+  "operator",
+  "consultant",
+  "auditor",
+  "investor",
+];
+function normalizeUseCase(input: unknown): ClientUseCase | undefined {
+  return typeof input === "string" &&
+    (VALID_USE_CASES as readonly string[]).includes(input)
+    ? (input as ClientUseCase)
+    : undefined;
+}
+
 export async function sendV2AstraMessage(
   history: V2AstraMessage[],
   userMessage: string,
+  useCaseRaw?: string,
 ): Promise<
   { ok: true; history: V2AstraMessage[] } | { ok: false; error: string }
 > {
@@ -87,10 +105,12 @@ export async function sendV2AstraMessage(
   if (!userMessage.trim()) {
     return { ok: false, error: "Message must not be empty" };
   }
+  const useCase = normalizeUseCase(useCaseRaw);
   const pipe = makeReasoningPipe(session.user.id, null);
   try {
     const updated = await runV2AstraTurn(history, userMessage.trim(), {
       onDelta: pipe.onDelta,
+      useCase, // Sprint UF15 — persona-aware system prompt.
     });
     return { ok: true, history: updated };
   } catch (err) {
@@ -111,6 +131,7 @@ export async function sendV2AstraMessage(
 export async function sendInConversation(
   conversationId: string,
   userMessage: string,
+  useCaseRaw?: string,
 ): Promise<
   { ok: true; history: V2AstraMessage[] } | { ok: false; error: string }
 > {
@@ -121,6 +142,7 @@ export async function sendInConversation(
   if (!userMessage.trim()) {
     return { ok: false, error: "Message must not be empty" };
   }
+  const useCase = normalizeUseCase(useCaseRaw);
 
   // Lazy import to keep the server-actions module thin and avoid
   // unused imports when only the ephemeral path is exercised.
@@ -135,6 +157,7 @@ export async function sendInConversation(
   try {
     const updated = await runV2AstraTurn(conv.messages, userMessage.trim(), {
       onDelta: pipe.onDelta,
+      useCase, // Sprint UF15 — persona-aware system prompt.
     });
     await appendTurn(conversationId, session.user.id, updated);
     revalidatePath("/dashboard/astra-v2");

@@ -21,6 +21,10 @@ import type {
 // Sprint 6C — EU AI Act Art. 50 disclosure surfaces.
 import { AIDisclosureBanner } from "@/components/astra-v2/AIDisclosureBanner";
 import { AIMessageFooter } from "@/components/astra-v2/AIMessageFooter";
+// Sprint UF15 — persona-aware Astra. Reads localStorage useCase
+// and forwards to the server action so Astra adjusts its tonality
+// + scope per user role (operator / consultant / auditor / investor).
+import { useUseCase } from "@/lib/use-case";
 
 /**
  * Comply V2 Astra chat UI — isolated from the legacy Astra panel.
@@ -87,6 +91,11 @@ export function AstraV2Chat({
   const [pending, setPending] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  // Sprint UF15 — persona for the system prompt. null on first
+  // render (server) + first client render until useEffect resolves.
+  // The server action also validates so a null/invalid useCase falls
+  // back to the operator-tuned default.
+  const useCase = useUseCase();
 
   // When the user clicks a different conversation in the sidebar
   // (Server Component re-renders with new initialMessages), reset
@@ -118,9 +127,15 @@ export function AstraV2Chat({
         // Persisted path: conversation lives in DB. Server loads
         // history itself so we don't have to round-trip it.
         // Ephemeral path: send the local history.
+        // Sprint UF15 — useCase forwarded to server action so the
+        // engine builds a persona-specific system prompt.
         const result = initialConversationId
-          ? await sendInConversation(initialConversationId, trimmed)
-          : await sendV2AstraMessage(history, trimmed);
+          ? await sendInConversation(
+              initialConversationId,
+              trimmed,
+              useCase ?? undefined,
+            )
+          : await sendV2AstraMessage(history, trimmed, useCase ?? undefined);
         if (result.ok) {
           setHistory(result.history);
         } else {
@@ -136,7 +151,7 @@ export function AstraV2Chat({
         setPending(false);
       }
     },
-    [history, pending, initialConversationId],
+    [history, pending, initialConversationId, useCase],
   );
 
   return (

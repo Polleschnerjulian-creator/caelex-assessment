@@ -145,6 +145,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Sprint UF15 — Validate persona. Only the 4 known values pass;
+    // anything else (mistyped, tampered, legacy) becomes undefined
+    // and Astra falls back to its persona-blind default.
+    const VALID_USE_CASES = [
+      "operator",
+      "consultant",
+      "auditor",
+      "investor",
+    ] as const;
+    const useCase =
+      body.useCase &&
+      (VALID_USE_CASES as readonly string[]).includes(body.useCase)
+        ? (body.useCase as (typeof VALID_USE_CASES)[number])
+        : undefined;
+
     // H-API5: if the caller passes a conversationId, verify it belongs
     // to this user BEFORE feeding the message into the engine. Without
     // this, a user could post into another user's conversation (the
@@ -222,6 +237,7 @@ export async function POST(request: NextRequest) {
               body.conversationId,
               pageContext,
               body.missionData,
+              useCase, // Sprint UF15 — persona forwarded to engine.
             );
 
             // Send truncation warning before metadata if message was truncated
@@ -311,6 +327,7 @@ export async function POST(request: NextRequest) {
         body.conversationId,
         pageContext,
         body.missionData,
+        useCase, // Sprint UF15 — persona forwarded to engine.
       );
 
     // ─── Log Audit Event ───

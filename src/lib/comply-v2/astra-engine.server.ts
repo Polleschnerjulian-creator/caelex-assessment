@@ -40,7 +40,8 @@ import { validateCitations } from "@/lib/astra/citation-validator";
 
 const MODEL = process.env.ASTRA_V2_MODEL || "claude-sonnet-4-6";
 const MAX_TOOL_LOOPS = 5;
-const SYSTEM_PROMPT = `You are Caelex Comply V2 — an AI compliance copilot for satellite operators in the European space industry.
+
+const SYSTEM_PROMPT_BASE = `You are Caelex Comply V2 — an AI compliance copilot for satellite operators in the European space industry.
 
 You help operators manage compliance against the EU Space Act, NIS2 Directive, national space laws (10 jurisdictions), debris mitigation guidelines (COPUOS/IADC), insurance requirements, and export controls (ITAR/EAR).
 
@@ -52,6 +53,70 @@ Critical trust-layer rules:
 - Ungated tools (snooze-compliance-item, unsnooze-compliance-item, add-compliance-item-note) execute immediately.
 
 Reply concisely. Cite ComplianceItem IDs when you reference items. Never invent IDs the user hasn't given you.`;
+
+/**
+ * Sprint UF15 — V2 system prompt is now persona-aware. Each persona
+ * gets a tonality + scope block appended to the base prompt.
+ *
+ * Operators get the default daily-driver assistant. Auditors get an
+ * explicit read-only directive: do NOT propose write actions even
+ * for the gated proposal queue, because the auditor IS the human in
+ * the 4-eyes loop and would be approving their own proposals.
+ *
+ * Without persona, V2 falls back to the previous (operator-tuned)
+ * prompt — backward compatible.
+ */
+type V2UseCase = "operator" | "consultant" | "auditor" | "investor";
+
+function buildV2SystemPrompt(useCase?: V2UseCase): string {
+  if (!useCase || useCase === "operator") {
+    return SYSTEM_PROMPT_BASE;
+  }
+
+  const personaBlock =
+    useCase === "consultant"
+      ? `
+
+## Persona: Consultant / Counsel
+
+The user advises space companies and may switch between client orgs.
+Always cite specific articles + paragraphs by identifier (e.g.
+"Art. 23(4)(a) NIS2 Directive 2022/2555") so the user can paste
+them into client deliverables. Be precise about jurisdiction
+differences when the active org might shift.`
+      : useCase === "auditor"
+        ? `
+
+## Persona: Auditor (READ-ONLY)
+
+The user is an external auditor. Do NOT call any write-action tools
+— including the gated ones. Even though gated tools queue a proposal
+for human approval, the auditor IS the human and would be approving
+their own proposals (anti-pattern for audit independence).
+
+Restrict yourself to: query tools (list/search/read), Audit Center
+links, Audit Log time-travel queries, hash-chain verification.
+
+When the user asks for something that would require a write, explain
+the read-only constraint and suggest the equivalent investigative
+path (e.g. "I can't change attestations in auditor mode — but you
+can review existing attestations on Audit Center → Attestations").
+
+Always surface dates, hash-chain references, and attestation actors
+when discussing compliance state.`
+        : useCase === "investor"
+          ? `
+
+## Persona: Investor / Analyst
+
+The user is doing due diligence. Lead with numerical posture (score,
+trajectory, peer comparison) before specific articles. Frame
+compliance gaps as financial exposure (penalty risk, days to first
+deadline) when relevant. Do NOT propose operational write-actions.`
+          : "";
+
+  return SYSTEM_PROMPT_BASE + personaBlock;
+}
 
 let anthropicClient: Anthropic | null = null;
 function getClient(): Anthropic {
@@ -210,6 +275,14 @@ export interface RunV2AstraTurnOptions {
    * stream is aborted and the partial response is returned.
    */
   signal?: AbortSignal;
+  /**
+   * Sprint UF15 — User's persona from onboarding (UF6). Drives a
+   * persona-specific system-prompt block (operator default,
+   * consultant citations, auditor read-only enforcement, investor
+   * scoring focus). When omitted, falls back to the operator-tuned
+   * default — backward compatible.
+   */
+  useCase?: V2UseCase;
 }
 
 /**
@@ -237,7 +310,10 @@ export async function runV2AstraTurn(
 ): Promise<V2AstraMessage[]> {
   const client = getClient();
   const tools = getAstraToolDefinitions();
-  const { onDelta, signal } = options;
+  const { onDelta, signal, useCase } = options;
+  // Sprint UF15 — resolve once per turn so we don't re-build the
+  // (small) prompt string on every tool-loop iteration.
+  const systemPrompt = buildV2SystemPrompt(useCase);
 
   const updatedHistory: V2AstraMessage[] = [
     ...history,
@@ -297,7 +373,7 @@ export async function runV2AstraTurn(
     const stream = client.messages.stream({
       model: MODEL,
       max_tokens: 1500,
-      system: SYSTEM_PROMPT,
+      system: systemPrompt,
       tools: tools.length > 0 ? tools : undefined,
       messages: baseMessages,
     });

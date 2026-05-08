@@ -592,6 +592,8 @@ export class AstraEngine implements IAstraEngine {
     conversationId?: string,
     pageContext?: AstraContext,
     missionData?: AstraMissionData,
+    // Sprint UF15 — persona passes through from API to system-prompt.
+    useCase?: "operator" | "consultant" | "auditor" | "investor",
   ): Promise<{
     response: AstraResponse;
     conversationId: string;
@@ -621,6 +623,11 @@ export class AstraEngine implements IAstraEngine {
       pageContext,
       missionData,
     );
+
+    // Sprint UF15 — merge persona into context for buildSystemPrompt.
+    if (useCase) {
+      userContext.useCase = useCase;
+    }
 
     // Convert history to conversation messages
     const conversationMessages: AstraConversationMessage[] = history.map(
@@ -677,6 +684,8 @@ export class AstraEngine implements IAstraEngine {
     conversationId?: string,
     pageContext?: AstraContext,
     missionData?: AstraMissionData,
+    // Sprint UF15 — persona passes through from API to system-prompt.
+    useCase?: "operator" | "consultant" | "auditor" | "investor",
   ): Promise<{
     response: AstraResponse;
     conversationId: string;
@@ -704,6 +713,12 @@ export class AstraEngine implements IAstraEngine {
       pageContext,
       missionData,
     );
+
+    // Sprint UF15 — merge persona into context BEFORE buildSystemPrompt
+    // is called. Engine itself doesn't know about useCase.
+    if (useCase) {
+      userContext.useCase = useCase;
+    }
 
     const conversationMessages: AstraConversationMessage[] = history.map(
       (h, i) => ({
