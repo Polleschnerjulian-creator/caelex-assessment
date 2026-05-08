@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { AlertTriangle, X } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { AlertTriangle, X, Rocket, ExternalLink, Loader2 } from "lucide-react";
 import { DocumentSelectorPanel } from "./DocumentSelectorPanel";
 import { DocumentPreviewPanel } from "./DocumentPreviewPanel";
 import { ContextPanel } from "./ContextPanel";
@@ -216,7 +218,40 @@ interface DocumentState {
   evidencePlaceholderCount: number;
 }
 
+// Sprint UF27 (P0-C) — Mission context loaded from ?mission=<id> URL
+// param. Shape mirrors the subset of getMissionDetail() returned by
+// /api/missions/[id] that the banner + reasoning-prompt actually use.
+//
+// Why not the full Mission type: the banner needs name + reference +
+// type + status + spacecraft summary. Anything more (assignments,
+// phases, milestones) is fetched by downstream calls when the user
+// generates a doc. Keep this client-side payload small.
+interface MissionContext {
+  id: string;
+  name: string;
+  reference: string | null;
+  missionType: string | null;
+  status: string | null;
+  programPhase: string | null;
+  primaryEndUser: string | null;
+  primaryEndUserCountryCode: string | null;
+  spacecraftCount: number;
+  primarySpacecraftName: string | null;
+  primarySpacecraftCospar: string | null;
+  primarySpacecraftNoradId: string | null;
+  primarySpacecraftOrbitType: string | null;
+}
+
 export function Generate2Page() {
+  // Sprint UF27 — read mission context from URL.
+  const searchParams = useSearchParams();
+  const missionIdParam = searchParams?.get("mission") ?? null;
+  const [missionContext, setMissionContext] = useState<MissionContext | null>(
+    null,
+  );
+  const [missionLoading, setMissionLoading] = useState(false);
+  const [missionError, setMissionError] = useState<string | null>(null);
+
   const [selectedType, setSelectedType] = useState<NCADocumentType | null>(
     null,
   );
@@ -289,6 +324,85 @@ export function Generate2Page() {
 
   // Global abort controller for cancelling the entire generation flow
   const generationAbortRef = useRef<AbortController | null>(null);
+
+  // Sprint UF27 — fetch mission context when ?mission=<id> present.
+  // Fire-and-forget pattern: success populates banner + future
+  // generation requests can include mission-aware system prompt.
+  // Failure shows a small dismissible error in the banner area —
+  // the page stays usable without mission context.
+  useEffect(() => {
+    if (!missionIdParam) {
+      setMissionContext(null);
+      return;
+    }
+    let cancelled = false;
+    setMissionLoading(true);
+    setMissionError(null);
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/missions/${encodeURIComponent(missionIdParam)}`,
+          { cache: "no-store" },
+        );
+        if (!res.ok) {
+          throw new Error(
+            res.status === 404
+              ? "Mission not found"
+              : `Failed to load mission (HTTP ${res.status})`,
+          );
+        }
+        const data = (await res.json()) as {
+          mission?: {
+            id: string;
+            name: string;
+            reference?: string | null;
+            missionType?: string | null;
+            status?: string | null;
+            programPhase?: string | null;
+            primaryEndUser?: string | null;
+            primaryEndUserCountryCode?: string | null;
+            spacecraftCount?: number;
+            primarySpacecraft?: {
+              name?: string;
+              cosparId?: string | null;
+              noradId?: string | null;
+              orbitType?: string | null;
+            } | null;
+          };
+        };
+        if (cancelled || !data.mission) return;
+        setMissionContext({
+          id: data.mission.id,
+          name: data.mission.name,
+          reference: data.mission.reference ?? null,
+          missionType: data.mission.missionType ?? null,
+          status: data.mission.status ?? null,
+          programPhase: data.mission.programPhase ?? null,
+          primaryEndUser: data.mission.primaryEndUser ?? null,
+          primaryEndUserCountryCode:
+            data.mission.primaryEndUserCountryCode ?? null,
+          spacecraftCount: data.mission.spacecraftCount ?? 0,
+          primarySpacecraftName: data.mission.primarySpacecraft?.name ?? null,
+          primarySpacecraftCospar:
+            data.mission.primarySpacecraft?.cosparId ?? null,
+          primarySpacecraftNoradId:
+            data.mission.primarySpacecraft?.noradId ?? null,
+          primarySpacecraftOrbitType:
+            data.mission.primarySpacecraft?.orbitType ?? null,
+        });
+      } catch (err) {
+        if (cancelled) return;
+        setMissionError(
+          err instanceof Error ? err.message : "Failed to load mission",
+        );
+      } finally {
+        if (!cancelled) setMissionLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [missionIdParam]);
 
   // Load readiness scores and existing documents
   useEffect(() => {
@@ -1410,6 +1524,26 @@ export function Generate2Page() {
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-slate-200 dark:bg-none dark:bg-transparent">
+      {/* Sprint UF27 (P0-C) — Mission Context Banner.
+          Surfaces when arriving via /dashboard/generate?mission=<id>
+          (i.e. via the in-context Generate-report button on Mission
+          detail). Tells the operator which mission they're generating
+          docs for, with a one-click jump-back. Pre-loaded mission
+          metadata (status, program phase, primary spacecraft) is
+          available to downstream generation calls via
+          `missionContext` state — future enhancement: pass to
+          /api/generate2/* request body so the system prompt includes
+          mission-specific facts. */}
+      <MissionContextBanner
+        mission={missionContext}
+        loading={missionLoading}
+        error={missionError}
+        onDismiss={() => {
+          setMissionContext(null);
+          setMissionError(null);
+        }}
+      />
+
       {/* H-4: Save failure warning banner */}
       {saveError && (
         <div
@@ -1553,6 +1687,147 @@ export function Generate2Page() {
           />
         </aside>
       </div>
+    </div>
+  );
+}
+
+// ─── Sprint UF27 (P0-C) — Mission Context Banner ────────────────────────
+//
+// Renders only when `?mission=<id>` was on the URL when the page
+// mounted. Three states:
+//
+//   - loading: pulsing skeleton while we fetch the mission
+//   - error:   rose banner with retry hint + dismiss
+//   - loaded:  emerald "Generating in context of: <Mission Name>" card
+//              with jump-back link, primary spacecraft summary, status
+//              + phase chips
+//
+// Why a separate component vs. inline JSX: keeps the (already 1700-line)
+// page render function from growing further; future enhancement points
+// are clearly scoped — e.g. when we add "Suggested for this mission"
+// doc-type pre-selection, the logic lands here, not in the orchestrator.
+
+function MissionContextBanner({
+  mission,
+  loading,
+  error,
+  onDismiss,
+}: {
+  mission: MissionContext | null;
+  loading: boolean;
+  error: string | null;
+  onDismiss: () => void;
+}) {
+  if (loading) {
+    return (
+      <div
+        className="mx-3 mt-3 flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.04] px-4 py-3"
+        role="status"
+        aria-live="polite"
+      >
+        <Loader2 size={16} className="animate-spin text-emerald-500 shrink-0" />
+        <p className="text-sm text-emerald-700 dark:text-emerald-300">
+          Loading mission context…
+        </p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        className="mx-3 mt-3 flex items-start gap-3 rounded-xl border border-rose-500/20 bg-rose-500/[0.04] px-4 py-3"
+        role="alert"
+      >
+        <AlertTriangle size={16} className="mt-0.5 text-rose-500 shrink-0" />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-rose-700 dark:text-rose-300">
+            Mission context unavailable
+          </p>
+          <p className="mt-0.5 text-xs text-rose-600/70 dark:text-rose-400/70">
+            {error}. You can still generate documents — they just won&apos;t be
+            pre-tied to this mission.
+          </p>
+        </div>
+        <button
+          onClick={onDismiss}
+          aria-label="Dismiss mission-context error"
+          className="rounded-md p-1 text-rose-500 transition hover:bg-rose-500/10"
+        >
+          <X size={14} />
+        </button>
+      </div>
+    );
+  }
+
+  if (!mission) return null;
+
+  // Format status + phase as a single hint line (e.g. "OPERATIONAL · Phase E").
+  const statusLabel = mission.status?.replace(/_/g, " ").toLowerCase();
+  const phaseLabel = mission.programPhase?.replace(/_/g, " ").toLowerCase();
+  const stageLine = [statusLabel, phaseLabel].filter(Boolean).join(" · ");
+
+  // Spacecraft summary line: name + COSPAR + orbit, or fallback.
+  const spacecraftLine = mission.primarySpacecraftName
+    ? [
+        mission.primarySpacecraftName,
+        mission.primarySpacecraftCospar,
+        mission.primarySpacecraftOrbitType,
+        mission.spacecraftCount > 1
+          ? `+${mission.spacecraftCount - 1} more`
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" · ")
+    : mission.spacecraftCount === 0
+      ? "No spacecraft assigned yet"
+      : `${mission.spacecraftCount} spacecraft`;
+
+  return (
+    <div
+      className="mx-3 mt-3 flex items-start gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.06] px-4 py-3"
+      role="status"
+    >
+      <span
+        className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-emerald-500/15 ring-1 ring-inset ring-emerald-500/25"
+        aria-hidden
+      >
+        <Rocket size={14} className="text-emerald-600 dark:text-emerald-300" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-baseline gap-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">
+            Generating in context
+          </p>
+          <Link
+            href={`/dashboard/missions/${encodeURIComponent(mission.id)}`}
+            className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 transition hover:text-emerald-500 dark:text-emerald-300/80"
+          >
+            Open mission
+            <ExternalLink size={10} />
+          </Link>
+        </div>
+        <p className="mt-0.5 truncate text-sm font-semibold text-slate-900 dark:text-white">
+          {mission.name}
+          {mission.reference ? (
+            <span className="ml-2 font-mono text-[11px] font-normal text-slate-500">
+              {mission.reference}
+            </span>
+          ) : null}
+        </p>
+        <p className="mt-0.5 truncate text-[11.5px] text-slate-600 dark:text-slate-400">
+          {[mission.missionType, stageLine, spacecraftLine]
+            .filter(Boolean)
+            .join(" — ")}
+        </p>
+      </div>
+      <button
+        onClick={onDismiss}
+        aria-label="Dismiss mission context"
+        className="rounded-md p-1 text-emerald-600 transition hover:bg-emerald-500/10 dark:text-emerald-300"
+      >
+        <X size={14} />
+      </button>
     </div>
   );
 }
