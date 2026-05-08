@@ -1,6 +1,6 @@
 # Caelex Comply v2 — Compliance-Officer-Audit (Living Document)
 
-**Status:** Aktiv · **Letztes Update:** 2026-05-08 (Batch UF38-40) · **Eigentümer:** Claude + Julian
+**Status:** Aktiv · **Letztes Update:** 2026-05-08 (Batch UF41-43) · **Eigentümer:** Claude + Julian
 
 > Living document — wird nach jedem implementierten Sprint upgedated.
 > Überlebt Kontext-Kompression: alle Findings + Sprint-Mapping +
@@ -43,7 +43,7 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 | Today (Inbox)   | 7/10  | P0-B (`window.prompt()`-Bug)               |
 | Triage          | 5/10  | Keyboard verifizieren                      |
 | Proposals       | 6/10  | 50-Cap (Pending) Pagination                |
-| Notifications   | 4/10  | Filter (Severity/Module/Date)              |
+| Notifications   | 6/10  | UF41 added severity + category filters     |
 | Astra V2        | 5/10  | Scratchpad-Loss-Warning, Archive-Confirm   |
 | Missions-Liste  | 3/10  | Search/Filter/Compliance-Score (P1-M1+M2)  |
 | Mission-Detail  | 6/10  | Spacecraft-Detail-Page (P0-D)              |
@@ -157,16 +157,16 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ### Article-Tracker (operative Hauptfläche)
 
-| ID    | Was                                                             | File:Line                    | Sprint             | Status                                                                 |
-| ----- | --------------------------------------------------------------- | ---------------------------- | ------------------ | ---------------------------------------------------------------------- |
-| P1-T1 | Keine Notes inline (Schema hat sie, UI rendert nicht)           | `tracker/page.tsx:86-89`     | UF32               | ✅ Done (commit 0a5ce832 — ArticleNotesEditor)                         |
-| P1-T2 | Kein Assignee/Due-Date/Priority pro Article                     | `tracker/page.tsx:1328-1456` | später             | ⏳                                                                     |
-| P1-T3 | Keine Bulk-Actions (51 NIS2-Items = 51 Klicks)                  | `tracker/page.tsx:1399-1435` | UF34               | ✅ Done (commit c599dea4 — checkbox + select-all + BulkActionsToolbar) |
-| P1-T4 | NIS2/Cyber/Debris Sub-Pages haben keinen Article-Detail         | `tracker/page.tsx:1640-1781` | später             | ⏳                                                                     |
-| P1-T5 | Light-Mode-Kontrast-Bug (`rgba(255,255,255,0.96)` ohne theme)   | `tracker/page.tsx:599-632`   | später             | ⏳                                                                     |
-| P1-T6 | V1↔V2 Vocabulary-Mismatch (Tracker-Statuses ≠ Posture-Statuses) | `tracker/page.tsx:237-249`   | später (X-1 below) | ⏳                                                                     |
-| P1-T7 | Action-Items-Cap bei 20 ohne Pagination                         | `tracker/page.tsx:849`       | später             | ⏳                                                                     |
-| P1-T8 | `expandedArticles` persistiert über Regulation-Switch           | `tracker/page.tsx:383-385`   | später             | ⏳                                                                     |
+| ID    | Was                                                             | File:Line                    | Sprint             | Status                                                                                                          |
+| ----- | --------------------------------------------------------------- | ---------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------- |
+| P1-T1 | Keine Notes inline (Schema hat sie, UI rendert nicht)           | `tracker/page.tsx:86-89`     | UF32               | ✅ Done (commit 0a5ce832 — ArticleNotesEditor)                                                                  |
+| P1-T2 | Kein Assignee/Due-Date/Priority pro Article                     | `tracker/page.tsx:1328-1456` | später             | ⏳                                                                                                              |
+| P1-T3 | Keine Bulk-Actions (51 NIS2-Items = 51 Klicks)                  | `tracker/page.tsx:1399-1435` | UF34               | ✅ Done (commit c599dea4 — checkbox + select-all + BulkActionsToolbar)                                          |
+| P1-T4 | NIS2/Cyber/Debris Sub-Pages haben keinen Article-Detail         | `tracker/page.tsx:1640-1781` | später             | ⏳                                                                                                              |
+| P1-T5 | Light-Mode-Kontrast-Bug (`rgba(255,255,255,0.96)` ohne theme)   | `tracker/page.tsx:599-632`   | später             | ⏳                                                                                                              |
+| P1-T6 | V1↔V2 Vocabulary-Mismatch (Tracker-Statuses ≠ Posture-Statuses) | `tracker/page.tsx:237-249`   | später (X-1 below) | ⏳                                                                                                              |
+| P1-T7 | Action-Items-Cap bei 20 ohne Pagination                         | `tracker/page.tsx:849`       | später             | ⏳                                                                                                              |
+| P1-T8 | `expandedArticles` persistiert über Regulation-Switch           | `tracker/page.tsx:383-385`   | UF42               | ✅ Done (useEffect resets expandedArticles + selectedArticleIds + collapsedGroups on selectedRegulation change) |
 
 ### Missions-Domäne
 
@@ -197,14 +197,14 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ### Daily-Driver
 
-| ID    | Was                                         | File:Line                        | Sprint | Status                                                          |
-| ----- | ------------------------------------------- | -------------------------------- | ------ | --------------------------------------------------------------- |
-| P1-D1 | Today buckets cap bei 25 pro Bucket         | `compliance-item.server.ts:1023` | später | ⏳                                                              |
-| P1-D2 | "This week" = 30d Cutoff, nicht Mon-Fri     | `compliance-item.server.ts:50`   | später | ⏳                                                              |
-| P1-D3 | `clearedToday` UTC-midnight (Timezone-Leak) | `compliance-item.server.ts:1061` | später | ⏳                                                              |
-| P1-D4 | Notifications: nur all/unread Filter        | `notifications/page.tsx:25`      | später | ⏳                                                              |
-| P1-D5 | Astra V2 Scratchpad-Loss ohne Warning       | `astra-v2/page.tsx:38-41, 80-85` | UF36   | ✅ Done (commit ae3cc019 — beforeunload + visible amber banner) |
-| P1-D6 | Astra V2 Archive ohne Confirmation          | `astra-v2/page.tsx:122-128`      | UF36   | ✅ Done (commit ae3cc019 — 2-stage ArchiveConversationButton)   |
+| ID    | Was                                         | File:Line                        | Sprint | Status                                                                                                       |
+| ----- | ------------------------------------------- | -------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------ |
+| P1-D1 | Today buckets cap bei 25 pro Bucket         | `compliance-item.server.ts:1023` | später | ⏳                                                                                                           |
+| P1-D2 | "This week" = 30d Cutoff, nicht Mon-Fri     | `compliance-item.server.ts:50`   | später | ⏳                                                                                                           |
+| P1-D3 | `clearedToday` UTC-midnight (Timezone-Leak) | `compliance-item.server.ts:1061` | später | ⏳                                                                                                           |
+| P1-D4 | Notifications: nur all/unread Filter        | `notifications/page.tsx:25`      | UF41   | ✅ Done (severity + category dropdowns; URL-mirrored; server-resolved category→type via NOTIFICATION_CONFIG) |
+| P1-D5 | Astra V2 Scratchpad-Loss ohne Warning       | `astra-v2/page.tsx:38-41, 80-85` | UF36   | ✅ Done (commit ae3cc019 — beforeunload + visible amber banner)                                              |
+| P1-D6 | Astra V2 Archive ohne Confirmation          | `astra-v2/page.tsx:122-128`      | UF36   | ✅ Done (commit ae3cc019 — 2-stage ArchiveConversationButton)                                                |
 
 ### Hot-Path
 
@@ -219,19 +219,19 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ### Side-Surfaces
 
-| ID     | Was                                                           | File:Line                   | Sprint | Status |
-| ------ | ------------------------------------------------------------- | --------------------------- | ------ | ------ |
-| P1-S1  | Sentinel-Agenten nicht pro Mission/Spacecraft konfigurierbar  | `sentinel/page.tsx:535-559` | später | ⏳     |
-| P1-S2  | Sentinel Evidence-Feed kein Search/Filter                     | `sentinel/page.tsx:638-644` | später | ⏳     |
-| P1-S3  | Sentinel 30s polling ohne Visibility-API-Pause                | `sentinel/page.tsx:172-209` | später | ⏳     |
-| P1-S4  | Network `dataRoomCount: 0`/`attestationCount: 0` hardcoded    | `network/page.tsx:479-480`  | später | ⏳     |
-| P1-S5  | Network Activity-Feed nicht pro Stakeholder gefiltert         | `network/page.tsx:501-512`  | später | ⏳     |
-| P1-S6  | Settings: kein Holiday/Delegate-Mode                          | Settings allgemein          | später | ⏳     |
-| P1-S7  | Settings: Billing-Folder ohne Nav-Eintrag (toter Pfad)        | `settings/page.tsx:128-239` | später | ⏳     |
-| P1-S8  | Digital Twin ↔ Optimizer keine Cross-Links                    | Beide Pages                 | später | ⏳     |
-| P1-S9  | Optimizer: kein Auto-Profile vom Onboarding                   | `optimizer/page.tsx:55-60`  | später | ⏳     |
-| P1-S10 | Optimizer: kein "Save Comparison" / "Generate Migration Plan" | Optimizer                   | später | ⏳     |
-| P1-S11 | Onboarding: kein Re-do nach Abschluss                         | `OnboardingWizard.tsx`      | später | ⏳     |
+| ID     | Was                                                           | File:Line                   | Sprint | Status                                                                                       |
+| ------ | ------------------------------------------------------------- | --------------------------- | ------ | -------------------------------------------------------------------------------------------- |
+| P1-S1  | Sentinel-Agenten nicht pro Mission/Spacecraft konfigurierbar  | `sentinel/page.tsx:535-559` | später | ⏳                                                                                           |
+| P1-S2  | Sentinel Evidence-Feed kein Search/Filter                     | `sentinel/page.tsx:638-644` | später | ⏳                                                                                           |
+| P1-S3  | Sentinel 30s polling ohne Visibility-API-Pause                | `sentinel/page.tsx:172-209` | später | ⏳                                                                                           |
+| P1-S4  | Network `dataRoomCount: 0`/`attestationCount: 0` hardcoded    | `network/page.tsx:479-480`  | UF43   | ✅ Done (read from `eng._count.{dataRooms,attestations}` — Prisma include was already there) |
+| P1-S5  | Network Activity-Feed nicht pro Stakeholder gefiltert         | `network/page.tsx:501-512`  | später | ⏳                                                                                           |
+| P1-S6  | Settings: kein Holiday/Delegate-Mode                          | Settings allgemein          | später | ⏳                                                                                           |
+| P1-S7  | Settings: Billing-Folder ohne Nav-Eintrag (toter Pfad)        | `settings/page.tsx:128-239` | später | ⏳                                                                                           |
+| P1-S8  | Digital Twin ↔ Optimizer keine Cross-Links                    | Beide Pages                 | später | ⏳                                                                                           |
+| P1-S9  | Optimizer: kein Auto-Profile vom Onboarding                   | `optimizer/page.tsx:55-60`  | später | ⏳                                                                                           |
+| P1-S10 | Optimizer: kein "Save Comparison" / "Generate Migration Plan" | Optimizer                   | später | ⏳                                                                                           |
+| P1-S11 | Onboarding: kein Re-do nach Abschluss                         | `OnboardingWizard.tsx`      | später | ⏳                                                                                           |
 
 ---
 
@@ -316,6 +316,9 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 | **UF38**    | P0-F partial — Onboarding Cap 12→50 + Bulk-import escape hatch                    | ✅ Done (commit 0d465c33 — full TLE/CelesTrak-Pull später)                |
 | **UF39**    | P0-E — Trade Counterparty/Operations (verification only)                          | ✅ Resolved — audit war veraltet, Wave A + C bereits live                 |
 | **UF40**    | P1-P7 — Regulatory-Feed "Forward to Inbox" (re-frame ComplianceItem→Notification) | ✅ Done (forward API + 2-stage button, idempotent on entityType+entityId) |
+| **UF41**    | P1-D4 — Notifications severity + category filters                                 | ✅ Done (URL-mirrored dropdowns; server-resolved category→type)           |
+| **UF42**    | P1-T8 — Tracker `expandedArticles` regression on regulation switch                | ✅ Done (useEffect resets all 3 selection Sets on regulation change)      |
+| **UF43**    | P1-S4 — Network engagement hardcoded counts                                       | ✅ Done (use `eng._count.{dataRooms,attestations}` from API)              |
 | **(later)** | P0-F (full) — Onboarding Bulk-Spacecraft-Import + CelesTrak-Pull                  | ⏳ pending (escape hatch live in UF38; full impl deferred)                |
 | **(later)** | P1-S6 — Holiday/Delegate-Mode (Settings)                                          | ⏳ pending                                                                |
 | **(later)** | P2 Polish-Bundle Rest (P2-2, P2-7, P2-13, P2-17, P2-18, P2-20)                    | ⏳ pending (deferred — bigger or contested)                               |
