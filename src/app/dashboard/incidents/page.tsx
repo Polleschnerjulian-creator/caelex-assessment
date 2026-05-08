@@ -495,6 +495,24 @@ function IncidentsContent() {
       i.urgentDeadlineMs > 0,
   );
 
+  // Sprint UF13 — surface the first incident with open phases so the
+  // top-banner CTA can deep-link/expand it directly. The audit found
+  // the "Critical Deadline Alert" was informational-only, no action.
+  const firstUrgentIncident =
+    activeIncidents.find((i) => (i.nis2PhasesSummary?.overdue ?? 0) > 0) ??
+    activeIncidents.find(
+      (i) =>
+        i.urgentDeadlineMs !== null &&
+        i.urgentDeadlineMs < 2 * 60 * 60 * 1000 &&
+        i.urgentDeadlineMs > 0,
+    ) ??
+    activeIncidents.find(
+      (i) =>
+        (i.nis2PhasesSummary?.total ?? 0) -
+          (i.nis2PhasesSummary?.submitted ?? 0) >
+        0,
+    );
+
   // ─── Loading State ───
 
   if (loading) {
@@ -680,29 +698,96 @@ function IncidentsContent() {
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 pb-5 space-y-4">
-          {/* Urgent deadline alert */}
+          {/* Sprint UF13 — actionable phase-due banner. Audit found
+              the previous "Critical Deadline Alert" was info-only:
+              no action, only visible at T-2h, missed the broader case
+              of "you have N reports due". This replaces it with an
+              actionable banner that shows whenever any phase is open,
+              upgrades visually to red+pulse for overdue/T-2h, and
+              jumps the user straight into the relevant incident. */}
           <AnimatePresence>
-            {hasUrgentDeadline && (
+            {phasesDueCount > 0 && firstUrgentIncident ? (
               <motion.div
                 initial={false}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                className="p-4 flex items-center gap-3 glass-surface rounded-[14px] bg-red-500/[0.08] border border-red-500/20"
+                className={`flex items-start gap-3 rounded-[14px] glass-surface p-4 ${
+                  overdueCount > 0
+                    ? "border border-red-500/30 bg-red-500/[0.1]"
+                    : hasUrgentDeadline
+                      ? "border border-red-500/20 bg-red-500/[0.08]"
+                      : "border border-amber-500/20 bg-amber-500/[0.06]"
+                }`}
               >
-                <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center animate-pulse">
-                  <AlertTriangle size={16} className="text-red-500" />
+                <div
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+                    overdueCount > 0 || hasUrgentDeadline
+                      ? "animate-pulse bg-red-500/15"
+                      : "bg-amber-500/15"
+                  }`}
+                >
+                  <AlertTriangle
+                    size={16}
+                    className={
+                      overdueCount > 0 || hasUrgentDeadline
+                        ? "text-red-500"
+                        : "text-amber-500"
+                    }
+                  />
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-red-500">
-                    Critical Deadline Alert
+                <div className="min-w-0 flex-1">
+                  <p
+                    className={`text-sm font-semibold ${
+                      overdueCount > 0
+                        ? "text-red-500"
+                        : hasUrgentDeadline
+                          ? "text-red-500"
+                          : "text-amber-500"
+                    }`}
+                  >
+                    {overdueCount > 0
+                      ? `${overdueCount} NIS2 phase report${overdueCount === 1 ? "" : "s"} overdue`
+                      : hasUrgentDeadline
+                        ? `Phase report deadline within 2 hours`
+                        : `${phasesDueCount} phase report${phasesDueCount === 1 ? "" : "s"} due`}
                   </p>
-                  <p className="text-xs text-red-500/70">
-                    One or more NIS2 reporting deadlines are less than 2 hours
-                    away. Immediate action required.
+                  <p className="mt-0.5 text-xs text-slate-500 dark:text-white/[0.55]">
+                    Open the incident to draft and submit. Caelex stores the
+                    draft + audit-logs the submission, but{" "}
+                    <span className="font-semibold">
+                      does not transmit to your NCA
+                    </span>{" "}
+                    — file via your NCA portal and paste the reference number.
                   </p>
                 </div>
+                <button
+                  onClick={() => {
+                    // Open the first urgent incident via the existing
+                    // fetchExpanded path (it sets expandedId + loads
+                    // detail), then scroll its card into view.
+                    fetchExpanded(firstUrgentIncident.id);
+                    // Defer scroll to next frame so the expand animation
+                    // can begin laying out before we scroll.
+                    requestAnimationFrame(() => {
+                      const el = document.querySelector(
+                        `[data-incident-id="${firstUrgentIncident.id}"]`,
+                      );
+                      el?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                      });
+                    });
+                  }}
+                  className={`shrink-0 self-center rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    overdueCount > 0 || hasUrgentDeadline
+                      ? "bg-red-500 text-white hover:bg-red-600"
+                      : "bg-amber-500 text-white hover:bg-amber-600"
+                  }`}
+                >
+                  Open incident →
+                </button>
               </motion.div>
-            )}
+            ) : null}
           </AnimatePresence>
 
           {/* Error state */}
@@ -756,6 +841,7 @@ function IncidentsContent() {
                 return (
                   <div
                     key={incident.id}
+                    data-incident-id={incident.id}
                     className="glass-surface rounded-[14px]"
                   >
                     {/* Row */}
