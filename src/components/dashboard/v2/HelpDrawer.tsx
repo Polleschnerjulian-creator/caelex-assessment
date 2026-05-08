@@ -47,6 +47,7 @@ import {
   DialogDescription,
 } from "@/components/ui/v2/dialog";
 import { GLOSSARY, type GlossaryEntry } from "./ui/HelpTooltip";
+import { useUseCase, type UseCase } from "@/lib/use-case";
 
 // ─── Section grouping ────────────────────────────────────────────────────
 //
@@ -146,6 +147,66 @@ const QUICK_ACTIONS: QuickAction[] = [
   },
 ];
 
+/**
+ * Reorder Quick Actions so the most-relevant one for the user's
+ * persona surfaces first. Sprint UF6 — uses the localStorage-backed
+ * useCase from the onboarding wizard.
+ *
+ * Operators / consultants → assessment-first (default order).
+ * Auditors                → assessment moves down, audit-flow up.
+ * Investors               → assessment also less prominent.
+ *
+ * The assessment is still listed for everyone — it's the cheapest
+ * way to populate the dashboard — but the headline action shifts.
+ */
+function orderQuickActions(useCase: UseCase | null): QuickAction[] {
+  if (!useCase) return QUICK_ACTIONS;
+
+  if (useCase === "auditor") {
+    return [
+      {
+        icon: Sparkles,
+        title: "Open the Audit Center",
+        body: "Browse evidence by module, see coverage gaps, export an audit pack.",
+        href: "/dashboard/audit-center",
+        iconColor: "text-emerald-300",
+      },
+      ...QUICK_ACTIONS.filter((a) => a.title !== "Run a compliance assessment"),
+      QUICK_ACTIONS[0]!, // Assessment moves to last
+    ];
+  }
+
+  if (useCase === "investor") {
+    return [
+      {
+        icon: Sparkles,
+        title: "Open Assure for due diligence",
+        body: "RRS / RCR scoring, peer benchmarks, risk register, and DD packages.",
+        href: "/assure/dashboard",
+        iconColor: "text-emerald-300",
+      },
+      ...QUICK_ACTIONS.filter((a) => a.title !== "Run a compliance assessment"),
+    ];
+  }
+
+  if (useCase === "consultant") {
+    return [
+      QUICK_ACTIONS[0]!, // Assessment first (run per-client)
+      {
+        icon: Compass,
+        title: "Open Trade — sanctions + ECCN",
+        body: "Counterparty screening, ECCN classification, license tracking.",
+        href: "/dashboard/trade",
+        iconColor: "text-sky-300",
+      },
+      ...QUICK_ACTIONS.slice(2), // Skip mission (consultants advise, don't operate)
+    ];
+  }
+
+  // operator → default order
+  return QUICK_ACTIONS;
+}
+
 // ─── Keyboard shortcuts ──────────────────────────────────────────────────
 
 interface ShortcutRow {
@@ -177,6 +238,12 @@ export function HelpDrawer({
 }) {
   const [query, setQuery] = React.useState("");
   const inputRef = React.useRef<HTMLInputElement>(null);
+  // Sprint UF6 — persona-aware Quick Action ordering.
+  const useCase = useUseCase();
+  const quickActions = React.useMemo(
+    () => orderQuickActions(useCase),
+    [useCase],
+  );
 
   // Focus search on open. Radix already handles initial focus, but
   // explicit ref-focus is the most reliable cross-browser path.
@@ -289,7 +356,7 @@ export function HelpDrawer({
                 Quick actions
               </h3>
               <div className="grid gap-2 sm:grid-cols-2">
-                {QUICK_ACTIONS.map((qa) => (
+                {quickActions.map((qa) => (
                   <Link
                     key={qa.title}
                     href={qa.href}

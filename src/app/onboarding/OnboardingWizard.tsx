@@ -19,22 +19,29 @@ import {
   Trash2,
   Sparkles,
 } from "lucide-react";
+import {
+  USE_CASES,
+  saveUseCase,
+  getUseCaseDefinition,
+  type UseCase,
+} from "@/lib/use-case";
 
 /**
  * Comply onboarding wizard — Apple-HIG dark theme.
  *
- * Four steps:
- *   1. Profile        — name + job title
+ * Six steps (Sprint UF6 inserted use-case as step 1):
+ *   0. Profile        — name + job title
+ *   1. Use case       — operator / consultant / auditor / investor
  *   2. Organization   — name + jurisdiction + operator type
- *   3. Spacecraft     — N rows of {name, missionType, orbitType,
- *                       status, optional NORAD-id}
- *   4. Done           — summary card + "Open Today" CTA
+ *   3. Mission        — first-class mission entity (skippable)
+ *   4. Spacecraft     — N rows of {name, missionType, orbitType,
+ *                       status, optional NORAD-id} (skippable)
+ *   5. Done           — summary card + use-case-aware landing CTA
  *
- * After step 4 we POST /api/onboarding/complete and redirect.
+ * After step 5 we POST /api/onboarding/complete and redirect.
  *
- * Step 3 (Spacecraft) lets the user skip if they're not yet
- * pre-launch. Skipping still completes the wizard but the Today
- * inbox will surface "Add your spacecraft" as the next CTA.
+ * Steps 3 + 4 are skippable. The use-case (step 1) is required and
+ * personalizes the Done CTA + the Today inbox welcome line.
  */
 
 const OPERATOR_TYPES = [
@@ -200,16 +207,22 @@ export default function OnboardingWizard() {
 
   const firstName = session?.user?.name?.split(" ")[0] || "";
 
-  // Step 1
+  // Step 0 — Profile
   const [fullName, setFullName] = useState(session?.user?.name || "");
   const [jobTitle, setJobTitle] = useState("");
 
-  // Step 2
+  // Step 1 (NEW — Sprint UF6) — Use case persona. Personalizes the
+  // Done step CTA + the Today inbox welcome copy. Stored to
+  // localStorage on continue so other client surfaces (Help drawer,
+  // Today page) can read it without a server round-trip.
+  const [useCase, setUseCase] = useState<UseCase | "">("");
+
+  // Step 2 — Organization
   const [orgName, setOrgName] = useState("");
   const [country, setCountry] = useState("");
   const [operatorType, setOperatorType] = useState("");
 
-  // Step 3 (NEW — Sprint M-Onboarding) — Mission as canonical first asset.
+  // Step 3 (Sprint M-Onboarding) — Mission as canonical first asset.
   // Group spacecraft under a Mission. Skippable for orgs that genuinely
   // can't define a mission yet (e.g. pre-concept consultants).
   const [missionName, setMissionName] = useState("");
@@ -234,7 +247,8 @@ export default function OnboardingWizard() {
 
   // ── Step transitions ──
 
-  const handleStep1Next = async () => {
+  // Step 0 → 1 — Profile saved.
+  const handleStep0Next = async () => {
     if (!fullName.trim()) return;
     setSaving(true);
     try {
@@ -254,6 +268,17 @@ export default function OnboardingWizard() {
     setStep(1);
   };
 
+  // Step 1 → 2 — Use case persisted to localStorage. Server doesn't
+  // need to know yet (Prisma migration deferred); the Today page
+  // and Help drawer read straight from localStorage.
+  const handleStep1Next = () => {
+    if (!useCase) return;
+    saveUseCase(useCase);
+    setDirection(1);
+    setStep(2);
+  };
+
+  // Step 2 → 3 — Organization saved.
   const handleStep2Next = async () => {
     if (!orgName.trim() || !country || !operatorType) return;
     setSaving(true);
@@ -272,17 +297,17 @@ export default function OnboardingWizard() {
     }
     setSaving(false);
     setDirection(1);
-    setStep(2);
+    setStep(3);
   };
 
-  // Step 3 (NEW) — Mission. Skippable; on save, capture missionId so
+  // Step 3 → 4 — Mission. Skippable; on save, capture missionId so
   // the Spacecraft step can auto-assign created spacecraft.
   const handleStep3Next = async (skip = false) => {
     if (skip || !missionName.trim()) {
       setSkippedMission(true);
       setSavedMissionId(null);
       setDirection(1);
-      setStep(3);
+      setStep(4);
       return;
     }
 
@@ -313,10 +338,10 @@ export default function OnboardingWizard() {
     }
     setSaving(false);
     setDirection(1);
-    setStep(3);
+    setStep(4);
   };
 
-  // Step 4 (was Step 3) — Spacecraft. After successful POST, also
+  // Step 4 → 5 — Spacecraft. After successful POST, also
   // auto-assigns each created spacecraft to the just-created Mission
   // (if missionId is set) via the Sprint Mission-4 bulk endpoint.
   const handleStep4Next = async (skip = false) => {
@@ -324,7 +349,7 @@ export default function OnboardingWizard() {
       setSkippedSpacecraft(true);
       setSavedSpacecraftCount(0);
       setDirection(1);
-      setStep(4);
+      setStep(5);
       return;
     }
 
@@ -333,7 +358,7 @@ export default function OnboardingWizard() {
       setSkippedSpacecraft(true);
       setSavedSpacecraftCount(0);
       setDirection(1);
-      setStep(4);
+      setStep(5);
       return;
     }
 
@@ -403,7 +428,7 @@ export default function OnboardingWizard() {
     }
     setSaving(false);
     setDirection(1);
-    setStep(4);
+    setStep(5);
   };
 
   const handleComplete = async (destination: string) => {
@@ -422,18 +447,21 @@ export default function OnboardingWizard() {
   };
 
   const goNext = () => {
-    if (step === 0) handleStep1Next();
-    else if (step === 1) handleStep2Next();
-    else if (step === 2) handleStep3Next(false);
-    else if (step === 3) handleStep4Next(false);
+    if (step === 0) handleStep0Next();
+    else if (step === 1) handleStep1Next();
+    else if (step === 2) handleStep2Next();
+    else if (step === 3) handleStep3Next(false);
+    else if (step === 4) handleStep4Next(false);
   };
 
   const canContinue =
     step === 0
       ? fullName.trim().length > 0
       : step === 1
-        ? orgName.trim().length > 0 && country && operatorType
-        : true; // Steps 2 (Mission) + 3 (Spacecraft) — skip path always available
+        ? Boolean(useCase)
+        : step === 2
+          ? orgName.trim().length > 0 && country && operatorType
+          : true; // Steps 3 (Mission) + 4 (Spacecraft) — skip path always available
 
   // ── Spacecraft helpers ──
 
@@ -488,12 +516,12 @@ export default function OnboardingWizard() {
             Comply
           </span>
         </span>
-        <StepIndicator current={step} total={5} />
+        <StepIndicator current={step} total={6} />
         <span
           className="text-[12px]"
           style={{ color: "rgba(255, 255, 255, 0.45)" }}
         >
-          Step {step + 1} of 5
+          Step {step + 1} of 6
         </span>
       </header>
 
@@ -551,6 +579,98 @@ export default function OnboardingWizard() {
             {step === 1 && (
               <motion.div
                 key="step-1"
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+              >
+                <h1
+                  className="text-[34px] font-semibold text-white"
+                  style={{
+                    fontFamily: DISPLAY_FONT,
+                    letterSpacing: "-0.022em",
+                    lineHeight: 1.1,
+                  }}
+                >
+                  How will you use Caelex?
+                </h1>
+                <p
+                  className="mt-2 mb-8 text-[15px] leading-relaxed"
+                  style={{ color: "rgba(255, 255, 255, 0.55)" }}
+                >
+                  This personalizes your dashboard, sets your default landing
+                  page, and shapes the help drawer&apos;s suggestions. Pick the
+                  closest fit — you can change it later.
+                </p>
+
+                <div className="grid grid-cols-1 gap-2">
+                  {USE_CASES.map((u) => {
+                    const Icon = u.icon;
+                    const selected = useCase === u.code;
+                    return (
+                      <button
+                        key={u.code}
+                        type="button"
+                        onClick={() => setUseCase(u.code)}
+                        className="flex items-start gap-3 rounded-xl px-3.5 py-3 text-left transition-colors"
+                        style={{
+                          background: selected
+                            ? "rgba(255, 255, 255, 0.08)"
+                            : "rgba(255, 255, 255, 0.03)",
+                          boxShadow: selected
+                            ? "inset 0 1px 0 0 rgba(255, 255, 255, 0.18), 0 0 0 0.5px rgba(255, 255, 255, 0.18)"
+                            : "inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+                        }}
+                      >
+                        <Icon
+                          className="mt-0.5 h-4 w-4 shrink-0"
+                          strokeWidth={1.75}
+                          style={{
+                            color: selected
+                              ? "rgba(255, 255, 255, 0.95)"
+                              : "rgba(255, 255, 255, 0.5)",
+                          }}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div
+                            className="text-[13.5px] font-medium"
+                            style={{
+                              color: selected
+                                ? "rgba(255, 255, 255, 0.95)"
+                                : "rgba(255, 255, 255, 0.85)",
+                              letterSpacing: "-0.005em",
+                            }}
+                          >
+                            {u.label}
+                          </div>
+                          <div
+                            className="mt-0.5 text-[12px] leading-relaxed"
+                            style={{
+                              color: "rgba(255, 255, 255, 0.45)",
+                            }}
+                          >
+                            {u.description}
+                          </div>
+                        </div>
+                        {selected ? (
+                          <Check
+                            className="mt-1 h-3.5 w-3.5 shrink-0"
+                            strokeWidth={2.2}
+                            style={{ color: "rgba(255, 255, 255, 0.95)" }}
+                          />
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+
+            {step === 2 && (
+              <motion.div
+                key="step-2"
                 custom={direction}
                 variants={slideVariants}
                 initial="enter"
@@ -666,9 +786,9 @@ export default function OnboardingWizard() {
               </motion.div>
             )}
 
-            {step === 2 && (
+            {step === 3 && (
               <motion.div
-                key="step-2"
+                key="step-3"
                 custom={direction}
                 variants={slideVariants}
                 initial="enter"
@@ -750,9 +870,9 @@ export default function OnboardingWizard() {
               </motion.div>
             )}
 
-            {step === 3 && (
+            {step === 4 && (
               <motion.div
-                key="step-3"
+                key="step-4"
                 custom={direction}
                 variants={slideVariants}
                 initial="enter"
@@ -820,9 +940,9 @@ export default function OnboardingWizard() {
               </motion.div>
             )}
 
-            {step === 4 && (
+            {step === 5 && (
               <motion.div
-                key="step-3"
+                key="step-5"
                 custom={direction}
                 variants={slideVariants}
                 initial="enter"
@@ -879,6 +999,12 @@ export default function OnboardingWizard() {
                   {jobTitle ? (
                     <SummaryRow label="Role" value={jobTitle} />
                   ) : null}
+                  {useCase ? (
+                    <SummaryRow
+                      label="Using Caelex as"
+                      value={getUseCaseDefinition(useCase)?.label ?? useCase}
+                    />
+                  ) : null}
                   <SummaryDivider />
                   <SummaryRow label="Organization" value={orgName} />
                   <SummaryRow
@@ -918,6 +1044,11 @@ export default function OnboardingWizard() {
                   />
                 </div>
 
+                {/* Sprint UF6 — CTAs adapt to chosen use-case persona.
+                    Investors land on Assure, auditors on Audit Center,
+                    others on the default Today inbox. The primary CTA
+                    is still the assessment (everyone benefits) but the
+                    fallback is now persona-aware. */}
                 <div className="space-y-2">
                   <button
                     onClick={() => handleComplete("/assessment/unified")}
@@ -933,12 +1064,23 @@ export default function OnboardingWizard() {
                     <ArrowRight className="h-4 w-4" strokeWidth={2.2} />
                   </button>
                   <button
-                    onClick={() => handleComplete("/dashboard/today")}
+                    onClick={() =>
+                      handleComplete(
+                        useCase
+                          ? (getUseCaseDefinition(useCase)
+                              ?.defaultLandingPath ?? "/dashboard/today")
+                          : "/dashboard/today",
+                      )
+                    }
                     disabled={saving}
                     className="w-full text-center text-[13px] font-medium py-2 transition-colors hover:text-white"
                     style={{ color: "rgba(255, 255, 255, 0.55)" }}
                   >
-                    Skip — open my Today inbox
+                    {useCase === "investor"
+                      ? "Skip — open Assure"
+                      : useCase === "auditor"
+                        ? "Skip — open Audit Center"
+                        : "Skip — open my Today inbox"}
                   </button>
                 </div>
               </motion.div>
@@ -947,9 +1089,9 @@ export default function OnboardingWizard() {
         </div>
       </div>
 
-      {/* Bottom bar — shown on form steps (0-3); the final Done step (4)
+      {/* Bottom bar — shown on form steps (0-4); the final Done step (5)
           has its own CTAs. */}
-      {step < 4 ? (
+      {step < 5 ? (
         <footer
           className="flex items-center justify-between px-8 py-5"
           style={{ borderTop: "0.5px solid rgba(255, 255, 255, 0.08)" }}
