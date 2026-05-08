@@ -522,12 +522,15 @@ export default function TradeItemsPage() {
             strokeWidth={2}
             style={{ color: "rgba(255,255,255,0.35)" }}
           />
+          {/* Sprint UF37 (P2-14) — `focusRingColor` is not a valid
+              CSS property (no Tailwind shorthand, no native CSS).
+              Replaced with a Tailwind ring utility so the focus
+              affordance actually renders. */}
           <input
-            className="w-full rounded-xl py-2 pl-9 pr-3 text-[13px] text-white placeholder-white/30 outline-none transition-all focus:ring-1"
+            className="w-full rounded-xl py-2 pl-9 pr-3 text-[13px] text-white placeholder-white/30 outline-none transition-all focus:ring-1 focus:ring-white/20"
             style={{
               background: "rgba(255,255,255,0.04)",
               border: "0.5px solid rgba(255,255,255,0.10)",
-              focusRingColor: "rgba(255,255,255,0.20)",
             }}
             placeholder="Search items, SKUs, codes…"
             value={search}

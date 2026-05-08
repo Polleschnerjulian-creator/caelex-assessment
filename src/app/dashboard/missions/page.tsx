@@ -223,10 +223,10 @@ function MissionCard({ mission }: { mission: MissionSummary }) {
         </li>
         <li className="inline-flex items-center gap-1.5">
           <Layers className="h-3.5 w-3.5 text-slate-500" strokeWidth={1.75} />
-          <span>
-            {mission.spacecraftCount} spacecraft
-            {mission.spacecraftCount === 1 ? "" : "s"}
-          </span>
+          {/* Sprint UF37 (P2-1) — "spacecraft" is uncountable in
+              English, no plural-s. Fixed both branches by removing
+              the conditional suffix. */}
+          <span>{mission.spacecraftCount} spacecraft</span>
         </li>
         {mission.primaryEndUser ? (
           <li className="inline-flex max-w-[180px] items-center gap-1.5">

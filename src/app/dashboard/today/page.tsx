@@ -433,7 +433,7 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
               <Section
                 title="Urgent"
                 count={inbox.urgent.length}
-                emptyMessage="Nothing urgent. Take a breath."
+                emptyMessage="No urgent items right now."
                 accent="emerald"
                 icon={Inbox}
               >

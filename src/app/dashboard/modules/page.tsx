@@ -191,7 +191,10 @@ const MODULES: ModuleEntry[] = [
     short: "EU 2024/2847 — cyber resilience for products.",
     body: "Class I / Class II classification, conformity assessment, SBOM (CycloneDX / SPDX), post-market vulnerability handling. Applies to ground-segment software products.",
     icon: ShieldCheck,
-    category: "specialised",
+    // Sprint UF37 (P2-15) — CRA was misclassified as specialised.
+    // For any operator with software ground-segment products
+    // (most space ops), it's effectively core.
+    category: "core",
     jurisdictions: ["EU"],
     regulationKey: "CRA",
   },

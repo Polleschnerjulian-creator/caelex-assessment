@@ -54,8 +54,10 @@ export default async function TriagePage() {
         title="Triage"
         helpTerm="Triage"
         description={
+          /* Sprint UF37 (P2-19) — Empty-copy: don't talk about the
+             keyboard when there's nothing TO navigate. */
           items.length === 0
-            ? "No new signals. The keyboard is fastest — J/K to navigate, A to acknowledge, D to dismiss."
+            ? "No new signals to triage."
             : `${items.length} signal${items.length === 1 ? "" : "s"} from notifications, regulator publications, and satellite alerts. Use J/K to navigate, A to acknowledge, D to dismiss.`
         }
         actions={

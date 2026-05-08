@@ -129,9 +129,14 @@ function formatDueDate(iso: Date | string): {
     return { label: `in ${diffDays}d`, overdue: false };
   }
   if (diffDays < 0) {
+    // Sprint UF37 (P2-3) — overdue items always include year so
+    // "Overdue · 9 May 2024" can't be confused with "Overdue · 9 May"
+    // (this year). Auditors reading screenshots months later need
+    // the unambiguous date.
     const dateLabel = target.toLocaleDateString(undefined, {
       day: "numeric",
       month: "short",
+      year: "numeric",
     });
     return { label: `Overdue · ${dateLabel}`, overdue: true };
   }
