@@ -208,10 +208,62 @@ export default function SentinelPage() {
     }
   }, [selectedAgentId]);
 
+  /**
+   * Sprint UF50 (P1-S3) — Pause polling when the tab is hidden.
+   *
+   * Audit found the page polled `/api/v1/sentinel/{agents,packets,health}`
+   * every 30s regardless of tab visibility. With ~50 packets per
+   * fetch + 3 endpoints, that's a non-trivial bandwidth + DB hit
+   * for a tab the user isn't even looking at — and the polling
+   * doesn't even produce visible UI updates while the tab is hidden.
+   *
+   * Strategy:
+   *   1. Always fetch on mount + on visibility change to "visible"
+   *      (so the user gets fresh data when they tab back).
+   *   2. Only schedule the 30s interval while the tab is visible.
+   *   3. Re-mount the interval whenever visibility flips back so the
+   *      first refresh after tabbing-in is immediate (step 1) and
+   *      then the cadence resumes.
+   *
+   * Trade-off: if the user leaves the tab in the background for
+   * an hour, the data is stale by an hour when they return — but
+   * the immediate fetch on `visibilitychange` brings it current.
+   */
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
+    let interval: ReturnType<typeof setInterval> | null = null;
+
+    const startInterval = () => {
+      if (interval !== null) return;
+      interval = setInterval(fetchData, 30000);
+    };
+    const stopInterval = () => {
+      if (interval === null) return;
+      clearInterval(interval);
+      interval = null;
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        fetchData();
+        startInterval();
+      } else {
+        stopInterval();
+      }
+    };
+
+    // Start polling immediately if the page is visible at mount.
+    if (
+      typeof document !== "undefined" &&
+      document.visibilityState === "visible"
+    ) {
+      startInterval();
+    }
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      stopInterval();
+    };
   }, [fetchData]);
 
   const handleRefresh = () => {
