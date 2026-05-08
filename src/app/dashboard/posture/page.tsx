@@ -19,6 +19,11 @@ import {
   RegulationBars,
 } from "@/components/dashboard/v2/PostureCharts";
 import { PostureSparkline } from "@/components/dashboard/v2/PostureSparkline";
+import {
+  PageContainer,
+  PageHeader,
+  StatusPill,
+} from "@/components/dashboard/v2/ui/PageChrome";
 
 export const metadata = {
   title: "Posture — Caelex Comply",
@@ -72,54 +77,15 @@ export default async function PosturePage() {
     value: p.activeSnoozes,
   }));
 
-  const sansFont =
-    'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif';
-  const displayFont =
-    'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif';
-
   return (
-    <div
-      className="mx-auto max-w-screen-2xl px-8 py-8"
-      style={{ fontFamily: sansFont, letterSpacing: "-0.005em" }}
-    >
-      <header
-        className="mb-7 flex items-end justify-between gap-6 pb-5"
-        style={{ borderBottom: "0.5px solid rgba(255, 255, 255, 0.08)" }}
-      >
-        <div className="min-w-0">
-          <h1
-            className="text-[28px] font-semibold text-white"
-            style={{
-              fontFamily: displayFont,
-              letterSpacing: "-0.022em",
-              lineHeight: 1.15,
-            }}
-          >
-            Posture
-          </h1>
-          <p
-            className="mt-1.5 max-w-2xl text-[14px]"
-            style={{ color: "rgba(255, 255, 255, 0.55)" }}
-          >
-            Executive overview of where you stand right now. Click any tile to
-            drill into the underlying ComplianceItems.
-          </p>
-        </div>
-        <span
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-medium"
-          style={{
-            background: "rgba(255, 255, 255, 0.05)",
-            color: "rgba(255, 255, 255, 0.85)",
-          }}
-        >
-          <span
-            aria-hidden
-            className="h-1.5 w-1.5 animate-pulse rounded-full"
-            style={{ background: "var(--ios-green)" }}
-          />
-          Live
-        </span>
-      </header>
+    <PageContainer>
+      <PageHeader
+        eyebrow="Posture"
+        eyebrowIcon={Gauge}
+        title="Posture"
+        description="Executive overview of where you stand right now. Click any tile to drill into the underlying ComplianceItems."
+        actions={<StatusPill tone="emerald">Live</StatusPill>}
+      />
 
       {/* KPI strip */}
       <section className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -319,7 +285,7 @@ export default async function PosturePage() {
           </div>
         )}
       </section>
-    </div>
+    </PageContainer>
   );
 }
 

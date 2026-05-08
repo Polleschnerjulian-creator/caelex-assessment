@@ -10,6 +10,14 @@ import {
 
 import { auth } from "@/lib/auth";
 import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
+import {
+  PageContainer,
+  PageHeader,
+  Card,
+  CardHeader,
+  CardBody,
+  StatusPill,
+} from "@/components/dashboard/v2/ui/PageChrome";
 
 export const dynamic = "force-dynamic";
 
@@ -26,10 +34,7 @@ export const metadata = {
  * Classification list (/dashboard/trade/items). Wave A adds the
  * Counterparty-Screening list; Wave C adds the Operations-Lifecycle.
  *
- * Strategischer Kontext: docs/COMPLY-EXPORT-CONTROL-CONCEPT.md
- * Operativer Sprint-Plan: docs/COMPLY-EXPORT-CONTROL-PLAN.md
- *
- * Two-Layer-Split (siehe Konzept § 2):
+ * Two-Layer-Split (Plan § 2):
  *   - Layer 1 (Posture, existiert): /dashboard/modules/export-control
  *     beantwortet "Wie reif ist unser ICP?"
  *   - Layer 2 (Operations, hier): /dashboard/trade beantwortet
@@ -43,206 +48,114 @@ export default async function TradeOverviewPage() {
   const ui = await resolveComplyUiVersion();
   if (ui === "v1") redirect("/dashboard");
 
-  const sansFont =
-    'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif';
-  const displayFont =
-    'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif';
+  const liveCards = [
+    {
+      href: "/dashboard/trade/items",
+      label: "Item Classification",
+      sublabel: "Classify BoM items across 5 jurisdictions",
+    },
+    {
+      href: "/dashboard/trade/counterparties",
+      label: "Counterparty Screening",
+      sublabel: "OFAC, BIS, DDTC fuzzy-match — Wave A",
+    },
+    {
+      href: "/dashboard/trade/operations",
+      label: "Operations Lifecycle",
+      sublabel: "Items × Counterparty × Route × License — Wave C",
+    },
+  ];
 
   return (
-    <div
-      className="mx-auto max-w-screen-2xl px-8 py-8"
-      style={{ fontFamily: sansFont, letterSpacing: "-0.005em" }}
-    >
-      <header
-        className="mb-7 flex items-end justify-between gap-6 pb-5"
-        style={{ borderBottom: "0.5px solid rgba(255, 255, 255, 0.08)" }}
-      >
-        <div className="min-w-0">
-          <h1
-            className="text-[28px] font-semibold text-white"
-            style={{
-              fontFamily: displayFont,
-              letterSpacing: "-0.022em",
-              lineHeight: 1.15,
-            }}
-          >
-            Trade Operations
-          </h1>
-          <p
-            className="mt-1.5 max-w-2xl text-[14px]"
-            style={{ color: "rgba(255, 255, 255, 0.55)" }}
-          >
-            Klassifizieren, screenen, lizenzieren — der Operations-Layer neben
-            deinem Export-Control-Posture.
-          </p>
-        </div>
-      </header>
+    <PageContainer>
+      <PageHeader
+        eyebrow="Trade operations"
+        eyebrowIcon={Globe2}
+        title="Trade Operations"
+        description="Klassifizieren, screenen, lizenzieren — der Operations-Layer neben deinem Export-Control-Posture."
+      />
 
-      {/* Quick-access to live sections */}
       <div className="mb-6 grid gap-3 sm:grid-cols-3">
-        {[
-          {
-            href: "/dashboard/trade/items",
-            label: "Item Classification",
-            sublabel: "Classify BoM items across 5 jurisdictions",
-            live: true,
-          },
-          {
-            href: "/dashboard/trade/counterparties",
-            label: "Counterparty Screening",
-            sublabel: "OFAC, BIS, DDTC fuzzy-match — Wave A",
-            live: true,
-          },
-          {
-            href: "/dashboard/trade/operations",
-            label: "Operations Lifecycle",
-            sublabel:
-              "Items × Counterparty × Route × License — Wave C (C1+C2 live)",
-            live: true,
-          },
-        ].map((card) => (
-          <Link key={card.href} href={card.href}>
-            <div
-              className="group flex items-center gap-3 rounded-2xl px-4 py-4 transition-all"
-              style={{
-                background: card.live
-                  ? "rgba(16, 185, 129, 0.06)"
-                  : "rgba(255,255,255,0.025)",
-                boxShadow: card.live
-                  ? "inset 0 0 0 0.5px rgba(16,185,129,0.20)"
-                  : "inset 0 0 0 0.5px rgba(255,255,255,0.07)",
-                cursor: card.live ? "pointer" : "default",
-                pointerEvents: card.live ? "auto" : "none",
-              }}
-            >
+        {liveCards.map((c) => (
+          <Link
+            key={c.href}
+            href={c.href}
+            className="group block overflow-hidden rounded-xl border border-emerald-500/20 bg-gradient-to-b from-emerald-500/[0.05] to-emerald-500/[0.012] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition hover:border-emerald-500/40 hover:from-emerald-500/[0.08]"
+          >
+            <div className="flex items-start gap-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span
-                    className="text-[13px] font-semibold"
-                    style={{
-                      color: card.live
-                        ? "rgba(255,255,255,0.92)"
-                        : "rgba(255,255,255,0.55)",
-                    }}
-                  >
-                    {card.label}
+                  <span className="text-[13px] font-semibold text-slate-100">
+                    {c.label}
                   </span>
-                  {card.live && (
-                    <span
-                      className="rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest"
-                      style={{
-                        background: "rgba(16,185,129,0.15)",
-                        color: "rgb(52,211,153)",
-                      }}
-                    >
-                      Live
-                    </span>
-                  )}
+                  <StatusPill tone="emerald" size="sm">
+                    Live
+                  </StatusPill>
                 </div>
-                <p
-                  className="mt-0.5 text-[11px]"
-                  style={{ color: "rgba(255,255,255,0.4)" }}
-                >
-                  {card.sublabel}
+                <p className="mt-0.5 text-[11.5px] text-slate-400">
+                  {c.sublabel}
                 </p>
               </div>
-              {card.live && (
-                <ArrowRight
-                  className="h-4 w-4 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-                  style={{ color: "rgba(16,185,129,0.8)" }}
-                />
-              )}
+              <ArrowRight className="h-4 w-4 shrink-0 text-emerald-300/0 transition group-hover:text-emerald-300" />
             </div>
           </Link>
         ))}
       </div>
 
-      {/* Roadmap */}
-      <div
-        className="max-w-3xl rounded-2xl p-8"
-        style={{
-          background: "rgba(255, 255, 255, 0.03)",
-          boxShadow:
-            "inset 0 1px 0 0 rgba(255, 255, 255, 0.06), 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
-        }}
-      >
-        <div
-          className="mb-5 flex h-10 w-10 items-center justify-center rounded-xl"
-          style={{
-            background: "rgba(255, 255, 255, 0.06)",
-            boxShadow:
-              "inset 0 1px 0 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 0 rgba(0, 0, 0, 0.25)",
-          }}
-        >
-          <Globe2
-            className="h-[18px] w-[18px]"
-            strokeWidth={1.75}
-            style={{ color: "rgba(255, 255, 255, 0.85)" }}
-          />
-        </div>
-        <h2
-          className="mb-1.5 text-[17px] font-semibold text-white"
-          style={{ letterSpacing: "-0.018em" }}
-        >
-          Trade-Layer im Aufbau
-        </h2>
-        <p
-          className="mb-6 text-[13px] leading-relaxed"
-          style={{ color: "rgba(255, 255, 255, 0.65)" }}
-        >
-          Diese Surface bringt Caelex Comply auf die zweite Compliance- Ebene:
-          pro Sendung, pro Counterparty, pro BoM-Zeile. Der Posture-Layer
-          (ICP-Reife, AV-Bestellung, Schulungen) bleibt unter{" "}
-          <Link
-            href="/dashboard/modules/export-control"
-            className="underline decoration-dotted underline-offset-2 hover:text-white"
-            style={{ color: "rgba(255, 255, 255, 0.85)" }}
-          >
-            Export Control
-          </Link>{" "}
-          erreichbar.
-        </p>
+      <Card className="max-w-3xl">
+        <CardHeader
+          icon={Globe2}
+          title="Trade-Layer im Aufbau"
+          subtitle={
+            <>
+              Diese Surface bringt Caelex Comply auf die zweite Compliance-
+              Ebene: pro Sendung, pro Counterparty, pro BoM-Zeile. Der
+              Posture-Layer (ICP-Reife, AV-Bestellung, Schulungen) bleibt unter{" "}
+              <Link
+                href="/dashboard/modules/export-control"
+                className="font-medium text-emerald-300 underline-offset-4 transition hover:text-emerald-200 hover:underline"
+              >
+                Export Control
+              </Link>{" "}
+              erreichbar.
+            </>
+          }
+        />
+        <CardBody>
+          <div className="mb-3 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+            Roadmap
+          </div>
+          <ul className="space-y-2.5">
+            <RoadmapRow
+              icon={ScanSearch}
+              label="Wave B — Item-Klassifikation"
+              description="ECCN, USML, MTCR, AL — parallel-Klassifikation mit Astra-Vorschlag und Property-Trigger-Override."
+              status="active"
+            />
+            <RoadmapRow
+              icon={FileSearch}
+              label="Wave A — Sanctions-Screening"
+              description="OFAC SDN live mit Jaro-Winkler-Fuzzy-Match. Daily-Cron mit Snapshot-Hash für Audit. BIS/DDTC/EU/UK/UN folgen via trade.gov consolidated CSV."
+              status="active"
+            />
+            <RoadmapRow
+              icon={ListChecks}
+              label="Wave C — Operations-Lifecycle"
+              description="TradeOperation als atomarer Liefer-Vorgang mit License-Stack. C1 (schema), C2 (list+detail+create) live. C3 (status transitions, lines mgmt, drawdown engine) und C4 (BAFA-ELAN-K2 PDF prefill) folgen."
+              status="active"
+            />
+          </ul>
+        </CardBody>
+      </Card>
 
-        <div
-          className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em]"
-          style={{ color: "rgba(255, 255, 255, 0.45)" }}
-        >
-          Roadmap
-        </div>
-        <ul className="space-y-3">
-          <RoadmapRow
-            icon={ScanSearch}
-            label="Wave B — Item-Klassifikation"
-            description="ECCN, USML, MTCR, AL — parallel-Klassifikation mit Astra-Vorschlag und Property-Trigger-Override."
-            tone="active"
-          />
-          <RoadmapRow
-            icon={FileSearch}
-            label="Wave A — Sanctions-Screening"
-            description="OFAC SDN live mit Jaro-Winkler-Fuzzy-Match. Daily-Cron mit Snapshot-Hash für Audit. BIS/DDTC/EU/UK/UN folgen via trade.gov consolidated CSV (A4)."
-            tone="active"
-          />
-          <RoadmapRow
-            icon={ListChecks}
-            label="Wave C — Operations-Lifecycle"
-            description="TradeOperation als atomarer Liefer-Vorgang mit License-Stack. C1 (schema), C2 (list+detail+create) live. C3 (status transitions, lines mgmt, drawdown engine) und C4 (BAFA-ELAN-K2 PDF prefill) folgen."
-            tone="active"
-          />
-        </ul>
-      </div>
-
-      {/* Disclaimer — Pflicht auf jeder Trade-Page (Plan § 6). */}
-      <p
-        className="mt-8 max-w-3xl text-[11px] leading-relaxed"
-        style={{ color: "rgba(255, 255, 255, 0.4)" }}
-      >
+      <p className="mt-8 max-w-3xl text-[11.5px] leading-relaxed text-slate-500">
         Caelex Comply Trade ist ein Compliance-Werkzeug, kein Counsel. Vor jeder
-        Export-Entscheidung mit qualifizierter Exportkontroll- Rechtsberatung
+        Export-Entscheidung mit qualifizierter Exportkontroll-Rechtsberatung
         verifizieren. Verstöße gegen AWG/EAR/ITAR können zu Freiheitsstrafen bis
         zu 10/20 Jahren und Bußen bis zu 40 Mio. € (DE) bzw. USD 1 Mio. (US)
         führen.
       </p>
-    </div>
+    </PageContainer>
   );
 }
 
@@ -252,75 +165,34 @@ function RoadmapRow({
   icon: Icon,
   label,
   description,
-  tone,
+  status,
 }: {
-  icon: React.ComponentType<{
-    className?: string;
-    strokeWidth?: number;
-    style?: React.CSSProperties;
-  }>;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   label: string;
   description: string;
-  tone: "active" | "planned";
+  status: "active" | "planned";
 }) {
-  const isActive = tone === "active";
+  const isActive = status === "active";
   return (
-    <li
-      className="flex items-start gap-3 rounded-xl p-3.5"
-      style={{
-        background: isActive
-          ? "rgba(255, 255, 255, 0.04)"
-          : "rgba(255, 255, 255, 0.02)",
-        boxShadow: "inset 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
-      }}
-    >
+    <li className="flex items-start gap-3 rounded-lg bg-white/[0.025] p-3 ring-1 ring-inset ring-white/[0.05]">
       <div
-        className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
-        style={{
-          background: isActive
-            ? "rgba(255, 255, 255, 0.08)"
-            : "rgba(255, 255, 255, 0.04)",
-        }}
+        className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset ${
+          isActive
+            ? "bg-emerald-500/10 text-emerald-300 ring-emerald-500/20"
+            : "bg-white/[0.04] text-slate-400 ring-white/[0.06]"
+        }`}
       >
-        <Icon
-          className="h-3.5 w-3.5"
-          strokeWidth={1.75}
-          style={{
-            color: isActive
-              ? "rgba(255, 255, 255, 0.92)"
-              : "rgba(255, 255, 255, 0.55)",
-          }}
-        />
+        <Icon className="h-3.5 w-3.5" />
       </div>
       <div className="min-w-0 flex-1">
-        <div
-          className="text-[13px] font-medium"
-          style={{
-            color: isActive
-              ? "rgba(255, 255, 255, 0.92)"
-              : "rgba(255, 255, 255, 0.7)",
-          }}
-        >
-          {label}
-        </div>
-        <p
-          className="mt-0.5 text-[12px] leading-relaxed"
-          style={{ color: "rgba(255, 255, 255, 0.55)" }}
-        >
+        <div className="text-[13px] font-medium text-slate-100">{label}</div>
+        <p className="mt-0.5 text-[12px] leading-relaxed text-slate-400">
           {description}
         </p>
       </div>
-      <span
-        className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em]"
-        style={{
-          background: isActive
-            ? "rgba(120, 220, 160, 0.12)"
-            : "rgba(255, 255, 255, 0.04)",
-          color: isActive ? "rgb(120, 220, 160)" : "rgba(255, 255, 255, 0.45)",
-        }}
-      >
+      <StatusPill tone={isActive ? "emerald" : "slate"} size="sm">
         {isActive ? "In progress" : "Planned"}
-      </span>
+      </StatusPill>
     </li>
   );
 }
