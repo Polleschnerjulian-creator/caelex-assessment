@@ -8,6 +8,7 @@ import { ChevronRight } from "lucide-react";
 import { breadcrumbsFromPath } from "./breadcrumbs";
 import { HelpDrawerTrigger } from "./HelpDrawer";
 import { NotificationCenterV2 } from "./NotificationCenterV2";
+import { TopbarOrgIndicator } from "./TopbarOrgIndicator";
 
 /**
  * V2TopBar — Sprint 12B (Caelex Liquid Glass top chrome)
@@ -103,6 +104,12 @@ export function V2TopBar({ userName, userEmail }: V2TopBarProps) {
           </React.Fragment>
         ))}
       </nav>
+
+      {/* Sprint UF12 — Active organization indicator. Hidden when
+          the user has 0 or 1 orgs (no switcher needed). Otherwise
+          shows a compact pill with the active org name + dropdown.
+          Critical for consultants juggling multiple client orgs. */}
+      <TopbarOrgIndicator />
 
       {/* Center — Apple-style search pill: rounded-full, no border,
           translucent, with subtle keyboard-shortcut chips */}

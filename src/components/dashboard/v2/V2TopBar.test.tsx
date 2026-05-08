@@ -74,6 +74,16 @@ vi.mock("lucide-react", () => {
     Users: icon("Users"),
     Keyboard: icon("Keyboard"),
     ArrowRight: icon("ArrowRight"),
+    // Sprint UF6 — use-case.ts icons (transitively imported via
+    // HelpDrawer's GLOSSARY consumer chain).
+    Briefcase: icon("Briefcase"),
+    ShieldCheck: icon("ShieldCheck"),
+    TrendingUp: icon("TrendingUp"),
+    // Sprint UF12 — TopbarOrgIndicator icons.
+    Building2: icon("Building2"),
+    ChevronDown: icon("ChevronDown"),
+    Plus: icon("Plus"),
+    Settings: icon("Settings"),
   };
 });
 
