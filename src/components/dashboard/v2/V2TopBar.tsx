@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 
 import { breadcrumbsFromPath } from "./breadcrumbs";
+import { HelpDrawerTrigger } from "./HelpDrawer";
 import { NotificationCenterV2 } from "./NotificationCenterV2";
 
 /**
@@ -127,9 +128,12 @@ export function V2TopBar({ userName, userEmail }: V2TopBarProps) {
         </span>
       </button>
 
-      {/* Right — notification bell + bare avatar circle (no bordered
-          pill, no name overlay; user identity is already in sidebar) */}
+      {/* Right — help · notification bell · bare avatar circle (no
+          bordered pill, no name overlay; user identity is already in
+          sidebar). Help button uses the (?) icon + global "?" keypress
+          shortcut, like Linear / GitHub. */}
       <div className="flex shrink-0 items-center gap-1">
+        <HelpDrawerTrigger />
         <NotificationCenterV2 />
 
         {userEmail || userName ? (

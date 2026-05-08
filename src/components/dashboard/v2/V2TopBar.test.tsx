@@ -65,6 +65,15 @@ vi.mock("lucide-react", () => {
     ShieldAlert: icon("ShieldAlert"),
     Info: icon("Info"),
     ArrowUpRight: icon("ArrowUpRight"),
+    // Sprint UF5 — HelpDrawer icons (HelpDrawerTrigger is rendered
+    // inside V2TopBar; the Drawer body is only mounted when open).
+    HelpCircle: icon("HelpCircle"),
+    Search: icon("Search"),
+    Sparkles: icon("Sparkles"),
+    Compass: icon("Compass"),
+    Users: icon("Users"),
+    Keyboard: icon("Keyboard"),
+    ArrowRight: icon("ArrowRight"),
   };
 });
 
@@ -162,5 +171,18 @@ describe("V2TopBar — notification bell", () => {
     const bell = screen.getByTestId("v2-topbar-bell");
     expect(bell.tagName).toBe("BUTTON");
     expect(bell.getAttribute("aria-label")).toBe("Notifications");
+  });
+});
+
+describe("V2TopBar — help drawer trigger (Sprint UF5)", () => {
+  // The (?) help button is permanently mounted; the drawer body
+  // only renders when open. This test asserts the trigger exists
+  // and has accessible labelling — that's the V2TopBar contract.
+
+  it("renders the help drawer trigger button", () => {
+    render(<V2TopBar />);
+    const help = screen.getByTestId("v2-topbar-help");
+    expect(help.tagName).toBe("BUTTON");
+    expect(help.getAttribute("aria-label")).toBe("Open help drawer");
   });
 });
