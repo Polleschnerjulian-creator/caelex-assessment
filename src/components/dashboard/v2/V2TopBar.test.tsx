@@ -19,6 +19,16 @@ import { render, screen, fireEvent } from "@testing-library/react";
 const pathnameMock = vi.fn<() => string>();
 vi.mock("next/navigation", () => ({
   usePathname: () => pathnameMock(),
+  // Sprint E — NotificationCenterV2 (mounted inside V2TopBar) calls
+  // useRouter for click-through navigation. Stub it.
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    prefetch: vi.fn(),
+  }),
 }));
 
 // next/link as plain <a> for jsdom
@@ -46,6 +56,15 @@ vi.mock("lucide-react", () => {
   return {
     Bell: icon("Bell"),
     ChevronRight: icon("ChevronRight"),
+    // Sprint E — NotificationCenterV2 icons
+    Check: icon("Check"),
+    X: icon("X"),
+    CheckCheck: icon("CheckCheck"),
+    Inbox: icon("Inbox"),
+    AlertTriangle: icon("AlertTriangle"),
+    ShieldAlert: icon("ShieldAlert"),
+    Info: icon("Info"),
+    ArrowUpRight: icon("ArrowUpRight"),
   };
 });
 

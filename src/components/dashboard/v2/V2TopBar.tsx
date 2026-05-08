@@ -3,9 +3,10 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 import { breadcrumbsFromPath } from "./breadcrumbs";
+import { NotificationCenterV2 } from "./NotificationCenterV2";
 
 /**
  * V2TopBar — Sprint 12B (Caelex Liquid Glass top chrome)
@@ -129,14 +130,7 @@ export function V2TopBar({ userName, userEmail }: V2TopBarProps) {
       {/* Right — notification bell + bare avatar circle (no bordered
           pill, no name overlay; user identity is already in sidebar) */}
       <div className="flex shrink-0 items-center gap-1">
-        <button
-          type="button"
-          aria-label="Notifications"
-          data-testid="v2-topbar-bell"
-          className="apple-icon-btn inline-flex h-8 w-8 items-center justify-center rounded-full"
-        >
-          <Bell className="h-4 w-4" strokeWidth={1.6} />
-        </button>
+        <NotificationCenterV2 />
 
         {userEmail || userName ? (
           <button
