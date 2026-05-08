@@ -193,6 +193,10 @@ function AuditCenterContent() {
   const [exportingPdf, setExportingPdf] = useState(false);
   const [exportingCsv, setExportingCsv] = useState(false);
   const [exportingCert, setExportingCert] = useState(false);
+  // Sprint UF17 — Audit-Pack ZIP export (PDF + CSV + Cert + Manifest +
+  // Evidence files), surfacing the existing ZIP endpoint that was
+  // already implemented but had no UI affordance.
+  const [exportingZip, setExportingZip] = useState(false);
   const [verifyingChain, setVerifyingChain] = useState(false);
   const [chainStatus, setChainStatus] = useState<{
     valid: boolean;
@@ -278,6 +282,37 @@ function AuditCenterContent() {
       setError("Failed to export audit trail");
     } finally {
       setExportingCsv(false);
+    }
+  };
+
+  // Sprint UF17 — Audit Pack ZIP. Bundles PDF report + CSV trail +
+  // certificate + manifest + evidence files in a single download.
+  // Auditor primitive — replaces the "click 3 separate exports" flow.
+  const handleExportZip = async () => {
+    setExportingZip(true);
+    try {
+      const res = await fetch("/api/audit-center/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify({ format: "zip" }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to generate audit pack");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Audit-Pack-${new Date().toISOString().split("T")[0]}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to export audit pack",
+      );
+    } finally {
+      setExportingZip(false);
     }
   };
 
@@ -927,8 +962,21 @@ function AuditCenterContent() {
                 className={`rounded-xl p-4 ${innerGlassDarkClass}`}
                 style={innerGlass}
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                   {[
+                    {
+                      // Sprint UF17 — Audit Pack ZIP. Listed first as
+                      // the recommended primary export for auditors:
+                      // bundles PDF + CSV + Cert + Manifest + Evidence
+                      // files into a single download. Replaces the
+                      // "click 3 buttons + manually zip" auditor workflow.
+                      label: "Audit Pack",
+                      sub: "Full ZIP bundle",
+                      icon: Archive,
+                      color: "text-violet-500",
+                      loading: exportingZip,
+                      onClick: handleExportZip,
+                    },
                     {
                       label: "Audit Report",
                       sub: "PDF with full trail",
