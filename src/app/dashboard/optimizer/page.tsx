@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import Link from "next/link";
+import { Layers, ArrowRight } from "lucide-react";
 import type {
   OptimizationInput,
   OptimizationOutput,
@@ -90,14 +92,30 @@ export default function OptimizerPage() {
   return (
     <div className="min-h-screen p-6 font-mono">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-[var(--text-primary)] text-xl font-bold tracking-tight">
-          Regulatory Arbitrage Optimizer
-        </h1>
-        <p className="text-[var(--text-secondary)] text-xs mt-1">
-          Compare 10 European jurisdictions and find the optimal regulatory
-          environment for your space mission.
-        </p>
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-[var(--text-primary)] text-xl font-bold tracking-tight">
+            Regulatory Arbitrage Optimizer
+          </h1>
+          <p className="text-[var(--text-secondary)] text-xs mt-1">
+            Compare 10 European jurisdictions and find the optimal regulatory
+            environment for your space mission.
+          </p>
+        </div>
+        {/* Sprint UF56 (P1-S8) — cross-link to Digital Twin.
+            Optimizer asks "what would moving to LU look like?"; Twin
+            answers "what does my actual current state look like?".
+            One click to the live picture so the operator can compare
+            the simulation against ground truth instead of switching
+            via sidebar. */}
+        <Link
+          href="/dashboard/digital-twin"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-[var(--border-default)] bg-white/[0.02] px-3 py-1.5 text-[11.5px] font-medium text-[var(--text-secondary)] transition hover:border-emerald-500/30 hover:bg-white/[0.04] hover:text-emerald-300"
+        >
+          <Layers className="h-3.5 w-3.5" />
+          View live compliance state
+          <ArrowRight className="h-3 w-3" />
+        </Link>
       </div>
 
       {/* 3-Column Grid */}

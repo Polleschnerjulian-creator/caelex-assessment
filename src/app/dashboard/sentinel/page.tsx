@@ -167,6 +167,17 @@ export default function SentinelPage() {
     failed: number;
   } | null>(null);
 
+  // Sprint UF54 (P1-S2) — Evidence-feed search + data-point + status
+  // filters. Client-side because the packet list is already in memory
+  // (capped at 50 per fetch); server-round-trip would add latency
+  // without value. Cleared filters fall back to the existing
+  // "agent + total count" header.
+  const [evidenceSearch, setEvidenceSearch] = useState("");
+  const [dataPointFilter, setDataPointFilter] = useState<string>("");
+  const [verificationFilter, setVerificationFilter] = useState<
+    "all" | "verified" | "issues" | "cross_verified"
+  >("all");
+
   // ─── Data Fetching ──────────────────────────────────────────────────────
 
   const fetchData = useCallback(async () => {
@@ -665,11 +676,16 @@ export default function SentinelPage() {
       {/* ─── Evidence Feed Tab ─── */}
       {viewMode === "feed" && (
         <div className="space-y-4">
-          {/* Agent Filter */}
-          <div className="flex items-center gap-3">
+          {/* Sprint UF54 (P1-S2) — Filter toolbar:
+              Agent + Search + Data-point + Verification status. The
+              search field matches data_point label, source_system, or
+              satellite NORAD id. Filters apply client-side over the
+              already-fetched (max 50) packets. */}
+          <div className="flex flex-wrap items-center gap-3">
             <select
               value={selectedAgentId ?? ""}
               onChange={(e) => setSelectedAgentId(e.target.value || null)}
+              aria-label="Filter by agent"
               className="px-3 py-2 rounded-lg text-body bg-[var(--fill-light)] border border-[var(--border-subtle)] text-[var(--text-primary)] outline-none"
             >
               <option value="">All Agents</option>
@@ -679,31 +695,120 @@ export default function SentinelPage() {
                 </option>
               ))}
             </select>
-            <span className="text-caption text-[var(--text-tertiary)]">
-              {packets.length} packet{packets.length !== 1 ? "s" : ""}
-            </span>
+
+            <input
+              type="search"
+              value={evidenceSearch}
+              onChange={(e) => setEvidenceSearch(e.target.value)}
+              placeholder="Search data-point / source / NORAD…"
+              aria-label="Search evidence packets"
+              className="flex-1 min-w-[220px] max-w-md px-3 py-2 rounded-lg text-body bg-[var(--fill-light)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] outline-none"
+            />
+
+            <select
+              value={dataPointFilter}
+              onChange={(e) => setDataPointFilter(e.target.value)}
+              aria-label="Filter by data point"
+              className="px-3 py-2 rounded-lg text-body bg-[var(--fill-light)] border border-[var(--border-subtle)] text-[var(--text-primary)] outline-none"
+            >
+              <option value="">All data points</option>
+              {Object.entries(DATA_POINT_LABELS).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={verificationFilter}
+              onChange={(e) =>
+                setVerificationFilter(
+                  e.target.value as typeof verificationFilter,
+                )
+              }
+              aria-label="Filter by verification status"
+              className="px-3 py-2 rounded-lg text-body bg-[var(--fill-light)] border border-[var(--border-subtle)] text-[var(--text-primary)] outline-none"
+            >
+              <option value="all">All statuses</option>
+              <option value="verified">Verified (sig + chain)</option>
+              <option value="cross_verified">Cross-verified</option>
+              <option value="issues">Issues only</option>
+            </select>
           </div>
 
-          {/* Packet List */}
-          <Card variant="elevated">
-            <CardContent className="p-0">
-              {packets.map((packet, i) => (
-                <PacketRow
-                  key={packet.id}
-                  packet={packet}
-                  isLast={i === packets.length - 1}
-                />
-              ))}
-              {packets.length === 0 && (
-                <div className="py-12 text-center">
-                  <Database className="w-6 h-6 text-[var(--text-tertiary)] mx-auto mb-2" />
-                  <p className="text-body text-[var(--text-secondary)]">
-                    No evidence packets
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {/* Filtered packet list. */}
+          {(() => {
+            const q = evidenceSearch.trim().toLowerCase();
+            const filtered = packets.filter((p) => {
+              if (dataPointFilter && p.data_point !== dataPointFilter)
+                return false;
+              if (verificationFilter === "verified") {
+                if (!p.signature_valid || !p.chain_valid) return false;
+              } else if (verificationFilter === "cross_verified") {
+                if (!p.cross_verified) return false;
+              } else if (verificationFilter === "issues") {
+                if (p.signature_valid && p.chain_valid) return false;
+              }
+              if (q) {
+                const dpLabel = (
+                  DATA_POINT_LABELS[p.data_point] ?? p.data_point
+                ).toLowerCase();
+                const hay =
+                  `${dpLabel} ${p.data_point} ${p.source_system} ${p.satellite_norad ?? ""}`.toLowerCase();
+                if (!hay.includes(q)) return false;
+              }
+              return true;
+            });
+            const filterActive =
+              q !== "" ||
+              dataPointFilter !== "" ||
+              verificationFilter !== "all";
+
+            return (
+              <>
+                <span className="text-caption text-[var(--text-tertiary)]">
+                  Showing {filtered.length} of {packets.length} packet
+                  {packets.length !== 1 ? "s" : ""}
+                  {filterActive ? " · filtered" : ""}
+                </span>
+
+                <Card variant="elevated">
+                  <CardContent className="p-0">
+                    {filtered.map((packet, i) => (
+                      <PacketRow
+                        key={packet.id}
+                        packet={packet}
+                        isLast={i === filtered.length - 1}
+                      />
+                    ))}
+                    {filtered.length === 0 && (
+                      <div className="py-12 text-center">
+                        <Database className="w-6 h-6 text-[var(--text-tertiary)] mx-auto mb-2" />
+                        <p className="text-body text-[var(--text-secondary)]">
+                          {filterActive
+                            ? "No packets match these filters."
+                            : "No evidence packets"}
+                        </p>
+                        {filterActive ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEvidenceSearch("");
+                              setDataPointFilter("");
+                              setVerificationFilter("all");
+                            }}
+                            className="mt-3 inline-flex items-center gap-1 rounded-lg border border-white/[0.08] bg-white/[0.025] px-3 py-1 text-[12px] font-medium text-slate-200 hover:border-white/[0.14] hover:bg-white/[0.05]"
+                          >
+                            Clear filters
+                          </button>
+                        ) : null}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </>
+            );
+          })()}
         </div>
       )}
     </div>

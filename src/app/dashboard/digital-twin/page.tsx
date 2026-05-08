@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -25,6 +26,7 @@ import {
   Trash2,
   ChevronRight,
   Info,
+  Compass,
 } from "lucide-react";
 import {
   AreaChart,
@@ -1820,7 +1822,7 @@ export default function DigitalTwinPage() {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-3 mb-1">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent-primary-soft)] to-[var(--accent-info-soft)] flex items-center justify-center">
             <Layers size={20} className="text-[var(--accent-primary)]" />
@@ -1834,6 +1836,19 @@ export default function DigitalTwinPage() {
             </p>
           </div>
         </div>
+        {/* Sprint UF56 (P1-S8) — cross-link to Optimizer.
+            Twin shows "what's my live state?"; Optimizer asks "what
+            would moving regulatory regime do?". One click between
+            them so the operator can pivot from observation to
+            simulation without sidebar navigation. */}
+        <Link
+          href="/dashboard/optimizer"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-[var(--border-default)] bg-white/[0.02] px-3 py-1.5 text-[11.5px] font-medium text-[var(--text-secondary)] transition hover:border-emerald-500/30 hover:bg-white/[0.04] hover:text-emerald-300"
+        >
+          <Compass className="h-3.5 w-3.5" />
+          Run a what-if comparison
+          <ChevronRight className="h-3 w-3" />
+        </Link>
       </div>
 
       {/* Hero KPIs */}

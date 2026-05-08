@@ -195,6 +195,12 @@ export default function NetworkHubPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [showInviteModal, setShowInviteModal] = useState(false);
+  // Sprint UF55 (P1-S5) — per-stakeholder activity-feed filter.
+  // Empty string = "all stakeholders". Persists in component state
+  // across refresh/refetch so the operator's selection isn't lost
+  // when the activities list polls or refreshes.
+  const [activityFilterEngagementId, setActivityFilterEngagementId] =
+    useState<string>("");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const orgId = organization?.id;
@@ -503,28 +509,74 @@ export default function NetworkHubPage() {
 
           {/* Activity Feed Section */}
           <div className="rounded-2xl p-5" style={innerGlass}>
-            <h3 className="text-sm font-medium text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-              <Network size={14} className="text-indigo-500" />
-              Network Activity
-            </h3>
-            {activities.length === 0 ? (
-              <p className="text-sm text-slate-500 dark:text-white/[0.55] py-4 text-center">
-                No recent activity.
-              </p>
-            ) : (
-              <NetworkActivityFeed
-                activities={activities.map(
-                  (a): NetworkActivity => ({
-                    id: a.id,
-                    action: a.type as NetworkActivity["action"],
-                    description: a.description,
-                    timestamp: a.timestamp,
-                    entityId: a.engagementId || "",
-                    entityType: "engagement",
-                  }),
-                )}
-              />
-            )}
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <h3 className="text-sm font-medium text-slate-800 dark:text-white flex items-center gap-2">
+                <Network size={14} className="text-indigo-500" />
+                Network Activity
+              </h3>
+              {/* Sprint UF55 (P1-S5) — Per-stakeholder filter for the
+                  activity feed. With ~50+ entries the unfiltered feed
+                  is noise; CO needs to isolate "what's @auditor done
+                  this week" or "all moves on this insurer" in one
+                  click. Server returns up to 20 most-recent entries
+                  (existing /api/network/activity?limit=20), filtering
+                  is client-side over that set. */}
+              <select
+                value={activityFilterEngagementId}
+                onChange={(e) => setActivityFilterEngagementId(e.target.value)}
+                aria-label="Filter activity by stakeholder"
+                className="rounded-lg border border-slate-200/60 bg-white/40 px-2.5 py-1 text-[12px] font-medium text-slate-700 outline-none transition hover:bg-white/60 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
+              >
+                <option value="">All stakeholders</option>
+                {engagements.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.companyName || e.stakeholderName}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {(() => {
+              const filtered = activityFilterEngagementId
+                ? activities.filter(
+                    (a) => a.engagementId === activityFilterEngagementId,
+                  )
+                : activities;
+              if (activities.length === 0) {
+                return (
+                  <p className="text-sm text-slate-500 dark:text-white/[0.55] py-4 text-center">
+                    No recent activity.
+                  </p>
+                );
+              }
+              if (filtered.length === 0) {
+                return (
+                  <p className="text-sm text-slate-500 dark:text-white/[0.55] py-4 text-center">
+                    No activity for this stakeholder.{" "}
+                    <button
+                      type="button"
+                      onClick={() => setActivityFilterEngagementId("")}
+                      className="font-medium text-indigo-500 hover:text-indigo-400"
+                    >
+                      Show all
+                    </button>
+                  </p>
+                );
+              }
+              return (
+                <NetworkActivityFeed
+                  activities={filtered.map(
+                    (a): NetworkActivity => ({
+                      id: a.id,
+                      action: a.type as NetworkActivity["action"],
+                      description: a.description,
+                      timestamp: a.timestamp,
+                      entityId: a.engagementId || "",
+                      entityType: "engagement",
+                    }),
+                  )}
+                />
+              );
+            })()}
           </div>
         </div>
       </div>
