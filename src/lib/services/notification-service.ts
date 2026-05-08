@@ -33,6 +33,13 @@ export interface NotificationFilters {
   dismissed?: boolean;
   type?: NotificationType;
   severity?: NotificationSeverity;
+  /**
+   * Sprint UF41 (P1-D4) — category filter resolves to a `type IN [...]`
+   * clause via NOTIFICATION_CONFIG. Lets the inbox UI offer a single
+   * "Compliance" / "Deadlines" / "Incidents" dropdown instead of
+   * exposing all 30+ NotificationType enum values to the operator.
+   */
+  category?: string;
   fromDate?: Date;
   toDate?: Date;
 }
@@ -441,6 +448,19 @@ export async function getUserNotifications(
 
   if (filters?.type) {
     where.type = filters.type;
+  }
+
+  // Sprint UF41 (P1-D4) — translate `category` to a `type IN [...]`
+  // clause by enumerating NOTIFICATION_CONFIG entries with that
+  // category. `type` (specific) takes precedence over `category`
+  // (group) so callers can do either.
+  if (!filters?.type && filters?.category) {
+    const matchingTypes = (
+      Object.keys(NOTIFICATION_CONFIG) as NotificationType[]
+    ).filter((t) => NOTIFICATION_CONFIG[t].category === filters.category);
+    if (matchingTypes.length > 0) {
+      where.type = { in: matchingTypes };
+    }
   }
 
   if (filters?.severity) {

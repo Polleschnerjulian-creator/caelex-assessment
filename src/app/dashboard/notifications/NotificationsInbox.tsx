@@ -21,6 +21,7 @@ import {
   Info,
   ArrowUpRight,
   Filter,
+  ChevronDown,
 } from "lucide-react";
 import {
   Card,
@@ -48,36 +49,99 @@ interface Props {
   initialTotal: number;
   initialUnreadCount: number;
   initialFilter: "all" | "unread";
+  /** Sprint UF41 (P1-D4) — server-resolved initial filters. */
+  initialSeverity: SeverityFilter | null;
+  initialCategory: string | null;
   categories: Array<{ id: string; label: string }>;
 }
 
 const PAGE_SIZE = 50;
+
+type SeverityFilter = "INFO" | "WARNING" | "URGENT" | "CRITICAL";
+const SEVERITY_OPTIONS: { value: SeverityFilter; label: string }[] = [
+  { value: "CRITICAL", label: "Critical" },
+  { value: "URGENT", label: "Urgent" },
+  { value: "WARNING", label: "Warning" },
+  { value: "INFO", label: "Info" },
+];
 
 export function NotificationsInbox({
   initialItems,
   initialTotal,
   initialUnreadCount,
   initialFilter,
+  initialSeverity,
+  initialCategory,
+  categories,
 }: Props) {
   const router = useRouter();
   const [items, setItems] = React.useState<NotificationItem[]>(initialItems);
   const [total, setTotal] = React.useState(initialTotal);
   const [unreadCount, setUnreadCount] = React.useState(initialUnreadCount);
   const [filter, setFilter] = React.useState<"all" | "unread">(initialFilter);
+  // Sprint UF41 (P1-D4) — severity + category filters on the inbox.
+  // Both are mirrored to URL params so back/forward + bookmarks work.
+  const [severity, setSeverity] = React.useState<SeverityFilter | null>(
+    initialSeverity,
+  );
+  const [category, setCategory] = React.useState<string | null>(
+    initialCategory,
+  );
   const [loadingMore, setLoadingMore] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
 
   const hasMore = items.length < total;
 
+  /**
+   * Sprint UF41 — single helper that owns URL-param construction. Each
+   * filter mutator calls this so we never drift between the URL and
+   * the in-memory state. router.refresh() then re-runs the server
+   * component and the initial list reflects the new filter without
+   * a full page reload.
+   */
+  function pushFiltered(next: {
+    filter?: "all" | "unread";
+    severity?: SeverityFilter | null;
+    category?: string | null;
+  }) {
+    const f = next.filter ?? filter;
+    const s = next.severity === undefined ? severity : next.severity;
+    const c = next.category === undefined ? category : next.category;
+    const params = new URLSearchParams();
+    if (f === "unread") params.set("filter", "unread");
+    if (s) params.set("severity", s);
+    if (c) params.set("category", c);
+    const qs = params.toString();
+    router.push(
+      qs ? `/dashboard/notifications?${qs}` : "/dashboard/notifications",
+    );
+    router.refresh();
+  }
+
   function switchFilter(next: "all" | "unread") {
     if (next === filter) return;
     setFilter(next);
-    router.push(
-      next === "unread"
-        ? "/dashboard/notifications?filter=unread"
-        : "/dashboard/notifications",
-    );
-    router.refresh();
+    pushFiltered({ filter: next });
+  }
+
+  function switchSeverity(next: SeverityFilter | null) {
+    if (next === severity) return;
+    setSeverity(next);
+    pushFiltered({ severity: next });
+  }
+
+  function switchCategory(next: string | null) {
+    if (next === category) return;
+    setCategory(next);
+    pushFiltered({ category: next });
+  }
+
+  function clearAll() {
+    if (filter === "all" && severity === null && category === null) return;
+    setFilter("all");
+    setSeverity(null);
+    setCategory(null);
+    pushFiltered({ filter: "all", severity: null, category: null });
   }
 
   async function handleClick(n: NotificationItem) {
@@ -147,6 +211,11 @@ export function NotificationsInbox({
       url.searchParams.set("limit", String(PAGE_SIZE));
       url.searchParams.set("offset", String(items.length));
       if (filter === "unread") url.searchParams.set("read", "false");
+      // Sprint UF41 — severity + category have to round-trip too,
+      // otherwise "Load more" silently widens the result set past
+      // what the user filtered.
+      if (severity) url.searchParams.set("severity", severity);
+      if (category) url.searchParams.set("category", category);
       const res = await fetch(url.toString());
       if (!res.ok) return;
       const data = (await res.json()) as {
@@ -160,34 +229,80 @@ export function NotificationsInbox({
     }
   }
 
+  const hasActiveFilter =
+    filter === "unread" || severity !== null || category !== null;
+
   return (
     <div className="space-y-4">
-      {/* Filter tabs + bulk action */}
-      <div className="flex items-center justify-between gap-3">
-        <nav className="flex items-center gap-1 rounded-lg border border-white/[0.06] bg-white/[0.02] p-0.5">
-          <FilterTab
-            active={filter === "all"}
-            onClick={() => switchFilter("all")}
-            icon={Filter}
-          >
-            All
-            <span className="ml-1.5 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] tabular-nums text-slate-300">
-              {total}
-            </span>
-          </FilterTab>
-          <FilterTab
-            active={filter === "unread"}
-            onClick={() => switchFilter("unread")}
-            icon={Inbox}
-          >
-            Unread
-            {unreadCount > 0 ? (
-              <span className="ml-1.5 rounded bg-rose-500/15 px-1.5 py-0.5 text-[10px] tabular-nums text-rose-300 ring-1 ring-inset ring-rose-500/20">
-                {unreadCount}
+      {/* Filter tabs + dropdowns + bulk action */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <nav className="flex items-center gap-1 rounded-lg border border-white/[0.06] bg-white/[0.02] p-0.5">
+            <FilterTab
+              active={filter === "all"}
+              onClick={() => switchFilter("all")}
+              icon={Filter}
+            >
+              All
+              <span className="ml-1.5 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] tabular-nums text-slate-300">
+                {total}
               </span>
-            ) : null}
-          </FilterTab>
-        </nav>
+            </FilterTab>
+            <FilterTab
+              active={filter === "unread"}
+              onClick={() => switchFilter("unread")}
+              icon={Inbox}
+            >
+              Unread
+              {unreadCount > 0 ? (
+                <span className="ml-1.5 rounded bg-rose-500/15 px-1.5 py-0.5 text-[10px] tabular-nums text-rose-300 ring-1 ring-inset ring-rose-500/20">
+                  {unreadCount}
+                </span>
+              ) : null}
+            </FilterTab>
+          </nav>
+
+          {/* Sprint UF41 (P1-D4) — severity dropdown.
+              Audit-flagged finding: Notifications surface had only
+              all/unread; CO with 200 mixed signals couldn't isolate
+              CRITICAL items. Native <select> for keyboard-friendliness
+              + zero JS overhead. */}
+          <FilterSelect
+            label="Severity"
+            value={severity ?? ""}
+            onChange={(v) => switchSeverity((v as SeverityFilter) || null)}
+            options={SEVERITY_OPTIONS.map((o) => ({
+              value: o.value,
+              label: o.label,
+            }))}
+          />
+
+          {/* Sprint UF41 (P1-D4) — category dropdown. Server resolves
+              category id → NotificationType[] via NOTIFICATION_CONFIG
+              so the operator picks "Compliance" or "Incidents", not 30+
+              raw enum values. */}
+          <FilterSelect
+            label="Category"
+            value={category ?? ""}
+            onChange={(v) => switchCategory(v || null)}
+            options={categories.map((c) => ({
+              value: c.id,
+              label: c.label,
+            }))}
+          />
+
+          {hasActiveFilter ? (
+            <button
+              type="button"
+              onClick={clearAll}
+              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11.5px] font-medium text-slate-400 transition hover:text-slate-200"
+              title="Reset all filters"
+            >
+              <X className="h-3 w-3" />
+              Clear
+            </button>
+          ) : null}
+        </div>
         <button
           type="button"
           onClick={handleMarkAllRead}
@@ -205,18 +320,18 @@ export function NotificationsInbox({
           <EmptyState
             icon={Inbox}
             title={
-              filter === "unread"
-                ? "No unread notifications"
+              hasActiveFilter
+                ? "No notifications match these filters"
                 : "No notifications yet"
             }
             description={
-              filter === "unread"
-                ? "You're all caught up. New compliance signals will land here as they fire."
+              hasActiveFilter
+                ? "Adjust the filters above or clear them to see your full inbox."
                 : "Notifications appear here when deadlines approach, regulators publish updates, or incidents need attention."
             }
             cta={
-              filter === "unread"
-                ? { label: "Show all", href: "/dashboard/notifications" }
+              hasActiveFilter
+                ? { label: "Clear filters", href: "/dashboard/notifications" }
                 : undefined
             }
           />
@@ -284,6 +399,49 @@ function FilterTab({
       <Icon className="h-3.5 w-3.5" />
       {children}
     </button>
+  );
+}
+
+/**
+ * Sprint UF41 (P1-D4) — native <select> wrapped to match the toolbar
+ * aesthetic. Native picker is keyboard-accessible by default + works
+ * on touch without an extra library. The placeholder option ("Any")
+ * doubles as the unset state — selecting it clears the filter.
+ */
+function FilterSelect({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: Array<{ value: string; label: string }>;
+}) {
+  const isActive = value !== "";
+  return (
+    <label className="relative inline-flex items-center">
+      <span className="sr-only">{label}</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label={label}
+        className={`appearance-none rounded-lg border bg-white/[0.02] px-3 py-1.5 pr-7 text-[12px] font-medium transition focus:outline-none focus:ring-1 focus:ring-emerald-500/40 ${
+          isActive
+            ? "border-emerald-500/30 text-emerald-200"
+            : "border-white/[0.06] text-slate-300 hover:border-white/[0.12]"
+        }`}
+      >
+        <option value="">{label}: Any</option>
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {label}: {o.label}
+          </option>
+        ))}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-2 h-3 w-3 text-slate-400" />
+    </label>
   );
 }
 

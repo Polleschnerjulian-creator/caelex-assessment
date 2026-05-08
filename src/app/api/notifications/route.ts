@@ -27,6 +27,10 @@ export async function GET(request: Request) {
     const severity = url.searchParams.get(
       "severity",
     ) as NotificationSeverity | null;
+    // Sprint UF41 (P1-D4) — category filter (deadlines/compliance/...)
+    // is server-resolved into a `type IN [...]` clause via
+    // NOTIFICATION_CONFIG; the inbox UI surfaces it as a plain dropdown.
+    const category = url.searchParams.get("category");
     const limit = parsePaginationLimit(url.searchParams.get("limit"), 20);
     const offset = parseInt(url.searchParams.get("offset") || "0");
 
@@ -36,6 +40,7 @@ export async function GET(request: Request) {
         read: read === null ? undefined : read === "true",
         type: type || undefined,
         severity: severity || undefined,
+        category: category || undefined,
       },
       { limit, offset },
     );
