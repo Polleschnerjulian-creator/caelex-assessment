@@ -169,7 +169,11 @@ export type AuditAction =
   | "mission_spacecraft_assigned"
   | "mission_spacecraft_detached"
   | "mission_spacecraft_role_changed"
-  | "mission_auto_migrated";
+  | "mission_auto_migrated"
+  // Regulatory feed (Sprint UF40 / P1-P7) — operator forwarded a
+  // RegulatoryUpdate row into their personal inbox (Notification),
+  // turning passive feed-content into a tracked task.
+  | "regulatory_update_forwarded";
 
 // Entity types for audit logging
 export type AuditEntityType =
@@ -234,7 +238,9 @@ export type AuditEntityType =
   | "trade_license"
   // Mission domain (Sprint Mission-2).
   | "mission"
-  | "mission_spacecraft";
+  | "mission_spacecraft"
+  // Regulatory feed (Sprint UF40 / P1-P7).
+  | "regulatory_update";
 
 export interface AuditLogEntry {
   userId: string;
@@ -749,6 +755,12 @@ export function generateAuditDescription(
       return "Imported assessment results";
     case "bulk_status_update":
       return `Updated multiple ${entityType} statuses`;
+    case "regulatory_update_forwarded": {
+      const next = newValue as { celex?: string } | undefined;
+      return next?.celex
+        ? `Forwarded regulatory update ${next.celex} to inbox`
+        : `Forwarded regulatory update to inbox`;
+    }
     default:
       return `${action} on ${entityType}`;
   }

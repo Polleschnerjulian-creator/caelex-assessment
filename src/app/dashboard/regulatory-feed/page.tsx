@@ -15,6 +15,8 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Inbox,
+  Check,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
@@ -161,6 +163,14 @@ export default function RegulatoryFeedPage() {
   const [moduleFilter, setModuleFilter] = useState<string>("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [markingRead, setMarkingRead] = useState<string | null>(null);
+  // Sprint UF40 (P1-P7) — Forward-to-inbox state. We track per-item
+  // status because the toolbar inline-confirms (idle → armed → posting
+  // → forwarded) and the user can have multiple items expanded over
+  // the course of one session. Forwarded set persists across the
+  // session so the button can render in its terminal state.
+  const [forwardingId, setForwardingId] = useState<string | null>(null);
+  const [forwardedIds, setForwardedIds] = useState<Set<string>>(new Set());
+  const [forwardError, setForwardError] = useState<string | null>(null);
 
   const fetchUpdates = useCallback(async () => {
     setLoading(true);
@@ -204,6 +214,47 @@ export default function RegulatoryFeedPage() {
       }
     } finally {
       setMarkingRead(null);
+    }
+  };
+
+  /**
+   * Sprint UF40 (P1-P7) — Forward to inbox.
+   *
+   * Calls /api/regulatory-feed/forward which (1) creates a Notification
+   * (type COMPLIANCE_ACTION_REQUIRED) for the user so the update lands
+   * in /dashboard/today and (2) marks the update as read so it stops
+   * cluttering this list. Idempotent on the server side.
+   *
+   * Optimistic UI: flip isRead in local state immediately, add to
+   * forwardedIds. On error, surface inline (no toast infra on this
+   * page) and roll back forwardedIds; isRead stays optimistic since the
+   * server treats both effects as one transaction.
+   */
+  const handleForwardToInbox = async (updateId: string) => {
+    setForwardError(null);
+    setForwardingId(updateId);
+    try {
+      const res = await fetch("/api/regulatory-feed/forward", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ updateId }),
+      });
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload?.error || `Request failed (${res.status})`);
+      }
+      setForwardedIds((prev) => {
+        const next = new Set(prev);
+        next.add(updateId);
+        return next;
+      });
+      setUpdates((prev) =>
+        prev.map((u) => (u.id === updateId ? { ...u, isRead: true } : u)),
+      );
+    } catch (err) {
+      setForwardError(err instanceof Error ? err.message : "Forward failed");
+    } finally {
+      setForwardingId(null);
     }
   };
 
@@ -381,6 +432,14 @@ export default function RegulatoryFeedPage() {
                       }
                       onMarkRead={() => handleMarkAsRead(update.id)}
                       markingRead={markingRead === update.id}
+                      onForward={() => handleForwardToInbox(update.id)}
+                      forwarding={forwardingId === update.id}
+                      forwarded={forwardedIds.has(update.id)}
+                      forwardError={
+                        forwardError && forwardingId === null
+                          ? forwardError
+                          : null
+                      }
                       formatDate={formatDate}
                       t={t}
                     />
@@ -444,6 +503,10 @@ function FeedItem({
   onToggle,
   onMarkRead,
   markingRead,
+  onForward,
+  forwarding,
+  forwarded,
+  forwardError,
   formatDate,
   t,
 }: {
@@ -452,6 +515,10 @@ function FeedItem({
   onToggle: () => void;
   onMarkRead: () => void;
   markingRead: boolean;
+  onForward: () => void;
+  forwarding: boolean;
+  forwarded: boolean;
+  forwardError: string | null;
   formatDate: (d: string) => string;
   t: (key: string) => string;
 }) {
@@ -551,7 +618,7 @@ function FeedItem({
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <a
                   href={update.sourceUrl}
                   target="_blank"
@@ -561,6 +628,40 @@ function FeedItem({
                   <ExternalLink size={12} />
                   {t("regulatoryFeed.viewOnEurLex")}
                 </a>
+
+                {/* Sprint UF40 (P1-P7) — Forward to inbox.
+                    Single-stage, single-click: Forward is additive, not
+                    destructive (creates a Notification + marks update
+                    as read). User can always dismiss the resulting
+                    Today-inbox item. The terminal "Forwarded" state
+                    stays so the user knows they already acted. */}
+                {forwarded ? (
+                  <span
+                    className="inline-flex items-center gap-1.5 text-small font-medium text-emerald-500"
+                    aria-live="polite"
+                  >
+                    <Check size={12} />
+                    Forwarded to inbox
+                  </span>
+                ) : (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onForward();
+                    }}
+                    disabled={forwarding}
+                    title="Create a follow-up notification on /dashboard/today"
+                    className="inline-flex items-center gap-1.5 text-small font-medium text-emerald-500 hover:text-emerald-400 transition-colors disabled:opacity-50"
+                  >
+                    {forwarding ? (
+                      <Loader2 size={12} className="animate-spin" />
+                    ) : (
+                      <Inbox size={12} />
+                    )}
+                    {forwarding ? "Forwarding…" : "Forward to inbox"}
+                  </button>
+                )}
+
                 {!update.isRead && (
                   <button
                     onClick={(e) => {
@@ -579,6 +680,14 @@ function FeedItem({
                   </button>
                 )}
               </div>
+
+              {/* Inline error surface for the forward action — keeps
+                  the user inside the feed without needing toast infra. */}
+              {forwardError && !forwarding ? (
+                <p role="alert" className="mt-2 text-caption text-rose-500">
+                  {forwardError}
+                </p>
+              ) : null}
             </div>
           </motion.div>
         )}
