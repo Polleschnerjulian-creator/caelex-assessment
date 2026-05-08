@@ -1,6 +1,6 @@
 # Caelex Comply v2 — Compliance-Officer-Audit (Living Document)
 
-**Status:** Aktiv · **Letztes Update:** 2026-05-08 (Batch UF36-37) · **Eigentümer:** Claude + Julian
+**Status:** Aktiv · **Letztes Update:** 2026-05-08 (Batch UF38-40) · **Eigentümer:** Claude + Julian
 
 > Living document — wird nach jedem implementierten Sprint upgedated.
 > Überlebt Kontext-Kompression: alle Findings + Sprint-Mapping +
@@ -38,35 +38,35 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ## 2. Score-Card pro Surface
 
-| Surface         | Score | Top-Fix                                   |
-| --------------- | ----- | ----------------------------------------- |
-| Today (Inbox)   | 7/10  | P0-B (`window.prompt()`-Bug)              |
-| Triage          | 5/10  | Keyboard verifizieren                     |
-| Proposals       | 6/10  | 50-Cap (Pending) Pagination               |
-| Notifications   | 4/10  | Filter (Severity/Module/Date)             |
-| Astra V2        | 5/10  | Scratchpad-Loss-Warning, Archive-Confirm  |
-| Missions-Liste  | 3/10  | Search/Filter/Compliance-Score (P1-M1+M2) |
-| Mission-Detail  | 6/10  | Spacecraft-Detail-Page (P0-D)             |
-| Mission Control | ?/10  | MissionControlView ungeprüft              |
-| Ephemeris       | 7/10  | Pre-Launch-Sats unsichtbar (P1-M7)        |
-| Sentinel        | 6/10  | Pro-Mission-Configuration (P1-S1)         |
-| Posture         | 7/10  | Top-Risks-Card (P1-P1)                    |
-| Modules-Index   | 3/10  | Brochure→Control-Panel (P1-P3)            |
-| Article-Tracker | 6/10  | Notes/Assignee/Bulk (P1-T1+T2+T3)         |
-| Documents       | 5/10  | Article-FK (P1-P4)                        |
-| Regulatory-Feed | 4/10  | Workflow-Integration (P1-P7)              |
-| Incidents       | 5/10  | NIS2-Dialog-Wiring (P0-A)                 |
-| NCA Portal      | 6/10  | Generate-Handoff (P1-H6)                  |
-| Audit Center    | 8/10  | ZIP-Evidence-Bundling verifizieren        |
-| Audit Log       | 8/10  | CSV-Export-Pagination (P1-H3)             |
-| Audit Chain     | 7/10  | (kaum Mängel)                             |
-| Network         | 6/10  | Activity-Feed-Filter (P1-S5)              |
-| Trade           | 2/10  | Counterparty/Operations Stubs (P0-E)      |
-| Digital Twin    | 7/10  | Optimizer-Cross-Link (P1-S8)              |
-| Optimizer       | 5/10  | Auto-Profile (P1-S9)                      |
-| Settings        | 6/10  | Holiday/Delegate (P1-S6)                  |
-| Onboarding      | 5/10  | Bulk-Import (P0-F)                        |
-| Timeline        | 3/10  | Hardcoded Phases + Dead Buttons (P0-G)    |
+| Surface         | Score | Top-Fix                                    |
+| --------------- | ----- | ------------------------------------------ |
+| Today (Inbox)   | 7/10  | P0-B (`window.prompt()`-Bug)               |
+| Triage          | 5/10  | Keyboard verifizieren                      |
+| Proposals       | 6/10  | 50-Cap (Pending) Pagination                |
+| Notifications   | 4/10  | Filter (Severity/Module/Date)              |
+| Astra V2        | 5/10  | Scratchpad-Loss-Warning, Archive-Confirm   |
+| Missions-Liste  | 3/10  | Search/Filter/Compliance-Score (P1-M1+M2)  |
+| Mission-Detail  | 6/10  | Spacecraft-Detail-Page (P0-D)              |
+| Mission Control | ?/10  | MissionControlView ungeprüft               |
+| Ephemeris       | 7/10  | Pre-Launch-Sats unsichtbar (P1-M7)         |
+| Sentinel        | 6/10  | Pro-Mission-Configuration (P1-S1)          |
+| Posture         | 7/10  | Top-Risks-Card (P1-P1)                     |
+| Modules-Index   | 3/10  | Brochure→Control-Panel (P1-P3)             |
+| Article-Tracker | 6/10  | Notes/Assignee/Bulk (P1-T1+T2+T3)          |
+| Documents       | 5/10  | Article-FK (P1-P4)                         |
+| Regulatory-Feed | 6/10  | UF40 closed P1-P7; Module-Filter (P1-P8)   |
+| Incidents       | 5/10  | NIS2-Dialog-Wiring (P0-A)                  |
+| NCA Portal      | 6/10  | Generate-Handoff (P1-H6)                   |
+| Audit Center    | 8/10  | ZIP-Evidence-Bundling verifizieren         |
+| Audit Log       | 8/10  | CSV-Export-Pagination (P1-H3)              |
+| Audit Chain     | 7/10  | (kaum Mängel)                              |
+| Network         | 6/10  | Activity-Feed-Filter (P1-S5)               |
+| Trade           | 6/10  | UF39 verified Wave A + C live; nicht stub  |
+| Digital Twin    | 7/10  | Optimizer-Cross-Link (P1-S8)               |
+| Optimizer       | 5/10  | Auto-Profile (P1-S9)                       |
+| Settings        | 6/10  | Holiday/Delegate (P1-S6)                   |
+| Onboarding      | 6/10  | UF38: cap 50 + escape hatch; full P0-F TBD |
+| Timeline        | 3/10  | Hardcoded Phases + Dead Buttons (P0-G)     |
 
 ---
 
@@ -122,8 +122,12 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
   Roadmap. 2/3 der Sub-Module nicht implementiert (Counterparty-Screening
   OFAC/BIS/DDTC, Operations-Lifecycle Item×Counterparty×Route×License).
 - **Reproduzieren:** Sidebar → Trade → 2 von 3 Cards `pointerEvents: none`
-- **Sprint:** UF33 (separate)
-- **Status:** ⏳ Pending
+- **Sprint:** UF39 (verification)
+- **Status:** ✅ Resolved (audit war veraltet — `pointerEvents: none` ist
+  nicht mehr im Code; alle 3 Cards verlinken auf gelaufene Implementierungen:
+  `trade/items/page.tsx`, `trade/counterparties/page.tsx` (17KB),
+  `trade/operations/page.tsx` (27KB), je mit `[id]`-Detail-Pages und
+  `/api/trade/{parties,operations}` API-Routes. Wave A + Wave C live.)
 
 ### P0-F — Onboarding-Wizard Cap auf 12 Spacecraft, kein TLE/CelesTrak-Pull
 
@@ -131,8 +135,12 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 - **Problem:** Operator mit 50 Sats kann nicht onboarden. Kein CSV-Upload, kein
   CelesTrak-Pull, kein NORAD-ID-Bulk-Lookup.
 - **Reproduzieren:** Onboarding starten → Spacecraft-Step → 12 Sats max
-- **Sprint:** UF34 (separate)
-- **Status:** ⏳ Pending
+- **Sprint:** UF38
+- **Status:** ✅ Done partial (commit 0d465c33 — Cap 12 → 50 + explanatory
+  hint card "Operating a large constellation? Add a few representative sats
+  here, then bulk-import via Settings → Spacecraft → Import (CSV) or via
+  Sentinel agent (auto-syncs from CelesTrak NORAD)" appearing at ≥10. Bulk-
+  import + CelesTrak-Pull selbst bleiben für später.)
 
 ### P0-G — Timeline-Page hat Hardcoded Phases + Dead Buttons
 
@@ -176,16 +184,16 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ### Posture / Modules / Documents / Feed
 
-| ID    | Was                                                    | File:Line                             | Sprint       | Status                                                                          |
-| ----- | ------------------------------------------------------ | ------------------------------------- | ------------ | ------------------------------------------------------------------------------- |
-| P1-P1 | Kein Top-Risks-Card auf Posture                        | `posture/page.tsx:106-167`            | UF35         | ✅ Done (commit ac0de037 — Top-5 urgent items inline, empty-state für 0 urgent) |
-| P1-P2 | V1↔V2 Score-Diskrepanz möglich, kein Reconciliation    | `posture/page.tsx:266-329`            | später (X-1) | ⏳                                                                              |
-| P1-P3 | Modules-Index ist Brochure (keine Live-Daten)          | `modules/page.tsx:173-192, 247-277`   | UF31         | ✅ Done (commit 325c0f68)                                                       |
-| P1-P4 | Documents `regulatoryRef` Plain-Text statt Article-FK  | `documents/page.tsx:781-791, 635-639` | später       | ⏳                                                                              |
-| P1-P5 | "Renew" öffnet Upload-Modal cold ohne Pre-fill         | `documents/page.tsx:985-991, 889-894` | später       | ⏳                                                                              |
-| P1-P6 | Documents-Pagination cap bei 50                        | `documents/page.tsx:207-228`          | später       | ⏳                                                                              |
-| P1-P7 | Regulatory-Feed kein "Convert to ComplianceItem"-CTA   | `regulatory-feed/page.tsx`            | später       | ⏳                                                                              |
-| P1-P8 | Regulatory-Feed Module-Filter deckt nur 8/14 Module ab | `regulatory-feed/page.tsx:124-133`    | später       | ⏳                                                                              |
+| ID    | Was                                                    | File:Line                             | Sprint       | Status                                                                                                                                                                                 |
+| ----- | ------------------------------------------------------ | ------------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1-P1 | Kein Top-Risks-Card auf Posture                        | `posture/page.tsx:106-167`            | UF35         | ✅ Done (commit ac0de037 — Top-5 urgent items inline, empty-state für 0 urgent)                                                                                                        |
+| P1-P2 | V1↔V2 Score-Diskrepanz möglich, kein Reconciliation    | `posture/page.tsx:266-329`            | später (X-1) | ⏳                                                                                                                                                                                     |
+| P1-P3 | Modules-Index ist Brochure (keine Live-Daten)          | `modules/page.tsx:173-192, 247-277`   | UF31         | ✅ Done (commit 325c0f68)                                                                                                                                                              |
+| P1-P4 | Documents `regulatoryRef` Plain-Text statt Article-FK  | `documents/page.tsx:781-791, 635-639` | später       | ⏳                                                                                                                                                                                     |
+| P1-P5 | "Renew" öffnet Upload-Modal cold ohne Pre-fill         | `documents/page.tsx:985-991, 889-894` | später       | ⏳                                                                                                                                                                                     |
+| P1-P6 | Documents-Pagination cap bei 50                        | `documents/page.tsx:207-228`          | später       | ⏳                                                                                                                                                                                     |
+| P1-P7 | Regulatory-Feed kein "Convert to ComplianceItem"-CTA   | `regulatory-feed/page.tsx`            | UF40         | ✅ Done (Forward-to-Inbox Button → POST /api/regulatory-feed/forward → erzeugt Notification + markiert Update als read; idempotent via entityType:"regulatory_update", entityId guard) |
+| P1-P8 | Regulatory-Feed Module-Filter deckt nur 8/14 Module ab | `regulatory-feed/page.tsx:124-133`    | später       | ⏳                                                                                                                                                                                     |
 
 ### Daily-Driver
 
@@ -291,27 +299,28 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ## 8. Sprint-Mapping (was wird wann gemacht)
 
-| Sprint       | Items                                                             | Status                                                         |
-| ------------ | ----------------------------------------------------------------- | -------------------------------------------------------------- |
-| **UF26**     | Living-Doc Erstellung (dieses Dokument)                           | ✅ Done (commit 64cc64ab)                                      |
-| **UF27**     | P0-C — Generate2Page liest `?mission=<id>`                        | ✅ Done (commit 211f5926)                                      |
-| **UF28**     | P0-A — Nis2PhaseSubmitDialog in incidents/page.tsx einbinden      | ✅ Done (commit 678ef672)                                      |
-| **UF29**     | P0-B — AttestModal-Komponente (replace `window.prompt()`)         | ✅ Done (commit 04ced89d)                                      |
-| **UF30**     | P0-G — Timeline-Page Cleanup                                      | ✅ Done (commit 4aee6ea0)                                      |
-| **UF31**     | P1-P3 — Modules-Index Live-Daten                                  | ✅ Done (commit 325c0f68)                                      |
-| **UF32**     | P1-T1 — Tracker Notes inline (P1-T3 Bulk deferred to UF33)        | ✅ Done (commit 0a5ce832, Notes only — Bulk separated to UF33) |
-| **UF33**     | P0-D — Spacecraft-Detail-Page                                     | ✅ Done (commit 2eec01c5)                                      |
-| **UF34**     | P1-T3 — Tracker Bulk-Actions (was P0-E, retasked)                 | ✅ Done (commit c599dea4)                                      |
-| **UF35**     | P1-P1 — Posture Top-Risks-Card + V-2 verified                     | ✅ Done (commit ac0de037)                                      |
-| **UF36**     | P0-E — Trade Counterparty/Operations (oder aus Sidebar entfernen) | ⏳ pending                                                     |
-| **UF35**     | P0-F — Onboarding Bulk-Spacecraft-Import                          | ⏳ pending                                                     |
-| **UF36**     | P1-S6 — Holiday/Delegate-Mode (Settings)                          | ⏳ pending                                                     |
-| **UF37**     | P1-P7 — Regulatory-Feed "Convert to ComplianceItem"               | ⏳ pending                                                     |
-| **UF36**     | P1-D5 + P1-D6 — Astra footgun-prevention                          | ✅ Done (commit ae3cc019)                                      |
-| **UF37**     | P2 Polish-Bundle (P2-1, P2-3, P2-9, P2-10, P2-14, P2-15, P2-19)   | ✅ Done (commit 65127b08 — 7 of 20 P2 items)                   |
-| **UF38**     | P2 Polish-Bundle Rest (P2-2, P2-7, P2-13, P2-17, P2-18, P2-20)    | ⏳ pending (deferred — bigger or contested)                    |
-| **UF39**     | X-4 — Persona-Switch-UI in Settings                               | ⏳ pending                                                     |
-| **(später)** | X-1, X-2, X-3 — Architektur-Sprints                               | ⏳ pending                                                     |
+| Sprint      | Items                                                                             | Status                                                                    |
+| ----------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| **UF26**    | Living-Doc Erstellung (dieses Dokument)                                           | ✅ Done (commit 64cc64ab)                                                 |
+| **UF27**    | P0-C — Generate2Page liest `?mission=<id>`                                        | ✅ Done (commit 211f5926)                                                 |
+| **UF28**    | P0-A — Nis2PhaseSubmitDialog in incidents/page.tsx einbinden                      | ✅ Done (commit 678ef672)                                                 |
+| **UF29**    | P0-B — AttestModal-Komponente (replace `window.prompt()`)                         | ✅ Done (commit 04ced89d)                                                 |
+| **UF30**    | P0-G — Timeline-Page Cleanup                                                      | ✅ Done (commit 4aee6ea0)                                                 |
+| **UF31**    | P1-P3 — Modules-Index Live-Daten                                                  | ✅ Done (commit 325c0f68)                                                 |
+| **UF32**    | P1-T1 — Tracker Notes inline (P1-T3 Bulk deferred to UF33)                        | ✅ Done (commit 0a5ce832, Notes only — Bulk separated to UF33)            |
+| **UF33**    | P0-D — Spacecraft-Detail-Page                                                     | ✅ Done (commit 2eec01c5)                                                 |
+| **UF34**    | P1-T3 — Tracker Bulk-Actions (was P0-E, retasked)                                 | ✅ Done (commit c599dea4)                                                 |
+| **UF35**    | P1-P1 — Posture Top-Risks-Card + V-2 verified                                     | ✅ Done (commit ac0de037)                                                 |
+| **UF36**    | P1-D5 + P1-D6 — Astra footgun-prevention                                          | ✅ Done (commit ae3cc019)                                                 |
+| **UF37**    | P2 Polish-Bundle (P2-1, P2-3, P2-9, P2-10, P2-14, P2-15, P2-19)                   | ✅ Done (commit 65127b08 — 7 of 20 P2 items)                              |
+| **UF38**    | P0-F partial — Onboarding Cap 12→50 + Bulk-import escape hatch                    | ✅ Done (commit 0d465c33 — full TLE/CelesTrak-Pull später)                |
+| **UF39**    | P0-E — Trade Counterparty/Operations (verification only)                          | ✅ Resolved — audit war veraltet, Wave A + C bereits live                 |
+| **UF40**    | P1-P7 — Regulatory-Feed "Forward to Inbox" (re-frame ComplianceItem→Notification) | ✅ Done (forward API + 2-stage button, idempotent on entityType+entityId) |
+| **(later)** | P0-F (full) — Onboarding Bulk-Spacecraft-Import + CelesTrak-Pull                  | ⏳ pending (escape hatch live in UF38; full impl deferred)                |
+| **(later)** | P1-S6 — Holiday/Delegate-Mode (Settings)                                          | ⏳ pending                                                                |
+| **(later)** | P2 Polish-Bundle Rest (P2-2, P2-7, P2-13, P2-17, P2-18, P2-20)                    | ⏳ pending (deferred — bigger or contested)                               |
+| **(later)** | X-4 — Persona-Switch-UI in Settings                                               | ⏳ pending                                                                |
+| **(later)** | X-1, X-2, X-3 — Architektur-Sprints                                               | ⏳ pending                                                                |
 
 ---
 
