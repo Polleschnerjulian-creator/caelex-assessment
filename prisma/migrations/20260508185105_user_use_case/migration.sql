@@ -1,0 +1,24 @@
+-- Sprint UF21 — promote User.useCase from localStorage to Prisma column.
+--
+-- Sprint UF6 captured the use-case persona in window.localStorage as a
+-- temporary bridge so the wizard could ship without a schema migration.
+-- UF21 makes it a real column so:
+--
+--   1. The persona persists across devices + browser-clears
+--      (audit finding P1-9: "useCase nur in localStorage").
+--   2. Server-side endpoints can read it directly from session/DB and
+--      enforce RBAC server-side (e.g. block mutating writes for
+--      auditor sessions in UF9 — currently client-side honor system).
+--
+-- Design notes:
+--   - Nullable. Existing users have `null` until they next log in and
+--     the client backfills via /api/user/use-case PATCH.
+--   - String, not enum: a Prisma enum migration is more disruptive.
+--     The application enforces the 4 valid values via Zod
+--     ("operator" | "consultant" | "auditor" | "investor"). null is
+--     also valid (= persona-blind default).
+--   - Indexed only if a future cron needs to bulk-filter by persona.
+--     Today no such query exists, so we skip the index to avoid
+--     overhead on every User write.
+
+ALTER TABLE "User" ADD COLUMN "useCase" TEXT;

@@ -8,6 +8,10 @@ import {
 } from "@/lib/audit";
 import { UpdateArticleStatusSchema } from "@/lib/validations";
 import { logger } from "@/lib/logger";
+// Sprint UF21 — server-side enforcement of auditor read-only mode.
+// Replaces the client-only UF9 guards with a real RBAC barrier:
+// even if the client clears localStorage, this PUT 403s.
+import { assertNotAuditor } from "@/lib/use-case-server";
 
 export async function GET() {
   try {
@@ -56,6 +60,16 @@ export async function PUT(request: Request) {
     }
 
     const userId = session.user.id;
+
+    // Sprint UF21 — auditor RBAC. UF9 added client-side guards
+    // (disabled buttons, banner, early-return in onClick handlers).
+    // This is the server-side belt-and-suspenders: even with
+    // localStorage cleared, a programmatic PUT from an auditor
+    // session 403s here. Audit-log entry on the rejection path is
+    // still created via the standard error pipeline.
+    const auditorBlock = await assertNotAuditor(userId);
+    if (auditorBlock) return auditorBlock;
+
     const body = await request.json();
     const parsed = UpdateArticleStatusSchema.safeParse(body);
     if (!parsed.success) {

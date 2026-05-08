@@ -97,7 +97,17 @@ export const USE_CASES: UseCaseDefinition[] = [
 const LS_KEY = "caelex.useCase";
 
 /**
- * Save the useCase to localStorage. No-op on the server.
+ * Save the useCase to localStorage AND POST it to the server so
+ * server-side surfaces (RBAC enforcement, audit-log) can use it.
+ *
+ * Sprint UF21 added the server-side persistence path. localStorage
+ * is the immediate UX driver (instant, no network), the API call is
+ * the durable record (cross-device, cross-browser). They diverge
+ * briefly when the network call is in flight; the next page load
+ * re-syncs.
+ *
+ * No-op on the server — only called from client onboarding +
+ * settings flows.
  */
 export function saveUseCase(useCase: UseCase): void {
   if (typeof window === "undefined") return;
@@ -111,6 +121,19 @@ export function saveUseCase(useCase: UseCase): void {
   } catch {
     // Quota / private mode — not fatal, just lose the personalization.
   }
+
+  // Sprint UF21 — durable server write. Fire-and-forget: the
+  // localStorage write is the user-facing source of truth, the API
+  // call is for cross-device persistence. Failure here is silent so
+  // it doesn't block the wizard. The next dashboard mount retries
+  // via the bridge in <UseCaseBridge>.
+  void fetch("/api/user/use-case", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ useCase }),
+  }).catch(() => {
+    // Network/server hiccup — not fatal.
+  });
 }
 
 /**

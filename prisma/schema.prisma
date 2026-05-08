@@ -30,6 +30,14 @@ model User {
   // See docs/CAELEX-COMPLY-CONCEPT.md § Rollback-Strategie.
   complyUiVersion String? // null | "v1" | "v2"
 
+  // Sprint UF21 — Use-case persona (Sprint UF6 captured this in
+  // localStorage as a bridge; UF21 promotes it to a real DB column
+  // so server-side surfaces can RBAC-gate mutations on auditor mode).
+  // Values: "operator" | "consultant" | "auditor" | "investor".
+  // Nullable to keep existing rows valid; the wizard backfills on
+  // next login.
+  useCase String? // null | "operator" | "consultant" | "auditor" | "investor"
+
   // Comply v2 — per-user state on ComplianceItems (snoozes, notes,
   // Astra-proposed actions awaiting approval, V2 Astra chats,
   // daily posture snapshots for sparkline trends).

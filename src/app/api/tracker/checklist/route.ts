@@ -8,6 +8,8 @@ import {
 } from "@/lib/audit";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+// Sprint UF21 — auditor RBAC enforcement, parallel to /api/tracker/articles.
+import { assertNotAuditor } from "@/lib/use-case-server";
 
 const UpdateChecklistStatusSchema = z.object({
   checklistId: z.string().min(1).max(100),
@@ -57,6 +59,11 @@ export async function PUT(request: Request) {
     }
 
     const userId = session.user.id;
+
+    // Sprint UF21 — auditor RBAC enforcement (server-side).
+    const auditorBlock = await assertNotAuditor(userId);
+    if (auditorBlock) return auditorBlock;
+
     const body = await request.json();
     const parsed = UpdateChecklistStatusSchema.safeParse(body);
     if (!parsed.success) {
