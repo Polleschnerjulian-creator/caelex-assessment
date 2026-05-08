@@ -5,6 +5,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import FeatureGate from "@/components/dashboard/FeatureGate";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+// Sprint UF28 (P0-A) — wire the rich NIS2 phase submit dialog into
+// the incidents page. Previously the inline Submit-button (line 1176)
+// fired a bare PATCH without statutory content. The dialog has been
+// living unused since UF2 — now it's reachable from the 24h hot path.
+import {
+  Nis2PhaseSubmitDialog,
+  type NIS2PhaseKey,
+} from "@/components/dashboard/v2/Nis2PhaseSubmitDialog";
 import {
   AlertTriangle,
   Shield,
@@ -186,6 +194,21 @@ const CATEGORY_DEADLINE_HOURS: Record<string, number> = {
 
 // ─── Helpers ───
 
+// Sprint UF28 (P0-A) — narrow API-supplied phase strings to the dialog's
+// NIS2PhaseKey union. The API in principle only returns the four
+// canonical NIS2 phases, but we defend against drift (mistyped enum,
+// future schema additions) so the dialog never opens on an invalid key.
+const NIS2_PHASE_KEYS = [
+  "early_warning",
+  "notification",
+  "intermediate_report",
+  "final_report",
+] as const;
+
+function isValidNis2PhaseKey(value: string): value is NIS2PhaseKey {
+  return (NIS2_PHASE_KEYS as readonly string[]).includes(value);
+}
+
 function formatCountdown(ms: number): string {
   if (ms <= 0) return "OVERDUE";
   const hours = Math.floor(ms / (1000 * 60 * 60));
@@ -240,6 +263,20 @@ function IncidentsContent() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const [, setTick] = useState(0);
+
+  // Sprint UF28 (P0-A) — state for the rich NIS2-phase-submit dialog.
+  // Single source of truth: when set, the dialog opens for that
+  // (incident, phase) tuple; nullable so closing dismisses it.
+  // Audit found the inline submit-button silently fired a bare PATCH
+  // without statutory content. This state drives the rich dialog
+  // (with per-phase fields, statutory checklist, NCA-ref input).
+  const [activePhaseSubmit, setActivePhaseSubmit] = useState<{
+    incidentId: string;
+    incidentNumber: string;
+    incidentTitle: string;
+    phase: NIS2PhaseKey;
+    deadline: Date;
+  } | null>(null);
 
   // Tick every second for countdown updates
   useEffect(() => {
@@ -1173,30 +1210,72 @@ function IncidentsContent() {
                                                   )}
                                                   Draft
                                                 </button>
-                                                <button
-                                                  onClick={() =>
-                                                    handleSubmitPhase(
-                                                      incident.id,
-                                                      phase.phase,
+                                                {/* Sprint UF28 (P0-A) — open the rich
+                                                    Nis2PhaseSubmitDialog
+                                                    instead of firing a
+                                                    bare-bones PATCH. The
+                                                    dialog enforces statutory
+                                                    fields per phase
+                                                    (NIS2 Art. 23 (4)) and
+                                                    captures NCA reference
+                                                    number. Phase keys are
+                                                    type-narrowed via the
+                                                    NIS2PhaseKey union — any
+                                                    legacy phase string from
+                                                    the API that doesn't
+                                                    match (shouldn't happen,
+                                                    but defensively) falls
+                                                    through to a disabled
+                                                    button so the user
+                                                    isn't stuck. */}
+                                                {(() => {
+                                                  // IIFE so the type narrowing
+                                                  // from isValidNis2PhaseKey
+                                                  // flows into the closure.
+                                                  // Without this, TS widens
+                                                  // back to `string` inside
+                                                  // the onClick callback.
+                                                  const phaseKey = phase.phase;
+                                                  if (
+                                                    !isValidNis2PhaseKey(
+                                                      phaseKey,
                                                     )
+                                                  ) {
+                                                    return (
+                                                      <span
+                                                        className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-slate-400 bg-slate-500/5 border border-slate-500/10 rounded cursor-not-allowed"
+                                                        title={`Unknown phase key: ${phaseKey}`}
+                                                      >
+                                                        <CheckCircle2
+                                                          size={10}
+                                                        />
+                                                        Submit
+                                                      </span>
+                                                    );
                                                   }
-                                                  disabled={
-                                                    actionLoading ===
-                                                    `submit-${incident.id}-${phase.phase}`
-                                                  }
-                                                  className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-emerald-600 bg-emerald-500/10 border border-emerald-500/20 rounded hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
-                                                >
-                                                  {actionLoading ===
-                                                  `submit-${incident.id}-${phase.phase}` ? (
-                                                    <Loader2
-                                                      size={10}
-                                                      className="animate-spin"
-                                                    />
-                                                  ) : (
-                                                    <CheckCircle2 size={10} />
-                                                  )}
-                                                  Submit
-                                                </button>
+                                                  return (
+                                                    <button
+                                                      onClick={() =>
+                                                        setActivePhaseSubmit({
+                                                          incidentId:
+                                                            incident.id,
+                                                          incidentNumber:
+                                                            incident.incidentNumber,
+                                                          incidentTitle:
+                                                            incident.title,
+                                                          phase: phaseKey,
+                                                          deadline: new Date(
+                                                            phase.deadline,
+                                                          ),
+                                                        })
+                                                      }
+                                                      className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-emerald-600 bg-emerald-500/10 border border-emerald-500/20 rounded hover:bg-emerald-500/20 transition-colors"
+                                                    >
+                                                      <CheckCircle2 size={10} />
+                                                      Submit
+                                                    </button>
+                                                  );
+                                                })()}
                                               </div>
                                             )}
                                           </div>
@@ -1393,6 +1472,38 @@ function IncidentsContent() {
           />
         )}
       </AnimatePresence>
+
+      {/* Sprint UF28 (P0-A) — Rich NIS2 Phase Submit Dialog.
+          Replaces the previous bare-bones inline submit. Captures
+          phase-specific statutory fields (Art. 23(4)(a-d)), the
+          NCA reference number, and exports a markdown draft. The
+          dialog handles its own POST to
+          /api/supervision/incidents/[id]/nis2-phases and audit-logs
+          the submission; we just listen for `onSubmitted` to refresh
+          the incident detail so the UI reflects the new state. */}
+      {activePhaseSubmit ? (
+        <Nis2PhaseSubmitDialog
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) setActivePhaseSubmit(null);
+          }}
+          incidentId={activePhaseSubmit.incidentId}
+          incidentNumber={activePhaseSubmit.incidentNumber}
+          incidentTitle={activePhaseSubmit.incidentTitle}
+          phase={activePhaseSubmit.phase}
+          deadline={activePhaseSubmit.deadline}
+          onSubmitted={() => {
+            // Refresh listing so the row's submitted-count + status
+            // pills reflect the new state. We do NOT toggle the
+            // expanded panel — fetchExpanded(sameId) collapses it,
+            // which would lose the user's place. Listing-refresh
+            // alone updates the per-row badge; a manual re-expand
+            // re-pulls detail with the freshly-submitted phase.
+            void fetchIncidents();
+            setActivePhaseSubmit(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 }
