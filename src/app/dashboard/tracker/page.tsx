@@ -489,6 +489,42 @@ export default function TrackerPage() {
     [isReadOnly],
   );
 
+  // Sprint UF32 (P1-T1) — inline notes editor.
+  // Audit P1-T1: schema has articleStatuses[id].notes but UI never
+  // rendered or edited it. Compliance officers had no way to leave
+  // "evidence pending from CISO ETA 2026-05-15" inline. This handler
+  // PUTs to the existing /api/tracker/articles endpoint, which
+  // already accepts an optional `notes` field (UpdateArticleStatusSchema
+  // in lib/validations.ts:200+).
+  //
+  // Optimistic update so the textarea feels instant; debounced save
+  // elsewhere via the editor's blur/save handler.
+  const updateArticleNotes = useCallback(
+    async (articleId: string, notes: string) => {
+      if (isReadOnly) return;
+      const status = articleStatuses[articleId]?.status || "not_started";
+      setArticleStatuses((prev) => ({
+        ...prev,
+        [articleId]: {
+          ...prev[articleId],
+          status,
+          notes,
+          updatedAt: new Date(),
+        },
+      }));
+      try {
+        await fetch("/api/tracker/articles", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ articleId, status, notes }),
+        });
+      } catch (e) {
+        console.error("Error updating notes:", e);
+      }
+    },
+    [isReadOnly, articleStatuses],
+  );
+
   const toggleChecklist = useCallback(
     async (id: string, completed: boolean) => {
       if (isReadOnly) return;
@@ -1453,6 +1489,25 @@ export default function TrackerPage() {
                                           />
                                         ) : null;
                                       })()}
+
+                                      {/* Sprint UF32 (P1-T1) — inline
+                                          notes editor. Schema had
+                                          notes-field since v1, UI
+                                          never exposed it. CO can
+                                          now leave context like
+                                          "Evidence pending from CISO
+                                          ETA 2026-05-15" right next
+                                          to the article. read-only
+                                          for auditor persona. */}
+                                      <ArticleNotesEditor
+                                        articleId={article.id}
+                                        currentNotes={
+                                          articleStatuses[article.id]?.notes ??
+                                          null
+                                        }
+                                        onSave={updateArticleNotes}
+                                        readOnly={isReadOnly}
+                                      />
                                     </div>
                                   )}
                                 </div>
@@ -1782,6 +1837,147 @@ export default function TrackerPage() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Sprint UF32 (P1-T1) — Article Notes Editor ─────────────────────────
+//
+// Inline notes input + save flow. Lives below the EvidenceDrawer in
+// the expanded article body. Behaviour:
+//
+//   - "View notes" / "Add notes" button toggles the editor open
+//   - When notes already exist, the button shows a green dot + count
+//     hint, and clicking expands to read-only display + Edit button
+//   - Edit mode: textarea + Save / Cancel. Saving calls onSave (which
+//     PUTs to /api/tracker/articles with the existing endpoint).
+//   - Read-only mode (auditor persona): shows existing notes plain;
+//     no edit button, no textarea.
+//   - Optimistic save: button shows "Saving…" briefly, error toast
+//     via console.error if the PUT fails (silent UX fallback —
+//     audit found Tracker doesn't have a global toast surface yet).
+
+function ArticleNotesEditor({
+  articleId,
+  currentNotes,
+  onSave,
+  readOnly,
+}: {
+  articleId: string;
+  currentNotes: string | null;
+  onSave: (id: string, notes: string) => Promise<void>;
+  readOnly: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(currentNotes ?? "");
+  const [saving, setSaving] = useState(false);
+
+  // Sync draft if external notes change (e.g. another tab updated).
+  useEffect(() => {
+    if (!editing) setDraft(currentNotes ?? "");
+  }, [currentNotes, editing]);
+
+  const hasNotes = Boolean(currentNotes && currentNotes.trim().length > 0);
+
+  async function handleSave() {
+    if (saving) return;
+    setSaving(true);
+    try {
+      await onSave(articleId, draft.trim());
+      setEditing(false);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function handleCancel() {
+    setDraft(currentNotes ?? "");
+    setEditing(false);
+  }
+
+  return (
+    <div className="mt-3">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[12px] font-medium transition ${
+          hasNotes
+            ? "border-emerald-500/20 bg-emerald-500/[0.04] text-emerald-300 hover:border-emerald-500/40 hover:bg-emerald-500/[0.08]"
+            : "border-white/[0.06] bg-white/[0.02] text-slate-400 hover:border-white/[0.12] hover:bg-white/[0.04]"
+        }`}
+      >
+        {hasNotes ? (
+          <span
+            className="h-1.5 w-1.5 rounded-full bg-emerald-400"
+            aria-hidden
+          />
+        ) : null}
+        {hasNotes ? "View notes" : readOnly ? "No notes" : "Add notes"}
+      </button>
+
+      {open ? (
+        <div className="mt-2 rounded-xl border border-white/[0.05] bg-white/[0.012] p-3">
+          {editing ? (
+            <>
+              <textarea
+                value={draft}
+                onChange={(e) => setDraft(e.target.value.slice(0, 5000))}
+                rows={3}
+                placeholder="Notes for this article (markdown OK). Visible to the whole org. Audit-logged on save."
+                className="block w-full rounded-md border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-[12px] leading-relaxed text-slate-100 placeholder-slate-600 focus:border-emerald-500/40 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+              />
+              <div className="mt-2 flex items-center justify-between">
+                <span className="text-[10.5px] text-slate-500">
+                  {draft.length} / 5000
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    disabled={saving}
+                    className="rounded-md px-2.5 py-1 text-[11.5px] font-medium text-slate-400 transition hover:text-slate-200 disabled:opacity-40"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSave}
+                    disabled={saving || draft === (currentNotes ?? "")}
+                    className="rounded-md bg-emerald-500 px-3 py-1 text-[11.5px] font-semibold text-emerald-950 transition hover:bg-emerald-400 disabled:opacity-40"
+                  >
+                    {saving ? "Saving…" : "Save"}
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {hasNotes ? (
+                <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-slate-300">
+                  {currentNotes}
+                </p>
+              ) : (
+                <p className="text-[11.5px] italic text-slate-500">
+                  No notes yet for this article.
+                </p>
+              )}
+              {!readOnly ? (
+                <div className="mt-2 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setEditing(true)}
+                    className="rounded-md bg-white/[0.04] px-2.5 py-1 text-[11px] font-medium text-slate-300 transition hover:bg-white/[0.08]"
+                  >
+                    {hasNotes ? "Edit" : "Add notes"}
+                  </button>
+                </div>
+              ) : null}
+            </>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }
