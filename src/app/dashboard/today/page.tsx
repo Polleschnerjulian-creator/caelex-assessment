@@ -12,6 +12,10 @@ import {
   ArrowRight,
   Sparkles,
   Check,
+  Gauge,
+  ShieldCheck,
+  FileSearch,
+  ScrollText,
   type LucideIcon,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
@@ -473,11 +477,144 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
                   />
                 ))}
               </Section>
+
+              {/* Sprint UF11 — Cross-links footer strip. Audit found
+                  Today was an island: no links to Posture, Triage,
+                  Proposals, Article Tracker, or Audit Center — users
+                  had to navigate via sidebar or ⌘K. This strip gives
+                  the natural "where to go next" affordance for each
+                  compliance workflow surface. */}
+              <TodayCrossLinks />
             </>
           ) : null}
         </>
       )}
     </div>
+  );
+}
+
+// ─── Sprint UF11 — Cross-links footer ────────────────────────────────────
+//
+// Why a static link grid rather than persona-aware ordering:
+//
+//   - Today is the operator daily-driver inbox. The 5 surfaces below
+//     are the natural follow-ups regardless of persona — every persona
+//     benefits from quick access to Posture, Article Tracker, etc.
+//   - Personalization (auditor pushes Audit Center first, investor
+//     pushes Assure) is the Help-drawer's job — it already does that
+//     based on useUseCase(). Today stays simple and consistent.
+//
+// If we later add per-persona reordering, a useUseCase() call here +
+// an order-prop on each card is the path.
+
+function TodayCrossLinks() {
+  return (
+    <section className="mt-10">
+      <h3
+        className="mb-3 px-0.5"
+        style={{
+          color: "rgba(255, 255, 255, 0.4)",
+          fontSize: "11px",
+          fontWeight: 600,
+          letterSpacing: "0.06em",
+          textTransform: "uppercase",
+        }}
+      >
+        Where to go next
+      </h3>
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+        <CrossLink
+          href="/dashboard/posture"
+          icon={Gauge}
+          label="Posture"
+          description="Score + open work"
+        />
+        <CrossLink
+          href="/dashboard/triage"
+          icon={Radio}
+          label="Triage"
+          description="Acknowledge signals"
+        />
+        <CrossLink
+          href="/dashboard/proposals"
+          icon={ShieldCheck}
+          label="Proposals"
+          description="Approve Astra actions"
+        />
+        <CrossLink
+          href="/dashboard/tracker"
+          icon={FileSearch}
+          label="Article tracker"
+          description="Per-article status"
+        />
+        <CrossLink
+          href="/dashboard/audit-center"
+          icon={ScrollText}
+          label="Audit center"
+          description="Evidence coverage"
+        />
+      </div>
+    </section>
+  );
+}
+
+function CrossLink({
+  href,
+  icon: Icon,
+  label,
+  description,
+}: {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+  description: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors"
+      style={{
+        background: "rgba(255, 255, 255, 0.03)",
+        boxShadow: "inset 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+      }}
+    >
+      <span
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md"
+        style={{
+          background: "rgba(255, 255, 255, 0.04)",
+          boxShadow: "inset 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+        }}
+        aria-hidden
+      >
+        <Icon
+          className="h-3.5 w-3.5"
+          strokeWidth={1.75}
+          style={{ color: "rgba(255, 255, 255, 0.65)" }}
+        />
+      </span>
+      <div className="min-w-0 flex-1">
+        <div
+          className="text-[12.5px] font-medium"
+          style={{
+            color: "rgba(255, 255, 255, 0.9)",
+            letterSpacing: "-0.005em",
+          }}
+        >
+          {label}
+        </div>
+        <div
+          className="text-[11px]"
+          style={{ color: "rgba(255, 255, 255, 0.45)" }}
+        >
+          {description}
+        </div>
+      </div>
+      <ArrowRight
+        className="h-3 w-3 shrink-0 opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-60"
+        strokeWidth={2}
+        style={{ color: "rgba(255, 255, 255, 0.6)" }}
+      />
+    </Link>
   );
 }
 
