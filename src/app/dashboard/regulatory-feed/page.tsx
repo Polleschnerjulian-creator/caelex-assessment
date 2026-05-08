@@ -123,15 +123,31 @@ const DOC_TYPE_LABELS: Record<string, string> = {
   UNKNOWN: "EU Act",
 };
 
+/**
+ * Sprint UF45 (P1-P8) — Module filter coverage expanded.
+ *
+ * Audit found the dropdown listed only 8 of the modules the EUR-Lex
+ * crawler can tag into (`MODULE_KEYWORDS` in eurlex-service.ts has 9
+ * — was missing `cra`). Source-of-truth re-anchored to the canonical
+ * `modules` definition + the missing entries the crawler emits but
+ * the canonical list doesn't carry shortName for. Now the filter
+ * mirrors what entries can actually appear with.
+ */
 const MODULE_LABELS: Record<string, string> = {
+  authorization: "Authorization",
+  registration: "Registration",
+  environmental: "Environmental",
   cybersecurity: "Cybersecurity",
-  nis2: "NIS2",
   debris: "Debris",
   insurance: "Insurance",
-  authorization: "Authorization",
-  environmental: "Environmental",
-  registration: "Registration",
   supervision: "Supervision",
+  regulatory: "Regulatory Intelligence",
+  nis2: "NIS2",
+  // Sprint UF45 — `cra` is what eurlex-service tags Cyber Resilience
+  // Act updates with (eurlex-service.ts:249-254 + 270-296). Without
+  // this entry the operator could not isolate CRA-specific updates
+  // from the feed despite the crawler emitting them.
+  cra: "Cyber Resilience Act",
 };
 
 const SEVERITY_FILTERS = ["ALL", "CRITICAL", "HIGH", "MEDIUM", "LOW"] as const;

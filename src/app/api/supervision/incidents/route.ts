@@ -38,6 +38,13 @@ export async function GET(req: Request) {
     const category = searchParams.get("category");
     const severity = searchParams.get("severity");
     const status = searchParams.get("status");
+    // Sprint UF44 (P1-H2) — workflow state filter. Distinct from
+    // `status` (detected/investigating/contained/resolved/reported).
+    // workflowState is the orchestration column the incidents-page UI
+    // uses for the Reported→Triaged→Investigating→Mitigating→Resolved
+    // →Closed pipeline. Without this filter the page only had 6
+    // workflow states with no way to filter on them.
+    const workflowState = searchParams.get("workflowState");
     const limit = parsePaginationLimit(searchParams.get("limit"));
     const offset = parseInt(searchParams.get("offset") || "0");
 
@@ -55,6 +62,7 @@ export async function GET(req: Request) {
     if (category) where.category = category;
     if (severity) where.severity = severity;
     if (status) where.status = status;
+    if (workflowState) where.workflowState = workflowState;
     if (search) {
       where.OR = [
         { title: { contains: search, mode: "insensitive" } },

@@ -180,6 +180,20 @@ const CATEGORY_FILTERS = [
   "regulatory_breach",
   "nis2_near_miss",
 ] as const;
+// Sprint UF44 (P1-H2) — Workflow-state filter. The schema already
+// has 6 workflow states (Incident.workflowState column) but the page
+// surfaced them only as badges, not as filter targets. Operator with
+// 30 incidents couldn't isolate "what's actively being investigated"
+// vs. "what's already closed". Order matches the pipeline left→right.
+const WORKFLOW_FILTERS = [
+  "ALL",
+  "reported",
+  "triaged",
+  "investigating",
+  "mitigating",
+  "resolved",
+  "closed",
+] as const;
 
 const CATEGORY_DEADLINE_HOURS: Record<string, number> = {
   spacecraft_anomaly: 24,
@@ -256,6 +270,8 @@ function IncidentsContent() {
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [severityFilter, setSeverityFilter] = useState<string>("ALL");
   const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
+  // Sprint UF44 (P1-H2) — workflow state filter
+  const [workflowFilter, setWorkflowFilter] = useState<string>("ALL");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [draftContent, setDraftContent] = useState<string | null>(null);
@@ -301,6 +317,7 @@ function IncidentsContent() {
       const params = new URLSearchParams();
       if (severityFilter !== "ALL") params.set("severity", severityFilter);
       if (categoryFilter !== "ALL") params.set("category", categoryFilter);
+      if (workflowFilter !== "ALL") params.set("workflowState", workflowFilter);
       if (debouncedSearch) params.set("search", debouncedSearch);
 
       const res = await fetch(
@@ -333,7 +350,7 @@ function IncidentsContent() {
     } finally {
       setLoading(false);
     }
-  }, [severityFilter, categoryFilter, debouncedSearch]);
+  }, [severityFilter, categoryFilter, workflowFilter, debouncedSearch]);
 
   useEffect(() => {
     fetchIncidents();
@@ -667,6 +684,44 @@ function IncidentsContent() {
                   {s === "ALL"
                     ? "All Severities"
                     : s.charAt(0).toUpperCase() + s.slice(1)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Sprint UF44 (P1-H2) — Workflow State Filter.
+            Slots between Severity and Category so the operator can
+            stack: e.g. "show all CRITICAL items still INVESTIGATING".
+            WORKFLOW_STATES (defined above) provides the per-state
+            color swatch so the row visually matches the badge they
+            see in the incident card. */}
+        <div className="px-4 pt-3 pb-1">
+          <p className="text-[10px] text-slate-400 uppercase tracking-widest font-medium mb-2">
+            Workflow
+          </p>
+          <div className="space-y-0.5">
+            {WORKFLOW_FILTERS.map((w) => {
+              const isActive = workflowFilter === w;
+              const meta = w !== "ALL" ? WORKFLOW_STATES[w] : null;
+              return (
+                <button
+                  key={w}
+                  onClick={() => setWorkflowFilter(w)}
+                  className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-left ${
+                    isActive
+                      ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+                      : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white/30"
+                  }`}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      meta
+                        ? meta.color.replace("text-", "bg-")
+                        : "bg-slate-300 dark:bg-slate-600"
+                    }`}
+                  />
+                  {w === "ALL" ? "All Workflow States" : meta?.label || w}
                 </button>
               );
             })}
