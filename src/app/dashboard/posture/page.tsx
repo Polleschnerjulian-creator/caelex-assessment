@@ -15,6 +15,10 @@ import { auth } from "@/lib/auth";
 import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
 import { getPostureForUser } from "@/lib/comply-v2/posture.server";
 import { getPostureTrend } from "@/lib/comply-v2/posture-snapshot.server";
+import {
+  getPeerBenchmarkForUser,
+  type PeerBenchmark,
+} from "@/lib/comply-v2/posture-benchmark.server";
 import { REGULATION_LABELS } from "@/lib/comply-v2/types";
 import {
   StatusDonut,
@@ -59,6 +63,15 @@ export default async function PosturePage() {
     getPostureForUser(session.user.id),
     getPostureTrend(session.user.id, 30),
   ]);
+
+  // Sprint UF18 — peer benchmark for the investor + executive view.
+  // Runs SEQUENTIALLY after posture because the lookup needs the
+  // user's overall score. Cheap query (single Prisma findUnique by
+  // composite key on RCRBenchmark).
+  const peerBenchmark = await getPeerBenchmarkForUser(
+    session.user.id,
+    posture.overallScore,
+  );
 
   // Project the trend points into per-KPI series the sparklines need.
   // Each picks one numeric column from the snapshot history.
@@ -138,6 +151,17 @@ export default async function PosturePage() {
           icon={CheckCircle2}
         />
       </section>
+
+      {/* Sprint UF18 — Peer benchmark band. Renders only when the
+          user has an operatorType + a non-trivial cohort exists for
+          this quarter (>5 orgs). Investor + executive primitive:
+          "78%" alone is meaningless without "vs. cohort median 71%". */}
+      {peerBenchmark ? (
+        <PeerBenchmarkBand
+          benchmark={peerBenchmark}
+          userScore={posture.overallScore}
+        />
+      ) : null}
 
       {/* Sprint UF7 — Trust indicators. Surfaces the two patterns
           that can artificially inflate the headline score: marking
@@ -602,6 +626,148 @@ function TrustKpi({
         {hint}
       </p>
     </div>
+  );
+}
+
+// ─── Sprint UF18 — Peer benchmark band ───────────────────────────────────
+//
+// Single-row visualization of the cohort distribution + user position:
+//
+//   p25 ─────╋══════ median ══════╋───── p75      cohort range
+//                         ▲
+//                         user (78%)              positioned dot
+//
+// The band is honest: shows the IQR (25-75) as a bar, median as a
+// notch, user as a dot. Tier-coded by position: above-p75 = emerald,
+// above-median = lime, below-median = amber, below-p25 = rose.
+//
+// Sized to fit on one row of the existing grid layout — sits between
+// the KPI strip and the TrustStrip without disrupting flow.
+
+function PeerBenchmarkBand({
+  benchmark,
+  userScore,
+}: {
+  benchmark: PeerBenchmark;
+  userScore: number;
+}) {
+  const positionColor =
+    benchmark.position === "above-p75"
+      ? "rgba(16, 185, 129, 0.95)" // emerald
+      : benchmark.position === "above-median"
+        ? "rgba(132, 204, 22, 0.95)" // lime
+        : benchmark.position === "below-median"
+          ? "rgba(251, 191, 36, 0.95)" // amber
+          : "rgba(244, 63, 94, 0.95)"; // rose
+
+  const positionLabel =
+    benchmark.position === "above-p75"
+      ? "Top quartile"
+      : benchmark.position === "above-median"
+        ? "Above median"
+        : benchmark.position === "below-median"
+          ? "Below median"
+          : "Bottom quartile";
+
+  // Position the user dot on the bar. Bar represents 0-100. Cap at
+  // edges so dot never overlaps the labels.
+  const userDotPct = Math.max(2, Math.min(98, userScore));
+
+  return (
+    <section
+      className="mb-8 rounded-xl p-4"
+      style={{
+        background: "rgba(255, 255, 255, 0.02)",
+        boxShadow: "inset 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+      }}
+      aria-label="Peer benchmark"
+    >
+      <div className="mb-3 flex items-baseline justify-between gap-3">
+        <h3
+          className="text-[11px] font-semibold uppercase"
+          style={{
+            color: "rgba(255, 255, 255, 0.55)",
+            letterSpacing: "0.08em",
+          }}
+        >
+          Peer benchmark
+        </h3>
+        <p
+          className="text-[11px]"
+          style={{ color: "rgba(255, 255, 255, 0.35)" }}
+        >
+          {benchmark.operatorType} · {benchmark.period} · n=
+          {benchmark.cohortSize}
+        </p>
+      </div>
+
+      {/* Cohort bar with positioned dot */}
+      <div className="relative mb-2 h-7">
+        {/* Background track 0-100 */}
+        <div
+          className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded-full"
+          style={{ background: "rgba(255, 255, 255, 0.04)" }}
+        />
+        {/* IQR band (p25 → p75) */}
+        <div
+          className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full"
+          style={{
+            left: `${benchmark.p25Score}%`,
+            width: `${benchmark.p75Score - benchmark.p25Score}%`,
+            background: "rgba(255, 255, 255, 0.18)",
+          }}
+        />
+        {/* Median tick */}
+        <div
+          className="absolute top-1/2 h-3 w-[2px] -translate-x-1/2 -translate-y-1/2"
+          style={{
+            left: `${benchmark.medianScore}%`,
+            background: "rgba(255, 255, 255, 0.6)",
+          }}
+        />
+        {/* User dot */}
+        <div
+          className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2"
+          style={{
+            left: `${userDotPct}%`,
+            background: positionColor,
+            // @ts-expect-error – inline ring color via CSS var
+            "--tw-ring-color": "rgba(0, 0, 0, 0.5)",
+          }}
+          title={`Your score: ${userScore}%`}
+        />
+      </div>
+
+      {/* Labels under the bar */}
+      <div
+        className="flex justify-between text-[10.5px]"
+        style={{ color: "rgba(255, 255, 255, 0.45)" }}
+      >
+        <span>p25: {Math.round(benchmark.p25Score)}%</span>
+        <span>median: {Math.round(benchmark.medianScore)}%</span>
+        <span>p75: {Math.round(benchmark.p75Score)}%</span>
+      </div>
+
+      {/* Position summary */}
+      <div className="mt-3 flex items-baseline justify-between gap-3">
+        <p className="text-[12.5px]" style={{ color: positionColor }}>
+          <span className="font-semibold">{positionLabel}</span>
+          <span style={{ color: "rgba(255, 255, 255, 0.55)" }}>
+            {" "}
+            — your {userScore}% vs cohort median{" "}
+            {Math.round(benchmark.medianScore)}%
+          </span>
+        </p>
+        {benchmark.userPercentile !== null ? (
+          <p
+            className="font-mono text-[11.5px] tabular-nums"
+            style={{ color: "rgba(255, 255, 255, 0.55)" }}
+          >
+            ~p{benchmark.userPercentile}
+          </p>
+        ) : null}
+      </div>
+    </section>
   );
 }
 
