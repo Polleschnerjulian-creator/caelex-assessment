@@ -27,6 +27,10 @@ import {
   Globe2,
   Layers,
   Link2,
+  // Sprint UF23 — operator-relevant orphan routes surfaced.
+  Send,
+  Wand2,
+  Boxes,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -146,6 +150,23 @@ export function V2Sidebar({
       label: "Documents",
       icon: FileText,
     },
+    // Sprint UF23 — Generate (document-generation studio). Operator
+    // daily/weekly task: produces compliance reports, NCA cover
+    // letters, attestation packets via templated PDFs. Was orphaned
+    // (URL-only) — now surfaced next to Documents (natural pairing).
+    {
+      href: "/dashboard/generate",
+      label: "Generate",
+      icon: Wand2,
+    },
+    // Sprint UF23 — NCA Portal. The submission-pipeline for filing
+    // with NCAs (BAFA, BSI, ANSSI, etc.). High-frequency operator
+    // surface — was previously only reachable by URL, audit P1-7.
+    {
+      href: "/dashboard/nca-portal",
+      label: "NCA Portal",
+      icon: Send,
+    },
     {
       href: "/dashboard/regulatory-feed",
       label: "Regulatory Feed",
@@ -159,6 +180,14 @@ export function V2Sidebar({
       label: "Trade",
       icon: Globe2,
       match: (p) => p.startsWith("/dashboard/trade"),
+    },
+    // Sprint UF23 — Digital Twin. Compliance-scenario simulation
+    // (what-if-modeling). Operator power-feature for evaluating
+    // mission/regulation changes before committing — was orphaned.
+    {
+      href: "/dashboard/digital-twin",
+      label: "Digital Twin",
+      icon: Boxes,
     },
   ];
 

@@ -101,6 +101,10 @@ vi.mock("lucide-react", () => {
     Fingerprint: icon("Fingerprint"),
     Newspaper: icon("Newspaper"),
     Layers: icon("Layers"),
+    // Sprint UF23 — operator orphan-route surfacing icons.
+    Send: icon("Send"),
+    Wand2: icon("Wand2"),
+    Boxes: icon("Boxes"),
   };
 });
 
@@ -149,19 +153,25 @@ describe("V2Sidebar — section structure", () => {
     ]);
   });
 
-  it("Compliance section contains Posture, Modules, Tracker, Incidents, Documents, Regulatory Feed, Network, Trade", () => {
+  it("Compliance section contains all operator-relevant routes (UF23 surfaced 3 orphans)", () => {
     render(<V2Sidebar pendingProposals={0} />);
     const section = screen.getByLabelText("Compliance");
     const links = within(section).getAllByRole("link");
+    // Sprint UF23 — added Generate, NCA Portal, Digital Twin to
+    // close P1-7 orphan-routes audit finding for the operator
+    // persona's daily-driver flow (file → generate → submit).
     expect(links.map((a) => a.getAttribute("href"))).toEqual([
       "/dashboard/posture",
       "/dashboard/modules",
       "/dashboard/tracker",
       "/dashboard/incidents",
       "/dashboard/documents",
+      "/dashboard/generate",
+      "/dashboard/nca-portal",
       "/dashboard/regulatory-feed",
       "/dashboard/network",
       "/dashboard/trade",
+      "/dashboard/digital-twin",
     ]);
   });
 
