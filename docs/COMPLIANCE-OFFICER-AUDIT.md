@@ -1,6 +1,6 @@
 # Caelex Comply v2 — Compliance-Officer-Audit (Living Document)
 
-**Status:** Aktiv · **Letztes Update:** 2026-05-08 (Batch UF51-53) · **Eigentümer:** Claude + Julian
+**Status:** Aktiv · **Letztes Update:** 2026-05-08 (Batch UF54-56) · **Eigentümer:** Claude + Julian
 
 > Living document — wird nach jedem implementierten Sprint upgedated.
 > Überlebt Kontext-Kompression: alle Findings + Sprint-Mapping +
@@ -38,35 +38,35 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ## 2. Score-Card pro Surface
 
-| Surface         | Score | Top-Fix                                         |
-| --------------- | ----- | ----------------------------------------------- |
-| Today (Inbox)   | 9/10  | UF46-48 closed P1-D1/D2/D3; only P0-B left      |
-| Triage          | 5/10  | Keyboard verifizieren                           |
-| Proposals       | 6/10  | 50-Cap (Pending) Pagination                     |
-| Notifications   | 6/10  | UF41 added severity + category filters          |
-| Astra V2        | 5/10  | Scratchpad-Loss-Warning, Archive-Confirm        |
-| Missions-Liste  | 7/10  | UF51+UF52 closed P1-M1+M2; M3-9 deferred        |
-| Mission-Detail  | 6/10  | Spacecraft-Detail-Page (P0-D)                   |
-| Mission Control | ?/10  | MissionControlView ungeprüft                    |
-| Ephemeris       | 7/10  | Pre-Launch-Sats unsichtbar (P1-M7)              |
-| Sentinel        | 7/10  | UF50: visibility pause; per-mission (P1-S1) TBD |
-| Posture         | 7/10  | Top-Risks-Card (P1-P1)                          |
-| Modules-Index   | 3/10  | Brochure→Control-Panel (P1-P3)                  |
-| Article-Tracker | 6/10  | Notes/Assignee/Bulk (P1-T1+T2+T3)               |
-| Documents       | 5/10  | Article-FK (P1-P4)                              |
-| Regulatory-Feed | 7/10  | UF40+UF45 closed P1-P7+P1-P8                    |
-| Incidents       | 7/10  | UF28+UF44 closed P0-A+P1-H2; H1 detail TBD      |
-| NCA Portal      | 6/10  | Generate-Handoff (P1-H6)                        |
-| Audit Center    | 8/10  | ZIP-Evidence-Bundling verifizieren              |
-| Audit Log       | 8/10  | CSV-Export-Pagination (P1-H3)                   |
-| Audit Chain     | 7/10  | (kaum Mängel)                                   |
-| Network         | 6/10  | Activity-Feed-Filter (P1-S5)                    |
-| Trade           | 6/10  | UF39 verified Wave A + C live; nicht stub       |
-| Digital Twin    | 7/10  | Optimizer-Cross-Link (P1-S8)                    |
-| Optimizer       | 5/10  | Auto-Profile (P1-S9)                            |
-| Settings        | 7/10  | UF53 closed billing nav; Holiday (P1-S6) TBD    |
-| Onboarding      | 6/10  | UF38: cap 50 + escape hatch; full P0-F TBD      |
-| Timeline        | 3/10  | Hardcoded Phases + Dead Buttons (P0-G)          |
+| Surface         | Score | Top-Fix                                          |
+| --------------- | ----- | ------------------------------------------------ |
+| Today (Inbox)   | 9/10  | UF46-48 closed P1-D1/D2/D3; only P0-B left       |
+| Triage          | 5/10  | Keyboard verifizieren                            |
+| Proposals       | 6/10  | 50-Cap (Pending) Pagination                      |
+| Notifications   | 6/10  | UF41 added severity + category filters           |
+| Astra V2        | 5/10  | Scratchpad-Loss-Warning, Archive-Confirm         |
+| Missions-Liste  | 7/10  | UF51+UF52 closed P1-M1+M2; M3-9 deferred         |
+| Mission-Detail  | 6/10  | Spacecraft-Detail-Page (P0-D)                    |
+| Mission Control | ?/10  | MissionControlView ungeprüft                     |
+| Ephemeris       | 7/10  | Pre-Launch-Sats unsichtbar (P1-M7)               |
+| Sentinel        | 8/10  | UF50+UF54 closed P1-S2+S3; per-mission TBD       |
+| Posture         | 7/10  | Top-Risks-Card (P1-P1)                           |
+| Modules-Index   | 3/10  | Brochure→Control-Panel (P1-P3)                   |
+| Article-Tracker | 6/10  | Notes/Assignee/Bulk (P1-T1+T2+T3)                |
+| Documents       | 5/10  | Article-FK (P1-P4)                               |
+| Regulatory-Feed | 7/10  | UF40+UF45 closed P1-P7+P1-P8                     |
+| Incidents       | 7/10  | UF28+UF44 closed P0-A+P1-H2; H1 detail TBD       |
+| NCA Portal      | 6/10  | Generate-Handoff (P1-H6)                         |
+| Audit Center    | 8/10  | ZIP-Evidence-Bundling verifizieren               |
+| Audit Log       | 8/10  | CSV-Export-Pagination (P1-H3)                    |
+| Audit Chain     | 7/10  | (kaum Mängel)                                    |
+| Network         | 8/10  | UF43+UF55 closed P1-S4+S5                        |
+| Trade           | 6/10  | UF39 verified Wave A + C live; nicht stub        |
+| Digital Twin    | 8/10  | UF56 closed P1-S8 (Optimizer round-trip)         |
+| Optimizer       | 6/10  | UF56 cross-linked to Twin; auto-profile (S9) TBD |
+| Settings        | 7/10  | UF53 closed billing nav; Holiday (P1-S6) TBD     |
+| Onboarding      | 6/10  | UF38: cap 50 + escape hatch; full P0-F TBD       |
+| Timeline        | 3/10  | Hardcoded Phases + Dead Buttons (P0-G)           |
 
 ---
 
@@ -222,13 +222,13 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 | ID     | Was                                                           | File:Line                   | Sprint | Status                                                                                                  |
 | ------ | ------------------------------------------------------------- | --------------------------- | ------ | ------------------------------------------------------------------------------------------------------- |
 | P1-S1  | Sentinel-Agenten nicht pro Mission/Spacecraft konfigurierbar  | `sentinel/page.tsx:535-559` | später | ⏳                                                                                                      |
-| P1-S2  | Sentinel Evidence-Feed kein Search/Filter                     | `sentinel/page.tsx:638-644` | später | ⏳                                                                                                      |
+| P1-S2  | Sentinel Evidence-Feed kein Search/Filter                     | `sentinel/page.tsx:638-644` | UF54   | ✅ Done (search + data-point + verification-status filters; clears with one click)                      |
 | P1-S3  | Sentinel 30s polling ohne Visibility-API-Pause                | `sentinel/page.tsx:172-209` | UF50   | ✅ Done (visibilitychange listener: pauses interval when hidden, immediate refetch + re-arm on visible) |
 | P1-S4  | Network `dataRoomCount: 0`/`attestationCount: 0` hardcoded    | `network/page.tsx:479-480`  | UF43   | ✅ Done (read from `eng._count.{dataRooms,attestations}` — Prisma include was already there)            |
-| P1-S5  | Network Activity-Feed nicht pro Stakeholder gefiltert         | `network/page.tsx:501-512`  | später | ⏳                                                                                                      |
+| P1-S5  | Network Activity-Feed nicht pro Stakeholder gefiltert         | `network/page.tsx:501-512`  | UF55   | ✅ Done (per-stakeholder dropdown; "Show all" recovery-link in empty-state)                             |
 | P1-S6  | Settings: kein Holiday/Delegate-Mode                          | Settings allgemein          | später | ⏳                                                                                                      |
 | P1-S7  | Settings: Billing-Folder ohne Nav-Eintrag (toter Pfad)        | `settings/page.tsx:128-239` | UF53   | ✅ Done (Billing nav entry with CreditCard icon; deep-links to /dashboard/settings/billing)             |
-| P1-S8  | Digital Twin ↔ Optimizer keine Cross-Links                    | Beide Pages                 | später | ⏳                                                                                                      |
+| P1-S8  | Digital Twin ↔ Optimizer keine Cross-Links                    | Beide Pages                 | UF56   | ✅ Done (Twin → "Run a what-if comparison"; Optimizer → "View live compliance state"; both header CTAs) |
 | P1-S9  | Optimizer: kein Auto-Profile vom Onboarding                   | `optimizer/page.tsx:55-60`  | später | ⏳                                                                                                      |
 | P1-S10 | Optimizer: kein "Save Comparison" / "Generate Migration Plan" | Optimizer                   | später | ⏳                                                                                                      |
 | P1-S11 | Onboarding: kein Re-do nach Abschluss                         | `OnboardingWizard.tsx`      | später | ⏳                                                                                                      |
@@ -329,6 +329,9 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 | **UF51**    | P1-M1 — Missions list search/filter/sort                                          | ✅ Done (URL-param driven + SortSelect client island)                       |
 | **UF52**    | P1-M2 — Missions header compliance-score KPI                                      | ✅ Done (getPostureForUser().overallScore; tier-coded color)                |
 | **UF53**    | P1-S7 — Settings billing nav entry                                                | ✅ Done (CreditCard nav item; deep-link to existing /settings/billing page) |
+| **UF54**    | P1-S2 — Sentinel evidence-feed search + data-point + status filters               | ✅ Done (client-side filtering over already-fetched packets)                |
+| **UF55**    | P1-S5 — Network activity-feed per-stakeholder filter                              | ✅ Done (dropdown above the feed; "Show all" recovery in empty-state)       |
+| **UF56**    | P1-S8 — Digital Twin ↔ Optimizer header cross-links                               | ✅ Done (both directions; emerald hover state matches existing patterns)    |
 | **(later)** | P0-F (full) — Onboarding Bulk-Spacecraft-Import + CelesTrak-Pull                  | ⏳ pending (escape hatch live in UF38; full impl deferred)                  |
 | **(later)** | P1-S6 — Holiday/Delegate-Mode (Settings)                                          | ⏳ pending                                                                  |
 | **(later)** | P2 Polish-Bundle Rest (P2-2, P2-7, P2-13, P2-17, P2-18, P2-20)                    | ⏳ pending (deferred — bigger or contested)                                 |
