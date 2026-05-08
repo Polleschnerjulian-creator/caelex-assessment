@@ -587,8 +587,17 @@ function AssignedSpacecraftSection({
                   className="border-b border-white/[0.04] transition last:border-b-0 hover:bg-white/[0.015]"
                   data-assignment-id={a.assignmentId}
                 >
-                  <Td className="font-medium text-slate-100">
-                    {a.spacecraftName}
+                  {/* Sprint UF33 (P0-D) — spacecraft name now drills
+                      into /dashboard/spacecraft/[id]. Audit found
+                      this was a static cell with no click target,
+                      blocking per-hardware compliance review. */}
+                  <Td className="font-medium">
+                    <Link
+                      href={`/dashboard/spacecraft/${a.spacecraftId}`}
+                      className="text-slate-100 transition hover:text-emerald-300"
+                    >
+                      {a.spacecraftName}
+                    </Link>
                   </Td>
                   <Td>
                     <span className="rounded-full bg-white/[0.04] px-2 py-0.5 text-[11px] text-slate-300 ring-1 ring-inset ring-white/[0.06]">
@@ -655,9 +664,14 @@ function AssignedSpacecraftSection({
                 className="flex items-center justify-between gap-3"
               >
                 <span className="truncate">
-                  <span className="font-medium text-slate-300">
+                  {/* Sprint UF33 — past-assignment names also link
+                      to spacecraft detail. */}
+                  <Link
+                    href={`/dashboard/spacecraft/${a.spacecraftId}`}
+                    className="font-medium text-slate-300 transition hover:text-emerald-300"
+                  >
                     {a.spacecraftName}
-                  </span>
+                  </Link>
                   <span className="ml-1.5 text-slate-600">·</span>
                   <span className="ml-1.5">{a.role.replace(/_/g, " ")}</span>
                 </span>
