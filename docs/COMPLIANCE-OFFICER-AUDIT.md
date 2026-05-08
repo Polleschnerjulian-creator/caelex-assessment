@@ -1,6 +1,6 @@
 # Caelex Comply v2 — Compliance-Officer-Audit (Living Document)
 
-**Status:** Aktiv · **Letztes Update:** 2026-05-08 (Batch UF27-31) · **Eigentümer:** Claude + Julian
+**Status:** Aktiv · **Letztes Update:** 2026-05-08 (Batch UF27-32) · **Eigentümer:** Claude + Julian
 
 > Living document — wird nach jedem implementierten Sprint upgedated.
 > Überlebt Kontext-Kompression: alle Findings + Sprint-Mapping +
@@ -149,16 +149,16 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ### Article-Tracker (operative Hauptfläche)
 
-| ID    | Was                                                             | File:Line                    | Sprint             | Status |
-| ----- | --------------------------------------------------------------- | ---------------------------- | ------------------ | ------ |
-| P1-T1 | Keine Notes inline (Schema hat sie, UI rendert nicht)           | `tracker/page.tsx:86-89`     | UF31               | ⏳     |
-| P1-T2 | Kein Assignee/Due-Date/Priority pro Article                     | `tracker/page.tsx:1328-1456` | später             | ⏳     |
-| P1-T3 | Keine Bulk-Actions (51 NIS2-Items = 51 Klicks)                  | `tracker/page.tsx:1399-1435` | UF31               | ⏳     |
-| P1-T4 | NIS2/Cyber/Debris Sub-Pages haben keinen Article-Detail         | `tracker/page.tsx:1640-1781` | später             | ⏳     |
-| P1-T5 | Light-Mode-Kontrast-Bug (`rgba(255,255,255,0.96)` ohne theme)   | `tracker/page.tsx:599-632`   | später             | ⏳     |
-| P1-T6 | V1↔V2 Vocabulary-Mismatch (Tracker-Statuses ≠ Posture-Statuses) | `tracker/page.tsx:237-249`   | später (X-1 below) | ⏳     |
-| P1-T7 | Action-Items-Cap bei 20 ohne Pagination                         | `tracker/page.tsx:849`       | später             | ⏳     |
-| P1-T8 | `expandedArticles` persistiert über Regulation-Switch           | `tracker/page.tsx:383-385`   | später             | ⏳     |
+| ID    | Was                                                             | File:Line                    | Sprint             | Status                                         |
+| ----- | --------------------------------------------------------------- | ---------------------------- | ------------------ | ---------------------------------------------- |
+| P1-T1 | Keine Notes inline (Schema hat sie, UI rendert nicht)           | `tracker/page.tsx:86-89`     | UF32               | ✅ Done (commit 0a5ce832 — ArticleNotesEditor) |
+| P1-T2 | Kein Assignee/Due-Date/Priority pro Article                     | `tracker/page.tsx:1328-1456` | später             | ⏳                                             |
+| P1-T3 | Keine Bulk-Actions (51 NIS2-Items = 51 Klicks)                  | `tracker/page.tsx:1399-1435` | UF31               | ⏳                                             |
+| P1-T4 | NIS2/Cyber/Debris Sub-Pages haben keinen Article-Detail         | `tracker/page.tsx:1640-1781` | später             | ⏳                                             |
+| P1-T5 | Light-Mode-Kontrast-Bug (`rgba(255,255,255,0.96)` ohne theme)   | `tracker/page.tsx:599-632`   | später             | ⏳                                             |
+| P1-T6 | V1↔V2 Vocabulary-Mismatch (Tracker-Statuses ≠ Posture-Statuses) | `tracker/page.tsx:237-249`   | später (X-1 below) | ⏳                                             |
+| P1-T7 | Action-Items-Cap bei 20 ohne Pagination                         | `tracker/page.tsx:849`       | später             | ⏳                                             |
+| P1-T8 | `expandedArticles` persistiert über Regulation-Switch           | `tracker/page.tsx:383-385`   | später             | ⏳                                             |
 
 ### Missions-Domäne
 
@@ -291,23 +291,23 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ## 8. Sprint-Mapping (was wird wann gemacht)
 
-| Sprint       | Items                                                             | Status                    |
-| ------------ | ----------------------------------------------------------------- | ------------------------- |
-| **UF26**     | Living-Doc Erstellung (dieses Dokument)                           | ✅ Done (commit 64cc64ab) |
-| **UF27**     | P0-C — Generate2Page liest `?mission=<id>`                        | ✅ Done (commit 211f5926) |
-| **UF28**     | P0-A — Nis2PhaseSubmitDialog in incidents/page.tsx einbinden      | ✅ Done (commit 678ef672) |
-| **UF29**     | P0-B — AttestModal-Komponente (replace `window.prompt()`)         | ✅ Done (commit 04ced89d) |
-| **UF30**     | P0-G — Timeline-Page Cleanup                                      | ✅ Done (commit 4aee6ea0) |
-| **UF31**     | P1-P3 — Modules-Index Live-Daten                                  | ✅ Done (commit 325c0f68) |
-| **UF32**     | P1-T1+T3 — Tracker Notes inline + Bulk-Actions                    | ⏳ pending                |
-| **UF33**     | P0-D — Spacecraft-Detail-Page (separat, größerer Scope)           | ⏳ pending                |
-| **UF34**     | P0-E — Trade Counterparty/Operations (oder aus Sidebar entfernen) | ⏳ pending                |
-| **UF35**     | P0-F — Onboarding Bulk-Spacecraft-Import                          | ⏳ pending                |
-| **UF36**     | P1-S6 — Holiday/Delegate-Mode (Settings)                          | ⏳ pending                |
-| **UF37**     | P1-P7 — Regulatory-Feed "Convert to ComplianceItem"               | ⏳ pending                |
-| **UF38**     | P2 Polish-Bundle (P2-1 bis P2-20)                                 | ⏳ pending                |
-| **UF39**     | X-4 — Persona-Switch-UI in Settings                               | ⏳ pending                |
-| **(später)** | X-1, X-2, X-3 — Architektur-Sprints                               | ⏳ pending                |
+| Sprint       | Items                                                             | Status                                                         |
+| ------------ | ----------------------------------------------------------------- | -------------------------------------------------------------- |
+| **UF26**     | Living-Doc Erstellung (dieses Dokument)                           | ✅ Done (commit 64cc64ab)                                      |
+| **UF27**     | P0-C — Generate2Page liest `?mission=<id>`                        | ✅ Done (commit 211f5926)                                      |
+| **UF28**     | P0-A — Nis2PhaseSubmitDialog in incidents/page.tsx einbinden      | ✅ Done (commit 678ef672)                                      |
+| **UF29**     | P0-B — AttestModal-Komponente (replace `window.prompt()`)         | ✅ Done (commit 04ced89d)                                      |
+| **UF30**     | P0-G — Timeline-Page Cleanup                                      | ✅ Done (commit 4aee6ea0)                                      |
+| **UF31**     | P1-P3 — Modules-Index Live-Daten                                  | ✅ Done (commit 325c0f68)                                      |
+| **UF32**     | P1-T1 — Tracker Notes inline (P1-T3 Bulk deferred to UF33)        | ✅ Done (commit 0a5ce832, Notes only — Bulk separated to UF33) |
+| **UF33**     | P0-D — Spacecraft-Detail-Page (separat, größerer Scope)           | ⏳ pending                                                     |
+| **UF34**     | P0-E — Trade Counterparty/Operations (oder aus Sidebar entfernen) | ⏳ pending                                                     |
+| **UF35**     | P0-F — Onboarding Bulk-Spacecraft-Import                          | ⏳ pending                                                     |
+| **UF36**     | P1-S6 — Holiday/Delegate-Mode (Settings)                          | ⏳ pending                                                     |
+| **UF37**     | P1-P7 — Regulatory-Feed "Convert to ComplianceItem"               | ⏳ pending                                                     |
+| **UF38**     | P2 Polish-Bundle (P2-1 bis P2-20)                                 | ⏳ pending                                                     |
+| **UF39**     | X-4 — Persona-Switch-UI in Settings                               | ⏳ pending                                                     |
+| **(später)** | X-1, X-2, X-3 — Architektur-Sprints                               | ⏳ pending                                                     |
 
 ---
 
