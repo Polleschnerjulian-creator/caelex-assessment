@@ -1,6 +1,6 @@
 # Caelex Comply v2 — Compliance-Officer-Audit (Living Document)
 
-**Status:** Aktiv · **Letztes Update:** 2026-05-08 (Batch UF33-35 + V-2 verified) · **Eigentümer:** Claude + Julian
+**Status:** Aktiv · **Letztes Update:** 2026-05-08 (Batch UF36-37) · **Eigentümer:** Claude + Julian
 
 > Living document — wird nach jedem implementierten Sprint upgedated.
 > Überlebt Kontext-Kompression: alle Findings + Sprint-Mapping +
@@ -189,14 +189,14 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ### Daily-Driver
 
-| ID    | Was                                         | File:Line                        | Sprint | Status |
-| ----- | ------------------------------------------- | -------------------------------- | ------ | ------ |
-| P1-D1 | Today buckets cap bei 25 pro Bucket         | `compliance-item.server.ts:1023` | später | ⏳     |
-| P1-D2 | "This week" = 30d Cutoff, nicht Mon-Fri     | `compliance-item.server.ts:50`   | später | ⏳     |
-| P1-D3 | `clearedToday` UTC-midnight (Timezone-Leak) | `compliance-item.server.ts:1061` | später | ⏳     |
-| P1-D4 | Notifications: nur all/unread Filter        | `notifications/page.tsx:25`      | später | ⏳     |
-| P1-D5 | Astra V2 Scratchpad-Loss ohne Warning       | `astra-v2/page.tsx:38-41, 80-85` | später | ⏳     |
-| P1-D6 | Astra V2 Archive ohne Confirmation          | `astra-v2/page.tsx:122-128`      | später | ⏳     |
+| ID    | Was                                         | File:Line                        | Sprint | Status                                                          |
+| ----- | ------------------------------------------- | -------------------------------- | ------ | --------------------------------------------------------------- |
+| P1-D1 | Today buckets cap bei 25 pro Bucket         | `compliance-item.server.ts:1023` | später | ⏳                                                              |
+| P1-D2 | "This week" = 30d Cutoff, nicht Mon-Fri     | `compliance-item.server.ts:50`   | später | ⏳                                                              |
+| P1-D3 | `clearedToday` UTC-midnight (Timezone-Leak) | `compliance-item.server.ts:1061` | später | ⏳                                                              |
+| P1-D4 | Notifications: nur all/unread Filter        | `notifications/page.tsx:25`      | später | ⏳                                                              |
+| P1-D5 | Astra V2 Scratchpad-Loss ohne Warning       | `astra-v2/page.tsx:38-41, 80-85` | UF36   | ✅ Done (commit ae3cc019 — beforeunload + visible amber banner) |
+| P1-D6 | Astra V2 Archive ohne Confirmation          | `astra-v2/page.tsx:122-128`      | UF36   | ✅ Done (commit ae3cc019 — 2-stage ArchiveConversationButton)   |
 
 ### Hot-Path
 
@@ -307,7 +307,9 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 | **UF35**     | P0-F — Onboarding Bulk-Spacecraft-Import                          | ⏳ pending                                                     |
 | **UF36**     | P1-S6 — Holiday/Delegate-Mode (Settings)                          | ⏳ pending                                                     |
 | **UF37**     | P1-P7 — Regulatory-Feed "Convert to ComplianceItem"               | ⏳ pending                                                     |
-| **UF38**     | P2 Polish-Bundle (P2-1 bis P2-20)                                 | ⏳ pending                                                     |
+| **UF36**     | P1-D5 + P1-D6 — Astra footgun-prevention                          | ✅ Done (commit ae3cc019)                                      |
+| **UF37**     | P2 Polish-Bundle (P2-1, P2-3, P2-9, P2-10, P2-14, P2-15, P2-19)   | ✅ Done (commit 65127b08 — 7 of 20 P2 items)                   |
+| **UF38**     | P2 Polish-Bundle Rest (P2-2, P2-7, P2-13, P2-17, P2-18, P2-20)    | ⏳ pending (deferred — bigger or contested)                    |
 | **UF39**     | X-4 — Persona-Switch-UI in Settings                               | ⏳ pending                                                     |
 | **(später)** | X-1, X-2, X-3 — Architektur-Sprints                               | ⏳ pending                                                     |
 
