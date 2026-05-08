@@ -642,7 +642,7 @@ export async function submitNIS2Phase(
   phase: string,
   userId: string,
   referenceNumber?: string,
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string; alreadySubmitted?: boolean }> {
   try {
     const phaseRecord = await prisma.incidentNIS2Phase.findUnique({
       where: { incidentId_phase: { incidentId, phase } },
@@ -652,18 +652,55 @@ export async function submitNIS2Phase(
       return { success: false, error: "Phase not found" };
     }
 
-    if (phaseRecord.status === "submitted") {
-      return { success: false, error: "Phase already submitted" };
-    }
-
-    await prisma.incidentNIS2Phase.update({
-      where: { id: phaseRecord.id },
+    // Sprint UF22 — true idempotency via conditional update.
+    //
+    // Audit finding P2-2: previous code did read-then-update which
+    // is a TOCTOU race. Two parallel submits (e.g. user clicks
+    // twice or stale tab + refresh) could both read status as
+    // "not submitted" and both proceed, double-firing the audit
+    // log.
+    //
+    // Replace with `updateMany` + `status: { not: "submitted" }`
+    // precondition. The DB enforces that only one write wins:
+    // the second receives count: 0 and we report it as "already
+    // submitted" success (idempotent), not an error.
+    //
+    // Bonus: also covers the "user submits at 23:55 vs cron marks
+    // overdue at 23:59" race from the audit. The user's update
+    // wins atomically — cron's `markedOverdueAt` write is
+    // independent and applies regardless, so the row ends up
+    // submitted: true + markedOverdueAt: <date>. UI's
+    // tier-resolution short-circuits on isSubmitted so the visual
+    // is correct.
+    const result = await prisma.incidentNIS2Phase.updateMany({
+      where: {
+        id: phaseRecord.id,
+        status: { not: "submitted" },
+      },
       data: {
         status: "submitted",
         submittedAt: new Date(),
         referenceNumber: referenceNumber || undefined,
       },
     });
+
+    // result.count === 0 means either:
+    //   (a) parallel request already submitted (race-loser path)
+    //   (b) row was deleted between findUnique and updateMany (rare)
+    // Re-read to distinguish + return idempotent success when (a).
+    if (result.count === 0) {
+      const current = await prisma.incidentNIS2Phase.findUnique({
+        where: { id: phaseRecord.id },
+        select: { status: true },
+      });
+      if (current?.status === "submitted") {
+        // Idempotent success — the caller's intent (phase submitted)
+        // is already satisfied. No audit-log entry from THIS call;
+        // the winner already wrote one.
+        return { success: true, alreadySubmitted: true };
+      }
+      return { success: false, error: "Phase not found" };
+    }
 
     // Audit log
     const incident = await prisma.incident.findUnique({
