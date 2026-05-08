@@ -21,6 +21,7 @@ import {
   AlertOctagon,
   Truck,
   ArrowUpRight,
+  Hourglass,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
@@ -37,6 +38,10 @@ import {
   type RelatedTradeOperationRef,
 } from "@/lib/comply-v2/missions.server";
 import { MissionDetailActions } from "./MissionDetailActions";
+import {
+  Nis2PhaseCountdown,
+  type PhaseRow,
+} from "@/components/dashboard/v2/Nis2PhaseCountdown";
 
 export const dynamic = "force-dynamic";
 
@@ -162,6 +167,8 @@ export default async function MissionDetailPage({
 
       <PhaseRoadmap phases={mission.phases} />
 
+      <Nis2PhaseAlertSection incidents={mission.relatedIncidents} />
+
       <RelatedSections
         workflows={mission.relatedWorkflows}
         documents={mission.relatedDocuments}
@@ -169,6 +176,69 @@ export default async function MissionDetailPage({
         tradeOps={mission.relatedTradeOperations}
       />
     </div>
+  );
+}
+
+/**
+ * Sprint C-UI — surfaces unsubmitted NIS2 reporting phases across all
+ * incidents linked to this mission. Hidden when no open phases exist.
+ * Tone-shifts the card border based on the worst-tier across rows
+ * (rose for any OVERDUE/ESCALATED, amber for any WARNING/CRITICAL).
+ */
+function Nis2PhaseAlertSection({
+  incidents,
+}: {
+  incidents: MissionDetail["relatedIncidents"];
+}) {
+  const rows: PhaseRow[] = incidents.flatMap((inc) =>
+    inc.openPhases.map((p) => ({
+      ...p,
+      incidentNumber: inc.incidentNumber,
+      incidentTitle: inc.title,
+    })),
+  );
+
+  if (rows.length === 0) return null;
+
+  // Worst-tier tone for the card border
+  const now = new Date();
+  const hasOverdue = rows.some(
+    (r) =>
+      r.markedOverdueAt ||
+      r.escalatedAt ||
+      new Date(r.deadline).getTime() <= now.getTime(),
+  );
+  const hasWarning = rows.some(
+    (r) => r.warnedCriticalAt || r.warnedApproachingAt,
+  );
+
+  const borderTone = hasOverdue
+    ? "border-rose-500/25 bg-gradient-to-b from-rose-500/[0.03] to-rose-500/[0.008]"
+    : hasWarning
+      ? "border-amber-500/20 bg-gradient-to-b from-amber-500/[0.025] to-amber-500/[0.008]"
+      : "border-white/[0.06] bg-gradient-to-b from-white/[0.025] to-white/[0.012]";
+
+  return (
+    <section
+      className={`mt-6 overflow-hidden rounded-xl border ${borderTone} shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]`}
+    >
+      <header className="flex items-start justify-between gap-3 border-b border-white/[0.05] bg-white/[0.012] px-5 py-3">
+        <div className="min-w-0">
+          <h2 className="flex items-center gap-2 text-[13px] font-semibold tracking-tight text-slate-100">
+            <Hourglass className="h-3.5 w-3.5 text-amber-300" />
+            NIS2 reporting deadlines
+          </h2>
+          <p className="mt-0.5 text-[12px] text-slate-400">
+            Art. 23 phases for active incidents on this mission. T-12h / T-2h /
+            T+0 / T+24h tiers fire automatically (notification + email).
+          </p>
+        </div>
+        <span className="shrink-0 rounded-full bg-white/[0.05] px-2.5 py-0.5 text-[11px] font-medium text-slate-300 ring-1 ring-inset ring-white/[0.06]">
+          {rows.length} open
+        </span>
+      </header>
+      <Nis2PhaseCountdown phases={rows} now={new Date()} showIncidentRef />
+    </section>
   );
 }
 

@@ -183,6 +183,22 @@ export interface RelatedIncidentRef {
   resolvedAt: Date | null;
   requiresNCANotification: boolean;
   reportedToNCA: boolean;
+  /** Sprint C-UI — open NIS2 phases (unsubmitted only) for the
+   *  countdown widget. Empty if all phases submitted or never seeded. */
+  openPhases: OpenNis2PhaseRef[];
+}
+
+export interface OpenNis2PhaseRef {
+  id: string;
+  /** "early_warning" | "notification" | "intermediate_report" | "final_report" */
+  phase: string;
+  deadline: Date;
+  status: string;
+  /** Threshold timestamps from Sprint C monitor — drive UI tier. */
+  warnedApproachingAt: Date | null;
+  warnedCriticalAt: Date | null;
+  markedOverdueAt: Date | null;
+  escalatedAt: Date | null;
 }
 
 export interface RelatedTradeOperationRef {
@@ -374,6 +390,22 @@ export async function getMissionDetail(
           resolvedAt: true,
           requiresNCANotification: true,
           reportedToNCA: true,
+          // Sprint C-UI — pull open NIS2 phases for the timeline widget
+          // on the mission detail page. Submitted phases skipped.
+          nis2Phases: {
+            where: { submittedAt: null },
+            select: {
+              id: true,
+              phase: true,
+              deadline: true,
+              status: true,
+              warnedApproachingAt: true,
+              warnedCriticalAt: true,
+              markedOverdueAt: true,
+              escalatedAt: true,
+            },
+            orderBy: { deadline: "asc" },
+          },
         },
         orderBy: [{ status: "asc" }, { detectedAt: "desc" }],
         take: 50,
@@ -453,6 +485,16 @@ export async function getMissionDetail(
       resolvedAt: i.resolvedAt,
       requiresNCANotification: i.requiresNCANotification,
       reportedToNCA: i.reportedToNCA,
+      openPhases: i.nis2Phases.map((p) => ({
+        id: p.id,
+        phase: p.phase,
+        deadline: p.deadline,
+        status: p.status,
+        warnedApproachingAt: p.warnedApproachingAt,
+        warnedCriticalAt: p.warnedCriticalAt,
+        markedOverdueAt: p.markedOverdueAt,
+        escalatedAt: p.escalatedAt,
+      })),
     })),
     relatedTradeOperations: mission.tradeOperations.map((op) => ({
       id: op.id,
