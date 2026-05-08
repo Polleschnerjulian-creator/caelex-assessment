@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import { csrfHeaders } from "@/lib/csrf-client";
 import { motion, AnimatePresence } from "framer-motion";
 import FeatureGate from "@/components/dashboard/FeatureGate";
@@ -158,10 +159,17 @@ interface MissionPhase {
   milestones?: MissionMilestone[];
 }
 
+// Sprint UF30 (P0-G) — explicitly demo-tagged. Audit found these
+// hardcoded phases ship in production with non-functional buttons.
+// Real phases per mission live in Mission-Detail (Sprint Mission-1
+// schema: MissionPhase rows). The Timeline page's Mission-Timeline
+// tab is currently a placeholder until a /api/missions/phases
+// org-aggregator exists. Demo banner now warns the user; buttons
+// are explicitly disabled with tooltips pointing to the real path.
 const DEFAULT_MISSION_PHASES: MissionPhase[] = [
   {
     id: "design",
-    name: "Design & Development",
+    name: "Design & Development (demo)",
     startDate: "2024-01-01",
     endDate: "2029-12-31",
     status: "active",
@@ -371,6 +379,42 @@ function MissionTimelineGantt() {
 
   return (
     <div>
+      {/* Sprint UF30 (P0-G) — Demo banner.
+          Audit found this whole tab renders hardcoded
+          DEFAULT_MISSION_PHASES (2024-2050) with non-functional Add /
+          Export buttons in production. Honest fix: explicit demo
+          banner pointing to real per-mission phases on Mission detail
+          + buttons disabled with tooltips explaining why. The full
+          fix (org-wide phase aggregator API + real CRUD here) is on
+          the post-launch backlog. */}
+      <div
+        role="status"
+        className="mb-5 flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/[0.06] px-4 py-3"
+      >
+        <span
+          className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-amber-500/15 ring-1 ring-inset ring-amber-500/25"
+          aria-hidden
+        >
+          <GanttChartSquare size={14} className="text-amber-300" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-amber-700 dark:text-amber-300">
+            Demo timeline · placeholder data
+          </p>
+          <p className="mt-0.5 text-xs text-amber-600/70 dark:text-amber-400/70">
+            Real mission phases are managed per mission. Open{" "}
+            <Link
+              href="/dashboard/missions"
+              className="font-medium underline-offset-2 hover:underline"
+            >
+              /dashboard/missions
+            </Link>{" "}
+            and pick a mission to see + edit its actual phase roadmap. An
+            org-wide aggregator view replaces this tab in a follow-up release.
+          </p>
+        </div>
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <h3 className="text-base font-semibold text-slate-800 dark:text-white flex items-center gap-2">
@@ -378,11 +422,25 @@ function MissionTimelineGantt() {
           Mission Timeline
         </h3>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-white/50 transition-colors border border-black/[0.04] dark:border-white/5">
+          {/* Sprint UF30 — disabled with explanatory title.
+              These buttons did nothing (no onClick handlers) which
+              looked like a UI bug. Now they communicate: this view
+              is read-only demo data. */}
+          <button
+            type="button"
+            disabled
+            title="Export is disabled while this tab shows demo data. Export real per-mission timelines from the mission detail page."
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 cursor-not-allowed border border-black/[0.04] dark:border-white/5 opacity-60"
+          >
             <Download size={13} />
             Export
           </button>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 dark:bg-emerald-600 text-white hover:bg-slate-700 dark:hover:bg-emerald-500 transition-colors">
+          <button
+            type="button"
+            disabled
+            title="Add Phase is disabled while this tab shows demo data. Add phases on a specific mission's detail page."
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700/50 text-slate-300 cursor-not-allowed opacity-60"
+          >
             <Plus size={13} />
             Add Phase
           </button>
