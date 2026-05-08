@@ -35,8 +35,10 @@ import {
   snoozeAction,
   unsnoozeAction,
   addNoteAction,
-  markAttestedAction,
 } from "@/app/dashboard/today/server-actions";
+// Sprint UF29 (P0-B) — proper attestation modal replaces window.prompt().
+// markAttestedAction is now consumed inside AttestModal, not here.
+import { AttestModal } from "@/components/dashboard/v2/AttestModal";
 
 /**
  * ComplianceItemCard — Today inbox row, Linear-app aesthetic.
@@ -149,6 +151,8 @@ export function ComplianceItemCard({
   snoozedUntil,
 }: ComplianceItemCardProps) {
   const [open, setOpen] = React.useState(false);
+  // Sprint UF29 (P0-B) — modal replaces window.prompt() for attestation.
+  const [attestModalOpen, setAttestModalOpen] = React.useState(false);
   const noteSnippet =
     item.notes?.slice(0, 160) || item.evidenceNotes?.slice(0, 160);
 
@@ -221,39 +225,27 @@ export function ComplianceItemCard({
 
             <MenuSeparator />
 
+            {/* Sprint UF29 (P0-B) — replaces window.prompt() with the
+                AttestModal. Closes the popover-menu and opens the
+                modal in one click; submit goes through the existing
+                markAttestedAction server action so audit-log + 4-eyes
+                proposal pipeline stay intact. */}
             {item.status !== "ATTESTED" ? (
-              <form
-                action={markAttestedAction}
-                onSubmit={(e) => {
-                  const form = e.currentTarget;
-                  const summary = window.prompt(
-                    "Briefly summarize the evidence supporting attestation (≥10 chars):",
-                  );
-                  if (!summary || summary.trim().length < 10) {
-                    e.preventDefault();
-                    return;
-                  }
-                  const input = form.elements.namedItem(
-                    "evidenceSummary",
-                  ) as HTMLInputElement | null;
-                  if (input) input.value = summary;
-                  const rationale = form.elements.namedItem(
-                    "_rationale",
-                  ) as HTMLInputElement | null;
-                  if (rationale)
-                    rationale.value = `User-initiated attestation request. Evidence: ${summary.slice(0, 200)}`;
+              <button
+                type="button"
+                onClick={() => {
                   setOpen(false);
+                  // Defer slightly so the popover-close animation
+                  // doesn't visually overlap the modal-open.
+                  requestAnimationFrame(() => setAttestModalOpen(true));
                 }}
+                className="block w-full"
               >
-                <input type="hidden" name="itemId" value={item.id} />
-                <input type="hidden" name="evidenceSummary" value="" />
-                <input type="hidden" name="_itemId" value={item.id} />
-                <input type="hidden" name="_rationale" value="" />
                 <MenuItem>
                   <ShieldCheck />
                   Mark as attested…
                 </MenuItem>
-              </form>
+              </button>
             ) : null}
 
             <form
@@ -340,6 +332,19 @@ export function ComplianceItemCard({
           </>
         ) : null}
       </footer>
+
+      {/* Sprint UF29 (P0-B) — Attestation modal. Renders nothing
+          when closed; portaled to body via Radix Dialog when open
+          so it overlays the entire viewport, not just the card. */}
+      <AttestModal
+        open={attestModalOpen}
+        onOpenChange={setAttestModalOpen}
+        item={{
+          id: item.id,
+          regulationLabel,
+          requirementId: item.requirementId,
+        }}
+      />
     </article>
   );
 }
