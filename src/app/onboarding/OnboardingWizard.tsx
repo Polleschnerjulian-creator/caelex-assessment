@@ -217,7 +217,10 @@ export default function OnboardingWizard() {
   // Today page) can read it without a server round-trip.
   const [useCase, setUseCase] = useState<UseCase | "">("");
 
-  // Step 2 — Organization
+  // Step 2 — Organization. operatorType is "NONE" sentinel when the
+  // user is non-operator (consultant/auditor/investor) so they don't
+  // have to pick one of 7 satellite-operator roles that don't apply.
+  // The PATCH payload converts "NONE" to null before sending.
   const [orgName, setOrgName] = useState("");
   const [country, setCountry] = useState("");
   const [operatorType, setOperatorType] = useState("");
@@ -271,9 +274,18 @@ export default function OnboardingWizard() {
   // Step 1 → 2 — Use case persisted to localStorage. Server doesn't
   // need to know yet (Prisma migration deferred); the Today page
   // and Help drawer read straight from localStorage.
+  //
+  // Sprint UF8 — auto-select "NONE" operatorType for non-operator
+  // personas so they never see the 7-role grid. Operators clear it
+  // back to empty string so they're forced to pick a real role.
   const handleStep1Next = () => {
     if (!useCase) return;
     saveUseCase(useCase);
+    if (useCase === "operator") {
+      setOperatorType((prev) => (prev === "NONE" ? "" : prev));
+    } else {
+      setOperatorType("NONE");
+    }
     setDirection(1);
     setStep(2);
   };
@@ -289,7 +301,10 @@ export default function OnboardingWizard() {
         body: JSON.stringify({
           organizationName: orgName.trim(),
           country,
-          operatorType,
+          // Sprint UF8 — "NONE" sentinel from the wizard maps to null
+          // on the server, so non-operator personas don't pollute the
+          // User.operatorType column with an irrelevant role code.
+          operatorType: operatorType === "NONE" ? null : operatorType,
         }),
       });
     } catch {
@@ -720,67 +735,132 @@ export default function OnboardingWizard() {
                       style={{ color: "rgba(255, 255, 255, 0.85)" }}
                     >
                       Operator type
+                      {useCase && useCase !== "operator" ? (
+                        <span
+                          className="ml-1.5 font-normal"
+                          style={{ color: "rgba(255, 255, 255, 0.4)" }}
+                        >
+                          (not required for {useCase}s)
+                        </span>
+                      ) : null}
                     </label>
-                    <div className="grid grid-cols-1 gap-2">
-                      {OPERATOR_TYPES.map((op) => {
-                        const Icon = op.icon;
-                        const selected = operatorType === op.code;
-                        return (
-                          <button
-                            key={op.code}
-                            type="button"
-                            onClick={() => setOperatorType(op.code)}
-                            className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-left transition-colors"
+                    {/* Sprint UF8 — non-operator personas get a single
+                        "Not applicable" tile instead of the 7-role grid.
+                        Avoids forcing them to pick an irrelevant role
+                        code that would corrupt downstream engine triggers.
+                        Operators see the full grid as before. */}
+                    {useCase && useCase !== "operator" ? (
+                      <button
+                        type="button"
+                        onClick={() => setOperatorType("NONE")}
+                        className="flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left transition-colors"
+                        style={{
+                          background:
+                            operatorType === "NONE"
+                              ? "rgba(255, 255, 255, 0.08)"
+                              : "rgba(255, 255, 255, 0.03)",
+                          boxShadow:
+                            operatorType === "NONE"
+                              ? "inset 0 1px 0 0 rgba(255, 255, 255, 0.18), 0 0 0 0.5px rgba(255, 255, 255, 0.18)"
+                              : "inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+                        }}
+                      >
+                        <Check
+                          className="h-4 w-4 shrink-0"
+                          strokeWidth={1.75}
+                          style={{
+                            color:
+                              operatorType === "NONE"
+                                ? "rgba(255, 255, 255, 0.95)"
+                                : "rgba(255, 255, 255, 0.5)",
+                          }}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div
+                            className="text-[13.5px] font-medium"
                             style={{
-                              background: selected
-                                ? "rgba(255, 255, 255, 0.08)"
-                                : "rgba(255, 255, 255, 0.03)",
-                              boxShadow: selected
-                                ? "inset 0 1px 0 0 rgba(255, 255, 255, 0.18), 0 0 0 0.5px rgba(255, 255, 255, 0.18)"
-                                : "inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+                              color:
+                                operatorType === "NONE"
+                                  ? "rgba(255, 255, 255, 0.95)"
+                                  : "rgba(255, 255, 255, 0.85)",
+                              letterSpacing: "-0.005em",
                             }}
                           >
-                            <Icon
-                              className="h-4 w-4 shrink-0"
-                              strokeWidth={1.75}
+                            Not applicable — I&apos;m not a satellite operator
+                          </div>
+                          <div
+                            className="text-[12px]"
+                            style={{
+                              color: "rgba(255, 255, 255, 0.45)",
+                            }}
+                          >
+                            Comply will skip operator-specific compliance
+                            engines and tailor the dashboard for your role.
+                          </div>
+                        </div>
+                      </button>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-2">
+                        {OPERATOR_TYPES.map((op) => {
+                          const Icon = op.icon;
+                          const selected = operatorType === op.code;
+                          return (
+                            <button
+                              key={op.code}
+                              type="button"
+                              onClick={() => setOperatorType(op.code)}
+                              className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-left transition-colors"
                               style={{
-                                color: selected
-                                  ? "rgba(255, 255, 255, 0.95)"
-                                  : "rgba(255, 255, 255, 0.5)",
+                                background: selected
+                                  ? "rgba(255, 255, 255, 0.08)"
+                                  : "rgba(255, 255, 255, 0.03)",
+                                boxShadow: selected
+                                  ? "inset 0 1px 0 0 rgba(255, 255, 255, 0.18), 0 0 0 0.5px rgba(255, 255, 255, 0.18)"
+                                  : "inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
                               }}
-                            />
-                            <div className="min-w-0 flex-1">
-                              <div
-                                className="text-[13.5px] font-medium"
+                            >
+                              <Icon
+                                className="h-4 w-4 shrink-0"
+                                strokeWidth={1.75}
                                 style={{
                                   color: selected
                                     ? "rgba(255, 255, 255, 0.95)"
-                                    : "rgba(255, 255, 255, 0.85)",
-                                  letterSpacing: "-0.005em",
+                                    : "rgba(255, 255, 255, 0.5)",
                                 }}
-                              >
-                                {op.label}
-                              </div>
-                              <div
-                                className="text-[12px]"
-                                style={{
-                                  color: "rgba(255, 255, 255, 0.45)",
-                                }}
-                              >
-                                {op.description}
-                              </div>
-                            </div>
-                            {selected ? (
-                              <Check
-                                className="h-3.5 w-3.5 shrink-0"
-                                strokeWidth={2.2}
-                                style={{ color: "rgba(255, 255, 255, 0.95)" }}
                               />
-                            ) : null}
-                          </button>
-                        );
-                      })}
-                    </div>
+                              <div className="min-w-0 flex-1">
+                                <div
+                                  className="text-[13.5px] font-medium"
+                                  style={{
+                                    color: selected
+                                      ? "rgba(255, 255, 255, 0.95)"
+                                      : "rgba(255, 255, 255, 0.85)",
+                                    letterSpacing: "-0.005em",
+                                  }}
+                                >
+                                  {op.label}
+                                </div>
+                                <div
+                                  className="text-[12px]"
+                                  style={{
+                                    color: "rgba(255, 255, 255, 0.45)",
+                                  }}
+                                >
+                                  {op.description}
+                                </div>
+                              </div>
+                              {selected ? (
+                                <Check
+                                  className="h-3.5 w-3.5 shrink-0"
+                                  strokeWidth={2.2}
+                                  style={{ color: "rgba(255, 255, 255, 0.95)" }}
+                                />
+                              ) : null}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
               </motion.div>
