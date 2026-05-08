@@ -27,6 +27,7 @@ import {
 import Link from "next/link";
 import { csrfHeaders } from "@/lib/csrf-client";
 import AttestationsTab from "./components/AttestationsTab";
+import { AsOfPicker } from "@/components/dashboard/v2/AsOfPicker";
 
 // ─── Types ───
 
@@ -563,6 +564,15 @@ function AuditCenterContent() {
             </button>
           </div>
         )}
+
+        {/* Sprint UF14 — Audit context picker. Surfaces "as-of"
+            time-travel for external auditors. Today this links to
+            the audit-log filtered by date (the only surface with
+            historical filtering). Posture/Tracker historical
+            snapshots come in a follow-up sprint. */}
+        <div className="mx-5 mt-4 flex justify-end">
+          <AsOfPicker />
+        </div>
 
         {/* ─── Attestations Tab Content ─── */}
         {activeTab === "attestations" && (
