@@ -1,6 +1,6 @@
 # Caelex Comply v2 — Compliance-Officer-Audit (Living Document)
 
-**Status:** Aktiv · **Letztes Update:** 2026-05-08 (Batch UF44-45) · **Eigentümer:** Claude + Julian
+**Status:** Aktiv · **Letztes Update:** 2026-05-08 (Batch UF46-50) · **Eigentümer:** Claude + Julian
 
 > Living document — wird nach jedem implementierten Sprint upgedated.
 > Überlebt Kontext-Kompression: alle Findings + Sprint-Mapping +
@@ -38,35 +38,35 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ## 2. Score-Card pro Surface
 
-| Surface         | Score | Top-Fix                                    |
-| --------------- | ----- | ------------------------------------------ |
-| Today (Inbox)   | 7/10  | P0-B (`window.prompt()`-Bug)               |
-| Triage          | 5/10  | Keyboard verifizieren                      |
-| Proposals       | 6/10  | 50-Cap (Pending) Pagination                |
-| Notifications   | 6/10  | UF41 added severity + category filters     |
-| Astra V2        | 5/10  | Scratchpad-Loss-Warning, Archive-Confirm   |
-| Missions-Liste  | 3/10  | Search/Filter/Compliance-Score (P1-M1+M2)  |
-| Mission-Detail  | 6/10  | Spacecraft-Detail-Page (P0-D)              |
-| Mission Control | ?/10  | MissionControlView ungeprüft               |
-| Ephemeris       | 7/10  | Pre-Launch-Sats unsichtbar (P1-M7)         |
-| Sentinel        | 6/10  | Pro-Mission-Configuration (P1-S1)          |
-| Posture         | 7/10  | Top-Risks-Card (P1-P1)                     |
-| Modules-Index   | 3/10  | Brochure→Control-Panel (P1-P3)             |
-| Article-Tracker | 6/10  | Notes/Assignee/Bulk (P1-T1+T2+T3)          |
-| Documents       | 5/10  | Article-FK (P1-P4)                         |
-| Regulatory-Feed | 7/10  | UF40+UF45 closed P1-P7+P1-P8               |
-| Incidents       | 7/10  | UF28+UF44 closed P0-A+P1-H2; H1 detail TBD |
-| NCA Portal      | 6/10  | Generate-Handoff (P1-H6)                   |
-| Audit Center    | 8/10  | ZIP-Evidence-Bundling verifizieren         |
-| Audit Log       | 8/10  | CSV-Export-Pagination (P1-H3)              |
-| Audit Chain     | 7/10  | (kaum Mängel)                              |
-| Network         | 6/10  | Activity-Feed-Filter (P1-S5)               |
-| Trade           | 6/10  | UF39 verified Wave A + C live; nicht stub  |
-| Digital Twin    | 7/10  | Optimizer-Cross-Link (P1-S8)               |
-| Optimizer       | 5/10  | Auto-Profile (P1-S9)                       |
-| Settings        | 6/10  | Holiday/Delegate (P1-S6)                   |
-| Onboarding      | 6/10  | UF38: cap 50 + escape hatch; full P0-F TBD |
-| Timeline        | 3/10  | Hardcoded Phases + Dead Buttons (P0-G)     |
+| Surface         | Score | Top-Fix                                         |
+| --------------- | ----- | ----------------------------------------------- |
+| Today (Inbox)   | 9/10  | UF46-48 closed P1-D1/D2/D3; only P0-B left      |
+| Triage          | 5/10  | Keyboard verifizieren                           |
+| Proposals       | 6/10  | 50-Cap (Pending) Pagination                     |
+| Notifications   | 6/10  | UF41 added severity + category filters          |
+| Astra V2        | 5/10  | Scratchpad-Loss-Warning, Archive-Confirm        |
+| Missions-Liste  | 3/10  | Search/Filter/Compliance-Score (P1-M1+M2)       |
+| Mission-Detail  | 6/10  | Spacecraft-Detail-Page (P0-D)                   |
+| Mission Control | ?/10  | MissionControlView ungeprüft                    |
+| Ephemeris       | 7/10  | Pre-Launch-Sats unsichtbar (P1-M7)              |
+| Sentinel        | 7/10  | UF50: visibility pause; per-mission (P1-S1) TBD |
+| Posture         | 7/10  | Top-Risks-Card (P1-P1)                          |
+| Modules-Index   | 3/10  | Brochure→Control-Panel (P1-P3)                  |
+| Article-Tracker | 6/10  | Notes/Assignee/Bulk (P1-T1+T2+T3)               |
+| Documents       | 5/10  | Article-FK (P1-P4)                              |
+| Regulatory-Feed | 7/10  | UF40+UF45 closed P1-P7+P1-P8                    |
+| Incidents       | 7/10  | UF28+UF44 closed P0-A+P1-H2; H1 detail TBD      |
+| NCA Portal      | 6/10  | Generate-Handoff (P1-H6)                        |
+| Audit Center    | 8/10  | ZIP-Evidence-Bundling verifizieren              |
+| Audit Log       | 8/10  | CSV-Export-Pagination (P1-H3)                   |
+| Audit Chain     | 7/10  | (kaum Mängel)                                   |
+| Network         | 6/10  | Activity-Feed-Filter (P1-S5)                    |
+| Trade           | 6/10  | UF39 verified Wave A + C live; nicht stub       |
+| Digital Twin    | 7/10  | Optimizer-Cross-Link (P1-S8)                    |
+| Optimizer       | 5/10  | Auto-Profile (P1-S9)                            |
+| Settings        | 6/10  | Holiday/Delegate (P1-S6)                        |
+| Onboarding      | 6/10  | UF38: cap 50 + escape hatch; full P0-F TBD      |
+| Timeline        | 3/10  | Hardcoded Phases + Dead Buttons (P0-G)          |
 
 ---
 
@@ -157,16 +157,16 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ### Article-Tracker (operative Hauptfläche)
 
-| ID    | Was                                                             | File:Line                    | Sprint             | Status                                                                                                          |
-| ----- | --------------------------------------------------------------- | ---------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------- |
-| P1-T1 | Keine Notes inline (Schema hat sie, UI rendert nicht)           | `tracker/page.tsx:86-89`     | UF32               | ✅ Done (commit 0a5ce832 — ArticleNotesEditor)                                                                  |
-| P1-T2 | Kein Assignee/Due-Date/Priority pro Article                     | `tracker/page.tsx:1328-1456` | später             | ⏳                                                                                                              |
-| P1-T3 | Keine Bulk-Actions (51 NIS2-Items = 51 Klicks)                  | `tracker/page.tsx:1399-1435` | UF34               | ✅ Done (commit c599dea4 — checkbox + select-all + BulkActionsToolbar)                                          |
-| P1-T4 | NIS2/Cyber/Debris Sub-Pages haben keinen Article-Detail         | `tracker/page.tsx:1640-1781` | später             | ⏳                                                                                                              |
-| P1-T5 | Light-Mode-Kontrast-Bug (`rgba(255,255,255,0.96)` ohne theme)   | `tracker/page.tsx:599-632`   | später             | ⏳                                                                                                              |
-| P1-T6 | V1↔V2 Vocabulary-Mismatch (Tracker-Statuses ≠ Posture-Statuses) | `tracker/page.tsx:237-249`   | später (X-1 below) | ⏳                                                                                                              |
-| P1-T7 | Action-Items-Cap bei 20 ohne Pagination                         | `tracker/page.tsx:849`       | später             | ⏳                                                                                                              |
-| P1-T8 | `expandedArticles` persistiert über Regulation-Switch           | `tracker/page.tsx:383-385`   | UF42               | ✅ Done (useEffect resets expandedArticles + selectedArticleIds + collapsedGroups on selectedRegulation change) |
+| ID    | Was                                                             | File:Line                    | Sprint              | Status                                                                                                                                                      |
+| ----- | --------------------------------------------------------------- | ---------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1-T1 | Keine Notes inline (Schema hat sie, UI rendert nicht)           | `tracker/page.tsx:86-89`     | UF32                | ✅ Done (commit 0a5ce832 — ArticleNotesEditor)                                                                                                              |
+| P1-T2 | Kein Assignee/Due-Date/Priority pro Article                     | `tracker/page.tsx:1328-1456` | später              | ⏳                                                                                                                                                          |
+| P1-T3 | Keine Bulk-Actions (51 NIS2-Items = 51 Klicks)                  | `tracker/page.tsx:1399-1435` | UF34                | ✅ Done (commit c599dea4 — checkbox + select-all + BulkActionsToolbar)                                                                                      |
+| P1-T4 | NIS2/Cyber/Debris Sub-Pages haben keinen Article-Detail         | `tracker/page.tsx:1640-1781` | später              | ⏳                                                                                                                                                          |
+| P1-T5 | Light-Mode-Kontrast-Bug (`rgba(255,255,255,0.96)` ohne theme)   | `tracker/page.tsx:599-632`   | später              | ⏳                                                                                                                                                          |
+| P1-T6 | V1↔V2 Vocabulary-Mismatch (Tracker-Statuses ≠ Posture-Statuses) | `tracker/page.tsx:237-249`   | später (X-1 below)  | ⏳                                                                                                                                                          |
+| P1-T7 | Action-Items-Cap bei 20 ohne Pagination                         | `tracker/page.tsx:849`       | UF49 (verification) | ⚠️ Audit ref stale — line 849 is in the table thead now; only `.slice()` in file is a textarea length-cap. Closing as not-reproducible until audit re-runs. |
+| P1-T8 | `expandedArticles` persistiert über Regulation-Switch           | `tracker/page.tsx:383-385`   | UF42                | ✅ Done (useEffect resets expandedArticles + selectedArticleIds + collapsedGroups on selectedRegulation change)                                             |
 
 ### Missions-Domäne
 
@@ -199,9 +199,9 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 | ID    | Was                                         | File:Line                        | Sprint | Status                                                                                                       |
 | ----- | ------------------------------------------- | -------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------ |
-| P1-D1 | Today buckets cap bei 25 pro Bucket         | `compliance-item.server.ts:1023` | später | ⏳                                                                                                           |
-| P1-D2 | "This week" = 30d Cutoff, nicht Mon-Fri     | `compliance-item.server.ts:50`   | später | ⏳                                                                                                           |
-| P1-D3 | `clearedToday` UTC-midnight (Timezone-Leak) | `compliance-item.server.ts:1061` | später | ⏳                                                                                                           |
+| P1-D1 | Today buckets cap bei 25 pro Bucket         | `compliance-item.server.ts:1023` | UF46   | ✅ Done (cap 25→100 + `totals` field exposes pre-cap counts; Section renders "+N more" hint when truncated)  |
+| P1-D2 | "This week" = 30d Cutoff, nicht Mon-Fri     | `compliance-item.server.ts:50`   | UF47   | ✅ Done (real 7-day window: HIGH+targetDate≤7d OR HIGH-no-date; HIGH items beyond 7d move to `watching`)     |
+| P1-D3 | `clearedToday` UTC-midnight (Timezone-Leak) | `compliance-item.server.ts:1061` | UF48   | ✅ Done (resolves Org.timezone via date-fns-tz; defaults Europe/Berlin)                                      |
 | P1-D4 | Notifications: nur all/unread Filter        | `notifications/page.tsx:25`      | UF41   | ✅ Done (severity + category dropdowns; URL-mirrored; server-resolved category→type via NOTIFICATION_CONFIG) |
 | P1-D5 | Astra V2 Scratchpad-Loss ohne Warning       | `astra-v2/page.tsx:38-41, 80-85` | UF36   | ✅ Done (commit ae3cc019 — beforeunload + visible amber banner)                                              |
 | P1-D6 | Astra V2 Archive ohne Confirmation          | `astra-v2/page.tsx:122-128`      | UF36   | ✅ Done (commit ae3cc019 — 2-stage ArchiveConversationButton)                                                |
@@ -219,19 +219,19 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ### Side-Surfaces
 
-| ID     | Was                                                           | File:Line                   | Sprint | Status                                                                                       |
-| ------ | ------------------------------------------------------------- | --------------------------- | ------ | -------------------------------------------------------------------------------------------- |
-| P1-S1  | Sentinel-Agenten nicht pro Mission/Spacecraft konfigurierbar  | `sentinel/page.tsx:535-559` | später | ⏳                                                                                           |
-| P1-S2  | Sentinel Evidence-Feed kein Search/Filter                     | `sentinel/page.tsx:638-644` | später | ⏳                                                                                           |
-| P1-S3  | Sentinel 30s polling ohne Visibility-API-Pause                | `sentinel/page.tsx:172-209` | später | ⏳                                                                                           |
-| P1-S4  | Network `dataRoomCount: 0`/`attestationCount: 0` hardcoded    | `network/page.tsx:479-480`  | UF43   | ✅ Done (read from `eng._count.{dataRooms,attestations}` — Prisma include was already there) |
-| P1-S5  | Network Activity-Feed nicht pro Stakeholder gefiltert         | `network/page.tsx:501-512`  | später | ⏳                                                                                           |
-| P1-S6  | Settings: kein Holiday/Delegate-Mode                          | Settings allgemein          | später | ⏳                                                                                           |
-| P1-S7  | Settings: Billing-Folder ohne Nav-Eintrag (toter Pfad)        | `settings/page.tsx:128-239` | später | ⏳                                                                                           |
-| P1-S8  | Digital Twin ↔ Optimizer keine Cross-Links                    | Beide Pages                 | später | ⏳                                                                                           |
-| P1-S9  | Optimizer: kein Auto-Profile vom Onboarding                   | `optimizer/page.tsx:55-60`  | später | ⏳                                                                                           |
-| P1-S10 | Optimizer: kein "Save Comparison" / "Generate Migration Plan" | Optimizer                   | später | ⏳                                                                                           |
-| P1-S11 | Onboarding: kein Re-do nach Abschluss                         | `OnboardingWizard.tsx`      | später | ⏳                                                                                           |
+| ID     | Was                                                           | File:Line                   | Sprint | Status                                                                                                  |
+| ------ | ------------------------------------------------------------- | --------------------------- | ------ | ------------------------------------------------------------------------------------------------------- |
+| P1-S1  | Sentinel-Agenten nicht pro Mission/Spacecraft konfigurierbar  | `sentinel/page.tsx:535-559` | später | ⏳                                                                                                      |
+| P1-S2  | Sentinel Evidence-Feed kein Search/Filter                     | `sentinel/page.tsx:638-644` | später | ⏳                                                                                                      |
+| P1-S3  | Sentinel 30s polling ohne Visibility-API-Pause                | `sentinel/page.tsx:172-209` | UF50   | ✅ Done (visibilitychange listener: pauses interval when hidden, immediate refetch + re-arm on visible) |
+| P1-S4  | Network `dataRoomCount: 0`/`attestationCount: 0` hardcoded    | `network/page.tsx:479-480`  | UF43   | ✅ Done (read from `eng._count.{dataRooms,attestations}` — Prisma include was already there)            |
+| P1-S5  | Network Activity-Feed nicht pro Stakeholder gefiltert         | `network/page.tsx:501-512`  | später | ⏳                                                                                                      |
+| P1-S6  | Settings: kein Holiday/Delegate-Mode                          | Settings allgemein          | später | ⏳                                                                                                      |
+| P1-S7  | Settings: Billing-Folder ohne Nav-Eintrag (toter Pfad)        | `settings/page.tsx:128-239` | später | ⏳                                                                                                      |
+| P1-S8  | Digital Twin ↔ Optimizer keine Cross-Links                    | Beide Pages                 | später | ⏳                                                                                                      |
+| P1-S9  | Optimizer: kein Auto-Profile vom Onboarding                   | `optimizer/page.tsx:55-60`  | später | ⏳                                                                                                      |
+| P1-S10 | Optimizer: kein "Save Comparison" / "Generate Migration Plan" | Optimizer                   | später | ⏳                                                                                                      |
+| P1-S11 | Onboarding: kein Re-do nach Abschluss                         | `OnboardingWizard.tsx`      | später | ⏳                                                                                                      |
 
 ---
 
@@ -299,33 +299,38 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ## 8. Sprint-Mapping (was wird wann gemacht)
 
-| Sprint      | Items                                                                             | Status                                                                    |
-| ----------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| **UF26**    | Living-Doc Erstellung (dieses Dokument)                                           | ✅ Done (commit 64cc64ab)                                                 |
-| **UF27**    | P0-C — Generate2Page liest `?mission=<id>`                                        | ✅ Done (commit 211f5926)                                                 |
-| **UF28**    | P0-A — Nis2PhaseSubmitDialog in incidents/page.tsx einbinden                      | ✅ Done (commit 678ef672)                                                 |
-| **UF29**    | P0-B — AttestModal-Komponente (replace `window.prompt()`)                         | ✅ Done (commit 04ced89d)                                                 |
-| **UF30**    | P0-G — Timeline-Page Cleanup                                                      | ✅ Done (commit 4aee6ea0)                                                 |
-| **UF31**    | P1-P3 — Modules-Index Live-Daten                                                  | ✅ Done (commit 325c0f68)                                                 |
-| **UF32**    | P1-T1 — Tracker Notes inline (P1-T3 Bulk deferred to UF33)                        | ✅ Done (commit 0a5ce832, Notes only — Bulk separated to UF33)            |
-| **UF33**    | P0-D — Spacecraft-Detail-Page                                                     | ✅ Done (commit 2eec01c5)                                                 |
-| **UF34**    | P1-T3 — Tracker Bulk-Actions (was P0-E, retasked)                                 | ✅ Done (commit c599dea4)                                                 |
-| **UF35**    | P1-P1 — Posture Top-Risks-Card + V-2 verified                                     | ✅ Done (commit ac0de037)                                                 |
-| **UF36**    | P1-D5 + P1-D6 — Astra footgun-prevention                                          | ✅ Done (commit ae3cc019)                                                 |
-| **UF37**    | P2 Polish-Bundle (P2-1, P2-3, P2-9, P2-10, P2-14, P2-15, P2-19)                   | ✅ Done (commit 65127b08 — 7 of 20 P2 items)                              |
-| **UF38**    | P0-F partial — Onboarding Cap 12→50 + Bulk-import escape hatch                    | ✅ Done (commit 0d465c33 — full TLE/CelesTrak-Pull später)                |
-| **UF39**    | P0-E — Trade Counterparty/Operations (verification only)                          | ✅ Resolved — audit war veraltet, Wave A + C bereits live                 |
-| **UF40**    | P1-P7 — Regulatory-Feed "Forward to Inbox" (re-frame ComplianceItem→Notification) | ✅ Done (forward API + 2-stage button, idempotent on entityType+entityId) |
-| **UF41**    | P1-D4 — Notifications severity + category filters                                 | ✅ Done (URL-mirrored dropdowns; server-resolved category→type)           |
-| **UF42**    | P1-T8 — Tracker `expandedArticles` regression on regulation switch                | ✅ Done (useEffect resets all 3 selection Sets on regulation change)      |
-| **UF43**    | P1-S4 — Network engagement hardcoded counts                                       | ✅ Done (use `eng._count.{dataRooms,attestations}` from API)              |
-| **UF44**    | P1-H2 — Incidents page workflow-state filter                                      | ✅ Done (sidebar row + API `workflowState` query param)                   |
-| **UF45**    | P1-P8 — Regulatory-Feed module filter coverage (added `cra` + `regulatory`)       | ✅ Done (mirrors eurlex-service MODULE_KEYWORDS)                          |
-| **(later)** | P0-F (full) — Onboarding Bulk-Spacecraft-Import + CelesTrak-Pull                  | ⏳ pending (escape hatch live in UF38; full impl deferred)                |
-| **(later)** | P1-S6 — Holiday/Delegate-Mode (Settings)                                          | ⏳ pending                                                                |
-| **(later)** | P2 Polish-Bundle Rest (P2-2, P2-7, P2-13, P2-17, P2-18, P2-20)                    | ⏳ pending (deferred — bigger or contested)                               |
-| **(later)** | X-4 — Persona-Switch-UI in Settings                                               | ⏳ pending                                                                |
-| **(later)** | X-1, X-2, X-3 — Architektur-Sprints                                               | ⏳ pending                                                                |
+| Sprint      | Items                                                                             | Status                                                                      |
+| ----------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| **UF26**    | Living-Doc Erstellung (dieses Dokument)                                           | ✅ Done (commit 64cc64ab)                                                   |
+| **UF27**    | P0-C — Generate2Page liest `?mission=<id>`                                        | ✅ Done (commit 211f5926)                                                   |
+| **UF28**    | P0-A — Nis2PhaseSubmitDialog in incidents/page.tsx einbinden                      | ✅ Done (commit 678ef672)                                                   |
+| **UF29**    | P0-B — AttestModal-Komponente (replace `window.prompt()`)                         | ✅ Done (commit 04ced89d)                                                   |
+| **UF30**    | P0-G — Timeline-Page Cleanup                                                      | ✅ Done (commit 4aee6ea0)                                                   |
+| **UF31**    | P1-P3 — Modules-Index Live-Daten                                                  | ✅ Done (commit 325c0f68)                                                   |
+| **UF32**    | P1-T1 — Tracker Notes inline (P1-T3 Bulk deferred to UF33)                        | ✅ Done (commit 0a5ce832, Notes only — Bulk separated to UF33)              |
+| **UF33**    | P0-D — Spacecraft-Detail-Page                                                     | ✅ Done (commit 2eec01c5)                                                   |
+| **UF34**    | P1-T3 — Tracker Bulk-Actions (was P0-E, retasked)                                 | ✅ Done (commit c599dea4)                                                   |
+| **UF35**    | P1-P1 — Posture Top-Risks-Card + V-2 verified                                     | ✅ Done (commit ac0de037)                                                   |
+| **UF36**    | P1-D5 + P1-D6 — Astra footgun-prevention                                          | ✅ Done (commit ae3cc019)                                                   |
+| **UF37**    | P2 Polish-Bundle (P2-1, P2-3, P2-9, P2-10, P2-14, P2-15, P2-19)                   | ✅ Done (commit 65127b08 — 7 of 20 P2 items)                                |
+| **UF38**    | P0-F partial — Onboarding Cap 12→50 + Bulk-import escape hatch                    | ✅ Done (commit 0d465c33 — full TLE/CelesTrak-Pull später)                  |
+| **UF39**    | P0-E — Trade Counterparty/Operations (verification only)                          | ✅ Resolved — audit war veraltet, Wave A + C bereits live                   |
+| **UF40**    | P1-P7 — Regulatory-Feed "Forward to Inbox" (re-frame ComplianceItem→Notification) | ✅ Done (forward API + 2-stage button, idempotent on entityType+entityId)   |
+| **UF41**    | P1-D4 — Notifications severity + category filters                                 | ✅ Done (URL-mirrored dropdowns; server-resolved category→type)             |
+| **UF42**    | P1-T8 — Tracker `expandedArticles` regression on regulation switch                | ✅ Done (useEffect resets all 3 selection Sets on regulation change)        |
+| **UF43**    | P1-S4 — Network engagement hardcoded counts                                       | ✅ Done (use `eng._count.{dataRooms,attestations}` from API)                |
+| **UF44**    | P1-H2 — Incidents page workflow-state filter                                      | ✅ Done (sidebar row + API `workflowState` query param)                     |
+| **UF45**    | P1-P8 — Regulatory-Feed module filter coverage (added `cra` + `regulatory`)       | ✅ Done (mirrors eurlex-service MODULE_KEYWORDS)                            |
+| **UF46**    | P1-D1 — Today bucket cap raised 25→100 + "+N more" hint                           | ✅ Done (`totals` field on getTodayInboxForUser; Section component)         |
+| **UF47**    | P1-D2 — "This week" honest 7-day semantics                                        | ✅ Done (HIGH+targetDate≤7d; HIGH-no-date stays; rest moves to Watching)    |
+| **UF48**    | P1-D3 — `clearedToday` timezone-aware (Org.timezone, default Berlin)              | ✅ Done (date-fns-tz fromZonedTime/toZonedTime; resolveUserTimezone helper) |
+| **UF49**    | P1-T7 verification — audit reference stale (no slice-cap-20 in current code)      | ⚠️ Closed not-reproducible until next audit                                 |
+| **UF50**    | P1-S3 — Sentinel polling pauses on document.hidden                                | ✅ Done (visibilitychange listener; immediate refetch on visible)           |
+| **(later)** | P0-F (full) — Onboarding Bulk-Spacecraft-Import + CelesTrak-Pull                  | ⏳ pending (escape hatch live in UF38; full impl deferred)                  |
+| **(later)** | P1-S6 — Holiday/Delegate-Mode (Settings)                                          | ⏳ pending                                                                  |
+| **(later)** | P2 Polish-Bundle Rest (P2-2, P2-7, P2-13, P2-17, P2-18, P2-20)                    | ⏳ pending (deferred — bigger or contested)                                 |
+| **(later)** | X-4 — Persona-Switch-UI in Settings                                               | ⏳ pending                                                                  |
+| **(later)** | X-1, X-2, X-3 — Architektur-Sprints                                               | ⏳ pending                                                                  |
 
 ---
 
