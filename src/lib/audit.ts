@@ -514,6 +514,109 @@ export async function getAuditLogs(
 }
 
 /**
+ * Sprint E2 — org-scoped audit log fetcher with user identity joined.
+ *
+ * Used by the /dashboard/audit-log page (chronological filterable
+ * viewer for regulators + auditors). Differs from getAuditLogs():
+ *   - Scoped to an organization (every member's actions visible)
+ *   - Includes user.name + user.email for the display column
+ *   - Returns the ipAddress + userAgent fields too (forensics)
+ *
+ * Permission gating happens at the API layer; this function trusts
+ * its caller to have verified the requester has audit:read.
+ */
+export async function getOrganizationAuditLog(
+  organizationId: string,
+  options: {
+    limit?: number;
+    offset?: number;
+    entityType?: string;
+    action?: string;
+    actorUserId?: string;
+    startDate?: Date;
+    endDate?: Date;
+    /** Free-text search across description + entityId. */
+    query?: string;
+  } = {},
+) {
+  const {
+    limit = 50,
+    offset = 0,
+    entityType,
+    action,
+    actorUserId,
+    startDate,
+    endDate,
+    query,
+  } = options;
+
+  const where: import("@prisma/client").Prisma.AuditLogWhereInput = {
+    organizationId,
+  };
+  if (entityType) where.entityType = entityType;
+  if (action) where.action = action;
+  if (actorUserId) where.userId = actorUserId;
+  if (startDate || endDate) {
+    where.timestamp = {};
+    if (startDate)
+      (where.timestamp as { gte?: Date; lte?: Date }).gte = startDate;
+    if (endDate) (where.timestamp as { gte?: Date; lte?: Date }).lte = endDate;
+  }
+  if (query && query.trim().length > 0) {
+    where.OR = [
+      { description: { contains: query, mode: "insensitive" } },
+      { entityId: { contains: query, mode: "insensitive" } },
+    ];
+  }
+
+  const [logs, total, distinctActorsRaw] = await Promise.all([
+    prisma.auditLog.findMany({
+      where,
+      select: {
+        id: true,
+        action: true,
+        entityType: true,
+        entityId: true,
+        description: true,
+        ipAddress: true,
+        userAgent: true,
+        timestamp: true,
+        entryHash: true,
+        previousHash: true,
+        user: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+      orderBy: { timestamp: "desc" },
+      take: limit,
+      skip: offset,
+    }),
+    prisma.auditLog.count({ where }),
+    // Distinct actors in the FULL org (independent of filters) so the
+    // filter dropdown is stable. Cap at 100 — orgs rarely exceed this.
+    prisma.auditLog.findMany({
+      where: { organizationId },
+      distinct: ["userId"],
+      select: {
+        userId: true,
+        user: { select: { name: true, email: true } },
+      },
+      take: 100,
+    }),
+  ]);
+
+  const distinctActors = distinctActorsRaw
+    .map((r) => ({
+      userId: r.userId,
+      name: r.user?.name ?? null,
+      email: r.user?.email ?? null,
+    }))
+    .filter((a) => a.email || a.name);
+
+  return { logs, total, distinctActors };
+}
+
+/**
  * Get audit logs for a specific entity
  */
 export async function getEntityAuditLogs(
