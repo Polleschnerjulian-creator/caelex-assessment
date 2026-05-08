@@ -3214,6 +3214,174 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
       })),
     };
   },
+
+  // ─── Mission Domain Tools (Sprint D) ────────────────────────────
+
+  list_missions: async (input, userContext) => {
+    const statusFilter = getString(input, "status");
+    const missionTypeFilter = getString(input, "missionType");
+
+    const { getMissionsForUser } =
+      await import("@/lib/comply-v2/missions.server");
+    const all = await getMissionsForUser(userContext.userId);
+
+    const filtered = all.filter((m) => {
+      if (statusFilter && m.status !== statusFilter) return false;
+      if (missionTypeFilter && m.missionType !== missionTypeFilter)
+        return false;
+      return true;
+    });
+
+    return {
+      count: filtered.length,
+      totalInOrg: all.length,
+      filters: {
+        status: statusFilter ?? null,
+        missionType: missionTypeFilter ?? null,
+      },
+      missions: filtered.map((m) => ({
+        id: m.id,
+        name: m.name,
+        reference: m.reference,
+        missionType: m.missionType,
+        programPhase: m.programPhase,
+        status: m.status,
+        primaryEndUser: m.primaryEndUser,
+        primaryEndUserCountry: m.primaryEndUserCountryCode,
+        spacecraftCount: m.spacecraftCount,
+        primarySpacecraftName: m.primarySpacecraft?.spacecraftName ?? null,
+        plannedStartAt: m.plannedStartAt?.toISOString() ?? null,
+        startedAt: m.startedAt?.toISOString() ?? null,
+        endedAt: m.endedAt?.toISOString() ?? null,
+        phaseCount: m.phaseCount,
+        roadmapProgressPct: m.roadmapProgressPct,
+        activePhase: m.activePhase
+          ? {
+              name: m.activePhase.name,
+              status: m.activePhase.status,
+              progress: m.activePhase.progress,
+              endDate: m.activePhase.endDate.toISOString(),
+            }
+          : null,
+      })),
+    };
+  },
+
+  get_mission_detail: async (input, userContext) => {
+    const missionId = getString(input, "missionId");
+    if (!missionId) {
+      return {
+        error:
+          "missionId is required. Use list_missions first to find the missionId.",
+      };
+    }
+
+    const { getMissionDetail } =
+      await import("@/lib/comply-v2/missions.server");
+    const mission = await getMissionDetail(userContext.userId, missionId);
+    if (!mission) {
+      return {
+        error: `Mission '${missionId}' not found in your organization.`,
+      };
+    }
+
+    return {
+      id: mission.id,
+      name: mission.name,
+      reference: mission.reference,
+      description: mission.description,
+      missionType: mission.missionType,
+      programPhase: mission.programPhase,
+      status: mission.status,
+      primaryEndUser: mission.primaryEndUser,
+      primaryEndUserCountry: mission.primaryEndUserCountryCode,
+      plannedStartAt: mission.plannedStartAt?.toISOString() ?? null,
+      startedAt: mission.startedAt?.toISOString() ?? null,
+      endedAt: mission.endedAt?.toISOString() ?? null,
+      authorityRefs: mission.authorityRefs,
+      // Spacecraft
+      assignedSpacecraft: mission.assignedSpacecraft.map((s) => ({
+        spacecraftId: s.spacecraftId,
+        name: s.spacecraftName,
+        role: s.role,
+        constellationSlot: s.constellationSlot,
+        status: s.status,
+        cosparId: s.cosparId,
+        noradId: s.noradId,
+        orbitType: s.orbitType,
+        altitudeKm: s.altitudeKm,
+        startedAt: s.startedAt.toISOString(),
+      })),
+      pastSpacecraftCount: mission.pastSpacecraft.length,
+      // Phases (summary level)
+      phaseCount: mission.phases.length,
+      totalMilestones: mission.totalMilestones,
+      regulatoryMilestones: mission.regulatoryMilestones,
+      roadmapProgressPct: mission.roadmapProgressPct,
+      // Cross-domain (counts only — model can call get_mission_timeline /
+      // list_documents / list_active_incidents / lookup_trade_party for
+      // the actual entries to keep this payload focused)
+      relatedCounts: {
+        authorizationWorkflows: mission.relatedWorkflows.length,
+        documents: mission.relatedDocuments.length,
+        incidents: mission.relatedIncidents.length,
+        tradeOperations: mission.relatedTradeOperations.length,
+      },
+      hasUnresolvedIncidents: mission.relatedIncidents.some(
+        (i) => i.status !== "resolved" && i.status !== "closed",
+      ),
+      hasCatchAllHits: mission.relatedTradeOperations.some(
+        (o) => o.catchAllAnyHit,
+      ),
+    };
+  },
+
+  get_mission_timeline: async (input, userContext) => {
+    const missionId = getString(input, "missionId");
+    if (!missionId) {
+      return { error: "missionId is required." };
+    }
+
+    const { getMissionDetail } =
+      await import("@/lib/comply-v2/missions.server");
+    const mission = await getMissionDetail(userContext.userId, missionId);
+    if (!mission) {
+      return {
+        error: `Mission '${missionId}' not found in your organization.`,
+      };
+    }
+
+    return {
+      missionId: mission.id,
+      missionName: mission.name,
+      programPhase: mission.programPhase,
+      roadmapProgressPct: mission.roadmapProgressPct,
+      phases: mission.phases.map((p) => ({
+        id: p.id,
+        name: p.name,
+        status: p.status,
+        progress: p.progress,
+        startDate: p.startDate.toISOString(),
+        endDate: p.endDate.toISOString(),
+        description: p.description,
+        dependsOn: p.dependsOn,
+        milestoneCount: p.milestones.length,
+        regulatoryMilestoneCount: p.milestones.filter((m) => m.isRegulatory)
+          .length,
+        criticalMilestoneCount: p.milestones.filter((m) => m.isCritical).length,
+        milestones: p.milestones.map((m) => ({
+          id: m.id,
+          name: m.name,
+          status: m.status,
+          targetDate: m.targetDate.toISOString(),
+          completedDate: m.completedDate?.toISOString() ?? null,
+          isCritical: m.isCritical,
+          isRegulatory: m.isRegulatory,
+          regulatoryRef: m.regulatoryRef,
+        })),
+      })),
+    };
+  },
 };
 
 // ─── Export ───

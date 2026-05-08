@@ -422,8 +422,38 @@ export async function buildTopicContext(
   topics: string[],
   pageContext?: AstraContext,
   missionData?: AstraMissionData,
+  // Sprint D — first-class Mission portfolio (separate from the legacy
+  // missionData free-form assessment payload above).
+  missionPortfolio?: MissionPortfolioSummary | null,
 ): Promise<string> {
   const contextSections: string[] = [];
+
+  // Sprint D — surface the mission portfolio at the top so Astra always
+  // knows the operator has first-class missions before any tool call.
+  if (missionPortfolio) {
+    const topMissionLines = missionPortfolio.topMissions
+      .map((m) => {
+        const ref = m.reference
+          ? ` [${sanitizeForPrompt(m.reference, 100)}]`
+          : "";
+        const sc =
+          m.spacecraftCount > 0
+            ? ` · ${m.spacecraftCount} spacecraft${m.primarySpacecraft ? ` (primary: ${sanitizeForPrompt(m.primarySpacecraft, 100)})` : ""}`
+            : " · no spacecraft";
+        return `- ${sanitizeForPrompt(m.name, 200)}${ref} — ${m.status} · ${m.programPhase} · ${m.missionType}${sc} · id=${m.id}`;
+      })
+      .join("\n");
+
+    contextSections.push(`
+## Mission Portfolio
+The user's organization has ${missionPortfolio.total} mission${missionPortfolio.total === 1 ? "" : "s"} (${missionPortfolio.active} ACTIVE, ${missionPortfolio.planned} PLANNED, ${missionPortfolio.paused} PAUSED, ${missionPortfolio.completed} COMPLETED, ${missionPortfolio.cancelled} CANCELLED).
+
+Top missions (most recent):
+${topMissionLines}
+
+When the user references "the mission" or names a specific one, prefer matching against this list. Use list_missions / get_mission_detail / get_mission_timeline tools for richer queries.
+`);
+  }
 
   // Add page context if present
   if (pageContext) {
@@ -625,12 +655,19 @@ export async function buildCompleteContext(
   // Build user context from database (filtered by detected topics)
   const userContext = await buildUserContext(userId, organizationId, topics);
 
+  // Sprint D — fetch a lightweight Mission portfolio summary so Astra
+  // knows the operator has first-class missions before any tool call.
+  // Failure-tolerant: if the mission DB is unavailable, we just skip
+  // the section rather than blocking the chat.
+  const missionPortfolio = await fetchMissionPortfolioSummary(userId);
+
   // Build topic-specific context
   const contextString = await buildTopicContext(
     userContext,
     topics,
     pageContext,
     missionData,
+    missionPortfolio,
   );
 
   const estimatedTokens = estimateTokenCount(contextString);
@@ -643,6 +680,62 @@ export async function buildCompleteContext(
   }
 
   return { userContext, contextString, estimatedTokens };
+}
+
+// ─── Mission portfolio summary (Sprint D) ────────────────────────────────
+
+interface MissionPortfolioSummary {
+  total: number;
+  active: number;
+  planned: number;
+  paused: number;
+  completed: number;
+  cancelled: number;
+  /** Top 5 most-recently-updated missions for inline reference. */
+  topMissions: Array<{
+    id: string;
+    name: string;
+    reference: string | null;
+    status: string;
+    programPhase: string;
+    missionType: string;
+    spacecraftCount: number;
+    primarySpacecraft: string | null;
+  }>;
+}
+
+async function fetchMissionPortfolioSummary(
+  userId: string,
+): Promise<MissionPortfolioSummary | null> {
+  try {
+    const { getMissionsForUser } =
+      await import("@/lib/comply-v2/missions.server");
+    const missions = await getMissionsForUser(userId);
+    if (missions.length === 0) return null;
+
+    return {
+      total: missions.length,
+      active: missions.filter((m) => m.status === "ACTIVE").length,
+      planned: missions.filter((m) => m.status === "PLANNED").length,
+      paused: missions.filter((m) => m.status === "PAUSED").length,
+      completed: missions.filter((m) => m.status === "COMPLETED").length,
+      cancelled: missions.filter((m) => m.status === "CANCELLED").length,
+      topMissions: missions.slice(0, 5).map((m) => ({
+        id: m.id,
+        name: m.name,
+        reference: m.reference,
+        status: m.status,
+        programPhase: m.programPhase,
+        missionType: m.missionType,
+        spacecraftCount: m.spacecraftCount,
+        primarySpacecraft: m.primarySpacecraft?.spacecraftName ?? null,
+      })),
+    };
+  } catch (err) {
+    // Never block the chat on mission-context failure
+    console.warn("[ASTRA] mission portfolio context fetch failed", err);
+    return null;
+  }
 }
 
 // ─── Helper Functions ───

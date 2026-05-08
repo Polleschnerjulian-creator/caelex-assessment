@@ -1423,6 +1423,76 @@ export const lookupClassificationCode: AstraToolDefinition = {
   },
 };
 
+// ─── Mission Domain Tools (Sprint D — first-class Mission entity) ───
+
+export const listMissions: AstraToolDefinition = {
+  name: "list_missions",
+  description:
+    "Returns the user's mission portfolio — all Mission rows in their primary organization, with status, programPhase (NASA Phase A-F), missionType, primary end-user, primary spacecraft (if any), and phase-roadmap progress. Use when the user asks 'show me my missions', 'what missions are active', 'how is the ICEYE constellation doing', or needs a high-level overview before drilling into a specific mission. Triggers a lazy backfill — orphan Spacecraft without a Mission get a default 1:1 Mission auto-created on this call.",
+  input_schema: {
+    type: "object",
+    properties: {
+      status: {
+        type: "string",
+        description:
+          "Optional filter by mission status. PLANNED = concept/early planning; ACTIVE = currently operating; PAUSED = on hold (anomaly investigation); COMPLETED = nominal end of mission; CANCELLED = ended early.",
+        enum: ["PLANNED", "ACTIVE", "PAUSED", "COMPLETED", "CANCELLED"],
+      },
+      missionType: {
+        type: "string",
+        description:
+          "Optional filter by mission type. EARTH_OBSERVATION (SAR / optical / hyperspectral), COMMUNICATIONS, NAVIGATION (PNT), SCIENCE, IOD (in-orbit demonstration), TECH_DEMO, HUMAN_SPACEFLIGHT, OOS_ADR (on-orbit servicing / debris removal), LAUNCH (launchers), OTHER.",
+        enum: [
+          "EARTH_OBSERVATION",
+          "COMMUNICATIONS",
+          "NAVIGATION",
+          "SCIENCE",
+          "IOD",
+          "TECH_DEMO",
+          "HUMAN_SPACEFLIGHT",
+          "OOS_ADR",
+          "LAUNCH",
+          "OTHER",
+        ],
+      },
+    },
+    required: [],
+  },
+};
+
+export const getMissionDetailTool: AstraToolDefinition = {
+  name: "get_mission_detail",
+  description:
+    "Returns the full detail of a single Mission: name, reference, description, status, programPhase, missionType, primary end-user + country, lifecycle dates, authority references (BAFA/FCC/BNetzA permits), all assigned and historical spacecraft, all phases with milestones, plus cross-domain links (related authorization workflows, documents, incidents, trade operations). Use after list_missions to drill into a specific mission, or when the user asks 'tell me about mission X', 'what's the status of ICEYE-FY26', or 'show me the full picture for this mission'.",
+  input_schema: {
+    type: "object",
+    properties: {
+      missionId: {
+        type: "string",
+        description:
+          "ID of an existing Mission in the user's organization. Use list_missions first to find the missionId.",
+      },
+    },
+    required: ["missionId"],
+  },
+};
+
+export const getMissionTimeline: AstraToolDefinition = {
+  name: "get_mission_timeline",
+  description:
+    "Returns the regulatory phase roadmap for a single Mission — every MissionPhase with its status, progress %, milestones (regulatory + critical), and date window. Use when the user asks about timing, milestones, what's overdue, or the next regulatory checkpoint for a specific mission. Lighter-weight than get_mission_detail (no spacecraft / cross-domain data) — prefer this when only the timeline matters.",
+  input_schema: {
+    type: "object",
+    properties: {
+      missionId: {
+        type: "string",
+        description: "ID of an existing Mission in the user's organization.",
+      },
+    },
+    required: ["missionId"],
+  },
+};
+
 export const ALL_TOOLS: AstraToolDefinition[] = [
   // Compliance Tools
   checkComplianceStatus,
@@ -1497,6 +1567,11 @@ export const ALL_TOOLS: AstraToolDefinition[] = [
   // Trade Counterparty Screening Tools (Wave A Sprint A7)
   screenTradeParty,
   lookupTradeParty,
+
+  // Mission Domain Tools (Sprint D)
+  listMissions,
+  getMissionDetailTool,
+  getMissionTimeline,
 ];
 
 // ─── Tool Name Lookup ───
@@ -1580,4 +1655,5 @@ export const TOOL_CATEGORIES = {
     "screen_trade_party",
     "lookup_trade_party",
   ],
+  mission: ["list_missions", "get_mission_detail", "get_mission_timeline"],
 } as const;

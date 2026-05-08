@@ -40,6 +40,9 @@ import {
   queryComplianceTwin,
   runWhatifScenario,
   getEvidenceGaps,
+  listMissions,
+  getMissionDetailTool,
+  getMissionTimeline,
 } from "./tool-definitions";
 
 // ─── ALL_TOOLS ───
@@ -167,6 +170,55 @@ describe("TOOL_CATEGORIES", () => {
   it("incident category has expected tools", () => {
     expect(TOOL_CATEGORIES.incident).toContain("report_incident");
     expect(TOOL_CATEGORIES.incident).toContain("get_incident_status");
+  });
+
+  it("mission category has the 3 first-class Mission tools (Sprint D)", () => {
+    expect(TOOL_CATEGORIES.mission).toBeDefined();
+    expect(TOOL_CATEGORIES.mission).toContain("list_missions");
+    expect(TOOL_CATEGORIES.mission).toContain("get_mission_detail");
+    expect(TOOL_CATEGORIES.mission).toContain("get_mission_timeline");
+  });
+});
+
+// ─── Mission tools (Sprint D) ───
+
+describe("Mission tools", () => {
+  it("listMissions has optional status + missionType enums", () => {
+    expect(listMissions.name).toBe("list_missions");
+    expect(listMissions.input_schema.required).toEqual([]);
+    expect(listMissions.input_schema.properties.status).toBeDefined();
+    expect(listMissions.input_schema.properties.missionType).toBeDefined();
+    const statusEnum = (
+      listMissions.input_schema.properties.status as {
+        enum?: string[];
+      }
+    ).enum;
+    expect(statusEnum).toContain("ACTIVE");
+    expect(statusEnum).toContain("PLANNED");
+    expect(statusEnum).toContain("CANCELLED");
+  });
+
+  it("getMissionDetailTool requires missionId", () => {
+    expect(getMissionDetailTool.name).toBe("get_mission_detail");
+    expect(getMissionDetailTool.input_schema.required).toContain("missionId");
+  });
+
+  it("getMissionTimeline requires missionId", () => {
+    expect(getMissionTimeline.name).toBe("get_mission_timeline");
+    expect(getMissionTimeline.input_schema.required).toContain("missionId");
+  });
+
+  it("all 3 mission tools are registered in ALL_TOOLS", () => {
+    const names = ALL_TOOLS.map((t) => t.name);
+    expect(names).toContain("list_missions");
+    expect(names).toContain("get_mission_detail");
+    expect(names).toContain("get_mission_timeline");
+  });
+
+  it("mission tools are reachable via TOOL_BY_NAME", () => {
+    expect(TOOL_BY_NAME["list_missions"]).toBeDefined();
+    expect(TOOL_BY_NAME["get_mission_detail"]).toBeDefined();
+    expect(TOOL_BY_NAME["get_mission_timeline"]).toBeDefined();
   });
 });
 
