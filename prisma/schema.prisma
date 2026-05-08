@@ -1760,12 +1760,27 @@ model IncidentNIS2Phase {
   draftContent    String?   @db.Text
   referenceNumber String?
 
+  // Sprint C — NIS2 Hardening. One-way idempotency timestamps that the
+  // hourly nis2-phase-deadlines cron sets when crossing thresholds.
+  // Null = the threshold has not been crossed yet OR the phase was
+  // already submitted before the threshold. Set-once, never cleared.
+  /// T-12h before deadline. WARNING-tier notification fired.
+  warnedApproachingAt DateTime?
+  /// T-2h before deadline. CRITICAL-tier notification fired.
+  warnedCriticalAt DateTime?
+  /// T+0 (deadline passed without submit). OVERDUE notification fired.
+  markedOverdueAt DateTime?
+  /// T+24h after deadline. Escalation to org-OWNER tier.
+  escalatedAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([incidentId, phase])
   @@index([status])
   @@index([deadline])
+  // Hot-path index for the cron: pending/draft phases sorted by deadline.
+  @@index([status, deadline])
 }
 
 model SupervisionReport {
