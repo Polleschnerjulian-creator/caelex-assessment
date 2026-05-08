@@ -478,10 +478,24 @@ export default function OnboardingWizard() {
           ? orgName.trim().length > 0 && country && operatorType
           : true; // Steps 3 (Mission) + 4 (Spacecraft) — skip path always available
 
+  // Sprint UF38 (P0-F) — raise spacecraft cap from 12 → 50.
+  //
+  // Audit P0-F: hard cap on 12 spacecraft blocked any operator with
+  // a mid-size constellation (e.g. ICEYE @ 35 sats, Planet @ 200+).
+  // 50 is a pragmatic ceiling — large constellations (50+) need the
+  // server-side bulk-import flow (CSV / CelesTrak NORAD-pull, follow-up
+  // sprint) rather than typing in a 100-row form.
+  //
+  // The cap stays because: each row triggers a Prisma upsert, and
+  // the form validation gets unwieldy beyond ~50. A hint card near
+  // the cap points users to the post-onboarding bulk-import path
+  // for >50 constellations.
+  const SPACECRAFT_CAP = 50;
+
   // ── Spacecraft helpers ──
 
   const addSpacecraft = () => {
-    if (spacecraft.length >= 12) return;
+    if (spacecraft.length >= SPACECRAFT_CAP) return;
     setSpacecraft((sc) => [...sc, emptySpacecraft()]);
   };
 
@@ -997,7 +1011,7 @@ export default function OnboardingWizard() {
                 <button
                   type="button"
                   onClick={addSpacecraft}
-                  disabled={spacecraft.length >= 12}
+                  disabled={spacecraft.length >= SPACECRAFT_CAP}
                   className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors disabled:opacity-40"
                   style={{
                     background: "rgba(255, 255, 255, 0.04)",
@@ -1006,7 +1020,9 @@ export default function OnboardingWizard() {
                 >
                   <Plus className="h-3.5 w-3.5" strokeWidth={2.2} />
                   Add another spacecraft
-                  {spacecraft.length >= 12 ? " (max 12)" : ""}
+                  {spacecraft.length >= SPACECRAFT_CAP
+                    ? ` (max ${SPACECRAFT_CAP})`
+                    : ""}
                 </button>
 
                 <button
@@ -1017,6 +1033,31 @@ export default function OnboardingWizard() {
                 >
                   Skip — I&apos;ll add later
                 </button>
+
+                {/* Sprint UF38 (P0-F) — Bulk-import escape hatch.
+                    Onboarding-form is unwieldy past ~50 sats. Tell
+                    operators with a >50-sat constellation that the
+                    real bulk-import path lives post-onboarding. */}
+                {spacecraft.length >= 10 ? (
+                  <div
+                    className="mt-4 rounded-lg p-3 text-[12px]"
+                    style={{
+                      background: "rgba(255, 255, 255, 0.025)",
+                      boxShadow: "inset 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+                      color: "rgba(255, 255, 255, 0.55)",
+                    }}
+                  >
+                    <strong className="text-white/80">
+                      Operating a large constellation?
+                    </strong>{" "}
+                    Add a few representative sats here to get going, then
+                    bulk-import the rest from{" "}
+                    <span className="font-mono text-white/70">
+                      Settings → Spacecraft → Import (CSV)
+                    </span>{" "}
+                    or via the Sentinel agent (auto-syncs from CelesTrak NORAD).
+                  </div>
+                ) : null}
               </motion.div>
             )}
 
