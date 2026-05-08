@@ -113,6 +113,32 @@ const ORBIT_TYPES = [
   { value: "HEO", label: "Highly Elliptical Orbit" },
 ] as const;
 
+// Sprint M-Onboarding — Mission step. Maps to the Mission Prisma
+// enum (post Sprint M1 schema). NOT the same as the Spacecraft.missionType
+// free-text field above (which is per-spacecraft and pre-dates the
+// first-class Mission entity).
+const MISSION_ENTITY_TYPES = [
+  { value: "EARTH_OBSERVATION", label: "Earth observation" },
+  { value: "COMMUNICATIONS", label: "Communications" },
+  { value: "NAVIGATION", label: "Navigation / PNT" },
+  { value: "SCIENCE", label: "Science" },
+  { value: "IOD", label: "In-orbit demonstration" },
+  { value: "TECH_DEMO", label: "Technology demo" },
+  { value: "HUMAN_SPACEFLIGHT", label: "Human spaceflight" },
+  { value: "OOS_ADR", label: "On-orbit servicing / ADR" },
+  { value: "LAUNCH", label: "Launch" },
+  { value: "OTHER", label: "Other" },
+] as const;
+
+const MISSION_PROGRAM_PHASES = [
+  { value: "PHASE_A", label: "Phase A · Concept studies" },
+  { value: "PHASE_B", label: "Phase B · Concept development" },
+  { value: "PHASE_C", label: "Phase C · Preliminary design" },
+  { value: "PHASE_D", label: "Phase D · Build & launch" },
+  { value: "PHASE_E", label: "Phase E · Operations" },
+  { value: "PHASE_F", label: "Phase F · Closeout" },
+] as const;
+
 interface SpacecraftDraft {
   id: string; // local-only key for React
   name: string;
@@ -183,12 +209,28 @@ export default function OnboardingWizard() {
   const [country, setCountry] = useState("");
   const [operatorType, setOperatorType] = useState("");
 
-  // Step 3
+  // Step 3 (NEW — Sprint M-Onboarding) — Mission as canonical first asset.
+  // Group spacecraft under a Mission. Skippable for orgs that genuinely
+  // can't define a mission yet (e.g. pre-concept consultants).
+  const [missionName, setMissionName] = useState("");
+  const [missionEntityType, setMissionEntityType] =
+    useState<(typeof MISSION_ENTITY_TYPES)[number]["value"]>(
+      "EARTH_OBSERVATION",
+    );
+  const [missionProgramPhase, setMissionProgramPhase] =
+    useState<(typeof MISSION_PROGRAM_PHASES)[number]["value"]>("PHASE_A");
+  const [missionPrimaryEndUser, setMissionPrimaryEndUser] = useState("");
+  const [skippedMission, setSkippedMission] = useState(false);
+  const [savedMissionId, setSavedMissionId] = useState<string | null>(null);
+
+  // Step 4 (was Step 3) — Spacecraft. Auto-assigned to savedMissionId
+  // after successful registration if available.
   const [spacecraft, setSpacecraft] = useState<SpacecraftDraft[]>([
     emptySpacecraft(),
   ]);
   const [skippedSpacecraft, setSkippedSpacecraft] = useState(false);
   const [savedSpacecraftCount, setSavedSpacecraftCount] = useState(0);
+  const [assignedToMissionCount, setAssignedToMissionCount] = useState(0);
 
   // ── Step transitions ──
 
@@ -233,22 +275,65 @@ export default function OnboardingWizard() {
     setStep(2);
   };
 
+  // Step 3 (NEW) — Mission. Skippable; on save, capture missionId so
+  // the Spacecraft step can auto-assign created spacecraft.
   const handleStep3Next = async (skip = false) => {
-    if (skip) {
-      setSkippedSpacecraft(true);
-      setSavedSpacecraftCount(0);
+    if (skip || !missionName.trim()) {
+      setSkippedMission(true);
+      setSavedMissionId(null);
       setDirection(1);
       setStep(3);
       return;
     }
 
-    const valid = spacecraft.filter((s) => s.name.trim().length > 0);
-    if (valid.length === 0) {
-      // Treat as skip if all rows empty.
+    setSaving(true);
+    try {
+      const res = await fetch("/api/missions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: missionName.trim(),
+          missionType: missionEntityType,
+          programPhase: missionProgramPhase,
+          status: "PLANNED",
+          primaryEndUser: missionPrimaryEndUser.trim() || null,
+        }),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as { mission?: { id?: string } };
+        setSavedMissionId(data.mission?.id ?? null);
+        setSkippedMission(false);
+      } else {
+        setSavedMissionId(null);
+        setSkippedMission(true);
+      }
+    } catch {
+      setSavedMissionId(null);
+      setSkippedMission(true);
+    }
+    setSaving(false);
+    setDirection(1);
+    setStep(3);
+  };
+
+  // Step 4 (was Step 3) — Spacecraft. After successful POST, also
+  // auto-assigns each created spacecraft to the just-created Mission
+  // (if missionId is set) via the Sprint Mission-4 bulk endpoint.
+  const handleStep4Next = async (skip = false) => {
+    if (skip) {
       setSkippedSpacecraft(true);
       setSavedSpacecraftCount(0);
       setDirection(1);
-      setStep(3);
+      setStep(4);
+      return;
+    }
+
+    const valid = spacecraft.filter((s) => s.name.trim().length > 0);
+    if (valid.length === 0) {
+      setSkippedSpacecraft(true);
+      setSavedSpacecraftCount(0);
+      setDirection(1);
+      setStep(4);
       return;
     }
 
@@ -272,8 +357,44 @@ export default function OnboardingWizard() {
         body: JSON.stringify(payload),
       });
       if (res.ok) {
-        const data = await res.json();
-        setSavedSpacecraftCount(data.count ?? valid.length);
+        const data = (await res.json()) as {
+          count?: number;
+          spacecraft?: Array<{ id: string }>;
+        };
+        const count = data.count ?? valid.length;
+        setSavedSpacecraftCount(count);
+
+        // Sprint M-Onboarding — auto-assign to the Mission created in
+        // step 3, if any. Best-effort; a failure here doesn't break
+        // the wizard (the user can assign later from the mission
+        // detail page).
+        const spacecraftIds = (data.spacecraft ?? [])
+          .map((s) => s.id)
+          .filter((id): id is string => Boolean(id));
+        if (savedMissionId && spacecraftIds.length > 0) {
+          try {
+            const bulkRes = await fetch(
+              `/api/missions/${savedMissionId}/spacecraft/bulk`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  spacecraftIds,
+                  role: "primary",
+                  startingSlot: 1,
+                }),
+              },
+            );
+            if (bulkRes.ok) {
+              const bulkData = (await bulkRes.json()) as {
+                assigned?: number;
+              };
+              setAssignedToMissionCount(bulkData.assigned ?? 0);
+            }
+          } catch {
+            // Non-critical
+          }
+        }
       } else {
         setSavedSpacecraftCount(0);
       }
@@ -282,7 +403,7 @@ export default function OnboardingWizard() {
     }
     setSaving(false);
     setDirection(1);
-    setStep(3);
+    setStep(4);
   };
 
   const handleComplete = async (destination: string) => {
@@ -304,6 +425,7 @@ export default function OnboardingWizard() {
     if (step === 0) handleStep1Next();
     else if (step === 1) handleStep2Next();
     else if (step === 2) handleStep3Next(false);
+    else if (step === 3) handleStep4Next(false);
   };
 
   const canContinue =
@@ -311,7 +433,7 @@ export default function OnboardingWizard() {
       ? fullName.trim().length > 0
       : step === 1
         ? orgName.trim().length > 0 && country && operatorType
-        : true; // Step 2 (Spacecraft) always allows continue (skip path)
+        : true; // Steps 2 (Mission) + 3 (Spacecraft) — skip path always available
 
   // ── Spacecraft helpers ──
 
@@ -366,12 +488,12 @@ export default function OnboardingWizard() {
             Comply
           </span>
         </span>
-        <StepIndicator current={step} total={4} />
+        <StepIndicator current={step} total={5} />
         <span
           className="text-[12px]"
           style={{ color: "rgba(255, 255, 255, 0.45)" }}
         >
-          Step {step + 1} of 4
+          Step {step + 1} of 5
         </span>
       </header>
 
@@ -562,15 +684,100 @@ export default function OnboardingWizard() {
                     lineHeight: 1.1,
                   }}
                 >
+                  Your first mission
+                </h1>
+                <p
+                  className="mt-2 mb-8 text-[15px] leading-relaxed"
+                  style={{ color: "rgba(255, 255, 255, 0.55)" }}
+                >
+                  A mission groups one or more spacecraft serving the same
+                  operational program — single satellite, constellation, or
+                  launch campaign. You&apos;ll add spacecraft to it in the next
+                  step.
+                </p>
+
+                <div className="space-y-5">
+                  <FormField
+                    label="Mission name"
+                    value={missionName}
+                    onChange={setMissionName}
+                    placeholder='e.g. "ICEYE Constellation Phase 2"'
+                    autoFocus
+                  />
+                  <SelectField
+                    label="Mission type"
+                    value={missionEntityType}
+                    onChange={(v) =>
+                      setMissionEntityType(
+                        v as (typeof MISSION_ENTITY_TYPES)[number]["value"],
+                      )
+                    }
+                    options={MISSION_ENTITY_TYPES.map((m) => ({
+                      value: m.value,
+                      label: m.label,
+                    }))}
+                  />
+                  <SelectField
+                    label="Program phase"
+                    value={missionProgramPhase}
+                    onChange={(v) =>
+                      setMissionProgramPhase(
+                        v as (typeof MISSION_PROGRAM_PHASES)[number]["value"],
+                      )
+                    }
+                    options={MISSION_PROGRAM_PHASES.map((p) => ({
+                      value: p.value,
+                      label: p.label,
+                    }))}
+                  />
+                  <FormField
+                    label="Primary end-user"
+                    optional
+                    value={missionPrimaryEndUser}
+                    onChange={setMissionPrimaryEndUser}
+                    placeholder="e.g. ESA EOP-S, BMVg / Bundeswehr"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleStep3Next(true)}
+                  className="mt-5 text-[13px] font-medium underline-offset-4 hover:underline"
+                  style={{ color: "rgba(255, 255, 255, 0.5)" }}
+                >
+                  Skip — I&apos;ll create a mission later
+                </button>
+              </motion.div>
+            )}
+
+            {step === 3 && (
+              <motion.div
+                key="step-3"
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+              >
+                <h1
+                  className="text-[34px] font-semibold text-white"
+                  style={{
+                    fontFamily: DISPLAY_FONT,
+                    letterSpacing: "-0.022em",
+                    lineHeight: 1.1,
+                  }}
+                >
                   Your spacecraft
                 </h1>
                 <p
                   className="mt-2 mb-8 text-[15px] leading-relaxed"
                   style={{ color: "rgba(255, 255, 255, 0.55)" }}
                 >
-                  Add the spacecraft you operate (or plan to). We&apos;ll
-                  generate compliance items for each one based on your
-                  jurisdiction.
+                  Add the spacecraft you operate (or plan to).
+                  {savedMissionId
+                    ? ` They'll be auto-assigned to "${missionName}" as primary spacecraft.`
+                    : " We'll generate compliance items based on your jurisdiction."}
                 </p>
 
                 <div className="space-y-3">
@@ -604,7 +811,7 @@ export default function OnboardingWizard() {
 
                 <button
                   type="button"
-                  onClick={() => handleStep3Next(true)}
+                  onClick={() => handleStep4Next(true)}
                   className="mt-3 ml-3 text-[13px] font-medium underline-offset-4 hover:underline"
                   style={{ color: "rgba(255, 255, 255, 0.5)" }}
                 >
@@ -613,7 +820,7 @@ export default function OnboardingWizard() {
               </motion.div>
             )}
 
-            {step === 3 && (
+            {step === 4 && (
               <motion.div
                 key="step-3"
                 custom={direction}
@@ -651,11 +858,13 @@ export default function OnboardingWizard() {
                   className="mt-2 mb-8 text-[15px] leading-relaxed"
                   style={{ color: "rgba(255, 255, 255, 0.55)" }}
                 >
-                  {savedSpacecraftCount > 0
-                    ? `Workspace configured with ${savedSpacecraftCount} spacecraft. Run an applicability assessment next to populate your Today inbox with compliance items.`
-                    : skippedSpacecraft
-                      ? "Workspace configured. Add spacecraft anytime from the Missions tab. Run an applicability assessment to start tracking compliance."
-                      : "Workspace configured. Run an applicability assessment to start tracking compliance."}
+                  {savedMissionId && savedSpacecraftCount > 0
+                    ? `Workspace configured with mission "${missionName}" and ${savedSpacecraftCount} spacecraft${assignedToMissionCount > 0 ? ` (${assignedToMissionCount} assigned to mission)` : ""}. Run an applicability assessment next to populate your Today inbox.`
+                    : savedMissionId
+                      ? `Workspace configured with mission "${missionName}". Add spacecraft anytime from the mission detail page. Run an applicability assessment to start tracking compliance.`
+                      : savedSpacecraftCount > 0
+                        ? `Workspace configured with ${savedSpacecraftCount} spacecraft. Run an applicability assessment next to populate your Today inbox.`
+                        : "Workspace configured. Create a mission and run an applicability assessment to start tracking compliance."}
                 </p>
 
                 <div
@@ -688,10 +897,22 @@ export default function OnboardingWizard() {
                   />
                   <SummaryDivider />
                   <SummaryRow
+                    label="Mission"
+                    value={
+                      savedMissionId
+                        ? missionName
+                        : skippedMission
+                          ? "Skipped"
+                          : "None yet"
+                    }
+                  />
+                  <SummaryRow
                     label="Spacecraft"
                     value={
                       savedSpacecraftCount > 0
-                        ? `${savedSpacecraftCount} added`
+                        ? assignedToMissionCount > 0
+                          ? `${savedSpacecraftCount} added · ${assignedToMissionCount} assigned to mission`
+                          : `${savedSpacecraftCount} added`
                         : "None yet"
                     }
                   />
@@ -726,8 +947,9 @@ export default function OnboardingWizard() {
         </div>
       </div>
 
-      {/* Bottom bar — only shown on steps 0-2 (step 3 has its own CTAs) */}
-      {step < 3 ? (
+      {/* Bottom bar — shown on form steps (0-3); the final Done step (4)
+          has its own CTAs. */}
+      {step < 4 ? (
         <footer
           className="flex items-center justify-between px-8 py-5"
           style={{ borderTop: "0.5px solid rgba(255, 255, 255, 0.08)" }}
