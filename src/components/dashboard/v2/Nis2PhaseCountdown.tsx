@@ -173,8 +173,20 @@ function PhaseCountdownRow({
             remainingMs={remainingMs}
             phaseKey={phase.phase}
           />
+          {/* Sprint UF10 — countdown text size escalates with tier so
+              the CRITICAL → OVERDUE jump is unmistakable under stress.
+              NORMAL/WARNING: 11px regular. CRITICAL: 13px semibold.
+              OVERDUE/ESCALATED: 14px bold + animate-pulse.
+              The text-only color difference (amber→rose) was too subtle
+              for stress conditions per the audit walkthrough. */}
           <span
-            className={`shrink-0 font-mono text-[11px] tabular-nums ${palette.countdownColor}`}
+            className={`shrink-0 font-mono tabular-nums ${palette.countdownColor} ${
+              tier === "ESCALATED" || tier === "OVERDUE"
+                ? "text-[14px] font-bold animate-pulse"
+                : tier === "CRITICAL"
+                  ? "text-[13px] font-semibold animate-pulse"
+                  : "text-[11px]"
+            }`}
           >
             {isSubmitted
               ? "—"
@@ -229,11 +241,25 @@ function ProgressTrack({
           ? "bg-amber-400"
           : "bg-emerald-400";
 
+  // Sprint UF10 — bar height steps up from 1px (normal) to 2px
+  // (critical/overdue). Pulse starts at CRITICAL not OVERDUE so the
+  // user has motion-cue WHILE there's still time to act, not only
+  // after the deadline already missed. Audit found WARNING/CRITICAL
+  // were visually too similar — the pulse is the difference.
+  const barHeight =
+    tier === "CRITICAL" || tier === "OVERDUE" || tier === "ESCALATED"
+      ? "h-[2px]"
+      : "h-1";
+  const shouldPulse =
+    tier === "CRITICAL" || tier === "OVERDUE" || tier === "ESCALATED";
+
   return (
-    <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+    <div
+      className={`${barHeight} flex-1 overflow-hidden rounded-full bg-white/[0.06]`}
+    >
       <div
         className={`h-full transition-all duration-500 ${fillColor} ${
-          tier === "OVERDUE" || tier === "ESCALATED" ? "animate-pulse" : ""
+          shouldPulse ? "animate-pulse" : ""
         }`}
         style={{
           width:
