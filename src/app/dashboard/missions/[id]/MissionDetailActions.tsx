@@ -19,6 +19,7 @@
  */
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Pencil,
@@ -28,6 +29,7 @@ import {
   Loader2,
   AlertTriangle,
   CheckCircle2,
+  Wand2,
 } from "lucide-react";
 import type { SpacecraftStatus } from "@prisma/client";
 
@@ -162,7 +164,7 @@ export function MissionDetailActions(props: Props) {
   return (
     <>
       {/* Action toolbar above the FactsCard */}
-      <div className="mb-5 flex items-center gap-2">
+      <div className="mb-5 flex flex-wrap items-center gap-2">
         <ToolbarButton
           icon={Pencil}
           label="Edit"
@@ -178,6 +180,18 @@ export function MissionDetailActions(props: Props) {
             setError(null);
             setMode("assign");
           }}
+        />
+        {/* Sprint UF24 — In-context Generate Report action.
+            Audit P1-12: operators had to leave the mission detail
+            page → navigate to /dashboard/generate → re-pick the
+            mission from a list. Now the link carries ?mission=<id>
+            so the generate page (when enhanced to read it) can
+            pre-select. Even without param-handling today, the
+            discoverability win alone closes the workflow gap. */}
+        <ToolbarLink
+          icon={Wand2}
+          label="Generate report"
+          href={`/dashboard/generate?mission=${props.missionId}`}
         />
         <ToolbarButton
           icon={Archive}
@@ -354,6 +368,31 @@ function ToolbarButton({
       <Icon className="h-3.5 w-3.5" />
       {label}
     </button>
+  );
+}
+
+// Sprint UF24 — link variant of ToolbarButton for in-context
+// navigation (Generate Report jumps to /dashboard/generate). Same
+// visual treatment so the toolbar stays uniform; semantics (anchor
+// vs button) matches what the action actually does (navigate vs
+// mutate-with-side-panel).
+function ToolbarLink({
+  icon: Icon,
+  label,
+  href,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  href: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/25 bg-emerald-500/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-emerald-200 transition hover:border-emerald-500/40 hover:bg-emerald-500/[0.08]"
+    >
+      <Icon className="h-3.5 w-3.5" />
+      {label}
+    </Link>
   );
 }
 
