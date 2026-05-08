@@ -19,7 +19,8 @@ import {
   getPeerBenchmarkForUser,
   type PeerBenchmark,
 } from "@/lib/comply-v2/posture-benchmark.server";
-import { REGULATION_LABELS } from "@/lib/comply-v2/types";
+import { getTodayInboxForUser } from "@/lib/comply-v2/compliance-item.server";
+import { REGULATION_LABELS, type ComplianceItem } from "@/lib/comply-v2/types";
 import {
   StatusDonut,
   RegulationBars,
@@ -59,10 +60,22 @@ export default async function PosturePage() {
   const ui = await resolveComplyUiVersion();
   if (ui === "v1") redirect("/dashboard");
 
-  const [posture, trend] = await Promise.all([
+  const [posture, trend, todayInbox] = await Promise.all([
     getPostureForUser(session.user.id),
     getPostureTrend(session.user.id, 30),
+    // Sprint UF35 (P1-P1) — fetch the user's urgent items for the
+    // top-risks card. Reuses the existing today-inbox aggregator
+    // so we don't add a parallel "top risks" engine. Top-5 of
+    // urgent[] is the highest-priority subset; if you need
+    // anything more sophisticated (cross-regulation risk-scoring,
+    // financial-impact-weighted, etc.) that's a separate
+    // engine — out of scope for UF35.
+    getTodayInboxForUser(session.user.id),
   ]);
+
+  // Top 5 urgent items as the headline-risk view. Already sorted
+  // by priority+targetDate in getTodayInboxForUser.
+  const topRisks: ComplianceItem[] = todayInbox.urgent.slice(0, 5);
 
   // Sprint UF18 — peer benchmark for the investor + executive view.
   // Runs SEQUENTIALLY after posture because the lookup needs the
@@ -176,6 +189,14 @@ export default async function PosturePage() {
           userScore={posture.overallScore}
         />
       ) : null}
+
+      {/* Sprint UF35 (P1-P1) — Top-Risks Card.
+          Audit found Posture had no "what should I worry about
+          today?" card. CEO scanning the page saw aggregates + peer
+          band but had to drill into Today inbox to see specific
+          fires. Now: top-5 urgent items rendered inline, each
+          linked to its detail. */}
+      <TopRisksCard items={topRisks} />
 
       {/* Sprint UF7 — Trust indicators. Surfaces the two patterns
           that can artificially inflate the headline score: marking
@@ -781,6 +802,150 @@ function PeerBenchmarkBand({
           </p>
         ) : null}
       </div>
+    </section>
+  );
+}
+
+// ─── Sprint UF35 (P1-P1) — Top-Risks Card ─────────────────────────────
+//
+// Highlights the 5 most-urgent ComplianceItems for executive +
+// CEO-pitch scenarios. Audit P1-P1: Posture aggregates were honest
+// but the "where is fire?" question required a click into Today.
+// This collapses that one click — the 5 highest-priority items
+// render inline.
+//
+// Selection: getTodayInboxForUser already sorts by priority+
+// targetDate. We take .urgent.slice(0, 5). Future enhancement: a
+// dedicated risk-engine that weights by financial exposure,
+// regulator-severity, and decay-deadline-proximity.
+//
+// Empty state: emerald "Nothing urgent right now" card. honest +
+// reassuring vs. silently hiding the section.
+
+function TopRisksCard({ items }: { items: ComplianceItem[] }) {
+  if (items.length === 0) {
+    return (
+      <section
+        className="mb-8 rounded-xl p-4"
+        style={{
+          background: "rgba(16, 185, 129, 0.04)",
+          boxShadow: "inset 0 0 0 0.5px rgba(16, 185, 129, 0.18)",
+        }}
+        aria-label="Top risks — none right now"
+      >
+        <div className="flex items-start gap-3">
+          <span
+            className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-emerald-500/10 ring-1 ring-inset ring-emerald-500/20"
+            aria-hidden
+          >
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-[12.5px] font-semibold text-emerald-200">
+              Top risks — nothing urgent right now
+            </h3>
+            <p className="mt-0.5 text-[11px] text-emerald-200/60">
+              No compliance items are flagged URGENT priority. Open Today for
+              the full active queue.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section
+      className="mb-8 rounded-xl p-4"
+      style={{
+        background: "rgba(244, 63, 94, 0.04)",
+        boxShadow: "inset 0 0 0 0.5px rgba(244, 63, 94, 0.18)",
+      }}
+      aria-label="Top risks needing attention"
+    >
+      <header className="mb-3 flex items-baseline justify-between gap-3">
+        <h3
+          className="flex items-center gap-1.5 text-[11px] font-semibold uppercase"
+          style={{
+            color: "rgba(244, 63, 94, 0.85)",
+            letterSpacing: "0.08em",
+          }}
+        >
+          <AlertTriangle className="h-3 w-3" strokeWidth={2.4} />
+          Top risks · needs attention
+        </h3>
+        <Link
+          href="/dashboard/today"
+          className="inline-flex items-center gap-1 text-[11px] font-medium text-rose-300/80 transition hover:text-rose-200"
+        >
+          View all in Today
+          <ArrowRight className="h-3 w-3" strokeWidth={2.4} />
+        </Link>
+      </header>
+
+      <ul className="space-y-1.5">
+        {items.map((item) => {
+          const detailHref = `/dashboard/items/${item.regulation}/${item.rowId}`;
+          const due = item.targetDate
+            ? new Date(item.targetDate).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })
+            : null;
+          const isOverdue = item.targetDate
+            ? new Date(item.targetDate).getTime() < Date.now()
+            : false;
+          return (
+            <li key={item.id}>
+              <Link
+                href={detailHref}
+                className="group flex items-center justify-between gap-3 rounded-lg px-3 py-2 transition"
+                style={{
+                  background: "rgba(255, 255, 255, 0.02)",
+                  boxShadow: "inset 0 0 0 0.5px rgba(255, 255, 255, 0.04)",
+                }}
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 text-[12.5px] font-semibold text-slate-100">
+                    <span className="truncate">
+                      {REGULATION_LABELS[item.regulation]}
+                    </span>
+                    <span className="font-mono text-[11px] font-normal text-slate-500">
+                      {item.requirementId}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-[10.5px] text-slate-500">
+                    Status:{" "}
+                    <span className="text-slate-300">
+                      {item.status.replace(/_/g, " ").toLowerCase()}
+                    </span>
+                    {due ? (
+                      <>
+                        {" · "}
+                        <span
+                          className={
+                            isOverdue
+                              ? "font-semibold text-rose-300"
+                              : "text-slate-400"
+                          }
+                        >
+                          {isOverdue ? "Overdue · " : "Due "}
+                          {due}
+                        </span>
+                      </>
+                    ) : null}
+                  </p>
+                </div>
+                <ArrowRight
+                  className="h-3 w-3 shrink-0 text-slate-600 transition group-hover:translate-x-0.5 group-hover:text-rose-300"
+                  strokeWidth={2.2}
+                />
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </section>
   );
 }
