@@ -61,6 +61,10 @@ export interface PhaseRow {
   /** Optional incident reference for the row's secondary line. */
   incidentNumber?: string;
   incidentTitle?: string;
+  /** Sprint UF2 — incident foreign key, needed by the interactive
+   *  wrapper to wire the Submit dialog. Optional so the read-only
+   *  countdown still works server-side. */
+  incidentId?: string;
 }
 
 export function Nis2PhaseCountdown({

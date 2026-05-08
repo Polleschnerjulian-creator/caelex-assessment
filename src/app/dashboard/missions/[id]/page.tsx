@@ -38,10 +38,8 @@ import {
   type RelatedTradeOperationRef,
 } from "@/lib/comply-v2/missions.server";
 import { MissionDetailActions } from "./MissionDetailActions";
-import {
-  Nis2PhaseCountdown,
-  type PhaseRow,
-} from "@/components/dashboard/v2/Nis2PhaseCountdown";
+import { type PhaseRow } from "@/components/dashboard/v2/Nis2PhaseCountdown";
+import { Nis2InteractiveTimeline } from "@/components/dashboard/v2/Nis2InteractiveTimeline";
 
 export const dynamic = "force-dynamic";
 
@@ -193,6 +191,7 @@ function Nis2PhaseAlertSection({
   const rows: PhaseRow[] = incidents.flatMap((inc) =>
     inc.openPhases.map((p) => ({
       ...p,
+      incidentId: inc.id,
       incidentNumber: inc.incidentNumber,
       incidentTitle: inc.title,
     })),
@@ -237,7 +236,7 @@ function Nis2PhaseAlertSection({
           {rows.length} open
         </span>
       </header>
-      <Nis2PhaseCountdown phases={rows} now={new Date()} showIncidentRef />
+      <Nis2InteractiveTimeline phases={rows} showIncidentRef />
     </section>
   );
 }
