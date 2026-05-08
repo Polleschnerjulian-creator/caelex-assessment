@@ -11,6 +11,7 @@ import {
   FolderOpen,
   ArrowRight,
   Sparkles,
+  Check,
   type LucideIcon,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
@@ -580,6 +581,12 @@ function OnboardingHero({
         </div>
       </section>
 
+      {/* Sprint UF4 — progressive Getting-Started checklist showing
+          ALL 4 setup gates. The user sees the journey, not just the
+          next step. Each row is greyed-out (done) or highlighted
+          (current/pending) with its own quick-action link. */}
+      {setupState ? <GettingStartedChecklist setupState={setupState} /> : null}
+
       {/* Demo-mode escape hatch — quiet text link, doesn't compete
           with the primary CTA. */}
       <p
@@ -597,6 +604,141 @@ function OnboardingHero({
         .
       </p>
     </div>
+  );
+}
+
+/**
+ * Sprint UF4 — Progressive Getting-Started checklist.
+ *
+ * Shows ALL 4 onboarding gates with their done/pending status so the
+ * user sees the full journey, not just the next step.
+ */
+function GettingStartedChecklist({
+  setupState,
+}: {
+  setupState: OnboardingSetupState;
+}) {
+  const items = [
+    {
+      key: "org",
+      done: setupState.hasOrganization,
+      label: "Set up your organization",
+      hint: "Name + jurisdiction + operator type drives which regulations apply.",
+      href: "/onboarding",
+    },
+    {
+      key: "asset",
+      done: setupState.hasMission || setupState.hasSpacecraft,
+      label: "Create your first mission",
+      hint: setupState.hasMission
+        ? `${setupState.missionCount} mission${setupState.missionCount === 1 ? "" : "s"} created.`
+        : setupState.hasSpacecraft
+          ? `${setupState.spacecraftCount} spacecraft registered (auto-wrapped to mission).`
+          : "A mission groups spacecraft serving the same operational program.",
+      href:
+        setupState.hasMission || setupState.hasSpacecraft
+          ? "/dashboard/missions"
+          : "/dashboard/missions/new",
+    },
+    {
+      key: "assessment",
+      done: setupState.hasAnyAssessment,
+      label: "Run an applicability assessment",
+      hint: "~15 questions to determine which articles apply. Generates your compliance roadmap.",
+      href: "/assessment/unified",
+    },
+    {
+      key: "items",
+      done: setupState.hasComplianceItems,
+      label: "Open your first compliance item",
+      hint: "Once the assessment is run, items appear here and in /dashboard/today.",
+      href: "/dashboard/today",
+    },
+  ];
+
+  const completedSteps = items.filter((i) => i.done).length;
+
+  return (
+    <section
+      className="mt-2 overflow-hidden rounded-2xl"
+      style={{
+        background: "rgba(255, 255, 255, 0.03)",
+        boxShadow:
+          "inset 0 1px 0 0 rgba(255, 255, 255, 0.06), 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+      }}
+    >
+      <header className="flex items-center justify-between gap-2 border-b border-white/[0.05] bg-white/[0.012] px-5 py-3">
+        <div>
+          <h3 className="text-[13px] font-semibold tracking-tight text-slate-100">
+            Getting started
+          </h3>
+          <p className="mt-0.5 text-[11.5px] text-slate-500">
+            Complete these to unlock your compliance dashboard.
+          </p>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[11px] tabular-nums text-slate-400">
+            {completedSteps} / {items.length}
+          </span>
+          <div
+            className="h-1.5 w-16 overflow-hidden rounded-full"
+            style={{ background: "rgba(255,255,255,0.06)" }}
+          >
+            <div
+              className="h-full bg-emerald-400 transition-all duration-500"
+              style={{ width: `${(completedSteps / items.length) * 100}%` }}
+            />
+          </div>
+        </div>
+      </header>
+      <ol className="divide-y divide-white/[0.04]">
+        {items.map((item, idx) => (
+          <li key={item.key}>
+            <Link
+              href={item.href}
+              className={`group flex items-start gap-3 px-5 py-3 transition ${
+                item.done
+                  ? "opacity-60 hover:opacity-100"
+                  : "hover:bg-white/[0.02]"
+              }`}
+            >
+              <span
+                className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold tabular-nums ring-1 ring-inset ${
+                  item.done
+                    ? "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30"
+                    : "bg-white/[0.04] text-slate-400 ring-white/[0.08]"
+                }`}
+                aria-hidden
+              >
+                {item.done ? (
+                  <Check className="h-3 w-3" strokeWidth={2.5} />
+                ) : (
+                  idx + 1
+                )}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div
+                  className={`text-[12.5px] font-medium ${
+                    item.done ? "text-slate-400 line-through" : "text-slate-100"
+                  }`}
+                >
+                  {item.label}
+                </div>
+                <p className="mt-0.5 text-[11.5px] text-slate-500">
+                  {item.hint}
+                </p>
+              </div>
+              {!item.done ? (
+                <ArrowRight
+                  className="mt-1 h-3.5 w-3.5 shrink-0 text-slate-500 opacity-0 transition group-hover:opacity-100"
+                  strokeWidth={2}
+                />
+              ) : null}
+            </Link>
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }
 
