@@ -1,6 +1,6 @@
 # Caelex Comply v2 — Compliance-Officer-Audit (Living Document)
 
-**Status:** Aktiv · **Letztes Update:** 2026-05-08 · **Eigentümer:** Claude + Julian
+**Status:** Aktiv · **Letztes Update:** 2026-05-08 (Batch UF27-31) · **Eigentümer:** Claude + Julian
 
 > Living document — wird nach jedem implementierten Sprint upgedated.
 > Überlebt Kontext-Kompression: alle Findings + Sprint-Mapping +
@@ -82,7 +82,7 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 - **Reproduzieren:** Klick "Submit" auf Phase-Row → bare PATCH → keine
   statutory content gespeichert
 - **Sprint:** UF28
-- **Status:** ⏳ Pending
+- **Status:** ✅ Done (commit 678ef672 — Dialog wired with type-narrowed phase keys, listing-refresh on submit)
 
 ### P0-B — "Mark as attested" benutzt `window.prompt()`
 
@@ -92,7 +92,7 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
   Toast. UI bricht Dark-Cinema-Design.
 - **Reproduzieren:** Hover Item → `…` Menu → "Mark as attested" → Prompt
 - **Sprint:** UF29
-- **Status:** ⏳ Pending
+- **Status:** ✅ Done (commit 04ced89d — AttestModal + co-signer + notes + composed rationale)
 
 ### P0-C — Generate2Page ignoriert UF24-URL-Param `?mission=<id>`
 
@@ -102,7 +102,7 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 - **Reproduzieren:** Mission-Detail → "Generate report" → Generate öffnet
   ohne Mission-Kontext
 - **Sprint:** UF27
-- **Status:** ⏳ Pending
+- **Status:** ✅ Done (commit 211f5926 — MissionContextBanner with loading/error/loaded states)
 
 ### P0-D — Kein Spacecraft-Detail-Page
 
@@ -141,7 +141,7 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
   und "Export" Buttons haben kein onClick. Demo-Reste in Production.
 - **Reproduzieren:** `/dashboard/timeline` → "Add Phase" → kein Effect
 - **Sprint:** UF30
-- **Status:** ⏳ Pending
+- **Status:** ✅ Done (commit 4aee6ea0 — Demo-Banner + disabled buttons with explanatory tooltips)
 
 ---
 
@@ -176,16 +176,16 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ### Posture / Modules / Documents / Feed
 
-| ID    | Was                                                    | File:Line                             | Sprint       | Status |
-| ----- | ------------------------------------------------------ | ------------------------------------- | ------------ | ------ |
-| P1-P1 | Kein Top-Risks-Card auf Posture                        | `posture/page.tsx:106-167`            | später       | ⏳     |
-| P1-P2 | V1↔V2 Score-Diskrepanz möglich, kein Reconciliation    | `posture/page.tsx:266-329`            | später (X-1) | ⏳     |
-| P1-P3 | Modules-Index ist Brochure (keine Live-Daten)          | `modules/page.tsx:173-192, 247-277`   | UF31         | ⏳     |
-| P1-P4 | Documents `regulatoryRef` Plain-Text statt Article-FK  | `documents/page.tsx:781-791, 635-639` | später       | ⏳     |
-| P1-P5 | "Renew" öffnet Upload-Modal cold ohne Pre-fill         | `documents/page.tsx:985-991, 889-894` | später       | ⏳     |
-| P1-P6 | Documents-Pagination cap bei 50                        | `documents/page.tsx:207-228`          | später       | ⏳     |
-| P1-P7 | Regulatory-Feed kein "Convert to ComplianceItem"-CTA   | `regulatory-feed/page.tsx`            | später       | ⏳     |
-| P1-P8 | Regulatory-Feed Module-Filter deckt nur 8/14 Module ab | `regulatory-feed/page.tsx:124-133`    | später       | ⏳     |
+| ID    | Was                                                    | File:Line                             | Sprint       | Status                    |
+| ----- | ------------------------------------------------------ | ------------------------------------- | ------------ | ------------------------- |
+| P1-P1 | Kein Top-Risks-Card auf Posture                        | `posture/page.tsx:106-167`            | später       | ⏳                        |
+| P1-P2 | V1↔V2 Score-Diskrepanz möglich, kein Reconciliation    | `posture/page.tsx:266-329`            | später (X-1) | ⏳                        |
+| P1-P3 | Modules-Index ist Brochure (keine Live-Daten)          | `modules/page.tsx:173-192, 247-277`   | UF31         | ✅ Done (commit 325c0f68) |
+| P1-P4 | Documents `regulatoryRef` Plain-Text statt Article-FK  | `documents/page.tsx:781-791, 635-639` | später       | ⏳                        |
+| P1-P5 | "Renew" öffnet Upload-Modal cold ohne Pre-fill         | `documents/page.tsx:985-991, 889-894` | später       | ⏳                        |
+| P1-P6 | Documents-Pagination cap bei 50                        | `documents/page.tsx:207-228`          | später       | ⏳                        |
+| P1-P7 | Regulatory-Feed kein "Convert to ComplianceItem"-CTA   | `regulatory-feed/page.tsx`            | später       | ⏳                        |
+| P1-P8 | Regulatory-Feed Module-Filter deckt nur 8/14 Module ab | `regulatory-feed/page.tsx:124-133`    | später       | ⏳                        |
 
 ### Daily-Driver
 
@@ -291,23 +291,23 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ## 8. Sprint-Mapping (was wird wann gemacht)
 
-| Sprint       | Items                                                             | Status         |
-| ------------ | ----------------------------------------------------------------- | -------------- |
-| **UF26**     | Living-Doc Erstellung (dieses Dokument)                           | ⏳ in progress |
-| **UF27**     | P0-C — Generate2Page liest `?mission=<id>`                        | ⏳ pending     |
-| **UF28**     | P0-A — Nis2PhaseSubmitDialog in incidents/page.tsx einbinden      | ⏳ pending     |
-| **UF29**     | P0-B — AttestModal-Komponente (replace `window.prompt()`)         | ⏳ pending     |
-| **UF30**     | P0-G — Timeline-Page Cleanup                                      | ⏳ pending     |
-| **UF31**     | P1-P3 — Modules-Index Live-Daten                                  | ⏳ pending     |
-| **UF32**     | P1-T1+T3 — Tracker Notes inline + Bulk-Actions                    | ⏳ pending     |
-| **UF33**     | P0-D — Spacecraft-Detail-Page (separat, größerer Scope)           | ⏳ pending     |
-| **UF34**     | P0-E — Trade Counterparty/Operations (oder aus Sidebar entfernen) | ⏳ pending     |
-| **UF35**     | P0-F — Onboarding Bulk-Spacecraft-Import                          | ⏳ pending     |
-| **UF36**     | P1-S6 — Holiday/Delegate-Mode (Settings)                          | ⏳ pending     |
-| **UF37**     | P1-P7 — Regulatory-Feed "Convert to ComplianceItem"               | ⏳ pending     |
-| **UF38**     | P2 Polish-Bundle (P2-1 bis P2-20)                                 | ⏳ pending     |
-| **UF39**     | X-4 — Persona-Switch-UI in Settings                               | ⏳ pending     |
-| **(später)** | X-1, X-2, X-3 — Architektur-Sprints                               | ⏳ pending     |
+| Sprint       | Items                                                             | Status                    |
+| ------------ | ----------------------------------------------------------------- | ------------------------- |
+| **UF26**     | Living-Doc Erstellung (dieses Dokument)                           | ✅ Done (commit 64cc64ab) |
+| **UF27**     | P0-C — Generate2Page liest `?mission=<id>`                        | ✅ Done (commit 211f5926) |
+| **UF28**     | P0-A — Nis2PhaseSubmitDialog in incidents/page.tsx einbinden      | ✅ Done (commit 678ef672) |
+| **UF29**     | P0-B — AttestModal-Komponente (replace `window.prompt()`)         | ✅ Done (commit 04ced89d) |
+| **UF30**     | P0-G — Timeline-Page Cleanup                                      | ✅ Done (commit 4aee6ea0) |
+| **UF31**     | P1-P3 — Modules-Index Live-Daten                                  | ✅ Done (commit 325c0f68) |
+| **UF32**     | P1-T1+T3 — Tracker Notes inline + Bulk-Actions                    | ⏳ pending                |
+| **UF33**     | P0-D — Spacecraft-Detail-Page (separat, größerer Scope)           | ⏳ pending                |
+| **UF34**     | P0-E — Trade Counterparty/Operations (oder aus Sidebar entfernen) | ⏳ pending                |
+| **UF35**     | P0-F — Onboarding Bulk-Spacecraft-Import                          | ⏳ pending                |
+| **UF36**     | P1-S6 — Holiday/Delegate-Mode (Settings)                          | ⏳ pending                |
+| **UF37**     | P1-P7 — Regulatory-Feed "Convert to ComplianceItem"               | ⏳ pending                |
+| **UF38**     | P2 Polish-Bundle (P2-1 bis P2-20)                                 | ⏳ pending                |
+| **UF39**     | X-4 — Persona-Switch-UI in Settings                               | ⏳ pending                |
+| **(später)** | X-1, X-2, X-3 — Architektur-Sprints                               | ⏳ pending                |
 
 ---
 
