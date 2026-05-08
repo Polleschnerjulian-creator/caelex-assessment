@@ -26,6 +26,46 @@ import {
   ReadOnlyBanner,
   useIsReadOnlyPersona,
 } from "@/components/dashboard/v2/ReadOnlyBanner";
+// Sprint UF19 — inline evidence drawer per article. Lazy-fetches
+// from /api/audit-center/evidence on first open so the page stays
+// light even with 600+ articles in scope.
+import { EvidenceDrawer } from "@/components/dashboard/v2/EvidenceDrawer";
+
+// Sprint UF19 — Tracker uses kebab-case RegulationId for routing /
+// filter chips. Evidence API uses the Prisma RegulationType enum
+// (UPPER_SNAKE). Single mapping table here so the drawer can be
+// dropped into any regulation surface without each one re-deriving
+// the conversion. Returning null means "no evidence model exists for
+// this regulation" → hide the drawer trigger.
+function regulationIdToEvidenceType(regId: RegulationId): string | null {
+  switch (regId) {
+    case "eu-space-act":
+      return "EU_SPACE_ACT";
+    case "nis2":
+      return "NIS2";
+    case "cybersecurity":
+      return "CYBERSECURITY";
+    case "debris":
+      return "DEBRIS";
+    case "environmental":
+      return "ENVIRONMENTAL";
+    case "insurance":
+      return "INSURANCE";
+    case "uk-space":
+      return "UK_SPACE_ACT";
+    case "us-regulatory":
+      return "US_REGULATORY";
+    case "all":
+    case "copuos":
+    case "spectrum":
+    case "export-control":
+    default:
+      // copuos / spectrum / export-control aren't in the
+      // RegulationType enum (yet) — those modules track requirements
+      // via their own tables. The drawer hides itself for these.
+      return null;
+  }
+}
 
 // ─── Types ───
 
@@ -1394,6 +1434,25 @@ export default function TrackerPage() {
                                           );
                                         })}
                                       </div>
+                                      {/* Sprint UF19 — Evidence drawer
+                                          per article. Lazy-fetches +
+                                          shows attached evidence + R2
+                                          download links. Only renders
+                                          when this article's
+                                          regulation has an evidence
+                                          model in the schema. */}
+                                      {(() => {
+                                        const evidenceType =
+                                          regulationIdToEvidenceType(
+                                            selectedRegulation,
+                                          );
+                                        return evidenceType ? (
+                                          <EvidenceDrawer
+                                            articleId={article.id}
+                                            regulationType={evidenceType}
+                                          />
+                                        ) : null;
+                                      })()}
                                     </div>
                                   )}
                                 </div>
