@@ -4,6 +4,9 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { ArticleStatusEnum } from "@/lib/validations";
 import { logger } from "@/lib/logger";
+// Sprint UF34 (P1-T3) — server-side RBAC for bulk mutations.
+// Mirrors UF21's per-route guard on /api/tracker/articles + /checklist.
+import { assertNotAuditor } from "@/lib/use-case-server";
 
 const BulkUpdateSchema = z.object({
   updates: z
@@ -25,6 +28,12 @@ export async function PUT(request: Request) {
     }
 
     const userId = session.user.id;
+
+    // Sprint UF34 — auditor RBAC. Same pattern as UF21 elsewhere:
+    // server-side belt-and-suspenders, in addition to the
+    // client-side disabled-state from UF9.
+    const auditorBlock = await assertNotAuditor(userId);
+    if (auditorBlock) return auditorBlock;
 
     const body = await request.json();
     const parsed = BulkUpdateSchema.safeParse(body);

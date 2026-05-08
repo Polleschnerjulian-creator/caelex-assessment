@@ -367,6 +367,17 @@ export default function TrackerPage() {
   // click changes the very state they're auditing.
   const isReadOnly = useIsReadOnlyPersona();
 
+  // Sprint UF34 (P1-T3) — bulk-action selection set + busy-state.
+  // Audit P1-T3: 51 NIS2 items = 51 individual clicks for "set all
+  // to in_progress". Now: Cmd-K-style multi-select + bulk-toolbar.
+  // Selection persists across regulation switches so user can
+  // build a cross-regulation batch (e.g. "all 100 EU+NIS2 items
+  // → under_review for the auditor sample-pull").
+  const [selectedArticleIds, setSelectedArticleIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [bulkBusy, setBulkBusy] = useState(false);
+
   const [selectedRegulation, setSelectedRegulation] =
     useState<RegulationId>("all");
   const [euView, setEuView] = useState<"articles" | "checklist">("articles");
@@ -487,6 +498,71 @@ export default function TrackerPage() {
       }
     },
     [isReadOnly],
+  );
+
+  // Sprint UF34 (P1-T3) — bulk-update + selection toggles.
+  //
+  // toggleArticleSelected: per-row checkbox. Only operates on
+  // article IDs that exist in the current article catalog so we
+  // don't accumulate stale IDs.
+  // selectAllVisible / clearSelection: keyboard-friendly batch
+  // operations against the current filtered view.
+  // handleBulkStatusUpdate: POSTs to /api/tracker/bulk with the
+  // existing endpoint (UF34 added auditor RBAC there). Optimistic
+  // local state-update so the UI reflects instantly.
+  const toggleArticleSelected = useCallback((articleId: string) => {
+    setSelectedArticleIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(articleId)) next.delete(articleId);
+      else next.add(articleId);
+      return next;
+    });
+  }, []);
+
+  const selectAllFiltered = useCallback((visibleIds: string[]) => {
+    setSelectedArticleIds((prev) => {
+      const next = new Set(prev);
+      for (const id of visibleIds) next.add(id);
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedArticleIds(new Set());
+  }, []);
+
+  const handleBulkStatusUpdate = useCallback(
+    async (status: ArticleStatusType) => {
+      if (isReadOnly || selectedArticleIds.size === 0 || bulkBusy) return;
+      setBulkBusy(true);
+      const ids = Array.from(selectedArticleIds);
+      // Optimistic local update: each selected id flips to the
+      // chosen status. Server ack via /api/tracker/bulk transactions
+      // the upserts atomically.
+      setArticleStatuses((prev) => {
+        const next = { ...prev };
+        const now = new Date();
+        for (const id of ids) {
+          next[id] = { ...next[id], status, updatedAt: now };
+        }
+        return next;
+      });
+      try {
+        await fetch("/api/tracker/bulk", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            updates: ids.map((articleId) => ({ articleId, status })),
+          }),
+        });
+        clearSelection();
+      } catch (e) {
+        console.error("Error in bulk status update:", e);
+      } finally {
+        setBulkBusy(false);
+      }
+    },
+    [isReadOnly, selectedArticleIds, bulkBusy, clearSelection],
   );
 
   // Sprint UF32 (P1-T1) — inline notes editor.
@@ -1038,6 +1114,38 @@ export default function TrackerPage() {
                   borderBottom: "1px solid rgba(0,0,0,0.04)",
                 }}
               >
+                {/* Sprint UF34 (P1-T3) — Bulk-actions toolbar.
+                    Renders only when ≥1 article is selected.
+                    Sticky-feel via prominent emerald background.
+                    Auditor mode hides the toolbar entirely (the
+                    select-checkboxes are hidden too via isReadOnly,
+                    so this never fires). */}
+                {!isReadOnly && selectedArticleIds.size > 0 ? (
+                  <BulkActionsToolbar
+                    count={selectedArticleIds.size}
+                    onApply={handleBulkStatusUpdate}
+                    onClear={clearSelection}
+                    busy={bulkBusy}
+                  />
+                ) : null}
+
+                {/* Sprint UF34 — "Select all visible" affordance.
+                    Only when there are filtered articles to act on
+                    AND not in read-only persona. */}
+                {!isReadOnly &&
+                filteredArticles.length > 0 &&
+                selectedArticleIds.size === 0 ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      selectAllFiltered(filteredArticles.map((a) => a.id))
+                    }
+                    className="text-[12px] font-medium text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+                  >
+                    Select all visible ({filteredArticles.length})
+                  </button>
+                ) : null}
+
                 <div className="relative">
                   <Search
                     size={14}
@@ -1284,16 +1392,42 @@ export default function TrackerPage() {
                               return (
                                 <div
                                   key={article.id}
+                                  className="flex items-stretch"
                                   style={{
                                     borderBottom: "1px solid rgba(0,0,0,0.04)",
                                   }}
                                 >
+                                  {/* Sprint UF34 (P1-T3) — bulk-action
+                                      checkbox column. Hidden in
+                                      read-only persona. Click is
+                                      stopped from propagating to
+                                      avoid toggling row-expand
+                                      (the row's main onClick). */}
+                                  {!isReadOnly ? (
+                                    <label
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="flex items-center px-2 cursor-pointer"
+                                      title="Select for bulk actions"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedArticleIds.has(
+                                          article.id,
+                                        )}
+                                        onChange={() =>
+                                          toggleArticleSelected(article.id)
+                                        }
+                                        className="h-3.5 w-3.5 cursor-pointer rounded border-slate-400 accent-emerald-500"
+                                        aria-label={`Select ${article.number} for bulk actions`}
+                                      />
+                                    </label>
+                                  ) : null}
                                   <button
                                     onClick={() =>
                                       toggleArticleExpand(article.id)
                                     }
                                     aria-expanded={exp}
-                                    className="w-full py-3 flex items-center gap-4 text-left group/row transition-colors"
+                                    className="flex-1 py-3 flex items-center gap-4 text-left group/row transition-colors"
                                     style={{ minHeight: 48 }}
                                     onMouseEnter={(e) => {
                                       (
@@ -1978,6 +2112,88 @@ function ArticleNotesEditor({
           )}
         </div>
       ) : null}
+    </div>
+  );
+}
+
+// ─── Sprint UF34 (P1-T3) — Bulk Actions Toolbar ─────────────────────────
+//
+// Floats inside the filter bar. Visible only when ≥1 article is
+// selected (the parent gates the render). Provides:
+//
+//   - "N selected" status pill (emerald)
+//   - Status-target select (5 options matching STATUS_CONFIG)
+//   - Apply button — fires onApply with the chosen status
+//   - Clear button — empties the selection
+//
+// Audit P1-T3 said 51 NIS2 items = 51 individual clicks. Now: select
+// all (or pick a subset), choose status, one apply. Mirrors Linear's
+// project-board bulk actions pattern.
+
+function BulkActionsToolbar({
+  count,
+  onApply,
+  onClear,
+  busy,
+}: {
+  count: number;
+  onApply: (status: ArticleStatusType) => Promise<void>;
+  onClear: () => void;
+  busy: boolean;
+}) {
+  const [target, setTarget] = useState<ArticleStatusType>("in_progress");
+  return (
+    <div
+      className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5"
+      style={{
+        background: "rgba(16, 185, 129, 0.08)",
+        boxShadow: "inset 0 0 0 0.5px rgba(16, 185, 129, 0.25)",
+      }}
+      role="toolbar"
+      aria-label="Bulk-action toolbar"
+    >
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-2 py-0.5 text-[10.5px] font-semibold text-emerald-950">
+        <CheckSquare size={11} />
+        {count} selected
+      </span>
+      <span className="text-[12px] font-medium text-slate-600 dark:text-slate-300">
+        Set status to:
+      </span>
+      <select
+        value={target}
+        onChange={(e) => setTarget(e.target.value as ArticleStatusType)}
+        disabled={busy}
+        className="rounded-md border border-white/10 bg-white/40 dark:bg-white/[0.04] px-2 py-1 text-[12px] font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 disabled:opacity-50"
+      >
+        {(Object.keys(STATUS_CONFIG) as ArticleStatusType[]).map((s) => (
+          <option key={s} value={s}>
+            {STATUS_CONFIG[s].label}
+          </option>
+        ))}
+      </select>
+      <button
+        type="button"
+        onClick={() => onApply(target)}
+        disabled={busy}
+        className="rounded-md bg-emerald-500 px-3 py-1 text-[12px] font-semibold text-emerald-950 transition hover:bg-emerald-400 disabled:opacity-40"
+      >
+        {busy ? (
+          <span className="inline-flex items-center gap-1">
+            <Loader2 size={11} className="animate-spin" />
+            Applying…
+          </span>
+        ) : (
+          "Apply"
+        )}
+      </button>
+      <button
+        type="button"
+        onClick={onClear}
+        disabled={busy}
+        className="rounded-md px-2 py-1 text-[11.5px] font-medium text-slate-500 transition hover:text-slate-700 dark:hover:text-slate-300 disabled:opacity-40"
+      >
+        Clear
+      </button>
     </div>
   );
 }
