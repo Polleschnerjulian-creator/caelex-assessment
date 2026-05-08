@@ -45,6 +45,33 @@ export interface PostureSnapshot {
     activeSnoozes: number;
     attestedThisWeek: number;
   };
+  /**
+   * Sprint UF7 — Anti-gaming transparency indicators.
+   *
+   * The compliance score is derived as ATTESTED / (total − NOT_APPLICABLE).
+   * Two patterns can artificially inflate that ratio:
+   *
+   *   1. **N/A inflation** — operator marks items as NOT_APPLICABLE
+   *      to shrink the denominator. Without exposure, a 95% score
+   *      could be hiding 60% of items being declared out-of-scope.
+   *   2. **Draft accumulation** — operator keeps items in DRAFT
+   *      indefinitely so they look "in progress" without ever
+   *      becoming non-compliant signals.
+   *
+   * Surfacing both as first-class KPIs lets auditors (and honest
+   * operators) see whether a high score reflects real compliance or
+   * statistical theater.
+   */
+  trust: {
+    /** Items marked NOT_APPLICABLE. Spike = potential N/A inflation. */
+    notApplicableCount: number;
+    /** N/A share of totalItems (0-100). >40% warrants auditor attention. */
+    notApplicableShare: number;
+    /** DRAFT items older than 30 days. Spike = rotting backlog. */
+    staleDraftsCount: number;
+    /** Total DRAFT items (regardless of age). For stale-share %. */
+    totalDraftsCount: number;
+  };
 }
 
 export interface RegulationStats {
@@ -172,6 +199,15 @@ export async function getPostureForUser(
     .filter((s) => s.total > 0)
     .sort((a, b) => b.score - a.score || b.total - a.total);
 
+  // Sprint UF7 — Trust indicators. Surface the two patterns that
+  // can artificially inflate the headline score so they're visible
+  // to operators (and auditors) without changing the score formula
+  // itself (which would be a breaking trend-line shift).
+  const notApplicableCount = statusCounts.NOT_APPLICABLE;
+  const notApplicableShare =
+    totalItems > 0 ? Math.round((notApplicableCount / totalItems) * 100) : 0;
+  const totalDraftsCount = statusCounts.DRAFT;
+
   return {
     totalItems,
     countableItems,
@@ -184,6 +220,12 @@ export async function getPostureForUser(
       openTriage: regulatoryUpdatesUnread,
       activeSnoozes: openSnoozes,
       attestedThisWeek,
+    },
+    trust: {
+      notApplicableCount,
+      notApplicableShare,
+      staleDraftsCount: aggregate.staleDraftsCount,
+      totalDraftsCount,
     },
   };
 }

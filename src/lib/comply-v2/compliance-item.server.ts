@@ -321,6 +321,14 @@ export interface ComplianceStatusAggregate {
   /** Items attested in the last 7 days (status=ATTESTED + updated
    *  in window). Total across all regs. */
   attestedThisWeek: number;
+  /**
+   * Sprint UF7 — DRAFT items not touched in 30+ days, across all
+   * regulations. Surfaced on Posture as a trust indicator: a high
+   * stale-drafts count = compliance backlog rotting in DRAFT instead
+   * of being closed (real attestation) or escalated (EVIDENCE_REQUIRED).
+   * Important auditor signal.
+   */
+  staleDraftsCount: number;
 }
 
 function emptyStatusCounts(): Record<ComplianceStatus, number> {
@@ -501,10 +509,75 @@ export async function getComplianceStatusAggregateForUser(
     return counts.reduce((s, c) => s + c, 0);
   })();
 
-  const [perRegulation, attestedThisWeek] = await Promise.all([
-    groupByPromises,
-    attestedThisWeekPromise,
-  ]);
+  // Sprint UF7 — Stale-drafts trust indicator. DRAFT in V2 maps to
+  // "partial" in the legacy enum (see normalizeStatus in types.ts).
+  // Items in DRAFT for 30+ days indicate compliance backlog rotting.
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const staleDraftsCountPromise = (async (): Promise<number> => {
+    const counts = await Promise.all([
+      prisma.debrisRequirementStatus.count({
+        where: {
+          assessment: { userId },
+          status: "partial",
+          updatedAt: { lt: thirtyDaysAgo },
+        },
+      }),
+      prisma.cybersecurityRequirementStatus.count({
+        where: {
+          assessment: { userId },
+          status: "partial",
+          updatedAt: { lt: thirtyDaysAgo },
+        },
+      }),
+      prisma.nIS2RequirementStatus.count({
+        where: {
+          assessment: { userId },
+          status: "partial",
+          updatedAt: { lt: thirtyDaysAgo },
+        },
+      }),
+      prisma.cRARequirementStatus.count({
+        where: {
+          assessment: { userId },
+          status: "partial",
+          updatedAt: { lt: thirtyDaysAgo },
+        },
+      }),
+      prisma.ukRequirementStatus.count({
+        where: {
+          assessment: { userId },
+          status: "partial",
+          updatedAt: { lt: thirtyDaysAgo },
+        },
+      }),
+      prisma.usRequirementStatus.count({
+        where: {
+          assessment: { userId },
+          status: "partial",
+          updatedAt: { lt: thirtyDaysAgo },
+        },
+      }),
+      prisma.exportControlRequirementStatus.count({
+        where: {
+          assessment: { userId },
+          status: "partial",
+          updatedAt: { lt: thirtyDaysAgo },
+        },
+      }),
+      prisma.spectrumRequirementStatus.count({
+        where: {
+          assessment: { userId },
+          status: "partial",
+          updatedAt: { lt: thirtyDaysAgo },
+        },
+      }),
+    ]);
+    return counts.reduce((s, c) => s + c, 0);
+  })();
+
+  const [perRegulation, attestedThisWeek, staleDraftsCount] = await Promise.all(
+    [groupByPromises, attestedThisWeekPromise, staleDraftsCountPromise],
+  );
 
   // Roll up totalByStatus from per-regulation buckets.
   const totalByStatus = emptyStatusCounts();
@@ -524,6 +597,7 @@ export async function getComplianceStatusAggregateForUser(
     totalByStatus,
     perRegulation,
     attestedThisWeek,
+    staleDraftsCount,
   };
 }
 

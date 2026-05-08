@@ -7,6 +7,8 @@ import {
   Clock,
   CheckCircle2,
   ArrowRight,
+  EyeOff,
+  FileWarning,
   type LucideIcon,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
@@ -136,6 +138,13 @@ export default async function PosturePage() {
           icon={CheckCircle2}
         />
       </section>
+
+      {/* Sprint UF7 — Trust indicators. Surfaces the two patterns
+          that can artificially inflate the headline score: marking
+          items as N/A (shrinks denominator) and accumulating stale
+          DRAFT items (busy work that doesn't move attestation).
+          Auditor-relevant: a 95% score with 60% N/A is theater. */}
+      <TrustStrip trust={posture.trust} totalItems={posture.totalItems} />
 
       {/* Charts row */}
       <section className="mb-8 grid gap-6 lg:grid-cols-2">
@@ -412,6 +421,188 @@ function Kpi({
     );
   }
   return inner;
+}
+
+// ─── Sprint UF7 — Trust strip ────────────────────────────────────────────
+//
+// Anti-gaming transparency. The headline overall-score has two
+// inflation vehicles:
+//
+//   1. NOT_APPLICABLE inflation — operator marks items as N/A to
+//      shrink the denominator. A 95% score with 60% items N/A is
+//      statistical theater, not real compliance.
+//   2. DRAFT accumulation — operator keeps items in DRAFT for months
+//      so they look "in progress" without ever attesting or
+//      escalating to EVIDENCE_REQUIRED.
+//
+// The strip is dezent — no panic. Just two compact KPIs with tier-
+// coded badges that honest operators can show their auditor and
+// say "look, only 8% N/A, 0 stale drafts". Auditors learn to ask
+// for these numbers.
+
+function TrustStrip({
+  trust,
+  totalItems,
+}: {
+  trust: {
+    notApplicableCount: number;
+    notApplicableShare: number;
+    staleDraftsCount: number;
+    totalDraftsCount: number;
+  };
+  totalItems: number;
+}) {
+  // Skip the whole strip on empty databases — irrelevant noise for
+  // brand-new orgs.
+  if (totalItems === 0) return null;
+
+  const naTier =
+    trust.notApplicableShare >= 40
+      ? "rose"
+      : trust.notApplicableShare >= 20
+        ? "amber"
+        : "emerald";
+  const staleTier =
+    trust.staleDraftsCount >= 10
+      ? "rose"
+      : trust.staleDraftsCount >= 3
+        ? "amber"
+        : "emerald";
+
+  return (
+    <section
+      className="mb-8 rounded-xl p-4"
+      style={{
+        background: "rgba(255, 255, 255, 0.02)",
+        boxShadow: "inset 0 0 0 0.5px rgba(255, 255, 255, 0.06)",
+      }}
+      aria-label="Score trust indicators"
+    >
+      <div className="mb-3 flex items-baseline justify-between gap-3">
+        <h3
+          className="text-[11px] font-semibold uppercase"
+          style={{
+            color: "rgba(255, 255, 255, 0.55)",
+            letterSpacing: "0.08em",
+          }}
+        >
+          Score trust indicators
+        </h3>
+        <p
+          className="text-[11px]"
+          style={{ color: "rgba(255, 255, 255, 0.35)" }}
+        >
+          Surfaces patterns that can artificially inflate the headline score.
+        </p>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <TrustKpi
+          icon={EyeOff}
+          label="Marked Not-Applicable"
+          value={`${trust.notApplicableShare}%`}
+          subline={`${trust.notApplicableCount} of ${totalItems} items declared out-of-scope`}
+          tier={naTier}
+          hint={
+            naTier === "rose"
+              ? "High N/A share — auditor should ask for justifications."
+              : naTier === "amber"
+                ? "Moderate N/A share — review classifications."
+                : "Healthy — most items remain in scope."
+          }
+        />
+        <TrustKpi
+          icon={FileWarning}
+          label="Stale drafts (30d+)"
+          value={trust.staleDraftsCount.toString()}
+          subline={`of ${trust.totalDraftsCount} total drafts not touched in 30 days`}
+          tier={staleTier}
+          hint={
+            staleTier === "rose"
+              ? "Backlog rotting — close as attested or escalate to evidence-required."
+              : staleTier === "amber"
+                ? "Some drafts aging — review oldest."
+                : "Healthy — drafts are moving."
+          }
+        />
+      </div>
+    </section>
+  );
+}
+
+function TrustKpi({
+  icon: Icon,
+  label,
+  value,
+  subline,
+  tier,
+  hint,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+  subline: string;
+  tier: "emerald" | "amber" | "rose";
+  hint: string;
+}) {
+  const tierColor =
+    tier === "rose"
+      ? "rgba(244, 63, 94, 0.85)"
+      : tier === "amber"
+        ? "rgba(251, 191, 36, 0.85)"
+        : "rgba(16, 185, 129, 0.85)";
+  const tierBg =
+    tier === "rose"
+      ? "rgba(244, 63, 94, 0.06)"
+      : tier === "amber"
+        ? "rgba(251, 191, 36, 0.06)"
+        : "rgba(16, 185, 129, 0.05)";
+
+  return (
+    <div
+      className="rounded-lg p-3"
+      style={{
+        background: tierBg,
+        boxShadow: "inset 0 0 0 0.5px rgba(255, 255, 255, 0.04)",
+      }}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5">
+          <Icon
+            className="h-3 w-3"
+            strokeWidth={2}
+            style={{ color: tierColor }}
+          />
+          <span
+            className="text-[11px] font-medium uppercase"
+            style={{
+              color: "rgba(255, 255, 255, 0.55)",
+              letterSpacing: "0.06em",
+            }}
+          >
+            {label}
+          </span>
+        </div>
+        <span
+          className="text-[18px] font-semibold tabular-nums"
+          style={{ color: tierColor, letterSpacing: "-0.018em" }}
+        >
+          {value}
+        </span>
+      </div>
+      <p
+        className="mt-1 text-[11.5px]"
+        style={{ color: "rgba(255, 255, 255, 0.5)" }}
+      >
+        {subline}
+      </p>
+      <p
+        className="mt-1 text-[10.5px]"
+        style={{ color: "rgba(255, 255, 255, 0.4)" }}
+      >
+        {hint}
+      </p>
+    </div>
+  );
 }
 
 function ScoreDot({ score }: { score: number }) {
