@@ -624,10 +624,26 @@ function pickPrimaryAction(setupState: OnboardingSetupState | null): {
         href: "/onboarding",
         icon: FolderOpen,
       };
+    case "create_first_mission":
+      return {
+        title: "Create your first mission",
+        body: "A mission groups one or more spacecraft serving the same operational program — single satellite, constellation, or launch campaign. Mission is the canonical unit your compliance work hangs off of.",
+        buttonLabel: "New mission",
+        href: "/dashboard/missions/new",
+        icon: Radio,
+        secondary: {
+          label: "Add spacecraft instead",
+          href: "/onboarding",
+        },
+      };
     case "add_spacecraft":
+      // Legacy path — pre-Mission-domain orgs that haven't been
+      // backfilled yet. The lazy-migration in getMissionsForUser()
+      // will wrap any registered Spacecraft into a Mission on first
+      // list-fetch, so this path is rarely hit in practice.
       return {
         title: "Add your spacecraft",
-        body: "Each spacecraft becomes one mission with its own compliance roadmap. Add the satellites you operate (or plan to launch).",
+        body: "Each spacecraft is auto-wrapped into a Mission. Add the satellites you operate (or plan to launch).",
         buttonLabel: "Add spacecraft",
         href: "/onboarding",
         icon: Radio,

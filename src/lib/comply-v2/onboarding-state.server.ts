@@ -17,6 +17,7 @@ import { prisma } from "@/lib/prisma";
 
 export type OnboardingNextAction =
   | "set_up_organization"
+  | "create_first_mission"
   | "add_spacecraft"
   | "run_assessment"
   | "open_first_item"
@@ -24,6 +25,12 @@ export type OnboardingNextAction =
 
 export interface OnboardingSetupState {
   hasOrganization: boolean;
+  /** Sprint M-Onboarding: Mission is now first-class. A user has set
+   *  up the org's "first asset" once they've either created a Mission
+   *  OR registered a Spacecraft (the lazy backfill auto-wraps legacy
+   *  Spacecraft into Missions, so any of the two satisfies the gate). */
+  hasMission: boolean;
+  missionCount: number;
   hasSpacecraft: boolean;
   spacecraftCount: number;
   hasAnyAssessment: boolean;
@@ -49,6 +56,8 @@ export async function getOnboardingSetupState(
   if (!hasOrganization) {
     return {
       hasOrganization: false,
+      hasMission: false,
+      missionCount: 0,
       hasSpacecraft: false,
       spacecraftCount: 0,
       hasAnyAssessment: false,
@@ -64,98 +73,112 @@ export async function getOnboardingSetupState(
   // 2 of 8 status tables. Users who only ran a UK_SPACE / SPECTRUM
   // / EXPORT_CONTROL / CRA / US_REGULATORY assessment got "run
   // assessment" prompted forever. Now checks all 8 of each.
-  const [spacecraftCount, anyAssessmentRows, anyItemRows] = await Promise.all([
-    prisma.spacecraft.count({
-      where: { organizationId: orgId! },
-    }),
-    Promise.all([
-      prisma.debrisAssessment.findFirst({
-        where: { userId },
-        select: { id: true },
+  const [missionCount, spacecraftCount, anyAssessmentRows, anyItemRows] =
+    await Promise.all([
+      // Sprint M-Onboarding: count first-class Missions in the org.
+      prisma.mission.count({
+        where: { organizationId: orgId! },
       }),
-      prisma.nIS2Assessment.findFirst({
-        where: { userId },
-        select: { id: true },
+      prisma.spacecraft.count({
+        where: { organizationId: orgId! },
       }),
-      prisma.cybersecurityAssessment.findFirst({
-        where: { userId },
-        select: { id: true },
-      }),
-      prisma.cRAAssessment.findFirst({
-        where: { userId },
-        select: { id: true },
-      }),
-      prisma.ukSpaceAssessment.findFirst({
-        where: { userId },
-        select: { id: true },
-      }),
-      prisma.usRegulatoryAssessment.findFirst({
-        where: { userId },
-        select: { id: true },
-      }),
-      prisma.exportControlAssessment.findFirst({
-        where: { userId },
-        select: { id: true },
-      }),
-      prisma.spectrumAssessment.findFirst({
-        where: { userId },
-        select: { id: true },
-      }),
-    ]),
-    Promise.all([
-      prisma.debrisRequirementStatus.findFirst({
-        where: { assessment: { userId } },
-        select: { id: true },
-      }),
-      prisma.nIS2RequirementStatus.findFirst({
-        where: { assessment: { userId } },
-        select: { id: true },
-      }),
-      prisma.cybersecurityRequirementStatus.findFirst({
-        where: { assessment: { userId } },
-        select: { id: true },
-      }),
-      prisma.cRARequirementStatus.findFirst({
-        where: { assessment: { userId } },
-        select: { id: true },
-      }),
-      prisma.ukRequirementStatus.findFirst({
-        where: { assessment: { userId } },
-        select: { id: true },
-      }),
-      prisma.usRequirementStatus.findFirst({
-        where: { assessment: { userId } },
-        select: { id: true },
-      }),
-      prisma.exportControlRequirementStatus.findFirst({
-        where: { assessment: { userId } },
-        select: { id: true },
-      }),
-      prisma.spectrumRequirementStatus.findFirst({
-        where: { assessment: { userId } },
-        select: { id: true },
-      }),
-    ]),
-  ]);
+      Promise.all([
+        prisma.debrisAssessment.findFirst({
+          where: { userId },
+          select: { id: true },
+        }),
+        prisma.nIS2Assessment.findFirst({
+          where: { userId },
+          select: { id: true },
+        }),
+        prisma.cybersecurityAssessment.findFirst({
+          where: { userId },
+          select: { id: true },
+        }),
+        prisma.cRAAssessment.findFirst({
+          where: { userId },
+          select: { id: true },
+        }),
+        prisma.ukSpaceAssessment.findFirst({
+          where: { userId },
+          select: { id: true },
+        }),
+        prisma.usRegulatoryAssessment.findFirst({
+          where: { userId },
+          select: { id: true },
+        }),
+        prisma.exportControlAssessment.findFirst({
+          where: { userId },
+          select: { id: true },
+        }),
+        prisma.spectrumAssessment.findFirst({
+          where: { userId },
+          select: { id: true },
+        }),
+      ]),
+      Promise.all([
+        prisma.debrisRequirementStatus.findFirst({
+          where: { assessment: { userId } },
+          select: { id: true },
+        }),
+        prisma.nIS2RequirementStatus.findFirst({
+          where: { assessment: { userId } },
+          select: { id: true },
+        }),
+        prisma.cybersecurityRequirementStatus.findFirst({
+          where: { assessment: { userId } },
+          select: { id: true },
+        }),
+        prisma.cRARequirementStatus.findFirst({
+          where: { assessment: { userId } },
+          select: { id: true },
+        }),
+        prisma.ukRequirementStatus.findFirst({
+          where: { assessment: { userId } },
+          select: { id: true },
+        }),
+        prisma.usRequirementStatus.findFirst({
+          where: { assessment: { userId } },
+          select: { id: true },
+        }),
+        prisma.exportControlRequirementStatus.findFirst({
+          where: { assessment: { userId } },
+          select: { id: true },
+        }),
+        prisma.spectrumRequirementStatus.findFirst({
+          where: { assessment: { userId } },
+          select: { id: true },
+        }),
+      ]),
+    ]);
 
+  const hasMission = missionCount > 0;
   const hasSpacecraft = spacecraftCount > 0;
+  // First-asset gate: either Mission OR Spacecraft satisfies it. The
+  // lazy backfill in getMissionsForUser() auto-wraps legacy Spacecraft
+  // into Missions on first list-fetch, so a Spacecraft-only org will
+  // become a Mission-having org transparently.
+  const hasFirstAsset = hasMission || hasSpacecraft;
   const hasAnyAssessment = anyAssessmentRows.some((r) => r !== null);
   const hasComplianceItems = anyItemRows.some((r) => r !== null);
 
   const completedSteps = [
     hasOrganization,
-    hasSpacecraft,
+    hasFirstAsset,
     hasAnyAssessment,
     hasComplianceItems,
   ].filter(Boolean).length;
 
-  // Priority-ordered next action — first unfinished step wins.
-  // hasComplianceItems implies hasAnyAssessment, so we treat them as
-  // a single "assessment progress" step in the heuristic.
+  // Priority-ordered next action — first unfinished step wins. After
+  // the Mission-domain refactor we prefer pointing new orgs to
+  // /dashboard/missions/new (creates a Mission) rather than the
+  // Spacecraft registry. If the org already has a Spacecraft but no
+  // Mission yet, we still recognize that as "first asset done" thanks
+  // to the auto-backfill.
   const nextAction: OnboardingNextAction = !hasOrganization
     ? "set_up_organization"
-    : !hasSpacecraft
-      ? "add_spacecraft"
+    : !hasFirstAsset
+      ? "create_first_mission"
       : !hasAnyAssessment
         ? "run_assessment"
         : !hasComplianceItems
@@ -164,6 +187,8 @@ export async function getOnboardingSetupState(
 
   return {
     hasOrganization,
+    hasMission,
+    missionCount,
     hasSpacecraft,
     spacecraftCount,
     hasAnyAssessment,

@@ -505,6 +505,7 @@ function NavLink({
 function SetupProgressBadge({ state }: { state: OnboardingSetupState }) {
   const labels: Record<OnboardingSetupState["nextAction"], string> = {
     set_up_organization: "Set up organization",
+    create_first_mission: "Create first mission",
     add_spacecraft: "Add your spacecraft",
     run_assessment: "Run assessment",
     open_first_item: "Open first item",
@@ -512,6 +513,7 @@ function SetupProgressBadge({ state }: { state: OnboardingSetupState }) {
   };
   const hrefs: Record<OnboardingSetupState["nextAction"], string> = {
     set_up_organization: "/onboarding",
+    create_first_mission: "/dashboard/missions/new",
     add_spacecraft: "/onboarding",
     run_assessment: "/assessment/unified",
     open_first_item: "/dashboard/today",

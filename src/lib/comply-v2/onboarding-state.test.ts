@@ -22,6 +22,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const {
   mockOrgMemberFindFirst,
+  mockMissionCount,
   mockSpacecraftCount,
   mockDebrisAssessmentFirst,
   mockNIS2AssessmentFirst,
@@ -41,6 +42,7 @@ const {
   mockSpectrumStatusFirst,
 } = vi.hoisted(() => ({
   mockOrgMemberFindFirst: vi.fn(),
+  mockMissionCount: vi.fn(),
   mockSpacecraftCount: vi.fn(),
   mockDebrisAssessmentFirst: vi.fn(),
   mockNIS2AssessmentFirst: vi.fn(),
@@ -63,6 +65,7 @@ const {
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     organizationMember: { findFirst: mockOrgMemberFindFirst },
+    mission: { count: mockMissionCount },
     spacecraft: { count: mockSpacecraftCount },
     debrisAssessment: { findFirst: mockDebrisAssessmentFirst },
     nIS2Assessment: { findFirst: mockNIS2AssessmentFirst },
@@ -91,6 +94,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   // Default: empty across the board (no org, no anything).
   mockOrgMemberFindFirst.mockResolvedValue(null);
+  mockMissionCount.mockResolvedValue(0);
   mockSpacecraftCount.mockResolvedValue(0);
   for (const m of [
     mockDebrisAssessmentFirst,
@@ -118,6 +122,8 @@ describe("getOnboardingSetupState — priority-ordered nextAction", () => {
   it("no org → completedSteps=0, nextAction=set_up_organization", async () => {
     const r = await getOnboardingSetupState(USER_ID);
     expect(r.hasOrganization).toBe(false);
+    expect(r.hasMission).toBe(false);
+    expect(r.missionCount).toBe(0);
     expect(r.hasSpacecraft).toBe(false);
     expect(r.hasAnyAssessment).toBe(false);
     expect(r.hasComplianceItems).toBe(false);
@@ -128,25 +134,40 @@ describe("getOnboardingSetupState — priority-ordered nextAction", () => {
 
   it("no org → short-circuits before downstream queries", async () => {
     await getOnboardingSetupState(USER_ID);
-    // Spacecraft + assessment + status checks must NOT fire when no org.
+    // Mission + spacecraft + assessment + status checks must NOT fire
+    // when no org.
+    expect(mockMissionCount).not.toHaveBeenCalled();
     expect(mockSpacecraftCount).not.toHaveBeenCalled();
     expect(mockDebrisAssessmentFirst).not.toHaveBeenCalled();
     expect(mockDebrisStatusFirst).not.toHaveBeenCalled();
   });
 
-  it("org exists but no spacecraft → nextAction=add_spacecraft, completedSteps=1", async () => {
+  it("org but no mission AND no spacecraft → nextAction=create_first_mission, completedSteps=1", async () => {
     mockOrgMemberFindFirst.mockResolvedValue({ organizationId: "org_1" });
     const r = await getOnboardingSetupState(USER_ID);
     expect(r.hasOrganization).toBe(true);
+    expect(r.hasMission).toBe(false);
     expect(r.hasSpacecraft).toBe(false);
     expect(r.completedSteps).toBe(1);
-    expect(r.nextAction).toBe("add_spacecraft");
+    expect(r.nextAction).toBe("create_first_mission");
   });
 
-  it("org + spacecraft but no assessment → nextAction=run_assessment, completedSteps=2", async () => {
+  it("org + mission satisfies first-asset gate (Sprint M-Onboarding)", async () => {
+    mockOrgMemberFindFirst.mockResolvedValue({ organizationId: "org_1" });
+    mockMissionCount.mockResolvedValue(1);
+    const r = await getOnboardingSetupState(USER_ID);
+    expect(r.hasMission).toBe(true);
+    expect(r.missionCount).toBe(1);
+    expect(r.hasSpacecraft).toBe(false);
+    expect(r.completedSteps).toBe(2); // org + first-asset (mission)
+    expect(r.nextAction).toBe("run_assessment");
+  });
+
+  it("org + spacecraft only (legacy) still satisfies first-asset gate", async () => {
     mockOrgMemberFindFirst.mockResolvedValue({ organizationId: "org_1" });
     mockSpacecraftCount.mockResolvedValue(2);
     const r = await getOnboardingSetupState(USER_ID);
+    expect(r.hasMission).toBe(false);
     expect(r.hasSpacecraft).toBe(true);
     expect(r.spacecraftCount).toBe(2);
     expect(r.hasAnyAssessment).toBe(false);
@@ -156,7 +177,7 @@ describe("getOnboardingSetupState — priority-ordered nextAction", () => {
 
   it("assessment exists but no items → still run_assessment, completedSteps=3", async () => {
     mockOrgMemberFindFirst.mockResolvedValue({ organizationId: "org_1" });
-    mockSpacecraftCount.mockResolvedValue(2);
+    mockMissionCount.mockResolvedValue(1);
     mockDebrisAssessmentFirst.mockResolvedValue({ id: "ass_1" });
     const r = await getOnboardingSetupState(USER_ID);
     expect(r.hasAnyAssessment).toBe(true);
@@ -167,6 +188,7 @@ describe("getOnboardingSetupState — priority-ordered nextAction", () => {
 
   it("full chain → all_done, completedSteps=4", async () => {
     mockOrgMemberFindFirst.mockResolvedValue({ organizationId: "org_1" });
+    mockMissionCount.mockResolvedValue(1);
     mockSpacecraftCount.mockResolvedValue(2);
     mockDebrisAssessmentFirst.mockResolvedValue({ id: "ass_1" });
     mockDebrisStatusFirst.mockResolvedValue({ id: "stat_1" });
