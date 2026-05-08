@@ -5,6 +5,11 @@ import { prisma } from "@/lib/prisma";
 import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
 import { getAuditChainSegment } from "@/lib/comply-v2/audit-chain-view.server";
 import { AuditChainVisualizer } from "@/components/dashboard/v2/AuditChainVisualizer";
+import {
+  PageContainer,
+  PageHeader,
+  CountBadge,
+} from "@/components/dashboard/v2/ui/PageChrome";
 
 export const dynamic = "force-dynamic";
 
@@ -34,8 +39,6 @@ export default async function AuditChainPage() {
   const ui = await resolveComplyUiVersion();
   if (ui === "v1") redirect("/dashboard");
 
-  // Resolve the user's primary org — same lookup as Sprint 5A's
-  // mission aggregator. If no membership, render the empty state.
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
@@ -53,29 +56,29 @@ export default async function AuditChainPage() {
     : { totalEntries: 0, hasMore: false, nextCursor: null, blocks: [] };
 
   return (
-    <div className="mx-auto max-w-screen-2xl px-6 py-6">
-      <header className="mb-6 flex items-end justify-between gap-6 border-b border-white/[0.06] pb-4">
-        <div>
-          <div className="mb-1.5 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-400">
-            <Link2 className="h-3 w-3" />
-            AUDIT CHAIN · {initialSegment.totalEntries} BLOCKS
-          </div>
-          <h1 className="text-xl font-semibold tracking-tight text-slate-100">
-            Tamper-evident audit chain
-          </h1>
-          <p className="mt-1 max-w-2xl text-xs text-slate-500">
+    <PageContainer>
+      <PageHeader
+        eyebrow="Audit chain"
+        eyebrowIcon={Link2}
+        title="Tamper-evident audit chain"
+        description={
+          <>
             Every audit-log row is a SHA-256-linked block. The chain is{" "}
-            <strong>tamper-evident</strong> — modifying any row breaks the hash
-            link to its successor. Quarterly OpenTimestamps anchors commit chain
-            heads to Bitcoin so the timeline can't be silently rewritten.
-          </p>
-        </div>
-      </header>
+            <strong className="font-semibold text-slate-200">
+              tamper-evident
+            </strong>{" "}
+            — modifying any row breaks the hash link to its successor. Quarterly
+            OpenTimestamps anchors commit chain heads to Bitcoin so the timeline
+            can&apos;t be silently rewritten.
+          </>
+        }
+        actions={<CountBadge count={initialSegment.totalEntries} />}
+      />
 
       <AuditChainVisualizer
         organizationId={orgId}
         initialSegment={initialSegment}
       />
-    </div>
+    </PageContainer>
   );
 }

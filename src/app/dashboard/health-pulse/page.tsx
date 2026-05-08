@@ -6,6 +6,11 @@ import { prisma } from "@/lib/prisma";
 import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
 import { getHealthPulseSnapshot } from "@/lib/comply-v2/health-pulse.server";
 import { HealthPulseClient } from "@/components/dashboard/v2/HealthPulseClient";
+import {
+  PageContainer,
+  PageHeader,
+  StatusPill,
+} from "@/components/dashboard/v2/ui/PageChrome";
 
 export const dynamic = "force-dynamic";
 
@@ -54,25 +59,16 @@ export default async function HealthPulsePage() {
       };
 
   return (
-    <div className="mx-auto max-w-screen-2xl px-6 py-6">
-      <header className="mb-6 flex items-end justify-between gap-6 border-b border-white/[0.06] pb-4">
-        <div>
-          <div className="mb-1.5 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-400">
-            <Activity className="h-3 w-3" />
-            HEALTH PULSE · LIVE
-          </div>
-          <h1 className="text-xl font-semibold tracking-tight text-slate-100">
-            Compliance heartbeat
-          </h1>
-          <p className="mt-1 max-w-2xl text-xs text-slate-500">
-            Last-hour event flow, 5-minute buckets. Animates in real-time as new
-            audit events fire — same SSE feed as the Ops Console, just a
-            different rendering.
-          </p>
-        </div>
-      </header>
+    <PageContainer>
+      <PageHeader
+        eyebrow="Health pulse"
+        eyebrowIcon={Activity}
+        title="Compliance heartbeat"
+        description="Last-hour event flow, 5-minute buckets. Animates in real-time as new audit events fire — same SSE feed as the Ops Console, just a different rendering."
+        actions={<StatusPill tone="emerald">Live</StatusPill>}
+      />
 
       <HealthPulseClient initialSnapshot={snapshot} hasOrg={Boolean(orgId)} />
-    </div>
+    </PageContainer>
   );
 }
