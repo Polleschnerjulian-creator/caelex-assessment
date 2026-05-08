@@ -165,13 +165,16 @@ describe("V2Sidebar — section structure", () => {
     ]);
   });
 
-  it("Audit & System section contains Audit Center, Audit Log, Ops Console, System Health", () => {
+  it("Audit & System section contains Audit Center, Audit Log, Hash Chain, Ops Console, System Health", () => {
     render(<V2Sidebar pendingProposals={0} />);
     const section = screen.getByLabelText("Audit & System");
     const links = within(section).getAllByRole("link");
+    // Sprint UF16 — added Hash Chain (audit-chain) so the previously-
+    // orphaned visualizer is reachable from the rail.
     expect(links.map((a) => a.getAttribute("href"))).toEqual([
       "/dashboard/audit-center",
       "/dashboard/audit-log",
+      "/dashboard/audit-chain",
       "/dashboard/ops-console",
       "/dashboard/system-health",
     ]);

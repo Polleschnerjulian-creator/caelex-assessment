@@ -26,6 +26,7 @@ import {
   Newspaper,
   Globe2,
   Layers,
+  Link2,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -171,6 +172,14 @@ export function V2Sidebar({
       href: "/dashboard/audit-log",
       label: "Audit Log",
       icon: Fingerprint,
+    },
+    {
+      // Sprint UF16 — surface the previously-orphaned hash-chain
+      // visualizer in the rail so auditors discover it by browsing
+      // (not by URL guessing). Sub-tier of Audit Log conceptually.
+      href: "/dashboard/audit-chain",
+      label: "Hash Chain",
+      icon: Link2,
     },
     {
       href: "/dashboard/ops-console",

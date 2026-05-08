@@ -128,10 +128,10 @@ export default async function AuditLogPage({ searchParams }: PageProps) {
               className="font-medium text-emerald-300 underline-offset-4 hover:text-emerald-200 hover:underline"
               href="/dashboard/audit-chain"
             >
-              Audit chain
+              Hash Chain explorer
             </a>{" "}
-            for the block visualization). 5+ year retention per §22 AWV / 15 CFR
-            762.
+            for the per-block SHA-256 chain + Bitcoin-anchor visualization). 5+
+            year retention per §22 AWV / 15 CFR 762.
           </>
         }
         actions={<CountBadge count={result.total} />}

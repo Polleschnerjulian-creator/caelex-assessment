@@ -1018,31 +1018,47 @@ function AuditCenterContent() {
                 )}
 
                 {/* Tamper-Evident Audit Trail */}
+                {/* Sprint UF16 — link the existing AuditChainVisualizer
+                    page (block-explorer view of the SHA-256 hash chain
+                    + Bitcoin anchors). audit found that Audit Center
+                    showed only a green pill saying "tamper-evident"
+                    without any way to actually inspect the chain.
+                    The visualizer page existed but was orphaned (one
+                    of the 22 routes not reachable from V2 sidebar). */}
                 <div className="mt-4 pt-3 border-t border-black/[0.04] dark:border-white/5">
-                  <div className="flex items-start gap-3 p-3 rounded-lg bg-emerald-50/50 dark:bg-emerald-500/[0.04] border border-emerald-200/40 dark:border-emerald-500/10">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Fingerprint
-                        size={16}
-                        className="text-emerald-600 dark:text-emerald-400"
-                      />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
-                          Tamper-Evident Audit Trail
-                        </span>
-                        <span className="text-[9px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                          SHA-256
-                        </span>
+                  <Link href="/dashboard/audit-chain" className="block group">
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-emerald-50/50 dark:bg-emerald-500/[0.04] border border-emerald-200/40 dark:border-emerald-500/10 transition hover:border-emerald-400/60 hover:bg-emerald-50 dark:hover:bg-emerald-500/[0.08]">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Fingerprint
+                          size={16}
+                          className="text-emerald-600 dark:text-emerald-400"
+                        />
                       </div>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                        All audit entries are timestamped with server-side UTC
-                        timestamps and linked via SHA-256 hash chain. Each entry
-                        references the previous hash, creating a tamper-evident
-                        sequence of compliance events.
-                      </p>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                            Tamper-Evident Audit Trail
+                          </span>
+                          <span className="text-[9px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                            SHA-256
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                          All audit entries are timestamped with server-side UTC
+                          timestamps and linked via SHA-256 hash chain. Each
+                          entry references the previous hash, creating a
+                          tamper-evident sequence of compliance events.
+                        </p>
+                        <p className="mt-2 text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
+                          Open hash-chain explorer
+                          <ExternalLink
+                            size={11}
+                            className="ml-1 inline-block transition group-hover:translate-x-0.5"
+                          />
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 </div>
               </div>
             </div>
