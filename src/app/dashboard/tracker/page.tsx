@@ -404,6 +404,21 @@ export default function TrackerPage() {
     useState<UnifiedStatusResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // ─── Sprint UF42 (P1-T8) — Reset expandedArticles + selectedArticleIds
+  // ─── + collapsedGroups when the operator switches regulation. Without
+  // ─── this effect the Set persists across the regime swap, so e.g. an
+  // ─── article id from the EU-Space-Act surface still flags as expanded
+  // ─── on NIS2 (where the same id may map to a different article or
+  // ─── nothing at all). The same logic for collapsedGroups: NIS2's
+  // ─── group keys ("incident-handling", "risk-management") aren't
+  // ─── meaningful on Cybersecurity. Cheaper to drop both Sets than to
+  // ─── try a per-regulation namespacing scheme.
+  useEffect(() => {
+    setExpandedArticles(new Set());
+    setSelectedArticleIds(new Set());
+    setCollapsedGroups(new Set());
+  }, [selectedRegulation]);
+
   // ─── Data Fetching ───
   useEffect(() => {
     const fetchAll = async () => {

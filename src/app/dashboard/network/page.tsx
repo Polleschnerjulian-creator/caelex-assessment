@@ -53,6 +53,17 @@ interface Engagement {
   scope: string;
   createdAt: string;
   lastActivity: string | null;
+  /**
+   * Sprint UF43 (P1-S4) — counts come from the API's `_count` block
+   * (Prisma include in stakeholder-engagement.ts:155-156). Optional
+   * because the API may not return them on legacy clients; fall back
+   * to 0 in that case.
+   */
+  _count?: {
+    dataRooms?: number;
+    attestations?: number;
+    accessLogs?: number;
+  };
 }
 
 interface NetworkStats {
@@ -476,8 +487,11 @@ export default function NetworkHubPage() {
                         (eng.status as StakeholderEngagement["status"]) ||
                         "ACTIVE",
                       lastAccessAt: eng.lastActivity,
-                      dataRoomCount: 0,
-                      attestationCount: 0,
+                      // Sprint UF43 (P1-S4) — wire real counts from the
+                      // API's _count block. The Prisma query already
+                      // includes them; the page just wasn't using them.
+                      dataRoomCount: eng._count?.dataRooms ?? 0,
+                      attestationCount: eng._count?.attestations ?? 0,
                     }}
                     onView={(id) => router.push(`/dashboard/network/${id}`)}
                     onRevoke={() => {}}
