@@ -25,6 +25,7 @@ import {
   Fingerprint,
   Newspaper,
   Globe2,
+  Layers,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -131,6 +132,12 @@ export function V2Sidebar({
 
   const compliance: NavItem[] = [
     { href: "/dashboard/posture", label: "Posture", icon: Gauge },
+    {
+      href: "/dashboard/modules",
+      label: "Modules",
+      icon: Layers,
+      match: (p) => p.startsWith("/dashboard/modules"),
+    },
     { href: "/dashboard/tracker", label: "Article Tracker", icon: FileSearch },
     { href: "/dashboard/incidents", label: "Incidents", icon: AlertTriangle },
     {

@@ -100,6 +100,7 @@ vi.mock("lucide-react", () => {
     FileText: icon("FileText"),
     Fingerprint: icon("Fingerprint"),
     Newspaper: icon("Newspaper"),
+    Layers: icon("Layers"),
   };
 });
 
@@ -148,12 +149,13 @@ describe("V2Sidebar — section structure", () => {
     ]);
   });
 
-  it("Compliance section contains Posture, Tracker, Incidents, Documents, Regulatory Feed, Network, Trade (Audit Chain / Health Pulse / Time Travel removed from primary nav)", () => {
+  it("Compliance section contains Posture, Modules, Tracker, Incidents, Documents, Regulatory Feed, Network, Trade", () => {
     render(<V2Sidebar pendingProposals={0} />);
     const section = screen.getByLabelText("Compliance");
     const links = within(section).getAllByRole("link");
     expect(links.map((a) => a.getAttribute("href"))).toEqual([
       "/dashboard/posture",
+      "/dashboard/modules",
       "/dashboard/tracker",
       "/dashboard/incidents",
       "/dashboard/documents",
