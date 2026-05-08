@@ -1,4 +1,5 @@
 import "server-only";
+import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import { prisma } from "@/lib/prisma";
 import {
   type ComplianceItem,
@@ -8,6 +9,52 @@ import {
   type RegulationKey,
   normalizeStatus,
 } from "./types";
+
+/**
+ * Sprint UF46-48 (P1-D1/D2/D3) — Today inbox quality bumps.
+ *
+ * Constants pulled out of `getTodayInboxForUser` so future tuning
+ * (or per-org overrides) doesn't require changing the function body.
+ */
+const TODAY_BUCKET_CAP = 100; // was 25 — too low when an org has many open items
+const THIS_WEEK_DAYS = 7; // honest-name-the-bucket: "This week" = 7d
+
+/**
+ * Resolve the user's effective timezone for "today" boundaries.
+ * Priority: Org.timezone (Europe/Berlin default) → falls back to UTC.
+ *
+ * Rationale: Caelex serves EU operators primarily; org-level tz lets
+ * a US subsidiary still get correct local-day semantics. Without this
+ * the cleared-today KPI rolls over at the operator's afternoon (UTC
+ * midnight = 5pm Pacific, 1am Berlin), which makes the chip look stale
+ * by the time the operator checks it.
+ */
+async function resolveUserTimezone(userId: string): Promise<string> {
+  const membership = await prisma.organizationMember.findFirst({
+    where: { userId },
+    select: { organization: { select: { timezone: true } } },
+  });
+  return membership?.organization?.timezone || "Europe/Berlin";
+}
+
+/**
+ * Compute "00:00 today in tz" expressed as a UTC Date for Prisma
+ * timestamp comparisons. Uses date-fns-tz so DST edges are handled
+ * (CET → CEST and back).
+ */
+function startOfTodayInTz(tz: string): Date {
+  const nowInTz = toZonedTime(new Date(), tz);
+  const localMidnight = new Date(
+    nowInTz.getFullYear(),
+    nowInTz.getMonth(),
+    nowInTz.getDate(),
+    0,
+    0,
+    0,
+    0,
+  );
+  return fromZonedTime(localMidnight, tz);
+}
 
 /**
  * Comply v2 Ontology Fetcher
@@ -1005,6 +1052,12 @@ export async function getTodayInboxForUser(userId: string): Promise<{
   thisWeek: ComplianceItem[];
   watching: ComplianceItem[];
   snoozedUntilByItemId: Record<string, string>;
+  /**
+   * Sprint UF46 (P1-D1) — totals BEFORE the bucket cap, so the UI
+   * can render "showing X of Y" affordances when overflow happens.
+   * If totalUrgent === urgent.length the cap wasn't hit.
+   */
+  totals: { urgent: number; thisWeek: number; watching: number };
 }> {
   const [all, snoozes] = await Promise.all([
     getComplianceItemsForUser(userId, { limit: 500 }),
@@ -1017,22 +1070,48 @@ export async function getTodayInboxForUser(userId: string): Promise<{
     snoozedUntilByItemId[id] = date.toISOString();
   }
 
+  // Sprint UF47 (P1-D2) — "This week" honest semantics. The audit
+  // flagged that this bucket actually contained anything within 30
+  // days (because computePriority() maps targetDate ≤ now+30d to
+  // HIGH). Operator clicking a "This week" bucket and seeing items
+  // due Q4 next year is misleading.
+  //
+  // New rule: HIGH priority AND
+  //   (a) targetDate falls in the next 7 days, OR
+  //   (b) no targetDate (DRAFT-without-deadline — important regardless)
+  // HIGH items with targetDate > now+7d move into `watching`.
+  const sevenDaysOut = Date.now() + THIS_WEEK_DAYS * 24 * 60 * 60 * 1000;
+  const isThisWeek = (i: ComplianceItem): boolean => {
+    if (i.priority !== "HIGH" || isSnoozed(i.id)) return false;
+    if (!i.targetDate) return true; // HIGH-without-date stays here
+    return i.targetDate.getTime() <= sevenDaysOut;
+  };
+
+  const urgentAll = all.filter(
+    (i) => i.priority === "URGENT" && !isSnoozed(i.id),
+  );
+  const thisWeekAll = all.filter(isThisWeek);
+  const watchingAll = all.filter(
+    (i) =>
+      // existing watching predicate: MEDIUM in-flight + snoozed
+      (i.priority === "MEDIUM" &&
+        (i.status === "UNDER_REVIEW" || i.status === "DRAFT")) ||
+      isSnoozed(i.id) ||
+      // Sprint UF47 — HIGH items pushed past the 7-day window land
+      // here so they don't disappear; operator can still see them.
+      (i.priority === "HIGH" && !isThisWeek(i) && !isSnoozed(i.id)),
+  );
+
   return {
-    urgent: all
-      .filter((i) => i.priority === "URGENT" && !isSnoozed(i.id))
-      .slice(0, 25),
-    thisWeek: all
-      .filter((i) => i.priority === "HIGH" && !isSnoozed(i.id))
-      .slice(0, 25),
-    watching: all
-      .filter(
-        (i) =>
-          (i.priority === "MEDIUM" &&
-            (i.status === "UNDER_REVIEW" || i.status === "DRAFT")) ||
-          isSnoozed(i.id),
-      )
-      .slice(0, 25),
+    urgent: urgentAll.slice(0, TODAY_BUCKET_CAP),
+    thisWeek: thisWeekAll.slice(0, TODAY_BUCKET_CAP),
+    watching: watchingAll.slice(0, TODAY_BUCKET_CAP),
     snoozedUntilByItemId,
+    totals: {
+      urgent: urgentAll.length,
+      thisWeek: thisWeekAll.length,
+      watching: watchingAll.length,
+    },
   };
 }
 
@@ -1046,9 +1125,12 @@ export async function getTodayInboxForUser(userId: string): Promise<{
  * writes for every successful action: snooze, attest, note, ack,
  * dismiss, etc.
  *
- * "Today" = since 00:00 UTC. Local-time semantics intentionally
- * deferred — UTC is consistent across the user's devices and the
- * cron-published posture snapshot.
+ * Sprint UF48 (P1-D3) fix: "today" is now the operator's local day
+ * (resolved from Org.timezone, defaulting to Europe/Berlin), not UTC.
+ * Previously this rolled over at UTC midnight — for a US-Pacific user
+ * that meant the chip jumped to the next day at 5pm local, making it
+ * look stale. Berlin-default keeps EU operators (the bulk of the
+ * userbase) aligned with their working day.
  *
  * The query counts DISTINCT entityIds so a user that snoozes the
  * same item twice (e.g. extends the snooze) doesn't get double-
@@ -1057,8 +1139,8 @@ export async function getTodayInboxForUser(userId: string): Promise<{
 export async function getClearedTodayCountForUser(
   userId: string,
 ): Promise<number> {
-  const startOfToday = new Date();
-  startOfToday.setUTCHours(0, 0, 0, 0);
+  const tz = await resolveUserTimezone(userId);
+  const startOfToday = startOfTodayInTz(tz);
 
   // Verbs that count as "cleared the item from your active queue
   // today". Notably excludes comply_v2_action_executed (the generic

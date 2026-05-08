@@ -102,6 +102,10 @@ function buildDemoInbox(userId: string): {
   thisWeek: ComplianceItem[];
   watching: ComplianceItem[];
   snoozedUntilByItemId: Record<string, string>;
+  /** Sprint UF46 — match the live shape so the Section "X of Y" hint
+   *  works in demo mode too. With only 7 hand-curated items there's
+   *  no truncation, so totals == lengths. */
+  totals: { urgent: number; thisWeek: number; watching: number };
 } {
   const now = Date.now();
   const day = 24 * 60 * 60 * 1000;
@@ -217,6 +221,11 @@ function buildDemoInbox(userId: string): {
     snoozedUntilByItemId: {
       "CRA:demo_7": new Date(now + 7 * day).toISOString(),
     },
+    totals: {
+      urgent: urgent.length,
+      thisWeek: thisWeek.length,
+      watching: watching.length,
+    },
   };
 }
 
@@ -261,7 +270,7 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
     // set so the user can poke at the FilterBar with realistic data.
     const demo = buildDemoInbox(session.user.id);
     inbox = demo;
-    total = demo.urgent.length + demo.thisWeek.length + demo.watching.length;
+    total = demo.totals.urgent + demo.totals.thisWeek + demo.totals.watching;
     clearedToday = 4; // sample value to show the KPI chip populated
     if (filterActive) {
       const all = [...demo.urgent, ...demo.thisWeek, ...demo.watching];
@@ -287,7 +296,10 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
       getTodayInboxForUser(session.user.id),
       getClearedTodayCountForUser(session.user.id),
     ]);
-    total = inbox.urgent.length + inbox.thisWeek.length + inbox.watching.length;
+    // Sprint UF46 — use pre-cap totals so the page-level total
+    // reflects what the operator actually has (not what fits in the
+    // 100-cap render).
+    total = inbox.totals.urgent + inbox.totals.thisWeek + inbox.totals.watching;
   }
 
   // True empty-state: no items in any bucket AND no filter applied.
@@ -433,6 +445,7 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
               <Section
                 title="Urgent"
                 count={inbox.urgent.length}
+                total={inbox.totals.urgent}
                 emptyMessage="No urgent items right now."
                 accent="emerald"
                 icon={Inbox}
@@ -449,6 +462,7 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
               <Section
                 title="This week"
                 count={inbox.thisWeek.length}
+                total={inbox.totals.thisWeek}
                 emptyMessage="Nothing on the radar this week."
                 accent="slate"
                 icon={Calendar}
@@ -465,6 +479,7 @@ export default async function TodayInboxPage({ searchParams }: TodayPageProps) {
               <Section
                 title="Watching"
                 count={inbox.watching.length}
+                total={inbox.totals.watching}
                 emptyMessage="Nothing in flight."
                 accent="slate"
                 icon={Eye}
@@ -967,6 +982,7 @@ function serializableItem(item: ComplianceItem): ComplianceItem {
 function Section({
   title,
   count,
+  total,
   emptyMessage,
   accent,
   icon: Icon,
@@ -974,6 +990,11 @@ function Section({
 }: {
   title: string;
   count: number;
+  /**
+   * Sprint UF46 (P1-D1) — pre-cap total. If supplied AND > count we
+   * render "+N more" so the operator knows the bucket was truncated.
+   */
+  total?: number;
   emptyMessage: string;
   accent: "emerald" | "slate";
   icon: React.ComponentType<{ className?: string }>;
@@ -983,6 +1004,8 @@ function Section({
     accent === "emerald"
       ? "h-3.5 w-3.5 text-white/80"
       : "h-3.5 w-3.5 text-white/45";
+  const overflow =
+    typeof total === "number" && total > count ? total - count : 0;
 
   return (
     <section className="mb-8">
@@ -990,7 +1013,7 @@ function Section({
         <Icon className={iconClass} />
         <span>{title}</span>
         <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-white/[0.06] px-1.5 text-[10px] font-medium tabular-nums text-white/70 ring-1 ring-inset ring-white/[0.08]">
-          {count}
+          {typeof total === "number" ? total : count}
         </span>
       </h2>
       {count === 0 ? (
@@ -998,9 +1021,17 @@ function Section({
           {emptyMessage}
         </p>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {children}
-        </div>
+        <>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {children}
+          </div>
+          {overflow > 0 ? (
+            <p className="mt-3 text-[11.5px] text-white/45">
+              Showing {count} of {total} — {overflow} more in this bucket.
+              Filter or open Posture to see the rest.
+            </p>
+          ) : null}
+        </>
       )}
     </section>
   );
