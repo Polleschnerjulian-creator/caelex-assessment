@@ -21,6 +21,11 @@ import {
 } from "@/data/articles";
 import { checklistItems } from "@/data/checklists";
 import { modules } from "@/data/modules";
+// Sprint UF9 — read-only enforcement for auditor persona.
+import {
+  ReadOnlyBanner,
+  useIsReadOnlyPersona,
+} from "@/components/dashboard/v2/ReadOnlyBanner";
 
 // ─── Types ───
 
@@ -315,6 +320,13 @@ const thColor = { color: "var(--cx-text-tertiary, #9CA3AF)" };
 // ─── Main Component ───
 
 export default function TrackerPage() {
+  // Sprint UF9 — read-only enforcement for auditor persona.
+  // The tracker is one of the most-mutating pages in Comply
+  // (any logged-in user can flip article statuses via the
+  // status pills). For auditors that's a foot-gun: a stray
+  // click changes the very state they're auditing.
+  const isReadOnly = useIsReadOnlyPersona();
+
   const [selectedRegulation, setSelectedRegulation] =
     useState<RegulationId>("all");
   const [euView, setEuView] = useState<"articles" | "checklist">("articles");
@@ -412,8 +424,14 @@ export default function TrackerPage() {
   }, [articleStatuses]);
 
   // ─── Mutations ───
+  // Sprint UF9 — both mutations short-circuit for read-only personas.
+  // No optimistic state update, no fetch. The status pills also pass
+  // `isReadOnly` down so they render disabled visually; this is the
+  // belt-and-suspenders guard in case a pill bypasses the disabled
+  // attribute (programmatic .click(), a11y keyboard activation, etc).
   const updateArticleStatus = useCallback(
     async (articleId: string, status: ArticleStatusType) => {
+      if (isReadOnly) return;
       setArticleStatuses((prev) => ({
         ...prev,
         [articleId]: { ...prev[articleId], status, updatedAt: new Date() },
@@ -428,11 +446,12 @@ export default function TrackerPage() {
         console.error("Error updating status:", e);
       }
     },
-    [],
+    [isReadOnly],
   );
 
   const toggleChecklist = useCallback(
     async (id: string, completed: boolean) => {
+      if (isReadOnly) return;
       setChecklistStatuses((prev) => ({
         ...prev,
         [id]: { ...prev[id], completed, updatedAt: new Date() },
@@ -447,7 +466,7 @@ export default function TrackerPage() {
         console.error("Error updating checklist:", e);
       }
     },
-    [],
+    [isReadOnly],
   );
 
   const toggleArticleExpand = useCallback((id: string) => {
@@ -531,6 +550,10 @@ export default function TrackerPage() {
       <style>{`.dark .tracker-ambient { background: #0B0F1A !important; }`}</style>
       <div className="tracker-ambient h-full overflow-y-auto">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-8">
+          {/* Sprint UF9 — Read-only banner (auditor persona only).
+              Renders nothing for operator/consultant/investor. */}
+          <ReadOnlyBanner message="Article status pills are locked. You can browse, search, expand, and export all articles — but cannot flip statuses or check off requirements while in auditor mode." />
+
           {/* Header — Apple HIG: drop the uppercase "COMPLIANCE" overline,
               just title + subtitle. Inter font, -0.022em tracking, 28px. */}
           <header
@@ -1338,6 +1361,12 @@ export default function TrackerPage() {
                                           return (
                                             <button
                                               key={s}
+                                              disabled={isReadOnly}
+                                              title={
+                                                isReadOnly
+                                                  ? "Read-only — auditor mode prevents status changes"
+                                                  : undefined
+                                              }
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 updateArticleStatus(
@@ -1347,7 +1376,7 @@ export default function TrackerPage() {
                                               }}
                                               className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
                                                 status === s ? sc.color : ""
-                                              }`}
+                                              } ${isReadOnly ? "cursor-not-allowed opacity-50" : ""}`}
                                               style={
                                                 status === s
                                                   ? {
@@ -1481,10 +1510,20 @@ export default function TrackerPage() {
                                 }}
                               >
                                 <button
+                                  disabled={isReadOnly}
+                                  title={
+                                    isReadOnly
+                                      ? "Read-only — auditor mode prevents checklist changes"
+                                      : undefined
+                                  }
                                   onClick={() =>
                                     toggleChecklist(item.id, !isDone)
                                   }
-                                  className="mt-0.5 w-[18px] h-[18px] rounded flex items-center justify-center transition-all flex-shrink-0"
+                                  className={`mt-0.5 w-[18px] h-[18px] rounded flex items-center justify-center transition-all flex-shrink-0 ${
+                                    isReadOnly
+                                      ? "cursor-not-allowed opacity-50"
+                                      : ""
+                                  }`}
                                   style={{
                                     border: isDone
                                       ? "1.5px solid #22C55E"
