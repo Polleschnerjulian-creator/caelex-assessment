@@ -5,15 +5,24 @@ import { Sparkles, ShieldAlert } from "lucide-react";
 import type { V2CitationCheck } from "@/lib/comply-v2/astra-engine.server";
 
 /**
- * AI Message Footer — Sprint 6C (EU AI Act Art. 50 §4)
+ * AI Message Footer — Sprint 6C (EU AI Act Art. 50 §4) +
+ *                     Sprint UF20 (confidence dot).
  *
- * Renders below every Astra-generated message bubble. Two layers:
+ * Renders below every Astra-generated message bubble. Three layers:
  *
- *   1. **AI-generated disclosure** — always shown. Required by
+ *   1. **Confidence dot** (Sprint UF20) — small colored dot + label
+ *      at the start of the footer line. Derived purely from the
+ *      citation-validator output (no external API call): high when
+ *      all citations verified, medium when some unverified, low when
+ *      most unverified, omitted when there are no citations to check.
+ *      Audit found "kein Confidence-Indicator pro Antwort" — this
+ *      closes that gap with the data we already compute on the server.
+ *
+ *   2. **AI-generated disclosure** — always shown. Required by
  *      Art. 50(4) ("AI-generated text shall be marked"). Discreet
  *      but unmissable: small icon + "AI-generated" label.
  *
- *   2. **Citation warning** — shown only when the citation-validator
+ *   3. **Citation warning** — shown only when the citation-validator
  *      flagged at least one unverified regulatory reference. Surfaces
  *      "N of M citations could not be verified — please cross-check
  *      against primary sources" + the first 3 unverified raw strings
@@ -29,15 +38,74 @@ export interface AIMessageFooterProps {
   citationCheck?: V2CitationCheck;
 }
 
+/**
+ * Sprint UF20 — derive a confidence tier from the citation check.
+ * Cheap, deterministic, no model call. The confidence reflects only
+ * the regulatory-reference verification — it's NOT an end-to-end
+ * answer-quality signal. The label is honest about this scope.
+ */
+function deriveConfidence(
+  citationCheck: V2CitationCheck | undefined,
+): { level: "high" | "medium" | "low"; label: string } | null {
+  if (!citationCheck || citationCheck.total === 0) return null;
+  const ratio = citationCheck.verifiedCount / citationCheck.total;
+  if (ratio >= 0.85) {
+    return {
+      level: "high",
+      label: `High confidence · ${citationCheck.verifiedCount}/${citationCheck.total} citations verified`,
+    };
+  }
+  if (ratio >= 0.5) {
+    return {
+      level: "medium",
+      label: `Medium confidence · ${citationCheck.verifiedCount}/${citationCheck.total} citations verified`,
+    };
+  }
+  return {
+    level: "low",
+    label: `Low confidence · ${citationCheck.verifiedCount}/${citationCheck.total} citations verified`,
+  };
+}
+
 export function AIMessageFooter({ citationCheck }: AIMessageFooterProps) {
   const hasUnverified = citationCheck && citationCheck.unverifiedCount > 0;
+  const confidence = deriveConfidence(citationCheck);
   return (
     <footer
       data-testid="ai-message-footer"
       className="mt-2 flex flex-col gap-1.5"
     >
-      {/* Layer 1 — AI-generated disclosure */}
-      <p className="inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">
+      {/* Layer 1 — Confidence dot + AI-generated disclosure on one line */}
+      <p className="inline-flex flex-wrap items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">
+        {confidence ? (
+          <>
+            <span
+              data-testid="ai-confidence-dot"
+              className={
+                confidence.level === "high"
+                  ? "h-1.5 w-1.5 rounded-full bg-emerald-400"
+                  : confidence.level === "medium"
+                    ? "h-1.5 w-1.5 rounded-full bg-amber-400"
+                    : "h-1.5 w-1.5 rounded-full bg-rose-400"
+              }
+              aria-hidden
+            />
+            <span
+              data-testid="ai-confidence-label"
+              className={
+                confidence.level === "high"
+                  ? "text-emerald-300/80"
+                  : confidence.level === "medium"
+                    ? "text-amber-300/80"
+                    : "text-rose-300/80"
+              }
+              title={confidence.label}
+            >
+              {confidence.level} confidence
+            </span>
+            <span className="text-slate-600">·</span>
+          </>
+        ) : null}
         <Sparkles className="h-2.5 w-2.5 text-emerald-400/70" aria-hidden />
         <span data-testid="ai-generated-label">
           AI-generated · verify before submission
