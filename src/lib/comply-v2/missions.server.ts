@@ -139,6 +139,63 @@ export interface MissionDetail extends MissionSummary {
   /** Aggregate milestone counts across all phases. */
   totalMilestones: number;
   regulatoryMilestones: number;
+  /** Sprint MA — cross-domain relations. Each capped at 50 — paginated
+   *  endpoints exist for full lists; this is the at-a-glance lens. */
+  relatedWorkflows: RelatedWorkflowRef[];
+  relatedDocuments: RelatedDocumentRef[];
+  relatedIncidents: RelatedIncidentRef[];
+  relatedTradeOperations: RelatedTradeOperationRef[];
+}
+
+export interface RelatedWorkflowRef {
+  id: string;
+  status: string;
+  pathway: string;
+  primaryNCAName: string;
+  operatorType: string | null;
+  targetSubmission: Date | null;
+  startedAt: Date | null;
+  submittedAt: Date | null;
+  approvedAt: Date | null;
+  updatedAt: Date;
+}
+
+export interface RelatedDocumentRef {
+  id: string;
+  name: string;
+  category: string;
+  status: string;
+  expiryDate: Date | null;
+  isExpired: boolean;
+  fileName: string;
+  fileSize: number;
+  updatedAt: Date;
+}
+
+export interface RelatedIncidentRef {
+  id: string;
+  incidentNumber: string;
+  title: string;
+  severity: string;
+  status: string;
+  category: string;
+  detectedAt: Date;
+  resolvedAt: Date | null;
+  requiresNCANotification: boolean;
+  reportedToNCA: boolean;
+}
+
+export interface RelatedTradeOperationRef {
+  id: string;
+  reference: string;
+  operationType: string;
+  status: string;
+  riskScore: number | null;
+  shipFromCountry: string;
+  shipToCountry: string;
+  scheduledShipDate: Date | null;
+  counterpartyName: string;
+  catchAllAnyHit: boolean;
 }
 
 export interface CreateMissionInput {
@@ -272,6 +329,62 @@ export async function getMissionDetail(
         },
         orderBy: { startDate: "asc" },
       },
+      // Sprint MA — cross-domain relations. Each capped at 50.
+      authorizationWorkflows: {
+        select: {
+          id: true,
+          status: true,
+          pathway: true,
+          primaryNCAName: true,
+          operatorType: true,
+          targetSubmission: true,
+          startedAt: true,
+          submittedAt: true,
+          approvedAt: true,
+          updatedAt: true,
+        },
+        orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
+        take: 50,
+      },
+      documents: {
+        where: { isLatest: true },
+        select: {
+          id: true,
+          name: true,
+          category: true,
+          status: true,
+          expiryDate: true,
+          isExpired: true,
+          fileName: true,
+          fileSize: true,
+          updatedAt: true,
+        },
+        orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
+        take: 50,
+      },
+      incidents: {
+        select: {
+          id: true,
+          incidentNumber: true,
+          title: true,
+          severity: true,
+          status: true,
+          category: true,
+          detectedAt: true,
+          resolvedAt: true,
+          requiresNCANotification: true,
+          reportedToNCA: true,
+        },
+        orderBy: [{ status: "asc" }, { detectedAt: "desc" }],
+        take: 50,
+      },
+      tradeOperations: {
+        include: {
+          counterparty: { select: { legalName: true } },
+        },
+        orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+        take: 50,
+      },
     },
   });
 
@@ -306,6 +419,57 @@ export async function getMissionDetail(
     phases: phaseDetails,
     totalMilestones,
     regulatoryMilestones,
+    relatedWorkflows: mission.authorizationWorkflows.map((w) => ({
+      id: w.id,
+      status: w.status,
+      pathway: w.pathway,
+      primaryNCAName: w.primaryNCAName,
+      operatorType: w.operatorType,
+      targetSubmission: w.targetSubmission,
+      startedAt: w.startedAt,
+      submittedAt: w.submittedAt,
+      approvedAt: w.approvedAt,
+      updatedAt: w.updatedAt,
+    })),
+    relatedDocuments: mission.documents.map((d) => ({
+      id: d.id,
+      name: d.name,
+      category: d.category,
+      status: d.status,
+      expiryDate: d.expiryDate,
+      isExpired: d.isExpired,
+      fileName: d.fileName,
+      fileSize: d.fileSize,
+      updatedAt: d.updatedAt,
+    })),
+    relatedIncidents: mission.incidents.map((i) => ({
+      id: i.id,
+      incidentNumber: i.incidentNumber,
+      title: i.title,
+      severity: i.severity,
+      status: i.status,
+      category: i.category,
+      detectedAt: i.detectedAt,
+      resolvedAt: i.resolvedAt,
+      requiresNCANotification: i.requiresNCANotification,
+      reportedToNCA: i.reportedToNCA,
+    })),
+    relatedTradeOperations: mission.tradeOperations.map((op) => ({
+      id: op.id,
+      reference: op.reference,
+      operationType: op.operationType,
+      status: op.status,
+      riskScore: op.riskScore,
+      shipFromCountry: op.shipFromCountry,
+      shipToCountry: op.shipToCountry,
+      scheduledShipDate: op.scheduledShipDate,
+      counterpartyName: op.counterparty.legalName,
+      catchAllAnyHit:
+        op.catchAllArt4Hit ||
+        op.catchAllArt5Hit ||
+        op.catchAllArt9Hit ||
+        op.catchAllArt10Hit,
+    })),
   };
 }
 

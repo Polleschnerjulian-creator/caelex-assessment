@@ -17,6 +17,10 @@ import {
   Layers,
   FileText,
   History,
+  Briefcase,
+  AlertOctagon,
+  Truck,
+  ArrowUpRight,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { resolveComplyUiVersion } from "@/lib/comply-ui-version.server";
@@ -27,6 +31,10 @@ import {
   type MissionDetail,
   type MissionPhaseDetail,
   type MissionMilestone,
+  type RelatedWorkflowRef,
+  type RelatedDocumentRef,
+  type RelatedIncidentRef,
+  type RelatedTradeOperationRef,
 } from "@/lib/comply-v2/missions.server";
 import { MissionDetailActions } from "./MissionDetailActions";
 
@@ -153,6 +161,13 @@ export default async function MissionDetailPage({
       <AuthorityRefsCard refs={mission.authorityRefs} />
 
       <PhaseRoadmap phases={mission.phases} />
+
+      <RelatedSections
+        workflows={mission.relatedWorkflows}
+        documents={mission.relatedDocuments}
+        incidents={mission.relatedIncidents}
+        tradeOps={mission.relatedTradeOperations}
+      />
     </div>
   );
 }
@@ -903,6 +918,407 @@ function pickMilestoneIcon(
   if (m.status === "MISSED") return AlertTriangle;
   if (m.status === "RESCHEDULED") return Clock;
   return Flag;
+}
+
+// ─── Sprint MA — Cross-domain related sections ────────────────────────────
+
+function RelatedSections({
+  workflows,
+  documents,
+  incidents,
+  tradeOps,
+}: {
+  workflows: RelatedWorkflowRef[];
+  documents: RelatedDocumentRef[];
+  incidents: RelatedIncidentRef[];
+  tradeOps: RelatedTradeOperationRef[];
+}) {
+  return (
+    <section className="mt-8 grid gap-4 lg:grid-cols-2">
+      <RelatedCard
+        title="Authorization workflows"
+        icon={Briefcase}
+        count={workflows.length}
+        emptyHint="No NCA authorization workflow has been linked to this mission yet."
+        emptyCtaLabel="Open workflows"
+        emptyCtaHref="/dashboard/modules/authorization"
+      >
+        {workflows.length > 0 ? (
+          <ul className="divide-y divide-white/[0.04]">
+            {workflows.map((w) => (
+              <RelatedRow
+                key={w.id}
+                href={`/dashboard/modules/authorization?workflow=${w.id}`}
+                title={`${w.primaryNCAName} · ${w.pathway.replace(/_/g, " ")}`}
+                meta={[
+                  w.operatorType ?? null,
+                  w.targetSubmission
+                    ? `target ${w.targetSubmission.toISOString().slice(0, 10)}`
+                    : null,
+                  w.submittedAt
+                    ? `submitted ${w.submittedAt.toISOString().slice(0, 10)}`
+                    : null,
+                ]}
+                statusPill={<WorkflowStatusPill status={w.status} />}
+              />
+            ))}
+          </ul>
+        ) : null}
+      </RelatedCard>
+
+      <RelatedCard
+        title="Documents"
+        icon={FileText}
+        count={documents.length}
+        emptyHint="No documents have been linked to this mission yet."
+        emptyCtaLabel="Open document vault"
+        emptyCtaHref="/dashboard/documents"
+      >
+        {documents.length > 0 ? (
+          <ul className="divide-y divide-white/[0.04]">
+            {documents.map((d) => (
+              <RelatedRow
+                key={d.id}
+                href={`/dashboard/documents?id=${d.id}`}
+                title={d.name}
+                meta={[
+                  d.category.toLowerCase().replace(/_/g, " "),
+                  formatBytes(d.fileSize),
+                  d.expiryDate
+                    ? `expires ${d.expiryDate.toISOString().slice(0, 10)}`
+                    : null,
+                  d.isExpired ? "EXPIRED" : null,
+                ]}
+                statusPill={
+                  <DocumentStatusPill status={d.status} expired={d.isExpired} />
+                }
+              />
+            ))}
+          </ul>
+        ) : null}
+      </RelatedCard>
+
+      <RelatedCard
+        title="Incidents"
+        icon={AlertOctagon}
+        count={incidents.length}
+        tone={
+          incidents.some(
+            (i) => i.status !== "resolved" && i.status !== "closed",
+          )
+            ? "rose"
+            : undefined
+        }
+        emptyHint="No incidents recorded for this mission. Good."
+        emptyCtaLabel="Open incidents"
+        emptyCtaHref="/dashboard/incidents"
+      >
+        {incidents.length > 0 ? (
+          <ul className="divide-y divide-white/[0.04]">
+            {incidents.map((i) => (
+              <RelatedRow
+                key={i.id}
+                href={`/dashboard/incidents/${i.id}`}
+                title={`${i.incidentNumber} · ${i.title}`}
+                meta={[
+                  i.category.replace(/_/g, " "),
+                  `detected ${i.detectedAt.toISOString().slice(0, 10)}`,
+                  i.requiresNCANotification
+                    ? i.reportedToNCA
+                      ? "NCA reported"
+                      : "NCA report due"
+                    : null,
+                ]}
+                statusPill={
+                  <IncidentSeverityPill
+                    severity={i.severity}
+                    status={i.status}
+                  />
+                }
+              />
+            ))}
+          </ul>
+        ) : null}
+      </RelatedCard>
+
+      <RelatedCard
+        title="Trade operations"
+        icon={Truck}
+        count={tradeOps.length}
+        tone={tradeOps.some((o) => o.catchAllAnyHit) ? "amber" : undefined}
+        emptyHint="No export-control operations linked to this mission yet."
+        emptyCtaLabel="Open trade module"
+        emptyCtaHref="/dashboard/modules/export-control"
+      >
+        {tradeOps.length > 0 ? (
+          <ul className="divide-y divide-white/[0.04]">
+            {tradeOps.map((op) => (
+              <RelatedRow
+                key={op.id}
+                href={`/dashboard/modules/export-control/operations/${op.id}`}
+                title={`${op.reference} · ${op.counterpartyName}`}
+                meta={[
+                  op.operationType.toLowerCase().replace(/_/g, " "),
+                  `${op.shipFromCountry} → ${op.shipToCountry}`,
+                  op.scheduledShipDate
+                    ? `ship ${op.scheduledShipDate.toISOString().slice(0, 10)}`
+                    : null,
+                  op.catchAllAnyHit ? "catch-all hit" : null,
+                ]}
+                statusPill={
+                  <TradeOpStatusPill
+                    status={op.status}
+                    riskScore={op.riskScore}
+                  />
+                }
+              />
+            ))}
+          </ul>
+        ) : null}
+      </RelatedCard>
+    </section>
+  );
+}
+
+function RelatedCard({
+  title,
+  icon: Icon,
+  count,
+  emptyHint,
+  emptyCtaHref,
+  emptyCtaLabel,
+  children,
+  tone,
+}: {
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  count: number;
+  emptyHint: string;
+  emptyCtaHref: string;
+  emptyCtaLabel: string;
+  children?: React.ReactNode;
+  tone?: "rose" | "amber";
+}) {
+  const accent =
+    tone === "rose"
+      ? "bg-rose-500/10 text-rose-300 ring-rose-500/15"
+      : tone === "amber"
+        ? "bg-amber-500/10 text-amber-300 ring-amber-500/15"
+        : "bg-white/[0.04] text-slate-400 ring-white/[0.06]";
+  return (
+    <section className="overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-white/[0.025] to-white/[0.012] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+      <header className="flex items-center justify-between gap-2 border-b border-white/[0.05] bg-white/[0.012] px-5 py-3">
+        <h2 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+          <Icon className="h-3.5 w-3.5" />
+          {title}
+        </h2>
+        <span
+          className={`rounded-full px-2 py-0.5 text-[10.5px] font-semibold tabular-nums ring-1 ring-inset ${accent}`}
+        >
+          {count}
+        </span>
+      </header>
+      {count === 0 ? (
+        <div className="px-5 py-6 text-center">
+          <p className="mb-2 text-[12.5px] text-slate-400">{emptyHint}</p>
+          <Link
+            href={emptyCtaHref}
+            className="inline-flex items-center gap-1 text-[12px] font-medium text-emerald-300 transition hover:text-emerald-200"
+          >
+            {emptyCtaLabel}
+            <ArrowUpRight className="h-3 w-3" />
+          </Link>
+        </div>
+      ) : (
+        children
+      )}
+    </section>
+  );
+}
+
+function RelatedRow({
+  href,
+  title,
+  meta,
+  statusPill,
+}: {
+  href: string;
+  title: string;
+  meta: Array<string | null>;
+  statusPill?: React.ReactNode;
+}) {
+  const filteredMeta = meta.filter((m): m is string => Boolean(m));
+  return (
+    <li>
+      <Link
+        href={href}
+        className="group flex items-start justify-between gap-3 px-5 py-3 transition hover:bg-white/[0.015]"
+      >
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[12.5px] font-medium text-slate-100 group-hover:text-white">
+            {title}
+          </p>
+          {filteredMeta.length > 0 ? (
+            <p className="mt-0.5 truncate text-[11px] text-slate-500">
+              {filteredMeta.join(" · ")}
+            </p>
+          ) : null}
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {statusPill}
+          <ArrowUpRight className="h-3.5 w-3.5 text-slate-500 transition group-hover:text-slate-300" />
+        </div>
+      </Link>
+    </li>
+  );
+}
+
+function WorkflowStatusPill({ status }: { status: string }) {
+  const tones: Record<
+    string,
+    { bg: string; text: string; ring: string; dot: string }
+  > = {
+    not_started: {
+      bg: "bg-slate-500/[0.08]",
+      text: "text-slate-400",
+      ring: "ring-slate-500/20",
+      dot: "bg-slate-400",
+    },
+    in_progress: {
+      bg: "bg-amber-500/[0.08]",
+      text: "text-amber-300",
+      ring: "ring-amber-500/20",
+      dot: "bg-amber-400",
+    },
+    submitted: {
+      bg: "bg-cyan-500/[0.08]",
+      text: "text-cyan-300",
+      ring: "ring-cyan-500/20",
+      dot: "bg-cyan-400",
+    },
+    under_review: {
+      bg: "bg-cyan-500/[0.08]",
+      text: "text-cyan-300",
+      ring: "ring-cyan-500/20",
+      dot: "bg-cyan-400",
+    },
+    approved: {
+      bg: "bg-emerald-500/[0.08]",
+      text: "text-emerald-300",
+      ring: "ring-emerald-500/20",
+      dot: "bg-emerald-400",
+    },
+    rejected: {
+      bg: "bg-rose-500/[0.08]",
+      text: "text-rose-300",
+      ring: "ring-rose-500/20",
+      dot: "bg-rose-400",
+    },
+  };
+  const t = tones[status] ?? tones.not_started;
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10.5px] font-medium ring-1 ring-inset ${t.bg} ${t.text} ${t.ring}`}
+    >
+      <span aria-hidden className={`h-1 w-1 rounded-full ${t.dot}`} />
+      {status.replace(/_/g, " ")}
+    </span>
+  );
+}
+
+function DocumentStatusPill({
+  status,
+  expired,
+}: {
+  status: string;
+  expired: boolean;
+}) {
+  if (expired) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/[0.08] px-2 py-0.5 text-[10.5px] font-medium text-rose-300 ring-1 ring-inset ring-rose-500/20">
+        <span aria-hidden className="h-1 w-1 rounded-full bg-rose-400" />
+        expired
+      </span>
+    );
+  }
+  const isApproved = status === "APPROVED";
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10.5px] font-medium ring-1 ring-inset ${
+        isApproved
+          ? "bg-emerald-500/[0.08] text-emerald-300 ring-emerald-500/20"
+          : "bg-white/[0.04] text-slate-400 ring-white/[0.06]"
+      }`}
+    >
+      <span
+        aria-hidden
+        className={`h-1 w-1 rounded-full ${
+          isApproved ? "bg-emerald-400" : "bg-slate-400"
+        }`}
+      />
+      {status.toLowerCase()}
+    </span>
+  );
+}
+
+function IncidentSeverityPill({
+  severity,
+  status,
+}: {
+  severity: string;
+  status: string;
+}) {
+  const tones: Record<string, string> = {
+    critical: "bg-rose-500/[0.10] text-rose-300 ring-rose-500/25",
+    high: "bg-orange-500/[0.10] text-orange-300 ring-orange-500/25",
+    medium: "bg-amber-500/[0.10] text-amber-300 ring-amber-500/25",
+    low: "bg-slate-500/[0.08] text-slate-400 ring-slate-500/20",
+  };
+  const t = tones[severity] ?? tones.low;
+  const isResolved = status === "resolved" || status === "closed";
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10.5px] font-medium ring-1 ring-inset ${t} ${isResolved ? "opacity-60" : ""}`}
+    >
+      {severity}
+    </span>
+  );
+}
+
+function TradeOpStatusPill({
+  status,
+  riskScore,
+}: {
+  status: string;
+  riskScore: number | null;
+}) {
+  const riskTone =
+    riskScore !== null && riskScore >= 70
+      ? "bg-rose-500/[0.10] text-rose-300 ring-rose-500/25"
+      : riskScore !== null && riskScore >= 40
+        ? "bg-amber-500/[0.10] text-amber-300 ring-amber-500/25"
+        : "bg-emerald-500/[0.08] text-emerald-300 ring-emerald-500/20";
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      {riskScore !== null ? (
+        <span
+          className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10.5px] font-semibold tabular-nums ring-1 ring-inset ${riskTone}`}
+          title={`Risk score ${riskScore}/100`}
+        >
+          {riskScore}
+        </span>
+      ) : null}
+      <span className="rounded-full bg-white/[0.04] px-2 py-0.5 text-[10.5px] font-medium text-slate-400 ring-1 ring-inset ring-white/[0.06]">
+        {status.toLowerCase().replace(/_/g, " ")}
+      </span>
+    </span>
+  );
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
 // ─── Label helpers ─────────────────────────────────────────────────────────

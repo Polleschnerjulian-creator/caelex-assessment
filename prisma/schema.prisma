@@ -278,6 +278,13 @@ model AuthorizationWorkflow {
   // Relations
   documents AuthorizationDocument[]
 
+  // Mission domain (Sprint MA — Mission integration). Optional FK to
+  // the canonical Mission this workflow belongs to. Nullable for
+  // back-compat; lazy-backfilled by ensureMissionsForOrg() when the
+  // legacy code path used Spacecraft.id as the mission identifier.
+  missionRefId String?
+  missionRef   Mission? @relation(fields: [missionRefId], references: [id], onDelete: SetNull)
+
   // Notes
   notes String? @db.Text
 
@@ -287,6 +294,7 @@ model AuthorizationWorkflow {
   @@index([userId])
   @@index([status])
   @@index([userId, status, targetSubmission])
+  @@index([missionRefId])
 }
 
 model AuthorizationDocument {
@@ -1691,12 +1699,19 @@ model Incident {
   reports        SupervisionReport[]
   nis2Phases     IncidentNIS2Phase[]
 
+  // Mission domain (Sprint MA — Mission integration). Incidents are
+  // typically scoped to one mission (constellation incident, single-sat
+  // anomaly, …). Optional FK; legacy incidents stay null.
+  missionRefId String?
+  missionRef   Mission? @relation(fields: [missionRefId], references: [id], onDelete: SetNull)
+
   @@index([supervisionId])
   @@index([category])
   @@index([severity])
   @@index([status])
   @@index([detectedAt])
   @@index([workflowState])
+  @@index([missionRefId])
 }
 
 model IncidentAsset {
@@ -2090,6 +2105,15 @@ model Mission {
   spacecraft MissionSpacecraft[]
   phases     MissionPhase[]
 
+  // Sprint MA — cross-domain back-refs. Each is optional from the
+  // child side (a workflow / document / incident / trade-op may not
+  // belong to any mission). Mission-detail view aggregates these for
+  // the "everything happening for this mission" lens.
+  authorizationWorkflows AuthorizationWorkflow[]
+  documents              Document[]
+  incidents              Incident[]
+  tradeOperations        TradeOperation[]
+
   @@unique([organizationId, reference])
   @@index([organizationId, status])
   @@index([organizationId, programPhase])
@@ -2260,8 +2284,14 @@ model Document {
 
   // Compliance Linking
   moduleType      ModuleType?
-  relatedEntityId String? // e.g., Mission ID, License ID
+  relatedEntityId String? // legacy free-form ID — kept for back-compat
   regulatoryRef   String? // e.g., "EU Space Act Art. 7"
+
+  // Mission domain (Sprint MA). Proper FK link to Mission supersedes
+  // the freeform `relatedEntityId` for mission-scoped documents.
+  // Nullable: org-wide policies / governance docs aren't mission-scoped.
+  missionRefId String?
+  missionRef   Mission? @relation(fields: [missionRefId], references: [id], onDelete: SetNull)
 
   // Access Control
   accessLevel    AccessLevel @default(INTERNAL)
@@ -2294,6 +2324,7 @@ model Document {
   @@index([organizationId])
   @@index([organizationId, status])
   @@index([userId, status, expiryDate])
+  @@index([missionRefId])
 }
 
 model DocumentAccessLog {
@@ -11085,6 +11116,15 @@ model TradeOperation {
   // ── License stack (M:N — see TradeLicense for full lifecycle) ──
   licenses TradeLicense[]
 
+  // ── Mission link (Sprint MA — Mission integration) ──
+  /// Optional FK to the Mission this operation supports. Often a
+  /// trade operation is part of a launch campaign or constellation
+  /// build-out — linking back to Mission gives the customer a single
+  /// "everything happening for Mission X" view. Nullable: spare-parts
+  /// procurement / org-wide framework agreements aren't mission-scoped.
+  missionRefId String?
+  missionRef   Mission? @relation(fields: [missionRefId], references: [id], onDelete: SetNull)
+
   // ── Lifecycle timestamps ──
   scheduledShipDate DateTime?
   actualShipDate    DateTime?
@@ -11099,6 +11139,7 @@ model TradeOperation {
   @@index([organizationId, scheduledShipDate])
   @@index([organizationId, createdAt])
   @@index([counterpartyId])
+  @@index([missionRefId])
 }
 
 /// One line item in a TradeOperation. Links a TradeItem to the operation
