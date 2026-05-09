@@ -1,6 +1,6 @@
 # Caelex Comply v2 — Compliance-Officer-Audit (Living Document)
 
-**Status:** Aktiv · **Letztes Update:** 2026-05-08 (Batch UF54-56) · **Eigentümer:** Claude + Julian
+**Status:** Aktiv · **Letztes Update:** 2026-05-09 (Batch UF57-59) · **Eigentümer:** Claude + Julian
 
 > Living document — wird nach jedem implementierten Sprint upgedated.
 > Überlebt Kontext-Kompression: alle Findings + Sprint-Mapping +
@@ -46,7 +46,7 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 | Notifications   | 6/10  | UF41 added severity + category filters           |
 | Astra V2        | 5/10  | Scratchpad-Loss-Warning, Archive-Confirm         |
 | Missions-Liste  | 7/10  | UF51+UF52 closed P1-M1+M2; M3-9 deferred         |
-| Mission-Detail  | 6/10  | Spacecraft-Detail-Page (P0-D)                    |
+| Mission-Detail  | 7/10  | UF33+UF58+UF59 closed P0-D+P1-M8+M9              |
 | Mission Control | ?/10  | MissionControlView ungeprüft                     |
 | Ephemeris       | 7/10  | Pre-Launch-Sats unsichtbar (P1-M7)               |
 | Sentinel        | 8/10  | UF50+UF54 closed P1-S2+S3; per-mission TBD       |
@@ -58,7 +58,7 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 | Incidents       | 7/10  | UF28+UF44 closed P0-A+P1-H2; H1 detail TBD       |
 | NCA Portal      | 6/10  | Generate-Handoff (P1-H6)                         |
 | Audit Center    | 8/10  | ZIP-Evidence-Bundling verifizieren               |
-| Audit Log       | 8/10  | CSV-Export-Pagination (P1-H3)                    |
+| Audit Log       | 9/10  | UF57 closed P1-H3 (full export, 10k cap)         |
 | Audit Chain     | 7/10  | (kaum Mängel)                                    |
 | Network         | 8/10  | UF43+UF55 closed P1-S4+S5                        |
 | Trade           | 6/10  | UF39 verified Wave A + C live; nicht stub        |
@@ -170,17 +170,17 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ### Missions-Domäne
 
-| ID    | Was                                                              | File:Line                          | Sprint | Status                                                                                                                |
-| ----- | ---------------------------------------------------------------- | ---------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------- |
-| P1-M1 | Missions-Liste hat kein Search/Filter/Sort                       | `missions/page.tsx:60-127`         | UF51   | ✅ Done (URL-param `?q=`, `?status=`, `?sort=`; SortSelect client island; flat or grouped layout depending on filter) |
-| P1-M2 | Header-KPIs sind Counts, kein Compliance-Score                   | `missions/page.tsx:88-92`          | UF52   | ✅ Done (ScoreStat tile pulls `getPostureForUser().overallScore`; tier-coded emerald/amber/rose)                      |
-| P1-M3 | Kein EU-Space-Act-Article-Status pro Mission                     | `missions/[id]/page.tsx:155-176`   | später | ⏳                                                                                                                    |
-| P1-M4 | StatsRow misst `roadmapProgressPct` (Schedule!) statt Compliance | `missions/[id]/page.tsx:454-527`   | später | ⏳                                                                                                                    |
-| P1-M5 | Kein Jurisdictional View pro Mission                             | `missions/[id]/page.tsx:155-176`   | später | ⏳                                                                                                                    |
-| P1-M6 | Kein Decommissioning-Workflow (nur Status-Toggle)                | Mission-Detail                     | später | ⏳                                                                                                                    |
-| P1-M7 | Pre-Launch-Sats unsichtbar in Ephemeris (no NORAD)               | `ephemeris/page.tsx:43-46`         | später | ⏳                                                                                                                    |
-| P1-M8 | `primaryEndUserCountryCode` nur Pattern, keine ISO-3166-Liste    | `MissionDetailActions.tsx:561-572` | später | ⏳                                                                                                                    |
-| P1-M9 | `authorityRefs` silently `slice(0,50)` ohne Warning              | `MissionDetailActions.tsx:485-491` | später | ⏳                                                                                                                    |
+| ID    | Was                                                              | File:Line                          | Sprint | Status                                                                                                                 |
+| ----- | ---------------------------------------------------------------- | ---------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------- |
+| P1-M1 | Missions-Liste hat kein Search/Filter/Sort                       | `missions/page.tsx:60-127`         | UF51   | ✅ Done (URL-param `?q=`, `?status=`, `?sort=`; SortSelect client island; flat or grouped layout depending on filter)  |
+| P1-M2 | Header-KPIs sind Counts, kein Compliance-Score                   | `missions/page.tsx:88-92`          | UF52   | ✅ Done (ScoreStat tile pulls `getPostureForUser().overallScore`; tier-coded emerald/amber/rose)                       |
+| P1-M3 | Kein EU-Space-Act-Article-Status pro Mission                     | `missions/[id]/page.tsx:155-176`   | später | ⏳                                                                                                                     |
+| P1-M4 | StatsRow misst `roadmapProgressPct` (Schedule!) statt Compliance | `missions/[id]/page.tsx:454-527`   | später | ⏳                                                                                                                     |
+| P1-M5 | Kein Jurisdictional View pro Mission                             | `missions/[id]/page.tsx:155-176`   | später | ⏳                                                                                                                     |
+| P1-M6 | Kein Decommissioning-Workflow (nur Status-Toggle)                | Mission-Detail                     | später | ⏳                                                                                                                     |
+| P1-M7 | Pre-Launch-Sats unsichtbar in Ephemeris (no NORAD)               | `ephemeris/page.tsx:43-46`         | später | ⏳                                                                                                                     |
+| P1-M8 | `primaryEndUserCountryCode` nur Pattern, keine ISO-3166-Liste    | `MissionDetailActions.tsx:561-572` | UF58   | ✅ Done (datalist-backed input + ISO_3166_COUNTRIES data file with 249 entries; amber warning when unknown code typed) |
+| P1-M9 | `authorityRefs` silently `slice(0,50)` ohne Warning              | `MissionDetailActions.tsx:485-491` | UF59   | ✅ Done (live `N/50 references` counter; amber warning above-cap with explicit "rest are silently dropped" copy)       |
 
 ### Posture / Modules / Documents / Feed
 
@@ -208,14 +208,14 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 
 ### Hot-Path
 
-| ID    | Was                                                        | File:Line                       | Sprint   | Status                                                                                                          |
-| ----- | ---------------------------------------------------------- | ------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------- |
-| P1-H1 | Keine `incidents/[id]/page.tsx` (nur Listing)              | Filesystem                      | später   | ⏳                                                                                                              |
-| P1-H2 | Incidents-Page: kein Status-Filter trotz 6 Workflow-States | `incidents/page.tsx:139-146`    | UF44     | ✅ Done (workflow-state filter row in sidebar; API `workflowState` query param; Reported→Closed pipeline order) |
-| P1-H3 | CSV-Export Audit-Log nur loaded rows (silent footgun)      | `AuditLogClient.tsx:195-235`    | später   | ⏳                                                                                                              |
-| P1-H4 | Audit-Pack ZIP Evidence-Bundling unverifiziert             | `audit-center/page.tsx:288-290` | UF35 V-2 | ✅ Verified (R2-stream evidence/regulation/filename in /api/audit-center/export route.ts:155-184)               |
-| P1-H5 | NCA Portal kein Inline-Reply                               | `nca-portal/page.tsx:339-388`   | später   | ⏳                                                                                                              |
-| P1-H6 | Generate ↔ NCA-Portal-Handoff fehlt                        | Cross-page                      | später   | ⏳                                                                                                              |
+| ID    | Was                                                        | File:Line                       | Sprint   | Status                                                                                                              |
+| ----- | ---------------------------------------------------------- | ------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------- |
+| P1-H1 | Keine `incidents/[id]/page.tsx` (nur Listing)              | Filesystem                      | später   | ⏳                                                                                                                  |
+| P1-H2 | Incidents-Page: kein Status-Filter trotz 6 Workflow-States | `incidents/page.tsx:139-146`    | UF44     | ✅ Done (workflow-state filter row in sidebar; API `workflowState` query param; Reported→Closed pipeline order)     |
+| P1-H3 | CSV-Export Audit-Log nur loaded rows (silent footgun)      | `AuditLogClient.tsx:195-235`    | UF57     | ✅ Done (split into "Export page" + "Export all" with 10k cap; pagination loop until exhausted; busy-state spinner) |
+| P1-H4 | Audit-Pack ZIP Evidence-Bundling unverifiziert             | `audit-center/page.tsx:288-290` | UF35 V-2 | ✅ Verified (R2-stream evidence/regulation/filename in /api/audit-center/export route.ts:155-184)                   |
+| P1-H5 | NCA Portal kein Inline-Reply                               | `nca-portal/page.tsx:339-388`   | später   | ⏳                                                                                                                  |
+| P1-H6 | Generate ↔ NCA-Portal-Handoff fehlt                        | Cross-page                      | später   | ⏳                                                                                                                  |
 
 ### Side-Surfaces
 
@@ -332,6 +332,9 @@ relevanten Pages, jede mit `file:line`-Referenzen. Synthese hier.
 | **UF54**    | P1-S2 — Sentinel evidence-feed search + data-point + status filters               | ✅ Done (client-side filtering over already-fetched packets)                |
 | **UF55**    | P1-S5 — Network activity-feed per-stakeholder filter                              | ✅ Done (dropdown above the feed; "Show all" recovery in empty-state)       |
 | **UF56**    | P1-S8 — Digital Twin ↔ Optimizer header cross-links                               | ✅ Done (both directions; emerald hover state matches existing patterns)    |
+| **UF57**    | P1-H3 — Audit-log CSV-export full-result paging                                   | ✅ Done ("Export page" + "Export all" with 10k cap; busy-state spinner)     |
+| **UF58**    | P1-M8 — ISO-3166 country-code datalist for end-user country                       | ✅ Done (new src/data/iso-3166-countries.ts with 249 entries; amber warn)   |
+| **UF59**    | P1-M9 — authorityRefs visible cap counter + above-50 warning                      | ✅ Done (live N/50 + amber dropped-refs notice)                             |
 | **(later)** | P0-F (full) — Onboarding Bulk-Spacecraft-Import + CelesTrak-Pull                  | ⏳ pending (escape hatch live in UF38; full impl deferred)                  |
 | **(later)** | P1-S6 — Holiday/Delegate-Mode (Settings)                                          | ⏳ pending                                                                  |
 | **(later)** | P2 Polish-Bundle Rest (P2-2, P2-7, P2-13, P2-17, P2-18, P2-20)                    | ⏳ pending (deferred — bigger or contested)                                 |
