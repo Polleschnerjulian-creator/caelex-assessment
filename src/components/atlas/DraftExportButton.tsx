@@ -42,6 +42,21 @@ export function DraftExportButton({
   const exportLocale: "en" | "de" = language === "de" ? "de" : "en";
   const isDe = language === "de";
 
+  /* F-DRAFT-2 stage-2 — read the privileged-mode preference set on
+     /atlas/drafting (same localStorage key) and pass through to the
+     exporter so the artifact carries the privilege banner. Read at
+     export-time (not on mount) so a partner who toggles the flag
+     mid-session doesn't have to reload the chat to take effect. */
+  const readPrivilegedFlag = (): boolean => {
+    try {
+      return (
+        window.localStorage.getItem("atlas-drafting-privileged-mode") === "true"
+      );
+    } catch {
+      return false;
+    }
+  };
+
   useEffect(() => {
     if (!open) return;
     const onClick = (e: MouseEvent) => {
@@ -61,13 +76,23 @@ export function DraftExportButton({
   }, [open]);
 
   const handleWord = () => {
-    exportDraftAsWord({ markdown: content, title, locale: exportLocale });
+    exportDraftAsWord({
+      markdown: content,
+      title,
+      locale: exportLocale,
+      privileged: readPrivilegedFlag(),
+    });
     setExported("word");
     setOpen(false);
     setTimeout(() => setExported(null), 1800);
   };
   const handleMarkdown = () => {
-    exportDraftAsMarkdown({ markdown: content, title, locale: exportLocale });
+    exportDraftAsMarkdown({
+      markdown: content,
+      title,
+      locale: exportLocale,
+      privileged: readPrivilegedFlag(),
+    });
     setExported("markdown");
     setOpen(false);
     setTimeout(() => setExported(null), 1800);

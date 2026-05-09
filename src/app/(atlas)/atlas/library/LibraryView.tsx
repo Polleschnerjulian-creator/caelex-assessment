@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { AtlasMarkdown } from "@/components/atlas/ai-mode/AtlasMarkdown";
+import { EmptyState } from "../_components/EmptyState";
 
 interface ResearchEntry {
   id: string;
@@ -320,27 +321,38 @@ export function LibraryView() {
         )}
 
         {loading && (
-          <div className="py-12 text-center text-[11.5px] text-white/35 animate-pulse">
-            Lade Bibliothek…
-          </div>
+          /* F-RES-6 stage-2: dark-tone EmptyState replaces the bare
+             muted-text loading line. ARIA polite announcement is built
+             into the component for SR users. */
+          <EmptyState
+            variant="loading"
+            tone="dark"
+            title="Lade Bibliothek…"
+            size="md"
+          />
         )}
 
         {empty && (
-          <div className="py-16 text-center">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/[0.03] ring-1 ring-white/[0.06] mb-3">
-              <Bookmark
-                size={18}
-                strokeWidth={1.5}
-                className="text-white/40"
-                aria-hidden="true"
-              />
-            </div>
-            <p className="text-[12.5px] text-white/55 max-w-sm mx-auto leading-relaxed">
-              {debouncedQuery
+          /* F-RES-6 stage-2: dark-tone first-run / search-empty state.
+             Same Bookmark icon as before, same copy, but routed
+             through the shared component so the visual contract
+             matches the rest of Atlas. The size=lg keeps the hero
+             feel of the original empty state. */
+          <EmptyState
+            tone="dark"
+            size="lg"
+            icon={<Bookmark size={22} strokeWidth={1.5} />}
+            title={
+              debouncedQuery
                 ? "Kein Eintrag passt zur Suche."
-                : "Noch keine Einträge. Speichere eine Atlas-Antwort über das Lesezeichen-Symbol, dann landet sie hier."}
-            </p>
-          </div>
+                : "Noch keine Einträge"
+            }
+            description={
+              debouncedQuery
+                ? "Suche etwas anderes oder lösche das Suchfeld, um die ganze Bibliothek zu sehen."
+                : "Speichere eine Atlas-Antwort über das Lesezeichen-Symbol, dann landet sie hier."
+            }
+          />
         )}
 
         {/* Entries list */}

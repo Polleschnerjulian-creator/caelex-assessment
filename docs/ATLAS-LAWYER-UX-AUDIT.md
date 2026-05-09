@@ -1824,3 +1824,101 @@ User können jetzt direkt in ihre Bibliography-Software kopieren statt
 manuell zu konvertieren. Mobile-User's UI-tap-targets sind jetzt
 WCAG-2.5.5-konform — auch wenn Future-Refactoring an den paddings
 zaubert.
+
+---
+
+## 25. Quick-Wins-Bündel #11 — Stage-2 Followups (2026-05-09)
+
+Drei stage-2 follow-ups auf bereits gelieferte Bundles. Jeder bringt
+das ursprüngliche Bundle auf "production-ready" statt "minimum
+viable".
+
+### F-CASES-3 stage-2 — Pre-filtered cases-list deep-link (HIGH → Done)
+
+- **Wo:** `src/app/(atlas)/atlas/cases/page.tsx` + `compare-articles/page.tsx`
+- **Vorher:** Bundle #5's RelatedCasesSection rendered "+N more" als
+  Link zu `/atlas/cases` ohne URL-state-Übergabe. User klickt durch,
+  sieht alle 28 cases statt nur die N citing cases — bricht den
+  drill-down-flow.
+- **Fix:**
+  - `/atlas/cases` liest `?source=ID` query-param via `useSearchParams`
+  - State-sync auf URL-Changes (browser back/forward funktioniert)
+  - Filter logic: `c.applied_sources.includes(sourceFilter)`
+  - Violet-tinted banner über filter-bar zeigt aktiven source-filter
+    mit clickable source-id-link + clear-button
+  - Clear strippt nur den source-param, behält andere Filter
+  - Suspense-wrap erforderlich (Next 15 contract für useSearchParams)
+  - Compare-Articles "+N more" jetzt
+    `href="/atlas/cases?source=ENCODED_ID"`
+- **Aufwand:** ~50 min (incl. Suspense-wrap refactor)
+
+### F-DRAFT-2 stage-2 — Privilege-marker export back-stop (MEDIUM → Done)
+
+- **Wo:** `src/lib/atlas/draft-export.ts` + `src/components/atlas/DraftExportButton.tsx`
+- **Vorher:** Bundle #7's drafting-toggle setzte privilege-instructions
+  in den prompt — Astra wrappt typischerweise den output mit dem
+  marker. Aber: User kann den draft in Notion editen und den marker
+  drop'en, dann via DraftExportButton re-exporten. Export-Pipeline
+  wusste nicht, dass user privilege beabsichtigte.
+- **Fix:**
+  - **Helpers exposed:** `hasPrivilegeMarker(text)`, `privilegePrefix(locale)`,
+    `ensurePrivilegeMarker(body, locale)` — primitive functions im
+    `draft-export.ts` Modul
+  - **Detection-Markers:** 8 phrases in 4 locales (PRIVILEGED & CONFIDENTIAL /
+    PRIVILEGIERT & VERTRAULICH / etc + Anwaltsgeheimnis / Attorney-Client /
+    Avocat-Client / Abogado-Cliente)
+  - **Locale-correct privilege-blocks:** DE (§ 43a BRAO + EU-Anwaltsrichtlinie)
+    und EN (Attorney-Client Work Product), Markdown-blockquote-Format
+    damit `.doc`/`.md` export beide tragen
+  - **Caller-driven opt-in:** `exportDraftAsWord` und `exportDraftAsMarkdown`
+    bekommen optional `privileged?: boolean`. Wenn true:
+    `ensurePrivilegeMarker(body, locale)` läuft → marker oben
+    angefügt wenn fehlt (idempotent — kein double-stamp)
+  - **Order of injection:** privilege LEADS disclaimer (audience-control
+    vor AI-disclosure)
+  - **Wiring:** `DraftExportButton` liest `atlas-drafting-privileged-mode`
+    aus localStorage AT EXPORT TIME (nicht onMount — partner kann
+    toggle mid-session ändern und es wirkt sofort)
+- **Was BEWUSST nicht jetzt gefixt:** PDF-Watermark (visual rendering)
+  vs Markdown-Header. Export-pipeline ist .doc/.md only — wenn der
+  Anwalt separat zu PDF konvertiert, muss er den marker manuell
+  prüfen. Echte PDF-Generation wäre ein eigener Sprint mit
+  `@react-pdf/renderer` o.ä.
+- **Aufwand:** ~50 min
+
+### F-RES-6 stage-2 — EmptyState dark-tone variant + LibraryView migration (MEDIUM → Done)
+
+- **Wo:** `src/app/(atlas)/atlas/_components/EmptyState.tsx` + `library/LibraryView.tsx`
+- **Vorher:** Bundle #8 wired EmptyState in 4 surfaces aber `/atlas/library`
+  bewusst übersprungen ("eigene white-on-dark Palette würde Component
+  verwässern"). Library hatte weiterhin bespoke states für loading +
+  empty.
+- **Fix:**
+  - `EmptyState` neuer optional `tone?: "light" | "dark"` prop, default light
+  - Dark-tone: `bg-white/[0.025]` + `ring-1 ring-white/[0.06]` (matches
+    library entry-card visual contract)
+  - Per-tone-Tokens für: surface, border, icon-wrap-bg, icon-color,
+    title-color, description-color
+  - Error-variant in beide tones explicit (red-tinted on light,
+    red-tinted-dark on dark)
+  - LibraryView migration: `loading`-state wird jetzt
+    `<EmptyState variant="loading" tone="dark" />`, `empty`-state wird
+    `<EmptyState tone="dark" size="lg" icon={<Bookmark>} />` mit
+    differenzierter Search vs First-run copy
+- **Aufwand:** ~25 min
+
+### Trust-Score nach Quick-Wins-Bündel #11
+
+| Surface         | Vorher | Nachher                                                                     |
+| --------------- | ------ | --------------------------------------------------------------------------- |
+| Cases           | 7.5/10 | **7.7/10** (+0.2 — drill-down-flow von compare-articles funktioniert jetzt) |
+| Drafting/Export | 7/10   | **7.5/10** (+0.5 — privilege survives Notion-roundtrip)                     |
+| Library         | 6.5/10 | **7/10** (+0.5 — visuelle Konsistenz mit anderen empty-states)              |
+| GESAMT          | 8.4/10 | **8.5/10**                                                                  |
+
+**Marie-Impact:** Klick-Pfad von "Statuten-Wortlaut → wer zitiert das? →
+welcher Case-Status?" ist jetzt ein 2-Klick-Workflow statt manueller
+Tab-Switch. PDF-Export-Kontext: privilege-marker survives den vollen
+Notion-edit-roundtrip ohne dass sie händisch nachprüfen muss. Library
+sieht zum ersten Mal "wie eine Atlas-Seite" aus statt "wie eine
+abweichende Sub-App".

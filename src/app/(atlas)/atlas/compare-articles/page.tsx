@@ -489,14 +489,14 @@ function RelatedCasesSection({
         })}
       </ul>
       {remaining > 0 && (
-        /* +N hint links to the cases index — the user can use the
-           recently-shipped status / forum / jurisdiction filters to
-           narrow further. We can't pre-filter via query-param yet
-           (cases page reads filters from local state, not URL) so the
-           link points at the index; the visible 5 already covered
-           the most-recent cases, and the rest are older context. */
+        /* F-CASES-3 stage-2: +N link now deep-links to the cases
+           index pre-filtered to this same source via `?source=ID`.
+           The cases page renders a removable "Filtered to cases
+           applying [source]" banner so the partner can either
+           browse the full list of citing cases OR drop the filter
+           to widen the search. */
         <Link
-          href="/atlas/cases"
+          href={`/atlas/cases?source=${encodeURIComponent(sourceId)}`}
           className="mt-2 inline-flex items-center gap-1 text-[10.5px] text-violet-700 dark:text-violet-400 hover:underline"
         >
           {isDe ? `+${remaining} weitere` : `+${remaining} more`}

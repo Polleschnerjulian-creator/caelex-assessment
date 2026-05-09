@@ -55,6 +55,12 @@ interface EmptyStateProps {
    *  "this section is empty by configuration" (e.g. filter-empty);
    *  solid signals "this is the natural empty state for this dataset". */
   bordered?: "solid" | "dashed";
+  /** F-RES-6 stage-2: tone selects between Atlas's standard light
+   *  surface (default) and a bespoke dark variant for /atlas/library
+   *  which uses its own white-on-dark palette. Without this option
+   *  the library page would have to fork the component or stay on
+   *  bespoke states (the latter was the original Bundle #8 trade-off). */
+  tone?: "light" | "dark";
   /** Pass-through className so callers can constrain max-width or
    *  override margins without forking the component. */
   className?: string;
@@ -104,34 +110,60 @@ export function EmptyState({
   action,
   size = "md",
   bordered = "solid",
+  tone = "light",
   className = "",
 }: EmptyStateProps) {
-  const borderClass =
-    bordered === "dashed"
+  const isDark = tone === "dark";
+
+  /* Per-tone surface + border tokens. Dark variant explicitly uses
+     `bg-white/[0.025]` + `ring-1 ring-white/[0.06]` to match the
+     library page's existing visual language — those exact values
+     come from .libraryEntry styling so the EmptyState doesn't read
+     as a foreign component when sitting next to entry cards. */
+  const surfaceClass = isDark
+    ? "bg-white/[0.025] ring-1 ring-white/[0.06]"
+    : "bg-[var(--atlas-bg-surface)]";
+
+  const borderClass = isDark
+    ? "" /* dark uses ring instead of border */
+    : bordered === "dashed"
       ? "border border-dashed border-[var(--atlas-border)]"
       : "border border-[var(--atlas-border-subtle)]";
 
   /* Variant tone — error state shifts the icon ring red so the
-     failure mode is unmistakable. Empty/loading stay neutral. */
+     failure mode is unmistakable. Empty/loading stay neutral. Dark
+     variants keep the same red-error treatment but on dark surfaces. */
   const iconWrapTone =
     variant === "error"
-      ? "bg-red-50 border-red-200 text-red-600 dark:bg-red-500/10 dark:border-red-400/30 dark:text-red-300"
-      : "bg-[var(--atlas-bg-surface-muted)] border-[var(--atlas-border)] text-[var(--atlas-text-faint)]";
+      ? isDark
+        ? "bg-red-500/10 border border-red-400/30 text-red-300"
+        : "bg-red-50 border border-red-200 text-red-600 dark:bg-red-500/10 dark:border-red-400/30 dark:text-red-300"
+      : isDark
+        ? "bg-white/[0.03] border border-white/[0.06] text-white/40"
+        : "bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] text-[var(--atlas-text-faint)]";
 
   const titleTone =
     variant === "error"
-      ? "text-red-700 dark:text-red-300"
-      : "text-[var(--atlas-text-primary)]";
+      ? isDark
+        ? "text-red-300"
+        : "text-red-700 dark:text-red-300"
+      : isDark
+        ? "text-white/85"
+        : "text-[var(--atlas-text-primary)]";
+
+  const descriptionTone = isDark
+    ? "text-white/55"
+    : "text-[var(--atlas-text-muted)]";
 
   return (
     <div
       role={variant === "error" ? "alert" : "status"}
       aria-live={variant === "loading" ? "polite" : undefined}
-      className={`rounded-xl ${borderClass} bg-[var(--atlas-bg-surface)] ${SIZE_PADDING[size]} text-center ${className}`}
+      className={`rounded-xl ${borderClass} ${surfaceClass} ${SIZE_PADDING[size]} text-center ${className}`}
     >
       {icon !== null && (
         <div
-          className={`inline-flex items-center justify-center rounded-full border ${iconWrapTone} ${SIZE_ICON_WRAP[size]}`}
+          className={`inline-flex items-center justify-center rounded-full ${iconWrapTone} ${SIZE_ICON_WRAP[size]}`}
           aria-hidden="true"
         >
           {icon ?? defaultIcon(variant, size)}
@@ -144,7 +176,7 @@ export function EmptyState({
       </h2>
       {description && (
         <p
-          className={`${SIZE_DESC[size]} text-[var(--atlas-text-muted)] max-w-sm mx-auto leading-relaxed`}
+          className={`${SIZE_DESC[size]} ${descriptionTone} max-w-sm mx-auto leading-relaxed`}
         >
           {description}
         </p>

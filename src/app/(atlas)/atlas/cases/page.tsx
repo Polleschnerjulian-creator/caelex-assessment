@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Gavel,
   Search,
@@ -151,13 +152,45 @@ function formatAmount(c: LegalCase): string | null {
   return null;
 }
 
-export default function CasesIndexPage() {
+function CasesIndexInner() {
   const { t, language } = useLanguage();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
   const [forum, setForum] = useState<CaseForum | "all">("all");
   const [jurisdiction, setJurisdiction] = useState<string>("all");
   /* F-CASES-1: outcome-filter state. */
   const [status, setStatus] = useState<CaseStatus | "all">("all");
+
+  /* F-CASES-3 stage-2: deep-link-driven source filter.
+     The `?source=ID` param arrives from the +N more link rendered by
+     the RelatedCasesSection on /atlas/compare-articles. We read it
+     into state on mount + sync any subsequent clears back to the URL
+     so a partner can share the filtered link. We also keep this as
+     a separate state from the regular filter dropdowns because the
+     audience for it is "drill-through from a specific source" —
+     surfacing it via a banner instead of a permanent dropdown keeps
+     the filter chrome honest for users who arrive directly. */
+  const initialSource = searchParams.get("source");
+  const [sourceFilter, setSourceFilter] = useState<string | null>(
+    initialSource && initialSource.length > 0 ? initialSource : null,
+  );
+  useEffect(() => {
+    /* If the URL changes (browser back/forward) sync our state. */
+    const next = searchParams.get("source");
+    setSourceFilter(next && next.length > 0 ? next : null);
+  }, [searchParams]);
+  const clearSourceFilter = () => {
+    setSourceFilter(null);
+    /* Strip the param from the URL but preserve any others (we use
+       `replace` not `push` so the back-button still goes to the
+       referrer, e.g. /atlas/compare-articles, not to a stale
+       filtered state). */
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("source");
+    const qs = params.toString();
+    router.replace(qs.length > 0 ? `?${qs}` : "?", { scroll: false });
+  };
 
   const allJurisdictions = useMemo(() => {
     const set = new Set(ATLAS_CASES.map((c) => c.jurisdiction));
@@ -186,6 +219,13 @@ export default function CasesIndexPage() {
       if (jurisdiction !== "all" && c.jurisdiction !== jurisdiction)
         return false;
       if (status !== "all" && c.status !== status) return false;
+      /* F-CASES-3 stage-2: source-id deep-link filter. Matches if the
+         case carries the source id in its `applied_sources` array —
+         same join column the RelatedCasesSection uses, so the link
+         from compare-articles lands on exactly the cases the user saw
+         on that page. */
+      if (sourceFilter && !c.applied_sources.includes(sourceFilter))
+        return false;
       if (!q) return true;
       const tr = getTranslatedCase(c.id, language);
       const haystack = [
@@ -205,7 +245,7 @@ export default function CasesIndexPage() {
       (a, b) =>
         new Date(b.date_decided).getTime() - new Date(a.date_decided).getTime(),
     );
-  }, [query, forum, jurisdiction, status, language]);
+  }, [query, forum, jurisdiction, status, sourceFilter, language]);
 
   const isDe = language === "de";
 
@@ -321,6 +361,60 @@ export default function CasesIndexPage() {
           </>
         )}
       </div>
+
+      {/* F-CASES-3 stage-2: source-filter deep-link banner. Renders
+          ONLY when `?source=ID` is in the URL (e.g. arrived from the
+          "+N more" link on a Compare-Articles RelatedCases section).
+          The filter sits *above* the regular dropdowns because it's a
+          contextual scope-narrowing — the user is here because they
+          clicked a specific source, not because they're browsing
+          generally. The clear-button strips the param so the user can
+          widen back to the full list without navigating away. */}
+      {sourceFilter && (
+        <div
+          className="flex flex-wrap items-center gap-2 rounded-lg border border-violet-300 bg-violet-50 dark:border-violet-500/40 dark:bg-violet-500/10 px-3 py-2"
+          role="status"
+        >
+          <Scale
+            className="h-3.5 w-3.5 text-violet-700 dark:text-violet-300 flex-shrink-0"
+            strokeWidth={1.7}
+          />
+          <span className="text-[12px] text-violet-900 dark:text-violet-100">
+            {isDe ? "Gefiltert auf Cases die" : "Filtered to cases applying"}{" "}
+            <Link
+              href={`/atlas/sources/${encodeURIComponent(sourceFilter)}`}
+              className="font-mono font-semibold underline underline-offset-2 hover:text-violet-950 dark:hover:text-white"
+            >
+              {sourceFilter}
+            </Link>{" "}
+            {isDe ? "anwenden." : "."}
+            <span className="ml-1 text-violet-700/80 dark:text-violet-200/70">
+              {filtered.length}{" "}
+              {isDe
+                ? filtered.length === 1
+                  ? "Treffer"
+                  : "Treffer"
+                : filtered.length === 1
+                  ? "match"
+                  : "matches"}
+              {(query ||
+                forum !== "all" ||
+                jurisdiction !== "all" ||
+                status !== "all") &&
+                ` (${isDe ? "+ weitere Filter" : "+ further filters"})`}
+              .
+            </span>
+          </span>
+          <button
+            type="button"
+            onClick={clearSourceFilter}
+            className="ml-auto inline-flex items-center gap-1 text-[11px] font-medium text-violet-800 dark:text-violet-200 hover:text-violet-950 dark:hover:text-white"
+          >
+            <X className="h-3 w-3" strokeWidth={1.8} />
+            {isDe ? "Filter aufheben" : "Clear filter"}
+          </button>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
@@ -527,5 +621,25 @@ export default function CasesIndexPage() {
         </ul>
       )}
     </div>
+  );
+}
+
+/* F-CASES-3 stage-2: Suspense wrapper required because the inner
+   component reads `useSearchParams()`. Without this, Next 15 throws
+   on the deep-link page transition. The fallback is intentionally
+   tiny (header skeleton only) — the cases list is dataset-static, so
+   first-paint should be sub-100ms. */
+export default function CasesIndexPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col h-full min-h-screen bg-[var(--atlas-bg-page)] p-4 gap-3">
+          <div className="h-6 w-48 rounded bg-[var(--atlas-bg-inset)] animate-pulse" />
+          <div className="h-32 rounded-xl bg-[var(--atlas-bg-inset)] animate-pulse" />
+        </div>
+      }
+    >
+      <CasesIndexInner />
+    </Suspense>
   );
 }
