@@ -24,7 +24,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   PenSquare,
   ArrowLeft,
@@ -43,6 +43,7 @@ import {
   Briefcase,
   Share2,
   GitCompare,
+  Layers,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { openAIMode } from "@/components/atlas/AIModeLauncher";
@@ -138,6 +139,10 @@ export default function DraftingHistoryPage() {
   const [search, setSearch] = useState("");
   /* Bundle 36: filter by mandate. "" = all mandates. */
   const [mandateFilter, setMandateFilter] = useState<string>("");
+  /* Bundle 41: filter by parallel-set id (passed via ?set= URL param
+     by the parallel-draft page). */
+  const searchParamsHook = useSearchParams();
+  const setFilter = searchParamsHook?.get("set") ?? "";
 
   /* Per-entry edit-mode (only one open at a time keeps the layout tame). */
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -169,13 +174,14 @@ export default function DraftingHistoryPage() {
         if (mandateFilter === "__none__") return !e.mandateId;
         return e.mandateId === mandateFilter;
       })
+      .filter((e) => (setFilter ? e.parallelSetId === setFilter : true))
       .filter((e) =>
         q
           ? e.title.toLowerCase().includes(q) ||
             e.prompt.toLowerCase().includes(q)
           : true,
       );
-  }, [entries, kindFilter, search, mandateFilter]);
+  }, [entries, kindFilter, search, mandateFilter, setFilter]);
 
   /* Aggregate distinct mandates from the entries — derived rather than
      pulled from the mandate-store directly so deleted mandates with
@@ -362,6 +368,22 @@ export default function DraftingHistoryPage() {
         )}
       </div>
 
+      {/* Bundle 41: parallel-set filter banner. Surfaces when navigated
+          here from the parallel-draft page. */}
+      {setFilter && (
+        <div className="inline-flex items-center gap-2 max-w-3xl rounded-md border border-emerald-300 dark:border-emerald-500/40 bg-emerald-50 dark:bg-emerald-500/10 px-3 py-1.5 text-[11.5px] text-emerald-800 dark:text-emerald-200">
+          <Layers size={11} strokeWidth={1.8} aria-hidden="true" />
+          {isDe ? "Set-Filter aktiv:" : "Set filter active:"}{" "}
+          <span className="font-mono">{setFilter.slice(-8)}</span>
+          <Link
+            href="/atlas/drafting/history"
+            className="ml-auto text-[10.5px] hover:underline"
+          >
+            {isDe ? "Filter entfernen" : "Clear"}
+          </Link>
+        </div>
+      )}
+
       {/* Empty states */}
       {hydrated && entries.length === 0 && (
         <div className="flex flex-col items-center justify-center text-center max-w-md mx-auto mt-12 gap-3">
@@ -442,6 +464,27 @@ export default function DraftingHistoryPage() {
                         />
                         {entry.mandateName}
                       </span>
+                    )}
+                    {/* Bundle 41: parallel-set chip + jurisdiction badge.
+                        Click → filter the list to that set. */}
+                    {entry.parallelSetId && (
+                      <Link
+                        href={`/atlas/drafting/history?set=${entry.parallelSetId}`}
+                        className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-violet-700 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10 px-1.5 py-0.5 rounded hover:bg-violet-100 dark:hover:bg-violet-500/20 transition-colors"
+                        title={
+                          isDe
+                            ? "Set in Filter anzeigen"
+                            : "Show this set in filter"
+                        }
+                      >
+                        <Layers size={9} strokeWidth={1.8} aria-hidden="true" />
+                        {isDe ? "Set" : "Set"}
+                        {entry.jurisdiction && (
+                          <span className="font-mono">
+                            · {entry.jurisdiction}
+                          </span>
+                        )}
+                      </Link>
                     )}
                     <span className="text-[10.5px] text-[var(--atlas-text-faint)]">
                       {fmtRelative(entry.ts, isDe)}

@@ -238,6 +238,13 @@ export interface DraftLibraryEntry {
    *  pre-B5 entries; new entries always include at least the initial
    *  version. */
   versions?: PromptVersion[];
+  /** Bundle 41 — parallel-set id. When the same authorization is
+   *  drafted in parallel for multiple jurisdictions, every entry in
+   *  the set shares this id so the My Drafts view can group them. */
+  parallelSetId?: string;
+  /** Bundle 41 — jurisdiction this entry was generated against, used
+   *  by the parallel-set view to label each variant. */
+  jurisdiction?: string;
   ts: number;
 }
 

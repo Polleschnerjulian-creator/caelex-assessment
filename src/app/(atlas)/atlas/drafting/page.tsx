@@ -1676,6 +1676,18 @@ export default function DraftingStudioPage() {
                 ? "oder Abschnitt für Abschnitt →"
                 : "or step section by section →"}
             </Link>
+            {/* Bundle 41 — multi-jurisdiction parallel. Generates the
+                same auth filing for several jurisdictions as a linked
+                set so Marie can ship DE+FR+UK simultaneously. */}
+            <Link
+              href="/atlas/drafting/auth/parallel"
+              className="inline-flex items-center justify-center gap-1 text-[10.5px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)] transition-colors"
+            >
+              <Layers size={10} strokeWidth={1.8} aria-hidden="true" />
+              {isDe
+                ? "oder parallel in mehreren JD →"
+                : "or in parallel across jurisdictions →"}
+            </Link>
           </div>
         </article>
 
