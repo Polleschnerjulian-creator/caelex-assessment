@@ -1469,3 +1469,106 @@ und damit das eigentliche Risk gemildert. Bundle #6 schließt jetzt die
 visuelle Lücke (Anwalt sieht ⚠ auf jeder uncatalogued citation BEVOR
 sie ins Memo wandert) UND lockt die Marker-Detection-Contracts via
 Test-Suite gegen unbeabsichtigte Regressionen.
+
+---
+
+## 21. Quick-Wins-Bündel #7 — MEDIUM-Findings Sweep (2026-05-09)
+
+Re-Audit der drei MEDIUM-Findings F-LAND-3, F-DRAFT-2, F-RES-6:
+
+- **F-LAND-3:** False-positive-rate diesmal niedriger als bei Bundle #4.
+  Browse-UI existiert (`/atlas/landing-rights/conduct/page.tsx` rendert
+  `ConductTable`), **aber** `ConductTable` war eine flache 50+-Zeilen-
+  Tabelle ohne jegliche Filter — Marie scrollte sich tot. Real Gap.
+- **F-DRAFT-2:** Vollständig real. Drafting-Studio hatte keine LPP/
+  Anwaltsgeheimnis-Markers. Lawyers brauchen das für Memos die mit
+  Co-Counsel geshared werden — Privilege geht verloren wenn nicht im
+  Artifact selbst markiert.
+- **F-RES-6:** Audit sagte "unassessed" — Sweep wäre eigener Sprint.
+  **Deferred** (siehe unten).
+
+### F-LAND-3 — Conduct-Conditions Filter UI (MEDIUM → Done)
+
+- **Wo:** `src/components/atlas/landing-rights/ConductTable.tsx` (von
+  53 LOC server-component zu 222 LOC client island refactored)
+- **Vorher:** Wall-of-text Tabelle mit allen 50+ Conduct-Conditions, kein
+  Filter, keine Search. Marie's Use-Case "data localization rules in
+  India" hieß: scrollen, ctrl+F, hoffen.
+- **Fix:** Drei-Filter-Bar identisch zur Cases-List (gleiche UX-Vokabel
+  cross-surface):
+  - Free-text search über title/requirement/jurisdiction/type/id
+  - Type-Filter (`data_localization` / `lawful_intercept` /
+    `geo_fencing` / `indigenization` / `suspension_capability` /
+    `local_content` / `other`) mit per-type counts ("Data localisation
+    (12)") und zero-buckets ausgeblendet
+  - Jurisdiction-Filter
+  - Reset-Button + result-count "(N of M)"
+  - Empty-state Message wenn 0 matches
+  - Sort: jurisdiction-asc, dann title-asc — natural reading order
+- **Side-effect:** Type-Labels jetzt in `TYPE_LABEL` map (DE-style "Data
+  localisation" statt raw "data_localization") — kosmetisch besser.
+- **Aufwand:** ~35 min
+
+### F-DRAFT-2 — Privilege-Marker auf Drafting Tiles (MEDIUM → Done)
+
+- **Wo:** `src/app/(atlas)/atlas/drafting/page.tsx` (page-level toggle
+  mit `withPrivilege` wrapper für alle 3 tile-handlers)
+- **Vorher:** Drafting Studio hatte 3 Tiles die direkt prompts an AI Mode
+  schickten. Kein Weg für die Anwältin zu signalisieren dass der draft
+  privileged work-product ist. Wenn sie die generated draft an
+  Co-Counsel schickt, fehlt der Privilege-Marker → LPP-Schutz nicht
+  einklagbar im Streitfall.
+- **Fix:** Single global toggle "Mark drafts as attorney-client privileged"
+  am page-header level:
+  - Default: off (most drafts aren't privileged)
+  - Sticky: localStorage persistiert `atlas-drafting-privileged-mode` —
+    wenn lawyer einmal aktiviert, bleibt es bis sie deaktiviert
+  - Visuell aktiv: ⚠ Lock-Icon wechselt zu emerald + "ON" badge
+    erscheint daneben
+  - Defensive: try/catch um localStorage-access (private browsing)
+- **Wirkungsmechanik:** `withPrivilege(prompt)` wrapper prepended einen
+  4-locale Instructions-Prefix vor jeden generierten Prompt:
+  ```
+  Mark the entire draft at the top with "PRIVILEGED & CONFIDENTIAL
+  — Attorney-Client Work Product" and add a footer note that the
+  document is subject to legal professional privilege.
+  [original prompt]
+  ```
+- **Locales:** DE/EN/FR/ES alle abgedeckt mit jeweils landesüblichen
+  Privilege-Termini (DE: "Anwaltsgeheimnis (LPP)", FR: "secret
+  professionnel", ES: "secreto profesional", EN: "Attorney-Client
+  Work Product").
+- **Server-Coordination:** Astra's existing legal-disclaimer back-stop
+  (siehe Bundle #6) bleibt orthogonal — privilege-marker ist
+  zusätzlich, nicht statt. Beide enden im final draft.
+- **Was fehlt für Stage-2:** Watermark im PDF-Export (`draft-export.ts`).
+  Aktuell ist der Marker nur im Markdown-Header — wenn der Anwalt
+  separat zu PDF konvertiert kann das Wasserzeichen verloren gehen.
+  Sollte in einem Export-Pipeline-Sprint adressiert werden.
+- **Aufwand:** ~45 min
+
+### F-RES-6 — Empty/Loading/Error-States (DEFERRED)
+
+- **Audit-Befund:** "unassessed" — würde Sweep über 8-15 Surfaces brauchen
+  (atlas dashboard, sources, library, bookmarks, alerts, updates,
+  treaties, cases, jurisdictions, conduct, calendar, …)
+- **Spot-checks:**
+  - `/atlas` Search-Result-View hat decent empty-state mit hint
+  - `/atlas/cases` (Bundle #4 update) hat empty-state mit Filter-Reset-cue
+  - `/atlas/landing-rights/conduct` (heute, F-LAND-3) hat empty-state
+- **Deferred to:** Bundle "F-RES-6 sweep" als eigener Sprint mit
+  Ziel-Inventory + per-Surface-Audit + standardized `<EmptyState />`
+  Component für DRY-ness. Geschätzt 1-1.5 Tage.
+
+### Trust-Score nach Quick-Wins-Bündel #7
+
+| Surface        | Vorher | Nachher                                                          |
+| -------------- | ------ | ---------------------------------------------------------------- |
+| Landing-Rights | 7/10   | **7.5/10** (+0.5 — Conduct-Browse ist jetzt Tool, nicht Tabelle) |
+| Drafting       | 6/10   | **7/10** (+1 — Privilege-Marker schließt LPP-Schutz-Lücke)       |
+| GESAMT         | 8.0/10 | **8.1/10**                                                       |
+
+**Marie+Klaus-Impact:** Conduct-Conditions-Research geht von "scroll +
+ctrl+F" zu "type + select + done in 5s". Privilege-marker macht Atlas
+zum ersten AI-Drafting-Tool das LPP-Schutz strukturell unterstützt
+statt es dem Anwalt zu überlassen.

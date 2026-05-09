@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   PenSquare,
   FileText,
@@ -9,10 +9,32 @@ import {
   ArrowRight,
   Sparkles,
   Info,
+  Lock,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { ALL_SOURCES } from "@/data/legal-sources";
 import { openAIMode } from "@/components/atlas/AIModeLauncher";
+
+/* Atlas Lawyer-UX-Audit F-DRAFT-2 — Privilege-marker support.
+   When the user opts in, every prompt the studio dispatches to AI
+   Mode is prefixed with an instruction asking Astra to wrap the
+   draft with a "PRIVILEGED & CONFIDENTIAL — Attorney-Client Work
+   Product" header. Drafts marked privileged are clearly identifiable
+   when shared with co-counsel and survive accidental disclosure
+   (the marker is in the artifact, not in our metadata). The
+   preference persists in localStorage so the lawyer doesn't have to
+   re-tick it every session. */
+const PRIVILEGE_STORAGE_KEY = "atlas-drafting-privileged-mode";
+
+function buildPrivilegePrefix(language: "de" | "en" | "fr" | "es"): string {
+  const headerByLocale: Record<string, string> = {
+    de: 'Markiere den gesamten Entwurf oben mit "PRIVILEGIERT & VERTRAULICH — Geschütztes Anwaltsgeheimnis (LPP)" und füge unten einen Hinweis hinzu, dass das Dokument Anwaltsgeheimnis nach § 43a BRAO / Art. 2 EU-Anwaltsrichtlinie unterliegt. ',
+    en: 'Mark the entire draft at the top with "PRIVILEGED & CONFIDENTIAL — Attorney-Client Work Product" and add a footer note that the document is subject to legal professional privilege. ',
+    fr: 'Marque l\'ensemble du brouillon en haut avec "PRIVILÉGIÉ & CONFIDENTIEL — Produit de travail avocat-client" et ajoute en bas une note indiquant que le document est soumis au secret professionnel. ',
+    es: 'Marca el borrador completo en la parte superior con "PRIVILEGIADO Y CONFIDENCIAL — Producto del trabajo abogado-cliente" y añade al final una nota indicando que el documento está sujeto al secreto profesional. ',
+  };
+  return headerByLocale[language] ?? headerByLocale.en;
+}
 
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
@@ -98,6 +120,35 @@ export default function DraftingStudioPage() {
     "LU",
   ]);
 
+  /* ── F-DRAFT-2: privileged-mode toggle ──
+     Hydrated from localStorage so the preference sticks across page
+     reloads. The two-step (default false → effect-load) avoids SSR
+     hydration mismatch — server can't read localStorage. */
+  const [privileged, setPrivileged] = useState(false);
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(PRIVILEGE_STORAGE_KEY);
+      if (stored === "true") setPrivileged(true);
+    } catch {
+      /* private-browsing throws on getItem — non-fatal, just defaults
+         to off, the user can still tick the box per session. */
+    }
+  }, []);
+  const togglePrivileged = (next: boolean) => {
+    setPrivileged(next);
+    try {
+      window.localStorage.setItem(PRIVILEGE_STORAGE_KEY, String(next));
+    } catch {
+      /* see above. */
+    }
+  };
+
+  /* `withPrivilege` wraps any prompt with the privilege-marker prefix
+     when the toggle is on. Centralised here so each handler stays a
+     one-liner and there's a single place to update the prefix wording. */
+  const withPrivilege = (prompt: string): string =>
+    privileged ? buildPrivilegePrefix(language) + prompt : prompt;
+
   const allJurisdictions = useMemo(() => {
     const set = new Set<string>();
     for (const s of ALL_SOURCES) set.add(s.jurisdiction);
@@ -117,24 +168,28 @@ export default function DraftingStudioPage() {
         ? ` Missionsprofil: ${authMission.trim()}.`
         : ` Mission profile: ${authMission.trim()}.`
       : "";
-    const prompt = (isDe ? baseDe : baseEn) + mission;
+    const prompt = withPrivilege((isDe ? baseDe : baseEn) + mission);
     openAIMode({ prompt });
   };
 
   const handleBriefSubmit = () => {
     if (!briefTopic.trim()) return;
-    const prompt = isDe
-      ? `Erstelle ein Compliance-Briefing zum Thema: ${briefTopic.trim()}.`
-      : `Draft a compliance brief on: ${briefTopic.trim()}.`;
+    const prompt = withPrivilege(
+      isDe
+        ? `Erstelle ein Compliance-Briefing zum Thema: ${briefTopic.trim()}.`
+        : `Draft a compliance brief on: ${briefTopic.trim()}.`,
+    );
     openAIMode({ prompt });
   };
 
   const handleCompareSubmit = () => {
     if (compareJurisdictions.length < 2) return;
     const list = compareJurisdictions.join(", ");
-    const prompt = isDe
-      ? `Vergleiche die folgenden Jurisdiktionen für ein Filing: ${list}. Erstelle eine Kriterien-Matrix mit zitierten ATLAS-IDs.`
-      : `Compare the following jurisdictions for a filing: ${list}. Produce a criteria matrix with cited ATLAS-IDs.`;
+    const prompt = withPrivilege(
+      isDe
+        ? `Vergleiche die folgenden Jurisdiktionen für ein Filing: ${list}. Erstelle eine Kriterien-Matrix mit zitierten ATLAS-IDs.`
+        : `Compare the following jurisdictions for a filing: ${list}. Produce a criteria matrix with cited ATLAS-IDs.`,
+    );
     openAIMode({ prompt });
   };
 
@@ -170,6 +225,52 @@ export default function DraftingStudioPage() {
           </p>
         </div>
       </div>
+
+      {/* F-DRAFT-2: privileged-mode toggle. Default off — most drafts
+          aren't privileged work-product, but when they are the marker
+          MUST be in the artifact. The toggle is sticky (localStorage)
+          and visually emphasised when on so the lawyer can't forget
+          it's still active across sessions. */}
+      <label className="flex items-start gap-3 max-w-3xl rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] px-4 py-3 cursor-pointer hover:border-[var(--atlas-border-strong)] transition-colors">
+        <input
+          type="checkbox"
+          checked={privileged}
+          onChange={(e) => togglePrivileged(e.target.checked)}
+          className="mt-0.5 h-3.5 w-3.5 cursor-pointer accent-emerald-600"
+          aria-describedby="privilege-mode-help"
+        />
+        <span className="flex-1 min-w-0">
+          <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-[var(--atlas-text-primary)]">
+            <Lock
+              size={12}
+              strokeWidth={1.8}
+              className={
+                privileged
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-[var(--atlas-text-faint)]"
+              }
+              aria-hidden="true"
+            />
+            {isDe
+              ? "Drafts als anwaltlich privilegiert kennzeichnen"
+              : "Mark drafts as attorney-client privileged"}
+            {privileged && (
+              <span className="ml-1 inline-flex items-center rounded-md bg-emerald-100 dark:bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-800 dark:text-emerald-200">
+                {isDe ? "Aktiv" : "On"}
+              </span>
+            )}
+          </span>
+          <span
+            id="privilege-mode-help"
+            className="block mt-1 text-[11px] text-[var(--atlas-text-muted)] leading-relaxed"
+          >
+            {isDe
+              ? "Wenn aktiv, wird jeder erzeugte Entwurf oben mit „PRIVILEGIERT & VERTRAULICH" +
+                ' — Anwaltsgeheimnis (LPP)" gekennzeichnet plus Footer-Hinweis. Einstellung wird im Browser gespeichert.'
+              : 'When on, every draft is wrapped with a "PRIVILEGED & CONFIDENTIAL — Attorney-Client Work Product" header plus footer note. Saved in this browser.'}
+          </span>
+        </span>
+      </label>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mt-2">
         {/* ── Tile 1: Authorization application ── */}
