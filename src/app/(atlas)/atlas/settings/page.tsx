@@ -670,6 +670,69 @@ export default function SettingsPage() {
     [language],
   );
 
+  /* ──── Atlas Lawyer-UX-Audit F-ADM-11: Invitation expiry status.
+     A pending invite is moot once expired — owners need to see the
+     status, not just the raw date. We classify into three buckets:
+       • pending      — > 48 h to live, treated as healthy
+       • expiring_soon — < 48 h, amber-elevated
+       • expired      — past expiry, red, action-required
+     Returns the human relative-time hint as a localized i18n key
+     so the UI stays language-aware without tracking dates twice. */
+  const getInvitationExpiryStatus = useCallback(
+    (
+      expiresAtIso: string,
+    ): {
+      status: "pending" | "expiring_soon" | "expired";
+      hint: { key: string; vars: Record<string, string | number> };
+    } => {
+      const now = Date.now();
+      const expiry = new Date(expiresAtIso).getTime();
+      const hoursDelta = (expiry - now) / (1000 * 60 * 60);
+
+      if (hoursDelta < 0) {
+        // Expired path. Use absolute hours when < 48 h ago, otherwise
+        // express in days for legibility.
+        const elapsedHours = Math.abs(hoursDelta);
+        if (elapsedHours < 48) {
+          return {
+            status: "expired",
+            hint: {
+              key: "atlas.settings_team_expired_ago_hours",
+              vars: { hours: Math.max(1, Math.floor(elapsedHours)) },
+            },
+          };
+        }
+        return {
+          status: "expired",
+          hint: {
+            key: "atlas.settings_team_expired_ago_days",
+            vars: { days: Math.max(1, Math.floor(elapsedHours / 24)) },
+          },
+        };
+      }
+
+      if (hoursDelta < 48) {
+        return {
+          status: "expiring_soon",
+          hint: {
+            key: "atlas.settings_team_expires_in_hours",
+            vars: { hours: Math.max(1, Math.ceil(hoursDelta)) },
+          },
+        };
+      }
+
+      const daysDelta = Math.ceil(hoursDelta / 24);
+      return {
+        status: "pending",
+        hint: {
+          key: "atlas.settings_team_expires_in_days",
+          vars: { days: daysDelta },
+        },
+      };
+    },
+    [],
+  );
+
   /* ──── Tab definitions ──── */
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     {
@@ -1646,12 +1709,43 @@ export default function SettingsPage() {
                     const armedForRevoke = confirmRevokeId === inv.id;
                     const busy = isResending || isRevoking;
 
+                    /* F-ADM-11: derive expiry-state once per row so the
+                       avatar, badge, and footer hint stay in sync. */
+                    const expiry = inv.expiresAt
+                      ? getInvitationExpiryStatus(inv.expiresAt)
+                      : null;
+                    const isExpired = expiry?.status === "expired";
+                    const isExpiringSoon = expiry?.status === "expiring_soon";
+
+                    // Avatar circle reflects the urgency tier.
+                    const avatarTone = isExpired
+                      ? "bg-red-50 text-red-500"
+                      : isExpiringSoon
+                        ? "bg-amber-100 text-amber-600"
+                        : "bg-amber-50 text-amber-400";
+
+                    // Pill colour + label mirror the avatar tier so the
+                    // information is conveyed to colour-blind users via
+                    // text content too, not only hue.
+                    const badgeTone = isExpired
+                      ? "bg-red-50 text-red-600"
+                      : isExpiringSoon
+                        ? "bg-amber-100 text-amber-700"
+                        : "bg-amber-50 text-amber-600";
+                    const badgeLabelKey = isExpired
+                      ? "atlas.settings_team_badge_expired"
+                      : isExpiringSoon
+                        ? "atlas.settings_team_badge_expiring_soon"
+                        : "atlas.settings_team_badge_pending";
+
                     return (
                       <div
                         key={inv.id}
                         className="flex items-center gap-3 px-5 py-3.5"
                       >
-                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-amber-50 text-amber-400 shrink-0">
+                        <div
+                          className={`flex items-center justify-center h-8 w-8 rounded-full ${avatarTone} shrink-0`}
+                        >
                           <Mail
                             size={14}
                             strokeWidth={1.5}
@@ -1666,13 +1760,21 @@ export default function SettingsPage() {
                           <div className="text-[11px] text-[var(--atlas-text-faint)]">
                             {t("atlas.settings_team_invited")}{" "}
                             {formatDate(inv.createdAt)}
-                            {inv.expiresAt && (
+                            {expiry && (
                               <>
                                 {" "}
                                 &middot;{" "}
-                                {t("atlas.settings_team_expires", {
-                                  date: formatDate(inv.expiresAt),
-                                })}
+                                <span
+                                  className={
+                                    isExpired
+                                      ? "text-red-600 font-medium"
+                                      : isExpiringSoon
+                                        ? "text-amber-700 font-medium"
+                                        : ""
+                                  }
+                                >
+                                  {t(expiry.hint.key, expiry.hint.vars)}
+                                </span>
                               </>
                             )}
                           </div>
@@ -1692,8 +1794,10 @@ export default function SettingsPage() {
                               {t("atlas.settings_team_resent")}
                             </span>
                           ) : (
-                            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-600">
-                              {t("atlas.settings_team_badge_pending")}
+                            <span
+                              className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${badgeTone}`}
+                            >
+                              {t(badgeLabelKey)}
                             </span>
                           )}
 

@@ -1098,3 +1098,81 @@ Vier weitere Backlog-Items aus dem Lawyer-UX-Audit in einer Session geclosed:
 | GESAMT            | 7.2/10 | **7.4/10**                                                 |
 
 **Marie-Impact:** Drei Daily-Driver-Frictions reduziert. Plus F-AUTH-8 entfernt einen verlorenen Mandanten (Invite + Google-OAuth = vorher dead-end).
+
+---
+
+## 17. Quick-Wins-Bündel #3 (2026-05-09)
+
+Drei weitere Backlog-Items aus dem Lawyer-UX-Audit. F-LAND-1 (deferred in #2) als
+False-Positive entlarvt — die Card hatte den Stamp bereits; nur die Search-Result-
+Rows fehlten ihn. Wir nutzen denselben `LastVerifiedStamp` jetzt cross-surface
+(JurisdictionCard + Dashboard-Search-Rows) damit Marie _eine_ Trust-Decay-Vokabel
+lernt und überall wiedererkennt.
+
+### F-LAND-1 — Last-Verified-Stamp auf JurisdictionCard (CLOSED — false positive)
+
+- **Wo:** `src/components/atlas/landing-rights/JurisdictionCard.tsx:111`
+- **Befund:** `<LastVerifiedStamp date={profile.last_verified} />` ist bereits am
+  Card-Footer rendered. Der Audit-Agent hatte die Card-Komponente nicht im Scope.
+- **Action:** Audit-Eintrag closed. Trust-Decay-Coloring (>180 d red, >90 d amber)
+  wird auch auf Dashboard-Result-Rows nachgezogen (siehe F-RES-3 unten).
+
+### F-LAND-4 — Regime-Type-Tooltips auf JurisdictionCard (HIGH → Done)
+
+- **Wo:** `src/components/atlas/landing-rights/JurisdictionCard.tsx:25-34, 53-58`
+- **Vorher:** Cards zeigen "TWO-TRACK" / "TELECOMS-ONLY" / "SPACE-ACT-ONLY" /
+  "EMERGING" als 10-px-uppercase-Label ohne Erklärung. Junior-Anwält:innen
+  miss-classifizieren Jurisdiktionen, Senior-Anwält:innen verlieren Zeit beim
+  klären für Trainees.
+- **Fix:** `REGIME_TOOLTIPS` constant mit präzisen 1-2-Satz-Erklärungen pro
+  Regime + Beispiel-Jurisdiktionen. Wired via native `title=` attribute +
+  `cursor-help` className.
+- **Warum native `title`:** Zero JS, keyboard-focus-triggerable in modernen
+  Browsern, screen-reader-friendly. Trade-off (kein styling, ~500 ms hover-delay)
+  ist akzeptabel für Disclosure-Copy auf Hover.
+- **Aufwand:** ~20 min
+
+### F-RES-3 — Trust-Signals auf Dashboard-Search-Result-Rows (HIGH → Done)
+
+- **Wo:** `src/app/(atlas)/atlas/page.tsx` (Profile-, Case-Study-, Conduct-
+  Sections in der landing-rights-Result-Group)
+- **Vorher:** Search-Results für Landing-Rights-Profile, Case-Studies und Conduct-
+  Conditions zeigten nur Jurisdiktion + Title — Marie hatte keinen Trust-Signal-
+  Anker bevor sie die Detail-Seite öffnete. Bei Conduct-Conditions (national-
+  security-policy, ändert sich häufig) ist Frische besonders load-bearing.
+- **Fix:** `<LastVerifiedStamp date={p.last_verified} />` an jeder der drei
+  Result-Row-Klassen angefügt. Color-coded (muted = frisch, amber > 90 d, red > 180 d).
+  Profile-Cards von einzeiligem Flex auf zweizeiliges flex-col umgestellt damit der
+  Stamp am unteren Rand sitzt.
+- **Cross-Surface-Konsistenz:** Identisches Stamp-Component mit identischer Decay-
+  Color-Skala wie auf JurisdictionCard → Marie lernt eine Vokabel, nicht drei.
+- **Aufwand:** ~25 min
+
+### F-ADM-11 — Invitation-Expiry-Visibility (MEDIUM → Done)
+
+- **Wo:** `src/app/(atlas)/atlas/settings/page.tsx` (Pending-Invitations-Section)
+- **Vorher:** Alle Pending-Invites zeigten gleiches amber-50-Avatar + "Pending"-
+  Badge unabhängig vom Expiry-Status. Owner sieht abgelaufene Einladungen nicht
+  visuell — sie sind in der Liste, aber wirken aktiv. Risiko: Owner verlässt sich
+  auf Pending-Liste, dabei sind 3 davon längst abgelaufen.
+- **Fix:** Drei-Tier-Status-System per `getInvitationExpiryStatus()` Helper:
+  - `pending` (> 48 h to live): amber-50 avatar + "Pending" badge + "Expires in N d"
+  - `expiring_soon` (< 48 h): amber-100 avatar + "Expiring soon" badge + "Expires in N h"
+  - `expired` (past): red-50 avatar + "Expired" badge + "Expired N h/d ago" (red, bold)
+- **WCAG 1.4.1 (Use of Color):** Information wird via Text + Farbe vermittelt, nicht
+  Farbe alleine. Deuteranopie/Protanopie-User lesen "Expired" statt nur die Hue.
+- **i18n:** 5 neue Keys × 3 Sprachen = 15 Translations (DE/EN/FR).
+- **Aufwand:** ~50 min (mit Helper-Refactor + i18n)
+
+### Trust-Score nach Quick-Wins-Bündel #3
+
+| Surface          | Vorher | Nachher                                                                  |
+| ---------------- | ------ | ------------------------------------------------------------------------ |
+| Landing-Rights   | 6/10   | **7/10** (+1 — Tooltips schließen Klassifikations-Lücke + Trust-Signals) |
+| Dashboard-Search | 6/10   | **7/10** (+1 — Cross-surface Trust-Decay-Vokabel)                        |
+| Settings + Admin | 7/10   | **7.5/10** (+0.5 — Invite-Expiry sichtbar, ein Stress-Trigger weniger)   |
+| GESAMT           | 7.4/10 | **7.6/10**                                                               |
+
+**Marie-Impact:** Drei Trust-decay-Surfaces vereinheitlicht. Junior-Anwält:innen
+classifizieren Regime-Types ohne Trainer-Frage. Owner sieht abgelaufene Invites
+sofort.

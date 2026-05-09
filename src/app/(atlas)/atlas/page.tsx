@@ -54,6 +54,11 @@ import {
   type LegalCase,
 } from "@/data/legal-cases";
 import { foldText, escapeRegex } from "@/lib/atlas/search-normalize";
+// F-RES-3 (Lawyer-UX-Audit): Trust-Signal-Stamps on Dashboard search-
+// result rows. Marie/Frieda judge result trustworthiness in <2 seconds —
+// a verified-on date with age-based color (>180 d → red, >90 d → amber,
+// fresh → muted) gives the same trust-decay cue used on the JurisdictionCard.
+import { LastVerifiedStamp } from "@/components/atlas/landing-rights/LastVerifiedStamp";
 
 // Discriminated union for the render layer. Keeps each branch's
 // `entity` strongly typed so TSX narrowing via `item.kind ===` works
@@ -938,14 +943,21 @@ export default function CommandCenterPage() {
                         `/atlas/landing-rights/${p.jurisdiction.toLowerCase()}`,
                       )
                     }
-                    className="flex items-center gap-4 px-5 py-4 text-left rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] hover:border-[var(--atlas-border-strong)] transition"
+                    className="flex flex-col gap-1.5 px-5 py-4 text-left rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] hover:border-[var(--atlas-border-strong)] transition"
                   >
-                    <span className="text-[22px] font-bold text-[var(--atlas-text-faint)] w-10">
-                      {p.jurisdiction}
-                    </span>
-                    <span className="text-[13px] text-[var(--atlas-text-secondary)] line-clamp-2 flex-1">
-                      {p.overview.summary}
-                    </span>
+                    <div className="flex items-center gap-4">
+                      <span className="text-[22px] font-bold text-[var(--atlas-text-faint)] w-10">
+                        {p.jurisdiction}
+                      </span>
+                      <span className="text-[13px] text-[var(--atlas-text-secondary)] line-clamp-2 flex-1">
+                        {p.overview.summary}
+                      </span>
+                    </div>
+                    {/* F-RES-3: trust signal — color-coded freshness stamp.
+                        Marie sees at a glance whether profile data is
+                        fresh (muted), aging (amber, >90 d) or stale (red,
+                        >180 d) before clicking through. */}
+                    <LastVerifiedStamp date={p.last_verified} />
                   </button>
                 ))}
               </div>
@@ -980,6 +992,8 @@ export default function CommandCenterPage() {
                     <span className="text-[13px] font-medium text-[var(--atlas-text-primary)] flex-1">
                       {cs.title}
                     </span>
+                    {/* F-RES-3: same freshness signal as the profile rows. */}
+                    <LastVerifiedStamp date={cs.last_verified} />
                   </button>
                 ))}
               </div>
@@ -1017,6 +1031,10 @@ export default function CommandCenterPage() {
                         {c.type.replace("_", " ")}
                       </span>
                     </div>
+                    {/* F-RES-3: trust signal. Conduct conditions change
+                        with national-security policy shifts; freshness is
+                        especially load-bearing here. */}
+                    <LastVerifiedStamp date={c.last_verified} />
                   </button>
                 ))}
               </div>

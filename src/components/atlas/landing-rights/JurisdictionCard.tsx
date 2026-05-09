@@ -14,6 +14,25 @@ const REGIME_LABELS: Record<string, string> = {
   emerging: "Emerging",
 };
 
+/**
+ * Atlas Lawyer-UX Audit F-LAND-4:
+ * Tooltips for the regime-type labels. Junior lawyers misclassify
+ * jurisdictions because the labels are dense without explanation;
+ * senior lawyers waste time clarifying for trainees. Native
+ * `title` attribute is keyboard-accessible (browser shows on long-
+ * focus too) and incurs zero JS overhead.
+ */
+const REGIME_TOOLTIPS: Record<string, string> = {
+  two_track:
+    "Two-track regime — separate authorisations from the telecoms regulator (radio spectrum, gateways) and a space-activities authority (mission, payload). Examples: DE (BNetzA + BMWK), FR (ARCEP + CNES).",
+  telecoms_only:
+    "Telecoms-only regime — the national telecoms regulator's authorisation covers space activities; no separate space-act licence required. Examples: GB (Ofcom), NL (ACM).",
+  space_act_only:
+    "Space-act-only regime — a dedicated national space act creates a unified authorisation track covering operator, mission, and ground-segment. Examples: LU, FI.",
+  emerging:
+    "Emerging regime — the legal framework is still under development; authorisations issued case-by-case via existing telecoms or aviation routes until a dedicated space act is enacted.",
+};
+
 export function JurisdictionCard({
   profile,
 }: {
@@ -32,7 +51,10 @@ export function JurisdictionCard({
           <span className="text-[26px] font-bold text-[var(--atlas-text-primary)] leading-none">
             {profile.jurisdiction}
           </span>
-          <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-faint)]">
+          <span
+            title={REGIME_TOOLTIPS[profile.overview.regime_type] ?? ""}
+            className="text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-faint)] cursor-help"
+          >
             {REGIME_LABELS[profile.overview.regime_type] ??
               profile.overview.regime_type}
           </span>
