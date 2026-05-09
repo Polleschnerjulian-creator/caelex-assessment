@@ -216,7 +216,12 @@ interface Props {
   onForkWorkspace?: (id: string) => void;
   /** Trigger an export of the workspace as a deliverable. Format
    *  selects md (paste-into-Word) vs pdf (drop-in legal memo). */
-  onExportWorkspace?: (id: string, format: "md" | "pdf") => void;
+  /** F-AI-4: format is now "md" | "doc" — was "md" | "pdf" but the
+   *  PDF path silently 404'd against a non-existent server route.
+   *  Word (.doc) goes through the existing exportDraftAsWord client
+   *  pipeline. PDF can be re-added later if a real PDF generator
+   *  lands. */
+  onExportWorkspace?: (id: string, format: "md" | "doc") => void;
   /** Toggle read-only sharing on/off. Returns the URL when enabled. */
   onShareWorkspace?: (
     id: string,
@@ -905,7 +910,9 @@ export function WorkspacePinboardInline({
       const k = e.key.toLowerCase();
       if (k === "e" && currentWorkspaceId && cards.length > 0) {
         e.preventDefault();
-        onExportWorkspace?.(currentWorkspaceId, "pdf");
+        /* F-AI-4: ⌘⇧E now triggers Word export (was the dead "pdf"
+           server-route). Markdown stays on ⌘⇧M. */
+        onExportWorkspace?.(currentWorkspaceId, "doc");
       } else if (k === "m" && currentWorkspaceId && cards.length > 0) {
         e.preventDefault();
         onExportWorkspace?.(currentWorkspaceId, "md");
@@ -1162,20 +1169,21 @@ export function WorkspacePinboardInline({
             </button>
           )}
 
-          {/* Export-Group — primary button defaults to PDF (the real
-              deliverable lawyers want) and a chevron-arrow opens a
-              tiny dropdown for the alternative markdown export. */}
+          {/* Export-Group — F-AI-4 update: primary now Word (.doc) via
+              the client-side exportDraftAsWord pipeline. PDF removed
+              until a real generator lands (the previous "PDF" button
+              hit a non-existent server route and silently failed). */}
           {onExportWorkspace && currentWorkspaceId && cards.length > 0 && (
             <div className={styles.headerExportGroup}>
               <button
                 type="button"
-                onClick={() => onExportWorkspace(currentWorkspaceId, "pdf")}
-                aria-label="Workspace als PDF-Memo exportieren"
-                title="Als PDF-Memo exportieren (⌘⇧E)"
+                onClick={() => onExportWorkspace(currentWorkspaceId, "doc")}
+                aria-label="Workspace als Word-Dokument exportieren"
+                title="Als Word (.doc) exportieren (⌘⇧E)"
                 className={styles.headerExport}
               >
                 <Download size={12} strokeWidth={1.8} />
-                <span>PDF</span>
+                <span>Word</span>
               </button>
               <button
                 type="button"
@@ -1193,13 +1201,13 @@ export function WorkspacePinboardInline({
                   <button
                     type="button"
                     onClick={() => {
-                      onExportWorkspace(currentWorkspaceId, "pdf");
+                      onExportWorkspace(currentWorkspaceId, "doc");
                       setExportMenuOpen(false);
                     }}
                     className={styles.exportMenuItem}
                   >
                     <Download size={11} strokeWidth={1.8} />
-                    <span>PDF (Legal Memo)</span>
+                    <span>Word (.doc)</span>
                   </button>
                   <button
                     type="button"

@@ -1991,3 +1991,84 @@ das auf einen markdown-serialization-helper + button-wiring.
 30-min-Screenshot-Hell zu 1-Klick-Word-Download. Pasten in eigene
 Memo-Vorlage = sofort. Disclaimer + Caelex-attribution lead-in
 automatisch im artifact.
+
+---
+
+## 27. Quick-Wins-Bündel #13 — F-AI-4 Workspace-Pinboard Export (2026-05-09)
+
+Audit-Estimate war HIGH/M (1-2 Wochen). Real-Audit-Befund: das
+Problem war **schlimmer** als das Audit dachte (Buttons existierten
+aber waren tot — silent 404), aber der Fix war **viel kleiner** dank
+existing draft-export-Pipeline (~1h).
+
+### Re-Audit-Befund
+
+- **WorkspacePinboardInline.tsx:1168-1216** hat schon "PDF" + "Markdown"
+  Export-Buttons inkl. UI dropdown
+- **AIMode.tsx:1569-1597** verdrahtet `onExportWorkspace` als
+  authenticated GET zu `/api/atlas/workspaces/${id}/export?format=...`
+- **Aber:** Die Server-Route `/api/atlas/workspaces/[id]/export/route.ts`
+  **existiert nicht.** Vorhandene Routes: `[id]/route.ts`, `cards/`,
+  `share/`, `fork/`, `suggest/` — keine `export/`.
+- **Resultat:** Jeder PDF/Markdown-Klick wirft 404, der Client schluckt
+  es via `if (!res.ok) return`. Silent dead button.
+
+### F-AI-4 — Workspace-Pinboard Bulk-DOCX-Export (HIGH → Done, ~1h)
+
+- **Architektur (mirroring F-COMP-1):** Client-side serialisierung +
+  existing exportDraftAsWord pipeline. Cards sind bereits in
+  AIMode-state — server route nicht nötig.
+- **Wo:**
+  - Neuer helper `src/lib/atlas/workspace-export-md.ts` (~150 LOC)
+  - `WorkspacePinboardInline.tsx` interface change + UI-relabel
+  - `AIMode.tsx` handler-rewrite + import additions
+- **Helper:**
+  - `buildWorkspaceMarkdown({ cards, workspaceTitle, locale })` →
+    `{ markdown, title }`
+  - **Card-kind-aware rendering:**
+    - `user` cards → H2 + plain-text body + quiet timestamp
+    - `ai-clause` → H2 + "_KI-Synthese aus Karten: ID1, ID2 · datum_"
+    - `ai-answer` → H2 + "_Atlas-Antwort · datum_" + "**Frage:** ..."
+      blockquote + answer
+  - Empty workspaces: italic "Dieser Arbeitsbereich ist leer..."
+    placeholder
+  - Footer: AI-content verification reminder
+  - Bilingual EN/DE per inline `TR()` helper
+- **Interface change:**
+  - `onExportWorkspace?: (id: string, format: "md" | "pdf") => void`
+    → `(id, format: "md" | "doc")`
+  - "PDF" button → "Word" button (mit Word-flavoured-HTML statt
+    real PDF; ein PDF-Generator kann später ein-replaced werden)
+  - Keyboard-shortcut ⌘⇧E triggert jetzt Word (war PDF, war 404)
+- **Handler-Rewrite:** AIMode rendert keinen fetch mehr — direkt
+  `buildWorkspaceMarkdown()` mit `workspaceCards` + `workspaceTitle`
+  aus `workspaces` array, dann `exportDraftAsWord()` oder
+  `exportDraftAsMarkdown()` je nach format
+- **Audit-Estimate-Reduktion:** 1-2 Wochen → ~1h. Genau wie F-COMP-1:
+  bei "neue Export-Format gewünscht" Findings IMMER erst die
+  draft-export-pipeline checken.
+
+### Was BEWUSST nicht jetzt gefixt
+
+- **Server-side `/export` route**: Nicht nötig wenn cards in client-
+  state sind. Wenn später async-export brauchen (z.B. großer
+  workspace, server-rendered PDF mit @react-pdf/renderer), dann der
+  Route bauen — aber jetzt YAGNI.
+- **Per-card-selection**: Audit hatte "Bulk-Export selected cards"
+  erwähnt. Aktuell exportieren wir alle Cards des current workspace.
+  Per-card-checkbox + selective export wäre eigene Feature.
+- **Real PDF**: Nicht via window.print() (das wäre der Pinboard-DOM
+  ohne export-chrome). Würde @react-pdf/renderer brauchen — eigener
+  Sprint.
+
+### Trust-Score nach Quick-Wins-Bündel #13
+
+| Surface | Vorher | Nachher                                                         |
+| ------- | ------ | --------------------------------------------------------------- |
+| AI-Mode | 7.5/10 | **8/10** (+0.5 — Workspace-Export funktioniert jetzt überhaupt) |
+| GESAMT  | 8.6/10 | **8.7/10**                                                      |
+
+**Marie-Impact:** Die "Export Workspace"-Buttons taten **noch nie**
+was. Jetzt: Workspace + cards + locale = .doc/.md download in <1s.
+Memo-Drafting-Flow von "AI Mode → Pinboard → Word-File" ist
+end-to-end funktional.

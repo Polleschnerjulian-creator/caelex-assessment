@@ -56,6 +56,11 @@ import { MorningBrief } from "./MorningBrief";
 import { LibrarySaveButton } from "./LibrarySaveButton";
 import { DraftExportButton } from "../DraftExportButton";
 import {
+  exportDraftAsWord,
+  exportDraftAsMarkdown,
+} from "@/lib/atlas/draft-export";
+import { buildWorkspaceMarkdown } from "@/lib/atlas/workspace-export-md";
+import {
   WorkspacePinboardInline,
   type WorkspaceCard,
 } from "./WorkspacePinboardInline";
@@ -1566,33 +1571,30 @@ export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
               return { url: null, enabledAt: null };
             }
           }}
-          onExportWorkspace={async (id, format) => {
-            // Trigger a browser download by following the export URL.
-            // Authenticated GET — the cookie carries the session, no
-            // extra headers needed. The server sets Content-Disposition
-            // so the browser saves rather than opens.
-            try {
-              const res = await fetch(
-                `/api/atlas/workspaces/${id}/export?format=${format}`,
-              );
-              if (!res.ok) return;
-              const blob = await res.blob();
-              const cd = res.headers.get("content-disposition") ?? "";
-              const fnMatch = /filename="([^"]+)"/.exec(cd);
-              const filename = fnMatch?.[1] ?? `workspace-${id}.${format}`;
-              // Standard "create blob URL, click invisible anchor"
-              // pattern — works in every modern browser without a
-              // file-saver dep.
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = filename;
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              setTimeout(() => URL.revokeObjectURL(url), 1000);
-            } catch {
-              // Silent — could add a toast later.
+          onExportWorkspace={(id, format) => {
+            /* F-AI-4: client-side export. Was a fetch to a non-existent
+               server route (/api/atlas/workspaces/[id]/export) that
+               silently failed. The pinboard cards are already in
+               local state, so we serialise them via the workspace
+               markdown helper and pipe through the existing
+               exportDraftAsWord / exportDraftAsMarkdown pipeline —
+               same chrome (header, footer, page numbers, disclaimer
+               back-stop) as every other Atlas export. */
+            const ws = workspaces.find((w) => w.id === id);
+            const exportLocale: "en" | "de" = language === "de" ? "de" : "en";
+            const { markdown, title } = buildWorkspaceMarkdown({
+              cards: workspaceCards,
+              workspaceTitle: ws?.title,
+              locale: exportLocale,
+            });
+            if (format === "doc") {
+              exportDraftAsWord({ markdown, title, locale: exportLocale });
+            } else {
+              exportDraftAsMarkdown({
+                markdown,
+                title,
+                locale: exportLocale,
+              });
             }
           }}
           onClose={() => setWorkspaceOpen(false)}
