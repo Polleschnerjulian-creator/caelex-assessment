@@ -49,6 +49,7 @@ import {
   getAvailableJurisdictions,
 } from "@/data/legal-sources";
 import { AccountBanner } from "@/components/atlas/AccountBanner";
+import { AtlasDataRightsCard } from "./AtlasDataRightsCard";
 
 // Computed inventory counts — derived from the same barrel exports the
 // rest of Atlas uses, so the settings stats never drift from reality.
@@ -1938,56 +1939,40 @@ export default function SettingsPage() {
               </div>
             </section>
 
-            {/* Self-service rights — placeholder for DSGVO-2 + DSGVO-3 */}
+            {/* Atlas Lawyer-UX Audit DSGVO-2 (Stage-1):
+                Replaced the static mailto-list placeholder with the
+                interactive AtlasDataRightsCard. The card submits real
+                requests to /api/atlas/compliance/{data-export,
+                data-deletion} which send confirmation emails + DPO
+                alerts + write audit-log entries. Stage-2 (later
+                sprint) adds DB tracking + cron-driven processing
+                + in-app cancel-button (instead of email-reply
+                cancellation). The remaining audit-log right is still
+                email-only because the AtlasAuditLog UI is DSGVO-3. */}
+            <AtlasDataRightsCard userEmail={profile?.email ?? ""} />
+
+            {/* Audit-log self-service is DSGVO-3 — keep mailto for now */}
             <section className="rounded-xl border border-dashed border-[var(--atlas-border)] bg-[var(--atlas-bg-inset)] p-5">
               <h3 className="text-[13px] font-semibold text-[var(--atlas-text-secondary)] mb-2 inline-flex items-center gap-2">
                 <Clock size={14} aria-hidden="true" />
                 {t("atlas.settings_compliance_selfservice_title")}
               </h3>
               <p className="text-[12px] text-[var(--atlas-text-muted)] leading-relaxed mb-3">
-                {t("atlas.settings_compliance_selfservice_desc")}
+                {t("atlas.settings_compliance_audit_pending_desc")}
               </p>
-              <ul className="text-[12px] text-[var(--atlas-text-muted)] space-y-1.5 ml-1">
-                <li>
-                  <strong className="text-[var(--atlas-text-secondary)]">
-                    {t("atlas.settings_compliance_right_export")}
-                  </strong>{" "}
-                  ({t("atlas.settings_compliance_right_via")}{" "}
-                  <a
-                    href="mailto:datenschutz@caelex.eu?subject=Daten-Export%20Anfrage"
-                    className="underline hover:text-[var(--atlas-text-secondary)]"
-                  >
-                    datenschutz@caelex.eu
-                  </a>
-                  )
-                </li>
-                <li>
-                  <strong className="text-[var(--atlas-text-secondary)]">
-                    {t("atlas.settings_compliance_right_delete")}
-                  </strong>{" "}
-                  ({t("atlas.settings_compliance_right_via")}{" "}
-                  <a
-                    href="mailto:datenschutz@caelex.eu?subject=L%C3%B6sch-Anfrage"
-                    className="underline hover:text-[var(--atlas-text-secondary)]"
-                  >
-                    datenschutz@caelex.eu
-                  </a>
-                  )
-                </li>
-                <li>
-                  <strong className="text-[var(--atlas-text-secondary)]">
-                    {t("atlas.settings_compliance_right_audit")}
-                  </strong>{" "}
-                  ({t("atlas.settings_compliance_right_via")}{" "}
-                  <a
-                    href="mailto:datenschutz@caelex.eu?subject=Audit-Log%20Anfrage"
-                    className="underline hover:text-[var(--atlas-text-secondary)]"
-                  >
-                    datenschutz@caelex.eu
-                  </a>
-                  )
-                </li>
-              </ul>
+              <p className="text-[12px] text-[var(--atlas-text-muted)] ml-1">
+                <strong className="text-[var(--atlas-text-secondary)]">
+                  {t("atlas.settings_compliance_right_audit")}
+                </strong>{" "}
+                ({t("atlas.settings_compliance_right_via")}{" "}
+                <a
+                  href="mailto:datenschutz@caelex.eu?subject=Audit-Log%20Anfrage"
+                  className="underline hover:text-[var(--atlas-text-secondary)]"
+                >
+                  datenschutz@caelex.eu
+                </a>
+                )
+              </p>
             </section>
           </div>
         )}

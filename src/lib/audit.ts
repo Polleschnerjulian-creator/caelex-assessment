@@ -173,7 +173,12 @@ export type AuditAction =
   // Regulatory feed (Sprint UF40 / P1-P7) — operator forwarded a
   // RegulatoryUpdate row into their personal inbox (Notification),
   // turning passive feed-content into a tracked task.
-  | "regulatory_update_forwarded";
+  | "regulatory_update_forwarded"
+  // Atlas DSGVO Self-Service (Lawyer-UX-Audit DSGVO-2 Stage-1).
+  // Email-only intake; manual processing within 30-day GDPR window.
+  // Stage-2 will add per-request DB rows + cron-driven processing.
+  | "atlas_data_export_requested"
+  | "atlas_data_deletion_requested";
 
 // Entity types for audit logging
 export type AuditEntityType =

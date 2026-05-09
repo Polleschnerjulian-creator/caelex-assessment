@@ -1001,3 +1001,49 @@ Trust-Score-Inkrement durch Phase B: **+0.3 Punkte gesamt**, +1.5 für Auth (hö
 | GESAMT           | 6.8/10 | **7.0/10**                                                               |
 
 Klaus' "show me your compliance"-Frage ist jetzt mit einem Klick beantwortbar.
+
+---
+
+## 15. DSGVO-2 Sprint Stage-1 Done (2026-05-09)
+
+**Constraint:** "Niemals externe Kosten verursachen." Email-only Stage-1 ohne neue paid services. Nutzt existing Resend (Email) + AuditLog. Stage-2 (DB-Models + Cron-Auto-Processing) deferred bis Prisma-Migration sauber deployed.
+
+### Was deployed wurde
+
+**2 neue API-Routes:**
+
+- `POST /api/atlas/compliance/data-export` (DSGVO Art. 20)
+- `POST /api/atlas/compliance/data-deletion` (DSGVO Art. 17)
+
+Beide: Auth + rate-limit (`sensitive` tier) + Org-Context-Resolve + Confirmation-Email an User + DPO-Alert-Email + AuditLog-Entry.
+
+**Deletion-spezifisch:** 30-Tage Grace-Period, Email-Typing-Confirmation-Gate (analog Stripe/Vercel/GitHub), Optional-Reason-Textarea, **Owner-Account-Warning** wenn User OWNER einer Org ist, Cancel-Path via Email-Reply "STORNIEREN".
+
+**Neue UI-Card** (`AtlasDataRightsCard.tsx`): Im Compliance-Tab eingebunden. Two-step-flow für Deletion mit confirm-modal + email-typing-gate + reason-input. Loading/success/error states.
+
+**i18n:** ~20 neue Keys DE/EN/FR.
+
+**Audit-Action-Type-Erweiterung:** `atlas_data_export_requested`, `atlas_data_deletion_requested` in `src/lib/audit.ts`.
+
+### Was bleibt für DSGVO-2 Stage-2 (~1 Woche, braucht Prisma-Migration)
+
+- DB-Models `AtlasDataExportRequest` + `AtlasDataDeletionRequest`
+- Vercel-Cron `atlas-data-deletion-executor` (daily, hard-delete nach Grace)
+- Vercel-Cron `atlas-data-export-processor` (auto-ZIP, R2 upload, signed-URL Email)
+- In-app Cancel-Button für pending deletion
+- Request-History-List
+- Subprocessor-Notify-on-Change
+
+### Was bleibt für DSGVO-3 (~1.5 Wochen)
+
+- `AtlasAuditLog` Model + Middleware + Search-UI mit CSV-Export
+- 7-Jahre append-only Retention
+
+### Trust-Score nach DSGVO-2 Stage-1
+
+| Surface          | Vorher | Nachher    |
+| ---------------- | ------ | ---------- |
+| Settings + Admin | 6/10   | **7/10**   |
+| GESAMT           | 7.0/10 | **7.2/10** |
+
+**Klaus-Impact:** Marie kann Daten-Export + Account-Löschung jetzt direkt aus Atlas anfordern. **Provably submitted** (Audit-Log + zwei Emails), DSGVO-konform da manuelle Verarbeitung innerhalb 30-Tage-Frist erlaubt ist.
