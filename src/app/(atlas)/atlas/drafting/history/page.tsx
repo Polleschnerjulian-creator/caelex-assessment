@@ -42,6 +42,7 @@ import {
   AlertCircle,
   Briefcase,
   Share2,
+  GitCompare,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { openAIMode } from "@/components/atlas/AIModeLauncher";
@@ -49,10 +50,12 @@ import {
   getDraftLibrary,
   deleteDraftLibraryEntry,
   clearDraftLibrary,
+  addPromptVersion,
   type DraftLibraryEntry,
   type DraftKind,
 } from "@/lib/atlas/drafting-history";
 import { createReviewSession } from "@/lib/atlas/review-sessions";
+import { diffLines, diffStats } from "@/lib/atlas/text-diff";
 
 const KIND_META: Record<
   DraftKind,
@@ -211,10 +214,19 @@ export default function DraftingHistoryPage() {
   };
 
   const handleRegenerateEdited = () => {
-    if (!editPrompt.trim()) return;
+    if (!editPrompt.trim() || !editingId) return;
+    /* Bundle 40: snapshot the new prompt as a version on the existing
+       entry BEFORE dispatching, so the version-history reflects the
+       full edit chain (rather than spawning a brand-new entry). */
+    addPromptVersion(editingId, editPrompt.trim(), "edit-regenerate");
+    refresh();
     openAIMode({ prompt: editPrompt.trim() });
     handleCancelEdit();
   };
+
+  /* Bundle 40: per-entry version-history toggle. Tracks the entry id
+     whose history is currently expanded (or null if none). */
+  const [versionsOpenFor, setVersionsOpenFor] = useState<string | null>(null);
 
   const handleDelete = (id: string) => {
     deleteDraftLibraryEntry(id);
@@ -480,6 +492,32 @@ export default function DraftingHistoryPage() {
                           ? "Anpassen"
                           : "Edit"}
                     </button>
+                    {/* Bundle 40: versions toggle. Only renders when
+                        the entry has more than one version (i.e. the
+                        user has done at least one edit-regenerate). */}
+                    {(entry.versions?.length ?? 0) > 1 && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setVersionsOpenFor((cur) =>
+                            cur === entry.id ? null : entry.id,
+                          )
+                        }
+                        title={
+                          isDe
+                            ? "Versions-Verlauf ein-/ausblenden"
+                            : "Toggle version history"
+                        }
+                        className="inline-flex items-center gap-1 text-[10.5px] font-medium px-2 py-1 rounded border border-[var(--atlas-border)] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)] hover:bg-[var(--atlas-bg-surface-muted)] transition-colors"
+                      >
+                        <GitCompare
+                          size={10}
+                          strokeWidth={1.8}
+                          aria-hidden="true"
+                        />
+                        v{entry.versions?.length}
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => handleDelete(entry.id)}
@@ -493,6 +531,111 @@ export default function DraftingHistoryPage() {
                 <p className="text-[13px] font-medium text-[var(--atlas-text-primary)] truncate">
                   {entry.title}
                 </p>
+
+                {/* Bundle 40: version-history with diffs. Renders only
+                    when toggled open via the "v{n}" button above. */}
+                {versionsOpenFor === entry.id &&
+                  entry.versions &&
+                  entry.versions.length > 1 && (
+                    <div className="flex flex-col gap-2 rounded border border-[var(--atlas-border-subtle)] bg-[var(--atlas-bg-surface-muted)] p-2">
+                      <p className="text-[10.5px] font-semibold uppercase tracking-wider text-[var(--atlas-text-muted)]">
+                        {isDe ? "Versions-Verlauf" : "Version history"}
+                      </p>
+                      {entry.versions.map((v, idx) => {
+                        const prev = idx > 0 ? entry.versions![idx - 1] : null;
+                        const diff = prev
+                          ? diffLines(prev.prompt, v.prompt)
+                          : [];
+                        const stats = prev
+                          ? diffStats(diff)
+                          : { added: 0, removed: 0, context: 0 };
+                        const isLatest = idx === entry.versions!.length - 1;
+                        return (
+                          <details
+                            key={v.ts}
+                            open={isLatest}
+                            className="rounded border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)]"
+                          >
+                            <summary className="cursor-pointer px-2 py-1 text-[10.5px] flex items-center gap-2 flex-wrap">
+                              <span className="font-semibold text-[var(--atlas-text-primary)]">
+                                v{idx + 1}
+                              </span>
+                              <span className="text-[var(--atlas-text-faint)]">
+                                {fmtRelative(v.ts, isDe)}
+                              </span>
+                              <span className="text-[9.5px] uppercase tracking-wider text-[var(--atlas-text-muted)]">
+                                {v.source === "initial"
+                                  ? isDe
+                                    ? "Original"
+                                    : "Initial"
+                                  : isDe
+                                    ? "Bearbeitet"
+                                    : "Edited"}
+                              </span>
+                              {prev && (
+                                <span className="ml-auto inline-flex items-center gap-1 text-[9.5px] font-mono">
+                                  <span className="text-emerald-700 dark:text-emerald-400">
+                                    +{stats.added}
+                                  </span>
+                                  <span className="text-red-700 dark:text-red-400">
+                                    -{stats.removed}
+                                  </span>
+                                </span>
+                              )}
+                            </summary>
+                            <div className="p-2 border-t border-[var(--atlas-border-subtle)]">
+                              {prev ? (
+                                <pre className="text-[10.5px] font-mono whitespace-pre-wrap leading-snug max-h-48 overflow-y-auto">
+                                  {diff.map((d, di) => (
+                                    <span
+                                      key={di}
+                                      className={
+                                        d.kind === "added"
+                                          ? "block bg-emerald-100 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-100"
+                                          : d.kind === "removed"
+                                            ? "block bg-red-100 dark:bg-red-500/20 text-red-900 dark:text-red-100"
+                                            : "block text-[var(--atlas-text-secondary)]"
+                                      }
+                                    >
+                                      {d.kind === "added"
+                                        ? "+ "
+                                        : d.kind === "removed"
+                                          ? "- "
+                                          : "  "}
+                                      {d.text}
+                                    </span>
+                                  ))}
+                                </pre>
+                              ) : (
+                                <pre className="text-[10.5px] font-mono whitespace-pre-wrap leading-snug max-h-48 overflow-y-auto text-[var(--atlas-text-secondary)]">
+                                  {v.prompt}
+                                </pre>
+                              )}
+                              <div className="mt-1.5 flex items-center justify-end">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    openAIMode({ prompt: v.prompt })
+                                  }
+                                  className="inline-flex items-center gap-1 text-[10.5px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)] transition-colors"
+                                >
+                                  <Sparkles
+                                    size={10}
+                                    strokeWidth={1.8}
+                                    aria-hidden="true"
+                                  />
+                                  {isDe
+                                    ? "Diese Version dispatchen"
+                                    : "Dispatch this version"}
+                                </button>
+                              </div>
+                            </div>
+                          </details>
+                        );
+                      })}
+                    </div>
+                  )}
+
                 {isEditing ? (
                   <div className="flex flex-col gap-2">
                     <textarea

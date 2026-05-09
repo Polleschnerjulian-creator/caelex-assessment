@@ -203,12 +203,26 @@ export function pushRecentCover(entry: Omit<RecentCoverEntry, "ts">): void {
 
 export type DraftKind = "auth" | "brief" | "compare" | "nda" | "cover";
 
+/* Bundle 40 — auto-versioning. Each library entry tracks every
+   prompt the user dispatched against it: the initial creation prompt
+   plus any "edit & regenerate" prompts. Marie can compare prompts
+   side-by-side to see what changed between Klaus's review rounds. */
+export interface PromptVersion {
+  prompt: string;
+  ts: number;
+  /** Where the version came from. "initial" = first dispatch from the
+   *  studio, "edit-regenerate" = user edited the prompt in the My Drafts
+   *  view and re-fired. */
+  source: "initial" | "edit-regenerate";
+}
+
 export interface DraftLibraryEntry {
   id: string;
   kind: DraftKind;
   /** Short human-readable summary used in the library list. */
   title: string;
-  /** The actual prompt text dispatched to AI Mode. */
+  /** The actual prompt text dispatched to AI Mode. Always reflects the
+   *  LATEST version — older versions live in `versions`. */
   prompt: string;
   /** Output locale ("de" | "en") at dispatch time. */
   outputLocale: string;
@@ -220,6 +234,10 @@ export interface DraftLibraryEntry {
   /** Snapshot of the mandate name at dispatch time so deleting the
    *  mandate later doesn't orphan the library entry's display label. */
   mandateName?: string;
+  /** Bundle 40 — version history. Optional for backward compat with
+   *  pre-B5 entries; new entries always include at least the initial
+   *  version. */
+  versions?: PromptVersion[];
   ts: number;
 }
 
@@ -236,16 +254,48 @@ export function getDraftLibrary(): DraftLibraryEntry[] {
 }
 
 export function pushDraftLibrary(
-  entry: Omit<DraftLibraryEntry, "id" | "ts">,
+  entry: Omit<DraftLibraryEntry, "id" | "ts" | "versions">,
 ): DraftLibraryEntry {
+  const ts = Date.now();
   const next: DraftLibraryEntry = {
     ...entry,
-    id: `drft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    ts: Date.now(),
+    id: `drft-${ts}-${Math.random().toString(36).slice(2, 8)}`,
+    ts,
+    /* Bundle 40: seed the initial version on creation so subsequent
+       edit-regenerate cycles always have a baseline to diff against. */
+    versions: [{ prompt: entry.prompt, ts, source: "initial" }],
   };
   const list = getDraftLibrary();
   safeWrite(LIBRARY_KEY, [next, ...list].slice(0, LIBRARY_CAP));
   return next;
+}
+
+/**
+ * Bundle 40 — append a new prompt version to an existing entry. Used
+ * by the My Drafts page when Marie clicks "Edit & regenerate". The
+ * entry's `prompt` field is also updated to the new version (so the
+ * default "Restore" action fires the latest version, not the original).
+ */
+export function addPromptVersion(
+  entryId: string,
+  newPrompt: string,
+  source: PromptVersion["source"] = "edit-regenerate",
+): void {
+  const list = getDraftLibrary();
+  const ts = Date.now();
+  const next = list.map((e) => {
+    if (e.id !== entryId) return e;
+    const versions = e.versions ?? [
+      { prompt: e.prompt, ts: e.ts, source: "initial" as const },
+    ];
+    return {
+      ...e,
+      prompt: newPrompt,
+      ts,
+      versions: [...versions, { prompt: newPrompt, ts, source }],
+    };
+  });
+  safeWrite(LIBRARY_KEY, next);
 }
 
 export function deleteDraftLibraryEntry(id: string): void {
