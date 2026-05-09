@@ -36,6 +36,17 @@ interface ComparisonTableProps {
    * about", not "show me what to label". Defaults false.
    */
   differencesOnly?: boolean;
+  /**
+   * D4 — fired when the user clicks a cell. The callback receives
+   * the row label, the cell value, and the JurisdictionLaw record
+   * for the column. Page renders a slide-over with the primary-
+   * source link. Optional — when undefined, cells are not clickable.
+   */
+  onCellClick?: (args: {
+    rowLabel: string;
+    value: string;
+    jurisdiction: JurisdictionLaw;
+  }) => void;
 }
 
 interface RowDef {
@@ -393,6 +404,7 @@ export default function ComparisonTable({
   dimension,
   targetDate,
   differencesOnly = false,
+  onCellClick,
 }: ComparisonTableProps) {
   const { t } = useLanguage();
   const jurisdictionNames = useMemo(() => getJurisdictionNames(t), [t]);
@@ -751,6 +763,7 @@ export default function ComparisonTable({
                 showSectionHeader={dimension === "all"}
                 forecastEvents={forecastEvents}
                 lookupForecast={lookupForecast}
+                onCellClick={onCellClick}
               />
             ))}
           </tbody>
@@ -778,6 +791,7 @@ function SectionBlock({
   showSectionHeader,
   forecastEvents,
   lookupForecast,
+  onCellClick,
 }: {
   label: string;
   rows: RowDefInternal[];
@@ -791,6 +805,14 @@ function SectionBlock({
     conceptKey: string | undefined,
     jurisdiction: string,
   ) => ForecastEvent | null;
+  /* D4 — when set, cells become clickable and dispatch this
+     callback. The page renders a slide-over with primary-source
+     verification info. */
+  onCellClick?: (args: {
+    rowLabel: string;
+    value: string;
+    jurisdiction: JurisdictionLaw;
+  }) => void;
 }) {
   return (
     <>
@@ -825,15 +847,12 @@ function SectionBlock({
               const value = row.accessor(data);
               const render = getCellRender(row.conceptKey || "", value);
               const forecast = lookupForecast(row.conceptKey, code);
-
-              return (
-                <td
-                  key={code}
-                  className={`
-                    py-2.5 px-4 border-b border-[var(--atlas-border-subtle)] align-top
-                    ${colIdx > 0 ? "border-l border-[var(--atlas-border-subtle)]" : ""}
-                  `}
-                >
+              /* D4: clickable when a handler is provided. We use a
+                 button-inside-td (not a clickable td) for keyboard +
+                 screen-reader accessibility — focusable, Enter/Space
+                 triggers, role implicit. */
+              const cellInner = (
+                <>
                   {render.badge ? (
                     <span className={render.badgeClassName}>{value}</span>
                   ) : (
@@ -848,6 +867,37 @@ function SectionBlock({
                     </span>
                   )}
                   {forecast && <ForecastBadge event={forecast} />}
+                </>
+              );
+
+              return (
+                <td
+                  key={code}
+                  className={`
+                    py-2.5 px-4 border-b border-[var(--atlas-border-subtle)] align-top
+                    ${colIdx > 0 ? "border-l border-[var(--atlas-border-subtle)]" : ""}
+                  `}
+                >
+                  {onCellClick ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onCellClick({
+                          rowLabel: row.label,
+                          value,
+                          jurisdiction: data,
+                        })
+                      }
+                      title={
+                        "Click to view primary source — " + data.countryName
+                      }
+                      className="text-left w-full -mx-1 px-1 py-0.5 rounded hover:bg-[var(--atlas-bg-inset)]/50 transition-colors cursor-pointer"
+                    >
+                      {cellInner}
+                    </button>
+                  ) : (
+                    cellInner
+                  )}
                 </td>
               );
             })}

@@ -53,6 +53,8 @@ import {
 } from "@/lib/atlas/comparator-diff-counts";
 import { CountryPalette } from "./CountryPalette";
 import { SavedSetsMenu } from "./SavedSetsMenu";
+import { CellSourcePanel } from "./CellSourcePanel";
+import type { JurisdictionLaw } from "@/lib/space-law-types";
 
 /**
  * Shared Apple-like glass style used for the sticky control bar.
@@ -261,6 +263,15 @@ function ComparatorPageInner() {
     if (differencesOnly) params.set("diff", "1");
     return params.toString();
   }, [selected, dimension, targetDate, differencesOnly]);
+
+  /* D4: cell-source-panel state — opens when the user clicks a
+     comparison cell. Captures the row label, value, and jurisdiction
+     so the panel can render primary-source context without re-deriving. */
+  const [sourceCell, setSourceCell] = useState<{
+    rowLabel: string;
+    value: string;
+    jurisdiction: JurisdictionLaw;
+  } | null>(null);
 
   /* D6: ⌘K palette state. Global listener mounts once; meta+K /
      ctrl+K toggle. Skips when user is typing in another input so
@@ -614,6 +625,7 @@ function ComparatorPageInner() {
             dimension={dimension}
             targetDate={targetDate}
             differencesOnly={differencesOnly}
+            onCellClick={setSourceCell}
           />
         </div>
 
@@ -637,6 +649,14 @@ function ComparatorPageInner() {
         open={paletteOpen}
         onClose={() => setPaletteOpen(false)}
         onApply={(next) => setSelected(next)}
+        language={language}
+      />
+
+      {/* D4: cell-source slide-over */}
+      <CellSourcePanel
+        open={sourceCell !== null}
+        onClose={() => setSourceCell(null)}
+        cell={sourceCell}
         language={language}
       />
     </>
