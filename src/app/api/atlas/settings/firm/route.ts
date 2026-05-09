@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getAtlasAuth, isOwner } from "@/lib/atlas-auth";
+import { canManageFirm, getAtlasAuth, isOwner } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 
@@ -36,19 +36,30 @@ export async function GET() {
     logoUrl: atlas.organizationLogo,
     slug: atlas.organizationSlug,
     isOwner: isOwner(atlas.role),
+    /* F-ADM-9: expose the wider firm-management permission so the
+       client can render edit-affordances for ADMIN users too, not
+       only OWNERs. The legacy `isOwner` flag stays in the response
+       for any caller still keying off it (no breaking change). */
+    canManageFirm: canManageFirm(atlas.role),
+    role: atlas.role,
   });
 }
 
-// PATCH /api/atlas/settings/firm — Owner only
+// PATCH /api/atlas/settings/firm — Owner or Admin
 export async function PATCH(request: Request) {
   const atlas = await getAtlasAuth();
   if (!atlas) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!isOwner(atlas.role)) {
+  /* F-ADM-9: was OWNER-only — widen to OWNER + ADMIN so a partner
+     can update firm details while the owner is unavailable. The
+     fine-grained mutation surface (slug change, transfer ownership,
+     delete org) stays OWNER-only via separate routes that keep
+     isOwner() gating. */
+  if (!canManageFirm(atlas.role)) {
     return NextResponse.json(
-      { error: "Only the owner can edit firm settings" },
+      { error: "Only owners and admins can edit firm settings" },
       { status: 403 },
     );
   }

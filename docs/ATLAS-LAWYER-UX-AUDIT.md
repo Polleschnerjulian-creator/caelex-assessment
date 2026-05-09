@@ -2072,3 +2072,87 @@ existing draft-export-Pipeline (~1h).
 was. Jetzt: Workspace + cards + locale = .doc/.md download in <1s.
 Memo-Drafting-Flow von "AI Mode → Pinboard → Word-File" ist
 end-to-end funktional.
+
+---
+
+## 28. Quick-Wins-Bündel #14 — F-ADM-9 Multi-User Firm-Admin (2026-05-09)
+
+Re-Audit-Ergebnis:
+
+- **F-ADM-9**: real gap, S-effort. Server-Helper `requireAtlasOrgAdmin`
+  existiert schon (admits OWNER + ADMIN), aber der firm-API-Route
+  und das settings-UI sind beide hard-OWNER-only.
+- **F-DRAFT-3**: audit estimate L (2-3 Wochen). Auto-save versions +
+  manual snapshot + diff-viewer braucht DB-Models, save-pipeline,
+  diff-UI. Defer (siehe unten).
+
+### F-ADM-9 — Multi-User Firm-Admin (MEDIUM → Done, ~30 min)
+
+- **Wo:**
+  - `src/lib/atlas-auth.ts` (neuer `canManageFirm` helper)
+  - `src/app/api/atlas/settings/firm/route.ts` (PATCH-gate +
+    GET-response erweitert)
+  - `src/app/(atlas)/atlas/settings/page.tsx` (FirmData interface,
+    `canEditFirm` derived state, 4 UI-gates aktualisiert)
+- **Vorher:** Klaus geht in Urlaub. Sein Partner (ADMIN role) öffnet
+  Settings → Firm → kann nichts editen, sieht "Only the owner can
+  edit firm settings" notice. Firm-Updates müssen warten bis Klaus
+  zurück ist. Schreibt Support-Ticket.
+- **Fix-Architektur:**
+  - **Atlas-auth helper** `canManageFirm(role)` returns true für
+    OWNER + ADMIN. Bewusst SEPARATER helper als `isOwner` damit
+    destruktive Operationen (delete org, transfer ownership) weiter
+    OWNER-only bleiben.
+  - **Server PATCH-Gate** `/api/atlas/settings/firm` jetzt:
+    `if (!canManageFirm(atlas.role))` (war: `!isOwner(...)`).
+    Error-message: "Only owners and admins" statt "Only the owner".
+  - **Server GET-Response** zusätzlich `canManageFirm: boolean` +
+    `role: OrganizationRole` (back-compat: `isOwner` bleibt drin).
+  - **Client FirmData** interface: `canManageFirm?: boolean` +
+    `role?: ...` (defensive optional damit alte server-versions
+    nicht sofort breaken).
+  - **Client `canEditFirm` derived state** in main settings component
+    mit fallback `firm?.canManageFirm ?? firm?.isOwner` — single
+    source of truth für alle 4 UI-gates.
+  - **4 UI-gates** alle `firm.isOwner`/`firm?.isOwner` → `canEditFirm`
+    geändert: read-only-notice, firm-name-input, logo-replace-button,
+    logo-upload-button.
+  - **Acting-as-Admin Banner**: emerald-tinted notice rendered wenn
+    `canEditFirm && firm.role === "ADMIN"` — Klaus's partner sieht
+    "Sie bearbeiten als Admin im Auftrag des Owners. Änderungen
+    werden im Audit-Log vermerkt." (oder EN-Pendant). Klare
+    delegation-mode signalling, kein silent-edit.
+- **Bewusst getrennt von destruktiven ops:** Delete org, transfer
+  ownership, slug-change bleiben OWNER-only via `isOwner`. ADMIN
+  delegation ist für day-to-day firm-info-Pflege, nicht für
+  Existenz-bedrohende Mutations.
+- **Aufwand:** ~30 min
+
+### F-DRAFT-3 — Versioning/Snapshots (DEFERRED)
+
+- **Audit-Effort:** L (2-3 Wochen)
+- **Real-scope:** auto-save versions + manual snapshot + diff-viewer
+  braucht:
+  - DB-Models `AtlasDraftVersion` + `AtlasDraftSnapshot`
+  - Save-pipeline (auto-save jede N seconds + manual trigger)
+  - Diff-UI (text-diff-render, side-by-side oder inline)
+  - API-Routes für list/get/restore versions
+- **Existing functionality**: `/atlas/library` saved Atlas-message
+  entries — IS eine form von versioning (jeder save = snapshot der
+  Atlas-Antwort), aber per-message nicht per-draft-iteration. Kein
+  diff-viewer.
+- **Status:** Tracked als own future sprint. Würde best mit dem
+  Drafting Studio-Refactor zusammen kommen (drafting/page.tsx
+  aktuell nur dispatch-to-AI-Mode, kein eigenes draft-state-store).
+
+### Trust-Score nach Quick-Wins-Bündel #14
+
+| Surface          | Vorher | Nachher                                                                |
+| ---------------- | ------ | ---------------------------------------------------------------------- |
+| Settings + Admin | 7.5/10 | **7.8/10** (+0.3 — RBAC-Gap geschlossen, Klaus's vacation-blocker weg) |
+| GESAMT           | 8.7/10 | **8.8/10**                                                             |
+
+**Klaus-Impact:** Partner kann firm-name + logo updaten ohne dass
+Klaus aus dem Urlaub angerufen werden muss. Audit-trail ist via
+existing `logger.info("Atlas firm settings updated", {...updatedBy})`
+abgedeckt — wir wissen wer was geändert hat.

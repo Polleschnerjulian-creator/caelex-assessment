@@ -216,3 +216,21 @@ export async function requireAtlasOrgAdmin(
 export function isOwner(role: OrganizationRole): boolean {
   return role === "OWNER";
 }
+
+/**
+ * Atlas Lawyer-UX-Audit F-ADM-9 — firm-level management permission.
+ *
+ * Returns true if the role can edit firm-level settings (name, logo,
+ * etc.). OWNER + ADMIN both qualify; MEMBER and VIEWER do not. The
+ * audit's complaint was that Klaus going on holiday left his partner
+ * unable to update firm details — partners typically hold the ADMIN
+ * role but the firm tab was OWNER-gated. This helper widens the gate
+ * to ADMIN without losing the OWNER-only floor for destructive
+ * operations (which still go through `isOwner`).
+ *
+ * Use this for firm-info edits (name, logo). Keep `isOwner` for
+ * destructive operations (delete org, transfer ownership).
+ */
+export function canManageFirm(role: OrganizationRole): boolean {
+  return role === "OWNER" || role === "ADMIN";
+}

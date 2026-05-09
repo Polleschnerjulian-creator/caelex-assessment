@@ -80,6 +80,13 @@ interface FirmData {
   logoUrl: string | null;
   slug: string;
   isOwner: boolean;
+  /* F-ADM-9: widened firm-edit permission. True for OWNER + ADMIN.
+     Falls back to `isOwner` when the server is older and doesn't
+     yet emit this field (defensive — in practice the server is
+     always co-deployed with the client). */
+  canManageFirm?: boolean;
+  /** F-ADM-9: raw role for UI hints ("Acting as ADMIN" badge). */
+  role?: "OWNER" | "ADMIN" | "MEMBER" | "VIEWER";
 }
 
 interface TeamMember {
@@ -436,13 +443,22 @@ export default function SettingsPage() {
     [setLanguage],
   );
 
+  /* F-ADM-9: derived edit permission. Falls back to `isOwner` when
+     the server hasn't yet rolled out the wider flag — same back-compat
+     pattern as on the FirmData interface. Used everywhere the firm-
+     tab gates UI on "can the current user edit firm-level settings?".
+     We do NOT use this for destructive operations (delete org,
+     transfer ownership) — those still go through `isOwner` per
+     atlas-auth.canManageFirm vs isOwner separation. */
+  const canEditFirm = Boolean(firm?.canManageFirm ?? firm?.isOwner);
+
   /* ──── Firm name save (debounced) ──── */
   // M-14: same initial-load guard as the profile-name path above —
   // skip the first commit of firm.name so GET-then-PATCH doesn't
   // round-trip on every page load.
   const firmNameInitialRef = useRef(true);
   useEffect(() => {
-    if (!firm || firmLoading || !firm.isOwner) return;
+    if (!firm || firmLoading || !canEditFirm) return;
     if (firmNameInitialRef.current) {
       firmNameInitialRef.current = false;
       return;
@@ -1256,8 +1272,12 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {/* Owner-only notice */}
-              {firm && !firm.isOwner && (
+              {/* F-ADM-9: read-only notice now triggers when the user
+                  is below ADMIN (was: not OWNER). Plus a quiet "Acting
+                  as ADMIN" hint when an admin is editing — Klaus's
+                  partner gets a clear signal that they're in
+                  delegated-management mode. */}
+              {firm && !canEditFirm && (
                 <div className="flex items-center gap-2 px-4 py-2.5 mb-4 rounded-lg bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border-subtle)]">
                   <Info
                     size={13}
@@ -1267,6 +1287,21 @@ export default function SettingsPage() {
                   />
                   <span className="text-[12px] text-[var(--atlas-text-muted)]">
                     {t("atlas.settings_owner_only")}
+                  </span>
+                </div>
+              )}
+              {firm && canEditFirm && firm.role === "ADMIN" && (
+                <div className="flex items-center gap-2 px-4 py-2.5 mb-4 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30">
+                  <Info
+                    size={13}
+                    className="text-emerald-700 dark:text-emerald-300 shrink-0"
+                    strokeWidth={1.5}
+                    aria-hidden="true"
+                  />
+                  <span className="text-[12px] text-emerald-800 dark:text-emerald-200">
+                    {language === "de"
+                      ? "Sie bearbeiten als Admin im Auftrag des Owners. Änderungen werden im Audit-Log vermerkt."
+                      : "Editing as Admin on behalf of the owner. Changes are recorded in the audit log."}
                   </span>
                 </div>
               )}
@@ -1280,7 +1315,7 @@ export default function SettingsPage() {
                     <label className="block text-[12px] font-medium text-[var(--atlas-text-secondary)] mb-1.5">
                       {t("atlas.settings_firm_name")}
                     </label>
-                    {firm?.isOwner ? (
+                    {canEditFirm ? (
                       <input
                         type="text"
                         value={firm?.name ?? ""}
@@ -1318,7 +1353,7 @@ export default function SettingsPage() {
                             className="max-h-14 max-w-14 object-contain"
                           />
                         </div>
-                        {firm.isOwner && (
+                        {canEditFirm && (
                           <div className="flex flex-col gap-1.5">
                             <button
                               onClick={() => fileRef.current?.click()}
@@ -1336,7 +1371,7 @@ export default function SettingsPage() {
                           </div>
                         )}
                       </div>
-                    ) : firm?.isOwner ? (
+                    ) : canEditFirm ? (
                       <button
                         onClick={() => fileRef.current?.click()}
                         className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-dashed border-[var(--atlas-border)] bg-[var(--atlas-bg-surface-muted)] hover:border-[var(--atlas-border-strong)] hover:bg-[var(--atlas-bg-surface)] transition-all w-full"
