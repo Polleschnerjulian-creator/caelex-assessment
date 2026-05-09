@@ -6,6 +6,8 @@ import type {
   SpaceLawCountryCode,
   JurisdictionLaw,
 } from "@/lib/space-law-types";
+import { EU_MEMBER_STATES_SET } from "@/lib/space-law-types";
+import { CONCEPT_KEYS } from "@/lib/atlas/concept-keys";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { getJurisdictionNames } from "@/app/(atlas)/atlas/i18n-labels";
 import ForecastBadge from "./ForecastBadge";
@@ -60,32 +62,10 @@ function findForecastForConcept(
   return null;
 }
 
-const EU_MEMBER_CODES = new Set([
-  "FR",
-  "DE",
-  "IT",
-  "LU",
-  "NL",
-  "BE",
-  "ES",
-  "AT",
-  "PL",
-  "DK",
-  "SE",
-  "FI",
-  "PT",
-  "GR",
-  "CZ",
-  "IE",
-  "EE",
-  "RO",
-  "HU",
-  "SI",
-  "LV",
-  "LT",
-  "SK",
-  "HR",
-]);
+/* BUG-A2: replaced 24-entry hard-coded set with the canonical
+   `EU_MEMBER_STATES_SET` from `space-law-types.ts`. Comparison-table,
+   forecast-engine, and country-selector now share one list. */
+const EU_MEMBER_CODES = EU_MEMBER_STATES_SET;
 
 // ─── Helpers ───
 
@@ -422,15 +402,20 @@ export default function ComparisonTable({
   }, [targetDate]);
 
   // Build translated row definitions
+  /* BUG-A1: all concept-keys reference the canonical CONCEPT_KEYS map
+     so they stay in sync with `forecast-engine.ts`'s emitter side.
+     Previously `min_coverage` and `debris_plan` were typed as ad-hoc
+     strings and drifted from the engine's `minimum_coverage` /
+     `debris_mitigation_plan`, silently breaking ForecastBadge render. */
   const authRows = useMemo(
     () =>
       addConceptKeys(getAuthRows(t), [
-        "licensing_authority",
-        "legislation",
-        "status",
-        "mandatory_insurance",
-        "gov_indemnification",
-        "licensing_requirements",
+        CONCEPT_KEYS.LICENSING_AUTHORITY,
+        CONCEPT_KEYS.LEGISLATION,
+        CONCEPT_KEYS.STATUS,
+        CONCEPT_KEYS.MANDATORY_INSURANCE,
+        CONCEPT_KEYS.GOV_INDEMNIFICATION,
+        CONCEPT_KEYS.LICENSING_REQUIREMENTS,
       ]),
     [t],
   );
@@ -438,13 +423,13 @@ export default function ComparisonTable({
   const liabilityRows = useMemo(
     () =>
       addConceptKeys(getLiabilityRows(t), [
-        "liability_regime",
-        "liability_cap",
-        "mandatory_insurance",
-        "min_coverage",
-        "third_party_required",
-        "gov_indemnification",
-        "indemnification_cap",
+        CONCEPT_KEYS.LIABILITY_REGIME,
+        CONCEPT_KEYS.LIABILITY_CAP,
+        CONCEPT_KEYS.MANDATORY_INSURANCE,
+        CONCEPT_KEYS.MINIMUM_COVERAGE,
+        CONCEPT_KEYS.THIRD_PARTY_REQUIRED,
+        CONCEPT_KEYS.GOV_INDEMNIFICATION,
+        CONCEPT_KEYS.INDEMNIFICATION_CAP,
       ]),
     [t],
   );
@@ -452,28 +437,32 @@ export default function ComparisonTable({
   const debrisRows = useMemo(
     () =>
       addConceptKeys(getDebrisRows(t), [
-        "deorbit_requirement",
-        "deorbit_timeline",
-        "passivation",
-        "debris_plan",
-        "collision_avoidance",
-        "standards",
+        CONCEPT_KEYS.DEORBIT_REQUIREMENT,
+        CONCEPT_KEYS.DEORBIT_TIMELINE,
+        CONCEPT_KEYS.PASSIVATION,
+        CONCEPT_KEYS.DEBRIS_MITIGATION_PLAN,
+        CONCEPT_KEYS.COLLISION_AVOIDANCE,
+        CONCEPT_KEYS.STANDARDS,
       ]),
     [t],
   );
 
   const timelineRows = useMemo(
-    () => addConceptKeys(getTimelineRows(t), ["annual_fee", "other_costs"]),
+    () =>
+      addConceptKeys(getTimelineRows(t), [
+        CONCEPT_KEYS.ANNUAL_FEE,
+        CONCEPT_KEYS.OTHER_COSTS,
+      ]),
     [t],
   );
 
   const euRows = useMemo(
     () =>
       addConceptKeys(getEuRows(t), [
-        "relationship",
-        "description",
-        "key_articles",
-        "transition_notes",
+        CONCEPT_KEYS.RELATIONSHIP,
+        CONCEPT_KEYS.DESCRIPTION,
+        CONCEPT_KEYS.KEY_ARTICLES,
+        CONCEPT_KEYS.TRANSITION_NOTES,
       ]),
     [t],
   );
@@ -481,9 +470,9 @@ export default function ComparisonTable({
   const registrationRows = useMemo(
     () =>
       addConceptKeys(getRegistrationRows(t), [
-        "national_registry",
-        "registry_name",
-        "un_registration",
+        CONCEPT_KEYS.NATIONAL_REGISTRY,
+        CONCEPT_KEYS.REGISTRY_NAME,
+        CONCEPT_KEYS.UN_REGISTRATION,
       ]),
     [t],
   );

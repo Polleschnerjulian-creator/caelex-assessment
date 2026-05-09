@@ -95,6 +95,56 @@ export const SPACE_LAW_COUNTRY_CODES: SpaceLawCountryCode[] = [
 ];
 
 /**
+ * Atlas Comparator BUG-A2 — canonical EU member states list.
+ *
+ * Three different "EU codes" lists existed before: ComparisonTable's
+ * `EU_MEMBER_CODES` (24 codes), CountrySelector's `EU_COUNTRY_CODES`
+ * (only 16 — missing EE/RO/HU/SI/LV/LT/SK/HR), and forecast-engine's
+ * `EU_ISO_CODES` (24, same as ComparisonTable). The mismatch meant
+ * the comparator's "EU" quick-action button silently EXCLUDED 8 EU
+ * member states the user might have just added manually.
+ *
+ * This constant is the single source of truth. All three callers MUST
+ * import it. Includes the 8 codes the comparator's CountrySelector
+ * was missing (EE/RO/HU/SI/LV/LT/SK/HR) so the EU button now selects
+ * every member state the comparator actually supports.
+ *
+ * Brexit note: UK is NOT included (left the EU 2020-01-31). Listed
+ * separately at the call site if needed.
+ */
+export const EU_MEMBER_STATES: readonly SpaceLawCountryCode[] = [
+  "FR",
+  "DE",
+  "IT",
+  "LU",
+  "NL",
+  "BE",
+  "ES",
+  "AT",
+  "PL",
+  "DK",
+  "SE",
+  "FI",
+  "PT",
+  "GR",
+  "CZ",
+  "IE",
+  "EE",
+  "RO",
+  "HU",
+  "SI",
+  "LV",
+  "LT",
+  "SK",
+  "HR",
+] as const;
+
+/** Set form for O(1) `has()` checks (used by forecast-engine + comparison-table). */
+export const EU_MEMBER_STATES_SET: ReadonlySet<string> = new Set(
+  EU_MEMBER_STATES,
+);
+
+/**
  * Extended catalogue including the 11 strategic non-EU/non-UK actors added
  * in the 2026-04 Atlas content expansion (JP, IN, AU, CA, AE, KR, IL, CN,
  * RU, BR, ZA). These jurisdictions are catalogued in the legal-sources

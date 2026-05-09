@@ -27,6 +27,8 @@
 import { REGULATION_TIMELINE } from "@/data/regulation-timeline";
 import type { RegulationPhase } from "@/data/regulation-timeline";
 import type { LegalSource } from "@/data/legal-sources/types";
+import { EU_MEMBER_STATES, EU_MEMBER_STATES_SET } from "@/lib/space-law-types";
+import { CONCEPT_KEYS } from "@/lib/atlas/concept-keys";
 
 // Legal sources imported from the files most likely to contain
 // forecastable future events. Keeping these explicit (rather than a
@@ -174,32 +176,10 @@ function expandApplicableTo(applicableTo: string[]): string[] {
   return Array.from(out);
 }
 
-const EU_ISO_CODES = [
-  "FR",
-  "DE",
-  "IT",
-  "LU",
-  "NL",
-  "BE",
-  "ES",
-  "AT",
-  "PL",
-  "DK",
-  "SE",
-  "FI",
-  "PT",
-  "GR",
-  "CZ",
-  "IE",
-  "EE",
-  "RO",
-  "HU",
-  "SI",
-  "LV",
-  "LT",
-  "SK",
-  "HR",
-];
+/* BUG-A2: previously a local 24-entry hard-coded EU-codes list. Now
+   imported from the canonical `EU_MEMBER_STATES` so all three callers
+   (forecast-engine, ComparisonTable, CountrySelector) share one source. */
+const EU_ISO_CODES = EU_MEMBER_STATES;
 
 /**
  * Heuristic: map a LegalSource to the set of comparator dimensions
@@ -252,6 +232,9 @@ function mapSourceDimensions(source: LegalSource): ForecastDimension[] {
  * as per-cell badges.
  */
 function mapSourceConcepts(source: LegalSource): string[] {
+  /* BUG-A1: emit canonical CONCEPT_KEYS so the comparator's row-level
+     conceptKey lookup always resolves. Previously raw strings; now the
+     same constants both sides share. */
   const concepts = new Set<string>();
   const title = source.title_en.toLowerCase();
   const tags = source.compliance_areas;
@@ -260,32 +243,32 @@ function mapSourceConcepts(source: LegalSource): string[] {
     /deorbit|disposal|debris/.test(title) ||
     tags.includes("debris_mitigation")
   ) {
-    concepts.add("deorbit_timeline");
-    concepts.add("debris_mitigation_plan");
+    concepts.add(CONCEPT_KEYS.DEORBIT_TIMELINE);
+    concepts.add(CONCEPT_KEYS.DEBRIS_MITIGATION_PLAN);
   }
   if (
     /liability|insurance|indemnity/.test(title) ||
     tags.includes("liability")
   ) {
-    concepts.add("liability_regime");
-    concepts.add("liability_cap");
-    concepts.add("mandatory_insurance");
-    concepts.add("minimum_coverage");
+    concepts.add(CONCEPT_KEYS.LIABILITY_REGIME);
+    concepts.add(CONCEPT_KEYS.LIABILITY_CAP);
+    concepts.add(CONCEPT_KEYS.MANDATORY_INSURANCE);
+    concepts.add(CONCEPT_KEYS.MINIMUM_COVERAGE);
   }
   if (
     /licence|licens|authoris|authoriz/.test(title) ||
     tags.includes("licensing")
   ) {
-    concepts.add("status");
-    concepts.add("licensing_authority");
+    concepts.add(CONCEPT_KEYS.STATUS);
+    concepts.add(CONCEPT_KEYS.LICENSING_AUTHORITY);
   }
   if (/registration|registry/.test(title) || tags.includes("registration")) {
-    concepts.add("national_registry");
-    concepts.add("registry_name");
+    concepts.add(CONCEPT_KEYS.NATIONAL_REGISTRY);
+    concepts.add(CONCEPT_KEYS.REGISTRY_NAME);
   }
   if (source.type === "eu_regulation" || /eu space act/i.test(title)) {
-    concepts.add("eu_space_act_readiness");
-    concepts.add("relationship");
+    concepts.add(CONCEPT_KEYS.EU_SPACE_ACT_READINESS);
+    concepts.add(CONCEPT_KEYS.RELATIONSHIP);
   }
   return Array.from(concepts);
 }
@@ -393,24 +376,25 @@ function dimensionsForTimelinePhase(p: RegulationPhase): ForecastDimension[] {
 }
 
 function conceptsForTimelinePhase(p: RegulationPhase): string[] {
+  /* BUG-A1: same canonical CONCEPT_KEYS reference. */
   const name = p.regulation.toLowerCase();
   const concepts = new Set<string>();
   if (/eu space act/.test(name)) {
-    concepts.add("eu_space_act_readiness");
-    concepts.add("relationship");
-    concepts.add("status");
+    concepts.add(CONCEPT_KEYS.EU_SPACE_ACT_READINESS);
+    concepts.add(CONCEPT_KEYS.RELATIONSHIP);
+    concepts.add(CONCEPT_KEYS.STATUS);
   }
   if (/nis2/.test(name)) {
-    concepts.add("cybersecurity_regime");
-    concepts.add("eu_space_act_readiness");
+    concepts.add(CONCEPT_KEYS.CYBERSECURITY_REGIME);
+    concepts.add(CONCEPT_KEYS.EU_SPACE_ACT_READINESS);
   }
   if (/deorbit|debris/.test(name)) {
-    concepts.add("deorbit_timeline");
-    concepts.add("debris_mitigation_plan");
+    concepts.add(CONCEPT_KEYS.DEORBIT_TIMELINE);
+    concepts.add(CONCEPT_KEYS.DEBRIS_MITIGATION_PLAN);
   }
   if (/space industry act|space activities|space operations/.test(name)) {
-    concepts.add("status");
-    concepts.add("legislation");
+    concepts.add(CONCEPT_KEYS.STATUS);
+    concepts.add(CONCEPT_KEYS.LEGISLATION);
   }
   return Array.from(concepts);
 }
@@ -436,12 +420,14 @@ export function getEffectiveEventsAt(targetDate: Date): ForecastEvent[] {
  * clutter the ribbon.
  */
 export function getJurisdictionTimeline(code: string): ForecastEvent[] {
+  /* Uses the Set-form for O(1) membership check + accepts generic
+     string (the `code` arrives unsanitised from event/route data). */
   return getAllForecastEvents().filter(
     (e) =>
       e.effectiveDate > TODAY_ISO &&
       (e.jurisdictions.includes(code) ||
         e.jurisdictions.includes("INT") ||
-        (e.jurisdictions.includes("EU") && EU_ISO_CODES.includes(code))),
+        (e.jurisdictions.includes("EU") && EU_MEMBER_STATES_SET.has(code))),
   );
 }
 

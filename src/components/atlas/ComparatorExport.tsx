@@ -301,8 +301,21 @@ interface GlanceCard {
   detail: string;
 }
 
+/* BUG-A8: glance-card labels + detail strings were hard-coded English
+   even when the export ran in DE locale. The chrome-i18n object
+   already supported per-locale strings; we mirror that pattern here
+   so the German PDF actually says "In allen ausgewählten Jurisdiktionen
+   pflichtig" instead of "Mandatory in: …". `nOf` template handles the
+   "X of Y" connector locale-correctly. */
+type GlanceLocale = "en" | "de";
+
+function nOf(n: number, total: number, locale: GlanceLocale): string {
+  return locale === "de" ? `${n} von ${total}` : `${n} of ${total}`;
+}
+
 function deriveGlanceCards(
   jurisdictions: { code: SpaceLawCountryCode; data: JurisdictionLaw }[],
+  locale: GlanceLocale = "en",
 ): GlanceCard[] {
   // NOTE: "Fastest Path" card removed — it was derived from
   // `typicalProcessingWeeks.max`, which is an editorial estimate. We
@@ -324,35 +337,52 @@ function deriveGlanceCards(
     (j) => j.data.legislation.status === "enacted",
   );
 
+  const total = jurisdictions.length;
+  const isDe = locale === "de";
+
   return [
     {
       num: "01",
-      label: "Enacted Frameworks",
-      value: `${enacted.length} of ${jurisdictions.length}`,
+      label: isDe ? "Geltende Rahmenwerke" : "Enacted Frameworks",
+      value: nOf(enacted.length, total, locale),
       detail:
-        enacted.length === jurisdictions.length
-          ? "All selected jurisdictions operate under an enacted national space law"
+        enacted.length === total
+          ? isDe
+            ? "Alle ausgewählten Jurisdiktionen verfügen über ein in Kraft getretenes nationales Weltraumgesetz"
+            : "All selected jurisdictions operate under an enacted national space law"
           : enacted.length > 0
-            ? `Enacted in: ${enacted.map((j) => j.code).join(" · ")}`
-            : "None of the selected jurisdictions has an enacted dedicated space law",
+            ? isDe
+              ? `In Kraft in: ${enacted.map((j) => j.code).join(" · ")}`
+              : `Enacted in: ${enacted.map((j) => j.code).join(" · ")}`
+            : isDe
+              ? "Keine der ausgewählten Jurisdiktionen verfügt über ein eigenes Weltraumgesetz in Kraft"
+              : "None of the selected jurisdictions has an enacted dedicated space law",
     },
     {
       num: "02",
-      label: "Mandatory Insurance",
-      value: `${mandatoryInsurance.length} of ${jurisdictions.length}`,
+      label: isDe ? "Pflichtversicherung" : "Mandatory Insurance",
+      value: nOf(mandatoryInsurance.length, total, locale),
       detail:
         mandatoryInsurance.length > 0
-          ? `Mandatory in: ${mandatoryInsurance.map((j) => j.code).join(" · ")}`
-          : "Voluntary across all selected jurisdictions",
+          ? isDe
+            ? `Pflichtig in: ${mandatoryInsurance.map((j) => j.code).join(" · ")}`
+            : `Mandatory in: ${mandatoryInsurance.map((j) => j.code).join(" · ")}`
+          : isDe
+            ? "Freiwillig in allen ausgewählten Jurisdiktionen"
+            : "Voluntary across all selected jurisdictions",
     },
     {
       num: "03",
-      label: "Deorbit Obligation",
-      value: `${deorbitRequired.length} of ${jurisdictions.length}`,
+      label: isDe ? "Deorbit-Pflicht" : "Deorbit Obligation",
+      value: nOf(deorbitRequired.length, total, locale),
       detail:
         deorbitRequired.length > 0
-          ? `Required in: ${deorbitRequired.map((j) => j.code).join(" · ")}`
-          : "No formal deorbit requirement in any selected jurisdiction",
+          ? isDe
+            ? `Erforderlich in: ${deorbitRequired.map((j) => j.code).join(" · ")}`
+            : `Required in: ${deorbitRequired.map((j) => j.code).join(" · ")}`
+          : isDe
+            ? "Keine formale Deorbit-Pflicht in einer der ausgewählten Jurisdiktionen"
+            : "No formal deorbit requirement in any selected jurisdiction",
     },
     {
       // Fixed: previously gated the detail text on
@@ -360,14 +390,20 @@ function deriveGlanceCards(
       // registry card. The correct discriminant is whether any
       // national registry is present.
       num: "04",
-      label: "National Registry",
-      value: `${hasRegistry.length} of ${jurisdictions.length}`,
+      label: isDe ? "Nationales Register" : "National Registry",
+      value: nOf(hasRegistry.length, total, locale),
       detail:
-        hasRegistry.length === jurisdictions.length
-          ? "National registry maintained in every selected jurisdiction"
+        hasRegistry.length === total
+          ? isDe
+            ? "Nationales Register in jeder ausgewählten Jurisdiktion vorhanden"
+            : "National registry maintained in every selected jurisdiction"
           : hasRegistry.length === 0
-            ? "No national registry maintained — UN Registration Convention may still apply"
-            : `National registry in: ${hasRegistry.map((j) => j.code).join(" · ")}`,
+            ? isDe
+              ? "Kein nationales Register vorhanden — UN-Registrierungs-Übereinkommen kann dennoch greifen"
+              : "No national registry maintained — UN Registration Convention may still apply"
+            : isDe
+              ? `Nationales Register in: ${hasRegistry.map((j) => j.code).join(" · ")}`
+              : `National registry in: ${hasRegistry.map((j) => j.code).join(" · ")}`,
     },
   ];
 }
@@ -465,9 +501,11 @@ export default function ComparatorExport({
   const countryCodes = jurisdictions.map((j) => j.code).join(" / ");
   const dimensionLabel = DIMENSION_LABELS[dimension] || "All Dimensions";
 
+  /* BUG-A8: thread locale through so the glance-card labels +
+     details match the rest of the export's chrome locale. */
   const glanceCards =
     dimension === "all" || sections.length > 1
-      ? deriveGlanceCards(jurisdictions)
+      ? deriveGlanceCards(jurisdictions, isDe ? "de" : "en")
       : null;
 
   // ─── Layout sizing rules ───

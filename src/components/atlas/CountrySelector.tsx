@@ -4,27 +4,20 @@ import { useState, useRef, useEffect } from "react";
 import { ChevronDown, X, Check } from "lucide-react";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import type { SpaceLawCountryCode } from "@/lib/space-law-types";
+import { EU_MEMBER_STATES } from "@/lib/space-law-types";
 
-const MAX_SELECTIONS = 5;
+/* BUG-A2 + B2: was 5. Cross-border partners routinely brief 6-8
+   jurisdictions for FDI/Series-A panels, and ComparatorExport already
+   handles 6+ in landscape mode (line 503). Bumped to 8 — the export
+   stays clean, and the table's horizontal-scroll handles overflow. */
+const MAX_SELECTIONS = 8;
 
-const EU_COUNTRY_CODES: SpaceLawCountryCode[] = [
-  "FR",
-  "DE",
-  "IT",
-  "LU",
-  "NL",
-  "BE",
-  "ES",
-  "AT",
-  "PL",
-  "DK",
-  "SE",
-  "FI",
-  "PT",
-  "GR",
-  "CZ",
-  "IE",
-];
+/* BUG-A2: the local EU_COUNTRY_CODES list was missing 8 EU member
+   states (EE/RO/HU/SI/LV/LT/SK/HR) — clicking the "EU" button silently
+   excluded them. Now imported from the canonical
+   `EU_MEMBER_STATES` so this list always matches what the
+   ComparisonTable + forecast-engine consider EU. */
+const EU_COUNTRY_CODES: readonly SpaceLawCountryCode[] = EU_MEMBER_STATES;
 
 interface CountrySelectorProps {
   selected: SpaceLawCountryCode[];
@@ -58,8 +51,21 @@ export default function CountrySelector({
     }
   };
 
+  /* BUG-A3: was a destructive overwrite — Marie built "FR + UK + CH",
+     clicked EU, lost everything except the first 5 EU codes. Now we
+     MERGE the user's existing selection with EU members, preserving
+     non-EU choices first (so the user's intentional picks survive),
+     then top up with EU codes the user didn't already pick, until the
+     cap. If the cap is hit before we exhaust EU members, we don't
+     silently truncate — return what we got and let the count-indicator
+     speak for itself. */
   const selectAllEU = () => {
-    onChange(EU_COUNTRY_CODES.slice(0, MAX_SELECTIONS));
+    const merged: SpaceLawCountryCode[] = [...selected];
+    for (const code of EU_COUNTRY_CODES) {
+      if (merged.length >= MAX_SELECTIONS) break;
+      if (!merged.includes(code)) merged.push(code);
+    }
+    onChange(merged);
   };
 
   const clearAll = () => onChange([]);
