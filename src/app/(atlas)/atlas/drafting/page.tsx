@@ -1666,9 +1666,12 @@ export default function DraftingStudioPage() {
             </button>
             {/* Bundle 35 — section-by-section route. Same auth tile,
                 stepwise generation. URL params carry the current
-                jurisdiction + operator + lang. */}
+                jurisdiction + operator + lang.
+                Bundle 42 — also pass the active mandate id so the
+                workspace is keyed per-mandate (no clobbering when
+                switching between Sky-Sat and Aero-Partners). */}
             <Link
-              href={`/atlas/drafting/auth/section-by-section?j=${authJurisdiction}&op=${authOperator}&lang=${outputLang}`}
+              href={`/atlas/drafting/auth/section-by-section?j=${authJurisdiction}&op=${authOperator}&lang=${outputLang}${activeMandate ? `&m=${activeMandate.id}` : ""}`}
               className="inline-flex items-center justify-center gap-1 text-[10.5px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)] transition-colors"
             >
               <Layers size={10} strokeWidth={1.8} aria-hidden="true" />

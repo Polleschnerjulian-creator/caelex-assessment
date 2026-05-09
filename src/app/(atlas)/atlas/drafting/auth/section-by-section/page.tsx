@@ -48,14 +48,15 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { openAIMode } from "@/components/atlas/AIModeLauncher";
 import { AUTH_SECTIONS, type SectionStatus } from "@/lib/atlas/auth-sections";
 import {
-  getWorkspace,
+  getWorkspaceFor,
   saveWorkspace,
-  clearWorkspace,
+  deleteWorkspace,
   createWorkspace,
   composeFullDraft,
   type SectionWorkspace,
 } from "@/lib/atlas/section-by-section-store";
-import { getMandateIntake, EMPTY_INTAKE } from "@/lib/atlas/mandate-intake";
+import { EMPTY_INTAKE, type MandateIntake } from "@/lib/atlas/mandate-intake";
+import { getMandateStore, type Mandate } from "@/lib/atlas/mandate-store";
 
 const OPERATOR_LABELS: Record<string, { de: string; en: string }> = {
   satellite_operator: { de: "Satellitenbetreiber", en: "Satellite operator" },
@@ -120,31 +121,47 @@ export default function SectionBySectionPage() {
   const isDe = language === "de";
   const params = useSearchParams();
 
-  /* Read URL params on mount only — they're the workspace's identity. */
+  /* Read URL params on mount — they're the workspace's identity. */
   const urlJurisdiction = params.get("j") || "DE";
   const urlOperator = params.get("op") || "satellite_operator";
   const urlLang = (params.get("lang") || (isDe ? "de" : "en")) as "de" | "en";
+  /* Bundle 42: mandate id from URL. Falls back to "use the active
+     mandate at hydration time", or null if there's no active. */
+  const urlMandateId = params.get("m");
 
   const [workspace, setWorkspace] = useState<SectionWorkspace | null>(null);
+  const [mandate, setMandate] = useState<Mandate | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  /* On mount: load existing workspace OR create a fresh one. We honor
-     URL params over any stored workspace so navigating from the auth
-     tile with new params resets the workspace. */
+  /* On mount: resolve the mandate (from URL, then active fallback),
+     then look up the matching workspace OR create a fresh one. The
+     workspace is keyed by (mandateId, jurisdiction, operator, lang)
+     so switching any of those four loads a different workspace
+     instead of clobbering the current one. */
   useEffect(() => {
-    const existing = getWorkspace();
+    const store = getMandateStore();
+    const m =
+      (urlMandateId
+        ? (store.mandates.find((mm) => mm.id === urlMandateId) ?? null)
+        : null) ??
+      store.mandates.find((mm) => mm.id === store.activeMandateId) ??
+      null;
+    setMandate(m);
+
     const sectionIds = AUTH_SECTIONS.map((s) => s.id);
-    if (
-      existing &&
-      existing.jurisdiction === urlJurisdiction &&
-      existing.operatorType === urlOperator &&
-      existing.outputLang === urlLang &&
-      sectionIds.every((id) => id in existing.sections)
-    ) {
+    const existing = getWorkspaceFor({
+      mandateId: m?.id ?? null,
+      jurisdiction: urlJurisdiction,
+      operatorType: urlOperator,
+      outputLang: urlLang,
+    });
+
+    if (existing && sectionIds.every((id) => id in existing.sections)) {
       setWorkspace(existing);
     } else {
       const fresh = createWorkspace({
+        mandateId: m?.id ?? null,
         jurisdiction: urlJurisdiction,
         operatorType: urlOperator,
         outputLang: urlLang,
@@ -153,12 +170,9 @@ export default function SectionBySectionPage() {
       setWorkspace(fresh);
     }
     setHydrated(true);
-  }, [urlJurisdiction, urlOperator, urlLang]);
+  }, [urlJurisdiction, urlOperator, urlLang, urlMandateId]);
 
-  const intake = useMemo(
-    () => (typeof window === "undefined" ? EMPTY_INTAKE : getMandateIntake()),
-    [],
-  );
+  const intake: MandateIntake = mandate?.intake ?? EMPTY_INTAKE;
 
   const operatorLabel = OPERATOR_LABELS[urlOperator]?.[urlLang] ?? urlOperator;
 
@@ -214,8 +228,11 @@ export default function SectionBySectionPage() {
   };
 
   const handleResetWorkspace = () => {
-    clearWorkspace();
+    /* Bundle 42: only delete THIS workspace, not all of them. The
+       other (mandate, jurisdiction, op, lang) workspaces stay put. */
+    if (workspace) deleteWorkspace(workspace.id);
     const fresh = createWorkspace({
+      mandateId: mandate?.id ?? null,
       jurisdiction: urlJurisdiction,
       operatorType: urlOperator,
       outputLang: urlLang,
@@ -270,6 +287,14 @@ export default function SectionBySectionPage() {
           <span className="inline-flex items-center rounded-md bg-[var(--atlas-bg-surface-muted)] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--atlas-text-muted)]">
             {urlJurisdiction} · {operatorLabel}
           </span>
+          {/* Bundle 42: surface which mandate this workspace belongs
+              to. Without it, Marie can't tell at a glance whether
+              she's in the Sky-Sat workspace or the Aero-Partners one. */}
+          {mandate && (
+            <span className="inline-flex items-center rounded-md bg-emerald-100 dark:bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-800 dark:text-emerald-200">
+              {mandate.name}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[11px] text-[var(--atlas-text-muted)]">
