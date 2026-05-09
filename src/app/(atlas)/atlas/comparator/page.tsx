@@ -11,6 +11,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import {
+  Clock,
   Download,
   FileText,
   Link as LinkIcon,
@@ -61,6 +62,7 @@ import {
 import { CountryPalette } from "./CountryPalette";
 import { SavedSetsMenu } from "./SavedSetsMenu";
 import { CellSourcePanel } from "./CellSourcePanel";
+import { TimeDiffPanel } from "./TimeDiffPanel";
 import type { JurisdictionLaw } from "@/lib/space-law-types";
 
 /**
@@ -279,6 +281,9 @@ function ComparatorPageInner() {
     value: string;
     jurisdiction: JurisdictionLaw;
   } | null>(null);
+
+  /* D2 / Time-travel BOLD: backwards-diff panel state. */
+  const [timeDiffOpen, setTimeDiffOpen] = useState(false);
 
   /* D6: ⌘K palette state. Global listener mounts once; meta+K /
      ctrl+K toggle. Skips when user is typing in another input so
@@ -534,6 +539,34 @@ function ComparatorPageInner() {
                 />
                 <span>{language === "de" ? "Briefing" : "Briefing"}</span>
               </button>
+              {/* D2/Time-travel BOLD: backwards-diff. "Since the last
+                  client update, what changed?" */}
+              <button
+                onClick={() => setTimeDiffOpen(true)}
+                disabled={selected.length === 0}
+                className="
+                  flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
+                  text-[11px] font-medium text-[var(--atlas-text-muted)]
+                  hover:text-[var(--atlas-text-primary)] hover:bg-[var(--atlas-bg-inset)]
+                  disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed
+                  transition-colors duration-150
+                "
+                aria-label={
+                  language === "de" ? "Was hat sich geändert?" : "What changed?"
+                }
+                title={
+                  language === "de"
+                    ? "Regulatorische Änderungen in einem Zeitfenster (z.B. seit dem letzten Mandanten-Update)"
+                    : "Regulatory changes within a date window (e.g. since the last client update)"
+                }
+              >
+                <Clock
+                  className="h-3.5 w-3.5"
+                  aria-hidden="true"
+                  strokeWidth={1.5}
+                />
+                <span>{language === "de" ? "Diff" : "Diff"}</span>
+              </button>
             </>
           </div>
         </header>
@@ -726,6 +759,14 @@ function ComparatorPageInner() {
         open={sourceCell !== null}
         onClose={() => setSourceCell(null)}
         cell={sourceCell}
+        language={language}
+      />
+
+      {/* D2/Time-travel BOLD: backwards-diff slide-over */}
+      <TimeDiffPanel
+        open={timeDiffOpen}
+        onClose={() => setTimeDiffOpen(false)}
+        jurisdictions={selected}
         language={language}
       />
     </>
