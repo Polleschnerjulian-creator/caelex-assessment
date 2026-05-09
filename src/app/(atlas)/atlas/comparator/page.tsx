@@ -47,6 +47,11 @@ import {
   parseStateFromQuery,
   buildShareableUrl,
 } from "@/lib/atlas/comparator-state";
+import {
+  countDifferingRowsByDimension,
+  type ComparatorDimensionKey,
+} from "@/lib/atlas/comparator-diff-counts";
+import { CountryPalette } from "./CountryPalette";
 
 /**
  * Shared Apple-like glass style used for the sticky control bar.
@@ -213,6 +218,38 @@ function ComparatorPageInner() {
       // Clipboard can fail on iOS without a user gesture; silent.
     }
   }, [selected, dimension, targetDate]);
+
+  /* D7: dimension count badges. For each per-dimension tab, render a
+     subscript "(N)" showing how many rows DIFFER across the selected
+     jurisdictions. Helps the user spot where the variance is before
+     clicking through. Cheap per-render so no memo. */
+  const diffCounts = useMemo(
+    () => countDifferingRowsByDimension(selected),
+    [selected],
+  );
+
+  /* D6: ⌘K palette state. Global listener mounts once; meta+K /
+     ctrl+K toggle. Skips when user is typing in another input so
+     we don't hijack form interactions. */
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "k" && e.key !== "K") return;
+      if (!(e.metaKey || e.ctrlKey)) return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target?.tagName === "INPUT" ||
+        target?.tagName === "TEXTAREA" ||
+        target?.isContentEditable
+      ) {
+        return;
+      }
+      e.preventDefault();
+      setPaletteOpen((v) => !v);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   // ─── Dimension tabs (translated) ───
   const dimensions = useMemo(
@@ -412,6 +449,7 @@ function ComparatorPageInner() {
             <ForecastTimelineSlider
               value={targetDate}
               onChange={setTargetDate}
+              eventsAheadCount={forecastEventsAhead.length}
             />
           </div>
         </div>
@@ -454,30 +492,53 @@ function ComparatorPageInner() {
           role="tablist"
           className="sticky top-[88px] z-20 -mx-1 px-1 flex items-center gap-4 overflow-x-auto pb-0.5 border-b border-[var(--atlas-border)] bg-[var(--atlas-bg-page)]"
         >
-          {dimensions.map((dim) => (
-            <button
-              key={dim.key}
-              role="tab"
-              aria-selected={dimension === dim.key}
-              onClick={() => handleDimensionChange(dim.key)}
-              className={`
-                flex-shrink-0 pb-2 text-[11px] font-medium
-                transition-all duration-150 border-b-2 -mb-[1px]
-                ${
-                  /* BUG-B10: was hard-coded `border-gray-900` →
-                     invisible against `--atlas-bg-page: #0a0d12` in
-                     dark mode. Now uses the same atlas-token as the
-                     active text colour so contrast holds in both
-                     themes. */
-                  dimension === dim.key
-                    ? "border-[var(--atlas-text-primary)] text-[var(--atlas-text-primary)]"
-                    : "border-transparent text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)]"
+          {dimensions.map((dim) => {
+            /* D7 — only the per-dimension tabs get a diff-count badge
+               (the "all" tab would just show the sum, which is noisy). */
+            const count =
+              dim.key !== "all"
+                ? diffCounts[dim.key as ComparatorDimensionKey]
+                : 0;
+            return (
+              <button
+                key={dim.key}
+                role="tab"
+                aria-selected={dimension === dim.key}
+                onClick={() => handleDimensionChange(dim.key)}
+                title={
+                  count > 0
+                    ? language === "de"
+                      ? `${count} Zeile${count === 1 ? "" : "n"} unterscheid${count === 1 ? "et" : "en"} sich`
+                      : `${count} row${count === 1 ? "" : "s"} differ${count === 1 ? "s" : ""} across selected jurisdictions`
+                    : undefined
                 }
-              `}
-            >
-              {dim.label}
-            </button>
-          ))}
+                className={`
+                  flex-shrink-0 pb-2 text-[11px] font-medium
+                  transition-all duration-150 border-b-2 -mb-[1px]
+                  inline-flex items-baseline gap-1
+                  ${
+                    dimension === dim.key
+                      ? "border-[var(--atlas-text-primary)] text-[var(--atlas-text-primary)]"
+                      : "border-transparent text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)]"
+                  }
+                `}
+              >
+                <span>{dim.label}</span>
+                {count > 0 && (
+                  <span
+                    className={`text-[9px] font-mono tabular-nums ${
+                      dimension === dim.key
+                        ? "text-[var(--atlas-text-muted)]"
+                        : "text-[var(--atlas-text-faint)]"
+                    }`}
+                    aria-hidden="true"
+                  >
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* ─── Comparison Table ─── */}
@@ -503,6 +564,14 @@ function ComparatorPageInner() {
 
       {/* ─── Print-only export view ─── */}
       <ComparatorExport countries={selected} dimension={dimension} />
+
+      {/* D6: ⌘K country palette */}
+      <CountryPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        onApply={(next) => setSelected(next)}
+        language={language}
+      />
     </>
   );
 }

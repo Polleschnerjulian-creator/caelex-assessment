@@ -17,6 +17,11 @@ interface ForecastTimelineSliderProps {
   value: Date;
   /** Called with a Date pinned to the first day of the selected quarter. */
   onChange: (date: Date) => void;
+  /** D8: optional count of forecast events between today and `value`
+   *  for the user's selected jurisdictions. When > 0 we render a
+   *  compact "+N changes" next to the date label so the time-travel
+   *  feature is legible without scanning the table for badges. */
+  eventsAheadCount?: number;
 }
 
 /** Generate the list of quarter-start dates from today → 2032-Q1. */
@@ -54,6 +59,7 @@ function formatQuarterLabel(date: Date): string {
 export default function ForecastTimelineSlider({
   value,
   onChange,
+  eventsAheadCount = 0,
 }: ForecastTimelineSliderProps) {
   const { t } = useLanguage();
   /* BUG-A7: was `useMemo(buildQuarterRange, [])` — `range[0]` then
@@ -199,6 +205,18 @@ export default function ForecastTimelineSlider({
         >
           {isToday ? t("atlas.forecast_today") : selectedLabel}
         </span>
+        {/* D8: events-ahead inline counter — small amber pill when the
+            slider is in the future and there's at least one event in
+            the window. Complements the page-level ribbon (B5) by
+            making the count visible right at the date affordance. */}
+        {!isToday && eventsAheadCount > 0 && (
+          <span
+            className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300 tabular-nums"
+            aria-label={`${eventsAheadCount} forecast events ahead`}
+          >
+            +{eventsAheadCount}
+          </span>
+        )}
         {!isToday && (
           <button
             onClick={handleReset}
