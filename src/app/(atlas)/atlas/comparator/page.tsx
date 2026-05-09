@@ -110,6 +110,13 @@ function ComparatorPageInner() {
     () => initial.date ?? new Date(),
   );
   const [linkCopied, setLinkCopied] = useState(false);
+  /* D1 (BOLD): "Show only differences" toggle. Hides rows where every
+     selected jurisdiction has the same value, plus rows whose RowDef
+     opted out of difference-highlighting. URL-synced via `?diff=1`
+     so the filtered view is shareable. */
+  const [differencesOnly, setDifferencesOnly] = useState(
+    () => searchParams.get("diff") === "1",
+  );
   const { t, language } = useLanguage();
 
   /* BUG-B1: dimension switch resets table scrollTop. Marie scrolled
@@ -180,6 +187,9 @@ function ComparatorPageInner() {
     if (drift > 24 * 60 * 60 * 1000) {
       params.set("t", targetDate.toISOString().slice(0, 10));
     }
+    /* D1: encode the differences-only toggle. Omitted when off
+       (default) to keep the URL short for the common case. */
+    if (differencesOnly) params.set("diff", "1");
     const qs = params.toString();
     if (initialSyncRef.current) {
       initialSyncRef.current = false;
@@ -189,7 +199,7 @@ function ComparatorPageInner() {
     if (qs === lastSyncedQsRef.current) return;
     lastSyncedQsRef.current = qs;
     router.replace(`/atlas/comparator${qs ? `?${qs}` : ""}`, { scroll: false });
-  }, [selected, dimension, targetDate, router, searchParams]);
+  }, [selected, dimension, targetDate, differencesOnly, router, searchParams]);
 
   /* BUG-B11: a fast double-click started two parallel setTimeouts.
      The second one's `setLinkCopied(false)` fired AFTER the first's
@@ -205,10 +215,17 @@ function ComparatorPageInner() {
     [],
   );
   const handleCopyLink = useCallback(async () => {
-    const url = buildShareableUrl(selected, dimension, targetDate, {
-      origin:
-        typeof window !== "undefined" ? window.location.origin : undefined,
-    });
+    const url = buildShareableUrl(
+      selected,
+      dimension,
+      targetDate,
+      {
+        origin:
+          typeof window !== "undefined" ? window.location.origin : undefined,
+      },
+      Date.now(),
+      differencesOnly,
+    );
     try {
       await navigator.clipboard.writeText(url);
       setLinkCopied(true);
@@ -217,7 +234,7 @@ function ComparatorPageInner() {
     } catch {
       // Clipboard can fail on iOS without a user gesture; silent.
     }
-  }, [selected, dimension, targetDate]);
+  }, [selected, dimension, targetDate, differencesOnly]);
 
   /* D7: dimension count badges. For each per-dimension tab, render a
      subscript "(N)" showing how many rows DIFFER across the selected
@@ -480,7 +497,7 @@ function ComparatorPageInner() {
           </div>
         )}
 
-        {/* ─── Dimension Tabs ─── */}
+        {/* ─── Dimension Tabs + D1 toggle ─── */}
         {/* BUG-B6: were not sticky, so once Marie scrolled 200px down
             she couldn't switch dimension without scrolling back to the
             top. Now sticky right below the controls panel (top-[88px]
@@ -492,6 +509,34 @@ function ComparatorPageInner() {
           role="tablist"
           className="sticky top-[88px] z-20 -mx-1 px-1 flex items-center gap-4 overflow-x-auto pb-0.5 border-b border-[var(--atlas-border)] bg-[var(--atlas-bg-page)]"
         >
+          {/* D1 toggle — right-aligned in the tab row. Disabled when
+              there are <2 jurisdictions (no variance to filter). */}
+          <button
+            type="button"
+            onClick={() => setDifferencesOnly((v) => !v)}
+            disabled={selected.length < 2}
+            aria-pressed={differencesOnly}
+            title={
+              language === "de"
+                ? "Nur Zeilen anzeigen, in denen sich die ausgewählten Jurisdiktionen unterscheiden"
+                : "Show only rows where the selected jurisdictions differ"
+            }
+            className={`order-last ml-auto flex-shrink-0 inline-flex items-center gap-1.5 pb-2 text-[11px] font-medium transition-colors duration-150 ${
+              differencesOnly
+                ? "text-emerald-600 dark:text-emerald-400"
+                : "text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)]"
+            } disabled:opacity-40 disabled:cursor-not-allowed`}
+          >
+            <span
+              className={`inline-block h-3 w-3 rounded-full border ${
+                differencesOnly
+                  ? "bg-emerald-500 border-emerald-500"
+                  : "border-[var(--atlas-border-strong)]"
+              }`}
+              aria-hidden="true"
+            />
+            {language === "de" ? "Nur Unterschiede" : "Only differences"}
+          </button>
           {dimensions.map((dim) => {
             /* D7 — only the per-dimension tabs get a diff-count badge
                (the "all" tab would just show the sum, which is noisy). */
@@ -547,6 +592,7 @@ function ComparatorPageInner() {
             countries={selected}
             dimension={dimension}
             targetDate={targetDate}
+            differencesOnly={differencesOnly}
           />
         </div>
 

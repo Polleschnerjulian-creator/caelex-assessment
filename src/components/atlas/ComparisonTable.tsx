@@ -27,6 +27,15 @@ interface ComparisonTableProps {
    * change render a ForecastBadge. Defaults to today (no badges).
    */
   targetDate?: Date;
+  /**
+   * D1 (BOLD) — when true, hides rows where every selected
+   * jurisdiction has the same value. Lets the user focus on the
+   * variance instantly. Identifying-only rows
+   * (`highlightDifferences: false`) also hide because they're
+   * cosmetic — the differences-only mode is "show me what to argue
+   * about", not "show me what to label". Defaults false.
+   */
+  differencesOnly?: boolean;
 }
 
 interface RowDef {
@@ -383,6 +392,7 @@ export default function ComparisonTable({
   countries,
   dimension,
   targetDate,
+  differencesOnly = false,
 }: ComparisonTableProps) {
   const { t } = useLanguage();
   const jurisdictionNames = useMemo(() => getJurisdictionNames(t), [t]);
@@ -613,7 +623,7 @@ export default function ComparisonTable({
     );
   }
 
-  const sections =
+  const rawSections =
     dimension === "all"
       ? dimensionSectionMap.all
       : [
@@ -622,6 +632,30 @@ export default function ComparisonTable({
             rows: dimensionMap[dimension] || [],
           },
         ];
+
+  /* D1 (BOLD): collapse rows where all selected jurisdictions agree.
+     A row "agrees" when its accessor outputs the same string for
+     every jurisdiction in `jurisdictions`. We only filter when
+     `differencesOnly` is on AND there are ≥2 jurisdictions to compare
+     (otherwise "differences" is meaningless). Rows whose definition
+     opted out via `highlightDifferences: false` are always hidden in
+     differences-only mode — they're cosmetic identifiers, not
+     decision-grade variance. */
+  const sections =
+    differencesOnly && jurisdictions.length >= 2
+      ? rawSections
+          .map((s) => ({
+            ...s,
+            rows: s.rows.filter((row) => {
+              if (row.highlightDifferences === false) return false;
+              const distinct = new Set(
+                jurisdictions.map(({ data }) => row.accessor(data)),
+              );
+              return distinct.size > 1;
+            }),
+          }))
+          .filter((s) => s.rows.length > 0)
+      : rawSections;
 
   return (
     /* BUG-B8: nested horizontal-scroll on mobile (table forced

@@ -63,6 +63,8 @@ export interface ParsedState {
   countries: SpaceLawCountryCode[] | null;
   dimension: string | null;
   date: Date | null;
+  /** D1: differences-only toggle. URL param `?diff=1`. */
+  differencesOnly: boolean;
 }
 
 /**
@@ -97,7 +99,10 @@ export function parseStateFromQuery(params: URLSearchParams): ParsedState {
     const parsed = new Date(dateRaw);
     if (!Number.isNaN(parsed.getTime())) date = parsed;
   }
-  return { countries, dimension, date };
+  /* D1: differences-only — `?diff=1` is on, anything else (including
+     missing) is off. We use `=1` not `=true` so the URL stays short. */
+  const differencesOnly = params.get("diff") === "1";
+  return { countries, dimension, date, differencesOnly };
 }
 
 export interface BuildShareableUrlOptions {
@@ -122,6 +127,9 @@ export function buildShareableUrl(
   /* `nowMs` injectable so tests can lock the date-drift threshold
      without mocking Date.now globally. Defaults to Date.now(). */
   nowMs: number = Date.now(),
+  /* D1: opt-in differences-only flag. Defaults to false so existing
+     callers don't accidentally emit `?diff=1`. */
+  differencesOnly: boolean = false,
 ): string {
   const params = new URLSearchParams();
   if (countries.length > 0) params.set("j", countries.join(","));
@@ -130,6 +138,7 @@ export function buildShareableUrl(
   if (drift > 24 * 60 * 60 * 1000) {
     params.set("t", date.toISOString().slice(0, 10));
   }
+  if (differencesOnly) params.set("diff", "1");
   const path = `/atlas/comparator${params.size > 0 ? `?${params.toString()}` : ""}`;
   if (options.origin) return `${options.origin}${path}`;
   return path;

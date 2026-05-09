@@ -86,6 +86,30 @@ describe("parseStateFromQuery — dimension (`?dim=`)", () => {
   });
 });
 
+describe("parseStateFromQuery — differences-only (`?diff=`)", () => {
+  it("defaults to false when missing", () => {
+    const r = parseStateFromQuery(new URLSearchParams(""));
+    expect(r.differencesOnly).toBe(false);
+  });
+
+  it("is true when ?diff=1", () => {
+    const r = parseStateFromQuery(new URLSearchParams("diff=1"));
+    expect(r.differencesOnly).toBe(true);
+  });
+
+  it("is false for any other value", () => {
+    expect(
+      parseStateFromQuery(new URLSearchParams("diff=true")).differencesOnly,
+    ).toBe(false);
+    expect(
+      parseStateFromQuery(new URLSearchParams("diff=on")).differencesOnly,
+    ).toBe(false);
+    expect(
+      parseStateFromQuery(new URLSearchParams("diff=0")).differencesOnly,
+    ).toBe(false);
+  });
+});
+
 describe("parseStateFromQuery — date (`?t=`)", () => {
   it("returns null when t is missing", () => {
     const r = parseStateFromQuery(new URLSearchParams(""));
@@ -157,6 +181,23 @@ describe("buildShareableUrl", () => {
   it("emits a relative URL when origin is omitted (SSR-safe)", () => {
     const url = buildShareableUrl(["FR"], "all", new Date(NOW), {}, NOW);
     expect(url).toBe("/atlas/comparator?j=FR");
+  });
+
+  it("D1: emits diff=1 when differencesOnly is true", () => {
+    const url = buildShareableUrl(
+      ["FR", "DE"],
+      "all",
+      new Date(NOW),
+      {},
+      NOW,
+      true,
+    );
+    expect(url).toContain("diff=1");
+  });
+
+  it("D1: omits diff= when differencesOnly is false (default)", () => {
+    const url = buildShareableUrl(["FR", "DE"], "all", new Date(NOW), {}, NOW);
+    expect(url).not.toContain("diff=");
   });
 
   it("round-trips: build → parse yields equivalent state", () => {
