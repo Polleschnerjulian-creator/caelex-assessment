@@ -10,7 +10,13 @@ import {
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
-import { Download, FileText, Link as LinkIcon, Check } from "lucide-react";
+import {
+  Download,
+  FileText,
+  Link as LinkIcon,
+  Check,
+  Sparkles,
+} from "lucide-react";
 import type { SpaceLawCountryCode } from "@/lib/space-law-types";
 import CountrySelector from "@/components/atlas/CountrySelector";
 import ComparisonTable from "@/components/atlas/ComparisonTable";
@@ -30,6 +36,7 @@ import CrossBorderQuickRef from "@/components/atlas/CrossBorderQuickRef";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import {
+  buildClientBriefing,
   buildComparisonMarkdown,
   type ComparatorDimension,
 } from "@/lib/atlas/comparator-export-md";
@@ -349,6 +356,30 @@ function ComparatorPageInner() {
     });
   }, [selected, dimension, language]);
 
+  /* D2 (BOLD): Generate-Briefing handler. Picks the most-distinguishing
+     differentiator per dimension via buildClientBriefing, then exports
+     as Word — the lawyer can paste into a memo template or send to
+     the client as a one-pager. Differs from handleExportWord (the
+     comparator-grid export) by emitting an executive-summary memo
+     instead of the raw table. */
+  const handleGenerateBriefing = useCallback(() => {
+    if (selected.length === 0) return;
+    const countries = selected
+      .map((code) => JURISDICTION_DATA.get(code))
+      .filter((c): c is NonNullable<typeof c> => c !== undefined);
+    if (countries.length < 2) return;
+    const exportLocale: "en" | "de" = language === "de" ? "de" : "en";
+    const { markdown, title } = buildClientBriefing({
+      countries,
+      locale: exportLocale,
+    });
+    exportDraftAsWord({
+      markdown,
+      title,
+      locale: exportLocale,
+    });
+  }, [selected, language]);
+
   return (
     <>
       <div className="flex flex-col h-full min-h-screen bg-[var(--atlas-bg-page)] p-4 gap-3 print:hidden">
@@ -464,6 +495,44 @@ function ComparatorPageInner() {
                   strokeWidth={1.5}
                 />
                 <span>{language === "de" ? "Word" : "Word"}</span>
+              </button>
+              {/* D2 (BOLD): Generate-Briefing button. Disabled when
+                  fewer than 2 jurisdictions selected — a single-
+                  jurisdiction "differentiator memo" doesn't make
+                  sense. Emerald accent so the user understands this
+                  is the high-value AI-flavoured action vs the
+                  raw-data exports. */}
+              <button
+                onClick={handleGenerateBriefing}
+                disabled={selected.length < 2}
+                className="
+                  flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
+                  text-[11px] font-medium text-emerald-700 dark:text-emerald-400
+                  hover:text-emerald-800 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/10
+                  disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed
+                  transition-colors duration-150
+                "
+                aria-label={
+                  language === "de"
+                    ? "Mandanten-Briefing generieren"
+                    : "Generate client briefing"
+                }
+                title={
+                  selected.length < 2
+                    ? language === "de"
+                      ? "Mindestens 2 Jurisdiktionen für einen Briefing-Vergleich nötig"
+                      : "Pick at least 2 jurisdictions for a comparison briefing"
+                    : language === "de"
+                      ? "Ein-Seiten-Briefing mit den wichtigsten Unterschieden generieren"
+                      : "Generate a one-page briefing with the most-material differences"
+                }
+              >
+                <Sparkles
+                  className="h-3.5 w-3.5"
+                  aria-hidden="true"
+                  strokeWidth={1.8}
+                />
+                <span>{language === "de" ? "Briefing" : "Briefing"}</span>
               </button>
             </>
           </div>

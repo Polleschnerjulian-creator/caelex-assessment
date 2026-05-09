@@ -298,3 +298,237 @@ export function buildComparisonMarkdown(args: BuildComparisonMarkdownArgs): {
   const markdown = `# ${title}\n\n${intro}\n\n${sections}${footer}`;
   return { markdown, title };
 }
+
+/* ── D2 (BOLD): Client briefing memo builder ────────────────────────
+ *
+ * Produces a 1-page client-facing memo from the comparator state.
+ * Unlike `buildComparisonMarkdown` which emits the full grid, this
+ * picks the SINGLE most-distinguishing differentiator per dimension —
+ * the lawyer-equivalent of "the executive summary". Output reads like
+ * a bullet-list memo rather than a table: "FR mandates €60M cover; LU
+ * has no statutory floor; UK requires per-mission cover."
+ *
+ * Each differentiator names the jurisdictions on each side of the
+ * split + cites the primary legislation. The result drops cleanly into
+ * a Word memo via the existing exportDraftAsWord pipeline.
+ */
+
+interface DifferentiatorLine {
+  label: string;
+  /** Map<value, jurisdictions[]> for the bucket grouping. */
+  buckets: Map<string, string[]>;
+}
+
+function bucketByValue(
+  countries: JurisdictionLaw[],
+  read: (l: JurisdictionLaw) => string,
+): Map<string, string[]> {
+  const map = new Map<string, string[]>();
+  for (const c of countries) {
+    const v = read(c) || "—";
+    const list = map.get(v) ?? [];
+    list.push(c.countryCode);
+    map.set(v, list);
+  }
+  return map;
+}
+
+/* Per-dimension picker: returns the most-distinguishing line (max
+   distinct buckets), label-localised, or null when nothing differs. */
+function pickTopDifferentiator(
+  dimension: Exclude<ComparatorDimension, "all">,
+  countries: JurisdictionLaw[],
+  locale: ComparatorLocale,
+): DifferentiatorLine | null {
+  /* Per-dimension candidate accessors with translated labels. We
+     deliberately keep the candidate set small (2-3 per dimension)
+     because a 1-page memo can't carry every nuance. */
+  const candidates: { label: string; read: (l: JurisdictionLaw) => string }[] =
+    [];
+  switch (dimension) {
+    case "authorization":
+      candidates.push(
+        {
+          label: TR(locale, "Legislative status", "Gesetzgebungsstatus"),
+          read: (l) => l.legislation.status,
+        },
+        {
+          label: TR(locale, "Licensing authority", "Lizenzbehörde"),
+          read: (l) => l.licensingAuthority.name,
+        },
+      );
+      break;
+    case "liability":
+      candidates.push(
+        {
+          label: TR(locale, "Mandatory insurance", "Pflichtversicherung"),
+          read: (l) =>
+            l.insuranceLiability.mandatoryInsurance
+              ? `${TR(locale, "Yes", "Ja")} (${l.insuranceLiability.minimumCoverage ?? "TBD"})`
+              : TR(locale, "No", "Nein"),
+        },
+        {
+          label: TR(locale, "Liability cap", "Haftungs-Höchstbetrag"),
+          read: (l) => l.insuranceLiability.liabilityCap ?? "—",
+        },
+        {
+          label: TR(locale, "Liability regime", "Haftungsregime"),
+          read: (l) => l.insuranceLiability.liabilityRegime,
+        },
+      );
+      break;
+    case "debris":
+      candidates.push(
+        {
+          label: TR(locale, "Deorbit timeline", "Deorbit-Frist"),
+          read: (l) => l.debrisMitigation.deorbitTimeline ?? "—",
+        },
+        {
+          label: TR(locale, "Deorbit mandatory", "Deorbit-Pflicht"),
+          read: (l) =>
+            l.debrisMitigation.deorbitRequirement
+              ? TR(locale, "Yes", "Ja")
+              : TR(locale, "No", "Nein"),
+        },
+      );
+      break;
+    case "registration":
+      candidates.push({
+        label: TR(locale, "National registry", "Nationales Register"),
+        read: (l) =>
+          l.registration.nationalRegistryExists
+            ? (l.registration.registryName ?? TR(locale, "Yes", "Ja"))
+            : TR(locale, "No", "Nein"),
+      });
+      break;
+    case "timeline":
+      candidates.push({
+        label: TR(locale, "Annual fee", "Jahresgebühr"),
+        read: (l) => l.timeline.annualFee ?? "—",
+      });
+      break;
+    case "eu_readiness":
+      candidates.push({
+        label: TR(
+          locale,
+          "EU Space Act relationship",
+          "Verhältnis zum EU Space Act",
+        ),
+        read: (l) => l.euSpaceActCrossRef.relationship,
+      });
+      break;
+  }
+  /* Pick the candidate that produces the most distinct buckets — the
+     one that actually distinguishes the most. */
+  let best: DifferentiatorLine | null = null;
+  for (const c of candidates) {
+    const buckets = bucketByValue(countries, c.read);
+    if (buckets.size <= 1) continue;
+    if (best === null || buckets.size > best.buckets.size) {
+      best = { label: c.label, buckets };
+    }
+  }
+  return best;
+}
+
+function formatBucket(
+  buckets: Map<string, string[]>,
+  locale: ComparatorLocale,
+): string {
+  /* "DE, FR: €60M · LU: no statutory floor · UK: per-mission" */
+  const parts: string[] = [];
+  for (const [value, codes] of buckets.entries()) {
+    parts.push(`${codes.join(", ")}: ${value}`);
+  }
+  return parts.join(TR(locale, " · ", " · "));
+}
+
+export interface BuildClientBriefingArgs {
+  countries: JurisdictionLaw[];
+  locale: ComparatorLocale;
+  /* Optional matter-name to surface in the memo header
+     ("Briefing für Mandant X"). Otherwise generic. */
+  matterName?: string;
+}
+
+export function buildClientBriefing(args: BuildClientBriefingArgs): {
+  markdown: string;
+  title: string;
+} {
+  const { countries, locale, matterName } = args;
+  const codes = countries.map((c) => c.countryCode).join(" / ");
+  const title = matterName
+    ? TR(
+        locale,
+        `Cross-jurisdiction briefing: ${matterName}`,
+        `Jurisdiktions-Briefing: ${matterName}`,
+      )
+    : TR(
+        locale,
+        `Cross-jurisdiction briefing: ${codes}`,
+        `Jurisdiktions-Briefing: ${codes}`,
+      );
+
+  const intro = TR(
+    locale,
+    `Comparing ${countries.length} jurisdictions: ${codes}. Each section below names the most-material variance across the selected jurisdictions and cites the governing instrument.`,
+    `Vergleich von ${countries.length} Jurisdiktionen: ${codes}. Jeder Abschnitt nennt die wichtigste Varianz zwischen den ausgewählten Jurisdiktionen und zitiert das maßgebliche Rechtsinstrument.`,
+  );
+
+  /* Build one bullet per dimension that has a differentiator. */
+  const dimensions: Exclude<ComparatorDimension, "all">[] = [
+    "authorization",
+    "liability",
+    "debris",
+    "registration",
+    "timeline",
+    "eu_readiness",
+  ];
+  const bullets: string[] = [];
+  for (const dim of dimensions) {
+    const diff = pickTopDifferentiator(dim, countries, locale);
+    if (!diff) continue;
+    const heading = TR(
+      locale,
+      DIMENSION_TITLE[dim].en,
+      DIMENSION_TITLE[dim].de,
+    );
+    bullets.push(
+      `- **${heading} — ${diff.label}.** ${formatBucket(diff.buckets, locale)}`,
+    );
+  }
+
+  /* Citations table: legislation per jurisdiction so the partner can
+     verify each claim against the gazette. */
+  const cites = countries
+    .map(
+      (c) =>
+        `- **${c.countryCode} ${c.countryName}**: ${c.legislation.name} (${c.legislation.yearEnacted}${c.legislation.yearAmended ? `, am. ${c.legislation.yearAmended}` : ""})${c.legislation.officialUrl ? ` — [${TR(locale, "Official text", "Offizieller Text")}](${c.legislation.officialUrl})` : ""}`,
+    )
+    .join("\n");
+
+  const noVariance =
+    bullets.length === 0
+      ? TR(
+          locale,
+          `\n\n_No material variance detected across the selected jurisdictions. Consider widening the selection to surface differentiating points._`,
+          `\n\n_Keine wesentliche Varianz zwischen den ausgewählten Jurisdiktionen gefunden. Erweitern Sie die Auswahl, um differenzierende Punkte zu finden._`,
+        )
+      : "";
+
+  const footer = TR(
+    locale,
+    `\n\n---\n\n*Generated by Caelex Atlas Comparator. Verify each citation against the official text before relying on this briefing for client advice.*`,
+    `\n\n---\n\n*Erstellt mit dem Caelex Atlas-Vergleich. Vor Verwendung in der Mandantenberatung jede Zitierung am offiziellen Wortlaut verifizieren.*`,
+  );
+
+  const sourcesHeading = TR(locale, "## Sources", "## Quellen");
+  const findingsHeading = TR(
+    locale,
+    "## Key differentiators",
+    "## Wesentliche Unterschiede",
+  );
+
+  const markdown = `# ${title}\n\n${intro}\n\n${findingsHeading}\n\n${bullets.join("\n")}${noVariance}\n\n${sourcesHeading}\n\n${cites}${footer}`;
+  return { markdown, title };
+}
