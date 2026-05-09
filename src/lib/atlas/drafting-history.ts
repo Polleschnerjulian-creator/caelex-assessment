@@ -214,6 +214,12 @@ export interface DraftLibraryEntry {
   outputLocale: string;
   /** Whether the privilege-marker was active. */
   privileged: boolean;
+  /** Bundle 36 — active mandate id at dispatch time. Optional for
+   *  backward compat with entries created before B1. */
+  mandateId?: string;
+  /** Snapshot of the mandate name at dispatch time so deleting the
+   *  mandate later doesn't orphan the library entry's display label. */
+  mandateName?: string;
   ts: number;
 }
 

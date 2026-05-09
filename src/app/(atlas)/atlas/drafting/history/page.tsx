@@ -39,6 +39,7 @@ import {
   Columns,
   Inbox,
   AlertCircle,
+  Briefcase,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { openAIMode } from "@/components/atlas/AIModeLauncher";
@@ -128,6 +129,8 @@ export default function DraftingHistoryPage() {
     () => new Set(ALL_KINDS),
   );
   const [search, setSearch] = useState("");
+  /* Bundle 36: filter by mandate. "" = all mandates. */
+  const [mandateFilter, setMandateFilter] = useState<string>("");
 
   /* Per-entry edit-mode (only one open at a time keeps the layout tame). */
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -154,13 +157,29 @@ export default function DraftingHistoryPage() {
     const q = search.trim().toLowerCase();
     return entries
       .filter((e) => kindFilter.has(e.kind))
+      .filter((e) => {
+        if (!mandateFilter) return true;
+        if (mandateFilter === "__none__") return !e.mandateId;
+        return e.mandateId === mandateFilter;
+      })
       .filter((e) =>
         q
           ? e.title.toLowerCase().includes(q) ||
             e.prompt.toLowerCase().includes(q)
           : true,
       );
-  }, [entries, kindFilter, search]);
+  }, [entries, kindFilter, search, mandateFilter]);
+
+  /* Aggregate distinct mandates from the entries — derived rather than
+     pulled from the mandate-store directly so deleted mandates with
+     surviving library entries still surface as a filter option. */
+  const knownMandates = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const e of entries) {
+      if (e.mandateId && e.mandateName) seen.set(e.mandateId, e.mandateName);
+    }
+    return Array.from(seen, ([id, name]) => ({ id, name }));
+  }, [entries]);
 
   const handleRestore = (entry: DraftLibraryEntry) => {
     /* "Restore" = re-fire the exact prompt that was dispatched. */
@@ -295,6 +314,26 @@ export default function DraftingHistoryPage() {
             );
           })}
         </div>
+        {/* Bundle 36: mandate filter. Surfaces only when there's at
+            least one library entry tagged with a mandate id. */}
+        {knownMandates.length > 0 && (
+          <select
+            value={mandateFilter}
+            onChange={(e) => setMandateFilter(e.target.value)}
+            aria-label={isDe ? "Nach Mandant filtern" : "Filter by mandate"}
+            className="rounded-md bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2 py-1.5 text-[11.5px] text-[var(--atlas-text-primary)] outline-none cursor-pointer"
+          >
+            <option value="">{isDe ? "Alle Mandate" : "All mandates"}</option>
+            {knownMandates.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+            <option value="__none__">
+              {isDe ? "(Ohne Mandant)" : "(Untagged)"}
+            </option>
+          </select>
+        )}
       </div>
 
       {/* Empty states */}
@@ -364,6 +403,18 @@ export default function DraftingHistoryPage() {
                       <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                         <Lock size={9} strokeWidth={1.8} aria-hidden="true" />
                         {isDe ? "Privilegiert" : "Privileged"}
+                      </span>
+                    )}
+                    {/* Bundle 36: mandate-name badge surfaces which
+                        client this draft was dispatched against. */}
+                    {entry.mandateName && (
+                      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                        <Briefcase
+                          size={9}
+                          strokeWidth={1.8}
+                          aria-hidden="true"
+                        />
+                        {entry.mandateName}
                       </span>
                     )}
                     <span className="text-[10.5px] text-[var(--atlas-text-faint)]">

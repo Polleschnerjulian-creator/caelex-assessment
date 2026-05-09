@@ -48,14 +48,19 @@ import {
   type RecentCoverEntry,
 } from "@/lib/atlas/drafting-history";
 import {
-  getMandateIntake,
-  setMandateIntake,
-  clearMandateIntake,
   isIntakeActive,
   composeMandateContext,
   EMPTY_INTAKE,
   type MandateIntake,
 } from "@/lib/atlas/mandate-intake";
+import {
+  getMandateStore,
+  setActiveMandate,
+  createMandate,
+  updateMandate,
+  deleteMandate,
+  type Mandate,
+} from "@/lib/atlas/mandate-store";
 import { getClauses, type Clause } from "@/lib/atlas/clause-library";
 
 /* Atlas Lawyer-UX-Audit F-DRAFT-2 — Privilege-marker support.
@@ -232,38 +237,101 @@ export default function DraftingStudioPage() {
     setRecentCover(getRecentCover());
   }, []);
 
-  /* S1 — mandate intake. Single active mandate, persisted in
-     localStorage, hydrated lazily after mount to avoid SSR drift.
-     `intakeOpen` controls the panel's expand state independently of
-     whether the intake has data — so the lawyer can collapse a filled
-     intake and the active-mandate pill still surfaces on each tile. */
-  const [intake, setIntake] = useState<MandateIntake>(EMPTY_INTAKE);
+  /* S1+B1 — multi-mandate store. The active mandate's intake is the
+     shape used by the existing tiles; mandates beyond the active one
+     stay quiet in storage but show up in the switcher dropdown.
+     Hydrated after mount to avoid SSR drift; the legacy single-intake
+     localStorage key is migrated on first read inside getMandateStore. */
+  const [mandates, setMandates] = useState<Mandate[]>([]);
+  const [activeMandateId, setActiveMandateIdState] = useState<string | null>(
+    null,
+  );
   const [intakeOpen, setIntakeOpen] = useState(false);
   const [intakeHydrated, setIntakeHydrated] = useState(false);
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+
+  /* Pull the active mandate's intake (or EMPTY_INTAKE when none active)
+     so the existing tile UI keeps using the same shape. */
+  const activeMandate = useMemo(
+    () => mandates.find((m) => m.id === activeMandateId) ?? null,
+    [mandates, activeMandateId],
+  );
+  const intake: MandateIntake = activeMandate?.intake ?? EMPTY_INTAKE;
+
+  const refreshMandates = () => {
+    const store = getMandateStore();
+    setMandates(store.mandates);
+    setActiveMandateIdState(store.activeMandateId);
+  };
+
   useEffect(() => {
-    const loaded = getMandateIntake();
-    setIntake(loaded);
-    /* Auto-expand the panel if the user has no intake yet — they need
-       to see the form. Auto-collapse if they have one — assume they
-       want to focus on the tiles, not the form. */
-    setIntakeOpen(!isIntakeActive(loaded));
+    const store = getMandateStore();
+    setMandates(store.mandates);
+    setActiveMandateIdState(store.activeMandateId);
+    /* Auto-expand the intake panel only if there's no active mandate
+       (i.e. nothing to use as a starting context). */
+    const active = store.mandates.find((m) => m.id === store.activeMandateId);
+    setIntakeOpen(!active || !isIntakeActive(active.intake));
     setIntakeHydrated(true);
   }, []);
 
-  const updateIntake = (next: MandateIntake) => {
-    setIntake(next);
-    setMandateIntake(next);
-  };
   const updateIntakeField = <K extends keyof MandateIntake>(
     field: K,
     value: MandateIntake[K],
   ) => {
-    updateIntake({ ...intake, [field]: value });
+    if (!activeMandateId) {
+      /* Without an active mandate, create one on first edit so the
+         lawyer never has to think "which mandate am I in" before
+         typing — the field they touch implicitly creates the mandate. */
+      const m = createMandate({
+        intake: { ...EMPTY_INTAKE, [field]: value },
+      });
+      refreshMandates();
+      /* Switcher also benefits from a name update once the client name
+         is known — handled via the rename-on-client-change effect below. */
+      void m;
+      return;
+    }
+    updateMandate(activeMandateId, {
+      intake: { ...intake, [field]: value },
+      /* If the field being edited is the client name AND the mandate's
+         display name still matches the prior client, auto-rename so the
+         switcher chip stays informative. */
+      ...(field === "client" &&
+      activeMandate &&
+      (activeMandate.name === activeMandate.intake.client.trim() ||
+        activeMandate.name.startsWith("Mandant "))
+        ? { name: (value as string).trim() || activeMandate.name }
+        : {}),
+    });
+    refreshMandates();
   };
+
   const resetIntake = () => {
-    setIntake(EMPTY_INTAKE);
-    clearMandateIntake();
+    /* "Reset" in the multi-mandate world means delete the active
+       mandate. Marie can always create a fresh one. */
+    if (!activeMandateId) return;
+    deleteMandate(activeMandateId);
+    refreshMandates();
     setIntakeOpen(true);
+  };
+
+  const handleSwitchMandate = (id: string) => {
+    setActiveMandate(id);
+    refreshMandates();
+    setSwitcherOpen(false);
+  };
+
+  const handleCreateMandate = () => {
+    createMandate({});
+    refreshMandates();
+    setIntakeOpen(true);
+    setSwitcherOpen(false);
+  };
+
+  const handleRenameMandate = (id: string, name: string) => {
+    updateMandate(id, { name: name.trim() || "Mandant" });
+    refreshMandates();
   };
 
   const intakeActive = intakeHydrated && isIntakeActive(intake);
@@ -531,6 +599,8 @@ export default function DraftingStudioPage() {
       prompt,
       outputLocale: outputLang,
       privileged,
+      mandateId: activeMandate?.id,
+      mandateName: activeMandate?.name,
     });
   };
 
@@ -547,6 +617,8 @@ export default function DraftingStudioPage() {
       prompt,
       outputLocale: outputLang,
       privileged,
+      mandateId: activeMandate?.id,
+      mandateName: activeMandate?.name,
     });
   };
 
@@ -566,6 +638,8 @@ export default function DraftingStudioPage() {
       prompt,
       outputLocale: outputLang,
       privileged,
+      mandateId: activeMandate?.id,
+      mandateName: activeMandate?.name,
     });
   };
 
@@ -608,6 +682,8 @@ export default function DraftingStudioPage() {
       prompt,
       outputLocale: outputLang,
       privileged,
+      mandateId: activeMandate?.id,
+      mandateName: activeMandate?.name,
     });
   };
 
@@ -643,6 +719,8 @@ export default function DraftingStudioPage() {
       prompt,
       outputLocale: outputLang,
       privileged,
+      mandateId: activeMandate?.id,
+      mandateName: activeMandate?.name,
     });
   };
 
@@ -793,18 +871,11 @@ export default function DraftingStudioPage() {
         )}
       </div>
 
-      {/* S1 — Mandate Intake Form. Marie enters the mandate context
-          ONCE and every tile inherits it (auth tile prefills via
-          "Use mandate" button, brief + compare prompts get a
-          "Mandate context: …" line auto-appended). Persists in
-          localStorage so reload doesn't lose it. */}
+      {/* S1+B1 — Mandate context panel. Now backed by the multi-
+          mandate store: a switcher chip in the header lets Marie
+          flip between saved mandates without losing any of them. */}
       <section className="max-w-3xl rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] overflow-hidden">
-        <button
-          type="button"
-          onClick={() => setIntakeOpen((o) => !o)}
-          className="w-full flex items-center gap-2 px-4 py-2.5 text-left hover:bg-[var(--atlas-bg-surface-muted)] transition-colors"
-          aria-expanded={intakeOpen}
-        >
+        <div className="flex items-center gap-2 px-4 py-2.5">
           <Briefcase
             size={14}
             strokeWidth={1.8}
@@ -815,39 +886,101 @@ export default function DraftingStudioPage() {
             }
             aria-hidden="true"
           />
-          <span className="flex-1 min-w-0">
-            <span className="text-[12.5px] font-medium text-[var(--atlas-text-primary)]">
-              {isDe ? "Mandanten-Kontext" : "Mandate context"}
-            </span>
-            {intakeActive && intake.client.trim() && (
-              <span className="ml-2 inline-flex items-center rounded-md bg-emerald-100 dark:bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-800 dark:text-emerald-200">
-                {intake.client.trim()}
-              </span>
-            )}
-            {!intakeActive && (
-              <span className="ml-2 text-[11px] text-[var(--atlas-text-muted)]">
-                {isDe
-                  ? "Einmal eintragen, alle Tiles ziehen daraus"
-                  : "Enter once, every tile pulls from it"}
-              </span>
-            )}
+          <span className="flex-shrink-0 text-[12.5px] font-medium text-[var(--atlas-text-primary)]">
+            {isDe ? "Mandant" : "Mandate"}
           </span>
-          {intakeOpen ? (
-            <ChevronUp
-              size={14}
-              strokeWidth={1.8}
-              className="text-[var(--atlas-text-faint)]"
-              aria-hidden="true"
-            />
-          ) : (
-            <ChevronDown
-              size={14}
-              strokeWidth={1.8}
-              className="text-[var(--atlas-text-faint)]"
-              aria-hidden="true"
-            />
-          )}
-        </button>
+
+          {/* Switcher chip — opens a popover listing all mandates
+              + "create new" CTA. */}
+          <div className="relative flex-1 min-w-0">
+            <button
+              type="button"
+              onClick={() => setSwitcherOpen((o) => !o)}
+              className="inline-flex items-center gap-1.5 rounded-md border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface-muted)] px-2 py-1 text-[11.5px] text-[var(--atlas-text-primary)] hover:border-[var(--atlas-border-strong)] transition-colors max-w-full"
+              aria-expanded={switcherOpen}
+              aria-haspopup="listbox"
+            >
+              <span className="truncate">
+                {activeMandate
+                  ? activeMandate.name
+                  : isDe
+                    ? "Kein Mandant aktiv"
+                    : "No active mandate"}
+              </span>
+              <ChevronDown
+                size={11}
+                strokeWidth={1.8}
+                aria-hidden="true"
+                className="text-[var(--atlas-text-faint)]"
+              />
+            </button>
+            {switcherOpen && (
+              <div
+                role="listbox"
+                className="absolute left-0 top-full mt-1 z-10 w-72 rounded-md border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-lg overflow-hidden"
+              >
+                <div className="max-h-56 overflow-y-auto">
+                  {mandates.length === 0 && (
+                    <div className="px-3 py-2 text-[11px] text-[var(--atlas-text-muted)] italic">
+                      {isDe ? "Noch keine Mandate" : "No mandates yet"}
+                    </div>
+                  )}
+                  {mandates.map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      role="option"
+                      aria-selected={m.id === activeMandateId}
+                      onClick={() => handleSwitchMandate(m.id)}
+                      className={`w-full flex items-center justify-between gap-2 px-3 py-1.5 text-left text-[11.5px] transition-colors ${
+                        m.id === activeMandateId
+                          ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-200"
+                          : "text-[var(--atlas-text-primary)] hover:bg-[var(--atlas-bg-surface-muted)]"
+                      }`}
+                    >
+                      <span className="truncate">{m.name}</span>
+                      {m.id === activeMandateId && (
+                        <span className="text-[9px] font-semibold uppercase tracking-wider">
+                          {isDe ? "Aktiv" : "Active"}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCreateMandate}
+                  className="w-full flex items-center gap-1.5 px-3 py-2 text-[11.5px] font-medium text-emerald-700 dark:text-emerald-400 border-t border-[var(--atlas-border-subtle)] hover:bg-[var(--atlas-bg-surface-muted)] transition-colors"
+                >
+                  <Wand2 size={11} strokeWidth={1.8} aria-hidden="true" />
+                  {isDe ? "Neuer Mandant" : "New mandate"}
+                </button>
+              </div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIntakeOpen((o) => !o)}
+            className="ml-auto inline-flex items-center justify-center w-7 h-7 rounded text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-primary)] hover:bg-[var(--atlas-bg-surface-muted)] transition-colors"
+            aria-expanded={intakeOpen}
+            aria-label={
+              intakeOpen
+                ? isDe
+                  ? "Panel einklappen"
+                  : "Collapse panel"
+                : isDe
+                  ? "Panel ausklappen"
+                  : "Expand panel"
+            }
+          >
+            {intakeOpen ? (
+              <ChevronUp size={14} strokeWidth={1.8} aria-hidden="true" />
+            ) : (
+              <ChevronDown size={14} strokeWidth={1.8} aria-hidden="true" />
+            )}
+          </button>
+        </div>
 
         {intakeOpen && (
           <div className="border-t border-[var(--atlas-border-subtle)] p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
