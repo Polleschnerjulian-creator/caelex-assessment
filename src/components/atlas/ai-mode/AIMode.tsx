@@ -619,6 +619,27 @@ export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
 
   const startListening = useCallback(async () => {
     try {
+      // Atlas Lawyer-UX Audit F-AI-VOICE (Phase 1.5):
+      // Browser's getUserMedia permission is *technical* consent — but a
+      // German law firm using AI Mode needs *informed* consent about
+      // voice-data handling (transcription path, server-logging,
+      // training-opt-out). DSGVO Art. 6 + 13 + ePrivacy. One-time prompt
+      // gated by localStorage flag; user can revoke by clearing storage
+      // or via a future settings toggle. The browser permission still
+      // applies as a second gate.
+      if (typeof window !== "undefined") {
+        const consented = window.localStorage.getItem("atlas-voice-consent");
+        if (consented !== "yes") {
+          const ok = window.confirm(
+            "Voice input streams your audio to Atlas's AI provider for " +
+              "real-time transcription. Audio is NOT used for model training " +
+              "and is NOT retained beyond the active session. Do you consent " +
+              "to enable voice input?",
+          );
+          if (!ok) return;
+          window.localStorage.setItem("atlas-voice-consent", "yes");
+        }
+      }
       if (!audioCtxRef.current) {
         audioCtxRef.current = new (
           window.AudioContext ||

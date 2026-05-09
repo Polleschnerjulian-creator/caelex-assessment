@@ -51,6 +51,27 @@ export default async function NoAccessPage() {
     redirect("/atlas");
   }
 
+  // Atlas Lawyer-UX Audit F-AUTH-13: differentiate two reasons for
+  // landing here — (a) the user has zero memberships at all (no invite
+  // yet) vs (b) the user IS a member of an org but the org-type isn't
+  // LAW_FIRM/BOTH. Marie's pain: she gets invited to an OPERATOR-typed
+  // org and sees the same generic "no access" copy as a brand-new user
+  // who never received an invite. The fix is a second prisma probe to
+  // detect "wrong org-type" specifically and surface tailored copy.
+  const anyMembership = await prisma.organizationMember.findFirst({
+    where: {
+      userId: session.user.id,
+      organization: { isActive: true },
+    },
+    select: {
+      organization: { select: { name: true, orgType: true } },
+    },
+  });
+  const isOrgTypeMismatch =
+    anyMembership !== null &&
+    anyMembership.organization.orgType !== "LAW_FIRM" &&
+    anyMembership.organization.orgType !== "BOTH";
+
   const email = session.user.email || "";
 
   return (
@@ -61,14 +82,37 @@ export default async function NoAccessPage() {
         </div>
 
         <h1 className="text-[22px] font-semibold text-gray-900 mb-2">
-          Kein Zugang zu ATLAS
+          {isOrgTypeMismatch
+            ? "ATLAS ist für Anwaltskanzleien"
+            : "Kein Zugang zu ATLAS"}
         </h1>
-        <p className="text-[14px] text-gray-600 leading-relaxed mb-6">
-          Ihr Konto ({email || "ohne E-Mail"}) ist derzeit keiner aktiven
-          Organisation auf Caelex ATLAS zugeordnet. ATLAS ist nur für
-          eingeladene Teams verfügbar — bitten Sie eine:n Organisations-
-          Owner:in, Ihnen eine Einladung zu schicken.
-        </p>
+        {isOrgTypeMismatch && anyMembership ? (
+          <p className="text-[14px] text-gray-600 leading-relaxed mb-6">
+            Ihre Organisation <strong>{anyMembership.organization.name}</strong>{" "}
+            ist auf Caelex als{" "}
+            <code className="text-[12px] bg-gray-100 px-1 py-0.5 rounded">
+              {anyMembership.organization.orgType}
+            </code>{" "}
+            registriert. ATLAS ist ausschließlich für Organisationen vom Typ{" "}
+            <strong>LAW_FIRM</strong> (oder <strong>BOTH</strong>) verfügbar.
+            Bitten Sie eine:n Organisations-Owner:in, den Org-Typ zu ändern,
+            oder kontaktieren Sie{" "}
+            <a
+              href="mailto:support@caelex.io"
+              className="text-emerald-700 hover:text-emerald-800 underline"
+            >
+              support@caelex.io
+            </a>
+            .
+          </p>
+        ) : (
+          <p className="text-[14px] text-gray-600 leading-relaxed mb-6">
+            Ihr Konto ({email || "ohne E-Mail"}) ist derzeit keiner aktiven
+            Organisation auf Caelex ATLAS zugeordnet. ATLAS ist nur für
+            eingeladene Teams verfügbar — bitten Sie eine:n Organisations-
+            Owner:in, Ihnen eine Einladung zu schicken.
+          </p>
+        )}
 
         <div className="rounded-xl border border-gray-200 bg-white p-4 text-left mb-6">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-2">

@@ -583,10 +583,30 @@ export default function AtlasAccessPage() {
                         className={styles.fieldLabel}
                         htmlFor="access-role"
                       >
-                        Your role
+                        Your role{" "}
+                        {/* Atlas Lawyer-UX Audit F-AUTH-6: explain WHY
+                            we collect role — silent collection feels
+                            invasive to lawyers. Aria-describedby ties
+                            the help text to the select for SR users. */}
+                        <span
+                          id="access-role-help"
+                          className={styles.fieldHelp}
+                          style={{
+                            fontWeight: "normal",
+                            color: "rgba(255,255,255,0.45)",
+                            fontSize: "11px",
+                            display: "block",
+                            marginTop: 2,
+                          }}
+                        >
+                          Helps us tailor the demo to features that fit your
+                          day-to-day work — never used for sales qualification
+                          or pricing.
+                        </span>
                       </label>
                       <select
                         id="access-role"
+                        aria-describedby="access-role-help"
                         value={role}
                         onChange={(e) => setRole(e.target.value)}
                         required

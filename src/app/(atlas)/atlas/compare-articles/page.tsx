@@ -515,11 +515,40 @@ function ArticleColumn({
             <p className="text-[13px] text-[var(--atlas-text-primary)] leading-relaxed">
               {provision.summary}
             </p>
-            <p className="mt-3 text-[11px] text-amber-700 dark:text-amber-300 italic">
-              {isDe
-                ? "Wörtlicher Wortlaut wird nachgepflegt — bitte beim offiziellen Text verifizieren."
-                : "Verbatim text is being backfilled — please verify against the official text."}
-            </p>
+            {/* Atlas Lawyer-UX Audit F-COMP-2: turn the editorial
+                disclaimer from a faint italicized footer into a banner
+                that senior partners actually notice. Bar-license risk
+                if a lawyer relies on backfilled text without verifying. */}
+            <div
+              className="mt-3 flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-2.5 dark:border-amber-500/30 dark:bg-amber-500/10"
+              role="note"
+            >
+              <svg
+                aria-hidden="true"
+                className="h-4 w-4 shrink-0 text-amber-700 dark:text-amber-300 mt-0.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4a2 2 0 00-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"
+                />
+              </svg>
+              <p className="text-[11.5px] text-amber-800 dark:text-amber-200 leading-relaxed">
+                <strong>
+                  {isDe
+                    ? "Wörtlicher Wortlaut wird nachgepflegt"
+                    : "Verbatim text is being backfilled"}
+                </strong>
+                {" — "}
+                {isDe
+                  ? "bitte beim offiziellen Text verifizieren bevor Sie zitieren oder Mandanten beraten."
+                  : "please verify against the official text before citing or advising clients."}
+              </p>
+            </div>
           </>
         )}
       </div>
