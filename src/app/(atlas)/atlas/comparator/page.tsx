@@ -52,6 +52,7 @@ import {
   type ComparatorDimensionKey,
 } from "@/lib/atlas/comparator-diff-counts";
 import { CountryPalette } from "./CountryPalette";
+import { SavedSetsMenu } from "./SavedSetsMenu";
 
 /**
  * Shared Apple-like glass style used for the sticky control bar.
@@ -245,6 +246,22 @@ function ComparatorPageInner() {
     [selected],
   );
 
+  /* D5: derive the current canonical query-string so SavedSetsMenu
+     can capture it. Re-uses the same encoding as the URL-sync
+     effect — kept as a single source of truth via a small builder
+     here to avoid drift. */
+  const currentQs = useMemo(() => {
+    const params = new URLSearchParams();
+    if (selected.length > 0) params.set("j", selected.join(","));
+    if (dimension !== "all") params.set("dim", dimension);
+    const drift = Math.abs(targetDate.getTime() - Date.now());
+    if (drift > 24 * 60 * 60 * 1000) {
+      params.set("t", targetDate.toISOString().slice(0, 10));
+    }
+    if (differencesOnly) params.set("diff", "1");
+    return params.toString();
+  }, [selected, dimension, targetDate, differencesOnly]);
+
   /* D6: ⌘K palette state. Global listener mounts once; meta+K /
      ctrl+K toggle. Skips when user is typing in another input so
      we don't hijack form interactions. */
@@ -345,6 +362,10 @@ function ComparatorPageInner() {
                   t("atlas.all_dimensions")}
               </span>
             </div>
+            {/* D5: saved comparisons menu. Renders even at 0
+                selections — empty saved-sets state is a fine place
+                to teach the feature. */}
+            <SavedSetsMenu currentQs={currentQs} language={language} />
             {/* BUG-B7: action-buttons used to vanish when selected.length
                 === 0 — Marie clicked Clear, read the empty-state, wanted
                 to share that empty state but the button was gone.
