@@ -1340,3 +1340,132 @@ populated). Kein false-positive — echte Lücke.
 **Marie-Impact:** Statt manuelle Such-Schleife jetzt 1-Klick von
 Statuten-Wortlaut zu citing case → Faktor-10 Speed-Up beim "wie wurde
 das angewendet?"-Reflex.
+
+---
+
+## 20. Quick-Wins-Bündel #6 — F-AI-1 + F-AI-2 (BLOCKER, 2026-05-09)
+
+Audit der AI-Mode Compliance-Surfaces. Ergebnis: **Architektur ist
+grundsätzlich solide**, aber drei Real-Gaps gefunden + gefixt.
+
+### Re-Audit Server-Side Disclaimer-Injection (F-AI-2)
+
+**Wo:** `src/app/api/atlas/ai-chat/route.ts:396-416`
+
+Server-Side back-stop ist **bypass-proof implementiert**:
+
+```ts
+if (draftingToolUsed && !hasDisclaimer(assistantTextBuffer)) {
+  const disclaimerText = "\n\n---\n\n" + disclaimerFor(disclaimerLocale);
+  assistantTextBuffer += disclaimerText;
+  send({ type: "text", text: disclaimerText });
+  send({
+    type: "compliance",
+    kind: "disclaimer_injected",
+    locale: disclaimerLocale,
+  });
+}
+```
+
+Das Modell kann den Disclaimer im Output weglassen — der Server-Stream
+hängt ihn an + meldet via SSE-Event. Der Client rendert dann den
+"Legal review required"-Banner. Kein Weg um das herum.
+
+**Locale-Coverage:** 4 Sprachen (DE/EN/FR/ES) per `disclaimerFor(locale)`.
+Locale-Auswahl in `route.ts:295-298` aus dem User-Prompt heuristisch
+abgeleitet — guter Ansatz, robust gegen Mixed-Language-Drafts.
+
+**Marker-Detection:** `hasDisclaimer()` matcht 8 stable phrases
+(canonical opener × 4 locales + 4 legacy phrasings für
+backward-compatibility mit alten gespeicherten Drafts).
+
+**Was fehlte:** Tests die diese Marker-Contracts locken. **Hinzugefügt**
+in `src/lib/atlas/legal-disclaimers.test.ts` (14 Tests, alle grün).
+
+### Re-Audit Client-Side Citation Provenance (F-AI-1)
+
+**Befund 1 (Done already):** "N of M citations could not be verified"
+red footer rendered wenn `compliance.unverifiedCitations.length > 0`
+(`AIMode.tsx:1731-1761`). Citation-Validator läuft auf jedem Stream-End.
+
+**Befund 2 (Done already):** Per-citation popover hat ShieldAlert-Icon +
+"Vor Verwendung am offiziellen Text prüfen — KI-Ausgabe ohne
+Rechtsberatungsgewähr" (`CitationChip.tsx:124-132`).
+
+**Befund 3 (Real Gap):** Per-citation **Badge** auf der Chip selbst
+(✓ verified vs ⚠ unverified) — **fehlte**. Catalogued (mit
+`lastVerified` + `sourceUrl`) und Uncatalogued Chips sahen IDENTISCH
+aus. Marie musste jeden Chip öffnen um den Status zu sehen.
+
+### F-AI-1 Fix #1 — Per-Citation Provenance Badge (HIGH → Done)
+
+- **Wo:** `src/components/atlas/ai-mode/CitationChip.tsx` + `ai-mode.module.css:.citationChipUnverified*`
+- **Fix:** Discriminator `isCatalogued = Boolean(lastVerified && sourceUrl)`.
+  Wenn false:
+  - Chip-Background wechselt von emerald-tinted zu amber-tinted
+  - ⚠ AlertTriangle-Icon (size 9) als prefix prepended
+  - ARIA-Label: `"Citation X (nicht im Caelex-Katalog — am offiziellen Text prüfen)"`
+  - Native title-attribute für Hover-Tooltip
+  - Hover/Open-Variants konsistent amber-getintet
+- **Color-Strategie:** Subtle amber (alpha 0.07), nicht aggressive red —
+  wir wollen nicht jede uncatalogued citation als "false" markieren
+  (viele sind legit, nur nicht von Caelex curated). Amber sagt "needs
+  manual verify", red sagt "wahrscheinlich falsch".
+- **WCAG:** Information via Icon + Color, nicht nur Color → 1.4.1 OK.
+- **Aufwand:** ~25 min
+
+### F-AI-1 Fix #2 — Locale-Bug auf "Legal review required" Banner (MEDIUM → Done)
+
+- **Wo:** `src/components/atlas/ai-mode/AIMode.tsx:1668`
+- **Bug:** Ternary hatte beide Branches mit english text:
+  ```ts
+  m.compliance.disclaimerLocale === "de"
+    ? "Legal review required" // ← war englisch obwohl "de"
+    : "Legal review required";
+  ```
+- **Fix:** German branch jetzt korrekt `"Juristische Prüfung erforderlich"`.
+- **Aufwand:** ~3 min
+
+### F-AI-2 Fix — Disclaimer-Test-Suite (HIGH → Done)
+
+- **Wo:** `src/lib/atlas/legal-disclaimers.test.ts` (NEW, 184 LOC, 14 tests)
+- **Coverage:**
+  - `disclaimerFor()` returns correct language per locale (4 tests, DE/EN/FR/ES)
+  - Default-fall-back zu EN wenn unknown locale (defensive)
+  - Markdown-blockquote format für jede locale (`> ` prefix) damit
+    `.doc`/`.md`-Export-Pipeline funktioniert
+  - `hasDisclaimer()` detects canonical openers (4 tests)
+  - `hasDisclaimer()` detects every legacy phrasing in `DISCLAIMER_MARKERS`
+  - `hasDisclaimer()` returns false on unrelated text + adversarial
+    "Important: deadline is Tuesday" (false-positive guard)
+  - **Round-trip lock:** `disclaimerFor(L) → hasDisclaimer() == true`
+    für jede locale — der genaue Contract auf den die back-stop bei
+    `route.ts:406` baut, damit kein Double-Inject passiert
+  - Mid-document Disclaimer wird auch erkannt (legacy-output safety)
+  - `DISCLAIMER_TRIGGER_TOOLS` non-empty + enthält
+    `draft_authorization_application` (Bar-license-load-bearing tool)
+  - `exportPrefix()` lead-with-disclaimer guarantee + trailing newlines
+- **Run:** `npx vitest run src/lib/atlas/legal-disclaimers.test.ts` →
+  14/14 passed in 3 ms
+- **Aufwand:** ~30 min
+
+### Was BEWUSST nicht in diesem Bundle ist
+
+- **Output-Test-Suite mit Adversarial-Prompts** (F-AI-2 audit recommendation):
+  würde Anthropic-API-Mocking + golden-fixtures für > 20 prompt-injection-
+  patterns brauchen → eigener Sprint (~3-4 Tage). Die hier
+  gelieferten Marker-Tests sind die nötige Vorarbeit dafür.
+- **AI-Model-Selection-UI** (F-AI-3): out-of-scope für dieses Bundle.
+
+### Trust-Score nach Quick-Wins-Bündel #6
+
+| Surface | Vorher | Nachher                                                                 |
+| ------- | ------ | ----------------------------------------------------------------------- |
+| AI-Mode | 5/10   | **7/10** (+2 — Per-citation provenance + locale-correct banner + tests) |
+| GESAMT  | 7.8/10 | **8.0/10**                                                              |
+
+**Bar-Lizenz-Risk-Reduktion:** Der Server-Side back-stop war schon da
+und damit das eigentliche Risk gemildert. Bundle #6 schließt jetzt die
+visuelle Lücke (Anwalt sieht ⚠ auf jeder uncatalogued citation BEVOR
+sie ins Memo wandert) UND lockt die Marker-Detection-Contracts via
+Test-Suite gegen unbeabsichtigte Regressionen.

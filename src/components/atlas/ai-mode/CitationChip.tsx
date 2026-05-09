@@ -26,7 +26,12 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowUpRight, ExternalLink, ShieldAlert } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowUpRight,
+  ExternalLink,
+  ShieldAlert,
+} from "lucide-react";
 import type { Citation } from "@/lib/atlas/citations";
 import styles from "./ai-mode.module.css";
 
@@ -94,20 +99,46 @@ export function CitationChip({
       window.removeEventListener("keydown", onKey, { capture: true });
   }, [open]);
 
+  /* F-AI-1: provenance discriminator. A citation is "verified" iff the
+     parser resolved it to a Caelex-catalogue source — i.e. both
+     `lastVerified` and `sourceUrl` are populated. Otherwise the chip
+     wears the amber/⚠ uncatalogued styling so the lawyer SEES the
+     status before opening the popover. */
+  const isCatalogued = Boolean(citation.lastVerified && citation.sourceUrl);
+
+  const chipClassName = isCatalogued
+    ? `${styles.citationChip} ${open ? styles.citationChipOpen : ""}`
+    : `${styles.citationChip} ${styles.citationChipUnverified} ${
+        open ? styles.citationChipUnverifiedOpen : ""
+      }`;
+
+  const ariaLabel = isCatalogued
+    ? `Citation ${citation.label}: Details öffnen`
+    : `Citation ${citation.label} (nicht im Caelex-Katalog — am offiziellen Text prüfen): Details öffnen`;
+
   return (
     <span ref={wrapperRef} className={styles.citationWrapper}>
       <button
         type="button"
-        className={`${styles.citationChip} ${
-          open ? styles.citationChipOpen : ""
-        }`}
+        className={chipClassName}
         onClick={(e) => {
           e.stopPropagation();
           setOpen((v) => !v);
         }}
         aria-expanded={open}
-        aria-label={`Citation ${citation.label}: Details öffnen`}
+        aria-label={ariaLabel}
+        title={
+          isCatalogued ? undefined : "Nicht im Caelex-Katalog — manuell prüfen"
+        }
       >
+        {!isCatalogued && (
+          <span
+            className={styles.citationChipUnverifiedIcon}
+            aria-hidden="true"
+          >
+            <AlertTriangle size={9} strokeWidth={2.2} />
+          </span>
+        )}
         {rawText}
       </button>
       {open && (

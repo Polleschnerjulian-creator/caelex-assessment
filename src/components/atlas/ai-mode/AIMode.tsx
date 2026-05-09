@@ -1664,8 +1664,11 @@ export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
                   }}
                 >
                   <strong>
+                    {/* F-AI-1: locale-bug fix — was rendering "Legal
+                        review required" in both branches; the German
+                        bubble now actually reads German. */}
                     {m.compliance.disclaimerLocale === "de"
-                      ? "Legal review required"
+                      ? "Juristische Prüfung erforderlich"
                       : "Legal review required"}
                   </strong>
                   {" — "}
