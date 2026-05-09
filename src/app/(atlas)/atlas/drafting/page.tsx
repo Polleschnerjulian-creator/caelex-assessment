@@ -14,6 +14,11 @@ import {
   History,
   Eye,
   EyeOff,
+  Briefcase,
+  ChevronDown,
+  ChevronUp,
+  Wand2,
+  X,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { ALL_SOURCES } from "@/data/legal-sources";
@@ -30,6 +35,15 @@ import {
   type RecentBriefEntry,
   type RecentCompareEntry,
 } from "@/lib/atlas/drafting-history";
+import {
+  getMandateIntake,
+  setMandateIntake,
+  clearMandateIntake,
+  isIntakeActive,
+  composeMandateContext,
+  EMPTY_INTAKE,
+  type MandateIntake,
+} from "@/lib/atlas/mandate-intake";
 
 /* Atlas Lawyer-UX-Audit F-DRAFT-2 — Privilege-marker support.
    When the user opts in, every prompt the studio dispatches to AI
@@ -187,6 +201,90 @@ export default function DraftingStudioPage() {
     setRecentCompare(getRecentCompare());
   }, []);
 
+  /* S1 — mandate intake. Single active mandate, persisted in
+     localStorage, hydrated lazily after mount to avoid SSR drift.
+     `intakeOpen` controls the panel's expand state independently of
+     whether the intake has data — so the lawyer can collapse a filled
+     intake and the active-mandate pill still surfaces on each tile. */
+  const [intake, setIntake] = useState<MandateIntake>(EMPTY_INTAKE);
+  const [intakeOpen, setIntakeOpen] = useState(false);
+  const [intakeHydrated, setIntakeHydrated] = useState(false);
+  useEffect(() => {
+    const loaded = getMandateIntake();
+    setIntake(loaded);
+    /* Auto-expand the panel if the user has no intake yet — they need
+       to see the form. Auto-collapse if they have one — assume they
+       want to focus on the tiles, not the form. */
+    setIntakeOpen(!isIntakeActive(loaded));
+    setIntakeHydrated(true);
+  }, []);
+
+  const updateIntake = (next: MandateIntake) => {
+    setIntake(next);
+    setMandateIntake(next);
+  };
+  const updateIntakeField = <K extends keyof MandateIntake>(
+    field: K,
+    value: MandateIntake[K],
+  ) => {
+    updateIntake({ ...intake, [field]: value });
+  };
+  const resetIntake = () => {
+    setIntake(EMPTY_INTAKE);
+    clearMandateIntake();
+    setIntakeOpen(true);
+  };
+
+  const intakeActive = intakeHydrated && isIntakeActive(intake);
+
+  /* When intake is active, compose the per-language context string
+     once per render and reuse it in builders + UI hints. */
+  const mandateContext = intakeActive
+    ? composeMandateContext(intake, outputLang === "de" ? "de" : "en")
+    : "";
+
+  /* Auth-tile prefill from intake. Only applied when the user clicks
+     the "Use mandate" button — never silently overwrites local edits. */
+  const applyIntakeToAuth = () => {
+    if (!intakeActive) return;
+    setAuthJurisdiction(intake.primaryJurisdiction || authJurisdiction);
+    if (
+      OPERATOR_TYPES.includes(
+        intake.operatorType as (typeof OPERATOR_TYPES)[number],
+      )
+    ) {
+      setAuthOperator(intake.operatorType as (typeof OPERATOR_TYPES)[number]);
+    }
+    /* Compose mission-profile from intake fields. Marie can still edit
+       the result; this is a starting point, not a lock. */
+    const composedMission = [
+      intake.satelliteSpecs.trim(),
+      intake.missionProfile.trim(),
+      intake.frequencies.trim(),
+      intake.launchDate.trim(),
+      intake.client.trim()
+        ? outputLang === "de"
+          ? `Mandant: ${intake.client.trim()}`
+          : `Client: ${intake.client.trim()}`
+        : "",
+    ]
+      .filter(Boolean)
+      .join(", ");
+    setAuthMission(composedMission);
+  };
+
+  /* Compare-tile: ensure the primary jurisdiction is in the comparison
+     when intake is active. Idempotent. */
+  const applyIntakeToCompare = () => {
+    if (!intakeActive) return;
+    if (!compareJurisdictions.includes(intake.primaryJurisdiction)) {
+      setCompareJurisdictions([
+        intake.primaryJurisdiction,
+        ...compareJurisdictions,
+      ]);
+    }
+  };
+
   /* ── F-DRAFT-2: privileged-mode toggle ──
      Hydrated from localStorage so the preference sticks across page
      reloads. The two-step (default false → effect-load) avoids SSR
@@ -245,20 +343,31 @@ export default function DraftingStudioPage() {
     return withPrivilege((outputDe ? baseDe : baseEn) + mission);
   };
 
-  const buildBriefPrompt = (): string =>
-    withPrivilege(
-      outputDe
-        ? `Erstelle ein Compliance-Briefing zum Thema: ${briefTopic.trim()}.`
-        : `Draft a compliance brief on: ${briefTopic.trim()}.`,
-    );
+  const buildBriefPrompt = (): string => {
+    const base = outputDe
+      ? `Erstelle ein Compliance-Briefing zum Thema: ${briefTopic.trim()}.`
+      : `Draft a compliance brief on: ${briefTopic.trim()}.`;
+    /* S1: mandate context appended as its own clearly-labelled line so
+       the model sees it as guidance, not as part of the topic. */
+    const ctx = mandateContext
+      ? outputDe
+        ? ` Mandanten-Kontext: ${mandateContext}.`
+        : ` Mandate context: ${mandateContext}.`
+      : "";
+    return withPrivilege(base + ctx);
+  };
 
   const buildComparePrompt = (): string => {
     const list = compareJurisdictions.join(", ");
-    return withPrivilege(
-      outputDe
-        ? `Vergleiche die folgenden Jurisdiktionen für ein Filing: ${list}. Erstelle eine Kriterien-Matrix mit zitierten ATLAS-IDs.`
-        : `Compare the following jurisdictions for a filing: ${list}. Produce a criteria matrix with cited ATLAS-IDs.`,
-    );
+    const base = outputDe
+      ? `Vergleiche die folgenden Jurisdiktionen für ein Filing: ${list}. Erstelle eine Kriterien-Matrix mit zitierten ATLAS-IDs.`
+      : `Compare the following jurisdictions for a filing: ${list}. Produce a criteria matrix with cited ATLAS-IDs.`;
+    const ctx = mandateContext
+      ? outputDe
+        ? ` Mandanten-Kontext: ${mandateContext}.`
+        : ` Mandate context: ${mandateContext}.`
+      : "";
+    return withPrivilege(base + ctx);
   };
 
   const handleAuthSubmit = () => {
@@ -451,6 +560,199 @@ export default function DraftingStudioPage() {
         )}
       </div>
 
+      {/* S1 — Mandate Intake Form. Marie enters the mandate context
+          ONCE and every tile inherits it (auth tile prefills via
+          "Use mandate" button, brief + compare prompts get a
+          "Mandate context: …" line auto-appended). Persists in
+          localStorage so reload doesn't lose it. */}
+      <section className="max-w-3xl rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setIntakeOpen((o) => !o)}
+          className="w-full flex items-center gap-2 px-4 py-2.5 text-left hover:bg-[var(--atlas-bg-surface-muted)] transition-colors"
+          aria-expanded={intakeOpen}
+        >
+          <Briefcase
+            size={14}
+            strokeWidth={1.8}
+            className={
+              intakeActive
+                ? "text-emerald-600 dark:text-emerald-400"
+                : "text-[var(--atlas-text-faint)]"
+            }
+            aria-hidden="true"
+          />
+          <span className="flex-1 min-w-0">
+            <span className="text-[12.5px] font-medium text-[var(--atlas-text-primary)]">
+              {isDe ? "Mandanten-Kontext" : "Mandate context"}
+            </span>
+            {intakeActive && intake.client.trim() && (
+              <span className="ml-2 inline-flex items-center rounded-md bg-emerald-100 dark:bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-800 dark:text-emerald-200">
+                {intake.client.trim()}
+              </span>
+            )}
+            {!intakeActive && (
+              <span className="ml-2 text-[11px] text-[var(--atlas-text-muted)]">
+                {isDe
+                  ? "Einmal eintragen, alle Tiles ziehen daraus"
+                  : "Enter once, every tile pulls from it"}
+              </span>
+            )}
+          </span>
+          {intakeOpen ? (
+            <ChevronUp
+              size={14}
+              strokeWidth={1.8}
+              className="text-[var(--atlas-text-faint)]"
+              aria-hidden="true"
+            />
+          ) : (
+            <ChevronDown
+              size={14}
+              strokeWidth={1.8}
+              className="text-[var(--atlas-text-faint)]"
+              aria-hidden="true"
+            />
+          )}
+        </button>
+
+        {intakeOpen && (
+          <div className="border-t border-[var(--atlas-border-subtle)] p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="md:col-span-2">
+              <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                {isDe ? "Mandant" : "Client"}
+              </label>
+              <input
+                type="text"
+                value={intake.client}
+                onChange={(e) => updateIntakeField("client", e.target.value)}
+                placeholder={isDe ? "z. B. Sky-Sat GmbH" : "e.g. Sky-Sat GmbH"}
+                className="w-full rounded-md bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] outline-none placeholder:text-[var(--atlas-text-faint)]"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                {isDe ? "Primäre Jurisdiktion" : "Primary jurisdiction"}
+              </label>
+              <select
+                value={intake.primaryJurisdiction}
+                onChange={(e) =>
+                  updateIntakeField("primaryJurisdiction", e.target.value)
+                }
+                className="w-full rounded-md bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] outline-none cursor-pointer"
+              >
+                {allJurisdictions.map((j) => (
+                  <option key={j} value={j}>
+                    {j}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                {isDe ? "Betreiber-Typ" : "Operator type"}
+              </label>
+              <select
+                value={intake.operatorType}
+                onChange={(e) =>
+                  updateIntakeField("operatorType", e.target.value)
+                }
+                className="w-full rounded-md bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] outline-none cursor-pointer"
+              >
+                {OPERATOR_TYPES.map((op) => (
+                  <option key={op} value={op}>
+                    {isDe ? OPERATOR_LABELS[op].de : OPERATOR_LABELS[op].en}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                {isDe ? "Satelliten-Specs" : "Satellite specs"}
+              </label>
+              <input
+                type="text"
+                value={intake.satelliteSpecs}
+                onChange={(e) =>
+                  updateIntakeField("satelliteSpecs", e.target.value)
+                }
+                placeholder={
+                  isDe
+                    ? "z. B. 12 LEO-Sats à 250 kg, 550 km Höhe"
+                    : "e.g. 12 LEO sats × 250 kg, 550 km altitude"
+                }
+                className="w-full rounded-md bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] outline-none placeholder:text-[var(--atlas-text-faint)]"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                {isDe ? "Missionsprofil" : "Mission profile"}
+              </label>
+              <input
+                type="text"
+                value={intake.missionProfile}
+                onChange={(e) =>
+                  updateIntakeField("missionProfile", e.target.value)
+                }
+                placeholder={
+                  isDe ? "z. B. EO optical + SAR" : "e.g. EO optical + SAR"
+                }
+                className="w-full rounded-md bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] outline-none placeholder:text-[var(--atlas-text-faint)]"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                {isDe ? "Frequenzen" : "Frequencies"}
+              </label>
+              <input
+                type="text"
+                value={intake.frequencies}
+                onChange={(e) =>
+                  updateIntakeField("frequencies", e.target.value)
+                }
+                placeholder={
+                  isDe ? "z. B. Ka-Band 28/18 GHz" : "e.g. Ka-band 28/18 GHz"
+                }
+                className="w-full rounded-md bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] outline-none placeholder:text-[var(--atlas-text-faint)]"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                {isDe ? "Launch-Fenster" : "Launch window"}
+              </label>
+              <input
+                type="text"
+                value={intake.launchDate}
+                onChange={(e) =>
+                  updateIntakeField("launchDate", e.target.value)
+                }
+                placeholder={
+                  isDe ? "z. B. Q3/2027 (Ariane 6)" : "e.g. Q3/2027 (Ariane 6)"
+                }
+                className="w-full rounded-md bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] outline-none placeholder:text-[var(--atlas-text-faint)]"
+              />
+            </div>
+            {intakeActive && (
+              <div className="md:col-span-2 flex items-center justify-between gap-2 pt-1">
+                <span className="text-[10.5px] text-[var(--atlas-text-muted)] italic">
+                  {isDe
+                    ? "Wird automatisch in Brief- und Vergleich-Prompts eingefügt."
+                    : "Auto-injected into brief and compare prompts."}
+                </span>
+                <button
+                  type="button"
+                  onClick={resetIntake}
+                  className="inline-flex items-center gap-1 text-[10.5px] text-[var(--atlas-text-muted)] hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                >
+                  <X size={10} strokeWidth={1.8} aria-hidden="true" />
+                  {isDe ? "Mandant zurücksetzen" : "Reset mandate"}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mt-2">
         {/* ── Tile 1: Authorization application ── */}
         <article className="flex flex-col rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm overflow-hidden">
@@ -474,6 +776,27 @@ export default function DraftingStudioPage() {
             </p>
           </div>
           <div className="p-4 flex flex-col gap-3 flex-1">
+            {/* S1: when an intake is active, surface a one-click button
+                that prefills jurisdiction + operator + mission from the
+                intake. Composes the mission textarea from specs +
+                profile + frequencies + launch + client. */}
+            {intakeActive && (
+              <button
+                type="button"
+                onClick={applyIntakeToAuth}
+                className="inline-flex items-center justify-center gap-1.5 rounded-md border border-emerald-300 dark:border-emerald-500/40 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1.5 text-[11px] font-medium text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors"
+                title={
+                  intake.client.trim()
+                    ? `${isDe ? "Vorausfüllen mit Mandant" : "Prefill with mandate"}: ${intake.client.trim()}`
+                    : isDe
+                      ? "Vorausfüllen mit Mandanten-Kontext"
+                      : "Prefill with mandate context"
+                }
+              >
+                <Wand2 size={11} strokeWidth={1.8} aria-hidden="true" />
+                {isDe ? "Mit Mandant befüllen" : "Use mandate"}
+              </button>
+            )}
             <div>
               <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
                 {isDe ? "Jurisdiktion" : "Jurisdiction"}
@@ -617,6 +940,20 @@ export default function DraftingStudioPage() {
             </p>
           </div>
           <div className="p-4 flex flex-col gap-3 flex-1">
+            {/* S1: brief tile auto-appends the mandate context to the
+                prompt — Marie doesn't need a button, just confirmation
+                that the context is along for the ride. */}
+            {intakeActive && (
+              <div className="inline-flex items-center gap-1.5 rounded-md border border-emerald-300 dark:border-emerald-500/40 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 text-[10.5px] text-emerald-800 dark:text-emerald-200">
+                <Briefcase size={10} strokeWidth={1.8} aria-hidden="true" />
+                {isDe ? "Mandanten-Kontext aktiv" : "Mandate context active"}
+                {intake.client.trim() && (
+                  <span className="ml-0.5 font-semibold">
+                    · {intake.client.trim()}
+                  </span>
+                )}
+              </div>
+            )}
             <div>
               <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
                 {isDe ? "Thema" : "Topic"}
@@ -743,6 +1080,37 @@ export default function DraftingStudioPage() {
             </p>
           </div>
           <div className="p-4 flex flex-col gap-3 flex-1">
+            {/* S1: when an intake is active, surface a button that
+                ensures the primary jurisdiction is in the comparison
+                set + the mandate context auto-injects into the prompt. */}
+            {intakeActive && (
+              <div className="flex items-center justify-between gap-2 rounded-md border border-emerald-300 dark:border-emerald-500/40 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1">
+                <span className="inline-flex items-center gap-1.5 text-[10.5px] text-emerald-800 dark:text-emerald-200">
+                  <Briefcase size={10} strokeWidth={1.8} aria-hidden="true" />
+                  {isDe ? "Mandanten-Kontext aktiv" : "Mandate context active"}
+                  {intake.client.trim() && (
+                    <span className="ml-0.5 font-semibold">
+                      · {intake.client.trim()}
+                    </span>
+                  )}
+                </span>
+                {!compareJurisdictions.includes(intake.primaryJurisdiction) && (
+                  <button
+                    type="button"
+                    onClick={applyIntakeToCompare}
+                    title={
+                      isDe
+                        ? `${intake.primaryJurisdiction} hinzufügen`
+                        : `Add ${intake.primaryJurisdiction}`
+                    }
+                    className="inline-flex items-center gap-1 text-[10.5px] font-medium text-emerald-800 dark:text-emerald-200 hover:underline"
+                  >
+                    <Wand2 size={9} strokeWidth={1.8} aria-hidden="true" />+
+                    {intake.primaryJurisdiction}
+                  </button>
+                )}
+              </div>
+            )}
             <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
               {isDe ? "Jurisdiktionen vergleichen" : "Jurisdictions to compare"}
               <span className="ml-1 text-[var(--atlas-text-faint)] normal-case font-normal tracking-normal">
