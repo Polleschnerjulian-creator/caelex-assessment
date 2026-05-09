@@ -1655,3 +1655,94 @@ toten-Sackgasse-Seite.
 Audits oben zu landen, aber sie sind die Touchpoints wo eine
 ungeduldig-suchende Anwältin Vertrauen verliert oder gewinnt. Bundle
 #8 macht aus 4 dead-end-states Pfadangebote.
+
+---
+
+## 23. Quick-Wins-Bündel #9 — AI-Mode Polish-Layer (2026-05-09)
+
+Re-Audit der drei AI-Mode Findings F-AI-3, F-AI-5, F-AI-6 — alle drei
+hatten substanzielle Discrepancies zur Realität:
+
+- **F-AI-3 (Model Selection):** Audit beschrieb "ATLAS-1/Mini/Pro mit
+  220k/64k/1M ctx" als ob das funktional implementiert wäre. **Reality:**
+  Server pinnt einen einzigen Model (`claude-sonnet-4-6` oder
+  `anthropic/claude-sonnet-4.6` via Gateway). Client-side picker
+  existiert (lines 1538-1623 in AIMode.tsx) aber ist **rein kosmetisch**
+  — `modelName` state wird nie an Server geschickt. Funktionales
+  Multi-Model-Switching wäre ein Server-Allowlist + Per-tier-Auth-
+  Sprint, nicht Quick-Win-Material.
+
+- **F-AI-5 (Mic Privacy):** Phase-1.5 hatte schon eine DSGVO-Consent-
+  Schwelle eingebaut (lines 622-642) mit localStorage-Flag. **Real
+  Gap:** Consent-Text war englisch-only (kein DE/FR/ES für non-EN
+  Anwält:innen) und kein User-facing Revoke-Mechanismus.
+
+- **F-AI-6 (Token Cost):** Token-Counter existierte schon (line 158
+  fmtTokens, line 849 usage tracking) — aber als globaler Conversation-
+  Counter, nicht per-message. Kein Cost-in-USD irgendwo sichtbar.
+
+### F-AI-3 — Honest disclosure on cosmetic model picker (HIGH → Done, partial)
+
+- **Wo:** `AIMode.tsx` model menu (~line 1623-1646)
+- **Fix:** Note am unteren Rand der Model-Picker-Dropdown:
+  > "Display preference — Atlas server picks the optimised model for
+  > your query. Cost is shown per-message below."
+- **Was bewusst nicht jetzt gefixt:** Funktionale Model-Switching
+  (claude-haiku/sonnet/opus mapping). Braucht:
+  - Server-Allowlist mit per-tier-auth-policy
+  - Verification dass alternate models alle Tools korrekt bedienen
+  - Pricing-tier transparency wenn opus deutlich teurer ist
+    → Eigener "F-AI-3 stage-2" Sprint, ~1 Woche
+- **Aufwand:** ~10 min (Note-Eintrag)
+
+### F-AI-5 stage-2 — Voice Consent localized + revocable (MEDIUM → Done)
+
+- **Wo:** `AIMode.tsx:lines 656-705` (consent prompt) + lines 351-368
+  (revoke handler) + lines 2008-2055 (revoke UI)
+- **Fix-1 (Localization):** `consentText` map mit DE/EN/FR/ES — picked
+  via `language` from useLanguage hook. Native browser confirm()
+  bleibt für jetzt (OK/Cancel locale ist browser-kontrolliert, akzeptabel).
+- **Fix-2 (Revoke):** Sticky `voiceConsent` state mirrored aus
+  localStorage + `revokeVoiceConsent` handler:
+  - Removes localStorage key
+  - Stops active mic stream sofort (immediate effect, nicht erst nach
+    nächster Page-Reload)
+  - Sets listening=false
+- **Fix-3 (UI):** Subtile dashed-border button am Ende der suggestion-
+  chips Row, nur sichtbar wenn voiceConsent=true. 4-locale label
+  ("Sprach-Zustimmung widerrufen" / "Revoke voice consent" / etc).
+  Toast-feedback nach erfolgreichem Revoke.
+- **Aufwand:** ~40 min
+
+### F-AI-6 — Per-message token cost footer (MEDIUM → Done)
+
+- **Wo:** `AIMode.tsx` (helpers + ChatMsg interface + done-event handler
+  - bubble render)
+- **Helpers:**
+  - `ATLAS_PRICE_INPUT_USD_PER_M = 3.0` (Sonnet 4.x standard pricing)
+  - `ATLAS_PRICE_OUTPUT_USD_PER_M = 15.0`
+  - `estimateCostUSD(input, output)` → number
+  - `formatCostUSD(cost)` → "<$0.01" / "$0.02" / "$1.23"
+- **Persistence:** Extended `ChatMsg` interface mit optional
+  `usage?: { input: number; output: number }`. Server-streamed `done`
+  event jetzt setzt usage auf der Message ITSELF (vorher nur globalen
+  Counter bumped).
+- **UI:** Subtle 10.5px mono footer pro completed atlas-Message:
+  > "≈ 4.2k tokens · $0.02"
+  - Hover-title zeigt Breakdown ("3,450 input + 750 output tokens · pricing: $3/M input, $15/M output")
+  - ARIA-label: full cost string für screen-readers
+  - Renders nur wenn `m.usage` set (skipped during streaming)
+  - Sits zwischen unverified-citations footer und library/export-chips
+- **Aufwand:** ~30 min
+
+### Trust-Score nach Quick-Wins-Bündel #9
+
+| Surface | Vorher | Nachher                                                                    |
+| ------- | ------ | -------------------------------------------------------------------------- |
+| AI-Mode | 7/10   | **7.5/10** (+0.5 — cost-transparency + privacy-revoke + honest disclosure) |
+| GESAMT  | 8.2/10 | **8.3/10**                                                                 |
+
+**Marie-Impact:** Pro Query sieht sie jetzt "$0.03" — nach 50 Queries
+ist die Mandant-Abrechnung defensible. Plus sie kann Voice-Consent
+revoken ohne Browser-DevTools öffnen zu müssen. Plus der model-picker
+lügt nicht mehr (sie weiß dass es eine Display-Preference ist).

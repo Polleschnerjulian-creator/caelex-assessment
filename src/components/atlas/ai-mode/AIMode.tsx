@@ -36,6 +36,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { Briefcase, UserPlus, PenLine, Scale, Inbox } from "lucide-react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { Citation } from "@/lib/atlas/citations";
 import {
   AtlasEntity,
@@ -207,6 +208,38 @@ interface ChatMsg {
   streaming?: boolean;
   tools?: ToolTrace[];
   compliance?: ComplianceFlags;
+  /** Atlas Lawyer-UX-Audit F-AI-6: per-message token usage from the
+   *  server's `done` event. Stored on the message so the cost footer
+   *  in the bubble survives later state updates (vs only updating the
+   *  global token-meter). Only present on completed atlas messages. */
+  usage?: { input: number; output: number };
+}
+
+/* F-AI-3 + F-AI-6 — cost-estimation helpers.
+ * Anthropic standard pricing for Claude Sonnet 4.x: $3 / M input
+ * tokens, $15 / M output tokens. Cached / batch input is cheaper but
+ * Atlas's inline single-shot research path always pays the full
+ * input rate, so we estimate against that. The numbers are only
+ * displayed with two-decimal precision so a $0.0237 query reads as
+ * "$0.02" — accurate enough to give the lawyer a sense of magnitude
+ * without false precision.
+ *
+ * If pricing changes, update these constants only — every cost
+ * surface in the UI derives from them. */
+const ATLAS_PRICE_INPUT_USD_PER_M = 3.0;
+const ATLAS_PRICE_OUTPUT_USD_PER_M = 15.0;
+
+function estimateCostUSD(input: number, output: number): number {
+  return (
+    (input / 1_000_000) * ATLAS_PRICE_INPUT_USD_PER_M +
+    (output / 1_000_000) * ATLAS_PRICE_OUTPUT_USD_PER_M
+  );
+}
+
+function formatCostUSD(cost: number): string {
+  if (cost < 0.01) return "<$0.01";
+  if (cost < 1) return `$${cost.toFixed(2)}`;
+  return `$${cost.toFixed(2)}`;
 }
 
 /** Atlas tool → human label for the transparency chip. */
@@ -252,6 +285,22 @@ export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
   const [audioLevel, setAudioLevel] = useState(0);
   const [activePanel, setActivePanel] = useState<ActionPanelKey | null>(null);
 
+  /* F-AI-5 stage-2 — voice-consent state.
+     `voiceConsent` mirrors the localStorage flag so the revoke link
+     in quickActions only renders when consent is actually set. SSR-
+     safe: starts false, hydrates on mount. The actual `revokeVoiceConsent`
+     callback is declared further down (after `micStreamRef` is in scope). */
+  const { language } = useLanguage();
+  const [voiceConsent, setVoiceConsent] = useState(false);
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem("atlas-voice-consent");
+      if (stored === "yes") setVoiceConsent(true);
+    } catch {
+      /* private browsing */
+    }
+  }, []);
+
   // Workspace state — inline Pinboard rendered around the minimised orb
   // when open. Cards persist via /api/atlas/workspaces (per-user
   // pinboards, AtlasWorkspace + AtlasWorkspaceCard models). Multiple
@@ -283,6 +332,24 @@ export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
   const micRafRef = useRef<number>(0);
   const lastTypeTs = useRef<number>(0);
   const idleReturnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /* F-AI-5 stage-2 — revoke handler placed here so micStreamRef is
+     in scope. Stops any active mic stream so the revoke takes
+     immediate effect even mid-session (matches the close-handler
+     teardown). */
+  const revokeVoiceConsent = useCallback(() => {
+    try {
+      window.localStorage.removeItem("atlas-voice-consent");
+    } catch {
+      /* private browsing — flag was per-session anyway */
+    }
+    setVoiceConsent(false);
+    if (micStreamRef.current) {
+      micStreamRef.current.getTracks().forEach((t) => t.stop());
+      micStreamRef.current = null;
+    }
+    setListening(false);
+  }, []);
 
   const maxTokens = MODELS[modelName].ctx;
 
@@ -619,25 +686,55 @@ export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
 
   const startListening = useCallback(async () => {
     try {
-      // Atlas Lawyer-UX Audit F-AI-VOICE (Phase 1.5):
+      // Atlas Lawyer-UX Audit F-AI-VOICE (Phase 1.5) + F-AI-5 stage-2:
       // Browser's getUserMedia permission is *technical* consent — but a
       // German law firm using AI Mode needs *informed* consent about
       // voice-data handling (transcription path, server-logging,
       // training-opt-out). DSGVO Art. 6 + 13 + ePrivacy. One-time prompt
-      // gated by localStorage flag; user can revoke by clearing storage
-      // or via a future settings toggle. The browser permission still
-      // applies as a second gate.
+      // gated by localStorage flag, language-aware (DE/EN/FR/ES). User
+      // revokes via the "Voice consent: granted · revoke" affordance in
+      // the quickActions row (rendered when this flag is set). Browser
+      // permission still applies as a second gate.
       if (typeof window !== "undefined") {
         const consented = window.localStorage.getItem("atlas-voice-consent");
         if (consented !== "yes") {
-          const ok = window.confirm(
-            "Voice input streams your audio to Atlas's AI provider for " +
+          const consentText: Record<string, string> = {
+            de:
+              "Sprach-Eingabe streamt Ihr Audio an den Atlas-KI-Anbieter zur " +
+              "Echtzeit-Transkription. Audio wird NICHT für Modell-Training " +
+              "verwendet und NICHT über die aktive Sitzung hinaus aufbewahrt. " +
+              "Stimmen Sie der Sprach-Eingabe zu?\n\n" +
+              "Hinweis: Die Zustimmung kann jederzeit über den Link " +
+              '„Sprach-Zustimmung widerrufen" unter dem Eingabefeld ' +
+              "zurückgenommen werden.",
+            en:
+              "Voice input streams your audio to Atlas's AI provider for " +
               "real-time transcription. Audio is NOT used for model training " +
               "and is NOT retained beyond the active session. Do you consent " +
-              "to enable voice input?",
-          );
+              "to enable voice input?\n\n" +
+              "Note: You can revoke this consent at any time via the " +
+              '"Revoke voice consent" link under the input area.',
+            fr:
+              "L'entrée vocale transmet votre audio au fournisseur d'IA " +
+              "Atlas pour la transcription en temps réel. L'audio N'EST PAS " +
+              "utilisé pour l'entraînement du modèle et N'EST PAS conservé " +
+              "au-delà de la session active. Acceptez-vous l'entrée vocale ?\n\n" +
+              "Remarque : vous pouvez révoquer ce consentement à tout moment " +
+              "via le lien « Révoquer le consentement vocal » sous la zone " +
+              "de saisie.",
+            es:
+              "La entrada de voz transmite su audio al proveedor de IA de " +
+              "Atlas para la transcripción en tiempo real. El audio NO se " +
+              "utiliza para el entrenamiento del modelo y NO se conserva " +
+              "más allá de la sesión activa. ¿Acepta la entrada de voz?\n\n" +
+              "Nota: puede revocar este consentimiento en cualquier momento " +
+              'mediante el enlace "Revocar consentimiento de voz" bajo el ' +
+              "área de entrada.",
+          };
+          const ok = window.confirm(consentText[language] ?? consentText.en);
           if (!ok) return;
           window.localStorage.setItem("atlas-voice-consent", "yes");
+          setVoiceConsent(true);
         }
       }
       if (!audioCtxRef.current) {
@@ -850,6 +947,19 @@ export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
                 // Real-usage telemetry bump to keep the meter honest.
                 setTotalTokens((n) =>
                   Math.min(maxTokens, n + evt.usage!.output),
+                );
+                /* F-AI-6: also stash the usage on the message itself
+                   so the bubble's cost-footer renders from this
+                   per-message snapshot, not the conversation-global
+                   counter. Survives later state mutations. */
+                const msgUsage = {
+                  input: evt.usage.input,
+                  output: evt.usage.output,
+                };
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === atlasId ? { ...m, usage: msgUsage } : m,
+                  ),
                 );
               } else if (evt.type === "tool_use_start") {
                 // Append a pending tool chip to the current atlas msg
@@ -1620,6 +1730,27 @@ export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
             <span className="sub">{MODELS[name].label}</span>
           </div>
         ))}
+        {/* F-AI-3 — honest disclosure: the picker is presently a
+            display preference. Server-side Atlas pins one optimised
+            model regardless of selection; this row sets the context-
+            window meter cap and lets us A/B different cap defaults
+            without code changes. The audit's ask for *functional*
+            model switching is tracked separately — needs server
+            allowlist + per-tier auth policy. */}
+        <div
+          style={{
+            padding: "8px 12px 6px 12px",
+            fontSize: "10px",
+            lineHeight: 1.45,
+            color: "rgba(255,255,255,0.4)",
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            marginTop: "4px",
+          }}
+          role="note"
+        >
+          Display preference — Atlas server picks the optimised model for your
+          query. Cost is shown per-message below.
+        </div>
       </div>
 
       {/* Conversation */}
@@ -1762,6 +1893,25 @@ export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
                     </span>
                   </div>
                 )}
+              {/* F-AI-6 — per-message token + cost footer. Only on
+                  completed atlas messages (skipped while streaming
+                  because the usage event lands at end-of-stream). The
+                  display is intentionally subtle (10.5px, faint
+                  colour) so the cost feedback is *available* but
+                  doesn't dominate the answer. */}
+              {m.role === "atlas" && !m.streaming && m.usage && (
+                <div
+                  className="mt-1.5 text-[10.5px] text-[var(--atlas-text-faint)] font-mono"
+                  role="note"
+                  aria-label={`Cost estimate for this query: ${formatCostUSD(estimateCostUSD(m.usage.input, m.usage.output))}`}
+                  title={`${m.usage.input.toLocaleString()} input + ${m.usage.output.toLocaleString()} output tokens · pricing: $${ATLAS_PRICE_INPUT_USD_PER_M}/M input, $${ATLAS_PRICE_OUTPUT_USD_PER_M}/M output`}
+                >
+                  ≈ {fmtTokens(m.usage.input + m.usage.output)} tokens ·{" "}
+                  {formatCostUSD(
+                    estimateCostUSD(m.usage.input, m.usage.output),
+                  )}
+                </div>
+              )}
               {/* Phase 5 — Library save chip on completed Atlas messages.
                 Compact icon-only variant; sits inside the bubble at
                 the bottom-right corner so it doesn't compete with
@@ -1849,6 +1999,56 @@ export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
               {s}
             </button>
           ))}
+          {/* F-AI-5 stage-2 — voice-consent revoke affordance.
+              Only renders when consent has been granted. Subtle:
+              positioned at the end of the suggestion-chip row in a
+              muted text style so it doesn't fight for attention with
+              the actual prompt-suggestion chips, but is *findable*
+              for the lawyer who decides to opt out mid-session. */}
+          {voiceConsent && (
+            <button
+              type="button"
+              onClick={() => {
+                revokeVoiceConsent();
+                toast(
+                  language === "de"
+                    ? "Sprach-Zustimmung widerrufen"
+                    : language === "fr"
+                      ? "Consentement vocal révoqué"
+                      : language === "es"
+                        ? "Consentimiento de voz revocado"
+                        : "Voice consent revoked",
+                );
+              }}
+              style={{
+                background: "transparent",
+                border: "1px dashed rgba(255,255,255,0.18)",
+                color: "rgba(255,255,255,0.5)",
+                padding: "5px 10px",
+                borderRadius: "8px",
+                fontSize: "11px",
+                cursor: "pointer",
+              }}
+              title={
+                language === "de"
+                  ? "Sprach-Zustimmung für diesen Browser widerrufen"
+                  : "Revoke voice consent for this browser"
+              }
+              aria-label={
+                language === "de"
+                  ? "Sprach-Zustimmung widerrufen"
+                  : "Revoke voice consent"
+              }
+            >
+              {language === "de"
+                ? "Sprach-Zustimmung widerrufen"
+                : language === "fr"
+                  ? "Révoquer le consentement vocal"
+                  : language === "es"
+                    ? "Revocar consentimiento de voz"
+                    : "Revoke voice consent"}
+            </button>
+          )}
         </div>
 
         {/* Token meter — visible in workspace mode too; the input pill
