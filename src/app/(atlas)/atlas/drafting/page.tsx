@@ -10,10 +10,26 @@ import {
   Sparkles,
   Info,
   Lock,
+  Languages,
+  History,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { ALL_SOURCES } from "@/data/legal-sources";
 import { openAIMode } from "@/components/atlas/AIModeLauncher";
+import {
+  getRecentAuth,
+  getRecentBrief,
+  getRecentCompare,
+  pushRecentAuth,
+  pushRecentBrief,
+  pushRecentCompare,
+  pushDraftLibrary,
+  type RecentAuthEntry,
+  type RecentBriefEntry,
+  type RecentCompareEntry,
+} from "@/lib/atlas/drafting-history";
 
 /* Atlas Lawyer-UX-Audit F-DRAFT-2 — Privilege-marker support.
    When the user opts in, every prompt the studio dispatches to AI
@@ -71,6 +87,30 @@ const OPERATOR_TYPES = [
   "space_resource_operator",
 ] as const;
 
+/* Q1: pre-defined topic chips for the Brief tile.
+   Curated from the four most-asked compliance briefs in the BHO Legal +
+   Heuking Space practice (Marie's actual ticket queue, sample 2026-01).
+   Click-to-fill the textarea so the lawyer doesn't re-type these every
+   time. Free-text still works for everything off the list. */
+const BRIEF_TOPIC_PRESETS: { de: string; en: string }[] = [
+  {
+    de: "NIS2-Compliance für Satellitenbetreiber",
+    en: "NIS2 compliance for satellite operators",
+  },
+  {
+    de: "ITU-Frequenzkoordination & BIU-Pflichten",
+    en: "ITU frequency coordination & BIU obligations",
+  },
+  {
+    de: "Re-Entry-Haftung nach Weltraumhaftungsübereinkommen",
+    en: "Re-entry liability under the Liability Convention",
+  },
+  {
+    de: "EU Space Act — Auswirkungen auf bestehende Genehmigungen",
+    en: "EU Space Act — impact on existing authorizations",
+  },
+];
+
 const OPERATOR_LABELS: Record<
   (typeof OPERATOR_TYPES)[number],
   { en: string; de: string }
@@ -120,6 +160,33 @@ export default function DraftingStudioPage() {
     "LU",
   ]);
 
+  /* Q4 — output-language toggle. Independent of UI language. Marie can
+     work in EN-UI and still ask Astra to draft in DE for her DE
+     mandate, or vice-versa. Sticky via state alone (per-session) so
+     the UI doesn't override per-tile. */
+  const [outputLang, setOutputLang] = useState<"de" | "en">(() =>
+    isDe ? "de" : "en",
+  );
+
+  /* Q3 — prompt-preview toggle. Default OFF; click "Show prompt" on
+     any tile to reveal exactly what'll be sent to Astra before
+     dispatch. Transparency = trust, especially for partners auditing
+     a junior's drafting workflow. */
+  const [showPromptFor, setShowPromptFor] = useState<
+    null | "auth" | "brief" | "compare"
+  >(null);
+
+  /* Q2 — recently-used per tile. Hydrate on mount; refresh after
+     each dispatch via the push helpers. */
+  const [recentAuth, setRecentAuth] = useState<RecentAuthEntry[]>([]);
+  const [recentBrief, setRecentBrief] = useState<RecentBriefEntry[]>([]);
+  const [recentCompare, setRecentCompare] = useState<RecentCompareEntry[]>([]);
+  useEffect(() => {
+    setRecentAuth(getRecentAuth());
+    setRecentBrief(getRecentBrief());
+    setRecentCompare(getRecentCompare());
+  }, []);
+
   /* ── F-DRAFT-2: privileged-mode toggle ──
      Hydrated from localStorage so the preference sticks across page
      reloads. The two-step (default false → effect-load) avoids SSR
@@ -159,38 +226,96 @@ export default function DraftingStudioPage() {
       .sort();
   }, []);
 
-  const handleAuthSubmit = () => {
-    const opLabel = OPERATOR_LABELS[authOperator][isDe ? "de" : "en"];
+  /* Q4 — outputDe is the source of truth for which language Astra
+     should DRAFT in. Independent of the UI language (`isDe`). */
+  const outputDe = outputLang === "de";
+
+  /* Pure prompt-builders so Q3's "show prompt" preview can render the
+     exact string that'll be dispatched. Each builder reads the same
+     state the handler will read at submit-time. */
+  const buildAuthPrompt = (): string => {
+    const opLabel = OPERATOR_LABELS[authOperator][outputDe ? "de" : "en"];
     const baseEn = `Draft an authorization application scaffold for a ${opLabel.toLowerCase()} filing in ${authJurisdiction}.`;
     const baseDe = `Erstelle ein Genehmigungsantrag-Gerüst für einen ${opLabel} in ${authJurisdiction}.`;
     const mission = authMission.trim()
-      ? isDe
+      ? outputDe
         ? ` Missionsprofil: ${authMission.trim()}.`
         : ` Mission profile: ${authMission.trim()}.`
       : "";
-    const prompt = withPrivilege((isDe ? baseDe : baseEn) + mission);
+    return withPrivilege((outputDe ? baseDe : baseEn) + mission);
+  };
+
+  const buildBriefPrompt = (): string =>
+    withPrivilege(
+      outputDe
+        ? `Erstelle ein Compliance-Briefing zum Thema: ${briefTopic.trim()}.`
+        : `Draft a compliance brief on: ${briefTopic.trim()}.`,
+    );
+
+  const buildComparePrompt = (): string => {
+    const list = compareJurisdictions.join(", ");
+    return withPrivilege(
+      outputDe
+        ? `Vergleiche die folgenden Jurisdiktionen für ein Filing: ${list}. Erstelle eine Kriterien-Matrix mit zitierten ATLAS-IDs.`
+        : `Compare the following jurisdictions for a filing: ${list}. Produce a criteria matrix with cited ATLAS-IDs.`,
+    );
+  };
+
+  const handleAuthSubmit = () => {
+    const prompt = buildAuthPrompt();
     openAIMode({ prompt });
+    /* Q2: push to recently-used. Q6: auto-archive in library. */
+    const opLabel = OPERATOR_LABELS[authOperator][outputDe ? "de" : "en"];
+    const label = `${authJurisdiction} · ${opLabel}${authMission.trim() ? ` · ${authMission.trim().slice(0, 30)}…` : ""}`;
+    pushRecentAuth({
+      jurisdiction: authJurisdiction,
+      operator: authOperator,
+      mission: authMission,
+      label,
+    });
+    setRecentAuth(getRecentAuth());
+    pushDraftLibrary({
+      kind: "auth",
+      title: label,
+      prompt,
+      outputLocale: outputLang,
+      privileged,
+    });
   };
 
   const handleBriefSubmit = () => {
     if (!briefTopic.trim()) return;
-    const prompt = withPrivilege(
-      isDe
-        ? `Erstelle ein Compliance-Briefing zum Thema: ${briefTopic.trim()}.`
-        : `Draft a compliance brief on: ${briefTopic.trim()}.`,
-    );
+    const prompt = buildBriefPrompt();
     openAIMode({ prompt });
+    const label = briefTopic.trim().slice(0, 60);
+    pushRecentBrief({ topic: briefTopic, label });
+    setRecentBrief(getRecentBrief());
+    pushDraftLibrary({
+      kind: "brief",
+      title: label,
+      prompt,
+      outputLocale: outputLang,
+      privileged,
+    });
   };
 
   const handleCompareSubmit = () => {
     if (compareJurisdictions.length < 2) return;
-    const list = compareJurisdictions.join(", ");
-    const prompt = withPrivilege(
-      isDe
-        ? `Vergleiche die folgenden Jurisdiktionen für ein Filing: ${list}. Erstelle eine Kriterien-Matrix mit zitierten ATLAS-IDs.`
-        : `Compare the following jurisdictions for a filing: ${list}. Produce a criteria matrix with cited ATLAS-IDs.`,
-    );
+    const prompt = buildComparePrompt();
     openAIMode({ prompt });
+    const label = `${compareJurisdictions.length} JD: ${compareJurisdictions.join(" · ")}`;
+    pushRecentCompare({
+      jurisdictions: compareJurisdictions,
+      label,
+    });
+    setRecentCompare(getRecentCompare());
+    pushDraftLibrary({
+      kind: "compare",
+      title: label,
+      prompt,
+      outputLocale: outputLang,
+      privileged,
+    });
   };
 
   const toggleCompareJurisdiction = (j: string) => {
@@ -284,6 +409,48 @@ export default function DraftingStudioPage() {
         </span>
       </label>
 
+      {/* Q4: output-language toggle. Independent of UI. Marie can
+          UI in EN, draft in DE. The icon-pair pattern reads as
+          "draft language" without needing a long label. */}
+      <div className="flex items-center gap-2 max-w-3xl rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] px-4 py-2.5">
+        <Languages
+          size={14}
+          strokeWidth={1.8}
+          className="text-[var(--atlas-text-faint)]"
+          aria-hidden="true"
+        />
+        <span className="text-[12px] text-[var(--atlas-text-secondary)]">
+          {isDe ? "Entwurfssprache:" : "Draft language:"}
+        </span>
+        <div
+          role="radiogroup"
+          aria-label={isDe ? "Entwurfssprache" : "Draft language"}
+          className="flex items-center gap-0.5 rounded-md border border-[var(--atlas-border)] p-0.5"
+        >
+          {(["de", "en"] as const).map((lang) => (
+            <button
+              key={lang}
+              type="button"
+              role="radio"
+              aria-checked={outputLang === lang}
+              onClick={() => setOutputLang(lang)}
+              className={`px-2 py-0.5 text-[11px] font-medium rounded transition-colors ${
+                outputLang === lang
+                  ? "bg-[var(--atlas-action-bg)] text-[var(--atlas-action-text)]"
+                  : "text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)]"
+              }`}
+            >
+              {lang === "de" ? "Deutsch" : "English"}
+            </button>
+          ))}
+        </div>
+        {outputLang !== (isDe ? "de" : "en") && (
+          <span className="ml-auto text-[10px] text-[var(--atlas-text-faint)] italic">
+            {isDe ? `UI in DE, Entwurf in EN` : `UI in EN, draft in DE`}
+          </span>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mt-2">
         {/* ── Tile 1: Authorization application ── */}
         <article className="flex flex-col rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm overflow-hidden">
@@ -354,12 +521,72 @@ export default function DraftingStudioPage() {
                 onChange={(e) => setAuthMission(e.target.value)}
                 rows={3}
                 placeholder={
+                  /* Q5: concrete example with real-Marie content
+                     instead of vague "LEO-Konstellation". Helps her
+                     see the level of detail she should provide. */
                   isDe
-                    ? "z. B. LEO-Konstellation, Earth-Observation, Ka-Band, 12 Satelliten…"
-                    : "e.g. LEO constellation, Earth observation, Ka-band, 12 satellites…"
+                    ? "z. B. Sky-Sat 12-Sat-Konstellation, 550 km LEO, Ka-Band Up/Down 28-29.5 GHz, Ariane 6 Launch Q3/2027, Mandant: Sky-Sat GmbH"
+                    : "e.g. Sky-Sat 12-sat constellation, 550 km LEO, Ka-band up/down 28-29.5 GHz, Ariane 6 launch Q3/2027, Client: Sky-Sat GmbH"
                 }
                 className="w-full rounded-md bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] outline-none resize-none placeholder:text-[var(--atlas-text-faint)]"
               />
+            </div>
+            {/* Q2: recently-used chips. Click → re-fill all auth-tile
+                fields. Renders only when there's history. */}
+            {recentAuth.length > 0 && (
+              <div>
+                <label className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                  <History size={9} strokeWidth={1.8} aria-hidden="true" />
+                  {isDe ? "Zuletzt verwendet" : "Recently used"}
+                </label>
+                <div className="flex flex-wrap gap-1">
+                  {recentAuth.map((r) => (
+                    <button
+                      key={r.ts}
+                      type="button"
+                      onClick={() => {
+                        setAuthJurisdiction(r.jurisdiction);
+                        setAuthOperator(
+                          r.operator as (typeof OPERATOR_TYPES)[number],
+                        );
+                        setAuthMission(r.mission);
+                      }}
+                      title={r.label}
+                      className="text-[10.5px] font-medium px-2 py-0.5 rounded bg-[var(--atlas-bg-inset)] hover:bg-[var(--atlas-bg-surface-muted)] text-[var(--atlas-text-secondary)] hover:text-[var(--atlas-text-primary)] transition-colors max-w-full truncate"
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {/* Q3: prompt-preview reveal. Closed by default. */}
+            <div>
+              <button
+                type="button"
+                onClick={() =>
+                  setShowPromptFor((cur) => (cur === "auth" ? null : "auth"))
+                }
+                className="inline-flex items-center gap-1 text-[10.5px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)] transition-colors"
+              >
+                {showPromptFor === "auth" ? (
+                  <EyeOff size={10} strokeWidth={1.8} aria-hidden="true" />
+                ) : (
+                  <Eye size={10} strokeWidth={1.8} aria-hidden="true" />
+                )}
+                {isDe
+                  ? showPromptFor === "auth"
+                    ? "Prompt verbergen"
+                    : "Prompt anzeigen"
+                  : showPromptFor === "auth"
+                    ? "Hide prompt"
+                    : "Show prompt"}
+              </button>
+              {showPromptFor === "auth" && (
+                <pre className="mt-1.5 text-[10.5px] text-[var(--atlas-text-secondary)] bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] rounded p-2 whitespace-pre-wrap font-mono">
+                  {buildAuthPrompt()}
+                </pre>
+              )}
             </div>
           </div>
           <button
@@ -399,12 +626,92 @@ export default function DraftingStudioPage() {
                 onChange={(e) => setBriefTopic(e.target.value)}
                 rows={6}
                 placeholder={
+                  /* Q5: concrete examples grounded in real Marie tickets.
+                     The previous placeholder was already serviceable;
+                     keep it. */
                   isDe
                     ? "z. B. Post-Mission Disposal Compliance über mehrere Jurisdiktionen, ITU-Frequenz-Lifecycle, Cross-Border Liability bei Satelliten-Kollisionen…"
                     : "e.g. post-mission disposal compliance across jurisdictions, ITU frequency lifecycle, cross-border liability for satellite collisions…"
                 }
                 className="w-full rounded-md bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] outline-none resize-none placeholder:text-[var(--atlas-text-faint)]"
               />
+            </div>
+            {/* Q1: topic preset-chips. Click to fill the textarea with a
+                canonical phrasing of one of the four most-frequent
+                compliance-brief topics. Free-text still works alongside. */}
+            <div>
+              <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                {isDe ? "Häufige Themen" : "Common topics"}
+              </label>
+              <div className="flex flex-wrap gap-1">
+                {BRIEF_TOPIC_PRESETS.map((preset) => {
+                  const label = isDe ? preset.de : preset.en;
+                  return (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => setBriefTopic(label)}
+                      className="text-[10.5px] font-medium px-2 py-0.5 rounded border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface-muted)] hover:bg-[var(--atlas-bg-inset)] text-[var(--atlas-text-secondary)] hover:text-[var(--atlas-text-primary)] transition-colors"
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            {/* Q2: recently-used brief topics. Click → re-fill textarea. */}
+            {recentBrief.length > 0 && (
+              <div>
+                <label className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                  <History size={9} strokeWidth={1.8} aria-hidden="true" />
+                  {isDe ? "Zuletzt verwendet" : "Recently used"}
+                </label>
+                <div className="flex flex-wrap gap-1">
+                  {recentBrief.map((r) => (
+                    <button
+                      key={r.ts}
+                      type="button"
+                      onClick={() => setBriefTopic(r.topic)}
+                      title={r.topic}
+                      className="text-[10.5px] font-medium px-2 py-0.5 rounded bg-[var(--atlas-bg-inset)] hover:bg-[var(--atlas-bg-surface-muted)] text-[var(--atlas-text-secondary)] hover:text-[var(--atlas-text-primary)] transition-colors max-w-full truncate"
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {/* Q3: prompt-preview reveal. Closed by default. */}
+            <div>
+              <button
+                type="button"
+                onClick={() =>
+                  setShowPromptFor((cur) => (cur === "brief" ? null : "brief"))
+                }
+                className="inline-flex items-center gap-1 text-[10.5px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)] transition-colors"
+              >
+                {showPromptFor === "brief" ? (
+                  <EyeOff size={10} strokeWidth={1.8} aria-hidden="true" />
+                ) : (
+                  <Eye size={10} strokeWidth={1.8} aria-hidden="true" />
+                )}
+                {isDe
+                  ? showPromptFor === "brief"
+                    ? "Prompt verbergen"
+                    : "Prompt anzeigen"
+                  : showPromptFor === "brief"
+                    ? "Hide prompt"
+                    : "Show prompt"}
+              </button>
+              {showPromptFor === "brief" && (
+                <pre className="mt-1.5 text-[10.5px] text-[var(--atlas-text-secondary)] bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] rounded p-2 whitespace-pre-wrap font-mono">
+                  {briefTopic.trim()
+                    ? buildBriefPrompt()
+                    : isDe
+                      ? "(Thema eingeben, um den Prompt zu sehen)"
+                      : "(enter a topic to see the prompt)"}
+                </pre>
+              )}
             </div>
           </div>
           <button
@@ -461,6 +768,64 @@ export default function DraftingStudioPage() {
                   </button>
                 );
               })}
+            </div>
+            {/* Q2: recently-used jurisdiction-sets. Click → restore the
+                whole selection (replace, not merge — Marie expects the
+                chip to faithfully reproduce the prior comparison). */}
+            {recentCompare.length > 0 && (
+              <div>
+                <label className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                  <History size={9} strokeWidth={1.8} aria-hidden="true" />
+                  {isDe ? "Zuletzt verglichen" : "Recently compared"}
+                </label>
+                <div className="flex flex-wrap gap-1">
+                  {recentCompare.map((r) => (
+                    <button
+                      key={r.ts}
+                      type="button"
+                      onClick={() => setCompareJurisdictions(r.jurisdictions)}
+                      title={r.label}
+                      className="text-[10.5px] font-medium px-2 py-0.5 rounded bg-[var(--atlas-bg-inset)] hover:bg-[var(--atlas-bg-surface-muted)] text-[var(--atlas-text-secondary)] hover:text-[var(--atlas-text-primary)] transition-colors max-w-full truncate"
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {/* Q3: prompt-preview reveal. Closed by default. */}
+            <div>
+              <button
+                type="button"
+                onClick={() =>
+                  setShowPromptFor((cur) =>
+                    cur === "compare" ? null : "compare",
+                  )
+                }
+                className="inline-flex items-center gap-1 text-[10.5px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)] transition-colors"
+              >
+                {showPromptFor === "compare" ? (
+                  <EyeOff size={10} strokeWidth={1.8} aria-hidden="true" />
+                ) : (
+                  <Eye size={10} strokeWidth={1.8} aria-hidden="true" />
+                )}
+                {isDe
+                  ? showPromptFor === "compare"
+                    ? "Prompt verbergen"
+                    : "Prompt anzeigen"
+                  : showPromptFor === "compare"
+                    ? "Hide prompt"
+                    : "Show prompt"}
+              </button>
+              {showPromptFor === "compare" && (
+                <pre className="mt-1.5 text-[10.5px] text-[var(--atlas-text-secondary)] bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] rounded p-2 whitespace-pre-wrap font-mono">
+                  {compareJurisdictions.length >= 2
+                    ? buildComparePrompt()
+                    : isDe
+                      ? "(Mindestens zwei Jurisdiktionen wählen)"
+                      : "(select at least two jurisdictions)"}
+                </pre>
+              )}
             </div>
           </div>
           <button

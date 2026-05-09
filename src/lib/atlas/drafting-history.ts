@@ -1,0 +1,195 @@
+/**
+ * Atlas Drafting — recently-used + draft-history persistence (Q2 + Q6).
+ *
+ * Two stores in one module:
+ *
+ *   - recentDispatch{Auth,Brief,Compare}: per-tile last-N inputs that
+ *     produced a draft. Surfaces as "recently used" chips so Marie can
+ *     re-fire a previous draft without re-typing.
+ *
+ *   - draftLibrary: append-only log of every dispatched draft prompt
+ *     with timestamp + tile-kind + the final prompt text. Lets us
+ *     auto-archive without forcing the user to click "save". /atlas/
+ *     drafting/history (bundle 32) reads from this.
+ *
+ * MVP via localStorage. Stage-2 = backend persistence + per-mandate
+ * binding (bundle 36). The same defensive shape-check pattern as
+ * comparator-annotations.ts is used so a schema drift doesn't crash.
+ */
+
+const RECENT_AUTH_KEY = "atlas-drafting-recent-auth";
+const RECENT_BRIEF_KEY = "atlas-drafting-recent-brief";
+const RECENT_COMPARE_KEY = "atlas-drafting-recent-compare";
+const LIBRARY_KEY = "atlas-drafting-library";
+
+const RECENT_CAP = 5;
+const LIBRARY_CAP = 50;
+
+/* ── Recently-used per tile ─────────────────────────────────────── */
+
+export interface RecentAuthEntry {
+  jurisdiction: string;
+  operator: string;
+  mission: string;
+  /** Display label, computed once. */
+  label: string;
+  ts: number;
+}
+
+export interface RecentBriefEntry {
+  topic: string;
+  /** Truncated label for the chip (~40 chars). */
+  label: string;
+  ts: number;
+}
+
+export interface RecentCompareEntry {
+  jurisdictions: string[];
+  label: string;
+  ts: number;
+}
+
+function safeRead<T>(key: string, isOk: (v: unknown) => v is T): T[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(isOk);
+  } catch {
+    return [];
+  }
+}
+
+function safeWrite(key: string, value: unknown): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* quota / private browsing — silent. */
+  }
+}
+
+function pushBounded<T>(list: T[], next: T, cap: number): T[] {
+  /* New entry leads, dedupe by label, cap from the tail. */
+  const dedup = list.filter(
+    (e) =>
+      typeof e === "object" &&
+      e !== null &&
+      "label" in e &&
+      "label" in (next as object) &&
+      (e as { label: string }).label !== (next as { label: string }).label,
+  );
+  return [next, ...dedup].slice(0, cap);
+}
+
+const isAuth = (v: unknown): v is RecentAuthEntry =>
+  typeof v === "object" &&
+  v !== null &&
+  typeof (v as RecentAuthEntry).jurisdiction === "string" &&
+  typeof (v as RecentAuthEntry).operator === "string" &&
+  typeof (v as RecentAuthEntry).label === "string";
+
+const isBrief = (v: unknown): v is RecentBriefEntry =>
+  typeof v === "object" &&
+  v !== null &&
+  typeof (v as RecentBriefEntry).topic === "string" &&
+  typeof (v as RecentBriefEntry).label === "string";
+
+const isCompare = (v: unknown): v is RecentCompareEntry =>
+  typeof v === "object" &&
+  v !== null &&
+  Array.isArray((v as RecentCompareEntry).jurisdictions) &&
+  typeof (v as RecentCompareEntry).label === "string";
+
+export function getRecentAuth(): RecentAuthEntry[] {
+  return safeRead(RECENT_AUTH_KEY, isAuth);
+}
+
+export function getRecentBrief(): RecentBriefEntry[] {
+  return safeRead(RECENT_BRIEF_KEY, isBrief);
+}
+
+export function getRecentCompare(): RecentCompareEntry[] {
+  return safeRead(RECENT_COMPARE_KEY, isCompare);
+}
+
+export function pushRecentAuth(entry: Omit<RecentAuthEntry, "ts">): void {
+  const list = getRecentAuth();
+  safeWrite(
+    RECENT_AUTH_KEY,
+    pushBounded(list, { ...entry, ts: Date.now() }, RECENT_CAP),
+  );
+}
+
+export function pushRecentBrief(entry: Omit<RecentBriefEntry, "ts">): void {
+  const list = getRecentBrief();
+  safeWrite(
+    RECENT_BRIEF_KEY,
+    pushBounded(list, { ...entry, ts: Date.now() }, RECENT_CAP),
+  );
+}
+
+export function pushRecentCompare(entry: Omit<RecentCompareEntry, "ts">): void {
+  const list = getRecentCompare();
+  safeWrite(
+    RECENT_COMPARE_KEY,
+    pushBounded(list, { ...entry, ts: Date.now() }, RECENT_CAP),
+  );
+}
+
+/* ── Draft library — auto-archive every dispatched prompt ─────── */
+
+export type DraftKind = "auth" | "brief" | "compare" | "nda" | "cover";
+
+export interface DraftLibraryEntry {
+  id: string;
+  kind: DraftKind;
+  /** Short human-readable summary used in the library list. */
+  title: string;
+  /** The actual prompt text dispatched to AI Mode. */
+  prompt: string;
+  /** Output locale ("de" | "en") at dispatch time. */
+  outputLocale: string;
+  /** Whether the privilege-marker was active. */
+  privileged: boolean;
+  ts: number;
+}
+
+const isDraft = (v: unknown): v is DraftLibraryEntry =>
+  typeof v === "object" &&
+  v !== null &&
+  typeof (v as DraftLibraryEntry).id === "string" &&
+  typeof (v as DraftLibraryEntry).kind === "string" &&
+  typeof (v as DraftLibraryEntry).title === "string" &&
+  typeof (v as DraftLibraryEntry).prompt === "string";
+
+export function getDraftLibrary(): DraftLibraryEntry[] {
+  return safeRead(LIBRARY_KEY, isDraft);
+}
+
+export function pushDraftLibrary(
+  entry: Omit<DraftLibraryEntry, "id" | "ts">,
+): DraftLibraryEntry {
+  const next: DraftLibraryEntry = {
+    ...entry,
+    id: `drft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    ts: Date.now(),
+  };
+  const list = getDraftLibrary();
+  safeWrite(LIBRARY_KEY, [next, ...list].slice(0, LIBRARY_CAP));
+  return next;
+}
+
+export function deleteDraftLibraryEntry(id: string): void {
+  const list = getDraftLibrary();
+  safeWrite(
+    LIBRARY_KEY,
+    list.filter((e) => e.id !== id),
+  );
+}
+
+export function clearDraftLibrary(): void {
+  safeWrite(LIBRARY_KEY, []);
+}
