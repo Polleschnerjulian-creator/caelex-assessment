@@ -195,6 +195,26 @@ export default function AtlasForgotPasswordPage() {
                   secure link to set a new password.
                 </p>
 
+                {/* Atlas Lawyer-UX-Audit F-AUTH-7 + F-AUTH-9 stage-2.
+                    Surfacing the contract before submit so users on
+                    aggressive corporate spam-filters know to whitelist
+                    `noreply@caelex.eu` and aren't surprised by the
+                    60-minute link expiry. */}
+                <div className={styles.expectNote} role="note">
+                  <Mail
+                    size={14}
+                    strokeWidth={1.6}
+                    aria-hidden="true"
+                    className={styles.expectNoteIcon}
+                  />
+                  <span>
+                    Reset emails sometimes land in <strong>spam</strong> — check
+                    there if you don&rsquo;t see it within a minute. The link
+                    works for <strong>60&nbsp;minutes</strong> and can only be
+                    used once.
+                  </span>
+                </div>
+
                 <div className={styles.card}>
                   <form onSubmit={handleSubmit} noValidate>
                     <div className={styles.field}>

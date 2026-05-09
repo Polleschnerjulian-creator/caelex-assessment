@@ -17,6 +17,7 @@ import {
   ATLAS_CASES_COUNT,
   getTranslatedCase,
   type CaseForum,
+  type CaseStatus,
   type LegalCase,
   type PrecedentialWeight,
 } from "@/data/legal-cases";
@@ -78,6 +79,31 @@ const FORUM_LABEL: Record<
   arbitral_award: { en: "Arbitral award", de: "Schiedsspruch", weight: 7 },
 };
 
+/* Atlas Lawyer-UX-Audit F-CASES-1: outcome (status) filter labels.
+   Marie searches for precedent (e.g. "denied authorisation in UK") and
+   wants to drop the 28 cases down to the handful that ended in the
+   outcome she's interested in — without re-reading every record.
+   Order is intentional (most-decisive first). */
+const STATUS_LABEL: Record<CaseStatus, { en: string; de: string }> = {
+  decided: { en: "Decided", de: "Entschieden" },
+  settled: { en: "Settled", de: "Vergleich" },
+  vacated: { en: "Vacated", de: "Aufgehoben" },
+  appeal_pending: { en: "On appeal", de: "Berufung anhängig" },
+  pending: { en: "Pending", de: "Anhängig" },
+  withdrawn: { en: "Withdrawn", de: "Zurückgezogen" },
+};
+
+/* Render order — keep "decided" + "settled" at the top because those
+   are the buckets lawyers want most often. */
+const STATUS_ORDER: CaseStatus[] = [
+  "decided",
+  "settled",
+  "vacated",
+  "appeal_pending",
+  "pending",
+  "withdrawn",
+];
+
 const WEIGHT_BADGE: Record<
   PrecedentialWeight,
   { label_en: string; label_de: string; tone: string }
@@ -130,10 +156,27 @@ export default function CasesIndexPage() {
   const [query, setQuery] = useState("");
   const [forum, setForum] = useState<CaseForum | "all">("all");
   const [jurisdiction, setJurisdiction] = useState<string>("all");
+  /* F-CASES-1: outcome-filter state. */
+  const [status, setStatus] = useState<CaseStatus | "all">("all");
 
   const allJurisdictions = useMemo(() => {
     const set = new Set(ATLAS_CASES.map((c) => c.jurisdiction));
     return Array.from(set).sort();
+  }, []);
+
+  /* Status counts so the dropdown can hide buckets that have zero
+     matching cases — keeps the menu honest. */
+  const statusCounts = useMemo(() => {
+    const counts: Record<CaseStatus, number> = {
+      decided: 0,
+      settled: 0,
+      pending: 0,
+      withdrawn: 0,
+      vacated: 0,
+      appeal_pending: 0,
+    };
+    for (const c of ATLAS_CASES) counts[c.status] += 1;
+    return counts;
   }, []);
 
   const filtered = useMemo(() => {
@@ -142,6 +185,7 @@ export default function CasesIndexPage() {
       if (forum !== "all" && c.forum !== forum) return false;
       if (jurisdiction !== "all" && c.jurisdiction !== jurisdiction)
         return false;
+      if (status !== "all" && c.status !== status) return false;
       if (!q) return true;
       const tr = getTranslatedCase(c.id, language);
       const haystack = [
@@ -161,7 +205,7 @@ export default function CasesIndexPage() {
       (a, b) =>
         new Date(b.date_decided).getTime() - new Date(a.date_decided).getTime(),
     );
-  }, [query, forum, jurisdiction, language]);
+  }, [query, forum, jurisdiction, status, language]);
 
   const isDe = language === "de";
 
@@ -335,13 +379,35 @@ export default function CasesIndexPage() {
           ))}
         </select>
 
-        {(query || forum !== "all" || jurisdiction !== "all") && (
+        {/* F-CASES-1: outcome (status) filter. Buckets with 0 matches
+            are hidden so the menu doesn't bait the user with dead
+            options. The label includes the count to set expectations. */}
+        <select
+          value={status}
+          onChange={(e) => setStatus(e.target.value as CaseStatus | "all")}
+          className="rounded-md bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] shadow-sm outline-none cursor-pointer"
+          aria-label={isDe ? "Nach Ausgang filtern" : "Filter by outcome"}
+        >
+          <option value="all">{isDe ? "Alle Ausgänge" : "All outcomes"}</option>
+          {STATUS_ORDER.filter((s) => statusCounts[s] > 0).map((s) => (
+            <option key={s} value={s}>
+              {(isDe ? STATUS_LABEL[s].de : STATUS_LABEL[s].en) +
+                ` (${statusCounts[s]})`}
+            </option>
+          ))}
+        </select>
+
+        {(query ||
+          forum !== "all" ||
+          jurisdiction !== "all" ||
+          status !== "all") && (
           <button
             type="button"
             onClick={() => {
               setQuery("");
               setForum("all");
               setJurisdiction("all");
+              setStatus("all");
             }}
             className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[12px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)]"
           >

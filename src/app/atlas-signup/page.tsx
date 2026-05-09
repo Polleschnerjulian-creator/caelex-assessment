@@ -454,6 +454,21 @@ function SignupForm() {
         )}
       </div>
 
+      {/* Atlas Lawyer-UX-Audit F-AUTH-2 stage-2: GDPR-trust banner.
+          Lawyers won't tick a "Privacy Policy" box without knowing the
+          basics — controller, processing-purpose, processor list.
+          Surfacing the posture here turns the consent from a generic
+          ToS-tick into informed consent (GDPR Art. 7). */}
+      <div className={styles.gdprBanner} role="note">
+        Your data is processed by <strong>Caelex GmbH</strong> (controller) in
+        the EU. We use named sub-processors listed in our{" "}
+        <Link href="/legal/sub-processors">Sub-Processors</Link> page and
+        protect your account under the safeguards described in our{" "}
+        <Link href="/legal/security">Security</Link> overview. You may withdraw
+        consent and request export or erasure at any time — details in our{" "}
+        <Link href="/legal/privacy">Privacy Policy</Link>.
+      </div>
+
       <div className={styles.consent}>
         <label className={styles.consentItem}>
           <input

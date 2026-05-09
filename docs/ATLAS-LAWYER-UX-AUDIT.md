@@ -1176,3 +1176,114 @@ lernt und überall wiedererkennt.
 **Marie-Impact:** Drei Trust-decay-Surfaces vereinheitlicht. Junior-Anwält:innen
 classifizieren Regime-Types ohne Trainer-Frage. Owner sieht abgelaufene Invites
 sofort.
+
+---
+
+## 18. Quick-Wins-Bündel #4 (2026-05-09)
+
+Auth-Surface- und Cases-Surface-Sweep. Vorgeschlagenes Auth-Bundle wurde
+beim Re-Audit zu 4/6 als bereits-gelöst entlarvt (Audit-Findings hinkten
+hinterher) — ein Pattern das wir jetzt explizit dokumentieren. Echte
+Lücken (3) wurden gefixt + ein bisher ungetouchter Cases-Filter dazu.
+
+**Constraint-Update vom Maintainer (2026-05-09):** "keine externe kosten
+und noch nicht was mit mails versenden" — der ursprünglich geplante
+Resend-Button auf Forgot-Password (F-AUTH-7 stage-2) wurde deshalb
+weggelassen. Statisches Spam-Hint vor Submit erfüllt 80 % der UX-Win
+ohne neue Email-Code-Pfade zu triggern.
+
+### F-AUTH-13 — Org-Type-Gate (CLOSED — already done)
+
+- **Wo:** `src/app/atlas-no-access/page.tsx:54-115`
+- **Befund:** Differentiated path (org-type-mismatch vs no-membership) ist
+  bereits implementiert mit zweitem prisma-Probe + tailored copy +
+  mailto-link zu support@caelex.io.
+- **Action:** Audit-Eintrag closed.
+
+### F-AUTH-6 — Role-Tooltip (CLOSED — already done)
+
+- **Wo:** `src/app/atlas-access/page.tsx:587-605`
+- **Befund:** Visible help-text + aria-describedby in place mit Trust-
+  Statement "never used for sales qualification or pricing".
+- **Action:** Closed.
+
+### F-COMP-2 — Compare-Articles Disclaimer (CLOSED — already done)
+
+- **Wo:** `src/app/(atlas)/atlas/compare-articles/page.tsx:518+`
+- **Befund:** Banner-style amber Warning ist bereits oben pro Spalte
+  rendered (statt der ursprünglich zu-faintigen Footer-Variante).
+- **Action:** Closed.
+
+### F-AUTH-4 — Login Prominent Sign-Up CTA (CLOSED — by design)
+
+- **Wo:** `src/app/atlas-login/page.tsx:322-330`
+- **Befund:** Atlas ist invite/demo-gated by design (anders als die
+  Caelex-Compliance-Suite, die self-service-signup hat). Die "tiny"
+  text-only Pfade ("Redeem invite" + "Book a demo") sind die intendierte
+  UX — ein prominenter "Create account"-CTA würde den invite-only-
+  positioning des Produkts verwässern.
+- **Action:** Closed mit by-design-Note. Wenn das Produkt-Positioning
+  später ändert (z.B. self-service-tier), wird das Finding wieder
+  geöffnet.
+
+### F-AUTH-2 stage-2 — DSGVO-Trust-Banner über Consent-Checkboxes (HIGH → Done)
+
+- **Wo:** `src/app/atlas-signup/page.tsx:457` + `atlas-signup.module.css:.gdprBanner`
+- **Befund:** Privacy/Terms-Links waren schon inline in den Checkbox-
+  Labels. Aber der DSGVO-Trust-Kontext (Controller, Sub-Processor-Liste,
+  Recht auf Widerruf) fehlte komplett — ein Anwalt der den Tick setzen
+  soll erwartet diese Info als Mindeststandard für _informed consent_
+  (DSGVO Art. 7).
+- **Fix:** Slate-tinted Banner über den Checkboxes:
+  > "Your data is processed by **Caelex GmbH** (controller) in the EU.
+  > We use named sub-processors listed in our **Sub-Processors** page
+  > and protect your account under the safeguards described in our
+  > **Security** overview. You may withdraw consent and request export
+  > or erasure at any time — details in our **Privacy Policy**."
+- **Aufwand:** ~15 min
+
+### F-AUTH-7 + F-AUTH-9 stage-2 — Reset-Email Expectations vor Submit (MEDIUM → Done)
+
+- **Wo:** `src/app/atlas-forgot-password/page.tsx:198` + `atlas-forgot-password.module.css:.expectNote`
+- **Befund:** Spam-Hint existierte nur auf der success-state-Page (NACH
+  Submit) — User mit aggressivem Corporate-Spam-Filter merkten erst nach
+  10 min Warten dass die Email verschluckt wurde. 60-min-Expiry war auch
+  nur auf success-state.
+- **Fix:** Kombinierte "what to expect" Note VOR dem Form-Card:
+  > "Reset emails sometimes land in **spam** — check there if you don't
+  > see it within a minute. The link works for **60 minutes** and can
+  > only be used once."
+- **Bewusst weggelassen** (Email-Constraint): Der ursprünglich geplante
+  Resend-Button (rate-limited 1/5min) bleibt in DSGVO-2-Stage-2 für später
+  parkiert. Statisches Hint reicht für die Mehrheit der Cases.
+- **Aufwand:** ~15 min (kombiniert)
+
+### F-CASES-1 — Cases Outcome (Status) Filter (HIGH → Done)
+
+- **Wo:** `src/app/(atlas)/atlas/cases/page.tsx`
+- **Befund:** Free-text-Search + Forum/Jurisdiction-Filter waren da, aber
+  kein Filter nach `status` (decided/settled/vacated/appeal_pending/
+  pending/withdrawn). Marie sucht "precedent for authorisation rejection
+  in UK" und musste 28 Cases manuell scannen.
+- **Fix:** Drittes `<select>` in der Filter-Bar mit:
+  - i18n-Labels (DE/EN) per `STATUS_LABEL` map
+  - Render-Order priorisiert decisive outcomes (decided + settled vor
+    pending + withdrawn)
+  - Counts in den Optionen ("Decided (18)") für scale-at-a-glance
+  - Zero-count-Buckets ausgeblendet — keine bait-and-switch Optionen
+  - Reset-Button greift jetzt auch den status-Filter ab
+- **Aufwand:** ~25 min
+
+### Trust-Score nach Quick-Wins-Bündel #4
+
+| Surface           | Vorher | Nachher                                         |
+| ----------------- | ------ | ----------------------------------------------- |
+| Auth + Onboarding | 8/10   | **8.3/10** (+0.3 — DSGVO-trust + reset-clarity) |
+| Cases             | 6.5/10 | **7/10** (+0.5 — Outcome-Filter)                |
+| GESAMT            | 7.6/10 | **7.7/10**                                      |
+
+**Audit-Process-Note:** False-Positive-Rate dieses Bundles war 4/8 = 50%.
+Die Audit-Doc ist stale — viele Findings wurden in Bundles #1-#3 oder
+in DSGVO-1+2 implizit mit-gefixt ohne als geschlossen markiert zu werden.
+Ab Bundle #5 gilt: jedes Bundle startet mit explizitem Re-Read der
+betroffenen Files BEVOR Implementation, nicht erst beim Edit.
