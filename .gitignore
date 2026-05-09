@@ -83,3 +83,7 @@ next-env.d.ts
 /logo-*.svg
 .github/workflows/
 .worktrees/
+
+# Tauri (Bundle 45 — desktop app)
+src-tauri/target/
+src-tauri/gen/schemas/

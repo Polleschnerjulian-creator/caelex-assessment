@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Atlas placeholder app icon. 1024x1024, designed for retina + Retina@2x.
+
+  Run `npx @tauri-apps/cli icon src-tauri/icons/source.svg` to generate
+  the macOS / Windows / Linux icon set from this source. The CLI reads
+  this SVG, rasterizes to all required sizes (16, 32, 64, 128, 256,
+  512, 1024 px), and writes them next to this file.
+
+  Replace this SVG with the final Caelex Atlas brand icon when it's
+  ready.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Navy background, slight gradient for depth. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0A0F1E"/>
+      <stop offset="1" stop-color="#1E293B"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="512" cy="512" r="400" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#10B981" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#10B981" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Rounded square background (matches macOS icon mask shape). -->
+  <rect x="0" y="0" width="1024" height="1024" rx="225" ry="225" fill="url(#bg)"/>
+
+  <!-- Subtle emerald glow centered. -->
+  <rect x="0" y="0" width="1024" height="1024" rx="225" ry="225" fill="url(#glow)"/>
+
+  <!-- Stylized "A" letter mark. Two strokes meeting at apex with a
+       horizontal crossbar suggesting an atlas page. -->
+  <g fill="none" stroke="#10B981" stroke-width="64" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Left stroke -->
+    <path d="M 280 800 L 512 224"/>
+    <!-- Right stroke -->
+    <path d="M 744 800 L 512 224"/>
+    <!-- Crossbar -->
+    <path d="M 380 580 L 644 580"/>
+  </g>
+
+  <!-- Small dot above the apex — Caelex's "celestial" mark, suggests
+       a satellite over the A. -->
+  <circle cx="512" cy="170" r="22" fill="#10B981"/>
+</svg>

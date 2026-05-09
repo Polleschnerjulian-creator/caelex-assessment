@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Default capabilities for the Atlas main window. Granted to all standard windows. Permissions are deliberately minimal — the app is mostly a WebView host. Add capabilities here as native features are introduced (file-system, clipboard-extended, notifications, etc.).",
+  "windows": ["main"],
+  "permissions": ["core:default", "shell:allow-open"]
+}

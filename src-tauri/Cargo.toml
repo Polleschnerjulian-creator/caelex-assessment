@@ -1,0 +1,30 @@
+[package]
+name = "atlas"
+version = "0.1.0"
+description = "Atlas — Caelex legal-research client for space-law counsel"
+authors = ["Caelex Einzelunternehmen"]
+edition = "2021"
+
+# Library target so Tauri can link both the desktop binary and any
+# future mobile entry point against the same Rust code.
+[lib]
+name = "atlas_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Optimize the production binary aggressively — we ship a download,
+# bundle size matters.
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
