@@ -73,6 +73,7 @@ import {
   parseExtractionResponse,
   mergeIntoIntake,
 } from "@/lib/atlas/intake-extractor";
+import { PLAN_TEMPLATES } from "@/lib/atlas/plan-templates";
 
 /* Atlas Lawyer-UX-Audit F-DRAFT-2 — Privilege-marker support.
    When the user opts in, every prompt the studio dispatches to AI
@@ -350,6 +351,11 @@ export default function DraftingStudioPage() {
     updateMandate(id, { name: name.trim() || "Mandant" });
     refreshMandates();
   };
+
+  /* Bundle 43 — plan-picker collapse state. Default closed so the
+     per-tile workflow stays uninterrupted; the lawyer expands when she
+     needs a paket. */
+  const [plansOpen, setPlansOpen] = useState(false);
 
   /* B4 — client-fact extractor state. Two textareas: paste mandant
      email → fire extraction prompt → paste back AI's JSON → apply. */
@@ -1431,6 +1437,76 @@ export default function DraftingStudioPage() {
                 </div>
               </>
             )}
+          </div>
+        )}
+      </section>
+
+      {/* Bundle 43 — Plan picker. Marie's actual workflow is per-paket
+          ("DE-Auth-Filing" = auth + cover + brief + NDA), not per-tile.
+          Plans are curated bundles of drafts that share the active
+          mandate's context. Default-collapsed so per-tile users
+          aren't disturbed. */}
+      <section className="max-w-3xl rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setPlansOpen((o) => !o)}
+          className="w-full flex items-center gap-2 px-4 py-2.5 text-left hover:bg-[var(--atlas-bg-surface-muted)] transition-colors"
+          aria-expanded={plansOpen}
+        >
+          <Layers
+            size={14}
+            strokeWidth={1.8}
+            className="text-[var(--atlas-text-faint)]"
+            aria-hidden="true"
+          />
+          <span className="flex-1 min-w-0">
+            <span className="text-[12.5px] font-medium text-[var(--atlas-text-primary)]">
+              {isDe ? "Filing-Pakete" : "Filing packages"}
+            </span>
+            <span className="ml-2 text-[11px] text-[var(--atlas-text-muted)]">
+              {isDe
+                ? "Mehrere Drafts auf einmal — Auth + Cover + Brief + NDA"
+                : "Multiple drafts at once — auth + cover + brief + NDA"}
+            </span>
+          </span>
+          {plansOpen ? (
+            <ChevronUp
+              size={14}
+              strokeWidth={1.8}
+              className="text-[var(--atlas-text-faint)]"
+              aria-hidden="true"
+            />
+          ) : (
+            <ChevronDown
+              size={14}
+              strokeWidth={1.8}
+              className="text-[var(--atlas-text-faint)]"
+              aria-hidden="true"
+            />
+          )}
+        </button>
+        {plansOpen && (
+          <div className="border-t border-[var(--atlas-border-subtle)] p-4 grid grid-cols-1 md:grid-cols-2 gap-2">
+            {PLAN_TEMPLATES.map((p) => {
+              const url = `/atlas/drafting/plan/${p.id}?lang=${outputLang}${activeMandate ? `&m=${activeMandate.id}` : ""}`;
+              return (
+                <Link
+                  key={p.id}
+                  href={url}
+                  className="flex flex-col gap-1 rounded-md border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface-muted)] p-3 hover:border-emerald-300 dark:hover:border-emerald-500/40 hover:bg-emerald-50/30 dark:hover:bg-emerald-500/5 transition-colors"
+                >
+                  <span className="text-[12px] font-semibold text-[var(--atlas-text-primary)]">
+                    {p.name[isDe ? "de" : "en"]}
+                  </span>
+                  <span className="text-[10.5px] text-[var(--atlas-text-muted)] leading-relaxed">
+                    {p.description[isDe ? "de" : "en"]}
+                  </span>
+                  <span className="mt-1 text-[10px] uppercase tracking-wider text-[var(--atlas-text-faint)] font-medium">
+                    {p.items.length} {isDe ? "Items" : "items"}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         )}
       </section>
