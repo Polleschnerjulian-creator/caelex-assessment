@@ -34,7 +34,7 @@ Erfolgskriterien aus WCAG 2.1 AA plus die 6 neuen aus WCAG 2.2 AA:
 | ----- | ---------------------------------------------------------------------------------------- | ---------- |
 | **A** | Hot-Fix Headings (Token-Bug) + alle Atlas-Routes auf weiß-auf-weiß prüfen                | ✅ Done    |
 | **B** | Color & Contrast Audit — axe-core auf alle Routes + Token-Inventar erweitern             | ✅ Done    |
-| **C** | Semantic HTML & ARIA — Heading-Hierarchy, Landmarks, ARIA-Labels, Skip-Links             | ⏳ pending |
+| **C** | Semantic HTML & ARIA — Heading-Hierarchy, Landmarks, ARIA-Labels, Skip-Links             | ✅ Done    |
 | **D** | Keyboard & Focus — Tab-Order, Focus-Trap in Modals, WCAG 2.4.11 Focus Not Obscured       | ⏳ pending |
 | **E** | Forms & Auth — Label-Association, WCAG 2.2 3.3.7 Redundant Entry + 3.3.8 Accessible Auth | ⏳ pending |
 | **F** | Mobile & Touch — WCAG 2.5.8 Target Size 24×24, 1.4.10 Reflow @ 320px, 2.5.7 Dragging     | ⏳ pending |
@@ -154,6 +154,34 @@ Erfolgskriterien aus WCAG 2.1 AA plus die 6 neuen aus WCAG 2.2 AA:
 
 - **Sprint:** Phase H (Verification)
 - **Status:** ⏳ Deferred — wird mit axe-core + Playwright in Phase H gegen jede Route gerunnt. Phase B fokussiert auf token-systemic fixes (B-1, B-2) statt einzelnen page-content checks.
+
+---
+
+## 5. Phase C Findings — Semantic HTML & ARIA
+
+### C-1 — Bestehende ARIA + Semantic-HTML in AtlasShell ist solide
+
+- **Wo:** `_components/AtlasShell.tsx`
+- **Befund:** `<main>` Landmark (Z. 488), `<nav aria-label="Main navigation">` (Z. 248), Hamburger-Button mit `aria-label` + `aria-expanded` (Z. 158-159), Icon-Buttons mit `aria-label` (Z. 315), decorative Icons mit `aria-hidden="true"` (Z. 330), Logo `<Image alt="Caelex">` (Z. 218), coming-soon items mit `aria-disabled="true"` + `tabIndex={-1}` (Z. 279-280), Backdrop mit `aria-hidden="true"` (Z. 175). **Kein Fix nötig.**
+- **Sprint:** Phase C (Verifikation)
+- **Status:** ✅ Verified
+
+### C-2 — WCAG 2.4.1 Bypass Blocks (A): kein Skip-Link
+
+- **Wo:** `_components/AtlasShell.tsx` (top of return)
+- **Problem:** Sidebar hat ~20 Nav-Items. Keyboard-Nutzer (insb. Screen-Reader-User) müssen 20+ Tab-Stops durchsteppen, um zur Page-Content zu gelangen. WCAG 2.4.1 (A-Level) verlangt einen "skip-to-main" Mechanismus.
+- **Sprint:** Phase C
+- **Status:** ✅ Done — neuer `<a href="#atlas-main-content">` als erstes interaktives Element im AtlasShell. `sr-only` by default, `focus:not-sr-only` macht ihn bei Focus sichtbar (visible focus-state mit action-button-tokens + accent-ring). `<main>` bekam `id="atlas-main-content"` + `tabIndex={-1}` als Skip-Target (tabIndex=-1 nimmt den `<main>` aus dem Tab-Order, lässt ihn aber programmatisch fokussierbar bleiben — Skip-Link-Click setzt focus auf main, screen-reader lesen "main content").
+
+### C-3 (deferred to Phase H) — Per-page Heading-Hierarchy Audit
+
+- **Sprint:** Phase H (Verification)
+- **Status:** ⏳ Deferred — axe-core fängt `heading-order` violations automated; manueller Per-Page-Heading-Walk wäre zeitintensiv ohne automated-fall-through-net.
+
+### C-4 (deferred to Phase E) — ARIA-Live-Regions für Toasts/Notifications
+
+- **Sprint:** Phase E (Forms & Auth deckt Form-Live-Regions ab); Toast-System separat in Phase H zu auditieren
+- **Status:** ⏳ Deferred
 
 ---
 

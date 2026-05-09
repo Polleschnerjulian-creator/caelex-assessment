@@ -152,6 +152,18 @@ export default function AtlasShell({
       data-atlas-theme={resolvedTheme}
       suppressHydrationWarning
     >
+      {/* WCAG 2.4.1 Bypass Blocks (A) — Phase C.
+          Skip-link must be the first interactive element in DOM order.
+          Visually hidden by default; springs to visible focusable size
+          on :focus so keyboard users can jump past the 20+ sidebar
+          links into the main content directly. */}
+      <a
+        href="#atlas-main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-[100] focus:rounded-lg focus:bg-[var(--atlas-action-bg)] focus:px-4 focus:py-2 focus:text-[var(--atlas-action-text)] focus:text-[13px] focus:font-medium focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--atlas-accent)] focus:ring-offset-2"
+      >
+        Skip to main content
+      </a>
+
       {/* ─── Mobile: hamburger toggle (<lg only) ─── */}
       <button
         type="button"
@@ -486,7 +498,9 @@ export default function AtlasShell({
           its width via the --atlas-sidebar-w custom property + lg: breakpoint.
           pt-14 on mobile reserves space for the hamburger button. */}
       <main
-        className="h-full overflow-y-auto overflow-x-hidden pt-14 lg:pt-0 lg:ml-[var(--atlas-sidebar-w,58px)]"
+        id="atlas-main-content"
+        tabIndex={-1}
+        className="h-full overflow-y-auto overflow-x-hidden pt-14 lg:pt-0 lg:ml-[var(--atlas-sidebar-w,58px)] focus:outline-none"
         style={
           {
             "--atlas-sidebar-w": `${sidebarWidth}px`,
