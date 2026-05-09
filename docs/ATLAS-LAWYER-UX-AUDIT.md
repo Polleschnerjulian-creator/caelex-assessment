@@ -1922,3 +1922,72 @@ Tab-Switch. PDF-Export-Kontext: privilege-marker survives den vollen
 Notion-edit-roundtrip ohne dass sie händisch nachprüfen muss. Library
 sieht zum ersten Mal "wie eine Atlas-Seite" aus statt "wie eine
 abweichende Sub-App".
+
+---
+
+## 26. Quick-Wins-Bündel #12 — F-COMP-1 Comparator Word Export (2026-05-09)
+
+Größere als Quick-Win, kleiner als ursprünglich audited. Audit hatte
+F-COMP-1 als L (1-2 Wochen) eingeschätzt mit "Server-Side DOCX-
+Generation API". Reality: durch existing `exportDraftAsWord` pipeline
+(Word-flavoured-HTML, läuft client-side, no deps) reduziert sich
+das auf einen markdown-serialization-helper + button-wiring.
+
+### F-COMP-1 — Comparator Word/DOCX Export (HIGH → Done, ~1 hour)
+
+- **Wo:** Neuer helper `src/lib/atlas/comparator-export-md.ts` (270 LOC)
+  - button-wiring in `src/app/(atlas)/atlas/comparator/page.tsx`
+- **Vorher:** Comparator hatte nur Print-zu-PDF via `window.print()`
+  - 693-Zeilen ComparatorExport-Print-Layout. Marie compariert UK vs
+    JP vs DE für Memo-Anhang an Mandant — musste screenshot → manuell
+    in Word recreaten (~30 min/Export).
+- **Fix-Architektur:**
+  - `buildComparisonMarkdown({ countries, dimension, locale })` →
+    `{ markdown, title }`
+  - Pro-Dimension Builder-Funktionen (authorization / liability /
+    debris / registration / timeline / eu_readiness) — jede returned
+    `string[][]` (header + body rows) für GFM-Markdown-Tabelle
+  - "all" dimension expandiert zu allen 6 sub-sections sequentiell
+  - Cell-escape für `|` und Newlines damit Word-Tabelle nicht bricht
+  - Bilingual content (DE/EN) per inline `TR()` helper, kein i18n-key
+    overhead da export-only one-shot
+  - Source-attribution paragraph + footer-note "verify against
+    official text before client advice"
+- **Wiring:**
+  - Existing `Print → PDF` button bleibt unverändert
+  - Neuer `Word` button rechts daneben (FileText icon)
+  - Deactivated wenn 0 countries selected (gleicher condition wie
+    PDF button)
+  - Resolves codes → JurisdictionLaw via `JURISDICTION_DATA.get()`
+    mit defensive filter für unknown codes
+  - Pipes durch `exportDraftAsWord({ markdown, title, locale })`
+  - Existing chrome (header, footer, page numbers, disclaimer
+    back-stop) gilt automatisch
+- **Audit-Estimate-Reduktion:** Audit said "L (1-2 Wochen)". Actual:
+  ~1 hour. Reason: existing `exportDraftAsWord` pipeline ist die
+  load-bearing infrastruktur — wir mussten nur die markdown-
+  serialisierung dazu schreiben. Pattern-erkenntnis: bei "neue
+  Export-Format gewünscht" Findings immer erst checken ob die
+  draft-export pipeline schon das Format unterstützt.
+- **Was BEWUSST nicht jetzt gefixt:**
+  - **Server-side DOCX** mit echtem `@docx` package — overkill für
+    diesen use-case. Word-flavoured HTML in `.doc` öffnet überall
+    seit Word 2003 ohne Probleme.
+  - **FR/ES locale** für markdown export — pilot ist DE/EN.
+    `ComparatorLocale` als 2-locale type lässt sich später erweitern.
+  - **Compliance-citations cross-link** im exported document — die
+    serialisierung ist tabular, nicht prose. Wenn lawyer das in
+    Word weiterbearbeiten und citations einbetten will, paste-from-
+    Atlas Source-page macht das nachträglich.
+
+### Trust-Score nach Quick-Wins-Bündel #12
+
+| Surface    | Vorher | Nachher                                                       |
+| ---------- | ------ | ------------------------------------------------------------- |
+| Comparator | 7/10   | **8/10** (+1 — DOCX-export schließt memo-attachment-workflow) |
+| GESAMT     | 8.5/10 | **8.6/10**                                                    |
+
+**Marie-Impact:** "UK vs JP comparison für Mandant" geht von
+30-min-Screenshot-Hell zu 1-Klick-Word-Download. Pasten in eigene
+Memo-Vorlage = sofort. Disclaimer + Caelex-attribution lead-in
+automatisch im artifact.

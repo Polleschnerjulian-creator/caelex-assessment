@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Download, Link as LinkIcon, Check } from "lucide-react";
+import { Download, FileText, Link as LinkIcon, Check } from "lucide-react";
 import type { SpaceLawCountryCode } from "@/lib/space-law-types";
 import CountrySelector from "@/components/atlas/CountrySelector";
 import ComparisonTable from "@/components/atlas/ComparisonTable";
@@ -10,6 +10,12 @@ import ComparatorExport from "@/components/atlas/ComparatorExport";
 import ForecastTimelineSlider from "@/components/atlas/ForecastTimelineSlider";
 import CrossBorderQuickRef from "@/components/atlas/CrossBorderQuickRef";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { JURISDICTION_DATA } from "@/data/national-space-laws";
+import {
+  buildComparisonMarkdown,
+  type ComparatorDimension,
+} from "@/lib/atlas/comparator-export-md";
+import { exportDraftAsWord } from "@/lib/atlas/draft-export";
 
 /**
  * Shared Apple-like glass style used for the sticky control bar.
@@ -145,7 +151,7 @@ function ComparatorPageInner() {
     () => initial.date ?? new Date(),
   );
   const [linkCopied, setLinkCopied] = useState(false);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   // Push state changes back into the URL — keeps reload + back-button
   // returning to the same view. router.replace (not push) so stepping
@@ -197,6 +203,34 @@ function ComparatorPageInner() {
       requestAnimationFrame(() => window.print());
     });
   }, []);
+
+  /* F-COMP-1 — Word export. Resolves the selected country codes to
+     full JurisdictionLaw records (skipping any unknown codes
+     defensively), serialises the comparison to markdown via
+     buildComparisonMarkdown(), then hands off to exportDraftAsWord
+     which wraps with chrome (header, footer, page numbers) +
+     legal-review disclaimer back-stop. The pilot is bilingual, so
+     we collapse fr/es to en for the export locale (chrome-only —
+     full FR/ES wiring would mean adding a third locale to the
+     ComparatorLocale union). */
+  const handleExportWord = useCallback(() => {
+    if (selected.length === 0) return;
+    const countries = selected
+      .map((code) => JURISDICTION_DATA.get(code))
+      .filter((c): c is NonNullable<typeof c> => c !== undefined);
+    if (countries.length === 0) return;
+    const exportLocale: "en" | "de" = language === "de" ? "de" : "en";
+    const { markdown, title } = buildComparisonMarkdown({
+      countries,
+      dimension: dimension as ComparatorDimension,
+      locale: exportLocale,
+    });
+    exportDraftAsWord({
+      markdown,
+      title,
+      locale: exportLocale,
+    });
+  }, [selected, dimension, language]);
 
   return (
     <>
@@ -268,6 +302,38 @@ function ComparatorPageInner() {
                     strokeWidth={1.5}
                   />
                   <span>{t("atlas.export_pdf_btn")}</span>
+                </button>
+                {/* F-COMP-1: Word-export sibling to the PDF button.
+                    Same chrome (icon + label + hover) so the user
+                    learns the affordance once. The Word output is
+                    the comparator data as a markdown table inside
+                    Word-flavoured HTML — pastes cleanly into a memo
+                    without screenshot+OCR. */}
+                <button
+                  onClick={handleExportWord}
+                  className="
+                    flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
+                    text-[11px] font-medium text-[var(--atlas-text-muted)]
+                    hover:text-[var(--atlas-text-primary)] hover:bg-[var(--atlas-bg-inset)]
+                    transition-colors duration-150
+                  "
+                  aria-label={
+                    language === "de"
+                      ? "Vergleich als Word exportieren"
+                      : "Export comparison as Word"
+                  }
+                  title={
+                    language === "de"
+                      ? "Vergleich als Word (.doc) exportieren"
+                      : "Export comparison as Word (.doc)"
+                  }
+                >
+                  <FileText
+                    className="h-3.5 w-3.5"
+                    aria-hidden="true"
+                    strokeWidth={1.5}
+                  />
+                  <span>{language === "de" ? "Word" : "Word"}</span>
                 </button>
               </>
             )}
