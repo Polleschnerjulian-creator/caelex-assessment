@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
   PenSquare,
@@ -442,6 +443,15 @@ export default function DraftingStudioPage() {
             {t("atlas.drafting_title")}
           </h1>
         </div>
+        {/* Bundle 32: link to the My Drafts library. Surfaces only after
+            hydration so the count badge doesn't pop in late. */}
+        <Link
+          href="/atlas/drafting/history"
+          className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)] transition-colors"
+        >
+          <History size={11} strokeWidth={1.8} aria-hidden="true" />
+          {isDe ? "Meine Entwürfe" : "My Drafts"}
+        </Link>
       </header>
 
       {/* Hero subtitle — promise + speed claim ("2 minutes instead of
