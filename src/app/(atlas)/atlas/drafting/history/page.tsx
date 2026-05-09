@@ -24,6 +24,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   PenSquare,
   ArrowLeft,
@@ -40,6 +41,7 @@ import {
   Inbox,
   AlertCircle,
   Briefcase,
+  Share2,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { openAIMode } from "@/components/atlas/AIModeLauncher";
@@ -50,6 +52,7 @@ import {
   type DraftLibraryEntry,
   type DraftKind,
 } from "@/lib/atlas/drafting-history";
+import { createReviewSession } from "@/lib/atlas/review-sessions";
 
 const KIND_META: Record<
   DraftKind,
@@ -119,6 +122,7 @@ const ALL_KINDS: DraftKind[] = ["auth", "brief", "compare", "nda", "cover"];
 export default function DraftingHistoryPage() {
   const { language } = useLanguage();
   const isDe = language === "de";
+  const router = useRouter();
 
   /* Library state. Hydrate after mount to dodge SSR localStorage. */
   const [entries, setEntries] = useState<DraftLibraryEntry[]>([]);
@@ -184,6 +188,16 @@ export default function DraftingHistoryPage() {
   const handleRestore = (entry: DraftLibraryEntry) => {
     /* "Restore" = re-fire the exact prompt that was dispatched. */
     openAIMode({ prompt: entry.prompt });
+  };
+
+  /* Bundle 38: spawn a partner-review session and navigate to it. */
+  const handleShareForReview = (entry: DraftLibraryEntry) => {
+    const session = createReviewSession({
+      draftId: entry.id,
+      draftTitle: entry.title,
+      draftPrompt: entry.prompt,
+    });
+    router.push(`/atlas/drafting/review/${session.id}`);
   };
 
   const handleStartEdit = (entry: DraftLibraryEntry) => {
@@ -434,6 +448,20 @@ export default function DraftingHistoryPage() {
                         aria-hidden="true"
                       />
                       {isDe ? "Wiederholen" : "Restore"}
+                    </button>
+                    {/* Bundle 38: share-for-review action. */}
+                    <button
+                      type="button"
+                      onClick={() => handleShareForReview(entry)}
+                      title={
+                        isDe
+                          ? "Review-Session starten und teilen"
+                          : "Spawn a review session and share"
+                      }
+                      className="inline-flex items-center gap-1 text-[10.5px] font-medium px-2 py-1 rounded border border-[var(--atlas-border)] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)] hover:bg-[var(--atlas-bg-surface-muted)] transition-colors"
+                    >
+                      <Share2 size={10} strokeWidth={1.8} aria-hidden="true" />
+                      {isDe ? "Review" : "Review"}
                     </button>
                     <button
                       type="button"
