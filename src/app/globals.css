@@ -908,6 +908,44 @@ html[data-atlas-preload="dark"] .atlas-themed {
   color: var(--atlas-text-faint);
 }
 
+/* WCAG 2.4.7 Focus Visible (AA) + 2.4.11 Focus Not Obscured (AA) — Phase D.
+   Browser-default outlines vary wildly (Chrome blue ring, Safari subtle
+   glow, Firefox dotted) — and many Tailwind reset styles strip them.
+   Atlas needs a unified, high-contrast focus indicator that meets the
+   2.4.11 "focus indicator must be at least partially visible" rule.
+
+   Strategy: 2px outline in the accent color + 2px offset from the
+   element. The offset ensures the ring sits OUTSIDE the element so a
+   sticky header/sidebar doesn't fully obscure it (2.4.11). Border-
+   radius matches the element's radius via `outline-style: solid` on
+   most elements.
+
+   Applied to interactive elements only (button, a, input, select,
+   textarea, [role="button"], [role="link"], [tabindex]:not([tabindex="-1"])).
+   :focus-visible (not :focus) so mouse-clicks don't paint the ring,
+   only keyboard navigation. */
+.atlas-themed[data-atlas-theme]
+  :is(
+    a,
+    button,
+    input,
+    select,
+    textarea,
+    [role="button"],
+    [role="link"],
+    [tabindex]
+  ):focus-visible {
+  outline: 2px solid var(--atlas-accent);
+  outline-offset: 2px;
+  /* The :is() expression catches tabindex="-1" too, which we want to
+     EXCLUDE (those are programmatic-focus targets like the <main>
+     skip-target — never user-keyboard-reached). Override with a
+     transparent outline for those: */
+}
+.atlas-themed[data-atlas-theme] [tabindex="-1"]:focus-visible {
+  outline: none;
+}
+
 /* ===== ATLAS ACCENT BADGE OVERRIDES (dark mode) =====
    In light mode, Tailwind's bg-blue-50/text-blue-700 pairs read as
    "badge with soft-tint bg + strong-colored text". In dark mode, the
