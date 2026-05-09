@@ -23,6 +23,7 @@ import {
 import { SPACE_LAW_COUNTRY_CODES } from "@/lib/space-law-types";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import { BookmarkButton } from "../../_components/BookmarkButton";
+import { PrintTreatyButton } from "./PrintTreatyButton";
 
 /**
  * /atlas/treaties/[slug] — per-treaty deep-dive.
@@ -298,6 +299,12 @@ export default async function TreatyDetailPage({ params }: PageProps) {
                 href: `/atlas/treaties/${slug}`,
               }}
             />
+            {/* Atlas Lawyer-UX Audit F-TREATY-1 (Quick-Fix subset):
+                Print-Button so Marie can produce a memo-attachment of
+                the treaty without copy-pasting. Browser-native print
+                dialog supports "Save as PDF". Full server-side PDF-
+                rendering with custom layout deferred to Stage-2. */}
+            <PrintTreatyButton />
           </div>
         </div>
         <h1 className="text-[22px] font-semibold tracking-tight text-[var(--atlas-text-primary)] leading-snug mb-3 max-w-4xl">

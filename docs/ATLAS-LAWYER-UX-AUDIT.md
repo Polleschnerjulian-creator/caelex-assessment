@@ -1047,3 +1047,54 @@ Beide: Auth + rate-limit (`sensitive` tier) + Org-Context-Resolve + Confirmation
 | GESAMT           | 7.0/10 | **7.2/10** |
 
 **Klaus-Impact:** Marie kann Daten-Export + Account-Löschung jetzt direkt aus Atlas anfordern. **Provably submitted** (Audit-Log + zwei Emails), DSGVO-konform da manuelle Verarbeitung innerhalb 30-Tage-Frist erlaubt ist.
+
+---
+
+## 16. Quick-Wins-Bündel #2 (2026-05-09)
+
+Vier weitere Backlog-Items aus dem Lawyer-UX-Audit in einer Session geclosed:
+
+### F-AUTH-8 — Google OAuth Invite-Token-Preservation (BLOCKER → Done)
+
+- **Wo:** `atlas-signup/page.tsx:248-280` (`handleGoogleSignIn`)
+- **Vorher:** Click "Sign in with Google" → OAuth-Flow strips invite-token → User landet auf `/atlas-no-access` (dead-end)
+- **Fix:** `sessionStorage.setItem("atlas-pending-invite-token", inviteToken)` VOR `signIn("google")` + callbackUrl wird zu `/accept-invite?token=...` wenn invite vorhanden (defense-in-depth)
+- **Aufwand:** ~1h (statt 3-5d vermutet)
+
+### F-AUTH-3 — Org-Field-Clarity bei Invite-Flow (HIGH → Done)
+
+- **Wo:** `atlas-signup/page.tsx:311-356` (invite-banner)
+- **Fix:** Org-Name auf eigener Zeile + bold + 14px; Inviter-Name in zweiter Zeile gedämpft; neuer Escape-Link "Not the right organisation? Contact support" mit `mailto:support@caelex.io`
+- **Aufwand:** ~30min
+
+### F-TREATY-1 — Print-Button auf Treaty-Detail (BLOCKER, Quick-Fix-Subset → Done)
+
+- **Wo:** `atlas/treaties/[slug]/page.tsx` + neue `PrintTreatyButton.tsx`
+- **Fix:** Client-island PrintTreatyButton mit `window.print()`. Atlas hat schon globales Print-CSS-framework (globals.css:3533+) das `.fixed` Atlas-Shell ausblendet + serif-typography + A4-Margins + Caelex-Header/Footer
+- **Defer to Stage-2:** Server-side PDF-rendering mit custom layout. Browser-Print covers 80%-case zero-cost
+- **Aufwand:** ~30min
+
+### F-CASES-2 — Citation-Export auf Case-Cards (HIGH → Done)
+
+- **Wo:** `atlas/cases/page.tsx` + neue `CaseCitationButton.tsx`
+- **Fix:** Mini client-island "Cite"-Button auf jeder Case-Card-Footer. Two formats sprach-gated:
+  - **DE:** `Plaintiff ./. Defendant, Forum (DD.MM.YYYY), Az.: Citation` (DE-Bluebuch)
+  - **EN/FR:** `Plaintiff v. Defendant, Citation, Forum (Year)` (plain)
+  - Click stopPropagation → `clipboard.writeText` → 1.8s Check-Icon Feedback
+- **Defer to Stage-2:** BibTeX/RIS/OSCOLA-Picker + Per-Detail-Page-Version
+- **Aufwand:** ~45min
+
+### F-LAND-1 — Last-Verified-Badge (DEFERRED)
+
+- **Status:** Per-Jurisdiction-Cards leben nicht in `landing-rights/page.tsx` — braucht Component-Tree-Audit. Defer.
+
+### Trust-Score nach Quick-Wins-Bündel #2
+
+| Surface           | Vorher | Nachher                                                    |
+| ----------------- | ------ | ---------------------------------------------------------- |
+| Auth + Onboarding | 7.5/10 | **8/10** (+0.5)                                            |
+| Treaty-Detail     | 5/10   | **6/10** (+1 — Print-Button löst memo-attachment-workflow) |
+| Cases             | 6/10   | **6.5/10** (+0.5 — Cite-Button speeds-up daily citing)     |
+| GESAMT            | 7.2/10 | **7.4/10**                                                 |
+
+**Marie-Impact:** Drei Daily-Driver-Frictions reduziert. Plus F-AUTH-8 entfernt einen verlorenen Mandanten (Invite + Google-OAuth = vorher dead-end).

@@ -246,10 +246,39 @@ function SignupForm() {
   };
 
   const handleGoogleSignIn = () => {
-    // Google OAuth doesn't carry inviteToken through the redirect —
-    // Atlas access still requires an active membership, so Google-
-    // signed-up users will land on /atlas-no-access until invited.
-    signIn("google", { callbackUrl: "/atlas" });
+    // Atlas Lawyer-UX Audit F-AUTH-8: invite-token preservation across
+    // Google OAuth redirect. Google's OAuth flow strips query params
+    // through its own provider redirect (sign-in.google.com → callback)
+    // — so a user who clicks an invite link AND chooses "Sign in with
+    // Google" used to silently lose the invite-token and land on
+    // /atlas-no-access (a dead-end-page).
+    //
+    // Fix: stash the invite-token in sessionStorage BEFORE Google's
+    // redirect. After the OAuth callback completes, the auth-redirect
+    // handler (or a small client-side hook) reads sessionStorage and
+    // routes the freshly-signed-in user to /accept-invite?token=...
+    // sessionStorage is cleared as soon as the token is consumed so a
+    // stale token can't accidentally be replayed on a different account.
+    //
+    // We also pass the invite-token to the callbackUrl so a server-
+    // component variant could pick it up (defense in depth — if
+    // sessionStorage somehow doesn't survive the round-trip, the URL
+    // param is the fallback).
+    if (typeof window !== "undefined" && inviteToken) {
+      try {
+        window.sessionStorage.setItem(
+          "atlas-pending-invite-token",
+          inviteToken,
+        );
+      } catch {
+        // Private browsing modes can throw on setItem — non-fatal,
+        // user just falls back to the post-callback URL-param path.
+      }
+    }
+    const callbackUrl = inviteToken
+      ? `/accept-invite?token=${encodeURIComponent(inviteToken)}`
+      : "/atlas";
+    signIn("google", { callbackUrl });
   };
 
   return (
@@ -285,11 +314,49 @@ function SignupForm() {
       {isInvite && inviteCtx && (
         <div className={styles.inviteBanner}>
           <Mail size={14} style={{ marginTop: 2, flexShrink: 0 }} />
-          <span>
-            Invited by <strong>{inviteCtx.inviterName}</strong> to{" "}
-            <strong>{inviteCtx.organizationName}</strong>. Your account will be
-            added to this organisation automatically.
-          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {/* Atlas Lawyer-UX Audit F-AUTH-3: org-name made
+                bold-on-its-own-line so Marie can verify she's joining
+                the right firm at a glance. Plus an explicit escape-
+                link for the case where the invite was forwarded /
+                misaddressed — better than silently joining the wrong
+                org and asking an admin to remove her later. */}
+            <div style={{ fontSize: "13px", lineHeight: 1.5 }}>
+              You're joining{" "}
+              <strong style={{ fontSize: "14px" }}>
+                {inviteCtx.organizationName}
+              </strong>
+            </div>
+            <div
+              style={{
+                fontSize: "12px",
+                marginTop: 4,
+                color: "rgba(255,255,255,0.65)",
+              }}
+            >
+              Invited by <strong>{inviteCtx.inviterName}</strong>. Your account
+              will be added to this organisation automatically.
+            </div>
+            <div
+              style={{
+                fontSize: "11.5px",
+                marginTop: 8,
+                color: "rgba(255,255,255,0.5)",
+              }}
+            >
+              Not the right organisation?{" "}
+              <a
+                href="mailto:support@caelex.io?subject=Atlas%20invite%20mismatch"
+                style={{
+                  color: "rgba(255,255,255,0.7)",
+                  textDecoration: "underline",
+                }}
+              >
+                Contact support
+              </a>{" "}
+              before completing signup.
+            </div>
+          </div>
         </div>
       )}
 

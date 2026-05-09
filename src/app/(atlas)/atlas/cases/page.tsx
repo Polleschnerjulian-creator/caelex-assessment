@@ -21,6 +21,7 @@ import {
   type PrecedentialWeight,
 } from "@/data/legal-cases";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { CaseCitationButton } from "./CaseCitationButton";
 
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
@@ -436,6 +437,18 @@ export default function CasesIndexPage() {
                           ` +${c.parties_mentioned.length - 2}`}
                       </span>
                     )}
+                    {/* Atlas Lawyer-UX Audit F-CASES-2 (Quick-Win):
+                        copy-citation button on the list-card itself
+                        so Marie can cite without opening the detail.
+                        stopPropagation handled inside the button. */}
+                    <CaseCitationButton
+                      plaintiff={plaintiff}
+                      defendant={defendant}
+                      citation={c.citation}
+                      forumName={forumName}
+                      dateDecided={c.date_decided}
+                      language={language as "de" | "en" | "fr"}
+                    />
                     <ArrowRight
                       className="h-3 w-3 ml-auto text-[var(--atlas-text-faint)] group-hover:text-violet-600 transition-colors"
                       strokeWidth={1.5}
