@@ -108,8 +108,14 @@ export default function ForecastTimelineSlider({
   const progressPct = ((index / Math.max(1, range.length - 1)) * 100).toFixed(
     2,
   );
+  /* BUG-B10: was hard-coded `#111827` (gray-900 fill) and
+     `rgba(229,231,235,0.7)` (gray-200 track) — both light-mode
+     tokens. In dark mode the dark fill blended with the dark
+     background, the slider became "dark fill on slightly-darker
+     track" — invisible. Now uses CSS vars `--atlas-text-primary`
+     and `--atlas-border` which Atlas defines per-theme. */
   const trackStyle: React.CSSProperties = {
-    background: `linear-gradient(to right, #111827 0%, #111827 ${progressPct}%, rgba(229,231,235,0.7) ${progressPct}%, rgba(229,231,235,0.7) 100%)`,
+    background: `linear-gradient(to right, var(--atlas-text-primary) 0%, var(--atlas-text-primary) ${progressPct}%, var(--atlas-border) ${progressPct}%, var(--atlas-border) 100%)`,
   };
 
   return (

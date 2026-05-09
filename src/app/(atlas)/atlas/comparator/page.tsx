@@ -23,6 +23,11 @@ import {
   type ComparatorDimension,
 } from "@/lib/atlas/comparator-export-md";
 import { exportDraftAsWord } from "@/lib/atlas/draft-export";
+import {
+  getEffectiveEventsAt,
+  type ForecastEvent,
+} from "@/lib/atlas/forecast-engine";
+import { EU_MEMBER_STATES_SET } from "@/lib/space-law-types";
 
 /**
  * Shared Apple-like glass style used for the sticky control bar.
@@ -164,6 +169,54 @@ function ComparatorPageInner() {
   const [linkCopied, setLinkCopied] = useState(false);
   const { t, language } = useLanguage();
 
+  /* BUG-B1: dimension switch resets table scrollTop. Marie scrolled
+     into row 8 of `liability`, switched to `debris`, lost her place.
+     Persist window.scrollY per dimension in a ref-map and restore on
+     switch. Window-scroll (not table-internal) is the right scope:
+     the table itself isn't an overflow-container, the page is. */
+  const scrollByDimensionRef = useRef<Record<string, number>>({});
+  const handleDimensionChange = useCallback(
+    (next: string) => {
+      if (typeof window !== "undefined") {
+        scrollByDimensionRef.current[dimension] = window.scrollY;
+      }
+      setDimension(next);
+    },
+    [dimension],
+  );
+  /* Restore on dimension change. instant-jump (not smooth) so the
+     view feels like "remembering" rather than "animating". */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = scrollByDimensionRef.current[dimension];
+    if (saved === undefined) return;
+    window.scrollTo({ top: saved, behavior: "instant" as ScrollBehavior });
+  }, [dimension]);
+
+  /* BUG-B5: aggregate forecast ribbon. The user has the slider in the
+     future and sees scattered per-cell badges, but no summary of "N
+     changes between today and your target date". Computing here at
+     the page level makes the count visible alongside the slider —
+     users learn that the time-travel feature has teeth before they
+     scan the table for badges. We filter to events that touch the
+     selected jurisdictions (or are EU/INT meta-tagged) so the count
+     reflects what's relevant to the current view, not the whole feed. */
+  const forecastEventsAhead = useMemo<ForecastEvent[]>(() => {
+    const drift = targetDate.getTime() - Date.now();
+    if (drift <= 24 * 60 * 60 * 1000) return [];
+    const all = getEffectiveEventsAt(targetDate);
+    if (selected.length === 0) return all;
+    const sel = new Set<string>(selected);
+    return all.filter((e) =>
+      e.jurisdictions.some(
+        (j) =>
+          sel.has(j) ||
+          j === "INT" ||
+          (j === "EU" && selected.some((c) => EU_MEMBER_STATES_SET.has(c))),
+      ),
+    );
+  }, [selected, targetDate]);
+
   /* BUG-A5: ref-guard the first-render URL-sync so that a user who
      lands on the bare `/atlas/comparator` doesn't immediately see
      `?j=FR,DE,UK` slammed into the address bar before they've done
@@ -195,12 +248,26 @@ function ComparatorPageInner() {
     router.replace(`/atlas/comparator${qs ? `?${qs}` : ""}`, { scroll: false });
   }, [selected, dimension, targetDate, router, searchParams]);
 
+  /* BUG-B11: a fast double-click started two parallel setTimeouts.
+     The second one's `setLinkCopied(false)` fired AFTER the first's
+     window had already lapsed and we'd re-set true again — net
+     effect: the icon could flip back to its idle state mid-flash and
+     stay there until the next click. Now a ref tracks the active
+     timer so each new click clears the previous one. */
+  const linkCopyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (linkCopyTimerRef.current) clearTimeout(linkCopyTimerRef.current);
+    },
+    [],
+  );
   const handleCopyLink = useCallback(async () => {
     const url = buildShareableUrl(selected, dimension, targetDate);
     try {
       await navigator.clipboard.writeText(url);
       setLinkCopied(true);
-      setTimeout(() => setLinkCopied(false), 1800);
+      if (linkCopyTimerRef.current) clearTimeout(linkCopyTimerRef.current);
+      linkCopyTimerRef.current = setTimeout(() => setLinkCopied(false), 1800);
     } catch {
       // Clipboard can fail on iOS without a user gesture; silent.
     }
@@ -283,87 +350,95 @@ function ComparatorPageInner() {
                   t("atlas.all_dimensions")}
               </span>
             </div>
-            {selected.length > 0 && (
-              <>
-                <button
-                  onClick={handleCopyLink}
-                  className="
-                    flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
-                    text-[11px] font-medium text-[var(--atlas-text-muted)]
-                    hover:text-[var(--atlas-text-primary)] hover:bg-[var(--atlas-bg-inset)]
-                    transition-colors duration-150
-                  "
-                  aria-label={t("atlas.share_comparison_link")}
-                >
-                  {linkCopied ? (
-                    <Check
-                      className="h-3.5 w-3.5 text-emerald-600"
-                      aria-hidden="true"
-                      strokeWidth={2}
-                    />
-                  ) : (
-                    <LinkIcon
-                      className="h-3.5 w-3.5"
-                      aria-hidden="true"
-                      strokeWidth={1.5}
-                    />
-                  )}
-                  <span>
-                    {linkCopied
-                      ? t("atlas.link_copied")
-                      : t("atlas.share_comparison")}
-                  </span>
-                </button>
-                <button
-                  onClick={handleExport}
-                  className="
-                    flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
-                    text-[11px] font-medium text-[var(--atlas-text-muted)]
-                    hover:text-[var(--atlas-text-primary)] hover:bg-[var(--atlas-bg-inset)]
-                    transition-colors duration-150
-                  "
-                >
-                  <Download
+            {/* BUG-B7: action-buttons used to vanish when selected.length
+                === 0 — Marie clicked Clear, read the empty-state, wanted
+                to share that empty state but the button was gone.
+                Disabled-but-visible affordance is consistent. */}
+            <>
+              <button
+                onClick={handleCopyLink}
+                disabled={selected.length === 0}
+                className="
+                  flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
+                  text-[11px] font-medium text-[var(--atlas-text-muted)]
+                  hover:text-[var(--atlas-text-primary)] hover:bg-[var(--atlas-bg-inset)]
+                  disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[var(--atlas-text-muted)] disabled:cursor-not-allowed
+                  transition-colors duration-150
+                "
+                aria-label={t("atlas.share_comparison_link")}
+              >
+                {linkCopied ? (
+                  <Check
+                    className="h-3.5 w-3.5 text-emerald-600"
+                    aria-hidden="true"
+                    strokeWidth={2}
+                  />
+                ) : (
+                  <LinkIcon
                     className="h-3.5 w-3.5"
                     aria-hidden="true"
                     strokeWidth={1.5}
                   />
-                  <span>{t("atlas.export_pdf_btn")}</span>
-                </button>
-                {/* F-COMP-1: Word-export sibling to the PDF button.
-                    Same chrome (icon + label + hover) so the user
-                    learns the affordance once. The Word output is
-                    the comparator data as a markdown table inside
-                    Word-flavoured HTML — pastes cleanly into a memo
-                    without screenshot+OCR. */}
-                <button
-                  onClick={handleExportWord}
-                  className="
-                    flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
-                    text-[11px] font-medium text-[var(--atlas-text-muted)]
-                    hover:text-[var(--atlas-text-primary)] hover:bg-[var(--atlas-bg-inset)]
-                    transition-colors duration-150
-                  "
-                  aria-label={
-                    language === "de"
-                      ? "Vergleich als Word exportieren"
-                      : "Export comparison as Word"
-                  }
-                  title={
-                    language === "de"
-                      ? "Vergleich als Word (.doc) exportieren"
-                      : "Export comparison as Word (.doc)"
-                  }
-                >
-                  <FileText
-                    className="h-3.5 w-3.5"
-                    aria-hidden="true"
-                    strokeWidth={1.5}
-                  />
-                  <span>{language === "de" ? "Word" : "Word"}</span>
-                </button>
-              </>
-            )}
+                )}
+                <span>
+                  {linkCopied
+                    ? t("atlas.link_copied")
+                    : t("atlas.share_comparison")}
+                </span>
+              </button>
+              <button
+                onClick={handleExport}
+                disabled={selected.length === 0}
+                className="
+                  flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
+                  text-[11px] font-medium text-[var(--atlas-text-muted)]
+                  hover:text-[var(--atlas-text-primary)] hover:bg-[var(--atlas-bg-inset)]
+                  disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[var(--atlas-text-muted)] disabled:cursor-not-allowed
+                  transition-colors duration-150
+                "
+              >
+                <Download
+                  className="h-3.5 w-3.5"
+                  aria-hidden="true"
+                  strokeWidth={1.5}
+                />
+                <span>{t("atlas.export_pdf_btn")}</span>
+              </button>
+              {/* F-COMP-1: Word-export sibling to the PDF button.
+                  Same chrome (icon + label + hover) so the user
+                  learns the affordance once. The Word output is
+                  the comparator data as a markdown table inside
+                  Word-flavoured HTML — pastes cleanly into a memo
+                  without screenshot+OCR. */}
+              <button
+                onClick={handleExportWord}
+                disabled={selected.length === 0}
+                className="
+                  flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
+                  text-[11px] font-medium text-[var(--atlas-text-muted)]
+                  hover:text-[var(--atlas-text-primary)] hover:bg-[var(--atlas-bg-inset)]
+                  disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[var(--atlas-text-muted)] disabled:cursor-not-allowed
+                  transition-colors duration-150
+                "
+                aria-label={
+                  language === "de"
+                    ? "Vergleich als Word exportieren"
+                    : "Export comparison as Word"
+                }
+                title={
+                  language === "de"
+                    ? "Vergleich als Word (.doc) exportieren"
+                    : "Export comparison as Word (.doc)"
+                }
+              >
+                <FileText
+                  className="h-3.5 w-3.5"
+                  aria-hidden="true"
+                  strokeWidth={1.5}
+                />
+                <span>{language === "de" ? "Word" : "Word"}</span>
+              </button>
+            </>
           </div>
         </header>
 
@@ -400,6 +475,32 @@ function ComparatorPageInner() {
           </div>
         </div>
 
+        {/* BUG-B5: aggregate forecast ribbon. Renders only when the
+            slider is in the future AND there are events that affect
+            the user's selected jurisdictions. Sits between the
+            controls and the tabs so it's the first thing the eye
+            lands on after picking a future date. Click on the count
+            scrolls the table to the first cell with a badge — D8
+            partial fold-in for free affordance. */}
+        {forecastEventsAhead.length > 0 && (
+          <div
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10 text-[11.5px]"
+            role="status"
+            aria-live="polite"
+          >
+            <span className="text-amber-700 dark:text-amber-300 font-medium">
+              {language === "de"
+                ? `${forecastEventsAhead.length} ${forecastEventsAhead.length === 1 ? "Änderung" : "Änderungen"} zwischen heute und Ihrem Zieldatum`
+                : `${forecastEventsAhead.length} ${forecastEventsAhead.length === 1 ? "change" : "changes"} between today and your target date`}
+            </span>
+            <span className="ml-auto text-amber-700/70 dark:text-amber-300/70 text-[10px]">
+              {language === "de"
+                ? "Markierte Zeilen unten zeigen, welche Konzepte betroffen sind."
+                : "Highlighted rows below show which concepts are affected."}
+            </span>
+          </div>
+        )}
+
         {/* ─── Dimension Tabs ─── */}
         <div
           role="tablist"
@@ -410,13 +511,18 @@ function ComparatorPageInner() {
               key={dim.key}
               role="tab"
               aria-selected={dimension === dim.key}
-              onClick={() => setDimension(dim.key)}
+              onClick={() => handleDimensionChange(dim.key)}
               className={`
                 flex-shrink-0 pb-2 text-[11px] font-medium
                 transition-all duration-150 border-b-2 -mb-[1px]
                 ${
+                  /* BUG-B10: was hard-coded `border-gray-900` →
+                     invisible against `--atlas-bg-page: #0a0d12` in
+                     dark mode. Now uses the same atlas-token as the
+                     active text colour so contrast holds in both
+                     themes. */
                   dimension === dim.key
-                    ? "border-gray-900 text-[var(--atlas-text-primary)]"
+                    ? "border-[var(--atlas-text-primary)] text-[var(--atlas-text-primary)]"
                     : "border-transparent text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-secondary)]"
                 }
               `}
