@@ -1,0 +1,162 @@
+# Atlas — WCAG 2.2 AA Accessibility Audit (Living Document)
+
+**Status:** Aktiv · **Letztes Update:** 2026-05-09 (Phase A Start) · **Eigentümer:** Claude + Julian
+
+> Living document — wird nach jeder Phase upgedated.
+> Überlebt Kontext-Kompression: alle Findings + Phasen-Mapping +
+> Verifikations-Pfade dokumentiert. Wenn ein anderer Agent ohne
+> Vorwissen den State braucht, liest er hier.
+
+---
+
+## 0. Zweck dieses Dokuments
+
+Atlas (das Space-Law-Recherche-Produkt für Anwaltskanzleien) muss
+**vollständig WCAG 2.2 AA konform** werden. Das umfasst alle 50+
+Erfolgskriterien aus WCAG 2.1 AA plus die 6 neuen aus WCAG 2.2 AA:
+
+- **2.4.11 Focus Not Obscured (Minimum)** — fokussierte Elemente nicht durch sticky headers verdeckt
+- **2.5.7 Dragging Movements** — alles draggable braucht single-pointer alternative
+- **2.5.8 Target Size (Minimum)** — interaktive Elemente min 24×24 CSS px
+- **3.2.6 Consistent Help** — Help-Mechanismus an konsistenter Position
+- **3.3.7 Redundant Entry** — schon eingegebene Daten nicht nochmal abfragen
+- **3.3.8 Accessible Authentication (Minimum)** — keine cognitive tests im Auth-Flow
+
+**Scope:** 22 authentifizierte Routes unter `/atlas/*` + 7 öffentliche Auth-Pages (`/atlas-signup`, `/atlas-login`, `/atlas-access`, `/atlas-invite`, `/atlas-no-access`, `/atlas-forgot-password`, `/atlas-reset-password`).
+
+**Methodik:** 8 sequentielle Phasen (A→H). Jede Phase liefert: (a) Code-Fixes, (b) Living-Doc-Update mit ✅-Status pro Finding, (c) commit auf main.
+
+---
+
+## 1. Phasen-Mapping
+
+| Phase | Ziel                                                                                     | Status     |
+| ----- | ---------------------------------------------------------------------------------------- | ---------- |
+| **A** | Hot-Fix Headings (Token-Bug) + alle Atlas-Routes auf weiß-auf-weiß prüfen                | ✅ Done    |
+| **B** | Color & Contrast Audit — axe-core auf alle Routes + Token-Inventar erweitern             | ⏳ pending |
+| **C** | Semantic HTML & ARIA — Heading-Hierarchy, Landmarks, ARIA-Labels, Skip-Links             | ⏳ pending |
+| **D** | Keyboard & Focus — Tab-Order, Focus-Trap in Modals, WCAG 2.4.11 Focus Not Obscured       | ⏳ pending |
+| **E** | Forms & Auth — Label-Association, WCAG 2.2 3.3.7 Redundant Entry + 3.3.8 Accessible Auth | ⏳ pending |
+| **F** | Mobile & Touch — WCAG 2.5.8 Target Size 24×24, 1.4.10 Reflow @ 320px, 2.5.7 Dragging     | ⏳ pending |
+| **G** | Content & Language — lang attributes, page-titles, link-texts                            | ⏳ pending |
+| **H** | Verification + WCAG 2.2 AA Conformance Statement                                         | ⏳ pending |
+
+---
+
+## 2. Atlas-Routen-Inventar (29 Pages)
+
+### Authentifiziert (22 Routes)
+
+| Route                                 | Komponenten                              | Phase-A-Status      |
+| ------------------------------------- | ---------------------------------------- | ------------------- |
+| `/atlas` (root)                       | AtlasShell + dashboard                   | ⏳                  |
+| `/atlas/comparator`                   | ?                                        | ⏳                  |
+| `/atlas/compare-articles`             | ?                                        | ⏳                  |
+| `/atlas/cra`                          | ?                                        | ⏳                  |
+| `/atlas/cases`                        | ?                                        | ⏳                  |
+| `/atlas/drafting`                     | ?                                        | ⏳                  |
+| `/atlas/eu`                           | ?                                        | ⏳                  |
+| `/atlas/eu-space-act`                 | ?                                        | ⏳                  |
+| `/atlas/international`                | International Treaties (Phase-A-Trigger) | ✅ Hot-Fix deployed |
+| `/atlas/jurisdictions`                | ?                                        | ⏳                  |
+| `/atlas/library`                      | ?                                        | ⏳                  |
+| `/atlas/network`                      | ?                                        | ⏳                  |
+| `/atlas/pending`                      | Admin review queue                       | ⏳                  |
+| `/atlas/sources`                      | Source-Directory                         | ⏳                  |
+| `/atlas/treaties`                     | Treaty-Detail                            | ⏳                  |
+| `/atlas/treaties/[slug]`              | Treaty-Slug-Detail                       | ⏳                  |
+| `/atlas/updates`                      | Admin-curated updates                    | ⏳                  |
+| `/atlas/alerts`                       | Subscriptions                            | ⏳                  |
+| `/atlas/bookmarks`                    | User saves                               | ⏳                  |
+| `/atlas/api-access`                   | API-Key management                       | ⏳                  |
+| `/atlas/settings`                     | User+Org preferences                     | ⏳                  |
+| `/atlas/[id]` (dynamic source detail) | Source-Detail with @modal                | ⏳                  |
+
+### Öffentlich (7 Routes)
+
+| Route                    | Zweck                                  | Phase-A-Status |
+| ------------------------ | -------------------------------------- | -------------- |
+| `/atlas-signup`          | Account-Erstellung + Invite-Redemption | ⏳             |
+| `/atlas-login`           | Credentials + Google OAuth             | ⏳             |
+| `/atlas-access`          | Sales-assisted Demo-Booking            | ⏳             |
+| `/atlas-invite/[token]`  | Invite-Acceptance                      | ⏳             |
+| `/atlas-no-access`       | Org-Type-Erklärung                     | ⏳             |
+| `/atlas-forgot-password` | Password Recovery                      | ⏳             |
+| `/atlas-reset-password`  | Password Reset                         | ⏳             |
+
+---
+
+## 3. Phase A Findings
+
+### A-1 — Globale `.dark h1..h6` Regel leakt in Atlas-Subtree
+
+- **Wo:** `globals.css:1365-1372`
+- **Problem:** `<html>` trägt permanent `class="dark"` (Caelex-Comply-Default). Globale Regel `.dark h1, .dark h2, ... { color: #ffffff }` mit Specificity (0,1,1) schlägt Tailwind's `text-[var(--atlas-text-primary)]` (0,1,0) auf jedem Atlas-Heading. Im Atlas-Light-Modus → weiß-auf-weiß auf jedem h1/h2/h3 in jeder Page.
+- **Reproduzieren:** `/atlas/international` im Light-Mode → "International Space Treaties" h1 + "INSTRUMENTS (89)" h2 + Treaty-Titel h3 alle unsichtbar
+- **Sprint:** Phase A
+- **Status:** ✅ Done (override-block bei `globals.css:846+` ergänzt — `.atlas-themed[data-atlas-theme] :where(h1, h2, h3, h4, h5, h6) { color: var(--atlas-text-primary) }` mit Spec (0,2,1) + `:where()`-Reset für Tailwind-Per-Element-Overrides)
+
+### A-2 — Globale `.dark label` Regel leakt in Atlas-Subtree
+
+- **Wo:** `globals.css:1387-1389`
+- **Problem:** Selbe Specificity-Pattern wie A-1. Atlas-Forms-Labels werden `rgba(255,255,255,0.8)` im Atlas-Light-Modus.
+- **Sprint:** Phase A
+- **Status:** ✅ Done (`.atlas-themed[data-atlas-theme] label { color: var(--atlas-text-secondary) }` ergänzt)
+
+### A-3 — Theme-Provider setzt `data-atlas-theme` korrekt, aber switching ist passiv
+
+- **Wo:** `_components/AtlasThemeProvider.tsx`
+- **Problem:** Provider hält `theme` + `resolvedTheme` als React-Context-State, aber wendet das auf das DOM nicht direkt an. Initial-Render via `AtlasShell.tsx:152 data-atlas-theme={resolvedTheme}` deckt SSR + initial CSR. Theme-Switching im UI funktioniert via React-Re-Render.
+- **Sprint:** Phase A (Verifikation)
+- **Status:** ✅ Verified — Pattern korrekt, kein Bug. Der Pre-Hydration-Script setzt `data-atlas-preload` auf `<html>` für Pre-React-Render-Korrektheit.
+
+### A-4 — Weitere weiß-auf-weiß Patterns auf 21 nicht-getesteten Routes
+
+- **Wo:** alle Routes außer `/atlas/international`
+- **Sprint:** Phase A
+- **Status:** ✅ Done — Sub-Agent-Audit über alle 22 authentifizierten + 7 öffentlichen Routes durchgelaufen. 11 Findings total:
+  - **2 HIGH** (gefixt in dieser Phase):
+    - **A-4.1** `jurisdictions/[code]/page.tsx:404` — `text-gray-100` auf 72px display heading → `text-[var(--atlas-text-faint)]`
+    - **A-4.2** `jurisdictions/[code]/page.tsx:439` — `text-gray-200` auf 36px country code → `text-[var(--atlas-text-faint)]`
+  - **7 MEDIUM** (deferred zu Phase B — sind hardcoded button colors `bg-gray-900 text-white` + `bg-[#0f0f12] text-white` in drafting/settings/network/landing-rights, nicht akut weiß-auf-weiß sondern theme-switching-incomplete; werden in Color-Audit konsolidiert)
+  - **2 LOW** (intentional — atlas-no-access public page nicht teil des Atlas-Theme-Trees)
+
+---
+
+## 4. Phase B Vorbereitung — Was kommt nach Phase A
+
+- axe-core in `vitest.atlas.config.ts` integrieren
+- Playwright-Test pro Atlas-Route mit axe-Run
+- Living-Doc-Erweiterung: Color-Contrast-Findings als B-1, B-2, ...
+- Token-Inventar erweitern (status colors für `in_force`/`expired`/`pending`)
+
+---
+
+## 5. WCAG 2.2 AA Compliance-Matrix (wird in Phase H final ausgefüllt)
+
+| SC                              | Level | Coverage  | Phase | Status                 |
+| ------------------------------- | ----- | --------- | ----- | ---------------------- |
+| 1.4.3 Contrast (Minimum)        | AA    | Phase A+B | A,B   | 🔄 Phase A in progress |
+| 1.4.10 Reflow                   | AA    | Phase F   | F     | ⏳                     |
+| 1.4.11 Non-text Contrast        | AA    | Phase B   | B     | ⏳                     |
+| 2.1.1 Keyboard                  | A     | Phase D   | D     | ⏳                     |
+| 2.4.7 Focus Visible             | AA    | Phase D   | D     | ⏳                     |
+| 2.4.11 Focus Not Obscured (Min) | AA    | Phase D   | D     | ⏳                     |
+| 2.5.7 Dragging Movements        | AA    | Phase F   | F     | ⏳                     |
+| 2.5.8 Target Size (Min)         | AA    | Phase F   | F     | ⏳                     |
+| 3.2.6 Consistent Help           | A     | Phase G   | G     | ⏳                     |
+| 3.3.7 Redundant Entry           | A     | Phase E   | E     | ⏳                     |
+| 3.3.8 Accessible Authentication | AA    | Phase E   | E     | ⏳                     |
+| 4.1.2 Name, Role, Value         | A     | Phase C   | C     | ⏳                     |
+| ... weitere ~38 SC              |       |           |       | ⏳                     |
+
+---
+
+## 6. Verifikations-Methodik (für jede Phase)
+
+1. **Automated:** axe-core via Playwright + Vitest auf jede Route
+2. **Manual:** WCAG-Checklist pro Phase abhaken
+3. **Color-Contrast:** WebAIM Contrast Checker für jede Token-Pair
+4. **Screen-Reader:** NVDA (Windows) + VoiceOver (macOS) Smoke-Test pro Route in Phase H
+5. **Keyboard-only:** Tab-only Navigation pro Route in Phase D
+6. **Browser-Zoom:** 200% in Phase H

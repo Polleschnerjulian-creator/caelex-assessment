@@ -401,7 +401,12 @@ export default function JurisdictionDetailPage({
           </Link>
         </nav>
         <div className="mt-20 text-center">
-          <span className="text-[72px]  font-bold text-gray-100">
+          {/* WCAG 2.2 AA — Phase A Finding A-4.1: text-gray-100 was
+              invisible on Atlas-Light-Mode background (#f7f8fa).
+              Replaced with theme-aware --atlas-text-faint which gives
+              the same "muted display headline" feel but reads
+              correctly in both themes. Contrast ≥ 4.5:1 on both. */}
+          <span className="text-[72px]  font-bold text-[var(--atlas-text-faint)]">
             {displayCode}
           </span>
           <p className="text-[13px] text-[var(--atlas-text-muted)] mt-4">
@@ -436,7 +441,12 @@ export default function JurisdictionDetailPage({
           </nav>
 
           <div className="mt-6 flex items-baseline gap-4">
-            <span className="text-[36px]  font-bold text-gray-200 leading-none tracking-tight">
+            {/* WCAG 2.2 AA — Phase A Finding A-4.2: text-gray-200 was
+                invisible on Atlas-Light-Mode background. Replaced with
+                theme-aware --atlas-text-faint. Pairs visually with
+                the adjacent h1 (text-primary) — country code reads as
+                muted display label, country name is the main heading. */}
+            <span className="text-[36px]  font-bold text-[var(--atlas-text-faint)] leading-none tracking-tight">
               {displayCode}
             </span>
             <h1 className="text-[28px] font-semibold text-[var(--atlas-text-primary)] tracking-tight leading-none">

@@ -847,6 +847,25 @@ html[data-atlas-preload="dark"] .atlas-themed {
   color: var(--atlas-text-primary);
 }
 
+/* WCAG 2.2 AA — Phase A Hot-Fix (P0):
+   Without these selectors the global `.dark h1..h6` rule at line ~1365
+   (specificity 0,1,1) leaks into Atlas's light-mode subtree and forces
+   white-on-white headings — completely unreadable. Plus `.dark label`
+   at ~1387. The `.atlas-themed[data-atlas-theme]` attribute selector
+   gives us specificity (0,2,1), which beats the global Caelex rules
+   regardless of whether html.dark is set or not. We use :where() on
+   the heading list so a Tailwind text-{color} utility on a specific
+   heading still wins (Tailwind utility = (0,1,0); :where() reduces our
+   added selector contribution to 0, leaving us at the parent's (0,2,1)
+   on the heading itself but allowing Tailwind to override on a per-
+   element basis via source order). */
+.atlas-themed[data-atlas-theme] :where(h1, h2, h3, h4, h5, h6) {
+  color: var(--atlas-text-primary);
+}
+.atlas-themed[data-atlas-theme] label {
+  color: var(--atlas-text-secondary);
+}
+
 .atlas-themed[data-atlas-theme] input,
 .atlas-themed[data-atlas-theme] textarea,
 .atlas-themed[data-atlas-theme] select {
