@@ -21,9 +21,15 @@
  * through is a stage-2 enhancement.
  */
 
-import { ExternalLink, X, FileText } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ExternalLink, X, FileText, StickyNote } from "lucide-react";
 import Link from "next/link";
 import type { JurisdictionLaw } from "@/lib/space-law-types";
+import {
+  getAnnotation,
+  makeAnnotationKey,
+  setAnnotation,
+} from "@/lib/atlas/comparator-annotations";
 
 interface CellSourcePanelProps {
   open: boolean;
@@ -44,10 +50,33 @@ export function CellSourcePanel({
   cell,
   language,
 }: CellSourcePanelProps) {
+  /* D3: annotation editor state. Hydrate from localStorage when the
+     cell changes; debounce-write on every keystroke. The annotation
+     persists across sessions + jurisdictions (the key is composite
+     of countryCode + rowLabel) so if Marie reopens the same cell on
+     a different selection, her note is still there. */
+  const annotationKey =
+    cell !== null
+      ? makeAnnotationKey(cell.jurisdiction.countryCode, cell.rowLabel)
+      : "";
+  const [noteDraft, setNoteDraft] = useState("");
+  const [saved, setSaved] = useState(false);
+  useEffect(() => {
+    if (!cell) return;
+    setNoteDraft(getAnnotation(annotationKey)?.body ?? "");
+    setSaved(false);
+  }, [annotationKey, cell]);
+
   if (!open || !cell) return null;
   const isDe = language === "de";
   const { rowLabel, value, jurisdiction: j } = cell;
   const url = j.legislation.officialUrl;
+
+  function handleSaveNote() {
+    setAnnotation(annotationKey, noteDraft);
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 1600);
+  }
 
   return (
     <div
@@ -172,6 +201,48 @@ export function CellSourcePanel({
                   {j.licensingAuthority.website.replace(/^https?:\/\//, "")}
                   <ExternalLink className="h-3 w-3" strokeWidth={1.5} />
                 </a>
+              )}
+            </div>
+          </section>
+
+          {/* D3: annotation editor — sticky note attached to this cell */}
+          <section>
+            <h3 className="text-[10px] font-semibold tracking-widest text-[var(--atlas-text-muted)] uppercase mb-2 inline-flex items-center gap-1.5">
+              <StickyNote
+                className="h-3 w-3"
+                strokeWidth={1.8}
+                aria-hidden="true"
+              />
+              {isDe ? "Notiz zu dieser Zelle" : "Note on this cell"}
+            </h3>
+            <textarea
+              value={noteDraft}
+              onChange={(e) => setNoteDraft(e.target.value)}
+              onBlur={handleSaveNote}
+              onKeyDown={(e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                  e.preventDefault();
+                  handleSaveNote();
+                }
+              }}
+              rows={3}
+              placeholder={
+                isDe
+                  ? 'z.B. "Mandant will Cap; nachverhandeln vor Filing"'
+                  : 'e.g. "Client wants cap — push for renegotiation before filing"'
+              }
+              className="w-full bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-md px-3 py-2 text-[12px] text-amber-900 dark:text-amber-100 placeholder:text-amber-700/50 dark:placeholder:text-amber-300/50 outline-none focus:border-amber-400 dark:focus:border-amber-400/50 resize-none"
+            />
+            <div className="mt-1 flex items-center justify-between text-[10.5px] text-[var(--atlas-text-faint)]">
+              <span>
+                {isDe
+                  ? "Bei Verlassen automatisch gespeichert (oder ⌘↵)"
+                  : "Auto-saves on blur (or ⌘↵)"}
+              </span>
+              {saved && (
+                <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                  {isDe ? "Gespeichert" : "Saved"}
+                </span>
               )}
             </div>
           </section>
