@@ -210,9 +210,20 @@ export default function DraftingStudioPage() {
         </div>
       </header>
 
-      <p className="text-[12px] text-[var(--atlas-text-secondary)] leading-relaxed max-w-3xl">
+      {/* Hero subtitle — promise + speed claim ("2 minutes instead of
+          2 hours"). Uses the rewritten lawyer-workflow language. */}
+      <p className="text-[13px] text-[var(--atlas-text-secondary)] leading-relaxed max-w-3xl">
         {t("atlas.drafting_subtitle")}
       </p>
+
+      {/* "How it works" workflow-hint — explains the click→prompt→AI
+          Mode handoff so the lawyer isn't surprised when the AI Mode
+          panel opens after submit. New in bundle 29. */}
+      <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] px-4 py-3 max-w-3xl">
+        <p className="text-[12px] text-[var(--atlas-text-secondary)] leading-relaxed">
+          {t("atlas.drafting_workflow_hint")}
+        </p>
+      </div>
 
       <div className="rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 px-4 py-3 max-w-3xl">
         <div className="flex items-start gap-2">
@@ -264,10 +275,11 @@ export default function DraftingStudioPage() {
             id="privilege-mode-help"
             className="block mt-1 text-[11px] text-[var(--atlas-text-muted)] leading-relaxed"
           >
-            {isDe
-              ? "Wenn aktiv, wird jeder erzeugte Entwurf oben mit „PRIVILEGIERT & VERTRAULICH" +
-                ' — Anwaltsgeheimnis (LPP)" gekennzeichnet plus Footer-Hinweis. Einstellung wird im Browser gespeichert.'
-              : 'When on, every draft is wrapped with a "PRIVILEGED & CONFIDENTIAL — Attorney-Client Work Product" header plus footer note. Saved in this browser.'}
+            {/* Bundle 29: clearer "WHEN you'd want this" copy from
+                the new drafting_privilege_when key — answers the
+                lawyer's actual question ("do I need this for THIS
+                draft?") instead of just describing the mechanism. */}
+            {t("atlas.drafting_privilege_when")}
           </span>
         </span>
       </label>
@@ -287,6 +299,11 @@ export default function DraftingStudioPage() {
             </div>
             <p className="text-[11px] text-[var(--atlas-text-muted)] leading-relaxed">
               {t("atlas.drafting_auth_desc")}
+            </p>
+            {/* "What you'll get" preview — concrete deliverable so the
+                lawyer knows what lands in their inbox before clicking. */}
+            <p className="mt-2 text-[10.5px] text-emerald-700 dark:text-emerald-400 leading-relaxed">
+              {t("atlas.drafting_auth_what_youll_get")}
             </p>
           </div>
           <div className="p-4 flex flex-col gap-3 flex-1">
@@ -368,6 +385,9 @@ export default function DraftingStudioPage() {
             <p className="text-[11px] text-[var(--atlas-text-muted)] leading-relaxed">
               {t("atlas.drafting_brief_desc")}
             </p>
+            <p className="mt-2 text-[10.5px] text-blue-700 dark:text-blue-400 leading-relaxed">
+              {t("atlas.drafting_brief_what_youll_get")}
+            </p>
           </div>
           <div className="p-4 flex flex-col gap-3 flex-1">
             <div>
@@ -410,6 +430,9 @@ export default function DraftingStudioPage() {
             </div>
             <p className="text-[11px] text-[var(--atlas-text-muted)] leading-relaxed">
               {t("atlas.drafting_compare_desc")}
+            </p>
+            <p className="mt-2 text-[10.5px] text-violet-700 dark:text-violet-400 leading-relaxed">
+              {t("atlas.drafting_compare_what_youll_get")}
             </p>
           </div>
           <div className="p-4 flex flex-col gap-3 flex-1">

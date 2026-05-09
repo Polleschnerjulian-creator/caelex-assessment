@@ -70,15 +70,17 @@ const MAIN_NAV: readonly NavItem[] = [
   // citation pills. Distinct icon (Gavel) to read as adjudication-
   // outcomes vs the statutory text under "sources".
   { labelKey: "atlas.cases", href: "/atlas/cases", icon: Gavel },
-  // Drafting Studio — surface kept visible as a "coming soon" preview.
-  // The actual drafting tools live in AI Mode; the standalone /atlas/
-  // drafting page is being polished and is intentionally non-clickable
-  // until ready. comingSoon: true → greyed + "Soon" pill, click guarded.
+  // Drafting Studio — three Astra-routed tile-forms (authorization
+  // application, compliance brief, jurisdictional comparison) plus a
+  // privilege-marker toggle. Live as of bundle 29 — was previously
+  // greyed-out as "Soon" because the page existed but the value-prop
+  // wasn't clear from the labels. Now relabelled in lawyer-workflow
+  // language ("you need X → click → get Y") instead of engineering
+  // jargon ("scaffold", "N×M matrix").
   {
     labelKey: "atlas.drafting",
     href: "/atlas/drafting",
     icon: PenSquare,
-    comingSoon: true,
   },
   { labelKey: "atlas.eu", href: "/atlas/eu", icon: Landmark },
   // Landing-Rights: same "coming soon" treatment as Drafting — content
