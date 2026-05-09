@@ -24,6 +24,7 @@ import {
   Tag,
   FileSignature,
   Mail,
+  Layers,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { ALL_SOURCES } from "@/data/legal-sources";
@@ -1272,15 +1273,29 @@ export default function DraftingStudioPage() {
               )}
             </div>
           </div>
-          <button
-            type="button"
-            onClick={handleAuthSubmit}
-            className="m-4 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--atlas-action-bg)] hover:bg-[var(--atlas-action-bg-hover)] text-[var(--atlas-action-text)] text-[12px] font-medium tracking-wide px-4 py-2.5 transition-colors"
-          >
-            <Sparkles className="h-3 w-3" strokeWidth={1.8} />
-            {t("atlas.drafting_open_in_ai")}
-            <ArrowRight className="h-3 w-3" strokeWidth={1.8} />
-          </button>
+          <div className="m-4 mt-0 flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={handleAuthSubmit}
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--atlas-action-bg)] hover:bg-[var(--atlas-action-bg-hover)] text-[var(--atlas-action-text)] text-[12px] font-medium tracking-wide px-4 py-2.5 transition-colors"
+            >
+              <Sparkles className="h-3 w-3" strokeWidth={1.8} />
+              {t("atlas.drafting_open_in_ai")}
+              <ArrowRight className="h-3 w-3" strokeWidth={1.8} />
+            </button>
+            {/* Bundle 35 — section-by-section route. Same auth tile,
+                stepwise generation. URL params carry the current
+                jurisdiction + operator + lang. */}
+            <Link
+              href={`/atlas/drafting/auth/section-by-section?j=${authJurisdiction}&op=${authOperator}&lang=${outputLang}`}
+              className="inline-flex items-center justify-center gap-1 text-[10.5px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)] transition-colors"
+            >
+              <Layers size={10} strokeWidth={1.8} aria-hidden="true" />
+              {isDe
+                ? "oder Abschnitt für Abschnitt →"
+                : "or step section by section →"}
+            </Link>
+          </div>
         </article>
 
         {/* ── Tile 2: Compliance brief ── */}
