@@ -98,6 +98,10 @@ export function AuditLogClient({
   const [loading, setLoading] = React.useState(false);
   const [loadingMore, setLoadingMore] = React.useState(false);
   const [expandedId, setExpandedId] = React.useState<string | null>(null);
+  // Sprint UF57 (P1-H3) — busy-state for the full-export path so the
+  // button can show a spinner instead of letting the operator wonder
+  // whether their click was registered.
+  const [exportingFull, setExportingFull] = React.useState(false);
 
   const hasFilters =
     filters.action ||
@@ -192,10 +196,27 @@ export function AuditLogClient({
     });
   }
 
-  function exportCsv() {
-    // Build CSV from current rows (visible result set, not full org —
-    // user can adjust filters before export). Header row + escaping.
-    const header = [
+  /**
+   * Sprint UF57 (P1-H3) — CSV export now defaults to ALL matching rows,
+   * not just the in-memory page.
+   *
+   * Audit found the previous version silently exported only `logs.length`
+   * rows (whatever the user had loaded) — for a 12k-row org that
+   * "audit log export" silently dropped 95% of evidence and the
+   * regulator never knew. Honest fix: paginate the API in 100-row
+   * windows until exhausted, with a hard cap (10k) to prevent
+   * accidental browser-tab-killer exports.
+   *
+   * Trade-off: a 10k-row export does ~100 sequential fetches (~10s on
+   * a normal connection). Acceptable for a one-off compliance export
+   * — the operator can always narrow the filter to make it faster.
+   * For huge orgs we'd add a server-side streaming endpoint later;
+   * keeping it client-paginated avoids a new API surface for now.
+   */
+  const HARD_EXPORT_CAP = 10_000;
+
+  function csvHeader(): string[] {
+    return [
       "timestamp",
       "actor",
       "action",
@@ -205,13 +226,16 @@ export function AuditLogClient({
       "ip_address",
       "entry_hash",
     ];
-    const escape = (v: string | null) => {
-      if (!v) return "";
-      if (v.includes(",") || v.includes('"') || v.includes("\n"))
-        return `"${v.replace(/"/g, '""')}"`;
-      return v;
-    };
-    const rows = logs.map((l) =>
+  }
+  function escape(v: string | null) {
+    if (!v) return "";
+    if (v.includes(",") || v.includes('"') || v.includes("\n"))
+      return `"${v.replace(/"/g, '""')}"`;
+    return v;
+  }
+  function rowsToCsv(items: typeof logs): string {
+    const header = csvHeader();
+    const rows = items.map((l) =>
       [
         l.timestamp,
         l.actor.email ?? l.actor.name ?? l.actor.userId ?? "",
@@ -225,13 +249,51 @@ export function AuditLogClient({
         .map(escape)
         .join(","),
     );
-    const csv = [header.join(","), ...rows].join("\n");
+    return [header.join(","), ...rows].join("\n");
+  }
+
+  function downloadCsv(csv: string, suffix = "") {
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `audit-log-${new Date().toISOString().slice(0, 10)}.csv`;
+    const date = new Date().toISOString().slice(0, 10);
+    link.download = `audit-log-${date}${suffix}.csv`;
     link.click();
     URL.revokeObjectURL(link.href);
+  }
+
+  // Visible-rows export (legacy fast path).
+  function exportCsvVisible() {
+    downloadCsv(rowsToCsv(logs), "-page");
+  }
+
+  // Sprint UF57 — Full filtered export. Loops the API in 100-row pages
+  // until total is exhausted or HARD_EXPORT_CAP is reached. Surfaces
+  // progress via the `exportingFull` state so the operator gets a
+  // spinner instead of a frozen-tab feeling.
+  async function exportCsvAll() {
+    if (exportingFull) return;
+    setExportingFull(true);
+    try {
+      const all: typeof logs = [];
+      const pageSize = 100;
+      let offset = 0;
+      while (offset < HARD_EXPORT_CAP) {
+        const res = await fetch(filterToUrl(filters, offset, pageSize));
+        if (!res.ok) break;
+        const data = (await res.json()) as { logs: typeof logs; total: number };
+        all.push(...data.logs);
+        if (data.logs.length < pageSize) break; // exhausted
+        if (data.total > 0 && all.length >= data.total) break;
+        offset += pageSize;
+      }
+      downloadCsv(
+        rowsToCsv(all),
+        all.length >= HARD_EXPORT_CAP ? `-capped-${HARD_EXPORT_CAP}` : "-full",
+      );
+    } finally {
+      setExportingFull(false);
+    }
   }
 
   return (
@@ -378,14 +440,35 @@ export function AuditLogClient({
               </span>
             )}
           </div>
-          <button
-            type="button"
-            onClick={exportCsv}
-            disabled={logs.length === 0}
-            className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[11.5px] font-medium text-slate-200 transition hover:border-white/[0.14] hover:bg-white/[0.05] disabled:opacity-40"
-          >
-            Export CSV
-          </button>
+          {/* Sprint UF57 (P1-H3) — Two export buttons:
+              "Export page" keeps the original quick-export path
+              (current visible rows); "Export all matching" paginates
+              the API and bundles every matching row up to a 10k cap.
+              The full-export is the safe default for compliance
+              evidence — silent partial exports were the audit's
+              concern. */}
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={exportCsvVisible}
+              disabled={logs.length === 0 || exportingFull}
+              className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[11.5px] font-medium text-slate-200 transition hover:border-white/[0.14] hover:bg-white/[0.05] disabled:opacity-40"
+              title="Export only the rows currently loaded in the table"
+            >
+              Export page
+            </button>
+            <button
+              type="button"
+              onClick={exportCsvAll}
+              disabled={total === 0 || exportingFull}
+              className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/25 bg-emerald-500/[0.07] px-2.5 py-1 text-[11.5px] font-medium text-emerald-200 transition hover:border-emerald-500/40 hover:bg-emerald-500/[0.12] disabled:opacity-40"
+              title={`Export all matching rows (up to ${HARD_EXPORT_CAP.toLocaleString()})`}
+            >
+              {exportingFull
+                ? `Exporting…`
+                : `Export all (${Math.min(total, HARD_EXPORT_CAP).toLocaleString()})`}
+            </button>
+          </div>
         </footer>
       </Card>
 

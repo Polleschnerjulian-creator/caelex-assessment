@@ -32,6 +32,10 @@ import {
   Wand2,
 } from "lucide-react";
 import type { SpacecraftStatus } from "@prisma/client";
+import {
+  ISO_3166_COUNTRIES,
+  ISO_3166_CODE_SET,
+} from "@/data/iso-3166-countries";
 
 interface AvailableSpacecraft {
   id: string;
@@ -559,16 +563,51 @@ function EditPanel({
           />
         </Field>
         <Field label="End-user country (ISO-2)">
+          {/* Sprint UF58 (P1-M8) — ISO-3166-1 alpha-2 input is now
+              datalist-backed: the operator can still type any 2-letter
+              code (some sub-territories aren't in our list yet, e.g.
+              for legacy data we don't want to block them) but the
+              autocomplete catalogues all 249 ISO codes with country
+              names. Visual feedback when an unknown code is entered
+              so misclicks don't silently land in the DB. */}
           <input
             value={primaryEndUserCountryCode}
+            list="iso-3166-countries-mission-form"
             onChange={(e) =>
-              setPrimaryEndUserCountryCode(e.target.value.toUpperCase())
+              setPrimaryEndUserCountryCode(
+                e.target.value.toUpperCase().slice(0, 2),
+              )
             }
             maxLength={2}
             pattern="^[A-Z]{2}$"
             placeholder="DE"
+            aria-describedby="end-user-country-hint"
             className={`${inputClass} font-mono uppercase`}
           />
+          <datalist id="iso-3166-countries-mission-form">
+            {ISO_3166_COUNTRIES.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.code} — {c.name}
+              </option>
+            ))}
+          </datalist>
+          <p
+            id="end-user-country-hint"
+            className="mt-1 text-[10.5px] text-slate-500"
+          >
+            {primaryEndUserCountryCode.length === 2 &&
+            !ISO_3166_CODE_SET.has(primaryEndUserCountryCode) ? (
+              <span className="text-amber-400">
+                <AlertTriangle className="inline h-3 w-3" /> Not a known
+                ISO-3166 code — saving anyway, but verify before submission.
+              </span>
+            ) : (
+              <>
+                ISO-3166-1 alpha-2 (e.g. DE, US, JP). Type to autocomplete from
+                the full country list.
+              </>
+            )}
+          </p>
         </Field>
         <Field label="Planned start (YYYY-MM-DD)">
           <input
@@ -604,6 +643,11 @@ function EditPanel({
           />
         </Field>
         <Field label="Authority references (one per line)" full>
+          {/* Sprint UF59 (P1-M9) — visible warning when the ref count
+              exceeds the silent server-side cap of 50. The save handler
+              still .slice(0, 50)'s the array, but now the operator
+              knows exactly which refs are about to be dropped instead
+              of finding out later when an authority isn't reachable. */}
           <textarea
             value={refsText}
             onChange={(e) => setRefsText(e.target.value)}
@@ -611,6 +655,29 @@ function EditPanel({
             placeholder={"BAFA-EXP-12345\nFCC-IBFS-987"}
             className={`${inputClass} font-mono resize-y`}
           />
+          {(() => {
+            const refsCount = refsText
+              .split("\n")
+              .map((s) => s.trim())
+              .filter((s) => s.length > 0).length;
+            if (refsCount > 50) {
+              return (
+                <p className="mt-1 text-[10.5px] text-amber-400">
+                  <AlertTriangle className="inline h-3 w-3" /> {refsCount}{" "}
+                  references entered — only the first 50 will be saved (the rest
+                  are silently dropped server-side).
+                </p>
+              );
+            }
+            if (refsCount > 0) {
+              return (
+                <p className="mt-1 text-[10.5px] text-slate-500">
+                  {refsCount}/50 references
+                </p>
+              );
+            }
+            return null;
+          })()}
         </Field>
         <div className="flex items-center justify-end gap-2 sm:col-span-2">
           <button
