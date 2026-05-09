@@ -68,6 +68,11 @@ import {
   listAuthoritiesForJurisdiction,
   getAuthorityTemplate,
 } from "@/lib/atlas/authority-templates";
+import {
+  buildExtractionPrompt,
+  parseExtractionResponse,
+  mergeIntoIntake,
+} from "@/lib/atlas/intake-extractor";
 
 /* Atlas Lawyer-UX-Audit F-DRAFT-2 — Privilege-marker support.
    When the user opts in, every prompt the studio dispatches to AI
@@ -344,6 +349,56 @@ export default function DraftingStudioPage() {
   const handleRenameMandate = (id: string, name: string) => {
     updateMandate(id, { name: name.trim() || "Mandant" });
     refreshMandates();
+  };
+
+  /* B4 — client-fact extractor state. Two textareas: paste mandant
+     email → fire extraction prompt → paste back AI's JSON → apply. */
+  const [extractorOpen, setExtractorOpen] = useState(false);
+  const [extractorEmail, setExtractorEmail] = useState("");
+  const [extractorJson, setExtractorJson] = useState("");
+  const [extractorError, setExtractorError] = useState<string | null>(null);
+
+  const handleSendExtractionPrompt = () => {
+    if (!extractorEmail.trim()) return;
+    const prompt = buildExtractionPrompt(
+      extractorEmail,
+      outputLang === "de" ? "de" : "en",
+    );
+    openAIMode({ prompt });
+  };
+
+  const handleApplyExtraction = () => {
+    setExtractorError(null);
+    const parsed = parseExtractionResponse(extractorJson);
+    if (!parsed) {
+      setExtractorError(
+        isDe
+          ? "Konnte kein JSON in der Antwort finden."
+          : "Couldn't find JSON in the response.",
+      );
+      return;
+    }
+    if (Object.keys(parsed).length === 0) {
+      setExtractorError(
+        isDe
+          ? "JSON ist leer — kein einziges Feld extrahiert."
+          : "JSON is empty — no fields extracted.",
+      );
+      return;
+    }
+    /* If no active mandate, create one. Otherwise merge into the
+       existing mandate's intake (extraction never erases). */
+    if (!activeMandateId) {
+      createMandate({ intake: parsed });
+    } else {
+      const merged = mergeIntoIntake(intake, parsed);
+      updateMandate(activeMandateId, { intake: merged });
+    }
+    refreshMandates();
+    /* Reset state so a successful apply doesn't keep stale text around. */
+    setExtractorEmail("");
+    setExtractorJson("");
+    setExtractorOpen(false);
   };
 
   const intakeActive = intakeHydrated && isIntakeActive(intake);
@@ -1013,6 +1068,110 @@ export default function DraftingStudioPage() {
 
         {intakeOpen && (
           <div className="border-t border-[var(--atlas-border-subtle)] p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* B4: client-fact extractor row. Spans both columns at the
+                top of the panel so it's the first thing Marie sees when
+                a new mandate email lands. */}
+            <div className="md:col-span-2 -m-1 mb-2 rounded-md border border-[var(--atlas-border-subtle)] bg-[var(--atlas-bg-surface-muted)]">
+              <button
+                type="button"
+                onClick={() => {
+                  setExtractorOpen((o) => !o);
+                  setExtractorError(null);
+                }}
+                className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-[var(--atlas-bg-inset)] transition-colors text-[11.5px] text-[var(--atlas-text-secondary)]"
+                aria-expanded={extractorOpen}
+              >
+                <Wand2
+                  size={11}
+                  strokeWidth={1.8}
+                  aria-hidden="true"
+                  className="text-emerald-600"
+                />
+                {isDe
+                  ? "Aus Mandant-E-Mail extrahieren"
+                  : "Extract from client email"}
+                {extractorOpen ? (
+                  <ChevronUp
+                    size={11}
+                    strokeWidth={1.8}
+                    aria-hidden="true"
+                    className="ml-auto text-[var(--atlas-text-faint)]"
+                  />
+                ) : (
+                  <ChevronDown
+                    size={11}
+                    strokeWidth={1.8}
+                    aria-hidden="true"
+                    className="ml-auto text-[var(--atlas-text-faint)]"
+                  />
+                )}
+              </button>
+              {extractorOpen && (
+                <div className="border-t border-[var(--atlas-border-subtle)] p-3 flex flex-col gap-2">
+                  <p className="text-[10.5px] text-[var(--atlas-text-muted)] leading-relaxed">
+                    {isDe
+                      ? `1. Mandant-E-Mail unten einfügen → 2. "An Astra senden" → 3. Astras JSON-Antwort kopieren → 4. Hier einfügen → 5. "Anwenden".`
+                      : `1. Paste the client email below → 2. Click "Send to Astra" → 3. Copy Astra's JSON response → 4. Paste here → 5. Click "Apply".`}
+                  </p>
+                  <textarea
+                    value={extractorEmail}
+                    onChange={(e) => setExtractorEmail(e.target.value)}
+                    rows={4}
+                    placeholder={
+                      isDe
+                        ? "Hier den E-Mail-Text vom Mandanten einfügen…"
+                        : "Paste the client email here…"
+                    }
+                    className="w-full rounded bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2 py-1.5 text-[11.5px] text-[var(--atlas-text-primary)] outline-none resize-y placeholder:text-[var(--atlas-text-faint)]"
+                  />
+                  <div className="flex items-center justify-end">
+                    <button
+                      type="button"
+                      onClick={handleSendExtractionPrompt}
+                      disabled={!extractorEmail.trim()}
+                      className="inline-flex items-center gap-1.5 rounded bg-[var(--atlas-action-bg)] hover:bg-[var(--atlas-action-bg-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-[var(--atlas-action-text)] text-[11px] font-medium px-3 py-1 transition-colors"
+                    >
+                      <Sparkles
+                        size={10}
+                        strokeWidth={1.8}
+                        aria-hidden="true"
+                      />
+                      {isDe ? "An Astra senden" : "Send to Astra"}
+                    </button>
+                  </div>
+                  <textarea
+                    value={extractorJson}
+                    onChange={(e) => {
+                      setExtractorJson(e.target.value);
+                      setExtractorError(null);
+                    }}
+                    rows={4}
+                    placeholder={
+                      isDe
+                        ? "Astras JSON-Antwort hier einfügen…"
+                        : "Paste Astra's JSON response here…"
+                    }
+                    className="w-full rounded bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2 py-1.5 text-[11.5px] text-[var(--atlas-text-primary)] outline-none resize-y font-mono placeholder:text-[var(--atlas-text-faint)]"
+                  />
+                  {extractorError && (
+                    <p className="text-[10.5px] text-red-700 dark:text-red-400 italic">
+                      {extractorError}
+                    </p>
+                  )}
+                  <div className="flex items-center justify-end">
+                    <button
+                      type="button"
+                      onClick={handleApplyExtraction}
+                      disabled={!extractorJson.trim()}
+                      className="inline-flex items-center gap-1.5 rounded bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[11px] font-medium px-3 py-1 transition-colors"
+                    >
+                      <Wand2 size={10} strokeWidth={1.8} aria-hidden="true" />
+                      {isDe ? "Anwenden" : "Apply"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
             <div className="md:col-span-2">
               <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
                 {isDe ? "Mandant" : "Client"}
