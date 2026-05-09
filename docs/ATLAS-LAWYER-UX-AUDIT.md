@@ -946,3 +946,58 @@ Trust-Score-Inkrement durch Phase B: **+0.3 Punkte gesamt**, +1.5 für Auth (hö
 **Für Klaus (DSGVO-Production-Readiness)** sind die echten Showstopper unverändert: F-ADM-1 (DSGVO-Surfaces), F-ADM-5 (2FA), F-ADM-2/3/4 (Team-Management). Diese 5 Items zusammen = ~8-12 Wochen fokussierter Engineering-Arbeit. Bis dahin ist Atlas für deutsche Kanzleien **nicht firmweit ausrollbar**.
 
 **Nächster Sprint-Vorschlag:** F-ADM-1 (DSGVO-Surfaces) als single-focus 3-4-Wochen-Sprint. Ohne diese Surfaces verkauft Atlas keine deutsche Kanzlei.
+
+---
+
+## 14. DSGVO-1 Sprint Done (2026-05-09)
+
+**Befund während Implementierung:** Caelex hat **bereits 22 Legal-Pages** in `/src/app/legal/` (DPA, Privacy, Sub-Processors, AI-Disclosure, Cookies, Impressum, Security) — alle in DE+EN. Sub-Processors-Daten enthalten alle 8 relevanten Vendors inkl. **OpenAI + Anthropic für Atlas-AI-Mode**.
+
+**Das Problem war Discovery, nicht Substanz.** Klaus konnte aus Atlas-Settings nicht zu den existierenden Compliance-Pages navigieren.
+
+### Was gefixt wurde (DSGVO-1, Klasse A)
+
+**Neuer "Compliance & Recht" Tab in Atlas-Settings** (`atlas/settings/page.tsx`):
+
+- 4. Tab `"compliance"` neben Personal/Firm/Team
+- 8 strukturierte Sektionen mit Article-Badges (Art. 28 / Art. 13 / Art. 22 / Art. 32 / ePrivacy):
+  1. **AVV** (DPA-Link DE+EN, Art. 28 DSGVO)
+  2. **Sub-Auftragsverarbeiter** (Live-Liste mit 30-Tage-Notice-Hinweis, Art. 28(2))
+  3. **Datenschutzerklärung** (DE+EN, Art. 13)
+  4. **AI-Disclosure** (mit Atlas-spezifischer Beschreibung: "welche KI-Modelle, NICHT für Modell-Training", Art. 22)
+  5. **Cookies & Tracking** (DE+EN, ePrivacy)
+  6. **Nutzungsbedingungen** (DE+EN)
+  7. **Impressum** (§ 5 TMG)
+  8. **Sicherheit & TOMs** (Art. 32)
+- **DPO-Kontakt-Karte** mit `mailto:datenschutz@caelex.eu`
+- **Self-Service-Placeholder-Karte** für DSGVO-2 + DSGVO-3: erklärt dass Daten-Export, Löschung und Audit-Log derzeit per Email gehen (subject-prefilled mailto-Links), In-App folgt
+- **Neue ComplianceRow-Komponente** (Icon + Title + Description + Badge + Multi-Link-Footer)
+
+**i18n-Keys:** ~30 neue Keys in DE/EN/FR (`src/lib/i18n/translations/{de,en,fr}.json`)
+
+**Severity-Update für F-ADM-1:** BLOCKER → noch offen sind Klasse B (Self-Service ~2 Wochen) + Klasse C (Audit-Log-UI ~1.5 Wochen).
+
+### Was bleibt für DSGVO-2 + DSGVO-3 (~3.5 Wochen)
+
+**DSGVO-2 (~2 Wochen) — Self-Service-Workflows:**
+
+- Data-Export-Pipeline (Art. 20): Background-Job + ZIP-Bundle + Email mit signed-URL
+- Data-Deletion-Workflow (Art. 17): Soft-Delete + 30-Tage-Grace-Period + Cron für Hard-Delete
+- Subprocessor-Notify-on-Change: Email-Subscription + 30-Tage-Vorlauf-Email
+- DB-Models: `DataExportRequest`, `DataDeletionRequest`, `SubprocessorChangeNotification`
+
+**DSGVO-3 (~1.5 Wochen) — Audit-Log-Infrastruktur:**
+
+- `AtlasAuditLog` Model mit hash-chain (analog Comply pattern)
+- Middleware für alle Atlas-API-Routes
+- Audit-Log-UI mit Filter (User × Action × Date × Resource), CSV-Export
+- 7-Jahre-Retention (DSGVO § 6 Abs. 1 lit. c), append-only
+
+### Neuer Trust-Score nach DSGVO-1
+
+| Surface          | Vorher | Nachher                                                                  |
+| ---------------- | ------ | ------------------------------------------------------------------------ |
+| Settings + Admin | 3/10   | **6/10** (+3 — Compliance-Tab schließt 60% der Klaus-Wahrnehmungs-Lücke) |
+| GESAMT           | 6.8/10 | **7.0/10**                                                               |
+
+Klaus' "show me your compliance"-Frage ist jetzt mit einem Klick beantwortbar.

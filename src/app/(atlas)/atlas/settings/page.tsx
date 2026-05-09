@@ -26,6 +26,14 @@ import {
   Eye,
   EyeOff,
   Lock,
+  Shield,
+  ExternalLink,
+  FileText,
+  Server,
+  Sparkles,
+  Cookie,
+  ScrollText,
+  Database,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
@@ -54,7 +62,11 @@ const ATLAS_STATS = {
    Types
    ──────────────────────────────────────────── */
 
-type Tab = "personal" | "firm" | "team";
+// Atlas Lawyer-UX Audit DSGVO-1 (F-ADM-1, Klasse A): Compliance-Tab
+// added so Klaus (Equity-Partner persona) finds AVV, Subprocessor-list,
+// Privacy-Policy, AI-Disclosure etc. directly from inside Atlas. The
+// underlying /legal/* pages already exist — this surfaces them.
+type Tab = "personal" | "firm" | "team" | "compliance";
 
 interface ProfileData {
   name: string;
@@ -673,6 +685,11 @@ export default function SettingsPage() {
       id: "team",
       label: t("atlas.settings_tab_team"),
       icon: <Users size={14} strokeWidth={1.5} aria-hidden="true" />,
+    },
+    {
+      id: "compliance",
+      label: t("atlas.settings_tab_compliance"),
+      icon: <Shield size={14} strokeWidth={1.5} aria-hidden="true" />,
     },
   ];
 
@@ -1765,6 +1782,275 @@ export default function SettingsPage() {
             )}
           </div>
         )}
+
+        {/* Atlas Lawyer-UX Audit DSGVO-1 (F-ADM-1, Klasse A):
+            Compliance & Legal Tab. All linked /legal/* pages already
+            exist (DPA, Subprocessors, Privacy, AI-Disclosure, Cookies,
+            Impressum, Security). Klaus's pain was discovery — they were
+            unreachable from inside Atlas. This tab surfaces them in one
+            organized place plus inline summaries of the most important
+            DSGVO artifacts. Self-Service-Workflows (Data-Export,
+            Deletion, Audit-Log-UI) come in DSGVO-2 + DSGVO-3 sprints. */}
+        {activeTab === "compliance" && (
+          <div className="space-y-6">
+            {/* Hero / scope statement */}
+            <section className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] p-5">
+              <div className="flex items-start gap-3">
+                <div className="shrink-0 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                  <Shield size={18} strokeWidth={1.5} aria-hidden="true" />
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-[15px] font-semibold text-[var(--atlas-text-primary)] mb-1">
+                    {t("atlas.settings_compliance_title")}
+                  </h2>
+                  <p className="text-[12.5px] text-[var(--atlas-text-secondary)] leading-relaxed">
+                    {t("atlas.settings_compliance_intro")}
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* DSGVO Artifacts — Order follows Art. 28 → Art. 13/14 → Art. 22 → ePrivacy → Art. 5 TOMs */}
+            <section className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] divide-y divide-[var(--atlas-border-subtle)]">
+              {/* AVV / DPA */}
+              <ComplianceRow
+                icon={<FileText size={16} aria-hidden="true" />}
+                title={t("atlas.settings_compliance_dpa_title")}
+                description={t("atlas.settings_compliance_dpa_desc")}
+                badge={t("atlas.settings_compliance_badge_art28")}
+                links={[
+                  { label: "DE", href: "/legal/dpa" },
+                  { label: "EN", href: "/legal/dpa-en" },
+                ]}
+              />
+
+              {/* Sub-processors */}
+              <ComplianceRow
+                icon={<Server size={16} aria-hidden="true" />}
+                title={t("atlas.settings_compliance_subprocessors_title")}
+                description={t("atlas.settings_compliance_subprocessors_desc")}
+                badge={t("atlas.settings_compliance_badge_art28_2")}
+                links={[
+                  {
+                    label: t("atlas.settings_compliance_action_view"),
+                    href: "/legal/sub-processors",
+                  },
+                ]}
+              />
+
+              {/* Privacy Policy */}
+              <ComplianceRow
+                icon={<Lock size={16} aria-hidden="true" />}
+                title={t("atlas.settings_compliance_privacy_title")}
+                description={t("atlas.settings_compliance_privacy_desc")}
+                badge={t("atlas.settings_compliance_badge_art13")}
+                links={[
+                  { label: "DE", href: "/legal/privacy" },
+                  { label: "EN", href: "/legal/privacy-en" },
+                ]}
+              />
+
+              {/* AI-Disclosure (Atlas-relevant!) */}
+              <ComplianceRow
+                icon={<Sparkles size={16} aria-hidden="true" />}
+                title={t("atlas.settings_compliance_ai_title")}
+                description={t("atlas.settings_compliance_ai_desc")}
+                badge={t("atlas.settings_compliance_badge_art22")}
+                links={[
+                  { label: "DE", href: "/legal/ai-disclosure" },
+                  { label: "EN", href: "/legal/ai-disclosure-en" },
+                ]}
+              />
+
+              {/* Cookies */}
+              <ComplianceRow
+                icon={<Cookie size={16} aria-hidden="true" />}
+                title={t("atlas.settings_compliance_cookies_title")}
+                description={t("atlas.settings_compliance_cookies_desc")}
+                badge={t("atlas.settings_compliance_badge_eprivacy")}
+                links={[
+                  { label: "DE", href: "/legal/cookies" },
+                  { label: "EN", href: "/legal/cookies-en" },
+                ]}
+              />
+
+              {/* Terms */}
+              <ComplianceRow
+                icon={<ScrollText size={16} aria-hidden="true" />}
+                title={t("atlas.settings_compliance_terms_title")}
+                description={t("atlas.settings_compliance_terms_desc")}
+                links={[
+                  { label: "DE", href: "/legal/terms" },
+                  { label: "EN", href: "/legal/terms-en" },
+                ]}
+              />
+
+              {/* Impressum */}
+              <ComplianceRow
+                icon={<Info size={16} aria-hidden="true" />}
+                title={t("atlas.settings_compliance_impressum_title")}
+                description={t("atlas.settings_compliance_impressum_desc")}
+                badge="§ 5 TMG"
+                links={[
+                  {
+                    label: t("atlas.settings_compliance_action_open"),
+                    href: "/legal/impressum",
+                  },
+                ]}
+              />
+
+              {/* Security & TOMs */}
+              <ComplianceRow
+                icon={<Database size={16} aria-hidden="true" />}
+                title={t("atlas.settings_compliance_security_title")}
+                description={t("atlas.settings_compliance_security_desc")}
+                badge={t("atlas.settings_compliance_badge_art32")}
+                links={[
+                  {
+                    label: t("atlas.settings_compliance_action_open"),
+                    href: "/legal/security",
+                  },
+                ]}
+              />
+            </section>
+
+            {/* DPO contact card */}
+            <section className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] p-5">
+              <div className="flex items-start gap-3">
+                <div className="shrink-0 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300">
+                  <Mail size={18} strokeWidth={1.5} aria-hidden="true" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-[14px] font-semibold text-[var(--atlas-text-primary)] mb-1">
+                    {t("atlas.settings_compliance_dpo_title")}
+                  </h3>
+                  <p className="text-[12.5px] text-[var(--atlas-text-secondary)] leading-relaxed mb-3">
+                    {t("atlas.settings_compliance_dpo_desc")}
+                  </p>
+                  <a
+                    href="mailto:datenschutz@caelex.eu"
+                    className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-emerald-700 hover:text-emerald-800 dark:text-emerald-300 dark:hover:text-emerald-200"
+                  >
+                    <Mail size={12} aria-hidden="true" />
+                    datenschutz@caelex.eu
+                  </a>
+                </div>
+              </div>
+            </section>
+
+            {/* Self-service rights — placeholder for DSGVO-2 + DSGVO-3 */}
+            <section className="rounded-xl border border-dashed border-[var(--atlas-border)] bg-[var(--atlas-bg-inset)] p-5">
+              <h3 className="text-[13px] font-semibold text-[var(--atlas-text-secondary)] mb-2 inline-flex items-center gap-2">
+                <Clock size={14} aria-hidden="true" />
+                {t("atlas.settings_compliance_selfservice_title")}
+              </h3>
+              <p className="text-[12px] text-[var(--atlas-text-muted)] leading-relaxed mb-3">
+                {t("atlas.settings_compliance_selfservice_desc")}
+              </p>
+              <ul className="text-[12px] text-[var(--atlas-text-muted)] space-y-1.5 ml-1">
+                <li>
+                  <strong className="text-[var(--atlas-text-secondary)]">
+                    {t("atlas.settings_compliance_right_export")}
+                  </strong>{" "}
+                  ({t("atlas.settings_compliance_right_via")}{" "}
+                  <a
+                    href="mailto:datenschutz@caelex.eu?subject=Daten-Export%20Anfrage"
+                    className="underline hover:text-[var(--atlas-text-secondary)]"
+                  >
+                    datenschutz@caelex.eu
+                  </a>
+                  )
+                </li>
+                <li>
+                  <strong className="text-[var(--atlas-text-secondary)]">
+                    {t("atlas.settings_compliance_right_delete")}
+                  </strong>{" "}
+                  ({t("atlas.settings_compliance_right_via")}{" "}
+                  <a
+                    href="mailto:datenschutz@caelex.eu?subject=L%C3%B6sch-Anfrage"
+                    className="underline hover:text-[var(--atlas-text-secondary)]"
+                  >
+                    datenschutz@caelex.eu
+                  </a>
+                  )
+                </li>
+                <li>
+                  <strong className="text-[var(--atlas-text-secondary)]">
+                    {t("atlas.settings_compliance_right_audit")}
+                  </strong>{" "}
+                  ({t("atlas.settings_compliance_right_via")}{" "}
+                  <a
+                    href="mailto:datenschutz@caelex.eu?subject=Audit-Log%20Anfrage"
+                    className="underline hover:text-[var(--atlas-text-secondary)]"
+                  >
+                    datenschutz@caelex.eu
+                  </a>
+                  )
+                </li>
+              </ul>
+            </section>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Atlas Compliance-Tab row component (DSGVO-1).
+ * Each row links to one or more /legal/* pages; badge surfaces the
+ * relevant GDPR / TMG / ePrivacy article so Klaus can map the surface
+ * to the legal obligation at a glance.
+ */
+function ComplianceRow({
+  icon,
+  title,
+  description,
+  badge,
+  links,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  badge?: string;
+  links: { label: string; href: string }[];
+}) {
+  return (
+    <div className="flex items-start gap-4 p-4">
+      <div
+        className="shrink-0 inline-flex h-8 w-8 items-center justify-center rounded-md bg-[var(--atlas-bg-inset)] text-[var(--atlas-text-secondary)]"
+        aria-hidden="true"
+      >
+        {icon}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
+          <h3 className="text-[13.5px] font-semibold text-[var(--atlas-text-primary)]">
+            {title}
+          </h3>
+          {badge ? (
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20">
+              {badge}
+            </span>
+          ) : null}
+        </div>
+        <p className="text-[12px] text-[var(--atlas-text-muted)] leading-relaxed mb-2">
+          {description}
+        </p>
+        <div className="flex items-center gap-3 flex-wrap">
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-[12px] font-medium text-[var(--atlas-text-secondary)] hover:text-[var(--atlas-text-primary)]"
+            >
+              {link.label}
+              <ExternalLink size={11} aria-hidden="true" />
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );
