@@ -789,12 +789,30 @@ body {
   --atlas-text-primary: #111827;
   --atlas-text-secondary: #374151;
   --atlas-text-muted: #6b7280;
-  --atlas-text-faint: #9ca3af;
+  /* WCAG 2.2 AA — Phase B Finding B-1: --atlas-text-faint was #9ca3af
+     which gave only 3.4:1 contrast vs --atlas-bg-page (#f7f8fa) — that
+     fails AA-Normal (4.5:1). Adjusted to #6b7280 for AA-Normal pass.
+     If a "faint display label" feel is needed, callers should use
+     --atlas-text-display-faint (4.5:1+ in both themes, designed for
+     ≥24px regular / ≥18.66px bold display text only). */
+  --atlas-text-faint: #6b7280;
+  --atlas-text-display-faint: #9ca3af; /* large text only — 3.4:1 */
   --atlas-border: #e5e7eb;
   --atlas-border-subtle: #f3f4f6;
   --atlas-border-strong: #d1d5db;
   --atlas-accent: #059669;
   --atlas-accent-soft: #ecfdf5;
+  /* WCAG 2.2 AA — Phase B Finding B-2: action button tokens.
+     Audit found 7 spots in Atlas (drafting, settings, network, landing-
+     rights) hardcoded bg-gray-900 / bg-[#0f0f12] text-white for primary
+     action buttons. Without a token they don't switch on theme — and
+     they encode design intent ("dark contrast pill button") that should
+     live in one place. Light mode: dark pill. Dark mode: lighter pill
+     so the button reads as a foreground action and not as background. */
+  --atlas-action-bg: #1a1a1a;
+  --atlas-action-bg-hover: #2d2d2d;
+  --atlas-action-text: #ffffff;
+  --atlas-action-border: #1a1a1a;
   --atlas-scrollbar-thumb: #d1d5db;
   --atlas-scrollbar-thumb-hover: #9ca3af;
   --atlas-selection-bg: rgba(107, 114, 128, 0.15);
@@ -818,12 +836,24 @@ html[data-atlas-preload="dark"] .atlas-themed {
   --atlas-text-primary: #f1f5f9;
   --atlas-text-secondary: #d1d5db;
   --atlas-text-muted: #9ca3af;
-  --atlas-text-faint: #6b7280;
+  /* WCAG 2.2 AA — Phase B Finding B-1: dark-mode --atlas-text-faint was
+     #6b7280 → 4.0:1 vs bg-page → fails AA-Normal. Bumped to #9ca3af
+     for 7.4:1 (same value as --atlas-text-muted now — semantic delta
+     stays via display-faint below for explicit large-text use). */
+  --atlas-text-faint: #9ca3af;
+  --atlas-text-display-faint: #6b7280; /* large text only — 4.0:1 */
   --atlas-border: #262d39;
   --atlas-border-subtle: #1a2029;
   --atlas-border-strong: #374151;
   --atlas-accent: #10b981;
   --atlas-accent-soft: rgba(16, 185, 129, 0.12);
+  /* Phase B Finding B-2 (dark): action buttons stay dark-on-dark would
+     disappear. Use the existing surface-elevated tone with a light
+     border so the button still reads as foreground. */
+  --atlas-action-bg: #2d3441;
+  --atlas-action-bg-hover: #3a4252;
+  --atlas-action-text: #f1f5f9;
+  --atlas-action-border: #4b5563;
   --atlas-scrollbar-thumb: #374151;
   --atlas-scrollbar-thumb-hover: #4b5563;
   --atlas-selection-bg: rgba(16, 185, 129, 0.25);

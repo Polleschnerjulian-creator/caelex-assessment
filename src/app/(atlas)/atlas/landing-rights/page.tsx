@@ -154,7 +154,7 @@ export default async function LandingRightsPage({
         {nextDeadline && (
           <Link
             href="/atlas/landing-rights/calendar"
-            className="group flex items-center justify-between gap-4 rounded-xl bg-gradient-to-r from-gray-900 to-gray-800 text-white px-5 py-3 hover:shadow-md transition-all"
+            className="group flex items-center justify-between gap-4 rounded-xl bg-[var(--atlas-action-bg)] hover:bg-[var(--atlas-action-bg-hover)] text-[var(--atlas-action-text)] px-5 py-3 hover:shadow-md transition-all"
           >
             <div className="flex items-center gap-3 min-w-0">
               <CalendarIcon size={16} className="text-emerald-400" />

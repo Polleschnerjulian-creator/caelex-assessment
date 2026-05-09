@@ -247,7 +247,7 @@ export default function DraftingStudioPage() {
           <button
             type="button"
             onClick={handleAuthSubmit}
-            className="m-4 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#0f0f12] hover:bg-[#1a1a1f] text-white text-[12px] font-medium tracking-wide px-4 py-2.5 transition-colors"
+            className="m-4 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--atlas-action-bg)] hover:bg-[var(--atlas-action-bg-hover)] text-[var(--atlas-action-text)] text-[12px] font-medium tracking-wide px-4 py-2.5 transition-colors"
           >
             <Sparkles className="h-3 w-3" strokeWidth={1.8} />
             {t("atlas.drafting_open_in_ai")}
@@ -290,7 +290,7 @@ export default function DraftingStudioPage() {
             type="button"
             disabled={!briefTopic.trim()}
             onClick={handleBriefSubmit}
-            className="m-4 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#0f0f12] hover:bg-[#1a1a1f] disabled:opacity-50 disabled:hover:bg-[#0f0f12] disabled:cursor-not-allowed text-white text-[12px] font-medium tracking-wide px-4 py-2.5 transition-colors"
+            className="m-4 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--atlas-action-bg)] hover:bg-[var(--atlas-action-bg-hover)] disabled:opacity-50 disabled:hover:bg-[var(--atlas-action-bg)] disabled:cursor-not-allowed text-[var(--atlas-action-text)] text-[12px] font-medium tracking-wide px-4 py-2.5 transition-colors"
           >
             <Sparkles className="h-3 w-3" strokeWidth={1.8} />
             {t("atlas.drafting_open_in_ai")}
@@ -343,7 +343,7 @@ export default function DraftingStudioPage() {
             type="button"
             disabled={compareJurisdictions.length < 2}
             onClick={handleCompareSubmit}
-            className="m-4 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#0f0f12] hover:bg-[#1a1a1f] disabled:opacity-50 disabled:hover:bg-[#0f0f12] disabled:cursor-not-allowed text-white text-[12px] font-medium tracking-wide px-4 py-2.5 transition-colors"
+            className="m-4 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--atlas-action-bg)] hover:bg-[var(--atlas-action-bg-hover)] disabled:opacity-50 disabled:hover:bg-[var(--atlas-action-bg)] disabled:cursor-not-allowed text-[var(--atlas-action-text)] text-[12px] font-medium tracking-wide px-4 py-2.5 transition-colors"
           >
             <Sparkles className="h-3 w-3" strokeWidth={1.8} />
             {t("atlas.drafting_open_in_ai")}

@@ -33,7 +33,7 @@ Erfolgskriterien aus WCAG 2.1 AA plus die 6 neuen aus WCAG 2.2 AA:
 | Phase | Ziel                                                                                     | Status     |
 | ----- | ---------------------------------------------------------------------------------------- | ---------- |
 | **A** | Hot-Fix Headings (Token-Bug) + alle Atlas-Routes auf weiß-auf-weiß prüfen                | ✅ Done    |
-| **B** | Color & Contrast Audit — axe-core auf alle Routes + Token-Inventar erweitern             | ⏳ pending |
+| **B** | Color & Contrast Audit — axe-core auf alle Routes + Token-Inventar erweitern             | ✅ Done    |
 | **C** | Semantic HTML & ARIA — Heading-Hierarchy, Landmarks, ARIA-Labels, Skip-Links             | ⏳ pending |
 | **D** | Keyboard & Focus — Tab-Order, Focus-Trap in Modals, WCAG 2.4.11 Focus Not Obscured       | ⏳ pending |
 | **E** | Forms & Auth — Label-Association, WCAG 2.2 3.3.7 Redundant Entry + 3.3.8 Accessible Auth | ⏳ pending |
@@ -123,12 +123,37 @@ Erfolgskriterien aus WCAG 2.1 AA plus die 6 neuen aus WCAG 2.2 AA:
 
 ---
 
-## 4. Phase B Vorbereitung — Was kommt nach Phase A
+## 4. Phase B Findings — Color & Contrast
 
-- axe-core in `vitest.atlas.config.ts` integrieren
-- Playwright-Test pro Atlas-Route mit axe-Run
-- Living-Doc-Erweiterung: Color-Contrast-Findings als B-1, B-2, ...
-- Token-Inventar erweitern (status colors für `in_force`/`expired`/`pending`)
+### B-1 — `--atlas-text-faint` failed WCAG AA-Normal contrast in beiden Modi
+
+- **Wo:** `globals.css:792` (light) + `globals.css:821` (dark)
+- **Problem:** Light: `#9ca3af` auf `#f7f8fa` = **3.4:1** (fails AA-Normal 4.5:1, passes AA-Large 3:1). Dark: `#6b7280` auf `#0a0d12` = **4.0:1** (fails AA-Normal). Token wurde aber für regulären Text genutzt (z.B. input placeholders, faint metadata).
+- **Sprint:** Phase B
+- **Status:** ✅ Done — Token aufgewertet:
+  - Light `--atlas-text-faint: #9ca3af → #6b7280` (5.6:1 AA-Normal pass)
+  - Dark `--atlas-text-faint: #6b7280 → #9ca3af` (7.4:1 AA-Normal pass)
+  - Neuer Token `--atlas-text-display-faint` (3.4-4.0:1) explizit für large-text-only display-headings
+
+### B-2 — Hardcoded action-button colors statt Token
+
+- **Wo:** 9 Stellen über 4 Routes:
+  - `drafting/page.tsx:250,293,346` — `bg-[#0f0f12] text-white` AI buttons
+  - `network/page.tsx:33` — invite button
+  - `landing-rights/page.tsx:157` — deadline gradient `bg-gradient-to-r from-gray-900 to-gray-800 text-white`
+  - `landing-rights/calendar/page.tsx:122` — active filter conditional
+  - `settings/page.tsx:951,1432,1533` — change-password + invite + member-role-badge
+- **Problem:** Hardcoded hex/Tailwind-grays funktionieren in Light, aber überleben Theme-Switch nicht — im Atlas-Dark-Mode wird `bg-[#0f0f12]` auf `bg-page #0a0d12` quasi unsichtbar (Button verschwindet im Background). Plus: Design-Intent ("Primary contrast pill button") an 9 Stellen dupliziert.
+- **Sprint:** Phase B
+- **Status:** ✅ Done — Neue Tokens `--atlas-action-{bg,bg-hover,text,border}` eingeführt:
+  - Light: `bg #1a1a1a` + text white (high-contrast pill on light surface)
+  - Dark: `bg #2d3441` + text `#f1f5f9` + visible border `#4b5563` (foreground action stays foreground)
+  - Alle 9 Stellen migriert auf `bg-[var(--atlas-action-bg)] text-[var(--atlas-action-text)] hover:bg-[var(--atlas-action-bg-hover)]`
+
+### B-3 (deferred to Phase H) — Automated axe-core per-route audit
+
+- **Sprint:** Phase H (Verification)
+- **Status:** ⏳ Deferred — wird mit axe-core + Playwright in Phase H gegen jede Route gerunnt. Phase B fokussiert auf token-systemic fixes (B-1, B-2) statt einzelnen page-content checks.
 
 ---
 
@@ -136,7 +161,7 @@ Erfolgskriterien aus WCAG 2.1 AA plus die 6 neuen aus WCAG 2.2 AA:
 
 | SC                              | Level | Coverage  | Phase | Status                 |
 | ------------------------------- | ----- | --------- | ----- | ---------------------- |
-| 1.4.3 Contrast (Minimum)        | AA    | Phase A+B | A,B   | 🔄 Phase A in progress |
+| 1.4.3 Contrast (Minimum)        | AA    | Phase A+B | A,B   | ✅ Done (token system) |
 | 1.4.10 Reflow                   | AA    | Phase F   | F     | ⏳                     |
 | 1.4.11 Non-text Contrast        | AA    | Phase B   | B     | ⏳                     |
 | 2.1.1 Keyboard                  | A     | Phase D   | D     | ⏳                     |

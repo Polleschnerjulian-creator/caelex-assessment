@@ -948,7 +948,7 @@ export default function SettingsPage() {
                       !newPwd ||
                       !confirmPwd
                     }
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white text-[13px] font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--atlas-action-bg)] text-[var(--atlas-action-text)] text-[13px] font-medium hover:bg-[var(--atlas-action-bg-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     {passwordStatus === "saving" ? (
                       <>
@@ -1429,7 +1429,7 @@ export default function SettingsPage() {
                     <button
                       onClick={handleInvite}
                       disabled={inviting || !inviteEmail.trim()}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gray-900 text-white text-[13px] font-medium hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--atlas-action-bg)] text-[var(--atlas-action-text)] text-[13px] font-medium hover:bg-[var(--atlas-action-bg-hover)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       {inviting ? (
                         <Loader2
@@ -1530,7 +1530,7 @@ export default function SettingsPage() {
                       <span
                         className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
                           member.role === "OWNER"
-                            ? "bg-gray-900 text-white"
+                            ? "bg-[var(--atlas-action-bg)] text-[var(--atlas-action-text)]"
                             : "bg-[var(--atlas-bg-inset)] text-[var(--atlas-text-muted)]"
                         }`}
                       >

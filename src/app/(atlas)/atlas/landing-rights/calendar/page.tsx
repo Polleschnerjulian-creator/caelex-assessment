@@ -119,7 +119,7 @@ function CalendarFilters({ range, sp }: { range: string; sp: SearchParams }) {
           <a
             key={r.v}
             href={href}
-            className={`px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors ${isActive ? "bg-gray-900 text-white" : "bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] text-[var(--atlas-text-secondary)] hover:border-[var(--atlas-border-strong)]"}`}
+            className={`px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors ${isActive ? "bg-[var(--atlas-action-bg)] text-[var(--atlas-action-text)]" : "bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] text-[var(--atlas-text-secondary)] hover:border-[var(--atlas-border-strong)]"}`}
           >
             {r.l}
           </a>

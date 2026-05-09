@@ -30,7 +30,7 @@ export default function AtlasNetworkPage() {
           </div>
           <Link
             href="/atlas/network/invite"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0f0f12] text-white hover:bg-[#1a1a1f] text-sm font-medium transition border border-white/10"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--atlas-action-bg)] text-[var(--atlas-action-text)] hover:bg-[var(--atlas-action-bg-hover)] text-sm font-medium transition border border-[var(--atlas-action-border)]"
           >
             + Neues Mandat
           </Link>
