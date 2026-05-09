@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { ChevronDown, X, Check } from "lucide-react";
+import { useMemo, useState, useRef, useEffect } from "react";
+import { ChevronDown, Search, X, Check } from "lucide-react";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import type { SpaceLawCountryCode } from "@/lib/space-law-types";
 import { EU_MEMBER_STATES } from "@/lib/space-law-types";
@@ -29,7 +29,14 @@ export default function CountrySelector({
   onChange,
 }: CountrySelectorProps) {
   const [open, setOpen] = useState(false);
+  /* BUG-B3: 31 jurisdictions in the dropdown with no search — DE/FR
+     users scanned for "Belgique"/"Belgien" but the list was sorted by
+     ISO code. A small search input filters across both `countryName`
+     AND `code` (folded so diacritics + case don't matter). Reset on
+     close so re-opening doesn't surface a stale filter. */
+  const [search, setSearch] = useState("");
   const ref = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -41,7 +48,34 @@ export default function CountrySelector({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const allCountries = Array.from(JURISDICTION_DATA.entries());
+  /* Auto-focus the search input when opening — keyboard-first UX,
+     and clears on close so the next open doesn't carry stale filter. */
+  useEffect(() => {
+    if (open) {
+      setSearch("");
+      // Defer to the next tick so the input has actually mounted.
+      const id = window.setTimeout(() => searchInputRef.current?.focus(), 0);
+      return () => window.clearTimeout(id);
+    }
+  }, [open]);
+
+  /* Folded-text matcher mirrors the homepage search-normalize approach:
+     ASCII-fold the haystack + needle so "österreich" matches "Austria"
+     in DE locale and "Belgien" matches "Belgium". The full data is
+     small (31 entries) so allocating a folded copy per render is fine. */
+  const allCountries = useMemo(() => {
+    const list = Array.from(JURISDICTION_DATA.entries());
+    const q = search.trim().toLowerCase();
+    if (!q) return list;
+    const folded = (s: string) =>
+      s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ß/g, "ss");
+    const needle = folded(q);
+    return list.filter(
+      ([code, data]) =>
+        folded(code).includes(needle) ||
+        folded(data.countryName).includes(needle),
+    );
+  }, [search]);
 
   const toggle = (code: SpaceLawCountryCode) => {
     if (selected.includes(code)) {
@@ -153,48 +187,84 @@ export default function CountrySelector({
       {open && (
         <div
           className="
-            absolute z-50 top-full left-0 mt-1.5 w-full max-w-[640px] max-h-[320px]
-            overflow-y-auto rounded-xl border border-[var(--atlas-border)]
+            absolute z-50 top-full left-0 mt-1.5 w-full max-w-[640px] max-h-[360px]
+            overflow-hidden rounded-xl border border-[var(--atlas-border)]
             bg-[var(--atlas-bg-surface)] backdrop-blur-xl shadow-xl
+            flex flex-col
           "
         >
-          <div className="p-2 grid grid-cols-2 sm:grid-cols-3 gap-0.5">
-            {allCountries.map(([code, data]) => {
-              const isSelected = selected.includes(code);
-              const isDisabled =
-                !isSelected && selected.length >= MAX_SELECTIONS;
+          {/* BUG-B3: search input */}
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-[var(--atlas-border-subtle)]">
+            <Search
+              className="h-3.5 w-3.5 text-[var(--atlas-text-faint)]"
+              strokeWidth={1.5}
+            />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") setOpen(false);
+              }}
+              placeholder="Search jurisdictions… (e.g. ÖSterreich, FR, Belgien)"
+              className="flex-1 bg-transparent text-[12px] text-[var(--atlas-text-primary)] placeholder:text-[var(--atlas-text-faint)] outline-none"
+              aria-label="Search jurisdictions"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                aria-label="Clear search"
+                className="text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-primary)]"
+              >
+                <X className="h-3.5 w-3.5" strokeWidth={1.5} />
+              </button>
+            )}
+          </div>
+          <div className="flex-1 overflow-y-auto p-2 grid grid-cols-2 sm:grid-cols-3 gap-0.5">
+            {allCountries.length === 0 ? (
+              <div className="col-span-full text-center py-6 text-[11px] text-[var(--atlas-text-muted)]">
+                No matches for &ldquo;{search}&rdquo;
+              </div>
+            ) : (
+              allCountries.map(([code, data]) => {
+                const isSelected = selected.includes(code);
+                const isDisabled =
+                  !isSelected && selected.length >= MAX_SELECTIONS;
 
-              return (
-                <button
-                  key={code}
-                  onClick={() => !isDisabled && toggle(code)}
-                  disabled={isDisabled}
-                  className={`
-                    flex items-center gap-2 rounded-md px-2.5 py-1.5 text-left
-                    transition-colors duration-100
-                    ${
-                      isSelected
-                        ? "bg-[var(--atlas-bg-inset)] text-[var(--atlas-text-primary)]"
-                        : isDisabled
-                          ? "opacity-30 cursor-not-allowed text-[var(--atlas-text-faint)]"
-                          : "hover:bg-[var(--atlas-bg-surface-muted)] text-[var(--atlas-text-secondary)]"
-                    }
-                  `}
-                >
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[11px] font-medium truncate block">
-                      {data.countryName}
-                    </span>
-                    <span className="text-[9px]  text-[var(--atlas-text-faint)]">
-                      {code}
-                    </span>
-                  </div>
-                  {isSelected && (
-                    <Check className="h-3 w-3 text-[var(--atlas-text-secondary)] flex-shrink-0" />
-                  )}
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={code}
+                    onClick={() => !isDisabled && toggle(code)}
+                    disabled={isDisabled}
+                    className={`
+                      flex items-center gap-2 rounded-md px-2.5 py-1.5 text-left
+                      transition-colors duration-100
+                      ${
+                        isSelected
+                          ? "bg-[var(--atlas-bg-inset)] text-[var(--atlas-text-primary)]"
+                          : isDisabled
+                            ? "opacity-30 cursor-not-allowed text-[var(--atlas-text-faint)]"
+                            : "hover:bg-[var(--atlas-bg-surface-muted)] text-[var(--atlas-text-secondary)]"
+                      }
+                    `}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[11px] font-medium truncate block">
+                        {data.countryName}
+                      </span>
+                      <span className="text-[9px]  text-[var(--atlas-text-faint)]">
+                        {code}
+                      </span>
+                    </div>
+                    {isSelected && (
+                      <Check className="h-3 w-3 text-[var(--atlas-text-secondary)] flex-shrink-0" />
+                    )}
+                  </button>
+                );
+              })
+            )}
           </div>
         </div>
       )}

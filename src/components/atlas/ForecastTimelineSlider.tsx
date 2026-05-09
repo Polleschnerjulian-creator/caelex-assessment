@@ -101,6 +101,39 @@ export default function ForecastTimelineSlider({
   const isToday = index === 0;
   const selectedLabel = formatQuarterLabel(valueQuarter);
 
+  /* BUG-B4: most users never discover the time-travel mechanic
+     because the slider parks at index 0 with the "Today" label and
+     no visual hint that it moves. One-shot tutorial bubble (localStorage
+     flag `atlas-comparator-tutorial-seen`) hovers next to the slider
+     on first visit; auto-dismisses on first interaction or click. */
+  const TUTORIAL_FLAG = "atlas-comparator-tutorial-seen";
+  const [showTutorial, setShowTutorial] = useState(false);
+  useEffect(() => {
+    try {
+      if (window.localStorage.getItem(TUTORIAL_FLAG) !== "yes") {
+        setShowTutorial(true);
+      }
+    } catch {
+      /* private browsing — skip the bubble. */
+    }
+  }, []);
+  const dismissTutorial = () => {
+    setShowTutorial(false);
+    try {
+      window.localStorage.setItem(TUTORIAL_FLAG, "yes");
+    } catch {
+      /* see above. */
+    }
+  };
+  /* Auto-dismiss when the user actually interacts with the slider —
+     they've discovered the mechanic, no need to keep the hint around. */
+  const handleChangeWithTutorialDismiss = (
+    evt: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    if (showTutorial) dismissTutorial();
+    handleChange(evt);
+  };
+
   // Progress percentage (0–100) for the filled portion behind the
   // thumb. We paint the filled range as a gradient stop so the track
   // renders like an Apple / iOS slider — dark-fill left of the thumb,
@@ -119,7 +152,25 @@ export default function ForecastTimelineSlider({
   };
 
   return (
-    <div className="w-full flex items-center gap-3">
+    <div className="w-full flex items-center gap-3 relative">
+      {/* BUG-B4: tutorial bubble */}
+      {showTutorial && (
+        <div
+          role="tooltip"
+          className="absolute -top-9 left-1/2 -translate-x-1/2 z-10 inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-600 text-white text-[10.5px] font-medium shadow-md whitespace-nowrap animate-pulse"
+        >
+          <span aria-hidden>↓</span>
+          Drag to see future regulatory changes
+          <button
+            type="button"
+            onClick={dismissTutorial}
+            aria-label="Dismiss hint"
+            className="ml-1 opacity-70 hover:opacity-100"
+          >
+            ×
+          </button>
+        </div>
+      )}
       <span className="flex-shrink-0 text-[10px] font-semibold tracking-widest uppercase text-[var(--atlas-text-muted)]">
         {t("atlas.forecast_target_date")}
       </span>
@@ -130,7 +181,7 @@ export default function ForecastTimelineSlider({
           max={range.length - 1}
           value={index}
           step={1}
-          onChange={handleChange}
+          onChange={handleChangeWithTutorialDismiss}
           aria-label={t("atlas.forecast_target_date")}
           style={trackStyle}
           className="w-full h-1.5 rounded-full appearance-none cursor-pointer accent-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"

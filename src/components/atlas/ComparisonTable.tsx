@@ -564,48 +564,104 @@ export default function ComparisonTable({
         ];
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse min-w-[600px]">
-        {/* Sticky header */}
-        <thead className="sticky top-0 z-20">
-          <tr>
-            <th className="text-left py-3 px-4 bg-[var(--atlas-bg-surface-muted)] border-b border-[var(--atlas-border)] w-[200px] min-w-[180px]">
-              <span className="text-[10px] font-semibold tracking-widest text-[var(--atlas-text-faint)] uppercase">
-                {t("atlas.provision")}
-              </span>
-            </th>
-            {jurisdictions.map(({ code, data }) => (
-              <th
-                key={code}
-                className="text-left py-3 px-4 bg-[var(--atlas-bg-surface-muted)] border-b border-[var(--atlas-border)] min-w-[180px]"
-              >
-                <div>
-                  <span className="text-[12px] font-medium text-[var(--atlas-text-primary)] block">
-                    {jurisdictionNames[code] || data.countryName}
-                  </span>
-                  <span className="text-[10px]  text-[var(--atlas-text-faint)]">
-                    {code}
-                  </span>
-                </div>
+    /* BUG-B8: nested horizontal-scroll on mobile (table forced
+       min-w-[600px] inside a viewport already < 600px) competes with
+       the page's own horizontal pan. We render a stacked per-jurisdiction
+       cards-view on mobile (sm:hidden) and the original table on
+       sm-and-up. Cards summarise each jurisdiction's row values for
+       the current dimension — keeps mobile useful for spot-checks
+       even if the full grid view is desktop-first. */
+    <>
+      {/* Mobile: stacked per-jurisdiction cards */}
+      <div className="sm:hidden flex flex-col gap-3 p-3">
+        {jurisdictions.length === 0 ? (
+          <div className="text-center text-[12px] text-[var(--atlas-text-muted)] py-6">
+            {/* No translation key existed yet for this — inline since
+                this surface is only ever shown when the user clicked
+                Clear and the empty state is visible elsewhere too. */}
+            No jurisdictions selected.
+          </div>
+        ) : (
+          jurisdictions.map(({ code, data }) => (
+            <div
+              key={code}
+              className="rounded-lg border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface-muted)] p-3"
+            >
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-[11px] font-semibold tracking-wider text-[var(--atlas-text-secondary)] uppercase">
+                  {code}
+                </span>
+                <span className="text-[12px] font-medium text-[var(--atlas-text-primary)]">
+                  {data.countryName}
+                </span>
+              </div>
+              <dl className="space-y-1.5">
+                {sections.flatMap((section) =>
+                  section.rows.map((row) => (
+                    <div
+                      key={`${section.label}-${row.label}`}
+                      className="flex items-baseline justify-between gap-2 text-[11px] border-t border-[var(--atlas-border-subtle)] pt-1.5 first:border-t-0 first:pt-0"
+                    >
+                      <dt className="text-[var(--atlas-text-muted)] flex-shrink-0 max-w-[55%]">
+                        {row.label}
+                      </dt>
+                      <dd
+                        className={`text-right text-[var(--atlas-text-primary)] ${row.monospace ? "font-mono text-[10.5px]" : ""}`}
+                      >
+                        {row.accessor(data)}
+                      </dd>
+                    </div>
+                  )),
+                )}
+              </dl>
+            </div>
+          ))
+        )}
+      </div>
+      {/* Desktop: original table */}
+      <div className="hidden sm:block overflow-x-auto">
+        <table className="w-full border-collapse min-w-[600px]">
+          {/* Sticky header */}
+          <thead className="sticky top-0 z-20">
+            <tr>
+              <th className="text-left py-3 px-4 bg-[var(--atlas-bg-surface-muted)] border-b border-[var(--atlas-border)] w-[200px] min-w-[180px]">
+                <span className="text-[10px] font-semibold tracking-widest text-[var(--atlas-text-faint)] uppercase">
+                  {t("atlas.provision")}
+                </span>
               </th>
-            ))}
-          </tr>
-        </thead>
+              {jurisdictions.map(({ code, data }) => (
+                <th
+                  key={code}
+                  className="text-left py-3 px-4 bg-[var(--atlas-bg-surface-muted)] border-b border-[var(--atlas-border)] min-w-[180px]"
+                >
+                  <div>
+                    <span className="text-[12px] font-medium text-[var(--atlas-text-primary)] block">
+                      {jurisdictionNames[code] || data.countryName}
+                    </span>
+                    <span className="text-[10px]  text-[var(--atlas-text-faint)]">
+                      {code}
+                    </span>
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
 
-        <tbody>
-          {sections.map((section) => (
-            <SectionBlock
-              key={section.label}
-              label={section.label}
-              rows={section.rows as RowDefInternal[]}
-              jurisdictions={jurisdictions}
-              showSectionHeader={dimension === "all"}
-              forecastEvents={forecastEvents}
-            />
-          ))}
-        </tbody>
-      </table>
-    </div>
+          <tbody>
+            {sections.map((section) => (
+              <SectionBlock
+                key={section.label}
+                label={section.label}
+                rows={section.rows as RowDefInternal[]}
+                jurisdictions={jurisdictions}
+                showSectionHeader={dimension === "all"}
+                forecastEvents={forecastEvents}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
 

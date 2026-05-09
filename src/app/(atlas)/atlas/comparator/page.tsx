@@ -502,9 +502,16 @@ function ComparatorPageInner() {
         )}
 
         {/* ─── Dimension Tabs ─── */}
+        {/* BUG-B6: were not sticky, so once Marie scrolled 200px down
+            she couldn't switch dimension without scrolling back to the
+            top. Now sticky right below the controls panel (top-[88px]
+            roughly accounts for the controls panel height + the
+            optional ribbon). Background fill prevents table content
+            from bleeding through. z-20 keeps them below the controls
+            (which sit at z-30). */}
         <div
           role="tablist"
-          className="flex items-center gap-4 overflow-x-auto pb-0.5 -mx-1 px-1 border-b border-[var(--atlas-border)]"
+          className="sticky top-[88px] z-20 -mx-1 px-1 flex items-center gap-4 overflow-x-auto pb-0.5 border-b border-[var(--atlas-border)] bg-[var(--atlas-bg-page)]"
         >
           {dimensions.map((dim) => (
             <button
