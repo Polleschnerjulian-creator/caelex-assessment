@@ -62,6 +62,12 @@ import {
   type Mandate,
 } from "@/lib/atlas/mandate-store";
 import { getClauses, type Clause } from "@/lib/atlas/clause-library";
+import {
+  AUTHORITY_TEMPLATES,
+  buildAuthorityDirective,
+  listAuthoritiesForJurisdiction,
+  getAuthorityTemplate,
+} from "@/lib/atlas/authority-templates";
 
 /* Atlas Lawyer-UX-Audit F-DRAFT-2 — Privilege-marker support.
    When the user opts in, every prompt the studio dispatches to AI
@@ -180,6 +186,9 @@ export default function DraftingStudioPage() {
   const [authOperator, setAuthOperator] =
     useState<(typeof OPERATOR_TYPES)[number]>("satellite_operator");
   const [authMission, setAuthMission] = useState("");
+  /* Bundle 37: per-authority template. "" = no template (generic
+     output). Auto-defaulted from jurisdiction when changed. */
+  const [authAuthorityId, setAuthAuthorityId] = useState<string>("");
 
   // ── Brief tile state ──
   const [briefTopic, setBriefTopic] = useState("");
@@ -205,6 +214,9 @@ export default function DraftingStudioPage() {
   >("authorization");
   const [coverAuthority, setCoverAuthority] = useState("");
   const [coverReference, setCoverReference] = useState("");
+  /* Bundle 37: cover-letter authority template. When set, the
+     coverAuthority free-text gets prefilled with the template's name. */
+  const [coverAuthorityId, setCoverAuthorityId] = useState<string>("");
 
   /* Q4 — output-language toggle. Independent of UI language. Marie can
      work in EN-UI and still ask Astra to draft in DE for her DE
@@ -488,10 +500,19 @@ export default function DraftingStudioPage() {
         ? ` Missionsprofil: ${authMission.trim()}.`
         : ` Mission profile: ${authMission.trim()}.`
       : "";
+    /* B2: authority-template directive appended after the mission.
+       Empty when no authority is selected. */
+    const authorityDirective = buildAuthorityDirective(
+      authAuthorityId,
+      outputDe ? "de" : "en",
+    );
     /* S3: clause-directive appended at the end so the model sees it
        as a "include verbatim" instruction, not as part of the mission. */
     return withPrivilege(
-      (outputDe ? baseDe : baseEn) + mission + clauseDirective,
+      (outputDe ? baseDe : baseEn) +
+        mission +
+        authorityDirective +
+        clauseDirective,
     );
   };
 
@@ -577,7 +598,15 @@ export default function DraftingStudioPage() {
         ? ` Mandanten-Kontext: ${mandateContext}.`
         : ` Mandate context: ${mandateContext}.`
       : "";
-    return withPrivilege((outputDe ? baseDe : baseEn) + ctx + clauseDirective);
+    /* B2: authority-template directive appended for cover letters too —
+       this is the tile where house-style mismatch is most visible. */
+    const authorityDirective = buildAuthorityDirective(
+      coverAuthorityId,
+      outputDe ? "de" : "en",
+    );
+    return withPrivilege(
+      (outputDe ? baseDe : baseEn) + ctx + authorityDirective + clauseDirective,
+    );
   };
 
   const handleAuthSubmit = () => {
@@ -1327,6 +1356,66 @@ export default function DraftingStudioPage() {
                 ))}
               </select>
             </div>
+            {/* B2: authority-template selector. Optional. Filtered to
+                authorities matching the selected jurisdiction first;
+                falls back to "all" so cross-border filings work too. */}
+            <div>
+              <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                {isDe
+                  ? "Behörden-Template (optional)"
+                  : "Authority template (optional)"}
+              </label>
+              <select
+                value={authAuthorityId}
+                onChange={(e) => setAuthAuthorityId(e.target.value)}
+                className="w-full rounded-md bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] outline-none cursor-pointer"
+              >
+                <option value="">
+                  {isDe ? "— Generisch —" : "— Generic —"}
+                </option>
+                {(() => {
+                  const matching =
+                    listAuthoritiesForJurisdiction(authJurisdiction);
+                  const others = AUTHORITY_TEMPLATES.filter(
+                    (a) => a.jurisdiction !== authJurisdiction,
+                  );
+                  return (
+                    <>
+                      {matching.length > 0 && (
+                        <optgroup
+                          label={
+                            isDe
+                              ? `Für ${authJurisdiction}`
+                              : `For ${authJurisdiction}`
+                          }
+                        >
+                          {matching.map((a) => (
+                            <option key={a.id} value={a.id}>
+                              {a.name}
+                            </option>
+                          ))}
+                        </optgroup>
+                      )}
+                      <optgroup label={isDe ? "Andere" : "Other"}>
+                        {others.map((a) => (
+                          <option key={a.id} value={a.id}>
+                            {a.name} ({a.jurisdiction})
+                          </option>
+                        ))}
+                      </optgroup>
+                    </>
+                  );
+                })()}
+              </select>
+              {authAuthorityId && (
+                <p className="mt-1 text-[10px] text-[var(--atlas-text-muted)] leading-relaxed italic">
+                  {(() => {
+                    const tpl = getAuthorityTemplate(authAuthorityId);
+                    return tpl ? (isDe ? tpl.scope.de : tpl.scope.en) : "";
+                  })()}
+                </p>
+              )}
+            </div>
             <div>
               <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
                 {isDe
@@ -1978,6 +2067,37 @@ export default function DraftingStudioPage() {
                 <option value="amendment">
                   {isDe ? "Änderungsantrag" : "Amendment"}
                 </option>
+              </select>
+            </div>
+            {/* B2: authority-template selector for cover letters.
+                Picking a template prefills the Authority free-text and
+                attaches the formatting directive to the prompt. */}
+            <div>
+              <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                {isDe
+                  ? "Behörden-Template (optional)"
+                  : "Authority template (optional)"}
+              </label>
+              <select
+                value={coverAuthorityId}
+                onChange={(e) => {
+                  const id = e.target.value;
+                  setCoverAuthorityId(id);
+                  if (id) {
+                    const tpl = getAuthorityTemplate(id);
+                    if (tpl) setCoverAuthority(tpl.name);
+                  }
+                }}
+                className="w-full rounded-md bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] outline-none cursor-pointer"
+              >
+                <option value="">
+                  {isDe ? "— Generisch —" : "— Generic —"}
+                </option>
+                {AUTHORITY_TEMPLATES.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name} ({a.jurisdiction})
+                  </option>
+                ))}
               </select>
             </div>
             <div>
