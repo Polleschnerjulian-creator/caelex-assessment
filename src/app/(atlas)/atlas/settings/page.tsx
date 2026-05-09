@@ -232,6 +232,14 @@ export default function SettingsPage() {
 
   // Invite state
   const [inviteEmail, setInviteEmail] = useState("");
+  /* F-ADM-3 (BLOCKER): role-aware invitations. Default MEMBER preserves
+     pre-RBAC-UI behavior, but Klaus can now pick ADMIN (delegation) or
+     VIEWER (contractor / external counsel) from the dropdown next to
+     the email input. OWNER intentionally absent — ownership transfer
+     is a separate ceremony. */
+  const [inviteRole, setInviteRole] = useState<"ADMIN" | "MEMBER" | "VIEWER">(
+    "MEMBER",
+  );
   const [inviting, setInviting] = useState(false);
   const [inviteSuccess, setInviteSuccess] = useState(false);
   const [inviteError, setInviteError] = useState("");
@@ -538,7 +546,8 @@ export default function SettingsPage() {
       const res = await fetch("/api/atlas/team", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: inviteEmail.trim() }),
+        /* F-ADM-3: send the chosen role with the invite. */
+        body: JSON.stringify({ email: inviteEmail.trim(), role: inviteRole }),
       });
 
       if (!res.ok) {
@@ -561,7 +570,7 @@ export default function SettingsPage() {
     } finally {
       setInviting(false);
     }
-  }, [inviteEmail, t]);
+  }, [inviteEmail, inviteRole, t]);
 
   /* ──── Remove member handler ──── */
   const handleRemoveMember = useCallback(async (memberId: string) => {
@@ -1542,6 +1551,33 @@ export default function SettingsPage() {
                       placeholder={t("atlas.settings_team_invite_email")}
                       className="flex-1 px-3 py-2.5 rounded-lg border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] text-[14px] text-[var(--atlas-text-primary)] placeholder:text-[var(--atlas-text-faint)] focus:border-[var(--atlas-border-strong)] focus:outline-none transition-colors"
                     />
+                    {/* F-ADM-3: role dropdown next to the email input.
+                        Stays before the submit button so the partner
+                        chooses role + email before triggering the
+                        invite. OWNER intentionally absent from the
+                        options — see InviteRoleSchema in the route. */}
+                    <select
+                      value={inviteRole}
+                      onChange={(e) =>
+                        setInviteRole(
+                          e.target.value as "ADMIN" | "MEMBER" | "VIEWER",
+                        )
+                      }
+                      aria-label={
+                        language === "de" ? "Rolle wählen" : "Choose role"
+                      }
+                      className="px-3 py-2.5 rounded-lg border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] text-[13px] text-[var(--atlas-text-primary)] focus:border-[var(--atlas-border-strong)] focus:outline-none transition-colors cursor-pointer"
+                    >
+                      <option value="MEMBER">
+                        {language === "de" ? "Mitglied" : "Member"}
+                      </option>
+                      <option value="ADMIN">
+                        {language === "de" ? "Admin" : "Admin"}
+                      </option>
+                      <option value="VIEWER">
+                        {language === "de" ? "Lese-Zugriff" : "Viewer"}
+                      </option>
+                    </select>
                     <button
                       onClick={handleInvite}
                       disabled={inviting || !inviteEmail.trim()}
@@ -1642,17 +1678,31 @@ export default function SettingsPage() {
                         </div>
                       </div>
 
-                      {/* Role badge */}
+                      {/* F-ADM-3: role badge — all 4 roles shown
+                          distinctly. Was collapsing ADMIN/VIEWER to
+                          "Member" which made the new RBAC invisible. */}
                       <span
                         className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
                           member.role === "OWNER"
                             ? "bg-[var(--atlas-action-bg)] text-[var(--atlas-action-text)]"
-                            : "bg-[var(--atlas-bg-inset)] text-[var(--atlas-text-muted)]"
+                            : member.role === "ADMIN"
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
+                              : member.role === "VIEWER"
+                                ? "bg-slate-100 text-slate-600 dark:bg-slate-500/15 dark:text-slate-400"
+                                : "bg-[var(--atlas-bg-inset)] text-[var(--atlas-text-muted)]"
                         }`}
                       >
                         {member.role === "OWNER"
                           ? t("atlas.settings_team_role_owner")
-                          : t("atlas.settings_team_role_member")}
+                          : member.role === "ADMIN"
+                            ? language === "de"
+                              ? "Admin"
+                              : "Admin"
+                            : member.role === "VIEWER"
+                              ? language === "de"
+                                ? "Lese-Zugriff"
+                                : "Viewer"
+                              : t("atlas.settings_team_role_member")}
                       </span>
 
                       {/* Remove button (owner only, cannot remove self) */}
@@ -1920,6 +1970,151 @@ export default function SettingsPage() {
                 </div>
               </section>
             )}
+
+            {/* F-ADM-3 (BLOCKER): Permissions matrix card. Surfaces
+                what each role can actually do so Klaus understands
+                what he's about to grant when he picks ADMIN vs MEMBER
+                vs VIEWER from the invite-form dropdown. Renders for
+                everyone (not owner-gated) — non-owners benefit from
+                seeing what their own role unlocks too. */}
+            <section>
+              <div className="flex items-center gap-2 mb-4">
+                <Shield
+                  className="h-4 w-4 text-[var(--atlas-text-faint)]"
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
+                <h2 className="text-[12px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.1em] uppercase">
+                  {language === "de"
+                    ? "Rollen & Rechte"
+                    : "Roles & Permissions"}
+                </h2>
+              </div>
+              <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] overflow-hidden">
+                <table className="w-full text-[12px]">
+                  <thead className="bg-[var(--atlas-bg-surface-muted)]">
+                    <tr>
+                      <th className="text-left px-4 py-2.5 font-semibold text-[var(--atlas-text-secondary)]">
+                        {language === "de" ? "Aktion" : "Action"}
+                      </th>
+                      <th className="text-center px-3 py-2.5 font-semibold text-[var(--atlas-text-secondary)]">
+                        Owner
+                      </th>
+                      <th className="text-center px-3 py-2.5 font-semibold text-[var(--atlas-text-secondary)]">
+                        Admin
+                      </th>
+                      <th className="text-center px-3 py-2.5 font-semibold text-[var(--atlas-text-secondary)]">
+                        {language === "de" ? "Mitglied" : "Member"}
+                      </th>
+                      <th className="text-center px-3 py-2.5 font-semibold text-[var(--atlas-text-secondary)]">
+                        {language === "de" ? "Lese-Zugriff" : "Viewer"}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      {
+                        en: "Read sources, cases, comparisons",
+                        de: "Quellen, Cases, Vergleiche lesen",
+                        roles: {
+                          OWNER: true,
+                          ADMIN: true,
+                          MEMBER: true,
+                          VIEWER: true,
+                        },
+                      },
+                      {
+                        en: "Use AI Mode + workspaces + drafting",
+                        de: "AI Mode + Arbeitsbereiche + Drafting nutzen",
+                        roles: {
+                          OWNER: true,
+                          ADMIN: true,
+                          MEMBER: true,
+                          VIEWER: false,
+                        },
+                      },
+                      {
+                        en: "Save to library + bookmarks",
+                        de: "In Bibliothek + Bookmarks speichern",
+                        roles: {
+                          OWNER: true,
+                          ADMIN: true,
+                          MEMBER: true,
+                          VIEWER: false,
+                        },
+                      },
+                      {
+                        en: "Edit firm name + logo",
+                        de: "Firmenname + Logo bearbeiten",
+                        roles: {
+                          OWNER: true,
+                          ADMIN: true,
+                          MEMBER: false,
+                          VIEWER: false,
+                        },
+                      },
+                      {
+                        en: "Invite + remove team members",
+                        de: "Teammitglieder einladen + entfernen",
+                        roles: {
+                          OWNER: true,
+                          ADMIN: false,
+                          MEMBER: false,
+                          VIEWER: false,
+                        },
+                      },
+                      {
+                        en: "Delete organisation / transfer ownership",
+                        de: "Organisation löschen / Eigentum übertragen",
+                        roles: {
+                          OWNER: true,
+                          ADMIN: false,
+                          MEMBER: false,
+                          VIEWER: false,
+                        },
+                      },
+                    ].map((row, i) => (
+                      <tr
+                        key={i}
+                        className="border-t border-[var(--atlas-border-subtle)]"
+                      >
+                        <td className="px-4 py-2.5 text-[var(--atlas-text-secondary)]">
+                          {language === "de" ? row.de : row.en}
+                        </td>
+                        {(["OWNER", "ADMIN", "MEMBER", "VIEWER"] as const).map(
+                          (r) => (
+                            <td
+                              key={r}
+                              className="text-center px-3 py-2.5"
+                              aria-label={
+                                row.roles[r]
+                                  ? `${r}: ${language === "de" ? "ja" : "yes"}`
+                                  : `${r}: ${language === "de" ? "nein" : "no"}`
+                              }
+                            >
+                              {row.roles[r] ? (
+                                <span className="text-emerald-600 dark:text-emerald-400">
+                                  ●
+                                </span>
+                              ) : (
+                                <span className="text-[var(--atlas-text-faint)]">
+                                  ○
+                                </span>
+                              )}
+                            </td>
+                          ),
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="px-4 py-2.5 text-[10.5px] text-[var(--atlas-text-faint)] border-t border-[var(--atlas-border-subtle)] bg-[var(--atlas-bg-surface-muted)]">
+                  {language === "de"
+                    ? "Tipp: Wählen Sie ADMIN für Senior-Partner, die im Urlaub des Owners Firmen-Settings pflegen sollen. VIEWER eignet sich für externe Counsel oder Praktikant:innen, die nur lesend zugreifen."
+                    : "Tip: Pick ADMIN for senior partners who should manage firm settings while the owner is on holiday. VIEWER suits external counsel or trainees who only need read access."}
+                </div>
+              </div>
+            </section>
           </div>
         )}
 

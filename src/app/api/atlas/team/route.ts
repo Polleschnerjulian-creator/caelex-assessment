@@ -17,8 +17,25 @@ export const runtime = "nodejs";
  *  sync when changing expiry logic in organization-service.ts. */
 const INVITE_EXPIRY_DAYS = 14;
 
+/* F-ADM-3 (BLOCKER): role-aware invitations. The schema previously
+ * accepted only email and the route hard-coded role: "MEMBER" — so
+ * even though the OrganizationMember model supports OWNER/ADMIN/
+ * MEMBER/VIEWER, every invite landed as MEMBER. Klaus couldn't
+ * delegate ADMIN to a senior partner or downgrade a contractor to
+ * VIEWER without poking the DB.
+ *
+ * OWNER is intentionally NOT a valid invite role — ownership transfer
+ * is a separate ceremony that goes through a dedicated endpoint
+ * (which doesn't yet exist; tracked separately).
+ */
+const InviteRoleSchema = z.enum(["ADMIN", "MEMBER", "VIEWER"]);
+
 const InviteSchema = z.object({
   email: z.string().email().max(254), // RFC 5321 maximum
+  /* Optional with default so existing clients that don't pass role
+     still work — they get MEMBER, same as before. New role-aware
+     clients pass an explicit value. */
+  role: InviteRoleSchema.optional().default("MEMBER"),
 });
 
 // GET /api/atlas/team — list members + pending invitations
@@ -118,9 +135,12 @@ export async function POST(request: Request) {
   }
 
   try {
+    /* F-ADM-3: pass the parsed role through (defaults to MEMBER when
+       the caller didn't specify, preserving the prior behavior for
+       any legacy callers). */
     const invitation = await createInvitation(
       atlas.organizationId,
-      { email, role: "MEMBER" },
+      { email, role: parsed.data.role },
       atlas.userId,
     );
 

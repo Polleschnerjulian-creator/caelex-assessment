@@ -2222,3 +2222,94 @@ sie 80% der results visuell überspringen. Jetzt: dropdown auf "DE",
 nur DE-relevante hits. Discovery von 25 min → ~5 min. Plus die
 selection bleibt sticky → sequenzielle queries im selben mandate
 verbrennen kein zusätzliches scope-clicking.
+
+---
+
+## 30. Quick-Wins-Bündel #16 — F-ADM-3 RBAC-UI exposed (BLOCKER) (2026-05-09)
+
+Dieser BLOCKER war eine reine UI-Discoverability-Lücke: das Schema +
+die Server-Routes unterstützen seit jeher `OWNER/ADMIN/MEMBER/VIEWER`,
+aber das Settings-UI hat alles zu `Owner` vs `Member` collapsed
+gerendert + im Invite-Form gar keine role-Auswahl angeboten. Klaus
+konnte einen Senior-Partner nicht zu ADMIN befördern, einen externen
+Counsel nicht als VIEWER einladen.
+
+### F-ADM-3 — RBAC vollständig im UI exposed (BLOCKER → Done, ~50 min)
+
+- **Wo:**
+  - `src/app/api/atlas/team/route.ts` (POST schema + role pass-through)
+  - `src/app/(atlas)/atlas/settings/page.tsx` (invite-state, dropdown,
+    members-list-badge, permissions-matrix card)
+- **Vorher:**
+  - Server-side: `InviteSchema` akzeptierte nur `email`, route hard-
+    coded `role: "MEMBER"` → jeder Invite landete als MEMBER
+  - Client-side invite-form: nur Email-Input, keine Rolle wählbar
+  - Members-list: ternary `role === "OWNER" ? "Owner" : "Member"` —
+    ADMIN + VIEWER waren visuell von MEMBER nicht unterscheidbar
+  - Keine permissions-doc — Klaus wusste nicht was die Rollen können
+
+#### Fix Server-side (`/api/atlas/team` POST)
+
+- Neuer `InviteRoleSchema = z.enum(["ADMIN", "MEMBER", "VIEWER"])` —
+  OWNER bewusst ausgenommen weil ownership-transfer eigene ceremony
+  braucht (separater endpoint, deferred)
+- `InviteSchema` erweitert: `role: InviteRoleSchema.optional().default("MEMBER")`
+  — back-compat für legacy clients ohne role param
+- `createInvitation` call jetzt `{ email, role: parsed.data.role }`
+  statt hard-coded "MEMBER"
+
+#### Fix Client-side invite form
+
+- Neue state `[inviteRole, setInviteRole]` mit type-narrowed union
+  default MEMBER
+- 3-option `<select>` zwischen email-input und submit-button:
+  Member / Admin / Viewer (lokalisiert DE/EN)
+- POST body sendet jetzt `{ email, role }` statt nur email
+- handleInvite useCallback deps erweitert um inviteRole
+
+#### Fix Members-list role badge
+
+- 4-tier conditional rendering statt 2-tier:
+  - OWNER: emerald action-bg badge (premium)
+  - ADMIN: emerald-100 muted badge (secondary tier)
+  - VIEWER: slate-100 readonly badge
+  - MEMBER: default atlas-bg-inset (baseline)
+- Labels lokalisiert ("Lese-Zugriff" / "Viewer" für VIEWER)
+
+#### Fix Permissions matrix card
+
+- Neue section am unteren Rand des team-tab (immer sichtbar — nicht
+  owner-gated, weil non-owner auch sehen wollen was sie selbst dürfen)
+- 4-spaltige Tabelle: Action × {Owner, Admin, Member, Viewer}
+- 6 Action-rows: read, AI Mode, library, firm-edit, invite/remove,
+  delete-org-or-transfer
+- Filled-circle (●) = yes, hollow-circle (○) = no — colorblind-safe
+  (info via shape, not just color)
+- Tip-footer mit empfohlener Verwendung pro Rolle (ADMIN für senior-
+  partner als delegate, VIEWER für externe Counsel)
+- Bilingual DE/EN
+
+### Was BEWUSST nicht jetzt gefixt
+
+- **Member-role-change-after-invite** (z.B. promote MEMBER → ADMIN):
+  würde ein PATCH endpoint `/api/atlas/team/members/[id]` brauchen +
+  client-side dropdown mit role-change handler. Audit-Ask war "Role-
+  Dropdown auf Members-List" — wir liefern korrekte display, nicht
+  edit-affordance. Stage-2 sprint.
+- **Ownership transfer flow**: braucht 2-step-confirmation (current
+  owner → designate ADMIN as new owner → email-confirm) + sole-owner-
+  protection. Eigener separater sprint.
+- **Per-role audit-log filtering**: F-ADM-8 territory.
+
+### Trust-Score nach Quick-Wins-Bündel #16
+
+| Surface          | Vorher | Nachher                                                        |
+| ---------------- | ------ | -------------------------------------------------------------- |
+| Settings + Admin | 7.8/10 | **8.2/10** (+0.4 — RBAC nicht mehr unsichtbar, BLOCKER closed) |
+| GESAMT           | 8.9/10 | **9.0/10**                                                     |
+
+**Klaus-Impact:** Vorher konnte er nicht delegieren ohne Database-
+Editor zu öffnen. Jetzt: pro Invite Rolle wählen, Members-List zeigt
+echte Rollen, Permissions-Matrix dokumentiert was jede Rolle kann.
+RBAC ist von "schema-supported, ui-invisible" zu "discoverable,
+delegateable" gewachsen.
