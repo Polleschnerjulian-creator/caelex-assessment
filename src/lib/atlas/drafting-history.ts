@@ -20,6 +20,9 @@
 const RECENT_AUTH_KEY = "atlas-drafting-recent-auth";
 const RECENT_BRIEF_KEY = "atlas-drafting-recent-brief";
 const RECENT_COMPARE_KEY = "atlas-drafting-recent-compare";
+/* Bundle 34: two new tiles get their own recently-used rings. */
+const RECENT_NDA_KEY = "atlas-drafting-recent-nda";
+const RECENT_COVER_KEY = "atlas-drafting-recent-cover";
 const LIBRARY_KEY = "atlas-drafting-library";
 
 const RECENT_CAP = 5;
@@ -45,6 +48,26 @@ export interface RecentBriefEntry {
 
 export interface RecentCompareEntry {
   jurisdictions: string[];
+  label: string;
+  ts: number;
+}
+
+/* Bundle 34 — NDA tile recent. */
+export interface RecentNdaEntry {
+  ndaType: "mutual" | "one_way";
+  partyA: string;
+  partyB: string;
+  jurisdiction: string;
+  termYears: string;
+  label: string;
+  ts: number;
+}
+
+/* Bundle 34 — Filing-Cover-Letter tile recent. */
+export interface RecentCoverEntry {
+  filingType: "authorization" | "notification" | "renewal" | "amendment";
+  authority: string;
+  reference: string;
   label: string;
   ts: number;
 }
@@ -103,6 +126,19 @@ const isCompare = (v: unknown): v is RecentCompareEntry =>
   Array.isArray((v as RecentCompareEntry).jurisdictions) &&
   typeof (v as RecentCompareEntry).label === "string";
 
+const isNda = (v: unknown): v is RecentNdaEntry =>
+  typeof v === "object" &&
+  v !== null &&
+  typeof (v as RecentNdaEntry).partyA === "string" &&
+  typeof (v as RecentNdaEntry).partyB === "string" &&
+  typeof (v as RecentNdaEntry).label === "string";
+
+const isCover = (v: unknown): v is RecentCoverEntry =>
+  typeof v === "object" &&
+  v !== null &&
+  typeof (v as RecentCoverEntry).authority === "string" &&
+  typeof (v as RecentCoverEntry).label === "string";
+
 export function getRecentAuth(): RecentAuthEntry[] {
   return safeRead(RECENT_AUTH_KEY, isAuth);
 }
@@ -135,6 +171,30 @@ export function pushRecentCompare(entry: Omit<RecentCompareEntry, "ts">): void {
   const list = getRecentCompare();
   safeWrite(
     RECENT_COMPARE_KEY,
+    pushBounded(list, { ...entry, ts: Date.now() }, RECENT_CAP),
+  );
+}
+
+export function getRecentNda(): RecentNdaEntry[] {
+  return safeRead(RECENT_NDA_KEY, isNda);
+}
+
+export function getRecentCover(): RecentCoverEntry[] {
+  return safeRead(RECENT_COVER_KEY, isCover);
+}
+
+export function pushRecentNda(entry: Omit<RecentNdaEntry, "ts">): void {
+  const list = getRecentNda();
+  safeWrite(
+    RECENT_NDA_KEY,
+    pushBounded(list, { ...entry, ts: Date.now() }, RECENT_CAP),
+  );
+}
+
+export function pushRecentCover(entry: Omit<RecentCoverEntry, "ts">): void {
+  const list = getRecentCover();
+  safeWrite(
+    RECENT_COVER_KEY,
     pushBounded(list, { ...entry, ts: Date.now() }, RECENT_CAP),
   );
 }

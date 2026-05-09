@@ -22,6 +22,8 @@ import {
   X,
   Library,
   Tag,
+  FileSignature,
+  Mail,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { ALL_SOURCES } from "@/data/legal-sources";
@@ -30,13 +32,19 @@ import {
   getRecentAuth,
   getRecentBrief,
   getRecentCompare,
+  getRecentNda,
+  getRecentCover,
   pushRecentAuth,
   pushRecentBrief,
   pushRecentCompare,
+  pushRecentNda,
+  pushRecentCover,
   pushDraftLibrary,
   type RecentAuthEntry,
   type RecentBriefEntry,
   type RecentCompareEntry,
+  type RecentNdaEntry,
+  type RecentCoverEntry,
 } from "@/lib/atlas/drafting-history";
 import {
   getMandateIntake,
@@ -178,6 +186,20 @@ export default function DraftingStudioPage() {
     "LU",
   ]);
 
+  // ── NDA tile state (Bundle 34, S4) ──
+  const [ndaType, setNdaType] = useState<"mutual" | "one_way">("mutual");
+  const [ndaPartyA, setNdaPartyA] = useState("");
+  const [ndaPartyB, setNdaPartyB] = useState("");
+  const [ndaJurisdiction, setNdaJurisdiction] = useState("DE");
+  const [ndaTermYears, setNdaTermYears] = useState("3");
+
+  // ── Filing-Cover-Letter tile state (Bundle 34, S4) ──
+  const [coverFilingType, setCoverFilingType] = useState<
+    "authorization" | "notification" | "renewal" | "amendment"
+  >("authorization");
+  const [coverAuthority, setCoverAuthority] = useState("");
+  const [coverReference, setCoverReference] = useState("");
+
   /* Q4 — output-language toggle. Independent of UI language. Marie can
      work in EN-UI and still ask Astra to draft in DE for her DE
      mandate, or vice-versa. Sticky via state alone (per-session) so
@@ -191,7 +213,7 @@ export default function DraftingStudioPage() {
      dispatch. Transparency = trust, especially for partners auditing
      a junior's drafting workflow. */
   const [showPromptFor, setShowPromptFor] = useState<
-    null | "auth" | "brief" | "compare"
+    null | "auth" | "brief" | "compare" | "nda" | "cover"
   >(null);
 
   /* Q2 — recently-used per tile. Hydrate on mount; refresh after
@@ -199,10 +221,14 @@ export default function DraftingStudioPage() {
   const [recentAuth, setRecentAuth] = useState<RecentAuthEntry[]>([]);
   const [recentBrief, setRecentBrief] = useState<RecentBriefEntry[]>([]);
   const [recentCompare, setRecentCompare] = useState<RecentCompareEntry[]>([]);
+  const [recentNda, setRecentNda] = useState<RecentNdaEntry[]>([]);
+  const [recentCover, setRecentCover] = useState<RecentCoverEntry[]>([]);
   useEffect(() => {
     setRecentAuth(getRecentAuth());
     setRecentBrief(getRecentBrief());
     setRecentCompare(getRecentCompare());
+    setRecentNda(getRecentNda());
+    setRecentCover(getRecentCover());
   }, []);
 
   /* S1 — mandate intake. Single active mandate, persisted in
@@ -427,6 +453,64 @@ export default function DraftingStudioPage() {
     return withPrivilege(base + ctx + clauseDirective);
   };
 
+  /* Bundle 34 — NDA prompt builder. Reciprocal vs one-way changes
+     the drafting style (mutual obligations vs one-direction). */
+  const buildNdaPrompt = (): string => {
+    const aRaw = ndaPartyA.trim();
+    const bRaw = ndaPartyB.trim();
+    const a = aRaw || (outputDe ? "[Partei A]" : "[Party A]");
+    const b = bRaw || (outputDe ? "[Partei B]" : "[Party B]");
+    const term = ndaTermYears.trim() || "3";
+    const baseDe =
+      ndaType === "mutual"
+        ? `Erstelle einen wechselseitigen NDA (Mutual Non-Disclosure Agreement) zwischen ${a} und ${b}. Geltendes Recht: ${ndaJurisdiction}. Laufzeit: ${term} Jahre.`
+        : `Erstelle einen einseitigen NDA (One-Way Non-Disclosure Agreement) — ${a} als Disclosing Party, ${b} als Receiving Party. Geltendes Recht: ${ndaJurisdiction}. Laufzeit: ${term} Jahre.`;
+    const baseEn =
+      ndaType === "mutual"
+        ? `Draft a mutual non-disclosure agreement between ${a} and ${b}. Governing law: ${ndaJurisdiction}. Term: ${term} years.`
+        : `Draft a one-way non-disclosure agreement — ${a} as disclosing party, ${b} as receiving party. Governing law: ${ndaJurisdiction}. Term: ${term} years.`;
+    const ctx = mandateContext
+      ? outputDe
+        ? ` Mandanten-Kontext: ${mandateContext}.`
+        : ` Mandate context: ${mandateContext}.`
+      : "";
+    return withPrivilege((outputDe ? baseDe : baseEn) + ctx + clauseDirective);
+  };
+
+  /* Bundle 34 — Filing-Cover-Letter prompt builder. */
+  const buildCoverPrompt = (): string => {
+    const filingTypeLabelsDe: Record<typeof coverFilingType, string> = {
+      authorization: "Erstantrag (Genehmigung)",
+      notification: "Notifikation",
+      renewal: "Verlängerung",
+      amendment: "Änderung",
+    };
+    const filingTypeLabelsEn: Record<typeof coverFilingType, string> = {
+      authorization: "initial authorization application",
+      notification: "notification",
+      renewal: "renewal",
+      amendment: "amendment",
+    };
+    const fLabel = outputDe
+      ? filingTypeLabelsDe[coverFilingType]
+      : filingTypeLabelsEn[coverFilingType];
+    const auth =
+      coverAuthority.trim() || (outputDe ? "[Behörde]" : "[Authority]");
+    const ref = coverReference.trim()
+      ? outputDe
+        ? ` Aktenzeichen: ${coverReference.trim()}.`
+        : ` Reference: ${coverReference.trim()}.`
+      : "";
+    const baseEn = `Draft a cover letter for a ${fLabel} filing addressed to ${auth}.${ref} Include standard salutation, identifying section, list of enclosed documents placeholder, and closing block.`;
+    const baseDe = `Erstelle ein Anschreiben für eine ${fLabel} an ${auth}.${ref} Inklusive Standard-Anrede, Identifikations-Block, Anlagen-Verzeichnis-Platzhalter und Abschlussblock.`;
+    const ctx = mandateContext
+      ? outputDe
+        ? ` Mandanten-Kontext: ${mandateContext}.`
+        : ` Mandate context: ${mandateContext}.`
+      : "";
+    return withPrivilege((outputDe ? baseDe : baseEn) + ctx + clauseDirective);
+  };
+
   const handleAuthSubmit = () => {
     const prompt = buildAuthPrompt();
     openAIMode({ prompt });
@@ -488,6 +572,77 @@ export default function DraftingStudioPage() {
     setCompareJurisdictions((prev) =>
       prev.includes(j) ? prev.filter((p) => p !== j) : [...prev, j],
     );
+  };
+
+  /* Bundle 34 — NDA dispatch handler. */
+  const handleNdaSubmit = () => {
+    /* Allow dispatch with placeholder party names so a partner can
+       review the structure before plugging client names — but if a
+       lawyer typed something, store it for "recently used". */
+    const prompt = buildNdaPrompt();
+    openAIMode({ prompt });
+    const a = ndaPartyA.trim() || (outputDe ? "[A]" : "[A]");
+    const b = ndaPartyB.trim() || (outputDe ? "[B]" : "[B]");
+    const typeLabel =
+      ndaType === "mutual"
+        ? outputDe
+          ? "wechselseitig"
+          : "mutual"
+        : outputDe
+          ? "einseitig"
+          : "one-way";
+    const label = `${typeLabel} · ${a} ↔ ${b} · ${ndaJurisdiction} · ${ndaTermYears}J`;
+    pushRecentNda({
+      ndaType,
+      partyA: ndaPartyA,
+      partyB: ndaPartyB,
+      jurisdiction: ndaJurisdiction,
+      termYears: ndaTermYears,
+      label,
+    });
+    setRecentNda(getRecentNda());
+    pushDraftLibrary({
+      kind: "nda",
+      title: label,
+      prompt,
+      outputLocale: outputLang,
+      privileged,
+    });
+  };
+
+  /* Bundle 34 — Filing-Cover-Letter dispatch handler. */
+  const handleCoverSubmit = () => {
+    if (!coverAuthority.trim()) return;
+    const prompt = buildCoverPrompt();
+    openAIMode({ prompt });
+    const fLabelDe: Record<typeof coverFilingType, string> = {
+      authorization: "Genehmigung",
+      notification: "Notifikation",
+      renewal: "Verlängerung",
+      amendment: "Änderung",
+    };
+    const fLabelEn: Record<typeof coverFilingType, string> = {
+      authorization: "Authorization",
+      notification: "Notification",
+      renewal: "Renewal",
+      amendment: "Amendment",
+    };
+    const fLabel = (outputDe ? fLabelDe : fLabelEn)[coverFilingType];
+    const label = `${fLabel} → ${coverAuthority.trim()}${coverReference.trim() ? ` · ${coverReference.trim()}` : ""}`;
+    pushRecentCover({
+      filingType: coverFilingType,
+      authority: coverAuthority,
+      reference: coverReference,
+      label,
+    });
+    setRecentCover(getRecentCover());
+    pushDraftLibrary({
+      kind: "cover",
+      title: label,
+      prompt,
+      outputLocale: outputLang,
+      privileged,
+    });
   };
 
   return (
@@ -1405,6 +1560,371 @@ export default function DraftingStudioPage() {
             type="button"
             disabled={compareJurisdictions.length < 2}
             onClick={handleCompareSubmit}
+            className="m-4 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--atlas-action-bg)] hover:bg-[var(--atlas-action-bg-hover)] disabled:opacity-50 disabled:hover:bg-[var(--atlas-action-bg)] disabled:cursor-not-allowed text-[var(--atlas-action-text)] text-[12px] font-medium tracking-wide px-4 py-2.5 transition-colors"
+          >
+            <Sparkles className="h-3 w-3" strokeWidth={1.8} />
+            {t("atlas.drafting_open_in_ai")}
+            <ArrowRight className="h-3 w-3" strokeWidth={1.8} />
+          </button>
+        </article>
+
+        {/* ── Tile 4: NDA (Bundle 34, S4) ── */}
+        <article className="flex flex-col rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-[var(--atlas-border-subtle)]">
+            <div className="flex items-center gap-2 mb-2">
+              <FileSignature
+                className="h-4 w-4 text-amber-600"
+                strokeWidth={1.5}
+              />
+              <h2 className="text-[14px] font-semibold text-[var(--atlas-text-primary)]">
+                {isDe ? "NDA-Entwurf" : "NDA draft"}
+              </h2>
+            </div>
+            <p className="text-[11px] text-[var(--atlas-text-muted)] leading-relaxed">
+              {isDe
+                ? "Wechselseitiger oder einseitiger Geheimhaltungsvertrag — Standardstruktur, dein Wording."
+                : "Mutual or one-way non-disclosure agreement — standard structure, your wording."}
+            </p>
+            <p className="mt-2 text-[10.5px] text-amber-700 dark:text-amber-400 leading-relaxed">
+              {isDe
+                ? "Liefert: Präambel, Definitionen, Geheimhaltungspflichten, Ausnahmen, Laufzeit, Salvatorische, Gerichtsstand."
+                : "Returns: preamble, definitions, confidentiality obligations, exceptions, term, severability, jurisdiction."}
+            </p>
+          </div>
+          <div className="p-4 flex flex-col gap-3 flex-1">
+            {intakeActive && (
+              <div className="inline-flex items-center gap-1.5 rounded-md border border-emerald-300 dark:border-emerald-500/40 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 text-[10.5px] text-emerald-800 dark:text-emerald-200">
+                <Briefcase size={10} strokeWidth={1.8} aria-hidden="true" />
+                {isDe ? "Mandanten-Kontext aktiv" : "Mandate context active"}
+                {intake.client.trim() && (
+                  <span className="ml-0.5 font-semibold">
+                    · {intake.client.trim()}
+                  </span>
+                )}
+              </div>
+            )}
+            <div>
+              <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                {isDe ? "Typ" : "Type"}
+              </label>
+              <div
+                role="radiogroup"
+                aria-label={isDe ? "NDA-Typ" : "NDA type"}
+                className="flex items-center gap-0.5 rounded-md border border-[var(--atlas-border)] p-0.5"
+              >
+                {(["mutual", "one_way"] as const).map((typ) => (
+                  <button
+                    key={typ}
+                    type="button"
+                    role="radio"
+                    aria-checked={ndaType === typ}
+                    onClick={() => setNdaType(typ)}
+                    className={`flex-1 px-2 py-1 text-[11px] font-medium rounded transition-colors ${
+                      ndaType === typ
+                        ? "bg-[var(--atlas-action-bg)] text-[var(--atlas-action-text)]"
+                        : "text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)]"
+                    }`}
+                  >
+                    {typ === "mutual"
+                      ? isDe
+                        ? "Wechselseitig"
+                        : "Mutual"
+                      : isDe
+                        ? "Einseitig"
+                        : "One-way"}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                {ndaType === "mutual"
+                  ? isDe
+                    ? "Partei A"
+                    : "Party A"
+                  : isDe
+                    ? "Disclosing Party"
+                    : "Disclosing party"}
+              </label>
+              <input
+                type="text"
+                value={ndaPartyA}
+                onChange={(e) => setNdaPartyA(e.target.value)}
+                placeholder={isDe ? "z. B. Sky-Sat GmbH" : "e.g. Sky-Sat GmbH"}
+                className="w-full rounded-md bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] outline-none placeholder:text-[var(--atlas-text-faint)]"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                {ndaType === "mutual"
+                  ? isDe
+                    ? "Partei B"
+                    : "Party B"
+                  : isDe
+                    ? "Receiving Party"
+                    : "Receiving party"}
+              </label>
+              <input
+                type="text"
+                value={ndaPartyB}
+                onChange={(e) => setNdaPartyB(e.target.value)}
+                placeholder={
+                  isDe
+                    ? "z. B. Aerospace Partners SARL"
+                    : "e.g. Aerospace Partners SARL"
+                }
+                className="w-full rounded-md bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] outline-none placeholder:text-[var(--atlas-text-faint)]"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                  {isDe ? "Geltendes Recht" : "Governing law"}
+                </label>
+                <select
+                  value={ndaJurisdiction}
+                  onChange={(e) => setNdaJurisdiction(e.target.value)}
+                  className="w-full rounded-md bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] outline-none cursor-pointer"
+                >
+                  {allJurisdictions.map((j) => (
+                    <option key={j} value={j}>
+                      {j}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                  {isDe ? "Laufzeit (Jahre)" : "Term (years)"}
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={ndaTermYears}
+                  onChange={(e) => setNdaTermYears(e.target.value)}
+                  className="w-full rounded-md bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] outline-none"
+                />
+              </div>
+            </div>
+            {recentNda.length > 0 && (
+              <div>
+                <label className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                  <History size={9} strokeWidth={1.8} aria-hidden="true" />
+                  {isDe ? "Zuletzt verwendet" : "Recently used"}
+                </label>
+                <div className="flex flex-wrap gap-1">
+                  {recentNda.map((r) => (
+                    <button
+                      key={r.ts}
+                      type="button"
+                      onClick={() => {
+                        setNdaType(r.ndaType);
+                        setNdaPartyA(r.partyA);
+                        setNdaPartyB(r.partyB);
+                        setNdaJurisdiction(r.jurisdiction);
+                        setNdaTermYears(r.termYears);
+                      }}
+                      title={r.label}
+                      className="text-[10.5px] font-medium px-2 py-0.5 rounded bg-[var(--atlas-bg-inset)] hover:bg-[var(--atlas-bg-surface-muted)] text-[var(--atlas-text-secondary)] hover:text-[var(--atlas-text-primary)] transition-colors max-w-full truncate"
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div>
+              <button
+                type="button"
+                onClick={() =>
+                  setShowPromptFor((cur) => (cur === "nda" ? null : "nda"))
+                }
+                className="inline-flex items-center gap-1 text-[10.5px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)] transition-colors"
+              >
+                {showPromptFor === "nda" ? (
+                  <EyeOff size={10} strokeWidth={1.8} aria-hidden="true" />
+                ) : (
+                  <Eye size={10} strokeWidth={1.8} aria-hidden="true" />
+                )}
+                {isDe
+                  ? showPromptFor === "nda"
+                    ? "Prompt verbergen"
+                    : "Prompt anzeigen"
+                  : showPromptFor === "nda"
+                    ? "Hide prompt"
+                    : "Show prompt"}
+              </button>
+              {showPromptFor === "nda" && (
+                <pre className="mt-1.5 text-[10.5px] text-[var(--atlas-text-secondary)] bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] rounded p-2 whitespace-pre-wrap font-mono">
+                  {buildNdaPrompt()}
+                </pre>
+              )}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleNdaSubmit}
+            className="m-4 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--atlas-action-bg)] hover:bg-[var(--atlas-action-bg-hover)] text-[var(--atlas-action-text)] text-[12px] font-medium tracking-wide px-4 py-2.5 transition-colors"
+          >
+            <Sparkles className="h-3 w-3" strokeWidth={1.8} />
+            {t("atlas.drafting_open_in_ai")}
+            <ArrowRight className="h-3 w-3" strokeWidth={1.8} />
+          </button>
+        </article>
+
+        {/* ── Tile 5: Filing Cover Letter (Bundle 34, S4) ── */}
+        <article className="flex flex-col rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-[var(--atlas-border-subtle)]">
+            <div className="flex items-center gap-2 mb-2">
+              <Mail className="h-4 w-4 text-cyan-600" strokeWidth={1.5} />
+              <h2 className="text-[14px] font-semibold text-[var(--atlas-text-primary)]">
+                {isDe ? "Behörden-Anschreiben" : "Filing cover letter"}
+              </h2>
+            </div>
+            <p className="text-[11px] text-[var(--atlas-text-muted)] leading-relaxed">
+              {isDe
+                ? "Formell, kurz, mit allen Pflicht-Identifikatoren — bereit zum Anhängen an dein Filing-Paket."
+                : "Formal, terse, with every mandatory identifier — ready to staple onto your filing package."}
+            </p>
+            <p className="mt-2 text-[10.5px] text-cyan-700 dark:text-cyan-400 leading-relaxed">
+              {isDe
+                ? "Liefert: Anrede, Betreff mit Aktenzeichen, Identifikations-Block, Anlagen-Verzeichnis, Schlussformel."
+                : "Returns: salutation, subject line w/ reference, identifying block, enclosures list, closing block."}
+            </p>
+          </div>
+          <div className="p-4 flex flex-col gap-3 flex-1">
+            {intakeActive && (
+              <div className="inline-flex items-center gap-1.5 rounded-md border border-emerald-300 dark:border-emerald-500/40 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 text-[10.5px] text-emerald-800 dark:text-emerald-200">
+                <Briefcase size={10} strokeWidth={1.8} aria-hidden="true" />
+                {isDe ? "Mandanten-Kontext aktiv" : "Mandate context active"}
+                {intake.client.trim() && (
+                  <span className="ml-0.5 font-semibold">
+                    · {intake.client.trim()}
+                  </span>
+                )}
+              </div>
+            )}
+            <div>
+              <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                {isDe ? "Filing-Typ" : "Filing type"}
+              </label>
+              <select
+                value={coverFilingType}
+                onChange={(e) =>
+                  setCoverFilingType(e.target.value as typeof coverFilingType)
+                }
+                className="w-full rounded-md bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] outline-none cursor-pointer"
+              >
+                <option value="authorization">
+                  {isDe
+                    ? "Genehmigung (Erstantrag)"
+                    : "Authorization (initial)"}
+                </option>
+                <option value="notification">
+                  {isDe ? "Notifikation" : "Notification"}
+                </option>
+                <option value="renewal">
+                  {isDe ? "Verlängerung" : "Renewal"}
+                </option>
+                <option value="amendment">
+                  {isDe ? "Änderungsantrag" : "Amendment"}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                {isDe ? "Behörde" : "Authority"}
+              </label>
+              <input
+                type="text"
+                value={coverAuthority}
+                onChange={(e) => setCoverAuthority(e.target.value)}
+                placeholder={
+                  isDe
+                    ? "z. B. Bundesnetzagentur, Mainz"
+                    : "e.g. Bundesnetzagentur, Mainz"
+                }
+                className="w-full rounded-md bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] outline-none placeholder:text-[var(--atlas-text-faint)]"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                {isDe ? "Aktenzeichen (optional)" : "Reference (optional)"}
+              </label>
+              <input
+                type="text"
+                value={coverReference}
+                onChange={(e) => setCoverReference(e.target.value)}
+                placeholder={
+                  isDe
+                    ? "z. B. BNetzA-2026-Sky-Sat-001"
+                    : "e.g. BNetzA-2026-Sky-Sat-001"
+                }
+                className="w-full rounded-md bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] outline-none placeholder:text-[var(--atlas-text-faint)]"
+              />
+            </div>
+            {recentCover.length > 0 && (
+              <div>
+                <label className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-[var(--atlas-text-muted)] mb-1">
+                  <History size={9} strokeWidth={1.8} aria-hidden="true" />
+                  {isDe ? "Zuletzt verwendet" : "Recently used"}
+                </label>
+                <div className="flex flex-wrap gap-1">
+                  {recentCover.map((r) => (
+                    <button
+                      key={r.ts}
+                      type="button"
+                      onClick={() => {
+                        setCoverFilingType(r.filingType);
+                        setCoverAuthority(r.authority);
+                        setCoverReference(r.reference);
+                      }}
+                      title={r.label}
+                      className="text-[10.5px] font-medium px-2 py-0.5 rounded bg-[var(--atlas-bg-inset)] hover:bg-[var(--atlas-bg-surface-muted)] text-[var(--atlas-text-secondary)] hover:text-[var(--atlas-text-primary)] transition-colors max-w-full truncate"
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div>
+              <button
+                type="button"
+                onClick={() =>
+                  setShowPromptFor((cur) => (cur === "cover" ? null : "cover"))
+                }
+                className="inline-flex items-center gap-1 text-[10.5px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)] transition-colors"
+              >
+                {showPromptFor === "cover" ? (
+                  <EyeOff size={10} strokeWidth={1.8} aria-hidden="true" />
+                ) : (
+                  <Eye size={10} strokeWidth={1.8} aria-hidden="true" />
+                )}
+                {isDe
+                  ? showPromptFor === "cover"
+                    ? "Prompt verbergen"
+                    : "Prompt anzeigen"
+                  : showPromptFor === "cover"
+                    ? "Hide prompt"
+                    : "Show prompt"}
+              </button>
+              {showPromptFor === "cover" && (
+                <pre className="mt-1.5 text-[10.5px] text-[var(--atlas-text-secondary)] bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] rounded p-2 whitespace-pre-wrap font-mono">
+                  {coverAuthority.trim()
+                    ? buildCoverPrompt()
+                    : isDe
+                      ? "(Behörde eingeben, um den Prompt zu sehen)"
+                      : "(enter an authority to see the prompt)"}
+                </pre>
+              )}
+            </div>
+          </div>
+          <button
+            type="button"
+            disabled={!coverAuthority.trim()}
+            onClick={handleCoverSubmit}
             className="m-4 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--atlas-action-bg)] hover:bg-[var(--atlas-action-bg-hover)] disabled:opacity-50 disabled:hover:bg-[var(--atlas-action-bg)] disabled:cursor-not-allowed text-[var(--atlas-action-text)] text-[12px] font-medium tracking-wide px-4 py-2.5 transition-colors"
           >
             <Sparkles className="h-3 w-3" strokeWidth={1.8} />
