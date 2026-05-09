@@ -1746,3 +1746,81 @@ hatten substanzielle Discrepancies zur Realität:
 ist die Mandant-Abrechnung defensible. Plus sie kann Voice-Consent
 revoken ohne Browser-DevTools öffnen zu müssen. Plus der model-picker
 lügt nicht mehr (sie weiß dass es eine Display-Preference ist).
+
+---
+
+## 24. Quick-Wins-Bündel #10 — MEDIUM-Polish-Sweep (2026-05-09)
+
+Drei MEDIUM-Findings re-auditiert, eines als false-positive geschlossen,
+zwei real-gap gefixt.
+
+### F-ADM-10 — Theme/Lang Live-Preview (CLOSED — false positive)
+
+- **Wo:** `src/app/(atlas)/atlas/settings/page.tsx:200-201, 425-437`
+- **Befund:** `setLanguage(lang)` und `setTheme(theme)` werden synchron
+  aufgerufen (instant UI update), die API-Persistierung läuft dann
+  fire-and-forget per `fetch(...).catch(() => {})`. Local State wird
+  optimistisch updated. **Live-Preview funktioniert bereits** — der
+  Audit-Befund war stale.
+- **Action:** Closed.
+
+### F-CASES-2 stage-2 — Citation-Format-Picker (HIGH → Done)
+
+- **Wo:** `src/app/(atlas)/atlas/cases/CaseCitationButton.tsx` (von 121
+  zu 312 LOC erweitert)
+- **Vorher:** Stage-1 hatte 2 Formate (plain EN/FR + Bluebuch DE),
+  picked automatisch via UI-language. Anwält:innen die in Mendeley/
+  EndNote/Zotero arbeiten oder LaTeX-Bibliografien pflegen, mussten
+  manuell konvertieren.
+- **Fix:** Picker-Architektur:
+  - **Default-Klick** nutzt sticky-Format aus `localStorage`
+    (`atlas-citation-format`) oder fällt auf locale-Default zurück
+  - **Chevron-Button** rechts vom Main-Button öffnet Format-Menü
+  - **4 Formate** mit Hint:
+    - `plain` — "AGCITED-style memo citation"
+    - `bluebuch` — "DE-Bluebuch — Gerichts-/Kanzlei-Standard"
+    - `bibtex` — `@case{...}` Block für LaTeX-Bibliographien
+    - `ris` — TY/AU/PY/T1/M1/PB/ER Tags für Mendeley/EndNote/Zotero
+  - **Format-Wahl persistiert**: Picker-Selection speichert + setzt als
+    neues Default für den nächsten Main-Klick
+  - **i18n-Labels** in 3 locales (EN/DE/FR), inline maps
+  - **Pure builder functions** für jedes Format — testbar ohne React
+- **Aufwand:** ~50 min
+
+### F-AUTH-11 — Mobile Tap-Targets (MEDIUM → Done, defensive)
+
+- **Wo:** 3 module.css Files in atlas-access/atlas-signup/atlas-login
+- **Vorher:** Audit sagte "untested". Slot/Button-Höhen wurden nicht
+  explizit gefloored. Auf Desktop war alles >44px durch Padding, aber:
+  - Demo-Calendar `.slot` in 3-col-grid auf 360px-Phone → Slots ~30vw
+    breit ohne `min-width`
+  - `.btn` auf Mobile-Zoom oder UA-Style-Override könnte unter 44px
+    fallen
+- **Fix:** Defensive `min-height: 44px` (+ `min-width: 44px` für slots)
+  auf:
+  - `.slot` in atlas-access — calendar slots WCAG 2.5.5 compliant
+  - `.btn` in atlas-login (Login-Submit + Password-Reset)
+  - `.btn` in atlas-signup (Sign-up Submit)
+  - `.btn` in atlas-access (Demo-Booking Submit)
+- **WCAG-Standard:** 2.5.5 Target Size (AAA), 44 × 44 px. Wir floored
+  defensiv — visuell ändert sich nichts auf Desktop (Padding ist
+  schon ausreichend), aber das Lock garantiert dass kein UA-Override
+  oder zukünftiger Padding-Refactor das Floor unterläuft.
+- **Was BEWUSST nicht jetzt gefixt:** Real-Device-Test auf iPhone 15 +
+  iPad — braucht eigene QA-Runde mit BrowserStack oder physical
+  devices. Documented als future "F-AUTH-11 stage-2" task.
+- **Aufwand:** ~15 min
+
+### Trust-Score nach Quick-Wins-Bündel #10
+
+| Surface           | Vorher | Nachher                                                             |
+| ----------------- | ------ | ------------------------------------------------------------------- |
+| Cases             | 7.2/10 | **7.5/10** (+0.3 — citation formats für bibliography-software user) |
+| Auth + Onboarding | 8.3/10 | **8.4/10** (+0.1 — defensive mobile tap-target floor)               |
+| GESAMT            | 8.3/10 | **8.4/10**                                                          |
+
+**Marie+Klaus-Impact:** LaTeX-affine Anwält:innen + Zotero/Mendeley-
+User können jetzt direkt in ihre Bibliography-Software kopieren statt
+manuell zu konvertieren. Mobile-User's UI-tap-targets sind jetzt
+WCAG-2.5.5-konform — auch wenn Future-Refactoring an den paddings
+zaubert.

@@ -487,6 +487,14 @@
   align-items: center;
   justify-content: center;
   padding: 12px 10px;
+  /* Atlas Lawyer-UX-Audit F-AUTH-11: enforce WCAG 2.5.5 (Target Size,
+     AAA) — minimum 44 × 44 px tap-target. The natural padded height
+     already lands around 45 px on desktop, but mobile-narrow widths
+     could collapse the slot below 44 px without these explicit floors.
+     `min-width` matters in the 3-col mobile grid where each slot only
+     gets ~30vw of width on a 360 px phone screen. */
+  min-height: 44px;
+  min-width: 44px;
   border: 1px solid var(--chip-border);
   background: var(--chip-bg);
   border-radius: 10px;
@@ -688,6 +696,8 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
+  /* F-AUTH-11: WCAG 2.5.5 floor — see /atlas-login same fix. */
+  min-height: 44px;
   background: #f5f5f4;
   color: var(--black);
   border: 1px solid #f5f5f4;

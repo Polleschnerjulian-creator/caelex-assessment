@@ -406,6 +406,10 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
+  /* Atlas Lawyer-UX-Audit F-AUTH-11: defensive WCAG 2.5.5 floor.
+     Natural padding lands ~48 px on desktop, but mobile zoom or
+     user-agent style overrides could compress this below 44 px. */
+  min-height: 44px;
   background: #f5f5f4;
   color: var(--black);
   border: 1px solid #f5f5f4;
