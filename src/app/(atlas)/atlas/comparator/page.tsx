@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect, Suspense } from "react";
+import {
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+  useRef,
+  Suspense,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Download, FileText, Link as LinkIcon, Check } from "lucide-react";
 import type { SpaceLawCountryCode } from "@/lib/space-law-types";
@@ -92,7 +99,11 @@ function parseStateFromQuery(params: URLSearchParams): {
       );
     if (parts.length > 0) countries = parts.slice(0, 8);
   }
-  const dim = params.get("dim");
+  /* BUG-A4: dim was case-sensitive while `j` is `.toUpperCase()`d.
+     `?dim=Liability` silently fell through to null/all. Normalise to
+     lowercase here so hand-crafted share-links don't silently break. */
+  const dimRaw = params.get("dim");
+  const dim = dimRaw ? dimRaw.toLowerCase() : null;
   const dimension = dim && VALID_DIMENSIONS.has(dim) ? dim : null;
   const dateRaw = params.get("t");
   let date: Date | null = null;
@@ -153,9 +164,18 @@ function ComparatorPageInner() {
   const [linkCopied, setLinkCopied] = useState(false);
   const { t, language } = useLanguage();
 
-  // Push state changes back into the URL — keeps reload + back-button
-  // returning to the same view. router.replace (not push) so stepping
-  // back doesn't fight the user's filter changes.
+  /* BUG-A5: ref-guard the first-render URL-sync so that a user who
+     lands on the bare `/atlas/comparator` doesn't immediately see
+     `?j=FR,DE,UK` slammed into the address bar before they've done
+     anything. The URL becomes dirty only AFTER the first user
+     interaction changes state.
+     BUG-A6: also dedupe — only push to router when the computed
+     query-string actually differs from the current URL. Without
+     this, a parent re-render that bumps `targetDate`'s reference
+     identity (Date is non-value-equal) re-fires router.replace
+     even when the canonical URL is unchanged. */
+  const initialSyncRef = useRef(true);
+  const lastSyncedQsRef = useRef<string>(searchParams.toString());
   useEffect(() => {
     const params = new URLSearchParams();
     if (selected.length > 0) params.set("j", selected.join(","));
@@ -165,8 +185,15 @@ function ComparatorPageInner() {
       params.set("t", targetDate.toISOString().slice(0, 10));
     }
     const qs = params.toString();
+    if (initialSyncRef.current) {
+      initialSyncRef.current = false;
+      lastSyncedQsRef.current = qs;
+      return;
+    }
+    if (qs === lastSyncedQsRef.current) return;
+    lastSyncedQsRef.current = qs;
     router.replace(`/atlas/comparator${qs ? `?${qs}` : ""}`, { scroll: false });
-  }, [selected, dimension, targetDate, router]);
+  }, [selected, dimension, targetDate, router, searchParams]);
 
   const handleCopyLink = useCallback(async () => {
     const url = buildShareableUrl(selected, dimension, targetDate);

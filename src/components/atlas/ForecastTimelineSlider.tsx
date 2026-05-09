@@ -8,7 +8,7 @@
  * labelling. Keyboard users get arrow-key quarter-stepping for free.
  */
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
 interface ForecastTimelineSliderProps {
@@ -56,7 +56,28 @@ export default function ForecastTimelineSlider({
   onChange,
 }: ForecastTimelineSliderProps) {
   const { t } = useLanguage();
-  const range = useMemo(buildQuarterRange, []);
+  /* BUG-A7: was `useMemo(buildQuarterRange, [])` — `range[0]` then
+     pointed at the QUARTER-START of the day the component mounted.
+     A long-lived dashboard kept open across Mar 31 → Apr 1 would
+     never update its "today" label. Now we anchor on a `nowKey`
+     state that ticks when the wall-clock crosses a quarter boundary
+     (cheap polled check every 30 min — quarters are 90+ days, so a
+     half-hour interval is fine and doesn't spam re-renders). */
+  const [quarterAnchor, setQuarterAnchor] = useState(() =>
+    toQuarterStart(new Date()).toISOString().slice(0, 10),
+  );
+  useEffect(() => {
+    const tick = () => {
+      const next = toQuarterStart(new Date()).toISOString().slice(0, 10);
+      setQuarterAnchor((prev) => (prev === next ? prev : next));
+    };
+    const id = window.setInterval(tick, 30 * 60 * 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  const range = useMemo(
+    buildQuarterRange,
+    [quarterAnchor], // recompute when wall-clock has crossed a quarter
+  );
   const today = range[0]!;
   const valueQuarter = toQuarterStart(value);
   // Find the index corresponding to the current value.
