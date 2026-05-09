@@ -9,11 +9,22 @@ import {
   Suspense,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { Download, FileText, Link as LinkIcon, Check } from "lucide-react";
 import type { SpaceLawCountryCode } from "@/lib/space-law-types";
 import CountrySelector from "@/components/atlas/CountrySelector";
 import ComparisonTable from "@/components/atlas/ComparisonTable";
-import ComparatorExport from "@/components/atlas/ComparatorExport";
+/* PERF-C3: ComparatorExport is ~700 LOC of mostly-dormant DOM
+   (display: none on screen, only used during window.print()). Static
+   import shipped it in the comparator client bundle on every load.
+   Lazy via next/dynamic with ssr:false + null loading shaves ~25-40 KB
+   gzipped from initial JS — the screen never shows this until the
+   user invokes print, by which point the latency is dwarfed by the
+   browser's print-dialog overhead. */
+const ComparatorExport = dynamic(
+  () => import("@/components/atlas/ComparatorExport"),
+  { ssr: false, loading: () => null },
+);
 import ForecastTimelineSlider from "@/components/atlas/ForecastTimelineSlider";
 import CrossBorderQuickRef from "@/components/atlas/CrossBorderQuickRef";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -28,6 +39,14 @@ import {
   type ForecastEvent,
 } from "@/lib/atlas/forecast-engine";
 import { EU_MEMBER_STATES_SET } from "@/lib/space-law-types";
+/* PERF/test-gap: extracted parsing + share-URL building to a pure
+   testable module. See `comparator-state.test.ts` for the locked
+   contracts. */
+import {
+  DEFAULT_COUNTRIES,
+  parseStateFromQuery,
+  buildShareableUrl,
+} from "@/lib/atlas/comparator-state";
 
 /**
  * Shared Apple-like glass style used for the sticky control bar.
@@ -54,91 +73,10 @@ const stickyGlass: React.CSSProperties = {
     "0 8px 40px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.05)",
 };
 
-const DEFAULT_COUNTRIES: SpaceLawCountryCode[] = ["FR", "DE", "UK"];
-
-const VALID_DIMENSIONS = new Set([
-  "all",
-  "authorization",
-  "liability",
-  "debris",
-  "registration",
-  "timeline",
-  "eu_readiness",
-]);
-
-const VALID_COUNTRIES = new Set<SpaceLawCountryCode>([
-  "FR",
-  "DE",
-  "UK",
-  "IT",
-  "LU",
-  "NL",
-  "BE",
-  "ES",
-  "NO",
-  "SE",
-  "FI",
-  "DK",
-  "AT",
-  "CH",
-  "PT",
-  "IE",
-  "GR",
-  "CZ",
-  "PL",
-]);
-
-function parseStateFromQuery(params: URLSearchParams): {
-  countries: SpaceLawCountryCode[] | null;
-  dimension: string | null;
-  date: Date | null;
-} {
-  const j = params.get("j");
-  let countries: SpaceLawCountryCode[] | null = null;
-  if (j) {
-    const parts = j
-      .split(",")
-      .map((s) => s.trim().toUpperCase())
-      .filter((s): s is SpaceLawCountryCode =>
-        VALID_COUNTRIES.has(s as SpaceLawCountryCode),
-      );
-    if (parts.length > 0) countries = parts.slice(0, 8);
-  }
-  /* BUG-A4: dim was case-sensitive while `j` is `.toUpperCase()`d.
-     `?dim=Liability` silently fell through to null/all. Normalise to
-     lowercase here so hand-crafted share-links don't silently break. */
-  const dimRaw = params.get("dim");
-  const dim = dimRaw ? dimRaw.toLowerCase() : null;
-  const dimension = dim && VALID_DIMENSIONS.has(dim) ? dim : null;
-  const dateRaw = params.get("t");
-  let date: Date | null = null;
-  if (dateRaw) {
-    const parsed = new Date(dateRaw);
-    if (!Number.isNaN(parsed.getTime())) date = parsed;
-  }
-  return { countries, dimension, date };
-}
-
-function buildShareableUrl(
-  countries: SpaceLawCountryCode[],
-  dimension: string,
-  date: Date,
-): string {
-  const params = new URLSearchParams();
-  if (countries.length > 0) params.set("j", countries.join(","));
-  if (dimension !== "all") params.set("dim", dimension);
-  // Only include the date if it's >24h away from "now" — saves the
-  // shareable URL from carrying an irrelevant timestamp for the common
-  // "current state" comparison.
-  const drift = Math.abs(date.getTime() - Date.now());
-  if (drift > 24 * 60 * 60 * 1000) {
-    params.set("t", date.toISOString().slice(0, 10));
-  }
-  if (typeof window === "undefined") {
-    return `/atlas/comparator${params.size > 0 ? `?${params.toString()}` : ""}`;
-  }
-  return `${window.location.origin}/atlas/comparator${params.size > 0 ? `?${params.toString()}` : ""}`;
-}
+/* PERF/test-gap fix: VALID_COUNTRIES, VALID_DIMENSIONS,
+   DEFAULT_COUNTRIES, parseStateFromQuery, and buildShareableUrl all
+   moved to `src/lib/atlas/comparator-state.ts` for testability +
+   reuse. The module is the source of truth; this file just consumes. */
 
 function ComparatorPageInner() {
   const router = useRouter();
@@ -262,7 +200,10 @@ function ComparatorPageInner() {
     [],
   );
   const handleCopyLink = useCallback(async () => {
-    const url = buildShareableUrl(selected, dimension, targetDate);
+    const url = buildShareableUrl(selected, dimension, targetDate, {
+      origin:
+        typeof window !== "undefined" ? window.location.origin : undefined,
+    });
     try {
       await navigator.clipboard.writeText(url);
       setLinkCopied(true);

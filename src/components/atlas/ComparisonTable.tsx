@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import type {
   SpaceLawCountryCode,
@@ -401,6 +401,66 @@ export default function ComparisonTable({
     return getEffectiveEventsAt(target);
   }, [targetDate]);
 
+  /* PERF-C1: per-render the table did O(R × C × E) work in
+     `findForecastForConcept` — for 38 rows × 5 countries × 200 events
+     that's 38,000 inclusion checks. Pre-build a `Map<concept,
+     Map<jurisdiction, ForecastEvent>>` PLUS two `Map<concept,
+     ForecastEvent>` indexes for INT and EU meta-events, so the per-
+     cell lookup is O(1). Negligible today; will matter when the
+     event-feed grows to 1k+ entries. First-occurrence semantics
+     preserved (the original `findForecastForConcept` returned the
+     first matching event in the array). */
+  const forecastIndex = useMemo(() => {
+    const byConceptByJurisdiction = new Map<
+      string,
+      Map<string, ForecastEvent>
+    >();
+    const byConceptInt = new Map<string, ForecastEvent>();
+    const byConceptEu = new Map<string, ForecastEvent>();
+    for (const e of forecastEvents) {
+      const isInt = e.jurisdictions.includes("INT");
+      const isEu = e.jurisdictions.includes("EU");
+      for (const concept of e.affectedConcepts) {
+        if (isInt && !byConceptInt.has(concept)) byConceptInt.set(concept, e);
+        if (isEu && !byConceptEu.has(concept)) byConceptEu.set(concept, e);
+        for (const j of e.jurisdictions) {
+          if (j === "INT" || j === "EU") continue;
+          let inner = byConceptByJurisdiction.get(concept);
+          if (!inner) {
+            inner = new Map();
+            byConceptByJurisdiction.set(concept, inner);
+          }
+          if (!inner.has(j)) inner.set(j, e);
+        }
+      }
+    }
+    return { byConceptByJurisdiction, byConceptInt, byConceptEu };
+  }, [forecastEvents]);
+
+  /* O(1) lookup function — replaces `findForecastForConcept` calls
+     downstream. Closes over `forecastIndex` + the (constant)
+     EU_MEMBER_CODES set. */
+  const lookupForecast = useCallback(
+    (
+      conceptKey: string | undefined,
+      jurisdiction: string,
+    ): ForecastEvent | null => {
+      if (!conceptKey) return null;
+      const direct = forecastIndex.byConceptByJurisdiction
+        .get(conceptKey)
+        ?.get(jurisdiction);
+      if (direct) return direct;
+      const intMatch = forecastIndex.byConceptInt.get(conceptKey);
+      if (intMatch) return intMatch;
+      if (EU_MEMBER_CODES.has(jurisdiction)) {
+        const euMatch = forecastIndex.byConceptEu.get(conceptKey);
+        if (euMatch) return euMatch;
+      }
+      return null;
+    },
+    [forecastIndex],
+  );
+
   // Build translated row definitions
   /* BUG-A1: all concept-keys reference the canonical CONCEPT_KEYS map
      so they stay in sync with `forecast-engine.ts`'s emitter side.
@@ -656,6 +716,7 @@ export default function ComparisonTable({
                 jurisdictions={jurisdictions}
                 showSectionHeader={dimension === "all"}
                 forecastEvents={forecastEvents}
+                lookupForecast={lookupForecast}
               />
             ))}
           </tbody>
@@ -682,12 +743,20 @@ function SectionBlock({
   jurisdictions,
   showSectionHeader,
   forecastEvents,
+  lookupForecast,
 }: {
   label: string;
   rows: RowDefInternal[];
   jurisdictions: { code: SpaceLawCountryCode; data: JurisdictionLaw }[];
   showSectionHeader: boolean;
+  /* Kept for back-compat (forecastEvents.length > 0 used as a render
+     gate elsewhere) but the per-cell forecast-lookup is now the
+     O(1) `lookupForecast` closure. PERF-C1. */
   forecastEvents: ForecastEvent[];
+  lookupForecast: (
+    conceptKey: string | undefined,
+    jurisdiction: string,
+  ) => ForecastEvent | null;
 }) {
   return (
     <>
@@ -721,11 +790,7 @@ function SectionBlock({
             {jurisdictions.map(({ code, data }, colIdx) => {
               const value = row.accessor(data);
               const render = getCellRender(row.conceptKey || "", value);
-              const forecast = findForecastForConcept(
-                forecastEvents,
-                code,
-                row.conceptKey,
-              );
+              const forecast = lookupForecast(row.conceptKey, code);
 
               return (
                 <td
