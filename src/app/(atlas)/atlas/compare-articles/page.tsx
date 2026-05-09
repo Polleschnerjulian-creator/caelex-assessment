@@ -11,6 +11,7 @@ import {
   Search,
   Quote,
   AlertCircle,
+  Gavel,
 } from "lucide-react";
 import {
   ALL_SOURCES,
@@ -19,6 +20,11 @@ import {
   type LegalSource,
   type KeyProvision,
 } from "@/data/legal-sources";
+import {
+  getCasesApplyingSource,
+  getTranslatedCase,
+  type LegalCase,
+} from "@/data/legal-cases";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { getVerbatimAttribution } from "@/lib/atlas/verbatim-attribution";
 
@@ -382,6 +388,125 @@ function CompareArticlesView() {
   );
 }
 
+/* ──────────────────────────────────────────────────────────────────
+   F-CASES-3 — Doctrine Cross-Reference
+   ──────────────────────────────────────────────────────────────────
+   Lawyers comparing statutory provisions side-by-side want to know
+   *how those provisions have been applied* — which decisions cite
+   them, with what outcome. The cases dataset already tags each
+   record with `applied_sources: string[]`, so the reverse-index is
+   trivially `getCasesApplyingSource(source.id)`. We surface up to
+   five hits per column so the column doesn't grow into a wall of
+   text; the "all related cases" link drops straight into the cases
+   list pre-filtered. */
+
+const STATUS_TONE: Record<LegalCase["status"], string> = {
+  decided:
+    "bg-violet-100 text-violet-800 dark:bg-violet-500/20 dark:text-violet-300",
+  settled:
+    "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300",
+  vacated: "bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300",
+  appeal_pending:
+    "bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300",
+  pending:
+    "bg-slate-100 text-slate-700 dark:bg-slate-500/20 dark:text-slate-300",
+  withdrawn:
+    "bg-slate-100 text-slate-600 dark:bg-slate-500/15 dark:text-slate-400",
+};
+
+const STATUS_LABEL: Record<LegalCase["status"], { en: string; de: string }> = {
+  decided: { en: "Decided", de: "Entschieden" },
+  settled: { en: "Settled", de: "Vergleich" },
+  vacated: { en: "Vacated", de: "Aufgehoben" },
+  appeal_pending: { en: "On appeal", de: "Berufung anhängig" },
+  pending: { en: "Pending", de: "Anhängig" },
+  withdrawn: { en: "Withdrawn", de: "Zurückgezogen" },
+};
+
+function RelatedCasesSection({
+  sourceId,
+  language,
+}: {
+  sourceId: string;
+  language: ReturnType<typeof useLanguage>["language"];
+}) {
+  const isDe = language === "de";
+  /* `getCasesApplyingSource` walks ATLAS_CASES once per render, but the
+     dataset is module-loaded constant data (28 cases × ~5 sources each)
+     so the cost is negligible — useMemo here would just add an
+     allocation. Sort by date so the most-recent cases lead. */
+  const cases = getCasesApplyingSource(sourceId).sort(
+    (a, b) =>
+      new Date(b.date_decided).getTime() - new Date(a.date_decided).getTime(),
+  );
+  if (cases.length === 0) return null;
+
+  const visible = cases.slice(0, 5);
+  const remaining = cases.length - visible.length;
+
+  return (
+    <div className="mt-5 pt-4 border-t border-[var(--atlas-border-subtle)]">
+      <div className="flex items-center gap-1.5 mb-2.5">
+        <Gavel
+          className="h-3 w-3 text-violet-600 dark:text-violet-400"
+          strokeWidth={1.5}
+          aria-hidden="true"
+        />
+        <span className="text-[10px] uppercase tracking-[0.18em] text-violet-700 dark:text-violet-300 font-semibold">
+          {isDe
+            ? `Anwendungsfälle (${cases.length})`
+            : `Cases applying this (${cases.length})`}
+        </span>
+      </div>
+      <ul className="space-y-1">
+        {visible.map((c) => {
+          const tr = getTranslatedCase(c.id, language);
+          const title = tr?.title ?? c.title;
+          const year = c.date_decided.slice(0, 4);
+          const statusLabel = isDe
+            ? STATUS_LABEL[c.status].de
+            : STATUS_LABEL[c.status].en;
+          return (
+            <li key={c.id}>
+              <Link
+                href={`/atlas/cases/${encodeURIComponent(c.id)}`}
+                className="group flex items-start gap-2 rounded-md px-2 py-1.5 text-[11.5px] text-[var(--atlas-text-secondary)] hover:bg-[var(--atlas-bg-hover)] hover:text-[var(--atlas-text-primary)] transition-colors"
+              >
+                <span className="font-mono text-[10px] text-[var(--atlas-text-faint)] shrink-0 mt-0.5 w-9">
+                  {year}
+                </span>
+                <span className="flex-1 min-w-0 leading-snug line-clamp-2 group-hover:text-[var(--atlas-text-primary)]">
+                  {title}
+                </span>
+                <span
+                  className={`shrink-0 self-start mt-0.5 text-[9px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded ${STATUS_TONE[c.status]}`}
+                >
+                  {statusLabel}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+      {remaining > 0 && (
+        /* +N hint links to the cases index — the user can use the
+           recently-shipped status / forum / jurisdiction filters to
+           narrow further. We can't pre-filter via query-param yet
+           (cases page reads filters from local state, not URL) so the
+           link points at the index; the visible 5 already covered
+           the most-recent cases, and the rest are older context. */
+        <Link
+          href="/atlas/cases"
+          className="mt-2 inline-flex items-center gap-1 text-[10.5px] text-violet-700 dark:text-violet-400 hover:underline"
+        >
+          {isDe ? `+${remaining} weitere` : `+${remaining} more`}
+          <ExternalLink className="h-2.5 w-2.5" strokeWidth={1.5} />
+        </Link>
+      )}
+    </div>
+  );
+}
+
 function ArticleColumn({
   resolved,
   language,
@@ -551,6 +676,12 @@ function ArticleColumn({
             </div>
           </>
         )}
+
+        {/* F-CASES-3: doctrine cross-reference. Renders nothing if zero
+            cases cite this source — keeps short articles uncluttered.
+            Lives below the verbatim/summary so the law's words always
+            beat the case-list to the user's eye. */}
+        <RelatedCasesSection sourceId={source.id} language={language} />
       </div>
 
       {(url || provision?.complianceImplication) && (

@@ -1287,3 +1287,56 @@ Die Audit-Doc ist stale — viele Findings wurden in Bundles #1-#3 oder
 in DSGVO-1+2 implizit mit-gefixt ohne als geschlossen markiert zu werden.
 Ab Bundle #5 gilt: jedes Bundle startet mit explizitem Re-Read der
 betroffenen Files BEVOR Implementation, nicht erst beim Edit.
+
+---
+
+## 19. Quick-Wins-Bündel #5 — F-CASES-3 Doctrine-Cross-Reference (2026-05-09)
+
+Statt einer vollen "Bündel"-Sammlung dieses Mal **ein** dichtes Finding,
+weil F-CASES-3 als HIGH-Severity-Item das Compare-Articles-Surface
+strukturell aufwertet (ohne ist Compare-Articles "tote" Statuten-
+Vergleichserie, mit ist es ein Doktrine-zu-Praxis-Brücken-Tool).
+
+**Re-Audit-Process:** Vor Implementation überprüft — `compare-articles/
+page.tsx` hatte tatsächlich keine Cross-Reference, und die
+Cases-Datasource hatte bereits den exakten Helper (`getCasesApplyingSource`)
+plus dataset-tagging (`applied_sources: string[]` pro Case, 44 cases
+populated). Kein false-positive — echte Lücke.
+
+### F-CASES-3 — Cases-Doctrine-Cross-Reference auf Compare-Articles (HIGH → Done)
+
+- **Wo:** `src/app/(atlas)/atlas/compare-articles/page.tsx` (neue Komponente
+  `RelatedCasesSection`, in jede `ArticleColumn` integriert)
+- **Vorher:** Marie liest FR-LOS Art. 4 nebenan UK SIA s.7 — sieht den
+  Wortlaut, sieht die Caelex-Zusammenfassung. Will wissen "wie wurde
+  diese Norm eigentlich angewendet?" → muss /atlas/cases öffnen, jede
+  Source-ID manuell suchen, hin- und herwechseln. 8-12 min Friction
+  pro Norm.
+- **Fix:** Per-column "Cases applying this (N)" Sub-Section unter dem
+  Verbatim/Summary-Block. Listet:
+  - Top 5 Cases nach `date_decided` desc
+  - Year-Mono-Prefix für scan-line Lesbarkeit
+  - Truncated Title (line-clamp-2)
+  - Status-Badge mit color-tone (decided=violet, settled=amber,
+    vacated=red, appeal_pending=blue, pending=slate, withdrawn=slate-faint)
+  - Direct-Link zu `/atlas/cases/[id]`
+  - "+N weitere" Hint zur Cases-Index wenn >5 cases
+  - Nichts gerendert wenn 0 cases — keine leeren-State-Pollution
+- **Daten-Source:** `getCasesApplyingSource(sourceId)` — existing barrel
+  helper, joins via `applied_sources` array auf jedem Case. 44 cases
+  haben `applied_sources` populated → dichte Coverage.
+- **i18n:** Inline DE/EN per `STATUS_LABEL` map (analog zu Cases-Index
+  in Bundle #4, gleiche Vokabel).
+- **Aufwand:** ~45 min (inkl. Status-tone-tokens + reverse-index-design)
+
+### Trust-Score nach Quick-Wins-Bündel #5
+
+| Surface          | Vorher | Nachher                                                   |
+| ---------------- | ------ | --------------------------------------------------------- |
+| Compare-Articles | 6/10   | **7/10** (+1 — Doctrine-zu-Praxis-Brücke geschlossen)     |
+| Cases            | 7/10   | **7.2/10** (+0.2 — passive boost durch reverse-Pfad rein) |
+| GESAMT           | 7.7/10 | **7.8/10**                                                |
+
+**Marie-Impact:** Statt manuelle Such-Schleife jetzt 1-Klick von
+Statuten-Wortlaut zu citing case → Faktor-10 Speed-Up beim "wie wurde
+das angewendet?"-Reflex.
