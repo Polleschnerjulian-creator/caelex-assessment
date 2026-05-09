@@ -20,6 +20,8 @@ import {
   ChevronUp,
   Wand2,
   X,
+  Library,
+  Tag,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { ALL_SOURCES } from "@/data/legal-sources";
@@ -45,6 +47,7 @@ import {
   EMPTY_INTAKE,
   type MandateIntake,
 } from "@/lib/atlas/mandate-intake";
+import { getClauses, type Clause } from "@/lib/atlas/clause-library";
 
 /* Atlas Lawyer-UX-Audit F-DRAFT-2 — Privilege-marker support.
    When the user opts in, every prompt the studio dispatches to AI
@@ -244,6 +247,55 @@ export default function DraftingStudioPage() {
     ? composeMandateContext(intake, outputLang === "de" ? "de" : "en")
     : "";
 
+  /* S3 — Clause attachments. Session-wide (not per-tile) so Marie can
+     attach the boilerplate once and dispatch any of the three tiles
+     with the same clauses included. Refreshes from localStorage on
+     mount + when the picker opens. */
+  const [clauses, setClauses] = useState<Clause[]>([]);
+  const [attachedClauseIds, setAttachedClauseIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [clausePickerOpen, setClausePickerOpen] = useState(false);
+  useEffect(() => {
+    setClauses(getClauses());
+  }, []);
+  /* Reload clauses when the picker opens — the user may have added a
+     clause on /atlas/drafting/clauses since the page first mounted. */
+  useEffect(() => {
+    if (clausePickerOpen) setClauses(getClauses());
+  }, [clausePickerOpen]);
+
+  const attachedClauses = useMemo(
+    () => clauses.filter((c) => attachedClauseIds.has(c.id)),
+    [clauses, attachedClauseIds],
+  );
+
+  const toggleAttachClause = (id: string) => {
+    const next = new Set(attachedClauseIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setAttachedClauseIds(next);
+  };
+
+  /* Compose the clause-directive block. Empty string when no clauses
+     attached. Builders append this at the end of every prompt so the
+     model sees the boilerplate as a verbatim-include directive, not
+     as suggestion to paraphrase. */
+  const clauseDirective = useMemo(() => {
+    if (attachedClauses.length === 0) return "";
+    const heading =
+      outputLang === "de"
+        ? "Folgende Standard-Klauseln wortgetreu in den Entwurf einbauen:"
+        : "Include the following standard clauses verbatim in the draft:";
+    const blocks = attachedClauses
+      .map(
+        (c) =>
+          `--- ${c.name}${c.jurisdiction ? ` (${c.jurisdiction})` : ""} ---\n${c.content}`,
+      )
+      .join("\n\n");
+    return `\n\n${heading}\n\n${blocks}`;
+  }, [attachedClauses, outputLang]);
+
   /* Auth-tile prefill from intake. Only applied when the user clicks
      the "Use mandate" button — never silently overwrites local edits. */
   const applyIntakeToAuth = () => {
@@ -341,7 +393,11 @@ export default function DraftingStudioPage() {
         ? ` Missionsprofil: ${authMission.trim()}.`
         : ` Mission profile: ${authMission.trim()}.`
       : "";
-    return withPrivilege((outputDe ? baseDe : baseEn) + mission);
+    /* S3: clause-directive appended at the end so the model sees it
+       as a "include verbatim" instruction, not as part of the mission. */
+    return withPrivilege(
+      (outputDe ? baseDe : baseEn) + mission + clauseDirective,
+    );
   };
 
   const buildBriefPrompt = (): string => {
@@ -355,7 +411,7 @@ export default function DraftingStudioPage() {
         ? ` Mandanten-Kontext: ${mandateContext}.`
         : ` Mandate context: ${mandateContext}.`
       : "";
-    return withPrivilege(base + ctx);
+    return withPrivilege(base + ctx + clauseDirective);
   };
 
   const buildComparePrompt = (): string => {
@@ -368,7 +424,7 @@ export default function DraftingStudioPage() {
         ? ` Mandanten-Kontext: ${mandateContext}.`
         : ` Mandate context: ${mandateContext}.`
       : "";
-    return withPrivilege(base + ctx);
+    return withPrivilege(base + ctx + clauseDirective);
   };
 
   const handleAuthSubmit = () => {
@@ -443,15 +499,26 @@ export default function DraftingStudioPage() {
             {t("atlas.drafting_title")}
           </h1>
         </div>
-        {/* Bundle 32: link to the My Drafts library. Surfaces only after
-            hydration so the count badge doesn't pop in late. */}
-        <Link
-          href="/atlas/drafting/history"
-          className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)] transition-colors"
-        >
-          <History size={11} strokeWidth={1.8} aria-hidden="true" />
-          {isDe ? "Meine Entwürfe" : "My Drafts"}
-        </Link>
+        <div className="flex items-center gap-3">
+          {/* Bundle 33: clause-library shortcut. Same lightweight link
+              treatment as the My Drafts entry. */}
+          <Link
+            href="/atlas/drafting/clauses"
+            className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)] transition-colors"
+          >
+            <Library size={11} strokeWidth={1.8} aria-hidden="true" />
+            {isDe ? "Klauseln" : "Clauses"}
+          </Link>
+          {/* Bundle 32: link to the My Drafts library. Surfaces only
+              after hydration so the count badge doesn't pop in late. */}
+          <Link
+            href="/atlas/drafting/history"
+            className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)] transition-colors"
+          >
+            <History size={11} strokeWidth={1.8} aria-hidden="true" />
+            {isDe ? "Meine Entwürfe" : "My Drafts"}
+          </Link>
+        </div>
       </header>
 
       {/* Hero subtitle — promise + speed claim ("2 minutes instead of
@@ -758,6 +825,134 @@ export default function DraftingStudioPage() {
                   {isDe ? "Mandant zurücksetzen" : "Reset mandate"}
                 </button>
               </div>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* S3 — Clause attachment panel. Session-wide. The same set of
+          attached clauses is appended to every dispatched prompt
+          (auth / brief / compare) as a verbatim-include directive.
+          Only renders the toggle when there are saved clauses to pick
+          from; otherwise nudges Marie toward /atlas/drafting/clauses. */}
+      <section className="max-w-3xl rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setClausePickerOpen((o) => !o)}
+          className="w-full flex items-center gap-2 px-4 py-2.5 text-left hover:bg-[var(--atlas-bg-surface-muted)] transition-colors"
+          aria-expanded={clausePickerOpen}
+        >
+          <Library
+            size={14}
+            strokeWidth={1.8}
+            className={
+              attachedClauses.length > 0
+                ? "text-emerald-600 dark:text-emerald-400"
+                : "text-[var(--atlas-text-faint)]"
+            }
+            aria-hidden="true"
+          />
+          <span className="flex-1 min-w-0">
+            <span className="text-[12.5px] font-medium text-[var(--atlas-text-primary)]">
+              {isDe ? "Standard-Klauseln" : "Standard clauses"}
+            </span>
+            {attachedClauses.length > 0 ? (
+              <span className="ml-2 inline-flex items-center rounded-md bg-emerald-100 dark:bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-800 dark:text-emerald-200">
+                {attachedClauses.length}
+                {isDe ? " angeheftet" : " attached"}
+              </span>
+            ) : (
+              <span className="ml-2 text-[11px] text-[var(--atlas-text-muted)]">
+                {isDe
+                  ? "Boilerplate auswählen, die jeder Entwurf verbatim enthalten soll"
+                  : "Pick boilerplate every draft should include verbatim"}
+              </span>
+            )}
+          </span>
+          {clausePickerOpen ? (
+            <ChevronUp
+              size={14}
+              strokeWidth={1.8}
+              className="text-[var(--atlas-text-faint)]"
+              aria-hidden="true"
+            />
+          ) : (
+            <ChevronDown
+              size={14}
+              strokeWidth={1.8}
+              className="text-[var(--atlas-text-faint)]"
+              aria-hidden="true"
+            />
+          )}
+        </button>
+
+        {clausePickerOpen && (
+          <div className="border-t border-[var(--atlas-border-subtle)] p-4 flex flex-col gap-2">
+            {clauses.length === 0 ? (
+              <div className="flex flex-col items-center text-center gap-2 py-4">
+                <p className="text-[12px] text-[var(--atlas-text-muted)]">
+                  {isDe
+                    ? "Du hast noch keine Klauseln gespeichert."
+                    : "You haven't saved any clauses yet."}
+                </p>
+                <Link
+                  href="/atlas/drafting/clauses"
+                  className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-400 hover:underline"
+                >
+                  <Library size={11} strokeWidth={1.8} aria-hidden="true" />
+                  {isDe
+                    ? "Erste Klausel anlegen →"
+                    : "Create your first clause →"}
+                </Link>
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto">
+                  {clauses.map((c) => {
+                    const attached = attachedClauseIds.has(c.id);
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => toggleAttachClause(c.id)}
+                        title={c.content.slice(0, 200)}
+                        className={`text-[11px] font-medium px-2 py-1 rounded border transition-colors flex items-center gap-1 ${
+                          attached
+                            ? "bg-emerald-100 dark:bg-emerald-500/20 border-emerald-300 dark:border-emerald-400/40 text-emerald-800 dark:text-emerald-200"
+                            : "bg-[var(--atlas-bg-surface-muted)] border-[var(--atlas-border)] text-[var(--atlas-text-secondary)] hover:text-[var(--atlas-text-primary)]"
+                        }`}
+                      >
+                        {attached && (
+                          <Tag size={9} strokeWidth={1.8} aria-hidden="true" />
+                        )}
+                        {c.name}
+                        {c.jurisdiction && (
+                          <span className="opacity-70 text-[9.5px]">
+                            · {c.jurisdiction}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center justify-between gap-2 pt-1">
+                  <span className="text-[10.5px] text-[var(--atlas-text-muted)] italic">
+                    {attachedClauses.length === 0
+                      ? isDe
+                        ? "Klick eine Klausel an, um sie an den nächsten Entwurf anzuhängen."
+                        : "Click a clause to attach it to the next dispatched draft."
+                      : isDe
+                        ? `Wird in jeden Entwurf wortgetreu eingebaut.`
+                        : `Will be included verbatim in every dispatched draft.`}
+                  </span>
+                  <Link
+                    href="/atlas/drafting/clauses"
+                    className="text-[10.5px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)] transition-colors"
+                  >
+                    {isDe ? "Klauseln verwalten →" : "Manage clauses →"}
+                  </Link>
+                </div>
+              </>
             )}
           </div>
         )}
