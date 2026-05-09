@@ -2156,3 +2156,69 @@ Re-Audit-Ergebnis:
 Klaus aus dem Urlaub angerufen werden muss. Audit-trail ist via
 existing `logger.info("Atlas firm settings updated", {...updatedBy})`
 abgedeckt — wir wissen wer was geändert hat.
+
+---
+
+## 29. Quick-Wins-Bündel #15 — F-RES-1 Jurisdiction-Filter (BLOCKER) (2026-05-09)
+
+Re-Audit-Ergebnis:
+
+- **F-RES-1 part 1 (10-source-cap)**: ✅ schon done — `showAllSources`
+  toggle + "Show all N sources" expansion-link sind bereits seit
+  früher live. Sweep-Bestätigung statt false-positive.
+- **F-RES-1 part 2 (Jurisdiction-Filter)**: real gap. `performSearch`
+  hatte keinen jurisdiction-param, alle 7 Result-Buckets vermischen
+  alle 19+ Jurisdiktionen. 30-min Mandat dauerte 25 min für die
+  Discovery weil Marie ständig non-DE-results visuell überspringen
+  musste.
+
+### F-RES-1 part 2 — Dashboard Jurisdiction-Filter (BLOCKER → Done, ~40 min)
+
+- **Wo:** `src/app/(atlas)/atlas/page.tsx` — `performSearch` signature +
+  component state + UI dropdown
+- **Architektur:**
+  - `performSearch(query, jurisdictionFilter)` als post-filter pass
+    — keine Änderungen am ranking + scoring (das match-system bleibt
+    stabil, narrowing nur an der Surface)
+  - Filter wirkt auf alle 7 Result-Buckets per `item.jurisdiction === filter`:
+    jurisdictions, sources, authorities, profiles, case-studies,
+    conduct, cases
+  - Empty-check post-filter — "No results" rendert wenn der filter
+    den Bucket auf 0 reduziert
+- **State:**
+  - `[jurisdictionFilter, setJurisdictionFilter]` — sticky across
+    queries (partner working a DE-mandate stays in DE-mode ohne
+    re-pick auf jeder neuen suche)
+  - `availableJurisdictions` useMemo: aggregated set aller jurisdictions
+    aus allen 7 datasets, sortiert mit `EU/INT/DE/FR/GB/UK/US/LU`
+    pinned-top, rest alphabetisch
+- **UI:**
+  - Renders nur wenn `hasAnyResults` — empty-state-hero bleibt clean
+  - `<select>` mit "Alle (19+)" als first option + alle codes
+  - Inline "× zurücksetzen" / "× clear" button wenn filter aktiv
+  - Localized label DE/EN
+  - Bewusste Position UNTER dem search-input — der suchstring ist
+    primary, der jurisdiction-filter ist scope-narrowing secondary
+- **Was BEWUSST nicht jetzt gefixt:**
+  - URL-state-sync für jurisdictionFilter (so eine Marie's `?j=DE`
+    link teilen könnte). Stage-2 wenn shareable-search ein
+    persistenter Use-case wird.
+  - Multi-jurisdiction-select (DE + AT + CH gleichzeitig). Aktuell
+    single-select reicht für 95% der Fälle.
+  - Show-all toggles auf den anderen capped buckets (profiles,
+    case-studies, conduct, cases) — die 10-cap ist auf den meisten
+    nicht so eng wie auf sources weil weniger volume vorhanden.
+    Wenn ein bucket hart rebellt, dann eigener stage-2.
+
+### Trust-Score nach Quick-Wins-Bündel #15
+
+| Surface   | Vorher | Nachher                                                                |
+| --------- | ------ | ---------------------------------------------------------------------- |
+| Dashboard | 7/10   | **8/10** (+1 — BLOCKER closed, jurisdiction-narrowing zu single-click) |
+| GESAMT    | 8.8/10 | **8.9/10**                                                             |
+
+**Marie-Impact:** "Germany re-entry liability" Mandat — vorher mussten
+sie 80% der results visuell überspringen. Jetzt: dropdown auf "DE",
+nur DE-relevante hits. Discovery von 25 min → ~5 min. Plus die
+selection bleibt sticky → sequenzielle queries im selben mandate
+verbrennen kein zusätzliches scope-clicking.

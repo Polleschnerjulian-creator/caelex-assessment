@@ -244,7 +244,16 @@ interface SearchResults {
   cases: LegalCase[];
 }
 
-function performSearch(query: string): SearchResults | null {
+/* F-RES-1: optional jurisdiction post-filter. The audit specifically
+   asked for a Jurisdiction-Filter dropdown in the search header so a
+   30-min mandate ("Germany re-entry liability") doesn't drown in
+   non-DE noise. We post-filter every result group by `jurisdiction`
+   (or `code` for the jurisdictions list itself) so the existing
+   ranking stays untouched — narrowing only at the surface. */
+function performSearch(
+  query: string,
+  jurisdictionFilter: string | null,
+): SearchResults | null {
   const raw = query.trim();
   if (!raw || raw.length < 2) return null;
   // q is the folded query: lowercased, NFD-decomposed, combining marks
@@ -328,26 +337,60 @@ function performSearch(query: string): SearchResults | null {
       new Date(b.date_decided).getTime() - new Date(a.date_decided).getTime(),
   );
 
+  /* F-RES-1: apply jurisdiction filter as a post-filter pass. Each
+     source has a `jurisdiction` field; for the jurisdictions tuple
+     itself we match on the code key. Filter is case-sensitive ALL-
+     CAPS country-code form ("DE", "FR", "INT", "EU") — the dropdown
+     only ever sets these values. Null disables the filter entirely. */
+  let filteredJurisdictions = jurisdictions;
+  let filteredSources = sources;
+  let filteredAuthorities = authorities;
+  let filteredProfiles = landingRightsProfiles;
+  let filteredCaseStudies = landingRightsCaseStudies;
+  let filteredConduct = landingRightsConduct;
+  let filteredCases = cases;
+  if (jurisdictionFilter) {
+    filteredJurisdictions = jurisdictions.filter(
+      ([code]) => code === jurisdictionFilter,
+    );
+    filteredSources = sources.filter(
+      (s) => s.jurisdiction === jurisdictionFilter,
+    );
+    filteredAuthorities = authorities.filter(
+      (a) => a.jurisdiction === jurisdictionFilter,
+    );
+    filteredProfiles = landingRightsProfiles.filter(
+      (p) => p.jurisdiction === jurisdictionFilter,
+    );
+    filteredCaseStudies = landingRightsCaseStudies.filter(
+      (cs) => cs.jurisdiction === jurisdictionFilter,
+    );
+    filteredConduct = landingRightsConduct.filter(
+      (c) => c.jurisdiction === jurisdictionFilter,
+    );
+    filteredCases = cases.filter((c) => c.jurisdiction === jurisdictionFilter);
+  }
+
   if (
-    jurisdictions.length === 0 &&
-    sources.length === 0 &&
-    authorities.length === 0 &&
-    landingRightsProfiles.length === 0 &&
-    landingRightsCaseStudies.length === 0 &&
-    landingRightsConduct.length === 0 &&
-    cases.length === 0
+    filteredJurisdictions.length === 0 &&
+    filteredSources.length === 0 &&
+    filteredAuthorities.length === 0 &&
+    filteredProfiles.length === 0 &&
+    filteredCaseStudies.length === 0 &&
+    filteredConduct.length === 0 &&
+    filteredCases.length === 0
   ) {
     return null;
   }
 
   return {
-    jurisdictions,
-    sources,
-    authorities,
-    landingRightsProfiles,
-    landingRightsCaseStudies,
-    landingRightsConduct,
-    cases,
+    jurisdictions: filteredJurisdictions,
+    sources: filteredSources,
+    authorities: filteredAuthorities,
+    landingRightsProfiles: filteredProfiles,
+    landingRightsCaseStudies: filteredCaseStudies,
+    landingRightsConduct: filteredConduct,
+    cases: filteredCases,
   };
 }
 
@@ -463,6 +506,42 @@ export default function CommandCenterPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query, 150);
+
+  /* F-RES-1: jurisdiction filter for the dashboard search. The audit
+     observed that "Germany re-entry liability" returned all 19+
+     jurisdictions' results mixed together, so a 30-min mandate
+     turned into 25 minutes of mental dedupe. The dropdown narrows
+     the search post-rank to a single jurisdiction. Sticky across
+     queries — partner who's working a German mandate stays in DE
+     mode without re-selecting on every search. */
+  const [jurisdictionFilter, setJurisdictionFilter] = useState<string | null>(
+    null,
+  );
+
+  /* All jurisdictions the dataset can possibly surface, computed once
+     from every relevant array (sources, authorities, profiles, cases,
+     etc.). Sorted with EU/INT pinned to the top because they're the
+     most frequently selected meta-jurisdictions. */
+  const availableJurisdictions = useMemo(() => {
+    const set = new Set<string>();
+    for (const s of ALL_SOURCES) set.add(s.jurisdiction);
+    for (const a of ALL_AUTHORITIES) set.add(a.jurisdiction);
+    for (const p of ALL_LANDING_RIGHTS_PROFILES) set.add(p.jurisdiction);
+    for (const cs of ALL_CASE_STUDIES) set.add(cs.jurisdiction);
+    for (const c of ALL_CONDUCT_CONDITIONS) set.add(c.jurisdiction);
+    for (const c of ATLAS_CASES) set.add(c.jurisdiction);
+    for (const [code] of JURISDICTION_DATA.entries()) set.add(code);
+    const all = Array.from(set);
+    const PIN_TOP = ["EU", "INT", "DE", "FR", "GB", "UK", "US", "LU"];
+    return all.sort((a, b) => {
+      const ai = PIN_TOP.indexOf(a);
+      const bi = PIN_TOP.indexOf(b);
+      if (ai !== -1 && bi !== -1) return ai - bi;
+      if (ai !== -1) return -1;
+      if (bi !== -1) return 1;
+      return a.localeCompare(b);
+    });
+  }, []);
   // M8: greetingKey is derived from new Date().getHours(), which resolves
   // to the server's timezone on SSR and the user's timezone on hydration.
   // Initialise to a neutral value on both sides, then pick the real
@@ -476,8 +555,8 @@ export default function CommandCenterPage() {
   }, []);
 
   const results = useMemo(
-    () => performSearch(debouncedQuery),
-    [debouncedQuery],
+    () => performSearch(debouncedQuery, jurisdictionFilter),
+    [debouncedQuery, jurisdictionFilter],
   );
 
   // Semantic search runs in parallel to the exact-match performSearch
@@ -650,6 +729,54 @@ export default function CommandCenterPage() {
             style={{ caretColor: "#111", outline: "none", boxShadow: "none" }}
           />
         </div>
+
+        {/* F-RES-1: jurisdiction filter — only renders once a query
+            is active so the empty-state hero stays clean. Sticky:
+            stays selected across queries because a partner working a
+            DE mandate doesn't want to re-pick "DE" on every search.
+            Reset is one click. */}
+        {hasAnyResults && (
+          <div className="flex items-center gap-2 mb-4 text-[12px] text-[var(--atlas-text-muted)]">
+            <span>{language === "de" ? "Jurisdiktion:" : "Jurisdiction:"}</span>
+            <select
+              value={jurisdictionFilter ?? ""}
+              onChange={(e) =>
+                setJurisdictionFilter(
+                  e.target.value === "" ? null : e.target.value,
+                )
+              }
+              aria-label={
+                language === "de"
+                  ? "Nach Jurisdiktion filtern"
+                  : "Filter by jurisdiction"
+              }
+              className="rounded-md bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2 py-1 text-[12px] text-[var(--atlas-text-primary)] outline-none cursor-pointer hover:border-[var(--atlas-border-strong)]"
+            >
+              <option value="">
+                {language === "de" ? "Alle (19+)" : "All (19+)"}
+              </option>
+              {availableJurisdictions.map((code) => (
+                <option key={code} value={code}>
+                  {code}
+                </option>
+              ))}
+            </select>
+            {jurisdictionFilter && (
+              <button
+                type="button"
+                onClick={() => setJurisdictionFilter(null)}
+                className="text-[11px] text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-primary)]"
+                aria-label={
+                  language === "de"
+                    ? "Jurisdiktions-Filter aufheben"
+                    : "Clear jurisdiction filter"
+                }
+              >
+                {language === "de" ? "× zurücksetzen" : "× clear"}
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Subtle stats line */}
         <div
