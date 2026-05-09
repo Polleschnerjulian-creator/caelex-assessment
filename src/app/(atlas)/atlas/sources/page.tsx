@@ -20,6 +20,7 @@ import {
   type RelevanceLevel,
 } from "@/data/legal-sources";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { EmptyState } from "../_components/EmptyState";
 
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
@@ -340,15 +341,22 @@ export default function SourcesIndexPage() {
         </span>
       </div>
 
-      {/* Result list */}
+      {/* Result list — F-RES-6 standardised empty-state */}
       {displayed.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] p-8 text-center">
-          <p className="text-[12px] text-[var(--atlas-text-muted)]">
-            {isDe
+        <EmptyState
+          icon={<Search size={16} strokeWidth={1.5} />}
+          bordered="dashed"
+          title={
+            isDe
               ? "Keine Quellen für diese Filter."
-              : "No sources match the current filters."}
-          </p>
-        </div>
+              : "No sources match the current filters."
+          }
+          description={
+            isDe
+              ? "Versuche eine breitere Jurisdiktion, einen anderen Quelltyp oder lösche die Suche, um wieder alle Quellen zu sehen."
+              : "Try widening the jurisdiction, switching the source type, or clearing the search to see every source again."
+          }
+        />
       ) : (
         <ul className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {displayed.map((s) => {

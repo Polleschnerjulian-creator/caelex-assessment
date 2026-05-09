@@ -1572,3 +1572,86 @@ Re-Audit der drei MEDIUM-Findings F-LAND-3, F-DRAFT-2, F-RES-6:
 ctrl+F" zu "type + select + done in 5s". Privilege-marker macht Atlas
 zum ersten AI-Drafting-Tool das LPP-Schutz strukturell unterstützt
 statt es dem Anwalt zu überlassen.
+
+---
+
+## 22. Quick-Wins-Bündel #8 — F-RES-6 Empty-States Sweep (2026-05-09)
+
+Deferred-Item aus Bundle #7 jetzt fokussiert geliefert. Empty/loading/
+error-States waren über die Atlas-Surfaces hinweg inkonsistent — von
+poliert (`/atlas/alerts`) bis bare-text-Sackgasse (`/atlas/sources`,
+`/atlas/updates`). User merken den Unterschied unbewusst: das Produkt
+fühlt sich "halbfertig" an wenn jede zweite Seite ein anderes Empty-
+State-Vokabular spricht.
+
+### Audit-Ergebnis (4 surfaces inventarisiert)
+
+| Surface            | Empty-state vorher                      | Loading vorher    | Quality    |
+| ------------------ | --------------------------------------- | ----------------- | ---------- |
+| `/atlas/alerts`    | Polished (dashed + bell-icon + heading) | Bare flex-spinner | gut        |
+| `/atlas/bookmarks` | Solid card + bookmark-icon + heading    | —                 | medium-gut |
+| `/atlas/updates`   | **Bare 2-zeilen-Text**                  | Skeleton-shimmer  | medium-bad |
+| `/atlas/sources`   | **Bare 1-zeilen-Text**                  | —                 | bad        |
+
+`/atlas/library` hat eigene dark-mode-Palette (white-on-dark) und wurde
+bewusst nicht migriert — Component-Adaption für beide Themes hätte das
+Component verwässert.
+
+### Fix — neue `<EmptyState />` Component
+
+- **Wo:** `src/app/(atlas)/atlas/_components/EmptyState.tsx` (NEW, 138 LOC)
+- **API:**
+  ```tsx
+  <EmptyState
+    variant="empty" | "loading" | "error"  // default: empty
+    icon={<...>} | null  // override per-variant default (Inbox / Loader2 / AlertCircle)
+    title="..."          // required
+    description={...}    // ReactNode for inline links / kbd
+    action={...}         // optional CTA (caller chooses style)
+    size="sm" | "md" | "lg"  // padding scale
+    bordered="solid" | "dashed"  // dashed = filter-empty; solid = natural empty
+    className="..."      // pass-through (e.g. max-width)
+  />
+  ```
+- **Variant-Tones:**
+  - `empty`: neutral icon-ring, primary text headline
+  - `loading`: aria-live=polite, neutral icon (Loader2 spinning)
+  - `error`: red icon-ring + red headline, role=alert
+- **Sizes:** sm (panel-inline), md (page-default), lg (hero/first-run)
+- **Borders:** solid (natural-empty signal) vs dashed (filter-empty
+  signal — "this section is empty by your configuration")
+
+### Wired surfaces
+
+| Surface                       | Before            | After                                            |
+| ----------------------------- | ----------------- | ------------------------------------------------ |
+| `/atlas/sources` filter-empty | bare text         | EmptyState with Search-icon + recovery-hint copy |
+| `/atlas/updates` empty        | bare 2-line text  | EmptyState (size=lg) with Bell-icon              |
+| `/atlas/alerts` loading       | bare flex spinner | EmptyState variant=loading                       |
+| `/atlas/alerts` empty         | bespoke pattern   | EmptyState (kept Bell-icon + same copy)          |
+| `/atlas/bookmarks` empty      | bespoke card      | EmptyState (size=lg, max-w-xl preserved)         |
+
+**Recovery-hints jetzt konsistent**: jeder filter-empty-state suggeriert
+eine Action ("Try widening the jurisdiction…"). Das ist der größere
+UX-Win als die visuelle Einheit — User sind nie auf einer
+toten-Sackgasse-Seite.
+
+### Was BEWUSST nicht in diesem Bundle ist
+
+- `/atlas/library` migration (eigene dark-mode-Palette, würde EmptyState verwässern)
+- Ergebnis-states ON `/atlas/treaties` und Sub-Routes (würden eigene Audit-Runde brauchen)
+- Spinner-skeleton variants (lib hat das schon, brauchen wir nicht zentral)
+
+### Trust-Score nach Quick-Wins-Bündel #8
+
+| Surface        | Vorher | Nachher                                                         |
+| -------------- | ------ | --------------------------------------------------------------- |
+| Alerts/Updates | 6/10   | **7/10** (+1 — inkonsistente Sackgassen-States vereinheitlicht) |
+| Sources index  | 7/10   | **7.5/10** (+0.5 — recovery-hint statt bare-text)               |
+| Bookmarks      | 7/10   | **7.5/10** (+0.5 — visuelle Konsistenz mit anderen Surfaces)    |
+| GESAMT         | 8.1/10 | **8.2/10**                                                      |
+
+**Marie+Klaus-Impact:** Empty-states sind nie auffällig genug um in
+Audits oben zu landen, aber sie sind die Touchpoints wo eine
+ungeduldig-suchende Anwältin Vertrauen verliert oder gewinnt. Bundle
+#8 macht aus 4 dead-end-states Pfadangebote.

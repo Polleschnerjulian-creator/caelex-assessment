@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Bookmark, Trash2, ArrowRight, Cloud, Laptop } from "lucide-react";
 import { useBookmarks } from "../_components/BookmarkButton";
+import { EmptyState } from "../_components/EmptyState";
 
 export default function BookmarksPage() {
   const { all, remove, persistence } = useBookmarks();
@@ -52,20 +53,21 @@ export default function BookmarksPage() {
       </header>
 
       {all.length === 0 ? (
-        <div className="max-w-xl rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] p-8 text-center">
-          <Bookmark
-            size={28}
-            strokeWidth={1.2}
-            className="mx-auto mb-3 text-[var(--atlas-text-faint)]"
-          />
-          <p className="text-[14px] font-medium text-[var(--atlas-text-primary)] mb-1">
-            No bookmarks yet
-          </p>
-          <p className="text-[12px] text-[var(--atlas-text-muted)]">
-            Click the <span className="font-medium">Save</span> pill on any
-            source, authority, or country card — it&rsquo;ll appear here.
-          </p>
-        </div>
+        /* F-RES-6: standardised first-run empty state. The lg size
+           gives this hero-style space to telegraph that bookmarks are
+           a deliberate save action — not just a list that auto-fills. */
+        <EmptyState
+          icon={<Bookmark size={22} strokeWidth={1.2} />}
+          title="No bookmarks yet"
+          description={
+            <>
+              Click the <span className="font-medium">Save</span> pill on any
+              source, authority, or country card — it&rsquo;ll appear here.
+            </>
+          }
+          size="lg"
+          className="max-w-xl"
+        />
       ) : (
         <div className="space-y-8 max-w-4xl">
           {(

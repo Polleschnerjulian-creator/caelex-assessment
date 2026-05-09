@@ -12,6 +12,7 @@ import {
   RefreshCw,
   X,
 } from "lucide-react";
+import { EmptyState } from "../_components/EmptyState";
 
 /**
  * /atlas/alerts — real implementation replacing the SAMPLE_ALERTS
@@ -248,29 +249,30 @@ export default function AlertsPage() {
       {/* Notifications list */}
       <section className="flex-1 space-y-1.5">
         {loading ? (
-          <div className="flex items-center gap-2 text-[12px] text-[var(--atlas-text-faint)] py-12 justify-center">
-            <Loader2 size={14} className="animate-spin" strokeWidth={1.5} />
-            Loading alerts…
-          </div>
+          /* F-RES-6: standardised loading-state. Was a bare inline
+             flex with Loader2 — readable but inconsistent with other
+             surfaces. EmptyState centralises the visual so the user
+             sees one loading shape across Atlas. */
+          <EmptyState
+            variant="loading"
+            title="Loading alerts…"
+            bordered="dashed"
+            size="md"
+          />
         ) : notifications.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] px-5 py-10 text-center">
-            <div className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] mb-3">
-              <Bell
-                size={16}
-                strokeWidth={1.5}
-                className="text-[var(--atlas-text-faint)]"
-              />
-            </div>
-            <h2 className="text-[13px] font-medium text-[var(--atlas-text-primary)] mb-1">
-              No alerts yet
-            </h2>
-            <p className="text-[11px] text-[var(--atlas-text-muted)] max-w-sm mx-auto leading-relaxed">
-              Subscribe to a jurisdiction or a specific source to be notified
-              whenever an amendment is detected and reviewed. Open any
-              jurisdiction page and click{" "}
-              <span className="font-medium">Watch</span>.
-            </p>
-          </div>
+          <EmptyState
+            icon={<Bell size={16} strokeWidth={1.5} />}
+            bordered="dashed"
+            title="No alerts yet"
+            description={
+              <>
+                Subscribe to a jurisdiction or a specific source to be notified
+                whenever an amendment is detected and reviewed. Open any
+                jurisdiction page and click{" "}
+                <span className="font-medium">Watch</span>.
+              </>
+            }
+          />
         ) : (
           notifications.map((n) => {
             const cfg = KIND_CONFIG[n.kind];

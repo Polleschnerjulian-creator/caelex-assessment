@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { Bell } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { EmptyState } from "../_components/EmptyState";
 
 interface Update {
   id: string;
@@ -102,14 +104,16 @@ export default function UpdatesPage() {
             ))}
           </div>
         ) : updates.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-[14px] text-[var(--atlas-text-faint)]">
-              {t("atlas.no_updates")}
-            </p>
-            <p className="text-[12px] text-[var(--atlas-text-faint)] mt-1">
-              {t("atlas.no_updates_detail")}
-            </p>
-          </div>
+          /* F-RES-6 standardised empty-state. Was bare two-line muted
+             text — felt like a dead-end. EmptyState gives the icon
+             affordance and ties this surface visually to /atlas/alerts
+             and /atlas/sources. */
+          <EmptyState
+            icon={<Bell size={16} strokeWidth={1.5} />}
+            title={t("atlas.no_updates")}
+            description={t("atlas.no_updates_detail")}
+            size="lg"
+          />
         ) : (
           <div className="relative">
             {/* Timeline line */}
