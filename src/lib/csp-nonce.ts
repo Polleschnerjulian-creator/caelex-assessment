@@ -104,8 +104,11 @@ export function buildCspHeader(nonce: string, isDev = false): string {
     "base-uri 'self'",
     // Prevent embedding in frames (clickjacking protection)
     "frame-ancestors 'none'",
-    // Upgrade HTTP to HTTPS
-    "upgrade-insecure-requests",
+    // Upgrade HTTP to HTTPS — production-only. In dev the Next.js
+    // server speaks plain HTTP; this directive would force the browser
+    // (incl. Tauri's WebKit) to upgrade asset requests to HTTPS, which
+    // then fail with TLS errors because there's no cert on localhost.
+    ...(isDev ? [] : ["upgrade-insecure-requests"]),
     // Block all object/embed (Flash, Java applets)
     "object-src 'none'",
     // Worker scripts

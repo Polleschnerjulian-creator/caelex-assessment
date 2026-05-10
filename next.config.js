@@ -39,11 +39,19 @@ const securityHeaders = [
     key: "X-DNS-Prefetch-Control",
     value: "on",
   },
-  // HTTP Strict Transport Security (1 year + preload)
-  {
-    key: "Strict-Transport-Security",
-    value: "max-age=63072000; includeSubDomains; preload",
-  },
+  // HTTP Strict Transport Security (1 year + preload).
+  // Production-only: in dev the Next server speaks plain HTTP and HSTS
+  // would HTTPS-pin localhost in the browser, breaking subsequent
+  // hot-reloads (and the Tauri desktop dev mode). Stripped via a spread
+  // below.
+  ...(process.env.NODE_ENV === "production"
+    ? [
+        {
+          key: "Strict-Transport-Security",
+          value: "max-age=63072000; includeSubDomains; preload",
+        },
+      ]
+    : []),
   // Permissions Policy - disable unnecessary browser features
   {
     key: "Permissions-Policy",

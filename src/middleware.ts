@@ -184,7 +184,15 @@ function getSanitizedClientIp(req: NextRequest): string {
 // ─── Security Headers ───
 
 const SECURITY_HEADERS: Record<string, string> = {
-  "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
+  // HSTS — production-only. In dev the server speaks plain HTTP and
+  // HSTS would HTTPS-pin localhost in the browser, breaking subsequent
+  // hot-reloads (and Tauri desktop dev mode). Conditionally injected.
+  ...(process.env.NODE_ENV === "production"
+    ? {
+        "Strict-Transport-Security":
+          "max-age=63072000; includeSubDomains; preload",
+      }
+    : {}),
   "X-Frame-Options": "DENY",
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
