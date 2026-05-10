@@ -17,7 +17,7 @@ import type { Mandate } from "../mandate-store";
 import type { Clause } from "../clause-library";
 import type { MandateIntake } from "../mandate-intake";
 import type { PlanWorkspace } from "../plan-workspace-store";
-import type { DraftLibraryEntry, DraftKind } from "../drafting-history";
+import type { DraftKind } from "../drafting-history";
 
 /* ── Chat message shape ───────────────────────────────────────────── */
 
@@ -193,8 +193,18 @@ export type ClientAction =
       clauseId: string;
     }
   | {
+      /* Flat shape (matches the engine's `{type, ...toolInput}` spread).
+         Body is intentionally NOT persisted into the library — only the
+         prompt + metadata is stored, since the generated body lives in
+         the toolCalls[i].generatedBody field of the chat response. */
       type: "push_to_library";
-      entry: Omit<DraftLibraryEntry, "id" | "ts" | "versions">;
+      kind: DraftKind;
+      title: string;
+      prompt: string;
+      outputLocale: string;
+      privileged: boolean;
+      mandateId?: string;
+      mandateName?: string;
     };
 
 /* ── Final chat-turn response ─────────────────────────────────────── */

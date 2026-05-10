@@ -263,7 +263,7 @@ export const DRAFTING_CHAT_TOOLS: AnthropicToolDefinition[] = [
   {
     name: "push_to_library",
     description:
-      "Archives a one-off draft (not part of a plan workspace) into the My Drafts library. Use when generate_draft was called outside a plan context.",
+      "Archives a one-off draft (not part of a plan workspace) into the My Drafts library. Use when generate_draft was called outside a plan context. Only the prompt + metadata is stored — the generated body is shown to the user inline in the chat from the generate_draft tool result, not persisted.",
     input_schema: {
       type: "object",
       properties: {
@@ -273,7 +273,6 @@ export const DRAFTING_CHAT_TOOLS: AnthropicToolDefinition[] = [
         },
         title: { type: "string" },
         prompt: { type: "string" },
-        body: { type: "string" },
         outputLocale: { type: "string" },
         privileged: { type: "boolean" },
       },

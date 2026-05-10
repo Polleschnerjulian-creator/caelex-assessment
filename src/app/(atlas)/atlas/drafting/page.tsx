@@ -824,6 +824,15 @@ export default function DraftingStudioPage() {
           </h1>
         </div>
         <div className="flex items-center gap-3">
+          {/* Bundle 46: Drafting Chat — Harvey-style conversational
+              surface, surfaced prominently as the new default flow. */}
+          <Link
+            href="/atlas/drafting/chat"
+            className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-medium px-2.5 py-1 transition-colors"
+          >
+            <Sparkles size={11} strokeWidth={1.8} aria-hidden="true" />
+            {isDe ? "Chat" : "Chat"}
+          </Link>
           {/* Bundle 33: clause-library shortcut. Same lightweight link
               treatment as the My Drafts entry. */}
           <Link
