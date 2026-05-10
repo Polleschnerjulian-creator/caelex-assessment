@@ -6,8 +6,8 @@
   "build": {
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "",
-    "devUrl": "http://localhost:3000",
-    "frontendDist": "https://atlas.caelex.com"
+    "devUrl": "http://localhost:3000/atlas",
+    "frontendDist": "https://caelex.com/atlas"
   },
   "app": {
     "windows": [
