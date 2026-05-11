@@ -88,6 +88,22 @@ export async function GET(
         { status: 410 },
       );
     }
+    /* Compliance-Audit 2026-05 hardening: fallback hard-max-age cap.
+       Any share whose `shareEnabledAt` is older than HARD_MAX_AGE_MS
+       is treated as expired even when `shareExpiresAt` is null
+       (e.g. legacy shares minted before M-4 added the expiry field).
+       Belt-and-suspenders alongside the cron backfill — even if the
+       backfill is delayed, no link survives forever. */
+    const HARD_MAX_AGE_MS = 180 * 24 * 60 * 60 * 1000;
+    if (
+      !ws.shareExpiresAt &&
+      ws.shareEnabledAt.getTime() < Date.now() - HARD_MAX_AGE_MS
+    ) {
+      return NextResponse.json(
+        { error: "Share link expired (legacy hard-max)" },
+        { status: 410 },
+      );
+    }
 
     return NextResponse.json({
       workspace: {

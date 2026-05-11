@@ -5,12 +5,37 @@ import Link from "next/link";
 import { ChevronDown, ChevronUp, Lock } from "lucide-react";
 
 const CONSENT_KEY = "caelex-cookie-consent";
+const SESSION_KEY = "caelex-cookie-consent-session";
+
+/* Compliance-Audit 2026-05 — DSGVO Art. 7 Abs. 1 Nachweispflicht.
+   Bump CONSENT_VERSION whenever the banner copy changes materially
+   (e.g. a new sub-processor lands in /legal/sub-processors). Each
+   bump invalidates the localStorage record and re-prompts the user;
+   the prior decision stays in ConsentRecord rows for audit. */
+export const CONSENT_VERSION = "2026-05-11";
 
 export interface CookiePreferences {
   necessary: true; // always on
   analytics: boolean;
   performance: boolean;
   errorTracking: boolean;
+}
+
+/* Versioned + timestamped record persisted to localStorage. The
+   simple boolean shape from getPreferences() is derived from this. */
+interface ConsentRecord {
+  version: string;
+  decision: "accept_all" | "decline" | "customize";
+  preferences: CookiePreferences;
+  /** ISO timestamp of the decision. */
+  decidedAt: string;
+  /** Per-purpose timestamps so we can show the user when each purpose
+   *  was opted-in (e.g. settings page audit-trail). */
+  perPurposeAt: {
+    analytics?: string;
+    performance?: string;
+    errorTracking?: string;
+  };
 }
 
 const DEFAULT_PREFS: CookiePreferences = {
@@ -27,18 +52,127 @@ const ALL_PREFS: CookiePreferences = {
   errorTracking: true,
 };
 
+/* Stable per-browser session key. Used to hash server-side as the
+   anonymous correlation id for ConsentRecord rows. */
+function getOrCreateSessionKey(): string {
+  if (typeof window === "undefined") return "";
+  try {
+    const existing = window.localStorage.getItem(SESSION_KEY);
+    if (existing) return existing;
+    /* crypto.randomUUID is available in all modern browsers. */
+    const fresh =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `s-${Math.random().toString(36).slice(2)}-${Date.now()}`;
+    window.localStorage.setItem(SESSION_KEY, fresh);
+    return fresh;
+  } catch {
+    return "";
+  }
+}
+
 /** Read current preferences from localStorage (safe for SSR) */
 export function getPreferences(): CookiePreferences | null {
+  const record = getConsentRecord();
+  if (record) return record.preferences;
+  /* Backwards compat: legacy values "all" / "necessary" / raw prefs. */
   if (typeof window === "undefined") return null;
   try {
-    const raw = localStorage.getItem(CONSENT_KEY);
+    const raw = window.localStorage.getItem(CONSENT_KEY);
     if (!raw) return null;
     if (raw === "all") return ALL_PREFS;
     if (raw === "necessary") return DEFAULT_PREFS;
     const parsed = JSON.parse(raw);
+    /* If parsed is a versioned record, getConsentRecord would have
+       handled it — only reaches here for old plain-prefs shape. */
     return { ...DEFAULT_PREFS, ...parsed, necessary: true };
   } catch {
     return null;
+  }
+}
+
+/** Read the full versioned consent record (preferences + timestamps). */
+export function getConsentRecord(): ConsentRecord | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(CONSENT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (
+      parsed &&
+      typeof parsed === "object" &&
+      typeof parsed.version === "string" &&
+      typeof parsed.decision === "string" &&
+      parsed.preferences &&
+      typeof parsed.decidedAt === "string"
+    ) {
+      const record = parsed as ConsentRecord;
+      /* Out-of-date version → treat as missing so the banner re-prompts. */
+      if (record.version !== CONSENT_VERSION) return null;
+      return record;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/** Build a fresh ConsentRecord, preserving per-purpose timestamps
+ *  from the prior record where the boolean stayed true. */
+function buildRecord(
+  decision: ConsentRecord["decision"],
+  prefs: CookiePreferences,
+): ConsentRecord {
+  const now = new Date().toISOString();
+  const prior = getConsentRecord();
+  const perPurposeAt: ConsentRecord["perPurposeAt"] = {
+    ...prior?.perPurposeAt,
+  };
+  for (const key of ["analytics", "performance", "errorTracking"] as const) {
+    if (prefs[key]) {
+      /* If newly turned on, stamp now; if already on, keep prior stamp. */
+      if (!prior?.preferences[key] || !perPurposeAt[key]) {
+        perPurposeAt[key] = now;
+      }
+    } else {
+      delete perPurposeAt[key];
+    }
+  }
+  return {
+    version: CONSENT_VERSION,
+    decision,
+    preferences: prefs,
+    decidedAt: now,
+    perPurposeAt,
+  };
+}
+
+/* Fire-and-forget POST to the consent log. Failures are intentionally
+   swallowed — the localStorage record is the user-side proof, the DB
+   row is the operator-side proof; if the fetch fails we still want
+   the UX to proceed. */
+function postConsentLog(record: ConsentRecord, surface: string): void {
+  if (typeof window === "undefined") return;
+  const sessionKey = getOrCreateSessionKey();
+  if (!sessionKey) return;
+  try {
+    void fetch("/api/consent/log", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      keepalive: true,
+      body: JSON.stringify({
+        consentVersion: record.version,
+        sessionKey,
+        decision: record.decision,
+        preferences: record.preferences,
+        surface,
+        path: window.location.pathname,
+      }),
+    }).catch(() => {
+      /* swallow */
+    });
+  } catch {
+    /* swallow */
   }
 }
 
@@ -133,33 +267,43 @@ export default function CookieConsent() {
       );
   }, []);
 
-  const saveAndClose = useCallback((preferences: CookiePreferences) => {
-    try {
-      localStorage.setItem(CONSENT_KEY, JSON.stringify(preferences));
-    } catch {
-      // localStorage might be blocked
-    }
-    setIsAnimating(false);
-    setTimeout(() => setVisible(false), 300);
-    if (
-      preferences.analytics ||
-      preferences.performance ||
-      preferences.errorTracking
-    ) {
-      setTimeout(() => window.location.reload(), 350);
-    }
-  }, []);
+  const saveAndClose = useCallback(
+    (
+      preferences: CookiePreferences,
+      decision: ConsentRecord["decision"],
+      surface: string,
+    ) => {
+      const record = buildRecord(decision, preferences);
+      try {
+        localStorage.setItem(CONSENT_KEY, JSON.stringify(record));
+      } catch {
+        // localStorage might be blocked
+      }
+      /* Server-side audit log (DSGVO Art. 7 Abs. 1 Nachweispflicht). */
+      postConsentLog(record, surface);
+      setIsAnimating(false);
+      setTimeout(() => setVisible(false), 300);
+      if (
+        preferences.analytics ||
+        preferences.performance ||
+        preferences.errorTracking
+      ) {
+        setTimeout(() => window.location.reload(), 350);
+      }
+    },
+    [],
+  );
 
   const handleAcceptAll = useCallback(() => {
-    saveAndClose(ALL_PREFS);
+    saveAndClose(ALL_PREFS, "accept_all", "first_visit");
   }, [saveAndClose]);
 
   const handleNecessaryOnly = useCallback(() => {
-    saveAndClose(DEFAULT_PREFS);
+    saveAndClose(DEFAULT_PREFS, "decline", "first_visit");
   }, [saveAndClose]);
 
   const handleSavePreferences = useCallback(() => {
-    saveAndClose(prefs);
+    saveAndClose(prefs, "customize", "first_visit");
   }, [prefs, saveAndClose]);
 
   if (!mounted || !visible) return null;

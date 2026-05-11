@@ -39,6 +39,11 @@ import { Briefcase, UserPlus, PenLine, Scale, Inbox } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { Citation } from "@/lib/atlas/citations";
 import {
+  AtlasChatPrivacyBanner,
+  AtlasChatPrivacyModal,
+  useChatPrivacyGate,
+} from "@/components/atlas/AtlasChatPrivacyGate";
+import {
   AtlasEntity,
   type AtlasEntityHandle,
   type AtlasMode,
@@ -1087,33 +1092,47 @@ export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
     [maxTokens, playSound, onClose, router],
   );
 
+  /* Compliance-Audit 2026-05: chat-privacy gate. Mirrors the existing
+     voice-input localStorage consent check. On first text submit per
+     device, opens an informed-consent modal explaining § 203 StGB /
+     DSGVO Art. 28 routing posture. After acknowledgement the queued
+     submit fires; on cancel it's discarded. */
+  const privacyGate = useChatPrivacyGate(language);
+
   const handleSubmit = useCallback(
     (e: FormEvent) => {
       e.preventDefault();
       const text = inputValue.trim();
       if (!text) return;
-      // Close any open action panel — submitting transitions Atlas
-      // from the idle command surface to active conversation, and
-      // a side-panel competing with the answer feed is too noisy.
-      setActivePanel(null);
-      // Snapshot current history BEFORE adding the user's message so
-      // runResponse can concatenate cleanly without duplicating.
+      /* Snapshot the input + history BEFORE the gate so we can run the
+         actual submit work even after the modal-acknowledgement
+         round-trip. The user's typed text is captured here; a re-render
+         from setInputValue("") doesn't tear because we close over the
+         local `text`. */
       const historyBeforePrompt = messages;
-      const userId = `m-${Date.now()}-user`;
-      setMessages((prev) => [...prev, { id: userId, role: "user", text }]);
       const typedTokens = Math.floor(inputValue.length / 3.2);
-      const attachmentCost = attachments.length * 400;
-      setTotalTokens((n) =>
-        Math.min(maxTokens, n + typedTokens + attachmentCost),
-      );
-      setInputValue("");
-      setTokenPulse((n) => n + 1);
-      // Sanfter Send-Moment: kein Shockwave-Ring, nur ein kleiner
-      // Energy-Bump damit der Orb merklich aber ruhig in den
-      // Thinking-State rollt. Der Sound wird zum dezenten Click.
-      entityHandle.current?.bumpEnergy(0.25);
-      playSound("click");
-      runResponse(text, historyBeforePrompt);
+      const attachmentCount = attachments.length;
+
+      privacyGate.gate(() => {
+        // Close any open action panel — submitting transitions Atlas
+        // from the idle command surface to active conversation, and
+        // a side-panel competing with the answer feed is too noisy.
+        setActivePanel(null);
+        const userId = `m-${Date.now()}-user`;
+        setMessages((prev) => [...prev, { id: userId, role: "user", text }]);
+        const attachmentCost = attachmentCount * 400;
+        setTotalTokens((n) =>
+          Math.min(maxTokens, n + typedTokens + attachmentCost),
+        );
+        setInputValue("");
+        setTokenPulse((n) => n + 1);
+        // Sanfter Send-Moment: kein Shockwave-Ring, nur ein kleiner
+        // Energy-Bump damit der Orb merklich aber ruhig in den
+        // Thinking-State rollt. Der Sound wird zum dezenten Click.
+        entityHandle.current?.bumpEnergy(0.25);
+        playSound("click");
+        runResponse(text, historyBeforePrompt);
+      });
     },
     [
       attachments.length,
@@ -1122,6 +1141,7 @@ export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
       messages,
       playSound,
       runResponse,
+      privacyGate,
     ],
   );
 
@@ -2201,6 +2221,36 @@ export function AIMode({ open, onClose, initialPrompt }: AIModeProps) {
           Mehr
         </a>
       </div>
+
+      {/* Compliance-Audit 2026-05 · § 203 StGB / DSGVO Art. 28 Banner.
+          Persistent unter dem KI-VO-Hinweis sichtbar. Erinnert daran,
+          dass Eingaben an Anthropic fließen (EU-Bedrock bevorzugt) und
+          dass für identifizierende Mandantendaten die Mandanten-Ein-
+          willigung vorliegen muss. Kombiniert mit dem First-Use-Modal
+          (oben) bildet das die Text-Variante des bereits existierenden
+          Voice-Input-Consents. */}
+      <div
+        style={{
+          position: "fixed",
+          left: "50%",
+          bottom: "8px",
+          transform: "translateX(-50%)",
+          maxWidth: "640px",
+          width: "calc(100% - 32px)",
+          zIndex: 5,
+          pointerEvents: "auto",
+        }}
+      >
+        <AtlasChatPrivacyBanner language={language} />
+      </div>
+
+      {privacyGate.modalOpen && (
+        <AtlasChatPrivacyModal
+          language={language}
+          onAccept={privacyGate.accept}
+          onCancel={privacyGate.cancel}
+        />
+      )}
 
       {/* Command palette */}
       <div

@@ -46,6 +46,11 @@ import {
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { buildBrowserContext } from "@/lib/atlas/drafting-chat/browser-context";
 import { applyActions } from "@/lib/atlas/drafting-chat/action-executor";
+import {
+  AtlasChatPrivacyBanner,
+  AtlasChatPrivacyModal,
+  useChatPrivacyGate,
+} from "@/components/atlas/AtlasChatPrivacyGate";
 import type {
   ChatMessage,
   ChatContentBlock,
@@ -328,10 +333,26 @@ export default function DraftingChatPage() {
     [turns],
   );
 
+  /* Compliance-Audit 2026-05: chat-privacy gate. Drafting chat is the
+     higher-risk surface because it serialises full mandate identity
+     into every turn's BrowserContext snapshot (see
+     lib/atlas/drafting-chat/browser-context.ts). The informed-consent
+     ack matters here, not less. */
+  const privacyGate = useChatPrivacyGate(language);
+
   const send = async (overrideText?: string) => {
     const text = (overrideText ?? input).trim();
     if (!text || loading) return;
 
+    /* Gate before any work. gate() runs the queued submit
+       synchronously when consent already exists; otherwise opens the
+       modal and runs it from `accept`. */
+    privacyGate.gate(() => {
+      void runSend(text);
+    });
+  };
+
+  const runSend = async (text: string): Promise<void> => {
     const userMsg: ChatMessage = { role: "user", content: text };
     const newTurn: ChatTurn = {
       userMessage: userMsg,
@@ -643,8 +664,21 @@ export default function DraftingChatPage() {
               ? "Astra hat Zugriff auf alle deine Drafting-Daten. Drafts werden mit Claude Sonnet generiert."
               : "Astra has access to all your drafting data. Drafts are generated with Claude Sonnet."}
           </p>
+          {/* Compliance-Audit 2026-05 · § 203 StGB / DSGVO Banner.
+              Persistent direkt unter dem Input. */}
+          <div className="mt-3">
+            <AtlasChatPrivacyBanner language={language} />
+          </div>
         </div>
       </div>
+
+      {privacyGate.modalOpen && (
+        <AtlasChatPrivacyModal
+          language={language}
+          onAccept={privacyGate.accept}
+          onCancel={privacyGate.cancel}
+        />
+      )}
     </div>
   );
 }

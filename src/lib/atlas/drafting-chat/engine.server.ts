@@ -20,7 +20,7 @@
  */
 
 import "server-only";
-import Anthropic from "@anthropic-ai/sdk";
+import type Anthropic from "@anthropic-ai/sdk";
 import {
   DRAFTING_CHAT_TOOLS,
   isServerTool,
@@ -30,6 +30,7 @@ import {
   executeGenerateDraft,
   executeExtractMandateFacts,
 } from "./server-tools.server";
+import { buildAnthropicClient } from "../anthropic-client";
 import type {
   BrowserContext,
   ChatMessage,
@@ -40,9 +41,13 @@ import type {
 
 /* ── Config ───────────────────────────────────────────────────────── */
 
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+/* Compliance-Audit 2026-05: route via buildAnthropicClient() so the
+   EU-Bedrock pathway (when AI_GATEWAY_API_KEY is set) is used by
+   default. Direct Anthropic-US is only the fallback when no Gateway
+   key is configured. The `setup.model` field carries the right
+   provider-prefixed model identifier for the active routing mode. */
 
-const CHAT_MODEL = process.env.ATLAS_CHAT_MODEL || "claude-sonnet-4-6";
+const CHAT_MODEL_OVERRIDE = process.env.ATLAS_CHAT_MODEL; // optional
 const CHAT_MAX_TOKENS = parseInt(
   process.env.ATLAS_CHAT_MAX_TOKENS || "4096",
   10,
@@ -60,15 +65,24 @@ const MAX_TOOL_ITERATIONS = parseInt(
 const PRICE_INPUT_PER_MTOK = 3.0;
 const PRICE_OUTPUT_PER_MTOK = 15.0;
 
-let client: Anthropic | null = null;
-function getClient(): Anthropic {
-  if (!ANTHROPIC_API_KEY) {
+interface ResolvedClient {
+  client: Anthropic;
+  model: string;
+  mode: "gateway" | "direct";
+}
+
+function getClient(): ResolvedClient {
+  const setup = buildAnthropicClient();
+  if (!setup) {
     throw new Error(
-      "ANTHROPIC_API_KEY missing — drafting chat requires server-side LLM access.",
+      "AI_GATEWAY_API_KEY or ANTHROPIC_API_KEY missing — drafting chat requires server-side LLM access.",
     );
   }
-  if (!client) client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
-  return client;
+  return {
+    client: setup.client,
+    model: CHAT_MODEL_OVERRIDE || setup.model,
+    mode: setup.mode,
+  };
 }
 
 /* ── System prompt builder ────────────────────────────────────────── */
@@ -195,7 +209,9 @@ export async function processChat(args: {
   messages: ChatMessage[];
   context: BrowserContext;
 }): Promise<ChatTurnResponse> {
-  const anthropic = getClient();
+  const resolved = getClient();
+  const anthropic = resolved.client;
+  const model = resolved.model;
   const systemPrompt = buildSystemPrompt(args.context);
 
   /* Mutable working copy of messages — appends tool_result blocks as
@@ -214,7 +230,7 @@ export async function processChat(args: {
 
   for (let iter = 0; iter < MAX_TOOL_ITERATIONS; iter++) {
     const response = await anthropic.messages.create({
-      model: CHAT_MODEL,
+      model,
       max_tokens: CHAT_MAX_TOKENS,
       temperature: CHAT_TEMPERATURE,
       system: systemPrompt,

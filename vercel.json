@@ -185,6 +185,10 @@
     {
       "path": "/api/cron/trade-rescreen-stale",
       "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/atlas-share-expiry-backfill",
+      "schedule": "30 3 * * 0"
     }
   ]
 }

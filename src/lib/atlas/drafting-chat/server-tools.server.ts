@@ -15,7 +15,7 @@
  */
 
 import "server-only";
-import Anthropic from "@anthropic-ai/sdk";
+import type Anthropic from "@anthropic-ai/sdk";
 import {
   buildAuthPrompt,
   buildBriefPrompt,
@@ -28,28 +28,24 @@ import {
   buildExtractionPrompt,
   parseExtractionResponse,
 } from "../intake-extractor";
+import { buildAnthropicClient } from "../anthropic-client";
 import type { BrowserContext } from "./types";
 
 /* ── Anthropic client (lazy) ──────────────────────────────────────── */
 
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+/* Compliance-Audit 2026-05: switch from `new Anthropic({ apiKey:
+   ANTHROPIC_API_KEY })` to buildAnthropicClient() so generation calls
+   route via Vercel AI Gateway (AWS Bedrock EU) when AI_GATEWAY_API_KEY
+   is configured. Falls back to direct US Anthropic only when no
+   Gateway key is present. Same SDK surface — no protocol changes. */
 
-let client: Anthropic | null = null;
-function getClient(): Anthropic {
-  if (!ANTHROPIC_API_KEY) {
-    throw new Error(
-      "ANTHROPIC_API_KEY missing — drafting chat requires server-side LLM access. Configure it in your environment.",
-    );
-  }
-  if (!client) client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
-  return client;
+interface ResolvedClient {
+  client: Anthropic;
+  model: string;
+  mode: "gateway" | "direct";
 }
 
-/* Default generation model — can be overridden per env. The chat
-   reasoning model is set by the engine. Generation is lower temp
-   because we want consistent, conservative drafts. */
-const GENERATION_MODEL =
-  process.env.ATLAS_DRAFTING_MODEL || "claude-sonnet-4-6";
+const GENERATION_MODEL_OVERRIDE = process.env.ATLAS_DRAFTING_MODEL; // optional
 const GENERATION_MAX_TOKENS = parseInt(
   process.env.ATLAS_DRAFTING_MAX_TOKENS || "4096",
   10,
@@ -57,6 +53,20 @@ const GENERATION_MAX_TOKENS = parseInt(
 const GENERATION_TEMPERATURE = parseFloat(
   process.env.ATLAS_DRAFTING_TEMPERATURE || "0.3",
 );
+
+function getClient(): ResolvedClient {
+  const setup = buildAnthropicClient();
+  if (!setup) {
+    throw new Error(
+      "AI_GATEWAY_API_KEY or ANTHROPIC_API_KEY missing — drafting requires server-side LLM access. Configure one in your environment.",
+    );
+  }
+  return {
+    client: setup.client,
+    model: GENERATION_MODEL_OVERRIDE || setup.model,
+    mode: setup.mode,
+  };
+}
 
 /* ── Tool: generate_draft ─────────────────────────────────────────── */
 
@@ -223,10 +233,10 @@ export async function executeGenerateDraft(
      order so prompts are byte-equal between the two surfaces). */
   const fullPrompt = privilegePrefix + basePrompt + clauseDirective;
 
-  /* Call Anthropic for the actual generation. */
-  const anthropic = getClient();
-  const response = await anthropic.messages.create({
-    model: GENERATION_MODEL,
+  /* Call Anthropic (or AI Gateway → Bedrock EU) for the generation. */
+  const resolved = getClient();
+  const response = await resolved.client.messages.create({
+    model: resolved.model,
     max_tokens: GENERATION_MAX_TOKENS,
     temperature: GENERATION_TEMPERATURE,
     messages: [{ role: "user", content: fullPrompt }],
@@ -271,9 +281,9 @@ export async function executeExtractMandateFacts(
   }
   const prompt = buildExtractionPrompt(args.emailBody, ctx.outputLang);
 
-  const anthropic = getClient();
-  const response = await anthropic.messages.create({
-    model: GENERATION_MODEL,
+  const resolved = getClient();
+  const response = await resolved.client.messages.create({
+    model: resolved.model,
     max_tokens: 1024,
     temperature: 0.1 /* Strict for structured extraction. */,
     messages: [{ role: "user", content: prompt }],

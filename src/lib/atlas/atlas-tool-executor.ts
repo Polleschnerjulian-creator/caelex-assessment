@@ -784,6 +784,30 @@ function getLegalSourceByIdTool(args: { input: unknown }): AtlasToolResult {
 
   // Return a compact projection — full key_provisions, but trimmed
   // sub-arrays so the model isn't drowned in noise.
+  //
+  // IP/Copyright safeguard (Compliance-Audit 2026-05): cap each
+  // `paragraph_text` at 600 chars + ellipsis. Verbatim statutory text
+  // is gemeinfrei under § 5 UrhG / EU Decision 2011/833/EU / 17 USC
+  // §105 etc., but quoting unbounded paragraphs of NJW-Leitsätze,
+  // ISO/ITU normative text, or Beck-Kommentare into Astra's chat
+  // output would create downstream IP exposure. The lawyer can always
+  // open the official text via `paragraph_url` for the full version.
+  // See `src/lib/atlas/verbatim-attribution.ts` for the per-jurisdiction
+  // licence basis that governs the truncated quote.
+  const PARAGRAPH_TEXT_CAP = 600;
+  const cappedProvisions = source.key_provisions.map((p) => {
+    if (!p.paragraph_text || p.paragraph_text.length <= PARAGRAPH_TEXT_CAP) {
+      return p;
+    }
+    return {
+      ...p,
+      paragraph_text:
+        p.paragraph_text.slice(0, PARAGRAPH_TEXT_CAP).trimEnd() +
+        " […] (truncated — see paragraph_url for full text)",
+      paragraph_text_truncated: true,
+    };
+  });
+
   return {
     content: JSON.stringify({
       id: source.id,
@@ -800,7 +824,7 @@ function getLegalSourceByIdTool(args: { input: unknown }): AtlasToolResult {
       applicable_to: source.applicable_to,
       compliance_areas: source.compliance_areas,
       scope_description: source.scope_description,
-      key_provisions: source.key_provisions,
+      key_provisions: cappedProvisions,
       related_sources: source.related_sources.slice(0, 12),
       amends: source.amends,
       amended_by: source.amended_by?.slice(0, 8),

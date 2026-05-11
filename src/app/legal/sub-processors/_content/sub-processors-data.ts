@@ -231,4 +231,103 @@ export const SUB_PROCESSORS: SubProcessor[] = [
     dpaUrl: "https://openai.com/policies/data-processing-addendum/",
     addedOn: "2026-04-25",
   },
+  /* ─── Compliance-Audit 2026-05: nachgepflegte Sub-Prozessoren ─── */
+  {
+    id: "cloudflare-r2",
+    name: "Cloudflare, Inc.",
+    entity: "Cloudflare, Inc., 101 Townsend St, San Francisco, CA 94107, USA",
+    category: "storage",
+    categoryLabel: {
+      de: "Objektspeicher (Dokumente, Anhänge)",
+      en: "Object storage (documents, attachments)",
+    },
+    purpose: {
+      de: "Speicherung von Nutzer-hochgeladenen Dokumenten, Mandantenanlagen, generierten PDF-Reports und sonstigen Datei-Anhängen via Cloudflare R2 (S3-kompatibel). R2 wird ausschließlich serverseitig adressiert; signierte URLs sind kurzlebig (Stunden, nicht Tage).",
+      en: "Storage of user-uploaded documents, mandate attachments, generated PDF reports and other file attachments via Cloudflare R2 (S3-compatible). R2 is addressed server-side only; signed URLs are short-lived (hours, not days).",
+    },
+    dataTypes: {
+      de: "Dateiinhalte (Dokumente, Bilder, PDFs), Datei-Metadaten (Name, MIME-Type, Größe), Caelex-interne Zuordnungs-IDs (Organisation, Nutzer, Mandant). Keine Klartext-Indizierung. Verschlüsselung at-rest durch Cloudflare-Standard (AES-256).",
+      en: "File contents (documents, images, PDFs), file metadata (name, MIME type, size), Caelex-internal assignment IDs (organisation, user, mandate). No plaintext indexing. At-rest encryption via Cloudflare standard (AES-256).",
+    },
+    location:
+      "EU-Region (Frankfurt) als bevorzugte Storage-Region; Cloudflare global edge für signierte URL-Auslieferung",
+    transferMechanism:
+      "Verarbeitung in EU-Region; EU-Standardvertragsklauseln Modul 3 für US-Verwaltungs-Zugriff; Cloudflare ist DPF-zertifiziert",
+    website: "https://www.cloudflare.com/products/r2/",
+    dpaUrl: "https://www.cloudflare.com/cloudflare-customer-dpa/",
+    addedOn: "2026-05-11",
+  },
+  {
+    id: "logsnag",
+    name: "LogSnag",
+    entity: "LogSnag (operated by Shayan Taslim, registered in Canada)",
+    category: "monitoring",
+    categoryLabel: {
+      de: "Geschäftsereignis-Monitoring",
+      en: "Business-event monitoring",
+    },
+    purpose: {
+      de: "Server-seitiges Tracking aussagekräftiger Geschäftsereignisse (Anmeldungen, Stornierungen, Compliance-Meilensteine, Fehler-Cluster) für Operator-Alerting. Keine Profilbildung, keine Werbe- oder Marketing-Auswertung.",
+      en: "Server-side tracking of significant business events (signups, cancellations, compliance milestones, error clusters) for operator alerting. No profiling, no advertising or marketing analysis.",
+    },
+    dataTypes: {
+      de: "Ereignistyp, Channel, kurze Beschreibung, Caelex-interne IDs (User, Organisation), Zeitstempel. Keine E-Mail-Adressen, keine PII-Klartextfelder. Kein Browser- oder Geräte-Fingerprinting (Server-only).",
+      en: "Event type, channel, short description, Caelex-internal IDs (user, organisation), timestamp. No email addresses, no PII plaintext fields. No browser or device fingerprinting (server-only).",
+    },
+    location: "Kanada",
+    transferMechanism:
+      "Übermittlung an Drittland mit EU-Angemessenheitsbeschluss (Kanada — Decision 2002/2/EG); zusätzlich Standardvertragsklauseln im Anbietervertrag",
+    website: "https://logsnag.com",
+    dpaUrl: "https://logsnag.com/privacy",
+    addedOn: "2026-05-11",
+  },
+  {
+    id: "vercel-analytics",
+    name: "Vercel Inc. (Web Analytics)",
+    entity: "Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, USA",
+    category: "analytics",
+    categoryLabel: {
+      de: "Web-Analytics (cookielos)",
+      en: "Web analytics (cookieless)",
+    },
+    purpose: {
+      de: "Aggregierte Reichweiten- und Nutzungsstatistiken (Seitenaufrufe, Verweildauer, Geräteklasse). Cookielos und ohne Cross-Site-Tracking. Wird ausschließlich nach ausdrücklicher Einwilligung des Nutzers (Cookie-Banner: Analytics-Toggle aktiv) geladen — siehe `src/components/ConditionalAnalytics.tsx`.",
+      en: "Aggregated reach and usage statistics (page views, dwell time, device class). Cookieless and without cross-site tracking. Loaded only after explicit user consent (Cookie banner: analytics toggle on) — see `src/components/ConditionalAnalytics.tsx`.",
+    },
+    dataTypes: {
+      de: "Pfad der aufgerufenen Seite, anonymisierte Geräte-Klasse, Referrer-Domain, Sitzungs-Hash (gerollt). Keine IP-Adressen, keine Cookies, keine User-IDs.",
+      en: "Path of the visited page, anonymised device class, referrer domain, rolled session hash. No IP addresses, no cookies, no user IDs.",
+    },
+    location:
+      "USA (Vercel) mit globaler Edge-Aggregation; Caelex bevorzugt EU-Edge-Regionen",
+    transferMechanism:
+      "EU-Standardvertragsklauseln Modul 3 · EU-US Data Privacy Framework (Vercel ist zertifiziert)",
+    website: "https://vercel.com/analytics",
+    dpaUrl: "https://vercel.com/legal/dpa",
+    addedOn: "2026-05-11",
+  },
+  {
+    id: "vercel-speed-insights",
+    name: "Vercel Inc. (Speed Insights)",
+    entity: "Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, USA",
+    category: "monitoring",
+    categoryLabel: {
+      de: "Performance-Monitoring (Core Web Vitals)",
+      en: "Performance monitoring (Core Web Vitals)",
+    },
+    purpose: {
+      de: "Erfassung der Core Web Vitals (LCP, INP, CLS, TTFB) zur Beobachtung der Wahrnehmungs-Performance der Plattform. Wird ausschließlich nach ausdrücklicher Einwilligung des Nutzers (Cookie-Banner: Performance-Toggle aktiv) geladen — siehe `src/components/ConditionalAnalytics.tsx`.",
+      en: "Collection of Core Web Vitals (LCP, INP, CLS, TTFB) to observe perceived platform performance. Loaded only after explicit user consent (Cookie banner: performance toggle on) — see `src/components/ConditionalAnalytics.tsx`.",
+    },
+    dataTypes: {
+      de: "Performance-Messwerte (Millisekunden), Pfad der gemessenen Seite, anonymisierte Geräte- und Verbindungsklasse. Keine IP-Adressen, keine Cookies, keine personenbezogenen Identifikatoren.",
+      en: "Performance metrics (milliseconds), path of the measured page, anonymised device and connection class. No IP addresses, no cookies, no personal identifiers.",
+    },
+    location: "USA (Vercel) mit globaler Edge-Aggregation",
+    transferMechanism:
+      "EU-Standardvertragsklauseln Modul 3 · EU-US Data Privacy Framework (Vercel ist zertifiziert)",
+    website: "https://vercel.com/speed-insights",
+    dpaUrl: "https://vercel.com/legal/dpa",
+    addedOn: "2026-05-11",
+  },
 ];

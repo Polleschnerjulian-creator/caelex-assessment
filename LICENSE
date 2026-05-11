@@ -1,16 +1,45 @@
-Copyright 2026 Caelex GmbH. All Rights Reserved.
+Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All Rights Reserved.
 
 PROPRIETARY SOFTWARE LICENSE
 
-This software, including all source code, data files, regulatory mappings,
-compliance algorithms, and documentation, is the proprietary and confidential
-intellectual property of Caelex GmbH ("Caelex").
+This software, including all source code, regulatory mappings, compliance
+algorithms, taxonomy, editorial paraphrases, glossary entries, cross-references,
+and documentation produced by Caelex (Einzelunternehmen, owner: Julian
+Polleschner, Berlin — "Caelex"), is the proprietary and confidential
+intellectual property of Caelex.
 
-RESTRICTIONS:
+CARVE-OUT FOR PRIMARY LEGAL SOURCES (added 2026-05-11):
+
+The Atlas legal corpus (under `src/data/legal-sources/` and `src/data/legal-cases/`)
+references and may quote underlying primary legal sources — statutes,
+regulations, court decisions and treaty texts — that are themselves outside
+the scope of this proprietary licence and instead governed by the relevant
+jurisdiction's public-domain or open-government regime. Examples include:
+
+  - § 5 Abs. 1 UrhG (DE) — Gesetze, Verordnungen, amtliche Erlasse,
+    amtlich verfasste Leitsätze sind gemeinfrei.
+  - Commission Decision 2011/833/EU (EU) — Eur-Lex content reuse with
+    attribution.
+  - 17 USC § 105 (US) — Works of the U.S. Government are not subject to
+    copyright.
+  - Open Government Licence v3.0 (UK) — Crown copyright works.
+  - CPI Art. L122-5 2° (FR) — French statutes outside copyright monopoly.
+  - UN Treaty Series — public-domain via UN Secretariat.
+
+Caelex does NOT claim copyright in the underlying primary statutory text,
+court decision text, or treaty text where the source jurisdiction's regime
+places those materials outside private copyright. Caelex DOES claim
+copyright in the editorial layer over those materials (paraphrase,
+selection, taxonomy, cross-references, translations, annotations).
+
+For the per-jurisdiction list and the operational rules see
+`src/data/LEGAL-SOURCES-README.md`.
+
+RESTRICTIONS (apply to the editorial layer + all software):
 
 1. No part of this software may be reproduced, distributed, transmitted,
    displayed, published, or broadcast without the prior written permission
-   of Caelex GmbH.
+   of Caelex.
 
 2. This software may not be used, in whole or in part, to build, train,
    improve, or develop competing products or services.
@@ -21,14 +50,15 @@ RESTRICTIONS:
 4. Automated scraping, crawling, or systematic downloading of data from
    this software or its hosted instances is prohibited.
 
-5. The regulatory mapping data, compliance checklists, and assessment
-   algorithms contained herein represent significant research investment
-   and are protected as trade secrets under applicable law.
+5. The regulatory mapping editorial work, compliance checklists, and
+   assessment algorithms contained herein represent significant research
+   investment and are protected as trade secrets under applicable law.
 
 CONTACT:
 
 For licensing inquiries: legal@caelex.eu
 For security reports: security@caelex.eu
 
-Caelex GmbH
-Berlin, Germany
+Caelex (Einzelunternehmen, Inhaber: Julian Polleschner)
+Am Maselakepark 37
+13587 Berlin, Germany

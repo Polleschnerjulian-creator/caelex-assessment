@@ -10,6 +10,7 @@
     "db:push:force": "prisma db push --skip-generate --accept-data-loss",
     "start": "next start",
     "lint": "next lint",
+    "lint:legal-corpus": "tsx scripts/lint-legal-corpus.ts",
     "security:audit": "npm audit --audit-level=moderate",
     "security:check": "npm audit",
     "security:outdated": "npm outdated",

@@ -179,6 +179,16 @@ model User {
   // endpoint invalidates the prior token on each new request.
   passwordResetTokens PasswordResetToken[]
 
+  // Compliance-Audit 2026-05 — DSGVO Art. 7 Abs. 1 Nachweispflicht.
+  // Append-only log of consent decisions made while signed in.
+  consentRecords ConsentRecord[] @relation("UserConsentRecords")
+
+  // Compliance-Audit 2026-05 — § 203 StGB / DPA § 10a Abs. 2.
+  // (a) Verpflichtungserklärungen the user has signed; (b) commits
+  // they recorded (admin-side bookkeeping).
+  signedSection203Commitments  Section203Commitment[] @relation("SignedSection203Commitments")
+  recordedSection203Commitments Section203Commitment[] @relation("RecordedSection203Commitments")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -3011,6 +3021,8 @@ model Organization {
   regulatoryUpdateReads  RegulatoryUpdateRead[] // Regulatory feed read tracking
   ncaDocuments           NCADocument[] // Generate 2.0: NCA documents
   ncaDocPackages         NCADocPackage[] // Generate 2.0: NCA submission packages
+  // Compliance-Audit 2026-05 — DSGVO Art. 28 AVV per organisation.
+  dpaExecutions          OrganizationDPAExecution[] @relation("OrganizationDPAExecutions")
   stakeholderEngagements StakeholderEngagement[] // Network: stakeholder engagements
   dataRooms              DataRoom[] // Network: secure data rooms
   attestations           ComplianceAttestation[] // Network: compliance attestations
@@ -11363,4 +11375,227 @@ enum TradeLicenseStatus {
   EXPIRED
   /// Drawn-down to capacity (totalCapValue reached)
   EXHAUSTED
+}
+
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║  Consent Log — DSGVO Art. 7 Abs. 1 Nachweispflicht                ║
+// ║  Compliance-Audit 2026-05                                          ║
+// ╚══════════════════════════════════════════════════════════════════╝
+
+/// Versioned, append-only audit-trail of cookie/processing consent
+/// decisions. Required by DSGVO Art. 7 Abs. 1: the controller MUST
+/// be able to demonstrate that the data subject has consented to the
+/// processing of his/her personal data.
+///
+/// Anonymous (no userId) decisions are also captured — the consent
+/// banner fires before sign-in, so we use a hashed sessionKey
+/// (SHA-256 of a random per-browser uuid stored in localStorage) plus
+/// IP-hash to scope without storing PII. When a session later signs
+/// in, subsequent decisions carry both `sessionHashed` and `userId`
+/// so the operator can link back if needed.
+///
+/// Append-only: revocation creates a new row with `decision = "revoke"`,
+/// the previous row stays as evidence the consent existed at time T.
+model ConsentRecord {
+  id String @id @default(cuid())
+
+  /// Versioning of the consent UX itself — bumped when text changes
+  /// materially (e.g. "we now also use Cloudflare R2"). Lets us prove
+  /// what the user saw at the time of consent.
+  consentVersion String
+
+  /// SHA-256 hash of a per-browser session uuid (stored in localStorage).
+  /// Stable across the browser session; rotates on cookie clear.
+  sessionHashed String
+
+  /// SHA-256 hash of the IP address (truncated /24 for IPv4, /48 for
+  /// IPv6 before hashing — see lib/consent-log.ts). Coarse-grained,
+  /// not personally identifying on its own.
+  ipHashed String?
+
+  /// User-Agent hashed (truncated SHA-256, no full UA string).
+  userAgentHashed String?
+
+  /// Optional: when the user is signed in, the User.id is captured so
+  /// the operator can prove consent for a specific account if asked.
+  userId String?
+  user   User?   @relation("UserConsentRecords", fields: [userId], references: [id], onDelete: SetNull)
+
+  /// One of: "accept_all", "decline", "customize", "revoke".
+  decision String
+
+  /// Per-purpose consent state at the time of the decision. JSON
+  /// shaped like: { necessary: true, analytics: bool, performance:
+  /// bool, errorTracking: bool }.
+  preferences Json
+
+  /// What surface presented the banner — "first_visit", "settings",
+  /// "atlas", etc. Useful for distinguishing implicit-flow from
+  /// settings-page-explicit.
+  surface String?
+
+  /// The page path the consent was given on (for context). Trimmed
+  /// to remove query string.
+  path String?
+
+  createdAt DateTime @default(now())
+
+  @@index([sessionHashed, createdAt])
+  @@index([userId, createdAt])
+  @@index([createdAt])
+}
+
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║  § 203 StGB Verpflichtungserklärung — Berufsgeheimnis-Träger       ║
+// ║  Compliance-Audit 2026-05                                          ║
+// ╚══════════════════════════════════════════════════════════════════╝
+
+/// Signed § 203 StGB Verpflichtungserklärung for every individual
+/// (founder, employee, contractor, sub-processor staff) with technical
+/// access to Berufsgeheimnis-protected data on behalf of a Caelex
+/// law-firm customer.
+///
+/// Promised by DPA § 10a Abs. 2: "Caelex … sind ausdrücklich auf die
+/// Verschwiegenheit verpflichtet … Caelex dokumentiert diese Belehrung
+/// schriftlich für jede mitwirkende Person und stellt … Nachweise auf
+/// Anforderung … zur Verfügung."
+///
+/// Each row represents ONE signed Verpflichtungserklärung. Bumping
+/// `templateVersion` to retire an old commitment requires a new row,
+/// not an in-place edit (append-only audit-trail).
+model Section203Commitment {
+  id String @id @default(cuid())
+
+  /// Full legal name of the signer.
+  signerName String
+
+  /// Role / relationship to Caelex. Free text. Examples:
+  /// "Founder & Managing Director", "Software Engineer (Contractor)",
+  /// "Vercel Inc. (Sub-Processor staff with admin access)".
+  role String
+
+  /// Email of the signer (for the audit). Optional for sub-processor
+  /// staff where Caelex receives only an aggregate attestation.
+  signerEmail String?
+
+  /// When the signer accessed Caelex systems with privileged scope
+  /// for the first time. Sets the start of the obligation period.
+  scopeStartedAt DateTime?
+
+  /// Date the Verpflichtungserklärung was signed (out-of-band).
+  signedAt DateTime
+
+  /// Free-text scope summary — which systems / which data classes
+  /// the signer has access to. Renders into the PDF.
+  scope String
+
+  /// Version of the canonical template (the React-PDF Document). Bump
+  /// when the legal text changes; signing a new template version
+  /// requires a NEW row, not in-place edit.
+  templateVersion String @default("v1-2026-05")
+
+  /// Public path / R2 key to the generated PDF. Optional because we
+  /// can persist the row first and attach the file later.
+  pdfStorageKey String?
+
+  /// Public path / R2 key to a SIGNED scan-back of the PDF (operator
+  /// uploads after the signer returns it). Optional.
+  signedPdfStorageKey String?
+
+  /// Free-text notes (e.g. "co-signed by witness", "scanned signature
+  /// only — wet-ink on file at office address").
+  notes String?
+
+  /// Operator-side bookkeeping: who recorded this row. Optional so
+  /// commitments persisted by a script (e.g. self-recording for the
+  /// founder) don't require a logged-in admin.
+  recordedByUserId String?
+  recordedBy       User?   @relation("RecordedSection203Commitments", fields: [recordedByUserId], references: [id], onDelete: SetNull)
+
+  /// Optional link to the User row of the signer (when the signer is
+  /// also a Caelex platform account holder). NOT required — many
+  /// signers (notary, employee) won't have a Caelex login at all.
+  userId String?
+  user   User?   @relation("SignedSection203Commitments", fields: [userId], references: [id], onDelete: SetNull)
+
+  /// Soft-revocation: when an obligation is no longer active (signer
+  /// left the company, scope removed). The row stays for the audit
+  /// but `revokedAt` is set so the operator UI can grey it out.
+  revokedAt    DateTime?
+  revokedReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([signedAt])
+  @@index([revokedAt])
+  @@index([userId])
+  @@index([recordedByUserId])
+}
+
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║  DPA Execution — counter-signed AVV per organisation              ║
+// ║  Compliance-Audit 2026-05                                          ║
+// ╚══════════════════════════════════════════════════════════════════╝
+
+/// Tracks the AVV / Auftragsverarbeitungsvertrag execution status per
+/// customer organisation. The DPA itself is a single document
+/// (/legal/dpa) versioned by `dpaVersion`; this row is the binding
+/// instrument that says "Customer X has executed version Y on date Z".
+///
+/// Lifecycle:
+///   PENDING — row created automatically when an organisation goes
+///              live (a downloadable cover-PDF is available).
+///   DOWNLOADED — customer downloaded the cover-PDF (timestamp captured).
+///   EXECUTED — operator marked the row as customer-counter-signed
+///              after receiving the signed PDF back. Stored evidence
+///              is the signedPdfStorageKey (uploaded to R2).
+///
+/// One row per (orgId, dpaVersion). When the DPA template is updated
+/// to a new version, ALL existing rows stay as historical evidence
+/// and a new row per org is created automatically.
+model OrganizationDPAExecution {
+  id String @id @default(cuid())
+
+  organizationId String
+  organization   Organization @relation("OrganizationDPAExecutions", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  /// DPA template version this execution covers. Bump when the DPA
+  /// content changes materially. Caelex side: src/app/legal/dpa/_content.
+  dpaVersion String
+
+  /// SHA-256 hash of the canonical DPA content at the time of issuance.
+  /// Lets the operator prove the DPA hasn't been silently modified
+  /// after the customer signed it.
+  dpaContentHash String
+
+  /// Status: PENDING | DOWNLOADED | EXECUTED.
+  status String @default("PENDING")
+
+  /// Customer-side signer (filled in when status flips to EXECUTED).
+  customerSignerName  String?
+  customerSignerRole  String?
+  customerSignerEmail String?
+
+  /// Timestamps for the lifecycle steps. ISO via @default(now()) for
+  /// requestedAt; the rest are nullable until the step occurs.
+  requestedAt   DateTime  @default(now())
+  downloadedAt  DateTime?
+  executedAt    DateTime?
+
+  /// R2 / S3 key for the customer-counter-signed PDF (uploaded by the
+  /// operator after receiving it via secure channel). Optional — the
+  /// row can be marked EXECUTED without an attached file if the
+  /// operator just needs to record the date.
+  signedPdfStorageKey String?
+
+  /// Operator-side notes (e.g. "co-signed with notary witness").
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([organizationId, dpaVersion])
+  @@index([status])
+  @@index([executedAt])
 }

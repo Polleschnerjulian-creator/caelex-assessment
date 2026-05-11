@@ -460,8 +460,11 @@ function SignupForm() {
           Surfacing the posture here turns the consent from a generic
           ToS-tick into informed consent (GDPR Art. 7). */}
       <div className={styles.gdprBanner} role="note">
-        Your data is processed by <strong>Caelex GmbH</strong> (controller) in
-        the EU. We use named sub-processors listed in our{" "}
+        Your data is processed by{" "}
+        <strong>
+          Caelex (Einzelunternehmen, Inhaber: Julian Polleschner, Berlin)
+        </strong>{" "}
+        as controller in the EU. We use named sub-processors listed in our{" "}
         <Link href="/legal/sub-processors">Sub-Processors</Link> page and
         protect your account under the safeguards described in our{" "}
         <Link href="/legal/security">Security</Link> overview. You may withdraw

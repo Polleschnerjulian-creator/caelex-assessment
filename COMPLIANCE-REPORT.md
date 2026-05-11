@@ -7,6 +7,17 @@
 
 ---
 
+> **⚠️ STATUS-HINWEIS (Stand: 11. Mai 2026)** — Dieser Report ist überholt
+> und enthält Inkonsistenzen (z. B. behauptet Z. 80 "EU-US DPF + SCCs
+> dokumentiert", während Z. 248 das Gegenteil sagt). Aktueller Stand der
+> Anthropic-Drittlandtransfer-Mechanismen: **DPA + SCCs sind NICHT
+> abgeschlossen**. Eine neue Compliance-Audit-Suite (drei parallele
+> Audits, 11. Mai 2026) hat die offenen Lücken katalogisiert; die
+> Sofort-Fixes wurden in diesem Bundle adressiert. Siehe Commit-Historie
+> ab `feat(atlas/compliance):` Tag und `data/LEGAL-SOURCES-README.md`.
+
+---
+
 ## Executive Summary
 
 Caelex wurde als Compliance-SaaS fur Weltraumregulierung entwickelt und muss selbst zahlreiche Gesetze und Verordnungen einhalten. Diese Analyse pruft die Einhaltung aller auf Caelex anwendbaren Vorschriften — von DSGVO uber deutsches Telemedienrecht bis hin zur ePrivacy-Richtlinie.
@@ -71,19 +82,19 @@ Telefon: [Nummer]
 
 ### Erfullt (9/10)
 
-| DSGVO-Anforderung              | Status  | Details                                        |
-| ------------------------------ | ------- | ---------------------------------------------- |
-| Identitat des Verantwortlichen | Konform | Vollstandig mit Adresse                        |
-| Zwecke der Verarbeitung        | Konform | Alle Zwecke einzeln aufgefuhrt                 |
-| Rechtsgrundlagen (Art. 6)      | Konform | Art. 6(1)(a)/(b)/(c)/(f) jeweils zugeordnet    |
-| Empfanger/Kategorien           | Konform | 8 Auftragsverarbeiter mit Rollen               |
-| Drittlandtransfers             | Konform | EU-US DPF + SCCs dokumentiert                  |
-| Speicherfristen                | Konform | Detaillierte Tabelle pro Kategorie             |
-| Betroffenenrechte              | Konform | Alle 8 Rechte (Art. 15-21, 77) aufgefuhrt      |
-| Widerrufsrecht Einwilligung    | Konform | Art. 7(3) explizit genannt                     |
-| Beschwerderecht                | Konform | Berliner Datenschutzbeauftragte mit Adresse    |
-| Automatisierte Entscheidungen  | Konform | Art. 22 — keine automatisierten Entscheidungen |
-| Datenschutzverletzungen        | Konform | Art. 33/34 Verfahren dokumentiert              |
+| DSGVO-Anforderung              | Status    | Details                                                        |
+| ------------------------------ | --------- | -------------------------------------------------------------- |
+| Identitat des Verantwortlichen | Konform   | Vollstandig mit Adresse                                        |
+| Zwecke der Verarbeitung        | Konform   | Alle Zwecke einzeln aufgefuhrt                                 |
+| Rechtsgrundlagen (Art. 6)      | Konform   | Art. 6(1)(a)/(b)/(c)/(f) jeweils zugeordnet                    |
+| Empfanger/Kategorien           | Konform   | 8 Auftragsverarbeiter mit Rollen                               |
+| Drittlandtransfers             | TEILWEISE | Vercel/Neon/R2 via SCCs/DPF; **Anthropic-DPA noch ausstehend** |
+| Speicherfristen                | Konform   | Detaillierte Tabelle pro Kategorie                             |
+| Betroffenenrechte              | Konform   | Alle 8 Rechte (Art. 15-21, 77) aufgefuhrt                      |
+| Widerrufsrecht Einwilligung    | Konform   | Art. 7(3) explizit genannt                                     |
+| Beschwerderecht                | Konform   | Berliner Datenschutzbeauftragte mit Adresse                    |
+| Automatisierte Entscheidungen  | Konform   | Art. 22 — keine automatisierten Entscheidungen                 |
+| Datenschutzverletzungen        | Konform   | Art. 33/34 Verfahren dokumentiert                              |
 
 ### Starken
 
