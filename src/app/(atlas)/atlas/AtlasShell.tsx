@@ -70,17 +70,19 @@ const MAIN_NAV: readonly NavItem[] = [
   // citation pills. Distinct icon (Gavel) to read as adjudication-
   // outcomes vs the statutory text under "sources".
   { labelKey: "atlas.cases", href: "/atlas/cases", icon: Gavel },
-  // Drafting Studio — three Astra-routed tile-forms (authorization
-  // application, compliance brief, jurisdictional comparison) plus a
-  // privilege-marker toggle. Live as of bundle 29 — was previously
-  // greyed-out as "Soon" because the page existed but the value-prop
-  // wasn't clear from the labels. Now relabelled in lawyer-workflow
-  // language ("you need X → click → get Y") instead of engineering
-  // jargon ("scaffold", "N×M matrix").
+  // Drafting Studio + Chat — temporarily hidden behind "coming soon"
+  // again (re-gated after bundle 47 push). Pages are fully live and
+  // functional (bundles 29-46 shipped 17+ features: Q1-Q6, S1-S5,
+  // B1-B6, plan templates, drafting chat with tool-use), but a
+  // product call wants drafting kept off the public sidebar until a
+  // controlled rollout. Internal users can still reach it via direct
+  // URL (/atlas/drafting and /atlas/drafting/chat) since the routes
+  // themselves aren't gated — only the sidebar entry is.
   {
     labelKey: "atlas.drafting",
     href: "/atlas/drafting",
     icon: PenSquare,
+    comingSoon: true,
   },
   { labelKey: "atlas.eu", href: "/atlas/eu", icon: Landmark },
   // Landing-Rights: same "coming soon" treatment as Drafting — content
