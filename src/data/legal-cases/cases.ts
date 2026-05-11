@@ -18,6 +18,7 @@
  */
 
 import type { LegalCase } from "./types";
+import { ATLAS_CASES_RESEARCH_2026_05 } from "./cases-additions-research-2026-05";
 
 export const ATLAS_CASES: LegalCase[] = [
   // ─── Liability-Convention awards / inter-state settlements ──────────
@@ -1675,4 +1676,11 @@ export const ATLAS_CASES: LegalCase[] = [
     source_url: "https://www.spacecom.co.il/about/news/",
     last_verified: "2026-04-28",
   },
+
+  // ─── Research bundle 2026-05 (11 verified entries) ──────────────────
+  // Curated in src/data/legal-cases/cases-additions-research-2026-05.ts.
+  // Spread here so the corpus stays a single ATLAS_CASES array — every
+  // helper in index.ts (getCaseById, getCasesByJurisdiction, etc.) and
+  // every consumer continues to work without changes.
+  ...ATLAS_CASES_RESEARCH_2026_05,
 ];
