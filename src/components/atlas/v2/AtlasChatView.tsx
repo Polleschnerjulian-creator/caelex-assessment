@@ -15,11 +15,20 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Briefcase, Wrench, AlertCircle, ChevronRight } from "lucide-react";
+import {
+  Briefcase,
+  AlertCircle,
+  ChevronRight,
+  Check as CheckIcon,
+  Loader2,
+  X as XIcon,
+  PenLine,
+} from "lucide-react";
 import { ChatInput } from "./ChatInput";
 import { SuggestedFollowups } from "./SuggestedFollowups";
 import { CitationsPanel, type CitationRecord } from "./CitationsPanel";
 import { MarkdownContent } from "./MarkdownContent";
+import { labelFor, CATEGORY_DOT } from "@/lib/atlas/tool-labels";
 import type { ChatMessageBlock, ChatMessageRecord, ChatRecord } from "./types";
 
 interface Props {
@@ -381,6 +390,24 @@ function MessageRow({ message }: { message: ChatMessageRecord }) {
   );
 }
 
+/* ── Live "Atlas arbeitet" panel + persisted summary ─────────────────────
+ *
+ * The blackbox-problem fix: while the model streams, we render a
+ * Claude-style reasoning panel that shows, per tool, in plain German:
+ *   • status icon (running / done / error)
+ *   • friendly label ("Korpus durchsucht", "Validität geprüft")
+ *   • parameter description (e.g. „Art. 14 EU Space Act")
+ *   • source pill ("Atlas-Korpus", "EU Space Act", "Validity-Index")
+ *   • duration on right
+ *   • optional first-line preview of the output
+ *
+ * A header strip above shows the current activity ("Sucht in Atlas-
+ * Korpus…", "Schreibt Antwort…") so the user always knows what the
+ * assistant is doing right now. Auto-expanded; no clicks needed to
+ * see the trace mid-stream. Once the stream completes the trace
+ * collapses to a one-line `<details>` for compactness.
+ */
+
 function StreamingMessage({
   tools,
   text,
@@ -388,92 +415,230 @@ function StreamingMessage({
   tools: InFlightToolCall[];
   text: string;
 }) {
+  /* What's happening right now: most-recent-not-yet-completed tool,
+     OR — if every tool finished and text has begun arriving — the
+     "Schreibt Antwort…" state. */
+  const inFlight = [...tools].reverse().find((t) => !t.completedAt);
+  const allDone = tools.length > 0 && tools.every((t) => t.completedAt);
+  const writingAnswer = allDone && text.length > 0;
+
+  let activity: { verb: string; detail?: string } | null = null;
+  if (inFlight) {
+    const lbl = labelFor(inFlight.name);
+    activity = { verb: lbl.running, detail: lbl.describe?.(inFlight.input) };
+  } else if (writingAnswer) {
+    activity = { verb: "Schreibt Antwort" };
+  } else if (tools.length === 0 && text.length === 0) {
+    activity = { verb: "Plant Recherche" };
+  }
+
   return (
-    <div className="space-y-2">
-      {tools.length > 0 && (
-        <div className="rounded-xl bg-slate-50 px-3 py-2 dark:bg-white/[0.03]">
-          <div className="flex items-center justify-between text-[11px] text-slate-500">
-            <span>Tools verwendet ({tools.length})</span>
-            <span>
-              {tools.filter((t) => t.completedAt).length} / {tools.length}
-            </span>
-          </div>
-          <div className="mt-1 space-y-1">
-            {tools.map((t) => (
-              <ExpandableToolCallRow key={t.id} call={t} />
-            ))}
-          </div>
+    <div className="space-y-3">
+      {(tools.length > 0 || activity) && (
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50/60 dark:border-white/[0.06] dark:bg-white/[0.02]">
+          {/* Live activity header */}
+          {activity && (
+            <div className="flex items-center gap-2 border-b border-slate-200 bg-white/40 px-3 py-2 dark:border-white/[0.05] dark:bg-white/[0.02]">
+              {writingAnswer ? (
+                <PenLine
+                  size={12}
+                  className="shrink-0 text-slate-500 dark:text-slate-400"
+                />
+              ) : (
+                <Loader2
+                  size={12}
+                  className="shrink-0 animate-spin text-slate-500 dark:text-slate-400"
+                />
+              )}
+              <span className="text-[12px] font-medium text-slate-700 dark:text-slate-200">
+                {activity.verb}
+                {activity.detail ? "…" : "…"}
+              </span>
+              {activity.detail && (
+                <span className="line-clamp-1 text-[12px] text-slate-500">
+                  {activity.detail}
+                </span>
+              )}
+            </div>
+          )}
+          {/* Per-tool steps, auto-expanded */}
+          {tools.length > 0 && (
+            <div className="divide-y divide-slate-200 dark:divide-white/[0.04]">
+              {tools.map((t) => (
+                <ToolStepRow key={t.id} call={t} />
+              ))}
+            </div>
+          )}
         </div>
       )}
       <div className="prose prose-sm max-w-none text-[14.5px] leading-relaxed text-slate-800 dark:prose-invert dark:text-slate-200">
         <MarkdownContent text={text} />
-        <span className="ml-1 inline-block h-3 w-1.5 animate-pulse bg-slate-600 align-middle dark:bg-slate-300" />
+        {!allDone || text.length > 0 ? (
+          <span className="ml-1 inline-block h-3 w-1.5 animate-pulse bg-slate-600 align-middle dark:bg-slate-300" />
+        ) : null}
       </div>
     </div>
   );
 }
 
-function ExpandableToolCallRow({ call }: { call: InFlightToolCall }) {
+/**
+ * One row in the live trace. Designed to read at a glance:
+ *   ● Korpus durchsucht                           128ms
+ *     „EU Space Act Art. 14 Konformität"  · Atlas-Korpus
+ *     → Found: Artikel 14 — Konformitätsbewertung
+ *
+ * The raw JSON input/output is still available behind a chevron, but
+ * the natural-language summary is what's surfaced by default.
+ */
+function ToolStepRow({ call }: { call: InFlightToolCall }) {
   const [open, setOpen] = useState(false);
+  const lbl = labelFor(call.name);
+  const detail = lbl.describe?.(call.input);
+  const completed = !!call.completedAt;
+  const errored = !!call.isError;
   const inputJson = JSON.stringify(call.input ?? {}, null, 2);
+  const summaryPreview = call.summary
+    ? (call.summary.split("\n").find((l) => l.trim()) ?? "")
+    : "";
+  const previewTruncated =
+    summaryPreview.length > 140
+      ? summaryPreview.slice(0, 137) + "…"
+      : summaryPreview;
+
   return (
-    <div className="rounded-md bg-white/60 dark:bg-white/[0.02]">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-2 px-2 py-1 text-left text-[11.5px] text-slate-700 hover:bg-black/[0.03] dark:text-slate-300 dark:hover:bg-white/[0.03]"
-      >
-        <ChevronRight
-          size={10}
-          className={`shrink-0 opacity-60 transition-transform ${open ? "rotate-90" : ""}`}
-        />
-        <Wrench size={10} className="shrink-0 opacity-50" />
-        <span className="font-mono">{call.name}</span>
-        <span className="ml-auto shrink-0 text-slate-500">
-          {call.completedAt ? (
-            call.isError ? (
-              <span className="text-red-500 dark:text-red-400">Error</span>
-            ) : (
-              <span>{call.durationMs}ms</span>
-            )
+    <div className="px-3 py-2">
+      <div className="flex items-start gap-2.5">
+        {/* Status icon */}
+        <div className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center">
+          {errored ? (
+            <XIcon
+              size={12}
+              className="text-red-500 dark:text-red-400"
+              strokeWidth={2.5}
+            />
+          ) : completed ? (
+            <CheckIcon
+              size={12}
+              className="text-emerald-600 dark:text-emerald-400"
+              strokeWidth={2.5}
+            />
           ) : (
-            <span>läuft…</span>
-          )}
-        </span>
-      </button>
-      {open && (
-        <div className="space-y-1 border-t border-slate-200 px-2 py-1.5 font-mono text-[10.5px] dark:border-white/[0.04]">
-          <div className="text-slate-500">Input</div>
-          <pre className="overflow-x-auto whitespace-pre-wrap break-all text-slate-700 dark:text-slate-300">
-            {inputJson}
-          </pre>
-          {call.summary && (
-            <>
-              <div className="mt-1 text-slate-500">Output</div>
-              <pre className="whitespace-pre-wrap break-words text-slate-700 dark:text-slate-300">
-                {call.summary}
-              </pre>
-            </>
+            <Loader2
+              size={12}
+              className="animate-spin text-slate-500 dark:text-slate-400"
+            />
           )}
         </div>
-      )}
+
+        {/* Body */}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline gap-2">
+            <span className="text-[12.5px] font-medium text-slate-800 dark:text-slate-100">
+              {completed ? lbl.done : lbl.running}
+            </span>
+            <span className="ml-auto shrink-0 text-[10.5px] tabular-nums text-slate-400 dark:text-slate-500">
+              {completed ? (
+                errored ? (
+                  <span className="text-red-500 dark:text-red-400">Fehler</span>
+                ) : (
+                  <span>{call.durationMs}ms</span>
+                )
+              ) : (
+                <span>läuft…</span>
+              )}
+            </span>
+          </div>
+
+          {/* Detail (parameter) + source pill */}
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11.5px] text-slate-500">
+            {detail && <span className="line-clamp-2">{detail}</span>}
+            <span className="inline-flex items-center gap-1">
+              <span
+                className={`h-1.5 w-1.5 shrink-0 rounded-full ${CATEGORY_DOT[lbl.category]}`}
+              />
+              <span>{lbl.source}</span>
+            </span>
+          </div>
+
+          {/* Output preview (one line) */}
+          {previewTruncated && (
+            <div className="mt-1 line-clamp-1 text-[11.5px] text-slate-500 dark:text-slate-400">
+              <span className="mr-1 text-slate-300 dark:text-slate-600">→</span>
+              {previewTruncated}
+            </div>
+          )}
+
+          {/* Expand for raw I/O */}
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            className="mt-1 inline-flex items-center gap-1 text-[10.5px] text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300"
+          >
+            <ChevronRight
+              size={9}
+              className={`transition-transform ${open ? "rotate-90" : ""}`}
+            />
+            <span>{open ? "Details ausblenden" : "Rohdaten"}</span>
+          </button>
+
+          {open && (
+            <div className="mt-1.5 space-y-1 rounded-md bg-white px-2 py-1.5 font-mono text-[10.5px] dark:bg-white/[0.03]">
+              <div className="text-slate-400 dark:text-slate-500">Input</div>
+              <pre className="overflow-x-auto whitespace-pre-wrap break-all text-slate-700 dark:text-slate-300">
+                {inputJson}
+              </pre>
+              {call.summary && (
+                <>
+                  <div className="mt-1 text-slate-400 dark:text-slate-500">
+                    Output
+                  </div>
+                  <pre className="whitespace-pre-wrap break-words text-slate-700 dark:text-slate-300">
+                    {call.summary}
+                  </pre>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
 
+/**
+ * Persisted-message variant: after the stream lands the only data we
+ * have on disk is `string[]` (tool names). We translate them through
+ * `labelFor()` and render a one-line summary that opens to a clean
+ * vertical list — preserving "what did Atlas use to answer this" as
+ * a permanent audit trail.
+ */
 function ToolTraceSummary({ tools }: { tools: string[] }) {
   return (
     <details className="rounded-md bg-slate-50 px-3 py-1.5 text-[11.5px] dark:bg-white/[0.02]">
       <summary className="cursor-pointer text-slate-500 hover:text-slate-800 dark:hover:text-slate-300">
-        {tools.length} {tools.length === 1 ? "Tool" : "Tools"} verwendet
+        Gedankengang anzeigen ({tools.length}{" "}
+        {tools.length === 1 ? "Schritt" : "Schritte"})
       </summary>
-      <div className="mt-2 space-y-0.5">
-        {tools.map((t, i) => (
-          <div key={i} className="flex items-center gap-2 text-slate-500">
-            <Wrench size={9} className="opacity-50" />
-            <span className="font-mono">{t}</span>
-          </div>
-        ))}
+      <div className="mt-2 space-y-1">
+        {tools.map((t, i) => {
+          const lbl = labelFor(t);
+          return (
+            <div
+              key={i}
+              className="flex items-center gap-2 text-[12px] text-slate-600 dark:text-slate-400"
+            >
+              <span
+                className={`h-1.5 w-1.5 shrink-0 rounded-full ${CATEGORY_DOT[lbl.category]}`}
+              />
+              <span className="font-medium text-slate-700 dark:text-slate-300">
+                {lbl.done}
+              </span>
+              <span className="text-slate-400 dark:text-slate-500">
+                · {lbl.source}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </details>
   );
