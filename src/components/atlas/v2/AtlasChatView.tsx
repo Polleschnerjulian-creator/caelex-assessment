@@ -31,6 +31,7 @@ import {
 import { ChatInput } from "./ChatInput";
 import { CitationsPanel, type CitationRecord } from "./CitationsPanel";
 import { MarkdownContent } from "./MarkdownContent";
+import { AtlasMark } from "./AtlasLogo";
 import { labelFor, CATEGORY_DOT } from "@/lib/atlas/tool-labels";
 import {
   downloadChatAsPdf,
@@ -161,6 +162,28 @@ export function AtlasChatView({ chatId }: Props) {
     setStreamingThinking("");
     setInFlightTools([]);
     setError(null);
+
+    /* Optimistically add the user's message to local state IMMEDIATELY
+       so it stays visible while Atlas streams its reply. The silent
+       reload after stream-completion replaces this with the canonical
+       persisted version (with proper id, attached images, etc.). */
+    const optimisticUserMessage: ChatMessageRecord = {
+      id: `optimistic-${Date.now()}`,
+      role: "user",
+      content: [{ type: "text", text }],
+      inputTokens: null,
+      outputTokens: null,
+      costUsd: null,
+      toolsUsed: [],
+      citations: null,
+      createdAt: new Date().toISOString(),
+    };
+    setChat((prev) =>
+      prev
+        ? { ...prev, messages: [...prev.messages, optimisticUserMessage] }
+        : prev,
+    );
+
     try {
       const res = await fetch("/api/atlas/chat", {
         method: "POST",
@@ -600,7 +623,10 @@ function StreamingMessage({
       {thinking && <ThinkingPanel text={thinking} streaming />}
       {(tools.length > 0 || activity) && (
         <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50/60 dark:border-white/[0.06] dark:bg-white/[0.02]">
-          {/* Live activity header */}
+          {/* Live activity header — Atlas-Mark als Brand-Spinner
+              statt generischem Loader2. Mark pulsiert während der
+              Agent denkt/sucht — dieselbe Idee wie Claudes orange
+              "Claude denkt..." Animation, nur mit eigener Brand. */}
           {activity && (
             <div className="flex items-center gap-2 border-b border-slate-200 bg-white/40 px-3 py-2 dark:border-white/[0.05] dark:bg-white/[0.02]">
               {writingAnswer ? (
@@ -609,14 +635,12 @@ function StreamingMessage({
                   className="shrink-0 text-slate-500 dark:text-slate-400"
                 />
               ) : (
-                <Loader2
-                  size={12}
-                  className="shrink-0 animate-spin text-slate-500 dark:text-slate-400"
-                />
+                <span className="inline-flex shrink-0 animate-pulse text-slate-700 dark:text-slate-200">
+                  <AtlasMark size={10} />
+                </span>
               )}
               <span className="text-[12px] font-medium text-slate-700 dark:text-slate-200">
-                {activity.verb}
-                {activity.detail ? "…" : "…"}
+                {activity.verb}…
               </span>
               {activity.detail && (
                 <span className="line-clamp-1 text-[12px] text-slate-500">

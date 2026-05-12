@@ -706,8 +706,12 @@ function PlusMenu({
   onPickFile: () => void;
   onPickImage: () => void;
 }) {
+  /* Cleaner popover — light Section labels (sentence-case, kein
+     uppercase/tracking-wider), mehr Padding, weniger sichtbare
+     Divider, einheitlicher Row-Padding für ruhiges Erscheinungsbild.
+     Closes the visual-noise gap to ChatGPT's plus-menu reference. */
   return (
-    <div className="absolute bottom-full left-0 z-30 mb-2 w-72 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.12)] dark:border-white/[0.08] dark:bg-[#2a2a2a] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)]">
+    <div className="absolute bottom-full left-0 z-30 mb-2 w-[280px] overflow-hidden rounded-2xl border border-slate-200 bg-white py-2 shadow-[0_12px_32px_rgba(0,0,0,0.12)] dark:border-white/[0.08] dark:bg-[#2a2a2a] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)]">
       {/* Anhängen */}
       <MenuSection label="Anhängen">
         <MenuRow
@@ -719,7 +723,7 @@ function PlusMenu({
         <MenuRow
           icon={<ImageIcon size={14} />}
           label="Foto hochladen"
-          hint="JPEG, PNG, GIF, WEBP — max 5 MB"
+          hint="JPEG, PNG, GIF"
           onClick={onPickImage}
         />
       </MenuSection>
@@ -751,7 +755,7 @@ function PlusMenu({
           return (
             <MenuRow
               key={b.key}
-              icon={<Wrench size={14} className="opacity-60" />}
+              icon={<Wrench size={14} className="opacity-50" />}
               label={b.label}
               checked={on}
               onClick={() => onToggle(b.key as keyof typeof toggles)}
@@ -772,18 +776,16 @@ function MenuSection({
 }) {
   return (
     <div>
-      <div className="px-2.5 pb-0.5 pt-1.5 text-[10.5px] font-medium uppercase tracking-wider text-slate-500">
+      <div className="px-3 pb-1 pt-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
         {label}
       </div>
-      {children}
+      <div className="px-1">{children}</div>
     </div>
   );
 }
 
 function MenuDivider() {
-  return (
-    <div className="my-1 border-t border-slate-200 dark:border-white/[0.06]" />
-  );
+  return <div className="mx-3 my-1.5 h-px bg-slate-100 dark:bg-white/[0.05]" />;
 }
 
 function MenuRow({
@@ -806,7 +808,7 @@ function MenuRow({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors ${
+      className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] transition-colors ${
         disabled
           ? "cursor-default text-slate-400 dark:text-slate-600"
           : "text-slate-700 hover:bg-black/[0.04] dark:text-slate-200 dark:hover:bg-white/[0.04]"
