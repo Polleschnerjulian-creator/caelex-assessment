@@ -41,6 +41,7 @@ import {
   Shield as ShieldIcon,
   ArrowLeftRight,
   PenLine,
+  Cpu,
 } from "lucide-react";
 import type { ChatListItem, MandateListItem } from "./types";
 import { useAtlasTheme } from "@/app/(atlas)/atlas/_components/AtlasThemeProvider";
@@ -285,6 +286,12 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
             label="Drafting Canvas"
             icon={<PenLine size={14} />}
             active={pathname === "/atlas/draft"}
+          />
+          <SidebarItem
+            href="/atlas/agent"
+            label="Agent-Mode"
+            icon={<Cpu size={14} />}
+            active={pathname === "/atlas/agent"}
           />
         </div>
 
