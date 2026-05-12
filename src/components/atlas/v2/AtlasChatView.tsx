@@ -32,7 +32,6 @@ import { ChatInput } from "./ChatInput";
 import { SuggestedFollowups } from "./SuggestedFollowups";
 import { CitationsPanel, type CitationRecord } from "./CitationsPanel";
 import { MarkdownContent } from "./MarkdownContent";
-import { ContextWindowIndicator } from "./ContextWindowIndicator";
 import { labelFor, CATEGORY_DOT } from "@/lib/atlas/tool-labels";
 import {
   downloadChatAsPdf,
@@ -356,33 +355,6 @@ export function AtlasChatView({ chatId }: Props) {
             </Link>
           )}
         </div>
-        {(() => {
-          /* Context-window-indikator data: derive from the chat's
-             persisted message stream. inputTokens on the LAST
-             assistant message represents the cumulative conversation
-             Anthropic last saw — the right proxy for "how full is
-             the 200k window?". */
-          let lastInputTokens: number | null = null;
-          let totalOutputTokens = 0;
-          let totalCostUsd = 0;
-          for (const m of chat.messages) {
-            if (m.role === "assistant") {
-              if (m.inputTokens !== null && m.inputTokens !== undefined)
-                lastInputTokens = m.inputTokens;
-              if (m.outputTokens !== null && m.outputTokens !== undefined)
-                totalOutputTokens += m.outputTokens;
-              if (m.costUsd !== null && m.costUsd !== undefined)
-                totalCostUsd += m.costUsd;
-            }
-          }
-          return (
-            <ContextWindowIndicator
-              lastInputTokens={lastInputTokens}
-              totalOutputTokens={totalOutputTokens}
-              totalCostUsd={totalCostUsd}
-            />
-          );
-        })()}
         <ExportMenu chat={chat} />
       </header>
 
@@ -444,15 +416,42 @@ export function AtlasChatView({ chatId }: Props) {
       {/* Composer */}
       <div className="shrink-0 px-6 pb-6 pt-2">
         <div className="mx-auto max-w-3xl">
-          <ChatInput
-            initialValue={composerSeed}
-            disabled={streaming}
-            placeholder="Folgefrage stellen…"
-            onSubmit={(text, toggles, images) => {
-              setComposerSeed(undefined);
-              return handleFollowup(text, toggles, images);
-            }}
-          />
+          {(() => {
+            /* Aggregate per-chat usage stats for the in-composer
+               donut. inputTokens on the LAST assistant message
+               represents the cumulative conversation Anthropic
+               last saw — the right proxy for "how full is the
+               200k window?". */
+            let lastInputTokens: number | null = null;
+            let totalOutputTokens = 0;
+            let totalCostUsd = 0;
+            for (const m of chat.messages) {
+              if (m.role === "assistant") {
+                if (m.inputTokens !== null && m.inputTokens !== undefined)
+                  lastInputTokens = m.inputTokens;
+                if (m.outputTokens !== null && m.outputTokens !== undefined)
+                  totalOutputTokens += m.outputTokens;
+                if (m.costUsd !== null && m.costUsd !== undefined)
+                  totalCostUsd += m.costUsd;
+              }
+            }
+            return (
+              <ChatInput
+                initialValue={composerSeed}
+                disabled={streaming}
+                placeholder="Folgefrage stellen…"
+                contextStats={{
+                  lastInputTokens,
+                  totalOutputTokens,
+                  totalCostUsd,
+                }}
+                onSubmit={(text, toggles, images) => {
+                  setComposerSeed(undefined);
+                  return handleFollowup(text, toggles, images);
+                }}
+              />
+            );
+          })()}
         </div>
       </div>
     </div>

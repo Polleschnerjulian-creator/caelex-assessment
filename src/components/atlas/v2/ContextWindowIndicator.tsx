@@ -33,43 +33,57 @@ const CONTEXT_WINDOW_TOKENS = 200_000;
 
 interface Props {
   /** Latest assistant turn's input tokens — represents the full
-   *  conversation context as Anthropic last saw it. Pass null when
-   *  the chat hasn't received an assistant turn yet (the indicator
-   *  hides itself in that case). */
+   *  conversation context as Anthropic last saw it. Pass null on
+   *  the homepage / fresh chat — the indicator renders an empty
+   *  ring (0 %) so the affordance is always visible. */
   lastInputTokens: number | null;
   /** Cumulative output tokens across the chat (sum of all
    *  assistant messages). Only used for the hover-tooltip detail. */
   totalOutputTokens: number;
   /** Cumulative spend across the chat in USD. */
   totalCostUsd: number;
+  /** Compact form — for in-composer placement: smaller icon, no
+   *  percentage text. The full chat-header variant still shows the
+   *  number. */
+  compact?: boolean;
 }
 
 export function ContextWindowIndicator({
   lastInputTokens,
   totalOutputTokens,
   totalCostUsd,
+  compact = false,
 }: Props) {
   const [hover, setHover] = useState(false);
 
-  /* Hide entirely when the chat has had no assistant turns yet —
-     showing 0% would be visual noise on the empty-chat skeleton. */
-  if (lastInputTokens === null || lastInputTokens === 0) return null;
-
-  const pct = Math.min(1, lastInputTokens / CONTEXT_WINDOW_TOKENS);
+  /* Always render — even at 0 %. The lawyer wants the affordance
+     visible from the homepage onward (Claude-Code's status-line
+     ring is similarly always-on). The empty state reads as
+     "neuer Chat, 0 % belegt" so the user learns the metric exists
+     before they ever need to worry about it. */
+  const tokens = lastInputTokens ?? 0;
+  const pct = Math.min(1, tokens / CONTEXT_WINDOW_TOKENS);
   const pctDisplay = Math.round(pct * 100);
 
   const color =
-    pct < 0.5
+    tokens === 0
       ? {
-          ring: "stroke-emerald-500",
-          text: "text-emerald-600 dark:text-emerald-400",
+          /* Neutral grey at 0 % — fresh chat shouldn't read as
+             "low usage emerald", it should read as "nothing yet". */
+          ring: "stroke-slate-400 dark:stroke-slate-500",
+          text: "text-slate-500 dark:text-slate-400",
         }
-      : pct < 0.75
+      : pct < 0.5
         ? {
-            ring: "stroke-amber-500",
-            text: "text-amber-600 dark:text-amber-400",
+            ring: "stroke-emerald-500",
+            text: "text-emerald-600 dark:text-emerald-400",
           }
-        : { ring: "stroke-red-500", text: "text-red-600 dark:text-red-400" };
+        : pct < 0.75
+          ? {
+              ring: "stroke-amber-500",
+              text: "text-amber-600 dark:text-amber-400",
+            }
+          : { ring: "stroke-red-500", text: "text-red-600 dark:text-red-400" };
 
   /* Donut math: 16x16 viewBox, radius 6, circumference ≈ 37.7. The
      stroke-dasharray trick draws an arc proportional to `pct`. */
@@ -88,7 +102,9 @@ export function ContextWindowIndicator({
       <button
         type="button"
         aria-label={`Kontextfenster: ${pctDisplay} % belegt`}
-        className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[11px] font-medium tabular-nums text-slate-600 transition-colors hover:bg-black/[0.04] dark:text-slate-400 dark:hover:bg-white/[0.05]"
+        className={`inline-flex items-center rounded-full transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.05] ${
+          compact ? "h-7 w-7 justify-center" : "gap-1.5 px-2 py-1"
+        }`}
       >
         <svg
           width="16"
@@ -106,23 +122,40 @@ export function ContextWindowIndicator({
             strokeWidth="1.6"
             className="stroke-slate-200 dark:stroke-white/[0.08]"
           />
-          {/* Progress arc — colour-stopped per pct. */}
-          <circle
-            cx="8"
-            cy="8"
-            r={r}
-            fill="none"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeDasharray={`${dash} ${c}`}
-            className={`${color.ring} transition-all duration-500`}
-          />
+          {/* Progress arc — colour-stopped per pct. Stays empty at
+              0 % (dash=0) so the track is the only visible element
+              on a fresh chat. */}
+          {dash > 0 && (
+            <circle
+              cx="8"
+              cy="8"
+              r={r}
+              fill="none"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeDasharray={`${dash} ${c}`}
+              className={`${color.ring} transition-all duration-500`}
+            />
+          )}
         </svg>
-        <span className={color.text}>{pctDisplay}%</span>
+        {!compact && (
+          <span
+            className={`text-[11px] font-medium tabular-nums ${color.text}`}
+          >
+            {pctDisplay}%
+          </span>
+        )}
       </button>
 
       {hover && (
-        <div className="absolute right-0 top-full z-30 mt-1.5 w-64 rounded-lg border border-slate-200 bg-white p-3 text-[11.5px] shadow-[0_8px_24px_rgba(0,0,0,0.10)] dark:border-white/[0.08] dark:bg-[#2a2a2a] dark:shadow-[0_8px_24px_rgba(0,0,0,0.40)]">
+        <div
+          className={`absolute right-0 z-30 w-64 rounded-lg border border-slate-200 bg-white p-3 text-[11.5px] shadow-[0_8px_24px_rgba(0,0,0,0.10)] dark:border-white/[0.08] dark:bg-[#2a2a2a] dark:shadow-[0_8px_24px_rgba(0,0,0,0.40)] ${
+            /* In compact mode the indicator sits inside the
+               composer's bottom row — the tooltip needs to open
+               UPWARD so it doesn't collide with the page edge below. */
+            compact ? "bottom-full mb-1.5" : "top-full mt-1.5"
+          }`}
+        >
           <div className="mb-2 flex items-center justify-between border-b border-slate-100 pb-2 dark:border-white/[0.05]">
             <span className="font-semibold text-slate-900 dark:text-slate-100">
               Kontextfenster
@@ -130,14 +163,25 @@ export function ContextWindowIndicator({
             <span className={`tabular-nums ${color.text}`}>{pctDisplay}%</span>
           </div>
           <Row
-            label="Aktueller Turn"
-            value={`${formatTokens(lastInputTokens)} / ${formatTokens(CONTEXT_WINDOW_TOKENS)}`}
+            label={tokens === 0 ? "Status" : "Aktueller Turn"}
+            value={
+              tokens === 0
+                ? "Neuer Chat"
+                : `${formatTokens(tokens)} / ${formatTokens(CONTEXT_WINDOW_TOKENS)}`
+            }
           />
-          <Row
-            label="Antwort-Tokens (kum.)"
-            value={formatTokens(totalOutputTokens)}
-          />
-          <Row label="Kosten (kum.)" value={`$${totalCostUsd.toFixed(4)}`} />
+          {tokens > 0 && (
+            <>
+              <Row
+                label="Antwort-Tokens (kum.)"
+                value={formatTokens(totalOutputTokens)}
+              />
+              <Row
+                label="Kosten (kum.)"
+                value={`$${totalCostUsd.toFixed(4)}`}
+              />
+            </>
+          )}
           <div className="mt-2 border-t border-slate-100 pt-2 text-[10.5px] leading-snug text-slate-500 dark:border-white/[0.05]">
             Modell: Claude Sonnet 4.5 · 200k Tokens.
             {pct >= 0.75 &&

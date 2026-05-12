@@ -41,6 +41,18 @@ import {
 } from "lucide-react";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import type { ChatImageAttachment } from "./types";
+import { ContextWindowIndicator } from "./ContextWindowIndicator";
+
+/** Optional per-chat usage stats, surfaced in the composer's footer
+ *  row via a Claude-Code-style donut. AtlasChatView passes real data;
+ *  AtlasHomepage / MandateNewChatComposer omit it (the indicator
+ *  then renders an empty-state 0 % ring so the affordance stays
+ *  visible everywhere). */
+export interface ChatInputContextStats {
+  lastInputTokens: number | null;
+  totalOutputTokens: number;
+  totalCostUsd: number;
+}
 
 interface Props {
   initialValue?: string;
@@ -52,6 +64,10 @@ interface Props {
     images?: ChatImageAttachment[],
   ) => void | Promise<void>;
   showKorpusPill?: boolean;
+  /** Per-chat token usage — drives the composer-footer donut.
+   *  Optional: on the homepage / fresh chats the indicator renders
+   *  its 0 % empty state. */
+  contextStats?: ChatInputContextStats;
 }
 
 /* Anthropic Vision limits (stay conservative — the SDK accepts up to
@@ -92,6 +108,7 @@ export function ChatInput({
   disabled,
   placeholder,
   onSubmit,
+  contextStats,
 }: Props) {
   const [text, setText] = useState(initialValue ?? "");
   const [toggles, setToggles] = useState(DEFAULT_TOGGLES);
@@ -403,13 +420,18 @@ export function ChatInput({
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
-      className={`relative rounded-[28px] border bg-white px-3 pt-3 pb-2 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-colors dark:bg-[#212121] dark:shadow-[0_8px_24px_rgba(0,0,0,0.25)] ${
-        /* Background matches the canvas (#212121 in dark, white in
-           light) so the pill defines itself only via the border —
-           no contrasting fill, à la Claude.ai's composer. The
-           slightly darker #1a1a1a we used previously read as a
-           "lifted box" against the canvas which the lawyer found
-           visually noisy. */
+      className={`relative rounded-[28px] border bg-white px-3 pt-3 pb-2 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-colors dark:bg-[#212121] dark:shadow-none ${
+        /* Background AND shadow now match the canvas perfectly in
+           dark mode (`bg-[#212121]` + `shadow-none`). The previous
+           `0_8px_24px_rgba(0,0,0,0.25)` shadow read on the canvas
+           as a darker halo around the pill — by contrast the pill
+           appeared lighter, even though both were #212121. Killing
+           the shadow leaves the border as the only edge cue, à la
+           Claude.ai's composer.
+
+           Light mode keeps a soft 4 % shadow because on a white
+           canvas the eye expects some lift on form controls — that
+           shadow doesn't create the inverse-halo problem. */
         dragOver
           ? "border-slate-400 bg-slate-50 dark:border-white/[0.24] dark:bg-white/[0.04]"
           : "border-slate-200 focus-within:border-slate-300 dark:border-white/[0.08] dark:focus-within:border-white/[0.16]"
@@ -524,6 +546,18 @@ export function ChatInput({
         </div>
 
         <div className="flex-1" />
+
+        {/* Context-window donut — Claude-Code-style usage indicator.
+            Sits between flex-1 spacer and the voice button so it's
+            visible in every composer surface (homepage, chat-view,
+            mandate-detail). Tooltip opens UPWARD because the
+            composer hugs the bottom edge of the viewport. */}
+        <ContextWindowIndicator
+          lastInputTokens={contextStats?.lastInputTokens ?? null}
+          totalOutputTokens={contextStats?.totalOutputTokens ?? 0}
+          totalCostUsd={contextStats?.totalCostUsd ?? 0}
+          compact
+        />
 
         {/* Voice input — three visible states:
               idle/no-backend  → static Mic
