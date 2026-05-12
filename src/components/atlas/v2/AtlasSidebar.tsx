@@ -39,6 +39,7 @@ import {
   Folder as FolderIcon,
   StickyNote,
   Shield as ShieldIcon,
+  ArrowLeftRight,
 } from "lucide-react";
 import type { ChatListItem, MandateListItem } from "./types";
 import { useAtlasTheme } from "@/app/(atlas)/atlas/_components/AtlasThemeProvider";
@@ -429,6 +430,12 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
               label="Anonymisierung"
               icon={<ShieldIcon size={12} />}
               active={pathname === "/atlas/tools/anonymize"}
+            />
+            <NavLink
+              href="/atlas/tools/redline"
+              label="Redline"
+              icon={<ArrowLeftRight size={12} />}
+              active={pathname === "/atlas/tools/redline"}
             />
           </Section>
         </div>
