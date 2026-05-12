@@ -34,6 +34,10 @@ import {
   executeComplianceTool,
 } from "./compliance-tools.server";
 import {
+  isValidityToolName,
+  executeValidityTool,
+} from "./validity-tools.server";
+import {
   ALL_SOURCES,
   getLegalSourceById,
   getAuthoritiesByJurisdiction,
@@ -2397,6 +2401,11 @@ export async function executeAtlasTool(args: {
      don't need callerUserId/callerOrgId. See compliance-tools.server.ts. */
   if (typeof args.name === "string" && isComplianceToolName(args.name)) {
     return executeComplianceTool(args.name, args.input);
+  }
+  /* Atlas V2 Sprint 4: route validity tools (3 corpus-status helpers)
+     to the dedicated validity dispatch. Pure data, no caller context. */
+  if (typeof args.name === "string" && isValidityToolName(args.name)) {
+    return executeValidityTool(args.name, args.input);
   }
   switch (args.name as AtlasToolName) {
     case "find_or_open_matter":

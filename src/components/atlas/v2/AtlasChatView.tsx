@@ -18,6 +18,7 @@ import Link from "next/link";
 import { Briefcase, Wrench, AlertCircle, ChevronRight } from "lucide-react";
 import { ChatInput } from "./ChatInput";
 import { SuggestedFollowups } from "./SuggestedFollowups";
+import { CitationsPanel, type CitationRecord } from "./CitationsPanel";
 import type { ChatMessageBlock, ChatMessageRecord, ChatRecord } from "./types";
 
 interface Props {
@@ -365,6 +366,12 @@ function MessageRow({ message }: { message: ChatMessageRecord }) {
           </p>
         ))}
       </div>
+      {/* Sprint 4 — Quellen panel with live validity badges. Populated
+          by extractCitations() in the chat-engine when persisting the
+          assistant turn. */}
+      {Array.isArray(message.citations) && message.citations.length > 0 && (
+        <CitationsPanel citations={message.citations as CitationRecord[]} />
+      )}
       {message.costUsd != null && (
         <div className="text-[10px] text-slate-600">
           {message.inputTokens}↑ · {message.outputTokens}↓ tokens · $

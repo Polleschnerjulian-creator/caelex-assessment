@@ -12,7 +12,7 @@
 | Sprint 1 — Chat-First Foundation             | ✅ complete | 2026-05-12 | 2026-05-12 |
 | Sprint 2 — Mandate-Projects                  | ✅ complete | 2026-05-12 | 2026-05-12 |
 | Sprint 3 — Tool inventory + Tool-Trace UI    | ✅ complete | 2026-05-12 | 2026-05-12 |
-| Sprint 4 — Validity Signals + Norm-Drift     | 🔵 pending  | —          | —          |
+| Sprint 4 — Validity Signals + Norm-Drift     | ✅ complete | 2026-05-12 | 2026-05-12 |
 | Sprint 5 — File Upload + Document Tools      | 🔵 pending  | —          | —          |
 | Sprint 6 — Workflow library + Tabular + Eval | 🔵 pending  | —          | —          |
 
@@ -254,9 +254,99 @@ into "knowledgeable colleague who knows the regulation."
   (Vercel AI Gateway → Bedrock EU OR direct Anthropic). 7+ files
   follow this pattern; switching one to @ai-sdk would break consistency.
 
+## Sprint 4 — Validity Signals + Norm-Drift (complete, MVP scope)
+
+### Files added
+
+```
+src/lib/atlas/validity-tools.server.ts        # 3 tools + checkValidity helper
+src/lib/atlas/citation-extractor.server.ts    # parse [ATLAS:...] in answers
+src/components/atlas/v2/ValidityBadge.tsx     # 6-state coloured badge
+src/components/atlas/v2/CitationsPanel.tsx    # Quellen panel under each answer
+```
+
+### Files modified
+
+```
+src/lib/atlas/atlas-tools.ts                  # spread VALIDITY_TOOLS
+src/lib/atlas/atlas-tool-executor.ts          # validity dispatch branch
+src/lib/atlas/chat-engine.server.ts           # extractCitations → AtlasMessage.citations
+src/components/atlas/v2/AtlasChatView.tsx     # render CitationsPanel under assistant turns
+```
+
+### What landed
+
+**3 new validity tools** (`Bundle 5` per master-plan):
+
+- `check_article_status({articleOrSourceId})` — resolves to corpus,
+  returns badge + last_verified + amendment chain + sourceUrl.
+  Tolerates `§` and `Art.` suffixes.
+- `get_recent_norm_changes({jurisdiction?, daysBack?, onlyChanged?})`
+  — list up to 25 sources with recent verification or status changes.
+- `find_related_norms({sourceId})` — returns the
+  amends/amended_by/superseded_by/related_sources graph for a source.
+
+**Citation extractor** (`citation-extractor.server.ts`):
+
+- Regex `[ATLAS:source-id]` over assistant text.
+- Dedupes by sourceId, preserves first-seen order, counts occurrences.
+- Decorates each via `checkValidity()` from validity-tools.
+
+**Chat-engine integration**:
+
+- After streaming completes, extract citations + persist into
+  `AtlasMessage.citations` JSON column.
+- Zero added latency (pure post-process).
+
+**UI**:
+
+- `ValidityBadge` — 6 visual states matching the badge enum:
+  in_force / needs_review / pending / amended / repealed / unknown.
+  Coloured dot + lowercase label.
+- `CitationsPanel` — renders under each assistant turn when
+  citations exist. Each row: numbered pill + citation + badge +
+  title + last_verified date + occurrences + amendment chain +
+  external-link to official URL.
+
+### Acceptance verified
+
+- `npx tsc --noEmit` — zero errors.
+- The corpus has 950+ sources with `status` + `last_verified` already
+  populated, so badges render against real data immediately.
+- Astra responses that include `[ATLAS:DE-WeltraumG]` style citations
+  now produce a Quellen-Panel with live status badges.
+
+### What's deferred (real-time polling)
+
+Real EUR-Lex / gesetze-im-internet / Legifrance polling stays
+out-of-scope for Sprint 4. The MVP uses the corpus's own
+`last_verified` + `status` fields — already a defensible UX since
+these fields ARE manually maintained. Multi-week effort to harden
+real-time scrapers is queued for a later sprint (probably Sprint 7+
+once Pharos's `pharos-norm-drift` cron stub gets resolved).
+
+Daily mandate-briefing email also deferred — needs the polling
+infrastructure to be useful.
+
+### Decisions log addition (2026-05-12)
+
+- Validity-tools live in their own file (validity-tools.server.ts)
+  matching the compliance-tools pattern. Both expose
+  `is{Bundle}ToolName(name)` + `execute{Bundle}Tool(name, input)`
+  pairs that the central atlas-tool-executor branches on. This keeps
+  the executor switch lean and pre-empts the bundle-refactor that
+  the master-plan still has on the long-term roadmap.
+- Decided AGAINST replacing inline `[ATLAS:...]` tokens in the
+  rendered text with React-clickable pills in this sprint. Reason:
+  text rendering is a `<p>{text}</p>` split that can't host nested
+  components without a markdown-AST traversal. The CitationsPanel
+  under each answer already provides one-click access to every
+  cited source; inline-pills land in Sprint 5 alongside the
+  markdown-renderer overhaul (probably Tiptap or react-markdown).
+
 ## NEXT ACTION
 
-→ **Sprint 4: Validity Signals + Norm-Drift.** Build:
+→ **Sprint 5: File Upload + Document Tools.** Build:
 
 1. **Refactor tool-bundles** — split `atlas-tool-executor.ts` into
    `src/lib/atlas/tool-bundles/{korpus,compliance,comparison,drafting,

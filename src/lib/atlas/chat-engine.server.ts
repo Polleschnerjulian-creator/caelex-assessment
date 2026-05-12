@@ -35,6 +35,7 @@ import { prisma } from "@/lib/prisma";
 import { buildAnthropicClient } from "@/lib/atlas/anthropic-client";
 import { ATLAS_TOOLS, isAtlasToolName } from "@/lib/atlas/atlas-tools";
 import { executeAtlasTool } from "@/lib/atlas/atlas-tool-executor";
+import { extractCitations } from "@/lib/atlas/citation-extractor.server";
 import { logger } from "@/lib/logger";
 
 /* ── Config ───────────────────────────────────────────────────────── */
@@ -507,6 +508,11 @@ export async function runChat(
            losing fidelity. */
         const costUsd = estimateCostUsd(totalInputTokens, totalOutputTokens);
         const dedupedTools = Array.from(new Set(toolsUsedThisTurn));
+        /* Sprint 4: extract [ATLAS:source-id] citations from the
+           streamed text + decorate with validity status. The chat-view
+           reads message.citations to render the Quellen-Panel + inline
+           validity-badges. Pure post-process, no model call. */
+        const citations = extractCitations(assistantTextBuffer);
         const persisted = await prisma.atlasMessage.create({
           data: {
             chatId,
@@ -516,6 +522,10 @@ export async function runChat(
             outputTokens: totalOutputTokens,
             costUsd,
             toolsUsed: dedupedTools,
+            citations:
+              citations.length > 0
+                ? (citations as unknown as object)
+                : undefined,
           },
           select: { id: true },
         });
