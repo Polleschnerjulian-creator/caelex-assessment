@@ -236,6 +236,64 @@ function deriveTitle(userMessage: string, hint?: string): string {
   return oneLine.slice(0, 80) + (oneLine.length > 80 ? "…" : "");
 }
 
+/* ── History sanitisation ─────────────────────────────────────────────
+ *
+ * When persisting an assistant turn, we save the full block-set
+ * (text + tool_use + thinking + redacted_thinking) so the chat-view
+ * can replay tool-traces and the thinking-panel for past answers.
+ * BUT: Anthropic's API rejects assistant messages with `tool_use`
+ * blocks unless they're IMMEDIATELY followed by a user message
+ * containing `tool_result` blocks for the same tool-use ids.
+ *
+ * Tool-results live only in-memory during the streaming loop —
+ * they're not persisted (would double the row count of every
+ * tool-using turn). So when we replay history on the next turn,
+ * the persisted assistant message has tool_use blocks but no
+ * matching tool_result follows → 400 from Anthropic.
+ *
+ * Fix: strip tool_use / thinking / redacted_thinking blocks from
+ * past assistant messages when building the API request. The
+ * assistant's TEXT already incorporates the tool outputs as
+ * visible content — Anthropic doesn't need to "remember" the
+ * tool calls themselves to continue the conversation. The blocks
+ * stay in the DB for UI replay; they just don't ride along to
+ * the model on follow-up turns.
+ *
+ * User messages stay untouched — their content (text + image
+ * blocks) is always API-valid as-is.
+ */
+function sanitiseHistoryForApi(
+  messages: Array<{ role: string; content: unknown }>,
+): Anthropic.MessageParam[] {
+  const out: Anthropic.MessageParam[] = [];
+  for (const m of messages) {
+    const role = m.role as "user" | "assistant";
+    if (!Array.isArray(m.content)) {
+      out.push({
+        role,
+        content: m.content as Anthropic.MessageParam["content"],
+      });
+      continue;
+    }
+    if (role === "assistant") {
+      const filtered = (m.content as Array<{ type: string }>).filter(
+        (b) => b && typeof b === "object" && b.type === "text",
+      );
+      if (filtered.length === 0) continue; // drop turns that became empty
+      out.push({
+        role,
+        content: filtered as Anthropic.MessageParam["content"],
+      });
+      continue;
+    }
+    out.push({
+      role,
+      content: m.content as Anthropic.MessageParam["content"],
+    });
+  }
+  return out;
+}
+
 /* ── User-message content shaping ─────────────────────────────────────
  *
  * Anthropic's recommended order is image-blocks FIRST, then text. The
@@ -370,10 +428,16 @@ async function ensureChatAndHistory(args: {
       },
     });
 
-    const history: Anthropic.MessageParam[] = chat.messages.map((m) => ({
-      role: m.role as "user" | "assistant",
-      content: m.content as Anthropic.MessageParam["content"],
-    }));
+    /* Sanitise: strip tool_use / thinking blocks from past
+       assistant messages. Without this, Anthropic 400s when the
+       persisted assistant has tool_use blocks but no matching
+       tool_result follows in history (tool_results aren't
+       persisted — they live only in-memory during the streaming
+       loop). See sanitiseHistoryForApi() docs above for the
+       detailed rationale. */
+    const history: Anthropic.MessageParam[] = sanitiseHistoryForApi(
+      chat.messages,
+    );
     history.push({
       role: "user",
       content: userContent,
