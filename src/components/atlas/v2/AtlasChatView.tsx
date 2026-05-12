@@ -34,6 +34,8 @@ import { SuggestedFollowups } from "./SuggestedFollowups";
 import { CitationsPanel, type CitationRecord } from "./CitationsPanel";
 import { MarkdownContent } from "./MarkdownContent";
 import { labelFor, CATEGORY_DOT } from "@/lib/atlas/tool-labels";
+import { downloadChatAsPdf } from "@/lib/atlas/chat-briefing-pdf";
+import { downloadChatAsDocx } from "@/lib/atlas/chat-briefing-docx";
 import type { ChatMessageBlock, ChatMessageRecord, ChatRecord } from "./types";
 
 interface Props {
@@ -338,15 +340,7 @@ export function AtlasChatView({ chatId }: Props) {
             </Link>
           )}
         </div>
-        <button
-          type="button"
-          onClick={() => downloadChatAsMarkdown(chat)}
-          title="Chat als Markdown exportieren"
-          aria-label="Chat als Markdown exportieren"
-          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-100"
-        >
-          <Download size={13} />
-        </button>
+        <ExportMenu chat={chat} />
       </header>
 
       {/* Messages */}
@@ -926,6 +920,208 @@ function extractText(content: ChatMessageBlock[] | string): string {
     .filter((b) => b.type === "text")
     .map((b) => b.text ?? "")
     .join("\n");
+}
+
+/**
+ * Header export menu — replaces the single Download icon with a
+ * 4-format picker (PDF / DOCX / Markdown / Plain text). Lawyers
+ * pick the deliverable format for client / matter file / internal
+ * note. Click-outside closes.
+ *
+ * Why these four:
+ *   - PDF      Mandanten-Deliverable (read-only, printable)
+ *   - DOCX     Lawyer-editable in Word/LibreOffice before sending
+ *   - MD       Source-of-truth for re-rendering / dev workflows
+ *   - TXT      Plain copy for older systems / DMS pipelines
+ */
+function ExportMenu({ chat }: { chat: ChatRecord }) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState<null | "pdf" | "docx" | "md" | "txt">(null);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    window.addEventListener("mousedown", handler);
+    return () => window.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const run = async (fmt: "pdf" | "docx" | "md" | "txt") => {
+    setBusy(fmt);
+    try {
+      if (fmt === "pdf") {
+        downloadChatAsPdf(chat);
+      } else if (fmt === "docx") {
+        await downloadChatAsDocx(chat);
+      } else if (fmt === "md") {
+        downloadChatAsMarkdown(chat);
+      } else {
+        downloadChatAsPlainText(chat);
+      }
+    } finally {
+      setBusy(null);
+      setOpen(false);
+    }
+  };
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        title="Chat exportieren"
+        aria-label="Chat exportieren"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-100"
+      >
+        {busy ? (
+          <Loader2 size={13} className="animate-spin" />
+        ) : (
+          <Download size={13} />
+        )}
+      </button>
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-full z-30 mt-1 w-56 overflow-hidden rounded-lg border border-slate-200 bg-white p-1 shadow-[0_8px_24px_rgba(0,0,0,0.10)] dark:border-white/[0.08] dark:bg-[#1f1f1f] dark:shadow-[0_8px_24px_rgba(0,0,0,0.40)]"
+        >
+          <ExportItem
+            label="PDF — Mandanten-Briefing"
+            hint=".pdf"
+            onClick={() => run("pdf")}
+            disabled={busy !== null}
+          />
+          <ExportItem
+            label="Word — editierbar"
+            hint=".docx"
+            onClick={() => run("docx")}
+            disabled={busy !== null}
+          />
+          <ExportItem
+            label="Markdown"
+            hint=".md"
+            onClick={() => run("md")}
+            disabled={busy !== null}
+          />
+          <ExportItem
+            label="Plain Text"
+            hint=".txt"
+            onClick={() => run("txt")}
+            disabled={busy !== null}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ExportItem({
+  label,
+  hint,
+  onClick,
+  disabled,
+}: {
+  label: string;
+  hint: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      onClick={onClick}
+      disabled={disabled}
+      className="flex w-full items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-[13px] text-slate-700 transition-colors hover:bg-slate-100 disabled:opacity-50 dark:text-slate-200 dark:hover:bg-white/[0.05]"
+    >
+      <span>{label}</span>
+      <span className="text-[10.5px] text-slate-400 dark:text-slate-500">
+        {hint}
+      </span>
+    </button>
+  );
+}
+
+/**
+ * Plain-text export — strips Markdown markers and ATLAS-tokens,
+ * keeps line-breaks. Useful for DMS / paste-into-email workflows.
+ */
+function downloadChatAsPlainText(chat: ChatRecord) {
+  const lines: string[] = [];
+  lines.push(chat.title);
+  lines.push("=".repeat(Math.min(chat.title.length, 60)));
+  lines.push("");
+  if (chat.mandate) lines.push(`Mandat: ${chat.mandate.name}`);
+  lines.push(`Erstellt: ${new Date(chat.createdAt).toLocaleString("de-DE")}`);
+  lines.push(
+    `Aktualisiert: ${new Date(chat.updatedAt).toLocaleString("de-DE")}`,
+  );
+  lines.push("");
+  lines.push("---");
+  lines.push("");
+
+  let qNum = 0;
+  for (const m of chat.messages) {
+    const text = extractText(m.content);
+    if (m.role === "user") {
+      qNum++;
+      lines.push(`FRAGE ${qNum}:`);
+      lines.push(text);
+      lines.push("");
+    } else {
+      lines.push(`ANTWORT:`);
+      lines.push(
+        text
+          .replace(/\[ATLAS:[^\]]+\]/g, "")
+          .replace(/\*\*(.+?)\*\*/g, "$1")
+          .replace(/^#{1,3}\s+/gm, ""),
+      );
+      lines.push("");
+      if (Array.isArray(m.citations) && m.citations.length > 0) {
+        lines.push("Quellen:");
+        for (const c of m.citations as Array<{
+          index: number;
+          citation: string;
+          title: string | null;
+          sourceUrl: string | null;
+        }>) {
+          const url = c.sourceUrl ? ` ${c.sourceUrl}` : "";
+          lines.push(
+            `  ${c.index}. ${c.citation}${c.title ? ` — ${c.title}` : ""}${url}`,
+          );
+        }
+        lines.push("");
+      }
+      lines.push("---");
+      lines.push("");
+    }
+  }
+
+  const slug =
+    chat.title
+      .toLowerCase()
+      .replace(/[^a-z0-9äöüß]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60) || "chat";
+  const date = new Date(chat.updatedAt).toISOString().slice(0, 10);
+  const filename = `atlas-chat-${slug}-${date}.txt`;
+
+  const blob = new Blob([lines.join("\n")], {
+    type: "text/plain;charset=utf-8",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /**
