@@ -5,9 +5,17 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CaelexIcon } from "@/components/ui/Logo";
 
-// Only apply transition on public/landing pages
+// Only apply transition on public/landing pages.
+//
+// Atlas (`/atlas/*`) explicitly excluded as of Sprint 11: the white
+// Caelex-Logo overlay was firing on every internal Atlas navigation
+// (chat → mandate, etc.) which the user reported as "annoying".
+// Atlas has its own loading skeletons inside MandateContextSection,
+// AtlasChatView, AtlasSidebar — full-page splash on top of those is
+// double-flashy.
 const EXCLUDED_PREFIXES = [
   "/dashboard",
+  "/atlas",
   "/assure",
   "/login",
   "/signup",
@@ -17,6 +25,10 @@ const EXCLUDED_PREFIXES = [
   "/verity",
   "/testdemo1",
   "/onboarding",
+  "/atlas-login",
+  "/atlas-no-access",
+  "/atlas-invite",
+  "/accept-invite",
 ];
 
 function isLandingRoute(path: string) {
