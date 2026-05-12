@@ -44,12 +44,12 @@ import type { ChatImageAttachment } from "./types";
 import { ContextWindowIndicator } from "./ContextWindowIndicator";
 
 /** Optional per-chat usage stats, surfaced in the composer's footer
- *  row via a Claude-Code-style donut. AtlasChatView passes real data;
- *  AtlasHomepage / MandateNewChatComposer omit it (the indicator
- *  then renders an empty-state 0 % ring so the affordance stays
- *  visible everywhere). */
+ *  row via a Claude-Code-style donut. AtlasChatView passes real data
+ *  (sums across all turns of the chat); AtlasHomepage /
+ *  MandateNewChatComposer omit it (the indicator then renders an
+ *  empty-state 0 % ring so the affordance stays visible everywhere). */
 export interface ChatInputContextStats {
-  lastInputTokens: number | null;
+  totalInputTokens: number;
   totalOutputTokens: number;
   totalCostUsd: number;
 }
@@ -550,7 +550,7 @@ export function ChatInput({
             mandate-detail). Tooltip opens UPWARD because the
             composer hugs the bottom edge of the viewport. */}
         <ContextWindowIndicator
-          lastInputTokens={contextStats?.lastInputTokens ?? null}
+          totalInputTokens={contextStats?.totalInputTokens ?? 0}
           totalOutputTokens={contextStats?.totalOutputTokens ?? 0}
           totalCostUsd={contextStats?.totalCostUsd ?? 0}
           compact

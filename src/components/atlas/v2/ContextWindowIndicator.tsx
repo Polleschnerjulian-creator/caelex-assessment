@@ -3,44 +3,45 @@
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
- * Atlas V2 — Context-window indicator.
+ * Atlas V2 — Cumulative-usage indicator.
  *
- * Claude-Code-style donut showing how much of Sonnet 4.5's 200k token
- * context window the current conversation has consumed. The visible
- * data point is the LAST assistant message's `inputTokens` — that
- * value represents the cumulative conversation Anthropic saw on the
- * most recent turn (system-prompt + every user/assistant turn so far
- * + tool-use traces). It's the right proxy for "am I about to bump
- * the model's context limit?".
+ * Claude-Code-style donut showing the CUMULATIVE token spend across
+ * the entire chat (sum of input + output tokens across every
+ * assistant turn). Grows monotonically as the conversation
+ * progresses — matches the lawyer's intuition of "wie viel hat
+ * dieser Chat bisher verbraucht?".
+ *
+ * The 200k denominator is Sonnet 4.5's input context limit, used
+ * here as a soft "consider starting a new chat" budget marker. A
+ * chat that crosses ~80 % is approaching both the model's hard
+ * input limit on the next turn AND a meaningful € spend.
  *
  * Color stops:
- *   < 50 %  emerald  — plenty of room
+ *   < 50 %  emerald  — plenty of budget
  *   < 75 %  amber    — getting fuller
  *   ≥ 75 %  red      — consider starting a new chat
  *
- * Hover/focus surfaces the breakdown (input + output + total + cost)
- * via a small popover so the lawyer can sanity-check the spend.
+ * Hover/focus surfaces the breakdown (cumulative input, output,
+ * total, cost) via a small popover.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
 import { useState } from "react";
 
-/* Sonnet 4.5 (claude-sonnet-4-6) — 200k input context window. Pinned
-   here rather than imported from the engine so the UI stays self-
-   contained; if we ever bump the model, both files update once. */
-const CONTEXT_WINDOW_TOKENS = 200_000;
+/* Sonnet 4.5 (claude-sonnet-4-6) — 200k input context window. Used
+   here as a soft cumulative-spend budget; the actual hard limit is
+   per-turn input only, but 200k of cumulative tokens is also a good
+   "this chat is getting expensive" threshold. */
+const BUDGET_TOKENS = 200_000;
 
 interface Props {
-  /** Latest assistant turn's input tokens — represents the full
-   *  conversation context as Anthropic last saw it. Pass null on
-   *  the homepage / fresh chat — the indicator renders an empty
-   *  ring (0 %) so the affordance is always visible. */
-  lastInputTokens: number | null;
-  /** Cumulative output tokens across the chat (sum of all
-   *  assistant messages). Only used for the hover-tooltip detail. */
+  /** CUMULATIVE input tokens across every assistant turn so far.
+   *  Grows monotonically as the conversation progresses. */
+  totalInputTokens: number;
+  /** CUMULATIVE output tokens across every assistant turn. */
   totalOutputTokens: number;
-  /** Cumulative spend across the chat in USD. */
+  /** CUMULATIVE spend in USD across every assistant turn. */
   totalCostUsd: number;
   /** Compact form — for in-composer placement: smaller icon, no
    *  percentage text. The full chat-header variant still shows the
@@ -49,20 +50,18 @@ interface Props {
 }
 
 export function ContextWindowIndicator({
-  lastInputTokens,
+  totalInputTokens,
   totalOutputTokens,
   totalCostUsd,
   compact = false,
 }: Props) {
   const [hover, setHover] = useState(false);
 
-  /* Always render — even at 0 %. The lawyer wants the affordance
-     visible from the homepage onward (Claude-Code's status-line
-     ring is similarly always-on). The empty state reads as
-     "neuer Chat, 0 % belegt" so the user learns the metric exists
-     before they ever need to worry about it. */
-  const tokens = lastInputTokens ?? 0;
-  const pct = Math.min(1, tokens / CONTEXT_WINDOW_TOKENS);
+  /* Total burn = input + output. The donut fills toward the soft
+     200k budget. Caps at 100 % so the visual stays sensible even
+     for marathon chats that overflow the budget. */
+  const tokens = totalInputTokens + totalOutputTokens;
+  const pct = Math.min(1, tokens / BUDGET_TOKENS);
   const pctDisplay = Math.round(pct * 100);
 
   const color =
@@ -101,7 +100,7 @@ export function ContextWindowIndicator({
     >
       <button
         type="button"
-        aria-label={`Kontextfenster: ${pctDisplay} % belegt`}
+        aria-label={`Verbraucht: ${pctDisplay} % des Budgets`}
         className={`inline-flex items-center rounded-full transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.05] ${
           compact ? "h-7 w-7 justify-center" : "gap-1.5 px-2 py-1"
         }`}
@@ -113,7 +112,6 @@ export function ContextWindowIndicator({
           aria-hidden="true"
           className="-rotate-90"
         >
-          {/* Track — full circle in the canvas's neutral grey. */}
           <circle
             cx="8"
             cy="8"
@@ -122,9 +120,6 @@ export function ContextWindowIndicator({
             strokeWidth="1.6"
             className="stroke-slate-200 dark:stroke-white/[0.08]"
           />
-          {/* Progress arc — colour-stopped per pct. Stays empty at
-              0 % (dash=0) so the track is the only visible element
-              on a fresh chat. */}
           {dash > 0 && (
             <circle
               cx="8"
@@ -150,42 +145,26 @@ export function ContextWindowIndicator({
       {hover && (
         <div
           className={`absolute right-0 z-30 w-64 rounded-lg border border-slate-200 bg-white p-3 text-[11.5px] shadow-[0_8px_24px_rgba(0,0,0,0.10)] dark:border-white/[0.08] dark:bg-[#2a2a2a] dark:shadow-[0_8px_24px_rgba(0,0,0,0.40)] ${
-            /* In compact mode the indicator sits inside the
-               composer's bottom row — the tooltip needs to open
-               UPWARD so it doesn't collide with the page edge below. */
             compact ? "bottom-full mb-1.5" : "top-full mt-1.5"
           }`}
         >
           <div className="mb-2 flex items-center justify-between border-b border-slate-100 pb-2 dark:border-white/[0.05]">
             <span className="font-semibold text-slate-900 dark:text-slate-100">
-              Kontextfenster
+              Verbrauch
             </span>
             <span className={`tabular-nums ${color.text}`}>{pctDisplay}%</span>
           </div>
           <Row
-            label={tokens === 0 ? "Status" : "Aktueller Turn"}
-            value={
-              tokens === 0
-                ? "Neuer Chat"
-                : `${formatTokens(tokens)} / ${formatTokens(CONTEXT_WINDOW_TOKENS)}`
-            }
+            label="Insgesamt"
+            value={`${formatTokens(tokens)} / ${formatTokens(BUDGET_TOKENS)}`}
           />
-          {tokens > 0 && (
-            <>
-              <Row
-                label="Antwort-Tokens (kum.)"
-                value={formatTokens(totalOutputTokens)}
-              />
-              <Row
-                label="Kosten (kum.)"
-                value={`$${totalCostUsd.toFixed(4)}`}
-              />
-            </>
-          )}
+          <Row label="Input (kum.)" value={formatTokens(totalInputTokens)} />
+          <Row label="Output (kum.)" value={formatTokens(totalOutputTokens)} />
+          <Row label="Kosten (kum.)" value={`$${totalCostUsd.toFixed(4)}`} />
           <div className="mt-2 border-t border-slate-100 pt-2 text-[10.5px] leading-snug text-slate-500 dark:border-white/[0.05]">
-            Modell: Claude Sonnet 4.5 · 200k Tokens.
+            Modell: Claude Sonnet 4.5 · Budget 200k Tokens.
             {pct >= 0.75 &&
-              " Erwäge einen neuen Chat — bei > 75 % steigt das Risiko von Antwortabbrüchen."}
+              " Erwäge einen neuen Chat — bei > 75 % wird's spürbar teurer."}
           </div>
         </div>
       )}

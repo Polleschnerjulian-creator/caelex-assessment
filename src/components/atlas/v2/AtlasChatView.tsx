@@ -29,7 +29,6 @@ import {
   Bookmark,
 } from "lucide-react";
 import { ChatInput } from "./ChatInput";
-import { SuggestedFollowups } from "./SuggestedFollowups";
 import { CitationsPanel, type CitationRecord } from "./CitationsPanel";
 import { MarkdownContent } from "./MarkdownContent";
 import { labelFor, CATEGORY_DOT } from "@/lib/atlas/tool-labels";
@@ -71,17 +70,18 @@ export function AtlasChatView({ chatId }: Props) {
   const [streamingThinking, setStreamingThinking] = useState("");
   const [inFlightTools, setInFlightTools] = useState<InFlightToolCall[]>([]);
   const [error, setError] = useState<string | null>(null);
-  /* Bumped after every successful assistant turn so the
-     SuggestedFollowups child re-fetches with fresh context. */
-  const [followupRefreshKey, setFollowupRefreshKey] = useState(0);
-  /* Lifts the seed value into ChatInput so suggested-followup clicks
-     can populate + auto-submit it. */
+  /* Seed value for the composer textarea — used when a programmatic
+     event (e.g. quickstart link) wants to pre-fill the input. */
   const [composerSeed, setComposerSeed] = useState<string | undefined>();
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  /* Load persisted chat. */
-  const reload = async () => {
-    setLoading(true);
+  /* Load persisted chat. The `silent` flag suppresses the loading
+     skeleton — used after stream-completion when we already have
+     visible content + just want to swap in the canonical persisted
+     state (with extracted citations, exact tokens, etc.) WITHOUT
+     causing a UI flash. */
+  const reload = async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const res = await fetch(`/api/atlas/chat/${chatId}`, {
         cache: "no-store",
@@ -97,7 +97,7 @@ export function AtlasChatView({ chatId }: Props) {
       const data = (await res.json()) as { chat: ChatRecord };
       setChat(data.chat);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -229,13 +229,12 @@ export function AtlasChatView({ chatId }: Props) {
           }
         }
       }
-      /* Reload persisted messages so the streamed assistant turn
-         enters the canonical render path. */
-      await reload();
+      /* Silent reload — fetch the canonical persisted state (with
+         extracted citations + exact tokens) WITHOUT triggering the
+         loading skeleton. The streamed content is already visible
+         on screen, so reload-flash would be a visible regression. */
+      await reload(true);
       window.dispatchEvent(new Event("atlas-v2-sidebar-refresh"));
-      /* Bump the suggested-followups key so the chips re-fetch with
-         the just-completed assistant turn as their seed. */
-      setFollowupRefreshKey((n) => n + 1);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -245,15 +244,6 @@ export function AtlasChatView({ chatId }: Props) {
       setInFlightTools([]);
     }
   };
-
-  /* Bump followupRefreshKey on first load so the chips fetch under the
-     existing last assistant turn (when the user lands here via the
-     homepage handoff). */
-  useEffect(() => {
-    if (!loading && chat && chat.messages.some((m) => m.role === "assistant")) {
-      setFollowupRefreshKey((n) => (n === 0 ? 1 : n));
-    }
-  }, [loading, chat]);
 
   const handleEvent = (evt: { type: string } & Record<string, unknown>) => {
     switch (evt.type) {
@@ -361,10 +351,7 @@ export function AtlasChatView({ chatId }: Props) {
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-6">
         <div className="mx-auto max-w-3xl space-y-6">
-          {chat.messages.map((m, idx) => {
-            const isLast = idx === chat.messages.length - 1;
-            const showFollowups =
-              isLast && m.role === "assistant" && !streaming;
+          {chat.messages.map((m) => {
             return (
               <div key={m.id}>
                 <MessageRow
@@ -372,26 +359,6 @@ export function AtlasChatView({ chatId }: Props) {
                   chatId={chatId}
                   mandateId={chat.mandateId ?? null}
                 />
-                {showFollowups && followupRefreshKey > 0 && (
-                  <SuggestedFollowups
-                    chatId={chatId}
-                    refreshKey={followupRefreshKey}
-                    onPick={(text) => {
-                      setComposerSeed(text);
-                      void handleFollowup(text, {
-                        korpus: true,
-                        compliance: true,
-                        comparison: true,
-                        drafting: true,
-                        validity: true,
-                        documents: false,
-                        web: false,
-                        workflow: true,
-                        mandate: true,
-                      });
-                    }}
-                  />
-                )}
               </div>
             );
           })}
@@ -417,18 +384,17 @@ export function AtlasChatView({ chatId }: Props) {
       <div className="shrink-0 px-6 pb-6 pt-2">
         <div className="mx-auto max-w-3xl">
           {(() => {
-            /* Aggregate per-chat usage stats for the in-composer
-               donut. inputTokens on the LAST assistant message
-               represents the cumulative conversation Anthropic
-               last saw — the right proxy for "how full is the
-               200k window?". */
-            let lastInputTokens: number | null = null;
+            /* Aggregate CUMULATIVE per-chat usage stats. Sum input +
+               output tokens across every assistant turn so the donut
+               grows turn-by-turn (matches the lawyer's intuition of
+               "wie viel hat dieser Chat bisher verbraucht"). */
+            let totalInputTokens = 0;
             let totalOutputTokens = 0;
             let totalCostUsd = 0;
             for (const m of chat.messages) {
               if (m.role === "assistant") {
                 if (m.inputTokens !== null && m.inputTokens !== undefined)
-                  lastInputTokens = m.inputTokens;
+                  totalInputTokens += m.inputTokens;
                 if (m.outputTokens !== null && m.outputTokens !== undefined)
                   totalOutputTokens += m.outputTokens;
                 if (m.costUsd !== null && m.costUsd !== undefined)
@@ -441,7 +407,7 @@ export function AtlasChatView({ chatId }: Props) {
                 disabled={streaming}
                 placeholder="Folgefrage stellen…"
                 contextStats={{
-                  lastInputTokens,
+                  totalInputTokens,
                   totalOutputTokens,
                   totalCostUsd,
                 }}
@@ -701,20 +667,20 @@ function ThinkingPanel({
 }) {
   const [open, setOpen] = useState(streaming ?? false);
   return (
-    <div className="overflow-hidden rounded-xl border border-violet-200 bg-violet-50/60 dark:border-violet-500/15 dark:bg-violet-500/[0.04]">
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50/60 dark:border-white/[0.08] dark:bg-white/[0.02]">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-violet-100/50 dark:hover:bg-violet-500/[0.08]"
+        className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-slate-100/60 dark:hover:bg-white/[0.04]"
       >
         <Brain
           size={12}
-          className={`shrink-0 text-violet-600 dark:text-violet-300 ${streaming ? "animate-pulse" : ""}`}
+          className={`shrink-0 text-slate-500 dark:text-slate-400 ${streaming ? "animate-pulse" : ""}`}
         />
-        <span className="text-[12px] font-medium text-violet-900 dark:text-violet-100">
+        <span className="text-[12px] font-medium text-slate-700 dark:text-slate-200">
           {streaming ? "Denkt nach…" : "Gedankengang"}
         </span>
-        <span className="ml-auto text-[10.5px] text-violet-700/70 dark:text-violet-300/70">
+        <span className="ml-auto text-[10.5px] text-slate-500 dark:text-slate-400">
           {streaming
             ? `${text.length} Zeichen`
             : open
@@ -723,15 +689,15 @@ function ThinkingPanel({
         </span>
         <ChevronRight
           size={11}
-          className={`shrink-0 text-violet-600 transition-transform dark:text-violet-300 ${open ? "rotate-90" : ""}`}
+          className={`shrink-0 text-slate-500 transition-transform dark:text-slate-400 ${open ? "rotate-90" : ""}`}
         />
       </button>
       {open && (
-        <div className="border-t border-violet-200 px-3 py-2 dark:border-violet-500/15">
-          <div className="whitespace-pre-wrap text-[12.5px] leading-relaxed text-violet-900/90 dark:text-violet-100/85">
+        <div className="border-t border-slate-200 px-3 py-2 dark:border-white/[0.05]">
+          <div className="whitespace-pre-wrap text-[12.5px] leading-relaxed text-slate-700 dark:text-slate-300">
             {text}
             {streaming && (
-              <span className="ml-1 inline-block h-2.5 w-1 animate-pulse bg-violet-400 align-middle dark:bg-violet-300" />
+              <span className="ml-1 inline-block h-2.5 w-1 animate-pulse bg-slate-500 align-middle dark:bg-slate-400" />
             )}
           </div>
         </div>
