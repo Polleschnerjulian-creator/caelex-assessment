@@ -3,55 +3,73 @@
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
- * Atlas V2 — Chat input box.
+ * Atlas V2 — Chat input box (UI refresh 2026-05-12).
  *
- * Centred text-area + tool-picker chips + send button. Used both on
- * the homepage (empty state) and at the bottom of an active chat.
+ * Refined to match ChatGPT's restraint:
+ *   - Single rounded pill (rounded-3xl), no aggressive border
+ *   - Icons-only chip row (no text labels)
+ *   - Tools toggles collapse into one popover instead of 4 chunky chips
+ *   - Send appears only when there's text (no permanently-emerald button)
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Paperclip, Globe, BookOpenText, Wrench } from "lucide-react";
+import {
+  ArrowUp,
+  Plus,
+  Globe,
+  BookOpenText,
+  Wrench,
+  Mic,
+  Check,
+} from "lucide-react";
 
 interface Props {
-  /** Initial value (e.g. when opened from a quickstart). */
   initialValue?: string;
-  /** Disabled while a stream is in flight. */
   disabled?: boolean;
-  /** Placeholder text. */
   placeholder?: string;
-  /** Submit handler. */
   onSubmit: (
     text: string,
     toolToggles: Record<string, boolean>,
   ) => void | Promise<void>;
-  /** Show "Korpus aktiv" pill. */
   showKorpusPill?: boolean;
 }
+
+const DEFAULT_TOGGLES = {
+  korpus: true,
+  compliance: true,
+  comparison: true,
+  drafting: true,
+  validity: true,
+  documents: false,
+  web: false,
+  workflow: true,
+  mandate: true,
+};
+
+const TOOL_BUNDLES = [
+  { key: "compliance", label: "Compliance" },
+  { key: "comparison", label: "Vergleich" },
+  { key: "drafting", label: "Drafting" },
+  { key: "validity", label: "Validity" },
+  { key: "workflow", label: "Workflow" },
+  { key: "mandate", label: "Mandate" },
+] as const;
 
 export function ChatInput({
   initialValue,
   disabled,
   placeholder,
   onSubmit,
-  showKorpusPill = true,
 }: Props) {
   const [text, setText] = useState(initialValue ?? "");
-  const [toolToggles, setToolToggles] = useState({
-    korpus: true,
-    compliance: true,
-    comparison: true,
-    drafting: true,
-    validity: true,
-    documents: false,
-    web: false,
-    workflow: true,
-    mandate: true,
-  });
+  const [toggles, setToggles] = useState(DEFAULT_TOGGLES);
+  const [toolsOpen, setToolsOpen] = useState(false);
   const taRef = useRef<HTMLTextAreaElement>(null);
+  const popRef = useRef<HTMLDivElement>(null);
 
-  /* Auto-grow the textarea up to a sensible max-height. */
+  /* Auto-grow textarea (max 240px). */
   useEffect(() => {
     const ta = taRef.current;
     if (!ta) return;
@@ -59,24 +77,38 @@ export function ChatInput({
     ta.style.height = Math.min(ta.scrollHeight, 240) + "px";
   }, [text]);
 
-  /* Update value when an external `initialValue` arrives (quickstart click). */
+  /* Sync external initialValue (e.g. quickstart click). */
   useEffect(() => {
     if (initialValue !== undefined) setText(initialValue);
   }, [initialValue]);
 
+  /* Click-outside closes the tools popover. */
+  useEffect(() => {
+    if (!toolsOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (popRef.current && !popRef.current.contains(e.target as Node)) {
+        setToolsOpen(false);
+      }
+    };
+    window.addEventListener("mousedown", handler);
+    return () => window.removeEventListener("mousedown", handler);
+  }, [toolsOpen]);
+
   const handleSend = () => {
     const v = text.trim();
     if (!v || disabled) return;
-    void onSubmit(v, toolToggles);
+    void onSubmit(v, toggles);
     setText("");
   };
 
-  const toggle = (key: keyof typeof toolToggles) => {
-    setToolToggles((prev) => ({ ...prev, [key]: !prev[key] }));
+  const toggle = (key: keyof typeof toggles) => {
+    setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const hasText = text.trim().length > 0;
+
   return (
-    <div className="rounded-2xl border border-slate-700 bg-slate-900/80 p-3 shadow-2xl backdrop-blur-md focus-within:border-emerald-500/50">
+    <div className="rounded-[28px] border border-white/[0.08] bg-[#1a1a1a] px-3 pt-3 pb-2 shadow-[0_8px_24px_rgba(0,0,0,0.25)] transition-colors focus-within:border-white/[0.16]">
       <textarea
         ref={taRef}
         value={text}
@@ -91,107 +123,116 @@ export function ChatInput({
         placeholder={
           placeholder ?? "Frage etwas oder beschreibe was du brauchst…"
         }
-        className="block w-full resize-none bg-transparent px-2 py-2 text-[14px] text-slate-100 outline-none placeholder:text-slate-500"
+        className="block w-full resize-none bg-transparent px-2 py-1.5 text-[15px] leading-relaxed text-slate-100 outline-none placeholder:text-slate-500"
         rows={1}
       />
 
-      <div className="mt-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-          {/* Files (placeholder; wired in Sprint 5) */}
-          <button
-            type="button"
-            disabled
-            title="Datei-Upload (Sprint 5)"
-            className="flex items-center gap-1 rounded-md border border-slate-800 bg-slate-900 px-2 py-1 opacity-40"
+      <div className="mt-1 flex items-center gap-1">
+        {/* Left: subtle icon-row */}
+        <IconButton title="Datei anhängen (Sprint 5 — über Mandat)" disabled>
+          <Plus size={16} />
+        </IconButton>
+
+        <IconButton
+          title={toggles.web ? "Web aus" : "Web Search"}
+          active={toggles.web}
+          onClick={() => toggle("web")}
+        >
+          <Globe size={15} />
+        </IconButton>
+
+        <IconButton
+          title={toggles.korpus ? "Korpus aus" : "Korpus an"}
+          active={toggles.korpus}
+          onClick={() => toggle("korpus")}
+        >
+          <BookOpenText size={15} />
+        </IconButton>
+
+        <div ref={popRef} className="relative">
+          <IconButton
+            title="Tools"
+            active={toolsOpen}
+            onClick={() => setToolsOpen((v) => !v)}
           >
-            <Paperclip size={11} />
-            <span>Dateien</span>
-          </button>
-
-          <ToggleChip
-            on={toolToggles.web}
-            onClick={() => toggle("web")}
-            icon={<Globe size={11} />}
-            label="Web"
-          />
-
-          {showKorpusPill && (
-            <ToggleChip
-              on={toolToggles.korpus}
-              onClick={() => toggle("korpus")}
-              icon={<BookOpenText size={11} />}
-              label="Korpus"
-            />
+            <Wrench size={14} />
+          </IconButton>
+          {toolsOpen && (
+            <div className="absolute bottom-full left-0 z-30 mb-2 w-56 rounded-2xl border border-white/[0.08] bg-[#1a1a1a] p-2 shadow-[0_12px_32px_rgba(0,0,0,0.4)]">
+              <div className="mb-1 px-2 py-1 text-[10.5px] uppercase tracking-wider text-slate-500">
+                Aktive Tool-Bundles
+              </div>
+              {TOOL_BUNDLES.map((b) => {
+                const on = toggles[b.key as keyof typeof toggles];
+                return (
+                  <button
+                    key={b.key}
+                    type="button"
+                    onClick={() => toggle(b.key as keyof typeof toggles)}
+                    className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-[13px] text-slate-200 hover:bg-white/[0.04]"
+                  >
+                    <span>{b.label}</span>
+                    {on && <Check size={13} className="text-slate-300" />}
+                  </button>
+                );
+              })}
+            </div>
           )}
-
-          <ToggleChip
-            on={
-              toolToggles.compliance ||
-              toolToggles.comparison ||
-              toolToggles.drafting ||
-              toolToggles.validity ||
-              toolToggles.workflow
-            }
-            onClick={() => {
-              const allOn =
-                toolToggles.compliance &&
-                toolToggles.comparison &&
-                toolToggles.drafting &&
-                toolToggles.validity &&
-                toolToggles.workflow;
-              const next = !allOn;
-              setToolToggles((prev) => ({
-                ...prev,
-                compliance: next,
-                comparison: next,
-                drafting: next,
-                validity: next,
-                workflow: next,
-              }));
-            }}
-            icon={<Wrench size={11} />}
-            label="Tools"
-          />
         </div>
 
+        <div className="flex-1" />
+
+        <IconButton title="Spracheingabe (geplant)" disabled>
+          <Mic size={15} />
+        </IconButton>
+
+        {/* Send — only emphasised when there's text. */}
         <button
           type="button"
           onClick={handleSend}
-          disabled={!text.trim() || disabled}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 px-4 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-30"
+          disabled={!hasText || disabled}
           aria-label="Senden"
+          className={`ml-1 inline-flex h-8 w-8 items-center justify-center rounded-full transition-all ${
+            hasText && !disabled
+              ? "bg-white text-black hover:scale-105"
+              : "bg-white/[0.08] text-slate-500"
+          }`}
         >
-          <Send size={12} />
-          Senden
+          <ArrowUp size={16} strokeWidth={2.5} />
         </button>
       </div>
     </div>
   );
 }
 
-function ToggleChip({
-  on,
+function IconButton({
+  children,
   onClick,
-  icon,
-  label,
+  title,
+  active,
+  disabled,
 }: {
-  on: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  label: string;
+  children: React.ReactNode;
+  onClick?: () => void;
+  title: string;
+  active?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-1 rounded-md border px-2 py-1 transition-colors ${
-        on
-          ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-200"
-          : "border-slate-800 bg-slate-900 text-slate-500 hover:border-slate-700 hover:text-slate-300"
+      title={title}
+      disabled={disabled}
+      className={`inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+        disabled
+          ? "text-slate-700 cursor-default"
+          : active
+            ? "bg-white/[0.08] text-slate-100"
+            : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
       }`}
     >
-      {icon}
-      <span>{label}</span>
+      {children}
     </button>
   );
 }

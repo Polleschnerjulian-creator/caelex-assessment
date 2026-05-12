@@ -3,9 +3,11 @@
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
- * Atlas V2 — App Shell.
+ * Atlas V2 — App Shell (UI refresh 2026-05-12).
  *
- * Sidebar (256px) + Center (flex-1). Wraps every Atlas V2 page.
+ * Sidebar + Center. ChatGPT-tone backgrounds: sidebar slightly darker
+ * (#171717) than main canvas (#212121). No hard separator — the tone
+ * difference does the visual divide.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -21,8 +23,6 @@ interface Props {
 export function AtlasShellV2({ children }: Props) {
   const pathname = usePathname();
 
-  /* Resolve active chat-id and mandate-id from the current URL so the
-     sidebar can highlight the corresponding row. */
   const { activeChatId, activeMandateId } = useMemo(() => {
     const chatMatch = pathname.match(/^\/atlas\/chat\/([^/]+)/);
     const mandateMatch = pathname.match(/^\/atlas\/mandate\/([^/]+)/);
@@ -33,7 +33,7 @@ export function AtlasShellV2({ children }: Props) {
   }, [pathname]);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-950 text-slate-100">
+    <div className="flex h-screen w-screen overflow-hidden bg-[#212121] text-slate-100">
       <AtlasSidebar
         activeChatId={activeChatId}
         activeMandateId={activeMandateId}

@@ -252,8 +252,8 @@ export function AtlasChatView({ chatId }: Props) {
 
   return (
     <div className="flex h-full flex-col">
-      {/* Header */}
-      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-800 bg-slate-950/60 px-6 py-3">
+      {/* Header — soft, ChatGPT-style; no hard border. */}
+      <header className="flex shrink-0 items-center justify-between gap-3 px-6 py-3">
         <div className="min-w-0">
           <h1 className="line-clamp-1 text-sm font-semibold text-slate-100">
             {chat.title}
@@ -319,7 +319,7 @@ export function AtlasChatView({ chatId }: Props) {
       </div>
 
       {/* Composer */}
-      <div className="shrink-0 border-t border-slate-800 bg-slate-950/60 px-6 py-4">
+      <div className="shrink-0 px-6 pb-6 pt-2">
         <div className="mx-auto max-w-3xl">
           <ChatInput
             initialValue={composerSeed}
@@ -341,7 +341,7 @@ function MessageRow({ message }: { message: ChatMessageRecord }) {
     const text = extractText(message.content);
     return (
       <div className="flex justify-end">
-        <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-emerald-500/10 px-4 py-2.5 text-[14px] text-slate-100">
+        <div className="max-w-[85%] rounded-3xl bg-white/[0.06] px-4 py-2.5 text-[14.5px] text-slate-100">
           {text}
         </div>
       </div>
@@ -391,10 +391,10 @@ function StreamingMessage({
   return (
     <div className="space-y-2">
       {tools.length > 0 && (
-        <div className="rounded-md border border-emerald-500/20 bg-emerald-500/5 px-3 py-2">
-          <div className="flex items-center justify-between text-[11px] uppercase tracking-wider text-emerald-400">
+        <div className="rounded-xl bg-white/[0.03] px-3 py-2">
+          <div className="flex items-center justify-between text-[11px] text-slate-500">
             <span>Tools verwendet ({tools.length})</span>
-            <span className="text-emerald-500/60">
+            <span>
               {tools.filter((t) => t.completedAt).length} / {tools.length}
             </span>
           </div>
@@ -405,9 +405,9 @@ function StreamingMessage({
           </div>
         </div>
       )}
-      <div className="prose prose-invert prose-sm max-w-none text-[14px] leading-relaxed">
+      <div className="prose prose-invert prose-sm max-w-none text-[14.5px] leading-relaxed">
         <MarkdownContent text={text} />
-        <span className="ml-1 inline-block h-3 w-1.5 animate-pulse bg-emerald-400 align-middle" />
+        <span className="ml-1 inline-block h-3 w-1.5 animate-pulse bg-slate-300 align-middle" />
       </div>
     </div>
   );
@@ -416,54 +416,45 @@ function StreamingMessage({
 function ExpandableToolCallRow({ call }: { call: InFlightToolCall }) {
   const [open, setOpen] = useState(false);
   const inputJson = JSON.stringify(call.input ?? {}, null, 2);
-  const inputTooLong = inputJson.length > 80;
-  const inputPreview = inputTooLong
-    ? inputJson.replace(/\s+/g, " ").slice(0, 60) + "…"
-    : inputJson.replace(/\s+/g, " ");
   return (
-    <div className="rounded border border-emerald-500/10 bg-emerald-500/5">
+    <div className="rounded-md bg-white/[0.02]">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-2 px-1.5 py-1 text-left text-[11px] text-emerald-200 hover:bg-emerald-500/10"
+        className="flex w-full items-center gap-2 px-2 py-1 text-left text-[11.5px] text-slate-300 hover:bg-white/[0.03]"
       >
         <ChevronRight
           size={10}
-          className={`shrink-0 transition-transform ${open ? "rotate-90" : ""}`}
+          className={`shrink-0 opacity-60 transition-transform ${open ? "rotate-90" : ""}`}
         />
-        <Wrench size={10} className="shrink-0 opacity-70" />
+        <Wrench size={10} className="shrink-0 opacity-50" />
         <span className="font-mono">{call.name}</span>
-        <span className="ml-auto shrink-0 text-emerald-400/70">
+        <span className="ml-auto shrink-0 text-slate-500">
           {call.completedAt ? (
             call.isError ? (
-              <span className="text-red-400">✗ Error</span>
+              <span className="text-red-400">Error</span>
             ) : (
-              <span className="text-emerald-500">✓ {call.durationMs}ms</span>
+              <span>{call.durationMs}ms</span>
             )
           ) : (
-            <span className="text-emerald-400/60">läuft…</span>
+            <span>läuft…</span>
           )}
         </span>
       </button>
       {open && (
-        <div className="space-y-1 border-t border-emerald-500/10 px-2 py-1.5 font-mono text-[10px]">
-          <div className="text-emerald-500/80">Input:</div>
-          <pre className="overflow-x-auto whitespace-pre-wrap break-all text-emerald-200/80">
+        <div className="space-y-1 border-t border-white/[0.04] px-2 py-1.5 font-mono text-[10.5px]">
+          <div className="text-slate-500">Input</div>
+          <pre className="overflow-x-auto whitespace-pre-wrap break-all text-slate-300">
             {inputJson}
           </pre>
           {call.summary && (
             <>
-              <div className="mt-1 text-emerald-500/80">Output:</div>
-              <pre className="whitespace-pre-wrap break-words text-emerald-200/80">
+              <div className="mt-1 text-slate-500">Output</div>
+              <pre className="whitespace-pre-wrap break-words text-slate-300">
                 {call.summary}
               </pre>
             </>
           )}
-        </div>
-      )}
-      {!open && inputTooLong && (
-        <div className="px-2 pb-1 font-mono text-[10px] text-emerald-200/40">
-          {inputPreview}
         </div>
       )}
     </div>
@@ -472,15 +463,15 @@ function ExpandableToolCallRow({ call }: { call: InFlightToolCall }) {
 
 function ToolTraceSummary({ tools }: { tools: string[] }) {
   return (
-    <details className="rounded-md border border-slate-700/40 bg-slate-900/40 px-3 py-1.5 text-[11px]">
-      <summary className="cursor-pointer text-slate-400 hover:text-slate-200">
-        🔧 {tools.length} {tools.length === 1 ? "Tool" : "Tools"} verwendet
+    <details className="rounded-md bg-white/[0.02] px-3 py-1.5 text-[11.5px]">
+      <summary className="cursor-pointer text-slate-500 hover:text-slate-300">
+        {tools.length} {tools.length === 1 ? "Tool" : "Tools"} verwendet
       </summary>
       <div className="mt-2 space-y-0.5">
         {tools.map((t, i) => (
-          <div key={i} className="flex items-center gap-2 text-slate-400">
+          <div key={i} className="flex items-center gap-2 text-slate-500">
             <Wrench size={9} className="opacity-50" />
-            <span className="font-mono text-[11px]">{t}</span>
+            <span className="font-mono">{t}</span>
           </div>
         ))}
       </div>

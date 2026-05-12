@@ -3,13 +3,13 @@
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
- * Atlas V2 — Homepage.
+ * Atlas V2 — Homepage (UI refresh 2026-05-12).
  *
- * ChatGPT-style empty state: centred greeting + chat input + quickstart
- * cards. Submitting fires POST /api/atlas/chat (no chatId), reads the
- * SSE stream up to the first `chat_started` event to learn the new
- * chat-id, then redirects to /atlas/chat/[id] with the in-flight stream
- * handed off to the chat-view via sessionStorage.
+ * ChatGPT-style empty state:
+ *   - generous vertical centring
+ *   - serif headline with gentle weight
+ *   - refined input pill with icon-only chips
+ *   - chip-row of 4 quickstarts (was 6-card grid)
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -26,10 +26,6 @@ export function AtlasHomepage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  /* Sprint 6: pre-fill from URL ?prompt= when arriving from
-     /atlas/workflows. Does NOT auto-submit — gives the user a chance
-     to fill in the bracketed placeholders ([Land] / [fileId] / etc).
-     One-shot via deps to prevent re-seed on re-renders. */
   useEffect(() => {
     const fromUrl = searchParams.get("prompt");
     if (fromUrl) setSeedValue(fromUrl);
@@ -43,9 +39,6 @@ export function AtlasHomepage() {
     setSubmitting(true);
     setError(null);
     try {
-      /* Stash the pending submission so the chat-view can replay it
-         seamlessly after navigation. We POST first to learn the chat-id,
-         then navigate; the chat-view picks up where we left off. */
       const res = await fetch("/api/atlas/chat", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -61,14 +54,10 @@ export function AtlasHomepage() {
         throw new Error(body.error || `HTTP ${res.status}`);
       }
 
-      /* Read the SSE stream just enough to learn the chat-id, then
-         navigate. The chat-view will re-issue or continue from the
-         persisted user-message + first assistant turn. */
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
       let chatId: string | null = null;
-      const accumulatedEvents: string[] = [];
       while (chatId === null) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -77,7 +66,6 @@ export function AtlasHomepage() {
           if (!line.startsWith("data: ")) continue;
           const json = line.slice(6).trim();
           if (!json) continue;
-          accumulatedEvents.push(json);
           try {
             const evt = JSON.parse(json);
             if (evt.type === "chat_started") {
@@ -92,15 +80,11 @@ export function AtlasHomepage() {
       }
 
       if (chatId) {
-        /* Stash remainder of the stream by reading the rest in
-           background and persisting events. The chat-view simply
-           reloads the persisted messages once they hit the DB. */
         void (async () => {
           while (true) {
             const { done } = await reader.read();
             if (done) break;
           }
-          /* Notify sidebar to refresh once the stream finishes. */
           window.dispatchEvent(new Event("atlas-v2-sidebar-refresh"));
         })();
         router.push(`/atlas/chat/${chatId}`);
@@ -114,9 +98,9 @@ export function AtlasHomepage() {
   };
 
   return (
-    <div className="flex h-full flex-col items-center justify-center px-6 py-10">
-      <div className="w-full max-w-2xl">
-        <h1 className="mb-8 text-center text-2xl font-semibold tracking-tight text-slate-100">
+    <div className="flex h-full flex-col items-center justify-center px-6">
+      <div className="w-full max-w-[720px]">
+        <h1 className="mb-10 text-center text-[28px] font-normal tracking-tight text-slate-100 [font-family:ui-serif,Georgia,'Cambria_Style',serif]">
           Wie kann ich helfen?
         </h1>
 
@@ -131,12 +115,10 @@ export function AtlasHomepage() {
         )}
 
         {!submitting && (
-          <div className="mt-10">
+          <div className="mt-12">
             <QuickstartCards
               onPick={(promptHint, titleHint) => {
                 setSeedValue(promptHint);
-                /* Auto-submit shortly after seeding so the user sees the
-                   prompt land + immediately watches the run start. */
                 setTimeout(() => {
                   void handleSubmit(
                     promptHint,
