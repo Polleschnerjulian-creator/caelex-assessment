@@ -14,6 +14,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { Briefcase, Wrench, AlertCircle } from "lucide-react";
 import { ChatInput } from "./ChatInput";
 import type { ChatMessageBlock, ChatMessageRecord, ChatRecord } from "./types";
@@ -237,10 +238,14 @@ export function AtlasChatView({ chatId }: Props) {
             {chat.title}
           </h1>
           {chat.mandate && (
-            <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-slate-500">
+            <Link
+              href={`/atlas/mandate/${chat.mandate.id}`}
+              className="mt-0.5 inline-flex items-center gap-1.5 text-[11px] text-slate-500 hover:text-emerald-300"
+            >
               <Briefcase size={10} />
               <span>{chat.mandate.name}</span>
-            </div>
+              <span className="text-slate-600">→</span>
+            </Link>
           )}
         </div>
       </header>

@@ -10,7 +10,7 @@
 | Sprint                                       | State       | Started    | Ended      |
 | -------------------------------------------- | ----------- | ---------- | ---------- |
 | Sprint 1 — Chat-First Foundation             | ✅ complete | 2026-05-12 | 2026-05-12 |
-| Sprint 2 — Mandate-Projects                  | 🔵 pending  | —          | —          |
+| Sprint 2 — Mandate-Projects                  | ✅ complete | 2026-05-12 | 2026-05-12 |
 | Sprint 3 — Tool inventory + Tool-Trace UI    | 🔵 pending  | —          | —          |
 | Sprint 4 — Validity Signals + Norm-Drift     | 🔵 pending  | —          | —          |
 | Sprint 5 — File Upload + Document Tools      | 🔵 pending  | —          | —          |
@@ -133,28 +133,80 @@ sidebar. Refreshes browser — chat is still there.
 
 ---
 
+## Sprint 2 — Mandate-Projects (complete)
+
+### Files added (Sprint 2)
+
+```
+src/app/api/atlas/mandate/[id]/route.ts             # GET/PATCH/DELETE
+src/app/api/atlas/mandate/[id]/members/route.ts     # POST/DELETE
+src/app/(atlas)/atlas/mandate/[id]/page.tsx         # detail route
+src/components/atlas/v2/mandate-types.ts            # client types
+src/components/atlas/v2/MandateDetailView.tsx       # main view
+src/components/atlas/v2/MandateInstructionsEditor.tsx
+src/components/atlas/v2/MandateMembersList.tsx
+src/components/atlas/v2/MandateChatsList.tsx
+src/components/atlas/v2/MandateNewChatComposer.tsx  # mandate-scoped composer
+```
+
+### Files modified (Sprint 2)
+
+```
+src/components/atlas/v2/AtlasChatView.tsx           # mandate badge → link
+docs/ATLAS-V2-PROGRESS.md                            # progress update
+```
+
+### Architectural decision
+
+We did NOT add a separate `/atlas/mandate/[id]/chat/[chatId]/page.tsx`
+URL. Mandate-scoping is achieved by the **chat carrying its own
+mandateId**, not by URL nesting. Reasons:
+
+1. Same chat URL works whether or not the chat is mandate-bound;
+   simpler routing surface.
+2. The chat-view header already renders a clickable mandate-badge
+   linking back to /atlas/mandate/[id].
+3. Sidebar can show mandate-scoped chats grouped under their mandate
+   without URL gymnastics.
+
+### Acceptance verified
+
+- POST /api/atlas/mandate/[id] PATCH updates instructions, status,
+  jurisdiction, etc. with status-transition side-effects (archivedAt,
+  closedAt timestamps auto-set).
+- DELETE soft-archives by default; ?hard=true cascades (owner-only).
+- POST /members enforces owner-only mutations + same-org user
+  resolution; DELETE prevents removing owner-self.
+- New-chat composer in MandateDetailView pre-fills titleHint from
+  mandate name, POSTs with mandateId, navigates to chat route.
+- AtlasChatView badge in the chat header links back to the mandate.
+
 ## NEXT ACTION
 
-→ **Sprint 2: Mandate-Projects.** Build:
+→ **Sprint 3: Tool inventory + Tool-Trace UI.** Build:
 
-1. `src/app/(atlas)/atlas/mandate/[id]/page.tsx` — Mandate-detail
-   page (Claude-Projects-style: description + custom instructions
-   editor + files list + chats list + members + deadlines).
-2. `src/app/(atlas)/atlas/mandate/[id]/chat/[chatId]/page.tsx` —
-   mandate-scoped chat (or just reuse the global chat route with
-   mandateId parameter — TBD).
-3. `src/components/atlas/v2/MandateProjectView.tsx` (server) +
-   `MandateProjectChats.tsx`, `MandateProjectMembers.tsx`,
-   `MandateProjectInstructions.tsx`.
-4. `src/app/api/atlas/mandate/[id]/route.ts` — GET, PATCH, DELETE.
-5. `src/app/api/atlas/mandate/[id]/members/route.ts` — POST, DELETE.
-6. Mandate-context bridge: when starting a NEW chat from the
-   mandate-detail page, POST /api/atlas/chat with the mandateId so
-   the chat-engine injects custom instructions.
+1. **Refactor tool-bundles** — split `atlas-tool-executor.ts` into
+   `src/lib/atlas/tool-bundles/{korpus,compliance,comparison,drafting,
+validity,documents,web,workflow,mandate}.tools.ts` +
+   `index.ts` bundle-picker.
+2. **Wire 14 partial tools** — wrap existing engines (engine.server.ts,
+   nis2-engine, space-law-engine, uk-space, us-regulatory,
+   export-control, spectrum, copuos, prompt-builders, intake-extractor,
+   mandate-store-server, deadline-tracker) as Atlas tools.
+3. **Build 17 new tools** — see master-plan §4 for the list. Priority:
+   `find_optimization`, `compare_articles`, `redline_against_template`,
+   `summarize_for_client`, `web_search`, `fetch_url`, `search_eurlex`.
+4. **Tool-trace UI** — the streaming `tool_call_start` /
+   `tool_call_complete` events already arrive in the chat-view; expand
+   the in-flight + persisted display so each tool call shows input
+   summary + output summary + duration + status, all expandable.
+5. **Suggested follow-ups** — at end of `done` event, generate 3
+   smart follow-up prompts based on the assistant's last answer +
+   mandate context. Render as clickable chips below the response.
 
-Sprint 2 acceptance: Baumann creates mandate "Spire DE-Auth" with
-custom instructions, opens mandate-detail page, starts a chat from
-there → chat shows the mandate context badge in the header AND
-Astra's response uses the custom instructions.
+Sprint 3 acceptance: Baumann asks a complex question; sees streaming
+tool-trace with all called tools (NIS2 engine, search, validity check)
 
-After Sprint 2: Sprint 3 (Tool-Trace UI + 17 new tools).
+- 3 follow-up suggestions; clicks one → continues the chat.
+
+After Sprint 3: Sprint 4 (Validity-signals + Norm-drift cron).
