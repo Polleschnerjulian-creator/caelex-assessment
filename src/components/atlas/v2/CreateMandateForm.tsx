@@ -3,13 +3,11 @@
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
- * Atlas V2 — Create-Mandate form (Sprint 1, minimal).
+ * Atlas V2 — Create-Mandate form (UI refresh 2026-05-12, theme-aware).
  *
  * Submit → POST /api/atlas/mandate → redirect to homepage with the
- * mandate visible in the sidebar. Sprint 2 will add a dedicated
- * Mandate-Project page with files + members + a richer instructions
- * editor; Sprint 1 gives just the create surface so Baumann can stand
- * up his first persistent mandate.
+ * mandate visible in the sidebar. Form fields are editable later from
+ * the mandate-detail view.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -33,6 +31,12 @@ const JURISDICTIONS = [
   { code: "EU", label: "EU-übergreifend" },
   { code: "INT", label: "International" },
 ];
+
+/* Shared input className — keeps the form coherent and the file
+   maintainable. Light: white-on-slate-200 border, focus → slate-400.
+   Dark: slate-950 input on slate-700 border, focus → emerald. */
+const INPUT_CLASS =
+  "w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition-colors focus:border-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-emerald-500";
 
 export function CreateMandateForm() {
   const router = useRouter();
@@ -75,18 +79,18 @@ export function CreateMandateForm() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-10 text-slate-100">
+    <div className="mx-auto max-w-2xl px-6 py-10 text-slate-900 dark:text-slate-100">
       <div className="mb-6">
         <Link
           href="/atlas"
-          className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
         >
           <ArrowLeft size={12} /> Zurück zu Atlas
         </Link>
       </div>
 
       <h1 className="mb-2 text-xl font-semibold">Neues Mandat anlegen</h1>
-      <p className="mb-8 text-sm text-slate-400">
+      <p className="mb-8 text-sm text-slate-600 dark:text-slate-400">
         Mandate gruppieren Chats, Files und Custom-Instructions für eine Sache
         (z. B. „Spire Global · DE-Authorization SAT-2026"). Felder sind später
         beliebig editierbar.
@@ -104,7 +108,7 @@ export function CreateMandateForm() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="z. B. Spire Global · DE-Auth SAT-2026"
-              className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+              className={INPUT_CLASS}
             />
           }
         />
@@ -119,7 +123,7 @@ export function CreateMandateForm() {
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
                 placeholder="Spire Global Inc."
-                className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                className={INPUT_CLASS}
               />
             }
           />
@@ -130,7 +134,7 @@ export function CreateMandateForm() {
               <select
                 value={jurisdiction}
                 onChange={(e) => setJurisdiction(e.target.value)}
-                className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                className={INPUT_CLASS}
               >
                 <option value="">— wählen —</option>
                 {JURISDICTIONS.map((j) => (
@@ -151,7 +155,7 @@ export function CreateMandateForm() {
                 value={operatorType}
                 onChange={(e) => setOperatorType(e.target.value)}
                 placeholder="satellite_operator"
-                className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                className={INPUT_CLASS}
               />
             }
           />
@@ -165,7 +169,7 @@ export function CreateMandateForm() {
                 value={primaryAuthority}
                 onChange={(e) => setPrimaryAuthority(e.target.value)}
                 placeholder="BNetzA"
-                className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                className={INPUT_CLASS}
               />
             }
           />
@@ -180,25 +184,29 @@ export function CreateMandateForm() {
               maxLength={8000}
               value={customInstructions}
               onChange={(e) => setCustomInstructions(e.target.value)}
-              placeholder="Spire ist US-Operator mit DE-Tochter. Mission: Earth Observation, X-Band Downlink. Kunde will Cost-Optimum DE/LU. ITAR-Implikation immer einbeziehen."
-              className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+              placeholder={`Spire ist US-Operator mit DE-Tochter. Mission: Earth Observation, X-Band Downlink. Kunde will Cost-Optimum DE/LU. ITAR-Implikation immer einbeziehen.`}
+              className={INPUT_CLASS}
             />
           }
         />
 
-        {error && <p className="text-xs text-red-400">Fehler: {error}</p>}
+        {error && (
+          <p className="text-xs text-red-500 dark:text-red-400">
+            Fehler: {error}
+          </p>
+        )}
 
         <div className="flex justify-end gap-2">
           <Link
             href="/atlas"
-            className="rounded-md border border-slate-700 px-4 py-2 text-sm hover:bg-slate-900"
+            className="rounded-md border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-900"
           >
             Abbrechen
           </Link>
           <button
             type="submit"
             disabled={submitting || !name.trim()}
-            className="rounded-md bg-emerald-500 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-600 disabled:opacity-50"
+            className="rounded-md bg-slate-900 px-5 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50 dark:bg-emerald-500 dark:hover:bg-emerald-600"
           >
             {submitting ? "Speichere…" : "Mandat anlegen"}
           </button>
@@ -219,7 +227,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium text-slate-300">
+      <span className="mb-1 block text-xs font-medium text-slate-700 dark:text-slate-300">
         {label}
       </span>
       {input}

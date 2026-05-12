@@ -20,7 +20,7 @@ interface Props {
 export function MandateChatsList({ chats }: Props) {
   if (chats.length === 0) {
     return (
-      <div className="rounded-md border border-dashed border-slate-700/60 bg-slate-900/30 px-4 py-6 text-center text-xs text-slate-500">
+      <div className="rounded-md border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-xs text-slate-500 dark:border-slate-700/60 dark:bg-slate-900/30">
         Noch keine Chats in diesem Mandat. Stelle deine erste Frage oben im
         Composer.
       </div>
@@ -28,16 +28,16 @@ export function MandateChatsList({ chats }: Props) {
   }
 
   return (
-    <ul className="divide-y divide-slate-800 overflow-hidden rounded-lg border border-slate-700/60 bg-slate-900/40">
+    <ul className="divide-y divide-slate-200 overflow-hidden rounded-lg border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-700/60 dark:bg-slate-900/40">
       {chats.map((c) => (
         <li key={c.id}>
           <Link
             href={`/atlas/chat/${c.id}`}
-            className="flex items-center gap-3 px-4 py-3 text-[13px] text-slate-200 hover:bg-slate-900"
+            className="flex items-center gap-3 px-4 py-3 text-[13px] text-slate-800 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-900"
           >
             <MessageSquare
               size={12}
-              className="shrink-0 text-slate-500"
+              className="shrink-0 text-slate-400 dark:text-slate-500"
               aria-hidden="true"
             />
             <span className="line-clamp-1 flex-1">{c.title}</span>

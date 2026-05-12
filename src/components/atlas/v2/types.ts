@@ -29,7 +29,7 @@ export interface MandateListItem {
 }
 
 export interface ChatMessageBlock {
-  type: "text" | "tool_use" | "tool_result";
+  type: "text" | "tool_use" | "tool_result" | "thinking" | "redacted_thinking";
   text?: string;
   id?: string;
   name?: string;
@@ -37,6 +37,15 @@ export interface ChatMessageBlock {
   tool_use_id?: string;
   content?: string;
   is_error?: boolean;
+  /** Anthropic Extended Thinking: the model's internal reasoning text.
+   *  Only present when `type === "thinking"`. Persisted into
+   *  AtlasMessage.content so the audit trail captures the full chain
+   *  of thought for legal-compliance review. */
+  thinking?: string;
+  /** Anthropic Extended Thinking signature, required when the message
+   *  is sent back to the model in subsequent tool-use turns. Opaque
+   *  token — UI ignores it. */
+  signature?: string;
 }
 
 export interface ChatMessageRecord {
@@ -65,6 +74,7 @@ export interface ChatRecord {
 export type StreamEvent =
   | { type: "chat_started"; chatId: string }
   | { type: "text"; delta: string }
+  | { type: "thinking_delta"; delta: string }
   | {
       type: "tool_call_start";
       id: string;

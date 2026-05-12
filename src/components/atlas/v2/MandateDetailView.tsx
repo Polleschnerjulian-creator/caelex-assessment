@@ -3,16 +3,16 @@
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
- * Atlas V2 — Mandate detail view (Claude-Projects-style).
+ * Atlas V2 — Mandate detail view (UI refresh, theme-aware).
  *
- * Layout:
+ * Layout (Claude-Projects-style):
  *   ┌─ Header (name, client, status, jurisdiction badges) ──────────┐
  *   ├─ Inline new-chat composer (mandate-scoped) ───────────────────┤
  *   ├─ 2-col grid:                                                  │
  *   │   ◇ Custom Instructions editor                                │
  *   │   ◇ Members list + add form                                   │
  *   ├─ Chats in this mandate (full-width list)                      │
- *   └─ Files (placeholder; real upload arrives in Sprint 5)          │
+ *   └─ Files (R2-backed upload + extracted-text indexing)            │
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -109,9 +109,12 @@ export function MandateDetailView({ mandateId }: Props) {
 
   if (error && !mandate) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-red-400">
+      <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-red-500 dark:text-red-400">
         <span>{error}</span>
-        <Link href="/atlas" className="text-xs text-slate-400 underline">
+        <Link
+          href="/atlas"
+          className="text-xs text-slate-500 underline hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+        >
           Zurück zu Atlas
         </Link>
       </div>
@@ -126,12 +129,12 @@ export function MandateDetailView({ mandateId }: Props) {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Header */}
-      <header className="shrink-0 border-b border-slate-800 bg-slate-950/60">
+      <header className="shrink-0 border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/60">
         <div className="mx-auto max-w-5xl px-6 py-5">
           <div className="mb-3 flex items-center justify-between gap-3">
             <Link
               href="/atlas"
-              className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200"
+              className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
             >
               <ArrowLeft size={12} /> Zurück zu Atlas
             </Link>
@@ -140,7 +143,7 @@ export function MandateDetailView({ mandateId }: Props) {
                 type="button"
                 onClick={handleArchive}
                 disabled={archiving}
-                className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-red-400"
+                className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-red-600 dark:hover:text-red-400"
               >
                 <Archive size={11} />
                 {archiving ? "Archiviere…" : "Archivieren"}
@@ -148,12 +151,15 @@ export function MandateDetailView({ mandateId }: Props) {
             )}
           </div>
           <div className="flex items-start gap-3">
-            <Briefcase size={18} className="mt-0.5 text-emerald-400 shrink-0" />
+            <Briefcase
+              size={18}
+              className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400"
+            />
             <div className="min-w-0 flex-1">
-              <h1 className="text-xl font-semibold text-slate-100">
+              <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
                 {mandate.name}
               </h1>
-              <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-600 dark:text-slate-400">
                 {mandate.clientName && (
                   <Pill label="Klient" value={mandate.clientName} />
                 )}
@@ -235,7 +241,7 @@ export function MandateDetailView({ mandateId }: Props) {
             <MandateChatsList chats={mandate.chats} mandateId={mandate.id} />
           </section>
 
-          {/* Files (Sprint 5 — real R2 upload + per-mandate vault) */}
+          {/* Files (R2-backed) */}
           <section>
             <SectionTitle>Dateien</SectionTitle>
             <div className="space-y-3">
@@ -253,7 +259,7 @@ export function MandateDetailView({ mandateId }: Props) {
               Astra kann Dateien direkt im Chat referenzieren — frag z.B. „Was
               steht in der Mission-Spec zu Frequenzen?". TXT/MD/HTML/CSV werden
               automatisch text-extrahiert; PDF/DOC(X)/XLS(X) werden gespeichert
-              (Text-Extraktion folgt in Sprint 6).
+              (Text-Extraktion folgt).
             </p>
           </section>
         </div>
@@ -264,9 +270,9 @@ export function MandateDetailView({ mandateId }: Props) {
 
 function Pill({ label, value }: { label: string; value: string }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded border border-slate-700 bg-slate-900 px-1.5 py-0.5">
+    <span className="inline-flex items-center gap-1 rounded border border-slate-200 bg-white px-1.5 py-0.5 dark:border-slate-700 dark:bg-slate-900">
       <span className="text-slate-500">{label}:</span>
-      <span className="text-slate-200">{value}</span>
+      <span className="text-slate-800 dark:text-slate-200">{value}</span>
     </span>
   );
 }
@@ -274,20 +280,20 @@ function Pill({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: string }) {
   if (status === "archived") {
     return (
-      <span className="rounded border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-amber-300">
+      <span className="rounded border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
         Archiviert
       </span>
     );
   }
   if (status === "closed") {
     return (
-      <span className="rounded border border-slate-500/30 bg-slate-500/10 px-1.5 py-0.5 text-slate-400">
+      <span className="rounded border border-slate-300 bg-slate-100 px-1.5 py-0.5 text-slate-600 dark:border-slate-500/30 dark:bg-slate-500/10 dark:text-slate-400">
         Geschlossen
       </span>
     );
   }
   return (
-    <span className="rounded border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 text-emerald-300">
+    <span className="rounded border border-emerald-300 bg-emerald-50 px-1.5 py-0.5 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
       Aktiv
     </span>
   );
@@ -295,7 +301,7 @@ function StatusPill({ status }: { status: string }) {
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+    <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
       {children}
     </h2>
   );

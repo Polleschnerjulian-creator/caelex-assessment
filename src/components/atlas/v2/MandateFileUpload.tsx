@@ -139,18 +139,20 @@ export function MandateFileUpload({ mandateId, onChanged, disabled }: Props) {
         onDrop={disabled ? undefined : handleDrop}
         className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-6 py-8 text-center text-xs transition-colors ${
           disabled
-            ? "border-slate-800 bg-slate-900/20 text-slate-600"
+            ? "border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-800 dark:bg-slate-900/20 dark:text-slate-600"
             : dragOver
-              ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-200"
-              : "border-slate-700/60 bg-slate-900/30 text-slate-400 hover:border-emerald-500/40 hover:bg-slate-900/50"
+              ? "border-emerald-400 bg-emerald-50 text-emerald-700 dark:border-emerald-500/60 dark:bg-emerald-500/10 dark:text-emerald-200"
+              : "border-slate-300 bg-slate-50 text-slate-600 hover:border-slate-400 hover:bg-slate-100 dark:border-slate-700/60 dark:bg-slate-900/30 dark:text-slate-400 dark:hover:border-emerald-500/40 dark:hover:bg-slate-900/50"
         }`}
       >
         <Upload size={18} />
         <span>
           Datei hierher ziehen oder{" "}
-          <span className="text-emerald-400 underline">auswählen</span>
+          <span className="text-emerald-700 underline dark:text-emerald-400">
+            auswählen
+          </span>
         </span>
-        <span className="text-[10px] text-slate-600">
+        <span className="text-[10px] text-slate-400 dark:text-slate-600">
           TXT/MD/HTML/CSV/PDF/DOC(X)/XLS(X) · max 50 MB · 100 pro Mandat
         </span>
       </div>
@@ -169,22 +171,31 @@ export function MandateFileUpload({ mandateId, onChanged, disabled }: Props) {
           {statuses.map((s) => (
             <li
               key={s.filename + s.state}
-              className="flex items-center gap-2 rounded border border-slate-800 bg-slate-900/40 px-2.5 py-1.5 text-[11px]"
+              className="flex items-center gap-2 rounded border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] dark:border-slate-800 dark:bg-slate-900/40"
             >
               {s.state === "uploading" && (
-                <Loader2 size={11} className="animate-spin text-emerald-400" />
+                <Loader2
+                  size={11}
+                  className="animate-spin text-emerald-600 dark:text-emerald-400"
+                />
               )}
               {s.state === "done" && (
-                <CheckCircle2 size={11} className="text-emerald-400" />
+                <CheckCircle2
+                  size={11}
+                  className="text-emerald-600 dark:text-emerald-400"
+                />
               )}
               {s.state === "error" && (
-                <AlertCircle size={11} className="text-red-400" />
+                <AlertCircle
+                  size={11}
+                  className="text-red-500 dark:text-red-400"
+                />
               )}
-              <span className="line-clamp-1 flex-1 text-slate-300">
+              <span className="line-clamp-1 flex-1 text-slate-700 dark:text-slate-300">
                 {s.filename}
               </span>
               {s.error && (
-                <span className="line-clamp-1 max-w-[40%] text-red-400">
+                <span className="line-clamp-1 max-w-[40%] text-red-500 dark:text-red-400">
                   {s.error}
                 </span>
               )}
@@ -192,7 +203,7 @@ export function MandateFileUpload({ mandateId, onChanged, disabled }: Props) {
                 <button
                   type="button"
                   onClick={() => dismissStatus(s.filename)}
-                  className="text-slate-600 hover:text-slate-300"
+                  className="text-slate-400 hover:text-slate-700 dark:text-slate-600 dark:hover:text-slate-300"
                   aria-label="Verbergen"
                 >
                   <X size={10} />

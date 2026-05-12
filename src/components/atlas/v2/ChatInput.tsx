@@ -132,6 +132,14 @@ export function ChatInput({
     return () => window.removeEventListener("mousedown", handler);
   }, [plusOpen]);
 
+  /* ⌘K via the keyboard-shortcuts hook fires `atlas-v2-focus-
+     composer` — focus the textarea so the user can immediately type. */
+  useEffect(() => {
+    const handler = () => taRef.current?.focus();
+    window.addEventListener("atlas-v2-focus-composer", handler);
+    return () => window.removeEventListener("atlas-v2-focus-composer", handler);
+  }, []);
+
   /* ── File-attach (text-files only — drag-drop + click) ─────────────
      Client-side FileReader extracts the text, then we splice it into
      the textarea as a tagged block the model recognises. No upload

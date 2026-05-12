@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { AlertTriangle, RefreshCw, ArrowLeft } from "lucide-react";
+import * as Sentry from "@sentry/nextjs";
 
 /**
  * Atlas-scoped error boundary (C8).
@@ -10,6 +11,11 @@ import { AlertTriangle, RefreshCw, ArrowLeft } from "lucide-react";
  * Catches render / data-fetch errors in the (atlas) route group so that
  * a failing `getLinkStatusMap()` or a transient Neon outage renders a
  * graceful fallback instead of the generic Next.js white screen.
+ *
+ * Reports to Sentry explicitly (in addition to Next.js's auto-
+ * instrumentation) so the breadcrumb trail captures Atlas-specific
+ * tags. The `atlas-v2` tag lets us slice Sentry issues to just the
+ * V2 chat surface separate from the rest of the Caelex platform.
  */
 export default function AtlasError({
   error,
@@ -19,8 +25,10 @@ export default function AtlasError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log to the server-side logger via console so Sentry/Vercel capture it.
-    // The digest is the stable error id Next.js produces in production builds.
+    Sentry.captureException(error, {
+      tags: { surface: "atlas-v2", route: "render-error-boundary" },
+      extra: { digest: error.digest },
+    });
     // eslint-disable-next-line no-console
     console.error("Atlas render error", {
       message: error.message,

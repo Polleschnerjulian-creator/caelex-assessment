@@ -3,7 +3,7 @@
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
- * Atlas V2 — Mandate Custom-Instructions editor.
+ * Atlas V2 — Mandate Custom-Instructions editor (UI refresh, theme-aware).
  *
  * Inline-editable. Save button enabled iff dirty. PATCH /api/atlas/mandate/[id]
  * persists; the parent receives the new value via onSaved so the local
@@ -61,14 +61,14 @@ export function MandateInstructionsEditor({
   };
 
   return (
-    <div className="rounded-lg border border-slate-700/60 bg-slate-900/40 p-3">
+    <div className="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700/60 dark:bg-slate-900/40">
       <textarea
         value={value}
         onChange={(e) => setValue(e.target.value)}
         rows={8}
         maxLength={8000}
         placeholder={`Werden bei jedem Chat in diesem Mandat als System-Prompt-Suffix injiziert. Zum Beispiel: „Spire ist US-Operator mit DE-Tochter. Mission: Earth Observation, X-Band. Kunde will Cost-Optimum DE/LU. ITAR-Implikation immer einbeziehen."`}
-        className="block w-full resize-none bg-transparent text-[13px] text-slate-100 outline-none placeholder:text-slate-600"
+        className="block w-full resize-none bg-transparent text-[13px] text-slate-900 outline-none focus-visible:outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-600"
       />
       <div className="mt-2 flex items-center justify-between gap-2">
         <span className="text-[10px] text-slate-500">
@@ -76,16 +76,20 @@ export function MandateInstructionsEditor({
         </span>
         <div className="flex items-center gap-2">
           {savedAt && (
-            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400">
+            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 size={11} /> Gespeichert
             </span>
           )}
-          {error && <span className="text-[11px] text-red-400">{error}</span>}
+          {error && (
+            <span className="text-[11px] text-red-500 dark:text-red-400">
+              {error}
+            </span>
+          )}
           <button
             type="button"
             onClick={handleSave}
             disabled={!dirty || saving}
-            className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-30"
+            className="inline-flex items-center gap-1.5 rounded-md bg-slate-900 px-3 py-1 text-xs font-medium text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-30 dark:bg-emerald-500 dark:hover:bg-emerald-600"
           >
             {saving ? (
               <Loader2 size={11} className="animate-spin" />

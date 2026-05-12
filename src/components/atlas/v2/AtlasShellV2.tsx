@@ -16,6 +16,8 @@
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 import { AtlasSidebar } from "./AtlasSidebar";
+import { KeyboardHelpOverlay } from "./KeyboardHelpOverlay";
+import { useAtlasKeyboardShortcuts } from "@/hooks/useAtlasKeyboardShortcuts";
 
 interface Props {
   children: React.ReactNode;
@@ -33,6 +35,11 @@ export function AtlasShellV2({ children }: Props) {
     };
   }, [pathname]);
 
+  /* Global keyboard shortcuts — dispatches custom events that
+     AtlasSidebar + ChatInput listen for. The help-overlay state
+     lives here so the modal can be rendered as a peer of the shell. */
+  const kbd = useAtlasKeyboardShortcuts();
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-white text-slate-900 dark:bg-[#212121] dark:text-slate-100">
       <AtlasSidebar
@@ -40,6 +47,7 @@ export function AtlasShellV2({ children }: Props) {
         activeMandateId={activeMandateId}
       />
       <main className="flex-1 overflow-hidden">{children}</main>
+      <KeyboardHelpOverlay open={kbd.helpOpen} onClose={kbd.closeHelp} />
     </div>
   );
 }

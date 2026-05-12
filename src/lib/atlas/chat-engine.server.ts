@@ -52,6 +52,30 @@ const TEMPERATURE_DEFAULT = parseFloat(
   process.env.ATLAS_V2_CHAT_TEMPERATURE ?? "0.5",
 );
 
+/**
+ * Anthropic Extended Thinking — show Claude's internal chain-of-
+ * thought as a separate stream alongside the visible response.
+ *
+ *   ATLAS_V2_THINKING_ENABLED  (default: true)
+ *     Toggle on/off without code change. Falls back to false if the
+ *     upstream model doesn't support thinking (Bedrock routing on
+ *     older Sonnet versions, e.g.).
+ *   ATLAS_V2_THINKING_BUDGET   (default: 5000 tokens)
+ *     Hard cap on thinking-token consumption per turn. ~$0.075/turn
+ *     at sonnet-4.5 output pricing. The model self-limits inside
+ *     this budget — most legal queries use 1-3k.
+ *
+ * NOTE: Extended Thinking requires `temperature: 1` per Anthropic
+ * spec (the docs are explicit on this — non-1 produces invalid_
+ * request_error). When thinking is enabled we override the default
+ * 0.5 → 1 just for the stream call.
+ */
+const THINKING_ENABLED = process.env.ATLAS_V2_THINKING_ENABLED !== "false";
+const THINKING_BUDGET = parseInt(
+  process.env.ATLAS_V2_THINKING_BUDGET ?? "5000",
+  10,
+);
+
 /* Sonnet pricing per million tokens (USD), used for transparency cost
    display only — not for billing. */
 const PRICE_INPUT_PER_MTOK = 3.0;
@@ -366,22 +390,39 @@ export async function runChat(
       let totalInputTokens = 0;
       let totalOutputTokens = 0;
       let assistantTextBuffer = "";
-      const finalAssistantBlocks: Array<
-        Anthropic.TextBlock | Anthropic.ToolUseBlock
-      > = [];
+      /* finalAssistantBlocks holds the blocks we persist into the
+         AtlasMessage.content jsonb so the chat-view can replay the
+         assistant turn faithfully. With Extended Thinking enabled we
+         also persist `thinking` + `redacted_thinking` blocks for the
+         legal audit trail (lawyer can re-inspect Atlas's chain of
+         thought when reviewing a past answer). The type union here
+         widens to include thinking blocks. */
+      const finalAssistantBlocks: Array<Anthropic.ContentBlock> = [];
 
       try {
         let iter = 0;
         while (iter < MAX_TOOL_ITERATIONS) {
           iter++;
 
+          /* Extended Thinking budget is ADDITIONAL output capacity on
+             top of normal max_tokens — Anthropic counts thinking +
+             response separately. We add them to keep MAX_TOKENS_DEFAULT
+             intact as the visible-response cap. */
           const turnStream = anthropic.messages.stream({
             model,
-            max_tokens: MAX_TOKENS_DEFAULT,
-            temperature: TEMPERATURE_DEFAULT,
+            max_tokens:
+              MAX_TOKENS_DEFAULT + (THINKING_ENABLED ? THINKING_BUDGET : 0),
+            /* Extended Thinking REQUIRES temperature=1 (Anthropic spec). */
+            temperature: THINKING_ENABLED ? 1 : TEMPERATURE_DEFAULT,
             system: systemPrompt,
             messages: conversation,
             tools: ATLAS_TOOLS,
+            ...(THINKING_ENABLED && {
+              thinking: {
+                type: "enabled",
+                budget_tokens: THINKING_BUDGET,
+              },
+            }),
           });
 
           let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
@@ -399,6 +440,25 @@ export async function runChat(
             assistantTextBuffer += delta;
             send({ type: "text", delta });
           });
+
+          /* Listen for thinking deltas — the SDK's high-level `text`
+             event only fires for text content. Thinking deltas come
+             through the raw streamEvent. */
+          if (THINKING_ENABLED) {
+            turnStream.on("streamEvent", (evt) => {
+              if (
+                evt.type === "content_block_delta" &&
+                evt.delta &&
+                typeof evt.delta === "object" &&
+                "type" in evt.delta &&
+                evt.delta.type === "thinking_delta"
+              ) {
+                bump();
+                const tDelta = (evt.delta as { thinking?: string }).thinking;
+                if (tDelta) send({ type: "thinking_delta", delta: tDelta });
+              }
+            });
+          }
 
           turnStream.on("error", (err) => {
             const msg = err instanceof Error ? err.message : String(err);
@@ -425,10 +485,16 @@ export async function runChat(
           });
 
           /* If no tool-use, this was the final turn. Capture blocks
-             and break. */
+             and break. Persist thinking blocks too so the audit
+             trail is complete. */
           if (finalMessage.stop_reason !== "tool_use") {
             for (const block of finalMessage.content) {
-              if (block.type === "text" || block.type === "tool_use") {
+              if (
+                block.type === "text" ||
+                block.type === "tool_use" ||
+                block.type === "thinking" ||
+                block.type === "redacted_thinking"
+              ) {
                 finalAssistantBlocks.push(block);
               }
             }
@@ -439,7 +505,13 @@ export async function runChat(
           const toolResults: ToolResultBlock[] = [];
           for (const block of finalMessage.content) {
             if (block.type !== "tool_use") {
-              if (block.type === "text") finalAssistantBlocks.push(block);
+              if (
+                block.type === "text" ||
+                block.type === "thinking" ||
+                block.type === "redacted_thinking"
+              ) {
+                finalAssistantBlocks.push(block);
+              }
               continue;
             }
             const toolBlock = block as ToolUseBlock;

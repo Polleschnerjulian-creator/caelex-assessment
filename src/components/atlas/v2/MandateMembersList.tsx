@@ -3,7 +3,7 @@
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
- * Atlas V2 — Mandate members list + add form.
+ * Atlas V2 — Mandate members list + add form (UI refresh, theme-aware).
  *
  * Owner-only mutations (the API enforces it; we surface the UI accordingly).
  * Add by email (must be a User in the same organisation). Remove via the X
@@ -22,6 +22,9 @@ interface Props {
   ownerUserId: string;
   onChanged: () => void;
 }
+
+const INPUT_CLASS =
+  "rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none transition-colors focus:border-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-emerald-500";
 
 export function MandateMembersList({
   mandateId,
@@ -82,7 +85,7 @@ export function MandateMembersList({
   };
 
   return (
-    <div className="rounded-lg border border-slate-700/60 bg-slate-900/40 p-3">
+    <div className="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700/60 dark:bg-slate-900/40">
       <ul className="mb-3 space-y-1">
         {members.length === 0 ? (
           <li className="text-xs text-slate-500">Noch keine Mitglieder.</li>
@@ -92,11 +95,11 @@ export function MandateMembersList({
             return (
               <li
                 key={m.id}
-                className="flex items-center gap-2 rounded px-2 py-1.5 text-[13px] hover:bg-slate-900"
+                className="flex items-center gap-2 rounded px-2 py-1.5 text-[13px] hover:bg-slate-50 dark:hover:bg-slate-900"
               >
                 <RoleIcon role={m.role} isOwner={isOwner} />
                 <div className="min-w-0 flex-1">
-                  <div className="line-clamp-1 text-slate-100">
+                  <div className="line-clamp-1 text-slate-800 dark:text-slate-100">
                     {m.user.name || m.user.email || "—"}
                   </div>
                   {m.user.name && m.user.email && (
@@ -113,7 +116,7 @@ export function MandateMembersList({
                     type="button"
                     onClick={() => handleRemove(m.user.id)}
                     disabled={removing === m.user.id}
-                    className="text-slate-500 hover:text-red-400 disabled:opacity-30"
+                    className="text-slate-400 hover:text-red-600 disabled:opacity-30 dark:text-slate-500 dark:hover:text-red-400"
                     aria-label={`${m.user.email ?? "Mitglied"} entfernen`}
                   >
                     {removing === m.user.id ? (
@@ -131,7 +134,7 @@ export function MandateMembersList({
 
       <form
         onSubmit={handleAdd}
-        className="flex flex-col gap-2 border-t border-slate-700/40 pt-3"
+        className="flex flex-col gap-2 border-t border-slate-200 pt-3 dark:border-slate-700/40"
       >
         <div className="flex items-center gap-2">
           <input
@@ -140,7 +143,7 @@ export function MandateMembersList({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={adding}
-            className="flex-1 rounded-md border border-slate-700 bg-slate-950 px-2 py-1.5 text-xs text-slate-100 outline-none focus:border-emerald-500"
+            className={`flex-1 ${INPUT_CLASS}`}
           />
           <select
             value={role}
@@ -154,7 +157,7 @@ export function MandateMembersList({
               )
             }
             disabled={adding}
-            className="rounded-md border border-slate-700 bg-slate-950 px-2 py-1.5 text-xs text-slate-100 outline-none focus:border-emerald-500"
+            className={INPUT_CLASS}
           >
             <option value="collaborator">Collaborator</option>
             <option value="reviewer">Reviewer</option>
@@ -163,7 +166,7 @@ export function MandateMembersList({
           <button
             type="submit"
             disabled={!email.trim() || adding}
-            className="inline-flex items-center gap-1 rounded-md bg-emerald-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-600 disabled:opacity-30"
+            className="inline-flex items-center gap-1 rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800 disabled:opacity-30 dark:bg-emerald-500 dark:hover:bg-emerald-600"
           >
             {adding ? (
               <Loader2 size={11} className="animate-spin" />
@@ -173,7 +176,9 @@ export function MandateMembersList({
             Hinzufügen
           </button>
         </div>
-        {error && <p className="text-[11px] text-red-400">{error}</p>}
+        {error && (
+          <p className="text-[11px] text-red-500 dark:text-red-400">{error}</p>
+        )}
         <p className="text-[10px] text-slate-500">
           Nur User die schon in deiner Caelex-Organisation sind, können
           hinzugefügt werden.
@@ -184,8 +189,15 @@ export function MandateMembersList({
 }
 
 function RoleIcon({ role, isOwner }: { role: string; isOwner: boolean }) {
-  if (isOwner) return <Crown size={11} className="shrink-0 text-amber-400" />;
+  if (isOwner) return <Crown size={11} className="shrink-0 text-amber-500" />;
   if (role === "reviewer")
-    return <ShieldCheck size={11} className="shrink-0 text-emerald-400" />;
-  return <User size={11} className="shrink-0 text-slate-500" />;
+    return (
+      <ShieldCheck
+        size={11}
+        className="shrink-0 text-emerald-600 dark:text-emerald-400"
+      />
+    );
+  return (
+    <User size={11} className="shrink-0 text-slate-400 dark:text-slate-500" />
+  );
 }

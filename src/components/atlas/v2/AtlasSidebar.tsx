@@ -114,10 +114,16 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
 
   useEffect(() => {
     void refresh();
-    const handler = () => void refresh();
-    window.addEventListener("atlas-v2-sidebar-refresh", handler);
-    return () =>
-      window.removeEventListener("atlas-v2-sidebar-refresh", handler);
+    const refreshHandler = () => void refresh();
+    /* ⌘\ via the keyboard-shortcuts hook fires `atlas-v2-sidebar-
+       toggle`. We respond by flipping the local collapsed state. */
+    const toggleHandler = () => setCollapsed((v) => !v);
+    window.addEventListener("atlas-v2-sidebar-refresh", refreshHandler);
+    window.addEventListener("atlas-v2-sidebar-toggle", toggleHandler);
+    return () => {
+      window.removeEventListener("atlas-v2-sidebar-refresh", refreshHandler);
+      window.removeEventListener("atlas-v2-sidebar-toggle", toggleHandler);
+    };
   }, [refresh, pathname]);
 
   const grouped = chats.reduce<Record<string, ChatListItem[]>>((acc, c) => {

@@ -3,7 +3,7 @@
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
- * Atlas V2 — Mandate file list.
+ * Atlas V2 — Mandate file list (UI refresh, theme-aware).
  *
  * Renders the file vault for one mandate. Each row: icon + filename +
  * type pill + size + uploader + actions (download via signed URL,
@@ -99,7 +99,7 @@ export function MandateFilesList({ mandateId, refreshKey }: Props) {
 
   if (loading && files.length === 0) {
     return (
-      <div className="flex items-center justify-center rounded-md border border-dashed border-slate-700/60 bg-slate-900/30 px-4 py-6 text-xs text-slate-500">
+      <div className="flex items-center justify-center rounded-md border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-xs text-slate-500 dark:border-slate-700/60 dark:bg-slate-900/30">
         <Loader2 size={11} className="mr-2 animate-spin" /> Lädt Dateien…
       </div>
     );
@@ -107,22 +107,24 @@ export function MandateFilesList({ mandateId, refreshKey }: Props) {
 
   if (files.length === 0) {
     return (
-      <div className="rounded-md border border-dashed border-slate-700/60 bg-slate-900/30 px-4 py-6 text-center text-xs text-slate-500">
+      <div className="rounded-md border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-xs text-slate-500 dark:border-slate-700/60 dark:bg-slate-900/30">
         Noch keine Dateien hochgeladen.
       </div>
     );
   }
 
   return (
-    <ul className="divide-y divide-slate-800 overflow-hidden rounded-lg border border-slate-700/60 bg-slate-900/40">
+    <ul className="divide-y divide-slate-200 overflow-hidden rounded-lg border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-700/60 dark:bg-slate-900/40">
       {files.map((f) => (
         <li
           key={f.id}
-          className="flex items-center gap-3 px-4 py-2.5 text-[13px] hover:bg-slate-900"
+          className="flex items-center gap-3 px-4 py-2.5 text-[13px] hover:bg-slate-50 dark:hover:bg-slate-900"
         >
           <FileIcon mimeType={f.mimeType} />
           <div className="min-w-0 flex-1">
-            <div className="line-clamp-1 text-slate-100">{f.filename}</div>
+            <div className="line-clamp-1 text-slate-900 dark:text-slate-100">
+              {f.filename}
+            </div>
             <div className="mt-0.5 flex items-center gap-2 text-[10px] text-slate-500">
               {f.documentType && <TypeBadge t={f.documentType} />}
               <span>{formatBytes(f.sizeBytes)}</span>
@@ -137,7 +139,7 @@ export function MandateFilesList({ mandateId, refreshKey }: Props) {
             onClick={() => handleDownload(f.id)}
             disabled={downloading === f.id}
             title="Herunterladen"
-            className="text-slate-500 hover:text-emerald-300 disabled:opacity-30"
+            className="text-slate-400 hover:text-emerald-700 disabled:opacity-30 dark:text-slate-500 dark:hover:text-emerald-300"
           >
             {downloading === f.id ? (
               <Loader2 size={12} className="animate-spin" />
@@ -150,7 +152,7 @@ export function MandateFilesList({ mandateId, refreshKey }: Props) {
             onClick={() => handleDelete(f.id, f.filename)}
             disabled={deleting === f.id}
             title="Löschen"
-            className="text-slate-500 hover:text-red-400 disabled:opacity-30"
+            className="text-slate-400 hover:text-red-600 disabled:opacity-30 dark:text-slate-500 dark:hover:text-red-400"
           >
             {deleting === f.id ? (
               <Loader2 size={12} className="animate-spin" />
@@ -166,17 +168,37 @@ export function MandateFilesList({ mandateId, refreshKey }: Props) {
 
 function FileIcon({ mimeType }: { mimeType: string }) {
   if (mimeType.startsWith("image/"))
-    return <FileImage size={14} className="shrink-0 text-slate-500" />;
+    return (
+      <FileImage
+        size={14}
+        className="shrink-0 text-slate-400 dark:text-slate-500"
+      />
+    );
   if (mimeType.includes("spreadsheet") || mimeType === "text/csv")
-    return <FileSpreadsheet size={14} className="shrink-0 text-slate-500" />;
+    return (
+      <FileSpreadsheet
+        size={14}
+        className="shrink-0 text-slate-400 dark:text-slate-500"
+      />
+    );
   if (mimeType === "application/pdf")
-    return <ExternalLink size={14} className="shrink-0 text-rose-400/70" />;
-  return <FileText size={14} className="shrink-0 text-slate-500" />;
+    return (
+      <ExternalLink
+        size={14}
+        className="shrink-0 text-rose-500 dark:text-rose-400/70"
+      />
+    );
+  return (
+    <FileText
+      size={14}
+      className="shrink-0 text-slate-400 dark:text-slate-500"
+    />
+  );
 }
 
 function TypeBadge({ t }: { t: string }) {
   return (
-    <span className="rounded border border-slate-700 bg-slate-900 px-1 py-0.5 font-mono text-[9px] text-slate-300">
+    <span className="rounded border border-slate-200 bg-slate-100 px-1 py-0.5 font-mono text-[9px] text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
       {t}
     </span>
   );

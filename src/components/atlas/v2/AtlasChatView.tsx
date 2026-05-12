@@ -23,6 +23,7 @@ import {
   Loader2,
   X as XIcon,
   PenLine,
+  Brain,
 } from "lucide-react";
 import { ChatInput } from "./ChatInput";
 import { SuggestedFollowups } from "./SuggestedFollowups";
@@ -51,6 +52,7 @@ export function AtlasChatView({ chatId }: Props) {
   const [loading, setLoading] = useState(true);
   const [streaming, setStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState("");
+  const [streamingThinking, setStreamingThinking] = useState("");
   const [inFlightTools, setInFlightTools] = useState<InFlightToolCall[]>([]);
   const [error, setError] = useState<string | null>(null);
   /* Bumped after every successful assistant turn so the
@@ -139,6 +141,7 @@ export function AtlasChatView({ chatId }: Props) {
     if (!chat) return;
     setStreaming(true);
     setStreamingText("");
+    setStreamingThinking("");
     setInFlightTools([]);
     setError(null);
     try {
@@ -217,6 +220,7 @@ export function AtlasChatView({ chatId }: Props) {
     } finally {
       setStreaming(false);
       setStreamingText("");
+      setStreamingThinking("");
       setInFlightTools([]);
     }
   };
@@ -234,6 +238,9 @@ export function AtlasChatView({ chatId }: Props) {
     switch (evt.type) {
       case "text":
         setStreamingText((prev) => prev + (evt.delta as string));
+        break;
+      case "thinking_delta":
+        setStreamingThinking((prev) => prev + (evt.delta as string));
         break;
       case "tool_call_start":
         setInFlightTools((prev) => [
@@ -364,7 +371,11 @@ export function AtlasChatView({ chatId }: Props) {
           })}
 
           {streaming && (
-            <StreamingMessage tools={inFlightTools} text={streamingText} />
+            <StreamingMessage
+              tools={inFlightTools}
+              text={streamingText}
+              thinking={streamingThinking}
+            />
           )}
 
           {error && chat && (
@@ -413,8 +424,17 @@ function MessageRow({ message }: { message: ChatMessageRecord }) {
     .filter((b) => b.type === "text")
     .map((b) => b.text)
     .join("\n");
+  /* Persisted thinking blocks (Anthropic Extended Thinking output).
+     Joined as one stream so the lawyer can audit the full chain of
+     thought for past answers. */
+  const thinkingText = blocks
+    .filter((b) => b.type === "thinking")
+    .map((b) => b.thinking ?? "")
+    .filter(Boolean)
+    .join("\n");
   return (
     <div className="space-y-2">
+      {thinkingText && <ThinkingPanel text={thinkingText} />}
       {message.toolsUsed.length > 0 && (
         <ToolTraceSummary tools={message.toolsUsed} />
       )}
@@ -460,9 +480,11 @@ function MessageRow({ message }: { message: ChatMessageRecord }) {
 function StreamingMessage({
   tools,
   text,
+  thinking,
 }: {
   tools: InFlightToolCall[];
   text: string;
+  thinking: string;
 }) {
   /* What's happening right now: most-recent-not-yet-completed tool,
      OR — if every tool finished and text has begun arriving — the
@@ -470,9 +492,13 @@ function StreamingMessage({
   const inFlight = [...tools].reverse().find((t) => !t.completedAt);
   const allDone = tools.length > 0 && tools.every((t) => t.completedAt);
   const writingAnswer = allDone && text.length > 0;
+  const isThinking =
+    thinking.length > 0 && tools.length === 0 && text.length === 0;
 
   let activity: { verb: string; detail?: string } | null = null;
-  if (inFlight) {
+  if (isThinking) {
+    activity = { verb: "Denkt nach" };
+  } else if (inFlight) {
     const lbl = labelFor(inFlight.name);
     activity = { verb: lbl.running, detail: lbl.describe?.(inFlight.input) };
   } else if (writingAnswer) {
@@ -483,6 +509,11 @@ function StreamingMessage({
 
   return (
     <div className="space-y-3">
+      {/* Thinking panel — Claude's internal chain-of-thought stream.
+          Auto-expanded during streaming so the user sees Atlas reason
+          in real time. Renders only when thinking is enabled (server-
+          side env var) AND content has arrived. */}
+      {thinking && <ThinkingPanel text={thinking} streaming />}
       {(tools.length > 0 || activity) && (
         <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50/60 dark:border-white/[0.06] dark:bg-white/[0.02]">
           {/* Live activity header */}
@@ -526,6 +557,67 @@ function StreamingMessage({
           <span className="ml-1 inline-block h-3 w-1.5 animate-pulse bg-slate-600 align-middle dark:bg-slate-300" />
         ) : null}
       </div>
+    </div>
+  );
+}
+
+/**
+ * "Gedankengang" panel — surfaces Anthropic Extended Thinking
+ * content. Two modes:
+ *   • streaming=true  → auto-expanded, shows live thinking text
+ *   • streaming=false → collapsed by default with a "Gedankengang
+ *                       anzeigen" toggle. Used in persisted history.
+ *
+ * Why we surface this prominently for legal AI: a lawyer reviewing
+ * a past Atlas answer can re-read the model's reasoning chain and
+ * sanity-check whether the conclusion follows from valid steps.
+ * That's a trust+audit signal that's been missing from the SaaS-
+ * legal-AI category until now.
+ */
+function ThinkingPanel({
+  text,
+  streaming,
+}: {
+  text: string;
+  streaming?: boolean;
+}) {
+  const [open, setOpen] = useState(streaming ?? false);
+  return (
+    <div className="overflow-hidden rounded-xl border border-violet-200 bg-violet-50/60 dark:border-violet-500/15 dark:bg-violet-500/[0.04]">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-violet-100/50 dark:hover:bg-violet-500/[0.08]"
+      >
+        <Brain
+          size={12}
+          className={`shrink-0 text-violet-600 dark:text-violet-300 ${streaming ? "animate-pulse" : ""}`}
+        />
+        <span className="text-[12px] font-medium text-violet-900 dark:text-violet-100">
+          {streaming ? "Denkt nach…" : "Gedankengang"}
+        </span>
+        <span className="ml-auto text-[10.5px] text-violet-700/70 dark:text-violet-300/70">
+          {streaming
+            ? `${text.length} Zeichen`
+            : open
+              ? "ausblenden"
+              : "anzeigen"}
+        </span>
+        <ChevronRight
+          size={11}
+          className={`shrink-0 text-violet-600 transition-transform dark:text-violet-300 ${open ? "rotate-90" : ""}`}
+        />
+      </button>
+      {open && (
+        <div className="border-t border-violet-200 px-3 py-2 dark:border-violet-500/15">
+          <div className="whitespace-pre-wrap text-[12.5px] leading-relaxed text-violet-900/90 dark:text-violet-100/85">
+            {text}
+            {streaming && (
+              <span className="ml-1 inline-block h-2.5 w-1 animate-pulse bg-violet-400 align-middle dark:bg-violet-300" />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
