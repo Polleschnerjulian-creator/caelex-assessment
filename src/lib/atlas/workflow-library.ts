@@ -237,6 +237,188 @@ export const WORKFLOW_LIBRARY: Workflow[] = [
     expectedTools: ["get_recent_norm_changes", "check_article_status"],
     estimatedMinutes: 3,
   },
+
+  /* ── Sprint 9 Vertragsanalyse + Mandat-Briefing Workflows ─────────
+     Diese Workflows bündeln häufige Anwalts-Tasks in vorgefertigte
+     Prompts. Sie nutzen die existing Tool-Chain (summarize_document,
+     find_clauses, compare_documents) ohne neue Server-Code-Pfade. */
+
+  {
+    id: "contract-red-flag-analysis",
+    name: "Vertrag: Red-Flag-Analyse",
+    emoji: "🚩",
+    description:
+      "Lade einen Vertrag hoch. Atlas analysiert klausel-für-klausel auf Risiken (🔴 Kritisch / 🟡 Achtung / 🟢 Standard) mit Counter-Drafting-Vorschlägen.",
+    category: "document",
+    isQuickstart: true,
+    startingPrompt: `Analysiere den angehängten Vertrag systematisch klausel-für-klausel auf Red Flags aus Sicht meines Mandanten. Strukturiere die Antwort so:
+
+**Zusammenfassung** (2-3 Sätze: Gesamtrisiko-Einschätzung)
+
+**🔴 KRITISCH** (Klauseln die meinem Mandanten erheblichen Schaden zufügen können — hier muss verhandelt werden)
+
+Pro Klausel:
+- **Klausel:** [Bezeichnung + ungefährer §/Abschnitt]
+- **Risiko:** [Konkretes Problem]
+- **Counter-Drafting:** [Vorschlag für Verhandlung]
+
+**🟡 ACHTUNG** (Akzeptabel aber ungewöhnlich — sollte Senior-Anwalt sehen)
+
+[gleiche Struktur]
+
+**🟢 STANDARD** (Marktüblich — kein Handlungsbedarf)
+
+[Kurze Liste]
+
+**Fehlende Klauseln** (Standardklauseln die im Vertrag fehlen)
+
+[Liste mit kurzer Begründung]
+
+Berücksichtige BGB, HGB und (falls anwendbar) jurisdiktion-spezifische Regelungen aus den Atlas-Tools.`,
+    expectedTools: [
+      "summarize_document",
+      "find_clauses",
+      "search_legal_sources",
+      "check_article_status",
+    ],
+    estimatedMinutes: 8,
+  },
+  {
+    id: "contract-clause-extraction",
+    name: "Vertrag: Klausel-Extraktion",
+    emoji: "📋",
+    description:
+      "Extrahiert alle Standard-Klauseln eines hochgeladenen Vertrags in strukturierter Tabelle (Force Majeure, Haftung, Termination, Datenschutz, etc.).",
+    category: "document",
+    startingPrompt: `Extrahiere aus dem angehängten Vertrag alle Standard-Klauseln in einer strukturierten Tabelle. Für jede Klausel:
+
+| Klausel-Typ | Wortlaut (Auszug) | Bewertung |
+|---|---|---|
+
+Decke mindestens diese Klausel-Typen ab (falls vorhanden):
+- Vertragsparteien + Vertragsgegenstand
+- Laufzeit / Termination
+- Haftung / Haftungsbeschränkung
+- Force Majeure
+- Datenschutz / DSGVO
+- Vertraulichkeit / NDA
+- Gerichtsstand / Anwendbares Recht
+- Schiedsklausel / Mediation
+- Salvatorische Klausel
+- Änderungsvorbehalt
+
+Markiere fehlende Standard-Klauseln am Ende mit ⚠️.`,
+    expectedTools: ["summarize_document", "find_clauses"],
+    estimatedMinutes: 5,
+  },
+  {
+    id: "mandate-briefing-summary",
+    name: "Mandats-Briefing: Wo stehen wir?",
+    emoji: "📌",
+    description:
+      "Auto-generierte Zusammenfassung des aktuell aktiven Mandats: bisherige Recherche, offene Fragen, nächste Schritte. Perfekt für Re-Einstieg nach Pause oder Mandant-Update.",
+    category: "research",
+    isQuickstart: true,
+    startingPrompt: `Erstelle ein Mandats-Briefing zum aktuell aktiven Mandat. Strukturiere so:
+
+**Sachverhalt** (2-4 Sätze, basierend auf Custom Instructions + bisherigen Chats des Mandats)
+
+**Bisherige Recherche-Ergebnisse**
+[Aufzählung der wichtigsten Erkenntnisse — chronologisch mit Datum]
+
+**Offene Fragen**
+[Was wurde in bisherigen Chats aufgeworfen aber nicht abschließend geklärt?]
+
+**Nächste Schritte (Empfehlung)**
+[Was sollte als nächstes recherchiert oder gedraftet werden? Konkrete Atlas-Workflows vorschlagen.]
+
+**Hochgeladene Dateien**
+[Pro Datei: Name + 1-Satz-Inhaltsangabe]`,
+    expectedTools: ["search_legal_sources", "summarize_document"],
+    estimatedMinutes: 4,
+  },
+  {
+    id: "client-email-draft",
+    name: "Mandanten-Email entwerfen",
+    emoji: "✉️",
+    description:
+      "Wandelt die Antwort eines Chats in eine fertige Mandanten-Email um — höflich, klar strukturiert, Disclaimer am Ende. Direkt copy-paste in den Mail-Client.",
+    category: "drafting",
+    isQuickstart: true,
+    startingPrompt: `Entwirf eine Mandanten-Email mit folgender Struktur:
+
+**An:** [Mandant — Platzhalter [MANDANT_NAME]]
+**Von:** [Anwalt — Platzhalter [ANWALT_NAME]]
+**Betreff:** [Aussagekräftiger Betreff, max 80 Zeichen]
+
+---
+
+Sehr geehrte/r [MANDANT_NAME],
+
+[Einstieg: 1-2 Sätze Kontext-Bezug]
+
+[Hauptteil: die Erkenntnisse strukturiert + verständlich für einen Nicht-Juristen — Bullet-Points wo sinnvoll, Fachbegriffe in Klammern erklärt]
+
+[Empfehlung / nächste Schritte]
+
+[Höflicher Schluss-Satz mit Rückfragenangebot]
+
+Mit freundlichen Grüßen
+[ANWALT_NAME]
+
+---
+
+**Disclaimer:** Diese Email basiert auf einer Atlas-Recherche und ersetzt nicht die abschließende juristische Beurteilung im Einzelfall.
+
+Verwende formelles Sie, aber lesbar für einen kaufmännischen Mandanten ohne Jura-Hintergrund.`,
+    expectedTools: ["search_legal_sources", "check_article_status"],
+    estimatedMinutes: 3,
+  },
+  {
+    id: "client-memo-formal",
+    name: "Internes Memo (formell)",
+    emoji: "📝",
+    description:
+      "Erstellt ein formell strukturiertes Memo zum aktuellen Sachverhalt: Sachverhalt → Rechtsfrage → Würdigung → Ergebnis. Für die Akte oder als Vorlage für ein anwaltliches Gutachten.",
+    category: "drafting",
+    startingPrompt: `Erstelle ein formelles juristisches Memo nach klassischer Struktur:
+
+**MEMO**
+Datum: [heute]
+Bearbeitet: [Anwalt]
+Mandat: [aus aktivem Mandat]
+
+**1. Sachverhalt**
+[Kompakter Sachverhalt — 1 Absatz]
+
+**2. Rechtsfrage**
+[Die zu beantwortende Rechtsfrage — präzise formuliert]
+
+**3. Rechtliche Würdigung**
+
+**3.1 Anwendbares Recht**
+[Welche Normen / Treaties / Verordnungen sind einschlägig?]
+
+**3.2 Subsumtion**
+[Anwendung der Normen auf den Sachverhalt — TBM + Rechtsfolge]
+
+**3.3 Rechtsprechung**
+[Falls vorhanden: relevante Urteile mit Quellen]
+
+**4. Ergebnis**
+[Klare Antwort auf die Rechtsfrage. Max 3-5 Sätze.]
+
+**5. Empfehlung**
+[Konkreter Handlungsvorschlag — was sollte das Mandat als nächstes tun?]
+
+Verwende präzise juristische Sprache. Quellen klar zitieren (Atlas-Pills).`,
+    expectedTools: [
+      "search_legal_sources",
+      "search_cases",
+      "check_article_status",
+    ],
+    estimatedMinutes: 6,
+  },
 ];
 
 export function listWorkflows(opts?: {

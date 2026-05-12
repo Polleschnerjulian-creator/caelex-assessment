@@ -197,6 +197,12 @@ model User {
   ownedAtlasChats          AtlasChat[]          @relation("OwnedAtlasChats")
   /// Atlas-specific audit log entries authored by this user.
   atlasAuditLogs           AtlasAuditLog[]
+  /// Atlas deadlines created by this user.
+  atlasDeadlinesCreated    AtlasMandateDeadline[] @relation("AtlasDeadlineCreators")
+  /// Atlas clause-library entries created by this user.
+  atlasClausesCreated      AtlasClause[]        @relation("AtlasClauseCreators")
+  /// Atlas notes / highlights — private per-user knowledge base.
+  atlasNotes               AtlasNote[]          @relation("AtlasNotes")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3035,6 +3041,7 @@ model Organization {
   // Atlas V2 — Mandate-Projects + Chats per organisation.
   atlasMandates          AtlasMandate[]             @relation("OrgAtlasMandates")
   atlasChats             AtlasChat[]                @relation("OrgAtlasChats")
+  atlasClauses           AtlasClause[]              @relation("OrgAtlasClauses")
   stakeholderEngagements StakeholderEngagement[] // Network: stakeholder engagements
   dataRooms              DataRoom[] // Network: secure data rooms
   attestations           ComplianceAttestation[] // Network: compliance attestations
@@ -11664,9 +11671,11 @@ model AtlasMandate {
   closedAt   DateTime?
 
   // Relations
-  chats   AtlasChat[]
-  files   AtlasMandateFile[]
-  members AtlasMandateMember[]
+  chats     AtlasChat[]
+  files     AtlasMandateFile[]
+  members   AtlasMandateMember[]
+  deadlines AtlasMandateDeadline[]
+  clauses   AtlasClause[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -11868,4 +11877,135 @@ model AtlasAuditLog {
   @@index([organizationId, createdAt])
   @@index([entityType, entityId])
   @@index([action, createdAt])
+}
+
+/// Atlas V2 Mandate-Deadline (Sprint 9, 2026-05-12).
+///
+/// Lawyer-managed deadlines attached to a mandate (Authorisation-
+/// filing due 2026-09-15, response brief due in 14 days, etc).
+/// Surfaced on the MandateDetailView + warned about by the
+/// daily atlas-deadline-reminder cron when within the warn-
+/// window (default 7 days).
+model AtlasMandateDeadline {
+  id String @id @default(cuid())
+
+  mandateId String
+  mandate   AtlasMandate @relation(fields: [mandateId], references: [id], onDelete: Cascade)
+
+  /// Free-form title — "BNetzA-Antrag einreichen", "Reply Brief Hess".
+  title String
+
+  /// Optional longer description.
+  description String?
+
+  /// Hard deadline date — when this thing is due.
+  dueAt DateTime
+
+  /// Warning lead time in days. The reminder cron will email +
+  /// in-app-notify when dueAt is within this window.
+  warnDays Int @default(7)
+
+  /// Status — open or done. We don't surface "missed" because the
+  /// chronology (dueAt vs now) makes it obvious from the UI.
+  status String @default("open") // "open" | "done"
+
+  /// Optional URL — e.g. portal-link for the BNetzA filing.
+  url String?
+
+  createdByUserId String
+  createdBy       User   @relation("AtlasDeadlineCreators", fields: [createdByUserId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([mandateId, dueAt])
+  @@index([status, dueAt])
+}
+
+/// Atlas V2 Clause-Library (Sprint 9, 2026-05-12).
+///
+/// Reusable clause building-blocks tagged by topic + jurisdiction +
+/// risk-level. Per organisation (kanzlei-wide) so partners can curate
+/// the firm's standard catalog once and all associates use it.
+///
+/// Mandate-scoped clauses live in the same table with mandateId set
+/// — useful for tracking matter-specific drafting choices.
+model AtlasClause {
+  id String @id @default(cuid())
+
+  organizationId String
+  organization   Organization @relation("OrgAtlasClauses", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  /// Optional mandate-scope. NULL = firm-wide catalog clause.
+  mandateId String?
+  mandate   AtlasMandate? @relation(fields: [mandateId], references: [id], onDelete: SetNull)
+
+  /// Short display title — "Haftungsbeschränkung 12 Mio EUR".
+  title String
+
+  /// Full clause text (Markdown allowed).
+  body String
+
+  /// Domain tag — drafting / liability / dataprivacy / termination / etc.
+  category String
+
+  /// Jurisdiction code or "INT" — DE / FR / UK / US / EU / INT.
+  jurisdiction String
+
+  /// Risk-level visible in the picker UI.
+  /// "neutral" — standard market clause
+  /// "aggressive" — favours one side strongly
+  /// "defensive" — risk-averse, customer-friendly
+  riskLevel String @default("neutral") // "neutral" | "aggressive" | "defensive"
+
+  /// Free-form tags for additional filtering (eg ["nda", "supplier"]).
+  tags String[]
+
+  /// Soft-delete: archive instead of hard-delete so historical
+  /// drafts referencing this clause still resolve the body.
+  archivedAt DateTime?
+
+  createdByUserId String
+  createdBy       User   @relation("AtlasClauseCreators", fields: [createdByUserId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId, category, jurisdiction])
+  @@index([mandateId])
+  @@index([archivedAt])
+}
+
+/// Atlas V2 Notes (Sprint 9, 2026-05-12).
+///
+/// User-saved excerpts from chat answers — like Kindle-highlights
+/// for legal AI. Per-user (private), filterable by mandate.
+/// Builds the lawyer's personal knowledge base over time.
+model AtlasNote {
+  id String @id @default(cuid())
+
+  userId String
+  user   User @relation("AtlasNotes", fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Optional source-chat the excerpt came from.
+  chatId String?
+
+  /// Optional mandate context (= the chat's mandate at note-time).
+  mandateId String?
+
+  /// The excerpt text itself — what the user highlighted.
+  excerpt String
+
+  /// Optional user-added annotation.
+  note String?
+
+  /// Tags for retrieval.
+  tags String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([userId, chatId])
+  @@index([userId, mandateId])
 }

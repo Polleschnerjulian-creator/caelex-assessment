@@ -1,0 +1,155 @@
+/**
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
+ *
+ * Atlas V2 — Mandate Deadlines API.
+ *
+ *   GET    /api/atlas/mandate/[id]/deadlines      list mandate deadlines
+ *   POST   /api/atlas/mandate/[id]/deadlines      create new deadline
+ *
+ * Auth: mandate membership (owner OR member). Same gate as the
+ * mandate-files / members routes.
+ *
+ * Rate-limit: api tier (cheap reads + occasional writes).
+ *
+ * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
+ */
+
+import { NextResponse, type NextRequest } from "next/server";
+import { z } from "zod";
+import { getAtlasAuth } from "@/lib/atlas-auth";
+import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+async function checkMembership(
+  mandateId: string,
+  userId: string,
+  organizationId: string,
+): Promise<boolean> {
+  const hit = await prisma.atlasMandate.findFirst({
+    where: {
+      id: mandateId,
+      organizationId,
+      OR: [{ ownerUserId: userId }, { members: { some: { userId } } }],
+    },
+    select: { id: true },
+  });
+  return !!hit;
+}
+
+export async function GET(
+  req: NextRequest,
+  ctx: { params: Promise<{ id: string }> },
+) {
+  const atlas = await getAtlasAuth();
+  if (!atlas) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+  const { id: mandateId } = await ctx.params;
+  if (!(await checkMembership(mandateId, atlas.userId, atlas.organizationId))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const rl = await checkRateLimit("api", getIdentifier(req, atlas.userId));
+  if (!rl.success) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  }
+
+  const deadlines = await prisma.atlasMandateDeadline.findMany({
+    where: { mandateId },
+    orderBy: { dueAt: "asc" },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      dueAt: true,
+      warnDays: true,
+      status: true,
+      url: true,
+      createdAt: true,
+      createdBy: { select: { id: true, name: true, email: true } },
+    },
+  });
+
+  return NextResponse.json({ deadlines });
+}
+
+const PostBody = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().max(2000).optional(),
+  dueAt: z.string().datetime(),
+  warnDays: z.number().int().min(0).max(180).default(7),
+  url: z.string().url().max(500).optional(),
+});
+
+export async function POST(
+  req: NextRequest,
+  ctx: { params: Promise<{ id: string }> },
+) {
+  const atlas = await getAtlasAuth();
+  if (!atlas) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+  const { id: mandateId } = await ctx.params;
+  if (!(await checkMembership(mandateId, atlas.userId, atlas.organizationId))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const rl = await checkRateLimit("api", getIdentifier(req, atlas.userId));
+  if (!rl.success) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  }
+
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+  const parsed = PostBody.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Bad request", details: parsed.error.flatten() },
+      { status: 400 },
+    );
+  }
+
+  try {
+    const created = await prisma.atlasMandateDeadline.create({
+      data: {
+        mandateId,
+        title: parsed.data.title,
+        description: parsed.data.description ?? null,
+        dueAt: new Date(parsed.data.dueAt),
+        warnDays: parsed.data.warnDays,
+        url: parsed.data.url ?? null,
+        createdByUserId: atlas.userId,
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        dueAt: true,
+        warnDays: true,
+        status: true,
+        url: true,
+        createdAt: true,
+      },
+    });
+    logger.info("[atlas/deadlines] created", {
+      mandateId,
+      userId: atlas.userId,
+      deadlineId: created.id,
+    });
+    return NextResponse.json({ deadline: created });
+  } catch (err) {
+    logger.error("[atlas/deadlines] create failed", {
+      mandateId,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return NextResponse.json({ error: "Create failed" }, { status: 500 });
+  }
+}

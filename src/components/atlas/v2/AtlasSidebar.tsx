@@ -35,6 +35,7 @@ import {
   Sun,
   Moon,
   Loader2,
+  Library as LibraryIcon,
 } from "lucide-react";
 import type { ChatListItem, MandateListItem } from "./types";
 import { useAtlasTheme } from "@/app/(atlas)/atlas/_components/AtlasThemeProvider";
@@ -356,6 +357,12 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
               label="Workflows"
               icon={<MessageSquare size={12} />}
               active={pathname === "/atlas/workflows"}
+            />
+            <NavLink
+              href="/atlas/clauses"
+              label="Klauseln"
+              icon={<LibraryIcon size={12} />}
+              active={pathname === "/atlas/clauses"}
             />
           </Section>
         </div>

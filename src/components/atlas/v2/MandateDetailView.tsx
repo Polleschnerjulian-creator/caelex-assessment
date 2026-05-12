@@ -36,6 +36,7 @@ import { MandateChatsList } from "./MandateChatsList";
 import { MandateNewChatComposer } from "./MandateNewChatComposer";
 import { MandateFileUpload } from "./MandateFileUpload";
 import { MandateFilesList } from "./MandateFilesList";
+import { MandateDeadlines } from "./MandateDeadlines";
 
 interface Props {
   mandateId: string;
@@ -234,6 +235,15 @@ export function MandateDetailView({ mandateId }: Props) {
               />
             </section>
           </div>
+
+          {/* Deadlines (full-width) — Anwalts-Daily-Driver. */}
+          <section>
+            <SectionTitle>Fristen</SectionTitle>
+            <MandateDeadlines
+              mandateId={mandate.id}
+              disabled={isArchived || isClosed}
+            />
+          </section>
 
           {/* Chats list (full-width) */}
           <section>
