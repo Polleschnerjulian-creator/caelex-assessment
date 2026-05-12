@@ -1,0 +1,14 @@
+{
+  "ranAt": null,
+  "modelMode": "unknown",
+  "totalQueries": 0,
+  "passed": 0,
+  "failed": 0,
+  "hallucinationRate": 0,
+  "avgCitationRecall": 0,
+  "avgToolRecall": 0,
+  "byCategory": {},
+  "results": [],
+  "totalCostUsd": 0,
+  "_note": "Placeholder — run `npm run test:atlas-eval` with the required env vars to populate."
+}

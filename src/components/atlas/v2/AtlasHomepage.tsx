@@ -14,16 +14,26 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChatInput } from "./ChatInput";
 import { QuickstartCards } from "./QuickstartCards";
 
 export function AtlasHomepage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [seedValue, setSeedValue] = useState<string | undefined>();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  /* Sprint 6: pre-fill from URL ?prompt= when arriving from
+     /atlas/workflows. Does NOT auto-submit — gives the user a chance
+     to fill in the bracketed placeholders ([Land] / [fileId] / etc).
+     One-shot via deps to prevent re-seed on re-renders. */
+  useEffect(() => {
+    const fromUrl = searchParams.get("prompt");
+    if (fromUrl) setSeedValue(fromUrl);
+  }, [searchParams]);
 
   const handleSubmit = async (
     text: string,

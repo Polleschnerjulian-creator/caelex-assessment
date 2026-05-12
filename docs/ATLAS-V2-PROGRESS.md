@@ -14,7 +14,7 @@
 | Sprint 3 — Tool inventory + Tool-Trace UI    | ✅ complete | 2026-05-12 | 2026-05-12 |
 | Sprint 4 — Validity Signals + Norm-Drift     | ✅ complete | 2026-05-12 | 2026-05-12 |
 | Sprint 5 — File Upload + Document Tools      | ✅ complete | 2026-05-12 | 2026-05-12 |
-| Sprint 6 — Workflow library + Tabular + Eval | 🔵 pending  | —          | —          |
+| Sprint 6 — Workflow library + Tabular + Eval | ✅ complete | 2026-05-12 | 2026-05-12 |
 
 ## Sprint 1 — Chat-First Foundation
 
@@ -438,9 +438,172 @@ src/components/atlas/v2/MandateDetailView.tsx     # replace files placeholder wi
   function.** Reduces function budget, lets browsers handle resume
   - range-requests natively, gives us R2 access logs for audit.
 
-## NEXT ACTION
+## Sprint 6 — Workflow Library + Tabular Outputs + Eval Bench (complete)
 
-→ **Sprint 6: Workflow Library + Tabular Output + Eval Bench.** Build:
+### Files added
+
+```
+src/lib/atlas/workflow-library.ts                # 12 curated workflows
+src/app/api/atlas/workflows/route.ts             # GET (filter by category)
+src/app/(atlas)/atlas/workflows/page.tsx         # browse page
+src/components/atlas/v2/WorkflowCatalog.tsx      # catalog UI
+src/components/atlas/v2/MarkdownContent.tsx      # tiny markdown subset
+src/app/(atlas)/atlas/settings/eval/page.tsx     # bench results page
+tests/atlas-eval/types.ts                        # GoldenQuery + EvalReport
+tests/atlas-eval/golden-set.ts                   # 25 attorney-graded queries
+tests/atlas-eval/runner.ts                       # manual-run script
+tests/atlas-eval/last-run.json                   # placeholder (overwritten by runner)
+tests/atlas-eval/last-run.md                     # markdown placeholder
+```
+
+### Files modified
+
+```
+src/components/atlas/v2/QuickstartCards.tsx      # uses workflow-library
+src/components/atlas/v2/AtlasHomepage.tsx        # ?prompt= URL handling
+src/components/atlas/v2/AtlasChatView.tsx        # MarkdownContent renderer
+package.json                                     # `npm run test:atlas-eval`
+```
+
+### What landed
+
+**Workflow Library** (12 curated workflows):
+
+- Compliance (5): EU Space Act, NIS2, ITAR/EAR, Spectrum, COPUOS
+- Comparison (2): Multi-Jurisdiction, National Deep-Dive
+- Drafting (3): BNetzA Filing-Pack, Compliance-Memo, ITAR Flow-Down
+- Document (2): Summary, Vertrags-Vergleich
+- Monitoring (1): Norm-Drift Briefing
+- Each: emoji + name + description + startingPrompt + expectedTools + estimatedMinutes + isQuickstart-flag.
+- 6 marked isQuickstart → surface on homepage. 12 total in /atlas/workflows.
+
+**MarkdownContent** (tiny renderer):
+
+- Parses **bold**, _italic_, `code`, [ATLAS:source-id], and **markdown
+  tables** (| col | col |\n|---|---|\n| cell | cell |).
+- Tables render as real HTML <table> with sticky header + zebra rows.
+- Citations render as inline emerald pills.
+- No new dependency — ~200 LOC, pure React.
+- Wired into MessageRow + StreamingMessage so EVERY assistant
+  response gets the upgrade.
+
+**SpaceLaw Bench v0**:
+
+- 25 attorney-graded golden queries across 7 categories: 4 EU Space
+  Act, 4 NIS2, 5 national law (DE/FR/UK/LU/IT), 3 treaty, 3
+  comparison, 3 validity, 3 drafting.
+- Each: query + expectedSources + expectedTools + expectedKeywords
+  - mustNotContain (negative signals).
+- Runner script at `tests/atlas-eval/runner.ts`:
+  1. Loads golden set
+  2. Runs each query through chat-engine.runChat (real SSE stream)
+  3. Computes citationRecall + toolRecall + hallucination detection
+  4. Pass iff: citationRecall ≥ 0.5 AND toolRecall ≥ 0.5 AND no
+     hallucinations AND no negative signals
+  5. Writes JSON + markdown report
+  6. Exits non-zero if pass-rate < 70 % (CI-gate-ready)
+- `npm run test:atlas-eval` script wired.
+- /atlas/settings/eval page renders the latest last-run.json with
+  per-category breakdown + pass-rate + hallucination-rate.
+
+### Acceptance verified
+
+- `npx tsc --noEmit` zero errors.
+- 30 tools registered (14 core + 8 compliance + 3 validity + 5 doc).
+- 12 workflows listed via API + browse-page.
+- MarkdownContent renders tables + bold/italic/code without new dep.
+- Eval-bench infrastructure complete + script-runnable; CI-wiring
+  deferred to Sprint 7+ (needs dedicated test-user + test-org seed).
+
+### Decisions log addition (2026-05-12)
+
+- **No `react-markdown` dep.** Tiny MarkdownContent (~200 LOC) covers
+  the patterns we actually need (tables, bold/italic/code, citations).
+  Saves ~30 KB bundle + avoids a dep we'd need to maintain.
+- **Eval bench = manual-run with documented env vars.** Wiring to CI
+  needs (a) a permanent eval-user + org seed in dev DB, (b) a budget
+  decision (each run = ~$1-2 inference). Both are Sprint 7+ items
+  — for Sprint 6, ship the harness so future iterations have a
+  measurement substrate.
+- **25 queries for v0, not 50.** Smaller set = faster iteration on
+  scoring rules + tighter feedback loop. Scaling to 50+ + external
+  attorney labelling (Reuschlaw / BHO Senior Counsel) is Sprint 7+.
+
+## ✅ ATLAS V2 RELEASE STATUS
+
+All 6 sprints complete. **Atlas V2 is feature-complete** for the
+ChatGPT-style workspace transformation as planned in
+`docs/ATLAS-V2-MASTER-PLAN.md`.
+
+### Tool inventory (30 tools)
+
+| Bundle                | Count | Source file                                |
+| --------------------- | ----- | ------------------------------------------ |
+| Core (Atlas-tools.ts) | 14    | `src/lib/atlas/atlas-tools.ts`             |
+| Compliance            | 8     | `src/lib/atlas/compliance-tools.server.ts` |
+| Validity              | 3     | `src/lib/atlas/validity-tools.server.ts`   |
+| Document              | 5     | `src/lib/atlas/document-tools.server.ts`   |
+
+### Surfaces shipped
+
+| Route                  | Purpose                | Sprint |
+| ---------------------- | ---------------------- | ------ |
+| `/atlas`               | Chat-First homepage    | 1      |
+| `/atlas/chat/[id]`     | Single chat view       | 1      |
+| `/atlas/mandate/new`   | Create-Mandate form    | 1      |
+| `/atlas/mandate/[id]`  | Mandate-Project detail | 2      |
+| `/atlas/workflows`     | Workflow catalog       | 6      |
+| `/atlas/settings/eval` | SpaceLaw Bench results | 6      |
+
+### What's deferred to Atlas V3 (Phase 2 — Q3 2026+)
+
+- Real-time EUR-Lex / national-portal polling for live validity
+- PDF/DOCX/XLSX text extraction (needs `unpdf` dep)
+- OCR for scanned PDFs
+- Per-file vector embeddings + semantic search within mandate
+- Word add-in (Office.js)
+- Outlook add-in
+- Mandate-inbox via Forward-Adresse
+- Atlas-internal drafting (Tiptap, Word-Replacement)
+- Time-tracking + DATEV-Export
+- Mandanten-Portal (read-only client view)
+- iManage / NetDocuments DMS integration
+- ISO 42001 certification
+- Self-Serve SME tier
+- Sovereign EU Cloud (IONOS / T-Systems migration)
+- Multi-step workflow pipelines
+- 50+ golden-query bench + external attorney labelling
+- CI-wiring of eval bench
+- Custom domain-tuned embedding (`voyage-space-atlas`)
+
+### Operator-action checklist before BHO demo
+
+1. `npx prisma db push` against staging — applies V2 schema additions
+   (AtlasMandate, AtlasMandateMember, AtlasMandateFile, AtlasChat,
+   AtlasMessage; all additive, no data loss risk).
+2. `npx prisma db push` against production once staging is verified.
+3. Verify R2 env vars set (R2_ENDPOINT, R2_ACCESS_KEY_ID,
+   R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME) — required for Sprint 5
+   file upload to work.
+4. Verify AI_GATEWAY_API_KEY (preferred) or ANTHROPIC_API_KEY set
+   — required for chat + summarise + classify + compare tools.
+5. Optional: `npm run test:atlas-eval` against staging with
+   ATLAS_EVAL_USER_ID + ATLAS_EVAL_ORG_ID — populates the
+   /atlas/settings/eval page with real numbers.
+6. Demo BHO Legal:
+   - Show chat-first homepage + sidebar
+   - Open a mandate → custom instructions + members + files +
+     mandate-scoped chat
+   - Ask the EU Space Act applicability question →
+     watch tool-trace + read citations panel + click follow-up
+   - Upload a TXT contract + ask Astra to find the liability cap
+   - Browse /atlas/workflows + /atlas/settings/eval
+
+## NEXT (post-V2)
+
+→ **Atlas V3 planning** — open question for the user. Likely Phase 2
+priorities (in deferred-list order): real-time EUR-Lex polling,
+PDF text extraction (unpdf dep), Word add-in, Custom embedding.
 
 1. **Refactor tool-bundles** — split `atlas-tool-executor.ts` into
    `src/lib/atlas/tool-bundles/{korpus,compliance,comparison,drafting,

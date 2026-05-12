@@ -11,6 +11,7 @@
     "start": "next start",
     "lint": "next lint",
     "lint:legal-corpus": "tsx scripts/lint-legal-corpus.ts",
+    "test:atlas-eval": "tsx tests/atlas-eval/runner.ts",
     "security:audit": "npm audit --audit-level=moderate",
     "security:check": "npm audit",
     "security:outdated": "npm outdated",

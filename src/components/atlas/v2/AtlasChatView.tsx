@@ -19,6 +19,7 @@ import { Briefcase, Wrench, AlertCircle, ChevronRight } from "lucide-react";
 import { ChatInput } from "./ChatInput";
 import { SuggestedFollowups } from "./SuggestedFollowups";
 import { CitationsPanel, type CitationRecord } from "./CitationsPanel";
+import { MarkdownContent } from "./MarkdownContent";
 import type { ChatMessageBlock, ChatMessageRecord, ChatRecord } from "./types";
 
 interface Props {
@@ -360,11 +361,9 @@ function MessageRow({ message }: { message: ChatMessageRecord }) {
         <ToolTraceSummary tools={message.toolsUsed} />
       )}
       <div className="prose prose-invert prose-sm max-w-none text-[14px] leading-relaxed">
-        {text.split("\n\n").map((p, i) => (
-          <p key={i} className="mb-3 last:mb-0">
-            {p}
-          </p>
-        ))}
+        {/* Sprint 6: MarkdownContent handles markdown tables (real
+            <table> render) + bold/italic/code/[ATLAS:…] inline marks. */}
+        <MarkdownContent text={text} />
       </div>
       {/* Sprint 4 — Quellen panel with live validity badges. Populated
           by extractCitations() in the chat-engine when persisting the
@@ -407,14 +406,8 @@ function StreamingMessage({
         </div>
       )}
       <div className="prose prose-invert prose-sm max-w-none text-[14px] leading-relaxed">
-        {text.split("\n\n").map((p, i) => (
-          <p key={i} className="mb-3 last:mb-0">
-            {p}
-            {i === text.split("\n\n").length - 1 && (
-              <span className="ml-1 inline-block h-3 w-1.5 animate-pulse bg-emerald-400 align-middle" />
-            )}
-          </p>
-        ))}
+        <MarkdownContent text={text} />
+        <span className="ml-1 inline-block h-3 w-1.5 animate-pulse bg-emerald-400 align-middle" />
       </div>
     </div>
   );
