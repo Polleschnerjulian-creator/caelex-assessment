@@ -63,15 +63,13 @@ export function AtlasLogo({
  * it into custom layouts (e.g. a centred splash on a loading screen)
  * without inheriting the wordmark + flex container.
  *
- * `size` is the HEIGHT in CSS px. Width is auto-computed at 3 ×
- * height to match the reference image's natural aspect ratio. The
- * full 32-bar WATERMARK_SEQUENCE renders — at small sizes the
- * hairlines become sub-pixel and the browser anti-aliases them into
- * crisp 1-device-pixel lines.
+ * `size` is the HEIGHT in CSS px. Width is auto-computed at the
+ * WavePattern's natural 839:388 ≈ 2.16:1 aspect (via
+ * preserveAspectRatio="xMidYMid meet" inside the SVG).
  *
  * Don't try to render this in a square — the pattern's identity is
  * its horizontal sequence. Layouts using AtlasMark must allow the
- * mark to take ~3 × its height in width.
+ * mark to take ~2.16 × its height in width.
  */
 export function AtlasMark({
   size = 18,
@@ -80,13 +78,5 @@ export function AtlasMark({
   size?: number;
   className?: string;
 }) {
-  return (
-    <WavePattern
-      width={size * 3}
-      height={size}
-      density={32}
-      opacity={1}
-      className={className}
-    />
-  );
+  return <WavePattern width={size * 2.16} opacity={1} className={className} />;
 }

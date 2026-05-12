@@ -148,17 +148,18 @@ export function AtlasHomepage() {
     <div className="relative flex h-full flex-col items-center justify-center px-6">
       {/* Brand watermark — the wave-pattern at 6 % opacity, centred
           BEHIND the hero stack. Same visual family as the sidebar
-          AtlasMark, scaled up. Pointer-events: none + aria-hidden
-          via the WavePattern component itself, so it stays purely
-          decorative. Sized at ~85 % of the hero width with a
-          shorter aspect than its natural 3.33:1 so it reads as a
-          horizontal stripe behind the headline, not as a tall
-          slab. */}
+          AtlasMark. Pointer-events: none + aria-hidden are baked
+          into the WavePattern component itself.
+
+          Width 480 px, natural 2.16:1 aspect → height ≈ 222 px.
+          That's slightly taller than the hero stack (h1 + composer
+          ≈ 140 px), so the watermark wraps around the hero as a
+          subtle envelope — institutional document feel. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-1/2 z-0 w-[600px] max-w-[85%] -translate-x-1/2 -translate-y-1/2 text-slate-900 dark:text-slate-100"
+        className="pointer-events-none absolute left-1/2 top-1/2 z-0 w-[480px] max-w-[85%] -translate-x-1/2 -translate-y-1/2 text-slate-900 dark:text-slate-100"
       >
-        <WavePattern width={600} height={140} opacity={0.06} density={32} />
+        <WavePattern width={480} opacity={0.06} />
       </div>
 
       {/* Hero content stack — sits ABOVE the watermark via z-10. */}
