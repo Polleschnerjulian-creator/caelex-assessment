@@ -30,11 +30,16 @@ import {
   Sparkles,
   ChevronRight,
   Cpu,
+  Briefcase,
+  FolderInput,
+  CalendarPlus,
+  Check,
 } from "lucide-react";
 import { MarkdownContent } from "@/components/atlas/v2/MarkdownContent";
 import { AtlasMark } from "@/components/atlas/v2/AtlasLogo";
 import { labelFor } from "@/lib/atlas/tool-labels";
 import { exportDraftAsWord } from "@/lib/atlas/draft-export";
+import type { MandateListItem } from "@/components/atlas/v2/types";
 
 interface StepRecord {
   iteration: number;
@@ -62,14 +67,75 @@ const SUGGESTED_GOALS = [
   "Drafte einen Widerspruch gegen einen ablehnenden BNetzA-Bescheid mit Citations + Anhörungsrüge-Begründung",
 ];
 
+/* Heuristic deadline-detection regex. Matches:
+   - "(bis|spätestens|fällig am|Frist) DD.MM.YYYY"
+   - "(deadline|by) DD.MM.YYYY"
+   - "DD.MM.YYYY" near "Frist|Deadline" keywords
+   German date format only — international formats would need a
+   bigger parser. Each match has a leading keyword + a parseable
+   DD.MM.YYYY date. Captures the keyword in [1] for label + date
+   in [2-4]. */
+const DEADLINE_REGEX =
+  /(bis spätestens|spätestens|bis zum|bis|fällig am|Frist:?|Deadline:?|Stichtag:?)\s*(\d{1,2})\.(\d{1,2})\.(\d{4})/gi;
+
+interface DetectedDeadline {
+  raw: string;
+  isoDate: string;
+  context: string;
+}
+
+function detectDeadlines(text: string): DetectedDeadline[] {
+  const found: DetectedDeadline[] = [];
+  const seen = new Set<string>();
+  for (const m of text.matchAll(DEADLINE_REGEX)) {
+    const day = m[2].padStart(2, "0");
+    const month = m[3].padStart(2, "0");
+    const year = m[4];
+    const isoDate = `${year}-${month}-${day}`;
+    /* Dedupe by ISO date — multiple references to the same date
+       in the report shouldn't produce duplicate calendar entries. */
+    if (seen.has(isoDate)) continue;
+    seen.add(isoDate);
+    /* Grab ~80 chars of context around the match for the calendar
+       entry title. */
+    const start = Math.max(0, (m.index ?? 0) - 40);
+    const end = Math.min(text.length, (m.index ?? 0) + 80);
+    const context = text.slice(start, end).replace(/\s+/g, " ").trim();
+    found.push({ raw: m[0], isoDate, context });
+  }
+  return found;
+}
+
 export default function AgentPage() {
   const [goal, setGoal] = useState("");
+  const [mandateId, setMandateId] = useState<string>("");
+  const [mandates, setMandates] = useState<MandateListItem[]>([]);
   const [running, setRunning] = useState(false);
   const [steps, setSteps] = useState<StepRecord[]>([]);
   const [finalText, setFinalText] = useState("");
   const [usage, setUsage] = useState<UsageStats | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /* Post-run action states — track which post-run actions have been
+     triggered already so we can disable the buttons + show a Check. */
+  const [savedToVault, setSavedToVault] = useState(false);
+  const [savedDeadlines, setSavedDeadlines] = useState<Set<string>>(new Set());
   const transcriptRef = useRef<HTMLDivElement>(null);
+
+  /* Fetch mandate list on mount so the Mandate-Picker is populated.
+     Re-fetches when the page mounts; mandate-creation is a separate
+     flow that requires page-reload anyway. */
+  useEffect(() => {
+    void (async () => {
+      try {
+        const res = await fetch("/api/atlas/mandate", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = (await res.json()) as { mandates: MandateListItem[] };
+        setMandates(data.mandates ?? []);
+      } catch {
+        /* Mandates are optional — page works without them. */
+      }
+    })();
+  }, []);
 
   /* Auto-scroll on new content. */
   useEffect(() => {
@@ -84,11 +150,16 @@ export default function AgentPage() {
     setFinalText("");
     setUsage(null);
     setError(null);
+    setSavedToVault(false);
+    setSavedDeadlines(new Set());
     try {
       const res = await fetch("/api/atlas/agent", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ goal: goal.trim() }),
+        body: JSON.stringify({
+          goal: goal.trim(),
+          mandateId: mandateId || undefined,
+        }),
       });
       if (!res.ok || !res.body) {
         const body = await res.json().catch(() => ({}));
@@ -167,6 +238,68 @@ export default function AgentPage() {
     setUsage(null);
     setError(null);
     setGoal("");
+    setSavedToVault(false);
+    setSavedDeadlines(new Set());
+    /* Keep mandateId selection — user often runs multiple agents
+       on the same mandate, no reason to make them re-pick. */
+  };
+
+  /* Save the agent's final artifact as a Markdown file in the
+     selected mandate's vault. Uses the existing multipart-upload
+     flow at /api/atlas/mandate/[id]/files. */
+  const saveToVault = async () => {
+    if (!mandateId || !finalText.trim() || savedToVault) return;
+    const title =
+      goal
+        .split(/[.!?\n]/)[0]
+        ?.trim()
+        .slice(0, 80) || "Atlas Agent-Ergebnis";
+    const filename = `${title.replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, "").trim()}.md`;
+    const blob = new Blob([finalText], { type: "text/markdown" });
+    const file = new File([blob], filename, { type: "text/markdown" });
+    const form = new FormData();
+    form.append("file", file);
+    try {
+      const res = await fetch(`/api/atlas/mandate/${mandateId}/files`, {
+        method: "POST",
+        body: form,
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setError(body.error || `Speichern fehlgeschlagen (${res.status})`);
+        return;
+      }
+      setSavedToVault(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  };
+
+  /* Create a mandate-deadline from a detected date. The agent often
+     mentions deadlines in its output (e.g. "Registrierungsfrist bis
+     17.04.2025"); we surface them with a one-click "trag in Mandat-
+     Kalender ein" action so the lawyer doesn't have to re-type. */
+  const saveDeadline = async (d: DetectedDeadline) => {
+    if (!mandateId || savedDeadlines.has(d.isoDate)) return;
+    try {
+      const res = await fetch(`/api/atlas/mandate/${mandateId}/deadlines`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          title: d.context.slice(0, 200),
+          dueAt: new Date(d.isoDate + "T23:59:59").toISOString(),
+          kind: "agent_detected",
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setError(body.error || `Frist konnte nicht angelegt werden`);
+        return;
+      }
+      setSavedDeadlines((prev) => new Set(prev).add(d.isoDate));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
   };
 
   const downloadDoc = () => {
@@ -208,6 +341,32 @@ export default function AgentPage() {
       {/* Goal input (hidden once we're running / done) */}
       {!hasResults && !running && (
         <div className="space-y-4">
+          {/* Mandate-Picker — optional. When selected, Atlas runs the
+              agent WITH the mandate's full context (jurisdiction,
+              operator-type, custom-instructions, etc.) injected into
+              its system prompt. Empty = "general" agent run. */}
+          {mandates.length > 0 && (
+            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-white/[0.08] dark:bg-white/[0.02]">
+              <Briefcase size={14} className="shrink-0 text-slate-500" />
+              <label className="text-[12px] text-slate-500">
+                Mandat-Kontext:
+              </label>
+              <select
+                value={mandateId}
+                onChange={(e) => setMandateId(e.target.value)}
+                className="flex-1 bg-transparent text-[12.5px] text-slate-900 outline-none dark:text-slate-100"
+              >
+                <option value="">Kein Mandat — generischer Agent-Run</option>
+                {mandates.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                    {m.clientName ? ` — ${m.clientName}` : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="rounded-2xl border border-slate-200 bg-white p-1 dark:border-white/[0.08] dark:bg-[#1a1a1a]">
             <textarea
               value={goal}
@@ -293,20 +452,46 @@ export default function AgentPage() {
           {/* Final artifact */}
           {finalText && (
             <div className="rounded-lg border border-slate-200 bg-white p-5 dark:border-white/[0.08] dark:bg-white/[0.02]">
-              <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-white/[0.05]">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-white/[0.05]">
                 <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                   <CheckCircle2 size={11} />
                   {running ? "Atlas schreibt Ergebnis…" : "Ergebnis"}
                 </div>
                 {!running && (
-                  <button
-                    type="button"
-                    onClick={downloadDoc}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-2 py-1 text-[11px] text-slate-600 transition-colors hover:bg-slate-50 dark:border-white/[0.10] dark:text-slate-400 dark:hover:bg-white/[0.05]"
-                  >
-                    <FileText size={11} />
-                    .doc Export
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={downloadDoc}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-2 py-1 text-[11px] text-slate-600 transition-colors hover:bg-slate-50 dark:border-white/[0.10] dark:text-slate-400 dark:hover:bg-white/[0.05]"
+                    >
+                      <FileText size={11} />
+                      .doc Export
+                    </button>
+                    {mandateId && (
+                      <button
+                        type="button"
+                        onClick={saveToVault}
+                        disabled={savedToVault}
+                        className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] transition-colors disabled:opacity-100 ${
+                          savedToVault
+                            ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+                            : "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-white/[0.10] dark:text-slate-400 dark:hover:bg-white/[0.05]"
+                        }`}
+                      >
+                        {savedToVault ? (
+                          <>
+                            <Check size={11} />
+                            Im Mandat-Vault
+                          </>
+                        ) : (
+                          <>
+                            <FolderInput size={11} />
+                            In Mandat-Vault
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
               <div className="prose prose-sm max-w-none text-[13.5px] leading-relaxed text-slate-800 dark:prose-invert dark:text-slate-200">
@@ -315,6 +500,61 @@ export default function AgentPage() {
                   <span className="ml-1 inline-block h-3 w-1 animate-pulse bg-slate-500 align-middle dark:bg-slate-300" />
                 )}
               </div>
+
+              {/* Auto-detected deadlines — only shown when (a) run is
+                  done, (b) a mandate is selected, (c) any deadline was
+                  found. Each row is a 1-click "add to mandate calendar". */}
+              {!running &&
+                mandateId &&
+                (() => {
+                  const deadlines = detectDeadlines(finalText);
+                  if (deadlines.length === 0) return null;
+                  return (
+                    <div className="mt-4 border-t border-slate-100 pt-3 dark:border-white/[0.05]">
+                      <div className="mb-2 flex items-center gap-1.5 text-[10.5px] uppercase tracking-wider text-slate-500">
+                        <CalendarPlus size={10} />
+                        Erkannte Fristen ({deadlines.length})
+                      </div>
+                      <div className="space-y-1.5">
+                        {deadlines.map((d) => {
+                          const saved = savedDeadlines.has(d.isoDate);
+                          return (
+                            <div
+                              key={d.isoDate}
+                              className="flex items-center gap-2 rounded-md bg-slate-50 px-2.5 py-1.5 text-[11.5px] dark:bg-white/[0.02]"
+                            >
+                              <span className="shrink-0 font-mono tabular-nums text-slate-700 dark:text-slate-300">
+                                {d.isoDate}
+                              </span>
+                              <span className="line-clamp-1 flex-1 text-slate-500">
+                                …{d.context}…
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => saveDeadline(d)}
+                                disabled={saved}
+                                className={`shrink-0 rounded-md border px-2 py-0.5 text-[10.5px] transition-colors ${
+                                  saved
+                                    ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+                                    : "border-slate-200 text-slate-600 hover:bg-white dark:border-white/[0.10] dark:text-slate-400 dark:hover:bg-white/[0.05]"
+                                }`}
+                              >
+                                {saved ? (
+                                  <span className="inline-flex items-center gap-1">
+                                    <Check size={9} />
+                                    in Kalender
+                                  </span>
+                                ) : (
+                                  "→ Kalender"
+                                )}
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
             </div>
           )}
 
