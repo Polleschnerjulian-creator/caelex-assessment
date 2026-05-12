@@ -170,9 +170,13 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
           onClick={() => router.push("/atlas")}
           title="Atlas — zur Startseite"
           aria-label="Atlas"
-          className="flex h-7 items-center justify-center rounded-md px-1.5 text-slate-900 transition-colors hover:bg-black/[0.04] dark:text-slate-100 dark:hover:bg-white/[0.05]"
+          className="flex h-9 items-center justify-center rounded-md px-1 text-slate-900 transition-colors hover:bg-black/[0.04] dark:text-slate-100 dark:hover:bg-white/[0.05]"
         >
-          <AtlasMark size={10} />
+          {/* size=14 → ~42 px wide. Rail is 48 px (w-12); px-1 gives
+              40 px effective width → small clipping is acceptable for
+              the brand-feel-over-pixel-perfection trade-off. If we
+              need real space-only, drop to size=12 or widen the rail. */}
+          <AtlasMark size={14} />
         </button>
         <button
           type="button"
@@ -225,12 +229,12 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
             type="button"
             onClick={() => router.push("/atlas")}
             title="Atlas — zur Startseite"
-            className="flex h-8 items-center gap-2 rounded-md px-1.5 text-slate-900 transition-colors hover:bg-black/[0.04] dark:text-slate-100 dark:hover:bg-white/[0.05]"
+            className="flex h-9 items-center gap-2 rounded-md px-1.5 text-slate-900 transition-colors hover:bg-black/[0.04] dark:text-slate-100 dark:hover:bg-white/[0.05]"
           >
-            {/* size=14 height → ~42 px wide mark. With 8 px gap +
-                Atlas-wordmark (~38 px), total ~88 px. Fits 260 px
-                sidebar with the collapse-toggle still visible right. */}
-            <AtlasLogo size={14} withWordmark />
+            {/* size=20 height → ~60 px wide mark. With 8 px gap +
+                Atlas-wordmark (~42 px), total ~110 px. Fits 260 px
+                sidebar comfortably with the collapse-toggle right. */}
+            <AtlasLogo size={20} withWordmark />
           </button>
           <button
             type="button"
