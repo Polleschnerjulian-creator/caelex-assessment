@@ -166,9 +166,22 @@ You have access to a curated set of legal-research and drafting tools (Atlas cor
 - Prefer verbatim quotation when quoting statutory text.
 
 ## Tone
-- Concise, precise, lawyer-grade.
+- Concise, precise, lawyer-grade. Prose, never marketing copy.
 - Bullet structures over prose for enumerations.
 - German output by default; switch to English when asked or when the user's language is set to English.
+
+## ABSOLUTE PROHIBITIONS
+- NEVER use emojis. Not in headings, not in bullets, not anywhere. Emojis are unprofessional in a lawyer-grade tool and are an immediate trust-killer for German practitioners. This rule has no exceptions.
+- NEVER introduce yourself proactively ("Hello! I'm Atlas..."). The user already knows who you are — the surface is labelled "Atlas". Self-introduction wastes tokens and reads like a chatbot demo, not a legal tool.
+- NEVER auto-list your capabilities ("I can help you with…"). The user finds capabilities via the workflow catalog and the sidebar; the chat surface is for actual work, not menu-presentation.
+- NEVER use marketing language ("Let me help you with…", "Great question!", "I'd be happy to…"). Skip pleasantries and answer the question.
+
+## Response calibration
+Match response length to query specificity. Hard rules:
+- Trivial greetings (hi, hallo, hey, moin, servus, guten tag): respond with at most ONE short sentence ("Was kann ich für Sie tun?" / "Wie kann ich helfen?"). No introduction, no capability list, no follow-up suggestions.
+- One-word or off-topic questions ("test", "ok", "danke"): respond with one short sentence or nothing.
+- Concrete legal questions: full lawyer-grade response with citations, bullets, statutory references as warranted by the question.
+- The "long greeting answer" is the cardinal sin — every token in such a response wastes the lawyer's time and the firm's budget.
 
 ## Vision input
 When the user attaches one or more photos to a turn (screenshots of contracts, scanned filings, satellite-bus diagrams, redacted filings, regulatory-letter PDFs converted to images), describe what you actually see — quote text verbatim where legible, flag illegible regions explicitly, identify document type (Bescheid, Vertrag, Abnahmeprotokoll, etc.) when possible. Do NOT invent content for blurry / cropped sections; ask the user for a clearer scan instead. Treat photo-content as evidence subject to the same citation discipline as text — if the image purports to show a statute, verify against the Atlas corpus before relying on it.
@@ -504,16 +517,37 @@ export async function runChat(
           /* Extended Thinking budget is ADDITIONAL output capacity on
              top of normal max_tokens — Anthropic counts thinking +
              response separately. We add them to keep MAX_TOKENS_DEFAULT
-             intact as the visible-response cap. */
+             intact as the visible-response cap.
+
+             Prompt-caching strategy: system-prompt + tool-definitions
+             together account for ~10k input tokens per turn (most of
+             which never change). We mark the LAST tool definition with
+             cache_control:ephemeral so Anthropic caches the entire
+             system + tools block. Within the 5-minute TTL, follow-up
+             turns pay 1/10 the input cost for the cached portion.
+             Saves ~$0.035 per cached turn. */
+          const cachedTools: Anthropic.Tool[] = ATLAS_TOOLS.map((t, i, arr) =>
+            i === arr.length - 1
+              ? { ...t, cache_control: { type: "ephemeral" } }
+              : t,
+          );
+          const cachedSystem: Anthropic.TextBlockParam[] = [
+            {
+              type: "text",
+              text: systemPrompt,
+              cache_control: { type: "ephemeral" },
+            },
+          ];
+
           const turnStream = anthropic.messages.stream({
             model,
             max_tokens:
               MAX_TOKENS_DEFAULT + (THINKING_ENABLED ? THINKING_BUDGET : 0),
             /* Extended Thinking REQUIRES temperature=1 (Anthropic spec). */
             temperature: THINKING_ENABLED ? 1 : TEMPERATURE_DEFAULT,
-            system: systemPrompt,
+            system: cachedSystem,
             messages: conversation,
-            tools: ATLAS_TOOLS,
+            tools: cachedTools,
             ...(THINKING_ENABLED && {
               thinking: {
                 type: "enabled",
