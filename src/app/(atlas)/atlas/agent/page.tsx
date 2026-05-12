@@ -37,6 +37,8 @@ import {
   Paperclip,
   X,
   Brain,
+  ShieldCheck,
+  ShieldAlert,
 } from "lucide-react";
 import { MarkdownContent } from "@/components/atlas/v2/MarkdownContent";
 import { AtlasMark } from "@/components/atlas/v2/AtlasLogo";
@@ -64,6 +66,38 @@ interface UsageStats {
   inputTokens: number;
   outputTokens: number;
   costUsd: number;
+}
+
+/** Per-citation verification record from the server-side
+ *  citation-extractor. Same shape as ExtractedCitation but with
+ *  optional `index` + `occurrences` for inline rendering. */
+interface VerificationCitation {
+  sourceId: string;
+  citation: string;
+  badge:
+    | "in_force"
+    | "needs_review"
+    | "pending"
+    | "amended"
+    | "repealed"
+    | "unknown";
+  title: string | null;
+  status: string | null;
+  lastVerified: string | null;
+  staleDays: number | null;
+  amendedBy: string[] | null;
+  supersededBy: string | null;
+  sourceUrl: string | null;
+  index: number;
+  occurrences: number;
+}
+
+interface VerificationResult {
+  total: number;
+  verified: number;
+  warnings: number;
+  hallucinated: number;
+  citations: VerificationCitation[];
 }
 
 const SUGGESTED_GOALS = [
@@ -184,6 +218,13 @@ export default function AgentPage() {
      step-cards as a "Warum?"-expandable. */
   const [reasoning, setReasoning] = useState<Map<number, string>>(new Map());
   const [finalText, setFinalText] = useState("");
+  /* Citation-Verification result — emitted by the server after the
+     run completes. Null until the verification event lands; if the
+     run had no citations at all, stays null and the UI doesn't
+     render a verification card. */
+  const [verification, setVerification] = useState<VerificationResult | null>(
+    null,
+  );
   const [usage, setUsage] = useState<UsageStats | null>(null);
   const [error, setError] = useState<string | null>(null);
   /* Post-run action states — track which post-run actions have been
@@ -293,6 +334,7 @@ export default function AgentPage() {
     setSteps([]);
     setReasoning(new Map());
     setFinalText("");
+    setVerification(null);
     setUsage(null);
     setError(null);
     setSavedToVault(false);
@@ -385,6 +427,15 @@ export default function AgentPage() {
                   ),
                 );
                 break;
+              case "verification":
+                setVerification({
+                  total: evt.total as number,
+                  verified: evt.verified as number,
+                  warnings: evt.warnings as number,
+                  hallucinated: evt.hallucinated as number,
+                  citations: (evt.citations as VerificationCitation[]) ?? [],
+                });
+                break;
               case "run_done":
                 setUsage(evt.usage as UsageStats);
                 break;
@@ -408,6 +459,7 @@ export default function AgentPage() {
     setSteps([]);
     setReasoning(new Map());
     setFinalText("");
+    setVerification(null);
     setUsage(null);
     setError(null);
     setGoal("");
@@ -727,6 +779,13 @@ export default function AgentPage() {
             });
           })()}
 
+          {/* Citation-Verification banner — rendered prominently
+              above the artifacts. Atlas may have hallucinated source-
+              ids; this is the trust-layer that surfaces them. */}
+          {verification && verification.total > 0 && (
+            <VerificationBanner verification={verification} />
+          )}
+
           {/* Final artifacts — Atlas in agent-mode now produces
               MULTIPLE structured artifacts per run (memo, schriftsatz,
               email, checklist, summary). We parse the fenced markers
@@ -925,6 +984,150 @@ function StepCard({ step }: { step: StepRecord }) {
 
 /* exportDraftAsWord handles its own blob + anchor click — no local
    download helper needed here. */
+
+/* ── VerificationBanner ───────────────────────────────────────────────
+ *
+ * Trust-layer card that surfaces citation-verification results after
+ * each agent run. Three buckets:
+ *   - verified:     badge === "in_force" — corpus has this source AND
+ *                   it's current (no amendments / no staleness)
+ *   - warnings:     badge in {needs_review, pending, amended, repealed}
+ *                   — source EXISTS but the lawyer should double-check
+ *   - hallucinated: badge === "unknown" — model invented a source-id
+ *                   that doesn't exist in our corpus. RED FLAG.
+ *
+ * Banner top-line: emerald when 100% verified, amber when warnings
+ * but no hallucinations, RED when ANY hallucinations.
+ *
+ * Expandable detail-list shows every citation with its individual
+ * badge so the lawyer can immediately spot which claim to verify
+ * manually.
+ */
+function VerificationBanner({
+  verification,
+}: {
+  verification: VerificationResult;
+}) {
+  const [open, setOpen] = useState(verification.hallucinated > 0);
+  const hasHallucinations = verification.hallucinated > 0;
+  const hasWarnings = verification.warnings > 0;
+  const allGood = !hasHallucinations && !hasWarnings;
+
+  const tone = hasHallucinations
+    ? {
+        border: "border-red-300 dark:border-red-500/30",
+        bg: "bg-red-50 dark:bg-red-500/10",
+        text: "text-red-700 dark:text-red-300",
+        icon: <ShieldAlert size={13} />,
+        label: "Hallucination erkannt",
+      }
+    : hasWarnings
+      ? {
+          border: "border-amber-300 dark:border-amber-500/30",
+          bg: "bg-amber-50 dark:bg-amber-500/10",
+          text: "text-amber-700 dark:text-amber-300",
+          icon: <ShieldAlert size={13} />,
+          label: "Citations mit Vorbehalt",
+        }
+      : {
+          border: "border-emerald-300 dark:border-emerald-500/30",
+          bg: "bg-emerald-50 dark:bg-emerald-500/10",
+          text: "text-emerald-700 dark:text-emerald-300",
+          icon: <ShieldCheck size={13} />,
+          label: "Alle Citations verifiziert",
+        };
+
+  return (
+    <div className={`rounded-lg border ${tone.border} ${tone.bg}`}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-black/[0.02] dark:hover:bg-white/[0.02]"
+      >
+        <span className={`shrink-0 ${tone.text}`}>{tone.icon}</span>
+        <span className={`text-[12px] font-medium ${tone.text}`}>
+          {tone.label}
+        </span>
+        <span className="ml-auto text-[11px] text-slate-500">
+          {verification.verified}/{verification.total} verified
+          {hasWarnings && ` · ${verification.warnings} warnings`}
+          {hasHallucinations && ` · ${verification.hallucinated} hallucinated`}
+        </span>
+        <ChevronRight
+          size={11}
+          className={`shrink-0 text-slate-500 transition-transform ${
+            open ? "rotate-90" : ""
+          }`}
+        />
+      </button>
+      {open && (
+        <div className="space-y-1 border-t border-current/10 px-3 py-2">
+          {verification.citations.map((c) => {
+            const badgeTone =
+              c.badge === "in_force"
+                ? "text-emerald-700 dark:text-emerald-300"
+                : c.badge === "unknown"
+                  ? "text-red-700 dark:text-red-300"
+                  : "text-amber-700 dark:text-amber-300";
+            const badgeLabel =
+              c.badge === "in_force"
+                ? "✓ verified"
+                : c.badge === "unknown"
+                  ? "✗ NICHT im Korpus"
+                  : c.badge === "needs_review"
+                    ? "veraltet"
+                    : c.badge === "pending"
+                      ? "draft"
+                      : c.badge === "amended"
+                        ? "geändert"
+                        : c.badge === "repealed"
+                          ? "aufgehoben"
+                          : "?";
+            return (
+              <div
+                key={`${c.sourceId}-${c.index}`}
+                className="flex items-baseline gap-2 text-[11.5px]"
+              >
+                <span className="shrink-0 tabular-nums text-slate-400">
+                  {c.index}.
+                </span>
+                <span className="font-mono text-[10.5px] text-slate-700 dark:text-slate-300">
+                  {c.citation}
+                </span>
+                {c.title && (
+                  <span className="line-clamp-1 flex-1 text-slate-500">
+                    · {c.title}
+                  </span>
+                )}
+                <span className={`shrink-0 tabular-nums ${badgeTone}`}>
+                  {badgeLabel}
+                </span>
+                {c.occurrences > 1 && (
+                  <span className="shrink-0 text-[10px] text-slate-400">
+                    {c.occurrences}×
+                  </span>
+                )}
+              </div>
+            );
+          })}
+          {allGood && (
+            <div className="mt-1 text-[10.5px] text-slate-500">
+              Alle {verification.total} Citation-Token wurden gegen den
+              Atlas-Korpus geprüft und sind in geltender Fassung.
+            </div>
+          )}
+          {hasHallucinations && (
+            <div className="mt-1 text-[10.5px] text-red-700 dark:text-red-300">
+              ACHTUNG: {verification.hallucinated} Citation-Token verweisen auf
+              Source-IDs, die NICHT im Atlas-Korpus existieren — Atlas hat hier
+              möglicherweise halluziniert. Bitte vor Versand manuell prüfen.
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 /* ── ArtifactCard ─────────────────────────────────────────────────────
  *

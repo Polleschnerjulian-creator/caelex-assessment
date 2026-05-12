@@ -30,6 +30,7 @@ import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { buildAnthropicClient } from "@/lib/atlas/anthropic-client";
 import { ATLAS_TOOLS, isAtlasToolName } from "@/lib/atlas/atlas-tools";
 import { executeAtlasTool } from "@/lib/atlas/atlas-tool-executor";
+import { extractCitations } from "@/lib/atlas/citation-extractor.server";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 
@@ -253,6 +254,12 @@ export async function POST(req: NextRequest) {
       let totalInputTokens = 0;
       let totalOutputTokens = 0;
       const toolsUsed: string[] = [];
+      /* Server-side text buffer accumulates every text-delta the
+         model emits across all iterations. Used at run-end for
+         citation extraction + hallucination detection (Sprint E).
+         The client's textBuffer is reset between iterations in
+         some flows, so we keep the canonical version here. */
+      let textBuffer = "";
 
       try {
         let iter = 0;
@@ -294,6 +301,7 @@ export async function POST(req: NextRequest) {
           });
 
           turnStream.on("text", (delta) => {
+            textBuffer += delta;
             send({ type: "text", delta, iteration: iter });
           });
 
@@ -388,6 +396,48 @@ export async function POST(req: NextRequest) {
           conversation.push({
             role: "user",
             content: toolResults,
+          });
+        }
+
+        /* Sprint E — Citation-Verification / Hallucination-Guard.
+           Run extractCitations() over the full accumulated text-
+           buffer. Every [ATLAS:source-id] is resolved against the
+           corpus + decorated with a validity badge. Citations that
+           don't resolve (= the model hallucinated a source-id that
+           doesn't exist in our corpus) come back with
+           badge === "unknown" — those are the red flags the lawyer
+           needs to see. The UI renders this as a top-banner
+           "Citations geprüft (X verified · Y warnings · Z
+           hallucinations)" card. */
+        const citations = extractCitations(textBuffer);
+        if (citations.length > 0) {
+          const verified = citations.filter(
+            (c) => c.badge === "in_force",
+          ).length;
+          const hallucinated = citations.filter(
+            (c) => c.badge === "unknown",
+          ).length;
+          const warnings = citations.length - verified - hallucinated;
+          send({
+            type: "verification",
+            total: citations.length,
+            verified,
+            warnings,
+            hallucinated,
+            citations: citations.map((c) => ({
+              sourceId: c.sourceId,
+              citation: c.citation,
+              badge: c.badge,
+              title: c.title,
+              status: c.status,
+              lastVerified: c.lastVerified,
+              staleDays: c.staleDays,
+              amendedBy: c.amendedBy,
+              supersededBy: c.supersededBy,
+              sourceUrl: c.sourceUrl,
+              index: c.index,
+              occurrences: c.occurrences,
+            })),
           });
         }
 
