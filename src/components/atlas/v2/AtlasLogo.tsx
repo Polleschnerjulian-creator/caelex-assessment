@@ -33,14 +33,14 @@ interface Props {
 }
 
 export function AtlasLogo({
-  size = 20,
+  size = 18,
   className,
   withWordmark = false,
   wordmark = "Atlas",
 }: Props) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 ${className ?? ""}`}
+      className={`inline-flex items-center gap-2 ${className ?? ""}`}
       aria-label={withWordmark ? wordmark : "Atlas"}
     >
       <AtlasMark size={size} />
@@ -63,14 +63,18 @@ export function AtlasLogo({
  * it into custom layouts (e.g. a centred splash on a loading screen)
  * without inheriting the wordmark + flex container.
  *
- * Renders the wave-pattern at icon scale: 7 bars in a horizontal
- * strip, ~1.6:1 aspect ratio. The strip is letterboxed vertically
- * inside the `size × size` SVG output — that keeps the icon roughly
- * square so it slots into existing sidebar / button layouts without
- * shifting their dimensions.
+ * `size` is the HEIGHT in CSS px. Width is auto-computed at 3 ×
+ * height to match the reference image's natural aspect ratio. The
+ * full 32-bar WATERMARK_SEQUENCE renders — at small sizes the
+ * hairlines become sub-pixel and the browser anti-aliases them into
+ * crisp 1-device-pixel lines.
+ *
+ * Don't try to render this in a square — the pattern's identity is
+ * its horizontal sequence. Layouts using AtlasMark must allow the
+ * mark to take ~3 × its height in width.
  */
 export function AtlasMark({
-  size = 20,
+  size = 18,
   className,
 }: {
   size?: number;
@@ -78,9 +82,9 @@ export function AtlasMark({
 }) {
   return (
     <WavePattern
-      width={size}
+      width={size * 3}
       height={size}
-      variant="icon"
+      density={32}
       opacity={1}
       className={className}
     />

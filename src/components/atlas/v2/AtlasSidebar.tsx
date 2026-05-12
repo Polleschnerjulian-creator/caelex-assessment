@@ -158,15 +158,19 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
       <aside className="flex h-full w-12 shrink-0 flex-col items-center gap-3 bg-[#f9f9f9] py-3 text-slate-600 dark:bg-[#171717] dark:text-slate-300">
         {/* Atlas brand mark — clicking it lands on the homepage so the
             mark doubles as a "home" affordance. Same UX as Claude's
-            sidebar logo + ChatGPT's top-left brand. */}
+            sidebar logo + ChatGPT's top-left brand.
+
+            Button auto-widens (no w-8 constraint) because AtlasMark
+            renders at 3:1 aspect — at size=10 that's a 30×10 strip
+            which fits the 48 px collapsed-rail with margin. */}
         <button
           type="button"
           onClick={() => router.push("/atlas")}
           title="Atlas — zur Startseite"
           aria-label="Atlas"
-          className="flex h-8 w-8 items-center justify-center rounded-md text-slate-700 transition-colors hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-200 dark:hover:bg-white/[0.05] dark:hover:text-slate-100"
+          className="flex h-7 items-center justify-center rounded-md px-1.5 text-slate-900 transition-colors hover:bg-black/[0.04] dark:text-slate-100 dark:hover:bg-white/[0.05]"
         >
-          <AtlasMark size={20} />
+          <AtlasMark size={10} />
         </button>
         <button
           type="button"
@@ -219,9 +223,12 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
             type="button"
             onClick={() => router.push("/atlas")}
             title="Atlas — zur Startseite"
-            className="flex h-8 items-center gap-2 rounded-md px-1.5 transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.05]"
+            className="flex h-8 items-center gap-2 rounded-md px-1.5 text-slate-900 transition-colors hover:bg-black/[0.04] dark:text-slate-100 dark:hover:bg-white/[0.05]"
           >
-            <AtlasLogo size={20} withWordmark />
+            {/* size=14 height → ~42 px wide mark. With 8 px gap +
+                Atlas-wordmark (~38 px), total ~88 px. Fits 260 px
+                sidebar with the collapse-toggle still visible right. */}
+            <AtlasLogo size={14} withWordmark />
           </button>
           <button
             type="button"
