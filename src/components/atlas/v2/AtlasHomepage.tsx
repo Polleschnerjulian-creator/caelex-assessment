@@ -8,8 +8,12 @@
  * ChatGPT-style empty state:
  *   - generous vertical centring
  *   - serif headline with gentle weight
- *   - refined input pill with icon-only chips
- *   - chip-row of 4 quickstarts (was 6-card grid)
+ *   - refined input pill — single Plus menu, no inline shortcuts
+ *
+ * Quickstart chips below the input were removed (2026-05-12) — the
+ * workflows themselves live on at /atlas/workflows. The homepage is
+ * intentionally bare to focus the user on a single thing: typing a
+ * question. Same restraint as ChatGPT/Claude.ai's empty state.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -17,7 +21,6 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChatInput } from "./ChatInput";
-import { QuickstartCards } from "./QuickstartCards";
 
 export function AtlasHomepage() {
   const router = useRouter();
@@ -114,33 +117,6 @@ export function AtlasHomepage() {
           <p className="mt-3 text-center text-xs text-red-500 dark:text-red-400">
             {error}
           </p>
-        )}
-
-        {!submitting && (
-          <div className="mt-12">
-            <QuickstartCards
-              onPick={(promptHint, titleHint) => {
-                setSeedValue(promptHint);
-                setTimeout(() => {
-                  void handleSubmit(
-                    promptHint,
-                    {
-                      korpus: true,
-                      compliance: true,
-                      comparison: true,
-                      drafting: true,
-                      validity: true,
-                      documents: false,
-                      web: false,
-                      workflow: true,
-                      mandate: true,
-                    },
-                    titleHint,
-                  );
-                }, 100);
-              }}
-            />
-          </div>
         )}
 
         {submitting && (

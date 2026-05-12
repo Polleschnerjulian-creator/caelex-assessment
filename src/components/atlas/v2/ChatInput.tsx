@@ -3,16 +3,22 @@
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
- * Atlas V2 — Chat input box (UI refresh 2026-05-12, theme-aware).
+ * Atlas V2 — Chat input box (UI refresh 2026-05-12, theme-aware,
+ * single-Plus-menu).
  *
- * Refined to match ChatGPT's restraint:
- *   - Single rounded pill (rounded-3xl), no aggressive border
- *   - Icons-only chip row (no text labels)
- *   - Tools toggles collapse into one popover instead of 4 chunky chips
- *   - Send appears only when there's text (no permanently-emerald button)
+ * One-button composer (the row was getting busy):
+ *   [+]  ……textarea……  [🎙]  [↑]
  *
- * Light: white pill on white canvas with a soft slate-200 border.
- * Dark:  near-black pill on dark canvas with subtle white-08 border.
+ * The [+] opens a single popover containing every previously-inline
+ * affordance, organized into three sections:
+ *
+ *   • Anhängen (file/photo upload — currently routed via Mandat)
+ *   • Recherche (Web-Suche, Atlas-Korpus — toggles)
+ *   • Tools     (the 6 bundle toggles)
+ *
+ * The toggle-state contract on the parent is unchanged — only the UI
+ * wrapper changed. The chat-engine still receives the same toolToggles
+ * record on submit.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -26,6 +32,8 @@ import {
   Wrench,
   Mic,
   Check,
+  Paperclip,
+  Image as ImageIcon,
 } from "lucide-react";
 
 interface Props {
@@ -68,7 +76,7 @@ export function ChatInput({
 }: Props) {
   const [text, setText] = useState(initialValue ?? "");
   const [toggles, setToggles] = useState(DEFAULT_TOGGLES);
-  const [toolsOpen, setToolsOpen] = useState(false);
+  const [plusOpen, setPlusOpen] = useState(false);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const popRef = useRef<HTMLDivElement>(null);
 
@@ -85,17 +93,17 @@ export function ChatInput({
     if (initialValue !== undefined) setText(initialValue);
   }, [initialValue]);
 
-  /* Click-outside closes the tools popover. */
+  /* Click-outside closes the plus popover. */
   useEffect(() => {
-    if (!toolsOpen) return;
+    if (!plusOpen) return;
     const handler = (e: MouseEvent) => {
       if (popRef.current && !popRef.current.contains(e.target as Node)) {
-        setToolsOpen(false);
+        setPlusOpen(false);
       }
     };
     window.addEventListener("mousedown", handler);
     return () => window.removeEventListener("mousedown", handler);
-  }, [toolsOpen]);
+  }, [plusOpen]);
 
   const handleSend = () => {
     const v = text.trim();
@@ -131,60 +139,22 @@ export function ChatInput({
       />
 
       <div className="mt-1 flex items-center gap-1">
-        {/* Left: subtle icon-row */}
-        <IconButton title="Datei anhängen (Sprint 5 — über Mandat)" disabled>
-          <Plus size={16} />
-        </IconButton>
-
-        <IconButton
-          title={toggles.web ? "Web aus" : "Web Search"}
-          active={toggles.web}
-          onClick={() => toggle("web")}
-        >
-          <Globe size={15} />
-        </IconButton>
-
-        <IconButton
-          title={toggles.korpus ? "Korpus aus" : "Korpus an"}
-          active={toggles.korpus}
-          onClick={() => toggle("korpus")}
-        >
-          <BookOpenText size={15} />
-        </IconButton>
-
+        {/* The single Plus button — opens the rich popover with every
+            affordance the row used to expose inline. */}
         <div ref={popRef} className="relative">
           <IconButton
-            title="Tools"
-            active={toolsOpen}
-            onClick={() => setToolsOpen((v) => !v)}
+            title="Anhängen, Recherche, Tools"
+            active={plusOpen}
+            onClick={() => setPlusOpen((v) => !v)}
           >
-            <Wrench size={14} />
+            <Plus size={16} />
           </IconButton>
-          {toolsOpen && (
-            <div className="absolute bottom-full left-0 z-30 mb-2 w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_12px_32px_rgba(0,0,0,0.12)] dark:border-white/[0.08] dark:bg-[#1a1a1a] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)]">
-              <div className="mb-1 px-2 py-1 text-[10.5px] uppercase tracking-wider text-slate-500">
-                Aktive Tool-Bundles
-              </div>
-              {TOOL_BUNDLES.map((b) => {
-                const on = toggles[b.key as keyof typeof toggles];
-                return (
-                  <button
-                    key={b.key}
-                    type="button"
-                    onClick={() => toggle(b.key as keyof typeof toggles)}
-                    className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-[13px] text-slate-700 hover:bg-black/[0.04] dark:text-slate-200 dark:hover:bg-white/[0.04]"
-                  >
-                    <span>{b.label}</span>
-                    {on && (
-                      <Check
-                        size={13}
-                        className="text-slate-700 dark:text-slate-300"
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+          {plusOpen && (
+            <PlusMenu
+              toggles={toggles}
+              onToggle={toggle}
+              onClose={() => setPlusOpen(false)}
+            />
           )}
         </div>
 
@@ -213,6 +183,147 @@ export function ChatInput({
     </div>
   );
 }
+
+/* ── Plus-menu popover ───────────────────────────────────────────────── */
+
+function PlusMenu({
+  toggles,
+  onToggle,
+  onClose: _onClose,
+}: {
+  toggles: typeof DEFAULT_TOGGLES;
+  onToggle: (k: keyof typeof DEFAULT_TOGGLES) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="absolute bottom-full left-0 z-30 mb-2 w-72 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.12)] dark:border-white/[0.08] dark:bg-[#1a1a1a] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)]">
+      {/* Anhängen */}
+      <MenuSection label="Anhängen">
+        <MenuRow
+          icon={<Paperclip size={14} />}
+          label="Datei hochladen"
+          hint="über Mandat verfügbar"
+          disabled
+        />
+        <MenuRow
+          icon={<ImageIcon size={14} />}
+          label="Foto hochladen"
+          hint="über Mandat verfügbar"
+          disabled
+        />
+      </MenuSection>
+
+      <MenuDivider />
+
+      {/* Recherche */}
+      <MenuSection label="Recherche">
+        <MenuRow
+          icon={<Globe size={14} />}
+          label="Web-Suche"
+          checked={toggles.web}
+          onClick={() => onToggle("web")}
+        />
+        <MenuRow
+          icon={<BookOpenText size={14} />}
+          label="Atlas-Korpus"
+          checked={toggles.korpus}
+          onClick={() => onToggle("korpus")}
+        />
+      </MenuSection>
+
+      <MenuDivider />
+
+      {/* Tools */}
+      <MenuSection label="Tools">
+        {TOOL_BUNDLES.map((b) => {
+          const on = toggles[b.key as keyof typeof toggles];
+          return (
+            <MenuRow
+              key={b.key}
+              icon={<Wrench size={14} className="opacity-60" />}
+              label={b.label}
+              checked={on}
+              onClick={() => onToggle(b.key as keyof typeof toggles)}
+            />
+          );
+        })}
+      </MenuSection>
+    </div>
+  );
+}
+
+function MenuSection({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <div className="px-2.5 pb-0.5 pt-1.5 text-[10.5px] font-medium uppercase tracking-wider text-slate-500">
+        {label}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function MenuDivider() {
+  return (
+    <div className="my-1 border-t border-slate-200 dark:border-white/[0.06]" />
+  );
+}
+
+function MenuRow({
+  icon,
+  label,
+  hint,
+  checked,
+  onClick,
+  disabled,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  hint?: string;
+  checked?: boolean;
+  onClick?: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors ${
+        disabled
+          ? "cursor-default text-slate-400 dark:text-slate-600"
+          : "text-slate-700 hover:bg-black/[0.04] dark:text-slate-200 dark:hover:bg-white/[0.04]"
+      }`}
+    >
+      <span className={`shrink-0 ${disabled ? "opacity-50" : ""}`}>{icon}</span>
+      <span className="flex-1 text-left">{label}</span>
+      {hint && (
+        <span className="shrink-0 text-[10.5px] text-slate-400 dark:text-slate-500">
+          {hint}
+        </span>
+      )}
+      {checked !== undefined && !disabled && (
+        <span className="shrink-0">
+          {checked ? (
+            <Check size={13} className="text-slate-700 dark:text-slate-300" />
+          ) : (
+            <span className="text-[10.5px] text-slate-400 dark:text-slate-500">
+              aus
+            </span>
+          )}
+        </span>
+      )}
+    </button>
+  );
+}
+
+/* ── Tiny shared icon-button (kept for Mic + Plus) ───────────────────── */
 
 function IconButton({
   children,
