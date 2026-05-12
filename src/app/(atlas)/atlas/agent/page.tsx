@@ -91,6 +91,66 @@ interface DetectedDeadline {
   context: string;
 }
 
+/* Multi-Artifact parser. Atlas in agent-mode now produces structured
+   artifacts using fence markers like:
+     [[ARTIFACT type=memo title="..."]] ... [[/ARTIFACT]]
+   We parse the final-text into an array of typed artifacts the UI
+   can render as separate cards. Anything outside the fences is
+   ignored (system-prompt instructs the model not to emit prose
+   outside artifacts). */
+
+type ArtifactKind = "memo" | "schriftsatz" | "email" | "checklist" | "summary";
+
+interface Artifact {
+  kind: ArtifactKind;
+  title: string;
+  body: string;
+}
+
+const ARTIFACT_OPEN_RE = /\[\[ARTIFACT\s+type=(\w+)\s+title="([^"]+)"\]\]/g;
+const ARTIFACT_CLOSE = "[[/ARTIFACT]]";
+
+function parseArtifacts(text: string): Artifact[] {
+  const out: Artifact[] = [];
+  let m: RegExpExecArray | null;
+  ARTIFACT_OPEN_RE.lastIndex = 0;
+  while ((m = ARTIFACT_OPEN_RE.exec(text)) !== null) {
+    const kindRaw = m[1].toLowerCase();
+    const title = m[2];
+    const bodyStart = m.index + m[0].length;
+    const closeIdx = text.indexOf(ARTIFACT_CLOSE, bodyStart);
+    if (closeIdx === -1) {
+      /* Streaming may not have emitted the closing fence yet —
+         take everything from bodyStart to EOF and render as the
+         in-flight artifact. */
+      out.push({
+        kind: normaliseKind(kindRaw),
+        title,
+        body: text.slice(bodyStart).trim(),
+      });
+      break;
+    }
+    out.push({
+      kind: normaliseKind(kindRaw),
+      title,
+      body: text.slice(bodyStart, closeIdx).trim(),
+    });
+    ARTIFACT_OPEN_RE.lastIndex = closeIdx + ARTIFACT_CLOSE.length;
+  }
+  return out;
+}
+
+function normaliseKind(s: string): ArtifactKind {
+  if (
+    s === "schriftsatz" ||
+    s === "email" ||
+    s === "checklist" ||
+    s === "summary"
+  )
+    return s;
+  return "memo";
+}
+
 function detectDeadlines(text: string): DetectedDeadline[] {
   const found: DetectedDeadline[] = [];
   const seen = new Set<string>();
@@ -667,114 +727,104 @@ export default function AgentPage() {
             });
           })()}
 
-          {/* Final artifact */}
-          {finalText && (
-            <div className="rounded-lg border border-slate-200 bg-white p-5 dark:border-white/[0.08] dark:bg-white/[0.02]">
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-white/[0.05]">
-                <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                  <CheckCircle2 size={11} />
-                  {running ? "Atlas schreibt Ergebnis…" : "Ergebnis"}
-                </div>
-                {!running && (
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={downloadDoc}
-                      className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-2 py-1 text-[11px] text-slate-600 transition-colors hover:bg-slate-50 dark:border-white/[0.10] dark:text-slate-400 dark:hover:bg-white/[0.05]"
-                    >
-                      <FileText size={11} />
-                      .doc Export
-                    </button>
-                    {mandateId && (
-                      <button
-                        type="button"
-                        onClick={saveToVault}
-                        disabled={savedToVault}
-                        className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] transition-colors disabled:opacity-100 ${
-                          savedToVault
-                            ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
-                            : "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-white/[0.10] dark:text-slate-400 dark:hover:bg-white/[0.05]"
-                        }`}
-                      >
-                        {savedToVault ? (
-                          <>
-                            <Check size={11} />
-                            Im Mandat-Vault
-                          </>
-                        ) : (
-                          <>
-                            <FolderInput size={11} />
-                            In Mandat-Vault
-                          </>
-                        )}
-                      </button>
-                    )}
+          {/* Final artifacts — Atlas in agent-mode now produces
+              MULTIPLE structured artifacts per run (memo, schriftsatz,
+              email, checklist, summary). We parse the fenced markers
+              and render each as its own card. If no artifacts were
+              parsed (= older runs or system-prompt-disregarded), we
+              fall back to a single-card render of finalText. */}
+          {finalText &&
+            (() => {
+              const artifacts = parseArtifacts(finalText);
+              if (artifacts.length === 0) {
+                /* Legacy/fallback render — same as before, one card. */
+                return (
+                  <LegacyArtifact
+                    finalText={finalText}
+                    running={running}
+                    mandateId={mandateId}
+                    savedToVault={savedToVault}
+                    onDownloadDoc={downloadDoc}
+                    onSaveToVault={saveToVault}
+                  />
+                );
+              }
+              return (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                    <CheckCircle2 size={11} />
+                    {running
+                      ? `Atlas erstellt Artefakte… (${artifacts.length})`
+                      : `Ergebnis — ${artifacts.length} Artefakt${artifacts.length === 1 ? "" : "e"}`}
                   </div>
-                )}
-              </div>
-              <div className="prose prose-sm max-w-none text-[13.5px] leading-relaxed text-slate-800 dark:prose-invert dark:text-slate-200">
-                <MarkdownContent text={finalText} />
-                {running && (
-                  <span className="ml-1 inline-block h-3 w-1 animate-pulse bg-slate-500 align-middle dark:bg-slate-300" />
-                )}
-              </div>
+                  {artifacts.map((a, i) => (
+                    <ArtifactCard
+                      key={`${a.kind}-${i}-${a.title}`}
+                      artifact={a}
+                      running={running}
+                      mandateId={mandateId}
+                      goalTitle={goal.split(/[.!?\n]/)[0]?.trim() ?? ""}
+                    />
+                  ))}
+                </div>
+              );
+            })()}
 
-              {/* Auto-detected deadlines — only shown when (a) run is
-                  done, (b) a mandate is selected, (c) any deadline was
-                  found. Each row is a 1-click "add to mandate calendar". */}
-              {!running &&
-                mandateId &&
-                (() => {
-                  const deadlines = detectDeadlines(finalText);
-                  if (deadlines.length === 0) return null;
-                  return (
-                    <div className="mt-4 border-t border-slate-100 pt-3 dark:border-white/[0.05]">
-                      <div className="mb-2 flex items-center gap-1.5 text-[10.5px] uppercase tracking-wider text-slate-500">
-                        <CalendarPlus size={10} />
-                        Erkannte Fristen ({deadlines.length})
-                      </div>
-                      <div className="space-y-1.5">
-                        {deadlines.map((d) => {
-                          const saved = savedDeadlines.has(d.isoDate);
-                          return (
-                            <div
-                              key={d.isoDate}
-                              className="flex items-center gap-2 rounded-md bg-slate-50 px-2.5 py-1.5 text-[11.5px] dark:bg-white/[0.02]"
-                            >
-                              <span className="shrink-0 font-mono tabular-nums text-slate-700 dark:text-slate-300">
-                                {d.isoDate}
+          {/* Auto-detected deadlines — run-level, NOT per-artifact, so
+              we render at the bottom (after all artifacts). Detects
+              across the entire finalText, not just one artifact. */}
+          {!running &&
+            mandateId &&
+            finalText &&
+            (() => {
+              const deadlines = detectDeadlines(finalText);
+              if (deadlines.length === 0) return null;
+              return (
+                <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-white/[0.08] dark:bg-white/[0.02]">
+                  <div className="mb-2 flex items-center gap-1.5 text-[10.5px] uppercase tracking-wider text-slate-500">
+                    <CalendarPlus size={10} />
+                    Erkannte Fristen ({deadlines.length})
+                  </div>
+                  <div className="space-y-1.5">
+                    {deadlines.map((d) => {
+                      const saved = savedDeadlines.has(d.isoDate);
+                      return (
+                        <div
+                          key={d.isoDate}
+                          className="flex items-center gap-2 rounded-md bg-slate-50 px-2.5 py-1.5 text-[11.5px] dark:bg-white/[0.02]"
+                        >
+                          <span className="shrink-0 font-mono tabular-nums text-slate-700 dark:text-slate-300">
+                            {d.isoDate}
+                          </span>
+                          <span className="line-clamp-1 flex-1 text-slate-500">
+                            …{d.context}…
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => saveDeadline(d)}
+                            disabled={saved}
+                            className={`shrink-0 rounded-md border px-2 py-0.5 text-[10.5px] transition-colors ${
+                              saved
+                                ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+                                : "border-slate-200 text-slate-600 hover:bg-white dark:border-white/[0.10] dark:text-slate-400 dark:hover:bg-white/[0.05]"
+                            }`}
+                          >
+                            {saved ? (
+                              <span className="inline-flex items-center gap-1">
+                                <Check size={9} />
+                                in Kalender
                               </span>
-                              <span className="line-clamp-1 flex-1 text-slate-500">
-                                …{d.context}…
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => saveDeadline(d)}
-                                disabled={saved}
-                                className={`shrink-0 rounded-md border px-2 py-0.5 text-[10.5px] transition-colors ${
-                                  saved
-                                    ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
-                                    : "border-slate-200 text-slate-600 hover:bg-white dark:border-white/[0.10] dark:text-slate-400 dark:hover:bg-white/[0.05]"
-                                }`}
-                              >
-                                {saved ? (
-                                  <span className="inline-flex items-center gap-1">
-                                    <Check size={9} />
-                                    in Kalender
-                                  </span>
-                                ) : (
-                                  "→ Kalender"
-                                )}
-                              </button>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })()}
-            </div>
-          )}
+                            ) : (
+                              "→ Kalender"
+                            )}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
 
           {/* Usage footer + reset */}
           {usage && (
@@ -875,6 +925,244 @@ function StepCard({ step }: { step: StepRecord }) {
 
 /* exportDraftAsWord handles its own blob + anchor click — no local
    download helper needed here. */
+
+/* ── ArtifactCard ─────────────────────────────────────────────────────
+ *
+ * Renders one structured artifact from the agent's multi-output. Each
+ * artifact has its own type-specific icon, title, body, and action
+ * buttons. The .doc export uses the artifact's title as filename + the
+ * appropriate privileged-stamp (schriftsatz always gets privilege
+ * marker; memo/email get it conditionally per locale-defaults). The
+ * Save-to-Vault button is shown only when a mandate is selected.
+ */
+function ArtifactCard({
+  artifact,
+  running,
+  mandateId,
+  goalTitle,
+}: {
+  artifact: Artifact;
+  running: boolean;
+  mandateId: string;
+  goalTitle: string;
+}) {
+  const [savedToVault, setSavedToVault] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const meta: Record<
+    ArtifactKind,
+    { label: string; tint: string; icon: React.ReactNode }
+  > = {
+    memo: {
+      label: "Memo",
+      tint: "text-blue-600 dark:text-blue-400",
+      icon: <FileText size={11} />,
+    },
+    schriftsatz: {
+      label: "Schriftsatz",
+      tint: "text-emerald-600 dark:text-emerald-400",
+      icon: <FileText size={11} />,
+    },
+    email: {
+      label: "Email-Draft",
+      tint: "text-amber-600 dark:text-amber-400",
+      icon: <FileText size={11} />,
+    },
+    checklist: {
+      label: "Checkliste",
+      tint: "text-slate-600 dark:text-slate-400",
+      icon: <Check size={11} />,
+    },
+    summary: {
+      label: "Zusammenfassung",
+      tint: "text-slate-500",
+      icon: <Sparkles size={11} />,
+    },
+  };
+  const m = meta[artifact.kind];
+
+  const downloadDoc = () => {
+    exportDraftAsWord({
+      title: artifact.title || goalTitle || "Atlas Agent-Ergebnis",
+      markdown: artifact.body,
+      locale: "de",
+      privileged: artifact.kind === "schriftsatz" || artifact.kind === "memo",
+    });
+  };
+
+  const saveToVault = async () => {
+    if (savedToVault || saving) return;
+    setSaving(true);
+    setError(null);
+    const safeTitle =
+      artifact.title.replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, "").trim() ||
+      "Atlas Agent Artefakt";
+    const filename = `${safeTitle}.md`;
+    const blob = new Blob([artifact.body], { type: "text/markdown" });
+    const file = new File([blob], filename, { type: "text/markdown" });
+    const form = new FormData();
+    form.append("file", file);
+    try {
+      const res = await fetch(`/api/atlas/mandate/${mandateId}/files`, {
+        method: "POST",
+        body: form,
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setError(body.error || `Speichern fehlgeschlagen (${res.status})`);
+        return;
+      }
+      setSavedToVault(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-white/[0.08] dark:bg-white/[0.02]">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-white/[0.05]">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className={`shrink-0 ${m.tint}`}>{m.icon}</span>
+          <span
+            className={`shrink-0 text-[10.5px] uppercase tracking-wider ${m.tint}`}
+          >
+            {m.label}
+          </span>
+          <span className="line-clamp-1 text-[13px] font-medium text-slate-900 dark:text-slate-100">
+            {artifact.title}
+          </span>
+        </div>
+        {!running && artifact.kind !== "summary" && (
+          <div className="flex shrink-0 items-center gap-1.5">
+            <button
+              type="button"
+              onClick={downloadDoc}
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-2 py-1 text-[11px] text-slate-600 transition-colors hover:bg-slate-50 dark:border-white/[0.10] dark:text-slate-400 dark:hover:bg-white/[0.05]"
+            >
+              <FileText size={11} />
+              .doc
+            </button>
+            {mandateId && (
+              <button
+                type="button"
+                onClick={saveToVault}
+                disabled={savedToVault || saving}
+                className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] transition-colors disabled:opacity-100 ${
+                  savedToVault
+                    ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+                    : "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-white/[0.10] dark:text-slate-400 dark:hover:bg-white/[0.05]"
+                }`}
+              >
+                {saving ? (
+                  <Loader2 size={11} className="animate-spin" />
+                ) : savedToVault ? (
+                  <>
+                    <Check size={11} />
+                    Im Vault
+                  </>
+                ) : (
+                  <>
+                    <FolderInput size={11} />
+                    In Vault
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+      <div className="prose prose-sm max-w-none text-[13px] leading-relaxed text-slate-800 dark:prose-invert dark:text-slate-200">
+        <MarkdownContent text={artifact.body} />
+        {running && (
+          <span className="ml-1 inline-block h-3 w-1 animate-pulse bg-slate-500 align-middle dark:bg-slate-300" />
+        )}
+      </div>
+      {error && (
+        <div className="mt-2 text-[11px] text-red-600 dark:text-red-400">
+          {error}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── LegacyArtifact ───────────────────────────────────────────────────
+ *
+ * Fallback render when no fenced artifacts were emitted (older runs
+ * or the model ignored the structured-output instruction). Same look
+ * as pre-Sprint-D: one card with the whole finalText.
+ */
+function LegacyArtifact({
+  finalText,
+  running,
+  mandateId,
+  savedToVault,
+  onDownloadDoc,
+  onSaveToVault,
+}: {
+  finalText: string;
+  running: boolean;
+  mandateId: string;
+  savedToVault: boolean;
+  onDownloadDoc: () => void;
+  onSaveToVault: () => void;
+}) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-5 dark:border-white/[0.08] dark:bg-white/[0.02]">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-white/[0.05]">
+        <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+          <CheckCircle2 size={11} />
+          {running ? "Atlas schreibt Ergebnis…" : "Ergebnis"}
+        </div>
+        {!running && (
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={onDownloadDoc}
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-2 py-1 text-[11px] text-slate-600 transition-colors hover:bg-slate-50 dark:border-white/[0.10] dark:text-slate-400 dark:hover:bg-white/[0.05]"
+            >
+              <FileText size={11} />
+              .doc Export
+            </button>
+            {mandateId && (
+              <button
+                type="button"
+                onClick={onSaveToVault}
+                disabled={savedToVault}
+                className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] transition-colors disabled:opacity-100 ${
+                  savedToVault
+                    ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+                    : "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-white/[0.10] dark:text-slate-400 dark:hover:bg-white/[0.05]"
+                }`}
+              >
+                {savedToVault ? (
+                  <>
+                    <Check size={11} />
+                    Im Mandat-Vault
+                  </>
+                ) : (
+                  <>
+                    <FolderInput size={11} />
+                    In Mandat-Vault
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+      <div className="prose prose-sm max-w-none text-[13.5px] leading-relaxed text-slate-800 dark:prose-invert dark:text-slate-200">
+        <MarkdownContent text={finalText} />
+        {running && (
+          <span className="ml-1 inline-block h-3 w-1 animate-pulse bg-slate-500 align-middle dark:bg-slate-300" />
+        )}
+      </div>
+    </div>
+  );
+}
 
 /* ── ReasoningPanel ───────────────────────────────────────────────────
  *
