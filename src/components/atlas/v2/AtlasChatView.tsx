@@ -27,7 +27,6 @@ import {
   Download,
   Copy,
   Bookmark,
-  BookmarkCheck,
 } from "lucide-react";
 import { ChatInput } from "./ChatInput";
 import { SuggestedFollowups } from "./SuggestedFollowups";
@@ -358,7 +357,11 @@ export function AtlasChatView({ chatId }: Props) {
               isLast && m.role === "assistant" && !streaming;
             return (
               <div key={m.id}>
-                <MessageRow message={m} chatId={chatId} />
+                <MessageRow
+                  message={m}
+                  chatId={chatId}
+                  mandateId={chat.mandateId ?? null}
+                />
                 {showFollowups && followupRefreshKey > 0 && (
                   <SuggestedFollowups
                     chatId={chatId}
@@ -421,9 +424,13 @@ export function AtlasChatView({ chatId }: Props) {
 function MessageRow({
   message,
   chatId,
+  mandateId,
 }: {
   message: ChatMessageRecord;
   chatId: string;
+  /* Threaded down so AssistantActions' "Save as Note" can persist
+     the mandate context alongside the chat reference. */
+  mandateId: string | null;
 }) {
   if (message.role === "user") {
     const text = extractText(message.content);
@@ -484,7 +491,11 @@ function MessageRow({
       {/* Inline actions: copy text, save the user-question as a
           workflow. Stays out of the way (small icon row, bottom-
           right) but available for power users. */}
-      <AssistantActions text={text} chatId={chatId} />
+      <AssistantActions
+        text={text}
+        chatId={chatId}
+        mandateId={mandateId ?? null}
+      />
       {message.costUsd != null && (
         <div className="text-[10px] text-slate-400 dark:text-slate-600">
           {message.inputTokens}↑ · {message.outputTokens}↓ tokens · $
@@ -800,45 +811,19 @@ function ToolStepRow({ call }: { call: InFlightToolCall }) {
  * Row stays out of the way (small icon row, faint by default,
  * full opacity on hover/focus) so the answer text remains primary.
  */
-function AssistantActions({ text, chatId }: { text: string; chatId: string }) {
+function AssistantActions({
+  text,
+  chatId,
+  mandateId,
+}: {
+  text: string;
+  chatId: string;
+  mandateId: string | null;
+}) {
   const [copied, setCopied] = useState(false);
-  const [bookmarked, setBookmarked] = useState(false);
-
-  /* Bookmark state lives in localStorage. The key includes chatId
-     so bookmarks survive across sessions + are per-chat. Hydrate
-     once on mount. */
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const raw = localStorage.getItem(`atlas-bookmarks-${chatId}`);
-      if (!raw) return;
-      const set = JSON.parse(raw) as string[];
-      const fingerprint = text.slice(0, 60);
-      setBookmarked(set.includes(fingerprint));
-    } catch {
-      /* ignore — bookmark state is a UX nicety, not critical */
-    }
-  }, [chatId, text]);
-
-  const toggleBookmark = () => {
-    try {
-      const key = `atlas-bookmarks-${chatId}`;
-      const fingerprint = text.slice(0, 60);
-      const raw = localStorage.getItem(key);
-      const set: string[] = raw ? (JSON.parse(raw) as string[]) : [];
-      const idx = set.indexOf(fingerprint);
-      if (idx === -1) {
-        set.push(fingerprint);
-        setBookmarked(true);
-      } else {
-        set.splice(idx, 1);
-        setBookmarked(false);
-      }
-      localStorage.setItem(key, JSON.stringify(set));
-    } catch {
-      /* ignore */
-    }
-  };
+  const [noteState, setNoteState] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
 
   const handleCopy = async () => {
     try {
@@ -848,6 +833,33 @@ function AssistantActions({ text, chatId }: { text: string; chatId: string }) {
     } catch {
       /* Browser may reject clipboard in non-secure contexts —
          fail silently. */
+    }
+  };
+
+  /* Save the assistant message as an AtlasNote — server-persisted,
+     surfaces in /atlas/notes. Differs from the old localStorage
+     "bookmark" which was a placeholder; this is real. */
+  const saveAsNote = async () => {
+    if (noteState !== "idle") return;
+    setNoteState("saving");
+    try {
+      const res = await fetch("/api/atlas/notes", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          excerpt: text.slice(0, 4000),
+          chatId,
+          mandateId: mandateId ?? undefined,
+          tags: [],
+        }),
+      });
+      if (!res.ok) throw new Error("save failed");
+      setNoteState("saved");
+      /* Reset to idle after 2s so a second save is possible. */
+      setTimeout(() => setNoteState("idle"), 2000);
+    } catch {
+      setNoteState("error");
+      setTimeout(() => setNoteState("idle"), 2500);
     }
   };
 
@@ -872,17 +884,40 @@ function AssistantActions({ text, chatId }: { text: string; chatId: string }) {
       </button>
       <button
         type="button"
-        onClick={toggleBookmark}
-        title={bookmarked ? "Bookmark entfernen" : "Antwort bookmarken"}
-        aria-label={bookmarked ? "Bookmark entfernen" : "Antwort bookmarken"}
+        onClick={saveAsNote}
+        disabled={noteState === "saving"}
+        title={
+          noteState === "saved"
+            ? "In Notizen gespeichert!"
+            : noteState === "error"
+              ? "Speichern fehlgeschlagen"
+              : "Als Notiz speichern"
+        }
+        aria-label="Antwort als Notiz speichern"
         className={`inline-flex h-6 items-center gap-1 rounded px-1.5 text-[11px] transition-colors ${
-          bookmarked
-            ? "bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/15"
-            : "text-slate-500 hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-200"
+          noteState === "saved"
+            ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"
+            : noteState === "error"
+              ? "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300"
+              : "text-slate-500 hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-200"
         }`}
       >
-        {bookmarked ? <BookmarkCheck size={11} /> : <Bookmark size={11} />}
-        <span>{bookmarked ? "Bookmarkt" : "Bookmark"}</span>
+        {noteState === "saving" ? (
+          <Loader2 size={11} className="animate-spin" />
+        ) : noteState === "saved" ? (
+          <CheckIcon size={11} />
+        ) : (
+          <Bookmark size={11} />
+        )}
+        <span>
+          {noteState === "saving"
+            ? "Speichert…"
+            : noteState === "saved"
+              ? "Gespeichert"
+              : noteState === "error"
+                ? "Fehler"
+                : "Notiz"}
+        </span>
       </button>
     </div>
   );

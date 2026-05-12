@@ -155,13 +155,13 @@ export default function JurisdictionsPage() {
   const withMandatory = ALL.filter((j) => j.mandatoryInsurance).length;
 
   return (
-    <div className="min-h-screen bg-[var(--atlas-bg-page)] px-6 lg:px-12 py-10">
+    <div className="min-h-screen bg-white dark:bg-[#212121] px-6 lg:px-12 py-10">
       {/* ─── Header ─── */}
       <div className="mb-8">
-        <h1 className="text-[24px] font-semibold tracking-tight text-[var(--atlas-text-primary)] mb-1">
+        <h1 className="text-[24px] font-semibold tracking-tight text-slate-900 dark:text-slate-100 mb-1">
           {t("atlas.jurisdictions")}
         </h1>
-        <p className="text-[13px] text-[var(--atlas-text-muted)]">
+        <p className="text-[13px] text-slate-500 dark:text-slate-400">
           {t("atlas.countries_stats", {
             total: ALL.length,
             withSources: WITH_SOURCES.length,
@@ -198,15 +198,15 @@ export default function JurisdictionsPage() {
         ].map((s) => (
           <div
             key={s.label}
-            className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] px-5 py-4"
+            className="rounded-xl bg-white dark:bg-[#1a1a1a] border border-slate-100 dark:border-white/[0.04] px-5 py-4"
           >
-            <span className="text-[28px] font-bold text-[var(--atlas-text-primary)] block leading-none">
+            <span className="text-[28px] font-bold text-slate-900 dark:text-slate-100 block leading-none">
               {s.n}
             </span>
-            <span className="text-[12px] font-medium text-[var(--atlas-text-secondary)] block mt-1">
+            <span className="text-[12px] font-medium text-slate-700 dark:text-slate-300 block mt-1">
               {s.label}
             </span>
-            <span className="text-[10px] text-[var(--atlas-text-faint)] block mt-0.5">
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 block mt-0.5">
               {s.sub}
             </span>
           </div>
@@ -217,29 +217,29 @@ export default function JurisdictionsPage() {
       <div className="flex flex-wrap items-center gap-2 mb-6">
         <Filter
           size={14}
-          className="text-[var(--atlas-text-faint)]"
+          className="text-slate-400 dark:text-slate-500"
           aria-hidden="true"
         />
         {filters.map((f) => (
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
-            className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150 ${filter === f.key ? "bg-gray-900 text-white" : "bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] text-[var(--atlas-text-secondary)] hover:border-[var(--atlas-border-strong)]"}`}
+            className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150 ${filter === f.key ? "bg-gray-900 text-white" : "bg-white dark:bg-[#1a1a1a] border border-slate-200 dark:border-white/[0.08] text-slate-700 dark:text-slate-300 hover:border-slate-400 dark:hover:border-white/[0.16]"}`}
           >
             {f.label}
           </button>
         ))}
-        <span className="text-[10px] text-[var(--atlas-text-faint)] mx-2">
+        <span className="text-[10px] text-slate-400 dark:text-slate-500 mx-2">
           |
         </span>
-        <span className="text-[10px] text-[var(--atlas-text-muted)]">
+        <span className="text-[10px] text-slate-500 dark:text-slate-400">
           {t("atlas.sort")}
         </span>
         {sorts.map((s) => (
           <button
             key={s.key}
             onClick={() => setSort(s.key)}
-            className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-all ${sort === s.key ? "text-[var(--atlas-text-primary)] underline underline-offset-2" : "text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-secondary)]"}`}
+            className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-all ${sort === s.key ? "text-slate-900 dark:text-slate-100 underline underline-offset-2" : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
           >
             {s.label}
           </button>
@@ -257,7 +257,7 @@ export default function JurisdictionsPage() {
         {filtered.map((j) => (
           <article
             key={j.code}
-            className="relative rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] hover:border-[var(--atlas-border-strong)] hover:shadow-md transition-all duration-200 group"
+            className="relative rounded-xl bg-white dark:bg-[#1a1a1a] border border-slate-100 dark:border-white/[0.04] hover:border-slate-400 dark:hover:border-white/[0.16] hover:shadow-md transition-all duration-200 group"
           >
             <Link
               href={`/atlas/jurisdictions/${j.code.toLowerCase()}`}
@@ -266,22 +266,22 @@ export default function JurisdictionsPage() {
               {/* Top row: code + country + arrow */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-[20px] font-bold text-[var(--atlas-text-faint)] group-hover:text-[var(--atlas-text-muted)] transition-colors">
+                  <span className="text-[20px] font-bold text-slate-400 dark:text-slate-500 group-hover:text-slate-500 dark:text-slate-400 transition-colors">
                     {j.code}
                   </span>
-                  <span className="text-[15px] font-semibold text-[var(--atlas-text-primary)]">
+                  <span className="text-[15px] font-semibold text-slate-900 dark:text-slate-100">
                     {JURISDICTION_NAMES[j.code] || j.country}
                   </span>
                 </div>
                 <ArrowRight
                   size={14}
-                  className="text-[var(--atlas-text-faint)] group-hover:text-[var(--atlas-text-primary)] transition-colors"
+                  className="text-slate-400 dark:text-slate-500 group-hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
                   aria-hidden="true"
                 />
               </div>
 
               {/* Legislation line */}
-              <p className="text-[11px] text-[var(--atlas-text-muted)] truncate mb-3">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mb-3">
                 {j.hasSpaceAct
                   ? `${j.actName} (${j.actYear})`
                   : j.actName || t("atlas.no_comprehensive_law")}
@@ -315,16 +315,16 @@ export default function JurisdictionsPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {j.mandatoryInsurance && (
-                    <span className="text-[10px] font-medium text-[var(--atlas-text-secondary)] bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border-subtle)] rounded px-2 py-0.5">
+                    <span className="text-[10px] font-medium text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/[0.04] rounded px-2 py-0.5">
                       {j.insurance}
                     </span>
                   )}
-                  <span className="text-[10px] text-[var(--atlas-text-faint)] capitalize">
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 capitalize">
                     {j.liability}
                   </span>
                 </div>
                 {j.sourceCount > 0 && (
-                  <span className="text-[10px] font-medium text-[var(--atlas-text-muted)]">
+                  <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
                     {t("atlas.sources_auth", {
                       sources: j.sourceCount,
                       auth: j.authorityCount,
@@ -342,7 +342,7 @@ export default function JurisdictionsPage() {
                 href={`/api/atlas/country-memo/${j.code}`}
                 download
                 title="Download PDF country memo"
-                className="absolute top-3 right-10 z-10 inline-flex items-center gap-1 text-[10px] font-medium text-[var(--atlas-text-secondary)] hover:text-emerald-700 bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] hover:border-emerald-500 rounded-full px-2 py-0.5 transition-colors"
+                className="absolute top-3 right-10 z-10 inline-flex items-center gap-1 text-[10px] font-medium text-slate-700 dark:text-slate-300 hover:text-emerald-700 bg-white dark:bg-[#1a1a1a] border border-slate-200 dark:border-white/[0.08] hover:border-emerald-500 rounded-full px-2 py-0.5 transition-colors"
               >
                 <FileDown size={10} strokeWidth={2} aria-hidden="true" />
                 PDF
@@ -367,35 +367,35 @@ export default function JurisdictionsPage() {
 
       {/* ─── Treaty Ratification Matrix ─── */}
       <section className="mb-10">
-        <h2 className="text-[12px] font-semibold text-[var(--atlas-text-muted)] tracking-[0.15em] uppercase mb-4">
+        <h2 className="text-[12px] font-semibold text-slate-500 dark:text-slate-400 tracking-[0.15em] uppercase mb-4">
           {t("atlas.treaty_matrix")}
         </h2>
-        <div className="rounded-xl bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border-subtle)] overflow-x-auto">
+        <div className="rounded-xl bg-white dark:bg-[#1a1a1a] border border-slate-100 dark:border-white/[0.04] overflow-x-auto">
           <table className="w-full text-[11px]">
             <thead>
-              <tr className="border-b border-[var(--atlas-border-subtle)]">
-                <th className="text-left px-4 py-2.5 font-medium text-[var(--atlas-text-muted)] w-[100px]">
+              <tr className="border-b border-slate-100 dark:border-white/[0.04]">
+                <th className="text-left px-4 py-2.5 font-medium text-slate-500 dark:text-slate-400 w-[100px]">
                   {t("atlas.sort_country")}
                 </th>
-                <th className="text-center px-2 py-2.5 font-medium text-[var(--atlas-text-muted)]">
+                <th className="text-center px-2 py-2.5 font-medium text-slate-500 dark:text-slate-400">
                   {t("atlas.treaty_ost")}
                 </th>
-                <th className="text-center px-2 py-2.5 font-medium text-[var(--atlas-text-muted)]">
+                <th className="text-center px-2 py-2.5 font-medium text-slate-500 dark:text-slate-400">
                   {t("atlas.treaty_liability")}
                 </th>
-                <th className="text-center px-2 py-2.5 font-medium text-[var(--atlas-text-muted)]">
+                <th className="text-center px-2 py-2.5 font-medium text-slate-500 dark:text-slate-400">
                   {t("atlas.treaty_registration")}
                 </th>
-                <th className="text-center px-2 py-2.5 font-medium text-[var(--atlas-text-muted)]">
+                <th className="text-center px-2 py-2.5 font-medium text-slate-500 dark:text-slate-400">
                   {t("atlas.treaty_moon")}
                 </th>
-                <th className="text-center px-2 py-2.5 font-medium text-[var(--atlas-text-muted)]">
+                <th className="text-center px-2 py-2.5 font-medium text-slate-500 dark:text-slate-400">
                   {t("atlas.treaty_artemis")}
                 </th>
-                <th className="text-center px-2 py-2.5 font-medium text-[var(--atlas-text-muted)]">
+                <th className="text-center px-2 py-2.5 font-medium text-slate-500 dark:text-slate-400">
                   {t("atlas.indicator_act")}
                 </th>
-                <th className="text-center px-2 py-2.5 font-medium text-[var(--atlas-text-muted)]">
+                <th className="text-center px-2 py-2.5 font-medium text-slate-500 dark:text-slate-400">
                   {t("atlas.indicator_insurance")}
                 </th>
               </tr>
@@ -404,11 +404,11 @@ export default function JurisdictionsPage() {
               {WITH_SOURCES.map((j) => (
                 <tr
                   key={j.code}
-                  className="border-b border-gray-50 hover:bg-[var(--atlas-bg-surface-muted)]/50 transition-colors"
+                  className="border-b border-gray-50 hover:bg-slate-50 dark:hover:bg-white/[0.04]/50 transition-colors"
                 >
-                  <td className="px-4 py-2 font-semibold text-[var(--atlas-text-primary)]">
+                  <td className="px-4 py-2 font-semibold text-slate-900 dark:text-slate-100">
                     {j.code}{" "}
-                    <span className="font-normal text-[var(--atlas-text-faint)]">
+                    <span className="font-normal text-slate-400 dark:text-slate-500">
                       {JURISDICTION_NAMES[j.code] || j.country}
                     </span>
                   </td>
@@ -457,7 +457,7 @@ export default function JurisdictionsPage() {
 function Indicator({ active, label }: { active: boolean; label: string }) {
   return (
     <div
-      className={`flex flex-col items-center gap-1 py-1.5 rounded-lg ${active ? "bg-emerald-50" : "bg-[var(--atlas-bg-surface-muted)]"}`}
+      className={`flex flex-col items-center gap-1 py-1.5 rounded-lg ${active ? "bg-emerald-50" : "bg-slate-50 dark:bg-white/[0.02]"}`}
     >
       {active ? (
         <Check
@@ -468,14 +468,14 @@ function Indicator({ active, label }: { active: boolean; label: string }) {
         />
       ) : (
         <span
-          className="text-[10px] text-[var(--atlas-text-faint)]"
+          className="text-[10px] text-slate-400 dark:text-slate-500"
           aria-hidden="true"
         >
           —
         </span>
       )}
       <span
-        className={`text-[8px] font-medium ${active ? "text-emerald-700" : "text-[var(--atlas-text-faint)]"}`}
+        className={`text-[8px] font-medium ${active ? "text-emerald-700" : "text-slate-400 dark:text-slate-500"}`}
       >
         {label}
       </span>
@@ -494,7 +494,7 @@ function Dot({
   label?: string;
 }) {
   // M5: non-active state needs ≥ 3:1 contrast on white for WCAG 2.1 AA
-  // "Non-Text Contrast" (SC 1.4.11). bg-[var(--atlas-bg-inset)] on white is ~1.3:1 —
+  // "Non-Text Contrast" (SC 1.4.11). bg-slate-50 dark:bg-white/[0.02] on white is ~1.3:1 —
   // bumped to bg-gray-400 which is ~3.5:1.
   if (!active)
     return (

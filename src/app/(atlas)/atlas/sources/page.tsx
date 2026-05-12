@@ -191,15 +191,15 @@ export default function SourcesIndexPage() {
   const isDe = language === "de";
 
   return (
-    <div className="flex flex-col h-full min-h-screen bg-[var(--atlas-bg-page)] p-4 gap-3">
+    <div className="flex flex-col h-full min-h-screen bg-white dark:bg-[#212121] p-4 gap-3">
       {/* Header */}
       <header className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-3">
           <Library className="h-5 w-5 text-emerald-600" strokeWidth={1.5} />
-          <h1 className="text-[18px] font-semibold tracking-tight text-[var(--atlas-text-primary)]">
+          <h1 className="text-[18px] font-semibold tracking-tight text-slate-900 dark:text-slate-100">
             {isDe ? "Rechtsquellen" : "Legal Sources"}
           </h1>
-          <span className="text-[11px] text-[var(--atlas-text-faint)]">
+          <span className="text-[11px] text-slate-400 dark:text-slate-500">
             {ALL_SOURCES.length}{" "}
             {isDe
               ? "Statuten, Verordnungen, Verträge und technische Standards"
@@ -209,8 +209,8 @@ export default function SourcesIndexPage() {
       </header>
 
       {/* Intro */}
-      <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm p-4">
-        <p className="text-[12px] text-[var(--atlas-text-secondary)] leading-relaxed max-w-3xl">
+      <div className="rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#1a1a1a] shadow-sm p-4">
+        <p className="text-[12px] text-slate-700 dark:text-slate-300 leading-relaxed max-w-3xl">
           {isDe ? (
             <>
               Der vollständige statutarische Korpus, den Atlas indexiert — von
@@ -248,9 +248,9 @@ export default function SourcesIndexPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-1.5 rounded-md bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2.5 py-1.5 shadow-sm flex-1 min-w-[240px] max-w-md">
+        <div className="flex items-center gap-1.5 rounded-md bg-white dark:bg-[#1a1a1a] border border-slate-200 dark:border-white/[0.08] px-2.5 py-1.5 shadow-sm flex-1 min-w-[240px] max-w-md">
           <Search
-            className="h-3.5 w-3.5 text-[var(--atlas-text-faint)] flex-shrink-0"
+            className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500 flex-shrink-0"
             strokeWidth={1.5}
           />
           <input
@@ -262,13 +262,13 @@ export default function SourcesIndexPage() {
                 ? "Nach Titel, Aktenzeichen, Behörde suchen…"
                 : "Search title, citation, body…"
             }
-            className="bg-transparent text-[12px] text-[var(--atlas-text-primary)] flex-1 outline-none placeholder:text-[var(--atlas-text-faint)]"
+            className="bg-transparent text-[12px] text-slate-900 dark:text-slate-100 flex-1 outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
           />
           {query && (
             <button
               type="button"
               onClick={() => setQuery("")}
-              className="text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-primary)]"
+              className="text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
             >
               <X className="h-3.5 w-3.5" strokeWidth={1.5} />
             </button>
@@ -278,7 +278,7 @@ export default function SourcesIndexPage() {
         <select
           value={type}
           onChange={(e) => setType(e.target.value as LegalSourceType | "all")}
-          className="rounded-md bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] shadow-sm outline-none cursor-pointer"
+          className="rounded-md bg-white dark:bg-[#1a1a1a] border border-slate-200 dark:border-white/[0.08] px-2.5 py-1.5 text-[12px] text-slate-900 dark:text-slate-100 shadow-sm outline-none cursor-pointer"
         >
           <option value="all">{isDe ? "Alle Typen" : "All types"}</option>
           {(Object.keys(TYPE_LABEL) as LegalSourceType[]).map((tk) => (
@@ -291,7 +291,7 @@ export default function SourcesIndexPage() {
         <select
           value={jurisdiction}
           onChange={(e) => setJurisdiction(e.target.value)}
-          className="rounded-md bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] shadow-sm outline-none cursor-pointer"
+          className="rounded-md bg-white dark:bg-[#1a1a1a] border border-slate-200 dark:border-white/[0.08] px-2.5 py-1.5 text-[12px] text-slate-900 dark:text-slate-100 shadow-sm outline-none cursor-pointer"
         >
           <option value="all">
             {isDe ? "Alle Jurisdiktionen" : "All jurisdictions"}
@@ -306,7 +306,7 @@ export default function SourcesIndexPage() {
         <select
           value={area}
           onChange={(e) => setArea(e.target.value as ComplianceArea | "all")}
-          className="rounded-md bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] shadow-sm outline-none cursor-pointer"
+          className="rounded-md bg-white dark:bg-[#1a1a1a] border border-slate-200 dark:border-white/[0.08] px-2.5 py-1.5 text-[12px] text-slate-900 dark:text-slate-100 shadow-sm outline-none cursor-pointer"
         >
           <option value="all">
             {isDe ? "Alle Bereiche" : "All compliance areas"}
@@ -327,14 +327,14 @@ export default function SourcesIndexPage() {
               setJurisdiction("all");
               setArea("all");
             }}
-            className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[12px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)]"
+            className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[12px] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
           >
             <Filter className="h-3 w-3" strokeWidth={1.5} />
             {isDe ? "Filter zurücksetzen" : "Reset filters"}
           </button>
         )}
 
-        <span className="ml-auto text-[11px] text-[var(--atlas-text-faint)]">
+        <span className="ml-auto text-[11px] text-slate-400 dark:text-slate-500">
           {filtered.length} {isDe ? "Treffer" : "results"}
           {truncated &&
             ` · ${isDe ? `oberste ${VIEW_CAP} angezeigt` : `top ${VIEW_CAP} shown`}`}
@@ -366,14 +366,14 @@ export default function SourcesIndexPage() {
             return (
               <li
                 key={s.id}
-                className="group rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] hover:bg-[var(--atlas-bg-surface-muted)] shadow-sm hover:shadow transition-all"
+                className="group rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#1a1a1a] hover:bg-slate-50 dark:hover:bg-white/[0.04] shadow-sm hover:shadow transition-all"
               >
                 <Link
                   href={`/atlas/sources/${encodeURIComponent(s.id)}`}
                   className="block p-4"
                 >
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider font-mono text-[var(--atlas-text-muted)]">
+                    <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider font-mono text-slate-500 dark:text-slate-400">
                       <span>{s.jurisdiction}</span>
                       <span>·</span>
                       <span>{isDe ? typeLabel.de : typeLabel.en}</span>
@@ -391,24 +391,24 @@ export default function SourcesIndexPage() {
                     </span>
                   </div>
 
-                  <h3 className="text-[14px] font-semibold text-[var(--atlas-text-primary)] mb-1 leading-snug line-clamp-2">
+                  <h3 className="text-[14px] font-semibold text-slate-900 dark:text-slate-100 mb-1 leading-snug line-clamp-2">
                     {tr.title}
                   </h3>
 
                   {s.title_local && s.title_local !== tr.title && (
-                    <p className="text-[11px] text-[var(--atlas-text-muted)] italic mb-2 line-clamp-1">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 italic mb-2 line-clamp-1">
                       {s.title_local}
                     </p>
                   )}
 
                   {tr.scopeDescription && (
-                    <p className="text-[11px] text-[var(--atlas-text-secondary)] line-clamp-2 mb-3">
+                    <p className="text-[11px] text-slate-700 dark:text-slate-300 line-clamp-2 mb-3">
                       {tr.scopeDescription}
                     </p>
                   )}
 
-                  <div className="flex items-center justify-between gap-2 flex-wrap pt-2 border-t border-[var(--atlas-border-subtle)]">
-                    <span className="inline-flex items-center gap-1 text-[10px] text-[var(--atlas-text-muted)] truncate max-w-[180px]">
+                  <div className="flex items-center justify-between gap-2 flex-wrap pt-2 border-t border-slate-100 dark:border-white/[0.04]">
+                    <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[180px]">
                       <Building2
                         className="h-3 w-3 flex-shrink-0"
                         strokeWidth={1.5}
@@ -427,7 +427,7 @@ export default function SourcesIndexPage() {
                       {s.id}
                     </span>
                     <ArrowRight
-                      className="h-3 w-3 text-[var(--atlas-text-faint)] group-hover:text-emerald-600 transition-colors"
+                      className="h-3 w-3 text-slate-400 dark:text-slate-500 group-hover:text-emerald-600 transition-colors"
                       strokeWidth={1.5}
                     />
                   </div>
@@ -439,7 +439,7 @@ export default function SourcesIndexPage() {
       )}
 
       {truncated && (
-        <div className="text-[11px] text-[var(--atlas-text-muted)] text-center py-4">
+        <div className="text-[11px] text-slate-500 dark:text-slate-400 text-center py-4">
           {isDe ? (
             <>
               Es gibt {filtered.length} relevante Quellen. Suche oder filtere um

@@ -37,6 +37,8 @@ import {
   Loader2,
   Library as LibraryIcon,
   Folder as FolderIcon,
+  StickyNote,
+  Shield as ShieldIcon,
 } from "lucide-react";
 import type { ChatListItem, MandateListItem } from "./types";
 import { useAtlasTheme } from "@/app/(atlas)/atlas/_components/AtlasThemeProvider";
@@ -241,6 +243,12 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
             icon={<FolderIcon size={14} />}
             active={pathname === "/atlas/vault"}
           />
+          <SidebarItem
+            href="/atlas/notes"
+            label="Notizen"
+            icon={<StickyNote size={14} />}
+            active={pathname === "/atlas/notes"}
+          />
         </div>
 
         {/* Active mandate context — resolves from the URL path
@@ -390,6 +398,12 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
               label="Klauseln"
               icon={<LibraryIcon size={12} />}
               active={pathname === "/atlas/clauses"}
+            />
+            <NavLink
+              href="/atlas/tools/anonymize"
+              label="Anonymisierung"
+              icon={<ShieldIcon size={12} />}
+              active={pathname === "/atlas/tools/anonymize"}
             />
           </Section>
         </div>

@@ -250,15 +250,15 @@ function CasesIndexInner() {
   const isDe = language === "de";
 
   return (
-    <div className="flex flex-col h-full min-h-screen bg-[var(--atlas-bg-page)] p-4 gap-3">
+    <div className="flex flex-col h-full min-h-screen bg-white dark:bg-[#212121] p-4 gap-3">
       {/* Header */}
       <header className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-3">
           <Gavel className="h-5 w-5 text-violet-600" strokeWidth={1.5} />
-          <h1 className="text-[18px] font-semibold tracking-tight text-[var(--atlas-text-primary)]">
+          <h1 className="text-[18px] font-semibold tracking-tight text-slate-900 dark:text-slate-100">
             {isDe ? "Rechtsprechung" : "Case law"}
           </h1>
-          <span className="text-[11px] text-[var(--atlas-text-faint)]">
+          <span className="text-[11px] text-slate-400 dark:text-slate-500">
             {ATLAS_CASES_COUNT}{" "}
             {isDe
               ? "Entscheidungen, Settlements und Behördenanordnungen"
@@ -268,8 +268,8 @@ function CasesIndexInner() {
       </header>
 
       {/* Intro */}
-      <div className="rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] shadow-sm p-4">
-        <p className="text-[12px] text-[var(--atlas-text-secondary)] leading-relaxed max-w-3xl">
+      <div className="rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#1a1a1a] shadow-sm p-4">
+        <p className="text-[12px] text-slate-700 dark:text-slate-300 leading-relaxed max-w-3xl">
           {isDe ? (
             <>
               Wie Rechtsquellen tatsächlich angewendet werden — Gerichtsurteile,
@@ -418,9 +418,9 @@ function CasesIndexInner() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-1.5 rounded-md bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2.5 py-1.5 shadow-sm flex-1 min-w-[240px] max-w-md">
+        <div className="flex items-center gap-1.5 rounded-md bg-white dark:bg-[#1a1a1a] border border-slate-200 dark:border-white/[0.08] px-2.5 py-1.5 shadow-sm flex-1 min-w-[240px] max-w-md">
           <Search
-            className="h-3.5 w-3.5 text-[var(--atlas-text-faint)] flex-shrink-0"
+            className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500 flex-shrink-0"
             strokeWidth={1.5}
           />
           <input
@@ -432,13 +432,13 @@ function CasesIndexInner() {
                 ? "Nach Caption, Partei, Aktenzeichen suchen…"
                 : "Search caption, party, citation…"
             }
-            className="bg-transparent text-[12px] text-[var(--atlas-text-primary)] flex-1 outline-none placeholder:text-[var(--atlas-text-faint)]"
+            className="bg-transparent text-[12px] text-slate-900 dark:text-slate-100 flex-1 outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
           />
           {query && (
             <button
               type="button"
               onClick={() => setQuery("")}
-              className="text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-primary)]"
+              className="text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
             >
               <X className="h-3.5 w-3.5" strokeWidth={1.5} />
             </button>
@@ -448,7 +448,7 @@ function CasesIndexInner() {
         <select
           value={forum}
           onChange={(e) => setForum(e.target.value as CaseForum | "all")}
-          className="rounded-md bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] shadow-sm outline-none cursor-pointer"
+          className="rounded-md bg-white dark:bg-[#1a1a1a] border border-slate-200 dark:border-white/[0.08] px-2.5 py-1.5 text-[12px] text-slate-900 dark:text-slate-100 shadow-sm outline-none cursor-pointer"
         >
           <option value="all">{isDe ? "Alle Foren" : "All forums"}</option>
           {(Object.keys(FORUM_LABEL) as CaseForum[]).map((f) => (
@@ -461,7 +461,7 @@ function CasesIndexInner() {
         <select
           value={jurisdiction}
           onChange={(e) => setJurisdiction(e.target.value)}
-          className="rounded-md bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] shadow-sm outline-none cursor-pointer"
+          className="rounded-md bg-white dark:bg-[#1a1a1a] border border-slate-200 dark:border-white/[0.08] px-2.5 py-1.5 text-[12px] text-slate-900 dark:text-slate-100 shadow-sm outline-none cursor-pointer"
         >
           <option value="all">
             {isDe ? "Alle Jurisdiktionen" : "All jurisdictions"}
@@ -479,7 +479,7 @@ function CasesIndexInner() {
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as CaseStatus | "all")}
-          className="rounded-md bg-[var(--atlas-bg-surface)] border border-[var(--atlas-border)] px-2.5 py-1.5 text-[12px] text-[var(--atlas-text-primary)] shadow-sm outline-none cursor-pointer"
+          className="rounded-md bg-white dark:bg-[#1a1a1a] border border-slate-200 dark:border-white/[0.08] px-2.5 py-1.5 text-[12px] text-slate-900 dark:text-slate-100 shadow-sm outline-none cursor-pointer"
           aria-label={isDe ? "Nach Ausgang filtern" : "Filter by outcome"}
         >
           <option value="all">{isDe ? "Alle Ausgänge" : "All outcomes"}</option>
@@ -503,22 +503,22 @@ function CasesIndexInner() {
               setJurisdiction("all");
               setStatus("all");
             }}
-            className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[12px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)]"
+            className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[12px] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
           >
             <Filter className="h-3 w-3" strokeWidth={1.5} />
             {isDe ? "Filter zurücksetzen" : "Reset filters"}
           </button>
         )}
 
-        <span className="ml-auto text-[11px] text-[var(--atlas-text-faint)]">
+        <span className="ml-auto text-[11px] text-slate-400 dark:text-slate-500">
           {filtered.length} {isDe ? "Treffer" : "results"}
         </span>
       </div>
 
       {/* Result list */}
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] p-8 text-center">
-          <p className="text-[12px] text-[var(--atlas-text-muted)]">
+        <div className="rounded-xl border border-dashed border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#1a1a1a] p-8 text-center">
+          <p className="text-[12px] text-slate-500 dark:text-slate-400">
             {isDe
               ? "Keine Entscheidungen für diese Filter."
               : "No matters match the current filters."}
@@ -539,14 +539,14 @@ function CasesIndexInner() {
             return (
               <li
                 key={c.id}
-                className="group rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] hover:bg-[var(--atlas-bg-surface-muted)] shadow-sm hover:shadow transition-all"
+                className="group rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#1a1a1a] hover:bg-slate-50 dark:hover:bg-white/[0.04] shadow-sm hover:shadow transition-all"
               >
                 <Link
                   href={`/atlas/cases/${encodeURIComponent(c.id)}`}
                   className="block p-4"
                 >
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider font-mono text-[var(--atlas-text-muted)]">
+                    <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider font-mono text-slate-500 dark:text-slate-400">
                       <span>{c.jurisdiction}</span>
                       <span>·</span>
                       <span>{c.date_decided.slice(0, 4)}</span>
@@ -562,24 +562,24 @@ function CasesIndexInner() {
                     </span>
                   </div>
 
-                  <h3 className="text-[14px] font-semibold text-[var(--atlas-text-primary)] mb-1 leading-snug line-clamp-2">
+                  <h3 className="text-[14px] font-semibold text-slate-900 dark:text-slate-100 mb-1 leading-snug line-clamp-2">
                     {title}
                   </h3>
 
-                  <p className="text-[11px] text-[var(--atlas-text-secondary)] mb-2">
+                  <p className="text-[11px] text-slate-700 dark:text-slate-300 mb-2">
                     <span className="font-medium">{plaintiff}</span>
-                    <span className="mx-1.5 text-[var(--atlas-text-faint)]">
+                    <span className="mx-1.5 text-slate-400 dark:text-slate-500">
                       v.
                     </span>
                     <span className="font-medium">{defendant}</span>
                   </p>
 
-                  <p className="text-[11px] text-[var(--atlas-text-muted)] line-clamp-2 mb-3">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">
                     {significance}
                   </p>
 
-                  <div className="flex items-center justify-between gap-2 flex-wrap pt-2 border-t border-[var(--atlas-border-subtle)]">
-                    <span className="inline-flex items-center gap-1 text-[10px] text-[var(--atlas-text-muted)]">
+                  <div className="flex items-center justify-between gap-2 flex-wrap pt-2 border-t border-slate-100 dark:border-white/[0.04]">
+                    <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
                       <Scale className="h-3 w-3" strokeWidth={1.5} />
                       {forumName}
                     </span>
@@ -590,7 +590,7 @@ function CasesIndexInner() {
                       </span>
                     )}
                     {c.parties_mentioned && c.parties_mentioned.length > 0 && (
-                      <span className="inline-flex items-center gap-1 text-[10px] text-[var(--atlas-text-muted)]">
+                      <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
                         <Building2 className="h-3 w-3" strokeWidth={1.5} />
                         {c.parties_mentioned.slice(0, 2).join(", ")}
                         {c.parties_mentioned.length > 2 &&
@@ -610,7 +610,7 @@ function CasesIndexInner() {
                       language={language as "de" | "en" | "fr"}
                     />
                     <ArrowRight
-                      className="h-3 w-3 ml-auto text-[var(--atlas-text-faint)] group-hover:text-violet-600 transition-colors"
+                      className="h-3 w-3 ml-auto text-slate-400 dark:text-slate-500 group-hover:text-violet-600 transition-colors"
                       strokeWidth={1.5}
                     />
                   </div>
@@ -633,9 +633,9 @@ export default function CasesIndexPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex flex-col h-full min-h-screen bg-[var(--atlas-bg-page)] p-4 gap-3">
-          <div className="h-6 w-48 rounded bg-[var(--atlas-bg-inset)] animate-pulse" />
-          <div className="h-32 rounded-xl bg-[var(--atlas-bg-inset)] animate-pulse" />
+        <div className="flex flex-col h-full min-h-screen bg-white dark:bg-[#212121] p-4 gap-3">
+          <div className="h-6 w-48 rounded bg-slate-50 dark:bg-white/[0.02] animate-pulse" />
+          <div className="h-32 rounded-xl bg-slate-50 dark:bg-white/[0.02] animate-pulse" />
         </div>
       }
     >

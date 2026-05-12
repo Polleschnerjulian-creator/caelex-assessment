@@ -14,7 +14,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2, AlertTriangle, Check } from "lucide-react";
 import Link from "next/link";
 import { MANDATE_TEMPLATES, templateById } from "@/lib/atlas/mandate-templates";
 
@@ -39,6 +39,16 @@ const JURISDICTIONS = [
 const INPUT_CLASS =
   "w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition-colors focus:border-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-emerald-500";
 
+interface ConflictHit {
+  mandateId: string;
+  mandateName: string;
+  clientName: string | null;
+  matchedField: "clientName" | "party" | "opposingCounsel" | "instructions";
+  matchedTerm: string;
+  confidence: number;
+  status: string;
+}
+
 export function CreateMandateForm() {
   const router = useRouter();
   const [name, setName] = useState("");
@@ -49,6 +59,41 @@ export function CreateMandateForm() {
   const [customInstructions, setCustomInstructions] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /* Conflict-of-Interest check state. Triggered onBlur of clientName.
+     Lawyer can dismiss the warning + proceed (with conflict logged
+     for the audit-trail) OR cancel the mandate-creation flow. */
+  const [conflictHits, setConflictHits] = useState<ConflictHit[] | null>(null);
+  const [conflictChecking, setConflictChecking] = useState(false);
+  const [conflictDismissed, setConflictDismissed] = useState(false);
+
+  /* §43a BRAO conflict check. Runs when the lawyer blurs the
+     clientName field with non-empty value. Substring match against
+     every active+closed mandate in the org. Hits don't BLOCK the
+     creation — they raise a banner the user must explicitly dismiss. */
+  const runConflictCheck = async (client: string) => {
+    if (!client.trim()) {
+      setConflictHits(null);
+      setConflictDismissed(false);
+      return;
+    }
+    setConflictChecking(true);
+    try {
+      const res = await fetch("/api/atlas/conflict-check", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ clientName: client.trim() }),
+      });
+      if (!res.ok) {
+        setConflictHits(null);
+        return;
+      }
+      const data = (await res.json()) as { hits: ConflictHit[] };
+      setConflictHits(data.hits ?? []);
+      setConflictDismissed(false);
+    } finally {
+      setConflictChecking(false);
+    }
+  };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -135,6 +180,92 @@ export function CreateMandateForm() {
         </div>
       </div>
 
+      {/* Conflict-of-Interest banner — surfaces whenever the org has
+          one or more existing mandates that match the entered client
+          name. §43a BRAO requires a firm-wide check before opening
+          a new mandate. User can review-then-dismiss to proceed or
+          cancel + adjust the client name. */}
+      {conflictChecking && (
+        <div className="mb-4 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[12px] text-slate-600 dark:border-slate-700/60 dark:bg-slate-900/40 dark:text-slate-400">
+          <Loader2 size={12} className="animate-spin" />
+          Prüfe Interessenkollision…
+        </div>
+      )}
+      {conflictHits && conflictHits.length > 0 && !conflictDismissed && (
+        <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-500/30 dark:bg-amber-500/[0.08]">
+          <div className="mb-2 flex items-start gap-2">
+            <AlertTriangle
+              size={14}
+              className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400"
+            />
+            <div className="flex-1">
+              <p className="text-[13px] font-semibold text-amber-900 dark:text-amber-100">
+                Möglicher Interessenkonflikt ({conflictHits.length})
+              </p>
+              <p className="mt-0.5 text-[11.5px] text-amber-800 dark:text-amber-200/85">
+                Folgende bestehende Mandate könnten zu „{clientName.trim()}" in
+                Bezug stehen. Prüfe sorgfältig nach §43a BRAO bevor du
+                fortfährst.
+              </p>
+            </div>
+          </div>
+          <ul className="mb-2 space-y-1">
+            {conflictHits.slice(0, 5).map((h) => (
+              <li
+                key={h.mandateId}
+                className="rounded border border-amber-200 bg-white/60 px-2.5 py-1.5 text-[12px] dark:border-amber-500/20 dark:bg-amber-500/[0.04]"
+              >
+                <div className="flex items-baseline gap-2">
+                  <Link
+                    href={`/atlas/mandate/${h.mandateId}`}
+                    target="_blank"
+                    className="font-medium text-amber-900 underline-offset-2 hover:underline dark:text-amber-100"
+                  >
+                    {h.mandateName}
+                  </Link>
+                  <span className="text-[10.5px] text-amber-700/70 dark:text-amber-300/70">
+                    ·{" "}
+                    {h.matchedField === "clientName"
+                      ? "Klient"
+                      : "Custom-Instructions"}
+                    {h.confidence === 1.0 ? " · exakt" : " · partial"}
+                  </span>
+                </div>
+                {h.clientName && (
+                  <div className="mt-0.5 text-[10.5px] text-amber-700/80 dark:text-amber-300/70">
+                    Klient: {h.clientName}
+                  </div>
+                )}
+              </li>
+            ))}
+            {conflictHits.length > 5 && (
+              <li className="px-2.5 text-[10.5px] text-amber-700/70 dark:text-amber-300/70">
+                + {conflictHits.length - 5} weitere Treffer
+              </li>
+            )}
+          </ul>
+          <button
+            type="button"
+            onClick={() => setConflictDismissed(true)}
+            className="text-[11.5px] text-amber-800 underline underline-offset-2 hover:text-amber-900 dark:text-amber-200 dark:hover:text-amber-100"
+          >
+            Konflikt geprüft — fortfahren
+          </button>
+        </div>
+      )}
+      {conflictHits &&
+        conflictHits.length === 0 &&
+        clientName.trim().length > 0 && (
+          <div className="mb-4 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[12px] text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/[0.06] dark:text-emerald-200">
+            <Check
+              size={12}
+              className="shrink-0 text-emerald-600 dark:text-emerald-400"
+            />
+            Keine Interessenkollision gefunden — alle bestehenden Mandate
+            unbedenklich.
+          </div>
+        )}
+
       <form onSubmit={handleSubmit} className="space-y-5">
         <Field
           label="Name *"
@@ -161,6 +292,7 @@ export function CreateMandateForm() {
                 maxLength={200}
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
+                onBlur={(e) => runConflictCheck(e.target.value)}
                 placeholder="Spire Global Inc."
                 className={INPUT_CLASS}
               />

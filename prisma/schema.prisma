@@ -203,6 +203,8 @@ model User {
   atlasClausesCreated      AtlasClause[]        @relation("AtlasClauseCreators")
   /// Atlas notes / highlights — private per-user knowledge base.
   atlasNotes               AtlasNote[]          @relation("AtlasNotes")
+  /// Atlas time-tracking entries.
+  atlasTimeEntries         AtlasTimeEntry[]     @relation("AtlasTimeEntries")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -11671,11 +11673,12 @@ model AtlasMandate {
   closedAt   DateTime?
 
   // Relations
-  chats     AtlasChat[]
-  files     AtlasMandateFile[]
-  members   AtlasMandateMember[]
-  deadlines AtlasMandateDeadline[]
-  clauses   AtlasClause[]
+  chats       AtlasChat[]
+  files       AtlasMandateFile[]
+  members     AtlasMandateMember[]
+  deadlines   AtlasMandateDeadline[]
+  clauses     AtlasClause[]
+  timeEntries AtlasTimeEntry[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -12008,4 +12011,63 @@ model AtlasNote {
   @@index([userId, createdAt])
   @@index([userId, chatId])
   @@index([userId, mandateId])
+}
+
+/// Atlas V2 Time-Tracking (Sprint 12, 2026-05-12).
+///
+/// Lawyer time entries per chat/mandate. Optional billable flag +
+/// description so the same model serves both:
+///   - Internal time-spent tracking (productivity / utilisation)
+///   - Billable hours export to DATEV / RA-Micro
+///
+/// Why no auto-tracking from chat duration: lawyers want to
+/// separate "AI did the research" from "I reviewed it". The chat
+/// duration is a signal but not the truth. Manual entry stays
+/// the source-of-truth with an "Atlas suggested X minutes" hint.
+model AtlasTimeEntry {
+  id String @id @default(cuid())
+
+  userId String
+  user   User @relation("AtlasTimeEntries", fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Mandate the work was on. Required — non-mandate time
+  /// shouldn't live in Atlas (use a separate non-billable system).
+  mandateId String
+  mandate   AtlasMandate @relation(fields: [mandateId], references: [id], onDelete: Cascade)
+
+  /// Optional source chat. Null for time spent outside Atlas chat
+  /// (reviewing files, drafting letters, meetings) that the lawyer
+  /// still wants to attribute to this mandate.
+  chatId String?
+
+  /// Duration in minutes. We store minutes (not seconds) so a
+  /// "0:15" entry isn't precise to the second — matches how
+  /// lawyers actually track time (6-minute increments are common
+  /// in DACH billing).
+  minutes Int
+
+  /// Free-text description ("ITAR-Klassifizierung recherchiert",
+  /// "Vertrag Hess gegengelesen"). Exported as billing-note.
+  description String
+
+  /// Whether this is billable (default true). Internal time
+  /// (e.g. CLE, business-dev) gets billable=false.
+  billable Boolean @default(true)
+
+  /// Hourly rate snapshot at time-of-entry — frozen so changing
+  /// the rate later doesn't retroactively change billing history.
+  /// Nullable for non-billable + for orgs that don't track rates
+  /// in Atlas (rate-management often lives in DATEV/RA-Micro).
+  hourlyRateEur Float?
+
+  /// Date the work happened. Defaults to today but editable for
+  /// back-dated entries (lawyer entered Friday's work on Monday).
+  workedOn DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, workedOn])
+  @@index([mandateId, workedOn])
+  @@index([chatId])
 }
