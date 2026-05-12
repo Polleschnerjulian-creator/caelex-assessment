@@ -25,6 +25,9 @@ import {
   PenLine,
   Brain,
   Download,
+  Copy,
+  Bookmark,
+  BookmarkCheck,
 } from "lucide-react";
 import { ChatInput } from "./ChatInput";
 import { SuggestedFollowups } from "./SuggestedFollowups";
@@ -355,7 +358,7 @@ export function AtlasChatView({ chatId }: Props) {
               isLast && m.role === "assistant" && !streaming;
             return (
               <div key={m.id}>
-                <MessageRow message={m} />
+                <MessageRow message={m} chatId={chatId} />
                 {showFollowups && followupRefreshKey > 0 && (
                   <SuggestedFollowups
                     chatId={chatId}
@@ -415,7 +418,13 @@ export function AtlasChatView({ chatId }: Props) {
   );
 }
 
-function MessageRow({ message }: { message: ChatMessageRecord }) {
+function MessageRow({
+  message,
+  chatId,
+}: {
+  message: ChatMessageRecord;
+  chatId: string;
+}) {
   if (message.role === "user") {
     const text = extractText(message.content);
     return (
@@ -472,6 +481,10 @@ function MessageRow({ message }: { message: ChatMessageRecord }) {
       {Array.isArray(message.citations) && message.citations.length > 0 && (
         <CitationsPanel citations={message.citations as CitationRecord[]} />
       )}
+      {/* Inline actions: copy text, save the user-question as a
+          workflow. Stays out of the way (small icon row, bottom-
+          right) but available for power users. */}
+      <AssistantActions text={text} chatId={chatId} />
       {message.costUsd != null && (
         <div className="text-[10px] text-slate-400 dark:text-slate-600">
           {message.inputTokens}↑ · {message.outputTokens}↓ tokens · $
@@ -776,6 +789,105 @@ function ToolStepRow({ call }: { call: InFlightToolCall }) {
  * vertical list — preserving "what did Atlas use to answer this" as
  * a permanent audit trail.
  */
+/**
+ * Inline actions surfaced under each assistant message:
+ *   • Copy text → clipboard. Visual "kopiert!" feedback for 1.5s.
+ *   • Bookmark  → toggles a localStorage flag the user can later
+ *                 use to filter "ihre wichtigsten Antworten". Stored
+ *                 client-side only (no backend) — graduation to a
+ *                 server-side Bookmark model is a Sprint 7+ item.
+ *
+ * Row stays out of the way (small icon row, faint by default,
+ * full opacity on hover/focus) so the answer text remains primary.
+ */
+function AssistantActions({ text, chatId }: { text: string; chatId: string }) {
+  const [copied, setCopied] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
+
+  /* Bookmark state lives in localStorage. The key includes chatId
+     so bookmarks survive across sessions + are per-chat. Hydrate
+     once on mount. */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem(`atlas-bookmarks-${chatId}`);
+      if (!raw) return;
+      const set = JSON.parse(raw) as string[];
+      const fingerprint = text.slice(0, 60);
+      setBookmarked(set.includes(fingerprint));
+    } catch {
+      /* ignore — bookmark state is a UX nicety, not critical */
+    }
+  }, [chatId, text]);
+
+  const toggleBookmark = () => {
+    try {
+      const key = `atlas-bookmarks-${chatId}`;
+      const fingerprint = text.slice(0, 60);
+      const raw = localStorage.getItem(key);
+      const set: string[] = raw ? (JSON.parse(raw) as string[]) : [];
+      const idx = set.indexOf(fingerprint);
+      if (idx === -1) {
+        set.push(fingerprint);
+        setBookmarked(true);
+      } else {
+        set.splice(idx, 1);
+        setBookmarked(false);
+      }
+      localStorage.setItem(key, JSON.stringify(set));
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* Browser may reject clipboard in non-secure contexts —
+         fail silently. */
+    }
+  };
+
+  return (
+    <div className="mt-1 flex items-center gap-1 opacity-50 transition-opacity hover:opacity-100 focus-within:opacity-100">
+      <button
+        type="button"
+        onClick={handleCopy}
+        title={copied ? "Kopiert!" : "Antwort kopieren"}
+        aria-label="Antwort kopieren"
+        className="inline-flex h-6 items-center gap-1 rounded px-1.5 text-[11px] text-slate-500 transition-colors hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-200"
+      >
+        {copied ? (
+          <CheckIcon
+            size={11}
+            className="text-emerald-600 dark:text-emerald-400"
+          />
+        ) : (
+          <Copy size={11} />
+        )}
+        <span>{copied ? "Kopiert" : "Kopieren"}</span>
+      </button>
+      <button
+        type="button"
+        onClick={toggleBookmark}
+        title={bookmarked ? "Bookmark entfernen" : "Antwort bookmarken"}
+        aria-label={bookmarked ? "Bookmark entfernen" : "Antwort bookmarken"}
+        className={`inline-flex h-6 items-center gap-1 rounded px-1.5 text-[11px] transition-colors ${
+          bookmarked
+            ? "bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/15"
+            : "text-slate-500 hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-200"
+        }`}
+      >
+        {bookmarked ? <BookmarkCheck size={11} /> : <Bookmark size={11} />}
+        <span>{bookmarked ? "Bookmarkt" : "Bookmark"}</span>
+      </button>
+    </div>
+  );
+}
+
 function ToolTraceSummary({ tools }: { tools: string[] }) {
   return (
     <details className="rounded-md bg-slate-50 px-3 py-1.5 text-[11.5px] dark:bg-white/[0.02]">

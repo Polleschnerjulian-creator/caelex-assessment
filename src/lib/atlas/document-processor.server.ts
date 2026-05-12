@@ -69,6 +69,54 @@ async function extractPdfText(data: Buffer): Promise<string | null> {
   }
 }
 
+/* DOCX text extraction via mammoth.js. Strips formatting and returns
+   the raw text body — same shape as PDF extraction. Mammoth uses
+   `extractRawText` (vs `convertToHtml`) since the Atlas chat-engine
+   ingests plain text; HTML adds noise to the LLM context. */
+async function extractDocxText(data: Buffer): Promise<string | null> {
+  try {
+    const mammoth = await import("mammoth");
+    const result = await mammoth.extractRawText({ buffer: data });
+    const text = result.value;
+    return text && text.trim().length > 0 ? text : null;
+  } catch (err) {
+    logger.warn("[atlas/document-processor] DOCX extraction failed", {
+      bytes: data.length,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return null;
+  }
+}
+
+/* XLSX text extraction via sheetjs. Each sheet renders as a CSV-like
+   block prefixed with `## SheetName`. Lawyers usually attach a
+   spreadsheet for a single concept (e.g. "satellite-orbit-list")
+   so this flat representation is enough for the LLM to read by
+   row + column without us building a full table-renderer. */
+async function extractXlsxText(data: Buffer): Promise<string | null> {
+  try {
+    const XLSX = await import("xlsx");
+    const wb = XLSX.read(data, { type: "buffer" });
+    const out: string[] = [];
+    for (const sheetName of wb.SheetNames) {
+      const sheet = wb.Sheets[sheetName];
+      if (!sheet) continue;
+      const csv = XLSX.utils.sheet_to_csv(sheet, { blankrows: false });
+      if (csv && csv.trim().length > 0) {
+        out.push(`## ${sheetName}\n\n${csv}`);
+      }
+    }
+    const text = out.join("\n\n");
+    return text && text.trim().length > 0 ? text : null;
+  } catch (err) {
+    logger.warn("[atlas/document-processor] XLSX extraction failed", {
+      bytes: data.length,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return null;
+  }
+}
+
 /* ── Config ──────────────────────────────────────────────────────────── */
 
 export const MAX_FILE_BYTES = 50 * 1024 * 1024; // 50 MB
@@ -183,13 +231,14 @@ export async function uploadFileToMandate(args: {
     };
   }
 
-  /* 3. Best-effort text extraction. Three paths:
+  /* 3. Best-effort text extraction. Four paths:
      (a) text/* + markdown + html + csv → utf8 decode (fast, no deps).
      (b) application/pdf → unpdf (Workers-compatible, no native deps).
-     (c) Office binaries (.doc(x), .xls(x)) → still NULL — would need
-         mammoth.js (DOCX) + xlsx (Excel) packages. Files upload but
-         extracted-text-search misses them. Documented in the UI hint
-         on MandateFileUpload. */
+     (c) DOCX (Word) → mammoth.js extractRawText.
+     (d) XLSX (Excel) → sheetjs sheet_to_csv per worksheet.
+     Legacy .doc + .xls (the old binary OLE formats from pre-2007 Office)
+     are still NULL — they need separate parsers and are rare enough
+     in legal-doc workflows to defer. */
   let extractedText: string | null = null;
   if (TEXT_INLINE_MIME.has(mimeType)) {
     try {
@@ -199,6 +248,16 @@ export async function uploadFileToMandate(args: {
     }
   } else if (mimeType === "application/pdf") {
     extractedText = await extractPdfText(data);
+  } else if (
+    mimeType ===
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  ) {
+    extractedText = await extractDocxText(data);
+  } else if (
+    mimeType ===
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  ) {
+    extractedText = await extractXlsxText(data);
   }
   /* Cap at 200 KB to keep DB rows reasonable; the LLM tool layer
      can re-fetch the full file from R2 if it ever needs more. */

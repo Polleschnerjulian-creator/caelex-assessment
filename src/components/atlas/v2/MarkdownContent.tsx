@@ -57,17 +57,38 @@ export function MarkdownContent({ text, citations }: Props) {
   return <>{blocks.map((b, i) => renderBlock(b, i, sourceMap))}</>;
 }
 
-/* ── Block parsing ───────────────────────────────────────────────────── */
+/* ── Block parsing ─────────────────────────────────────────────────────
+ * Block kinds we render:
+ *   - table       Markdown pipe-tables   ("| col | col |\n|---|---|\n…")
+ *   - heading     #/##/### lines         ("# Heading")
+ *   - list        - or * or 1.           consecutive list items
+ *   - blockquote  > line(s)              consecutive '> ' prefixed
+ *   - paragraph   everything else
+ *
+ * Lists support unordered (- / *) and ordered (1.) styles. Nested
+ * lists are NOT supported on this round — we surface a flat list.
+ * Most lawyer-grade responses use shallow lists; deep nesting would
+ * need a heavier parser.
+ * --------------------------------------------------------------------*/
 
 type Block =
   | { kind: "table"; rows: string[][]; header: string[] }
+  | { kind: "heading"; level: 1 | 2 | 3; text: string }
+  | { kind: "list"; ordered: boolean; items: string[] }
+  | { kind: "blockquote"; text: string }
   | { kind: "paragraph"; text: string };
+
+const HEADING_RE = /^(#{1,3})\s+(.+)$/;
+const UL_RE = /^[-*]\s+(.+)$/;
+const OL_RE = /^\d+\.\s+(.+)$/;
+const QUOTE_RE = /^>\s?(.*)$/;
 
 function parseBlocks(text: string): Block[] {
   const lines = text.split("\n");
   const blocks: Block[] = [];
   let i = 0;
   while (i < lines.length) {
+    /* Table — multi-line, leading row + separator + body. */
     if (isTableStart(lines, i)) {
       const result = consumeTable(lines, i);
       if (result) {
@@ -76,17 +97,71 @@ function parseBlocks(text: string): Block[] {
         continue;
       }
     }
-    if (lines[i].trim() === "") {
+
+    const trimmed = lines[i].trim();
+
+    /* Blank line — block separator. */
+    if (trimmed === "") {
       i++;
       continue;
     }
-    /* Collect consecutive non-empty lines into one paragraph. */
+
+    /* Heading — one line, # / ## / ###. */
+    const h = trimmed.match(HEADING_RE);
+    if (h) {
+      const level = h[1].length as 1 | 2 | 3;
+      blocks.push({ kind: "heading", level, text: h[2].trim() });
+      i++;
+      continue;
+    }
+
+    /* List — consume consecutive bullet or numbered items. */
+    if (UL_RE.test(trimmed) || OL_RE.test(trimmed)) {
+      const ordered = OL_RE.test(trimmed);
+      const items: string[] = [];
+      while (i < lines.length) {
+        const t = lines[i].trim();
+        if (t === "") break;
+        const ul = t.match(UL_RE);
+        const ol = t.match(OL_RE);
+        if (ul) items.push(ul[1]);
+        else if (ol) items.push(ol[1]);
+        else break;
+        i++;
+      }
+      if (items.length > 0) blocks.push({ kind: "list", ordered, items });
+      continue;
+    }
+
+    /* Blockquote — consecutive '> ' lines joined with newlines. */
+    if (QUOTE_RE.test(trimmed)) {
+      const quoteLines: string[] = [];
+      while (i < lines.length) {
+        const t = lines[i].trim();
+        if (t === "") break;
+        const q = t.match(QUOTE_RE);
+        if (!q) break;
+        quoteLines.push(q[1]);
+        i++;
+      }
+      blocks.push({ kind: "blockquote", text: quoteLines.join("\n") });
+      continue;
+    }
+
+    /* Paragraph — non-empty consecutive lines until next blank /
+       table / heading / list / quote line. */
     const start = i;
-    while (
-      i < lines.length &&
-      lines[i].trim() !== "" &&
-      !isTableStart(lines, i)
-    ) {
+    while (i < lines.length) {
+      const t = lines[i].trim();
+      if (
+        t === "" ||
+        isTableStart(lines, i) ||
+        HEADING_RE.test(t) ||
+        UL_RE.test(t) ||
+        OL_RE.test(t) ||
+        QUOTE_RE.test(t)
+      )
+        break;
       i++;
     }
     const para = lines.slice(start, i).join("\n").trim();
@@ -184,6 +259,80 @@ function renderBlock(
       </div>
     );
   }
+  if (b.kind === "heading") {
+    /* Headings use distinct sizes so a structured answer reads like
+       a memo. We cap at h3 — h4+ would crowd the prose. */
+    if (b.level === 1) {
+      return (
+        <h2
+          key={key}
+          className="mb-3 mt-5 text-[18px] font-semibold leading-tight text-slate-900 first:mt-0 dark:text-slate-100"
+        >
+          {renderInline(b.text, sourceMap)}
+        </h2>
+      );
+    }
+    if (b.level === 2) {
+      return (
+        <h3
+          key={key}
+          className="mb-2 mt-4 text-[15.5px] font-semibold leading-snug text-slate-900 first:mt-0 dark:text-slate-100"
+        >
+          {renderInline(b.text, sourceMap)}
+        </h3>
+      );
+    }
+    return (
+      <h4
+        key={key}
+        className="mb-2 mt-3 text-[13.5px] font-semibold uppercase tracking-wide text-slate-700 first:mt-0 dark:text-slate-300"
+      >
+        {renderInline(b.text, sourceMap)}
+      </h4>
+    );
+  }
+
+  if (b.kind === "list") {
+    /* Flat list — see parseBlocks for why we don't support nesting.
+       We render ol/ul natively (vs paragraph + bullet glyphs) so
+       browser semantics + accessibility tooling pick it up. */
+    if (b.ordered) {
+      return (
+        <ol
+          key={key}
+          className="my-3 list-decimal space-y-1 pl-6 last:mb-0 marker:text-slate-400 dark:marker:text-slate-500"
+        >
+          {b.items.map((it, ii) => (
+            <li key={ii}>{renderInline(it, sourceMap)}</li>
+          ))}
+        </ol>
+      );
+    }
+    return (
+      <ul
+        key={key}
+        className="my-3 list-disc space-y-1 pl-6 last:mb-0 marker:text-slate-400 dark:marker:text-slate-500"
+      >
+        {b.items.map((it, ii) => (
+          <li key={ii}>{renderInline(it, sourceMap)}</li>
+        ))}
+      </ul>
+    );
+  }
+
+  if (b.kind === "blockquote") {
+    /* Subtle left-border accent. Quote text is one shade muter than
+       paragraph text to read as commentary, not as the answer. */
+    return (
+      <blockquote
+        key={key}
+        className="my-3 border-l-2 border-slate-300 pl-3 text-slate-600 last:mb-0 dark:border-slate-600 dark:text-slate-400"
+      >
+        {renderInline(b.text, sourceMap)}
+      </blockquote>
+    );
+  }
+
   return (
     <p key={key} className="mb-3 last:mb-0 whitespace-pre-wrap">
       {renderInline(b.text, sourceMap)}
@@ -229,16 +378,18 @@ function renderInline(
 
   /* Greedy split on the first matched pattern; recurse on the
      remainder. Order matters: bold (**) before italic (*) so we
-     don't split inside bold. */
+     don't split inside bold. Link pattern has TWO capture groups
+     (text + url) so the wrap signature accepts the full match
+     array — single-group patterns read match[1] as before. */
   const patterns: Array<{
     re: RegExp;
-    wrap: (m: string) => ReactNode;
+    wrap: (m: RegExpMatchArray) => ReactNode;
   }> = [
     {
       re: /\*\*(.+?)\*\*/,
       wrap: (m) => (
         <strong className="font-semibold text-slate-900 dark:text-slate-100">
-          {m}
+          {m[1]}
         </strong>
       ),
     },
@@ -246,9 +397,31 @@ function renderInline(
       re: /`([^`]+)`/,
       wrap: (m) => (
         <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-[11.5px] text-slate-800 dark:bg-white/[0.06] dark:text-slate-200">
-          {m}
+          {m[1]}
         </code>
       ),
+    },
+    {
+      /* [text](url) → safe external link. We only allow http(s)://
+         and mailto: — every other scheme (javascript:, data:, etc.)
+         degrades to a plain-text span. Order matters: this MUST
+         come before the [ATLAS:…] pattern. The pattern captures
+         match[1]=text and match[2]=url. */
+      re: /\[([^\]]+)\]\((https?:\/\/[^\s)]+|mailto:[^\s)]+)\)/,
+      wrap: (m) => {
+        const linkText = m[1];
+        const url = m[2];
+        return (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline decoration-slate-400 underline-offset-2 transition-colors hover:decoration-slate-700 dark:decoration-slate-500 dark:hover:decoration-slate-300"
+          >
+            {linkText}
+          </a>
+        );
+      },
     },
     {
       /* [ATLAS:source-id] → clickable numbered pill. The pill shows
@@ -259,7 +432,8 @@ function renderInline(
          non-interactive fallback showing a short source-id label. */
       re: /\[ATLAS:([^\]]+)\]/,
       wrap: (m) => {
-        const hit = sourceMap.get(m);
+        const sourceId = m[1];
+        const hit = sourceMap.get(sourceId);
         if (hit) {
           return (
             <a
@@ -276,7 +450,8 @@ function renderInline(
           );
         }
         /* Streaming fallback — citations not yet extracted. */
-        const shortId = m.length > 16 ? m.slice(0, 14) + "…" : m;
+        const shortId =
+          sourceId.length > 16 ? sourceId.slice(0, 14) + "…" : sourceId;
         return (
           <sup className="ml-0.5 inline-flex items-center rounded-full bg-slate-100 px-1.5 py-0 font-mono text-[10px] font-medium text-slate-700 dark:bg-white/[0.06] dark:text-slate-300">
             {shortId}
@@ -294,7 +469,7 @@ function renderInline(
         const start = m.index;
         const end = start + m[0].length;
         if (!earliest || start < earliest.start) {
-          earliest = { start, end, wrap: p.wrap(m[1]) };
+          earliest = { start, end, wrap: p.wrap(m) };
         }
       }
     }
