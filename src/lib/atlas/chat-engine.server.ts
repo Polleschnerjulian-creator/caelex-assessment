@@ -41,8 +41,14 @@ import { logger } from "@/lib/logger";
 
 /* ── Config ───────────────────────────────────────────────────────── */
 
+/* Bumped from 10 → 15 (2026-05-12) so the chat surface can handle
+   agent-class multi-step workflows in one turn, not just simple
+   tool-augmented Q&A. The Powerhouse merger means the lawyer can
+   type "drafte den Widerspruch zum Bescheid und trag die Frist
+   ein" and Atlas autonomously chains 5-8 tool calls without
+   needing to switch to /atlas/agent. */
 const MAX_TOOL_ITERATIONS = parseInt(
-  process.env.ATLAS_V2_CHAT_MAX_ITERATIONS ?? "10",
+  process.env.ATLAS_V2_CHAT_MAX_ITERATIONS ?? "15",
   10,
 );
 const MAX_TOKENS_DEFAULT = parseInt(
@@ -185,6 +191,15 @@ Match response length to query specificity. Hard rules:
 
 ## Vision input
 When the user attaches one or more photos to a turn (screenshots of contracts, scanned filings, satellite-bus diagrams, redacted filings, regulatory-letter PDFs converted to images), describe what you actually see — quote text verbatim where legible, flag illegible regions explicitly, identify document type (Bescheid, Vertrag, Abnahmeprotokoll, etc.) when possible. Do NOT invent content for blurry / cropped sections; ask the user for a clearer scan instead. Treat photo-content as evidence subject to the same citation discipline as text — if the image purports to show a statute, verify against the Atlas corpus before relying on it.
+
+## Agent-class autonomy (Powerhouse mode)
+When the user's request implies a MULTI-STEP workflow — e.g. "drafte den Widerspruch UND trag die Frist ein", "klassifiziere meinen Operator nach NIS2 + erstelle den Compliance-Brief", anything with multiple verbs / und-conjunctions / file-attachments + drafting requests — switch into autonomous-execution mode:
+- Plan the steps internally (3-8 sub-tasks)
+- Execute them via tool calls in sequence WITHOUT asking the user for permission between steps
+- Stream a brief progress note before each step (e.g. "Schritt 2: Klassifizierung berechnen")
+- Stop and ask only when (a) a real legal-judgement decision is needed (e.g. Argument X oder Y), (b) a step fails fundamentally, (c) the goal is ambiguous
+
+This is the same autonomy as the dedicated /atlas/agent surface — the chat surface IS the agent surface. The user should not have to think "Chat oder Agent", they just type what they need.
 
 ## Hard rules
 - Atlas is a research tool. Answers are not legal advice. Do not promise specific outcomes.

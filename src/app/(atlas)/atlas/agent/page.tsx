@@ -34,6 +34,8 @@ import {
   FolderInput,
   CalendarPlus,
   Check,
+  Paperclip,
+  X,
 } from "lucide-react";
 import { MarkdownContent } from "@/components/atlas/v2/MarkdownContent";
 import { AtlasMark } from "@/components/atlas/v2/AtlasLogo";
@@ -119,6 +121,16 @@ export default function AgentPage() {
      triggered already so we can disable the buttons + show a Check. */
   const [savedToVault, setSavedToVault] = useState(false);
   const [savedDeadlines, setSavedDeadlines] = useState<Set<string>>(new Set());
+  /* Pre-run file attachments — Bescheide / Verträge / etc. that
+     Atlas should read first, then run the agent on them. Each gets
+     extracted via /api/atlas/extract and the text is prepended to
+     the goal as a fenced [Anhang] block. */
+  const [attachments, setAttachments] = useState<
+    { fileName: string; text: string }[]
+  >([]);
+  const [extractingFiles, setExtractingFiles] = useState<string[]>([]);
+  const [attachError, setAttachError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
 
   /* Fetch mandate list on mount so the Mandate-Picker is populated.
@@ -143,6 +155,69 @@ export default function AgentPage() {
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [steps.length, finalText, usage]);
 
+  /* File-extraction for the agent. Posts each PDF/DOCX/TXT to
+     /api/atlas/extract (already built for the chat composer) and
+     keeps the extracted text in local state. Runs sequentially so
+     the spinner-rows show one-at-a-time. */
+  const handleAddFile = async (file: File) => {
+    setAttachError(null);
+    if (file.size > 10 * 1024 * 1024) {
+      setAttachError(
+        `Datei zu groß (${Math.round(file.size / 1024)} KB; max 10 MB).`,
+      );
+      return;
+    }
+    setExtractingFiles((prev) => [...prev, file.name]);
+    try {
+      /* Plain-text files we can read client-side — saves a server
+         round-trip and keeps the spinner short. */
+      const lower = file.name.toLowerCase();
+      const isTextFile =
+        lower.endsWith(".txt") ||
+        lower.endsWith(".md") ||
+        lower.endsWith(".markdown") ||
+        file.type === "text/plain" ||
+        file.type === "text/markdown";
+      let text = "";
+      if (isTextFile) {
+        text = (await file.text()).trim();
+      } else {
+        const form = new FormData();
+        form.append("file", file);
+        const res = await fetch("/api/atlas/extract", {
+          method: "POST",
+          body: form,
+        });
+        const body = (await res.json().catch(() => ({}))) as {
+          text?: string;
+          error?: string;
+        };
+        if (!res.ok) {
+          setAttachError(
+            body.error || `Extraktion fehlgeschlagen (${res.status})`,
+          );
+          return;
+        }
+        text = (body.text ?? "").trim();
+      }
+      if (!text) {
+        setAttachError("Datei enthielt keinen extrahierbaren Text.");
+        return;
+      }
+      setAttachments((prev) => [...prev, { fileName: file.name, text }]);
+    } catch (e) {
+      setAttachError(
+        e instanceof Error ? e.message : "Datei konnte nicht gelesen werden",
+      );
+    } finally {
+      setExtractingFiles((prev) => prev.filter((n) => n !== file.name));
+    }
+  };
+
+  const removeAttachment = (idx: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== idx));
+  };
+
   const handleRun = async () => {
     if (!goal.trim() || running) return;
     setRunning(true);
@@ -153,11 +228,24 @@ export default function AgentPage() {
     setSavedToVault(false);
     setSavedDeadlines(new Set());
     try {
+      /* Build the effective goal: attached files prepended as fenced
+         [Anhang]-Blocks (same convention the chat-composer uses), so
+         Atlas knows it should read them as evidence-context for the
+         actual goal that follows. */
+      const effectiveGoal =
+        attachments.length === 0
+          ? goal.trim()
+          : attachments
+              .map(
+                (a) =>
+                  `--- Anhang: ${a.fileName} ---\n${a.text}\n--- /Anhang ---`,
+              )
+              .join("\n\n") + `\n\n${goal.trim()}`;
       const res = await fetch("/api/atlas/agent", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          goal: goal.trim(),
+          goal: effectiveGoal,
           mandateId: mandateId || undefined,
         }),
       });
@@ -240,6 +328,8 @@ export default function AgentPage() {
     setGoal("");
     setSavedToVault(false);
     setSavedDeadlines(new Set());
+    setAttachments([]);
+    setAttachError(null);
     /* Keep mandateId selection — user often runs multiple agents
        on the same mandate, no reason to make them re-pick. */
   };
@@ -368,6 +458,48 @@ export default function AgentPage() {
           )}
 
           <div className="rounded-2xl border border-slate-200 bg-white p-1 dark:border-white/[0.08] dark:bg-[#1a1a1a]">
+            {/* Attached files (PDF / DOCX / TXT / MD) — prepended to the
+                goal as fenced [Anhang]-Blocks so Atlas reads them as
+                evidence-context. Use cases: drop Bescheid + write
+                "drafte den Widerspruch", drop Vertrag + write
+                "fasse die Haftungsklauseln zusammen", etc. */}
+            {(attachments.length > 0 || extractingFiles.length > 0) && (
+              <div className="flex flex-col gap-1 px-2 pt-2">
+                {attachments.map((a, i) => (
+                  <div
+                    key={`${a.fileName}-${i}`}
+                    className="flex items-center gap-2 rounded-lg bg-slate-100 px-2.5 py-1.5 text-[11.5px] text-slate-700 dark:bg-white/[0.04] dark:text-slate-300"
+                  >
+                    <Paperclip size={12} className="shrink-0 text-slate-500" />
+                    <span className="flex-1 truncate" title={a.fileName}>
+                      {a.fileName}
+                    </span>
+                    <span className="shrink-0 text-[10px] text-slate-500">
+                      {Math.round(a.text.length / 1024)} KB Text
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeAttachment(i)}
+                      className="shrink-0 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                      aria-label="Anhang entfernen"
+                    >
+                      <X size={11} />
+                    </button>
+                  </div>
+                ))}
+                {extractingFiles.map((name) => (
+                  <div
+                    key={name}
+                    className="flex items-center gap-2 rounded-lg bg-slate-50 px-2.5 py-1.5 text-[11.5px] text-slate-500 dark:bg-white/[0.02]"
+                  >
+                    <Loader2 size={12} className="shrink-0 animate-spin" />
+                    <span className="flex-1 truncate">{name}</span>
+                    <span className="shrink-0 text-[10px]">extrahiert…</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <textarea
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
@@ -376,10 +508,37 @@ export default function AgentPage() {
               className="block w-full resize-none rounded-2xl bg-transparent px-4 py-3 text-[14px] text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
               autoFocus
             />
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.docx,.txt,.md,.markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown"
+              multiple
+              onChange={async (e) => {
+                const files = Array.from(e.target.files ?? []);
+                for (const f of files) await handleAddFile(f);
+                e.target.value = "";
+              }}
+              className="hidden"
+            />
+
             <div className="flex items-center justify-between border-t border-slate-100 px-3 py-2 dark:border-white/[0.05]">
-              <span className="text-[11px] text-slate-500">
-                {goal.length}/2000 Zeichen
-              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-2 py-1 text-[11px] text-slate-600 transition-colors hover:bg-slate-50 dark:border-white/[0.10] dark:text-slate-400 dark:hover:bg-white/[0.05]"
+                  title="Datei hochladen (PDF, DOCX, TXT, MD)"
+                >
+                  <Paperclip size={11} />
+                  Datei
+                </button>
+                <span className="text-[11px] text-slate-500">
+                  {goal.length}/2000 Zeichen
+                  {attachments.length > 0 &&
+                    ` · ${attachments.length} Anhang${attachments.length === 1 ? "" : "e"}`}
+                </span>
+              </div>
               <button
                 type="button"
                 onClick={handleRun}
@@ -391,6 +550,12 @@ export default function AgentPage() {
               </button>
             </div>
           </div>
+
+          {attachError && (
+            <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-[12.5px] text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+              {attachError}
+            </div>
+          )}
 
           {/* Suggested goals */}
           <div>
