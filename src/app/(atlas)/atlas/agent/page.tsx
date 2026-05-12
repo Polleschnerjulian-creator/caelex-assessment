@@ -36,6 +36,7 @@ import {
   Check,
   Paperclip,
   X,
+  Brain,
 } from "lucide-react";
 import { MarkdownContent } from "@/components/atlas/v2/MarkdownContent";
 import { AtlasMark } from "@/components/atlas/v2/AtlasLogo";
@@ -54,6 +55,10 @@ interface StepRecord {
   isError?: boolean;
   summary?: string;
 }
+
+/* Per-iteration thinking text is stored in a Map<iter, string> in
+   component state; no separate type needed since the Map signature
+   already documents the shape. */
 
 interface UsageStats {
   inputTokens: number;
@@ -114,6 +119,10 @@ export default function AgentPage() {
   const [mandates, setMandates] = useState<MandateListItem[]>([]);
   const [running, setRunning] = useState(false);
   const [steps, setSteps] = useState<StepRecord[]>([]);
+  /* Reasoning text per iteration — accumulated via thinking_delta
+     stream events. Keyed by iteration number; rendered next to the
+     step-cards as a "Warum?"-expandable. */
+  const [reasoning, setReasoning] = useState<Map<number, string>>(new Map());
   const [finalText, setFinalText] = useState("");
   const [usage, setUsage] = useState<UsageStats | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -222,6 +231,7 @@ export default function AgentPage() {
     if (!goal.trim() || running) return;
     setRunning(true);
     setSteps([]);
+    setReasoning(new Map());
     setFinalText("");
     setUsage(null);
     setError(null);
@@ -274,6 +284,20 @@ export default function AgentPage() {
                 textBuffer += evt.delta as string;
                 setFinalText(textBuffer);
                 break;
+              case "thinking_delta": {
+                /* Accumulate thinking text per iteration. Multiple
+                   deltas per iteration land in the same bucket;
+                   tool_use blocks for that iteration share the
+                   same reasoning. */
+                const it = evt.iteration as number;
+                const delta = evt.delta as string;
+                setReasoning((prev) => {
+                  const next = new Map(prev);
+                  next.set(it, (next.get(it) ?? "") + delta);
+                  return next;
+                });
+                break;
+              }
               case "step_start":
                 setSteps((prev) => [
                   ...prev,
@@ -322,6 +346,7 @@ export default function AgentPage() {
 
   const reset = () => {
     setSteps([]);
+    setReasoning(new Map());
     setFinalText("");
     setUsage(null);
     setError(null);
@@ -610,9 +635,37 @@ export default function AgentPage() {
           )}
 
           {/* Step-cards */}
-          {steps.map((step) => (
-            <StepCard key={step.toolId} step={step} />
-          ))}
+          {(() => {
+            /* Group steps by iteration so each iteration's
+               reasoning-panel renders ONCE above its step-cards
+               (instead of duplicating the same reasoning above
+               every tool-call in that iteration). */
+            const byIter = new Map<number, StepRecord[]>();
+            const iterations: number[] = [];
+            for (const s of steps) {
+              if (!byIter.has(s.iteration)) {
+                iterations.push(s.iteration);
+                byIter.set(s.iteration, []);
+              }
+              byIter.get(s.iteration)!.push(s);
+            }
+            return iterations.flatMap((iter) => {
+              const iterSteps = byIter.get(iter) ?? [];
+              const reasoningText = reasoning.get(iter);
+              return [
+                reasoningText ? (
+                  <ReasoningPanel
+                    key={`reasoning-${iter}`}
+                    iteration={iter}
+                    text={reasoningText}
+                  />
+                ) : null,
+                ...iterSteps.map((step) => (
+                  <StepCard key={step.toolId} step={step} />
+                )),
+              ];
+            });
+          })()}
 
           {/* Final artifact */}
           {finalText && (
@@ -822,3 +875,58 @@ function StepCard({ step }: { step: StepRecord }) {
 
 /* exportDraftAsWord handles its own blob + anchor click — no local
    download helper needed here. */
+
+/* ── ReasoningPanel ───────────────────────────────────────────────────
+ *
+ * Renders Atlas's Extended-Thinking output for one iteration. Sits
+ * ABOVE the step-cards of that iteration as a collapsible "Warum?"
+ * panel. The lawyer sees the model's actual reasoning ("ich suche
+ * im Korpus nach NIS2 Art. 21 weil der Mandant essential entity
+ * sein könnte und Art. 21 die Pflichten enthält") for full
+ * transparency.
+ *
+ * Streaming behaviour: text streams in via thinking_delta events,
+ * we accumulate it per-iteration. The panel auto-expands while
+ * the iteration is still running (= text grows), collapses to a
+ * 1-line preview once the iteration's steps complete.
+ */
+function ReasoningPanel({
+  iteration,
+  text,
+}: {
+  iteration: number;
+  text: string;
+}) {
+  const [open, setOpen] = useState(true);
+  return (
+    <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50/60 dark:border-white/[0.06] dark:bg-white/[0.02]">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-slate-100/60 dark:hover:bg-white/[0.04]"
+      >
+        <Brain
+          size={11}
+          className="shrink-0 text-slate-500 dark:text-slate-400"
+        />
+        <span className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+          Reasoning · Iteration {iteration}
+        </span>
+        <span className="ml-auto text-[10.5px] text-slate-400 dark:text-slate-500">
+          {text.length} Zeichen · {open ? "einklappen" : "anzeigen"}
+        </span>
+        <ChevronRight
+          size={11}
+          className={`shrink-0 text-slate-500 transition-transform dark:text-slate-400 ${
+            open ? "rotate-90" : ""
+          }`}
+        />
+      </button>
+      {open && (
+        <div className="whitespace-pre-wrap border-t border-slate-200 px-3 py-2 text-[12px] leading-relaxed text-slate-700 dark:border-white/[0.05] dark:text-slate-300">
+          {text}
+        </div>
+      )}
+    </div>
+  );
+}

@@ -39,7 +39,11 @@ export const maxDuration = 300;
 
 const MAX_TOOL_ITERATIONS = 15;
 const MAX_TOKENS = 6000;
-const TEMPERATURE = 0.3;
+/* Extended Thinking REQUIRES temperature=1 per Anthropic spec.
+   Agent-mode benefits from thinking transparency (lawyer wants
+   to see WHY each step was chosen) so we always enable it. */
+const TEMPERATURE = 1;
+const THINKING_BUDGET = 4000;
 
 const PostBody = z.object({
   goal: z.string().min(10).max(2_000),
@@ -234,15 +238,47 @@ export async function POST(req: NextRequest) {
 
           const turnStream = anthropic.messages.stream({
             model,
-            max_tokens: MAX_TOKENS,
+            /* Extended Thinking budget is ADDITIONAL output capacity
+               on top of MAX_TOKENS — Anthropic counts thinking +
+               response separately. Agent-mode explicitly enables
+               it so the lawyer sees WHY each tool was chosen, not
+               just THAT it was. */
+            max_tokens: MAX_TOKENS + THINKING_BUDGET,
             temperature: TEMPERATURE,
             system: cachedSystem,
             messages: conversation,
             tools: cachedTools,
+            thinking: {
+              type: "enabled",
+              budget_tokens: THINKING_BUDGET,
+            },
           });
 
           turnStream.on("text", (delta) => {
             send({ type: "text", delta, iteration: iter });
+          });
+
+          /* Listen for thinking deltas — the SDK's high-level `text`
+             event only fires for visible-text content. Thinking
+             deltas come through the raw streamEvent. We tag them
+             with the iteration so the UI can group thinking with
+             the step it explains. */
+          turnStream.on("streamEvent", (evt) => {
+            if (
+              evt.type === "content_block_delta" &&
+              evt.delta &&
+              typeof evt.delta === "object" &&
+              "type" in evt.delta &&
+              evt.delta.type === "thinking_delta"
+            ) {
+              const tDelta = (evt.delta as { thinking?: string }).thinking;
+              if (tDelta)
+                send({
+                  type: "thinking_delta",
+                  delta: tDelta,
+                  iteration: iter,
+                });
+            }
           });
 
           const finalMessage = await turnStream.finalMessage();
