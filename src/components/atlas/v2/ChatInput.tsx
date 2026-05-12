@@ -118,6 +118,9 @@ export function ChatInput({
   /* Pending image attachments for the next send. Cleared on submit so
      the chip strip resets together with the textarea. */
   const [images, setImages] = useState<ChatImageAttachment[]>([]);
+  /* Per-file status during PDF/DOCX extraction. Shows a spinner-strip
+     under the composer while server-side extraction runs. */
+  const [extracting, setExtracting] = useState<string[]>([]);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const popRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -214,23 +217,23 @@ export function ChatInput({
       TEXT_EXTS.some((e) => file.name.toLowerCase().endsWith(e));
 
     if (!looksText) {
-      const isPdf =
+      /* PDF / DOCX go through server-side extraction (separate
+         function below). Image-files have their own drag-drop branch.
+         Anything else falls through as unsupported. */
+      const lower = file.name.toLowerCase();
+      const isPdfOrDocx =
         file.type === "application/pdf" ||
-        file.name.toLowerCase().endsWith(".pdf");
-      if (isPdf) {
-        setFileError(
-          "PDF-Extraktion folgt im nächsten Sprint. Bitte als TXT/MD speichern und erneut hochladen.",
-        );
-      } else {
-        /* Image-files were previously rejected here with a "vision
-           coming soon" message — vision is live now and the image
-           drop-path branches BEFORE we ever reach this function (see
-           onDrop below), so this fallback only fires for genuinely
-           unsupported types like .docx / .zip / etc. */
-        setFileError(
-          `Dateityp nicht unterstützt (${file.type || file.name.split(".").pop()}). Aktuell: TXT, MD, CSV, HTML, JSON, XML — oder Foto via Plus-Menü.`,
-        );
+        file.type ===
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+        lower.endsWith(".pdf") ||
+        lower.endsWith(".docx");
+      if (isPdfOrDocx) {
+        await handleBinaryDocument(file);
+        return;
       }
+      setFileError(
+        `Dateityp nicht unterstützt (${file.type || file.name.split(".").pop()}). Aktuell: TXT, MD, CSV, HTML, JSON, XML, PDF, DOCX — oder Foto via Plus-Menü.`,
+      );
       return;
     }
     if (file.size > MAX_TEXT_BYTES) {
@@ -254,6 +257,54 @@ export function ChatInput({
       taRef.current?.focus();
     } catch (e) {
       setFileError("Datei konnte nicht gelesen werden.");
+    }
+  };
+
+  /* ── Binary-document attach (PDF / DOCX) ───────────────────────────
+     Posts the file to /api/atlas/extract → server-side text extract
+     (unpdf for PDF, mammoth for DOCX) → splices the returned text
+     into the textarea as a fenced block. Hard cap 10 MB enforced
+     server-side; we show a spinner-strip while extraction runs
+     (typical PDF takes ~1 s, DOCX ~200 ms). */
+
+  const handleBinaryDocument = async (file: File) => {
+    setFileError(null);
+    setExtracting((prev) => [...prev, file.name]);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/atlas/extract", {
+        method: "POST",
+        body: form,
+      });
+      const body = (await res.json().catch(() => ({}))) as {
+        text?: string;
+        truncated?: boolean;
+        error?: string;
+      };
+      if (!res.ok) {
+        setFileError(body.error || `Extraktion fehlgeschlagen (${res.status})`);
+        return;
+      }
+      const extracted = body.text ?? "";
+      if (!extracted.trim()) {
+        setFileError("Datei enthielt keinen extrahierbaren Text.");
+        return;
+      }
+      const truncNote = body.truncated
+        ? "\n[Anhang gekürzt — weiterer Text wurde aus Kontextgründen abgeschnitten.]"
+        : "";
+      const block = `\n\n--- Anhang: ${file.name} ---\n${extracted}${truncNote}\n--- /Anhang ---\n\n`;
+      setText((prev) => (prev ? prev + block : block.trimStart()));
+      taRef.current?.focus();
+    } catch (e) {
+      setFileError(
+        e instanceof Error
+          ? `Extraktion fehlgeschlagen: ${e.message}`
+          : "Extraktion fehlgeschlagen.",
+      );
+    } finally {
+      setExtracting((prev) => prev.filter((n) => n !== file.name));
     }
   };
 
@@ -446,7 +497,7 @@ export function ChatInput({
       <input
         ref={fileInputRef}
         type="file"
-        accept=".txt,.md,.markdown,.csv,.html,.htm,.json,.xml,.log,text/plain,text/markdown,text/csv,text/html,application/json,text/xml"
+        accept=".txt,.md,.markdown,.csv,.html,.htm,.json,.xml,.log,.pdf,.docx,text/plain,text/markdown,text/csv,text/html,application/json,text/xml,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         onChange={onFileInputChange}
         className="hidden"
         aria-hidden="true"
@@ -461,6 +512,26 @@ export function ChatInput({
         className="hidden"
         aria-hidden="true"
       />
+      {/* PDF/DOCX-Extraktion-Live-Strip. Spinner-Zeile pro Datei die
+          gerade noch server-side extrahiert wird. Verschwindet sobald
+          Server-Antwort da ist + Text in Textarea spliced. */}
+      {extracting.length > 0 && (
+        <div className="mb-2 flex flex-col gap-1 px-1">
+          {extracting.map((name) => (
+            <div
+              key={name}
+              className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-[11.5px] text-slate-600 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-slate-300"
+            >
+              <Loader2 size={12} className="shrink-0 animate-spin" />
+              <span className="flex-1 truncate" title={name}>
+                {name}
+              </span>
+              <span className="shrink-0 text-slate-400">extrahiert Text…</span>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Image-attachment chip strip. Renders above the textarea so
           the user always sees what will ride along with the next send.
           Click the X to remove a single image. */}
@@ -642,7 +713,7 @@ function PlusMenu({
         <MenuRow
           icon={<Paperclip size={14} />}
           label="Datei hochladen"
-          hint="TXT, MD, CSV, HTML, JSON"
+          hint="PDF, DOCX, TXT, MD"
           onClick={onPickFile}
         />
         <MenuRow
