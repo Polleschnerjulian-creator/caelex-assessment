@@ -17,8 +17,9 @@ import "server-only";
  */
 
 import type Anthropic from "@anthropic-ai/sdk";
+import { COMPLIANCE_TOOLS } from "./compliance-tools.server";
 
-export const ATLAS_TOOLS: Anthropic.Tool[] = [
+const CORE_ATLAS_TOOLS: Anthropic.Tool[] = [
   {
     name: "find_operator_organization",
     description: `Searches the Caelex operator-organisation directory (all registered satellite operators / launch providers / space-service companies) by name fragment. Use this before \`create_matter_invite\` to resolve a client name to an orgId — never pass a guessed id.
@@ -534,6 +535,18 @@ The agent should render this as a chronologically-sorted list, not a generic tab
   },
 ];
 
+/* Atlas V2 Sprint 3: Compliance tools (8 engine wrappers) merged into the
+   canonical ATLAS_TOOLS array so the chat-engine sees them automatically.
+   See src/lib/atlas/compliance-tools.server.ts. */
+export const ATLAS_TOOLS: Anthropic.Tool[] = [
+  ...CORE_ATLAS_TOOLS,
+  ...COMPLIANCE_TOOLS,
+];
+
+/* Core (Sprint 1) tool-name union. Compliance tool names are matched at
+   runtime via isComplianceToolName(); we intentionally don't enumerate
+   them in the AtlasToolName literal-union to keep this file stable as
+   the compliance-tools file grows. */
 export type AtlasToolName =
   | "find_or_open_matter"
   | "find_operator_organization"
@@ -550,6 +563,6 @@ export type AtlasToolName =
   | "get_filing_deadlines"
   | "summarize_changes_since";
 
-export function isAtlasToolName(name: string): name is AtlasToolName {
+export function isAtlasToolName(name: string): boolean {
   return ATLAS_TOOLS.some((t) => t.name === name);
 }

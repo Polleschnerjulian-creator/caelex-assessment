@@ -15,8 +15,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Briefcase, Wrench, AlertCircle } from "lucide-react";
+import { Briefcase, Wrench, AlertCircle, ChevronRight } from "lucide-react";
 import { ChatInput } from "./ChatInput";
+import { SuggestedFollowups } from "./SuggestedFollowups";
 import type { ChatMessageBlock, ChatMessageRecord, ChatRecord } from "./types";
 
 interface Props {
@@ -41,6 +42,12 @@ export function AtlasChatView({ chatId }: Props) {
   const [streamingText, setStreamingText] = useState("");
   const [inFlightTools, setInFlightTools] = useState<InFlightToolCall[]>([]);
   const [error, setError] = useState<string | null>(null);
+  /* Bumped after every successful assistant turn so the
+     SuggestedFollowups child re-fetches with fresh context. */
+  const [followupRefreshKey, setFollowupRefreshKey] = useState(0);
+  /* Lifts the seed value into ChatInput so suggested-followup clicks
+     can populate + auto-submit it. */
+  const [composerSeed, setComposerSeed] = useState<string | undefined>();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   /* Load persisted chat. */
@@ -163,6 +170,9 @@ export function AtlasChatView({ chatId }: Props) {
          enters the canonical render path. */
       await reload();
       window.dispatchEvent(new Event("atlas-v2-sidebar-refresh"));
+      /* Bump the suggested-followups key so the chips re-fetch with
+         the just-completed assistant turn as their seed. */
+      setFollowupRefreshKey((n) => n + 1);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -171,6 +181,15 @@ export function AtlasChatView({ chatId }: Props) {
       setInFlightTools([]);
     }
   };
+
+  /* Bump followupRefreshKey on first load so the chips fetch under the
+     existing last assistant turn (when the user lands here via the
+     homepage handoff). */
+  useEffect(() => {
+    if (!loading && chat && chat.messages.some((m) => m.role === "assistant")) {
+      setFollowupRefreshKey((n) => (n === 0 ? 1 : n));
+    }
+  }, [loading, chat]);
 
   const handleEvent = (evt: { type: string } & Record<string, unknown>) => {
     switch (evt.type) {
@@ -253,9 +272,36 @@ export function AtlasChatView({ chatId }: Props) {
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-6">
         <div className="mx-auto max-w-3xl space-y-6">
-          {chat.messages.map((m) => (
-            <MessageRow key={m.id} message={m} />
-          ))}
+          {chat.messages.map((m, idx) => {
+            const isLast = idx === chat.messages.length - 1;
+            const showFollowups =
+              isLast && m.role === "assistant" && !streaming;
+            return (
+              <div key={m.id}>
+                <MessageRow message={m} />
+                {showFollowups && followupRefreshKey > 0 && (
+                  <SuggestedFollowups
+                    chatId={chatId}
+                    refreshKey={followupRefreshKey}
+                    onPick={(text) => {
+                      setComposerSeed(text);
+                      void handleFollowup(text, {
+                        korpus: true,
+                        compliance: true,
+                        comparison: true,
+                        drafting: true,
+                        validity: true,
+                        documents: false,
+                        web: false,
+                        workflow: true,
+                        mandate: true,
+                      });
+                    }}
+                  />
+                )}
+              </div>
+            );
+          })}
 
           {streaming && (
             <StreamingMessage tools={inFlightTools} text={streamingText} />
@@ -274,9 +320,13 @@ export function AtlasChatView({ chatId }: Props) {
       <div className="shrink-0 border-t border-slate-800 bg-slate-950/60 px-6 py-4">
         <div className="mx-auto max-w-3xl">
           <ChatInput
+            initialValue={composerSeed}
             disabled={streaming}
             placeholder="Folgefrage stellen…"
-            onSubmit={handleFollowup}
+            onSubmit={(text, toggles) => {
+              setComposerSeed(undefined);
+              return handleFollowup(text, toggles);
+            }}
           />
         </div>
       </div>
@@ -336,25 +386,15 @@ function StreamingMessage({
     <div className="space-y-2">
       {tools.length > 0 && (
         <div className="rounded-md border border-emerald-500/20 bg-emerald-500/5 px-3 py-2">
-          <div className="text-[11px] uppercase tracking-wider text-emerald-400">
-            Tools verwendet ({tools.length})
+          <div className="flex items-center justify-between text-[11px] uppercase tracking-wider text-emerald-400">
+            <span>Tools verwendet ({tools.length})</span>
+            <span className="text-emerald-500/60">
+              {tools.filter((t) => t.completedAt).length} / {tools.length}
+            </span>
           </div>
-          <div className="mt-1 space-y-0.5">
+          <div className="mt-1 space-y-1">
             {tools.map((t) => (
-              <div
-                key={t.id}
-                className="flex items-center gap-2 text-[11px] text-emerald-200"
-              >
-                <Wrench size={10} className="opacity-70" />
-                <span className="font-mono">{t.name}</span>
-                {t.completedAt ? (
-                  <span className="ml-auto text-emerald-500">
-                    ✓ {t.durationMs}ms
-                  </span>
-                ) : (
-                  <span className="ml-auto text-emerald-400/60">läuft…</span>
-                )}
-              </div>
+              <ExpandableToolCallRow key={t.id} call={t} />
             ))}
           </div>
         </div>
@@ -369,6 +409,63 @@ function StreamingMessage({
           </p>
         ))}
       </div>
+    </div>
+  );
+}
+
+function ExpandableToolCallRow({ call }: { call: InFlightToolCall }) {
+  const [open, setOpen] = useState(false);
+  const inputJson = JSON.stringify(call.input ?? {}, null, 2);
+  const inputTooLong = inputJson.length > 80;
+  const inputPreview = inputTooLong
+    ? inputJson.replace(/\s+/g, " ").slice(0, 60) + "…"
+    : inputJson.replace(/\s+/g, " ");
+  return (
+    <div className="rounded border border-emerald-500/10 bg-emerald-500/5">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-2 px-1.5 py-1 text-left text-[11px] text-emerald-200 hover:bg-emerald-500/10"
+      >
+        <ChevronRight
+          size={10}
+          className={`shrink-0 transition-transform ${open ? "rotate-90" : ""}`}
+        />
+        <Wrench size={10} className="shrink-0 opacity-70" />
+        <span className="font-mono">{call.name}</span>
+        <span className="ml-auto shrink-0 text-emerald-400/70">
+          {call.completedAt ? (
+            call.isError ? (
+              <span className="text-red-400">✗ Error</span>
+            ) : (
+              <span className="text-emerald-500">✓ {call.durationMs}ms</span>
+            )
+          ) : (
+            <span className="text-emerald-400/60">läuft…</span>
+          )}
+        </span>
+      </button>
+      {open && (
+        <div className="space-y-1 border-t border-emerald-500/10 px-2 py-1.5 font-mono text-[10px]">
+          <div className="text-emerald-500/80">Input:</div>
+          <pre className="overflow-x-auto whitespace-pre-wrap break-all text-emerald-200/80">
+            {inputJson}
+          </pre>
+          {call.summary && (
+            <>
+              <div className="mt-1 text-emerald-500/80">Output:</div>
+              <pre className="whitespace-pre-wrap break-words text-emerald-200/80">
+                {call.summary}
+              </pre>
+            </>
+          )}
+        </div>
+      )}
+      {!open && inputTooLong && (
+        <div className="px-2 pb-1 font-mono text-[10px] text-emerald-200/40">
+          {inputPreview}
+        </div>
+      )}
     </div>
   );
 }

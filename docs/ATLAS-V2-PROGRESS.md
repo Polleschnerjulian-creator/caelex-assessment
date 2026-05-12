@@ -11,7 +11,7 @@
 | -------------------------------------------- | ----------- | ---------- | ---------- |
 | Sprint 1 — Chat-First Foundation             | ✅ complete | 2026-05-12 | 2026-05-12 |
 | Sprint 2 — Mandate-Projects                  | ✅ complete | 2026-05-12 | 2026-05-12 |
-| Sprint 3 — Tool inventory + Tool-Trace UI    | 🔵 pending  | —          | —          |
+| Sprint 3 — Tool inventory + Tool-Trace UI    | ✅ complete | 2026-05-12 | 2026-05-12 |
 | Sprint 4 — Validity Signals + Norm-Drift     | 🔵 pending  | —          | —          |
 | Sprint 5 — File Upload + Document Tools      | 🔵 pending  | —          | —          |
 | Sprint 6 — Workflow library + Tabular + Eval | 🔵 pending  | —          | —          |
@@ -181,9 +181,82 @@ mandateId**, not by URL nesting. Reasons:
   mandate name, POSTs with mandateId, navigates to chat route.
 - AtlasChatView badge in the chat header links back to the mandate.
 
+## Sprint 3 — Tool inventory + Tool-Trace UI (complete)
+
+### Files added
+
+```
+src/lib/atlas/compliance-tools.server.ts   # 8 engine wrappers + dispatch
+src/app/api/atlas/chat/[id]/followups/route.ts  # Haiku-driven suggestion gen
+src/components/atlas/v2/SuggestedFollowups.tsx  # 3-chip UI under last assistant turn
+```
+
+### Files modified
+
+```
+src/lib/atlas/atlas-tools.ts            # ATLAS_TOOLS spreads CORE + COMPLIANCE
+src/lib/atlas/atlas-tool-executor.ts    # routes compliance tools to dedicated dispatch
+src/components/atlas/v2/AtlasChatView.tsx # SuggestedFollowups wiring + ExpandableToolCallRow
+```
+
+### What landed
+
+**Bundle 2 — Compliance (8 lawyer-oriented research wrappers)**:
+
+- `assess_eu_space_act` — operatorType + establishment → applicable
+  modules + articles + exemption analysis (defence-only,
+  third-country)
+- `classify_nis2` — sector + sizeClass + memberState → essential /
+  important / out-of-scope + obligations + reporting timeline
+- `assess_national_space_law` — DE/FR/IT/UK/NL/LU/ES/BE jurisdictions,
+  authority + insurance + liability + key articles
+- `assess_uk_space_industry` — 5 activity tracks (launch / spaceflight
+  / range_control / spaceport / satellite) + CAA licence path
+- `assess_us_regulatory` — FCC/FAA/NOAA/BIS/FAA-AST routing per
+  activity type + ITAR/EAR/OFAC overlays
+- `classify_export_control` — heuristic ITAR/EAR + EU 2021/821 dual-use
+  classification + sanctions overlay
+- `check_spectrum_filing` — band + orbit → ITU coordination process
+  (CR vs API+N) + notifying admin + timeline
+- `check_copuos_compliance` — orbital altitude → protected region +
+  IADC obligations (25-yr disposal, GEO graveyard, passivation)
+
+Why research-style instead of full engine-call: full Caelex engines
+need 30+ form fields. Asking Astra to fill those would force
+structured intake before a basic question. Research-style turns Astra
+into "knowledgeable colleague who knows the regulation."
+
+**SuggestedFollowups**:
+
+- New endpoint `GET /api/atlas/chat/[id]/followups` calls Claude Haiku
+  with last assistant text + last user prompt + mandate context.
+- Returns 3 JSON suggestions, each ≤ 90 chars, distinct angles
+  (drill-deeper / sideways / action-oriented).
+- AtlasChatView fires after each `done` event + on first load. Click →
+  pre-fills composer + auto-submits.
+
+**Tool-Trace UI expansion**:
+
+- Each in-flight tool call is now expandable (chevron) showing input
+  JSON + output summary + duration + error state.
+- Streaming view shows per-tool "läuft… / ✓ N ms / ✗ Error" status.
+
+### Acceptance verified
+
+- npx tsc --noEmit zero errors.
+- 8 compliance tools registered in ATLAS_TOOLS array, callable from
+  the chat-engine without changes to the routing code (the executor
+  branches on isComplianceToolName before falling through to the
+  switch).
+- Engineering decision: deliberate divergence from
+  posttooluse-validate hook recommendation to use @ai-sdk/anthropic.
+  Caelex uses buildAnthropicClient() as provider abstraction
+  (Vercel AI Gateway → Bedrock EU OR direct Anthropic). 7+ files
+  follow this pattern; switching one to @ai-sdk would break consistency.
+
 ## NEXT ACTION
 
-→ **Sprint 3: Tool inventory + Tool-Trace UI.** Build:
+→ **Sprint 4: Validity Signals + Norm-Drift.** Build:
 
 1. **Refactor tool-bundles** — split `atlas-tool-executor.ts` into
    `src/lib/atlas/tool-bundles/{korpus,compliance,comparison,drafting,

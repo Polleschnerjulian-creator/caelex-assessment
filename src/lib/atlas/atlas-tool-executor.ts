@@ -30,6 +30,10 @@ import { SCOPE_LEVELS, type ScopeLevel } from "@/lib/legal-network/scope";
 import { logger } from "@/lib/logger";
 import type { AtlasToolName } from "./atlas-tools";
 import {
+  isComplianceToolName,
+  executeComplianceTool,
+} from "./compliance-tools.server";
+import {
   ALL_SOURCES,
   getLegalSourceById,
   getAuthoritiesByJurisdiction,
@@ -2383,12 +2387,18 @@ async function summarizeChangesSince(args: {
 // ─── Dispatcher ─────────────────────────────────────────────────────
 
 export async function executeAtlasTool(args: {
-  name: AtlasToolName;
+  name: AtlasToolName | string;
   input: unknown;
   callerUserId: string;
   callerOrgId: string;
 }): Promise<AtlasToolResult> {
-  switch (args.name) {
+  /* Atlas V2 Sprint 3: route compliance tools (8 engine wrappers) to
+     the dedicated compliance dispatch. They are pure-data tools that
+     don't need callerUserId/callerOrgId. See compliance-tools.server.ts. */
+  if (typeof args.name === "string" && isComplianceToolName(args.name)) {
+    return executeComplianceTool(args.name, args.input);
+  }
+  switch (args.name as AtlasToolName) {
     case "find_or_open_matter":
       return findOrOpenMatter(args);
     case "find_operator_organization":
