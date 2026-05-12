@@ -200,18 +200,18 @@ export function ChatInput({
       const isPdf =
         file.type === "application/pdf" ||
         file.name.toLowerCase().endsWith(".pdf");
-      const isImg = file.type.startsWith("image/");
       if (isPdf) {
         setFileError(
           "PDF-Extraktion folgt im nächsten Sprint. Bitte als TXT/MD speichern und erneut hochladen.",
         );
-      } else if (isImg) {
-        setFileError(
-          "Bilderkennung folgt mit Vision-Support. Bitte Text-Datei hochladen.",
-        );
       } else {
+        /* Image-files were previously rejected here with a "vision
+           coming soon" message — vision is live now and the image
+           drop-path branches BEFORE we ever reach this function (see
+           onDrop below), so this fallback only fires for genuinely
+           unsupported types like .docx / .zip / etc. */
         setFileError(
-          `Dateityp nicht unterstützt (${file.type || file.name.split(".").pop()}). Aktuell: TXT, MD, CSV, HTML, JSON, XML.`,
+          `Dateityp nicht unterstützt (${file.type || file.name.split(".").pop()}). Aktuell: TXT, MD, CSV, HTML, JSON, XML — oder Foto via Plus-Menü.`,
         );
       }
       return;
@@ -259,8 +259,24 @@ export function ChatInput({
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    const f = e.dataTransfer?.files?.[0];
-    if (f) void handleTextFile(f);
+    const files = Array.from(e.dataTransfer?.files ?? []);
+    if (files.length === 0) return;
+    /* Route by MIME — image files go straight to the vision pipeline,
+       everything else falls through to the text-file extractor. This
+       lets a lawyer drag a screenshot from Finder without first
+       opening the Plus-menu. */
+    void (async () => {
+      for (const f of files) {
+        const isImg =
+          (f.type || "").startsWith("image/") ||
+          /\.(jpe?g|png|gif|webp)$/i.test(f.name);
+        if (isImg) {
+          await handleImageFile(f);
+        } else {
+          await handleTextFile(f);
+        }
+      }
+    })();
   };
 
   /* ── Photo-attach (Anthropic Vision — JPEG/PNG/GIF/WEBP) ───────────
@@ -397,7 +413,7 @@ export function ChatInput({
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-[28px] bg-white/80 backdrop-blur-sm dark:bg-[#1a1a1a]/80">
           <div className="flex items-center gap-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">
             <Paperclip size={14} />
-            Text-Datei hier ablegen
+            Datei oder Bild hier ablegen
           </div>
         </div>
       )}
