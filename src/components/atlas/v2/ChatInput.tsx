@@ -403,14 +403,20 @@ export function ChatInput({
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
-      className={`relative rounded-[28px] border bg-white px-3 pt-3 pb-2 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-colors dark:bg-[#1a1a1a] dark:shadow-[0_8px_24px_rgba(0,0,0,0.25)] ${
+      className={`relative rounded-[28px] border bg-white px-3 pt-3 pb-2 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-colors dark:bg-[#212121] dark:shadow-[0_8px_24px_rgba(0,0,0,0.25)] ${
+        /* Background matches the canvas (#212121 in dark, white in
+           light) so the pill defines itself only via the border —
+           no contrasting fill, à la Claude.ai's composer. The
+           slightly darker #1a1a1a we used previously read as a
+           "lifted box" against the canvas which the lawyer found
+           visually noisy. */
         dragOver
           ? "border-slate-400 bg-slate-50 dark:border-white/[0.24] dark:bg-white/[0.04]"
           : "border-slate-200 focus-within:border-slate-300 dark:border-white/[0.08] dark:focus-within:border-white/[0.16]"
       }`}
     >
       {dragOver && (
-        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-[28px] bg-white/80 backdrop-blur-sm dark:bg-[#1a1a1a]/80">
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-[28px] bg-white/80 backdrop-blur-sm dark:bg-[#212121]/80">
           <div className="flex items-center gap-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">
             <Paperclip size={14} />
             Datei oder Bild hier ablegen
@@ -599,7 +605,7 @@ function PlusMenu({
   onPickImage: () => void;
 }) {
   return (
-    <div className="absolute bottom-full left-0 z-30 mb-2 w-72 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.12)] dark:border-white/[0.08] dark:bg-[#1a1a1a] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)]">
+    <div className="absolute bottom-full left-0 z-30 mb-2 w-72 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.12)] dark:border-white/[0.08] dark:bg-[#2a2a2a] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)]">
       {/* Anhängen */}
       <MenuSection label="Anhängen">
         <MenuRow
