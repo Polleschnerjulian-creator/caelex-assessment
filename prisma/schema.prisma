@@ -189,6 +189,13 @@ model User {
   signedSection203Commitments  Section203Commitment[] @relation("SignedSection203Commitments")
   recordedSection203Commitments Section203Commitment[] @relation("RecordedSection203Commitments")
 
+  // Atlas V2 — Mandate-Project + Chat container ownership relations.
+  // See docs/ATLAS-V2-MASTER-PLAN.md.
+  ownedAtlasMandates       AtlasMandate[]       @relation("OwnedAtlasMandates")
+  atlasMandateMemberships  AtlasMandateMember[] @relation("AtlasMandateMemberships")
+  atlasMandateFileUploads  AtlasMandateFile[]   @relation("AtlasMandateFileUploads")
+  ownedAtlasChats          AtlasChat[]          @relation("OwnedAtlasChats")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -3023,6 +3030,9 @@ model Organization {
   ncaDocPackages         NCADocPackage[] // Generate 2.0: NCA submission packages
   // Compliance-Audit 2026-05 — DSGVO Art. 28 AVV per organisation.
   dpaExecutions          OrganizationDPAExecution[] @relation("OrganizationDPAExecutions")
+  // Atlas V2 — Mandate-Projects + Chats per organisation.
+  atlasMandates          AtlasMandate[]             @relation("OrgAtlasMandates")
+  atlasChats             AtlasChat[]                @relation("OrgAtlasChats")
   stakeholderEngagements StakeholderEngagement[] // Network: stakeholder engagements
   dataRooms              DataRoom[] // Network: secure data rooms
   attestations           ComplianceAttestation[] // Network: compliance attestations
@@ -11598,4 +11608,193 @@ model OrganizationDPAExecution {
   @@unique([organizationId, dpaVersion])
   @@index([status])
   @@index([executedAt])
+}
+
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║  ATLAS V2 — Chat-First Workspace                                  ║
+// ║  Sprint 1 · 2026-05-12                                            ║
+// ║  Plan: docs/ATLAS-V2-MASTER-PLAN.md                                ║
+// ╚══════════════════════════════════════════════════════════════════╝
+
+/// Atlas Mandate — Claude-Projects-style container for a piece of
+/// lawyer work (one matter for one client, one filing campaign, one
+/// litigation sub-matter, etc.). Replaces the previous
+/// localStorage-based mandate-store.ts as the canonical record.
+///
+/// Multi-user: members other than the owner can be added via
+/// AtlasMandateMember. All chats inside a mandate inherit
+/// `customInstructions` as a system-prompt suffix and have
+/// mandate-files available as a per-mandate vault.
+///
+/// Lifecycle: active → archived → closed. Archived = sidebar-hidden
+/// but still queryable. Closed = post-mortem, locked from edits.
+model AtlasMandate {
+  id String @id @default(cuid())
+
+  organizationId String
+  organization   Organization @relation("OrgAtlasMandates", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  /// Owner = der Anwalt der das Mandate erstellt hat. Andere
+  /// Members werden via AtlasMandateMember als Collaborators
+  /// hinzugefügt.
+  ownerUserId String
+  owner       User   @relation("OwnedAtlasMandates", fields: [ownerUserId], references: [id], onDelete: Cascade)
+
+  /// Display-Name. Frei-text, z.B. "Spire Global · Auth SAT-2026".
+  name String
+
+  /// Strukturierter Klient. Optional — manche Mandate sind intern.
+  clientName    String?
+  clientContact String?
+
+  /// Custom Instructions die als System-Prompt-Suffix in jeden Chat
+  /// injected werden. Markdown-aware. ≤ 4000 chars empfohlen.
+  customInstructions String? @db.Text
+
+  /// Quick-View-Felder die häufig in Chat-Context injected werden.
+  jurisdiction     String? // ISO-Code, e.g. "DE", "FR"
+  operatorType     String? // e.g. "satellite_operator"
+  primaryAuthority String? // e.g. "BNetzA"
+
+  /// Lifecycle.
+  status     String    @default("active") // active | archived | closed
+  archivedAt DateTime?
+  closedAt   DateTime?
+
+  // Relations
+  chats   AtlasChat[]
+  files   AtlasMandateFile[]
+  members AtlasMandateMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId, status])
+  @@index([ownerUserId])
+  @@index([updatedAt])
+}
+
+/// Per-Mandate Mitglied. Owner + zusätzliche Collaborators (typisch:
+/// Junior-Lawyer + Senior-Reviewer + Partner-Approver).
+model AtlasMandateMember {
+  id String @id @default(cuid())
+
+  mandateId String
+  mandate   AtlasMandate @relation(fields: [mandateId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation("AtlasMandateMemberships", fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Role within the mandate. Owner is implied via AtlasMandate.ownerUserId,
+  /// but can also have an explicit MandateMember row for consistency.
+  role String @default("collaborator") // owner | reviewer | collaborator | viewer
+
+  addedAt DateTime @default(now())
+
+  @@unique([mandateId, userId])
+  @@index([userId])
+}
+
+/// File hochgeladen in ein Mandate (= "Vault per Mandate").
+/// Storage in R2 EU; encrypted at rest mit per-mandate-key.
+/// Sprint 5 baut die Tools (extract_text_from_pdf, find_clauses, …)
+/// die diese Files konsumieren; Sprint 1 liefert nur das Schema +
+/// die Relation, damit später kein zerstörender Migrate nötig ist.
+model AtlasMandateFile {
+  id String @id @default(cuid())
+
+  mandateId String
+  mandate   AtlasMandate @relation(fields: [mandateId], references: [id], onDelete: Cascade)
+
+  uploadedByUserId String
+  uploadedBy       User   @relation("AtlasMandateFileUploads", fields: [uploadedByUserId], references: [id], onDelete: Cascade)
+
+  /// File-Metadata.
+  filename      String
+  mimeType      String
+  sizeBytes     Int
+  storageKey    String // R2 path
+  storageRegion String @default("eu-central-1")
+
+  /// Extracted text + classification (filled by document-processing
+  /// pipeline in Sprint 5).
+  extractedText String? @db.Text
+  documentType  String? // "NDA" | "SPA" | "License" | "Filing" | …
+
+  /// Vector embedding pointer (per-file embedding for semantic
+  /// search within mandate). Nullable until Sprint 5 wires pgvector.
+  embeddingId String? @db.Uuid
+
+  createdAt DateTime @default(now())
+
+  @@index([mandateId, createdAt])
+}
+
+/// Atlas Chat = ein Conversation-Thread (wie bei ChatGPT/Claude).
+/// Optional einem Mandate zugeordnet (= mandate-scoped, with
+/// customInstructions injected) oder global (= general-purpose).
+model AtlasChat {
+  id String @id @default(cuid())
+
+  organizationId String
+  organization   Organization @relation("OrgAtlasChats", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  ownerUserId String
+  owner       User   @relation("OwnedAtlasChats", fields: [ownerUserId], references: [id], onDelete: Cascade)
+
+  /// Optional mandate-scope. NULL = global chat.
+  mandateId String?
+  mandate   AtlasMandate? @relation(fields: [mandateId], references: [id], onDelete: SetNull)
+
+  /// Title — von erster User-Message generated, oder explicit gesetzt.
+  title String
+
+  /// Tool-toggles state at time of chat creation (so the user's
+  /// preferences persist across sessions even if defaults change).
+  /// JSON shape: { korpus: bool, web: bool, compliance: bool, … }
+  toolToggles Json
+
+  /// Lifecycle.
+  archivedAt DateTime?
+
+  // Relations
+  messages AtlasMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId, updatedAt])
+  @@index([ownerUserId, updatedAt])
+  @@index([mandateId, updatedAt])
+}
+
+/// Single message in a chat — entweder user oder assistant.
+/// content = Anthropic-format ContentBlocks (text + tool_use +
+/// tool_result), so we can store structured tool-use traces alongside
+/// text without parsing on every read.
+model AtlasMessage {
+  id String @id @default(cuid())
+
+  chatId String
+  chat   AtlasChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  role    String // "user" | "assistant"
+  content Json
+
+  /// Per-message Token-Accounting + Kosten.
+  inputTokens  Int?
+  outputTokens Int?
+  costUsd      Float?
+
+  /// Tools die in diesem Turn aufgerufen wurden — denormalised für
+  /// quick-trace ohne content-parsing.
+  toolsUsed String[]
+
+  /// Citations + Validity-Status nach Post-Processing.
+  /// Shape: [{ index: 1, sourceId: "DE-TKG-§9", validity: "in_force" }]
+  citations Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([chatId, createdAt])
 }

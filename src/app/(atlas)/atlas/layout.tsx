@@ -3,7 +3,13 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isSuperAdmin } from "@/lib/super-admin";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
-import AtlasShell from "./AtlasShell";
+/*
+ * Atlas V2 (Sprint 1, 2026-05-12) — Chat-First shell.
+ * The legacy AtlasShell is still importable as './AtlasShell' but is
+ * no longer mounted by default. See docs/ATLAS-V2-MASTER-PLAN.md.
+ */
+import { AtlasShellV2 } from "@/components/atlas/v2/AtlasShellV2";
+import { AtlasV2Bootstrap } from "@/components/atlas/v2/AtlasV2Bootstrap";
 import { AtlasThemeProvider } from "./_components/AtlasThemeProvider";
 
 /**
@@ -84,7 +90,8 @@ export default async function AtlasLayout({
     <LanguageProvider>
       <AtlasThemeProvider>
         <script dangerouslySetInnerHTML={{ __html: flashGuardScript }} />
-        <AtlasShell>{children}</AtlasShell>
+        <AtlasV2Bootstrap />
+        <AtlasShellV2>{children}</AtlasShellV2>
       </AtlasThemeProvider>
     </LanguageProvider>
   );

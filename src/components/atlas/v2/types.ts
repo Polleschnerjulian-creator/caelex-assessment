@@ -1,0 +1,144 @@
+/**
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
+ *
+ * Atlas V2 — shared client types.
+ *
+ * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
+ */
+
+export interface ChatListItem {
+  id: string;
+  title: string;
+  mandateId: string | null;
+  updatedAt: string;
+  createdAt: string;
+  mandate: { id: string; name: string } | null;
+}
+
+export interface MandateListItem {
+  id: string;
+  name: string;
+  clientName: string | null;
+  jurisdiction: string | null;
+  operatorType: string | null;
+  primaryAuthority: string | null;
+  status: string;
+  updatedAt: string;
+  createdAt: string;
+  _count: { chats: number; files: number };
+}
+
+export interface ChatMessageBlock {
+  type: "text" | "tool_use" | "tool_result";
+  text?: string;
+  id?: string;
+  name?: string;
+  input?: Record<string, unknown>;
+  tool_use_id?: string;
+  content?: string;
+  is_error?: boolean;
+}
+
+export interface ChatMessageRecord {
+  id: string;
+  role: "user" | "assistant";
+  content: ChatMessageBlock[] | string;
+  inputTokens: number | null;
+  outputTokens: number | null;
+  costUsd: number | null;
+  toolsUsed: string[];
+  citations: unknown;
+  createdAt: string;
+}
+
+export interface ChatRecord {
+  id: string;
+  title: string;
+  mandateId: string | null;
+  toolToggles: Record<string, boolean>;
+  createdAt: string;
+  updatedAt: string;
+  mandate: { id: string; name: string; jurisdiction: string | null } | null;
+  messages: ChatMessageRecord[];
+}
+
+export type StreamEvent =
+  | { type: "chat_started"; chatId: string }
+  | { type: "text"; delta: string }
+  | {
+      type: "tool_call_start";
+      id: string;
+      name: string;
+      input: Record<string, unknown>;
+    }
+  | {
+      type: "tool_call_complete";
+      id: string;
+      name: string;
+      durationMs: number;
+      summary: string;
+      isError: boolean;
+    }
+  | {
+      type: "done";
+      messageId: string;
+      usage: { inputTokens: number; outputTokens: number; costUsd: number };
+      toolsUsed: string[];
+    }
+  | { type: "error"; message: string };
+
+/* The 6 quickstart workflow seeds shown on the homepage.
+   Tied to actual Atlas tools — the user click pre-fills the chat
+   input + sets relevant tool-toggles + enters a new chat. */
+export interface Quickstart {
+  id: string;
+  emoji: string;
+  title: string;
+  promptHint: string; // pre-fills the input text-area
+  toolToggles?: Record<string, boolean>; // override defaults if needed
+}
+
+export const QUICKSTARTS: Quickstart[] = [
+  {
+    id: "eu-space-act-applicability",
+    emoji: "⚖️",
+    title: "EU Space Act Applicability",
+    promptHint:
+      "Prüfe die Anwendbarkeit des EU Space Act für meinen Mandanten. Beziehe die einschlägigen Artikel ein und nenne Behörden + Fristen.",
+  },
+  {
+    id: "multi-jurisdiction-comparison",
+    emoji: "🌍",
+    title: "Multi-Jurisdiktion-Vergleich",
+    promptHint:
+      "Vergleiche DE, FR, IT, UK und LU für Satelliten-Authorisierung (Behörde, Liability-Cap, Insurance-Min, Spektrum-Coordinator, Export-Lizenz).",
+  },
+  {
+    id: "itar-ear-classification",
+    emoji: "📋",
+    title: "ITAR/EAR Klassifizierung",
+    promptHint:
+      "Klassifiziere folgende Komponente nach ITAR/EAR und nenne die maßgeblichen Listings sowie Genehmigungswege:",
+  },
+  {
+    id: "nis2-auto-classification",
+    emoji: "🛡️",
+    title: "NIS2 Auto-Classification",
+    promptHint:
+      "Klassifiziere meinen Operator nach NIS2 (Essential / Important / Out-of-Scope) und nenne die Pflichten + Fristen.",
+  },
+  {
+    id: "bnetza-filing-pack",
+    emoji: "📑",
+    title: "BNetzA Filing-Pack",
+    promptHint:
+      "Erstelle ein Filing-Pack für die BNetzA-Frequenzanmeldung für folgende Mission:",
+  },
+  {
+    id: "ecss-conformity-matrix",
+    emoji: "🔍",
+    title: "ECSS Conformity Matrix",
+    promptHint:
+      "Erstelle eine ECSS-Konformitätsmatrix (Requirements × Status × Evidence × Owner) für folgendes Projekt:",
+  },
+];
