@@ -21,6 +21,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChatInput } from "./ChatInput";
+import type { ChatImageAttachment } from "./types";
 
 export function AtlasHomepage() {
   const router = useRouter();
@@ -44,6 +45,7 @@ export function AtlasHomepage() {
   const handleSubmit = async (
     text: string,
     toolToggles: Record<string, boolean>,
+    images?: ChatImageAttachment[],
     titleHint?: string,
   ) => {
     setSubmitting(true);
@@ -57,6 +59,9 @@ export function AtlasHomepage() {
           toolToggles,
           titleHint,
           workflowId: seedWorkflowId,
+          /* Photo-attachments piggyback on the same POST. Server
+             validates + widens into Anthropic ImageBlockParam shape. */
+          images: images && images.length > 0 ? images : undefined,
         }),
       });
 
@@ -148,7 +153,9 @@ export function AtlasHomepage() {
         <ChatInput
           initialValue={seedValue}
           disabled={submitting}
-          onSubmit={(text, toggles) => handleSubmit(text, toggles)}
+          onSubmit={(text, toggles, images) =>
+            handleSubmit(text, toggles, images)
+          }
         />
 
         {error && (

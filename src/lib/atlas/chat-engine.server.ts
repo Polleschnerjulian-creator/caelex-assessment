@@ -87,6 +87,15 @@ const STREAM_INACTIVITY_TIMEOUT_MS = 30_000;
 
 /* ── Types ────────────────────────────────────────────────────────── */
 
+/** Anthropic Vision photo attachment. The shape mirrors the
+ *  Base64ImageSource the Anthropic SDK ultimately wants — we accept
+ *  the same flat shape from the API layer to avoid double-validation. */
+export interface ChatEngineImage {
+  fileName: string;
+  mediaType: "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+  data: string;
+}
+
 export interface ChatEngineInput {
   /** Existing chat to continue, or null to create a new chat. */
   chatId: string | null;
@@ -96,8 +105,11 @@ export interface ChatEngineInput {
   organizationId: string;
   /** Optional mandate-scope. Triggers context injection. */
   mandateId?: string | null;
-  /** New user message text (the assistant message is generated). */
+  /** New user message text (the assistant message is generated). May
+   *  be empty when at least one image is attached. */
   userMessage: string;
+  /** Photo attachments forwarded to Anthropic as ImageBlockParam. */
+  images?: ChatEngineImage[];
   /** Tool toggles state: { korpus: true, web: false, ... }. */
   toolToggles?: Record<string, boolean>;
   /** UI language for the system-prompt locale hints. */
@@ -158,6 +170,9 @@ You have access to a curated set of legal-research and drafting tools (Atlas cor
 - Bullet structures over prose for enumerations.
 - German output by default; switch to English when asked or when the user's language is set to English.
 
+## Vision input
+When the user attaches one or more photos to a turn (screenshots of contracts, scanned filings, satellite-bus diagrams, redacted filings, regulatory-letter PDFs converted to images), describe what you actually see — quote text verbatim where legible, flag illegible regions explicitly, identify document type (Bescheid, Vertrag, Abnahmeprotokoll, etc.) when possible. Do NOT invent content for blurry / cropped sections; ask the user for a clearer scan instead. Treat photo-content as evidence subject to the same citation discipline as text — if the image purports to show a statute, verify against the Atlas corpus before relying on it.
+
 ## Hard rules
 - Atlas is a research tool. Answers are not legal advice. Do not promise specific outcomes.
 - For drafting outputs (memos, filings, applications), include a short legal-review back-stop at the end.
@@ -204,7 +219,49 @@ function buildSystemPrompt(
 function deriveTitle(userMessage: string, hint?: string): string {
   if (hint && hint.trim()) return hint.trim().slice(0, 120);
   const oneLine = userMessage.replace(/\s+/g, " ").trim();
+  if (oneLine.length === 0) return "Bild-Analyse";
   return oneLine.slice(0, 80) + (oneLine.length > 80 ? "…" : "");
+}
+
+/* ── User-message content shaping ─────────────────────────────────────
+ *
+ * Anthropic's recommended order is image-blocks FIRST, then text. The
+ * model attends to images when it sees them at the top of the user
+ * turn — flipping the order causes lower vision quality on long
+ * prompts. We persist the same shape into AtlasMessage.content so
+ * replays on follow-up turns stay faithful.
+ *
+ * For text-only turns we keep the old single-text-block shape so we
+ * don't churn historical messages or regress the existing chat UI.
+ */
+function buildUserContentBlocks(
+  text: string,
+  images: ChatEngineImage[] | undefined,
+): Anthropic.MessageParam["content"] {
+  const trimmedText = text.trim();
+  if (!images || images.length === 0) {
+    /* Preserve the existing flat shape — array-of-one-text-block — so
+       the persistence layer doesn't need a code-path bump. */
+    return [{ type: "text", text: trimmedText }];
+  }
+  const blocks: Anthropic.ContentBlockParam[] = images.map((img) => ({
+    type: "image",
+    source: {
+      type: "base64",
+      media_type: img.mediaType,
+      data: img.data,
+    },
+  }));
+  /* Append the user's text last (Anthropic recommends image-first
+     ordering for best vision quality). For purely image-only turns we
+     intentionally OMIT a placeholder text — persisting one would
+     surprise the user on reload ("I never wrote that"). The model
+     handles image-only turns fine; the system prompt's "Vision input"
+     section already tells it to describe what it sees. */
+  if (trimmedText.length > 0) {
+    blocks.push({ type: "text", text: trimmedText });
+  }
+  return blocks;
 }
 
 function estimateCostUsd(input: number, output: number): number {
@@ -252,6 +309,7 @@ async function ensureChatAndHistory(args: {
   mandateId: string | null;
   toolToggles: Record<string, boolean>;
   newUserMessage: string;
+  newUserImages: ChatEngineImage[] | undefined;
   titleHint: string | undefined;
   workflowId?: string;
 }): Promise<{ chatId: string; history: Anthropic.MessageParam[] }> {
@@ -262,9 +320,15 @@ async function ensureChatAndHistory(args: {
     mandateId,
     toolToggles,
     newUserMessage,
+    newUserImages,
     titleHint,
     workflowId,
   } = args;
+
+  /* Pre-build the user-content array once — Anthropic-style blocks for
+     both persistence and history. With images this becomes
+     [image..., text]; without images it stays a single text block. */
+  const userContent = buildUserContentBlocks(newUserMessage, newUserImages);
 
   if (chatId) {
     /* Continuation — load existing messages, append the new user
@@ -281,12 +345,14 @@ async function ensureChatAndHistory(args: {
     }
     /* Persist the new user message inline so the streaming loop can
        reference its id later (and so the message is durable even if
-       the upstream call fails). */
+       the upstream call fails). Images live inside the content jsonb
+       as proper Anthropic-style blocks so AtlasChatView can re-render
+       thumbnails on reload. */
     await prisma.atlasMessage.create({
       data: {
         chatId: chat.id,
         role: "user",
-        content: [{ type: "text", text: newUserMessage }],
+        content: userContent as unknown as object,
         toolsUsed: [],
       },
     });
@@ -297,7 +363,7 @@ async function ensureChatAndHistory(args: {
     }));
     history.push({
       role: "user",
-      content: [{ type: "text", text: newUserMessage }],
+      content: userContent,
     });
     return { chatId: chat.id, history };
   }
@@ -315,7 +381,7 @@ async function ensureChatAndHistory(args: {
         create: [
           {
             role: "user",
-            content: [{ type: "text", text: newUserMessage }],
+            content: userContent as unknown as object,
             toolsUsed: [],
           },
         ],
@@ -324,7 +390,8 @@ async function ensureChatAndHistory(args: {
     select: { id: true },
   });
   /* Append to the Atlas audit log. Fire-and-forget — never blocks
-     the chat-creation path. */
+     the chat-creation path. Image-count surfaced so the audit trail
+     captures vision-augmented turns without storing the bytes. */
   void appendAtlasAudit({
     userId,
     organizationId,
@@ -335,6 +402,7 @@ async function ensureChatAndHistory(args: {
       mandateId: mandateId ?? null,
       titleHint: titleHint ?? null,
       workflowId: workflowId ?? null,
+      imageCount: newUserImages?.length ?? 0,
     },
   });
   return {
@@ -342,7 +410,7 @@ async function ensureChatAndHistory(args: {
     history: [
       {
         role: "user",
-        content: [{ type: "text", text: newUserMessage }],
+        content: userContent,
       },
     ],
   };
@@ -396,6 +464,7 @@ export async function runChat(
     mandateId: input.mandateId ?? null,
     toolToggles,
     newUserMessage: input.userMessage,
+    newUserImages: input.images,
     titleHint: input.titleHint,
     workflowId: input.workflowId,
   });

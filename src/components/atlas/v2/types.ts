@@ -29,7 +29,13 @@ export interface MandateListItem {
 }
 
 export interface ChatMessageBlock {
-  type: "text" | "tool_use" | "tool_result" | "thinking" | "redacted_thinking";
+  type:
+    | "text"
+    | "tool_use"
+    | "tool_result"
+    | "thinking"
+    | "redacted_thinking"
+    | "image";
   text?: string;
   id?: string;
   name?: string;
@@ -46,6 +52,29 @@ export interface ChatMessageBlock {
    *  is sent back to the model in subsequent tool-use turns. Opaque
    *  token — UI ignores it. */
   signature?: string;
+  /** Anthropic Vision: image attachment on a user-message. The shape
+   *  matches Anthropic's ImageBlockParam exactly so we can persist the
+   *  block as-is and replay it on follow-up turns. Stored base64 to
+   *  keep AtlasMessage self-contained (no R2 round-trip needed for
+   *  rehydration). Capped at 5 MB per image / 4 images per turn at
+   *  the input layer. */
+  source?: {
+    type: "base64";
+    media_type: "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+    data: string;
+  };
+}
+
+/** Client-side image attachment, captured by ChatInput, posted to
+ *  /api/atlas/chat as part of the request body. Server widens this
+ *  into a proper ImageBlockParam before forwarding to Anthropic. */
+export interface ChatImageAttachment {
+  /** Original file name — kept for thumbnail captions + audit trail. */
+  fileName: string;
+  /** MIME type. Validated against Anthropic's accepted set. */
+  mediaType: "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+  /** Base64-encoded image bytes (no data: prefix). */
+  data: string;
 }
 
 export interface ChatMessageRecord {

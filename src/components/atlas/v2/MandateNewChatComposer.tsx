@@ -15,6 +15,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChatInput } from "./ChatInput";
+import type { ChatImageAttachment } from "./types";
 
 interface Props {
   mandateId: string;
@@ -34,6 +35,7 @@ export function MandateNewChatComposer({
   const handleSubmit = async (
     text: string,
     toolToggles: Record<string, boolean>,
+    images?: ChatImageAttachment[],
   ) => {
     setSubmitting(true);
     setError(null);
@@ -48,6 +50,8 @@ export function MandateNewChatComposer({
           /* Title-hint pulls the mandate name in so the new chat is
              instantly recognisable in the sidebar. */
           titleHint: `${mandateName} — ${text.slice(0, 50)}`,
+          /* Photo-attachments piggyback on the same POST. */
+          images: images && images.length > 0 ? images : undefined,
         }),
       });
       if (!res.ok || !res.body) {

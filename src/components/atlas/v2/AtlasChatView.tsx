@@ -41,7 +41,12 @@ import {
   downloadChatAsDocx,
   generateChatDocxBlob,
 } from "@/lib/atlas/chat-briefing-docx";
-import type { ChatMessageBlock, ChatMessageRecord, ChatRecord } from "./types";
+import type {
+  ChatImageAttachment,
+  ChatMessageBlock,
+  ChatMessageRecord,
+  ChatRecord,
+} from "./types";
 
 interface Props {
   chatId: string;
@@ -148,6 +153,7 @@ export function AtlasChatView({ chatId }: Props) {
   const handleFollowup = async (
     text: string,
     toolToggles: Record<string, boolean>,
+    images?: ChatImageAttachment[],
   ) => {
     if (!chat) return;
     setStreaming(true);
@@ -164,6 +170,10 @@ export function AtlasChatView({ chatId }: Props) {
           mandateId: chat.mandateId,
           message: text,
           toolToggles,
+          /* Photo-attachments piggyback on the same POST. Server
+             validates + widens into Anthropic ImageBlockParam shape
+             before forwarding to the model. */
+          images: images && images.length > 0 ? images : undefined,
         }),
       });
       if (!res.ok || !res.body) {
@@ -410,9 +420,9 @@ export function AtlasChatView({ chatId }: Props) {
             initialValue={composerSeed}
             disabled={streaming}
             placeholder="Folgefrage stellen…"
-            onSubmit={(text, toggles) => {
+            onSubmit={(text, toggles, images) => {
               setComposerSeed(undefined);
-              return handleFollowup(text, toggles);
+              return handleFollowup(text, toggles, images);
             }}
           />
         </div>
@@ -434,11 +444,45 @@ function MessageRow({
 }) {
   if (message.role === "user") {
     const text = extractText(message.content);
+    /* Image-blocks ride along inside content[]. We pull them out so we
+       can render thumbnails above the text bubble — the lawyer always
+       sees what they sent the model, even on reload weeks later. */
+    const imageBlocks: ChatMessageBlock[] = Array.isArray(message.content)
+      ? (message.content as ChatMessageBlock[]).filter(
+          (b) => b.type === "image" && b.source?.data,
+        )
+      : [];
     return (
-      <div className="flex justify-end">
-        <div className="max-w-[85%] rounded-3xl bg-slate-100 px-4 py-2.5 text-[14.5px] text-slate-900 dark:bg-white/[0.06] dark:text-slate-100">
-          {text}
-        </div>
+      <div className="flex flex-col items-end gap-1.5">
+        {imageBlocks.length > 0 && (
+          <div className="flex max-w-[85%] flex-wrap justify-end gap-1.5">
+            {imageBlocks.map((b, i) => {
+              const src = `data:${b.source!.media_type};base64,${b.source!.data}`;
+              return (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <a
+                  key={i}
+                  href={src}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 transition-opacity hover:opacity-90 dark:border-white/[0.08] dark:bg-white/[0.04]"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={src}
+                    alt={`Anhang ${i + 1}`}
+                    className="max-h-48 max-w-[240px] object-contain"
+                  />
+                </a>
+              );
+            })}
+          </div>
+        )}
+        {text && (
+          <div className="max-w-[85%] rounded-3xl bg-slate-100 px-4 py-2.5 text-[14.5px] text-slate-900 dark:bg-white/[0.06] dark:text-slate-100">
+            {text}
+          </div>
+        )}
       </div>
     );
   }

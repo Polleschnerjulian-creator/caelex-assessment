@@ -37,8 +37,10 @@ import {
   Check,
   Paperclip,
   Image as ImageIcon,
+  X,
 } from "lucide-react";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
+import type { ChatImageAttachment } from "./types";
 
 interface Props {
   initialValue?: string;
@@ -47,9 +49,22 @@ interface Props {
   onSubmit: (
     text: string,
     toolToggles: Record<string, boolean>,
+    images?: ChatImageAttachment[],
   ) => void | Promise<void>;
   showKorpusPill?: boolean;
 }
+
+/* Anthropic Vision limits (stay conservative — the SDK accepts up to
+   100 images per message but cost + latency push hard against that).
+   5 MB raw matches Anthropic's documented per-image cap. */
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const MAX_IMAGES_PER_TURN = 4;
+const ACCEPTED_IMAGE_MIMES = new Set<ChatImageAttachment["mediaType"]>([
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+]);
 
 const DEFAULT_TOGGLES = {
   korpus: true,
@@ -83,9 +98,13 @@ export function ChatInput({
   const [plusOpen, setPlusOpen] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
+  /* Pending image attachments for the next send. Cleared on submit so
+     the chip strip resets together with the textarea. */
+  const [images, setImages] = useState<ChatImageAttachment[]>([]);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const popRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   /* Voice-input integration. The hook handles the full MediaRecorder
      → /api/atlas/transcribe lifecycle and returns a transcript that
@@ -244,11 +263,113 @@ export function ChatInput({
     if (f) void handleTextFile(f);
   };
 
+  /* ── Photo-attach (Anthropic Vision — JPEG/PNG/GIF/WEBP) ───────────
+     Reads the file via FileReader.readAsDataURL → strips the
+     `data:image/...;base64,` prefix → stores the raw base64 in state.
+     Anthropic's ImageBlockParam expects exactly that format on the
+     server. Not uploaded to R2 — for ephemeral chat-attachments this
+     keeps things round-trip-free, and the bytes ride along with the
+     persisted AtlasMessage.content jsonb. */
+
+  const readImageAsBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result;
+        if (typeof result !== "string") {
+          reject(new Error("Bild konnte nicht gelesen werden"));
+          return;
+        }
+        /* Strip leading "data:image/...;base64," — Anthropic's
+           Base64ImageSource.data is the raw payload without prefix. */
+        const idx = result.indexOf(",");
+        resolve(idx >= 0 ? result.slice(idx + 1) : result);
+      };
+      reader.onerror = () =>
+        reject(new Error("Bild konnte nicht gelesen werden"));
+      reader.readAsDataURL(file);
+    });
+
+  const handleImageFile = async (file: File) => {
+    setFileError(null);
+    const mime = (file.type || "").toLowerCase();
+    if (
+      !ACCEPTED_IMAGE_MIMES.has(mime as ChatImageAttachment["mediaType"]) &&
+      !file.name.toLowerCase().match(/\.(jpe?g|png|gif|webp)$/)
+    ) {
+      setFileError(
+        `Bildformat nicht unterstützt (${mime || file.name.split(".").pop()}). Erlaubt: JPEG, PNG, GIF, WEBP.`,
+      );
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      setFileError(
+        `Bild zu groß (${Math.round(file.size / 1024)} KB; max ${MAX_IMAGE_BYTES / 1024 / 1024} MB).`,
+      );
+      return;
+    }
+    if (images.length >= MAX_IMAGES_PER_TURN) {
+      setFileError(
+        `Maximal ${MAX_IMAGES_PER_TURN} Bilder pro Nachricht. Bitte entferne ein Bild.`,
+      );
+      return;
+    }
+    try {
+      const data = await readImageAsBase64(file);
+      /* Normalise the media-type so it matches Anthropic's accepted
+         set even if the browser filled in something exotic ("image/jpg"
+         → "image/jpeg"). */
+      const normMime: ChatImageAttachment["mediaType"] = (() => {
+        if (mime === "image/jpg") return "image/jpeg";
+        if (ACCEPTED_IMAGE_MIMES.has(mime as ChatImageAttachment["mediaType"]))
+          return mime as ChatImageAttachment["mediaType"];
+        const ext = file.name.toLowerCase().split(".").pop();
+        if (ext === "png") return "image/png";
+        if (ext === "gif") return "image/gif";
+        if (ext === "webp") return "image/webp";
+        return "image/jpeg";
+      })();
+      setImages((prev) => [
+        ...prev,
+        { fileName: file.name, mediaType: normMime, data },
+      ]);
+    } catch (e) {
+      setFileError(
+        e instanceof Error ? e.message : "Bild konnte nicht gelesen werden",
+      );
+    }
+  };
+
+  const onPickImage = () => {
+    setPlusOpen(false);
+    imageInputRef.current?.click();
+  };
+
+  const onImageInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    /* Sequential await keeps the cap-check honest — parallel awaits
+       would let 8 files race past the MAX_IMAGES_PER_TURN gate. */
+    for (const f of files) {
+      await handleImageFile(f);
+    }
+    e.target.value = "";
+  };
+
+  const removeImage = (idx: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== idx));
+  };
+
   const handleSend = () => {
     const v = text.trim();
-    if (!v || disabled) return;
-    void onSubmit(v, toggles);
+    /* Allow image-only messages so the user can drop a screenshot and
+       say "what's in this?" via voice or a one-word prompt. But the
+       composer still requires SOMETHING — either text or images — so
+       a stray Enter doesn't fire an empty turn. */
+    if (!v && images.length === 0) return;
+    if (disabled) return;
+    void onSubmit(v, toggles, images.length > 0 ? images : undefined);
     setText("");
+    setImages([]);
     setFileError(null);
   };
 
@@ -257,6 +378,9 @@ export function ChatInput({
   };
 
   const hasText = text.trim().length > 0;
+  /* Send button enables when there's text OR at least one image
+     attachment (image-only turns are valid for "what's in this?"). */
+  const canSend = hasText || images.length > 0;
 
   return (
     <div
@@ -286,6 +410,50 @@ export function ChatInput({
         className="hidden"
         aria-hidden="true"
       />
+      {/* Hidden image input — opened by Plus-Menu "Foto hochladen". */}
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/gif,image/webp,.jpg,.jpeg,.png,.gif,.webp"
+        multiple
+        onChange={(e) => void onImageInputChange(e)}
+        className="hidden"
+        aria-hidden="true"
+      />
+      {/* Image-attachment chip strip. Renders above the textarea so
+          the user always sees what will ride along with the next send.
+          Click the X to remove a single image. */}
+      {images.length > 0 && (
+        <div className="mb-2 flex flex-wrap gap-2 px-1">
+          {images.map((img, i) => (
+            <div
+              key={`${img.fileName}-${i}`}
+              className="relative h-16 w-16 overflow-hidden rounded-lg border border-slate-200 bg-slate-100 dark:border-white/[0.08] dark:bg-white/[0.04]"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`data:${img.mediaType};base64,${img.data}`}
+                alt={img.fileName}
+                className="h-full w-full object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => removeImage(i)}
+                aria-label={`Bild ${img.fileName} entfernen`}
+                className="absolute right-0.5 top-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
+              >
+                <X size={10} strokeWidth={2.5} />
+              </button>
+              <div
+                className="absolute inset-x-0 bottom-0 line-clamp-1 bg-gradient-to-t from-black/60 to-transparent px-1 pb-0.5 pt-2 text-[8.5px] text-white"
+                title={img.fileName}
+              >
+                {img.fileName}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       <textarea
         ref={taRef}
         value={text}
@@ -328,6 +496,7 @@ export function ChatInput({
               onToggle={toggle}
               onClose={() => setPlusOpen(false)}
               onPickFile={onPickFile}
+              onPickImage={onPickImage}
             />
           )}
         </div>
@@ -362,10 +531,10 @@ export function ChatInput({
         <button
           type="button"
           onClick={handleSend}
-          disabled={!hasText || disabled}
+          disabled={!canSend || disabled}
           aria-label="Senden"
           className={`ml-1 inline-flex h-8 w-8 items-center justify-center rounded-full transition-all ${
-            hasText && !disabled
+            canSend && !disabled
               ? "bg-slate-900 text-white hover:scale-105 dark:bg-white dark:text-black"
               : "bg-slate-200 text-slate-400 dark:bg-white/[0.08] dark:text-slate-500"
           }`}
@@ -405,11 +574,13 @@ function PlusMenu({
   onToggle,
   onClose: _onClose,
   onPickFile,
+  onPickImage,
 }: {
   toggles: typeof DEFAULT_TOGGLES;
   onToggle: (k: keyof typeof DEFAULT_TOGGLES) => void;
   onClose: () => void;
   onPickFile: () => void;
+  onPickImage: () => void;
 }) {
   return (
     <div className="absolute bottom-full left-0 z-30 mb-2 w-72 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.12)] dark:border-white/[0.08] dark:bg-[#1a1a1a] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)]">
@@ -424,8 +595,8 @@ function PlusMenu({
         <MenuRow
           icon={<ImageIcon size={14} />}
           label="Foto hochladen"
-          hint="folgt mit Vision-Support"
-          disabled
+          hint="JPEG, PNG, GIF, WEBP — max 5 MB"
+          onClick={onPickImage}
         />
       </MenuSection>
 
