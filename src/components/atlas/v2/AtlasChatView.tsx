@@ -153,7 +153,35 @@ export function AtlasChatView({ chatId }: Props) {
         }),
       });
       if (!res.ok || !res.body) {
-        const body = await res.json().catch(() => ({}));
+        const body = (await res.json().catch(() => ({}))) as {
+          error?: string;
+          retryAfterMs?: number;
+        };
+        /* Translate the most common production errors into friendly
+           German. Rate-limit 429 gets a retry-time hint. */
+        if (res.status === 429) {
+          const seconds = body.retryAfterMs
+            ? Math.max(1, Math.ceil(body.retryAfterMs / 1000))
+            : 60;
+          throw new Error(
+            `Zu viele Anfragen. Bitte warte etwa ${seconds}s und versuche es erneut.`,
+          );
+        }
+        if (res.status === 401) {
+          throw new Error(
+            "Sitzung abgelaufen. Bitte Seite neu laden + erneut anmelden.",
+          );
+        }
+        if (res.status === 503) {
+          throw new Error(
+            "Atlas ist gerade überlastet. Bitte in einer Minute erneut versuchen.",
+          );
+        }
+        if (res.status >= 500) {
+          throw new Error(
+            "Serverfehler — wir werden benachrichtigt. Bitte erneut versuchen.",
+          );
+        }
         throw new Error(body.error || `HTTP ${res.status}`);
       }
       const reader = res.body.getReader();
@@ -242,9 +270,30 @@ export function AtlasChatView({ chatId }: Props) {
   };
 
   if (loading) {
+    /* Skeleton mirrors the real chat layout — header strip + a few
+       message-shaped placeholder lines — so when the data lands the
+       layout doesn't visibly jump. */
     return (
-      <div className="flex h-full items-center justify-center text-sm text-slate-500">
-        Lädt Chat…
+      <div className="flex h-full flex-col">
+        <header className="flex shrink-0 items-center justify-between gap-3 px-6 py-3">
+          <div className="h-3 w-40 animate-pulse rounded-full bg-slate-200 dark:bg-white/[0.06]" />
+        </header>
+        <div className="flex-1 overflow-hidden px-6 py-6">
+          <div className="mx-auto max-w-3xl space-y-6">
+            {[80, 60, 70].map((w, i) => (
+              <div key={i} className="space-y-2">
+                <div
+                  className="h-3 animate-pulse rounded-full bg-slate-200 dark:bg-white/[0.06]"
+                  style={{ width: `${w}%` }}
+                />
+                <div
+                  className="h-3 animate-pulse rounded-full bg-slate-200 dark:bg-white/[0.06]"
+                  style={{ width: `${w - 15}%` }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }

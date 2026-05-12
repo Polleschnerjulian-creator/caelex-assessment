@@ -53,7 +53,37 @@ export function AtlasHomepage() {
       });
 
       if (!res.ok || !res.body) {
-        const body = await res.json().catch(() => ({}));
+        const body = (await res.json().catch(() => ({}))) as {
+          error?: string;
+          retryAfterMs?: number;
+        };
+        /* Friendly German for the most common production errors —
+           same translation as AtlasChatView so users see consistent
+           wording whether they hit the limit on first turn or
+           follow-up. */
+        if (res.status === 429) {
+          const seconds = body.retryAfterMs
+            ? Math.max(1, Math.ceil(body.retryAfterMs / 1000))
+            : 60;
+          throw new Error(
+            `Zu viele Anfragen. Bitte warte etwa ${seconds}s und versuche es erneut.`,
+          );
+        }
+        if (res.status === 401) {
+          throw new Error(
+            "Sitzung abgelaufen. Bitte Seite neu laden + erneut anmelden.",
+          );
+        }
+        if (res.status === 503) {
+          throw new Error(
+            "Atlas ist gerade überlastet. Bitte in einer Minute erneut versuchen.",
+          );
+        }
+        if (res.status >= 500) {
+          throw new Error(
+            "Serverfehler — wir werden benachrichtigt. Bitte erneut versuchen.",
+          );
+        }
         throw new Error(body.error || `HTTP ${res.status}`);
       }
 

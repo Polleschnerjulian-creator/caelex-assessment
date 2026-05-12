@@ -295,6 +295,30 @@ export const rateLimiters = redis
         prefix: "ratelimit:astra_chat",
       }),
 
+      // Atlas voice-input transcription: 30 per hour per user.
+      // A 30s clip at gpt-4o-mini-transcribe ($0.003/min) costs
+      // ~$0.0015. At 30/h max spend per user is ~$0.045/h — safely
+      // within abuse bounds. Audio blobs are processed in-memory and
+      // never persisted to R2 / DB.
+      transcription: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(30, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:transcription",
+      }),
+
+      // Atlas chat-level file upload: 20 per hour per user. Each
+      // upload writes to R2 + extracts text, so the limit is
+      // moderate (less than mandate file upload which is 30/h via
+      // a different route). Drag-and-drop friendly without enabling
+      // bulk-attack.
+      atlas_chat_upload: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(20, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:atlas_chat_upload",
+      }),
+
       // Atlas semantic search: 40 per minute per user. Tight because
       // each call hits the AI Gateway for a query embedding (cost +
       // latency), and the Atlas UI debounces at 300ms so a typing
@@ -459,6 +483,8 @@ const fallbackLimiters = {
   nexus: new InMemoryRateLimiter(15, 3600000),
   hub: new InMemoryRateLimiter(30, 60000), // 30/min vs 60/min (Redis)
   astra_chat: new InMemoryRateLimiter(30, 3600000), // 30/hr vs 60/hr (Redis)
+  transcription: new InMemoryRateLimiter(15, 3600000), // 15/hr dev vs 30/hr (Redis)
+  atlas_chat_upload: new InMemoryRateLimiter(10, 3600000), // 10/hr dev vs 20/hr (Redis)
   atlas_semantic: new InMemoryRateLimiter(20, 60000), // 20/min dev vs 40/min (Redis)
   atlas_workspace_ai: new InMemoryRateLimiter(5, 3600000), // 5/hr dev vs 10/hr (Redis)
   legal_matter_invite: new InMemoryRateLimiter(5, 3600000), // 5/hr dev vs 10/hr (Redis)
@@ -500,6 +526,8 @@ export type RateLimitType =
   | "nexus"
   | "hub"
   | "astra_chat"
+  | "transcription"
+  | "atlas_chat_upload"
   | "atlas_semantic"
   | "atlas_workspace_ai"
   | "legal_matter_invite"

@@ -31,10 +31,14 @@ import {
   BookOpenText,
   Wrench,
   Mic,
+  MicOff,
+  Square,
+  Loader2,
   Check,
   Paperclip,
   Image as ImageIcon,
 } from "lucide-react";
+import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 
 interface Props {
   initialValue?: string;
@@ -77,8 +81,31 @@ export function ChatInput({
   const [text, setText] = useState(initialValue ?? "");
   const [toggles, setToggles] = useState(DEFAULT_TOGGLES);
   const [plusOpen, setPlusOpen] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const popRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  /* Voice-input integration. The hook handles the full MediaRecorder
+     → /api/atlas/transcribe lifecycle and returns a transcript that
+     we splice into the textarea. */
+  const voice = useVoiceRecorder();
+
+  /* When a transcript lands, append it to the current text (or set
+     if empty), then clear the hook's transcript buffer so we don't
+     re-insert on next render. */
+  useEffect(() => {
+    if (voice.transcript) {
+      setText((prev) =>
+        prev ? `${prev} ${voice.transcript}` : voice.transcript!,
+      );
+      voice.reset();
+      /* Focus the textarea so the user can immediately review + edit
+         + send the transcribed text. */
+      taRef.current?.focus();
+    }
+  }, [voice.transcript, voice]);
 
   /* Auto-grow textarea (max 240px). */
   useEffect(() => {
@@ -105,11 +132,116 @@ export function ChatInput({
     return () => window.removeEventListener("mousedown", handler);
   }, [plusOpen]);
 
+  /* ── File-attach (text-files only — drag-drop + click) ─────────────
+     Client-side FileReader extracts the text, then we splice it into
+     the textarea as a tagged block the model recognises. No upload
+     to R2 / DB — the file content becomes part of the user's message
+     content. PDF / DOCX / images need server-side extraction and are
+     surfaced via the disabled menu entries (next sprint).
+     -----------------------------------------------------------------*/
+
+  const handleTextFile = async (file: File) => {
+    setFileError(null);
+    /* Hard cap 1 MB of text — anything larger blows past the model's
+       useful context window for a single chat turn. */
+    const MAX_TEXT_BYTES = 1 * 1024 * 1024;
+    const TEXT_MIMES = [
+      "text/plain",
+      "text/markdown",
+      "text/html",
+      "text/csv",
+      "application/json",
+      "application/xml",
+      "text/xml",
+    ];
+    const TEXT_EXTS = [
+      ".txt",
+      ".md",
+      ".markdown",
+      ".csv",
+      ".html",
+      ".htm",
+      ".json",
+      ".xml",
+      ".log",
+    ];
+    const looksText =
+      TEXT_MIMES.includes(file.type) ||
+      TEXT_EXTS.some((e) => file.name.toLowerCase().endsWith(e));
+
+    if (!looksText) {
+      const isPdf =
+        file.type === "application/pdf" ||
+        file.name.toLowerCase().endsWith(".pdf");
+      const isImg = file.type.startsWith("image/");
+      if (isPdf) {
+        setFileError(
+          "PDF-Extraktion folgt im nächsten Sprint. Bitte als TXT/MD speichern und erneut hochladen.",
+        );
+      } else if (isImg) {
+        setFileError(
+          "Bilderkennung folgt mit Vision-Support. Bitte Text-Datei hochladen.",
+        );
+      } else {
+        setFileError(
+          `Dateityp nicht unterstützt (${file.type || file.name.split(".").pop()}). Aktuell: TXT, MD, CSV, HTML, JSON, XML.`,
+        );
+      }
+      return;
+    }
+    if (file.size > MAX_TEXT_BYTES) {
+      setFileError(
+        `Datei zu groß (${Math.round(file.size / 1024)} KB; max ${MAX_TEXT_BYTES / 1024} KB).`,
+      );
+      return;
+    }
+    try {
+      const content = await file.text();
+      const trimmed = content.trim();
+      if (!trimmed) {
+        setFileError("Datei ist leer.");
+        return;
+      }
+      /* Splice the file content into the textarea as a clearly-fenced
+         block. The model reads the fence as "this came from an
+         attachment, treat it as quoted material". */
+      const block = `\n\n--- Anhang: ${file.name} ---\n${trimmed}\n--- /Anhang ---\n\n`;
+      setText((prev) => (prev ? prev + block : block.trimStart()));
+      taRef.current?.focus();
+    } catch (e) {
+      setFileError("Datei konnte nicht gelesen werden.");
+    }
+  };
+
+  const onPickFile = () => {
+    setPlusOpen(false);
+    fileInputRef.current?.click();
+  };
+
+  const onFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (f) void handleTextFile(f);
+    e.target.value = "";
+  };
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(true);
+  };
+  const onDragLeave = () => setDragOver(false);
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const f = e.dataTransfer?.files?.[0];
+    if (f) void handleTextFile(f);
+  };
+
   const handleSend = () => {
     const v = text.trim();
     if (!v || disabled) return;
     void onSubmit(v, toggles);
     setText("");
+    setFileError(null);
   };
 
   const toggle = (key: keyof typeof toggles) => {
@@ -119,7 +251,33 @@ export function ChatInput({
   const hasText = text.trim().length > 0;
 
   return (
-    <div className="rounded-[28px] border border-slate-200 bg-white px-3 pt-3 pb-2 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-colors focus-within:border-slate-300 dark:border-white/[0.08] dark:bg-[#1a1a1a] dark:shadow-[0_8px_24px_rgba(0,0,0,0.25)] dark:focus-within:border-white/[0.16]">
+    <div
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+      className={`relative rounded-[28px] border bg-white px-3 pt-3 pb-2 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-colors dark:bg-[#1a1a1a] dark:shadow-[0_8px_24px_rgba(0,0,0,0.25)] ${
+        dragOver
+          ? "border-slate-400 bg-slate-50 dark:border-white/[0.24] dark:bg-white/[0.04]"
+          : "border-slate-200 focus-within:border-slate-300 dark:border-white/[0.08] dark:focus-within:border-white/[0.16]"
+      }`}
+    >
+      {dragOver && (
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-[28px] bg-white/80 backdrop-blur-sm dark:bg-[#1a1a1a]/80">
+          <div className="flex items-center gap-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">
+            <Paperclip size={14} />
+            Text-Datei hier ablegen
+          </div>
+        </div>
+      )}
+      {/* Hidden file input — opened by Plus-Menu "Datei hochladen". */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".txt,.md,.markdown,.csv,.html,.htm,.json,.xml,.log,text/plain,text/markdown,text/csv,text/html,application/json,text/xml"
+        onChange={onFileInputChange}
+        className="hidden"
+        aria-hidden="true"
+      />
       <textarea
         ref={taRef}
         value={text}
@@ -161,15 +319,35 @@ export function ChatInput({
               toggles={toggles}
               onToggle={toggle}
               onClose={() => setPlusOpen(false)}
+              onPickFile={onPickFile}
             />
           )}
         </div>
 
         <div className="flex-1" />
 
-        <IconButton title="Spracheingabe (geplant)" disabled>
-          <Mic size={15} />
-        </IconButton>
+        {/* Voice input — three visible states:
+              idle/no-backend  → static Mic
+              requesting       → spinner (waiting on permission prompt)
+              recording        → pulsing red square (click to stop + transcribe)
+              transcribing     → spinner (server processing)
+            The hook gates feature availability so the button stays
+            disabled when MediaRecorder is unsupported or OPENAI_API_KEY
+            is missing server-side. */}
+        <VoiceButton voice={voice} />
+
+        {/* If the user is currently recording, show a small
+            elapsed-time + size hint inline so they know it's live. */}
+        {voice.state === "recording" && (
+          <span className="ml-1 hidden text-[11px] tabular-nums text-red-600 dark:text-red-400 sm:inline">
+            {voice.seconds}s
+          </span>
+        )}
+        {voice.state === "transcribing" && (
+          <span className="ml-1 hidden text-[11px] text-slate-500 sm:inline">
+            transkribiert…
+          </span>
+        )}
 
         {/* Send — only emphasised when there's text. Light: black-on-white,
             Dark: white-on-black (same inversion as ChatGPT). */}
@@ -187,6 +365,27 @@ export function ChatInput({
           <ArrowUp size={16} strokeWidth={2.5} />
         </button>
       </div>
+
+      {/* Voice-error inline hint — only renders when the recorder
+          surfaced a friendly German error string (mic denied, no
+          backend, etc). Self-clearing on next start(). */}
+      {voice.error && (
+        <div className="mt-1 px-2 text-[11px] text-red-500 dark:text-red-400">
+          {voice.error}
+        </div>
+      )}
+      {fileError && (
+        <div className="mt-1 flex items-start gap-2 px-2 text-[11px] text-red-500 dark:text-red-400">
+          <span className="flex-1">{fileError}</span>
+          <button
+            type="button"
+            onClick={() => setFileError(null)}
+            className="shrink-0 underline-offset-2 hover:underline"
+          >
+            ausblenden
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -197,10 +396,12 @@ function PlusMenu({
   toggles,
   onToggle,
   onClose: _onClose,
+  onPickFile,
 }: {
   toggles: typeof DEFAULT_TOGGLES;
   onToggle: (k: keyof typeof DEFAULT_TOGGLES) => void;
   onClose: () => void;
+  onPickFile: () => void;
 }) {
   return (
     <div className="absolute bottom-full left-0 z-30 mb-2 w-72 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.12)] dark:border-white/[0.08] dark:bg-[#1a1a1a] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)]">
@@ -209,13 +410,13 @@ function PlusMenu({
         <MenuRow
           icon={<Paperclip size={14} />}
           label="Datei hochladen"
-          hint="über Mandat verfügbar"
-          disabled
+          hint="TXT, MD, CSV, HTML, JSON"
+          onClick={onPickFile}
         />
         <MenuRow
           icon={<ImageIcon size={14} />}
           label="Foto hochladen"
-          hint="über Mandat verfügbar"
+          hint="folgt mit Vision-Support"
           disabled
         />
       </MenuSection>
@@ -325,6 +526,66 @@ function MenuRow({
             </span>
           )}
         </span>
+      )}
+    </button>
+  );
+}
+
+/* ── Voice-input button ──────────────────────────────────────────────── */
+
+function VoiceButton({
+  voice,
+}: {
+  voice: ReturnType<typeof useVoiceRecorder>;
+}) {
+  const disabled =
+    voice.availability === "unsupported" ||
+    voice.availability === "no-backend" ||
+    voice.state === "transcribing";
+
+  const tooltip = (() => {
+    if (voice.availability === "unsupported") {
+      return "Spracheingabe in diesem Browser nicht unterstützt";
+    }
+    if (voice.availability === "no-backend") {
+      return "Spracheingabe noch nicht freigeschaltet";
+    }
+    if (voice.state === "recording") return "Aufnahme stoppen + transkribieren";
+    if (voice.state === "transcribing") return "Transkribiert…";
+    if (voice.state === "requesting") return "Mikrofonzugriff anfordern…";
+    return "Spracheingabe starten";
+  })();
+
+  const onClick = () => {
+    if (disabled) return;
+    if (voice.state === "recording") voice.stop();
+    else void voice.start();
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={tooltip}
+      aria-label={tooltip}
+      className={`inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+        voice.state === "recording"
+          ? "animate-pulse bg-red-500 text-white"
+          : voice.availability === "unsupported" ||
+              voice.availability === "no-backend"
+            ? "text-slate-300 cursor-default dark:text-slate-700"
+            : "text-slate-500 hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.04] dark:hover:text-slate-200"
+      }`}
+    >
+      {voice.state === "recording" ? (
+        <Square size={11} strokeWidth={2.5} fill="currentColor" />
+      ) : voice.state === "requesting" || voice.state === "transcribing" ? (
+        <Loader2 size={14} className="animate-spin" />
+      ) : voice.availability === "unsupported" ? (
+        <MicOff size={15} />
+      ) : (
+        <Mic size={15} />
       )}
     </button>
   );
