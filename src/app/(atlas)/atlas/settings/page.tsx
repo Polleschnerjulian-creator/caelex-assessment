@@ -801,7 +801,11 @@ export default function SettingsPage() {
                mobile via flex-wrap)
        RIGHT — content pane with the active section + clean header.
        Replaces the previous horizontal-tabs-on-top layout. */
-    <div className="min-h-screen bg-white text-slate-900 dark:bg-[#212121] dark:text-slate-100">
+    /* AtlasShellV2's <main> wraps us in `overflow-hidden` so the
+       sidebar stays sticky. That means THIS page is responsible for
+       its own scroll. Use `h-full overflow-y-auto` (not `min-h-screen`
+       which would just overflow off the bottom invisibly). */
+    <div className="h-full overflow-y-auto bg-white text-slate-900 dark:bg-[#212121] dark:text-slate-100">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-10 md:flex-row md:gap-10 md:px-10">
         {/* ─── Vertical section nav (left) ─── */}
         <aside className="md:w-[220px] md:shrink-0">
