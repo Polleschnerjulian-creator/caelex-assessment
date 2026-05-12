@@ -56,7 +56,12 @@ export function CitationsPanel({ citations }: Props) {
         {citations.map((c) => (
           <li
             key={`${c.sourceId}-${c.index}`}
-            className="py-2 first:pt-0 last:pb-0"
+            id={`citation-${c.sourceId}`}
+            /* The id is the scroll-anchor target for inline pills
+               rendered by MarkdownContent. transition-shadow makes
+               the click-ring fade in smoothly when the pill is
+               tapped. */
+            className="rounded py-2 transition-shadow first:pt-0 last:pb-0 scroll-mt-24"
           >
             <div className="flex items-start gap-3">
               <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white font-mono text-[10px] text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">

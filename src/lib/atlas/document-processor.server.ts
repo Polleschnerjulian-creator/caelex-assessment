@@ -36,6 +36,38 @@ import {
   getR2BucketName,
   isR2Configured,
 } from "@/lib/storage/r2-client";
+import { logger } from "@/lib/logger";
+
+/* PDF text extraction via unpdf. Workers-compatible (pure-JS,
+   no native deps). The package is tree-shaken — only the
+   `extractText` function is bundled into our route handler. */
+async function extractPdfText(data: Buffer): Promise<string | null> {
+  try {
+    const { extractText, getDocumentProxy } = await import("unpdf");
+    /* unpdf accepts a Uint8Array; Buffer is a Uint8Array subclass
+       so we can pass it directly. */
+    const pdf = await getDocumentProxy(new Uint8Array(data));
+    const result = await extractText(pdf, { mergePages: true });
+    if (!result) return null;
+    /* `extractText` returns `{ totalPages, text: string | string[] }`.
+       When mergePages:true the text is a single string; defensive
+       handling for both cases. */
+    const text = Array.isArray(result.text)
+      ? result.text.join("\n\n")
+      : result.text;
+    return text && text.trim().length > 0 ? text : null;
+  } catch (err) {
+    /* PDF extraction is best-effort — a corrupt or encrypted PDF
+       should NOT prevent the upload itself from succeeding. Log +
+       fall through to extractedText=null. The file still lands in
+       R2 and the row is created; just no text search. */
+    logger.warn("[atlas/document-processor] PDF extraction failed", {
+      bytes: data.length,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return null;
+  }
+}
 
 /* ── Config ──────────────────────────────────────────────────────────── */
 
@@ -151,22 +183,29 @@ export async function uploadFileToMandate(args: {
     };
   }
 
-  /* 3. Best-effort text extraction. Inline for text-formats; PDF +
-     Office binaries land NULL for now (Sprint 6 will add unpdf). */
+  /* 3. Best-effort text extraction. Three paths:
+     (a) text/* + markdown + html + csv → utf8 decode (fast, no deps).
+     (b) application/pdf → unpdf (Workers-compatible, no native deps).
+     (c) Office binaries (.doc(x), .xls(x)) → still NULL — would need
+         mammoth.js (DOCX) + xlsx (Excel) packages. Files upload but
+         extracted-text-search misses them. Documented in the UI hint
+         on MandateFileUpload. */
   let extractedText: string | null = null;
   if (TEXT_INLINE_MIME.has(mimeType)) {
     try {
       extractedText = data.toString("utf8");
-      /* Cap at 200 KB to keep DB rows reasonable; the LLM tool layer
-         can re-fetch the full file from R2 if it ever needs more. */
-      if (extractedText.length > 200_000) {
-        extractedText =
-          extractedText.slice(0, 200_000) +
-          "\n\n[…truncated by Atlas at 200 000 chars; full file in R2.]";
-      }
     } catch {
       extractedText = null;
     }
+  } else if (mimeType === "application/pdf") {
+    extractedText = await extractPdfText(data);
+  }
+  /* Cap at 200 KB to keep DB rows reasonable; the LLM tool layer
+     can re-fetch the full file from R2 if it ever needs more. */
+  if (extractedText && extractedText.length > 200_000) {
+    extractedText =
+      extractedText.slice(0, 200_000) +
+      "\n\n[…truncated by Atlas at 200 000 chars; full file in R2.]";
   }
 
   /* 4. Naive document classification. Better heuristics land with the

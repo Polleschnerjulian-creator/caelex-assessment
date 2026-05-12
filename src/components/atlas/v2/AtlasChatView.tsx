@@ -24,6 +24,7 @@ import {
   X as XIcon,
   PenLine,
   Brain,
+  Download,
 } from "lucide-react";
 import { ChatInput } from "./ChatInput";
 import { SuggestedFollowups } from "./SuggestedFollowups";
@@ -319,7 +320,7 @@ export function AtlasChatView({ chatId }: Props) {
     <div className="flex h-full flex-col">
       {/* Header — soft, ChatGPT-style; no hard border. */}
       <header className="flex shrink-0 items-center justify-between gap-3 px-6 py-3">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h1 className="line-clamp-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
             {chat.title}
           </h1>
@@ -334,6 +335,15 @@ export function AtlasChatView({ chatId }: Props) {
             </Link>
           )}
         </div>
+        <button
+          type="button"
+          onClick={() => downloadChatAsMarkdown(chat)}
+          title="Chat als Markdown exportieren"
+          aria-label="Chat als Markdown exportieren"
+          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-100"
+        >
+          <Download size={13} />
+        </button>
       </header>
 
       {/* Messages */}
@@ -432,6 +442,18 @@ function MessageRow({ message }: { message: ChatMessageRecord }) {
     .map((b) => b.thinking ?? "")
     .filter(Boolean)
     .join("\n");
+  /* Citations are extracted server-side at persistence time. We pass
+     them down to MarkdownContent so inline [ATLAS:…] tokens render
+     as clickable numbered pills (¹ ² ³) that scroll to the matching
+     row in the CitationsPanel below. */
+  const citationsForInline =
+    Array.isArray(message.citations) && message.citations.length > 0
+      ? (message.citations as CitationRecord[]).map((c) => ({
+          index: c.index,
+          sourceId: c.sourceId,
+          citation: c.citation,
+        }))
+      : undefined;
   return (
     <div className="space-y-2">
       {thinkingText && <ThinkingPanel text={thinkingText} />}
@@ -439,13 +461,14 @@ function MessageRow({ message }: { message: ChatMessageRecord }) {
         <ToolTraceSummary tools={message.toolsUsed} />
       )}
       <div className="prose prose-sm max-w-none text-[14px] leading-relaxed text-slate-800 dark:prose-invert dark:text-slate-200">
-        {/* Sprint 6: MarkdownContent handles markdown tables (real
-            <table> render) + bold/italic/code/[ATLAS:…] inline marks. */}
-        <MarkdownContent text={text} />
+        {/* Markdown rendering handles tables (real <table> render) +
+            bold/italic/code marks + ATLAS-citation pills. */}
+        <MarkdownContent text={text} citations={citationsForInline} />
       </div>
-      {/* Sprint 4 — Quellen panel with live validity badges. Populated
-          by extractCitations() in the chat-engine when persisting the
-          assistant turn. */}
+      {/* Quellen panel with live validity badges. Populated by
+          extractCitations() in the chat-engine when persisting the
+          assistant turn. The list items have `id="citation-<src-id>"`
+          so inline pills can scroll to them. */}
       {Array.isArray(message.citations) && message.citations.length > 0 && (
         <CitationsPanel citations={message.citations as CitationRecord[]} />
       )}
@@ -791,4 +814,103 @@ function extractText(content: ChatMessageBlock[] | string): string {
     .filter((b) => b.type === "text")
     .map((b) => b.text ?? "")
     .join("\n");
+}
+
+/**
+ * Convert a full chat into a Markdown document + trigger browser
+ * download. Used by the header export button. Produces a self-
+ * contained `.md` file the lawyer can paste into Word, email to a
+ * colleague, or store in the client matter folder.
+ *
+ * Structure mirrors the visible chat:
+ *   - Title + mandate + date metadata
+ *   - User question + assistant answer pairs
+ *   - Tools-used trace per turn (collapsed in source as plain text)
+ *   - Citations list at the bottom of each assistant turn
+ */
+function downloadChatAsMarkdown(chat: ChatRecord) {
+  const lines: string[] = [];
+  lines.push(`# ${chat.title}`);
+  lines.push("");
+  if (chat.mandate) {
+    lines.push(`**Mandat:** ${chat.mandate.name}`);
+  }
+  lines.push(
+    `**Erstellt:** ${new Date(chat.createdAt).toLocaleString("de-DE")}`,
+  );
+  lines.push(
+    `**Aktualisiert:** ${new Date(chat.updatedAt).toLocaleString("de-DE")}`,
+  );
+  lines.push("");
+  lines.push("---");
+  lines.push("");
+
+  let qNum = 0;
+  for (const m of chat.messages) {
+    const text = extractText(m.content);
+    if (m.role === "user") {
+      qNum++;
+      lines.push(`## Frage ${qNum}`);
+      lines.push("");
+      lines.push(text);
+      lines.push("");
+    } else {
+      lines.push(`### Antwort`);
+      lines.push("");
+      lines.push(text);
+      lines.push("");
+      if (m.toolsUsed && m.toolsUsed.length > 0) {
+        lines.push(
+          `_Tools verwendet: ${m.toolsUsed.map((t) => `\`${t}\``).join(", ")}_`,
+        );
+        lines.push("");
+      }
+      if (Array.isArray(m.citations) && m.citations.length > 0) {
+        lines.push(`**Quellen:**`);
+        lines.push("");
+        for (const c of m.citations as Array<{
+          index: number;
+          citation: string;
+          title: string | null;
+          sourceUrl: string | null;
+          lastVerified: string | null;
+        }>) {
+          const url = c.sourceUrl ? ` — <${c.sourceUrl}>` : "";
+          const title = c.title ? ` — ${c.title}` : "";
+          const verified = c.lastVerified
+            ? ` (verified ${c.lastVerified})`
+            : "";
+          lines.push(`${c.index}. **${c.citation}**${title}${url}${verified}`);
+        }
+        lines.push("");
+      }
+      lines.push("---");
+      lines.push("");
+    }
+  }
+
+  /* Filename: atlas-chat-<sanitized-title>-<YYYY-MM-DD>.md
+     Sanitize title to a filesystem-safe slug. */
+  const slug =
+    chat.title
+      .toLowerCase()
+      .replace(/[^a-z0-9äöüß]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60) || "chat";
+  const date = new Date(chat.updatedAt).toISOString().slice(0, 10);
+  const filename = `atlas-chat-${slug}-${date}.md`;
+
+  const blob = new Blob([lines.join("\n")], {
+    type: "text/markdown;charset=utf-8",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  /* Free the blob URL after a short delay — most browsers wait for
+     the download to start before they actually use the URL. */
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

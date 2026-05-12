@@ -33,6 +33,7 @@ import "server-only";
 import type Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
 import { buildAnthropicClient } from "@/lib/atlas/anthropic-client";
+import { appendAtlasAudit } from "@/lib/atlas/audit-log.server";
 import { ATLAS_TOOLS, isAtlasToolName } from "@/lib/atlas/atlas-tools";
 import { executeAtlasTool } from "@/lib/atlas/atlas-tool-executor";
 import { extractCitations } from "@/lib/atlas/citation-extractor.server";
@@ -309,6 +310,19 @@ async function ensureChatAndHistory(args: {
       },
     },
     select: { id: true },
+  });
+  /* Append to the Atlas audit log. Fire-and-forget — never blocks
+     the chat-creation path. */
+  void appendAtlasAudit({
+    userId,
+    organizationId,
+    action: "atlas.chat.create",
+    entityType: "AtlasChat",
+    entityId: created.id,
+    metadata: {
+      mandateId: mandateId ?? null,
+      titleHint: titleHint ?? null,
+    },
   });
   return {
     chatId: created.id,

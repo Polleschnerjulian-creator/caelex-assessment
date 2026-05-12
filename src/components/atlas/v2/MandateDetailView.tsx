@@ -257,9 +257,9 @@ export function MandateDetailView({ mandateId }: Props) {
             </div>
             <p className="mt-2 text-[10px] text-slate-500">
               Astra kann Dateien direkt im Chat referenzieren — frag z.B. „Was
-              steht in der Mission-Spec zu Frequenzen?". TXT/MD/HTML/CSV werden
-              automatisch text-extrahiert; PDF/DOC(X)/XLS(X) werden gespeichert
-              (Text-Extraktion folgt).
+              steht in der Mission-Spec zu Frequenzen?". TXT/MD/HTML/CSV + PDF
+              werden automatisch text-extrahiert. DOC(X)/XLS(X) werden
+              gespeichert (Office-Extraktion folgt).
             </p>
           </section>
         </div>

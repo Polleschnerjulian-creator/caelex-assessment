@@ -18,7 +18,7 @@
  */
 
 import Link from "next/link";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Plus,
@@ -34,6 +34,7 @@ import {
   PanelLeftOpen,
   Sun,
   Moon,
+  Loader2,
 } from "lucide-react";
 import type { ChatListItem, MandateListItem } from "./types";
 import { useAtlasTheme } from "@/app/(atlas)/atlas/_components/AtlasThemeProvider";
@@ -202,12 +203,9 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
           </button>
         </div>
 
-        {/* Search-stub */}
+        {/* Search — live chat-search powered by /api/atlas/search. */}
         <div className="px-3 pt-2 pb-3">
-          <div className="flex items-center gap-2 rounded-lg bg-black/[0.04] px-2.5 py-1.5 text-[13px] text-slate-500 dark:bg-white/[0.04]">
-            <Search size={13} />
-            <span>Suchen…</span>
-          </div>
+          <SidebarSearch />
         </div>
 
         {/* Primary actions */}
@@ -420,6 +418,124 @@ function NavLink({
 
 function Empty({ children }: { children: React.ReactNode }) {
   return <p className="px-3 py-1 text-[12px] text-slate-500">{children}</p>;
+}
+
+/**
+ * Chat-search input + result dropdown. Live-fetches /api/atlas/search
+ * with debounced 250ms keystrokes. Closes when the user clicks outside
+ * or selects a result.
+ *
+ * Why we keep it inline in the sidebar (vs a full search-page): most
+ * legal-AI use is "find that chat from last Tuesday about Spire" —
+ * which is faster to satisfy with a sidebar dropdown than a full
+ * search-results page. We can upgrade to ⌘K command-palette later
+ * without breaking this baseline.
+ */
+function SidebarSearch() {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<
+    Array<{
+      id: string;
+      title: string;
+      updatedAt: string;
+      mandateName: string | null;
+    }>
+  >([]);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  /* Debounced search. 250ms is the ChatGPT/Linear sweet-spot — long
+     enough to skip in-progress typing, short enough to feel live. */
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([]);
+      return;
+    }
+    const handle = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(
+          `/api/atlas/search?q=${encodeURIComponent(query.trim())}`,
+          { cache: "no-store" },
+        );
+        if (!res.ok) {
+          setResults([]);
+          return;
+        }
+        const data = (await res.json()) as {
+          results: typeof results;
+        };
+        setResults(data.results ?? []);
+      } finally {
+        setLoading(false);
+      }
+    }, 250);
+    return () => clearTimeout(handle);
+  }, [query]);
+
+  /* Click-outside closes the dropdown. */
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+    window.addEventListener("mousedown", handler);
+    return () => window.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={containerRef} className="relative">
+      <div className="flex items-center gap-2 rounded-lg bg-black/[0.04] px-2.5 py-1.5 text-[13px] dark:bg-white/[0.04]">
+        <Search size={13} className="shrink-0 text-slate-500" />
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => setOpen(true)}
+          placeholder="Chats durchsuchen…"
+          aria-label="Chats durchsuchen"
+          className="w-full bg-transparent text-[13px] text-slate-800 outline-none focus-visible:outline-none placeholder:text-slate-500 dark:text-slate-200"
+        />
+        {loading && (
+          <Loader2 size={11} className="shrink-0 animate-spin text-slate-400" />
+        )}
+      </div>
+      {open && query.trim() && (
+        <div className="absolute left-0 right-0 top-full z-40 mt-1 max-h-[320px] overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-[0_8px_24px_rgba(0,0,0,0.10)] dark:border-white/[0.08] dark:bg-[#1f1f1f] dark:shadow-[0_8px_24px_rgba(0,0,0,0.40)]">
+          {results.length === 0 ? (
+            <p className="px-3 py-2 text-[12px] text-slate-500">
+              {loading ? "Sucht…" : "Keine Treffer."}
+            </p>
+          ) : (
+            results.map((r) => (
+              <Link
+                key={r.id}
+                href={`/atlas/chat/${r.id}`}
+                onClick={() => {
+                  setOpen(false);
+                  setQuery("");
+                }}
+                className="block rounded-md px-2.5 py-1.5 text-[13px] text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/[0.05]"
+              >
+                <div className="line-clamp-1">{r.title}</div>
+                {r.mandateName && (
+                  <div className="line-clamp-1 text-[10.5px] text-slate-500">
+                    {r.mandateName}
+                  </div>
+                )}
+              </Link>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 /**

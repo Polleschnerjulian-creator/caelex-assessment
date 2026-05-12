@@ -24,13 +24,37 @@
 
 import type { ReactNode } from "react";
 
-interface Props {
-  text: string;
+/**
+ * Minimal citation shape MarkdownContent needs to render inline pills.
+ * Kept as a structural interface so we don't drag the full CitationsPanel
+ * type through (which has many more fields). The chat-view passes the
+ * subset it has from message.citations.
+ */
+export interface InlineCitation {
+  index: number;
+  sourceId: string;
+  citation: string;
 }
 
-export function MarkdownContent({ text }: Props) {
+interface Props {
+  text: string;
+  /** Optional — when provided, `[ATLAS:source-id]` tokens render as
+   *  numbered clickable pills (¹ ² ³) that scroll to the matching
+   *  citation row. When undefined or empty (e.g. during streaming
+   *  before citations are extracted), tokens render as a fallback
+   *  source-id text. */
+  citations?: InlineCitation[];
+}
+
+export function MarkdownContent({ text, citations }: Props) {
   const blocks = parseBlocks(text);
-  return <>{blocks.map((b, i) => renderBlock(b, i))}</>;
+  /* Build a lookup: source-id → index. Used by renderInline to turn
+     [ATLAS:xx] into the right pill number. */
+  const sourceMap = new Map<string, InlineCitation>();
+  if (citations) {
+    for (const c of citations) sourceMap.set(c.sourceId, c);
+  }
+  return <>{blocks.map((b, i) => renderBlock(b, i, sourceMap))}</>;
 }
 
 /* ── Block parsing ───────────────────────────────────────────────────── */
@@ -118,7 +142,11 @@ function parseRow(line: string): string[] {
 
 /* ── Block rendering ─────────────────────────────────────────────────── */
 
-function renderBlock(b: Block, key: number): ReactNode {
+function renderBlock(
+  b: Block,
+  key: number,
+  sourceMap: Map<string, InlineCitation>,
+): ReactNode {
   if (b.kind === "table") {
     return (
       <div
@@ -133,7 +161,7 @@ function renderBlock(b: Block, key: number): ReactNode {
                   key={i}
                   className="border-b border-slate-200 px-3 py-2 text-left font-medium text-slate-800 dark:border-white/[0.06] dark:text-slate-200"
                 >
-                  {renderInline(h)}
+                  {renderInline(h, sourceMap)}
                 </th>
               ))}
             </tr>
@@ -146,7 +174,7 @@ function renderBlock(b: Block, key: number): ReactNode {
                     key={ci}
                     className="border-t border-slate-200 px-3 py-2 align-top text-slate-700 dark:border-white/[0.04] dark:text-slate-300"
                   >
-                    {renderInline(row[ci] ?? "")}
+                    {renderInline(row[ci] ?? "", sourceMap)}
                   </td>
                 ))}
               </tr>
@@ -158,17 +186,41 @@ function renderBlock(b: Block, key: number): ReactNode {
   }
   return (
     <p key={key} className="mb-3 last:mb-0 whitespace-pre-wrap">
-      {renderInline(b.text)}
+      {renderInline(b.text, sourceMap)}
     </p>
   );
 }
 
 /* ── Inline rendering ────────────────────────────────────────────────── */
 
+/**
+ * Smooth-scroll a citation anchor into view. Used by inline pills.
+ * Falls back to instant-scroll on browsers without `behavior: smooth`.
+ * Highlights the row briefly so the user sees what was clicked.
+ */
+function scrollToCitation(sourceId: string) {
+  if (typeof document === "undefined") return;
+  const target = document.getElementById(`citation-${sourceId}`);
+  if (!target) return;
+  target.scrollIntoView({ behavior: "smooth", block: "center" });
+  /* Brief highlight pulse — the row's normal style is restored via a
+     short CSS class swap. The class is a Tailwind ring + animate-pulse
+     applied for 1.2s. Self-clearing. */
+  target.classList.add("ring-2", "ring-emerald-300", "ring-offset-1");
+  setTimeout(
+    () =>
+      target.classList.remove("ring-2", "ring-emerald-300", "ring-offset-1"),
+    1200,
+  );
+}
+
 /* Tiny inline-markdown handling: **bold**, *italic*, `code`, and
    [ATLAS:…] citations get a subtle visual marker. We do this without
    regex-heavy parsers — split on the strong patterns, wrap in spans. */
-function renderInline(text: string): ReactNode[] {
+function renderInline(
+  text: string,
+  sourceMap: Map<string, InlineCitation>,
+): ReactNode[] {
   if (!text) return [];
 
   const parts: ReactNode[] = [];
@@ -199,12 +251,38 @@ function renderInline(text: string): ReactNode[] {
       ),
     },
     {
+      /* [ATLAS:source-id] → clickable numbered pill. The pill shows
+         the citation index (1, 2, 3…) instead of the raw source-id
+         so the answer text reads cleanly. Clicking scrolls to the
+         matching CitationsPanel row + briefly highlights it. When
+         citations aren't loaded yet (streaming), we render a
+         non-interactive fallback showing a short source-id label. */
       re: /\[ATLAS:([^\]]+)\]/,
-      wrap: (m) => (
-        <sup className="ml-0.5 inline-flex items-center rounded-full bg-slate-100 px-1.5 py-0 font-mono text-[10px] font-medium text-slate-700 dark:bg-white/[0.06] dark:text-slate-300">
-          {m}
-        </sup>
-      ),
+      wrap: (m) => {
+        const hit = sourceMap.get(m);
+        if (hit) {
+          return (
+            <a
+              href={`#citation-${hit.sourceId}`}
+              onClick={(e) => {
+                e.preventDefault();
+                scrollToCitation(hit.sourceId);
+              }}
+              title={hit.citation}
+              className="mx-0.5 inline-flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-slate-200 px-1 align-baseline text-[10px] font-semibold text-slate-700 no-underline transition-colors hover:bg-slate-300 hover:text-slate-900 dark:bg-white/[0.10] dark:text-slate-200 dark:hover:bg-white/[0.18] dark:hover:text-white"
+            >
+              {hit.index}
+            </a>
+          );
+        }
+        /* Streaming fallback — citations not yet extracted. */
+        const shortId = m.length > 16 ? m.slice(0, 14) + "…" : m;
+        return (
+          <sup className="ml-0.5 inline-flex items-center rounded-full bg-slate-100 px-1.5 py-0 font-mono text-[10px] font-medium text-slate-700 dark:bg-white/[0.06] dark:text-slate-300">
+            {shortId}
+          </sup>
+        );
+      },
     },
   ];
 

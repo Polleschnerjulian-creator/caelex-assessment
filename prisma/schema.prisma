@@ -195,6 +195,8 @@ model User {
   atlasMandateMemberships  AtlasMandateMember[] @relation("AtlasMandateMemberships")
   atlasMandateFileUploads  AtlasMandateFile[]   @relation("AtlasMandateFileUploads")
   ownedAtlasChats          AtlasChat[]          @relation("OwnedAtlasChats")
+  /// Atlas-specific audit log entries authored by this user.
+  atlasAuditLogs           AtlasAuditLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -11797,4 +11799,65 @@ model AtlasMessage {
   createdAt DateTime @default(now())
 
   @@index([chatId, createdAt])
+}
+
+/// Atlas V2 Audit-Log — single source of truth for "who did what,
+/// when, in what context". Required for legal-software compliance
+/// + investigations.
+///
+/// Hash-chained (sha256 of `{prevHash}:{payload}`) so a tampering
+/// attempt is detectable by re-walking the chain. Hash chain
+/// follows the same pattern used in the platform-wide AuditLog
+/// model — see src/lib/audit-hash.server.ts for the helpers.
+model AtlasAuditLog {
+  id String @id @default(cuid())
+
+  /// User who performed the action. Nullable for system events
+  /// (cron jobs, automated cleanup, etc).
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  /// Org scope — quick-filter for tenant isolation when reading the
+  /// log from the admin UI. Populated from getAtlasAuth() at
+  /// write-time.
+  organizationId String?
+
+  /// Action verb — namespaced to avoid collisions with platform
+  /// AuditLog actions. Examples:
+  ///   "atlas.chat.create"  "atlas.chat.delete"
+  ///   "atlas.mandate.create"  "atlas.mandate.archive"
+  ///   "atlas.mandate.member.add"  "atlas.mandate.member.remove"
+  ///   "atlas.file.upload"  "atlas.file.delete"
+  ///   "atlas.transcribe"  "atlas.export.markdown"
+  action String
+
+  /// Target entity (the thing acted upon). e.g. "AtlasChat", "AtlasMandate".
+  /// Nullable for actions with no specific target (logout, list-view).
+  entityType String?
+  entityId   String?
+
+  /// Free-form context as JSON. Examples:
+  ///   { titleHint: "Spire Auth", mandateId: "..." }
+  ///   { fromRole: "viewer", toRole: "reviewer" }
+  /// Avoid PII / sensitive data — this is for audit reviews and
+  /// can be exported to lawyers / auditors.
+  metadata Json?
+
+  /// Network attribution at write-time. Resolved by the same
+  /// 4-layer trust hierarchy used in src/lib/audit.ts.
+  ipAddress String?
+  userAgent String?
+
+  /// SHA-256 hash linking this row to the previous one for the
+  /// same org. Forms the tamper-evident chain. Sequence broken
+  /// → tampered. See src/lib/atlas/audit-log.server.ts hashEntry.
+  hash     String
+  prevHash String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([organizationId, createdAt])
+  @@index([entityType, entityId])
+  @@index([action, createdAt])
 }
