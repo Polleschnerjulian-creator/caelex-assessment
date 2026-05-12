@@ -40,6 +40,7 @@ import {
   StickyNote,
   Shield as ShieldIcon,
   ArrowLeftRight,
+  PenLine,
 } from "lucide-react";
 import type { ChatListItem, MandateListItem } from "./types";
 import { useAtlasTheme } from "@/app/(atlas)/atlas/_components/AtlasThemeProvider";
@@ -274,6 +275,12 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
             label="Notizen"
             icon={<StickyNote size={14} />}
             active={pathname === "/atlas/notes"}
+          />
+          <SidebarItem
+            href="/atlas/draft"
+            label="Drafting Canvas"
+            icon={<PenLine size={14} />}
+            active={pathname === "/atlas/draft"}
           />
         </div>
 
