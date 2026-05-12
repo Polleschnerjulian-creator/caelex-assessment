@@ -242,7 +242,7 @@ export function AtlasChatView({ chatId }: Props) {
 
   if (error && !chat) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-red-400">
+      <div className="flex h-full items-center justify-center text-sm text-red-500 dark:text-red-400">
         {error}
       </div>
     );
@@ -255,17 +255,17 @@ export function AtlasChatView({ chatId }: Props) {
       {/* Header — soft, ChatGPT-style; no hard border. */}
       <header className="flex shrink-0 items-center justify-between gap-3 px-6 py-3">
         <div className="min-w-0">
-          <h1 className="line-clamp-1 text-sm font-semibold text-slate-100">
+          <h1 className="line-clamp-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
             {chat.title}
           </h1>
           {chat.mandate && (
             <Link
               href={`/atlas/mandate/${chat.mandate.id}`}
-              className="mt-0.5 inline-flex items-center gap-1.5 text-[11px] text-slate-500 hover:text-emerald-300"
+              className="mt-0.5 inline-flex items-center gap-1.5 text-[11px] text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-300"
             >
               <Briefcase size={10} />
               <span>{chat.mandate.name}</span>
-              <span className="text-slate-600">→</span>
+              <span className="text-slate-400 dark:text-slate-600">→</span>
             </Link>
           )}
         </div>
@@ -310,7 +310,7 @@ export function AtlasChatView({ chatId }: Props) {
           )}
 
           {error && chat && (
-            <div className="flex items-center gap-2 rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+            <div className="flex items-center gap-2 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
               <AlertCircle size={12} />
               {error}
             </div>
@@ -341,7 +341,7 @@ function MessageRow({ message }: { message: ChatMessageRecord }) {
     const text = extractText(message.content);
     return (
       <div className="flex justify-end">
-        <div className="max-w-[85%] rounded-3xl bg-white/[0.06] px-4 py-2.5 text-[14.5px] text-slate-100">
+        <div className="max-w-[85%] rounded-3xl bg-slate-100 px-4 py-2.5 text-[14.5px] text-slate-900 dark:bg-white/[0.06] dark:text-slate-100">
           {text}
         </div>
       </div>
@@ -360,7 +360,7 @@ function MessageRow({ message }: { message: ChatMessageRecord }) {
       {message.toolsUsed.length > 0 && (
         <ToolTraceSummary tools={message.toolsUsed} />
       )}
-      <div className="prose prose-invert prose-sm max-w-none text-[14px] leading-relaxed">
+      <div className="prose prose-sm max-w-none text-[14px] leading-relaxed text-slate-800 dark:prose-invert dark:text-slate-200">
         {/* Sprint 6: MarkdownContent handles markdown tables (real
             <table> render) + bold/italic/code/[ATLAS:…] inline marks. */}
         <MarkdownContent text={text} />
@@ -372,7 +372,7 @@ function MessageRow({ message }: { message: ChatMessageRecord }) {
         <CitationsPanel citations={message.citations as CitationRecord[]} />
       )}
       {message.costUsd != null && (
-        <div className="text-[10px] text-slate-600">
+        <div className="text-[10px] text-slate-400 dark:text-slate-600">
           {message.inputTokens}↑ · {message.outputTokens}↓ tokens · $
           {message.costUsd.toFixed(4)}
         </div>
@@ -391,7 +391,7 @@ function StreamingMessage({
   return (
     <div className="space-y-2">
       {tools.length > 0 && (
-        <div className="rounded-xl bg-white/[0.03] px-3 py-2">
+        <div className="rounded-xl bg-slate-50 px-3 py-2 dark:bg-white/[0.03]">
           <div className="flex items-center justify-between text-[11px] text-slate-500">
             <span>Tools verwendet ({tools.length})</span>
             <span>
@@ -405,9 +405,9 @@ function StreamingMessage({
           </div>
         </div>
       )}
-      <div className="prose prose-invert prose-sm max-w-none text-[14.5px] leading-relaxed">
+      <div className="prose prose-sm max-w-none text-[14.5px] leading-relaxed text-slate-800 dark:prose-invert dark:text-slate-200">
         <MarkdownContent text={text} />
-        <span className="ml-1 inline-block h-3 w-1.5 animate-pulse bg-slate-300 align-middle" />
+        <span className="ml-1 inline-block h-3 w-1.5 animate-pulse bg-slate-600 align-middle dark:bg-slate-300" />
       </div>
     </div>
   );
@@ -417,11 +417,11 @@ function ExpandableToolCallRow({ call }: { call: InFlightToolCall }) {
   const [open, setOpen] = useState(false);
   const inputJson = JSON.stringify(call.input ?? {}, null, 2);
   return (
-    <div className="rounded-md bg-white/[0.02]">
+    <div className="rounded-md bg-white/60 dark:bg-white/[0.02]">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-2 px-2 py-1 text-left text-[11.5px] text-slate-300 hover:bg-white/[0.03]"
+        className="flex w-full items-center gap-2 px-2 py-1 text-left text-[11.5px] text-slate-700 hover:bg-black/[0.03] dark:text-slate-300 dark:hover:bg-white/[0.03]"
       >
         <ChevronRight
           size={10}
@@ -432,7 +432,7 @@ function ExpandableToolCallRow({ call }: { call: InFlightToolCall }) {
         <span className="ml-auto shrink-0 text-slate-500">
           {call.completedAt ? (
             call.isError ? (
-              <span className="text-red-400">Error</span>
+              <span className="text-red-500 dark:text-red-400">Error</span>
             ) : (
               <span>{call.durationMs}ms</span>
             )
@@ -442,15 +442,15 @@ function ExpandableToolCallRow({ call }: { call: InFlightToolCall }) {
         </span>
       </button>
       {open && (
-        <div className="space-y-1 border-t border-white/[0.04] px-2 py-1.5 font-mono text-[10.5px]">
+        <div className="space-y-1 border-t border-slate-200 px-2 py-1.5 font-mono text-[10.5px] dark:border-white/[0.04]">
           <div className="text-slate-500">Input</div>
-          <pre className="overflow-x-auto whitespace-pre-wrap break-all text-slate-300">
+          <pre className="overflow-x-auto whitespace-pre-wrap break-all text-slate-700 dark:text-slate-300">
             {inputJson}
           </pre>
           {call.summary && (
             <>
               <div className="mt-1 text-slate-500">Output</div>
-              <pre className="whitespace-pre-wrap break-words text-slate-300">
+              <pre className="whitespace-pre-wrap break-words text-slate-700 dark:text-slate-300">
                 {call.summary}
               </pre>
             </>
@@ -463,8 +463,8 @@ function ExpandableToolCallRow({ call }: { call: InFlightToolCall }) {
 
 function ToolTraceSummary({ tools }: { tools: string[] }) {
   return (
-    <details className="rounded-md bg-white/[0.02] px-3 py-1.5 text-[11.5px]">
-      <summary className="cursor-pointer text-slate-500 hover:text-slate-300">
+    <details className="rounded-md bg-slate-50 px-3 py-1.5 text-[11.5px] dark:bg-white/[0.02]">
+      <summary className="cursor-pointer text-slate-500 hover:text-slate-800 dark:hover:text-slate-300">
         {tools.length} {tools.length === 1 ? "Tool" : "Tools"} verwendet
       </summary>
       <div className="mt-2 space-y-0.5">

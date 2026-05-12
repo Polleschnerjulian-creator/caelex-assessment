@@ -34,7 +34,7 @@ export function QuickstartCards({ onPick }: Props) {
             type="button"
             onClick={() => onPick(q.startingPrompt, q.name)}
             title={q.description}
-            className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-[13px] text-slate-300 transition-colors hover:bg-white/[0.05] hover:text-slate-100"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-[13px] text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-white/[0.08] dark:bg-white/[0.02] dark:text-slate-300 dark:hover:border-white/[0.12] dark:hover:bg-white/[0.05] dark:hover:text-slate-100"
           >
             <span className="text-base leading-none">{q.emoji}</span>
             <span>{q.name}</span>
@@ -43,7 +43,7 @@ export function QuickstartCards({ onPick }: Props) {
       </div>
       <Link
         href="/atlas/workflows"
-        className="inline-flex items-center gap-1 text-[12px] text-slate-500 hover:text-slate-300"
+        className="inline-flex items-center gap-1 text-[12px] text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
       >
         Mehr Workflows
         <ArrowRight size={11} />

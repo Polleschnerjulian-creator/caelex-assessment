@@ -100,7 +100,7 @@ export function AtlasHomepage() {
   return (
     <div className="flex h-full flex-col items-center justify-center px-6">
       <div className="w-full max-w-[720px]">
-        <h1 className="mb-10 text-center text-[28px] font-normal tracking-tight text-slate-100 [font-family:ui-serif,Georgia,'Cambria_Style',serif]">
+        <h1 className="mb-10 text-center text-[28px] font-normal tracking-tight text-slate-900 dark:text-slate-100 [font-family:ui-serif,Georgia,'Cambria_Style',serif]">
           Wie kann ich helfen?
         </h1>
 
@@ -111,7 +111,9 @@ export function AtlasHomepage() {
         />
 
         {error && (
-          <p className="mt-3 text-center text-xs text-red-400">{error}</p>
+          <p className="mt-3 text-center text-xs text-red-500 dark:text-red-400">
+            {error}
+          </p>
         )}
 
         {!submitting && (

@@ -3,14 +3,16 @@
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
- * Atlas V2 — Sidebar (UI refresh 2026-05-12).
+ * Atlas V2 — Sidebar (UI refresh 2026-05-12, theme-aware).
  *
  * ChatGPT-style restraint:
  *   - No hard border-r — soft separation via background only
  *   - Section labels in title-case (not aggressive uppercase)
- *   - No emerald active-states — subtle white-on-near-black
+ *   - No emerald active-states — subtle slate on near-white in light,
+ *     subtle white on near-black in dark
  *   - More padding, less density
  *   - Plus-icon "Neuer Chat" button matches ChatGPT
+ *   - Footer carries the theme toggle (Sun/Moon)
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -30,8 +32,11 @@ import {
   Search,
   PanelLeftClose,
   PanelLeftOpen,
+  Sun,
+  Moon,
 } from "lucide-react";
 import type { ChatListItem, MandateListItem } from "./types";
+import { useAtlasTheme } from "@/app/(atlas)/atlas/_components/AtlasThemeProvider";
 
 interface Props {
   activeChatId?: string | null;
@@ -111,12 +116,12 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
 
   if (collapsed) {
     return (
-      <aside className="flex h-full w-12 shrink-0 flex-col items-center gap-3 bg-[#171717] py-3 text-slate-300">
+      <aside className="flex h-full w-12 shrink-0 flex-col items-center gap-3 bg-[#f9f9f9] py-3 text-slate-600 dark:bg-[#171717] dark:text-slate-300">
         <button
           type="button"
           onClick={() => setCollapsed(false)}
           title="Sidebar einblenden"
-          className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:bg-white/[0.05] hover:text-slate-100"
+          className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-100"
         >
           <PanelLeftOpen size={16} />
         </button>
@@ -124,23 +129,25 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
           type="button"
           onClick={() => router.push("/atlas")}
           title="Neuer Chat"
-          className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:bg-white/[0.05] hover:text-slate-100"
+          className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-100"
         >
           <Plus size={16} />
         </button>
+        <div className="flex-1" />
+        <ThemeToggleButton compact />
       </aside>
     );
   }
 
   return (
-    <aside className="flex h-full w-[260px] shrink-0 flex-col bg-[#171717] text-slate-200">
+    <aside className="flex h-full w-[260px] shrink-0 flex-col bg-[#f9f9f9] text-slate-700 dark:bg-[#171717] dark:text-slate-200">
       {/* Top row */}
       <div className="flex items-center justify-between gap-1 px-3 pt-3">
         <button
           type="button"
           onClick={() => setCollapsed(true)}
           title="Sidebar ausblenden"
-          className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:bg-white/[0.05] hover:text-slate-100"
+          className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-100"
         >
           <PanelLeftClose size={16} />
         </button>
@@ -148,7 +155,7 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
           type="button"
           onClick={() => router.push("/atlas")}
           title="Neuer Chat"
-          className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:bg-white/[0.05] hover:text-slate-100"
+          className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-100"
         >
           <Plus size={16} />
         </button>
@@ -156,7 +163,7 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
 
       {/* Search-stub */}
       <div className="px-3 pt-2 pb-3">
-        <div className="flex items-center gap-2 rounded-lg bg-white/[0.04] px-2.5 py-1.5 text-[13px] text-slate-500">
+        <div className="flex items-center gap-2 rounded-lg bg-black/[0.04] px-2.5 py-1.5 text-[13px] text-slate-500 dark:bg-white/[0.04]">
           <Search size={13} />
           <span>Suchen…</span>
         </div>
@@ -201,8 +208,8 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
                         href={`/atlas/chat/${c.id}`}
                         className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-[13.5px] transition-colors ${
                           active
-                            ? "bg-white/[0.06] text-slate-100"
-                            : "text-slate-300 hover:bg-white/[0.03]"
+                            ? "bg-black/[0.06] text-slate-900 dark:bg-white/[0.06] dark:text-slate-100"
+                            : "text-slate-700 hover:bg-black/[0.04] dark:text-slate-300 dark:hover:bg-white/[0.03]"
                         }`}
                       >
                         <MessageSquare
@@ -232,8 +239,8 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
                   href={`/atlas/mandate/${m.id}`}
                   className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-[13.5px] transition-colors ${
                     active
-                      ? "bg-white/[0.06] text-slate-100"
-                      : "text-slate-300 hover:bg-white/[0.03]"
+                      ? "bg-black/[0.06] text-slate-900 dark:bg-white/[0.06] dark:text-slate-100"
+                      : "text-slate-700 hover:bg-black/[0.04] dark:text-slate-300 dark:hover:bg-white/[0.03]"
                   }`}
                 >
                   <Briefcase size={12} className="shrink-0 opacity-40" />
@@ -285,13 +292,16 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-white/[0.05] px-2 py-2">
-        <NavLink
-          href="/atlas/settings"
-          label="Einstellungen"
-          icon={<Settings size={12} />}
-          active={pathname === "/atlas/settings"}
-        />
+      <div className="flex items-center gap-1 border-t border-black/[0.05] px-2 py-2 dark:border-white/[0.05]">
+        <div className="flex-1">
+          <NavLink
+            href="/atlas/settings"
+            label="Einstellungen"
+            icon={<Settings size={12} />}
+            active={pathname === "/atlas/settings"}
+          />
+        </div>
+        <ThemeToggleButton />
       </div>
     </aside>
   );
@@ -330,8 +340,8 @@ function SidebarItem({
       href={href}
       className={`flex items-center gap-2 rounded-md px-3 py-2 text-[13.5px] transition-colors ${
         active
-          ? "bg-white/[0.06] text-slate-100"
-          : "text-slate-300 hover:bg-white/[0.03]"
+          ? "bg-black/[0.06] text-slate-900 dark:bg-white/[0.06] dark:text-slate-100"
+          : "text-slate-700 hover:bg-black/[0.04] dark:text-slate-300 dark:hover:bg-white/[0.03]"
       }`}
     >
       <span className="shrink-0 opacity-50">{icon}</span>
@@ -356,8 +366,8 @@ function NavLink({
       href={href}
       className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-[13.5px] transition-colors ${
         active
-          ? "bg-white/[0.06] text-slate-100"
-          : "text-slate-300 hover:bg-white/[0.03]"
+          ? "bg-black/[0.06] text-slate-900 dark:bg-white/[0.06] dark:text-slate-100"
+          : "text-slate-700 hover:bg-black/[0.04] dark:text-slate-300 dark:hover:bg-white/[0.03]"
       }`}
     >
       <span className="shrink-0 opacity-50">{icon}</span>
@@ -368,4 +378,27 @@ function NavLink({
 
 function Empty({ children }: { children: React.ReactNode }) {
   return <p className="px-3 py-1 text-[12px] text-slate-500">{children}</p>;
+}
+
+/**
+ * Sun/Moon toggle. Sits in the sidebar footer (or vertically in the
+ * collapsed rail). Reads + writes via AtlasThemeProvider so the choice
+ * persists in localStorage.
+ */
+function ThemeToggleButton({ compact }: { compact?: boolean } = {}) {
+  const { resolvedTheme, toggle } = useAtlasTheme();
+  const isDark = resolvedTheme === "dark";
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      title={isDark ? "Heller Modus" : "Dunkler Modus"}
+      aria-label={
+        isDark ? "Zu hellem Modus wechseln" : "Zu dunklem Modus wechseln"
+      }
+      className={`flex h-8 ${compact ? "w-8" : "w-8"} shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-100`}
+    >
+      {isDark ? <Sun size={14} /> : <Moon size={14} />}
+    </button>
+  );
 }

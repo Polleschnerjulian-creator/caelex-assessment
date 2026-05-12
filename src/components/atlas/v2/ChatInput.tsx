@@ -3,13 +3,16 @@
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
- * Atlas V2 — Chat input box (UI refresh 2026-05-12).
+ * Atlas V2 — Chat input box (UI refresh 2026-05-12, theme-aware).
  *
  * Refined to match ChatGPT's restraint:
  *   - Single rounded pill (rounded-3xl), no aggressive border
  *   - Icons-only chip row (no text labels)
  *   - Tools toggles collapse into one popover instead of 4 chunky chips
  *   - Send appears only when there's text (no permanently-emerald button)
+ *
+ * Light: white pill on white canvas with a soft slate-200 border.
+ * Dark:  near-black pill on dark canvas with subtle white-08 border.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -108,7 +111,7 @@ export function ChatInput({
   const hasText = text.trim().length > 0;
 
   return (
-    <div className="rounded-[28px] border border-white/[0.08] bg-[#1a1a1a] px-3 pt-3 pb-2 shadow-[0_8px_24px_rgba(0,0,0,0.25)] transition-colors focus-within:border-white/[0.16]">
+    <div className="rounded-[28px] border border-slate-200 bg-white px-3 pt-3 pb-2 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-colors focus-within:border-slate-300 dark:border-white/[0.08] dark:bg-[#1a1a1a] dark:shadow-[0_8px_24px_rgba(0,0,0,0.25)] dark:focus-within:border-white/[0.16]">
       <textarea
         ref={taRef}
         value={text}
@@ -123,7 +126,7 @@ export function ChatInput({
         placeholder={
           placeholder ?? "Frage etwas oder beschreibe was du brauchst…"
         }
-        className="block w-full resize-none bg-transparent px-2 py-1.5 text-[15px] leading-relaxed text-slate-100 outline-none placeholder:text-slate-500"
+        className="block w-full resize-none bg-transparent px-2 py-1.5 text-[15px] leading-relaxed text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
         rows={1}
       />
 
@@ -158,7 +161,7 @@ export function ChatInput({
             <Wrench size={14} />
           </IconButton>
           {toolsOpen && (
-            <div className="absolute bottom-full left-0 z-30 mb-2 w-56 rounded-2xl border border-white/[0.08] bg-[#1a1a1a] p-2 shadow-[0_12px_32px_rgba(0,0,0,0.4)]">
+            <div className="absolute bottom-full left-0 z-30 mb-2 w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_12px_32px_rgba(0,0,0,0.12)] dark:border-white/[0.08] dark:bg-[#1a1a1a] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)]">
               <div className="mb-1 px-2 py-1 text-[10.5px] uppercase tracking-wider text-slate-500">
                 Aktive Tool-Bundles
               </div>
@@ -169,10 +172,15 @@ export function ChatInput({
                     key={b.key}
                     type="button"
                     onClick={() => toggle(b.key as keyof typeof toggles)}
-                    className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-[13px] text-slate-200 hover:bg-white/[0.04]"
+                    className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-[13px] text-slate-700 hover:bg-black/[0.04] dark:text-slate-200 dark:hover:bg-white/[0.04]"
                   >
                     <span>{b.label}</span>
-                    {on && <Check size={13} className="text-slate-300" />}
+                    {on && (
+                      <Check
+                        size={13}
+                        className="text-slate-700 dark:text-slate-300"
+                      />
+                    )}
                   </button>
                 );
               })}
@@ -186,7 +194,8 @@ export function ChatInput({
           <Mic size={15} />
         </IconButton>
 
-        {/* Send — only emphasised when there's text. */}
+        {/* Send — only emphasised when there's text. Light: black-on-white,
+            Dark: white-on-black (same inversion as ChatGPT). */}
         <button
           type="button"
           onClick={handleSend}
@@ -194,8 +203,8 @@ export function ChatInput({
           aria-label="Senden"
           className={`ml-1 inline-flex h-8 w-8 items-center justify-center rounded-full transition-all ${
             hasText && !disabled
-              ? "bg-white text-black hover:scale-105"
-              : "bg-white/[0.08] text-slate-500"
+              ? "bg-slate-900 text-white hover:scale-105 dark:bg-white dark:text-black"
+              : "bg-slate-200 text-slate-400 dark:bg-white/[0.08] dark:text-slate-500"
           }`}
         >
           <ArrowUp size={16} strokeWidth={2.5} />
@@ -226,10 +235,10 @@ function IconButton({
       disabled={disabled}
       className={`inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
         disabled
-          ? "text-slate-700 cursor-default"
+          ? "text-slate-300 cursor-default dark:text-slate-700"
           : active
-            ? "bg-white/[0.08] text-slate-100"
-            : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
+            ? "bg-black/[0.06] text-slate-900 dark:bg-white/[0.08] dark:text-slate-100"
+            : "text-slate-500 hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.04] dark:hover:text-slate-200"
       }`}
     >
       {children}

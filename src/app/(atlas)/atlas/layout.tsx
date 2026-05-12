@@ -15,10 +15,14 @@ import { AtlasThemeProvider } from "./_components/AtlasThemeProvider";
 /**
  * Pre-hydration theme script — runs synchronously before React paints
  * the atlas shell. Reads the user's stored atlas-theme preference from
- * localStorage (falls back to OS preference), then sets a data attribute
- * on <html> that CSS uses to apply the correct token palette BEFORE the
- * atlas-themed div even exists in the DOM. Kills the light-mode flash
- * that happens otherwise while React hydrates.
+ * localStorage (default = "light"), then sets BOTH a `class="dark"`
+ * (for Tailwind's class-based dark variants in V2 components) AND the
+ * legacy `data-atlas-preload` attribute (for V1 CSS + AtlasEntityMini)
+ * BEFORE React hydrates. Kills the wrong-theme flash that happens
+ * otherwise while React hydrates.
+ *
+ * Light is the new default (changed 2026-05-12). Users on a dark-OS
+ * who explicitly want dark Atlas toggle once and the choice sticks.
  *
  * Matches what next-themes does for its own theme switching.
  *
@@ -31,7 +35,7 @@ import { AtlasThemeProvider } from "./_components/AtlasThemeProvider";
  *   a `data-*` attribute on <html> server-side and have the script read
  *   from there — never via string concat.
  */
-const flashGuardScript = `(function(){try{var t=localStorage.getItem('atlas-theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;var r=(t==='dark'||(t!=='light'&&d))?'dark':'light';document.documentElement.setAttribute('data-atlas-preload',r);}catch(e){}})();`;
+const flashGuardScript = `(function(){try{var t=localStorage.getItem('atlas-theme');var s=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;var r=t==='dark'?'dark':(t==='system'&&s)?'dark':'light';var h=document.documentElement;if(r==='dark'){h.classList.add('dark');}else{h.classList.remove('dark');}h.setAttribute('data-atlas-preload',r);}catch(e){}})();`;
 
 export const metadata = {
   title: "ATLAS — Space Law Database",

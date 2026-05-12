@@ -5,9 +5,10 @@
  *
  * Atlas V2 — App Shell (UI refresh 2026-05-12).
  *
- * Sidebar + Center. ChatGPT-tone backgrounds: sidebar slightly darker
- * (#171717) than main canvas (#212121). No hard separator — the tone
- * difference does the visual divide.
+ * Sidebar + Center. ChatGPT-tone backgrounds, theme-aware:
+ *   - Light (default): canvas #ffffff, sidebar #f9f9f9
+ *   - Dark:            canvas #212121, sidebar #171717
+ * No hard separator — the tone difference does the visual divide.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -33,7 +34,7 @@ export function AtlasShellV2({ children }: Props) {
   }, [pathname]);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#212121] text-slate-100">
+    <div className="flex h-screen w-screen overflow-hidden bg-white text-slate-900 dark:bg-[#212121] dark:text-slate-100">
       <AtlasSidebar
         activeChatId={activeChatId}
         activeMandateId={activeMandateId}
