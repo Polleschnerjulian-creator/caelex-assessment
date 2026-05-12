@@ -134,7 +134,14 @@ export function ChatInput({
         placeholder={
           placeholder ?? "Frage etwas oder beschreibe was du brauchst…"
         }
-        className="block w-full resize-none bg-transparent px-2 py-1.5 text-[15px] leading-relaxed text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
+        /* `focus-visible:outline-none` + `focus-visible:shadow-none`
+           override the global *:focus-visible emerald outline (in
+           src/app/globals.css line 1563) — the blinking caret is
+           already the focus indicator for a textarea, so the
+           emerald halo around the pill was both redundant and
+           visually wrong. The buttons in the row below KEEP their
+           focus ring for keyboard a11y. */
+        className="block w-full resize-none bg-transparent px-2 py-1.5 text-[15px] leading-relaxed text-slate-900 outline-none focus-visible:shadow-none focus-visible:outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
         rows={1}
       />
 
