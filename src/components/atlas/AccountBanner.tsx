@@ -117,7 +117,7 @@ export function AccountBanner() {
 
   if (loading) {
     return (
-      <div className="mb-6 rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] p-5 h-[88px] animate-pulse" />
+      <div className="mb-6 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#1a1a1a] p-5 h-[88px] animate-pulse" />
     );
   }
 
@@ -140,7 +140,7 @@ export function AccountBanner() {
   };
 
   return (
-    <div className="mb-6 rounded-xl border border-[var(--atlas-border)] bg-[var(--atlas-bg-surface)] p-5">
+    <div className="mb-6 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#1a1a1a] p-5">
       <div className="flex items-start gap-4 flex-wrap">
         {/* Avatar */}
         <div className="flex items-center justify-center h-11 w-11 rounded-full bg-gray-900 text-white text-[13px] font-semibold flex-shrink-0">
@@ -150,7 +150,7 @@ export function AccountBanner() {
         {/* User block */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[14px] font-semibold text-[var(--atlas-text-primary)] truncate">
+            <span className="text-[14px] font-semibold text-slate-900 dark:text-slate-100 truncate">
               {ctx.user.name || ctx.user.email || "Unknown user"}
             </span>
             {ctx.isPlatformAdmin && (
@@ -164,24 +164,24 @@ export function AccountBanner() {
             )}
           </div>
           {ctx.user.email && (
-            <div className="text-[11px] text-[var(--atlas-text-muted)] mt-0.5 truncate">
+            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
               {ctx.user.email}
             </div>
           )}
         </div>
 
         {/* Divider */}
-        <div className="hidden sm:block w-px self-stretch bg-[var(--atlas-border-subtle)]" />
+        <div className="hidden sm:block w-px self-stretch bg-slate-200 dark:bg-white/[0.08]" />
 
         {/* Org block */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <Building2
               size={13}
-              className="text-[var(--atlas-text-muted)] flex-shrink-0"
+              className="text-slate-500 dark:text-slate-400 flex-shrink-0"
               strokeWidth={1.5}
             />
-            <span className="text-[14px] font-semibold text-[var(--atlas-text-primary)] truncate">
+            <span className="text-[14px] font-semibold text-slate-900 dark:text-slate-100 truncate">
               {ctx.organization.name}
             </span>
             {/* Org-switcher dropdown — without this the active-org
@@ -191,14 +191,14 @@ export function AccountBanner() {
           </div>
           <div className="flex items-center gap-1.5 mt-0.5">
             <span
-              className="text-[10px] font-mono text-[var(--atlas-text-faint)] truncate"
+              className="text-[10px] font-mono text-slate-400 dark:text-slate-500 truncate"
               title={ctx.organization.id}
             >
               {ctx.organization.id}
             </span>
             <button
               onClick={copyOrgId}
-              className="flex items-center justify-center h-4 w-4 rounded text-[var(--atlas-text-faint)] hover:text-[var(--atlas-text-primary)] transition-colors flex-shrink-0"
+              className="flex items-center justify-center h-4 w-4 rounded text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:text-slate-100 transition-colors flex-shrink-0"
               title="Copy organisation ID"
               aria-label="Copy organisation ID"
             >
@@ -230,7 +230,7 @@ export function AccountBanner() {
             {plan.label}
           </span>
           <span
-            className="text-[10px] font-medium text-[var(--atlas-text-muted)] bg-[var(--atlas-bg-surface-muted)] border border-[var(--atlas-border)] rounded px-2 py-1"
+            className="text-[10px] font-medium text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded px-2 py-1"
             title="Members in this organisation vs. seat cap"
           >
             {ctx.plan.memberCount}
