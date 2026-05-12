@@ -34,6 +34,8 @@ import { MandateInstructionsEditor } from "./MandateInstructionsEditor";
 import { MandateMembersList } from "./MandateMembersList";
 import { MandateChatsList } from "./MandateChatsList";
 import { MandateNewChatComposer } from "./MandateNewChatComposer";
+import { MandateFileUpload } from "./MandateFileUpload";
+import { MandateFilesList } from "./MandateFilesList";
 
 interface Props {
   mandateId: string;
@@ -45,6 +47,10 @@ export function MandateDetailView({ mandateId }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [archiving, setArchiving] = useState(false);
+  /* Bumped after each upload so MandateFilesList refetches.
+     Independent from the mandate-detail reload so we don't re-render
+     the whole page just because a file landed. */
+  const [filesRefreshKey, setFilesRefreshKey] = useState(0);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -229,13 +235,26 @@ export function MandateDetailView({ mandateId }: Props) {
             <MandateChatsList chats={mandate.chats} mandateId={mandate.id} />
           </section>
 
-          {/* Files placeholder */}
+          {/* Files (Sprint 5 — real R2 upload + per-mandate vault) */}
           <section>
             <SectionTitle>Dateien</SectionTitle>
-            <div className="rounded-md border border-dashed border-slate-700/60 bg-slate-900/30 px-4 py-8 text-center text-xs text-slate-500">
-              Datei-Upload wird in Sprint 5 ausgeliefert. Bis dahin referenziere
-              Dateien direkt im Chat-Text.
+            <div className="space-y-3">
+              <MandateFileUpload
+                mandateId={mandate.id}
+                onChanged={() => setFilesRefreshKey((n) => n + 1)}
+                disabled={isArchived || isClosed}
+              />
+              <MandateFilesList
+                mandateId={mandate.id}
+                refreshKey={filesRefreshKey}
+              />
             </div>
+            <p className="mt-2 text-[10px] text-slate-500">
+              Astra kann Dateien direkt im Chat referenzieren — frag z.B. „Was
+              steht in der Mission-Spec zu Frequenzen?". TXT/MD/HTML/CSV werden
+              automatisch text-extrahiert; PDF/DOC(X)/XLS(X) werden gespeichert
+              (Text-Extraktion folgt in Sprint 6).
+            </p>
           </section>
         </div>
       </div>

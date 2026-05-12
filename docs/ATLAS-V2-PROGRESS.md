@@ -13,7 +13,7 @@
 | Sprint 2 — Mandate-Projects                  | ✅ complete | 2026-05-12 | 2026-05-12 |
 | Sprint 3 — Tool inventory + Tool-Trace UI    | ✅ complete | 2026-05-12 | 2026-05-12 |
 | Sprint 4 — Validity Signals + Norm-Drift     | ✅ complete | 2026-05-12 | 2026-05-12 |
-| Sprint 5 — File Upload + Document Tools      | 🔵 pending  | —          | —          |
+| Sprint 5 — File Upload + Document Tools      | ✅ complete | 2026-05-12 | 2026-05-12 |
 | Sprint 6 — Workflow library + Tabular + Eval | 🔵 pending  | —          | —          |
 
 ## Sprint 1 — Chat-First Foundation
@@ -344,9 +344,103 @@ infrastructure to be useful.
   cited source; inline-pills land in Sprint 5 alongside the
   markdown-renderer overhaul (probably Tiptap or react-markdown).
 
+## Sprint 5 — File Upload + Document Tools (complete)
+
+### Files added
+
+```
+src/lib/atlas/document-processor.server.ts        # R2 upload + metadata + text extraction
+src/lib/atlas/document-tools.server.ts            # 5 tools (extract/find_clauses/summarize/classify/compare)
+src/app/api/atlas/mandate/[id]/files/route.ts     # POST upload + GET list
+src/app/api/atlas/mandate/[id]/files/[fileId]/route.ts  # GET signed URL + DELETE
+src/components/atlas/v2/MandateFileUpload.tsx     # drag-drop dropzone
+src/components/atlas/v2/MandateFilesList.tsx      # list + download + delete UI
+```
+
+### Files modified
+
+```
+src/lib/atlas/atlas-tools.ts                      # spread DOCUMENT_TOOLS
+src/lib/atlas/atlas-tool-executor.ts              # document dispatch branch (+caller context)
+src/lib/atlas/chat-engine.server.ts               # pass caller userId+orgId to executor
+src/components/atlas/v2/MandateDetailView.tsx     # replace files placeholder with real UI
+```
+
+### What landed
+
+**File pipeline (R2-backed)**:
+
+- 50 MB max per file, 100 files per mandate cap.
+- Allowed MIME: text/plain, text/markdown, text/html, text/csv,
+  application/pdf, .doc(x), .xls(x).
+- Storage path: `atlas-mandates/<orgId>/<mandateId>/<fileId>__<filename>`.
+- Atomic upload: row created with `__pending__` storageKey first, then
+  R2 PUT, then storageKey update. Failed PUT rolls back the row.
+- Text extraction: TXT/MD/HTML/CSV → inline at upload (capped 200 KB).
+  PDF/DOCX/XLSX → metadata only; text-extraction deferred to Sprint 6
+  (needs unpdf or similar dep — out of scope this sprint).
+- Naive on-upload classification (NDA / SPA / Filing / TechnicalSpec
+  …); LLM-driven classify_document tool refines later.
+
+**5 document tools** (Bundle 6, master-plan):
+
+- `extract_text_from_pdf(fileId, maxChars?)` — pure data, returns
+  stored extractedText or NEEDS_EXTRACTION_NOTE if NULL.
+- `find_clauses(fileId, clauseType)` — regex sweep over 10 clause
+  families (liability_cap, termination, indemnification,
+  itar_flow_down, ip_assignment, governing_law, dispute_resolution,
+  confidentiality, force_majeure, warranty). Pure data.
+- `summarize_document(fileId, perspective?)` — Claude Sonnet, 200-300
+  word lawyer-grade summary, 4 perspectives.
+- `classify_document(fileId)` — Claude Haiku, richer JSON-structured
+  classification + persists documentType back to DB.
+- `compare_documents(fileIdA, fileIdB, dimension)` — Claude Sonnet,
+  side-by-side diff + redline suggestions.
+
+**Auth/permissions**:
+
+- Every document tool resolves the file via `findFirst` with
+  mandate-membership clause; cross-mandate reads return "not found".
+- Owner OR member can delete (consistent with Sprint 2 collab posture).
+- Signed download URLs expire after 5 min (configurable).
+
+**Chat-engine extension**:
+
+- executeAtlasTool now receives callerUserId + callerOrgId from the
+  chat-engine. Compliance + validity tools ignore them (pure data);
+  document tools NEED them for membership-gated reads.
+
+### Acceptance verified
+
+- `npx tsc --noEmit` zero errors.
+- 30 tools now registered (14 core + 8 compliance + 3 validity + 5
+  document). Astra can call any of them via natural language.
+- File-upload UI: drag-drop dropzone + parallel multi-file uploads
+  - per-file status (uploading / done / error) + auto-clear of done
+    rows.
+- File-list UI: download via signed URL, delete with confirm,
+  uploader credit, file-type badge, size formatting.
+
+### Decisions log addition (2026-05-12)
+
+- **PDF text extraction deferred to Sprint 6.** The cleanest serverless
+  PDF extractor is `unpdf` (modern fork of pdf.js, ~300 KB, no native
+  deps). Adding a new prod dep without a dedicated test cycle felt
+  premature; ship Sprint 5 with TXT/MD/HTML/CSV text-extraction
+  (works perfectly today) + the PDF/Office binary upload + a clear
+  "extraction pending" message in the document tools when
+  extractedText is NULL. Sprint 6 can add unpdf in isolation.
+- **Per-mandate file cap = 100.** Harvey's Vault is 10 000 docs per
+  project; we're not Harvey. 100 is enough for the initial BHO use
+  cases (one mandate ≈ one matter) and avoids over-engineering
+  pagination + virtual-scroll in this sprint. Bumpable via a const.
+- **Signed-URL download (5 min) instead of proxy through our
+  function.** Reduces function budget, lets browsers handle resume
+  - range-requests natively, gives us R2 access logs for audit.
+
 ## NEXT ACTION
 
-→ **Sprint 5: File Upload + Document Tools.** Build:
+→ **Sprint 6: Workflow Library + Tabular Output + Eval Bench.** Build:
 
 1. **Refactor tool-bundles** — split `atlas-tool-executor.ts` into
    `src/lib/atlas/tool-bundles/{korpus,compliance,comparison,drafting,

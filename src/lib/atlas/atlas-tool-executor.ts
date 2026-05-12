@@ -38,6 +38,10 @@ import {
   executeValidityTool,
 } from "./validity-tools.server";
 import {
+  isDocumentToolName,
+  executeDocumentTool,
+} from "./document-tools.server";
+import {
   ALL_SOURCES,
   getLegalSourceById,
   getAuthoritiesByJurisdiction,
@@ -2406,6 +2410,17 @@ export async function executeAtlasTool(args: {
      to the dedicated validity dispatch. Pure data, no caller context. */
   if (typeof args.name === "string" && isValidityToolName(args.name)) {
     return executeValidityTool(args.name, args.input);
+  }
+  /* Atlas V2 Sprint 5: route document tools (5 file-aware tools) to
+     the dedicated document dispatch — they NEED callerUserId +
+     callerOrgId for AtlasMandateFile membership-gated reads. */
+  if (typeof args.name === "string" && isDocumentToolName(args.name)) {
+    return executeDocumentTool({
+      name: args.name,
+      input: args.input,
+      callerUserId: args.callerUserId,
+      callerOrgId: args.callerOrgId,
+    });
   }
   switch (args.name as AtlasToolName) {
     case "find_or_open_matter":

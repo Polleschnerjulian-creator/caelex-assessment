@@ -19,6 +19,7 @@ import "server-only";
 import type Anthropic from "@anthropic-ai/sdk";
 import { COMPLIANCE_TOOLS } from "./compliance-tools.server";
 import { VALIDITY_TOOLS } from "./validity-tools.server";
+import { DOCUMENT_TOOLS } from "./document-tools.server";
 
 const CORE_ATLAS_TOOLS: Anthropic.Tool[] = [
   {
@@ -536,14 +537,16 @@ The agent should render this as a chronologically-sorted list, not a generic tab
   },
 ];
 
-/* Atlas V2 Sprint 3+4: tool bundles merged into the canonical
+/* Atlas V2 Sprint 3-5: tool bundles merged into the canonical
    ATLAS_TOOLS array so the chat-engine picks them up automatically.
    - Sprint 3: 8 compliance tools (compliance-tools.server.ts)
-   - Sprint 4: 3 validity tools (validity-tools.server.ts) */
+   - Sprint 4: 3 validity tools (validity-tools.server.ts)
+   - Sprint 5: 5 document tools (document-tools.server.ts) */
 export const ATLAS_TOOLS: Anthropic.Tool[] = [
   ...CORE_ATLAS_TOOLS,
   ...COMPLIANCE_TOOLS,
   ...VALIDITY_TOOLS,
+  ...DOCUMENT_TOOLS,
 ];
 
 /* Core (Sprint 1) tool-name union. Compliance tool names are matched at

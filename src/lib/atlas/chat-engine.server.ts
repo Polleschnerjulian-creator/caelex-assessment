@@ -464,6 +464,12 @@ export async function runChat(
               const out = await executeAtlasTool({
                 name: toolBlock.name,
                 input: toolBlock.input,
+                /* Sprint 5: document tools (and any future
+                   org-scoped tools) need the caller's identity so
+                   AtlasMandateFile reads can be membership-gated.
+                   Compliance + validity tools ignore these fields. */
+                callerUserId: input.userId,
+                callerOrgId: input.organizationId,
               });
               resultContent = out.content;
               isError = out.isError;
