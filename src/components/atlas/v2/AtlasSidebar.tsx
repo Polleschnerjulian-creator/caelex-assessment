@@ -43,6 +43,7 @@ import {
 import type { ChatListItem, MandateListItem } from "./types";
 import { useAtlasTheme } from "@/app/(atlas)/atlas/_components/AtlasThemeProvider";
 import { MandateContextSection } from "./MandateContextSection";
+import { AtlasLogo, AtlasMark } from "./AtlasLogo";
 
 interface Props {
   activeChatId?: string | null;
@@ -155,6 +156,18 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
   if (collapsed) {
     return (
       <aside className="flex h-full w-12 shrink-0 flex-col items-center gap-3 bg-[#f9f9f9] py-3 text-slate-600 dark:bg-[#171717] dark:text-slate-300">
+        {/* Atlas brand mark — clicking it lands on the homepage so the
+            mark doubles as a "home" affordance. Same UX as Claude's
+            sidebar logo + ChatGPT's top-left brand. */}
+        <button
+          type="button"
+          onClick={() => router.push("/atlas")}
+          title="Atlas — zur Startseite"
+          aria-label="Atlas"
+          className="flex h-8 w-8 items-center justify-center rounded-md text-slate-700 transition-colors hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-200 dark:hover:bg-white/[0.05] dark:hover:text-slate-100"
+        >
+          <AtlasMark size={20} />
+        </button>
         <button
           type="button"
           onClick={() => setCollapsed(false)}
@@ -195,8 +208,21 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
             : ""
         }`}
       >
-        {/* Top row */}
+        {/* Top row — brand left, collapse-toggle right. Mirrors
+            Claude.ai's sidebar layout (logo+wordmark anchors the
+            user, collapse-button stays at the corner where the
+            sidebar's visual edge meets the chat content). The "+
+            Neuer Chat" affordance moved one row down into the
+            primary-actions section so the brand row stays clean. */}
         <div className="flex items-center justify-between gap-1 px-3 pt-3">
+          <button
+            type="button"
+            onClick={() => router.push("/atlas")}
+            title="Atlas — zur Startseite"
+            className="flex h-8 items-center gap-2 rounded-md px-1.5 transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.05]"
+          >
+            <AtlasLogo size={20} withWordmark />
+          </button>
           <button
             type="button"
             onClick={() => setCollapsed(true)}
@@ -204,14 +230,6 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
             className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-100"
           >
             <PanelLeftClose size={16} />
-          </button>
-          <button
-            type="button"
-            onClick={() => router.push("/atlas")}
-            title="Neuer Chat"
-            className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-100"
-          >
-            <Plus size={16} />
           </button>
         </div>
 
