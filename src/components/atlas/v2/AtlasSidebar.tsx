@@ -36,6 +36,7 @@ import {
   Moon,
   Loader2,
   Library as LibraryIcon,
+  Folder as FolderIcon,
 } from "lucide-react";
 import type { ChatListItem, MandateListItem } from "./types";
 import { useAtlasTheme } from "@/app/(atlas)/atlas/_components/AtlasThemeProvider";
@@ -230,6 +231,15 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
             label="Neues Mandat"
             icon={<Briefcase size={14} />}
             active={pathname === "/atlas/mandate/new"}
+          />
+          {/* Vault — top-level access to every mandate file the user
+              has access to. Lawyers think in "documents" first, the
+              vault treats all docs as one searchable pile. */}
+          <SidebarItem
+            href="/atlas/vault"
+            label="Vault"
+            icon={<FolderIcon size={14} />}
+            active={pathname === "/atlas/vault"}
           />
         </div>
 
