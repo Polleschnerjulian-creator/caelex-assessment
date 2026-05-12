@@ -420,25 +420,22 @@ export function ChatInput({
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
-      className={`relative rounded-[28px] border bg-white px-3 pt-3 pb-2 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-colors dark:bg-[#212121] dark:shadow-none ${
-        /* Background AND shadow now match the canvas perfectly in
-           dark mode (`bg-[#212121]` + `shadow-none`). The previous
-           `0_8px_24px_rgba(0,0,0,0.25)` shadow read on the canvas
-           as a darker halo around the pill — by contrast the pill
-           appeared lighter, even though both were #212121. Killing
-           the shadow leaves the border as the only edge cue, à la
-           Claude.ai's composer.
+      className={`relative rounded-[28px] border bg-white px-3 pt-3 pb-2 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-colors dark:bg-[#1a1a1a] dark:shadow-[0_8px_24px_rgba(0,0,0,0.25)] ${
+        /* Glassmorphism: pill bg is DARKER than the canvas (canvas
+           #212121, pill #1a1a1a) + soft shadow so the composer
+           visually lifts off the canvas. The textarea inside uses
+           `bg-transparent` and therefore inherits this same #1a1a1a
+           — no inner "field-within-a-field" effect.
 
-           Light mode keeps a soft 4 % shadow because on a white
-           canvas the eye expects some lift on form controls — that
-           shadow doesn't create the inverse-halo problem. */
+           This is the intentional design choice the lawyer
+           confirmed they prefer over the canvas-matching variant. */
         dragOver
           ? "border-slate-400 bg-slate-50 dark:border-white/[0.24] dark:bg-white/[0.04]"
           : "border-slate-200 focus-within:border-slate-300 dark:border-white/[0.08] dark:focus-within:border-white/[0.16]"
       }`}
     >
       {dragOver && (
-        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-[28px] bg-white/80 backdrop-blur-sm dark:bg-[#212121]/80">
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-[28px] bg-white/80 backdrop-blur-sm dark:bg-[#1a1a1a]/80">
           <div className="flex items-center gap-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">
             <Paperclip size={14} />
             Datei oder Bild hier ablegen
