@@ -20,6 +20,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
+import Link from "next/link";
 import { ExternalLink, BookOpen } from "lucide-react";
 import { ValidityBadge } from "./ValidityBadge";
 import type { ValidityBadge as Badge } from "@/lib/atlas/validity-tools.server";
@@ -68,20 +69,34 @@ export function CitationsPanel({ citations }: Props) {
               {c.index}.
             </span>
             <div className="min-w-0 flex-1">
-              <span className="font-mono text-[10.5px] text-slate-700 dark:text-slate-300">
-                {c.citation}
-              </span>
-              {c.title && (
-                <>
-                  <span className="text-slate-400 dark:text-slate-600">
-                    {" "}
-                    ·{" "}
-                  </span>
-                  <span className="text-slate-700 dark:text-slate-300">
-                    {c.title}
-                  </span>
-                </>
-              )}
+              {/* Internal link to the Atlas-Source detail page —
+                  clicking the citation-token + title navigates to
+                  /atlas/sources/<sourceId> where the lawyer sees
+                  the full text + amendments + verification history.
+                  External link (ExternalLink icon on the right)
+                  still opens the official source portal in a new
+                  tab. Two-link pattern = "open in Atlas" vs.
+                  "open at the source". */}
+              <Link
+                href={`/atlas/sources/${encodeURIComponent(c.sourceId)}`}
+                className="transition-colors hover:text-emerald-700 dark:hover:text-emerald-300"
+                title={`Atlas-Seite zu ${c.sourceId} öffnen`}
+              >
+                <span className="font-mono text-[10.5px] text-slate-700 dark:text-slate-300">
+                  {c.citation}
+                </span>
+                {c.title && (
+                  <>
+                    <span className="text-slate-400 dark:text-slate-600">
+                      {" "}
+                      ·{" "}
+                    </span>
+                    <span className="text-slate-700 underline-offset-2 hover:underline dark:text-slate-300">
+                      {c.title}
+                    </span>
+                  </>
+                )}
+              </Link>
               <ValidityBadge badge={c.badge} />
               {c.lastVerified && (
                 <span className="ml-1.5 text-[10px] text-slate-400 dark:text-slate-500">
@@ -116,7 +131,7 @@ export function CitationsPanel({ citations }: Props) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="shrink-0 text-slate-400 transition-colors hover:text-slate-700 dark:hover:text-slate-200"
-                title="Offizielle Quelle öffnen"
+                title="Offizielles Portal öffnen (extern)"
               >
                 <ExternalLink size={10} />
               </a>
