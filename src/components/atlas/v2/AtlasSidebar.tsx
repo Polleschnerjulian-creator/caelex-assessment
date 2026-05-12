@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import type { ChatListItem, MandateListItem } from "./types";
 import { useAtlasTheme } from "@/app/(atlas)/atlas/_components/AtlasThemeProvider";
+import { MandateContextSection } from "./MandateContextSection";
 
 interface Props {
   activeChatId?: string | null;
@@ -231,6 +232,22 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
             active={pathname === "/atlas/mandate/new"}
           />
         </div>
+
+        {/* Active mandate context — resolves from the URL path
+            (mandate detail page) OR from the active chat's mandateId
+            (sidebar lookup against the loaded chats list). When
+            present, surfaces the mandate's vault + deadlines inline
+            so the lawyer doesn't have to leave the chat. */}
+        {(() => {
+          const fromPath = activeMandateId;
+          const fromChat = activeChatId
+            ? (chats.find((c) => c.id === activeChatId)?.mandateId ?? null)
+            : null;
+          const mandateToShow = fromPath ?? fromChat;
+          return mandateToShow ? (
+            <MandateContextSection mandateId={mandateToShow} />
+          ) : null;
+        })()}
 
         {/* Scrollable middle */}
         <div className="flex-1 overflow-y-auto px-2 pb-3">

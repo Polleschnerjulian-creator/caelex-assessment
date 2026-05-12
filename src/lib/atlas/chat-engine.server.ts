@@ -175,6 +175,7 @@ function buildSystemPrompt(
   if (mandate) {
     parts.push("");
     parts.push("## Active mandate context");
+    parts.push(`- ID: ${mandate.id}`);
     parts.push(`- Name: ${mandate.name}`);
     if (mandate.clientName) parts.push(`- Client: ${mandate.clientName}`);
     if (mandate.jurisdiction)
@@ -188,6 +189,11 @@ function buildSystemPrompt(
       parts.push("### Custom instructions for this mandate");
       parts.push(mandate.customInstructions);
     }
+    parts.push("");
+    parts.push("### Mandate documents");
+    parts.push(
+      `When the user asks an open-ended question that may be answered by uploaded documents, call \`search_mandate_knowledge\` with this mandate id (${mandate.id}) BEFORE drafting a response. This lets you ground the answer in what the mandate's vault actually says. Pair with \`summarize_document\` or \`find_clauses\` for follow-up deep-dives on specific files.`,
+    );
   }
 
   return parts.join("\n");

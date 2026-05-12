@@ -287,6 +287,13 @@ export const TOOL_LABELS: Record<string, ToolLabel> = {
     source: "Mandats-Dokumente",
     category: "document",
   },
+  search_mandate_knowledge: {
+    done: "Mandats-Wissen durchsucht",
+    running: "Durchsucht Mandats-Dokumente",
+    source: "Mandats-Vault",
+    describe: (i) => quote(firstString(i, "query")),
+    category: "document",
+  },
 
   /* ── Drafting tools ─────────────────────────────────────────────── */
   draft_authorization_application: {

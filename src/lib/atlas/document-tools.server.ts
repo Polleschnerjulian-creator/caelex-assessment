@@ -145,6 +145,32 @@ export const DOCUMENT_TOOLS: Anthropic.Tool[] = [
       required: ["fileIdA", "fileIdB", "dimension"],
     },
   },
+  {
+    name: "search_mandate_knowledge",
+    description:
+      "Searches the EXTRACTED TEXT of every file uploaded to the active mandate for a given query (substring/keyword). Use when the user asks an open-ended question and you need to surface what the mandate's documents say about it WITHOUT knowing which specific file holds the answer. Returns up to 8 matching snippets with surrounding context + file references. Pairs well with summarize_document or find_clauses for follow-up deep-dives.",
+    input_schema: {
+      type: "object",
+      properties: {
+        mandateId: {
+          type: "string",
+          description:
+            "AtlasMandate id whose file vault to search. Resolve from the active chat's mandateId (system prompt context).",
+        },
+        query: {
+          type: "string",
+          description:
+            "Free-text query — keyword(s), term, or phrase to match against the extracted document text. Case-insensitive ILIKE search.",
+        },
+        maxHits: {
+          type: "number",
+          description:
+            "Optional cap on returned snippets. Defaults to 8, max 20.",
+        },
+      },
+      required: ["mandateId", "query"],
+    },
+  },
 ];
 
 const DOCUMENT_TOOL_NAMES = DOCUMENT_TOOLS.map((t) => t.name) as string[];
@@ -172,6 +198,12 @@ export async function executeDocumentTool(args: {
       return runClassify(args.input, args.callerUserId, args.callerOrgId);
     case "compare_documents":
       return runCompare(args.input, args.callerUserId, args.callerOrgId);
+    case "search_mandate_knowledge":
+      return runSearchMandateKnowledge(
+        args.input,
+        args.callerUserId,
+        args.callerOrgId,
+      );
     default:
       return {
         content: JSON.stringify({
@@ -673,4 +705,140 @@ ${b.extractedText.slice(0, 25_000)}${b.extractedText.length > 25_000 ? "\n[… t
       isError: true,
     };
   }
+}
+
+/**
+ * search_mandate_knowledge — substring search across the extracted
+ * text of every file in a mandate's vault. Returns matching snippets
+ * with surrounding context so the model can follow up with
+ * summarize_document or find_clauses on the most relevant file.
+ *
+ * Why no embeddings yet: text-search via in-process scan is good
+ * enough for a few hundred files per mandate. Vectorisation +
+ * hybrid retrieval is a Sprint 11+ item once we hit usage that
+ * needs it.
+ *
+ * Snippet extraction: 200 chars before + the match + 200 after,
+ * truncated at sentence boundaries where convenient.
+ */
+async function runSearchMandateKnowledge(
+  input: unknown,
+  userId: string,
+  organizationId: string,
+): Promise<DocumentToolResult> {
+  const i = input as {
+    mandateId?: unknown;
+    query?: unknown;
+    maxHits?: unknown;
+  };
+  const mandateId = typeof i.mandateId === "string" ? i.mandateId : null;
+  const query = typeof i.query === "string" ? i.query.trim() : "";
+  const maxHits = Math.min(
+    Math.max(1, typeof i.maxHits === "number" ? i.maxHits : 8),
+    20,
+  );
+
+  if (!mandateId || !query) {
+    return {
+      content: JSON.stringify({
+        error: "Missing required parameters mandateId + query",
+      }),
+      isError: true,
+    };
+  }
+
+  /* Membership check — same gate as the per-file tools. */
+  const mandate = await prisma.atlasMandate.findFirst({
+    where: {
+      id: mandateId,
+      organizationId,
+      OR: [{ ownerUserId: userId }, { members: { some: { userId } } }],
+    },
+    select: { id: true, name: true },
+  });
+  if (!mandate) {
+    return {
+      content: JSON.stringify({
+        error: "Mandate not found or access denied",
+      }),
+      isError: true,
+    };
+  }
+
+  /* Pull all files with extracted text for this mandate. We filter
+     in-process because each file's extractedText is already loaded
+     in a single pass — much cheaper than N ILIKE queries against
+     a Text column. */
+  const files = await prisma.atlasMandateFile.findMany({
+    where: {
+      mandateId,
+      extractedText: { not: null },
+    },
+    select: {
+      id: true,
+      filename: true,
+      mimeType: true,
+      documentType: true,
+      extractedText: true,
+    },
+  });
+
+  const queryLower = query.toLowerCase();
+  const hits: Array<{
+    fileId: string;
+    filename: string;
+    documentType: string | null;
+    snippet: string;
+    matchPosition: number;
+  }> = [];
+
+  for (const f of files) {
+    if (!f.extractedText) continue;
+    const haystack = f.extractedText.toLowerCase();
+    let from = 0;
+    let perFileCount = 0;
+    while (true) {
+      const idx = haystack.indexOf(queryLower, from);
+      if (idx === -1) break;
+      const start = Math.max(0, idx - 200);
+      const end = Math.min(f.extractedText.length, idx + query.length + 200);
+      let snippet = f.extractedText.slice(start, end);
+      /* Try to nudge to sentence boundaries — find the previous
+         period before start + the next period after end. Cosmetic
+         but keeps the snippet readable. */
+      if (start > 0) {
+        const dot = snippet.indexOf(". ");
+        if (dot >= 0 && dot < 60) snippet = snippet.slice(dot + 2);
+      }
+      hits.push({
+        fileId: f.id,
+        filename: f.filename,
+        documentType: f.documentType,
+        snippet:
+          (start > 0 ? "…" : "") +
+          snippet +
+          (end < f.extractedText.length ? "…" : ""),
+        matchPosition: idx,
+      });
+      perFileCount++;
+      from = idx + query.length;
+      /* Per-file cap: at most 3 hits per file so a single big file
+         doesn't dominate the result set. */
+      if (perFileCount >= 3) break;
+      if (hits.length >= maxHits) break;
+    }
+    if (hits.length >= maxHits) break;
+  }
+
+  return {
+    content: JSON.stringify({
+      mandateId: mandate.id,
+      mandateName: mandate.name,
+      query,
+      filesScanned: files.length,
+      totalHits: hits.length,
+      hits,
+    }),
+    isError: false,
+  };
 }

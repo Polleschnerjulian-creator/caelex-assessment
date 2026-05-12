@@ -84,10 +84,49 @@ function extractText(content: ChatMessageBlock[] | string): string {
 }
 
 /**
+ * Generate the PDF without triggering download. Returns the Blob +
+ * suggested filename. Used by callers that need the bytes for
+ * something other than direct download — e.g. uploading to the
+ * mandate vault.
+ */
+export function generateChatPdfBlob(chat: ChatRecord): {
+  blob: Blob;
+  filename: string;
+} {
+  const doc = buildChatPdf(chat);
+  const filename = chatPdfFilename(chat);
+  /* jsPDF's `output("blob")` returns the bytes as a Blob without
+     hitting the browser's download flow. */
+  const blob = doc.output("blob");
+  return { blob, filename };
+}
+
+/**
  * Public entry-point. Builds the PDF + triggers browser download.
  * Returns the suggested filename so callers can echo it in toasts.
  */
 export function downloadChatAsPdf(chat: ChatRecord): string {
+  const doc = buildChatPdf(chat);
+  const filename = chatPdfFilename(chat);
+  doc.save(filename);
+  return filename;
+}
+
+function chatPdfFilename(chat: ChatRecord): string {
+  const slug =
+    chat.title
+      .toLowerCase()
+      .replace(/[^a-z0-9äöüß]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60) || "chat";
+  const date = new Date(chat.updatedAt).toISOString().slice(0, 10);
+  return `atlas-briefing-${slug}-${date}.pdf`;
+}
+
+/* Internal: build the jsPDF doc + return it. Both `download` and
+   `generateBlob` paths share this so the visual output stays in lock-
+   step. */
+function buildChatPdf(chat: ChatRecord): jsPDF {
   const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
   let y = MARGIN_T;
 
@@ -304,17 +343,9 @@ export function downloadChatAsPdf(chat: ChatRecord): string {
     });
   }
 
-  /* ── Save ────────────────────────────────────────────────────────── */
-  const slug =
-    chat.title
-      .toLowerCase()
-      .replace(/[^a-z0-9äöüß]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 60) || "chat";
-  const date = new Date(chat.updatedAt).toISOString().slice(0, 10);
-  const filename = `atlas-briefing-${slug}-${date}.pdf`;
-  doc.save(filename);
-  return filename;
+  /* `buildChatPdf` returns the doc to its caller — the public
+     `download` and `generateBlob` wrappers handle the byte-output. */
+  return doc;
 }
 
 /* ── Layout helpers ─────────────────────────────────────────────────── */

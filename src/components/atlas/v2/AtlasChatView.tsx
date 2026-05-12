@@ -34,8 +34,14 @@ import { SuggestedFollowups } from "./SuggestedFollowups";
 import { CitationsPanel, type CitationRecord } from "./CitationsPanel";
 import { MarkdownContent } from "./MarkdownContent";
 import { labelFor, CATEGORY_DOT } from "@/lib/atlas/tool-labels";
-import { downloadChatAsPdf } from "@/lib/atlas/chat-briefing-pdf";
-import { downloadChatAsDocx } from "@/lib/atlas/chat-briefing-docx";
+import {
+  downloadChatAsPdf,
+  generateChatPdfBlob,
+} from "@/lib/atlas/chat-briefing-pdf";
+import {
+  downloadChatAsDocx,
+  generateChatDocxBlob,
+} from "@/lib/atlas/chat-briefing-docx";
 import type { ChatMessageBlock, ChatMessageRecord, ChatRecord } from "./types";
 
 interface Props {
@@ -937,6 +943,12 @@ function extractText(content: ChatMessageBlock[] | string): string {
 function ExportMenu({ chat }: { chat: ChatRecord }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState<null | "pdf" | "docx" | "md" | "txt">(null);
+  /* When the chat lives in a mandate, default-on a "also file in
+     mandate" toggle. The lawyer gets the deliverable AND it lands
+     automatically in the mandate's vault so it becomes part of the
+     matter file. */
+  const inMandate = !!chat.mandateId;
+  const [alsoFile, setAlsoFile] = useState(inMandate);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -950,13 +962,70 @@ function ExportMenu({ chat }: { chat: ChatRecord }) {
     return () => window.removeEventListener("mousedown", handler);
   }, [open]);
 
+  /* POST a generated blob to the mandate's file-upload endpoint.
+     Uses the same multipart contract the manual upload UI uses, so
+     the file lands as a regular AtlasMandateFile row + appears in
+     MandateFilesList alongside user-uploaded docs. */
+  const fileToMandate = async (
+    blob: Blob,
+    filename: string,
+    mimeType: string,
+  ) => {
+    if (!chat.mandateId) return;
+    const fd = new FormData();
+    fd.append("file", new File([blob], filename, { type: mimeType }));
+    try {
+      await fetch(`/api/atlas/mandate/${chat.mandateId}/files`, {
+        method: "POST",
+        body: fd,
+      });
+      /* Sidebar refresh so the new file appears in MandateContextSection
+         + MandateFilesList without a page reload. */
+      window.dispatchEvent(new Event("atlas-v2-sidebar-refresh"));
+    } catch {
+      /* Auto-file is best-effort; primary download already succeeded. */
+    }
+  };
+
   const run = async (fmt: "pdf" | "docx" | "md" | "txt") => {
     setBusy(fmt);
     try {
       if (fmt === "pdf") {
-        downloadChatAsPdf(chat);
+        if (alsoFile && chat.mandateId) {
+          const { blob, filename } = generateChatPdfBlob(chat);
+          /* Trigger download */
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          /* Plus mandate-file */
+          await fileToMandate(blob, filename, "application/pdf");
+        } else {
+          downloadChatAsPdf(chat);
+        }
       } else if (fmt === "docx") {
-        await downloadChatAsDocx(chat);
+        if (alsoFile && chat.mandateId) {
+          const { blob, filename } = await generateChatDocxBlob(chat);
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          await fileToMandate(
+            blob,
+            filename,
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          );
+        } else {
+          await downloadChatAsDocx(chat);
+        }
       } else if (fmt === "md") {
         downloadChatAsMarkdown(chat);
       } else {
@@ -988,7 +1057,7 @@ function ExportMenu({ chat }: { chat: ChatRecord }) {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full z-30 mt-1 w-56 overflow-hidden rounded-lg border border-slate-200 bg-white p-1 shadow-[0_8px_24px_rgba(0,0,0,0.10)] dark:border-white/[0.08] dark:bg-[#1f1f1f] dark:shadow-[0_8px_24px_rgba(0,0,0,0.40)]"
+          className="absolute right-0 top-full z-30 mt-1 w-72 overflow-hidden rounded-lg border border-slate-200 bg-white p-1 shadow-[0_8px_24px_rgba(0,0,0,0.10)] dark:border-white/[0.08] dark:bg-[#1f1f1f] dark:shadow-[0_8px_24px_rgba(0,0,0,0.40)]"
         >
           <ExportItem
             label="PDF — Mandanten-Briefing"
@@ -1014,6 +1083,22 @@ function ExportMenu({ chat }: { chat: ChatRecord }) {
             onClick={() => run("txt")}
             disabled={busy !== null}
           />
+          {inMandate && (
+            <div className="border-t border-slate-200 px-3 py-2 dark:border-white/[0.06]">
+              <label className="flex items-center gap-2 text-[12px] text-slate-700 dark:text-slate-200">
+                <input
+                  type="checkbox"
+                  checked={alsoFile}
+                  onChange={(e) => setAlsoFile(e.target.checked)}
+                  className="h-3.5 w-3.5 accent-slate-900 dark:accent-emerald-500"
+                />
+                <span>Auch in Mandat ablegen</span>
+              </label>
+              <p className="mt-0.5 pl-5 text-[10.5px] text-slate-500">
+                Gilt für PDF + Word. MD/TXT wird nur heruntergeladen.
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

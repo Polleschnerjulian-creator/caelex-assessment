@@ -344,23 +344,7 @@ function buildChildren(chat: ChatRecord): Paragraph[] {
   return children;
 }
 
-/**
- * Public entry-point. Builds the DOCX + triggers browser download.
- */
-export async function downloadChatAsDocx(chat: ChatRecord): Promise<string> {
-  const doc = new Document({
-    creator: "Caelex Atlas",
-    title: chat.title,
-    description: "Mandanten-Briefing",
-    sections: [
-      {
-        properties: {},
-        children: buildChildren(chat),
-      },
-    ],
-  });
-
-  const blob = await Packer.toBlob(doc);
+function chatDocxFilename(chat: ChatRecord): string {
   const slug =
     chat.title
       .toLowerCase()
@@ -368,8 +352,33 @@ export async function downloadChatAsDocx(chat: ChatRecord): Promise<string> {
       .replace(/^-+|-+$/g, "")
       .slice(0, 60) || "chat";
   const date = new Date(chat.updatedAt).toISOString().slice(0, 10);
-  const filename = `atlas-briefing-${slug}-${date}.docx`;
+  return `atlas-briefing-${slug}-${date}.docx`;
+}
 
+/**
+ * Generate the DOCX without triggering download. Returns the Blob +
+ * suggested filename. Used by callers that need the bytes for
+ * uploading to the mandate vault.
+ */
+export async function generateChatDocxBlob(chat: ChatRecord): Promise<{
+  blob: Blob;
+  filename: string;
+}> {
+  const doc = new Document({
+    creator: "Caelex Atlas",
+    title: chat.title,
+    description: "Mandanten-Briefing",
+    sections: [{ properties: {}, children: buildChildren(chat) }],
+  });
+  const blob = await Packer.toBlob(doc);
+  return { blob, filename: chatDocxFilename(chat) };
+}
+
+/**
+ * Public entry-point. Builds the DOCX + triggers browser download.
+ */
+export async function downloadChatAsDocx(chat: ChatRecord): Promise<string> {
+  const { blob, filename } = await generateChatDocxBlob(chat);
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
