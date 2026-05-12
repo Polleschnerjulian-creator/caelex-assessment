@@ -46,7 +46,15 @@ export function AtlasShellV2({ children }: Props) {
         activeChatId={activeChatId}
         activeMandateId={activeMandateId}
       />
-      <main className="flex-1 overflow-hidden">{children}</main>
+      {/* `overflow-y-auto` (not `overflow-hidden`) so sub-pages that
+          don't bring their own scroll container (CreateMandateForm,
+          /atlas/clauses, /atlas/workflows, /atlas/settings/*, etc.)
+          still scroll their content. Pages that need fixed-height
+          internal scroll (AtlasChatView → message list) can still set
+          `h-full flex flex-col` on their root and an inner
+          `flex-1 overflow-y-auto` — the dual-scroll plays nicely
+          because the inner container consumes wheel events first. */}
+      <main className="flex-1 overflow-y-auto">{children}</main>
       <KeyboardHelpOverlay open={kbd.helpOpen} onClose={kbd.closeHelp} />
     </div>
   );
