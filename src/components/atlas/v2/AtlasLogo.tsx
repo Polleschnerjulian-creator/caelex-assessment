@@ -3,18 +3,23 @@
  *
  * Atlas V2 — Brand mark.
  *
- * The composition: a sphere (the "atlas" — Greek titan carrying the
- * celestial sphere) crossed by a rotated orbital ring (the space-law
- * twist), with a single satellite-dot riding the ring's apex.
+ * The icon is a compact 7-bar variant of the WavePattern — same
+ * visual language as the homepage watermark, scaled down. Visually
+ * reads as a tiny pulsar-signal / barcode-spectrum, ties the
+ * brand-mark and the surface decoration into one family.
  *
- * Mono-line @ 1.5px stroke, `currentColor` so the icon picks up the
- * surrounding text colour — works light/dark/hover without theme
- * branches. Uses `non-scaling-stroke` so the line weight stays
- * readable when the SVG renders at 18px in the sidebar OR at 36px
- * in the about page.
+ * Style references: Mid-Century European modernism (Otl Aicher
+ * Lufthansa, Massimo Vignelli NYC Transit, Bauhaus rigor). Anti-
+ * glassmorphism, anti-gradient.
+ *
+ * Mark + wordmark always use `currentColor` so the consumer drives
+ * light/dark via the wrapping element's text colour. The wordmark
+ * stays serif to echo the homepage hero ("Wie kann ich helfen?").
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
+
+import { WavePattern } from "./WavePattern";
 
 interface Props {
   size?: number;
@@ -57,6 +62,12 @@ export function AtlasLogo({
  * The icon by itself — exported separately so consumers can compose
  * it into custom layouts (e.g. a centred splash on a loading screen)
  * without inheriting the wordmark + flex container.
+ *
+ * Renders the wave-pattern at icon scale: 7 bars in a horizontal
+ * strip, ~1.6:1 aspect ratio. The strip is letterboxed vertically
+ * inside the `size × size` SVG output — that keeps the icon roughly
+ * square so it slots into existing sidebar / button layouts without
+ * shifting their dimensions.
  */
 export function AtlasMark({
   size = 20,
@@ -66,55 +77,12 @@ export function AtlasMark({
   className?: string;
 }) {
   return (
-    <svg
+    <WavePattern
       width={size}
       height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
+      variant="icon"
+      opacity={1}
       className={className}
-      aria-hidden="true"
-    >
-      {/* The sphere — Atlas's celestial globe. Positioned slightly
-          inset so the orbital ring has room to breathe at the corners. */}
-      <circle
-        cx="12"
-        cy="12"
-        r="7.25"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        vectorEffect="non-scaling-stroke"
-      />
-      {/* Equator — a single horizontal latitude line, just enough to
-          read the sphere as 3D without going full-globe-grid. */}
-      <ellipse
-        cx="12"
-        cy="12"
-        rx="7.25"
-        ry="2.4"
-        stroke="currentColor"
-        strokeWidth="1.1"
-        strokeOpacity="0.55"
-        vectorEffect="non-scaling-stroke"
-      />
-      {/* Orbital ring — rotated ~32° so the ring crosses the sphere
-          on a clear diagonal. Slightly oversized so it pokes out top-
-          right + bottom-left of the sphere, suggesting "in orbit
-          AROUND the celestial body". */}
-      <ellipse
-        cx="12"
-        cy="12"
-        rx="10.25"
-        ry="3.5"
-        transform="rotate(-32 12 12)"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        vectorEffect="non-scaling-stroke"
-      />
-      {/* Satellite — a single dot riding the ring's apex (top-right
-          quadrant). Positioned along the rotated ellipse path at
-          theta ≈ 35°. */}
-      <circle cx="20.1" cy="6.6" r="1.15" fill="currentColor" />
-    </svg>
+    />
   );
 }

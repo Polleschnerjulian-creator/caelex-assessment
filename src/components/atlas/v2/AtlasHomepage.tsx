@@ -22,6 +22,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChatInput } from "./ChatInput";
 import type { ChatImageAttachment } from "./types";
+import { WavePattern } from "./WavePattern";
 
 export function AtlasHomepage() {
   const router = useRouter();
@@ -144,8 +145,24 @@ export function AtlasHomepage() {
   };
 
   return (
-    <div className="flex h-full flex-col items-center justify-center px-6">
-      <div className="w-full max-w-[720px]">
+    <div className="relative flex h-full flex-col items-center justify-center px-6">
+      {/* Brand watermark — the wave-pattern at 6 % opacity, centred
+          BEHIND the hero stack. Same visual family as the sidebar
+          AtlasMark, scaled up. Pointer-events: none + aria-hidden
+          via the WavePattern component itself, so it stays purely
+          decorative. Sized at ~85 % of the hero width with a
+          shorter aspect than its natural 3.33:1 so it reads as a
+          horizontal stripe behind the headline, not as a tall
+          slab. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-1/2 z-0 w-[600px] max-w-[85%] -translate-x-1/2 -translate-y-1/2 text-slate-900 dark:text-slate-100"
+      >
+        <WavePattern width={600} height={140} opacity={0.06} density={32} />
+      </div>
+
+      {/* Hero content stack — sits ABOVE the watermark via z-10. */}
+      <div className="relative z-10 w-full max-w-[720px]">
         <h1 className="mb-10 text-center text-[28px] font-normal tracking-tight text-slate-900 dark:text-slate-100 [font-family:ui-serif,Georgia,'Cambria_Style',serif]">
           Wie kann ich helfen?
         </h1>
