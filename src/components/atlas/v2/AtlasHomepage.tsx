@@ -26,12 +26,19 @@ export function AtlasHomepage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [seedValue, setSeedValue] = useState<string | undefined>();
+  const [seedWorkflowId, setSeedWorkflowId] = useState<string | undefined>();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fromUrl = searchParams.get("prompt");
     if (fromUrl) setSeedValue(fromUrl);
+    /* WorkflowCatalog navigates here with ?workflowId=… so we can
+       attribute the resulting chat to its source workflow. The id
+       gets forwarded to /api/atlas/chat → stored on AtlasChat for
+       admin dashboards. */
+    const wfId = searchParams.get("workflowId");
+    if (wfId) setSeedWorkflowId(wfId);
   }, [searchParams]);
 
   const handleSubmit = async (
@@ -49,6 +56,7 @@ export function AtlasHomepage() {
           message: text,
           toolToggles,
           titleHint,
+          workflowId: seedWorkflowId,
         }),
       });
 

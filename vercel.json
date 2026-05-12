@@ -31,6 +31,10 @@
       "schedule": "30 3 * * *"
     },
     {
+      "path": "/api/cron/atlas-stale-chat-archive",
+      "schedule": "45 3 * * *"
+    },
+    {
       "path": "/api/cron/onboarding-emails",
       "schedule": "0 10 * * *"
     },

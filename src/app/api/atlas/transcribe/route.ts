@@ -26,7 +26,11 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { getAtlasAuth } from "@/lib/atlas-auth";
-import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitHeaders,
+} from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
@@ -62,7 +66,7 @@ export async function POST(req: NextRequest) {
   if (!rl.success) {
     return NextResponse.json(
       { error: "Rate limit exceeded", retryAfterMs: rl.reset - Date.now() },
-      { status: 429 },
+      { status: 429, headers: createRateLimitHeaders(rl) },
     );
   }
 
@@ -175,5 +179,8 @@ export async function POST(req: NextRequest) {
     transcriptChars: data.text.length,
   });
 
-  return NextResponse.json({ text: data.text });
+  return NextResponse.json(
+    { text: data.text },
+    { headers: createRateLimitHeaders(rl) },
+  );
 }

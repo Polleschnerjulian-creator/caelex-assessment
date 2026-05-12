@@ -36,11 +36,15 @@ const PostBody = z.object({
   /** New user message. ≤ 12k chars (~3k tokens). */
   message: z.string().min(1).max(12_000),
   /** Per-bundle on/off state at submission time. */
-  toolToggles: z.record(z.boolean()).optional(),
+  toolToggles: z.record(z.string(), z.boolean()).optional(),
   /** UI language for the system-prompt locale hints. */
   language: z.enum(["de", "en", "fr", "es"]).optional(),
   /** Optional explicit title (when creating a new chat from a quickstart). */
   titleHint: z.string().max(200).optional(),
+  /** Workflow that launched this chat (e.g. "itar-classification").
+   *  Tracked on AtlasChat for admin dashboards + analytics so we can
+   *  see which curated workflows are popular. */
+  workflowId: z.string().max(64).optional(),
 });
 
 /* ── POST: stream a chat turn (SSE) ───────────────────────────────── */
@@ -90,6 +94,7 @@ export async function POST(req: NextRequest) {
         (atlas.userLanguage as "de" | "en" | "fr" | "es" | null) ??
         "de",
       titleHint: parsed.data.titleHint,
+      workflowId: parsed.data.workflowId,
     });
 
     return new Response(stream, {
@@ -129,9 +134,13 @@ export async function GET(_req: NextRequest) {
   if (!atlas) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  /* Bumped to 200 (from 50) so the sidebar's "+ N weitere" pagination
+     has something to expand into. Power users with many chats can
+     still scroll; the sidebar virtualises via overflow-y-auto. */
   const chats = await listChatsForUser({
     userId: atlas.userId,
     organizationId: atlas.organizationId,
+    limit: 200,
   });
   return NextResponse.json({ chats });
 }

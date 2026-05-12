@@ -104,6 +104,9 @@ export interface ChatEngineInput {
   language?: "de" | "en" | "fr" | "es";
   /** Title hint for new chats. Falls back to first 60 chars of message. */
   titleHint?: string;
+  /** Workflow that launched this chat — recorded on AtlasChat for
+   *  later analytics + admin dashboards. */
+  workflowId?: string;
 }
 
 export interface ChatEngineResult {
@@ -244,6 +247,7 @@ async function ensureChatAndHistory(args: {
   toolToggles: Record<string, boolean>;
   newUserMessage: string;
   titleHint: string | undefined;
+  workflowId?: string;
 }): Promise<{ chatId: string; history: Anthropic.MessageParam[] }> {
   const {
     chatId,
@@ -253,6 +257,7 @@ async function ensureChatAndHistory(args: {
     toolToggles,
     newUserMessage,
     titleHint,
+    workflowId,
   } = args;
 
   if (chatId) {
@@ -299,6 +304,7 @@ async function ensureChatAndHistory(args: {
       mandateId: mandateId,
       title: deriveTitle(newUserMessage, titleHint),
       toolToggles,
+      workflowId: workflowId ?? null,
       messages: {
         create: [
           {
@@ -322,6 +328,7 @@ async function ensureChatAndHistory(args: {
     metadata: {
       mandateId: mandateId ?? null,
       titleHint: titleHint ?? null,
+      workflowId: workflowId ?? null,
     },
   });
   return {
@@ -384,6 +391,7 @@ export async function runChat(
     toolToggles,
     newUserMessage: input.userMessage,
     titleHint: input.titleHint,
+    workflowId: input.workflowId,
   });
 
   const encoder = new TextEncoder();

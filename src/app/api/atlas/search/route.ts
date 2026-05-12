@@ -21,7 +21,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { getAtlasAuth } from "@/lib/atlas-auth";
-import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitHeaders,
+} from "@/lib/ratelimit";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 
@@ -46,7 +50,7 @@ export async function GET(req: NextRequest) {
   if (!rl.success) {
     return NextResponse.json(
       { error: "Rate limit exceeded", retryAfterMs: rl.reset - Date.now() },
-      { status: 429 },
+      { status: 429, headers: createRateLimitHeaders(rl) },
     );
   }
 
@@ -185,16 +189,22 @@ export async function GET(req: NextRequest) {
     durationMs,
   });
 
-  return NextResponse.json({
-    query: q,
-    titleHits: titleHits.length,
-    textHits: textHits.length,
-    results: [...titleHits, ...textHits].map((c) => ({
-      id: c.id,
-      title: c.title,
-      updatedAt: c.updatedAt.toISOString(),
-      mandateId: c.mandateId,
-      mandateName: c.mandate?.name ?? null,
-    })),
-  });
+  return NextResponse.json(
+    {
+      query: q,
+      titleHits: titleHits.length,
+      textHits: textHits.length,
+      results: [...titleHits, ...textHits].map((c) => ({
+        id: c.id,
+        title: c.title,
+        updatedAt: c.updatedAt.toISOString(),
+        mandateId: c.mandateId,
+        mandateName: c.mandate?.name ?? null,
+      })),
+    },
+    /* Standard X-RateLimit-* headers so client-side code (or future
+       SDK consumers) can read remaining quota without making a
+       throwaway request. */
+    { headers: createRateLimitHeaders(rl) },
+  );
 }

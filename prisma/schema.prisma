@@ -11759,6 +11759,13 @@ model AtlasChat {
   /// Lifecycle.
   archivedAt DateTime?
 
+  /// Workflow that launched this chat (e.g. "itar-classification",
+  /// "multi-jurisdiction-comparison"). Set from the URL query param
+  /// when the homepage was opened via the WorkflowCatalog. Null for
+  /// chats started by typing into the empty composer. Enables admin
+  /// dashboards to see which workflow templates are popular.
+  workflowId String?
+
   // Relations
   messages AtlasMessage[]
 
@@ -11768,6 +11775,7 @@ model AtlasChat {
   @@index([organizationId, updatedAt])
   @@index([ownerUserId, updatedAt])
   @@index([mandateId, updatedAt])
+  @@index([workflowId, createdAt])
 }
 
 /// Single message in a chat — entweder user oder assistant.

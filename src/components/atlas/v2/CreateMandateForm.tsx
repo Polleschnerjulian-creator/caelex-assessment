@@ -16,6 +16,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { MANDATE_TEMPLATES, templateById } from "@/lib/atlas/mandate-templates";
 
 const JURISDICTIONS = [
   { code: "DE", label: "Deutschland" },
@@ -90,11 +91,49 @@ export function CreateMandateForm() {
       </div>
 
       <h1 className="mb-2 text-xl font-semibold">Neues Mandat anlegen</h1>
-      <p className="mb-8 text-sm text-slate-600 dark:text-slate-400">
+      <p className="mb-6 text-sm text-slate-600 dark:text-slate-400">
         Mandate gruppieren Chats, Files und Custom-Instructions für eine Sache
         (z. B. „Spire Global · DE-Authorization SAT-2026"). Felder sind später
         beliebig editierbar.
       </p>
+
+      {/* Quick-start templates — pre-fill all fields for the most
+          common Caelex matters. Click → form populates. User can
+          still edit any field. */}
+      <div className="mb-8">
+        <p className="mb-2 text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          Quick-Start
+        </p>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {MANDATE_TEMPLATES.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => {
+                const tpl = templateById(t.id);
+                if (!tpl) return;
+                setName(tpl.defaultName);
+                setJurisdiction(tpl.jurisdiction ?? "");
+                setOperatorType(tpl.operatorType ?? "");
+                setPrimaryAuthority(tpl.primaryAuthority ?? "");
+                setCustomInstructions(tpl.customInstructions);
+              }}
+              title={t.description}
+              className="flex flex-col items-start gap-1 rounded-lg border border-slate-200 bg-white p-3 text-left transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700/60 dark:bg-slate-900/40 dark:hover:border-slate-600 dark:hover:bg-slate-900"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-base leading-none">{t.emoji}</span>
+                <span className="text-[12.5px] font-semibold text-slate-900 dark:text-slate-100">
+                  {t.label}
+                </span>
+              </div>
+              <span className="line-clamp-2 text-[11px] text-slate-500">
+                {t.description}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <Field

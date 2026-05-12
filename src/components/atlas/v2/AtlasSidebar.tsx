@@ -74,6 +74,13 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
   const [mandates, setMandates] = useState<MandateListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
+  /* Per-bucket "show all" toggle. Each bucket initially renders up to
+     16 entries; clicking "+ N weitere" adds the bucket name here to
+     reveal the full list. Resets to default-collapsed when the chat
+     list refetches (refresh event). */
+  const [expandedBuckets, setExpandedBuckets] = useState<Set<string>>(
+    new Set(),
+  );
   /* Mobile detection — drives whether the expanded sidebar renders
      as an overlay (covering content + backdrop) or as a flex sibling
      (pushing content). Set post-hydration to avoid SSR mismatch. */
@@ -233,13 +240,20 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
             ) : chats.length === 0 ? (
               <Empty>Noch keine Chats.</Empty>
             ) : (
-              order.map((b) =>
-                grouped[b] && grouped[b].length > 0 ? (
+              order.map((b) => {
+                const bucketChats = grouped[b];
+                if (!bucketChats || bucketChats.length === 0) return null;
+                const expanded = expandedBuckets.has(b as string);
+                const visible = expanded
+                  ? bucketChats
+                  : bucketChats.slice(0, 16);
+                const remaining = bucketChats.length - visible.length;
+                return (
                   <div key={b} className="mb-1">
                     <div className="px-3 pb-1 pt-2 text-[11px] text-slate-500">
                       {b}
                     </div>
-                    {grouped[b].slice(0, 16).map((c) => {
+                    {visible.map((c) => {
                       const active = c.id === activeChatId;
                       return (
                         <Link
@@ -259,9 +273,25 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
                         </Link>
                       );
                     })}
+                    {remaining > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setExpandedBuckets((prev) => {
+                            const next = new Set(prev);
+                            next.add(b as string);
+                            return next;
+                          });
+                        }}
+                        className="flex w-full items-center gap-2 rounded-md px-3 py-1 text-[11.5px] text-slate-500 transition-colors hover:bg-black/[0.04] hover:text-slate-800 dark:hover:bg-white/[0.03] dark:hover:text-slate-300"
+                      >
+                        <span className="opacity-40">+</span>
+                        <span>{remaining} weitere</span>
+                      </button>
+                    )}
                   </div>
-                ) : null,
-              )
+                );
+              })
             )}
           </Section>
 
