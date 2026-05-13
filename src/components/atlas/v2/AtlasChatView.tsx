@@ -74,6 +74,13 @@ export function AtlasChatView({ chatId }: Props) {
   /* Seed value for the composer textarea — used when a programmatic
      event (e.g. quickstart link) wants to pre-fill the input. */
   const [composerSeed, setComposerSeed] = useState<string | undefined>();
+  /* Mandate-attach state — synchronisiert mit chat.mandateId aus DB.
+     Beim Mount initialisiert aus dem geladenen Chat; Updates schreiben
+     sofort via API. */
+  const [attachedMandate, setAttachedMandate] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   /* Load persisted chat. The `silent` flag suppresses the loading
@@ -150,6 +157,45 @@ export function AtlasChatView({ chatId }: Props) {
       return () => clearInterval(interval);
     }
   }, [chat, chatId]);
+
+  /* Sync local mandate-state when chat finishes loading (or refreshes
+     after attach/detach). chat is fetched async, so initial useState
+     value would always be null — we hydrate here. */
+  useEffect(() => {
+    if (chat?.mandateId && chat?.mandate) {
+      setAttachedMandate({ id: chat.mandateId, name: chat.mandate.name });
+    } else {
+      setAttachedMandate(null);
+    }
+  }, [chat?.mandateId, chat?.mandate]);
+
+  /* Persist a mandate-attach change to the DB via the dedicated
+     attach-mandate endpoint. Optimistic UI: the chip updates locally
+     first, then the API call rolls in the background. On failure we
+     roll back so the UI never diverges from server state. */
+  const handleAttachMandate = async (
+    m: { id: string; name: string } | null,
+  ) => {
+    const previous = attachedMandate;
+    setAttachedMandate(m);
+    try {
+      const res = await fetch(`/api/atlas/chat/${chatId}/attach-mandate`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ mandateId: m?.id ?? null }),
+      });
+      if (!res.ok) {
+        /* Rollback on failure so the chip reflects server-truth. */
+        setAttachedMandate(previous);
+        throw new Error(`Attach failed (${res.status})`);
+      }
+      /* Sidebar re-resolve so MandateContextSection (re-)appears with
+         the new mandate's context. */
+      window.dispatchEvent(new Event("atlas-v2-sidebar-refresh"));
+    } catch (err) {
+      console.error("[AtlasChatView] attach-mandate failed", err);
+    }
+  };
 
   const handleFollowup = async (
     text: string,
@@ -434,6 +480,8 @@ export function AtlasChatView({ chatId }: Props) {
                   totalOutputTokens,
                   totalCostUsd,
                 }}
+                attachedMandate={attachedMandate}
+                onAttachMandate={handleAttachMandate}
                 onSubmit={(text, toggles, images) => {
                   setComposerSeed(undefined);
                   return handleFollowup(text, toggles, images);
