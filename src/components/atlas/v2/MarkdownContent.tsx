@@ -34,6 +34,23 @@ export interface InlineCitation {
   index: number;
   sourceId: string;
   citation: string;
+  /** Validity status from the corpus check — drives the inline pill
+   *  color (Hallucination-Verifier UX, 2026-05-13). When undefined or
+   *  set to "unknown", the pill renders in a neutral slate (the
+   *  Atlas-Korpus had no match for the cited source-id, which is itself
+   *  a yellow-flag for the lawyer). */
+  badge?:
+    | "in_force"
+    | "needs_review"
+    | "pending"
+    | "amended"
+    | "repealed"
+    | "unknown";
+  /** Optional metadata for the hover-tooltip — when missing, the
+   *  tooltip falls back to just the raw citation string. */
+  title?: string | null;
+  status?: string | null;
+  lastVerified?: string | null;
 }
 
 interface Props {
@@ -333,11 +350,131 @@ function renderBlock(
     );
   }
 
+  /* Confidence-Heatmap (2026-05-13): every substantive paragraph
+     carries a left-border accent that signals how grounded the claim
+     is. Two visible states (we deliberately don't paint EVERY paragraph
+     to keep noise low):
+       - emerald-200 + faint left-border → paragraph contains 1+
+         verified Atlas-corpus citations
+       - amber-200 + faint left-border → paragraph is substantive
+         (≥40 words) and contains ZERO citations (hallucination-flag)
+       - no border → short transitional text or section headers
+
+     Tooltip on the wrapper explains the signal so the lawyer knows
+     why the indicator is there and what to do about it. */
+  const conf = paragraphConfidence(b.text);
+  const wrapperCls = confidenceWrapperClasses(conf);
+  const tooltip = confidenceTooltip(conf);
   return (
-    <p key={key} className="mb-3 last:mb-0 whitespace-pre-wrap">
+    <p
+      key={key}
+      title={tooltip}
+      className={`mb-3 last:mb-0 whitespace-pre-wrap ${wrapperCls}`}
+    >
       {renderInline(b.text, sourceMap)}
     </p>
   );
+}
+
+/* ── Inline-pill helpers (Hallucination-Verifier UX, 2026-05-13) ──── */
+
+function inlinePillClasses(badge: InlineCitation["badge"]): string {
+  switch (badge) {
+    case "in_force":
+      return "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-200 dark:hover:bg-emerald-500/25";
+    case "amended":
+      return "bg-orange-100 text-orange-800 hover:bg-orange-200 dark:bg-orange-500/15 dark:text-orange-200 dark:hover:bg-orange-500/25";
+    case "repealed":
+      return "bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-500/15 dark:text-red-200 dark:hover:bg-red-500/25";
+    case "needs_review":
+    case "pending":
+      return "bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-500/15 dark:text-amber-200 dark:hover:bg-amber-500/25";
+    case "unknown":
+    default:
+      /* Slate-default fallback — used both when badge is missing
+         (streaming, or older messages without the field) and when the
+         corpus check explicitly returned "unknown". */
+      return "bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-white/[0.10] dark:text-slate-200 dark:hover:bg-white/[0.18]";
+  }
+}
+
+function buildPillTooltip(c: InlineCitation): string {
+  const lines: string[] = [];
+  if (c.title) lines.push(c.title);
+  if (c.badge) {
+    const label =
+      c.badge === "in_force"
+        ? "Verifiziert · in Kraft"
+        : c.badge === "needs_review"
+          ? "In Kraft · letzte Verifikation veraltet"
+          : c.badge === "pending"
+            ? "Entwurf / geplant"
+            : c.badge === "amended"
+              ? "Geändert · neuere Fassung existiert"
+              : c.badge === "repealed"
+                ? "Aufgehoben"
+                : "Nicht im Atlas-Korpus gefunden";
+    lines.push(`Status: ${label}`);
+  }
+  if (c.lastVerified) {
+    const d = new Date(c.lastVerified);
+    if (!isNaN(d.getTime())) {
+      lines.push(`Zuletzt geprüft: ${d.toLocaleDateString("de-DE")}`);
+    }
+  }
+  if (lines.length === 0) {
+    /* Streaming or sparse-metadata fallback — show the raw cited
+       string so the user at least sees what was cited. */
+    return c.citation;
+  }
+  lines.push("Klick öffnet die Quelle in der Quellenliste unten.");
+  return lines.join("\n");
+}
+
+/* ── Paragraph-confidence helpers (Heatmap UX, 2026-05-13) ────────── */
+
+type ConfidenceLevel = "grounded" | "ungrounded" | "neutral";
+
+function paragraphConfidence(text: string): ConfidenceLevel {
+  /* Cheap heuristic — count `[ATLAS:…]` tokens + word-count.
+     - 1+ tokens   → grounded
+     - 0 tokens && short paragraph (<40 words) → neutral (probably a
+       transition / restated question / acknowledgement — not a
+       substantive legal claim that needs grounding)
+     - 0 tokens && substantive paragraph → ungrounded (the heatmap
+       flags it as worth manual verification) */
+  ATLAS_CITATION_RE.lastIndex = 0;
+  const hasCitation = ATLAS_CITATION_RE.test(text);
+  if (hasCitation) return "grounded";
+  const wordCount = text.split(/\s+/).filter(Boolean).length;
+  if (wordCount < 40) return "neutral";
+  return "ungrounded";
+}
+
+const ATLAS_CITATION_RE = /\[ATLAS:[^\]]+\]/g;
+
+function confidenceWrapperClasses(c: ConfidenceLevel): string {
+  switch (c) {
+    case "grounded":
+      return "border-l-2 border-emerald-200/80 pl-3 dark:border-emerald-500/25";
+    case "ungrounded":
+      return "border-l-2 border-amber-200/80 pl-3 dark:border-amber-500/25";
+    case "neutral":
+    default:
+      return "";
+  }
+}
+
+function confidenceTooltip(c: ConfidenceLevel): string | undefined {
+  switch (c) {
+    case "grounded":
+      return "Diese Aussage stützt sich auf eine oder mehrere verifizierte Quellen (siehe Pille → Quellenpanel).";
+    case "ungrounded":
+      return "Substantielle Aussage ohne Quellenangabe im Atlas-Korpus. Bitte manuell prüfen.";
+    case "neutral":
+    default:
+      return undefined;
+  }
 }
 
 /* ── Inline rendering ────────────────────────────────────────────────── */
@@ -424,17 +561,28 @@ function renderInline(
       },
     },
     {
-      /* [ATLAS:source-id] → clickable numbered pill. The pill shows
-         the citation index (1, 2, 3…) instead of the raw source-id
-         so the answer text reads cleanly. Clicking scrolls to the
-         matching CitationsPanel row + briefly highlights it. When
-         citations aren't loaded yet (streaming), we render a
-         non-interactive fallback showing a short source-id label. */
+      /* [ATLAS:source-id] → status-colored numbered pill. The pill
+         color encodes the corpus-validity check (Hallucination-
+         Verifier UX, 2026-05-13):
+           emerald = in_force (verified, current)
+           amber   = needs_review / pending (verified but stale)
+           orange  = amended (current text differs from cited version)
+           red     = repealed (cited norm no longer in force)
+           slate   = unknown (NOT in corpus — biggest red flag for the
+                     lawyer, but rendered slate to look "neutral" rather
+                     than alarming since the raw fact is "we couldn't
+                     find this", not "this is wrong")
+         Tooltip carries multi-line context: title, status, last-
+         verified date. Click scrolls to the matching CitationsPanel
+         row + flashes a ring-highlight. Streaming fallback shows a
+         short source-id sup until citations are extracted. */
       re: /\[ATLAS:([^\]]+)\]/,
       wrap: (m) => {
         const sourceId = m[1];
         const hit = sourceMap.get(sourceId);
         if (hit) {
+          const cls = inlinePillClasses(hit.badge);
+          const tooltip = buildPillTooltip(hit);
           return (
             <a
               href={`#citation-${hit.sourceId}`}
@@ -442,8 +590,9 @@ function renderInline(
                 e.preventDefault();
                 scrollToCitation(hit.sourceId);
               }}
-              title={hit.citation}
-              className="mx-0.5 inline-flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-slate-200 px-1 align-baseline text-[10px] font-semibold text-slate-700 no-underline transition-colors hover:bg-slate-300 hover:text-slate-900 dark:bg-white/[0.10] dark:text-slate-200 dark:hover:bg-white/[0.18] dark:hover:text-white"
+              title={tooltip}
+              aria-label={`Quelle ${hit.index}: ${hit.title ?? hit.sourceId}`}
+              className={`mx-0.5 inline-flex h-[16px] min-w-[16px] items-center justify-center rounded-full px-1 align-baseline text-[10px] font-semibold no-underline transition-colors ${cls}`}
             >
               {hit.index}
             </a>

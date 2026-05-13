@@ -576,6 +576,14 @@ function MessageRow({
           index: c.index,
           sourceId: c.sourceId,
           citation: c.citation,
+          /* Hallucination-Verifier UX (2026-05-13): pass the validity
+             badge + corpus metadata through so MarkdownContent can
+             color the inline pill by status and render a richer
+             hover-tooltip (status, last-verified date). */
+          badge: c.badge,
+          title: c.title,
+          status: c.status,
+          lastVerified: c.lastVerified,
         }))
       : undefined;
   return (
