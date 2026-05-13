@@ -85,6 +85,25 @@ export async function POST(
         { status },
       );
     }
+    /* Fire-and-forget: kick off Vault-RAG auto-embed. We do NOT await
+       — the user's HTTP response goes back immediately. The embed job
+       logs its own success/failure. The vault-list UI polls embed
+       status separately (Task 7). */
+    void (async () => {
+      const { autoEmbedMandateFile } =
+        await import("@/lib/atlas/mandate/auto-embed.server");
+      const embedResult = await autoEmbedMandateFile(result.id);
+      logger.info("[atlas/vault-rag] post-upload embed dispatched", {
+        fileId: result.id,
+        mandateId,
+        embedStatus: embedResult.status,
+        chunkCount:
+          embedResult.status === "embedded"
+            ? embedResult.chunkCount
+            : undefined,
+      });
+    })();
+
     return NextResponse.json({ file: result }, { status: 201 });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
