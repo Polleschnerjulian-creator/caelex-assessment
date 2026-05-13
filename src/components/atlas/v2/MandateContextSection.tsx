@@ -138,7 +138,7 @@ export function MandateContextSection({ mandateId }: Props) {
   if (loading && !mandate) {
     return (
       <div className="mb-3 px-2">
-        <div className="rounded-lg bg-emerald-50 p-3 text-[12px] text-emerald-700 dark:bg-emerald-500/[0.06] dark:text-emerald-300">
+        <div className="rounded-lg bg-slate-50 p-3 text-[12px] text-slate-700 dark:bg-emerald-500/[0.06] dark:text-emerald-300">
           <Loader2 size={11} className="mr-1.5 inline animate-spin" />
           Lädt Mandat…
         </div>
@@ -162,14 +162,14 @@ export function MandateContextSection({ mandateId }: Props) {
         onDrop={onDrop}
         className={`rounded-lg border p-2.5 transition-colors ${
           dragOver
-            ? "border-emerald-400 bg-emerald-50 dark:border-emerald-500/40 dark:bg-emerald-500/[0.10]"
-            : "border-emerald-200 bg-emerald-50/60 dark:border-emerald-500/15 dark:bg-emerald-500/[0.04]"
+            ? "border-slate-400 bg-slate-50 dark:border-emerald-500/40 dark:bg-emerald-500/[0.10]"
+            : "border-slate-200 bg-slate-50/60 dark:border-emerald-500/15 dark:bg-emerald-500/[0.04]"
         }`}
       >
         {/* Mandate header */}
         <Link
           href={`/atlas/mandate/${mandate.id}`}
-          className="mb-1.5 flex items-center gap-2 text-emerald-900 transition-colors hover:text-emerald-700 dark:text-emerald-100 dark:hover:text-emerald-200"
+          className="mb-1.5 flex items-center gap-2 text-slate-900 transition-colors hover:text-slate-800 dark:text-emerald-100 dark:hover:text-emerald-200"
         >
           <Briefcase size={11} className="shrink-0 opacity-70" />
           <span className="line-clamp-1 flex-1 text-[12.5px] font-semibold">
@@ -180,12 +180,12 @@ export function MandateContextSection({ mandateId }: Props) {
 
         {/* Files preview */}
         <div className="mb-2">
-          <div className="mb-0.5 flex items-center gap-1.5 text-[10.5px] uppercase tracking-wider text-emerald-700/80 dark:text-emerald-300/70">
+          <div className="mb-0.5 flex items-center gap-1.5 text-[10.5px] uppercase tracking-wider text-slate-700/80 dark:text-emerald-300/70">
             <FileText size={9} />
             <span>{mandate._count.files} Dateien</span>
           </div>
           {filesPreview.length === 0 ? (
-            <p className="px-1 text-[11px] text-emerald-700/60 dark:text-emerald-300/50">
+            <p className="px-1 text-[11px] text-slate-700/60 dark:text-emerald-300/50">
               Noch keine Dateien.
             </p>
           ) : (
@@ -193,14 +193,14 @@ export function MandateContextSection({ mandateId }: Props) {
               {filesPreview.map((f) => (
                 <li
                   key={f.id}
-                  className="line-clamp-1 px-1 text-[11.5px] text-emerald-900/90 dark:text-emerald-100/85"
+                  className="line-clamp-1 px-1 text-[11.5px] text-slate-700 dark:text-emerald-100/85"
                   title={f.filename}
                 >
                   · {f.filename}
                 </li>
               ))}
               {mandate._count.files > 5 && (
-                <li className="px-1 text-[10.5px] text-emerald-700/70 dark:text-emerald-300/60">
+                <li className="px-1 text-[10.5px] text-slate-700/70 dark:text-emerald-300/60">
                   +{mandate._count.files - 5} weitere · alle anzeigen
                 </li>
               )}
@@ -211,7 +211,7 @@ export function MandateContextSection({ mandateId }: Props) {
         {/* Deadlines preview */}
         {deadlinesPreview.length > 0 && (
           <div className="mb-2">
-            <div className="mb-0.5 flex items-center gap-1.5 text-[10.5px] uppercase tracking-wider text-emerald-700/80 dark:text-emerald-300/70">
+            <div className="mb-0.5 flex items-center gap-1.5 text-[10.5px] uppercase tracking-wider text-slate-700/80 dark:text-emerald-300/70">
               <CalendarClock size={9} />
               <span>{deadlines.length} offene Fristen</span>
             </div>
@@ -238,7 +238,7 @@ export function MandateContextSection({ mandateId }: Props) {
                         className="shrink-0 text-amber-600 dark:text-amber-400"
                       />
                     ) : null}
-                    <span className="line-clamp-1 flex-1 text-emerald-900/90 dark:text-emerald-100/85">
+                    <span className="line-clamp-1 flex-1 text-slate-700 dark:text-emerald-100/85">
                       {d.title}
                     </span>
                     <span
@@ -247,7 +247,7 @@ export function MandateContextSection({ mandateId }: Props) {
                           ? "text-red-600 dark:text-red-400"
                           : isWarn
                             ? "text-amber-700 dark:text-amber-300"
-                            : "text-emerald-700/70 dark:text-emerald-300/60"
+                            : "text-slate-700/70 dark:text-emerald-300/60"
                       }`}
                     >
                       {isPast
@@ -264,7 +264,7 @@ export function MandateContextSection({ mandateId }: Props) {
         )}
 
         {/* Members compact line */}
-        <div className="mb-2 flex items-center gap-1.5 px-1 text-[10.5px] text-emerald-700/70 dark:text-emerald-300/60">
+        <div className="mb-2 flex items-center gap-1.5 px-1 text-[10.5px] text-slate-700/70 dark:text-emerald-300/60">
           <Users size={9} />
           <span>
             {mandate._count.members} Mitglied
@@ -277,7 +277,7 @@ export function MandateContextSection({ mandateId }: Props) {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-emerald-300 bg-white/40 px-2 py-1.5 text-[11px] text-emerald-700 transition-colors hover:border-emerald-400 hover:bg-white/70 disabled:opacity-50 dark:border-emerald-500/20 dark:bg-white/[0.02] dark:text-emerald-300 dark:hover:border-emerald-500/40 dark:hover:bg-white/[0.04]"
+          className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-slate-300 bg-white/40 px-2 py-1.5 text-[11px] text-slate-700 transition-colors hover:border-slate-400 hover:bg-white/70 disabled:opacity-50 dark:border-emerald-500/20 dark:bg-white/[0.02] dark:text-emerald-300 dark:hover:border-emerald-500/40 dark:hover:bg-white/[0.04]"
         >
           {uploading ? (
             <Loader2 size={10} className="animate-spin" />

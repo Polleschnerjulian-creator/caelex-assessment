@@ -79,7 +79,7 @@ export function CitationsPanel({ citations }: Props) {
                   "open at the source". */}
               <Link
                 href={`/atlas/sources/${encodeURIComponent(c.sourceId)}`}
-                className="transition-colors hover:text-emerald-700 dark:hover:text-emerald-300"
+                className="transition-colors hover:text-slate-900 dark:hover:text-slate-100"
                 title={`Atlas-Seite zu ${c.sourceId} öffnen`}
               >
                 <span className="font-mono text-[10.5px] text-slate-700 dark:text-slate-300">
@@ -115,12 +115,12 @@ export function CitationsPanel({ citations }: Props) {
                 </span>
               )}
               {c.amendedBy && c.amendedBy.length > 0 && (
-                <span className="ml-1.5 text-[10px] text-orange-600 dark:text-orange-400">
+                <span className="ml-1.5 text-[10px] text-amber-600 dark:text-amber-400">
                   · geändert durch {c.amendedBy[0]}
                 </span>
               )}
               {c.supersededBy && (
-                <span className="ml-1.5 text-[10px] text-orange-600 dark:text-orange-400">
+                <span className="ml-1.5 text-[10px] text-amber-600 dark:text-amber-400">
                   · ersetzt durch {c.supersededBy}
                 </span>
               )}

@@ -215,7 +215,7 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
       <aside
         className={`flex h-full w-[260px] shrink-0 flex-col bg-[#f9f9f9] text-slate-700 dark:bg-[#171717] dark:text-slate-200 ${
           isMobile
-            ? "fixed inset-y-0 left-0 z-40 shadow-[0_4px_24px_rgba(0,0,0,0.18)]"
+            ? "fixed inset-y-0 left-0 z-40 shadow-[0_16px_40px_rgba(0,0,0,0.14)]"
             : ""
         }`}
       >
@@ -482,7 +482,7 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-1 border-t border-black/[0.05] px-2 py-2 dark:border-white/[0.05]">
+        <div className="flex items-center gap-1 border-t border-slate-200 px-2 py-2 dark:border-white/[0.05]">
           <div className="flex-1">
             <NavLink
               href="/atlas/settings"

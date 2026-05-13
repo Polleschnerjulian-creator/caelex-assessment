@@ -59,7 +59,7 @@ export function KeyboardHelpOverlay({ open, onClose }: Props) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_24px_64px_rgba(0,0,0,0.18)] dark:border-white/[0.08] dark:bg-[#1a1a1a] dark:shadow-[0_24px_64px_rgba(0,0,0,0.5)]"
+        className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(0,0,0,0.14)] dark:border-white/[0.08] dark:bg-[#1a1a1a] dark:shadow-[0_16px_40px_rgba(0,0,0,0.50)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
