@@ -119,6 +119,12 @@ export function MandateNewChatComposer({
             ? "Mandat ist archiviert / geschlossen — Reaktivieren um neue Chats zu starten."
             : "Frage etwas zu diesem Mandat…"
         }
+        attachedMandate={{ id: mandateId, name: mandateName }}
+        onAttachMandate={() => {
+          /* No-op auf der Mandate-Page — Mandate ist Page-scope, nicht
+             abnehmbar. Falls der User wechseln will, navigiert er zum
+             anderen Mandat. */
+        }}
         onSubmit={handleSubmit}
       />
       {error && <p className="mt-2 text-[11px] text-red-400">{error}</p>}
