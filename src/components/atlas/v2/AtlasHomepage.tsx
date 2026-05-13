@@ -39,6 +39,13 @@ export function AtlasHomepage() {
   const [seedValue, setSeedValue] = useState<string | undefined>();
   const [seedWorkflowId, setSeedWorkflowId] = useState<string | undefined>();
 
+  /* Brand-new-chat: Mandate-Attach läuft rein lokal, weil noch kein
+     chat existiert. Der mandateId wird im initialen POST mitgegeben. */
+  const [pendingMandate, setPendingMandate] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+
   /* Submit-flow state — drives the in-place transition from empty
      state to chat-like streaming surface. */
   const [submittedMessage, setSubmittedMessage] = useState<string | null>(null);
@@ -71,6 +78,7 @@ export function AtlasHomepage() {
     text: string,
     toolToggles: Record<string, boolean>,
     images?: ChatImageAttachment[],
+    mandateIdFromInput?: string | null,
   ) => {
     /* Optimistic UI: paint the user-message + thinking-indicator
        IMMEDIATELY, before the network round-trip. The transcript
@@ -88,6 +96,11 @@ export function AtlasHomepage() {
         body: JSON.stringify({
           message: text,
           toolToggles,
+          /* Mandate-Attach: ChatInput hat höhere Priorität (User hat
+             gerade ausgewählt). Falls leer: pending state auf der
+             Homepage (Modal-Auswahl ohne Submit). Falls beides leer:
+             chat ist global. */
+          mandateId: mandateIdFromInput ?? pendingMandate?.id ?? undefined,
           workflowId: seedWorkflowId,
           /* Photo-attachments piggyback on the same POST. Server
              validates + widens into Anthropic ImageBlockParam shape. */
@@ -264,8 +277,10 @@ export function AtlasHomepage() {
 
         <ChatInput
           initialValue={seedValue}
-          onSubmit={(text, toggles, images) =>
-            handleSubmit(text, toggles, images)
+          attachedMandate={pendingMandate}
+          onAttachMandate={(m) => setPendingMandate(m)}
+          onSubmit={(text, toggles, images, mandateId) =>
+            handleSubmit(text, toggles, images, mandateId)
           }
         />
 
