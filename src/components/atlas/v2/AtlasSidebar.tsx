@@ -43,6 +43,7 @@ import {
   PenLine,
   Cpu,
   FileSpreadsheet,
+  History,
 } from "lucide-react";
 import type { ChatListItem, MandateListItem } from "./types";
 import { useAtlasTheme } from "@/app/(atlas)/atlas/_components/AtlasThemeProvider";
@@ -293,6 +294,12 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
             label="Agent-Mode"
             icon={<Cpu size={14} />}
             active={pathname === "/atlas/agent"}
+          />
+          <SidebarItem
+            href="/atlas/agent/history"
+            label="Agent-History"
+            icon={<History size={14} />}
+            active={pathname.startsWith("/atlas/agent/history")}
           />
         </div>
 

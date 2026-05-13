@@ -205,6 +205,8 @@ model User {
   atlasNotes               AtlasNote[]          @relation("AtlasNotes")
   /// Atlas time-tracking entries.
   atlasTimeEntries         AtlasTimeEntry[]     @relation("AtlasTimeEntries")
+  /// Atlas Agent-Mode autonomous runs.
+  atlasAgentRuns           AtlasAgentRun[]      @relation("AtlasAgentRuns")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -11679,6 +11681,7 @@ model AtlasMandate {
   deadlines   AtlasMandateDeadline[]
   clauses     AtlasClause[]
   timeEntries AtlasTimeEntry[]
+  agentRuns   AtlasAgentRun[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -11819,6 +11822,93 @@ model AtlasMessage {
   createdAt DateTime @default(now())
 
   @@index([chatId, createdAt])
+}
+
+/// Atlas V2 Agent-Run — persisted record of every autonomous Agent-
+/// Mode execution. Required for audit-trail ("was hat Atlas wann für
+/// Mandant XY gemacht?") and for the lawyer's own learning ("welche
+/// Goals funktionieren, welche nicht").
+///
+/// One row per agent-run. The `steps`, `reasoning`, `artifacts`, and
+/// `citations` jsonb fields capture the full streamed result so the
+/// run can be replayed in /atlas/agent/history without re-executing
+/// it (= no extra Anthropic-Cost on review).
+model AtlasAgentRun {
+  id String @id @default(cuid())
+
+  /// Caller's user-id (Atlas-auth resolved). Lawyer who started
+  /// the run.
+  userId String
+  user   User   @relation("AtlasAgentRuns", fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Org-scope for tenant isolation.
+  organizationId String
+
+  /// Optional mandate-scope. When set, the agent had the mandate's
+  /// custom-instructions / jurisdiction / operator-type as system-
+  /// prompt context.
+  mandateId String?
+  mandate   AtlasMandate? @relation(fields: [mandateId], references: [id], onDelete: SetNull)
+
+  /// The high-level goal the lawyer typed (1st 2000 chars).
+  goal String
+
+  /// Optional template-id from src/lib/atlas/agent-templates.ts —
+  /// when the run was launched from a curated workflow. Tracking
+  /// this lets the admin dashboard see which templates are popular.
+  templateId String?
+
+  /// Run status.
+  ///   running   the run is in flight (server-side state)
+  ///   complete  finished successfully (final artifacts emitted)
+  ///   error     stopped due to a failure
+  ///   aborted   user/system stopped it mid-flight
+  status String /// "running" | "complete" | "error" | "aborted"
+
+  /// Total iterations the agent went through (1 iteration = 1
+  /// Anthropic API call within the tool-use loop).
+  iterations Int @default(0)
+
+  /// All tool-use step records. Array of:
+  ///   { iteration, toolId, toolName, input, durationMs, isError, summary }
+  steps Json @default("[]")
+
+  /// Per-iteration thinking text (from Extended Thinking). Map
+  /// keyed by iteration number.
+  reasoning Json @default("{}")
+
+  /// Final structured artifacts (from the multi-artifact-output
+  /// system prompt). Array of:
+  ///   { kind: "memo"|"schriftsatz"|"email"|"checklist"|"summary",
+  ///     title: string, body: string }
+  artifacts Json @default("[]")
+
+  /// Citation-Verification result. Shape:
+  ///   { total, verified, warnings, hallucinated, citations: [...] }
+  /// Null when the run had zero citation tokens.
+  citations Json?
+
+  /// Per-run token + cost accounting (USD).
+  inputTokens  Int?
+  outputTokens Int?
+  costUsd      Float?
+
+  /// Error message when status === "error" (model error, network,
+  /// validation failure, etc).
+  errorMessage String?
+
+  /// File-attachments the lawyer pre-loaded for this run (PDF/DOCX
+  /// extracted text). Array of:
+  ///   { fileName: string, charsExtracted: number }
+  /// We DON'T persist the extracted text itself — too large.
+  attachments Json @default("[]")
+
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+
+  @@index([userId, startedAt(sort: Desc)])
+  @@index([organizationId, startedAt(sort: Desc)])
+  @@index([mandateId, startedAt(sort: Desc)])
 }
 
 /// Atlas V2 Audit-Log — single source of truth for "who did what,

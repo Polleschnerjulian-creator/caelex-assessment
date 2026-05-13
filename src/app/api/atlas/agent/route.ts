@@ -246,7 +246,34 @@ export async function POST(req: NextRequest) {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
       };
 
-      send({ type: "run_started", goal: parsed.data.goal });
+      /* Sprint #3 — persist the agent-run to AtlasAgentRun. We
+         create the row IMMEDIATELY at start so it shows up in the
+         history page even if the run aborts mid-flight. Updates
+         flow at run-end with the captured steps / artifacts / etc. */
+      let runId: string | null = null;
+      try {
+        const runRow = await prisma.atlasAgentRun.create({
+          data: {
+            userId: atlas.userId,
+            organizationId: atlas.organizationId,
+            mandateId: parsed.data.mandateId ?? null,
+            goal: parsed.data.goal.slice(0, 2000),
+            status: "running",
+          },
+          select: { id: true },
+        });
+        runId = runRow.id;
+        send({ type: "run_started", goal: parsed.data.goal, runId });
+      } catch (err) {
+        /* Persistence is best-effort — if the DB write fails,
+           continue with the run anyway (lawyer still gets the
+           result, just no history entry). */
+        logger.warn("[atlas/agent] failed to persist run-row", {
+          userId: atlas.userId,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        send({ type: "run_started", goal: parsed.data.goal });
+      }
 
       const conversation: Anthropic.MessageParam[] = [
         { role: "user", content: parsed.data.goal },
@@ -260,6 +287,20 @@ export async function POST(req: NextRequest) {
          The client's textBuffer is reset between iterations in
          some flows, so we keep the canonical version here. */
       let textBuffer = "";
+      /* Sprint #3 — server-side capture of steps + reasoning so we
+         can persist the full run-record to AtlasAgentRun at the
+         end. Mirrors the SSE event shape but kept in JS-native
+         types so the prisma write is straightforward. */
+      const persistedSteps: Array<{
+        iteration: number;
+        toolId: string;
+        toolName: string;
+        input: Record<string, unknown>;
+        durationMs?: number;
+        isError?: boolean;
+        summary?: string;
+      }> = [];
+      const persistedReasoning: Record<number, string> = {};
 
       try {
         let iter = 0;
@@ -319,12 +360,17 @@ export async function POST(req: NextRequest) {
               evt.delta.type === "thinking_delta"
             ) {
               const tDelta = (evt.delta as { thinking?: string }).thinking;
-              if (tDelta)
+              if (tDelta) {
+                /* Append to the persisted reasoning bucket per
+                   iteration (Sprint #3 history-replay). */
+                persistedReasoning[iter] =
+                  (persistedReasoning[iter] ?? "") + tDelta;
                 send({
                   type: "thinking_delta",
                   delta: tDelta,
                   iteration: iter,
                 });
+              }
             }
           });
 
@@ -346,6 +392,15 @@ export async function POST(req: NextRequest) {
           const toolResults: Anthropic.ToolResultBlockParam[] = [];
           for (const block of finalMessage.content) {
             if (block.type !== "tool_use") continue;
+            /* Sprint #3 — push the step into the persistence buffer
+               on start; we'll patch in durationMs/isError/summary
+               when step_complete fires. */
+            persistedSteps.push({
+              iteration: iter,
+              toolId: block.id,
+              toolName: block.name,
+              input: block.input as Record<string, unknown>,
+            });
             send({
               type: "step_start",
               iteration: iter,
@@ -375,6 +430,19 @@ export async function POST(req: NextRequest) {
               isError = true;
             }
             const durationMs = Date.now() - t0;
+            const summary = isError
+              ? `Fehler: ${resultContent.slice(0, 200)}`
+              : `${resultContent.length} chars`;
+            /* Patch the in-flight persistedSteps record with the
+               completion metadata. */
+            const stepRecord = persistedSteps.find(
+              (s) => s.toolId === block.id,
+            );
+            if (stepRecord) {
+              stepRecord.durationMs = durationMs;
+              stepRecord.isError = isError;
+              stepRecord.summary = summary;
+            }
             send({
               type: "step_complete",
               iteration: iter,
@@ -382,9 +450,7 @@ export async function POST(req: NextRequest) {
               toolName: block.name,
               durationMs,
               isError,
-              summary: isError
-                ? `Fehler: ${resultContent.slice(0, 200)}`
-                : `${resultContent.length} chars`,
+              summary,
             });
             toolResults.push({
               type: "tool_result",
@@ -441,14 +507,82 @@ export async function POST(req: NextRequest) {
           });
         }
 
+        const costUsd =
+          (totalInputTokens / 1_000_000) * 3 +
+          (totalOutputTokens / 1_000_000) * 15;
+
+        /* Sprint #3 — final-write of the run-record. Captures
+           steps, reasoning, artifacts (parsed from textBuffer with
+           the same fence-regex used client-side), citation-result,
+           token + cost totals, completion-time. status="complete". */
+        if (runId) {
+          /* Parse artifacts server-side too, so the history page
+             can render them without re-parsing. Same regex as the
+             client (parseArtifacts in agent/page.tsx). */
+          const artifacts: Array<{
+            kind: string;
+            title: string;
+            body: string;
+          }> = [];
+          const ARTIFACT_RE =
+            /\[\[ARTIFACT\s+type=(\w+)\s+title="([^"]+)"\]\]([\s\S]*?)\[\[\/ARTIFACT\]\]/g;
+          let am: RegExpExecArray | null;
+          while ((am = ARTIFACT_RE.exec(textBuffer)) !== null) {
+            artifacts.push({
+              kind: am[1].toLowerCase(),
+              title: am[2],
+              body: am[3].trim(),
+            });
+          }
+
+          const verificationPayload =
+            citations.length > 0
+              ? {
+                  total: citations.length,
+                  verified: citations.filter((c) => c.badge === "in_force")
+                    .length,
+                  warnings:
+                    citations.length -
+                    citations.filter((c) => c.badge === "in_force").length -
+                    citations.filter((c) => c.badge === "unknown").length,
+                  hallucinated: citations.filter((c) => c.badge === "unknown")
+                    .length,
+                  citations,
+                }
+              : null;
+
+          try {
+            await prisma.atlasAgentRun.update({
+              where: { id: runId },
+              data: {
+                status: "complete",
+                iterations: iter,
+                steps: persistedSteps as unknown as object,
+                reasoning: persistedReasoning as unknown as object,
+                artifacts: artifacts as unknown as object,
+                citations:
+                  (verificationPayload as unknown as object) ?? undefined,
+                inputTokens: totalInputTokens,
+                outputTokens: totalOutputTokens,
+                costUsd,
+                completedAt: new Date(),
+              },
+            });
+          } catch (err) {
+            logger.warn("[atlas/agent] failed to persist run-completion", {
+              runId,
+              error: err instanceof Error ? err.message : String(err),
+            });
+          }
+        }
+
         send({
           type: "run_done",
+          runId,
           usage: {
             inputTokens: totalInputTokens,
             outputTokens: totalOutputTokens,
-            costUsd:
-              (totalInputTokens / 1_000_000) * 3 +
-              (totalOutputTokens / 1_000_000) * 15,
+            costUsd,
           },
           toolsUsed: Array.from(new Set(toolsUsed)),
           iterations: iter,
@@ -457,6 +591,7 @@ export async function POST(req: NextRequest) {
         logger.info("[atlas/agent] run complete", {
           userId: atlas.userId,
           mandateId: parsed.data.mandateId ?? null,
+          runId,
           iterations: iter,
           totalInputTokens,
           totalOutputTokens,
@@ -466,8 +601,29 @@ export async function POST(req: NextRequest) {
         const msg = err instanceof Error ? err.message : String(err);
         logger.error("[atlas/agent] run failed", {
           userId: atlas.userId,
+          runId,
           error: msg,
         });
+        /* Persist the failure-state so it shows up in history with
+           the error-message visible. */
+        if (runId) {
+          try {
+            await prisma.atlasAgentRun.update({
+              where: { id: runId },
+              data: {
+                status: "error",
+                errorMessage: msg.slice(0, 1000),
+                steps: persistedSteps as unknown as object,
+                reasoning: persistedReasoning as unknown as object,
+                inputTokens: totalInputTokens,
+                outputTokens: totalOutputTokens,
+                completedAt: new Date(),
+              },
+            });
+          } catch {
+            /* swallow — already in error path */
+          }
+        }
         send({ type: "error", message: msg });
       } finally {
         controller.close();
