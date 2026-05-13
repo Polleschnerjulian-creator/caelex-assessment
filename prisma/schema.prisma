@@ -11676,6 +11676,22 @@ model AtlasMandate {
   archivedAt DateTime?
   closedAt   DateTime?
 
+  /// Auto-Briefing Cache (Feature 1, M3). Lazy-regenerated wenn
+  /// briefingStaleSince > briefingGeneratedAt oder briefingText null ist.
+  briefingText        String?    @db.Text
+  briefingGeneratedAt DateTime?
+  briefingStaleSince  DateTime?
+
+  /// Cross-Chat-Memory rolling summary (Feature 2, M4). crossChatSummaryUpToChatId
+  /// ist Sentinel — bis zu welcher Chat-ID die Summary aktuell ist; bei neueren
+  /// Chats triggert das Update-Job ein Refresh.
+  crossChatSummary           String?  @db.Text
+  crossChatSummaryAt         DateTime?
+  crossChatSummaryUpToChatId String?
+
+  /// Suggestions die noch nicht resolved wurden (M3, Feature 4).
+  deadlineSuggestions AtlasMandateDeadlineSuggestion[]
+
   // Relations
   chats           AtlasChat[]
   files           AtlasMandateFile[]
@@ -11744,6 +11760,9 @@ model AtlasMandateFile {
   /// Vector embedding pointer (per-file embedding for semantic
   /// search within mandate). Nullable until Sprint 5 wires pgvector.
   embeddingId String? @db.Uuid
+
+  /// Inverse Relation für DeadlineSuggestion (M3 Feature 4).
+  deadlineSuggestions AtlasMandateDeadlineSuggestion[] @relation("DeadlineSuggestionSource")
 
   createdAt DateTime @default(now())
 
@@ -12089,6 +12108,39 @@ model AtlasMandateDeadline {
 
   @@index([mandateId, dueAt])
   @@index([status, dueAt])
+}
+
+/// Vorgeschlagene Deadline aus Auto-Extract (M3, Feature 4).
+/// Status-Lifecycle: pending → accepted (creates AtlasMandateDeadline) | dismissed.
+/// Atlas erzeugt diese aus Vault-Files, der User bestätigt.
+model AtlasMandateDeadlineSuggestion {
+  id String @id @default(cuid())
+
+  mandateId String
+  mandate   AtlasMandate @relation(fields: [mandateId], references: [id], onDelete: Cascade)
+
+  /// Optional: aus welchem Vault-File extrahiert.
+  sourceFileId String?
+  sourceFile   AtlasMandateFile? @relation("DeadlineSuggestionSource", fields: [sourceFileId], references: [id], onDelete: SetNull)
+
+  /// Org-Scope für Multi-Tenancy-Queries.
+  organizationId String
+
+  title       String
+  dueAt       DateTime
+  description String? @db.Text
+  confidence  Float
+
+  /// pending | accepted | dismissed
+  status     String @default("pending")
+  suggestedAt DateTime @default(now())
+
+  resolvedAt          DateTime?
+  resolvedByUserId    String?
+  resolvedAsDeadlineId String?
+
+  @@index([mandateId, status])
+  @@index([organizationId, status])
 }
 
 /// Atlas V2 Clause-Library (Sprint 9, 2026-05-12).
