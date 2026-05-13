@@ -605,10 +605,18 @@ export async function runChat(
              system + tools block. Within the 5-minute TTL, follow-up
              turns pay 1/10 the input cost for the cached portion.
              Saves ~$0.035 per cached turn. */
-          const cachedTools: Anthropic.Tool[] = ATLAS_TOOLS.map((t, i, arr) =>
-            i === arr.length - 1
-              ? { ...t, cache_control: { type: "ephemeral" } }
-              : t,
+          /* Vault-RAG tool is gated by mandateId (M2). When no mandate
+             is attached, hide it from the model so it doesn't hallucinate
+             calls. Defense-in-depth: the executor also rejects calls
+             without a mandate (Task 4). */
+          const availableTools = input.mandateId
+            ? ATLAS_TOOLS
+            : ATLAS_TOOLS.filter((t) => t.name !== "search_mandate_vault");
+          const cachedTools: Anthropic.Tool[] = availableTools.map(
+            (t, i, arr) =>
+              i === arr.length - 1
+                ? { ...t, cache_control: { type: "ephemeral" } }
+                : t,
           );
           const cachedSystem: Anthropic.TextBlockParam[] = [
             {
