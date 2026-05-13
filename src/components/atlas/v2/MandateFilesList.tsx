@@ -31,6 +31,9 @@ interface FileRecord {
   documentType: string | null;
   createdAt: string;
   uploadedBy: { id: string; name: string | null; email: string | null };
+  /** M2 Vault-RAG: present once listMandateFiles enriches with chunk counts. */
+  embedStatus?: "embedded" | "pending";
+  embedChunks?: number;
 }
 
 interface Props {
@@ -132,6 +135,27 @@ export function MandateFilesList({ mandateId, refreshKey }: Props) {
               <span>{f.uploadedBy.name || f.uploadedBy.email || "—"}</span>
               <span>·</span>
               <span>{new Date(f.createdAt).toLocaleDateString("de-DE")}</span>
+              {f.embedStatus === "embedded" ? (
+                <>
+                  <span>·</span>
+                  <span
+                    className="inline-flex items-center gap-1 text-[10.5px] text-emerald-600 dark:text-emerald-400"
+                    title={`Volltextsuche aktiv (${f.embedChunks ?? 0} Chunks indexiert)`}
+                  >
+                    ✓ embedded
+                  </span>
+                </>
+              ) : f.embedStatus === "pending" ? (
+                <>
+                  <span>·</span>
+                  <span
+                    className="inline-flex items-center gap-1 text-[10.5px] text-slate-400 dark:text-slate-500"
+                    title="Datei wird im Hintergrund indexiert — Volltextsuche bald verfügbar"
+                  >
+                    ⏳ wird indexiert…
+                  </span>
+                </>
+              ) : null}
             </div>
           </div>
           <button

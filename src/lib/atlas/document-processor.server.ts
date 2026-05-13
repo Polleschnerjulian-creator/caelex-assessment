@@ -433,7 +433,7 @@ export async function listMandateFiles(args: {
   userId: string;
   organizationId: string;
 }) {
-  return prisma.atlasMandateFile.findMany({
+  const files = await prisma.atlasMandateFile.findMany({
     where: {
       mandateId: args.mandateId,
       mandate: {
@@ -456,6 +456,33 @@ export async function listMandateFiles(args: {
       /* extractedText omitted from list; tools fetch by id when needed. */
     },
   });
+
+  /* Compute embed status per file. One Prisma groupBy returns
+     counts efficiently. M2 Vault-RAG visibility — lawyers see
+     ✓ embedded vs ⏳ pending next to each file row. */
+  const fileIds = files.map((f) => f.id);
+  const chunkCounts =
+    fileIds.length === 0
+      ? []
+      : await prisma.atlasKnowledgeChunk.groupBy({
+          by: ["sourceRef"],
+          where: {
+            sourceType: "mandate_file",
+            sourceRef: { in: fileIds },
+          },
+          _count: { _all: true },
+        });
+  const chunkMap = new Map(
+    chunkCounts.map((c) => [c.sourceRef ?? "", c._count._all]),
+  );
+
+  return files.map((f) => ({
+    ...f,
+    embedStatus: chunkMap.has(f.id)
+      ? ("embedded" as const)
+      : ("pending" as const),
+    embedChunks: chunkMap.get(f.id) ?? 0,
+  }));
 }
 
 /* ── Helpers ─────────────────────────────────────────────────────────── */
