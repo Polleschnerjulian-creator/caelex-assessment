@@ -32,10 +32,13 @@ import {
   Square,
   Loader2,
   Paperclip,
+  Briefcase,
   X,
 } from "lucide-react";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import type { ChatImageAttachment } from "./types";
+import { MandateAttachChip } from "./MandateAttachChip";
+import { MandateAttachModal } from "./MandateAttachModal";
 import { ContextWindowIndicator } from "./ContextWindowIndicator";
 
 /** Optional per-chat usage stats, surfaced in the composer's footer
@@ -53,15 +56,21 @@ interface Props {
   initialValue?: string;
   disabled?: boolean;
   placeholder?: string;
+  /**
+   * Mandat-Attach-State — controlled vom Parent so dass derselbe
+   * State über Reload / Navigation hinweg konsistent bleibt. Wenn
+   * der Parent ihn nicht reicht, läuft der ChatInput im uncontrolled-
+   * Modus mit lokalem useState.
+   */
+  attachedMandate?: { id: string; name: string } | null;
+  onAttachMandate?: (mandate: { id: string; name: string } | null) => void;
   onSubmit: (
     text: string,
     toolToggles: Record<string, boolean>,
     images?: ChatImageAttachment[],
+    mandateId?: string | null,
   ) => void | Promise<void>;
   showKorpusPill?: boolean;
-  /** Per-chat token usage — drives the composer-footer donut.
-   *  Optional: on the homepage / fresh chats the indicator renders
-   *  its 0 % empty state. */
   contextStats?: ChatInputContextStats;
 }
 
@@ -101,6 +110,8 @@ export function ChatInput({
   initialValue,
   disabled,
   placeholder,
+  attachedMandate,
+  onAttachMandate,
   onSubmit,
   contextStats,
 }: Props) {
@@ -119,6 +130,26 @@ export function ChatInput({
   /* Per-file status during PDF/DOCX extraction. Shows a spinner-strip
      under the composer while server-side extraction runs. */
   const [extracting, setExtracting] = useState<string[]>([]);
+  /* Mandate-Attach: uncontrolled-Fallback wenn Parent keinen
+     attachedMandate prop reicht. Wir kombinieren beide Pfade so
+     dass `effectiveMandate` immer die Wahrheit ist (Prop dominiert
+     wenn vorhanden). */
+  const [localMandate, setLocalMandate] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const effectiveMandate = attachedMandate ?? localMandate;
+  const [mandateModalOpen, setMandateModalOpen] = useState(false);
+
+  const setAttachedMandate = (m: { id: string; name: string } | null) => {
+    /* Controlled-Pfad: Parent verwaltet, wir rufen nur den Callback. */
+    if (onAttachMandate) {
+      onAttachMandate(m);
+      return;
+    }
+    /* Uncontrolled-Pfad: lokaler State. */
+    setLocalMandate(m);
+  };
   const taRef = useRef<HTMLTextAreaElement>(null);
   const popRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -440,13 +471,16 @@ export function ChatInput({
 
   const handleSend = () => {
     const v = text.trim();
-    /* Allow image-only messages so the user can drop a screenshot and
-       say "what's in this?" via voice or a one-word prompt. But the
-       composer still requires SOMETHING — either text or images — so
-       a stray Enter doesn't fire an empty turn. */
+    /* Allow image-only messages; allow mandate-attach-only-Sends nicht
+       (Mandate ohne Text/Bild ergibt keinen Turn). */
     if (!v && images.length === 0) return;
     if (disabled) return;
-    void onSubmit(v, toggles, images.length > 0 ? images : undefined);
+    void onSubmit(
+      v,
+      toggles,
+      images.length > 0 ? images : undefined,
+      effectiveMandate?.id ?? null,
+    );
     setText("");
     setImages([]);
     setFileError(null);
@@ -560,6 +594,17 @@ export function ChatInput({
           ))}
         </div>
       )}
+      {/* Mandate-Chip — pill oberhalb der Textarea wenn ein Mandat
+          angehängt ist. Klick auf [×] detached. */}
+      {effectiveMandate && (
+        <div className="px-1">
+          <MandateAttachChip
+            mandateId={effectiveMandate.id}
+            mandateName={effectiveMandate.name}
+            onDetach={() => setAttachedMandate(null)}
+          />
+        </div>
+      )}
       <textarea
         ref={taRef}
         value={text}
@@ -598,7 +643,15 @@ export function ChatInput({
           >
             <Plus size={16} />
           </IconButton>
-          {plusOpen && <PlusMenu onPickFile={onPickFile} />}
+          {plusOpen && (
+            <PlusMenu
+              onPickFile={onPickFile}
+              onPickMandate={() => {
+                setPlusOpen(false);
+                setMandateModalOpen(true);
+              }}
+            />
+          )}
         </div>
 
         <div className="flex-1" />
@@ -675,6 +728,17 @@ export function ChatInput({
           </button>
         </div>
       )}
+      <MandateAttachModal
+        open={mandateModalOpen}
+        onClose={() => setMandateModalOpen(false)}
+        onSelect={(m) => {
+          setAttachedMandate(m);
+          setMandateModalOpen(false);
+          /* Sidebar muss MandateContextSection neu resolven. Das
+             existing event-bus dispatched dafür. */
+          window.dispatchEvent(new Event("atlas-v2-sidebar-refresh"));
+        }}
+      />
     </div>
   );
 }
@@ -700,7 +764,18 @@ export function ChatInput({
  * eventual "Insert from mandate file" entry), but only MenuRow is
  * currently called.
  */
-function PlusMenu({ onPickFile }: { onPickFile: () => void }) {
+/**
+ * Minimal Popover (UX simplification 2026-05-13). Aktuell zwei
+ * Einträge: Datei-Upload + Mandat-Anhängen. Opens DOWNWARDS
+ * (top-full mt-2) für Claude.ai-Muscle-Memory.
+ */
+function PlusMenu({
+  onPickFile,
+  onPickMandate,
+}: {
+  onPickFile: () => void;
+  onPickMandate: () => void;
+}) {
   return (
     <div className="absolute left-0 top-full z-30 mt-2 w-[260px] overflow-hidden rounded-2xl border border-slate-200 bg-white py-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.12)] dark:border-white/[0.08] dark:bg-[#2a2a2a] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)]">
       <div className="px-1">
@@ -709,6 +784,12 @@ function PlusMenu({ onPickFile }: { onPickFile: () => void }) {
           label="Datei oder Bild hochladen"
           hint="PDF, DOCX, TXT, MD, JPG, PNG"
           onClick={onPickFile}
+        />
+        <MenuRow
+          icon={<Briefcase size={14} />}
+          label="Mandat anhängen"
+          hint="Vault + Kontext"
+          onClick={onPickMandate}
         />
       </div>
     </div>
