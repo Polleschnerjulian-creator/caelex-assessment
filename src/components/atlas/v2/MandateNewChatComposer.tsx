@@ -119,12 +119,13 @@ export function MandateNewChatComposer({
             ? "Mandat ist archiviert / geschlossen — Reaktivieren um neue Chats zu starten."
             : "Frage etwas zu diesem Mandat…"
         }
-        attachedMandate={{ id: mandateId, name: mandateName }}
-        onAttachMandate={() => {
-          /* No-op auf der Mandate-Page — Mandate ist Page-scope, nicht
-             abnehmbar. Falls der User wechseln will, navigiert er zum
-             anderen Mandat. */
-        }}
+        /* Bewusst KEIN attachedMandate-Chip auf der Mandate-Workspace-
+           Page (Issue #1 aus Final-Review): Page-Header zeigt den
+           Mandat-Namen schon prominent. Ein zusätzlicher Chip mit
+           non-funktionalem [×] (Mandate ist Page-Scope) wäre eine
+           dead-end-Affordance. mandateId wird über handleSubmit
+           weitergereicht — der Backend-POST kennt das Mandat sowieso
+           via geschlossenem closure aus den Composer-Props. */
         onSubmit={handleSubmit}
       />
       {error && <p className="mt-2 text-[11px] text-red-400">{error}</p>}
