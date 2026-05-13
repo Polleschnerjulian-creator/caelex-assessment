@@ -44,6 +44,11 @@ import { MarkdownContent } from "@/components/atlas/v2/MarkdownContent";
 import { AtlasMark } from "@/components/atlas/v2/AtlasLogo";
 import { labelFor } from "@/lib/atlas/tool-labels";
 import { exportDraftAsWord } from "@/lib/atlas/draft-export";
+import {
+  AGENT_TEMPLATES,
+  TEMPLATE_CATEGORIES,
+  type AgentTemplate,
+} from "@/lib/atlas/agent-templates";
 import type { MandateListItem } from "@/components/atlas/v2/types";
 
 interface StepRecord {
@@ -100,13 +105,10 @@ interface VerificationResult {
   citations: VerificationCitation[];
 }
 
-const SUGGESTED_GOALS = [
-  "Erstelle eine NIS2-Klassifizierung + Compliance-Brief für einen LEO-Satelliten-Operator in Deutschland",
-  "Recherchiere die einschlägigen BNetzA-Frequenzanmelde-Pflichten für eine 12-Satelliten-Konstellation und drafte den Antrag",
-  "Vergleiche DE, FR und UK Authorisierungs-Verfahren für Satellitenbetreiber und liefere eine 1-Seite Decision-Memo",
-  "Prüfe ITAR/EAR-Klassifikation für ein RF-Subsystem mit GaN-PA, GaAs-LNA und SDR-Backend",
-  "Drafte einen Widerspruch gegen einen ablehnenden BNetzA-Bescheid mit Citations + Anhörungsrüge-Begründung",
-];
+/* SUGGESTED_GOALS replaced with the full AGENT_TEMPLATES library
+   in src/lib/atlas/agent-templates.ts (12 curated workflows across
+   6 categories). Templates are rendered as a category-grouped
+   accordion below the goal-input. */
 
 /* Heuristic deadline-detection regex. Matches:
    - "(bis|spätestens|fällig am|Frist) DD.MM.YYYY"
@@ -694,30 +696,61 @@ export default function AgentPage() {
             </div>
           )}
 
-          {/* Suggested goals */}
+          {/* Template-Bibliothek — kategorie-gruppiert. Click auf
+              eine Template-Card pre-fillt das Goal-Feld + setzt das
+              Mandate-Picker-Hint wenn das Template needsMandate hat.
+              Optional: Templates die needsFile haben, zeigen einen
+              "Datei hochladen"-Hint. */}
           <div>
-            <div className="mb-2 text-[11px] uppercase tracking-wider text-slate-500">
-              Beispiele
+            <div className="mb-2 flex items-center justify-between">
+              <div className="text-[11px] uppercase tracking-wider text-slate-500">
+                Workflow-Bibliothek ({AGENT_TEMPLATES.length})
+              </div>
+              <div className="text-[10.5px] text-slate-400">
+                Click → Goal pre-fillen, dann „Agent starten"
+              </div>
             </div>
-            <div className="space-y-1.5">
-              {SUGGESTED_GOALS.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setGoal(s)}
-                  className="flex w-full items-start gap-2 rounded-md border border-slate-200 px-3 py-2 text-left text-[12.5px] leading-snug text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-white/[0.08] dark:text-slate-300 dark:hover:border-white/[0.15] dark:hover:bg-white/[0.02]"
-                >
-                  <Sparkles
-                    size={11}
-                    className="mt-0.5 shrink-0 text-slate-400"
-                  />
-                  <span className="flex-1">{s}</span>
-                  <ChevronRight
-                    size={11}
-                    className="mt-0.5 shrink-0 text-slate-400"
-                  />
-                </button>
-              ))}
+            <div className="space-y-3">
+              {TEMPLATE_CATEGORIES.map((cat) => {
+                const templates = AGENT_TEMPLATES.filter(
+                  (t) => t.category === cat.id,
+                );
+                if (templates.length === 0) return null;
+                return (
+                  <div key={cat.id}>
+                    <div className="mb-1.5 flex items-baseline gap-2 px-1">
+                      <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300">
+                        {cat.label}
+                      </span>
+                      <span className="text-[10px] text-slate-400">
+                        {cat.description}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 gap-1.5 lg:grid-cols-2">
+                      {templates.map((t) => (
+                        <TemplateCard
+                          key={t.id}
+                          template={t}
+                          onClick={() => {
+                            setGoal(t.goal);
+                            /* Auto-pick first available mandate if
+                               template needs one and none is selected
+                               yet. The lawyer can change it before
+                               clicking "Agent starten". */
+                            if (
+                              t.needsMandate &&
+                              !mandateId &&
+                              mandates.length > 0
+                            ) {
+                              setMandateId(mandates[0].id);
+                            }
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -984,6 +1017,67 @@ function StepCard({ step }: { step: StepRecord }) {
 
 /* exportDraftAsWord handles its own blob + anchor click — no local
    download helper needed here. */
+
+/* ── TemplateCard ─────────────────────────────────────────────────────
+ *
+ * One curated workflow tile. Click pre-fills the goal-input. Shows
+ * the title, 1-line description, and metadata badges (cost-band,
+ * needs-mandate hint, needs-file hint). Compact enough to grid into
+ * 2-columns on lg+ screens.
+ */
+function TemplateCard({
+  template,
+  onClick,
+}: {
+  template: AgentTemplate;
+  onClick: () => void;
+}) {
+  const costColor =
+    template.costBand === "low"
+      ? "text-emerald-600 dark:text-emerald-400"
+      : template.costBand === "medium"
+        ? "text-amber-600 dark:text-amber-400"
+        : "text-slate-500";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex flex-col items-start gap-1 rounded-md border border-slate-200 px-3 py-2 text-left transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-white/[0.08] dark:hover:border-white/[0.15] dark:hover:bg-white/[0.02]"
+    >
+      <div className="flex w-full items-baseline justify-between gap-2">
+        <span className="text-[12.5px] font-medium text-slate-900 dark:text-slate-100">
+          {template.title}
+        </span>
+        <ChevronRight size={11} className="shrink-0 text-slate-400" />
+      </div>
+      <span className="text-[11px] leading-snug text-slate-500">
+        {template.description}
+      </span>
+      <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[10px] text-slate-400">
+        <span className={costColor}>
+          ~{template.estimatedSeconds}s ·{" "}
+          {template.costBand === "low"
+            ? "günstig"
+            : template.costBand === "medium"
+              ? "mittel"
+              : "umfangreich"}
+        </span>
+        {template.needsMandate && (
+          <span className="inline-flex items-center gap-0.5">
+            <Briefcase size={9} />
+            Mandat
+          </span>
+        )}
+        {template.needsFile && (
+          <span className="inline-flex items-center gap-0.5">
+            <Paperclip size={9} />
+            Datei
+          </span>
+        )}
+      </div>
+    </button>
+  );
+}
 
 /* ── VerificationBanner ───────────────────────────────────────────────
  *
