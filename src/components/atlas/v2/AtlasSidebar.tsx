@@ -265,10 +265,10 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
             active={pathname === "/atlas"}
           />
           <SidebarItem
-            href="/atlas/mandate/new"
-            label="Neues Mandat"
+            href="/atlas/mandate"
+            label="Mandate"
             icon={<Briefcase size={14} />}
-            active={pathname === "/atlas/mandate/new"}
+            active={pathname === "/atlas/mandate"}
           />
           {/* Vault — top-level access to every mandate file the user
               has access to. Lawyers think in "documents" first, the
