@@ -16,6 +16,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { logger } from "@/lib/logger";
+import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,6 +25,18 @@ export async function GET(req: NextRequest) {
   const atlas = await getAtlasAuth();
   if (!atlas) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  /* Rate-limit at the standard `api` tier (100/min/identifier). Matches
+     the pattern used by the closest peer typeahead endpoint
+     (organizations/search). The 200ms client-debounce in the modal
+     keeps legit usage well under the cap; this guard is for abuse. */
+  const rl = await checkRateLimit("api", getIdentifier(req, atlas.userId));
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: "Rate limit exceeded", retryAfterMs: rl.reset - Date.now() },
+      { status: 429 },
+    );
   }
 
   const url = new URL(req.url);
@@ -44,6 +57,12 @@ export async function GET(req: NextRequest) {
           { name: { contains: q, mode: "insensitive" } },
           { clientName: { contains: q, mode: "insensitive" } },
         ],
+        /* AND-wrap is intentional and load-bearing. If the owner/member
+           OR sat at the same level as the search OR (name/clientName),
+           Prisma would merge them into a single OR — and the search
+           predicate would satisfy the authz predicate. Result: the
+           query would return any mandate in the org whose name matches.
+           Wrapping in AND keeps the two predicates conjunctive. */
         AND: [
           {
             OR: [
