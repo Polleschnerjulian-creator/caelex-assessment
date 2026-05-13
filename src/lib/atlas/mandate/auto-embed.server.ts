@@ -40,11 +40,12 @@ export async function autoEmbedMandateFile(
       select: {
         id: true,
         mandateId: true,
-        organizationId: true,
         uploadedByUserId: true,
         filename: true,
         mimeType: true,
         extractedText: true,
+        /* organizationId lebt auf der parent-Mandate, nicht direkt am File. */
+        mandate: { select: { organizationId: true } },
       },
     });
 
@@ -96,7 +97,7 @@ export async function autoEmbedMandateFile(
        we just need success/fail, not the row IDs). */
     await prisma.atlasKnowledgeChunk.createMany({
       data: chunks.map((text, i) => ({
-        organizationId: file.organizationId,
+        organizationId: file.mandate.organizationId,
         userId: file.uploadedByUserId,
         sourceType: "mandate_file",
         sourceRef: file.id,

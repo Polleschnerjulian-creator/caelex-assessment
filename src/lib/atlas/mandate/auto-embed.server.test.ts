@@ -43,7 +43,7 @@ describe("autoEmbedMandateFile", () => {
     vi.mocked(prisma.atlasMandateFile.findUnique).mockResolvedValue({
       id: "f1",
       mandateId: "m1",
-      organizationId: "o1",
+      mandate: { organizationId: "o1" },
       uploadedByUserId: "u1",
       filename: "image.jpg",
       mimeType: "image/jpeg",
@@ -51,8 +51,11 @@ describe("autoEmbedMandateFile", () => {
     } as never);
 
     const result = await autoEmbedMandateFile("f1");
-    expect(result.status).toBe("skipped");
-    expect(result.reason).toContain("no extracted text");
+    /* toMatchObject avoids discriminated-union narrowing complaints */
+    expect(result).toMatchObject({
+      status: "skipped",
+      reason: expect.stringContaining("no extracted text"),
+    });
     expect(prisma.atlasKnowledgeChunk.createMany).not.toHaveBeenCalled();
   });
 
@@ -60,7 +63,7 @@ describe("autoEmbedMandateFile", () => {
     vi.mocked(prisma.atlasMandateFile.findUnique).mockResolvedValue({
       id: "f1",
       mandateId: "m1",
-      organizationId: "o1",
+      mandate: { organizationId: "o1" },
       uploadedByUserId: "u1",
       filename: "doc.pdf",
       mimeType: "application/pdf",
@@ -69,8 +72,10 @@ describe("autoEmbedMandateFile", () => {
     vi.mocked(prisma.atlasKnowledgeChunk.count).mockResolvedValue(3);
 
     const result = await autoEmbedMandateFile("f1");
-    expect(result.status).toBe("skipped");
-    expect(result.reason).toContain("already embedded");
+    expect(result).toMatchObject({
+      status: "skipped",
+      reason: expect.stringContaining("already embedded"),
+    });
     expect(prisma.atlasKnowledgeChunk.createMany).not.toHaveBeenCalled();
   });
 
@@ -78,7 +83,7 @@ describe("autoEmbedMandateFile", () => {
     vi.mocked(prisma.atlasMandateFile.findUnique).mockResolvedValue({
       id: "f1",
       mandateId: "m1",
-      organizationId: "o1",
+      mandate: { organizationId: "o1" },
       uploadedByUserId: "u1",
       filename: "doc.pdf",
       mimeType: "application/pdf",
@@ -90,15 +95,19 @@ describe("autoEmbedMandateFile", () => {
     } as never);
 
     const result = await autoEmbedMandateFile("f1");
-    expect(result.status).toBe("embedded");
-    expect(result.chunkCount).toBe(2);
+    expect(result).toMatchObject({
+      status: "embedded",
+      chunkCount: 2,
+    });
     expect(prisma.atlasKnowledgeChunk.createMany).toHaveBeenCalledTimes(1);
   });
 
   it("returns 'failed' when file not found", async () => {
     vi.mocked(prisma.atlasMandateFile.findUnique).mockResolvedValue(null);
     const result = await autoEmbedMandateFile("missing");
-    expect(result.status).toBe("failed");
-    expect(result.reason).toContain("not found");
+    expect(result).toMatchObject({
+      status: "failed",
+      reason: expect.stringContaining("not found"),
+    });
   });
 });
