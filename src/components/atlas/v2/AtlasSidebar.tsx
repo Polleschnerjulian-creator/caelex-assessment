@@ -43,6 +43,7 @@ import {
   Cpu,
   FileSpreadsheet,
   Brain,
+  HelpCircle,
 } from "lucide-react";
 import type { ChatListItem, MandateListItem } from "./types";
 import { useAtlasTheme } from "@/app/(atlas)/atlas/_components/AtlasThemeProvider";
@@ -196,6 +197,15 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
           <Plus size={16} />
         </button>
         <div className="flex-1" />
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event("atlas-v2-open-tour"))}
+          title="Onboarding-Tour erneut starten"
+          aria-label="Onboarding-Tour erneut starten"
+          className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-100"
+        >
+          <HelpCircle size={14} />
+        </button>
         <ThemeToggleButton compact />
       </aside>
     );
@@ -491,6 +501,17 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
               active={pathname === "/atlas/settings"}
             />
           </div>
+          <button
+            type="button"
+            onClick={() =>
+              window.dispatchEvent(new Event("atlas-v2-open-tour"))
+            }
+            title="Onboarding-Tour erneut starten"
+            aria-label="Onboarding-Tour erneut starten"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-100"
+          >
+            <HelpCircle size={14} />
+          </button>
           <ThemeToggleButton />
         </div>
       </aside>

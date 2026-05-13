@@ -15,6 +15,7 @@
  */
 
 import { useEffect } from "react";
+import { OnboardingTour } from "./OnboardingTour";
 
 const LEGACY_KEY = "atlas-drafting-mandates";
 const DONE_KEY = "atlas-v2-mandate-migration-done";
@@ -37,7 +38,11 @@ export function AtlasV2Bootstrap() {
   useEffect(() => {
     void runMigration();
   }, []);
-  return null;
+  /* Onboarding-Tour ist self-gating (eigener localStorage-Check + Esc-
+     Handling). Wird hier mit-mounted damit sie auf jedem Atlas-Pfad
+     verfügbar ist (nicht nur Homepage), und damit der Sidebar-Help-
+     Button via Window-Event ihn re-triggern kann. */
+  return <OnboardingTour />;
 }
 
 async function runMigration() {
