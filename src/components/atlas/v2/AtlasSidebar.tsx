@@ -44,6 +44,7 @@ import {
   Cpu,
   FileSpreadsheet,
   History,
+  Brain,
 } from "lucide-react";
 import type { ChatListItem, MandateListItem } from "./types";
 import { useAtlasTheme } from "@/app/(atlas)/atlas/_components/AtlasThemeProvider";
@@ -282,6 +283,12 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
             label="Notizen"
             icon={<StickyNote size={14} />}
             active={pathname === "/atlas/notes"}
+          />
+          <SidebarItem
+            href="/atlas/knowledge"
+            label="Wissensbasis"
+            icon={<Brain size={14} />}
+            active={pathname === "/atlas/knowledge"}
           />
           <SidebarItem
             href="/atlas/draft"

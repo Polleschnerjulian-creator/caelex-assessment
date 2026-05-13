@@ -207,6 +207,8 @@ model User {
   atlasTimeEntries         AtlasTimeEntry[]     @relation("AtlasTimeEntries")
   /// Atlas Agent-Mode autonomous runs.
   atlasAgentRuns           AtlasAgentRun[]      @relation("AtlasAgentRuns")
+  /// Atlas Knowledge-Persistence chunks (Kanzlei-RAG).
+  atlasKnowledgeChunks     AtlasKnowledgeChunk[] @relation("AtlasKnowledgeChunks")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -11675,13 +11677,14 @@ model AtlasMandate {
   closedAt   DateTime?
 
   // Relations
-  chats       AtlasChat[]
-  files       AtlasMandateFile[]
-  members     AtlasMandateMember[]
-  deadlines   AtlasMandateDeadline[]
-  clauses     AtlasClause[]
-  timeEntries AtlasTimeEntry[]
-  agentRuns   AtlasAgentRun[]
+  chats           AtlasChat[]
+  files           AtlasMandateFile[]
+  members         AtlasMandateMember[]
+  deadlines       AtlasMandateDeadline[]
+  clauses         AtlasClause[]
+  timeEntries     AtlasTimeEntry[]
+  agentRuns       AtlasAgentRun[]
+  knowledgeChunks AtlasKnowledgeChunk[] @relation("AtlasKnowledgeChunks")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -11909,6 +11912,79 @@ model AtlasAgentRun {
   @@index([userId, startedAt(sort: Desc)])
   @@index([organizationId, startedAt(sort: Desc)])
   @@index([mandateId, startedAt(sort: Desc)])
+}
+
+/// Atlas V2 Knowledge-Chunk — Kanzlei-spezifische Vector-DB.
+/// Each chunk is a 500-1000 char text-segment with an OpenAI
+/// text-embedding-3-small embedding (1536 dim, stored as Float[]).
+///
+/// Sources can be: existing Schriftsätze (chunked DOCX/PDF),
+/// AtlasNotes (whole), AtlasAgentRun-Artefakte, manuell-eingegebene
+/// "wir haben in Sache X erfolgreich Y argumentiert"-Snippets.
+///
+/// Why per-org persistent knowledge: Atlas wird besser je länger
+/// die Kanzlei es nutzt. Nach 6 Monaten zitiert Atlas nicht nur
+/// EU Space Act sondern auch "DEIN Schriftsatz vom 12.03.2026".
+/// Lock-in im positiven Sinne.
+///
+/// Future-tech: stored as Float[] for portability; pgvector
+/// activation (CREATE EXTENSION vector) later for performant
+/// native similarity-search via <-> / <=> operators. Until then,
+/// cosine similarity is computed in JS on the fetched candidate
+/// set — works fine up to ~10k chunks per org.
+model AtlasKnowledgeChunk {
+  id String @id @default(cuid())
+
+  /// Org-scope — embeddings are STRICTLY tenant-isolated. A chunk
+  /// from Kanzlei A must never surface in Kanzlei B's search.
+  organizationId String
+
+  /// What kind of source this chunk represents. Determines the
+  /// rendering badge + how the RAG retrieval pipeline weights it.
+  ///   "note"            — AtlasNote (manual lawyer note)
+  ///   "schriftsatz"     — chunked from an uploaded DOCX/PDF in vault
+  ///   "memo"            — agent-mode memo artifact
+  ///   "manual"          — direct lawyer input via /atlas/knowledge
+  ///   "agent_artifact"  — generic agent-mode artifact
+  ///   "mandate_file"    — chunked AtlasMandateFile
+  sourceType String
+
+  /// Optional reference to the source row in format "<type>:<id>"
+  /// so we can backtrack to the originating note / file / artifact
+  /// without rigid FK constraints (sources may delete + reinsert).
+  sourceRef String?
+
+  /// Optional mandate-scope. When set, the chunk only surfaces in
+  /// searches scoped to that mandate (= "knowledge specific to
+  /// this matter"). Null = org-wide knowledge.
+  mandateId String?
+  mandate   AtlasMandate? @relation("AtlasKnowledgeChunks", fields: [mandateId], references: [id], onDelete: Cascade)
+
+  /// User who authored / triggered the chunk creation.
+  userId String
+  user   User   @relation("AtlasKnowledgeChunks", fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Short label shown in search results + RAG-citations.
+  title String
+
+  /// The actual chunk text — 500-1000 chars typical, larger
+  /// documents get chunked at paragraph boundaries.
+  text String
+
+  /// OpenAI text-embedding-3-small output: 1536-dim Float[].
+  /// Stored as a Postgres double precision[] column.
+  embedding Float[]
+
+  /// Optional metadata: chunkIndex, totalChunks, sourceUrl,
+  /// originalAuthor, originalDate, etc.
+  meta Json @default("{}")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([mandateId, createdAt(sort: Desc)])
+  @@index([sourceType, organizationId])
 }
 
 /// Atlas V2 Audit-Log — single source of truth for "who did what,
