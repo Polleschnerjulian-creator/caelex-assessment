@@ -752,6 +752,11 @@ export async function runChat(
                    Compliance + validity tools ignore these fields. */
                 callerUserId: input.userId,
                 callerOrgId: input.organizationId,
+                /* M2 Vault-RAG: search_mandate_vault needs the
+                   currently-attached mandate to scope retrieval.
+                   Null when no mandate is attached — the tool
+                   refuses politely. */
+                mandateId: input.mandateId ?? null,
               });
               resultContent = out.content;
               isError = out.isError;

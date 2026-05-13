@@ -2399,6 +2399,12 @@ export async function executeAtlasTool(args: {
   input: unknown;
   callerUserId: string;
   callerOrgId: string;
+  /* Atlas M2 (Vault-RAG): the mandate currently attached to the chat,
+     if any. Required by `search_mandate_vault` so the RAG retrieval
+     can be mandate-scoped. Optional everywhere else — existing call-
+     sites that don't pass it (agent/route.ts, ai-chat/route.ts) keep
+     working, the mandate-only tools just refuse politely when null. */
+  mandateId?: string | null;
 }): Promise<AtlasToolResult> {
   /* Atlas V2 Sprint 3: route compliance tools (8 engine wrappers) to
      the dedicated compliance dispatch. They are pure-data tools that
@@ -2420,6 +2426,18 @@ export async function executeAtlasTool(args: {
       input: args.input,
       callerUserId: args.callerUserId,
       callerOrgId: args.callerOrgId,
+    });
+  }
+  /* Atlas M2 Vault-RAG: search_mandate_vault is registered in
+     ATLAS_TOOLS but intentionally NOT in the AtlasToolName literal-
+     union (kept stable as the tool-set grows). Route it via a
+     runtime guard BEFORE the exhaustive switch so the never-check
+     in the default arm stays valid. */
+  if (args.name === "search_mandate_vault") {
+    return executeSearchMandateVault({
+      input: args.input,
+      callerOrgId: args.callerOrgId,
+      mandateId: args.mandateId ?? null,
     });
   }
   switch (args.name as AtlasToolName) {
@@ -2462,4 +2480,155 @@ export async function executeAtlasTool(args: {
       };
     }
   }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   search_mandate_vault — Vault-RAG (M2)
+
+   Embeds the user's query, fetches mandate-scoped chunks (org +
+   mandate + sourceType="mandate_file"), ranks by cosine-similarity,
+   and returns the top-K with fileId for citation. The chat-engine
+   filters this tool out of the tools-array when no mandate is
+   attached (Wave C / Task 5), but the gate-check below is defensive
+   in case some future caller forgets to filter.
+   ───────────────────────────────────────────────────────────────── */
+
+const SearchMandateVaultInput = z.object({
+  query: z.string().min(3).max(500),
+  limit: z.number().int().min(1).max(10).default(5),
+});
+
+async function executeSearchMandateVault(args: {
+  input: unknown;
+  callerOrgId: string;
+  mandateId: string | null;
+}): Promise<AtlasToolResult> {
+  if (!args.mandateId) {
+    return {
+      content: JSON.stringify({
+        error:
+          "Kein Mandat attached. Hänge zuerst ein Mandat an den Chat (Plus-Menü → 'Mandat anhängen').",
+      }),
+      isError: true,
+    };
+  }
+
+  const parsed = SearchMandateVaultInput.safeParse(args.input);
+  if (!parsed.success) {
+    return {
+      content: JSON.stringify({
+        error: "Bad input",
+        details: parsed.error.flatten(),
+      }),
+      isError: true,
+    };
+  }
+  const { query, limit } = parsed.data;
+
+  const { embedTexts, cosineSimilarity } =
+    await import("@/lib/atlas/knowledge/embed.server");
+
+  /* Embed the query — same OpenAI model as the upload-side embedding,
+     so they live in the same vector-space. */
+  let queryEmbedding: number[];
+  try {
+    const embeddings = await embedTexts([query]);
+    queryEmbedding = embeddings[0];
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes("OPENAI_API_KEY")) {
+      return {
+        content: JSON.stringify({
+          error:
+            "Vault-Suche ist noch nicht konfiguriert (OPENAI_API_KEY fehlt in der Env).",
+        }),
+        isError: true,
+      };
+    }
+    logger.error("[atlas/search_mandate_vault] embed failed", {
+      mandateId: args.mandateId,
+      error: msg.slice(0, 200),
+    });
+    return {
+      content: JSON.stringify({
+        error: "Embedding fehlgeschlagen",
+        details: msg.slice(0, 200),
+      }),
+      isError: true,
+    };
+  }
+
+  /* Pull all chunks for THIS mandate. Org-scoped + mandate-scoped +
+     restricted to file-derived chunks (excludes notes/memos which
+     have a separate org-wide search path). MVP-limit 5000 chunks
+     matches the existing /api/atlas/knowledge/search route — past
+     that the lawyer should migrate to pgvector. */
+  const chunks = await prisma.atlasKnowledgeChunk.findMany({
+    where: {
+      organizationId: args.callerOrgId,
+      mandateId: args.mandateId,
+      sourceType: "mandate_file",
+    },
+    take: 5000,
+    select: {
+      id: true,
+      title: true,
+      text: true,
+      sourceRef: true, // = AtlasMandateFile.id (set by auto-embed)
+      meta: true,
+      embedding: true,
+    },
+  });
+
+  if (chunks.length === 0) {
+    return {
+      content: JSON.stringify({
+        results: [],
+        candidates: 0,
+        note: "Vault enthält keine indexierten Files. Lade zuerst Files in den Mandat-Vault hoch.",
+      }),
+      isError: false,
+    };
+  }
+
+  /* Score + rank. Min-score 0.4 mirrors the existing search route's
+     default minScore — anything below that is mostly noise for
+     text-embedding-3-small. */
+  const scored = chunks
+    .map((c) => {
+      const meta = (c.meta ?? {}) as {
+        originalFilename?: string;
+        chunkIndex?: number;
+        totalChunks?: number;
+      };
+      return {
+        fileId: c.sourceRef ?? "unknown",
+        filename: meta.originalFilename ?? c.title,
+        title: c.title,
+        text: c.text,
+        chunkIndex: meta.chunkIndex ?? 0,
+        totalChunks: meta.totalChunks ?? 1,
+        score: cosineSimilarity(queryEmbedding, c.embedding),
+      };
+    })
+    .filter((s) => s.score >= 0.4);
+
+  scored.sort((a, b) => b.score - a.score);
+  const top = scored.slice(0, limit);
+
+  return {
+    content: JSON.stringify({
+      results: top.map((r) => ({
+        fileId: r.fileId,
+        filename: r.filename,
+        text: r.text,
+        chunkIndex: r.chunkIndex,
+        totalChunks: r.totalChunks,
+        score: Number(r.score.toFixed(3)),
+      })),
+      candidates: chunks.length,
+      mandateId: args.mandateId,
+    }),
+    isError: false,
+  };
 }
