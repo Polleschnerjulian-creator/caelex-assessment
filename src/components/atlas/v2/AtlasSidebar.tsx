@@ -40,10 +40,8 @@ import {
   StickyNote,
   Shield as ShieldIcon,
   ArrowLeftRight,
-  PenLine,
   Cpu,
   FileSpreadsheet,
-  History,
   Brain,
 } from "lucide-react";
 import type { ChatListItem, MandateListItem } from "./types";
@@ -176,11 +174,10 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
           aria-label="Atlas"
           className="flex h-9 items-center justify-center rounded-md px-1 text-slate-900 transition-colors hover:bg-black/[0.04] dark:text-slate-100 dark:hover:bg-white/[0.05]"
         >
-          {/* size=14 → ~42 px wide. Rail is 48 px (w-12); px-1 gives
-              40 px effective width → small clipping is acceptable for
-              the brand-feel-over-pixel-perfection trade-off. If we
-              need real space-only, drop to size=12 or widen the rail. */}
-          <AtlasMark size={14} />
+          {/* size=18 height. Aspect 2.16:1 → ~39 px wide. Rail is 48 px
+              (w-12); px-1 padding still leaves room. Bumped from 14 →
+              18 (UX feedback 2026-05-13: "atlas logo etwas größer"). */}
+          <AtlasMark size={18} />
         </button>
         <button
           type="button"
@@ -235,10 +232,14 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
             title="Atlas — zur Startseite"
             className="flex h-9 items-center gap-2 rounded-md px-1.5 text-slate-900 transition-colors hover:bg-black/[0.04] dark:text-slate-100 dark:hover:bg-white/[0.05]"
           >
-            {/* size=20 height → ~60 px wide mark. With 8 px gap +
-                Atlas-wordmark (~42 px), total ~110 px. Fits 260 px
-                sidebar comfortably with the collapse-toggle right. */}
-            <AtlasLogo size={20} withWordmark />
+            {/* size=26 height → ~56 px wide mark (aspect 2.16:1). With
+                8 px gap + Atlas-wordmark (~42 px) + collapse-toggle on
+                right (~32 px), total ~140 px in a 260 px sidebar — still
+                breathing-room. Bumped from 20 → 26 (UX feedback
+                2026-05-13: "atlas logo etwas größer"). The wordmark
+                stays text-[15px] so the mark slightly dominates — that's
+                intentional brand-restraint, the icon carries the brand. */}
+            <AtlasLogo size={26} withWordmark />
           </button>
           <button
             type="button"
@@ -290,24 +291,25 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
             icon={<Brain size={14} />}
             active={pathname === "/atlas/knowledge"}
           />
-          <SidebarItem
-            href="/atlas/draft"
-            label="Drafting Canvas"
-            icon={<PenLine size={14} />}
-            active={pathname === "/atlas/draft"}
-          />
+          {/* Agent-Mode stays — kept as a discrete entry point for
+              long-running multi-step runs that benefit from the
+              dedicated reasoning surface. The normal chat is already
+              "Powerhouse mode" (Sprint A merger) and can dispatch the
+              same engine path; this link is for users who explicitly
+              want the agent-flavoured composer with template chips. */}
           <SidebarItem
             href="/atlas/agent"
             label="Agent-Mode"
             icon={<Cpu size={14} />}
             active={pathname === "/atlas/agent"}
           />
-          <SidebarItem
-            href="/atlas/agent/history"
-            label="Agent-History"
-            icon={<History size={14} />}
-            active={pathname.startsWith("/atlas/agent/history")}
-          />
+          {/* Drafting-Canvas + Agent-History links removed (UX
+              consolidation 2026-05-13). Drafting now spawns inline
+              from any chat when Atlas detects drafting intent;
+              agent-runs stream into the normal chat history.
+              The pages /atlas/draft + /atlas/agent/history remain
+              accessible by URL for now (deep-link compatibility) but
+              no longer carry their own sidebar real-estate. */}
         </div>
 
         {/* Active mandate context — resolves from the URL path

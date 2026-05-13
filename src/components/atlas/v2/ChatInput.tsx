@@ -27,16 +27,11 @@ import { useState, useRef, useEffect } from "react";
 import {
   ArrowUp,
   Plus,
-  Globe,
-  BookOpenText,
-  Wrench,
   Mic,
   MicOff,
   Square,
   Loader2,
-  Check,
   Paperclip,
-  Image as ImageIcon,
   X,
 } from "lucide-react";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
@@ -82,26 +77,25 @@ const ACCEPTED_IMAGE_MIMES = new Set<ChatImageAttachment["mediaType"]>([
   "image/webp",
 ]);
 
+/* All tools always-on (UX simplification 2026-05-13). The lawyer
+   shouldn't have to think about which tool-bundle is active —
+   Atlas decides per-turn which to actually invoke. The toggle-UI
+   was visual noise + a foot-gun (lawyer accidentally disabled
+   Korpus → Atlas couldn't search → blamed the tool).
+
+   `web` stays true as well; the per-turn cost is small and most
+   queries don't trigger web-search anyway. */
 const DEFAULT_TOGGLES = {
   korpus: true,
   compliance: true,
   comparison: true,
   drafting: true,
   validity: true,
-  documents: false,
-  web: false,
+  documents: true,
+  web: true,
   workflow: true,
   mandate: true,
 };
-
-const TOOL_BUNDLES = [
-  { key: "compliance", label: "Compliance" },
-  { key: "comparison", label: "Vergleich" },
-  { key: "drafting", label: "Drafting" },
-  { key: "validity", label: "Validity" },
-  { key: "workflow", label: "Workflow" },
-  { key: "mandate", label: "Mandate" },
-] as const;
 
 export function ChatInput({
   initialValue,
@@ -111,7 +105,11 @@ export function ChatInput({
   contextStats,
 }: Props) {
   const [text, setText] = useState(initialValue ?? "");
-  const [toggles, setToggles] = useState(DEFAULT_TOGGLES);
+  /* Tool-toggles are kept in component state so the existing chat-
+     engine contract (toolToggles record on submit) stays intact, but
+     the setter is gone — DEFAULT_TOGGLES = all true and the user can
+     no longer disable them (UX simplification 2026-05-13). */
+  const [toggles] = useState(DEFAULT_TOGGLES);
   const [plusOpen, setPlusOpen] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -124,7 +122,6 @@ export function ChatInput({
   const taRef = useRef<HTMLTextAreaElement>(null);
   const popRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const imageInputRef = useRef<HTMLInputElement>(null);
 
   /* Voice-input integration. The hook handles the full MediaRecorder
      → /api/atlas/transcribe lifecycle and returns a transcript that
@@ -255,7 +252,7 @@ export function ChatInput({
       const block = `\n\n--- Anhang: ${file.name} ---\n${trimmed}\n--- /Anhang ---\n\n`;
       setText((prev) => (prev ? prev + block : block.trimStart()));
       taRef.current?.focus();
-    } catch (e) {
+    } catch {
       setFileError("Datei konnte nicht gelesen werden.");
     }
   };
@@ -311,12 +308,6 @@ export function ChatInput({
   const onPickFile = () => {
     setPlusOpen(false);
     fileInputRef.current?.click();
-  };
-
-  const onFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (f) void handleTextFile(f);
-    e.target.value = "";
   };
 
   const onDragOver = (e: React.DragEvent) => {
@@ -424,19 +415,23 @@ export function ChatInput({
     }
   };
 
-  const onPickImage = () => {
-    setPlusOpen(false);
-    imageInputRef.current?.click();
-  };
-
-  const onImageInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []);
-    /* Sequential await keeps the cap-check honest — parallel awaits
-       would let 8 files race past the MAX_IMAGES_PER_TURN gate. */
-    for (const f of files) {
-      await handleImageFile(f);
+  /* Unified file-router (UX simplification 2026-05-13). One picker,
+     one handler — detect by MIME / extension and route to the right
+     pipeline (image-vision / PDF-extract / DOCX-extract / text-
+     splice). The lawyer doesn't care if it's a "Foto" or "Datei" —
+     they just want to share something with Atlas. */
+  const handleAnyFile = async (file: File) => {
+    const lower = file.name.toLowerCase();
+    const isImg =
+      (file.type || "").startsWith("image/") ||
+      /\.(jpe?g|png|gif|webp)$/i.test(lower);
+    if (isImg) {
+      await handleImageFile(file);
+      return;
     }
-    e.target.value = "";
+    /* handleTextFile already routes PDFs / DOCX to handleBinaryDocument
+       internally — re-using it as the catch-all for non-image files. */
+    await handleTextFile(file);
   };
 
   const removeImage = (idx: number) => {
@@ -455,10 +450,6 @@ export function ChatInput({
     setText("");
     setImages([]);
     setFileError(null);
-  };
-
-  const toggle = (key: keyof typeof toggles) => {
-    setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const hasText = text.trim().length > 0;
@@ -493,22 +484,25 @@ export function ChatInput({
           </div>
         </div>
       )}
-      {/* Hidden file input — opened by Plus-Menu "Datei hochladen". */}
+      {/* Single unified file input — opened by Plus-Menu "Datei
+          oder Bild hochladen". The handler routes by MIME / ext to
+          either the image-vision pipeline (JPEG/PNG/GIF/WEBP), the
+          PDF/DOCX-extract pipeline, or direct text-splice. */}
       <input
         ref={fileInputRef}
         type="file"
-        accept=".txt,.md,.markdown,.csv,.html,.htm,.json,.xml,.log,.pdf,.docx,text/plain,text/markdown,text/csv,text/html,application/json,text/xml,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        onChange={onFileInputChange}
-        className="hidden"
-        aria-hidden="true"
-      />
-      {/* Hidden image input — opened by Plus-Menu "Foto hochladen". */}
-      <input
-        ref={imageInputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/gif,image/webp,.jpg,.jpeg,.png,.gif,.webp"
+        accept=".txt,.md,.markdown,.csv,.html,.htm,.json,.xml,.log,.pdf,.docx,.jpg,.jpeg,.png,.gif,.webp,text/plain,text/markdown,text/csv,text/html,application/json,text/xml,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png,image/gif,image/webp"
         multiple
-        onChange={(e) => void onImageInputChange(e)}
+        onChange={async (e) => {
+          const files = Array.from(e.target.files ?? []);
+          /* Sequential await keeps the cap-check honest — parallel
+             awaits would let 8 image-files race past the
+             MAX_IMAGES_PER_TURN gate. */
+          for (const f of files) {
+            await handleAnyFile(f);
+          }
+          e.target.value = "";
+        }}
         className="hidden"
         aria-hidden="true"
       />
@@ -592,25 +586,19 @@ export function ChatInput({
       />
 
       <div className="mt-1 flex items-center gap-1">
-        {/* The single Plus button — opens the rich popover with every
-            affordance the row used to expose inline. */}
+        {/* The single Plus button — opens a minimal popover with the
+            file-upload affordance. Tools + Recherche-Toggles wurden
+            entfernt (UX simplification 2026-05-13) — Atlas läuft mit
+            allen Tools immer auto-aktiv. */}
         <div ref={popRef} className="relative">
           <IconButton
-            title="Anhängen, Recherche, Tools"
+            title="Datei oder Bild hochladen"
             active={plusOpen}
             onClick={() => setPlusOpen((v) => !v)}
           >
             <Plus size={16} />
           </IconButton>
-          {plusOpen && (
-            <PlusMenu
-              toggles={toggles}
-              onToggle={toggle}
-              onClose={() => setPlusOpen(false)}
-              onPickFile={onPickFile}
-              onPickImage={onPickImage}
-            />
-          )}
+          {plusOpen && <PlusMenu onPickFile={onPickFile} />}
         </div>
 
         <div className="flex-1" />
@@ -693,113 +681,50 @@ export function ChatInput({
 
 /* ── Plus-menu popover ───────────────────────────────────────────────── */
 
-function PlusMenu({
-  toggles,
-  onToggle,
-  onClose: _onClose,
-  onPickFile,
-  onPickImage,
-}: {
-  toggles: typeof DEFAULT_TOGGLES;
-  onToggle: (k: keyof typeof DEFAULT_TOGGLES) => void;
-  onClose: () => void;
-  onPickFile: () => void;
-  onPickImage: () => void;
-}) {
-  /* Cleaner popover — light Section labels (sentence-case, kein
-     uppercase/tracking-wider), mehr Padding, weniger sichtbare
-     Divider, einheitlicher Row-Padding für ruhiges Erscheinungsbild.
-     Closes the visual-noise gap to ChatGPT's plus-menu reference. */
+/**
+ * Minimal single-entry popover (UX simplification 2026-05-13).
+ *
+ * Was: 3 Sections (Anhängen, Recherche, Tools) × ~10 rows total — opens
+ *      UPWARDS via `bottom-full mb-2`. The lawyer's brain had to
+ *      decide which tools to enable per turn AND which file-flavour
+ *      to upload. Both decisions were noise.
+ *
+ * Now: ONE row — "Datei oder Bild hochladen" — opens DOWNWARDS via
+ *      `top-full mt-2` (matches Claude.ai / ChatGPT muscle memory).
+ *      File-router auto-detects image vs text/PDF/DOCX based on MIME
+ *      / extension and dispatches to the right pipeline. All tools
+ *      always-on; Atlas decides per-turn which to actually invoke.
+ *
+ * Helper components (MenuRow / MenuSection / MenuDivider) are kept
+ * exported-internal for potential future re-introduction (e.g. an
+ * eventual "Insert from mandate file" entry), but only MenuRow is
+ * currently called.
+ */
+function PlusMenu({ onPickFile }: { onPickFile: () => void }) {
   return (
-    <div className="absolute bottom-full left-0 z-30 mb-2 w-[280px] overflow-hidden rounded-2xl border border-slate-200 bg-white py-2 shadow-[0_12px_32px_rgba(0,0,0,0.12)] dark:border-white/[0.08] dark:bg-[#2a2a2a] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)]">
-      {/* Anhängen */}
-      <MenuSection label="Anhängen">
+    <div className="absolute left-0 top-full z-30 mt-2 w-[260px] overflow-hidden rounded-2xl border border-slate-200 bg-white py-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.12)] dark:border-white/[0.08] dark:bg-[#2a2a2a] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)]">
+      <div className="px-1">
         <MenuRow
           icon={<Paperclip size={14} />}
-          label="Datei hochladen"
-          hint="PDF, DOCX, TXT, MD"
+          label="Datei oder Bild hochladen"
+          hint="PDF, DOCX, TXT, MD, JPG, PNG"
           onClick={onPickFile}
         />
-        <MenuRow
-          icon={<ImageIcon size={14} />}
-          label="Foto hochladen"
-          hint="JPEG, PNG, GIF"
-          onClick={onPickImage}
-        />
-      </MenuSection>
-
-      <MenuDivider />
-
-      {/* Recherche */}
-      <MenuSection label="Recherche">
-        <MenuRow
-          icon={<Globe size={14} />}
-          label="Web-Suche"
-          checked={toggles.web}
-          onClick={() => onToggle("web")}
-        />
-        <MenuRow
-          icon={<BookOpenText size={14} />}
-          label="Atlas-Korpus"
-          checked={toggles.korpus}
-          onClick={() => onToggle("korpus")}
-        />
-      </MenuSection>
-
-      <MenuDivider />
-
-      {/* Tools */}
-      <MenuSection label="Tools">
-        {TOOL_BUNDLES.map((b) => {
-          const on = toggles[b.key as keyof typeof toggles];
-          return (
-            <MenuRow
-              key={b.key}
-              icon={<Wrench size={14} className="opacity-50" />}
-              label={b.label}
-              checked={on}
-              onClick={() => onToggle(b.key as keyof typeof toggles)}
-            />
-          );
-        })}
-      </MenuSection>
-    </div>
-  );
-}
-
-function MenuSection({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <div className="px-3 pb-1 pt-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
-        {label}
       </div>
-      <div className="px-1">{children}</div>
     </div>
   );
-}
-
-function MenuDivider() {
-  return <div className="mx-3 my-1.5 h-px bg-slate-100 dark:bg-white/[0.05]" />;
 }
 
 function MenuRow({
   icon,
   label,
   hint,
-  checked,
   onClick,
   disabled,
 }: {
   icon: React.ReactNode;
   label: string;
   hint?: string;
-  checked?: boolean;
   onClick?: () => void;
   disabled?: boolean;
 }) {
@@ -819,17 +744,6 @@ function MenuRow({
       {hint && (
         <span className="shrink-0 text-[10.5px] text-slate-400 dark:text-slate-500">
           {hint}
-        </span>
-      )}
-      {checked !== undefined && !disabled && (
-        <span className="shrink-0">
-          {checked ? (
-            <Check size={13} className="text-slate-700 dark:text-slate-300" />
-          ) : (
-            <span className="text-[10.5px] text-slate-400 dark:text-slate-500">
-              aus
-            </span>
-          )}
         </span>
       )}
     </button>
