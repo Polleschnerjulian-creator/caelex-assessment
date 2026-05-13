@@ -42,6 +42,7 @@ import {
   ArrowLeftRight,
   PenLine,
   Cpu,
+  FileSpreadsheet,
 } from "lucide-react";
 import type { ChatListItem, MandateListItem } from "./types";
 import { useAtlasTheme } from "@/app/(atlas)/atlas/_components/AtlasThemeProvider";
@@ -454,6 +455,12 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
               label="Redline"
               icon={<ArrowLeftRight size={12} />}
               active={pathname === "/atlas/tools/redline"}
+            />
+            <NavLink
+              href="/atlas/exports/datev"
+              label="DATEV-Export"
+              icon={<FileSpreadsheet size={12} />}
+              active={pathname === "/atlas/exports/datev"}
             />
           </Section>
         </div>
