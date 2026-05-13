@@ -535,6 +535,38 @@ The agent should render this as a chronologically-sorted list, not a generic tab
       },
     },
   },
+
+  {
+    name: "search_mandate_vault",
+    description: `Durchsucht die Vault-Files des aktuell angehängten Mandats nach semantischer Ähnlichkeit zur Query (RAG). Nur verfügbar wenn Chat einem Mandat zugewiesen ist — die chat-engine filtert dieses Tool raus wenn kein Mandat attached ist.
+
+Returns up to \`limit\` Treffer (default 5, max 10). Jeder Treffer enthält: \`fileId\` (für Citation-Link), \`filename\`, \`text\` (der relevante Chunk), \`score\` (cosine 0..1), und \`chunkIndex/totalChunks\` für Quellenangabe.
+
+Use cases:
+ - "Was steht im Schriftsatz vom 12.3. zur Frequenzkoordination?"
+ - "Find die Stelle im BNetzA-Bescheid wo die Widerspruchsfrist genannt wird"
+ - "Welche Files erwähnen den Antrag XY?"
+
+Cite sources in your reply with markdown links: \`[Mandats-Datei: filename.pdf](/atlas/mandate/<mandateId>/vault/<fileId>)\`. The chat-view renders these as clickable file references.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description:
+            "Free-text query — was suchst du im Vault? Mind. 3 Zeichen.",
+        },
+        limit: {
+          type: "integer",
+          description: "Max number of chunks to return (default 5, max 10).",
+          default: 5,
+          minimum: 1,
+          maximum: 10,
+        },
+      },
+      required: ["query"],
+    },
+  },
 ];
 
 /* Atlas V2 Sprint 3-5: tool bundles merged into the canonical
