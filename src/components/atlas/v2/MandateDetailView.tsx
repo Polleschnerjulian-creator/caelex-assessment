@@ -3,16 +3,23 @@
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
- * Atlas V2 — Mandate detail view (UI refresh, theme-aware).
+ * Atlas V2 — Mandate detail view (M1 layout revamp, theme-aware).
  *
- * Layout (Claude-Projects-style):
+ * Single-page-scroll layout (no tabs) with clearly delimited sections,
+ * top-down in the order the lawyer needs them:
+ *
  *   ┌─ Header (name, client, status, jurisdiction badges) ──────────┐
- *   ├─ Inline new-chat composer (mandate-scoped) ───────────────────┤
- *   ├─ 2-col grid:                                                  │
- *   │   ◇ Custom Instructions editor                                │
- *   │   ◇ Members list + add form                                   │
- *   ├─ Chats in this mandate (full-width list)                      │
- *   └─ Files (R2-backed upload + extracted-text indexing)            │
+ *   ├─ Briefing-Slot (M1 placeholder — M3 replaces with auto-briefing)
+ *   ├─ Composer: „Neuer Chat in diesem Mandat" ───────────────────┤
+ *   ├─ Chats in this mandate ────────────────────────────────────┤
+ *   ├─ Vault (files, R2-backed upload + extracted-text indexing) ─┤
+ *   ├─ Deadlines (Fristen) ──────────────────────────────────────┤
+ *   ├─ Stundenerfassung (preserved daily-driver tool) ───────────┤
+ *   ├─ Mitglieder ──────────────────────────────────────────────┤
+ *   └─ Custom Instructions (collapsed by default) ──────────────┘
+ *
+ * Each section uses `<section id="…" class="mb-8 scroll-mt-6">` so anchor-jumps
+ * (e.g. `#chats`, `#vault`) scroll the section heading clear of any sticky bar.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -28,6 +35,8 @@ import {
   FileText,
   Archive,
   Loader2,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import type { MandateDetail } from "./mandate-types";
 import { MandateInstructionsEditor } from "./MandateInstructionsEditor";
@@ -53,6 +62,9 @@ export function MandateDetailView({ mandateId }: Props) {
      Independent from the mandate-detail reload so we don't re-render
      the whole page just because a file landed. */
   const [filesRefreshKey, setFilesRefreshKey] = useState(0);
+  /* Custom Instructions is collapsed by default (M1 layout): power-feature,
+     not something the lawyer touches every session. */
+  const [instructionsOpen, setInstructionsOpen] = useState(false);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -201,11 +213,35 @@ export function MandateDetailView({ mandateId }: Props) {
         </div>
       </header>
 
-      {/* Scrollable content */}
+      {/* Scrollable content — single-page-scroll, NO tabs */}
       <div className="flex-1 overflow-y-auto px-6 py-6">
-        <div className="mx-auto max-w-5xl space-y-8">
-          {/* Inline new-chat composer */}
-          <section>
+        <div className="mx-auto max-w-5xl">
+          {/* Briefing-Slot — M1 placeholder, wird in M3 mit echtem Auto-Briefing ersetzt */}
+          <section
+            id="briefing"
+            className="mb-6 scroll-mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-white/[0.08] dark:bg-white/[0.02]"
+          >
+            <div className="flex items-start gap-3">
+              <span className="text-xl" aria-hidden="true">
+                🧠
+              </span>
+              <div>
+                <h3 className="text-[13px] font-medium text-slate-700 dark:text-slate-200">
+                  Briefing
+                </h3>
+                <p className="mt-1 text-[12.5px] text-slate-500 dark:text-slate-400">
+                  Auto-Briefing („Wo stehen wir?") kommt in M3. Solange: öffne
+                  einen der Chats unten oder lege neue Files / Deadlines an.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Composer — „Neuer Chat in diesem Mandat" */}
+          <section id="new-chat" className="mb-8 scroll-mt-6">
+            <h2 className="mb-3 text-[14px] font-medium text-slate-700 dark:text-slate-200">
+              Neuer Chat in diesem Mandat
+            </h2>
             <MandateNewChatComposer
               mandateId={mandate.id}
               mandateName={mandate.name}
@@ -213,58 +249,19 @@ export function MandateDetailView({ mandateId }: Props) {
             />
           </section>
 
-          {/* 2-col: Instructions + Members */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <section>
-              <SectionTitle>Custom Instructions</SectionTitle>
-              <MandateInstructionsEditor
-                mandateId={mandate.id}
-                initialValue={mandate.customInstructions ?? ""}
-                onSaved={(v) =>
-                  setMandate((m) => (m ? { ...m, customInstructions: v } : m))
-                }
-              />
-            </section>
-
-            <section>
-              <SectionTitle>Mitglieder</SectionTitle>
-              <MandateMembersList
-                mandateId={mandate.id}
-                members={mandate.members}
-                ownerUserId={mandate.ownerUserId}
-                onChanged={() => void reload()}
-              />
-            </section>
-          </div>
-
-          {/* Deadlines + Stundenerfassung side-by-side on desktop —
-              two daily-driver tools for the lawyer. */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <section>
-              <SectionTitle>Fristen</SectionTitle>
-              <MandateDeadlines
-                mandateId={mandate.id}
-                disabled={isArchived || isClosed}
-              />
-            </section>
-            <section>
-              <SectionTitle>Stundenerfassung</SectionTitle>
-              <MandateTimeEntries
-                mandateId={mandate.id}
-                disabled={isArchived || isClosed}
-              />
-            </section>
-          </div>
-
-          {/* Chats list (full-width) */}
-          <section>
-            <SectionTitle>Chats in diesem Mandat</SectionTitle>
+          {/* Chats */}
+          <section id="chats" className="mb-8 scroll-mt-6">
+            <h2 className="mb-3 text-[14px] font-medium text-slate-700 dark:text-slate-200">
+              Chats ({mandate._count.chats})
+            </h2>
             <MandateChatsList chats={mandate.chats} mandateId={mandate.id} />
           </section>
 
-          {/* Files (R2-backed) */}
-          <section>
-            <SectionTitle>Dateien</SectionTitle>
+          {/* Vault — files (R2-backed upload + extracted-text indexing) */}
+          <section id="vault" className="mb-8 scroll-mt-6">
+            <h2 className="mb-3 text-[14px] font-medium text-slate-700 dark:text-slate-200">
+              Vault ({mandate._count.files})
+            </h2>
             <div className="space-y-3">
               <MandateFileUpload
                 mandateId={mandate.id}
@@ -281,6 +278,70 @@ export function MandateDetailView({ mandateId }: Props) {
               steht in der Mission-Spec zu Frequenzen?". TXT/MD/HTML/CSV, PDF,
               DOCX und XLSX werden automatisch text-extrahiert.
             </p>
+          </section>
+
+          {/* Deadlines (Fristen) */}
+          <section id="deadlines" className="mb-8 scroll-mt-6">
+            <h2 className="mb-3 text-[14px] font-medium text-slate-700 dark:text-slate-200">
+              Deadlines
+            </h2>
+            <MandateDeadlines
+              mandateId={mandate.id}
+              disabled={isArchived || isClosed}
+            />
+          </section>
+
+          {/* Stundenerfassung (preserved — second daily-driver tool for the lawyer) */}
+          <section id="time-entries" className="mb-8 scroll-mt-6">
+            <h2 className="mb-3 text-[14px] font-medium text-slate-700 dark:text-slate-200">
+              Stundenerfassung
+            </h2>
+            <MandateTimeEntries
+              mandateId={mandate.id}
+              disabled={isArchived || isClosed}
+            />
+          </section>
+
+          {/* Members */}
+          <section id="members" className="mb-8 scroll-mt-6">
+            <h2 className="mb-3 text-[14px] font-medium text-slate-700 dark:text-slate-200">
+              Mitglieder ({mandate._count.members})
+            </h2>
+            <MandateMembersList
+              mandateId={mandate.id}
+              members={mandate.members}
+              ownerUserId={mandate.ownerUserId}
+              onChanged={() => void reload()}
+            />
+          </section>
+
+          {/* Custom Instructions — collapsed by default */}
+          <section id="custom-instructions" className="mb-8 scroll-mt-6">
+            <button
+              type="button"
+              onClick={() => setInstructionsOpen((v) => !v)}
+              aria-expanded={instructionsOpen}
+              aria-controls="custom-instructions-body"
+              className="mb-3 inline-flex items-center gap-1.5 text-[14px] font-medium text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
+            >
+              {instructionsOpen ? (
+                <ChevronDown size={14} className="shrink-0" />
+              ) : (
+                <ChevronRight size={14} className="shrink-0" />
+              )}
+              <h2 className="inline">Custom Instructions</h2>
+            </button>
+            {instructionsOpen && (
+              <div id="custom-instructions-body">
+                <MandateInstructionsEditor
+                  mandateId={mandate.id}
+                  initialValue={mandate.customInstructions ?? ""}
+                  onSaved={(v) =>
+                    setMandate((m) => (m ? { ...m, customInstructions: v } : m))
+                  }
+                />
+              </div>
+            )}
           </section>
         </div>
       </div>
@@ -316,13 +377,5 @@ function StatusPill({ status }: { status: string }) {
     <span className="rounded border border-emerald-300 bg-emerald-50 px-1.5 py-0.5 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
       Aktiv
     </span>
-  );
-}
-
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-      {children}
-    </h2>
   );
 }
