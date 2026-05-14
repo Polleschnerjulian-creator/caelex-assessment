@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Started:** 2026-05-14
-**Last updated:** 2026-05-14 (Wave 3 closed)
+**Last updated:** 2026-05-14 (Wave 4 closed)
 **Owner:** JP (controller) + Claude (executor)
 **Goal:** Jeden einzelnen Audit-Finding zu "best possible state" prozessieren. Keine offenen Findings bleiben undone oder unbegründet-deferred. Wenn dieser Tracker auf 0 offene Findings steht, ist Atlas V2 in produktiver Qualität.
 
@@ -70,18 +70,19 @@ Jedes Mal wenn ein Finding angegangen wird:
 
 ```
 Total findings:    80
-☑️ Done:           19   (Wave 1: S1+C7+C8+C9+H17 d9cf2640;
+☑️ Done:           28   (Wave 1: S1+C7+C8+C9+H17 d9cf2640;
                           Wave 2: C1+C2+C3+C4+C5+C6+H18+H19+H20+H21 ab71c895;
-                          Wave 3: H1+H23+H24+H25 7c19893d)
+                          Wave 3: H1+H23+H24+H25 7c19893d;
+                          Wave 4: H27+H28+H29+H30+H31+H32+H33+M37+M38 f8079519)
 ⏳ In progress:     0
 ⏭️ Deferred:        0
-☐ Open:           61
+☐ Open:           52
 
 By severity:
   🚨 Shipping:    1   (✅ 1, ☐ 0)
-  🔴 Critical:    9   (✅ 9, ☐ 0)  ← all critical findings closed!
-  🟠 High:       33   (✅ 9, ☐ 24)
-  🟡 Medium:     45   (☐ 45)
+  🔴 Critical:    9   (✅ 9, ☐ 0)
+  🟠 High:       33   (✅ 16, ☐ 17)
+  🟡 Medium:     45   (✅ 2, ☐ 43)
   🟢 Low:        19   (☐ 19)
 ```
 
@@ -459,7 +460,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 4
 - **Status:** ☐ Open
 
-#### H27 ☐ Modals haben kein focus-trap (MandateAttachModal, OnboardingTour, ExportMenu)
+#### H27 ✅ Modals haben kein focus-trap (MandateAttachModal, OnboardingTour, ExportMenu) — fixed in `f8079519`
 
 - **File:** Multiple
 - **Fix:** Implement focus-trap utility (capture initial focus, restrict Tab to descendants, restore focus to opener on close).
@@ -467,7 +468,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 4
 - **Status:** ☐ Open
 
-#### H28 ☐ Modals haben kein role="dialog" aria-modal
+#### H28 ✅ Modals haben kein role="dialog" aria-modal — fixed in `f8079519`
 
 - **File:** `MandateAttachModal.tsx:113`, `OnboardingTour.tsx:140`
 - **Fix:** Add `role="dialog" aria-modal="true" aria-labelledby="..."`.
@@ -475,7 +476,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 4
 - **Status:** ☐ Open
 
-#### H29 ☐ Confidence-Heatmap Tooltip auf `<p title="...">` unsichtbar auf Mobile/Touch
+#### H29 ✅ Confidence-Heatmap Tooltip auf `<p title="...">` unsichtbar auf Mobile/Touch — fixed in `f8079519`
 
 - **File:** `src/components/atlas/v2/MarkdownContent.tsx:368-377`
 - **Fix:** Sichtbares Icon (✓/⚠) inside paragraph oder one-line legend top-of-message.
@@ -483,7 +484,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 4
 - **Status:** ☐ Open
 
-#### H30 ☐ Inline Citation-Pills nutzen NUR Color für Validity
+#### H30 ✅ Inline Citation-Pills nutzen NUR Color für Validity — fixed in `f8079519`
 
 - **File:** `src/components/atlas/v2/MarkdownContent.tsx:381-399`
 - **Fix:** Status-Glyph (filled vs hollow vs ring) zusätzlich zu color encoding.
@@ -491,7 +492,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 4
 - **Status:** ☐ Open
 
-#### H31 ☐ Mandate-Chip "X" Button 16×16px (unter iOS 44px-Min)
+#### H31 ✅ Mandate-Chip "X" Button 16×16px (unter iOS 44px-Min) — fixed in `f8079519`
 
 - **File:** `src/components/atlas/v2/MandateAttachChip.tsx:45-54`
 - **Fix:** Bigger touch zone (`h-9 w-9` mit innerem icon) ODER min-h-[44px] min-w-[44px] tap-zone.
@@ -499,7 +500,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 4
 - **Status:** ☐ Open
 
-#### H32 ☐ SidebarSearch hat keine Esc/Pfeil-Navigation in Results
+#### H32 ✅ SidebarSearch hat keine Esc/Pfeil-Navigation in Results — fixed in `f8079519`
 
 - **File:** `src/components/atlas/v2/AtlasSidebar.tsx:649-662`
 - **Fix:** Keydown Esc + arrow nav, role=combobox + role=listbox + aria-activedescendant.
@@ -507,7 +508,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 4
 - **Status:** ☐ Open
 
-#### H33 ☐ ContextWindowIndicator hover-popover hat keinen Esc/click-outside
+#### H33 ✅ ContextWindowIndicator hover-popover hat keinen Esc/click-outside — fixed in `f8079519`
 
 - **File:** `src/components/atlas/v2/ContextWindowIndicator.tsx:94-172`
 - **Fix:** Touch-toggle + click-outside handler + Esc.
@@ -768,14 +769,14 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 9
 - **Status:** ☐ Open
 
-#### M37 ☐ Mobile-Sidebar-Backdrop trapped no focus + body scrollt weiter
+#### M37 ✅ Mobile-Sidebar-Backdrop trapped no focus + body scrollt weiter — fixed in `f8079519`
 
 - **File:** `src/components/atlas/v2/AtlasSidebar.tsx:218-224`
 - **Fix:** `body.style.overflow=hidden` + focus-trap while expanded mobile.
 - **Wave:** 4
 - **Status:** ☐ Open
 
-#### M38 ☐ prefers-reduced-motion nirgendwo respected
+#### M38 ✅ prefers-reduced-motion nirgendwo respected — fixed in `f8079519`
 
 - **File:** Multiple — search for `animate-`, `transition-all`, `hover:scale-`
 - **Fix:** `motion-reduce:animate-none motion-reduce:transition-none` variants.
@@ -999,3 +1000,4 @@ Diese sind in der Compliance-Konversation separat dokumentiert.
 - **2026-05-14:** Wave 1 closed (commit `d9cf2640`). 5/80 done — S1, C7, C8, C9, H17.
 - **2026-05-14:** Wave 2 closed (commit `ab71c895` + db-push). 15/80 done — added C1, C2, C3, C4, C5, C6, H18, H19, H20, H21. **All Critical findings closed!** 16 files changed, +533/-190 lines, 6 new schema FK relations + 2 soft-pointer fixes + R2-cleanup helper.
 - **2026-05-14:** Wave 3 closed (commit `7c19893d`). 19/80 done — added H1, H23, H24, H25. Streaming-resilience + cost-control + auto-scroll-respect. 4 files changed, +421/-52 lines. Mid-stream-disconnect persistiert jetzt audit-trail-vollständig; client cancelled fetches bei navigation; auto-scroll respektiert user reading-position.
+- **2026-05-14:** Wave 4 closed (commit `f8079519`). 28/80 done — added H27, H28, H29, H30, H31, H32, H33, M37, M38. A11y baseline: 3 modals + mobile-sidebar focus-trap + role/aria-modal, confidence-glyph + citation-pill greyscale-readable, 44px touch-targets, sidebar-search keyboard-nav, context-window-popover touch-fähig, prefers-reduced-motion durchgängig (33 motion-reduce-variants über 17 atlas/v2-files). 20 files changed, +604/-70 lines.
