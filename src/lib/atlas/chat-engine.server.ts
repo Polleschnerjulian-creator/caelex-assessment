@@ -31,6 +31,7 @@
 
 import "server-only";
 import type Anthropic from "@anthropic-ai/sdk";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { buildAnthropicClient } from "@/lib/atlas/anthropic-client";
 import { appendAtlasAudit } from "@/lib/atlas/audit-log.server";
@@ -628,7 +629,57 @@ export async function runChat(
          user sees a stalled stream with no error event. */
       let loopExitedWithFinalAnswer = false;
 
+      /* AUDIT-FIX H1: Persisted assistant-message verloren wenn Stream
+         mid-loop disconnected.
+         ──────────────────────────────────────────────────────────────
+         Problem: Vor diesem Fix wurde die assistant-message ERST am
+         Ende von runChat() persistiert — wenn der Client mid-stream
+         wegnavigiert, die Connection dropt, ein Tool-Call hängt oder
+         Anthropic ein Server-Error wirft, wird das `prisma.atlasMessage.
+         create({...role:"assistant"...})` nie erreicht. Die User-Message
+         ist da, die Assistant-Antwort fehlt → Chat-history korrupt +
+         Audit-trail unvollständig (rechtliche Anforderung: jede
+         Anfrage muss einen Audit-Eintrag haben).
+
+         Fix: CREATE-then-UPDATE Pattern. Wir legen DIREKT nach
+         `chat_started` eine Platzhalter-Row an mit:
+           - content: []  (leer, Modell hat noch nichts gesagt)
+           - toolsUsed: [] (leer)
+           - citations: { _streamingPlaceholder: true } (Sentinel,
+             erkennbar im UI + bei späterer Migration)
+
+         Am Ende des erfolgreichen runs UPDATEN wir die Row mit
+         finalen content/tokens/costs/toolsUsed.
+
+         Wenn der Stream mid-loop bricht:
+           - catch-block UPDATE-t die Row mit einem error-Sentinel +
+             einer kurzen Fehlermeldung als content
+           - Loop-Exhaustion-Path UPDATE-t analog mit incomplete-Sentinel
+
+         So gibt es IMMER eine AtlasMessage-Row für die assistant-side,
+         egal wo der Stream abbricht.
+
+         Note: assistantMessageId is `null` until the placeholder is
+         persisted (first action inside the try). All catch-block
+         updates are guarded against this so a CREATE-failure during
+         placeholder doesn't trigger an UPDATE on a non-existent row. */
+      let assistantMessageId: string | null = null;
+
       try {
+        /* AUDIT-FIX H1: persist placeholder upfront so any stream
+           interruption past this point still leaves a row. */
+        const assistantPlaceholder = await prisma.atlasMessage.create({
+          data: {
+            chatId,
+            role: "assistant",
+            content: [] as unknown as object,
+            toolsUsed: [],
+            citations: { _streamingPlaceholder: true } as unknown as object,
+          },
+          select: { id: true },
+        });
+        assistantMessageId = assistantPlaceholder.id;
+
         let iter = 0;
         while (iter < MAX_TOOL_ITERATIONS) {
           iter++;
@@ -847,14 +898,20 @@ export async function runChat(
 
         /* AUDIT-FIX C7: Loop exhausted without a final-answer turn —
            model wanted to keep calling tools but we hit the iter cap.
-           Surface as an explicit error event + skip persistence
-           (would orphan tool_use blocks + confuse next-turn replay).
-           The outer try/finally still runs to close the controller. */
+           Surface as an explicit error event.
+
+           AUDIT-FIX H1 (overlay on C7): We DO persist a stub-row in
+           this case — the placeholder-row already exists, and leaving
+           it as an empty placeholder is worse than marking it
+           explicitly as "tool-loop exhausted". Auditors need to see
+           that an exchange happened + why it failed. The previous
+           "skip persistence" comment was correct about not orphaning
+           tool_use blocks for sanitiseHistoryForApi — we sidestep
+           that by writing a TEXT-ONLY block (no tool_use), so the
+           replay-on-next-turn flow stays valid. */
         if (!loopExitedWithFinalAnswer) {
-          send({
-            type: "error",
-            message: `Maximale Tool-Iterationen erreicht (${MAX_TOOL_ITERATIONS}). Atlas hat zu viele Tool-Calls in einem Turn versucht — bitte präzisiere die Frage oder unterteile sie.`,
-          });
+          const exhaustionMsg = `Maximale Tool-Iterationen erreicht (${MAX_TOOL_ITERATIONS}). Atlas hat zu viele Tool-Calls in einem Turn versucht — bitte präzisiere die Frage oder unterteile sie.`;
+          send({ type: "error", message: exhaustionMsg });
           logger.warn("[atlas/chat] tool-loop exhausted", {
             chatId,
             userId: input.userId,
@@ -863,15 +920,60 @@ export async function runChat(
             inputTokens: totalInputTokens,
             outputTokens: totalOutputTokens,
           });
+
+          /* AUDIT-FIX H1: Mark the placeholder as exhausted with a
+             text-only stub so the row is non-empty + sanitiseHistoryForApi
+             accepts it on next turn replay. Best-effort.
+             Guard against null id — placeholder-CREATE failures land in
+             the outer catch instead. */
+          if (assistantMessageId) {
+            await prisma.atlasMessage
+              .update({
+                where: { id: assistantMessageId },
+                data: {
+                  content: [
+                    {
+                      type: "text",
+                      text: `[${exhaustionMsg}]`,
+                    },
+                  ] as unknown as object,
+                  inputTokens:
+                    totalInputTokens > 0 ? totalInputTokens : undefined,
+                  outputTokens:
+                    totalOutputTokens > 0 ? totalOutputTokens : undefined,
+                  toolsUsed: Array.from(new Set(toolsUsedThisTurn)),
+                  citations: {
+                    _streamingFailed: true,
+                    reason: "tool_loop_exhausted",
+                    maxIterations: MAX_TOOL_ITERATIONS,
+                  } as unknown as object,
+                },
+              })
+              .catch((dbErr) => {
+                logger.error(
+                  "[atlas/chat] failed to mark assistant placeholder as exhausted",
+                  {
+                    chatId,
+                    assistantMessageId,
+                    error:
+                      dbErr instanceof Error ? dbErr.message : String(dbErr),
+                  },
+                );
+              });
+          }
+
           send({ type: "done" });
-          /* Throw a sentinel so the outer catch logs + finally closes;
-             we deliberately do NOT persist the half-formed message. */
           return;
         }
 
-        /* Persist the assistant turn. content stores the raw blocks
-           so downstream renderers can replay tool-use traces without
-           losing fidelity. */
+        /* AUDIT-FIX H1: Persist the assistant turn by UPDATING the
+           placeholder row created at the top. content stores the raw
+           blocks so downstream renderers can replay tool-use traces
+           without losing fidelity. The placeholder's
+           `_streamingPlaceholder` sentinel is overwritten with either
+           the real citations array (if any) OR null (no citations
+           extracted) — either way the placeholder-flag is gone, which
+           is the success-marker for downstream consumers. */
         const costUsd = estimateCostUsd(totalInputTokens, totalOutputTokens);
         const dedupedTools = Array.from(new Set(toolsUsedThisTurn));
         /* Sprint 4: extract [ATLAS:source-id] citations from the
@@ -879,21 +981,30 @@ export async function runChat(
            reads message.citations to render the Quellen-Panel + inline
            validity-badges. Pure post-process, no model call. */
         const citations = extractCitations(assistantTextBuffer);
-        const persisted = await prisma.atlasMessage.create({
+        /* assistantMessageId is guaranteed non-null here — placeholder
+           is created at the top of try{} before any awaits that could
+           skip this branch. Asserting for the type-checker. */
+        if (!assistantMessageId) {
+          throw new Error(
+            "ATLAS_INVARIANT: assistantMessageId missing at success-persist",
+          );
+        }
+        await prisma.atlasMessage.update({
+          where: { id: assistantMessageId },
           data: {
-            chatId,
-            role: "assistant",
             content: finalAssistantBlocks as unknown as object,
             inputTokens: totalInputTokens,
             outputTokens: totalOutputTokens,
             costUsd,
             toolsUsed: dedupedTools,
+            /* Pass DbNull explicitly to clear the placeholder-sentinel
+               when there are no citations. Using `undefined` would
+               leave the `_streamingPlaceholder: true` value in place. */
             citations:
               citations.length > 0
                 ? (citations as unknown as object)
-                : undefined,
+                : Prisma.DbNull,
           },
-          select: { id: true },
         });
         /* Touch updatedAt on the chat for sidebar recency. */
         await prisma.atlasChat.update({
@@ -903,7 +1014,7 @@ export async function runChat(
 
         send({
           type: "done",
-          messageId: persisted.id,
+          messageId: assistantMessageId,
           usage: {
             inputTokens: totalInputTokens,
             outputTokens: totalOutputTokens,
@@ -919,6 +1030,80 @@ export async function runChat(
           error: msg,
         });
         send({ type: "error", message: msg });
+
+        /* AUDIT-FIX H1: Best-effort UPDATE of the placeholder so the
+           assistant-side row is never empty/orphaned. We persist
+           whatever text was streamed before the break (often non-trivial
+           — Anthropic may have emitted several paragraphs before the
+           connection died) so the chat-history shows partial progress
+           instead of a black hole. The `_streamingFailed` sentinel +
+           short error excerpt let the chat-view render an "incomplete
+           — try again" affordance and let auditors see WHY a row is
+           short. The .catch() swallows DB errors so the controller
+           still closes cleanly in finally.
+
+           Guard: if the placeholder-CREATE itself failed (assistantMessageId
+           still null), there's no row to update — error event was
+           already sent above, just close out. */
+        if (assistantMessageId) {
+          const partialBlocks: Anthropic.ContentBlock[] = [
+            ...finalAssistantBlocks,
+          ];
+          if (
+            assistantTextBuffer.length > 0 &&
+            !partialBlocks.some((b) => b.type === "text")
+          ) {
+            /* If text streamed but the upstream finalMessage() never
+               resolved, finalAssistantBlocks is still empty — synthesise
+               a text block from the buffer so the audit-trail captures
+               what the user actually saw on screen. */
+            partialBlocks.push({
+              type: "text",
+              text: assistantTextBuffer,
+              citations: null,
+            } as unknown as Anthropic.ContentBlock);
+          }
+          if (partialBlocks.length === 0) {
+            /* Nothing was streamed at all — emit an explicit incomplete-
+               marker so the row is non-empty (empty content would render
+               as a blank assistant turn in the UI and confuse users). */
+            partialBlocks.push({
+              type: "text",
+              text: "[Atlas-Antwort unvollständig — Stream wurde unterbrochen.]",
+              citations: null,
+            } as unknown as Anthropic.ContentBlock);
+          }
+          await prisma.atlasMessage
+            .update({
+              where: { id: assistantMessageId },
+              data: {
+                content: partialBlocks as unknown as object,
+                inputTokens:
+                  totalInputTokens > 0 ? totalInputTokens : undefined,
+                outputTokens:
+                  totalOutputTokens > 0 ? totalOutputTokens : undefined,
+                toolsUsed: Array.from(new Set(toolsUsedThisTurn)),
+                citations: {
+                  _streamingFailed: true,
+                  errorMessage: msg.slice(0, 200),
+                } as unknown as object,
+              },
+            })
+            .catch((dbErr) => {
+              /* DB-update failure here is non-fatal — the row already
+                 exists as a placeholder, the partial-content update is
+                 nice-to-have. Logging so we know if the placeholder-
+                 pattern itself is failing. */
+              logger.error(
+                "[atlas/chat] failed to mark assistant placeholder as failed",
+                {
+                  chatId,
+                  assistantMessageId,
+                  error: dbErr instanceof Error ? dbErr.message : String(dbErr),
+                },
+              );
+            });
+        }
       } finally {
         controller.close();
       }

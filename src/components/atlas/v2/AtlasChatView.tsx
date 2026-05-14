@@ -13,7 +13,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Briefcase,
@@ -82,40 +82,90 @@ export function AtlasChatView({ chatId }: Props) {
     name: string;
   } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  /* H23 fix — Cancel in-flight follow-up fetch on unmount; flip the
+     mounted-flag so any pending setState from the SSE reader-loop
+     short-circuits. Without this we keep a server-side Anthropic call
+     billing while the user has navigated to a different chat. */
+  const abortRef = useRef<AbortController | null>(null);
+  const isMountedRef = useRef<boolean>(true);
+  /* H24 fix — Track current messages.length without re-arming the
+     polling-effect on every message change. Polling-effect deps shrink
+     to [chatId, reload] so we get exactly ONE active interval per chat. */
+  const messagesLengthRef = useRef<number>(0);
+  /* H25 fix — Auto-scroll only fires when the user was already parked
+     at the bottom. If they scrolled up to re-read something, leave
+     their viewport alone instead of dragging them back down. */
+  const userIsAtBottomRef = useRef<boolean>(true);
+
+  /* Keep messagesLengthRef synced with the latest chat — this is a
+     read-channel for the polling-effect that doesn't trigger re-arm. */
+  useEffect(() => {
+    messagesLengthRef.current = chat?.messages.length ?? 0;
+  }, [chat?.messages.length]);
+
+  /* Unmount cleanup — abort the fetch + flip mounted flag so any
+     pending setState calls inside the reader-loop short-circuit. */
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      abortRef.current?.abort();
+    };
+  }, []);
+
+  /* H25 — On user-scroll, recompute "is the user parked at the
+     bottom?". 80px threshold tolerates fractional positions + small
+     bounces while still respecting deliberate scroll-up. */
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    userIsAtBottomRef.current =
+      el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+  };
 
   /* Load persisted chat. The `silent` flag suppresses the loading
      skeleton — used after stream-completion when we already have
      visible content + just want to swap in the canonical persisted
      state (with extracted citations, exact tokens, etc.) WITHOUT
-     causing a UI flash. */
-  const reload = async (silent = false) => {
-    if (!silent) setLoading(true);
-    try {
-      const res = await fetch(`/api/atlas/chat/${chatId}`, {
-        cache: "no-store",
-      });
-      if (!res.ok) {
-        if (res.status === 404) {
-          setError("Chat nicht gefunden");
-        } else {
-          setError(`HTTP ${res.status}`);
+     causing a UI flash.
+     H24 — Memoised on [chatId] only. Previously this was a fresh
+     function on every render, which made the polling-effect re-arm
+     constantly + spawn parallel intervals. */
+  const reload = useCallback(
+    async (silent = false) => {
+      if (!isMountedRef.current) return;
+      if (!silent) setLoading(true);
+      try {
+        const res = await fetch(`/api/atlas/chat/${chatId}`, {
+          cache: "no-store",
+        });
+        if (!isMountedRef.current) return;
+        if (!res.ok) {
+          if (res.status === 404) {
+            setError("Chat nicht gefunden");
+          } else {
+            setError(`HTTP ${res.status}`);
+          }
+          return;
         }
-        return;
+        const data = (await res.json()) as { chat: ChatRecord };
+        if (!isMountedRef.current) return;
+        setChat(data.chat);
+      } finally {
+        if (!silent && isMountedRef.current) setLoading(false);
       }
-      const data = (await res.json()) as { chat: ChatRecord };
-      setChat(data.chat);
-    } finally {
-      if (!silent) setLoading(false);
-    }
-  };
+    },
+    [chatId],
+  );
 
   useEffect(() => {
     void reload();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chatId]);
+  }, [reload]);
 
-  /* Auto-scroll to bottom on new content. */
+  /* Auto-scroll to bottom on new content — H25 gates this so the
+     viewport only follows the stream when the user was already
+     looking at the bottom. */
   useEffect(() => {
+    if (!userIsAtBottomRef.current) return;
     const el = scrollRef.current;
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [chat?.messages.length, streamingText, inFlightTools.length]);
@@ -123,7 +173,11 @@ export function AtlasChatView({ chatId }: Props) {
   /* If the latest message is a user-message and there's no following
      assistant-message, the chat was created via homepage POST and the
      stream is still in flight server-side. Auto-poll until the
-     assistant message lands. */
+     assistant message lands.
+     H24 — Deps are [chatId, reload]. We read the live message-count
+     via messagesLengthRef so the effect doesn't re-arm whenever the
+     chat-state object changes. Previously this re-armed on every
+     setChat() → 5+ parallel intervals per chat. */
   useEffect(() => {
     if (!chat) return;
     const lastUserIdx = [...chat.messages]
@@ -138,14 +192,30 @@ export function AtlasChatView({ chatId }: Props) {
     const assistantBehind =
       !noAssistantYet && lastAssistantIdx > lastUserIdx && lastUserIdx >= 0;
     if ((userIsLast && (noAssistantYet || assistantBehind)) || userOnly) {
+      const baseline = chat.messages.length;
       const interval = setInterval(async () => {
+        if (!isMountedRef.current) {
+          clearInterval(interval);
+          return;
+        }
         try {
           const res = await fetch(`/api/atlas/chat/${chatId}`, {
             cache: "no-store",
           });
           if (!res.ok) return;
           const data = (await res.json()) as { chat: ChatRecord };
-          if (data.chat.messages.length > chat.messages.length) {
+          if (!isMountedRef.current) {
+            clearInterval(interval);
+            return;
+          }
+          /* Compare against the baseline (length when this interval
+             was scheduled) — that's the trigger to know the assistant
+             reply has landed. Using messagesLengthRef lets us also
+             stop early if a parallel reload already ingested it. */
+          if (
+            data.chat.messages.length > baseline ||
+            data.chat.messages.length > messagesLengthRef.current
+          ) {
             setChat(data.chat);
             clearInterval(interval);
             window.dispatchEvent(new Event("atlas-v2-sidebar-refresh"));
@@ -156,7 +226,8 @@ export function AtlasChatView({ chatId }: Props) {
       }, 1500);
       return () => clearInterval(interval);
     }
-  }, [chat, chatId]);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [chatId, chat?.messages.length]);
 
   /* Sync local mandate-state when chat finishes loading (or refreshes
      after attach/detach). chat is fetched async, so initial useState
@@ -203,11 +274,22 @@ export function AtlasChatView({ chatId }: Props) {
     images?: ChatImageAttachment[],
   ) => {
     if (!chat) return;
+    if (!isMountedRef.current) return;
     setStreaming(true);
     setStreamingText("");
     setStreamingThinking("");
     setInFlightTools([]);
     setError(null);
+    /* Reset to "at bottom" — fresh user submit means they just typed
+       in the composer (which lives at the bottom), so they're looking
+       at it. Auto-scroll should follow the assistant reply. */
+    userIsAtBottomRef.current = true;
+    /* Fresh AbortController per submission so we can cancel cleanly
+       on unmount (user navigates to a different chat / sidebar /
+       homepage mid-stream). */
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
+    const signal = abortRef.current.signal;
 
     /* Optimistically add the user's message to local state IMMEDIATELY
        so it stays visible while Atlas streams its reply. The silent
@@ -234,6 +316,7 @@ export function AtlasChatView({ chatId }: Props) {
       const res = await fetch("/api/atlas/chat", {
         method: "POST",
         headers: { "content-type": "application/json" },
+        signal,
         body: JSON.stringify({
           chatId: chat.id,
           mandateId: chat.mandateId,
@@ -283,6 +366,7 @@ export function AtlasChatView({ chatId }: Props) {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
+        if (!isMountedRef.current) return;
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split("\n");
         buffer = lines.pop() ?? "";
@@ -302,19 +386,32 @@ export function AtlasChatView({ chatId }: Props) {
          extracted citations + exact tokens) WITHOUT triggering the
          loading skeleton. The streamed content is already visible
          on screen, so reload-flash would be a visible regression. */
+      if (!isMountedRef.current) return;
       await reload(true);
+      if (!isMountedRef.current) return;
       window.dispatchEvent(new Event("atlas-v2-sidebar-refresh"));
     } catch (e) {
+      /* AbortError = component unmounted mid-stream (user navigated
+         away). Silent — that's the navigation case, not a real error
+         to surface. */
+      if (e instanceof DOMException && e.name === "AbortError") return;
+      if (!isMountedRef.current) return;
       setError(e instanceof Error ? e.message : String(e));
     } finally {
-      setStreaming(false);
-      setStreamingText("");
-      setStreamingThinking("");
-      setInFlightTools([]);
+      if (isMountedRef.current) {
+        setStreaming(false);
+        setStreamingText("");
+        setStreamingThinking("");
+        setInFlightTools([]);
+      }
     }
   };
 
   const handleEvent = (evt: { type: string } & Record<string, unknown>) => {
+    /* H23 — Defensive guard. The reader-loop already short-circuits
+       on unmount, but stale events queued in micro-tasks could still
+       fire after unmount; bail before touching React state. */
+    if (!isMountedRef.current) return;
     switch (evt.type) {
       case "text":
         setStreamingText((prev) => prev + (evt.delta as string));
@@ -418,7 +515,11 @@ export function AtlasChatView({ chatId }: Props) {
       </header>
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-6">
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto px-6 py-6"
+      >
         <div className="mx-auto max-w-3xl space-y-6">
           {chat.messages.map((m) => {
             return (

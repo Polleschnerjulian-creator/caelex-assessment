@@ -56,6 +56,23 @@ export function AtlasHomepage() {
   const [activity, setActivity] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
+  /* H23 fix — Cancel mid-stream fetch + ignore late state updates if
+     the user navigates away while the SSE stream is still arriving. */
+  const abortRef = useRef<AbortController | null>(null);
+  const isMountedRef = useRef<boolean>(true);
+  /* H25 fix — Track whether the user is parked at the bottom. We only
+     auto-scroll when they were already there; if they scrolled up to
+     re-read something, we leave their viewport alone. */
+  const userIsAtBottomRef = useRef<boolean>(true);
+
+  /* Unmount cleanup — abort the in-flight fetch + flip the mounted flag
+     so any pending setState calls inside the reader loop short-circuit. */
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      abortRef.current?.abort();
+    };
+  }, []);
 
   useEffect(() => {
     const fromUrl = searchParams.get("prompt");
@@ -68,8 +85,20 @@ export function AtlasHomepage() {
     if (wfId) setSeedWorkflowId(wfId);
   }, [searchParams]);
 
-  /* Auto-scroll on new streaming content. */
+  /* H25 — On user-scroll, recompute "are we at the bottom?". Threshold
+     of 80px is a sweet-spot: respects deliberate scroll-up, but tolerant
+     of fractional scroll positions and small bounces. */
+  const handleTranscriptScroll = () => {
+    const el = transcriptRef.current;
+    if (!el) return;
+    userIsAtBottomRef.current =
+      el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+  };
+
+  /* Auto-scroll on new streaming content — gated by H25 so we only
+     drag the viewport down if the user was already at the bottom. */
   useEffect(() => {
+    if (!userIsAtBottomRef.current) return;
     const el = transcriptRef.current;
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [streamingText]);
@@ -80,6 +109,7 @@ export function AtlasHomepage() {
     images?: ChatImageAttachment[],
     mandateIdFromInput?: string | null,
   ) => {
+    if (!isMountedRef.current) return;
     /* Optimistic UI: paint the user-message + thinking-indicator
        IMMEDIATELY, before the network round-trip. The transcript
        UI replaces the empty-state hero. */
@@ -88,11 +118,20 @@ export function AtlasHomepage() {
     setStreamingText("");
     setActivity("Plant Recherche");
     setError(null);
+    /* Reset to "at bottom" on a fresh submit — the new transcript is
+       short, so the user is by definition looking at the bottom. */
+    userIsAtBottomRef.current = true;
+    /* Fresh AbortController per submission so we can cancel cleanly
+       on unmount (component navigates away mid-stream). */
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
+    const signal = abortRef.current.signal;
 
     try {
       const res = await fetch("/api/atlas/chat", {
         method: "POST",
         headers: { "content-type": "application/json" },
+        signal,
         body: JSON.stringify({
           message: text,
           toolToggles,
@@ -154,6 +193,7 @@ export function AtlasHomepage() {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
+        if (!isMountedRef.current) return;
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split("\n");
         buffer = lines.pop() ?? "";
@@ -169,6 +209,7 @@ export function AtlasHomepage() {
                 break;
               case "text":
                 textBuf += evt.delta as string;
+                if (!isMountedRef.current) return;
                 setStreamingText(textBuf);
                 /* As soon as visible text starts arriving, switch
                    the activity-label so the user knows planning
@@ -176,6 +217,7 @@ export function AtlasHomepage() {
                 setActivity("Schreibt Antwort");
                 break;
               case "tool_call_start":
+                if (!isMountedRef.current) return;
                 setActivity("Sucht in Atlas-Korpus");
                 break;
               case "error":
@@ -196,6 +238,7 @@ export function AtlasHomepage() {
       /* Run complete — sidebar should know about the new chat;
          navigate to the canonical URL. The destination loads from
          DB which now has both messages, so no polling. */
+      if (!isMountedRef.current) return;
       window.dispatchEvent(new Event("atlas-v2-sidebar-refresh"));
       if (chatId) {
         router.push(`/atlas/chat/${chatId}`);
@@ -203,6 +246,11 @@ export function AtlasHomepage() {
         throw new Error("Stream completed without chat_started event");
       }
     } catch (e) {
+      /* AbortError = component unmounted mid-stream (user navigated
+         away). Silent — that's the navigation case, not a real error
+         to surface. */
+      if (e instanceof DOMException && e.name === "AbortError") return;
+      if (!isMountedRef.current) return;
       setError(e instanceof Error ? e.message : String(e));
       setActivity(null);
     }
@@ -216,7 +264,11 @@ export function AtlasHomepage() {
   if (submittedMessage !== null) {
     return (
       <div className="flex h-full flex-col">
-        <div ref={transcriptRef} className="flex-1 overflow-y-auto px-6 py-8">
+        <div
+          ref={transcriptRef}
+          onScroll={handleTranscriptScroll}
+          className="flex-1 overflow-y-auto px-6 py-8"
+        >
           <div className="mx-auto max-w-3xl space-y-6">
             {/* User message bubble */}
             <div className="flex flex-col items-end gap-1.5">

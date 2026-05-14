@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChatInput } from "./ChatInput";
 import type { ChatImageAttachment } from "./types";
@@ -31,18 +31,43 @@ export function MandateNewChatComposer({
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /* H23 fix — Cancel in-flight fetch + ignore late state updates if the
+     user navigates away mid-stream. Without these refs we keep the
+     server-side Anthropic call running (and billable) until completion
+     even though the UI is gone. */
+  const abortRef = useRef<AbortController | null>(null);
+  const isMountedRef = useRef<boolean>(true);
+
+  /* Unmount cleanup — abort the fetch + flip the mounted-flag so any
+     pending setState calls inside the reader-loop short-circuit. */
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      abortRef.current?.abort();
+    };
+  }, []);
 
   const handleSubmit = async (
     text: string,
     toolToggles: Record<string, boolean>,
     images?: ChatImageAttachment[],
   ) => {
+    if (!isMountedRef.current) return;
     setSubmitting(true);
     setError(null);
+    /* Fresh AbortController per submission — abort cancels the fetch
+       + the reader.read() promise rejects with AbortError, which we
+       silently swallow in the catch below (it's the navigation case,
+       not a real error). */
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
+    const signal = abortRef.current.signal;
+
     try {
       const res = await fetch("/api/atlas/chat", {
         method: "POST",
         headers: { "content-type": "application/json" },
+        signal,
         body: JSON.stringify({
           message: text,
           mandateId,
@@ -70,6 +95,7 @@ export function MandateNewChatComposer({
       while (chatId === null) {
         const { done, value } = await reader.read();
         if (done) break;
+        if (!isMountedRef.current) return;
         buffer += decoder.decode(value, { stream: true });
         for (const line of buffer.split("\n")) {
           if (!line.startsWith("data: ")) continue;
@@ -94,6 +120,7 @@ export function MandateNewChatComposer({
             const { done } = await reader.read();
             if (done) break;
           }
+          if (!isMountedRef.current) return;
           window.dispatchEvent(new Event("atlas-v2-sidebar-refresh"));
         })();
         router.push(`/atlas/chat/${chatId}`);
@@ -101,6 +128,10 @@ export function MandateNewChatComposer({
         throw new Error("Stream completed without chat_started event");
       }
     } catch (e) {
+      /* AbortError = component unmounted mid-stream (user navigated
+         away). Silent — that's not a user-facing error. */
+      if (e instanceof DOMException && e.name === "AbortError") return;
+      if (!isMountedRef.current) return;
       setError(e instanceof Error ? e.message : String(e));
       setSubmitting(false);
     }
