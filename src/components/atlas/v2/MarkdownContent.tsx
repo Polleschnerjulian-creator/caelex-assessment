@@ -486,7 +486,14 @@ function confidenceTooltip(c: ConfidenceLevel): string | undefined {
  */
 function scrollToCitation(sourceId: string) {
   if (typeof document === "undefined") return;
-  const target = document.getElementById(`citation-${sourceId}`);
+  /* AUDIT-FIX C8: source-IDs come from the server presumably-safe but we
+     use the raw value as both an HTML id (hereafter, on the panel side
+     in CitationsPanel) and as part of an href attribute. encodeURIComponent
+     on both sides keeps quotes / specials from breaking the attribute or
+     the DOM lookup. */
+  const target = document.getElementById(
+    `citation-${encodeURIComponent(sourceId)}`,
+  );
   if (!target) return;
   target.scrollIntoView({ behavior: "smooth", block: "center" });
   /* Brief highlight pulse — the row's normal style is restored via a
@@ -585,7 +592,7 @@ function renderInline(
           const tooltip = buildPillTooltip(hit);
           return (
             <a
-              href={`#citation-${hit.sourceId}`}
+              href={`#citation-${encodeURIComponent(hit.sourceId)}`}
               onClick={(e) => {
                 e.preventDefault();
                 scrollToCitation(hit.sourceId);

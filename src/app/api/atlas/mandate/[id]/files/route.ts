@@ -92,15 +92,24 @@ export async function POST(
     void (async () => {
       const { autoEmbedMandateFile } =
         await import("@/lib/atlas/mandate/auto-embed.server");
-      const embedResult = await autoEmbedMandateFile(result.id);
-      logger.info("[atlas/vault-rag] post-upload embed dispatched", {
-        fileId: result.id,
+      /* AUDIT-FIX S1: result has `fileId` (not `id`) — the previous
+         `result.id` was undefined, silently causing every upload's
+         embed to fail (M2 Vault-RAG was end-to-end non-functional). */
+      const embedResult = await autoEmbedMandateFile(result.fileId);
+      const logFn =
+        embedResult.status === "failed"
+          ? logger.warn.bind(logger)
+          : logger.info.bind(logger);
+      logFn("[atlas/vault-rag] post-upload embed dispatched", {
+        fileId: result.fileId,
         mandateId,
         embedStatus: embedResult.status,
         chunkCount:
           embedResult.status === "embedded"
             ? embedResult.chunkCount
             : undefined,
+        reason:
+          embedResult.status !== "embedded" ? embedResult.reason : undefined,
       });
     })();
 

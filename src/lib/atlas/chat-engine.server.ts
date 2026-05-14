@@ -291,10 +291,42 @@ function sanitiseHistoryForApi(
       continue;
     }
     if (role === "assistant") {
-      const filtered = (m.content as Array<{ type: string }>).filter(
-        (b) => b && typeof b === "object" && b.type === "text",
+      const blocks = m.content as Array<{ type: string }>;
+      const hasToolUse = blocks.some(
+        (b) => b && typeof b === "object" && b.type === "tool_use",
+      );
+      /* AUDIT-FIX C9: Anthropic Extended Thinking spec — wenn das
+         persistierte assistant-turn `tool_use`-Blocks enthält, müssten
+         WIR auch matching tool_result-Blocks im next-user-message
+         senden, sonst 400. Wir persistieren tool_results aber nicht
+         (sie leben ephemeral im runChat conversation array). Daher:
+           - Mit tool_use im Turn → strip ALLES außer text (Anthropic
+             sieht nur die fertige Antwort, das ist gültig)
+           - Ohne tool_use → keep text + thinking + redacted_thinking
+             (thinking-Audit-Trail überlebt, Anthropic ist happy weil
+             keine tool_use→tool_result Erwartung)
+         Drop empty turns (thinking-only ohne final text = incomplete).
+
+         WICHTIG: Vor diesem Fix wurden ALLE thinking-Blocks
+         systematisch gestrippt — auch in turns ohne tool_use, was
+         in einem Edge-Case wo Anthropic thinking-signatures über
+         multiple turns validiert zu 400-errors führen konnte. Jetzt
+         preservieren wir thinking überall wo es safe ist. */
+      const allowedTypes = hasToolUse
+        ? new Set(["text"])
+        : new Set(["text", "thinking", "redacted_thinking"]);
+      const filtered = blocks.filter(
+        (b) => b && typeof b === "object" && allowedTypes.has(b.type),
       );
       if (filtered.length === 0) continue; // drop turns that became empty
+      /* Defense-in-depth: ensure at least one text-block exists; if
+         only thinking-blocks survived (no final answer was emitted
+         yet) drop the turn rather than send a thinking-only assistant
+         message which Anthropic may reject. */
+      const hasText = filtered.some(
+        (b) => b && typeof b === "object" && b.type === "text",
+      );
+      if (!hasText) continue;
       out.push({
         role,
         content: filtered as Anthropic.MessageParam["content"],
@@ -587,6 +619,14 @@ export async function runChat(
          thought when reviewing a past answer). The type union here
          widens to include thinking blocks. */
       const finalAssistantBlocks: Array<Anthropic.ContentBlock> = [];
+      /* AUDIT-FIX C7: Track whether the tool-loop exited because the
+         model returned a final answer (good) vs. because we hit the
+         MAX_TOOL_ITERATIONS guard (bad — model wanted to keep calling
+         tools but we cut it off). Without this flag we silently persist
+         a tool_use-only assistant turn that has no final text — the
+         next turn's sanitiseHistoryForApi drops the empty turn and the
+         user sees a stalled stream with no error event. */
+      let loopExitedWithFinalAnswer = false;
 
       try {
         let iter = 0;
@@ -716,6 +756,7 @@ export async function runChat(
                 finalAssistantBlocks.push(block);
               }
             }
+            loopExitedWithFinalAnswer = true;
             break;
           }
 
@@ -803,6 +844,30 @@ export async function runChat(
               toolResults as unknown as Anthropic.MessageParam["content"],
           });
         } /* ← while (iter < MAX_TOOL_ITERATIONS) */
+
+        /* AUDIT-FIX C7: Loop exhausted without a final-answer turn —
+           model wanted to keep calling tools but we hit the iter cap.
+           Surface as an explicit error event + skip persistence
+           (would orphan tool_use blocks + confuse next-turn replay).
+           The outer try/finally still runs to close the controller. */
+        if (!loopExitedWithFinalAnswer) {
+          send({
+            type: "error",
+            message: `Maximale Tool-Iterationen erreicht (${MAX_TOOL_ITERATIONS}). Atlas hat zu viele Tool-Calls in einem Turn versucht — bitte präzisiere die Frage oder unterteile sie.`,
+          });
+          logger.warn("[atlas/chat] tool-loop exhausted", {
+            chatId,
+            userId: input.userId,
+            mandateId: input.mandateId ?? null,
+            toolsUsedCount: toolsUsedThisTurn.length,
+            inputTokens: totalInputTokens,
+            outputTokens: totalOutputTokens,
+          });
+          send({ type: "done" });
+          /* Throw a sentinel so the outer catch logs + finally closes;
+             we deliberately do NOT persist the half-formed message. */
+          return;
+        }
 
         /* Persist the assistant turn. content stores the raw blocks
            so downstream renderers can replay tool-use traces without

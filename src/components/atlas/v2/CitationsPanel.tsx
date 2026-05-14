@@ -62,7 +62,7 @@ export function CitationsPanel({ citations }: Props) {
         {citations.map((c) => (
           <li
             key={`${c.sourceId}-${c.index}`}
-            id={`citation-${c.sourceId}`}
+            id={`citation-${encodeURIComponent(c.sourceId)}`}
             className="flex items-baseline gap-2 text-[11.5px] leading-snug text-slate-600 dark:text-slate-400 scroll-mt-24"
           >
             <span className="shrink-0 tabular-nums text-slate-400 dark:text-slate-500">

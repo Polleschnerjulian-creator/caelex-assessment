@@ -420,6 +420,10 @@ export async function POST(req: NextRequest) {
                 input: block.input as Record<string, unknown>,
                 callerUserId: atlas.userId,
                 callerOrgId: atlas.organizationId,
+                /* AUDIT-FIX H17: agent-mode konnte search_mandate_vault
+                   nie nutzen weil mandateId nie an den executor gereicht
+                   wurde. Jetzt parallel zum chat-engine call-pattern. */
+                mandateId: parsed.data.mandateId ?? null,
               });
               resultContent = out.content;
               isError = out.isError;
