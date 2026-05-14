@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Started:** 2026-05-14
-**Last updated:** 2026-05-14 (Wave 5 closed)
+**Last updated:** 2026-05-14 (Wave 6 closed)
 **Owner:** JP (controller) + Claude (executor)
 **Goal:** Jeden einzelnen Audit-Finding zu "best possible state" prozessieren. Keine offenen Findings bleiben undone oder unbegründet-deferred. Wenn dieser Tracker auf 0 offene Findings steht, ist Atlas V2 in produktiver Qualität.
 
@@ -70,16 +70,16 @@ Jedes Mal wenn ein Finding angegangen wird:
 
 ```
 Total findings:    80
-☑️ Done:           36   (Waves 1-4: 28; Wave 5: M21-M28 01c75de4)
+☑️ Done:           46   (Waves 1-5: 36; Wave 6: H4+H8+M2+M11+M12+M14+M15+M16+M18+M19 6dac83a8)
 ⏳ In progress:     0
-⏭️ Deferred:        0
-☐ Open:           44
+⏭️ Deferred:        2   (M13 status-enums + M17 decimal-currency — need coordinated app-layer caller-update)
+☐ Open:           32
 
 By severity:
   🚨 Shipping:    1   (✅ 1, ☐ 0)
   🔴 Critical:    9   (✅ 9, ☐ 0)
-  🟠 High:       33   (✅ 16, ☐ 17)
-  🟡 Medium:     45   (✅ 10, ☐ 35)
+  🟠 High:       33   (✅ 18, ☐ 15)
+  🟡 Medium:     45   (✅ 18, ⏭️ 2, ☐ 25)
   🟢 Low:        19   (☐ 19)
 ```
 
@@ -272,7 +272,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 8
 - **Status:** ☐ Open
 
-#### H4 ☐ MAX_CHUNKS_PER_FILE=50 silent truncation
+#### H4 ✅ MAX_CHUNKS_PER_FILE=50 silent truncation — fixed in `6dac83a8`
 
 - **File:** `src/lib/atlas/mandate/auto-embed.server.ts:32,77-78,121-127`
 - **Fix:** Add `truncated: bool` + `totalChunksOriginal: int` field auf AtlasMandateFile (oder neue AtlasMandateFileEmbedStatus row); surface in vault-list UI als ⚠ Badge.
@@ -304,7 +304,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 7
 - **Status:** ☐ Open
 
-#### H8 ☐ chunkText dropped letzte Paragraph wenn <240 chars
+#### H8 ✅ chunkText dropped letzte Paragraph wenn <240 chars — fixed in `6dac83a8`
 
 - **File:** `src/lib/atlas/knowledge/embed.server.ts:183`
 - **Fix:** Mindestens 1 chunk garantieren wenn ANY non-whitespace text; nur mid-text orphans filtern.
@@ -524,7 +524,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 8
 - **Status:** ☐ Open
 
-#### M2 ☐ AtlasChat.updatedAt 4× index-write per turn
+#### M2 ✅ AtlasChat.updatedAt 4× index-write per turn — fixed in `6dac83a8`
 
 - **File:** `prisma/schema.prisma:11812-11815`
 - **Fix:** Drop `[organizationId, updatedAt]` und `[mandateId, updatedAt]`. Recreate `[organizationId, archivedAt, updatedAt]`.
@@ -587,63 +587,63 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 8
 - **Status:** ☐ Open
 
-#### M11 ☐ Missing compound index `[organizationId, mandateId, sourceType]`
+#### M11 ✅ Missing compound index `[organizationId, mandateId, sourceType]` — fixed in `6dac83a8`
 
 - **File:** `prisma/schema.prisma` AtlasKnowledgeChunk
 - **Fix:** Add `@@index([organizationId, mandateId, sourceType])`.
 - **Wave:** 6
 - **Status:** ☐ Open
 
-#### M12 ☐ AtlasChat over-indexed
+#### M12 ✅ AtlasChat over-indexed — fixed in `6dac83a8`
 
 - **File:** `prisma/schema.prisma:11812-11815`
 - **Fix:** Siehe M2.
 - **Wave:** 6 (combined with M2)
 - **Status:** ☐ Open
 
-#### M13 ☐ Status-Enums als String über alle Atlas-Models
+#### M13 ⏭️ Status-Enums als String über alle Atlas-Models — DEFERRED (needs coordinated app-layer caller-update)
 
 - **File:** `prisma/schema.prisma` 6 places
 - **Fix:** Migration zu Prisma-Enums: AtlasMandateStatus, AtlasMandateRole, AtlasAgentRunStatus, AtlasDeadlineStatus, AtlasDeadlineSuggestionStatus, AtlasKnowledgeSourceType.
 - **Wave:** 6
 - **Status:** ☐ Open
 
-#### M14 ☐ AtlasMandateDeadlineSuggestion fehlt unique constraint
+#### M14 ✅ AtlasMandateDeadlineSuggestion fehlt unique constraint — fixed in `6dac83a8`
 
 - **File:** `prisma/schema.prisma:12116`
 - **Fix:** `@@unique([mandateId, sourceFileId, title])`.
 - **Wave:** 6
 - **Status:** ☐ Open
 
-#### M15 ☐ AtlasMessage hat kein senderUserId
+#### M15 ✅ AtlasMessage hat kein senderUserId — fixed in `6dac83a8`
 
 - **File:** `prisma/schema.prisma:11822`
 - **Fix:** Pre-emptiv `senderUserId String?` (nullable für assistant).
 - **Wave:** 6
 - **Status:** ☐ Open
 
-#### M16 ☐ AtlasAuditLog Hash-Chain fehlt unique-constraint
+#### M16 ✅ AtlasAuditLog Hash-Chain fehlt unique-constraint — fixed in `6dac83a8`
 
 - **File:** `prisma/schema.prisma:12064-12067`
 - **Fix:** `@@unique([organizationId, prevHash])`.
 - **Wave:** 6
 - **Status:** ☐ Open
 
-#### M17 ☐ Float für costUsd + hourlyRateEur
+#### M17 ⏭️ Float für costUsd + hourlyRateEur — DEFERRED (needs coordinated app-layer caller-update)
 
 - **File:** `prisma/schema.prisma:12132, 11834, 11916, 12278`
 - **Fix:** `hourlyRateEur → @db.Decimal(10, 2)`. `costUsd → @db.Decimal(10, 6)`.
 - **Wave:** 6
 - **Status:** ☐ Open
 
-#### M18 ☐ AtlasMandateDeadline list ohne take
+#### M18 ✅ AtlasMandateDeadline list ohne take — fixed in `6dac83a8`
 
 - **File:** `src/app/api/atlas/mandate/[id]/deadlines/route.ts:61`
 - **Fix:** `take: 200` + cursor.
 - **Wave:** 6
 - **Status:** ☐ Open
 
-#### M19 ☐ AtlasNote.chatId / AtlasTimeEntry.chatId soft-pointers
+#### M19 ✅ AtlasNote.chatId / AtlasTimeEntry.chatId soft-pointers — fixed in `6dac83a8`
 
 - **File:** `prisma/schema.prisma:12212, 12259`
 - **Fix:** Echte FK mit SetNull.
@@ -998,3 +998,5 @@ Diese sind in der Compliance-Konversation separat dokumentiert.
 - **2026-05-14:** Wave 2 closed (commit `ab71c895` + db-push). 15/80 done — added C1, C2, C3, C4, C5, C6, H18, H19, H20, H21. **All Critical findings closed!** 16 files changed, +533/-190 lines, 6 new schema FK relations + 2 soft-pointer fixes + R2-cleanup helper.
 - **2026-05-14:** Wave 3 closed (commit `7c19893d`). 19/80 done — added H1, H23, H24, H25. Streaming-resilience + cost-control + auto-scroll-respect. 4 files changed, +421/-52 lines. Mid-stream-disconnect persistiert jetzt audit-trail-vollständig; client cancelled fetches bei navigation; auto-scroll respektiert user reading-position.
 - **2026-05-14:** Wave 4 closed (commit `f8079519`). 28/80 done — added H27, H28, H29, H30, H31, H32, H33, M37, M38. A11y baseline: 3 modals + mobile-sidebar focus-trap + role/aria-modal, confidence-glyph + citation-pill greyscale-readable, 44px touch-targets, sidebar-search keyboard-nav, context-window-popover touch-fähig, prefers-reduced-motion durchgängig (33 motion-reduce-variants über 17 atlas/v2-files). 20 files changed, +604/-70 lines.
+- **2026-05-14:** Wave 5 closed (commit `01c75de4`). 36/80 done — DSGVO + Logger PII hardening across 27 files (M21-M28). New log-masking helper, timing-safe share-token compare, error-message sanitization, atomic dpa upsert, in-memory cache LRU.
+- **2026-05-14:** Wave 6 closed (commit `6dac83a8` + db-push --accept-data-loss). 46/80 done — added H4, H8, M2, M11, M12, M14, M15, M16, M18, M19. Schema: archive-aware indices on AtlasChat, vault-search compound index on AtlasKnowledgeChunk, hash-chain unique on AtlasAuditLog, deadline-suggestion unique constraint, AtlasMessage senderUserId, embed-truncation tracking on AtlasMandateFile. Plus pagination on deadlines GET. M13 (enum migration) + M17 (Decimal currency) DEFERRED — both need coordinated caller-updates that exceed Wave-6 scope.
