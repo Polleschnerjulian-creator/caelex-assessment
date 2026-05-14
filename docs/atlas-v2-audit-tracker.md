@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Started:** 2026-05-14
-**Last updated:** 2026-05-14 (Wave 2 closed)
+**Last updated:** 2026-05-14 (Wave 3 closed)
 **Owner:** JP (controller) + Claude (executor)
 **Goal:** Jeden einzelnen Audit-Finding zu "best possible state" prozessieren. Keine offenen Findings bleiben undone oder unbegründet-deferred. Wenn dieser Tracker auf 0 offene Findings steht, ist Atlas V2 in produktiver Qualität.
 
@@ -70,16 +70,17 @@ Jedes Mal wenn ein Finding angegangen wird:
 
 ```
 Total findings:    80
-☑️ Done:           15   (Wave 1: S1+C7+C8+C9+H17 d9cf2640;
-                          Wave 2: C1+C2+C3+C4+C5+C6+H18+H19+H20+H21 ab71c895)
+☑️ Done:           19   (Wave 1: S1+C7+C8+C9+H17 d9cf2640;
+                          Wave 2: C1+C2+C3+C4+C5+C6+H18+H19+H20+H21 ab71c895;
+                          Wave 3: H1+H23+H24+H25 7c19893d)
 ⏳ In progress:     0
 ⏭️ Deferred:        0
-☐ Open:           65
+☐ Open:           61
 
 By severity:
   🚨 Shipping:    1   (✅ 1, ☐ 0)
   🔴 Critical:    9   (✅ 9, ☐ 0)  ← all critical findings closed!
-  🟠 High:       33   (✅ 5, ☐ 28)
+  🟠 High:       33   (✅ 9, ☐ 24)
   🟡 Medium:     45   (☐ 45)
   🟢 Low:        19   (☐ 19)
 ```
@@ -249,7 +250,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 
 ### 🟠 High (33)
 
-#### H1 ☐ Persisted Assistant-Message verloren wenn Stream mid-loop disconnected
+#### H1 ✅ Persisted Assistant-Message verloren wenn Stream mid-loop disconnected — fixed in `7c19893d`
 
 - **File:** `src/lib/atlas/chat-engine.server.ts:817-832`
 - **Fix:** Persist placeholder assistant row mit status="streaming" am Anfang, update auf "done" am Ende, mark "failed" im error-path.
@@ -426,7 +427,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 7
 - **Status:** ☐ Open
 
-#### H23 ☐ Stream-Reader nie cancelled bei unmount
+#### H23 ✅ Stream-Reader nie cancelled bei unmount — fixed in `7c19893d`
 
 - **File:** `src/components/atlas/v2/AtlasChatView.tsx:280-300`, `AtlasHomepage.tsx:148-194`, `MandateNewChatComposer.tsx:66-99`
 - **Fix:** AbortController per fetch + reader.cancel() in cleanup + isMounted-ref guard für setX.
@@ -434,7 +435,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 3
 - **Status:** ☐ Open
 
-#### H24 ☐ AtlasChatView Polling-Interval re-armed jedes State-Update
+#### H24 ✅ AtlasChatView Polling-Interval re-armed jedes State-Update — fixed in `7c19893d`
 
 - **File:** `src/components/atlas/v2/AtlasChatView.tsx:127-159`
 - **Fix:** `useCallback([chatId])` für reload, ref für `messages.length` damit polling-effect-deps shrunk to `[chatId]`.
@@ -442,7 +443,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 3
 - **Status:** ☐ Open
 
-#### H25 ☐ Auto-Scroll fights User Reading
+#### H25 ✅ Auto-Scroll fights User Reading — fixed in `7c19893d`
 
 - **File:** `src/components/atlas/v2/AtlasChatView.tsx:118-121`, `AtlasHomepage.tsx:72-75`
 - **Fix:** Track `userIsAtBottom` (within ~80px) ref; only auto-scroll wenn was at bottom before update.
@@ -997,3 +998,4 @@ Diese sind in der Compliance-Konversation separat dokumentiert.
 - **2026-05-14:** Document created. 80 findings logged. 0 done.
 - **2026-05-14:** Wave 1 closed (commit `d9cf2640`). 5/80 done — S1, C7, C8, C9, H17.
 - **2026-05-14:** Wave 2 closed (commit `ab71c895` + db-push). 15/80 done — added C1, C2, C3, C4, C5, C6, H18, H19, H20, H21. **All Critical findings closed!** 16 files changed, +533/-190 lines, 6 new schema FK relations + 2 soft-pointer fixes + R2-cleanup helper.
+- **2026-05-14:** Wave 3 closed (commit `7c19893d`). 19/80 done — added H1, H23, H24, H25. Streaming-resilience + cost-control + auto-scroll-respect. 4 files changed, +421/-52 lines. Mid-stream-disconnect persistiert jetzt audit-trail-vollständig; client cancelled fetches bei navigation; auto-scroll respektiert user reading-position.
