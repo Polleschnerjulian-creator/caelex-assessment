@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Started:** 2026-05-14
-**Last updated:** 2026-05-14 (Wave 7 closed)
+**Last updated:** 2026-05-14 (Wave 8 closed)
 **Owner:** JP (controller) + Claude (executor)
 **Goal:** Jeden einzelnen Audit-Finding zu "best possible state" prozessieren. Keine offenen Findings bleiben undone oder unbegründet-deferred. Wenn dieser Tracker auf 0 offene Findings steht, ist Atlas V2 in produktiver Qualität.
 
@@ -70,16 +70,16 @@ Jedes Mal wenn ein Finding angegangen wird:
 
 ```
 Total findings:    80
-☑️ Done:           49   (Waves 1-6: 46; Wave 7: H7+H15+H22 71ee2767 + pgvector ext)
+☑️ Done:           66   (Waves 1-7: 49; Wave 8: H2+H3+H5+H6+H9+H10+H11+H13+H14+H16+M1+M3+M4+M6+M7+M8+M9 0da4d065)
 ⏳ In progress:     0
-⏭️ Deferred:        2   (M13 status-enums + M17 decimal-currency)
-☐ Open:           29
+⏭️ Deferred:        3   (M13 + M17 + H12 needs M3-feature)
+☐ Open:           11
 
 By severity:
   🚨 Shipping:    1   (✅ 1, ☐ 0)
   🔴 Critical:    9   (✅ 9, ☐ 0)
-  🟠 High:       33   (✅ 21, ☐ 12)
-  🟡 Medium:     45   (✅ 18, ⏭️ 2, ☐ 25)
+  🟠 High:       33   (✅ 31, ⏭️ 1, ☐ 1)
+  🟡 Medium:     45   (✅ 25, ⏭️ 2, ☐ 18)
   🟢 Low:        19   (☐ 19)
 ```
 
@@ -256,7 +256,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 3
 - **Status:** ☐ Open
 
-#### H2 ☐ Embedding-Dimension-Mismatch crashed Vault-RAG dauerhaft
+#### H2 ✅ Embedding-Dimension-Mismatch crashed Vault-RAG dauerhaft — fixed in `0da4d065`
 
 - **File:** `src/lib/atlas/knowledge/embed.server.ts:111-113`
 - **Fix:** `embeddingModel` Spalte auf AtlasKnowledgeChunk + filter chunks bei search nach matching dim.
@@ -264,7 +264,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 8
 - **Status:** ☐ Open
 
-#### H3 ☐ Auto-embed Race ohne DB-level idempotency
+#### H3 ✅ Auto-embed Race ohne DB-level idempotency — fixed in `0da4d065`
 
 - **File:** `src/lib/atlas/mandate/auto-embed.server.ts:66-119`
 - **Fix:** `@@unique([sourceType, sourceRef, chunkIndex])` auf AtlasKnowledgeChunk + retry-on-conflict in createMany.
@@ -280,7 +280,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 6
 - **Status:** ☐ Open
 
-#### H5 ☐ OpenAI/Anthropic Errors nicht retried
+#### H5 ✅ OpenAI/Anthropic Errors nicht retried — fixed in `0da4d065`
 
 - **File:** `src/lib/atlas/knowledge/embed.server.ts:78-87` + Anthropic-stream
 - **Fix:** Exponential backoff 3× mit jitter für 429/5xx/529. Für autoEmbed: `pending`-status row dass cron retried.
@@ -288,7 +288,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 8
 - **Status:** ☐ Open
 
-#### H6 ☐ Citation-Regex matched in Code-Blocks
+#### H6 ✅ Citation-Regex matched in Code-Blocks — fixed in `0da4d065`
 
 - **File:** `src/lib/atlas/citation-extractor.server.ts:25,50`
 - **Fix:** Strip ` ```...``` ` und ` `...` ` regions vor Match. Optional: warn-log bei malformed `[ATLAS:foo bar]`.
@@ -312,7 +312,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 6
 - **Status:** ☐ Open
 
-#### H9 ☐ Inactivity-Timer never cleared on error path
+#### H9 ✅ Inactivity-Timer never cleared on error path — fixed in `0da4d065`
 
 - **File:** `src/lib/atlas/chat-engine.server.ts:646-693`
 - **Fix:** `try/finally clearTimeout(inactivityTimer)`.
@@ -320,7 +320,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 8
 - **Status:** ☐ Open
 
-#### H10 ☐ Token accounting ignoriert prompt-cache (Anthropic)
+#### H10 ✅ Token accounting ignoriert prompt-cache (Anthropic) — fixed in `0da4d065`
 
 - **File:** `src/lib/atlas/chat-engine.server.ts:695-696, 353-358`
 - **Fix:** `cost = inputTokens*PRICE + cacheCreate*PRICE*1.25 + cacheRead*PRICE*0.1 + outputTokens*OUT`.
@@ -328,7 +328,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 8
 - **Status:** ☐ Open
 
-#### H11 ☐ Membership-Check N+1 auf Mandate-Sub-Routes
+#### H11 ✅ Membership-Check N+1 auf Mandate-Sub-Routes — fixed in `0da4d065`
 
 - **File:** Multiple `src/app/api/atlas/mandate/[id]/*/route.ts`
 - **Fix:** Standardisieren auf inline-membership pattern (siehe `document-processor.server.ts:349`); ODER helper `requireMandateMembership()`.
@@ -336,7 +336,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 8
 - **Status:** ☐ Open
 
-#### H12 ☐ AtlasMandateDeadlineSuggestion Accept-Flow nicht transactional
+#### H12 ⏭️ AtlasMandateDeadlineSuggestion Accept-Flow nicht transactional — DEFERRED (depends on M3 feature being built first)
 
 - **File:** Future: `src/app/api/atlas/mandate/[id]/deadlines/suggestions/[sid]/route.ts` (M3-feature)
 - **Fix:** `prisma.$transaction([deadline.create, suggestion.update])` + status-as-CAS via `update({where:{id, status:"pending"}})`. Add real FK on `resolvedAsDeadlineId`.
@@ -344,7 +344,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 6 (Schema part) + M3-time
 - **Status:** ☐ Open
 
-#### H13 ☐ loadChatForUser lädt FULL message rows inkl. citations + content jsonb
+#### H13 ✅ loadChatForUser lädt FULL message rows inkl. citations + content jsonb — fixed in `0da4d065`
 
 - **File:** `src/lib/atlas/chat-engine.server.ts:422`
 - **Fix:** `messages: { select: { role: true, content: true }, orderBy: { createdAt: "asc" } }` in continuation-load.
@@ -352,7 +352,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 8
 - **Status:** ☐ Open
 
-#### H14 ☐ Kein Length-Cap auf AtlasMessage.content + AtlasKnowledgeChunk.text
+#### H14 ✅ Kein Length-Cap auf AtlasMessage.content + AtlasKnowledgeChunk.text — fixed in `0da4d065`
 
 - **File:** `prisma/schema.prisma:11829, 11991`
 - **Fix:** `@db.VarChar(2000)` auf AtlasKnowledgeChunk.text. App-layer 1MB-cap pre-write für AtlasMessage.content (Json). Stop persisting base64-images in content — store in R2 + reference.
@@ -368,7 +368,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 7
 - **Status:** ☐ Open
 
-#### H16 ☐ Mandate-list ohne `take` limit
+#### H16 ✅ Mandate-list ohne `take` limit — fixed in `0da4d065`
 
 - **File:** `src/app/api/atlas/mandate/route.ts:101`
 - **Fix:** `take: 100` + cursor pagination by `updatedAt`. Replace `_count: { chats, files }` mit denormalised counts.
@@ -517,7 +517,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 
 ### 🟡 Medium (45)
 
-#### M1 ☐ updateMany-as-permission-check inconsistent mit findFirst-Pattern
+#### M1 ✅ updateMany-as-permission-check inconsistent mit findFirst-Pattern — fixed in `0da4d065`
 
 - **File:** `src/app/api/atlas/chat/[id]/route.ts:51` (DELETE)
 - **Fix:** Standardisieren auf findFirst-then-update.
@@ -531,14 +531,14 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 6
 - **Status:** ☐ Open
 
-#### M3 ☐ No SSE keep-alive ping
+#### M3 ✅ No SSE keep-alive ping — fixed in `0da4d065`
 
 - **File:** `src/lib/atlas/chat-engine.server.ts` SSE stream
 - **Fix:** setInterval `: keepalive\n\n` alle 15s während iterating.
 - **Wave:** 8
 - **Status:** ☐ Open
 
-#### M4 ☐ attach-mandate Race vs in-flight chat turn
+#### M4 ✅ attach-mandate Race vs in-flight chat turn — fixed in `0da4d065`
 
 - **File:** `src/app/api/atlas/chat/[id]/attach-mandate/route.ts:96-105`
 - **Fix:** Snapshot mandateId auf assistant-message-level (separate column).
@@ -552,28 +552,28 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 6
 - **Status:** ☐ Open
 
-#### M6 ☐ chunkText Sentence-split bricht auf "Art." / "vgl."
+#### M6 ✅ chunkText Sentence-split bricht auf "Art." / "vgl." — fixed in `0da4d065`
 
 - **File:** `src/lib/atlas/knowledge/embed.server.ts:156`
 - **Fix:** Negative-Lookbehind für common Latin abbreviations ODER richtige sentence-boundary lib.
 - **Wave:** 8
 - **Status:** ☐ Open
 
-#### M7 ☐ Empty image-only message → kein text block in user content
+#### M7 ✅ Empty image-only message → kein text block in user content — fixed in `0da4d065`
 
 - **File:** `src/lib/atlas/chat-engine.server.ts:323-351`
 - **Fix:** Always persist empty text-block für user turns.
 - **Wave:** 8
 - **Status:** ☐ Open
 
-#### M8 ☐ R2-Storage-Path: leading dot + Content-Disposition non-RFC-5987
+#### M8 ✅ R2-Storage-Path: leading dot + Content-Disposition non-RFC-5987 — fixed in `0da4d065`
 
 - **File:** `src/lib/atlas/document-processor.server.ts:293,490-492`
 - **Fix:** Strip leading dots in sanitiseForKey; use `filename*=UTF-8''...` syntax.
 - **Wave:** 8
 - **Status:** ☐ Open
 
-#### M9 ☐ dispatchInviteEmailBestEffort timezone bug
+#### M9 ✅ dispatchInviteEmailBestEffort timezone bug — fixed in `0da4d065`
 
 - **File:** `src/lib/atlas/atlas-tool-executor.ts:526-528`
 - **Fix:** Early return wenn already-expired.
