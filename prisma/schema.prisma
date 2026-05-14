@@ -208,7 +208,7 @@ model User {
   /// Atlas Agent-Mode autonomous runs.
   atlasAgentRuns           AtlasAgentRun[]      @relation("AtlasAgentRuns")
   /// Atlas Knowledge-Persistence chunks (Kanzlei-RAG).
-  atlasKnowledgeChunks     AtlasKnowledgeChunk[] @relation("AtlasKnowledgeChunks")
+  atlasKnowledgeChunks     AtlasKnowledgeChunk[] @relation("AtlasUserKnowledgeChunks")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3045,9 +3045,13 @@ model Organization {
   // Compliance-Audit 2026-05 — DSGVO Art. 28 AVV per organisation.
   dpaExecutions          OrganizationDPAExecution[] @relation("OrganizationDPAExecutions")
   // Atlas V2 — Mandate-Projects + Chats per organisation.
-  atlasMandates          AtlasMandate[]             @relation("OrgAtlasMandates")
-  atlasChats             AtlasChat[]                @relation("OrgAtlasChats")
-  atlasClauses           AtlasClause[]              @relation("OrgAtlasClauses")
+  atlasMandates            AtlasMandate[]                   @relation("OrgAtlasMandates")
+  atlasChats               AtlasChat[]                      @relation("OrgAtlasChats")
+  atlasClauses             AtlasClause[]                    @relation("OrgAtlasClauses")
+  atlasAgentRuns           AtlasAgentRun[]                  @relation("AtlasAgentRunsOrg")
+  atlasKnowledgeChunks     AtlasKnowledgeChunk[]            @relation("AtlasKnowledgeChunksOrg")
+  atlasAuditLogs           AtlasAuditLog[]                  @relation("AtlasAuditLogsOrg")
+  atlasDeadlineSuggestions AtlasMandateDeadlineSuggestion[] @relation("AtlasDeadlineSuggestionsOrg")
   stakeholderEngagements StakeholderEngagement[] // Network: stakeholder engagements
   dataRooms              DataRoom[] // Network: secure data rooms
   attestations           ComplianceAttestation[] // Network: compliance attestations
@@ -11700,7 +11704,7 @@ model AtlasMandate {
   clauses         AtlasClause[]
   timeEntries     AtlasTimeEntry[]
   agentRuns       AtlasAgentRun[]
-  knowledgeChunks AtlasKnowledgeChunk[] @relation("AtlasKnowledgeChunks")
+  knowledgeChunks AtlasKnowledgeChunk[] @relation("AtlasMandateKnowledgeChunks")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -11804,7 +11808,9 @@ model AtlasChat {
   workflowId String?
 
   // Relations
-  messages AtlasMessage[]
+  messages    AtlasMessage[]
+  notes       AtlasNote[]      @relation("AtlasNoteChats")
+  timeEntries AtlasTimeEntry[] @relation("AtlasTimeEntryChats")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -11865,6 +11871,7 @@ model AtlasAgentRun {
 
   /// Org-scope for tenant isolation.
   organizationId String
+  organization   Organization @relation("AtlasAgentRunsOrg", fields: [organizationId], references: [id], onDelete: Cascade)
 
   /// Optional mandate-scope. When set, the agent had the mandate's
   /// custom-instructions / jurisdiction / operator-type as system-
@@ -11957,6 +11964,7 @@ model AtlasKnowledgeChunk {
   /// Org-scope — embeddings are STRICTLY tenant-isolated. A chunk
   /// from Kanzlei A must never surface in Kanzlei B's search.
   organizationId String
+  organization   Organization @relation("AtlasKnowledgeChunksOrg", fields: [organizationId], references: [id], onDelete: Cascade)
 
   /// What kind of source this chunk represents. Determines the
   /// rendering badge + how the RAG retrieval pipeline weights it.
@@ -11977,11 +11985,11 @@ model AtlasKnowledgeChunk {
   /// searches scoped to that mandate (= "knowledge specific to
   /// this matter"). Null = org-wide knowledge.
   mandateId String?
-  mandate   AtlasMandate? @relation("AtlasKnowledgeChunks", fields: [mandateId], references: [id], onDelete: Cascade)
+  mandate   AtlasMandate? @relation("AtlasMandateKnowledgeChunks", fields: [mandateId], references: [id], onDelete: Cascade)
 
   /// User who authored / triggered the chunk creation.
   userId String
-  user   User   @relation("AtlasKnowledgeChunks", fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation("AtlasUserKnowledgeChunks", fields: [userId], references: [id], onDelete: Cascade)
 
   /// Short label shown in search results + RAG-citations.
   title String
@@ -12026,6 +12034,7 @@ model AtlasAuditLog {
   /// log from the admin UI. Populated from getAtlasAuth() at
   /// write-time.
   organizationId String?
+  organization   Organization? @relation("AtlasAuditLogsOrg", fields: [organizationId], references: [id], onDelete: SetNull)
 
   /// Action verb — namespaced to avoid collisions with platform
   /// AuditLog actions. Examples:
@@ -12125,6 +12134,7 @@ model AtlasMandateDeadlineSuggestion {
 
   /// Org-Scope für Multi-Tenancy-Queries.
   organizationId String
+  organization   Organization @relation("AtlasDeadlineSuggestionsOrg", fields: [organizationId], references: [id], onDelete: Cascade)
 
   title       String
   dueAt       DateTime
@@ -12210,6 +12220,7 @@ model AtlasNote {
 
   /// Optional source-chat the excerpt came from.
   chatId String?
+  chat   AtlasChat? @relation("AtlasNoteChats", fields: [chatId], references: [id], onDelete: SetNull)
 
   /// Optional mandate context (= the chat's mandate at note-time).
   mandateId String?
@@ -12257,6 +12268,7 @@ model AtlasTimeEntry {
   /// (reviewing files, drafting letters, meetings) that the lawyer
   /// still wants to attribute to this mandate.
   chatId String?
+  chat   AtlasChat? @relation("AtlasTimeEntryChats", fields: [chatId], references: [id], onDelete: SetNull)
 
   /// Duration in minutes. We store minutes (not seconds) so a
   /// "0:15" entry isn't precise to the second — matches how

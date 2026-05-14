@@ -57,6 +57,43 @@ function detectKind(file: File): "pdf" | "docx" {
   return "docx";
 }
 
+/**
+ * AUDIT-FIX H19: Verify file content matches its declared MIME-type
+ * by sniffing the first few bytes. Defends against renamed binaries
+ * (an .pdf-extension file that's actually an .exe could exploit
+ * unpdf/mammoth attack surface).
+ *
+ * - PDF: starts with `%PDF-` (0x25 0x50 0x44 0x46 0x2D)
+ * - DOCX: ZIP-archive magic `PK\x03\x04` (0x50 0x4B 0x03 0x04)
+ *   (DOCX is a ZIP underneath; further verification of the
+ *    /word/document.xml entry is overkill for our threat model)
+ *
+ * Returns the detected type or null if neither matches.
+ */
+function sniffMagicBytes(buf: Buffer): "pdf" | "docx" | null {
+  if (buf.length < 4) return null;
+  // PDF: %PDF-
+  if (
+    buf[0] === 0x25 &&
+    buf[1] === 0x50 &&
+    buf[2] === 0x44 &&
+    buf[3] === 0x46 &&
+    buf[4] === 0x2d
+  ) {
+    return "pdf";
+  }
+  // DOCX (ZIP): PK\x03\x04
+  if (
+    buf[0] === 0x50 &&
+    buf[1] === 0x4b &&
+    buf[2] === 0x03 &&
+    buf[3] === 0x04
+  ) {
+    return "docx";
+  }
+  return null;
+}
+
 /* Lazy-load the extraction helpers — keeps cold-start small for
    non-extract Atlas requests. Both packages are pure-JS (no native
    deps) so they bundle cleanly into the Node runtime. */
@@ -128,6 +165,26 @@ export async function POST(req: NextRequest) {
   const t0 = Date.now();
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
+
+    /* AUDIT-FIX H19: magic-byte sniff. Defend against renamed
+       binaries — the MIME / extension whitelist above is purely
+       declarative; here we cross-check the content's actual leading
+       bytes match the type we're about to feed into unpdf / mammoth. */
+    const detected = sniffMagicBytes(buffer);
+    if (
+      (kind === "pdf" && detected !== "pdf") ||
+      (kind === "docx" && detected !== "docx")
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Datei-Inhalt stimmt nicht mit dem angegebenen Dateityp überein",
+          code: "MIME_MISMATCH",
+        },
+        { status: 400 },
+      );
+    }
+
     const text =
       kind === "pdf" ? await extractPdf(buffer) : await extractDocx(buffer);
 

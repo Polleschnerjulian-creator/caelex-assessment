@@ -51,6 +51,24 @@ const MAX_BYTES = 10 * 1024 * 1024;
 const PROMPT_HINT =
   "Juristisches Deutsch. Mögliche Begriffe: BGB, GmbHG, ZPO, EU Space Act, NIS2, COPUOS, ITAR, EAR, Mandant, Compliance, Sorgfaltspflicht, Haftung, Genehmigung, Frequenznutzung.";
 
+/* AUDIT-FIX H20: Whitelist audio MIME types — previously the route
+   accepted any uploaded file → unbounded attack surface for
+   Whisper. These cover the common browser-recorder formats
+   (webm via MediaRecorder, mp4/m4a via Safari, wav for desktop
+   uploads, ogg/mpeg as historical formats). */
+const ALLOWED_AUDIO_MIMES = new Set<string>([
+  "audio/webm",
+  "audio/mp4",
+  "audio/m4a",
+  "audio/x-m4a",
+  "audio/wav",
+  "audio/wave",
+  "audio/x-wav",
+  "audio/mpeg",
+  "audio/mp3",
+  "audio/ogg",
+]);
+
 export async function POST(req: NextRequest) {
   /* ── Auth ──────────────────────────────────────────────────────── */
   const atlas = await getAtlasAuth();
@@ -99,6 +117,20 @@ export async function POST(req: NextRequest) {
   if (!file) {
     return NextResponse.json(
       { error: "Missing 'file' field in multipart body" },
+      { status: 400 },
+    );
+  }
+
+  /* AUDIT-FIX H20: reject files whose declared MIME isn't on the
+     audio-format whitelist. Prevents arbitrary uploads from being
+     forwarded to the Whisper API as "audio". */
+  const declaredMime = file.type || "";
+  if (!ALLOWED_AUDIO_MIMES.has(declaredMime)) {
+    return NextResponse.json(
+      {
+        error: `Audio-Format nicht unterstützt (${declaredMime || "unbekannt"}). Erlaubt: WebM, MP4, M4A, WAV, MP3, OGG.`,
+        code: "AUDIO_MIME_NOT_ALLOWED",
+      },
       { status: 400 },
     );
   }

@@ -14,7 +14,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
+import { getAtlasAuth } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
@@ -23,13 +23,18 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Look up the workspace and verify the current user owns it. Returns
- * the workspace row (no cards) or null. Centralises the auth check so
+ * Look up the workspace and verify the current user owns it AND it
+ * belongs to the user's active Atlas organisation. Returns the
+ * workspace row (no cards) or null. Centralises the auth check so
  * GET/PATCH/DELETE all use identical logic.
  */
-async function findOwnedWorkspace(workspaceId: string, userId: string) {
+async function findOwnedWorkspace(
+  workspaceId: string,
+  userId: string,
+  organizationId: string,
+) {
   return prisma.atlasWorkspace.findFirst({
-    where: { id: workspaceId, userId },
+    where: { id: workspaceId, userId, organizationId },
     select: {
       id: true,
       userId: true,
@@ -49,14 +54,15 @@ export async function GET(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    /* AUDIT-FIX C2: gated by getAtlasAuth (LAW_FIRM/BOTH only) — was previously raw auth() with any-org fallback, allowing OPERATOR users to mint Atlas workspaces + share-tokens. */
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const rl = await checkRateLimit(
       "astra_chat",
-      getIdentifier(request, session.user.id),
+      getIdentifier(request, atlas.userId),
     );
     if (!rl.success) {
       return NextResponse.json(
@@ -66,7 +72,7 @@ export async function GET(
     }
 
     const { id } = await context.params;
-    const ws = await findOwnedWorkspace(id, session.user.id);
+    const ws = await findOwnedWorkspace(id, atlas.userId, atlas.organizationId);
     if (!ws) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
@@ -126,14 +132,15 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    /* AUDIT-FIX C2: gated by getAtlasAuth (LAW_FIRM/BOTH only) — was previously raw auth() with any-org fallback, allowing OPERATOR users to mint Atlas workspaces + share-tokens. */
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const rl = await checkRateLimit(
       "astra_chat",
-      getIdentifier(request, session.user.id),
+      getIdentifier(request, atlas.userId),
     );
     if (!rl.success) {
       return NextResponse.json(
@@ -143,7 +150,7 @@ export async function PATCH(
     }
 
     const { id } = await context.params;
-    const ws = await findOwnedWorkspace(id, session.user.id);
+    const ws = await findOwnedWorkspace(id, atlas.userId, atlas.organizationId);
     if (!ws) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
@@ -201,14 +208,15 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    /* AUDIT-FIX C2: gated by getAtlasAuth (LAW_FIRM/BOTH only) — was previously raw auth() with any-org fallback, allowing OPERATOR users to mint Atlas workspaces + share-tokens. */
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const rl = await checkRateLimit(
       "astra_chat",
-      getIdentifier(request, session.user.id),
+      getIdentifier(request, atlas.userId),
     );
     if (!rl.success) {
       return NextResponse.json(
@@ -218,7 +226,7 @@ export async function DELETE(
     }
 
     const { id } = await context.params;
-    const ws = await findOwnedWorkspace(id, session.user.id);
+    const ws = await findOwnedWorkspace(id, atlas.userId, atlas.organizationId);
     if (!ws) {
       // 200 idempotent — re-deleting an already-deleted workspace
       // shouldn't surface a confusing error to the lawyer.

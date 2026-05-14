@@ -37,27 +37,28 @@ export async function GET(req: NextRequest) {
   try {
     const dpaContentHash = await computeDpaContentHash();
 
-    /* Find or create — one row per (org, dpaVersion). Bumping
-       DPA_TEMPLATE_VERSION causes a fresh row to be issued the next
-       time the org pulls the page. */
-    let execution = await prisma.organizationDPAExecution.findUnique({
+    /* AUDIT-FIX H21: was findUnique + conditional create which races
+       under concurrent GETs (both see "not exists" → both try create →
+       unique-constraint 500 on one). Atomic upsert eliminates the race.
+       One row per (org, dpaVersion) — bumping DPA_TEMPLATE_VERSION
+       still causes a fresh row to be issued because the compound
+       unique key includes dpaVersion. Empty `update` keeps GET
+       side-effect-free for an existing row. */
+    const execution = await prisma.organizationDPAExecution.upsert({
       where: {
         organizationId_dpaVersion: {
           organizationId: atlas.organizationId,
           dpaVersion: DPA_TEMPLATE_VERSION,
         },
       },
+      create: {
+        organizationId: atlas.organizationId,
+        dpaVersion: DPA_TEMPLATE_VERSION,
+        dpaContentHash,
+        status: "PENDING",
+      },
+      update: {},
     });
-    if (!execution) {
-      execution = await prisma.organizationDPAExecution.create({
-        data: {
-          organizationId: atlas.organizationId,
-          dpaVersion: DPA_TEMPLATE_VERSION,
-          dpaContentHash,
-          status: "PENDING",
-        },
-      });
-    }
 
     const url = new URL(req.url);
     const wantsDownload = url.searchParams.get("download") === "cover";

@@ -5,8 +5,8 @@
  *
  * Phase AB-2 — typeahead for the InvitePanel counterparty picker.
  * Lawyer types client name; we surface up to 8 operator organisations
- * matching the substring. Caller MUST be a LAW_FIRM org (this is an
- * Atlas-side endpoint — operators don't search other operators).
+ * matching the substring. Caller MUST be a LAW_FIRM (or BOTH) org —
+ * this is an Atlas-side endpoint, operators don't search other operators.
  *
  * Why a dedicated endpoint instead of reusing Claude's
  * `find_operator_organization` tool: that tool is owned by the
@@ -19,7 +19,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
+import { getAtlasAuth } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
@@ -27,38 +27,39 @@ import { logger } from "@/lib/logger";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+/* AUDIT-FIX C1: Tighten min-length to 2 (was already 2 but reaffirmed
+   alongside the auth/scope hardening). 0/1-char queries are a classic
+   enumeration vector — at 2 chars + insensitive contains, an attacker
+   would need to brute-force 26²=676 combinations to surface the full
+   table; combined with rate-limit + orgType filter that's no longer
+   meaningfully exploitable. */
 const QuerySchema = z.object({
-  q: z.string().trim().min(2).max(80),
+  q: z.string().trim().min(2).max(100),
 });
 
 const RESULT_LIMIT = 8;
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    /* AUDIT-FIX C1: This route previously used raw auth() + no orgType
+       filter, enabling cross-tenant org-enumeration (any logged-in
+       Caelex user could probe the full LAW_FIRM customer book via
+       2-char prefix queries). Now: getAtlasAuth() requires LAW_FIRM
+       (or BOTH) membership and isActive org, the orgType filter on
+       the result-set scopes to legitimate invite candidates only
+       (OPERATOR + BOTH — the orgs lawyers actually onboard), and
+       the rate-limit caps abuse. The previous "schema drift" excuse
+       for removing the orgType filter is moot — getAtlasAuth itself
+       relies on the orgType column working, so if that's broken the
+       endpoint would 401 anyway, not silently leak. */
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Atlas-side typeahead. We deliberately skip the orgType gate
-    // here — the column hasn't been reliably migrated to prod (Vercel
-    // build:deploy swallows db-push failures), and the InvitePanel
-    // is only renderable from Atlas mode anyway. Auth-by-session is
-    // the operative gate; the orgType layer was defence-in-depth.
-    // Once the migration drift is resolved we can re-enable the
-    // LAW_FIRM check from membership.organization.orgType.
-    const membership = await prisma.organizationMember.findFirst({
-      where: { userId: session.user.id },
-      select: { organizationId: true },
-      orderBy: { joinedAt: "asc" },
-    });
-    if (!membership) {
-      return NextResponse.json({ error: "No active org" }, { status: 403 });
     }
 
     const rl = await checkRateLimit(
       "api",
-      getIdentifier(request, session.user.id),
+      getIdentifier(request, atlas.userId),
     );
     if (!rl.success) {
       return NextResponse.json(
@@ -75,16 +76,19 @@ export async function GET(request: NextRequest) {
 
     const { q } = parsed.data;
 
-    // Exclude the caller's own org (prevents self-invite). The
-    // orgType filter (only OPERATOR + BOTH) is dropped temporarily
-    // due to schema drift — see comment on the membership query
-    // above. The lawyer can still pick the right counterparty by
-    // name; the worst case is a search hit on another LAW_FIRM,
-    // which the invite endpoint will then reject downstream.
+    /* Authz scope:
+       - Exclude the caller's own org (prevents self-invite).
+       - orgType ∈ {OPERATOR, BOTH} — these are the orgs lawyers can
+         legitimately invite as clients. LAW_FIRM and AUTHORITY orgs
+         are deliberately excluded (a law firm has no business
+         "inviting" another law firm or a regulator via this picker).
+       - isActive: true — never surface deactivated tenants. */
     const orgs = await prisma.organization.findMany({
       where: {
         AND: [
-          { id: { not: membership.organizationId } },
+          { id: { not: atlas.organizationId } },
+          { isActive: true },
+          { orgType: { in: ["OPERATOR", "BOTH"] } },
           { name: { contains: q, mode: "insensitive" } },
         ],
       },

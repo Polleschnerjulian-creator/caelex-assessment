@@ -18,6 +18,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { logger } from "@/lib/logger";
+import { deleteMandateAndR2Files } from "@/lib/atlas/document-processor.server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -235,8 +236,26 @@ export async function DELETE(
 
   try {
     if (hard) {
-      await prisma.atlasMandate.delete({ where: { id } });
-      return NextResponse.json({ ok: true, deleted: true });
+      /* AUDIT-FIX C6: route through deleteMandateAndR2Files so the
+         R2 binaries are removed BEFORE the Prisma cascade drops the
+         AtlasMandateFile rows. Bare prisma.delete leaks R2 objects
+         (storage cost + GDPR right-to-erasure violation). */
+      const result = await deleteMandateAndR2Files({
+        mandateId: id,
+        userId: atlas.userId,
+        organizationId: atlas.organizationId,
+      });
+      if (!result.deleted) {
+        return NextResponse.json(
+          { error: "Delete failed", r2DeletionErrors: result.r2DeletionErrors },
+          { status: 500 },
+        );
+      }
+      return NextResponse.json({
+        ok: true,
+        deleted: true,
+        r2DeletionErrors: result.r2DeletionErrors,
+      });
     }
     /* Soft archive — keeps chats + files + members intact. */
     await prisma.atlasMandate.update({

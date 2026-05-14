@@ -124,12 +124,19 @@ export const MAX_FILES_PER_MANDATE = 100;
 
 /* MIME-types we accept for upload. Anything outside this list is
    rejected. Includes the obvious lawyer-document formats + the binary
-   formats we'll process in Sprint 6 (PDF) once a real extractor lands. */
+   formats we'll process in Sprint 6 (PDF) once a real extractor lands.
+
+   AUDIT-FIX H18: text/html intentionally NOT on this list. HTML can
+   carry <script>, javascript: URLs, and event-handler attributes that
+   get stored verbatim as extractedText, then replayed into the chat
+   context — leading to stored XSS in the rendered chat surface. If a
+   future flow needs HTML ingestion (e.g. paste from clipboard), it
+   must run through DOMPurify (or equivalent) BEFORE persisting the
+   extractedText, ideally in a separate pipeline. */
 const ALLOWED_MIME = new Set([
   /* Text-based — extracted inline. */
   "text/plain",
   "text/markdown",
-  "text/html",
   "text/csv",
   /* Document-binary — uploaded but text-extraction deferred. */
   "application/pdf",
@@ -141,13 +148,10 @@ const ALLOWED_MIME = new Set([
 
 /* MIME-types where we extract text inline at upload-time. PDF + Office
    formats need a proper extractor (unpdf / mammoth.js); not added in
-   this sprint — files upload but extractedText stays NULL. */
-const TEXT_INLINE_MIME = new Set([
-  "text/plain",
-  "text/markdown",
-  "text/html",
-  "text/csv",
-]);
+   this sprint — files upload but extractedText stays NULL.
+
+   AUDIT-FIX H18: text/html removed (see ALLOWED_MIME comment above). */
+const TEXT_INLINE_MIME = new Set(["text/plain", "text/markdown", "text/csv"]);
 
 /* ── Public types ────────────────────────────────────────────────────── */
 
@@ -189,7 +193,7 @@ export async function uploadFileToMandate(args: {
   if (!ALLOWED_MIME.has(mimeType)) {
     return {
       code: "MIME_NOT_ALLOWED",
-      message: `MIME-type "${mimeType}" not allowed. Accepted: text/plain, text/markdown, text/html, text/csv, application/pdf, .doc(x), .xls(x).`,
+      message: `MIME-type "${mimeType}" not allowed. Accepted: text/plain, text/markdown, text/csv, application/pdf, .doc(x), .xls(x).`,
     };
   }
   if (data.length > MAX_FILE_BYTES) {
@@ -426,6 +430,146 @@ export async function deleteMandateFile(args: {
   }
   await prisma.atlasMandateFile.delete({ where: { id: file.id } });
   return { ok: true };
+}
+
+/* AUDIT-FIX C6: Mandate-Cascade lässt R2-Files zurück.
+   Prisma `AtlasMandateFile.mandate` is `onDelete: Cascade`, which
+   silently drops the DB rows when a mandate is deleted — but the
+   underlying R2 objects stay in the bucket forever. That's both a
+   storage-bill leak AND a GDPR right-to-erasure violation (the
+   personal data in those files isn't actually erased).
+
+   This helper enforces the correct ordering:
+     1. Auth: only the mandate owner may hard-delete (members can
+        soft-archive via the existing PATCH-status flow but not
+        destroy the audit trail / files).
+     2. Read storageKey for every AtlasMandateFile.
+     3. Best-effort R2 DeleteObjectCommand for each key (errors are
+        captured + logged but do NOT block the DB delete — leaving
+        an orphan R2 object is bad, but leaving an undeletable
+        mandate is worse from a UX standpoint).
+     4. THEN call prisma.atlasMandate.delete — Prisma cascade handles
+        the metadata rows, members, chats, etc.
+
+   R2 cleanup MUST happen BEFORE the DB delete: once the rows are
+   gone we'd have lost the storageKey list and would have to scan
+   the entire bucket prefix to find orphans, which is expensive and
+   racy with concurrent uploads.
+
+   When R2 is not configured (dev / test env without R2_BUCKET_NAME)
+   we still proceed with the DB delete so the operation doesn't crash
+   — the R2 cleanup gets recorded as a no-op with a warning instead. */
+export async function deleteMandateAndR2Files(args: {
+  mandateId: string;
+  userId: string;
+  organizationId: string;
+}): Promise<{ deleted: boolean; r2DeletionErrors: string[] }> {
+  /* 1. Auth: confirm caller is the OWNER of this mandate. We use
+     ownerUserId rather than membership because hard-delete is owner-
+     only by design (matches the existing DELETE route policy). */
+  const mandate = await prisma.atlasMandate.findFirst({
+    where: {
+      id: args.mandateId,
+      organizationId: args.organizationId,
+      ownerUserId: args.userId,
+    },
+    select: { id: true },
+  });
+  if (!mandate) {
+    return {
+      deleted: false,
+      r2DeletionErrors: ["MANDATE_NOT_FOUND_OR_FORBIDDEN"],
+    };
+  }
+
+  /* 2. Load all storageKeys before we touch anything. */
+  const files = await prisma.atlasMandateFile.findMany({
+    where: { mandateId: args.mandateId },
+    select: { id: true, storageKey: true },
+  });
+
+  /* 3. Best-effort R2 deletes. Capture per-file errors so the caller
+     can surface them in audit-logs. */
+  const r2DeletionErrors: string[] = [];
+  if (files.length > 0) {
+    if (!isR2Configured()) {
+      logger.warn(
+        "[atlas/document-processor] deleteMandateAndR2Files: R2 not configured; skipping R2 cleanup",
+        { mandateId: args.mandateId, fileCount: files.length },
+      );
+      r2DeletionErrors.push("R2_NOT_CONFIGURED");
+    } else {
+      const r2 = getR2Client();
+      const bucket = getR2BucketName();
+      if (!r2) {
+        logger.warn(
+          "[atlas/document-processor] deleteMandateAndR2Files: R2 client unavailable; skipping R2 cleanup",
+          { mandateId: args.mandateId, fileCount: files.length },
+        );
+        r2DeletionErrors.push("R2_CLIENT_UNAVAILABLE");
+      } else {
+        for (const f of files) {
+          /* Skip placeholders that never made it through upload — no
+             R2 object exists to delete. */
+          if (!f.storageKey || f.storageKey === "__pending__") continue;
+          try {
+            await r2.send(
+              new DeleteObjectCommand({
+                Bucket: bucket,
+                Key: f.storageKey,
+              }),
+            );
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            logger.warn(
+              "[atlas/document-processor] R2 delete failed for mandate file",
+              {
+                mandateId: args.mandateId,
+                fileId: f.id,
+                storageKey: f.storageKey,
+                error: msg,
+              },
+            );
+            r2DeletionErrors.push(`${f.id}:${msg}`);
+          }
+        }
+      }
+    }
+  }
+
+  /* 4. After R2 cleanup, drop the mandate row. Prisma cascade handles
+     AtlasMandateFile + AtlasMandateMember + AtlasChat etc. We re-scope
+     by ownerUserId + organizationId again as a defence-in-depth check
+     against TOCTOU (org or owner could have changed in the gap). */
+  try {
+    await prisma.atlasMandate.delete({
+      where: {
+        id: args.mandateId,
+        ownerUserId: args.userId,
+        organizationId: args.organizationId,
+      },
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(
+      "[atlas/document-processor] mandate DB-delete failed AFTER R2 cleanup",
+      { mandateId: args.mandateId, error: msg },
+    );
+    /* R2 objects are already gone but DB row remains — caller should
+       retry. Returning deleted:false signals that. */
+    return {
+      deleted: false,
+      r2DeletionErrors: [...r2DeletionErrors, `DB_DELETE_FAILED:${msg}`],
+    };
+  }
+
+  logger.info("[atlas/document-processor] mandate deleted with R2 cleanup", {
+    mandateId: args.mandateId,
+    fileCount: files.length,
+    r2DeletionErrors: r2DeletionErrors.length,
+  });
+
+  return { deleted: true, r2DeletionErrors };
 }
 
 export async function listMandateFiles(args: {

@@ -12,7 +12,7 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAtlasAuth } from "@/lib/atlas-auth";
 import { logger } from "@/lib/logger";
 import { listTemplateSummaries } from "@/data/atlas-workspace-templates";
 
@@ -24,8 +24,9 @@ export async function GET(_request: NextRequest) {
     // Authentication-only check — templates are firm-grade material
     // so we don't expose them to anonymous traffic, but no rate-limit
     // because the list is tiny and rarely fetched.
-    const session = await auth();
-    if (!session?.user?.id) {
+    /* AUDIT-FIX C2: gated by getAtlasAuth (LAW_FIRM/BOTH only) — was previously raw auth() with any-org fallback, allowing OPERATOR users to mint Atlas workspaces + share-tokens. */
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     return NextResponse.json({ templates: listTemplateSummaries() });

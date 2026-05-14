@@ -21,7 +21,7 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAtlasAuth } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
@@ -34,14 +34,15 @@ export async function POST(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    /* AUDIT-FIX C2: gated by getAtlasAuth (LAW_FIRM/BOTH only) — was previously raw auth() with any-org fallback, allowing OPERATOR users to mint Atlas workspaces + share-tokens. */
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const rl = await checkRateLimit(
       "astra_chat",
-      getIdentifier(request, session.user.id),
+      getIdentifier(request, atlas.userId),
     );
     if (!rl.success) {
       return NextResponse.json(
@@ -53,9 +54,13 @@ export async function POST(
     const { id } = await context.params;
 
     // Load source workspace + all cards in one go. ownership-check
-    // via userId match on the workspace.
+    // via (userId, organizationId) match on the workspace.
     const source = await prisma.atlasWorkspace.findFirst({
-      where: { id, userId: session.user.id },
+      where: {
+        id,
+        userId: atlas.userId,
+        organizationId: atlas.organizationId,
+      },
       select: {
         id: true,
         organizationId: true,
@@ -87,8 +92,8 @@ export async function POST(
     const fork = await prisma.$transaction(async (tx) => {
       const newWs = await tx.atlasWorkspace.create({
         data: {
-          userId: session.user.id!,
-          organizationId: source.organizationId,
+          userId: atlas.userId,
+          organizationId: atlas.organizationId,
           // Avoid "Kopie von Kopie von Kopie von …" runaway titles by
           // not adding the prefix when the source title already starts
           // with it. Lawyers iterating fast on scenarios benefit.

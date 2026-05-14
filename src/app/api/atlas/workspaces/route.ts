@@ -16,7 +16,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
+import { getAtlasAuth } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
@@ -25,47 +25,19 @@ import { getTemplateById } from "@/data/atlas-workspace-templates";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/**
- * Resolve the org for the current user. Mirrors the strategy used by
- * the rest of the Atlas surface (LAW_FIRM/BOTH preferred, falls back
- * to any active membership). Returns the orgId or null.
- *
- * Centralised here so list/create/[id] all behave consistently — no
- * subtle differences in which org a workspace gets attached to.
- */
-async function resolveOrgId(userId: string): Promise<string | null> {
-  const m =
-    (await prisma.organizationMember.findFirst({
-      where: {
-        userId,
-        organization: {
-          orgType: { in: ["LAW_FIRM", "BOTH"] },
-          isActive: true,
-        },
-      },
-      select: { organizationId: true },
-      orderBy: { joinedAt: "asc" },
-    })) ??
-    (await prisma.organizationMember.findFirst({
-      where: { userId, organization: { isActive: true } },
-      select: { organizationId: true },
-      orderBy: { joinedAt: "asc" },
-    }));
-  return m?.organizationId ?? null;
-}
-
 // ─── GET: list workspaces ─────────────────────────────────────────────
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    /* AUDIT-FIX C2: gated by getAtlasAuth (LAW_FIRM/BOTH only) — was previously raw auth() with any-org fallback, allowing OPERATOR users to mint Atlas workspaces + share-tokens. */
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const rl = await checkRateLimit(
       "astra_chat",
-      getIdentifier(request, session.user.id),
+      getIdentifier(request, atlas.userId),
     );
     if (!rl.success) {
       return NextResponse.json(
@@ -74,21 +46,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const orgId = await resolveOrgId(session.user.id);
-    if (!orgId) {
-      return NextResponse.json(
-        { error: "No active organisation" },
-        { status: 403 },
-      );
-    }
-
     // Return summary rows (no cards) — keeps the switcher dropdown
     // fast even when a lawyer has 50 workspaces. Cards load on-demand
     // when the user opens a specific workspace via [id].
     const workspaces = await prisma.atlasWorkspace.findMany({
       where: {
-        userId: session.user.id,
-        organizationId: orgId,
+        userId: atlas.userId,
+        organizationId: atlas.organizationId,
         archived: false,
       },
       select: {
@@ -134,27 +98,20 @@ const CreateBody = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    /* AUDIT-FIX C2: gated by getAtlasAuth (LAW_FIRM/BOTH only) — was previously raw auth() with any-org fallback, allowing OPERATOR users to mint Atlas workspaces + share-tokens. */
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const rl = await checkRateLimit(
       "astra_chat",
-      getIdentifier(request, session.user.id),
+      getIdentifier(request, atlas.userId),
     );
     if (!rl.success) {
       return NextResponse.json(
         { error: "Rate limit exceeded", retryAfterMs: rl.reset - Date.now() },
         { status: 429 },
-      );
-    }
-
-    const orgId = await resolveOrgId(session.user.id);
-    if (!orgId) {
-      return NextResponse.json(
-        { error: "No active organisation" },
-        { status: 403 },
       );
     }
 
@@ -182,8 +139,8 @@ export async function POST(request: NextRequest) {
       async (tx) => {
         const existing = await tx.atlasWorkspace.count({
           where: {
-            userId: session.user.id!,
-            organizationId: orgId,
+            userId: atlas.userId,
+            organizationId: atlas.organizationId,
             archived: false,
           },
         });
@@ -193,8 +150,8 @@ export async function POST(request: NextRequest) {
 
         const created = await tx.atlasWorkspace.create({
           data: {
-            userId: session.user.id!,
-            organizationId: orgId,
+            userId: atlas.userId,
+            organizationId: atlas.organizationId,
             title: parsed.data.title ?? template?.workspaceTitle ?? "Workspace",
           },
           select: {

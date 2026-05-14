@@ -17,7 +17,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
+import { getAtlasAuth } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
@@ -44,14 +44,15 @@ export async function POST(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    /* AUDIT-FIX C2: gated by getAtlasAuth (LAW_FIRM/BOTH only) — was previously raw auth() with any-org fallback, allowing OPERATOR users to mint Atlas workspaces + share-tokens. */
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const rl = await checkRateLimit(
       "astra_chat",
-      getIdentifier(request, session.user.id),
+      getIdentifier(request, atlas.userId),
     );
     if (!rl.success) {
       return NextResponse.json(
@@ -62,7 +63,11 @@ export async function POST(
 
     const { id } = await context.params;
     const ws = await prisma.atlasWorkspace.findFirst({
-      where: { id, userId: session.user.id },
+      where: {
+        id,
+        userId: atlas.userId,
+        organizationId: atlas.organizationId,
+      },
       select: {
         id: true,
         shareToken: true,
@@ -83,16 +88,16 @@ export async function POST(
       );
     }
 
-    // HIGH-5: do NOT trust the request `Origin` header for the
-    // outbound share URL. An attacker setting `Origin: https://evil`
-    // would receive a poisoned `shareUrl` that, if pasted into a
-    // message to a colleague, sends the recipient to the attacker's
-    // domain. Use the canonical app URL from env; fall back to the
-    // Origin only when the env var is unset (dev/preview without a
-    // configured `NEXT_PUBLIC_APP_URL`).
+    /* AUDIT-FIX C3: origin-header was attacker-controlled (any caller
+       could spoof Origin: https://evil.example via curl) — share-link
+       recipient would navigate to attacker domain. Use Next.js's parsed
+       nextUrl.origin which respects the deployment's actual Host
+       (Vercel-trusted) instead of the raw Origin request header. The
+       NEXT_PUBLIC_APP_URL env var still wins when set so canonical
+       production URLs survive deploys behind proxies/CDNs. */
     const origin = (
       process.env.NEXT_PUBLIC_APP_URL ??
-      request.headers.get("origin") ??
+      request.nextUrl.origin ??
       "https://caelex.app"
     ).replace(/\/+$/, "");
 

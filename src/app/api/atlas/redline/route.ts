@@ -63,10 +63,70 @@ function looksAccepted(file: File): boolean {
   );
 }
 
+/**
+ * AUDIT-FIX H19: Verify file content matches its declared MIME-type
+ * by sniffing the first few bytes. Defends against renamed binaries
+ * (an .pdf-extension file that's actually an .exe could exploit
+ * unpdf/mammoth attack surface).
+ *
+ * - PDF: starts with `%PDF-` (0x25 0x50 0x44 0x46 0x2D)
+ * - DOCX: ZIP-archive magic `PK\x03\x04` (0x50 0x4B 0x03 0x04)
+ *   (DOCX is a ZIP underneath; further verification of the
+ *    /word/document.xml entry is overkill for our threat model)
+ *
+ * Returns the detected type or null if neither matches.
+ */
+function sniffMagicBytes(buf: Buffer): "pdf" | "docx" | null {
+  if (buf.length < 4) return null;
+  // PDF: %PDF-
+  if (
+    buf[0] === 0x25 &&
+    buf[1] === 0x50 &&
+    buf[2] === 0x44 &&
+    buf[3] === 0x46 &&
+    buf[4] === 0x2d
+  ) {
+    return "pdf";
+  }
+  // DOCX (ZIP): PK\x03\x04
+  if (
+    buf[0] === 0x50 &&
+    buf[1] === 0x4b &&
+    buf[2] === 0x03 &&
+    buf[3] === 0x04
+  ) {
+    return "docx";
+  }
+  return null;
+}
+
+/* Sentinel error class — lets the POST handler distinguish a
+   magic-byte mismatch from a generic extraction failure so it can
+   return a 400 with a precise error code rather than a 500. */
+class MimeMismatchError extends Error {
+  constructor(public readonly fileName: string) {
+    super(`MIME mismatch for ${fileName}`);
+    this.name = "MimeMismatchError";
+  }
+}
+
 async function extractFile(file: File): Promise<string> {
   const buffer = Buffer.from(await file.arrayBuffer());
   const lower = file.name.toLowerCase();
-  if (file.type === "application/pdf" || lower.endsWith(".pdf")) {
+  const isPdf = file.type === "application/pdf" || lower.endsWith(".pdf");
+  const isDocx =
+    lower.endsWith(".docx") || file.type.includes("wordprocessingml");
+
+  /* AUDIT-FIX H19: magic-byte sniff for binary formats. Text files
+     (.txt/.md) skip this — they have no fixed magic header. */
+  if (isPdf || isDocx) {
+    const detected = sniffMagicBytes(buffer);
+    if ((isPdf && detected !== "pdf") || (isDocx && detected !== "docx")) {
+      throw new MimeMismatchError(file.name);
+    }
+  }
+
+  if (isPdf) {
     const { extractText, getDocumentProxy } = await import("unpdf");
     const pdf = await getDocumentProxy(new Uint8Array(buffer));
     const result = await extractText(pdf, { mergePages: true });
@@ -74,7 +134,7 @@ async function extractFile(file: File): Promise<string> {
       ? result.text.join("\n\n")
       : (result.text ?? "");
   }
-  if (lower.endsWith(".docx") || file.type.includes("wordprocessingml")) {
+  if (isDocx) {
     const mammoth = await import("mammoth");
     const result = await mammoth.extractRawText({ buffer });
     return result.value ?? "";
@@ -169,6 +229,22 @@ export async function POST(req: NextRequest) {
       extractFile(after),
     ]);
   } catch (err) {
+    /* AUDIT-FIX H19: distinguish magic-byte mismatch (400, attacker
+       likely renamed a binary) from a generic extract failure (500,
+       file is corrupt / encrypted / scanned image). */
+    if (err instanceof MimeMismatchError) {
+      logger.warn("[atlas/redline] mime mismatch", {
+        userId: atlas.userId,
+        fileName: err.fileName,
+      });
+      return NextResponse.json(
+        {
+          error: `Datei '${err.fileName}': Inhalt stimmt nicht mit dem angegebenen Dateityp überein`,
+          code: "MIME_MISMATCH",
+        },
+        { status: 400 },
+      );
+    }
     logger.error("[atlas/redline] extraction failed", {
       userId: atlas.userId,
       error: err instanceof Error ? err.message : String(err),

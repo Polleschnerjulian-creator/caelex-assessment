@@ -12,7 +12,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
+import { getAtlasAuth } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
@@ -58,14 +58,15 @@ export async function POST(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    /* AUDIT-FIX C2: gated by getAtlasAuth (LAW_FIRM/BOTH only) — was previously raw auth() with any-org fallback, allowing OPERATOR users to mint Atlas workspaces + share-tokens. */
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const rl = await checkRateLimit(
       "astra_chat",
-      getIdentifier(request, session.user.id),
+      getIdentifier(request, atlas.userId),
     );
     if (!rl.success) {
       return NextResponse.json(
@@ -76,11 +77,16 @@ export async function POST(
 
     const { id: workspaceId } = await context.params;
 
-    // Verify workspace exists AND is owned by the current user. Single
-    // findFirst by (id, userId) is the cheapest auth check — no need
-    // for a separate ownership query.
+    // Verify workspace exists AND is owned by the current user within
+    // the active Atlas organisation. Single findFirst by
+    // (id, userId, organizationId) is the cheapest auth check — no
+    // need for a separate ownership query.
     const ws = await prisma.atlasWorkspace.findFirst({
-      where: { id: workspaceId, userId: session.user.id },
+      where: {
+        id: workspaceId,
+        userId: atlas.userId,
+        organizationId: atlas.organizationId,
+      },
       select: { id: true },
     });
     if (!ws) {

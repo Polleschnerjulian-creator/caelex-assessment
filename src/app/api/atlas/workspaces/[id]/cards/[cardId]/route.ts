@@ -12,7 +12,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
+import { getAtlasAuth } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
@@ -32,14 +32,15 @@ export async function PATCH(
   context: { params: Promise<{ id: string; cardId: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    /* AUDIT-FIX C2: gated by getAtlasAuth (LAW_FIRM/BOTH only) — was previously raw auth() with any-org fallback, allowing OPERATOR users to mint Atlas workspaces + share-tokens. */
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const rl = await checkRateLimit(
       "astra_chat",
-      getIdentifier(request, session.user.id),
+      getIdentifier(request, atlas.userId),
     );
     if (!rl.success) {
       return NextResponse.json(
@@ -52,7 +53,11 @@ export async function PATCH(
     const card = await prisma.atlasWorkspaceCard.findFirst({
       where: {
         id: cardId,
-        workspace: { id: workspaceId, userId: session.user.id },
+        workspace: {
+          id: workspaceId,
+          userId: atlas.userId,
+          organizationId: atlas.organizationId,
+        },
       },
       select: { id: true, workspaceId: true },
     });
@@ -133,14 +138,15 @@ export async function DELETE(
   context: { params: Promise<{ id: string; cardId: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    /* AUDIT-FIX C2: gated by getAtlasAuth (LAW_FIRM/BOTH only) — was previously raw auth() with any-org fallback, allowing OPERATOR users to mint Atlas workspaces + share-tokens. */
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const rl = await checkRateLimit(
       "astra_chat",
-      getIdentifier(request, session.user.id),
+      getIdentifier(request, atlas.userId),
     );
     if (!rl.success) {
       return NextResponse.json(
@@ -152,13 +158,18 @@ export async function DELETE(
     const { id: workspaceId, cardId } = await context.params;
 
     // Verify workspace ownership. We lookup the card joined with the
-    // workspace's userId so we can prove the card belongs to a
-    // workspace that belongs to the current user — single query, no
-    // race window between ownership-check and delete.
+    // workspace's userId + organizationId so we can prove the card
+    // belongs to a workspace that belongs to the current user within
+    // the active Atlas organisation — single query, no race window
+    // between ownership-check and delete.
     const card = await prisma.atlasWorkspaceCard.findFirst({
       where: {
         id: cardId,
-        workspace: { id: workspaceId, userId: session.user.id },
+        workspace: {
+          id: workspaceId,
+          userId: atlas.userId,
+          organizationId: atlas.organizationId,
+        },
       },
       select: { id: true, workspaceId: true },
     });
