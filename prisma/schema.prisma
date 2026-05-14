@@ -11975,11 +11975,35 @@ model AtlasAgentRun {
 /// EU Space Act sondern auch "DEIN Schriftsatz vom 12.03.2026".
 /// Lock-in im positiven Sinne.
 ///
-/// Future-tech: stored as Float[] for portability; pgvector
-/// activation (CREATE EXTENSION vector) later for performant
-/// native similarity-search via <-> / <=> operators. Until then,
-/// cosine similarity is computed in JS on the fetched candidate
-/// set — works fine up to ~10k chunks per org.
+/// AUDIT-FIX H15 (pgvector migration):
+/// `embedding` is now a native pgvector(1536) column, queried via
+/// the `<=>` (cosine distance) operator from raw SQL. Prior MVP used
+/// a Float[] column with in-process JS-cosine, which transferred
+/// the entire chunk-set (~60MB at scale) on every search and
+/// scaled linearly with vault size (50+ ms per request at 5k
+/// chunks). The pgvector approach pushes the similarity-search
+/// into Postgres, returning sorted top-K in sub-millisecond at
+/// million-chunk scale.
+///
+/// REQUIRED OPS STEPS (run once per database):
+///   1. `CREATE EXTENSION IF NOT EXISTS vector;` (Neon supports it
+///      out-of-the-box; pgvector is preinstalled and just needs
+///      activation).
+///   2. After this Prisma migration lands, build an HNSW index for
+///      cosine-distance retrieval (Prisma cannot model this — must
+///      be applied via raw SQL post-migration):
+///      `CREATE INDEX IF NOT EXISTS atlas_kchunk_embedding_hnsw
+///       ON "AtlasKnowledgeChunk"
+///       USING hnsw (embedding vector_cosine_ops);`
+///      Without the HNSW index Postgres will sequential-scan the
+///      embedding column — fine at <10k rows, painful past that.
+///
+/// The column is NULLABLE because Prisma's Unsupported type does
+/// not accept array-literal assignment via the typed client; rows
+/// must be inserted via $executeRaw with a vector-cast literal
+/// (see auto-embed.server.ts) and then read back as a pgvector
+/// value. Pre-migration data is empty (M2 Vault-RAG never ran in
+/// prod without OPENAI_API_KEY), so the hard switch is safe.
 model AtlasKnowledgeChunk {
   id String @id @default(cuid())
 
@@ -12020,9 +12044,15 @@ model AtlasKnowledgeChunk {
   /// documents get chunked at paragraph boundaries.
   text String
 
-  /// OpenAI text-embedding-3-small output: 1536-dim Float[].
-  /// Stored as a Postgres double precision[] column.
-  embedding Float[]
+  /// AUDIT-FIX H15: OpenAI text-embedding-3-small output (1536-dim).
+  /// Stored as a native pgvector(1536) column. Reads happen via
+  /// raw SQL with the `<=>` cosine-distance operator; writes happen
+  /// via $executeRaw with a `'[v1,v2,...]'::vector` literal because
+  /// Prisma's typed client cannot bind to Unsupported types directly.
+  /// Nullable so that rows can be inserted before the vector is
+  /// known (not currently exercised — auto-embed always supplies a
+  /// value — but required to satisfy Prisma's Unsupported semantics).
+  embedding Unsupported("vector(1536)")?
 
   /// Optional metadata: chunkIndex, totalChunks, sourceUrl,
   /// originalAuthor, originalDate, etc.

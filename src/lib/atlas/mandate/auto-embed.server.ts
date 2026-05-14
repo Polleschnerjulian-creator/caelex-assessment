@@ -17,6 +17,7 @@ import "server-only";
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { chunkText, embedTexts } from "@/lib/atlas/knowledge/embed.server";
@@ -102,9 +103,30 @@ export async function autoEmbedMandateFile(
       };
     }
 
-    /* Bulk-insert. We use createMany (no createManyAndReturn here —
-       we just need success/fail, not the row IDs). */
-    await prisma.atlasKnowledgeChunk.createMany({
+    /* AUDIT-FIX H15 (pgvector migration): Prisma's typed client
+       cannot bind to the `Unsupported("vector(1536)")` column —
+       Float[] / number[] payloads are silently rejected. Insert in
+       two steps:
+
+         1. createManyAndReturn the rows WITHOUT the embedding (the
+            pgvector column is nullable post-migration; rows are
+            valid without it). This gives us the auto-generated cuid
+            ids for the follow-up update.
+         2. Issue ONE $executeRaw UPDATE using a CASE expression so
+            each chunk gets its own vector literal in a single
+            round-trip. The vector is cast from a Postgres literal
+            of the form `'[v1,v2,...]'::vector`.
+
+       The two-step approach is intentional — alternatives are worse:
+         - per-row UPDATE: N round-trips per file (50 files = 50 RTT)
+         - $executeRaw INSERT with a multi-VALUES list and embedded
+           literals: dodges parameterisation, brittle to escape
+         - prisma.$executeRaw template-literal INSERT: still requires
+           parameter binding for the vector which the driver cannot
+           do for Unsupported types
+       The CASE-WHEN UPDATE pushes everything into one statement and
+       keeps the Prisma client managing ids/timestamps. */
+    const inserted = await prisma.atlasKnowledgeChunk.createManyAndReturn({
       data: chunks.map((text, i) => ({
         organizationId: file.mandate.organizationId,
         userId: file.uploadedByUserId,
@@ -116,7 +138,6 @@ export async function autoEmbedMandateFile(
             ? file.filename
             : `${file.filename} (Chunk ${i + 1}/${chunks.length})`,
         text,
-        embedding: embeddings[i],
         meta: {
           fileId: file.id,
           mimeType: file.mimeType,
@@ -125,7 +146,35 @@ export async function autoEmbedMandateFile(
           totalChunks: chunks.length,
         } as object,
       })),
+      select: { id: true },
     });
+
+    /* Pair each inserted id with its embedding by ordinal index.
+       createManyAndReturn preserves input order (documented in
+       Prisma 5.14+ release notes), so the i-th returned id maps to
+       the i-th embedding. */
+    const idEmbeddingPairs = inserted.map((row, i) => ({
+      id: row.id,
+      embedding: embeddings[i],
+    }));
+
+    /* Build a CASE WHEN expression: one branch per chunk, each
+       casting its vector literal. Using Prisma.sql with parameter
+       interpolation keeps the ids parameterised against SQL injection
+       (the embedding values are pure numbers and assembled into a
+       trusted literal). */
+    const caseBranches = idEmbeddingPairs.map(
+      (p) =>
+        Prisma.sql`WHEN ${p.id} THEN ${`[${p.embedding.join(",")}]`}::vector`,
+    );
+    const ids = idEmbeddingPairs.map((p) => p.id);
+    await prisma.$executeRaw(Prisma.sql`
+      UPDATE "AtlasKnowledgeChunk"
+      SET embedding = CASE id
+        ${Prisma.join(caseBranches, " ")}
+      END
+      WHERE id IN (${Prisma.join(ids)})
+    `);
 
     /* AUDIT-FIX H4: Persist truncation flag on the file row so the
        Vault UI can show a "first 50 of N chunks indexed" badge. We

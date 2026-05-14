@@ -120,8 +120,16 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  /* Bulk-create the chunks. We track totalChunks so each chunk's
-     meta knows where it sits in the source. */
+  /* AUDIT-FIX H15: pgvector migration — `embedding` is now
+     Unsupported("vector(1536)") in the schema. Prisma's typed client
+     can't bind values into Unsupported columns, so we use the same
+     two-step pattern as auto-embed.server.ts:
+       1. createManyAndReturn writes rows WITHOUT embedding (column
+          is nullable to accommodate this).
+       2. Single $executeRaw UPDATE populates all embeddings via a
+          CASE-WHEN block + ::vector cast in one round-trip.
+     Order-preservation guarantee from createManyAndReturn (Prisma
+     5.14+) ensures the indices match the input texts. */
   const created = await prisma.atlasKnowledgeChunk.createManyAndReturn({
     data: texts.map((text, i) => ({
       organizationId: atlas.organizationId,
@@ -134,7 +142,6 @@ export async function POST(req: NextRequest) {
           ? parsed.data.title
           : `${parsed.data.title} (${i + 1}/${texts.length})`,
       text,
-      embedding: embeddings[i],
       meta: {
         ...(parsed.data.meta ?? {}),
         chunkIndex: i,
@@ -150,6 +157,22 @@ export async function POST(req: NextRequest) {
       createdAt: true,
     },
   });
+
+  /* Populate embedding column via raw UPDATE with CASE+vector-literal.
+     Single-statement to avoid N round-trips. Embedding-array literal
+     format: '[v1,v2,...]' with the ::vector cast. */
+  if (created.length > 0) {
+    const cases = created
+      .map((row, i) => {
+        const literal = `[${embeddings[i].join(",")}]`;
+        return `WHEN '${row.id}' THEN '${literal}'::vector`;
+      })
+      .join(" ");
+    const ids = created.map((r) => `'${r.id}'`).join(",");
+    await prisma.$executeRawUnsafe(
+      `UPDATE "AtlasKnowledgeChunk" SET embedding = CASE id ${cases} END WHERE id IN (${ids})`,
+    );
+  }
 
   logger.info("[atlas/knowledge] chunks created", {
     userId: atlas.userId,
