@@ -12054,6 +12054,28 @@ model AtlasKnowledgeChunk {
   /// value — but required to satisfy Prisma's Unsupported semantics).
   embedding Unsupported("vector(1536)")?
 
+  /// AUDIT-FIX H2: Track which embedding model produced this chunk's
+  /// vector. Today the entire corpus uses text-embedding-3-small
+  /// (1536-dim), but if we ever switch to a different model (e.g.
+  /// text-embedding-3-large at 3072-dim, or a future EU-hosted
+  /// alternative), the dimensions won't match — cosineSimilarity()
+  /// throws on mismatched vectors and would tank the WHOLE vault-RAG
+  /// search. Recording the model per-chunk lets a future migration
+  /// filter `WHERE embeddingModel = currentModel` during the transition
+  /// window so live search keeps working while old chunks are reindexed
+  /// in the background. Defaults to the current model so legacy rows
+  /// (none in prod, but local dev DBs may have some) remain searchable.
+  embeddingModel String? @default("text-embedding-3-small")
+
+  /// AUDIT-FIX H3: Promoted from `meta.chunkIndex` to a real column so
+  /// the @@unique compound below (sourceType, sourceRef, chunkIndex)
+  /// can enforce DB-level idempotency. The same value also continues
+  /// to live in `meta.chunkIndex` for backwards compatibility with the
+  /// search/UI code that already reads it from there. 0-indexed within
+  /// the source. Nullable so manual / ad-hoc entries (without a true
+  /// chunked source) don't need to fabricate one.
+  chunkIndex Int?
+
   /// Optional metadata: chunkIndex, totalChunks, sourceUrl,
   /// originalAuthor, originalDate, etc.
   meta Json @default("{}")
@@ -12069,6 +12091,16 @@ model AtlasKnowledgeChunk {
   /// filter). Without this compound, queries fall back to a sequential
   /// scan once a mandate has >100 chunks.
   @@index([organizationId, mandateId, sourceType])
+  /// AUDIT-FIX H3: DB-level idempotency for auto-embed. The app-level
+  /// "count chunks with this sourceRef" check has a TOCTOU race — two
+  /// concurrent uploads of the same file (or upload + retry) both see
+  /// count=0 and both insert. With this unique compound, the second
+  /// insert raises P2002 which auto-embed.server.ts catches + reports
+  /// as `{status: "skipped", reason: "concurrent insert detected"}`.
+  /// sourceRef is nullable; rows without one (manual entries) are
+  /// allowed to exist multiple times because Postgres treats NULLs
+  /// as distinct in unique indices.
+  @@unique([sourceType, sourceRef, chunkIndex], name: "atlas_kchunk_source_chunk_uq")
 }
 
 /// Atlas V2 Audit-Log — single source of truth for "who did what,

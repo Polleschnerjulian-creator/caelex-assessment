@@ -28,9 +28,35 @@ import { logger } from "@/lib/logger";
 /* OpenAI embeddings endpoint. Override-able via OPENAI_BASE_URL for
    Azure OpenAI EU-region or a self-hosted compatible endpoint. */
 const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL ?? "https://api.openai.com";
-const EMBED_MODEL = process.env.ATLAS_EMBED_MODEL ?? "text-embedding-3-small";
+
+/* AUDIT-FIX H2: Exported so call-sites that persist embeddings (auto-
+   embed, /api/atlas/knowledge POST, etc.) can stamp the per-chunk
+   `embeddingModel` column with the SAME value that produced the
+   vector. If we ever swap models, the column lets a future migration
+   identify which chunks need re-embedding. Reading the env var here
+   (vs at each call-site) keeps the source-of-truth in one place. */
+export const EMBED_MODEL =
+  process.env.ATLAS_EMBED_MODEL ?? "text-embedding-3-small";
 
 export const EMBED_DIM = 1536;
+
+/* AUDIT-FIX H5: HTTP status codes that indicate a transient failure
+   worth retrying with exponential back-off. 429 = rate-limit, 500/502/
+   503/504 = server-side hiccup, 529 = OpenAI-specific "overloaded"
+   (the same shape Anthropic uses). Anything else (401/403 = auth bug,
+   422 = malformed input, 400 = client error) is fail-fast — retrying
+   would just delay the eventual error and burn quota. */
+const RETRIABLE_STATUS = new Set([429, 500, 502, 503, 504, 529]);
+const MAX_RETRIES = 3;
+
+/** Sleep with full-jitter — base * 2^attempt + random([0, base * 2^attempt)).
+ *  Jitter prevents the thundering-herd retry storm when many concurrent
+ *  embed requests hit a shared rate-limit at the same instant. */
+function sleepWithJitter(attempt: number): Promise<void> {
+  const baseMs = 1000 * Math.pow(2, attempt); // 1s, 2s, 4s
+  const jitterMs = Math.random() * baseMs;
+  return new Promise((resolve) => setTimeout(resolve, baseMs + jitterMs));
+}
 
 interface OpenAIEmbedResponse {
   data: Array<{ embedding: number[]; index: number }>;
@@ -62,43 +88,84 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
      per text (~1000 tokens) to stay safely under. */
   const truncated = texts.map((t) => t.slice(0, 4000));
 
+  /* AUDIT-FIX H5: Retry transient OpenAI failures with exponential
+     back-off + jitter. Without this, a single transient 429 from
+     rate-limiting (very common during a burst-upload of 10+ files)
+     surfaces all the way to the user as a failed upload. With three
+     retries the worst-case wait is ~7s of sleep + the actual request
+     time, which is well within the upload-route's response budget.
+     Fail-fast on 401/403/422 (auth or malformed-input issues that no
+     amount of retrying will cure). */
   const t0 = Date.now();
-  const res = await fetch(`${OPENAI_BASE_URL}/v1/embeddings`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: EMBED_MODEL,
-      input: truncated,
-    }),
-  });
-
-  if (!res.ok) {
-    const errBody = await res.text().catch(() => "");
-    logger.error("[atlas/knowledge] embed failed", {
-      status: res.status,
-      body: errBody.slice(0, 500),
+  let lastErr: { status: number; body: string } | null = null;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    const res = await fetch(`${OPENAI_BASE_URL}/v1/embeddings`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: EMBED_MODEL,
+        input: truncated,
+      }),
     });
-    throw new Error(
-      `OpenAI embeddings failed (${res.status}): ${errBody.slice(0, 200)}`,
-    );
+
+    if (res.ok) {
+      const data = (await res.json()) as OpenAIEmbedResponse;
+      const durationMs = Date.now() - t0;
+      logger.info("[atlas/knowledge] embed ok", {
+        model: data.model,
+        n: data.data.length,
+        promptTokens: data.usage.prompt_tokens,
+        durationMs,
+        attempts: attempt + 1,
+      });
+
+      /* Sort by index so we return embeddings in the same order as
+         the input texts (OpenAI doesn't guarantee order). */
+      const sorted = [...data.data].sort((a, b) => a.index - b.index);
+      return sorted.map((d) => d.embedding);
+    }
+
+    const errBody = await res.text().catch(() => "");
+    lastErr = { status: res.status, body: errBody };
+
+    /* Non-retriable → throw immediately. */
+    if (!RETRIABLE_STATUS.has(res.status)) {
+      logger.error("[atlas/knowledge] embed failed (non-retriable)", {
+        status: res.status,
+        body: errBody.slice(0, 500),
+      });
+      throw new Error(
+        `OpenAI embeddings failed (${res.status}): ${errBody.slice(0, 200)}`,
+      );
+    }
+
+    /* Retriable but exhausted → throw with attempt count for ops. */
+    if (attempt === MAX_RETRIES) {
+      logger.error("[atlas/knowledge] embed failed (retries exhausted)", {
+        status: res.status,
+        body: errBody.slice(0, 500),
+        attempts: attempt + 1,
+      });
+      break;
+    }
+
+    logger.warn("[atlas/knowledge] embed transient failure, retrying", {
+      status: res.status,
+      attempt: attempt + 1,
+      nextDelayMs: 1000 * Math.pow(2, attempt),
+    });
+    await sleepWithJitter(attempt);
   }
 
-  const data = (await res.json()) as OpenAIEmbedResponse;
-  const durationMs = Date.now() - t0;
-  logger.info("[atlas/knowledge] embed ok", {
-    model: data.model,
-    n: data.data.length,
-    promptTokens: data.usage.prompt_tokens,
-    durationMs,
-  });
-
-  /* Sort by index so we return embeddings in the same order as
-     the input texts (OpenAI doesn't guarantee order). */
-  const sorted = [...data.data].sort((a, b) => a.index - b.index);
-  return sorted.map((d) => d.embedding);
+  /* Unreachable unless retries exhausted (loop body either returns
+     or throws). The cast is safe because lastErr is set whenever
+     `res.ok` is false. */
+  throw new Error(
+    `OpenAI embeddings failed after ${MAX_RETRIES + 1} attempts (${lastErr?.status}): ${lastErr?.body.slice(0, 200) ?? ""}`,
+  );
 }
 
 /**
@@ -124,6 +191,37 @@ export function cosineSimilarity(a: number[], b: number[]): number {
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
+/* AUDIT-FIX M6: Common Latin/German legal abbreviations whose trailing
+   period must NOT be treated as a sentence boundary. Without this guard,
+   "Art. 5 SatNV" (the most common German legal citation pattern) gets
+   shredded after "Art." every single time → useless RAG chunks for any
+   regulatory document. Pattern intentionally targets <token>.<space> so
+   that real sentence-ending periods (followed by a capital next-token
+   start) still split correctly. */
+const ABBREV_PATTERN =
+  /(Art|Abs|Nr|S|Bd|Hrsg|Aufl|Bsp|bzw|ca|d\.h|etc|evtl|f|ff|ggf|i\.d\.R|i\.d\.S|i\.S\.v|inkl|Mio|Mrd|sog|usw|vgl|z\.B|zit|HGB|BGB|StGB|GG|EU|EuGH|BGH|BVerfG|BVerwG)\.\s/g;
+/* Private-Use Area code-point that should never appear in real text;
+   used as a temporary placeholder for protected abbreviation periods. */
+const ABBREV_PERIOD_PLACEHOLDER = "";
+
+/**
+ * Sentence-splitter that respects common German/Latin legal abbreviations
+ * (Art., Abs., Nr., vgl., z.B., i.d.R., HGB, BGB, …). Strategy:
+ *   1. Replace abbreviation periods with a placeholder code-point.
+ *   2. Split on real sentence terminators (`.!?` + whitespace).
+ *   3. Restore the placeholder back to a literal period.
+ * This keeps "Art. 5 SatNV" together as one sentence-fragment instead
+ * of breaking it into "Art" / "5 SatNV".
+ */
+function splitSentencesAbbrevAware(text: string): string[] {
+  const protectedText = text.replace(ABBREV_PATTERN, (match) =>
+    match.replace(/\./, ABBREV_PERIOD_PLACEHOLDER),
+  );
+  const sentences = protectedText.split(/(?<=[.!?])\s+/);
+  const restoreRe = new RegExp(ABBREV_PERIOD_PLACEHOLDER, "g");
+  return sentences.map((s) => s.replace(restoreRe, "."));
+}
+
 /**
  * Naive paragraph-aware chunking for documents. Splits on blank
  * lines, then merges adjacent paragraphs until each chunk reaches
@@ -131,7 +229,9 @@ export function cosineSimilarity(a: number[], b: number[]): number {
  * context than fixed-size sliding-window chunks.
  *
  * For very long single paragraphs, falls back to hard-split at
- * sentence boundaries (via . ! ? followed by whitespace).
+ * sentence boundaries (via . ! ? followed by whitespace) using an
+ * abbreviation-aware splitter (AUDIT-FIX M6) so German legal cites
+ * like "Art. 5 SatNV" stay intact.
  */
 export function chunkText(text: string, targetChars = 800): string[] {
   const minChars = Math.floor(targetChars * 0.6);
@@ -153,7 +253,9 @@ export function chunkText(text: string, targetChars = 800): string[] {
         chunks.push(buf);
         buf = "";
       }
-      const sentences = p.split(/(?<=[.!?])\s+/);
+      /* AUDIT-FIX M6: use abbreviation-aware splitter instead of
+         the naive `(?<=[.!?])\s+` regex. */
+      const sentences = splitSentencesAbbrevAware(p);
       let sBuf = "";
       for (const s of sentences) {
         if (sBuf.length + s.length > maxChars) {

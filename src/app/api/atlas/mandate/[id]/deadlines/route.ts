@@ -49,9 +49,6 @@ export async function GET(
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
   const { id: mandateId } = await ctx.params;
-  if (!(await checkMembership(mandateId, atlas.userId, atlas.organizationId))) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
 
   const rl = await checkRateLimit("api", getIdentifier(req, atlas.userId));
   if (!rl.success) {
@@ -65,11 +62,32 @@ export async function GET(
      response — large payload, slow render, potential memory pressure
      on the API node. Cursor-pagination keeps the contract simple
      (just a `cursor` query-param + `nextCursor` in the response) and
-     compatible with the existing `dueAt` ordering. */
+     compatible with the existing `dueAt` ordering.
+
+     AUDIT-FIX H11: Inline the membership-check via the `mandate`
+     relation filter — drops the prior checkMembership() round-trip
+     to a single query. If the user has no access OR the mandate
+     doesn't exist, the relation-filter returns no rows and the
+     handler returns an empty page (200, []) — same observable
+     behaviour as the previous 403 from the caller's POV (they get
+     no data) but one fewer DB roundtrip. We accept that the
+     status-code degrades from 403 to 200/[]; the UI doesn't
+     differentiate today (both render an empty list) and exposing
+     access-vs-existence via status code is a minor info-leak we
+     remove by collapsing them. */
   const TAKE = 200;
   const cursor = req.nextUrl.searchParams.get("cursor");
   const deadlines = await prisma.atlasMandateDeadline.findMany({
-    where: { mandateId },
+    where: {
+      mandateId,
+      mandate: {
+        organizationId: atlas.organizationId,
+        OR: [
+          { ownerUserId: atlas.userId },
+          { members: { some: { userId: atlas.userId } } },
+        ],
+      },
+    },
     orderBy: { dueAt: "asc" },
     take: TAKE,
     cursor: cursor ? { id: cursor } : undefined,

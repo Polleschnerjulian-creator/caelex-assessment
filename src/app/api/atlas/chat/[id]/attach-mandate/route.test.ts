@@ -19,6 +19,14 @@ vi.mock("@/lib/prisma", () => ({
     atlasMandate: {
       findFirst: vi.fn(),
     },
+    /* AUDIT-FIX M4: route now checks for an in-flight stream by
+       looking for a recent assistant-message with a streaming-
+       placeholder citations sentinel. Test default returns null
+       (= no in-flight stream) so existing happy-path assertions
+       hold; a dedicated test below covers the 409 case. */
+    atlasMessage: {
+      findFirst: vi.fn().mockResolvedValue(null),
+    },
   },
 }));
 
@@ -122,6 +130,57 @@ describe("POST /api/atlas/chat/[id]/attach-mandate", () => {
         data: { mandateId: "m1" },
       }),
     );
+  });
+
+  it("returns 409 when an assistant turn is currently streaming", async () => {
+    /* AUDIT-FIX M4: When a chat is mid-stream, atlasMessage.findFirst
+       returns the placeholder row → route refuses the attach with a
+       STREAM_IN_FLIGHT 409 + friendly message so the UI can re-enable
+       the modal once the turn finishes. */
+    vi.mocked(getAtlasAuth).mockResolvedValue({
+      userId: "u1",
+      organizationId: "o1",
+    } as never);
+    vi.mocked(prisma.atlasChat.findFirst).mockResolvedValue({
+      id: "c1",
+    } as never);
+    vi.mocked(prisma.atlasMessage.findFirst).mockResolvedValue({
+      id: "msg-streaming",
+      createdAt: new Date(),
+    } as never);
+
+    const res = await POST(mkReq({ mandateId: "m1" }), mkCtx());
+    expect(res.status).toBe(409);
+    const body = (await res.json()) as { error: string; code: string };
+    expect(body.code).toBe("STREAM_IN_FLIGHT");
+    /* The mandate-existence check should never fire when we bail
+       out on the in-flight gate — keeps the path strictly
+       auth → ownership → in-flight → mandate. */
+    expect(prisma.atlasMandate.findFirst).not.toHaveBeenCalled();
+    expect(prisma.atlasChat.update).not.toHaveBeenCalled();
+  });
+
+  it("allows detach (mandateId=null) even during an in-flight stream", async () => {
+    /* AUDIT-FIX M4: Detach is harmless mid-stream — clearing the
+       link can't poison new context into the in-flight turn. So
+       the in-flight check is skipped on the null branch. */
+    vi.mocked(getAtlasAuth).mockResolvedValue({
+      userId: "u1",
+      organizationId: "o1",
+    } as never);
+    vi.mocked(prisma.atlasChat.findFirst).mockResolvedValue({
+      id: "c1",
+    } as never);
+    vi.mocked(prisma.atlasChat.update).mockResolvedValue({
+      id: "c1",
+      mandateId: null,
+      title: "T",
+      updatedAt: new Date(),
+    } as never);
+
+    const res = await POST(mkReq({ mandateId: null }), mkCtx());
+    expect(res.status).toBe(200);
+    expect(prisma.atlasMessage.findFirst).not.toHaveBeenCalled();
   });
 
   it("detaches when mandateId is null", async () => {

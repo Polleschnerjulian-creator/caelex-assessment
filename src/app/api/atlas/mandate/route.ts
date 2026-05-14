@@ -92,14 +92,35 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(_req: NextRequest) {
+export async function GET(req: NextRequest) {
   const atlas = await getAtlasAuth();
   if (!atlas) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   /* Return mandates where the user is owner OR explicit member.
      Filter out archived/closed for the sidebar default; the Korpus
-     surface can list those separately. */
+     surface can list those separately.
+
+     AUDIT-FIX H16: Cap result-size at 100 mandates per page +
+     cursor-pagination. Prior to this fix the GET handler returned
+     ALL mandates with no `take`, so a test-org with 5000 mandates
+     would emit a 5MB+ JSON payload. Cursor follows the same shape
+     as M18 (deadlines): `?cursor=<id>` resumes after the given id
+     in the existing `updatedAt desc` ordering, and the response
+     carries `nextCursor` (null when the page is partial = end of
+     list). The cursor is stable because Prisma's `cursor:` skips to
+     the row by id, so pagination is consistent even if `updatedAt`
+     ties exist (id is the unique tie-breaker in the underlying
+     b-tree).
+
+     Note: the existing `_count` subselect stays — it adds two
+     denormalised joins per row (chats + files), but at TAKE=100
+     that is bounded and Prisma compiles it into a single SQL with
+     CTEs (no per-row N+1). A later optimisation could move counts
+     into a denormalised column on AtlasMandate if dashboard render
+     becomes a hotspot. */
+  const TAKE = 100;
+  const cursor = req.nextUrl.searchParams.get("cursor");
   const mandates = await prisma.atlasMandate.findMany({
     where: {
       organizationId: atlas.organizationId,
@@ -110,6 +131,9 @@ export async function GET(_req: NextRequest) {
       ],
     },
     orderBy: { updatedAt: "desc" },
+    take: TAKE,
+    cursor: cursor ? { id: cursor } : undefined,
+    skip: cursor ? 1 : 0,
     select: {
       id: true,
       name: true,
@@ -125,5 +149,12 @@ export async function GET(_req: NextRequest) {
       },
     },
   });
-  return NextResponse.json({ mandates });
+
+  /* nextCursor is the last id only when the page is full — a partial
+     page means we have hit the end. Clients pass it back as
+     `?cursor=…` to fetch the next page. */
+  const nextCursor =
+    mandates.length === TAKE ? mandates[mandates.length - 1].id : null;
+
+  return NextResponse.json({ mandates, nextCursor });
 }

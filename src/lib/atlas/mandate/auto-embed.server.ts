@@ -20,7 +20,11 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
-import { chunkText, embedTexts } from "@/lib/atlas/knowledge/embed.server";
+import {
+  chunkText,
+  embedTexts,
+  EMBED_MODEL,
+} from "@/lib/atlas/knowledge/embed.server";
 
 export type AutoEmbedResult =
   | { status: "embedded"; chunkCount: number }
@@ -125,29 +129,67 @@ export async function autoEmbedMandateFile(
            parameter binding for the vector which the driver cannot
            do for Unsupported types
        The CASE-WHEN UPDATE pushes everything into one statement and
-       keeps the Prisma client managing ids/timestamps. */
-    const inserted = await prisma.atlasKnowledgeChunk.createManyAndReturn({
-      data: chunks.map((text, i) => ({
-        organizationId: file.mandate.organizationId,
-        userId: file.uploadedByUserId,
-        sourceType: "mandate_file",
-        sourceRef: file.id,
-        mandateId: file.mandateId,
-        title:
-          chunks.length === 1
-            ? file.filename
-            : `${file.filename} (Chunk ${i + 1}/${chunks.length})`,
-        text,
-        meta: {
-          fileId: file.id,
-          mimeType: file.mimeType,
-          originalFilename: file.filename,
+       keeps the Prisma client managing ids/timestamps.
+
+       AUDIT-FIX H2: Stamp `embeddingModel` with the constant from
+       embed.server.ts so a future model swap can identify which chunks
+       still hold legacy vectors that need re-embedding.
+
+       AUDIT-FIX H3: Lift `chunkIndex` to a real column so the new
+       (sourceType, sourceRef, chunkIndex) unique constraint enforces
+       DB-level idempotency. The same value is also kept in `meta` for
+       any reader that already pulls it from there. The createManyAndReturn
+       below is wrapped in a try/catch for the P2002 unique-violation
+       case — when two concurrent auto-embeds race on the same fileId,
+       the second one trips the unique index and we treat it as a clean
+       skip rather than a failure. */
+    let inserted: Array<{ id: string }>;
+    try {
+      inserted = await prisma.atlasKnowledgeChunk.createManyAndReturn({
+        data: chunks.map((text, i) => ({
+          organizationId: file.mandate.organizationId,
+          userId: file.uploadedByUserId,
+          sourceType: "mandate_file",
+          sourceRef: file.id,
+          mandateId: file.mandateId,
           chunkIndex: i,
-          totalChunks: chunks.length,
-        } as object,
-      })),
-      select: { id: true },
-    });
+          embeddingModel: EMBED_MODEL,
+          title:
+            chunks.length === 1
+              ? file.filename
+              : `${file.filename} (Chunk ${i + 1}/${chunks.length})`,
+          text,
+          meta: {
+            fileId: file.id,
+            mimeType: file.mimeType,
+            originalFilename: file.filename,
+            chunkIndex: i,
+            totalChunks: chunks.length,
+          } as object,
+        })),
+        select: { id: true },
+      });
+    } catch (insertErr) {
+      /* AUDIT-FIX H3: P2002 = unique constraint violation on
+         (sourceType, sourceRef, chunkIndex). This means a concurrent
+         auto-embed beat us to the insert — the chunks are already
+         landed by the other path, so this run is a no-op. Surface as
+         a clean "skipped" rather than failing the upload route. */
+      if (
+        insertErr instanceof Prisma.PrismaClientKnownRequestError &&
+        insertErr.code === "P2002"
+      ) {
+        logger.info("[atlas/vault-rag] concurrent auto-embed detected", {
+          fileId: file.id,
+          mandateId: file.mandateId,
+        });
+        return {
+          status: "skipped",
+          reason: "concurrent insert detected",
+        };
+      }
+      throw insertErr;
+    }
 
     /* Pair each inserted id with its embedding by ordinal index.
        createManyAndReturn preserves input order (documented in

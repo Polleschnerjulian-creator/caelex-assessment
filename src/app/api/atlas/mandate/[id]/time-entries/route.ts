@@ -46,15 +46,28 @@ export async function GET(
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
   const { id: mandateId } = await ctx.params;
-  if (!(await checkMembership(mandateId, atlas.userId, atlas.organizationId))) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
   const rl = await checkRateLimit("api", getIdentifier(req, atlas.userId));
   if (!rl.success) {
     return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
+  /* AUDIT-FIX H11: Inline the membership-check via the `mandate`
+     relation filter — collapses the prior checkMembership() +
+     findMany pair into a single query. Same trade-off as deadlines
+     GET: a no-access caller gets `{ entries: [], totals: ... }` with
+     a 200 instead of a 403. The UI doesn't differentiate, and the
+     prior 403 behaviour was already a soft info-leak (revealing
+     mandate existence vs. access). */
   const entries = await prisma.atlasTimeEntry.findMany({
-    where: { mandateId },
+    where: {
+      mandateId,
+      mandate: {
+        organizationId: atlas.organizationId,
+        OR: [
+          { ownerUserId: atlas.userId },
+          { members: { some: { userId: atlas.userId } } },
+        ],
+      },
+    },
     orderBy: { workedOn: "desc" },
     take: 200,
     select: {

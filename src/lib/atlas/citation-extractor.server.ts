@@ -24,6 +24,28 @@ import { checkValidity, type ValidityCheck } from "./validity-tools.server";
    dashes, dots, slashes, and § signs. */
 const ATLAS_CITATION_RE = /\[ATLAS:([\w\-§\.\/]+)\]/g;
 
+/* AUDIT-FIX H6: Match fenced code blocks (``` ... ```) — non-greedy,
+   multiline (the [\s\S] class crosses newlines without needing the
+   `s` dotall flag). We REPLACE rather than just skip so positional
+   indices for downstream "first occurrence" sorting stay aligned with
+   the original text — replacing the inner content with whitespace of
+   the same length preserves character offsets. */
+const CODE_FENCE_RE = /```[\s\S]*?```/g;
+
+/* AUDIT-FIX H6: Match inline-code spans (`...`) on a single line.
+   Use a tempered class to forbid newlines + backticks inside, so a
+   stray backtick on its own line doesn't accidentally consume the
+   rest of the document. */
+const INLINE_CODE_RE = /`[^`\n]*`/g;
+
+/** AUDIT-FIX H6: Replace the matched span with whitespace of equal
+ *  length. Keeping byte-offsets stable means citation `firstAt`
+ *  positions still reflect the visible-text order in the rendered
+ *  message. */
+function blankOut(match: string): string {
+  return " ".repeat(match.length);
+}
+
 export interface ExtractedCitation extends ValidityCheck {
   /** 1-indexed display order in the answer (first occurrence wins). */
   index: number;
@@ -35,9 +57,27 @@ export interface ExtractedCitation extends ValidityCheck {
  * Extract all [ATLAS:...] citations from an assistant text. Order by
  * first appearance; deduplicate by sourceId. Returns an empty array if
  * no citations are found.
+ *
+ * AUDIT-FIX H6: Citations inside markdown code-blocks (fenced ``` or
+ * inline `...`) are NOT real citations — they're documentation /
+ * examples / quoted error messages. Atlas's own answers regularly
+ * include things like "Verwende das Format `[ATLAS:DE-WeltraumG-§1]`"
+ * to teach the lawyer the citation syntax; before this fix those
+ * literals leaked into the inline-pill renderer + validity-checker
+ * as if they were real references, producing wrong "Quelle existiert
+ * nicht"-warnings. Pre-process by blanking out code regions before
+ * the citation regex runs.
  */
 export function extractCitations(text: string): ExtractedCitation[] {
   if (!text) return [];
+
+  /* Strip code regions FIRST: fenced (```...```) before inline (`...`)
+     so a backtick triple inside a fence doesn't accidentally pair with
+     a stray inline backtick later in the doc. Both replacements use
+     whitespace of equal length to preserve indices. */
+  const stripped = text
+    .replace(CODE_FENCE_RE, blankOut)
+    .replace(INLINE_CODE_RE, blankOut);
 
   const seen = new Map<
     string,
@@ -47,7 +87,7 @@ export function extractCitations(text: string): ExtractedCitation[] {
   let m: RegExpExecArray | null;
   /* Reset lastIndex so subsequent calls don't share state. */
   ATLAS_CITATION_RE.lastIndex = 0;
-  while ((m = ATLAS_CITATION_RE.exec(text)) !== null) {
+  while ((m = ATLAS_CITATION_RE.exec(stripped)) !== null) {
     const literal = m[1];
     const at = m.index;
     const existing = seen.get(literal);

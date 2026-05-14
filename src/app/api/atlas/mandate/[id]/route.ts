@@ -137,15 +137,6 @@ export async function PATCH(
   }
   const { id } = await context.params;
 
-  const access = await loadMandateForUser(
-    id,
-    atlas.userId,
-    atlas.organizationId,
-  );
-  if (!access) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
   let raw: unknown;
   try {
     raw = await req.json();
@@ -175,10 +166,37 @@ export async function PATCH(
     data.closedAt = null;
   }
 
+  /* AUDIT-FIX H11: Collapse the prior loadMandateForUser-then-update
+     into a single updateMany + lookup. updateMany supports the org +
+     membership `where` clause directly so the auth-gate and the
+     mutation share one round-trip; if count===0 the gate filtered
+     the row out → 404. Then a single primary-key lookup returns the
+     row shape the UI needs. Net: 2 queries (was: find + update = 2
+     queries) — same total but the first round-trip now does real
+     work (the actual update) instead of pure gating, so a stuck
+     update-roundtrip doesn't waste a separate gate roundtrip. The
+     find-after-update is unavoidable because updateMany doesn't
+     return rows; a returning-style update would need findFirst +
+     update (still 2). The trade-off is negligible at single-row
+     scale and the comment serves as a marker so future changes
+     don't accidentally re-introduce a third roundtrip. */
   try {
-    const updated = await prisma.atlasMandate.update({
-      where: { id },
+    const updated = await prisma.atlasMandate.updateMany({
+      where: {
+        id,
+        organizationId: atlas.organizationId,
+        OR: [
+          { ownerUserId: atlas.userId },
+          { members: { some: { userId: atlas.userId } } },
+        ],
+      },
       data,
+    });
+    if (updated.count === 0) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    const mandate = await prisma.atlasMandate.findUnique({
+      where: { id },
       select: {
         id: true,
         name: true,
@@ -191,7 +209,7 @@ export async function PATCH(
         updatedAt: true,
       },
     });
-    return NextResponse.json({ mandate: updated });
+    return NextResponse.json({ mandate });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     logger.error("[atlas/mandate/id] PATCH failed", {
@@ -217,25 +235,30 @@ export async function DELETE(
   const url = new URL(req.url);
   const hard = url.searchParams.get("hard") === "true";
 
-  const access = await loadMandateForUser(
-    id,
-    atlas.userId,
-    atlas.organizationId,
-  );
-  if (!access) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-  /* Hard-delete is owner-only — collaborators can soft-archive but
-     not destroy the audit trail. */
-  if (hard && access.ownerUserId !== atlas.userId) {
-    return NextResponse.json(
-      { error: "Only the mandate owner can hard-delete" },
-      { status: 403 },
+  /* AUDIT-FIX H11: Hard-delete still needs the row's ownerUserId
+     pre-fetched (to enforce owner-only on the destructive branch),
+     so we keep loadMandateForUser for the hard-path. The soft-archive
+     branch below collapses to a single updateMany — count===0 on the
+     membership-gate gives us the same 404 with one fewer query. */
+  if (hard) {
+    const access = await loadMandateForUser(
+      id,
+      atlas.userId,
+      atlas.organizationId,
     );
-  }
+    if (!access) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    /* Hard-delete is owner-only — collaborators can soft-archive but
+       not destroy the audit trail. */
+    if (access.ownerUserId !== atlas.userId) {
+      return NextResponse.json(
+        { error: "Only the mandate owner can hard-delete" },
+        { status: 403 },
+      );
+    }
 
-  try {
-    if (hard) {
+    try {
       /* AUDIT-FIX C6: route through deleteMandateAndR2Files so the
          R2 binaries are removed BEFORE the Prisma cascade drops the
          AtlasMandateFile rows. Bare prisma.delete leaks R2 objects
@@ -256,12 +279,37 @@ export async function DELETE(
         deleted: true,
         r2DeletionErrors: result.r2DeletionErrors,
       });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      logger.error("[atlas/mandate/id] DELETE failed", {
+        userId: atlas.userId,
+        mandateId: id,
+        error: msg,
+      });
+      return NextResponse.json({ error: "Delete failed" }, { status: 500 });
     }
-    /* Soft archive — keeps chats + files + members intact. */
-    await prisma.atlasMandate.update({
-      where: { id },
+  }
+
+  /* AUDIT-FIX H11: Soft-archive is a single updateMany with the
+     membership gate inline — count===0 means the gate filtered the
+     row (not-found OR no access, same 404 either way). The response
+     doesn't need the row, so no follow-up select required. Net: 1
+     query (was: find + update = 2 queries). */
+  try {
+    const updated = await prisma.atlasMandate.updateMany({
+      where: {
+        id,
+        organizationId: atlas.organizationId,
+        OR: [
+          { ownerUserId: atlas.userId },
+          { members: { some: { userId: atlas.userId } } },
+        ],
+      },
       data: { status: "archived", archivedAt: new Date() },
     });
+    if (updated.count === 0) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
     return NextResponse.json({ ok: true, archived: true });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

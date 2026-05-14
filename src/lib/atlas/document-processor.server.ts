@@ -378,11 +378,44 @@ export async function getSignedDownloadUrl(args: {
     new GetObjectCommand({
       Bucket: getR2BucketName(),
       Key: file.storageKey,
-      ResponseContentDisposition: `attachment; filename="${encodeURIComponent(file.filename)}"`,
+      ResponseContentDisposition: buildContentDispositionAttachment(
+        file.filename,
+      ),
     }),
     { expiresIn: args.expiresInSec ?? 300 },
   );
   return { url, filename: file.filename, mimeType: file.mimeType };
+}
+
+/* AUDIT-FIX M8: RFC 5987 / RFC 6266 compliant Content-Disposition builder.
+   The previous implementation `attachment; filename="<encodeURIComponent>"`
+   was wrong twice over:
+     1. It percent-encoded the filename inside the `filename=` quoted-string
+        token, so users saw "Vertrag%20%C3%84nderung.pdf" instead of
+        "Vertrag Änderung.pdf" in their browser save-dialog.
+     2. It had no UTF-8 fallback header for non-ASCII filenames, so
+        clients that DO decode `filename` as UTF-8 (modern browsers) and
+        clients that do NOT (older user-agents) couldn't agree on the name.
+   This helper emits BOTH:
+     - `filename="<ascii-fallback>"` for legacy clients (Umlauts → ae/oe/…)
+     - `filename*=UTF-8''<percent-encoded>` for modern clients per RFC 5987 */
+function buildContentDispositionAttachment(filename: string): string {
+  const transliterated = filename
+    .replace(/ä/g, "ae")
+    .replace(/ö/g, "oe")
+    .replace(/ü/g, "ue")
+    .replace(/Ä/g, "Ae")
+    .replace(/Ö/g, "Oe")
+    .replace(/Ü/g, "Ue")
+    .replace(/ß/g, "ss");
+  /* Final ASCII-only fallback: anything still non-ASCII → "_". Also
+     strip the quote/backslash characters that would break the
+     quoted-string token. */
+  const asciiFallback = transliterated
+    .replace(/[^\x20-\x7E]/g, "_")
+    .replace(/["\\]/g, "_");
+  const utf8Encoded = encodeURIComponent(filename);
+  return `attachment; filename="${asciiFallback}"; filename*=UTF-8''${utf8Encoded}`;
 }
 
 export async function deleteMandateFile(args: {
@@ -653,7 +686,14 @@ export async function listMandateFiles(args: {
 /* ── Helpers ─────────────────────────────────────────────────────────── */
 
 function sanitiseForKey(name: string): string {
-  return name.replace(/[^a-zA-Z0-9._\-]/g, "_").slice(0, 120);
+  /* AUDIT-FIX M8: strip leading dots so dot-files (".env", ".gitignore",
+     ".DS_Store") don't produce R2 keys that begin with ".". The
+     Cloudflare-R2 dashboard hides leading-dot objects in some views and
+     they're a footgun for object-listing tooling. We sanitise FIRST
+     (illegal chars → "_"), then strip leading dots from the result.
+     Slice to 120 chars last so the strip doesn't re-introduce a dot. */
+  const cleaned = name.replace(/[^a-zA-Z0-9._\-]/g, "_").replace(/^\.+/, "");
+  return cleaned.slice(0, 120);
 }
 
 function guessDocumentType(

@@ -482,6 +482,24 @@ async function dispatchInviteEmailBestEffort(input: {
   expiresAt: Date;
 }): Promise<void> {
   try {
+    /* AUDIT-FIX M9: bail out if the invite is already expired (or expires
+       in the past) before we burn a DB round-trip and an email-send.
+       This guards against clock-skew between web/worker, negative-TTL
+       configuration bugs, and any code-path that recycles a stale
+       expiresAt value. The email body would otherwise advertise a useless
+       past expiry-date to the recipient. */
+    if (input.expiresAt.getTime() <= Date.now()) {
+      logger.warn(
+        "[atlas/tool] dispatchInviteEmailBestEffort: computed expiry already past, skipping email",
+        {
+          matterId: input.matterId,
+          operatorOrgId: input.operatorOrgId,
+          expiresAt: input.expiresAt.toISOString(),
+        },
+      );
+      return;
+    }
+
     const { sendEmail } = await import("@/lib/email");
     const { renderLegalMatterInviteEmail } =
       await import("@/lib/email/legal-matter-invite");

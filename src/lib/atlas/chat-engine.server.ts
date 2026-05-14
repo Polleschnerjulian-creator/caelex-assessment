@@ -356,9 +356,34 @@ function sanitiseHistoryForApi(
       });
       continue;
     }
+    /* AUDIT-FIX H14 (companion): For past user-turns, strip inline
+       image-blocks from the API request. The model has already "seen"
+       the image in the original turn — the prior assistant response
+       describes/quotes it — so re-sending the bytes on every continuation
+       wastes 5-30k input tokens per image AND inflates the request
+       body. We replace each image-block with a small text reference
+       so the model knows an image existed (it can ask the user to
+       re-attach if it needs to re-inspect, which is rare).
+       Note: the IMMEDIATE-current user turn (appended after this
+       sanitiser runs) keeps its full image bytes — that's the only
+       place the model needs the bytes. */
+    const userBlocks = m.content as Array<{ type: string }>;
+    const replacedBlocks = userBlocks.map((b) => {
+      if (
+        b &&
+        typeof b === "object" &&
+        (b as { type: string }).type === "image"
+      ) {
+        return {
+          type: "text" as const,
+          text: "[Bild aus früherem Turn — Bytes nicht erneut gesendet]",
+        };
+      }
+      return b;
+    });
     out.push({
       role,
-      content: m.content as Anthropic.MessageParam["content"],
+      content: replacedBlocks as unknown as Anthropic.MessageParam["content"],
     });
   }
   return out;
@@ -379,10 +404,24 @@ function buildUserContentBlocks(
   text: string,
   images: ChatEngineImage[] | undefined,
 ): Anthropic.MessageParam["content"] {
-  const trimmedText = text.trim();
+  /* AUDIT-FIX M7: Anthropic API requires AT LEAST ONE text block per
+     user turn — some Sonnet versions reject pure-image messages with
+     `invalid_request_error: messages.N.content: text block expected`.
+     Previously when a user attached only an image (text empty), we
+     emitted ONLY image-blocks → 400 from upstream.
+     Fix: ALWAYS append a text-block, falling back to a German
+     placeholder ("(Bild zur Analyse)") when the user typed nothing.
+     This is shown to the model only — the chat-view's renderer can
+     hide the placeholder string from the UI replay if the user wants,
+     but the existing render already shows the original text so this
+     is a low-risk default. */
+  const trimmedText = text.trim() || "(Bild zur Analyse)";
   if (!images || images.length === 0) {
     /* Preserve the existing flat shape — array-of-one-text-block — so
-       the persistence layer doesn't need a code-path bump. */
+       the persistence layer doesn't need a code-path bump. Note: when
+       called with empty text + no images (shouldn't happen — API layer
+       validates non-empty turns), the placeholder still applies which
+       is safer than emitting an empty text-block (also a 400 trigger). */
     return [{ type: "text", text: trimmedText }];
   }
   const blocks: Anthropic.ContentBlockParam[] = images.map((img) => ({
@@ -394,20 +433,169 @@ function buildUserContentBlocks(
     },
   }));
   /* Append the user's text last (Anthropic recommends image-first
-     ordering for best vision quality). For purely image-only turns we
-     intentionally OMIT a placeholder text — persisting one would
-     surprise the user on reload ("I never wrote that"). The model
-     handles image-only turns fine; the system prompt's "Vision input"
-     section already tells it to describe what it sees. */
-  if (trimmedText.length > 0) {
-    blocks.push({ type: "text", text: trimmedText });
-  }
+     ordering for best vision quality). AUDIT-FIX M7: for purely
+     image-only turns we now ALWAYS emit a text-block (placeholder
+     above) so the API request is valid. */
+  blocks.push({ type: "text", text: trimmedText });
   return blocks;
 }
 
-function estimateCostUsd(input: number, output: number): number {
+/* AUDIT-FIX H10: Token accounting must include prompt-cache pricing.
+   ────────────────────────────────────────────────────────────────────
+   Previously the cost was `inputTokens × $3/Mtok + outputTokens ×
+   $15/Mtok` — which silently lied to users by 2–10× depending on
+   the cache-hit rate. Anthropic's `usage` field returns FOUR
+   token-categories per response:
+     - `input_tokens`               → uncached input    × $3/Mtok
+     - `cache_creation_input_tokens` → cache-write       × $3 × 1.25 = $3.75/Mtok
+     - `cache_read_input_tokens`     → cache-read        × $3 × 0.10 = $0.30/Mtok
+     - `output_tokens`               → assistant output  × $15/Mtok
+   We accumulate all four across tool-loop iterations and use this
+   helper to compute the aggregate display cost. The cost-display
+   in the UI is for transparency only (not billing) but a 10× error
+   makes the lawyer-grade tool look untrustworthy. */
+const PRICE_CACHE_CREATION_PER_MTOK = PRICE_INPUT_PER_MTOK * 1.25; // $3.75/Mtok
+const PRICE_CACHE_READ_PER_MTOK = PRICE_INPUT_PER_MTOK * 0.1; // $0.30/Mtok
+
+/* AUDIT-FIX H14: Hard cap on persisted AtlasMessage.content size.
+   ────────────────────────────────────────────────────────────────────
+   The content jsonb column is unbounded at the DB-layer (a parallel
+   agent owns the schema-level @db cap). At the app-layer we enforce
+   a 1 MB upper bound on the serialized JSON — a single 5 MB base64
+   image would balloon a row to ~6.7 MB after JSON-encoding, and a
+   handful of such rows can blow up disk usage + cripple replay
+   queries.
+   Strategy:
+     1. If the serialized content fits under MAX_PERSISTED_CONTENT_BYTES,
+        persist as-is.
+     2. Otherwise, walk the blocks and replace `image.source.data`
+        (base64 payload) with a small placeholder string. The image
+        bytes are NOT needed for follow-up turns — once Anthropic has
+        described the image in its response, the description lives in
+        the assistant's text. Re-sending the bytes on every turn would
+        rapidly exceed Anthropic's 100k-input-token budget anyway.
+     3. If still over the cap (rare — text-only message that's gigantic),
+        truncate the largest text-block to fit + append a marker so
+        the auditor sees what happened.
+   This keeps the chat-history rich enough for UI render (image-blocks
+   still appear with their `media_type` so the chat-view shows a
+   "[Image]" placeholder) while preventing pathological row-sizes. */
+const MAX_PERSISTED_CONTENT_BYTES = 1024 * 1024; // 1 MB
+const STRIPPED_IMAGE_PLACEHOLDER =
+  "<image-bytes-stripped-for-storage:see-original-upload>";
+
+function sanitizeContentForPersistence(
+  content: unknown,
+  ctx: { chatId: string; role: "user" | "assistant" },
+): unknown {
+  /* Fast-path: if it fits, ship it. JSON.stringify is the same
+     serialization Prisma uses for jsonb. */
+  let serialized = JSON.stringify(content);
+  if (serialized.length <= MAX_PERSISTED_CONTENT_BYTES) {
+    return content;
+  }
+  /* Over-cap: strip image-block payloads and try again. Only walk
+     when content is an array of blocks (the standard shape we emit). */
+  if (Array.isArray(content)) {
+    const stripped = (content as unknown[]).map((block) => {
+      if (
+        block &&
+        typeof block === "object" &&
+        "type" in block &&
+        (block as { type: string }).type === "image"
+      ) {
+        const b = block as {
+          type: "image";
+          source?: { type?: string; media_type?: string; data?: string };
+        };
+        return {
+          type: "image" as const,
+          source: {
+            type: b.source?.type ?? "base64",
+            media_type: b.source?.media_type ?? "image/png",
+            data: STRIPPED_IMAGE_PLACEHOLDER,
+          },
+        };
+      }
+      return block;
+    });
+    serialized = JSON.stringify(stripped);
+    if (serialized.length <= MAX_PERSISTED_CONTENT_BYTES) {
+      logger.warn(
+        "[atlas/chat] AtlasMessage content > 1MB — image bytes stripped before persist",
+        {
+          chatId: ctx.chatId,
+          role: ctx.role,
+          originalBytes: JSON.stringify(content).length,
+          strippedBytes: serialized.length,
+        },
+      );
+      return stripped;
+    }
+    /* Still too big — last-resort: truncate text blocks. Walk again
+       and clip the longest text-block to a budget. */
+    const truncated = stripped.map((block) => {
+      if (
+        block &&
+        typeof block === "object" &&
+        "type" in block &&
+        (block as { type: string }).type === "text"
+      ) {
+        const b = block as { type: "text"; text?: string };
+        const TRUNCATE_AT = 50_000; // ~50k chars per text-block
+        if (b.text && b.text.length > TRUNCATE_AT) {
+          return {
+            ...b,
+            text:
+              b.text.slice(0, TRUNCATE_AT) +
+              "\n\n[... truncated for storage cap ...]",
+          };
+        }
+      }
+      return block;
+    });
+    logger.warn(
+      "[atlas/chat] AtlasMessage content > 1MB after image-strip — text truncated",
+      {
+        chatId: ctx.chatId,
+        role: ctx.role,
+        originalBytes: JSON.stringify(content).length,
+        finalBytes: JSON.stringify(truncated).length,
+      },
+    );
+    return truncated;
+  }
+  /* Fallback: scalar / non-array content — coerce to a single text
+     block under the cap. Defensive only; we don't currently emit
+     non-array content shapes. */
+  logger.warn(
+    "[atlas/chat] AtlasMessage non-array content > 1MB — coerced to single text block",
+    {
+      chatId: ctx.chatId,
+      role: ctx.role,
+      originalBytes: serialized.length,
+    },
+  );
+  return [
+    {
+      type: "text",
+      text:
+        String(content).slice(0, 50_000) +
+        "\n\n[... truncated for storage cap ...]",
+    },
+  ];
+}
+
+function estimateCostUsd(
+  input: number,
+  output: number,
+  cacheCreation: number = 0,
+  cacheRead: number = 0,
+): number {
   return (
     (input / 1_000_000) * PRICE_INPUT_PER_MTOK +
+    (cacheCreation / 1_000_000) * PRICE_CACHE_CREATION_PER_MTOK +
+    (cacheRead / 1_000_000) * PRICE_CACHE_READ_PER_MTOK +
     (output / 1_000_000) * PRICE_OUTPUT_PER_MTOK
   );
 }
@@ -473,12 +661,28 @@ async function ensureChatAndHistory(args: {
 
   if (chatId) {
     /* Continuation — load existing messages, append the new user
-       turn. Membership-gate enforced via WHERE clause. */
+       turn. Membership-gate enforced via WHERE clause.
+       AUDIT-FIX H13: only request the fields needed for Anthropic's
+       message-replay (role + content). Previously the find loaded the
+       FULL AtlasMessage rows including `citations jsonb`, `costUsd`,
+       `inputTokens`, `outputTokens`, `toolsUsed`, `senderUserId` and —
+       most expensive — `content jsonb` for ALL past messages, where
+       content can hold base64-encoded images (5MB+ per image). For a
+       chat with 20 image-attached turns that's 100MB+ pulled per
+       continuation request, even though Anthropic's API only consumes
+       `{ role, content }`. Trimming the SELECT cuts continuation
+       latency dramatically and removes a per-turn memory spike. */
     const chat = await prisma.atlasChat.findFirst({
       where: { id: chatId, organizationId, ownerUserId: userId },
       select: {
         id: true,
-        messages: { orderBy: { createdAt: "asc" } },
+        messages: {
+          orderBy: { createdAt: "asc" },
+          select: {
+            role: true,
+            content: true,
+          },
+        },
       },
     });
     if (!chat) {
@@ -488,12 +692,18 @@ async function ensureChatAndHistory(args: {
        reference its id later (and so the message is durable even if
        the upstream call fails). Images live inside the content jsonb
        as proper Anthropic-style blocks so AtlasChatView can re-render
-       thumbnails on reload. */
+       thumbnails on reload.
+       AUDIT-FIX H14: cap serialized content at 1 MB before persist.
+       Strips inline image-bytes if the row would exceed the cap. */
+    const sanitizedUserContent = sanitizeContentForPersistence(userContent, {
+      chatId: chat.id,
+      role: "user",
+    });
     await prisma.atlasMessage.create({
       data: {
         chatId: chat.id,
         role: "user",
-        content: userContent as unknown as object,
+        content: sanitizedUserContent as object,
         toolsUsed: [],
       },
     });
@@ -516,6 +726,14 @@ async function ensureChatAndHistory(args: {
   }
 
   /* New chat. */
+  /* AUDIT-FIX H14: cap serialized content at 1 MB before persist —
+     same path as the continuation branch, applied here for the nested
+     create on the new-chat code path. The chatId is not yet known so
+     we log "(new-chat)" as the context. */
+  const sanitizedNewChatUserContent = sanitizeContentForPersistence(
+    userContent,
+    { chatId: "(new-chat)", role: "user" },
+  );
   const created = await prisma.atlasChat.create({
     data: {
       organizationId,
@@ -528,7 +746,7 @@ async function ensureChatAndHistory(args: {
         create: [
           {
             role: "user",
-            content: userContent as unknown as object,
+            content: sanitizedNewChatUserContent as object,
             toolsUsed: [],
           },
         ],
@@ -629,10 +847,41 @@ export async function runChat(
 
       send({ type: "chat_started", chatId });
 
+      /* AUDIT-FIX M3: SSE keep-alive heartbeat.
+         ─────────────────────────────────────────────────────────────
+         Long agent-class turns (4+ minutes when the model chains
+         many tool calls) can be silently terminated by intermediate
+         proxies — Vercel's Edge Network and Cloudflare drop idle
+         connections after ~60s with no bytes flowing. The Anthropic
+         SDK's `text` event fires only when the model emits content;
+         between iterations of the tool-loop there can be 10-30s of
+         "tool execution" with zero bytes on the wire.
+         Fix: emit an SSE comment line (`: keepalive\n\n`) every 15s.
+         Comment lines are part of the SSE spec — clients ignore
+         them, but proxies see "data flowing" and keep the
+         connection alive. We send via the encoder directly (not the
+         `send()` helper) because send() emits `data:` lines, and
+         the keep-alive must be a comment. Cleared in the outer
+         `finally` so it doesn't outlive the controller. */
+      const keepaliveInterval = setInterval(() => {
+        try {
+          controller.enqueue(encoder.encode(`: keepalive\n\n`));
+        } catch {
+          /* Controller closed — ignore. The interval is cleared
+             in the outer finally regardless. */
+        }
+      }, 15_000);
+
       const conversation: Anthropic.MessageParam[] = [...history];
       const toolsUsedThisTurn: string[] = [];
       let totalInputTokens = 0;
       let totalOutputTokens = 0;
+      /* AUDIT-FIX H10: accumulate prompt-cache token classes across
+         tool-loop iterations so the final costUsd reflects real
+         Anthropic pricing (cache-read ~10× cheaper, cache-write
+         ~25% more expensive than uncached input). */
+      let totalCacheCreationTokens = 0;
+      let totalCacheReadTokens = 0;
       let assistantTextBuffer = "";
       /* finalAssistantBlocks holds the blocks we persist into the
          AtlasMessage.content jsonb so the chat-view can replay the
@@ -799,63 +1048,115 @@ export async function runChat(
             }),
           });
 
+          /* AUDIT-FIX H9: Inactivity-timer must be cleared on every
+             exit path — success, abort, AND error. Previously the
+             clearTimeout() only ran on the success path (after
+             `await turnStream.finalMessage()` resolved). When the
+             upstream call threw (Anthropic 500, network drop, abort,
+             SDK validation error), the function bounced into the outer
+             catch and the timer was never cleared → after 30s the
+             deferred `turnStream.abort()` callback fired against a
+             stale stream-handle, the listener-closures held references
+             to the (now-orphaned) `assistantTextBuffer` etc. Across
+             many failed chats this is a death-by-a-thousand-cuts
+             memory leak.
+             Fix: declare the timer-ref at the iteration scope and
+             wrap the body in try/finally. The finally ALWAYS runs
+             (success, throw, await-rejection) and unconditionally
+             clears the timer if it's still armed. We use a `let`
+             at the scope outside the inner closure so the finally
+             can see the same reference the bump() rebinds. */
           let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
-          const bump = () => {
-            if (inactivityTimer) clearTimeout(inactivityTimer);
-            inactivityTimer = setTimeout(() => {
-              /* AUDIT-FIX M22: Mark the run as aborted BEFORE calling
-                 turnStream.abort() so the success-path persist (below)
-                 can short-circuit and let the catch-handler's failed-
-                 state UPDATE be the single writer. Without this flag
-                 a race could leave a "looks-successful" row with
-                 truncated content. */
-              aborted = true;
-              turnStream.abort();
-            }, STREAM_INACTIVITY_TIMEOUT_MS);
-          };
-          bump();
-
-          turnStream.on("text", (delta) => {
+          let iterationFinalMessage: Anthropic.Message | null = null;
+          try {
+            const bump = () => {
+              if (inactivityTimer) clearTimeout(inactivityTimer);
+              inactivityTimer = setTimeout(() => {
+                /* AUDIT-FIX M22: Mark the run as aborted BEFORE calling
+                   turnStream.abort() so the success-path persist (below)
+                   can short-circuit and let the catch-handler's failed-
+                   state UPDATE be the single writer. Without this flag
+                   a race could leave a "looks-successful" row with
+                   truncated content. */
+                aborted = true;
+                turnStream.abort();
+              }, STREAM_INACTIVITY_TIMEOUT_MS);
+            };
             bump();
-            assistantTextBuffer += delta;
-            send({ type: "text", delta });
-          });
 
-          /* Listen for thinking deltas — the SDK's high-level `text`
-             event only fires for text content. Thinking deltas come
-             through the raw streamEvent. */
-          if (THINKING_ENABLED) {
-            turnStream.on("streamEvent", (evt) => {
-              if (
-                evt.type === "content_block_delta" &&
-                evt.delta &&
-                typeof evt.delta === "object" &&
-                "type" in evt.delta &&
-                evt.delta.type === "thinking_delta"
-              ) {
-                bump();
-                const tDelta = (evt.delta as { thinking?: string }).thinking;
-                if (tDelta) send({ type: "thinking_delta", delta: tDelta });
-              }
+            turnStream.on("text", (delta) => {
+              bump();
+              assistantTextBuffer += delta;
+              send({ type: "text", delta });
             });
+
+            /* Listen for thinking deltas — the SDK's high-level `text`
+               event only fires for text content. Thinking deltas come
+               through the raw streamEvent. */
+            if (THINKING_ENABLED) {
+              turnStream.on("streamEvent", (evt) => {
+                if (
+                  evt.type === "content_block_delta" &&
+                  evt.delta &&
+                  typeof evt.delta === "object" &&
+                  "type" in evt.delta &&
+                  evt.delta.type === "thinking_delta"
+                ) {
+                  bump();
+                  const tDelta = (evt.delta as { thinking?: string }).thinking;
+                  if (tDelta) send({ type: "thinking_delta", delta: tDelta });
+                }
+              });
+            }
+
+            turnStream.on("error", (err) => {
+              const msg = err instanceof Error ? err.message : String(err);
+              logger.error("[atlas/chat] stream error", {
+                chatId,
+                userId: input.userId,
+                error: msg,
+              });
+              send({ type: "error", message: msg });
+            });
+
+            /* Wait for the upstream turn to finish. */
+            const finalMessage = await turnStream.finalMessage();
+
+            totalInputTokens += finalMessage.usage.input_tokens;
+            totalOutputTokens += finalMessage.usage.output_tokens;
+            /* AUDIT-FIX H10: read cache token counts from Anthropic's
+               usage payload (optional fields — undefined when prompt-
+               caching is disabled or the request didn't trigger any
+               cached prefix). Sum across iterations so the final
+               cost reflects all cache hits/writes in the turn. */
+            totalCacheCreationTokens +=
+              finalMessage.usage.cache_creation_input_tokens ?? 0;
+            totalCacheReadTokens +=
+              finalMessage.usage.cache_read_input_tokens ?? 0;
+
+            /* Stash for the post-finally code path — TS won't let us
+               return finalMessage from inside try without changing the
+               outer flow, so re-bind on the iteration-scoped variable. */
+            iterationFinalMessage = finalMessage;
+          } finally {
+            /* AUDIT-FIX H9: ALWAYS clear the inactivity-timer when
+               leaving this iteration, regardless of success/error/
+               abort. Without this, error paths leak a 30-s timer per
+               failed turn — across many failed chats the deferred
+               aborts pile up and pin closures + buffers in memory. */
+            if (inactivityTimer) clearTimeout(inactivityTimer);
           }
-
-          turnStream.on("error", (err) => {
-            const msg = err instanceof Error ? err.message : String(err);
-            logger.error("[atlas/chat] stream error", {
-              chatId,
-              userId: input.userId,
-              error: msg,
-            });
-            send({ type: "error", message: msg });
-          });
-
-          /* Wait for the upstream turn to finish. */
-          const finalMessage = await turnStream.finalMessage();
-          if (inactivityTimer) clearTimeout(inactivityTimer);
-
-          totalInputTokens += finalMessage.usage.input_tokens;
-          totalOutputTokens += finalMessage.usage.output_tokens;
+          /* Re-acquire the finalMessage we stashed in the try-block.
+             If the await threw (no finalMessage assigned), execution
+             never reaches here — we bounce into the outer catch via
+             the implicit re-throw from the try/finally. */
+          const finalMessage = iterationFinalMessage;
+          if (!finalMessage) {
+            // Defensive — should be unreachable.
+            throw new Error(
+              "ATLAS_INVARIANT: finalMessage missing after try/finally",
+            );
+          }
 
           /* Append the assistant turn into the conversation so the
              next iteration can see it. */
@@ -1061,7 +1362,15 @@ export async function runChat(
            the real citations array (if any) OR null (no citations
            extracted) — either way the placeholder-flag is gone, which
            is the success-marker for downstream consumers. */
-        const costUsd = estimateCostUsd(totalInputTokens, totalOutputTokens);
+        /* AUDIT-FIX H10: pass cache-create + cache-read tokens so the
+           cost reflects the (often dramatically lower) effective price
+           when the prompt-cache hits. */
+        const costUsd = estimateCostUsd(
+          totalInputTokens,
+          totalOutputTokens,
+          totalCacheCreationTokens,
+          totalCacheReadTokens,
+        );
         const dedupedTools = Array.from(new Set(toolsUsedThisTurn));
         /* Sprint 4: extract [ATLAS:source-id] citations from the
            streamed text + decorate with validity status. The chat-view
@@ -1076,10 +1385,19 @@ export async function runChat(
             "ATLAS_INVARIANT: assistantMessageId missing at success-persist",
           );
         }
+        /* AUDIT-FIX H14: cap serialized assistant content at 1 MB
+           before persist. Assistant blocks shouldn't normally contain
+           image bytes (model emits text/tool_use/thinking), but a
+           pathological tool-result content might still bloat the
+           accumulated content blocks. Belt-and-suspenders. */
+        const sanitizedFinalBlocks = sanitizeContentForPersistence(
+          finalAssistantBlocks,
+          { chatId, role: "assistant" },
+        );
         await prisma.atlasMessage.update({
           where: { id: assistantMessageId },
           data: {
-            content: finalAssistantBlocks as unknown as object,
+            content: sanitizedFinalBlocks as object,
             inputTokens: totalInputTokens,
             outputTokens: totalOutputTokens,
             costUsd,
@@ -1160,11 +1478,18 @@ export async function runChat(
               citations: null,
             } as unknown as Anthropic.ContentBlock);
           }
+          /* AUDIT-FIX H14: cap partial-content too — if the upstream
+             streamed a multi-MB response before failing, we still
+             enforce the row-cap. */
+          const sanitizedPartialBlocks = sanitizeContentForPersistence(
+            partialBlocks,
+            { chatId, role: "assistant" },
+          );
           await prisma.atlasMessage
             .update({
               where: { id: assistantMessageId },
               data: {
-                content: partialBlocks as unknown as object,
+                content: sanitizedPartialBlocks as object,
                 inputTokens:
                   totalInputTokens > 0 ? totalInputTokens : undefined,
                 outputTokens:
@@ -1192,6 +1517,12 @@ export async function runChat(
             });
         }
       } finally {
+        /* AUDIT-FIX M3: tear down the keep-alive heartbeat before
+           closing the controller. Without this the interval would
+           continue to fire `: keepalive\n\n` after the stream is
+           closed (controller.enqueue throws, the inner try/catch
+           swallows but the timer leaks until GC). */
+        clearInterval(keepaliveInterval);
         controller.close();
       }
     },
@@ -1206,6 +1537,14 @@ export async function runChat(
  * Load a chat for the current user, including all messages. Used by
  * GET /api/atlas/chat/[id]. Membership-gate enforced via WHERE clause
  * (orgId + ownerUserId).
+ *
+ * AUDIT-FIX H13: this UI-render path INTENTIONALLY selects more fields
+ * than the continuation-replay path (`ensureChatAndHistory`). The chat
+ * view needs to render token/cost badges, citation pills, and tool-use
+ * traces — Anthropic's API only needs `{ role, content }`. The
+ * trimmed-down replay path was the actual H13 fix; this loader stays
+ * field-selective (no `include`) so UI consumers get what they need
+ * without pulling unrelated FKs (e.g. `senderUserId`).
  */
 export async function loadChatForUser(args: {
   chatId: string;
