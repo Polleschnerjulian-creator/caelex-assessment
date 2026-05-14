@@ -21,6 +21,7 @@ import { getAtlasAuth } from "@/lib/atlas-auth";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { runChat, listChatsForUser } from "@/lib/atlas/chat-engine.server";
 import { logger } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -149,8 +150,9 @@ export async function POST(req: NextRequest) {
     if (msg.includes("Mandate not found") || msg.includes("Chat not found")) {
       return NextResponse.json({ error: msg }, { status: 404 });
     }
+    // AUDIT-FIX M23: mask userId (CUID) before logging
     logger.error("[atlas/chat] POST failed", {
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
       error: msg,
     });
     return NextResponse.json({ error: "Chat request failed" }, { status: 500 });

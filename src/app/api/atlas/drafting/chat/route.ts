@@ -30,6 +30,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 import { processChat } from "@/lib/atlas/drafting-chat/engine.server";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
@@ -118,8 +119,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       msg.includes("ANTHROPIC_API_KEY") || msg.includes("AI_GATEWAY_API_KEY")
         ? 503
         : 500;
+    // AUDIT-FIX M23: mask userId (CUID) before logging
     logger.error("[atlas/drafting/chat] processing failed", {
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
       orgId: atlas.organizationId,
       error: msg,
     });

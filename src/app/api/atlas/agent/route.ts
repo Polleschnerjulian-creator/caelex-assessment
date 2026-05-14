@@ -33,6 +33,7 @@ import { executeAtlasTool } from "@/lib/atlas/atlas-tool-executor";
 import { extractCitations } from "@/lib/atlas/citation-extractor.server";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { getSafeErrorMessage } from "@/lib/validations";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -602,12 +603,20 @@ export async function POST(req: NextRequest) {
           toolsUsed: Array.from(new Set(toolsUsed)),
         });
       } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
+        const rawMsg = err instanceof Error ? err.message : String(err);
+        /* AUDIT-FIX M25: log the RAW message internally for ops/debug,
+           but never persist or stream it untouched. Raw errors can
+           include stack frames, file paths, env-var names, or third-
+           party library messages with API-key fragments. */
         logger.error("[atlas/agent] run failed", {
           userId: atlas.userId,
           runId,
-          error: msg,
+          error: rawMsg,
         });
+        /* AUDIT-FIX M25: sanitize before persisting + before streaming
+           to client. In production this collapses to the generic
+           message; in dev it preserves the real text for debugging. */
+        const safeMsg = getSafeErrorMessage(err, "Agent run failed");
         /* Persist the failure-state so it shows up in history with
            the error-message visible. */
         if (runId) {
@@ -616,7 +625,8 @@ export async function POST(req: NextRequest) {
               where: { id: runId },
               data: {
                 status: "error",
-                errorMessage: msg.slice(0, 1000),
+                /* AUDIT-FIX M25: sanitized message, then truncated. */
+                errorMessage: safeMsg.slice(0, 1000),
                 steps: persistedSteps as unknown as object,
                 reasoning: persistedReasoning as unknown as object,
                 inputTokens: totalInputTokens,
@@ -628,7 +638,8 @@ export async function POST(req: NextRequest) {
             /* swallow — already in error path */
           }
         }
-        send({ type: "error", message: msg });
+        /* AUDIT-FIX M25: SSE stream also sees only the sanitized text. */
+        send({ type: "error", message: safeMsg });
       } finally {
         controller.close();
       }

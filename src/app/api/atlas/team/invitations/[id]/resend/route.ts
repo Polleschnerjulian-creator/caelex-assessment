@@ -8,6 +8,7 @@ import {
   createRateLimitResponse,
 } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 
 /**
  * POST /api/atlas/team/invitations/[id]/resend
@@ -131,10 +132,11 @@ export async function POST(
       });
     }
 
+    // AUDIT-FIX M23: mask userId (CUID) before logging
     logger.info("Atlas invitation resent", {
       invitationId: invitation.id,
       organizationId: atlas.organizationId,
-      resentBy: atlas.userId,
+      resentBy: maskId(atlas.userId),
     });
 
     return NextResponse.json({

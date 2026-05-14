@@ -7,6 +7,7 @@ import {
   createRateLimitResponse,
 } from "@/lib/ratelimit";
 import { logger, maskEmail } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 import { renderRevokeNotificationEmail } from "@/lib/email/revoke-notification";
 
 /**
@@ -75,10 +76,11 @@ export async function DELETE(
       organizationName: cancelled.organizationName,
     });
 
+    // AUDIT-FIX M23: mask userId (CUID) before logging
     logger.info("Atlas invitation revoked", {
       invitationId: id,
       organizationId: atlas.organizationId,
-      revokedBy: atlas.userId,
+      revokedBy: maskId(atlas.userId),
       recipientEmail: maskEmail(cancelled.email),
     });
 

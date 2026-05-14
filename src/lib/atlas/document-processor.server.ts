@@ -603,7 +603,19 @@ export async function listMandateFiles(args: {
 
   /* Compute embed status per file. One Prisma groupBy returns
      counts efficiently. M2 Vault-RAG visibility — lawyers see
-     ✓ embedded vs ⏳ pending next to each file row. */
+     ✓ embedded vs ⏳ pending next to each file row.
+
+     AUDIT-FIX M28: Add organizationId + mandateId to the WHERE
+     clause as belt-and-suspenders tenancy isolation. The fileIds
+     are already org-and-membership-scoped via the findMany above
+     (mandate.organizationId + members-OR-owner gate), so a
+     cross-tenant sourceRef collision would already imply a bug
+     elsewhere — but defense-in-depth is cheap here and the
+     `(organizationId, mandateId, sourceType)` index makes the
+     filtered groupBy strictly faster too. Without these fields a
+     hypothetical foreign chunk re-using the same CUID as one of
+     our fileIds would inflate the embedded-count and lie to the
+     lawyer in the vault UI. */
   const fileIds = files.map((f) => f.id);
   const chunkCounts =
     fileIds.length === 0
@@ -611,6 +623,8 @@ export async function listMandateFiles(args: {
       : await prisma.atlasKnowledgeChunk.groupBy({
           by: ["sourceRef"],
           where: {
+            organizationId: args.organizationId,
+            mandateId: args.mandateId,
             sourceType: "mandate_file",
             sourceRef: { in: fileIds },
           },

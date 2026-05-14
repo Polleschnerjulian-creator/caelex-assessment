@@ -9,6 +9,7 @@ import {
   createRateLimitResponse,
 } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 import { renderInvitationEmail } from "@/lib/email/invitation";
 
 export const runtime = "nodejs";
@@ -191,10 +192,11 @@ export async function POST(request: Request) {
       });
     }
 
+    // AUDIT-FIX M23: mask userId (CUID) before logging
     logger.info("Atlas team invite created", {
       invitationId: invitation.id,
       organizationId: atlas.organizationId,
-      invitedBy: atlas.userId,
+      invitedBy: maskId(atlas.userId),
     });
 
     // HIGH-2: do NOT echo the raw token back in the API response.
@@ -259,7 +261,7 @@ export async function DELETE(request: Request) {
   logger.info("Atlas team member removed", {
     organizationId: atlas.organizationId,
     removedMemberId: memberId,
-    removedBy: atlas.userId,
+    removedBy: maskId(atlas.userId),
   });
 
   return NextResponse.json({ success: true });

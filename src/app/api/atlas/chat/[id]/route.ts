@@ -14,6 +14,7 @@ import { prisma } from "@/lib/prisma";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { loadChatForUser } from "@/lib/atlas/chat-engine.server";
 import { logger } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -62,8 +63,9 @@ export async function DELETE(
     return NextResponse.json({ ok: true });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    // AUDIT-FIX M23: mask userId (CUID) before logging
     logger.error("[atlas/chat/id] DELETE failed", {
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
       error: msg,
     });
     return NextResponse.json({ error: "Delete failed" }, { status: 500 });

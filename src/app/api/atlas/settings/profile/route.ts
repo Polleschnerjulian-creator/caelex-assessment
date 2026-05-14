@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 
 export const runtime = "nodejs";
 
@@ -60,8 +61,9 @@ export async function PATCH(request: Request) {
       select: { name: true, language: true },
     });
 
+    // AUDIT-FIX M23: mask userId (CUID) before logging
     logger.info("Atlas profile updated", {
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
       fields: Object.keys(updates),
     });
 

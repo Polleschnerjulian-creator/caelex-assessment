@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 
 /**
  * GET /api/atlas/settings/context
@@ -64,8 +65,9 @@ export async function GET() {
       },
     });
   } catch (err) {
+    // AUDIT-FIX M23: mask userId (CUID) before logging
     logger.error("atlas context fetch failed", {
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
       error: err instanceof Error ? err.message : String(err),
     });
     return NextResponse.json({ error: "Internal error" }, { status: 500 });

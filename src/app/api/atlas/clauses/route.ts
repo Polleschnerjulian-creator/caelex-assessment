@@ -20,6 +20,7 @@ import { getAtlasAuth } from "@/lib/atlas-auth";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -67,14 +68,15 @@ export async function GET(req: NextRequest) {
         createdBy: { select: { id: true, name: true, email: true } },
       },
     });
+    // AUDIT-FIX M23: mask userId (CUID) before logging
     logger.info("[atlas/clauses] list ok", {
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
       count: clauses.length,
     });
     return NextResponse.json({ clauses });
   } catch (err) {
     logger.error("[atlas/clauses] list failed", {
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
       error: err instanceof Error ? err.message : String(err),
     });
     return NextResponse.json({ error: "List failed" }, { status: 500 });
@@ -168,13 +170,13 @@ export async function POST(req: NextRequest) {
       },
     });
     logger.info("[atlas/clauses] created", {
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
       clauseId: created.id,
     });
     return NextResponse.json({ clause: created });
   } catch (err) {
     logger.error("[atlas/clauses] create failed", {
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
       error: err instanceof Error ? err.message : String(err),
     });
     return NextResponse.json({ error: "Create failed" }, { status: 500 });

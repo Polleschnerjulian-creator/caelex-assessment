@@ -665,6 +665,23 @@ export async function runChat(
          placeholder doesn't trigger an UPDATE on a non-existent row. */
       let assistantMessageId: string | null = null;
 
+      /* AUDIT-FIX M22: Belt-and-suspenders flag for inactivity-abort.
+         ─────────────────────────────────────────────────────────────
+         The 30-s STREAM_INACTIVITY_TIMEOUT_MS guard calls
+         turnStream.abort() when no delta arrives. The abort
+         normally propagates through `await turnStream.finalMessage()`
+         and hits the outer catch — which then UPDATEs the placeholder
+         with the `_streamingFailed` sentinel (correct behaviour).
+         BUT: if the abort fires mid-loop (after finalMessage()
+         resolves for one iteration but before the next) there's a
+         window where the success-path UPDATE could fire on a
+         stream that was aborted by us. We track the abort
+         explicitly and gate the success-path UPDATE on `!aborted`,
+         so the catch handler's failed-state UPDATE wins
+         deterministically and we never end up with a half-written
+         "successful" assistant row that's missing real content. */
+      let aborted = false;
+
       try {
         /* AUDIT-FIX H1: persist placeholder upfront so any stream
            interruption past this point still leaves a row. */
@@ -737,10 +754,16 @@ export async function runChat(
           let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
           const bump = () => {
             if (inactivityTimer) clearTimeout(inactivityTimer);
-            inactivityTimer = setTimeout(
-              () => turnStream.abort(),
-              STREAM_INACTIVITY_TIMEOUT_MS,
-            );
+            inactivityTimer = setTimeout(() => {
+              /* AUDIT-FIX M22: Mark the run as aborted BEFORE calling
+                 turnStream.abort() so the success-path persist (below)
+                 can short-circuit and let the catch-handler's failed-
+                 state UPDATE be the single writer. Without this flag
+                 a race could leave a "looks-successful" row with
+                 truncated content. */
+              aborted = true;
+              turnStream.abort();
+            }, STREAM_INACTIVITY_TIMEOUT_MS);
           };
           bump();
 
@@ -964,6 +987,22 @@ export async function runChat(
 
           send({ type: "done" });
           return;
+        }
+
+        /* AUDIT-FIX M22: If the inactivity-guard tripped at any point
+           in the loop, do NOT walk the success-path. The abort would
+           normally cause turnStream.finalMessage() to throw and bounce
+           into catch — but if the abort fires AFTER finalMessage()
+           resolves for the prior iteration but BEFORE the next call
+           starts (rare race), we'd reach this success branch with
+           incomplete state. Throwing here forwards the run into the
+           catch handler so the placeholder UPDATE writes the
+           `_streamingFailed` sentinel + partial buffer like any other
+           interruption. */
+        if (aborted) {
+          throw new Error(
+            "ATLAS_STREAM_INACTIVITY_ABORT: upstream stream aborted by inactivity guard",
+          );
         }
 
         /* AUDIT-FIX H1: Persist the assistant turn by UPDATING the

@@ -14,6 +14,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { logger } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -79,8 +80,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ mandate: created });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    // AUDIT-FIX M23: mask userId (CUID) before logging
     logger.error("[atlas/mandate] POST failed", {
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
       error: msg,
     });
     return NextResponse.json(

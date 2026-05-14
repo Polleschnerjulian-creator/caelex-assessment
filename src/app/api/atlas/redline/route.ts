@@ -37,6 +37,7 @@ import {
 import { diffWords } from "@/lib/atlas/redline";
 import { buildAnthropicClient } from "@/lib/atlas/anthropic-client";
 import { logger } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 import type Anthropic from "@anthropic-ai/sdk";
 
 export const runtime = "nodejs";
@@ -234,7 +235,7 @@ export async function POST(req: NextRequest) {
        file is corrupt / encrypted / scanned image). */
     if (err instanceof MimeMismatchError) {
       logger.warn("[atlas/redline] mime mismatch", {
-        userId: atlas.userId,
+        userId: maskId(atlas.userId),
         fileName: err.fileName,
       });
       return NextResponse.json(
@@ -246,7 +247,7 @@ export async function POST(req: NextRequest) {
       );
     }
     logger.error("[atlas/redline] extraction failed", {
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
       error: err instanceof Error ? err.message : String(err),
     });
     return NextResponse.json(
@@ -313,7 +314,7 @@ export async function POST(req: NextRequest) {
           .trim();
       } catch (err) {
         logger.warn("[atlas/redline] commentary generation failed", {
-          userId: atlas.userId,
+          userId: maskId(atlas.userId),
           error: err instanceof Error ? err.message : String(err),
         });
       }

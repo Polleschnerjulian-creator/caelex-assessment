@@ -24,6 +24,7 @@ import { isSuperAdmin } from "@/lib/super-admin";
 import { ACTIVE_ORG_COOKIE } from "@/lib/atlas-auth";
 import { cookies } from "next/headers";
 import { logger } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -187,8 +188,9 @@ export async function POST(request: Request) {
     maxAge: 60 * 60 * 24 * 90,
   });
 
+  // AUDIT-FIX M23: mask userId (CUID) before logging
   logger.info("[atlas] active org switched", {
-    userId: session.user.id,
+    userId: maskId(session.user.id),
     organizationId,
     superAdmin: isAdmin,
   });

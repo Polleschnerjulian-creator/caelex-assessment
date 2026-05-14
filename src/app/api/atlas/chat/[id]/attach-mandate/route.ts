@@ -24,6 +24,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { logger } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -103,8 +104,9 @@ export async function POST(
         updatedAt: true,
       },
     });
+    // AUDIT-FIX M23: mask userId (CUID); leave chatId/mandateId for ops debugging
     logger.info("[atlas/chat/attach-mandate] ok", {
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
       chatId,
       mandateId,
     });
@@ -112,7 +114,7 @@ export async function POST(
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     logger.error("[atlas/chat/attach-mandate] update failed", {
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
       chatId,
       mandateId,
       error: msg,

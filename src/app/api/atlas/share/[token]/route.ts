@@ -20,12 +20,47 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server";
+import { timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+/**
+ * AUDIT-FIX M26 (2026-05): generic error response for ALL failure modes
+ * (token-not-found, sharing-disabled, expired, hard-max-age exceeded).
+ * Coalescing the error code-paths prevents an attacker from
+ * distinguishing "this token never existed" from "this token used to
+ * exist but was revoked / expired". Same body + same 404 status.
+ * Differentiated reasons are logged server-side only.
+ */
+function notFoundResponse() {
+  return NextResponse.json(
+    { error: "Invalid or expired share link" },
+    { status: 404 },
+  );
+}
+
+/**
+ * AUDIT-FIX M26 (2026-05): timing-safe comparison of the URL-supplied
+ * token against the DB-stored token. Plain `===` is timing-sensitive —
+ * an attacker could probe character-by-character. We still index the
+ * DB by shareToken (the lookup itself is O(1) with the index), but
+ * after the row is fetched we re-verify the token via a constant-time
+ * compare to defend against any future codepath that might land here
+ * with a partial or near-match token (e.g. cached row, fuzzy lookup).
+ *
+ * Returns false on length mismatch (timingSafeEqual would throw) or
+ * non-equal bytes; true only on exact match.
+ */
+function tokensMatch(a: string, b: string): boolean {
+  const aBuf = Buffer.from(a, "utf8");
+  const bBuf = Buffer.from(b, "utf8");
+  if (aBuf.length !== bBuf.length) return false;
+  return timingSafeEqual(aBuf, bBuf);
+}
 
 export async function GET(
   request: NextRequest,
@@ -43,8 +78,13 @@ export async function GET(
     }
 
     const { token } = await context.params;
+    // AUDIT-FIX M26: shape check + generic 404 (no separate "too short"
+    // / "too long" branches that an attacker could distinguish).
     if (!token || token.length < 16 || token.length > 64) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
+      logger.warn(
+        `Atlas share lookup rejected: invalid token shape (len=${token?.length ?? 0})`,
+      );
+      return notFoundResponse();
     }
 
     const ws = await prisma.atlasWorkspace.findUnique({
@@ -52,6 +92,7 @@ export async function GET(
       select: {
         id: true,
         title: true,
+        shareToken: true,
         shareEnabledAt: true,
         shareExpiresAt: true,
         createdAt: true,
@@ -70,23 +111,43 @@ export async function GET(
         },
       },
     });
-    // Return 404 (not 401) for missing tokens — we don't want to
-    // leak "this token used to exist but the lawyer revoked it".
-    // M-4: same 404 if shareEnabledAt was never set (token persisted
-    // in DB but sharing was never properly activated) or if the link
-    // has expired. The lawyer can re-enable sharing to mint a fresh
-    // expiry window without rotating the token.
+
+    // AUDIT-FIX M26: coalesce ALL failure reasons into one generic 404
+    // response so an external caller cannot distinguish:
+    //   - token not found at all
+    //   - token exists but sharing was never enabled
+    //   - token exists but share has expired (shareExpiresAt past)
+    //   - token exists but share is older than HARD_MAX_AGE_MS
+    //   - timing-safe re-comparison failed (defence-in-depth)
+    // Each reason is logged server-side for operator debugging, but
+    // the client only ever gets the generic body + 404. No more
+    // separate 410 ("expired") that lets an attacker confirm the
+    // token did exist.
+    const HARD_MAX_AGE_MS = 180 * 24 * 60 * 60 * 1000;
     if (!ws) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
+      logger.info("Atlas share lookup: token not found");
+      return notFoundResponse();
+    }
+    // AUDIT-FIX M26: timing-safe re-verification of the token.
+    // ws.shareToken is `String? @unique` in the schema. A findUnique
+    // by shareToken means the row necessarily has a matching non-null
+    // token, but TypeScript can't know that, so we guard explicitly +
+    // collapse to the same generic 404 if for any reason it's null.
+    if (!ws.shareToken || !tokensMatch(ws.shareToken, token)) {
+      logger.warn(
+        `Atlas share lookup: token re-verification failed for workspace=${ws.id}`,
+      );
+      return notFoundResponse();
     }
     if (!ws.shareEnabledAt) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
+      logger.info(
+        `Atlas share lookup: sharing not enabled for workspace=${ws.id}`,
+      );
+      return notFoundResponse();
     }
     if (ws.shareExpiresAt && ws.shareExpiresAt.getTime() < Date.now()) {
-      return NextResponse.json(
-        { error: "Share link expired" },
-        { status: 410 },
-      );
+      logger.info(`Atlas share lookup: link expired for workspace=${ws.id}`);
+      return notFoundResponse();
     }
     /* Compliance-Audit 2026-05 hardening: fallback hard-max-age cap.
        Any share whose `shareEnabledAt` is older than HARD_MAX_AGE_MS
@@ -94,15 +155,14 @@ export async function GET(
        (e.g. legacy shares minted before M-4 added the expiry field).
        Belt-and-suspenders alongside the cron backfill — even if the
        backfill is delayed, no link survives forever. */
-    const HARD_MAX_AGE_MS = 180 * 24 * 60 * 60 * 1000;
     if (
       !ws.shareExpiresAt &&
       ws.shareEnabledAt.getTime() < Date.now() - HARD_MAX_AGE_MS
     ) {
-      return NextResponse.json(
-        { error: "Share link expired (legacy hard-max)" },
-        { status: 410 },
+      logger.info(
+        `Atlas share lookup: legacy hard-max-age exceeded for workspace=${ws.id}`,
       );
+      return notFoundResponse();
     }
 
     return NextResponse.json({

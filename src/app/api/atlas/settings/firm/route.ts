@@ -3,6 +3,7 @@ import { z } from "zod";
 import { canManageFirm, getAtlasAuth, isOwner } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 
 export const runtime = "nodejs";
 
@@ -69,9 +70,10 @@ export async function PATCH(request: Request) {
   if (!parsed.success) {
     // Audit L5: don't leak Zod schema shape in the error body. Full
     // issues go to the server log where an operator can debug.
+    // AUDIT-FIX M23: mask userId (CUID) before logging
     logger.warn("Atlas firm settings payload rejected", {
       issues: parsed.error.issues,
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
     });
     const fields = parsed.error.issues
       .map((i) => i.path.join("."))
@@ -99,7 +101,7 @@ export async function PATCH(request: Request) {
 
     logger.info("Atlas firm settings updated", {
       organizationId: atlas.organizationId,
-      updatedBy: atlas.userId,
+      updatedBy: maskId(atlas.userId),
       fields: Object.keys(updates),
     });
 

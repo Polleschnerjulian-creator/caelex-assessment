@@ -5,6 +5,7 @@ import { PasswordChangeSchema, formatZodErrors } from "@/lib/validations";
 import { hashPassword, verifyPassword } from "@/lib/auth";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
+import { maskEmail, maskId } from "@/lib/atlas/log-masking";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -105,9 +106,10 @@ export async function PATCH(request: Request) {
     data: { password: newHash },
   });
 
+  // AUDIT-FIX M23: mask userId (CUID) and email (PII) before logging
   logger.info("Atlas user changed password", {
-    userId: user.id,
-    email: user.email ?? undefined,
+    userId: maskId(user.id),
+    email: maskEmail(user.email ?? ""),
   });
 
   return NextResponse.json({ success: true });

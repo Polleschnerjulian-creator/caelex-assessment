@@ -18,6 +18,7 @@ import { getAtlasAuth } from "@/lib/atlas-auth";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { getSafeErrorMessage } from "@/lib/validations";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -57,7 +58,24 @@ export async function GET(
     return NextResponse.json({ error: "Run not found" }, { status: 404 });
   }
 
-  return NextResponse.json({ run });
+  /* AUDIT-FIX M25: defense-in-depth — even though /api/atlas/agent now
+     sanitizes errorMessage at write-time, we re-sanitize on read so any
+     historical row written before the M25 patch (or any future write
+     path that forgets to sanitize) can't leak internals to the client.
+     getSafeErrorMessage is a no-op-ish in dev (preserves the message
+     for debugging) and returns a generic string in production. */
+  const safeRun =
+    run.errorMessage !== null && run.errorMessage !== undefined
+      ? {
+          ...run,
+          errorMessage: getSafeErrorMessage(
+            new Error(run.errorMessage),
+            "Agent run failed",
+          ),
+        }
+      : run;
+
+  return NextResponse.json({ run: safeRun });
 }
 
 export async function DELETE(

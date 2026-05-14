@@ -118,8 +118,13 @@ export async function GET(
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="atlas-memo-${code.toLowerCase()}-${new Date().toISOString().slice(0, 10)}.pdf"`,
-      // Private: memos can differ per user once auth-based scoping grows
-      "Cache-Control": "private, max-age=3600",
+      // AUDIT-FIX M24 (2026-05): was `private, max-age=3600`. Even though
+      // `private` blocks shared caches, the user's browser would cache
+      // the PDF for 1h — so a lawyer downloading on a shared computer
+      // would leave the memo retrievable from the browser cache without
+      // re-auth for the next user. Force no-store so each download is a
+      // fresh fetch through the auth gate above.
+      "Cache-Control": "private, no-store, max-age=0",
       "X-RateLimit-Remaining": rl.remaining.toString(),
     },
   });

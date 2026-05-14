@@ -51,9 +51,40 @@ const RECENT_MATTER_LIMIT = 5;
 // move that fast, and the hour-bucket forces a fresh greeting/brief
 // when the lawyer crosses 12:00 / 18:00 boundaries even if they
 // haven't crossed the 5min TTL.
+//
+// AUDIT-FIX M21 (2026-05): the cache holds matter names, client names
+// and task titles — i.e. confidential lawyer-mandate data. To bound
+// the residence time of confidential data in Node memory, this cache
+// is hard-capped:
+//   - per-entry TTL: 5min (existing) — see BRIEF_TTL_MS below
+//   - max-entries:  50 (LRU-evict oldest when exceeded)
+//   - per-instance: serverless containers scale down independently
+// We KEEP the in-process cache (vs Upstash) because the briefing is a
+// cheap query and external-cache RTT would defeat the snappy
+// idle-mode-reopen UX. Strict caps + short TTL keep the exposure
+// window minimal. Documented + reviewed as part of audit M21.
 type CachedBrief = { brief: BriefResponse; expiresAt: number };
 const briefCache = new Map<string, CachedBrief>();
 const BRIEF_TTL_MS = 5 * 60 * 1000;
+const BRIEF_CACHE_MAX_ENTRIES = 50;
+
+/** AUDIT-FIX M21: insert with LRU-cap eviction. Map preserves insertion
+ *  order, so the first key is the oldest. When at the cap, drop it
+ *  before adding the new entry. This bounds memory + the residence
+ *  time of any single entry's confidential payload. */
+function setBrief(key: string, value: CachedBrief): void {
+  if (briefCache.size >= BRIEF_CACHE_MAX_ENTRIES) {
+    const oldestKey = briefCache.keys().next().value;
+    if (oldestKey !== undefined) {
+      briefCache.delete(oldestKey);
+    }
+  }
+  // Touch-on-write: delete first so a re-set moves the key to the
+  // tail of the insertion order (i.e. it's now the freshest, last to
+  // be evicted). Standard Map-LRU pattern.
+  briefCache.delete(key);
+  briefCache.set(key, value);
+}
 
 interface BriefCta {
   label: string;
@@ -142,7 +173,7 @@ export async function GET(_request: NextRequest) {
           href: "/atlas/network/invite",
         },
       };
-      briefCache.set(cacheKey, {
+      setBrief(cacheKey, {
         brief: empty,
         expiresAt: Date.now() + BRIEF_TTL_MS,
       });
@@ -194,7 +225,7 @@ export async function GET(_request: NextRequest) {
 
     // Helper: cache + return one shot so all branches end the same way.
     const respond = (brief: BriefResponse) => {
-      briefCache.set(cacheKey, {
+      setBrief(cacheKey, {
         brief,
         expiresAt: Date.now() + BRIEF_TTL_MS,
       });

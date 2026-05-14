@@ -16,6 +16,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { logger } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
@@ -84,8 +85,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ mandates });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    // AUDIT-FIX M23: mask userId (CUID) before logging
     logger.error("[atlas/mandate/search] GET failed", {
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
       error: msg,
     });
     return NextResponse.json(

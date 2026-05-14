@@ -32,6 +32,7 @@ import {
   createRateLimitHeaders,
 } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -170,8 +171,9 @@ export async function POST(req: NextRequest) {
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
+    // AUDIT-FIX M23: mask userId (CUID) before logging
     logger.error("[atlas/transcribe] upstream fetch failed", {
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
       error: msg,
     });
     return NextResponse.json(
@@ -184,7 +186,7 @@ export async function POST(req: NextRequest) {
   if (!upstream.ok) {
     const text = await upstream.text().catch(() => "");
     logger.error("[atlas/transcribe] upstream non-2xx", {
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
       status: upstream.status,
       bodyPrefix: text.slice(0, 300),
     });
@@ -205,7 +207,7 @@ export async function POST(req: NextRequest) {
   }
 
   logger.info("[atlas/transcribe] ok", {
-    userId: atlas.userId,
+    userId: maskId(atlas.userId),
     durationMs,
     audioBytes: file.size,
     transcriptChars: data.text.length,

@@ -30,6 +30,7 @@ import {
 } from "@/lib/ratelimit";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -160,8 +161,9 @@ export async function POST(req: NextRequest) {
       (a, b) => b.confidence - a.confidence,
     );
 
+    // AUDIT-FIX M23: mask userId (CUID) before logging
     logger.info("[atlas/conflict-check] ok", {
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
       mandatesScanned: mandates.length,
       termsCount: terms.length,
       hits: dedupedHits.length,
@@ -177,7 +179,7 @@ export async function POST(req: NextRequest) {
     );
   } catch (err) {
     logger.error("[atlas/conflict-check] failed", {
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
       error: err instanceof Error ? err.message : String(err),
     });
     return NextResponse.json(

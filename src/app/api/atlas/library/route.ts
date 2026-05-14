@@ -114,16 +114,37 @@ export async function POST(request: NextRequest) {
       parsed.data.title?.trim() || defaultTitle || "Atlas-Notiz";
 
     // Phase 5+ — embed (title + query + content) for semantic recall.
-    // Best-effort: if the gateway call fails we save with an empty
-    // vector and the lazy-backfill path in /recall will retry on
-    // first read. Better than blocking the save on a transient
-    // gateway hiccup.
+    //
+    // AUDIT-FIX M27 (2026-05): previously the route fell back to
+    // `embedding: []` when embedLibraryText() returned null (rate
+    // limit, missing API key, transient gateway error). Persisting an
+    // empty vector silently broke semantic recall — the entry was
+    // saved but un-searchable, and cosineSimilarity over an empty
+    // vector is undefined behaviour for downstream consumers. The
+    // schema declares `embedding Float[]` (non-nullable + no default),
+    // so we can't store `null` either. Correct behaviour: refuse the
+    // save and surface a retryable 503 to the caller. The lawyer can
+    // retry once the embeddings backend recovers; no half-broken row
+    // ends up in the library.
     const embeddingInput = composeEmbeddingInput(
       finalTitle,
       trimmedContent,
       parsed.data.query?.trim() || null,
     );
-    const embedding = (await embedLibraryText(embeddingInput)) ?? [];
+    const embedding = await embedLibraryText(embeddingInput);
+    if (!embedding || embedding.length === 0) {
+      logger.warn(
+        `Library POST aborted: embedding service unavailable for user=${atlas.userId}`,
+      );
+      return NextResponse.json(
+        {
+          error:
+            "Could not save entry — semantic-search embedding service is temporarily unavailable. Please retry in a moment.",
+          code: "EMBEDDING_UNAVAILABLE",
+        },
+        { status: 503 },
+      );
+    }
 
     const entry = await prisma.atlasResearchEntry.create({
       data: {
