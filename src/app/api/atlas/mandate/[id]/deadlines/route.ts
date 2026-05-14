@@ -58,9 +58,22 @@ export async function GET(
     return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
+  /* AUDIT-FIX M18: Cap result-size at 200 deadlines per page + offer
+     cursor-pagination for callers that need more. Without `take`, a
+     mandate with 1000+ deadlines (theoretical worst-case after years
+     of regulatory-feed sync) returns the full list in a single
+     response — large payload, slow render, potential memory pressure
+     on the API node. Cursor-pagination keeps the contract simple
+     (just a `cursor` query-param + `nextCursor` in the response) and
+     compatible with the existing `dueAt` ordering. */
+  const TAKE = 200;
+  const cursor = req.nextUrl.searchParams.get("cursor");
   const deadlines = await prisma.atlasMandateDeadline.findMany({
     where: { mandateId },
     orderBy: { dueAt: "asc" },
+    take: TAKE,
+    cursor: cursor ? { id: cursor } : undefined,
+    skip: cursor ? 1 : 0,
     select: {
       id: true,
       title: true,
@@ -74,7 +87,13 @@ export async function GET(
     },
   });
 
-  return NextResponse.json({ deadlines });
+  /* nextCursor is the last id only when the page is full — a partial
+     page means we have hit the end. Clients pass it back as `?cursor=…`
+     to fetch the next page. */
+  const nextCursor =
+    deadlines.length === TAKE ? deadlines[deadlines.length - 1].id : null;
+
+  return NextResponse.json({ deadlines, nextCursor });
 }
 
 const PostBody = z.object({

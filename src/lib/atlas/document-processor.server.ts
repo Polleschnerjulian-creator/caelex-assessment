@@ -598,6 +598,13 @@ export async function listMandateFiles(args: {
       createdAt: true,
       uploadedBy: { select: { id: true, name: true, email: true } },
       /* extractedText omitted from list; tools fetch by id when needed. */
+      /* AUDIT-FIX H4: surface truncation fields so the Vault UI can
+         render a "truncated — only first N of M chunks indexed" badge
+         next to the file row. Without this the lawyer never learns
+         their 100-page PDF only got the first 50 chunks indexed and
+         retrieval cannot reach the rest. */
+      embedTruncated: true,
+      embedTotalChunks: true,
     },
   });
 

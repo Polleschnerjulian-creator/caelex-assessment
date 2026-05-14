@@ -179,6 +179,23 @@ export function chunkText(text: string, targetChars = 800): string[] {
 
   /* Defensive: filter out empty + super-tiny chunks (less than
      half min — those are usually orphaned headings or formatting
-     artifacts that don't help retrieval). */
-  return chunks.filter((c) => c.trim().length >= minChars / 2);
+     artifacts that don't help retrieval).
+
+     AUDIT-FIX H8: The orphan-filter previously dropped EVERY chunk
+     for naturally-short files (e.g. a 1-line "Bescheid: Widerspruchs-
+     frist 14.06.2026" notice produces a single chunk well below
+     `minChars/2`, which then gets filtered out → file is never indexed
+     even though it is the only content the lawyer cares about). The
+     filter is meant to suppress mid-text formatting orphans (a stray
+     heading that ended up in its own paragraph alongside many other
+     proper chunks), NOT to suppress files that are short by nature.
+
+     Rule: only apply the orphan-filter when there are MULTIPLE chunks
+     to choose from. If filtering would leave us with zero chunks but
+     the original input had non-whitespace content, return a single
+     trimmed chunk so the file gets indexed at all. */
+  const filtered = chunks.filter((c) => c.trim().length >= minChars / 2);
+  if (filtered.length > 0) return filtered;
+  const fallback = text.trim();
+  return fallback.length > 0 ? [fallback] : [];
 }

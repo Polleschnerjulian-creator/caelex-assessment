@@ -73,8 +73,17 @@ export async function autoEmbedMandateFile(
       return { status: "skipped", reason: "already embedded" };
     }
 
-    /* Chunk + cap. */
+    /* Chunk + cap.
+
+       AUDIT-FIX H4: Track truncation on the AtlasMandateFile so the
+       Vault UI can surface a "truncated — only first N of M chunks
+       indexed" badge to the lawyer. Without this, a 100-page PDF that
+       produces 200 chunks silently gets only its first 50 chunks into
+       the RAG store and the lawyer has no way to know that retrieval
+       cannot reach pages 25+. We compute totalChunks BEFORE applying
+       the cap so the badge can show the original count. */
     const allChunks = chunkText(file.extractedText, 800);
+    const totalChunks = allChunks.length;
     const chunks = allChunks.slice(0, MAX_CHUNKS_PER_FILE);
     if (chunks.length === 0) {
       return {
@@ -118,12 +127,26 @@ export async function autoEmbedMandateFile(
       })),
     });
 
+    /* AUDIT-FIX H4: Persist truncation flag on the file row so the
+       Vault UI can show a "first 50 of N chunks indexed" badge. We
+       only update when truncation actually happened (totalChunks
+       exceeded the cap) to avoid pointless writes for the common
+       small-file case. */
+    if (totalChunks > MAX_CHUNKS_PER_FILE) {
+      await prisma.atlasMandateFile.update({
+        where: { id: file.id },
+        data: {
+          embedTruncated: true,
+          embedTotalChunks: totalChunks,
+        },
+      });
+    }
+
     logger.info("[atlas/vault-rag] file embedded", {
       fileId: file.id,
       mandateId: file.mandateId,
       chunkCount: chunks.length,
-      cappedFromOriginal:
-        allChunks.length > chunks.length ? allChunks.length : undefined,
+      cappedFromOriginal: totalChunks > chunks.length ? totalChunks : undefined,
     });
 
     return { status: "embedded", chunkCount: chunks.length };

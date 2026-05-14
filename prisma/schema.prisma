@@ -195,6 +195,10 @@ model User {
   atlasMandateMemberships  AtlasMandateMember[] @relation("AtlasMandateMemberships")
   atlasMandateFileUploads  AtlasMandateFile[]   @relation("AtlasMandateFileUploads")
   ownedAtlasChats          AtlasChat[]          @relation("OwnedAtlasChats")
+  /// AUDIT-FIX M15: assistant turns have null sender; user turns
+  /// link back here. Future multi-user mandate-chats will use this
+  /// to attribute who said what.
+  atlasMessagesSent        AtlasMessage[]       @relation("AtlasMessageSenders")
   /// Atlas-specific audit log entries authored by this user.
   atlasAuditLogs           AtlasAuditLog[]
   /// Atlas deadlines created by this user.
@@ -11765,6 +11769,13 @@ model AtlasMandateFile {
   /// search within mandate). Nullable until Sprint 5 wires pgvector.
   embeddingId String? @db.Uuid
 
+  /// AUDIT-FIX H4: M2 Vault-RAG hard-caps embeddings at 50 chunks/file.
+  /// When a file exceeds, we record true total + a flag so the vault-list
+  /// UI can show ⚠ "N chunks not indexed" badge and ops can identify
+  /// large files that need a higher cap or chunking-strategy review.
+  embedTruncated   Boolean? @default(false)
+  embedTotalChunks Int?
+
   /// Inverse Relation für DeadlineSuggestion (M3 Feature 4).
   deadlineSuggestions AtlasMandateDeadlineSuggestion[] @relation("DeadlineSuggestionSource")
 
@@ -11815,9 +11826,12 @@ model AtlasChat {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([organizationId, updatedAt])
-  @@index([ownerUserId, updatedAt])
-  @@index([mandateId, updatedAt])
+  /// AUDIT-FIX M2/M12: archive-aware compounds. Sidebar always
+  /// filters `archivedAt: null`, so making it the second index column
+  /// avoids index-only-scan misses on the dominant query path.
+  @@index([organizationId, archivedAt, updatedAt])
+  @@index([ownerUserId, archivedAt, updatedAt])
+  @@index([mandateId, archivedAt, updatedAt])
   @@index([workflowId, createdAt])
 }
 
@@ -11847,9 +11861,17 @@ model AtlasMessage {
   /// Shape: [{ index: 1, sourceId: "DE-TKG-§9", validity: "in_force" }]
   citations Json?
 
+  /// AUDIT-FIX M15: pre-emptive sender tracking. Null for assistant
+  /// turns (the model has no user-id); set to the actual user-id for
+  /// user turns. Future multi-user-in-mandate-chat scenarios use this
+  /// for attribution. SetNull on user-delete preserves chat history.
+  senderUserId String?
+  sender       User?   @relation("AtlasMessageSenders", fields: [senderUserId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
 
   @@index([chatId, createdAt])
+  @@index([senderUserId])
 }
 
 /// Atlas V2 Agent-Run — persisted record of every autonomous Agent-
@@ -12012,6 +12034,11 @@ model AtlasKnowledgeChunk {
   @@index([organizationId, createdAt(sort: Desc)])
   @@index([mandateId, createdAt(sort: Desc)])
   @@index([sourceType, organizationId])
+  /// AUDIT-FIX M11: matches the WHERE clause in vault-search +
+  /// search_mandate_vault tool (org-scope + mandate-scope + sourceType
+  /// filter). Without this compound, queries fall back to a sequential
+  /// scan once a mandate has >100 chunks.
+  @@index([organizationId, mandateId, sourceType])
 }
 
 /// Atlas V2 Audit-Log — single source of truth for "who did what,
@@ -12074,6 +12101,11 @@ model AtlasAuditLog {
   @@index([organizationId, createdAt])
   @@index([entityType, entityId])
   @@index([action, createdAt])
+  /// AUDIT-FIX M16: hash-chain integrity — each prevHash within an org
+  /// must reference exactly ONE successor row. Without this, a fork-
+  /// attack (insert two rows pointing at the same prevHash) breaks the
+  /// tamper-evident chain undetectably.
+  @@unique([organizationId, prevHash])
 }
 
 /// Atlas V2 Mandate-Deadline (Sprint 9, 2026-05-12).
@@ -12151,6 +12183,10 @@ model AtlasMandateDeadlineSuggestion {
 
   @@index([mandateId, status])
   @@index([organizationId, status])
+  /// AUDIT-FIX M14: prevent duplicate suggestions from re-extraction
+  /// after re-upload of the same source-file. Title is the discriminator
+  /// because dueAt may legitimately drift if Atlas refines its parse.
+  @@unique([mandateId, sourceFileId, title])
 }
 
 /// Atlas V2 Clause-Library (Sprint 9, 2026-05-12).
