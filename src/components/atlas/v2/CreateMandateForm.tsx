@@ -187,7 +187,10 @@ export function CreateMandateForm() {
           cancel + adjust the client name. */}
       {conflictChecking && (
         <div className="mb-4 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[12px] text-slate-600 dark:border-slate-700/60 dark:bg-slate-900/40 dark:text-slate-400">
-          <Loader2 size={12} className="animate-spin" />
+          <Loader2
+            size={12}
+            className="animate-spin motion-reduce:animate-none"
+          />
           Prüfe Interessenkollision…
         </div>
       )}

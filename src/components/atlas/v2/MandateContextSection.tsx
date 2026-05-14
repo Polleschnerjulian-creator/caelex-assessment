@@ -139,7 +139,10 @@ export function MandateContextSection({ mandateId }: Props) {
     return (
       <div className="mb-3 px-2">
         <div className="rounded-lg bg-slate-50 p-3 text-[12px] text-slate-700 dark:bg-emerald-500/[0.06] dark:text-emerald-300">
-          <Loader2 size={11} className="mr-1.5 inline animate-spin" />
+          <Loader2
+            size={11}
+            className="mr-1.5 inline animate-spin motion-reduce:animate-none"
+          />
           Lädt Mandat…
         </div>
       </div>
@@ -280,7 +283,10 @@ export function MandateContextSection({ mandateId }: Props) {
           className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-slate-300 bg-white/40 px-2 py-1.5 text-[11px] text-slate-700 transition-colors hover:border-slate-400 hover:bg-white/70 disabled:opacity-50 dark:border-emerald-500/20 dark:bg-white/[0.02] dark:text-emerald-300 dark:hover:border-emerald-500/40 dark:hover:bg-white/[0.04]"
         >
           {uploading ? (
-            <Loader2 size={10} className="animate-spin" />
+            <Loader2
+              size={10}
+              className="animate-spin motion-reduce:animate-none"
+            />
           ) : (
             <Upload size={10} />
           )}

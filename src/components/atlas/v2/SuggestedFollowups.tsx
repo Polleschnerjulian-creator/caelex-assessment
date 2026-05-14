@@ -64,7 +64,10 @@ export function SuggestedFollowups({ chatId, refreshKey, onPick }: Props) {
   if (loading) {
     return (
       <div className="mt-3 flex items-center gap-2 text-[11px] text-slate-500">
-        <Sparkles size={11} className="animate-pulse text-emerald-400" />
+        <Sparkles
+          size={11}
+          className="animate-pulse text-emerald-400 motion-reduce:animate-none"
+        />
         <span>Folgefragen…</span>
       </div>
     );

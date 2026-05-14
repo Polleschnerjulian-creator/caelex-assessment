@@ -460,18 +460,18 @@ export function AtlasChatView({ chatId }: Props) {
     return (
       <div className="flex h-full flex-col">
         <header className="flex shrink-0 items-center justify-between gap-3 px-6 py-3">
-          <div className="h-3 w-40 animate-pulse rounded-full bg-slate-200 dark:bg-white/[0.06]" />
+          <div className="h-3 w-40 animate-pulse rounded-full bg-slate-200 motion-reduce:animate-none dark:bg-white/[0.06]" />
         </header>
         <div className="flex-1 overflow-hidden px-6 py-6">
           <div className="mx-auto max-w-3xl space-y-6">
             {[80, 60, 70].map((w, i) => (
               <div key={i} className="space-y-2">
                 <div
-                  className="h-3 animate-pulse rounded-full bg-slate-200 dark:bg-white/[0.06]"
+                  className="h-3 animate-pulse rounded-full bg-slate-200 motion-reduce:animate-none dark:bg-white/[0.06]"
                   style={{ width: `${w}%` }}
                 />
                 <div
-                  className="h-3 animate-pulse rounded-full bg-slate-200 dark:bg-white/[0.06]"
+                  className="h-3 animate-pulse rounded-full bg-slate-200 motion-reduce:animate-none dark:bg-white/[0.06]"
                   style={{ width: `${w - 15}%` }}
                 />
               </div>
@@ -792,7 +792,7 @@ function StreamingMessage({
                   className="shrink-0 text-slate-500 dark:text-slate-400"
                 />
               ) : (
-                <span className="inline-flex shrink-0 animate-pulse text-slate-700 dark:text-slate-200">
+                <span className="inline-flex shrink-0 animate-pulse text-slate-700 motion-reduce:animate-none dark:text-slate-200">
                   <AtlasMark size={10} />
                 </span>
               )}
@@ -819,7 +819,7 @@ function StreamingMessage({
       <div className="prose prose-sm max-w-none text-[14.5px] leading-relaxed text-slate-800 dark:prose-invert dark:text-slate-200">
         <MarkdownContent text={text} />
         {!allDone || text.length > 0 ? (
-          <span className="ml-1 inline-block h-3 w-1.5 animate-pulse bg-slate-600 align-middle dark:bg-slate-300" />
+          <span className="ml-1 inline-block h-3 w-1.5 animate-pulse bg-slate-600 align-middle motion-reduce:animate-none dark:bg-slate-300" />
         ) : null}
       </div>
     </div>
@@ -856,7 +856,7 @@ function ThinkingPanel({
       >
         <Brain
           size={12}
-          className={`shrink-0 text-slate-500 dark:text-slate-400 ${streaming ? "animate-pulse" : ""}`}
+          className={`shrink-0 text-slate-500 dark:text-slate-400 ${streaming ? "animate-pulse motion-reduce:animate-none" : ""}`}
         />
         <span className="text-[12px] font-medium text-slate-700 dark:text-slate-200">
           {streaming ? "Denkt nach…" : "Gedankengang"}
@@ -878,7 +878,7 @@ function ThinkingPanel({
           <div className="whitespace-pre-wrap text-[12.5px] leading-relaxed text-slate-700 dark:text-slate-300">
             {text}
             {streaming && (
-              <span className="ml-1 inline-block h-2.5 w-1 animate-pulse bg-slate-500 align-middle dark:bg-slate-400" />
+              <span className="ml-1 inline-block h-2.5 w-1 animate-pulse bg-slate-500 align-middle motion-reduce:animate-none dark:bg-slate-400" />
             )}
           </div>
         </div>
@@ -931,7 +931,7 @@ function ToolStepRow({ call }: { call: InFlightToolCall }) {
           ) : (
             <Loader2
               size={12}
-              className="animate-spin text-slate-500 dark:text-slate-400"
+              className="animate-spin text-slate-500 motion-reduce:animate-none dark:text-slate-400"
             />
           )}
         </div>
@@ -1121,7 +1121,10 @@ function AssistantActions({
         }`}
       >
         {noteState === "saving" ? (
-          <Loader2 size={11} className="animate-spin" />
+          <Loader2
+            size={11}
+            className="animate-spin motion-reduce:animate-none"
+          />
         ) : noteState === "saved" ? (
           <CheckIcon size={11} />
         ) : (
@@ -1302,7 +1305,10 @@ function ExportMenu({ chat }: { chat: ChatRecord }) {
         className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-100"
       >
         {busy ? (
-          <Loader2 size={13} className="animate-spin" />
+          <Loader2
+            size={13}
+            className="animate-spin motion-reduce:animate-none"
+          />
         ) : (
           <Download size={13} />
         )}

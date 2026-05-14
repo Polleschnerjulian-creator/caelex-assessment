@@ -92,7 +92,10 @@ export function MandateInstructionsEditor({
             className="inline-flex items-center gap-1.5 rounded-md bg-slate-900 px-3 py-1 text-xs font-medium text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-30 dark:bg-emerald-500 dark:hover:bg-emerald-600"
           >
             {saving ? (
-              <Loader2 size={11} className="animate-spin" />
+              <Loader2
+                size={11}
+                className="animate-spin motion-reduce:animate-none"
+              />
             ) : (
               <Save size={11} />
             )}

@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 
 interface Props {
@@ -25,8 +25,15 @@ interface Binding {
   description: string;
 }
 
+/* AUDIT-FIX H27: focus-trap selector — keep in sync with the same
+   constant in MandateAttachModal + OnboardingTour. */
+const FOCUSABLE_SELECTOR =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export function KeyboardHelpOverlay({ open, onClose }: Props) {
   const [isMac, setIsMac] = useState(true);
+  const modalRef = useRef<HTMLDivElement | null>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
   /* Detect platform post-hydration. SSR is OS-agnostic. */
   useEffect(() => {
@@ -35,6 +42,61 @@ export function KeyboardHelpOverlay({ open, onClose }: Props) {
       /Mac|iPhone|iPad/i.test(navigator.platform || navigator.userAgent),
     );
   }, []);
+
+  /* AUDIT-FIX H27: focus-trap. Snapshot opener on open, move focus
+     into modal, restore on close. Tab/Shift+Tab wrap inside the modal
+     to keep keyboard users from escaping into background controls
+     (sidebar, composer) while the help overlay is up. */
+  useEffect(() => {
+    if (!open) return;
+    previouslyFocusedRef.current =
+      typeof document !== "undefined"
+        ? (document.activeElement as HTMLElement | null)
+        : null;
+    /* Defer one tick so the modal DOM is mounted before we focus. */
+    const t = window.setTimeout(() => {
+      const root = modalRef.current;
+      if (!root) return;
+      const focusables = root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+      focusables[0]?.focus();
+    }, 0);
+    return () => {
+      window.clearTimeout(t);
+      previouslyFocusedRef.current?.focus();
+    };
+  }, [open]);
+
+  /* Tab-key trap — wraps focus within the modal. */
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const root = modalRef.current;
+      if (!root) return;
+      const focusables = Array.from(
+        root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      /* If focus has somehow escaped the modal, pull it back. */
+      if (!active || !root.contains(active)) {
+        e.preventDefault();
+        first.focus();
+        return;
+      }
+      if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [open]);
 
   if (!open) return null;
 
@@ -59,6 +121,7 @@ export function KeyboardHelpOverlay({ open, onClose }: Props) {
       onClick={onClose}
     >
       <div
+        ref={modalRef}
         className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(0,0,0,0.14)] dark:border-white/[0.08] dark:bg-[#1a1a1a] dark:shadow-[0_16px_40px_rgba(0,0,0,0.50)]"
         onClick={(e) => e.stopPropagation()}
       >

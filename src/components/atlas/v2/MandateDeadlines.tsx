@@ -320,7 +320,10 @@ export function MandateDeadlines({ mandateId, disabled }: Props) {
               className="inline-flex items-center gap-1 rounded-md bg-slate-900 px-3 py-1 text-xs font-medium text-white hover:bg-slate-800 disabled:opacity-30 dark:bg-emerald-500 dark:hover:bg-emerald-600"
             >
               {adding ? (
-                <Loader2 size={11} className="animate-spin" />
+                <Loader2
+                  size={11}
+                  className="animate-spin motion-reduce:animate-none"
+                />
               ) : (
                 <Plus size={11} />
               )}

@@ -27,7 +27,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /* Sonnet 4.5 (claude-sonnet-4-6) — 200k input context window. Used
    here as a soft cumulative-spend budget; the actual hard limit is
@@ -55,7 +55,45 @@ export function ContextWindowIndicator({
   totalCostUsd,
   compact = false,
 }: Props) {
+  /* Two independent visibility flags so hover-UX (desktop) and click-
+     toggle-UX (touch + keyboard) compose cleanly. The popover is shown
+     when EITHER is true; clicking pins it open across hover-out, and
+     hovering still reveals it on desktop without requiring a tap. */
   const [hover, setHover] = useState(false);
+  const [pinned, setPinned] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  /* Click-outside dismisses the pinned popover. Mousedown (not click)
+     so the popover closes BEFORE any focused control inside steals
+     focus, which feels snappier and avoids a flash. */
+  useEffect(() => {
+    if (!pinned) return;
+    const onMouseDown = (e: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setPinned(false);
+      }
+    };
+    window.addEventListener("mousedown", onMouseDown);
+    return () => window.removeEventListener("mousedown", onMouseDown);
+  }, [pinned]);
+
+  /* Esc dismisses the pinned popover. Only attached when pinned to
+     avoid swallowing Esc elsewhere (composer, modal). */
+  useEffect(() => {
+    if (!pinned) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setPinned(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [pinned]);
+
+  const popoverOpen = hover || pinned;
 
   /* Total burn = input + output. The donut fills toward the soft
      200k budget. Caps at 100 % so the visual stays sensible even
@@ -92,6 +130,7 @@ export function ContextWindowIndicator({
 
   return (
     <div
+      ref={containerRef}
       className="relative"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
@@ -100,7 +139,10 @@ export function ContextWindowIndicator({
     >
       <button
         type="button"
+        onClick={() => setPinned((p) => !p)}
         aria-label={`Verbraucht: ${pctDisplay} % des Budgets`}
+        aria-expanded={popoverOpen}
+        aria-haspopup="dialog"
         className={`inline-flex items-center rounded-full transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.05] ${
           compact ? "h-7 w-7 justify-center" : "gap-1.5 px-2 py-1"
         }`}
@@ -129,7 +171,7 @@ export function ContextWindowIndicator({
               strokeWidth="1.6"
               strokeLinecap="round"
               strokeDasharray={`${dash} ${c}`}
-              className={`${color.ring} transition-all duration-500`}
+              className={`${color.ring} transition-all duration-500 motion-reduce:transition-none`}
             />
           )}
         </svg>
@@ -142,8 +184,10 @@ export function ContextWindowIndicator({
         )}
       </button>
 
-      {hover && (
+      {popoverOpen && (
         <div
+          role="dialog"
+          aria-label="Token-Verbrauch dieses Chats"
           className={`absolute right-0 z-30 w-64 rounded-lg border border-slate-200 bg-white p-3 text-[11.5px] shadow-[0_8px_24px_rgba(0,0,0,0.10)] dark:border-white/[0.08] dark:bg-[#2a2a2a] dark:shadow-[0_8px_24px_rgba(0,0,0,0.40)] ${
             compact ? "bottom-full mb-1.5" : "top-full mt-1.5"
           }`}

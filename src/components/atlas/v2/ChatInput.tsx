@@ -550,7 +550,10 @@ export function ChatInput({
               key={name}
               className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-[11.5px] text-slate-600 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-slate-300"
             >
-              <Loader2 size={12} className="shrink-0 animate-spin" />
+              <Loader2
+                size={12}
+                className="shrink-0 animate-spin motion-reduce:animate-none"
+              />
               <span className="flex-1 truncate" title={name}>
                 {name}
               </span>
@@ -698,9 +701,9 @@ export function ChatInput({
           onClick={handleSend}
           disabled={!canSend || disabled}
           aria-label="Senden"
-          className={`ml-1 inline-flex h-8 w-8 items-center justify-center rounded-full transition-all ${
+          className={`ml-1 inline-flex h-8 w-8 items-center justify-center rounded-full transition-all motion-reduce:transition-none ${
             canSend && !disabled
-              ? "bg-slate-900 text-white hover:scale-105 dark:bg-white dark:text-black"
+              ? "bg-slate-900 text-white hover:scale-105 motion-reduce:hover:scale-100 dark:bg-white dark:text-black"
               : "bg-slate-200 text-slate-400 dark:bg-white/[0.08] dark:text-slate-500"
           }`}
         >
@@ -871,7 +874,7 @@ function VoiceButton({
       aria-label={tooltip}
       className={`inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
         voice.state === "recording"
-          ? "animate-pulse bg-red-500 text-white"
+          ? "animate-pulse motion-reduce:animate-none bg-red-500 text-white"
           : voice.availability === "unsupported" ||
               voice.availability === "no-backend"
             ? "text-slate-300 cursor-default dark:text-slate-700"
@@ -881,7 +884,10 @@ function VoiceButton({
       {voice.state === "recording" ? (
         <Square size={11} strokeWidth={2.5} fill="currentColor" />
       ) : voice.state === "requesting" || voice.state === "transcribing" ? (
-        <Loader2 size={14} className="animate-spin" />
+        <Loader2
+          size={14}
+          className="animate-spin motion-reduce:animate-none"
+        />
       ) : voice.availability === "unsupported" ? (
         <MicOff size={15} />
       ) : (

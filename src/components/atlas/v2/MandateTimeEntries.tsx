@@ -128,8 +128,11 @@ export function MandateTimeEntries({ mandateId, disabled }: Props) {
       {/* Entries */}
       {loading && entries.length === 0 ? (
         <p className="text-xs text-slate-500">
-          <Loader2 size={11} className="mr-1.5 inline animate-spin" /> Lädt
-          Einträge…
+          <Loader2
+            size={11}
+            className="mr-1.5 inline animate-spin motion-reduce:animate-none"
+          />{" "}
+          Lädt Einträge…
         </p>
       ) : entries.length === 0 ? (
         <p className="text-xs text-slate-500">
@@ -250,7 +253,10 @@ export function MandateTimeEntries({ mandateId, disabled }: Props) {
               className="inline-flex items-center gap-1 rounded-md bg-slate-900 px-3 py-1 text-xs font-medium text-white hover:bg-slate-800 disabled:opacity-30 dark:bg-emerald-500 dark:hover:bg-emerald-600"
             >
               {adding ? (
-                <Loader2 size={11} className="animate-spin" />
+                <Loader2
+                  size={11}
+                  className="animate-spin motion-reduce:animate-none"
+                />
               ) : (
                 <Plus size={11} />
               )}

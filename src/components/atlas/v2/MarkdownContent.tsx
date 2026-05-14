@@ -361,16 +361,27 @@ function renderBlock(
        - no border → short transitional text or section headers
 
      Tooltip on the wrapper explains the signal so the lawyer knows
-     why the indicator is there and what to do about it. */
+     why the indicator is there and what to do about it.
+
+     AUDIT-FIX H29 (2026-05-14): on mobile/touch devices the title-
+     attribute tooltip is invisible. Add a tiny visible glyph next to
+     the paragraph so the encoded signal is perceivable without hover.
+     The glyph is aria-hidden because the title (and the paragraph's
+     left-border + colour) already convey the same info to AT users via
+     the wrapper's title attribute. The glyph sits as a small inline
+     marker at the start of the paragraph (left of the text) so it
+     doesn't compete with the right-aligned reading flow. */
   const conf = paragraphConfidence(b.text);
   const wrapperCls = confidenceWrapperClasses(conf);
   const tooltip = confidenceTooltip(conf);
+  const glyph = confidenceGlyph(conf);
   return (
     <p
       key={key}
       title={tooltip}
       className={`mb-3 last:mb-0 whitespace-pre-wrap ${wrapperCls}`}
     >
+      {glyph}
       {renderInline(b.text, sourceMap)}
     </p>
   );
@@ -395,6 +406,37 @@ function inlinePillClasses(badge: InlineCitation["badge"]): string {
          (streaming, or older messages without the field) and when the
          corpus check explicitly returned "unknown". */
       return "bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-white/[0.10] dark:text-slate-200 dark:hover:bg-white/[0.18]";
+  }
+}
+
+/* AUDIT-FIX H30 (2026-05-14): pill glyph encodes badge status WITHOUT
+   relying on colour, so a colour-blind reader or a greyscale-printout
+   reader can still distinguish verified vs amended vs repealed vs
+   unknown. Glyph sits inside the pill, prefixed before the index.
+
+   Mapping:
+     - in_force        → ""  (no glyph; pill stands clean for the common case)
+     - needs_review    → "*" (pill content e.g. "*1" — stale verification)
+     - pending         → "*" (same — draft/planned text, treat as stale)
+     - amended         → "*" (same — newer fassung exists, citation drifted)
+     - repealed        → "!" (pill content e.g. "!1" — norm no longer in force)
+     - unknown         → "?" (pill content e.g. "?1" — not in corpus)
+
+   Kept ASCII-only so the pill width stays predictable; glyph rendered
+   inline without extra spacing so "?1" reads as one token. */
+function inlinePillGlyph(badge: InlineCitation["badge"]): string {
+  switch (badge) {
+    case "needs_review":
+    case "pending":
+    case "amended":
+      return "*";
+    case "repealed":
+      return "!";
+    case "unknown":
+      return "?";
+    case "in_force":
+    default:
+      return "";
   }
 }
 
@@ -475,6 +517,42 @@ function confidenceTooltip(c: ConfidenceLevel): string | undefined {
     default:
       return undefined;
   }
+}
+
+/* AUDIT-FIX H29 (2026-05-14): visible glyph that mirrors the left-border
+   colour-coding for mobile/touch users (where `title` tooltip never
+   surfaces). aria-hidden because the wrapper <p title=…> already carries
+   the equivalent info for AT users.
+
+   Glyph choices:
+     - grounded   → ✓ in emerald — "Quelle vorhanden"
+     - ungrounded → ⚠ in amber   — "Bitte manuell prüfen"
+     - neutral    → null         — short transitions don't need a marker
+
+   Sized text-[10px] so it sits inline without competing with body text;
+   slight right-margin separates it from the first word. */
+function confidenceGlyph(c: ConfidenceLevel): ReactNode {
+  if (c === "grounded") {
+    return (
+      <span
+        aria-hidden="true"
+        className="mr-1 inline-block align-middle text-[10px] font-bold leading-none text-emerald-600 dark:text-emerald-400"
+      >
+        ✓
+      </span>
+    );
+  }
+  if (c === "ungrounded") {
+    return (
+      <span
+        aria-hidden="true"
+        className="mr-1 inline-block align-middle text-[10px] font-bold leading-none text-amber-600 dark:text-amber-400"
+      >
+        ⚠
+      </span>
+    );
+  }
+  return null;
 }
 
 /* ── Inline rendering ────────────────────────────────────────────────── */
@@ -590,6 +668,14 @@ function renderInline(
         if (hit) {
           const cls = inlinePillClasses(hit.badge);
           const tooltip = buildPillTooltip(hit);
+          /* AUDIT-FIX H30 (2026-05-14): non-colour status indicator
+             prepended to the index. When a glyph is present, widen the
+             pill min-width slightly so the glyph + 2-digit index don't
+             feel cramped (e.g. "*12" needs more room than "12"). */
+          const glyph = inlinePillGlyph(hit.badge);
+          const widthCls = glyph
+            ? "h-[16px] min-w-[22px] px-1.5"
+            : "h-[16px] min-w-[16px] px-1";
           return (
             <a
               href={`#citation-${encodeURIComponent(hit.sourceId)}`}
@@ -599,8 +685,9 @@ function renderInline(
               }}
               title={tooltip}
               aria-label={`Quelle ${hit.index}: ${hit.title ?? hit.sourceId}`}
-              className={`mx-0.5 inline-flex h-[16px] min-w-[16px] items-center justify-center rounded-full px-1 align-baseline text-[10px] font-semibold no-underline transition-colors ${cls}`}
+              className={`mx-0.5 inline-flex items-center justify-center rounded-full align-baseline text-[10px] font-semibold no-underline transition-colors ${widthCls} ${cls}`}
             >
+              {glyph}
               {hit.index}
             </a>
           );

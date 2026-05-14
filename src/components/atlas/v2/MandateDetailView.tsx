@@ -116,7 +116,11 @@ export function MandateDetailView({ mandateId }: Props) {
   if (loading && !mandate) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-slate-500">
-        <Loader2 size={14} className="mr-2 animate-spin" /> Lädt Mandat…
+        <Loader2
+          size={14}
+          className="mr-2 animate-spin motion-reduce:animate-none"
+        />{" "}
+        Lädt Mandat…
       </div>
     );
   }

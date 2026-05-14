@@ -176,7 +176,7 @@ export function MandateFileUpload({ mandateId, onChanged, disabled }: Props) {
               {s.state === "uploading" && (
                 <Loader2
                   size={11}
-                  className="animate-spin text-emerald-600 dark:text-emerald-400"
+                  className="animate-spin text-emerald-600 motion-reduce:animate-none dark:text-emerald-400"
                 />
               )}
               {s.state === "done" && (

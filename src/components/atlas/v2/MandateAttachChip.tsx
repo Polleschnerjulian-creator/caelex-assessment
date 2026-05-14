@@ -42,13 +42,17 @@ export function MandateAttachChip({
         <Briefcase size={11} className="shrink-0 opacity-60" />
         <span className="line-clamp-1 max-w-[180px]">{mandateName}</span>
       </Link>
+      {/* Visible button stays small (h-5 w-5) so the chip looks tight,
+          but the `before:` pseudo-element extends the click/tap zone to
+          ≥44×44px so iOS touch targets aren't violated and lawyers
+          don't accidentally detach the chip with a thumb. */}
       <button
         type="button"
         onClick={onDetach}
         disabled={disabled}
         aria-label="Mandat abhängen"
         title="Abhängen"
-        className="ml-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-black/[0.06] hover:text-slate-900 disabled:opacity-50 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-slate-100"
+        className="relative ml-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-black/[0.06] hover:text-slate-900 disabled:opacity-50 before:absolute before:inset-[-12px] before:content-[''] dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-slate-100"
       >
         <X size={11} strokeWidth={2.5} />
       </button>

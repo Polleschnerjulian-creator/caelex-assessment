@@ -27,7 +27,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import {
   X,
   ChevronLeft,
@@ -41,6 +41,10 @@ import {
 import { AtlasMark } from "./AtlasLogo";
 
 const STORAGE_KEY = "atlas-v2-onboarding-seen";
+
+/* H27: focus-trap selector — see MandateAttachModal for rationale. */
+const FOCUSABLE_SELECTOR =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 interface Slide {
   id: string;
@@ -85,6 +89,11 @@ const SLIDES: Slide[] = [
 export function OnboardingTour() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
+  const modalRef = useRef<HTMLDivElement>(null);
+  /* H27: capture the element that opened the modal so we can restore
+     focus to it on close — keyboard users (and screen-reader users)
+     should land back where they were rather than at <body>. */
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
   /* Mount: check localStorage. Only auto-show if user has never seen it. */
   useEffect(() => {
@@ -114,7 +123,28 @@ export function OnboardingTour() {
     setOpen(false);
   }, []);
 
-  /* Esc closes (mark as seen — same as Skip). */
+  /* H27: snapshot opener-focus on open + restore on close, and move
+     focus into the modal so Tab cycles inside it from the start. */
+  useEffect(() => {
+    if (open) {
+      previouslyFocusedRef.current =
+        (document.activeElement as HTMLElement | null) ?? null;
+      /* Defer so the dialog has mounted; pick the first focusable
+         element inside (the Skip button in the header). */
+      setTimeout(() => {
+        if (!modalRef.current) return;
+        const first =
+          modalRef.current.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
+        first?.focus();
+      }, 0);
+    } else if (previouslyFocusedRef.current) {
+      previouslyFocusedRef.current.focus();
+      previouslyFocusedRef.current = null;
+    }
+  }, [open]);
+
+  /* Esc closes (mark as seen — same as Skip).
+     H27: also trap Tab so focus can't leave the modal. */
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
@@ -124,6 +154,26 @@ export function OnboardingTour() {
       }
       if (e.key === "ArrowLeft") {
         setStep((s) => Math.max(s - 1, 0));
+      }
+      if (e.key === "Tab" && modalRef.current) {
+        const focusables =
+          modalRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const active = document.activeElement as HTMLElement | null;
+        if (!modalRef.current.contains(active)) {
+          e.preventDefault();
+          first.focus();
+          return;
+        }
+        if (e.shiftKey && active === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && active === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     };
     window.addEventListener("keydown", handler);
@@ -142,6 +192,10 @@ export function OnboardingTour() {
       onClick={close}
     >
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="atlas-onboarding-tour-title"
         className="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(0,0,0,0.14)] dark:border-white/[0.08] dark:bg-[#1a1a1a] dark:shadow-[0_16px_40px_rgba(0,0,0,0.50)]"
         onClick={(e) => e.stopPropagation()}
       >
@@ -167,7 +221,10 @@ export function OnboardingTour() {
 
         {/* Title + body */}
         <div className="px-6 pb-5">
-          <h2 className="text-[18px] font-medium tracking-tight text-slate-900 dark:text-slate-100">
+          <h2
+            id="atlas-onboarding-tour-title"
+            className="text-[18px] font-medium tracking-tight text-slate-900 dark:text-slate-100"
+          >
             {slide.title}
           </h2>
           <p className="mt-2 text-[13px] leading-relaxed text-slate-600 dark:text-slate-400">
@@ -188,7 +245,7 @@ export function OnboardingTour() {
                 onClick={() => setStep(i)}
                 aria-label={`Slide ${i + 1} von ${SLIDES.length}`}
                 aria-current={i === step ? "step" : undefined}
-                className={`h-1.5 rounded-full transition-all ${
+                className={`h-1.5 rounded-full transition-all motion-reduce:transition-none ${
                   i === step
                     ? "w-6 bg-slate-700 dark:bg-slate-200"
                     : "w-1.5 bg-slate-300 hover:bg-slate-400 dark:bg-white/[0.12] dark:hover:bg-white/[0.20]"

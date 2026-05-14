@@ -296,7 +296,7 @@ export function AtlasHomepage() {
             {/* Activity / streaming response */}
             {streamingText.length === 0 && activity && (
               <div className="flex items-center gap-2 text-[12.5px] text-slate-600 dark:text-slate-400">
-                <span className="inline-flex animate-pulse text-slate-700 dark:text-slate-200">
+                <span className="inline-flex animate-pulse text-slate-700 motion-reduce:animate-none dark:text-slate-200">
                   <AtlasMark size={10} />
                 </span>
                 <span className="font-medium">{activity}…</span>
@@ -305,7 +305,7 @@ export function AtlasHomepage() {
             {streamingText.length > 0 && (
               <div className="prose prose-sm max-w-none text-[14px] leading-relaxed text-slate-800 dark:prose-invert dark:text-slate-200">
                 <MarkdownContent text={streamingText} />
-                <span className="ml-1 inline-block h-3 w-1 animate-pulse bg-slate-600 align-middle dark:bg-slate-300" />
+                <span className="ml-1 inline-block h-3 w-1 animate-pulse bg-slate-600 align-middle motion-reduce:animate-none dark:bg-slate-300" />
               </div>
             )}
 

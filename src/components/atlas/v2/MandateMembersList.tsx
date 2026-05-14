@@ -120,7 +120,10 @@ export function MandateMembersList({
                     aria-label={`${m.user.email ?? "Mitglied"} entfernen`}
                   >
                     {removing === m.user.id ? (
-                      <Loader2 size={11} className="animate-spin" />
+                      <Loader2
+                        size={11}
+                        className="animate-spin motion-reduce:animate-none"
+                      />
                     ) : (
                       <X size={11} />
                     )}
@@ -169,7 +172,10 @@ export function MandateMembersList({
             className="inline-flex items-center gap-1 rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800 disabled:opacity-30 dark:bg-emerald-500 dark:hover:bg-emerald-600"
           >
             {adding ? (
-              <Loader2 size={11} className="animate-spin" />
+              <Loader2
+                size={11}
+                className="animate-spin motion-reduce:animate-none"
+              />
             ) : (
               <UserPlus size={11} />
             )}

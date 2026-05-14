@@ -96,6 +96,9 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
      as an overlay (covering content + backdrop) or as a flex sibling
      (pushing content). Set post-hydration to avoid SSR mismatch. */
   const [isMobile, setIsMobile] = useState(false);
+  /* Ref to the mobile-overlay <aside> so we can focus-trap inside it
+     when the sidebar is expanded as an overlay on mobile (M37). */
+  const sidebarRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -111,6 +114,82 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
     mq.addEventListener("change", sync);
     return () => mq.removeEventListener("change", sync);
   }, []);
+
+  /* M37 — Body-scroll-lock + focus-trap for the mobile overlay.
+     When the sidebar is an overlay (mobile + !collapsed), we must
+     prevent the page beneath from scrolling and trap focus so it
+     can't escape behind the backdrop. Mirrors the modal a11y
+     pattern used elsewhere in the app. */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const isOverlay = isMobile && !collapsed;
+    if (!isOverlay) return;
+
+    /* Lock body scroll while overlay is up. */
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    /* Capture the element that triggered the overlay so we can
+       restore focus on close. */
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+
+    /* Move focus into the sidebar. We focus the first focusable
+       element so screen-reader + keyboard users land inside the
+       overlay rather than behind it. */
+    const sidebar = sidebarRef.current;
+    const getFocusable = (): HTMLElement[] => {
+      if (!sidebar) return [];
+      return Array.from(
+        sidebar.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((el) => !el.hasAttribute("inert") && el.offsetParent !== null);
+    };
+    const focusables = getFocusable();
+    if (focusables.length > 0) {
+      focusables[0].focus();
+    }
+
+    /* Tab-wrapping: keep focus inside the sidebar while overlay open.
+       Esc collapses the sidebar back to the rail. */
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setCollapsed(true);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const items = getFocusable();
+      if (items.length === 0) {
+        e.preventDefault();
+        return;
+      }
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey) {
+        if (active === first || !sidebar?.contains(active)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (active === last || !sidebar?.contains(active)) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+      /* Restore focus to whatever opened the overlay. */
+      if (previouslyFocused && typeof previouslyFocused.focus === "function") {
+        previouslyFocused.focus();
+      }
+    };
+  }, [isMobile, collapsed]);
 
   const refresh = useCallback(async () => {
     try {
@@ -223,6 +302,10 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
         />
       )}
       <aside
+        ref={sidebarRef}
+        role={isMobile ? "dialog" : undefined}
+        aria-modal={isMobile ? true : undefined}
+        aria-label={isMobile ? "Sidebar-Navigation" : undefined}
         className={`flex h-full w-[260px] shrink-0 flex-col bg-[#f9f9f9] text-slate-700 dark:bg-[#171717] dark:text-slate-200 ${
           isMobile
             ? "fixed inset-y-0 left-0 z-40 shadow-[0_16px_40px_rgba(0,0,0,0.14)]"
@@ -604,6 +687,7 @@ function Empty({ children }: { children: React.ReactNode }) {
  * without breaking this baseline.
  */
 function SidebarSearch() {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<
     Array<{
@@ -615,6 +699,10 @@ function SidebarSearch() {
   >([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  /* -1 = no row highlighted; matches the "no aria-activedescendant" pattern.
+     Reset whenever results change so the highlight doesn't survive into a
+     stale list. */
+  const [activeResultIndex, setActiveResultIndex] = useState<number>(-1);
   const containerRef = useRef<HTMLDivElement>(null);
 
   /* Debounced search. 250ms is the ChatGPT/Linear sweet-spot — long
@@ -646,6 +734,12 @@ function SidebarSearch() {
     return () => clearTimeout(handle);
   }, [query]);
 
+  /* Reset the keyboard-cursor whenever the result-set changes — otherwise
+     activeResultIndex could point past the new array length. */
+  useEffect(() => {
+    setActiveResultIndex(-1);
+  }, [results]);
+
   /* Click-outside closes the dropdown. */
   useEffect(() => {
     if (!open) return;
@@ -655,11 +749,58 @@ function SidebarSearch() {
         !containerRef.current.contains(e.target as Node)
       ) {
         setOpen(false);
+        setActiveResultIndex(-1);
       }
     };
     window.addEventListener("mousedown", handler);
     return () => window.removeEventListener("mousedown", handler);
   }, [open]);
+
+  /* Keyboard navigation while the dropdown is open: ↓/↑ move the
+     highlighted row, Enter follows the highlighted result, Esc closes
+     the dropdown without navigating. Attached on window so it works
+     even if the user's focus is on the input (which it normally is). */
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowDown") {
+        if (results.length === 0) return;
+        e.preventDefault();
+        setActiveResultIndex((i) => Math.min(i + 1, results.length - 1));
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        if (results.length === 0) return;
+        e.preventDefault();
+        setActiveResultIndex((i) => Math.max(i - 1, 0));
+        return;
+      }
+      if (e.key === "Enter") {
+        if (activeResultIndex >= 0 && activeResultIndex < results.length) {
+          e.preventDefault();
+          const target = results[activeResultIndex];
+          setOpen(false);
+          setQuery("");
+          setActiveResultIndex(-1);
+          router.push(`/atlas/chat/${target.id}`);
+        }
+        return;
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setOpen(false);
+        setActiveResultIndex(-1);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, results, activeResultIndex, router]);
+
+  const showDropdown = open && Boolean(query.trim());
+  const activeId =
+    activeResultIndex >= 0 && activeResultIndex < results.length
+      ? `atlas-search-result-${results[activeResultIndex].id}`
+      : undefined;
 
   return (
     <div ref={containerRef} className="relative">
@@ -672,37 +813,62 @@ function SidebarSearch() {
           onFocus={() => setOpen(true)}
           placeholder="Chats durchsuchen…"
           aria-label="Chats durchsuchen"
+          role="combobox"
+          aria-expanded={showDropdown}
+          aria-controls="atlas-search-results"
+          aria-autocomplete="list"
+          aria-activedescendant={activeId}
           className="w-full bg-transparent text-[13px] text-slate-800 outline-none focus-visible:outline-none placeholder:text-slate-500 dark:text-slate-200"
         />
         {loading && (
-          <Loader2 size={11} className="shrink-0 animate-spin text-slate-400" />
+          <Loader2
+            size={11}
+            className="shrink-0 animate-spin text-slate-400 motion-reduce:animate-none"
+          />
         )}
       </div>
-      {open && query.trim() && (
-        <div className="absolute left-0 right-0 top-full z-40 mt-1 max-h-[320px] overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-[0_8px_24px_rgba(0,0,0,0.10)] dark:border-white/[0.08] dark:bg-[#1f1f1f] dark:shadow-[0_8px_24px_rgba(0,0,0,0.40)]">
+      {showDropdown && (
+        <div
+          id="atlas-search-results"
+          role="listbox"
+          aria-label="Suchergebnisse"
+          className="absolute left-0 right-0 top-full z-40 mt-1 max-h-[320px] overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-[0_8px_24px_rgba(0,0,0,0.10)] dark:border-white/[0.08] dark:bg-[#1f1f1f] dark:shadow-[0_8px_24px_rgba(0,0,0,0.40)]"
+        >
           {results.length === 0 ? (
             <p className="px-3 py-2 text-[12px] text-slate-500">
               {loading ? "Sucht…" : "Keine Treffer."}
             </p>
           ) : (
-            results.map((r) => (
-              <Link
-                key={r.id}
-                href={`/atlas/chat/${r.id}`}
-                onClick={() => {
-                  setOpen(false);
-                  setQuery("");
-                }}
-                className="block rounded-md px-2.5 py-1.5 text-[13px] text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/[0.05]"
-              >
-                <div className="line-clamp-1">{r.title}</div>
-                {r.mandateName && (
-                  <div className="line-clamp-1 text-[10.5px] text-slate-500">
-                    {r.mandateName}
-                  </div>
-                )}
-              </Link>
-            ))
+            results.map((r, i) => {
+              const isActive = i === activeResultIndex;
+              return (
+                <Link
+                  key={r.id}
+                  id={`atlas-search-result-${r.id}`}
+                  role="option"
+                  aria-selected={isActive}
+                  href={`/atlas/chat/${r.id}`}
+                  onMouseEnter={() => setActiveResultIndex(i)}
+                  onClick={() => {
+                    setOpen(false);
+                    setQuery("");
+                    setActiveResultIndex(-1);
+                  }}
+                  className={`block rounded-md px-2.5 py-1.5 text-[13px] text-slate-700 dark:text-slate-200 ${
+                    isActive
+                      ? "bg-black/[0.06] dark:bg-white/[0.05]"
+                      : "hover:bg-slate-100 dark:hover:bg-white/[0.05]"
+                  }`}
+                >
+                  <div className="line-clamp-1">{r.title}</div>
+                  {r.mandateName && (
+                    <div className="line-clamp-1 text-[10.5px] text-slate-500">
+                      {r.mandateName}
+                    </div>
+                  )}
+                </Link>
+              );
+            })
           )}
         </div>
       )}
@@ -720,9 +886,9 @@ function ChatListSkeleton() {
     <div aria-label="Chats werden geladen" className="space-y-1 px-2 pt-1">
       {[60, 75, 50, 65, 80].map((w, i) => (
         <div key={i} className="flex items-center gap-2 px-1 py-1.5">
-          <div className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-slate-200 dark:bg-white/[0.06]" />
+          <div className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-slate-200 motion-reduce:animate-none dark:bg-white/[0.06]" />
           <div
-            className="h-2.5 animate-pulse rounded-full bg-slate-200 dark:bg-white/[0.06]"
+            className="h-2.5 animate-pulse rounded-full bg-slate-200 motion-reduce:animate-none dark:bg-white/[0.06]"
             style={{ width: `${w}%` }}
           />
         </div>

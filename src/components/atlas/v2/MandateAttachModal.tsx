@@ -24,6 +24,12 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Search, Briefcase, Loader2, Plus, X } from "lucide-react";
 
+/* H27: Selector for tab-trappable elements inside a modal. Excludes
+   disabled controls and tabindex="-1" descendants so the trap cycles
+   only through the actually-focusable surface. */
+const FOCUSABLE_SELECTOR =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 interface MandateLite {
   id: string;
   name: string;
@@ -43,15 +49,59 @@ export function MandateAttachModal({ open, onClose, onSelect }: Props) {
   const [recents, setRecents] = useState<MandateLite[]>([]);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  /* H27: capture the element that opened the modal so we can restore
+     focus to it on close — Tab/keyboard users (and screen-reader users)
+     should land back where they were rather than at <body>. */
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
   /* Auto-focus the search input on open. */
   useEffect(() => {
     if (open) {
       setQuery("");
       setResults([]);
+      /* H27: snapshot the previously-focused element BEFORE moving
+         focus into the modal — this is what we'll restore on close. */
+      previouslyFocusedRef.current =
+        (document.activeElement as HTMLElement | null) ?? null;
       /* Delay one tick so the input is mounted. */
       setTimeout(() => inputRef.current?.focus(), 0);
+    } else if (previouslyFocusedRef.current) {
+      /* H27: on close, restore focus to whoever opened us. */
+      previouslyFocusedRef.current.focus();
+      previouslyFocusedRef.current = null;
     }
+  }, [open]);
+
+  /* H27: trap Tab navigation inside the modal so keyboard users can't
+     accidentally tab back into the page underneath. Wraps focus from
+     last → first (Tab) and first → last (Shift+Tab). */
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== "Tab" || !modalRef.current) return;
+      const focusables =
+        modalRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      /* If focus has somehow escaped the modal, pull it back. */
+      if (!modalRef.current.contains(active)) {
+        e.preventDefault();
+        first.focus();
+        return;
+      }
+      if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
   }, [open]);
 
   /* Lade Recents beim ersten Öffnen — separater Effect damit
@@ -115,13 +165,20 @@ export function MandateAttachModal({ open, onClose, onSelect }: Props) {
       onClick={onClose}
     >
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mandate-attach-modal-title"
         className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(0,0,0,0.14)] dark:border-white/[0.08] dark:bg-[#1a1a1a] dark:shadow-[0_16px_40px_rgba(0,0,0,0.50)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-white/[0.06]">
-          <div className="text-[13px] font-medium text-slate-700 dark:text-slate-200">
+          <h2
+            id="mandate-attach-modal-title"
+            className="text-[13px] font-medium text-slate-700 dark:text-slate-200"
+          >
             Mandat anhängen
-          </div>
+          </h2>
           <button
             type="button"
             onClick={onClose}
@@ -146,7 +203,7 @@ export function MandateAttachModal({ open, onClose, onSelect }: Props) {
           {loading && (
             <Loader2
               size={12}
-              className="shrink-0 animate-spin text-slate-400"
+              className="shrink-0 animate-spin text-slate-400 motion-reduce:animate-none"
             />
           )}
         </div>

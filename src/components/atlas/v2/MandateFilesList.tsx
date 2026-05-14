@@ -103,7 +103,11 @@ export function MandateFilesList({ mandateId, refreshKey }: Props) {
   if (loading && files.length === 0) {
     return (
       <div className="flex items-center justify-center rounded-md border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-xs text-slate-500 dark:border-slate-700/60 dark:bg-slate-900/30">
-        <Loader2 size={11} className="mr-2 animate-spin" /> Lädt Dateien…
+        <Loader2
+          size={11}
+          className="mr-2 animate-spin motion-reduce:animate-none"
+        />{" "}
+        Lädt Dateien…
       </div>
     );
   }
@@ -166,7 +170,10 @@ export function MandateFilesList({ mandateId, refreshKey }: Props) {
             className="text-slate-400 hover:text-emerald-700 disabled:opacity-30 dark:text-slate-500 dark:hover:text-emerald-300"
           >
             {downloading === f.id ? (
-              <Loader2 size={12} className="animate-spin" />
+              <Loader2
+                size={12}
+                className="animate-spin motion-reduce:animate-none"
+              />
             ) : (
               <Download size={12} />
             )}
@@ -179,7 +186,10 @@ export function MandateFilesList({ mandateId, refreshKey }: Props) {
             className="text-slate-400 hover:text-red-600 disabled:opacity-30 dark:text-slate-500 dark:hover:text-red-400"
           >
             {deleting === f.id ? (
-              <Loader2 size={12} className="animate-spin" />
+              <Loader2
+                size={12}
+                className="animate-spin motion-reduce:animate-none"
+              />
             ) : (
               <Trash2 size={12} />
             )}
