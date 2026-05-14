@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Started:** 2026-05-14
-**Last updated:** 2026-05-14 (Wave 1 closed)
+**Last updated:** 2026-05-14 (Wave 2 closed)
 **Owner:** JP (controller) + Claude (executor)
 **Goal:** Jeden einzelnen Audit-Finding zu "best possible state" prozessieren. Keine offenen Findings bleiben undone oder unbegründet-deferred. Wenn dieser Tracker auf 0 offene Findings steht, ist Atlas V2 in produktiver Qualität.
 
@@ -70,15 +70,16 @@ Jedes Mal wenn ein Finding angegangen wird:
 
 ```
 Total findings:    80
-☑️ Done:            5   (S1, C7, C8, C9, H17 — Wave 1, commit d9cf2640)
+☑️ Done:           15   (Wave 1: S1+C7+C8+C9+H17 d9cf2640;
+                          Wave 2: C1+C2+C3+C4+C5+C6+H18+H19+H20+H21 ab71c895)
 ⏳ In progress:     0
 ⏭️ Deferred:        0
-☐ Open:           75
+☐ Open:           65
 
 By severity:
   🚨 Shipping:    1   (✅ 1, ☐ 0)
-  🔴 Critical:    9   (✅ 3, ☐ 6)
-  🟠 High:       33   (✅ 1, ☐ 32)
+  🔴 Critical:    9   (✅ 9, ☐ 0)  ← all critical findings closed!
+  🟠 High:       33   (✅ 5, ☐ 28)
   🟡 Medium:     45   (☐ 45)
   🟢 Low:        19   (☐ 19)
 ```
@@ -163,7 +164,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 
 ### 🔴 Critical (9)
 
-#### C1 ☐ Cross-Tenant Org-Enumeration
+#### C1 ✅ Cross-Tenant Org-Enumeration — fixed in `ab71c895`
 
 - **File:** `src/app/api/atlas/organizations/search/route.ts:50-94`
 - **What:** Nutzt raw `auth()` (nicht `getAtlasAuth`), entfernt explizit den orgType-Filter, OR über `name` über die KOMPLETTE Organization-Tabelle. Jeder eingeloggte Caelex-User (auch OPERATOR-orgs) kann das volle LAW_FIRM-Kundenbuch via 2-Char-Probe enumerieren.
@@ -172,7 +173,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 2
 - **Status:** ☐ Open
 
-#### C2 ☐ Atlas Workspaces-Routen ohne Atlas-Org-Gate
+#### C2 ✅ Atlas Workspaces-Routen ohne Atlas-Org-Gate — fixed in `ab71c895`
 
 - **File:** `src/app/api/atlas/workspaces/route.ts` + alle `[id]/{route,share,cards,fork}.ts`
 - **What:** Alle 7 Workspaces-Routen nutzen raw `auth()` + `resolveOrgId()` mit Fallback auf "any active membership". OPERATOR-User können AtlasWorkspaces in OPERATOR-org anlegen + Public-Share-Token mintten = bypassed das LAW_FIRM-Lizenz-Gate komplett.
@@ -181,7 +182,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 2
 - **Status:** ☐ Open
 
-#### C3 ☐ Workspace-Share-Token Poisoning via Origin-Header
+#### C3 ✅ Workspace-Share-Token Poisoning via Origin-Header — fixed in `ab71c895`
 
 - **File:** `src/app/api/atlas/workspaces/[id]/share/route.ts:93-97`
 - **What:** Wenn `NEXT_PUBLIC_APP_URL` unset (Preview/Dev), fällt `shareUrl` auf `request.headers.get("origin")` zurück → attacker-controlled. Owner pasted den Link → Recipient navigiert zu attacker-domain → **Token-Leak**.
@@ -190,7 +191,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 2
 - **Status:** ☐ Open
 
-#### C4 ☐ AtlasKnowledgeChunk Relation-Namen-Kollision
+#### C4 ✅ AtlasKnowledgeChunk Relation-Namen-Kollision — fixed in `ab71c895`
 
 - **File:** `prisma/schema.prisma:11980, 11984`
 - **What:** Zwei Relations beide named `"AtlasKnowledgeChunks"` (eine zu AtlasMandate, eine zu User). Prisma akzeptiert das technisch, aber jede future-Migration die eine dritte Relation hinzufügt bricht; aktuell schon ambiguouse Traversal.
@@ -199,7 +200,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 2
 - **Status:** ☐ Open
 
-#### C5 ☐ 5 Models haben `organizationId String` ohne FK
+#### C5 ✅ 5 Models haben `organizationId String` ohne FK — fixed in `ab71c895`
 
 - **File:** `prisma/schema.prisma` lines 11867 (AtlasAgentRun), 11959 (AtlasKnowledgeChunk), 12028 (AtlasAuditLog), 12127 (AtlasMandateDeadlineSuggestion). Plus partial: AtlasNote / AtlasTimeEntry chatId/mandateId soft-pointers.
 - **What:** Wenn Org hard-deleted wird → orphane Rows die die Tenant-Isolation brechen + GDPR right-to-erasure-Verstoß. Audit-Log-Chain-Integrity ohne FK schwächer als gedacht.
@@ -208,7 +209,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 2
 - **Status:** ☐ Open
 
-#### C6 ☐ Mandate-Cascade lässt R2-Files zurück
+#### C6 ✅ Mandate-Cascade lässt R2-Files zurück — fixed in `ab71c895`
 
 - **File:** `prisma/schema.prisma:11743,11980` + `src/lib/atlas/document-processor.server.ts`
 - **What:** Mandat löschen cascadet AtlasMandateFile-Rows weg, aber die R2-Binärdateien bleiben für immer in Cloudflare R2 — Storage-Bills + GDPR right-to-erasure-Verstoß.
@@ -385,7 +386,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 1
 - **Status:** ☐ Open
 
-#### H18 ☐ Document-processor akzeptiert text/html Upload
+#### H18 ✅ Document-processor akzeptiert text/html Upload — fixed in `ab71c895`
 
 - **File:** `src/lib/atlas/document-processor.server.ts:209-291` + ALLOWED_MIME
 - **Fix:** Block `text/html` aus ALLOWED_MIME ODER DOMPurify-strip vor Persist.
@@ -393,7 +394,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 2
 - **Status:** ☐ Open
 
-#### H19 ☐ PDF/DOCX-Upload kein Magic-Byte-Sniff
+#### H19 ✅ PDF/DOCX-Upload kein Magic-Byte-Sniff — fixed in `ab71c895`
 
 - **File:** `src/app/api/atlas/extract/route.ts:48-58`, `src/app/api/atlas/redline/route.ts:55-64`
 - **Fix:** Sniff first 4 bytes — `%PDF-` für PDF, `PK\x03\x04` für DOCX. Reject mismatches.
@@ -401,7 +402,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 2
 - **Status:** ☐ Open
 
-#### H20 ☐ Transcribe ohne Audio-MIME-Whitelist
+#### H20 ✅ Transcribe ohne Audio-MIME-Whitelist — fixed in `ab71c895`
 
 - **File:** `src/app/api/atlas/transcribe/route.ts:99-118`
 - **Fix:** Whitelist: audio/webm, audio/mp4, audio/wav, audio/m4a, audio/mpeg, audio/ogg.
@@ -409,7 +410,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 2
 - **Status:** ☐ Open
 
-#### H21 ☐ DPA-cover-endpoint auto-creates Audit-Row on every GET
+#### H21 ✅ DPA-cover-endpoint auto-creates Audit-Row on every GET — fixed in `ab71c895`
 
 - **File:** `src/app/api/atlas/organization/dpa/route.ts:43-60`
 - **Fix:** `prisma.upsert` mit unique-constraint key statt findUnique + create. Optional: explicit POST nur für DPA-execution; GET ist read-only.
@@ -995,3 +996,4 @@ Diese sind in der Compliance-Konversation separat dokumentiert.
 
 - **2026-05-14:** Document created. 80 findings logged. 0 done.
 - **2026-05-14:** Wave 1 closed (commit `d9cf2640`). 5/80 done — S1, C7, C8, C9, H17.
+- **2026-05-14:** Wave 2 closed (commit `ab71c895` + db-push). 15/80 done — added C1, C2, C3, C4, C5, C6, H18, H19, H20, H21. **All Critical findings closed!** 16 files changed, +533/-190 lines, 6 new schema FK relations + 2 soft-pointer fixes + R2-cleanup helper.
