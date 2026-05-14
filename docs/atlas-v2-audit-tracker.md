@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Started:** 2026-05-14
-**Last updated:** 2026-05-14
+**Last updated:** 2026-05-14 (Wave 1 closed)
 **Owner:** JP (controller) + Claude (executor)
 **Goal:** Jeden einzelnen Audit-Finding zu "best possible state" prozessieren. Keine offenen Findings bleiben undone oder unbegründet-deferred. Wenn dieser Tracker auf 0 offene Findings steht, ist Atlas V2 in produktiver Qualität.
 
@@ -70,16 +70,16 @@ Jedes Mal wenn ein Finding angegangen wird:
 
 ```
 Total findings:    80
-☑️ Done:            0
+☑️ Done:            5   (S1, C7, C8, C9, H17 — Wave 1, commit d9cf2640)
 ⏳ In progress:     0
 ⏭️ Deferred:        0
-☐ Open:           80
+☐ Open:           75
 
 By severity:
-  🚨 Shipping:    1   (☐ 1)
-  🔴 Critical:    9   (☐ 9)
-  🟠 High:       33   (☐ 33)
-  🟡 Medium:     45   (☐ 45)  [includes M1-M45]
+  🚨 Shipping:    1   (✅ 1, ☐ 0)
+  🔴 Critical:    9   (✅ 3, ☐ 6)
+  🟠 High:       33   (✅ 1, ☐ 32)
+  🟡 Medium:     45   (☐ 45)
   🟢 Low:        19   (☐ 19)
 ```
 
@@ -150,7 +150,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 
 ### 🚨 Shipping Critical (1)
 
-#### S1 ☐ M2 Vault-RAG ist komplett kaputt
+#### S1 ✅ M2 Vault-RAG ist komplett kaputt — fixed in `d9cf2640`
 
 - **File:** `src/app/api/atlas/mandate/[id]/files/route.ts:95` (auch Zeile 99 für log)
 - **What:** Code ruft `autoEmbedMandateFile(result.id)` aber `UploadResult` (document-processor.server.ts:154) hat `fileId` nicht `id`. Auto-embed kriegt `undefined`, findet kein File, returned `{status: "failed", reason: "File not found"}`. M2 ist seit `080a7ed2` produktiv aber nichts wird indexiert.
@@ -217,7 +217,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 2
 - **Status:** ☐ Open
 
-#### C7 ☐ Tool-Loop-Erschöpfung wird stillschweigend ignoriert
+#### C7 ✅ Tool-Loop-Erschöpfung wird stillschweigend ignoriert — fixed in `d9cf2640`
 
 - **File:** `src/lib/atlas/chat-engine.server.ts:593-805`
 - **What:** Wenn `iter === MAX_TOOL_ITERATIONS`, while-Loop exitiert ohne `break` aber auch ohne final-text. Letzter `finalMessage.stop_reason === "tool_use"` → persistierte Assistant-Message hat tool_use-Blocks ohne final text. Sanitise-history dropped die "leere" Message → silent data loss + User sieht stalled Response ohne Fehler.
@@ -226,7 +226,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 1
 - **Status:** ☐ Open
 
-#### C8 ☐ Citation Pill href not URL-encoded
+#### C8 ✅ Citation Pill href not URL-encoded — fixed in `d9cf2640`
 
 - **File:** `src/components/atlas/v2/MarkdownContent.tsx:588`
 - **What:** `href={#citation-${hit.sourceId}}` — wenn sourceId ein `"` enthält bricht das attribute. Defense-in-depth fail (sourceIds kommen vom Server, presumed safe, aber).
@@ -235,7 +235,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 1
 - **Status:** ☐ Open
 
-#### C9 ☐ sanitiseHistoryForApi strippt thinking-Blocks → Anthropic 400 auf Folge-Turns
+#### C9 ✅ sanitiseHistoryForApi strippt thinking-Blocks → Anthropic 400 auf Folge-Turns — fixed in `d9cf2640`
 
 - **File:** `src/lib/atlas/chat-engine.server.ts:280-310`
 - **What:** Mit `THINKING_ENABLED=true` UND tool_use im Verlauf: Anthropic verlangt thinking-Blocks adjacent zu tool_use beim Replay. Wir strippen aber alle thinking-Blocks. → 400 `messages.N.content.0: missing thinking signature` bei Folge-Turns. Latente Crisis: passiert nicht jedes Mal aber bei langen Tool-using Conversations.
@@ -376,7 +376,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 8
 - **Status:** ☐ Open
 
-#### H17 ☐ Agent-engine passt mandateId NICHT durch zu executor
+#### H17 ✅ Agent-engine passt mandateId NICHT durch zu executor — fixed in `d9cf2640`
 
 - **File:** `src/app/api/atlas/agent/route.ts:418-423`
 - **What:** Agent-Mode kann vault-RAG nie nutzen → silent disabled.
@@ -994,3 +994,4 @@ Diese sind in der Compliance-Konversation separat dokumentiert.
 ## Changelog
 
 - **2026-05-14:** Document created. 80 findings logged. 0 done.
+- **2026-05-14:** Wave 1 closed (commit `d9cf2640`). 5/80 done — S1, C7, C8, C9, H17.
