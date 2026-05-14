@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Started:** 2026-05-14
-**Last updated:** 2026-05-14 (Wave 4 closed)
+**Last updated:** 2026-05-14 (Wave 5 closed)
 **Owner:** JP (controller) + Claude (executor)
 **Goal:** Jeden einzelnen Audit-Finding zu "best possible state" prozessieren. Keine offenen Findings bleiben undone oder unbegründet-deferred. Wenn dieser Tracker auf 0 offene Findings steht, ist Atlas V2 in produktiver Qualität.
 
@@ -70,19 +70,16 @@ Jedes Mal wenn ein Finding angegangen wird:
 
 ```
 Total findings:    80
-☑️ Done:           28   (Wave 1: S1+C7+C8+C9+H17 d9cf2640;
-                          Wave 2: C1+C2+C3+C4+C5+C6+H18+H19+H20+H21 ab71c895;
-                          Wave 3: H1+H23+H24+H25 7c19893d;
-                          Wave 4: H27+H28+H29+H30+H31+H32+H33+M37+M38 f8079519)
+☑️ Done:           36   (Waves 1-4: 28; Wave 5: M21-M28 01c75de4)
 ⏳ In progress:     0
 ⏭️ Deferred:        0
-☐ Open:           52
+☐ Open:           44
 
 By severity:
   🚨 Shipping:    1   (✅ 1, ☐ 0)
   🔴 Critical:    9   (✅ 9, ☐ 0)
   🟠 High:       33   (✅ 16, ☐ 17)
-  🟡 Medium:     45   (✅ 2, ☐ 43)
+  🟡 Medium:     45   (✅ 10, ☐ 35)
   🟢 Low:        19   (☐ 19)
 ```
 
@@ -657,56 +654,56 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 
 - **Status:** ⏭️ DEFERRED (combined with C5)
 
-#### M21 ☐ morning-brief in-memory cache mit confidential lawyer data
+#### M21 ✅ morning-brief in-memory cache mit confidential lawyer data — fixed in `01c75de4`
 
 - **File:** `src/app/api/atlas/morning-brief/route.ts:53-56`
 - **Fix:** Upstash ODER per-request fetch; LRU-cap dokumentieren.
 - **Wave:** 5
 - **Status:** ☐ Open
 
-#### M22 ☐ chat-engine SSE inactivity abort kann partial AtlasMessage-Row schreiben
+#### M22 ✅ chat-engine SSE inactivity abort kann partial AtlasMessage-Row schreiben — fixed in `01c75de4`
 
 - **File:** `src/lib/atlas/chat-engine.server.ts:646-693`
 - **Fix:** `if (!aborted)` guard auf final persist.
 - **Wave:** 5
 - **Status:** ☐ Open
 
-#### M23 ☐ Logger-PII-Inkonsistenz
+#### M23 ✅ Logger-PII-Inkonsistenz — fixed in `01c75de4`
 
 - **File:** Multiple — settings/password:110, transcribe:175, team/invitations/[id]/resend:104, etc.
 - **Fix:** Zentral via `maskEmail()` durchgängig.
 - **Wave:** 5
 - **Status:** ☐ Open
 
-#### M24 ☐ country-memo PDF Cache-Control private + max-age=3600
+#### M24 ✅ country-memo PDF Cache-Control private + max-age=3600 — fixed in `01c75de4`
 
 - **File:** `src/app/api/atlas/country-memo/[code]/route.ts:121-122`
 - **Fix:** `Cache-Control: private, no-store, max-age=0`.
 - **Wave:** 5
 - **Status:** ☐ Open
 
-#### M25 ☐ agent/runs/[id] returnt errorMessage kann internals leaken
+#### M25 ✅ agent/runs/[id] returnt errorMessage kann internals leaken — fixed in `01c75de4`
 
 - **File:** `src/app/api/atlas/agent/runs/[id]/route.ts:39-58, agent/route.ts:611-625`
 - **Fix:** `getSafeErrorMessage()` wrapper.
 - **Wave:** 5
 - **Status:** ☐ Open
 
-#### M26 ☐ share/[token] timing-distinguishable codepaths
+#### M26 ✅ share/[token] timing-distinguishable codepaths — fixed in `01c75de4`
 
 - **File:** `src/app/api/atlas/share/[token]/route.ts:50-90`
 - **Fix:** Constant-time-compare via `crypto.timingSafeEqual`.
 - **Wave:** 5
 - **Status:** ☐ Open
 
-#### M27 ☐ library POST embedding fallback returns []
+#### M27 ✅ library POST embedding fallback returns [] — fixed in `01c75de4`
 
 - **File:** `src/app/api/atlas/library/route.ts:121-138`
 - **Fix:** Don't persist mit empty embedding; mark `null` + lazy-backfill via cron.
 - **Wave:** 5
 - **Status:** ☐ Open
 
-#### M28 ☐ Vault-Search WHERE clause fehlt organizationId belt-and-suspenders
+#### M28 ✅ Vault-Search WHERE clause fehlt organizationId belt-and-suspenders — fixed in `01c75de4`
 
 - **File:** `src/lib/atlas/document-processor.server.ts:467` (groupBy)
 - **Fix:** Add `organizationId: args.organizationId` zu where.
