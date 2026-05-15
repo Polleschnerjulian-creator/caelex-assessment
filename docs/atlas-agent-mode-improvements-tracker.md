@@ -47,13 +47,13 @@ Single Source of Truth für Agent-Mode-Improvements. Überlebt Context-Compactio
 
 ```
 Total items:    9
-☑️ Done:         0
+☑️ Done:         2
 ⏳ In progress:  0
 ⏭️ Deferred:     0
-☐ Open:         9
+☐ Open:         7
 
 By tier:
-  🔴 Sprint A (Trust + Cost):       2  (A1, A2)
+  🔴 Sprint A (Trust + Cost):       2  (A1✅, A2✅) — COMPLETE @ 86a40669
   🟡 Sprint B (Memory + Control):   2  (B1, B2)
   🟢 Sprint C (Workflow):           2  (C1, C2)
   🟣 Sprint D (Later):              3  (D1, D2, D3)
@@ -74,7 +74,7 @@ By tier:
 
 ### 🔴 Sprint A — Trust + Cost (immediate, ~2 days)
 
-#### A1 ☐ Cost-Budget per Run
+#### A1 ✅ Cost-Budget per Run
 
 **What:** Anwalt setzt "max $X pro Agent-Run" — Atlas zeigt Live-Counter im UI, bricht ab 80% mit "weiter? +$Y geschätzt für die finalen Steps".
 
@@ -95,11 +95,18 @@ By tier:
 - Click Continue → run resumes from same conversation state
 - Click Stop → AtlasAgentRun.status = "stopped_for_budget", final-state persisted
 
-**Wave:** A | **Status:** ☐ Open
+**Wave:** A | **Status:** ✅ DONE @ 86a40669
+
+**Notes (post-impl):**
+
+- Cache-aware `estimateCostUsd()` (parity with chat-engine H10): cache_creation × $3.75/M, cache_read × $0.30/M, regular tokens × Sonnet pricing
+- 20% safety margin baked into `checkBudget()` — pause triggers at 80% used-ratio floor
+- Resume route v1 trade-off: client re-POSTs original request body. Documented for v2 server-side restore.
+- New SSE events wired: `run_started` (with budgetUsd echoed), `cost_progress` (per iteration), `budget_pause` (with currentCost/budget/etaCost/remainingBudget)
 
 ---
 
-#### A2 ☐ Verification-Loop after each Artifact
+#### A2 ✅ Verification-Loop after each Artifact
 
 **What:** Nach jedem `[[ARTIFACT type=schriftsatz/memo/email]]` läuft automatisch:
 
@@ -125,7 +132,15 @@ Wenn was auffällt: Atlas markiert die Stelle inline mit ⚠ + erklärt was fehl
 - Test: artifact contains "100% Erfolgschance" claim → BORA-checker flags "Erfolgsversprechen verboten" (BORA §6)
 - UI shows verification-warnings inline next to the artifact card
 
-**Wave:** A | **Status:** ☐ Open
+**Wave:** A | **Status:** ✅ DONE @ 86a40669
+
+**Notes (post-impl):**
+
+- BORA-checker lexicon (4 rules): BORA §6 Erfolgsversprechen + Werbung, BRAO §43a Verschwiegenheit, BRAO §49b Honorar
+- Hallucination heuristic: paragraphs > 40 words containing claim-verbs (verstößt/verpflichtet/haftet/§…) **without** `[ATLAS:...]` citation in the same paragraph → flagged
+- Bounded negative-lookahead `(?!.{0,80}RVG)` used in BORA regex to avoid catastrophic backtracking
+- `verifyArtifacts()` in `verification-pass.server.ts` orchestrates all 3 checks per artifact, returns `Array<{artifactIndex, kind, severity, message, citation?}>`
+- New SSE event: `verification_warnings` after stream-end. UI groups by kind, error-first sort (ArtifactFindings component)
 
 ---
 
@@ -143,7 +158,7 @@ Wenn was auffällt: Atlas markiert die Stelle inline mit ⚠ + erklärt was fehl
 - `src/app/api/atlas/agent/route.ts` — before calling such a tool, emit SSE `{ type: "approval_required", toolName, input, rationale }` + halt the loop until SSE-back from client `{ type: "approval_response", approved: boolean, modifiedInput? }`
 - `src/components/atlas/v2/AgentRunView.tsx` — render approval-card with Approve/Edit/Cancel buttons
 - New: client → server channel for approval-response (POST `/api/atlas/agent/runs/[id]/approve` with toolUseId + decision)
-- `prisma/schema.prisma` — `AtlasAgentRun.approvalGates Json?` (audit-trail of all approval decisions)
+- `prisma/schema.prisma` — `AtlasAgentRun.approvalGates Json?` (audit-trail of all approval decisions) — **already in schema** (pre-empted in 86a40669, default `[]`)
 
 **Acceptance:**
 
@@ -189,7 +204,7 @@ Wenn was auffällt: Atlas markiert die Stelle inline mit ⚠ + erklärt was fehl
 
 **Files:**
 
-- `prisma/schema.prisma` — `AtlasAgentRun.parentRunId String?` + `forkedFromStep Int?` (track lineage)
+- `prisma/schema.prisma` — `AtlasAgentRun.parentRunId String?` + `forkedFromStep Int?` (track lineage) — **already in schema** (pre-empted in 86a40669)
 - `src/app/api/atlas/agent/route.ts` — accept new POST body field `forkFromRunId: string, forkFromStep: number, modifiedGoal?: string`. Load parent-run's conversation up to step N, replace step N's input with modified, continue from there
 - `src/components/atlas/v2/AgentRunView.tsx` — per-step "Fork from here"-button → opens modal "Was möchtest Du ändern?" → submit → POST /api/atlas/agent with fork-params
 - `src/app/(atlas)/atlas/agent/history/page.tsx` — show fork-tree UI for runs with children
@@ -280,3 +295,4 @@ Beispiele:
 ## Changelog
 
 - **2026-05-15:** Document created. 9 items (2A + 2B + 2C + 3D). 0 done.
+- **2026-05-15:** Sprint A complete. A1 (cost-budget) + A2 (verification-loop) shipped in `86a40669`. Pre-empted B1 schema-field `approvalGates` and C1 schema-fields `parentRunId` + `forkedFromStep` in same commit to avoid future schema-pushes. Progress: 2/9 done.
