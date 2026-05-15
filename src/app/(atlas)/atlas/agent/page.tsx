@@ -39,6 +39,8 @@ import {
   Brain,
   ShieldCheck,
   ShieldAlert,
+  DollarSign,
+  PauseCircle,
 } from "lucide-react";
 import { MarkdownContent } from "@/components/atlas/v2/MarkdownContent";
 import { AtlasMark } from "@/components/atlas/v2/AtlasLogo";
@@ -73,6 +75,29 @@ interface UsageStats {
   costUsd: number;
 }
 
+/** Sprint A1 — live cost-progress event payload streamed from the
+ *  server after every iteration. Drives the live cost-counter below
+ *  the goal-pin while the run is in flight. */
+interface CostProgress {
+  currentCost: number;
+  budget: number | null;
+  iteration: number;
+  inputTokens: number;
+  outputTokens: number;
+}
+
+/** Sprint A1 — budget_pause event payload. Surfaces a confirmation
+ *  modal where the lawyer can approve continuation, optionally bump
+ *  the budget, or stop the run. */
+interface BudgetPauseInfo {
+  runId: string | null;
+  currentCost: number;
+  budget: number;
+  etaCost: number;
+  remainingSteps: number;
+  iterationsCompleted: number;
+}
+
 /** Per-citation verification record from the server-side
  *  citation-extractor. Same shape as ExtractedCitation but with
  *  optional `index` + `occurrences` for inline rendering. */
@@ -103,6 +128,20 @@ interface VerificationResult {
   warnings: number;
   hallucinated: number;
   citations: VerificationCitation[];
+}
+
+/** Sprint A2 — Per-artifact verification finding emitted by the
+ *  server-side verifyArtifacts() pass. Three kinds: citation (bad/
+ *  repealed [ATLAS:...] reference), bora (BORA/BRAO rule fire), and
+ *  hallucination (substantive legal claim missing a citation).
+ *  Rendered as inline-warnings under each artefact-card. */
+interface VerificationFinding {
+  artifactIndex: number;
+  kind: "citation" | "bora" | "hallucination";
+  severity: "warn" | "error";
+  message: string;
+  citation?: string;
+  offset?: number;
 }
 
 /* SUGGESTED_GOALS replaced with the full AGENT_TEMPLATES library
@@ -213,7 +252,20 @@ export default function AgentPage() {
   const [goal, setGoal] = useState("");
   const [mandateId, setMandateId] = useState<string>("");
   const [mandates, setMandates] = useState<MandateListItem[]>([]);
-  const [running, setRunning] = useState(false);
+  /* Sprint A1 — Cost-Budget. budgetInput is the raw textfield string
+     so the user can clear it; we coerce to a number on POST. Empty/
+     invalid → no budget. */
+  const [budgetInput, setBudgetInput] = useState<string>("");
+  /* Sprint A1 — live cost-counter, updated per iteration via the new
+     cost_progress SSE event. Shown in the running-view footer. */
+  const [costProgress, setCostProgress] = useState<CostProgress | null>(null);
+  /* Sprint A1 — pause-state when the server emitted budget_pause. The
+     UI renders a modal-like confirmation card; the lawyer's choice
+     drives a POST to /resume + an optional re-POST to /api/atlas/agent. */
+  const [budgetPause, setBudgetPause] = useState<BudgetPauseInfo | null>(null);
+  /* runId captured from run_started — needed for the resume-POST when
+     the budget-pause modal triggers. */
+  const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const [steps, setSteps] = useState<StepRecord[]>([]);
   /* Reasoning text per iteration — accumulated via thinking_delta
      stream events. Keyed by iteration number; rendered next to the
@@ -242,6 +294,16 @@ export default function AgentPage() {
   >([]);
   const [extractingFiles, setExtractingFiles] = useState<string[]>([]);
   const [attachError, setAttachError] = useState<string | null>(null);
+  /* Running flag — true while an SSE stream is in flight. Set on
+     handleRun, cleared in finally / stop-handlers. Drives the UI
+     gating between "input the goal" and "watch the run". */
+  const [running, setRunning] = useState(false);
+  /* Sprint A2 — Verification-warnings emitted per artefact. The
+     verification-pass-server runs three checks (citation / BORA /
+     hallucination) and streams the findings via the
+     `verification_warnings` SSE event. We render them as inline
+     warnings under each artefact-card, filtered by artifactIndex. */
+  const [findings, setFindings] = useState<VerificationFinding[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
 
@@ -330,6 +392,16 @@ export default function AgentPage() {
     setAttachments((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  /* Sprint A1 — parse the user's budget-text into a number (or null).
+     Centralised so handleRun + the resume-flow agree on the rules. */
+  const parsedBudget = (() => {
+    const trimmed = budgetInput.trim();
+    if (!trimmed) return null;
+    const n = Number(trimmed);
+    if (!Number.isFinite(n) || n <= 0 || n > 100) return null;
+    return n;
+  })();
+
   const handleRun = async () => {
     if (!goal.trim() || running) return;
     setRunning(true);
@@ -341,6 +413,12 @@ export default function AgentPage() {
     setError(null);
     setSavedToVault(false);
     setSavedDeadlines(new Set());
+    setBudgetPause(null);
+    setCostProgress(null);
+    setActiveRunId(null);
+    /* Sprint A2 — clear the per-run verification-findings so a stale
+       set from the previous run doesn't render under the new one. */
+    setFindings([]);
     try {
       /* Build the effective goal: attached files prepended as fenced
          [Anhang]-Blocks (same convention the chat-composer uses), so
@@ -361,6 +439,9 @@ export default function AgentPage() {
         body: JSON.stringify({
           goal: effectiveGoal,
           mandateId: mandateId || undefined,
+          /* Sprint A1 — pass the parsed budget through. Server caps
+             at $100 again so a tampered client can't bypass. */
+          budgetUsd: parsedBudget,
         }),
       });
       if (!res.ok || !res.body) {
@@ -384,6 +465,34 @@ export default function AgentPage() {
           try {
             const evt = JSON.parse(json);
             switch (evt.type) {
+              case "run_started":
+                /* Sprint A1 — capture runId so we can POST to /resume
+                   if the budget pauses the run mid-flight. */
+                if (evt.runId) setActiveRunId(evt.runId as string);
+                break;
+              case "cost_progress":
+                /* Sprint A1 — live cost-counter feed. */
+                setCostProgress({
+                  currentCost: evt.currentCost as number,
+                  budget: (evt.budget as number | null) ?? null,
+                  iteration: evt.iteration as number,
+                  inputTokens: evt.inputTokens as number,
+                  outputTokens: evt.outputTokens as number,
+                });
+                break;
+              case "budget_pause":
+                /* Sprint A1 — server hit the budget threshold. Surface
+                   the modal; the lawyer's choice will fire the
+                   resume-POST + optional re-POST below. */
+                setBudgetPause({
+                  runId: (evt.runId as string | null) ?? activeRunId,
+                  currentCost: evt.currentCost as number,
+                  budget: evt.budget as number,
+                  etaCost: evt.etaCost as number,
+                  remainingSteps: evt.remainingSteps as number,
+                  iterationsCompleted: evt.iterationsCompleted as number,
+                });
+                break;
               case "text":
                 textBuffer += evt.delta as string;
                 setFinalText(textBuffer);
@@ -438,6 +547,15 @@ export default function AgentPage() {
                   citations: (evt.citations as VerificationCitation[]) ?? [],
                 });
                 break;
+              case "verification_warnings":
+                /* Sprint A2 — per-artefact verification findings. The
+                   server emits a single batch event with the full
+                   findings-array so we replace local state in one go;
+                   no merge / append semantics needed. */
+                setFindings(
+                  (evt.findings as VerificationFinding[] | undefined) ?? [],
+                );
+                break;
               case "run_done":
                 setUsage(evt.usage as UsageStats);
                 break;
@@ -469,8 +587,77 @@ export default function AgentPage() {
     setSavedDeadlines(new Set());
     setAttachments([]);
     setAttachError(null);
+    /* Sprint A1 — also clear cost/pause-state. Budget-input itself
+       stays (sticky preference between runs) so a lawyer who set
+       $5/run doesn't have to retype every time. */
+    setBudgetPause(null);
+    setCostProgress(null);
+    setActiveRunId(null);
+    /* Sprint A2 — also drop the per-run verification-findings on
+       reset; a fresh goal starts with a clean slate. */
+    setFindings([]);
     /* Keep mandateId selection — user often runs multiple agents
        on the same mandate, no reason to make them re-pick. */
+  };
+
+  /* Sprint A1 — Resume handler. Called from the budget-pause modal.
+     Posts the lawyer's decision to /resume; if approved, also re-
+     POSTs the original /api/atlas/agent request to actually continue.
+     The v1 trade-off is documented in the resume-route docblock:
+     re-POST is a fresh agent-run that re-uses the goal + new budget,
+     not a literal in-flight conversation-restoration. */
+  const handleResumeDecision = async (
+    approve: boolean,
+    increaseBudgetTo?: number,
+  ) => {
+    if (!budgetPause?.runId) {
+      setError("Resume nicht möglich — kein aktiver Run.");
+      return;
+    }
+    setRunning(true);
+    try {
+      const res = await fetch(
+        `/api/atlas/agent/runs/${budgetPause.runId}/resume`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            approve,
+            increaseBudgetTo: increaseBudgetTo ?? undefined,
+          }),
+        },
+      );
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setError(body.error || `Resume fehlgeschlagen (${res.status})`);
+        setRunning(false);
+        return;
+      }
+      setBudgetPause(null);
+      if (!approve) {
+        /* Lawyer chose stop — leave the partial output on screen but
+           clear the running flag so the reset-button is reachable. */
+        setRunning(false);
+        return;
+      }
+      /* Approved — bump the local budget if a new one was chosen and
+         re-POST to /api/atlas/agent. v1 trade-off: this starts a new
+         in-process agent-run with the same goal, NOT a server-side
+         continuation. The original run is marked "running" again on
+         the server side so the history page shows it as completed
+         after this re-POST finishes. */
+      if (increaseBudgetTo !== undefined) {
+        setBudgetInput(String(increaseBudgetTo));
+      }
+      /* Use a microtask delay so the budgetInput state-update applies
+         before parsedBudget is re-read inside handleRun. */
+      setTimeout(() => {
+        void handleRun();
+      }, 0);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setRunning(false);
+    }
   };
 
   /* Save the agent's final artifact as a Markdown file in the
@@ -595,6 +782,37 @@ export default function AgentPage() {
               </select>
             </div>
           )}
+
+          {/* Sprint A1 — Cost-Budget input. Optional (empty = unlimited).
+              Server caps at $100/run regardless. The lawyer types a
+              max once and forgets it; the run pauses if it would
+              exceed the cap. */}
+          <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-white/[0.08] dark:bg-white/[0.02]">
+            <DollarSign size={14} className="shrink-0 text-slate-500" />
+            <label
+              htmlFor="atlas-agent-budget"
+              className="text-[12px] text-slate-500"
+            >
+              Max-Budget:
+            </label>
+            <input
+              id="atlas-agent-budget"
+              type="number"
+              min="0"
+              max="100"
+              step="0.5"
+              value={budgetInput}
+              onChange={(e) => setBudgetInput(e.target.value)}
+              placeholder="optional, z.B. 5"
+              className="w-24 bg-transparent text-[12.5px] text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
+            />
+            <span className="text-[11px] text-slate-400">USD pro Run</span>
+            <span className="ml-auto text-[10.5px] text-slate-400">
+              {budgetInput && parsedBudget === null
+                ? "ungültig (1–100)"
+                : "Server-Cap: $100"}
+            </span>
+          </div>
 
           <div className="rounded-2xl border border-slate-200 bg-white p-1 dark:border-white/[0.08] dark:bg-[#1a1a1a]">
             {/* Attached files (PDF / DOCX / TXT / MD) — prepended to the
@@ -769,6 +987,58 @@ export default function AgentPage() {
             </div>
           </div>
 
+          {/* Sprint A1 — Live cost-counter. Shown while running (or
+              after the run if no usage-summary fired yet). Reads
+              cost_progress events from the server. When the lawyer
+              set a budget, render as `$X / $Y (Z%)` so they see
+              headroom at-a-glance. */}
+          {(costProgress || (running && parsedBudget)) && (
+            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11.5px] text-slate-600 dark:border-white/[0.08] dark:bg-white/[0.02] dark:text-slate-400">
+              <DollarSign
+                size={11}
+                className="shrink-0 text-slate-500 dark:text-slate-400"
+              />
+              <span className="tabular-nums">
+                ${(costProgress?.currentCost ?? 0).toFixed(4)}
+                {parsedBudget !== null && (
+                  <>
+                    {" "}
+                    / ${parsedBudget.toFixed(2)}
+                    <span className="ml-2 text-slate-400">
+                      (
+                      {Math.min(
+                        100,
+                        Math.round(
+                          ((costProgress?.currentCost ?? 0) / parsedBudget) *
+                            100,
+                        ),
+                      )}
+                      %)
+                    </span>
+                  </>
+                )}
+              </span>
+              {costProgress && (
+                <span className="ml-auto text-[10.5px] text-slate-400">
+                  Iter {costProgress.iteration} ·{" "}
+                  {costProgress.inputTokens.toLocaleString("de-DE")}↑ ·{" "}
+                  {costProgress.outputTokens.toLocaleString("de-DE")}↓
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Sprint A1 — Budget-Pause banner. Replaces the inline run
+              progress with a confirmation card when the server paused
+              the run. The lawyer either approves continuation
+              (optionally with a higher budget) or stops. */}
+          {budgetPause && (
+            <BudgetPauseBanner
+              info={budgetPause}
+              onDecision={handleResumeDecision}
+            />
+          )}
+
           {/* Active run indicator */}
           {running && steps.length === 0 && !finalText && (
             <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-3 text-[12.5px] text-slate-600 dark:border-white/[0.08] dark:text-slate-400">
@@ -849,15 +1119,32 @@ export default function AgentPage() {
                       ? `Atlas erstellt Artefakte… (${artifacts.length})`
                       : `Ergebnis — ${artifacts.length} Artefakt${artifacts.length === 1 ? "" : "e"}`}
                   </div>
-                  {artifacts.map((a, i) => (
-                    <ArtifactCard
-                      key={`${a.kind}-${i}-${a.title}`}
-                      artifact={a}
-                      running={running}
-                      mandateId={mandateId}
-                      goalTitle={goal.split(/[.!?\n]/)[0]?.trim() ?? ""}
-                    />
-                  ))}
+                  {artifacts.map((a, i) => {
+                    /* Sprint A2 — surface per-artefact verification
+                       warnings inline. We render them between the
+                       step-cards / verification-banner and the
+                       artefact-card body so the lawyer sees the flag
+                       BEFORE reading the body. */
+                    const artifactFindings = findings.filter(
+                      (f) => f.artifactIndex === i,
+                    );
+                    return (
+                      <div
+                        key={`${a.kind}-${i}-${a.title}`}
+                        className="space-y-2"
+                      >
+                        {artifactFindings.length > 0 && (
+                          <ArtifactFindings findings={artifactFindings} />
+                        )}
+                        <ArtifactCard
+                          artifact={a}
+                          running={running}
+                          mandateId={mandateId}
+                          goalTitle={goal.split(/[.!?\n]/)[0]?.trim() ?? ""}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })()}
@@ -1223,6 +1510,73 @@ function VerificationBanner({
   );
 }
 
+/* ── ArtifactFindings ──────────────────────────────────────────────────
+ *
+ * Sprint A2 — Inline-warnings for one artefact. Renders a compact
+ * stack of warning rows above the artefact-card body, grouped by
+ * kind (citation / bora / hallucination) so a memo with three citation-
+ * issues + one BORA-flag reads as two visual blocks instead of four
+ * scattered rows. Severity drives the icon-colour: error = red, warn
+ * = amber.
+ */
+function ArtifactFindings({ findings }: { findings: VerificationFinding[] }) {
+  /* Group by kind for cleaner display. Within each group, error
+     findings sort first (the lawyer needs to see the red flags
+     before the yellow ones). */
+  const groups = (["citation", "bora", "hallucination"] as const).map(
+    (kind) => ({
+      kind,
+      items: findings
+        .filter((f) => f.kind === kind)
+        .sort((a, b) => {
+          if (a.severity === b.severity) return 0;
+          return a.severity === "error" ? -1 : 1;
+        }),
+    }),
+  );
+
+  const groupLabel: Record<VerificationFinding["kind"], string> = {
+    citation: "Citation-Prüfung",
+    bora: "BORA / BRAO",
+    hallucination: "Halluzinations-Verdacht",
+  };
+
+  return (
+    <div className="space-y-1.5 rounded-lg border border-amber-200 bg-amber-50/50 px-3 py-2.5 dark:border-amber-500/20 dark:bg-amber-500/[0.04]">
+      <div className="text-[10.5px] uppercase tracking-wider text-amber-700 dark:text-amber-300">
+        Verification — {findings.length} Hinweis
+        {findings.length === 1 ? "" : "e"}
+      </div>
+      {groups.map((g) => {
+        if (g.items.length === 0) return null;
+        return (
+          <div key={g.kind} className="space-y-1">
+            <div className="text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              {groupLabel[g.kind]} ({g.items.length})
+            </div>
+            {g.items.map((f, i) => {
+              const isError = f.severity === "error";
+              const tone = isError
+                ? "text-red-700 dark:text-red-300"
+                : "text-amber-700 dark:text-amber-300";
+              const Icon = isError ? AlertCircle : ShieldAlert;
+              return (
+                <div
+                  key={`${g.kind}-${i}-${f.offset ?? f.citation ?? "x"}`}
+                  className={`flex items-start gap-1.5 text-[11.5px] ${tone}`}
+                >
+                  <Icon size={11} className="mt-0.5 shrink-0" />
+                  <span className="flex-1 leading-snug">{f.message}</span>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ── ArtifactCard ─────────────────────────────────────────────────────
  *
  * Renders one structured artifact from the agent's multi-output. Each
@@ -1457,6 +1811,141 @@ function LegacyArtifact({
           <span className="ml-1 inline-block h-3 w-1 animate-pulse bg-slate-500 align-middle dark:bg-slate-300" />
         )}
       </div>
+    </div>
+  );
+}
+
+/* ── BudgetPauseBanner ────────────────────────────────────────────────
+ *
+ * Sprint A1 — Cost-Budget pause confirmation. Renders a modal-like
+ * card when the server paused mid-run because the projected next-
+ * iteration cost would exceed the lawyer-set budget. Three actions:
+ *   • "Weiter (+$X)" → POST /resume with approve=true, then re-POST
+ *                      /api/atlas/agent (handled by the parent's
+ *                      handleResumeDecision)
+ *   • "Mehr Budget" → user input + approve=true with increaseBudgetTo
+ *   • "Stop"        → POST /resume with approve=false; partial output
+ *                     remains on screen for review
+ *
+ * v1 trade-off: the "Weiter"-flow re-POSTs the original goal as a
+ * NEW agent-run (the server-side conversation cannot be restored
+ * across HTTP requests yet). The lawyer sees this as Atlas
+ * "continuing", which is true semantically; v2 will move the
+ * continuation server-side.
+ */
+function BudgetPauseBanner({
+  info,
+  onDecision,
+}: {
+  info: BudgetPauseInfo;
+  onDecision: (approve: boolean, increaseBudgetTo?: number) => void;
+}) {
+  const [showBudgetBump, setShowBudgetBump] = useState(false);
+  const [bumpInput, setBumpInput] = useState("");
+  const usedRatio = info.budget > 0 ? info.currentCost / info.budget : 0;
+
+  return (
+    <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 dark:border-amber-500/30 dark:bg-amber-500/10">
+      <div className="mb-2 flex items-center gap-2 text-[12px] font-medium text-amber-800 dark:text-amber-200">
+        <PauseCircle size={14} />
+        Atlas pausiert — Budget fast erschöpft
+      </div>
+      <div className="mb-3 space-y-1 text-[12.5px] leading-relaxed text-amber-900 dark:text-amber-100">
+        <div>
+          Verbraucht:{" "}
+          <span className="font-mono tabular-nums">
+            ${info.currentCost.toFixed(4)}
+          </span>{" "}
+          von{" "}
+          <span className="font-mono tabular-nums">
+            ${info.budget.toFixed(2)}
+          </span>{" "}
+          ({Math.round(usedRatio * 100)}%).
+        </div>
+        <div className="text-amber-700 dark:text-amber-200/80">
+          Geschätzte Kosten für den nächsten Schritt:{" "}
+          <span className="font-mono tabular-nums">
+            +${info.etaCost.toFixed(4)}
+          </span>
+          . {info.remainingSteps} weitere Schritte möglich (Iteration{" "}
+          {info.iterationsCompleted}/15 durchlaufen).
+        </div>
+      </div>
+
+      {!showBudgetBump ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onDecision(true)}
+            className="inline-flex items-center gap-1.5 rounded-md bg-amber-600 px-3 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-amber-700"
+          >
+            <Play size={11} />
+            Weiter (+${info.etaCost.toFixed(4)})
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowBudgetBump(true)}
+            className="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-white px-3 py-1.5 text-[12px] text-amber-800 transition-colors hover:bg-amber-100 dark:border-amber-500/30 dark:bg-transparent dark:text-amber-100 dark:hover:bg-amber-500/20"
+          >
+            <DollarSign size={11} />
+            Mehr Budget …
+          </button>
+          <button
+            type="button"
+            onClick={() => onDecision(false)}
+            className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-[12px] text-slate-700 transition-colors hover:bg-slate-100 dark:border-white/[0.10] dark:bg-transparent dark:text-slate-300 dark:hover:bg-white/[0.05]"
+          >
+            <X size={11} />
+            Stop
+          </button>
+        </div>
+      ) : (
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="text-[11.5px] text-amber-800 dark:text-amber-200">
+            Neues Budget:
+          </label>
+          <input
+            type="number"
+            min="0.01"
+            max="100"
+            step="0.5"
+            value={bumpInput}
+            onChange={(e) => setBumpInput(e.target.value)}
+            placeholder={String(Math.min(100, info.budget * 2).toFixed(2))}
+            className="w-24 rounded-md border border-amber-300 bg-white px-2 py-1 text-[12px] text-slate-900 outline-none placeholder:text-slate-400 dark:border-amber-500/30 dark:bg-transparent dark:text-slate-100 dark:placeholder:text-slate-500"
+            autoFocus
+          />
+          <span className="text-[11px] text-amber-700 dark:text-amber-200/80">
+            USD
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              const n = Number(bumpInput);
+              if (!Number.isFinite(n) || n <= 0 || n > 100) return;
+              onDecision(true, n);
+            }}
+            disabled={(() => {
+              const n = Number(bumpInput);
+              return !Number.isFinite(n) || n <= 0 || n > 100;
+            })()}
+            className="inline-flex items-center gap-1.5 rounded-md bg-amber-600 px-3 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-amber-700 disabled:opacity-40"
+          >
+            <Play size={11} />
+            Bestätigen
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setShowBudgetBump(false);
+              setBumpInput("");
+            }}
+            className="text-[11px] text-amber-700 underline-offset-4 hover:underline dark:text-amber-200"
+          >
+            zurück
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -11954,6 +11954,29 @@ model AtlasAgentRun {
   /// We DON'T persist the extracted text itself — too large.
   attachments Json @default("[]")
 
+  /// Sprint A1: Cost-Budget per Run.
+  /// budgetUsd: lawyer-set max cost (null = no budget).
+  /// pausedForBudget: true if the run halted waiting for resume-confirmation.
+  budgetUsd       Decimal? @db.Decimal(10, 4)
+  pausedForBudget Boolean? @default(false)
+
+  /// Sprint A2: Verification-Pass results per artifact.
+  /// Array of: { artifactIndex, kind: "citation"|"bora"|"hallucination",
+  ///             severity: "warn"|"error", message, citation? }
+  /// Null when the run produced no artifacts or verification skipped.
+  verificationResults Json?
+
+  /// Sprint B1: Approval-gate audit trail (interactive pauses).
+  /// Array of: { toolUseId, toolName, decision: "approved"|"rejected"|
+  ///             "modified", originalInput, modifiedInput?, decidedAt }
+  approvalGates Json @default("[]")
+
+  /// Sprint C1: Run-Replay / Branching lineage.
+  /// parentRunId: the run we forked from (null = original).
+  /// forkedFromStep: the step-index where we diverged.
+  parentRunId    String?
+  forkedFromStep Int?
+
   startedAt   DateTime @default(now())
   completedAt DateTime?
 

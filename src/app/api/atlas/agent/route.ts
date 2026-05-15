@@ -31,9 +31,33 @@ import { buildAnthropicClient } from "@/lib/atlas/anthropic-client";
 import { ATLAS_TOOLS, isAtlasToolName } from "@/lib/atlas/atlas-tools";
 import { executeAtlasTool } from "@/lib/atlas/atlas-tool-executor";
 import { extractCitations } from "@/lib/atlas/citation-extractor.server";
+import { checkBudget } from "@/lib/atlas/agent/cost-budget";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { getSafeErrorMessage } from "@/lib/validations";
+
+/* Sprint A1 — Cost-Budget pricing constants. Mirrors the cache-aware
+   pricing used in chat-engine.server.ts (audit-fix H10) so the live-
+   counter shown to the lawyer in agent-mode matches the chat-mode
+   numbers. */
+const PRICE_INPUT_PER_MTOK = 3.0;
+const PRICE_OUTPUT_PER_MTOK = 15.0;
+const PRICE_CACHE_CREATION_PER_MTOK = PRICE_INPUT_PER_MTOK * 1.25;
+const PRICE_CACHE_READ_PER_MTOK = PRICE_INPUT_PER_MTOK * 0.1;
+
+function estimateCostUsd(
+  input: number,
+  output: number,
+  cacheCreation: number = 0,
+  cacheRead: number = 0,
+): number {
+  return (
+    (input / 1_000_000) * PRICE_INPUT_PER_MTOK +
+    (cacheCreation / 1_000_000) * PRICE_CACHE_CREATION_PER_MTOK +
+    (cacheRead / 1_000_000) * PRICE_CACHE_READ_PER_MTOK +
+    (output / 1_000_000) * PRICE_OUTPUT_PER_MTOK
+  );
+}
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -50,6 +74,10 @@ const THINKING_BUDGET = 4000;
 const PostBody = z.object({
   goal: z.string().min(10).max(2_000),
   mandateId: z.string().cuid().nullable().optional(),
+  /* Sprint A1 — lawyer-set max cost for the run (USD). Capped at
+     $100/run to prevent a runaway / malicious client from declaring
+     a $10k budget. Null/undefined = no budget (legacy behaviour). */
+  budgetUsd: z.number().positive().max(100).nullable().optional(),
 });
 
 /* AUDIT-FIX L18 (2026-05-15): strip control chars + ANSI escape
@@ -293,11 +321,22 @@ export async function POST(req: NextRequest) {
             mandateId: parsed.data.mandateId ?? null,
             goal: goalForLog.slice(0, 2000),
             status: "running",
+            /* Sprint A1 — persist the lawyer-set budget alongside
+               the run so the resume-endpoint can read it without
+               re-trusting any client-supplied number. Null when no
+               budget chosen. */
+            budgetUsd: parsed.data.budgetUsd ?? null,
+            pausedForBudget: false,
           },
           select: { id: true },
         });
         runId = runRow.id;
-        send({ type: "run_started", goal: goalForLog, runId });
+        send({
+          type: "run_started",
+          goal: goalForLog,
+          runId,
+          budgetUsd: parsed.data.budgetUsd ?? null,
+        });
       } catch (err) {
         /* Persistence is best-effort — if the DB write fails,
            continue with the run anyway (lawyer still gets the
@@ -314,6 +353,11 @@ export async function POST(req: NextRequest) {
       ];
       let totalInputTokens = 0;
       let totalOutputTokens = 0;
+      /* Sprint A1 — also accumulate cache-creation/read tokens so the
+         live cost-counter and budget-projection reflect cache-aware
+         pricing (parity with chat-engine's H10 fix). */
+      let totalCacheCreationTokens = 0;
+      let totalCacheReadTokens = 0;
       const toolsUsed: string[] = [];
       /* Server-side text buffer accumulates every text-delta the
          model emits across all iterations. Used at run-end for
@@ -336,9 +380,77 @@ export async function POST(req: NextRequest) {
       }> = [];
       const persistedReasoning: Record<number, string> = {};
 
+      /* Sprint A1 — flag set when we paused for budget. Skips the
+         post-loop "complete" / "done" persist + emits a budget_pause
+         SSE event instead. */
+      let pausedForBudget = false;
+
       try {
         let iter = 0;
         while (iter < MAX_TOOL_ITERATIONS) {
+          /* Sprint A1 — Cost-Budget pre-iteration check.
+             ─────────────────────────────────────────────────────────
+             Compute the running cost from accumulated tokens (cache-
+             aware), then ask the helper whether we'd exceed budget on
+             the NEXT iteration. If yes, persist the pause-state and
+             close the stream — the lawyer must POST to /resume to
+             continue. */
+          if (parsed.data.budgetUsd && parsed.data.budgetUsd > 0) {
+            const currentCostUsd = estimateCostUsd(
+              totalInputTokens,
+              totalOutputTokens,
+              totalCacheCreationTokens,
+              totalCacheReadTokens,
+            );
+            const check = checkBudget({
+              currentCostUsd,
+              budgetUsd: parsed.data.budgetUsd,
+              iterationsCompleted: iter,
+              beforeNextIteration: true,
+            });
+            if (check.shouldPause) {
+              pausedForBudget = true;
+              if (runId) {
+                try {
+                  await prisma.atlasAgentRun.update({
+                    where: { id: runId },
+                    data: {
+                      status: "paused",
+                      pausedForBudget: true,
+                      iterations: iter,
+                      steps: persistedSteps as unknown as object,
+                      reasoning: persistedReasoning as unknown as object,
+                      inputTokens: totalInputTokens,
+                      outputTokens: totalOutputTokens,
+                      costUsd: currentCostUsd,
+                    },
+                  });
+                } catch (err) {
+                  logger.warn("[atlas/agent] failed to persist paused-state", {
+                    runId,
+                    error: err instanceof Error ? err.message : String(err),
+                  });
+                }
+              }
+              send({
+                type: "budget_pause",
+                runId,
+                currentCost: check.currentCost,
+                budget: check.budget,
+                etaCost: check.etaCost,
+                remainingSteps: MAX_TOOL_ITERATIONS - iter,
+                iterationsCompleted: iter,
+              });
+              logger.info("[atlas/agent] paused for budget", {
+                userId: atlas.userId,
+                runId,
+                currentCost: check.currentCost,
+                budget: check.budget,
+                etaCost: check.etaCost,
+              });
+              break;
+            }
+          }
           iter++;
 
           /* Prompt-caching same strategy as chat-engine — sys + tools
@@ -411,6 +523,31 @@ export async function POST(req: NextRequest) {
           const finalMessage = await turnStream.finalMessage();
           totalInputTokens += finalMessage.usage.input_tokens;
           totalOutputTokens += finalMessage.usage.output_tokens;
+          /* Sprint A1 — capture cache-tier tokens for accurate
+             cost-projection. Older Anthropic responses may not
+             include these fields (will be undefined → 0). */
+          totalCacheCreationTokens +=
+            finalMessage.usage.cache_creation_input_tokens ?? 0;
+          totalCacheReadTokens +=
+            finalMessage.usage.cache_read_input_tokens ?? 0;
+
+          /* Sprint A1 — emit a per-iteration cost-progress event so
+             the UI can render the live counter (`$0.42 / $5.00`)
+             without waiting for run-completion. */
+          const liveCostUsd = estimateCostUsd(
+            totalInputTokens,
+            totalOutputTokens,
+            totalCacheCreationTokens,
+            totalCacheReadTokens,
+          );
+          send({
+            type: "cost_progress",
+            iteration: iter,
+            currentCost: liveCostUsd,
+            budget: parsed.data.budgetUsd ?? null,
+            inputTokens: totalInputTokens,
+            outputTokens: totalOutputTokens,
+          });
 
           conversation.push({
             role: "assistant",
@@ -503,6 +640,15 @@ export async function POST(req: NextRequest) {
           });
         }
 
+        /* Sprint A1 — when we paused for budget, skip the rest of
+           the post-loop pipeline. Citations / artifacts / completion-
+           write are reserved for terminal runs. The pause-state was
+           already persisted + streamed above; just close the stream
+           below in the finally-block. */
+        if (pausedForBudget) {
+          return;
+        }
+
         /* Sprint E — Citation-Verification / Hallucination-Guard.
            Run extractCitations() over the full accumulated text-
            buffer. Every [ATLAS:source-id] is resolved against the
@@ -545,34 +691,97 @@ export async function POST(req: NextRequest) {
           });
         }
 
-        const costUsd =
-          (totalInputTokens / 1_000_000) * 3 +
-          (totalOutputTokens / 1_000_000) * 15;
+        /* Sprint A1 — replace the old uncached-only calc with the
+           cache-aware estimateCostUsd helper for parity with chat-
+           engine + the budget-projection check above. */
+        const costUsd = estimateCostUsd(
+          totalInputTokens,
+          totalOutputTokens,
+          totalCacheCreationTokens,
+          totalCacheReadTokens,
+        );
+
+        /* Sprint A2 — Parse artifacts ONCE up here so both the
+           verification-pass below and the persistence-block further
+           down can reuse the same array. Same fence-regex as the
+           client-side parseArtifacts() in agent/page.tsx. */
+        const artifacts: Array<{
+          kind: string;
+          title: string;
+          body: string;
+        }> = [];
+        const ARTIFACT_RE =
+          /\[\[ARTIFACT\s+type=(\w+)\s+title="([^"]+)"\]\]([\s\S]*?)\[\[\/ARTIFACT\]\]/g;
+        let am: RegExpExecArray | null;
+        while ((am = ARTIFACT_RE.exec(textBuffer)) !== null) {
+          artifacts.push({
+            kind: am[1].toLowerCase(),
+            title: am[2],
+            body: am[3].trim(),
+          });
+        }
+
+        /* Sprint A2 — Verification-Pass over the freshly-parsed
+           artefacts. Runs three checks per artefact: citation-
+           verification (every [ATLAS:...] resolves), BORA / BRAO
+           lexicon-scan, and hallucination heuristic (substantive
+           claims without citations). Findings are streamed to the
+           UI as `verification_warnings` and persisted on the
+           AtlasAgentRun row below. */
+        let verificationFindings: Array<{
+          artifactIndex: number;
+          kind: "citation" | "bora" | "hallucination";
+          severity: "warn" | "error";
+          message: string;
+          citation?: string;
+          offset?: number;
+        }> = [];
+        if (artifacts.length > 0) {
+          try {
+            const { verifyArtifacts } =
+              await import("@/lib/atlas/agent/verification-pass.server");
+            /* Map raw kind strings to the union expected by the
+               verifier. Anything unknown collapses to "memo" — that
+               matches the client-side normaliseKind() behaviour. */
+            const normaliseKind = (
+              s: string,
+            ): "memo" | "schriftsatz" | "email" | "checklist" | "summary" =>
+              s === "schriftsatz" ||
+              s === "email" ||
+              s === "checklist" ||
+              s === "summary"
+                ? s
+                : "memo";
+            verificationFindings = await verifyArtifacts(
+              artifacts.map((a, i) => ({
+                index: i,
+                kind: normaliseKind(a.kind),
+                title: a.title,
+                body: a.body,
+              })),
+            );
+            if (verificationFindings.length > 0) {
+              send({
+                type: "verification_warnings",
+                findings: verificationFindings,
+              });
+            }
+          } catch (err) {
+            /* Verification is best-effort — never block the run on a
+               failure here. Log + continue so the lawyer still gets
+               the artefacts. */
+            logger.warn("[atlas/agent] verification-pass failed", {
+              runId,
+              error: err instanceof Error ? err.message : String(err),
+            });
+          }
+        }
 
         /* Sprint #3 — final-write of the run-record. Captures
            steps, reasoning, artifacts (parsed from textBuffer with
            the same fence-regex used client-side), citation-result,
            token + cost totals, completion-time. status="complete". */
         if (runId) {
-          /* Parse artifacts server-side too, so the history page
-             can render them without re-parsing. Same regex as the
-             client (parseArtifacts in agent/page.tsx). */
-          const artifacts: Array<{
-            kind: string;
-            title: string;
-            body: string;
-          }> = [];
-          const ARTIFACT_RE =
-            /\[\[ARTIFACT\s+type=(\w+)\s+title="([^"]+)"\]\]([\s\S]*?)\[\[\/ARTIFACT\]\]/g;
-          let am: RegExpExecArray | null;
-          while ((am = ARTIFACT_RE.exec(textBuffer)) !== null) {
-            artifacts.push({
-              kind: am[1].toLowerCase(),
-              title: am[2],
-              body: am[3].trim(),
-            });
-          }
-
           const verificationPayload =
             citations.length > 0
               ? {
@@ -600,6 +809,13 @@ export async function POST(req: NextRequest) {
                 artifacts: artifacts as unknown as object,
                 citations:
                   (verificationPayload as unknown as object) ?? undefined,
+                /* Sprint A2 — persist the verification-findings so
+                   the history page can render them without re-running
+                   the checks. Cast to JsonArray-compatible shape. */
+                verificationResults:
+                  verificationFindings.length > 0
+                    ? (verificationFindings as unknown as object)
+                    : undefined,
                 inputTokens: totalInputTokens,
                 outputTokens: totalOutputTokens,
                 costUsd,
