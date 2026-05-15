@@ -52,7 +52,7 @@ import {
 import type { ChatListItem, MandateListItem } from "./types";
 import { useAtlasTheme } from "@/app/(atlas)/atlas/_components/AtlasThemeProvider";
 import { MandateContextSection } from "./MandateContextSection";
-import { AtlasLogo, AtlasMark } from "./AtlasLogo";
+import { AtlasMark } from "./AtlasLogo";
 
 interface Props {
   activeChatId?: string | null;
@@ -340,14 +340,18 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
             title="Atlas — zur Startseite"
             className="flex h-9 items-center gap-2 rounded-md px-1.5 text-slate-900 transition-colors hover:bg-black/[0.04] dark:text-slate-100 dark:hover:bg-white/[0.05]"
           >
-            {/* size=26 height → ~56 px wide mark (aspect 2.16:1). With
-                8 px gap + Atlas-wordmark (~42 px) + collapse-toggle on
-                right (~32 px), total ~140 px in a 260 px sidebar — still
-                breathing-room. Bumped from 20 → 26 (UX feedback
-                2026-05-13: "atlas logo etwas größer"). The wordmark
-                stays text-[15px] so the mark slightly dominates — that's
-                intentional brand-restraint, the icon carries the brand. */}
-            <AtlasLogo size={26} withWordmark />
+            {/* User-Feedback 2026-05-15: Wave-pattern-mark entfernt aus
+                der expanded sidebar — nur noch das Atlas-Wordmark, dafür
+                größer (text-[22px] statt text-[15px]). Serif-face matched
+                das Homepage-hero "Wie kann ich helfen?". Der Mark-only
+                Logo bleibt im collapsed-rail (siehe oben), wo Text keinen
+                Platz hat. */}
+            <span
+              className="text-[22px] font-medium tracking-tight text-slate-900 dark:text-slate-100 [font-family:ui-serif,Georgia,'Cambria_Style',serif]"
+              aria-label="Atlas"
+            >
+              Atlas
+            </span>
           </button>
           <button
             type="button"
