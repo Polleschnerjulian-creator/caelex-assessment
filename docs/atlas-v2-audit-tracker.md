@@ -1,8 +1,8 @@
 # Atlas V2 — Master Audit Tracker (Living Document)
 
-**Status:** Active
+**Status:** ✅ COMPLETE — all 80 findings closed (76 fixed + 4 deferred with reason)
 **Started:** 2026-05-14
-**Last updated:** 2026-05-14 (Wave 8 closed)
+**Last updated:** 2026-05-15 (Wave 9+10 closed — TRACKER FERTIG)
 **Owner:** JP (controller) + Claude (executor)
 **Goal:** Jeden einzelnen Audit-Finding zu "best possible state" prozessieren. Keine offenen Findings bleiben undone oder unbegründet-deferred. Wenn dieser Tracker auf 0 offene Findings steht, ist Atlas V2 in produktiver Qualität.
 
@@ -70,17 +70,17 @@ Jedes Mal wenn ein Finding angegangen wird:
 
 ```
 Total findings:    80
-☑️ Done:           66   (Waves 1-7: 49; Wave 8: H2+H3+H5+H6+H9+H10+H11+H13+H14+H16+M1+M3+M4+M6+M7+M8+M9 0da4d065)
+☑️ Done:           76   (Waves 1-8: 66; Wave 9+10: M29-M45 + L1-L19 in 8e70f49f)
 ⏳ In progress:     0
-⏭️ Deferred:        3   (M13 + M17 + H12 needs M3-feature)
-☐ Open:           11
+⏭️ Deferred:        4   (M13 + M17 enum/decimal + H12 needs M3 + L17 covered by H15)
+☐ Open:            0   ← TRACKER COMPLETE 🎉
 
 By severity:
-  🚨 Shipping:    1   (✅ 1, ☐ 0)
-  🔴 Critical:    9   (✅ 9, ☐ 0)
-  🟠 High:       33   (✅ 31, ⏭️ 1, ☐ 1)
-  🟡 Medium:     45   (✅ 25, ⏭️ 2, ☐ 18)
-  🟢 Low:        19   (☐ 19)
+  🚨 Shipping:    1   (✅ 1)
+  🔴 Critical:    9   (✅ 9)
+  🟠 High:       33   (✅ 32, ⏭️ 1)
+  🟡 Medium:     45   (✅ 42, ⏭️ 3)
+  🟢 Low:        19   (✅ 18, ⏭️ 1)
 ```
 
 **Note:** Total counts to 107 — some findings cross-reference (e.g. C5 mentions 5 schema-models that get fixed in one migration). Logical "items to address" = 80.
@@ -650,7 +650,7 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 6 (combined with C5)
 - **Status:** ☐ Open
 
-#### M20 ☐ AtlasAgentRun.organizationId no FK (covered by C5)
+#### M20 ⏭️ AtlasAgentRun.organizationId no FK (covered by C5) — DEFERRED (covered by C5 organizationId-FK fix in Wave 2)
 
 - **Status:** ⏭️ DEFERRED (combined with C5)
 
@@ -710,56 +710,56 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 5
 - **Status:** ☐ Open
 
-#### M29 ☐ SSE JSON.parse swallows alle errors
+#### M29 ✅ SSE JSON.parse swallows alle errors — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/AtlasChatView.tsx:293-298`
 - **Fix:** Catch only SyntaxError; let other errors propagate or log to console.
 - **Wave:** 9
 - **Status:** ☐ Open
 
-#### M30 ☐ Token-count display kein formatting
+#### M30 ✅ Token-count display kein formatting — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/AtlasChatView.tsx:617-619`
 - **Fix:** Reuse `formatTokens(n)` from `ContextWindowIndicator.tsx:188`.
 - **Wave:** 9
 - **Status:** ☐ Open
 
-#### M31 ☐ costUsd.toFixed(4) zeigt "0.0000" für günstige turns
+#### M31 ✅ costUsd.toFixed(4) zeigt "0.0000" für günstige turns — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/AtlasChatView.tsx:618`
 - **Fix:** Hide row wenn cost < $0.0001 ODER show "<$0.001".
 - **Wave:** 9
 - **Status:** ☐ Open
 
-#### M32 ☐ ValidityBadge text-emerald-300 light-on-light in light-mode
+#### M32 ✅ ValidityBadge text-emerald-300 light-on-light in light-mode — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/ValidityBadge.tsx`
 - **Fix:** `text-emerald-600 dark:text-emerald-300`.
 - **Wave:** 9
 - **Status:** ☐ Open
 
-#### M33 ☐ SuggestedFollowups border-slate-700 bg-slate-900 invisible in light-mode
+#### M33 ✅ SuggestedFollowups border-slate-700 bg-slate-900 invisible in light-mode — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/...` (find via grep)
 - **Fix:** Light-mode contrast variants.
 - **Wave:** 9
 - **Status:** ☐ Open
 
-#### M34 ☐ MandateContextSection triple-fetch on every mount
+#### M34 ✅ MandateContextSection triple-fetch on every mount — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/MandateContextSection.tsx:71-105`
 - **Fix:** Split into independent effects keyed off domain ODER SWR mit mutate-tag.
 - **Wave:** 9
 - **Status:** ☐ Open
 
-#### M35 ☐ MandateAttachChip target="\_blank" öffnet immer neuen Tab
+#### M35 ✅ MandateAttachChip target="\_blank" öffnet immer neuen Tab — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/MandateAttachChip.tsx:36-44`
 - **Fix:** Default same-tab; cmd+click für new tab.
 - **Wave:** 9
 - **Status:** ☐ Open
 
-#### M36 ☐ Section-Anchor scroll-mt-6 zu klein für sticky header
+#### M36 ✅ Section-Anchor scroll-mt-6 zu klein für sticky header — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/MandateDetailView.tsx:241-345`
 - **Fix:** Bump zu `scroll-mt-20` ODER compute from header height.
@@ -780,49 +780,49 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 - **Wave:** 4
 - **Status:** ☐ Open
 
-#### M39 ☐ MandateInstructionsEditor textarea ohne label
+#### M39 ✅ MandateInstructionsEditor textarea ohne label — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/MandateInstructionsEditor.tsx:65-72`
 - **Fix:** `aria-label` ODER visually-hidden label.
 - **Wave:** 9
 - **Status:** ☐ Open
 
-#### M40 ☐ MandateFileUpload Space-key triggert picker UND scrollt page
+#### M40 ✅ MandateFileUpload Space-key triggert picker UND scrollt page — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/MandateFileUpload.tsx:131-139`
 - **Fix:** `e.preventDefault()` on Space.
 - **Wave:** 9
 - **Status:** ☐ Open
 
-#### M41 ☐ ChatInput voice-effect dep array causes effect to re-run every render
+#### M41 ✅ ChatInput voice-effect dep array causes effect to re-run every render — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/ChatInput.tsx:165-175`
 - **Fix:** Destructure transcript+reset; dep on `[transcript, reset]` only.
 - **Wave:** 9
 - **Status:** ☐ Open
 
-#### M42 ☐ eslint-disable react-hooks/exhaustive-deps in AtlasChatView versteckt echten Bug
+#### M42 ✅ eslint-disable react-hooks/exhaustive-deps in AtlasChatView versteckt echten Bug — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/AtlasChatView.tsx:114`
 - **Fix:** Wrap reload in useCallback([chatId]) + dep [reload].
 - **Wave:** 9
 - **Status:** ☐ Open
 
-#### M43 ☐ AtlasHomepage error nach submit resetted submittedMessage nicht
+#### M43 ✅ AtlasHomepage error nach submit resetted submittedMessage nicht — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/AtlasHomepage.tsx:205-208`
 - **Fix:** On error: reset submittedMessage = null, show retry-button.
 - **Wave:** 9
 - **Status:** ☐ Open
 
-#### M44 ☐ AtlasChatView error-banner ohne "Erneut versuchen"-Button
+#### M44 ✅ AtlasChatView error-banner ohne "Erneut versuchen"-Button — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/AtlasChatView.tsx:443-448`
 - **Fix:** Add retry-button die last user-message re-submitted.
 - **Wave:** 9
 - **Status:** ☐ Open
 
-#### M45 ☐ AtlasChatView fetch-error nicht behandelt — generic ohne retry
+#### M45 ✅ AtlasChatView fetch-error nicht behandelt — generic ohne retry — fixed in `8e70f49f`
 
 - **File:** Multiple in AtlasChatView
 - **Fix:** Combined mit M44.
@@ -833,130 +833,130 @@ Diese Reihenfolge minimiert Risiko (kleinste Surgical-Fixes zuerst, große Refac
 
 ### 🟢 Low (19)
 
-#### L1 ☐ cosineSimilarity all-zero vector returns 0 statt log+skip
+#### L1 ✅ cosineSimilarity all-zero vector returns 0 statt log+skip — fixed in `8e70f49f`
 
 - **File:** `src/lib/atlas/knowledge/embed.server.ts:123`
 - **Fix:** Log + skip when `normA === 0 || normB === 0`.
 - **Wave:** 10
 - **Status:** ☐ Open
 
-#### L2 ☐ Atlas audit-log fire-and-forget swallows failures
+#### L2 ✅ Atlas audit-log fire-and-forget swallows failures — fixed in `8e70f49f`
 
 - **File:** `src/lib/atlas/chat-engine.server.ts:487-499`
 - **Fix:** Track failure rate; alert on threshold.
 - **Wave:** 10
 - **Status:** ☐ Open
 
-#### L3 ☐ chatId validation inconsistent across routes
+#### L3 ✅ chatId validation inconsistent across routes — fixed in `8e70f49f`
 
 - **File:** Multiple
 - **Fix:** Standardize on `.cuid()`.
 - **Wave:** 10
 - **Status:** ☐ Open
 
-#### L4 ☐ assistantTextBuffer never bounded
+#### L4 ✅ assistantTextBuffer never bounded — fixed in `8e70f49f`
 
 - **File:** `src/lib/atlas/chat-engine.server.ts:581`
 - **Fix:** Hard-cap at 200KB.
 - **Wave:** 10
 - **Status:** ☐ Open
 
-#### L5 ☐ model-selection nicht validiert für thinking-support
+#### L5 ✅ model-selection nicht validiert für thinking-support — fixed in `8e70f49f`
 
 - **File:** `src/lib/atlas/chat-engine.server.ts:80-84`
 - **Fix:** Probe + fallback wenn model thinking nicht supportet.
 - **Wave:** 10
 - **Status:** ☐ Open
 
-#### L6 ☐ Citation-Regex allows `[ATLAS:../../etc/passwd]`
+#### L6 ✅ Citation-Regex allows `[ATLAS:../../etc/passwd]` — fixed in `8e70f49f`
 
 - **File:** `src/lib/atlas/citation-extractor.server.ts:25` + `validity-tools.server.ts:99-104`
 - **Fix:** Tighten regex to `[A-Z][A-Z0-9-]+(-[A-Za-z0-9§.]+)?`; remove prefix-startsWith fallback.
 - **Wave:** 10
 - **Status:** ☐ Open
 
-#### L7 ☐ OnboardingTour storage key set zu ISO-string aber nur truthy-checked
+#### L7 ✅ OnboardingTour storage key set zu ISO-string aber nur truthy-checked — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/OnboardingTour.tsx:112`
 - **Fix:** Store "1" stattdessen.
 - **Wave:** 9
 - **Status:** ☐ Open
 
-#### L8 ☐ OnboardingTour 300ms setTimeout magic number
+#### L8 ✅ OnboardingTour 300ms setTimeout magic number — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/OnboardingTour.tsx:90-97`
 - **Fix:** Inline-script gate (similar to flashGuardScript).
 - **Wave:** 9
 - **Status:** ☐ Open
 
-#### L9 ☐ lucide-react Library + Library as LibraryIcon doppelter Import
+#### L9 ✅ lucide-react Library + Library as LibraryIcon doppelter Import — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/AtlasSidebar.tsx:23-47`
 - **Fix:** Pick one alias.
 - **Wave:** 9
 - **Status:** ☐ Open
 
-#### L10 ☐ AtlasV2Bootstrap migration sequential for loop
+#### L10 ✅ AtlasV2Bootstrap migration sequential for loop — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/AtlasV2Bootstrap.tsx:71-103`
 - **Fix:** Promise.allSettled mit concurrency cap (e.g. 5).
 - **Wave:** 10
 - **Status:** ☐ Open
 
-#### L11 ☐ AtlasSidebar expandedBuckets reset comment lügt
+#### L11 ✅ AtlasSidebar expandedBuckets reset comment lügt — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/AtlasSidebar.tsx:88-91`
 - **Fix:** Either clear expandedBuckets on refresh ODER fix comment.
 - **Wave:** 10
 - **Status:** ☐ Open
 
-#### L12 ☐ DEFAULT_TOGGLES als useState obwohl never changed
+#### L12 ✅ DEFAULT_TOGGLES als useState obwohl never changed — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/ChatInput.tsx:123`
 - **Fix:** Move zu module-level const.
 - **Wave:** 10
 - **Status:** ☐ Open
 
-#### L13 ☐ Markdown parser key clash bei adjacent matches
+#### L13 ✅ Markdown parser key clash bei adjacent matches — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/MarkdownContent.tsx:632`
 - **Fix:** Use unique-key generator.
 - **Wave:** 10
 - **Status:** ☐ Open
 
-#### L14 ☐ Brittle iOS detection in KeyboardHelpOverlay
+#### L14 ✅ Brittle iOS detection in KeyboardHelpOverlay — fixed in `8e70f49f`
 
 - **File:** `src/components/atlas/v2/KeyboardHelpOverlay.tsx:32-37`
 - **Fix:** `navigator.userAgentData` fallback chain.
 - **Wave:** 10
 - **Status:** ☐ Open
 
-#### L15 ☐ Date formatting inconsistent
+#### L15 ✅ Date formatting inconsistent — fixed in `8e70f49f`
 
 - **File:** `MandateChatsList.tsx:54-66` (manual) vs `MandateFilesList.tsx:137` (toLocaleDateString)
 - **Fix:** Standardize on shared util.
 - **Wave:** 9
 - **Status:** ☐ Open
 
-#### L16 ☐ Middleware double-submit CSRF skipped wenn cookie absent
+#### L16 ✅ Middleware double-submit CSRF skipped wenn cookie absent — fixed in `8e70f49f`
 
 - **File:** `src/middleware.ts:481-516`
 - **Fix:** After grace period, require CSRF cookie presence.
 - **Wave:** 10
 - **Status:** ☐ Open
 
-#### L17 ☐ R2 storageKey 5000-chunks-pro-Search 60MB single-request memory bomb
+#### L17 ⏭️ R2 storageKey 5000-chunks-pro-Search 60MB single-request memory bomb — DEFERRED (covered by H15 pgvector migration)
 
 - **Status:** ⏭️ DEFERRED (covered by H15 pgvector migration)
 
-#### L18 ☐ Agent goal logging accepts control chars + ANSI
+#### L18 ✅ Agent goal logging accepts control chars + ANSI — fixed in `8e70f49f`
 
 - **File:** `src/app/api/atlas/agent/route.ts:260`
 - **Fix:** Strip control chars before logging.
 - **Wave:** 10
 - **Status:** ☐ Open
 
-#### L19 ☐ attach-mandate detach-case loggt nicht den vorherigen mandateId
+#### L19 ✅ attach-mandate detach-case loggt nicht den vorherigen mandateId — fixed in `8e70f49f`
 
 - **File:** `src/app/api/atlas/chat/[id]/attach-mandate/route.ts:106-110`
 - **Fix:** Read existing mandateId pre-update, log both.
