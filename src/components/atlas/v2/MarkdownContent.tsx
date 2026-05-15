@@ -22,7 +22,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 
 /**
  * Minimal citation shape MarkdownContent needs to render inline pills.
@@ -596,7 +596,20 @@ function renderInline(
 
   const parts: ReactNode[] = [];
   let remaining = text;
-  let key = 0;
+  /* AUDIT-FIX L13 (2026-05-15): unique-key generator. Previously the
+     plain-text segments pushed at lines `parts.push(remaining.slice(...))`
+     went in keyless, while only the wrapped `<span>`s carried keys via
+     `key={key++}`. When adjacent matches landed without intervening text
+     (e.g. `**bold**__more__` or `[ATLAS:a][ATLAS:b]`), React reconciled
+     the wrapped spans by their numeric position in the array and could
+     emit "two children with the same key" warnings if a downstream
+     consumer mapped the array a second time. We now wrap EVERY pushed
+     part — text and JSX alike — in a `<Fragment key=...>` so each part
+     is unambiguously keyed by its own monotonically-increasing index.
+     A counter is sufficient because keys only need to be unique among
+     siblings of the same parent (renderInline returns one such array). */
+  let nextKey = 0;
+  const makeKey = () => `inline-${nextKey++}`;
 
   /* Greedy split on the first matched pattern; recurse on the
      remainder. Order matters: bold (**) before italic (*) so we
@@ -717,13 +730,24 @@ function renderInline(
       }
     }
     if (!earliest) {
-      parts.push(remaining);
+      /* AUDIT-FIX L13: keyed Fragment for the trailing plain-text remainder. */
+      parts.push(<Fragment key={makeKey()}>{remaining}</Fragment>);
       break;
     }
     if (earliest.start > 0) {
-      parts.push(remaining.slice(0, earliest.start));
+      /* AUDIT-FIX L13: keyed Fragment for the plain-text segment that
+         precedes a match. Without a key this segment shared its slot
+         with neighbouring matches when arrays got re-ordered upstream. */
+      parts.push(
+        <Fragment key={makeKey()}>
+          {remaining.slice(0, earliest.start)}
+        </Fragment>,
+      );
     }
-    parts.push(<span key={key++}>{earliest.wrap}</span>);
+    /* AUDIT-FIX L13: route the wrapped match through the same generator
+       so adjacent matches are guaranteed distinct keys regardless of
+       how many were emitted before this one. */
+    parts.push(<span key={makeKey()}>{earliest.wrap}</span>);
     remaining = remaining.slice(earliest.end);
   }
   return parts;

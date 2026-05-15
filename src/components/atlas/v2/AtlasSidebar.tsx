@@ -21,6 +21,11 @@ import Link from "next/link";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  /* AUDIT-FIX L9: Removed the duplicate `Library as LibraryIcon` —
+     the unaliased `Library` import below already exposes the same
+     symbol. Both call-sites now use `Library`. Keeping a single name
+     also stops the lucide-react barrel optimisation from emitting
+     two separate top-level bindings for the same icon. */
   Plus,
   MessageSquare,
   Briefcase,
@@ -35,7 +40,6 @@ import {
   Sun,
   Moon,
   Loader2,
-  Library as LibraryIcon,
   Folder as FolderIcon,
   StickyNote,
   Shield as ShieldIcon,
@@ -212,7 +216,18 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
 
   useEffect(() => {
     void refresh();
-    const refreshHandler = () => void refresh();
+    /* AUDIT-FIX L11 (2026-05-15): On refresh, also clear the per-bucket
+       "show all" expansion state so the comment above on `expandedBuckets`
+       is honoured. Previously the comment claimed "Resets to default-
+       collapsed when the chat list refetches" but the handler only
+       refetched data — buckets stayed expanded across refreshes. Now
+       the refresh-event handler explicitly resets the Set so the next
+       render starts with the documented default-collapsed-per-bucket
+       behaviour. */
+    const refreshHandler = () => {
+      setExpandedBuckets(new Set());
+      void refresh();
+    };
     /* ⌘\ via the keyboard-shortcuts hook fires `atlas-v2-sidebar-
        toggle`. We respond by flipping the local collapsed state. */
     const toggleHandler = () => setCollapsed((v) => !v);
@@ -550,7 +565,7 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
             <NavLink
               href="/atlas/clauses"
               label="Klauseln"
-              icon={<LibraryIcon size={12} />}
+              icon={<Library size={12} />}
               active={pathname === "/atlas/clauses"}
             />
             <NavLink

@@ -95,14 +95,17 @@ export function resolveSourceId(citation: string): {
     if (hit) return { sourceId: withoutArticle, source: hit };
   }
 
-  /* 4. Case-insensitive prefix match. */
-  const lower = citation.toLowerCase();
-  const fuzzy = ALL_SOURCES.find(
-    (s) =>
-      lower.startsWith(s.id.toLowerCase()) ||
-      s.id.toLowerCase().startsWith(lower),
-  );
-  if (fuzzy) return { sourceId: fuzzy.id, source: fuzzy };
+  /* AUDIT-FIX L6: The case-insensitive prefix-startsWith fallback
+     was removed. Two reasons:
+       1. Combined with the citation-extractor regex (now tightened to
+          forbid path-traversal chars), the bidirectional `startsWith`
+          allowed a citation `DE-X` to silently resolve to any source
+          whose id begins with `DE-X*`, hiding model errors.
+       2. The §-clause and -Art. clause strips above (steps 2–3) already
+          handle the legitimate "extra suffix" case. The bidirectional
+          startsWith mainly produced false-positive resolutions that
+          made bad citations look valid in the UI.
+     Prefer an explicit `unknown` badge over a misleading fuzzy match. */
 
   return { sourceId: citation, source: null };
 }

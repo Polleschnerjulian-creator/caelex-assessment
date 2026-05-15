@@ -7,8 +7,9 @@
  *
  * Pill oberhalb des Composers, sichtbar wenn ein Mandat an den
  * aktuellen Chat angehängt ist. Klick auf [×] detached. Klick auf
- * den Mandats-Namen navigiert zum Mandat-Workspace (öffnet in
- * neuem Tab — der laufende Chat soll nicht verloren gehen).
+ * den Mandats-Namen navigiert zum Mandat-Workspace (im selben Tab —
+ * cmd/ctrl-click öffnet wie überall sonst nativ einen neuen Tab,
+ * d.h. der Lawyer behält die Kontrolle über sein Tab-Verhalten).
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -34,8 +35,10 @@ export function MandateAttachChip({
     <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 py-1 pl-2 pr-1 text-[12px] dark:border-white/[0.08] dark:bg-white/[0.04]">
       <Link
         href={`/atlas/mandate/${mandateId}`}
-        target="_blank"
-        rel="noopener"
+        /* M35 — Default same-tab navigation. Forcing `target="_blank"`
+           hijacked the user's intent (always opens new tab). Cmd/Ctrl-
+           click and middle-click still natively open in a new tab if
+           the lawyer wants that — they keep control. */
         className="inline-flex items-center gap-1.5 text-slate-700 transition-colors hover:text-slate-900 dark:text-slate-200 dark:hover:text-slate-50"
         title={`Mandat-Workspace öffnen: ${mandateName}`}
       >

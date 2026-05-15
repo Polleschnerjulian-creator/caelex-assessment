@@ -68,45 +68,78 @@ export function MandateContextSection({ mandateId }: Props) {
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  /* M34 — Three independent effects keyed off `mandateId`. Each
+     domain (mandate · files · deadlines) renders the moment its own
+     fetch returns instead of waiting on the slowest sibling. The
+     reload-callback is preserved (used by the upload-handler and the
+     parent's mandate-refresh signal) — it now fires all 3 in parallel
+     too via Promise.all but each result still applies independently. */
+  const fetchMandate = useCallback(async () => {
+    const res = await fetch(`/api/atlas/mandate/${mandateId}`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return;
+    const data = (await res.json()) as { mandate: MandateLite };
+    setMandate(data.mandate);
+  }, [mandateId]);
+
+  const fetchFiles = useCallback(async () => {
+    const res = await fetch(`/api/atlas/mandate/${mandateId}/files`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return;
+    const data = (await res.json()) as { files: FileLite[] };
+    setFiles(data.files ?? []);
+  }, [mandateId]);
+
+  const fetchDeadlines = useCallback(async () => {
+    const res = await fetch(`/api/atlas/mandate/${mandateId}/deadlines`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return;
+    const data = (await res.json()) as { deadlines: DeadlineLite[] };
+    setDeadlines(
+      (data.deadlines ?? [])
+        .filter((d) => d.status === "open")
+        .sort(
+          (a, b) => new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime(),
+        ),
+    );
+  }, [mandateId]);
+
+  /* Three independent effects — React schedules them in the same
+     render-cycle, so all 3 network requests dispatch in parallel.
+     The single shared `loading` flag flips off when the slowest
+     finishes (rare visual blink, but it keeps existing skeleton
+     contract intact for callers). */
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    void Promise.allSettled([
+      fetchMandate(),
+      fetchFiles(),
+      fetchDeadlines(),
+    ]).finally(() => {
+      if (!cancelled) setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchMandate, fetchFiles, fetchDeadlines]);
+
+  /* Imperative reload — used by upload-handler / external triggers. */
   const reload = useCallback(async () => {
     setLoading(true);
     try {
-      const [mandateRes, filesRes, deadlinesRes] = await Promise.all([
-        fetch(`/api/atlas/mandate/${mandateId}`, { cache: "no-store" }),
-        fetch(`/api/atlas/mandate/${mandateId}/files`, { cache: "no-store" }),
-        fetch(`/api/atlas/mandate/${mandateId}/deadlines`, {
-          cache: "no-store",
-        }),
+      await Promise.allSettled([
+        fetchMandate(),
+        fetchFiles(),
+        fetchDeadlines(),
       ]);
-      if (mandateRes.ok) {
-        const data = (await mandateRes.json()) as { mandate: MandateLite };
-        setMandate(data.mandate);
-      }
-      if (filesRes.ok) {
-        const data = (await filesRes.json()) as { files: FileLite[] };
-        setFiles(data.files ?? []);
-      }
-      if (deadlinesRes.ok) {
-        const data = (await deadlinesRes.json()) as {
-          deadlines: DeadlineLite[];
-        };
-        setDeadlines(
-          (data.deadlines ?? [])
-            .filter((d) => d.status === "open")
-            .sort(
-              (a, b) =>
-                new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime(),
-            ),
-        );
-      }
     } finally {
       setLoading(false);
     }
-  }, [mandateId]);
-
-  useEffect(() => {
-    void reload();
-  }, [reload]);
+  }, [fetchMandate, fetchFiles, fetchDeadlines]);
 
   const upload = async (filesIn: FileList | File[]) => {
     const list = Array.from(filesIn);

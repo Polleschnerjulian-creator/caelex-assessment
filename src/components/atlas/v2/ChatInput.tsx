@@ -116,11 +116,13 @@ export function ChatInput({
   contextStats,
 }: Props) {
   const [text, setText] = useState(initialValue ?? "");
-  /* Tool-toggles are kept in component state so the existing chat-
-     engine contract (toolToggles record on submit) stays intact, but
-     the setter is gone — DEFAULT_TOGGLES = all true and the user can
-     no longer disable them (UX simplification 2026-05-13). */
-  const [toggles] = useState(DEFAULT_TOGGLES);
+  /* AUDIT-FIX L12 (2026-05-15): `toggles` is never mutated post-mount
+     — `useState(DEFAULT_TOGGLES)` only added a needless component-state
+     slot and an extra re-render-on-init cost. DEFAULT_TOGGLES is already
+     module-level + frozen-by-convention, so a plain reference is enough.
+     The chat-engine contract (toolToggles record on submit) is untouched
+     because `handleSend` reads `toggles` exactly as before. */
+  const toggles = DEFAULT_TOGGLES;
   const [plusOpen, setPlusOpen] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);

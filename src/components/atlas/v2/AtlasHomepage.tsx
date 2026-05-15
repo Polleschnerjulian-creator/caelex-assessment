@@ -253,6 +253,15 @@ export function AtlasHomepage() {
       if (!isMountedRef.current) return;
       setError(e instanceof Error ? e.message : String(e));
       setActivity(null);
+      /* AUDIT-FIX M43 — On error, reset to the empty composer state so
+         the user gets the full input pill back (with their original text
+         pre-seeded for retry). Previously the error toast appeared but
+         submittedMessage stayed set → user was stranded on the streaming
+         surface with no composer + no retry path. */
+      setSeedValue(text);
+      setSubmittedMessage(null);
+      setSubmittedImages(null);
+      setStreamingText("");
     }
   };
 

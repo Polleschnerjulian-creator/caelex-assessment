@@ -62,7 +62,13 @@ export function MandateInstructionsEditor({
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700/60 dark:bg-slate-900/40">
+      {/* AUDIT-FIX M39 — visually-hidden label gives screen-reader users
+          a clear name for the textarea (sr-only sibling, no visual change). */}
+      <label htmlFor={`mandate-instructions-${mandateId}`} className="sr-only">
+        Custom-Instructions für dieses Mandat
+      </label>
       <textarea
+        id={`mandate-instructions-${mandateId}`}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         rows={8}

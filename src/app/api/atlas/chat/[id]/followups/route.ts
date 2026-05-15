@@ -15,6 +15,7 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server";
+import { z } from "zod";
 import type Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
 import { getAtlasAuth } from "@/lib/atlas-auth";
@@ -23,6 +24,10 @@ import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+/* AUDIT-FIX L3: Reject malformed chatIds at the edge — matches the
+   .cuid() body-validation pattern used elsewhere in /api/atlas/chat. */
+const CHAT_ID_SCHEMA = z.string().cuid();
 
 interface SuggestionsResponse {
   suggestions: { text: string }[];
@@ -49,6 +54,11 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id } = await context.params;
+  /* AUDIT-FIX L3: Reject malformed chatIds at the edge. */
+  const idCheck = CHAT_ID_SCHEMA.safeParse(id);
+  if (!idCheck.success) {
+    return NextResponse.json({ error: "Bad request" }, { status: 400 });
+  }
 
   /* Load chat + last assistant message + mandate context. */
   const chat = await prisma.atlasChat.findFirst({

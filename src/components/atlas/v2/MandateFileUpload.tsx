@@ -132,7 +132,13 @@ export function MandateFileUpload({ mandateId, onChanged, disabled }: Props) {
         tabIndex={0}
         onClick={disabled ? undefined : handlePick}
         onKeyDown={(e) => {
-          if (!disabled && (e.key === "Enter" || e.key === " ")) handlePick();
+          /* AUDIT-FIX M40 — preventDefault on Space stops the page from
+             scrolling when the dropzone has focus. Without this, native
+             space-bar behaviour scrolls the viewport AND opens the picker. */
+          if (!disabled && (e.key === "Enter" || e.key === " ")) {
+            e.preventDefault();
+            handlePick();
+          }
         }}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}

@@ -18,8 +18,10 @@
  *   ├─ Mitglieder ──────────────────────────────────────────────┤
  *   └─ Custom Instructions (collapsed by default) ──────────────┘
  *
- * Each section uses `<section id="…" class="mb-8 scroll-mt-6">` so anchor-jumps
- * (e.g. `#chats`, `#vault`) scroll the section heading clear of any sticky bar.
+ * Each section uses `<section id="…" class="mb-8 scroll-mt-20">` so anchor-
+ * jumps (e.g. `#chats`, `#vault`) scroll the section heading clear of the
+ * 4-row sticky page header (M36 — `scroll-mt-6` was too small and section
+ * titles disappeared under the header on jump).
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -223,7 +225,7 @@ export function MandateDetailView({ mandateId }: Props) {
           {/* Briefing-Slot — M1 placeholder, wird in M3 mit echtem Auto-Briefing ersetzt */}
           <section
             id="briefing"
-            className="mb-6 scroll-mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-white/[0.08] dark:bg-white/[0.02]"
+            className="mb-6 scroll-mt-20 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-white/[0.08] dark:bg-white/[0.02]"
           >
             <div className="flex items-start gap-3">
               <span className="text-xl" aria-hidden="true">
@@ -242,7 +244,7 @@ export function MandateDetailView({ mandateId }: Props) {
           </section>
 
           {/* Composer — „Neuer Chat in diesem Mandat" */}
-          <section id="new-chat" className="mb-8 scroll-mt-6">
+          <section id="new-chat" className="mb-8 scroll-mt-20">
             <h2 className="mb-3 text-[14px] font-medium text-slate-700 dark:text-slate-200">
               Neuer Chat in diesem Mandat
             </h2>
@@ -254,7 +256,7 @@ export function MandateDetailView({ mandateId }: Props) {
           </section>
 
           {/* Chats */}
-          <section id="chats" className="mb-8 scroll-mt-6">
+          <section id="chats" className="mb-8 scroll-mt-20">
             <h2 className="mb-3 text-[14px] font-medium text-slate-700 dark:text-slate-200">
               Chats ({mandate._count.chats})
             </h2>
@@ -262,7 +264,7 @@ export function MandateDetailView({ mandateId }: Props) {
           </section>
 
           {/* Vault — files (R2-backed upload + extracted-text indexing) */}
-          <section id="vault" className="mb-8 scroll-mt-6">
+          <section id="vault" className="mb-8 scroll-mt-20">
             <h2 className="mb-3 text-[14px] font-medium text-slate-700 dark:text-slate-200">
               Vault ({mandate._count.files})
             </h2>
@@ -285,7 +287,7 @@ export function MandateDetailView({ mandateId }: Props) {
           </section>
 
           {/* Deadlines (Fristen) */}
-          <section id="deadlines" className="mb-8 scroll-mt-6">
+          <section id="deadlines" className="mb-8 scroll-mt-20">
             <h2 className="mb-3 text-[14px] font-medium text-slate-700 dark:text-slate-200">
               Deadlines
             </h2>
@@ -296,7 +298,7 @@ export function MandateDetailView({ mandateId }: Props) {
           </section>
 
           {/* Stundenerfassung (preserved — second daily-driver tool for the lawyer) */}
-          <section id="time-entries" className="mb-8 scroll-mt-6">
+          <section id="time-entries" className="mb-8 scroll-mt-20">
             <h2 className="mb-3 text-[14px] font-medium text-slate-700 dark:text-slate-200">
               Stundenerfassung
             </h2>
@@ -307,7 +309,7 @@ export function MandateDetailView({ mandateId }: Props) {
           </section>
 
           {/* Members */}
-          <section id="members" className="mb-8 scroll-mt-6">
+          <section id="members" className="mb-8 scroll-mt-20">
             <h2 className="mb-3 text-[14px] font-medium text-slate-700 dark:text-slate-200">
               Mitglieder ({mandate._count.members})
             </h2>
@@ -320,7 +322,7 @@ export function MandateDetailView({ mandateId }: Props) {
           </section>
 
           {/* Custom Instructions — collapsed by default */}
-          <section id="custom-instructions" className="mb-8 scroll-mt-6">
+          <section id="custom-instructions" className="mb-8 scroll-mt-20">
             <button
               type="button"
               onClick={() => setInstructionsOpen((v) => !v)}

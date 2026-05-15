@@ -84,6 +84,28 @@ const THINKING_BUDGET = parseInt(
   10,
 );
 
+/* AUDIT-FIX L5: Allow-list of substrings that, when present in the
+   model id, indicate the model does NOT support Anthropic's Extended
+   Thinking feature. We match by substring (not exact id) because
+   Bedrock + Vercel-AI-Gateway prefix the same Anthropic model with
+   region/provider strings (e.g. "anthropic.claude-3-haiku-20240307").
+   Without this guard, enabling thinking + routing through a non-
+   thinking-capable model produces a 400 from Anthropic on EVERY chat
+   turn — users see a stalled response with a generic error event.
+   Update this list when promoting/demoting models in
+   buildAnthropicClient(). */
+const MODELS_WITHOUT_THINKING = [
+  "haiku",
+  "claude-3-",
+  "claude-2",
+  "claude-instant",
+];
+
+function modelSupportsThinking(modelId: string): boolean {
+  const lower = modelId.toLowerCase();
+  return !MODELS_WITHOUT_THINKING.some((needle) => lower.includes(needle));
+}
+
 /* Sonnet pricing per million tokens (USD), used for transparency cost
    display only — not for billing. */
 const PRICE_INPUT_PER_MTOK = 3.0;
@@ -91,6 +113,41 @@ const PRICE_OUTPUT_PER_MTOK = 15.0;
 
 /* Inactivity guard: abort upstream call if no delta arrives for 30s. */
 const STREAM_INACTIVITY_TIMEOUT_MS = 30_000;
+
+/* AUDIT-FIX L4: Hard cap on the in-memory text buffer that accumulates
+   every streamed text-delta from Anthropic across all tool-loop iterations.
+   Without this, a runaway model that emits megabytes of text in a single
+   turn (model bug, context-overflow, or someone uploading "/repeat HELLO
+   100000 times") would balloon process memory before the 30s inactivity
+   timer triggers. 200KB is ~50k tokens — well above any legitimate legal-
+   research answer (typical answers are 5-50 KB). When we hit the cap we
+   stop appending but keep streaming to the client; the persisted message
+   carries the truncated text so downstream consumers never see > cap. */
+const MAX_ASSISTANT_TEXT_BUFFER = 200_000;
+
+/* AUDIT-FIX L2: Module-level counter for audit-log failures so we don't
+   silently lose visibility when `void appendAtlasAudit(…)` rejects. The
+   audit log is required for the legal compliance trail — losing entries
+   without observability turns a critical control into a quiet bug. We
+   surface every 10th failure as a warn so dashboards can alert on rate
+   spikes without flooding logs on the happy path. */
+let auditLogFailures = 0;
+const AUDIT_LOG_FAILURE_LOG_INTERVAL = 10;
+
+function trackAuditLogFailure(
+  err: unknown,
+  ctx: { action: string; entityId?: string },
+): void {
+  auditLogFailures += 1;
+  if (auditLogFailures % AUDIT_LOG_FAILURE_LOG_INTERVAL === 0) {
+    logger.warn("[atlas/chat] audit-log failures accumulating", {
+      totalFailures: auditLogFailures,
+      lastError: err instanceof Error ? err.message : String(err),
+      action: ctx.action,
+      entityId: ctx.entityId,
+    });
+  }
+}
 
 /* ── Types ────────────────────────────────────────────────────────── */
 
@@ -756,7 +813,11 @@ async function ensureChatAndHistory(args: {
   });
   /* Append to the Atlas audit log. Fire-and-forget — never blocks
      the chat-creation path. Image-count surfaced so the audit trail
-     captures vision-augmented turns without storing the bytes. */
+     captures vision-augmented turns without storing the bytes.
+     AUDIT-FIX L2: Wire a `.catch` into the dangling promise so a
+     transient DB hiccup or hash-chain conflict gets recorded via the
+     module-level counter rather than vanishing into an unhandled
+     rejection. Still non-blocking — we only observe, we don't await. */
   void appendAtlasAudit({
     userId,
     organizationId,
@@ -769,6 +830,11 @@ async function ensureChatAndHistory(args: {
       workflowId: workflowId ?? null,
       imageCount: newUserImages?.length ?? 0,
     },
+  }).catch((err) => {
+    trackAuditLogFailure(err, {
+      action: "atlas.chat.create",
+      entityId: created.id,
+    });
   });
   return {
     chatId: created.id,
@@ -794,6 +860,21 @@ export async function runChat(
   }
   const anthropic = setup.client;
   const model = setup.model;
+
+  /* AUDIT-FIX L5: Disable Extended Thinking when the resolved model
+     doesn't support it (e.g. Haiku, Claude 3 family routed via Bedrock).
+     Without this fall-back, every chat turn produces a 400 from
+     Anthropic + a stalled stream visible to the user. We log once per
+     runChat() invocation so ops can spot misconfigurations without
+     drowning in per-tool-iteration noise. */
+  const thinkingEnabledForModel =
+    THINKING_ENABLED && modelSupportsThinking(model);
+  if (THINKING_ENABLED && !thinkingEnabledForModel) {
+    logger.warn(
+      "[atlas/chat] Extended Thinking disabled — model not in supported list",
+      { model },
+    );
+  }
 
   /* Resolve mandate-context (if any) for system-prompt enrichment. */
   const mandate = input.mandateId
@@ -1033,14 +1114,18 @@ export async function runChat(
 
           const turnStream = anthropic.messages.stream({
             model,
+            /* AUDIT-FIX L5: Use the per-model thinking flag so non-
+               thinking-capable models don't get a thinking budget that
+               would otherwise produce a 400. */
             max_tokens:
-              MAX_TOKENS_DEFAULT + (THINKING_ENABLED ? THINKING_BUDGET : 0),
+              MAX_TOKENS_DEFAULT +
+              (thinkingEnabledForModel ? THINKING_BUDGET : 0),
             /* Extended Thinking REQUIRES temperature=1 (Anthropic spec). */
-            temperature: THINKING_ENABLED ? 1 : TEMPERATURE_DEFAULT,
+            temperature: thinkingEnabledForModel ? 1 : TEMPERATURE_DEFAULT,
             system: cachedSystem,
             messages: conversation,
             tools: cachedTools,
-            ...(THINKING_ENABLED && {
+            ...(thinkingEnabledForModel && {
               thinking: {
                 type: "enabled",
                 budget_tokens: THINKING_BUDGET,
@@ -1086,14 +1171,39 @@ export async function runChat(
 
             turnStream.on("text", (delta) => {
               bump();
-              assistantTextBuffer += delta;
+              /* AUDIT-FIX L4: Cap the in-memory buffer at 200 KB. Once
+                 the cap is reached we still forward the delta to the
+                 client (the user has already paid for the tokens — no
+                 reason to drop visible output) but we stop accumulating
+                 server-side so the persisted message + memory footprint
+                 stay bounded. We log once on transition to keep ops
+                 alerted without spamming once per delta. */
+              if (assistantTextBuffer.length > MAX_ASSISTANT_TEXT_BUFFER) {
+                if (
+                  assistantTextBuffer.length <=
+                  MAX_ASSISTANT_TEXT_BUFFER + delta.length
+                ) {
+                  logger.warn(
+                    "[atlas/chat] assistantTextBuffer exceeded cap — further deltas not persisted",
+                    {
+                      chatId,
+                      cap: MAX_ASSISTANT_TEXT_BUFFER,
+                      bufferLength: assistantTextBuffer.length,
+                    },
+                  );
+                }
+              } else {
+                assistantTextBuffer += delta;
+              }
               send({ type: "text", delta });
             });
 
             /* Listen for thinking deltas — the SDK's high-level `text`
                event only fires for text content. Thinking deltas come
-               through the raw streamEvent. */
-            if (THINKING_ENABLED) {
+               through the raw streamEvent.
+               AUDIT-FIX L5: Use the per-model flag so we don't subscribe
+               to thinking events on a model that won't emit them. */
+            if (thinkingEnabledForModel) {
               turnStream.on("streamEvent", (evt) => {
                 if (
                   evt.type === "content_block_delta" &&

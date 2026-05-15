@@ -187,7 +187,21 @@ export function cosineSimilarity(a: number[], b: number[]): number {
     normA += a[i] * a[i];
     normB += b[i] * b[i];
   }
-  if (normA === 0 || normB === 0) return 0;
+  /* AUDIT-FIX L1: All-zero vectors used to silently return 0 here, which
+     looks identical to "perfectly orthogonal" in callers that just rank
+     by similarity. In practice an all-zero embedding means the upstream
+     embed call returned a degenerate vector (model bug, empty input that
+     slipped through, dimension-pad placeholder). Log a warn so ops can
+     spot the pattern in dashboards before it silently poisons RAG quality.
+     We still return 0 (preserves existing semantics — no caller change). */
+  if (normA === 0 || normB === 0) {
+    logger.warn("[atlas/knowledge] cosineSimilarity zero-norm vector", {
+      normA,
+      normB,
+      length: a.length,
+    });
+    return 0;
+  }
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 

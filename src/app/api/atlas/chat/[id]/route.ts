@@ -10,6 +10,7 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { loadChatForUser } from "@/lib/atlas/chat-engine.server";
@@ -18,6 +19,14 @@ import { maskId } from "@/lib/atlas/log-masking";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+/* AUDIT-FIX L3: Standardise chatId path-param validation on `.cuid()`
+   so the route surface matches the body-validation pattern already in
+   place at /api/atlas/chat (POST), /notes, /mandate/[id]/time-entries.
+   Without this, an attacker can hit /api/atlas/chat/<arbitrary-string>
+   and waste a Prisma round-trip per probe. CUID-shape gates the call
+   at the edge — invalid shape → 400 before any DB query. */
+const CHAT_ID_SCHEMA = z.string().cuid();
 
 export async function GET(
   _req: NextRequest,
@@ -28,6 +37,11 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id } = await context.params;
+  /* AUDIT-FIX L3: Reject malformed chatIds at the edge — see schema comment. */
+  const idCheck = CHAT_ID_SCHEMA.safeParse(id);
+  if (!idCheck.success) {
+    return NextResponse.json({ error: "Bad request" }, { status: 400 });
+  }
   const chat = await loadChatForUser({
     chatId: id,
     userId: atlas.userId,
@@ -48,6 +62,11 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id } = await context.params;
+  /* AUDIT-FIX L3: Reject malformed chatIds at the edge — see schema comment. */
+  const idCheck = CHAT_ID_SCHEMA.safeParse(id);
+  if (!idCheck.success) {
+    return NextResponse.json({ error: "Bad request" }, { status: 400 });
+  }
   try {
     /* AUDIT-FIX M1: Standardise on findFirst-then-update so the
        handler matches the rest of the Atlas API surface (see

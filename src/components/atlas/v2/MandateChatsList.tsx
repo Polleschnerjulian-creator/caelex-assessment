@@ -42,25 +42,18 @@ export function MandateChatsList({ chats }: Props) {
             />
             <span className="line-clamp-1 flex-1">{c.title}</span>
             <span className="shrink-0 text-[10px] text-slate-500 tabular-nums">
-              {formatRelative(c.updatedAt)}
+              {/* AUDIT-FIX L15 (2026-05-15): aligned with MandateFilesList
+                  which already uses `toLocaleDateString("de-DE")`. The
+                  prior bespoke "gerade eben / vor X Min / vor X Std /
+                  vor X Tagen" ladder was nice-to-read but inconsistent
+                  with every other list view in the mandate detail page,
+                  and it drifted UI-text out of sync with the formatter
+                  the file list uses for the same `createdAt` column. */}
+              {new Date(c.updatedAt).toLocaleDateString("de-DE")}
             </span>
           </Link>
         </li>
       ))}
     </ul>
   );
-}
-
-function formatRelative(iso: string): string {
-  const then = new Date(iso).getTime();
-  const now = Date.now();
-  const seconds = Math.floor((now - then) / 1000);
-  if (seconds < 60) return "gerade eben";
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `vor ${minutes} Min`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `vor ${hours} Std`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `vor ${days} Tagen`;
-  return new Date(iso).toLocaleDateString("de-DE");
 }

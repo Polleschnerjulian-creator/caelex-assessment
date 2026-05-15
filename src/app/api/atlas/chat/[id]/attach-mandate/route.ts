@@ -33,6 +33,10 @@ const Body = z.object({
   mandateId: z.string().min(1).max(40).nullable(),
 });
 
+/* AUDIT-FIX L3: Reject malformed chatIds at the edge — matches the
+   .cuid() body-validation pattern used elsewhere in /api/atlas/chat. */
+const CHAT_ID_SCHEMA = z.string().cuid();
+
 export async function POST(
   req: NextRequest,
   context: { params: Promise<{ id: string }> },
@@ -58,19 +62,36 @@ export async function POST(
   }
   const { mandateId } = parsed.data;
   const { id: chatId } = await context.params;
+  /* AUDIT-FIX L3: Reject malformed chatIds at the edge. */
+  const idCheck = CHAT_ID_SCHEMA.safeParse(chatId);
+  if (!idCheck.success) {
+    return NextResponse.json({ error: "Bad request" }, { status: 400 });
+  }
 
-  /* Chat-Existenz + Owner-Check. */
+  /* Chat-Existenz + Owner-Check.
+     AUDIT-FIX L19 (2026-05-15): also select the existing `mandateId`
+     so we can log both the previous and the new value on the success
+     line. The detach-case (new mandateId === null) was previously
+     opaque in the audit trail — operators saw "ok" with `mandateId:
+     null` but no record of which mandate had been unlinked, making
+     it impossible to reconstruct the lawyer's intent without
+     pulling the prior AtlasChat row from a snapshot. */
   const chat = await prisma.atlasChat.findFirst({
     where: {
       id: chatId,
       organizationId: atlas.organizationId,
       ownerUserId: atlas.userId,
     },
-    select: { id: true },
+    select: { id: true, mandateId: true },
   });
   if (!chat) {
     return NextResponse.json({ error: "Chat not found" }, { status: 404 });
   }
+  /* AUDIT-FIX L19: snapshot the previous link BEFORE the update so
+     a concurrent write (extremely unlikely on the same chatId, but
+     possible) can't race us into logging the post-update value as
+     the "previous" one. */
+  const previousMandateId = chat.mandateId ?? null;
 
   /* AUDIT-FIX M4: Reject attach during an in-flight chat turn.
      ─────────────────────────────────────────────────────────────
@@ -175,19 +196,38 @@ export async function POST(
         updatedAt: true,
       },
     });
-    // AUDIT-FIX M23: mask userId (CUID); leave chatId/mandateId for ops debugging
+    /* AUDIT-FIX M23: mask userId (CUID); leave chatId/mandateId for ops debugging.
+       AUDIT-FIX L19 (2026-05-15): include the previous mandateId so the
+       audit trail captures the full link transition. Renames the field
+       to `newMandateId` for clarity vs `previousMandateId` and adds a
+       derived `transition` enum to make filtered log queries trivial
+       ("show me every detach in the last 24h" / "show me every swap"). */
+    const transition: "attach" | "detach" | "swap" | "noop" =
+      previousMandateId === mandateId
+        ? "noop"
+        : previousMandateId === null
+          ? "attach"
+          : mandateId === null
+            ? "detach"
+            : "swap";
     logger.info("[atlas/chat/attach-mandate] ok", {
       userId: maskId(atlas.userId),
       chatId,
-      mandateId,
+      previousMandateId,
+      newMandateId: mandateId,
+      transition,
     });
     return NextResponse.json({ ok: true, chat: updated });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    /* AUDIT-FIX L19: include previous + intended-new mandateId in the
+       failure log too, mirroring the success-line shape so log queries
+       don't need separate filters for the two outcomes. */
     logger.error("[atlas/chat/attach-mandate] update failed", {
       userId: maskId(atlas.userId),
       chatId,
-      mandateId,
+      previousMandateId,
+      newMandateId: mandateId,
       error: msg,
     });
     return NextResponse.json({ error: "Attach failed" }, { status: 500 });

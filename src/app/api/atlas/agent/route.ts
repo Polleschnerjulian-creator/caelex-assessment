@@ -52,6 +52,31 @@ const PostBody = z.object({
   mandateId: z.string().cuid().nullable().optional(),
 });
 
+/* AUDIT-FIX L18 (2026-05-15): strip control chars + ANSI escape
+   sequences from any user-supplied string before it lands in the
+   logger or in the AtlasAgentRun.goal column. The agent route accepts
+   free-form German text from the lawyer, but a malicious upstream
+   client (or a copy-paste from a terminal session) could embed
+   `\x1b[31m` (ANSI red) or `\x00`-`\x1f`/`\x7f` (ASCII control) bytes
+   in the goal — those would survive into the structured logger and
+   downstream log-aggregators (Datadog/Loki/etc.) where they can
+   corrupt log-line rendering or, in a worst case, drive log-injection
+   on a tail/grep terminal. Sanitising at the edge means every code
+   path that handles the goal sees a clean string. The character class
+   matches:
+     - `\x00`-`\x1f` C0 control chars (incl. NULL, BEL, ESC, etc.)
+     - `\x7f`        DEL
+     - `\x1b\[[0-9;]*[A-Za-z]` ANSI CSI escape (covers `[31m`, `[2K`,
+       `[?25h`, etc.) — the ESC byte itself is also stripped by the
+       C0 class above, but matching the full sequence first removes
+       the trailing payload bytes that would otherwise survive as
+       garbage. Order matters: ANSI first, then individual chars. */
+function sanitiseForLog(input: string): string {
+  return input
+    .replace(/\x1b\[[0-9;]*[A-Za-z]/g, "")
+    .replace(/[\x00-\x1f\x7f]/g, "");
+}
+
 const AGENT_SYSTEM_PROMPT = `You are Atlas, running in AGENT MODE — autonomous multi-step task execution for a German space-law practitioner.
 
 The user has given you a HIGH-LEVEL GOAL, not a chat question. Your job is to break it into 3-8 concrete steps and execute each one using the available tools. The lawyer is watching your work but should not have to micro-manage it.
@@ -252,19 +277,27 @@ export async function POST(req: NextRequest) {
          history page even if the run aborts mid-flight. Updates
          flow at run-end with the captured steps / artifacts / etc. */
       let runId: string | null = null;
+      /* AUDIT-FIX L18 (2026-05-15): canonicalise the goal once for
+         every "log / persist / SSE-replay" path. The model itself
+         continues to see the raw `parsed.data.goal` (Anthropic's
+         tokenizer handles control chars fine and we want the model
+         to read what the lawyer actually typed); only the surfaces
+         that hit storage / observability / DOM use the sanitised
+         copy. */
+      const goalForLog = sanitiseForLog(parsed.data.goal);
       try {
         const runRow = await prisma.atlasAgentRun.create({
           data: {
             userId: atlas.userId,
             organizationId: atlas.organizationId,
             mandateId: parsed.data.mandateId ?? null,
-            goal: parsed.data.goal.slice(0, 2000),
+            goal: goalForLog.slice(0, 2000),
             status: "running",
           },
           select: { id: true },
         });
         runId = runRow.id;
-        send({ type: "run_started", goal: parsed.data.goal, runId });
+        send({ type: "run_started", goal: goalForLog, runId });
       } catch (err) {
         /* Persistence is best-effort — if the DB write fails,
            continue with the run anyway (lawyer still gets the
@@ -273,7 +306,7 @@ export async function POST(req: NextRequest) {
           userId: atlas.userId,
           error: err instanceof Error ? err.message : String(err),
         });
-        send({ type: "run_started", goal: parsed.data.goal });
+        send({ type: "run_started", goal: goalForLog });
       }
 
       const conversation: Anthropic.MessageParam[] = [

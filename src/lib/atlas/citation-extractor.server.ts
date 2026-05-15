@@ -20,9 +20,20 @@ import "server-only";
 import { checkValidity, type ValidityCheck } from "./validity-tools.server";
 
 /* The canonical Atlas-citation pattern, e.g. [ATLAS:DE-WeltraumG-§1]
-   or [ATLAS:EU-NIS2-Art.21]. Matches IDs containing letters, digits,
-   dashes, dots, slashes, and § signs. */
-const ATLAS_CITATION_RE = /\[ATLAS:([\w\-§\.\/]+)\]/g;
+   or [ATLAS:EU-NIS2-Art.21].
+   AUDIT-FIX L6: Tightened from `[\w\-§\.\/]+` to a stricter shape
+   `[A-Z][A-Z0-9-]+(-[A-Za-z0-9§.]+)?` that:
+     1. Requires the source-id to begin with an uppercase letter and
+        a hyphen-separated upper-case prefix (DE-, EU-, US-…).
+     2. Forbids `/` (path separator) and `..` (path-traversal) so a
+        malicious model output like `[ATLAS:../../etc/passwd]` cannot
+        be persisted as a "citation" and rendered as a clickable link.
+     3. Keeps §, `.`, alphanumerics for legitimate provision suffixes
+        (e.g. `-§1`, `-Art.21`).
+   The looser pattern leaked path-traversal chars into the rendered
+   pill href + the validity-check store; tightening here defends in
+   depth even though the upstream model is supposed to emit clean IDs. */
+const ATLAS_CITATION_RE = /\[ATLAS:([A-Z][A-Z0-9-]+(?:-[A-Za-z0-9§.]+)?)\]/g;
 
 /* AUDIT-FIX H6: Match fenced code blocks (``` ... ```) — non-greedy,
    multiline (the [\s\S] class crosses newlines without needing the

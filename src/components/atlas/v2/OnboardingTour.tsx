@@ -42,6 +42,16 @@ import { AtlasMark } from "./AtlasLogo";
 
 const STORAGE_KEY = "atlas-v2-onboarding-seen";
 
+/* AUDIT-FIX L8: Magic-number extracted. We defer the auto-show by 300ms
+   so AtlasShellV2's initial paint settles (mandate sidebar fetch +
+   theme hydration both finish in < ~250ms locally). Without the delay,
+   the tour modal flashes for one frame underneath the still-painting
+   shell, which looks broken. 300ms is the eyeballed value that keeps
+   the tour visible "immediately" to the user but reliably AFTER the
+   shell's first useful paint. If we ever migrate to React 19 Activity-
+   based mount-tracking, this can drop to a useLayoutEffect + RAF. */
+const MOUNT_DELAY_MS = 300;
+
 /* H27: focus-trap selector — see MandateAttachModal for rationale. */
 const FOCUSABLE_SELECTOR =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -99,9 +109,9 @@ export function OnboardingTour() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (window.localStorage.getItem(STORAGE_KEY)) return;
-    /* Defer one tick so we don't flash the modal during initial paint
-       — give AtlasShellV2 a moment to settle. */
-    const t = window.setTimeout(() => setOpen(true), 300);
+    /* AUDIT-FIX L8: Defer one shell-paint so we don't flash the modal
+       during initial paint — see MOUNT_DELAY_MS comment for rationale. */
+    const t = window.setTimeout(() => setOpen(true), MOUNT_DELAY_MS);
     return () => window.clearTimeout(t);
   }, []);
 
@@ -118,7 +128,11 @@ export function OnboardingTour() {
 
   const close = useCallback(() => {
     if (typeof window !== "undefined") {
-      window.localStorage.setItem(STORAGE_KEY, new Date().toISOString());
+      /* AUDIT-FIX L7: We only ever truthy-check this key, so an ISO
+         timestamp wastes ~24 bytes per user with no consumer of the
+         value. Store the literal "1" — same semantics, smaller blob,
+         clearer intent (boolean-as-string). */
+      window.localStorage.setItem(STORAGE_KEY, "1");
     }
     setOpen(false);
   }, []);

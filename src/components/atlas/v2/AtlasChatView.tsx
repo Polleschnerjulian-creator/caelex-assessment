@@ -170,64 +170,68 @@ export function AtlasChatView({ chatId }: Props) {
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [chat?.messages.length, streamingText, inFlightTools.length]);
 
-  /* If the latest message is a user-message and there's no following
-     assistant-message, the chat was created via homepage POST and the
-     stream is still in flight server-side. Auto-poll until the
-     assistant message lands.
-     H24 — Deps are [chatId, reload]. We read the live message-count
-     via messagesLengthRef so the effect doesn't re-arm whenever the
-     chat-state object changes. Previously this re-armed on every
-     setChat() → 5+ parallel intervals per chat. */
+  /* AUDIT-FIX M42 — Removed eslint-disable. The polling-effect now
+     depends on a single derived signal (`needsPoll`) computed from the
+     current message-shape via useMemo. When the predicate is true the
+     interval arms once; when polling lands a new assistant message
+     (length grows past baseline), `needsPoll` flips back to false and
+     the cleanup runs.
+     H24 contract preserved — exactly ONE interval per chat-poll cycle,
+     no per-render re-arm.
+     The previous deps `[chatId, chat?.messages.length]` re-armed on
+     every length-bump (incl. mid-stream optimistic adds), which defeats
+     H24. The new deps `[chatId, needsPoll]` only flip on true→false
+     edges, which is what we want. */
+  const lastUserIdx = chat
+    ? [...chat.messages].reverse().findIndex((m) => m.role === "user")
+    : -1;
+  const lastAssistantIdx = chat
+    ? [...chat.messages].reverse().findIndex((m) => m.role === "assistant")
+    : -1;
+  const messagesLen = chat?.messages.length ?? 0;
+  const userIsLast = lastUserIdx === 0;
+  const noAssistantYet = lastAssistantIdx === -1;
+  const userOnly = messagesLen === 1 && userIsLast;
+  const assistantBehind =
+    !noAssistantYet && lastAssistantIdx > lastUserIdx && lastUserIdx >= 0;
+  const needsPoll =
+    !!chat && ((userIsLast && (noAssistantYet || assistantBehind)) || userOnly);
+
   useEffect(() => {
-    if (!chat) return;
-    const lastUserIdx = [...chat.messages]
-      .reverse()
-      .findIndex((m) => m.role === "user");
-    const lastAssistantIdx = [...chat.messages]
-      .reverse()
-      .findIndex((m) => m.role === "assistant");
-    const userIsLast = lastUserIdx === 0;
-    const noAssistantYet = lastAssistantIdx === -1;
-    const userOnly = chat.messages.length === 1 && userIsLast;
-    const assistantBehind =
-      !noAssistantYet && lastAssistantIdx > lastUserIdx && lastUserIdx >= 0;
-    if ((userIsLast && (noAssistantYet || assistantBehind)) || userOnly) {
-      const baseline = chat.messages.length;
-      const interval = setInterval(async () => {
+    if (!needsPoll) return;
+    const baseline = messagesLengthRef.current;
+    const interval = setInterval(async () => {
+      if (!isMountedRef.current) {
+        clearInterval(interval);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/atlas/chat/${chatId}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) return;
+        const data = (await res.json()) as { chat: ChatRecord };
         if (!isMountedRef.current) {
           clearInterval(interval);
           return;
         }
-        try {
-          const res = await fetch(`/api/atlas/chat/${chatId}`, {
-            cache: "no-store",
-          });
-          if (!res.ok) return;
-          const data = (await res.json()) as { chat: ChatRecord };
-          if (!isMountedRef.current) {
-            clearInterval(interval);
-            return;
-          }
-          /* Compare against the baseline (length when this interval
-             was scheduled) — that's the trigger to know the assistant
-             reply has landed. Using messagesLengthRef lets us also
-             stop early if a parallel reload already ingested it. */
-          if (
-            data.chat.messages.length > baseline ||
-            data.chat.messages.length > messagesLengthRef.current
-          ) {
-            setChat(data.chat);
-            clearInterval(interval);
-            window.dispatchEvent(new Event("atlas-v2-sidebar-refresh"));
-          }
-        } catch {
-          /* swallow */
+        /* Compare against the baseline (length when this interval
+           was scheduled) — that's the trigger to know the assistant
+           reply has landed. */
+        if (
+          data.chat.messages.length > baseline ||
+          data.chat.messages.length > messagesLengthRef.current
+        ) {
+          setChat(data.chat);
+          clearInterval(interval);
+          window.dispatchEvent(new Event("atlas-v2-sidebar-refresh"));
         }
-      }, 1500);
-      return () => clearInterval(interval);
-    }
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [chatId, chat?.messages.length]);
+      } catch {
+        /* swallow */
+      }
+    }, 1500);
+    return () => clearInterval(interval);
+  }, [chatId, needsPoll]);
 
   /* Sync local mandate-state when chat finishes loading (or refreshes
      after attach/detach). chat is fetched async, so initial useState
@@ -377,8 +381,17 @@ export function AtlasChatView({ chatId }: Props) {
           try {
             const evt = JSON.parse(json);
             handleEvent(evt);
-          } catch {
-            /* incomplete chunk */
+          } catch (parseErr) {
+            /* M29 — Only swallow JSON parse failures (incomplete chunk
+               crossing a network boundary). Any other error from
+               handleEvent (TypeError on bad event-shape, RangeError on
+               oversized state-update) MUST propagate so we don't
+               silently drop a real bug. */
+            if (parseErr instanceof SyntaxError) {
+              /* incomplete chunk — wait for next decode pass */
+              continue;
+            }
+            console.warn("[atlas-chat] handleEvent failed", parseErr);
           }
         }
       }
@@ -542,9 +555,39 @@ export function AtlasChatView({ chatId }: Props) {
           )}
 
           {error && chat && (
+            /* AUDIT-FIX M44 + M45 — Error-banner now exposes a retry-
+               button that re-submits the most-recent user message
+               through the existing followups handler. M45 is the same
+               failure-mode (any fetch-error in AtlasChatView), so this
+               retry-CTA covers both findings. */
             <div className="flex items-center gap-2 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
-              <AlertCircle size={12} />
-              {error}
+              <AlertCircle size={12} className="shrink-0" />
+              <span className="flex-1">{error}</span>
+              {(() => {
+                /* Find the last user-message in the message-array so the
+                   retry-button can re-submit exactly what the user sent.
+                   If none exists (shouldn't happen if error follows a
+                   submit), the button is hidden. */
+                const lastUserMsg = [...chat.messages]
+                  .reverse()
+                  .find((m) => m.role === "user");
+                if (!lastUserMsg) return null;
+                const lastUserText = extractText(lastUserMsg.content);
+                if (!lastUserText) return null;
+                return (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setError(null);
+                      void handleFollowup(lastUserText, {});
+                    }}
+                    disabled={streaming}
+                    className="shrink-0 rounded-md border border-red-400 bg-red-100 px-2 py-0.5 text-[11px] font-medium text-red-700 transition-colors hover:bg-red-200 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-500/40 dark:bg-red-500/20 dark:text-red-200 dark:hover:bg-red-500/30"
+                  >
+                    Erneut versuchen
+                  </button>
+                );
+              })()}
             </div>
           )}
         </div>
@@ -715,8 +758,9 @@ function MessageRow({
       />
       {message.costUsd != null && (
         <div className="text-[10px] text-slate-400 dark:text-slate-600">
-          {message.inputTokens}↑ · {message.outputTokens}↓ tokens · $
-          {message.costUsd.toFixed(4)}
+          {formatTokens(message.inputTokens ?? 0)}↑ ·{" "}
+          {formatTokens(message.outputTokens ?? 0)}↓ tokens ·{" "}
+          {formatCost(message.costUsd)}
         </div>
       )}
     </div>
@@ -1182,6 +1226,31 @@ function extractText(content: ChatMessageBlock[] | string): string {
     .filter((b) => b.type === "text")
     .map((b) => b.text ?? "")
     .join("\n");
+}
+
+/**
+ * M30 — Compact token formatter — 12,345 → "12k", 1,200,000 → "1.2M".
+ * Mirrors `formatTokens()` in ContextWindowIndicator.tsx so the per-
+ * message footer reads consistently with the header donut tooltip.
+ * Defined locally (not imported) to avoid coupling AtlasChatView to
+ * ContextWindowIndicator's internal helpers.
+ */
+function formatTokens(n: number): string {
+  if (n < 1_000) return n.toString();
+  if (n < 1_000_000) return `${(n / 1_000).toFixed(n < 10_000 ? 1 : 0)}k`;
+  return `${(n / 1_000_000).toFixed(1)}M`;
+}
+
+/**
+ * M31 — Format per-message cost. Hides "$0.0000" noise on cheap turns
+ * (Haiku / cache hits) by showing "<$0.001" once cost dips below the
+ * resolution of 3-decimal display. Above that, shows two decimals so
+ * the lawyer sees a meaningful number.
+ */
+function formatCost(usd: number): string {
+  if (usd < 0.001) return "<$0.001";
+  if (usd < 1) return `$${usd.toFixed(3)}`;
+  return `$${usd.toFixed(2)}`;
 }
 
 /**

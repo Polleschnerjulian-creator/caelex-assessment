@@ -482,6 +482,32 @@ export default async function middleware(req: NextRequest) {
     // Origin validation (Layer 1) is the primary CSRF protection.
     // If CSRF cookie is absent (first visit, domain mismatch, cookie cleared),
     // the request is allowed — the cookie will be set on the response.
+    //
+    // AUDIT-FIX L16 (2026-05-15): added a feature-flag-gated strict mode
+    // that REQUIRES the CSRF cookie + header for mutating non-exempt
+    // requests once the rollout grace period ends. The grace period
+    // exists because old single-page-app sessions started before the
+    // CSRF cookie was issued (or after a cookie-clear) would otherwise
+    // get a hard 403 on their next mutating request — that's the
+    // behaviour we WANT once every active client has had a chance to
+    // pick up the cookie via a prior GET. The flag lets ops flip the
+    // enforcement on at the edge without redeploying app code.
+    //
+    // Rollout / migration path:
+    //   1. Default (CSRF_REQUIRE_DOUBLE_SUBMIT unset / "false"):
+    //      validate when both cookie+header are present, allow when
+    //      cookie absent. This is today's behaviour.
+    //   2. Telemetry phase (set to "log"): same allow-on-absent
+    //      behaviour, but emit a metric/log line so we can see how
+    //      many requests would 403 if we flipped the gate. (Not
+    //      implemented here — telemetry is a separate concern; the
+    //      log line below is enough to tail in observability.)
+    //   3. Enforcement (set to "true"): the cookie MUST be present
+    //      on every mutating non-exempt request, otherwise 403.
+    //
+    // Origin validation (Layer 1) is the primary CSRF defence and
+    // continues to gate the request before this layer runs — strict
+    // mode is purely additional belt-and-suspenders.
     const method = req.method.toUpperCase();
     const isMutating = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
     const isCsrfExempt = CSRF_EXEMPT_ROUTES.some((route) =>
@@ -491,6 +517,46 @@ export default async function middleware(req: NextRequest) {
     if (isMutating && !isCsrfExempt) {
       const cookieToken = req.cookies.get(CSRF_COOKIE_NAME)?.value;
       const headerToken = req.headers.get(CSRF_HEADER_NAME);
+
+      /* AUDIT-FIX L16: strict-mode gate. When the env-var is "true",
+         a missing cookie OR header is treated as a hard CSRF failure.
+         When unset / "false" / anything else, fall through to the
+         legacy permissive behaviour below. The "log" mode emits a
+         server log so we can quantify impact pre-flip without yet
+         changing user-visible behaviour. */
+      const csrfStrictMode = (
+        process.env.CSRF_REQUIRE_DOUBLE_SUBMIT ?? ""
+      ).toLowerCase();
+      const csrfStrictEnforce = csrfStrictMode === "true";
+      const csrfStrictLog = csrfStrictMode === "log";
+
+      if (!cookieToken || !headerToken) {
+        if (csrfStrictEnforce) {
+          return applySecurityHeaders(
+            new NextResponse(
+              JSON.stringify({
+                error: "Forbidden",
+                message: "CSRF token required",
+                code: "CSRF_TOKEN_MISSING",
+              }),
+              { status: 403, headers: { "Content-Type": "application/json" } },
+            ),
+            pathname,
+            nonce,
+          );
+        }
+        if (csrfStrictLog && process.env.NODE_ENV === "production") {
+          console.warn(
+            "[CSRF] missing token on mutating request",
+            JSON.stringify({
+              pathname,
+              method,
+              hasCookie: Boolean(cookieToken),
+              hasHeader: Boolean(headerToken),
+            }),
+          );
+        }
+      }
 
       // Only enforce double-submit check when both cookie and header exist.
       // Skip session binding — session rotation during long operations

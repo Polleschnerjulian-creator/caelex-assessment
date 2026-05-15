@@ -35,12 +35,26 @@ export function KeyboardHelpOverlay({ open, onClose }: Props) {
   const modalRef = useRef<HTMLDivElement | null>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
-  /* Detect platform post-hydration. SSR is OS-agnostic. */
+  /* Detect platform post-hydration. SSR is OS-agnostic.
+     AUDIT-FIX L14 (2026-05-15): use the modern `userAgentData.platform`
+     when available — it returns a stable string ("macOS", "iOS",
+     "Windows", etc.) and is unaffected by the long-running deprecation
+     of `navigator.platform`. The fallback chain handles older browsers
+     (Safari, Firefox, anything pre-Chromium-90) by reading the legacy
+     `platform` property; only when both are missing do we sniff the
+     UA string. The cast keeps TS happy without pulling in the
+     experimental type defs for `NavigatorUAData`. */
   useEffect(() => {
     if (typeof navigator === "undefined") return;
-    setIsMac(
-      /Mac|iPhone|iPad/i.test(navigator.platform || navigator.userAgent),
-    );
+    const navWithUaData = navigator as Navigator & {
+      userAgentData?: { platform?: string };
+    };
+    const platformSignal =
+      navWithUaData.userAgentData?.platform ??
+      navigator.platform ??
+      navigator.userAgent ??
+      "";
+    setIsMac(/Mac|iPhone|iPad|iOS/i.test(platformSignal));
   }, []);
 
   /* AUDIT-FIX H27: focus-trap. Snapshot opener on open, move focus

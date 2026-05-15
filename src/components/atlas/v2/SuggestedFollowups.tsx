@@ -87,7 +87,11 @@ export function SuggestedFollowups({ chatId, refreshKey, onPick }: Props) {
             key={`${refreshKey}-${i}`}
             type="button"
             onClick={() => onPick(s.text)}
-            className="group inline-flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-[11px] text-slate-300 transition-colors hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-200"
+            /* M33 — Light-mode contrast: original `border-slate-700
+               bg-slate-900 text-slate-300` rendered nearly invisible
+               on the white chat surface. Split into light/dark
+               variants so the chip reads on both backgrounds. */
+            className="group inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] text-slate-700 transition-colors hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:text-emerald-200"
           >
             <span className="line-clamp-1">{s.text}</span>
             <ArrowRight
