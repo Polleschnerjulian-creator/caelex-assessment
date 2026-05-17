@@ -1565,13 +1565,30 @@ export default function AgentPage() {
                 {usage.outputTokens.toLocaleString("de-DE")}↓ tokens · $
                 {usage.costUsd.toFixed(4)}
               </span>
-              <button
-                type="button"
-                onClick={reset}
-                className="text-slate-500 underline-offset-4 hover:text-slate-900 hover:underline dark:hover:text-slate-200"
-              >
-                Neuer Agent-Run
-              </button>
+              <div className="flex items-center gap-3">
+                {/* Sprint D1 — Evidence-Pack download. Only renders
+                    when activeRunId is set + run is complete (usage
+                    fires at run_done). The link is plain GET so the
+                    browser triggers the native download dialog with
+                    the server-set filename. */}
+                {activeRunId && (
+                  <a
+                    href={`/api/atlas/agent/runs/${activeRunId}/evidence-pack`}
+                    className="inline-flex items-center gap-1 text-slate-600 underline-offset-4 hover:text-slate-900 hover:underline dark:text-slate-400 dark:hover:text-slate-100"
+                    title="Berufshaftpflicht-tauglicher ZIP-Export: Agent-Output (PDF) + Quellen (PDF) + Audit-Log (JSON)"
+                  >
+                    <FolderInput size={11} />
+                    Evidence-Pack (ZIP)
+                  </a>
+                )}
+                <button
+                  type="button"
+                  onClick={reset}
+                  className="text-slate-500 underline-offset-4 hover:text-slate-900 hover:underline dark:hover:text-slate-200"
+                >
+                  Neuer Agent-Run
+                </button>
+              </div>
             </div>
           )}
 
