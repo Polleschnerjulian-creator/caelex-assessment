@@ -31,7 +31,10 @@ Matches are fuzzy (case-insensitive contains on name + slug). Only ACTIVE operat
 After calling:
   - 1 match → use its \`id\` in create_matter_invite, confirm the org name with user.
   - Multiple matches → list numbered, ask user to pick.
-  - Zero matches → tell user the operator is not (yet) on Caelex; they must sign up first or invite them via email (not supported by this tool).`,
+  - Zero matches → operator is not (yet) on Caelex. **Two options to proceed**:
+    (a) **DEFAULT for a project-workspace**: use \`create_solo_matter\` directly with free-text clientName. The lawyer can work in the mandate immediately (vault, chats, agent-runs, deadlines) — no bilateral handshake needed.
+    (b) Only when the lawyer explicitly wants a bilateral Caelex-counsel relationship: tell them the operator must sign up at caelex.eu first (not supported by this tool).
+  Prefer (a) for "lege ein Mandat an", "mach mir einen Workspace für X" — these don't need the operator on Caelex.`,
     input_schema: {
       type: "object",
       properties: {
@@ -98,6 +101,62 @@ Defaults: scope_level='active_counsel', duration_months=12.`,
         },
       },
       required: ["action", "operator_org_id", "matter_name"],
+    },
+  },
+
+  {
+    name: "create_solo_matter",
+    description: `Creates a LAWYER-SIDE-ONLY mandate (project workspace) WITHOUT requiring the operator to be a Caelex-registered org. This is the DEFAULT mandate-creation path for almost all cases. Use this when:
+- find_operator_organization returns zero matches AND the lawyer wants a workspace anyway
+- the lawyer says "lege ein Mandat an für X", "mach mir einen Workspace für Y", "ich brauch ein Projekt"
+- the client/operator is a prospect, an internal project, or just doesn't need a Caelex login
+
+The mandate becomes a FULL project workspace immediately: Vault (files), Chats, Notes, Deadlines, Time-Entries, Agent-Runs, Background-Agent — alles hängt am mandateId.
+
+clientName / clientContact are FREE-TEXT strings (no FK enforcement, no Caelex registration). The lawyer can later upgrade to a bilateral Caelex-counsel relationship via /atlas/network if the operator joins.
+
+Approval flow: this tool starts with \`create_\` prefix and therefore triggers Atlas's automatic approval-gate (Sprint B1). The lawyer sees an approval card with the proposed name/clientName before persistence. Single call (no preview/create split — the approval gate IS the preview).
+
+After successful creation, returns the new \`mandateId\`. The client navigates into the workspace at /atlas/mandate/[id].`,
+    input_schema: {
+      type: "object",
+      properties: {
+        name: {
+          type: "string",
+          description:
+            "Mandate name (3-200 chars). E.g. 'Spire · SAT-2026', 'Internes Compliance-Projekt Q1', 'Akquise Iridium NIS2-Pitch'.",
+        },
+        clientName: {
+          type: "string",
+          description:
+            "OPTIONAL free-text client/operator name. NO Caelex registration needed. E.g. 'Spire Global GmbH', 'Iridium Communications', 'Intern'.",
+        },
+        clientContact: {
+          type: "string",
+          description:
+            "OPTIONAL client contact (email or phone). E.g. 'legal@spire.com'.",
+        },
+        jurisdiction: {
+          type: "string",
+          description: "OPTIONAL ISO-Code. E.g. 'DE', 'FR', 'EU', 'US'.",
+        },
+        operatorType: {
+          type: "string",
+          description:
+            "OPTIONAL operator-type tag. E.g. 'satellite_operator', 'launch_provider', 'isos', 'data_provider'.",
+        },
+        primaryAuthority: {
+          type: "string",
+          description:
+            "OPTIONAL primary regulatory authority. E.g. 'BNetzA', 'CNES', 'FCC', 'ESA'.",
+        },
+        customInstructions: {
+          type: "string",
+          description:
+            "OPTIONAL Markdown system-prompt suffix injected into every chat of this mandate. Max 4000 chars. Lawyer can edit later.",
+        },
+      },
+      required: ["name"],
     },
   },
 
@@ -646,6 +705,7 @@ export type AtlasToolName =
   | "find_or_open_matter"
   | "find_operator_organization"
   | "create_matter_invite"
+  | "create_solo_matter"
   | "search_legal_sources"
   | "get_legal_source_by_id"
   | "list_workspace_templates"

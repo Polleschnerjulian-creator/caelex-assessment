@@ -620,6 +620,97 @@ const SearchSourcesInput = z.object({
 const SOURCE_HIT_LIMIT = 10;
 const MIN_HIT_SCORE = 0.05;
 
+/* ── create_solo_matter ──────────────────────────────────────────────
+ * Lawyer-side-only mandate creation. NO operator-org-id required —
+ * clientName / clientContact are free-text strings, matching the
+ * existing CreateMandateForm.tsx flow. Sprint B1's approval-gate
+ * (auto-triggered by the create_* prefix) handles the lawyer
+ * confirmation step.
+ *
+ * Mirrors POST /api/atlas/mandate but called directly via prisma so
+ * the agent route doesn't need to round-trip through HTTP. */
+const CreateSoloMatterInput = z.object({
+  name: z.string().trim().min(3).max(200),
+  clientName: z.string().trim().max(200).optional(),
+  clientContact: z.string().trim().max(200).optional(),
+  jurisdiction: z.string().trim().max(20).optional(),
+  operatorType: z.string().trim().max(80).optional(),
+  primaryAuthority: z.string().trim().max(120).optional(),
+  customInstructions: z.string().max(4000).optional(),
+});
+
+async function createSoloMatterTool(args: {
+  input: unknown;
+  callerUserId: string;
+  callerOrgId: string;
+}): Promise<AtlasToolResult> {
+  const parsed = CreateSoloMatterInput.safeParse(args.input);
+  if (!parsed.success) {
+    return {
+      content: JSON.stringify({
+        error: "Invalid tool input",
+        code: "INVALID_INPUT",
+        details: parsed.error.flatten(),
+      }),
+      isError: true,
+    };
+  }
+  const d = parsed.data;
+  try {
+    const mandate = await prisma.atlasMandate.create({
+      data: {
+        organizationId: args.callerOrgId,
+        ownerUserId: args.callerUserId,
+        name: d.name,
+        clientName: d.clientName || null,
+        clientContact: d.clientContact || null,
+        customInstructions: d.customInstructions || null,
+        jurisdiction: d.jurisdiction || null,
+        operatorType: d.operatorType || null,
+        primaryAuthority: d.primaryAuthority || null,
+        /* Persist the owner as an explicit member-row so member-based
+           queries always include them. Mirrors POST /api/atlas/mandate. */
+        members: {
+          create: { userId: args.callerUserId, role: "owner" },
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        clientName: true,
+        jurisdiction: true,
+        operatorType: true,
+        primaryAuthority: true,
+        createdAt: true,
+      },
+    });
+    return {
+      content: JSON.stringify({
+        ok: true,
+        mandateId: mandate.id,
+        message: `Mandat "${mandate.name}" angelegt. Workspace verfügbar unter /atlas/mandate/${mandate.id}.`,
+        mandate,
+      }),
+      isError: false,
+      /* Navigate the client to the new workspace so the lawyer lands
+         in it immediately (matches the bilateral create_matter_invite
+         post-create navigation). */
+      navigateUrl: `/atlas/mandate/${mandate.id}`,
+    };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(`[atlas/create_solo_matter] failed: ${msg}`);
+    return {
+      content: JSON.stringify({
+        error: "Mandate creation failed",
+        code: "DB_ERROR",
+        detail: msg.slice(0, 200),
+      }),
+      isError: true,
+    };
+  }
+}
+
 async function searchLegalSources(args: {
   input: unknown;
 }): Promise<AtlasToolResult> {
@@ -2466,6 +2557,8 @@ export async function executeAtlasTool(args: {
       return findOperatorOrganization(args);
     case "create_matter_invite":
       return createMatterInviteTool(args);
+    case "create_solo_matter":
+      return createSoloMatterTool(args);
     case "search_legal_sources":
       return searchLegalSources(args);
     case "get_legal_source_by_id":
