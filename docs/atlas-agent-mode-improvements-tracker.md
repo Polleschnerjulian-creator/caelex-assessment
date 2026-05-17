@@ -47,14 +47,14 @@ Single Source of Truth für Agent-Mode-Improvements. Überlebt Context-Compactio
 
 ```
 Total items:    9
-☑️ Done:         2
+☑️ Done:         4
 ⏳ In progress:  0
 ⏭️ Deferred:     0
-☐ Open:         7
+☐ Open:         5
 
 By tier:
   🔴 Sprint A (Trust + Cost):       2  (A1✅, A2✅) — COMPLETE @ 86a40669
-  🟡 Sprint B (Memory + Control):   2  (B1, B2)
+  🟡 Sprint B (Memory + Control):   2  (B1✅, B2✅) — COMPLETE @ dffc103c
   🟢 Sprint C (Workflow):           2  (C1, C2)
   🟣 Sprint D (Later):              3  (D1, D2, D3)
 ```
@@ -146,7 +146,7 @@ Wenn was auffällt: Atlas markiert die Stelle inline mit ⚠ + erklärt was fehl
 
 ### 🟡 Sprint B — Memory + Control (medium, ~3-5 days)
 
-#### B1 ☐ Interactive Pauses (Human-in-the-Loop)
+#### B1 ✅ Interactive Pauses (Human-in-the-Loop)
 
 **What:** Definierbare Pause-Points. Agent stoppt vor "kritischen" Steps (alles permanent: Brief absenden, Frist eintragen, Schriftsatz finalisieren), zeigt geplante Action + Begründung, fragt "freigeben / anpassen / abbrechen".
 
@@ -166,11 +166,21 @@ Wenn was auffällt: Atlas markiert die Stelle inline mit ⚠ + erklärt was fehl
 - User clicks "Anpassen" → input editable → submit → tool executes with modified input
 - User clicks "Abbrechen" → tool skipped, agent told "user cancelled this step", continues with next step
 
-**Wave:** B | **Status:** ☐ Open
+**Wave:** B | **Status:** ✅ DONE @ dffc103c
+
+**Notes (post-impl):**
+
+- `requiresApproval()` uses a **prefix-allowlist** (`create_` / `send_` / `schedule_` / `finalize_`) — adding a new dangerous tool needs no per-tool wiring, just naming convention.
+- New `src/lib/atlas/agent/approval-policy.ts` exports the helper + `approvalRationale()` (lawyer-facing one-liner) + the canonical `ApprovalGate` type that route + endpoint + UI all import.
+- Pause-on-FIRST-undecided semantics: if a single iteration has 3 dangerous tools, the lawyer goes through 3 pause cycles. Rare in practice.
+- Server persists `conversationState` Json (conversation, tokens, steps, reasoning, pendingToolUseId) at pause; resume-path restores it + skips ONE Anthropic call (the model's response is already in conv) + applies the recorded decision + continues the loop.
+- New `/api/atlas/agent/runs/[id]/approve` endpoint is thin — records decision only. The client re-POSTs `/api/atlas/agent` with `resumeFromRunId` to actually resume (parity with Sprint A1 /resume pattern).
+- New `ApprovalCard` UI component (Genehmigen / Bearbeiten / Ablehnen). Edit-mode renders the tool-input as JSON-editable textarea with parse-error feedback.
+- Rejected tools emit a `USER_CANCELLED` tool_result with `is_error: true` so Claude treats it as a hard fail and re-plans (vs. silently using the rejection-text as a positive result).
 
 ---
 
-#### B2 ☐ Cross-Run-Memory per Mandat
+#### B2 ✅ Cross-Run-Memory per Mandat
 
 **What:** Jeder Agent-Run-Output wird automatisch in `AtlasMandate.agentRunMemory` summarized + ins nächste Run-System-Prompt für dasselbe Mandat injiziert.
 
@@ -190,7 +200,17 @@ Wenn was auffällt: Atlas markiert die Stelle inline mit ⚠ + erklärt was fehl
 - Run 12 in mandate B → memory is recursive aggregate (not full concat)
 - Cold-start (no memory yet): fallback to last 3 run-summaries unaggregated
 
-**Wave:** B | **Status:** ☐ Open
+**Wave:** B | **Status:** ✅ DONE @ dffc103c
+
+**Notes (post-impl):**
+
+- New `src/lib/atlas/agent/memory-summarizer.server.ts` exports both `loadMandateMemoryForPrompt()` (read-side, with cold-start fallback) and `updateMandateMemory()` (fire-and-forget summariser).
+- Memory output strictly formatted: `## Bisher geleistete Arbeit / ## Wichtige Fakten / ## Offene Punkte`. Cap 4000 chars (matches existing crossChatSummary pattern).
+- Summariser runs Claude with temp=0.3, max_tokens=1500. Input: last 5 completed runs reduced to `{date, goal, tools, artifact-summaries}` — cheap (~10-15k input tokens per pass).
+- Idempotency: `agentRunMemoryUpToRunId` sentinel — re-trigger with no new runs since last summarisation = early return, no LLM call.
+- Cold-start path (no `agentRunMemory` yet but completed runs exist) prepends "_(Cold-start: noch keine verdichtete Memory. Letzte N Runs:)_" + bullet-list of `{date, goal[:200], top-3 artifacts}`.
+- Wired into agent route via `void updateMandateMemory(mandateId, organizationId).catch(...)` right after run-completion `update({status: "complete"})`. Vercel keeps the function alive until maxDuration (300s) so the floating promise runs reliably.
+- `loadMandateMemoryForPrompt()` injected at route-start under `## Vorherige Agent-Aktivität in diesem Mandat`. Returns null when no mandateId / no prior runs.
 
 ---
 
@@ -296,3 +316,4 @@ Beispiele:
 
 - **2026-05-15:** Document created. 9 items (2A + 2B + 2C + 3D). 0 done.
 - **2026-05-15:** Sprint A complete. A1 (cost-budget) + A2 (verification-loop) shipped in `86a40669`. Pre-empted B1 schema-field `approvalGates` and C1 schema-fields `parentRunId` + `forkedFromStep` in same commit to avoid future schema-pushes. Progress: 2/9 done.
+- **2026-05-15:** Sprint B complete. B1 (interactive-pauses) + B2 (cross-run-memory) shipped in `dffc103c`. Schema additions in same commit: AtlasMandate gets agentRunMemory + agentRunMemoryAt + agentRunMemoryUpToRunId; AtlasAgentRun gets pausedForApproval + conversationState (approvalGates was pre-empted in 86a40669). 1537 insertions, 215 deletions across 6 files. Progress: 4/9 done.
