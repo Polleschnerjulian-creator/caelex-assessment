@@ -45,6 +45,7 @@ import { AtlasMark } from "@/components/atlas/v2/AtlasLogo";
 import { labelFor } from "@/lib/atlas/tool-labels";
 import { exportDraftAsWord } from "@/lib/atlas/draft-export";
 import { downloadArtifactAsPdf } from "@/lib/atlas/artifact-pdf";
+import { downloadArtifactAsDocx } from "@/lib/atlas/artifact-docx";
 import {
   AGENT_TEMPLATES,
   TEMPLATE_CATEGORIES,
@@ -1528,6 +1529,26 @@ function ArtifactCard({
             >
               <FileText size={11} />
               PDF
+            </button>
+            {/* AUDIT-FIX 2026-05-17: real DOCX export (docx package, OOXML).
+                The adjacent `.doc` button uses Word-HTML which works in Word
+                but breaks LibreOffice/Pages/Google Docs round-trips. DOCX
+                is the lawyer-to-client review-format standard. */}
+            <button
+              type="button"
+              onClick={() => {
+                void downloadArtifactAsDocx({
+                  kind: artifact.kind,
+                  title: artifact.title,
+                  body: artifact.body,
+                  mandateName: undefined,
+                });
+              }}
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-2 py-1 text-[11px] text-slate-600 transition-colors hover:bg-slate-50 dark:border-white/[0.10] dark:text-slate-400 dark:hover:bg-white/[0.05]"
+              title="Als Word .docx herunterladen"
+            >
+              <FileText size={11} />
+              DOCX
             </button>
             {mandateId && (
               <button
