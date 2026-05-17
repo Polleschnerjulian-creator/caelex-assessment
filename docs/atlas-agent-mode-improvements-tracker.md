@@ -47,15 +47,15 @@ Single Source of Truth für Agent-Mode-Improvements. Überlebt Context-Compactio
 
 ```
 Total items:    9
-☑️ Done:         4
+☑️ Done:         6
 ⏳ In progress:  0
 ⏭️ Deferred:     0
-☐ Open:         5
+☐ Open:         3
 
 By tier:
   🔴 Sprint A (Trust + Cost):       2  (A1✅, A2✅) — COMPLETE @ 86a40669
   🟡 Sprint B (Memory + Control):   2  (B1✅, B2✅) — COMPLETE @ dffc103c
-  🟢 Sprint C (Workflow):           2  (C1, C2)
+  🟢 Sprint C (Workflow):           2  (C1✅, C2✅) — COMPLETE @ 46c86b96
   🟣 Sprint D (Later):              3  (D1, D2, D3)
 ```
 
@@ -216,7 +216,7 @@ Wenn was auffällt: Atlas markiert die Stelle inline mit ⚠ + erklärt was fehl
 
 ### 🟢 Sprint C — Workflow (medium, ~5-7 days)
 
-#### C1 ☐ Run-Replay with Branching
+#### C1 ✅ Run-Replay with Branching
 
 **What:** Pick einen Step aus der Run-History, ändere den Input, Atlas rennt ab dort weiter. "Fork from step N with modified input."
 
@@ -235,11 +235,23 @@ Wenn was auffällt: Atlas markiert die Stelle inline mit ⚠ + erklärt was fehl
 - Run B's `parentRunId = A.id`, `forkedFromStep = 3`
 - History UI shows tree: A → B (forked at step 3)
 
-**Wave:** C | **Status:** ☐ Open
+**Wave:** C | **Status:** ✅ DONE @ 46c86b96
+
+**Notes (post-impl):**
+
+- Agent route now ALWAYS persists `conversationState` on COMPLETE (not just on pause) — enables forks at any iteration. Storage: ~50-150 KB per row; cheap on Neon. TTL job for runs older than 30-90 days is a future cleanup.
+- Fork at iteration N keeps conversation messages `[0..2N-1]` (incl. iter N's assistant message), deep-clones the last msg, applies `modifiedToolInputs` to its tool_use blocks, then continues the loop. Re-uses the resume-path's `skipNextAnthropicCall` trick so iter N's tools run with new inputs instead of re-calling Claude.
+- Fork creates a NEW AtlasAgentRun row with `parentRunId` + `forkedFromStep` set. Parent's token counters carry over (lawyer sees cumulative cost, matches "saves tokens by skipping replay" framing).
+- Validates: parent must be `status === "complete"`, forkFromIteration ≤ parent's `iterations`, forkFromRunId mutually exclusive with resumeFromRunId.
+- UI: per-iteration "Fork ab Iteration N" button on completed runs. Opens `ForkModal` with each tool's input as JSON-editable textarea + diff-aware "geändert" badge; only changed inputs go in the POST.
+- Lineage badge ("Forked from Run XXXXXXXX@N") renders above the goal-pin on forked runs AND on the history-list rows. `/api/atlas/agent/runs` list endpoint surfaces `parentRunId` + `forkedFromStep`.
+- New SSE event: `run_forked` (with runId, parentRunId, forkedFromStep, modifiedToolCount) replaces the activeRunId mid-stream and triggers the lineage badge.
+
+**v1 limitation:** approval-gates aren't re-asked when forking a tool that requires approval — the parent's recorded decisions for those tools are NOT carried over (fresh execution = fresh approval pause). Acceptable for v1; v2 can opt to inherit approvals from parent.
 
 ---
 
-#### C2 ☐ Smart Workflow-Sequencing
+#### C2 ✅ Smart Workflow-Sequencing
 
 **What:** Nach Completion eines Workflow-Templates schlägt Atlas das logisch nächste vor. Templates werden zu Pipelines, nicht isolierten Aktionen.
 
@@ -262,7 +274,17 @@ Beispiele:
 - Run "draft_authorization_application" completes → SSE shows 2 suggestions: "set_deadline_for_response" + "send_to_authority"
 - Click suggestion → new agent-run starts with that workflow + same mandate-context auto-attached
 
-**Wave:** C | **Status:** ☐ Open
+**Wave:** C | **Status:** ✅ DONE @ 46c86b96
+
+**Notes (post-impl):**
+
+- New `suggestedNext?: string[]` field on `AgentTemplate`. All 12 templates wired with curated relationships (hand-picked, not learned). Examples: nis2-classification → [mandantenbrief-status, frist-check-mandat]; bnetza-filing-pack → [frist-check-mandat, mandantenbrief-status]; vertrag-haftungsanalyse → [klausel-suche-eigene]; multi-jurisdiction-compare → [esa-license-application, bnetza-filing-pack].
+- New `src/lib/atlas/agent/workflow-suggester.server.ts`: pure look-up `suggestNextWorkflows(templateId)` returning `WorkflowSuggestion[]` with templateId + title + description + category + rationale + cost-band + duration + needsMandate/File flags. Per-pair curated `rationaleFor()` returns one-line German explanations.
+- Agent route accepts `templateId` in PostBody, persists on `AtlasAgentRun.templateId`, emits `suggested_next` SSE at run-end (only when the run was launched from a template AND that template has suggestions).
+- UI: `SuggestedNextCards` component renders below artifacts (above deadlines). Click pre-fills next template's goal + sets selectedTemplateId + auto-attaches same mandate if needed + auto-starts a fresh run. Cards show category + duration + cost-band; mandate-required + file-required warnings inline.
+- `findPredecessors()` exported but unused (yet) — ready for the history view's "incoming" widget in a future sprint.
+
+**Curation philosophy:** kept the graph TIGHT (1-2 suggestions per template). More than 2 starts to feel like a choose-your-own-adventure menu rather than a "natural next step". If the lawyer wants something else, they go back to the catalog.
 
 ---
 
@@ -317,3 +339,4 @@ Beispiele:
 - **2026-05-15:** Document created. 9 items (2A + 2B + 2C + 3D). 0 done.
 - **2026-05-15:** Sprint A complete. A1 (cost-budget) + A2 (verification-loop) shipped in `86a40669`. Pre-empted B1 schema-field `approvalGates` and C1 schema-fields `parentRunId` + `forkedFromStep` in same commit to avoid future schema-pushes. Progress: 2/9 done.
 - **2026-05-15:** Sprint B complete. B1 (interactive-pauses) + B2 (cross-run-memory) shipped in `dffc103c`. Schema additions in same commit: AtlasMandate gets agentRunMemory + agentRunMemoryAt + agentRunMemoryUpToRunId; AtlasAgentRun gets pausedForApproval + conversationState (approvalGates was pre-empted in 86a40669). 1537 insertions, 215 deletions across 6 files. Progress: 4/9 done.
+- **2026-05-15:** Sprint C complete. C1 (run-replay-branching) + C2 (smart-sequencing) shipped in `46c86b96`. No schema changes needed (all fields were pre-empted in earlier sprints). conversationState now persisted on COMPLETE too (was pause-only) to enable forks. 974 insertions, 12 deletions across 6 files. Progress: 6/9 done.
