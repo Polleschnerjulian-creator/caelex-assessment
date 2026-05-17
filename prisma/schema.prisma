@@ -11697,6 +11697,17 @@ model AtlasMandate {
   crossChatSummaryAt         DateTime?
   crossChatSummaryUpToChatId String?
 
+  /// Sprint B2: Cross-Run-Memory rolling summary (parallel to crossChatSummary
+  /// but for AtlasAgentRun records). Built fire-and-forget after each agent-
+  /// run completes; pre-pended to the next run's system-prompt so the agent
+  /// "remembers" what happened in prior runs of the same mandate.
+  /// agentRunMemoryUpToRunId is sentinel — when newer agentRuns exist beyond
+  /// this id, the after()-job triggers a re-summarisation.
+  /// Cap at ~4000 chars (matches the Cross-Chat-Memory pattern).
+  agentRunMemory           String?   @db.Text
+  agentRunMemoryAt         DateTime?
+  agentRunMemoryUpToRunId  String?
+
   /// Suggestions die noch nicht resolved wurden (M3, Feature 4).
   deadlineSuggestions AtlasMandateDeadlineSuggestion[]
 
@@ -11970,6 +11981,30 @@ model AtlasAgentRun {
   /// Array of: { toolUseId, toolName, decision: "approved"|"rejected"|
   ///             "modified", originalInput, modifiedInput?, decidedAt }
   approvalGates Json @default("[]")
+
+  /// Sprint B1 runtime flag. Mirrors `pausedForBudget` (A1). True when
+  /// the run halted before executing a tool whose name matched the
+  /// `requiresApproval()` allowlist. Cleared when the /approve endpoint
+  /// records the lawyer's decision + the main route picks the run back
+  /// up via `resumeFromRunId`.
+  pausedForApproval Boolean? @default(false)
+
+  /// Sprint B1 runtime state. Persisted snapshot of the in-flight
+  /// agent-loop's conversation + accumulated counters at the moment
+  /// of pause. Shape:
+  ///   { conversation: Anthropic.MessageParam[],
+  ///     totalInputTokens, totalOutputTokens,
+  ///     totalCacheCreationTokens, totalCacheReadTokens,
+  ///     toolsUsed: string[], textBuffer: string,
+  ///     persistedSteps: [...], persistedReasoning: {...},
+  ///     iter: number,
+  ///     pendingToolUseId: string  // which tool_use block in the last
+  ///                               // assistant message is paused
+  ///   }
+  /// Null when not paused. Set when status moves to "awaiting_approval";
+  /// cleared (set to null) when the resume-path picks the state back
+  /// up and the run continues to terminal completion.
+  conversationState Json?
 
   /// Sprint C1: Run-Replay / Branching lineage.
   /// parentRunId: the run we forked from (null = original).

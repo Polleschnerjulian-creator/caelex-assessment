@@ -32,6 +32,15 @@ import { ATLAS_TOOLS, isAtlasToolName } from "@/lib/atlas/atlas-tools";
 import { executeAtlasTool } from "@/lib/atlas/atlas-tool-executor";
 import { extractCitations } from "@/lib/atlas/citation-extractor.server";
 import { checkBudget } from "@/lib/atlas/agent/cost-budget";
+import {
+  loadMandateMemoryForPrompt,
+  updateMandateMemory,
+} from "@/lib/atlas/agent/memory-summarizer.server";
+import {
+  requiresApproval,
+  approvalRationale,
+  type ApprovalGate,
+} from "@/lib/atlas/agent/approval-policy";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { getSafeErrorMessage } from "@/lib/validations";
@@ -78,6 +87,12 @@ const PostBody = z.object({
      $100/run to prevent a runaway / malicious client from declaring
      a $10k budget. Null/undefined = no budget (legacy behaviour). */
   budgetUsd: z.number().positive().max(100).nullable().optional(),
+  /* Sprint B1 — when present, the request is a CONTINUATION of an
+     existing AtlasAgentRun that paused for approval. The route loads
+     conversationState + the recorded approvalGates decision and
+     resumes the agent-loop from where it left off. Auth-gated to the
+     run's userId + organizationId. */
+  resumeFromRunId: z.string().cuid().nullable().optional(),
 });
 
 /* AUDIT-FIX L18 (2026-05-15): strip control chars + ANSI escape
@@ -219,21 +234,39 @@ async function loadMandateContext(
   return mandate;
 }
 
-function buildSystemPrompt(mandate: ResolvedMandateContext | null): string {
-  if (!mandate) return AGENT_SYSTEM_PROMPT;
-  const lines: string[] = [AGENT_SYSTEM_PROMPT, "", "## Active mandate"];
-  lines.push(`- ID: ${mandate.id}`);
-  lines.push(`- Name: ${mandate.name}`);
-  if (mandate.clientName) lines.push(`- Client: ${mandate.clientName}`);
-  if (mandate.jurisdiction)
-    lines.push(`- Jurisdiction: ${mandate.jurisdiction}`);
-  if (mandate.operatorType) lines.push(`- Operator: ${mandate.operatorType}`);
-  if (mandate.primaryAuthority)
-    lines.push(`- Behörde: ${mandate.primaryAuthority}`);
-  if (mandate.customInstructions) {
+function buildSystemPrompt(
+  mandate: ResolvedMandateContext | null,
+  /* Sprint B2 — Cross-Run-Memory for the mandate. Pre-pended to the
+     system prompt so the agent knows what happened in prior runs of
+     this same mandate. Null when there is no mandate, no memory, and
+     no prior runs at all. */
+  memory: string | null,
+): string {
+  if (!mandate && !memory) return AGENT_SYSTEM_PROMPT;
+  const lines: string[] = [AGENT_SYSTEM_PROMPT];
+  if (mandate) {
+    lines.push("", "## Active mandate");
+    lines.push(`- ID: ${mandate.id}`);
+    lines.push(`- Name: ${mandate.name}`);
+    if (mandate.clientName) lines.push(`- Client: ${mandate.clientName}`);
+    if (mandate.jurisdiction)
+      lines.push(`- Jurisdiction: ${mandate.jurisdiction}`);
+    if (mandate.operatorType) lines.push(`- Operator: ${mandate.operatorType}`);
+    if (mandate.primaryAuthority)
+      lines.push(`- Behörde: ${mandate.primaryAuthority}`);
+    if (mandate.customInstructions) {
+      lines.push("");
+      lines.push("### Custom instructions");
+      lines.push(mandate.customInstructions);
+    }
+  }
+  /* Sprint B2 — Cross-Run-Memory block. Sits AFTER the mandate-context
+     so the agent first internalises who/what the mandate is, then sees
+     what's been done so far. Cap relies on the loader (4000 chars). */
+  if (memory) {
     lines.push("");
-    lines.push("### Custom instructions");
-    lines.push(mandate.customInstructions);
+    lines.push("## Vorherige Agent-Aktivität in diesem Mandat");
+    lines.push(memory);
   }
   return lines.join("\n");
 }
@@ -291,7 +324,19 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const systemPrompt = buildSystemPrompt(mandate);
+  /* Sprint B2 — Cross-Run-Memory. Load the rolling summary (or cold-
+     start fallback) BEFORE building the system-prompt so it can be
+     pre-pended. Returns null for mandates with zero prior runs OR
+     when no mandateId is set at all. The helper is org-scoped and
+     fails soft (logs + returns null on error). */
+  const mandateMemory = parsed.data.mandateId
+    ? await loadMandateMemoryForPrompt(
+        parsed.data.mandateId,
+        atlas.organizationId,
+      )
+    : null;
+
+  const systemPrompt = buildSystemPrompt(mandate, mandateMemory);
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream<Uint8Array>({
@@ -313,63 +358,19 @@ export async function POST(req: NextRequest) {
          that hit storage / observability / DOM use the sanitised
          copy. */
       const goalForLog = sanitiseForLog(parsed.data.goal);
-      try {
-        const runRow = await prisma.atlasAgentRun.create({
-          data: {
-            userId: atlas.userId,
-            organizationId: atlas.organizationId,
-            mandateId: parsed.data.mandateId ?? null,
-            goal: goalForLog.slice(0, 2000),
-            status: "running",
-            /* Sprint A1 — persist the lawyer-set budget alongside
-               the run so the resume-endpoint can read it without
-               re-trusting any client-supplied number. Null when no
-               budget chosen. */
-            budgetUsd: parsed.data.budgetUsd ?? null,
-            pausedForBudget: false,
-          },
-          select: { id: true },
-        });
-        runId = runRow.id;
-        send({
-          type: "run_started",
-          goal: goalForLog,
-          runId,
-          budgetUsd: parsed.data.budgetUsd ?? null,
-        });
-      } catch (err) {
-        /* Persistence is best-effort — if the DB write fails,
-           continue with the run anyway (lawyer still gets the
-           result, just no history entry). */
-        logger.warn("[atlas/agent] failed to persist run-row", {
-          userId: atlas.userId,
-          error: err instanceof Error ? err.message : String(err),
-        });
-        send({ type: "run_started", goal: goalForLog });
-      }
 
-      const conversation: Anthropic.MessageParam[] = [
+      /* Sprint B1 — runtime state vars (declared BEFORE the
+         resume-branch so it can populate them from persisted state). */
+      let conversation: Anthropic.MessageParam[] = [
         { role: "user", content: parsed.data.goal },
       ];
       let totalInputTokens = 0;
       let totalOutputTokens = 0;
-      /* Sprint A1 — also accumulate cache-creation/read tokens so the
-         live cost-counter and budget-projection reflect cache-aware
-         pricing (parity with chat-engine's H10 fix). */
       let totalCacheCreationTokens = 0;
       let totalCacheReadTokens = 0;
-      const toolsUsed: string[] = [];
-      /* Server-side text buffer accumulates every text-delta the
-         model emits across all iterations. Used at run-end for
-         citation extraction + hallucination detection (Sprint E).
-         The client's textBuffer is reset between iterations in
-         some flows, so we keep the canonical version here. */
+      let toolsUsed: string[] = [];
       let textBuffer = "";
-      /* Sprint #3 — server-side capture of steps + reasoning so we
-         can persist the full run-record to AtlasAgentRun at the
-         end. Mirrors the SSE event shape but kept in JS-native
-         types so the prisma write is straightforward. */
-      const persistedSteps: Array<{
+      let persistedSteps: Array<{
         iteration: number;
         toolId: string;
         toolName: string;
@@ -378,24 +379,256 @@ export async function POST(req: NextRequest) {
         isError?: boolean;
         summary?: string;
       }> = [];
-      const persistedReasoning: Record<number, string> = {};
-
+      let persistedReasoning: Record<number, string> = {};
       /* Sprint A1 — flag set when we paused for budget. Skips the
          post-loop "complete" / "done" persist + emits a budget_pause
          SSE event instead. */
       let pausedForBudget = false;
+      /* Sprint B1 — parallel flag for approval-pauses. */
+      let pausedForApproval = false;
+      /* Sprint B1 — when true, the while-loop's first iteration uses
+         the LAST assistant message from the restored `conversation`
+         instead of calling Anthropic. Used by the resume-path to
+         continue execution from where the run was paused without
+         re-fetching the model's response (which would duplicate
+         token-cost + produce a different response). */
+      let skipNextAnthropicCall = false;
+      /* Sprint B1 — local snapshot of the run's approvalGates audit
+         trail. Fresh runs start empty; resumed runs load from DB. The
+         pre-execution check + execute-with-decision logic both read
+         this. Any new pauses APPEND to this array, persisted back. */
+      let currentApprovalGates: ApprovalGate[] = [];
+      /* Sprint B1 — starting iteration counter. Fresh runs at 0;
+         resumed runs continue from where they paused. */
+      let initialIter = 0;
+
+      /* ╔═══════════════════════════════════════════════════════════╗
+         ║ Sprint B1 — Resume-path branch                            ║
+         ║ When `resumeFromRunId` is set, load the prior run's       ║
+         ║ persisted conversation + counters + approvalGates and     ║
+         ║ skip ahead to where we paused. The approval-decision      ║
+         ║ recorded via /api/atlas/agent/runs/[id]/approve is read   ║
+         ║ from the gates array and applied inside the for-loop.     ║
+         ╚═══════════════════════════════════════════════════════════╝ */
+      if (parsed.data.resumeFromRunId) {
+        try {
+          const priorRun = await prisma.atlasAgentRun.findFirst({
+            where: {
+              id: parsed.data.resumeFromRunId,
+              userId: atlas.userId,
+              organizationId: atlas.organizationId,
+            },
+            select: {
+              id: true,
+              status: true,
+              pausedForApproval: true,
+              conversationState: true,
+              approvalGates: true,
+              iterations: true,
+              budgetUsd: true,
+            },
+          });
+          if (!priorRun) {
+            send({ type: "error", message: "Run not found" });
+            controller.close();
+            return;
+          }
+          if (
+            !priorRun.pausedForApproval ||
+            priorRun.status !== "awaiting_approval"
+          ) {
+            send({
+              type: "error",
+              message: "Run is not paused for approval",
+            });
+            controller.close();
+            return;
+          }
+          const state = priorRun.conversationState as {
+            conversation: Anthropic.MessageParam[];
+            totalInputTokens: number;
+            totalOutputTokens: number;
+            totalCacheCreationTokens: number;
+            totalCacheReadTokens: number;
+            toolsUsed: string[];
+            textBuffer: string;
+            persistedSteps: typeof persistedSteps;
+            persistedReasoning: Record<number, string>;
+            iter: number;
+            pendingToolUseId: string;
+          } | null;
+          if (!state) {
+            send({
+              type: "error",
+              message: "Conversation state missing — cannot resume",
+            });
+            controller.close();
+            return;
+          }
+          /* Validate that the pending tool now has a recorded decision
+             in approvalGates. Without it, the run can't make progress. */
+          const gates = Array.isArray(priorRun.approvalGates)
+            ? (priorRun.approvalGates as unknown as ApprovalGate[])
+            : [];
+          const pendingGate = gates.find(
+            (g) => g.toolUseId === state.pendingToolUseId,
+          );
+          if (!pendingGate || pendingGate.decision === null) {
+            send({
+              type: "error",
+              message: "No approval decision recorded — POST /approve first",
+            });
+            controller.close();
+            return;
+          }
+          /* Restore everything. */
+          runId = priorRun.id;
+          conversation = state.conversation;
+          totalInputTokens = state.totalInputTokens;
+          totalOutputTokens = state.totalOutputTokens;
+          totalCacheCreationTokens = state.totalCacheCreationTokens;
+          totalCacheReadTokens = state.totalCacheReadTokens;
+          toolsUsed = state.toolsUsed;
+          textBuffer = state.textBuffer;
+          persistedSteps = state.persistedSteps;
+          persistedReasoning = state.persistedReasoning;
+          initialIter = state.iter;
+          currentApprovalGates = gates;
+          skipNextAnthropicCall = true;
+          /* Flip status back to running + clear pause flags. The
+             conversationState is wiped because the resumed loop
+             will re-emit a new pause (or completion) and we don't
+             want a stale snapshot to look like the live state. */
+          await prisma.atlasAgentRun.update({
+            where: { id: runId },
+            data: {
+              status: "running",
+              pausedForApproval: false,
+              conversationState: undefined,
+            },
+          });
+          send({
+            type: "run_resumed",
+            runId,
+            fromIteration: initialIter,
+            decision: pendingGate.decision,
+          });
+          logger.info("[atlas/agent] resumed from approval", {
+            userId: atlas.userId,
+            runId,
+            fromIteration: initialIter,
+            decision: pendingGate.decision,
+          });
+        } catch (err) {
+          logger.error("[atlas/agent] resume failed", {
+            userId: atlas.userId,
+            runId: parsed.data.resumeFromRunId,
+            error: err instanceof Error ? err.message : String(err),
+          });
+          send({
+            type: "error",
+            message: getSafeErrorMessage(err, "Resume failed"),
+          });
+          controller.close();
+          return;
+        }
+      } else {
+        /* ─── Fresh-start path (existing behaviour) ─── */
+        try {
+          const runRow = await prisma.atlasAgentRun.create({
+            data: {
+              userId: atlas.userId,
+              organizationId: atlas.organizationId,
+              mandateId: parsed.data.mandateId ?? null,
+              goal: goalForLog.slice(0, 2000),
+              status: "running",
+              /* Sprint A1 — persist the lawyer-set budget alongside
+                 the run so the resume-endpoint can read it without
+                 re-trusting any client-supplied number. Null when no
+                 budget chosen. */
+              budgetUsd: parsed.data.budgetUsd ?? null,
+              pausedForBudget: false,
+            },
+            select: { id: true },
+          });
+          runId = runRow.id;
+          send({
+            type: "run_started",
+            goal: goalForLog,
+            runId,
+            budgetUsd: parsed.data.budgetUsd ?? null,
+          });
+        } catch (err) {
+          /* Persistence is best-effort — if the DB write fails,
+             continue with the run anyway (lawyer still gets the
+             result, just no history entry). */
+          logger.warn("[atlas/agent] failed to persist run-row", {
+            userId: atlas.userId,
+            error: err instanceof Error ? err.message : String(err),
+          });
+          send({ type: "run_started", goal: goalForLog });
+        }
+      }
 
       try {
-        let iter = 0;
+        let iter = initialIter;
         while (iter < MAX_TOOL_ITERATIONS) {
+          /* Sprint B1 — Resume-path branch. On the very FIRST loop
+             iteration after a resume, we already have the model's
+             assistant message in `conversation` (it was persisted
+             before the pause). Skip the Anthropic call + cost check
+             this round and jump straight to "execute tools using
+             the recorded decisions". The flag is unset after one
+             use so subsequent iterations are normal. */
+          let resumedFinalMessage: Anthropic.Message | null = null;
+          if (skipNextAnthropicCall) {
+            skipNextAnthropicCall = false;
+            const lastMsg = conversation[conversation.length - 1];
+            if (
+              !lastMsg ||
+              lastMsg.role !== "assistant" ||
+              !Array.isArray(lastMsg.content)
+            ) {
+              throw new Error(
+                "Resume failed: last conversation message is not an assistant tool_use",
+              );
+            }
+            /* Synthesise a minimal Anthropic.Message-shape for the
+               downstream code that expects a `finalMessage`. We only
+               need .content + .stop_reason — usage was already
+               counted at the pre-pause iteration. */
+            resumedFinalMessage = {
+              id: "resumed",
+              type: "message",
+              role: "assistant",
+              model: model,
+              content: lastMsg.content as Anthropic.ContentBlock[],
+              stop_reason: "tool_use",
+              stop_sequence: null,
+              usage: {
+                input_tokens: 0,
+                output_tokens: 0,
+                cache_creation_input_tokens: null,
+                cache_read_input_tokens: null,
+                service_tier: null,
+                cache_creation: null,
+                server_tool_use: null,
+              },
+            } as unknown as Anthropic.Message;
+          }
           /* Sprint A1 — Cost-Budget pre-iteration check.
              ─────────────────────────────────────────────────────────
              Compute the running cost from accumulated tokens (cache-
              aware), then ask the helper whether we'd exceed budget on
              the NEXT iteration. If yes, persist the pause-state and
              close the stream — the lawyer must POST to /resume to
-             continue. */
-          if (parsed.data.budgetUsd && parsed.data.budgetUsd > 0) {
+             continue. Skipped on the resume-path's first iteration
+             since we're not making a new Anthropic call this round. */
+          if (
+            !resumedFinalMessage &&
+            parsed.data.budgetUsd &&
+            parsed.data.budgetUsd > 0
+          ) {
             const currentCostUsd = estimateCostUsd(
               totalInputTokens,
               totalOutputTokens,
@@ -451,111 +684,215 @@ export async function POST(req: NextRequest) {
               break;
             }
           }
-          iter++;
+          /* Sprint B1 — On resume, finalMessage comes from the
+             persisted assistant message (synthesised above). Skip
+             iter++ + the Anthropic call + the cost-progress emit,
+             since those already happened in the pre-pause iteration. */
+          let finalMessage: Anthropic.Message;
+          if (resumedFinalMessage) {
+            finalMessage = resumedFinalMessage;
+          } else {
+            iter++;
 
-          /* Prompt-caching same strategy as chat-engine — sys + tools
-             cached so multi-turn agent runs don't pay full input
-             cost on every iteration. */
-          const cachedTools: Anthropic.Tool[] = ATLAS_TOOLS.map((t, i, arr) =>
-            i === arr.length - 1
-              ? { ...t, cache_control: { type: "ephemeral" } }
-              : t,
-          );
-          const cachedSystem: Anthropic.TextBlockParam[] = [
-            {
-              type: "text",
-              text: systemPrompt,
-              cache_control: { type: "ephemeral" },
-            },
-          ];
+            /* Prompt-caching same strategy as chat-engine — sys + tools
+               cached so multi-turn agent runs don't pay full input
+               cost on every iteration. */
+            const cachedTools: Anthropic.Tool[] = ATLAS_TOOLS.map(
+              (t, i, arr) =>
+                i === arr.length - 1
+                  ? { ...t, cache_control: { type: "ephemeral" } }
+                  : t,
+            );
+            const cachedSystem: Anthropic.TextBlockParam[] = [
+              {
+                type: "text",
+                text: systemPrompt,
+                cache_control: { type: "ephemeral" },
+              },
+            ];
 
-          const turnStream = anthropic.messages.stream({
-            model,
-            /* Extended Thinking budget is ADDITIONAL output capacity
-               on top of MAX_TOKENS — Anthropic counts thinking +
-               response separately. Agent-mode explicitly enables
-               it so the lawyer sees WHY each tool was chosen, not
-               just THAT it was. */
-            max_tokens: MAX_TOKENS + THINKING_BUDGET,
-            temperature: TEMPERATURE,
-            system: cachedSystem,
-            messages: conversation,
-            tools: cachedTools,
-            thinking: {
-              type: "enabled",
-              budget_tokens: THINKING_BUDGET,
-            },
-          });
+            const turnStream = anthropic.messages.stream({
+              model,
+              /* Extended Thinking budget is ADDITIONAL output capacity
+                 on top of MAX_TOKENS — Anthropic counts thinking +
+                 response separately. Agent-mode explicitly enables
+                 it so the lawyer sees WHY each tool was chosen, not
+                 just THAT it was. */
+              max_tokens: MAX_TOKENS + THINKING_BUDGET,
+              temperature: TEMPERATURE,
+              system: cachedSystem,
+              messages: conversation,
+              tools: cachedTools,
+              thinking: {
+                type: "enabled",
+                budget_tokens: THINKING_BUDGET,
+              },
+            });
 
-          turnStream.on("text", (delta) => {
-            textBuffer += delta;
-            send({ type: "text", delta, iteration: iter });
-          });
+            turnStream.on("text", (delta) => {
+              textBuffer += delta;
+              send({ type: "text", delta, iteration: iter });
+            });
 
-          /* Listen for thinking deltas — the SDK's high-level `text`
-             event only fires for visible-text content. Thinking
-             deltas come through the raw streamEvent. We tag them
-             with the iteration so the UI can group thinking with
-             the step it explains. */
-          turnStream.on("streamEvent", (evt) => {
-            if (
-              evt.type === "content_block_delta" &&
-              evt.delta &&
-              typeof evt.delta === "object" &&
-              "type" in evt.delta &&
-              evt.delta.type === "thinking_delta"
-            ) {
-              const tDelta = (evt.delta as { thinking?: string }).thinking;
-              if (tDelta) {
-                /* Append to the persisted reasoning bucket per
-                   iteration (Sprint #3 history-replay). */
-                persistedReasoning[iter] =
-                  (persistedReasoning[iter] ?? "") + tDelta;
-                send({
-                  type: "thinking_delta",
-                  delta: tDelta,
-                  iteration: iter,
-                });
+            /* Listen for thinking deltas — the SDK's high-level `text`
+               event only fires for visible-text content. Thinking
+               deltas come through the raw streamEvent. We tag them
+               with the iteration so the UI can group thinking with
+               the step it explains. */
+            turnStream.on("streamEvent", (evt) => {
+              if (
+                evt.type === "content_block_delta" &&
+                evt.delta &&
+                typeof evt.delta === "object" &&
+                "type" in evt.delta &&
+                evt.delta.type === "thinking_delta"
+              ) {
+                const tDelta = (evt.delta as { thinking?: string }).thinking;
+                if (tDelta) {
+                  /* Append to the persisted reasoning bucket per
+                     iteration (Sprint #3 history-replay). */
+                  persistedReasoning[iter] =
+                    (persistedReasoning[iter] ?? "") + tDelta;
+                  send({
+                    type: "thinking_delta",
+                    delta: tDelta,
+                    iteration: iter,
+                  });
+                }
               }
-            }
-          });
+            });
 
-          const finalMessage = await turnStream.finalMessage();
-          totalInputTokens += finalMessage.usage.input_tokens;
-          totalOutputTokens += finalMessage.usage.output_tokens;
-          /* Sprint A1 — capture cache-tier tokens for accurate
-             cost-projection. Older Anthropic responses may not
-             include these fields (will be undefined → 0). */
-          totalCacheCreationTokens +=
-            finalMessage.usage.cache_creation_input_tokens ?? 0;
-          totalCacheReadTokens +=
-            finalMessage.usage.cache_read_input_tokens ?? 0;
+            finalMessage = await turnStream.finalMessage();
+            totalInputTokens += finalMessage.usage.input_tokens;
+            totalOutputTokens += finalMessage.usage.output_tokens;
+            /* Sprint A1 — capture cache-tier tokens for accurate
+               cost-projection. Older Anthropic responses may not
+               include these fields (will be undefined → 0). */
+            totalCacheCreationTokens +=
+              finalMessage.usage.cache_creation_input_tokens ?? 0;
+            totalCacheReadTokens +=
+              finalMessage.usage.cache_read_input_tokens ?? 0;
 
-          /* Sprint A1 — emit a per-iteration cost-progress event so
-             the UI can render the live counter (`$0.42 / $5.00`)
-             without waiting for run-completion. */
-          const liveCostUsd = estimateCostUsd(
-            totalInputTokens,
-            totalOutputTokens,
-            totalCacheCreationTokens,
-            totalCacheReadTokens,
-          );
-          send({
-            type: "cost_progress",
-            iteration: iter,
-            currentCost: liveCostUsd,
-            budget: parsed.data.budgetUsd ?? null,
-            inputTokens: totalInputTokens,
-            outputTokens: totalOutputTokens,
-          });
+            /* Sprint A1 — emit a per-iteration cost-progress event so
+               the UI can render the live counter (`$0.42 / $5.00`)
+               without waiting for run-completion. */
+            const liveCostUsd = estimateCostUsd(
+              totalInputTokens,
+              totalOutputTokens,
+              totalCacheCreationTokens,
+              totalCacheReadTokens,
+            );
+            send({
+              type: "cost_progress",
+              iteration: iter,
+              currentCost: liveCostUsd,
+              budget: parsed.data.budgetUsd ?? null,
+              inputTokens: totalInputTokens,
+              outputTokens: totalOutputTokens,
+            });
 
-          conversation.push({
-            role: "assistant",
-            content: finalMessage.content,
-          });
+            conversation.push({
+              role: "assistant",
+              content: finalMessage.content,
+            });
+          }
 
           if (finalMessage.stop_reason !== "tool_use") {
             /* Final turn — agent is done. */
+            break;
+          }
+
+          /* ╔═══════════════════════════════════════════════════════════╗
+             ║ Sprint B1 — Approval-pause check                          ║
+             ║ Scan the model's tool_use blocks for any that require     ║
+             ║ approval AND don't have a recorded decision yet.          ║
+             ║ Pause on FIRST undecided one — persist snapshot + emit    ║
+             ║ approval_required SSE + break. The /approve endpoint      ║
+             ║ records the decision; the client then re-POSTs to this    ║
+             ║ route with `resumeFromRunId` to continue.                 ║
+             ╚═══════════════════════════════════════════════════════════╝ */
+          const toolUseBlocks = finalMessage.content.filter(
+            (b): b is Extract<Anthropic.ContentBlock, { type: "tool_use" }> =>
+              b.type === "tool_use",
+          );
+          const firstUndecided = toolUseBlocks.find(
+            (b) =>
+              requiresApproval(b.name) &&
+              !currentApprovalGates.some(
+                (g) => g.toolUseId === b.id && g.decision !== null,
+              ),
+          );
+          if (firstUndecided) {
+            const pendingGate: ApprovalGate = {
+              toolUseId: firstUndecided.id,
+              toolName: firstUndecided.name,
+              originalInput: firstUndecided.input as Record<string, unknown>,
+              decision: null,
+              rationale: approvalRationale(firstUndecided.name),
+              requestedAt: new Date().toISOString(),
+              decidedAt: null,
+            };
+            currentApprovalGates = [...currentApprovalGates, pendingGate];
+            pausedForApproval = true;
+            if (runId) {
+              try {
+                const liveCostUsd = estimateCostUsd(
+                  totalInputTokens,
+                  totalOutputTokens,
+                  totalCacheCreationTokens,
+                  totalCacheReadTokens,
+                );
+                await prisma.atlasAgentRun.update({
+                  where: { id: runId },
+                  data: {
+                    status: "awaiting_approval",
+                    pausedForApproval: true,
+                    approvalGates: currentApprovalGates as unknown as object,
+                    /* Snapshot everything needed for the resume-path
+                       to pick the loop back up. */
+                    conversationState: {
+                      conversation,
+                      totalInputTokens,
+                      totalOutputTokens,
+                      totalCacheCreationTokens,
+                      totalCacheReadTokens,
+                      toolsUsed,
+                      textBuffer,
+                      persistedSteps,
+                      persistedReasoning,
+                      iter,
+                      pendingToolUseId: firstUndecided.id,
+                    } as unknown as object,
+                    iterations: iter,
+                    steps: persistedSteps as unknown as object,
+                    reasoning: persistedReasoning as unknown as object,
+                    inputTokens: totalInputTokens,
+                    outputTokens: totalOutputTokens,
+                    costUsd: liveCostUsd,
+                  },
+                });
+              } catch (err) {
+                logger.warn("[atlas/agent] failed to persist approval-pause", {
+                  runId,
+                  error: err instanceof Error ? err.message : String(err),
+                });
+              }
+            }
+            send({
+              type: "approval_required",
+              runId,
+              toolUseId: firstUndecided.id,
+              toolName: firstUndecided.name,
+              input: firstUndecided.input,
+              rationale: pendingGate.rationale,
+              iteration: iter,
+            });
+            logger.info("[atlas/agent] paused for approval", {
+              userId: atlas.userId,
+              runId,
+              toolUseId: firstUndecided.id,
+              toolName: firstUndecided.name,
+            });
             break;
           }
 
@@ -563,51 +900,86 @@ export async function POST(req: NextRequest) {
           const toolResults: Anthropic.ToolResultBlockParam[] = [];
           for (const block of finalMessage.content) {
             if (block.type !== "tool_use") continue;
+
+            /* Sprint B1 — Apply recorded approval-decision if any.
+               At this point we know firstUndecided was null, so any
+               dangerous tool in this batch either:
+               (a) has a decision in currentApprovalGates, OR
+               (b) is non-dangerous (no gate, runs normally).
+               Decision === "rejected"  → skip execution, emit
+                  USER_CANCELLED tool_result so the model knows.
+               Decision === "modified" → swap to modifiedInput.
+               Decision === "approved" or no gate → use block.input. */
+            const gate = currentApprovalGates.find(
+              (g) => g.toolUseId === block.id,
+            );
+            const isRejected = gate?.decision === "rejected";
+            const effectiveInput =
+              gate?.decision === "modified" && gate.modifiedInput
+                ? gate.modifiedInput
+                : (block.input as Record<string, unknown>);
+
             /* Sprint #3 — push the step into the persistence buffer
                on start; we'll patch in durationMs/isError/summary
-               when step_complete fires. */
+               when step_complete fires. Effective input is captured
+               so the history view shows what actually ran. */
             persistedSteps.push({
               iteration: iter,
               toolId: block.id,
               toolName: block.name,
-              input: block.input as Record<string, unknown>,
+              input: effectiveInput,
             });
             send({
               type: "step_start",
               iteration: iter,
               toolId: block.id,
               toolName: block.name,
-              input: block.input,
+              input: effectiveInput,
+              /* Surface the approval-status so the UI can tag the
+                 step-card (approved / modified / rejected badge). */
+              approvalDecision: gate?.decision ?? null,
             });
             const t0 = Date.now();
             let resultContent = "";
             let isError = false;
-            try {
-              if (!isAtlasToolName(block.name)) {
-                throw new Error(`Unknown tool: ${block.name}`);
-              }
-              const out = await executeAtlasTool({
-                name: block.name,
-                input: block.input as Record<string, unknown>,
-                callerUserId: atlas.userId,
-                callerOrgId: atlas.organizationId,
-                /* AUDIT-FIX H17: agent-mode konnte search_mandate_vault
-                   nie nutzen weil mandateId nie an den executor gereicht
-                   wurde. Jetzt parallel zum chat-engine call-pattern. */
-                mandateId: parsed.data.mandateId ?? null,
-              });
-              resultContent = out.content;
-              isError = out.isError;
-              if (!isError) toolsUsed.push(block.name);
-            } catch (err) {
-              const msg = err instanceof Error ? err.message : String(err);
-              resultContent = JSON.stringify({ error: msg });
+            if (isRejected) {
+              /* Sprint B1 — tell the model the lawyer cancelled this
+                 step. Marked is_error: true so Claude treats it as a
+                 hard fail and re-plans (rather than silently using
+                 the rejection-text as a positive result). */
+              resultContent =
+                "USER_CANCELLED: Der Anwalt hat diesen Schritt nicht freigegeben. Lass diesen Schritt aus und mache mit dem nächsten Schritt im Plan weiter — passe deinen Plan ggf. an.";
               isError = true;
+            } else {
+              try {
+                if (!isAtlasToolName(block.name)) {
+                  throw new Error(`Unknown tool: ${block.name}`);
+                }
+                const out = await executeAtlasTool({
+                  name: block.name,
+                  input: effectiveInput,
+                  callerUserId: atlas.userId,
+                  callerOrgId: atlas.organizationId,
+                  /* AUDIT-FIX H17: agent-mode konnte search_mandate_vault
+                     nie nutzen weil mandateId nie an den executor gereicht
+                     wurde. Jetzt parallel zum chat-engine call-pattern. */
+                  mandateId: parsed.data.mandateId ?? null,
+                });
+                resultContent = out.content;
+                isError = out.isError;
+                if (!isError) toolsUsed.push(block.name);
+              } catch (err) {
+                const msg = err instanceof Error ? err.message : String(err);
+                resultContent = JSON.stringify({ error: msg });
+                isError = true;
+              }
             }
             const durationMs = Date.now() - t0;
-            const summary = isError
-              ? `Fehler: ${resultContent.slice(0, 200)}`
-              : `${resultContent.length} chars`;
+            const summary = isRejected
+              ? "Vom Anwalt abgelehnt"
+              : isError
+                ? `Fehler: ${resultContent.slice(0, 200)}`
+                : `${resultContent.length} chars`;
             /* Patch the in-flight persistedSteps record with the
                completion metadata. */
             const stepRecord = persistedSteps.find(
@@ -626,6 +998,7 @@ export async function POST(req: NextRequest) {
               durationMs,
               isError,
               summary,
+              approvalDecision: gate?.decision ?? null,
             });
             toolResults.push({
               type: "tool_result",
@@ -640,12 +1013,13 @@ export async function POST(req: NextRequest) {
           });
         }
 
-        /* Sprint A1 — when we paused for budget, skip the rest of
-           the post-loop pipeline. Citations / artifacts / completion-
-           write are reserved for terminal runs. The pause-state was
-           already persisted + streamed above; just close the stream
-           below in the finally-block. */
-        if (pausedForBudget) {
+        /* Sprint A1 / B1 — when we paused for either budget or
+           approval, skip the rest of the post-loop pipeline.
+           Citations / artifacts / completion-write are reserved
+           for terminal runs. The pause-state was already persisted +
+           streamed above; just close the stream below in the
+           finally-block. */
+        if (pausedForBudget || pausedForApproval) {
           return;
         }
 
@@ -822,6 +1196,25 @@ export async function POST(req: NextRequest) {
                 completedAt: new Date(),
               },
             });
+            /* Sprint B2 — Cross-Run-Memory fire-and-forget. Kicked
+               off RIGHT AFTER the run is persisted as `complete` so
+               the summariser's findMany({status:"complete"}) sees
+               this fresh run. Voided + caught — must not block the
+               SSE-close. Vercel keeps the function alive until
+               maxDuration so the background promise runs to
+               completion under normal conditions. */
+            if (parsed.data.mandateId) {
+              void updateMandateMemory(
+                parsed.data.mandateId,
+                atlas.organizationId,
+              ).catch((err) => {
+                logger.warn("[atlas/agent] memory update failed", {
+                  mandateId: parsed.data.mandateId,
+                  runId,
+                  error: err instanceof Error ? err.message : String(err),
+                });
+              });
+            }
           } catch (err) {
             logger.warn("[atlas/agent] failed to persist run-completion", {
               runId,

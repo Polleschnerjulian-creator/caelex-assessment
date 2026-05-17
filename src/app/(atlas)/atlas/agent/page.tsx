@@ -98,6 +98,21 @@ interface BudgetPauseInfo {
   iterationsCompleted: number;
 }
 
+/** Sprint B1 — approval_required event payload. Surfaces an inline
+ *  card asking the lawyer to approve / edit / reject a single
+ *  dangerous tool-use (create_*, send_*, schedule_*, finalize_*)
+ *  before it runs. The lawyer's choice is POSTed to
+ *  /api/atlas/agent/runs/[id]/approve; resume is then triggered by
+ *  re-POSTing /api/atlas/agent with `resumeFromRunId`. */
+interface ApprovalPauseInfo {
+  runId: string;
+  toolUseId: string;
+  toolName: string;
+  input: Record<string, unknown>;
+  rationale: string;
+  iteration: number;
+}
+
 /** Per-citation verification record from the server-side
  *  citation-extractor. Same shape as ExtractedCitation but with
  *  optional `index` + `occurrences` for inline rendering. */
@@ -263,6 +278,16 @@ export default function AgentPage() {
      UI renders a modal-like confirmation card; the lawyer's choice
      drives a POST to /resume + an optional re-POST to /api/atlas/agent. */
   const [budgetPause, setBudgetPause] = useState<BudgetPauseInfo | null>(null);
+  /* Sprint B1 — parallel pause-state for tool-use approvals. When set,
+     the ApprovalCard renders inline above the live run-view. Cleared
+     when the lawyer's decision is recorded + resume kicks off. */
+  const [approvalPause, setApprovalPause] = useState<ApprovalPauseInfo | null>(
+    null,
+  );
+  /* Sprint B1 — submitting flag for the approve-endpoint POST.
+     Prevents double-clicks on the approval-card buttons while the
+     decision is being recorded + resume is firing. */
+  const [approvalSubmitting, setApprovalSubmitting] = useState(false);
   /* runId captured from run_started — needed for the resume-POST when
      the budget-pause modal triggers. */
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
@@ -402,23 +427,37 @@ export default function AgentPage() {
     return n;
   })();
 
-  const handleRun = async () => {
-    if (!goal.trim() || running) return;
+  const handleRun = async (resumeFromRunId?: string) => {
+    if (running) return;
+    /* Sprint B1 — on resume, the goal is empty if the user already
+       cleared it, but we still need ≥10 chars to pass server-side
+       zod validation. Re-send the original goal verbatim (the server
+       ignores it for resumes — it's restored from conversationState
+       — but the zod schema requires it). For fresh runs, validate
+       goal locally before hitting the network. */
+    if (!resumeFromRunId && !goal.trim()) return;
     setRunning(true);
-    setSteps([]);
-    setReasoning(new Map());
-    setFinalText("");
-    setVerification(null);
-    setUsage(null);
+    /* On resume, KEEP prior steps/reasoning/etc visible so the lawyer
+       sees the full timeline. Only reset on fresh runs. */
+    if (!resumeFromRunId) {
+      setSteps([]);
+      setReasoning(new Map());
+      setFinalText("");
+      setVerification(null);
+      setUsage(null);
+      setSavedToVault(false);
+      setSavedDeadlines(new Set());
+      setBudgetPause(null);
+      setCostProgress(null);
+      setActiveRunId(null);
+      /* Sprint A2 — clear the per-run verification-findings so a stale
+         set from the previous run doesn't render under the new one. */
+      setFindings([]);
+    }
+    /* Always clear error + the approval-pause (we're either resuming
+       past it or starting fresh). */
     setError(null);
-    setSavedToVault(false);
-    setSavedDeadlines(new Set());
-    setBudgetPause(null);
-    setCostProgress(null);
-    setActiveRunId(null);
-    /* Sprint A2 — clear the per-run verification-findings so a stale
-       set from the previous run doesn't render under the new one. */
-    setFindings([]);
+    setApprovalPause(null);
     try {
       /* Build the effective goal: attached files prepended as fenced
          [Anhang]-Blocks (same convention the chat-composer uses), so
@@ -437,11 +476,18 @@ export default function AgentPage() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          goal: effectiveGoal,
+          /* Goal stays in the payload even on resume — zod requires
+             min:10. Server ignores it when resumeFromRunId is set
+             (state is restored from conversationState). */
+          goal: effectiveGoal || "RESUME_PLACEHOLDER_GOAL",
           mandateId: mandateId || undefined,
           /* Sprint A1 — pass the parsed budget through. Server caps
              at $100 again so a tampered client can't bypass. */
           budgetUsd: parsedBudget,
+          /* Sprint B1 — when set, server takes the resume-path:
+             reloads conversationState + applies the recorded approval
+             decision + continues the loop. */
+          resumeFromRunId: resumeFromRunId ?? undefined,
         }),
       });
       if (!res.ok || !res.body) {
@@ -492,6 +538,28 @@ export default function AgentPage() {
                   remainingSteps: evt.remainingSteps as number,
                   iterationsCompleted: evt.iterationsCompleted as number,
                 });
+                break;
+              case "approval_required":
+                /* Sprint B1 — server paused before a dangerous tool.
+                   Render the ApprovalCard inline. The lawyer's
+                   decision fires handleApprovalDecision → POST
+                   /approve → re-POST main route with resumeFromRunId. */
+                setApprovalPause({
+                  runId: (evt.runId as string | null) ?? activeRunId ?? "",
+                  toolUseId: evt.toolUseId as string,
+                  toolName: evt.toolName as string,
+                  input: (evt.input as Record<string, unknown>) ?? {},
+                  rationale: evt.rationale as string,
+                  iteration: evt.iteration as number,
+                });
+                break;
+              case "run_resumed":
+                /* Sprint B1 — server confirmed resume kicked off.
+                   Clear the approval-pause UI state so the timeline
+                   re-renders without the card. The continuation
+                   stream continues to emit step_start / step_complete
+                   for the resumed iteration's tools. */
+                setApprovalPause(null);
                 break;
               case "text":
                 textBuffer += evt.delta as string;
@@ -657,6 +725,58 @@ export default function AgentPage() {
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
       setRunning(false);
+    }
+  };
+
+  /* Sprint B1 — Approval-decision handler. Called from the inline
+     ApprovalCard. POSTs the lawyer's decision to /approve; on success
+     immediately re-POSTs /api/atlas/agent with `resumeFromRunId` set
+     so the agent loop picks up where it paused.
+     Decision shapes:
+       approved  → no extra payload; tool runs with original input
+       rejected  → no extra payload; tool is skipped (USER_CANCELLED)
+       modified  → modifiedInput required; tool runs with lawyer-edited input
+     The Re-POST uses the same handleRun() call as fresh starts but
+     with the resume param, so all existing SSE handlers (cost, steps,
+     verification) continue to fire normally. */
+  const handleApprovalDecision = async (
+    decision: "approved" | "rejected" | "modified",
+    modifiedInput?: Record<string, unknown>,
+  ) => {
+    if (!approvalPause) return;
+    if (approvalSubmitting) return;
+    setApprovalSubmitting(true);
+    try {
+      const res = await fetch(
+        `/api/atlas/agent/runs/${approvalPause.runId}/approve`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            toolUseId: approvalPause.toolUseId,
+            decision,
+            modifiedInput: decision === "modified" ? modifiedInput : undefined,
+          }),
+        },
+      );
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setError(body.error || `Freigabe fehlgeschlagen (${res.status})`);
+        setApprovalSubmitting(false);
+        return;
+      }
+      /* Decision recorded — kick off the resume. Note: handleRun
+         clears approvalPause + running + activates the new stream;
+         we don't need to do that here. */
+      const runIdToResume = approvalPause.runId;
+      setApprovalSubmitting(false);
+      /* Microtask delay matches the pattern in handleResumeDecision. */
+      setTimeout(() => {
+        void handleRun(runIdToResume);
+      }, 0);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setApprovalSubmitting(false);
     }
   };
 
@@ -898,7 +1018,7 @@ export default function AgentPage() {
               </div>
               <button
                 type="button"
-                onClick={handleRun}
+                onClick={() => void handleRun()}
                 disabled={goal.trim().length < 10}
                 className="inline-flex items-center gap-1.5 rounded-md bg-slate-900 px-4 py-2 text-[12.5px] font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-30 dark:bg-emerald-500 dark:hover:bg-emerald-600"
               >
@@ -1036,6 +1156,18 @@ export default function AgentPage() {
             <BudgetPauseBanner
               info={budgetPause}
               onDecision={handleResumeDecision}
+            />
+          )}
+
+          {/* Sprint B1 — Approval-pause card. Renders inline above the
+              step-list when the server emitted approval_required. The
+              lawyer's decision fires handleApprovalDecision which
+              records the choice + re-POSTs to resume the agent loop. */}
+          {approvalPause && (
+            <ApprovalCard
+              info={approvalPause}
+              submitting={approvalSubmitting}
+              onDecision={handleApprovalDecision}
             />
           )}
 
@@ -1944,6 +2076,176 @@ function BudgetPauseBanner({
           >
             zurück
           </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── ApprovalCard ─────────────────────────────────────────────────────
+ *
+ * Sprint B1 — Interactive pause for dangerous tool execution. Renders
+ * inline above the running step-list when the server emits
+ * `approval_required`. Lawyer chooses one of three actions:
+ *   • "Genehmigen" → POST /approve with decision="approved"; tool runs
+ *                    with original input
+ *   • "Bearbeiten" → expand inline JSON-textarea; lawyer edits the input;
+ *                    "Bestätigen" sends decision="modified" + modifiedInput
+ *   • "Ablehnen"   → POST /approve with decision="rejected"; tool is
+ *                    skipped, model is told "USER_CANCELLED" + asked to
+ *                    continue with the next step in the plan
+ *
+ * All three paths chain into handleApprovalDecision → re-POST main
+ * route with resumeFromRunId so the agent loop continues without
+ * losing accumulated conversation state.
+ */
+function ApprovalCard({
+  info,
+  submitting,
+  onDecision,
+}: {
+  info: ApprovalPauseInfo;
+  submitting: boolean;
+  onDecision: (
+    decision: "approved" | "rejected" | "modified",
+    modifiedInput?: Record<string, unknown>,
+  ) => void;
+}) {
+  const [mode, setMode] = useState<"buttons" | "edit">("buttons");
+  /* Pretty-print the original input as JSON so the lawyer sees what
+     Atlas wants to do. Falls back to "{}" for null / non-object. */
+  const initialJson = (() => {
+    try {
+      return JSON.stringify(info.input ?? {}, null, 2);
+    } catch {
+      return "{}";
+    }
+  })();
+  const [editJson, setEditJson] = useState<string>(initialJson);
+  const [parseError, setParseError] = useState<string | null>(null);
+
+  const handleConfirmEdit = () => {
+    setParseError(null);
+    let parsed: Record<string, unknown>;
+    try {
+      const raw = JSON.parse(editJson);
+      if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+        throw new Error("JSON muss ein Objekt sein");
+      }
+      parsed = raw as Record<string, unknown>;
+    } catch (e) {
+      setParseError(e instanceof Error ? e.message : "Ungültiges JSON");
+      return;
+    }
+    onDecision("modified", parsed);
+  };
+
+  return (
+    <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 dark:border-red-500/30 dark:bg-red-500/10">
+      <div className="mb-2 flex items-center gap-2 text-[12px] font-medium text-red-800 dark:text-red-200">
+        <ShieldAlert size={14} />
+        Atlas pausiert — Freigabe erforderlich
+      </div>
+      <div className="mb-3 space-y-1 text-[12.5px] leading-relaxed text-red-900 dark:text-red-100">
+        <div>
+          Tool:{" "}
+          <span className="font-mono text-[12px] text-red-700 dark:text-red-200/90">
+            {info.toolName}
+          </span>{" "}
+          <span className="text-red-700/80 dark:text-red-200/70">
+            (Iteration {info.iteration})
+          </span>
+        </div>
+        <div className="text-red-700 dark:text-red-200/80">
+          {info.rationale}
+        </div>
+      </div>
+
+      {mode === "buttons" ? (
+        <>
+          {/* Input-preview, scrollable when long. */}
+          <pre className="mb-3 max-h-40 overflow-auto rounded-md border border-red-200 bg-white/70 p-2 font-mono text-[11px] leading-relaxed text-slate-800 dark:border-red-500/20 dark:bg-black/20 dark:text-slate-200">
+            {initialJson}
+          </pre>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onDecision("approved")}
+              disabled={submitting}
+              className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-emerald-700 disabled:opacity-40"
+            >
+              <Check size={11} />
+              Genehmigen
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("edit")}
+              disabled={submitting}
+              className="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-white px-3 py-1.5 text-[12px] text-amber-800 transition-colors hover:bg-amber-100 disabled:opacity-40 dark:border-amber-500/30 dark:bg-transparent dark:text-amber-100 dark:hover:bg-amber-500/20"
+            >
+              Bearbeiten …
+            </button>
+            <button
+              type="button"
+              onClick={() => onDecision("rejected")}
+              disabled={submitting}
+              className="inline-flex items-center gap-1.5 rounded-md border border-red-300 bg-white px-3 py-1.5 text-[12px] text-red-700 transition-colors hover:bg-red-100 disabled:opacity-40 dark:border-red-500/30 dark:bg-transparent dark:text-red-200 dark:hover:bg-red-500/20"
+            >
+              <X size={11} />
+              Ablehnen
+            </button>
+            {submitting && (
+              <span className="inline-flex items-center gap-1 text-[11px] text-red-700 dark:text-red-200/80">
+                <Loader2 size={11} className="animate-spin" />
+                Sende …
+              </span>
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="space-y-2">
+          <label className="text-[11.5px] text-red-800 dark:text-red-200">
+            Tool-Input (JSON):
+          </label>
+          <textarea
+            value={editJson}
+            onChange={(e) => {
+              setEditJson(e.target.value);
+              if (parseError) setParseError(null);
+            }}
+            rows={Math.min(12, Math.max(4, editJson.split("\n").length))}
+            className="w-full rounded-md border border-red-200 bg-white p-2 font-mono text-[11.5px] leading-relaxed text-slate-900 outline-none dark:border-red-500/20 dark:bg-black/30 dark:text-slate-100"
+            autoFocus
+            spellCheck={false}
+          />
+          {parseError && (
+            <div className="text-[11px] text-red-700 dark:text-red-300">
+              {parseError}
+            </div>
+          )}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleConfirmEdit}
+              disabled={submitting}
+              className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-emerald-700 disabled:opacity-40"
+            >
+              <Check size={11} />
+              Bestätigen
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMode("buttons");
+                setEditJson(initialJson);
+                setParseError(null);
+              }}
+              disabled={submitting}
+              className="text-[11px] text-red-700 underline-offset-4 hover:underline disabled:opacity-40 dark:text-red-200"
+            >
+              zurück
+            </button>
+          </div>
         </div>
       )}
     </div>
