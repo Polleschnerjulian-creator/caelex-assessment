@@ -145,12 +145,18 @@ export function MandateDeadlines({ mandateId, disabled }: Props) {
     }
   };
 
+  /* AUDIT-FIX M26 (2026-05-17): track in-flight toggle so double-clicks
+     can't queue conflicting PATCHes that flip-flop the final state.
+     The button reads this set to disable itself during the request. */
+  const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
   const toggleStatus = async (d: DeadlineRecord) => {
+    if (togglingIds.has(d.id)) return;
     const nextStatus = d.status === "open" ? "done" : "open";
     /* Optimistic update — flip locally first, server-confirms. */
     setDeadlines((list) =>
       list.map((x) => (x.id === d.id ? { ...x, status: nextStatus } : x)),
     );
+    setTogglingIds((prev) => new Set(prev).add(d.id));
     try {
       await fetch(`/api/atlas/mandate/${mandateId}/deadlines/${d.id}`, {
         method: "PATCH",
@@ -159,6 +165,12 @@ export function MandateDeadlines({ mandateId, disabled }: Props) {
       });
     } catch {
       void reload();
+    } finally {
+      setTogglingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(d.id);
+        return next;
+      });
     }
   };
 
@@ -187,8 +199,17 @@ export function MandateDeadlines({ mandateId, disabled }: Props) {
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700/60 dark:bg-slate-900/40">
+      {/* AUDIT-FIX M11 (2026-05-17): align with sibling sections
+          (MandateFilesList, MandateTimeEntries) — use Loader2 spinner
+          instead of plain text. */}
       {loading && rows.length === 0 ? (
-        <p className="text-xs text-slate-500">Lädt Fristen…</p>
+        <p className="inline-flex items-center gap-2 text-xs text-slate-500">
+          <Loader2
+            size={11}
+            className="animate-spin motion-reduce:animate-none"
+          />
+          Lädt Fristen…
+        </p>
       ) : rows.length === 0 ? (
         <p className="text-xs text-slate-500">
           Noch keine Fristen für dieses Mandat.
@@ -200,9 +221,10 @@ export function MandateDeadlines({ mandateId, disabled }: Props) {
               <button
                 type="button"
                 onClick={() => toggleStatus(d)}
+                disabled={togglingIds.has(d.id)}
                 title={d.status === "done" ? "Wieder öffnen" : "Erledigt"}
                 aria-label={d.status === "done" ? "Wieder öffnen" : "Erledigt"}
-                className="mt-0.5 shrink-0"
+                className="mt-0.5 shrink-0 disabled:opacity-50"
               >
                 {d.status === "done" ? (
                   <CheckCircle2

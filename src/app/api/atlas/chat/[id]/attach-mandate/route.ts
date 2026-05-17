@@ -29,8 +29,11 @@ import { maskId } from "@/lib/atlas/log-masking";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+/* AUDIT-FIX M05 (2026-05-17): tighten mandateId to .cuid() like every
+   other /api/atlas/* route that accepts mandate IDs. Previously
+   .min(1).max(40) let non-cuid strings hit the DB and waste a query. */
 const Body = z.object({
-  mandateId: z.string().min(1).max(40).nullable(),
+  mandateId: z.string().cuid().nullable(),
 });
 
 /* AUDIT-FIX L3: Reject malformed chatIds at the edge — matches the

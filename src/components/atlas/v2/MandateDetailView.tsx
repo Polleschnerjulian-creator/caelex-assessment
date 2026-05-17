@@ -92,8 +92,13 @@ export function MandateDetailView({ mandateId }: Props) {
         cache: "no-store",
       });
       if (!res.ok) {
+        /* AUDIT-FIX M13 (2026-05-17): friendly German message instead
+           of raw `HTTP ${status}` code surfaced to end users. */
         if (res.status === 404) setError("Mandat nicht gefunden");
-        else setError(`HTTP ${res.status}`);
+        else if (res.status === 403) setError("Kein Zugriff auf dieses Mandat");
+        else if (res.status >= 500)
+          setError("Server-Fehler — bitte später erneut versuchen");
+        else setError(`Fehler beim Laden (HTTP ${res.status})`);
         return;
       }
       const data = (await res.json()) as { mandate: MandateDetail };

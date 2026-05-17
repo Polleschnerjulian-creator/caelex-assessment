@@ -220,8 +220,11 @@ function FileIcon({ mimeType }: { mimeType: string }) {
       />
     );
   if (mimeType === "application/pdf")
+    /* AUDIT-FIX M23 (2026-05-17): was ExternalLink which signals
+       "opens new tab" — wrong semantic for a file. Now FileText
+       (matching the other text-document icons) in PDF-red. */
     return (
-      <ExternalLink
+      <FileText
         size={14}
         className="shrink-0 text-rose-500 dark:text-rose-400/70"
       />

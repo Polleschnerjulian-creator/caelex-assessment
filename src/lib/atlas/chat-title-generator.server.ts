@@ -132,14 +132,20 @@ export async function generateChatTitle(
 
 /**
  * Convenience: generate AND persist the new title on AtlasChat.
- * Fire-and-forget friendly — returns false on any failure.
+ * Fire-and-forget friendly — returns the new title on success
+ * (or null on any failure). Callers that don't care about the
+ * return value can ignore it.
+ *
+ * AUDIT-FIX M29 (2026-05-17): now returns the title string so the
+ * /api/atlas/chat/[id]/regenerate-title route can skip its
+ * post-update findFirst round-trip.
  */
 export async function generateAndPersistChatTitle(
   chatId: string,
   organizationId: string,
-): Promise<boolean> {
+): Promise<string | null> {
   const title = await generateChatTitle(chatId, organizationId);
-  if (!title) return false;
+  if (!title) return null;
   try {
     await prisma.atlasChat.update({
       where: { id: chatId },
@@ -149,12 +155,12 @@ export async function generateAndPersistChatTitle(
       chatId,
       titleLength: title.length,
     });
-    return true;
+    return title;
   } catch (err) {
     logger.warn("[atlas/chat-title] persist failed", {
       chatId,
       error: err instanceof Error ? err.message : String(err),
     });
-    return false;
+    return null;
   }
 }

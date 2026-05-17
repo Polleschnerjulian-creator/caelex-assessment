@@ -55,22 +55,18 @@ export async function POST(
     return NextResponse.json({ error: "Chat not found" }, { status: 404 });
   }
 
-  const ok = await generateAndPersistChatTitle(id, atlas.organizationId);
-  if (!ok) {
+  /* AUDIT-FIX M29 (2026-05-17): generateAndPersistChatTitle now
+     returns the title directly — saved a Prisma round-trip. */
+  const title = await generateAndPersistChatTitle(id, atlas.organizationId);
+  if (title === null) {
     return NextResponse.json(
       { error: "Title generation failed" },
       { status: 500 },
     );
   }
-
-  /* Read back the new title. */
-  const updated = await prisma.atlasChat.findFirst({
-    where: { id },
-    select: { title: true },
-  });
   logger.info("[atlas/chat/regenerate-title] done", {
     userId: atlas.userId,
     chatId: id,
   });
-  return NextResponse.json({ ok: true, title: updated?.title ?? null });
+  return NextResponse.json({ ok: true, title });
 }
