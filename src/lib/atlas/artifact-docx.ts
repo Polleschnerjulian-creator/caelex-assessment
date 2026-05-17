@@ -47,87 +47,18 @@ const KIND_LABELS: Record<ArtifactKind, string> = {
   summary: "Zusammenfassung",
 };
 
-/* ── Segment parsing (mirror of artifact-pdf.ts) ───────────────────── */
+/* AUDIT-FIX Q06 (2026-05-17): GFM-pipe-table parser + stripInlineMd
+   moved to shared @/lib/atlas/markdown-segments (was duplicated
+   verbatim in artifact-pdf.ts). */
+import {
+  parseSegments,
+  stripInlineMd,
+  type TableSegment,
+} from "./markdown-segments";
 
-interface TextSegment {
-  type: "text";
-  content: string;
-}
-interface TableSegment {
-  type: "table";
-  headers: string[];
-  rows: string[][];
-}
-type Segment = TextSegment | TableSegment;
-
-function parseSegments(body: string): Segment[] {
-  const lines = body.split("\n");
-  const segments: Segment[] = [];
-  let textBuffer: string[] = [];
-
-  const flushText = () => {
-    if (textBuffer.length > 0) {
-      segments.push({ type: "text", content: textBuffer.join("\n").trim() });
-      textBuffer = [];
-    }
-  };
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (
-      line.includes("|") &&
-      i + 1 < lines.length &&
-      /^\s*\|?[\s:-]+\|[\s:-|]+/.test(lines[i + 1])
-    ) {
-      flushText();
-      const headers = splitRow(line);
-      i += 2;
-      const rows: string[][] = [];
-      while (i < lines.length && lines[i].includes("|")) {
-        rows.push(splitRow(lines[i]));
-        i++;
-      }
-      i--;
-      segments.push({ type: "table", headers, rows });
-    } else {
-      textBuffer.push(line);
-    }
-  }
-  flushText();
-  return segments;
-}
-
-function splitRow(line: string): string[] {
-  return line
-    .trim()
-    .replace(/^\||\|$/g, "")
-    .split("|")
-    .map((s) => s.trim());
-}
-
-function stripInlineMd(s: string): string {
-  return s
-    .replace(/\*\*([^*]+)\*\*/g, "$1")
-    .replace(/\*([^*]+)\*/g, "$1")
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    .replace(/\[ATLAS:[^\]]+\]/g, "");
-}
-
-/* Slugify for filename (mirrors artifact-pdf). */
-function slugify(s: string): string {
-  return (
-    s
-      .toLowerCase()
-      .replace(/[äÄ]/g, "ae")
-      .replace(/[öÖ]/g, "oe")
-      .replace(/[üÜ]/g, "ue")
-      .replace(/ß/g, "ss")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")
-      .slice(0, 60) || "dokument"
-  );
-}
+/* AUDIT-FIX Q04 (2026-05-17): slugify moved to shared
+   ./filename-slug. Local alias preserved for body-call clarity. */
+import { slugifyFilename as slugify } from "./filename-slug";
 
 /* ── DOCX builder (dynamic-import to keep chat bundle lean) ────────── */
 

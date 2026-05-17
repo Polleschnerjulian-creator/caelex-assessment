@@ -20,6 +20,7 @@
 
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import { slugifyFilename } from "./filename-slug";
 
 /* ── Layout constants (mm, A4 portrait) ─────────────────────────── */
 const PAGE_W = 210;
@@ -68,77 +69,15 @@ const KIND_LABELS: Record<ArtifactKind, string> = {
   summary: "Zusammenfassung",
 };
 
-/* GFM pipe-table detection: a header line + separator line (|---|---|) +
-   body lines. We split body into segments: alternating text-blocks and
-   table-blocks. */
-interface TextSegment {
-  type: "text";
-  content: string;
-}
-interface TableSegment {
-  type: "table";
-  headers: string[];
-  rows: string[][];
-}
-type Segment = TextSegment | TableSegment;
-
-function parseSegments(body: string): Segment[] {
-  const lines = body.split("\n");
-  const segments: Segment[] = [];
-  let textBuffer: string[] = [];
-
-  const flushText = () => {
-    if (textBuffer.length > 0) {
-      segments.push({ type: "text", content: textBuffer.join("\n").trim() });
-      textBuffer = [];
-    }
-  };
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    /* Detect table start: a line with pipes followed by separator. */
-    if (
-      line.includes("|") &&
-      i + 1 < lines.length &&
-      /^\s*\|?[\s:-]+\|[\s:-|]+/.test(lines[i + 1])
-    ) {
-      /* Parse table. */
-      flushText();
-      const headers = splitRow(line);
-      i += 2; // skip header + separator
-      const rows: string[][] = [];
-      while (i < lines.length && lines[i].includes("|")) {
-        rows.push(splitRow(lines[i]));
-        i++;
-      }
-      i--; // re-process this line on next iteration
-      segments.push({ type: "table", headers, rows });
-    } else {
-      textBuffer.push(line);
-    }
-  }
-  flushText();
-  return segments;
-}
-
-function splitRow(line: string): string[] {
-  return line
-    .trim()
-    .replace(/^\||\|$/g, "")
-    .split("|")
-    .map((s) => s.trim());
-}
-
-/* Markdown stripping for text segments (simple — keep headings detected
-   by leading #). */
-function stripInlineMd(s: string): string {
-  return s
-    .replace(/\*\*([^*]+)\*\*/g, "$1")
-    .replace(/\*([^*]+)\*/g, "$1")
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    .replace(/\[ATLAS:[^\]]+\]/g, "");
-}
+/* AUDIT-FIX Q06 (2026-05-17): GFM-pipe-table parser + stripInlineMd
+   moved to shared @/lib/atlas/markdown-segments (was duplicated
+   verbatim in artifact-docx.ts). */
+import {
+  parseSegments,
+  stripInlineMd,
+  type MarkdownSegment as Segment,
+  type TableSegment,
+} from "./markdown-segments";
 
 function ensureRoom(doc: jsPDF, y: number, needed: number): number {
   if (y + needed > MAX_Y) {
@@ -303,9 +242,9 @@ export function buildArtifactPdf(artifact: ArtifactInput): jsPDF {
 
 export function downloadArtifactAsPdf(artifact: ArtifactInput): void {
   const doc = buildArtifactPdf(artifact);
-  const slug = artifact.title
-    .toLowerCase()
-    .replace(/[^a-z0-9äöüß]+/g, "-")
-    .slice(0, 60);
+  /* AUDIT-FIX Q04 (2026-05-17): use shared slugifyFilename — same
+     fallback ("dokument") as artifact-docx.ts so the two file types
+     get consistent filenames for the same title. */
+  const slug = slugifyFilename(artifact.title);
   doc.save(`atlas-${artifact.kind}-${slug}.pdf`);
 }

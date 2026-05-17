@@ -43,32 +43,19 @@ import {
 } from "@/lib/atlas/agent/approval-policy";
 import { suggestNextWorkflows } from "@/lib/atlas/agent/workflow-suggester.server";
 import { delegateSubtasks } from "@/lib/atlas/agent/sub-agent-orchestrator.server";
+/* AUDIT-FIX Q05 (2026-05-17): shared mandate-context loader (was
+   duplicated verbatim in chat-engine.server.ts). */
+import {
+  loadMandateContext,
+  type ResolvedMandateContext,
+} from "@/lib/atlas/mandate-context";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { getSafeErrorMessage } from "@/lib/validations";
 
-/* Sprint A1 — Cost-Budget pricing constants. Mirrors the cache-aware
-   pricing used in chat-engine.server.ts (audit-fix H10) so the live-
-   counter shown to the lawyer in agent-mode matches the chat-mode
-   numbers. */
-const PRICE_INPUT_PER_MTOK = 3.0;
-const PRICE_OUTPUT_PER_MTOK = 15.0;
-const PRICE_CACHE_CREATION_PER_MTOK = PRICE_INPUT_PER_MTOK * 1.25;
-const PRICE_CACHE_READ_PER_MTOK = PRICE_INPUT_PER_MTOK * 0.1;
-
-function estimateCostUsd(
-  input: number,
-  output: number,
-  cacheCreation: number = 0,
-  cacheRead: number = 0,
-): number {
-  return (
-    (input / 1_000_000) * PRICE_INPUT_PER_MTOK +
-    (cacheCreation / 1_000_000) * PRICE_CACHE_CREATION_PER_MTOK +
-    (cacheRead / 1_000_000) * PRICE_CACHE_READ_PER_MTOK +
-    (output / 1_000_000) * PRICE_OUTPUT_PER_MTOK
-  );
-}
+/* AUDIT-FIX Q07 (2026-05-17): pricing constants + estimateCostUsd
+   moved to shared @/lib/atlas/cost-estimator to dedup with chat-engine. */
+import { estimateCostUsd } from "@/lib/atlas/cost-estimator";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -237,39 +224,9 @@ Rules for artifacts:
 ## Mandate context
 When a mandate is in scope, the system-prompt suffix will inject jurisdiction / operator-type / primary-authority / custom-instructions. Use those to make your steps mandate-specific (e.g. use the correct BNetzA contact if jurisdiction is DE).`;
 
-interface ResolvedMandateContext {
-  id: string;
-  name: string;
-  customInstructions: string | null;
-  jurisdiction: string | null;
-  operatorType: string | null;
-  primaryAuthority: string | null;
-  clientName: string | null;
-}
-
-async function loadMandateContext(
-  mandateId: string,
-  userId: string,
-  organizationId: string,
-): Promise<ResolvedMandateContext | null> {
-  const mandate = await prisma.atlasMandate.findFirst({
-    where: {
-      id: mandateId,
-      organizationId,
-      OR: [{ ownerUserId: userId }, { members: { some: { userId } } }],
-    },
-    select: {
-      id: true,
-      name: true,
-      customInstructions: true,
-      jurisdiction: true,
-      operatorType: true,
-      primaryAuthority: true,
-      clientName: true,
-    },
-  });
-  return mandate;
-}
+/* AUDIT-FIX Q05 (2026-05-17): ResolvedMandateContext + loadMandateContext
+   moved to shared @/lib/atlas/mandate-context to dedup with chat-engine.
+   Imports added at top of file. */
 
 function buildSystemPrompt(
   mandate: ResolvedMandateContext | null,

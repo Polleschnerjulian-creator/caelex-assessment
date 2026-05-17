@@ -107,10 +107,14 @@ function modelSupportsThinking(modelId: string): boolean {
   return !MODELS_WITHOUT_THINKING.some((needle) => lower.includes(needle));
 }
 
-/* Sonnet pricing per million tokens (USD), used for transparency cost
-   display only — not for billing. */
-const PRICE_INPUT_PER_MTOK = 3.0;
-const PRICE_OUTPUT_PER_MTOK = 15.0;
+/* AUDIT-FIX Q07 (2026-05-17): pricing constants + estimateCostUsd
+   moved to shared @/lib/atlas/cost-estimator. Re-export the constants
+   here for backwards-compat with internal references further down. */
+import {
+  estimateCostUsd,
+  PRICE_INPUT_PER_MTOK,
+  PRICE_OUTPUT_PER_MTOK,
+} from "./cost-estimator";
 
 /* Inactivity guard: abort upstream call if no delta arrives for 30s. */
 const STREAM_INACTIVITY_TIMEOUT_MS = 30_000;
@@ -192,15 +196,12 @@ export interface ChatEngineResult {
   stream: ReadableStream<Uint8Array>;
 }
 
-interface ResolvedMandateContext {
-  id: string;
-  name: string;
-  customInstructions: string | null;
-  jurisdiction: string | null;
-  operatorType: string | null;
-  primaryAuthority: string | null;
-  clientName: string | null;
-}
+/* AUDIT-FIX Q05 (2026-05-17): ResolvedMandateContext + loadMandateContext
+   moved to shared @/lib/atlas/mandate-context to dedup with agent/route. */
+import {
+  loadMandateContext,
+  type ResolvedMandateContext,
+} from "./mandate-context";
 
 interface ToolUseBlock {
   type: "tool_use";
@@ -512,8 +513,7 @@ function buildUserContentBlocks(
    helper to compute the aggregate display cost. The cost-display
    in the UI is for transparency only (not billing) but a 10× error
    makes the lawyer-grade tool look untrustworthy. */
-const PRICE_CACHE_CREATION_PER_MTOK = PRICE_INPUT_PER_MTOK * 1.25; // $3.75/Mtok
-const PRICE_CACHE_READ_PER_MTOK = PRICE_INPUT_PER_MTOK * 0.1; // $0.30/Mtok
+/* AUDIT-FIX Q07: cache-aware pricing now lives in cost-estimator. */
 
 /* AUDIT-FIX H14: Hard cap on persisted AtlasMessage.content size.
    ────────────────────────────────────────────────────────────────────
@@ -644,45 +644,11 @@ function sanitizeContentForPersistence(
   ];
 }
 
-function estimateCostUsd(
-  input: number,
-  output: number,
-  cacheCreation: number = 0,
-  cacheRead: number = 0,
-): number {
-  return (
-    (input / 1_000_000) * PRICE_INPUT_PER_MTOK +
-    (cacheCreation / 1_000_000) * PRICE_CACHE_CREATION_PER_MTOK +
-    (cacheRead / 1_000_000) * PRICE_CACHE_READ_PER_MTOK +
-    (output / 1_000_000) * PRICE_OUTPUT_PER_MTOK
-  );
-}
+/* AUDIT-FIX Q07: estimateCostUsd moved to ./cost-estimator. */
 
-async function loadMandateContext(
-  mandateId: string,
-  userId: string,
-  organizationId: string,
-): Promise<ResolvedMandateContext | null> {
-  /* Membership gate: caller must be owner OR explicit member.
-     Org-scope is also enforced as belt-and-suspenders. */
-  const mandate = await prisma.atlasMandate.findFirst({
-    where: {
-      id: mandateId,
-      organizationId,
-      OR: [{ ownerUserId: userId }, { members: { some: { userId } } }],
-    },
-    select: {
-      id: true,
-      name: true,
-      customInstructions: true,
-      jurisdiction: true,
-      operatorType: true,
-      primaryAuthority: true,
-      clientName: true,
-    },
-  });
-  return mandate;
-}
+/* AUDIT-FIX Q05 (2026-05-17): function moved to ./mandate-context.
+   Importing from shared module above. The function signature + return
+   shape is identical so call-sites need no changes. */
 
 /**
  * Load existing chat history (for continuation) OR initialise new chat

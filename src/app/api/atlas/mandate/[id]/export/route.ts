@@ -43,18 +43,11 @@ const PARTY_TYPE_LABEL: Record<string, string> = {
   other: "Sonstige",
 };
 
+/* AUDIT-FIX Q04 (2026-05-17): slugify moved to shared
+   @/lib/atlas/filename-slug. Wrapper keeps the "mandat" fallback. */
+import { slugifyFilename } from "@/lib/atlas/filename-slug";
 function slugify(s: string): string {
-  return (
-    s
-      .toLowerCase()
-      .replace(/[äÄ]/g, "ae")
-      .replace(/[öÖ]/g, "oe")
-      .replace(/[üÜ]/g, "ue")
-      .replace(/ß/g, "ss")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")
-      .slice(0, 60) || "mandat"
-  );
+  return slugifyFilename(s, "mandat");
 }
 
 function formatDate(d: Date | string | null | undefined): string {

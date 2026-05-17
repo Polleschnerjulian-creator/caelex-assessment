@@ -21,21 +21,10 @@ import { logger } from "@/lib/logger";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-async function checkMembership(
-  mandateId: string,
-  userId: string,
-  organizationId: string,
-): Promise<boolean> {
-  const hit = await prisma.atlasMandate.findFirst({
-    where: {
-      id: mandateId,
-      organizationId,
-      OR: [{ ownerUserId: userId }, { members: { some: { userId } } }],
-    },
-    select: { id: true },
-  });
-  return !!hit;
-}
+/* AUDIT-FIX Q03 (2026-05-17): membership check moved to shared
+   @/lib/atlas/mandate-membership (was duplicated verbatim here +
+   in deadlines route). */
+import { checkMandateMembership } from "@/lib/atlas/mandate-membership";
 
 export async function GET(
   req: NextRequest,
@@ -120,7 +109,13 @@ export async function POST(
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
   const { id: mandateId } = await ctx.params;
-  if (!(await checkMembership(mandateId, atlas.userId, atlas.organizationId))) {
+  if (
+    !(await checkMandateMembership(
+      mandateId,
+      atlas.userId,
+      atlas.organizationId,
+    ))
+  ) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const rl = await checkRateLimit("api", getIdentifier(req, atlas.userId));

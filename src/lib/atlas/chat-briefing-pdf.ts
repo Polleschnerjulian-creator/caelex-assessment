@@ -120,13 +120,10 @@ export async function downloadChatAsPdf(chat: ChatRecord): Promise<string> {
   return filename;
 }
 
+/* AUDIT-FIX Q04 (2026-05-17): use shared slugifyFilename. */
+import { slugifyFilename } from "./filename-slug";
 function chatPdfFilename(chat: ChatRecord): string {
-  const slug =
-    chat.title
-      .toLowerCase()
-      .replace(/[^a-z0-9äöüß]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 60) || "chat";
+  const slug = slugifyFilename(chat.title, "chat");
   const date = new Date(chat.updatedAt).toISOString().slice(0, 10);
   return `atlas-briefing-${slug}-${date}.pdf`;
 }
