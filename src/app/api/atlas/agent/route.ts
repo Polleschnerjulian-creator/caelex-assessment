@@ -114,10 +114,19 @@ const PostBody = z.object({
   /* Map of tool_use_id → new input object. Only the listed tool_uses
      have their inputs swapped; unlisted ones run with their original
      parent-run input. Limited to plain objects per Zod v4 record
-     signature (keySchema, valueSchema). */
+     signature (keySchema, valueSchema).
+
+     AUDIT-FIX M07 (2026-05-17): bound the body via JSON-string-size
+     check in the POST handler (Zod can't enforce deep size limits on
+     z.unknown). 256 KB total cap prevents the AtlasAgentRun.conversation
+     State JSON-column from being inflated via a deeply-nested
+     modifiedToolInputs payload. */
   modifiedToolInputs: z
     .record(z.string(), z.record(z.string(), z.unknown()))
-    .optional(),
+    .optional()
+    .refine((v) => v === undefined || JSON.stringify(v).length <= 256 * 1024, {
+      message: "modifiedToolInputs payload exceeds 256 KB cap",
+    }),
 });
 
 /* AUDIT-FIX L18 (2026-05-15): strip control chars + ANSI escape

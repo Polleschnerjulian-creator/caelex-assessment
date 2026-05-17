@@ -11911,6 +11911,11 @@ model AtlasMessage {
 
   @@index([chatId, createdAt])
   @@index([senderUserId])
+  /// AUDIT-FIX M33 (2026-05-17): followups + attach-mandate routes
+  /// filter by [chatId, role='assistant'] + createdAt range. The
+  /// existing [chatId, createdAt] index satisfies the chatId+createdAt
+  /// predicate but role is a post-filter scan. Compound covers it.
+  @@index([chatId, role, createdAt])
 }
 
 /// Atlas V2 Agent-Run — persisted record of every autonomous Agent-

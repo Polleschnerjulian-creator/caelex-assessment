@@ -12,9 +12,13 @@ import Link from "next/link";
 import { MessageSquare } from "lucide-react";
 import type { MandateChatRecord } from "./mandate-types";
 
+/* AUDIT-FIX Q02 (2026-05-17): removed unused `mandateId` prop. It was
+   declared on the Props interface, passed by callers, but never read
+   inside the component (chat links use chatId, not mandateId). Dead
+   props inflate the public API surface and mislead callers into
+   thinking the value matters. */
 interface Props {
   chats: MandateChatRecord[];
-  mandateId: string;
 }
 
 export function MandateChatsList({ chats }: Props) {

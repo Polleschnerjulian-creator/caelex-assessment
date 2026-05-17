@@ -394,7 +394,7 @@ export function MandateDetailView({ mandateId }: Props) {
             <h2 className="mb-3 text-[14px] font-medium text-slate-700 dark:text-slate-200">
               Chats ({mandate._count.chats})
             </h2>
-            <MandateChatsList chats={mandate.chats} mandateId={mandate.id} />
+            <MandateChatsList chats={mandate.chats} />
           </section>
 
           {/* Vault — files (R2-backed upload + extracted-text indexing) */}

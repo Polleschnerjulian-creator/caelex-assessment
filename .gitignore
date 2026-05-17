@@ -45,6 +45,13 @@ secrets/
 # Claude Code local settings (may contain credentials in bash history)
 .claude/settings.local.json
 
+# AUDIT-FIX Q19 (2026-05-17): Claude Code git worktrees — local-only,
+# never to be committed. Each worktree is a full source-tree copy used
+# by parallel subagent sessions. Previously the root `.worktrees/`
+# pattern caught a non-existent path; the actual location is nested
+# under `.claude/`. Excluding both for belt-and-suspenders.
+.claude/worktrees/
+
 # API responses with sensitive data
 **/response.json
 **/api-response.json
