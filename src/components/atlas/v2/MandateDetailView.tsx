@@ -49,6 +49,7 @@ import { MandateFileUpload } from "./MandateFileUpload";
 import { MandateFilesList } from "./MandateFilesList";
 import { MandateDeadlines } from "./MandateDeadlines";
 import { MandateTimeEntries } from "./MandateTimeEntries";
+import { MandateBackgroundAgentSection } from "./MandateBackgroundAgentSection";
 
 interface Props {
   mandateId: string;
@@ -296,6 +297,8 @@ export function MandateDetailView({ mandateId }: Props) {
               disabled={isArchived || isClosed}
             />
           </section>
+
+          <MandateBackgroundAgentSection mandateId={mandate.id} />
 
           {/* Stundenerfassung (preserved — second daily-driver tool for the lawyer) */}
           <section id="time-entries" className="mb-8 scroll-mt-20">

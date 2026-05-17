@@ -12021,6 +12021,15 @@ model AtlasAgentRun {
   /// up and the run continues to terminal completion.
   conversationState Json?
 
+  /// Sprint E3: Sub-Agent Cost-Breakdown.
+  /// When the main agent invokes `delegate_subtasks` (D2), the sub-
+  /// agent token totals are accumulated separately so the Live-Counter
+  /// can show "$main · $sub-agents". Cumulative cost (inputTokens +
+  /// outputTokens) STILL includes these — these fields are the
+  /// SUBSET. Both default 0 = no-op for runs that never delegated.
+  subAgentInputTokens  Int @default(0)
+  subAgentOutputTokens Int @default(0)
+
   /// Sprint C1: Run-Replay / Branching lineage.
   /// parentRunId: the run we forked from (null = original).
   /// forkedFromStep: the step-index where we diverged.

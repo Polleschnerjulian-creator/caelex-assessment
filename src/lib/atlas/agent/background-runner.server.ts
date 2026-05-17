@@ -212,6 +212,11 @@ export async function runAgentInBackground(
     summary?: string;
   }> = [];
   const persistedReasoning: Record<number, string> = {};
+  /* Sprint E3 — Sub-Agent token sub-tracking, parallel zum agent
+     route. Powers the Live-Counter split in the regular UI when
+     background-runs are reviewed from history. */
+  let subAgentInputTokens = 0;
+  let subAgentOutputTokens = 0;
   const approvalGates: ApprovalGate[] = [];
 
   try {
@@ -240,6 +245,8 @@ export async function runAgentInBackground(
             reasoning: persistedReasoning as unknown as object,
             inputTokens: totalInputTokens,
             outputTokens: totalOutputTokens,
+            subAgentInputTokens,
+            subAgentOutputTokens,
             costUsd: currentCost,
             completedAt: new Date(),
           },
@@ -342,6 +349,8 @@ export async function runAgentInBackground(
             reasoning: persistedReasoning as unknown as object,
             inputTokens: totalInputTokens,
             outputTokens: totalOutputTokens,
+            subAgentInputTokens,
+            subAgentOutputTokens,
             costUsd: finalCost,
           },
         });
@@ -388,6 +397,9 @@ export async function runAgentInBackground(
             totalCacheCreationTokens += outcome.totalCacheCreationTokens;
             totalCacheReadTokens += outcome.totalCacheReadTokens;
             if (!isError) toolsUsed.push(block.name);
+            /* Sprint E3 — sub-agent token sub-tracking. */
+            subAgentInputTokens += outcome.totalInputTokens;
+            subAgentOutputTokens += outcome.totalOutputTokens;
           } catch (err) {
             resultContent = JSON.stringify({
               error: err instanceof Error ? err.message : String(err),
@@ -466,6 +478,8 @@ export async function runAgentInBackground(
         artifacts: artifacts as unknown as object,
         inputTokens: totalInputTokens,
         outputTokens: totalOutputTokens,
+        subAgentInputTokens,
+        subAgentOutputTokens,
         costUsd: finalCost,
         completedAt: new Date(),
         conversationState: {
@@ -517,6 +531,8 @@ export async function runAgentInBackground(
         reasoning: persistedReasoning as unknown as object,
         inputTokens: totalInputTokens,
         outputTokens: totalOutputTokens,
+        subAgentInputTokens,
+        subAgentOutputTokens,
         completedAt: new Date(),
       },
     });

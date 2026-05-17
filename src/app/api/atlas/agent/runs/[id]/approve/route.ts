@@ -46,7 +46,10 @@ import type { ApprovalGate } from "@/lib/atlas/agent/approval-policy";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const PostBody = z
+/* Sprint E2 — Batched body. Lawyer decides ALL pending dangerous
+   tools in one round. Min 1, max 4 (matches MAX_PARALLEL_SUBTASKS
+   and the approvalGates UI scroll-comfort cap). */
+const DecisionEntry = z
   .object({
     toolUseId: z.string().min(1).max(200),
     decision: z.enum(["approved", "rejected", "modified"]),
@@ -66,6 +69,10 @@ const PostBody = z
       path: ["modifiedInput"],
     },
   );
+
+const PostBody = z.object({
+  decisions: z.array(DecisionEntry).min(1).max(4),
+});
 
 export async function POST(
   req: NextRequest,
@@ -128,42 +135,48 @@ export async function POST(
     );
   }
 
-  /* Find the pending gate by toolUseId. We expect it to exist (the
+  /* Find the pending gates by toolUseId. We expect each to exist (the
      route inserted it on pause) and to have decision === null. */
   const gates: ApprovalGate[] = Array.isArray(run.approvalGates)
     ? (run.approvalGates as unknown as ApprovalGate[])
     : [];
-  const targetIdx = gates.findIndex(
-    (g) => g.toolUseId === parsed.data.toolUseId,
-  );
-  if (targetIdx < 0) {
-    return NextResponse.json(
-      { error: "Tool-use not found in approval gates" },
-      { status: 404 },
-    );
-  }
-  if (gates[targetIdx].decision !== null) {
-    return NextResponse.json(
-      { error: "Decision already recorded for this tool" },
-      { status: 409 },
-    );
+
+  /* Sprint E2 — Validate ALL decisions before applying any. Each
+     toolUseId must exist in gates AND must still have decision=null
+     (not yet decided). Bail fast if any check fails. */
+  for (const d of parsed.data.decisions) {
+    const target = gates.find((g) => g.toolUseId === d.toolUseId);
+    if (!target) {
+      return NextResponse.json(
+        { error: `Tool-use ${d.toolUseId} not found in approval gates` },
+        { status: 404 },
+      );
+    }
+    if (target.decision !== null) {
+      return NextResponse.json(
+        { error: `Decision already recorded for ${d.toolUseId}` },
+        { status: 409 },
+      );
+    }
   }
 
-  /* Build the updated gates array — keep all prior entries intact,
-     patch the target with decision + decidedAt + (optional) modifiedInput. */
+  /* Apply all decisions atomically — single update. */
   const decidedAt = new Date().toISOString();
-  const updatedGates: ApprovalGate[] = gates.map((g, i) =>
-    i === targetIdx
-      ? {
-          ...g,
-          decision: parsed.data.decision,
-          decidedAt,
-          ...(parsed.data.decision === "modified" && parsed.data.modifiedInput
-            ? { modifiedInput: parsed.data.modifiedInput }
-            : {}),
-        }
-      : g,
+  const decisionsByToolUseId = new Map(
+    parsed.data.decisions.map((d) => [d.toolUseId, d] as const),
   );
+  const updatedGates: ApprovalGate[] = gates.map((g) => {
+    const d = decisionsByToolUseId.get(g.toolUseId);
+    if (!d) return g;
+    return {
+      ...g,
+      decision: d.decision,
+      decidedAt,
+      ...(d.decision === "modified" && d.modifiedInput
+        ? { modifiedInput: d.modifiedInput }
+        : {}),
+    };
+  });
 
   try {
     await prisma.atlasAgentRun.update({
@@ -172,17 +185,22 @@ export async function POST(
         approvalGates: updatedGates as unknown as object,
       },
     });
-    logger.info("[atlas/agent/approve] decision recorded", {
+    logger.info("[atlas/agent/approve] decisions recorded (batched)", {
       userId: atlas.userId,
       runId: id,
-      toolUseId: parsed.data.toolUseId,
-      decision: parsed.data.decision,
+      count: parsed.data.decisions.length,
+      decisions: parsed.data.decisions.map((d) => ({
+        toolUseId: d.toolUseId,
+        decision: d.decision,
+      })),
     });
     return NextResponse.json({
       ok: true,
       runId: id,
-      toolUseId: parsed.data.toolUseId,
-      decision: parsed.data.decision,
+      decisions: parsed.data.decisions.map((d) => ({
+        toolUseId: d.toolUseId,
+        decision: d.decision,
+      })),
       decidedAt,
     });
   } catch (err) {

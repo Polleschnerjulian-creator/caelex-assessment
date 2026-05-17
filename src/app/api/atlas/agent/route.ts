@@ -397,6 +397,12 @@ export async function POST(req: NextRequest) {
       let totalCacheCreationTokens = 0;
       let totalCacheReadTokens = 0;
       let toolsUsed: string[] = [];
+      /* Sprint E3 — Sub-Agent token sub-tracking. Accumulates IN
+         PARALLEL to totalInputTokens/totalOutputTokens (which stay
+         cumulative across main + sub). Powers Live-Counter
+         "$main · $sub-agents" split. 0 for runs without delegate_subtasks. */
+      let subAgentInputTokens = 0;
+      let subAgentOutputTokens = 0;
       let textBuffer = "";
       let persistedSteps: Array<{
         iteration: number;
@@ -693,7 +699,8 @@ export async function POST(req: NextRequest) {
             persistedSteps: typeof persistedSteps;
             persistedReasoning: Record<number, string>;
             iter: number;
-            pendingToolUseId: string;
+            pendingToolUseId?: string; // backwards-compat with pre-E2 snapshots
+            pendingToolUseIds?: string[];
           } | null;
           if (!state) {
             send({
@@ -703,15 +710,21 @@ export async function POST(req: NextRequest) {
             controller.close();
             return;
           }
-          /* Validate that the pending tool now has a recorded decision
-             in approvalGates. Without it, the run can't make progress. */
+          /* Validate that ALL pending tools now have recorded decisions
+             in approvalGates. Without it, the run can't make progress.
+             Sprint E2: support both old scalar (pre-E2) and new array. */
           const gates = Array.isArray(priorRun.approvalGates)
             ? (priorRun.approvalGates as unknown as ApprovalGate[])
             : [];
-          const pendingGate = gates.find(
-            (g) => g.toolUseId === state.pendingToolUseId,
-          );
-          if (!pendingGate || pendingGate.decision === null) {
+          const pendingIds =
+            (state as { pendingToolUseIds?: string[] }).pendingToolUseIds ??
+            (state.pendingToolUseId ? [state.pendingToolUseId] : []);
+          const allDecided =
+            pendingIds.length > 0 &&
+            pendingIds.every((id: string) =>
+              gates.some((g) => g.toolUseId === id && g.decision !== null),
+            );
+          if (!allDecided) {
             send({
               type: "error",
               message: "No approval decision recorded — POST /approve first",
@@ -749,13 +762,13 @@ export async function POST(req: NextRequest) {
             type: "run_resumed",
             runId,
             fromIteration: initialIter,
-            decision: pendingGate.decision,
+            decisionsApplied: pendingIds.length,
           });
           logger.info("[atlas/agent] resumed from approval", {
             userId: atlas.userId,
             runId,
             fromIteration: initialIter,
-            decision: pendingGate.decision,
+            decisionsApplied: pendingIds.length,
           });
         } catch (err) {
           logger.error("[atlas/agent] resume failed", {
@@ -898,6 +911,8 @@ export async function POST(req: NextRequest) {
                       reasoning: persistedReasoning as unknown as object,
                       inputTokens: totalInputTokens,
                       outputTokens: totalOutputTokens,
+                      subAgentInputTokens,
+                      subAgentOutputTokens,
                       costUsd: currentCostUsd,
                     },
                   });
@@ -1032,6 +1047,18 @@ export async function POST(req: NextRequest) {
               budget: parsed.data.budgetUsd ?? null,
               inputTokens: totalInputTokens,
               outputTokens: totalOutputTokens,
+              /* Sprint E3 — sub-agent cost-split (live computed). */
+              subAgentCost:
+                subAgentInputTokens > 0 || subAgentOutputTokens > 0
+                  ? estimateCostUsd(
+                      subAgentInputTokens,
+                      subAgentOutputTokens,
+                      0,
+                      0,
+                    )
+                  : 0,
+              subAgentInputTokens,
+              subAgentOutputTokens,
             });
 
             conversation.push({
@@ -1046,36 +1073,36 @@ export async function POST(req: NextRequest) {
           }
 
           /* ╔═══════════════════════════════════════════════════════════╗
-             ║ Sprint B1 — Approval-pause check                          ║
+             ║ Sprint B1/E2 — Approval-pause check                       ║
              ║ Scan the model's tool_use blocks for any that require     ║
              ║ approval AND don't have a recorded decision yet.          ║
-             ║ Pause on FIRST undecided one — persist snapshot + emit    ║
-             ║ approval_required SSE + break. The /approve endpoint      ║
-             ║ records the decision; the client then re-POSTs to this    ║
-             ║ route with `resumeFromRunId` to continue.                 ║
+             ║ Sprint E2: pause on ALL undecided (was: first). Persist  ║
+             ║ snapshot + emit approval_required SSE + break. The       ║
+             ║ /approve endpoint records each decision; the client then  ║
+             ║ re-POSTs with `resumeFromRunId` to continue.             ║
              ╚═══════════════════════════════════════════════════════════╝ */
           const toolUseBlocks = finalMessage.content.filter(
             (b): b is Extract<Anthropic.ContentBlock, { type: "tool_use" }> =>
               b.type === "tool_use",
           );
-          const firstUndecided = toolUseBlocks.find(
+          const allUndecided = toolUseBlocks.filter(
             (b) =>
               requiresApproval(b.name) &&
               !currentApprovalGates.some(
                 (g) => g.toolUseId === b.id && g.decision !== null,
               ),
           );
-          if (firstUndecided) {
-            const pendingGate: ApprovalGate = {
-              toolUseId: firstUndecided.id,
-              toolName: firstUndecided.name,
-              originalInput: firstUndecided.input as Record<string, unknown>,
+          if (allUndecided.length > 0) {
+            const newGates: ApprovalGate[] = allUndecided.map((b) => ({
+              toolUseId: b.id,
+              toolName: b.name,
+              originalInput: b.input as Record<string, unknown>,
               decision: null,
-              rationale: approvalRationale(firstUndecided.name),
+              rationale: approvalRationale(b.name),
               requestedAt: new Date().toISOString(),
               decidedAt: null,
-            };
-            currentApprovalGates = [...currentApprovalGates, pendingGate];
+            }));
+            currentApprovalGates = [...currentApprovalGates, ...newGates];
             pausedForApproval = true;
             if (runId) {
               try {
@@ -1104,13 +1131,16 @@ export async function POST(req: NextRequest) {
                       persistedSteps,
                       persistedReasoning,
                       iter,
-                      pendingToolUseId: firstUndecided.id,
+                      /* Sprint E2 — plural ids (replaces pre-E2 scalar). */
+                      pendingToolUseIds: allUndecided.map((b) => b.id),
                     } as unknown as object,
                     iterations: iter,
                     steps: persistedSteps as unknown as object,
                     reasoning: persistedReasoning as unknown as object,
                     inputTokens: totalInputTokens,
                     outputTokens: totalOutputTokens,
+                    subAgentInputTokens,
+                    subAgentOutputTokens,
                     costUsd: liveCostUsd,
                   },
                 });
@@ -1124,17 +1154,19 @@ export async function POST(req: NextRequest) {
             send({
               type: "approval_required",
               runId,
-              toolUseId: firstUndecided.id,
-              toolName: firstUndecided.name,
-              input: firstUndecided.input,
-              rationale: pendingGate.rationale,
+              tools: allUndecided.map((b) => ({
+                toolUseId: b.id,
+                toolName: b.name,
+                input: b.input,
+                rationale: approvalRationale(b.name),
+              })),
               iteration: iter,
             });
-            logger.info("[atlas/agent] paused for approval", {
+            logger.info("[atlas/agent] paused for approval (batched)", {
               userId: atlas.userId,
               runId,
-              toolUseId: firstUndecided.id,
-              toolName: firstUndecided.name,
+              pendingCount: allUndecided.length,
+              toolNames: allUndecided.map((b) => b.name),
             });
             break;
           }
@@ -1216,6 +1248,10 @@ export async function POST(req: NextRequest) {
                 totalCacheCreationTokens += outcome.totalCacheCreationTokens;
                 totalCacheReadTokens += outcome.totalCacheReadTokens;
                 if (!isError) toolsUsed.push(block.name);
+                /* Sprint E3 — also track sub-agent token totals
+                   separately for the Live-Counter split. */
+                subAgentInputTokens += outcome.totalInputTokens;
+                subAgentOutputTokens += outcome.totalOutputTokens;
               } catch (err) {
                 const msg = err instanceof Error ? err.message : String(err);
                 resultContent = JSON.stringify({ error: msg });
@@ -1481,6 +1517,8 @@ export async function POST(req: NextRequest) {
                 } as unknown as object,
                 inputTokens: totalInputTokens,
                 outputTokens: totalOutputTokens,
+                subAgentInputTokens,
+                subAgentOutputTokens,
                 costUsd,
                 completedAt: new Date(),
               },
@@ -1579,6 +1617,8 @@ export async function POST(req: NextRequest) {
                 reasoning: persistedReasoning as unknown as object,
                 inputTokens: totalInputTokens,
                 outputTokens: totalOutputTokens,
+                subAgentInputTokens,
+                subAgentOutputTokens,
                 completedAt: new Date(),
               },
             });

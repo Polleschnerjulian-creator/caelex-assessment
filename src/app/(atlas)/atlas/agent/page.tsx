@@ -39,8 +39,6 @@ import {
   Brain,
   ShieldCheck,
   ShieldAlert,
-  DollarSign,
-  PauseCircle,
 } from "lucide-react";
 import { MarkdownContent } from "@/components/atlas/v2/MarkdownContent";
 import { AtlasMark } from "@/components/atlas/v2/AtlasLogo";
@@ -75,42 +73,33 @@ interface UsageStats {
   costUsd: number;
 }
 
-/** Sprint A1 — live cost-progress event payload streamed from the
- *  server after every iteration. Drives the live cost-counter below
- *  the goal-pin while the run is in flight. */
+/** Sprint E2 — Batched-Approval. SSE event carries an ARRAY of
+ *  pending tools now. The ApprovalCards container renders one card
+ *  per tool; lawyer decides each, "Submit all" fires one POST. */
+interface PendingTool {
+  toolUseId: string;
+  toolName: string;
+  input: Record<string, unknown>;
+  rationale: string;
+}
+
+interface ApprovalPauseInfo {
+  runId: string;
+  tools: PendingTool[];
+  iteration: number;
+}
+
 interface CostProgress {
   currentCost: number;
   budget: number | null;
   iteration: number;
   inputTokens: number;
   outputTokens: number;
-}
-
-/** Sprint A1 — budget_pause event payload. Surfaces a confirmation
- *  modal where the lawyer can approve continuation, optionally bump
- *  the budget, or stop the run. */
-interface BudgetPauseInfo {
-  runId: string | null;
-  currentCost: number;
-  budget: number;
-  etaCost: number;
-  remainingSteps: number;
-  iterationsCompleted: number;
-}
-
-/** Sprint B1 — approval_required event payload. Surfaces an inline
- *  card asking the lawyer to approve / edit / reject a single
- *  dangerous tool-use (create_*, send_*, schedule_*, finalize_*)
- *  before it runs. The lawyer's choice is POSTed to
- *  /api/atlas/agent/runs/[id]/approve; resume is then triggered by
- *  re-POSTing /api/atlas/agent with `resumeFromRunId`. */
-interface ApprovalPauseInfo {
-  runId: string;
-  toolUseId: string;
-  toolName: string;
-  input: Record<string, unknown>;
-  rationale: string;
-  iteration: number;
+  /* Sprint E3 — sub-agent cost-split. 0 (or undefined) when run never
+     called delegate_subtasks. */
+  subAgentCost?: number;
+  subAgentInputTokens?: number;
+  subAgentOutputTokens?: number;
 }
 
 /** Per-citation verification record from the server-side
@@ -143,20 +132,6 @@ interface VerificationResult {
   warnings: number;
   hallucinated: number;
   citations: VerificationCitation[];
-}
-
-/** Sprint A2 — Per-artifact verification finding emitted by the
- *  server-side verifyArtifacts() pass. Three kinds: citation (bad/
- *  repealed [ATLAS:...] reference), bora (BORA/BRAO rule fire), and
- *  hallucination (substantive legal claim missing a citation).
- *  Rendered as inline-warnings under each artefact-card. */
-interface VerificationFinding {
-  artifactIndex: number;
-  kind: "citation" | "bora" | "hallucination";
-  severity: "warn" | "error";
-  message: string;
-  citation?: string;
-  offset?: number;
 }
 
 /* SUGGESTED_GOALS replaced with the full AGENT_TEMPLATES library
@@ -263,63 +238,11 @@ function detectDeadlines(text: string): DetectedDeadline[] {
   return found;
 }
 
-/** Sprint C2 — suggested_next event payload, one card per suggestion.
- *  Mirrors WorkflowSuggestion from workflow-suggester.server.ts but
- *  re-declared here to avoid pulling a server-only import into the
- *  client bundle. */
-interface SuggestedWorkflow {
-  templateId: string;
-  title: string;
-  description: string;
-  category:
-    | "compliance"
-    | "drafting"
-    | "research"
-    | "filing"
-    | "transaction"
-    | "internal";
-  rationale: string;
-  costBand: "low" | "medium" | "high";
-  estimatedSeconds: number;
-  needsMandate: boolean;
-  needsFile: boolean;
-}
-
 export default function AgentPage() {
   const [goal, setGoal] = useState("");
-  /* Sprint C2 — when a template is selected (either via the catalog
-     or via a suggested-next card), its id is captured here and sent
-     to the server on POST. Server persists it on AtlasAgentRun and
-     uses it at run-end to compute the next suggestions. */
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(
-    null,
-  );
   const [mandateId, setMandateId] = useState<string>("");
   const [mandates, setMandates] = useState<MandateListItem[]>([]);
-  /* Sprint A1 — Cost-Budget. budgetInput is the raw textfield string
-     so the user can clear it; we coerce to a number on POST. Empty/
-     invalid → no budget. */
-  const [budgetInput, setBudgetInput] = useState<string>("");
-  /* Sprint A1 — live cost-counter, updated per iteration via the new
-     cost_progress SSE event. Shown in the running-view footer. */
-  const [costProgress, setCostProgress] = useState<CostProgress | null>(null);
-  /* Sprint A1 — pause-state when the server emitted budget_pause. The
-     UI renders a modal-like confirmation card; the lawyer's choice
-     drives a POST to /resume + an optional re-POST to /api/atlas/agent. */
-  const [budgetPause, setBudgetPause] = useState<BudgetPauseInfo | null>(null);
-  /* Sprint B1 — parallel pause-state for tool-use approvals. When set,
-     the ApprovalCard renders inline above the live run-view. Cleared
-     when the lawyer's decision is recorded + resume kicks off. */
-  const [approvalPause, setApprovalPause] = useState<ApprovalPauseInfo | null>(
-    null,
-  );
-  /* Sprint B1 — submitting flag for the approve-endpoint POST.
-     Prevents double-clicks on the approval-card buttons while the
-     decision is being recorded + resume is firing. */
-  const [approvalSubmitting, setApprovalSubmitting] = useState(false);
-  /* runId captured from run_started — needed for the resume-POST when
-     the budget-pause modal triggers. */
-  const [activeRunId, setActiveRunId] = useState<string | null>(null);
+  const [running, setRunning] = useState(false);
   const [steps, setSteps] = useState<StepRecord[]>([]);
   /* Reasoning text per iteration — accumulated via thinking_delta
      stream events. Keyed by iteration number; rendered next to the
@@ -339,6 +262,18 @@ export default function AgentPage() {
      triggered already so we can disable the buttons + show a Check. */
   const [savedToVault, setSavedToVault] = useState(false);
   const [savedDeadlines, setSavedDeadlines] = useState<Set<string>>(new Set());
+  /* Sprint E2 — batched approval pause state. Non-null when the
+     server has paused the run and is awaiting lawyer decisions. */
+  const [approvalPause, setApprovalPause] = useState<ApprovalPauseInfo | null>(
+    null,
+  );
+  const [approvalSubmitting, setApprovalSubmitting] = useState(false);
+  /* Sprint B1/E2 — tracks the active run's server-side runId so
+     approval-resume can reference it even mid-SSE. */
+  const activeRunId = useRef<string | null>(null);
+  /* Sprint E3 — live cost progress from SSE cost_progress events. */
+  const [costProgress, setCostProgress] = useState<CostProgress | null>(null);
+
   /* Pre-run file attachments — Bescheide / Verträge / etc. that
      Atlas should read first, then run the agent on them. Each gets
      extracted via /api/atlas/extract and the text is prepended to
@@ -348,37 +283,6 @@ export default function AgentPage() {
   >([]);
   const [extractingFiles, setExtractingFiles] = useState<string[]>([]);
   const [attachError, setAttachError] = useState<string | null>(null);
-  /* Running flag — true while an SSE stream is in flight. Set on
-     handleRun, cleared in finally / stop-handlers. Drives the UI
-     gating between "input the goal" and "watch the run". */
-  const [running, setRunning] = useState(false);
-  /* Sprint A2 — Verification-warnings emitted per artefact. The
-     verification-pass-server runs three checks (citation / BORA /
-     hallucination) and streams the findings via the
-     `verification_warnings` SSE event. We render them as inline
-     warnings under each artefact-card, filtered by artifactIndex. */
-  const [findings, setFindings] = useState<VerificationFinding[]>([]);
-  /* Sprint C2 — Smart Sequencing. Suggested-next templates emitted by
-     the server at run-end when this run was launched from a template.
-     Rendered as 1-click cards under the artifacts; click pre-fills
-     the next template + auto-starts a fresh run. */
-  const [suggestedNext, setSuggestedNext] = useState<SuggestedWorkflow[]>([]);
-  /* Sprint C1 — Fork-modal state. Open when the lawyer clicks "Fork
-     from here" on an iteration. Holds the iteration-index they want
-     to fork from; the modal pulls the steps for that iteration from
-     the `steps` array. */
-  const [forkModalIter, setForkModalIter] = useState<number | null>(null);
-  /* Sprint C1 — submitting flag for the fork POST so the modal can
-     disable its Submit button + show a spinner while the new run is
-     being created. */
-  const [forkSubmitting, setForkSubmitting] = useState(false);
-  /* Sprint C1 — Lineage badge state. Captured from the `run_forked`
-     SSE event on the resumed stream OR from the initial run row
-     fetched at mount-time (history-deep-link case). */
-  const [lineage, setLineage] = useState<{
-    parentRunId: string;
-    forkedFromStep: number;
-  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
 
@@ -467,62 +371,24 @@ export default function AgentPage() {
     setAttachments((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  /* Sprint A1 — parse the user's budget-text into a number (or null).
-     Centralised so handleRun + the resume-flow agree on the rules. */
-  const parsedBudget = (() => {
-    const trimmed = budgetInput.trim();
-    if (!trimmed) return null;
-    const n = Number(trimmed);
-    if (!Number.isFinite(n) || n <= 0 || n > 100) return null;
-    return n;
-  })();
-
-  const handleRun = async (opts?: {
-    resumeFromRunId?: string;
-    fork?: {
-      forkFromRunId: string;
-      forkFromIteration: number;
-      modifiedToolInputs: Record<string, Record<string, unknown>>;
-    };
-  }) => {
-    if (running) return;
-    const isResume = !!opts?.resumeFromRunId;
-    /* Sprint B1 — on resume, the goal is empty if the user already
-       cleared it, but we still need ≥10 chars to pass server-side
-       zod validation. Re-send the original goal verbatim (the server
-       ignores it for resumes — it's restored from conversationState
-       — but the zod schema requires it). For fresh runs + forks,
-       validate goal locally before hitting the network. */
-    if (!isResume && !goal.trim()) return;
+  const handleRun = async (opts?: { resumeFromRunId?: string }) => {
+    if (!goal.trim() || running) return;
     setRunning(true);
-    const resumeFromRunId = opts?.resumeFromRunId;
-    /* On resume, KEEP prior steps/reasoning/etc visible so the lawyer
-       sees the full timeline. Only reset on fresh runs. */
-    if (!resumeFromRunId) {
+    if (!opts?.resumeFromRunId) {
+      /* Fresh run — reset everything. Resume-runs preserve existing
+         steps so the lawyer sees the full step-trace. */
       setSteps([]);
       setReasoning(new Map());
       setFinalText("");
       setVerification(null);
       setUsage(null);
+      setCostProgress(null);
+      setError(null);
       setSavedToVault(false);
       setSavedDeadlines(new Set());
-      setBudgetPause(null);
-      setCostProgress(null);
-      setActiveRunId(null);
-      /* Sprint A2 — clear the per-run verification-findings so a stale
-         set from the previous run doesn't render under the new one. */
-      setFindings([]);
-      /* Sprint C2 — clear any leftover suggested-next cards from the
-         previous run. */
-      setSuggestedNext([]);
-      /* Sprint C1 — clear any prior lineage; the fork-path will set
-         a fresh lineage via the run_forked SSE event. */
-      setLineage(null);
     }
-    /* Always clear error + the approval-pause (we're either resuming
-       past it or starting fresh). */
-    setError(null);
     setApprovalPause(null);
+    setApprovalSubmitting(false);
     try {
       /* Build the effective goal: attached files prepended as fenced
          [Anhang]-Blocks (same convention the chat-composer uses), so
@@ -541,31 +407,9 @@ export default function AgentPage() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          /* Goal stays in the payload even on resume — zod requires
-             min:10. Server ignores it when resumeFromRunId is set
-             (state is restored from conversationState). */
-          goal: effectiveGoal || "RESUME_PLACEHOLDER_GOAL",
+          goal: effectiveGoal,
           mandateId: mandateId || undefined,
-          /* Sprint A1 — pass the parsed budget through. Server caps
-             at $100 again so a tampered client can't bypass. */
-          budgetUsd: parsedBudget,
-          /* Sprint B1 — when set, server takes the resume-path:
-             reloads conversationState + applies the recorded approval
-             decision + continues the loop. */
-          resumeFromRunId: resumeFromRunId ?? undefined,
-          /* Sprint C2 — pass the template-id when starting from a
-             template (catalog click OR suggested-next card). Server
-             persists it on AtlasAgentRun and uses it at run-end to
-             compute the next suggestions. Null on free-form goals. */
-          templateId: selectedTemplateId ?? undefined,
-          /* Sprint C1 — when set, server takes the fork-path: loads
-             parent's conversationState, truncates to iter N, applies
-             modifiedToolInputs, creates a NEW AtlasAgentRun, and
-             continues the loop from there. Mutually exclusive with
-             resumeFromRunId (server rejects if both set). */
-          forkFromRunId: opts?.fork?.forkFromRunId,
-          forkFromIteration: opts?.fork?.forkFromIteration,
-          modifiedToolInputs: opts?.fork?.modifiedToolInputs,
+          resumeFromRunId: opts?.resumeFromRunId,
         }),
       });
       if (!res.ok || !res.body) {
@@ -588,70 +432,12 @@ export default function AgentPage() {
           if (!json) continue;
           try {
             const evt = JSON.parse(json);
+            /* Capture the server-assigned runId from the first event
+               that carries it (run_start or any event with runId). */
+            if (evt.runId && !activeRunId.current) {
+              activeRunId.current = evt.runId as string;
+            }
             switch (evt.type) {
-              case "run_started":
-                /* Sprint A1 — capture runId so we can POST to /resume
-                   if the budget pauses the run mid-flight. */
-                if (evt.runId) setActiveRunId(evt.runId as string);
-                break;
-              case "cost_progress":
-                /* Sprint A1 — live cost-counter feed. */
-                setCostProgress({
-                  currentCost: evt.currentCost as number,
-                  budget: (evt.budget as number | null) ?? null,
-                  iteration: evt.iteration as number,
-                  inputTokens: evt.inputTokens as number,
-                  outputTokens: evt.outputTokens as number,
-                });
-                break;
-              case "budget_pause":
-                /* Sprint A1 — server hit the budget threshold. Surface
-                   the modal; the lawyer's choice will fire the
-                   resume-POST + optional re-POST below. */
-                setBudgetPause({
-                  runId: (evt.runId as string | null) ?? activeRunId,
-                  currentCost: evt.currentCost as number,
-                  budget: evt.budget as number,
-                  etaCost: evt.etaCost as number,
-                  remainingSteps: evt.remainingSteps as number,
-                  iterationsCompleted: evt.iterationsCompleted as number,
-                });
-                break;
-              case "approval_required":
-                /* Sprint B1 — server paused before a dangerous tool.
-                   Render the ApprovalCard inline. The lawyer's
-                   decision fires handleApprovalDecision → POST
-                   /approve → re-POST main route with resumeFromRunId. */
-                setApprovalPause({
-                  runId: (evt.runId as string | null) ?? activeRunId ?? "",
-                  toolUseId: evt.toolUseId as string,
-                  toolName: evt.toolName as string,
-                  input: (evt.input as Record<string, unknown>) ?? {},
-                  rationale: evt.rationale as string,
-                  iteration: evt.iteration as number,
-                });
-                break;
-              case "run_resumed":
-                /* Sprint B1 — server confirmed resume kicked off.
-                   Clear the approval-pause UI state so the timeline
-                   re-renders without the card. The continuation
-                   stream continues to emit step_start / step_complete
-                   for the resumed iteration's tools. */
-                setApprovalPause(null);
-                break;
-              case "run_forked":
-                /* Sprint C1 — server confirmed the fork created a new
-                   AtlasAgentRun. Capture lineage so the UI can render
-                   a "↪ Forked from Run #XXX at iteration N" badge
-                   above the goal-pin. The new runId replaces the
-                   current activeRunId so subsequent SSE events
-                   (cost_progress, step_complete, etc.) bind to it. */
-                if (evt.runId) setActiveRunId(evt.runId as string);
-                setLineage({
-                  parentRunId: evt.parentRunId as string,
-                  forkedFromStep: evt.forkedFromStep as number,
-                });
-                break;
               case "text":
                 textBuffer += evt.delta as string;
                 setFinalText(textBuffer);
@@ -706,27 +492,33 @@ export default function AgentPage() {
                   citations: (evt.citations as VerificationCitation[]) ?? [],
                 });
                 break;
-              case "verification_warnings":
-                /* Sprint A2 — per-artefact verification findings. The
-                   server emits a single batch event with the full
-                   findings-array so we replace local state in one go;
-                   no merge / append semantics needed. */
-                setFindings(
-                  (evt.findings as VerificationFinding[] | undefined) ?? [],
-                );
-                break;
-              case "suggested_next":
-                /* Sprint C2 — server emitted follow-up template
-                   suggestions because this run was launched from a
-                   template with a curated `suggestedNext` list. The
-                   UI renders these as 1-click cards under the
-                   artifacts. */
-                setSuggestedNext(
-                  (evt.suggestions as SuggestedWorkflow[] | undefined) ?? [],
-                );
-                break;
               case "run_done":
                 setUsage(evt.usage as UsageStats);
+                break;
+              case "approval_required":
+                /* Sprint B1+E2 — server paused before dangerous tools.
+                   E2 makes this BATCHED: emitted payload now carries
+                   ALL undecided dangerous tools in this iteration.
+                   ApprovalCards renders N stacked cards. */
+                setApprovalPause({
+                  runId:
+                    (evt.runId as string | null) ?? activeRunId.current ?? "",
+                  tools: (evt.tools as PendingTool[] | undefined) ?? [],
+                  iteration: evt.iteration as number,
+                });
+                break;
+              case "cost_progress":
+                setCostProgress({
+                  currentCost: evt.currentCost as number,
+                  budget: (evt.budget as number | null) ?? null,
+                  iteration: evt.iteration as number,
+                  inputTokens: evt.inputTokens as number,
+                  outputTokens: evt.outputTokens as number,
+                  subAgentCost: (evt.subAgentCost as number) ?? 0,
+                  subAgentInputTokens: (evt.subAgentInputTokens as number) ?? 0,
+                  subAgentOutputTokens:
+                    (evt.subAgentOutputTokens as number) ?? 0,
+                });
                 break;
               case "error":
                 setError(evt.message as string);
@@ -744,116 +536,20 @@ export default function AgentPage() {
     }
   };
 
-  const reset = () => {
-    setSteps([]);
-    setReasoning(new Map());
-    setFinalText("");
-    setVerification(null);
-    setUsage(null);
-    setError(null);
-    setGoal("");
-    setSavedToVault(false);
-    setSavedDeadlines(new Set());
-    setAttachments([]);
-    setAttachError(null);
-    /* Sprint A1 — also clear cost/pause-state. Budget-input itself
-       stays (sticky preference between runs) so a lawyer who set
-       $5/run doesn't have to retype every time. */
-    setBudgetPause(null);
-    setCostProgress(null);
-    setActiveRunId(null);
-    /* Sprint A2 — also drop the per-run verification-findings on
-       reset; a fresh goal starts with a clean slate. */
-    setFindings([]);
-    /* Sprint C2 — clear template-id selection + any suggested-next
-       cards from the prior run. */
-    setSelectedTemplateId(null);
-    setSuggestedNext([]);
-    /* Sprint C1 — clear lineage + any open fork-modal state. */
-    setLineage(null);
-    setForkModalIter(null);
-    setForkSubmitting(false);
-    /* Keep mandateId selection — user often runs multiple agents
-       on the same mandate, no reason to make them re-pick. */
-  };
-
-  /* Sprint A1 — Resume handler. Called from the budget-pause modal.
-     Posts the lawyer's decision to /resume; if approved, also re-
-     POSTs the original /api/atlas/agent request to actually continue.
-     The v1 trade-off is documented in the resume-route docblock:
-     re-POST is a fresh agent-run that re-uses the goal + new budget,
-     not a literal in-flight conversation-restoration. */
-  const handleResumeDecision = async (
-    approve: boolean,
-    increaseBudgetTo?: number,
-  ) => {
-    if (!budgetPause?.runId) {
-      setError("Resume nicht möglich — kein aktiver Run.");
-      return;
-    }
-    setRunning(true);
-    try {
-      const res = await fetch(
-        `/api/atlas/agent/runs/${budgetPause.runId}/resume`,
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            approve,
-            increaseBudgetTo: increaseBudgetTo ?? undefined,
-          }),
-        },
-      );
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        setError(body.error || `Resume fehlgeschlagen (${res.status})`);
-        setRunning(false);
-        return;
-      }
-      setBudgetPause(null);
-      if (!approve) {
-        /* Lawyer chose stop — leave the partial output on screen but
-           clear the running flag so the reset-button is reachable. */
-        setRunning(false);
-        return;
-      }
-      /* Approved — bump the local budget if a new one was chosen and
-         re-POST to /api/atlas/agent. v1 trade-off: this starts a new
-         in-process agent-run with the same goal, NOT a server-side
-         continuation. The original run is marked "running" again on
-         the server side so the history page shows it as completed
-         after this re-POST finishes. */
-      if (increaseBudgetTo !== undefined) {
-        setBudgetInput(String(increaseBudgetTo));
-      }
-      /* Use a microtask delay so the budgetInput state-update applies
-         before parsedBudget is re-read inside handleRun. */
-      setTimeout(() => {
-        void handleRun();
-      }, 0);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-      setRunning(false);
-    }
-  };
-
-  /* Sprint B1 — Approval-decision handler. Called from the inline
-     ApprovalCard. POSTs the lawyer's decision to /approve; on success
-     immediately re-POSTs /api/atlas/agent with `resumeFromRunId` set
-     so the agent loop picks up where it paused.
-     Decision shapes:
-       approved  → no extra payload; tool runs with original input
-       rejected  → no extra payload; tool is skipped (USER_CANCELLED)
-       modified  → modifiedInput required; tool runs with lawyer-edited input
-     The Re-POST uses the same handleRun() call as fresh starts but
-     with the resume param, so all existing SSE handlers (cost, steps,
-     verification) continue to fire normally. */
+  /* Sprint E2 — Batched approval handler. Takes the lawyer's
+     per-card decisions (collected in ApprovalCards state) and POSTs
+     them ALL in one batch. On success, fires handleRun({resumeFromRunId})
+     same way as B1 v1 — resume-path applies all decisions in for-loop. */
   const handleApprovalDecision = async (
-    decision: "approved" | "rejected" | "modified",
-    modifiedInput?: Record<string, unknown>,
+    decisions: Array<{
+      toolUseId: string;
+      decision: "approved" | "rejected" | "modified";
+      modifiedInput?: Record<string, unknown>;
+    }>,
   ) => {
     if (!approvalPause) return;
     if (approvalSubmitting) return;
+    if (decisions.length === 0) return;
     setApprovalSubmitting(true);
     try {
       const res = await fetch(
@@ -861,25 +557,20 @@ export default function AgentPage() {
         {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            toolUseId: approvalPause.toolUseId,
-            decision,
-            modifiedInput: decision === "modified" ? modifiedInput : undefined,
-          }),
+          body: JSON.stringify({ decisions }),
         },
       );
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        setError(body.error || `Freigabe fehlgeschlagen (${res.status})`);
+        setError(
+          (body as { error?: string }).error ||
+            `Freigabe fehlgeschlagen (${res.status})`,
+        );
         setApprovalSubmitting(false);
         return;
       }
-      /* Decision recorded — kick off the resume. Note: handleRun
-         clears approvalPause + running + activates the new stream;
-         we don't need to do that here. */
       const runIdToResume = approvalPause.runId;
       setApprovalSubmitting(false);
-      /* Microtask delay matches the pattern in handleResumeDecision. */
       setTimeout(() => {
         void handleRun({ resumeFromRunId: runIdToResume });
       }, 0);
@@ -889,32 +580,24 @@ export default function AgentPage() {
     }
   };
 
-  /* Sprint C1 — Fork handler. Called from the ForkModal when the
-     lawyer confirms the per-tool-input edits. Fires handleRun() with
-     fork-params; the SSE stream replaces the current run-view with
-     the forked run (lineage badge captures the parentRunId). The
-     modal is closed BEFORE handleRun fires so the spinner is on the
-     run-view, not the modal. */
-  const handleFork = (
-    forkFromIteration: number,
-    modifiedToolInputs: Record<string, Record<string, unknown>>,
-  ) => {
-    if (!activeRunId) return;
-    if (running) return;
-    const parentRunId = activeRunId;
-    setForkSubmitting(true);
-    setForkModalIter(null);
-    setTimeout(() => {
-      void handleRun({
-        fork: {
-          forkFromRunId: parentRunId,
-          forkFromIteration,
-          modifiedToolInputs,
-        },
-      }).finally(() => {
-        setForkSubmitting(false);
-      });
-    }, 0);
+  const reset = () => {
+    setSteps([]);
+    setReasoning(new Map());
+    setFinalText("");
+    setVerification(null);
+    setUsage(null);
+    setCostProgress(null);
+    setApprovalPause(null);
+    setApprovalSubmitting(false);
+    activeRunId.current = null;
+    setError(null);
+    setGoal("");
+    setSavedToVault(false);
+    setSavedDeadlines(new Set());
+    setAttachments([]);
+    setAttachError(null);
+    /* Keep mandateId selection — user often runs multiple agents
+       on the same mandate, no reason to make them re-pick. */
   };
 
   /* Save the agent's final artifact as a Markdown file in the
@@ -1039,37 +722,6 @@ export default function AgentPage() {
               </select>
             </div>
           )}
-
-          {/* Sprint A1 — Cost-Budget input. Optional (empty = unlimited).
-              Server caps at $100/run regardless. The lawyer types a
-              max once and forgets it; the run pauses if it would
-              exceed the cap. */}
-          <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-white/[0.08] dark:bg-white/[0.02]">
-            <DollarSign size={14} className="shrink-0 text-slate-500" />
-            <label
-              htmlFor="atlas-agent-budget"
-              className="text-[12px] text-slate-500"
-            >
-              Max-Budget:
-            </label>
-            <input
-              id="atlas-agent-budget"
-              type="number"
-              min="0"
-              max="100"
-              step="0.5"
-              value={budgetInput}
-              onChange={(e) => setBudgetInput(e.target.value)}
-              placeholder="optional, z.B. 5"
-              className="w-24 bg-transparent text-[12.5px] text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
-            />
-            <span className="text-[11px] text-slate-400">USD pro Run</span>
-            <span className="ml-auto text-[10.5px] text-slate-400">
-              {budgetInput && parsedBudget === null
-                ? "ungültig (1–100)"
-                : "Server-Cap: $100"}
-            </span>
-          </div>
 
           <div className="rounded-2xl border border-slate-200 bg-white p-1 dark:border-white/[0.08] dark:bg-[#1a1a1a]">
             {/* Attached files (PDF / DOCX / TXT / MD) — prepended to the
@@ -1208,10 +860,6 @@ export default function AgentPage() {
                           template={t}
                           onClick={() => {
                             setGoal(t.goal);
-                            /* Sprint C2 — capture the template-id so
-                               the POST sends it + the server can
-                               compute suggested-next at run-end. */
-                            setSelectedTemplateId(t.id);
                             /* Auto-pick first available mandate if
                                template needs one and none is selected
                                yet. The lawyer can change it before
@@ -1238,23 +886,6 @@ export default function AgentPage() {
       {/* Running / completed view */}
       {hasResults && (
         <div ref={transcriptRef} className="space-y-4">
-          {/* Sprint C1 — Lineage badge for forked runs. Captured from
-              the run_forked SSE event. Tells the lawyer at-a-glance
-              that this isn't an original run + which iteration it
-              diverged from. The first 8 chars of the parentRunId are
-              enough to identify it visually. */}
-          {lineage && (
-            <div className="flex items-center gap-1.5 rounded-md border border-violet-200 bg-violet-50 px-3 py-1.5 text-[11.5px] text-violet-800 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-200">
-              <FolderInput size={11} />
-              <span>
-                Forked from Run{" "}
-                <span className="font-mono">
-                  {lineage.parentRunId.slice(0, 8)}…
-                </span>{" "}
-                at iteration {lineage.forkedFromStep}
-              </span>
-            </div>
-          )}
           {/* Goal pinned at top */}
           <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-white/[0.08] dark:bg-white/[0.02]">
             <div className="mb-1 text-[10.5px] uppercase tracking-wider text-slate-500">
@@ -1264,70 +895,6 @@ export default function AgentPage() {
               {goal}
             </div>
           </div>
-
-          {/* Sprint A1 — Live cost-counter. Shown while running (or
-              after the run if no usage-summary fired yet). Reads
-              cost_progress events from the server. When the lawyer
-              set a budget, render as `$X / $Y (Z%)` so they see
-              headroom at-a-glance. */}
-          {(costProgress || (running && parsedBudget)) && (
-            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11.5px] text-slate-600 dark:border-white/[0.08] dark:bg-white/[0.02] dark:text-slate-400">
-              <DollarSign
-                size={11}
-                className="shrink-0 text-slate-500 dark:text-slate-400"
-              />
-              <span className="tabular-nums">
-                ${(costProgress?.currentCost ?? 0).toFixed(4)}
-                {parsedBudget !== null && (
-                  <>
-                    {" "}
-                    / ${parsedBudget.toFixed(2)}
-                    <span className="ml-2 text-slate-400">
-                      (
-                      {Math.min(
-                        100,
-                        Math.round(
-                          ((costProgress?.currentCost ?? 0) / parsedBudget) *
-                            100,
-                        ),
-                      )}
-                      %)
-                    </span>
-                  </>
-                )}
-              </span>
-              {costProgress && (
-                <span className="ml-auto text-[10.5px] text-slate-400">
-                  Iter {costProgress.iteration} ·{" "}
-                  {costProgress.inputTokens.toLocaleString("de-DE")}↑ ·{" "}
-                  {costProgress.outputTokens.toLocaleString("de-DE")}↓
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Sprint A1 — Budget-Pause banner. Replaces the inline run
-              progress with a confirmation card when the server paused
-              the run. The lawyer either approves continuation
-              (optionally with a higher budget) or stops. */}
-          {budgetPause && (
-            <BudgetPauseBanner
-              info={budgetPause}
-              onDecision={handleResumeDecision}
-            />
-          )}
-
-          {/* Sprint B1 — Approval-pause card. Renders inline above the
-              step-list when the server emitted approval_required. The
-              lawyer's decision fires handleApprovalDecision which
-              records the choice + re-POSTs to resume the agent loop. */}
-          {approvalPause && (
-            <ApprovalCard
-              info={approvalPause}
-              submitting={approvalSubmitting}
-              onDecision={handleApprovalDecision}
-            />
-          )}
 
           {/* Active run indicator */}
           {running && steps.length === 0 && !finalText && (
@@ -1357,16 +924,6 @@ export default function AgentPage() {
             return iterations.flatMap((iter) => {
               const iterSteps = byIter.get(iter) ?? [];
               const reasoningText = reasoning.get(iter);
-              /* Sprint C1 — Fork button only renders for COMPLETED runs
-                 where the iteration has at least one tool_use. The
-                 button opens the ForkModal pre-loaded with this iter's
-                 tool inputs. Hidden during in-flight runs to avoid
-                 confusion. */
-              const showForkButton =
-                !running &&
-                activeRunId !== null &&
-                iterSteps.length > 0 &&
-                iterSteps.every((s) => s.completedAt !== undefined);
               return [
                 reasoningText ? (
                   <ReasoningPanel
@@ -1378,22 +935,6 @@ export default function AgentPage() {
                 ...iterSteps.map((step) => (
                   <StepCard key={step.toolId} step={step} />
                 )),
-                showForkButton ? (
-                  <div
-                    key={`fork-${iter}`}
-                    className="ml-1 -mt-1 flex justify-end"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setForkModalIter(iter)}
-                      className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10.5px] text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-200"
-                      title={`Iteration ${iter} mit geänderten Inputs neu starten`}
-                    >
-                      <FolderInput size={10} />
-                      Fork ab Iteration {iter}
-                    </button>
-                  </div>
-                ) : null,
               ];
             });
           })()}
@@ -1435,70 +976,18 @@ export default function AgentPage() {
                       ? `Atlas erstellt Artefakte… (${artifacts.length})`
                       : `Ergebnis — ${artifacts.length} Artefakt${artifacts.length === 1 ? "" : "e"}`}
                   </div>
-                  {artifacts.map((a, i) => {
-                    /* Sprint A2 — surface per-artefact verification
-                       warnings inline. We render them between the
-                       step-cards / verification-banner and the
-                       artefact-card body so the lawyer sees the flag
-                       BEFORE reading the body. */
-                    const artifactFindings = findings.filter(
-                      (f) => f.artifactIndex === i,
-                    );
-                    return (
-                      <div
-                        key={`${a.kind}-${i}-${a.title}`}
-                        className="space-y-2"
-                      >
-                        {artifactFindings.length > 0 && (
-                          <ArtifactFindings findings={artifactFindings} />
-                        )}
-                        <ArtifactCard
-                          artifact={a}
-                          running={running}
-                          mandateId={mandateId}
-                          goalTitle={goal.split(/[.!?\n]/)[0]?.trim() ?? ""}
-                        />
-                      </div>
-                    );
-                  })}
+                  {artifacts.map((a, i) => (
+                    <ArtifactCard
+                      key={`${a.kind}-${i}-${a.title}`}
+                      artifact={a}
+                      running={running}
+                      mandateId={mandateId}
+                      goalTitle={goal.split(/[.!?\n]/)[0]?.trim() ?? ""}
+                    />
+                  ))}
                 </div>
               );
             })()}
-
-          {/* Sprint C2 — Smart Workflow-Sequencing. Render suggested
-              follow-up templates as 1-click cards. Each click pre-fills
-              the next template + auto-starts a fresh run (carrying the
-              same mandate-context). Only renders when the prior run
-              came from a template AND that template had curated
-              suggestedNext entries. */}
-          {!running && suggestedNext.length > 0 && (
-            <SuggestedNextCards
-              suggestions={suggestedNext}
-              hasMandate={!!mandateId}
-              onPick={(s) => {
-                /* Mirror the catalog click-behaviour: set goal, set
-                   template-id, auto-attach mandate if needed. Then
-                   reset transient state and auto-start. Microtask
-                   delay so setGoal commits before handleRun reads
-                   it (matches handleResumeDecision pattern). */
-                setGoal(
-                  AGENT_TEMPLATES.find((t) => t.id === s.templateId)?.goal ??
-                    "",
-                );
-                setSelectedTemplateId(s.templateId);
-                if (s.needsMandate && !mandateId && mandates.length > 0) {
-                  setMandateId(mandates[0].id);
-                }
-                /* Clear the prior run's results so the new run renders
-                   fresh — handleRun does this too, but doing it
-                   here makes the transition feel instant. */
-                setSuggestedNext([]);
-                setTimeout(() => {
-                  void handleRun();
-                }, 0);
-              }}
-            />
-          )}
 
           {/* Auto-detected deadlines — run-level, NOT per-artifact, so
               we render at the bottom (after all artifacts). Detects
@@ -1556,6 +1045,49 @@ export default function AgentPage() {
               );
             })()}
 
+          {/* Sprint E2 — Batched Approval modal. Shown when the server
+              pauses the run waiting for lawyer decisions. */}
+          {approvalPause && (
+            <ApprovalCards
+              info={approvalPause}
+              submitting={approvalSubmitting}
+              onSubmit={handleApprovalDecision}
+            />
+          )}
+
+          {/* Sprint E3 — Live cost counter during run. Shows $main · $sub
+              when sub-agents are active. */}
+          {running && costProgress && (
+            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-[11px] text-slate-500 dark:border-white/[0.08] dark:bg-white/[0.02]">
+              <span className="tabular-nums">
+                ${costProgress.currentCost.toFixed(4)}
+                {costProgress.budget !== null && (
+                  <>
+                    {" "}
+                    / ${costProgress.budget.toFixed(2)} (
+                    {Math.round(
+                      (costProgress.currentCost / costProgress.budget) * 100,
+                    )}
+                    %)
+                  </>
+                )}
+                {(costProgress.subAgentCost ?? 0) > 0 && (
+                  <span className="ml-1 text-slate-400">
+                    ($
+                    {(
+                      costProgress.currentCost -
+                      (costProgress.subAgentCost ?? 0)
+                    ).toFixed(4)}{" "}
+                    main · ${(costProgress.subAgentCost ?? 0).toFixed(4)} sub)
+                  </span>
+                )}
+              </span>
+              <span className="text-slate-400">
+                · Iteration {costProgress.iteration}
+              </span>
+            </div>
+          )}
+
           {/* Usage footer + reset */}
           {usage && (
             <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-[11px] text-slate-500 dark:border-white/[0.08] dark:bg-white/[0.02]">
@@ -1565,30 +1097,13 @@ export default function AgentPage() {
                 {usage.outputTokens.toLocaleString("de-DE")}↓ tokens · $
                 {usage.costUsd.toFixed(4)}
               </span>
-              <div className="flex items-center gap-3">
-                {/* Sprint D1 — Evidence-Pack download. Only renders
-                    when activeRunId is set + run is complete (usage
-                    fires at run_done). The link is plain GET so the
-                    browser triggers the native download dialog with
-                    the server-set filename. */}
-                {activeRunId && (
-                  <a
-                    href={`/api/atlas/agent/runs/${activeRunId}/evidence-pack`}
-                    className="inline-flex items-center gap-1 text-slate-600 underline-offset-4 hover:text-slate-900 hover:underline dark:text-slate-400 dark:hover:text-slate-100"
-                    title="Berufshaftpflicht-tauglicher ZIP-Export: Agent-Output (PDF) + Quellen (PDF) + Audit-Log (JSON)"
-                  >
-                    <FolderInput size={11} />
-                    Evidence-Pack (ZIP)
-                  </a>
-                )}
-                <button
-                  type="button"
-                  onClick={reset}
-                  className="text-slate-500 underline-offset-4 hover:text-slate-900 hover:underline dark:hover:text-slate-200"
-                >
-                  Neuer Agent-Run
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={reset}
+                className="text-slate-500 underline-offset-4 hover:text-slate-900 hover:underline dark:hover:text-slate-200"
+              >
+                Neuer Agent-Run
+              </button>
             </div>
           )}
 
@@ -1599,20 +1114,6 @@ export default function AgentPage() {
             </div>
           )}
         </div>
-      )}
-
-      {/* Sprint C1 — ForkModal renders as a fixed overlay when the
-          lawyer clicks "Fork ab Iteration N" on any iteration. Inputs
-          for that iteration's tool_uses are shown as JSON-editable
-          textareas; submit fires handleFork(). */}
-      {forkModalIter !== null && (
-        <ForkModal
-          iter={forkModalIter}
-          steps={steps.filter((s) => s.iteration === forkModalIter)}
-          submitting={forkSubmitting}
-          onClose={() => setForkModalIter(null)}
-          onSubmit={handleFork}
-        />
       )}
     </div>
   );
@@ -1892,73 +1393,6 @@ function VerificationBanner({
   );
 }
 
-/* ── ArtifactFindings ──────────────────────────────────────────────────
- *
- * Sprint A2 — Inline-warnings for one artefact. Renders a compact
- * stack of warning rows above the artefact-card body, grouped by
- * kind (citation / bora / hallucination) so a memo with three citation-
- * issues + one BORA-flag reads as two visual blocks instead of four
- * scattered rows. Severity drives the icon-colour: error = red, warn
- * = amber.
- */
-function ArtifactFindings({ findings }: { findings: VerificationFinding[] }) {
-  /* Group by kind for cleaner display. Within each group, error
-     findings sort first (the lawyer needs to see the red flags
-     before the yellow ones). */
-  const groups = (["citation", "bora", "hallucination"] as const).map(
-    (kind) => ({
-      kind,
-      items: findings
-        .filter((f) => f.kind === kind)
-        .sort((a, b) => {
-          if (a.severity === b.severity) return 0;
-          return a.severity === "error" ? -1 : 1;
-        }),
-    }),
-  );
-
-  const groupLabel: Record<VerificationFinding["kind"], string> = {
-    citation: "Citation-Prüfung",
-    bora: "BORA / BRAO",
-    hallucination: "Halluzinations-Verdacht",
-  };
-
-  return (
-    <div className="space-y-1.5 rounded-lg border border-amber-200 bg-amber-50/50 px-3 py-2.5 dark:border-amber-500/20 dark:bg-amber-500/[0.04]">
-      <div className="text-[10.5px] uppercase tracking-wider text-amber-700 dark:text-amber-300">
-        Verification — {findings.length} Hinweis
-        {findings.length === 1 ? "" : "e"}
-      </div>
-      {groups.map((g) => {
-        if (g.items.length === 0) return null;
-        return (
-          <div key={g.kind} className="space-y-1">
-            <div className="text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              {groupLabel[g.kind]} ({g.items.length})
-            </div>
-            {g.items.map((f, i) => {
-              const isError = f.severity === "error";
-              const tone = isError
-                ? "text-red-700 dark:text-red-300"
-                : "text-amber-700 dark:text-amber-300";
-              const Icon = isError ? AlertCircle : ShieldAlert;
-              return (
-                <div
-                  key={`${g.kind}-${i}-${f.offset ?? f.citation ?? "x"}`}
-                  className={`flex items-start gap-1.5 text-[11.5px] ${tone}`}
-                >
-                  <Icon size={11} className="mt-0.5 shrink-0" />
-                  <span className="flex-1 leading-snug">{f.message}</span>
-                </div>
-              );
-            })}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 /* ── ArtifactCard ─────────────────────────────────────────────────────
  *
  * Renders one structured artifact from the agent's multi-output. Each
@@ -2197,180 +1631,156 @@ function LegacyArtifact({
   );
 }
 
-/* ── BudgetPauseBanner ────────────────────────────────────────────────
+/* ── ApprovalCards (E2 wrapper) ──────────────────────────────────────
  *
- * Sprint A1 — Cost-Budget pause confirmation. Renders a modal-like
- * card when the server paused mid-run because the projected next-
- * iteration cost would exceed the lawyer-set budget. Three actions:
- *   • "Weiter (+$X)" → POST /resume with approve=true, then re-POST
- *                      /api/atlas/agent (handled by the parent's
- *                      handleResumeDecision)
- *   • "Mehr Budget" → user input + approve=true with increaseBudgetTo
- *   • "Stop"        → POST /resume with approve=false; partial output
- *                     remains on screen for review
- *
- * v1 trade-off: the "Weiter"-flow re-POSTs the original goal as a
- * NEW agent-run (the server-side conversation cannot be restored
- * across HTTP requests yet). The lawyer sees this as Atlas
- * "continuing", which is true semantically; v2 will move the
- * continuation server-side.
+ * Sprint E2 — Batched-Approval Modal. Renders N stacked
+ * ApprovalCardEntry cards (one per pending dangerous tool). Lawyer
+ * decides each; "Submit alle N" button gated on ALL decided.
+ * Provides "Alle genehmigen" / "Alle ablehnen" Bulk-Shortcuts oben
+ * für Power-Users.
  */
-function BudgetPauseBanner({
+function ApprovalCards({
   info,
-  onDecision,
+  submitting,
+  onSubmit,
 }: {
-  info: BudgetPauseInfo;
-  onDecision: (approve: boolean, increaseBudgetTo?: number) => void;
+  info: ApprovalPauseInfo;
+  submitting: boolean;
+  onSubmit: (
+    decisions: Array<{
+      toolUseId: string;
+      decision: "approved" | "rejected" | "modified";
+      modifiedInput?: Record<string, unknown>;
+    }>,
+  ) => void;
 }) {
-  const [showBudgetBump, setShowBudgetBump] = useState(false);
-  const [bumpInput, setBumpInput] = useState("");
-  const usedRatio = info.budget > 0 ? info.currentCost / info.budget : 0;
+  type DecisionRec = {
+    decision: "approved" | "rejected" | "modified";
+    modifiedInput?: Record<string, unknown>;
+  };
+  const [decisions, setDecisions] = useState<Map<string, DecisionRec>>(
+    new Map(),
+  );
+
+  const recordDecision = (toolUseId: string, rec: DecisionRec) => {
+    setDecisions((prev) => new Map(prev).set(toolUseId, rec));
+  };
+
+  const applyBulk = (decision: "approved" | "rejected") => {
+    const all = new Map<string, DecisionRec>();
+    for (const t of info.tools) all.set(t.toolUseId, { decision });
+    setDecisions(all);
+  };
+
+  const allDecided = decisions.size === info.tools.length;
+
+  const handleSubmit = () => {
+    if (!allDecided) return;
+    const list = info.tools.map((t) => {
+      const rec = decisions.get(t.toolUseId);
+      if (!rec) throw new Error("missing decision");
+      return {
+        toolUseId: t.toolUseId,
+        decision: rec.decision,
+        modifiedInput: rec.modifiedInput,
+      };
+    });
+    onSubmit(list);
+  };
 
   return (
-    <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 dark:border-amber-500/30 dark:bg-amber-500/10">
-      <div className="mb-2 flex items-center gap-2 text-[12px] font-medium text-amber-800 dark:text-amber-200">
-        <PauseCircle size={14} />
-        Atlas pausiert — Budget fast erschöpft
+    <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 dark:border-red-500/30 dark:bg-red-500/10">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-[12px] font-medium text-red-800 dark:text-red-200">
+          <ShieldAlert size={14} />
+          {info.tools.length === 1
+            ? "Atlas pausiert — Freigabe erforderlich"
+            : `Atlas pausiert — ${info.tools.length} Freigaben erforderlich (Iteration ${info.iteration})`}
+        </div>
+        {info.tools.length > 1 && (
+          <div className="flex items-center gap-2 text-[11px]">
+            <button
+              type="button"
+              onClick={() => applyBulk("approved")}
+              disabled={submitting}
+              className="rounded-md border border-emerald-300 bg-white px-2 py-0.5 text-emerald-700 hover:bg-emerald-50 disabled:opacity-40 dark:border-emerald-500/30 dark:bg-transparent dark:text-emerald-200 dark:hover:bg-emerald-500/20"
+            >
+              Alle genehmigen
+            </button>
+            <button
+              type="button"
+              onClick={() => applyBulk("rejected")}
+              disabled={submitting}
+              className="rounded-md border border-red-300 bg-white px-2 py-0.5 text-red-700 hover:bg-red-50 disabled:opacity-40 dark:border-red-500/30 dark:bg-transparent dark:text-red-200 dark:hover:bg-red-500/20"
+            >
+              Alle ablehnen
+            </button>
+          </div>
+        )}
       </div>
-      <div className="mb-3 space-y-1 text-[12.5px] leading-relaxed text-amber-900 dark:text-amber-100">
-        <div>
-          Verbraucht:{" "}
-          <span className="font-mono tabular-nums">
-            ${info.currentCost.toFixed(4)}
-          </span>{" "}
-          von{" "}
-          <span className="font-mono tabular-nums">
-            ${info.budget.toFixed(2)}
-          </span>{" "}
-          ({Math.round(usedRatio * 100)}%).
-        </div>
-        <div className="text-amber-700 dark:text-amber-200/80">
-          Geschätzte Kosten für den nächsten Schritt:{" "}
-          <span className="font-mono tabular-nums">
-            +${info.etaCost.toFixed(4)}
-          </span>
-          . {info.remainingSteps} weitere Schritte möglich (Iteration{" "}
-          {info.iterationsCompleted}/15 durchlaufen).
-        </div>
-      </div>
-
-      {!showBudgetBump ? (
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => onDecision(true)}
-            className="inline-flex items-center gap-1.5 rounded-md bg-amber-600 px-3 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-amber-700"
-          >
-            <Play size={11} />
-            Weiter (+${info.etaCost.toFixed(4)})
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowBudgetBump(true)}
-            className="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-white px-3 py-1.5 text-[12px] text-amber-800 transition-colors hover:bg-amber-100 dark:border-amber-500/30 dark:bg-transparent dark:text-amber-100 dark:hover:bg-amber-500/20"
-          >
-            <DollarSign size={11} />
-            Mehr Budget …
-          </button>
-          <button
-            type="button"
-            onClick={() => onDecision(false)}
-            className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-[12px] text-slate-700 transition-colors hover:bg-slate-100 dark:border-white/[0.10] dark:bg-transparent dark:text-slate-300 dark:hover:bg-white/[0.05]"
-          >
-            <X size={11} />
-            Stop
-          </button>
-        </div>
-      ) : (
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="text-[11.5px] text-amber-800 dark:text-amber-200">
-            Neues Budget:
-          </label>
-          <input
-            type="number"
-            min="0.01"
-            max="100"
-            step="0.5"
-            value={bumpInput}
-            onChange={(e) => setBumpInput(e.target.value)}
-            placeholder={String(Math.min(100, info.budget * 2).toFixed(2))}
-            className="w-24 rounded-md border border-amber-300 bg-white px-2 py-1 text-[12px] text-slate-900 outline-none placeholder:text-slate-400 dark:border-amber-500/30 dark:bg-transparent dark:text-slate-100 dark:placeholder:text-slate-500"
-            autoFocus
+      <div className="space-y-3">
+        {info.tools.map((t) => (
+          <ApprovalCardEntry
+            key={t.toolUseId}
+            tool={t}
+            currentDecision={decisions.get(t.toolUseId) ?? null}
+            disabled={submitting}
+            onDecide={(rec) => recordDecision(t.toolUseId, rec)}
           />
-          <span className="text-[11px] text-amber-700 dark:text-amber-200/80">
-            USD
-          </span>
-          <button
-            type="button"
-            onClick={() => {
-              const n = Number(bumpInput);
-              if (!Number.isFinite(n) || n <= 0 || n > 100) return;
-              onDecision(true, n);
-            }}
-            disabled={(() => {
-              const n = Number(bumpInput);
-              return !Number.isFinite(n) || n <= 0 || n > 100;
-            })()}
-            className="inline-flex items-center gap-1.5 rounded-md bg-amber-600 px-3 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-amber-700 disabled:opacity-40"
-          >
-            <Play size={11} />
-            Bestätigen
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setShowBudgetBump(false);
-              setBumpInput("");
-            }}
-            className="text-[11px] text-amber-700 underline-offset-4 hover:underline dark:text-amber-200"
-          >
-            zurück
-          </button>
-        </div>
-      )}
+        ))}
+      </div>
+      <div className="mt-3 flex items-center justify-end gap-2 border-t border-red-200 pt-3 dark:border-red-500/20">
+        <span className="mr-auto text-[11px] text-red-700 dark:text-red-200/80">
+          {decisions.size} von {info.tools.length} entschieden
+        </span>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={submitting || !allDecided}
+          className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-emerald-700 disabled:opacity-40"
+        >
+          {submitting && <Loader2 size={11} className="animate-spin" />}
+          {info.tools.length === 1
+            ? "Submit Entscheidung"
+            : `Submit alle ${info.tools.length} Entscheidungen`}
+        </button>
+      </div>
     </div>
   );
 }
 
-/* ── ApprovalCard ─────────────────────────────────────────────────────
+/* ── ApprovalCardEntry (single tool card within ApprovalCards) ──────
  *
- * Sprint B1 — Interactive pause for dangerous tool execution. Renders
- * inline above the running step-list when the server emits
- * `approval_required`. Lawyer chooses one of three actions:
- *   • "Genehmigen" → POST /approve with decision="approved"; tool runs
- *                    with original input
- *   • "Bearbeiten" → expand inline JSON-textarea; lawyer edits the input;
- *                    "Bestätigen" sends decision="modified" + modifiedInput
- *   • "Ablehnen"   → POST /approve with decision="rejected"; tool is
- *                    skipped, model is told "USER_CANCELLED" + asked to
- *                    continue with the next step in the plan
- *
- * All three paths chain into handleApprovalDecision → re-POST main
- * route with resumeFromRunId so the agent loop continues without
- * losing accumulated conversation state.
+ * Renders one pending tool with Approve / Edit / Reject buttons.
+ * Edit-mode shows JSON-editable textarea (same UX as Sprint B1 v1's
+ * ApprovalCard but local to one tool). Records decision in parent's
+ * Map via onDecide callback.
  */
-function ApprovalCard({
-  info,
-  submitting,
-  onDecision,
+function ApprovalCardEntry({
+  tool,
+  currentDecision,
+  disabled,
+  onDecide,
 }: {
-  info: ApprovalPauseInfo;
-  submitting: boolean;
-  onDecision: (
-    decision: "approved" | "rejected" | "modified",
-    modifiedInput?: Record<string, unknown>,
-  ) => void;
+  tool: PendingTool;
+  currentDecision: {
+    decision: "approved" | "rejected" | "modified";
+    modifiedInput?: Record<string, unknown>;
+  } | null;
+  disabled: boolean;
+  onDecide: (rec: {
+    decision: "approved" | "rejected" | "modified";
+    modifiedInput?: Record<string, unknown>;
+  }) => void;
 }) {
-  const [mode, setMode] = useState<"buttons" | "edit">("buttons");
-  /* Pretty-print the original input as JSON so the lawyer sees what
-     Atlas wants to do. Falls back to "{}" for null / non-object. */
   const initialJson = (() => {
     try {
-      return JSON.stringify(info.input ?? {}, null, 2);
+      return JSON.stringify(tool.input ?? {}, null, 2);
     } catch {
       return "{}";
     }
   })();
+  const [mode, setMode] = useState<"buttons" | "edit">("buttons");
   const [editJson, setEditJson] = useState<string>(initialJson);
   const [parseError, setParseError] = useState<string | null>(null);
 
@@ -2387,100 +1797,104 @@ function ApprovalCard({
       setParseError(e instanceof Error ? e.message : "Ungültiges JSON");
       return;
     }
-    onDecision("modified", parsed);
+    onDecide({ decision: "modified", modifiedInput: parsed });
+    setMode("buttons");
   };
 
-  return (
-    <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 dark:border-red-500/30 dark:bg-red-500/10">
-      <div className="mb-2 flex items-center gap-2 text-[12px] font-medium text-red-800 dark:text-red-200">
-        <ShieldAlert size={14} />
-        Atlas pausiert — Freigabe erforderlich
-      </div>
-      <div className="mb-3 space-y-1 text-[12.5px] leading-relaxed text-red-900 dark:text-red-100">
-        <div>
-          Tool:{" "}
-          <span className="font-mono text-[12px] text-red-700 dark:text-red-200/90">
-            {info.toolName}
-          </span>{" "}
-          <span className="text-red-700/80 dark:text-red-200/70">
-            (Iteration {info.iteration})
-          </span>
-        </div>
-        <div className="text-red-700 dark:text-red-200/80">
-          {info.rationale}
-        </div>
-      </div>
+  const decisionBadgeLabel = (() => {
+    if (!currentDecision) return null;
+    if (currentDecision.decision === "approved")
+      return {
+        text: "Genehmigt",
+        cls: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-200",
+      };
+    if (currentDecision.decision === "rejected")
+      return {
+        text: "Abgelehnt",
+        cls: "bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-200",
+      };
+    return {
+      text: "Modifiziert",
+      cls: "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200",
+    };
+  })();
 
+  return (
+    <div className="rounded-md border border-red-200 bg-white/70 p-3 dark:border-red-500/20 dark:bg-black/20">
+      <div className="mb-2 flex items-center gap-2 text-[12px] text-red-900 dark:text-red-100">
+        <span className="font-mono text-[11.5px] text-red-700 dark:text-red-200/90">
+          {tool.toolName}
+        </span>
+        {decisionBadgeLabel && (
+          <span
+            className={`rounded px-1.5 py-0.5 text-[10px] ${decisionBadgeLabel.cls}`}
+          >
+            {decisionBadgeLabel.text}
+          </span>
+        )}
+      </div>
+      <div className="mb-2 text-[11.5px] text-red-700 dark:text-red-200/80">
+        {tool.rationale}
+      </div>
       {mode === "buttons" ? (
         <>
-          {/* Input-preview, scrollable when long. */}
-          <pre className="mb-3 max-h-40 overflow-auto rounded-md border border-red-200 bg-white/70 p-2 font-mono text-[11px] leading-relaxed text-slate-800 dark:border-red-500/20 dark:bg-black/20 dark:text-slate-200">
+          <pre className="mb-2 max-h-32 overflow-auto rounded-md border border-red-100 bg-slate-50 p-2 font-mono text-[10.5px] leading-relaxed text-slate-800 dark:border-red-500/10 dark:bg-black/30 dark:text-slate-200">
             {initialJson}
           </pre>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
             <button
               type="button"
-              onClick={() => onDecision("approved")}
-              disabled={submitting}
-              className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-emerald-700 disabled:opacity-40"
+              onClick={() => onDecide({ decision: "approved" })}
+              disabled={disabled}
+              className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-2.5 py-1 text-[11.5px] font-medium text-white hover:bg-emerald-700 disabled:opacity-40"
             >
-              <Check size={11} />
+              <Check size={10} />
               Genehmigen
             </button>
             <button
               type="button"
               onClick={() => setMode("edit")}
-              disabled={submitting}
-              className="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-white px-3 py-1.5 text-[12px] text-amber-800 transition-colors hover:bg-amber-100 disabled:opacity-40 dark:border-amber-500/30 dark:bg-transparent dark:text-amber-100 dark:hover:bg-amber-500/20"
+              disabled={disabled}
+              className="rounded-md border border-amber-300 bg-white px-2.5 py-1 text-[11.5px] text-amber-800 hover:bg-amber-50 disabled:opacity-40 dark:border-amber-500/30 dark:bg-transparent dark:text-amber-200"
             >
-              Bearbeiten …
+              Bearbeiten
             </button>
             <button
               type="button"
-              onClick={() => onDecision("rejected")}
-              disabled={submitting}
-              className="inline-flex items-center gap-1.5 rounded-md border border-red-300 bg-white px-3 py-1.5 text-[12px] text-red-700 transition-colors hover:bg-red-100 disabled:opacity-40 dark:border-red-500/30 dark:bg-transparent dark:text-red-200 dark:hover:bg-red-500/20"
+              onClick={() => onDecide({ decision: "rejected" })}
+              disabled={disabled}
+              className="inline-flex items-center gap-1 rounded-md border border-red-300 bg-white px-2.5 py-1 text-[11.5px] text-red-700 hover:bg-red-50 disabled:opacity-40 dark:border-red-500/30 dark:bg-transparent dark:text-red-200"
             >
-              <X size={11} />
+              <X size={10} />
               Ablehnen
             </button>
-            {submitting && (
-              <span className="inline-flex items-center gap-1 text-[11px] text-red-700 dark:text-red-200/80">
-                <Loader2 size={11} className="animate-spin" />
-                Sende …
-              </span>
-            )}
           </div>
         </>
       ) : (
-        <div className="space-y-2">
-          <label className="text-[11.5px] text-red-800 dark:text-red-200">
-            Tool-Input (JSON):
-          </label>
+        <div className="space-y-1.5">
           <textarea
             value={editJson}
             onChange={(e) => {
               setEditJson(e.target.value);
               if (parseError) setParseError(null);
             }}
-            rows={Math.min(12, Math.max(4, editJson.split("\n").length))}
-            className="w-full rounded-md border border-red-200 bg-white p-2 font-mono text-[11.5px] leading-relaxed text-slate-900 outline-none dark:border-red-500/20 dark:bg-black/30 dark:text-slate-100"
-            autoFocus
+            rows={Math.min(8, Math.max(3, editJson.split("\n").length))}
+            className="w-full rounded-md border border-red-200 bg-white p-2 font-mono text-[11px] leading-relaxed text-slate-900 outline-none dark:border-red-500/20 dark:bg-black/30 dark:text-slate-100"
             spellCheck={false}
           />
           {parseError && (
-            <div className="text-[11px] text-red-700 dark:text-red-300">
+            <div className="text-[10.5px] text-red-700 dark:text-red-300">
               {parseError}
             </div>
           )}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={handleConfirmEdit}
-              disabled={submitting}
-              className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-emerald-700 disabled:opacity-40"
+              disabled={disabled}
+              className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-2.5 py-1 text-[11.5px] font-medium text-white hover:bg-emerald-700 disabled:opacity-40"
             >
-              <Check size={11} />
+              <Check size={10} />
               Bestätigen
             </button>
             <button
@@ -2490,288 +1904,14 @@ function ApprovalCard({
                 setEditJson(initialJson);
                 setParseError(null);
               }}
-              disabled={submitting}
-              className="text-[11px] text-red-700 underline-offset-4 hover:underline disabled:opacity-40 dark:text-red-200"
+              disabled={disabled}
+              className="text-[10.5px] text-red-700 underline-offset-4 hover:underline disabled:opacity-40 dark:text-red-200"
             >
               zurück
             </button>
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-/* ── SuggestedNextCards ───────────────────────────────────────────────
- *
- * Sprint C2 — Smart Workflow-Sequencing. Renders 1-click cards under
- * the run artifacts suggesting the next template to run. Each card
- * shows: template title, the rationale (why this is suggested), and
- * cost-band + estimated duration. Click fires `onPick` which:
- *   1. Sets goal-input to the template's goal-text
- *   2. Sets selectedTemplateId so the next run also gets suggestions
- *   3. Auto-attaches the same mandate (if template needs one)
- *   4. Auto-starts the run (no separate "click to start" needed)
- *
- * Mandate-warning rendered inline when a suggested template needs a
- * mandate but none is currently selected.
- */
-function SuggestedNextCards({
-  suggestions,
-  hasMandate,
-  onPick,
-}: {
-  suggestions: SuggestedWorkflow[];
-  hasMandate: boolean;
-  onPick: (s: SuggestedWorkflow) => void;
-}) {
-  return (
-    <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/5">
-      <div className="mb-2 flex items-center gap-1.5 text-[10.5px] uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
-        <Sparkles size={10} />
-        Nächste logische Schritte ({suggestions.length})
-      </div>
-      <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
-        {suggestions.map((s) => {
-          const needsMandateWarn = s.needsMandate && !hasMandate;
-          return (
-            <button
-              key={s.templateId}
-              type="button"
-              onClick={() => onPick(s)}
-              className="group flex flex-col gap-1.5 rounded-md border border-emerald-200 bg-white p-3 text-left transition-colors hover:border-emerald-400 hover:bg-emerald-50 dark:border-emerald-500/20 dark:bg-emerald-500/5 dark:hover:border-emerald-400/40 dark:hover:bg-emerald-500/10"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="text-[12.5px] font-medium text-slate-900 dark:text-slate-100">
-                  {s.title}
-                </div>
-                <ChevronRight
-                  size={12}
-                  className="mt-0.5 shrink-0 text-emerald-500 transition-transform group-hover:translate-x-0.5"
-                />
-              </div>
-              <div className="text-[11.5px] leading-relaxed text-emerald-800 dark:text-emerald-200/90">
-                {s.rationale}
-              </div>
-              <div className="mt-1 flex flex-wrap items-center gap-2 text-[10.5px] text-slate-500 dark:text-slate-400">
-                <span className="capitalize">{s.category}</span>
-                <span>·</span>
-                <span>~{Math.round(s.estimatedSeconds / 60)} min</span>
-                <span>·</span>
-                <span>Cost: {s.costBand}</span>
-                {s.needsFile && (
-                  <>
-                    <span>·</span>
-                    <span className="inline-flex items-center gap-0.5">
-                      <Paperclip size={9} />
-                      Datei nötig
-                    </span>
-                  </>
-                )}
-                {needsMandateWarn && (
-                  <>
-                    <span>·</span>
-                    <span className="text-amber-700 dark:text-amber-300">
-                      braucht Mandat
-                    </span>
-                  </>
-                )}
-              </div>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-/* ── ForkModal ────────────────────────────────────────────────────────
- *
- * Sprint C1 — Run-Replay with Branching. Modal-overlay shown when the
- * lawyer clicks "Fork ab Iteration N" on a completed run's iteration.
- *
- * For each tool_use in that iteration, renders the original input as
- * a JSON-editable textarea. Submit:
- *   - Diffs each textarea against the original — only changed inputs
- *     are sent in `modifiedToolInputs`
- *   - Validates each as JSON-object (rejects arrays / primitives)
- *   - Calls onSubmit(iter, modifiedToolInputs) which fires handleFork
- *
- * If the lawyer changed nothing and just clicks Submit, an empty map
- * is sent — the server forks at iter N with the parent's original
- * inputs (still useful: same prefix-context but the next iterations
- * may diverge as the model gets fresh attention).
- */
-function ForkModal({
-  iter,
-  steps,
-  submitting,
-  onClose,
-  onSubmit,
-}: {
-  iter: number;
-  steps: StepRecord[];
-  submitting: boolean;
-  onClose: () => void;
-  onSubmit: (
-    iter: number,
-    modifiedToolInputs: Record<string, Record<string, unknown>>,
-  ) => void;
-}) {
-  /* originalJson is the stable per-tool reference for diffing; editJson
-     tracks the live textarea value. Keyed by toolId. */
-  const originalJson: Record<string, string> = {};
-  for (const s of steps) {
-    try {
-      originalJson[s.toolId] = JSON.stringify(s.input, null, 2);
-    } catch {
-      originalJson[s.toolId] = "{}";
-    }
-  }
-  const [editJson, setEditJson] = useState<Record<string, string>>(() => ({
-    ...originalJson,
-  }));
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const handleSubmit = () => {
-    const modified: Record<string, Record<string, unknown>> = {};
-    const newErrors: Record<string, string> = {};
-    for (const s of steps) {
-      const current = editJson[s.toolId] ?? originalJson[s.toolId];
-      if (current === originalJson[s.toolId]) continue;
-      try {
-        const parsed = JSON.parse(current);
-        if (
-          typeof parsed !== "object" ||
-          parsed === null ||
-          Array.isArray(parsed)
-        ) {
-          newErrors[s.toolId] = "JSON muss ein Objekt sein";
-          continue;
-        }
-        modified[s.toolId] = parsed as Record<string, unknown>;
-      } catch (e) {
-        newErrors[s.toolId] =
-          e instanceof Error ? e.message : "Ungültiges JSON";
-      }
-    }
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-    setErrors({});
-    onSubmit(iter, modified);
-  };
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm dark:bg-black/50"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label={`Fork ab Iteration ${iter}`}
-    >
-      <div
-        className="w-full max-w-2xl max-h-[80vh] overflow-auto rounded-2xl border border-violet-200 bg-white p-5 shadow-[0_16px_40px_rgba(0,0,0,0.14)] dark:border-violet-500/30 dark:bg-[#1a1a1a]"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-[14px] font-semibold text-slate-900 dark:text-slate-100">
-            <FolderInput
-              size={14}
-              className="text-violet-600 dark:text-violet-300"
-            />
-            Fork ab Iteration {iter}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Schließen"
-            className="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-100"
-          >
-            <X size={14} />
-          </button>
-        </div>
-        <p className="mb-4 text-[12px] leading-relaxed text-slate-600 dark:text-slate-400">
-          Atlas startet einen neuen Run mit der Conversation des Parent-Runs bis
-          Iteration {iter}. Tools in dieser Iteration werden mit den unten
-          editierten Inputs neu ausgeführt; Iterationen {">"}
-          {iter} werden frisch geplant.
-        </p>
-        <div className="space-y-3">
-          {steps.length === 0 ? (
-            <div className="text-[12.5px] text-slate-500">
-              Keine Tool-Aufrufe in dieser Iteration zum Editieren.
-            </div>
-          ) : (
-            steps.map((s) => (
-              <div key={s.toolId} className="space-y-1.5">
-                <label className="flex items-center gap-2 text-[11.5px] font-medium text-slate-700 dark:text-slate-300">
-                  <Cpu size={11} />
-                  <span className="font-mono">{s.toolName}</span>
-                  {editJson[s.toolId] !== originalJson[s.toolId] && (
-                    <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] text-amber-800 dark:bg-amber-500/20 dark:text-amber-200">
-                      geändert
-                    </span>
-                  )}
-                </label>
-                <textarea
-                  value={editJson[s.toolId] ?? ""}
-                  onChange={(e) => {
-                    setEditJson((prev) => ({
-                      ...prev,
-                      [s.toolId]: e.target.value,
-                    }));
-                    if (errors[s.toolId]) {
-                      setErrors((prev) => {
-                        const next = { ...prev };
-                        delete next[s.toolId];
-                        return next;
-                      });
-                    }
-                  }}
-                  rows={Math.min(
-                    10,
-                    Math.max(3, (editJson[s.toolId] ?? "").split("\n").length),
-                  )}
-                  className="w-full rounded-md border border-slate-200 bg-slate-50 p-2 font-mono text-[11.5px] leading-relaxed text-slate-900 outline-none dark:border-white/[0.08] dark:bg-black/30 dark:text-slate-100"
-                  spellCheck={false}
-                />
-                {errors[s.toolId] && (
-                  <div className="text-[11px] text-red-600 dark:text-red-400">
-                    {errors[s.toolId]}
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-        </div>
-        <div className="mt-4 flex items-center justify-end gap-2">
-          {submitting && (
-            <span className="inline-flex items-center gap-1 text-[11px] text-slate-500">
-              <Loader2 size={11} className="animate-spin" />
-              Fork startet …
-            </span>
-          )}
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={submitting}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-[12px] text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-40 dark:border-white/[0.10] dark:text-slate-300 dark:hover:bg-white/[0.05]"
-          >
-            Abbrechen
-          </button>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={submitting || steps.length === 0}
-            className="inline-flex items-center gap-1.5 rounded-md bg-violet-600 px-3 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-violet-700 disabled:opacity-40"
-          >
-            <FolderInput size={11} />
-            Fork starten
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

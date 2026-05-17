@@ -26,6 +26,7 @@ const QuerySchema = z.object({
   mandateId: z.string().cuid().optional(),
   limit: z.coerce.number().min(1).max(200).default(50),
   status: z.enum(["running", "complete", "error", "aborted"]).optional(),
+  templateId: z.string().min(1).max(100).optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -43,6 +44,7 @@ export async function GET(req: NextRequest) {
     mandateId: url.searchParams.get("mandateId") ?? undefined,
     limit: url.searchParams.get("limit") ?? undefined,
     status: url.searchParams.get("status") ?? undefined,
+    templateId: url.searchParams.get("templateId") ?? undefined,
   });
   if (!parsed.success) {
     return NextResponse.json(
@@ -56,12 +58,14 @@ export async function GET(req: NextRequest) {
     organizationId: string;
     mandateId?: string;
     status?: string;
+    templateId?: string;
   } = {
     userId: atlas.userId,
     organizationId: atlas.organizationId,
   };
   if (parsed.data.mandateId) where.mandateId = parsed.data.mandateId;
   if (parsed.data.status) where.status = parsed.data.status;
+  if (parsed.data.templateId) where.templateId = parsed.data.templateId;
 
   const runs = await prisma.atlasAgentRun.findMany({
     where,
