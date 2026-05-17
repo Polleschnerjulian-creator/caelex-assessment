@@ -53,16 +53,16 @@ model User {
   tradeItemNotes    TradeItemNote[]
 
   // Comply Trade v2 (Wave A Sprint A1) — counterparty screening back-refs.
-  tradePartiesCreated     TradeParty[]           @relation("TradePartyAuthor")
-  tradeScreeningsDecided  TradeScreeningResult[] @relation("TradeScreeningDecider")
+  tradePartiesCreated    TradeParty[]           @relation("TradePartyAuthor")
+  tradeScreeningsDecided TradeScreeningResult[] @relation("TradeScreeningDecider")
 
   // Comply Trade v2 (Wave C Sprint C1) — operations + license back-refs.
-  tradeOperationsCreated  TradeOperation[]       @relation("TradeOperationAuthor")
+  tradeOperationsCreated TradeOperation[] @relation("TradeOperationAuthor")
 
   // Mission domain (Sprint Mission-1) — first-class Mission entity
   // back-ref. Author of the Mission (creator). Distinct from
   // MissionSpacecraft / MissionPhase which have their own lifecycles.
-  missionsCreated         Mission[]              @relation("MissionAuthor")
+  missionsCreated Mission[] @relation("MissionAuthor")
 
   accounts                 Account[]
   sessions                 Session[]
@@ -186,33 +186,35 @@ model User {
   // Compliance-Audit 2026-05 — § 203 StGB / DPA § 10a Abs. 2.
   // (a) Verpflichtungserklärungen the user has signed; (b) commits
   // they recorded (admin-side bookkeeping).
-  signedSection203Commitments  Section203Commitment[] @relation("SignedSection203Commitments")
+  signedSection203Commitments   Section203Commitment[] @relation("SignedSection203Commitments")
   recordedSection203Commitments Section203Commitment[] @relation("RecordedSection203Commitments")
 
   // Atlas V2 — Mandate-Project + Chat container ownership relations.
   // See docs/ATLAS-V2-MASTER-PLAN.md.
-  ownedAtlasMandates       AtlasMandate[]       @relation("OwnedAtlasMandates")
-  atlasMandateMemberships  AtlasMandateMember[] @relation("AtlasMandateMemberships")
-  atlasMandateFileUploads  AtlasMandateFile[]   @relation("AtlasMandateFileUploads")
-  ownedAtlasChats          AtlasChat[]          @relation("OwnedAtlasChats")
+  ownedAtlasMandates         AtlasMandate[]         @relation("OwnedAtlasMandates")
+  atlasMandateMemberships    AtlasMandateMember[]   @relation("AtlasMandateMemberships")
+  atlasMandateFileUploads    AtlasMandateFile[]     @relation("AtlasMandateFileUploads")
+  /// Sprint 12 (2026-05-17): parties this user has added to mandates.
+  atlasMandatePartiesCreated AtlasMandateParty[]    @relation("AtlasMandatePartyCreators")
+  ownedAtlasChats            AtlasChat[]            @relation("OwnedAtlasChats")
   /// AUDIT-FIX M15: assistant turns have null sender; user turns
   /// link back here. Future multi-user mandate-chats will use this
   /// to attribute who said what.
-  atlasMessagesSent        AtlasMessage[]       @relation("AtlasMessageSenders")
+  atlasMessagesSent          AtlasMessage[]         @relation("AtlasMessageSenders")
   /// Atlas-specific audit log entries authored by this user.
-  atlasAuditLogs           AtlasAuditLog[]
+  atlasAuditLogs             AtlasAuditLog[]
   /// Atlas deadlines created by this user.
-  atlasDeadlinesCreated    AtlasMandateDeadline[] @relation("AtlasDeadlineCreators")
+  atlasDeadlinesCreated      AtlasMandateDeadline[] @relation("AtlasDeadlineCreators")
   /// Atlas clause-library entries created by this user.
-  atlasClausesCreated      AtlasClause[]        @relation("AtlasClauseCreators")
+  atlasClausesCreated        AtlasClause[]          @relation("AtlasClauseCreators")
   /// Atlas notes / highlights — private per-user knowledge base.
-  atlasNotes               AtlasNote[]          @relation("AtlasNotes")
+  atlasNotes                 AtlasNote[]            @relation("AtlasNotes")
   /// Atlas time-tracking entries.
-  atlasTimeEntries         AtlasTimeEntry[]     @relation("AtlasTimeEntries")
+  atlasTimeEntries           AtlasTimeEntry[]       @relation("AtlasTimeEntries")
   /// Atlas Agent-Mode autonomous runs.
-  atlasAgentRuns           AtlasAgentRun[]      @relation("AtlasAgentRuns")
+  atlasAgentRuns             AtlasAgentRun[]        @relation("AtlasAgentRuns")
   /// Atlas Knowledge-Persistence chunks (Kanzlei-RAG).
-  atlasKnowledgeChunks     AtlasKnowledgeChunk[] @relation("AtlasUserKnowledgeChunks")
+  atlasKnowledgeChunks       AtlasKnowledgeChunk[]  @relation("AtlasUserKnowledgeChunks")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1810,11 +1812,11 @@ model IncidentNIS2Phase {
   /// T-12h before deadline. WARNING-tier notification fired.
   warnedApproachingAt DateTime?
   /// T-2h before deadline. CRITICAL-tier notification fired.
-  warnedCriticalAt DateTime?
+  warnedCriticalAt    DateTime?
   /// T+0 (deadline passed without submit). OVERDUE notification fired.
-  markedOverdueAt DateTime?
+  markedOverdueAt     DateTime?
   /// T+24h after deadline. Escalation to org-OWNER tier.
-  escalatedAt DateTime?
+  escalatedAt         DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2142,8 +2144,8 @@ model Mission {
   /// keyword match). May differ from the operator's organization for
   /// service-provider missions (Iceye delivers data to government
   /// customers).
-  primaryEndUser    String?
-  primaryEndUserCountryCode String?  // ISO 3166-1 alpha-2
+  primaryEndUser            String?
+  primaryEndUserCountryCode String? // ISO 3166-1 alpha-2
 
   // ── Lifecycle dates ──
   plannedStartAt DateTime?
@@ -2153,7 +2155,7 @@ model Mission {
   // ── Authority references (free-text) ──
   /// Permit / license numbers from BAFA, FCC, BNetzA, etc that apply
   /// to the WHOLE mission (vs per-spacecraft licenses tracked elsewhere).
-  authorityRefs  String[] @default([])
+  authorityRefs String[] @default([])
 
   // ── Audit ──
   createdAt DateTime @default(now())
@@ -3023,31 +3025,31 @@ model Organization {
   complyUiVersion String @default("v2") // "v1" | "v2"
 
   // Relations
-  members                OrganizationMember[]
-  invitations            OrganizationInvitation[]
-  spacecraft             Spacecraft[]
-  registrations          SpaceObjectRegistration[]
-  ssoConnection          SSOConnection?
-  apiKeys                ApiKey[]
-  webhooks               Webhook[]
-  subscription           Subscription?
-  comments               Comment[] // Collaboration: organization's comments
-  activities             Activity[] // Collaboration: organization's activities
-  complianceEvidence     ComplianceEvidence[] // Audit Center: org-scoped compliance evidence
-  regulatoryRequirements RegulatoryRequirement[] // ACE: org-scoped regulatory requirements
-  astraConversations     AstraConversation[] // ASTRA AI conversations
-  atlasWorkspaces        AtlasWorkspace[] // Atlas: pinboard workspaces (AI-Mode)
-  generatedDocuments     GeneratedDocument[] // AI-generated compliance documents
-  healthScore            CustomerHealthScore? // CEO Analytics: customer health
-  submissionPackages     SubmissionPackage[] // NCA Portal: document packages
-  breachReports          BreachReport[] // GDPR Art. 33/34 breach reports
-  widgetConfigs          WidgetConfig[] // Embeddable widget configurations
-  churnInterventions     ChurnIntervention[] // Churn intervention tracking
-  regulatoryUpdateReads  RegulatoryUpdateRead[] // Regulatory feed read tracking
-  ncaDocuments           NCADocument[] // Generate 2.0: NCA documents
-  ncaDocPackages         NCADocPackage[] // Generate 2.0: NCA submission packages
+  members                  OrganizationMember[]
+  invitations              OrganizationInvitation[]
+  spacecraft               Spacecraft[]
+  registrations            SpaceObjectRegistration[]
+  ssoConnection            SSOConnection?
+  apiKeys                  ApiKey[]
+  webhooks                 Webhook[]
+  subscription             Subscription?
+  comments                 Comment[] // Collaboration: organization's comments
+  activities               Activity[] // Collaboration: organization's activities
+  complianceEvidence       ComplianceEvidence[] // Audit Center: org-scoped compliance evidence
+  regulatoryRequirements   RegulatoryRequirement[] // ACE: org-scoped regulatory requirements
+  astraConversations       AstraConversation[] // ASTRA AI conversations
+  atlasWorkspaces          AtlasWorkspace[] // Atlas: pinboard workspaces (AI-Mode)
+  generatedDocuments       GeneratedDocument[] // AI-generated compliance documents
+  healthScore              CustomerHealthScore? // CEO Analytics: customer health
+  submissionPackages       SubmissionPackage[] // NCA Portal: document packages
+  breachReports            BreachReport[] // GDPR Art. 33/34 breach reports
+  widgetConfigs            WidgetConfig[] // Embeddable widget configurations
+  churnInterventions       ChurnIntervention[] // Churn intervention tracking
+  regulatoryUpdateReads    RegulatoryUpdateRead[] // Regulatory feed read tracking
+  ncaDocuments             NCADocument[] // Generate 2.0: NCA documents
+  ncaDocPackages           NCADocPackage[] // Generate 2.0: NCA submission packages
   // Compliance-Audit 2026-05 — DSGVO Art. 28 AVV per organisation.
-  dpaExecutions          OrganizationDPAExecution[] @relation("OrganizationDPAExecutions")
+  dpaExecutions            OrganizationDPAExecution[]       @relation("OrganizationDPAExecutions")
   // Atlas V2 — Mandate-Projects + Chats per organisation.
   atlasMandates            AtlasMandate[]                   @relation("OrgAtlasMandates")
   atlasChats               AtlasChat[]                      @relation("OrgAtlasChats")
@@ -3056,10 +3058,11 @@ model Organization {
   atlasKnowledgeChunks     AtlasKnowledgeChunk[]            @relation("AtlasKnowledgeChunksOrg")
   atlasAuditLogs           AtlasAuditLog[]                  @relation("AtlasAuditLogsOrg")
   atlasDeadlineSuggestions AtlasMandateDeadlineSuggestion[] @relation("AtlasDeadlineSuggestionsOrg")
-  stakeholderEngagements StakeholderEngagement[] // Network: stakeholder engagements
-  dataRooms              DataRoom[] // Network: secure data rooms
-  attestations           ComplianceAttestation[] // Network: compliance attestations
-  operatorProfile        OperatorProfile? // Unified operator profile
+  atlasMandateParties      AtlasMandateParty[]              @relation("OrgAtlasMandateParties")
+  stakeholderEngagements   StakeholderEngagement[] // Network: stakeholder engagements
+  dataRooms                DataRoom[] // Network: secure data rooms
+  attestations             ComplianceAttestation[] // Network: compliance attestations
+  operatorProfile          OperatorProfile? // Unified operator profile
 
   // Legal Network Phase 1 — trust bridge between Atlas (law firms)
   // and Caelex (operators). An Organization may be an operator, a
@@ -3093,9 +3096,9 @@ model Organization {
 
   // Comply Trade v2 (Wave B Sprint B1) — operations-layer items.
   // Counterparties + Operations + Licenses kommen in Wave A/C.
-  tradeItems   TradeItem[]
+  tradeItems      TradeItem[]
   // Comply Trade v2 (Wave A Sprint A1) — counterparty screening.
-  tradeParties TradeParty[]
+  tradeParties    TradeParty[]
   // Comply Trade v2 (Wave C Sprint C1) — operations lifecycle + licenses.
   tradeOperations TradeOperation[]
   tradeLicenses   TradeLicense[]
@@ -11046,18 +11049,18 @@ enum TradePartyStatus {
 ///   ...
 /// ]
 model TradeSanctionsSnapshot {
-  id           String              @id @default(cuid())
-  list         TradeSanctionsList
+  id              String             @id @default(cuid())
+  list            TradeSanctionsList
   /// SHA-256 of canonicalized entries JSON. Same content → same hash.
-  hash         String
-  entryCount   Int
+  hash            String
+  entryCount      Int
   /// The full parsed canonical entry array. Indexed via GIN where useful.
-  entries      Json
+  entries         Json
   /// URL the snapshot was fetched from (for audit + re-fetch).
-  sourceUrl    String
+  sourceUrl       String
   /// Upstream's own version/timestamp if exposed, for traceability.
   upstreamVersion String?
-  fetchedAt    DateTime            @default(now())
+  fetchedAt       DateTime           @default(now())
 
   @@unique([list, hash])
   @@index([list, fetchedAt])
@@ -11134,7 +11137,7 @@ model TradeOperation {
   /// User-friendly reference, e.g. "ISAR-2026-Q1-001" or
   /// "Spectrum-Avionics-to-AeroJet". Eindeutig pro Org via @@unique.
   reference     String
-  description   String              @db.Text
+  description   String             @db.Text
   operationType TradeOperationType
 
   // ── Counterparty + intermediaries ──
@@ -11200,7 +11203,7 @@ model TradeOperation {
   updatedAt         DateTime  @updatedAt
   /// Set when status transitions to a terminal state (EXECUTED + closedAt)
   /// or BLOCKED-after-disclosure. Drives 5+ year audit retention windows.
-  closedAt DateTime?
+  closedAt          DateTime?
 
   @@unique([organizationId, reference])
   @@index([organizationId, status])
@@ -11554,7 +11557,7 @@ model Section203Commitment {
   /// Soft-revocation: when an obligation is no longer active (signer
   /// left the company, scope removed). The row stays for the audit
   /// but `revokedAt` is set so the operator UI can grey it out.
-  revokedAt    DateTime?
+  revokedAt     DateTime?
   revokedReason String?
 
   createdAt DateTime @default(now())
@@ -11612,9 +11615,9 @@ model OrganizationDPAExecution {
 
   /// Timestamps for the lifecycle steps. ISO via @default(now()) for
   /// requestedAt; the rest are nullable until the step occurs.
-  requestedAt   DateTime  @default(now())
-  downloadedAt  DateTime?
-  executedAt    DateTime?
+  requestedAt  DateTime  @default(now())
+  downloadedAt DateTime?
+  executedAt   DateTime?
 
   /// R2 / S3 key for the customer-counter-signed PDF (uploaded by the
   /// operator after receiving it via secure channel). Optional — the
@@ -11686,14 +11689,14 @@ model AtlasMandate {
 
   /// Auto-Briefing Cache (Feature 1, M3). Lazy-regenerated wenn
   /// briefingStaleSince > briefingGeneratedAt oder briefingText null ist.
-  briefingText        String?    @db.Text
+  briefingText        String?   @db.Text
   briefingGeneratedAt DateTime?
   briefingStaleSince  DateTime?
 
   /// Cross-Chat-Memory rolling summary (Feature 2, M4). crossChatSummaryUpToChatId
   /// ist Sentinel — bis zu welcher Chat-ID die Summary aktuell ist; bei neueren
   /// Chats triggert das Update-Job ein Refresh.
-  crossChatSummary           String?  @db.Text
+  crossChatSummary           String?   @db.Text
   crossChatSummaryAt         DateTime?
   crossChatSummaryUpToChatId String?
 
@@ -11704,9 +11707,9 @@ model AtlasMandate {
   /// agentRunMemoryUpToRunId is sentinel — when newer agentRuns exist beyond
   /// this id, the after()-job triggers a re-summarisation.
   /// Cap at ~4000 chars (matches the Cross-Chat-Memory pattern).
-  agentRunMemory           String?   @db.Text
-  agentRunMemoryAt         DateTime?
-  agentRunMemoryUpToRunId  String?
+  agentRunMemory          String?   @db.Text
+  agentRunMemoryAt        DateTime?
+  agentRunMemoryUpToRunId String?
 
   /// Sprint D3: Background Long-Running Agents.
   /// Per-mandate scheduled autonomous agent runs. The Vercel cron at
@@ -11717,14 +11720,20 @@ model AtlasMandate {
   /// regular B1 resume-from-approval flow.
   /// Schedule is a simple enum-string ("daily" | "weekly") for v1 —
   /// no cron-expression parser dependency.
-  backgroundAgentEnabled    Boolean   @default(false)
-  backgroundAgentSchedule   String?   // "daily" | "weekly" | "every-6h" | "every-12h"
-  backgroundAgentGoal       String?   @db.Text
-  backgroundAgentLastRunAt  DateTime?
-  backgroundAgentNextRunAt  DateTime?
+  backgroundAgentEnabled   Boolean   @default(false)
+  backgroundAgentSchedule  String? // "daily" | "weekly" | "every-6h" | "every-12h"
+  backgroundAgentGoal      String?   @db.Text
+  backgroundAgentLastRunAt DateTime?
+  backgroundAgentNextRunAt DateTime?
 
   /// Suggestions die noch nicht resolved wurden (M3, Feature 4).
   deadlineSuggestions AtlasMandateDeadlineSuggestion[]
+
+  /// Sprint 12 (2026-05-17): strukturierte Parteien — Mandant, Gegner,
+  /// Behörde, Co-Counsel. Schließt die Audit-Lücke "kein Parties-Model"
+  /// — vorher waren alle Parteien außer dem clientName-Freitext nur
+  /// in customInstructions als Plaintext.
+  parties AtlasMandateParty[]
 
   // Relations
   chats           AtlasChat[]
@@ -11734,7 +11743,7 @@ model AtlasMandate {
   clauses         AtlasClause[]
   timeEntries     AtlasTimeEntry[]
   agentRuns       AtlasAgentRun[]
-  knowledgeChunks AtlasKnowledgeChunk[] @relation("AtlasMandateKnowledgeChunks")
+  knowledgeChunks AtlasKnowledgeChunk[]  @relation("AtlasMandateKnowledgeChunks")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -12036,7 +12045,7 @@ model AtlasAgentRun {
   parentRunId    String?
   forkedFromStep Int?
 
-  startedAt   DateTime @default(now())
+  startedAt   DateTime  @default(now())
   completedAt DateTime?
 
   @@index([userId, startedAt(sort: Desc)])
@@ -12165,14 +12174,6 @@ model AtlasKnowledgeChunk {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([organizationId, createdAt(sort: Desc)])
-  @@index([mandateId, createdAt(sort: Desc)])
-  @@index([sourceType, organizationId])
-  /// AUDIT-FIX M11: matches the WHERE clause in vault-search +
-  /// search_mandate_vault tool (org-scope + mandate-scope + sourceType
-  /// filter). Without this compound, queries fall back to a sequential
-  /// scan once a mandate has >100 chunks.
-  @@index([organizationId, mandateId, sourceType])
   /// AUDIT-FIX H3: DB-level idempotency for auto-embed. The app-level
   /// "count chunks with this sourceRef" check has a TOCTOU race — two
   /// concurrent uploads of the same file (or upload + retry) both see
@@ -12183,6 +12184,14 @@ model AtlasKnowledgeChunk {
   /// allowed to exist multiple times because Postgres treats NULLs
   /// as distinct in unique indices.
   @@unique([sourceType, sourceRef, chunkIndex], name: "atlas_kchunk_source_chunk_uq")
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([mandateId, createdAt(sort: Desc)])
+  @@index([sourceType, organizationId])
+  /// AUDIT-FIX M11: matches the WHERE clause in vault-search +
+  /// search_mandate_vault tool (org-scope + mandate-scope + sourceType
+  /// filter). Without this compound, queries fall back to a sequential
+  /// scan once a mandate has >100 chunks.
+  @@index([organizationId, mandateId, sourceType])
 }
 
 /// Atlas V2 Audit-Log — single source of truth for "who did what,
@@ -12241,15 +12250,15 @@ model AtlasAuditLog {
 
   createdAt DateTime @default(now())
 
-  @@index([userId, createdAt])
-  @@index([organizationId, createdAt])
-  @@index([entityType, entityId])
-  @@index([action, createdAt])
   /// AUDIT-FIX M16: hash-chain integrity — each prevHash within an org
   /// must reference exactly ONE successor row. Without this, a fork-
   /// attack (insert two rows pointing at the same prevHash) breaks the
   /// tamper-evident chain undetectably.
   @@unique([organizationId, prevHash])
+  @@index([userId, createdAt])
+  @@index([organizationId, createdAt])
+  @@index([entityType, entityId])
+  @@index([action, createdAt])
 }
 
 /// Atlas V2 Mandate-Deadline (Sprint 9, 2026-05-12).
@@ -12298,6 +12307,70 @@ model AtlasMandateDeadline {
 /// Vorgeschlagene Deadline aus Auto-Extract (M3, Feature 4).
 /// Status-Lifecycle: pending → accepted (creates AtlasMandateDeadline) | dismissed.
 /// Atlas erzeugt diese aus Vault-Files, der User bestätigt.
+/// Atlas V2 — Strukturierte Mandats-Parteien (Sprint 12, 2026-05-17).
+///
+/// Ein Mandat hat typischerweise mehrere Parteien:
+///   - client     → der eigene Mandant (i.d.R. genau einer)
+///   - opponent   → Gegner / Gegenseite (z.B. Konkurrent, Beklagter)
+///   - authority  → Behörde (BNetzA, BMWK, BAFA, FCC, ...)
+///   - co_counsel → mitberatende Kanzlei (extern, auch cross-firm)
+///
+/// Vor diesem Model lebte alles außer clientName in customInstructions
+/// als Freitext — keine Suche, keine Wiederverwendung, keine strukturierten
+/// Felder. Dieses Model macht Parteien zu erster-Klasse-Entitäten mit
+/// Kontakt, Adresse, Aktenzeichen + Notes pro Partei.
+///
+/// `type` ist ein loser String (kein Enum) damit neue Typen (z.B.
+/// "court", "expert_witness") später ohne DB-Migration ergänzt werden
+/// können. Die UI gruppiert nach den 4 Hauptkategorien.
+model AtlasMandateParty {
+  id String @id @default(cuid())
+
+  mandateId String
+  mandate   AtlasMandate @relation(fields: [mandateId], references: [id], onDelete: Cascade)
+
+  /// Org-Scope für Multi-Tenancy-Queries (z.B. "alle Parteien meiner Kanzlei
+  /// die für Behörde X gelistet sind"). Auch Sicherheit: nie cross-org leak.
+  organizationId String
+  organization   Organization @relation("OrgAtlasMandateParties", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  /// Kategorie: client | opponent | authority | co_counsel | other
+  type String
+
+  /// Name der Person ODER Organisation. Pflichtfeld.
+  name String
+
+  /// Rolle innerhalb der Partei (z.B. "Geschäftsführerin",
+  /// "Sachbearbeiter Genehmigung", "Anwalt für Frequenzrecht").
+  role String?
+
+  /// Email, Telefon, beides — Freitext, Multi-Line erlaubt.
+  contact String? @db.Text
+
+  /// Adresse — Multi-Line.
+  address String? @db.Text
+
+  /// Aktenzeichen / Referenz (z.B. "BNetzA AZ 2024-1234" oder ein
+  /// internes Mandanten-Aktenzeichen).
+  reference String?
+
+  /// Freitext-Notizen zu dieser Partei. Markdown erlaubt.
+  notes String? @db.Text
+
+  /// Audit-Felder.
+  createdByUserId String?
+  createdBy       User?   @relation("AtlasMandatePartyCreators", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Schnell-Filter: "alle Behörden in Mandat X".
+  @@index([mandateId, type])
+  /// Org-weite Suche: "alle Mandate die mit BNetzA verbunden sind"
+  /// — beim Suchen nach Name innerhalb einer Org.
+  @@index([organizationId, type])
+}
+
 model AtlasMandateDeadlineSuggestion {
   id String @id @default(cuid())
 
@@ -12314,23 +12387,23 @@ model AtlasMandateDeadlineSuggestion {
 
   title       String
   dueAt       DateTime
-  description String? @db.Text
+  description String?  @db.Text
   confidence  Float
 
   /// pending | accepted | dismissed
-  status     String @default("pending")
+  status      String   @default("pending")
   suggestedAt DateTime @default(now())
 
-  resolvedAt          DateTime?
-  resolvedByUserId    String?
+  resolvedAt           DateTime?
+  resolvedByUserId     String?
   resolvedAsDeadlineId String?
 
-  @@index([mandateId, status])
-  @@index([organizationId, status])
   /// AUDIT-FIX M14: prevent duplicate suggestions from re-extraction
   /// after re-upload of the same source-file. Title is the discriminator
   /// because dueAt may legitimately drift if Atlas refines its parse.
   @@unique([mandateId, sourceFileId, title])
+  @@index([mandateId, status])
+  @@index([organizationId, status])
 }
 
 /// Atlas V2 Clause-Library (Sprint 9, 2026-05-12).
@@ -12396,7 +12469,7 @@ model AtlasNote {
   id String @id @default(cuid())
 
   userId String
-  user   User @relation("AtlasNotes", fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation("AtlasNotes", fields: [userId], references: [id], onDelete: Cascade)
 
   /// Optional source-chat the excerpt came from.
   chatId String?
@@ -12437,7 +12510,7 @@ model AtlasTimeEntry {
   id String @id @default(cuid())
 
   userId String
-  user   User @relation("AtlasTimeEntries", fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation("AtlasTimeEntries", fields: [userId], references: [id], onDelete: Cascade)
 
   /// Mandate the work was on. Required — non-mandate time
   /// shouldn't live in Atlas (use a separate non-billable system).

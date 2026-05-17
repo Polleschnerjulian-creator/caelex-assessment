@@ -55,6 +55,7 @@ import { MandateTimeEntries } from "./MandateTimeEntries";
 import { MandateBackgroundAgentSection } from "./MandateBackgroundAgentSection";
 import { MandateHeaderEditor } from "./MandateHeaderEditor";
 import { MandateDeadlineSuggestions } from "./MandateDeadlineSuggestions";
+import { MandateParties } from "./MandateParties";
 
 interface Props {
   mandateId: string;
@@ -409,6 +410,19 @@ export function MandateDetailView({ mandateId }: Props) {
               Stundenerfassung
             </h2>
             <MandateTimeEntries
+              mandateId={mandate.id}
+              disabled={isArchived || isClosed}
+            />
+          </section>
+
+          {/* AUDIT-FIX 2026-05-17: strukturierte Parteien — Mandant, Gegner,
+              Behörde, Co-Counsel. Schließt die größte Audit-Feature-Lücke
+              ("kein Parties-Model"). */}
+          <section id="parties" className="mb-8 scroll-mt-20">
+            <h2 className="mb-3 text-[14px] font-medium text-slate-700 dark:text-slate-200">
+              Parteien
+            </h2>
+            <MandateParties
               mandateId={mandate.id}
               disabled={isArchived || isClosed}
             />
