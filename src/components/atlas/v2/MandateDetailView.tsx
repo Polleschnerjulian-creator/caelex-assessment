@@ -54,6 +54,7 @@ import { MandateDeadlines } from "./MandateDeadlines";
 import { MandateTimeEntries } from "./MandateTimeEntries";
 import { MandateBackgroundAgentSection } from "./MandateBackgroundAgentSection";
 import { MandateHeaderEditor } from "./MandateHeaderEditor";
+import { MandateDeadlineSuggestions } from "./MandateDeadlineSuggestions";
 
 interface Props {
   mandateId: string;
@@ -380,6 +381,14 @@ export function MandateDetailView({ mandateId }: Props) {
               DOCX und XLSX werden automatisch text-extrahiert.
             </p>
           </section>
+
+          {/* AUDIT-FIX 2026-05-17: surface pending deadline-suggestions
+              (M3 schema, dark-feature until now). Renders nothing if no
+              pending suggestions — zero noise for new mandates. */}
+          <MandateDeadlineSuggestions
+            mandateId={mandate.id}
+            disabled={isArchived || isClosed}
+          />
 
           {/* Deadlines (Fristen) */}
           <section id="deadlines" className="mb-8 scroll-mt-20">

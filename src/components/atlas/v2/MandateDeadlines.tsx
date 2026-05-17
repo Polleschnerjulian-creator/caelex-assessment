@@ -76,6 +76,17 @@ export function MandateDeadlines({ mandateId, disabled }: Props) {
     void reload();
   }, [reload]);
 
+  /* AUDIT-FIX 2026-05-17: listen for the suggestion-accepted event so a
+     newly accepted deadline-suggestion appears in this list without the
+     user having to reload. Dispatched by MandateDeadlineSuggestions after
+     a successful accept. */
+  useEffect(() => {
+    const onRefresh = () => void reload();
+    window.addEventListener("atlas:mandate-deadlines-refresh", onRefresh);
+    return () =>
+      window.removeEventListener("atlas:mandate-deadlines-refresh", onRefresh);
+  }, [reload]);
+
   const quickSet = (days: number) => {
     const d = new Date();
     d.setDate(d.getDate() + days);
