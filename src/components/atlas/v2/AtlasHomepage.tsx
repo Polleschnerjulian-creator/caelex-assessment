@@ -127,6 +127,21 @@ export function AtlasHomepage() {
     abortRef.current = new AbortController();
     const signal = abortRef.current.signal;
 
+    /* AUDIT-FIX H19 (2026-05-17): hard-timeout safety net. If the server
+       connection drops after the POST succeeds but before any SSE event
+       arrives, the UI used to stay "Plant Recherche…" forever with no
+       way to cancel short of a page reload. 90s upper bound (worst-case
+       legitimate agent run + buffer) — any stall longer than this is a
+       real network failure, so we abort + surface an error message. */
+    const stallTimer = setTimeout(() => {
+      if (abortRef.current === abortRef.current /* still active */) {
+        abortRef.current?.abort();
+        setError(
+          "Keine Antwort vom Server erhalten — Verbindung scheint unterbrochen. Bitte erneut versuchen.",
+        );
+      }
+    }, 90_000);
+
     try {
       const res = await fetch("/api/atlas/chat", {
         method: "POST",
@@ -194,6 +209,10 @@ export function AtlasHomepage() {
         const { done, value } = await reader.read();
         if (done) break;
         if (!isMountedRef.current) return;
+        /* AUDIT-FIX H19: first byte received → clear the stall-timer.
+           The stream is alive; any subsequent stalls are within-stream
+           and handled by the AbortController on unmount. */
+        clearTimeout(stallTimer);
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split("\n");
         buffer = lines.pop() ?? "";
@@ -262,6 +281,10 @@ export function AtlasHomepage() {
       setSubmittedMessage(null);
       setSubmittedImages(null);
       setStreamingText("");
+    } finally {
+      /* AUDIT-FIX H19: always clear stall-timer (success, error, or
+         abort) so it never fires post-handler. */
+      clearTimeout(stallTimer);
     }
   };
 

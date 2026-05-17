@@ -162,11 +162,14 @@ export function MandateFilesList({ mandateId, refreshKey }: Props) {
               ) : null}
             </div>
           </div>
+          {/* AUDIT-FIX H12 (2026-05-17): icon-only button → aria-label
+              (title alone is not reliably exposed by screen readers). */}
           <button
             type="button"
             onClick={() => handleDownload(f.id)}
             disabled={downloading === f.id}
             title="Herunterladen"
+            aria-label={`Datei ${f.filename} herunterladen`}
             className="text-slate-400 hover:text-emerald-700 disabled:opacity-30 dark:text-slate-500 dark:hover:text-emerald-300"
           >
             {downloading === f.id ? (
@@ -183,6 +186,7 @@ export function MandateFilesList({ mandateId, refreshKey }: Props) {
             onClick={() => handleDelete(f.id, f.filename)}
             disabled={deleting === f.id}
             title="Löschen"
+            aria-label={`Datei ${f.filename} löschen`}
             className="text-slate-400 hover:text-red-600 disabled:opacity-30 dark:text-slate-500 dark:hover:text-red-400"
           >
             {deleting === f.id ? (

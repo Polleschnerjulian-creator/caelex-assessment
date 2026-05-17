@@ -234,8 +234,11 @@ export default function KnowledgePage() {
             >
               {adding ? (
                 <>
-                  <Loader2 size={11} className="animate-spin" />
-                  Embedding…
+                  <Loader2
+                    size={11}
+                    className="animate-spin motion-reduce:animate-none"
+                  />
+                  Wird gespeichert…
                 </>
               ) : (
                 <>

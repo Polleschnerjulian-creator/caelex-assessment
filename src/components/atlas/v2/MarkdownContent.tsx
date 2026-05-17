@@ -22,7 +22,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { Fragment, type ReactNode } from "react";
+import { Fragment, memo, type ReactNode } from "react";
 import { MarkdownTableExport } from "./MarkdownTableExport";
 
 /**
@@ -64,7 +64,14 @@ interface Props {
   citations?: InlineCitation[];
 }
 
-export function MarkdownContent({ text, citations }: Props) {
+/* AUDIT-FIX H22 (2026-05-17): wrap in React.memo. During streaming,
+   the parent's setStreamingText fires on every SSE delta, re-rendering
+   ALL historical messages even though only the latest is changing.
+   Without memo, parseBlocks + renderInline re-execute for every past
+   message per delta — expensive on long chats + visible frame-drops
+   on tablets. Memo keys on (text, citations); citations is the same
+   array reference per message so shallow equal is fine. */
+function MarkdownContentImpl({ text, citations }: Props) {
   const blocks = parseBlocks(text);
   /* Build a lookup: source-id → index. Used by renderInline to turn
      [ATLAS:xx] into the right pill number. */
@@ -74,6 +81,12 @@ export function MarkdownContent({ text, citations }: Props) {
   }
   return <>{blocks.map((b, i) => renderBlock(b, i, sourceMap))}</>;
 }
+
+/* AUDIT-FIX H22 (2026-05-17): React.memo wrapper. Shallow-equal on
+   props: text + citations. Skips re-render when neither changed —
+   massive win during streaming where the parent updates streamingText
+   every SSE delta but historical messages keep stable props. */
+export const MarkdownContent = memo(MarkdownContentImpl);
 
 /* ── Block parsing ─────────────────────────────────────────────────────
  * Block kinds we render:

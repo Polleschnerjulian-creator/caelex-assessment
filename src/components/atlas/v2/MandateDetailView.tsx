@@ -320,21 +320,33 @@ export function MandateDetailView({ mandateId }: Props) {
               {error}
             </div>
           )}
-          <div className="mt-2 flex flex-wrap items-center gap-4 text-[11px] text-slate-500">
+          {/* AUDIT-FIX H14 (2026-05-17): header meta-row overflowed on
+              narrow screens (<360px) — the literal `·` separators
+              prevented wrap-points. Now: separators are `aria-hidden`
+              and wrapped in a span that becomes invisible on narrow
+              widths via `hidden sm:inline`; each meta item is its own
+              flex-wrap item so they re-flow naturally on small screens. */}
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500">
             <span>
               Owner: {mandate.owner.name ?? mandate.owner.email ?? "—"}
             </span>
-            <span>·</span>
+            <span className="hidden sm:inline" aria-hidden="true">
+              ·
+            </span>
             <span className="inline-flex items-center gap-1">
               <Users size={10} /> {mandate._count.members} Mitglied
               {mandate._count.members !== 1 ? "er" : ""}
             </span>
-            <span>·</span>
+            <span className="hidden sm:inline" aria-hidden="true">
+              ·
+            </span>
             <span className="inline-flex items-center gap-1">
               <MessageSquare size={10} /> {mandate._count.chats} Chat
               {mandate._count.chats !== 1 ? "s" : ""}
             </span>
-            <span>·</span>
+            <span className="hidden sm:inline" aria-hidden="true">
+              ·
+            </span>
             <span className="inline-flex items-center gap-1">
               <FileText size={10} /> {mandate._count.files} Datei
               {mandate._count.files !== 1 ? "en" : ""}
@@ -462,21 +474,33 @@ export function MandateDetailView({ mandateId }: Props) {
           </section>
 
           {/* Custom Instructions — collapsed by default */}
+          {/* AUDIT-FIX H11 (2026-05-17): `<h2>` inside `<button>` was
+              invalid HTML and produced inconsistent screen-reader output.
+              Now the `<h2>` is the heading; the button is a separate
+              interactive element inside the heading with a proper
+              accessible name. */}
           <section id="custom-instructions" className="mb-8 scroll-mt-20">
-            <button
-              type="button"
-              onClick={() => setInstructionsOpen((v) => !v)}
-              aria-expanded={instructionsOpen}
-              aria-controls="custom-instructions-body"
-              className="mb-3 inline-flex items-center gap-1.5 text-[14px] font-medium text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
-            >
-              {instructionsOpen ? (
-                <ChevronDown size={14} className="shrink-0" />
-              ) : (
-                <ChevronRight size={14} className="shrink-0" />
-              )}
-              <h2 className="inline">Custom Instructions</h2>
-            </button>
+            <h2 className="mb-3 text-[14px] font-medium text-slate-700 dark:text-slate-200">
+              <button
+                type="button"
+                onClick={() => setInstructionsOpen((v) => !v)}
+                aria-expanded={instructionsOpen}
+                aria-controls="custom-instructions-body"
+                aria-label={
+                  instructionsOpen
+                    ? "Custom Instructions ausblenden"
+                    : "Custom Instructions einblenden"
+                }
+                className="inline-flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white"
+              >
+                {instructionsOpen ? (
+                  <ChevronDown size={14} className="shrink-0" />
+                ) : (
+                  <ChevronRight size={14} className="shrink-0" />
+                )}
+                Custom Instructions
+              </button>
+            </h2>
             {instructionsOpen && (
               <div id="custom-instructions-body">
                 <MandateInstructionsEditor

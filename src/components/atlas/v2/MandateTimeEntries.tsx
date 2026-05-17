@@ -58,11 +58,20 @@ export function MandateTimeEntries({ mandateId, disabled }: Props) {
 
   const reload = useCallback(async () => {
     setLoading(true);
+    /* AUDIT-FIX H17 (2026-05-17): surface fetch errors instead of
+       silently returning empty — lawyer needs to know about broken
+       state vs genuinely empty. */
+    setError(null);
     try {
       const res = await fetch(`/api/atlas/mandate/${mandateId}/time-entries`, {
         cache: "no-store",
       });
-      if (!res.ok) return;
+      if (!res.ok) {
+        setError(
+          `Stundeneinträge konnten nicht geladen werden (HTTP ${res.status}).`,
+        );
+        return;
+      }
       const data = (await res.json()) as {
         entries: TimeEntry[];
         totals: Totals;
@@ -70,6 +79,12 @@ export function MandateTimeEntries({ mandateId, disabled }: Props) {
       setEntries(data.entries ?? []);
       setTotals(
         data.totals ?? { minutes: 0, billableMinutes: 0, billableEur: 0 },
+      );
+    } catch (e) {
+      setError(
+        e instanceof Error
+          ? `Netzwerk-Fehler: ${e.message}`
+          : "Netzwerk-Fehler beim Laden.",
       );
     } finally {
       setLoading(false);
@@ -116,7 +131,7 @@ export function MandateTimeEntries({ mandateId, disabled }: Props) {
       {/* Totals strip */}
       <div className="mb-3 grid grid-cols-3 gap-2 rounded bg-slate-50 px-3 py-2 dark:bg-white/[0.02]">
         <Stat label="Gesamt" value={fmtMins(totals.minutes)} />
-        <Stat label="Billable" value={fmtMins(totals.billableMinutes)} />
+        <Stat label="Abrechenbar" value={fmtMins(totals.billableMinutes)} />
         <Stat
           label="€"
           value={
@@ -164,7 +179,7 @@ export function MandateTimeEntries({ mandateId, disabled }: Props) {
                   {e.billable && e.hourlyRateEur ? (
                     <span>· €{e.hourlyRateEur}/h</span>
                   ) : !e.billable ? (
-                    <span>· non-billable</span>
+                    <span>· nicht abrechenbar</span>
                   ) : null}
                   <span>
                     · {new Date(e.workedOn).toLocaleDateString("de-DE")}
@@ -221,7 +236,7 @@ export function MandateTimeEntries({ mandateId, disabled }: Props) {
                 onChange={(e) => setBillable(e.target.checked)}
                 className="h-3.5 w-3.5 accent-slate-900 dark:accent-emerald-500"
               />
-              Billable
+              Abrechenbar
             </label>
             {billable && (
               <label className="flex items-center gap-1.5 text-[11px] text-slate-700 dark:text-slate-300">

@@ -229,7 +229,14 @@ export function AtlasChatView({ chatId }: Props) {
       } catch {
         /* swallow */
       }
-    }, 1500);
+      /* AUDIT-FIX H23 (2026-05-17): increased from 1500ms to 4000ms.
+         Each poll triggers loadChatForUser which fetches all message
+         content (up to 200 messages × full JSONB now per H21). For a
+         long agent turn (15 tools × 2-5s each), 1500ms fires 30-40
+         times — each is a heavy Postgres query risking Neon connection
+         pool exhaustion. 4000ms gives ~10-12 polls per long turn while
+         staying responsive enough that the UI feels live. */
+    }, 4000);
     return () => clearInterval(interval);
   }, [chatId, needsPoll]);
 

@@ -60,13 +60,27 @@ export function MandateDeadlines({ mandateId, disabled }: Props) {
 
   const reload = useCallback(async () => {
     setLoading(true);
+    /* AUDIT-FIX H17 (2026-05-17): clear stale error before fetch,
+       surface network/server errors instead of silently returning
+       empty list — lawyer needs to know if the section is broken
+       vs genuinely empty. */
+    setError(null);
     try {
       const res = await fetch(`/api/atlas/mandate/${mandateId}/deadlines`, {
         cache: "no-store",
       });
-      if (!res.ok) return;
+      if (!res.ok) {
+        setError(`Fristen konnten nicht geladen werden (HTTP ${res.status}).`);
+        return;
+      }
       const data = (await res.json()) as { deadlines: DeadlineRecord[] };
       setDeadlines(data.deadlines ?? []);
+    } catch (e) {
+      setError(
+        e instanceof Error
+          ? `Netzwerk-Fehler beim Laden der Fristen: ${e.message}`
+          : "Netzwerk-Fehler beim Laden der Fristen.",
+      );
     } finally {
       setLoading(false);
     }

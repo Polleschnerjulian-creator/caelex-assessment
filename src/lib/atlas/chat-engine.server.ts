@@ -1682,7 +1682,7 @@ export async function loadChatForUser(args: {
   organizationId: string;
 }) {
   const { chatId, userId, organizationId } = args;
-  return prisma.atlasChat.findFirst({
+  const chat = await prisma.atlasChat.findFirst({
     where: { id: chatId, organizationId, ownerUserId: userId },
     select: {
       id: true,
@@ -1699,7 +1699,13 @@ export async function loadChatForUser(args: {
         },
       },
       messages: {
-        orderBy: { createdAt: "asc" },
+        /* AUDIT-FIX H21 (2026-05-17): cap loaded messages at 200 to
+           prevent unbounded payload when a long-lived mandate chat
+           grows to 500+ turns. Latest 200 fetched DESC then reversed
+           to chronological ASC below before returning. Older messages
+           remain in DB for future "load older" pagination. */
+        orderBy: { createdAt: "desc" },
+        take: 200,
         select: {
           id: true,
           role: true,
@@ -1714,6 +1720,12 @@ export async function loadChatForUser(args: {
       },
     },
   });
+  /* AUDIT-FIX H21: restore chronological ASC order for consumers
+     (chat-view, sanitiseHistoryForApi). */
+  if (chat && chat.messages.length > 0) {
+    chat.messages.reverse();
+  }
+  return chat;
 }
 
 /** List the recent chats for the current user, capped at `limit`. */

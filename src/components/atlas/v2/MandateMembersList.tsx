@@ -162,9 +162,11 @@ export function MandateMembersList({
             disabled={adding}
             className={INPUT_CLASS}
           >
-            <option value="collaborator">Collaborator</option>
-            <option value="reviewer">Reviewer</option>
-            <option value="viewer">Viewer</option>
+            {/* AUDIT-FIX H16 (2026-05-17): German labels for German UI.
+                Value stays English (matches DB column + permission system). */}
+            <option value="collaborator">Mitbearbeiter</option>
+            <option value="reviewer">Prüfer</option>
+            <option value="viewer">Beobachter</option>
           </select>
           <button
             type="submit"
