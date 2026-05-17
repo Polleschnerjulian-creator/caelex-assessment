@@ -735,7 +735,13 @@ async function ensureChatAndHistory(args: {
       select: {
         id: true,
         messages: {
-          orderBy: { createdAt: "asc" },
+          /* AUDIT-FIX M30 (2026-05-17): cap continuation-history at
+             200 most-recent messages — same bound as loadChatForUser
+             (H21). Anthropic's token-window will reject overly-long
+             contexts anyway, so older messages don't help the model;
+             cutting at the fetch layer saves the DB scan + payload. */
+          orderBy: { createdAt: "desc" },
+          take: 200,
           select: {
             role: true,
             content: true,
@@ -746,6 +752,9 @@ async function ensureChatAndHistory(args: {
     if (!chat) {
       throw new Error("Chat not found or access denied");
     }
+    /* AUDIT-FIX M30: restore chronological ASC order for the Anthropic
+       message-list (the API needs oldest-first context). */
+    chat.messages.reverse();
     /* Persist the new user message inline so the streaming loop can
        reference its id later (and so the message is durable even if
        the upstream call fails). Images live inside the content jsonb

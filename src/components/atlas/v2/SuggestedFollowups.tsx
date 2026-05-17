@@ -38,6 +38,12 @@ export function SuggestedFollowups({ chatId, refreshKey, onPick }: Props) {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    /* AUDIT-FIX L13 (2026-05-17): AbortController so the followups
+       fetch (which triggers a Haiku call serverside) is properly
+       cancelled on unmount / chat-switch. Previously the in-flight
+       Anthropic call continued billing in the background even after
+       the user navigated away. */
+    const controller = new AbortController();
     /* Tiny debounce — wait 400ms after the `done` event so the
        assistant message has fully settled in the DB before we ask
        Haiku to riff on it. */
@@ -45,11 +51,14 @@ export function SuggestedFollowups({ chatId, refreshKey, onPick }: Props) {
       try {
         const res = await fetch(`/api/atlas/chat/${chatId}/followups`, {
           cache: "no-store",
+          signal: controller.signal,
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = (await res.json()) as { suggestions: Suggestion[] };
         if (!cancelled) setSuggestions(data.suggestions ?? []);
-      } catch {
+      } catch (e) {
+        /* AbortError is the navigation case — silent. */
+        if (e instanceof DOMException && e.name === "AbortError") return;
         if (!cancelled) setSuggestions([]);
       } finally {
         if (!cancelled) setLoading(false);
@@ -58,6 +67,7 @@ export function SuggestedFollowups({ chatId, refreshKey, onPick }: Props) {
     return () => {
       cancelled = true;
       clearTimeout(t);
+      controller.abort();
     };
   }, [chatId, refreshKey]);
 

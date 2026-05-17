@@ -163,18 +163,42 @@ export default function ClauseLibraryPage() {
           Klauseln…
         </p>
       ) : clauses.length === 0 ? (
+        /* AUDIT-FIX L11 (2026-05-17): when filters are active, show
+           "Filter zurücksetzen" as the primary action — creating a
+           clause from this empty-state immediately hides the new clause
+           (it doesn't match the active filter), which was confusing. */
         <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-6 py-12 text-center dark:border-slate-700/60 dark:bg-slate-900/30">
-          <p className="text-sm text-slate-500">
-            Noch keine Klauseln für die gewählten Filter.
-          </p>
-          <button
-            type="button"
-            onClick={() => setCreateOpen(true)}
-            className="mt-3 inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
-          >
-            <Plus size={11} />
-            Erste Klausel anlegen
-          </button>
+          {filterCat || filterJur ? (
+            <>
+              <p className="text-sm text-slate-500">
+                Keine Klauseln passen zum aktiven Filter.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setFilterCat("");
+                  setFilterJur("");
+                }}
+                className="mt-3 inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+              >
+                Filter zurücksetzen
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-slate-500">
+                Noch keine Klauseln in der Library.
+              </p>
+              <button
+                type="button"
+                onClick={() => setCreateOpen(true)}
+                className="mt-3 inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+              >
+                <Plus size={11} />
+                Erste Klausel anlegen
+              </button>
+            </>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">

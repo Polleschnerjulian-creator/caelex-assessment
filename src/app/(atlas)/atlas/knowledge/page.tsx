@@ -314,8 +314,9 @@ export default function KnowledgePage() {
           </div>
           {results.length === 0 ? (
             <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center text-[12.5px] text-slate-500 dark:border-white/[0.08] dark:bg-white/[0.02]">
-              Keine Treffer über dem Score-Schwellwert (0.4). Pflege mehr
-              Snippets zur Kanzlei-Wissensbasis.
+              {/* AUDIT-FIX L05: more natural German wording. */}
+              Keine Treffer über der Relevanz-Schwelle (40%). Lege weitere
+              Snippets in der Kanzlei-Wissensbasis an.
             </div>
           ) : (
             <div className="space-y-2">
