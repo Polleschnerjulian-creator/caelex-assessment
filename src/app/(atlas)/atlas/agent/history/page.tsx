@@ -43,6 +43,10 @@ interface RunListItem {
   startedAt: string;
   completedAt: string | null;
   mandate: { id: string; name: string; clientName: string | null } | null;
+  /* Sprint C1 — fork lineage. Both null for original (non-forked) runs;
+     both set for forked runs. Surfaced as "↪ from XXXXXXXX@N" badge. */
+  parentRunId: string | null;
+  forkedFromStep: number | null;
 }
 
 function timeAgo(iso: string): string {
@@ -228,6 +232,16 @@ function RunRow({ run }: { run: RunListItem }) {
     >
       <span className={`mt-0.5 shrink-0 ${tone.color}`}>{tone.icon}</span>
       <div className="min-w-0 flex-1">
+        {/* Sprint C1 — lineage badge for forked runs. Displayed ABOVE
+            the goal-line so it's visible at the row's top-edge. */}
+        {run.parentRunId && run.forkedFromStep && (
+          <div className="mb-1 inline-flex items-center gap-1 rounded bg-violet-50 px-1.5 py-0.5 text-[10px] text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
+            <ChevronRight size={9} className="rotate-180" />
+            from{" "}
+            <span className="font-mono">{run.parentRunId.slice(0, 8)}</span>@
+            {run.forkedFromStep}
+          </div>
+        )}
         <div className="line-clamp-2 text-[13px] text-slate-900 dark:text-slate-100">
           {run.goal}
         </div>

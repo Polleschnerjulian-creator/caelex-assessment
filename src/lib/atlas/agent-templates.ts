@@ -47,6 +47,22 @@ export interface AgentTemplate {
   costBand: "low" | "medium" | "high";
   /** Estimated duration in seconds. */
   estimatedSeconds: number;
+  /**
+   * Sprint C2 — Smart Sequencing. IDs of templates that logically
+   * follow THIS one. Atlas suggests them as 1-click follow-ups in
+   * the agent-run UI once this template completes. The relationship
+   * is hand-curated (not learned) — the lawyer-author of the template
+   * encodes the typical pipeline.
+   *
+   * Example: "nis2-classification" → "mandantenbrief-status" because
+   * after classifying the mandant, the natural next step is a status
+   * brief to the client. Or "bnetza-filing-pack" → "frist-check-mandat"
+   * because filings come with deadlines that need tracking.
+   *
+   * Empty array / undefined = template is a terminal node (no obvious
+   * next step suggested).
+   */
+  suggestedNext?: string[];
 }
 
 export const AGENT_TEMPLATES: AgentTemplate[] = [
@@ -61,6 +77,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     needsMandate: true,
     costBand: "medium",
     estimatedSeconds: 75,
+    suggestedNext: ["mandantenbrief-status", "frist-check-mandat"],
   },
   {
     id: "itar-ear-classification",
@@ -71,6 +88,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     goal: "Klassifiziere die folgenden Komponenten nach ITAR (USML) und EAR (CCL): [Komponenten-Liste]. Nenne pro Komponente: ECCN-Klassifizierung, anwendbare Kontrollkategorie, erforderliche Lizenz (DSP-5 / TAA / EAR99 / etc.), Re-Export-Beschränkungen, und maßgebliche Behörde (DDTC / BIS).",
     costBand: "medium",
     estimatedSeconds: 90,
+    suggestedNext: ["mandantenbrief-status"],
   },
   {
     id: "copuos-debris-mitigation",
@@ -82,6 +100,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     needsMandate: true,
     costBand: "medium",
     estimatedSeconds: 90,
+    suggestedNext: ["esa-license-application", "mandantenbrief-status"],
   },
 
   /* ── Filing / Authorisation ─────────────────────────────────────── */
@@ -95,6 +114,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     needsMandate: true,
     costBand: "high",
     estimatedSeconds: 120,
+    suggestedNext: ["frist-check-mandat", "mandantenbrief-status"],
   },
   {
     id: "esa-license-application",
@@ -106,6 +126,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     needsMandate: true,
     costBand: "high",
     estimatedSeconds: 150,
+    suggestedNext: ["frist-check-mandat", "mandantenbrief-status"],
   },
   {
     id: "widerspruch-bescheid",
@@ -118,6 +139,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     needsFile: true,
     costBand: "high",
     estimatedSeconds: 120,
+    suggestedNext: ["frist-check-mandat", "mandantenbrief-status"],
   },
 
   /* ── Drafting ───────────────────────────────────────────────────── */
@@ -131,6 +153,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     needsMandate: true,
     costBand: "low",
     estimatedSeconds: 45,
+    suggestedNext: ["frist-check-mandat"],
   },
   {
     id: "vertrag-haftungsanalyse",
@@ -142,6 +165,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     needsFile: true,
     costBand: "medium",
     estimatedSeconds: 90,
+    suggestedNext: ["klausel-suche-eigene"],
   },
 
   /* ── Research ───────────────────────────────────────────────────── */
@@ -154,6 +178,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     goal: "Vergleiche die Authorisierungs-Verfahren für Satellitenbetreiber in DE, FR, UK, IT, LU. Pro Jurisdiktion: zuständige Behörde, anwendbares Gesetz, Verfahrensdauer (Median), Anmeldegebühren, Liability-Cap, Insurance-Minimum, Debris-Compliance-Standard, Spektrum-Coordinator. Liefere eine Decision-Matrix mit Empfehlung welche Jurisdiktion für meinen LEO-Constellation-Use-Case am vorteilhaftesten ist.",
     costBand: "high",
     estimatedSeconds: 150,
+    suggestedNext: ["esa-license-application", "bnetza-filing-pack"],
   },
   {
     id: "klausel-suche-eigene",
@@ -164,6 +189,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     goal: "Durchsuche meine Klausel-Bibliothek nach Klauseln zum Thema [Thema beschreiben — z.B. 'Schiedsklausel ICC mit Sitz in Genf', 'Liability-Cap mit Carve-Outs', 'IP-Übertragung bei Software-Customization']. Liefere die top 3-5 Klauseln mit kurzer Bewertung pro Klausel (Stärke, Schwäche, Anpassungs-Vorschlag).",
     costBand: "low",
     estimatedSeconds: 45,
+    suggestedNext: ["vertrag-haftungsanalyse"],
   },
 
   /* ── Internal / Kanzlei-Operations ──────────────────────────────── */
@@ -177,6 +203,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     needsMandate: true,
     costBand: "low",
     estimatedSeconds: 45,
+    suggestedNext: ["mandantenbrief-status"],
   },
   {
     id: "data-room-vorbereitung",
@@ -188,6 +215,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     needsMandate: true,
     costBand: "high",
     estimatedSeconds: 180,
+    suggestedNext: ["mandantenbrief-status"],
   },
 ];
 

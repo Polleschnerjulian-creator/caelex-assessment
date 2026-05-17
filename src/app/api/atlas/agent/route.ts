@@ -41,6 +41,7 @@ import {
   approvalRationale,
   type ApprovalGate,
 } from "@/lib/atlas/agent/approval-policy";
+import { suggestNextWorkflows } from "@/lib/atlas/agent/workflow-suggester.server";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { getSafeErrorMessage } from "@/lib/validations";
@@ -93,6 +94,29 @@ const PostBody = z.object({
      resumes the agent-loop from where it left off. Auth-gated to the
      run's userId + organizationId. */
   resumeFromRunId: z.string().cuid().nullable().optional(),
+  /* Sprint C2 — when the run was launched from a curated template,
+     pass its id here. Persisted on AtlasAgentRun.templateId and used
+     at run-end to compute the `suggested_next` SSE event. Free-form
+     string capped at 100 chars (template-ids are short kebab-case);
+     missing/null = run not from a template. */
+  templateId: z.string().min(1).max(100).nullable().optional(),
+  /* Sprint C1 — Run-Replay with Branching. When `forkFromRunId` is
+     set, the route loads the parent run's persisted conversationState,
+     truncates the conversation to iteration N's assistant message
+     (inclusive), applies `modifiedToolInputs` to that message's
+     tool_use blocks, then continues the loop from iter N's tool
+     execution. Creates a NEW AtlasAgentRun row with
+     parentRunId + forkedFromStep set. Mutually exclusive with
+     `resumeFromRunId` — passing both rejects. */
+  forkFromRunId: z.string().cuid().nullable().optional(),
+  forkFromIteration: z.number().int().min(1).max(15).nullable().optional(),
+  /* Map of tool_use_id → new input object. Only the listed tool_uses
+     have their inputs swapped; unlisted ones run with their original
+     parent-run input. Limited to plain objects per Zod v4 record
+     signature (keySchema, valueSchema). */
+  modifiedToolInputs: z
+    .record(z.string(), z.record(z.string(), z.unknown()))
+    .optional(),
 });
 
 /* AUDIT-FIX L18 (2026-05-15): strip control chars + ANSI escape
@@ -403,14 +427,224 @@ export async function POST(req: NextRequest) {
       let initialIter = 0;
 
       /* ╔═══════════════════════════════════════════════════════════╗
-         ║ Sprint B1 — Resume-path branch                            ║
-         ║ When `resumeFromRunId` is set, load the prior run's       ║
-         ║ persisted conversation + counters + approvalGates and     ║
-         ║ skip ahead to where we paused. The approval-decision      ║
-         ║ recorded via /api/atlas/agent/runs/[id]/approve is read   ║
-         ║ from the gates array and applied inside the for-loop.     ║
+         ║ Sprint C1 — Fork-path branch                              ║
+         ║ When `forkFromRunId` + `forkFromIteration` are set, load  ║
+         ║ the parent run's persisted conversationState, truncate    ║
+         ║ to keep messages up to AND INCLUDING iter N's assistant   ║
+         ║ message, apply `modifiedToolInputs` to that message's     ║
+         ║ tool_use blocks, then CREATE A NEW AtlasAgentRun row      ║
+         ║ (with parentRunId + forkedFromStep set) and skip the      ║
+         ║ first Anthropic call (the model's planning response is    ║
+         ║ already in conv from the parent). Same fork-cannot-also-  ║
+         ║ -resume guard ensures the two flows don't conflict.       ║
          ╚═══════════════════════════════════════════════════════════╝ */
-      if (parsed.data.resumeFromRunId) {
+      if (parsed.data.forkFromRunId && parsed.data.resumeFromRunId) {
+        send({
+          type: "error",
+          message: "Cannot fork and resume in the same request",
+        });
+        controller.close();
+        return;
+      }
+      if (parsed.data.forkFromRunId) {
+        if (
+          !parsed.data.forkFromIteration ||
+          parsed.data.forkFromIteration < 1
+        ) {
+          send({
+            type: "error",
+            message: "forkFromIteration is required when forking",
+          });
+          controller.close();
+          return;
+        }
+        try {
+          const parentRun = await prisma.atlasAgentRun.findFirst({
+            where: {
+              id: parsed.data.forkFromRunId,
+              userId: atlas.userId,
+              organizationId: atlas.organizationId,
+            },
+            select: {
+              id: true,
+              status: true,
+              conversationState: true,
+              templateId: true,
+              budgetUsd: true,
+              goal: true,
+              iterations: true,
+            },
+          });
+          if (!parentRun) {
+            send({ type: "error", message: "Parent run not found" });
+            controller.close();
+            return;
+          }
+          if (parentRun.status !== "complete") {
+            send({
+              type: "error",
+              message: "Can only fork from completed runs",
+            });
+            controller.close();
+            return;
+          }
+          const parentState = parentRun.conversationState as {
+            conversation: Anthropic.MessageParam[];
+            totalInputTokens: number;
+            totalOutputTokens: number;
+            totalCacheCreationTokens: number;
+            totalCacheReadTokens: number;
+            toolsUsed: string[];
+            textBuffer: string;
+            persistedSteps: typeof persistedSteps;
+            persistedReasoning: Record<number, string>;
+            iter: number;
+          } | null;
+          if (!parentState) {
+            send({
+              type: "error",
+              message:
+                "Parent run has no conversationState — cannot fork (pre-C1 run)",
+            });
+            controller.close();
+            return;
+          }
+          const forkIter = parsed.data.forkFromIteration;
+          if (forkIter > parentState.iter) {
+            send({
+              type: "error",
+              message: `forkFromIteration ${forkIter} exceeds parent's ${parentState.iter} iterations`,
+            });
+            controller.close();
+            return;
+          }
+          /* Slice the conversation to keep [0..2*forkIter-1] — i.e.
+             everything UP TO AND INCLUDING iter N's assistant message,
+             but NOT its tool_results (which we'll re-generate with
+             modified inputs). */
+          const cutoffIndex = 2 * forkIter - 1;
+          const slicedConversation = parentState.conversation.slice(
+            0,
+            cutoffIndex + 1,
+          );
+          if (slicedConversation.length < cutoffIndex + 1) {
+            send({
+              type: "error",
+              message: `Parent conversation truncated below fork-point (got ${slicedConversation.length} msgs, need ${cutoffIndex + 1})`,
+            });
+            controller.close();
+            return;
+          }
+          /* Find iter N's assistant message and apply modifiedToolInputs
+             to its tool_use blocks. We DEEP-CLONE first so we don't
+             mutate the parent's persisted state via shared object
+             references. */
+          const lastMsg = JSON.parse(
+            JSON.stringify(slicedConversation[slicedConversation.length - 1]),
+          ) as Anthropic.MessageParam;
+          if (lastMsg.role !== "assistant" || !Array.isArray(lastMsg.content)) {
+            send({
+              type: "error",
+              message:
+                "Fork-point conversation message is not an assistant tool_use",
+            });
+            controller.close();
+            return;
+          }
+          const modifiedInputs = parsed.data.modifiedToolInputs ?? {};
+          let modifiedCount = 0;
+          for (const block of lastMsg.content) {
+            if (
+              typeof block === "object" &&
+              block !== null &&
+              "type" in block &&
+              (block as { type: string }).type === "tool_use" &&
+              "id" in block
+            ) {
+              const blockId = (block as { id: string }).id;
+              if (modifiedInputs[blockId]) {
+                (block as { input: Record<string, unknown> }).input =
+                  modifiedInputs[blockId];
+                modifiedCount++;
+              }
+            }
+          }
+          slicedConversation[slicedConversation.length - 1] = lastMsg;
+          /* Truncate persistedSteps to remove anything from iter N
+             onwards (we're about to re-execute those tools with
+             potentially-modified inputs). */
+          const slicedSteps = parentState.persistedSteps.filter(
+            (s) => s.iteration < forkIter,
+          );
+          const slicedReasoning: Record<number, string> = {};
+          for (const [k, v] of Object.entries(parentState.persistedReasoning)) {
+            if (Number(k) < forkIter) slicedReasoning[Number(k)] = v;
+          }
+          /* Create the NEW AtlasAgentRun row, linked to parent. */
+          const newRunRow = await prisma.atlasAgentRun.create({
+            data: {
+              userId: atlas.userId,
+              organizationId: atlas.organizationId,
+              mandateId: parsed.data.mandateId ?? null,
+              goal: sanitiseForLog(parsed.data.goal).slice(0, 2000),
+              status: "running",
+              budgetUsd: parsed.data.budgetUsd ?? null,
+              pausedForBudget: false,
+              templateId: parsed.data.templateId ?? parentRun.templateId,
+              /* Sprint C1 lineage. */
+              parentRunId: parentRun.id,
+              forkedFromStep: forkIter,
+            },
+            select: { id: true },
+          });
+          /* Restore runtime state from the sliced parent state. We
+             intentionally KEEP the parent's accumulated token counters
+             — the lawyer sees the fork as a continuation of cost, not
+             a fresh $0 start. (Could be argued either way; this
+             matches the "saves tokens by skipping replay" framing.) */
+          runId = newRunRow.id;
+          conversation = slicedConversation;
+          totalInputTokens = parentState.totalInputTokens;
+          totalOutputTokens = parentState.totalOutputTokens;
+          totalCacheCreationTokens = parentState.totalCacheCreationTokens;
+          totalCacheReadTokens = parentState.totalCacheReadTokens;
+          toolsUsed = parentState.toolsUsed;
+          textBuffer = parentState.textBuffer;
+          persistedSteps = slicedSteps;
+          persistedReasoning = slicedReasoning;
+          initialIter = forkIter - 1;
+          /* Same skip-next-Anthropic-call trick as the resume-path —
+             the assistant message for iter N is already in conv;
+             the while-loop should jump straight to tool execution. */
+          skipNextAnthropicCall = true;
+          send({
+            type: "run_forked",
+            runId: newRunRow.id,
+            parentRunId: parentRun.id,
+            forkedFromStep: forkIter,
+            modifiedToolCount: modifiedCount,
+          });
+          logger.info("[atlas/agent] forked run", {
+            userId: atlas.userId,
+            runId: newRunRow.id,
+            parentRunId: parentRun.id,
+            forkedFromStep: forkIter,
+            modifiedToolCount: modifiedCount,
+          });
+        } catch (err) {
+          logger.error("[atlas/agent] fork failed", {
+            userId: atlas.userId,
+            parentRunId: parsed.data.forkFromRunId,
+            error: err instanceof Error ? err.message : String(err),
+          });
+          send({
+            type: "error",
+            message: getSafeErrorMessage(err, "Fork failed"),
+          });
+          controller.close();
+          return;
+        }
+      } else if (parsed.data.resumeFromRunId) {
         try {
           const priorRun = await prisma.atlasAgentRun.findFirst({
             where: {
@@ -548,6 +782,11 @@ export async function POST(req: NextRequest) {
                  budget chosen. */
               budgetUsd: parsed.data.budgetUsd ?? null,
               pausedForBudget: false,
+              /* Sprint C2 — persist the template-id when launched from
+                 a curated workflow so the run-end suggester can compute
+                 the `suggested_next` follow-ups + history view can
+                 group runs by template. */
+              templateId: parsed.data.templateId ?? null,
             },
             select: { id: true },
           });
@@ -1190,6 +1429,24 @@ export async function POST(req: NextRequest) {
                   verificationFindings.length > 0
                     ? (verificationFindings as unknown as object)
                     : undefined,
+                /* Sprint C1 — persist conversationState on COMPLETE
+                   too (not just on pause). Enables run-replay /
+                   branching via /api/atlas/agent with `forkFromRunId`.
+                   Storage cost: ~50-150 KB per run; cheap on Neon.
+                   A future TTL job can clear conversationState for
+                   runs older than 30-90 days if storage grows. */
+                conversationState: {
+                  conversation,
+                  totalInputTokens,
+                  totalOutputTokens,
+                  totalCacheCreationTokens,
+                  totalCacheReadTokens,
+                  toolsUsed,
+                  textBuffer,
+                  persistedSteps,
+                  persistedReasoning,
+                  iter,
+                } as unknown as object,
                 inputTokens: totalInputTokens,
                 outputTokens: totalOutputTokens,
                 costUsd,
@@ -1221,6 +1478,23 @@ export async function POST(req: NextRequest) {
               error: err instanceof Error ? err.message : String(err),
             });
           }
+        }
+
+        /* Sprint C2 — Smart Workflow-Sequencing. If the run was
+           launched from a curated template, emit the logically-next
+           templates as 1-click follow-ups. Pure look-up over the
+           hand-curated `suggestedNext` graph — no LLM call, no DB
+           read. The UI renders these as cards under the artifacts. */
+        const suggestions = suggestNextWorkflows(
+          parsed.data.templateId ?? null,
+        );
+        if (suggestions.length > 0) {
+          send({
+            type: "suggested_next",
+            runId,
+            sourceTemplateId: parsed.data.templateId,
+            suggestions,
+          });
         }
 
         send({

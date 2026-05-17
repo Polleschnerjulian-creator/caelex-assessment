@@ -263,8 +263,37 @@ function detectDeadlines(text: string): DetectedDeadline[] {
   return found;
 }
 
+/** Sprint C2 — suggested_next event payload, one card per suggestion.
+ *  Mirrors WorkflowSuggestion from workflow-suggester.server.ts but
+ *  re-declared here to avoid pulling a server-only import into the
+ *  client bundle. */
+interface SuggestedWorkflow {
+  templateId: string;
+  title: string;
+  description: string;
+  category:
+    | "compliance"
+    | "drafting"
+    | "research"
+    | "filing"
+    | "transaction"
+    | "internal";
+  rationale: string;
+  costBand: "low" | "medium" | "high";
+  estimatedSeconds: number;
+  needsMandate: boolean;
+  needsFile: boolean;
+}
+
 export default function AgentPage() {
   const [goal, setGoal] = useState("");
+  /* Sprint C2 — when a template is selected (either via the catalog
+     or via a suggested-next card), its id is captured here and sent
+     to the server on POST. Server persists it on AtlasAgentRun and
+     uses it at run-end to compute the next suggestions. */
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(
+    null,
+  );
   const [mandateId, setMandateId] = useState<string>("");
   const [mandates, setMandates] = useState<MandateListItem[]>([]);
   /* Sprint A1 — Cost-Budget. budgetInput is the raw textfield string
@@ -329,6 +358,27 @@ export default function AgentPage() {
      `verification_warnings` SSE event. We render them as inline
      warnings under each artefact-card, filtered by artifactIndex. */
   const [findings, setFindings] = useState<VerificationFinding[]>([]);
+  /* Sprint C2 — Smart Sequencing. Suggested-next templates emitted by
+     the server at run-end when this run was launched from a template.
+     Rendered as 1-click cards under the artifacts; click pre-fills
+     the next template + auto-starts a fresh run. */
+  const [suggestedNext, setSuggestedNext] = useState<SuggestedWorkflow[]>([]);
+  /* Sprint C1 — Fork-modal state. Open when the lawyer clicks "Fork
+     from here" on an iteration. Holds the iteration-index they want
+     to fork from; the modal pulls the steps for that iteration from
+     the `steps` array. */
+  const [forkModalIter, setForkModalIter] = useState<number | null>(null);
+  /* Sprint C1 — submitting flag for the fork POST so the modal can
+     disable its Submit button + show a spinner while the new run is
+     being created. */
+  const [forkSubmitting, setForkSubmitting] = useState(false);
+  /* Sprint C1 — Lineage badge state. Captured from the `run_forked`
+     SSE event on the resumed stream OR from the initial run row
+     fetched at mount-time (history-deep-link case). */
+  const [lineage, setLineage] = useState<{
+    parentRunId: string;
+    forkedFromStep: number;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
 
@@ -427,16 +477,25 @@ export default function AgentPage() {
     return n;
   })();
 
-  const handleRun = async (resumeFromRunId?: string) => {
+  const handleRun = async (opts?: {
+    resumeFromRunId?: string;
+    fork?: {
+      forkFromRunId: string;
+      forkFromIteration: number;
+      modifiedToolInputs: Record<string, Record<string, unknown>>;
+    };
+  }) => {
     if (running) return;
+    const isResume = !!opts?.resumeFromRunId;
     /* Sprint B1 — on resume, the goal is empty if the user already
        cleared it, but we still need ≥10 chars to pass server-side
        zod validation. Re-send the original goal verbatim (the server
        ignores it for resumes — it's restored from conversationState
-       — but the zod schema requires it). For fresh runs, validate
-       goal locally before hitting the network. */
-    if (!resumeFromRunId && !goal.trim()) return;
+       — but the zod schema requires it). For fresh runs + forks,
+       validate goal locally before hitting the network. */
+    if (!isResume && !goal.trim()) return;
     setRunning(true);
+    const resumeFromRunId = opts?.resumeFromRunId;
     /* On resume, KEEP prior steps/reasoning/etc visible so the lawyer
        sees the full timeline. Only reset on fresh runs. */
     if (!resumeFromRunId) {
@@ -453,6 +512,12 @@ export default function AgentPage() {
       /* Sprint A2 — clear the per-run verification-findings so a stale
          set from the previous run doesn't render under the new one. */
       setFindings([]);
+      /* Sprint C2 — clear any leftover suggested-next cards from the
+         previous run. */
+      setSuggestedNext([]);
+      /* Sprint C1 — clear any prior lineage; the fork-path will set
+         a fresh lineage via the run_forked SSE event. */
+      setLineage(null);
     }
     /* Always clear error + the approval-pause (we're either resuming
        past it or starting fresh). */
@@ -488,6 +553,19 @@ export default function AgentPage() {
              reloads conversationState + applies the recorded approval
              decision + continues the loop. */
           resumeFromRunId: resumeFromRunId ?? undefined,
+          /* Sprint C2 — pass the template-id when starting from a
+             template (catalog click OR suggested-next card). Server
+             persists it on AtlasAgentRun and uses it at run-end to
+             compute the next suggestions. Null on free-form goals. */
+          templateId: selectedTemplateId ?? undefined,
+          /* Sprint C1 — when set, server takes the fork-path: loads
+             parent's conversationState, truncates to iter N, applies
+             modifiedToolInputs, creates a NEW AtlasAgentRun, and
+             continues the loop from there. Mutually exclusive with
+             resumeFromRunId (server rejects if both set). */
+          forkFromRunId: opts?.fork?.forkFromRunId,
+          forkFromIteration: opts?.fork?.forkFromIteration,
+          modifiedToolInputs: opts?.fork?.modifiedToolInputs,
         }),
       });
       if (!res.ok || !res.body) {
@@ -561,6 +639,19 @@ export default function AgentPage() {
                    for the resumed iteration's tools. */
                 setApprovalPause(null);
                 break;
+              case "run_forked":
+                /* Sprint C1 — server confirmed the fork created a new
+                   AtlasAgentRun. Capture lineage so the UI can render
+                   a "↪ Forked from Run #XXX at iteration N" badge
+                   above the goal-pin. The new runId replaces the
+                   current activeRunId so subsequent SSE events
+                   (cost_progress, step_complete, etc.) bind to it. */
+                if (evt.runId) setActiveRunId(evt.runId as string);
+                setLineage({
+                  parentRunId: evt.parentRunId as string,
+                  forkedFromStep: evt.forkedFromStep as number,
+                });
+                break;
               case "text":
                 textBuffer += evt.delta as string;
                 setFinalText(textBuffer);
@@ -624,6 +715,16 @@ export default function AgentPage() {
                   (evt.findings as VerificationFinding[] | undefined) ?? [],
                 );
                 break;
+              case "suggested_next":
+                /* Sprint C2 — server emitted follow-up template
+                   suggestions because this run was launched from a
+                   template with a curated `suggestedNext` list. The
+                   UI renders these as 1-click cards under the
+                   artifacts. */
+                setSuggestedNext(
+                  (evt.suggestions as SuggestedWorkflow[] | undefined) ?? [],
+                );
+                break;
               case "run_done":
                 setUsage(evt.usage as UsageStats);
                 break;
@@ -664,6 +765,14 @@ export default function AgentPage() {
     /* Sprint A2 — also drop the per-run verification-findings on
        reset; a fresh goal starts with a clean slate. */
     setFindings([]);
+    /* Sprint C2 — clear template-id selection + any suggested-next
+       cards from the prior run. */
+    setSelectedTemplateId(null);
+    setSuggestedNext([]);
+    /* Sprint C1 — clear lineage + any open fork-modal state. */
+    setLineage(null);
+    setForkModalIter(null);
+    setForkSubmitting(false);
     /* Keep mandateId selection — user often runs multiple agents
        on the same mandate, no reason to make them re-pick. */
   };
@@ -772,12 +881,40 @@ export default function AgentPage() {
       setApprovalSubmitting(false);
       /* Microtask delay matches the pattern in handleResumeDecision. */
       setTimeout(() => {
-        void handleRun(runIdToResume);
+        void handleRun({ resumeFromRunId: runIdToResume });
       }, 0);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
       setApprovalSubmitting(false);
     }
+  };
+
+  /* Sprint C1 — Fork handler. Called from the ForkModal when the
+     lawyer confirms the per-tool-input edits. Fires handleRun() with
+     fork-params; the SSE stream replaces the current run-view with
+     the forked run (lineage badge captures the parentRunId). The
+     modal is closed BEFORE handleRun fires so the spinner is on the
+     run-view, not the modal. */
+  const handleFork = (
+    forkFromIteration: number,
+    modifiedToolInputs: Record<string, Record<string, unknown>>,
+  ) => {
+    if (!activeRunId) return;
+    if (running) return;
+    const parentRunId = activeRunId;
+    setForkSubmitting(true);
+    setForkModalIter(null);
+    setTimeout(() => {
+      void handleRun({
+        fork: {
+          forkFromRunId: parentRunId,
+          forkFromIteration,
+          modifiedToolInputs,
+        },
+      }).finally(() => {
+        setForkSubmitting(false);
+      });
+    }, 0);
   };
 
   /* Save the agent's final artifact as a Markdown file in the
@@ -1071,6 +1208,10 @@ export default function AgentPage() {
                           template={t}
                           onClick={() => {
                             setGoal(t.goal);
+                            /* Sprint C2 — capture the template-id so
+                               the POST sends it + the server can
+                               compute suggested-next at run-end. */
+                            setSelectedTemplateId(t.id);
                             /* Auto-pick first available mandate if
                                template needs one and none is selected
                                yet. The lawyer can change it before
@@ -1097,6 +1238,23 @@ export default function AgentPage() {
       {/* Running / completed view */}
       {hasResults && (
         <div ref={transcriptRef} className="space-y-4">
+          {/* Sprint C1 — Lineage badge for forked runs. Captured from
+              the run_forked SSE event. Tells the lawyer at-a-glance
+              that this isn't an original run + which iteration it
+              diverged from. The first 8 chars of the parentRunId are
+              enough to identify it visually. */}
+          {lineage && (
+            <div className="flex items-center gap-1.5 rounded-md border border-violet-200 bg-violet-50 px-3 py-1.5 text-[11.5px] text-violet-800 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-200">
+              <FolderInput size={11} />
+              <span>
+                Forked from Run{" "}
+                <span className="font-mono">
+                  {lineage.parentRunId.slice(0, 8)}…
+                </span>{" "}
+                at iteration {lineage.forkedFromStep}
+              </span>
+            </div>
+          )}
           {/* Goal pinned at top */}
           <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-white/[0.08] dark:bg-white/[0.02]">
             <div className="mb-1 text-[10.5px] uppercase tracking-wider text-slate-500">
@@ -1199,6 +1357,16 @@ export default function AgentPage() {
             return iterations.flatMap((iter) => {
               const iterSteps = byIter.get(iter) ?? [];
               const reasoningText = reasoning.get(iter);
+              /* Sprint C1 — Fork button only renders for COMPLETED runs
+                 where the iteration has at least one tool_use. The
+                 button opens the ForkModal pre-loaded with this iter's
+                 tool inputs. Hidden during in-flight runs to avoid
+                 confusion. */
+              const showForkButton =
+                !running &&
+                activeRunId !== null &&
+                iterSteps.length > 0 &&
+                iterSteps.every((s) => s.completedAt !== undefined);
               return [
                 reasoningText ? (
                   <ReasoningPanel
@@ -1210,6 +1378,22 @@ export default function AgentPage() {
                 ...iterSteps.map((step) => (
                   <StepCard key={step.toolId} step={step} />
                 )),
+                showForkButton ? (
+                  <div
+                    key={`fork-${iter}`}
+                    className="ml-1 -mt-1 flex justify-end"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setForkModalIter(iter)}
+                      className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10.5px] text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-200"
+                      title={`Iteration ${iter} mit geänderten Inputs neu starten`}
+                    >
+                      <FolderInput size={10} />
+                      Fork ab Iteration {iter}
+                    </button>
+                  </div>
+                ) : null,
               ];
             });
           })()}
@@ -1280,6 +1464,41 @@ export default function AgentPage() {
                 </div>
               );
             })()}
+
+          {/* Sprint C2 — Smart Workflow-Sequencing. Render suggested
+              follow-up templates as 1-click cards. Each click pre-fills
+              the next template + auto-starts a fresh run (carrying the
+              same mandate-context). Only renders when the prior run
+              came from a template AND that template had curated
+              suggestedNext entries. */}
+          {!running && suggestedNext.length > 0 && (
+            <SuggestedNextCards
+              suggestions={suggestedNext}
+              hasMandate={!!mandateId}
+              onPick={(s) => {
+                /* Mirror the catalog click-behaviour: set goal, set
+                   template-id, auto-attach mandate if needed. Then
+                   reset transient state and auto-start. Microtask
+                   delay so setGoal commits before handleRun reads
+                   it (matches handleResumeDecision pattern). */
+                setGoal(
+                  AGENT_TEMPLATES.find((t) => t.id === s.templateId)?.goal ??
+                    "",
+                );
+                setSelectedTemplateId(s.templateId);
+                if (s.needsMandate && !mandateId && mandates.length > 0) {
+                  setMandateId(mandates[0].id);
+                }
+                /* Clear the prior run's results so the new run renders
+                   fresh — handleRun does this too, but doing it
+                   here makes the transition feel instant. */
+                setSuggestedNext([]);
+                setTimeout(() => {
+                  void handleRun();
+                }, 0);
+              }}
+            />
+          )}
 
           {/* Auto-detected deadlines — run-level, NOT per-artifact, so
               we render at the bottom (after all artifacts). Detects
@@ -1363,6 +1582,20 @@ export default function AgentPage() {
             </div>
           )}
         </div>
+      )}
+
+      {/* Sprint C1 — ForkModal renders as a fixed overlay when the
+          lawyer clicks "Fork ab Iteration N" on any iteration. Inputs
+          for that iteration's tool_uses are shown as JSON-editable
+          textareas; submit fires handleFork(). */}
+      {forkModalIter !== null && (
+        <ForkModal
+          iter={forkModalIter}
+          steps={steps.filter((s) => s.iteration === forkModalIter)}
+          submitting={forkSubmitting}
+          onClose={() => setForkModalIter(null)}
+          onSubmit={handleFork}
+        />
       )}
     </div>
   );
@@ -2248,6 +2481,280 @@ function ApprovalCard({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ── SuggestedNextCards ───────────────────────────────────────────────
+ *
+ * Sprint C2 — Smart Workflow-Sequencing. Renders 1-click cards under
+ * the run artifacts suggesting the next template to run. Each card
+ * shows: template title, the rationale (why this is suggested), and
+ * cost-band + estimated duration. Click fires `onPick` which:
+ *   1. Sets goal-input to the template's goal-text
+ *   2. Sets selectedTemplateId so the next run also gets suggestions
+ *   3. Auto-attaches the same mandate (if template needs one)
+ *   4. Auto-starts the run (no separate "click to start" needed)
+ *
+ * Mandate-warning rendered inline when a suggested template needs a
+ * mandate but none is currently selected.
+ */
+function SuggestedNextCards({
+  suggestions,
+  hasMandate,
+  onPick,
+}: {
+  suggestions: SuggestedWorkflow[];
+  hasMandate: boolean;
+  onPick: (s: SuggestedWorkflow) => void;
+}) {
+  return (
+    <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+      <div className="mb-2 flex items-center gap-1.5 text-[10.5px] uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+        <Sparkles size={10} />
+        Nächste logische Schritte ({suggestions.length})
+      </div>
+      <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
+        {suggestions.map((s) => {
+          const needsMandateWarn = s.needsMandate && !hasMandate;
+          return (
+            <button
+              key={s.templateId}
+              type="button"
+              onClick={() => onPick(s)}
+              className="group flex flex-col gap-1.5 rounded-md border border-emerald-200 bg-white p-3 text-left transition-colors hover:border-emerald-400 hover:bg-emerald-50 dark:border-emerald-500/20 dark:bg-emerald-500/5 dark:hover:border-emerald-400/40 dark:hover:bg-emerald-500/10"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="text-[12.5px] font-medium text-slate-900 dark:text-slate-100">
+                  {s.title}
+                </div>
+                <ChevronRight
+                  size={12}
+                  className="mt-0.5 shrink-0 text-emerald-500 transition-transform group-hover:translate-x-0.5"
+                />
+              </div>
+              <div className="text-[11.5px] leading-relaxed text-emerald-800 dark:text-emerald-200/90">
+                {s.rationale}
+              </div>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-[10.5px] text-slate-500 dark:text-slate-400">
+                <span className="capitalize">{s.category}</span>
+                <span>·</span>
+                <span>~{Math.round(s.estimatedSeconds / 60)} min</span>
+                <span>·</span>
+                <span>Cost: {s.costBand}</span>
+                {s.needsFile && (
+                  <>
+                    <span>·</span>
+                    <span className="inline-flex items-center gap-0.5">
+                      <Paperclip size={9} />
+                      Datei nötig
+                    </span>
+                  </>
+                )}
+                {needsMandateWarn && (
+                  <>
+                    <span>·</span>
+                    <span className="text-amber-700 dark:text-amber-300">
+                      braucht Mandat
+                    </span>
+                  </>
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ── ForkModal ────────────────────────────────────────────────────────
+ *
+ * Sprint C1 — Run-Replay with Branching. Modal-overlay shown when the
+ * lawyer clicks "Fork ab Iteration N" on a completed run's iteration.
+ *
+ * For each tool_use in that iteration, renders the original input as
+ * a JSON-editable textarea. Submit:
+ *   - Diffs each textarea against the original — only changed inputs
+ *     are sent in `modifiedToolInputs`
+ *   - Validates each as JSON-object (rejects arrays / primitives)
+ *   - Calls onSubmit(iter, modifiedToolInputs) which fires handleFork
+ *
+ * If the lawyer changed nothing and just clicks Submit, an empty map
+ * is sent — the server forks at iter N with the parent's original
+ * inputs (still useful: same prefix-context but the next iterations
+ * may diverge as the model gets fresh attention).
+ */
+function ForkModal({
+  iter,
+  steps,
+  submitting,
+  onClose,
+  onSubmit,
+}: {
+  iter: number;
+  steps: StepRecord[];
+  submitting: boolean;
+  onClose: () => void;
+  onSubmit: (
+    iter: number,
+    modifiedToolInputs: Record<string, Record<string, unknown>>,
+  ) => void;
+}) {
+  /* originalJson is the stable per-tool reference for diffing; editJson
+     tracks the live textarea value. Keyed by toolId. */
+  const originalJson: Record<string, string> = {};
+  for (const s of steps) {
+    try {
+      originalJson[s.toolId] = JSON.stringify(s.input, null, 2);
+    } catch {
+      originalJson[s.toolId] = "{}";
+    }
+  }
+  const [editJson, setEditJson] = useState<Record<string, string>>(() => ({
+    ...originalJson,
+  }));
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleSubmit = () => {
+    const modified: Record<string, Record<string, unknown>> = {};
+    const newErrors: Record<string, string> = {};
+    for (const s of steps) {
+      const current = editJson[s.toolId] ?? originalJson[s.toolId];
+      if (current === originalJson[s.toolId]) continue;
+      try {
+        const parsed = JSON.parse(current);
+        if (
+          typeof parsed !== "object" ||
+          parsed === null ||
+          Array.isArray(parsed)
+        ) {
+          newErrors[s.toolId] = "JSON muss ein Objekt sein";
+          continue;
+        }
+        modified[s.toolId] = parsed as Record<string, unknown>;
+      } catch (e) {
+        newErrors[s.toolId] =
+          e instanceof Error ? e.message : "Ungültiges JSON";
+      }
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    setErrors({});
+    onSubmit(iter, modified);
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm dark:bg-black/50"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Fork ab Iteration ${iter}`}
+    >
+      <div
+        className="w-full max-w-2xl max-h-[80vh] overflow-auto rounded-2xl border border-violet-200 bg-white p-5 shadow-[0_16px_40px_rgba(0,0,0,0.14)] dark:border-violet-500/30 dark:bg-[#1a1a1a]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="flex items-center gap-2 text-[14px] font-semibold text-slate-900 dark:text-slate-100">
+            <FolderInput
+              size={14}
+              className="text-violet-600 dark:text-violet-300"
+            />
+            Fork ab Iteration {iter}
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Schließen"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-100"
+          >
+            <X size={14} />
+          </button>
+        </div>
+        <p className="mb-4 text-[12px] leading-relaxed text-slate-600 dark:text-slate-400">
+          Atlas startet einen neuen Run mit der Conversation des Parent-Runs bis
+          Iteration {iter}. Tools in dieser Iteration werden mit den unten
+          editierten Inputs neu ausgeführt; Iterationen {">"}
+          {iter} werden frisch geplant.
+        </p>
+        <div className="space-y-3">
+          {steps.length === 0 ? (
+            <div className="text-[12.5px] text-slate-500">
+              Keine Tool-Aufrufe in dieser Iteration zum Editieren.
+            </div>
+          ) : (
+            steps.map((s) => (
+              <div key={s.toolId} className="space-y-1.5">
+                <label className="flex items-center gap-2 text-[11.5px] font-medium text-slate-700 dark:text-slate-300">
+                  <Cpu size={11} />
+                  <span className="font-mono">{s.toolName}</span>
+                  {editJson[s.toolId] !== originalJson[s.toolId] && (
+                    <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] text-amber-800 dark:bg-amber-500/20 dark:text-amber-200">
+                      geändert
+                    </span>
+                  )}
+                </label>
+                <textarea
+                  value={editJson[s.toolId] ?? ""}
+                  onChange={(e) => {
+                    setEditJson((prev) => ({
+                      ...prev,
+                      [s.toolId]: e.target.value,
+                    }));
+                    if (errors[s.toolId]) {
+                      setErrors((prev) => {
+                        const next = { ...prev };
+                        delete next[s.toolId];
+                        return next;
+                      });
+                    }
+                  }}
+                  rows={Math.min(
+                    10,
+                    Math.max(3, (editJson[s.toolId] ?? "").split("\n").length),
+                  )}
+                  className="w-full rounded-md border border-slate-200 bg-slate-50 p-2 font-mono text-[11.5px] leading-relaxed text-slate-900 outline-none dark:border-white/[0.08] dark:bg-black/30 dark:text-slate-100"
+                  spellCheck={false}
+                />
+                {errors[s.toolId] && (
+                  <div className="text-[11px] text-red-600 dark:text-red-400">
+                    {errors[s.toolId]}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+        <div className="mt-4 flex items-center justify-end gap-2">
+          {submitting && (
+            <span className="inline-flex items-center gap-1 text-[11px] text-slate-500">
+              <Loader2 size={11} className="animate-spin" />
+              Fork startet …
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={submitting}
+            className="rounded-md border border-slate-300 px-3 py-1.5 text-[12px] text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-40 dark:border-white/[0.10] dark:text-slate-300 dark:hover:bg-white/[0.05]"
+          >
+            Abbrechen
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={submitting || steps.length === 0}
+            className="inline-flex items-center gap-1.5 rounded-md bg-violet-600 px-3 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-violet-700 disabled:opacity-40"
+          >
+            <FolderInput size={11} />
+            Fork starten
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

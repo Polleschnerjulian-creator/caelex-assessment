@@ -85,6 +85,11 @@ export async function GET(req: NextRequest) {
           clientName: true,
         },
       },
+      /* Sprint C1 — surface fork lineage in the history list so the
+         UI can render a small "↪ from XXXXXXXX@N" badge under the
+         goal-preview. Cheap fields, no join. */
+      parentRunId: true,
+      forkedFromStep: true,
     },
   });
 
