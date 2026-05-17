@@ -195,7 +195,9 @@ model User {
   atlasMandateMemberships    AtlasMandateMember[]   @relation("AtlasMandateMemberships")
   atlasMandateFileUploads    AtlasMandateFile[]     @relation("AtlasMandateFileUploads")
   /// Sprint 12 (2026-05-17): parties this user has added to mandates.
-  atlasMandatePartiesCreated AtlasMandateParty[]    @relation("AtlasMandatePartyCreators")
+  atlasMandatePartiesCreated    AtlasMandateParty[]     @relation("AtlasMandatePartyCreators")
+  /// Sprint 12 (2026-05-17): document templates this user created.
+  atlasDocumentTemplatesCreated AtlasDocumentTemplate[] @relation("AtlasDocumentTemplateCreators")
   ownedAtlasChats            AtlasChat[]            @relation("OwnedAtlasChats")
   /// AUDIT-FIX M15: assistant turns have null sender; user turns
   /// link back here. Future multi-user mandate-chats will use this
@@ -3059,6 +3061,8 @@ model Organization {
   atlasAuditLogs           AtlasAuditLog[]                  @relation("AtlasAuditLogsOrg")
   atlasDeadlineSuggestions AtlasMandateDeadlineSuggestion[] @relation("AtlasDeadlineSuggestionsOrg")
   atlasMandateParties      AtlasMandateParty[]              @relation("OrgAtlasMandateParties")
+  atlasOrgBranding         AtlasOrgBranding?                @relation("OrgAtlasBranding")
+  atlasDocumentTemplates   AtlasDocumentTemplate[]          @relation("OrgAtlasDocumentTemplates")
   stakeholderEngagements   StakeholderEngagement[] // Network: stakeholder engagements
   dataRooms                DataRoom[] // Network: secure data rooms
   attestations             ComplianceAttestation[] // Network: compliance attestations
@@ -12369,6 +12373,101 @@ model AtlasMandateParty {
   /// Org-weite Suche: "alle Mandate die mit BNetzA verbunden sind"
   /// — beim Suchen nach Name innerhalb einer Org.
   @@index([organizationId, type])
+}
+
+/// Atlas V2 — Per-organization document branding (Sprint 12, 2026-05-17).
+///
+/// Stores the kanzlei's Briefkopf / Letterhead data so that every
+/// AI-generated Schriftsatz/Brief/Vertrag inherits the correct
+/// branding without the lawyer having to retype it. Universal-Anwalt
+/// minimum: Logo, Adresse, RA-Nummer, Telefon, E-Mail, Bankverbindung,
+/// default Gerichtsstand, Schluss-Salutation.
+///
+/// Chat-native onboarding: when a draft tool runs and finds no
+/// AtlasOrgBranding row, it tells the AI to ask the lawyer for the
+/// data ONCE inline in the chat. The AI calls `set_org_branding` to
+/// persist. From then on, every draft auto-uses the branding.
+model AtlasOrgBranding {
+  id String @id @default(cuid())
+
+  organizationId String       @unique
+  organization   Organization @relation("OrgAtlasBranding", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  /// Kanzlei-Name wie auf dem Briefkopf (kann von Organization.name
+  /// abweichen, z.B. "Müller & Partner Rechtsanwälte mbH").
+  letterheadName String?
+
+  /// Adresse multi-line.
+  address String? @db.Text
+
+  phone   String?
+  email   String?
+  website String?
+
+  /// Anwalts-Pflichtangaben.
+  raNumber      String?
+  authority     String?
+  insuranceNote String? @db.Text
+
+  bankName String?
+  iban     String?
+  bic      String?
+
+  /// Default Gerichtsstand für Verträge.
+  defaultJurisdiction String?
+  /// Default-Schlussformel.
+  defaultClosing String?
+
+  /// Logo: R2-stored.
+  logoUrl        String?
+  logoStorageKey String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+}
+
+/// Atlas V2 — Per-organization document templates (Sprint 12, 2026-05-17).
+///
+/// Library of reusable document drafts the kanzlei builds via chat-
+/// memory. Lawyer: "speicher diesen Brief als Template 'BNetzA-Standardantrag'"
+/// → save_document_template extracts the Markdown body + tokens. Next use:
+/// "nutz BNetzA-Standardantrag für SkyCorp" → use_document_template
+/// merges new mandate-data into the tokens, returns merged body.
+///
+/// Tokens follow {{variable}} convention.
+model AtlasDocumentTemplate {
+  id String @id @default(cuid())
+
+  organizationId String
+  organization   Organization @relation("OrgAtlasDocumentTemplates", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  /// Display name ("BNetzA-Standardantrag", "Erstberatungs-Memo
+  /// Standard", "Vollmacht-Spezialvariante Frequenzrecht").
+  name String
+
+  /// Kind tag — matches draft-tool kind for discovery.
+  kind String
+
+  /// Full Markdown body with {{token}} placeholders.
+  body String @db.Text
+
+  /// JSON list of expected tokens. Used by use_document_template to
+  /// validate merge data + show the lawyer what variables are needed.
+  tokensJson String @db.Text
+
+  /// Optional: where this template was originally extracted from.
+  sourceMandateId String?
+
+  createdByUserId String?
+  createdBy       User?   @relation("AtlasDocumentTemplateCreators", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([organizationId, name])
+  @@index([organizationId, kind])
 }
 
 model AtlasMandateDeadlineSuggestion {

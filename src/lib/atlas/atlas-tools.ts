@@ -812,6 +812,156 @@ After calling: write the actual note in your reply. Aktennotiz tone is FACTUAL +
     },
   },
 
+  /* ── Sprint 12 C — Letterhead via Chat ─────────────────────────────
+   * Two tools that let the kanzlei pflege its Briefkopf-data inline
+   * in the chat. set_org_branding is the lazy-onboarding step the
+   * draft_* tools trigger when AtlasOrgBranding is empty.
+   * ───────────────────────────────────────────────────────────── */
+  {
+    name: "get_org_branding",
+    description: `Returns the kanzlei's stored Letterhead/Briefkopf data (name, address, phone, email, RA-Nummer, Bankverbindung, default Gerichtsstand, default Schlussformel, logo). Returns { branding: null } when not yet set — the AI uses this signal to ask the lawyer to set it via set_org_branding.
+
+USE: at the start of any draft_schriftsatz / draft_brief / draft_vertrag flow to check whether to use stored branding or to ask the lawyer.`,
+    input_schema: {
+      type: "object",
+      properties: {},
+    },
+  },
+  {
+    name: "set_org_branding",
+    description: `Upserts (creates-or-updates) the kanzlei's Letterhead/Briefkopf. ALL fields optional — pass only what changed. Existing fields are preserved if omitted. The AI calls this when the lawyer pastes branding info into the chat ("hier mein Briefkopf: ..." or in response to the lazy-onboarding prompt).
+
+DO NOT call without explicit lawyer input — set_org_branding is per-kanzlei and changes every future draft. When uncertain, confirm with the lawyer before persisting.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        letterheadName: {
+          type: "string",
+          description:
+            "Kanzlei-Name wie auf dem Briefkopf erscheint (kann von Organization.name abweichen).",
+        },
+        address: {
+          type: "string",
+          description: "Adresse (multi-line erlaubt).",
+        },
+        phone: { type: "string", description: "Telefon (eine Zeile)." },
+        email: { type: "string", description: "Kanzlei-E-Mail." },
+        website: { type: "string", description: "Kanzlei-Website." },
+        raNumber: { type: "string", description: "RA-Liste-Nummer." },
+        authority: {
+          type: "string",
+          description: "Aufsichtsbehörde (z.B. 'Rechtsanwaltskammer Berlin').",
+        },
+        insuranceNote: {
+          type: "string",
+          description:
+            "Berufshaftpflicht-Hinweis (Versicherer + Geltungsbereich).",
+        },
+        bankName: { type: "string", description: "Bank-Name." },
+        iban: { type: "string", description: "IBAN." },
+        bic: { type: "string", description: "BIC." },
+        defaultJurisdiction: {
+          type: "string",
+          description:
+            "Default Gerichtsstand für Verträge (z.B. 'Berlin', 'München').",
+        },
+        defaultClosing: {
+          type: "string",
+          description:
+            "Default-Schlussformel (z.B. 'Mit freundlichen Grüßen', 'Mit besten Grüßen').",
+        },
+      },
+    },
+  },
+
+  /* ── Sprint 12 D — Document Templates as Chat-Memory ────────────────
+   * Three tools that let the kanzlei build a personal template library
+   * via natural-language chat — no Templates-Page UI. The lawyer
+   * iterates on a draft, then says "speicher das als Template ..." →
+   * the AI calls save_document_template. Later: "nutz Template X für
+   * Mandant Y" → use_document_template merges + returns ready-to-polish.
+   * ───────────────────────────────────────────────────────────── */
+  {
+    name: "save_document_template",
+    description: `Saves the current document draft (from the AI's most recent reply) as a reusable template in the kanzlei's library. Extracts mandate-specific values from the body and replaces them with {{token}} placeholders for future merging.
+
+USE WHEN the lawyer says: "speicher das als Template 'BNetzA-Standardantrag'", "merk dir die Vollmacht als Vorlage 'Frequenz-Vollmacht'".
+
+Auto-detects + tokenizes these mandate-specific values:
+- {{client_name}} from the current mandate's client party
+- {{today}} from the date in the draft
+- {{aktenzeichen}} from client party reference
+- {{authority}} from mandate.primaryAuthority
+
+The lawyer can review tokens before save by passing dry_run=true.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        name: {
+          type: "string",
+          description:
+            "Template-Name (eindeutig pro Kanzlei). 3-100 chars. Beispiele: 'BNetzA-Standardantrag', 'Erstberatungs-Memo', 'Vollmacht-Frequenzrecht'.",
+        },
+        kind: {
+          type: "string",
+          enum: ["schriftsatz", "brief", "vertrag", "aktennotiz", "sonstiges"],
+          description: "Template-Typ — matches draft-tool kind.",
+        },
+        body: {
+          type: "string",
+          description:
+            "Vollständiger Markdown-Body des Drafts. Die AI fügt {{tokens}} ein, basierend auf den extrahierten mandate-spezifischen Werten.",
+        },
+        dry_run: {
+          type: "boolean",
+          description:
+            "Wenn true: tokenisiert + zeigt Lawyer das Template-Preview ohne zu speichern. Default false.",
+        },
+      },
+      required: ["name", "kind", "body"],
+    },
+  },
+  {
+    name: "list_document_templates",
+    description: `Returns all document templates in the kanzlei's library, optionally filtered by kind. The AI uses this when the lawyer asks "welche Templates haben wir?" or "zeig mir alle Schriftsatz-Templates".
+
+Returns each template's id, name, kind, token-count, last-update — the AI then renders as a plain Markdown list/table.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        kind: {
+          type: "string",
+          enum: ["schriftsatz", "brief", "vertrag", "aktennotiz", "sonstiges"],
+          description:
+            "Optional Filter — nur Templates dieses Typs zurückgeben.",
+        },
+      },
+    },
+  },
+  {
+    name: "use_document_template",
+    description: `Loads a template by name (or id) and merges its {{tokens}} with the current mandate's data. Returns the merged body — the AI uses it as a starting point and lightly polishes (mandate-specific details, today's exact wording, jurisdiction-specific phrasing).
+
+USE WHEN the lawyer says: "nutz BNetzA-Standardantrag für SkyCorp", "nimm Template Vollmacht-Frequenzrecht", "die Standard-Erstberatungs-Memo aber für Mandant XYZ".
+
+After calling: present the merged body to the lawyer + lightly polish based on chat context. Don't blindly emit — apply any specifics from the lawyer's request.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        name: {
+          type: "string",
+          description:
+            "Template-Name (case-insensitive). Wenn nicht eindeutig → AI fragt zurück mit list_document_templates.",
+        },
+        id: {
+          type: "string",
+          description:
+            "Optional Template-ID (cuid). Wenn name UND id leer → Fehler.",
+        },
+      },
+    },
+  },
+
   {
     name: "refine_document",
     description: `Takes an existing draft (Schriftsatz / Brief / Vertrag / Aktennotiz) the user is iterating on and produces refinement guidance for the AI to rewrite a specific section or aspect. Returns: which section to focus on, what aspect to change, suggested register (formaler/lockerer/kürzer/präziser), and any cross-references to mandate-data or citations that should be added.
@@ -948,6 +1098,13 @@ export type AtlasToolName =
   | "draft_vertrag"
   | "draft_aktennotiz"
   | "refine_document"
+  /* Sprint 12 C — letterhead via chat. */
+  | "get_org_branding"
+  | "set_org_branding"
+  /* Sprint 12 D — document templates as chat-memory. */
+  | "save_document_template"
+  | "list_document_templates"
+  | "use_document_template"
   /* Sprint D2 — agent-mode orchestration. Resolved by the agent
      route's special-case path, NOT by atlas-tool-executor. */
   | "delegate_subtasks";
