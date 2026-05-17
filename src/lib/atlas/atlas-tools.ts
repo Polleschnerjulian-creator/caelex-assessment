@@ -569,6 +569,61 @@ Cite sources in your reply with markdown links: \`[Mandats-Datei: filename.pdf](
   },
 ];
 
+/* Sprint D2 — agent-mode-only orchestration tools. Not used by chat-
+   mode (the executor in atlas-tool-executor.ts has no handler; agent
+   route special-cases them BEFORE delegating to the executor). The
+   model is told about them via the agent system-prompt + the tool
+   description below. */
+const AGENT_ORCHESTRATION_TOOLS: Anthropic.Tool[] = [
+  {
+    name: "delegate_subtasks",
+    description: `Sprint D2 — Fires K parallel sub-agents (max 4) to do genuinely-parallel work. Each sub-agent is single-completion (NO tool-use): it gets a self-contained prompt + lawyer-context and returns Markdown text. Results come back concatenated as \`## <title>\` sections so you can navigate them.
+
+USE THIS WHEN:
+ - "Compare X across N jurisdictions" — fire 1 sub-agent per jurisdiction
+ - "Analyse N independent contract sections" — fire 1 sub-agent per section
+ - "Recherchiere Argumentation für 3 verschiedene Hypothesen" — fire 1 per hypothesis
+
+DO NOT use for:
+ - Sequential dependencies (sub-agent B needs sub-agent A's output) — chain them in your own plan instead
+ - Single-task work (just do it inline; delegation has overhead)
+ - Anything requiring tool-use (sub-agents have no tools)
+
+Each sub-task prompt MUST be self-contained — embed any mandate context, jurisdiction, or facts the sub-agent needs. Sub-agents see ONLY their own prompt, not your conversation.
+
+Cost: K parallel Claude completions, max 1500 tokens each. Real wall-clock speedup ≈ K× for IO-bound work. Don't dispatch unless you'd genuinely save sequential turns.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        subtasks: {
+          type: "array",
+          description:
+            "Array of 1-4 sub-task specs. Each must have non-empty title (max 200 chars) + a self-contained prompt (≥10 chars, max 4000 chars).",
+          items: {
+            type: "object",
+            properties: {
+              title: {
+                type: "string",
+                description:
+                  "Short label for the sub-task (e.g. 'Frankreich — Authorisierung', 'Sec 3.2 — Haftungsklausel').",
+              },
+              prompt: {
+                type: "string",
+                description:
+                  "Self-contained prompt the sub-agent will receive. Embed any context the sub-agent needs — it has no conversation history.",
+              },
+            },
+            required: ["title", "prompt"],
+          },
+          minItems: 1,
+          maxItems: 4,
+        },
+      },
+      required: ["subtasks"],
+    },
+  },
+];
+
 /* Atlas V2 Sprint 3-5: tool bundles merged into the canonical
    ATLAS_TOOLS array so the chat-engine picks them up automatically.
    - Sprint 3: 8 compliance tools (compliance-tools.server.ts)
@@ -579,6 +634,8 @@ export const ATLAS_TOOLS: Anthropic.Tool[] = [
   ...COMPLIANCE_TOOLS,
   ...VALIDITY_TOOLS,
   ...DOCUMENT_TOOLS,
+  /* Sprint D2 — orchestration tools (agent-mode special-case). */
+  ...AGENT_ORCHESTRATION_TOOLS,
 ];
 
 /* Core (Sprint 1) tool-name union. Compliance tool names are matched at
@@ -599,7 +656,10 @@ export type AtlasToolName =
   | "draft_compliance_brief"
   | "compare_jurisdictions_for_filing"
   | "get_filing_deadlines"
-  | "summarize_changes_since";
+  | "summarize_changes_since"
+  /* Sprint D2 — agent-mode orchestration. Resolved by the agent
+     route's special-case path, NOT by atlas-tool-executor. */
+  | "delegate_subtasks";
 
 export function isAtlasToolName(name: string): boolean {
   return ATLAS_TOOLS.some((t) => t.name === name);

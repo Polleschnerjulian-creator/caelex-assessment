@@ -197,6 +197,10 @@
     {
       "path": "/api/cron/atlas-share-expiry-backfill",
       "schedule": "30 3 * * 0"
+    },
+    {
+      "path": "/api/cron/atlas-background-agents",
+      "schedule": "0 * * * *"
     }
   ]
 }

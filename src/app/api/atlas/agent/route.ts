@@ -42,6 +42,7 @@ import {
   type ApprovalGate,
 } from "@/lib/atlas/agent/approval-policy";
 import { suggestNextWorkflows } from "@/lib/atlas/agent/workflow-suggester.server";
+import { delegateSubtasks } from "@/lib/atlas/agent/sub-agent-orchestrator.server";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { getSafeErrorMessage } from "@/lib/validations";
@@ -169,6 +170,9 @@ Run each step using the appropriate tool. Stream a short "→ Schritt N abgeschl
   - A step truly requires the lawyer's judgement (e.g., "Argument X or Y führen?")
   - A step fails and the goal cannot continue without input
   - The goal is fundamentally ambiguous
+
+## Parallel sub-agents (D2)
+When a step has K genuinely-independent sub-tasks ("compare X across 5 jurisdictions", "analyse 4 contract sections", "research 3 alternative argumentations"), use the \`delegate_subtasks\` tool. It fires K parallel sub-Claude-calls (max 4) — real wall-clock speedup, single-turn. Each sub-agent gets only its own self-contained prompt + your shared system context; sub-agents have NO tool-use, so embed any facts they need inline. DO NOT delegate for sequential work (sub-B depends on sub-A's result) or for trivial single-task steps.
 
 ## Final artifacts — STRUCTURED MULTI-OUTPUT
 After all steps run, your closing message must produce ONE OR MORE structured artifacts using these EXACT fence markers (the UI parses them into separate downloadable cards):
@@ -1189,6 +1193,34 @@ export async function POST(req: NextRequest) {
               resultContent =
                 "USER_CANCELLED: Der Anwalt hat diesen Schritt nicht freigegeben. Lass diesen Schritt aus und mache mit dem nächsten Schritt im Plan weiter — passe deinen Plan ggf. an.";
               isError = true;
+            } else if (block.name === "delegate_subtasks") {
+              /* Sprint D2 — agent-mode-only orchestration tool.
+                 Handled HERE in the route (not via executeAtlasTool)
+                 because the parallel sub-agent dispatch needs direct
+                 access to the anthropic client + model + system
+                 prompt. Token-counts from sub-agents accumulate
+                 into the main run's totals so the cost-counter +
+                 budget-check stay accurate. */
+              try {
+                const inp = effectiveInput as { subtasks?: unknown };
+                const outcome = await delegateSubtasks(inp.subtasks, {
+                  anthropic,
+                  model,
+                  sharedSystemPrompt: systemPrompt,
+                });
+                resultContent = outcome.content;
+                isError = outcome.hasErrors;
+                /* Cumulative token-accounting across sub-agents. */
+                totalInputTokens += outcome.totalInputTokens;
+                totalOutputTokens += outcome.totalOutputTokens;
+                totalCacheCreationTokens += outcome.totalCacheCreationTokens;
+                totalCacheReadTokens += outcome.totalCacheReadTokens;
+                if (!isError) toolsUsed.push(block.name);
+              } catch (err) {
+                const msg = err instanceof Error ? err.message : String(err);
+                resultContent = JSON.stringify({ error: msg });
+                isError = true;
+              }
             } else {
               try {
                 if (!isAtlasToolName(block.name)) {

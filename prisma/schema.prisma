@@ -11708,6 +11708,21 @@ model AtlasMandate {
   agentRunMemoryAt         DateTime?
   agentRunMemoryUpToRunId  String?
 
+  /// Sprint D3: Background Long-Running Agents.
+  /// Per-mandate scheduled autonomous agent runs. The Vercel cron at
+  /// /api/cron/atlas-background-agents finds mandates with `enabled`
+  /// AND `nextRunAt <= now()` and invokes runAgentInBackground() with
+  /// the configured goal. Approval-required tools halt the run with
+  /// status="halted_for_review" so the lawyer can pick it up via the
+  /// regular B1 resume-from-approval flow.
+  /// Schedule is a simple enum-string ("daily" | "weekly") for v1 —
+  /// no cron-expression parser dependency.
+  backgroundAgentEnabled    Boolean   @default(false)
+  backgroundAgentSchedule   String?   // "daily" | "weekly" | "every-6h" | "every-12h"
+  backgroundAgentGoal       String?   @db.Text
+  backgroundAgentLastRunAt  DateTime?
+  backgroundAgentNextRunAt  DateTime?
+
   /// Suggestions die noch nicht resolved wurden (M3, Feature 4).
   deadlineSuggestions AtlasMandateDeadlineSuggestion[]
 
