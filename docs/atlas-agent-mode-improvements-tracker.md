@@ -47,16 +47,18 @@ Single Source of Truth für Agent-Mode-Improvements. Überlebt Context-Compactio
 
 ```
 Total items:    9
-☑️ Done:         7
+☑️ Done:         9
 ⏳ In progress:  0
 ⏭️ Deferred:     0
-☐ Open:         2
+☐ Open:         0
 
 By tier:
   🔴 Sprint A (Trust + Cost):       2  (A1✅, A2✅) — COMPLETE @ 86a40669
   🟡 Sprint B (Memory + Control):   2  (B1✅, B2✅) — COMPLETE @ dffc103c
   🟢 Sprint C (Workflow):           2  (C1✅, C2✅) — COMPLETE @ 46c86b96
-  🟣 Sprint D (Later):              3  (D1✅, D2, D3) — D1 shipped @ 812927a5
+  🟣 Sprint D (Later):              3  (D1✅, D2✅, D3✅) — D1 @ 812927a5, D2+D3 @ 8fb94002
+
+ATLAS AGENT-MODE IMPROVEMENT PROJECT — COMPLETE (9/9, all 4 sprints shipped)
 ```
 
 ---
@@ -313,7 +315,7 @@ Beispiele:
 
 ---
 
-#### D2 ☐ Multi-Agent Orchestration
+#### D2 ✅ Multi-Agent Orchestration
 
 **What:** Komplexe Tasks parallel: Recherche-Agent + Drafting-Agent + Compliance-Agent gleichzeitig, ein Synthesis-Agent merged. Speedup 10× bei "großer Akte".
 
@@ -321,11 +323,21 @@ Beispiele:
 
 **Effort:** ~2 Wochen. Komplex zu debuggen, schwacher ROI für deutsche Mandat-Größe (typisch 1-2 Anwälte pro Akte, wenig parallel benefit).
 
-**Wave:** D | **Status:** ☐ Open
+**Wave:** D | **Status:** ✅ DONE @ 8fb94002
+
+**Notes (post-impl):**
+
+- Shipped **v1-light**: a single `delegate_subtasks` tool that fires K parallel sub-Claude-calls (max 4) per main-agent turn. Each sub-agent is **single-completion (NO tool-use)** — gets a self-contained prompt + the main agent's system context, returns Markdown text. Results come back as `## <title>` sections concat'd into one tool_result.
+- NOT shipped (v2): separate Recherche / Drafting / Compliance ROLES with their own sub-tool-loops + a synthesis-agent. The original tracker note ("schwacher ROI für deutsche Mandat-Größe") was the basis for the simpler scope — re-evaluate if a real use-case (e.g., a 50-state US-regulatory compare) appears.
+- New `src/lib/atlas/agent/sub-agent-orchestrator.server.ts` with `delegateSubtasks()`. Hard caps: 4 parallel, 1500 max output tokens per sub-agent, prompt capped at 4000 chars per subtask.
+- Per-subtask token-accounting feeds back into the main run's totals so the cost-counter + budget-check stay accurate. `hasErrors` flag returned so the main agent re-plans on sub-failures.
+- Sub-agent dispatch happens DIRECTLY in the agent route's tool-exec loop (special-case BEFORE `executeAtlasTool`) so the orchestrator has clean access to the anthropic client + model + system prompt.
+- `AGENT_SYSTEM_PROMPT` updated to teach the model when to delegate ("compare X across N jurisdictions" yes; sequential dependencies no).
+- Background runner (`runAgentInBackground`) also supports `delegate_subtasks` — same dispatch logic.
 
 ---
 
-#### D3 ☐ Background Long-Running Agents
+#### D3 ✅ Background Long-Running Agents
 
 **What:** Sprengt Vercel-5min-timeout via background-worker (Vercel Workflow DK oder eigene queue). Use case: "monitor BNetzA-Eingangskorb täglich, draft-response wenn was ankommt".
 
@@ -333,7 +345,22 @@ Beispiele:
 
 **Effort:** ~1 Woche + neue Sub-Infrastruktur.
 
-**Wave:** D | **Status:** ☐ Open
+**Wave:** D | **Status:** ✅ DONE @ 8fb94002
+
+**Notes (post-impl):**
+
+- Shipped **v1-functional** without new sub-infrastructure — re-used the existing Vercel Cron pattern (1 new entry in `vercel.json` at `0 * * * *`, joining the 17 other crons).
+- 5 new fields on AtlasMandate: `backgroundAgentEnabled` (Boolean default false), `backgroundAgentSchedule` (string enum: "daily"|"weekly"|"every-6h"|"every-12h"), `backgroundAgentGoal` (Text), `backgroundAgentLastRunAt`, `backgroundAgentNextRunAt`. Pushed to Neon.
+- New `src/lib/atlas/agent/background-runner.server.ts`: `runAgentInBackground()` is a **non-streaming** agent loop. Mirrors the route's tool-use loop but without SSE / interactive-approval-pause / verification / suggested_next / extended-thinking. Server-controlled hard budget cap ($1 USD/run via `DEFAULT_BACKGROUND_BUDGET_USD`).
+- **Approval-required tools cause an IMMEDIATE HALT** (status=`awaiting_approval`) with full `conversationState` persisted — the lawyer picks the run up via the existing B1 resume-from-approval flow on their next login. This is the cleanest integration: background runs that hit a gate just become "human-needed" runs in the regular UI.
+- Background runs persist as first-class AtlasAgentRun rows with `templateId="background-agent"` so the history page shows them alongside manual runs. B2 memory-summariser fires the same fire-and-forget update.
+- New cron `/api/cron/atlas-background-agents` (hourly): finds enabled + due mandates, fires runAgentInBackground sequentially (cap 50/invocation), computes nextRunAt + persists lastRunAt regardless of run-status (halted runs still re-attempt on the next cycle; lawyer disables via settings if a mandate keeps halting). CRON_SECRET bearer auth.
+- New `/api/atlas/mandate/[id]/background-agent` (GET + PUT): membership-gated. PUT validates enabled→schedule+goal together; recomputes nextRunAt on enable-fresh or schedule-change; disabled state preserves prior nextRunAt for clean re-enabling.
+- **UI deferred for v1** — power users configure via API. Per the original D3 deferral note "Nur sinnvoll wenn ein konkretes use-case dafür da ist", infrastructure ships now; UI follows when a real mandate needs it.
+- Concrete use-cases now possible (set up by hand via PUT):
+  - "Monitor BNetzA-Eingangskorb täglich, drafte Antwort-Outline" (daily, write-tool halts trigger lawyer review)
+  - "Wöchentlich neue NIS2-Transpositions-Acts checken" (weekly, pure-read tools, summary artifact)
+  - "Monatliches Mandat-Status-Snapshot" (every-12h, read-only, summary)
 
 ---
 
@@ -353,3 +380,4 @@ Beispiele:
 - **2026-05-15:** Sprint C complete. C1 (run-replay-branching) + C2 (smart-sequencing) shipped in `46c86b96`. No schema changes needed (all fields were pre-empted in earlier sprints). conversationState now persisted on COMPLETE too (was pause-only) to enable forks. 974 insertions, 12 deletions across 6 files. Progress: 6/9 done.
 - **2026-05-15:** Sprints A+B+C pushed to origin (commits `0af96525..b420e74c`). Vercel deploy triggered.
 - **2026-05-15:** D1 (evidence-pack ZIP) shipped in `812927a5`. Berufshaftpflicht-tauglich bundle: agent-output.pdf + citations.pdf + audit-log.json + README.md. Server-side jsPDF + archiver. No schema changes. 967 insertions, 7 deletions across 3 files. Progress: 7/9 done.
+- **2026-05-15:** D2 + D3 shipped together in `8fb94002`. D2 = `delegate_subtasks` tool with K parallel sub-agent dispatch (v1-light — single-completion sub-agents, no sub-tool-loops). D3 = AtlasMandate schema additions (5 fields) + background-runner (non-streaming agent loop with approval-halt) + hourly Vercel cron + settings GET/PUT endpoint. UI for D3 deferred — API-only for v1. 1273 insertions, 1 deletion across 8 files. **Progress: 9/9 done — PROJECT COMPLETE.**
