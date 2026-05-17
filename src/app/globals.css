@@ -4652,3 +4652,40 @@ html:not(.dark) .caelex-v2 .glass-card::after {
     animation: none !important;
   }
 }
+
+/* ───────────────────────────────────────────────────────────────────────
+ * Atlas v2 Sidebar redesign — Claude-Code monochrome tokens (end-of-file
+ * so they WIN the cascade against any earlier definitions of the same
+ * names — there are legacy --text-primary / --border-subtle declarations
+ * in the v2.* glass system that would otherwise override these).
+ * Used via Tailwind classes atlas-bg-page / atlas-text-primary / etc.
+ * (mapped in tailwind.config.ts).
+ * ─────────────────────────────────────────────────────────────────── */
+:root {
+  --bg-page: #f4f4f2;
+  --bg-panel: #ffffff;
+  --bg-elevated: #fafaf9;
+  --bg-subtle: #f4f4f2;
+  --border-subtle: #e7e5e0;
+  --border-strong: #d4d2cd;
+  --text-primary: #1a1a19;
+  --text-secondary: #737170;
+  --text-muted: #a3a19e;
+  --accent-amber: #d4a047;
+  --accent-amber-soft: rgba(212, 160, 71, 0.15);
+}
+
+.dark,
+[data-caelex-theme="dark"] {
+  --bg-page: #000000;
+  --bg-panel: #0a0a0a;
+  --bg-elevated: #141413;
+  --bg-subtle: #1c1b1a;
+  --border-subtle: #26241f;
+  --border-strong: #3a3733;
+  --text-primary: #fafaf7;
+  --text-secondary: #a3a19e;
+  --text-muted: #6b6968;
+  --accent-amber: #c99744;
+  --accent-amber-soft: rgba(201, 151, 68, 0.2);
+}
