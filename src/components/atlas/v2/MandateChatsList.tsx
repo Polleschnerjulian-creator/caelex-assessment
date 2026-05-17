@@ -40,7 +40,13 @@ export function MandateChatsList({ chats }: Props) {
               className="shrink-0 text-slate-400 dark:text-slate-500"
               aria-hidden="true"
             />
-            <span className="line-clamp-1 flex-1">{c.title}</span>
+            {/* AUDIT-FIX 2026-05-17: chat.title is null for brand-new chats
+                until the first AI response generates a title. Previously
+                rendered as empty span. Now aligned with the sidebar's
+                fallback. */}
+            <span className="line-clamp-1 flex-1">
+              {c.title || "Unbenannter Chat"}
+            </span>
             <span className="shrink-0 text-[10px] text-slate-500 tabular-nums">
               {/* AUDIT-FIX L15 (2026-05-15): aligned with MandateFilesList
                   which already uses `toLocaleDateString("de-DE")`. The

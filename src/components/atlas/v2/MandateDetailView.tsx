@@ -71,6 +71,11 @@ export function MandateDetailView({ mandateId }: Props) {
 
   const reload = useCallback(async () => {
     setLoading(true);
+    /* AUDIT-FIX 2026-05-17: clear stale error BEFORE the fetch so a prior
+       failure doesn't briefly re-render while the retry is in flight.
+       Previously setError(null) only fired in the success branch, leaving
+       a stale message visible on retry. */
+    setError(null);
     try {
       const res = await fetch(`/api/atlas/mandate/${mandateId}`, {
         cache: "no-store",
@@ -82,7 +87,6 @@ export function MandateDetailView({ mandateId }: Props) {
       }
       const data = (await res.json()) as { mandate: MandateDetail };
       setMandate(data.mandate);
-      setError(null);
     } finally {
       setLoading(false);
     }

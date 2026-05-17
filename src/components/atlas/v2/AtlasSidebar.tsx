@@ -161,6 +161,39 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
     return () => window.removeEventListener("atlas:chats-refresh", onRefresh);
   }, []);
 
+  /* AUDIT-FIX 2026-05-17: refetch BOTH chats AND mandates when surfaces
+     dispatch the "atlas-v2-sidebar-refresh" event. Previously the sidebar
+     only listened for "atlas:chats-refresh" (chats-only) — every mandate
+     mutation (CreateMandateForm, MandateDetailView, ChatInput, etc.)
+     dispatched a different event that the sidebar ignored. Result: new
+     mandates didn't appear, archived mandates didn't disappear until
+     page reload. Now both lists stay in sync. */
+  useEffect(() => {
+    const onRefresh = async () => {
+      try {
+        const [chatsRes, mandatesRes] = await Promise.all([
+          fetch("/api/atlas/chat", { cache: "no-store" }),
+          fetch("/api/atlas/mandate", { cache: "no-store" }),
+        ]);
+        if (chatsRes.ok) {
+          const data = (await chatsRes.json()) as { chats: ChatListItem[] };
+          setChats(data.chats ?? []);
+        }
+        if (mandatesRes.ok) {
+          const data = (await mandatesRes.json()) as {
+            mandates: MandateListItem[];
+          };
+          setMandates(data.mandates ?? []);
+        }
+      } catch {
+        /* swallow — best-effort refresh */
+      }
+    };
+    window.addEventListener("atlas-v2-sidebar-refresh", onRefresh);
+    return () =>
+      window.removeEventListener("atlas-v2-sidebar-refresh", onRefresh);
+  }, []);
+
   /* Filter + bucket the chats. Search is case-insensitive substring
      match on the title (which is now AI-generated post-D2/Sprint-E,
      so titles are 3-5 word summaries instead of raw user input). */

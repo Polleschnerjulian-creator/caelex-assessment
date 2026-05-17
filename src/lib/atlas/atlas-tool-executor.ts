@@ -142,7 +142,11 @@ async function findOrOpenMatter(args: {
     id: m.id,
     name: m.name,
     reference: m.reference,
-    clientName: m.clientOrg.name,
+    /* AUDIT-FIX 2026-05-17: clientOrg is nullable (solo-matters have no
+       linked operator org since create_solo_matter shipped). Previously
+       `m.clientOrg.name` crashed with TypeError on null. Fall back to
+       null so the agent can read it as "no client-org linked". */
+    clientName: m.clientOrg?.name ?? null,
     status: m.status,
     updatedAt: m.updatedAt,
     workspaceUrl: `/atlas/network/${m.id}/workspace`,
@@ -352,12 +356,25 @@ async function createMatterInviteTool(args: {
       isError: true,
     };
   }
-  // Conditional wrong-type check — skipped under schema drift.
-  if (operator.orgType && operator.orgType === "LAW_FIRM") {
+  /* AUDIT-FIX 2026-05-17: previously `operator.orgType && operator.orgType
+     === "LAW_FIRM"` silently passed for null orgType (truthy guard skipped
+     the check entirely). Pre-migration rows with null orgType could be
+     invited as operator counterparties. Now blocks BOTH LAW_FIRM and null
+     — only explicit OPERATOR type is allowed. */
+  if (operator.orgType === "LAW_FIRM") {
     return {
       content: JSON.stringify({
         error: `${operator.name} is a law firm, not an operator — cannot invite as client`,
         code: "WRONG_ORG_TYPE",
+      }),
+      isError: true,
+    };
+  }
+  if (operator.orgType === null) {
+    return {
+      content: JSON.stringify({
+        error: `${operator.name} has no orgType set — refusing to invite as operator without explicit type`,
+        code: "UNKNOWN_ORG_TYPE",
       }),
       isError: true,
     };
@@ -633,7 +650,12 @@ const CreateSoloMatterInput = z.object({
   name: z.string().trim().min(3).max(200),
   clientName: z.string().trim().max(200).optional(),
   clientContact: z.string().trim().max(200).optional(),
-  jurisdiction: z.string().trim().max(20).optional(),
+  /* AUDIT-FIX 2026-05-17: aligned with POST /api/atlas/mandate which caps
+     jurisdiction at 8 chars (matches form's JURISDICTIONS dropdown codes
+     like "DE", "EU", "INT", max 3-4 chars). Previously max(20) allowed
+     the agent to create mandates with jurisdiction strings the API would
+     reject on subsequent PATCH — silent inconsistency. */
+  jurisdiction: z.string().trim().max(8).optional(),
   operatorType: z.string().trim().max(80).optional(),
   primaryAuthority: z.string().trim().max(120).optional(),
   customInstructions: z.string().max(4000).optional(),
