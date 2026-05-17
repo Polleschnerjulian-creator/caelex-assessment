@@ -44,7 +44,7 @@ export async function PATCH(
 ) {
   const atlas = await getAtlasAuth();
   if (!atlas) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id: mandateId, suggestionId } = await ctx.params;
 

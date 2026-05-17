@@ -116,7 +116,7 @@ async function extractDocx(buffer: Buffer): Promise<string> {
 export async function POST(req: NextRequest) {
   const atlas = await getAtlasAuth();
   if (!atlas) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   /* `api` tier (100/min) is fine — extraction is fast (<1 s for typical
      documents) and the lawyer rarely uploads more than a few files

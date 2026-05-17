@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
   /* ── Auth ──────────────────────────────────────────────────────── */
   const atlas = await getAtlasAuth();
   if (!atlas) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   /* ── Rate limit ────────────────────────────────────────────────── */

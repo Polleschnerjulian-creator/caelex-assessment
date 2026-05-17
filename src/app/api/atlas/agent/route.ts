@@ -268,7 +268,7 @@ function buildSystemPrompt(
 export async function POST(req: NextRequest) {
   const atlas = await getAtlasAuth();
   if (!atlas) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   /* astra_chat tier — agents are heavier than chat but the user
      starts them deliberately, not bulk. */

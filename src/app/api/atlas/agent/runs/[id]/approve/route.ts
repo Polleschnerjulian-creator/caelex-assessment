@@ -80,7 +80,7 @@ export async function POST(
 ) {
   const atlas = await getAtlasAuth();
   if (!atlas) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   /* Same `api` tier as /resume — these are user-driven, low-volume
      state-flip endpoints. */

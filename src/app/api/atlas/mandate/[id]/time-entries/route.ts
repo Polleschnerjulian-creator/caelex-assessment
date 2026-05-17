@@ -32,7 +32,7 @@ export async function GET(
 ) {
   const atlas = await getAtlasAuth();
   if (!atlas) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id: mandateId } = await ctx.params;
   const rl = await checkRateLimit("api", getIdentifier(req, atlas.userId));
@@ -106,7 +106,7 @@ export async function POST(
 ) {
   const atlas = await getAtlasAuth();
   if (!atlas) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id: mandateId } = await ctx.params;
   if (

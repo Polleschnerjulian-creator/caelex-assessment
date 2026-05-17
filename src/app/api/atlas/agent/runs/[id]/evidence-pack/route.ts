@@ -40,7 +40,7 @@ export async function GET(
 ) {
   const atlas = await getAtlasAuth();
   if (!atlas) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   /* `export` tier — matches Caelex compliance-reporter exports. */
   const rl = await checkRateLimit("export", getIdentifier(req, atlas.userId));

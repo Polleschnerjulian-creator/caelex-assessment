@@ -83,7 +83,7 @@ OUTPUT: Return the anonymised text only. No prose, no markdown fence, no introdu
 export async function POST(req: NextRequest) {
   const atlas = await getAtlasAuth();
   if (!atlas) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const rl = await checkRateLimit(
     "astra_chat",

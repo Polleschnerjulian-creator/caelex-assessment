@@ -33,7 +33,7 @@ const QuerySchema = z.object({
 export async function GET(req: NextRequest) {
   const atlas = await getAtlasAuth();
   if (!atlas) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const rl = await checkRateLimit("api", getIdentifier(req, atlas.userId));
   if (!rl.success) {
