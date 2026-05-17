@@ -111,15 +111,39 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  /* Build where-clause: org-scope ALWAYS via mandate-relation, plus
-     optional mandate-id, billable-toggle, and date-range. */
+  /* AUDIT-FIX C01 (2026-05-17): privilege-escalation fix — previously
+     ANY org-member (incl. VIEWER role) could export ALL firm time-entries
+     including mandates they had no membership of. Now:
+     - OWNER/ADMIN/MANAGER (partner-tier roles): full-org export as before
+       (the documented "partner imports Quartal-Abrechnung" use-case)
+     - MEMBER/VIEWER: membership-gated to mandates they own or are member of
+     This preserves the partner workflow while preventing cross-mandate
+     financial-data leaks to junior staff. */
+  const isPartnerTier =
+    atlas.role === "OWNER" ||
+    atlas.role === "ADMIN" ||
+    atlas.role === "MANAGER";
+
+  const mandateRelationFilter: {
+    organizationId: string;
+    OR?: Array<
+      { ownerUserId: string } | { members: { some: { userId: string } } }
+    >;
+  } = { organizationId: atlas.organizationId };
+  if (!isPartnerTier) {
+    mandateRelationFilter.OR = [
+      { ownerUserId: atlas.userId },
+      { members: { some: { userId: atlas.userId } } },
+    ];
+  }
+
   const where: {
-    mandate: { organizationId: string };
+    mandate: typeof mandateRelationFilter;
     mandateId?: string;
     billable?: boolean;
     workedOn?: { gte?: Date; lte?: Date };
   } = {
-    mandate: { organizationId: atlas.organizationId },
+    mandate: mandateRelationFilter,
   };
   if (parsed.data.mandateId) where.mandateId = parsed.data.mandateId;
   if (parsed.data.billableOnly === "true") where.billable = true;

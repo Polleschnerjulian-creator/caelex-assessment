@@ -14,16 +14,20 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import {
-  Document,
-  Packer,
-  Paragraph,
-  TextRun,
-  HeadingLevel,
-  AlignmentType,
-  BorderStyle,
-} from "docx";
+/* AUDIT-FIX C04 (2026-05-17): docx is ~200KB. Previously imported
+   statically into the Atlas chat bundle. Now type-only at module-
+   scope, dynamic-imported at first call. Module-cached so subsequent
+   exports skip the load. */
+import type { Paragraph as ParagraphType } from "docx";
 import type { ChatMessageBlock, ChatRecord } from "@/components/atlas/v2/types";
+
+type DocxMod = typeof import("docx");
+let docxModCache: DocxMod | null = null;
+async function loadDocx(): Promise<DocxMod> {
+  if (docxModCache) return docxModCache;
+  docxModCache = await import("docx");
+  return docxModCache;
+}
 
 interface CitationLite {
   index: number;
@@ -57,9 +61,17 @@ const SLATE_500 = "64748B";
 /**
  * Build the Word document children — cover header, all Q&A pairs,
  * footer disclaimer.
+ *
+ * AUDIT-FIX C04: takes docxMod as a param so the heavy `docx` library
+ * is only loaded at the entry-point (generateChatDocxBlob). The local
+ * destructuring at the top lets the body keep its readable
+ * `new Paragraph(...)` / `HeadingLevel.HEADING_2` style without
+ * threading `docxMod.X` through every line.
  */
-function buildChildren(chat: ChatRecord): Paragraph[] {
-  const children: Paragraph[] = [];
+function buildChildren(chat: ChatRecord, docxMod: DocxMod): ParagraphType[] {
+  const { Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } =
+    docxMod;
+  const children: ParagraphType[] = [];
 
   /* Topline pill */
   children.push(
@@ -364,13 +376,17 @@ export async function generateChatDocxBlob(chat: ChatRecord): Promise<{
   blob: Blob;
   filename: string;
 }> {
-  const doc = new Document({
+  /* AUDIT-FIX C04: dynamic-loaded docx module — module-cached so a
+     second export within the same session skips the network round-trip
+     to the chunk. */
+  const docxMod = await loadDocx();
+  const doc = new docxMod.Document({
     creator: "Caelex Atlas",
     title: chat.title,
     description: "Mandanten-Briefing",
-    sections: [{ properties: {}, children: buildChildren(chat) }],
+    sections: [{ properties: {}, children: buildChildren(chat, docxMod) }],
   });
-  const blob = await Packer.toBlob(doc);
+  const blob = await docxMod.Packer.toBlob(doc);
   return { blob, filename: chatDocxFilename(chat) };
 }
 

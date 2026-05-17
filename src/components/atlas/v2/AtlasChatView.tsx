@@ -1317,7 +1317,9 @@ function ExportMenu({ chat }: { chat: ChatRecord }) {
     try {
       if (fmt === "pdf") {
         if (alsoFile && chat.mandateId) {
-          const { blob, filename } = generateChatPdfBlob(chat);
+          /* AUDIT-FIX C04: generateChatPdfBlob became async (jsPDF
+             dynamic-loaded). */
+          const { blob, filename } = await generateChatPdfBlob(chat);
           /* Trigger download */
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
@@ -1330,7 +1332,8 @@ function ExportMenu({ chat }: { chat: ChatRecord }) {
           /* Plus mandate-file */
           await fileToMandate(blob, filename, "application/pdf");
         } else {
-          downloadChatAsPdf(chat);
+          /* AUDIT-FIX C04: downloadChatAsPdf became async too. */
+          await downloadChatAsPdf(chat);
         }
       } else if (fmt === "docx") {
         if (alsoFile && chat.mandateId) {

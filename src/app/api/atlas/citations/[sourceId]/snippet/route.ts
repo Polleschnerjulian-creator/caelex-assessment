@@ -102,9 +102,14 @@ export async function GET(
     },
     {
       headers: {
-        // Tooltip-grade cache: refresh hourly, serve stale up to 24h.
-        // Citation metadata rarely changes mid-session.
-        "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+        /* AUDIT-FIX C02 (2026-05-17): was `public, max-age=3600, swr=86400`.
+           This is an authenticated endpoint (getAtlasAuth gate above).
+           `public` permits Vercel Edge / shared CDN proxies to cache the
+           response and serve it to OTHER tenants requesting the same
+           sourceId path — a tenant-isolation leak. `private` keeps the
+           cache browser-only, where the no-store fetch in CitationHover
+           Preview already prevents staleness. Same hourly window. */
+        "Cache-Control": "private, max-age=3600, stale-while-revalidate=86400",
       },
     },
   );

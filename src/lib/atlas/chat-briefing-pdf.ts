@@ -29,7 +29,12 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { jsPDF } from "jspdf";
+/* AUDIT-FIX C04 (2026-05-17): jsPDF is ~200KB. Previously imported
+   statically, landing in the Atlas chat initial bundle even though
+   it's only loaded when the lawyer clicks "Download as PDF". Now
+   dynamic-imported on first use — type-only import keeps the type
+   surface intact at zero runtime cost. */
+import type { jsPDF } from "jspdf";
 import type { ChatMessageBlock, ChatRecord } from "@/components/atlas/v2/types";
 
 /* ── Layout constants (mm, A4 portrait) ─────────────────────────────── */
@@ -89,11 +94,11 @@ function extractText(content: ChatMessageBlock[] | string): string {
  * something other than direct download — e.g. uploading to the
  * mandate vault.
  */
-export function generateChatPdfBlob(chat: ChatRecord): {
+export async function generateChatPdfBlob(chat: ChatRecord): Promise<{
   blob: Blob;
   filename: string;
-} {
-  const doc = buildChatPdf(chat);
+}> {
+  const doc = await buildChatPdf(chat);
   const filename = chatPdfFilename(chat);
   /* jsPDF's `output("blob")` returns the bytes as a Blob without
      hitting the browser's download flow. */
@@ -104,9 +109,12 @@ export function generateChatPdfBlob(chat: ChatRecord): {
 /**
  * Public entry-point. Builds the PDF + triggers browser download.
  * Returns the suggested filename so callers can echo it in toasts.
+ *
+ * AUDIT-FIX C04: now async — `buildChatPdf` dynamic-imports jsPDF
+ * to keep ~200KB out of the chat initial bundle.
  */
-export function downloadChatAsPdf(chat: ChatRecord): string {
-  const doc = buildChatPdf(chat);
+export async function downloadChatAsPdf(chat: ChatRecord): Promise<string> {
+  const doc = await buildChatPdf(chat);
   const filename = chatPdfFilename(chat);
   doc.save(filename);
   return filename;
@@ -125,8 +133,10 @@ function chatPdfFilename(chat: ChatRecord): string {
 
 /* Internal: build the jsPDF doc + return it. Both `download` and
    `generateBlob` paths share this so the visual output stays in lock-
-   step. */
-function buildChatPdf(chat: ChatRecord): jsPDF {
+   step. AUDIT-FIX C04: dynamic-imports jsPDF so the ~200KB only loads
+   when the user actually triggers a PDF export. */
+async function buildChatPdf(chat: ChatRecord): Promise<jsPDF> {
+  const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
   let y = MARGIN_T;
 

@@ -28,24 +28,28 @@ const PatchBody = z.object({
   url: z.string().url().max(500).nullable().optional(),
 });
 
-async function authorize(
+/* AUDIT-FIX C03 (2026-05-17): the helper returns the membership-gated
+   WHERE clause that BOTH the authorize check AND the subsequent
+   update/delete use. By feeding the same filter into `updateMany` /
+   `deleteMany` we close the TOCTOU window where a concurrent
+   member-removal between the authorize check and the mutation could
+   let an ex-member's request still complete. updateMany / deleteMany
+   accept relation filters that `update` / `delete` (which require
+   unique-WHERE) do not. */
+function buildAuthorizedWhere(
   mandateId: string,
   deadlineId: string,
   userId: string,
   organizationId: string,
-): Promise<boolean> {
-  const hit = await prisma.atlasMandateDeadline.findFirst({
-    where: {
-      id: deadlineId,
-      mandate: {
-        id: mandateId,
-        organizationId,
-        OR: [{ ownerUserId: userId }, { members: { some: { userId } } }],
-      },
+) {
+  return {
+    id: deadlineId,
+    mandate: {
+      id: mandateId,
+      organizationId,
+      OR: [{ ownerUserId: userId }, { members: { some: { userId } } }],
     },
-    select: { id: true },
-  });
-  return !!hit;
+  } as const;
 }
 
 export async function PATCH(
@@ -57,9 +61,6 @@ export async function PATCH(
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
   const { id, deadlineId } = await ctx.params;
-  if (!(await authorize(id, deadlineId, atlas.userId, atlas.organizationId))) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
   const rl = await checkRateLimit("api", getIdentifier(req, atlas.userId));
   if (!rl.success) {
     return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
@@ -85,9 +86,28 @@ export async function PATCH(
   if (parsed.data.url !== undefined) data.url = parsed.data.url;
 
   try {
-    const updated = await prisma.atlasMandateDeadline.update({
-      where: { id: deadlineId },
+    /* AUDIT-FIX C03: atomic membership-gated update via updateMany
+       (which supports relation filters; `update` requires unique
+       WHERE and can't combine the membership-OR). count=0 means
+       either the deadline doesn't exist or the user lost access
+       between check and mutation — both surface as 403. */
+    const where = buildAuthorizedWhere(
+      id,
+      deadlineId,
+      atlas.userId,
+      atlas.organizationId,
+    );
+    const result = await prisma.atlasMandateDeadline.updateMany({
+      where,
       data,
+    });
+    if (result.count === 0) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    /* Refetch the row for the response — small overhead, but keeps the
+       API contract (returning the updated row) unchanged. */
+    const updated = await prisma.atlasMandateDeadline.findUnique({
+      where: { id: deadlineId },
       select: {
         id: true,
         title: true,
@@ -124,15 +144,22 @@ export async function DELETE(
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
   const { id, deadlineId } = await ctx.params;
-  if (!(await authorize(id, deadlineId, atlas.userId, atlas.organizationId))) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
   const rl = await checkRateLimit("api", getIdentifier(req, atlas.userId));
   if (!rl.success) {
     return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
   try {
-    await prisma.atlasMandateDeadline.delete({ where: { id: deadlineId } });
+    /* AUDIT-FIX C03: atomic membership-gated delete via deleteMany. */
+    const where = buildAuthorizedWhere(
+      id,
+      deadlineId,
+      atlas.userId,
+      atlas.organizationId,
+    );
+    const result = await prisma.atlasMandateDeadline.deleteMany({ where });
+    if (result.count === 0) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
     logger.info("[atlas/deadlines] deleted", {
       mandateId: id,
       deadlineId,

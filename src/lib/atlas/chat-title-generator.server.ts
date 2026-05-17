@@ -98,8 +98,13 @@ export async function generateChatTitle(
       assistantText ? `\n\nAtlas-Antwort:\n${assistantText}` : ""
     }`;
 
+    /* AUDIT-FIX C05 (2026-05-17): use Haiku (~1/12 of Sonnet's cost
+       for output tokens) for this trivial 3-5-word summarization
+       task. Sonnet was overkill for a 5-token output and was firing
+       on every completed chat turn. Same model the followups route
+       uses for low-stakes inference (see chat/[id]/followups). */
     const response = await setup.client.messages.create({
-      model: setup.model,
+      model: "claude-haiku-4-5",
       max_tokens: TITLE_MAX_OUTPUT_TOKENS,
       temperature: TITLE_TEMPERATURE,
       system: SYSTEM_PROMPT,
