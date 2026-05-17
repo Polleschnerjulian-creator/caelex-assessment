@@ -38,6 +38,7 @@ import { appendAtlasAudit } from "@/lib/atlas/audit-log.server";
 import { ATLAS_TOOLS, isAtlasToolName } from "@/lib/atlas/atlas-tools";
 import { executeAtlasTool } from "@/lib/atlas/atlas-tool-executor";
 import { extractCitations } from "@/lib/atlas/citation-extractor.server";
+import { generateAndPersistChatTitle } from "./chat-title-generator.server";
 import { logger } from "@/lib/logger";
 
 /* ── Config ───────────────────────────────────────────────────────── */
@@ -1526,6 +1527,25 @@ export async function runChat(
           where: { id: chatId },
           data: { updatedAt: new Date() },
         });
+
+        /* Atlas v2 — auto-generate a smart chat title after the FIRST AI
+           response of a new chat. The title-generator fetches first 4 msgs +
+           asks Claude for a 3-5 word German topic summary, persists to
+           AtlasChat.title. Fire-and-forget — never blocks the SSE close. */
+        const messageCount = await prisma.atlasMessage.count({
+          where: { chatId },
+        });
+        if (messageCount === 2) {
+          /* Exactly 2 messages = 1 user msg + 1 just-saved assistant msg = first AI response */
+          void generateAndPersistChatTitle(chatId, input.organizationId).catch(
+            (err: unknown) => {
+              logger.warn("[atlas/chat-engine] auto-title-gen failed", {
+                chatId,
+                error: err instanceof Error ? err.message : String(err),
+              });
+            },
+          );
+        }
 
         send({
           type: "done",

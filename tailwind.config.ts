@@ -133,6 +133,18 @@ const config: Config = {
           "border-hover": "var(--glass-border-hover)",
           "border-active": "var(--glass-border-active)",
         },
+        // Atlas v2 sidebar redesign — Claude-Code monochrome
+        "atlas-bg-page": "var(--bg-page)",
+        "atlas-bg-panel": "var(--bg-panel)",
+        "atlas-bg-elevated": "var(--bg-elevated)",
+        "atlas-bg-subtle": "var(--bg-subtle)",
+        "atlas-border-subtle": "var(--border-subtle)",
+        "atlas-border-strong": "var(--border-strong)",
+        "atlas-text-primary": "var(--text-primary)",
+        "atlas-text-secondary": "var(--text-secondary)",
+        "atlas-text-muted": "var(--text-muted)",
+        "atlas-amber": "var(--accent-amber)",
+        "atlas-amber-soft": "var(--accent-amber-soft)",
       },
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],

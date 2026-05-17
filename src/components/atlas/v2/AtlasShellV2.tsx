@@ -5,10 +5,11 @@
  *
  * Atlas V2 — App Shell (UI refresh 2026-05-12).
  *
- * Sidebar + Center. ChatGPT-tone backgrounds, theme-aware:
- *   - Light (default): canvas #ffffff, sidebar #f9f9f9
- *   - Dark:            canvas #212121, sidebar #171717
- * No hard separator — the tone difference does the visual divide.
+ * Floating-panel layout (redesign 2026-05-17):
+ *   - Page background uses `bg-atlas-bg-page` (the gap colour between panels)
+ *   - Sidebar and main content are white floating panels with rounded corners + shadow
+ *   - Small padding + gap between panels and viewport edge (p-2 gap-2)
+ *   - Theme-aware via CSS custom properties set by AtlasV2Bootstrap
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -41,11 +42,13 @@ export function AtlasShellV2({ children }: Props) {
   const kbd = useAtlasKeyboardShortcuts();
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-white text-slate-900 dark:bg-[#212121] dark:text-slate-100">
-      <AtlasSidebar
-        activeChatId={activeChatId}
-        activeMandateId={activeMandateId}
-      />
+    <div className="flex h-screen w-screen bg-atlas-bg-page p-2 gap-2 text-slate-900 dark:text-slate-100">
+      <aside className="w-[260px] shrink-0 rounded-xl border border-atlas-border-subtle bg-atlas-bg-panel shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_16px_rgba(0,0,0,0.06)] overflow-hidden">
+        <AtlasSidebar
+          activeChatId={activeChatId}
+          activeMandateId={activeMandateId}
+        />
+      </aside>
       {/* `overflow-y-auto` (not `overflow-hidden`) so sub-pages that
           don't bring their own scroll container (CreateMandateForm,
           /atlas/clauses, /atlas/workflows, /atlas/settings/*, etc.)
@@ -54,7 +57,9 @@ export function AtlasShellV2({ children }: Props) {
           `h-full flex flex-col` on their root and an inner
           `flex-1 overflow-y-auto` — the dual-scroll plays nicely
           because the inner container consumes wheel events first. */}
-      <main className="flex-1 overflow-y-auto">{children}</main>
+      <main className="flex-1 rounded-xl border border-atlas-border-subtle bg-atlas-bg-panel shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_16px_rgba(0,0,0,0.06)] overflow-y-auto">
+        {children}
+      </main>
       <KeyboardHelpOverlay open={kbd.helpOpen} onClose={kbd.closeHelp} />
     </div>
   );
