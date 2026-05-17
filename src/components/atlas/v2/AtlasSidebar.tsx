@@ -310,22 +310,36 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
           )}
 
         {/* ── Mandate (top 5, link to full list) ─────────────────── */}
-        {!loading && mandates.length > 0 && (
+        {/* AUDIT-FIX M08 (2026-05-17): show empty-state CTA for
+            mandate section too. Previously the section was hidden when
+            mandates.length === 0 — first-time users had no path to
+            create a mandate from the sidebar. */}
+        {!loading && (
           <SidebarSection label="Mandate">
-            {mandates.slice(0, MAX_MANDATES_INLINE).map((m) => (
+            {mandates.length === 0 ? (
               <SidebarItem
-                key={m.id}
-                href={`/atlas/mandate/${m.id}`}
+                href="/atlas/mandate/new"
                 icon={<Briefcase size={13} />}
-                label={m.name}
-                active={activeMandateId === m.id}
+                label="Erstes Mandat anlegen"
               />
-            ))}
-            {mandates.length > MAX_MANDATES_INLINE && (
-              <SidebarItem
-                href="/atlas/mandate"
-                label={`Alle ${mandates.length} anzeigen →`}
-              />
+            ) : (
+              <>
+                {mandates.slice(0, MAX_MANDATES_INLINE).map((m) => (
+                  <SidebarItem
+                    key={m.id}
+                    href={`/atlas/mandate/${m.id}`}
+                    icon={<Briefcase size={13} />}
+                    label={m.name}
+                    active={activeMandateId === m.id}
+                  />
+                ))}
+                {mandates.length > MAX_MANDATES_INLINE && (
+                  <SidebarItem
+                    href="/atlas/mandate"
+                    label={`Alle ${mandates.length} anzeigen →`}
+                  />
+                )}
+              </>
             )}
           </SidebarSection>
         )}

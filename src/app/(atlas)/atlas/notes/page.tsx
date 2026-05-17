@@ -117,13 +117,20 @@ export default function NotesPage() {
           className="w-full bg-transparent text-[13.5px] text-slate-900 outline-none focus-visible:outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
         />
         {loading && (
-          <Loader2 size={12} className="shrink-0 animate-spin text-slate-400" />
+          <Loader2
+            size={12}
+            className="shrink-0 animate-spin motion-reduce:animate-none text-slate-400"
+          />
         )}
       </div>
 
       {loading && notes.length === 0 ? (
         <p className="text-sm text-slate-500">
-          <Loader2 size={12} className="mr-2 inline animate-spin" /> Lädt…
+          <Loader2
+            size={12}
+            className="mr-2 inline animate-spin motion-reduce:animate-none"
+          />{" "}
+          Lädt…
         </p>
       ) : notes.length === 0 ? (
         <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-6 py-12 text-center dark:border-slate-700/60 dark:bg-slate-900/30">
@@ -288,7 +295,12 @@ function EditNoteDialog({
             disabled={saving}
             className="inline-flex items-center gap-1 rounded-md bg-slate-900 px-4 py-1.5 text-[12.5px] font-medium text-white hover:bg-slate-800 disabled:opacity-50 dark:bg-emerald-500 dark:hover:bg-emerald-600"
           >
-            {saving && <Loader2 size={11} className="animate-spin" />}
+            {saving && (
+              <Loader2
+                size={11}
+                className="animate-spin motion-reduce:animate-none"
+              />
+            )}
             Speichern
           </button>
         </div>

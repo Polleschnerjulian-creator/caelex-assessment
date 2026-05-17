@@ -80,7 +80,11 @@ export function MandateInstructionsEditor({
         <span className="text-[10px] text-slate-500">
           {value.length} / 8000
         </span>
-        <div className="flex items-center gap-2">
+        {/* AUDIT-FIX M14 (2026-05-17): aria-live polite so screen-reader
+            users hear the save-confirmation when it briefly appears
+            (auto-hides after 3s). Empty live-region keeps the assistive
+            text-channel hot. */}
+        <div className="flex items-center gap-2" aria-live="polite">
           {savedAt && (
             <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 size={11} /> Gespeichert
