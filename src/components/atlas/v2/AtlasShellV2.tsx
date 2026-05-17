@@ -43,7 +43,7 @@ export function AtlasShellV2({ children }: Props) {
 
   return (
     <div className="flex h-screen w-screen bg-atlas-bg-page p-2 gap-2 text-slate-900 dark:text-slate-100">
-      <aside className="w-[260px] shrink-0 rounded-xl border border-atlas-border-subtle bg-atlas-bg-panel shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_16px_rgba(0,0,0,0.06)] overflow-hidden">
+      <aside className="w-[260px] shrink-0 overflow-hidden rounded-xl bg-atlas-bg-panel shadow-[0_1px_2px_rgba(0,0,0,0.03),0_8px_24px_rgba(0,0,0,0.06),0_24px_64px_rgba(0,0,0,0.04)] ring-1 ring-black/[0.04] dark:shadow-[0_1px_2px_rgba(0,0,0,0.5),0_8px_24px_rgba(0,0,0,0.4)] dark:ring-white/[0.06]">
         <AtlasSidebar
           activeChatId={activeChatId}
           activeMandateId={activeMandateId}
@@ -57,7 +57,7 @@ export function AtlasShellV2({ children }: Props) {
           `h-full flex flex-col` on their root and an inner
           `flex-1 overflow-y-auto` — the dual-scroll plays nicely
           because the inner container consumes wheel events first. */}
-      <main className="flex-1 rounded-xl border border-atlas-border-subtle bg-atlas-bg-panel shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_16px_rgba(0,0,0,0.06)] overflow-y-auto">
+      <main className="flex-1 overflow-y-auto rounded-xl bg-atlas-bg-panel shadow-[0_1px_2px_rgba(0,0,0,0.03),0_8px_24px_rgba(0,0,0,0.06),0_24px_64px_rgba(0,0,0,0.04)] ring-1 ring-black/[0.04] dark:shadow-[0_1px_2px_rgba(0,0,0,0.5),0_8px_24px_rgba(0,0,0,0.4)] dark:ring-white/[0.06]">
         {children}
       </main>
       <KeyboardHelpOverlay open={kbd.helpOpen} onClose={kbd.closeHelp} />
