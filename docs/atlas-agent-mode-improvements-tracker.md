@@ -46,20 +46,43 @@ Single Source of Truth für Agent-Mode-Improvements. Überlebt Context-Compactio
 ## Progress
 
 ```
-Total items:    9
-☑️ Done:         9
-⏳ In progress:  0
-⏭️ Deferred:     0
-☐ Open:         0
+v1 (Sprints A-D): 9/9 done, all shipped.
+v2 Sprint E (Polish v1-light): 5/5 done, shipped 2026-05-17 @ 1f26dbb0.
 
 By tier:
   🔴 Sprint A (Trust + Cost):       2  (A1✅, A2✅) — COMPLETE @ 86a40669
   🟡 Sprint B (Memory + Control):   2  (B1✅, B2✅) — COMPLETE @ dffc103c
   🟢 Sprint C (Workflow):           2  (C1✅, C2✅) — COMPLETE @ 46c86b96
   🟣 Sprint D (Later):              3  (D1✅, D2✅, D3✅) — D1 @ 812927a5, D2+D3 @ 8fb94002
+  🔵 Sprint E (v2 Polish):          5  (E1✅, E2✅, E3✅, E4✅, E5✅) — COMPLETE @ 1f26dbb0
 
-ATLAS AGENT-MODE IMPROVEMENT PROJECT — COMPLETE (9/9, all 4 sprints shipped)
+ATLAS AGENT-MODE IMPROVEMENT PROJECT — v1 + v2-Sprint-E complete.
+Future v2 sprints (F Quality+Trust, G Workflow-Smartness, H Capability-v2)
+have specs to be written when prioritised.
 ```
+
+## v2 Sprint E — Polish v1-light (2026-05-17 @ 1f26dbb0)
+
+Spec: `docs/superpowers/specs/2026-05-15-atlas-agent-mode-v2-sprint-e-polish-design.md`
+Plan: `docs/superpowers/plans/2026-05-15-atlas-agent-mode-v2-sprint-e-polish.md`
+Implementation: 8 parallel subagents (one per file/file-group) + 1 verify-fix pass.
+~7 min wall-clock vs ~45-60 min sequential.
+
+5 items shipped:
+
+- **E1** ✅ D3 Settings Section in MandateDetailView (`MandateBackgroundAgentSection.tsx` — 4 states, recent-runs list, prominent halt-banner with direct-link into B1 approval-flow). Plus `templateId` filter on `/api/atlas/agent/runs`.
+- **E2** ✅ Batched-Approval (pause-on-ALL instead of pause-on-first; new `ApprovalCards` wrapper with bulk "Alle genehmigen/ablehnen" shortcuts; `/approve` accepts batched `{decisions: Array<...>}` body; backwards-compat on resume-path for pre-E2 single-tool snapshots).
+- **E3** ✅ Sub-Agent Cost-Breakdown (2 new schema fields on AtlasAgentRun: subAgentInputTokens + subAgentOutputTokens; tracking in both main agent route + background-runner; cost_progress SSE event extended; live counter renders "$0.42 ($0.27 main · $0.15 sub)" when sub-agents fired).
+- **E4** ✅ conversationState TTL Cleanup (new `/api/cron/atlas-housekeeping` daily 04:00 UTC; wipes `conversationState=null` for AtlasAgentRun rows older than 30 days; keeps row + steps/artifacts/citations).
+- **E5** ✅ Stale awaiting_approval Cleanup (same cron, Job 2; marks runs as `abandoned` after 7 days in awaiting_approval; silent — no notification spam).
+
+Tests: 13 cases across 3 new test files (3 sub-agent + 4 approve + 6 cron). All passing.
+
+Implementation lessons (post-impl):
+
+- Parallel subagent dispatch via single message with `run_in_background: true` for each Agent tool-call: 8 in parallel, ~7 min total. Massive speedup vs sequential.
+- Conflict-aware grouping: agents that touch same file are bundled under ONE agent. 8 file-groups identified before dispatch.
+- Worktree-vs-main path gotcha: 2 of 8 agents wrote to worktree path instead of main; copy-fix at integration time. Future: explicit `cd /main-path && pwd` validation in agent prompt.
 
 ---
 
