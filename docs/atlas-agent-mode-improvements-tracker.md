@@ -47,16 +47,16 @@ Single Source of Truth für Agent-Mode-Improvements. Überlebt Context-Compactio
 
 ```
 Total items:    9
-☑️ Done:         6
+☑️ Done:         7
 ⏳ In progress:  0
 ⏭️ Deferred:     0
-☐ Open:         3
+☐ Open:         2
 
 By tier:
   🔴 Sprint A (Trust + Cost):       2  (A1✅, A2✅) — COMPLETE @ 86a40669
   🟡 Sprint B (Memory + Control):   2  (B1✅, B2✅) — COMPLETE @ dffc103c
   🟢 Sprint C (Workflow):           2  (C1✅, C2✅) — COMPLETE @ 46c86b96
-  🟣 Sprint D (Later):              3  (D1, D2, D3)
+  🟣 Sprint D (Later):              3  (D1✅, D2, D3) — D1 shipped @ 812927a5
 ```
 
 ---
@@ -290,7 +290,7 @@ Beispiele:
 
 ### 🟣 Sprint D — Later / Deferred (do when there's a real need)
 
-#### D1 ☐ Evidence-Pack ZIP-Export
+#### D1 ✅ Evidence-Pack ZIP-Export
 
 **What:** Pro Run ein ZIP automatisch erzeugen mit: Agent-Output (PDF) + alle zitierten Quellen als PDF + Audit-Log (JSON). Berufshaftpflicht-tauglich.
 
@@ -298,7 +298,18 @@ Beispiele:
 
 **Effort:** ~1-2 Tage. Nutzt existierende PDF-Render-Pipeline (jsPDF + react-pdf).
 
-**Wave:** D | **Status:** ☐ Open
+**Wave:** D | **Status:** ✅ DONE @ 812927a5
+
+**Notes (post-impl):**
+
+- 4 files in the ZIP (added `README.md` for "what is this bundle when you find it 3 years later" clarity).
+- Server-side jsPDF (matches `src/lib/pdf/jspdf-generator.ts` pattern) + `archiver` for the ZIP. Buffer-assembly via custom Writable sink — fine for typical ~1-3 MB packs; would need true streaming for raw conversation transcripts but v1 doesn't include those.
+- `citations.pdf` is METADATA-only for v1 (source-id, title, validity-badge, status, last-verified, URL, occurrence count). Full-text reprints would need legal-corpus storage which we don't have yet.
+- `audit-log.json` is the canonical machine-readable record: tokens, durations, costs, all steps with inputs, all approval-gate decisions, lineage (parentRunId/forkedFromStep), template-id, mandate, reasoning per iteration, artifacts, citations, verification findings. Replayable / re-importable.
+- Defensive type-guards on EVERY Prisma JSON column (`toStepsArray`, `toArtifactsArray`, `toCitationsArray`, `toApprovalGates`, `toReasoningMap`, `toVerificationFindings`) — partial / legacy rows don't crash the generator.
+- `export` rate-limit tier (20/hr — matches Caelex compliance-reporter PDFs).
+- Auth: membership-gated `findFirst(userId + organizationId)` returns 404 to outsiders (no info leak).
+- UI: plain anchor `<a href=...>` in the run-view footer next to "Neuer Agent-Run" — browser handles the download natively via `content-disposition: attachment`.
 
 ---
 
@@ -340,3 +351,5 @@ Beispiele:
 - **2026-05-15:** Sprint A complete. A1 (cost-budget) + A2 (verification-loop) shipped in `86a40669`. Pre-empted B1 schema-field `approvalGates` and C1 schema-fields `parentRunId` + `forkedFromStep` in same commit to avoid future schema-pushes. Progress: 2/9 done.
 - **2026-05-15:** Sprint B complete. B1 (interactive-pauses) + B2 (cross-run-memory) shipped in `dffc103c`. Schema additions in same commit: AtlasMandate gets agentRunMemory + agentRunMemoryAt + agentRunMemoryUpToRunId; AtlasAgentRun gets pausedForApproval + conversationState (approvalGates was pre-empted in 86a40669). 1537 insertions, 215 deletions across 6 files. Progress: 4/9 done.
 - **2026-05-15:** Sprint C complete. C1 (run-replay-branching) + C2 (smart-sequencing) shipped in `46c86b96`. No schema changes needed (all fields were pre-empted in earlier sprints). conversationState now persisted on COMPLETE too (was pause-only) to enable forks. 974 insertions, 12 deletions across 6 files. Progress: 6/9 done.
+- **2026-05-15:** Sprints A+B+C pushed to origin (commits `0af96525..b420e74c`). Vercel deploy triggered.
+- **2026-05-15:** D1 (evidence-pack ZIP) shipped in `812927a5`. Berufshaftpflicht-tauglich bundle: agent-output.pdf + citations.pdf + audit-log.json + README.md. Server-side jsPDF + archiver. No schema changes. 967 insertions, 7 deletions across 3 files. Progress: 7/9 done.
