@@ -36,6 +36,9 @@ import {
   MessageSquare,
   FileText,
   Archive,
+  ArchiveRestore,
+  CheckCircle2,
+  Pencil,
   Loader2,
   ChevronDown,
   ChevronRight,
@@ -50,6 +53,7 @@ import { MandateFilesList } from "./MandateFilesList";
 import { MandateDeadlines } from "./MandateDeadlines";
 import { MandateTimeEntries } from "./MandateTimeEntries";
 import { MandateBackgroundAgentSection } from "./MandateBackgroundAgentSection";
+import { MandateHeaderEditor } from "./MandateHeaderEditor";
 
 interface Props {
   mandateId: string;
@@ -61,6 +65,9 @@ export function MandateDetailView({ mandateId }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [archiving, setArchiving] = useState(false);
+  /* AUDIT 2026-05-17: state-transition + header-edit UI. */
+  const [statusChanging, setStatusChanging] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(false);
   /* Bumped after each upload so MandateFilesList refetches.
      Independent from the mandate-detail reload so we don't re-render
      the whole page just because a file landed. */
@@ -120,6 +127,38 @@ export function MandateDetailView({ mandateId }: Props) {
     }
   };
 
+  /* AUDIT-FIX 2026-05-17: status-transition handlers. The API supports
+     these via PATCH but no UI exposed them. Restore brings an archived
+     mandate back to active. Close marks it as finished (different from
+     archive — closed mandates stay visible but can't be edited). */
+  const handleStatusChange = async (
+    nextStatus: "active" | "closed",
+    confirmText: string,
+  ) => {
+    if (!confirm(confirmText)) return;
+    setStatusChanging(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/atlas/mandate/${mandateId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as {
+          error?: string;
+        };
+        setError(body.error || `HTTP ${res.status}`);
+        return;
+      }
+      const data = (await res.json()) as { mandate: MandateDetail };
+      setMandate(data.mandate);
+      window.dispatchEvent(new Event("atlas-v2-sidebar-refresh"));
+    } finally {
+      setStatusChanging(false);
+    }
+  };
+
   if (loading && !mandate) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-slate-500">
@@ -163,17 +202,56 @@ export function MandateDetailView({ mandateId }: Props) {
             >
               <ArrowLeft size={12} /> Zurück zu Atlas
             </Link>
-            {!isArchived && !isClosed && (
-              <button
-                type="button"
-                onClick={handleArchive}
-                disabled={archiving}
-                className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-red-600 dark:hover:text-red-400"
-              >
-                <Archive size={11} />
-                {archiving ? "Archiviere…" : "Archivieren"}
-              </button>
-            )}
+            {/* AUDIT-FIX 2026-05-17: state-transition controls. Three states:
+                active → can archive OR mark closed
+                archived → can restore (back to active)
+                closed → terminal, no transitions exposed (use API for hard
+                         delete if needed). */}
+            <div className="flex items-center gap-3">
+              {isArchived && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleStatusChange(
+                      "active",
+                      "Mandat wiederherstellen? Es erscheint wieder in der Sidebar und kann bearbeitet werden.",
+                    )
+                  }
+                  disabled={statusChanging}
+                  className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-emerald-600 disabled:opacity-50 dark:hover:text-emerald-400"
+                >
+                  <ArchiveRestore size={11} />
+                  {statusChanging ? "Stelle wieder her…" : "Wiederherstellen"}
+                </button>
+              )}
+              {!isArchived && !isClosed && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleStatusChange(
+                        "closed",
+                        "Mandat als geschlossen markieren? Es bleibt sichtbar, kann aber nicht mehr bearbeitet werden.",
+                      )
+                    }
+                    disabled={statusChanging}
+                    className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-800 disabled:opacity-50 dark:hover:text-slate-200"
+                  >
+                    <CheckCircle2 size={11} />
+                    {statusChanging ? "…" : "Abschließen"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleArchive}
+                    disabled={archiving}
+                    className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-red-600 disabled:opacity-50 dark:hover:text-red-400"
+                  >
+                    <Archive size={11} />
+                    {archiving ? "Archiviere…" : "Archivieren"}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
           <div className="flex items-start gap-3">
             <Briefcase
@@ -181,9 +259,25 @@ export function MandateDetailView({ mandateId }: Props) {
               className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400"
             />
             <div className="min-w-0 flex-1">
-              <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                {mandate.name}
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                  {mandate.name}
+                </h1>
+                {/* AUDIT-FIX 2026-05-17: inline edit affordance for header
+                    fields. Disabled in archived/closed states since those
+                    are non-editable per business rule. */}
+                {!isArchived && !isClosed && (
+                  <button
+                    type="button"
+                    onClick={() => setEditorOpen(true)}
+                    className="rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                    title="Mandat bearbeiten"
+                    aria-label="Mandat bearbeiten"
+                  >
+                    <Pencil size={12} />
+                  </button>
+                )}
+              </div>
               <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-600 dark:text-slate-400">
                 {mandate.clientName && (
                   <Pill label="Klient" value={mandate.clientName} />
@@ -201,6 +295,16 @@ export function MandateDetailView({ mandateId }: Props) {
               </div>
             </div>
           </div>
+          {/* Inline error banner — for status-transition / patch failures.
+              Mandate-load errors are caught earlier and hide the whole view. */}
+          {error && (
+            <div
+              role="alert"
+              className="mt-2 rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-[11.5px] text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
+            >
+              {error}
+            </div>
+          )}
           <div className="mt-2 flex flex-wrap items-center gap-4 text-[11px] text-slate-500">
             <span>
               Owner: {mandate.owner.name ?? mandate.owner.email ?? "—"}
@@ -227,26 +331,12 @@ export function MandateDetailView({ mandateId }: Props) {
       {/* Scrollable content — single-page-scroll, NO tabs */}
       <div className="flex-1 overflow-y-auto px-6 py-6">
         <div className="mx-auto max-w-5xl">
-          {/* Briefing-Slot — M1 placeholder, wird in M3 mit echtem Auto-Briefing ersetzt */}
-          <section
-            id="briefing"
-            className="mb-6 scroll-mt-20 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-white/[0.08] dark:bg-white/[0.02]"
-          >
-            <div className="flex items-start gap-3">
-              <span className="text-xl" aria-hidden="true">
-                🧠
-              </span>
-              <div>
-                <h3 className="text-[13px] font-medium text-slate-700 dark:text-slate-200">
-                  Briefing
-                </h3>
-                <p className="mt-1 text-[12.5px] text-slate-500 dark:text-slate-400">
-                  Auto-Briefing („Wo stehen wir?") kommt in M3. Solange: öffne
-                  einen der Chats unten oder lege neue Files / Deadlines an.
-                </p>
-              </div>
-            </div>
-          </section>
+          {/* AUDIT-FIX 2026-05-17: removed the "Auto-Briefing kommt in M3"
+              placeholder. It looked like a broken feature and was a trust-
+              killer for new users. The M3 briefing fields (`briefingText`,
+              `briefingGeneratedAt`, `briefingStaleSince`) are already in
+              the schema — when the feature ships, the section returns,
+              this time with real content. */}
 
           {/* Composer — „Neuer Chat in diesem Mandat" */}
           <section id="new-chat" className="mb-8 scroll-mt-20">
@@ -358,6 +448,19 @@ export function MandateDetailView({ mandateId }: Props) {
           </section>
         </div>
       </div>
+
+      {/* AUDIT-FIX 2026-05-17: header-edit modal — overlay outside the
+          scroll container so it overlays the entire page. */}
+      {editorOpen && (
+        <MandateHeaderEditor
+          mandate={mandate}
+          onClose={() => setEditorOpen(false)}
+          onSaved={(updated) => {
+            setMandate(updated);
+            setEditorOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }
