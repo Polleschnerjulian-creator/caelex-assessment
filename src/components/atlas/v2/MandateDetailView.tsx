@@ -39,6 +39,7 @@ import {
   ArchiveRestore,
   CheckCircle2,
   Pencil,
+  Download,
   Loader2,
   ChevronDown,
   ChevronRight,
@@ -56,6 +57,7 @@ import { MandateBackgroundAgentSection } from "./MandateBackgroundAgentSection";
 import { MandateHeaderEditor } from "./MandateHeaderEditor";
 import { MandateDeadlineSuggestions } from "./MandateDeadlineSuggestions";
 import { MandateParties } from "./MandateParties";
+import { MandateActivityFeed } from "./MandateActivityFeed";
 
 interface Props {
   mandateId: string;
@@ -210,6 +212,17 @@ export function MandateDetailView({ mandateId }: Props) {
                 closed → terminal, no transitions exposed (use API for hard
                          delete if needed). */}
             <div className="flex items-center gap-3">
+              {/* Akte-Export — every state, always available. Pure read,
+                  no side-effects. Plain anchor so the browser handles the
+                  download attribute + Content-Disposition correctly. */}
+              <a
+                href={`/api/atlas/mandate/${mandateId}/export`}
+                className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400"
+                title="Mandats-Akte als Markdown herunterladen"
+              >
+                <Download size={11} />
+                Akte exportieren
+              </a>
               {isArchived && (
                 <button
                   type="button"
@@ -339,6 +352,13 @@ export function MandateDetailView({ mandateId }: Props) {
               `briefingGeneratedAt`, `briefingStaleSince`) are already in
               the schema — when the feature ships, the section returns,
               this time with real content. */}
+
+          {/* AUDIT-FIX 2026-05-17: Activity-Feed — "was hat sich seit
+              gestern verändert?". Pure aggregation across chats, files,
+              deadlines, time-entries, parties, members, agent-runs.
+              Collapsed by default with 1-line summary. Hidden entirely
+              for empty mandates. */}
+          <MandateActivityFeed mandateId={mandate.id} />
 
           {/* Composer — „Neuer Chat in diesem Mandat" */}
           <section id="new-chat" className="mb-8 scroll-mt-20">
