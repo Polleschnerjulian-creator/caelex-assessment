@@ -76,8 +76,15 @@ export function CitationHoverPreview({
   );
 
   const fetchSnippet = useCallback(async () => {
-    if (cache.get(sourceId)?.state === "ready") return;
-    if (cache.get(sourceId)?.state === "loading") return;
+    const cached = cache.get(sourceId);
+    /* AUDIT-FIX H01/M02 (2026-05-17): when another instance already
+       fetched, sync local state to the cached ready/error result so
+       this instance doesn't show stale "Lädt…". */
+    if (cached?.state === "ready" || cached?.state === "error") {
+      setSnapshot(cached);
+      return;
+    }
+    if (cached?.state === "loading") return;
     cache.set(sourceId, { state: "loading" });
     setSnapshot({ state: "loading" });
     try {
@@ -96,6 +103,12 @@ export function CitationHoverPreview({
       cache.set(sourceId, { state: "ready", data });
       setSnapshot({ state: "ready", data });
     } catch (e) {
+      /* AUDIT-FIX H01 (2026-05-17): error-path writes "error" state to
+         the cache (not leaves it at "loading") so future hovers can
+         retry from scratch. Previously a fetch aborted mid-flight (e.g.
+         component unmounted during the 50ms open-delay) left the cache
+         permanently "loading" — every later hover for the same sourceId
+         saw ewiges "Lädt…". */
       const msg = e instanceof Error ? e.message : String(e);
       cache.set(sourceId, { state: "error", message: msg });
       setSnapshot({ state: "error", message: msg });

@@ -163,7 +163,15 @@ export function ChatInput({
 
   /* When a transcript lands, append it to the current text (or set
      if empty), then clear the hook's transcript buffer so we don't
-     re-insert on next render. */
+     re-insert on next render.
+
+     AUDIT-FIX H02 (2026-05-17): previously had `[voice.transcript, voice]`
+     as deps. `voice` is reconstructed every render of useVoiceRecorder
+     (ticks via `seconds`/`bytes` during recording), so the effect was
+     firing ~30+ times per recording for a no-op + risked a race where a
+     second `voice` reference with the same non-null transcript could
+     re-insert. Depend only on the transcript primitive — voice.reset
+     is stable enough (called once when there IS a transcript). */
   useEffect(() => {
     if (voice.transcript) {
       setText((prev) =>
@@ -174,7 +182,11 @@ export function ChatInput({
          + send the transcribed text. */
       taRef.current?.focus();
     }
-  }, [voice.transcript, voice]);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps -- voice
+       object identity is unstable; we intentionally only re-run when
+       voice.transcript changes. voice.reset is a method on the latest
+       voice instance via closure capture (recreated each render). */
+  }, [voice.transcript]);
 
   /* Auto-grow textarea (max 240px). */
   useEffect(() => {
@@ -471,12 +483,24 @@ export function ChatInput({
     setImages((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  /* AUDIT-FIX H05 (2026-05-17): guard against double-submit between
+     the user clicking Send and the parent's `disabled` prop flipping
+     to true (typically 100-300ms network latency before first SSE).
+     A local ref blocks re-invocation in that window; cleared on the
+     next render after `disabled` becomes false again (i.e. when the
+     parent's streaming completes). */
+  const submittingRef = useRef(false);
+  useEffect(() => {
+    if (!disabled) submittingRef.current = false;
+  }, [disabled]);
+
   const handleSend = () => {
     const v = text.trim();
     /* Allow image-only messages; allow mandate-attach-only-Sends nicht
        (Mandate ohne Text/Bild ergibt keinen Turn). */
     if (!v && images.length === 0) return;
-    if (disabled) return;
+    if (disabled || submittingRef.current) return;
+    submittingRef.current = true;
     void onSubmit(
       v,
       toggles,

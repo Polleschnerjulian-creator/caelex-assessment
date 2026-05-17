@@ -35,10 +35,29 @@ export const maxDuration = 60;
 const CONVERSATION_STATE_TTL_DAYS = 30;
 const STALE_APPROVAL_THRESHOLD_DAYS = 7;
 
+/* AUDIT-FIX H06 (2026-05-17): timing-safe constant-time comparison
+   for CRON_SECRET, matching the pattern used by all other Atlas cron
+   routes (atlas-deadline-reminders, atlas-stale-chat-archive, etc.).
+   The naive `!==` allowed character-by-character timing enumeration
+   over a network. crypto.timingSafeEqual requires equal-length buffers
+   so we length-check first. */
+import { timingSafeEqual } from "node:crypto";
+
+function isValidCronSecret(auth: string | null): boolean {
+  const secret = process.env.CRON_SECRET;
+  if (!secret || !auth) return false;
+  const expected = `Bearer ${secret}`;
+  if (auth.length !== expected.length) return false;
+  try {
+    return timingSafeEqual(Buffer.from(auth), Buffer.from(expected));
+  } catch {
+    return false;
+  }
+}
+
 export async function GET(req: NextRequest) {
   const auth = req.headers.get("authorization");
-  const expected = `Bearer ${process.env.CRON_SECRET}`;
-  if (!process.env.CRON_SECRET || auth !== expected) {
+  if (!isValidCronSecret(auth)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

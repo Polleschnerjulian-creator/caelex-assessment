@@ -1172,10 +1172,19 @@ async function searchCasesTool(args: {
   // recall + keyword precision. Returns null when embeddings or AI
   // Gateway are unavailable; we fall back to keyword-only without a
   // user-visible error.
-  const semanticHits = await semanticSearch(query!, {
-    types: ["case"],
-    limit: 40,
-  }).catch(() => null);
+  /* AUDIT-FIX H03 (2026-05-17): `query!` non-null assertion crashed
+     `semanticSearch` when the tool was called with only filter args
+     (the tool definition has no `required` array, so query is
+     legitimately optional). Skip semantic pass entirely when no
+     query — keyword-scoring already handles empty query via
+     `(query ?? "").trim()` below. */
+  const semanticHits =
+    query && query.trim().length > 0
+      ? await semanticSearch(query, {
+          types: ["case"],
+          limit: 40,
+        }).catch(() => null)
+      : null;
   const semanticScores = new Map<string, number>();
   if (semanticHits) {
     for (const h of semanticHits) semanticScores.set(h.entityId, h.score);

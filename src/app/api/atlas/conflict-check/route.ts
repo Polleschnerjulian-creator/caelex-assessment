@@ -111,8 +111,26 @@ export async function POST(req: NextRequest) {
         clientName: true,
         customInstructions: true,
         status: true,
+        ownerUserId: true,
+        members: { select: { userId: true } },
       },
     });
+
+    /* AUDIT-FIX H07 (2026-05-17): firm-wide §43a check stays firm-wide,
+       but client identities of mandates the caller is NOT a member of
+       must NOT leak to non-members. We compute membership per-mandate
+       and redact clientName + mandateName for mandates the caller has
+       no access to. The hit still surfaces so the §43a alarm fires —
+       the caller just gets "Konflikt mit fremdem Mandat (geschützt) —
+       wende dich an den verantwortlichen Partner" instead of the
+       client identity. */
+    const accessByMandate = new Map<string, boolean>();
+    for (const m of mandates) {
+      const userIsMember =
+        m.ownerUserId === atlas.userId ||
+        m.members.some((mem) => mem.userId === atlas.userId);
+      accessByMandate.set(m.id, userIsMember);
+    }
 
     const hits: ConflictHit[] = [];
     for (const m of mandates) {
@@ -134,12 +152,19 @@ export async function POST(req: NextRequest) {
         for (const h of haystacks) {
           if (h.text.includes(term)) {
             const exact = h.text === term;
+            /* AUDIT-FIX H07: redact identifying fields when caller has
+               no access. The §43a alarm still fires (mandateId + match
+               are returned) so the caller knows to escalate; identity
+               leak is prevented. */
+            const hasAccess = accessByMandate.get(m.id) === true;
             hits.push({
               mandateId: m.id,
-              mandateName: m.name,
-              clientName: m.clientName,
+              mandateName: hasAccess
+                ? m.name
+                : "Konflikt mit fremdem Mandat (geschützt)",
+              clientName: hasAccess ? m.clientName : null,
               matchedField: field === "party" ? "instructions" : field,
-              matchedTerm: term,
+              matchedTerm: hasAccess ? term : "[geschützt]",
               confidence: exact ? 1.0 : 0.6,
               status: m.status,
             });

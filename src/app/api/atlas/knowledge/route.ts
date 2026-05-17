@@ -72,6 +72,32 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  /* AUDIT-FIX H10 (2026-05-17): when mandateId is provided, verify the
+     caller has membership in that mandate before stamping the chunk
+     with the mandateId. Previously: any user could inject knowledge
+     chunks into any mandate they knew the cuid of — cross-mandate
+     write-injection visible to that mandate's members via semantic
+     search. Membership-gate via relation filter (single query). */
+  if (parsed.data.mandateId) {
+    const accessible = await prisma.atlasMandate.findFirst({
+      where: {
+        id: parsed.data.mandateId,
+        organizationId: atlas.organizationId,
+        OR: [
+          { ownerUserId: atlas.userId },
+          { members: { some: { userId: atlas.userId } } },
+        ],
+      },
+      select: { id: true },
+    });
+    if (!accessible) {
+      return NextResponse.json(
+        { error: "Mandate not accessible" },
+        { status: 403 },
+      );
+    }
+  }
+
   /* Auto-chunk large bodies — default ON for "schriftsatz" /
      "memo" / "mandate_file" / "agent_artifact" (where the text
      comes from a long doc); OFF for "note" / "manual" (where the

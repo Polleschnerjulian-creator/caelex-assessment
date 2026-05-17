@@ -34,6 +34,14 @@ export async function POST(
 
   const { id } = await ctx.params;
 
+  /* AUDIT-FIX H04 (2026-05-17): validate cuid at the edge — matches
+     CHAT_ID_SCHEMA pattern used by every other /chat/[id]/* route
+     (regenerate-title was the lone outlier letting non-cuid strings
+     hit the DB and waste a round-trip). */
+  if (!/^c[a-z0-9]{24}$/.test(id)) {
+    return NextResponse.json({ error: "Bad request" }, { status: 400 });
+  }
+
   /* Membership-gate: chat must exist and belong to this user+org. */
   const chat = await prisma.atlasChat.findFirst({
     where: {

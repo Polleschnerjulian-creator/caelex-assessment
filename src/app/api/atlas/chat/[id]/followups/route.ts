@@ -60,12 +60,25 @@ export async function GET(
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }
 
-  /* Load chat + last assistant message + mandate context. */
+  /* AUDIT-FIX H09 (2026-05-17): allow chat-owner OR mandate-member
+     to receive follow-ups. Previously gated only on `ownerUserId`,
+     which silently 404'd for co-counsel members reading shared
+     mandate chats — UX bug with security framing (404 implied the
+     chat didn't exist rather than access-denied). The membership
+     check via the mandate relation matches the access model the
+     chat-engine itself uses. */
   const chat = await prisma.atlasChat.findFirst({
     where: {
       id,
       organizationId: atlas.organizationId,
-      ownerUserId: atlas.userId,
+      OR: [
+        { ownerUserId: atlas.userId },
+        {
+          mandate: {
+            members: { some: { userId: atlas.userId } },
+          },
+        },
+      ],
     },
     select: {
       id: true,
