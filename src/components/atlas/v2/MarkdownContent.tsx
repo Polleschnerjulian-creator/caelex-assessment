@@ -23,6 +23,7 @@
  */
 
 import { Fragment, type ReactNode } from "react";
+import { MarkdownTableExport } from "./MarkdownTableExport";
 
 /**
  * Minimal citation shape MarkdownContent needs to render inline pills.
@@ -241,39 +242,34 @@ function renderBlock(
 ): ReactNode {
   if (b.kind === "table") {
     return (
-      <div
-        key={key}
-        className="my-4 overflow-x-auto rounded-xl bg-slate-50 dark:bg-white/[0.02]"
-      >
-        <table className="w-full border-collapse text-[12.5px]">
-          <thead>
-            <tr>
-              {b.header.map((h, i) => (
-                <th
-                  key={i}
-                  className="border-b border-slate-200 px-3 py-2 text-left font-medium text-slate-800 dark:border-white/[0.06] dark:text-slate-200"
+      <MarkdownTableExport key={key}>
+        <thead>
+          <tr>
+            {b.header.map((h, i) => (
+              <th
+                key={i}
+                className="border-b border-slate-200 px-3 py-2 text-left font-medium text-slate-800 dark:border-white/[0.06] dark:text-slate-200"
+              >
+                {renderInline(h, sourceMap)}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {b.rows.map((row, ri) => (
+            <tr key={ri}>
+              {b.header.map((_, ci) => (
+                <td
+                  key={ci}
+                  className="border-t border-slate-200 px-3 py-2 align-top text-slate-700 dark:border-white/[0.04] dark:text-slate-300"
                 >
-                  {renderInline(h, sourceMap)}
-                </th>
+                  {renderInline(row[ci] ?? "", sourceMap)}
+                </td>
               ))}
             </tr>
-          </thead>
-          <tbody>
-            {b.rows.map((row, ri) => (
-              <tr key={ri}>
-                {b.header.map((_, ci) => (
-                  <td
-                    key={ci}
-                    className="border-t border-slate-200 px-3 py-2 align-top text-slate-700 dark:border-white/[0.04] dark:text-slate-300"
-                  >
-                    {renderInline(row[ci] ?? "", sourceMap)}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </MarkdownTableExport>
     );
   }
   if (b.kind === "heading") {

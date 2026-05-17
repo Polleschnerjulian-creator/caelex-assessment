@@ -44,6 +44,7 @@ import { MarkdownContent } from "@/components/atlas/v2/MarkdownContent";
 import { AtlasMark } from "@/components/atlas/v2/AtlasLogo";
 import { labelFor } from "@/lib/atlas/tool-labels";
 import { exportDraftAsWord } from "@/lib/atlas/draft-export";
+import { downloadArtifactAsPdf } from "@/lib/atlas/artifact-pdf";
 import {
   AGENT_TEMPLATES,
   TEMPLATE_CATEGORIES,
@@ -807,7 +808,7 @@ export default function AgentPage() {
               </div>
               <button
                 type="button"
-                onClick={() => void handleRun()}
+                onClick={handleRun}
                 disabled={goal.trim().length < 10}
                 className="inline-flex items-center gap-1.5 rounded-md bg-slate-900 px-4 py-2 text-[12.5px] font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-30 dark:bg-emerald-500 dark:hover:bg-emerald-600"
               >
@@ -1511,6 +1512,22 @@ function ArtifactCard({
             >
               <FileText size={11} />
               .doc
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                downloadArtifactAsPdf({
+                  kind: artifact.kind,
+                  title: artifact.title,
+                  body: artifact.body,
+                  mandateName: undefined,
+                });
+              }}
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-2 py-1 text-[11px] text-slate-600 transition-colors hover:bg-slate-50 dark:border-white/[0.10] dark:text-slate-400 dark:hover:bg-white/[0.05]"
+              title="Als PDF herunterladen"
+            >
+              <FileText size={11} />
+              PDF
             </button>
             {mandateId && (
               <button
