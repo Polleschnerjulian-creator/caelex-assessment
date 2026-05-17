@@ -2524,6 +2524,628 @@ async function summarizeChangesSince(args: {
   return { content: JSON.stringify(payload), isError: false };
 }
 
+/* ─── Sprint 12 (2026-05-17): Chat-native Document Drafting ─────────────
+ *
+ * 5 tools that turn natural-language requests like "schreib ne Vollmacht
+ * für OrbitCo" into structured scaffolds the AI uses to compose the
+ * actual document IN ITS CHAT REPLY. All auto-load mandate context
+ * (parties, header, custom instructions, deadlines) when mandateId is
+ * attached, so the lawyer never has to repeat Mandanten-Daten.
+ *
+ * Each draft tool RETURNS A SCAFFOLD, not a finished document. The AI
+ * uses the scaffold (sections, parties, citations, hints) to write the
+ * actual prose. Output goes into the chat as Markdown — the lawyer can
+ * download via the existing per-table PDF / per-artifact PDF+DOCX
+ * buttons (when in agent-mode) or copy-paste into Word.
+ *
+ * HARD RULE in the tool descriptions: every draft must include the
+ * legal-review disclaimer + PRIVILEGED & CONFIDENTIAL marker for
+ * Schriftsatz / Verträge. The scaffolds remind the AI of this.
+ * ─────────────────────────────────────────────────────────────────── */
+
+/* Shared context-loader. Pulls everything a draft scaffold typically
+   needs from a single mandate query — parties grouped by type, header
+   metadata, customInstructions, lawyer-owner. Returns null when the
+   mandateId is missing OR the user has no access (membership-gated
+   via the same relation filter we use everywhere else). */
+async function loadMandateScaffoldContext(args: {
+  mandateId: string | null | undefined;
+  callerUserId: string;
+  callerOrgId: string;
+}): Promise<null | {
+  id: string;
+  name: string;
+  jurisdiction: string | null;
+  operatorType: string | null;
+  primaryAuthority: string | null;
+  clientName: string | null;
+  clientContact: string | null;
+  customInstructions: string | null;
+  parties: {
+    id: string;
+    type: string;
+    name: string;
+    role: string | null;
+    contact: string | null;
+    address: string | null;
+    reference: string | null;
+  }[];
+  ownerName: string | null;
+  ownerEmail: string | null;
+}> {
+  if (!args.mandateId) return null;
+  const m = await prisma.atlasMandate.findFirst({
+    where: {
+      id: args.mandateId,
+      organizationId: args.callerOrgId,
+      OR: [
+        { ownerUserId: args.callerUserId },
+        { members: { some: { userId: args.callerUserId } } },
+      ],
+    },
+    select: {
+      id: true,
+      name: true,
+      jurisdiction: true,
+      operatorType: true,
+      primaryAuthority: true,
+      clientName: true,
+      clientContact: true,
+      customInstructions: true,
+      parties: {
+        orderBy: [{ type: "asc" }, { createdAt: "asc" }],
+        select: {
+          id: true,
+          type: true,
+          name: true,
+          role: true,
+          contact: true,
+          address: true,
+          reference: true,
+        },
+      },
+      owner: { select: { name: true, email: true } },
+    },
+  });
+  if (!m) return null;
+  return {
+    id: m.id,
+    name: m.name,
+    jurisdiction: m.jurisdiction,
+    operatorType: m.operatorType,
+    primaryAuthority: m.primaryAuthority,
+    clientName: m.clientName,
+    clientContact: m.clientContact,
+    customInstructions: m.customInstructions,
+    parties: m.parties,
+    ownerName: m.owner?.name ?? null,
+    ownerEmail: m.owner?.email ?? null,
+  };
+}
+
+const DRAFT_DISCLAIMER_DE =
+  "Hinweis: AI-generierter Entwurf. Vor Versand juristisch zu prüfen.";
+const PRIVILEGE_BANNER_DE = "PRIVILEGED & CONFIDENTIAL · Anwaltsgeheimnis";
+
+const DraftSchriftsatzInput = z.object({
+  recipient: z.string().trim().max(200).optional(),
+  subject: z.string().trim().min(5).max(200),
+  purpose: z.enum([
+    "antrag",
+    "stellungnahme",
+    "beschwerde",
+    "klage",
+    "widerspruch",
+    "anhoerung",
+    "sonstiges",
+  ]),
+  key_points: z.array(z.string().max(500)).max(5).optional(),
+});
+
+async function draftSchriftsatzTool(args: {
+  input: unknown;
+  callerUserId: string;
+  callerOrgId: string;
+  mandateId?: string | null;
+}): Promise<AtlasToolResult> {
+  const parsed = DraftSchriftsatzInput.safeParse(args.input);
+  if (!parsed.success) {
+    return {
+      content: JSON.stringify({
+        error: "Invalid input",
+        details: parsed.error.flatten(),
+      }),
+      isError: true,
+    };
+  }
+  const d = parsed.data;
+  const ctx = await loadMandateScaffoldContext({
+    mandateId: args.mandateId,
+    callerUserId: args.callerUserId,
+    callerOrgId: args.callerOrgId,
+  });
+  const today = new Date().toLocaleDateString("de-DE", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  /* Resolve recipient: explicit > mandate.primaryAuthority > first
+     authority-party > placeholder. */
+  const authorityParty = ctx?.parties.find((p) => p.type === "authority");
+  const recipientName =
+    d.recipient ??
+    ctx?.primaryAuthority ??
+    authorityParty?.name ??
+    "[Empfänger einsetzen]";
+  const clientParty = ctx?.parties.find((p) => p.type === "client") ?? null;
+  const aktenzeichen = clientParty?.reference ?? null;
+
+  const sections = [
+    "Briefkopf (Kanzlei-Branding, automatisch wenn AtlasOrgBranding gepflegt)",
+    `Empfänger: ${recipientName}`,
+    aktenzeichen
+      ? `Aktenzeichen: ${aktenzeichen}`
+      : "Aktenzeichen: [falls vorhanden einsetzen]",
+    `Bezug / Betreff: ${d.subject}`,
+    "Anrede (formal: 'Sehr geehrte Damen und Herren')",
+    "Sachverhalt (kurz, faktisch, chronologisch)",
+    "Anträge / Begehren (klar nummeriert)",
+    "Begründung (auf Anträge bezogen, mit [ATLAS:...] Citations)",
+    "Schlussformel ('Mit freundlichen Grüßen')",
+    "Unterschriftsblock (Anwalt-Name, Funktion)",
+  ];
+
+  const payload = {
+    kind: "schriftsatz" as const,
+    purpose: d.purpose,
+    today,
+    recipient: recipientName,
+    aktenzeichen,
+    subject: d.subject,
+    key_points: d.key_points ?? [],
+    sections,
+    mandate_context: ctx
+      ? {
+          name: ctx.name,
+          jurisdiction: ctx.jurisdiction,
+          operatorType: ctx.operatorType,
+          customInstructions: ctx.customInstructions,
+          parties: ctx.parties,
+        }
+      : null,
+    lawyer: ctx ? { name: ctx.ownerName, email: ctx.ownerEmail } : null,
+    drafting_directives: [
+      `Begin output with: "${PRIVILEGE_BANNER_DE}" auf eigener Zeile, dann eine Leerzeile, dann den Schriftsatz.`,
+      "Sprache: Deutsch (formal, juristischer Stil).",
+      "Begründung: jede regulatorische Aussage MIT [ATLAS:...] Citation belegen.",
+      "Anträge: nummeriert (1., 2., 3.) und prägnant.",
+      d.key_points && d.key_points.length > 0
+        ? `Key-Points aus Lawyer-Input einbauen: ${d.key_points.join(" · ")}`
+        : null,
+      ctx?.customInstructions
+        ? "Mandate-Custom-Instructions berücksichtigen (siehe mandate_context.customInstructions)."
+        : null,
+      `End output with: "${DRAFT_DISCLAIMER_DE}" auf eigener Zeile.`,
+    ].filter(Boolean),
+  };
+  return { content: JSON.stringify(payload), isError: false };
+}
+
+const DraftMandantenbriefInput = z.object({
+  kind: z.enum([
+    "mandatsbestaetigung",
+    "sachstandsbericht",
+    "erstberatung_memo",
+    "schlussbericht",
+    "honorarnote_begleitschreiben",
+    "sonstiges",
+  ]),
+  subject: z.string().trim().min(5).max(200),
+  key_points: z.array(z.string().max(500)).max(5).optional(),
+  tone: z.enum(["formal", "warm", "neutral"]).optional(),
+});
+
+async function draftMandantenbriefTool(args: {
+  input: unknown;
+  callerUserId: string;
+  callerOrgId: string;
+  mandateId?: string | null;
+}): Promise<AtlasToolResult> {
+  const parsed = DraftMandantenbriefInput.safeParse(args.input);
+  if (!parsed.success) {
+    return {
+      content: JSON.stringify({
+        error: "Invalid input",
+        details: parsed.error.flatten(),
+      }),
+      isError: true,
+    };
+  }
+  const d = parsed.data;
+  const ctx = await loadMandateScaffoldContext({
+    mandateId: args.mandateId,
+    callerUserId: args.callerUserId,
+    callerOrgId: args.callerOrgId,
+  });
+  const today = new Date().toLocaleDateString("de-DE", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const clientParty = ctx?.parties.find((p) => p.type === "client") ?? null;
+  const recipientName =
+    clientParty?.name ?? ctx?.clientName ?? "[Mandant einsetzen]";
+  const recipientContact = clientParty?.contact ?? ctx?.clientContact ?? null;
+
+  /* Section skeleton varies per kind. */
+  const sectionsByKind: Record<typeof d.kind, string[]> = {
+    mandatsbestaetigung: [
+      "Anrede",
+      "Bestätigung der Mandatsannahme + Datum",
+      "Definition des Mandatsgegenstandes (kurz, präzise)",
+      "Honorarvereinbarung (Verweis oder Inline)",
+      "Nächste Schritte + Erstkontakt-Zusage",
+      "Schlussformel",
+    ],
+    sachstandsbericht: [
+      "Anrede",
+      "Zusammenfassung (1 Absatz, oben)",
+      "Was wurde seit letztem Bericht erreicht (chronologisch)",
+      "Aktuelle Fristen + nächste Termine",
+      "Empfehlung / nächste Anwalt-Aktion + ggf. Mandanten-Aktion",
+      "Schlussformel",
+    ],
+    erstberatung_memo: [
+      "Anrede",
+      "Bezug auf Erstberatung + Datum",
+      "Rechtliche Einordnung des Sachverhalts (mit [ATLAS:...] Citations)",
+      "Risiken + Handlungsoptionen",
+      "Empfehlung",
+      "Honorar-Hinweis + Mandats-Annahme-Schritt",
+      "Schlussformel",
+    ],
+    schlussbericht: [
+      "Anrede",
+      "Mandatsabschluss-Erklärung + Datum",
+      "Endergebnis (kurz, faktisch)",
+      "Aktenarchivierungs-Hinweis + DSGVO-Bezug",
+      "Schlussformel",
+    ],
+    honorarnote_begleitschreiben: [
+      "Anrede",
+      "Begleitsatz zur anliegenden Honorarnote",
+      "Bezahl-Hinweis (BIC/IBAN, Zahlungsfrist)",
+      "Schlussformel",
+    ],
+    sonstiges: ["Anrede", "Sachverhalt / Anliegen", "Inhalt", "Schlussformel"],
+  };
+
+  const payload = {
+    kind: "brief" as const,
+    sub_kind: d.kind,
+    today,
+    recipient: recipientName,
+    recipient_contact: recipientContact,
+    subject: d.subject,
+    tone: d.tone ?? "formal",
+    key_points: d.key_points ?? [],
+    sections: sectionsByKind[d.kind],
+    mandate_context: ctx
+      ? {
+          name: ctx.name,
+          jurisdiction: ctx.jurisdiction,
+          customInstructions: ctx.customInstructions,
+          authority: ctx.primaryAuthority,
+        }
+      : null,
+    lawyer: ctx ? { name: ctx.ownerName, email: ctx.ownerEmail } : null,
+    drafting_directives: [
+      "Sprache: Deutsch, juristisch-präzise aber Mandanten-verständlich (keine Fachjargon-Mauern).",
+      d.tone === "warm"
+        ? "Anrede: persönlich ('Liebe Frau Lee') aber formell. Schluss: 'Mit den besten Grüßen'."
+        : "Anrede: formell ('Sehr geehrte Frau Lee'). Schluss: 'Mit freundlichen Grüßen'.",
+      d.kind === "sachstandsbericht"
+        ? "Wenn Fristen aus mandate_context.deadlines vorliegen, in 'Aktuelle Fristen' Section listen."
+        : null,
+      `Datum oben rechts: ${today}`,
+      `End output with: "${DRAFT_DISCLAIMER_DE}" auf eigener Zeile.`,
+    ].filter(Boolean),
+  };
+  return { content: JSON.stringify(payload), isError: false };
+}
+
+const DraftVertragInput = z.object({
+  kind: z.enum([
+    "vollmacht",
+    "mandatsvereinbarung",
+    "nda",
+    "kooperationsvereinbarung",
+    "honorarvereinbarung",
+    "sonstiges",
+  ]),
+  counterparty_party_id: z.string().cuid().optional(),
+  scope: z.string().trim().min(5).max(500).optional(),
+});
+
+async function draftVertragTool(args: {
+  input: unknown;
+  callerUserId: string;
+  callerOrgId: string;
+  mandateId?: string | null;
+}): Promise<AtlasToolResult> {
+  const parsed = DraftVertragInput.safeParse(args.input);
+  if (!parsed.success) {
+    return {
+      content: JSON.stringify({
+        error: "Invalid input",
+        details: parsed.error.flatten(),
+      }),
+      isError: true,
+    };
+  }
+  const d = parsed.data;
+  const ctx = await loadMandateScaffoldContext({
+    mandateId: args.mandateId,
+    callerUserId: args.callerUserId,
+    callerOrgId: args.callerOrgId,
+  });
+
+  /* Counterparty resolution: explicit party-id > first client > placeholder. */
+  let counterparty: {
+    name: string;
+    address: string | null;
+    contact: string | null;
+  };
+  if (d.counterparty_party_id && ctx) {
+    const p = ctx.parties.find((x) => x.id === d.counterparty_party_id);
+    counterparty = p
+      ? { name: p.name, address: p.address, contact: p.contact }
+      : { name: "[Gegenpartei]", address: null, contact: null };
+  } else {
+    const c = ctx?.parties.find((p) => p.type === "client") ?? null;
+    counterparty = c
+      ? { name: c.name, address: c.address, contact: c.contact }
+      : {
+          name: ctx?.clientName ?? "[Gegenpartei]",
+          address: null,
+          contact: ctx?.clientContact ?? null,
+        };
+  }
+
+  /* Clause-spine differs per Vertrags-Typ. */
+  const spineByKind: Record<typeof d.kind, string[]> = {
+    vollmacht: [
+      "Bezeichnung (Vollmacht)",
+      "Vollmachtgeber (Counterparty)",
+      "Bevollmächtigter (Anwalt)",
+      "Gegenstand der Vollmacht (Scope)",
+      "Umfang (Vertretung vor Gerichten, Behörden, Aufnahme/Entgegennahme von Zustellungen)",
+      "Untervollmacht-Klausel",
+      "Erlöschens-Klausel",
+      "Ort, Datum, Unterschriften",
+    ],
+    mandatsvereinbarung: [
+      "Präambel",
+      "§1 Mandatsgegenstand",
+      "§2 Mandatsumfang (Was IST + was IST NICHT vom Mandat erfasst)",
+      "§3 Honorar (RVG / Vereinbarung) — TODO: {{Honorarsatz EUR/h}} einsetzen",
+      "§4 Auslagen + Vorschuss",
+      "§5 Pflichten Mandant (Mitwirkung, Wahrheit)",
+      "§6 Datenschutz (DSGVO + §43e BRAO)",
+      "§7 Schlichtungsstelle",
+      "§8 Gerichtsstand + anwendbares Recht",
+      "Ort, Datum, Unterschriften",
+    ],
+    nda: [
+      "Parteien",
+      "Präambel (Anlass)",
+      "§1 Vertrauliche Information (Definition)",
+      "§2 Verpflichtungen",
+      "§3 Ausnahmen",
+      "§4 Dauer + Rückgabe",
+      "§5 Vertragsstrafe",
+      "§6 Gerichtsstand + anwendbares Recht",
+      "§7 Salvatorische Klausel",
+      "Ort, Datum, Unterschriften",
+    ],
+    kooperationsvereinbarung: [
+      "Parteien",
+      "Präambel (Anlass + Ziel der Kooperation)",
+      "§1 Gegenstand",
+      "§2 Pflichten beider Parteien",
+      "§3 Honorar-Teilung + Abrechnung",
+      "§4 Haftung",
+      "§5 Vertraulichkeit",
+      "§6 Laufzeit + Kündigung",
+      "§7 Gerichtsstand",
+      "Unterschriften",
+    ],
+    honorarvereinbarung: [
+      "Parteien",
+      "§1 Gegenstand der Vereinbarung",
+      "§2 Honorarsatz / Stundensatz",
+      "§3 Vorschuss + Abrechnung",
+      "§4 Auslagen + Umsatzsteuer",
+      "§5 Fälligkeit + Verzug",
+      "Unterschriften",
+    ],
+    sonstiges: [
+      "Parteien",
+      "Präambel",
+      "Vertragsinhalt",
+      "Schlussbestimmungen",
+      "Unterschriften",
+    ],
+  };
+
+  const payload = {
+    kind: "vertrag" as const,
+    sub_kind: d.kind,
+    counterparty,
+    scope: d.scope ?? null,
+    clause_spine: spineByKind[d.kind],
+    mandate_context: ctx
+      ? { name: ctx.name, jurisdiction: ctx.jurisdiction }
+      : null,
+    lawyer: ctx ? { name: ctx.ownerName, email: ctx.ownerEmail } : null,
+    drafting_directives: [
+      `Begin output with: "${PRIVILEGE_BANNER_DE}" auf eigener Zeile.`,
+      "Sprache: Deutsch, juristisch-präzise. RVG-konform wo zutreffend.",
+      "Gerichtsstand: Sitz der Kanzlei (falls AtlasOrgBranding vorhanden, sonst Platzhalter).",
+      "{{Token}}-Style Placeholders NUR für Variablen die nicht aufgelöst werden konnten.",
+      `End output with: "${DRAFT_DISCLAIMER_DE}" auf eigener Zeile.`,
+    ],
+  };
+  return { content: JSON.stringify(payload), isError: false };
+}
+
+const DraftAktennotizInput = z.object({
+  kind: z.enum([
+    "telefon_vermerk",
+    "besprechungs_protokoll",
+    "memo",
+    "beratungs_protokoll",
+    "recherche_memo",
+    "sonstiges",
+  ]),
+  subject: z.string().trim().min(5).max(200),
+  participants: z.array(z.string().max(200)).max(20).optional(),
+});
+
+async function draftAktennotizTool(args: {
+  input: unknown;
+  callerUserId: string;
+  callerOrgId: string;
+  mandateId?: string | null;
+}): Promise<AtlasToolResult> {
+  const parsed = DraftAktennotizInput.safeParse(args.input);
+  if (!parsed.success) {
+    return {
+      content: JSON.stringify({
+        error: "Invalid input",
+        details: parsed.error.flatten(),
+      }),
+      isError: true,
+    };
+  }
+  const d = parsed.data;
+  const ctx = await loadMandateScaffoldContext({
+    mandateId: args.mandateId,
+    callerUserId: args.callerUserId,
+    callerOrgId: args.callerOrgId,
+  });
+  const now = new Date();
+  const today = now.toLocaleDateString("de-DE", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const time = now.toLocaleTimeString("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  /* Default Teilnehmer: lawyer + first client party. */
+  const participants = d.participants ?? [];
+  if (participants.length === 0 && ctx) {
+    const lawyer = ctx.ownerName ?? ctx.ownerEmail;
+    if (lawyer) participants.push(`${lawyer} (Anwalt)`);
+    const client = ctx.parties.find((p) => p.type === "client");
+    if (client) participants.push(`${client.name} (Mandant)`);
+  }
+
+  const payload = {
+    kind: "aktennotiz" as const,
+    sub_kind: d.kind,
+    today,
+    time,
+    subject: d.subject,
+    participants,
+    mandate_context: ctx ? { name: ctx.name } : null,
+    sections: [
+      "Datum + Uhrzeit",
+      "Teilnehmer",
+      "Anlass / Bezug",
+      "Inhalt (numerische Sub-Punkte)",
+      "Vereinbarungen / Ergebnisse",
+      "Nächste Schritte (mit Verantwortlichkeit + Frist)",
+    ],
+    drafting_directives: [
+      "Sprache: Deutsch, knapp + faktisch. KEINE Anrede, KEIN Briefkopf, KEINE Schlussformel.",
+      "Inhalt nummeriert (1., 2., 3.). Ein-Satz-Punkte bevorzugt.",
+      d.kind === "recherche_memo"
+        ? "Bei Recherche-Memo: jede Rechtsaussage mit [ATLAS:...] Citation belegen."
+        : null,
+      "Aktennotiz ist INTERN — keine Privilege-Banner nötig.",
+    ].filter(Boolean),
+  };
+  return { content: JSON.stringify(payload), isError: false };
+}
+
+const RefineDocumentInput = z.object({
+  target_section: z.string().trim().min(1).max(80),
+  change_kind: z.enum([
+    "kuerzer",
+    "laenger",
+    "formaler",
+    "lockerer",
+    "praeziser",
+    "andere_formulierung",
+    "zitat_hinzufuegen",
+    "fakt_korrigieren",
+    "sonstiges",
+  ]),
+  instruction: z.string().trim().min(1).max(1000),
+});
+
+function refineDocumentTool(args: { input: unknown }): AtlasToolResult {
+  const parsed = RefineDocumentInput.safeParse(args.input);
+  if (!parsed.success) {
+    return {
+      content: JSON.stringify({
+        error: "Invalid input",
+        details: parsed.error.flatten(),
+      }),
+      isError: true,
+    };
+  }
+  const d = parsed.data;
+
+  const directives: Record<typeof d.change_kind, string> = {
+    kuerzer:
+      "Auf max. 50% der Original-Länge kürzen. Kernaussagen behalten, Schmuck weglassen.",
+    laenger:
+      "Inhaltlich vertiefen — zusätzliche Argumente, Belege, ggf. Beispiele.",
+    formaler:
+      "Tonfall förmlicher. Vollständige Sätze, keine Umgangssprache, juristisch präzise.",
+    lockerer:
+      "Tonfall weniger förmlich. Persönlicher, mandanten-näher, aber juristisch korrekt.",
+    praeziser:
+      "Vage Aussagen durch konkrete Tatsachen + Zahlen + Citations ersetzen.",
+    andere_formulierung:
+      "Selber Inhalt, völlig neue Formulierung. Wörter NICHT 1:1 wiederverwenden.",
+    zitat_hinzufuegen:
+      "Spezifische [ATLAS:...] Citations zur belegenden Behörde/Norm einfügen.",
+    fakt_korrigieren: "Spezifischen Fakt im Text korrigieren wie beschrieben.",
+    sonstiges: "Lawyer-Instruction wörtlich umsetzen.",
+  };
+
+  const payload = {
+    target_section: d.target_section,
+    change_kind: d.change_kind,
+    instruction: d.instruction,
+    directive: directives[d.change_kind],
+    drafting_directives: [
+      `Rewrite ONLY the section "${d.target_section}" — leave everything else as-is.`,
+      directives[d.change_kind],
+      `Lawyer's specific instruction: "${d.instruction}"`,
+      "Output the new section block ready-to-paste — no preamble, no explanation, just the rewritten content.",
+    ],
+  };
+  return { content: JSON.stringify(payload), isError: false };
+}
+
 // ─── Dispatcher ─────────────────────────────────────────────────────
 
 export async function executeAtlasTool(args: {
@@ -2603,6 +3225,37 @@ export async function executeAtlasTool(args: {
       return getFilingDeadlines(args);
     case "summarize_changes_since":
       return summarizeChangesSince(args);
+    /* Sprint 12 — chat-native document drafting (5 tools). */
+    case "draft_schriftsatz":
+      return draftSchriftsatzTool({
+        input: args.input,
+        callerUserId: args.callerUserId,
+        callerOrgId: args.callerOrgId,
+        mandateId: args.mandateId,
+      });
+    case "draft_mandantenbrief":
+      return draftMandantenbriefTool({
+        input: args.input,
+        callerUserId: args.callerUserId,
+        callerOrgId: args.callerOrgId,
+        mandateId: args.mandateId,
+      });
+    case "draft_vertrag":
+      return draftVertragTool({
+        input: args.input,
+        callerUserId: args.callerUserId,
+        callerOrgId: args.callerOrgId,
+        mandateId: args.mandateId,
+      });
+    case "draft_aktennotiz":
+      return draftAktennotizTool({
+        input: args.input,
+        callerUserId: args.callerUserId,
+        callerOrgId: args.callerOrgId,
+        mandateId: args.mandateId,
+      });
+    case "refine_document":
+      return refineDocumentTool({ input: args.input });
     default: {
       const _never: never = args.name;
       return {

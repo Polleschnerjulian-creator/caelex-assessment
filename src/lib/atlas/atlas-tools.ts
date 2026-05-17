@@ -626,6 +626,231 @@ Cite sources in your reply with markdown links: \`[Mandats-Datei: filename.pdf](
       required: ["query"],
     },
   },
+
+  /* ── Sprint 12 (2026-05-17): Chat-native Document Drafting ───────────
+   * 5 tools that turn natural-language requests like "Schreib mir ne
+   * Vollmacht für OrbitCo" or "Antrag an BNetzA für Frequenz" into
+   * structured document scaffolds the AI uses to compose the actual
+   * Word-ready document IN ITS CHAT REPLY.
+   *
+   * Each tool auto-loads mandate context (parties, jurisdiction,
+   * primary authority, custom instructions) when a mandateId is
+   * attached to the chat, so the lawyer doesn't have to repeat
+   * Mandanten-Daten every time.
+   *
+   * All draft tools return a SCAFFOLD payload, not a finished
+   * document — the AI uses the scaffold + the citations it picked
+   * to write the actual prose. Output goes into the chat as Markdown
+   * which the lawyer can download via the per-table PDF buttons
+   * (existing) or copy-paste into Word.
+   *
+   * HARD RULE: every draft must include the legal-review disclaimer
+   * + the PRIVILEGED & CONFIDENTIAL marker for Schriftsatz / Verträge.
+   * ────────────────────────────────────────────────────────────────── */
+  {
+    name: "draft_schriftsatz",
+    description: `Builds a German-legal-style "Schriftsatz" scaffold (brief to an authority or court) using the current mandate's parties, jurisdiction, and primary authority. Returns the recommended structure (Briefkopf · Empfänger · Aktenzeichen · Bezug · Anrede · Sachverhalt · Anträge · Begründung · Schluss · Unterschrift), the parties block auto-filled from AtlasMandateParty rows, the today date, and bilingual section-headers when the matter is cross-border.
+
+USE WHEN the user asks: "schreib mir nen Antrag an BNetzA", "Schriftsatz an das VG Köln für OrbitCo", "Beschwerde gegen Bescheid X", "Stellungnahme zum Bescheid vom 12.4."
+
+After calling: write the actual Schriftsatz in your reply, using the scaffold sections. Apply the lawyer's custom instructions if any. Cite every regulatory claim with [ATLAS:...] tokens. Begin output with "PRIVILEGED & CONFIDENTIAL" and the legal-review disclaimer.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        recipient: {
+          type: "string",
+          description:
+            "Empfänger of the Schriftsatz — full authority/court name (z.B. 'Bundesnetzagentur', 'Verwaltungsgericht Köln'). When omitted, the tool uses the mandate's primaryAuthority.",
+        },
+        subject: {
+          type: "string",
+          description:
+            "Subject-line / Bezug ('Antrag auf Frequenzzuteilung S-Band für Mission OrbitSat-1'). 5-200 chars.",
+        },
+        purpose: {
+          type: "string",
+          enum: [
+            "antrag",
+            "stellungnahme",
+            "beschwerde",
+            "klage",
+            "widerspruch",
+            "anhoerung",
+            "sonstiges",
+          ],
+          description:
+            "Schriftsatz-Typ. 'antrag' = Genehmigungs/Zulassungs-Antrag, 'stellungnahme' = Reply zu Anhörung, 'beschwerde' = formal complaint, 'klage' = Klageschrift, 'widerspruch' = Widerspruch gegen Bescheid, 'anhoerung' = Anhörung response.",
+        },
+        key_points: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Optional 1-5 key arguments / Anträge the lawyer wants in the brief. The AI uses these as the spine of the Begründung section.",
+        },
+      },
+      required: ["subject", "purpose"],
+    },
+  },
+
+  {
+    name: "draft_mandantenbrief",
+    description: `Builds a client-letter scaffold (Brief an Mandant). Returns the recipient-block from the mandate's clientName + clientContact (or AtlasMandateParty of type='client'), today's date, suitable salutation, and the section-skeleton appropriate to the letter-kind (Mandatsbestätigung / Sachstandsbericht / Erstberatungs-Memo / Honorarnote-Begleitschreiben / Schlusssbericht).
+
+USE WHEN the user asks: "schreib dem Mandanten X einen Sachstandsbericht", "Mandatsbestätigung für OrbitCo aufsetzen", "Memo zur Erstberatung am 5.5.", "Begleitschreiben zur Honorarnote".
+
+After calling: write the actual letter in your reply with appropriate Anrede ("Sehr geehrte Frau Geschäftsführerin", "Lieber Herr Müller" only if signaled), formal-but-warm tone for Sachstandsbericht, factual-only for Bestätigung. End with the lawyer's salutation block.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        kind: {
+          type: "string",
+          enum: [
+            "mandatsbestaetigung",
+            "sachstandsbericht",
+            "erstberatung_memo",
+            "schlussbericht",
+            "honorarnote_begleitschreiben",
+            "sonstiges",
+          ],
+          description:
+            "Brief-Typ. Each kind has distinct section-skeleton + tone.",
+        },
+        subject: {
+          type: "string",
+          description:
+            "Betreff / Bezug ('Sachstand Genehmigungsverfahren KW 18-2026'). 5-200 chars.",
+        },
+        key_points: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Optional 1-5 facts/topics the lawyer wants covered (z.B. 'Frist bei BNetzA: 30.5.', 'Anhörungstermin: 12.6.', 'Risikoeinschätzung neuer Bescheid').",
+        },
+        tone: {
+          type: "string",
+          enum: ["formal", "warm", "neutral"],
+          description:
+            "Tone — 'formal' (Erstkontakt), 'warm' (etablierter Mandant), 'neutral' (default).",
+        },
+      },
+      required: ["kind", "subject"],
+    },
+  },
+
+  {
+    name: "draft_vertrag",
+    description: `Builds a contract scaffold (Vollmacht / Mandatsvereinbarung / NDA / Kooperationsvereinbarung / sonstige) for one of the parties in the current mandate. Returns the parties block, jurisdiction-appropriate boilerplate (German RVG-konforme Mandatsvereinbarung; AGB-Anlehnung), the suggested clause-spine, and standard salvatorische Klausel + Gerichtsstand.
+
+USE WHEN the user asks: "Vollmacht für OrbitCo erstellen", "Mandatsvereinbarung mit neuem Mandanten", "NDA für Frequenz-Daten mit BNetzA", "Kooperationsvereinbarung Co-Counsel KanzleiX".
+
+After calling: write the actual contract draft. Use {{Token}}-style placeholders only for variables the tool didn't auto-resolve (e.g. {{Honorarsatz EUR/h}}). Include "PRIVILEGED & CONFIDENTIAL" + the legal-review disclaimer at the top.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        kind: {
+          type: "string",
+          enum: [
+            "vollmacht",
+            "mandatsvereinbarung",
+            "nda",
+            "kooperationsvereinbarung",
+            "honorarvereinbarung",
+            "sonstiges",
+          ],
+          description: "Vertrags-Typ.",
+        },
+        counterparty_party_id: {
+          type: "string",
+          description:
+            "Optional AtlasMandateParty.id of the contract-counterparty. When provided, the tool auto-fills the parties block from that party's name/address/contact. Otherwise the AI infers from chat context.",
+        },
+        scope: {
+          type: "string",
+          description:
+            "Free-text Spezial-Scope (z.B. 'beschränkt auf die Vertretung vor BNetzA in der Sache Frequenzzuteilung S-Band'). 5-500 chars.",
+        },
+      },
+      required: ["kind"],
+    },
+  },
+
+  {
+    name: "draft_aktennotiz",
+    description: `Builds an internal note scaffold (Aktennotiz / Telefon-Vermerk / Memo / Beratungsprotokoll). Returns the standard structure: Datum, Uhrzeit, Teilnehmer, Anlass, Inhalt, Vereinbarungen, Nächste Schritte. Picks up mandate parties + current lawyer as default Teilnehmer.
+
+USE WHEN the user asks: "schreib mal nen Telefonvermerk zum Gespräch mit Anna Lee", "Aktennotiz zur heutigen Besprechung", "Memo zur Recherche zu §22 NIS2", "Beratungsprotokoll Erstberatung OrbitCo 5.5.".
+
+After calling: write the actual note in your reply. Aktennotiz tone is FACTUAL + KNAPP — no formal salutation, no closing. Numbered subsections OK. Optional: short conclusion block ("Bewertung:" oder "Risikoeinschätzung:").`,
+    input_schema: {
+      type: "object",
+      properties: {
+        kind: {
+          type: "string",
+          enum: [
+            "telefon_vermerk",
+            "besprechungs_protokoll",
+            "memo",
+            "beratungs_protokoll",
+            "recherche_memo",
+            "sonstiges",
+          ],
+          description: "Notiz-Typ.",
+        },
+        subject: {
+          type: "string",
+          description:
+            "Anlass / Betreff ('Telefonat Anna Lee zu Frequenz-Antrag', 'Recherche §22 NIS2 Anwendbarkeit auf Bodenstationen').",
+        },
+        participants: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Optional list of Teilnehmer (Name + ggf. Funktion). When omitted, the lawyer + the mandate's primary client are used.",
+        },
+      },
+      required: ["kind", "subject"],
+    },
+  },
+
+  {
+    name: "refine_document",
+    description: `Takes an existing draft (Schriftsatz / Brief / Vertrag / Aktennotiz) the user is iterating on and produces refinement guidance for the AI to rewrite a specific section or aspect. Returns: which section to focus on, what aspect to change, suggested register (formaler/lockerer/kürzer/präziser), and any cross-references to mandate-data or citations that should be added.
+
+USE WHEN the user says: "Begründung kürzer", "nochmal förmlicher", "Absatz 3 anders formulieren", "füg §22 NIS2 hinzu", "der Tonfall ist zu freundlich", "verkürz das auf eine Seite".
+
+After calling: rewrite ONLY the requested section/aspect in your reply, NOT the whole document. Keep the rest implicitly unchanged. Output the new section block ready-to-paste.`,
+    input_schema: {
+      type: "object",
+      properties: {
+        target_section: {
+          type: "string",
+          description:
+            "Which section to refine ('Begründung', 'Anrede', 'Anträge', 'Sachverhalt', 'gesamt'). 'gesamt' = entire document.",
+        },
+        change_kind: {
+          type: "string",
+          enum: [
+            "kuerzer",
+            "laenger",
+            "formaler",
+            "lockerer",
+            "praeziser",
+            "andere_formulierung",
+            "zitat_hinzufuegen",
+            "fakt_korrigieren",
+            "sonstiges",
+          ],
+          description: "Art der Änderung.",
+        },
+        instruction: {
+          type: "string",
+          description:
+            "Free-text spezifische Anweisung vom Anwalt ('halb so lang', 'mehr §-Bezüge', 'füg §22 NIS2 ein', 'der Mandant hieß Anna Lee nicht Hans Müller').",
+        },
+      },
+      required: ["target_section", "change_kind", "instruction"],
+    },
+  },
 ];
 
 /* Sprint D2 — agent-mode-only orchestration tools. Not used by chat-
@@ -717,6 +942,12 @@ export type AtlasToolName =
   | "compare_jurisdictions_for_filing"
   | "get_filing_deadlines"
   | "summarize_changes_since"
+  /* Sprint 12 — chat-native document drafting. */
+  | "draft_schriftsatz"
+  | "draft_mandantenbrief"
+  | "draft_vertrag"
+  | "draft_aktennotiz"
+  | "refine_document"
   /* Sprint D2 — agent-mode orchestration. Resolved by the agent
      route's special-case path, NOT by atlas-tool-executor. */
   | "delegate_subtasks";
