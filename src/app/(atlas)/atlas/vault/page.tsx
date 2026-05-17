@@ -64,7 +64,11 @@ export default function VaultPage() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [groupBy, setGroupBy] = useState<"mandate" | "flat">("mandate");
-  const [downloading, setDownloading] = useState<string | null>(null);
+  /* AUDIT-FIX L04 (2026-05-17): track concurrent downloads via Set
+     instead of single string. Previously rapid clicks on two files
+     only showed the spinner on whichever was clicked last; the first
+     download's button lost its loading-indicator immediately. */
+  const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set());
 
   /* Live-search with debounce. 250ms feels responsive without
      triggering on every keystroke. */
@@ -90,7 +94,8 @@ export default function VaultPage() {
   }, [query, reload]);
 
   const handleDownload = async (file: FileRecord) => {
-    setDownloading(file.id);
+    if (downloadingIds.has(file.id)) return;
+    setDownloadingIds((prev) => new Set(prev).add(file.id));
     try {
       const res = await fetch(
         `/api/atlas/mandate/${file.mandate.id}/files/${file.id}`,
@@ -100,7 +105,11 @@ export default function VaultPage() {
       const data = (await res.json()) as { url: string };
       if (data.url) window.open(data.url, "_blank", "noopener,noreferrer");
     } finally {
-      setDownloading(null);
+      setDownloadingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(file.id);
+        return next;
+      });
     }
   };
 
@@ -249,7 +258,7 @@ export default function VaultPage() {
                     key={f.id}
                     file={f}
                     onDownload={handleDownload}
-                    downloading={downloading === f.id}
+                    downloading={downloadingIds.has(f.id)}
                     isLast={i === group.files.length - 1}
                   />
                 ))}
@@ -264,7 +273,7 @@ export default function VaultPage() {
               key={f.id}
               file={f}
               onDownload={handleDownload}
-              downloading={downloading === f.id}
+              downloading={downloadingIds.has(f.id)}
               isLast={i === files.length - 1}
               showMandate
             />

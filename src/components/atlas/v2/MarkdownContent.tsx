@@ -494,8 +494,12 @@ function paragraphConfidence(text: string): ConfidenceLevel {
        substantive legal claim that needs grounding)
      - 0 tokens && substantive paragraph → ungrounded (the heatmap
        flags it as worth manual verification) */
-  ATLAS_CITATION_RE.lastIndex = 0;
-  const hasCitation = ATLAS_CITATION_RE.test(text);
+  /* AUDIT-FIX L01 (2026-05-17): instead of resetting the shared
+     module-level regex's `lastIndex` (race-prone under React 18
+     concurrent rendering), use String.prototype.search with a non-
+     global copy. Zero shared mutable state — safe under any
+     interleaving. */
+  const hasCitation = /\[ATLAS:[^\]]+\]/.test(text);
   if (hasCitation) return "grounded";
   const wordCount = text.split(/\s+/).filter(Boolean).length;
   if (wordCount < 40) return "neutral";

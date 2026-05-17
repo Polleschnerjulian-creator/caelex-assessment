@@ -12060,6 +12060,13 @@ model AtlasAgentRun {
   @@index([userId, startedAt(sort: Desc)])
   @@index([organizationId, startedAt(sort: Desc)])
   @@index([mandateId, startedAt(sort: Desc)])
+  /// AUDIT-FIX M31 (2026-05-17): housekeeping cron filters by
+  /// (status, startedAt) for TTL cleanup. Without a covering index,
+  /// the cron does a sequential scan on AtlasAgentRun. Compound
+  /// index on (status, startedAt) lets the cron's updateMany hit
+  /// an index scan instead. Cheap addition — these table rows are
+  /// finite (cron TTLs them at 30 days).
+  @@index([status, startedAt])
 }
 
 /// Atlas V2 Knowledge-Chunk — Kanzlei-spezifische Vector-DB.

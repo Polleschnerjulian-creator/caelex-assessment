@@ -203,7 +203,10 @@ export function MandateTimeEntries({ mandateId, disabled }: Props) {
           onSubmit={handleAdd}
           className="space-y-2 border-t border-slate-200 pt-3 dark:border-slate-700/40"
         >
-          <div className="flex gap-2">
+          {/* AUDIT-FIX M19 (2026-05-17): responsive — wrap to column
+              on very narrow screens (<360px). Was flex-row-only causing
+              the 96px minutes-input + flex-1 description to clip. */}
+          <div className="flex flex-col gap-2 sm:flex-row">
             <input
               type="number"
               min={1}
@@ -213,8 +216,9 @@ export function MandateTimeEntries({ mandateId, disabled }: Props) {
                 setMinutes(e.target.value === "" ? "" : Number(e.target.value))
               }
               placeholder="Minuten"
+              aria-label="Dauer in Minuten"
               required
-              className={`w-24 ${INPUT_CLASS}`}
+              className={`w-full sm:w-24 ${INPUT_CLASS}`}
               disabled={adding}
             />
             <input
@@ -222,6 +226,7 @@ export function MandateTimeEntries({ mandateId, disabled }: Props) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="z.B. Vertragsentwurf gegengelesen"
+              aria-label="Tätigkeitsbeschreibung"
               required
               maxLength={500}
               className={`flex-1 ${INPUT_CLASS}`}

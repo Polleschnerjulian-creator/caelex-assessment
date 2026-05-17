@@ -417,26 +417,37 @@ function CreateClauseDialog({
           </button>
         </div>
         <form onSubmit={submit} className="space-y-3">
-          <input
-            type="text"
-            placeholder="Titel — z.B. Haftungsbeschränkung 12 Mio EUR"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            maxLength={200}
-            required
-            className={INPUT_CLASS}
-            disabled={busy}
-          />
-          <textarea
-            placeholder="Wortlaut der Klausel"
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            rows={8}
-            required
-            maxLength={20_000}
-            className={INPUT_CLASS}
-            disabled={busy}
-          />
+          {/* AUDIT-FIX M18 (2026-05-17): visible labels for inputs so
+              SR users know what each field is. Placeholder alone isn't
+              a label (disappears on focus). */}
+          <label className="block">
+            <span className="sr-only">Titel der Klausel</span>
+            <input
+              type="text"
+              placeholder="Titel — z.B. Haftungsbeschränkung 12 Mio EUR"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              maxLength={200}
+              required
+              aria-label="Titel der Klausel"
+              className={INPUT_CLASS}
+              disabled={busy}
+            />
+          </label>
+          <label className="block">
+            <span className="sr-only">Wortlaut der Klausel</span>
+            <textarea
+              placeholder="Wortlaut der Klausel"
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              rows={8}
+              required
+              maxLength={20_000}
+              aria-label="Wortlaut der Klausel"
+              className={INPUT_CLASS}
+              disabled={busy}
+            />
+          </label>
           <div className="grid grid-cols-3 gap-2">
             <select
               value={category}

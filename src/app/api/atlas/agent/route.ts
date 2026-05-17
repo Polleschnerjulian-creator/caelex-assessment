@@ -1466,21 +1466,38 @@ export async function POST(req: NextRequest) {
                 /* Sprint C1 — persist conversationState on COMPLETE
                    too (not just on pause). Enables run-replay /
                    branching via /api/atlas/agent with `forkFromRunId`.
-                   Storage cost: ~50-150 KB per run; cheap on Neon.
-                   A future TTL job can clear conversationState for
-                   runs older than 30-90 days if storage grows. */
-                conversationState: {
-                  conversation,
-                  totalInputTokens,
-                  totalOutputTokens,
-                  totalCacheCreationTokens,
-                  totalCacheReadTokens,
-                  toolsUsed,
-                  textBuffer,
-                  persistedSteps,
-                  persistedReasoning,
-                  iter,
-                } as unknown as object,
+                   AUDIT-FIX M32 (2026-05-17): cap at 5 MB. Runs with
+                   thinking enabled + many tool-iterations could grow
+                   the JSON blob to several MB. Capping at persistence
+                   time prevents the row from blowing up Postgres
+                   payload limits OR ballooning the AtlasAgentRun
+                   storage footprint. When over-cap, store a sentinel
+                   so the fork-path knows to refuse with a clean error
+                   instead of crashing. */
+                conversationState: (() => {
+                  const state = {
+                    conversation,
+                    totalInputTokens,
+                    totalOutputTokens,
+                    totalCacheCreationTokens,
+                    totalCacheReadTokens,
+                    toolsUsed,
+                    textBuffer,
+                    persistedSteps,
+                    persistedReasoning,
+                    iter,
+                  };
+                  const serialized = JSON.stringify(state);
+                  if (serialized.length > 5 * 1024 * 1024) {
+                    return {
+                      truncated: true,
+                      reason: "Exceeded 5 MB cap",
+                      iter,
+                      toolsUsed,
+                    } as unknown as object;
+                  }
+                  return state as unknown as object;
+                })(),
                 inputTokens: totalInputTokens,
                 outputTokens: totalOutputTokens,
                 subAgentInputTokens,
