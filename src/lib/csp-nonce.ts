@@ -113,8 +113,11 @@ export function buildCspHeader(nonce: string, isDev = false): string {
     // (incl. Tauri's WebKit) to upgrade asset requests to HTTPS, which
     // then fail with TLS errors because there's no cert on localhost.
     ...(isDev ? [] : ["upgrade-insecure-requests"]),
-    // Block all object/embed (Flash, Java applets)
-    "object-src 'none'",
+    // Block all object/embed (Flash, Java applets) — EXCEPT blob: for
+    // client-side PDF-preview. Safari/WebKit rendert blob:application/pdf
+    // im <iframe> oft als white-screen; <object data="blob:..."> ist die
+    // robuste cross-browser fallback. Beide brauchen blob: in object-src.
+    "object-src 'self' blob:",
     // Worker scripts
     "worker-src 'self' blob:",
     // Manifest

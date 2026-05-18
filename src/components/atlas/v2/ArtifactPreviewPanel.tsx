@@ -462,15 +462,41 @@ export function ArtifactPreviewPanel({
                 </button>
               </div>
             )}
-            {/* The iframe stays mounted (no key-remount on body-change)
-                so blob-URL transitions are seamless. */}
+            {/* Sprint 8-fix² (2026-05-18) — <object> statt <iframe>:
+                Safari/WebKit hat einen langjährigen bug bei
+                blob:application/pdf in <iframe> (lädt aber rendert
+                nicht → weißer screen wie beim user gesehen). <object>
+                nutzt den nativen PDF-plugin-pfad zuverlässiger UND hat
+                native fallback-kette via children: zuerst <iframe> als
+                zweiter versuch, dann Download-Link als letzte rettung
+                wenn beide fehlschlagen. */}
             {pdf.url && (
-              <iframe
-                title={`PDF-Vorschau: ${artifact.title}`}
-                src={pdf.url}
+              <object
+                data={pdf.url}
+                type="application/pdf"
+                className="h-full w-full bg-white"
                 onLoad={() => setPdf((p) => ({ ...p, iframeLoading: false }))}
-                className="h-full w-full border-0 bg-white"
-              />
+              >
+                <iframe
+                  title={`PDF-Vorschau: ${artifact.title}`}
+                  src={pdf.url}
+                  className="h-full w-full border-0 bg-white"
+                />
+                <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+                  <FileText size={28} className="text-slate-400" />
+                  <div className="text-[13px] text-slate-700 dark:text-slate-200">
+                    Dein Browser kann PDFs nicht inline anzeigen.
+                  </div>
+                  <a
+                    href={pdf.url}
+                    download={`atlas-${artifact.kind}-vorschau.pdf`}
+                    className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500 px-3 py-1.5 text-[12px] font-medium text-white hover:bg-emerald-600"
+                  >
+                    <FileText size={12} />
+                    PDF herunterladen
+                  </a>
+                </div>
+              </object>
             )}
           </div>
         )}
