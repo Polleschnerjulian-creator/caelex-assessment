@@ -55,6 +55,13 @@ import { Subscript } from "@tiptap/extension-subscript";
 import { Footnotes, FootnoteReference, Footnote } from "tiptap-footnotes";
 import { PaginationPlus } from "tiptap-pagination-plus";
 import SearchAndReplace from "@sereneinserenade/tiptap-search-and-replace";
+/* Sprint 11 (2026-05-18) — Legal-specific custom extensions + dialogs */
+import {
+  LegalOrderedList,
+  LEGAL_LIST_TYPES,
+  type LegalListType,
+} from "@/lib/atlas/editor-extensions/LegalOrderedList";
+import { CitationDialog } from "./CitationDialog";
 import {
   X,
   Save,
@@ -160,6 +167,8 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [replaceTerm, setReplaceTerm] = useState("");
+  /* Sprint 11 — CitationDialog state */
+  const [citationOpen, setCitationOpen] = useState(false);
 
   /* TipTap editor instance — set up once on mount.
      Sprint 10: Word-feature-parity OSS-Extensions added (per research-
@@ -168,7 +177,11 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3, 4, 5, 6] },
+        /* Sprint 11 — disable StarterKit's ordered-list, use our
+           LegalOrderedList that supports listType=1/I/i/A/a. */
+        orderedList: false,
       }),
+      LegalOrderedList,
       Underline,
       LinkExt.configure({
         openOnClick: false,
@@ -558,6 +571,7 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
         setShowAi={setShowAi}
         selectionLen={selectionText.length}
         onOpenSearch={() => setSearchOpen(true)}
+        onOpenCitation={() => setCitationOpen(true)}
       />
 
       {/* Body: outline + page + ai */}
@@ -746,6 +760,16 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
           </aside>
         )}
       </div>
+
+      {/* Sprint 11 — Citation-Dialog (strukturierte jur. Zitate) */}
+      {citationOpen && editor && (
+        <CitationDialog
+          onClose={() => setCitationOpen(false)}
+          onInsert={(text) => {
+            editor.chain().focus().insertContent(text).run();
+          }}
+        />
+      )}
 
       {/* Word-page typography + Sprint-10 additions (Pagination, Search,
           Footnotes, Subscript/Superscript) */}
@@ -984,6 +1008,7 @@ function Ribbon({
   setShowAi,
   selectionLen,
   onOpenSearch,
+  onOpenCitation,
 }: {
   editor: Editor | null;
   showOutline: boolean;
@@ -992,6 +1017,7 @@ function Ribbon({
   setShowAi: (v: boolean) => void;
   selectionLen: number;
   onOpenSearch: () => void;
+  onOpenCitation: () => void;
 }) {
   const [styleOpen, setStyleOpen] = useState(false);
   const [insertOpen, setInsertOpen] = useState(false);
@@ -999,6 +1025,7 @@ function Ribbon({
   const [fontOpen, setFontOpen] = useState(false);
   const [sizeOpen, setSizeOpen] = useState(false);
   const [colorOpen, setColorOpen] = useState(false);
+  const [listTypeOpen, setListTypeOpen] = useState(false);
 
   if (!editor) {
     return (
@@ -1254,6 +1281,61 @@ function Ribbon({
         >
           <ListOrdered size={13} />
         </RibbonBtn>
+        {/* Sprint 11 — List-Type-dropdown für jur. Hierarchien (I. II. /
+            A. B. / a) b) / i) ii)). Erscheint immer aber wirkt nur wenn
+            der Cursor in einer Ordered-List ist. */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setListTypeOpen((v) => !v)}
+            title="Listen-Format (Arabisch / Römisch / Buchstaben)"
+            className="inline-flex h-7 items-center gap-0.5 rounded px-1 text-[10px] font-semibold text-slate-700 transition-colors hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-700"
+          >
+            {(editor.getAttributes("orderedList").listType as
+              | string
+              | undefined) ?? "1"}
+            <ChevronDown size={9} />
+          </button>
+          {listTypeOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setListTypeOpen(false)}
+              />
+              <ul className="absolute left-0 top-full z-20 mt-1 w-48 overflow-hidden rounded-md border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+                {LEGAL_LIST_TYPES.map((t) => (
+                  <li key={t.value}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        /* Apply listType via updateAttributes — works when
+                           cursor is inside an ordered-list; creates one
+                           first if not. */
+                        if (!editor.isActive("orderedList")) {
+                          editor.chain().focus().toggleOrderedList().run();
+                        }
+                        editor
+                          .chain()
+                          .focus()
+                          .updateAttributes("orderedList", {
+                            listType: t.value as LegalListType,
+                          })
+                          .run();
+                        setListTypeOpen(false);
+                      }}
+                      className="flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-[12px] text-slate-700 transition-colors hover:bg-emerald-50 dark:text-slate-300 dark:hover:bg-emerald-500/10"
+                    >
+                      <span>{t.label}</span>
+                      <span className="font-mono text-[10.5px] text-slate-400">
+                        {t.preview}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
         <RibbonBtn
           active={isActive("taskList")}
           onClick={() => editor.chain().focus().toggleTaskList().run()}
@@ -1415,6 +1497,10 @@ function Ribbon({
           title="Fußnote einfügen"
         >
           <Scroll size={13} />
+        </RibbonBtn>
+        {/* Sprint 11 — Strukturiertes jur. Zitat (Gesetz/Urteil/Komm./etc.) */}
+        <RibbonBtn onClick={onOpenCitation} title="Juristisches Zitat einfügen">
+          <Quote size={13} />
         </RibbonBtn>
         <div className="relative">
           <button
