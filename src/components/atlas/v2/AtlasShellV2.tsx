@@ -18,6 +18,7 @@ import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 import { AtlasSidebar } from "./AtlasSidebar";
 import { KeyboardHelpOverlay } from "./KeyboardHelpOverlay";
+import { CommandPalette } from "./CommandPalette";
 import { useAtlasKeyboardShortcuts } from "@/hooks/useAtlasKeyboardShortcuts";
 
 interface Props {
@@ -61,6 +62,8 @@ export function AtlasShellV2({ children }: Props) {
         {children}
       </main>
       <KeyboardHelpOverlay open={kbd.helpOpen} onClose={kbd.closeHelp} />
+      {/* Sprint 5b (2026-05-18) — Cmd+K Quick-Switcher (Linear-style) */}
+      <CommandPalette />
     </div>
   );
 }

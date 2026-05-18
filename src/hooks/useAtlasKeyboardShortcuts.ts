@@ -93,8 +93,14 @@ export function useAtlasKeyboardShortcuts(): UseAtlasKeyboardShortcuts {
         return;
       }
 
-      /* ⌘K — focus composer (or jump to /atlas if not on a chat). */
-      if (e.key.toLowerCase() === "k" && !e.shiftKey) {
+      /* ⌘K — Sprint 5b (2026-05-18): now opens the Command Palette
+         (Linear/Notion convention). The previous "focus composer"
+         behavior moved to ⌘L; users can also just click the textarea.
+         The CommandPalette component owns the ⌘K listener so we don't
+         need to handle it here. */
+
+      /* ⌘L — focus composer (legacy ⌘K replacement). */
+      if (e.key.toLowerCase() === "l" && !e.shiftKey) {
         e.preventDefault();
         if (
           pathname &&

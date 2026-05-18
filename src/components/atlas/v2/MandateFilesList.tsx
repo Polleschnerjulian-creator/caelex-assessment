@@ -21,6 +21,8 @@ import {
   Download,
   Trash2,
   ExternalLink,
+  CalendarPlus,
+  Check,
 } from "lucide-react";
 
 interface FileRecord {
@@ -46,6 +48,58 @@ export function MandateFilesList({ mandateId, refreshKey }: Props) {
   const [files, setFiles] = useState<FileRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState<string | null>(null);
+  /* Sprint 6b (2026-05-18) — Frist-Extraktion in-flight state.
+     Maps fileId → "loading" | "done" | { error: string }. */
+  const [extracting, setExtracting] = useState<
+    Record<string, "loading" | "done">
+  >({});
+  const [extractError, setExtractError] = useState<string | null>(null);
+
+  const handleExtractDeadlines = async (fileId: string) => {
+    setExtracting((prev) => ({ ...prev, [fileId]: "loading" }));
+    setExtractError(null);
+    try {
+      const res = await fetch(
+        `/api/atlas/mandate/${mandateId}/files/${fileId}/extract-deadlines`,
+        { method: "POST" },
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setExtractError(data?.error ?? "Extraktion fehlgeschlagen");
+        setExtracting((prev) => {
+          const { [fileId]: _, ...rest } = prev;
+          return rest;
+        });
+        return;
+      }
+      const data = (await res.json()) as {
+        created: number;
+        deadlines: { title: string; dueAt: string }[];
+      };
+      setExtracting((prev) => ({ ...prev, [fileId]: "done" }));
+      /* Notify the suggestions surface to refetch (event-bus pattern). */
+      window.dispatchEvent(
+        new CustomEvent("atlas-v2-deadline-suggestions-changed", {
+          detail: { mandateId, count: data.created },
+        }),
+      );
+      /* Reset "done" state after a few seconds so the button comes back. */
+      setTimeout(() => {
+        setExtracting((prev) => {
+          const { [fileId]: _, ...rest } = prev;
+          return rest;
+        });
+      }, 4000);
+    } catch (err) {
+      setExtractError(
+        err instanceof Error ? err.message : "Extraktion fehlgeschlagen",
+      );
+      setExtracting((prev) => {
+        const { [fileId]: _, ...rest } = prev;
+        return rest;
+      });
+    }
+  };
   const [deleting, setDeleting] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
@@ -121,86 +175,120 @@ export function MandateFilesList({ mandateId, refreshKey }: Props) {
   }
 
   return (
-    <ul className="divide-y divide-slate-200 overflow-hidden rounded-lg border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-700/60 dark:bg-slate-900/40">
-      {files.map((f) => (
-        <li
-          key={f.id}
-          className="flex items-center gap-3 px-4 py-2.5 text-[13px] hover:bg-slate-50 dark:hover:bg-slate-900"
-        >
-          <FileIcon mimeType={f.mimeType} />
-          <div className="min-w-0 flex-1">
-            <div className="line-clamp-1 text-slate-900 dark:text-slate-100">
-              {f.filename}
+    <>
+      {/* Sprint 6b — Extract error banner. */}
+      {extractError && (
+        <div className="mb-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+          {extractError}
+        </div>
+      )}
+      <ul className="divide-y divide-slate-200 overflow-hidden rounded-lg border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-700/60 dark:bg-slate-900/40">
+        {files.map((f) => (
+          <li
+            key={f.id}
+            className="flex items-center gap-3 px-4 py-2.5 text-[13px] hover:bg-slate-50 dark:hover:bg-slate-900"
+          >
+            <FileIcon mimeType={f.mimeType} />
+            <div className="min-w-0 flex-1">
+              <div className="line-clamp-1 text-slate-900 dark:text-slate-100">
+                {f.filename}
+              </div>
+              <div className="mt-0.5 flex items-center gap-2 text-[10px] text-slate-500">
+                {f.documentType && <TypeBadge t={f.documentType} />}
+                <span>{formatBytes(f.sizeBytes)}</span>
+                <span>·</span>
+                <span>{f.uploadedBy.name || f.uploadedBy.email || "—"}</span>
+                <span>·</span>
+                <span>{new Date(f.createdAt).toLocaleDateString("de-DE")}</span>
+                {f.embedStatus === "embedded" ? (
+                  <>
+                    <span>·</span>
+                    <span
+                      className="inline-flex items-center gap-1 text-[10.5px] text-emerald-600 dark:text-emerald-400"
+                      title={`Volltextsuche aktiv (${f.embedChunks ?? 0} Chunks indexiert)`}
+                    >
+                      ✓ embedded
+                    </span>
+                  </>
+                ) : f.embedStatus === "pending" ? (
+                  <>
+                    <span>·</span>
+                    <span
+                      className="inline-flex items-center gap-1 text-[10.5px] text-slate-400 dark:text-slate-500"
+                      title="Datei wird im Hintergrund indexiert — Volltextsuche bald verfügbar"
+                    >
+                      ⏳ wird indexiert…
+                    </span>
+                  </>
+                ) : null}
+              </div>
             </div>
-            <div className="mt-0.5 flex items-center gap-2 text-[10px] text-slate-500">
-              {f.documentType && <TypeBadge t={f.documentType} />}
-              <span>{formatBytes(f.sizeBytes)}</span>
-              <span>·</span>
-              <span>{f.uploadedBy.name || f.uploadedBy.email || "—"}</span>
-              <span>·</span>
-              <span>{new Date(f.createdAt).toLocaleDateString("de-DE")}</span>
-              {f.embedStatus === "embedded" ? (
-                <>
-                  <span>·</span>
-                  <span
-                    className="inline-flex items-center gap-1 text-[10.5px] text-emerald-600 dark:text-emerald-400"
-                    title={`Volltextsuche aktiv (${f.embedChunks ?? 0} Chunks indexiert)`}
-                  >
-                    ✓ embedded
-                  </span>
-                </>
-              ) : f.embedStatus === "pending" ? (
-                <>
-                  <span>·</span>
-                  <span
-                    className="inline-flex items-center gap-1 text-[10.5px] text-slate-400 dark:text-slate-500"
-                    title="Datei wird im Hintergrund indexiert — Volltextsuche bald verfügbar"
-                  >
-                    ⏳ wird indexiert…
-                  </span>
-                </>
-              ) : null}
-            </div>
-          </div>
-          {/* AUDIT-FIX H12 (2026-05-17): icon-only button → aria-label
+            {/* AUDIT-FIX H12 (2026-05-17): icon-only button → aria-label
               (title alone is not reliably exposed by screen readers). */}
-          <button
-            type="button"
-            onClick={() => handleDownload(f.id)}
-            disabled={downloading === f.id}
-            title="Herunterladen"
-            aria-label={`Datei ${f.filename} herunterladen`}
-            className="text-slate-400 hover:text-emerald-700 disabled:opacity-30 dark:text-slate-500 dark:hover:text-emerald-300"
-          >
-            {downloading === f.id ? (
-              <Loader2
-                size={12}
-                className="animate-spin motion-reduce:animate-none"
-              />
-            ) : (
-              <Download size={12} />
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleDelete(f.id, f.filename)}
-            disabled={deleting === f.id}
-            title="Löschen"
-            aria-label={`Datei ${f.filename} löschen`}
-            className="text-slate-400 hover:text-red-600 disabled:opacity-30 dark:text-slate-500 dark:hover:text-red-400"
-          >
-            {deleting === f.id ? (
-              <Loader2
-                size={12}
-                className="animate-spin motion-reduce:animate-none"
-              />
-            ) : (
-              <Trash2 size={12} />
-            )}
-          </button>
-        </li>
-      ))}
-    </ul>
+            <button
+              type="button"
+              onClick={() => handleDownload(f.id)}
+              disabled={downloading === f.id}
+              title="Herunterladen"
+              aria-label={`Datei ${f.filename} herunterladen`}
+              className="text-slate-400 hover:text-emerald-700 disabled:opacity-30 dark:text-slate-500 dark:hover:text-emerald-300"
+            >
+              {downloading === f.id ? (
+                <Loader2
+                  size={12}
+                  className="animate-spin motion-reduce:animate-none"
+                />
+              ) : (
+                <Download size={12} />
+              )}
+            </button>
+            {/* Sprint 6b (2026-05-18) — Frist-Extraktion via Claude Haiku.
+              Erkennt automatisch Fristen in der Datei (Bescheide,
+              Schriftsätze) und legt sie als pending Suggestions an. */}
+            <button
+              type="button"
+              onClick={() => handleExtractDeadlines(f.id)}
+              disabled={extracting[f.id] === "loading"}
+              title="Fristen aus Datei extrahieren (AI)"
+              aria-label={`Fristen aus Datei ${f.filename} extrahieren`}
+              className={`disabled:opacity-30 ${
+                extracting[f.id] === "done"
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-slate-400 hover:text-amber-600 dark:text-slate-500 dark:hover:text-amber-400"
+              }`}
+            >
+              {extracting[f.id] === "loading" ? (
+                <Loader2
+                  size={12}
+                  className="animate-spin motion-reduce:animate-none"
+                />
+              ) : extracting[f.id] === "done" ? (
+                <Check size={12} />
+              ) : (
+                <CalendarPlus size={12} />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDelete(f.id, f.filename)}
+              disabled={deleting === f.id}
+              title="Löschen"
+              aria-label={`Datei ${f.filename} löschen`}
+              className="text-slate-400 hover:text-red-600 disabled:opacity-30 dark:text-slate-500 dark:hover:text-red-400"
+            >
+              {deleting === f.id ? (
+                <Loader2
+                  size={12}
+                  className="animate-spin motion-reduce:animate-none"
+                />
+              ) : (
+                <Trash2 size={12} />
+              )}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 

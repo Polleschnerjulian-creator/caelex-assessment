@@ -23,6 +23,10 @@ interface BaseProps {
   active?: boolean;
   /** Optional right-side hover-only action (e.g. ⋯ menu, ×). */
   rightAction?: ReactNode;
+  /** Sprint 6a (2026-05-18) — if true, rightAction is ALWAYS visible
+   *  instead of only on hover. Used for status-dots on mandate items
+   *  where the lawyer wants to see workload state at a glance. */
+  alwaysVisibleRightAction?: boolean;
   /** Truncate the label at the available width. Default true. */
   truncate?: boolean;
 }
@@ -58,7 +62,13 @@ export function SidebarItem(props: SidebarItemProps) {
         {props.label}
       </span>
       {props.rightAction && (
-        <span className="opacity-0 transition-opacity group-hover:opacity-100">
+        <span
+          className={
+            props.alwaysVisibleRightAction
+              ? "flex shrink-0 items-center"
+              : "opacity-0 transition-opacity group-hover:opacity-100"
+          }
+        >
           {props.rightAction}
         </span>
       )}

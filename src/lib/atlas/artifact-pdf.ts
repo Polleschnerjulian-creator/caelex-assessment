@@ -800,6 +800,108 @@ function drawFooter(
   }
 }
 
+/* ── Sprint 5a (2026-05-18) — Anlage-Detection ────────────────────── */
+
+interface AnlageBlock {
+  items: { label: string; description?: string }[];
+}
+
+/** Look for "Anlagen:" / "Anlage 1: ..." patterns at the end of the body.
+ *  Returns the parsed block + the body with the Anlage-lines stripped.
+ *  Recognised forms:
+ *    Anlagen:
+ *      - Anlage 1: Bescheid vom 12.05.2026
+ *      - Anlage 2: Vollmacht
+ *  OR inline:
+ *    Anlage 1: Bescheid vom 12.05.2026
+ *    Anlage 2: Vollmacht
+ */
+function parseAnlageBlock(body: string): {
+  block: AnlageBlock | null;
+  remainingBody: string;
+} {
+  const lines = body.split("\n");
+  const items: { label: string; description?: string }[] = [];
+  const consumed = new Set<number>();
+  let foundHeader = false;
+  /* Scan from the END backward — Anlagen are always at the bottom. */
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const line = lines[i].trim();
+    if (!line) {
+      if (items.length > 0 || foundHeader) consumed.add(i);
+      continue;
+    }
+    /* Standalone "Anlagen:" header line */
+    if (/^Anlagen?:\s*$/i.test(line)) {
+      foundHeader = true;
+      consumed.add(i);
+      continue;
+    }
+    /* "Anlage 1: description" or "- Anlage 1: description" */
+    const m = line.match(/^[-*•]?\s*Anlage\s+(\d+)\s*[:\-]\s*(.+)$/i);
+    if (m) {
+      items.unshift({ label: `Anlage ${m[1]}`, description: m[2].trim() });
+      consumed.add(i);
+      continue;
+    }
+    /* "- Some attachment" right after a "Anlagen:" header */
+    if (foundHeader && /^[-*•]\s+(.+)$/.test(line)) {
+      const labelMatch = line.match(/^[-*•]\s+(.+)$/);
+      if (labelMatch) {
+        items.unshift({ label: labelMatch[1].trim() });
+        consumed.add(i);
+        continue;
+      }
+    }
+    /* Anything else — stop scanning backward (we're out of the Anlage
+       block). */
+    break;
+  }
+  if (items.length === 0) return { block: null, remainingBody: body };
+  const remainingBody = lines
+    .filter((_, i) => !consumed.has(i))
+    .join("\n")
+    .replace(/\n+$/, "");
+  return { block: { items }, remainingBody };
+}
+
+function drawAnlageBlock(
+  doc: jsPDF,
+  block: AnlageBlock,
+  y: number,
+  artifact: ArtifactInput,
+): number {
+  const blockH = 8 + block.items.length * BODY_LH + 4;
+  y = ensureRoom(doc, y, blockH, artifact);
+  y += 4;
+  /* Section header */
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(...COL.slate700);
+  doc.text("Anlagen", MARGIN_L, y);
+  /* Thin emerald underline */
+  doc.setDrawColor(...COL.emerald);
+  doc.setLineWidth(0.4);
+  doc.line(MARGIN_L, y + 1, MARGIN_L + 16, y + 1);
+  y += 5;
+  /* Items */
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(...COL.slate800);
+  for (const item of block.items) {
+    y = ensureRoom(doc, y, BODY_LH, artifact);
+    const labelW = doc.getTextWidth(`${item.label}:`);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${item.label}${item.description ? ":" : ""}`, MARGIN_L, y);
+    if (item.description) {
+      doc.setFont("helvetica", "normal");
+      doc.text(item.description, MARGIN_L + labelW + 2, y);
+    }
+    y += BODY_LH;
+  }
+  return y + 2;
+}
+
 /** Add the Kanzlei logo to the top of page 1 (above any text content).
  *  Called only on letter-style kinds where the letterhead is visually
  *  appropriate (court filings, mandate letters). */
@@ -879,6 +981,13 @@ export function buildArtifactPdf(artifact: ArtifactInput): jsPDF {
      doesn't appear twice. */
   bodyText = bodyText.replace(/^#\s+.+\n+/, "");
 
+  /* Sprint 5a — Anlage-Block separieren bevor wir den Body rendern,
+     damit die Anlagen am ENDE als eigener gestylter Block erscheinen
+     statt mitten im Body als normaler Bullet-Punkt. */
+  const { block: anlageBlock, remainingBody: bodyWithoutAnlage } =
+    parseAnlageBlock(bodyText);
+  bodyText = bodyWithoutAnlage;
+
   const segments = parseSegments(bodyText);
   for (const seg of segments) {
     if (seg.type === "text") {
@@ -886,6 +995,10 @@ export function buildArtifactPdf(artifact: ArtifactInput): jsPDF {
     } else {
       y = drawTable(doc, seg, y, effectiveArtifact);
     }
+  }
+  /* Sprint 5a — Anlage-Block am Ende rendern (nach Signatur). */
+  if (anlageBlock) {
+    y = drawAnlageBlock(doc, anlageBlock, y, effectiveArtifact);
   }
   drawFooter(doc, effectiveArtifact, letterhead);
   return doc;

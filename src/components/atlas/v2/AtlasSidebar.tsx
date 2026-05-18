@@ -339,6 +339,12 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
                     icon={<Briefcase size={13} />}
                     label={m.name}
                     active={activeMandateId === m.id}
+                    /* Sprint 6a (2026-05-18) — Status-Dot.
+                       Visual indicator: emerald = active, amber =
+                       wartend (pending action), slate = archived/closed.
+                       Helps the lawyer scan workload state at a glance. */
+                    rightAction={<MandateStatusDot status={m.status} />}
+                    alwaysVisibleRightAction
                   />
                 ))}
                 {mandates.length > MAX_MANDATES_INLINE && (
@@ -398,3 +404,30 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
     </div>
   );
 }
+
+/* Sprint 6a (2026-05-18) — Status-Dot für Mandat-Sidebar-Items.
+   active   → emerald (laufendes Mandat)
+   pending  → amber   (wartet auf Bescheid / Termin / Frist)
+   closed   → slate   (abgeschlossen — bleibt sichtbar zum Nachlesen)
+   archived → slate-300 dünner (langfristig weg)
+   Visible on hover (matches the rightAction opacity-0/100 pattern). */
+function MandateStatusDot({ status }: { status: string }) {
+  const meta = STATUS_META[status] ?? STATUS_META.active;
+  return (
+    <span
+      aria-label={`Status: ${meta.label}`}
+      title={`Status: ${meta.label}`}
+      className={`inline-block h-2 w-2 rounded-full ${meta.color}`}
+    />
+  );
+}
+
+const STATUS_META: Record<string, { label: string; color: string }> = {
+  active: { label: "Aktiv", color: "bg-emerald-500" },
+  pending: { label: "Wartend", color: "bg-amber-500" },
+  closed: { label: "Abgeschlossen", color: "bg-slate-400" },
+  archived: {
+    label: "Archiviert",
+    color: "bg-slate-300 dark:bg-slate-600",
+  },
+};

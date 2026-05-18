@@ -76,6 +76,24 @@ export function MandateDeadlineSuggestions({
     void load();
   }, [load]);
 
+  /* Sprint 6b (2026-05-18) — listen for new suggestions persisted via
+     /files/[fileId]/extract-deadlines so the lawyer sees them appear
+     without a page reload. */
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<{ mandateId: string; count: number }>;
+      if (ce.detail?.mandateId === mandateId && (ce.detail.count ?? 0) > 0) {
+        void load();
+      }
+    };
+    window.addEventListener("atlas-v2-deadline-suggestions-changed", handler);
+    return () =>
+      window.removeEventListener(
+        "atlas-v2-deadline-suggestions-changed",
+        handler,
+      );
+  }, [load, mandateId]);
+
   const handleResolve = async (
     suggestionId: string,
     action: "accept" | "dismiss",
