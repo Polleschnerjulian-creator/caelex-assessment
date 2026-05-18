@@ -47,8 +47,39 @@ type CacheState =
   | { state: "error"; message: string };
 
 /* Module-level cache shared across all CitationHoverPreview instances —
-   the same sourceId can appear many times in a chat. */
+   the same sourceId can appear many times in a chat.
+   ────────────────────────────────────────────────────────────────────
+   AUDIT-FIX 2026-05-18 (Memory-Leak): JS-Map ist Insertion-Order, das
+   nutzen wir als günstigen LRU. Bei jedem Get: re-insert (move-to-end).
+   Bei Set: wenn > MAX_ENTRIES, evict den ältesten (first key). Cap auf
+   200 Einträge → bei typischen 100-200 Citations pro Long-Session
+   bleibt RAM bounded statt unbegrenzt zu wachsen. */
+const MAX_CACHE_ENTRIES = 200;
 const cache = new Map<string, CacheState>();
+
+function cacheGet(sourceId: string): CacheState | undefined {
+  const entry = cache.get(sourceId);
+  if (entry === undefined) return undefined;
+  /* Move-to-end (LRU touch) — only for ready/error so loading-state
+     doesn't get accidentally promoted (it'll be replaced soon anyway). */
+  if (entry.state === "ready" || entry.state === "error") {
+    cache.delete(sourceId);
+    cache.set(sourceId, entry);
+  }
+  return entry;
+}
+
+function cacheSet(sourceId: string, value: CacheState): void {
+  cache.delete(sourceId);
+  cache.set(sourceId, value);
+  /* Evict oldest entries beyond cap. JS-Map iteration is insertion-
+     order so the first key is the LRU. */
+  while (cache.size > MAX_CACHE_ENTRIES) {
+    const oldest = cache.keys().next().value;
+    if (oldest === undefined) break;
+    cache.delete(oldest);
+  }
+}
 
 const OPEN_DELAY_MS = 50;
 const CLOSE_DELAY_MS = 100;
@@ -72,11 +103,11 @@ export function CitationHoverPreview({
     placement: "above" | "below";
   } | null>(null);
   const [snapshot, setSnapshot] = useState<CacheState>(
-    () => cache.get(sourceId) ?? { state: "idle" },
+    () => cacheGet(sourceId) ?? { state: "idle" },
   );
 
   const fetchSnippet = useCallback(async () => {
-    const cached = cache.get(sourceId);
+    const cached = cacheGet(sourceId);
     /* AUDIT-FIX H01/M02 (2026-05-17): when another instance already
        fetched, sync local state to the cached ready/error result so
        this instance doesn't show stale "Lädt…". */
@@ -85,7 +116,7 @@ export function CitationHoverPreview({
       return;
     }
     if (cached?.state === "loading") return;
-    cache.set(sourceId, { state: "loading" });
+    cacheSet(sourceId, { state: "loading" });
     setSnapshot({ state: "loading" });
     try {
       const res = await fetch(
@@ -95,12 +126,12 @@ export function CitationHoverPreview({
       if (!res.ok) {
         const msg =
           res.status === 404 ? "Quelle nicht gefunden" : `Fehler ${res.status}`;
-        cache.set(sourceId, { state: "error", message: msg });
+        cacheSet(sourceId, { state: "error", message: msg });
         setSnapshot({ state: "error", message: msg });
         return;
       }
       const data = (await res.json()) as SnippetData;
-      cache.set(sourceId, { state: "ready", data });
+      cacheSet(sourceId, { state: "ready", data });
       setSnapshot({ state: "ready", data });
     } catch (e) {
       /* AUDIT-FIX H01 (2026-05-17): error-path writes "error" state to
@@ -110,7 +141,7 @@ export function CitationHoverPreview({
          permanently "loading" — every later hover for the same sourceId
          saw ewiges "Lädt…". */
       const msg = e instanceof Error ? e.message : String(e);
-      cache.set(sourceId, { state: "error", message: msg });
+      cacheSet(sourceId, { state: "error", message: msg });
       setSnapshot({ state: "error", message: msg });
     }
   }, [sourceId]);
