@@ -122,6 +122,23 @@ export async function downloadChatAsPdf(chat: ChatRecord): Promise<string> {
 
 /* AUDIT-FIX Q04 (2026-05-17): use shared slugifyFilename. */
 import { slugifyFilename } from "./filename-slug";
+
+/* Sprint 7b (2026-05-18) — Letterhead-Integration für Conversation-Export.
+   Defensive wrapper: SSR-Build kann readLetterhead nicht aufrufen ohne
+   window. Returns sane defaults. */
+function readLetterheadSafe(): { kanzleiName: string; footerLine: string } {
+  if (typeof window === "undefined") return { kanzleiName: "", footerLine: "" };
+  try {
+    /* eslint-disable-next-line @typescript-eslint/no-require-imports */
+    const { readLetterhead } = require("./letterhead") as {
+      readLetterhead: () => { kanzleiName: string; footerLine: string };
+    };
+    return readLetterhead();
+  } catch {
+    return { kanzleiName: "", footerLine: "" };
+  }
+}
+
 function chatPdfFilename(chat: ChatRecord): string {
   const slug = slugifyFilename(chat.title, "chat");
   const date = new Date(chat.updatedAt).toISOString().slice(0, 10);
@@ -337,14 +354,33 @@ async function buildChatPdf(chat: ChatRecord): Promise<jsPDF> {
     y += 3.5;
   }
 
-  /* ── Page numbers (footer, all pages) ───────────────────────────── */
+  /* ── Page numbers + Letterhead-Footer (Sprint 7b, 2026-05-18) ───── */
+  const lh = readLetterheadSafe();
+  const footerLines = (lh.footerLine ?? "")
+    .split("\n")
+    .map((l: string) => l.trim())
+    .filter(Boolean);
   const total = doc.getNumberOfPages();
   for (let i = 1; i <= total; i++) {
     doc.setPage(i);
+    /* Kanzlei-Footer-Block über der Atlas-Attribution. */
+    if (footerLines.length > 0) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(...COL.slate500);
+      let footerY = PAGE_H - 10 - footerLines.length * 3.2 - 2;
+      for (const line of footerLines) {
+        doc.text(line, PAGE_W / 2, footerY, { align: "center" });
+        footerY += 3.2;
+      }
+    }
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(...COL.slate400);
-    doc.text("Caelex · Atlas", MARGIN_L, PAGE_H - 10);
+    const attribution = lh.kanzleiName
+      ? `${lh.kanzleiName} · Atlas (Caelex)`
+      : "Caelex · Atlas";
+    doc.text(attribution, MARGIN_L, PAGE_H - 10);
     doc.text(`Seite ${i} von ${total}`, PAGE_W - MARGIN_R, PAGE_H - 10, {
       align: "right",
     });

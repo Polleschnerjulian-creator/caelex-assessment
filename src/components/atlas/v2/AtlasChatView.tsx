@@ -29,6 +29,7 @@ import {
   Bookmark,
   ArrowDown,
   RefreshCw,
+  Quote,
 } from "lucide-react";
 import { ChatInput } from "./ChatInput";
 import { CitationsPanel, type CitationRecord } from "./CitationsPanel";
@@ -95,6 +96,25 @@ export function AtlasChatView({ chatId }: Props) {
   /* Seed value for the composer textarea — used when a programmatic
      event (e.g. quickstart link) wants to pre-fill the input. */
   const [composerSeed, setComposerSeed] = useState<string | undefined>();
+
+  /* Sprint 7a (2026-05-18) — Listen for quote-events from AssistantActions.
+     The quote-button dispatches "atlas-v2-composer-seed" with the
+     quoted-text payload; we prefill the composer and focus it. */
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<{ text: string }>;
+      if (typeof ce.detail?.text === "string") {
+        setComposerSeed(ce.detail.text);
+        /* Focus the composer right after the seed lands so the lawyer
+           can immediately add their question below the quote. */
+        setTimeout(() => {
+          window.dispatchEvent(new Event("atlas-v2-focus-composer"));
+        }, 50);
+      }
+    };
+    window.addEventListener("atlas-v2-composer-seed", handler);
+    return () => window.removeEventListener("atlas-v2-composer-seed", handler);
+  }, []);
   /* Mandate-attach state — synchronisiert mit chat.mandateId aus DB.
      Beim Mount initialisiert aus dem geladenen Chat; Updates schreiben
      sofort via API. */
@@ -1571,6 +1591,27 @@ function AssistantActions({
     }
   };
 
+  /* Sprint 7a (2026-05-18) — Quote-Reply: zitiert (1) die aktuelle
+     window-selection wenn vorhanden, sonst (2) den ganzen text.
+     Prefilled prompt landet via composer-seed event im ChatInput.
+     Selection wird zu "> "-prefixed lines, dann newline + cursor. */
+  const handleQuote = () => {
+    const selection =
+      typeof window !== "undefined" ? window.getSelection() : null;
+    const selected = selection?.toString().trim();
+    const quoteText = selected && selected.length > 0 ? selected : text;
+    const quoted = quoteText
+      .split("\n")
+      .map((line) => `> ${line}`)
+      .join("\n");
+    const composerSeed = `${quoted}\n\n`;
+    window.dispatchEvent(
+      new CustomEvent("atlas-v2-composer-seed", {
+        detail: { text: composerSeed },
+      }),
+    );
+  };
+
   return (
     <div className="mt-1 flex items-center gap-1 opacity-50 transition-opacity hover:opacity-100 focus-within:opacity-100">
       <button
@@ -1589,6 +1630,16 @@ function AssistantActions({
           <Copy size={11} />
         )}
         <span>{copied ? "Kopiert" : "Kopieren"}</span>
+      </button>
+      <button
+        type="button"
+        onClick={handleQuote}
+        title="Zitieren (Selection oder ganze Antwort) — landet in Chat-Input"
+        aria-label="Antwort zitieren"
+        className="inline-flex h-6 items-center gap-1 rounded px-1.5 text-[11px] text-slate-500 transition-colors hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-200"
+      >
+        <Quote size={11} />
+        <span>Zitieren</span>
       </button>
       <button
         type="button"
