@@ -770,13 +770,10 @@ function MessageRow({
         chatId={chatId}
         mandateId={mandateId ?? null}
       />
-      {message.costUsd != null && (
-        <div className="text-[10px] text-slate-400 dark:text-slate-600">
-          {formatTokens(message.inputTokens ?? 0)}↑ ·{" "}
-          {formatTokens(message.outputTokens ?? 0)}↓ tokens ·{" "}
-          {formatCost(message.costUsd)}
-        </div>
-      )}
+      {/* UI 2026-05-18: Kosten/Token-Anzeige pro Nachricht entfernt
+          (User-Request). Bleibt in totalCostUsd / Header-Indicator
+          aggregiert — Anwalt soll sich auf Inhalt fokussieren, nicht
+          auf $-Zahlen unter jeder Antwort. */}
     </div>
   );
 }

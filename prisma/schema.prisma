@@ -33,7 +33,10 @@ model User {
   isThirdCountry       Boolean   @default(false)
   role                 String    @default("user") // user, admin, auditor
   isActive             Boolean   @default(true)
-  theme                String    @default("system") // "light" | "dark" | "system"
+  /// UI 2026-05-18: Default geändert von "system" auf "light".
+  /// "system" picked dark wenn OS-dark — User wollte unconditional
+  /// light bis explizit umgeschaltet.
+  theme                String    @default("light") // "light" | "dark" | "system"
   language             String    @default("en") // en, de, fr, es
 
   // Comply v2 redesign — per-user override for org-level complyUiVersion.

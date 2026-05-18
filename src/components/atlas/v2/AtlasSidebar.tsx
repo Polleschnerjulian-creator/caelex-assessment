@@ -34,7 +34,7 @@ import {
   Folder as FolderIcon,
   StickyNote,
   Brain,
-  Cpu,
+  Database,
   MessageSquare,
   Library,
   ArrowLeftRight,
@@ -263,11 +263,19 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
             label="Wissensbasis"
             active={pathname?.startsWith("/atlas/knowledge") ?? false}
           />
+          {/* UI 2026-05-18: Agent-Mode entfernt — Standard-Chat ist
+              bereits agent-class autonom (siehe system-prompt "Powerhouse
+              mode"). Kein eigener Menüpunkt nötig. /atlas/agent Route
+              bleibt erreichbar via direct-URL falls Power-User. */}
+          {/* UI 2026-05-18: Datenbank → V1-Legal-Source-Suche, der
+              durchsuchbare Korpus (UN-Treaties, EU-Instrumente, nationale
+              Space-Gesetzgebung). User wollte explizit nur die Suche, nicht
+              ganz V1. */}
           <SidebarItem
-            href="/atlas/agent"
-            icon={<Cpu size={14} />}
-            label="Agent-Mode"
-            active={pathname?.startsWith("/atlas/agent") ?? false}
+            href="/atlas/sources"
+            icon={<Database size={14} />}
+            label="Datenbank"
+            active={pathname?.startsWith("/atlas/sources") ?? false}
           />
         </SidebarSection>
 

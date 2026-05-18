@@ -34,10 +34,11 @@ function readStoredTheme(): "light" | "dark" {
   if (typeof window === "undefined") return "light";
   const stored = window.localStorage.getItem("atlas.theme");
   if (stored === "dark" || stored === "light") return stored;
-  // Fallback to system preference
-  return window.matchMedia?.("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+  /* UI 2026-05-18: light ist unbedingter Default, auch wenn OS dark
+     ist. User-Request: "whitemode ist standart nicht darmode. soll
+     aber natürlich einstellbar sein". Dark wird nur aktiv wenn User
+     den Toggle expliziert auf "dark" stellt. */
+  return "light";
 }
 
 export function SidebarUserPill({

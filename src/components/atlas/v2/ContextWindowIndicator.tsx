@@ -205,8 +205,12 @@ export function ContextWindowIndicator({
           <Row label="Input (kum.)" value={formatTokens(totalInputTokens)} />
           <Row label="Output (kum.)" value={formatTokens(totalOutputTokens)} />
           <Row label="Kosten (kum.)" value={`$${totalCostUsd.toFixed(4)}`} />
+          {/* UI 2026-05-18: Modell-Name entfernt (User-Request).
+              Atlas-Brand bleibt agnostisch — User soll nicht denken
+              müssen "ist Claude besser/schlechter als X". Budget +
+              Warn-Hinweis bleiben. */}
           <div className="mt-2 border-t border-slate-100 pt-2 text-[10.5px] leading-snug text-slate-500 dark:border-white/[0.05]">
-            Modell: Claude Sonnet 4.5 · Budget 200k Tokens.
+            Budget 200k Tokens.
             {pct >= 0.75 &&
               " Erwäge einen neuen Chat — bei > 75 % wird's spürbar teurer."}
           </div>

@@ -35,7 +35,11 @@ import { AtlasThemeProvider } from "./_components/AtlasThemeProvider";
  *   a `data-*` attribute on <html> server-side and have the script read
  *   from there — never via string concat.
  */
-const flashGuardScript = `(function(){try{var t=localStorage.getItem('atlas-theme');var s=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;var r=t==='dark'?'dark':(t==='system'&&s)?'dark':'light';var h=document.documentElement;if(r==='dark'){h.classList.add('dark');}else{h.classList.remove('dark');}h.setAttribute('data-atlas-preload',r);}catch(e){}})();`;
+/* UI 2026-05-18: light unconditional default. Vorher: t==='system' &&
+   OS-dark → dark gerendert. Jetzt: nur t==='dark' triggert dark; alles
+   andere (null/system/light) bleibt light. User-Request "whitemode ist
+   standart". */
+const flashGuardScript = `(function(){try{var t=localStorage.getItem('atlas-theme')||localStorage.getItem('atlas.theme');var r=t==='dark'?'dark':'light';var h=document.documentElement;if(r==='dark'){h.classList.add('dark');}else{h.classList.remove('dark');}h.setAttribute('data-atlas-preload',r);}catch(e){}})();`;
 
 export const metadata = {
   title: "ATLAS — Space Law Database",
