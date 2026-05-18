@@ -29,7 +29,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   X,
   Save,
@@ -42,9 +42,24 @@ import {
   Eye,
   Code2,
   AlertCircle,
+  Bold,
+  Italic,
+  Heading1,
+  Heading2,
+  Heading3,
+  List,
+  ListOrdered,
+  Quote,
+  Columns,
+  Link as LinkIcon,
+  Highlighter,
 } from "lucide-react";
 import { MarkdownContent } from "./MarkdownContent";
 import type { ArtifactInfo } from "./ArtifactPreviewPanel";
+
+const AUTOSAVE_PREFIX = "atlas-editor-draft-v1:";
+const AUTOSAVE_DEBOUNCE_MS = 1500;
+const AUTOSAVE_TTL_MS = 24 * 60 * 60 * 1000; /* 24h */
 
 interface Props {
   artifact: ArtifactInfo;
@@ -67,6 +82,10 @@ interface AiMessage {
    *  apply with one click. */
   suggestion?: string | null;
   applied?: boolean;
+  /** Sprint 9b — preview-snippet (≤80 chars) of the text the user had
+   *  selected when sending this message. Rendered as a quote-badge
+   *  above the user-bubble. */
+  selectionPreview?: string;
 }
 
 function parseOutline(body: string): OutlineEntry[] {
@@ -103,14 +122,26 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
   const [title, setTitle] = useState(artifact.title);
   const [body, setBody] = useState(artifact.body);
   const [dirty, setDirty] = useState(false);
-  const [view, setView] = useState<"edit" | "preview">("edit");
+  /* Sprint 9b (2026-05-18) — Split-view als dritter view-modus.
+     edit-only, preview-only, oder side-by-side. */
+  const [view, setView] = useState<"edit" | "preview" | "split">("edit");
+  /* Sprint 9b — current textarea selection für AI-Selection-Aware-Mode.
+     Wird bei jedem onSelect-Event aktualisiert. Null wenn keine
+     selection (caret-only). */
+  const [selection, setSelection] = useState<{
+    start: number;
+    end: number;
+    text: string;
+  } | null>(null);
+  /* Sprint 9b — autosave-status für status-bar feedback. */
+  const [autosavedAt, setAutosavedAt] = useState<number | null>(null);
 
   const [aiInput, setAiInput] = useState("");
   const [aiMessages, setAiMessages] = useState<AiMessage[]>([
     {
       id: "welcome",
       role: "system",
-      text: "Hallo. Frag mich was zum Dokument oder gib mir eine Bearbeitungs-Anweisung. Beispiele:\n• Schreib Abschnitt II härter\n• Was bedeutet § 2 WeltrG?\n• Füge eine Anlage 3 hinzu\n• Schreib das in der Sie-Form",
+      text: "Hallo. Frag mich was zum Dokument oder gib mir eine Bearbeitungs-Anweisung. Beispiele:\n• Schreib Abschnitt II härter\n• Was bedeutet § 2 WeltrG?\n• Füge eine Anlage 3 hinzu\n• Schreib das in der Sie-Form\n\nTipp: Markier Text im Editor und ich fokussier auf den Ausschnitt.",
     },
   ]);
   const [aiBusy, setAiBusy] = useState(false);
@@ -122,10 +153,152 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
 
   const outline = useMemo(() => parseOutline(body), [body]);
 
+  /* ── Sprint 9b — Markdown-Toolbar Helpers ──────────────────────── */
+
+  /** Wrap selected text in `before…after` markers. If no selection,
+   *  inserts placeholders + selects them so user can type to replace. */
+  const wrapSelection = useCallback(
+    (before: string, after: string = before, placeholder = "text") => {
+      const ta = textareaRef.current;
+      if (!ta) return;
+      const start = ta.selectionStart;
+      const end = ta.selectionEnd;
+      const sel = body.slice(start, end);
+      const middle = sel || placeholder;
+      const newBody =
+        body.slice(0, start) + before + middle + after + body.slice(end);
+      setBody(newBody);
+      requestAnimationFrame(() => {
+        ta.focus();
+        if (sel) {
+          /* Restore selection over the wrapped text */
+          ta.setSelectionRange(start + before.length, end + before.length);
+        } else {
+          /* Select the placeholder so user can type to replace */
+          ta.setSelectionRange(
+            start + before.length,
+            start + before.length + middle.length,
+          );
+        }
+      });
+    },
+    [body],
+  );
+
+  /** Toggle a line-prefix on the current line (H1/H2/H3/Bullet/Numbered/Quote).
+   *  If line already has SAME prefix → strip it. If different prefix → swap. */
+  const toggleLinePrefix = useCallback(
+    (prefix: string) => {
+      const ta = textareaRef.current;
+      if (!ta) return;
+      const caret = ta.selectionStart;
+      const lineStart = body.lastIndexOf("\n", caret - 1) + 1;
+      const lineEndRaw = body.indexOf("\n", caret);
+      const lineEnd = lineEndRaw === -1 ? body.length : lineEndRaw;
+      const lineText = body.slice(lineStart, lineEnd);
+      /* Strip any existing block-prefix first. */
+      const stripped = lineText.replace(/^(#{1,6}\s|[-*+]\s|\d+\.\s|>\s)/, "");
+      const newLine =
+        lineText.startsWith(prefix) && lineText !== stripped
+          ? stripped
+          : prefix + stripped;
+      const newBody = body.slice(0, lineStart) + newLine + body.slice(lineEnd);
+      setBody(newBody);
+      requestAnimationFrame(() => {
+        ta.focus();
+        const newCaret =
+          lineStart + newLine.length - (lineText.length - (caret - lineStart));
+        ta.setSelectionRange(newCaret, newCaret);
+      });
+    },
+    [body],
+  );
+
+  /** Insert a snippet at caret (replaces selection if any). */
+  const insertAtCaret = useCallback(
+    (snippet: string) => {
+      const ta = textareaRef.current;
+      if (!ta) return;
+      const start = ta.selectionStart;
+      const end = ta.selectionEnd;
+      const newBody = body.slice(0, start) + snippet + body.slice(end);
+      setBody(newBody);
+      requestAnimationFrame(() => {
+        ta.focus();
+        ta.setSelectionRange(start + snippet.length, start + snippet.length);
+      });
+    },
+    [body],
+  );
+
   /* Track dirty-state without re-firing on every keystroke. */
   useEffect(() => {
     setDirty(body !== artifact.body || title !== artifact.title);
   }, [body, title, artifact.body, artifact.title]);
+
+  /* Sprint 9b — Auto-save to localStorage (debounced 1.5s). Schützt vor
+     accidental tab-close / browser-crash / mac-sleep während großer
+     edits. Key ist title-basiert weil wir keine stabile artifact-id
+     haben (artifact wird beim refine recreated). */
+  useEffect(() => {
+    if (!dirty || typeof window === "undefined") return;
+    const key = AUTOSAVE_PREFIX + artifact.title;
+    const timer = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(
+          key,
+          JSON.stringify({ body, title, savedAt: Date.now() }),
+        );
+        setAutosavedAt(Date.now());
+      } catch {
+        /* localStorage full / blocked — silent */
+      }
+    }, AUTOSAVE_DEBOUNCE_MS);
+    return () => window.clearTimeout(timer);
+  }, [body, title, dirty, artifact.title]);
+
+  /* Sprint 9b — Restore-on-mount. Wenn der user den editor schließt
+     ohne save (crash, accidental close), bieten wir bei reopen die
+     letzte unsaved version an. */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const key = AUTOSAVE_PREFIX + artifact.title;
+    const cached = window.localStorage.getItem(key);
+    if (!cached) return;
+    try {
+      const data = JSON.parse(cached) as {
+        body: string;
+        title: string;
+        savedAt: number;
+      };
+      const isFresh = Date.now() - data.savedAt < AUTOSAVE_TTL_MS;
+      const isDifferent =
+        data.body !== artifact.body || data.title !== artifact.title;
+      if (isFresh && isDifferent) {
+        const ageMin = Math.round((Date.now() - data.savedAt) / 60_000);
+        const when =
+          ageMin < 1
+            ? "gerade eben"
+            : ageMin < 60
+              ? `vor ${ageMin} Min`
+              : new Date(data.savedAt).toLocaleString("de-DE");
+        const ok = window.confirm(
+          `Du hattest eine ungespeicherte Bearbeitung (${when}). Wiederherstellen?\n\nOK = wiederherstellen, Abbrechen = mit Original starten`,
+        );
+        if (ok) {
+          setBody(data.body);
+          setTitle(data.title);
+        } else {
+          window.localStorage.removeItem(key);
+        }
+      } else if (!isFresh) {
+        window.localStorage.removeItem(key);
+      }
+    } catch {
+      /* corrupted entry — ignore */
+    }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps -- only on mount */
+  }, []);
 
   /* Esc closes — but warn on unsaved. */
   useEffect(() => {
@@ -157,6 +330,10 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
   }, [aiMessages.length, aiBusy]);
 
   const handleSave = () => {
+    /* Sprint 9b — Auto-save cache löschen wenn user explizit speichert. */
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(AUTOSAVE_PREFIX + artifact.title);
+    }
     onSave({ title, body });
     onClose();
   };
@@ -186,10 +363,27 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
     if (!instruction || aiBusy) return;
     setAiInput("");
     setAiError(null);
+    /* Sprint 9b — Selection-aware: if the user has text selected in the
+       editor, include it as focus-context in the API call AND show a
+       badge in the user-bubble so the user knows AI saw the selection. */
+    const hasSelection = selection !== null && selection.text.trim().length > 0;
+    const selectionPreview = hasSelection
+      ? selection!.text.length > 80
+        ? `${selection!.text.slice(0, 77).trim()}…`
+        : selection!.text.trim()
+      : null;
+    const apiInstruction = hasSelection
+      ? `Der Anwalt hat folgenden Text-Ausschnitt markiert:\n\n"""${selection!.text}"""\n\nAnweisung dazu: ${instruction}`
+      : instruction;
     const userMsgId = `u-${Date.now()}`;
     setAiMessages((prev) => [
       ...prev,
-      { id: userMsgId, role: "user", text: instruction },
+      {
+        id: userMsgId,
+        role: "user",
+        text: instruction,
+        selectionPreview: selectionPreview ?? undefined,
+      },
     ]);
     setAiBusy(true);
     try {
@@ -200,7 +394,7 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
           kind: artifact.kind,
           title,
           body,
-          instruction,
+          instruction: apiInstruction,
         }),
       });
       if (!res.ok) {
@@ -263,11 +457,12 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
             </span>
           )}
         </div>
-        {/* View toggle */}
+        {/* View toggle — Sprint 9b: jetzt 3 Modi (edit / preview / split) */}
         <div className="flex shrink-0 items-center gap-0.5 rounded-md border border-slate-200 p-0.5 dark:border-slate-700">
           <button
             type="button"
             onClick={() => setView("edit")}
+            title="Nur Editor"
             className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-medium transition-colors ${
               view === "edit"
                 ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
@@ -275,11 +470,25 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
             }`}
           >
             <Code2 size={10} />
-            Bearbeiten
+            Editor
+          </button>
+          <button
+            type="button"
+            onClick={() => setView("split")}
+            title="Editor + Vorschau side-by-side"
+            className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-medium transition-colors ${
+              view === "split"
+                ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
+                : "text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50"
+            }`}
+          >
+            <Columns size={10} />
+            Split
           </button>
           <button
             type="button"
             onClick={() => setView("preview")}
+            title="Nur Vorschau"
             className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-medium transition-colors ${
               view === "preview"
                 ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
@@ -364,25 +573,136 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
           </div>
         </aside>
 
-        {/* Center: Editor or Preview */}
+        {/* Center: Editor / Preview / Split (Sprint 9b) */}
         <main className="flex flex-1 flex-col overflow-hidden bg-slate-100 dark:bg-slate-900">
-          <div className="flex-1 overflow-y-auto py-8">
-            <div className="mx-auto max-w-3xl px-12">
-              {view === "edit" ? (
+          {/* Sprint 9b — Markdown-Toolbar (only shown in edit/split, not pure preview) */}
+          {view !== "preview" && (
+            <EditorToolbar
+              wrap={wrapSelection}
+              toggleLine={toggleLinePrefix}
+              insert={insertAtCaret}
+              hasSelection={selection !== null}
+              selectionLen={selection?.text.length ?? 0}
+            />
+          )}
+
+          <div className="flex-1 overflow-y-auto py-6">
+            <div
+              className={`mx-auto ${view === "split" ? "max-w-6xl px-6" : "max-w-3xl px-12"}`}
+            >
+              {view === "edit" && (
                 <textarea
                   ref={textareaRef}
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
+                  onSelect={(e) => {
+                    const ta = e.currentTarget;
+                    const s = ta.selectionStart;
+                    const en = ta.selectionEnd;
+                    if (s !== en) {
+                      setSelection({
+                        start: s,
+                        end: en,
+                        text: body.slice(s, en),
+                      });
+                    } else {
+                      setSelection(null);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.metaKey || e.ctrlKey) {
+                      const k = e.key.toLowerCase();
+                      if (k === "b") {
+                        e.preventDefault();
+                        wrapSelection("**", "**", "fett");
+                      } else if (k === "i") {
+                        e.preventDefault();
+                        wrapSelection("*", "*", "kursiv");
+                      } else if (k === "1") {
+                        e.preventDefault();
+                        toggleLinePrefix("# ");
+                      } else if (k === "2") {
+                        e.preventDefault();
+                        toggleLinePrefix("## ");
+                      } else if (k === "3") {
+                        e.preventDefault();
+                        toggleLinePrefix("### ");
+                      } else if (k === "k") {
+                        e.preventDefault();
+                        wrapSelection("[", "](https://)", "Link-Text");
+                      }
+                    }
+                  }}
                   spellCheck
-                  className="block min-h-[80vh] w-full resize-none rounded-xl border border-slate-200 bg-white p-10 font-mono text-[13.5px] leading-[1.7] text-slate-900 shadow-sm focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-emerald-500/40 dark:focus:ring-emerald-500/10"
+                  className="block min-h-[78vh] w-full resize-none rounded-xl border border-slate-200 bg-white p-10 font-mono text-[13.5px] leading-[1.7] text-slate-900 shadow-sm focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-emerald-500/40 dark:focus:ring-emerald-500/10"
                 />
-              ) : (
+              )}
+              {view === "preview" && (
                 <div className="prose prose-slate max-w-none rounded-xl border border-slate-200 bg-white p-10 text-[14px] leading-relaxed shadow-sm dark:prose-invert dark:border-slate-700 dark:bg-slate-950">
                   <MarkdownContent text={body} />
                 </div>
               )}
+              {view === "split" && (
+                <div className="grid min-h-[78vh] grid-cols-2 gap-4">
+                  <textarea
+                    ref={textareaRef}
+                    value={body}
+                    onChange={(e) => setBody(e.target.value)}
+                    onSelect={(e) => {
+                      const ta = e.currentTarget;
+                      const s = ta.selectionStart;
+                      const en = ta.selectionEnd;
+                      if (s !== en) {
+                        setSelection({
+                          start: s,
+                          end: en,
+                          text: body.slice(s, en),
+                        });
+                      } else {
+                        setSelection(null);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.metaKey || e.ctrlKey) {
+                        const k = e.key.toLowerCase();
+                        if (k === "b") {
+                          e.preventDefault();
+                          wrapSelection("**", "**", "fett");
+                        } else if (k === "i") {
+                          e.preventDefault();
+                          wrapSelection("*", "*", "kursiv");
+                        } else if (k === "1") {
+                          e.preventDefault();
+                          toggleLinePrefix("# ");
+                        } else if (k === "2") {
+                          e.preventDefault();
+                          toggleLinePrefix("## ");
+                        } else if (k === "3") {
+                          e.preventDefault();
+                          toggleLinePrefix("### ");
+                        }
+                      }
+                    }}
+                    spellCheck
+                    className="block h-full w-full resize-none rounded-xl border border-slate-200 bg-white p-6 font-mono text-[13px] leading-[1.7] text-slate-900 shadow-sm focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-emerald-500/40 dark:focus:ring-emerald-500/10"
+                  />
+                  <div className="overflow-y-auto rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-950">
+                    <div className="prose prose-slate prose-sm max-w-none text-[13px] leading-relaxed dark:prose-invert">
+                      <MarkdownContent text={body} />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
+
+          {/* Sprint 9b — Status bar (line/col, words, autosave) */}
+          <EditorStatusBar
+            body={body}
+            selection={selection}
+            autosavedAt={autosavedAt}
+            dirty={dirty}
+          />
         </main>
 
         {/* Right: AI Assistant */}
@@ -507,8 +827,19 @@ function AiMessageBubble({
   }
   if (message.role === "user") {
     return (
-      <div className="ml-auto max-w-[85%] rounded-2xl bg-slate-100 px-3 py-1.5 text-[12.5px] text-slate-900 dark:bg-slate-800 dark:text-slate-100">
-        {message.text}
+      <div className="ml-auto flex max-w-[85%] flex-col items-end gap-1">
+        {/* Sprint 9b — Selection-Preview Quote-Badge wenn der User
+            mit aktiver Selektion gefragt hat. Macht klar dass die AI
+            den Ausschnitt im Fokus hatte. */}
+        {message.selectionPreview && (
+          <div className="flex items-start gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-[10.5px] italic text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+            <Highlighter size={9} className="mt-0.5 shrink-0" />
+            <span className="line-clamp-2">{message.selectionPreview}</span>
+          </div>
+        )}
+        <div className="rounded-2xl bg-slate-100 px-3 py-1.5 text-[12.5px] text-slate-900 dark:bg-slate-800 dark:text-slate-100">
+          {message.text}
+        </div>
       </div>
     );
   }
@@ -538,6 +869,225 @@ function AiMessageBubble({
           <span>Übernommen — im Editor links änderbar</span>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ── Sprint 9b — Markdown-Toolbar über dem Editor ───────────────────
+   Stellt Format-Buttons + Insert-Snippets bereit. Tooltips zeigen den
+   keyboard-shortcut wo's einen gibt. Selection-Indikator rechts zeigt
+   "Selektion aktiv → AI fokussiert darauf" wenn was markiert ist. */
+function EditorToolbar({
+  wrap,
+  toggleLine,
+  insert,
+  hasSelection,
+  selectionLen,
+}: {
+  wrap: (before: string, after?: string, placeholder?: string) => void;
+  toggleLine: (prefix: string) => void;
+  insert: (snippet: string) => void;
+  hasSelection: boolean;
+  selectionLen: number;
+}) {
+  const [insertMenuOpen, setInsertMenuOpen] = useState(false);
+  return (
+    <div className="flex flex-wrap items-center gap-0.5 border-b border-slate-200 bg-white/70 px-4 py-1.5 backdrop-blur dark:border-slate-800 dark:bg-slate-900/70">
+      <ToolbarBtn onClick={() => wrap("**", "**", "fett")} title="Fett (⌘B)">
+        <Bold size={12} />
+      </ToolbarBtn>
+      <ToolbarBtn onClick={() => wrap("*", "*", "kursiv")} title="Kursiv (⌘I)">
+        <Italic size={12} />
+      </ToolbarBtn>
+      <ToolbarBtn onClick={() => wrap("`", "`", "code")} title="Inline-Code">
+        <Code2 size={12} />
+      </ToolbarBtn>
+      <ToolbarSep />
+      <ToolbarBtn onClick={() => toggleLine("# ")} title="Überschrift 1 (⌘1)">
+        <Heading1 size={12} />
+      </ToolbarBtn>
+      <ToolbarBtn onClick={() => toggleLine("## ")} title="Überschrift 2 (⌘2)">
+        <Heading2 size={12} />
+      </ToolbarBtn>
+      <ToolbarBtn onClick={() => toggleLine("### ")} title="Überschrift 3 (⌘3)">
+        <Heading3 size={12} />
+      </ToolbarBtn>
+      <ToolbarSep />
+      <ToolbarBtn onClick={() => toggleLine("- ")} title="Bullet-Liste">
+        <List size={12} />
+      </ToolbarBtn>
+      <ToolbarBtn onClick={() => toggleLine("1. ")} title="Nummerierte Liste">
+        <ListOrdered size={12} />
+      </ToolbarBtn>
+      <ToolbarBtn onClick={() => toggleLine("> ")} title="Zitat (Blockquote)">
+        <Quote size={12} />
+      </ToolbarBtn>
+      <ToolbarSep />
+      <ToolbarBtn
+        onClick={() => wrap("[", "](https://)", "Link-Text")}
+        title="Link einfügen (⌘K)"
+      >
+        <LinkIcon size={12} />
+      </ToolbarBtn>
+      {/* Insert-Snippet Dropdown — typische deutsche legal-doc Phrasen */}
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setInsertMenuOpen((v) => !v)}
+          className="inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+        >
+          + Einfügen
+        </button>
+        {insertMenuOpen && (
+          <>
+            <div
+              className="fixed inset-0 z-10"
+              onClick={() => setInsertMenuOpen(false)}
+            />
+            <ul className="absolute left-0 top-full z-20 mt-1 w-64 overflow-hidden rounded-md border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+              {INSERT_SNIPPETS.map((s) => (
+                <li key={s.label}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      insert(s.snippet);
+                      setInsertMenuOpen(false);
+                    }}
+                    className="block w-full px-3 py-1.5 text-left text-[12px] text-slate-700 transition-colors hover:bg-emerald-50 hover:text-emerald-700 dark:text-slate-300 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300"
+                  >
+                    <div className="font-medium">{s.label}</div>
+                    <div className="line-clamp-1 text-[10.5px] text-slate-500 dark:text-slate-500">
+                      {s.preview}
+                    </div>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </div>
+
+      {/* Selection indicator — pushed right */}
+      {hasSelection && (
+        <div className="ml-auto inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[10.5px] font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+          <Highlighter size={9} />
+          {selectionLen} Zeichen markiert · Atlas fokussiert darauf
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ToolbarBtn({
+  onClick,
+  title,
+  children,
+}: {
+  onClick: () => void;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      aria-label={title}
+      className="inline-flex h-6 w-6 items-center justify-center rounded text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+    >
+      {children}
+    </button>
+  );
+}
+
+function ToolbarSep() {
+  return <div className="mx-1 h-4 w-px bg-slate-200 dark:bg-slate-700" />;
+}
+
+const INSERT_SNIPPETS = [
+  {
+    label: "Anrede (Sehr geehrte/r ...)",
+    preview: "Sehr geehrte/r [Anrede], ...",
+    snippet: "\n\nSehr geehrte/r [Anrede],\n\n",
+  },
+  {
+    label: "Schlussformel (Mit freundlichen Grüßen)",
+    preview: "Mit freundlichen Grüßen / [Name]",
+    snippet: "\n\nMit freundlichen Grüßen\n\n[Name Anwalt]\n",
+  },
+  {
+    label: "Anlagen-Block",
+    preview: "Anlagen: Anlage 1: ...",
+    snippet:
+      "\n\nAnlagen:\n- Anlage 1: [Beschreibung]\n- Anlage 2: [Beschreibung]\n",
+  },
+  {
+    label: "Roman-Section (I./II./III.)",
+    preview: "I. Sachverhalt / II. Würdigung / III. Antrag",
+    snippet:
+      "\n\nI. Sachverhalt\n\n[Sachverhalt]\n\nII. Rechtliche Würdigung\n\n[Würdigung]\n\nIII. Antrag\n\n[Antrag]\n",
+  },
+  {
+    label: "Aktenzeichen + Betreff",
+    preview: "Aktenzeichen: ... | Betreff: ...",
+    snippet: "\n\nAktenzeichen: [AZ]\nBetreff: [prägnante Betreff-Zeile]\n",
+  },
+  {
+    label: "Markdown-Tabelle (3x3)",
+    preview: "| Spalte 1 | Spalte 2 | Spalte 3 |",
+    snippet:
+      "\n\n| Spalte 1 | Spalte 2 | Spalte 3 |\n|----------|----------|----------|\n| Zelle    | Zelle    | Zelle    |\n| Zelle    | Zelle    | Zelle    |\n",
+  },
+  {
+    label: "Gesetzes-Zitat (Blockquote)",
+    preview: "> § X Abs. Y ...",
+    snippet: "\n\n> § [X] Abs. [Y] [GesetzKürzel]: [Zitat]\n",
+  },
+];
+
+/* ── Sprint 9b — Status Bar unter dem Editor ───────────────────────── */
+function EditorStatusBar({
+  body,
+  selection,
+  autosavedAt,
+  dirty,
+}: {
+  body: string;
+  selection: { start: number; end: number; text: string } | null;
+  autosavedAt: number | null;
+  dirty: boolean;
+}) {
+  const wordCount = useMemo(
+    () => body.split(/\s+/).filter(Boolean).length,
+    [body],
+  );
+  const readingMin = Math.max(1, Math.round(wordCount / 220));
+  const autosaveLabel = autosavedAt
+    ? (() => {
+        const sec = Math.round((Date.now() - autosavedAt) / 1000);
+        if (sec < 5) return "soeben auto-gespeichert";
+        if (sec < 60) return `auto-gespeichert vor ${sec}s`;
+        return `auto-gespeichert ${new Date(autosavedAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`;
+      })()
+    : dirty
+      ? "noch nicht auto-gespeichert"
+      : "—";
+  return (
+    <div className="flex items-center gap-3 border-t border-slate-200 bg-white px-4 py-1 text-[10.5px] text-slate-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
+      <span>{body.length} Zeichen</span>
+      <span>·</span>
+      <span>{wordCount} Wörter</span>
+      <span>·</span>
+      <span>~{readingMin} Min Lesezeit</span>
+      {selection && (
+        <>
+          <span>·</span>
+          <span className="text-amber-700 dark:text-amber-300">
+            Selektion: {selection.text.length} Z
+          </span>
+        </>
+      )}
+      <span className="ml-auto">{autosaveLabel}</span>
     </div>
   );
 }
