@@ -48,6 +48,14 @@ import {
 import { downloadArtifactAsPdf } from "@/lib/atlas/artifact-pdf";
 import { downloadArtifactAsDocx } from "@/lib/atlas/artifact-docx";
 import { FileText, FileType } from "lucide-react";
+/* UI 2026-05-18: Claude.ai-Style Artefakt-System — Karte unter
+   Antwort + rechtsseitiges Preview-Panel. */
+import { InlineArtifactCard } from "./InlineArtifactCard";
+import {
+  ArtifactPreviewPanel,
+  type ArtifactInfo,
+  type ArtifactKind,
+} from "./ArtifactPreviewPanel";
 import type {
   ChatImageAttachment,
   ChatMessageBlock,
@@ -78,6 +86,10 @@ export function AtlasChatView({ chatId }: Props) {
   const [streamingThinking, setStreamingThinking] = useState("");
   const [inFlightTools, setInFlightTools] = useState<InFlightToolCall[]>([]);
   const [error, setError] = useState<string | null>(null);
+  /* UI 2026-05-18: Claude.ai-Style — wenn User auf InlineArtifactCard
+     klickt wird der Artefakt hier gesetzt und das rechtsseitige
+     ArtifactPreviewPanel rendert ihn. */
+  const [openArtifact, setOpenArtifact] = useState<ArtifactInfo | null>(null);
   /* Seed value for the composer textarea — used when a programmatic
      event (e.g. quickstart link) wants to pre-fill the input. */
   const [composerSeed, setComposerSeed] = useState<string | undefined>();
@@ -555,6 +567,7 @@ export function AtlasChatView({ chatId }: Props) {
                   message={m}
                   chatId={chatId}
                   mandateId={chat.mandateId ?? null}
+                  onOpenArtifact={setOpenArtifact}
                 />
               </div>
             );
@@ -649,20 +662,106 @@ export function AtlasChatView({ chatId }: Props) {
           })()}
         </div>
       </div>
+      {/* UI 2026-05-18: Rechtsseitiges Artefakt-Preview-Panel
+          (Claude.ai-Style). Wird gerendert wenn User auf eine
+          InlineArtifactCard klickt. */}
+      {openArtifact && (
+        <ArtifactPreviewPanel
+          artifact={openArtifact}
+          onClose={() => setOpenArtifact(null)}
+        />
+      )}
     </div>
   );
+}
+
+/* UI 2026-05-18: Heuristik — erkennt AI-Antworten die als "Dokument"
+   gerendert werden sollten (Schriftsatz, Brief, Vertrag, Memo etc.).
+   Triggers: lange Antwort (≥ 800 chars) + strukturierte Markdown
+   (≥ 2 Headings ODER beginnt mit dokument-typischen Marker).
+   Returns null wenn keine Dokument-Charakteristik. */
+function detectArtifact(text: string): {
+  kind: ArtifactKind;
+  title: string;
+  preview: string;
+} | null {
+  const trimmed = text.trim();
+  if (trimmed.length < 800) return null;
+
+  /* Kind-Erkennung anhand der Schlüsselwörter im ersten Block. */
+  const head = trimmed.slice(0, 500).toLowerCase();
+  let kind: ArtifactKind = "memo";
+  if (
+    /\b(schriftsatz|antrag auf|widerspruch|beschwerde|klage|stellungnahme)\b/.test(
+      head,
+    )
+  ) {
+    kind = "schriftsatz";
+  } else if (
+    /\b(vollmacht|nda|vertrag|vereinbarung|kooperations)\b/.test(head)
+  ) {
+    kind = "vertrag";
+  } else if (
+    /\b(sehr geehrte|liebe|mandatsbestätigung|sachstandsbericht|honorarnote)\b/.test(
+      head,
+    )
+  ) {
+    kind = "brief";
+  } else if (
+    /\b(aktennotiz|telefon-vermerk|telefonvermerk|protokoll|memo)\b/.test(head)
+  ) {
+    kind = "aktennotiz";
+  } else if (/^(- \[|☐|☑|\d+\.\s)/m.test(trimmed.slice(0, 300))) {
+    kind = "checklist";
+  }
+
+  /* Title: erste H1 / H2, sonst erste Zeile (max 80 chars). */
+  const h1 = trimmed.match(/^#\s+(.+)$/m);
+  const h2 = trimmed.match(/^##\s+(.+)$/m);
+  const firstLine = trimmed
+    .split("\n")
+    .find((l) => l.trim().length > 0)
+    ?.replace(/^[#*\-_>\s]+/, "")
+    .trim();
+  const title = (h1?.[1] ?? h2?.[1] ?? firstLine ?? "Atlas-Dokument")
+    .slice(0, 80)
+    .trim();
+
+  /* Preview: nimm 2. Zeile (oder 1. wenn Title fehlt), max 120 chars. */
+  const lines = trimmed.split("\n").filter((l) => l.trim().length > 0);
+  const previewLine =
+    lines.length > 1
+      ? lines[1].replace(/^[#*\-_>\s]+/, "").trim()
+      : lines[0]?.replace(/^[#*\-_>\s]+/, "").trim();
+  const preview = (previewLine ?? "").slice(0, 120);
+
+  /* Mindest-Struktur-Check: muss mindestens 2 Headings ODER einen
+     dokument-typischen Marker haben, sonst zähl als regulärer Chat-
+     Output (auch wenn >800 chars). */
+  const headingCount = (trimmed.match(/^#{1,3}\s/gm) ?? []).length;
+  const hasDocumentMarker =
+    /\b(sehr geehrte|hiermit|antrag|aktenzeichen|bezug|anlage|gegenstand der vereinbarung)\b/i.test(
+      trimmed.slice(0, 600),
+    );
+  if (headingCount < 2 && !hasDocumentMarker) return null;
+
+  return { kind, title, preview };
 }
 
 function MessageRow({
   message,
   chatId,
   mandateId,
+  onOpenArtifact,
 }: {
   message: ChatMessageRecord;
   chatId: string;
   /* Threaded down so AssistantActions' "Save as Note" can persist
      the mandate context alongside the chat reference. */
   mandateId: string | null;
+  /* NEU 2026-05-18: callback wenn User auf InlineArtifactCard klickt
+     → AtlasChatView öffnet das rechtsseitige ArtifactPreviewPanel. */
+  onOpenArtifact: (artifact: ArtifactInfo) => void;
 }) {
   if (message.role === "user") {
     const text = extractText(message.content);
@@ -762,6 +861,30 @@ function MessageRow({
       {Array.isArray(message.citations) && message.citations.length > 0 && (
         <CitationsPanel citations={message.citations as CitationRecord[]} />
       )}
+      {/* NEU 2026-05-18: Claude.ai-Style Artefakt-Karte unter der
+          AI-Antwort wenn die Antwort als Dokument erkannt wird (lang
+          + strukturiert ODER Schriftsatz/Brief/Vertrag-Marker). Klick
+          öffnet das ArtifactPreviewPanel rechts. */}
+      {(() => {
+        const artifact = detectArtifact(text);
+        if (!artifact) return null;
+        return (
+          <InlineArtifactCard
+            kind={artifact.kind}
+            title={artifact.title}
+            preview={artifact.preview}
+            onOpen={() =>
+              onOpenArtifact({
+                kind: artifact.kind,
+                title: artifact.title,
+                body: text,
+                chatId,
+                mandateId,
+              })
+            }
+          />
+        );
+      })()}
       {/* Inline actions: copy text, save the user-question as a
           workflow. Stays out of the way (small icon row, bottom-
           right) but available for power users. */}
