@@ -156,18 +156,11 @@ export function MandateActivityFeed({ mandateId }: Props) {
     );
   }
 
-  if (error) {
-    return (
-      <section className="mb-6 rounded-xl border border-red-200 bg-red-50 p-3 dark:border-red-500/30 dark:bg-red-500/10">
-        <span className="text-[11.5px] text-red-700 dark:text-red-300">
-          Aktivität konnte nicht geladen werden: {error}
-        </span>
-      </section>
-    );
-  }
-
-  if (events.length === 0) {
-    /* New / quiet mandates: hidden entirely so the page stays clean. */
+  /* UI-FIX 2026-05-18: Activity ist non-kritisches Convenience-Feature.
+     Bei Fehler ODER leer → silently hide statt prominentem Banner. Ein
+     leeres Mandat soll nicht mit roter "konnte nicht geladen werden"-
+     Meldung empfangen werden. Errors werden serverside geloggt. */
+  if (error || events.length === 0) {
     return null;
   }
 

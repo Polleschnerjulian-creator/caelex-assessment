@@ -23,10 +23,23 @@ interface Props {
 
 export function MandateChatsList({ chats }: Props) {
   if (chats.length === 0) {
+    /* UI-FIX 2026-05-18: Empty-State mit Icon + klarem CTA-Pfeil zum
+       Composer oben. Visuelles Anker statt nur flachem Text-Kasten. */
     return (
-      <div className="rounded-md border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-xs text-slate-500 dark:border-slate-700/60 dark:bg-slate-900/30">
-        Noch keine Chats in diesem Mandat. Stelle deine erste Frage oben im
-        Composer.
+      <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center dark:border-slate-700/60 dark:bg-slate-900/30">
+        <MessageSquare
+          size={20}
+          strokeWidth={1.5}
+          className="text-slate-400 dark:text-slate-600"
+        />
+        <p className="text-[13px] font-medium text-slate-700 dark:text-slate-200">
+          Noch keine Chats in diesem Mandat
+        </p>
+        <p className="max-w-sm text-[11.5px] text-slate-500 dark:text-slate-400">
+          Stelle deine erste Frage oben im Composer ↑ — Atlas kennt dann
+          automatisch alle Custom-Instructions, Vault-Files und Parteien dieses
+          Mandats.
+        </p>
       </div>
     );
   }

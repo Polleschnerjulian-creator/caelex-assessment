@@ -325,37 +325,30 @@ export function MandateDetailView({ mandateId }: Props) {
               {error}
             </div>
           )}
-          {/* AUDIT-FIX H14 (2026-05-17): header meta-row overflowed on
-              narrow screens (<360px) — the literal `·` separators
-              prevented wrap-points. Now: separators are `aria-hidden`
-              and wrapped in a span that becomes invisible on narrow
-              widths via `hidden sm:inline`; each meta item is its own
-              flex-wrap item so they re-flow naturally on small screens. */}
-          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500">
-            <span>
-              Owner: {mandate.owner.name ?? mandate.owner.email ?? "—"}
-            </span>
-            <span className="hidden sm:inline" aria-hidden="true">
-              ·
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <Users size={10} /> {mandate._count.members} Mitglied
-              {mandate._count.members !== 1 ? "er" : ""}
-            </span>
-            <span className="hidden sm:inline" aria-hidden="true">
-              ·
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <MessageSquare size={10} /> {mandate._count.chats} Chat
-              {mandate._count.chats !== 1 ? "s" : ""}
-            </span>
-            <span className="hidden sm:inline" aria-hidden="true">
-              ·
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <FileText size={10} /> {mandate._count.files} Datei
-              {mandate._count.files !== 1 ? "en" : ""}
-            </span>
+          {/* UI-FIX 2026-05-18: stats als Icon-Chips statt dot-separated
+              Text. Mehr visuelles Gewicht + besser scannbar. Owner ist
+              jetzt eigener Chip statt prefix. */}
+          <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[11px]">
+            <StatChip
+              icon={<Briefcase size={10} />}
+              value={mandate.owner.name ?? mandate.owner.email ?? "—"}
+              label="Owner"
+            />
+            <StatChip
+              icon={<Users size={10} />}
+              value={String(mandate._count.members)}
+              label={mandate._count.members === 1 ? "Mitglied" : "Mitglieder"}
+            />
+            <StatChip
+              icon={<MessageSquare size={10} />}
+              value={String(mandate._count.chats)}
+              label={mandate._count.chats === 1 ? "Chat" : "Chats"}
+            />
+            <StatChip
+              icon={<FileText size={10} />}
+              value={String(mandate._count.files)}
+              label={mandate._count.files === 1 ? "Datei" : "Dateien"}
+            />
           </div>
         </div>
       </header>
@@ -542,6 +535,29 @@ function Pill({ label, value }: { label: string; value: string }) {
     <span className="inline-flex items-center gap-1 rounded border border-slate-200 bg-white px-1.5 py-0.5 dark:border-slate-700 dark:bg-slate-900">
       <span className="text-slate-500">{label}:</span>
       <span className="text-slate-800 dark:text-slate-200">{value}</span>
+    </span>
+  );
+}
+
+/* UI-FIX 2026-05-18: Header-Stats als Icon-Chip-Row. Mehr visuelles
+   Gewicht als die alte text-mit-dots Reihe. Owner-Wert wird truncated
+   damit lange Namen nicht den Header sprengen. */
+function StatChip({
+  icon,
+  value,
+  label,
+}: {
+  icon: React.ReactNode;
+  value: string;
+  label: string;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-1 text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+      <span className="text-slate-400 dark:text-slate-500">{icon}</span>
+      <span className="max-w-[160px] truncate font-medium text-slate-800 dark:text-slate-100">
+        {value}
+      </span>
+      <span className="text-slate-400 dark:text-slate-500">{label}</span>
     </span>
   );
 }

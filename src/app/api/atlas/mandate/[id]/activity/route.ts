@@ -121,7 +121,9 @@ export async function GET(
             id: true,
             filename: true,
             createdAt: true,
-            uploader: { select: { name: true, email: true } },
+            /* AUDIT-FIX 2026-05-18: war `uploader` (existiert nicht
+               in Schema). Echter Relation-Name ist `uploadedBy`. */
+            uploadedBy: { select: { name: true, email: true } },
           },
           orderBy: { createdAt: "desc" },
           take: PER_SOURCE_LIMIT,
@@ -179,7 +181,9 @@ export async function GET(
             goal: true,
             status: true,
             startedAt: true,
-            triggeredBy: { select: { name: true, email: true } },
+            /* AUDIT-FIX 2026-05-18: war `triggeredBy` (existiert nicht
+               in Schema). Echter Relation-Name ist `user`. */
+            user: { select: { name: true, email: true } },
           },
           orderBy: { startedAt: "desc" },
           take: PER_SOURCE_LIMIT,
@@ -202,7 +206,7 @@ export async function GET(
         kind: "file_uploaded",
         at: f.createdAt.toISOString(),
         title: f.filename,
-        actorName: f.uploader?.name ?? f.uploader?.email ?? null,
+        actorName: f.uploadedBy?.name ?? f.uploadedBy?.email ?? null,
         meta: { fileId: f.id },
       });
     }
@@ -248,7 +252,7 @@ export async function GET(
         kind: "agent_run",
         at: r.startedAt.toISOString(),
         title: r.goal?.slice(0, 80) ?? "Agent-Run",
-        actorName: r.triggeredBy?.name ?? r.triggeredBy?.email ?? null,
+        actorName: r.user?.name ?? r.user?.email ?? null,
         meta: { runId: r.id, status: r.status },
       });
     }
