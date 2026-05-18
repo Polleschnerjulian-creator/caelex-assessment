@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   X,
   Copy,
@@ -30,6 +30,12 @@ import {
   ScrollText,
   ClipboardList,
   Pencil,
+  Eye,
+  Code2,
+  ExternalLink,
+  Maximize2,
+  Minimize2,
+  AlertCircle,
 } from "lucide-react";
 import { MarkdownContent } from "./MarkdownContent";
 import {
@@ -126,6 +132,27 @@ export function ArtifactPreviewPanel({
   const [savingToVault, setSavingToVault] = useState(false);
   /* Sprint 1a (2026-05-18): PDF inline preview tab. */
   const [mode, setMode] = useState<PreviewMode>("markdown");
+  /* Sprint 8-polish (2026-05-18) — Fullscreen toggle, desktop only. */
+  const [fullscreen, setFullscreen] = useState(false);
+  /* Sprint 8-polish — Async PDF-generation state. Replaces the old
+     useMemo (sync, blocking) which made the user click "PDF" and see
+     500ms of nothing before the iframe appeared. Now: loading-spinner
+     paints immediately, jsPDF runs after a 0-ms tick. */
+  const [pdf, setPdf] = useState<{
+    url: string | null;
+    generating: boolean;
+    iframeLoading: boolean;
+    error: string | null;
+    sizeKb: number | null;
+    pageCount: number | null;
+  }>({
+    url: null,
+    generating: false,
+    iframeLoading: false,
+    error: null,
+    sizeKb: null,
+    pageCount: null,
+  });
 
   /* Escape-key + click-outside close. */
   useEffect(() => {
@@ -136,32 +163,70 @@ export function ArtifactPreviewPanel({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  /* Sprint 1a — generate PDF as a blob URL only when the PDF tab is
-     active. We re-generate on artifact-body change so iterative refines
-     re-render. The URL is revoked on cleanup so we don't leak blob-
-     memory across artifact-switches. */
-  const pdfBlobUrl = useMemo(() => {
-    if (mode !== "pdf") return null;
-    try {
-      const doc = buildArtifactPdf({
-        kind: artifact.kind,
-        title: artifact.title,
-        body: artifact.body,
-        mandateName: undefined,
-      });
-      const blob = doc.output("blob");
-      return URL.createObjectURL(blob);
-    } catch (err) {
-      console.error("PDF preview generation failed", err);
-      return null;
-    }
-  }, [mode, artifact.kind, artifact.title, artifact.body]);
-
+  /* PDF generation effect. Owns the blob-URL lifecycle: cleanup
+     revokes the URL when (a) mode switches back to markdown, (b) the
+     artifact body changes, or (c) the panel unmounts. Cancellation
+     flag protects against fast tab-flipping leaking blob-URLs. */
   useEffect(() => {
+    if (mode !== "pdf") return;
+
+    setPdf({
+      url: null,
+      generating: true,
+      iframeLoading: false,
+      error: null,
+      sizeKb: null,
+      pageCount: null,
+    });
+
+    let cancelled = false;
+    let createdUrl: string | null = null;
+
+    /* setTimeout(0) defers the jsPDF call so React can paint the
+       loading-state BEFORE the 200-800ms blocking work starts. */
+    const timer = window.setTimeout(() => {
+      if (cancelled) return;
+      try {
+        const doc = buildArtifactPdf({
+          kind: artifact.kind,
+          title: artifact.title,
+          body: artifact.body,
+          mandateName: undefined,
+        });
+        const blob = doc.output("blob");
+        if (cancelled) return;
+        createdUrl = URL.createObjectURL(blob);
+        setPdf({
+          url: createdUrl,
+          generating: false,
+          iframeLoading: true,
+          error: null,
+          sizeKb: Math.round(blob.size / 1024),
+          pageCount: doc.getNumberOfPages(),
+        });
+      } catch (err) {
+        if (cancelled) return;
+        console.error("PDF preview generation failed", err);
+        setPdf({
+          url: null,
+          generating: false,
+          iframeLoading: false,
+          error:
+            err instanceof Error
+              ? err.message
+              : "Unbekannter Fehler beim PDF-Render",
+          sizeKb: null,
+          pageCount: null,
+        });
+      }
+    }, 30);
+
     return () => {
-      if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl);
+      cancelled = true;
+      window.clearTimeout(timer);
+      if (createdUrl) URL.revokeObjectURL(createdUrl);
     };
-  }, [pdfBlobUrl]);
+  }, [mode, artifact.kind, artifact.title, artifact.body]);
 
   const meta = KIND_META[artifact.kind] ?? KIND_META.memo;
   const Icon = meta.icon;
@@ -228,12 +293,15 @@ export function ArtifactPreviewPanel({
         onClick={onClose}
         aria-hidden="true"
       />
-      {/* Side panel — desktop: 600px from right; mobile: full screen */}
+      {/* Side panel — desktop: 760px from right (or fullscreen toggle);
+          mobile: full screen with backdrop. */}
       <aside
         role="dialog"
         aria-modal="true"
         aria-labelledby="artifact-preview-title"
-        className="fixed inset-y-0 right-0 z-50 flex w-full flex-col bg-white shadow-2xl ring-1 ring-black/[0.06] dark:bg-slate-950 dark:ring-white/[0.08] lg:w-[640px] lg:border-l lg:border-slate-200 lg:dark:border-slate-800"
+        className={`fixed inset-y-0 right-0 z-50 flex flex-col bg-white shadow-2xl ring-1 ring-black/[0.06] transition-[width] duration-200 dark:bg-slate-950 dark:ring-white/[0.08] lg:border-l lg:border-slate-200 lg:dark:border-slate-800 ${
+          fullscreen ? "w-full lg:w-[calc(100vw-280px)]" : "w-full lg:w-[760px]"
+        }`}
       >
         {/* Header */}
         <header className="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4 dark:border-slate-800">
@@ -268,6 +336,16 @@ export function ArtifactPreviewPanel({
                 Anpassen
               </button>
             )}
+            {/* Sprint 8-polish — Fullscreen toggle, desktop only. */}
+            <button
+              type="button"
+              onClick={() => setFullscreen((v) => !v)}
+              aria-label={fullscreen ? "Panel verkleinern" : "Panel vergrößern"}
+              title={fullscreen ? "Verkleinern" : "Vergrößern"}
+              className="hidden rounded-md p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 lg:inline-flex"
+            >
+              {fullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+            </button>
             <button
               type="button"
               onClick={onClose}
@@ -279,35 +357,59 @@ export function ArtifactPreviewPanel({
           </div>
         </header>
 
-        {/* Sprint 1a (2026-05-18) — Tab toggle: Markdown vs PDF-preview */}
-        <div className="flex items-center gap-1 border-b border-slate-200 px-5 py-2 dark:border-slate-800">
+        {/* Sprint 1a (2026-05-18) + Sprint 8-polish — Tab toggle with
+            icons + per-tab caption (page-count / file-size). */}
+        <div className="flex items-center gap-1 border-b border-slate-200 px-4 py-2 dark:border-slate-800">
           <button
             type="button"
             onClick={() => setMode("markdown")}
-            className={`rounded-md px-2.5 py-1 text-[11.5px] font-medium transition-colors ${
+            className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[12px] font-medium transition-colors ${
               mode === "markdown"
                 ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
                 : "text-slate-500 hover:bg-slate-50 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-300"
             }`}
           >
+            <Code2 size={12} />
             Markdown
           </button>
           <button
             type="button"
             onClick={() => setMode("pdf")}
-            className={`rounded-md px-2.5 py-1 text-[11.5px] font-medium transition-colors ${
+            className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[12px] font-medium transition-colors ${
               mode === "pdf"
                 ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
                 : "text-slate-500 hover:bg-slate-50 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-300"
             }`}
           >
+            <Eye size={12} />
             PDF-Vorschau
           </button>
-          <span className="ml-auto text-[10.5px] text-slate-400">
-            {mode === "pdf"
-              ? "live-render — DIN 5008-Layout"
-              : "Quell-Markdown"}
-          </span>
+          <div className="ml-auto flex items-center gap-2 text-[10.5px] text-slate-400">
+            {mode === "pdf" && pdf.pageCount && pdf.sizeKb ? (
+              <>
+                <span>
+                  {pdf.pageCount} {pdf.pageCount === 1 ? "Seite" : "Seiten"} ·{" "}
+                  {pdf.sizeKb} KB
+                </span>
+                {pdf.url && (
+                  <a
+                    href={pdf.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="In neuem Tab öffnen"
+                    className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+                  >
+                    <ExternalLink size={10} />
+                    Neuer Tab
+                  </a>
+                )}
+              </>
+            ) : mode === "pdf" ? (
+              <span>DIN 5008-Layout · live-Render</span>
+            ) : (
+              <span>Quell-Markdown</span>
+            )}
+          </div>
         </div>
 
         {/* Body — scrollable. Markdown OR PDF iframe depending on mode. */}
@@ -318,18 +420,57 @@ export function ArtifactPreviewPanel({
             </div>
           </div>
         ) : (
-          <div className="flex-1 overflow-hidden bg-slate-100 dark:bg-slate-900">
-            {pdfBlobUrl ? (
+          <div className="relative flex-1 overflow-hidden bg-slate-200/60 dark:bg-slate-900">
+            {/* Loading state — visible while jsPDF runs (200-800ms). */}
+            {pdf.generating && (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-slate-200/60 backdrop-blur-sm dark:bg-slate-900/70">
+                <Loader2
+                  size={20}
+                  className="animate-spin text-emerald-600 motion-reduce:animate-none dark:text-emerald-400"
+                />
+                <div className="text-center">
+                  <div className="text-[13px] font-medium text-slate-700 dark:text-slate-200">
+                    PDF wird generiert …
+                  </div>
+                  <div className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+                    DIN 5008-Layout · {meta.label} · {artifact.body.length}{" "}
+                    Zeichen
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Error state — generation crashed (rare). */}
+            {pdf.error && (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 px-6 text-center">
+                <AlertCircle size={20} className="text-red-500" />
+                <div className="text-[13px] font-medium text-slate-700 dark:text-slate-200">
+                  PDF-Generierung fehlgeschlagen
+                </div>
+                <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                  {pdf.error}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    /* Force re-run by toggling mode */
+                    setMode("markdown");
+                    setTimeout(() => setMode("pdf"), 50);
+                  }}
+                  className="mt-2 rounded-md border border-slate-300 bg-white px-3 py-1 text-[11.5px] font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                >
+                  Erneut versuchen
+                </button>
+              </div>
+            )}
+            {/* The iframe stays mounted (no key-remount on body-change)
+                so blob-URL transitions are seamless. */}
+            {pdf.url && (
               <iframe
                 title={`PDF-Vorschau: ${artifact.title}`}
-                src={pdfBlobUrl}
-                className="h-full w-full border-0"
+                src={pdf.url}
+                onLoad={() => setPdf((p) => ({ ...p, iframeLoading: false }))}
+                className="h-full w-full border-0 bg-white"
               />
-            ) : (
-              <div className="flex h-full items-center justify-center text-[12px] text-slate-500">
-                <Loader2 size={14} className="mr-2 animate-spin" />
-                PDF wird generiert …
-              </div>
             )}
           </div>
         )}
