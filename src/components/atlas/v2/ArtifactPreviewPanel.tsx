@@ -133,18 +133,10 @@ export function ArtifactPreviewPanel({ artifact, onClose }: Props) {
   };
 
   const handleDownloadPdf = () => {
+    /* artifact-pdf supports all 8 ArtifactKind variants 1:1 since the
+       DIN 5008-konformen rewrite (2026-05-18). Pass kind through. */
     downloadArtifactAsPdf({
-      kind:
-        artifact.kind === "vertrag" ||
-        artifact.kind === "brief" ||
-        artifact.kind === "aktennotiz"
-          ? "memo" /* artifact-pdf kind union ist enger als unsere */
-          : (artifact.kind as
-              | "memo"
-              | "schriftsatz"
-              | "email"
-              | "checklist"
-              | "summary"),
+      kind: artifact.kind,
       title: artifact.title,
       body: artifact.body,
       mandateName: undefined,
