@@ -669,6 +669,15 @@ export function AtlasChatView({ chatId }: Props) {
         <ArtifactPreviewPanel
           artifact={openArtifact}
           onClose={() => setOpenArtifact(null)}
+          onRefineRequest={(art) => {
+            /* Sprint 2a (2026-05-18): "Anpassen" — wir prefillen die
+               Chat-Input mit einem refine-prompt + dem Artefakt-Body
+               als Context. Der Lawyer muss nur noch seinen Änderungs-
+               wunsch oben drauf tippen und schicken. */
+            const prompt = `Bitte das folgende Dokument anpassen:\n\n---\n\n${art.body}\n\n---\n\nÄnderungswunsch: `;
+            setComposerSeed(prompt);
+            setOpenArtifact(null);
+          }}
         />
       )}
     </div>

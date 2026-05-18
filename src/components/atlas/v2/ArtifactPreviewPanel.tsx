@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   X,
   Copy,
@@ -29,9 +29,13 @@ import {
   ListChecks,
   ScrollText,
   ClipboardList,
+  Pencil,
 } from "lucide-react";
 import { MarkdownContent } from "./MarkdownContent";
-import { downloadArtifactAsPdf } from "@/lib/atlas/artifact-pdf";
+import {
+  downloadArtifactAsPdf,
+  buildArtifactPdf,
+} from "@/lib/atlas/artifact-pdf";
 import { downloadArtifactAsDocx } from "@/lib/atlas/artifact-docx";
 
 export type ArtifactKind =
@@ -57,7 +61,14 @@ export interface ArtifactInfo {
 interface Props {
   artifact: ArtifactInfo;
   onClose: () => void;
+  /** Optional — Sprint 2a (2026-05-18). Triggers a chat-iteration on
+   *  this artifact: parent prefills the chat input with a refine-prompt
+   *  carrying the artifact body as context. When undefined, the
+   *  "Anpassen" button is hidden. */
+  onRefineRequest?: (artifact: ArtifactInfo) => void;
 }
+
+type PreviewMode = "markdown" | "pdf";
 
 const KIND_META: Record<
   ArtifactKind,
@@ -105,10 +116,16 @@ const KIND_META: Record<
   },
 };
 
-export function ArtifactPreviewPanel({ artifact, onClose }: Props) {
+export function ArtifactPreviewPanel({
+  artifact,
+  onClose,
+  onRefineRequest,
+}: Props) {
   const [copied, setCopied] = useState(false);
   const [savedToVault, setSavedToVault] = useState(false);
   const [savingToVault, setSavingToVault] = useState(false);
+  /* Sprint 1a (2026-05-18): PDF inline preview tab. */
+  const [mode, setMode] = useState<PreviewMode>("markdown");
 
   /* Escape-key + click-outside close. */
   useEffect(() => {
@@ -118,6 +135,33 @@ export function ArtifactPreviewPanel({ artifact, onClose }: Props) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  /* Sprint 1a — generate PDF as a blob URL only when the PDF tab is
+     active. We re-generate on artifact-body change so iterative refines
+     re-render. The URL is revoked on cleanup so we don't leak blob-
+     memory across artifact-switches. */
+  const pdfBlobUrl = useMemo(() => {
+    if (mode !== "pdf") return null;
+    try {
+      const doc = buildArtifactPdf({
+        kind: artifact.kind,
+        title: artifact.title,
+        body: artifact.body,
+        mandateName: undefined,
+      });
+      const blob = doc.output("blob");
+      return URL.createObjectURL(blob);
+    } catch (err) {
+      console.error("PDF preview generation failed", err);
+      return null;
+    }
+  }, [mode, artifact.kind, artifact.title, artifact.body]);
+
+  useEffect(() => {
+    return () => {
+      if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl);
+    };
+  }, [pdfBlobUrl]);
 
   const meta = KIND_META[artifact.kind] ?? KIND_META.memo;
   const Icon = meta.icon;
@@ -144,18 +188,10 @@ export function ArtifactPreviewPanel({ artifact, onClose }: Props) {
   };
 
   const handleDownloadDocx = () => {
+    /* Sprint 1b (2026-05-18): artifact-docx now supports all 8 kinds 1:1
+       with DIN 5008-style layouts mirroring the PDF generator. */
     void downloadArtifactAsDocx({
-      kind:
-        artifact.kind === "vertrag" ||
-        artifact.kind === "brief" ||
-        artifact.kind === "aktennotiz"
-          ? "memo"
-          : (artifact.kind as
-              | "memo"
-              | "schriftsatz"
-              | "email"
-              | "checklist"
-              | "summary"),
+      kind: artifact.kind,
       title: artifact.title,
       body: artifact.body,
       mandateName: undefined,
@@ -220,22 +256,83 @@ export function ArtifactPreviewPanel({ artifact, onClose }: Props) {
               </h2>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Vorschau schließen"
-            className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-          >
-            <X size={16} />
-          </button>
+          <div className="flex items-center gap-1">
+            {onRefineRequest && (
+              <button
+                type="button"
+                onClick={() => onRefineRequest(artifact)}
+                title="Dokument anpassen (Chat-Iteration starten)"
+                className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1 text-[11.5px] font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+              >
+                <Pencil size={11} />
+                Anpassen
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Vorschau schließen"
+              className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            >
+              <X size={16} />
+            </button>
+          </div>
         </header>
 
-        {/* Body — scrollable */}
-        <div className="flex-1 overflow-y-auto px-5 py-5">
-          <div className="prose prose-sm max-w-none text-[13.5px] leading-relaxed text-slate-800 dark:prose-invert dark:text-slate-200">
-            <MarkdownContent text={artifact.body} />
-          </div>
+        {/* Sprint 1a (2026-05-18) — Tab toggle: Markdown vs PDF-preview */}
+        <div className="flex items-center gap-1 border-b border-slate-200 px-5 py-2 dark:border-slate-800">
+          <button
+            type="button"
+            onClick={() => setMode("markdown")}
+            className={`rounded-md px-2.5 py-1 text-[11.5px] font-medium transition-colors ${
+              mode === "markdown"
+                ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
+                : "text-slate-500 hover:bg-slate-50 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-300"
+            }`}
+          >
+            Markdown
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("pdf")}
+            className={`rounded-md px-2.5 py-1 text-[11.5px] font-medium transition-colors ${
+              mode === "pdf"
+                ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
+                : "text-slate-500 hover:bg-slate-50 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-300"
+            }`}
+          >
+            PDF-Vorschau
+          </button>
+          <span className="ml-auto text-[10.5px] text-slate-400">
+            {mode === "pdf"
+              ? "live-render — DIN 5008-Layout"
+              : "Quell-Markdown"}
+          </span>
         </div>
+
+        {/* Body — scrollable. Markdown OR PDF iframe depending on mode. */}
+        {mode === "markdown" ? (
+          <div className="flex-1 overflow-y-auto px-5 py-5">
+            <div className="prose prose-sm max-w-none text-[13.5px] leading-relaxed text-slate-800 dark:prose-invert dark:text-slate-200">
+              <MarkdownContent text={artifact.body} />
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 overflow-hidden bg-slate-100 dark:bg-slate-900">
+            {pdfBlobUrl ? (
+              <iframe
+                title={`PDF-Vorschau: ${artifact.title}`}
+                src={pdfBlobUrl}
+                className="h-full w-full border-0"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center text-[12px] text-slate-500">
+                <Loader2 size={14} className="mr-2 animate-spin" />
+                PDF wird generiert …
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Action bar — sticky bottom */}
         <footer className="flex flex-wrap items-center gap-2 border-t border-slate-200 bg-slate-50 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50">

@@ -23,7 +23,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import {
   ArrowUp,
   Plus,
@@ -34,6 +34,12 @@ import {
   Paperclip,
   Briefcase,
   X,
+  ScrollText,
+  Mail,
+  FileText,
+  ClipboardList,
+  ListChecks,
+  Search,
 } from "lucide-react";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import type { ChatImageAttachment } from "./types";
@@ -85,6 +91,244 @@ const ACCEPTED_IMAGE_MIMES = new Set<ChatImageAttachment["mediaType"]>([
   "image/gif",
   "image/webp",
 ]);
+
+/* Sprint 2b (2026-05-18) — Slash-Commands.
+   Templates die das DIN-5008-Layout im PDF triggern. User tippt
+   "/schriftsatz", Enter → Skelett-Text mit Platzhaltern landet im
+   Input. Atlas erkennt die Struktur (Heuristik in AtlasChatView)
+   und rendert das Dokument als Artefakt-Card mit PDF-Export. */
+interface SlashCommand {
+  command: string;
+  label: string;
+  description: string;
+  icon: typeof FileText;
+  template: string;
+}
+
+const SLASH_COMMANDS: SlashCommand[] = [
+  {
+    command: "/schriftsatz",
+    label: "Schriftsatz",
+    description: "Gerichtlicher Schriftsatz (I./II./III.) mit Aktenzeichen",
+    icon: ScrollText,
+    template: `# [Titel des Schriftsatzes]
+
+An:
+[Gericht / Behörde]
+[Straße Hausnr.]
+[PLZ Ort]
+
+Aktenzeichen: [AZ]
+Betreff: [prägnante Betreff-Zeile]
+
+I. Sachverhalt
+
+[Sachverhalts-Darstellung]
+
+II. Rechtliche Würdigung
+
+[Rechtliche Argumentation]
+
+III. Antrag
+
+Es wird beantragt,
+
+1. [Antrag 1]
+2. [Antrag 2]
+
+[Begründung]
+
+Mit freundlichen Grüßen
+
+[Name Anwalt]
+`,
+  },
+  {
+    command: "/brief",
+    label: "Mandantenbrief",
+    description: "Brief an Mandant / Gegenseite (DIN 5008-Format)",
+    icon: Mail,
+    template: `# [Titel des Briefs]
+
+An:
+[Empfänger]
+[Straße Hausnr.]
+[PLZ Ort]
+
+Betreff: [prägnante Betreff-Zeile]
+
+Sehr geehrte/r [Anrede],
+
+[Inhalt des Briefs]
+
+Mit freundlichen Grüßen
+
+[Name Anwalt]
+`,
+  },
+  {
+    command: "/vertrag",
+    label: "Vertrag",
+    description: "Vertrag mit §§-Struktur und Parteien-Block",
+    icon: Briefcase,
+    template: `# [Vertragstitel]
+
+zwischen
+
+[Partei 1 — Name + Adresse]
+- nachfolgend "Auftraggeber" genannt -
+
+und
+
+[Partei 2 — Name + Adresse]
+- nachfolgend "Auftragnehmer" genannt -
+
+## § 1 Gegenstand des Vertrags
+
+[Gegenstand]
+
+## § 2 Leistungen
+
+[Leistungs-Beschreibung]
+
+## § 3 Vergütung
+
+[Vergütung]
+
+## § 4 Laufzeit
+
+[Laufzeit / Kündigung]
+
+## § 5 Schlussbestimmungen
+
+[Salvatorische Klausel, Schriftform, Gerichtsstand]
+
+[Ort], [Datum]
+
+
+_________________________          _________________________
+[Auftraggeber]                     [Auftragnehmer]
+`,
+  },
+  {
+    command: "/memo",
+    label: "Memo",
+    description: "Internes Memo mit Metadata-Header (Von / An / Datum)",
+    icon: FileText,
+    template: `# [Memo-Titel]
+
+Von: [Bearbeiter]
+An: [Empfänger]
+Datum: [TT.MM.JJJJ]
+Betreff: [prägnante Betreff-Zeile]
+
+## Zusammenfassung
+
+[Kernaussage in 2-3 Sätzen]
+
+## Sachverhalt
+
+[Sachverhalt]
+
+## Rechtliche Bewertung
+
+[Bewertung]
+
+## Empfehlung
+
+[Konkrete Handlungsempfehlung]
+`,
+  },
+  {
+    command: "/aktennotiz",
+    label: "Aktennotiz",
+    description: "Aktennotiz zu Mandat-relevantem Vorgang",
+    icon: ClipboardList,
+    template: `# Aktennotiz: [Titel]
+
+Von: [Bearbeiter]
+An: Akte
+Datum: [TT.MM.JJJJ]
+Aktenzeichen: [AZ]
+Betreff: [prägnante Betreff-Zeile]
+
+## Anlass
+
+[Was war der Anlass für die Notiz?]
+
+## Sachverhalt
+
+[Was ist passiert / wurde besprochen?]
+
+## Ergebnis / Vereinbarung
+
+[Ergebnis]
+
+## To-Do / Nächste Schritte
+
+- [ ] [Schritt 1]
+- [ ] [Schritt 2]
+`,
+  },
+  {
+    command: "/email",
+    label: "E-Mail",
+    description: "Formelle E-Mail mit Header (Von / An / Betreff)",
+    icon: Mail,
+    template: `# [E-Mail-Betreff]
+
+Von: [Absender]
+An: [Empfänger]
+Datum: [TT.MM.JJJJ]
+Betreff: [prägnante Betreff-Zeile]
+
+Sehr geehrte/r [Anrede],
+
+[Inhalt]
+
+Mit freundlichen Grüßen
+
+[Name]
+`,
+  },
+  {
+    command: "/checklist",
+    label: "Checkliste",
+    description: "Abarbeitbare Checkliste",
+    icon: ListChecks,
+    template: `# Checkliste: [Titel]
+
+## [Abschnitt 1]
+
+- [ ] [Punkt 1]
+- [ ] [Punkt 2]
+- [ ] [Punkt 3]
+
+## [Abschnitt 2]
+
+- [ ] [Punkt 1]
+- [ ] [Punkt 2]
+`,
+  },
+  {
+    command: "/recherche",
+    label: "Recherche-Anfrage",
+    description: "Strukturierte Recherche im Atlas-Korpus + Web",
+    icon: Search,
+    template: `Bitte recherchiere zu folgendem Thema im Atlas-Korpus und im Web:
+
+**Thema:** [Thema]
+
+**Konkrete Frage:** [präzise Frage]
+
+**Gewünschter Output:**
+- Kurze Zusammenfassung (max 200 Wörter)
+- Top 5 relevante Quellen mit Zitaten
+- ggf. Vergleichende Tabelle
+- Quellen-Konflikte explizit ausweisen
+`,
+  },
+];
 
 /* All tools always-on (UX simplification 2026-05-13). The lawyer
    shouldn't have to think about which tool-bundle is active —
@@ -155,6 +399,57 @@ export function ChatInput({
   const taRef = useRef<HTMLTextAreaElement>(null);
   const popRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  /* Sprint 2b (2026-05-18) — Slash-Commands.
+     Wenn die erste Zeile mit "/" startet, parsen wir die Query und
+     zeigen ein Popover mit matching Templates. Pfeil-up/down + Enter
+     zum Selektieren, Escape zum Schließen. */
+  const [slashSelectedIdx, setSlashSelectedIdx] = useState(0);
+
+  const slashQuery = useMemo(() => {
+    const firstLine = text.split("\n")[0];
+    if (!firstLine.startsWith("/")) return null;
+    if (firstLine.includes(" "))
+      return null; /* slash-command line muss EIN Wort sein */
+    return firstLine.slice(1).toLowerCase();
+  }, [text]);
+
+  const slashMatches = useMemo(() => {
+    if (slashQuery === null) return [];
+    if (slashQuery === "") return SLASH_COMMANDS;
+    return SLASH_COMMANDS.filter((c) =>
+      c.command.slice(1).toLowerCase().startsWith(slashQuery),
+    );
+  }, [slashQuery]);
+
+  const slashOpen = slashQuery !== null && slashMatches.length > 0;
+
+  useEffect(() => {
+    /* Reset selection when matches change */
+    setSlashSelectedIdx(0);
+  }, [slashMatches.length]);
+
+  const applySlashCommand = (cmd: SlashCommand) => {
+    /* Replace only the slash-line with the template + any trailing text */
+    const lines = text.split("\n");
+    const rest = lines.slice(1).join("\n");
+    const newText = rest ? `${cmd.template}\n${rest}` : cmd.template;
+    setText(newText);
+    /* Move caret to first [Platzhalter] so user starts filling immediately */
+    requestAnimationFrame(() => {
+      const ta = taRef.current;
+      if (!ta) return;
+      const placeholderMatch = newText.match(/\[/);
+      if (placeholderMatch && placeholderMatch.index !== undefined) {
+        const start = placeholderMatch.index;
+        const end = newText.indexOf("]", start) + 1 || start;
+        ta.focus();
+        ta.setSelectionRange(start, end);
+      } else {
+        ta.focus();
+      }
+    });
+  };
 
   /* Voice-input integration. The hook handles the full MediaRecorder
      → /api/atlas/transcribe lifecycle and returns a transcript that
@@ -634,11 +929,92 @@ export function ChatInput({
           />
         </div>
       )}
+      {/* Sprint 2b — Slash-Command Popover (above textarea) */}
+      {slashOpen && (
+        <div className="mb-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg ring-1 ring-black/5 dark:border-slate-700 dark:bg-slate-900 dark:ring-white/10">
+          <div className="border-b border-slate-100 bg-slate-50 px-3 py-1.5 text-[10.5px] uppercase tracking-[0.14em] text-slate-500 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
+            Slash-Commands · ↑↓ navigieren · Enter einsetzen · Esc abbrechen
+          </div>
+          <ul className="max-h-72 overflow-y-auto py-1">
+            {slashMatches.map((cmd, idx) => {
+              const CmdIcon = cmd.icon;
+              const isSelected = idx === slashSelectedIdx;
+              return (
+                <li key={cmd.command}>
+                  <button
+                    type="button"
+                    onMouseEnter={() => setSlashSelectedIdx(idx)}
+                    onClick={() => applySlashCommand(cmd)}
+                    className={`flex w-full items-start gap-3 px-3 py-2 text-left transition-colors ${
+                      isSelected
+                        ? "bg-emerald-50 dark:bg-emerald-500/10"
+                        : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                    }`}
+                  >
+                    <span
+                      className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${
+                        isSelected
+                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
+                          : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                      }`}
+                    >
+                      <CmdIcon size={13} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-mono text-[12px] font-semibold text-slate-900 dark:text-slate-100">
+                          {cmd.command}
+                        </span>
+                        <span className="text-[12px] font-medium text-slate-700 dark:text-slate-300">
+                          {cmd.label}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                        {cmd.description}
+                      </div>
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
       <textarea
         ref={taRef}
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={(e) => {
+          /* Sprint 2b — Slash-Command keyboard handling */
+          if (slashOpen) {
+            if (e.key === "ArrowDown") {
+              e.preventDefault();
+              setSlashSelectedIdx((i) =>
+                Math.min(i + 1, slashMatches.length - 1),
+              );
+              return;
+            }
+            if (e.key === "ArrowUp") {
+              e.preventDefault();
+              setSlashSelectedIdx((i) => Math.max(i - 1, 0));
+              return;
+            }
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              applySlashCommand(slashMatches[slashSelectedIdx]);
+              return;
+            }
+            if (e.key === "Escape") {
+              e.preventDefault();
+              setText("");
+              return;
+            }
+            if (e.key === "Tab") {
+              e.preventDefault();
+              applySlashCommand(slashMatches[slashSelectedIdx]);
+              return;
+            }
+          }
           if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
             e.preventDefault();
             handleSend();
