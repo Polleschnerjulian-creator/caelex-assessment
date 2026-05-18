@@ -2510,6 +2510,149 @@ export default function SettingsPage() {
                       },
                     ]}
                   />
+
+                  {/* NEU 2026-05-18 — Anwalts-Spezifika: BRAO §43e
+                      Konformitätserklärung. Pflicht für DE-Kanzlei-
+                      Kunden — bestätigt dass Cloud-Stack BRAO-konform
+                      ist (Schweigepflicht der Mitwirkenden, Verzicht
+                      auf Drittzugriff, Audit-Rechte). */}
+                  <ComplianceRow
+                    icon={<Shield size={16} aria-hidden="true" />}
+                    title="BRAO §43e — Cloud-Nutzung durch Anwälte"
+                    description="Konformitätserklärung für Caelex-Cloud gemäß § 43e BRAO. Bestätigt die Schweigepflicht der Mitwirkenden (§ 203 StGB), Verzicht auf Drittzugriff, Audit-Rechte der Kanzlei, sowie Provider-Stack-Anforderungen."
+                    badge="§ 43e BRAO"
+                    links={[
+                      { label: "Erklärung öffnen", href: "/legal/brao-43e" },
+                    ]}
+                  />
+
+                  {/* NEU 2026-05-18 — Anwalts-Spezifika: §203 StGB
+                      Schweigepflicht-Erklärung aller Mitwirkenden. */}
+                  <ComplianceRow
+                    icon={<Lock size={16} aria-hidden="true" />}
+                    title="§ 203 StGB — Mitwirkenden-Verpflichtung"
+                    description="Schriftliche Verpflichtungserklärung aller Caelex-Mitarbeiter und Sub-Processors auf die anwaltliche Schweigepflicht (analog § 203 Abs. 4 StGB). Erforderlich für Mandatsdaten-Verarbeitung."
+                    badge="§ 203 StGB"
+                    links={[
+                      { label: "Erklärung öffnen", href: "/legal/mitwirkende" },
+                    ]}
+                  />
+
+                  {/* NEU 2026-05-18 — EU AI Act explizite Konformität
+                      (neben general AI-Disclosure). */}
+                  <ComplianceRow
+                    icon={<Sparkles size={16} aria-hidden="true" />}
+                    title="EU AI Act — Konformitäts-Statement"
+                    description="Caelex Atlas-Einstufung unter EU AI Act (VO 2024/1689). Atlas ist Werkzeug für Anwälte (Human-Oversight gewährleistet) und fällt unter Art. 50 Transparenz-Pflichten — nicht unter High-Risk Annex III, da keine richterlichen Entscheidungen automatisiert."
+                    badge="VO 2024/1689"
+                    links={[
+                      { label: "Statement öffnen", href: "/legal/eu-ai-act" },
+                    ]}
+                  />
+
+                  {/* NEU 2026-05-18 — Datenresidenz EU. Wichtig nach
+                      Schrems II für Anwalts-Mandanten-Daten. */}
+                  <ComplianceRow
+                    icon={<Globe size={16} aria-hidden="true" />}
+                    title="Datenresidenz — EU only"
+                    description="Alle Mandantendaten werden ausschließlich in der EU verarbeitet: Datenbank in Frankfurt (Neon eu-central-1), Hosting in Frankfurt (Vercel fra1), Storage in EU (Cloudflare R2), LLM-Inference in EU/UK (Anthropic Zero-Data-Retention). Keine USA-Transfers von Mandantendaten."
+                    badge="DSGVO Art. 44 ff."
+                    links={[
+                      {
+                        label: "Datenresidenz-Statement",
+                        href: "/legal/data-residency",
+                      },
+                    ]}
+                  />
+                </section>
+
+                {/* NEU 2026-05-18 — Provider-Zertifikate transparent.
+                    Sales-Argument für Compliance-bewusste Kanzleien. */}
+                <section className="rounded-xl border border-slate-200 bg-white p-5 dark:border-white/[0.08] dark:bg-[#1a1a1a]">
+                  <div className="mb-3 flex items-start gap-3">
+                    <div className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-purple-50 text-purple-700 dark:bg-purple-500/10 dark:text-purple-300">
+                      <Server size={18} strokeWidth={1.5} aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="mb-1 text-[14px] font-semibold text-slate-900 dark:text-slate-100">
+                        Provider-Zertifikate &amp; Trust-Center
+                      </h3>
+                      <p className="text-[12.5px] leading-relaxed text-slate-700 dark:text-slate-300">
+                        Caelex-Stack basiert auf SOC 2 Type II + ISO 27001
+                        zertifizierten Anbietern. Direktlinks zu Trust-Centern +
+                        DPA-Anfrageportalen.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <ProviderCertCard
+                      name="Neon (Postgres EU-Frankfurt)"
+                      certs="SOC 2 Type II · ISO 27001 · GDPR"
+                      url="https://trust.neon.com"
+                    />
+                    <ProviderCertCard
+                      name="Vercel (Hosting EU)"
+                      certs="SOC 2 Type II · ISO 27001 · HIPAA"
+                      url="https://vercel.com/legal/dpa"
+                    />
+                    <ProviderCertCard
+                      name="Anthropic (Claude, Zero-Data-Retention)"
+                      certs="SOC 2 Type II · ISO 27001 · ISO 42001 (AI)"
+                      url="https://trust.anthropic.com"
+                    />
+                    <ProviderCertCard
+                      name="Cloudflare R2 (Vault-Storage EU)"
+                      certs="SOC 2 Type II · ISO 27001 · GDPR"
+                      url="https://www.cloudflare.com/trust-hub/"
+                    />
+                    <ProviderCertCard
+                      name="Upstash Redis (EU)"
+                      certs="SOC 2 Type II · GDPR"
+                      url="https://upstash.com/legal/dpa"
+                    />
+                  </div>
+                </section>
+
+                {/* NEU 2026-05-18 — Incident- + Notfall-Kontakte für
+                    Compliance-bewusste Kanzleien. */}
+                <section className="rounded-xl border border-slate-200 bg-white p-5 dark:border-white/[0.08] dark:bg-[#1a1a1a]">
+                  <div className="mb-3 flex items-start gap-3">
+                    <div className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+                      <Shield size={18} strokeWidth={1.5} aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="mb-1 text-[14px] font-semibold text-slate-900 dark:text-slate-100">
+                        Incident-Response &amp; Notfall-Kontakte
+                      </h3>
+                      <p className="text-[12.5px] leading-relaxed text-slate-700 dark:text-slate-300">
+                        72h-Meldepflicht nach DSGVO Art. 33. Bei Verdacht auf
+                        Datenpanne sofort melden — wir bestätigen Eingang
+                        innerhalb 2 Stunden.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <ContactCard
+                      label="Datenschutz / Privacy"
+                      email="datenschutz@caelex.eu"
+                      hint="DSGVO-Anfragen, Auskunft, Löschung"
+                    />
+                    <ContactCard
+                      label="Security-Incidents"
+                      email="security@caelex.eu"
+                      hint="Datenpannen, Verdacht auf Hack, Mitwirkenden-Bruch"
+                    />
+                    <ContactCard
+                      label="DPA / AVV-Verhandlung"
+                      email="legal@caelex.eu"
+                      hint="Custom-AVV, Audit-Rechte, Sub-Processor-Approval"
+                    />
+                    <ContactCard
+                      label="Allgemeiner Support"
+                      email="support@caelex.eu"
+                      hint="Technische Fragen, Onboarding"
+                    />
+                  </div>
                 </section>
 
                 {/* DPO contact card */}
@@ -2667,5 +2810,74 @@ function ComplianceRow({
         </div>
       </div>
     </div>
+  );
+}
+
+/* NEU 2026-05-18 — Provider-Cert-Card für die Provider-Zertifikate-Sektion. */
+function ProviderCertCard({
+  name,
+  certs,
+  url,
+}: {
+  name: string;
+  certs: string;
+  url: string;
+}) {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex items-start justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 transition-colors hover:border-slate-300 hover:bg-slate-100 dark:border-white/[0.06] dark:bg-white/[0.02] dark:hover:border-white/[0.12] dark:hover:bg-white/[0.04]"
+    >
+      <div className="min-w-0">
+        <div className="text-[12.5px] font-medium text-slate-900 dark:text-slate-100">
+          {name}
+        </div>
+        <div className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+          {certs}
+        </div>
+      </div>
+      <ExternalLink
+        size={12}
+        className="mt-0.5 shrink-0 text-slate-400 group-hover:text-slate-600 dark:text-slate-500 dark:group-hover:text-slate-300"
+        aria-hidden="true"
+      />
+    </a>
+  );
+}
+
+/* NEU 2026-05-18 — Contact-Card für Incident- & Notfall-Kontakte. */
+function ContactCard({
+  label,
+  email,
+  hint,
+}: {
+  label: string;
+  email: string;
+  hint: string;
+}) {
+  return (
+    <a
+      href={`mailto:${email}`}
+      className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 transition-colors hover:border-slate-300 hover:bg-slate-100 dark:border-white/[0.06] dark:bg-white/[0.02] dark:hover:border-white/[0.12] dark:hover:bg-white/[0.04]"
+    >
+      <Mail
+        size={14}
+        className="mt-0.5 shrink-0 text-slate-400 dark:text-slate-500"
+        aria-hidden="true"
+      />
+      <div className="min-w-0">
+        <div className="text-[12.5px] font-medium text-slate-900 dark:text-slate-100">
+          {label}
+        </div>
+        <div className="mt-0.5 truncate text-[11.5px] text-emerald-700 dark:text-emerald-400">
+          {email}
+        </div>
+        <div className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+          {hint}
+        </div>
+      </div>
+    </a>
   );
 }
