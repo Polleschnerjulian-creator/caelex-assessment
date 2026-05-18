@@ -4,6 +4,17 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  /// NEON COMPUTE OPTIMIERUNG (2026-05-18):
+  /// DATABASE_URL sollte der pgbouncer-pooled Neon-Endpoint sein:
+  ///   ep-XXX-pooler.<region>.aws.neon.tech?pgbouncer=true&connect_timeout=10
+  /// → Connection-Multiplexing, Compute kann zwischen Requests
+  ///   auto-suspenden, drastische Reduktion CU-hours auf Free/Launch.
+  ///
+  /// Für `prisma migrate deploy` (DDL braucht prepared statements die
+  /// pgbouncer-transaction-mode nicht supportet) — directUrl auskommentiert
+  /// solange DIRECT_URL noch nicht in Vercel-Env gesetzt ist. Nach Setup:
+  ///   directUrl = env("DIRECT_URL")  // direct (NICHT-pooled) Endpoint
+  /// einkommentieren + DIRECT_URL als Vercel Env-Var hinzufügen.
   url      = env("DATABASE_URL")
 }
 
