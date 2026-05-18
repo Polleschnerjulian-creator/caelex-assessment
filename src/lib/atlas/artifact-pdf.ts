@@ -46,6 +46,7 @@ import {
   stripInlineMd,
   type TableSegment,
 } from "./markdown-segments";
+import { readLetterhead, type LetterheadConfig } from "./letterhead";
 
 /* ── DIN 5008-A Layout (mm, A4 portrait) ─────────────────────────── */
 const PAGE_W = 210;
@@ -748,29 +749,93 @@ function drawTable(
   return finalY + 6;
 }
 
-function drawFooter(doc: jsPDF, artifact: ArtifactInput): void {
+function drawFooter(
+  doc: jsPDF,
+  artifact: ArtifactInput,
+  letterhead: LetterheadConfig,
+): void {
   const total = doc.getNumberOfPages();
+  /* Footer-Block aus dem Letterhead (mehrzeilig erlaubt). Wenn gesetzt,
+     verbraucht der Footer mehr Vertical-Space — drawText muss schon
+     früher pagebrechen damit nichts überlappt. Wird über die FOOTER-
+     Konstante MAX_Y im ensureRoom-Pfad nicht direkt berücksichtigt;
+     stattdessen kalkulieren wir hier den top-Y des Footer-Blocks. */
+  const footerLines = letterhead.footerLine
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  const footerBlockH = footerLines.length * 3.2;
+  const blockTopY = FOOTER_BASELINE - footerBlockH;
+
   for (let i = 1; i <= total; i++) {
     doc.setPage(i);
     /* Thin divider above footer. */
     doc.setDrawColor(...COL.slate200);
     doc.setLineWidth(0.2);
-    doc.line(
-      MARGIN_L,
-      FOOTER_BASELINE - 4.5,
-      MARGIN_L + CONTENT_W,
-      FOOTER_BASELINE - 4.5,
-    );
+    doc.line(MARGIN_L, blockTopY - 4.5, MARGIN_L + CONTENT_W, blockTopY - 4.5);
+    /* Kanzlei-Footer-Block (oberhalb der Atlas-Attribution). */
+    if (footerLines.length > 0) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(...COL.slate500);
+      let footerY = blockTopY;
+      for (const line of footerLines) {
+        doc.text(line, MARGIN_L + CONTENT_W / 2, footerY, { align: "center" });
+        footerY += 3.2;
+      }
+    }
+    /* Atlas-Attribution + Seitenzahl. */
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(...COL.slate400);
-    const left = artifact.mandateName
-      ? `${artifact.mandateName} · erstellt mit Atlas (Caelex)`
-      : "erstellt mit Atlas (Caelex)";
-    doc.text(left, MARGIN_L, FOOTER_BASELINE);
+    const attribution = letterhead.kanzleiName
+      ? `${letterhead.kanzleiName}`
+      : artifact.mandateName
+        ? `${artifact.mandateName} · erstellt mit Atlas (Caelex)`
+        : "erstellt mit Atlas (Caelex)";
+    doc.text(attribution, MARGIN_L, FOOTER_BASELINE);
     doc.text(`Seite ${i} von ${total}`, PAGE_W - MARGIN_R, FOOTER_BASELINE, {
       align: "right",
     });
+  }
+}
+
+/** Add the Kanzlei logo to the top of page 1 (above any text content).
+ *  Called only on letter-style kinds where the letterhead is visually
+ *  appropriate (court filings, mandate letters). */
+function drawLetterheadLogo(doc: jsPDF, letterhead: LetterheadConfig): number {
+  if (!letterhead.logoDataUrl) return 0;
+  try {
+    /* Infer aspect ratio via an offscreen Image — but we don't want to
+       be async here. Instead trust the user-set widthMm and let jsPDF
+       compute the height proportionally by passing height: 0 (jsPDF
+       auto-scales to source aspect when one dim is 0). */
+    const formatMatch = letterhead.logoDataUrl.match(
+      /^data:image\/(png|jpeg|jpg);/i,
+    );
+    const format = formatMatch ? formatMatch[1].toUpperCase() : "PNG";
+    const wantedFormat = format === "JPG" ? "JPEG" : format;
+    /* Place logo top-right above the privilege stamp area but below
+       MARGIN_T_HEAD. Width capped at user-config, height auto. */
+    const widthMm = Math.max(15, Math.min(letterhead.logoWidthMm, 60));
+    /* Compute height from intrinsic aspect via the data-URL — synch via
+       Image() won't work pre-load. Approximate: assume 3:1 logo aspect
+       (typical for word-mark logos). User can adjust widthMm if too tall. */
+    const heightMm = widthMm / 3;
+    doc.addImage(
+      letterhead.logoDataUrl,
+      wantedFormat,
+      PAGE_W - MARGIN_R - widthMm,
+      MARGIN_T_HEAD - 2,
+      widthMm,
+      heightMm,
+      undefined,
+      "FAST",
+    );
+    return heightMm + 2;
+  } catch (err) {
+    console.warn("Letterhead logo embed failed:", err);
+    return 0;
   }
 }
 
@@ -778,21 +843,35 @@ function drawFooter(doc: jsPDF, artifact: ArtifactInput): void {
 
 export function buildArtifactPdf(artifact: ArtifactInput): jsPDF {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
+  /* Sprint 3a (2026-05-18): Letterhead aus localStorage lesen. Wenn
+     der Caller einen kanzleiName direkt mitgibt, gewinnt das (für
+     Tests / Story-Books / explizite Overrides). */
+  const letterhead = readLetterhead();
+  const effectiveArtifact: ArtifactInput = {
+    ...artifact,
+    kanzleiName: artifact.kanzleiName ?? letterhead.kanzleiName ?? undefined,
+  };
+
+  /* Logo nur auf Letter-Kinds — bei Memos/Verträgen wäre der Logo am
+     oberen Rand unhandlich neben dem Title-Block. */
+  if (LETTER_KINDS.has(effectiveArtifact.kind) && letterhead.logoDataUrl) {
+    drawLetterheadLogo(doc, letterhead);
+  }
 
   let y: number;
   let bodyText: string;
 
-  if (LETTER_KINDS.has(artifact.kind)) {
-    const parsed = parseLetterHeader(artifact.body);
-    y = drawLetterHeader(doc, artifact, parsed);
+  if (LETTER_KINDS.has(effectiveArtifact.kind)) {
+    const parsed = parseLetterHeader(effectiveArtifact.body);
+    y = drawLetterHeader(doc, effectiveArtifact, parsed);
     bodyText = parsed.remainingBody;
-  } else if (METADATA_KINDS.has(artifact.kind)) {
-    const parsed = parseMemoHeader(artifact.body);
-    y = drawDocumentHeader(doc, artifact, parsed);
+  } else if (METADATA_KINDS.has(effectiveArtifact.kind)) {
+    const parsed = parseMemoHeader(effectiveArtifact.body);
+    y = drawDocumentHeader(doc, effectiveArtifact, parsed);
     bodyText = parsed.remainingBody;
   } else {
-    y = drawDocumentHeader(doc, artifact, null);
-    bodyText = artifact.body;
+    y = drawDocumentHeader(doc, effectiveArtifact, null);
+    bodyText = effectiveArtifact.body;
   }
 
   /* The body sometimes starts with the same title as the H1. We already
@@ -803,12 +882,12 @@ export function buildArtifactPdf(artifact: ArtifactInput): jsPDF {
   const segments = parseSegments(bodyText);
   for (const seg of segments) {
     if (seg.type === "text") {
-      y = drawBody(doc, seg.content, y, artifact);
+      y = drawBody(doc, seg.content, y, effectiveArtifact);
     } else {
-      y = drawTable(doc, seg, y, artifact);
+      y = drawTable(doc, seg, y, effectiveArtifact);
     }
   }
-  drawFooter(doc, artifact);
+  drawFooter(doc, effectiveArtifact, letterhead);
   return doc;
 }
 

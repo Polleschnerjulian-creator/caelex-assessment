@@ -39,6 +39,7 @@ import {
   type TableSegment,
 } from "./markdown-segments";
 import { slugifyFilename as slugify } from "./filename-slug";
+import { readLetterhead } from "./letterhead";
 
 export type ArtifactKind =
   | "memo"
@@ -991,8 +992,16 @@ async function buildDocument(
 export async function buildArtifactDocxBlob(
   input: ArtifactDocxInput,
 ): Promise<Blob> {
+  /* Sprint 3a (2026-05-18): Letterhead aus localStorage einlesen falls
+     der Caller keine kanzleiName explizit übergibt. Konsistent mit der
+     PDF-Generator-Auflösung. */
+  const letterhead = readLetterhead();
+  const effective: ArtifactDocxInput = {
+    ...input,
+    kanzleiName: input.kanzleiName ?? letterhead.kanzleiName ?? undefined,
+  };
   const docxMod = await import("docx");
-  const doc = await buildDocument(input, docxMod);
+  const doc = await buildDocument(effective, docxMod);
   return docxMod.Packer.toBlob(doc);
 }
 

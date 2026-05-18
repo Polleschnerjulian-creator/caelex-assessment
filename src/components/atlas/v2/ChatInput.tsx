@@ -650,6 +650,22 @@ export function ChatInput({
     fileInputRef.current?.click();
   };
 
+  /* Sprint 4b (2026-05-18) — file-processing extracted so the global
+     window-level drop-handler can call into it. Routes images vs text
+     to the right pipeline. */
+  const processDroppedFiles = async (files: File[]) => {
+    for (const f of files) {
+      const isImg =
+        (f.type || "").startsWith("image/") ||
+        /\.(jpe?g|png|gif|webp)$/i.test(f.name);
+      if (isImg) {
+        await handleImageFile(f);
+      } else {
+        await handleTextFile(f);
+      }
+    }
+  };
+
   const onDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(true);
@@ -664,19 +680,26 @@ export function ChatInput({
        everything else falls through to the text-file extractor. This
        lets a lawyer drag a screenshot from Finder without first
        opening the Plus-menu. */
-    void (async () => {
-      for (const f of files) {
-        const isImg =
-          (f.type || "").startsWith("image/") ||
-          /\.(jpe?g|png|gif|webp)$/i.test(f.name);
-        if (isImg) {
-          await handleImageFile(f);
-        } else {
-          await handleTextFile(f);
-        }
-      }
-    })();
+    void processDroppedFiles(files);
   };
+
+  /* Sprint 4b (2026-05-18) — listen for chat-area-level file-drops.
+     AtlasChatView captures drop events on the messages container and
+     dispatches "atlas-v2-files-dropped" with the files array. This way
+     the lawyer can drop a PDF anywhere in the chat surface, not just
+     on the small input pill. */
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<{ files: File[] }>;
+      if (!ce.detail?.files?.length) return;
+      void processDroppedFiles(ce.detail.files);
+    };
+    window.addEventListener("atlas-v2-files-dropped", handler);
+    return () => window.removeEventListener("atlas-v2-files-dropped", handler);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps -- handler
+       references are stable for the lifetime of the component; we
+       intentionally don't re-arm on every render. */
+  }, []);
 
   /* ── Photo-attach (Anthropic Vision — JPEG/PNG/GIF/WEBP) ───────────
      Reads the file via FileReader.readAsDataURL → strips the

@@ -27,6 +27,8 @@ import {
   Download,
   Copy,
   Bookmark,
+  ArrowDown,
+  RefreshCw,
 } from "lucide-react";
 import { ChatInput } from "./ChatInput";
 import { CitationsPanel, type CitationRecord } from "./CitationsPanel";
@@ -115,6 +117,12 @@ export function AtlasChatView({ chatId }: Props) {
      at the bottom. If they scrolled up to re-read something, leave
      their viewport alone instead of dragging them back down. */
   const userIsAtBottomRef = useRef<boolean>(true);
+  /* Sprint 3b (2026-05-18) — Floating activity-pill state. Mirrors the
+     ref but as state so React can conditionally render the pill when
+     the user has scrolled away during streaming. */
+  const [userIsAtBottom, setUserIsAtBottom] = useState(true);
+  /* Sprint 4b (2026-05-18) — Chat-area-level drag-drop overlay state. */
+  const [chatDragOver, setChatDragOver] = useState(false);
 
   /* Keep messagesLengthRef synced with the latest chat — this is a
      read-channel for the polling-effect that doesn't trigger re-arm. */
@@ -137,8 +145,11 @@ export function AtlasChatView({ chatId }: Props) {
   const handleScroll = () => {
     const el = scrollRef.current;
     if (!el) return;
-    userIsAtBottomRef.current =
-      el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    userIsAtBottomRef.current = atBottom;
+    /* Sprint 3b — only update state when it actually flips, to avoid
+       re-renders on every scroll-pixel. */
+    setUserIsAtBottom((prev) => (prev !== atBottom ? atBottom : prev));
   };
 
   /* Load persisted chat. The `silent` flag suppresses the loading
@@ -446,6 +457,64 @@ export function AtlasChatView({ chatId }: Props) {
     }
   };
 
+  /* Sprint 4a (2026-05-18) — Edit + Retry handlers. Both truncate the
+     conversation at the chosen pivot and re-run handleFollowup. The
+     truncate-from-message endpoint is atomic in the DB (deleteMany in
+     a single round-trip), so partial-failure can't leave a half-
+     truncated chat. */
+  const handleEditMessage = async (messageId: string, newText: string) => {
+    if (!chat) return;
+    try {
+      /* includeMessage=true removes the pivot + everything after, so
+         the new prompt becomes the new pivot. */
+      await fetch(`/api/atlas/chat/${chat.id}/truncate-from-message`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ messageId, includeMessage: true }),
+      });
+      /* Optimistically prune the messages-array so the UI doesn't
+         flash the deleted bubbles. The silent reload after the new
+         stream will replace this with the canonical state. */
+      setChat((prev) => {
+        if (!prev) return prev;
+        const idx = prev.messages.findIndex((m) => m.id === messageId);
+        if (idx < 0) return prev;
+        return { ...prev, messages: prev.messages.slice(0, idx) };
+      });
+      void handleFollowup(newText, {});
+    } catch (err) {
+      console.error("Edit-message failed", err);
+      setError("Bearbeiten fehlgeschlagen — bitte erneut versuchen.");
+    }
+  };
+
+  const handleRetryMessage = async (messageId: string) => {
+    if (!chat) return;
+    const userMsg = chat.messages.find((m) => m.id === messageId);
+    if (!userMsg) return;
+    const userText = extractText(userMsg.content);
+    if (!userText) return;
+    try {
+      /* includeMessage=false keeps the user-prompt, drops everything
+         after (the assistant response we want to regenerate). */
+      await fetch(`/api/atlas/chat/${chat.id}/truncate-from-message`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ messageId, includeMessage: false }),
+      });
+      setChat((prev) => {
+        if (!prev) return prev;
+        const idx = prev.messages.findIndex((m) => m.id === messageId);
+        if (idx < 0) return prev;
+        return { ...prev, messages: prev.messages.slice(0, idx + 1) };
+      });
+      void handleFollowup(userText, {});
+    } catch (err) {
+      console.error("Retry-message failed", err);
+      setError("Neu generieren fehlgeschlagen — bitte erneut versuchen.");
+    }
+  };
+
   const handleEvent = (evt: { type: string } & Record<string, unknown>) => {
     /* H23 — Defensive guard. The reader-loop already short-circuits
        on unmount, but stale events queued in micro-tasks could still
@@ -553,11 +622,41 @@ export function AtlasChatView({ chatId }: Props) {
         <ExportMenu chat={chat} />
       </header>
 
-      {/* Messages */}
+      {/* Messages — Sprint 4b: drop-zone für direkt-im-chat file-attach */}
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-6 py-6"
+        onDragEnter={(e) => {
+          if (e.dataTransfer?.types?.includes("Files")) {
+            e.preventDefault();
+            setChatDragOver(true);
+          }
+        }}
+        onDragOver={(e) => {
+          if (e.dataTransfer?.types?.includes("Files")) {
+            e.preventDefault();
+          }
+        }}
+        onDragLeave={(e) => {
+          /* Only flip off when we actually leave the container, not
+             when crossing over a child element (firefox quirk). */
+          if (e.currentTarget === e.target) {
+            setChatDragOver(false);
+          }
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          setChatDragOver(false);
+          const files = Array.from(e.dataTransfer?.files ?? []);
+          if (files.length === 0) return;
+          /* Forward to ChatInput via custom event — keeps the file-
+             processing logic in one place (next to the textarea so
+             the chip-strip + extraction-spinner work the same way). */
+          window.dispatchEvent(
+            new CustomEvent("atlas-v2-files-dropped", { detail: { files } }),
+          );
+        }}
+        className="relative flex-1 overflow-y-auto px-6 py-6"
       >
         <div className="mx-auto max-w-3xl space-y-6">
           {chat.messages.map((m) => {
@@ -568,6 +667,8 @@ export function AtlasChatView({ chatId }: Props) {
                   chatId={chatId}
                   mandateId={chat.mandateId ?? null}
                   onOpenArtifact={setOpenArtifact}
+                  onEditMessage={handleEditMessage}
+                  onRetryMessage={handleRetryMessage}
                 />
               </div>
             );
@@ -680,7 +781,91 @@ export function AtlasChatView({ chatId }: Props) {
           }}
         />
       )}
+
+      {/* Sprint 4b (2026-05-18) — Drag-Drop Overlay über Chat-Area.
+          Erscheint wenn User eine Datei vom Desktop reinzieht — visueller
+          Hinweis "Hier loslassen". Click-through verhindert (pointer-
+          events-none auf children) damit das Drop-Event sauber fängt. */}
+      {chatDragOver && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center bg-emerald-500/10 backdrop-blur-sm"
+        >
+          <div className="rounded-2xl border-2 border-dashed border-emerald-500 bg-white px-6 py-5 shadow-2xl dark:bg-slate-900">
+            <div className="flex items-center gap-3">
+              <Download
+                size={20}
+                className="text-emerald-600 dark:text-emerald-400"
+              />
+              <div>
+                <div className="text-[14px] font-semibold text-slate-900 dark:text-slate-100">
+                  Datei hier loslassen
+                </div>
+                <div className="text-[12px] text-slate-500 dark:text-slate-400">
+                  PDF, DOCX, Bilder oder Text — Atlas verarbeitet alles
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sprint 3b (2026-05-18) — Floating Activity-Pill.
+          Erscheint wenn Atlas streamt UND der User vom Bottom weg-
+          gescrollt ist. Click → scroll-to-bottom. Verhindert das
+          "ich weiß nicht ob Atlas noch arbeitet"-Problem beim
+          retroaktiven Lesen während der Generation. */}
+      {streaming && !userIsAtBottom && (
+        <FloatingActivityPill
+          tools={inFlightTools}
+          hasText={streamingText.length > 0}
+          onScrollToBottom={() => {
+            const el = scrollRef.current;
+            if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+/* Sprint 3b — kompakte schwebende Pill rechts unten am Viewport-Rand.
+   Zeigt die aktuelle Aktivität in einer natürlich-sprachlichen Zeile
+   und scrollt bei Click zurück auf die letzte Nachricht. */
+function FloatingActivityPill({
+  tools,
+  hasText,
+  onScrollToBottom,
+}: {
+  tools: InFlightToolCall[];
+  hasText: boolean;
+  onScrollToBottom: () => void;
+}) {
+  const inFlight = [...tools].reverse().find((t) => !t.completedAt);
+  const allDone = tools.length > 0 && tools.every((t) => t.completedAt);
+  let label = "Atlas arbeitet";
+  if (inFlight) {
+    const lbl = labelFor(inFlight.name);
+    label = lbl.running;
+  } else if (allDone && hasText) {
+    label = "Atlas schreibt Antwort";
+  } else if (tools.length === 0 && hasText) {
+    label = "Atlas schreibt Antwort";
+  } else if (tools.length === 0 && !hasText) {
+    label = "Atlas denkt nach";
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onScrollToBottom}
+      title="Zur aktuellen Nachricht scrollen"
+      className="fixed bottom-28 right-6 z-30 flex items-center gap-2 rounded-full border border-slate-200 bg-white/95 px-4 py-2 text-[12.5px] font-medium text-slate-700 shadow-lg ring-1 ring-black/[0.04] backdrop-blur transition-all hover:bg-white hover:shadow-xl dark:border-white/[0.08] dark:bg-slate-900/95 dark:text-slate-200 dark:ring-white/[0.04] dark:hover:bg-slate-900 lg:right-10"
+    >
+      <span className="inline-flex h-2 w-2 shrink-0 animate-pulse rounded-full bg-emerald-500 motion-reduce:animate-none" />
+      {label}…
+      <ArrowDown size={11} className="opacity-60" />
+    </button>
   );
 }
 
@@ -762,6 +947,8 @@ function MessageRow({
   chatId,
   mandateId,
   onOpenArtifact,
+  onEditMessage,
+  onRetryMessage,
 }: {
   message: ChatMessageRecord;
   chatId: string;
@@ -771,7 +958,17 @@ function MessageRow({
   /* NEU 2026-05-18: callback wenn User auf InlineArtifactCard klickt
      → AtlasChatView öffnet das rechtsseitige ArtifactPreviewPanel. */
   onOpenArtifact: (artifact: ArtifactInfo) => void;
+  /* Sprint 4a (2026-05-18) — Edit + Retry callbacks. Optional weil
+     der streaming-placeholder + die assistant-bubbles diese nicht
+     brauchen. Nur User-Bubbles bekommen die hover-affordances. */
+  onEditMessage?: (messageId: string, newText: string) => void | Promise<void>;
+  onRetryMessage?: (messageId: string) => void | Promise<void>;
 }) {
+  /* Sprint 4a — local edit state. When true, render textarea+save/cancel
+     in place of the static text bubble. */
+  const [editing, setEditing] = useState(false);
+  const [editText, setEditText] = useState("");
+
   if (message.role === "user") {
     const text = extractText(message.content);
     /* Image-blocks ride along inside content[]. We pull them out so we
@@ -782,8 +979,14 @@ function MessageRow({
           (b) => b.type === "image" && b.source?.data,
         )
       : [];
+    /* Optimistic-placeholder messages have IDs like "optimistic-…" and
+       can't be edited/retried (not persisted yet). */
+    const canMutate =
+      !!onEditMessage &&
+      !!onRetryMessage &&
+      !message.id.startsWith("optimistic-");
     return (
-      <div className="flex flex-col items-end gap-1.5">
+      <div className="group flex flex-col items-end gap-1.5">
         {imageBlocks.length > 0 && (
           <div className="flex max-w-[85%] flex-wrap justify-end gap-1.5">
             {imageBlocks.map((b, i) => {
@@ -808,9 +1011,72 @@ function MessageRow({
             })}
           </div>
         )}
-        {text && (
-          <div className="max-w-[85%] rounded-3xl bg-slate-100 px-4 py-2.5 text-[14.5px] text-slate-900 dark:bg-white/[0.06] dark:text-slate-100">
-            {text}
+        {editing && canMutate ? (
+          /* Sprint 4a — inline edit mode. Textarea replaces the bubble. */
+          <div className="w-full max-w-[85%]">
+            <textarea
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              rows={Math.max(2, editText.split("\n").length)}
+              autoFocus
+              className="w-full resize-y rounded-2xl border border-slate-300 bg-white px-3 py-2 text-[14px] text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-emerald-500/60"
+            />
+            <div className="mt-1.5 flex items-center justify-end gap-2 text-[12px]">
+              <button
+                type="button"
+                onClick={() => {
+                  setEditing(false);
+                  setEditText("");
+                }}
+                className="rounded-md px-2.5 py-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+              >
+                Abbrechen
+              </button>
+              <button
+                type="button"
+                disabled={!editText.trim() || editText === text}
+                onClick={() => {
+                  void onEditMessage?.(message.id, editText.trim());
+                  setEditing(false);
+                }}
+                className="rounded-md bg-emerald-500 px-3 py-1 text-white shadow-sm transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 dark:disabled:bg-slate-700"
+              >
+                Speichern & neu generieren
+              </button>
+            </div>
+          </div>
+        ) : (
+          text && (
+            <div className="max-w-[85%] rounded-3xl bg-slate-100 px-4 py-2.5 text-[14.5px] text-slate-900 dark:bg-white/[0.06] dark:text-slate-100">
+              {text}
+            </div>
+          )
+        )}
+        {/* Sprint 4a — hover-action row with Edit + Retry. Only on
+            persisted user-messages, hidden in edit-mode. */}
+        {!editing && canMutate && text && (
+          <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+            <button
+              type="button"
+              onClick={() => {
+                setEditText(text);
+                setEditing(true);
+              }}
+              title="Nachricht bearbeiten — Atlas regeneriert ab hier"
+              className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+            >
+              <PenLine size={10} />
+              Bearbeiten
+            </button>
+            <button
+              type="button"
+              onClick={() => void onRetryMessage?.(message.id)}
+              title="Antwort neu generieren — dieselbe Frage, neuer Versuch"
+              className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+            >
+              <RefreshCw size={10} />
+              Neu generieren
+            </button>
           </div>
         )}
       </div>

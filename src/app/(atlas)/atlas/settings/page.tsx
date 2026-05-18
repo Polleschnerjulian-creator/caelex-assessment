@@ -50,6 +50,7 @@ import {
 } from "@/data/legal-sources";
 import { AccountBanner } from "@/components/atlas/AccountBanner";
 import { AtlasDataRightsCard } from "./AtlasDataRightsCard";
+import { LetterheadSettings } from "@/components/atlas/v2/LetterheadSettings";
 
 // Computed inventory counts — derived from the same barrel exports the
 // rest of Atlas uses, so the settings stats never drift from reality.
@@ -1501,6 +1502,9 @@ export default function SettingsPage() {
             ═══════════════════════════════════════════ */}
             {activeTab === "firm" && (
               <div className="space-y-8">
+                {/* Sprint 3a (2026-05-18) — Kanzlei-Briefkopf für PDF/DOCX-Export */}
+                <LetterheadSettings />
+
                 {/* Firm branding */}
                 <section>
                   <div className="flex items-center gap-2 mb-4">
