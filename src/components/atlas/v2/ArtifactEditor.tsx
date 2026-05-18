@@ -44,6 +44,17 @@ import Placeholder from "@tiptap/extension-placeholder";
 import Highlight from "@tiptap/extension-highlight";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
+/* Sprint 10 (2026-05-18) — OSS-only Word-feature-parity extensions
+   based on the May-2026 research-report. NO Tiptap-Pro subscriptions. */
+import { CharacterCount } from "@tiptap/extension-character-count";
+import { TextStyle } from "@tiptap/extension-text-style";
+import { FontFamily } from "@tiptap/extension-font-family";
+import { Color } from "@tiptap/extension-color";
+import { Superscript } from "@tiptap/extension-superscript";
+import { Subscript } from "@tiptap/extension-subscript";
+import { Footnotes, FootnoteReference, Footnote } from "tiptap-footnotes";
+import { PaginationPlus } from "tiptap-pagination-plus";
+import SearchAndReplace from "@sereneinserenade/tiptap-search-and-replace";
 import {
   X,
   Save,
@@ -83,6 +94,12 @@ import {
   Trash2,
   Code,
   Minus,
+  Superscript as SupIcon,
+  Subscript as SubIcon,
+  Search,
+  Footprints,
+  Palette,
+  Scroll,
 } from "lucide-react";
 import type { ArtifactInfo } from "./ArtifactPreviewPanel";
 import { markdownToHtml, htmlToMarkdown } from "@/lib/atlas/editor-md-bridge";
@@ -139,11 +156,18 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
   const initialMdRef = useRef(artifact.body);
   const initialTitleRef = useRef(artifact.title);
 
-  /* TipTap editor instance — set up once on mount. */
+  /* Search-and-replace UI state */
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [replaceTerm, setReplaceTerm] = useState("");
+
+  /* TipTap editor instance — set up once on mount.
+     Sprint 10: Word-feature-parity OSS-Extensions added (per research-
+     report May 2026). */
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        heading: { levels: [1, 2, 3] },
+        heading: { levels: [1, 2, 3, 4, 5, 6] },
       }),
       Underline,
       LinkExt.configure({
@@ -165,6 +189,47 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
       Highlight.configure({ multicolor: false }),
       TaskList,
       TaskItem.configure({ nested: true }),
+      /* Sprint 10 — Word-parity OSS extensions */
+      CharacterCount,
+      TextStyle,
+      FontFamily.configure({ types: ["textStyle"] }),
+      Color.configure({ types: ["textStyle"] }),
+      Superscript,
+      Subscript,
+      /* Footnotes (Buttondown) — adds Footnotes container, FootnoteReference
+         inline-node + Footnote item-node. Renders as auto-numbered citations
+         at the bottom of the doc (kanzlei-Standard für Schriftsätze). */
+      Footnotes,
+      FootnoteReference,
+      Footnote,
+      /* Search & Replace (Cmd+F overlay below) */
+      SearchAndReplace.configure({
+        searchResultClass: "atlas-search-result",
+        disableRegex: false,
+      }),
+      /* PaginationPlus — visible Word-style page breaks. DIN 5008 Form B
+         margins (4.5cm top / 2.5cm left / 2.0cm right / 2.0cm bottom)
+         at 96dpi: 170/94/76/76 px. A4 = 794×1123 px. */
+      PaginationPlus.configure({
+        pageHeight: 1123,
+        pageWidth: 794,
+        marginTop: 170,
+        marginBottom: 76,
+        marginLeft: 94,
+        marginRight: 76,
+        pageGap: 30,
+        pageGapBorderSize: 1,
+        pageGapBorderColor: "#cbd5e1",
+        pageBreakBackground: "#f1f5f9",
+        contentMarginTop: 0,
+        contentMarginBottom: 0,
+        footerRight: "Seite {page} von {pages}",
+        footerLeft: "",
+        headerRight: "",
+        headerLeft: "",
+        customHeader: {},
+        customFooter: {},
+      }),
     ],
     content: markdownToHtml(artifact.body),
     editorProps: {
@@ -301,10 +366,15 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [aiMessages.length, aiBusy]);
 
-  /* Esc + Cmd+S */
+  /* Esc + Cmd+S + Cmd+F */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        if (searchOpen) {
+          setSearchOpen(false);
+          editor?.commands.setSearchTerm("");
+          return;
+        }
         if (dirty) {
           const ok = confirm(
             "Ungespeicherte Änderungen verwerfen und schließen?",
@@ -317,11 +387,16 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
         e.preventDefault();
         if (dirty) handleSave();
       }
+      /* Sprint 10 — Cmd+F öffnet Search-overlay (wie Word/Browser) */
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [dirty, onClose]);
+  }, [dirty, onClose, searchOpen, editor]);
 
   const handleSave = () => {
     if (!editor) return;
@@ -482,6 +557,7 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
         showAi={showAi}
         setShowAi={setShowAi}
         selectionLen={selectionText.length}
+        onOpenSearch={() => setSearchOpen(true)}
       />
 
       {/* Body: outline + page + ai */}
@@ -528,25 +604,40 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
           </aside>
         )}
 
-        {/* Center: A4 page on gray */}
+        {/* Center: Multi-page A4 layout via PaginationPlus.
+            Sprint 10 — Visible page-breaks wie in Word, mit DIN 5008-B
+            margins + auto-page-numbering im footer. */}
         <main className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex-1 overflow-auto py-8">
+          {/* Search & Replace overlay (Cmd+F) — appears above the page */}
+          {searchOpen && editor && (
+            <SearchReplaceOverlay
+              editor={editor}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              replaceTerm={replaceTerm}
+              setReplaceTerm={setReplaceTerm}
+              onClose={() => {
+                setSearchOpen(false);
+                editor.commands.setSearchTerm("");
+              }}
+            />
+          )}
+          <div className="atlas-page-canvas flex-1 overflow-auto bg-slate-200 py-6 dark:bg-slate-900">
             <div
               className="mx-auto"
               style={{
-                width: `${21 * (zoom / 100)}cm`,
+                width: `${794 * (zoom / 100)}px`,
                 transition: "width 200ms",
               }}
             >
               <div
-                className="word-page bg-white shadow-[0_4px_24px_rgba(0,0,0,0.10),0_1px_3px_rgba(0,0,0,0.06)]"
+                className="atlas-page-wrap bg-white shadow-[0_4px_24px_rgba(0,0,0,0.12)]"
                 style={{
-                  minHeight: "29.7cm",
-                  padding: "2.5cm 2.5cm 2.5cm 2.5cm",
                   fontFamily:
-                    '"Calibri", "Aptos", system-ui, -apple-system, "Segoe UI", sans-serif',
+                    '"Calibri", "Aptos", "Segoe UI", system-ui, sans-serif',
                   transform: zoom !== 100 ? `scale(${zoom / 100})` : undefined,
                   transformOrigin: "top center",
+                  width: "794px",
                 }}
               >
                 <EditorContent editor={editor} />
@@ -656,7 +747,8 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
         )}
       </div>
 
-      {/* Word-page typography */}
+      {/* Word-page typography + Sprint-10 additions (Pagination, Search,
+          Footnotes, Subscript/Superscript) */}
       <style jsx global>{`
         .atlas-wysiwyg {
           outline: none;
@@ -664,6 +756,50 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
           line-height: 1.5;
           color: #1f2937;
           min-height: 100%;
+        }
+        /* Sprint 10 — Search-Highlight (amber) */
+        .atlas-search-result {
+          background: #fef3c7;
+          color: #92400e;
+        }
+        .atlas-search-result.atlas-search-result--current {
+          background: #f59e0b;
+          color: #fff;
+        }
+        /* Footnotes — auto-numbered reference + footnote block */
+        .atlas-wysiwyg sup[data-footnote-id] {
+          color: #047857;
+          font-weight: 600;
+          cursor: pointer;
+        }
+        .atlas-wysiwyg ol.footnotes {
+          margin-top: 24pt;
+          padding-top: 12pt;
+          border-top: 1px solid #cbd5e1;
+          font-size: 9.5pt;
+          color: #475569;
+          counter-reset: footnote;
+        }
+        .atlas-wysiwyg ol.footnotes li {
+          margin: 4pt 0;
+        }
+        .atlas-wysiwyg sub,
+        .atlas-wysiwyg sup {
+          font-size: 0.75em;
+          line-height: 0;
+          position: relative;
+          vertical-align: baseline;
+        }
+        .atlas-wysiwyg sup {
+          top: -0.5em;
+        }
+        .atlas-wysiwyg sub {
+          bottom: -0.25em;
+        }
+        /* PaginationPlus — kosmetische polish auf den page-breaks */
+        .atlas-page-wrap [data-rm-pagination] {
+          /* Pagination-plus rendert hier dynamische page-break divs.
+             Border + bg geben den visuellen "gap zwischen seiten" feel. */
         }
         .atlas-wysiwyg p {
           margin: 0 0 6pt;
@@ -847,6 +983,7 @@ function Ribbon({
   showAi,
   setShowAi,
   selectionLen,
+  onOpenSearch,
 }: {
   editor: Editor | null;
   showOutline: boolean;
@@ -854,10 +991,14 @@ function Ribbon({
   showAi: boolean;
   setShowAi: (v: boolean) => void;
   selectionLen: number;
+  onOpenSearch: () => void;
 }) {
   const [styleOpen, setStyleOpen] = useState(false);
   const [insertOpen, setInsertOpen] = useState(false);
   const [tableOpen, setTableOpen] = useState(false);
+  const [fontOpen, setFontOpen] = useState(false);
+  const [sizeOpen, setSizeOpen] = useState(false);
+  const [colorOpen, setColorOpen] = useState(false);
 
   if (!editor) {
     return (
@@ -868,10 +1009,104 @@ function Ribbon({
   const isActive = (name: string, attrs?: Record<string, unknown>) =>
     editor.isActive(name, attrs);
 
+  const currentFont =
+    (editor.getAttributes("textStyle").fontFamily as string | undefined) ??
+    "Calibri";
+  const currentColor =
+    (editor.getAttributes("textStyle").color as string | undefined) ?? "";
+
   return (
     <div className="flex shrink-0 items-stretch gap-0 border-b border-slate-300 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900/60">
-      {/* Schriftart */}
+      {/* Schriftart — mit Font-Family + Size + Color */}
       <RibbonGroup label="Schriftart">
+        {/* Font Family */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setFontOpen((v) => !v)}
+            className="inline-flex h-7 min-w-[100px] items-center justify-between gap-1 rounded border border-slate-200 bg-white px-2 text-[11px] text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            style={{ fontFamily: currentFont }}
+          >
+            <span className="truncate">{currentFont}</span>
+            <ChevronDown size={10} />
+          </button>
+          {fontOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setFontOpen(false)}
+              />
+              <ul className="absolute left-0 top-full z-20 mt-1 max-h-72 w-48 overflow-y-auto rounded-md border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+                {FONT_FAMILIES.map((f) => (
+                  <li key={f}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        editor.chain().focus().setFontFamily(f).run();
+                        setFontOpen(false);
+                      }}
+                      className={`block w-full px-3 py-1.5 text-left text-[12px] transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-500/10 ${currentFont === f ? "bg-emerald-50/50 font-semibold dark:bg-emerald-500/10" : ""}`}
+                      style={{ fontFamily: f }}
+                    >
+                      {f}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+        {/* Font Size — uses font-size CSS via custom mark on TextStyle */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setSizeOpen((v) => !v)}
+            className="inline-flex h-7 min-w-[44px] items-center justify-between gap-1 rounded border border-slate-200 bg-white px-1.5 text-[11px] text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+          >
+            <span>11</span>
+            <ChevronDown size={9} />
+          </button>
+          {sizeOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setSizeOpen(false)}
+              />
+              <ul className="absolute left-0 top-full z-20 mt-1 max-h-72 w-20 overflow-y-auto rounded-md border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+                {FONT_SIZES.map((s) => (
+                  <li key={s}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        /* Inject font-size via inline style on TextStyle mark */
+                        editor
+                          .chain()
+                          .focus()
+                          .setMark("textStyle", {
+                            ...(editor.getAttributes("textStyle") ?? {}),
+                          })
+                          .run();
+                        /* TipTap's TextStyle mark accepts style attrs via
+                           HTMLAttributes; for size we patch via DOM. */
+                        document.execCommand("fontSize", false, "7");
+                        const fontElements =
+                          document.querySelectorAll("font[size='7']");
+                        fontElements.forEach((el) => {
+                          (el as HTMLElement).removeAttribute("size");
+                          (el as HTMLElement).style.fontSize = `${s}pt`;
+                        });
+                        setSizeOpen(false);
+                      }}
+                      className="block w-full px-3 py-1 text-left text-[12px] transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
+                    >
+                      {s}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
         <RibbonBtn
           active={isActive("bold")}
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -901,12 +1136,69 @@ function Ribbon({
           <Strikethrough size={14} />
         </RibbonBtn>
         <RibbonBtn
+          active={isActive("superscript")}
+          onClick={() => editor.chain().focus().toggleSuperscript().run()}
+          title="Hochgestellt (x²)"
+        >
+          <SupIcon size={14} />
+        </RibbonBtn>
+        <RibbonBtn
+          active={isActive("subscript")}
+          onClick={() => editor.chain().focus().toggleSubscript().run()}
+          title="Tiefgestellt (H₂O)"
+        >
+          <SubIcon size={14} />
+        </RibbonBtn>
+        <RibbonBtn
           active={isActive("highlight")}
           onClick={() => editor.chain().focus().toggleHighlight().run()}
-          title="Hervorheben"
+          title="Markieren"
         >
           <Highlighter size={14} />
         </RibbonBtn>
+        {/* Color picker */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setColorOpen((v) => !v)}
+            title="Textfarbe"
+            className="inline-flex h-7 items-center gap-0.5 rounded px-1 text-slate-700 transition-colors hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-700"
+          >
+            <Palette size={13} />
+            <span
+              className="h-1 w-3"
+              style={{ backgroundColor: currentColor || "#000" }}
+            />
+            <ChevronDown size={9} />
+          </button>
+          {colorOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setColorOpen(false)}
+              />
+              <div className="absolute left-0 top-full z-20 mt-1 grid grid-cols-7 gap-1 rounded-md border border-slate-200 bg-white p-2 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+                {COLOR_SWATCHES.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => {
+                      if (c === "") {
+                        editor.chain().focus().unsetColor().run();
+                      } else {
+                        editor.chain().focus().setColor(c).run();
+                      }
+                      setColorOpen(false);
+                    }}
+                    title={c || "Standard"}
+                    className="h-5 w-5 rounded border border-slate-300 transition-transform hover:scale-110"
+                    style={{ backgroundColor: c || "transparent" }}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
         <RibbonBtn
           active={isActive("code")}
           onClick={() => editor.chain().focus().toggleCode().run()}
@@ -1117,6 +1409,13 @@ function Ribbon({
         >
           <Minus size={13} />
         </RibbonBtn>
+        {/* Sprint 10 — Fußnote (kanzlei-essential für Zitate) */}
+        <RibbonBtn
+          onClick={() => editor.chain().focus().addFootnote().run()}
+          title="Fußnote einfügen"
+        >
+          <Scroll size={13} />
+        </RibbonBtn>
         <div className="relative">
           <button
             type="button"
@@ -1222,6 +1521,10 @@ function Ribbon({
           title="Wiederholen (⌘⇧Z)"
         >
           <Redo2 size={13} />
+        </RibbonBtn>
+        {/* Sprint 10 — Find & Replace (Cmd+F) */}
+        <RibbonBtn onClick={onOpenSearch} title="Suchen & Ersetzen (⌘F)">
+          <Search size={13} />
         </RibbonBtn>
       </RibbonGroup>
 
@@ -1382,6 +1685,124 @@ function TableToolbar({ editor }: { editor: Editor }) {
   );
 }
 
+/* ── Search & Replace Overlay (Sprint 10) ─────────────────────────── */
+
+function SearchReplaceOverlay({
+  editor,
+  searchTerm,
+  setSearchTerm,
+  replaceTerm,
+  setReplaceTerm,
+  onClose,
+}: {
+  editor: Editor;
+  searchTerm: string;
+  setSearchTerm: (v: string) => void;
+  replaceTerm: string;
+  setReplaceTerm: (v: string) => void;
+  onClose: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }, []);
+
+  /* Update the search-highlight as user types. */
+  useEffect(() => {
+    editor.commands.setSearchTerm(searchTerm);
+    editor.commands.setReplaceTerm(replaceTerm);
+  }, [searchTerm, replaceTerm, editor]);
+
+  /* Read live result-count from extension storage. */
+  const results = (
+    (editor.storage as unknown as Record<string, unknown>).searchAndReplace as
+      | { results?: Array<unknown> }
+      | undefined
+  )?.results;
+  const resultCount = results?.length ?? 0;
+
+  return (
+    <div className="flex shrink-0 items-center gap-2 border-b border-slate-300 bg-amber-50 px-3 py-2 dark:border-slate-700 dark:bg-amber-500/10">
+      <Search size={13} className="text-amber-700 dark:text-amber-300" />
+      <input
+        ref={inputRef}
+        type="text"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            editor.commands.nextSearchResult();
+          }
+          if (e.key === "Enter" && e.shiftKey) {
+            e.preventDefault();
+            editor.commands.previousSearchResult();
+          }
+          if (e.key === "Escape") {
+            e.preventDefault();
+            onClose();
+          }
+        }}
+        placeholder="Suchen..."
+        className="w-64 rounded-md border border-slate-300 bg-white px-2.5 py-1 text-[12px] focus:border-amber-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900"
+      />
+      <input
+        type="text"
+        value={replaceTerm}
+        onChange={(e) => setReplaceTerm(e.target.value)}
+        placeholder="Ersetzen mit..."
+        className="w-64 rounded-md border border-slate-300 bg-white px-2.5 py-1 text-[12px] focus:border-amber-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900"
+      />
+      <button
+        type="button"
+        onClick={() => editor.commands.previousSearchResult()}
+        className="rounded px-2 py-1 text-[11px] text-slate-700 transition-colors hover:bg-amber-100 dark:text-slate-300 dark:hover:bg-amber-500/20"
+      >
+        ↑
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.commands.nextSearchResult()}
+        className="rounded px-2 py-1 text-[11px] text-slate-700 transition-colors hover:bg-amber-100 dark:text-slate-300 dark:hover:bg-amber-500/20"
+      >
+        ↓
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.commands.replace()}
+        disabled={!replaceTerm || resultCount === 0}
+        className="rounded bg-amber-200 px-2 py-1 text-[11px] font-medium text-amber-900 transition-colors hover:bg-amber-300 disabled:opacity-50 dark:bg-amber-500/30 dark:text-amber-200"
+      >
+        Ersetzen
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.commands.replaceAll()}
+        disabled={!replaceTerm || resultCount === 0}
+        className="rounded bg-amber-500 px-2 py-1 text-[11px] font-medium text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
+      >
+        Alle ersetzen
+      </button>
+      <span className="ml-2 text-[11px] text-slate-600 dark:text-slate-400">
+        {resultCount === 0 && searchTerm
+          ? "Keine Treffer"
+          : resultCount > 0
+            ? `${resultCount} Treffer`
+            : ""}
+      </span>
+      <button
+        type="button"
+        onClick={onClose}
+        className="ml-auto rounded p-1 text-slate-500 transition-colors hover:bg-amber-100 hover:text-slate-900 dark:hover:bg-amber-500/20 dark:hover:text-slate-200"
+        aria-label="Suche schließen"
+      >
+        <X size={14} />
+      </button>
+    </div>
+  );
+}
+
 /* ── Status Bar ────────────────────────────────────────────────────── */
 
 function StatusBar({
@@ -1513,6 +1934,41 @@ function AiMessageBubble({
 }
 
 /* ── Static data ──────────────────────────────────────────────────── */
+
+/* Sprint 10 — Word-style font + size + color choices.
+   DIN 5008 empfiehlt Times New Roman / Arial / Calibri 11-12pt. */
+const FONT_FAMILIES = [
+  "Calibri",
+  "Aptos",
+  "Arial",
+  "Helvetica",
+  "Times New Roman",
+  "Cambria",
+  "Georgia",
+  "Verdana",
+  "Tahoma",
+  "Garamond",
+  "Courier New",
+];
+
+const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48];
+
+const COLOR_SWATCHES = [
+  "" /* default / unset */,
+  "#000000",
+  "#1f2937",
+  "#475569",
+  "#9ca3af",
+  "#dc2626",
+  "#ea580c",
+  "#d97706",
+  "#65a30d",
+  "#059669" /* emerald-600 = Atlas accent */,
+  "#0891b2",
+  "#2563eb",
+  "#7c3aed",
+  "#c026d3",
+];
 
 const QUICK_PROMPTS = [
   "Schreib das formeller",
