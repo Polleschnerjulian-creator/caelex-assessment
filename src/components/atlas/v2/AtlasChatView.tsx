@@ -41,6 +41,13 @@ import {
   downloadChatAsDocx,
   generateChatDocxBlob,
 } from "@/lib/atlas/chat-briefing-docx";
+/* UI-FIX 2026-05-18: per-message PDF/DOCX export. AI-Antworten als
+   Schriftsatz / Memo / Vertrag müssen direkt aus dem Chat-Bubble
+   downloadbar sein — vorher gabs nur den ganzen Chat-Export. Closes
+   audit-finding M28. */
+import { downloadArtifactAsPdf } from "@/lib/atlas/artifact-pdf";
+import { downloadArtifactAsDocx } from "@/lib/atlas/artifact-docx";
+import { FileText, FileType } from "lucide-react";
 import type {
   ChatImageAttachment,
   ChatMessageBlock,
@@ -1105,6 +1112,43 @@ function AssistantActions({
     }
   };
 
+  /* UI-FIX 2026-05-18: per-message PDF/DOCX export.
+     Heuristic für sinnvolle title: erste Markdown-H1/H2 oder die
+     ersten 60 chars. Kind = "memo" als safer Default (Atlas-Branding
+     neutral). Wenn die Antwort als Schriftsatz/Vertrag kommt, hat der
+     Text-Body schon "PRIVILEGED & CONFIDENTIAL" als Banner → die PDF
+     bekommt das auch korrekt von artifact-pdf.ts gerendert. */
+  const extractTitle = (md: string): string => {
+    const h1 = md.match(/^#\s+(.+)$/m);
+    if (h1) return h1[1].trim().slice(0, 80);
+    const h2 = md.match(/^##\s+(.+)$/m);
+    if (h2) return h2[1].trim().slice(0, 80);
+    const firstLine = md
+      .split("\n")
+      .find((l) => l.trim().length > 0)
+      ?.replace(/^\W+/, "")
+      .trim();
+    return (firstLine ?? "Atlas-Antwort").slice(0, 60);
+  };
+
+  const downloadAsPdf = () => {
+    downloadArtifactAsPdf({
+      kind: "memo",
+      title: extractTitle(text),
+      body: text,
+      mandateName: undefined,
+    });
+  };
+
+  const downloadAsDocx = () => {
+    void downloadArtifactAsDocx({
+      kind: "memo",
+      title: extractTitle(text),
+      body: text,
+      mandateName: undefined,
+    });
+  };
+
   /* Save the assistant message as an AtlasNote — server-persisted,
      surfaces in /atlas/notes. Differs from the old localStorage
      "bookmark" which was a placeholder; this is real. */
@@ -1190,6 +1234,30 @@ function AssistantActions({
                 ? "Fehler"
                 : "Notiz"}
         </span>
+      </button>
+      {/* UI-FIX 2026-05-18: PDF + DOCX Export pro AI-Antwort. Bislang
+          waren beide Exporter nur im Agent-Mode-ArtifactCard verfügbar
+          → User musste im regular Chat "kann Atlas PDF?" fragen + AI
+          sagte "nein". Jetzt: jede Antwort downloadbar als PDF/DOCX. */}
+      <button
+        type="button"
+        onClick={downloadAsPdf}
+        title="Antwort als PDF herunterladen"
+        aria-label="Antwort als PDF herunterladen"
+        className="inline-flex h-6 items-center gap-1 rounded px-1.5 text-[11px] text-slate-500 transition-colors hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-200"
+      >
+        <FileText size={11} />
+        <span>PDF</span>
+      </button>
+      <button
+        type="button"
+        onClick={downloadAsDocx}
+        title="Antwort als Word (.docx) herunterladen"
+        aria-label="Antwort als Word herunterladen"
+        className="inline-flex h-6 items-center gap-1 rounded px-1.5 text-[11px] text-slate-500 transition-colors hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-200"
+      >
+        <FileType size={11} />
+        <span>DOCX</span>
       </button>
     </div>
   );
