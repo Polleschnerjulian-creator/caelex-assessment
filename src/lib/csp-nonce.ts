@@ -96,8 +96,12 @@ export function buildCspHeader(nonce: string, isDev = false): string {
     "img-src 'self' data: https: blob:",
     // Connections: explicitly whitelisted domains only
     "connect-src 'self' blob: https://accounts.google.com https://*.neon.tech wss://*.neon.tech https://*.upstash.io https://*.sentry.io https://*.ingest.sentry.io https://api.stripe.com https://vitals.vercel-insights.com",
-    // Frames: Google OAuth popup, Stripe
-    "frame-src 'self' https://accounts.google.com https://js.stripe.com https://hooks.stripe.com",
+    // Frames: Google OAuth popup, Stripe, AND blob: für client-side
+    // generierte PDF-Previews (Atlas v2 ArtifactPreviewPanel — iframe
+    // src ist eine blob:application/pdf URL aus jsPDF). Ohne `blob:`
+    // hier blockt der Browser den iframe stillschweigend → weißer
+    // Bildschirm im PDF-Tab. Fix 2026-05-18.
+    "frame-src 'self' blob: https://accounts.google.com https://js.stripe.com https://hooks.stripe.com",
     // Form submissions: only to self
     "form-action 'self'",
     // Base URI: only self (prevents base tag hijacking)
