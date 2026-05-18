@@ -59,6 +59,7 @@ import {
   type ArtifactInfo,
   type ArtifactKind,
 } from "./ArtifactPreviewPanel";
+import { ArtifactEditor } from "./ArtifactEditor";
 import type {
   ChatImageAttachment,
   ChatMessageBlock,
@@ -93,6 +94,12 @@ export function AtlasChatView({ chatId }: Props) {
      klickt wird der Artefakt hier gesetzt und das rechtsseitige
      ArtifactPreviewPanel rendert ihn. */
   const [openArtifact, setOpenArtifact] = useState<ArtifactInfo | null>(null);
+  /* Sprint 9 (2026-05-18) — Word-like Editor state. Independent vom
+     openArtifact damit der User aus dem Editor zurück ins Panel kann
+     (Panel-Stack: Editor on top of Panel on top of Chat). */
+  const [editingArtifact, setEditingArtifact] = useState<ArtifactInfo | null>(
+    null,
+  );
   /* Seed value for the composer textarea — used when a programmatic
      event (e.g. quickstart link) wants to pre-fill the input. */
   const [composerSeed, setComposerSeed] = useState<string | undefined>();
@@ -791,12 +798,39 @@ export function AtlasChatView({ chatId }: Props) {
           artifact={openArtifact}
           onClose={() => setOpenArtifact(null)}
           onRefineRequest={(art) => {
-            /* Sprint 2a (2026-05-18): "Anpassen" — wir prefillen die
+            /* Sprint 2a (2026-05-18): "Schnell-Frage" — wir prefillen die
                Chat-Input mit einem refine-prompt + dem Artefakt-Body
                als Context. Der Lawyer muss nur noch seinen Änderungs-
                wunsch oben drauf tippen und schicken. */
             const prompt = `Bitte das folgende Dokument anpassen:\n\n---\n\n${art.body}\n\n---\n\nÄnderungswunsch: `;
             setComposerSeed(prompt);
+            setOpenArtifact(null);
+          }}
+          onOpenEditor={(art) => {
+            /* Sprint 9 (2026-05-18): "Bearbeiten" — öffnet Word-like
+               Editor mit AI-Sidebar im Vollbild. Panel bleibt im state
+               (zurück-Button im Editor schließt nur den Editor, das
+               Panel bleibt sichtbar). */
+            setEditingArtifact(art);
+          }}
+        />
+      )}
+
+      {/* Sprint 9 (2026-05-18) — Word-like Fullscreen Editor.
+          Z-index [100] > ArtifactPreviewPanel (z-50) damit der Editor
+          dem Panel optisch overlay'd. Auf Save: dispatch refine-prompt
+          mit dem editierten body als Folgenachricht im Chat. */}
+      {editingArtifact && (
+        <ArtifactEditor
+          artifact={editingArtifact}
+          onClose={() => setEditingArtifact(null)}
+          onSave={({ title, body }) => {
+            /* Schicke die editierte Version als neue User-Nachricht +
+               Hinweis-Prompt damit Atlas den Kontext versteht und
+               eventuell weitere Vorschläge macht. */
+            const prompt = `Ich habe das Dokument "${title}" überarbeitet. Hier die neue Version:\n\n---\n\n${body}\n\n---\n\nBitte review + gib mir Feedback (oder mach weitere Verbesserungen wenn nötig).`;
+            setComposerSeed(prompt);
+            setEditingArtifact(null);
             setOpenArtifact(null);
           }}
         />

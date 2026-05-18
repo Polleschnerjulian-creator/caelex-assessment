@@ -72,6 +72,10 @@ interface Props {
    *  carrying the artifact body as context. When undefined, the
    *  "Anpassen" button is hidden. */
   onRefineRequest?: (artifact: ArtifactInfo) => void;
+  /** Optional — Sprint 9 (2026-05-18). Opens the full-screen Word-like
+   *  editor with AI sidebar. When undefined, the "Bearbeiten"-button
+   *  is hidden. */
+  onOpenEditor?: (artifact: ArtifactInfo) => void;
 }
 
 type PreviewMode = "markdown" | "pdf";
@@ -126,6 +130,7 @@ export function ArtifactPreviewPanel({
   artifact,
   onClose,
   onRefineRequest,
+  onOpenEditor,
 }: Props) {
   const [copied, setCopied] = useState(false);
   const [savedToVault, setSavedToVault] = useState(false);
@@ -325,15 +330,29 @@ export function ArtifactPreviewPanel({
             </div>
           </div>
           <div className="flex items-center gap-1">
+            {/* Sprint 9 (2026-05-18) — Bearbeiten öffnet den fullscreen
+                Word-like Editor mit AI-Sidebar. Bevorzugt gegenüber
+                "Anpassen" (das ist die schnelle one-shot Chat-Iteration). */}
+            {onOpenEditor && (
+              <button
+                type="button"
+                onClick={() => onOpenEditor(artifact)}
+                title="Im Editor öffnen — Word-like Vollbild mit AI-Sidebar"
+                className="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-[11.5px] font-medium text-emerald-700 transition-colors hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20"
+              >
+                <Pencil size={11} />
+                Bearbeiten
+              </button>
+            )}
             {onRefineRequest && (
               <button
                 type="button"
                 onClick={() => onRefineRequest(artifact)}
-                title="Dokument anpassen (Chat-Iteration starten)"
+                title="Schnell-Anpassen via Chat-Input (eine Frage stellen)"
                 className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1 text-[11.5px] font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
               >
                 <Pencil size={11} />
-                Anpassen
+                Schnell-Frage
               </button>
             )}
             {/* Sprint 8-polish — Fullscreen toggle, desktop only. */}
