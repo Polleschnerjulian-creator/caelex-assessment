@@ -62,6 +62,7 @@ import {
   type LegalListType,
 } from "@/lib/atlas/editor-extensions/LegalOrderedList";
 import { CitationDialog } from "./CitationDialog";
+import { CrossReferenceDialog } from "./CrossReferenceDialog";
 import {
   X,
   Save,
@@ -107,6 +108,7 @@ import {
   Footprints,
   Palette,
   Scroll,
+  Link2,
 } from "lucide-react";
 import type { ArtifactInfo } from "./ArtifactPreviewPanel";
 import { markdownToHtml, htmlToMarkdown } from "@/lib/atlas/editor-md-bridge";
@@ -169,6 +171,8 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
   const [replaceTerm, setReplaceTerm] = useState("");
   /* Sprint 11 — CitationDialog state */
   const [citationOpen, setCitationOpen] = useState(false);
+  /* Sprint 12 — CrossReferenceDialog state */
+  const [crossRefOpen, setCrossRefOpen] = useState(false);
 
   /* TipTap editor instance — set up once on mount.
      Sprint 10: Word-feature-parity OSS-Extensions added (per research-
@@ -379,6 +383,42 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [aiMessages.length, aiBusy]);
 
+  /* Sprint 12 — Cross-Reference click-handler. Wenn der user auf eine
+     ".atlas-cross-ref"-link klickt, scrolle zur target-position im
+     editor (statt browser-default "follow href"). */
+  useEffect(() => {
+    if (!editor) return;
+    const onClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      const link = target.closest(
+        ".atlas-cross-ref",
+      ) as HTMLAnchorElement | null;
+      if (!link) return;
+      e.preventDefault();
+      const posAttr = link.getAttribute("data-target-pos");
+      if (!posAttr) return;
+      const pos = parseInt(posAttr, 10);
+      if (isNaN(pos)) return;
+      try {
+        editor
+          .chain()
+          .focus()
+          .setTextSelection(pos + 1)
+          .run();
+        const dom = editor.view.domAtPos(pos + 1).node;
+        const el = (
+          dom instanceof Element ? dom : dom.parentElement
+        ) as HTMLElement | null;
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      } catch {
+        /* silent — pos might be stale if doc changed */
+      }
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, [editor]);
+
   /* Esc + Cmd+S + Cmd+F */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -572,6 +612,7 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
         selectionLen={selectionText.length}
         onOpenSearch={() => setSearchOpen(true)}
         onOpenCitation={() => setCitationOpen(true)}
+        onOpenCrossRef={() => setCrossRefOpen(true)}
       />
 
       {/* Body: outline + page + ai */}
@@ -771,6 +812,23 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
         />
       )}
 
+      {/* Sprint 12 — Cross-Reference Dialog (Querverweise zu Headings + Fußnoten).
+          Click-to-scroll handler attached via global delegation below. */}
+      {crossRefOpen && editor && (
+        <CrossReferenceDialog
+          editor={editor}
+          onClose={() => setCrossRefOpen(false)}
+          onInsert={(target, label) => {
+            /* Insert as styled <a> with data attributes; href is "#" +
+               unique key so multiple refs to same target keep distinct
+               identity. Click-handler reads data-target-pos and uses
+               TipTap commands to navigate. */
+            const html = `<a href="#xref-${target.pos}" data-cross-ref="${target.kind}" data-target-pos="${target.pos}" class="atlas-cross-ref">${label}</a>`;
+            editor.chain().focus().insertContent(html).run();
+          }}
+        />
+      )}
+
       {/* Word-page typography + Sprint-10 additions (Pagination, Search,
           Footnotes, Subscript/Superscript) */}
       <style jsx global>{`
@@ -780,6 +838,23 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
           line-height: 1.5;
           color: #1f2937;
           min-height: 100%;
+        }
+        /* Sprint 12 — Querverweis (Cross-Reference) link styling.
+           Emerald wie Atlas-accent + dotted underline für visual-distinction
+           von normalen externen Links. */
+        .atlas-wysiwyg a.atlas-cross-ref {
+          color: #047857;
+          text-decoration: underline dotted;
+          text-decoration-thickness: 1px;
+          text-underline-offset: 2px;
+          cursor: pointer;
+          font-weight: 500;
+        }
+        .atlas-wysiwyg a.atlas-cross-ref:hover {
+          color: #065f46;
+          background: #ecfdf5;
+          padding: 0 2pt;
+          border-radius: 2pt;
         }
         /* Sprint 10 — Search-Highlight (amber) */
         .atlas-search-result {
@@ -1009,6 +1084,7 @@ function Ribbon({
   selectionLen,
   onOpenSearch,
   onOpenCitation,
+  onOpenCrossRef,
 }: {
   editor: Editor | null;
   showOutline: boolean;
@@ -1018,6 +1094,7 @@ function Ribbon({
   selectionLen: number;
   onOpenSearch: () => void;
   onOpenCitation: () => void;
+  onOpenCrossRef: () => void;
 }) {
   const [styleOpen, setStyleOpen] = useState(false);
   const [insertOpen, setInsertOpen] = useState(false);
@@ -1501,6 +1578,13 @@ function Ribbon({
         {/* Sprint 11 — Strukturiertes jur. Zitat (Gesetz/Urteil/Komm./etc.) */}
         <RibbonBtn onClick={onOpenCitation} title="Juristisches Zitat einfügen">
           <Quote size={13} />
+        </RibbonBtn>
+        {/* Sprint 12 — Querverweis zu Überschriften/Fußnoten */}
+        <RibbonBtn
+          onClick={onOpenCrossRef}
+          title="Querverweis (siehe Abschnitt X / vgl. Fn. Y)"
+        >
+          <Link2 size={13} />
         </RibbonBtn>
         <div className="relative">
           <button
