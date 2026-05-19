@@ -220,8 +220,10 @@ export default function ImpressumPage() {
               </p>
             </section>
 
-            {/* EU Streitbeilegung */}
-            <section>
+            {/* EU Streitbeilegung — Wave 9 (H-7): id-anker damit der
+                footer-link /legal/impressum#streitbeilegung direkt hierher
+                scrollt (§ 36 VSBG "leicht zugänglich"-pflicht). */}
+            <section id="streitbeilegung" className="scroll-mt-24">
               <h2 className="text-heading font-medium mb-3">Streitbeilegung</h2>
               <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 Die Europäische Kommission stellt unter{" "}

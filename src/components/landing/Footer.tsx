@@ -189,6 +189,16 @@ const legalOtherLinks = [
   { label: "Acceptable Use", href: "/legal/content-policy" },
   { label: "Security Policy", href: "/legal/security" },
   { label: "Accessibility", href: "/legal/barrierefreiheit" },
+  /* Wave 9 (Audit H-7) — § 36 VSBG verlangt den hinweis auf die
+     OS-streitbeilegungs-plattform "leicht zugänglich, klar und
+     verständlich". Nur im impressum vergraben reicht nicht laut
+     herrschender meinung — daher direkt im footer. Link führt auf
+     impressum-anker damit user den vollen text (inkl. nicht-teilnahme-
+     bereitschaft) sieht. */
+  {
+    label: "Streitbeilegung (VSBG/OS)",
+    href: "/legal/impressum#streitbeilegung",
+  },
 ];
 
 const socialLinks = [
