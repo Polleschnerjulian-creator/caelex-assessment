@@ -78,21 +78,21 @@ The user mandates: **zero new external costs**. Any finding marked `BLOCKED_COST
 
 ```
 TOTAL:                96 findings
-DONE:                  0   (SEC-T0-1 still in-progress at sub-step 4/7)
-IN_PROGRESS:           1   (SEC-T0-1, sub-steps 1+2a+2b+2c+3+4 complete; 5-7 remaining)
+DONE:                  1   (SEC-T0-1 fully shipped via 7 sub-step commits)
+IN_PROGRESS:           0
 TODO:                 95
 DEFERRED:              0
 WONTFIX:               0
 BLOCKED:               0
 
 By tier:
-  TIER 0 (existential):  3 findings · 0 done
+  TIER 0 (existential):  3 findings · 1 done (SEC-T0-1)
   TIER 1 (high-impact):  21 findings · 0 done   (9 SEC-IDORs + 4 bugs + 8 perf)
   TIER 2 (significant):  47 findings · 0 done
   TIER 3 (tech-debt):    25 findings · 0 done
 
 By domain:
-  Security:    28 findings · 0 done
+  Security:    28 findings · 1 done
   Bugs:        30 findings · 0 done
   Performance: 23 findings · 0 done
   UX/A11y:     15 findings · 0 done
@@ -227,11 +227,51 @@ Each finding follows the exact same structure for easy parsing.
 
 ### SEC-T0-1 · Zero encryption at rest for Atlas mandate content
 
-**Status:** IN_PROGRESS (started 2026-05-19, Step 1 of 7 done in commit `43b0b0d1`)
+**Status:** DONE (2026-05-19, all 7 sub-steps shipped; commit range `43b0b0d1..13dc5b18`)
 **Tier:** 0 (existential)
 **Domain:** Security
-**Effort:** 2-3 days (revised DOWN to ~1 day after discovering lib/encryption.ts already had encryptForOrg/smartDecrypt/migrateToOrgEncryption — see Step Log below)
-**Cost:** FREE (lib/encryption.ts already exists)
+**Effort:** ~6 hours actual (revised DOWN from 2-3 day initial estimate after discovering lib/encryption.ts already had encryptForOrg/smartDecrypt/migrateToOrgEncryption — see Step Log below)
+**Cost:** FREE (lib/encryption.ts already existed; Atlas-specific wrappers + backfill script are pure code)
+
+**Production-run instructions for the operator:**
+
+The dual-read transition (D-3) means production is SAFE TODAY — all
+write paths now encrypt, all read paths tolerate both ciphertext +
+legacy plaintext via smartDecrypt. Existing rows are still plaintext
+until the backfill runs. Schedule the backfill at low-traffic time:
+
+1. **Dry-run first** to see how many rows would be affected:
+
+   ```bash
+   npm run atlas:encrypt-backfill:dry
+   ```
+
+   Inspect the per-model tally. Expect `failed=0` on healthy DBs.
+
+2. **Live run** (writes ciphertext):
+
+   ```bash
+   npm run atlas:encrypt-backfill
+   ```
+
+   Logs progress every 500 rows. Per-row errors caught + logged; one
+   bad row doesn't abort the batch. Exit code 1 if any failures.
+
+3. **Verify via prisma studio**: open `AtlasMandate.customInstructions`
+   on a recently-edited mandate, expect the value to start with `org:cl...:`.
+   Same for `AtlasMandateFile.extractedText`, `AtlasMessage.content`
+   text-blocks, `AtlasKnowledgeChunk.text`, `AtlasResearchEntry.content`.
+
+4. **Re-run is safe**: backfill is idempotent (`isAtlasFieldEncrypted`
+   check skips already-encrypted rows). If you crash midway, just
+   re-run — cursor pagination resumes from the next row.
+
+**Single-model run** (useful for testing on staging):
+
+```bash
+npx tsx scripts/encrypt-atlas-backfill.ts --only=mandate
+# Models: mandate, message, file, chunk, library
+```
 
 **Step Log:**
 
@@ -241,11 +281,9 @@ Each finding follows the exact same structure for easy parsing.
 - ✅ **Step 2c** (2026-05-19, `f68c5a2b`): Searchable encryption per D-6 = Option A (load-then-decrypt-then-filter). conflict-check decrypts in-memory before substring scan; mandate/search uses two-phase fetch (DB filename match Phase 1 + in-memory clientName match Phase 2 + merge/dedupe/take 10).
 - ✅ **Step 3** (2026-05-19, `f72ae6f4`): chat-engine.server.ts AtlasMessage.content encryption. 3 write sites (continuation user-msg create, new-chat nested user-msg create, assistant final update) + 2 read sites (ensureChatAndHistory decrypt-before-Anthropic-API, loadChatForUser decrypt-before-UI). Prisma.JsonValue cast on read sites. 71 insertions.
 - ✅ **Step 4** (2026-05-19, `48f910ef`): AtlasMandateFile.extractedText encryption (200KB-per-file vault text). 1 write site (document-processor) + 5 read sites (loadFile central choke, search_mandate_vault bulk-load, auto-embed pre-tokenize, extract-deadlines pre-Haiku, vault/route two-phase search per D-6). 167 insertions across 5 files.
-- ⏳ **Step 3**: wire into chat-engine.server.ts (AtlasMessage.content text blocks + tool_result content)
-- ⏳ **Step 4**: wire into document-processor.server.ts (AtlasMandateFile.extractedText)
-- ⏳ **Step 5**: wire into auto-embed.server.ts + library-recall (AtlasKnowledgeChunk.text + AtlasResearchEntry.content)
-- ⏳ **Step 6**: backfill script `scripts/encrypt-atlas-backfill.ts` + manual run instructions
-- ⏳ **Step 7**: integration verify via prisma studio + commit final consolidation
+- ✅ **Step 5** (2026-05-19, `ad7be9e1`): AtlasKnowledgeChunk.text + AtlasResearchEntry.{content,query} encryption. 3 writes (auto-embed bulk-insert, knowledge POST, library POST) + 4 reads (knowledge GET, knowledge search vector-rank, library list/search, library-recall embedding-compose). 184 insertions across 5 files.
+- ✅ **Step 6** (2026-05-19, `13dc5b18`): `scripts/encrypt-atlas-backfill.ts` — one-shot idempotent migration script for all 5 encrypted Models. Cursor pagination, BATCH_SIZE=100, dry-run mode, per-row error catching, `--only=<model>` filter, exit-code-1 on any failures. 446 LOC + 2 npm scripts (`atlas:encrypt-backfill:dry` + `atlas:encrypt-backfill`).
+- ✅ **Step 7** (2026-05-19, this commit): Final consolidation. SEC-T0-1 status flipped to DONE. Operator-facing production-run-instructions written above. Progress counter bumped: 1/96 done.
 
 **Files:**
 
