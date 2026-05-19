@@ -19,6 +19,12 @@ import { prisma } from "@/lib/prisma";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { logger } from "@/lib/logger";
 import { deleteMandateAndR2Files } from "@/lib/atlas/document-processor.server";
+/* SEC-T0-1 step 2 — encryption-at-rest for PII fields on AtlasMandate.
+   See docs/AUDIT-ATLAS-V2.md for the full audit-fix plan. */
+import {
+  encryptAtlasField,
+  decryptAtlasField,
+} from "@/lib/atlas/atlas-encryption";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -122,7 +128,18 @@ export async function GET(
   if (!mandate) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  return NextResponse.json({ mandate });
+  /* SEC-T0-1: decrypt all 3 PII fields (clientName, clientContact,
+     customInstructions) before responding. Three sequential awaits
+     would also work but Promise.all is cheaper and parallelizable
+     since each field's decryption is independent. */
+  const [clientName, clientContact, customInstructions] = await Promise.all([
+    decryptAtlasField(mandate.clientName),
+    decryptAtlasField(mandate.clientContact),
+    decryptAtlasField(mandate.customInstructions),
+  ]);
+  return NextResponse.json({
+    mandate: { ...mandate, clientName, clientContact, customInstructions },
+  });
 }
 
 /* ── PATCH ─────────────────────────────────────────────────────────── */
@@ -160,6 +177,30 @@ export async function PATCH(
   }
   if (parsed.data.status === "closed") {
     data.closedAt = new Date();
+  }
+
+  /* SEC-T0-1: encrypt PII fields before persisting the update. We
+     overwrite only the keys the caller actually sent — keeping null
+     vs undefined semantics so a PATCH that omits clientName leaves
+     it untouched, while a PATCH that sends clientName: null clears
+     it (encryptAtlasField passes null through unchanged). */
+  if ("clientName" in parsed.data) {
+    data.clientName = await encryptAtlasField(
+      parsed.data.clientName,
+      atlas.organizationId,
+    );
+  }
+  if ("clientContact" in parsed.data) {
+    data.clientContact = await encryptAtlasField(
+      parsed.data.clientContact,
+      atlas.organizationId,
+    );
+  }
+  if ("customInstructions" in parsed.data) {
+    data.customInstructions = await encryptAtlasField(
+      parsed.data.customInstructions,
+      atlas.organizationId,
+    );
   }
   if (parsed.data.status === "active") {
     data.archivedAt = null;
@@ -209,7 +250,15 @@ export async function PATCH(
         updatedAt: true,
       },
     });
-    return NextResponse.json({ mandate });
+    /* SEC-T0-1: decrypt the 2 sensitive fields in the response. */
+    if (!mandate) return NextResponse.json({ mandate });
+    const [clientName, customInstructions] = await Promise.all([
+      decryptAtlasField(mandate.clientName),
+      decryptAtlasField(mandate.customInstructions),
+    ]);
+    return NextResponse.json({
+      mandate: { ...mandate, clientName, customInstructions },
+    });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     logger.error("[atlas/mandate/id] PATCH failed", {

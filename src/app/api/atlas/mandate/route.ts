@@ -15,6 +15,12 @@ import { prisma } from "@/lib/prisma";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { logger } from "@/lib/logger";
 import { maskId } from "@/lib/atlas/log-masking";
+/* SEC-T0-1 step 2 — encryption-at-rest for PII fields on AtlasMandate.
+   See docs/AUDIT-ATLAS-V2.md for the full audit-fix plan. */
+import {
+  encryptAtlasField,
+  decryptAtlasField,
+} from "@/lib/atlas/atlas-encryption";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -51,14 +57,33 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    /* SEC-T0-1: encrypt PII fields (clientName, clientContact,
+       customInstructions) with the per-organization key before writing.
+       `name` stays plaintext — it's the display label shown in nav
+       lists where decryption-per-row would be a perf hit (PERF-T2-4).
+       jurisdiction / operatorType / primaryAuthority are categorical
+       enums, not PII — plaintext is fine. */
+    const encClientName = await encryptAtlasField(
+      parsed.data.clientName,
+      atlas.organizationId,
+    );
+    const encClientContact = await encryptAtlasField(
+      parsed.data.clientContact,
+      atlas.organizationId,
+    );
+    const encCustomInstructions = await encryptAtlasField(
+      parsed.data.customInstructions,
+      atlas.organizationId,
+    );
+
     const created = await prisma.atlasMandate.create({
       data: {
         organizationId: atlas.organizationId,
         ownerUserId: atlas.userId,
         name: parsed.data.name,
-        clientName: parsed.data.clientName,
-        clientContact: parsed.data.clientContact,
-        customInstructions: parsed.data.customInstructions,
+        clientName: encClientName,
+        clientContact: encClientContact,
+        customInstructions: encCustomInstructions,
         jurisdiction: parsed.data.jurisdiction,
         operatorType: parsed.data.operatorType,
         primaryAuthority: parsed.data.primaryAuthority,
@@ -77,7 +102,15 @@ export async function POST(req: NextRequest) {
         createdAt: true,
       },
     });
-    return NextResponse.json({ mandate: created });
+    /* Decrypt the returned clientName before responding so the client
+       UI receives plaintext (encryption is a server-side invariant,
+       transparent to API consumers). */
+    return NextResponse.json({
+      mandate: {
+        ...created,
+        clientName: await decryptAtlasField(created.clientName),
+      },
+    });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     // AUDIT-FIX M23: mask userId (CUID) before logging
@@ -156,5 +189,17 @@ export async function GET(req: NextRequest) {
   const nextCursor =
     mandates.length === TAKE ? mandates[mandates.length - 1].id : null;
 
-  return NextResponse.json({ mandates, nextCursor });
+  /* SEC-T0-1: decrypt clientName per row before responding. clientName
+     is the only sensitive field projected by this query — the others
+     (jurisdiction, operatorType, primaryAuthority) are categorical and
+     stored plaintext. Decryption is parallelized via Promise.all so a
+     100-row page adds ~50ms not 5s. */
+  const decrypted = await Promise.all(
+    mandates.map(async (m) => ({
+      ...m,
+      clientName: await decryptAtlasField(m.clientName),
+    })),
+  );
+
+  return NextResponse.json({ mandates: decrypted, nextCursor });
 }
