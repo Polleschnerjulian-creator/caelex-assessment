@@ -20,6 +20,9 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+/* SEC-T0-1 step 4 — decrypt extractedText before tokenizing for
+   embedding. Encrypted ciphertext would produce useless vectors. */
+import { decryptAtlasField } from "../atlas-encryption";
 import {
   chunkText,
   embedTexts,
@@ -58,7 +61,14 @@ export async function autoEmbedMandateFile(
       return { status: "failed", reason: "File not found" };
     }
 
-    if (!file.extractedText || file.extractedText.trim().length === 0) {
+    /* SEC-T0-1 step 4: decrypt extractedText before embedding. The
+       embedding pipeline tokenizes plaintext — feeding encrypted
+       ciphertext would produce vector-junk that nothing matches. */
+    const decryptedExtractedText = await decryptAtlasField(
+      file.extractedText,
+    ).catch(() => file.extractedText);
+
+    if (!decryptedExtractedText || decryptedExtractedText.trim().length === 0) {
       return {
         status: "skipped",
         reason: "no extracted text (image / unsupported)",
@@ -87,7 +97,7 @@ export async function autoEmbedMandateFile(
        the RAG store and the lawyer has no way to know that retrieval
        cannot reach pages 25+. We compute totalChunks BEFORE applying
        the cap so the badge can show the original count. */
-    const allChunks = chunkText(file.extractedText, 800);
+    const allChunks = chunkText(decryptedExtractedText, 800);
     const totalChunks = allChunks.length;
     const chunks = allChunks.slice(0, MAX_CHUNKS_PER_FILE);
     if (chunks.length === 0) {

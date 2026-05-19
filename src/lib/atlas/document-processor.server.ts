@@ -37,6 +37,10 @@ import {
   isR2Configured,
 } from "@/lib/storage/r2-client";
 import { logger } from "@/lib/logger";
+/* SEC-T0-1 step 4 — encryption-at-rest for AtlasMandateFile
+   .extractedText. Used by every write of vault-extracted PDF/DOCX/
+   XLSX text. See docs/AUDIT-ATLAS-V2.md. */
+import { encryptAtlasField } from "./atlas-encryption";
 
 /* PDF text extraction via unpdf. Workers-compatible (pure-JS,
    no native deps). The package is tree-shaken — only the
@@ -280,6 +284,14 @@ export async function uploadFileToMandate(args: {
      FIRST (with a placeholder storageKey) so its CUID becomes part of
      the storage path. Then we PUT to R2 + UPDATE the storageKey. If
      the R2 upload fails after the row exists, we delete the row. */
+  /* SEC-T0-1 step 4: encrypt extractedText at rest. This is the
+     single most-impactful field in Atlas to encrypt — 200KB per file
+     of vault contracts/NDAs/Bescheide is the densest PII surface in
+     the system. See docs/AUDIT-ATLAS-V2.md SEC-T0-1. */
+  const encryptedExtractedText = await encryptAtlasField(
+    extractedText,
+    organizationId,
+  );
   const placeholder = await prisma.atlasMandateFile.create({
     data: {
       mandateId,
@@ -289,7 +301,7 @@ export async function uploadFileToMandate(args: {
       sizeBytes: data.length,
       storageKey: "__pending__",
       documentType,
-      extractedText,
+      extractedText: encryptedExtractedText,
     },
     select: { id: true },
   });

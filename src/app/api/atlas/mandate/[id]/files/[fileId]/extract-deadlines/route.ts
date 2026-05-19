@@ -29,6 +29,9 @@ import { getAtlasAuth } from "@/lib/atlas-auth";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { buildAnthropicClient } from "@/lib/atlas/anthropic-client";
 import { logger } from "@/lib/logger";
+/* SEC-T0-1 step 4 — decrypt extractedText before feeding into Claude
+   for deadline-extraction. Ciphertext input would produce garbage. */
+import { decryptAtlasField } from "@/lib/atlas/atlas-encryption";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -115,7 +118,14 @@ export async function POST(
   if (!file) {
     return NextResponse.json({ error: "File not found" }, { status: 404 });
   }
-  if (!file.extractedText || file.extractedText.trim().length < 100) {
+  /* SEC-T0-1 step 4: decrypt extractedText before length-check + Haiku
+     processing. Encrypted ciphertext is ~33% longer than plaintext, so
+     the length-check would silently misclassify long-ciphertext-of-
+     short-text as "extracted"; decrypt first, then check. */
+  const decryptedExtractedText = await decryptAtlasField(
+    file.extractedText,
+  ).catch(() => file.extractedText);
+  if (!decryptedExtractedText || decryptedExtractedText.trim().length < 100) {
     return NextResponse.json(
       {
         error:
@@ -126,7 +136,7 @@ export async function POST(
   }
 
   /* Truncate to avoid blowing Haiku's context budget. */
-  const text = file.extractedText.slice(0, MAX_TEXT_CHARS);
+  const text = decryptedExtractedText.slice(0, MAX_TEXT_CHARS);
 
   let extracted: z.infer<typeof EXTRACTED_SCHEMA>;
   try {

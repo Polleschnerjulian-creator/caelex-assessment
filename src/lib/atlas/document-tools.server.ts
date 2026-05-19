@@ -31,6 +31,9 @@ import "server-only";
 import type Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
 import { buildAnthropicClient } from "./anthropic-client";
+/* SEC-T0-1 step 4 — decrypt extractedText centrally in loadFile so
+   every per-tool path gets plaintext. */
+import { decryptAtlasField } from "./atlas-encryption";
 
 export interface DocumentToolResult {
   content: string;
@@ -221,7 +224,7 @@ async function loadFile(
   userId: string,
   organizationId: string,
 ) {
-  return prisma.atlasMandateFile.findFirst({
+  const file = await prisma.atlasMandateFile.findFirst({
     where: {
       id: fileId,
       mandate: {
@@ -239,6 +242,17 @@ async function loadFile(
       mandateId: true,
     },
   });
+  if (!file) return null;
+  /* SEC-T0-1 step 4: decrypt extractedText here at the central loader
+     so every per-tool caller (extract_text_from_pdf, search_mandate_vault,
+     summarize_document, find_clauses, find_dates) automatically gets
+     plaintext without needing per-callsite changes. Decrypt failure
+     silently falls back to original — let the per-tool path handle the
+     null/garbled case rather than crashing the whole tool execution. */
+  const decrypted = await decryptAtlasField(file.extractedText).catch(
+    () => file.extractedText,
+  );
+  return { ...file, extractedText: decrypted };
 }
 
 interface ExtractInput {
@@ -768,8 +782,14 @@ async function runSearchMandateKnowledge(
   /* Pull all files with extracted text for this mandate. We filter
      in-process because each file's extractedText is already loaded
      in a single pass — much cheaper than N ILIKE queries against
-     a Text column. */
-  const files = await prisma.atlasMandateFile.findMany({
+     a Text column.
+
+     SEC-T0-1 step 4: extractedText is now stored encrypted. The
+     `not: null` DB filter still works (encrypted "org:..." string is
+     non-null). After load, decrypt each row's extractedText so the
+     substring scan below sees plaintext. Same load-then-decrypt-
+     then-filter pattern as conflict-check + mandate/search (D-6). */
+  const rawFiles = await prisma.atlasMandateFile.findMany({
     where: {
       mandateId,
       extractedText: { not: null },
@@ -782,6 +802,14 @@ async function runSearchMandateKnowledge(
       extractedText: true,
     },
   });
+  const files = await Promise.all(
+    rawFiles.map(async (f) => ({
+      ...f,
+      extractedText: await decryptAtlasField(f.extractedText).catch(
+        () => f.extractedText,
+      ),
+    })),
+  );
 
   const queryLower = query.toLowerCase();
   const hits: Array<{
