@@ -39,6 +39,15 @@ import { ATLAS_TOOLS, isAtlasToolName } from "@/lib/atlas/atlas-tools";
 import { executeAtlasTool } from "@/lib/atlas/atlas-tool-executor";
 import { extractCitations } from "@/lib/atlas/citation-extractor.server";
 import { generateAndPersistChatTitle } from "./chat-title-generator.server";
+/* SEC-T0-1 step 3 — encryption-at-rest for AtlasMessage.content. Walks
+   the JSONB array, encrypts only text-blocks' .text + tool_result
+   nested text. Image-blocks and tool_use metadata stay structurally
+   intact (binary blobs / structured metadata, not direct PII). See
+   docs/AUDIT-ATLAS-V2.md and src/lib/atlas/atlas-encryption.ts. */
+import {
+  encryptAtlasMessageContent,
+  decryptAtlasMessageContent,
+} from "./atlas-encryption";
 import { logger } from "@/lib/logger";
 
 /* ── Config ───────────────────────────────────────────────────────── */
@@ -807,6 +816,22 @@ async function ensureChatAndHistory(args: {
     /* AUDIT-FIX M30: restore chronological ASC order for the Anthropic
        message-list (the API needs oldest-first context). */
     chat.messages.reverse();
+    /* SEC-T0-1 step 3: decrypt every message's content before feeding
+       it into the Anthropic API. CRITICAL: skipping this would make
+       the model see "org:cl...:..." ciphertext garbage as conversation
+       history, breaking every multi-turn chat. Dual-read tolerant
+       (smartDecrypt passes plaintext through unchanged). Parallelized
+       so a 200-message history costs ~1× decrypt-latency, not 200×.
+       The cast back to Prisma.JsonValue is safe — we only swap .text
+       strings inside text-blocks, the overall JSONB shape is preserved. */
+    chat.messages = await Promise.all(
+      chat.messages.map(async (m) => ({
+        ...m,
+        content: (await decryptAtlasMessageContent(m.content).catch(
+          () => m.content,
+        )) as Prisma.JsonValue,
+      })),
+    );
     /* Persist the new user message inline so the streaming loop can
        reference its id later (and so the message is durable even if
        the upstream call fails). Images live inside the content jsonb
@@ -818,11 +843,19 @@ async function ensureChatAndHistory(args: {
       chatId: chat.id,
       role: "user",
     });
+    /* SEC-T0-1 step 3: encrypt text-blocks inside the user-message
+       content array before persistence. Walks the array and only
+       encrypts .text on type:"text" blocks + tool_result nested
+       content. Image-blocks stay structurally intact. */
+    const encryptedUserContent = await encryptAtlasMessageContent(
+      sanitizedUserContent,
+      organizationId,
+    );
     await prisma.atlasMessage.create({
       data: {
         chatId: chat.id,
         role: "user",
-        content: sanitizedUserContent as object,
+        content: encryptedUserContent as object,
         toolsUsed: [],
       },
     });
@@ -853,6 +886,12 @@ async function ensureChatAndHistory(args: {
     userContent,
     { chatId: "(new-chat)", role: "user" },
   );
+  /* SEC-T0-1 step 3: encrypt new-chat user message too. Same pattern
+     as the continuation branch above. */
+  const encryptedNewChatUserContent = await encryptAtlasMessageContent(
+    sanitizedNewChatUserContent,
+    organizationId,
+  );
   const created = await prisma.atlasChat.create({
     data: {
       organizationId,
@@ -865,7 +904,7 @@ async function ensureChatAndHistory(args: {
         create: [
           {
             role: "user",
-            content: sanitizedNewChatUserContent as object,
+            content: encryptedNewChatUserContent as object,
             toolsUsed: [],
           },
         ],
@@ -1566,10 +1605,22 @@ export async function runChat(
           finalAssistantBlocks,
           { chatId, role: "assistant" },
         );
+        /* SEC-T0-1 step 3: encrypt assistant text-blocks before
+           persistence. Assistant content can include tool_result
+           blocks whose nested .content contains vault-derived text —
+           encryptAtlasMessageContent walks those recursively so
+           vault-content is also encrypted at rest, not just user-typed
+           text. organizationId from input is the same caller-org used
+           on the user-message create (line 821); per-org isolation
+           holds across both sides of a turn. */
+        const encryptedFinalBlocks = await encryptAtlasMessageContent(
+          sanitizedFinalBlocks,
+          input.organizationId,
+        );
         await prisma.atlasMessage.update({
           where: { id: assistantMessageId },
           data: {
-            content: sanitizedFinalBlocks as object,
+            content: encryptedFinalBlocks as object,
             inputTokens: totalInputTokens,
             outputTokens: totalOutputTokens,
             costUsd,
@@ -1785,6 +1836,23 @@ export async function loadChatForUser(args: {
      (chat-view, sanitiseHistoryForApi). */
   if (chat && chat.messages.length > 0) {
     chat.messages.reverse();
+    /* SEC-T0-1 step 3: decrypt every message's content JSONB before
+       returning. Dual-read tolerant — legacy plaintext content arrays
+       (created before encryption rollout) pass through unchanged via
+       smartDecrypt's auto-detection. Failed decrypts (corrupted
+       ciphertext) silently fall back to the original encrypted bytes:
+       the chat-view will render garbled text rather than showing a
+       blank page or crashing the route. Parallelized across messages.
+       Prisma.JsonValue cast is safe — shape preserved, only .text
+       strings inside text-blocks are swapped. */
+    chat.messages = await Promise.all(
+      chat.messages.map(async (m) => ({
+        ...m,
+        content: (await decryptAtlasMessageContent(m.content).catch(
+          () => m.content,
+        )) as Prisma.JsonValue,
+      })),
+    );
   }
   return chat;
 }
