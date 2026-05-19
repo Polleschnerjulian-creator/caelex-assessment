@@ -125,6 +125,43 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }
 
+  /* SEC-H3 (wave 11B): validate that chatId/mandateId references
+     actually belong to the caller before insert. Without this:
+     (a) attacker can probe valid ids via FK-constraint vs success
+         error differentiation (existence-leak),
+     (b) future feature "show notes attached to this chat" would
+         allow hostile note-planting on someone else's chat-id.
+     Use 404 (not 403) to avoid leaking which case failed. */
+  if (parsed.data.chatId) {
+    const chat = await prisma.atlasChat.findFirst({
+      where: {
+        id: parsed.data.chatId,
+        organizationId: atlas.organizationId,
+        ownerUserId: atlas.userId,
+      },
+      select: { id: true },
+    });
+    if (!chat) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+  }
+  if (parsed.data.mandateId) {
+    const mandate = await prisma.atlasMandate.findFirst({
+      where: {
+        id: parsed.data.mandateId,
+        organizationId: atlas.organizationId,
+        OR: [
+          { ownerUserId: atlas.userId },
+          { members: { some: { userId: atlas.userId } } },
+        ],
+      },
+      select: { id: true },
+    });
+    if (!mandate) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+  }
+
   try {
     const created = await prisma.atlasNote.create({
       data: {

@@ -179,6 +179,65 @@ export async function PATCH(
     data.closedAt = new Date();
   }
 
+  /* SEC-H7 (wave 11B): role-based field-level edit gating.
+
+     Before this fix, any mandate member could PATCH any field —
+     including `customInstructions` which gets injected into Claude's
+     system-prompt for EVERY chat in this mandate. That made any
+     bona-fide member (external counsel for one workstream, paralegal,
+     etc.) a prompt-injection vector against the partner running the
+     mandate.
+
+     Role policy:
+       - owner (ownerUserId or members.role==="owner") → all fields
+       - reviewer (members.role==="reviewer")          → all fields
+       - collaborator                                  → status/tags only
+       - viewer                                        → no PATCH (403)
+
+     Sensitive fields: name, clientName, clientContact, customInstructions.
+     Non-sensitive: status, jurisdiction, operatorType, primaryAuthority. */
+  const ownerRow = await prisma.atlasMandate.findFirst({
+    where: { id, organizationId: atlas.organizationId },
+    select: { ownerUserId: true },
+  });
+  const isOwner = ownerRow?.ownerUserId === atlas.userId;
+  let role: string | null = null;
+  if (!isOwner) {
+    const member = await prisma.atlasMandateMember.findFirst({
+      where: { mandateId: id, userId: atlas.userId },
+      select: { role: true },
+    });
+    role = member?.role ?? null;
+  }
+  const canEditAll = isOwner || role === "owner" || role === "reviewer";
+  const canEditSafe = canEditAll || role === "collaborator";
+  if (!canEditSafe) {
+    /* viewer or no membership at all — refuse the whole PATCH. */
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const SENSITIVE_FIELDS = [
+    "name",
+    "clientName",
+    "clientContact",
+    "customInstructions",
+  ] as const;
+  if (!canEditAll) {
+    /* collaborator path — strip sensitive fields. Surface as 403 if
+       the caller TRIED to send a sensitive field; silent strip would
+       be confusing UX. */
+    const attempted = SENSITIVE_FIELDS.filter((f) => f in parsed.data);
+    if (attempted.length > 0) {
+      return NextResponse.json(
+        {
+          error: "Forbidden — reviewer or owner role required",
+          fields: attempted,
+        },
+        { status: 403 },
+      );
+    }
+  }
+
   /* SEC-T0-1: encrypt PII fields before persisting the update. We
      overwrite only the keys the caller actually sent — keeping null
      vs undefined semantics so a PATCH that omits clientName leaves

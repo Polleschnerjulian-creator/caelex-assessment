@@ -31,6 +31,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { maskId } from "@/lib/atlas/log-masking";
+import { createHash } from "crypto";
 /* SEC-T0-1 step 2c — encryption-at-rest forces load-then-decrypt-
    then-filter for substring search. This route was already in that
    shape (no DB-level ILIKE) so the cost of encryption is just N
@@ -175,13 +176,26 @@ export async function POST(req: NextRequest) {
         for (const h of haystacks) {
           if (h.text.includes(term)) {
             const exact = h.text === term;
-            /* AUDIT-FIX H07: redact identifying fields when caller has
-               no access. The §43a alarm still fires (mandateId + match
-               are returned) so the caller knows to escalate; identity
-               leak is prevented. */
+            /* AUDIT-FIX H07 + SEC-H6 (wave 11B): redact identifying
+               fields when caller has no access. H07 already redacted
+               mandateName + clientName + matchedTerm; SEC-H6 extends
+               this to mandateId itself (was an existence-probe leak —
+               attacker passes a clientName, gets back hits with the
+               raw mandateId, now knows those mandate ids exist in the
+               org).
+
+               For non-member hits, replace mandateId with a SHA-256
+               prefix so the dedupe Map below still works per-mandate
+               but the raw CUID never leaves the server. The hash is
+               not reversible — partner whose mandate matched gets a
+               separate in-app notification (out of scope for this
+               commit, see future SEC-T2 follow-up). */
             const hasAccess = accessByMandate.get(m.id) === true;
+            const safeMandateId = hasAccess
+              ? m.id
+              : `redacted-${createHash("sha256").update(m.id).digest("hex").slice(0, 12)}`;
             hits.push({
-              mandateId: m.id,
+              mandateId: safeMandateId,
               mandateName: hasAccess
                 ? m.name
                 : "Konflikt mit fremdem Mandat (geschützt)",
