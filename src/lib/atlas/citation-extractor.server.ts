@@ -95,10 +95,19 @@ export function extractCitations(text: string): ExtractedCitation[] {
     { citationLiteral: string; firstAt: number; count: number }
   >();
 
-  let m: RegExpExecArray | null;
-  /* Reset lastIndex so subsequent calls don't share state. */
-  ATLAS_CITATION_RE.lastIndex = 0;
-  while ((m = ATLAS_CITATION_RE.exec(stripped)) !== null) {
+  /* BUG-T1-3 (wave 11C): use matchAll() instead of the .exec() loop.
+     The previous code did `ATLAS_CITATION_RE.lastIndex = 0` before
+     looping — but that's NOT concurrency-safe. The module-level
+     `const` regex with the `g` flag is a SHARED mutable object across
+     all in-flight requests in the same Node.js process (warm-start
+     serverless). Two interleaved calls can stomp on each other's
+     lastIndex state mid-loop, causing silently-skipped or duplicated
+     citations.
+
+     matchAll() returns a fresh iterator with internal state on each
+     call — no shared mutable state, fully concurrency-safe. The
+     regex object itself is read-only; matchAll wraps it. */
+  for (const m of stripped.matchAll(ATLAS_CITATION_RE)) {
     const literal = m[1];
     const at = m.index;
     const existing = seen.get(literal);

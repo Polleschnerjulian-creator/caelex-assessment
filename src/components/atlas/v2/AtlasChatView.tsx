@@ -256,8 +256,27 @@ export function AtlasChatView({ chatId }: Props) {
 
   useEffect(() => {
     if (!needsPoll) return;
+    /* BUG-T1-2 (wave 11C): circuit-breaker on the poll loop.
+
+       Before this fix: `needsPoll` could stay true forever if a chat
+       enters a state where lastMessage.role === "user" but no assistant
+       reply ever lands (edit-failure scenario, network-loss during
+       handleFollowup, etc.). The interval then hammered
+       /api/atlas/chat/[id] every 4s indefinitely until navigation —
+       hot-loop wasted DB queries, Neon connection pool pressure.
+
+       Fix: cap retries at 30 (= 2 minutes at 4s interval). After cap,
+       stop polling silently. User can manually refresh the page if
+       they need the canonical state. */
+    const MAX_POLL_ATTEMPTS = 30;
+    let attempts = 0;
     const baseline = messagesLengthRef.current;
     const interval = setInterval(async () => {
+      attempts++;
+      if (attempts > MAX_POLL_ATTEMPTS) {
+        clearInterval(interval);
+        return;
+      }
       if (!isMountedRef.current) {
         clearInterval(interval);
         return;
@@ -380,6 +399,13 @@ export function AtlasChatView({ chatId }: Props) {
         : prev,
     );
 
+    /* BUG-T1-1: track whether the post-stream reload() succeeded. If
+       it failed, the SSE stream finished + the message is persisted
+       server-side, but chat.messages doesn't yet have the new row.
+       We must NOT clear streamingText in finally{} — otherwise the
+       user sees their just-streamed answer vanish (chat.messages has
+       nothing to render in its place). */
+    let reloadFailed = false;
     try {
       const res = await fetch("/api/atlas/chat", {
         method: "POST",
@@ -462,9 +488,48 @@ export function AtlasChatView({ chatId }: Props) {
       /* Silent reload — fetch the canonical persisted state (with
          extracted citations + exact tokens) WITHOUT triggering the
          loading skeleton. The streamed content is already visible
-         on screen, so reload-flash would be a visible regression. */
+         on screen, so reload-flash would be a visible regression.
+
+         BUG-T1-1 (wave 11C): isolate the reload-failure path. If the
+         post-stream reload throws (network blip, browser offline
+         mid-flight, 5xx from the persisted-chat endpoint), the
+         streamed answer was ALREADY successfully completed + persisted
+         server-side (we exited the SSE while-loop normally above). The
+         only thing that failed is fetching the canonical row back to
+         hydrate citations + tokens.
+
+         Without this isolated catch, the reload-error propagates to
+         the outer catch (line ~480) which surfaces it as a real
+         error AND finally{} wipes streamingText — user sees their
+         perfect answer vanish + a "Failed to fetch" banner appear.
+         That's a trust-killer for an answer that's actually safely
+         stored in the DB. With this catch: keep the streamed content
+         visible, surface a soft warning instead. The persisted
+         citations + tokens hydrate on next page-reload. */
       if (!isMountedRef.current) return;
-      await reload(true);
+      try {
+        await reload(true);
+      } catch (reloadErr) {
+        if (!isMountedRef.current) return;
+        if (
+          reloadErr instanceof DOMException &&
+          reloadErr.name === "AbortError"
+        ) {
+          /* unmount mid-reload — caller already navigated away */
+          return;
+        }
+        console.warn(
+          "[atlas-chat] post-stream reload failed — answer is persisted, hydration will happen on next page-load",
+          reloadErr,
+        );
+        reloadFailed = true;
+        /* Surface a soft notice so the user knows their answer is
+           safely stored, just not yet in the up-to-date persisted view.
+           Less alarming than a full error banner. */
+        setError(
+          "Antwort gespeichert, aber Aktualisierung der Chat-Liste fehlgeschlagen. Beim nächsten Laden synchronisiert.",
+        );
+      }
       if (!isMountedRef.current) return;
       window.dispatchEvent(new Event("atlas-v2-sidebar-refresh"));
     } catch (e) {
@@ -477,8 +542,15 @@ export function AtlasChatView({ chatId }: Props) {
     } finally {
       if (isMountedRef.current) {
         setStreaming(false);
-        setStreamingText("");
-        setStreamingThinking("");
+        /* BUG-T1-1: only clear streamingText when reload succeeded.
+           If reload failed, chat.messages has no row to render the
+           just-finished answer; keep streamingText set so the
+           answer stays visible until the user reloads the page
+           (which re-fetches the persisted state). */
+        if (!reloadFailed) {
+          setStreamingText("");
+          setStreamingThinking("");
+        }
         setInFlightTools([]);
       }
     }
