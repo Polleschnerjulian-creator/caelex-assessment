@@ -48,18 +48,54 @@ import {
    Schriftsatz / Memo / Vertrag müssen direkt aus dem Chat-Bubble
    downloadbar sein — vorher gabs nur den ganzen Chat-Export. Closes
    audit-finding M28. */
-import { downloadArtifactAsPdf } from "@/lib/atlas/artifact-pdf";
-import { downloadArtifactAsDocx } from "@/lib/atlas/artifact-docx";
+/* PERF-T1-3 (wave 11D): jsPDF + jspdf-autotable (~120KB gzipped) +
+   docx (~80KB gzipped) are only needed when the user clicks
+   "Download PDF" / "Download DOCX" — typically a small fraction of
+   chat-visits. Lazy-import inside the click handlers below moves
+   ~200KB off the AtlasChatView initial-load critical path. Has the
+   side-benefit of cutting webpack compilation memory pressure that
+   pushed the Vercel 8GB build container to OOM after wave 11A
+   added the crypto chain. */
 import { FileText, FileType } from "lucide-react";
 /* UI 2026-05-18: Claude.ai-Style Artefakt-System — Karte unter
    Antwort + rechtsseitiges Preview-Panel. */
 import { InlineArtifactCard } from "./InlineArtifactCard";
-import {
-  ArtifactPreviewPanel,
-  type ArtifactInfo,
-  type ArtifactKind,
-} from "./ArtifactPreviewPanel";
-import { ArtifactEditor } from "./ArtifactEditor";
+/* PERF-T1-3: ArtifactPreviewPanel pulls jsPDF/jspdf-autotable for
+   live preview rendering (~200KB gzipped). Lazy-load it via dynamic()
+   so the chat-view's initial bundle doesn't carry it. Types stay
+   statically imported (zero runtime cost). */
+import type { ArtifactInfo, ArtifactKind } from "./ArtifactPreviewPanel";
+const ArtifactPreviewPanel = dynamic(
+  () =>
+    import("./ArtifactPreviewPanel").then((m) => ({
+      default: m.ArtifactPreviewPanel,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="fixed right-0 top-0 z-50 flex h-full w-[480px] items-center justify-center border-l border-slate-200 bg-white dark:border-white/[0.06] dark:bg-slate-950">
+        <div className="text-sm text-slate-500">Lade Vorschau…</div>
+      </div>
+    ),
+  },
+);
+/* PERF-T1-3 (wave 11D): TipTap StarterKit + 18 extensions (~150KB
+   gzipped) only render when the user opens the artifact editor —
+   conditional `editingArtifact && <ArtifactEditor>` below. dynamic()
+   with ssr:false defers the entire bundle until the user clicks the
+   edit button. */
+import dynamic from "next/dynamic";
+const ArtifactEditor = dynamic(
+  () => import("./ArtifactEditor").then((m) => ({ default: m.ArtifactEditor })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/80 dark:bg-slate-950/80">
+        <div className="text-sm text-slate-500">Lade Editor…</div>
+      </div>
+    ),
+  },
+);
 import type {
   ChatImageAttachment,
   ChatMessageBlock,
@@ -1673,7 +1709,12 @@ function AssistantActions({
     return (firstLine ?? "Atlas-Antwort").slice(0, 60);
   };
 
-  const downloadAsPdf = () => {
+  /* PERF-T1-3: lazy-import the PDF/DOCX generators only when needed.
+     Each handler does a one-shot dynamic import per click — webpack
+     splits these into separate chunks that aren't loaded until the
+     user actually clicks the button. */
+  const downloadAsPdf = async () => {
+    const { downloadArtifactAsPdf } = await import("@/lib/atlas/artifact-pdf");
     downloadArtifactAsPdf({
       kind: "memo",
       title: extractTitle(text),
@@ -1682,7 +1723,9 @@ function AssistantActions({
     });
   };
 
-  const downloadAsDocx = () => {
+  const downloadAsDocx = async () => {
+    const { downloadArtifactAsDocx } =
+      await import("@/lib/atlas/artifact-docx");
     void downloadArtifactAsDocx({
       kind: "memo",
       title: extractTitle(text),
