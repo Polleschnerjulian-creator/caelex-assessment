@@ -11,8 +11,20 @@ const SESSION_KEY = "caelex-cookie-consent-session";
    Bump CONSENT_VERSION whenever the banner copy changes materially
    (e.g. a new sub-processor lands in /legal/sub-processors). Each
    bump invalidates the localStorage record and re-prompts the user;
-   the prior decision stays in ConsentRecord rows for audit. */
-export const CONSENT_VERSION = "2026-05-11";
+   the prior decision stays in ConsentRecord rows for audit.
+
+   Wave 9 (2026-05-19) — bumped to 2026-05-19 weil: (a) banner ist
+   jetzt i18n (DE default + EN auto-detect), (b) visual button-parität
+   (Audit H-1, OLG Köln 6 U 187/21), (c) 12-monats-expiry (Audit H-5,
+   DSK-empfehlung). Bestehende einwilligungen werden re-prompted weil
+   der neue text ein opt-in-relevantes update darstellt. */
+export const CONSENT_VERSION = "2026-05-19";
+
+/* Wave 9 (Audit H-5) — DSK + LfDI Baden-Württemberg empfehlen max.
+   12-monats-gültigkeit für cookie-consent. Nach ablauf wird der
+   banner re-prompted. 366 statt 365 als puffer für schaltjahre +
+   timezone-edge-cases am genau-1-jahr-grenztag. */
+const CONSENT_TTL_DAYS = 366;
 
 export interface CookiePreferences {
   necessary: true; // always on
@@ -109,6 +121,12 @@ export function getConsentRecord(): ConsentRecord | null {
       const record = parsed as ConsentRecord;
       /* Out-of-date version → treat as missing so the banner re-prompts. */
       if (record.version !== CONSENT_VERSION) return null;
+      /* Wave 9 (H-5) — TTL-check: einwilligungen älter als 12 monate
+         werden invalidiert, banner re-prompted. DSK-empfehlung. */
+      const decidedAt = new Date(record.decidedAt).getTime();
+      const ageMs = Date.now() - decidedAt;
+      const maxAgeMs = CONSENT_TTL_DAYS * 24 * 60 * 60 * 1000;
+      if (Number.isFinite(decidedAt) && ageMs > maxAgeMs) return null;
       return record;
     }
     return null;
@@ -188,6 +206,64 @@ export function isAnalyticsAllowed(): boolean {
   return isAllowed("analytics");
 }
 
+/* Wave 9 (Audit H-2) — Cookie-Banner i18n.
+   DSGVO Art. 12 fordert dass informationen in einer sprache
+   bereitgestellt werden die die betroffene person verstehen kann.
+   Bei deutscher domain (.eu) mit deutschsprachigem hauptmarkt ist
+   DE pflicht; EN ist convenience für nicht-deutschsprachige.
+   Detection: navigator.language. Fallback: DE (markt-default). */
+type BannerLocale = "de" | "en";
+const STRINGS = {
+  de: {
+    dialogLabel: "Datenschutz-Einstellungen",
+    title: "Datenschutz-Einstellungen",
+    description:
+      "Wir verwenden notwendige Cookies für Sicherheit und Authentifizierung. Optionale Cookies helfen uns, Ihr Erlebnis zu verbessern.",
+    cookiePolicy: "Cookie-Richtlinie",
+    customize: "Anpassen",
+    decline: "Ablehnen",
+    acceptAll: "Alle akzeptieren",
+    necessary: "Notwendig",
+    necessaryDesc: "Authentifizierung, CSRF-Schutz, Session-Management.",
+    analytics: "Analyse",
+    analyticsDesc: "Anonyme, cookielose Nutzungsstatistik.",
+    performance: "Performance",
+    performanceDesc: "Ladezeit- und Performance-Monitoring.",
+    errorTracking: "Fehler-Tracking",
+    errorTrackingDesc: "Fehlerberichte, damit wir Bugs beheben können.",
+    savePrefs: "Einstellungen speichern",
+  },
+  en: {
+    dialogLabel: "Privacy settings",
+    title: "Privacy Settings",
+    description:
+      "We use essential cookies for security and authentication. Optional cookies help us improve your experience.",
+    cookiePolicy: "Cookie Policy",
+    customize: "Customize",
+    decline: "Decline",
+    acceptAll: "Accept All",
+    necessary: "Necessary",
+    necessaryDesc: "Authentication, CSRF protection, session management.",
+    analytics: "Analytics",
+    analyticsDesc: "Anonymous, cookieless usage statistics.",
+    performance: "Performance",
+    performanceDesc: "Page load and performance monitoring.",
+    errorTracking: "Error Tracking",
+    errorTrackingDesc: "Error reporting to help us fix bugs.",
+    savePrefs: "Save Preferences",
+  },
+} as const;
+
+function detectLocale(): BannerLocale {
+  if (typeof navigator === "undefined") return "de";
+  const lang = (navigator.language || "de").toLowerCase();
+  /* DE als markt-default. Nur explizit nicht-deutschsprachige
+     browser bekommen EN — das ist konservativ (DE-fallback bei
+     unklarheit erfüllt Art. 12 für den hauptmarkt). */
+  if (lang.startsWith("de")) return "de";
+  return "en";
+}
+
 interface ToggleProps {
   label: string;
   description: string;
@@ -244,9 +320,11 @@ export default function CookieConsent() {
   const [showDetails, setShowDetails] = useState(false);
   const [prefs, setPrefs] = useState<CookiePreferences>(DEFAULT_PREFS);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [locale, setLocale] = useState<BannerLocale>("de");
 
   useEffect(() => {
     setMounted(true);
+    setLocale(detectLocale());
     const stored = getPreferences();
     if (!stored) {
       setIsAnimating(true);
@@ -307,6 +385,7 @@ export default function CookieConsent() {
   }, [prefs, saveAndClose]);
 
   if (!mounted || !visible) return null;
+  const t = STRINGS[locale];
 
   return (
     <>
@@ -321,7 +400,7 @@ export default function CookieConsent() {
       {/* Banner */}
       <div
         role="dialog"
-        aria-label="Privacy settings"
+        aria-label={t.dialogLabel}
         aria-modal="true"
         className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] w-[calc(100%-32px)] max-w-[680px] transition-all duration-500 ease-out ${
           isAnimating ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
@@ -333,21 +412,28 @@ export default function CookieConsent() {
             <div className="flex flex-col md:flex-row md:items-start gap-5">
               <div className="flex-1 min-w-0">
                 <h3 className="text-[17px] font-semibold text-[#1d1d1f] tracking-[-0.01em]">
-                  Privacy Settings
+                  {t.title}
                 </h3>
                 <p className="text-[14px] text-[#86868b] leading-[1.5] mt-1.5">
-                  We use essential cookies for security and authentication.
-                  Optional cookies help us improve your experience.{" "}
+                  {t.description}{" "}
                   <Link
                     href="/legal/cookies"
                     className="text-[#1d1d1f] underline decoration-[#1d1d1f]/20 underline-offset-2 hover:decoration-[#1d1d1f]/50 transition-colors"
                   >
-                    Cookie Policy
+                    {t.cookiePolicy}
                   </Link>
                 </p>
               </div>
 
-              {/* Actions */}
+              {/* Actions — Wave 9 (H-1) — visual button parity.
+                  Vorher: Decline grau (#f5f5f7), Accept All schwarz
+                  (#1d1d1f) → klares hierarchie-gefälle, OLG Köln
+                  6 U 187/21 (10.06.2022) sieht das als verstoß gegen
+                  die "gleich-prominent"-pflicht. Jetzt: beide buttons
+                  IDENTISCH gestyled (light gray bg, dark text). User
+                  kann nur über das label unterscheiden — und genau das
+                  ist die DSGVO-vorgabe. Customize bleibt subtiler
+                  (text-only) weil es eine sekundäre option ist. */}
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button
                   onClick={() => setShowDetails(!showDetails)}
@@ -355,7 +441,7 @@ export default function CookieConsent() {
                   aria-controls="cookie-details"
                   className="flex items-center gap-1 py-2.5 px-4 text-[14px] font-medium text-[#86868b] hover:text-[#1d1d1f] transition-colors rounded-full hover:bg-[#f5f5f7]"
                 >
-                  Customize
+                  {t.customize}
                   {showDetails ? (
                     <ChevronUp size={14} aria-hidden="true" />
                   ) : (
@@ -366,13 +452,13 @@ export default function CookieConsent() {
                   onClick={handleNecessaryOnly}
                   className="py-2.5 px-5 text-[14px] font-medium text-[#1d1d1f] rounded-full bg-[#f5f5f7] hover:bg-[#e8e8ed] transition-colors"
                 >
-                  Decline
+                  {t.decline}
                 </button>
                 <button
                   onClick={handleAcceptAll}
-                  className="py-2.5 px-5 text-[14px] font-medium text-white rounded-full bg-[#1d1d1f] hover:bg-[#000000] transition-colors"
+                  className="py-2.5 px-5 text-[14px] font-medium text-[#1d1d1f] rounded-full bg-[#f5f5f7] hover:bg-[#e8e8ed] transition-colors"
                 >
-                  Accept All
+                  {t.acceptAll}
                 </button>
               </div>
             </div>
@@ -387,27 +473,27 @@ export default function CookieConsent() {
               <div className="mt-5 pt-5 border-t border-[#e5e5ea]">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-0">
                   <Toggle
-                    label="Necessary"
-                    description="Authentication, CSRF protection, session management."
+                    label={t.necessary}
+                    description={t.necessaryDesc}
                     checked={true}
                     onChange={() => {}}
                     disabled
                   />
                   <Toggle
-                    label="Analytics"
-                    description="Anonymous, cookieless usage statistics."
+                    label={t.analytics}
+                    description={t.analyticsDesc}
                     checked={prefs.analytics}
                     onChange={(v) => setPrefs({ ...prefs, analytics: v })}
                   />
                   <Toggle
-                    label="Performance"
-                    description="Page load and performance monitoring."
+                    label={t.performance}
+                    description={t.performanceDesc}
                     checked={prefs.performance}
                     onChange={(v) => setPrefs({ ...prefs, performance: v })}
                   />
                   <Toggle
-                    label="Error Tracking"
-                    description="Error reporting to help us fix bugs."
+                    label={t.errorTracking}
+                    description={t.errorTrackingDesc}
                     checked={prefs.errorTracking}
                     onChange={(v) => setPrefs({ ...prefs, errorTracking: v })}
                   />
@@ -416,9 +502,9 @@ export default function CookieConsent() {
                 <div className="flex justify-end mt-5">
                   <button
                     onClick={handleSavePreferences}
-                    className="py-2.5 px-6 text-[14px] font-medium text-white rounded-full bg-[#1d1d1f] hover:bg-[#000000] transition-colors"
+                    className="py-2.5 px-6 text-[14px] font-medium text-[#1d1d1f] rounded-full bg-[#f5f5f7] hover:bg-[#e8e8ed] transition-colors"
                   >
-                    Save Preferences
+                    {t.savePrefs}
                   </button>
                 </div>
               </div>

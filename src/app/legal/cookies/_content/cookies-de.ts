@@ -101,7 +101,7 @@ export const COOKIES_DE: LegalDocument = {
         },
         {
           type: "p",
-          text: "(3) Einwilligungen werden lokal in Ihrem Browser protokolliert (Zeitpunkt, Version, Auswahl je Kategorie), ergänzt durch eine server-seitige Protokollierung bei eingeloggten Nutzern zur Nachweisbarkeit.",
+          text: "(3) Einwilligungen werden lokal in Ihrem Browser protokolliert (Zeitpunkt, Version, Auswahl je Kategorie) und zusätzlich server-seitig zur Nachweisbarkeit gespeichert (Pflicht nach Art. 7 Abs. 1 DSGVO). Bei eingeloggten Nutzern erfolgt die Zuordnung über die User-ID, bei nicht-eingeloggten Besuchern über einen pseudonymisierten Browser-Session-Hash. Einwilligungen werden nach 12 Monaten automatisch erneut abgefragt, auch wenn der Banner zwischendurch nicht aktualisiert wurde.",
         },
       ],
     },
