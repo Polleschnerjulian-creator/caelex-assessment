@@ -37,10 +37,26 @@ import {
   ArrowUp,
   FileText,
   Search,
+  MessageSquare,
+  Quote,
+  GitPullRequest,
+  Sparkles,
+  Hash,
+  Link2,
+  BookMarked,
+  Image as ImageIcon,
+  Building,
+  Mail,
+  Command,
 } from "lucide-react";
 import { AtlasMark } from "./AtlasLogo";
 
-const STORAGE_KEY = "atlas-v2-onboarding-seen";
+/* Sprint 19 (2026-05-19) — Storage-key bumped von "atlas-v2-onboarding-
+   seen" auf "...-v2-seen" damit existing users (die den alten 5-slide
+   tour bereits dismissed haben) den neuen 12-slide v1→v2-migration tour
+   auto-shown bekommen. Wer ihn schon hat: kann jederzeit via help-icon
+   im sidebar-footer wieder öffnen. */
+const STORAGE_KEY = "atlas-v2-onboarding-tour-v2";
 
 /* AUDIT-FIX L8: Magic-number extracted. We defer the auto-show by 300ms
    so AtlasShellV2's initial paint settles (mandate sidebar fetch +
@@ -63,35 +79,80 @@ interface Slide {
   visual: () => React.ReactNode;
 }
 
+/* Sprint 19 (2026-05-19) — Expanded tour for v1→v2 migration.
+   12 Slides die jedem v1-anwalt zeigen was sich geändert hat + welche
+   neuen features bestehen. Re-callable via help-icon im sidebar. */
 const SLIDES: Slide[] = [
   {
-    id: "welcome",
-    title: "Willkommen bei Atlas",
-    body: "Dein KI-Mitarbeiter für deutsches Weltraum- und Space-Compliance-Recht. Atlas durchsucht Akten, recherchiert das Atlas-Korpus, entwirft Schriftsätze und kennt jeden EU-Space-Act-Artikel.",
-    visual: VisualWelcome,
+    id: "welcome-v2",
+    title: "Atlas v2 ist da",
+    body: "Komplett umgebaut: Chat-first statt Dashboard. Integrierter Word-grade Editor. Auto-Zitate. Mandanten-Review-Workflow. Diese Tour zeigt dir was neu ist — 12 Steps, ~3 Minuten.",
+    visual: VisualWelcomeV2,
+  },
+  {
+    id: "chat-first",
+    title: "Chat ist deine Startseite",
+    body: "Kein Modul-Dashboard mehr. Du öffnest Atlas → direkt im Chat-Composer. Frag was du willst — Atlas kennt EU Space Act, WeltrG, BORA, NIS2, alle ESA-Verträge. Antworten mit Zitat zur Quelle.",
+    visual: VisualChatFirst,
+  },
+  {
+    id: "slash-commands",
+    title: "/-Befehle für Dokumente",
+    body: "Tipp `/schriftsatz`, `/brief`, `/vertrag`, `/memo`, `/aktennotiz`, `/email`, `/checklist`, `/recherche` im Composer. Atlas fügt ein DIN-konformes Skelett ein das du fertigstellen lässt.",
+    visual: VisualSlashCommands,
   },
   {
     id: "mandate",
-    title: "Mandate sind dein Arbeitsraum",
-    body: "Lege ein Mandat an für jede Akte. Vault, Deadlines, Notizen und alle Chats des Falls liegen am gleichen Ort. Atlas kennt automatisch den Mandanten, die Jurisdiktion und alle bisherigen Schritte.",
-    visual: VisualMandate,
-  },
-  {
-    id: "attach",
-    title: "Mandat im Chat anhängen",
-    body: "Im Composer auf das + klicken → 'Mandat anhängen'. Ab diesem Moment sieht Atlas die Custom-Instructions, alle Vault-Files und den bisherigen Chat-Verlauf — Du musst nichts mehr wiederholen.",
-    visual: VisualAttach,
+    title: "Mandate als Workspace",
+    body: "Pro Akte ein Mandat: Vault-Files, Deadlines, Custom-Instructions, alle Chats zum Fall. Im Composer auf + → 'Mandat anhängen': Atlas sieht ab dann alles automatisch — du musst keinen Context wiederholen.",
+    visual: VisualMandateAttach,
   },
   {
     id: "vault",
     title: "Frag deine Akten direkt",
-    body: "Lade PDFs / DOCX in den Vault hoch — Atlas indexiert sie automatisch. Im Chat: 'Was steht im Bescheid vom 12.3.?' liefert Atlas die exakte Stelle, mit Link zurück auf die Quelldatei.",
+    body: "PDFs / DOCX in den Vault → Atlas indexiert automatisch (OCR + Embeddings). Frag z.B. 'Was steht im Bescheid vom 12.3.?' — Atlas liefert die exakte Stelle mit Link auf die Quelldatei.",
     visual: VisualVault,
   },
   {
+    id: "artifacts",
+    title: "AI-Antworten als Artefakt-Karten",
+    body: "Wenn Atlas einen Schriftsatz, Brief oder Vertrag schreibt, erscheint eine Artefakt-Karte unter der Antwort. Click → rechtsseitiges Preview-Panel mit PDF/DOCX-Export, oder direkt im Editor öffnen.",
+    visual: VisualArtifactCard,
+  },
+  {
+    id: "editor",
+    title: "Word-grade Editor im Browser",
+    body: "Per Klick auf 'Bearbeiten' öffnest du den vollwertigen Editor: A4-Seite mit DIN 5008-Margins, Ribbon-Toolbar (Font, Heading, Lists, Tables, Footnotes), 100% WYSIWYG. Keine Markdown-Marker sichtbar.",
+    visual: VisualEditor,
+  },
+  {
+    id: "citations",
+    title: "Strukturierte juristische Zitate",
+    body: "Im Editor: Zitat-Button → Dialog mit 11 Quellentypen (Gesetz, Urteil, BVerfGE, EuGH, Kommentar, EU-VO…). Atlas formatiert nach DE-Konvention (Stüber/Möllers). Plus: Querverweise + Auto-Quellenverzeichnis am Ende.",
+    visual: VisualCitations,
+  },
+  {
+    id: "review",
+    title: "Kommentare & Änderungsvorschläge",
+    body: "Markier Text → 'Kommentar' für Diskussion mit Mandant (threaded, resolvable). Oder 'Vorschlag: Löschen/Einfügen' für Track-Changes-style Review. Accept/Reject im rechten Panel.",
+    visual: VisualReview,
+  },
+  {
+    id: "pdf-letterhead",
+    title: "PDF-Export mit Briefkopf",
+    body: "Jeder Schriftsatz/Brief wird als DIN 5008-konformes PDF exportiert. Settings → Firm → Letterhead: Logo + Kanzlei-Adresse einmal hochladen → erscheint auto auf jeder PDF. Direct sendable.",
+    visual: VisualLetterhead,
+  },
+  {
+    id: "suche",
+    title: "Eine Suche, alles findbar",
+    body: "Sidebar → Suche: durchsucht deine Wissensbasis (eigene Snippets, Schriftsätze, Notizen) UND 937 statutory Legal-Sources (UN-Treaties, EU-Recht, nationale Space-Gesetze) parallel.",
+    visual: VisualSuche,
+  },
+  {
     id: "shortcuts",
-    title: "Schneller arbeiten",
-    body: "Mit ⌘ K springst Du sofort in den Composer, ⌘ \\ klappt die Sidebar ein, ⏎ schickt die Nachricht. Diese Tour kannst Du jederzeit über das ?-Icon links unten in der Sidebar neu starten.",
+    title: "Power-User Shortcuts",
+    body: "⌘K = Command-Palette (jeder Chat, Mandat, Setting). ⌘\\ = Sidebar toggle. ⌘S = Save im Editor. ⌘F = Find/Replace. Die Tour startest du jederzeit neu via Help-Icon links unten in der Sidebar.",
     visual: VisualShortcuts,
   },
 ];
@@ -431,6 +492,294 @@ function VisualShortcuts() {
           </span>
         </div>
       ))}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Sprint 19 — Neue Visuals für v1→v2 migration tour.
+   ───────────────────────────────────────────────────────────────── */
+
+function VisualWelcomeV2() {
+  return (
+    <div className="flex flex-col items-center gap-3 text-slate-700 dark:text-slate-200">
+      <div className="relative">
+        <AtlasMark size={48} />
+        <span className="absolute -right-3 -top-1 rounded-md bg-emerald-500 px-1.5 py-0.5 text-[8.5px] font-bold text-white shadow-sm">
+          v2
+        </span>
+      </div>
+      <div className="text-[10.5px] uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
+        Komplett neu · Mai 2026
+      </div>
+      <div className="flex gap-1.5">
+        {["Chat-first", "WYSIWYG-Editor", "Auto-Zitate", "Review"].map((t) => (
+          <span
+            key={t}
+            className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[9.5px] font-medium text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+          >
+            {t}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function VisualChatFirst() {
+  return (
+    <div className="flex w-[280px] flex-col gap-1.5">
+      <div className="rounded-2xl border border-slate-200 bg-white p-3 dark:border-white/[0.08] dark:bg-[#222]">
+        <div className="mb-1.5 text-[10px] uppercase tracking-wider text-slate-400">
+          Atlas
+        </div>
+        <div className="text-[10.5px] leading-relaxed text-slate-700 dark:text-slate-300">
+          Nach § 2 Abs. 1 WeltrG ist eine Genehmigung erforderlich für…
+          <span className="ml-1 inline-flex h-3 w-3 items-center justify-center rounded-full bg-emerald-100 text-[7.5px] font-bold text-emerald-700">
+            ¹
+          </span>
+        </div>
+        <div className="mt-1 text-[8.5px] text-slate-500">
+          ¹ § 2 WeltrG · BGBl I S. 2502
+        </div>
+      </div>
+      <div className="rounded-full border border-slate-200 bg-white px-3 py-1.5 dark:border-white/[0.08] dark:bg-[#222]">
+        <span className="text-[10.5px] text-slate-400">
+          Frage zum Mandat stellen…
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function VisualSlashCommands() {
+  const cmds = [
+    ["/schriftsatz", "Gerichtlicher Schriftsatz"],
+    ["/brief", "Mandantenbrief"],
+    ["/vertrag", "Vertrag mit §§-Struktur"],
+    ["/memo", "Internes Memo"],
+  ];
+  return (
+    <div className="w-[300px] overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/[0.08] dark:bg-[#222]">
+      <div className="border-b border-slate-100 bg-slate-50 px-3 py-1.5 text-[9.5px] uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-900/50">
+        Slash-Commands · ↑↓ navigieren
+      </div>
+      {cmds.map(([cmd, desc], i) => (
+        <div
+          key={cmd}
+          className={`flex items-center gap-2 px-3 py-1.5 text-[11px] ${
+            i === 0 ? "bg-emerald-50 dark:bg-emerald-500/10" : ""
+          }`}
+        >
+          <span className="font-mono font-semibold text-slate-900 dark:text-slate-100">
+            {cmd}
+          </span>
+          <span className="text-slate-500">{desc}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function VisualMandateAttach() {
+  return (
+    <div className="flex w-[280px] flex-col gap-2">
+      <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-white/[0.08] dark:bg-[#222]">
+        <div className="text-[12px] font-medium text-slate-900 dark:text-slate-100">
+          Spire 2024 · Satelliten-Genehmigung
+        </div>
+        <div className="mt-2 flex items-center gap-3 text-[10px] text-slate-500">
+          <span>📁 24 Files</span>
+          <span>·</span>
+          <span>💬 12 Chats</span>
+          <span>·</span>
+          <span className="text-amber-600">⏰ Frist 14d</span>
+        </div>
+      </div>
+      <div className="self-start">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 py-1 pl-2 pr-2 text-[10.5px] dark:border-emerald-500/30 dark:bg-emerald-500/10">
+          <Briefcase size={9} className="text-emerald-700" />
+          <span className="text-emerald-700 dark:text-emerald-300">
+            Mandat angehängt
+          </span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function VisualArtifactCard() {
+  return (
+    <div className="flex w-[280px] flex-col gap-2">
+      <div className="rounded-2xl border border-slate-200 bg-white p-3 dark:border-white/[0.08] dark:bg-[#222]">
+        <div className="text-[10.5px] text-slate-600">
+          Hier ist der Antrag nach § 2 WeltrG:
+        </div>
+      </div>
+      <div className="rounded-xl border-2 border-emerald-200 bg-emerald-50/40 p-3 dark:border-emerald-500/30 dark:bg-emerald-500/[0.04]">
+        <div className="flex items-start gap-2.5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/20">
+            <FileText
+              size={16}
+              className="text-emerald-700 dark:text-emerald-300"
+            />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[10px] font-medium uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+              Schriftsatz
+            </div>
+            <div className="text-[11.5px] font-medium text-slate-900 dark:text-slate-100">
+              Antrag § 2 WeltrG
+            </div>
+            <div className="text-[9.5px] text-slate-500">
+              Click für Vorschau
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VisualEditor() {
+  return (
+    <div className="flex w-[300px] flex-col gap-1.5">
+      {/* Ribbon-bar Mini */}
+      <div className="flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1.5 dark:border-white/[0.08] dark:bg-[#222]">
+        <span className="font-bold text-slate-700">B</span>
+        <span className="italic text-slate-700">I</span>
+        <span className="underline text-slate-700">U</span>
+        <span className="mx-1 h-3 w-px bg-slate-200" />
+        <span className="text-[10px] font-semibold text-slate-700">H1</span>
+        <span className="text-[10px] text-slate-600">H2</span>
+        <span className="text-[10px] text-slate-600">H3</span>
+        <span className="mx-1 h-3 w-px bg-slate-200" />
+        <span className="text-[10px] text-slate-600">≡ ≣ ≣</span>
+      </div>
+      {/* A4-Page mini */}
+      <div className="rounded-sm bg-white p-3 shadow-md ring-1 ring-slate-200">
+        <div className="text-[10px] font-bold text-slate-900">
+          I. Sachverhalt
+        </div>
+        <div className="mt-1 h-1 w-full rounded bg-slate-100" />
+        <div className="mt-1 h-1 w-4/5 rounded bg-slate-100" />
+        <div className="mt-2 text-[10px] font-bold text-slate-900">
+          II. Würdigung
+        </div>
+        <div className="mt-1 h-1 w-full rounded bg-slate-100" />
+        <div className="mt-1 h-1 w-3/5 rounded bg-slate-100" />
+      </div>
+    </div>
+  );
+}
+
+function VisualCitations() {
+  return (
+    <div className="w-[300px] overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/[0.08] dark:bg-[#222]">
+      <div className="border-b border-slate-100 bg-slate-50 px-3 py-1.5 text-[9.5px] font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-900/50">
+        <Quote size={10} className="mr-1 inline" />
+        Zitat einfügen
+      </div>
+      <div className="space-y-1.5 px-3 py-2.5">
+        <div className="flex items-center gap-1.5">
+          <Hash size={10} className="text-slate-400" />
+          <span className="text-[10px] text-slate-500">Gesetz</span>
+        </div>
+        <div className="rounded-md border border-emerald-200 bg-emerald-50/40 px-2 py-1.5 font-serif text-[11.5px] italic text-slate-900 dark:bg-emerald-500/10 dark:text-slate-100">
+          § 433 Abs. 1 S. 1 BGB
+        </div>
+        <div className="flex items-center gap-2 text-[9.5px] text-slate-500">
+          <BookMarked size={10} />
+          <span>Auto-Quellenverzeichnis am Doc-Ende</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VisualReview() {
+  return (
+    <div className="flex w-[280px] flex-col gap-1.5">
+      <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-2 dark:border-amber-500/30 dark:bg-amber-500/[0.04]">
+        <div className="text-[10px] italic text-amber-800 dark:text-amber-200">
+          „§ 433 BGB"
+        </div>
+        <div className="mt-1 flex items-start gap-1.5">
+          <MessageSquare size={9} className="mt-0.5 text-amber-700" />
+          <span className="text-[10.5px] text-slate-700 dark:text-slate-300">
+            Bitte hier prüfen — eher § 280?
+          </span>
+        </div>
+      </div>
+      <div className="flex gap-1.5">
+        <div className="flex-1 rounded-md border border-emerald-200 bg-emerald-50/60 px-2 py-1 text-[10px] dark:bg-emerald-500/10">
+          <span className="text-emerald-700">+ Einfügen</span>
+        </div>
+        <div className="flex-1 rounded-md border border-red-200 bg-red-50/60 px-2 py-1 text-[10px] dark:bg-red-500/10">
+          <span className="text-red-700 line-through">− Löschen</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-1 text-[9.5px] text-slate-500">
+        <GitPullRequest size={9} />
+        <span>Accept/Reject im rechten Panel</span>
+      </div>
+    </div>
+  );
+}
+
+function VisualLetterhead() {
+  return (
+    <div className="w-[260px] rounded-sm bg-white p-3 shadow-md ring-1 ring-slate-200">
+      <div className="flex items-start justify-between border-b border-slate-100 pb-1.5">
+        <div>
+          <div className="text-[10px] font-bold text-slate-900">
+            Musterrecht & Partner
+          </div>
+          <div className="text-[7.5px] text-slate-500">
+            Anwälte für Weltraumrecht · Berlin
+          </div>
+        </div>
+        <Building size={14} className="text-slate-300" />
+      </div>
+      <div className="mt-2 space-y-0.5">
+        <div className="h-1 w-full rounded bg-slate-100" />
+        <div className="h-1 w-5/6 rounded bg-slate-100" />
+        <div className="h-1 w-4/6 rounded bg-slate-100" />
+      </div>
+      <div className="mt-2 flex justify-end">
+        <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[8.5px] font-medium text-emerald-700">
+          DIN 5008 PDF
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function VisualSuche() {
+  return (
+    <div className="w-[300px] space-y-1.5">
+      <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 dark:border-white/[0.08] dark:bg-[#222]">
+        <Search size={12} className="text-slate-400" />
+        <span className="text-[10.5px] text-slate-600">§ 2 WeltrG</span>
+      </div>
+      <div className="space-y-1">
+        <div className="rounded-md border border-slate-200 bg-white px-2 py-1.5 dark:border-white/[0.08] dark:bg-[#222]">
+          <div className="flex items-center gap-1.5">
+            <span className="rounded bg-rose-50 px-1 text-[8.5px] font-medium text-rose-700">
+              Gesetz
+            </span>
+            <span className="text-[10px] font-medium">Weltraumgesetz</span>
+          </div>
+        </div>
+        <div className="rounded-md border border-slate-200 bg-white px-2 py-1.5 dark:border-white/[0.08] dark:bg-[#222]">
+          <div className="flex items-center gap-1.5">
+            <span className="rounded bg-emerald-50 px-1 text-[8.5px] font-medium text-emerald-700">
+              Wissensbasis
+            </span>
+            <span className="text-[10px]">Schriftsatz-Vorlage zu § 2</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

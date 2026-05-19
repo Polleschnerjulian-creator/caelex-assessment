@@ -41,6 +41,7 @@ import {
   ScrollText,
   Settings,
   Search,
+  HelpCircle,
 } from "lucide-react";
 import type { ChatListItem, MandateListItem } from "./types";
 import { SidebarItem } from "./sidebar/SidebarItem";
@@ -377,8 +378,23 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
         </SidebarSection>
       </div>
 
-      {/* ── Bottom: Settings link + UserPill ─────────────────────── */}
+      {/* ── Bottom: Tour-Trigger + Settings link + UserPill ─────── */}
       <div className="border-t border-atlas-border-subtle px-3 pt-2 pb-3">
+        {/* Sprint 19 (2026-05-19) — "Tour öffnen" trigger.
+            User-request: "Wir brauchen ein supergutes Onboarding, was
+            auch immer wieder aufrufbar sein soll. Einfach so 'n
+            kleinen Symbol im Leistmenü." — also wichtig: die Tour
+            muss für die v1→v2-Umstellung der Anwälte JEDERZEIT
+            aufrufbar sein, nicht nur beim ersten Login. Dispatcht
+            `atlas-v2-open-tour` — OnboardingTour.tsx hört darauf
+            (siehe useEffect dort). */}
+        <SidebarItem
+          icon={<HelpCircle size={13} />}
+          label="Tour öffnen"
+          onClick={() => {
+            window.dispatchEvent(new Event("atlas-v2-open-tour"));
+          }}
+        />
         <SidebarItem
           href="/atlas/settings"
           icon={<Settings size={13} />}
