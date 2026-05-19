@@ -83,6 +83,11 @@ export async function GET(req: NextRequest) {
   try {
     titleHits = await prisma.atlasChat.findMany({
       where: {
+        /* SEC-H1 (wave 11B): org-scope BEFORE user-scope. A multi-org
+           user (consultant working with two firms) must NOT see firm-A
+           chats while searching from firm-B's session. Without the
+           organizationId filter, ownerUserId alone leaks cross-org. */
+        organizationId: atlas.organizationId,
         ownerUserId: atlas.userId,
         archivedAt: null,
         title: { contains: queryLower, mode: "insensitive" },
@@ -138,7 +143,8 @@ export async function GET(req: NextRequest) {
           c."mandateId" AS "mandateId"
         FROM "AtlasChat" c
         INNER JOIN "AtlasMessage" m ON m."chatId" = c."id"
-        WHERE c."ownerUserId" = ${atlas.userId}
+        WHERE c."organizationId" = ${atlas.organizationId}
+          AND c."ownerUserId" = ${atlas.userId}
           AND c."archivedAt" IS NULL
           AND m."content"::text ILIKE ${escaped}
         ORDER BY c."updatedAt" DESC

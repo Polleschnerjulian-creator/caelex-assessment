@@ -119,6 +119,29 @@ export async function POST(req: NextRequest) {
   const queryEmbeddingLiteral = `[${queryEmbedding.join(",")}]`;
   const overfetchLimit = parsed.data.limit * 4;
 
+  /* SEC-H5 (wave 11B): when caller supplies mandateId, verify the
+     user is owner OR a member BEFORE running the vector search. The
+     org-scope filter (organizationId in WHERE below) is not enough —
+     intra-org mandate confidentiality is a § 43a/§ 43e BRAO firewall:
+     partner A must not see partner B's mandate-chunks just because
+     they share an org. */
+  if (parsed.data.mandateId) {
+    const membership = await prisma.atlasMandate.findFirst({
+      where: {
+        id: parsed.data.mandateId,
+        organizationId: atlas.organizationId,
+        OR: [
+          { ownerUserId: atlas.userId },
+          { members: { some: { userId: atlas.userId } } },
+        ],
+      },
+      select: { id: true },
+    });
+    if (!membership) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+  }
+
   const mandateFilter = parsed.data.mandateId
     ? Prisma.sql`AND "mandateId" = ${parsed.data.mandateId}`
     : Prisma.empty;

@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+/* SEC-H4 (wave 11B): replace raw `auth()` with `getAtlasAuth()` so
+   bookmarks routes inherit the LAW_FIRM/BOTH org-type gate. Previously
+   any logged-in Caelex user (incl. OPERATOR-only) could read/write
+   Atlas bookmarks because raw auth() doesn't enforce the org-type. */
+import { getAtlasAuth } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import {
@@ -54,19 +58,24 @@ const MAX_BOOKMARKS_PER_USER = 1000;
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ bookmarks: [] });
+    /* SEC-H4: getAtlasAuth enforces LAW_FIRM/BOTH org-type gate.
+       Previously a raw `auth()` allowed any logged-in Caelex user
+       (incl. OPERATOR-only) to read Atlas bookmarks; the empty-list
+       return for unauth also leaked endpoint-existence to probes.
+       Now: 401 on unauth — consistent with other Atlas routes. */
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Audit L4: rate-limit the read path too. Without this, an authed
     // user (or leaked token) can enumerate bookmarks in a tight loop
     // for DB-load DoS or for exfiltration of the full item-id namespace.
-    const rl = await checkRateLimit("api", getIdentifier(req, session.user.id));
+    const rl = await checkRateLimit("api", getIdentifier(req, atlas.userId));
     if (!rl.success) return createRateLimitResponse(rl);
 
     const rows = await prisma.atlasBookmark.findMany({
-      where: { userId: session.user.id },
+      where: { userId: atlas.userId },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -102,13 +111,14 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    /* SEC-H4: getAtlasAuth enforces LAW_FIRM/BOTH org-type gate. */
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // H1: user-keyed rate-limit on writes
-    const rl = await checkRateLimit("api", getIdentifier(req, session.user.id));
+    const rl = await checkRateLimit("api", getIdentifier(req, atlas.userId));
     if (!rl.success) return createRateLimitResponse(rl);
 
     const body = await req.json().catch(() => ({}));
@@ -122,7 +132,7 @@ export async function POST(req: NextRequest) {
       // Serializable interactive tx — Postgres rejects one of the
       // concurrent transactions on serialization-failure, which we
       // surface as a 409 just like an over-quota result.
-      const userId = session.user.id;
+      const userId = atlas.userId;
       const items = bulk.data.items;
       try {
         const result = await prisma.$transaction(
@@ -212,7 +222,7 @@ export async function POST(req: NextRequest) {
     // existedBefore=null in both, both attempted INSERT, one crashed
     // with P2002 surfaced as a 500 to the client. Now: one creates, the
     // other becomes a no-op update under serialisation.
-    const userId = session.user.id;
+    const userId = atlas.userId;
     let row: Awaited<ReturnType<typeof prisma.atlasBookmark.upsert>>;
     let existedBefore: { id: string } | null = null;
     try {
@@ -288,7 +298,7 @@ export async function POST(req: NextRequest) {
     // place (common for a stale cached label) doesn't spam the chain.
     if (!existedBefore) {
       await logAuditEvent({
-        userId: session.user.id,
+        userId: atlas.userId,
         action: "atlas_bookmark_created",
         entityType: "atlas_bookmark",
         entityId: single.data.itemId,
@@ -320,8 +330,9 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    /* SEC-H4: getAtlasAuth enforces LAW_FIRM/BOTH org-type gate. */
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const { searchParams } = new URL(req.url);
@@ -334,13 +345,13 @@ export async function DELETE(req: NextRequest) {
     // clutter the audit trail.
     const removed = await prisma.atlasBookmark
       .delete({
-        where: { userId_itemId: { userId: session.user.id, itemId } },
+        where: { userId_itemId: { userId: atlas.userId, itemId } },
         select: { itemType: true, title: true },
       })
       .catch(() => null);
     if (removed) {
       await logAuditEvent({
-        userId: session.user.id,
+        userId: atlas.userId,
         action: "atlas_bookmark_deleted",
         entityType: "atlas_bookmark",
         entityId: itemId,
