@@ -21,8 +21,11 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 /* SEC-T0-1 step 4 — decrypt extractedText before tokenizing for
-   embedding. Encrypted ciphertext would produce useless vectors. */
-import { decryptAtlasField } from "../atlas-encryption";
+   embedding. Encrypted ciphertext would produce useless vectors.
+   SEC-T0-1 step 5 — encrypt chunk text before persisting. Chunks are
+   derived from extractedText so they contain the same vault-PII;
+   defense-in-depth requires encrypting them too. */
+import { decryptAtlasField, encryptAtlasField } from "../atlas-encryption";
 import {
   chunkText,
   embedTexts,
@@ -153,10 +156,21 @@ export async function autoEmbedMandateFile(
        case — when two concurrent auto-embeds race on the same fileId,
        the second one trips the unique index and we treat it as a clean
        skip rather than a failure. */
+    /* SEC-T0-1 step 5: encrypt each chunk's text before persisting.
+       The vector (embedding) is computed from plaintext (above) and
+       stored separately — embeddings are not PII-recoverable from
+       text (one-way transformation), so they stay unencrypted. The
+       .text column is what an attacker reads as plaintext if the DB
+       leaks; encrypting closes that gap. Parallelized for throughput. */
+    const encryptedChunkTexts = await Promise.all(
+      chunks.map((text) =>
+        encryptAtlasField(text, file.mandate.organizationId),
+      ),
+    );
     let inserted: Array<{ id: string }>;
     try {
       inserted = await prisma.atlasKnowledgeChunk.createManyAndReturn({
-        data: chunks.map((text, i) => ({
+        data: chunks.map((_unused, i) => ({
           organizationId: file.mandate.organizationId,
           userId: file.uploadedByUserId,
           sourceType: "mandate_file",
@@ -168,7 +182,7 @@ export async function autoEmbedMandateFile(
             chunks.length === 1
               ? file.filename
               : `${file.filename} (Chunk ${i + 1}/${chunks.length})`,
-          text,
+          text: encryptedChunkTexts[i] ?? "",
           meta: {
             fileId: file.id,
             mimeType: file.mimeType,

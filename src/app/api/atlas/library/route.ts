@@ -22,6 +22,13 @@ import { getAtlasAuth } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
+/* SEC-T0-1 step 5 — encrypt AtlasResearchEntry.content at rest.
+   Library entries hold lawyer-typed research notes; same § 43e BRAO
+   confidentiality concern as mandate content. */
+import {
+  encryptAtlasField,
+  decryptAtlasField,
+} from "@/lib/atlas/atlas-encryption";
 import {
   embedLibraryText,
   composeEmbeddingInput,
@@ -146,19 +153,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    /* SEC-T0-1 step 5: encrypt content + query before persisting.
+       title stays plaintext (display label + DB-side search). The
+       embedding is computed from PLAINTEXT (above) — embeddings are
+       a one-way transformation and not PII-recoverable, so they stay
+       unencrypted. */
+    const [encContent, encQuery] = await Promise.all([
+      encryptAtlasField(trimmedContent, atlas.organizationId),
+      encryptAtlasField(
+        parsed.data.query?.trim() || null,
+        atlas.organizationId,
+      ),
+    ]);
     const entry = await prisma.atlasResearchEntry.create({
       data: {
         userId: atlas.userId,
         title: finalTitle,
-        content: trimmedContent,
-        query: parsed.data.query?.trim() || null,
+        content: encContent ?? "",
+        query: encQuery,
         sourceKind: parsed.data.sourceKind ?? null,
         sourceMatterId: parsed.data.sourceMatterId ?? null,
         embedding,
       },
     });
 
-    return NextResponse.json({ entry });
+    /* Decrypt response so the client receives plaintext (encryption
+       is server-side invariant, transparent to API consumers). */
+    return NextResponse.json({
+      entry: {
+        ...entry,
+        content:
+          (await decryptAtlasField(entry.content).catch(() => entry.content)) ??
+          "",
+        query: await decryptAtlasField(entry.query).catch(() => entry.query),
+      },
+    });
   } catch (err) {
     const errMsg = err instanceof Error ? err.message : String(err);
     const errName = err instanceof Error ? err.name : typeof err;
@@ -214,35 +243,79 @@ export async function GET(request: NextRequest) {
 
     const { q, limit, cursor } = parsed.data;
 
-    const where = {
-      userId: atlas.userId,
-      ...(q
-        ? {
-            OR: [
-              { title: { contains: q, mode: "insensitive" as const } },
-              { content: { contains: q, mode: "insensitive" as const } },
-              { query: { contains: q, mode: "insensitive" as const } },
-            ],
-          }
-        : {}),
-    };
-
-    const entries = await prisma.atlasResearchEntry.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      take: limit + 1, // +1 so we can detect if there's a next page
-      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        query: true,
-        sourceKind: true,
-        sourceMatterId: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    /* SEC-T0-1 step 5: content + query are now encrypted at rest, so
+       DB-level `contains` no longer matches. When q is provided, do a
+       broader fetch (filter only on plaintext title) then decrypt +
+       in-memory substring-filter the rest. When q is absent, just
+       paginate normally. Per D-6: this is bounded for typical library
+       sizes (~hundreds of entries per user). */
+    const baseSelect = {
+      id: true,
+      title: true,
+      content: true,
+      query: true,
+      sourceKind: true,
+      sourceMatterId: true,
+      createdAt: true,
+      updatedAt: true,
+    } as const;
+    interface EntryRow {
+      id: string;
+      title: string;
+      content: string;
+      query: string | null;
+      sourceKind: string | null;
+      sourceMatterId: string | null;
+      createdAt: Date;
+      updatedAt: Date;
+    }
+    let entries: EntryRow[];
+    if (q) {
+      const qLower = q.toLowerCase();
+      /* Load a generous cap (up to 500 user entries — typical library
+         is well below this) and filter in memory after decryption.
+         Cursor pagination over filtered results is not stable, so
+         when q is set we drop cursor support (clients shouldn't
+         paginate searches; they refine the query instead). */
+      const allUserEntries = await prisma.atlasResearchEntry.findMany({
+        where: { userId: atlas.userId },
+        orderBy: { createdAt: "desc" },
+        take: 500,
+        select: baseSelect,
+      });
+      const decrypted = await Promise.all(
+        allUserEntries.map(async (e) => ({
+          ...e,
+          content:
+            (await decryptAtlasField(e.content).catch(() => e.content)) ?? "",
+          query: await decryptAtlasField(e.query).catch(() => e.query),
+        })),
+      );
+      const filtered = decrypted.filter(
+        (e) =>
+          e.title.toLowerCase().includes(qLower) ||
+          (e.content && e.content.toLowerCase().includes(qLower)) ||
+          (e.query && e.query.toLowerCase().includes(qLower)),
+      );
+      entries = filtered.slice(0, limit + 1);
+    } else {
+      const raw = await prisma.atlasResearchEntry.findMany({
+        where: { userId: atlas.userId },
+        orderBy: { createdAt: "desc" },
+        take: limit + 1,
+        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+        select: baseSelect,
+      });
+      /* Decrypt content + query per row. */
+      entries = await Promise.all(
+        raw.map(async (e) => ({
+          ...e,
+          content:
+            (await decryptAtlasField(e.content).catch(() => e.content)) ?? "",
+          query: await decryptAtlasField(e.query).catch(() => e.query),
+        })),
+      );
+    }
 
     const hasMore = entries.length > limit;
     const items = hasMore ? entries.slice(0, limit) : entries;

@@ -30,6 +30,11 @@ import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { embedTexts } from "@/lib/atlas/knowledge/embed.server";
+/* SEC-T0-1 step 5 — decrypt chunk.text from ranked $queryRaw results
+   before returning. Embedding-based similarity ranking works on the
+   vector (untouched by encryption), but the projected text needs
+   decryption for the consumer (UI / RAG tool). */
+import { decryptAtlasField } from "@/lib/atlas/atlas-encryption";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -188,18 +193,23 @@ export async function POST(req: NextRequest) {
     for (const m of mandates) mandateMap.set(m.id, m);
   }
 
-  const top = capped.map((r) => ({
-    id: r.id,
-    title: r.title,
-    text: r.text,
-    sourceType: r.sourceType,
-    sourceRef: r.sourceRef,
-    mandateId: r.mandateId,
-    meta: r.meta,
-    createdAt: r.createdAt,
-    mandate: r.mandateId ? (mandateMap.get(r.mandateId) ?? null) : null,
-    score: Number(Number(r.similarity).toFixed(4)),
-  }));
+  /* SEC-T0-1 step 5: decrypt the projected text per ranked row.
+     Parallel decrypt for the typical ≤10-result page. Dual-read
+     tolerant — legacy plaintext chunks pass through smartDecrypt. */
+  const top = await Promise.all(
+    capped.map(async (r) => ({
+      id: r.id,
+      title: r.title,
+      text: (await decryptAtlasField(r.text).catch(() => r.text)) ?? "",
+      sourceType: r.sourceType,
+      sourceRef: r.sourceRef,
+      mandateId: r.mandateId,
+      meta: r.meta,
+      createdAt: r.createdAt,
+      mandate: r.mandateId ? (mandateMap.get(r.mandateId) ?? null) : null,
+      score: Number(Number(r.similarity).toFixed(4)),
+    })),
+  );
 
   const durationMs = Date.now() - t0;
   logger.info("[atlas/knowledge] search ok", {

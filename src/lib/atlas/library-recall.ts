@@ -22,6 +22,10 @@ import "server-only";
 import { cosineSimilarity } from "ai";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+/* SEC-T0-1 step 5 — decrypt entry content + query for embedding
+   compose + UI return. Embeddings work on plaintext; ciphertext input
+   would produce non-matching vectors. */
+import { decryptAtlasField } from "./atlas-encryption";
 import {
   embedLibraryText,
   composeEmbeddingInput,
@@ -84,7 +88,7 @@ export async function recallLibrary(
     createdAt: Date;
   }>;
   try {
-    entries = await prisma.atlasResearchEntry.findMany({
+    const rawEntries = await prisma.atlasResearchEntry.findMany({
       where: { userId },
       select: {
         id: true,
@@ -98,6 +102,18 @@ export async function recallLibrary(
       orderBy: { createdAt: "desc" },
       take: ENTRIES_FETCH_CAP,
     });
+    /* SEC-T0-1 step 5: decrypt content + query for embedding compose
+       and result display. content can be very long; parallel decrypt
+       to keep recall latency bounded. Dual-read tolerant (legacy
+       plaintext passes through smartDecrypt unchanged). */
+    entries = await Promise.all(
+      rawEntries.map(async (e) => ({
+        ...e,
+        content:
+          (await decryptAtlasField(e.content).catch(() => e.content)) ?? "",
+        query: await decryptAtlasField(e.query).catch(() => e.query),
+      })),
+    );
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     if (

@@ -20,6 +20,12 @@ import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { embedTexts, chunkText } from "@/lib/atlas/knowledge/embed.server";
+/* SEC-T0-1 step 5 — encrypt chunk text at rest; decrypt on read.
+   Per-org key derivation isolates ciphertext across firms. */
+import {
+  encryptAtlasField,
+  decryptAtlasField,
+} from "@/lib/atlas/atlas-encryption";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -156,8 +162,12 @@ export async function POST(req: NextRequest) {
           CASE-WHEN block + ::vector cast in one round-trip.
      Order-preservation guarantee from createManyAndReturn (Prisma
      5.14+) ensures the indices match the input texts. */
+  /* SEC-T0-1 step 5: encrypt each chunk's text before persisting. */
+  const encryptedTexts = await Promise.all(
+    texts.map((text) => encryptAtlasField(text, atlas.organizationId)),
+  );
   const created = await prisma.atlasKnowledgeChunk.createManyAndReturn({
-    data: texts.map((text, i) => ({
+    data: texts.map((_unused, i) => ({
       organizationId: atlas.organizationId,
       userId: atlas.userId,
       sourceType: parsed.data.sourceType,
@@ -167,7 +177,7 @@ export async function POST(req: NextRequest) {
         texts.length === 1
           ? parsed.data.title
           : `${parsed.data.title} (${i + 1}/${texts.length})`,
-      text,
+      text: encryptedTexts[i] ?? "",
       meta: {
         ...(parsed.data.meta ?? {}),
         chunkIndex: i,
@@ -275,6 +285,14 @@ export async function GET(req: NextRequest) {
 
   /* Don't ship the embedding vectors back — way too large for the
      list view (1536 floats × N rows). Only the search-endpoint
-     pulls the vectors server-side for similarity ranking. */
-  return NextResponse.json({ chunks });
+     pulls the vectors server-side for similarity ranking.
+     SEC-T0-1 step 5: decrypt each row's text before returning.
+     Parallelized. Dual-read tolerant (legacy plaintext passes through). */
+  const decryptedChunks = await Promise.all(
+    chunks.map(async (c) => ({
+      ...c,
+      text: (await decryptAtlasField(c.text).catch(() => c.text)) ?? "",
+    })),
+  );
+  return NextResponse.json({ chunks: decryptedChunks });
 }
