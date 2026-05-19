@@ -78,16 +78,16 @@ The user mandates: **zero new external costs**. Any finding marked `BLOCKED_COST
 
 ```
 TOTAL:                96 findings
-DONE:                 15   (3 Tier-0 + 7 11B + 4 11C + 1 11D)
+DONE:                 16   (3 Tier-0 + 7 11B + 4 11C + 2 11D)
 IN_PROGRESS:           0
-TODO:                 81
+TODO:                 80
 DEFERRED:              0
 WONTFIX:               0
 BLOCKED:               0
 
 By tier:
   TIER 0 (existential):  3 findings · 3 done ✅ — WAVE 11A COMPLETE
-  TIER 1 (high-impact):  21 findings · 12 done — 11B 7/9 + 11C 4/4 + 11D 1/4
+  TIER 1 (high-impact):  21 findings · 13 done — 11B 7/9 + 11C 4/4 + 11D 2/4
                           (SEC-H2 + SEC-H8 deferred for schema)
   TIER 2 (significant):  47 findings · 0 done
   TIER 3 (tech-debt):    25 findings · 0 done
@@ -95,7 +95,7 @@ By tier:
 By domain:
   Security:    28 findings · 10 done
   Bugs:        30 findings · 3 done   (BUG-T1-1, T1-2, T1-3)
-  Performance: 23 findings · 1 done   (PERF-T1-3 lazy-imports)
+  Performance: 23 findings · 2 done   (PERF-T1-2, T1-3)
   UX/A11y:     15 findings · 1 done   (UX-T1-1 aria-live)
 ```
 
