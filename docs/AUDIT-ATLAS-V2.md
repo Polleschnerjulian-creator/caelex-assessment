@@ -79,25 +79,61 @@ The user mandates: **zero new external costs**. Any finding marked `BLOCKED_COST
 ```
 TOTAL:                96 findings
 DONE:                 16   (3 Tier-0 + 7 11B + 4 11C + 2 11D)
-IN_PROGRESS:           0
-TODO:                 80
+IN_PROGRESS:           1   (PERF-T1-1 step 1/2 done in d6650957)
+TODO:                 79
 DEFERRED:              0
 WONTFIX:               0
 BLOCKED:               0
 
 By tier:
   TIER 0 (existential):  3 findings · 3 done ✅ — WAVE 11A COMPLETE
-  TIER 1 (high-impact):  21 findings · 13 done — 11B 7/9 + 11C 4/4 + 11D 2/4
-                          (SEC-H2 + SEC-H8 deferred for schema)
+  TIER 1 (high-impact):  21 findings · 13 done + 1 in-progress
+                          (11B 7/9 + 11C 4/4 + 11D 2.5/4; SEC-H2 + SEC-H8 deferred)
   TIER 2 (significant):  47 findings · 0 done
   TIER 3 (tech-debt):    25 findings · 0 done
 
 By domain:
   Security:    28 findings · 10 done
   Bugs:        30 findings · 3 done   (BUG-T1-1, T1-2, T1-3)
-  Performance: 23 findings · 2 done   (PERF-T1-2, T1-3)
+  Performance: 23 findings · 2 done + 1 in-progress (T1-1 step 1/2)
   UX/A11y:     15 findings · 1 done   (UX-T1-1 aria-live)
 ```
+
+**PERF-T1-1 Step 2 — client wiring (next session pickup):**
+
+Step 1 (`d6650957`) shipped the `/api/atlas/mandate/[id]/full` aggregator endpoint. Step 2 wires it into `src/components/atlas/v2/MandateDetailView.tsx`:
+
+1. Replace the parent mandate-fetch (currently `fetch('/api/atlas/mandate/${id}')`) with `fetch('/api/atlas/mandate/${id}/full')`. The response now includes 8 additional fields (chats, files, deadlines, timeEntries, parties, members, agentRuns, deadlineSuggestions) on top of the mandate row.
+
+2. For each of the 8 subcomponents, add an optional `initialData?: T[]` prop:
+   - `MandateActivityFeed` — derives events from chats+files+deadlines+timeEntries+parties+members+agentRuns; pass all 7 arrays
+   - `MandateFilesList` — `initialFiles?: FileRow[]`
+   - `MandateDeadlines` — `initialDeadlines?: Deadline[]`
+   - `MandateTimeEntries` — `initialEntries?: TimeEntry[]`
+   - `MandateParties` — `initialParties?: Party[]`
+   - `MandateMembersList` — `initialMembers?: Member[]`
+   - `MandateDeadlineSuggestions` — `initialSuggestions?: Suggestion[]`
+   - `MandateBackgroundAgentSection` — `initialRuns?: AgentRun[]`
+
+3. Pattern in each subcomponent's initial useEffect:
+
+   ```ts
+   useEffect(() => {
+     /* If parent provided initialData (via /full aggregator), skip
+        the cold-mount fetch — data is already on screen. The fetch
+        is still triggered when refreshKey bumps (post-mutation). */
+     if (initialData && refreshKey === 0) {
+       setData(initialData);
+       setLoading(false);
+       return;
+     }
+     // ... existing fetch logic
+   }, [refreshKey, mandateId]);
+   ```
+
+4. Result: 1 round-trip on mount (~100-300ms) instead of 9 (~600-900ms staircase).
+
+Estimated: 3-4h for full wiring (each subcomponent is a 10-min touch).
 
 **Update this counter** after every finding flip — keep the numbers in sync.
 
