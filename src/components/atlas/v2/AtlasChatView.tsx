@@ -786,8 +786,17 @@ export function AtlasChatView({ chatId }: Props) {
                button that re-submits the most-recent user message
                through the existing followups handler. M45 is the same
                failure-mode (any fetch-error in AtlasChatView), so this
-               retry-CTA covers both findings. */
-            <div className="flex items-center gap-2 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+               retry-CTA covers both findings.
+
+               UX-T1-1 (wave 11C, WCAG 4.1.3): error banner needs
+               aria-live="assertive" to INTERRUPT screen-reader speech
+               with the failure — unlike the streaming-response surface
+               which uses polite, errors warrant immediate attention. */
+            <div
+              role="alert"
+              aria-live="assertive"
+              className="flex items-center gap-2 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
+            >
               <AlertCircle size={12} className="shrink-0" />
               <span className="flex-1">{error}</span>
               {(() => {
@@ -1351,7 +1360,19 @@ function StreamingMessage({
   }
 
   return (
-    <div className="space-y-3">
+    /* UX-T1-1 (wave 11C, WCAG 4.1.3 Status Messages): aria-live region
+       for the streaming response surface. Screen-reader users had ZERO
+       feedback before this — they submitted a question and heard silence
+       until the answer was fully rendered (and even then, only if their
+       reader re-scanned the page). Now: progress + activity get spoken
+       aloud. `aria-live="polite"` queues announcements behind whatever
+       the user is currently reading rather than interrupting. */
+    <div
+      className="space-y-3"
+      role="status"
+      aria-live="polite"
+      aria-atomic="false"
+    >
       {/* Thinking panel — Claude's internal chain-of-thought stream.
           Auto-expanded during streaming so the user sees Atlas reason
           in real time. Renders only when thinking is enabled (server-
