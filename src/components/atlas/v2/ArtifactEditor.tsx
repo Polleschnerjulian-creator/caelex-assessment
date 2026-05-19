@@ -69,6 +69,12 @@ import {
 } from "@/lib/atlas/editor-extensions/CitationMark";
 import { CitationDialog } from "./CitationDialog";
 import { CrossReferenceDialog } from "./CrossReferenceDialog";
+import { DocumentMetaPane } from "./DocumentMetaPane";
+import {
+  parseDocumentMeta,
+  serializeDocumentMeta,
+  type DocumentMeta,
+} from "@/lib/atlas/document-meta";
 import {
   X,
   Save,
@@ -180,6 +186,14 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
   const [citationOpen, setCitationOpen] = useState(false);
   /* Sprint 12 — CrossReferenceDialog state */
   const [crossRefOpen, setCrossRefOpen] = useState(false);
+  /* Sprint 14 — Document-Meta state (Aktenzeichen, Mandant, etc.).
+     Initial-parse aus dem body, beim save wieder als YAML-frontmatter
+     prependet. */
+  const parsedInitial = useMemo(
+    () => parseDocumentMeta(artifact.body),
+    [artifact.body],
+  );
+  const [meta, setMeta] = useState<DocumentMeta>(parsedInitial.meta);
 
   /* TipTap editor instance — set up once on mount.
      Sprint 10: Word-feature-parity OSS-Extensions added (per research-
@@ -257,7 +271,10 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
         customFooter: {},
       }),
     ],
-    content: markdownToHtml(artifact.body),
+    /* Sprint 14 — strip frontmatter before passing to TipTap so the
+       editor only sees the actual content. Meta-fields werden
+       separately gemanaged via DocumentMetaPane. */
+    content: markdownToHtml(parsedInitial.body),
     editorProps: {
       attributes: {
         class: "atlas-wysiwyg",
@@ -313,11 +330,16 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
     return { words, chars, minutes, pages };
   }, [editor, _]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  /* Track dirty-state vs original. */
+  /* Track dirty-state vs original (title + meta changes flip dirty;
+     editor-content changes flip via onUpdate). */
   useEffect(() => {
     if (!editor) return;
-    setDirty(title !== initialTitleRef.current);
-  }, [title, editor]);
+    const metaJson = JSON.stringify(meta);
+    const initialMetaJson = JSON.stringify(parsedInitial.meta);
+    if (title !== initialTitleRef.current || metaJson !== initialMetaJson) {
+      setDirty(true);
+    }
+  }, [title, meta, editor, parsedInitial.meta]);
 
   /* Auto-save to localStorage (debounced). */
   useEffect(() => {
@@ -326,9 +348,13 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
     const timer = window.setTimeout(() => {
       try {
         const md = htmlToMarkdown(editor.getHTML());
+        /* Sprint 14 — include meta in autosave payload so restore
+           reconstructs the full state. */
+        const metaPrefix = serializeDocumentMeta(meta);
+        const fullBody = metaPrefix ? metaPrefix + md : md;
         window.localStorage.setItem(
           key,
-          JSON.stringify({ body: md, title, savedAt: Date.now() }),
+          JSON.stringify({ body: fullBody, title, savedAt: Date.now() }),
         );
         setAutosavedAt(Date.now());
       } catch {
@@ -339,6 +365,7 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
   }, [
     editor,
     title,
+    meta,
     dirty,
     artifact.title,
     _,
@@ -466,7 +493,11 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
       window.localStorage.removeItem(AUTOSAVE_PREFIX + artifact.title);
     }
     const md = htmlToMarkdown(editor.getHTML());
-    onSave({ title, body: md });
+    /* Sprint 14 — re-attach meta as YAML-frontmatter so PDF/DOCX
+       export + reload-roundtrip preserves it. */
+    const metaPrefix = serializeDocumentMeta(meta);
+    const fullBody = metaPrefix ? metaPrefix + md : md;
+    onSave({ title, body: fullBody });
     onClose();
   };
 
@@ -695,6 +726,11 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
         onOpenCrossRef={() => setCrossRefOpen(true)}
         onGenerateToA={generateTableOfAuthorities}
       />
+
+      {/* Sprint 14 — Document-Meta-Pane (Aktenzeichen, Mandant, Empfänger,
+          Betreff usw.). Collapsed by default, expand für strukturierte
+          eingabe. Persistiert als YAML-frontmatter im body. */}
+      <DocumentMetaPane meta={meta} onChange={setMeta} />
 
       {/* Body: outline + page + ai */}
       <div className="flex flex-1 overflow-hidden">
