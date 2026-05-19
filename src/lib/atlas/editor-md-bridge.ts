@@ -93,6 +93,29 @@ turndown.addRule("atlasCitation", {
   },
 });
 
+/* Sprint 16 — Suggestion-marks roundtrip (ins/del). Preserved als
+   raw HTML im markdown body damit beim reopen die suggestions wieder
+   erkannt werden + die suggestionsJson-meta-payload sich auf die marks
+   refresht. */
+turndown.addRule("atlasInsertion", {
+  filter: (node) =>
+    node.nodeName === "INS" &&
+    (node as HTMLElement).classList.contains("atlas-insertion"),
+  replacement: (content, node) => {
+    const id = (node as HTMLElement).getAttribute("data-suggestion-id") ?? "";
+    return `<ins class="atlas-insertion" data-suggestion-id="${id}">${content}</ins>`;
+  },
+});
+turndown.addRule("atlasDeletion", {
+  filter: (node) =>
+    node.nodeName === "DEL" &&
+    (node as HTMLElement).classList.contains("atlas-deletion"),
+  replacement: (content, node) => {
+    const id = (node as HTMLElement).getAttribute("data-suggestion-id") ?? "";
+    return `<del class="atlas-deletion" data-suggestion-id="${id}">${content}</del>`;
+  },
+});
+
 /* Sprint 15 — Comment-mark roundtrip. Behält das <span class="atlas-
    comment" data-comment-id="X" data-resolved="Y">…</span> als raw-HTML
    damit beim reopen die comment-marks + ihre IDs wieder erkennt + an

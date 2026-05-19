@@ -68,10 +68,15 @@ import {
   type CitationKind,
 } from "@/lib/atlas/editor-extensions/CitationMark";
 import { CommentMark } from "@/lib/atlas/editor-extensions/CommentMark";
+import {
+  InsertionMark,
+  DeletionMark,
+} from "@/lib/atlas/editor-extensions/SuggestionMarks";
 import { CitationDialog } from "./CitationDialog";
 import { CrossReferenceDialog } from "./CrossReferenceDialog";
 import { DocumentMetaPane } from "./DocumentMetaPane";
 import { CommentsPanel, type Comment } from "./CommentsPanel";
+import { SuggestionsPanel, type Suggestion } from "./SuggestionsPanel";
 import {
   parseDocumentMeta,
   serializeDocumentMeta,
@@ -125,6 +130,9 @@ import {
   Link2,
   BookMarked,
   MessageSquare,
+  GitPullRequest,
+  PlusCircle,
+  MinusCircle,
 } from "lucide-react";
 import type { ArtifactInfo } from "./ArtifactPreviewPanel";
 import { markdownToHtml, htmlToMarkdown } from "@/lib/atlas/editor-md-bridge";
@@ -209,8 +217,21 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
       return [];
     }
   });
-  /* Sprint 15 — Sidebar tab: "atlas" (AI chat) or "comments" (review). */
-  const [sidebarTab, setSidebarTab] = useState<"atlas" | "comments">("atlas");
+  /* Sprint 15+16 — Sidebar tab: atlas / comments / suggestions. */
+  const [sidebarTab, setSidebarTab] = useState<
+    "atlas" | "comments" | "suggestions"
+  >("atlas");
+  /* Sprint 16 — Suggestions state. Stored as JSON in document-meta
+     (key: suggestionsJson). */
+  const [suggestions, setSuggestions] = useState<Suggestion[]>(() => {
+    try {
+      const raw = (parsedInitial.meta as { suggestionsJson?: string })
+        .suggestionsJson;
+      return raw ? (JSON.parse(raw) as Suggestion[]) : [];
+    } catch {
+      return [];
+    }
+  });
 
   /* TipTap editor instance — set up once on mount.
      Sprint 10: Word-feature-parity OSS-Extensions added (per research-
@@ -228,6 +249,9 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
       CitationMark,
       /* Sprint 15 — Custom-mark für Kommentare (Mandanten-Review) */
       CommentMark,
+      /* Sprint 16 — Suggestions-Marks (Tracked-Changes MVP) */
+      InsertionMark,
+      DeletionMark,
       Underline,
       LinkExt.configure({
         openOnClick: false,
@@ -512,14 +536,17 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
       window.localStorage.removeItem(AUTOSAVE_PREFIX + artifact.title);
     }
     const md = htmlToMarkdown(editor.getHTML());
-    /* Sprint 14 + 15 — re-attach meta + comments as YAML-frontmatter. */
-    const metaWithComments: DocumentMeta = {
+    /* Sprint 14 + 15 + 16 — re-attach meta + comments + suggestions. */
+    const fullMeta: DocumentMeta = {
       ...meta,
       ...(comments.length > 0
         ? { commentsJson: JSON.stringify(comments) }
         : {}),
+      ...(suggestions.length > 0
+        ? { suggestionsJson: JSON.stringify(suggestions) }
+        : {}),
     };
-    const metaPrefix = serializeDocumentMeta(metaWithComments);
+    const metaPrefix = serializeDocumentMeta(fullMeta);
     const fullBody = metaPrefix ? metaPrefix + md : md;
     onSave({ title, body: fullBody });
     onClose();
@@ -719,6 +746,169 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
     );
   };
 
+  /* Sprint 16 — Suggestions (Tracked-Changes-MVP) handlers.
+
+     Workflow:
+     - Reviewer markiert text + click "Vorschlag: Löschen" → wraps mit
+       DeletionMark + push Suggestion {kind: deletion, ...} to state
+     - Reviewer setzt cursor + click "Vorschlag: Einfügen" → prompt für
+       neuen text → insert with InsertionMark + push Suggestion {kind:
+       insertion, ...}
+     - Document-owner sieht beide im SuggestionsPanel
+     - Accept-insertion → unsetInsertion (text bleibt, mark weg)
+     - Accept-deletion → text + mark wirklich löschen
+     - Reject-insertion → text + mark löschen
+     - Reject-deletion → unsetDeletion (text bleibt, mark weg)
+  */
+  const handleProposeDeletion = () => {
+    if (!editor) return;
+    const { from, to } = editor.state.selection;
+    if (from === to) {
+      alert("Bitte erst Text markieren der gelöscht werden soll.");
+      return;
+    }
+    const id = `s-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const text = editor.state.doc.textBetween(from, to, " ").slice(0, 120);
+    const newSuggestion: Suggestion = {
+      id,
+      kind: "deletion",
+      author: currentUserName,
+      createdAt: Date.now(),
+      text,
+    };
+    setSuggestions((prev) => [...prev, newSuggestion]);
+    editor.chain().focus().setDeletion({ suggestionId: id }).run();
+    setSidebarTab("suggestions");
+  };
+
+  const handleProposeInsertion = () => {
+    if (!editor) return;
+    const text = prompt("Text der eingefügt werden soll:");
+    if (!text || !text.trim()) return;
+    const id = `s-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const newSuggestion: Suggestion = {
+      id,
+      kind: "insertion",
+      author: currentUserName,
+      createdAt: Date.now(),
+      text: text.trim().slice(0, 120),
+    };
+    setSuggestions((prev) => [...prev, newSuggestion]);
+    /* Insert text wrapped with InsertionMark at cursor. */
+    editor
+      .chain()
+      .focus()
+      .insertContent(
+        `<ins class="atlas-insertion" data-suggestion-id="${id}">${text.trim()}</ins>`,
+      )
+      .run();
+    setSidebarTab("suggestions");
+  };
+
+  const findSuggestionRange = (
+    suggestionId: string,
+  ): {
+    from: number;
+    to: number;
+    markName: "insertion" | "deletion";
+  } | null => {
+    if (!editor) return null;
+    let from: number | null = null;
+    let to: number | null = null;
+    let markName: "insertion" | "deletion" | null = null;
+    editor.state.doc.descendants((node, pos) => {
+      if (!node.isText || !node.marks?.length) return;
+      const m = node.marks.find(
+        (mark) =>
+          (mark.type.name === "insertion" || mark.type.name === "deletion") &&
+          mark.attrs.suggestionId === suggestionId,
+      );
+      if (!m) return;
+      if (from === null) from = pos;
+      to = pos + node.nodeSize;
+      markName = m.type.name as "insertion" | "deletion";
+    });
+    if (from === null || to === null || markName === null) return null;
+    return { from, to, markName };
+  };
+
+  const handleJumpToSuggestion = (id: string) => {
+    if (!editor) return;
+    const range = findSuggestionRange(id);
+    if (!range) return;
+    editor
+      .chain()
+      .focus()
+      .setTextSelection(range.from + 1)
+      .run();
+    const dom = editor.view.domAtPos(range.from + 1).node;
+    const el = (
+      dom instanceof Element ? dom : dom.parentElement
+    ) as HTMLElement | null;
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
+  const handleAcceptSuggestion = (id: string) => {
+    if (!editor) return;
+    const range = findSuggestionRange(id);
+    if (!range) {
+      /* Mark not found in doc — just drop from state. */
+      setSuggestions((prev) => prev.filter((s) => s.id !== id));
+      return;
+    }
+    if (range.markName === "insertion") {
+      /* Accept insertion: keep text, remove mark. */
+      editor
+        .chain()
+        .setTextSelection({ from: range.from, to: range.to })
+        .unsetMark("insertion")
+        .run();
+    } else {
+      /* Accept deletion: delete text + mark. */
+      editor
+        .chain()
+        .setTextSelection({ from: range.from, to: range.to })
+        .deleteSelection()
+        .run();
+    }
+    setSuggestions((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const handleRejectSuggestion = (id: string) => {
+    if (!editor) return;
+    const range = findSuggestionRange(id);
+    if (!range) {
+      setSuggestions((prev) => prev.filter((s) => s.id !== id));
+      return;
+    }
+    if (range.markName === "insertion") {
+      /* Reject insertion: delete the inserted text + mark. */
+      editor
+        .chain()
+        .setTextSelection({ from: range.from, to: range.to })
+        .deleteSelection()
+        .run();
+    } else {
+      /* Reject deletion: keep text, remove deletion-mark. */
+      editor
+        .chain()
+        .setTextSelection({ from: range.from, to: range.to })
+        .unsetMark("deletion")
+        .run();
+    }
+    setSuggestions((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const handleAcceptAllSuggestions = () => {
+    const ids = suggestions.map((s) => s.id);
+    for (const id of ids) handleAcceptSuggestion(id);
+  };
+
+  const handleRejectAllSuggestions = () => {
+    const ids = suggestions.map((s) => s.id);
+    for (const id of ids) handleRejectSuggestion(id);
+  };
+
   /* Sprint 13 — Table of Authorities Generator.
      Walks the doc, collects all text-nodes that have the citation-mark
      applied, groups them by citationType, and inserts a formatted
@@ -867,6 +1057,8 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
         onOpenCrossRef={() => setCrossRefOpen(true)}
         onGenerateToA={generateTableOfAuthorities}
         onAddComment={handleAddComment}
+        onProposeInsertion={handleProposeInsertion}
+        onProposeDeletion={handleProposeDeletion}
       />
 
       {/* Sprint 14 — Document-Meta-Pane (Aktenzeichen, Mandant, Empfänger,
@@ -992,7 +1184,7 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
               <button
                 type="button"
                 onClick={() => setSidebarTab("comments")}
-                className={`flex flex-1 items-center justify-center gap-1.5 border-b-2 px-3 py-2 text-[11.5px] font-medium transition-colors ${
+                className={`flex flex-1 items-center justify-center gap-1 border-b-2 px-2 py-2 text-[11px] font-medium transition-colors ${
                   sidebarTab === "comments"
                     ? "border-emerald-500 text-emerald-700 dark:text-emerald-300"
                     : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
@@ -1001,8 +1193,25 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
                 <MessageSquare size={12} />
                 Kommentare
                 {comments.filter((c) => !c.resolved).length > 0 && (
-                  <span className="rounded-full bg-amber-100 px-1.5 text-[10px] font-semibold text-amber-800 dark:bg-amber-500/20 dark:text-amber-200">
+                  <span className="rounded-full bg-amber-100 px-1.5 text-[9.5px] font-semibold text-amber-800 dark:bg-amber-500/20 dark:text-amber-200">
                     {comments.filter((c) => !c.resolved).length}
+                  </span>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setSidebarTab("suggestions")}
+                className={`flex flex-1 items-center justify-center gap-1 border-b-2 px-2 py-2 text-[11px] font-medium transition-colors ${
+                  sidebarTab === "suggestions"
+                    ? "border-emerald-500 text-emerald-700 dark:text-emerald-300"
+                    : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                }`}
+              >
+                <GitPullRequest size={12} />
+                Vorschläge
+                {suggestions.length > 0 && (
+                  <span className="rounded-full bg-emerald-100 px-1.5 text-[9.5px] font-semibold text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-200">
+                    {suggestions.length}
                   </span>
                 )}
               </button>
@@ -1016,6 +1225,15 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
                 onResolve={handleResolveComment}
                 onDelete={handleDeleteComment}
                 onAddReply={handleAddReply}
+              />
+            ) : sidebarTab === "suggestions" ? (
+              <SuggestionsPanel
+                suggestions={suggestions}
+                onAccept={handleAcceptSuggestion}
+                onReject={handleRejectSuggestion}
+                onAcceptAll={handleAcceptAllSuggestions}
+                onRejectAll={handleRejectAllSuggestions}
+                onJumpTo={handleJumpToSuggestion}
               />
             ) : (
               <>
@@ -1148,6 +1366,27 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
           line-height: 1.5;
           color: #1f2937;
           min-height: 100%;
+        }
+        /* Sprint 16 — Suggestion marks (Tracked-Changes MVP).
+           Insertion: grüner Underline (Word-style "insertion-suggestion").
+           Deletion: roter Strikethrough mit subtilen bg. */
+        .atlas-wysiwyg ins.atlas-insertion {
+          background: #d1fae5;
+          color: #065f46;
+          text-decoration: underline;
+          text-decoration-color: #10b981;
+          text-decoration-thickness: 2px;
+          padding: 0 1pt;
+          border-radius: 2pt;
+        }
+        .atlas-wysiwyg del.atlas-deletion {
+          background: #fee2e2;
+          color: #991b1b;
+          text-decoration: line-through;
+          text-decoration-color: #dc2626;
+          text-decoration-thickness: 2px;
+          padding: 0 1pt;
+          border-radius: 2pt;
         }
         /* Sprint 15 — Comment-mark (Mandanten-Review). Gelber highlight
            wie sticky-note über dem text. Resolved comments verlieren ihre
@@ -1446,6 +1685,8 @@ function Ribbon({
   onOpenCrossRef,
   onGenerateToA,
   onAddComment,
+  onProposeInsertion,
+  onProposeDeletion,
 }: {
   editor: Editor | null;
   showOutline: boolean;
@@ -1458,6 +1699,8 @@ function Ribbon({
   onOpenCrossRef: () => void;
   onGenerateToA: () => void;
   onAddComment: () => void;
+  onProposeInsertion: () => void;
+  onProposeDeletion: () => void;
 }) {
   const [styleOpen, setStyleOpen] = useState(false);
   const [insertOpen, setInsertOpen] = useState(false);
@@ -2072,6 +2315,19 @@ function Ribbon({
         {/* Sprint 10 — Find & Replace (Cmd+F) */}
         <RibbonBtn onClick={onOpenSearch} title="Suchen & Ersetzen (⌘F)">
           <Search size={13} />
+        </RibbonBtn>
+        {/* Sprint 16 — Suggestions / Tracked Changes (MVP, manuell) */}
+        <RibbonBtn
+          onClick={onProposeInsertion}
+          title="Vorschlag: Text hier einfügen (grün)"
+        >
+          <PlusCircle size={13} />
+        </RibbonBtn>
+        <RibbonBtn
+          onClick={onProposeDeletion}
+          title="Vorschlag: markierten Text löschen (rot strikethrough)"
+        >
+          <MinusCircle size={13} />
         </RibbonBtn>
       </RibbonGroup>
 

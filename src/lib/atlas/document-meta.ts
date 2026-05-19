@@ -42,6 +42,8 @@ export interface DocumentMeta {
   /* Sprint 15 — Comments serialized as JSON-string. Internal field,
      not surfaced in the DocumentMetaPane UI. */
   commentsJson?: string;
+  /* Sprint 16 — Suggestions (tracked-changes) serialized as JSON. */
+  suggestionsJson?: string;
 }
 
 const FRONTMATTER_RE = /^---\s*\n([\s\S]*?)\n---\s*\n?/;
