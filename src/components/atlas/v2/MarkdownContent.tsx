@@ -22,7 +22,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { Fragment, memo, type ReactNode } from "react";
+import { Fragment, memo, useMemo, type ReactNode } from "react";
 import { MarkdownTableExport } from "./MarkdownTableExport";
 
 /**
@@ -72,13 +72,25 @@ interface Props {
    on tablets. Memo keys on (text, citations); citations is the same
    array reference per message so shallow equal is fine. */
 function MarkdownContentImpl({ text, citations }: Props) {
-  const blocks = parseBlocks(text);
-  /* Build a lookup: source-id → index. Used by renderInline to turn
-     [ATLAS:xx] into the right pill number. */
-  const sourceMap = new Map<string, InlineCitation>();
-  if (citations) {
-    for (const c of citations) sourceMap.set(c.sourceId, c);
-  }
+  /* PERF-T3-3 (wave 11D): memoise parseBlocks + sourceMap. Even with
+     the outer React.memo wrapping (H22), the inner Impl re-runs on
+     every render when memo's shallow-equal check passes (e.g. when
+     React just re-renders due to context change). parseBlocks does
+     several regex+split passes on the entire text — O(N) per render.
+     During streaming, `text` grows incrementally so each delta would
+     re-parse the WHOLE growing buffer. useMemo([text]) keys on text
+     identity so re-parse happens only when text actually changes. */
+  const blocks = useMemo(() => parseBlocks(text), [text]);
+  /* PERF-T3-3: sourceMap allocation per render is wasteful when
+     citations is reference-stable (the parent message-row props
+     pattern guarantees this). Memo on citations identity. */
+  const sourceMap = useMemo(() => {
+    const m = new Map<string, InlineCitation>();
+    if (citations) {
+      for (const c of citations) m.set(c.sourceId, c);
+    }
+    return m;
+  }, [citations]);
   return <>{blocks.map((b, i) => renderBlock(b, i, sourceMap))}</>;
 }
 

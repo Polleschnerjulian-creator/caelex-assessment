@@ -13,7 +13,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Briefcase,
@@ -283,12 +283,29 @@ export function AtlasChatView({ chatId }: Props) {
      every length-bump (incl. mid-stream optimistic adds), which defeats
      H24. The new deps `[chatId, needsPoll]` only flip on true→false
      edges, which is what we want. */
-  const lastUserIdx = chat
-    ? [...chat.messages].reverse().findIndex((m) => m.role === "user")
-    : -1;
-  const lastAssistantIdx = chat
-    ? [...chat.messages].reverse().findIndex((m) => m.role === "assistant")
-    : -1;
+  /* PERF-T3-2 (wave 11D): useMemo the message-shape derivations so we
+     don't allocate two reversed-array clones on EVERY render. Before
+     this fix, each render allocated 2 × O(N) array clones (the
+     [...chat.messages].reverse() pattern) — during streaming, the
+     parent re-renders ~30x/second, meaning ~60 array allocations per
+     second × N-message size. useMemo memoizes on messages identity:
+     allocations now happen only when chat.messages changes. */
+  const { lastUserIdx, lastAssistantIdx } = useMemo(() => {
+    if (!chat) return { lastUserIdx: -1, lastAssistantIdx: -1 };
+    /* Single backward scan finds BOTH indices in one O(N) pass instead
+       of two array-clones + two findIndex calls. */
+    let user = -1;
+    let assistant = -1;
+    const messages = chat.messages;
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      if (user === -1 && m.role === "user") user = messages.length - 1 - i;
+      if (assistant === -1 && m.role === "assistant")
+        assistant = messages.length - 1 - i;
+      if (user !== -1 && assistant !== -1) break;
+    }
+    return { lastUserIdx: user, lastAssistantIdx: assistant };
+  }, [chat]);
   const messagesLen = chat?.messages.length ?? 0;
   const userIsLast = lastUserIdx === 0;
   const noAssistantYet = lastAssistantIdx === -1;
