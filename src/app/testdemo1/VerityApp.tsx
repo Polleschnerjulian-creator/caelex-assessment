@@ -454,7 +454,14 @@ export default function VerityApp() {
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+        /* Wave 9 (2026-05-19) — Google-Fonts @import ENTFERNT (Audit-Befund
+           C-1, LG München I Schadenersatz-Urteil). IBM Plex Mono + Inter
+           werden via system-fallbacks ('monospace' / 'sans-serif') rendered.
+           Inter ist ohnehin via next/font/google im root-layout self-gehostet
+           und wird durch CSS-Variablen erreicht; IBM Plex Mono fällt auf
+           Menlo/Monaco/system-monospace zurück — visuell minimal abweichend,
+           DSGVO-konform. Wenn IBM Plex Mono unbedingt nötig wird, via
+           next/font/google self-hosten statt @import-URL. */
         @keyframes fi{from{opacity:0}to{opacity:1}}
         @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
         @keyframes scanMove{0%{top:-1px}100%{top:100%}}

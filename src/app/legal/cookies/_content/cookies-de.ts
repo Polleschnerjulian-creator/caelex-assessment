@@ -78,7 +78,7 @@ export const COOKIES_DE: LegalDocument = {
         },
         {
           type: "p",
-          text: "C. Analyse (nur mit Einwilligung, soweit aktiviert): Vercel Web Analytics mit IP-Anonymisierung; keine Cookie-Setzung, rein server-seitige Aggregation. Keine Übermittlung an Dritte jenseits von Vercel Inc.",
+          text: "C. Analyse (nur mit Einwilligung, soweit aktiviert): Vercel Web Analytics — cookielos, browser-basiert mit pro Session neu gerolltem Hash, IP-Anonymisierung. Keine Übermittlung an Dritte jenseits von Vercel Inc.",
         },
         {
           type: "p",

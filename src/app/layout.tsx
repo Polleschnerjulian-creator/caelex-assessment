@@ -184,12 +184,16 @@ export default function RootLayout({
           name="format-detection"
           content="telephone=no, date=no, email=no, address=no"
         />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
+        {/* Wave 9 (2026-05-19) — Google-Fonts preconnect ENTFERNT.
+            Audit-Befund C-1: <link rel="preconnect" href="fonts.googleapis.com">
+            öffnet HTTP-Verbindung zu Google LLC USA noch BEVOR ein
+            cookie-banner reagieren kann → DSGVO-Verstoß nach LG München I
+            03 O 17493/20 (20.01.2022, 100 € Schadenersatz pro Betroffenem).
+            next/font/google (oben importiert) self-hostet die Fonts ohnehin
+            zur Build-Zeit aus /public/, also brauchen wir den Preconnect
+            ÜBERHAUPT nicht — er war reiner Performance-Hint der ohne
+            Self-Host-Wissen sinnvoll wäre, mit Self-Host aber unnötig
+            UND DSGVO-schädlich ist. */}
         <OrganizationJsonLd />
         <WebSiteJsonLd />
       </head>

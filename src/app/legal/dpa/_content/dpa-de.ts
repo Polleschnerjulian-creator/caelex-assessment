@@ -334,7 +334,7 @@ export const DPA_DE: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "(1) Caelex informiert den Kunden unverzüglich, spätestens innerhalb von 72 Stunden ab Kenntniserlangung, schriftlich oder in Textform über Schutzverletzungen personenbezogener Daten, die dem Zuständigkeitsbereich von Caelex zuzurechnen sind.",
+          text: "(1) Caelex informiert den Kunden unverzüglich nach Kenntniserlangung schriftlich oder in Textform über Schutzverletzungen personenbezogener Daten, die dem Zuständigkeitsbereich von Caelex zuzurechnen sind. Ziel-Reaktionszeit: in der Regel binnen 24 Stunden, spätestens innerhalb von 72 Stunden. Die 72-Stunden-Frist des Art. 33 Abs. 1 DSGVO bezieht sich auf die Meldepflicht des Verantwortlichen gegenüber der Aufsichtsbehörde; Caelex als Auftragsverarbeiter agiert nach Art. 33 Abs. 2 DSGVO 'unverzüglich', hält sich aber selbst an die kürzere operative Frist um dem Kunden die fristgerechte Aufsichtsbehörden-Meldung zu ermöglichen.",
         },
         {
           type: "p",
@@ -372,7 +372,7 @@ export const DPA_DE: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "(1) Nach Beendigung der Erbringung der Verarbeitungsleistung stellt Caelex dem Kunden die personenbezogenen Daten innerhalb von 30 Tagen in einem strukturierten, gängigen und maschinenlesbaren Format zur Verfügung (Export). Nach Ablauf der Exportfrist oder auf Wunsch des Kunden erfolgt die Löschung.",
+          text: "(1) Nach Beendigung der Erbringung der Verarbeitungsleistung stellt Caelex dem Kunden die personenbezogenen Daten innerhalb von 30 Tagen in einem strukturierten, gängigen und maschinenlesbaren Format zur Verfügung (Export). Bei Kunden mit gesetzlicher Aktenführungs- oder Aufbewahrungspflicht (insbesondere Rechtsanwaltskanzleien nach § 50 BRAO, Steuerberater nach § 66 StBerG, sowie Berufsgeheimnisträger nach § 203 StGB) verlängert sich die Exportfrist auf Anfrage und unter Aufrechterhaltung der Vergütungspflicht auf bis zu 90 Tage. Nach Ablauf der jeweiligen Exportfrist oder auf Wunsch des Kunden erfolgt die Löschung.",
         },
         {
           type: "p",
