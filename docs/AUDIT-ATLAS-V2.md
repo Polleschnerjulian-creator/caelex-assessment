@@ -78,8 +78,8 @@ The user mandates: **zero new external costs**. Any finding marked `BLOCKED_COST
 
 ```
 TOTAL:                96 findings
-DONE:                  0   (SEC-T0-1 still in-progress at sub-step 2b/7)
-IN_PROGRESS:           1   (SEC-T0-1, sub-steps 1+2a+2b complete; 2c, 3-7 remaining)
+DONE:                  0   (SEC-T0-1 still in-progress at sub-step 4/7)
+IN_PROGRESS:           1   (SEC-T0-1, sub-steps 1+2a+2b+2c+3+4 complete; 5-7 remaining)
 TODO:                 95
 DEFERRED:              0
 WONTFIX:               0
@@ -237,8 +237,10 @@ Each finding follows the exact same structure for easy parsing.
 
 - ✅ **Step 1** (2026-05-19, `43b0b0d1`): Foundation — `src/lib/atlas/atlas-encryption.ts` + 23 vitest tests. Public API: `encryptAtlasField` / `decryptAtlasField` / `encryptAtlasMessageContent` / `decryptAtlasMessageContent` / `migrateAtlasField` / `migrateAtlasMessageContent` / `isAtlasFieldEncrypted`. Built on top of existing per-org encryption infrastructure. Tests cover round-trip, null/empty fidelity, per-org isolation, IV randomization, JSONB walking, tool_result nested content, backfill idempotency, dual-read transition.
 - ✅ **Step 2a** (2026-05-19, `ba2d2072`): Main mandate REST API. POST encrypts clientName/clientContact/customInstructions before create; GET list + GET single + PATCH decrypt accordingly. `name`/jurisdiction/operatorType/primaryAuthority left plaintext (categorical, list-view perf). 101 insertions across 2 files.
-- ⏳ **Step 2b** (next): remaining mandate read sites — mandate-context.ts (chat-engine context loader), atlas-tool-executor.ts:682 (tool-driven create), agent/memory-summarizer (background updates).
-- ⏳ **Step 2c** (deferred): conflict-check + mandate-search — substring search on `clientName` breaks under at-rest encryption. Three viable designs: (a) load-then-decrypt-then-filter (OK for ≤200 mandates/firm), (b) HMAC blind-index column for exact-match (requires schema migration), (c) keep `clientName` plaintext and only encrypt `clientContact`/`customInstructions`. Decision pending after step 3-5 complete.
+- ✅ **Step 2b** (2026-05-19, `ce31f859`): mandate-context.ts (chat-engine + agent choke-point) + atlas-tool-executor:682 (create_solo_matter tool path). Single-choke-point strategy meant one 5-line edit removed encryption-leakage from every downstream LLM prompt that references mandate context.
+- ✅ **Step 2c** (2026-05-19, `f68c5a2b`): Searchable encryption per D-6 = Option A (load-then-decrypt-then-filter). conflict-check decrypts in-memory before substring scan; mandate/search uses two-phase fetch (DB filename match Phase 1 + in-memory clientName match Phase 2 + merge/dedupe/take 10).
+- ✅ **Step 3** (2026-05-19, `f72ae6f4`): chat-engine.server.ts AtlasMessage.content encryption. 3 write sites (continuation user-msg create, new-chat nested user-msg create, assistant final update) + 2 read sites (ensureChatAndHistory decrypt-before-Anthropic-API, loadChatForUser decrypt-before-UI). Prisma.JsonValue cast on read sites. 71 insertions.
+- ✅ **Step 4** (2026-05-19, `48f910ef`): AtlasMandateFile.extractedText encryption (200KB-per-file vault text). 1 write site (document-processor) + 5 read sites (loadFile central choke, search_mandate_vault bulk-load, auto-embed pre-tokenize, extract-deadlines pre-Haiku, vault/route two-phase search per D-6). 167 insertions across 5 files.
 - ⏳ **Step 3**: wire into chat-engine.server.ts (AtlasMessage.content text blocks + tool_result content)
 - ⏳ **Step 4**: wire into document-processor.server.ts (AtlasMandateFile.extractedText)
 - ⏳ **Step 5**: wire into auto-embed.server.ts + library-recall (AtlasKnowledgeChunk.text + AtlasResearchEntry.content)
@@ -991,6 +993,9 @@ When a session ends due to context-window pressure, the active Claude session wr
 - **SEC-T0-1 Step 1** (`43b0b0d1`): Foundation `src/lib/atlas/atlas-encryption.ts` + 23 vitest tests passing
 - **SEC-T0-1 Step 2a** (`ba2d2072`): Main mandate REST API (POST/GET/PATCH) encryption wrapping
 - **SEC-T0-1 Step 2b** (`ce31f859`): mandate-context.ts (chat-engine + agent choke-point) + atlas-tool-executor:682 (create_solo_matter tool path)
+- **SEC-T0-1 Step 2c** (`f68c5a2b`): Searchable encryption (D-6 = Option A load-then-decrypt-then-filter) for conflict-check + mandate-search
+- **SEC-T0-1 Step 3** (`f72ae6f4`): chat-engine.server.ts AtlasMessage.content encryption (3 write sites + 2 read sites, the biggest single touch-point)
+- **SEC-T0-1 Step 4** (`48f910ef`): AtlasMandateFile.extractedText encryption (1 write + 5 read sites incl. vault/route two-phase search)
 
 **Decision made (D-5):** SEC-H2 Library = Option A (per-org-personal). Confirmed by user.
 
