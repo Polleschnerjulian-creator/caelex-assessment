@@ -78,9 +78,9 @@ The user mandates: **zero new external costs**. Any finding marked `BLOCKED_COST
 
 ```
 TOTAL:                96 findings
-DONE:                 16   (3 Tier-0 + 7 11B + 4 11C + 2 11D)
+DONE:                 22   (3 Tier-0 + 7 11B + 4 11C + 2 11D + 6 Tier-3)
 IN_PROGRESS:           1   (PERF-T1-1 step 1/2 done in d6650957)
-TODO:                 79
+TODO:                 73
 DEFERRED:              0
 WONTFIX:               0
 BLOCKED:               0
@@ -90,12 +90,14 @@ By tier:
   TIER 1 (high-impact):  21 findings · 13 done + 1 in-progress
                           (11B 7/9 + 11C 4/4 + 11D 2.5/4; SEC-H2 + SEC-H8 deferred)
   TIER 2 (significant):  47 findings · 0 done
-  TIER 3 (tech-debt):    25 findings · 0 done
+  TIER 3 (tech-debt):    25 findings · 6 done
+                          (PERF-T3-2/T3-3, BUG-T3-4/T3-5/T3-6, DOC-T3-1)
 
 By domain:
   Security:    28 findings · 10 done
-  Bugs:        30 findings · 3 done   (BUG-T1-1, T1-2, T1-3)
-  Performance: 23 findings · 2 done + 1 in-progress (T1-1 step 1/2)
+  Bugs:        30 findings · 6 done   (T1-1/T1-2/T1-3, T3-4/T3-5/T3-6)
+  Performance: 23 findings · 4 done + 1 in-progress
+                          (T1-2, T1-3, T3-2, T3-3; T1-1 step 1/2)
   UX/A11y:     15 findings · 1 done   (UX-T1-1 aria-live)
 ```
 
