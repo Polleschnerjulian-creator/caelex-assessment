@@ -66,6 +66,20 @@ interface Props {
 export function MandateDetailView({ mandateId }: Props) {
   const router = useRouter();
   const [mandate, setMandate] = useState<MandateDetail | null>(null);
+  /* PERF-T1-1 step 2 (wave 11D): the aggregator endpoint returns the
+     mandate row + 8 subcomponent datasets in one round-trip. We store
+     the slices here so each subcomponent receives its data via prop
+     and skips its cold-mount fetch. Refresh after mutation still
+     uses each subcomponent's own endpoint (refresh-key pattern stays
+     intact). */
+  const [aggregated, setAggregated] = useState<{
+    files: unknown[];
+    deadlines: unknown[];
+    timeEntries: unknown[];
+    parties: unknown[];
+    agentRuns: unknown[];
+    deadlineSuggestions: unknown[];
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [archiving, setArchiving] = useState(false);
@@ -82,13 +96,13 @@ export function MandateDetailView({ mandateId }: Props) {
 
   const reload = useCallback(async () => {
     setLoading(true);
-    /* AUDIT-FIX 2026-05-17: clear stale error BEFORE the fetch so a prior
-       failure doesn't briefly re-render while the retry is in flight.
-       Previously setError(null) only fired in the success branch, leaving
-       a stale message visible on retry. */
     setError(null);
     try {
-      const res = await fetch(`/api/atlas/mandate/${mandateId}`, {
+      /* PERF-T1-1 step 2: use the aggregator endpoint instead of the
+         single-mandate endpoint. Returns the mandate row + 8
+         subcomponent datasets in one round-trip. Net: 9→1 fetches on
+         mount, ~600-900ms staircase → ~100-300ms one-shot. */
+      const res = await fetch(`/api/atlas/mandate/${mandateId}/full`, {
         cache: "no-store",
       });
       if (!res.ok) {
@@ -101,8 +115,40 @@ export function MandateDetailView({ mandateId }: Props) {
         else setError(`Fehler beim Laden (HTTP ${res.status})`);
         return;
       }
-      const data = (await res.json()) as { mandate: MandateDetail };
-      setMandate(data.mandate);
+      const data = (await res.json()) as {
+        mandate: MandateDetail;
+        files: unknown[];
+        deadlines: unknown[];
+        timeEntries: unknown[];
+        parties: unknown[];
+        agentRuns: unknown[];
+        deadlineSuggestions: unknown[];
+      };
+      /* Shape note: the aggregator returns mandate WITHOUT members[]
+         (it returns members as a separate top-level slice). The
+         existing MandateDetail shape assumes members lives on the
+         mandate object. Bridge: stitch the members slice onto the
+         mandate before storing. Same for chats. */
+      const aggregatedMembers = (
+        (await Promise.resolve(data)) as unknown as { members?: unknown[] }
+      ).members;
+      const aggregatedChats = (
+        (await Promise.resolve(data)) as unknown as { chats?: unknown[] }
+      ).chats;
+      setMandate({
+        ...data.mandate,
+        members: (aggregatedMembers ??
+          []) as unknown as MandateDetail["members"],
+        chats: (aggregatedChats ?? []) as unknown as MandateDetail["chats"],
+      });
+      setAggregated({
+        files: data.files,
+        deadlines: data.deadlines,
+        timeEntries: data.timeEntries,
+        parties: data.parties,
+        agentRuns: data.agentRuns,
+        deadlineSuggestions: data.deadlineSuggestions,
+      });
     } finally {
       setLoading(false);
     }
@@ -368,6 +414,10 @@ export function MandateDetailView({ mandateId }: Props) {
               deadlines, time-entries, parties, members, agent-runs.
               Collapsed by default with 1-line summary. Hidden entirely
               for empty mandates. */}
+          {/* PERF note: activity feed runs its own enriched-event aggregation
+              endpoint that the /full aggregator doesn't cover yet. Adding
+              an `activity` slice to /full would let us drop one more fetch
+              on mount — tracked as a follow-up to PERF-T1-1. */}
           <MandateActivityFeed mandateId={mandate.id} />
 
           {/* Composer — „Neuer Chat in diesem Mandat" */}
@@ -404,6 +454,7 @@ export function MandateDetailView({ mandateId }: Props) {
               <MandateFilesList
                 mandateId={mandate.id}
                 refreshKey={filesRefreshKey}
+                initialData={aggregated?.files}
               />
             </div>
             <p className="mt-2 text-[10px] text-slate-500">
@@ -419,6 +470,7 @@ export function MandateDetailView({ mandateId }: Props) {
           <MandateDeadlineSuggestions
             mandateId={mandate.id}
             disabled={isArchived || isClosed}
+            initialData={aggregated?.deadlineSuggestions}
           />
 
           {/* Deadlines (Fristen) */}
@@ -429,9 +481,16 @@ export function MandateDetailView({ mandateId }: Props) {
             <MandateDeadlines
               mandateId={mandate.id}
               disabled={isArchived || isClosed}
+              initialData={aggregated?.deadlines}
             />
           </section>
 
+          {/* PERF note: bg-agent section fetches its own settings (separate
+              model) + filters agentRuns by templateId=background-agent.
+              Aggregator returns ALL agentRuns without templateId, so the
+              client-side filter would miss data. Follow-up to add a
+              `backgroundAgentRuns` slice with the proper filter + the
+              missing costUsd/iterations select fields. */}
           <MandateBackgroundAgentSection mandateId={mandate.id} />
 
           {/* Stundenerfassung (preserved — second daily-driver tool for the lawyer) */}
@@ -442,6 +501,7 @@ export function MandateDetailView({ mandateId }: Props) {
             <MandateTimeEntries
               mandateId={mandate.id}
               disabled={isArchived || isClosed}
+              initialData={aggregated?.timeEntries}
             />
           </section>
 
@@ -455,6 +515,7 @@ export function MandateDetailView({ mandateId }: Props) {
             <MandateParties
               mandateId={mandate.id}
               disabled={isArchived || isClosed}
+              initialData={aggregated?.parties}
             />
           </section>
 

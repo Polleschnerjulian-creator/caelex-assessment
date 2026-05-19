@@ -13,7 +13,7 @@
  */
 
 import { useEffect, useState, useCallback } from "react";
-import { Clock, Loader2, Plus, MessageSquare } from "lucide-react";
+import { Clock, Loader2, Plus, MessageSquare, AlertCircle } from "lucide-react";
 
 interface TimeEntry {
   id: string;
@@ -36,20 +36,60 @@ interface Totals {
 interface Props {
   mandateId: string;
   disabled?: boolean;
+  /** PERF-T1-1 step 2: pre-fetched entries from the aggregator endpoint.
+   *  Used as a seed for instant first paint. We still fetch in the
+   *  background because aggregator's per-source cap (25) can under-count
+   *  totals for long-running mandates — the server-computed totals come
+   *  ~100ms after first paint and overwrite the client-computed totals. */
+  initialData?: unknown[];
+}
+
+/* Helper: compute totals strip values client-side from the visible
+   entries array. Used to seed the totals state when parent provides
+   initialData (so the totals strip renders something meaningful in
+   the same frame as the entries list). The server-side reload still
+   overwrites these with the authoritative aggregate computed across
+   ALL entries (not just the first 25 the aggregator caps to). */
+function computeTotalsFromEntries(entries: TimeEntry[]): Totals {
+  let minutes = 0;
+  let billableMinutes = 0;
+  let billableEur = 0;
+  for (const e of entries) {
+    minutes += e.minutes;
+    if (e.billable) {
+      billableMinutes += e.minutes;
+      if (e.hourlyRateEur) {
+        billableEur += (e.minutes / 60) * e.hourlyRateEur;
+      }
+    }
+  }
+  return { minutes, billableMinutes, billableEur };
 }
 
 const INPUT_CLASS =
   "rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none transition-colors focus:border-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-emerald-500";
 
-export function MandateTimeEntries({ mandateId, disabled }: Props) {
-  const [entries, setEntries] = useState<TimeEntry[]>([]);
-  const [totals, setTotals] = useState<Totals>({
-    minutes: 0,
-    billableMinutes: 0,
-    billableEur: 0,
-  });
-  const [loading, setLoading] = useState(true);
+export function MandateTimeEntries({
+  mandateId,
+  disabled,
+  initialData,
+}: Props) {
+  /* PERF-T1-1 step 2: seed entries + totals from initialData. The
+     entries useState gets the cast directly; totals get computed
+     client-side via the helper so the totals strip renders in the
+     same frame as the entries (instead of flashing 0/0/0 first). */
+  const initialEntries = (initialData as TimeEntry[] | undefined) ?? [];
+  const [entries, setEntries] = useState<TimeEntry[]>(initialEntries);
+  const [totals, setTotals] = useState<Totals>(() =>
+    computeTotalsFromEntries(initialEntries),
+  );
+  const [loading, setLoading] = useState(!initialData);
   const [adding, setAdding] = useState(false);
+  /* AUDIT-FIX 2026-05-19: reload() referenced setError without an
+     error-state declaration — a latent crash on the first network
+     error. Adding the state + an inline error banner closes the
+     loop H17 was trying to address. */
+  const [error, setError] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [minutes, setMinutes] = useState<number | "">("");
   const [description, setDescription] = useState("");
@@ -128,6 +168,15 @@ export function MandateTimeEntries({ mandateId, disabled }: Props) {
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700/60 dark:bg-slate-900/40">
+      {error && (
+        <div
+          role="alert"
+          className="mb-3 flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[11.5px] text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
+        >
+          <AlertCircle size={12} className="mt-0.5 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
       {/* Totals strip */}
       <div className="mb-3 grid grid-cols-3 gap-2 rounded bg-slate-50 px-3 py-2 dark:bg-white/[0.02]">
         <Stat label="Gesamt" value={fmtMins(totals.minutes)} />

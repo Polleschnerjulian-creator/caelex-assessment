@@ -48,3 +48,26 @@ export interface MandateDetail {
   chats: MandateChatRecord[];
   _count: { chats: number; files: number; members: number };
 }
+
+/* PERF-T1-1 step 2 (wave 11D): aggregated mandate-detail payload
+   returned by GET /api/atlas/mandate/[id]/full. Bundles the mandate
+   row + 8 subcomponent datasets in one round-trip. Subcomponents
+   accept these slices via optional `initialData` props to skip their
+   cold-mount fetches. Refresh on mutation still uses each
+   subcomponent's individual endpoint (refresh-key pattern). */
+export interface MandateFullPayload {
+  mandate: MandateDetail;
+  /* Each slice is `unknown[]` here so the consumer-component owns
+     its precise row shape — keeps this types file lean + each sub-
+     component free to evolve its own schema without coordinating
+     a shared type. Subcomponents that import this should cast to
+     their internal Row type at the prop-boundary. */
+  chats: unknown[];
+  files: unknown[];
+  deadlines: unknown[];
+  timeEntries: unknown[];
+  parties: unknown[];
+  members: unknown[];
+  agentRuns: unknown[];
+  deadlineSuggestions: unknown[];
+}

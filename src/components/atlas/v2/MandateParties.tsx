@@ -51,6 +51,10 @@ interface Party {
 interface Props {
   mandateId: string;
   disabled?: boolean;
+  /** PERF-T1-1 step 2: pre-fetched parties from the aggregator endpoint.
+   *  When present, skips the cold-mount fetch — the parties already
+   *  render in the same frame as the rest of the mandate page. */
+  initialData?: unknown[];
 }
 
 const GROUPS: {
@@ -94,9 +98,13 @@ const GROUPS: {
 const INPUT_CLASS =
   "w-full rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-[12px] text-slate-900 outline-none transition-colors focus:border-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-emerald-500";
 
-export function MandateParties({ mandateId, disabled }: Props) {
-  const [parties, setParties] = useState<Party[]>([]);
-  const [loading, setLoading] = useState(true);
+export function MandateParties({ mandateId, disabled, initialData }: Props) {
+  const [parties, setParties] = useState<Party[]>(
+    (initialData as Party[] | undefined) ?? [],
+  );
+  /* PERF-T1-1 step 2: if seeded via initialData, start NOT loading —
+     parties render in the same frame as the rest of the page. */
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<string | null>(null);
   /* `editorState`: null = no editor open; { type, id? } = create/edit
      inline form open. id present → edit mode. */
@@ -127,8 +135,14 @@ export function MandateParties({ mandateId, disabled }: Props) {
   }, [mandateId]);
 
   useEffect(() => {
+    /* PERF-T1-1 step 2: skip cold-mount fetch when parent seeded data.
+       Mutation handlers (handleDelete, handleSaved, PartyForm submit)
+       update local state directly without going through reload(), so
+       parties stays in sync even though we never re-fetch from this
+       effect. */
+    if (initialData) return;
     void load();
-  }, [load]);
+  }, [load, initialData]);
 
   const handleDelete = async (party: Party) => {
     if (

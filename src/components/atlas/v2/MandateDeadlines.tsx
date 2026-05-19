@@ -43,14 +43,22 @@ interface DeadlineRecord {
 interface Props {
   mandateId: string;
   disabled?: boolean;
+  /** PERF-T1-1 step 2: pre-fetched deadlines from the aggregator endpoint.
+   *  When present, skips the cold-mount fetch — the data is already on
+   *  screen and the lawyer sees no loader on the deadlines section. */
+  initialData?: unknown[];
 }
 
 const INPUT_CLASS =
   "w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none transition-colors focus:border-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-emerald-500";
 
-export function MandateDeadlines({ mandateId, disabled }: Props) {
-  const [deadlines, setDeadlines] = useState<DeadlineRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+export function MandateDeadlines({ mandateId, disabled, initialData }: Props) {
+  const [deadlines, setDeadlines] = useState<DeadlineRecord[]>(
+    (initialData as DeadlineRecord[] | undefined) ?? [],
+  );
+  /* PERF-T1-1 step 2: if parent seeded deadlines via initialData, start
+     NOT loading — the list is already on screen. */
+  const [loading, setLoading] = useState(!initialData);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -87,8 +95,13 @@ export function MandateDeadlines({ mandateId, disabled }: Props) {
   }, [mandateId]);
 
   useEffect(() => {
+    /* PERF-T1-1 step 2: skip cold-mount fetch when parent seeded data.
+       Mutation handlers (handleAdd, toggleStatus, handleDelete) still
+       call reload() directly, and the window-event listener below still
+       fires on accept-suggestion — so all refresh paths remain intact. */
+    if (initialData) return;
     void reload();
-  }, [reload]);
+  }, [reload, initialData]);
 
   /* AUDIT-FIX 2026-05-17: listen for the suggestion-accepted event so a
      newly accepted deadline-suggestion appears in this list without the

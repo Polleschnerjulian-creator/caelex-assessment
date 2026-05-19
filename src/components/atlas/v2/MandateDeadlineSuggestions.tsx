@@ -39,15 +39,27 @@ interface Props {
    *  Deadlines list (typically by bumping its refreshKey state). */
   onAccepted?: () => void;
   disabled?: boolean;
+  /** PERF-T1-1 step 2: pre-fetched pending suggestions from the
+   *  aggregator endpoint. Skips the cold-mount fetch — the suggestions
+   *  banner appears in the same frame as the rest of the mandate page
+   *  (or stays hidden if no pending rows, same zero-noise UX). */
+  initialData?: unknown[];
 }
 
 export function MandateDeadlineSuggestions({
   mandateId,
   onAccepted,
   disabled,
+  initialData,
 }: Props) {
-  const [suggestions, setSuggestions] = useState<SuggestionItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [suggestions, setSuggestions] = useState<SuggestionItem[]>(
+    (initialData as SuggestionItem[] | undefined) ?? [],
+  );
+  /* PERF-T1-1 step 2: if seeded, start NOT loading. Combined with the
+     existing "hide entirely when no pending suggestions" rule, this
+     means a mandate with zero suggestions renders nothing here AND
+     does no network — pure win. */
+  const [loading, setLoading] = useState(!initialData);
   const [resolvingId, setResolvingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,8 +85,13 @@ export function MandateDeadlineSuggestions({
   }, [mandateId]);
 
   useEffect(() => {
+    /* PERF-T1-1 step 2: skip cold-mount fetch when parent seeded data.
+       The window-event listener below still fires on extract-deadline
+       events, and handleResolve mutates local state directly — so the
+       surface stays live without the initial fetch. */
+    if (initialData) return;
     void load();
-  }, [load]);
+  }, [load, initialData]);
 
   /* Sprint 6b (2026-05-18) — listen for new suggestions persisted via
      /files/[fileId]/extract-deadlines so the lawyer sees them appear

@@ -42,11 +42,23 @@ interface Props {
   mandateId: string;
   /** Bumped by parent (after upload finishes) to trigger reload. */
   refreshKey: number;
+  /** PERF-T1-1 step 2: pre-fetched files from the aggregator endpoint.
+   *  When present + refreshKey===0, skips the cold-mount fetch. */
+  initialData?: unknown[];
 }
 
-export function MandateFilesList({ mandateId, refreshKey }: Props) {
-  const [files, setFiles] = useState<FileRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+export function MandateFilesList({
+  mandateId,
+  refreshKey,
+  initialData,
+}: Props) {
+  const [files, setFiles] = useState<FileRecord[]>(
+    (initialData as FileRecord[] | undefined) ?? [],
+  );
+  /* If initialData was provided, start NOT loading — the data is
+     already on screen. Cold-mount fetch only fires when initialData
+     is absent OR the parent later bumps refreshKey (post-upload). */
+  const [loading, setLoading] = useState(!initialData);
   const [downloading, setDownloading] = useState<string | null>(null);
   /* Sprint 6b (2026-05-18) — Frist-Extraktion in-flight state.
      Maps fileId → "loading" | "done" | { error: string }. */
@@ -120,6 +132,12 @@ export function MandateFilesList({ mandateId, refreshKey }: Props) {
   }, [mandateId]);
 
   useEffect(() => {
+    /* PERF-T1-1 step 2: parent seeds files via initialData for instant
+       first paint. We STILL fetch here because the aggregator's slice
+       doesn't include the M2 Vault-RAG embed enrichment (chunk counts +
+       embedStatus pill). The fetch is invisible to the user — entries
+       are already on screen from the seed — and it overwrites with the
+       enriched version once the listMandateFiles route resolves. */
     void reload();
   }, [reload, refreshKey]);
 
