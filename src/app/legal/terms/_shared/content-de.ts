@@ -786,15 +786,19 @@ const __pushed31to35: LegalSection[] = [
       },
       {
         type: "p",
-        text: "(3) Widerspricht der Kunde nicht innerhalb von 30 Tagen nach Zugang der Mitteilung in Textform, gelten die geänderten AGB als angenommen. Auf diese Rechtsfolge wird in der Mitteilung ausdrücklich hingewiesen.",
+        text: "(3) Für unwesentliche Änderungen — insbesondere redaktionelle Anpassungen, Klarstellungen ohne materiellen Eingriff in Rechte oder Pflichten, Updates der Sub-Processor-Liste innerhalb der bestehenden Risiko-Kategorie, sowie Korrekturen offensichtlicher Unrichtigkeiten — gilt: Widerspricht der Kunde nicht innerhalb von 30 Tagen nach Zugang der Mitteilung in Textform, gelten die geänderten AGB als angenommen. Auf diese Rechtsfolge wird in der Mitteilung ausdrücklich hingewiesen.",
       },
       {
         type: "p",
-        text: "(4) Widerspricht der Kunde fristgerecht, gilt der Vertrag zu den bisherigen AGB fort; jede Partei kann den Vertrag in diesem Fall mit Wirkung zum geplanten Inkrafttreten außerordentlich kündigen.",
+        text: "(4) Für wesentliche Änderungen — insbesondere Änderungen des Leistungsumfangs zum Nachteil des Kunden, Preisanpassungen über die nach § 17 (Vergütung) zulässigen Mechanismen hinaus, neue Haftungsbeschränkungen, Änderungen der Vertragslaufzeit oder Kündigungsfristen, neue Drittland-Übermittlungen, sowie Änderungen der Datenschutz-Garantien — ist eine ausdrückliche Zustimmung des Kunden in Textform erforderlich (z.B. durch Re-Acceptance-Dialog in der Anwendung oder schriftliche Bestätigung). Schweigen gilt insoweit NICHT als Zustimmung. Diese Klarstellung trägt der Rechtsprechung des Bundesgerichtshofs (Urteil vom 27.04.2021 — XI ZR 26/20) Rechnung, die rein stillschweigende Annahmen wesentlicher AGB-Änderungen für unwirksam erklärt.",
       },
       {
         type: "p",
-        text: "(5) Für Verbraucher gilt Abs. 3 nur für Klauseln, die keine unangemessene Benachteiligung i.S.d. § 307 BGB begründen; für wesentliche Vertragsbestandteile gilt stets das gesetzliche Zustimmungserfordernis.",
+        text: "(5) Widerspricht der Kunde im Fall von Abs. 3 fristgerecht — oder verweigert der Kunde im Fall von Abs. 4 die ausdrückliche Zustimmung — gilt der Vertrag zu den bisherigen AGB fort; jede Partei kann den Vertrag in diesem Fall mit Wirkung zum geplanten Inkrafttreten außerordentlich kündigen. Bis zur Kündigung läuft der Vertrag zu den bisherigen Bedingungen weiter.",
+      },
+      {
+        type: "p",
+        text: "(6) Für Verbraucher gilt Abs. 3 nur für Klauseln, die keine unangemessene Benachteiligung i.S.d. § 307 BGB begründen; für wesentliche Vertragsbestandteile gilt stets das gesetzliche Zustimmungserfordernis. Verbraucher werden zudem auf ihr Widerrufsrecht nach § 312g i.V.m. § 355 BGB hingewiesen, soweit einschlägig.",
       },
     ],
   },

@@ -101,26 +101,61 @@ export default function BraoPage() {
         </p>
         <ul>
           <li>
-            SOC 2 Type II Reports (auf Anfrage, Caelex selbst + Sub-Processors)
+            SOC 2 Type II Reports der Sub-Processors (Neon, Vercel, Anthropic,
+            Cloudflare, Upstash) — auf Anfrage NDA-gebunden
           </li>
-          <li>ISO 27001 Zertifikate (sobald Caelex selbst zertifiziert)</li>
-          <li>Penetration-Test Summaries (jährlich)</li>
+          <li>
+            ISO 27001 Zertifikate der Sub-Processors (siehe § 1 —
+            Provider-Stack)
+          </li>
+          <li>
+            Penetration-Test Summaries (jährlich, geschwärzte Zusammenfassung)
+          </li>
           <li>
             Vollständiges Audit-Log aller Operationen auf Mandantendaten (DSGVO
             Art. 30)
           </li>
           <li>Vertragliche Audit-Klausel mit 14 Tagen Voranmeldung</li>
         </ul>
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          <strong>Hinweis zur Caelex-eigenen Zertifizierung:</strong> Caelex ist
+          aktuell nicht ISO-27001- oder SOC-2-zertifiziert. Eine eigene
+          Zertifizierung ist mittelfristig geplant; ein konkretes Datum
+          kommunizieren wir erst, wenn Audit-Vorbereitung und Auditor-Mandat
+          abgeschlossen sind. Aktuell stützen wir uns vertraglich auf die
+          Zertifizierungen der oben genannten Sub-Processors, ergänzt durch
+          eigene technische und organisatorische Maßnahmen (siehe
+          <a
+            href="/legal/security"
+            className="ml-1 text-emerald-700 hover:underline dark:text-emerald-400"
+          >
+            Security-Statement
+          </a>
+          ).
+        </p>
 
         <h2>5. Datenresidenz (§ 43e Abs. 2 Nr. 3 BRAO + DSGVO Kapitel V)</h2>
         <p>
-          Alle Mandantendaten werden ausschließlich in der Europäischen Union
-          verarbeitet — keine USA-Transfers. Siehe{" "}
+          Mandanten-Content (Datenbank, Datei-Vault) verbleibt ausschließlich in
+          der EU (Frankfurt). Hilfsdienste mit Drittland-Berührung
+          (KI-Inferenz-Fallback, Embeddings für die semantische Suche,
+          transaktionale E-Mails, Fehler-Monitoring) sind über
+          EU-Standardvertragsklauseln (SCC, Modul 3), das EU-US Data Privacy
+          Framework und — wo verfügbar — Zero-Data-Retention-Zusagen
+          abgesichert. Details und vollständige Aufschlüsselung pro
+          Sub-Processor:{" "}
           <a
             href="/legal/data-residency"
             className="text-emerald-700 hover:underline dark:text-emerald-400"
           >
             Datenresidenz-Statement
+          </a>{" "}
+          und{" "}
+          <a
+            href="/legal/sub-processors"
+            className="text-emerald-700 hover:underline dark:text-emerald-400"
+          >
+            Sub-Processor-Register
           </a>
           .
         </p>
