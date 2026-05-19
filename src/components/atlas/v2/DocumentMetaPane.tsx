@@ -58,36 +58,33 @@ export function DocumentMetaPane({ meta, onChange }: Props) {
   };
 
   return (
-    <div className="shrink-0 border-b border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950">
-      {/* Collapsed summary row */}
+    <div className="shrink-0 border-b border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-950">
+      {/* Collapsed summary row (Sprint 17 redesign — cleaner typography) */}
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
-        className="flex w-full items-center gap-2 px-4 py-1.5 text-left text-[11.5px] text-slate-600 transition-colors hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-900"
+        className="flex w-full items-center gap-2.5 px-4 py-2 text-left text-[12px] text-slate-600 transition-colors hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-900"
       >
         {expanded ? (
-          <ChevronDown size={11} className="shrink-0 text-slate-400" />
+          <ChevronDown size={12} className="shrink-0 text-slate-400" />
         ) : (
-          <ChevronRight size={11} className="shrink-0 text-slate-400" />
+          <ChevronRight size={12} className="shrink-0 text-slate-400" />
         )}
-        <FileSignature
-          size={11}
-          className="shrink-0 text-emerald-600 dark:text-emerald-400"
-        />
-        <span className="font-medium">Dokument-Eigenschaften</span>
-        <span className="text-slate-400">·</span>
+        <FileSignature size={12} className="shrink-0 text-slate-400" />
+        <span className="font-medium text-slate-700 dark:text-slate-300">
+          Dokument-Eigenschaften
+        </span>
+        <span className="text-slate-300 dark:text-slate-700">·</span>
         <span className="truncate text-slate-500">
-          {filledCount === 0 ? (
-            <em className="italic">leer — click zum Ausfüllen</em>
-          ) : (
-            summary || `${filledCount} Felder befüllt`
-          )}
+          {filledCount === 0
+            ? "leer"
+            : summary || `${filledCount} Felder befüllt`}
         </span>
       </button>
 
-      {/* Expanded form */}
+      {/* Expanded form (Sprint 17 — cleaner bg, tighter spacing) */}
       {expanded && (
-        <div className="border-t border-slate-200 bg-slate-50/60 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/50">
+        <div className="border-t border-slate-100 bg-slate-50/50 px-4 py-3.5 dark:border-slate-800 dark:bg-slate-900/50">
           <div className="grid grid-cols-2 gap-3">
             <MetaField
               icon={Hash}
@@ -171,8 +168,8 @@ function MetaField({
 }) {
   return (
     <div className={full ? "col-span-2" : ""}>
-      <label className="mb-1 flex items-center gap-1.5 text-[10.5px] font-medium uppercase tracking-[0.1em] text-slate-500">
-        <Icon size={9} />
+      <label className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-slate-600 dark:text-slate-400">
+        <Icon size={10} className="text-slate-400" />
         {label}
       </label>
       <input
@@ -180,7 +177,7 @@ function MetaField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[12.5px] text-slate-900 placeholder:text-slate-400 focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[12.5px] text-slate-900 placeholder:text-slate-400 transition-colors focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-emerald-500/10"
       />
     </div>
   );
@@ -205,8 +202,8 @@ function MetaTextarea({
 }) {
   return (
     <div className={full ? "col-span-2" : ""}>
-      <label className="mb-1 flex items-center gap-1.5 text-[10.5px] font-medium uppercase tracking-[0.1em] text-slate-500">
-        <Icon size={9} />
+      <label className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-slate-600 dark:text-slate-400">
+        <Icon size={10} className="text-slate-400" />
         {label}
       </label>
       <textarea
@@ -214,7 +211,7 @@ function MetaTextarea({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={rows ?? 3}
-        className="w-full resize-y rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[12px] leading-relaxed text-slate-900 placeholder:text-slate-400 focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        className="w-full resize-y rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[12px] leading-relaxed text-slate-900 placeholder:text-slate-400 transition-colors focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-emerald-500/10"
       />
     </div>
   );

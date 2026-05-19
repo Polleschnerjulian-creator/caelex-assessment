@@ -992,7 +992,7 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-slate-100 text-slate-900 dark:bg-slate-900 dark:text-slate-100">
       {/* Title bar */}
-      <header className="flex shrink-0 items-center gap-3 border-b border-slate-300 bg-white px-4 py-1.5 dark:border-slate-700 dark:bg-slate-950">
+      <header className="flex h-12 shrink-0 items-center gap-3 border-b border-slate-100 bg-white px-4 dark:border-slate-800 dark:bg-slate-950">
         <FileText
           size={14}
           className="shrink-0 text-emerald-600 dark:text-emerald-400"
@@ -1069,35 +1069,36 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
       {/* Body: outline + page + ai */}
       <div className="flex flex-1 overflow-hidden">
         {showOutline && (
-          <aside className="hidden w-60 shrink-0 flex-col border-r border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950 lg:flex">
-            <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-2 dark:border-slate-800">
-              <ListTree size={12} className="text-slate-400" />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+          <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-950 lg:flex">
+            {/* Sprint 17 — cleaner outline-header (sentence case, no all-caps) */}
+            <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3 dark:border-slate-800">
+              <ListTree size={13} className="text-slate-400" />
+              <span className="text-[12.5px] font-medium text-slate-700 dark:text-slate-200">
                 Gliederung
               </span>
-              <span className="ml-auto text-[10.5px] text-slate-400">
+              <span className="ml-auto rounded-full bg-slate-100 px-1.5 text-[10px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                 {outline.length}
               </span>
             </div>
-            <div className="flex-1 overflow-y-auto py-2">
+            <div className="flex-1 overflow-y-auto p-2">
               {outline.length === 0 ? (
-                <div className="px-4 py-3 text-[11.5px] text-slate-400">
-                  Noch keine Überschriften. Klick H1/H2/H3 in der Ribbon oder
-                  wähle eine Formatvorlage.
+                <div className="px-3 py-4 text-[11.5px] leading-relaxed text-slate-400">
+                  Noch keine Überschriften. Wähle Text + H1/H2/H3 in der
+                  Toolbar.
                 </div>
               ) : (
-                <ul>
+                <ul className="space-y-0.5">
                   {outline.map((entry, idx) => (
                     <li key={`${entry.pos}-${idx}`}>
                       <button
                         type="button"
                         onClick={() => jumpToHeading(entry)}
-                        className={`flex w-full items-start gap-1.5 px-4 py-1 text-left text-[12px] text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 ${
+                        className={`flex w-full items-start gap-1.5 rounded-md px-2 py-1.5 text-left text-[12.5px] text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 ${
                           entry.level === 1
-                            ? "font-semibold"
+                            ? "font-semibold text-slate-800 dark:text-slate-200"
                             : entry.level === 2
-                              ? "pl-6"
-                              : "pl-8 text-[11.5px]"
+                              ? "pl-5 text-[12px]"
+                              : "pl-8 text-[11.5px] text-slate-500"
                         }`}
                       >
                         <span className="line-clamp-2">{entry.text}</span>
@@ -1128,7 +1129,7 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
               }}
             />
           )}
-          <div className="atlas-page-canvas flex-1 overflow-auto bg-slate-200 py-6 dark:bg-slate-900">
+          <div className="atlas-page-canvas flex-1 overflow-auto bg-slate-50 py-8 dark:bg-slate-900">
             <div
               className="mx-auto"
               style={{
@@ -1137,7 +1138,7 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
               }}
             >
               <div
-                className="atlas-page-wrap bg-white shadow-[0_4px_24px_rgba(0,0,0,0.12)]"
+                className="atlas-page-wrap rounded-sm bg-white shadow-[0_1px_3px_rgba(15,23,42,0.04),0_8px_24px_rgba(15,23,42,0.06)] ring-1 ring-slate-200/60"
                 style={{
                   fontFamily:
                     '"Calibri", "Aptos", "Segoe UI", system-ui, sans-serif',
@@ -1166,55 +1167,38 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
 
         {/* Right: AI Sidebar — Sprint 15: tabbed (Atlas / Kommentare) */}
         {showAi && (
-          <aside className="flex w-full max-w-[380px] shrink-0 flex-col border-l border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950">
+          <aside className="flex w-full max-w-[380px] shrink-0 flex-col border-l border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-950">
             {/* Tabs */}
-            <div className="flex shrink-0 items-stretch border-b border-slate-200 dark:border-slate-800">
-              <button
-                type="button"
-                onClick={() => setSidebarTab("atlas")}
-                className={`flex flex-1 items-center justify-center gap-1.5 border-b-2 px-3 py-2 text-[11.5px] font-medium transition-colors ${
-                  sidebarTab === "atlas"
-                    ? "border-emerald-500 text-emerald-700 dark:text-emerald-300"
-                    : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                }`}
-              >
-                <Sparkles size={12} />
-                Atlas
-              </button>
-              <button
-                type="button"
-                onClick={() => setSidebarTab("comments")}
-                className={`flex flex-1 items-center justify-center gap-1 border-b-2 px-2 py-2 text-[11px] font-medium transition-colors ${
-                  sidebarTab === "comments"
-                    ? "border-emerald-500 text-emerald-700 dark:text-emerald-300"
-                    : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                }`}
-              >
-                <MessageSquare size={12} />
-                Kommentare
-                {comments.filter((c) => !c.resolved).length > 0 && (
-                  <span className="rounded-full bg-amber-100 px-1.5 text-[9.5px] font-semibold text-amber-800 dark:bg-amber-500/20 dark:text-amber-200">
-                    {comments.filter((c) => !c.resolved).length}
-                  </span>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => setSidebarTab("suggestions")}
-                className={`flex flex-1 items-center justify-center gap-1 border-b-2 px-2 py-2 text-[11px] font-medium transition-colors ${
-                  sidebarTab === "suggestions"
-                    ? "border-emerald-500 text-emerald-700 dark:text-emerald-300"
-                    : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                }`}
-              >
-                <GitPullRequest size={12} />
-                Vorschläge
-                {suggestions.length > 0 && (
-                  <span className="rounded-full bg-emerald-100 px-1.5 text-[9.5px] font-semibold text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-200">
-                    {suggestions.length}
-                  </span>
-                )}
-              </button>
+            {/* Sprint 17 — pill-style tabs (Linear/Notion vibe).
+                Subtle bg-slate-100 container, active-pill mit weißem
+                shadow-sm. */}
+            <div className="shrink-0 px-3 py-2.5">
+              <div className="flex items-center gap-0.5 rounded-lg bg-slate-100 p-0.5 dark:bg-slate-900">
+                <SidebarTab
+                  active={sidebarTab === "atlas"}
+                  onClick={() => setSidebarTab("atlas")}
+                  icon={Sparkles}
+                  label="Atlas"
+                />
+                <SidebarTab
+                  active={sidebarTab === "comments"}
+                  onClick={() => setSidebarTab("comments")}
+                  icon={MessageSquare}
+                  label="Kommentare"
+                  badge={
+                    comments.filter((c) => !c.resolved).length || undefined
+                  }
+                  badgeColor="amber"
+                />
+                <SidebarTab
+                  active={sidebarTab === "suggestions"}
+                  onClick={() => setSidebarTab("suggestions")}
+                  icon={GitPullRequest}
+                  label="Vorschläge"
+                  badge={suggestions.length || undefined}
+                  badgeColor="emerald"
+                />
+              </div>
             </div>
 
             {sidebarTab === "comments" ? (
@@ -1237,18 +1221,8 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
               />
             ) : (
               <>
-                <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-2 dark:border-slate-800">
-                  <Sparkles
-                    size={13}
-                    className="text-emerald-600 dark:text-emerald-400"
-                  />
-                  <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-200">
-                    Atlas
-                  </span>
-                  <span className="ml-auto text-[10.5px] text-slate-400">
-                    Selection-aware
-                  </span>
-                </div>
+                {/* Sprint 17 — duplicate "Atlas"-header gestrichen
+                    (Tab oben zeigt's schon). Mehr platz für content. */}
                 <div
                   ref={aiScrollRef}
                   className="flex-1 overflow-y-auto px-3 py-3"
@@ -1712,7 +1686,7 @@ function Ribbon({
 
   if (!editor) {
     return (
-      <div className="h-[60px] shrink-0 border-b border-slate-300 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/60" />
+      <div className="h-11 shrink-0 border-b border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-950" />
     );
   }
 
@@ -1726,7 +1700,7 @@ function Ribbon({
     (editor.getAttributes("textStyle").color as string | undefined) ?? "";
 
   return (
-    <div className="flex shrink-0 items-stretch gap-0 border-b border-slate-300 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900/60">
+    <div className="flex h-11 shrink-0 items-center gap-1 border-b border-slate-100 bg-white px-3 dark:border-slate-800 dark:bg-slate-950">
       {/* Schriftart — mit Font-Family + Size + Color */}
       <RibbonGroup label="Schriftart">
         {/* Font Family */}
@@ -2370,21 +2344,17 @@ function Ribbon({
   );
 }
 
+/* Sprint 17 (2026-05-19) — Modernized RibbonGroup: drops the visible
+   group-label below buttons (Word-2003 vibe), uses subtle horizontal
+   gap-spacing for visual grouping instead. */
 function RibbonGroup({
-  label,
+  label: _label,
   children,
 }: {
   label: string;
   children: React.ReactNode;
 }) {
-  return (
-    <div className="flex flex-col items-center gap-0.5 px-2">
-      <div className="flex items-center gap-0.5">{children}</div>
-      <div className="text-[9.5px] uppercase tracking-[0.1em] text-slate-400">
-        {label}
-      </div>
-    </div>
-  );
+  return <div className="flex items-center gap-0.5">{children}</div>;
 }
 
 function RibbonBtn({
@@ -2407,10 +2377,10 @@ function RibbonBtn({
       disabled={disabled}
       title={title}
       aria-label={title}
-      className={`inline-flex h-7 w-7 items-center justify-center rounded transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
+      className={`inline-flex h-7 w-7 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
         active
-          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
-          : "text-slate-700 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-700"
+          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
       }`}
     >
       {children}
@@ -2418,9 +2388,54 @@ function RibbonBtn({
   );
 }
 
+/* Sprint 17 — Subtle separator (was: solid slate-300 vertical line).
+   Jetzt nur 1px breite mit ~30% opacity damit's visuell weniger laut ist. */
 function RibbonSeparator() {
   return (
-    <div className="mx-1 w-px self-stretch bg-slate-300 dark:bg-slate-700" />
+    <div className="mx-1.5 my-1.5 w-px self-stretch bg-slate-200 dark:bg-slate-800" />
+  );
+}
+
+/* Sprint 17 — Pill-style sidebar-tab (Linear/Notion vibe). */
+function SidebarTab({
+  active,
+  onClick,
+  icon: Icon,
+  label,
+  badge,
+  badgeColor,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: typeof FileText;
+  label: string;
+  badge?: number;
+  badgeColor?: "amber" | "emerald";
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-[11.5px] font-medium transition-all ${
+        active
+          ? "bg-white text-slate-900 shadow-sm dark:bg-slate-800 dark:text-slate-100"
+          : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+      }`}
+    >
+      <Icon size={12} />
+      <span className="truncate">{label}</span>
+      {badge !== undefined && badge > 0 && (
+        <span
+          className={`shrink-0 rounded-full px-1.5 text-[9.5px] font-semibold ${
+            badgeColor === "amber"
+              ? "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200"
+              : "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-200"
+          }`}
+        >
+          {badge}
+        </span>
+      )}
+    </button>
   );
 }
 
@@ -2633,42 +2648,51 @@ function StatusBar({
     : dirty
       ? "noch nicht auto-gespeichert"
       : "—";
+  /* Sprint 17 (2026-05-19) — Subtle status-bar (was: chunky emerald-700).
+     Atlas-style: weiß bg, slate-500 text, subtile separators, zoom-controls
+     dezent. */
   return (
-    <div className="flex shrink-0 items-center gap-4 border-t border-slate-300 bg-emerald-700 px-4 py-1 text-[11px] text-white dark:border-slate-700 dark:bg-slate-800">
+    <div className="flex h-7 shrink-0 items-center gap-3 border-t border-slate-100 bg-white px-4 text-[11px] text-slate-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
       <span>Seite 1 von {stats.pages}</span>
-      <span className="opacity-50">|</span>
+      <span className="text-slate-300 dark:text-slate-700">·</span>
       <span>{stats.words} Wörter</span>
-      <span className="opacity-50">|</span>
+      <span className="text-slate-300 dark:text-slate-700">·</span>
       <span>{stats.chars} Zeichen</span>
-      <span className="opacity-50">|</span>
+      <span className="text-slate-300 dark:text-slate-700">·</span>
       <span>~{stats.minutes} Min Lesezeit</span>
       {selectionLen > 0 && (
         <>
-          <span className="opacity-50">|</span>
-          <span className="text-amber-200">
-            Selektion: {selectionLen} Zeichen
+          <span className="text-slate-300 dark:text-slate-700">·</span>
+          <span className="text-amber-600 dark:text-amber-400">
+            Selektion: {selectionLen}
           </span>
         </>
       )}
-      <span className="ml-auto text-emerald-100">{autosaveLabel}</span>
-      <span className="opacity-50">|</span>
-      <button
-        type="button"
-        onClick={() => setZoom(Math.max(60, zoom - 10))}
-        className="rounded px-1 transition-colors hover:bg-white/10"
-        aria-label="Verkleinern"
-      >
-        −
-      </button>
-      <span className="w-8 text-center">{zoom}%</span>
-      <button
-        type="button"
-        onClick={() => setZoom(Math.min(150, zoom + 10))}
-        className="rounded px-1 transition-colors hover:bg-white/10"
-        aria-label="Vergrößern"
-      >
-        +
-      </button>
+      <span className="ml-auto text-slate-400 dark:text-slate-500">
+        {autosaveLabel}
+      </span>
+      <span className="text-slate-300 dark:text-slate-700">·</span>
+      <div className="flex items-center gap-0.5">
+        <button
+          type="button"
+          onClick={() => setZoom(Math.max(60, zoom - 10))}
+          className="inline-flex h-5 w-5 items-center justify-center rounded text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          aria-label="Verkleinern"
+        >
+          −
+        </button>
+        <span className="w-9 text-center text-slate-600 dark:text-slate-400">
+          {zoom}%
+        </span>
+        <button
+          type="button"
+          onClick={() => setZoom(Math.min(150, zoom + 10))}
+          className="inline-flex h-5 w-5 items-center justify-center rounded text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          aria-label="Vergrößern"
+        >
+          +
+        </button>
+      </div>
     </div>
   );
 }
