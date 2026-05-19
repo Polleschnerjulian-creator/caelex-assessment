@@ -40,6 +40,7 @@ import {
   ArrowLeftRight,
   ScrollText,
   Settings,
+  Search,
 } from "lucide-react";
 import type { ChatListItem, MandateListItem } from "./types";
 import { SidebarItem } from "./sidebar/SidebarItem";
@@ -257,25 +258,23 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
             label="Notizen"
             active={pathname?.startsWith("/atlas/notes") ?? false}
           />
+          {/* Sprint 18 (2026-05-19) — Wissensbasis + Datenbank zu EINEM
+              Eintrag "Suche" zusammengefasst (user-feedback: "warum gibt
+              es zwei? ich will eine wie bei v1"). Die Suche durchsucht
+              jetzt beide quellen parallel (knowledge-base via embeddings
+              + legal-sources via text-match). Die alten URLs bleiben für
+              power-user erreichbar via direct-link am footer der search-
+              seite (snippet hinzufügen + sources durchstöbern). */}
           <SidebarItem
-            href="/atlas/knowledge"
-            icon={<Brain size={14} />}
-            label="Wissensbasis"
-            active={pathname?.startsWith("/atlas/knowledge") ?? false}
-          />
-          {/* UI 2026-05-18: Agent-Mode entfernt — Standard-Chat ist
-              bereits agent-class autonom (siehe system-prompt "Powerhouse
-              mode"). Kein eigener Menüpunkt nötig. /atlas/agent Route
-              bleibt erreichbar via direct-URL falls Power-User. */}
-          {/* UI 2026-05-18: Datenbank → V1-Legal-Source-Suche, der
-              durchsuchbare Korpus (UN-Treaties, EU-Instrumente, nationale
-              Space-Gesetzgebung). User wollte explizit nur die Suche, nicht
-              ganz V1. */}
-          <SidebarItem
-            href="/atlas/sources"
-            icon={<Database size={14} />}
-            label="Datenbank"
-            active={pathname?.startsWith("/atlas/sources") ?? false}
+            href="/atlas/search"
+            icon={<Search size={14} />}
+            label="Suche"
+            active={
+              pathname?.startsWith("/atlas/search") ||
+              pathname?.startsWith("/atlas/knowledge") ||
+              pathname?.startsWith("/atlas/sources") ||
+              false
+            }
           />
         </SidebarSection>
 
@@ -358,14 +357,11 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
           </SidebarSection>
         )}
 
-        {/* ── Korpus (knowledge resources, secondary) ────────────── */}
+        {/* Sprint 18 (2026-05-19) — "Quellen" entfernt aus Korpus
+            (war duplikat zur neuen Suche im Primary-Nav, beide gingen
+            zu /atlas/sources). Korpus-section reduziert auf Workflows
+            + Klauseln. */}
         <SidebarSection label="Korpus">
-          <SidebarItem
-            href="/atlas/sources"
-            icon={<Library size={13} />}
-            label="Quellen"
-            active={pathname === "/atlas/sources"}
-          />
           <SidebarItem
             href="/atlas/workflows"
             icon={<ArrowLeftRight size={13} />}
