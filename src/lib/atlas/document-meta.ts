@@ -39,6 +39,9 @@ export interface DocumentMeta {
   gericht?: string;
   bearbeiter?: string;
   datum?: string;
+  /* Sprint 15 — Comments serialized as JSON-string. Internal field,
+     not surfaced in the DocumentMetaPane UI. */
+  commentsJson?: string;
 }
 
 const FRONTMATTER_RE = /^---\s*\n([\s\S]*?)\n---\s*\n?/;
@@ -117,8 +120,9 @@ export function serializeDocumentMeta(meta: DocumentMeta): string {
   return lines.join("\n");
 }
 
-/** Display labels (DE) for UI rendering. */
-export const META_LABELS: Record<keyof DocumentMeta, string> = {
+/** Display labels (DE) for UI rendering. Excludes internal-only fields
+ *  like commentsJson. */
+export const META_LABELS: Partial<Record<keyof DocumentMeta, string>> = {
   aktenzeichen: "Aktenzeichen",
   mandant: "Mandant",
   empfänger: "Empfänger",

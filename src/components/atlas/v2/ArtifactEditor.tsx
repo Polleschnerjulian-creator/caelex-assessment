@@ -67,9 +67,11 @@ import {
   CITATION_KIND_ORDER,
   type CitationKind,
 } from "@/lib/atlas/editor-extensions/CitationMark";
+import { CommentMark } from "@/lib/atlas/editor-extensions/CommentMark";
 import { CitationDialog } from "./CitationDialog";
 import { CrossReferenceDialog } from "./CrossReferenceDialog";
 import { DocumentMetaPane } from "./DocumentMetaPane";
+import { CommentsPanel, type Comment } from "./CommentsPanel";
 import {
   parseDocumentMeta,
   serializeDocumentMeta,
@@ -122,6 +124,7 @@ import {
   Scroll,
   Link2,
   BookMarked,
+  MessageSquare,
 } from "lucide-react";
 import type { ArtifactInfo } from "./ArtifactPreviewPanel";
 import { markdownToHtml, htmlToMarkdown } from "@/lib/atlas/editor-md-bridge";
@@ -194,6 +197,20 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
     [artifact.body],
   );
   const [meta, setMeta] = useState<DocumentMeta>(parsedInitial.meta);
+  /* Sprint 15 — Comments state. Comments are stored as JSON in the
+     document-meta (key: commentsJson). Mark in body carries only the
+     commentId; full data here. */
+  const [comments, setComments] = useState<Comment[]>(() => {
+    try {
+      const raw = (parsedInitial.meta as { commentsJson?: string })
+        .commentsJson;
+      return raw ? (JSON.parse(raw) as Comment[]) : [];
+    } catch {
+      return [];
+    }
+  });
+  /* Sprint 15 — Sidebar tab: "atlas" (AI chat) or "comments" (review). */
+  const [sidebarTab, setSidebarTab] = useState<"atlas" | "comments">("atlas");
 
   /* TipTap editor instance — set up once on mount.
      Sprint 10: Word-feature-parity OSS-Extensions added (per research-
@@ -209,6 +226,8 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
       LegalOrderedList,
       /* Sprint 13 — Custom-mark für jur. Zitate (Grundlage für ToA) */
       CitationMark,
+      /* Sprint 15 — Custom-mark für Kommentare (Mandanten-Review) */
+      CommentMark,
       Underline,
       LinkExt.configure({
         openOnClick: false,
@@ -493,9 +512,14 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
       window.localStorage.removeItem(AUTOSAVE_PREFIX + artifact.title);
     }
     const md = htmlToMarkdown(editor.getHTML());
-    /* Sprint 14 — re-attach meta as YAML-frontmatter so PDF/DOCX
-       export + reload-roundtrip preserves it. */
-    const metaPrefix = serializeDocumentMeta(meta);
+    /* Sprint 14 + 15 — re-attach meta + comments as YAML-frontmatter. */
+    const metaWithComments: DocumentMeta = {
+      ...meta,
+      ...(comments.length > 0
+        ? { commentsJson: JSON.stringify(comments) }
+        : {}),
+    };
+    const metaPrefix = serializeDocumentMeta(metaWithComments);
     const fullBody = metaPrefix ? metaPrefix + md : md;
     onSave({ title, body: fullBody });
     onClose();
@@ -576,6 +600,123 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
       setAiBusy(false);
       requestAnimationFrame(() => aiInputRef.current?.focus());
     }
+  };
+
+  /* Sprint 15 — Comments handlers.
+     Add: prompt user for comment-text, then wrap selection with
+     CommentMark + push full Comment to state. */
+  const currentUserName = "Anwalt"; /* TODO: read from session-context */
+
+  const handleAddComment = () => {
+    if (!editor) return;
+    const { from, to } = editor.state.selection;
+    if (from === to) {
+      alert(
+        "Bitte erst Text markieren auf den sich der Kommentar beziehen soll.",
+      );
+      return;
+    }
+    const text = prompt("Kommentar-Text:");
+    if (!text || !text.trim()) return;
+    const commentId = `c-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const anchorText = editor.state.doc.textBetween(from, to, " ").slice(0, 80);
+    const newComment: Comment = {
+      id: commentId,
+      author: currentUserName,
+      text: text.trim(),
+      createdAt: Date.now(),
+      resolved: false,
+      anchorText,
+    };
+    setComments((prev) => [...prev, newComment]);
+    editor.chain().focus().setComment({ commentId }).run();
+    setSidebarTab("comments");
+  };
+
+  const handleJumpToComment = (commentId: string) => {
+    if (!editor) return;
+    /* Walk the doc to find the first node with this commentId in its
+       marks, then scroll + select. */
+    let foundPos: number | null = null;
+    editor.state.doc.descendants((node, pos) => {
+      if (foundPos !== null) return false;
+      if (!node.isText || !node.marks?.length) return;
+      const m = node.marks.find(
+        (mark) =>
+          mark.type.name === "comment" && mark.attrs.commentId === commentId,
+      );
+      if (m) foundPos = pos;
+    });
+    if (foundPos !== null) {
+      editor
+        .chain()
+        .focus()
+        .setTextSelection(foundPos + 1)
+        .run();
+      const dom = editor.view.domAtPos(foundPos + 1).node;
+      const el = (
+        dom instanceof Element ? dom : dom.parentElement
+      ) as HTMLElement | null;
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
+
+  const handleResolveComment = (commentId: string) => {
+    setComments((prev) =>
+      prev.map((c) =>
+        c.id === commentId ? { ...c, resolved: !c.resolved } : c,
+      ),
+    );
+    /* Also update mark's resolved attribute in the editor (visual). */
+    if (!editor) return;
+    editor.state.doc.descendants((node, pos) => {
+      if (!node.isText || !node.marks?.length) return;
+      const m = node.marks.find(
+        (mark) =>
+          mark.type.name === "comment" && mark.attrs.commentId === commentId,
+      );
+      if (!m) return;
+      const newResolved = !m.attrs.resolved;
+      editor
+        .chain()
+        .setTextSelection({ from: pos, to: pos + node.nodeSize })
+        .setMark("comment", { commentId, resolved: newResolved })
+        .run();
+    });
+  };
+
+  const handleDeleteComment = (commentId: string) => {
+    if (!editor) return;
+    setComments((prev) => prev.filter((c) => c.id !== commentId));
+    /* Remove the mark from all text nodes that have this commentId. */
+    editor.state.doc.descendants((node, pos) => {
+      if (!node.isText || !node.marks?.length) return;
+      const m = node.marks.find(
+        (mark) =>
+          mark.type.name === "comment" && mark.attrs.commentId === commentId,
+      );
+      if (!m) return;
+      editor
+        .chain()
+        .setTextSelection({ from: pos, to: pos + node.nodeSize })
+        .unsetMark("comment")
+        .run();
+    });
+  };
+
+  const handleAddReply = (commentId: string, text: string) => {
+    setComments((prev) =>
+      prev.map((c) => {
+        if (c.id !== commentId) return c;
+        const reply = {
+          id: `r-${Date.now()}`,
+          author: currentUserName,
+          text,
+          createdAt: Date.now(),
+        };
+        return { ...c, replies: [...(c.replies ?? []), reply] };
+      }),
+    );
   };
 
   /* Sprint 13 — Table of Authorities Generator.
@@ -725,6 +866,7 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
         onOpenCitation={() => setCitationOpen(true)}
         onOpenCrossRef={() => setCrossRefOpen(true)}
         onGenerateToA={generateTableOfAuthorities}
+        onAddComment={handleAddComment}
       />
 
       {/* Sprint 14 — Document-Meta-Pane (Aktenzeichen, Mandant, Empfänger,
@@ -830,91 +972,140 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
           />
         </main>
 
-        {/* Right: AI Sidebar */}
+        {/* Right: AI Sidebar — Sprint 15: tabbed (Atlas / Kommentare) */}
         {showAi && (
           <aside className="flex w-full max-w-[380px] shrink-0 flex-col border-l border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950">
-            <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-2 dark:border-slate-800">
-              <Sparkles
-                size={13}
-                className="text-emerald-600 dark:text-emerald-400"
-              />
-              <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-200">
+            {/* Tabs */}
+            <div className="flex shrink-0 items-stretch border-b border-slate-200 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setSidebarTab("atlas")}
+                className={`flex flex-1 items-center justify-center gap-1.5 border-b-2 px-3 py-2 text-[11.5px] font-medium transition-colors ${
+                  sidebarTab === "atlas"
+                    ? "border-emerald-500 text-emerald-700 dark:text-emerald-300"
+                    : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                }`}
+              >
+                <Sparkles size={12} />
                 Atlas
-              </span>
-              <span className="ml-auto text-[10.5px] text-slate-400">
-                Selection-aware
-              </span>
-            </div>
-            <div ref={aiScrollRef} className="flex-1 overflow-y-auto px-3 py-3">
-              <div className="space-y-3">
-                {aiMessages.map((m) => (
-                  <AiMessageBubble
-                    key={m.id}
-                    message={m}
-                    onApply={() => {
-                      if (m.suggestion) applySuggestion(m.id, m.suggestion);
-                    }}
-                  />
-                ))}
-                {aiBusy && (
-                  <div className="flex items-center gap-2 px-2 py-1 text-[11.5px] text-slate-500">
-                    <Loader2 size={11} className="animate-spin" />
-                    Atlas denkt nach…
-                  </div>
-                )}
-                {aiError && (
-                  <div className="flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[11.5px] text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
-                    <AlertCircle size={12} className="mt-0.5 shrink-0" />
-                    <span>{aiError}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="border-t border-slate-200 p-3 dark:border-slate-800">
-              <div className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm focus-within:border-emerald-300 focus-within:ring-2 focus-within:ring-emerald-100 dark:border-slate-700 dark:bg-slate-900">
-                <textarea
-                  ref={aiInputRef}
-                  value={aiInput}
-                  onChange={(e) => setAiInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      void handleAskAi();
-                    }
-                  }}
-                  placeholder="Frag Atlas oder gib Anweisung…"
-                  rows={2}
-                  disabled={aiBusy}
-                  className="block w-full resize-none bg-transparent text-[12.5px] leading-relaxed text-slate-900 placeholder:text-slate-400 focus:outline-none dark:text-slate-100"
-                />
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-slate-400">
-                    Enter = senden · Shift+Enter = neue Zeile
+              </button>
+              <button
+                type="button"
+                onClick={() => setSidebarTab("comments")}
+                className={`flex flex-1 items-center justify-center gap-1.5 border-b-2 px-3 py-2 text-[11.5px] font-medium transition-colors ${
+                  sidebarTab === "comments"
+                    ? "border-emerald-500 text-emerald-700 dark:text-emerald-300"
+                    : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                }`}
+              >
+                <MessageSquare size={12} />
+                Kommentare
+                {comments.filter((c) => !c.resolved).length > 0 && (
+                  <span className="rounded-full bg-amber-100 px-1.5 text-[10px] font-semibold text-amber-800 dark:bg-amber-500/20 dark:text-amber-200">
+                    {comments.filter((c) => !c.resolved).length}
                   </span>
-                  <button
-                    type="button"
-                    onClick={handleAskAi}
-                    disabled={!aiInput.trim() || aiBusy}
-                    className="inline-flex items-center gap-1 rounded-md bg-emerald-500 px-2.5 py-1 text-[11px] font-medium text-white transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    <Sparkles size={10} />
-                    Senden
-                  </button>
-                </div>
-              </div>
-              <div className="mt-2 flex flex-wrap gap-1">
-                {QUICK_PROMPTS.map((q) => (
-                  <button
-                    key={q}
-                    type="button"
-                    onClick={() => setAiInput(q)}
-                    className="rounded-full border border-slate-200 px-2 py-0.5 text-[10.5px] text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
+                )}
+              </button>
             </div>
+
+            {sidebarTab === "comments" ? (
+              <CommentsPanel
+                comments={comments}
+                currentUserName={currentUserName}
+                onJumpTo={handleJumpToComment}
+                onResolve={handleResolveComment}
+                onDelete={handleDeleteComment}
+                onAddReply={handleAddReply}
+              />
+            ) : (
+              <>
+                <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-2 dark:border-slate-800">
+                  <Sparkles
+                    size={13}
+                    className="text-emerald-600 dark:text-emerald-400"
+                  />
+                  <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-200">
+                    Atlas
+                  </span>
+                  <span className="ml-auto text-[10.5px] text-slate-400">
+                    Selection-aware
+                  </span>
+                </div>
+                <div
+                  ref={aiScrollRef}
+                  className="flex-1 overflow-y-auto px-3 py-3"
+                >
+                  <div className="space-y-3">
+                    {aiMessages.map((m) => (
+                      <AiMessageBubble
+                        key={m.id}
+                        message={m}
+                        onApply={() => {
+                          if (m.suggestion) applySuggestion(m.id, m.suggestion);
+                        }}
+                      />
+                    ))}
+                    {aiBusy && (
+                      <div className="flex items-center gap-2 px-2 py-1 text-[11.5px] text-slate-500">
+                        <Loader2 size={11} className="animate-spin" />
+                        Atlas denkt nach…
+                      </div>
+                    )}
+                    {aiError && (
+                      <div className="flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[11.5px] text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+                        <AlertCircle size={12} className="mt-0.5 shrink-0" />
+                        <span>{aiError}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="border-t border-slate-200 p-3 dark:border-slate-800">
+                  <div className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm focus-within:border-emerald-300 focus-within:ring-2 focus-within:ring-emerald-100 dark:border-slate-700 dark:bg-slate-900">
+                    <textarea
+                      ref={aiInputRef}
+                      value={aiInput}
+                      onChange={(e) => setAiInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          void handleAskAi();
+                        }
+                      }}
+                      placeholder="Frag Atlas oder gib Anweisung…"
+                      rows={2}
+                      disabled={aiBusy}
+                      className="block w-full resize-none bg-transparent text-[12.5px] leading-relaxed text-slate-900 placeholder:text-slate-400 focus:outline-none dark:text-slate-100"
+                    />
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-slate-400">
+                        Enter = senden · Shift+Enter = neue Zeile
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleAskAi}
+                        disabled={!aiInput.trim() || aiBusy}
+                        className="inline-flex items-center gap-1 rounded-md bg-emerald-500 px-2.5 py-1 text-[11px] font-medium text-white transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        <Sparkles size={10} />
+                        Senden
+                      </button>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {QUICK_PROMPTS.map((q) => (
+                      <button
+                        key={q}
+                        type="button"
+                        onClick={() => setAiInput(q)}
+                        className="rounded-full border border-slate-200 px-2 py-0.5 text-[10.5px] text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                      >
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </aside>
         )}
       </div>
@@ -957,6 +1148,41 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
           line-height: 1.5;
           color: #1f2937;
           min-height: 100%;
+        }
+        /* Sprint 15 — Comment-mark (Mandanten-Review). Gelber highlight
+           wie sticky-note über dem text. Resolved comments verlieren ihre
+           färbung. */
+        .atlas-wysiwyg span.atlas-comment {
+          background: linear-gradient(
+            to top,
+            #fef3c7 0%,
+            #fef3c7 70%,
+            transparent 70%,
+            transparent 100%
+          );
+          cursor: pointer;
+          padding: 0 1pt;
+          border-radius: 2pt;
+          transition: background 200ms;
+        }
+        .atlas-wysiwyg span.atlas-comment:hover {
+          background: linear-gradient(
+            to top,
+            #fde68a 0%,
+            #fde68a 70%,
+            transparent 70%,
+            transparent 100%
+          );
+        }
+        .atlas-wysiwyg span.atlas-comment[data-resolved="true"] {
+          background: linear-gradient(
+            to top,
+            #f1f5f9 0%,
+            #f1f5f9 70%,
+            transparent 70%,
+            transparent 100%
+          );
+          opacity: 0.7;
         }
         /* Sprint 13 — Citation-mark styling. Subtile italic + dotted-
            underline in slate, damit Zitate visuell vom normalen Text
@@ -1219,6 +1445,7 @@ function Ribbon({
   onOpenCitation,
   onOpenCrossRef,
   onGenerateToA,
+  onAddComment,
 }: {
   editor: Editor | null;
   showOutline: boolean;
@@ -1230,6 +1457,7 @@ function Ribbon({
   onOpenCitation: () => void;
   onOpenCrossRef: () => void;
   onGenerateToA: () => void;
+  onAddComment: () => void;
 }) {
   const [styleOpen, setStyleOpen] = useState(false);
   const [insertOpen, setInsertOpen] = useState(false);
@@ -1727,6 +1955,13 @@ function Ribbon({
           title="Quellenverzeichnis aus allen Zitaten generieren"
         >
           <BookMarked size={13} />
+        </RibbonBtn>
+        {/* Sprint 15 — Kommentar zur aktuellen Selektion hinzufügen */}
+        <RibbonBtn
+          onClick={onAddComment}
+          title="Kommentar zu markiertem Text hinzufügen"
+        >
+          <MessageSquare size={13} />
         </RibbonBtn>
         <div className="relative">
           <button

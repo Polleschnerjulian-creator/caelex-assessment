@@ -93,6 +93,22 @@ turndown.addRule("atlasCitation", {
   },
 });
 
+/* Sprint 15 — Comment-mark roundtrip. Behält das <span class="atlas-
+   comment" data-comment-id="X" data-resolved="Y">…</span> als raw-HTML
+   damit beim reopen die comment-marks + ihre IDs wieder erkennt + an
+   die comments-state-array gemapped werden können. */
+turndown.addRule("atlasComment", {
+  filter: (node) =>
+    node.nodeName === "SPAN" &&
+    (node as HTMLElement).classList.contains("atlas-comment"),
+  replacement: (content, node) => {
+    const el = node as HTMLElement;
+    const id = el.getAttribute("data-comment-id") ?? "";
+    const resolved = el.getAttribute("data-resolved") === "true";
+    return `<span class="atlas-comment" data-comment-id="${id}"${resolved ? ' data-resolved="true"' : ""}>${content}</span>`;
+  },
+});
+
 /* Sprint 12 — Cross-reference link roundtrip. Same pattern: keep the
    <a class="atlas-cross-ref" ...> as raw HTML so click-handler can
    re-attach on reload. */
