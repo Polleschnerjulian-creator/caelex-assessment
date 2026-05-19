@@ -79,8 +79,8 @@ The user mandates: **zero new external costs**. Any finding marked `BLOCKED_COST
 ```
 TOTAL:                96 findings
 DONE:                  0
-IN_PROGRESS:           0
-TODO:                 96
+IN_PROGRESS:           1   (SEC-T0-1)
+TODO:                 95
 DEFERRED:              0
 WONTFIX:               0
 BLOCKED:               0
@@ -200,6 +200,14 @@ This section records architectural decisions that affect multiple findings.
 **Affects:** All
 **Date:** 2026-05-19
 
+### D-5: SEC-H2 Library — Option A (per-org-personal) (2026-05-19, confirmed by user)
+
+**Context:** AtlasResearchEntry currently per-user cross-org. Decision needed before SEC-H2 fix.
+**Decision:** Option A — library becomes per-org-personal. AtlasResearchEntry schema gets `organizationId`; every query filters by both `userId` AND `organizationId`. Reasons: (a) matches the pattern every other Atlas resource uses, (b) cleaner mental model for users — "my notes in this firm" not "my notes across firms", (c) GDPR/BRAO confidentiality is easier to argue when there's a hard partition.
+**Migration:** Existing rows get `organizationId` = the user's primary org (first OrganizationMember row, ordered by joinedAt ASC). Users who later move firms keep their existing library in the old firm.
+**Affects:** SEC-H2
+**Date:** 2026-05-19
+
 ---
 
 ## Findings
@@ -210,7 +218,7 @@ Each finding follows the exact same structure for easy parsing.
 
 ### SEC-T0-1 · Zero encryption at rest for Atlas mandate content
 
-**Status:** TODO
+**Status:** IN_PROGRESS (started 2026-05-19)
 **Tier:** 0 (existential)
 **Domain:** Security
 **Effort:** 2-3 days
