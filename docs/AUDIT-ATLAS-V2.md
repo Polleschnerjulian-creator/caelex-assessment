@@ -200,6 +200,15 @@ This section records architectural decisions that affect multiple findings.
 **Affects:** All
 **Date:** 2026-05-19
 
+### D-6: Searchable encryption for clientName — Option A (load-then-decrypt-then-filter) (2026-05-19)
+
+**Context:** SEC-T0-1 encrypts AtlasMandate.clientName at rest. Two routes do substring search on clientName: `/api/atlas/conflict-check` (firm-wide § 43a) and `/api/atlas/mandate/search` (typeahead). Encryption breaks DB-level `ILIKE`.
+**Decision:** **Option A** — load mandates with NO ILIKE on clientName, decrypt clientName per row in memory, filter by substring match in memory.
+**Reasons:** (a) Caelex targets boutique kanzleis (<200 mandates/firm) where 200 × 1ms decrypt = ~200ms is bounded; (b) the typeahead client-debounce (200ms) absorbs the cost; (c) Option B (HMAC blind-index) needs schema migration + only supports exact-match (substring search would still need Option A pattern); (d) Option C (keep clientName plaintext) undermines the audit fix and is rejected.
+**Scale-out path:** when any firm exceeds 500 mandates, add `clientNameSearchHash` column populated via Prisma middleware on write + filter at DB by hash for the common exact-match case; fall back to Option A for substring.
+**Affects:** SEC-T0-1 step 2c, conflict-check route, mandate-search route
+**Date:** 2026-05-19 (self-decided per user "gogogo" mandate)
+
 ### D-5: SEC-H2 Library — Option A (per-org-personal) (2026-05-19, confirmed by user)
 
 **Context:** AtlasResearchEntry currently per-user cross-org. Decision needed before SEC-H2 fix.

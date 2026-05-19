@@ -31,6 +31,13 @@ import {
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { maskId } from "@/lib/atlas/log-masking";
+/* SEC-T0-1 step 2c — encryption-at-rest forces load-then-decrypt-
+   then-filter for substring search. This route was already in that
+   shape (no DB-level ILIKE) so the cost of encryption is just N
+   decrypts per check. For boutique kanzleis (typically <200
+   mandates/firm) this is bounded; at scale (>1000 mandates) we'd
+   need an HMAC blind-index column (deferred per Living Doc D-6). */
+import { decryptAtlasField } from "@/lib/atlas/atlas-encryption";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -100,7 +107,7 @@ export async function POST(req: NextRequest) {
        We do NOT scope to user's own mandates — for conflict purposes,
        the firm-wide view matters (§43a BRAO is firm-wide, not
        lawyer-individual). */
-    const mandates = await prisma.atlasMandate.findMany({
+    const rawMandates = await prisma.atlasMandate.findMany({
       where: {
         organizationId: atlas.organizationId,
         status: { not: "archived" },
@@ -115,6 +122,22 @@ export async function POST(req: NextRequest) {
         members: { select: { userId: true } },
       },
     });
+
+    /* SEC-T0-1 step 2c: decrypt the two searchable PII fields before
+       the substring scan. Parallelized via Promise.all so the cost is
+       ~1× decrypt-latency for the whole page rather than N× sequential.
+       Per-row decrypt failure (e.g. corrupted ciphertext) is silently
+       caught and the field falls back to empty — better to miss a
+       conflict-hit than crash the entire firm's conflict-check. */
+    const mandates = await Promise.all(
+      rawMandates.map(async (m) => ({
+        ...m,
+        clientName: await decryptAtlasField(m.clientName).catch(() => null),
+        customInstructions: await decryptAtlasField(m.customInstructions).catch(
+          () => null,
+        ),
+      })),
+    );
 
     /* AUDIT-FIX H07 (2026-05-17): firm-wide §43a check stays firm-wide,
        but client identities of mandates the caller is NOT a member of
