@@ -242,11 +242,20 @@ const nextConfig = {
     //     opening Neon serverless connections at static-gen time
     //     exhausts Neon's connection cap around page 200/847 →
     //     subsequent pages hang.
-    //   - cpus: 2 — current. Math: 4 GB main + 2 × 1 GB workers +
+    //   - cpus: 2 — was current. Math: 4 GB main + 2 × 1 GB workers +
     //     0.5 GB OS = 6.5 GB. Less Neon connection pressure (2
     //     concurrent vs 3). Compile slows by ~30s but static-gen
     //     completes reliably even on cold-cache builds.
-    cpus: 2,
+    //   - cpus: 1 (current, 2026-05-19) — wave 11A added atlas-
+    //     encryption + vault-wrap import chains to 10+ server-routes.
+    //     The crypto-chain (scrypt + AES-GCM + per-org-key) is
+    //     compile-heavy; per-worker memory peak now exceeds the 1GB
+    //     headroom the cpus:2 config assumed. After 7 consecutive
+    //     OOM-SIGKILLs at "Creating an optimized production build...",
+    //     reduced workers from 2 to 1: single-threaded compile
+    //     guarantees no concurrent peak, fits trivially in 8GB
+    //     container. Cost: 60-90s slower build, but reliable.
+    cpus: 1,
   },
 
   // Webpack configuration
