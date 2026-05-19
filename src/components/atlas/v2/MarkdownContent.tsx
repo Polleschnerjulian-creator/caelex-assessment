@@ -518,7 +518,13 @@ function paragraphConfidence(text: string): ConfidenceLevel {
   return "ungrounded";
 }
 
-const ATLAS_CITATION_RE = /\[ATLAS:[^\]]+\]/g;
+/* BUG-T3-5 (wave 11D, removed 2026-05-19): module-level
+   ATLAS_CITATION_RE was declared here but never referenced. The
+   confidence-detection above uses a fresh non-global regex inline.
+   Removed to drop dead-code + avoid confusion with the IDENTICAL
+   regex in src/lib/atlas/citation-extractor.server.ts (which IS
+   actually used + was made concurrency-safe via matchAll in
+   BUG-T1-3, commit 0aea450b). */
 
 function confidenceWrapperClasses(c: ConfidenceLevel): string {
   switch (c) {

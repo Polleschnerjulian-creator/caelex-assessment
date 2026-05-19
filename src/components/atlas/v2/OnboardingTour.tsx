@@ -5,7 +5,8 @@
  *
  * Atlas V2 — Onboarding Tour (2026-05-13).
  *
- * Modal-Carousel mit 5 Slides die einem neuen User die wichtigsten
+ * Modal-Carousel mit 12 Slides (Sprint 19 expansion, v1→v2 migration)
+ * die einem neuen User die wichtigsten
  * Atlas-Konzepte zeigen: Was Atlas ist, Mandate als Workspaces,
  * Mandate im Chat anhängen, Vault-RAG, Tastatur-Shortcuts.
  *
@@ -375,74 +376,14 @@ export function OnboardingTour() {
    ein Marketing-Surface mit dem Anspruch, korrekt zu sein.
    ───────────────────────────────────────────────────────────────── */
 
-function VisualWelcome() {
-  return (
-    <div className="flex flex-col items-center gap-3 text-slate-700 dark:text-slate-200">
-      <AtlasMark size={48} />
-      <div className="text-[10.5px] uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
-        Atlas V2 · Mai 2026
-      </div>
-    </div>
-  );
-}
-
-function VisualMandate() {
-  return (
-    <div className="w-[240px] rounded-xl border border-slate-200 bg-white p-3.5 dark:border-white/[0.08] dark:bg-[#222]">
-      <div className="text-[12.5px] font-medium text-slate-900 dark:text-slate-100">
-        Spire 2024
-      </div>
-      <div className="mt-0.5 text-[10.5px] text-slate-500 dark:text-slate-400">
-        Spire Global Inc
-      </div>
-      <div className="mt-2 flex flex-wrap gap-1">
-        <span className="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-[9.5px] uppercase tracking-wider text-slate-600 dark:bg-white/[0.06] dark:text-slate-300">
-          DE
-        </span>
-        <span className="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-[9.5px] text-slate-600 dark:bg-white/[0.06] dark:text-slate-300">
-          sat-op
-        </span>
-      </div>
-      <div className="mt-3 flex items-center gap-3 text-[10.5px] text-slate-500 dark:text-slate-400">
-        <span>12 Chats</span>
-        <span>·</span>
-        <span>24 Files</span>
-        <span>·</span>
-        <span className="text-amber-600 dark:text-amber-400">⏰ 14d</span>
-      </div>
-    </div>
-  );
-}
-
-function VisualAttach() {
-  return (
-    <div className="flex w-[280px] flex-col gap-1.5">
-      {/* Mandate-Chip — exakt wie in Production */}
-      <div className="self-start">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 py-1 pl-2 pr-2 text-[10.5px] dark:border-white/[0.08] dark:bg-white/[0.04]">
-          <Briefcase size={9} className="opacity-60" />
-          <span className="text-slate-700 dark:text-slate-200">Spire 2024</span>
-          <X size={9} className="opacity-50" />
-        </span>
-      </div>
-      {/* Mini-Composer Pille */}
-      <div className="rounded-2xl border border-slate-200 bg-white px-3 pt-2 pb-1.5 dark:border-white/[0.08] dark:bg-[#222]">
-        <div className="text-[10.5px] text-slate-400 dark:text-slate-500">
-          Was steht im BNetzA-Bescheid?
-        </div>
-        <div className="mt-1.5 flex items-center gap-1">
-          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full text-slate-500 dark:text-slate-400">
-            <Plus size={11} />
-          </span>
-          <div className="flex-1" />
-          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-900 text-white dark:bg-white dark:text-black">
-            <ArrowUp size={10} strokeWidth={2.5} />
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
+/* BUG-T3-4 (wave 11D, removed 2026-05-19): the v1-era VisualWelcome /
+   VisualMandate / VisualAttach functions were replaced by the v2
+   variants (VisualWelcomeV2, VisualMandateAttach below) in Sprint 19
+   when the tour was expanded from 5 to 12 slides. The old visuals
+   were never deleted — ~95 LOC of dead code that no SLIDES entry
+   references. Removed for clarity + bundle. The Briefcase / Plus /
+   ArrowUp / X icon imports they used are still used by VisualMandateAttach
+   below, so the lucide-react imports stay. */
 
 function VisualVault() {
   return (

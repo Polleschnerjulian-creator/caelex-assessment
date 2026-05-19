@@ -1984,30 +1984,13 @@ function extractText(content: ChatMessageBlock[] | string): string {
     .join("\n");
 }
 
-/**
- * M30 — Compact token formatter — 12,345 → "12k", 1,200,000 → "1.2M".
- * Mirrors `formatTokens()` in ContextWindowIndicator.tsx so the per-
- * message footer reads consistently with the header donut tooltip.
- * Defined locally (not imported) to avoid coupling AtlasChatView to
- * ContextWindowIndicator's internal helpers.
- */
-function formatTokens(n: number): string {
-  if (n < 1_000) return n.toString();
-  if (n < 1_000_000) return `${(n / 1_000).toFixed(n < 10_000 ? 1 : 0)}k`;
-  return `${(n / 1_000_000).toFixed(1)}M`;
-}
-
-/**
- * M31 — Format per-message cost. Hides "$0.0000" noise on cheap turns
- * (Haiku / cache hits) by showing "<$0.001" once cost dips below the
- * resolution of 3-decimal display. Above that, shows two decimals so
- * the lawyer sees a meaningful number.
- */
-function formatCost(usd: number): string {
-  if (usd < 0.001) return "<$0.001";
-  if (usd < 1) return `$${usd.toFixed(3)}`;
-  return `$${usd.toFixed(2)}`;
-}
+/* BUG-T3-6 (wave 11D, removed 2026-05-19): formatTokens + formatCost
+   helpers were defined here but never called — the per-message cost-
+   display they were written for was removed per a prior user request
+   (see comments around line ~1225 of historic version). Dropped to
+   reduce dead-code surface. ContextWindowIndicator.tsx still has its
+   own formatTokens for the header donut tooltip; if a per-message
+   cost display ever returns, import from there instead of re-defining. */
 
 /**
  * Header export menu — replaces the single Download icon with a
