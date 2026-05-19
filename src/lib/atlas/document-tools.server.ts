@@ -32,8 +32,14 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
 import { buildAnthropicClient } from "./anthropic-client";
 /* SEC-T0-1 step 4 — decrypt extractedText centrally in loadFile so
-   every per-tool path gets plaintext. */
+   every per-tool path gets plaintext.
+   SEC-T0-2 — wrap every vault-derived text in <vault_content> markers
+   before returning to the LLM. The system prompt instructs Claude to
+   treat anything inside those tags as untrusted data only; without
+   the wrapping, an adversarial PDF could smuggle instructions past
+   the trust boundary. */
 import { decryptAtlasField } from "./atlas-encryption";
+import { wrapVaultContent } from "./vault-wrap";
 
 export interface DocumentToolResult {
   content: string;
@@ -304,7 +310,12 @@ async function runExtractText(
       filename: file.filename,
       mimeType: file.mimeType,
       documentType: file.documentType,
-      text,
+      /* SEC-T0-2: wrap the vault-extracted text in trust markers so
+         the system-prompt rule (treat <vault_content> as untrusted
+         data only) has a concrete signal to attach to. Tag-byte
+         smuggle defense + opaque hash-based origin (full fileId
+         stays server-side). */
+      text: wrapVaultContent(text, { fileId: file.id }),
       sizeChars: file.extractedText.length,
     }),
     isError: false,
@@ -406,7 +417,12 @@ async function runFindClauses(
       const start = Math.max(0, m.index - 100);
       const end = Math.min(file.extractedText.length, m.index + 400);
       matches.push({
-        snippet: file.extractedText.slice(start, end).replace(/\s+/g, " "),
+        /* SEC-T0-2: wrap each snippet — every match is vault-derived
+           and could contain adversarial content. */
+        snippet: wrapVaultContent(
+          file.extractedText.slice(start, end).replace(/\s+/g, " "),
+          { fileId: file.id, label: "snippet" },
+        ),
         offset: m.index,
         pattern: re.source,
       });
@@ -842,10 +858,15 @@ async function runSearchMandateKnowledge(
         fileId: f.id,
         filename: f.filename,
         documentType: f.documentType,
-        snippet:
+        /* SEC-T0-2: wrap snippet — vault-derived text that goes into
+           tool_result. The wrap defends against an adversarial PDF
+           whose extracted content contains injected instructions. */
+        snippet: wrapVaultContent(
           (start > 0 ? "…" : "") +
-          snippet +
-          (end < f.extractedText.length ? "…" : ""),
+            snippet +
+            (end < f.extractedText.length ? "…" : ""),
+          { fileId: f.id, label: "snippet" },
+        ) as string,
         matchPosition: idx,
       });
       perFileCount++;

@@ -78,21 +78,21 @@ The user mandates: **zero new external costs**. Any finding marked `BLOCKED_COST
 
 ```
 TOTAL:                96 findings
-DONE:                  1   (SEC-T0-1 fully shipped via 7 sub-step commits)
+DONE:                  2   (SEC-T0-1 encryption + SEC-T0-2 vault-wrap)
 IN_PROGRESS:           0
-TODO:                 95
+TODO:                 94
 DEFERRED:              0
 WONTFIX:               0
 BLOCKED:               0
 
 By tier:
-  TIER 0 (existential):  3 findings · 1 done (SEC-T0-1)
+  TIER 0 (existential):  3 findings · 2 done (SEC-T0-1, SEC-T0-2)
   TIER 1 (high-impact):  21 findings · 0 done   (9 SEC-IDORs + 4 bugs + 8 perf)
   TIER 2 (significant):  47 findings · 0 done
   TIER 3 (tech-debt):    25 findings · 0 done
 
 By domain:
-  Security:    28 findings · 1 done
+  Security:    28 findings · 2 done
   Bugs:        30 findings · 0 done
   Performance: 23 findings · 0 done
   UX/A11y:     15 findings · 0 done
@@ -333,11 +333,13 @@ All highly-confidential mandate-scoped text fields are stored as plain `String` 
 
 ### SEC-T0-2 · Prompt injection: vault content not wrapped in trust-markers
 
-**Status:** TODO
+**Status:** DONE (2026-05-19, this commit)
 **Tier:** 0 (existential)
 **Domain:** Security
-**Effort:** 4-6 hours
+**Effort:** ~2 hours actual (estimate was 4-6h — wrap helper is small + only 3 integration sites)
 **Cost:** FREE
+
+**Shipped:** `src/lib/atlas/vault-wrap.ts` (~140 LOC: `wrapVaultContent` / `wrapVaultContentField` / `isVaultWrapped` / `isInjectionSuspicious`) + 21 vitest tests covering tag-shape, smuggle-defense (escapes literal `<vault_content>` tag bytes via HTML-entity encoding), origin-hashing (SHA-256 prefix prevents raw fileId leak), null/empty fidelity, German unicode preservation. Integrated into 3 vault-returning tool sites in `document-tools.server.ts` (extract_text_from_pdf, find_clauses snippets, search_mandate_vault snippets). System prompt in chat-engine.server.ts upgraded to reference the code-enforced wrap (was previously aspirational-only).
 
 **Files:**
 
