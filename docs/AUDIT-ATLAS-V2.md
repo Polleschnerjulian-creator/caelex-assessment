@@ -78,21 +78,21 @@ The user mandates: **zero new external costs**. Any finding marked `BLOCKED_COST
 
 ```
 TOTAL:                96 findings
-DONE:                  2   (SEC-T0-1 encryption + SEC-T0-2 vault-wrap)
+DONE:                  3   (SEC-T0-1, SEC-T0-2, SEC-T0-3 — all Tier-0 done)
 IN_PROGRESS:           0
-TODO:                 94
+TODO:                 93
 DEFERRED:              0
 WONTFIX:               0
 BLOCKED:               0
 
 By tier:
-  TIER 0 (existential):  3 findings · 2 done (SEC-T0-1, SEC-T0-2)
+  TIER 0 (existential):  3 findings · 3 done ✅ — WAVE 11A COMPLETE
   TIER 1 (high-impact):  21 findings · 0 done   (9 SEC-IDORs + 4 bugs + 8 perf)
   TIER 2 (significant):  47 findings · 0 done
   TIER 3 (tech-debt):    25 findings · 0 done
 
 By domain:
-  Security:    28 findings · 2 done
+  Security:    28 findings · 3 done
   Bugs:        30 findings · 0 done
   Performance: 23 findings · 0 done
   UX/A11y:     15 findings · 0 done
@@ -385,11 +385,25 @@ When the lawyer asks "Fasse mein neues Dokument zusammen", the tool extracts thi
 
 ### SEC-T0-3 · sub-agent-orchestrator unaudited — possible scope-bypass
 
-**Status:** TODO
+**Status:** DONE (2026-05-19) — Investigation result: NO VULNERABILITY. Defensive comment-only commit.
 **Tier:** 0 (existential)
 **Domain:** Security
-**Effort:** 2 hours investigation + 4 hours fix (if needed)
+**Effort:** 30 minutes (investigation only; no fix needed)
 **Cost:** FREE
+
+**Investigation result:**
+
+Read the full `src/lib/atlas/agent/sub-agent-orchestrator.server.ts` (239 LOC). The design is SECURE BY CONSTRUCTION against the audit concern. Three reasons:
+
+1. **Sub-agents have ZERO tool surface.** Line ~190 calls `anthropic.messages.create` without a `tools` parameter. Sub-agents can only emit text — there's no tool-execution loop, no `create_matter_invite`, no `delete_*` available. Without tools there's no way to bypass mandate-scope.
+
+2. **`sharedSystemPrompt` is parent-provided, not sub-prompt-controllable.** The parent route handler (`agent/route.ts`) constructs the shared system prompt. An adversarial sub-prompt becomes the user-message of the sub-call — it cannot rewrite the system context.
+
+3. **mandateId / orgId / userId NEVER appear in the orchestrator file.** Sub-agents have no notion of "the current mandate" — they execute a self-contained prompt. There's nothing to bypass because there's no scope to begin with.
+
+**Defensive additions (this commit, doc-only / comment-only):**
+
+Added a substantial JSDoc block at the file head documenting the security-by-construction reasoning so future contributors know NOT to add `tools: ...` to the sub-agent call without re-running this audit. Explicit forward-warning: "If a future change adds tools to sub-agents (i.e. enables a real sub-loop), THIS WHOLE ANALYSIS NEEDS TO BE REVISITED."
 
 **Files:**
 

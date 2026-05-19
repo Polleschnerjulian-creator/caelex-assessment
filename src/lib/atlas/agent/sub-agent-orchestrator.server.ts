@@ -30,6 +30,35 @@
  * route's request boundary where we can charge tokens cleanly to the
  * AtlasAgentRun row.
  *
+ * SEC-T0-3 (Wave 11A, May 2026) — Audit investigation result: this
+ * design is SECURE BY CONSTRUCTION against the prompt-injection /
+ * mandate-scope-bypass concern raised in the audit. Reasoning:
+ *
+ *   1. Sub-agents receive NO tools (anthropic.messages.create is
+ *      called without a `tools` parameter at line ~190). They can
+ *      only emit text output — there is no tool-execution surface
+ *      through which an adversarial sub-prompt could call
+ *      create_matter_invite, delete_*, or any side-effect.
+ *
+ *   2. The `sharedSystemPrompt` is provided by the parent agent's
+ *      route handler (agent/route.ts) — NOT by the sub-prompt input.
+ *      An attacker who injects a sub-prompt cannot rewrite the
+ *      system context; their text only becomes the user-message of
+ *      the sub-agent call.
+ *
+ *   3. mandateId / orgId / userId never appear in this file. The
+ *      sub-agent has no notion of "the current mandate" — it just
+ *      executes a self-contained prompt. There's nothing to bypass.
+ *
+ * Defensive additions in this file (defense-in-depth, not blockers):
+ *   - Hard cap of 4 parallel sub-agents (MAX_PARALLEL_SUBTASKS)
+ *   - Per-subtask 4000-char prompt cap (blocks input-token blowups)
+ *   - Per-subtask 1500-token output cap
+ *   - Per-subtask error isolation (one bad subtask doesn't fail others)
+ *
+ * If a future change adds tools to sub-agents (i.e. enables a real
+ * sub-loop), THIS WHOLE ANALYSIS NEEDS TO BE REVISITED.
+ *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
