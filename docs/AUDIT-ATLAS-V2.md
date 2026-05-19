@@ -78,8 +78,8 @@ The user mandates: **zero new external costs**. Any finding marked `BLOCKED_COST
 
 ```
 TOTAL:                96 findings
-DONE:                  0
-IN_PROGRESS:           1   (SEC-T0-1)
+DONE:                  0   (SEC-T0-1 still in-progress at sub-step 2b/7)
+IN_PROGRESS:           1   (SEC-T0-1, sub-steps 1+2a+2b complete; 2c, 3-7 remaining)
 TODO:                 95
 DEFERRED:              0
 WONTFIX:               0
@@ -972,22 +972,42 @@ _(empty)_
 
 When a session ends due to context-window pressure, the active Claude session writes a brief handoff note here. The next session reads this first before picking up work.
 
-### Session 2026-05-19 (Wave 9 + Audit Wave 10 setup)
+### Session 2026-05-19 (Wave 9 + Audit Wave 10 setup + SEC-T0-1 Steps 1, 2a, 2b)
 
 **Completed in this session:**
 
-- Wave 9: 6 commits closing 13 audit findings from the LegalHub audit (separate from Atlas v2 audit). See `git log --oneline` between `09dac246..e1b77856`.
-- Atlas v2 deep audit: 4 parallel agents dispatched, all returned, consolidated to 96 findings
-- This file (`docs/AUDIT-ATLAS-V2.md`) created as Living Document
+- Wave 9: 6 commits closing 13 audit findings from the LegalHub audit (separate from Atlas v2 audit)
+- Atlas v2 deep audit: 4 parallel agents dispatched, consolidated to 96 findings
+- `docs/AUDIT-ATLAS-V2.md` created as Living Document
+- **SEC-T0-1 Step 1** (`43b0b0d1`): Foundation `src/lib/atlas/atlas-encryption.ts` + 23 vitest tests passing
+- **SEC-T0-1 Step 2a** (`ba2d2072`): Main mandate REST API (POST/GET/PATCH) encryption wrapping
+- **SEC-T0-1 Step 2b** (`ce31f859`): mandate-context.ts (chat-engine + agent choke-point) + atlas-tool-executor:682 (create_solo_matter tool path)
 
-**Recommended next action:**
+**Decision made (D-5):** SEC-H2 Library = Option A (per-org-personal). Confirmed by user.
 
-- Start Wave 11A with `SEC-T0-1` (Encryption at-rest). Largest single fix in the audit; everything else depends on having sane encryption primitives.
+**Recommended next action for next session:**
 
-**Open questions for user (when picked up):**
+1. **Step 2c — Searchable encryption design**: conflict-check + mandate-search routes use `WHERE clientName ILIKE`. At-rest encryption breaks this. Three options:
+   - **(a)** load-then-decrypt-then-filter (recommended for ≤200 mandates/firm)
+   - **(b)** HMAC blind-index column for exact-match
+   - **(c)** keep clientName plaintext, only encrypt customInstructions/clientContact
+2. **Step 3 — chat-engine.server.ts message-content encryption**: ~5 call sites, 4-6h
+3. **Step 4-5 — file extracted-text + knowledge chunks**: smaller scopes
+4. **Step 6 — backfill script** `scripts/encrypt-atlas-backfill.ts` (idempotent)
 
-- For Wave 11B `SEC-H2`: Library cross-org leak — Option A (add organizationId, per-org-personal) vs Option B (cross-org with consent prompt)? My recommendation Option A.
-- For Wave 11D `PERF-T1-1`: Aggregator endpoint (Option A) first, then Server Component migration (Option B) in Wave 12? Or skip A and go straight to B?
+**Open questions for user:**
+
+- For Step 2c: confirm Option (a) load-then-filter? Or Option (b) HMAC blind-index?
+- For Wave 11D `PERF-T1-1`: Aggregator endpoint first, then Server Component migration in Wave 12?
+
+**State of the codebase as of session end:**
+
+- Working tree clean on main, last commit `ce31f859`
+- Tests: atlas-encryption.test.ts 23/23 green
+- Typecheck: NO new errors introduced (one pre-existing exhaustiveness error in atlas-tool-executor.ts:3717 unchanged from main)
+- Vercel: all commits pushed to main; auto-deploys triggered
+
+**Progress counter:** 3/96 done (SEC-T0-1 step 1, 2a, 2b); 1/96 in-progress (SEC-T0-1 overall, ~5 substeps remaining); 92/96 todo.
 
 ---
 
