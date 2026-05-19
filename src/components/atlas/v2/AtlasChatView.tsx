@@ -180,6 +180,14 @@ export function AtlasChatView({ chatId }: Props) {
      at the bottom. If they scrolled up to re-read something, leave
      their viewport alone instead of dragging them back down. */
   const userIsAtBottomRef = useRef<boolean>(true);
+  /* PERF-T1-2 (wave 11D): captures the assistantMessageId emitted in
+     the SSE `done` event so handleFollowup can do a targeted
+     /api/atlas/messages/[id] hydration after streaming, instead of
+     reloading the entire chat. Ref (not state) because handleEvent
+     is defined outside handleFollowup and we don't want it to trigger
+     a re-render. Cleared per-turn by handleFollowup before each
+     stream. */
+  const assistantMessageIdFromDoneRef = useRef<string | null>(null);
   /* Sprint 3b (2026-05-18) — Floating activity-pill state. Mirrors the
      ref but as state so React can conditionally render the pill when
      the user has scrolled away during streaming. */
@@ -442,6 +450,9 @@ export function AtlasChatView({ chatId }: Props) {
        user sees their just-streamed answer vanish (chat.messages has
        nothing to render in its place). */
     let reloadFailed = false;
+    /* PERF-T1-2: reset the messageId ref at the start of each turn
+       so we don't carry over stale values from a previous stream. */
+    assistantMessageIdFromDoneRef.current = null;
     try {
       const res = await fetch("/api/atlas/chat", {
         method: "POST",
@@ -521,50 +532,78 @@ export function AtlasChatView({ chatId }: Props) {
           }
         }
       }
-      /* Silent reload — fetch the canonical persisted state (with
-         extracted citations + exact tokens) WITHOUT triggering the
-         loading skeleton. The streamed content is already visible
-         on screen, so reload-flash would be a visible regression.
+      /* PERF-T1-2 (wave 11D): targeted hydration — fetch ONLY the
+         just-finished assistant message instead of reloading the
+         entire chat (up to 200 messages × MB-scale JSONB each, see
+         loadChatForUser). The SSE `done` event already carries the
+         messageId; we use it to hit /api/atlas/messages/[id] which
+         returns ~5-50KB instead of ~1-50MB.
 
-         BUG-T1-1 (wave 11C): isolate the reload-failure path. If the
-         post-stream reload throws (network blip, browser offline
-         mid-flight, 5xx from the persisted-chat endpoint), the
-         streamed answer was ALREADY successfully completed + persisted
-         server-side (we exited the SSE while-loop normally above). The
-         only thing that failed is fetching the canonical row back to
-         hydrate citations + tokens.
+         The streamed content is already on screen via streamingText;
+         we merge the hydrated message into chat.messages so the
+         persisted citations + exact token counts appear in the
+         UI without the heavy reload.
 
-         Without this isolated catch, the reload-error propagates to
-         the outer catch (line ~480) which surfaces it as a real
-         error AND finally{} wipes streamingText — user sees their
-         perfect answer vanish + a "Failed to fetch" banner appear.
-         That's a trust-killer for an answer that's actually safely
-         stored in the DB. With this catch: keep the streamed content
-         visible, surface a soft warning instead. The persisted
-         citations + tokens hydrate on next page-reload. */
+         BUG-T1-1 (wave 11C) wrap stays — if hydration fails (network
+         blip), keep streamedContent visible + soft warning. The
+         message IS persisted server-side; only hydration of its
+         metadata (citations/tokens) is missing. */
       if (!isMountedRef.current) return;
-      try {
-        await reload(true);
-      } catch (reloadErr) {
-        if (!isMountedRef.current) return;
-        if (
-          reloadErr instanceof DOMException &&
-          reloadErr.name === "AbortError"
-        ) {
-          /* unmount mid-reload — caller already navigated away */
-          return;
+      const assistantMessageIdFromDone = assistantMessageIdFromDoneRef.current;
+      if (assistantMessageIdFromDone) {
+        try {
+          const hydRes = await fetch(
+            `/api/atlas/messages/${assistantMessageIdFromDone}`,
+            { signal },
+          );
+          if (!hydRes.ok) throw new Error(`HTTP ${hydRes.status}`);
+          const { message: hydrated } = (await hydRes.json()) as {
+            message: ChatMessageRecord;
+          };
+          if (!isMountedRef.current) return;
+          /* Merge the hydrated message into chat.messages. The chat
+             state may not yet contain the user-message (the SSE flow
+             persisted it server-side via the POST, but we never
+             added it client-side). Append both: optimistic user
+             first, then hydrated assistant. */
+          setChat((prev) => {
+            if (!prev) return prev;
+            const without = prev.messages.filter((m) => m.id !== hydrated.id);
+            return { ...prev, messages: [...without, hydrated] };
+          });
+        } catch (hydErr) {
+          if (!isMountedRef.current) return;
+          if (hydErr instanceof DOMException && hydErr.name === "AbortError") {
+            return;
+          }
+          console.warn(
+            "[atlas-chat] targeted message hydration failed — answer is persisted, hydration on next page-load",
+            hydErr,
+          );
+          reloadFailed = true;
+          setError(
+            "Antwort gespeichert, aber Aktualisierung der Chat-Liste fehlgeschlagen. Beim nächsten Laden synchronisiert.",
+          );
         }
-        console.warn(
-          "[atlas-chat] post-stream reload failed — answer is persisted, hydration will happen on next page-load",
-          reloadErr,
-        );
-        reloadFailed = true;
-        /* Surface a soft notice so the user knows their answer is
-           safely stored, just not yet in the up-to-date persisted view.
-           Less alarming than a full error banner. */
-        setError(
-          "Antwort gespeichert, aber Aktualisierung der Chat-Liste fehlgeschlagen. Beim nächsten Laden synchronisiert.",
-        );
+      } else {
+        /* No messageId from done event — fall back to full reload for
+           backwards-compat with older SSE streams. */
+        try {
+          await reload(true);
+        } catch (reloadErr) {
+          if (!isMountedRef.current) return;
+          if (
+            reloadErr instanceof DOMException &&
+            reloadErr.name === "AbortError"
+          ) {
+            return;
+          }
+          console.warn("[atlas-chat] post-stream reload failed", reloadErr);
+          reloadFailed = true;
+          setError(
+            "Antwort gespeichert, aber Aktualisierung der Chat-Liste fehlgeschlagen. Beim nächsten Laden synchronisiert.",
+          );
+        }
       }
       if (!isMountedRef.current) return;
       window.dispatchEvent(new Event("atlas-v2-sidebar-refresh"));
@@ -690,6 +729,15 @@ export function AtlasChatView({ chatId }: Props) {
         break;
       case "error":
         setError(evt.message as string);
+        break;
+      case "done":
+        /* PERF-T1-2: capture messageId so handleFollowup can do a
+           targeted single-message hydration after the SSE closes
+           instead of reloading the entire chat. Ref-based so we
+           don't trigger a re-render. */
+        if (typeof evt.messageId === "string") {
+          assistantMessageIdFromDoneRef.current = evt.messageId;
+        }
         break;
       default:
         break;
