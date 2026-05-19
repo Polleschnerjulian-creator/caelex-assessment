@@ -132,6 +132,157 @@ const PRIVILEGED_KINDS: ReadonlySet<ArtifactKind> = new Set<ArtifactKind>([
   "aktennotiz",
 ]);
 
+/* ── Sprint 19c (2026-05-19) — Chat-Body Preprocessing ───────────────
+   USER-BUG: PDFs enthielten chat-meta-junk: "Agent-Modus aktiv...",
+   "Schritt 1/2/3:", "Agent-Modus abgeschlossen...", follow-up-fragen
+   wie "Soll ich vertiefen?". Außerdem: tables vom model flattened auf
+   eine zeile, `---` als literaler text statt visual divider, special
+   chars (≥, ≤, ⁻⁶, ×) gemangelt weil Helvetica nicht alle unicode
+   chars kann, `{{Placeholder}}` raw statt highlighted.
+
+   preprocessBody() löst alles davon BEVOR parseSegments läuft. Wenn
+   das chat-engine sein progress-pattern ändert, müssen die regex hier
+   nachgezogen werden — siehe chat-engine.server.ts § "Agent-class
+   autonomy" für die quelle der "Schritt N:"-strings. */
+
+/* Lines that signal the agent's meta-narration (NOT document content).
+   Conservative ruleset: only patterns that are UNAMBIGUOUSLY chat-meta
+   and never appear in a real legal document. Follow-up questions are
+   handled by the inAgentPostamble flag below, not by line-level regex,
+   because a document COULD contain "Soll ich..." legitimately. */
+const AGENT_META_PREFIXES = [
+  /^Agent-Modus\s+(aktiv|abgeschlossen)/i,
+  /^Schritt\s+\d+\s*[:.]/i,
+  /^\(Schritt\s+\d+/i,
+  /^Branding-Check\b/i,
+  /^satellite_operator\b/i,
+];
+
+/* Follow-up question patterns — only matched when we're already
+   inside the agent-postamble (i.e. after we've seen one of the
+   postamble-trigger lines). Stops the trailing chat-prompt from
+   leaking into the PDF. */
+const FOLLOWUP_PATTERNS = [
+  /^Soll ich\b.*\?$/i,
+  /^Möchtest du\b.*\?$/i,
+  /^Brauchst du\b.*\?$/i,
+];
+
+/* Unicode chars that Helvetica doesn't support cleanly — substitute
+   with ASCII / common-character equivalents. Lawyers prefer "≥" but
+   if it would render as "?e" or a broken character, "≥ → >= " or
+   the simpler ">=" is much better than garbage. */
+const UNICODE_SUBSTITUTIONS: Array<[RegExp, string]> = [
+  [/≥/g, ">="],
+  [/≤/g, "<="],
+  [/⁻/g, "^-"],
+  [/⁰/g, "^0"],
+  [/¹/g, "^1"],
+  [/²/g, "^2"],
+  [/³/g, "^3"],
+  [/⁴/g, "^4"],
+  [/⁵/g, "^5"],
+  [/⁶/g, "^6"],
+  [/⁷/g, "^7"],
+  [/⁸/g, "^8"],
+  [/⁹/g, "^9"],
+  /* Keep ×, →, —, –, „, ", ', ' — Helvetica supports those.
+     Keep §, €, £, ¥, ©, ® — Latin-1 covers them. */
+];
+
+function substituteUnicode(text: string): string {
+  let out = text;
+  for (const [pattern, replacement] of UNICODE_SUBSTITUTIONS) {
+    out = out.replace(pattern, replacement);
+  }
+  return out;
+}
+
+/* GFM tables sometimes arrive on a single line from the model when the
+   markdown source got reflowed somewhere upstream. Detect via pattern
+   `| header | header | | --- | --- | | cell | cell | | cell | cell |`
+   and split back into proper newline-separated rows so the existing
+   parseSegments() can recognise them as tables.
+
+   Detection: line contains BOTH `||` (row-boundary marker) AND `|---|`
+   (separator row marker) — that combo is only ever a flattened table.
+
+   Split strategy: insert `\n` after every `|` that is immediately
+   followed by ` |` (the boundary between two rows in a flattened
+   table). Preserves the leading/trailing `|` of each row. */
+function normalizeFlattenedTables(text: string): string {
+  return text
+    .split("\n")
+    .map((line) => {
+      if (!line.includes("||")) return line;
+      if (!/\|\s*-{3,}/.test(line)) return line;
+      /* Replace `| |` (row boundary) with `|\n|`. Use lookahead-free
+         regex because we want to consume the whitespace between. */
+      return line.replace(/\|\s+\|/g, "|\n|");
+    })
+    .join("\n");
+}
+
+/* Strip chat-meta lines (preamble + postamble + follow-up questions).
+   Two phases:
+     1. Forward scan: drop AGENT_META_PREFIXES lines anywhere. If we
+        hit a postamble-trigger ("Agent-Modus abgeschlossen", "PDF/DOCX-
+        Export", "Die mit TODO markierten Felder"), flip a flag and
+        drop everything after.
+     2. Backward scan on what remains: drop trailing FOLLOWUP_PATTERNS
+        even if no explicit postamble-trigger fired (model sometimes
+        omits the trigger but still ends with "Soll ich…?"). */
+function stripChatMeta(text: string): string {
+  const lines = text.split("\n");
+  const kept: string[] = [];
+  let inAgentPostamble = false;
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (
+      /^Agent-Modus\s+abgeschlossen/i.test(line) ||
+      /^PDF\/DOCX-Export\b/i.test(line) ||
+      /^Die mit TODO markierten Felder müssen/i.test(line)
+    ) {
+      inAgentPostamble = true;
+      continue;
+    }
+    if (inAgentPostamble) continue;
+    if (AGENT_META_PREFIXES.some((rx) => rx.test(line))) continue;
+    kept.push(rawLine);
+  }
+
+  /* Backward sweep: drop trailing follow-up questions + empty/divider
+     runs. Keeps real document content intact (a mid-document "Soll
+     ich..." won't be stripped because we stop at the first line that
+     doesn't match the trailing-junk pattern). */
+  while (kept.length > 0) {
+    const last = kept[kept.length - 1].trim();
+    if (
+      last === "" ||
+      /^-{3,}$/.test(last) ||
+      FOLLOWUP_PATTERNS.some((rx) => rx.test(last))
+    ) {
+      kept.pop();
+    } else break;
+  }
+  /* Forward trim of empty/divider lines too. */
+  while (kept.length > 0) {
+    const first = kept[0].trim();
+    if (first === "" || /^-{3,}$/.test(first)) kept.shift();
+    else break;
+  }
+
+  return kept.join("\n");
+}
+
+/** Public preprocessor — runs all three normalisations in the right
+ *  order (strip meta first so we don't waste table-detection effort on
+ *  meta lines, then normalise tables, then substitute unicode). */
+export function preprocessChatBody(text: string): string {
+  return substituteUnicode(normalizeFlattenedTables(stripChatMeta(text)));
+}
+
 /* ─────────────────────────────────────────────────────────────────── */
 
 function formatGermanDate(d: Date): string {
@@ -424,14 +575,22 @@ function drawDocumentHeader(
   doc.line(MARGIN_L, y, MARGIN_L + 18, y);
   y += 8;
 
-  /* Title — large navy, multi-line aware. */
+  /* Title — large navy, multi-line aware. Sprint 19c: scale font down
+     for very long titles so we never truncate the last word. Helvetica
+     splitTextToSize handles long compound German words inconsistently;
+     dropping a size or two means even "Genehmigungsantrag — Betrieb
+     eines Erdbeobachtungssatelliten (Demonstrationsmission)" wraps
+     cleanly into 2-3 lines instead of clipping. */
+  const titleLen = artifact.title.length;
+  const titleFontSize = titleLen > 80 ? 17 : titleLen > 55 ? 19 : 22;
+  const titleLineH = titleFontSize > 20 ? 9 : titleFontSize > 18 ? 8 : 7;
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(22);
+  doc.setFontSize(titleFontSize);
   doc.setTextColor(...COL.navy);
   const titleLines = doc.splitTextToSize(artifact.title, CONTENT_W);
   for (const line of titleLines) {
     doc.text(line, MARGIN_L, y);
-    y += 9;
+    y += titleLineH;
   }
   y += 3;
 
@@ -641,6 +800,20 @@ function drawBody(
         doc.text(w, MARGIN_L + indent, y);
         y += BODY_LH;
       }
+      i++;
+      continue;
+    }
+    /* Horizontal rule (---, ***, ___ on its own line). Sprint 19c —
+       previously rendered as literal text "---" in the PDF; now drawn
+       as a thin slate divider matching the visual separators in the
+       letter/memo headers. */
+    if (/^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(raw)) {
+      y = ensureRoom(doc, y, 5, artifact);
+      y += 1.5;
+      doc.setDrawColor(...COL.slate300);
+      doc.setLineWidth(0.25);
+      doc.line(MARGIN_L + 30, y, MARGIN_L + CONTENT_W - 30, y);
+      y += 3.5;
       i++;
       continue;
     }
@@ -949,8 +1122,14 @@ export function buildArtifactPdf(artifact: ArtifactInput): jsPDF {
      der Caller einen kanzleiName direkt mitgibt, gewinnt das (für
      Tests / Story-Books / explizite Overrides). */
   const letterhead = readLetterhead();
+  /* Sprint 19c (2026-05-19) — Body durch den preprocess pipeline
+     schicken bevor wir den header/parser dran lassen. Entfernt
+     chat-meta ("Agent-Modus...", "Schritt N:", follow-up-fragen),
+     repariert flattened tables, ersetzt problematic unicode chars. */
+  const cleanBody = preprocessChatBody(artifact.body);
   const effectiveArtifact: ArtifactInput = {
     ...artifact,
+    body: cleanBody,
     kanzleiName: artifact.kanzleiName ?? letterhead.kanzleiName ?? undefined,
   };
 
