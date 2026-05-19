@@ -61,6 +61,12 @@ import {
   LEGAL_LIST_TYPES,
   type LegalListType,
 } from "@/lib/atlas/editor-extensions/LegalOrderedList";
+import {
+  CitationMark,
+  CITATION_KIND_LABEL,
+  CITATION_KIND_ORDER,
+  type CitationKind,
+} from "@/lib/atlas/editor-extensions/CitationMark";
 import { CitationDialog } from "./CitationDialog";
 import { CrossReferenceDialog } from "./CrossReferenceDialog";
 import {
@@ -109,6 +115,7 @@ import {
   Palette,
   Scroll,
   Link2,
+  BookMarked,
 } from "lucide-react";
 import type { ArtifactInfo } from "./ArtifactPreviewPanel";
 import { markdownToHtml, htmlToMarkdown } from "@/lib/atlas/editor-md-bridge";
@@ -186,6 +193,8 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
         orderedList: false,
       }),
       LegalOrderedList,
+      /* Sprint 13 — Custom-mark für jur. Zitate (Grundlage für ToA) */
+      CitationMark,
       Underline,
       LinkExt.configure({
         openOnClick: false,
@@ -538,6 +547,77 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
     }
   };
 
+  /* Sprint 13 — Table of Authorities Generator.
+     Walks the doc, collects all text-nodes that have the citation-mark
+     applied, groups them by citationType, and inserts a formatted
+     "Quellenverzeichnis"-block at cursor position. */
+  const generateTableOfAuthorities = () => {
+    if (!editor) return;
+    const grouped: Record<CitationKind, string[]> = {
+      gesetz: [],
+      urteil: [],
+      "bverfg-amtl": [],
+      "bghz-amtl": [],
+      eugh: [],
+      kommentar: [],
+      lehrbuch: [],
+      aufsatz: [],
+      festschrift: [],
+      "eu-vo": [],
+      online: [],
+    };
+    /* Walk the doc tree, find text nodes with citation mark. */
+    editor.state.doc.descendants((node) => {
+      if (!node.isText || !node.marks?.length) return;
+      const citationMark = node.marks.find((m) => m.type.name === "citation");
+      if (!citationMark) return;
+      const kind =
+        (citationMark.attrs.citationType as CitationKind) ?? "gesetz";
+      const text = node.text ?? "";
+      if (text && !grouped[kind].includes(text)) {
+        grouped[kind].push(text);
+      }
+    });
+
+    /* De-dupe by display-bucket (z.B. alle Rechtsprechungs-typen
+       sammeln sich unter "Rechtsprechung"). */
+    type Bucket = string;
+    const byBucket = new Map<Bucket, string[]>();
+    for (const kind of CITATION_KIND_ORDER) {
+      const bucket = CITATION_KIND_LABEL[kind];
+      const existing = byBucket.get(bucket) ?? [];
+      for (const cite of grouped[kind]) {
+        if (!existing.includes(cite)) existing.push(cite);
+      }
+      byBucket.set(bucket, existing);
+    }
+
+    const totalCount = Array.from(byBucket.values()).reduce(
+      (sum, arr) => sum + arr.length,
+      0,
+    );
+    if (totalCount === 0) {
+      alert(
+        "Noch keine Zitate im Dokument erkannt.\n\nFüge erst Zitate via 'Zitat einfügen'-button ein, dann kann das Quellenverzeichnis generiert werden.",
+      );
+      return;
+    }
+
+    /* Build the HTML block: H1 + per-bucket H3 + ordered-list. */
+    const sections: string[] = ["<h1>Quellenverzeichnis</h1>"];
+    for (const [bucket, cites] of byBucket) {
+      if (cites.length === 0) continue;
+      sections.push(`<h3>${bucket}</h3>`);
+      sections.push("<ol>");
+      for (const cite of cites.sort((a, b) => a.localeCompare(b, "de"))) {
+        sections.push(`<li>${cite}</li>`);
+      }
+      sections.push("</ol>");
+    }
+    const html = sections.join("");
+    editor.chain().focus().insertContent(html).run();
+  };
+
   const applySuggestion = (msgId: string, suggestionMd: string) => {
     if (!editor) return;
     editor.commands.setContent(markdownToHtml(suggestionMd));
@@ -613,6 +693,7 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
         onOpenSearch={() => setSearchOpen(true)}
         onOpenCitation={() => setCitationOpen(true)}
         onOpenCrossRef={() => setCrossRefOpen(true)}
+        onGenerateToA={generateTableOfAuthorities}
       />
 
       {/* Body: outline + page + ai */}
@@ -802,12 +883,14 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
         )}
       </div>
 
-      {/* Sprint 11 — Citation-Dialog (strukturierte jur. Zitate) */}
+      {/* Sprint 11 + 13 — Citation-Dialog. Sprint 13: wrap inserted
+          text with CitationMark so Table-of-Authorities can scan + group. */}
       {citationOpen && editor && (
         <CitationDialog
           onClose={() => setCitationOpen(false)}
-          onInsert={(text) => {
-            editor.chain().focus().insertContent(text).run();
+          onInsert={(text, type) => {
+            const html = `<span class="atlas-citation" data-citation-type="${type}">${text}</span>`;
+            editor.chain().focus().insertContent(html).run();
           }}
         />
       )}
@@ -838,6 +921,20 @@ export function ArtifactEditor({ artifact, onClose, onSave }: Props) {
           line-height: 1.5;
           color: #1f2937;
           min-height: 100%;
+        }
+        /* Sprint 13 — Citation-mark styling. Subtile italic + dotted-
+           underline in slate, damit Zitate visuell vom normalen Text
+           abgehoben sind aber nicht ablenken. Hover zeigt den Typ
+           via data-attribute (für späteren tooltip-popup). */
+        .atlas-wysiwyg span.atlas-citation {
+          font-style: italic;
+          border-bottom: 1px dotted #94a3b8;
+          padding: 0 1pt;
+          color: #1e293b;
+        }
+        .atlas-wysiwyg span.atlas-citation:hover {
+          background: #f1f5f9;
+          border-bottom-color: #047857;
         }
         /* Sprint 12 — Querverweis (Cross-Reference) link styling.
            Emerald wie Atlas-accent + dotted underline für visual-distinction
@@ -1085,6 +1182,7 @@ function Ribbon({
   onOpenSearch,
   onOpenCitation,
   onOpenCrossRef,
+  onGenerateToA,
 }: {
   editor: Editor | null;
   showOutline: boolean;
@@ -1095,6 +1193,7 @@ function Ribbon({
   onOpenSearch: () => void;
   onOpenCitation: () => void;
   onOpenCrossRef: () => void;
+  onGenerateToA: () => void;
 }) {
   const [styleOpen, setStyleOpen] = useState(false);
   const [insertOpen, setInsertOpen] = useState(false);
@@ -1585,6 +1684,13 @@ function Ribbon({
           title="Querverweis (siehe Abschnitt X / vgl. Fn. Y)"
         >
           <Link2 size={13} />
+        </RibbonBtn>
+        {/* Sprint 13 — Table of Authorities (Quellenverzeichnis) */}
+        <RibbonBtn
+          onClick={onGenerateToA}
+          title="Quellenverzeichnis aus allen Zitaten generieren"
+        >
+          <BookMarked size={13} />
         </RibbonBtn>
         <div className="relative">
           <button

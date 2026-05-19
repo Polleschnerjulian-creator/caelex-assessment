@@ -76,6 +76,38 @@ turndown.addRule("underline", {
   replacement: (content) => `**${content}**`,
 });
 
+/* Sprint 13 — Citation-mark roundtrip preservation. Inserted via
+   CitationDialog as <span class="atlas-citation" data-citation-type="X">
+   Text</span>. Markdown has no native citation-syntax → we keep the
+   span as raw HTML in the markdown body. marked (das wir auf der
+   anderen seite nutzen) parsed inline-HTML by default mit gfm-mode,
+   sodass es bei reopen wieder als citation-mark erkannt wird. */
+turndown.addRule("atlasCitation", {
+  filter: (node) =>
+    node.nodeName === "SPAN" &&
+    (node as HTMLElement).classList.contains("atlas-citation"),
+  replacement: (content, node) => {
+    const type =
+      (node as HTMLElement).getAttribute("data-citation-type") ?? "gesetz";
+    return `<span class="atlas-citation" data-citation-type="${type}">${content}</span>`;
+  },
+});
+
+/* Sprint 12 — Cross-reference link roundtrip. Same pattern: keep the
+   <a class="atlas-cross-ref" ...> as raw HTML so click-handler can
+   re-attach on reload. */
+turndown.addRule("atlasCrossRef", {
+  filter: (node) =>
+    node.nodeName === "A" &&
+    (node as HTMLElement).classList.contains("atlas-cross-ref"),
+  replacement: (content, node) => {
+    const el = node as HTMLElement;
+    const pos = el.getAttribute("data-target-pos") ?? "";
+    const kind = el.getAttribute("data-cross-ref") ?? "heading";
+    return `<a class="atlas-cross-ref" data-cross-ref="${kind}" data-target-pos="${pos}">${content}</a>`;
+  },
+});
+
 /* Custom rule: task-list-item — turndown's gfm-plugin handles task-
    lists but the syntax can be inconsistent. Lock it down here. */
 turndown.addRule("taskListItem", {

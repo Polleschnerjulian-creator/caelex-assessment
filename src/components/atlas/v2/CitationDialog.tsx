@@ -50,7 +50,10 @@ export type CitationType =
 
 interface Props {
   onClose: () => void;
-  onInsert: (formattedText: string) => void;
+  /** Sprint 13 — `type` is the structured citation-kind so the parent
+   *  can wrap the inserted text with a CitationMark for Table of
+   *  Authorities scanning. */
+  onInsert: (formattedText: string, type: CitationType) => void;
 }
 
 const TYPE_META: {
@@ -384,7 +387,7 @@ export function CitationDialog({ onClose, onInsert }: Props) {
   };
 
   const handleInsert = () => {
-    onInsert(preview);
+    onInsert(preview, type);
     onClose();
   };
 
