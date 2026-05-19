@@ -78,21 +78,22 @@ The user mandates: **zero new external costs**. Any finding marked `BLOCKED_COST
 
 ```
 TOTAL:                96 findings
-DONE:                  3   (SEC-T0-1, SEC-T0-2, SEC-T0-3 — all Tier-0 done)
+DONE:                 10   (3 Tier-0 + 7 Wave-11B-IDORs)
 IN_PROGRESS:           0
-TODO:                 93
+TODO:                 86
 DEFERRED:              0
 WONTFIX:               0
 BLOCKED:               0
 
 By tier:
   TIER 0 (existential):  3 findings · 3 done ✅ — WAVE 11A COMPLETE
-  TIER 1 (high-impact):  21 findings · 0 done   (9 SEC-IDORs + 4 bugs + 8 perf)
+  TIER 1 (high-impact):  21 findings · 7 done — WAVE 11B 7/9 DONE
+                          (SEC-H2 + SEC-H8 deferred for schema)
   TIER 2 (significant):  47 findings · 0 done
   TIER 3 (tech-debt):    25 findings · 0 done
 
 By domain:
-  Security:    28 findings · 3 done
+  Security:    28 findings · 10 done
   Bugs:        30 findings · 0 done
   Performance: 23 findings · 0 done
   UX/A11y:     15 findings · 0 done

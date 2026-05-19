@@ -111,8 +111,12 @@ export async function POST(request: NextRequest) {
         { status: 503 },
       );
     }
+    /* SEC-H9 (wave 11B): never leak raw err.message to client — it
+       contains stack-trace fragments, Prisma query details, internal
+       paths. Generic code label is enough for the UI. errMsg stays
+       in logger only (server-side). */
     return NextResponse.json(
-      { error: "Failed to decouple", code: errName, detail: errMsg },
+      { error: "Failed to decouple", code: errName },
       { status: 500 },
     );
   }
