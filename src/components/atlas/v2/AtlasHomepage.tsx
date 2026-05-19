@@ -26,12 +26,107 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChatInput } from "./ChatInput";
 import { MarkdownContent } from "./MarkdownContent";
 import { AtlasMark } from "./AtlasLogo";
 import type { ChatImageAttachment } from "./types";
+
+/* Sprint 19b (2026-05-19) — Personalized homepage greeting.
+   User-request: "Wie kann ich helfen" rechts cool machen, mit namen
+   personalisieren wie es Claude tut.
+
+   Variations sind handcurated pro tageszeit-bucket: Morgen / Mittag /
+   Nachmittag / Abend / Nacht. Tonalität: locker-professionell, "du"
+   (matches the existing "ich helfen" tone — kein Sie). Auswahl ist
+   stable pro session (useState-initializer mit Math.random) damit der
+   greeting nicht bei jedem re-render flippt. */
+type GreetingBucket = readonly string[];
+
+function pickGreetingBucket(hour: number, hasName: boolean): GreetingBucket {
+  /* Without name we fall back to neutral options so we never render
+     awkward orphans like "Schön dich zu sehen, " */
+  if (hour < 5) {
+    return hasName
+      ? ([
+          "Spät unterwegs, $name?",
+          "Atlas ist für dich da, $name",
+          "Wie kann ich helfen, $name?",
+        ] as const)
+      : (["Spät unterwegs?", "Wie kann ich helfen?"] as const);
+  }
+  if (hour < 11) {
+    return hasName
+      ? ([
+          "Guten Morgen, $name",
+          "Bereit für den Tag, $name?",
+          "Schön dich zu sehen, $name",
+          "Was steht heute an, $name?",
+        ] as const)
+      : ([
+          "Guten Morgen",
+          "Bereit für den Tag?",
+          "Was steht heute an?",
+        ] as const);
+  }
+  if (hour < 14) {
+    return hasName
+      ? ([
+          "Hallo $name, was steht an?",
+          "Wie kann ich helfen, $name?",
+          "Worüber sprechen wir, $name?",
+          "Was machen wir, $name?",
+        ] as const)
+      : (["Hallo, was steht an?", "Wie kann ich helfen?"] as const);
+  }
+  if (hour < 18) {
+    return hasName
+      ? ([
+          "Wie kann ich helfen, $name?",
+          "Was machen wir, $name?",
+          "Welche Akte beschäftigt dich, $name?",
+          "Womit kann ich helfen, $name?",
+        ] as const)
+      : ([
+          "Wie kann ich helfen?",
+          "Was machen wir?",
+          "Welche Akte beschäftigt dich?",
+        ] as const);
+  }
+  if (hour < 22) {
+    return hasName
+      ? ([
+          "Guten Abend, $name",
+          "Noch eine Akte heute, $name?",
+          "Wie kann ich helfen, $name?",
+          "Was steht noch an, $name?",
+        ] as const)
+      : ([
+          "Guten Abend",
+          "Wie kann ich helfen?",
+          "Was steht noch an?",
+        ] as const);
+  }
+  return hasName
+    ? ([
+        "Noch wach, $name?",
+        "Atlas ist für dich da, $name",
+        "Wie kann ich helfen, $name?",
+      ] as const)
+    : (["Atlas ist für dich da", "Wie kann ich helfen?"] as const);
+}
+
+/* Extract first-name from "Dr. Julian Polleschner" → "Julian", etc.
+   Strips legal/academic titles so greetings feel personal not stiff. */
+const TITLE_PATTERN = /^(dr\.?|prof\.?|prof\.?dr\.?|ra|raín|llm|ll\.m\.?)\s+/i;
+function firstNameOf(fullName: string | null | undefined): string | null {
+  if (!fullName) return null;
+  const trimmed = fullName.trim().replace(TITLE_PATTERN, "");
+  const parts = trimmed.split(/\s+/);
+  if (parts.length === 0 || !parts[0]) return null;
+  return parts[0];
+}
 
 export function AtlasHomepage() {
   const router = useRouter();
@@ -64,6 +159,42 @@ export function AtlasHomepage() {
      auto-scroll when they were already there; if they scrolled up to
      re-read something, we leave their viewport alone. */
   const userIsAtBottomRef = useRef<boolean>(true);
+
+  /* Sprint 19b — Personalized greeting state. Name comes from
+     /api/atlas/auth/me (same endpoint the sidebar uses); seedIndex
+     is fixed once-per-mount via useState-initializer so the greeting
+     pick is stable across re-renders (no flicker when user types). */
+  const [meName, setMeName] = useState<string | null>(null);
+  const [seedIndex] = useState<number>(() => Math.floor(Math.random() * 1000));
+  const [mountHour] = useState<number>(() => new Date().getHours());
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/atlas/auth/me", { cache: "no-store" });
+        if (!res.ok || cancelled) return;
+        const data = (await res.json()) as { name?: string };
+        if (cancelled) return;
+        setMeName(firstNameOf(data.name) ?? null);
+      } catch {
+        /* swallow — greeting falls back to nameless variant */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /* Compose the greeting deterministically from seedIndex + mountHour +
+     whether name is loaded. The name-load triggers exactly one re-pick
+     (because hasName changes false→true), which feels natural rather
+     than jarring. */
+  const greeting = useMemo(() => {
+    const bucket = pickGreetingBucket(mountHour, Boolean(meName));
+    const template = bucket[seedIndex % bucket.length] ?? bucket[0]!;
+    return meName ? template.replace("$name", meName) : template;
+  }, [meName, mountHour, seedIndex]);
 
   /* Unmount cleanup — abort the in-flight fetch + flip the mounted flag
      so any pending setState calls inside the reader loop short-circuit. */
@@ -356,7 +487,7 @@ export function AtlasHomepage() {
     <div className="flex h-full flex-col items-center justify-center px-6">
       <div className="w-full max-w-[720px]">
         <h1 className="mb-10 text-center text-[28px] font-normal tracking-tight text-slate-900 dark:text-slate-100 [font-family:ui-serif,Georgia,'Cambria_Style',serif]">
-          Wie kann ich helfen?
+          {greeting}
         </h1>
 
         <ChatInput

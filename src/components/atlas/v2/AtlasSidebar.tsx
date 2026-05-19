@@ -27,7 +27,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import {
   Briefcase,
@@ -102,6 +102,35 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
   const [mandates, setMandates] = useState<MandateListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  /* Sprint 19b (2026-05-19) — auto-hide scrollbar.
+     User-request: scrollbar nur sichtbar in den ersten paar sekunden
+     nach mount + wenn user scrollt, sonst ausgeblendet. Ref hängt an
+     der scroll-container-div weiter unten; CSS lebt in globals.css
+     (.atlas-scrollbar-autohide + [data-scroll-active] attribute). */
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    let hideTimer: number | undefined;
+    const showScrollbar = () => {
+      el.setAttribute("data-scroll-active", "true");
+      if (hideTimer) window.clearTimeout(hideTimer);
+      hideTimer = window.setTimeout(() => {
+        el.setAttribute("data-scroll-active", "false");
+      }, 1500);
+    };
+    /* Initial mount — show for 2s so user clocks that scrolling is
+       available, then fade away. */
+    el.setAttribute("data-scroll-active", "true");
+    hideTimer = window.setTimeout(() => {
+      el.setAttribute("data-scroll-active", "false");
+    }, 2000);
+    el.addEventListener("scroll", showScrollbar, { passive: true });
+    return () => {
+      el.removeEventListener("scroll", showScrollbar);
+      if (hideTimer) window.clearTimeout(hideTimer);
+    };
+  }, []);
   /* Lawyer name + tier displayed in the bottom user-pill. Fetched
      post-mount from /api/atlas/auth/me so SSR doesn't have to wait. */
   const [meName, setMeName] = useState<string>("");
@@ -238,7 +267,10 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
       </div>
 
       {/* ── Scrollable middle ─────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto pb-2">
+      <div
+        ref={scrollContainerRef}
+        className="atlas-scrollbar-autohide flex-1 overflow-y-auto pb-2"
+      >
         {/* Primary nav — no section header, just the 5 main destinations */}
         <SidebarSection label="" hideLabel>
           <SidebarItem

@@ -767,6 +767,64 @@ body {
   background: #9ca3af;
 }
 
+/* ────────────────────────────────────────────────────────────────
+   Atlas Sidebar — auto-hiding scrollbar (2026-05-19)
+   ────────────────────────────────────────────────────────────────
+   User-request: scrollbar soll nur sichtbar sein in den ersten paar
+   sekunden nach mount UND wenn der user gerade scrollt — sonst
+   ausgeblendet. Default-browser-scrollbars sind permanent sichtbar
+   (under macOS Safari mit "always show scrollbars" preference) und
+   das macht die sidebar visuell rauschig.
+
+   Toggle erfolgt via `data-scroll-active="true|false"` attribute,
+   das JS in AtlasSidebar.tsx auf mount + scroll setzt + per timer
+   wieder entfernt. CSS animiert den fade über 250ms.
+
+   Webkit (Chrome, Safari) verwendet ::-webkit-scrollbar-*; Firefox
+   nutzt scrollbar-color (color-pair: thumb track). Beide branches
+   sind synchron animiert.
+   ──────────────────────────────────────────────────────────────── */
+.atlas-scrollbar-autohide {
+  /* Firefox baseline — transparent thumb, transparent track */
+  scrollbar-color: transparent transparent;
+  scrollbar-width: thin;
+  transition: scrollbar-color 250ms ease;
+}
+.atlas-scrollbar-autohide[data-scroll-active="true"] {
+  /* Firefox active — slate-500 @ 40% on transparent track */
+  scrollbar-color: rgba(100, 116, 139, 0.4) transparent;
+}
+.atlas-scrollbar-autohide::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.atlas-scrollbar-autohide::-webkit-scrollbar-track {
+  background: transparent;
+}
+.atlas-scrollbar-autohide::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 3px;
+  transition: background-color 250ms ease;
+}
+.atlas-scrollbar-autohide[data-scroll-active="true"]::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 116, 139, 0.4);
+}
+.atlas-scrollbar-autohide[data-scroll-active="true"]::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(100, 116, 139, 0.7);
+}
+/* Dark mode — same alpha but lighter slate so it reads on navy bg */
+.dark .atlas-scrollbar-autohide[data-scroll-active="true"] {
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+}
+.dark
+  .atlas-scrollbar-autohide[data-scroll-active="true"]::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.4);
+}
+.dark
+  .atlas-scrollbar-autohide[data-scroll-active="true"]::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(148, 163, 184, 0.7);
+}
+
 /* Landing light selection */
 .landing-light ::selection {
   background: rgba(107, 114, 128, 0.15);
