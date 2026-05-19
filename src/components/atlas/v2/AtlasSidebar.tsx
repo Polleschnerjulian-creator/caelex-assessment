@@ -37,8 +37,6 @@ import {
   Database,
   MessageSquare,
   Library,
-  ArrowLeftRight,
-  ScrollText,
   Settings,
   Search,
   HelpCircle,
@@ -390,24 +388,12 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
           </SidebarSection>
         )}
 
-        {/* Sprint 18 (2026-05-19) — "Quellen" entfernt aus Korpus
-            (war duplikat zur neuen Suche im Primary-Nav, beide gingen
-            zu /atlas/sources). Korpus-section reduziert auf Workflows
-            + Klauseln. */}
-        <SidebarSection label="Korpus">
-          <SidebarItem
-            href="/atlas/workflows"
-            icon={<ArrowLeftRight size={13} />}
-            label="Workflows"
-            active={pathname === "/atlas/workflows"}
-          />
-          <SidebarItem
-            href="/atlas/clauses"
-            icon={<ScrollText size={13} />}
-            label="Klauseln"
-            active={pathname === "/atlas/clauses"}
-          />
-        </SidebarSection>
+        {/* Sprint 19d (2026-05-19) — komplette "Korpus"-section entfernt.
+            User-request: "workflows und klauseln bitte noch aus dem menü
+            streichen als punkte". Die routen /atlas/workflows und
+            /atlas/clauses bleiben erreichbar (direkter URL-aufruf,
+            command-palette, etc.) — nur die sidebar-einträge sind weg
+            um die menü-fläche aufgeräumter zu halten. */}
       </div>
 
       {/* ── Bottom: Tour-Trigger + Settings link + UserPill ─────── */}
