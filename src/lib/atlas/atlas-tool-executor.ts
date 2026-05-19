@@ -30,6 +30,9 @@ import {
 import { SCOPE_LEVELS, type ScopeLevel } from "@/lib/legal-network/scope";
 import { logger } from "@/lib/logger";
 import type { AtlasToolName } from "./atlas-tools";
+/* SEC-T0-1 step 2b — encryption-at-rest for mandate PII created via
+   tools. Mirrors the wrapping applied to POST /api/atlas/mandate. */
+import { encryptAtlasField, decryptAtlasField } from "./atlas-encryption";
 import {
   isComplianceToolName,
   executeComplianceTool,
@@ -679,14 +682,28 @@ async function createSoloMatterTool(args: {
   }
   const d = parsed.data;
   try {
+    /* SEC-T0-1 step 2b: encrypt the 3 PII fields before create —
+       same pattern as POST /api/atlas/mandate. */
+    const encClientName = await encryptAtlasField(
+      d.clientName || null,
+      args.callerOrgId,
+    );
+    const encClientContact = await encryptAtlasField(
+      d.clientContact || null,
+      args.callerOrgId,
+    );
+    const encCustomInstructions = await encryptAtlasField(
+      d.customInstructions || null,
+      args.callerOrgId,
+    );
     const mandate = await prisma.atlasMandate.create({
       data: {
         organizationId: args.callerOrgId,
         ownerUserId: args.callerUserId,
         name: d.name,
-        clientName: d.clientName || null,
-        clientContact: d.clientContact || null,
-        customInstructions: d.customInstructions || null,
+        clientName: encClientName,
+        clientContact: encClientContact,
+        customInstructions: encCustomInstructions,
         jurisdiction: d.jurisdiction || null,
         operatorType: d.operatorType || null,
         primaryAuthority: d.primaryAuthority || null,
@@ -706,18 +723,26 @@ async function createSoloMatterTool(args: {
         createdAt: true,
       },
     });
+    /* Decrypt clientName before returning to the tool-result so the
+       AI sees plaintext (it just created the mandate; treating the
+       projected row as encrypted bytes would surface garbage in the
+       chat turn). */
+    const mandateWithPlain = {
+      ...mandate,
+      clientName: await decryptAtlasField(mandate.clientName),
+    };
     return {
       content: JSON.stringify({
         ok: true,
-        mandateId: mandate.id,
-        message: `Mandat "${mandate.name}" angelegt. Workspace verfügbar unter /atlas/mandate/${mandate.id}.`,
-        mandate,
+        mandateId: mandateWithPlain.id,
+        message: `Mandat "${mandateWithPlain.name}" angelegt. Workspace verfügbar unter /atlas/mandate/${mandateWithPlain.id}.`,
+        mandate: mandateWithPlain,
       }),
       isError: false,
       /* Navigate the client to the new workspace so the lawyer lands
          in it immediately (matches the bilateral create_matter_invite
          post-create navigation). */
-      navigateUrl: `/atlas/mandate/${mandate.id}`,
+      navigateUrl: `/atlas/mandate/${mandateWithPlain.id}`,
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

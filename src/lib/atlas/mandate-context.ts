@@ -19,6 +19,11 @@
 
 import "server-only";
 import { prisma } from "@/lib/prisma";
+/* SEC-T0-1 step 2b — encryption-at-rest for mandate PII. This loader
+   is the single choke-point for chat-engine + agent-mode mandate
+   context, so decrypting here means both downstream paths get plaintext
+   without needing per-callsite changes. */
+import { decryptAtlasField } from "./atlas-encryption";
 
 export interface ResolvedMandateContext {
   id: string;
@@ -37,7 +42,7 @@ export async function loadMandateContext(
 ): Promise<ResolvedMandateContext | null> {
   /* Membership gate: caller must be owner OR explicit member.
      Org-scope is enforced as belt-and-suspenders. */
-  return prisma.atlasMandate.findFirst({
+  const row = await prisma.atlasMandate.findFirst({
     where: {
       id: mandateId,
       organizationId,
@@ -53,4 +58,15 @@ export async function loadMandateContext(
       clientName: true,
     },
   });
+  if (!row) return null;
+  /* SEC-T0-1: decrypt customInstructions + clientName. Parallel awaits
+     because the two fields' decryption is independent. The chat-engine
+     uses customInstructions to construct the per-mandate system-prompt
+     prefix; if we returned ciphertext here the LLM would receive
+     "org:...:..." garbage. */
+  const [clientName, customInstructions] = await Promise.all([
+    decryptAtlasField(row.clientName),
+    decryptAtlasField(row.customInstructions),
+  ]);
+  return { ...row, clientName, customInstructions };
 }

@@ -218,11 +218,23 @@ Each finding follows the exact same structure for easy parsing.
 
 ### SEC-T0-1 · Zero encryption at rest for Atlas mandate content
 
-**Status:** IN_PROGRESS (started 2026-05-19)
+**Status:** IN_PROGRESS (started 2026-05-19, Step 1 of 7 done in commit `43b0b0d1`)
 **Tier:** 0 (existential)
 **Domain:** Security
-**Effort:** 2-3 days
+**Effort:** 2-3 days (revised DOWN to ~1 day after discovering lib/encryption.ts already had encryptForOrg/smartDecrypt/migrateToOrgEncryption — see Step Log below)
 **Cost:** FREE (lib/encryption.ts already exists)
+
+**Step Log:**
+
+- ✅ **Step 1** (2026-05-19, `43b0b0d1`): Foundation — `src/lib/atlas/atlas-encryption.ts` + 23 vitest tests. Public API: `encryptAtlasField` / `decryptAtlasField` / `encryptAtlasMessageContent` / `decryptAtlasMessageContent` / `migrateAtlasField` / `migrateAtlasMessageContent` / `isAtlasFieldEncrypted`. Built on top of existing per-org encryption infrastructure. Tests cover round-trip, null/empty fidelity, per-org isolation, IV randomization, JSONB walking, tool_result nested content, backfill idempotency, dual-read transition.
+- ✅ **Step 2a** (2026-05-19, `ba2d2072`): Main mandate REST API. POST encrypts clientName/clientContact/customInstructions before create; GET list + GET single + PATCH decrypt accordingly. `name`/jurisdiction/operatorType/primaryAuthority left plaintext (categorical, list-view perf). 101 insertions across 2 files.
+- ⏳ **Step 2b** (next): remaining mandate read sites — mandate-context.ts (chat-engine context loader), atlas-tool-executor.ts:682 (tool-driven create), agent/memory-summarizer (background updates).
+- ⏳ **Step 2c** (deferred): conflict-check + mandate-search — substring search on `clientName` breaks under at-rest encryption. Three viable designs: (a) load-then-decrypt-then-filter (OK for ≤200 mandates/firm), (b) HMAC blind-index column for exact-match (requires schema migration), (c) keep `clientName` plaintext and only encrypt `clientContact`/`customInstructions`. Decision pending after step 3-5 complete.
+- ⏳ **Step 3**: wire into chat-engine.server.ts (AtlasMessage.content text blocks + tool_result content)
+- ⏳ **Step 4**: wire into document-processor.server.ts (AtlasMandateFile.extractedText)
+- ⏳ **Step 5**: wire into auto-embed.server.ts + library-recall (AtlasKnowledgeChunk.text + AtlasResearchEntry.content)
+- ⏳ **Step 6**: backfill script `scripts/encrypt-atlas-backfill.ts` + manual run instructions
+- ⏳ **Step 7**: integration verify via prisma studio + commit final consolidation
 
 **Files:**
 
