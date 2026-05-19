@@ -267,6 +267,27 @@ export default async function BlogPostPage({ params }: PageProps) {
                 </div>
               </div>
 
+              {/* V.i.S.d.P. — Wave 9 (Audit H-6).
+                  § 18 Abs. 2 MStV verlangt bei journalistisch-redaktionellen
+                  inhalten die namentliche nennung eines verantwortlichen
+                  pro beitrag (nicht nur sammelnennung im impressum). Blog-
+                  posts qualifizieren als journalistisch-redaktionell sobald
+                  sie regulatorische einschätzungen oder kommentierte rechts-
+                  entwicklungen enthalten — konservativ daher auf jedem post. */}
+              <div className="mt-6 text-small text-[#6B7280] leading-relaxed">
+                <span className="font-medium text-[#4B5563]">
+                  V.i.S.d.P. (§ 18 Abs. 2 MStV):
+                </span>{" "}
+                {post.author} · Caelex, Am Maselakepark 37, 13587 Berlin,
+                Deutschland · Kontakt:{" "}
+                <a
+                  href="mailto:legal@caelex.eu"
+                  className="underline hover:text-[#111827]"
+                >
+                  legal@caelex.eu
+                </a>
+              </div>
+
               {/* CTA */}
               <div className="mt-12 p-8 rounded-2xl bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
                 <h3 className="text-heading-lg font-medium text-[#111827] mb-3">
