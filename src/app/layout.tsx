@@ -140,6 +140,30 @@ export const metadata: Metadata = {
 
 // Light mode — clean Palantir × Apple aesthetic
 
+/**
+ * Pre-hydration theme script — runs synchronously in <head> before React
+ * paints, mirroring the Atlas pattern (see app/(atlas)/atlas/layout.tsx).
+ *
+ * Reads `caelex-theme` from localStorage (default: "light" — matches the
+ * 2026-05-12 platform-wide decision that white-mode is the new default)
+ * and applies the `dark` class to <html> BEFORE React hydrates. Without
+ * this, every component with `dark:` Tailwind variants flashes to its
+ * dark-mode version on first paint because ThemeProvider's initial
+ * useState defaults render before the localStorage-reading useEffect.
+ *
+ * Handles three saved values: "dark" → dark; "system" → follow OS
+ * preference via matchMedia; anything else / null → light.
+ *
+ * MED-2 SAFETY CONTRACT — DO NOT INTERPOLATE VARIABLES INTO THIS STRING.
+ *   Injected via `dangerouslySetInnerHTML`, which bypasses React's
+ *   auto-escape. Current implementation is a static literal, so it is
+ *   XSS-safe. Any future change that interpolates server-side values
+ *   (user prefs, locale, …) would create an XSS vector. Use a `data-*`
+ *   attribute on <html> server-side instead and have the script read
+ *   from there — never via string concat.
+ */
+const themeFlashGuard = `(function(){try{var t=localStorage.getItem('caelex-theme');var d='light';if(t==='dark'){d='dark';}else if(t==='system'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches){d='dark';}var h=document.documentElement;if(d==='dark'){h.classList.add('dark');h.classList.remove('light');}else{h.classList.add('light');h.classList.remove('dark');}}catch(e){}})();`;
+
 export default function RootLayout({
   children,
 }: {
@@ -152,6 +176,10 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/* Theme flash-guard — MUST be first in <head> to apply before
+            any paint. Without this every reload flashed to dark-mode
+            because ThemeProvider's initial state defaults to dark. */}
+        <script dangerouslySetInnerHTML={{ __html: themeFlashGuard }} />
         <meta
           name="format-detection"
           content="telephone=no, date=no, email=no, address=no"
@@ -166,7 +194,7 @@ export default function RootLayout({
         <WebSiteJsonLd />
       </head>
       <body
-        className={`${inter.className} font-sans antialiased bg-light-bg text-slate-900`}
+        className={`${inter.className} font-sans antialiased bg-light-bg text-slate-900 dark:bg-[#0a0f1e] dark:text-slate-200`}
       >
         <a href="#main-content" className="skip-to-main">
           Skip to main content

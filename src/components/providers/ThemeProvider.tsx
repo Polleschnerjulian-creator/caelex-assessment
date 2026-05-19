@@ -29,8 +29,13 @@ const isAuthEnabled = Boolean(process.env.NEXT_PUBLIC_AUTH_ENABLED);
  */
 function ThemeProviderWithSession({ children }: { children: React.ReactNode }) {
   const { data: session, update: updateSession } = useSession();
-  const [theme, setThemeState] = useState<Theme>("system");
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("dark");
+  // 2026-05-19 — defaults aligned with the pre-hydration script in
+  // src/app/layout.tsx: light is the platform default; the script
+  // applies the saved preference to <html> before React mounts so
+  // there is no flash. resolvedTheme initial = "light" so any
+  // component using useDarkMode() hydrates light-mode-first.
+  const [theme, setThemeState] = useState<Theme>("light");
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
   const [mounted, setMounted] = useState(false);
 
   // Load theme from user session or localStorage on mount
@@ -40,7 +45,7 @@ function ThemeProviderWithSession({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setMounted(true);
     const savedTheme =
-      userTheme || localStorage.getItem("caelex-theme") || "system";
+      userTheme || localStorage.getItem("caelex-theme") || "light";
     setThemeState(savedTheme as Theme);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userTheme]);
@@ -112,13 +117,16 @@ function ThemeProviderWithSession({ children }: { children: React.ReactNode }) {
  * Uses only localStorage for theme persistence (no session sync).
  */
 function ThemeProviderStandalone({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("dark");
+  // 2026-05-19 — see comment in ThemeProviderWithSession above for the
+  // rationale on these defaults (must match the pre-hydration script
+  // in src/app/layout.tsx to avoid flash).
+  const [theme, setThemeState] = useState<Theme>("light");
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const savedTheme = localStorage.getItem("caelex-theme") || "system";
+    const savedTheme = localStorage.getItem("caelex-theme") || "light";
     setThemeState(savedTheme as Theme);
   }, []);
 
