@@ -200,6 +200,15 @@ const VERBS: PaletteVerb[] = [
     run: (r) => r.push("/dashboard/digital-twin"),
   },
   {
+    // Primary creation surface for new spacecraft.
+    id: "nav-new-spacecraft",
+    label: "Add new spacecraft",
+    hint: "Register a satellite or space asset in your organization",
+    icon: Satellite,
+    group: "navigate",
+    run: (r) => r.push("/dashboard/spacecraft/new"),
+  },
+  {
     id: "nav-incidents",
     label: "Open Incidents",
     icon: AlertTriangle,

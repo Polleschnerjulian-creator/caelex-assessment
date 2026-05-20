@@ -762,10 +762,18 @@ function AssignPanel({
   return (
     <PanelShell title="Assign spacecraft" onClose={onCancel}>
       {available.length === 0 ? (
-        <p className="text-xs text-slate-400">
-          No spacecraft available in your organization. Register one in the
-          Registration module first.
-        </p>
+        <div className="space-y-3">
+          <p className="text-xs text-slate-400">
+            No spacecraft in your organization yet. Create your first one —
+            takes 30 seconds.
+          </p>
+          <Link
+            href="/dashboard/spacecraft/new"
+            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium ring-1 ring-inset ring-emerald-500/30 text-emerald-300 transition hover:bg-emerald-500/10"
+          >
+            + Create your first spacecraft
+          </Link>
+        </div>
       ) : (
         <form
           onSubmit={(e) => {
