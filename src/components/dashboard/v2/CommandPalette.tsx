@@ -154,6 +154,14 @@ const VERBS: PaletteVerb[] = [
     run: (r) => r.push("/dashboard/network"),
   },
   {
+    id: "nav-lineage",
+    label: "Open Lineage Explorer",
+    hint: "Trace provenance of any compliance item, field, or proposal",
+    icon: Network,
+    group: "navigate",
+    run: (r) => r.push("/dashboard/lineage"),
+  },
+  {
     id: "nav-incidents",
     label: "Open Incidents",
     icon: AlertTriangle,
