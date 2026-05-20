@@ -305,11 +305,7 @@ export function V2Sidebar({
       </div>
 
       <div className="flex-1 overflow-y-auto px-2.5 pb-4">
-        <SidebarSection
-          label="Today's Work"
-          items={todaysWork}
-          isActive={isActive}
-        />
+        <SidebarSection label="Inbox" items={todaysWork} isActive={isActive} />
         <SidebarSection
           label="Operations"
           items={operations}

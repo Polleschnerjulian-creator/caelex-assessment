@@ -662,6 +662,16 @@ function OnboardingHero({
 
   const PrimaryIcon = primary.icon;
 
+  // Day-1 Magic Moment promotion — shows during the setup phase only.
+  // Once the operator is past setup (open_first_item / all_done) the
+  // hero is no longer relevant, so we hide it.
+  const nextAction = setupState?.nextAction ?? "run_assessment";
+  const isSetupPhase =
+    nextAction === "set_up_organization" ||
+    nextAction === "create_first_mission" ||
+    nextAction === "add_spacecraft" ||
+    nextAction === "run_assessment";
+
   return (
     <div
       className="mx-auto max-w-xl space-y-6 pt-4"
@@ -671,6 +681,69 @@ function OnboardingHero({
         letterSpacing: "-0.005em",
       }}
     >
+      {/* Day-1 Magic Moment — the fastest path to value. Auto-enrich
+          from VIES + GLEIF + BRIS + UNOOSA in 90s, then generate the
+          full roadmap. Only shown during the setup phase. */}
+      {isSetupPhase ? (
+        <section
+          className="relative overflow-hidden rounded-2xl border p-5"
+          style={{
+            borderColor: "rgba(16, 185, 129, 0.28)",
+            background:
+              "linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 182, 212, 0.06) 100%)",
+          }}
+        >
+          <div className="flex items-start gap-4">
+            <div
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
+              style={{
+                background: "rgba(16, 185, 129, 0.18)",
+                boxShadow: "inset 0 1px 0 0 rgba(255, 255, 255, 0.16)",
+              }}
+            >
+              <Sparkles
+                className="h-5 w-5"
+                strokeWidth={1.75}
+                style={{ color: "rgb(110, 231, 183)" }}
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p
+                className="text-[11px] font-semibold uppercase tracking-widest"
+                style={{ color: "rgb(110, 231, 183)" }}
+              >
+                Skip the wizards
+              </p>
+              <h2
+                className="mt-1 text-[18px] font-semibold tracking-tight text-white"
+                style={{ letterSpacing: "-0.015em", lineHeight: 1.3 }}
+              >
+                Let Caelex enrich your profile from EU registries in 90 seconds
+              </h2>
+              <p
+                className="mt-2 text-[13.5px] leading-relaxed"
+                style={{ color: "rgba(255, 255, 255, 0.65)" }}
+              >
+                We scan VIES + GLEIF + your national business register + UNOOSA
+                in parallel, then auto-generate your compliance roadmap. No
+                manual data entry.
+              </p>
+              <Link
+                href="/dashboard/day1"
+                className="mt-4 inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[13px] font-medium transition-colors"
+                style={{
+                  background: "rgb(16, 185, 129)",
+                  color: "rgb(6, 78, 59)",
+                }}
+              >
+                Run Day-1 Magic Moment
+                <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.4} />
+              </Link>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       {/* Hero — left-aligned per Apple HIG empty-state convention.
           Single icon-tile + headline + body + ONE primary CTA. */}
       <section>
@@ -921,7 +994,7 @@ function pickPrimaryAction(setupState: OnboardingSetupState | null): {
     case "create_first_mission":
       return {
         title: "Create your first mission",
-        body: "A mission groups one or more spacecraft serving the same operational program — single satellite, constellation, or launch campaign. Mission is the canonical unit your compliance work hangs off of.",
+        body: "A mission is one satellite, a constellation, or a launch campaign — whatever you're operating. Everything compliance-related hangs off it: applicable articles, deadlines, evidence, NCA filings.",
         buttonLabel: "New mission",
         href: "/dashboard/missions/new",
         icon: Radio,
