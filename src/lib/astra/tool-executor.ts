@@ -3401,6 +3401,46 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
     };
   },
 
+  // ─── Time-Travel (Sprint C2) ───
+
+  snapshot_at_date: async (input, userContext) => {
+    const { snapshotOperatorProfile, snapshotProposals, snapshotAuditChain } =
+      await import("@/lib/time-travel/snapshot");
+    const asOfStr = getString(input, "asOf");
+    const scope = getString(input, "scope", "all");
+    const auditLimit = getNumber(input, "auditLimit", 50) ?? 50;
+
+    let asOf: Date | undefined;
+    if (asOfStr) {
+      const d = new Date(asOfStr);
+      if (!isNaN(d.getTime())) asOf = d;
+    }
+
+    const out: Record<string, unknown> = {
+      asOf: (asOf ?? new Date()).toISOString(),
+      scope,
+    };
+
+    if (scope === "operator-profile" || scope === "all") {
+      out.operatorProfile = await snapshotOperatorProfile(
+        userContext.organizationId,
+        asOf,
+      );
+    }
+    if (scope === "proposals" || scope === "all") {
+      out.proposals = await snapshotProposals(userContext.organizationId, asOf);
+    }
+    if (scope === "audit-chain" || scope === "all") {
+      out.auditChain = await snapshotAuditChain(
+        userContext.organizationId,
+        asOf,
+        auditLimit,
+      );
+    }
+
+    return out;
+  },
+
   // ─── AI Blocks (Sprint B3) ───
 
   create_ai_block: async (input, userContext) => {

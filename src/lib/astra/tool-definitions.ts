@@ -1493,6 +1493,35 @@ export const getMissionTimeline: AstraToolDefinition = {
   },
 };
 
+// ─── Time-Travel (Sprint C2 — partial) ───
+
+export const snapshotAtDate: AstraToolDefinition = {
+  name: "snapshot_at_date",
+  description:
+    "Reconstruct the state of the operator's compliance posture as it WOULD have appeared on a given date. Reads append-only chains (DerivationTrace + AstraProposal + AuditLog) and returns a snapshot view. Useful for auditors asking 'prove your state on 2027-03-15' or for time-travel debugging.",
+  input_schema: {
+    type: "object",
+    properties: {
+      asOf: {
+        type: "string",
+        description:
+          "ISO-8601 date or timestamp. Defaults to now. Future dates are clamped to now.",
+      },
+      scope: {
+        type: "string",
+        enum: ["operator-profile", "proposals", "audit-chain", "all"],
+        description: "Which slice of state to snapshot. Default: 'all'.",
+      },
+      auditLimit: {
+        type: "number",
+        description:
+          "Max audit entries to return when scope includes audit-chain. Default 50, max 500.",
+      },
+    },
+    required: [],
+  },
+};
+
 // ─── AI Blocks (Sprint B3) ───
 
 export const createAiBlock: AstraToolDefinition = {
@@ -1825,6 +1854,9 @@ export const ALL_TOOLS: AstraToolDefinition[] = [
   createAiBlock,
   listAiBlocks,
   runAiBlock,
+
+  // Time-Travel (Sprint C2)
+  snapshotAtDate,
 ];
 
 // ─── Tool Name Lookup ───
