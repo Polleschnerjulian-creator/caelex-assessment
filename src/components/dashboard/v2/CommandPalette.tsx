@@ -217,9 +217,17 @@ const VERBS: PaletteVerb[] = [
     run: (r) => r.push("/dashboard/generate"),
   },
   {
+    id: "nav-day1-page",
+    label: "Open Day-1 Magic Moment",
+    hint: "Banner + KPIs + first moves + enrichment/discovery/roadmap drill-downs",
+    icon: Sparkles,
+    group: "navigate",
+    run: (r) => r.push("/dashboard/day1"),
+  },
+  {
     id: "ai-day1-magic-moment",
-    label: "Run Day-1 magic moment",
-    hint: "Identity enrichment + NCA detection + compliance roadmap, in one shot",
+    label: "Run Day-1 magic moment via Astra chat",
+    hint: "Identity enrichment + NCA detection + compliance roadmap, in chat",
     icon: Sparkles,
     group: "ai",
     run: (r) =>

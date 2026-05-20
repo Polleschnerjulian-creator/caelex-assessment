@@ -1,7 +1,7 @@
 # CAELEX COMPLY — World-Best Edition · Living Document
 
-> **STATUS:** Active — Batch 4 shipped (C1.3 React-Flow viz + A2.4 Czech adapter = 2 sprints), 18 total sprints deployed
-> **VERSION:** 1.7 (Batch 4 — Lineage React-Flow viz with column layout, Czech ARES adapter; 6/10 country adapters now live; 140 tests green)
+> **STATUS:** Active — Batch 5 shipped (Day1-UI page = 1 sprint), 19 total sprints deployed
+> **VERSION:** 1.8 (Batch 5 — `/dashboard/day1` server-rendered banner + KPIs + first-moves + 3-column drill-down; Cmd-K verb added; 140 tests green)
 > **LAST UPDATED:** 2026-05-20
 > **OWNER:** Julian Polleschner (polleschnerjulian@gmail.com)
 > **CONTRIBUTORS:** Julian + Claude Opus 4.7 (1M context)
