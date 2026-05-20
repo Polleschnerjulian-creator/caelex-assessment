@@ -244,8 +244,11 @@ interface MissionContext {
 
 export function Generate2Page() {
   // Sprint UF27 — read mission context from URL.
+  // Sprint Q0 — read pre-selected document type from URL (e.g. ?type=AUTHORIZATION_APPLICATION
+  // from the Authorization module's "Generate with ASTRA" CTA).
   const searchParams = useSearchParams();
   const missionIdParam = searchParams?.get("mission") ?? null;
+  const typeParam = searchParams?.get("type") ?? null;
   const [missionContext, setMissionContext] = useState<MissionContext | null>(
     null,
   );
@@ -542,6 +545,18 @@ export function Generate2Page() {
     },
     [completedDocs, loadDocument],
   );
+
+  // Sprint Q0 — one-time effect: if ?type= is in URL on mount and references a valid
+  // NCADocumentType, pre-select it so the operator lands directly in the generation
+  // flow (used by Authorization-Module "Generate with ASTRA" CTA).
+  const typeParamAppliedRef = useRef(false);
+  useEffect(() => {
+    if (typeParamAppliedRef.current) return;
+    if (!typeParam || selectedType) return;
+    if (!ALL_NCA_DOC_TYPES.includes(typeParam as NCADocumentType)) return;
+    typeParamAppliedRef.current = true;
+    handleSelect(typeParam as NCADocumentType);
+  }, [typeParam, selectedType, handleSelect]);
 
   async function handleComputePlan() {
     if (!selectedType) return;

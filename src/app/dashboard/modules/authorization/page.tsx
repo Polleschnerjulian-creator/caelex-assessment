@@ -1283,7 +1283,7 @@ function AuthorizationPageContent() {
                 {/* Actions */}
                 <div className="flex gap-3">
                   <Link
-                    href="/dashboard/documents/generate?type=AUTHORIZATION_APPLICATION"
+                    href="/dashboard/generate?type=AUTHORIZATION_APPLICATION"
                     className="flex items-center gap-2 bg-[var(--accent-primary-soft)] hover:bg-[var(--accent-success-soft)] border border-[var(--accent-success)/30] text-[var(--accent-primary)] px-5 py-2.5 rounded-lg font-medium text-body transition-all"
                   >
                     <Zap size={14} aria-hidden="true" />
