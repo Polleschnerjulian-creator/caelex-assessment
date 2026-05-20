@@ -1493,6 +1493,25 @@ export const getMissionTimeline: AstraToolDefinition = {
   },
 };
 
+// ─── Network Discovery (Sprint A4 — Trilateral Auto-Discovery) ───
+
+export const discoverTrilateralNetwork: AstraToolDefinition = {
+  name: "discover_trilateral_network",
+  description:
+    "Auto-detect the operator's supervisory NCAs and likely legal counsel based on their profile (operatorType + establishment country + jurisdictions). Returns AuthoritySuggestions (NCAs with pathway/articles/timeline) and CounselSuggestions (law firms from the stakeholder network or directory). Use this on first sign-up, when the operator asks 'who supervises me?' or 'who should represent me?', and to show the Day-1 magic moment banner. Reads OperatorProfile from the database.",
+  input_schema: {
+    type: "object",
+    properties: {
+      includeSecondaryNCAs: {
+        type: "boolean",
+        description:
+          "If true, include cross-jurisdiction NCAs in addition to the primary supervisor. Default: true.",
+      },
+    },
+    required: [],
+  },
+};
+
 // ─── Precision Engine / Roadmap Tools (Sprint A3.5) ───
 
 export const generateComplianceRoadmap: AstraToolDefinition = {
@@ -1604,6 +1623,9 @@ export const ALL_TOOLS: AstraToolDefinition[] = [
 
   // Precision Engine / Roadmap Tools (Sprint A3.5)
   generateComplianceRoadmap,
+
+  // Network Discovery (Sprint A4)
+  discoverTrilateralNetwork,
 ];
 
 // ─── Tool Name Lookup ───

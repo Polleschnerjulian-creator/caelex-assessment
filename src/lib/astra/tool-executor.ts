@@ -3383,6 +3383,55 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
     };
   },
 
+  // ─── Network Discovery (Sprint A4) ───
+
+  discover_trilateral_network: async (_input, userContext) => {
+    const { runTrilateralDiscovery } = await import("@/lib/network-discovery");
+
+    const operator = await prisma.operatorProfile.findUnique({
+      where: { organizationId: userContext.organizationId },
+      select: {
+        euOperatorCode: true,
+        operatorType: true,
+        establishment: true,
+        operatingJurisdictions: true,
+      },
+    });
+
+    const operatorTypeCode =
+      operator?.euOperatorCode ?? operator?.operatorType ?? "";
+
+    if (!operatorTypeCode || !operator?.establishment) {
+      return {
+        status: "EMPTY",
+        message:
+          "Need OperatorProfile.operatorType + establishment country before trilateral discovery can run.",
+        authorities: [],
+        counsel: [],
+        signals: [],
+      };
+    }
+
+    const result = await runTrilateralDiscovery({
+      organizationId: userContext.organizationId,
+      operatorType: operatorTypeCode,
+      establishmentCountry: operator.establishment,
+      operatingJurisdictions: operator.operatingJurisdictions ?? [],
+    });
+
+    return {
+      status: result.meta.inputComplete ? "SUCCESS" : "PARTIAL",
+      message:
+        result.authorities.length > 0
+          ? `Detected ${result.authorities.length} supervising NCA${result.authorities.length === 1 ? "" : "s"} and ${result.counsel.filter((c) => c.matchStrategy !== "stub").length} counsel suggestion${result.counsel.filter((c) => c.matchStrategy !== "stub").length === 1 ? "" : "s"}.`
+          : "No supervisory NCAs matched — check operatorType + establishment country.",
+      authorities: result.authorities,
+      counsel: result.counsel,
+      signals: result.signals,
+      warnings: result.meta.warnings,
+    };
+  },
+
   // ─── Precision Engine / Roadmap Tools (Sprint A3.5) ───
 
   generate_compliance_roadmap: async (input, userContext) => {
