@@ -1,7 +1,7 @@
 # CAELEX COMPLY — World-Best Edition · Living Document
 
-> **STATUS:** Active — Sprint A1 + Q0 shipped, Sprint A2 ready to start
-> **VERSION:** 1.1 (Sprint A1 + Q0 complete)
+> **STATUS:** Active — Q0 + A1 + A2 (3/10 countries) shipped, Sprint A2.2 next
+> **VERSION:** 1.2 (Sprint A2 partial — DK, FI, NO live)
 > **LAST UPDATED:** 2026-05-20
 > **OWNER:** Julian Polleschner (polleschnerjulian@gmail.com)
 > **CONTRIBUTORS:** Julian + Claude Opus 4.7 (1M context)
@@ -568,23 +568,25 @@ Total: ~10 adapters × 120 LOC avg = ~1,200 LOC
 
 Update after every sprint. Use this table as the single source of truth for "where are we?"
 
-| Sprint                                    | Status        | Owner  | Started    | Done       | Notes                                                             |
-| ----------------------------------------- | ------------- | ------ | ---------- | ---------- | ----------------------------------------------------------------- |
-| Q0 — Authorization Quick-Fix              | ✅ Done       | Claude | 2026-05-20 | 2026-05-20 | Button + Generate2Page `?type=` param                             |
-| A1 — EU Tier-1 Adapters                   | ✅ Done       | Claude | 2026-05-20 | 2026-05-20 | VIES + GLEIF + BRIS-router + orchestrator + cron + 41 tests green |
-| A2 — Top-10 Country Tier-2                | ☐ Not Started | —      | —          | —          | Week 2 — next                                                     |
-| A3 — Precision Engine + Pregenerate       | ☐ Not Started | —      | —          | —          | Week 3                                                            |
-| A4 — Trilateral Auto-Discovery            | ☐ Not Started | —      | —          | —          | Week 4                                                            |
-| B1 — Astra-Bridge Wiring + Ghost-Text MVP | ☐ Not Started | —      | —          | —          | Week 5                                                            |
-| B2 — Background Autofill                  | ☐ Not Started | —      | —          | —          | Week 6                                                            |
-| B3 — AI Blocks                            | ☐ Not Started | —      | —          | —          | Week 7                                                            |
-| B4 — AstraProposal-Queue UX               | ☐ Not Started | —      | —          | —          | Week 8                                                            |
-| C1 — Lineage Surface                      | ☐ Not Started | —      | —          | —          | Week 9                                                            |
-| C2 — Bi-Temporal Layer                    | ☐ Not Started | —      | —          | —          | Week 10                                                           |
-| D1 — Sidebar Cut + UI Primitives          | ☐ Not Started | —      | —          | —          | Week 11                                                           |
-| D2 — Cmd-K Power Mode                     | ☐ Not Started | —      | —          | —          | Week 12                                                           |
-| E1 — MCP Full Expansion                   | ☐ Not Started | —      | —          | —          | Week 13                                                           |
-| E2 — Ecosystem-Bridge APIs                | ☐ Not Started | —      | —          | —          | Week 14                                                           |
+| Sprint                                         | Status        | Owner  | Started    | Done       | Notes                                                             |
+| ---------------------------------------------- | ------------- | ------ | ---------- | ---------- | ----------------------------------------------------------------- |
+| Q0 — Authorization Quick-Fix                   | ✅ Done       | Claude | 2026-05-20 | 2026-05-20 | Button + Generate2Page `?type=` param                             |
+| A1 — EU Tier-1 Adapters                        | ✅ Done       | Claude | 2026-05-20 | 2026-05-20 | VIES + GLEIF + BRIS-router + orchestrator + cron + 41 tests green |
+| A2.1 — Tier-2 zero-auth (DK, FI, NO)           | ✅ Done       | Claude | 2026-05-20 | 2026-05-20 | 3/10 countries wired into BRIS router; +40 tests (81 total) green |
+| A2.2 — Tier-2 auth-required (UK, FR)           | ☐ Not Started | —      | —          | —          | Companies House + SIRENE (free with API key registration)         |
+| A2.3 — Tier-2 HTML-scrape (DE, IT, ES, BE, SE) | ☐ Not Started | —      | —          | —          | OffeneRegister, InfoCamere, RMC, KBO, Bolagsverket                |
+| A3 — Precision Engine + Pregenerate            | ☐ Not Started | —      | —          | —          | Week 3                                                            |
+| A4 — Trilateral Auto-Discovery                 | ☐ Not Started | —      | —          | —          | Week 4                                                            |
+| B1 — Astra-Bridge Wiring + Ghost-Text MVP      | ☐ Not Started | —      | —          | —          | Week 5                                                            |
+| B2 — Background Autofill                       | ☐ Not Started | —      | —          | —          | Week 6                                                            |
+| B3 — AI Blocks                                 | ☐ Not Started | —      | —          | —          | Week 7                                                            |
+| B4 — AstraProposal-Queue UX                    | ☐ Not Started | —      | —          | —          | Week 8                                                            |
+| C1 — Lineage Surface                           | ☐ Not Started | —      | —          | —          | Week 9                                                            |
+| C2 — Bi-Temporal Layer                         | ☐ Not Started | —      | —          | —          | Week 10                                                           |
+| D1 — Sidebar Cut + UI Primitives               | ☐ Not Started | —      | —          | —          | Week 11                                                           |
+| D2 — Cmd-K Power Mode                          | ☐ Not Started | —      | —          | —          | Week 12                                                           |
+| E1 — MCP Full Expansion                        | ☐ Not Started | —      | —          | —          | Week 13                                                           |
+| E2 — Ecosystem-Bridge APIs                     | ☐ Not Started | —      | —          | —          | Week 14                                                           |
 
 **Status legend:** ☐ Not Started · 🟡 In Progress · ✅ Done · ⛔ Blocked · ⏸ Paused
 
@@ -628,19 +630,21 @@ Update after every sprint. Use this table as the single source of truth for "whe
 
 ## 8. Decision Log (chronological)
 
-| Date       | Decision                                                                                                                                                                                    | Made By                         | Rationale                                                                                                     |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| 2026-05-20 | Build World-Best Edition (14 weeks) instead of basic 12-week plan                                                                                                                           | Julian + Claude                 | Strategic constraints: EU-wide, zero external cost, trilateral ecosystem                                      |
-| 2026-05-20 | Use VIES + BRIS + GLEIF as Tier-1 (not just DE Handelsregister)                                                                                                                             | Julian                          | All-EU positioning required for moat                                                                          |
-| 2026-05-20 | Reuse `DerivationTrace.sourceRef` instead of new `EnrichedProfile` model in Phase A                                                                                                         | Claude (proposed), Julian (TBD) | Avoids migration, leverages existing T0-T5 + hash-chain                                                       |
-| 2026-05-20 | Trilateral auto-discovery is Sprint A4 (not deferred)                                                                                                                                       | Julian                          | This is THE moat. Cannot defer.                                                                               |
-| 2026-05-20 | Q0 fix Authorization-Module button before Sprint A1                                                                                                                                         | Claude (proposed), Julian (TBD) | 2-hour quick-win, blocks UX otherwise                                                                         |
-| 2026-05-20 | Top-10 country adapters in Sprint A2                                                                                                                                                        | Julian                          | Demo needs multi-country evidence                                                                             |
-| 2026-05-20 | MCP expansion (5→51 tools) in Phase E with marketing push                                                                                                                                   | Julian                          | Distribution differentiator                                                                                   |
-| 2026-05-20 | Q0 + Sprint A1 implementation completed in one session                                                                                                                                      | Claude                          | Founder said "Automodus, baller alles durch" — autonomous execution                                           |
-| 2026-05-20 | BRIS-as-portal is UI-only, no clean API; revised to country-router that dispatches to Tier-2 adapters (built in A2)                                                                         | Claude                          | Original plan assumed BRIS had a clean API. Country-router pattern is cleaner, keeps orchestrator code stable |
-| 2026-05-20 | DerivationTrace persistence deferred to follow-up sprint (origin "source-backed" validator only accepts "legal-source"/"regulatory-feed" sourceRef kinds; extending it is additive, ~5 LOC) | Claude                          | Sprint A1 orchestrator returns provenance in-memory only. AssureCompanyProfile receives the mapped fields.    |
-| 2026-05-20 | Enrichment-cron schedule: `15 3 * * *` daily (03:15 UTC, non-conflicting slot in vercel.json)                                                                                               | Claude                          | Picked the first free slot between data-retention-cleanup (03:00) and atlas-notification-cleanup (03:30)      |
+| Date       | Decision                                                                                                                                                                                    | Made By                         | Rationale                                                                                                                                                                        |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-05-20 | Build World-Best Edition (14 weeks) instead of basic 12-week plan                                                                                                                           | Julian + Claude                 | Strategic constraints: EU-wide, zero external cost, trilateral ecosystem                                                                                                         |
+| 2026-05-20 | Use VIES + BRIS + GLEIF as Tier-1 (not just DE Handelsregister)                                                                                                                             | Julian                          | All-EU positioning required for moat                                                                                                                                             |
+| 2026-05-20 | Reuse `DerivationTrace.sourceRef` instead of new `EnrichedProfile` model in Phase A                                                                                                         | Claude (proposed), Julian (TBD) | Avoids migration, leverages existing T0-T5 + hash-chain                                                                                                                          |
+| 2026-05-20 | Trilateral auto-discovery is Sprint A4 (not deferred)                                                                                                                                       | Julian                          | This is THE moat. Cannot defer.                                                                                                                                                  |
+| 2026-05-20 | Q0 fix Authorization-Module button before Sprint A1                                                                                                                                         | Claude (proposed), Julian (TBD) | 2-hour quick-win, blocks UX otherwise                                                                                                                                            |
+| 2026-05-20 | Top-10 country adapters in Sprint A2                                                                                                                                                        | Julian                          | Demo needs multi-country evidence                                                                                                                                                |
+| 2026-05-20 | MCP expansion (5→51 tools) in Phase E with marketing push                                                                                                                                   | Julian                          | Distribution differentiator                                                                                                                                                      |
+| 2026-05-20 | Q0 + Sprint A1 implementation completed in one session                                                                                                                                      | Claude                          | Founder said "Automodus, baller alles durch" — autonomous execution                                                                                                              |
+| 2026-05-20 | BRIS-as-portal is UI-only, no clean API; revised to country-router that dispatches to Tier-2 adapters (built in A2)                                                                         | Claude                          | Original plan assumed BRIS had a clean API. Country-router pattern is cleaner, keeps orchestrator code stable                                                                    |
+| 2026-05-20 | DerivationTrace persistence deferred to follow-up sprint (origin "source-backed" validator only accepts "legal-source"/"regulatory-feed" sourceRef kinds; extending it is additive, ~5 LOC) | Claude                          | Sprint A1 orchestrator returns provenance in-memory only. AssureCompanyProfile receives the mapped fields.                                                                       |
+| 2026-05-20 | Enrichment-cron schedule: `15 3 * * *` daily (03:15 UTC, non-conflicting slot in vercel.json)                                                                                               | Claude                          | Picked the first free slot between data-retention-cleanup (03:00) and atlas-notification-cleanup (03:30)                                                                         |
+| 2026-05-20 | Sprint A2 split into 3 sub-sprints (A2.1 zero-auth, A2.2 auth-required, A2.3 HTML-scrape)                                                                                                   | Claude                          | Different complexity tiers → different risk profiles. A2.1 ships now with real free APIs (DK, FI, NO); A2.2/A2.3 wait until we commit to API-key registration / scrape stability |
+| 2026-05-20 | Sprint A2.1: 3 country adapters shipped — DK CVR, FI PRH, NO Brønnøysund (all zero external cost, no auth)                                                                                  | Claude                          | All three are EU/EFTA open-data APIs explicitly designated as free public services. JSON responses, well-documented, stable schemas                                              |
 
 ---
 
@@ -850,7 +854,16 @@ Key file paths discovered in audit. Use these as starting points for any work, n
 - [src/lib/profile-enrichment/bris-country-router.ts](src/lib/profile-enrichment/bris-country-router.ts) — 144 LOC — Country dispatcher (Sprint A1 stubs, Sprint A2 fills in)
 - [src/lib/profile-enrichment/orchestrator.ts](src/lib/profile-enrichment/orchestrator.ts) — 277 LOC — parallel dispatch + confidence-weighted merge + AssureCompanyProfile persistence helper
 
-**Tests:** [tests/unit/profile-enrichment/](tests/unit/profile-enrichment/) — 41 tests, all green (13 VIES + 14 GLEIF + 14 orchestrator)
+**Country adapters (Sprint A2.1):**
+
+- [src/lib/profile-enrichment/country/dk-adapter.ts](src/lib/profile-enrichment/country/dk-adapter.ts) — 282 LOC — DK CVR via virk.dk Elasticsearch (free, no auth)
+- [src/lib/profile-enrichment/country/fi-adapter.ts](src/lib/profile-enrichment/country/fi-adapter.ts) — 277 LOC — FI PRH/YTJ via avoindata.prh.fi (free, no auth)
+- [src/lib/profile-enrichment/country/no-adapter.ts](src/lib/profile-enrichment/country/no-adapter.ts) — 282 LOC — NO Brønnøysund via data.brreg.no (free, no auth)
+
+**Tests:** [tests/unit/profile-enrichment/](tests/unit/profile-enrichment/) — **81 tests, all green**
+
+- 13 VIES + 14 GLEIF + 14 orchestrator (A1)
+- 9 DK + 7 FI + 11 NO + 13 BRIS-router (A2.1)
 
 ---
 

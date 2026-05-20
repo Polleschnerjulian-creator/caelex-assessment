@@ -30,6 +30,12 @@ import {
   type EnrichmentSource,
   type EnrichmentInput,
 } from "./types";
+import { lookupCvrByNumber, searchCvrByName } from "./country/dk-adapter";
+import { lookupPrhByBusinessId, searchPrhByName } from "./country/fi-adapter";
+import {
+  lookupBrregByOrgNumber,
+  searchBrregByName,
+} from "./country/no-adapter";
 
 // ─── Country coverage ──────────────────────────────────────────────────────
 
@@ -159,16 +165,25 @@ export async function lookupBrisByCountry(input: {
     };
   }
 
-  // Sprint A1: every country is a stub.
-  // Sprint A2 will replace this switch with real adapter dispatch.
-  return makeStubOutput(source, startedAt, t0, cc);
+  // Sprint A2: dispatch to country-specific adapters (DK, FI, NO).
+  // Remaining countries fall through to the stub until later sprints.
+  switch (cc) {
+    case "DK":
+      return dispatchDk(input);
+    case "FI":
+      return dispatchFi(input);
+    case "NO":
+      return dispatchNo(input);
+    default:
+      return makeStubOutput(source, startedAt, t0, cc);
+  }
 }
 
 /** Returns true if a given country has a real adapter implementation. */
-export function hasCountryAdapter(_countryCode: string): boolean {
-  // Sprint A1: none implemented yet.
-  // Sprint A2: flip individual countries to `true` as adapters land.
-  return false;
+const IMPLEMENTED_COUNTRIES = new Set<string>(["DK", "FI", "NO"]);
+
+export function hasCountryAdapter(countryCode: string): boolean {
+  return IMPLEMENTED_COUNTRIES.has(countryCode.toUpperCase());
 }
 
 /** Inspector: list which countries are currently real vs. stubbed. */
@@ -199,7 +214,80 @@ function makeStubOutput(
     fields: {},
     startedAt,
     durationMs: Date.now() - t0,
-    error: `Sprint A1 stub — country adapter for ${countryCode} ships in Sprint A2 (per TIER_2_PRIORITY_COUNTRIES list)`,
+    error: `Country adapter for ${countryCode} not yet implemented (Sprint A2 shipped DK, FI, NO; remaining ships in A2.2/A2.3)`,
+  };
+}
+
+// ─── Per-country dispatchers ──────────────────────────────────────────────
+
+async function dispatchDk(input: {
+  countryCode: string;
+  legalName?: string;
+  registrationNumber?: string;
+  vatId?: string;
+  lei?: string;
+}): Promise<AdapterOutput> {
+  // Direct by CVR number if registration number provided.
+  if (input.registrationNumber) {
+    return lookupCvrByNumber(input.registrationNumber);
+  }
+  // Fall back to name search.
+  if (input.legalName) {
+    return searchCvrByName(input.legalName);
+  }
+  return {
+    source: "country-dk",
+    fields: {},
+    startedAt: new Date().toISOString(),
+    durationMs: 0,
+    error: "Need legalName or registrationNumber (CVR) to dispatch DK adapter",
+  };
+}
+
+async function dispatchFi(input: {
+  countryCode: string;
+  legalName?: string;
+  registrationNumber?: string;
+  vatId?: string;
+  lei?: string;
+}): Promise<AdapterOutput> {
+  // Finnish business ID matches the registrationNumber convention.
+  if (input.registrationNumber) {
+    return lookupPrhByBusinessId(input.registrationNumber);
+  }
+  if (input.legalName) {
+    return searchPrhByName(input.legalName);
+  }
+  return {
+    source: "country-fi",
+    fields: {},
+    startedAt: new Date().toISOString(),
+    durationMs: 0,
+    error:
+      "Need legalName or registrationNumber (FI business ID) to dispatch FI adapter",
+  };
+}
+
+async function dispatchNo(input: {
+  countryCode: string;
+  legalName?: string;
+  registrationNumber?: string;
+  vatId?: string;
+  lei?: string;
+}): Promise<AdapterOutput> {
+  if (input.registrationNumber) {
+    return lookupBrregByOrgNumber(input.registrationNumber);
+  }
+  if (input.legalName) {
+    return searchBrregByName(input.legalName);
+  }
+  return {
+    source: "country-no",
+    fields: {},
+    startedAt: new Date().toISOString(),
+    durationMs: 0,
+    error:
+      "Need legalName or registrationNumber (NO orgnr) to dispatch NO adapter",
   };
 }
 
