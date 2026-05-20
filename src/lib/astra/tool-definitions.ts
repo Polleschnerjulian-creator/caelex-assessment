@@ -1493,6 +1493,35 @@ export const getMissionTimeline: AstraToolDefinition = {
   },
 };
 
+// ─── Precision Engine / Roadmap Tools (Sprint A3.5) ───
+
+export const generateComplianceRoadmap: AstraToolDefinition = {
+  name: "generate_compliance_roadmap",
+  description:
+    "Generate a personalized, dependency-resolved compliance roadmap for the user's organization. Walks the regulatory ontology for the operator's profile (operatorType + jurisdictions + orbit + planned launch) and returns a prioritized list of ComplianceItems with target dates and dependencies. Use this when the user asks 'what do I need to do?', 'what's my roadmap?', or right after onboarding to show next steps. Reads OperatorProfile from the database — no extra parameters needed in the typical case.",
+  input_schema: {
+    type: "object",
+    properties: {
+      domain: {
+        type: "string",
+        description:
+          "Optional: focus on a single regulatory domain. Examples: 'AUTHORIZATION', 'CYBERSECURITY', 'DEBRIS', 'SPECTRUM', 'INSURANCE'. Omit to include all domains.",
+      },
+      includeProposals: {
+        type: "boolean",
+        description:
+          "If true, include lower-confidence (proposal-tier) ontology obligations alongside the shipped ones. Default: false.",
+      },
+      maxItems: {
+        type: "number",
+        description:
+          "Cap the number of items returned (after dependency-sort). Default: 25. Max: 100.",
+      },
+    },
+    required: [],
+  },
+};
+
 export const ALL_TOOLS: AstraToolDefinition[] = [
   // Compliance Tools
   checkComplianceStatus,
@@ -1572,6 +1601,9 @@ export const ALL_TOOLS: AstraToolDefinition[] = [
   listMissions,
   getMissionDetailTool,
   getMissionTimeline,
+
+  // Precision Engine / Roadmap Tools (Sprint A3.5)
+  generateComplianceRoadmap,
 ];
 
 // ─── Tool Name Lookup ───

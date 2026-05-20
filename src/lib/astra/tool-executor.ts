@@ -3382,6 +3382,115 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
       })),
     };
   },
+
+  // ─── Precision Engine / Roadmap Tools (Sprint A3.5) ───
+
+  generate_compliance_roadmap: async (input, userContext) => {
+    // Lazy import to avoid pulling precision-engine into the cold path for
+    // every other tool call.
+    const { runPrecisionEngine } =
+      await import("@/lib/comply-v2/precision-engine");
+
+    const domain = getString(input, "domain");
+    const includeProposals = getBoolean(input, "includeProposals", false);
+    const maxItemsRaw = getNumber(input, "maxItems", 25);
+    const maxItems = Math.max(1, Math.min(maxItemsRaw ?? 25, 100));
+
+    // Resolve operator profile.
+    const operator = await prisma.operatorProfile.findUnique({
+      where: { organizationId: userContext.organizationId },
+      select: {
+        euOperatorCode: true,
+        operatorType: true,
+        primaryOrbit: true,
+        constellationSize: true,
+        missionDurationMonths: true,
+        plannedLaunchDate: true,
+        operatingJurisdictions: true,
+        establishment: true,
+      },
+    });
+
+    const operatorTypeCode =
+      operator?.euOperatorCode ?? operator?.operatorType ?? "";
+    const jurisdictions = Array.from(
+      new Set(
+        [
+          ...(operator?.operatingJurisdictions ?? []),
+          operator?.establishment,
+        ].filter((j): j is string => Boolean(j)),
+      ),
+    );
+
+    if (!operatorTypeCode) {
+      return {
+        status: "EMPTY",
+        message:
+          "No OperatorProfile.operatorType found for this organization. Complete the onboarding wizard or set the operator type first.",
+        items: [],
+        stats: null,
+      };
+    }
+    if (jurisdictions.length === 0) {
+      return {
+        status: "EMPTY",
+        message:
+          "No jurisdictions found on OperatorProfile. Set operatingJurisdictions or establishment before generating a roadmap.",
+        items: [],
+        stats: null,
+      };
+    }
+
+    const result = await runPrecisionEngine({
+      organizationId: userContext.organizationId,
+      applicability: {
+        operatorType: operatorTypeCode,
+        jurisdictions,
+        primaryOrbit: operator?.primaryOrbit ?? undefined,
+        constellationSize: operator?.constellationSize ?? undefined,
+        missionDurationMonths: operator?.missionDurationMonths ?? undefined,
+        plannedLaunchDate: operator?.plannedLaunchDate ?? undefined,
+      },
+      domain,
+      includeProposals,
+    });
+
+    const trimmedItems = result.items.slice(0, maxItems).map((it) => ({
+      id: it.id,
+      title: it.title,
+      regulation: it.regulationRef,
+      domain: it.domain,
+      articleRef: it.articleRef,
+      priority: it.priority,
+      confidence: it.confidence,
+      targetDate: it.targetDate?.toISOString() ?? null,
+      startDate: it.startDate?.toISOString() ?? null,
+      dependsOn: it.dependsOn,
+      jurisdictions: it.jurisdictions,
+      evidenceRequired: it.evidenceRequired,
+      origin: it.origin,
+    }));
+
+    return {
+      status: result.status,
+      message:
+        result.status === "SUCCESS"
+          ? `Generated ${result.stats.itemsGenerated} compliance items (showing top ${trimmedItems.length}).`
+          : result.status === "EMPTY"
+            ? "No applicable obligations found for this operator profile. Either the operator is out-of-scope, or the ontology has no obligations seeded for these jurisdictions yet."
+            : "Precision engine reported a problem — see warnings.",
+      items: trimmedItems,
+      stats: result.stats,
+      warnings: result.warnings,
+      operator: {
+        operatorTypeCode,
+        jurisdictions,
+        primaryOrbit: operator?.primaryOrbit ?? null,
+        constellationSize: operator?.constellationSize ?? null,
+        plannedLaunchDate: operator?.plannedLaunchDate?.toISOString() ?? null,
+      },
+    };
+  },
 };
 
 // ─── Export ───
