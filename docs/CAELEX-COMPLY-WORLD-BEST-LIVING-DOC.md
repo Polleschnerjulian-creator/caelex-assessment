@@ -1,7 +1,7 @@
 # CAELEX COMPLY — World-Best Edition · Living Document
 
-> **STATUS:** Active — Q0 + A1 + A2 (3/10 countries) shipped, Sprint A2.2 next
-> **VERSION:** 1.2 (Sprint A2 partial — DK, FI, NO live)
+> **STATUS:** Active — Q0 + A1 + A2.1 + A3-core shipped, Sprint A3.5 (Astra pregenerate tools) next
+> **VERSION:** 1.3 (Sprint A3 core engine — applicability/item-gen/dep-resolver/time-planner)
 > **LAST UPDATED:** 2026-05-20
 > **OWNER:** Julian Polleschner (polleschnerjulian@gmail.com)
 > **CONTRIBUTORS:** Julian + Claude Opus 4.7 (1M context)
