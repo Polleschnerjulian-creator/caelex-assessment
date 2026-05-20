@@ -1493,6 +1493,35 @@ export const getMissionTimeline: AstraToolDefinition = {
   },
 };
 
+// ─── Background Autofill (Sprint B2) ───
+
+export const suggestFormAutofill: AstraToolDefinition = {
+  name: "suggest_form_autofill",
+  description:
+    "Suggest field values for common operator forms (document-upload, spacecraft-create, incident-create, mission-create) based on filename patterns + OperatorProfile context. Returns ranked AutofillFieldSuggestion[] with reasoning per suggestion. Use when the operator pastes a filename, draft description, or mission brief and asks 'how should I categorize this?'.",
+  input_schema: {
+    type: "object",
+    properties: {
+      formType: {
+        type: "string",
+        enum: [
+          "document-upload",
+          "spacecraft-create",
+          "incident-create",
+          "mission-create",
+        ],
+        description: "Which form to suggest fields for.",
+      },
+      currentValues: {
+        type: "object",
+        description:
+          "The values the user has already filled in (free-form object — strings, numbers, booleans). Suggestions skip fields that already have values.",
+      },
+    },
+    required: ["formType", "currentValues"],
+  },
+};
+
 // ─── Capabilities Discovery ───
 
 export const discoverCaelexCapabilities: AstraToolDefinition = {
@@ -1715,6 +1744,9 @@ export const ALL_TOOLS: AstraToolDefinition[] = [
 
   // Capabilities discovery
   discoverCaelexCapabilities,
+
+  // Background Autofill (Sprint B2)
+  suggestFormAutofill,
 ];
 
 // ─── Tool Name Lookup ───

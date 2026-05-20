@@ -3401,6 +3401,37 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
     };
   },
 
+  // ─── Background Autofill (Sprint B2) ───
+
+  suggest_form_autofill: async (input, userContext) => {
+    const { suggestFormAutofill } =
+      await import("@/lib/autofill/suggest-fields");
+    const formType = getString(input, "formType");
+    const valid = [
+      "document-upload",
+      "spacecraft-create",
+      "incident-create",
+      "mission-create",
+    ] as const;
+    type ValidFormType = (typeof valid)[number];
+    if (!formType || !valid.includes(formType as ValidFormType)) {
+      return {
+        error: `formType must be one of: ${valid.join(", ")}`,
+        suggestions: [],
+      };
+    }
+    const currentValues =
+      typeof input.currentValues === "object" && input.currentValues !== null
+        ? (input.currentValues as Record<string, unknown>)
+        : {};
+    const result = await suggestFormAutofill({
+      formType: formType as ValidFormType,
+      currentValues,
+      organizationId: userContext.organizationId,
+    });
+    return result;
+  },
+
   // ─── Capabilities Discovery ───
 
   discover_caelex_capabilities: async (input) => {
