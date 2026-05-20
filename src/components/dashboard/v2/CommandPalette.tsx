@@ -28,6 +28,8 @@ import {
   FileSearch as FileSearchIcon,
   Loader2,
   Gauge,
+  Link2,
+  Activity,
   type LucideIcon,
 } from "lucide-react";
 import type { ServerActionVerb } from "@/lib/comply-v2/actions/palette-verbs.server";
@@ -160,6 +162,33 @@ const VERBS: PaletteVerb[] = [
     icon: Network,
     group: "navigate",
     run: (r) => r.push("/dashboard/lineage"),
+  },
+  {
+    // Removed from sidebar — niche audit sub-tool. Still reachable here.
+    id: "nav-hash-chain",
+    label: "Open Hash Chain",
+    hint: "Tamper-evident audit-log visualizer (Bitcoin-anchored)",
+    icon: Link2,
+    group: "navigate",
+    run: (r) => r.push("/dashboard/audit-chain"),
+  },
+  {
+    // Removed from sidebar — technical/admin surface.
+    id: "nav-ops-console",
+    label: "Open Ops Console",
+    hint: "Live operations stream (admin)",
+    icon: Activity,
+    group: "navigate",
+    run: (r) => r.push("/dashboard/ops-console"),
+  },
+  {
+    // Removed from sidebar — admin tool. Surfaces system metrics.
+    id: "nav-system-health",
+    label: "Open System Health",
+    hint: "Platform telemetry & status",
+    icon: Gauge,
+    group: "navigate",
+    run: (r) => r.push("/dashboard/system-health"),
   },
   {
     id: "nav-incidents",

@@ -19,21 +19,16 @@ import {
   ScrollText,
   FileSearch,
   Rocket,
-  Activity,
   FileText,
   Bell,
   Fingerprint,
   Newspaper,
   Globe2,
   Layers,
-  Link2,
   // Sprint UF23 — operator-relevant orphan routes surfaced.
   Send,
   Wand2,
   Boxes,
-  // Batch 5+ — Day-1 + Lineage surfaces shipped this batch.
-  Sparkles,
-  GitBranch,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -102,11 +97,8 @@ export function V2Sidebar({
 
   const todaysWork: NavItem[] = [
     { href: "/dashboard/today", label: "Today", icon: Inbox },
-    {
-      href: "/dashboard/day1",
-      label: "Day-1 Magic Moment",
-      icon: Sparkles,
-    },
+    // Day-1 Magic Moment removed from primary nav — one-shot event,
+    // still URL-reachable at /dashboard/day1 + Cmd-K verb.
     { href: "/dashboard/triage", label: "Triage", icon: ListChecks },
     {
       href: "/dashboard/proposals",
@@ -135,12 +127,28 @@ export function V2Sidebar({
       match: (p) => p.startsWith("/dashboard/missions"),
     },
     {
+      // Was "Mission Control" — the 3D satellite-tracking globe.
+      // Renamed to describe what the surface actually IS rather than
+      // what it's called internally.
       href: "/dashboard/mission-control",
-      label: "Mission Control",
+      label: "Live Tracking",
       icon: Globe,
     },
-    { href: "/dashboard/ephemeris", label: "Ephemeris", icon: Orbit },
-    { href: "/dashboard/sentinel", label: "Sentinel", icon: Satellite },
+    {
+      // Was "Ephemeris" — physics-driven orbital compliance forecasting.
+      // "Orbit Forecast" tells operators what they get.
+      href: "/dashboard/ephemeris",
+      label: "Orbit Forecast",
+      icon: Orbit,
+    },
+    {
+      // Was "Sentinel" — distributed telemetry agents collecting
+      // signed evidence packets. "Live Telemetry" is what an operator
+      // would search for.
+      href: "/dashboard/sentinel",
+      label: "Live Telemetry",
+      icon: Satellite,
+    },
   ];
 
   const compliance: NavItem[] = [
@@ -151,87 +159,78 @@ export function V2Sidebar({
       icon: Layers,
       match: (p) => p.startsWith("/dashboard/modules"),
     },
-    { href: "/dashboard/tracker", label: "Article Tracker", icon: FileSearch },
+    // Was "Article Tracker" — "tracker" doesn't say what it does;
+    // "Status" tells the operator they'll see compliant/in-progress flags.
+    {
+      href: "/dashboard/tracker",
+      label: "Article Status",
+      icon: FileSearch,
+    },
     { href: "/dashboard/incidents", label: "Incidents", icon: AlertTriangle },
     {
       href: "/dashboard/documents",
       label: "Documents",
       icon: FileText,
     },
-    // Sprint UF23 — Generate (document-generation studio). Operator
-    // daily/weekly task: produces compliance reports, NCA cover
-    // letters, attestation packets via templated PDFs. Was orphaned
-    // (URL-only) — now surfaced next to Documents (natural pairing).
+    // Was "Generate" — now spells out what it does.
     {
       href: "/dashboard/generate",
-      label: "Generate",
+      label: "AI Document Generator",
       icon: Wand2,
     },
-    // Sprint UF23 — NCA Portal. The submission-pipeline for filing
-    // with NCAs (BAFA, BSI, ANSSI, etc.). High-frequency operator
-    // surface — was previously only reachable by URL, audit P1-7.
+    // Was "NCA Portal" — "NCA" is insider-lingo (National Competent
+    // Authority). "Authority Submissions" is self-explanatory.
     {
       href: "/dashboard/nca-portal",
-      label: "NCA Portal",
+      label: "Authority Submissions",
       icon: Send,
     },
+    // Was "Regulatory Feed" — operators don't search "feed", they
+    // search "updates".
     {
       href: "/dashboard/regulatory-feed",
-      label: "Regulatory Feed",
+      label: "Regulation Updates",
       icon: Newspaper,
     },
-    { href: "/dashboard/network", label: "Network", icon: Network },
-    // Trade Operations Layer (siehe docs/COMPLY-EXPORT-CONTROL-PLAN.md).
-    // Sub-routes: /dashboard/trade/{items,counterparties,operations,licenses}
+    // Was "Network" — generic word; "Stakeholder Network" says who.
+    {
+      href: "/dashboard/network",
+      label: "Stakeholder Network",
+      icon: Network,
+    },
+    // Was "Trade" — broadens to "Trade & Export" to make export-
+    // control coverage obvious (operators care about that distinction).
     {
       href: "/dashboard/trade",
-      label: "Trade",
+      label: "Trade & Export",
       icon: Globe2,
       match: (p) => p.startsWith("/dashboard/trade"),
     },
-    // Sprint UF23 — Digital Twin. Compliance-scenario simulation
-    // (what-if-modeling). Operator power-feature for evaluating
-    // mission/regulation changes before committing — was orphaned.
+    // Was "Digital Twin" — buzzword that doesn't describe the feature.
+    // "What-If Simulator" tells the operator they can model scenarios.
     {
       href: "/dashboard/digital-twin",
-      label: "Digital Twin",
+      label: "What-If Simulator",
       icon: Boxes,
     },
   ];
 
-  const auditAndSystem: NavItem[] = [
+  // Sidebar-Cleanup — niche / admin / drill-down tools removed from
+  // primary nav (still URL-reachable + Cmd-K):
+  //   - Lineage Explorer   → drill-down from item detail pages
+  //   - Hash Chain         → sub-tool of Audit Log
+  //   - Ops Console        → technical/admin surface
+  //   - System Health      → belongs under Settings
+  const audit: NavItem[] = [
     {
       href: "/dashboard/audit-center",
       label: "Audit Center",
       icon: ScrollText,
     },
     {
-      href: "/dashboard/lineage",
-      label: "Lineage Explorer",
-      icon: GitBranch,
-    },
-    {
       href: "/dashboard/audit-log",
       label: "Audit Log",
       icon: Fingerprint,
-    },
-    {
-      // Sprint UF16 — surface the previously-orphaned hash-chain
-      // visualizer in the rail so auditors discover it by browsing
-      // (not by URL guessing). Sub-tier of Audit Log conceptually.
-      href: "/dashboard/audit-chain",
-      label: "Hash Chain",
-      icon: Link2,
-    },
-    {
-      href: "/dashboard/ops-console",
-      label: "Ops Console",
-      icon: Activity,
-    },
-    {
-      href: "/dashboard/system-health",
-      label: "System Health",
-      icon: Gauge,
     },
   ];
 
@@ -324,8 +323,8 @@ export function V2Sidebar({
           className="mt-6"
         />
         <SidebarSection
-          label="Audit & System"
-          items={auditAndSystem}
+          label="Audit"
+          items={audit}
           isActive={isActive}
           className="mt-6"
         />
