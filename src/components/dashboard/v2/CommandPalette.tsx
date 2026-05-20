@@ -208,6 +208,60 @@ const VERBS: PaletteVerb[] = [
     group: "ai",
     run: (r) => r.push("/dashboard/generate"),
   },
+  {
+    id: "ai-day1-magic-moment",
+    label: "Run Day-1 magic moment",
+    hint: "Identity enrichment + NCA detection + compliance roadmap, in one shot",
+    icon: Sparkles,
+    group: "ai",
+    run: (r) =>
+      r.push(
+        "/dashboard/astra-v2?prompt=" +
+          encodeURIComponent(
+            "Run the Day-1 magic moment for my organization (enrichment + trilateral discovery + roadmap)",
+          ),
+      ),
+  },
+  {
+    id: "ai-generate-roadmap",
+    label: "Generate compliance roadmap",
+    hint: "Dependency-resolved obligations from the regulatory ontology",
+    icon: Sparkles,
+    group: "ai",
+    run: (r) =>
+      r.push(
+        "/dashboard/astra-v2?prompt=" +
+          encodeURIComponent("Generate my compliance roadmap"),
+      ),
+  },
+  {
+    id: "ai-discover-network",
+    label: "Discover supervising NCAs + counsel",
+    hint: "Trilateral auto-discovery — who supervises me, who could represent me",
+    icon: Network,
+    group: "ai",
+    run: (r) =>
+      r.push(
+        "/dashboard/astra-v2?prompt=" +
+          encodeURIComponent(
+            "Discover my supervising NCAs and suggest counsel for my profile",
+          ),
+      ),
+  },
+  {
+    id: "ai-enrich-profile",
+    label: "Re-enrich operator profile",
+    hint: "Pull fresh data from VIES + GLEIF + country business registries",
+    icon: Sparkles,
+    group: "ai",
+    run: (r) =>
+      r.push(
+        "/dashboard/astra-v2?prompt=" +
+          encodeURIComponent(
+            "Re-enrich my organization's identity from public registries",
+          ),
+      ),
+  },
 
   // ─── Settings ───────────────────────────────────────────────────────
   {
