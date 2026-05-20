@@ -1,7 +1,7 @@
 # CAELEX COMPLY — World-Best Edition · Living Document
 
-> **STATUS:** Active — Batch 6 shipped (Capabilities inventory = 1 sprint), 20 total sprints deployed
-> **VERSION:** 1.9 (Batch 6 — Capabilities discovery: inventory module + /api/v1/ecosystem/capabilities + discover_caelex_capabilities Astra tool + Cmd-K verb; 140 tests green)
+> **STATUS:** Active — Batch 7 shipped (B2 Background Autofill + B3 AI Blocks = 2 sprints), 22 total sprints deployed; Phase B is now ✅ DONE
+> **VERSION:** 2.0 (Batch 7 — Phase B Complete: Astra-bridge wired (B1) + Autofill (B2) + AI Blocks (B3) + Proposal lifecycle (B4) all production)
 > **LAST UPDATED:** 2026-05-20
 > **OWNER:** Julian Polleschner (polleschnerjulian@gmail.com)
 > **CONTRIBUTORS:** Julian + Claude Opus 4.7 (1M context)
