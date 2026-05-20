@@ -28,7 +28,6 @@ import {
   // Sprint UF23 — operator-relevant orphan routes surfaced.
   Send,
   Wand2,
-  Boxes,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -206,13 +205,9 @@ export function V2Sidebar({
       icon: Globe2,
       match: (p) => p.startsWith("/dashboard/trade"),
     },
-    // Was "Digital Twin" — buzzword that doesn't describe the feature.
-    // "What-If Simulator" tells the operator they can model scenarios.
-    {
-      href: "/dashboard/digital-twin",
-      label: "What-If Simulator",
-      icon: Boxes,
-    },
+    // Sidebar-fit: What-If Simulator removed from primary nav — it's
+    // an advanced power-user feature, used <weekly. Stays reachable via
+    // Cmd-K verb + direct URL.
   ];
 
   // Sidebar-Cleanup — niche / admin / drill-down tools removed from
@@ -304,25 +299,35 @@ export function V2Sidebar({
         </Link>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2.5 pb-4">
+      {/* Scrollbar visually hidden (Linear pattern). Internal scroll
+          still works if needed on very short viewports, but the visual
+          cue is gone so accidental mouse-wheel events don't make items
+          "disappear" — users perceive the sidebar as a fixed surface. */}
+      <div
+        className="flex-1 overflow-y-auto px-2.5 pb-3"
+        style={{
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+        }}
+      >
         <SidebarSection label="Inbox" items={todaysWork} isActive={isActive} />
         <SidebarSection
           label="Operations"
           items={operations}
           isActive={isActive}
-          className="mt-6"
+          className="mt-5"
         />
         <SidebarSection
           label="Compliance"
           items={compliance}
           isActive={isActive}
-          className="mt-6"
+          className="mt-5"
         />
         <SidebarSection
           label="Audit"
           items={audit}
           isActive={isActive}
-          className="mt-6"
+          className="mt-5"
         />
       </div>
 
@@ -424,7 +429,7 @@ function SidebarSection({
 }) {
   return (
     <section className={className} aria-label={label}>
-      <div className="mb-1.5 px-2.5 pt-2">
+      <div className="mb-1 px-2.5 pt-1.5">
         <span
           style={{
             color: "rgba(255, 255, 255, 0.45)",
@@ -497,7 +502,7 @@ function NavLink({
         fontSize: "13px",
         fontWeight: active ? 500 : 450,
         letterSpacing: "-0.005em",
-        padding: "5px 10px",
+        padding: "4px 10px",
       }}
       onMouseEnter={(e) => {
         if (!active)

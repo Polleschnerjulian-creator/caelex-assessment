@@ -191,6 +191,15 @@ const VERBS: PaletteVerb[] = [
     run: (r) => r.push("/dashboard/system-health"),
   },
   {
+    // Removed from sidebar — advanced power-user feature, used <weekly.
+    id: "nav-what-if-simulator",
+    label: "Open What-If Simulator",
+    hint: "Model compliance scenarios (add sats / change jurisdiction / etc.)",
+    icon: Sparkles,
+    group: "navigate",
+    run: (r) => r.push("/dashboard/digital-twin"),
+  },
+  {
     id: "nav-incidents",
     label: "Open Incidents",
     icon: AlertTriangle,
