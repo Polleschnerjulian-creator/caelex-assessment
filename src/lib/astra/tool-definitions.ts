@@ -1493,6 +1493,35 @@ export const getMissionTimeline: AstraToolDefinition = {
   },
 };
 
+// ─── Lineage (Sprint C1) ───
+
+export const queryLineageForSubject: AstraToolDefinition = {
+  name: "query_lineage_for_subject",
+  description:
+    "Reconstruct the provenance subgraph for a subject (compliance item, operator-profile field, Astra proposal, or audit-log entry). Returns the nodes and edges that trace 'where did this value/decision come from?' across DerivationTrace + AstraProposal + AuditLog + Enrichment sources. Use this when the user asks 'why does this item exist?', 'who proposed this?', or 'show the lineage of …'.",
+  input_schema: {
+    type: "object",
+    properties: {
+      subjectType: {
+        type: "string",
+        enum: [
+          "compliance-item",
+          "operator-profile-field",
+          "astra-proposal",
+          "audit-log-entry",
+        ],
+        description: "The kind of subject to trace.",
+      },
+      subjectId: {
+        type: "string",
+        description:
+          "ID of the subject. For compliance-item: 'REGULATION:CODE'. For operator-profile-field: 'OPERATOR_PROFILE_ID:fieldName'. For astra-proposal / audit-log-entry: row id.",
+      },
+    },
+    required: ["subjectType", "subjectId"],
+  },
+};
+
 // ─── Day-1 Magic Moment (Sprint Day1) ───
 
 export const runDay1MagicMoment: AstraToolDefinition = {
@@ -1652,6 +1681,9 @@ export const ALL_TOOLS: AstraToolDefinition[] = [
 
   // Day-1 Magic Moment (Sprint Day1)
   runDay1MagicMoment,
+
+  // Lineage (Sprint C1)
+  queryLineageForSubject,
 ];
 
 // ─── Tool Name Lookup ───

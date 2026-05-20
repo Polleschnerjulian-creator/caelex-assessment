@@ -3401,6 +3401,47 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
     };
   },
 
+  // ─── Lineage (Sprint C1) ───
+
+  query_lineage_for_subject: async (input, userContext) => {
+    const { buildLineageGraph } =
+      await import("@/lib/lineage/build-lineage-graph");
+
+    const subjectTypeRaw = getString(input, "subjectType");
+    const subjectId = getString(input, "subjectId");
+    const validTypes = [
+      "compliance-item",
+      "operator-profile-field",
+      "astra-proposal",
+      "audit-log-entry",
+    ] as const;
+    type ValidType = (typeof validTypes)[number];
+
+    if (!subjectTypeRaw || !validTypes.includes(subjectTypeRaw as ValidType)) {
+      return {
+        error: `subjectType must be one of: ${validTypes.join(", ")}`,
+        nodes: [],
+        edges: [],
+      };
+    }
+    if (!subjectId) {
+      return { error: "subjectId is required", nodes: [], edges: [] };
+    }
+
+    const result = await buildLineageGraph(userContext.organizationId, {
+      type: subjectTypeRaw as ValidType,
+      id: subjectId,
+    });
+
+    return {
+      subject: result.subject,
+      nodes: result.nodes,
+      edges: result.edges,
+      summary: `${result.nodes.length} nodes, ${result.edges.length} edges${result.meta.truncated ? " (truncated)" : ""}`,
+      warnings: result.meta.warnings,
+    };
+  },
+
   // ─── Day-1 Magic Moment (Sprint Day1) ───
 
   run_day1_magic_moment: async (input, userContext) => {

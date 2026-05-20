@@ -29,11 +29,12 @@ afterEach(() => {
 });
 
 describe("BRIS router — hasCountryAdapter", () => {
-  it("returns true for implemented countries (DK, FI, NO, GB)", () => {
+  it("returns true for implemented countries (DK, FI, NO, GB, EE)", () => {
     expect(hasCountryAdapter("DK")).toBe(true);
     expect(hasCountryAdapter("FI")).toBe(true);
     expect(hasCountryAdapter("NO")).toBe(true);
     expect(hasCountryAdapter("GB")).toBe(true);
+    expect(hasCountryAdapter("EE")).toBe(true);
   });
 
   it("returns false for unimplemented countries", () => {
@@ -49,10 +50,10 @@ describe("BRIS router — hasCountryAdapter", () => {
 });
 
 describe("BRIS router — listAdapterImplementationStatus", () => {
-  it("flags DK, FI, NO, GB as implemented and the rest as stubs", () => {
+  it("flags DK, FI, NO, GB, EE as implemented and the rest as stubs", () => {
     const list = listAdapterImplementationStatus();
     const implemented = list.filter((e) => e.implemented).map((e) => e.country);
-    expect(implemented.sort()).toEqual(["DK", "FI", "GB", "NO"]);
+    expect(implemented.sort()).toEqual(["DK", "EE", "FI", "GB", "NO"]);
     // All 32 countries should be listed (EU-27 + EFTA + UK).
     expect(list.length).toBe(32);
   });
