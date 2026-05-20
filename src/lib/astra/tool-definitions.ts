@@ -1493,6 +1493,79 @@ export const getMissionTimeline: AstraToolDefinition = {
   },
 };
 
+// ─── AI Blocks (Sprint B3) ───
+
+export const createAiBlock: AstraToolDefinition = {
+  name: "create_ai_block",
+  description:
+    "Create a durable, re-runnable prompt block attached to an owner (compliance-item, module, organization, or spacecraft). Used to pin recurring questions like 'Re-generate gap analysis whenever evidence changes' or 'Summarize regulator correspondence weekly'.",
+  input_schema: {
+    type: "object",
+    properties: {
+      ownerType: {
+        type: "string",
+        enum: ["compliance-item", "module", "organization", "spacecraft"],
+      },
+      ownerId: { type: "string", description: "ID of the owner entity." },
+      name: { type: "string", description: "Short label for the block." },
+      description: { type: "string" },
+      prompt: { type: "string", description: "The LLM prompt to run." },
+      triggerType: {
+        type: "string",
+        enum: ["manual", "evidence-change", "schedule", "regulation-update"],
+      },
+      schedule: {
+        type: "string",
+        description: "cron expression (only if triggerType='schedule').",
+      },
+      regulationRef: {
+        type: "string",
+        description:
+          "Regulation namespace (e.g. 'EU_SPACE_ACT', 'NIS2') to watch when triggerType='regulation-update'.",
+      },
+      isPinned: { type: "boolean" },
+    },
+    required: ["ownerType", "ownerId", "name", "prompt", "triggerType"],
+  },
+};
+
+export const listAiBlocks: AstraToolDefinition = {
+  name: "list_ai_blocks",
+  description:
+    "List AI blocks for the authenticated organization. Optionally filter by owner (e.g. all blocks attached to one ComplianceItem) or onlyPinned=true.",
+  input_schema: {
+    type: "object",
+    properties: {
+      ownerType: {
+        type: "string",
+        enum: ["compliance-item", "module", "organization", "spacecraft"],
+      },
+      ownerId: { type: "string" },
+      onlyPinned: { type: "boolean" },
+      limit: { type: "number", description: "Default: 50, max: 100." },
+    },
+    required: [],
+  },
+};
+
+export const runAiBlock: AstraToolDefinition = {
+  name: "run_ai_block",
+  description:
+    "Execute an AI block — invokes the underlying LLM with the block's prompt + optional context payload, persists the AIBlockExecution row, returns output. Use when the user asks 'run my gap-analysis block' or after evidence changes that should retrigger a block.",
+  input_schema: {
+    type: "object",
+    properties: {
+      blockId: { type: "string" },
+      triggerReason: {
+        type: "string",
+        description:
+          "Optional human-readable note for the execution log (e.g. 'Evidence X uploaded').",
+      },
+    },
+    required: ["blockId"],
+  },
+};
+
 // ─── Background Autofill (Sprint B2) ───
 
 export const suggestFormAutofill: AstraToolDefinition = {
@@ -1747,6 +1820,11 @@ export const ALL_TOOLS: AstraToolDefinition[] = [
 
   // Background Autofill (Sprint B2)
   suggestFormAutofill,
+
+  // AI Blocks (Sprint B3)
+  createAiBlock,
+  listAiBlocks,
+  runAiBlock,
 ];
 
 // ─── Tool Name Lookup ───

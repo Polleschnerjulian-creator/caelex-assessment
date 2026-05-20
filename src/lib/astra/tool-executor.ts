@@ -3401,6 +3401,88 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
     };
   },
 
+  // ─── AI Blocks (Sprint B3) ───
+
+  create_ai_block: async (input, userContext) => {
+    const { createAIBlock } = await import("@/lib/ai-blocks/service");
+    const ownerType = getString(input, "ownerType");
+    const ownerId = getString(input, "ownerId");
+    const name = getString(input, "name");
+    const prompt = getString(input, "prompt");
+    const triggerType = getString(input, "triggerType");
+
+    if (!ownerType || !ownerId || !name || !prompt || !triggerType) {
+      return {
+        error:
+          "Missing required fields: ownerType, ownerId, name, prompt, triggerType",
+      };
+    }
+
+    const summary = await createAIBlock({
+      organizationId: userContext.organizationId,
+      ownerType: ownerType as
+        | "compliance-item"
+        | "module"
+        | "organization"
+        | "spacecraft",
+      ownerId,
+      name,
+      description: getString(input, "description"),
+      prompt,
+      triggerType: triggerType as
+        | "manual"
+        | "evidence-change"
+        | "schedule"
+        | "regulation-update",
+      schedule: getString(input, "schedule"),
+      regulationRef: getString(input, "regulationRef"),
+      isPinned: getBoolean(input, "isPinned", false),
+    });
+    return summary;
+  },
+
+  list_ai_blocks: async (input, userContext) => {
+    const { listAIBlocksForOrg, listAIBlocksForOwner } =
+      await import("@/lib/ai-blocks/service");
+    const ownerType = getString(input, "ownerType");
+    const ownerId = getString(input, "ownerId");
+    const limitRaw = getNumber(input, "limit", 50);
+    const limit = Math.max(1, Math.min(limitRaw ?? 50, 100));
+    const onlyPinned = getBoolean(input, "onlyPinned", false);
+
+    if (ownerType && ownerId) {
+      const blocks = await listAIBlocksForOwner(
+        userContext.organizationId,
+        ownerType as
+          | "compliance-item"
+          | "module"
+          | "organization"
+          | "spacecraft",
+        ownerId,
+      );
+      return { blocks: blocks.slice(0, limit), count: blocks.length };
+    }
+    const blocks = await listAIBlocksForOrg(userContext.organizationId, {
+      limit,
+      onlyPinned,
+    });
+    return { blocks, count: blocks.length };
+  },
+
+  run_ai_block: async (input, userContext) => {
+    const { runAIBlock } = await import("@/lib/ai-blocks/service");
+    const blockId = getString(input, "blockId");
+    if (!blockId) {
+      return { error: "blockId is required", status: "FAILED" };
+    }
+    const triggerReason = getString(input, "triggerReason");
+    const result = await runAIBlock(userContext.organizationId, blockId, {
+      triggeredBy: userContext.userId,
+      triggerReason,
+    });
+    return result;
+  },
+
   // ─── Background Autofill (Sprint B2) ───
 
   suggest_form_autofill: async (input, userContext) => {

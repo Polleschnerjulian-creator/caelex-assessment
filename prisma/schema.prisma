@@ -205,32 +205,32 @@ model User {
 
   // Atlas V2 — Mandate-Project + Chat container ownership relations.
   // See docs/ATLAS-V2-MASTER-PLAN.md.
-  ownedAtlasMandates         AtlasMandate[]         @relation("OwnedAtlasMandates")
-  atlasMandateMemberships    AtlasMandateMember[]   @relation("AtlasMandateMemberships")
-  atlasMandateFileUploads    AtlasMandateFile[]     @relation("AtlasMandateFileUploads")
+  ownedAtlasMandates            AtlasMandate[]          @relation("OwnedAtlasMandates")
+  atlasMandateMemberships       AtlasMandateMember[]    @relation("AtlasMandateMemberships")
+  atlasMandateFileUploads       AtlasMandateFile[]      @relation("AtlasMandateFileUploads")
   /// Sprint 12 (2026-05-17): parties this user has added to mandates.
   atlasMandatePartiesCreated    AtlasMandateParty[]     @relation("AtlasMandatePartyCreators")
   /// Sprint 12 (2026-05-17): document templates this user created.
   atlasDocumentTemplatesCreated AtlasDocumentTemplate[] @relation("AtlasDocumentTemplateCreators")
-  ownedAtlasChats            AtlasChat[]            @relation("OwnedAtlasChats")
+  ownedAtlasChats               AtlasChat[]             @relation("OwnedAtlasChats")
   /// AUDIT-FIX M15: assistant turns have null sender; user turns
   /// link back here. Future multi-user mandate-chats will use this
   /// to attribute who said what.
-  atlasMessagesSent          AtlasMessage[]         @relation("AtlasMessageSenders")
+  atlasMessagesSent             AtlasMessage[]          @relation("AtlasMessageSenders")
   /// Atlas-specific audit log entries authored by this user.
-  atlasAuditLogs             AtlasAuditLog[]
+  atlasAuditLogs                AtlasAuditLog[]
   /// Atlas deadlines created by this user.
-  atlasDeadlinesCreated      AtlasMandateDeadline[] @relation("AtlasDeadlineCreators")
+  atlasDeadlinesCreated         AtlasMandateDeadline[]  @relation("AtlasDeadlineCreators")
   /// Atlas clause-library entries created by this user.
-  atlasClausesCreated        AtlasClause[]          @relation("AtlasClauseCreators")
+  atlasClausesCreated           AtlasClause[]           @relation("AtlasClauseCreators")
   /// Atlas notes / highlights — private per-user knowledge base.
-  atlasNotes                 AtlasNote[]            @relation("AtlasNotes")
+  atlasNotes                    AtlasNote[]             @relation("AtlasNotes")
   /// Atlas time-tracking entries.
-  atlasTimeEntries           AtlasTimeEntry[]       @relation("AtlasTimeEntries")
+  atlasTimeEntries              AtlasTimeEntry[]        @relation("AtlasTimeEntries")
   /// Atlas Agent-Mode autonomous runs.
-  atlasAgentRuns             AtlasAgentRun[]        @relation("AtlasAgentRuns")
+  atlasAgentRuns                AtlasAgentRun[]         @relation("AtlasAgentRuns")
   /// Atlas Knowledge-Persistence chunks (Kanzlei-RAG).
-  atlasKnowledgeChunks       AtlasKnowledgeChunk[]  @relation("AtlasUserKnowledgeChunks")
+  atlasKnowledgeChunks          AtlasKnowledgeChunk[]   @relation("AtlasUserKnowledgeChunks")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3185,6 +3185,7 @@ model Organization {
   // the firm's workspace.
   atlasAlertSubscriptions AtlasAlertSubscription[]
   atlasNotifications      AtlasNotification[]
+  AIBlock                 AIBlock[]
 
   // @@index([slug]) — removed: redundant with @unique
   @@index([plan])
@@ -10381,6 +10382,99 @@ model AstraProposal {
   @@index([modelName, createdAt])
 }
 
+// ─── Comply v2 — AI Blocks (Sprint B3) ──────────────────────────────────
+//
+// Durable, re-runnable prompt blocks. An operator (or Astra) creates an
+// AIBlock with a prompt + optional schedule; the block runs on demand
+// or per-trigger, persisting outputs as AIBlockExecution rows.
+//
+// Owner can be any entity — typically a ComplianceItem, a module, or
+// the organization root. Block-output is plain text / Markdown that
+// the UI renders inline.
+//
+// Trigger types:
+//   - manual               : run only when invoked explicitly
+//   - evidence-change      : re-run when the owner's evidence updates
+//   - schedule             : re-run per cron expression
+//   - regulation-update    : re-run when EUR-Lex publishes an update
+//                            touching the regulationRef
+//
+// All fields except output / lastRunAt are user-editable; outputs are
+// append-only via AIBlockExecution.
+
+model AIBlock {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Owner — free-form so blocks can attach to anything.
+  ownerType String // "compliance-item" | "module" | "organization" | "spacecraft"
+  ownerId   String // entity id
+
+  // Block definition
+  name        String
+  description String? @db.Text
+  prompt      String  @db.Text
+
+  // Trigger config
+  triggerType   String // "manual" | "evidence-change" | "schedule" | "regulation-update"
+  schedule      String? // cron expression when triggerType="schedule"
+  regulationRef String? // EU_SPACE_ACT | NIS2 | ... when triggerType="regulation-update"
+
+  // Last execution (denormalized for quick reads)
+  lastRunAt     DateTime?
+  lastRunStatus String? // "SUCCESS" | "FAILED" | "PENDING"
+
+  // UI
+  isPinned    Boolean @default(false)
+  displayIcon String? // lucide icon name
+
+  // Sprint 6B-style provenance fields
+  modelName     String?
+  engineVersion String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  executions AIBlockExecution[]
+
+  @@index([organizationId])
+  @@index([ownerType, ownerId])
+  @@index([triggerType])
+  @@index([isPinned, createdAt])
+}
+
+/// Append-only execution history for an AIBlock.
+model AIBlockExecution {
+  id      String  @id @default(cuid())
+  blockId String
+  block   AIBlock @relation(fields: [blockId], references: [id], onDelete: Cascade)
+
+  // Trigger context
+  triggeredBy   String // userId | "cron" | "evidence-watcher" | "regulation-feed"
+  triggerReason String? @db.Text
+
+  // Output
+  status        String // "PENDING" | "SUCCESS" | "FAILED"
+  output        String? @db.Text
+  citationChain Json? // structured citation array (from the LLM response)
+  errorMessage  String? @db.Text
+
+  // Telemetry
+  startedAt     DateTime  @default(now())
+  completedAt   DateTime?
+  inputTokens   Int?
+  outputTokens  Int?
+  modelName     String?
+  engineVersion String?
+
+  // EU AI Act Art. 12 — same shape as AstraProposal.reproducibility
+  reproducibility Json?
+
+  @@index([blockId, startedAt])
+  @@index([status])
+}
+
 // ─── Comply v2 — Astra V2 Conversations ─────────────────────────────────
 //
 // Persistence for /dashboard/astra-v2. Lives separately from the legacy
@@ -12442,7 +12536,7 @@ model AtlasOrgBranding {
   /// Default Gerichtsstand für Verträge.
   defaultJurisdiction String?
   /// Default-Schlussformel.
-  defaultClosing String?
+  defaultClosing      String?
 
   /// Logo: R2-stored.
   logoUrl        String?
