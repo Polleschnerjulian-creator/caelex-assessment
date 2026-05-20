@@ -31,6 +31,9 @@ import {
   Send,
   Wand2,
   Boxes,
+  // Batch 5+ — Day-1 + Lineage surfaces shipped this batch.
+  Sparkles,
+  GitBranch,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -99,6 +102,11 @@ export function V2Sidebar({
 
   const todaysWork: NavItem[] = [
     { href: "/dashboard/today", label: "Today", icon: Inbox },
+    {
+      href: "/dashboard/day1",
+      label: "Day-1 Magic Moment",
+      icon: Sparkles,
+    },
     { href: "/dashboard/triage", label: "Triage", icon: ListChecks },
     {
       href: "/dashboard/proposals",
@@ -196,6 +204,11 @@ export function V2Sidebar({
       href: "/dashboard/audit-center",
       label: "Audit Center",
       icon: ScrollText,
+    },
+    {
+      href: "/dashboard/lineage",
+      label: "Lineage Explorer",
+      icon: GitBranch,
     },
     {
       href: "/dashboard/audit-log",

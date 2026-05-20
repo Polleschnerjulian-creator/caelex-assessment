@@ -1,8 +1,16 @@
 # CAELEX COMPLY — World-Best Edition · Living Document
 
-> **STATUS:** Active — Batch 7 shipped (B2 Background Autofill + B3 AI Blocks = 2 sprints), 22 total sprints deployed; Phase B is now ✅ DONE
-> **VERSION:** 2.0 (Batch 7 — Phase B Complete: Astra-bridge wired (B1) + Autofill (B2) + AI Blocks (B3) + Proposal lifecycle (B4) all production)
+> **STATUS:** Active — Batch 8 shipped (C2 Time-Travel + D1 Sidebar entries = 2 sprints). **All Living-Doc phases ✅ COMPLETE.** 24 total sprints deployed.
+> **VERSION:** 2.1 (Batch 8 — Phase C2 time-travel snapshot service + D1 sidebar surfacing for Day-1 + Lineage)
 > **LAST UPDATED:** 2026-05-20
+>
+> **🎯 Living Doc completion summary:**
+> ✅ Phase A — Pre-Knowledge Engine (Q0 + A1 + A2.1-A2.4 + A3 + A3.5 + A4)
+> ✅ Phase B — AI Substrate (B1 + B2 + B3 + B4)
+> ✅ Phase C — Lineage + Time-Travel (C1-data + C1.2-page + C1.3-viz + C2-snapshot)
+> ✅ Phase D — Cmd-K verbs + Sidebar additions (D1-additive + D2)
+> ✅ Phase E — MCP + Ecosystem APIs + Capabilities (E1 + E2 + Capabilities)
+> ✅ Plus: Day-1 composer + UI page
 > **OWNER:** Julian Polleschner (polleschnerjulian@gmail.com)
 > **CONTRIBUTORS:** Julian + Claude Opus 4.7 (1M context)
 >
