@@ -22,6 +22,14 @@ import { buildSystemPrompt } from "./system-prompt";
 import { buildCompleteContext, detectTopics } from "./context-builder";
 import { ALL_TOOLS } from "./tool-definitions";
 import { executeTool } from "./tool-executor";
+// Sprint B1 — wire the Action-Layer (comply-v2) bridge into the engine
+// so every defineAction()-registered action becomes an Astra tool. The
+// bridge module is side-effect-imported here to ensure all action
+// registrations have run before getAstraToolDefinitions() is called.
+import {
+  getAstraToolDefinitions,
+  executeAstraAction,
+} from "@/lib/comply-v2/actions/astra-bridge.server";
 import {
   formatResponse,
   createGreetingResponse,
@@ -331,7 +339,10 @@ export class AstraEngine implements IAstraEngine {
           max_tokens: ASTRA_CONFIG.maxTokens,
           system: systemPrompt,
           messages: messages as Anthropic.MessageParam[],
-          tools: ALL_TOOLS as Anthropic.Tool[],
+          tools: [
+            ...(ALL_TOOLS as Anthropic.Tool[]),
+            ...(getAstraToolDefinitions() as unknown as Anthropic.Tool[]),
+          ],
           temperature: ASTRA_CONFIG.temperature,
         }),
       );

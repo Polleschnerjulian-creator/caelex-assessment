@@ -123,17 +123,35 @@ export async function executeTool(
       },
     });
 
-    // Execute the appropriate tool handler
+    // Execute the appropriate tool handler. If no TOOL_HANDLERS entry
+    // exists, fall through to the Action-Layer bridge (Sprint B1) — this
+    // lets every defineAction()-registered action run through Astra
+    // without any per-tool boilerplate here.
     const handler = TOOL_HANDLERS[toolCall.name];
-    if (!handler) {
-      return {
-        toolCallId: toolCall.id,
-        success: false,
-        error: `Unknown tool: ${toolCall.name}`,
-      };
+    let result: unknown;
+    if (handler) {
+      result = await handler(toolCall.input, userContext);
+    } else {
+      // Lazy-import the bridge to keep the cold path light for legacy tools.
+      const { executeAstraAction } =
+        await import("@/lib/comply-v2/actions/astra-bridge.server");
+      // The action layer reads userId/organizationId from its own auth
+      // gate (defineAction). We just forward an empty ProposalCallOptions —
+      // the bridge inserts decisionLog + reproducibility itself when the
+      // action is approval-gated.
+      const actionResult = await executeAstraAction(
+        toolCall.name,
+        toolCall.input,
+      );
+      if (!actionResult.ok) {
+        return {
+          toolCallId: toolCall.id,
+          success: false,
+          error: actionResult.error,
+        };
+      }
+      result = actionResult.result;
     }
-
-    const result = await handler(toolCall.input, userContext);
 
     // Log successful execution
     await logAuditEvent({
