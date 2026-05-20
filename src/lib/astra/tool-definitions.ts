@@ -1493,6 +1493,29 @@ export const getMissionTimeline: AstraToolDefinition = {
   },
 };
 
+// ─── Day-1 Magic Moment (Sprint Day1) ───
+
+export const runDay1MagicMoment: AstraToolDefinition = {
+  name: "run_day1_magic_moment",
+  description:
+    "Compose the full Day-1 magic moment in one call: external identity enrichment (VIES + GLEIF + country registries) + trilateral auto-discovery (NCAs + counsel) + precision-engine roadmap. Returns a unified Day1Result with a human-readable banner summary and top-3 actions. Use this when an operator finishes onboarding, asks 'what's my situation?', or invokes the welcome banner.",
+  input_schema: {
+    type: "object",
+    properties: {
+      persist: {
+        type: "boolean",
+        description:
+          "If true, persist enrichment results to AssureCompanyProfile. Default: false.",
+      },
+      maxItems: {
+        type: "number",
+        description: "Cap on roadmap items returned. Default: 25. Max: 100.",
+      },
+    },
+    required: [],
+  },
+};
+
 // ─── Network Discovery (Sprint A4 — Trilateral Auto-Discovery) ───
 
 export const discoverTrilateralNetwork: AstraToolDefinition = {
@@ -1626,6 +1649,9 @@ export const ALL_TOOLS: AstraToolDefinition[] = [
 
   // Network Discovery (Sprint A4)
   discoverTrilateralNetwork,
+
+  // Day-1 Magic Moment (Sprint Day1)
+  runDay1MagicMoment,
 ];
 
 // ─── Tool Name Lookup ───

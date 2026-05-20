@@ -3401,6 +3401,52 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
     };
   },
 
+  // ─── Day-1 Magic Moment (Sprint Day1) ───
+
+  run_day1_magic_moment: async (input, userContext) => {
+    const { runDay1MagicMoment } = await import("@/lib/day1/run-day1");
+    const persist = input.persist === true;
+    const maxItemsRaw =
+      typeof input.maxItems === "number" ? input.maxItems : undefined;
+    const maxItems =
+      maxItemsRaw === undefined
+        ? undefined
+        : Math.max(1, Math.min(maxItemsRaw, 100));
+
+    const result = await runDay1MagicMoment({
+      organizationId: userContext.organizationId,
+      persist,
+      maxItems,
+    });
+
+    // Trim verbose payload for chat context — return only the banner +
+    // top actions + summary stats. Full payload is available via the
+    // /api/v1/ecosystem/day1 endpoint when needed.
+    return {
+      bannerSummary: result.bannerSummary,
+      topActions: result.topActions,
+      enrichmentStatus: result.enrichment?.status ?? null,
+      discoverySummary: result.discovery
+        ? {
+            authoritiesCount: result.discovery.authorities.length,
+            counselCount: result.discovery.counsel.filter(
+              (c) => c.matchStrategy !== "stub",
+            ).length,
+            signalsCount: result.discovery.signals.length,
+          }
+        : null,
+      roadmapSummary: result.roadmap
+        ? {
+            status: result.roadmap.status,
+            itemsGenerated: result.roadmap.stats.itemsGenerated,
+            byPriority: result.roadmap.stats.itemsByPriority,
+            byRegulation: result.roadmap.stats.itemsByRegulation,
+          }
+        : null,
+      durationMs: result.durationMs,
+    };
+  },
+
   // ─── Network Discovery (Sprint A4) ───
 
   discover_trilateral_network: async (_input, userContext) => {
