@@ -7,6 +7,10 @@
       "schedule": "15 3 * * *"
     },
     {
+      "path": "/api/cron/proposal-lifecycle",
+      "schedule": "45 7 * * *"
+    },
+    {
       "path": "/api/cron/atlas-deadline-reminders",
       "schedule": "0 7 * * *"
     },
