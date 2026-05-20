@@ -265,6 +265,20 @@ const VERBS: PaletteVerb[] = [
       ),
   },
   {
+    id: "ai-discover-capabilities",
+    label: "What can Caelex do?",
+    hint: "Full inventory: tools, endpoints, countries, frameworks, trust layer",
+    icon: Sparkles,
+    group: "ai",
+    run: (r) =>
+      r.push(
+        "/dashboard/astra-v2?prompt=" +
+          encodeURIComponent(
+            "Show me Caelex's full capabilities — countries supported, frameworks, Astra tools, and trust-layer features",
+          ),
+      ),
+  },
+  {
     id: "ai-enrich-profile",
     label: "Re-enrich operator profile",
     hint: "Pull fresh data from VIES + GLEIF + country business registries",

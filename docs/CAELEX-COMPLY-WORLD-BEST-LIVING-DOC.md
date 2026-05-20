@@ -1,7 +1,7 @@
 # CAELEX COMPLY — World-Best Edition · Living Document
 
-> **STATUS:** Active — Batch 5 shipped (Day1-UI page = 1 sprint), 19 total sprints deployed
-> **VERSION:** 1.8 (Batch 5 — `/dashboard/day1` server-rendered banner + KPIs + first-moves + 3-column drill-down; Cmd-K verb added; 140 tests green)
+> **STATUS:** Active — Batch 6 shipped (Capabilities inventory = 1 sprint), 20 total sprints deployed
+> **VERSION:** 1.9 (Batch 6 — Capabilities discovery: inventory module + /api/v1/ecosystem/capabilities + discover_caelex_capabilities Astra tool + Cmd-K verb; 140 tests green)
 > **LAST UPDATED:** 2026-05-20
 > **OWNER:** Julian Polleschner (polleschnerjulian@gmail.com)
 > **CONTRIBUTORS:** Julian + Claude Opus 4.7 (1M context)
