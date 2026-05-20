@@ -41,6 +41,7 @@ import {
   searchCompaniesHouseByName,
 } from "./country/uk-adapter";
 import { lookupRikByRegistryCode, searchRikByName } from "./country/ee-adapter";
+import { lookupAresByIco, searchAresByName } from "./country/cz-adapter";
 
 // ─── Country coverage ──────────────────────────────────────────────────────
 
@@ -183,13 +184,22 @@ export async function lookupBrisByCountry(input: {
       return dispatchUk(input);
     case "EE":
       return dispatchEe(input);
+    case "CZ":
+      return dispatchCz(input);
     default:
       return makeStubOutput(source, startedAt, t0, cc);
   }
 }
 
 /** Returns true if a given country has a real adapter implementation. */
-const IMPLEMENTED_COUNTRIES = new Set<string>(["DK", "FI", "NO", "GB", "EE"]);
+const IMPLEMENTED_COUNTRIES = new Set<string>([
+  "DK",
+  "FI",
+  "NO",
+  "GB",
+  "EE",
+  "CZ",
+]);
 
 export function hasCountryAdapter(countryCode: string): boolean {
   return IMPLEMENTED_COUNTRIES.has(countryCode.toUpperCase());
@@ -343,6 +353,29 @@ async function dispatchEe(input: {
     durationMs: 0,
     error:
       "Need legalName or registrationNumber (EE registry code) to dispatch EE adapter",
+  };
+}
+
+async function dispatchCz(input: {
+  countryCode: string;
+  legalName?: string;
+  registrationNumber?: string;
+  vatId?: string;
+  lei?: string;
+}): Promise<AdapterOutput> {
+  if (input.registrationNumber) {
+    return lookupAresByIco(input.registrationNumber);
+  }
+  if (input.legalName) {
+    return searchAresByName(input.legalName);
+  }
+  return {
+    source: "country-cz",
+    fields: {},
+    startedAt: new Date().toISOString(),
+    durationMs: 0,
+    error:
+      "Need legalName or registrationNumber (CZ ICO) to dispatch CZ adapter",
   };
 }
 

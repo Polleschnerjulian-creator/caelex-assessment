@@ -20,6 +20,7 @@ import {
   type LineageNode,
   type LineageNodeKind,
 } from "@/lib/lineage/build-lineage-graph";
+import { LineageGraphClient } from "./LineageGraphClient";
 
 export const dynamic = "force-dynamic";
 
@@ -112,6 +113,13 @@ export default async function LineagePage({ searchParams }: PageProps) {
           </ul>
         </div>
       )}
+
+      <section className="mb-8">
+        <h2 className="text-sm uppercase tracking-wide text-slate-500 mb-3">
+          Graph
+        </h2>
+        <LineageGraphClient graph={result} />
+      </section>
 
       <section className="mb-8">
         <h2 className="text-sm uppercase tracking-wide text-slate-500 mb-3">

@@ -1,7 +1,7 @@
 # CAELEX COMPLY — World-Best Edition · Living Document
 
-> **STATUS:** Active — Batch 3 shipped (A2.3 + C1-data + C1.2-page + B4 = 4 sprints), 16 total sprints deployed, Phase B (Ghost-Text + AI Blocks) next
-> **VERSION:** 1.6 (Batch 3 — Estonia adapter, Lineage data layer + page + Astra tool, AstraProposal lifecycle cron; 140 tests green)
+> **STATUS:** Active — Batch 4 shipped (C1.3 React-Flow viz + A2.4 Czech adapter = 2 sprints), 18 total sprints deployed
+> **VERSION:** 1.7 (Batch 4 — Lineage React-Flow viz with column layout, Czech ARES adapter; 6/10 country adapters now live; 140 tests green)
 > **LAST UPDATED:** 2026-05-20
 > **OWNER:** Julian Polleschner (polleschnerjulian@gmail.com)
 > **CONTRIBUTORS:** Julian + Claude Opus 4.7 (1M context)
