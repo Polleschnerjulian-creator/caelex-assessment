@@ -3401,6 +3401,54 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
     };
   },
 
+  // ─── Capabilities Discovery ───
+
+  discover_caelex_capabilities: async (input) => {
+    const { getCapabilitiesInventory } =
+      await import("@/lib/capabilities/inventory");
+    const inv = getCapabilitiesInventory();
+    const scope = getString(input, "scope", "summary");
+
+    switch (scope) {
+      case "all":
+        return inv;
+      case "countries":
+        return {
+          summary: {
+            implemented: inv.summary.countryAdaptersImplemented,
+            total: inv.summary.countryAdaptersTotal,
+          },
+          countryCoverage: inv.countryCoverage,
+        };
+      case "frameworks":
+        return {
+          summary: { count: inv.summary.frameworksCount },
+          frameworks: inv.frameworks,
+        };
+      case "tools":
+        return {
+          summary: { count: inv.summary.astraToolsCount },
+          tools: inv.astraTools,
+        };
+      case "endpoints":
+        return {
+          summary: { count: inv.summary.ecosystemEndpointsCount },
+          endpoints: inv.ecosystemEndpoints,
+        };
+      case "trust":
+        return { trustLayer: inv.trustLayer };
+      case "summary":
+      default:
+        return {
+          generatedAt: inv.generatedAt,
+          platformVersion: inv.platformVersion,
+          summary: inv.summary,
+          externalSources: inv.externalSources.map((s) => s.id),
+          frameworks: inv.frameworks.map((f) => f.id),
+        };
+    }
+  },
+
   // ─── Lineage (Sprint C1) ───
 
   query_lineage_for_subject: async (input, userContext) => {

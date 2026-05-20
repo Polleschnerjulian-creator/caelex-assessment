@@ -1493,6 +1493,34 @@ export const getMissionTimeline: AstraToolDefinition = {
   },
 };
 
+// ─── Capabilities Discovery ───
+
+export const discoverCaelexCapabilities: AstraToolDefinition = {
+  name: "discover_caelex_capabilities",
+  description:
+    "Return Caelex's full capabilities inventory: every Astra tool, every v1 ecosystem API endpoint, every external free data source we pull from, every compliance framework modelled, every country with a real business-registry adapter, plus the trust-layer features (verification tiers, hash-chain, attestations). Use when the user asks 'what can you do?', 'which countries do you cover?', 'which regulations?', or when an external integrator needs an overview.",
+  input_schema: {
+    type: "object",
+    properties: {
+      scope: {
+        type: "string",
+        enum: [
+          "summary",
+          "countries",
+          "frameworks",
+          "tools",
+          "endpoints",
+          "trust",
+          "all",
+        ],
+        description:
+          "Limit the inventory section returned. Default: summary (cheap; ideal for chat). Use 'all' for full payload.",
+      },
+    },
+    required: [],
+  },
+};
+
 // ─── Lineage (Sprint C1) ───
 
 export const queryLineageForSubject: AstraToolDefinition = {
@@ -1684,6 +1712,9 @@ export const ALL_TOOLS: AstraToolDefinition[] = [
 
   // Lineage (Sprint C1)
   queryLineageForSubject,
+
+  // Capabilities discovery
+  discoverCaelexCapabilities,
 ];
 
 // ─── Tool Name Lookup ───
