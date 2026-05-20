@@ -36,6 +36,10 @@ import {
   lookupBrregByOrgNumber,
   searchBrregByName,
 } from "./country/no-adapter";
+import {
+  lookupCompaniesHouseByNumber,
+  searchCompaniesHouseByName,
+} from "./country/uk-adapter";
 
 // ─── Country coverage ──────────────────────────────────────────────────────
 
@@ -165,7 +169,7 @@ export async function lookupBrisByCountry(input: {
     };
   }
 
-  // Sprint A2: dispatch to country-specific adapters (DK, FI, NO).
+  // Sprint A2: dispatch to country-specific adapters (DK, FI, NO, UK).
   // Remaining countries fall through to the stub until later sprints.
   switch (cc) {
     case "DK":
@@ -174,13 +178,15 @@ export async function lookupBrisByCountry(input: {
       return dispatchFi(input);
     case "NO":
       return dispatchNo(input);
+    case "GB":
+      return dispatchUk(input);
     default:
       return makeStubOutput(source, startedAt, t0, cc);
   }
 }
 
 /** Returns true if a given country has a real adapter implementation. */
-const IMPLEMENTED_COUNTRIES = new Set<string>(["DK", "FI", "NO"]);
+const IMPLEMENTED_COUNTRIES = new Set<string>(["DK", "FI", "NO", "GB"]);
 
 export function hasCountryAdapter(countryCode: string): boolean {
   return IMPLEMENTED_COUNTRIES.has(countryCode.toUpperCase());
@@ -288,6 +294,29 @@ async function dispatchNo(input: {
     durationMs: 0,
     error:
       "Need legalName or registrationNumber (NO orgnr) to dispatch NO adapter",
+  };
+}
+
+async function dispatchUk(input: {
+  countryCode: string;
+  legalName?: string;
+  registrationNumber?: string;
+  vatId?: string;
+  lei?: string;
+}): Promise<AdapterOutput> {
+  if (input.registrationNumber) {
+    return lookupCompaniesHouseByNumber(input.registrationNumber);
+  }
+  if (input.legalName) {
+    return searchCompaniesHouseByName(input.legalName);
+  }
+  return {
+    source: "country-uk",
+    fields: {},
+    startedAt: new Date().toISOString(),
+    durationMs: 0,
+    error:
+      "Need legalName or registrationNumber (UK company number) to dispatch UK adapter",
   };
 }
 
