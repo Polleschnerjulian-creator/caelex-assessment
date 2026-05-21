@@ -139,14 +139,16 @@ Pragmatischer Minimal-Embed: `/trade/astra` rendert die existierende `<AstraFull
 
 **Bewusst NICHT in T8:** Separate Conversation-Domain pro Produkt, restringierter Tool-Subset, Trade-System-Prompt → Polish-Sprint später.
 
-### T9 — Launch-Pack
+### ~~T9 — Launch-Pack (Pricing-Mention + README)~~ ✅ DONE (in `feature/caelex-trade-batch2`, not yet pushed)
 
-**Scope:**
+Minimal-Launch-Pack per User-Direktive "erst zum Laufen bringen":
 
-- Pricing-Page erweitern (oder neue `/trade-pricing`)
-- Bestandskunden-E-Mail-Sequenz (Migration zu Trade-Starter mit 6-Monaten Loyalty-Bonus)
-- Footer-Integration final, SoftwareShowcase-Update
-- Marketing-Page Polish
+- `src/app/pricing/page.tsx` — Trade-Section eingefügt zwischen Hero und Pricing-Cards. Dark navy + indigo gradient mesh + glass card mit "Now available — Caelex Trade" eyebrow, value-prop headline, "Talk to Sales" + "Learn more" CTAs. Bewusste Brand-Inseln-Setzung gegenüber der light-themed Comply-Pricing-Tier-Tabelle.
+- `README.md` — Neue "## Products"-Sektion direkt vor "## Features", listet alle 4 Produkte (Comply, Trade, Atlas, Pharos) mit Brand-Surface + Route.
+
+**Bewusst NICHT in T9:** Stripe-Trade-Tier-Cards (User-Direktive: Pricing erst nach Customer-Demand), Welcome-Emails (kein Onboarding-Trigger), Bestandskunden-Loyalty-Bonus-Sequenz (kein konkreter Triggerpunkt), Blog-Post (separate Doku-Sprint).
+
+**Build:** `/pricing` als ○ static (12 kB).
 
 ### T10 — Soft-Launch
 
@@ -244,6 +246,6 @@ Legacy (intakt für 90-Tage-Audit):
 
 ## 🎯 Nächster konkreter Sprint
 
-**T9 — Launch-Pack.** Pricing-Page Erweiterung (oder neue `/trade-pricing`), Bestandskunden-Loyalty-Bonus-Mail (6-Monate Trade-Starter gratis für Comply-Export-Control-User), Footer-Polish, Marketing-Page Polish, evtl. Trade-spezifische Email-Templates.
+**T10 — Soft-Launch.** Push `feature/caelex-trade-batch2` zu main (T7+T8+T9 in einer Welle), Vercel-Deploy abwarten, End-to-End-Verify gegen Prod-URL. Optional: kurze Release-Notes oder LinkedIn-Post.
 
-Status-Batch-Counter (Batch 2): **T7+T8 done, 2/6-8 commits**. Noch nicht pushen.
+Status-Batch-Counter (Batch 2): **T7+T8+T9 done, 3/6-8 commits**. Sprint T6 ist verschoben, T10 ist eher ein Wrap-Up-Sprint als ein neuer Code-Sprint. Wir können diesen Batch jetzt pushen oder noch sammeln.

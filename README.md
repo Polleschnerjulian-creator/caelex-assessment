@@ -10,6 +10,17 @@ Full-stack space regulatory compliance SaaS platform for satellite operators, la
 
 Caelex is a comprehensive regulatory compliance platform that helps space companies navigate the EU Space Act (COM(2025) 335), NIS2 Directive (EU 2022/2555), and national space laws across 10 European jurisdictions. The platform provides automated compliance assessments, real-time regulatory tracking, document management, and AI-powered compliance assistance through the ASTRA assistant.
 
+## Products
+
+Caelex ships as four independent products on a shared platform:
+
+- **Comply** — regulatory compliance command center for satellite operators (`/dashboard`)
+- **Trade** — export-compliance engine: item classification, counterparty screening, license determination across ITAR/EAR/EU Dual-Use/MTCR/BAFA (`/trade`)
+- **Atlas** — searchable space-law database for law firms (`/atlas`)
+- **Pharos** — supervisory workspace for regulators (`/pharos`)
+
+Each product has its own brand, route group, auth gate, and access control via the `OrganizationProductAccess` ledger.
+
 ## Features
 
 - **3 Compliance Assessment Modules**

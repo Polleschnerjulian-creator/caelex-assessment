@@ -601,6 +601,61 @@ export default function PricingPage() {
       </section>
 
       {/* ================================================================== */}
+      {/* CAELEX TRADE — promotional band (Sprint T9 launch-pack)             */}
+      {/* ================================================================== */}
+      <section className="relative bg-[#09090B] py-16 md:py-20 px-6 md:px-12">
+        {/* Indigo gradient mesh — same vocabulary as /trade-access */}
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background: `
+              radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.10) 0%, transparent 55%),
+              radial-gradient(ellipse at 80% 30%, rgba(129, 140, 248, 0.07) 0%, transparent 55%)
+            `,
+          }}
+        />
+        <div className="relative mx-auto max-w-[1200px]">
+          <div
+            className="relative overflow-hidden rounded-2xl border border-white/[0.08] p-8 md:p-10"
+            style={{
+              background: "rgba(19, 23, 34, 0.65)",
+              backdropFilter: "blur(20px) saturate(1.2)",
+              WebkitBackdropFilter: "blur(20px) saturate(1.2)",
+              boxShadow:
+                "0 2px 8px rgba(0,0,0,0.3), 0 12px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 60px rgba(99,102,241,0.08)",
+            }}
+          >
+            <p className="font-display text-[11px] font-medium uppercase tracking-[0.15em] text-indigo-400 mb-3">
+              Now available — Caelex Trade
+            </p>
+            <h2 className="font-display text-[clamp(1.5rem,3vw,1.875rem)] font-medium tracking-[-0.01em] text-zinc-50 mb-4 max-w-2xl">
+              Export-compliance engine for the space economy
+            </h2>
+            <p className="font-body text-[15px] leading-relaxed text-zinc-400 mb-6 max-w-2xl">
+              Classify items across US, EU and MTCR. Screen counterparties
+              against five sanctions lists. Determine licenses across BIS, DDTC,
+              BAFA and EU competent authorities — pricing is sales-assisted
+              while we ramp up.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <a
+                href="mailto:sales@caelex.eu?subject=Caelex%20Trade"
+                className="inline-flex h-[40px] items-center rounded-[6px] bg-indigo-500 px-5 font-body text-[14px] font-semibold text-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-all hover:bg-indigo-600 hover:shadow-[0_2px_8px_rgba(99,102,241,0.25)]"
+              >
+                Talk to Sales
+              </a>
+              <Link
+                href="/trade-access"
+                className="inline-flex h-[40px] items-center rounded-[6px] border border-white/[0.12] bg-white/[0.04] px-5 font-body text-[14px] font-medium text-white transition-colors hover:border-white/[0.18] hover:bg-white/[0.08]"
+              >
+                Learn more →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ================================================================== */}
       {/* PRICING CARDS */}
       {/* ================================================================== */}
       <section className="relative py-16 px-6 md:px-12">
