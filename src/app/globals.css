@@ -4798,3 +4798,24 @@ html[data-trade-preload="dark"] .trade-themed {
   --trade-hover: #1e293b;
   color-scheme: dark;
 }
+
+/* WCAG 2.2 AA Hot-Fix — mirror of Atlas's Phase-A fix.
+   The global `.dark h1..h6` rule (defined ~line 1365 of this file)
+   has specificity (0,1,1) and forces headings to white in any
+   subtree where `html.dark` is set. Inside /trade — where light-
+   mode is the default but `html.dark` can still be set globally by
+   Comply's theme system — this leaks: H1 "Caelex Trade" rendered
+   white on a white card, completely invisible.
+
+   Same fix Atlas applies: target headings inside `.trade-themed`
+   via the [data-trade-theme] attribute selector. Specificity
+   (0,2,0) beats the global (0,1,1). `:where()` neutralises the
+   selector list's specificity, so Tailwind utilities like
+   `text-zinc-50` on a specific heading can still override on a
+   per-element basis. */
+.trade-themed[data-trade-theme] :where(h1, h2, h3, h4, h5, h6) {
+  color: var(--trade-text-primary);
+}
+.trade-themed[data-trade-theme] label {
+  color: var(--trade-text-secondary);
+}
