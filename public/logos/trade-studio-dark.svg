@@ -1,0 +1,35 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 290 130"
+  fill="none"
+>
+  <!-- Caelex Trade placeholder wordmark — dark-mode variant (used on
+       dark backgrounds, so the wordmark is white and the accent is a
+       lighter indigo). Replace with the real SVG/PNG asset in Sprint
+       T3 (Brand). -->
+  <g fill="#818cf8">
+    <rect x="0" y="0" width="3" height="80" />
+    <rect x="6" y="14" width="3" height="66" />
+    <rect x="12" y="0" width="3" height="80" />
+    <rect x="18" y="22" width="3" height="58" />
+    <rect x="24" y="0" width="3" height="80" />
+  </g>
+  <text
+    x="42"
+    y="48"
+    font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif"
+    font-size="22"
+    font-weight="700"
+    letter-spacing="2"
+    fill="#f1f5f9"
+  >CAELEX</text>
+  <text
+    x="42"
+    y="74"
+    font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif"
+    font-size="22"
+    font-weight="700"
+    letter-spacing="2"
+    fill="#818cf8"
+  >TRADE</text>
+</svg>

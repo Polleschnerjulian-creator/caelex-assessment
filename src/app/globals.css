@@ -4747,3 +4747,54 @@ html:not(.dark) .caelex-v2 .glass-card::after {
   --accent-amber: #c99744;
   --accent-amber-soft: rgba(201, 151, 68, 0.2);
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   CAELEX TRADE — Indigo accent product palette (Sprint T2, 2026-05-21)
+   ════════════════════════════════════════════════════════════════════
+   Scoped to the Trade sub-app. The Trade shell adds the `.trade-themed`
+   class + a `data-trade-theme="light|dark"` attribute on the document
+   root via TradeThemeProvider. All `--trade-*` tokens are scoped to
+   that class so they never leak into Comply/Atlas/Pharos.
+
+   Light palette is the default; dark palette inherits Linear/Apple
+   off-black surface conventions. Indigo (#6366f1 / #818cf8) is the
+   product's signature accent — chosen to clearly differentiate from
+   Comply-emerald, Atlas-cyan, and Pharos-amber. */
+
+.trade-themed {
+  /* Light (default) */
+  --trade-bg-page: #f6f7fb;
+  --trade-bg-panel: #ffffff;
+  --trade-bg-elevated: #fafbff;
+  --trade-bg-subtle: #f1f3fa;
+  --trade-border: #e2e6f0;
+  --trade-border-subtle: #eef1f8;
+  --trade-border-strong: #cdd3e2;
+  --trade-text-primary: #111827;
+  --trade-text-secondary: #4b5563;
+  --trade-text-muted: #6b7280;
+  --trade-accent: #6366f1; /* indigo-500 */
+  --trade-accent-soft: #eef2ff; /* indigo-50 */
+  --trade-accent-strong: #4f46e5; /* indigo-600 */
+  --trade-hover: #f1f5f9;
+  color-scheme: light;
+}
+
+.trade-themed[data-trade-theme="dark"],
+html[data-trade-preload="dark"] .trade-themed {
+  --trade-bg-page: #0a0c12;
+  --trade-bg-panel: #131722;
+  --trade-bg-elevated: #1a1f2e;
+  --trade-bg-subtle: #10141d;
+  --trade-border: #262d39;
+  --trade-border-subtle: #1a2029;
+  --trade-border-strong: #374151;
+  --trade-text-primary: #f1f5f9;
+  --trade-text-secondary: #d1d5db;
+  --trade-text-muted: #9ca3af;
+  --trade-accent: #818cf8; /* indigo-400 — lighter on dark surface */
+  --trade-accent-soft: rgba(99, 102, 241, 0.14);
+  --trade-accent-strong: #6366f1;
+  --trade-hover: #1e293b;
+  color-scheme: dark;
+}

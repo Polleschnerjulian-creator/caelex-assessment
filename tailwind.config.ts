@@ -145,6 +145,23 @@ const config: Config = {
         "atlas-text-muted": "var(--text-muted)",
         "atlas-amber": "var(--accent-amber)",
         "atlas-amber-soft": "var(--accent-amber-soft)",
+        // Caelex Trade — indigo accent product palette (Sprint T2).
+        // All variables are scoped to the .trade-themed class on the
+        // Trade shell, so they never leak into Comply/Atlas/Pharos.
+        "trade-bg-page": "var(--trade-bg-page)",
+        "trade-bg-panel": "var(--trade-bg-panel)",
+        "trade-bg-elevated": "var(--trade-bg-elevated)",
+        "trade-bg-subtle": "var(--trade-bg-subtle)",
+        "trade-border": "var(--trade-border)",
+        "trade-border-subtle": "var(--trade-border-subtle)",
+        "trade-border-strong": "var(--trade-border-strong)",
+        "trade-text-primary": "var(--trade-text-primary)",
+        "trade-text-secondary": "var(--trade-text-secondary)",
+        "trade-text-muted": "var(--trade-text-muted)",
+        "trade-accent": "var(--trade-accent)",
+        "trade-accent-soft": "var(--trade-accent-soft)",
+        "trade-accent-strong": "var(--trade-accent-strong)",
+        "trade-hover": "var(--trade-hover)",
       },
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
