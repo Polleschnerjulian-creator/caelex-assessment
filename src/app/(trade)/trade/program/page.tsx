@@ -1,0 +1,230 @@
+import { redirect } from "next/navigation";
+import {
+  Building2,
+  FileBadge,
+  UserCheck,
+  MapPin,
+  FileCheck,
+  GraduationCap,
+  AlertOctagon,
+} from "lucide-react";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { isSuperAdmin } from "@/lib/super-admin";
+import {
+  getProgramWithRequirements,
+  ensureProgram,
+  type ProgramView,
+} from "@/lib/trade/program-service";
+import { ProgramSection } from "./_components/ProgramSection";
+import type { ProgramSectionItem } from "./_components/ProgramSection";
+import { RequirementStatusList } from "./_components/RequirementStatusList";
+
+export const metadata = {
+  title: "Compliance Program — Caelex Trade",
+};
+
+/**
+ * /trade/program — Posture overview (Sprint T4).
+ *
+ * Read-only dashboard summarising the org's export-compliance program:
+ * registration state, Empowered Official, jurisdiction determination,
+ * licensing counters, training/audit cycle, voluntary disclosures.
+ * Re-resolves the org from session (the layout already gated access).
+ *
+ * Lazy-creates a DRAFT program row on first visit so the page never
+ * shows a "no program found" stub for an entitled user.
+ */
+export default async function TradeProgramPage() {
+  const session = await auth();
+  // The layout would have redirected unauthenticated users; this defends
+  // against any future direct-render path (e.g. server actions invoking
+  // the component shape).
+  if (!session?.user?.id) {
+    redirect("/login?callbackUrl=%2Ftrade%2Fprogram");
+  }
+
+  const orgId = await resolveOrgId(session.user.id, session.user.email);
+  const fetched = await getProgramWithRequirements(orgId);
+  const program: ProgramView = fetched?.program ?? (await ensureProgram(orgId));
+  const requirementStatuses = fetched?.requirementStatuses ?? [];
+
+  return (
+    <div className="space-y-5 px-8 py-10">
+      <header className="mb-2">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-trade-accent">
+          Caelex Trade — Posture
+        </p>
+        <h1 className="mt-2 text-[28px] font-bold tracking-tight text-trade-text-primary">
+          Compliance Program
+        </h1>
+        <p className="mt-1 max-w-2xl text-[13px] text-trade-text-secondary">
+          Org-level state of your export-compliance program — registration,
+          Empowered Official, jurisdiction, training and audit cadence. Read-
+          only in T4; edit forms ship in a later sprint after legacy-data
+          migration.
+        </p>
+      </header>
+
+      <ProgramSection
+        icon={Building2}
+        title="Company Profile"
+        items={companyProfile(program)}
+      />
+      <ProgramSection
+        icon={FileBadge}
+        title="Registration & Infrastructure"
+        items={registrationInfo(program)}
+      />
+      <ProgramSection
+        icon={UserCheck}
+        title="Empowered Official (ITAR)"
+        items={empoweredOfficial(program)}
+      />
+      <ProgramSection
+        icon={MapPin}
+        title="Jurisdiction Determination"
+        items={jurisdiction(program)}
+      />
+      <ProgramSection
+        icon={FileCheck}
+        title="License Counters"
+        items={licenseCounters(program)}
+      />
+      <ProgramSection
+        icon={GraduationCap}
+        title="Training & Audit Cycle"
+        items={trainingAndAudit(program)}
+      />
+      <ProgramSection
+        icon={AlertOctagon}
+        title="Voluntary Disclosures"
+        items={voluntaryDisclosures(program)}
+      />
+
+      <RequirementStatusList statuses={requirementStatuses} />
+    </div>
+  );
+}
+
+async function resolveOrgId(userId: string, email: string | null | undefined) {
+  if (isSuperAdmin(email)) {
+    const anyOrg = await prisma.organization.findFirst({
+      where: { isActive: true },
+      select: { id: true },
+      orderBy: { createdAt: "asc" },
+    });
+    return anyOrg?.id ?? "super-admin-no-org";
+  }
+  const membership = await prisma.organizationMember.findFirst({
+    where: { userId, organization: { isActive: true } },
+    select: { organization: { select: { id: true } } },
+    orderBy: { joinedAt: "asc" },
+  });
+  return membership?.organization.id ?? "no-org";
+}
+
+function companyProfile(p: ProgramView): ProgramSectionItem[] {
+  return [
+    { label: "Has ITAR Items", value: p.hasITARItems },
+    { label: "Has EAR Items", value: p.hasEARItems },
+    { label: "Has Foreign Nationals", value: p.hasForeignNationals },
+    { label: "Technology Transfer", value: p.hasTechnologyTransfer },
+    { label: "Defense Contracts", value: p.hasDefenseContracts },
+    { label: "Manufacturing Abroad", value: p.hasManufacturingAbroad },
+    { label: "Joint Ventures", value: p.hasJointVentures },
+    {
+      label: "Annual Export Value (€)",
+      value: p.annualExportValueEur
+        ? p.annualExportValueEur.toLocaleString()
+        : null,
+    },
+  ];
+}
+
+function registrationInfo(p: ProgramView): ProgramSectionItem[] {
+  return [
+    { label: "Registered with DDTC", value: p.registeredWithDDTC },
+    {
+      label: "DDTC Registration No.",
+      value: p.ddtcRegistrationNo,
+    },
+    { label: "DDTC Expiry", value: p.ddtcRegistrationExpiry },
+    { label: "Has TCP", value: p.hasTCP },
+    { label: "TCP Last Review", value: p.tcpLastReviewDate },
+    { label: "Has ECL", value: p.hasECL },
+    { label: "Automated Screening", value: p.hasAutomatedScreening },
+    { label: "Screening Vendor", value: p.screeningVendor },
+  ];
+}
+
+function empoweredOfficial(p: ProgramView): ProgramSectionItem[] {
+  return [
+    { label: "Name", value: p.empoweredOfficialName },
+    { label: "Email", value: p.empoweredOfficialEmail },
+    { label: "Title", value: p.empoweredOfficialTitle },
+  ];
+}
+
+function jurisdiction(p: ProgramView): ProgramSectionItem[] {
+  return [
+    { label: "Determination", value: p.jurisdictionDetermination },
+    { label: "Determined On", value: p.jurisdictionDeterminationDate },
+    { label: "CJ Request", value: p.hasCJRequest },
+    { label: "CJ Request Date", value: p.cjRequestDate },
+    { label: "CJ Determination", value: p.cjDetermination },
+    { label: "CJ Determination Date", value: p.cjDeterminationDate },
+  ];
+}
+
+function licenseCounters(p: ProgramView): ProgramSectionItem[] {
+  return [
+    {
+      label: "Active ITAR Licenses",
+      value: p.activeITARLicenses?.toString() ?? null,
+    },
+    {
+      label: "Pending ITAR Licenses",
+      value: p.pendingITARLicenses?.toString() ?? null,
+    },
+    { label: "Active TAAs", value: p.activeTAAs?.toString() ?? null },
+    { label: "Active MLAs", value: p.activeMLAs?.toString() ?? null },
+    {
+      label: "Active EAR Licenses",
+      value: p.activeEARLicenses?.toString() ?? null,
+    },
+    {
+      label: "Pending EAR Licenses",
+      value: p.pendingEARLicenses?.toString() ?? null,
+    },
+    { label: "Uses License Exceptions", value: p.usesLicenseExceptions },
+  ];
+}
+
+function trainingAndAudit(p: ProgramView): ProgramSectionItem[] {
+  return [
+    { label: "Last Training", value: p.lastTrainingDate },
+    { label: "Next Training Due", value: p.nextTrainingDue },
+    {
+      label: "Training Completion (%)",
+      value: p.trainingCompletionRate?.toString() ?? null,
+    },
+    { label: "Last Audit", value: p.lastAuditDate },
+    { label: "Next Audit Due", value: p.nextAuditDue },
+    { label: "Last Audit Findings", value: p.lastAuditFindings },
+  ];
+}
+
+function voluntaryDisclosures(p: ProgramView): ProgramSectionItem[] {
+  return [
+    { label: "Has Disclosures", value: p.hasVoluntaryDisclosures },
+    {
+      label: "Disclosure Count",
+      value: p.voluntaryDisclosureCount?.toString() ?? null,
+    },
+    {
+      label: "Last Disclosure Date",
+      value: p.lastVoluntaryDisclosureDate,
+    },
+  ];
+}

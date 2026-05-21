@@ -3126,6 +3126,12 @@ model Organization {
   // See OrganizationProductAccess model below.
   productAccesses OrganizationProductAccess[]
 
+  // Caelex Trade Sprint T4 — org-scoped Posture layer (1:1).
+  // Houses the compliance-program state (DDTC, TCP, EO, training,
+  // audit cycle, voluntary disclosures) that migrated out of the
+  // legacy user-scoped ExportControlAssessment model.
+  tradeComplianceProgram TradeComplianceProgram?
+
   // Mission domain (Sprint Mission-1) — first-class Mission rows
   // (vs the legacy 1:1 Spacecraft=Mission collapse). Org-scoped.
   missions Mission[]
@@ -11598,6 +11604,148 @@ enum TradeLicenseStatus {
   EXPIRED
   /// Drawn-down to capacity (totalCapValue reached)
   EXHAUSTED
+}
+
+// ════════════════════════════════════════════════════════════════════
+// COMPLY TRADE — POSTURE LAYER (Sprint T4, 2026-05-21)
+// ════════════════════════════════════════════════════════════════════
+// Org-scoped compliance-program state. Replaces the user-scoped legacy
+// `ExportControlAssessment` model (under /dashboard/modules/export-
+// control). 1:1 with Organization — each org has at most one program
+// record. Created lazily on first /trade/program load if no row exists
+// yet, with sensible defaults (status = DRAFT, all booleans = false).
+//
+// Sensitive fields (`ddtcRegistrationNoEnc`, `empoweredOfficialEmailEnc`)
+// store AES-256-GCM ciphertext produced by `src/lib/encryption.ts`.
+// The `src/lib/trade/program-service.ts` service-lib handles
+// encrypt/decrypt at the boundary so callers see plaintext.
+//
+// T4 introduces the schema + service + read-only UI. T5 migrates the
+// legacy assessment data; later sprints add edit forms.
+
+model TradeComplianceProgram {
+  id             String       @id @default(cuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // ── Lifecycle ──
+  status TradeProgramStatus @default(DRAFT)
+
+  // ── Company profile (drives requirement applicability) ──
+  /// JSON array — spacecraft_manufacturer, satellite_operator,
+  /// launch_provider, ground_station, in_space_servicer, etc.
+  companyTypesJson         String?
+  hasITARItems             Boolean @default(false)
+  hasEARItems              Boolean @default(false)
+  hasForeignNationals      Boolean @default(false)
+  /// JSON array of ISO-3166-1 alpha-2 country codes.
+  foreignNationalCountries String?
+  exportsToCountries       String?
+  hasTechnologyTransfer    Boolean @default(false)
+  hasDefenseContracts      Boolean @default(false)
+  hasManufacturingAbroad   Boolean @default(false)
+  hasJointVentures         Boolean @default(false)
+  annualExportValueEur     Float?
+
+  // ── Registration & infrastructure ──
+  registeredWithDDTC     Boolean   @default(false)
+  /// AES-256-GCM ciphertext of DDTC registration number.
+  /// Decrypt via program-service before display.
+  ddtcRegistrationNoEnc  String?
+  ddtcRegistrationExpiry DateTime?
+  hasTCP                 Boolean   @default(false)
+  tcpLastReviewDate      DateTime?
+  hasECL                 Boolean   @default(false)
+  hasAutomatedScreening  Boolean   @default(false)
+  screeningVendor        String?
+
+  // ── Empowered Official (ITAR) ──
+  empoweredOfficialName     String?
+  /// AES-256-GCM ciphertext of Empowered Official email.
+  empoweredOfficialEmailEnc String?
+  empoweredOfficialTitle    String?
+
+  // ── Jurisdiction determination ──
+  jurisdictionDetermination     String? // itar_only | ear_only | dual_use | itar_with_ear_parts | ear99
+  jurisdictionDeterminationDate DateTime?
+  hasCJRequest                  Boolean   @default(false)
+  cjRequestDate                 DateTime?
+  cjDeterminationDate           DateTime?
+  cjDetermination               String?
+
+  // ── License counters ──
+  activeITARLicenses    Int?
+  pendingITARLicenses   Int?
+  activeTAAs            Int?
+  activeMLAs            Int?
+  activeEARLicenses     Int?
+  pendingEARLicenses    Int?
+  usesLicenseExceptions Boolean @default(false)
+  /// JSON array: TMP, RPL, GOV, TSR, STA, etc.
+  licenseExceptionsUsed String?
+
+  // ── Training & audit cycle ──
+  lastTrainingDate       DateTime?
+  nextTrainingDue        DateTime?
+  trainingCompletionRate Float? // 0-100
+  lastAuditDate          DateTime?
+  nextAuditDue           DateTime?
+  lastAuditFindings      String?   @db.Text
+
+  // ── Voluntary disclosure history ──
+  hasVoluntaryDisclosures     Boolean   @default(false)
+  voluntaryDisclosureCount    Int?
+  lastVoluntaryDisclosureDate DateTime?
+
+  // ── Relations ──
+  requirementStatuses TradeProgramRequirementStatus[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([hasITARItems])
+  @@index([hasEARItems])
+  @@index([nextTrainingDue])
+  @@index([nextAuditDue])
+}
+
+enum TradeProgramStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETE
+  ARCHIVED
+}
+
+model TradeProgramRequirementStatus {
+  id        String                 @id @default(cuid())
+  programId String
+  program   TradeComplianceProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  /// Matches ExportControlRequirement.id from src/data/itar-ear-requirements.ts
+  /// (e.g. "ITAR-001", "EAR-014"). The data file stays the source of
+  /// truth for requirement metadata; only per-org status lives here.
+  requirementId    String
+  status           TradeRequirementStatus @default(NOT_ASSESSED)
+  notes            String?                @db.Text
+  evidenceNotes    String?                @db.Text
+  targetDate       DateTime?
+  responsibleParty String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([programId, requirementId])
+  @@index([programId])
+  @@index([status])
+}
+
+enum TradeRequirementStatus {
+  COMPLIANT
+  PARTIAL
+  NON_COMPLIANT
+  NOT_ASSESSED
+  NOT_APPLICABLE
 }
 
 // ╔══════════════════════════════════════════════════════════════════╗

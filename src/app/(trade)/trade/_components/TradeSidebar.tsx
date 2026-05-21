@@ -35,6 +35,7 @@ import {
   Sparkles,
   ScrollText,
   Settings,
+  ClipboardCheck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -126,6 +127,23 @@ const NAV_SECTIONS: NavSection[] = [
         href: "/trade",
         icon: CalendarClock,
         comingIn: "Wave B",
+      },
+    ],
+  },
+  {
+    label: "Compliance Program",
+    items: [
+      {
+        label: "Overview",
+        href: "/trade/program",
+        icon: ShieldCheck,
+        activePrefix: "/trade/program",
+      },
+      {
+        label: "Requirements",
+        href: "/trade/program#requirements",
+        icon: ClipboardCheck,
+        comingIn: "Sprint T5",
       },
     ],
   },
