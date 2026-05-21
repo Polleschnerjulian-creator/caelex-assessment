@@ -10,6 +10,7 @@ import { PRICING_TIERS, PlanType, hasModuleAccess } from "@/lib/stripe/pricing";
 import { trackSubscription } from "@/lib/logsnag";
 import { sendEmail, isEmailConfigured } from "@/lib/email";
 import type StripeTypes from "stripe";
+import type { ProductCode } from "@prisma/client";
 
 // ─── Internal Stripe Types ───
 // Minimal types to avoid conflicts with Prisma models
@@ -331,6 +332,33 @@ export async function handleCheckoutComplete(
     },
   });
 
+  // Sprint T1 — mirror the subscription into the multi-product access
+  // ledger. T1 only knows Comply prices; T6 extends resolvePriceToProduct
+  // with Trade prices. Idempotent via the (orgId, product) unique key.
+  const product = resolvePriceToProduct(priceId);
+  if (product) {
+    await prisma.organizationProductAccess.upsert({
+      where: {
+        organizationId_product: { organizationId, product },
+      },
+      create: {
+        organizationId,
+        product,
+        status: stripeSub.status === "trialing" ? "TRIAL" : "ACTIVE",
+        source: "STRIPE",
+        stripeSubscriptionId: subscriptionId,
+        stripePriceId: priceId,
+      },
+      update: {
+        status: stripeSub.status === "trialing" ? "TRIAL" : "ACTIVE",
+        suspendedAt: null,
+        suspendedReason: null,
+        stripeSubscriptionId: subscriptionId,
+        stripePriceId: priceId,
+      },
+    });
+  }
+
   // Get org for tracking
   const org = await prisma.organization.findUnique({
     where: { id: organizationId },
@@ -505,6 +533,45 @@ export async function handleSubscriptionUpdated(
     },
   });
 
+  // Sprint T1 — mirror subscription state into the product access ledger.
+  // ACTIVE/TRIALING → ACTIVE/TRIAL; anything else suspends access until
+  // payment is restored (handleCheckoutComplete re-activates on next pay).
+  const product = resolvePriceToProduct(priceId);
+  if (product) {
+    const stripeStatus = stripeSubscription.status;
+    const isLive = stripeStatus === "active" || stripeStatus === "trialing";
+    const accessStatus = isLive
+      ? stripeStatus === "trialing"
+        ? "TRIAL"
+        : "ACTIVE"
+      : "SUSPENDED";
+    await prisma.organizationProductAccess.upsert({
+      where: {
+        organizationId_product: {
+          organizationId: subscription.organizationId,
+          product,
+        },
+      },
+      create: {
+        organizationId: subscription.organizationId,
+        product,
+        status: accessStatus,
+        source: "STRIPE",
+        stripeSubscriptionId: stripeSubscription.id,
+        stripePriceId: priceId,
+        suspendedAt: isLive ? null : new Date(),
+        suspendedReason: isLive ? null : `stripe_status_${stripeStatus}`,
+      },
+      update: {
+        status: accessStatus,
+        suspendedAt: isLive ? null : new Date(),
+        suspendedReason: isLive ? null : `stripe_status_${stripeStatus}`,
+        stripeSubscriptionId: stripeSubscription.id,
+        stripePriceId: priceId,
+      },
+    });
+  }
+
   // Track plan change
   if (oldPlan !== newPlan) {
     const action =
@@ -555,6 +622,27 @@ export async function handleSubscriptionCanceled(
           : 1,
     },
   });
+
+  // Sprint T1 — suspend the matching product access row. The row stays
+  // for audit; a future re-purchase re-activates it via the upsert in
+  // handleCheckoutComplete. Use updateMany so it's a no-op when no row
+  // exists (e.g. legacy subscription pre-T1 backfill).
+  const canceledProduct = resolvePriceToProduct(
+    subscription.stripePriceId ?? undefined,
+  );
+  if (canceledProduct) {
+    await prisma.organizationProductAccess.updateMany({
+      where: {
+        organizationId: subscription.organizationId,
+        product: canceledProduct,
+      },
+      data: {
+        status: "SUSPENDED",
+        suspendedAt: new Date(),
+        suspendedReason: "stripe_subscription_canceled",
+      },
+    });
+  }
 
   // Track cancellation
   await trackSubscription({
@@ -717,6 +805,23 @@ function getPlanFromPriceId(priceId: string | undefined): PlanType {
     }
   }
   return "FREE";
+}
+
+/**
+ * Sprint T1 — map a Stripe price-ID to the Caelex product it belongs to.
+ * Returns `null` when the price-ID doesn't correspond to any known product
+ * (defensive: legacy invoices, manual line-items, future prices not yet wired).
+ *
+ * Today: only Comply prices exist in `PRICING_TIERS`, so anything resolving
+ * to a non-FREE plan is COMPLY. Sprint T6 will extend this with Trade prices.
+ */
+function resolvePriceToProduct(
+  priceId: string | undefined,
+): ProductCode | null {
+  if (!priceId) return null;
+  const plan = getPlanFromPriceId(priceId);
+  if (plan !== "FREE") return "COMPLY";
+  return null;
 }
 
 function getPlanLevel(plan: PlanType): number {

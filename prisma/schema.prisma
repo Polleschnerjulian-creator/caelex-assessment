@@ -3121,6 +3121,11 @@ model Organization {
   tradeOperations TradeOperation[]
   tradeLicenses   TradeLicense[]
 
+  // Caelex Trade Sprint T1 — multi-product access ledger.
+  // Source of truth for which Caelex products this org may enter.
+  // See OrganizationProductAccess model below.
+  productAccesses OrganizationProductAccess[]
+
   // Mission domain (Sprint Mission-1) — first-class Mission rows
   // (vs the legacy 1:1 Spacecraft=Mission collapse). Org-scoped.
   missions Mission[]
@@ -3281,6 +3286,76 @@ enum OrganizationPlan {
   STARTER
   PROFESSIONAL
   ENTERPRISE
+}
+
+// ============================================
+// MULTI-PRODUCT ACCESS (Sprint T1, 2026-05-21)
+// ============================================
+// Cross-product access ledger. One row per (Organization, Product) tuple.
+// Source of truth for *which* Caelex products an organization may enter,
+// independent of orgType. orgType remains the database-level boundary for
+// Atlas/Pharos in T1 (their layouts still use orgType directly); the new
+// Trade layout (Sprint T2) consumes this table exclusively.
+//
+// Sources of writes:
+//   - Stripe webhook (subscription.created/updated/deleted)
+//   - Admin API (manual grants for enterprise sales)
+//   - Backfill script (one-time migration for legacy orgs)
+//   - Trial promos (6-month Trade Starter for ex-Comply Export Control users)
+
+model OrganizationProductAccess {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  product ProductCode
+  status  ProductAccessStatus @default(ACTIVE)
+  source  ProductAccessSource
+
+  // Stripe linkage — null when source != STRIPE
+  stripeSubscriptionId String?
+  stripePriceId        String?
+
+  // Lifecycle
+  grantedAt       DateTime  @default(now())
+  expiresAt       DateTime? // null = perpetual; set for TRIAL_PROMO / time-limited grants
+  suspendedAt     DateTime?
+  suspendedReason String?
+
+  // Audit
+  grantedById String? // User.id — set when source = MANUAL
+  notes       String? // free-text admin note
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([organizationId, product])
+  @@index([organizationId])
+  @@index([product])
+  @@index([status])
+  @@index([stripeSubscriptionId])
+}
+
+enum ProductCode {
+  COMPLY
+  TRADE
+  ATLAS
+  PHAROS
+}
+
+enum ProductAccessStatus {
+  ACTIVE
+  TRIAL
+  SUSPENDED
+  EXPIRED
+}
+
+enum ProductAccessSource {
+  STRIPE // bought via Stripe checkout
+  MANUAL // admin-granted (enterprise sales)
+  LEGACY_BACKFILL // one-time migration from pre-ProductAccess state
+  TRIAL_PROMO // automatic trial (e.g. 6-month Trade Starter loyalty bonus)
+  ORG_TYPE // derived from orgType (Atlas/Pharos pre-cutover)
 }
 
 enum OrganizationRole {
