@@ -13,6 +13,13 @@ const PRODUCTS = [
     href: "/platform",
   },
   {
+    name: "Trade",
+    tagline: "Classify, screen, license —\nfrom export desk to shipment.",
+    description:
+      "Export-compliance engine for operators in the space sector. Multi-jurisdiction classification (ECCN, USML, EU Annex I, MTCR), counterparty screening against five sanctions lists, and automated license determination across BIS, DDTC, BAFA, and EU competent authorities.",
+    href: "/trade-access",
+  },
+  {
     name: "Atlas",
     tagline: "Search space law,\nfrom UN treaty to national code.",
     description:

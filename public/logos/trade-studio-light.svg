@@ -3,32 +3,27 @@
   viewBox="0 0 290 130"
   fill="none"
 >
-  <!-- Caelex Trade placeholder wordmark — light-mode variant (used on
-       white / light backgrounds, so the fill is the indigo brand color).
-       Replace with the real SVG/PNG asset in Sprint T3 (Brand). -->
+  <!-- Caelex Trade Studio wordmark — light-mode variant.
+       Mark: 3-block pyramid in indigo-600 (#4f46e5). Bottom-up
+       ascending taper represents classification cascade (broad
+       item base → narrow license-restricted top) and the
+       compliance-layer stack (items → operations → licenses).
+       Wordmark in near-black for crisp contrast on light bg.
+       Replace if/when a hand-crafted brand asset arrives. -->
   <g fill="#4f46e5">
-    <rect x="0" y="0" width="3" height="80" />
-    <rect x="6" y="14" width="3" height="66" />
-    <rect x="12" y="0" width="3" height="80" />
-    <rect x="18" y="22" width="3" height="58" />
-    <rect x="24" y="0" width="3" height="80" />
+    <rect x="0" y="58" width="80" height="22" />
+    <rect x="15" y="30" width="50" height="22" />
+    <rect x="29" y="2" width="22" height="22" />
   </g>
   <text
-    x="42"
-    y="48"
-    font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif"
+    x="0"
+    y="116"
+    font-family="Inter, -apple-system, system-ui, sans-serif"
+    font-weight="600"
     font-size="22"
-    font-weight="700"
-    letter-spacing="2"
-    fill="#1f2937"
-  >CAELEX</text>
-  <text
-    x="42"
-    y="74"
-    font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif"
-    font-size="22"
-    font-weight="700"
-    letter-spacing="2"
-    fill="#4f46e5"
-  >TRADE</text>
+    fill="#111827"
+    letter-spacing="-0.6"
+  >
+    caelex trade studio
+  </text>
 </svg>

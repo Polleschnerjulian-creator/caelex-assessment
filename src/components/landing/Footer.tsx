@@ -61,6 +61,11 @@ const solutionLinks = [
   // expected to find at /atlas/map.
   { label: "Jurisdiction Map", href: "/atlas/jurisdictions" },
   { label: "Case Law Database", href: "/atlas/cases" },
+  // Trade — export-compliance engine
+  { label: "Caelex Trade", href: "/trade-access" },
+  { label: "Item Classification", href: "/trade-access#features" },
+  { label: "Counterparty Screening", href: "/trade-access#features" },
+  { label: "License Determination", href: "/trade-access#features" },
 ];
 
 const industryLinks = [
