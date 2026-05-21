@@ -152,9 +152,9 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       {
         label: "Astra Trade",
-        href: "/trade",
+        href: "/trade/astra",
         icon: Sparkles,
-        comingIn: "Sprint T8",
+        activePrefix: "/trade/astra",
       },
     ],
   },

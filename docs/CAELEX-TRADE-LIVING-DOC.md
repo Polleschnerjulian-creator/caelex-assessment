@@ -126,11 +126,18 @@ User-Wortlaut: "Stripe, das kann mir erst mal hinranstellen, jetzt Pricing ist n
 
 **Build:** Alle 3 neuen Routes ship als ○ static (2.35–3.79 kB).
 
-### T8 — Astra-Trade-Modus
+### ~~T8 — Astra im Trade-Shell~~ ✅ DONE (in `feature/caelex-trade-batch2`, not yet pushed)
 
-**Scope:** Eigene Conversation-Domain für Trade, Astra-Tools (`classify_trade_item`, `lookup_classification_code`, `screen_trade_party`, `lookup_trade_party`) exklusiv im Trade-Kontext sichtbar. Comply-Astra behält nur Read-Tools für Trade-Status.
+Pragmatischer Minimal-Embed: `/trade/astra` rendert die existierende `<AstraFullPage />` im TradeShell. Trade-Tools (`classify_trade_item`, `screen_trade_party`, `lookup_classification_code`, `lookup_trade_party`) sind seit T0 in `tool-definitions.ts:1937` registriert und greifen sofort.
 
-**Files (geplant):** `src/lib/astra/trade-engine.ts` oder `src/lib/astra/contexts/trade.ts` + UI unter `/trade/astra`.
+**Files:**
+
+- `src/app/(trade)/trade/astra/page.tsx` — 20-Zeilen Suspense-Wrapper, mirror of `/dashboard/astra/page.tsx`
+- `TradeSidebar.tsx`: "Astra Trade" entry von `comingIn: "Sprint T8"` (disabled) auf `href: "/trade/astra"` + `activePrefix` (live)
+
+**Build:** `/trade/astra` als ƒ dynamic (174 B + 173 kB shared chunk).
+
+**Bewusst NICHT in T8:** Separate Conversation-Domain pro Produkt, restringierter Tool-Subset, Trade-System-Prompt → Polish-Sprint später.
 
 ### T9 — Launch-Pack
 
@@ -237,6 +244,6 @@ Legacy (intakt für 90-Tage-Audit):
 
 ## 🎯 Nächster konkreter Sprint
 
-**T8 — Astra-Trade-Modus.** Eigene Conversation-Domain für Trade, Astra-Tools (`classify_trade_item`, `lookup_classification_code`, `screen_trade_party`, `lookup_trade_party`) exklusiv im Trade-Kontext. Files (geplant): `src/lib/astra/contexts/trade.ts` oder `src/lib/astra/trade-engine.ts` + UI unter `/trade/astra`.
+**T9 — Launch-Pack.** Pricing-Page Erweiterung (oder neue `/trade-pricing`), Bestandskunden-Loyalty-Bonus-Mail (6-Monate Trade-Starter gratis für Comply-Export-Control-User), Footer-Polish, Marketing-Page Polish, evtl. Trade-spezifische Email-Templates.
 
-Status-Batch-Counter (Batch 2): **T7 done, 1/6-8 commits**. Noch nicht pushen.
+Status-Batch-Counter (Batch 2): **T7+T8 done, 2/6-8 commits**. Noch nicht pushen.
