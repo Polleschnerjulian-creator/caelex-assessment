@@ -30,10 +30,11 @@ export const runtime = "nodejs";
 const Schema = z.object({
   email: z.string().email().max(254).toLowerCase(),
   /// Which surface launched the reset. Drives both the link target
-  /// (caelex → /reset-password, atlas → /atlas-reset-password) and the
-  /// email branding. Defaults to atlas for backwards compat with
-  /// existing /atlas-forgot-password requests that don't send it.
-  intent: z.enum(["caelex", "atlas"]).optional().default("atlas"),
+  /// (caelex → /reset-password, atlas → /atlas-reset-password,
+  /// trade → /trade-reset-password) and the email branding. Defaults
+  /// to atlas for backwards compat with existing /atlas-forgot-
+  /// password requests that don't send it.
+  intent: z.enum(["caelex", "atlas", "trade"]).optional().default("atlas"),
 });
 
 const TOKEN_TTL_MINUTES = 60;
@@ -59,9 +60,18 @@ export async function POST(request: NextRequest) {
   const email = parsed.data.email;
   const intent = parsed.data.intent;
   const isAtlas = intent === "atlas";
-  const productLabel = isAtlas ? "Caelex ATLAS" : "Caelex";
-  const productLabelShort = isAtlas ? "ATLAS" : "Caelex";
-  const resetPath = isAtlas ? "/atlas-reset-password" : "/reset-password";
+  const isTrade = intent === "trade";
+  const productLabel = isAtlas
+    ? "Caelex ATLAS"
+    : isTrade
+      ? "Caelex Trade"
+      : "Caelex";
+  const productLabelShort = isAtlas ? "ATLAS" : isTrade ? "Trade" : "Caelex";
+  const resetPath = isAtlas
+    ? "/atlas-reset-password"
+    : isTrade
+      ? "/trade-reset-password"
+      : "/reset-password";
 
   try {
     const user = await prisma.user.findUnique({
@@ -154,7 +164,9 @@ export async function POST(request: NextRequest) {
               ${
                 isAtlas
                   ? "Caelex ATLAS — the searchable space-law database for law firms."
-                  : "Caelex — the regulatory compliance platform for satellite operators."
+                  : isTrade
+                    ? "Caelex Trade — export-compliance engine for the space economy."
+                    : "Caelex — the regulatory compliance platform for satellite operators."
               }<br />
               <a href="https://www.caelex.eu" style="color: #9ca3af;">caelex.eu</a>
             </p>

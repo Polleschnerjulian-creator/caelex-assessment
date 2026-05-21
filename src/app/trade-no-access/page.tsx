@@ -31,7 +31,7 @@ interface PageProps {
 export default async function TradeNoAccessPage({ searchParams }: PageProps) {
   const session = await auth();
   if (!session?.user?.id) {
-    redirect("/login?callbackUrl=%2Ftrade");
+    redirect("/trade-login?callbackUrl=%2Ftrade");
   }
 
   // Re-check: a user who got access right after the redirect should

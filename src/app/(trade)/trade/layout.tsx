@@ -50,7 +50,7 @@ export default async function TradeLayout({
 }) {
   const session = await auth();
   if (!session?.user?.id) {
-    redirect("/login?callbackUrl=%2Ftrade");
+    redirect("/trade-login?callbackUrl=%2Ftrade");
   }
 
   // Super-admin shortcut — platform owners reach Trade regardless of

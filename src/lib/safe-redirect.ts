@@ -53,3 +53,29 @@ export function safeAtlasUrl(
   }
   return fallback;
 }
+
+/**
+ * Trade-scoped variant — Sprint T7 mirror of safeAtlasUrl. Same strict
+ * brand-isolation logic: only paths inside the Trade product surface
+ * (`/trade`, `/trade/*`, and the `/trade-*` auth/marketing pages) are
+ * accepted as redirect targets. A `?callbackUrl=/dashboard` arriving
+ * on /trade-login falls through to `/trade`, preventing accidental
+ * cross-brand smuggling.
+ */
+export function safeTradeUrl(
+  raw: string | null | undefined,
+  fallback = "/trade",
+): string {
+  if (!raw) return fallback;
+  if (raw.startsWith("//")) return fallback;
+  if (raw.includes("://")) return fallback;
+  if (!raw.startsWith("/")) return fallback;
+  if (
+    raw === "/trade" ||
+    raw.startsWith("/trade/") ||
+    raw.startsWith("/trade-")
+  ) {
+    return raw;
+  }
+  return fallback;
+}
