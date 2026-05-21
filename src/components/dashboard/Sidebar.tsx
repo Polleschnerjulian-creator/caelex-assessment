@@ -479,7 +479,6 @@ const MODULE_MAP: Record<string, string> = {
   "/dashboard/modules/supervision": "supervision",
   "/dashboard/modules/copuos": "copuos",
   "/dashboard/modules/registration": "registration",
-  "/dashboard/modules/export-control": "export-control",
   "/dashboard/modules/uk-space": "uk-space",
   "/dashboard/modules/us-regulatory": "us-regulatory",
   "/dashboard/modules/spectrum": "spectrum",
@@ -514,8 +513,12 @@ const SAFETY_MODULES = [
   "/dashboard/modules/copuos",
 ];
 
+// Sprint T5 sunset (2026-05-21) — Export Control retired into Caelex
+// Trade at /trade-access (marketing) and /trade/program (authenticated).
+// The /dashboard/modules/export-control URL still redirects per the
+// stub page; this list removes the sidebar surface so the V1 UI no
+// longer advertises a deprecated module.
 const INTERNATIONAL_MODULES = [
-  "/dashboard/modules/export-control",
   "/dashboard/modules/uk-space",
   "/dashboard/modules/us-regulatory",
   "/dashboard/modules/spectrum",
@@ -1070,17 +1073,8 @@ export default function Sidebar({
               groupId="international"
               collapsed={collapsed}
             >
-              <CompactModuleItem
-                href="/dashboard/modules/export-control"
-                icon={<FileSearch size={14} strokeWidth={1.5} />}
-                label="Export Control"
-                onClick={handleNavClick}
-                locked={isModuleLocked("/dashboard/modules/export-control")}
-                requiredPlan={getRequiredPlanLabel(
-                  "/dashboard/modules/export-control",
-                )}
-                collapsed={collapsed}
-              />
+              {/* Sprint T5 sunset — Export Control entry retired
+                  (now lives at /trade/program via Caelex Trade). */}
               <CompactModuleItem
                 href="/dashboard/modules/uk-space"
                 icon={<Building2 size={14} strokeWidth={1.5} />}
