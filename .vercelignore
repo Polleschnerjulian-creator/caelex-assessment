@@ -17,13 +17,18 @@ packages/
 # Sentinel telemetry data + scratch — 99 MB, unused at build time
 sentinel/
 
-# Long-form docs + reports — not part of the runtime bundle
-docs/
-reports/
-linkedin_visuals/
+# Long-form docs + reports at repo root — not part of the runtime
+# bundle. Anchored with leading `/` so the pattern matches ONLY the
+# root-level directory, not any `reports/` deeper in the tree
+# (importantly, `src/lib/pdf/reports/` MUST stay included — it
+# contains the production PDF renderers).
+/docs/
+/reports/
+/linkedin_visuals/
 
-# Test suites — Vercel does not run tests during build
-tests/
+# Top-level test suites — Vercel does not run tests during build.
+# Anchored to root so it doesn't match e.g. `src/.../tests/`.
+/tests/
 
 # Standalone PDFs / DOCX at repo root
 *.pdf
