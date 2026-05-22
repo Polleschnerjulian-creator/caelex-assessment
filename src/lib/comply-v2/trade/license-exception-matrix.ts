@@ -1,5 +1,5 @@
 /**
- * License Exception Matrix (Sprint B3).
+ * License Exception Matrix (Sprint B3 + Sprint D3).
  *
  * Maps an item + destination + end-use → eligible license exceptions,
  * with their conditions and the reasoning that justifies eligibility.
@@ -8,20 +8,25 @@
  *
  *   BIS (US — 15 CFR Part 740):
  *     STA   — Strategic Trade Authorization (§740.20)
- *     CSA   — Cybersecurity Activities (§740.13(b)) — wraps into ENC
  *     ENC   — Encryption Commodities, Software and Technology (§740.17)
- *     TSU   — Technology and Software — Unrestricted (§740.13)
+ *     CSA   — Commercial Space Activities (§740.X, NEW Oct 23 2024 IFR
+ *             89 FR 84713) — Sprint D3 addition
  *     GOV   — Governments and International Organizations (§740.11)
  *     TMP   — Temporary Imports, Exports, Re-exports (§740.9)
  *
  *   BAFA (DE — Allgemeine Genehmigungen):
- *     AGG_12, AGG_16, AGG_27, AGG_47
- *     EUGEA EU001, EU002
+ *     AGG_12, AGG_27 (sprint B3)
+ *     EUGEA EU001 (sprint B3)
+ *     AGG_16, AGG_47, EUGEA EU002 still pending — enum values exist
  *
  * Out of scope (need further sprints):
+ *   - BIS TSU (§740.13) — software/technology unrestricted; partial overlap
+ *     with ENC but distinct enough to warrant its own evaluator
  *   - DDTC license exemptions (§125.4 / §126.4 etc.) — different
- *     mental model; come in B3.5 if needed
- *   - UK Open General Export Licences (OGELs) — net-new for B5
+ *     mental model; come in a future Trade sprint
+ *   - UK Open General Export Licences (OGELs) — 71 in force as of 2024;
+ *     planned for Phase D / E
+ *   - FR / IT / ES / JP national general authorisations
  *
  * Architecture: pure data + pure functions. No DB calls, no async.
  * Inputs are normalized facts; output is a list of ApplicableException

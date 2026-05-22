@@ -1,7 +1,7 @@
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
  *
- * 50%-Rule Cascade Engine (Wave A Sprint A6).
+ * 50%-Rule Cascade Engine (Wave A Sprint A6, extended Sprint D2).
  *
  * OFAC's 50% rule (and its EU/UK equivalents) extends sanctions
  * automatically to any entity that is 50% or more owned, directly or
@@ -13,6 +13,20 @@
  *    blocked persons is considered to be the property of the blocked
  *    persons." This applies regardless of whether the entity itself
  *    is named on the SDN list.
+ *
+ * Sprint D2 extension — BIS Affiliate Rule (Sept 29, 2025).
+ * BIS adopted an explicit 50%-aggregation rule mirroring OFAC for
+ * the Entity List, Military End-User (MEU) List, Military Intelligence
+ * End-User (MIEU) List, and Denied Persons List (DPL). The legal trigger
+ * is analogous: ≥50% aggregate ownership by parties on any of these
+ * lists requires BIS authorisation for the affiliated entity.
+ *
+ * The cascade ALGORITHM is identical regardless of which list triggered
+ * the underlying CONFIRMED_HIT — we treat every CONFIRMED_HIT ancestor
+ * the same. The DIFFERENCE is downstream interpretation: an OFAC
+ * cascade blocks property; a BIS cascade requires a BIS license. The
+ * UI / determination engine reads `triggerSources` (added below) to
+ * tell the operator which authority's rule fired.
  *
  * The same principle now applies under the post-Dec-2025 OFAC trustee
  * doctrine for control-without-equity (TradePartyOwnership.controlType
@@ -136,6 +150,21 @@ export interface CascadeResult {
    * not in our graph (the rest = "public/other").
    */
   totalCascadedOwnership: number;
+  /**
+   * Sprint D2 — which authority rules' 50%-Aggregation triggered this
+   * cascade. Populated by the DB-loading wrapper (`runCascadeForParty`
+   * in cascade-50pct.server.ts) by reading each CONFIRMED_HIT
+   * ancestor's TradeScreeningResult.hits[] and rolling up the
+   * distinct TradeSanctionsList values. Allows downstream callers to
+   * surface "OFAC 50%-Rule" vs "BIS Affiliate Rule (Sept 29 2025)"
+   * vs "EU 833/2014 sanctioned ownership" with the right framing.
+   *
+   * Empty array when no cascade hit, or when caller didn't supply
+   * the sanctions-source map. Values come from `TradeSanctionsList`
+   * enum (`OFAC_SDN`, `BIS_ENTITY`, `DDTC_DEBARRED`, `EU_FSF`,
+   * `UK_OFSI`, `UN_CONSOLIDATED`).
+   */
+  triggerSources?: string[];
 }
 
 // ─── Algorithm ──────────────────────────────────────────────────────

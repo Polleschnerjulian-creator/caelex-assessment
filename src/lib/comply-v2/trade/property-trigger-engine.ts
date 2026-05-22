@@ -505,6 +505,264 @@ const RULES: TriggerRule[] = [
   },
 
   // ─────────────────────────────────────────────────────────────────
+  // Rule 11: Keyword — On-orbit servicing / RPO / OSAM (Oct 2024 IFR)
+  //
+  // 2024 IFR (89 FR 84713) explicitly added "spacecraft performing
+  // remote proximity on-orbit services" as a 9A515 sub-category.
+  // Catches Northrop MEV-class, Astroscale ELSA-M, Orbit Fab tanker.
+  // ─────────────────────────────────────────────────────────────────
+  {
+    ruleId: "KEYWORD_OSAM_RPO",
+    check: (s) => {
+      if (!s.description) return false;
+      const d = s.description.toLowerCase();
+      return (
+        d.includes("on-orbit servicing") ||
+        d.includes("on orbit servicing") ||
+        d.includes("osam") ||
+        d.includes("in-orbit servicing") ||
+        d.includes("proximity operations") ||
+        d.includes("rendezvous and proximity") ||
+        d.includes("mission extension") ||
+        d.includes("satellite servicing") ||
+        d.includes("propellant transfer") ||
+        d.includes("refueling vehicle") ||
+        d.includes("orbital servicer")
+      );
+    },
+    result: () => ({
+      reason:
+        "Description matches on-orbit servicing / proximity-operations keywords (Oct 2024 IFR added explicit 9A515 sub-category for OSAM).",
+      topicSlug: "in-orbit-servicing-rpo",
+      suggestedCodes: [
+        {
+          jurisdiction: "US_CCL",
+          code: "9A515.a",
+          mtcrCatI: false,
+          itar: false,
+        },
+        { jurisdiction: "US_CCL", code: "9A004", mtcrCatI: false, itar: false },
+        {
+          jurisdiction: "EU_ANNEX_I",
+          code: "9A004",
+          mtcrCatI: false,
+          itar: false,
+        },
+        { jurisdiction: "USML", code: "XV(a)(5)", mtcrCatI: false, itar: true },
+      ],
+      confidence: "MEDIUM",
+      requiresHumanReview: true,
+      advisory:
+        "OSAM / RPO classification was clarified in 89 FR 84713 (Oct 23 2024 IFR) — most commercial servicing falls under 9A515.a. ITAR XV(a)(5) applies for military / intelligence-purpose servicers. Customer-consent letter required for third-party-owned target spacecraft.",
+    }),
+  },
+
+  // ─────────────────────────────────────────────────────────────────
+  // Rule 12: Keyword — Active Debris Removal (ADR)
+  //
+  // 2024 IFR added "spacecraft for collecting or removing space debris"
+  // as 9A515 sub-category. ClearSpace, Astroscale ADRAS-J.
+  //
+  // Critical: ADR technology is dual-use ASAT. Article 4 EU 2021/821
+  // catch-all may apply — flagged via requiresHumanReview.
+  // ─────────────────────────────────────────────────────────────────
+  {
+    ruleId: "KEYWORD_ACTIVE_DEBRIS_REMOVAL",
+    check: (s) => {
+      if (!s.description) return false;
+      const d = s.description.toLowerCase();
+      return (
+        d.includes("active debris removal") ||
+        d.includes("adr ") ||
+        d.includes("space debris removal") ||
+        d.includes("debris-removal") ||
+        d.includes("debris removal spacecraft") ||
+        d.includes("clearspace") ||
+        d.includes("end-of-life capture")
+      );
+    },
+    result: () => ({
+      reason:
+        "Description matches active-debris-removal keywords. 2024 IFR added explicit 9A515 sub-category for debris-removal spacecraft.",
+      topicSlug: "in-orbit-servicing-rpo",
+      suggestedCodes: [
+        {
+          jurisdiction: "US_CCL",
+          code: "9A515.a",
+          mtcrCatI: false,
+          itar: false,
+        },
+        { jurisdiction: "US_CCL", code: "9A004", mtcrCatI: false, itar: false },
+        {
+          jurisdiction: "EU_ANNEX_I",
+          code: "9A004",
+          mtcrCatI: false,
+          itar: false,
+        },
+        { jurisdiction: "USML", code: "XV(a)(6)", mtcrCatI: false, itar: true },
+      ],
+      confidence: "MEDIUM",
+      requiresHumanReview: true,
+      advisory:
+        "ADR technology is dual-use ASAT — EU 2021/821 Article 4 catch-all may apply. BAFA / ECJU may impose authorisation on a non-listed ADR vehicle if military end-use is known/suspected. Customer-consent letter required from target-spacecraft owner. ASAT-adjacency disclosure recommended.",
+    }),
+  },
+
+  // ─────────────────────────────────────────────────────────────────
+  // Rule 13: Suborbital vehicles (AWV 22nd Amendment Nov 2025 — 0010j)
+  //
+  // German AWV 22nd Amendment (Nov 1 2025) added Anlage AL Item 0010j
+  // for suborbital vehicles. Catches Karman-line crossing payloads
+  // (e.g. sounding rockets near 100km altitude with sub-500kg payload
+  // that don't quite trigger MTCR Cat I).
+  // ─────────────────────────────────────────────────────────────────
+  {
+    ruleId: "KEYWORD_SUBORBITAL_VEHICLE",
+    check: (s) => {
+      if (!s.description) return false;
+      const d = s.description.toLowerCase();
+      return (
+        d.includes("suborbital") ||
+        d.includes("sub-orbital") ||
+        d.includes("sounding rocket") ||
+        d.includes("karman line") ||
+        d.includes("kármán line")
+      );
+    },
+    result: () => ({
+      reason:
+        "Description matches suborbital-vehicle keywords. AWV 22nd Amendment (Nov 1 2025) added Anlage AL Item 0010j for suborbital vehicles.",
+      topicSlug: "complete-launch-vehicles",
+      suggestedCodes: [
+        {
+          jurisdiction: "DE_ANLAGE_AL",
+          code: "0010j",
+          mtcrCatI: false,
+          itar: false,
+        },
+        { jurisdiction: "US_CCL", code: "9A004", mtcrCatI: false, itar: false },
+        {
+          jurisdiction: "EU_ANNEX_I",
+          code: "9A004",
+          mtcrCatI: false,
+          itar: false,
+        },
+        {
+          jurisdiction: "MTCR_ANNEX",
+          code: "1.A.2",
+          mtcrCatI: false,
+          itar: false,
+        },
+      ],
+      confidence: "LOW",
+      requiresHumanReview: true,
+      advisory:
+        "Verify against MTCR Cat I thresholds: complete vehicles capable of ≥500kg payload to ≥300km range trigger Cat I. Suborbital vehicles approaching 100km altitude with sub-500kg may stay Cat II. Per AWV 22nd Amendment (Nov 2025), Anlage AL Item 0010j is the new explicit DE position.",
+    }),
+  },
+
+  // ─────────────────────────────────────────────────────────────────
+  // Rule 14: Electric propulsion ≥400 mN thrust (Oct 2024 IFR)
+  //
+  // 2024 IFR explicitly added electric thrusters ≥400 mN thrust as a
+  // 9A515 sub-category. Below 400 mN typically stays at the lower
+  // 9A011 / EU 9A011 classification.
+  //
+  // Trigger via description keyword + (optional) thrust mention. We
+  // can't extract numeric thrust without a dedicated signal, so this
+  // is keyword-only with an explicit threshold-verification advisory.
+  // ─────────────────────────────────────────────────────────────────
+  {
+    ruleId: "KEYWORD_HIGH_POWER_ELECTRIC_PROPULSION",
+    check: (s) => {
+      if (!s.description) return false;
+      const d = s.description.toLowerCase();
+      const isElectric =
+        d.includes("hall thruster") ||
+        d.includes("ion thruster") ||
+        d.includes("electric propulsion");
+      // High-power indicator keywords: kW-class, N-class thrust, Newton mention
+      const isHighPower =
+        d.includes("kw-class") ||
+        d.includes("kilowatt") ||
+        d.includes("high-power") ||
+        d.includes("high power thrust") ||
+        / [0-9]+\s*n /.test(d) || // " 1 N " mentions (typical for ≥400 mN)
+        d.includes("≥ 400 mn") ||
+        d.includes(">= 400 mn") ||
+        d.includes("> 0.4 n");
+      return isElectric && isHighPower;
+    },
+    result: () => ({
+      reason:
+        "Description mentions electric propulsion with high-power indicators. Oct 2024 IFR added ≥400 mN thrust to 9A515 sub-category.",
+      topicSlug: "hall-thrusters-electric-propulsion",
+      suggestedCodes: [
+        { jurisdiction: "US_CCL", code: "9A515", mtcrCatI: false, itar: false },
+        { jurisdiction: "US_CCL", code: "9A011", mtcrCatI: false, itar: false },
+        {
+          jurisdiction: "EU_ANNEX_I",
+          code: "9A011",
+          mtcrCatI: false,
+          itar: false,
+        },
+        {
+          jurisdiction: "MTCR_ANNEX",
+          code: "9.A.106",
+          mtcrCatI: false,
+          itar: false,
+        },
+      ],
+      confidence: "MEDIUM",
+      requiresHumanReview: true,
+      advisory:
+        "Verify actual thrust ≥400 mN against 9A515 sub-paragraph threshold. Lower-power electric propulsion (e.g. CubeSat-class FEEP / PPT typically <50 mN) remains at 9A011. US-origin PCU/PPU remains a common De-minimis trigger.",
+    }),
+  },
+
+  // ─────────────────────────────────────────────────────────────────
+  // Rule 15: X-Ray grazing-incidence optics (Oct 2024 IFR)
+  //
+  // 2024 IFR added X-ray grazing-incidence optics to 9A515. Specific
+  // to X-ray astronomy + space-based X-ray detection (e.g. XRISM,
+  // ATHENA, certain SDA-Tranche components).
+  // ─────────────────────────────────────────────────────────────────
+  {
+    ruleId: "KEYWORD_XRAY_GRAZING_OPTICS",
+    check: (s) => {
+      if (!s.description) return false;
+      const d = s.description.toLowerCase();
+      return (
+        d.includes("x-ray optic") ||
+        d.includes("xray optic") ||
+        d.includes("grazing incidence") ||
+        d.includes("x-ray telescope") ||
+        d.includes("xray telescope") ||
+        d.includes("wolter")
+      );
+    },
+    result: () => ({
+      reason:
+        "Description matches X-ray grazing-incidence optics keywords. Oct 2024 IFR added to 9A515 series.",
+      topicSlug: "high-resolution-eo-payloads",
+      suggestedCodes: [
+        { jurisdiction: "US_CCL", code: "9A515", mtcrCatI: false, itar: false },
+        { jurisdiction: "US_CCL", code: "6A004", mtcrCatI: false, itar: false },
+        {
+          jurisdiction: "EU_ANNEX_I",
+          code: "6A004",
+          mtcrCatI: false,
+          itar: false,
+        },
+      ],
+      confidence: "MEDIUM",
+      requiresHumanReview: true,
+      advisory:
+        "X-ray optics for space-based astronomy / detection. Verify against specific 9A515 sub-paragraph in the Oct 2024 IFR text. Some configurations may also fall under 6A004 (optical components).",
+    }),
+  },
+
+  // ─────────────────────────────────────────────────────────────────
   // Rule 10: Keyword — Launch vehicle (description heuristic)
   // ─────────────────────────────────────────────────────────────────
   {

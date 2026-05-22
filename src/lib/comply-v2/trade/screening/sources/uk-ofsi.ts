@@ -1,11 +1,42 @@
 /**
- * UK OFSI (Office of Financial Sanctions Implementation) parser.
+ * UK Sanctions List parser (renamed from UK OFSI — see migration note).
+ *
+ * ─── Sprint D1 migration notice (2026-05-22) ──────────────────────────
+ *
+ * As of 28 January 2026 the UK consolidated its sanctions data onto a
+ * **single authoritative source**: the UK Sanctions List, operated by
+ * the Foreign, Commonwealth and Development Office (FCDO) via
+ * search-uk-sanctions-list.service.gov.uk. The legacy OFSI Consolidated
+ * List on ofsistorage.blob.core.windows.net/publishedlists/ConList.csv
+ * stopped receiving updates on that date — so any data we fetch from
+ * the old URL is now STALE and incomplete (missing all designations
+ * made between 28 Jan 2026 and today).
+ *
+ * Until an FCDO bulk-feed URL is verified and added below, the old URL
+ * continues to serve as a fallback. Downstream consumers should treat
+ * UK_OFSI entries with caution and supplement with manual review for
+ * any designation listed after 28 Jan 2026 until D1.5 lands.
+ *
+ * Action items deferred to D1.5:
+ *   - Verify the bulk-data asset URL on gov.uk (the asset filename
+ *     contains a hash that changes on each publication, so we either
+ *     need to scrape the publication index page or use the FCDO API
+ *     if and when one is published).
+ *   - Schema validation: the new UK Sanctions List XML / CSV
+ *     structure may differ from OFSI ConList.csv. Run header
+ *     detection + verify column mapping before relying on output.
+ *   - The TradeSanctionsList enum value `UK_OFSI` stays for backward
+ *     compatibility but is semantically "UK Sanctions List" now.
+ *     A future migration may rename to UK_SANCTIONS.
+ *
+ * ─── Original notice ─────────────────────────────────────────────────
  *
  * Source: HM Treasury Office of Financial Sanctions Implementation
+ *         (legacy; deprecated 2026-01-28)
  * URL:    https://ofsistorage.blob.core.windows.net/publishedlists/ConList.csv
  * Format: CSV with header, ~5K rows, ~1.5 MB. Update cadence: ≥ weekly,
  *         often daily when sanctions activity is high.
- * Docs:   https://www.gov.uk/government/publications/financial-sanctions-consolidated-list-of-targets
+ * Docs:   https://www.gov.uk/government/publications/the-uk-sanctions-list
  *
  * Key columns (UK OFSI publishes a 2-line preamble before the header
  * row, so we detect the header by signature rather than fixed offset):
