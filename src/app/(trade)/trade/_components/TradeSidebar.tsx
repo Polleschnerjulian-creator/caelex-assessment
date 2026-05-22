@@ -23,19 +23,13 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Inbox,
-  Bell,
   Package,
-  Upload,
   Users,
   ShieldCheck,
   Workflow,
-  Activity,
   FileCheck,
-  CalendarClock,
   Sparkles,
-  ScrollText,
   Settings,
-  ClipboardCheck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -56,94 +50,46 @@ interface NavSection {
 
 const NAV_SECTIONS: NavSection[] = [
   {
-    label: "Inbox",
-    items: [
-      { label: "Today", href: "/trade", icon: Inbox },
-      { label: "Alerts", href: "/trade", icon: Bell, comingIn: "Wave B" },
-    ],
+    label: "Workspace",
+    items: [{ label: "Today", href: "/trade", icon: Inbox }],
   },
   {
-    label: "Items & Parts",
+    label: "Trade",
     items: [
       {
-        label: "Classification",
+        label: "Items",
         href: "/trade/items",
         icon: Package,
         activePrefix: "/trade/items",
       },
       {
-        label: "Bulk Import",
-        href: "/trade",
-        icon: Upload,
-        comingIn: "Sprint T6",
-      },
-    ],
-  },
-  {
-    label: "Counterparties",
-    items: [
-      {
-        label: "Screening",
+        label: "Counterparties",
         href: "/trade/parties",
         icon: Users,
         activePrefix: "/trade/parties",
       },
       {
-        label: "Watch-Lists",
-        href: "/trade",
-        icon: ShieldCheck,
-        comingIn: "Wave B",
-      },
-    ],
-  },
-  {
-    label: "Operations",
-    items: [
-      {
-        label: "Pipeline",
+        label: "Operations",
         href: "/trade/operations",
         icon: Workflow,
         activePrefix: "/trade/operations",
       },
       {
-        label: "Lifecycle",
-        href: "/trade",
-        icon: Activity,
-        comingIn: "Wave B",
-      },
-    ],
-  },
-  {
-    label: "Licenses",
-    items: [
-      {
-        label: "Active",
+        label: "Licenses",
         href: "/trade/licenses",
         icon: FileCheck,
         activePrefix: "/trade/licenses",
       },
-      {
-        label: "Expirations",
-        href: "/trade",
-        icon: CalendarClock,
-        comingIn: "Wave B",
-      },
     ],
   },
   {
-    label: "Compliance Program",
+    label: "Compliance",
     items: [
       {
-        label: "Overview",
+        label: "Program",
         href: "/trade/program",
         icon: ShieldCheck,
         activePrefix: "/trade/program",
-      },
-      {
-        label: "Requirements",
-        href: "/trade/program#requirements",
-        icon: ClipboardCheck,
-        comingIn: "Sprint T5",
       },
     ],
   },
@@ -155,17 +101,6 @@ const NAV_SECTIONS: NavSection[] = [
         href: "/trade/astra",
         icon: Sparkles,
         activePrefix: "/trade/astra",
-      },
-    ],
-  },
-  {
-    label: "Audit",
-    items: [
-      {
-        label: "Reports & Audit",
-        href: "/trade",
-        icon: ScrollText,
-        comingIn: "Wave B",
       },
     ],
   },

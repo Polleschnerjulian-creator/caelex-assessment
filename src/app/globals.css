@@ -4813,9 +4813,23 @@ html[data-trade-preload="dark"] .trade-themed {
    selector list's specificity, so Tailwind utilities like
    `text-zinc-50` on a specific heading can still override on a
    per-element basis. */
-.trade-themed[data-trade-theme] :where(h1, h2, h3, h4, h5, h6) {
+/* The `data-trade-theme` attribute is set on <html> by TradeThemeProvider
+ * (NOT on the .trade-themed div), so `html[data-trade-theme]` is the
+ * correct ancestor scope. Specificity (0,2,1) beats the global
+ * `.dark h1` rule (0,1,1) above, fixing the white-on-white heading
+ * regression when navigating from Comply (dark) into Trade (light)
+ * — the `.dark` class persists on <html> but Trade now wins the
+ * cascade for headings inside `.trade-themed`.
+ *
+ * `:where()` keeps the h1/h2/… selectors at 0 specificity so an
+ * individual heading inside `.trade-themed` can still opt out via
+ * a stronger utility (e.g. `text-zinc-50` on a dark hero variant).
+ */
+html[data-trade-theme] .trade-themed :where(h1, h2, h3, h4, h5, h6),
+.trade-themed :where(h1, h2, h3, h4, h5, h6) {
   color: var(--trade-text-primary);
 }
-.trade-themed[data-trade-theme] label {
+html[data-trade-theme] .trade-themed label,
+.trade-themed label {
   color: var(--trade-text-secondary);
 }
