@@ -1395,6 +1395,48 @@ export const classifyTradeItem: AstraToolDefinition = {
   },
 };
 
+/**
+ * Z4b — Astra Classification Copilot tool.
+ *
+ * Wraps the datasheet extractor (`src/lib/trade/datasheet-extractor.ts`)
+ * + the parametric matcher into a single Astra tool. The operator drops
+ * a PDF (or pastes raw text); Astra calls this tool with either the
+ * base64 PDF bytes or the rawText, and we return a `ClassificationDraft`
+ * with proposed ECCN / USML / EU Annex I codes + per-attribute evidence
+ * spans + a mandatory disclaimer.
+ *
+ * The tool *never* persists. The Z4d UI calls a server action to save
+ * the accepted draft into the Z4c `TradeItemClassificationDraft` table.
+ * Keeping the tool pure means the Astra chat panel can preview without
+ * locking in a row.
+ */
+export const classifyFromDatasheet: AstraToolDefinition = {
+  name: "classify_from_datasheet",
+  description:
+    "AI Classification Copilot (Z4) — extract typed parametric attributes from a product datasheet (PDF or raw text), then run the parametric matcher to propose an export-control classification (ECCN / USML / EU Annex I / MTCR). Returns a ClassificationDraft with up to 3 ranked proposals, per-attribute evidence spans pulled from the source text, attributes the operator still needs to supply, and a mandatory legal disclaimer. The operator reviews the draft in the UI and accepts / rejects / modifies before any persistence. Use this when the user uploads a datasheet, pastes datasheet text, or asks 'classify this item from its datasheet'.",
+  input_schema: {
+    type: "object",
+    properties: {
+      pdfBase64: {
+        type: "string",
+        description:
+          "Optional: base64-encoded PDF bytes of the datasheet. The tool decodes and runs the unpdf extractor. Provide EITHER pdfBase64 OR rawText, not both. Maximum size 8 MB — operators should crop / reduce large datasheets before upload.",
+      },
+      rawText: {
+        type: "string",
+        description:
+          "Optional: raw datasheet text (e.g. pasted from a vendor brochure). The tool runs the regex/keyword extractor directly without invoking PDF.js. Useful when the operator already has the text on the clipboard.",
+      },
+      tradeItemId: {
+        type: "string",
+        description:
+          "Optional: ID of an existing TradeItem the draft should be associated with. The draft's `tradeItemId` is set to this value when persisted (Z4c). Pass when classifying a known item; omit for ad-hoc 'what would this be?' lookups.",
+      },
+    },
+    required: [],
+  },
+};
+
 export const lookupClassificationCode: AstraToolDefinition = {
   name: "lookup_classification_code",
   description:
@@ -1822,6 +1864,8 @@ export const ALL_TOOLS: AstraToolDefinition[] = [
   // Trade Classification Tools (Sprint B4)
   classifyTradeItem,
   lookupClassificationCode,
+  // Trade AI Classification Copilot (Sprint Z4b)
+  classifyFromDatasheet,
 
   // Trade Counterparty Screening Tools (Wave A Sprint A7)
   screenTradeParty,
@@ -1937,6 +1981,7 @@ export const TOOL_CATEGORIES = {
   trade: [
     "classify_trade_item",
     "lookup_classification_code",
+    "classify_from_datasheet",
     "screen_trade_party",
     "lookup_trade_party",
   ],

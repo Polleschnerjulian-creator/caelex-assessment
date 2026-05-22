@@ -101,6 +101,29 @@ function getStringArray(input: Record<string, unknown>, key: string): string[] {
   return [];
 }
 
+/**
+ * Decode a base64 string into a Uint8Array. Tolerates the `data:` URI
+ * prefix so the Astra tool can be called with a full
+ * `data:application/pdf;base64,...` blob or a bare payload.
+ *
+ * Caps the decoded size at 8 MB to keep the cold-path memory budget
+ * predictable on Vercel Functions — the Z4b tool description tells
+ * operators to crop before upload.
+ */
+function decodeBase64(input: string): Uint8Array {
+  const payload = input.startsWith("data:")
+    ? input.replace(/^data:[^;]+;base64,/, "")
+    : input;
+  const buf = Buffer.from(payload, "base64");
+  const MAX_BYTES = 8 * 1024 * 1024;
+  if (buf.byteLength > MAX_BYTES) {
+    throw new Error(
+      `Datasheet exceeds 8 MB upload limit (received ${buf.byteLength} bytes).`,
+    );
+  }
+  return new Uint8Array(buf);
+}
+
 // ─── Main Executor ───
 
 export async function executeTool(
@@ -2997,6 +3020,80 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
       })),
       disclaimer:
         "Caelex Trade classification suggestions are informational only. Before any export decision, verify with qualified export-control legal counsel. Violations of EAR/ITAR/AWG can result in criminal penalties.",
+    };
+  },
+
+  // ─── Trade AI Classification Copilot — Z4b ─────────────────────────
+  //
+  // Wraps the datasheet extractor (Z4a) + the parametric matcher
+  // (Z3c) into one tool. Accepts either base64-encoded PDF bytes or
+  // raw datasheet text. Returns a `ClassificationDraft` — never
+  // persists, the Z4d UI calls a separate server action for that.
+  classify_from_datasheet: async (input, _userContext) => {
+    const { extractDatasheet, extractFromText } =
+      await import("@/lib/trade/datasheet-extractor");
+    const { buildClassificationDraft } =
+      await import("@/lib/trade/classification-draft-builder");
+
+    const pdfBase64 = getString(input, "pdfBase64");
+    const rawText = getString(input, "rawText");
+    const tradeItemId = getString(input, "tradeItemId");
+
+    // Either input must be present — caller-validated, but we re-check
+    // here so a malformed Astra call doesn't NPE.
+    if (!pdfBase64 && !rawText) {
+      return {
+        error:
+          "Provide either pdfBase64 (base64-encoded PDF bytes) or rawText (datasheet text). Both are missing.",
+      };
+    }
+
+    const extraction = pdfBase64
+      ? await extractDatasheet(decodeBase64(pdfBase64))
+      : extractFromText(rawText ?? "");
+
+    if (extraction.parseError) {
+      return {
+        error: `Failed to parse datasheet: ${extraction.parseError}`,
+        parseError: extraction.parseError,
+      };
+    }
+
+    const draft = buildClassificationDraft(extraction);
+
+    return {
+      tradeItemId: tradeItemId ?? null,
+      proposals: draft.proposals.map((p) => ({
+        canonicalId: p.canonicalId,
+        regime: p.regime,
+        title: p.title,
+        citation: p.citation,
+        reasonsForControl: p.reasonsForControl,
+        confidence: p.confidence,
+        rationale: p.rationale,
+        source: p.source,
+        evidence: p.evidence.map((e) => ({
+          attribute: e.attribute,
+          quote: e.quote,
+          contextBefore: e.contextBefore,
+          contextAfter: e.contextAfter,
+          parsedValue: e.parsedValue,
+        })),
+      })),
+      primary: draft.primary
+        ? {
+            canonicalId: draft.primary.canonicalId,
+            confidence: draft.primary.confidence,
+            regime: draft.primary.regime,
+          }
+        : null,
+      attributesExtracted: Object.keys(draft.attributes).filter(
+        (k) => k !== "parametricAttributes",
+      ),
+      attributesNeeded: draft.attributesNeeded,
+      pageCount: extraction.pageCount,
+      summary: draft.summary,
+      disclaimer: draft.disclaimer,
     };
   },
 

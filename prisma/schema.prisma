@@ -66,6 +66,13 @@ model User {
   tradeItemsCreated TradeItem[]     @relation("TradeItemAuthor")
   tradeItemNotes    TradeItemNote[]
 
+  // Comply Trade (Sprint Z4c) — AI Classification Copilot drafts.
+  // Author + reviewer back-refs are split into two relations so the
+  // distinction between "I generated this" and "I signed off on this"
+  // is auditable.
+  classificationDraftsAuthored TradeItemClassificationDraft[] @relation("ClassificationDraftAuthor")
+  classificationDraftsReviewed TradeItemClassificationDraft[] @relation("ClassificationDraftReviewer")
+
   // Comply Trade v2 (Wave A Sprint A1) — counterparty screening back-refs.
   tradePartiesCreated    TradeParty[]           @relation("TradePartyAuthor")
   tradeScreeningsDecided TradeScreeningResult[] @relation("TradeScreeningDecider")
@@ -3124,6 +3131,8 @@ model Organization {
   // Comply Trade v2 (Wave B Sprint B1) — operations-layer items.
   // Counterparties + Operations + Licenses kommen in Wave A/C.
   tradeItems      TradeItem[]
+  // Comply Trade (Sprint Z4c) — persisted AI Classification Copilot drafts.
+  tradeClassificationDrafts TradeItemClassificationDraft[]
   // Comply Trade v2 (Wave A Sprint A1) — counterparty screening.
   tradeParties    TradeParty[]
   // Comply Trade v2 (Wave C Sprint C1) — operations lifecycle + licenses.
@@ -11058,6 +11067,12 @@ model TradeItem {
 
   notes TradeItemNote[]
 
+  // Sprint Z4c — AI Classification Copilot drafts for this item.
+  // Items may have many drafts (re-runs with newer datasheets or
+  // edited attributes) — the most recent ACCEPTED draft tells the
+  // story of how the current classification fields got their values.
+  classificationDrafts TradeItemClassificationDraft[]
+
   // Wave C Sprint C1 — items appear in operation lines
   operationLines TradeOperationLine[]
 
@@ -11103,6 +11118,123 @@ model TradeItemNote {
 
   @@index([itemId, createdAt])
   @@index([userId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMPLY TRADE — Sprint Z4c: AI Classification Copilot Draft Persistence
+// ═══════════════════════════════════════════════════════════════════════════════
+// Stores the output of the Z4 AI Classification Copilot — a typed,
+// citation-backed proposal generated from a datasheet PDF. The draft is
+// always *advisory*: even after acceptance, it surfaces in the audit
+// trail with a reference to the operator who signed off, the time of
+// review, and the verbatim disclaimer text that was visible at the
+// time of acceptance.
+//
+// Architecture:
+//   - One TradeItem ↔ many drafts: operators can re-run with newer
+//     datasheets or with manually-edited attributes. The history
+//     stays for audit.
+//   - tradeItemId is optional — operators can produce a draft from a
+//     pasted datasheet without first creating a TradeItem (useful for
+//     "what would this be" lookups before committing to vendor data).
+//   - The full proposal payload (proposals + attributes + evidence
+//     spans) is stored as JSON. Schema for that JSON is owned by the
+//     application layer (`src/lib/trade/classification-draft-builder.ts`).
+//     Keeping the row-level columns small ensures the table stays
+//     queryable for the common Tier 1 dashboard reads ("show me all
+//     PENDING drafts for this org").
+//   - reviewedBy + reviewedAt are NULL until the operator opens the
+//     draft and clicks Accept / Reject / Modify. The decision is
+//     captured as an enum so we don't have to re-derive it from text.
+//   - acceptedSnapshot stores the JSON of the proposal the operator
+//     accepted (post-modification) — that's the row that ends up
+//     binding the TradeItem's eccnUS / eccnEU / usmlCategory cells
+//     when the operator confirms.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Persisted AI classification draft. One per (datasheet extraction
+/// + matcher run). The Z4d UI lists PENDING drafts for review.
+model TradeItemClassificationDraft {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  /// Optional FK to the TradeItem the draft applies to. NULL means
+  /// the operator ran an ad-hoc datasheet lookup without committing
+  /// to a TradeItem row.
+  tradeItemId String?
+  tradeItem   TradeItem? @relation(fields: [tradeItemId], references: [id], onDelete: SetNull)
+
+  /// User who ran the extractor → draft step. Persisted for the audit
+  /// trail even if their account is later deactivated.
+  createdById String
+  createdBy   User   @relation("ClassificationDraftAuthor", fields: [createdById], references: [id], onDelete: Cascade)
+
+  // ── Proposal summary (denormalised for cheap list queries) ──
+  /// Highest-confidence proposed code (e.g. "ECCN:9A515.a.1"). NULL
+  /// when the draft produced zero matches.
+  proposedEccn String?
+  /// Regime for `proposedEccn` ("EAR-CCL", "ITAR-USML", "EU-ANNEX-I",
+  /// "MTCR-ANNEX", "DE-AL-TEIL-IB", etc.). NULL with proposedEccn.
+  proposedRegime String?
+  /// Confidence label propagated from the matcher (HIGH/MEDIUM/LOW).
+  /// NULL when proposedEccn is NULL.
+  confidence String?
+
+  // ── Full payload (JSON, schema lives in the app layer) ──
+  /// The full `ClassificationDraft` blob — proposals[], evidence[],
+  /// attributes, attributesNeeded, summary. Validated by Zod at the
+  /// service boundary; treated as opaque by Prisma.
+  evidence Json
+
+  /// Source descriptor — filename + size + page count, when the draft
+  /// came from a PDF. NULL for pasted-text drafts.
+  sourceFilename String?
+  /// Optional snapshot of the raw extracted text. Capped at 64 kB at
+  /// the service boundary so the row stays small. The Z4d UI never
+  /// re-reads this — it's purely for auditing the extraction.
+  rawTextSnapshot String? @db.Text
+
+  // ── Review / sign-off ──
+  /// Operator decision. PENDING until reviewed.
+  decision ClassificationDraftDecision @default(PENDING)
+  /// User who reviewed the draft (NULL = not yet reviewed).
+  reviewedById String?
+  reviewedBy   User?   @relation("ClassificationDraftReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt   DateTime?
+  /// Operator note attached to the decision. Captures "why I rejected"
+  /// or "why I modified" for the audit trail.
+  reviewNote String? @db.Text
+  /// Verbatim disclaimer text shown to the operator at the time of
+  /// review. Required for evidentiary value — if the disclaimer wording
+  /// later changes, this preserves what they actually saw.
+  disclaimerAtReview String? @db.Text
+  /// JSON snapshot of the accepted proposal (after any operator
+  /// modifications). NULL until decision = ACCEPTED or MODIFIED.
+  acceptedSnapshot Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId, decision])
+  @@index([organizationId, createdAt])
+  @@index([tradeItemId, createdAt])
+  @@index([createdById, createdAt])
+  @@index([reviewedById])
+}
+
+/// Operator decision on a classification draft.
+///
+///   PENDING   — created by the AI copilot, not yet reviewed.
+///   ACCEPTED  — operator accepted the proposal verbatim.
+///   REJECTED  — operator rejected the proposal (no binding action).
+///   MODIFIED  — operator accepted with edits (acceptedSnapshot
+///               contains the modified version).
+enum ClassificationDraftDecision {
+  PENDING
+  ACCEPTED
+  REJECTED
+  MODIFIED
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
