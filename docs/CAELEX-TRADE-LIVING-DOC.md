@@ -172,7 +172,7 @@ Per Recherche `docs/CAELEX-TRADE-FULL-RECHERCHE.md` § 7: Welt A (`/dashboard/tr
 | **A1**  | Items-Liste + Detail-Page nach `/trade/items/*` portieren, Indigo-Theme                                         | ✅ done (`58bbe844`)  |
 | **A2**  | Counterparties + Detail (Screening + BeneficialOwners) nach `/trade/parties/*` portieren                        | ✅ done (`69c456f2`)  |
 | **A3a** | Operations-Liste portieren + Detail-Placeholder (Detail proper = A3b)                                           | ✅ done (`3dea7e10`)  |
-| **A3b** | Operations-Detail-Page + 3 Light-Panels (Lines, Lifecycle, Licenses)                                            | ⏳                    |
+| **A3b** | Operations-Detail-Page + 3 Light-Panels (Lines, Lifecycle, Licenses)                                            | ✅ done (`b03aae98`)  |
 | **A4**  | Licenses-Inventory (net-new — keine Legacy-UI)                                                                  | ✅ done (`1f7d58a8`)  |
 | **A5**  | `/trade` Welcome-Dashboard mit real aggregates (Items-Count, Parties-Count, In-Progress-Ops, Risk-Distribution) | ✅ done (this commit) |
 
