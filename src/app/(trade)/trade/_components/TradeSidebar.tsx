@@ -98,6 +98,12 @@ const NAV_SECTIONS: NavSection[] = [
         icon: FileSignature,
         activePrefix: "/trade/euc",
       },
+      {
+        label: "Re-Export Consents",
+        href: "/trade/reexport-consents",
+        icon: FileSignature,
+        activePrefix: "/trade/reexport-consents",
+      },
     ],
   },
   {
