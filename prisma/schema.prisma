@@ -10991,6 +10991,47 @@ model TradeItem {
   radHardTidKrad         Float?
   seuRateErrorsPerBitDay Float?
 
+  // ── Z3e (Sprint Z3e 2026-05-22) Extended parametric attributes ──
+  // Driven by the May 2026 ontology research blueprint § 12 (full
+  // predicate vocabulary). Each maps to at least one regulatory
+  // hard-edge threshold in USML / CCL / EU Annex I / MTCR.
+  //
+  //   spectralBandCount       — USML XV(a)(7)(i) <40 vs (a)(7)(ii) ≥40
+  //   peakWavelengthNm        — USML XV(e)(3) FPA > 900 nm
+  //   radarCenterFreqGhz      — CCL 9A515.a.3 ∈ [1, 10) GHz
+  //   radarBandwidthMhz       — 9A515.a.3 [100, 300); USML XV(a)(8) ≥ 300
+  //   antennaDiameterM        — USML XV(e)(1) > 25 m
+  //   starTrackerAccuracyArcsec — USML XV(e)(16) ≤ 1 arcsec
+  //   starTrackerSlewRateDegPerS — USML XV(e)(16) ≥ 3 deg/s (BOTH)
+  //   totalImpulseNs          — USML IV(d)(2) ≥ 1.1e6 (MT Cat I);
+  //                              IV(d)(3) ≥ 8.41e5 (MT Cat II)
+  //   neutronFluenceNPerCm2   — 9A515.d criterion 3 ≥ 1×10¹⁴ N/cm²
+  //   selLetThresholdMevCm2Mg — 9A515.d criterion 5 SEL-free ≥ 80
+  //   doseRateUpsetRadSiPerS  — 9A515.d criterion 2 ≥ 5×10⁸ Rad(Si)/s
+  //   gnssMaxVelocityMPerS    — 7A105.b.1 > 600 m/s (airborne)
+  //   antennaActiveScanning   — USML XV(e)(1) flag
+  //   antennaAdaptiveBeamforming — USML XV(e)(1) / 7A005.b flag
+  //   isSpeciallyDesigned     — Universal "specially designed" flag
+  //                              that nearly every regime predicates on.
+  //                              Operator-attested; matcher requires
+  //                              explicit true to fire "specially
+  //                              designed for spacecraft" predicates.
+  spectralBandCount          Int?
+  peakWavelengthNm           Float?
+  radarCenterFreqGhz         Float?
+  radarBandwidthMhz          Float?
+  antennaDiameterM           Float?
+  starTrackerAccuracyArcsec  Float?
+  starTrackerSlewRateDegPerS Float?
+  totalImpulseNs             Float?
+  neutronFluenceNPerCm2      Float?
+  selLetThresholdMevCm2Mg    Float?
+  doseRateUpsetRadSiPerS     Float?
+  gnssMaxVelocityMPerS       Float?
+  antennaActiveScanning      Boolean?
+  antennaAdaptiveBeamforming Boolean?
+  isSpeciallyDesigned        Boolean?
+
   // Space-domain classification hint. Free-form string so the cross-walk
   // can prefix-match (e.g. "spacecraft.remote_sensing.eo",
   // "propulsion.electric.hall", "ic.radhard.processor"). NULL means

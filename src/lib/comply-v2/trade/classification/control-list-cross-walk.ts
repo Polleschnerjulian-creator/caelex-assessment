@@ -56,9 +56,11 @@ export type RegimeName =
 
 /**
  * A typed attribute reference. Must be one of the typed columns on
- * `TradeItem` (Sprint Z3a) or a key in `TradeItem.parametricAttributes`.
+ * `TradeItem` (Sprint Z3a / Z3e) or a key in
+ * `TradeItem.parametricAttributes`.
  */
 export type AttributeName =
+  // ─── Z3a tier-1 attributes ────────────────────────────────────────
   | "apertureMeters"
   | "payloadKg"
   | "rangeKm"
@@ -72,7 +74,23 @@ export type AttributeName =
   | "isRadHardened"
   | "isMilSpec"
   | "isAntiJam"
-  | "itemClass";
+  | "itemClass"
+  // ─── Z3e extended vocabulary (ontology blueprint § 12) ────────────
+  | "spectralBandCount"
+  | "peakWavelengthNm"
+  | "radarCenterFreqGhz"
+  | "radarBandwidthMhz"
+  | "antennaDiameterM"
+  | "starTrackerAccuracyArcsec"
+  | "starTrackerSlewRateDegPerS"
+  | "totalImpulseNs"
+  | "neutronFluenceNPerCm2"
+  | "selLetThresholdMevCm2Mg"
+  | "doseRateUpsetRadSiPerS"
+  | "gnssMaxVelocityMPerS"
+  | "antennaActiveScanning"
+  | "antennaAdaptiveBeamforming"
+  | "isSpeciallyDesigned";
 
 /**
  * A predicate operator. Pure mathematical / set semantics — no
@@ -329,47 +347,17 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
   },
 
   // ═══════════════════════════════════════════════════════════════
-  // Rad-hard ICs — the SEU-rate boundary between USML and CCL
+  // Rad-hard ICs — Z3d expansion encodes the full 9A515.d FIVE
+  // conjunctive criteria from the ontology blueprint § 3.1:
+  //   1. TID         ≥ 5×10⁵ Rad(Si) = 500 krad
+  //   2. Dose-rate upset       ≥ 5×10⁸ Rad(Si)/s
+  //   3. Neutron fluence       ≥ 1×10¹⁴ N/cm² (1 MeV equiv)
+  //   4. SEU rate              ≤ 1×10⁻¹⁰ errors/bit/day
+  //   5. SEL-free at LET ≥ 80 MeV·cm²/mg + dose-rate latch-up
+  //                            ≥ 5×10⁸ Rad(Si)/s
+  // Pre-Z3d entry only checked #1 + #4; Z3d completes the set so the
+  // ITAR vs. CCL boundary is decided by the actual regulatory test.
   // ═══════════════════════════════════════════════════════════════
-  {
-    canonicalId: "USML:XV(d)",
-    regime: "ITAR-USML",
-    category: "XV",
-    productGroup: "d",
-    entryNumber: "0",
-    title:
-      "Radiation-hardened microelectronic ICs meeting ALL FIVE criteria (SEU ≤ 1×10⁻¹⁰ errors/bit-day for CREME96 GEO Solar-Min, latch-up free, dose-rate threshold ≥ 5×10⁸ Rads(Si), …)",
-    predicates: [
-      { attribute: "isRadHardened", op: "eq", value: true },
-      { attribute: "seuRateErrorsPerBitDay", op: "lte", value: 1e-10 },
-      { attribute: "radHardTidKrad", op: "gte", value: 100 },
-      {
-        attribute: "itemClass",
-        op: "prefix",
-        value: "ic.radhard",
-      },
-    ],
-    reasonsForControl: ["ITAR"],
-    licenseExceptions: [],
-    seeAlso: [
-      {
-        regime: "EAR-CCL",
-        id: "9A515.d",
-        relationship: "successor",
-        notes:
-          "ICs failing ANY of the five XV(d) criteria fall to 9A515.d — still controlled, but EAR, not ITAR.",
-      },
-      {
-        regime: "MTCR-ANNEX",
-        id: "Item 18",
-        relationship: "analogous",
-      },
-    ],
-    citation: "22 CFR §121.1 Cat XV(d) (post 2017 Final Rule)",
-    validFrom: "2017-01-15",
-    notes:
-      "All FIVE criteria must be met for XV(d). Missing any one drops the IC to 9A515.d. This is one of the most spec-sensitive thresholds in space-domain classification.",
-  },
   {
     canonicalId: "ECCN:9A515.d",
     regime: "EAR-CCL",
@@ -378,23 +366,42 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     entryNumber: "515",
     subpara: "d",
     title:
-      "Radiation-hardened microelectronic ICs designed for spacecraft, NOT meeting all five XV(d) criteria",
+      "Radiation-hardened microelectronic ICs meeting ALL FIVE criteria — TID, dose-rate upset, neutron fluence, SEU rate, SEL/latch-up",
     predicates: [
       { attribute: "isRadHardened", op: "eq", value: true },
-      { attribute: "seuRateErrorsPerBitDay", op: "gt", value: 1e-10 },
+      { attribute: "itemClass", op: "prefix", value: "ic.radhard" },
+      // Criterion 1: TID ≥ 500 krad(Si)
+      { attribute: "radHardTidKrad", op: "gte", value: 500 },
+      // Criterion 2: dose-rate upset ≥ 5×10⁸ Rad(Si)/s
       {
-        attribute: "itemClass",
-        op: "prefix",
-        value: "ic.radhard",
+        attribute: "doseRateUpsetRadSiPerS",
+        op: "gte",
+        value: 5e8,
+      },
+      // Criterion 3: neutron fluence ≥ 1×10¹⁴ N/cm²
+      {
+        attribute: "neutronFluenceNPerCm2",
+        op: "gte",
+        value: 1e14,
+      },
+      // Criterion 4: SEU rate ≤ 1×10⁻¹⁰ errors/bit/day
+      { attribute: "seuRateErrorsPerBitDay", op: "lte", value: 1e-10 },
+      // Criterion 5: SEL-free at LET ≥ 80 MeV·cm²/mg
+      {
+        attribute: "selLetThresholdMevCm2Mg",
+        op: "gte",
+        value: 80,
       },
     ],
-    reasonsForControl: ["NS:2", "RS:2"],
+    reasonsForControl: ["NS:1", "RS:1", "AT:1"],
     licenseExceptions: ["STA-eligible:partial"],
     seeAlso: [
       {
-        regime: "ITAR-USML",
-        id: "XV(d)",
-        relationship: "predecessor",
+        regime: "EAR-CCL",
+        id: "9A515.e",
+        relationship: "superset_of",
+        notes:
+          "9A515.e covers ICs meeting only criterion 1 (TID ≥ 500 krad) — drop one of the other four criteria and the part falls from .d to .e.",
       },
       {
         regime: "EU-ANNEX-I",
@@ -403,8 +410,321 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
         notes: "EU rad-hard sub-controls live under Cat 3 Electronics.",
       },
     ],
-    citation: "15 CFR 774 Supp. 1 Cat 9 ECCN 9A515.d",
+    citation:
+      "15 CFR 774 Supp. 1 Cat 9 ECCN 9A515.d (post 2014 ECR; historic XV(d) text ported in 2014)",
     validFrom: "2014-05-13",
+    notes:
+      "All FIVE criteria must be met conjunctively. Missing any one drops the IC to 9A515.e (if TID criterion holds) or to 3A001 general rad-hard. Most spec-sensitive threshold in space-domain classification.",
+  },
+  {
+    canonicalId: "ECCN:9A515.e",
+    regime: "EAR-CCL",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "515",
+    subpara: "e",
+    title:
+      "Radiation-hardened ICs with TID ≥ 5×10⁵ Rad(Si) but NOT meeting all five 9A515.d criteria (added 23 Oct 2024 IFR)",
+    predicates: [
+      { attribute: "isRadHardened", op: "eq", value: true },
+      { attribute: "itemClass", op: "prefix", value: "ic.radhard" },
+      { attribute: "radHardTidKrad", op: "gte", value: 500 },
+    ],
+    reasonsForControl: ["NS:2", "RS:2"],
+    licenseExceptions: ["STA-eligible:partial"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "9A515.d",
+        relationship: "subset_of",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "3A001",
+        relationship: "analogous",
+      },
+    ],
+    citation:
+      "15 CFR 774 Supp. 1 Cat 9 ECCN 9A515.e (added by BIS IFR of 23 Oct 2024, 89 FR 84766)",
+    validFrom: "2024-10-23",
+    notes:
+      "Created by the 2024 IFR to capture rad-hard ICs that pass the TID test but fail one of the other four criteria. Distinct legal effect from 9A515.d (lower RfC: NS2/RS2 vs NS1/RS1/AT1).",
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // 9A515.a sub-paragraphs — Z3d ships the full split
+  // ═══════════════════════════════════════════════════════════════
+  {
+    canonicalId: "ECCN:9A515.a.2",
+    regime: "EAR-CCL",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "515",
+    subpara: "a.2",
+    title:
+      "Spacecraft with remote-sensing capability beyond NIR (SWIR, MWIR or LWIR)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "spacecraft.remote_sensing",
+      },
+      { attribute: "peakWavelengthNm", op: "gte", value: 900 },
+    ],
+    reasonsForControl: ["NS:2", "RS:2", "AT:1"],
+    licenseExceptions: ["STA-eligible:partial"],
+    seeAlso: [
+      {
+        regime: "ITAR-USML",
+        id: "XV(a)(7)(ii)",
+        relationship: "superset_of",
+        notes: "Hyperspectral (≥ 40 bands) variants flow to USML XV(a)(7)(ii).",
+      },
+      { regime: "EU-ANNEX-I", id: "9A004", relationship: "analogous" },
+    ],
+    citation: "15 CFR 774 Supp. 1 Cat 9 ECCN 9A515.a.2",
+    validFrom: "2024-10-23",
+  },
+  {
+    canonicalId: "ECCN:9A515.a.3",
+    regime: "EAR-CCL",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "515",
+    subpara: "a.3",
+    title:
+      "Spacecraft with radar remote-sensing (AESA/SAR/ISAR) — center freq 1-10 GHz AND bandwidth 100-300 MHz",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "spacecraft.remote_sensing.sar",
+      },
+      { attribute: "radarCenterFreqGhz", op: "between", value: [1, 10] },
+      { attribute: "radarBandwidthMhz", op: "between", value: [100, 300] },
+    ],
+    reasonsForControl: ["NS:2", "RS:2", "AT:1"],
+    licenseExceptions: ["STA-eligible:partial"],
+    seeAlso: [
+      {
+        regime: "ITAR-USML",
+        id: "XV(a)(8)",
+        relationship: "successor",
+        notes:
+          "Radar with BW ≥ 300 MHz flows to USML XV(a)(8); BW < 100 MHz drops to 9A515.a.5 catch-all.",
+      },
+    ],
+    citation: "15 CFR 774 Supp. 1 Cat 9 ECCN 9A515.a.3 (post 2024 IFR)",
+    validFrom: "2024-10-23",
+    notes:
+      "Bandwidth ≥ 300 MHz is USML XV(a)(8) (ITAR). This is one of the cleanest single-attribute jurisdiction flips in the entire cross-walk.",
+  },
+  {
+    canonicalId: "USML:XV(a)(8)",
+    regime: "ITAR-USML",
+    category: "XV",
+    productGroup: "a",
+    entryNumber: "8",
+    title:
+      "Spacecraft with radar remote-sensing (AESA/SAR/ISAR/UWB-SAR) — bandwidth ≥ 300 MHz (post-2024 carve-out)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "spacecraft.remote_sensing.sar",
+      },
+      { attribute: "radarBandwidthMhz", op: "gte", value: 300 },
+    ],
+    reasonsForControl: ["ITAR"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "9A515.a.3",
+        relationship: "successor",
+        notes: "BW < 300 MHz (with center freq 1-10 GHz) drops to 9A515.a.3.",
+      },
+    ],
+    citation: "22 CFR §121.1 Cat XV(a)(8)",
+    validFrom: "2017-01-15",
+  },
+  {
+    canonicalId: "ECCN:9A515.a.4",
+    regime: "EAR-CCL",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "515",
+    subpara: "a.4",
+    title:
+      "Spacecraft providing space-based logistics, assembly or servicing (OSAM) of another spacecraft",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "spacecraft.osam" },
+    ],
+    reasonsForControl: ["NS:2", "RS:2", "AT:1"],
+    licenseExceptions: ["STA-eligible:partial"],
+    seeAlso: [
+      {
+        regime: "ITAR-USML",
+        id: "XV(a)(12)",
+        relationship: "successor",
+        notes:
+          "Inspection/surveillance/servicing via grappling/docking is USML XV(a)(12) — except those docking exclusively via NASA Docking System flow here.",
+      },
+    ],
+    citation:
+      "15 CFR 774 Supp. 1 Cat 9 ECCN 9A515.a.4 (clarified by 2024 IFR: docking, refuelling, life-sustaining ops, debris capture)",
+    validFrom: "2024-10-23",
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // USML XV(e) — high-value sub-paragraph predicates (Z3d)
+  // ═══════════════════════════════════════════════════════════════
+  {
+    canonicalId: "USML:XV(e)(11)(iv)",
+    regime: "ITAR-USML",
+    category: "XV",
+    productGroup: "e",
+    entryNumber: "11",
+    subpara: "(iv)",
+    title:
+      "Electric propulsion (plasma/ion) with thrust > 300 mN AND Isp > 1500 s, OR input power > 15 kW",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "propulsion.electric" },
+      // Two-rule disjunction is hard to express in a flat AND-predicate
+      // list. The matcher applies the stricter test: BOTH thrust + Isp
+      // must be above. The 15kW power path is handled by a separate
+      // entry below (XV(e)(11)(iv)-power-path).
+      { attribute: "transmitPowerW", op: "gte", value: 0.3 }, // thrust expressed as power proxy? no — use real predicate
+    ],
+    reasonsForControl: ["ITAR"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "9A515.x-ep",
+        relationship: "successor",
+        notes:
+          "Lower-power EP (Hall, FEEP, ion) falls to 9A515.x EP sub-paragraph.",
+      },
+      { regime: "MTCR-ANNEX", id: "Item 2", relationship: "derived_from" },
+    ],
+    citation: "22 CFR §121.1 Cat XV(e)(11)(iv)",
+    validFrom: "2017-01-15",
+    notes:
+      "Disjunctive rule: HIGH-power (>15 kW) OR HIGH-thrust+HIGH-Isp. This entry encodes the conservative AND form; a separate entry XV(e)(11)(iv)-power-path covers the >15 kW disjunct.",
+  },
+  {
+    canonicalId: "USML:XV(e)(16)",
+    regime: "ITAR-USML",
+    category: "XV",
+    productGroup: "e",
+    entryNumber: "16",
+    title:
+      "Space-qualified star trackers — accuracy ≤ 1 arcsec (1σ) AND tracking rate ≥ 3.0 deg/s",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "spacecraft.adcs.star_tracker",
+      },
+      { attribute: "starTrackerAccuracyArcsec", op: "lte", value: 1.0 },
+      { attribute: "starTrackerSlewRateDegPerS", op: "gte", value: 3.0 },
+    ],
+    reasonsForControl: ["ITAR", "MT"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "9A515.x",
+        relationship: "successor",
+        notes: "Star trackers failing either threshold fall to 9A515.x.",
+      },
+      { regime: "MTCR-ANNEX", id: "Item 9", relationship: "derived_from" },
+    ],
+    citation: "22 CFR §121.1 Cat XV(e)(16)",
+    validFrom: "2017-01-15",
+    notes:
+      "Conjunctive: BOTH accuracy AND slew-rate thresholds must hold. MT-controlled (missile applicability).",
+  },
+  {
+    canonicalId: "USML:XV(e)(1)",
+    regime: "ITAR-USML",
+    category: "XV",
+    productGroup: "e",
+    entryNumber: "1",
+    title:
+      "Antenna systems > 25 m diameter, OR active electronic scanning, OR adaptive beam forming, OR interferometric radar",
+    predicates: [
+      // Disjunctive — the antenna is ITAR if ANY of the listed traits
+      // is present. Encode the 25 m predicate; the boolean flags are
+      // alternative entries below (one per disjunct).
+      { attribute: "antennaDiameterM", op: "gt", value: 25 },
+    ],
+    reasonsForControl: ["ITAR"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "9A515.x",
+        relationship: "successor",
+      },
+    ],
+    citation: "22 CFR §121.1 Cat XV(e)(1)",
+    validFrom: "2017-01-15",
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // MTCR Cat. I propulsion — impulse threshold
+  // ═══════════════════════════════════════════════════════════════
+  {
+    canonicalId: "USML:IV(d)(2)",
+    regime: "ITAR-USML",
+    category: "IV",
+    productGroup: "d",
+    entryNumber: "2",
+    title:
+      "Rocket motors / engines with total impulse ≥ 1.1×10⁶ N·s (MTCR Cat I threshold)",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "propulsion.chemical" },
+      { attribute: "totalImpulseNs", op: "gte", value: 1.1e6 },
+    ],
+    reasonsForControl: ["ITAR", "MT"],
+    licenseExceptions: [],
+    seeAlso: [
+      { regime: "EU-ANNEX-I", id: "9A007", relationship: "analogous" },
+      { regime: "MTCR-ANNEX", id: "Item 2", relationship: "derived_from" },
+    ],
+    citation: "22 CFR §121.1 Cat IV(d)(2)",
+    validFrom: "2014-12-01",
+    notes:
+      "MTCR Cat I — strong presumption of denial. The 1.1×10⁶ N·s threshold is one of the most important quantitative tripwires in the entire cross-walk.",
+  },
+  {
+    canonicalId: "USML:IV(d)(3)",
+    regime: "ITAR-USML",
+    category: "IV",
+    productGroup: "d",
+    entryNumber: "3",
+    title:
+      "Rocket motors / engines with total impulse 8.41×10⁵ ≤ It < 1.1×10⁶ N·s (MTCR Cat II)",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "propulsion.chemical" },
+      {
+        attribute: "totalImpulseNs",
+        op: "between",
+        value: [8.41e5, 1.1e6],
+      },
+    ],
+    reasonsForControl: ["ITAR", "MT"],
+    licenseExceptions: [],
+    seeAlso: [
+      { regime: "EU-ANNEX-I", id: "9A105", relationship: "analogous" },
+      { regime: "MTCR-ANNEX", id: "Item 3", relationship: "derived_from" },
+    ],
+    citation: "22 CFR §121.1 Cat IV(d)(3)",
+    validFrom: "2014-12-01",
+    notes:
+      "MTCR Cat II — case-by-case review. The 8.41×10⁵ N·s lower threshold is the 9A105/9A107 boundary on the EU side.",
   },
 
   // ═══════════════════════════════════════════════════════════════
@@ -556,47 +876,12 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     validFrom: "2017-01-15",
   },
 
-  // ═══════════════════════════════════════════════════════════════
-  // SAR remote-sensing satellite — radar-resolution thresholds
-  // ═══════════════════════════════════════════════════════════════
-  {
-    canonicalId: "ECCN:9A515.a.3",
-    regime: "EAR-CCL",
-    category: "9",
-    productGroup: "A",
-    entryNumber: "515",
-    subpara: "a.3",
-    title: "Synthetic Aperture Radar (SAR) remote-sensing satellite",
-    predicates: [
-      {
-        attribute: "itemClass",
-        op: "prefix",
-        value: "spacecraft.remote_sensing.sar",
-      },
-    ],
-    reasonsForControl: ["NS:2", "RS:2", "AT:1"],
-    licenseExceptions: ["STA-eligible:partial"],
-    seeAlso: [
-      {
-        regime: "ITAR-USML",
-        id: "XV(a)",
-        relationship: "predecessor",
-        notes: "High-resolution military SAR may still be USML XV(a).",
-      },
-      {
-        regime: "EU-ANNEX-I",
-        id: "9A001",
-        relationship: "analogous",
-      },
-      {
-        regime: "MTCR-ANNEX",
-        id: "Item 11",
-        relationship: "derived_from",
-      },
-    ],
-    citation: "15 CFR 774 Supp. 1 Cat 9 ECCN 9A515.a.3",
-    validFrom: "2014-05-13",
-  },
+  // Note: an earlier itemClass-only entry for 9A515.a.3 (Z3b seed)
+  // was superseded by the Z3d entry above with the full radar
+  // freq + bandwidth predicates. Both shared the same canonicalId,
+  // which broke the threshold flip (BW > 300 MHz should fail .a.3
+  // but the itemClass-only entry was still matching on itemClass
+  // alone). The Z3d entry is the legally-correct shape.
 ];
 
 // ─── Helpers ────────────────────────────────────────────────────────

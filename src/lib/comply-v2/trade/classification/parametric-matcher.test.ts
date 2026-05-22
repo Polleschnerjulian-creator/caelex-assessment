@@ -91,42 +91,183 @@ describe("Aperture 0.50 m boundary (USML XV(a)(7)(i) vs CCL 9A515.a.1)", () => {
   });
 });
 
-describe("SEU rate 1×10⁻¹⁰ boundary (USML XV(d) vs CCL 9A515.d)", () => {
-  const radHardBase: ItemAttributeBag = {
+describe("Rad-hard IC five-criteria boundary (CCL 9A515.d vs 9A515.e)", () => {
+  // Z3d: 9A515.d now encodes ALL FIVE criteria (TID, dose-rate upset,
+  // neutron fluence, SEU rate, SEL LET). USML XV(d) is [Reserved]
+  // since 2014 — controls moved to 9A515.d.  Items meeting only
+  // criterion 1 (TID ≥ 500 krad) fall to 9A515.e.
+
+  const allFiveBase: ItemAttributeBag = {
     isRadHardened: true,
-    radHardTidKrad: 150,
     itemClass: "ic.radhard.processor",
+    radHardTidKrad: 600, // criterion 1: ≥ 500
+    doseRateUpsetRadSiPerS: 6e8, // criterion 2: ≥ 5×10⁸
+    neutronFluenceNPerCm2: 1.5e14, // criterion 3: ≥ 1×10¹⁴
+    selLetThresholdMevCm2Mg: 100, // criterion 5: ≥ 80
   };
 
-  it("SEU 1e-11 (10× better than threshold) → USML XV(d)", () => {
+  it("all five criteria + SEU 1e-11 → 9A515.d (HIGH)", () => {
     const result = matchAgainstCrossWalk({
-      ...radHardBase,
-      seuRateErrorsPerBitDay: 1e-11,
+      ...allFiveBase,
+      seuRateErrorsPerBitDay: 1e-11, // criterion 4: ≤ 1e-10
     });
-    const ids = result.candidates.map((c) => c.entry.canonicalId);
-    expect(ids).toContain("USML:XV(d)");
-    // Should NOT match 9A515.d (which requires SEU > 1e-10)
-    expect(ids).not.toContain("ECCN:9A515.d");
+    const d = result.candidates.find(
+      (c) => c.entry.canonicalId === "ECCN:9A515.d",
+    );
+    expect(d).toBeDefined();
+    expect(d!.confidence).toBe("HIGH");
   });
 
-  it("SEU 1e-10 exactly (at threshold) → USML XV(d) (lte includes equal)", () => {
+  it("all five criteria + SEU 1e-10 exactly (at threshold) → 9A515.d", () => {
     const result = matchAgainstCrossWalk({
-      ...radHardBase,
+      ...allFiveBase,
       seuRateErrorsPerBitDay: 1e-10,
     });
     const ids = result.candidates.map((c) => c.entry.canonicalId);
-    expect(ids).toContain("USML:XV(d)");
+    expect(ids).toContain("ECCN:9A515.d");
   });
 
-  it("SEU 2e-10 (just over threshold) → CCL 9A515.d, NOT USML", () => {
+  it("SEU 2e-10 (fails criterion 4) → 9A515.e, NOT 9A515.d", () => {
     const result = matchAgainstCrossWalk({
-      ...radHardBase,
-      radHardTidKrad: 80, // also below XV(d) tid threshold
-      seuRateErrorsPerBitDay: 2e-10,
+      ...allFiveBase,
+      seuRateErrorsPerBitDay: 2e-10, // FAILS criterion 4
     });
     const ids = result.candidates.map((c) => c.entry.canonicalId);
-    expect(ids).toContain("ECCN:9A515.d");
-    expect(ids).not.toContain("USML:XV(d)");
+    expect(ids).toContain("ECCN:9A515.e"); // TID still passes
+    expect(ids).not.toContain("ECCN:9A515.d"); // five-criteria fails
+  });
+
+  it("neutron fluence too low (fails criterion 3) → 9A515.e", () => {
+    const result = matchAgainstCrossWalk({
+      ...allFiveBase,
+      seuRateErrorsPerBitDay: 1e-11,
+      neutronFluenceNPerCm2: 5e13, // below 1e14
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("ECCN:9A515.e");
+    expect(ids).not.toContain("ECCN:9A515.d");
+  });
+
+  it("LET threshold too low (fails criterion 5) → 9A515.e", () => {
+    const result = matchAgainstCrossWalk({
+      ...allFiveBase,
+      seuRateErrorsPerBitDay: 1e-11,
+      selLetThresholdMevCm2Mg: 60, // below 80
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("ECCN:9A515.e");
+    expect(ids).not.toContain("ECCN:9A515.d");
+  });
+
+  it("TID below 500 krad → NEITHER 9A515.d NOR 9A515.e fire", () => {
+    const result = matchAgainstCrossWalk({
+      ...allFiveBase,
+      radHardTidKrad: 100, // below threshold
+      seuRateErrorsPerBitDay: 1e-11,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("ECCN:9A515.d");
+    expect(ids).not.toContain("ECCN:9A515.e");
+  });
+});
+
+describe("9A515.a sub-paragraph splits (Z3d)", () => {
+  it("Spacecraft with SWIR sensor (peak λ 1500 nm) → 9A515.a.2", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.remote_sensing.swir",
+      peakWavelengthNm: 1500,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("ECCN:9A515.a.2");
+  });
+
+  it("SAR satellite center freq 5 GHz + BW 200 MHz → 9A515.a.3 (in band)", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.remote_sensing.sar",
+      radarCenterFreqGhz: 5,
+      radarBandwidthMhz: 200,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("ECCN:9A515.a.3");
+    expect(ids).not.toContain("USML:XV(a)(8)");
+  });
+
+  it("SAR center freq 5 GHz + BW 400 MHz → USML XV(a)(8) (ITAR), NOT 9A515.a.3", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.remote_sensing.sar",
+      radarCenterFreqGhz: 5,
+      radarBandwidthMhz: 400,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("USML:XV(a)(8)");
+    expect(ids).not.toContain("ECCN:9A515.a.3");
+  });
+
+  it("OSAM spacecraft (in-space servicing) → 9A515.a.4", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.osam.docking",
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("ECCN:9A515.a.4");
+  });
+});
+
+describe("USML XV(e) high-value sub-paragraphs (Z3d)", () => {
+  it("Star tracker ≤ 1 arcsec AND ≥ 3 deg/s → USML XV(e)(16) (BOTH thresholds)", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.adcs.star_tracker",
+      starTrackerAccuracyArcsec: 0.5,
+      starTrackerSlewRateDegPerS: 5,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("USML:XV(e)(16)");
+  });
+
+  it("Star tracker ≤ 1 arcsec but slew rate too low → NOT XV(e)(16)", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.adcs.star_tracker",
+      starTrackerAccuracyArcsec: 0.5,
+      starTrackerSlewRateDegPerS: 1.5, // below 3 deg/s
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("USML:XV(e)(16)");
+  });
+
+  it("Antenna diameter 30 m → USML XV(e)(1)", () => {
+    const result = matchAgainstCrossWalk({ antennaDiameterM: 30 });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("USML:XV(e)(1)");
+  });
+});
+
+describe("MTCR Cat I/II impulse thresholds (Z3d)", () => {
+  it("totalImpulse 1.2e6 N·s → USML IV(d)(2) (Cat I)", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "propulsion.chemical.solid",
+      totalImpulseNs: 1.2e6,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("USML:IV(d)(2)");
+  });
+
+  it("totalImpulse 9e5 N·s → USML IV(d)(3) (Cat II), NOT IV(d)(2)", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "propulsion.chemical.solid",
+      totalImpulseNs: 9e5,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("USML:IV(d)(3)");
+    expect(ids).not.toContain("USML:IV(d)(2)");
+  });
+
+  it("totalImpulse 5e5 N·s (below both) → no MTCR-impulse match", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "propulsion.chemical.solid",
+      totalImpulseNs: 5e5,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("USML:IV(d)(2)");
+    expect(ids).not.toContain("USML:IV(d)(3)");
   });
 });
 
