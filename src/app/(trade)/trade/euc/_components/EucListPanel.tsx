@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
-import { Plus, ChevronDown } from "lucide-react";
+import { Plus, ChevronDown, Download } from "lucide-react";
 import { TradeEUCFormType, TradeEUCStatus } from "@prisma/client";
 import type { EucWithRelations } from "@/lib/trade/euc-service";
 import { createEuc, advanceEucStatus } from "@/lib/trade/euc-actions";
@@ -87,15 +88,19 @@ export function EucListPanel({
                 <th className="pb-2 pr-4 font-medium">Operation</th>
                 <th className="pb-2 pr-4 font-medium">Status</th>
                 <th className="pb-2 pr-4 font-medium">Valid until</th>
+                <th className="pb-2 pr-4 font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-trade-border-subtle">
               {eucs.map((e) => (
                 <tr key={e.id}>
                   <td className="py-3 pr-4">
-                    <span className="font-medium text-trade-text-primary">
+                    <Link
+                      href={`/trade/euc/${e.id}`}
+                      className="font-medium text-trade-text-primary hover:text-trade-accent-strong hover:underline"
+                    >
                       {FORM_TYPE_LABELS[e.formType]}
-                    </span>
+                    </Link>
                   </td>
                   <td className="py-3 pr-4">
                     <span className="text-trade-text-primary">
@@ -119,6 +124,17 @@ export function EucListPanel({
                     {e.validUntil
                       ? new Date(e.validUntil).toISOString().slice(0, 10)
                       : "—"}
+                  </td>
+                  <td className="py-3 pr-4 text-right">
+                    <a
+                      href={`/api/trade/euc/${e.id}/pdf`}
+                      download
+                      title="Download Annex IIIa Certificate"
+                      className="inline-flex items-center gap-1 rounded-md border border-trade-border bg-trade-bg-page px-2 py-1 text-[11px] font-medium text-trade-text-secondary transition-colors hover:border-trade-accent hover:text-trade-accent-strong"
+                    >
+                      <Download size={11} />
+                      Annex IIIa
+                    </a>
                   </td>
                 </tr>
               ))}
