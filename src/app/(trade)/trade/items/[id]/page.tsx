@@ -28,6 +28,7 @@ import {
 
 import { ClassificationPanel } from "../_components/ClassificationPanel";
 import type { ClassificationResult } from "../_components/ClassificationPanel";
+import { ParametricMatcherPanel } from "../_components/ParametricMatcherPanel";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -61,6 +62,35 @@ interface TradeItemDetail {
   isRadHardened: boolean | null;
   isMilSpec: boolean | null;
   isAntiJam: boolean | null;
+  // Z3a tier-1 — optional because legacy items may not have them yet.
+  IspSeconds?: number | null;
+  deltaVMetersPerSecond?: number | null;
+  gsdMeters?: number | null;
+  transmitPowerW?: number | null;
+  frequencyGhz?: number | null;
+  radHardTidKrad?: number | null;
+  seuRateErrorsPerBitDay?: number | null;
+  itemClass?: string | null;
+  // Z3e extended vocabulary — optional. The matcher's three-valued
+  // logic treats missing values as UNKNOWN and emits PossibleMatch
+  // entries for them.
+  spectralBandCount?: number | null;
+  peakWavelengthNm?: number | null;
+  radarCenterFreqGhz?: number | null;
+  radarBandwidthMhz?: number | null;
+  antennaDiameterM?: number | null;
+  starTrackerAccuracyArcsec?: number | null;
+  starTrackerSlewRateDegPerS?: number | null;
+  totalImpulseNs?: number | null;
+  neutronFluenceNPerCm2?: number | null;
+  selLetThresholdMevCm2Mg?: number | null;
+  doseRateUpsetRadSiPerS?: number | null;
+  gnssMaxVelocityMPerS?: number | null;
+  antennaActiveScanning?: boolean | null;
+  antennaAdaptiveBeamforming?: boolean | null;
+  // Z3g universal — "specially designed" qualifier.
+  isSpeciallyDesigned?: boolean | null;
+  parametricAttributes?: Record<string, unknown> | null;
   status: TradeItemStatus;
   classificationSource: ClassificationSource;
   classifiedAt: string | null;
@@ -562,6 +592,14 @@ export default function TradeItemDetailPage({
                 </p>
               </div>
             )}
+          </div>
+
+          {/* Sprint Z3n — Parametric cross-walk matcher panel. Pure
+              client-side computation against the typed technical
+              attributes; surfaces candidates / possible-matches /
+              near-misses with regulatory-citation trails. */}
+          <div className="mt-6">
+            <ParametricMatcherPanel item={item} />
           </div>
         </div>
       </div>
