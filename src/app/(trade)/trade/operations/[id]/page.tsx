@@ -34,6 +34,7 @@ import { OperationLicensesPanel } from "../_components/OperationLicensesPanel";
 import { BafaPdfButton } from "@/components/trade/BafaPdfButton";
 import { BafaXmlButton } from "@/components/trade/BafaXmlButton";
 import { BafaXsdVersionWarning } from "@/components/trade/BafaXsdVersionWarning";
+import { DcsGeneratorButton } from "@/components/trade/DcsGeneratorButton";
 
 interface RiskFactorView {
   key: string;
@@ -375,6 +376,33 @@ export default function OperationDetailPage({
           }}
         />
         <BafaXmlButton operationId={op.id} operationReference={op.reference} />
+        {/* Z30 — US export documentation. Separated from BAFA by a
+            divider; only shown when at least one line carries a US
+            ECCN classification, which is what § 758.6 keys off. */}
+        {(() => {
+          const usEccns = Array.from(
+            new Set(
+              op.lines
+                .map((l) => l.item.eccnUS)
+                .filter((v): v is string => Boolean(v && v.trim().length > 0)),
+            ),
+          );
+          if (usEccns.length === 0) return null;
+          return (
+            <>
+              <span
+                aria-hidden="true"
+                className="h-6 w-px bg-trade-border-subtle"
+              />
+              <DcsGeneratorButton
+                eccns={usEccns}
+                destinationCountry={op.endUseCountry ?? op.shipToCountry}
+                consigneeName={op.endUserName ?? op.counterparty.legalName}
+                shipmentReference={op.reference}
+              />
+            </>
+          );
+        })()}
       </div>
 
       {/* Lifecycle */}
