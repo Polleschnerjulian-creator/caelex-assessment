@@ -10955,6 +10955,54 @@ model TradeItem {
   isMilSpec      Boolean? @default(false)
   isAntiJam      Boolean? @default(false)
 
+  // ── Z3a (Sprint Z3a 2026-05-22) Parametric attributes ──
+  // Typed technical specs that map to regulatory predicate thresholds.
+  // Used by the parametric-matcher (Sprint Z3c) to rank ECCN / USML /
+  // Annex I / MTCR candidates from the cross-walk graph in Sprint Z3b.
+  // All Float? — populated when known; NULL means the operator hasn't
+  // supplied the value yet and predicates depending on it skip.
+  //
+  // Regulatory anchors per field:
+  //   gsdMeters              — ground sample distance, drives EO
+  //                            spacecraft sub-classification
+  //                            (sub-0.5 m → ITAR vs ≥ 0.5 m → 9A515.a.1)
+  //   IspSeconds             — propulsion specific impulse, drives
+  //                            electric-propulsion identification
+  //                            (Hall thrusters ~1500 s, ion >3000 s)
+  //   deltaVMetersPerSecond  — total impulse capability, used as a
+  //                            sanity-bound on propulsion classification
+  //   transmitPowerW         — RF transmit power, drives some MTCR
+  //                            Cat. II + telecoms thresholds
+  //   frequencyGhz           — RF carrier frequency, drives 5A001
+  //                            telecoms sub-paragraph
+  //   radHardTidKrad         — total ionising dose tolerance in krad(Si),
+  //                            drives rad-hard threshold (9A515.d
+  //                            vs USML XV(d) all-five-criteria test)
+  //   seuRateErrorsPerBitDay — single-event-upset rate for CREME96
+  //                            GEO Solar-Min — USML XV(d) threshold:
+  //                            ≤ 1×10⁻¹⁰ errors/bit-day = ITAR;
+  //                            > 1×10⁻¹⁰ = 9A515.d (still controlled
+  //                            but EAR, not ITAR).
+  gsdMeters              Float?
+  IspSeconds             Float?
+  deltaVMetersPerSecond  Float?
+  transmitPowerW         Float?
+  frequencyGhz           Float?
+  radHardTidKrad         Float?
+  seuRateErrorsPerBitDay Float?
+
+  // Space-domain classification hint. Free-form string so the cross-walk
+  // can prefix-match (e.g. "spacecraft.remote_sensing.eo",
+  // "propulsion.electric.hall", "ic.radhard.processor"). NULL means
+  // unclassified — matcher falls back to attribute-only ranking.
+  itemClass String?
+
+  /// JSON bag for one-off / future technical attributes that don't have
+  /// dedicated columns yet. Shape: `{ "<attribute>": <value>, ... }`.
+  /// The parametric-matcher reads this AFTER the typed columns, so a
+  /// value here can fill gaps but won't override a typed column.
+  parametricAttributes Json?
+
   // ── Classification provenance ──
   classificationSource      TradeClassificationSource @default(USER_DECLARED)
   classifiedAt              DateTime?
