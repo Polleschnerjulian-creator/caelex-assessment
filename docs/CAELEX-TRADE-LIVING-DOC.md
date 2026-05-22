@@ -167,13 +167,13 @@ Minimal-Launch-Pack per User-Direktive "erst zum Laufen bringen":
 
 Per Recherche `docs/CAELEX-TRADE-FULL-RECHERCHE.md` § 7: Welt A (`/dashboard/trade/*`) ist production-ready CRUD, Welt B (`/trade/*`) hat nur Skelett-Pages. Phase A portiert Welt A → Welt B mit Indigo-Light-Theme.
 
-| Sprint | Scope                                                                                                           | Status         |
-| ------ | --------------------------------------------------------------------------------------------------------------- | -------------- |
-| **A1** | Items-Liste + Detail-Page nach `/trade/items/*` portieren, Indigo-Theme                                         | ⏳ in progress |
-| **A2** | Counterparties + Detail nach `/trade/parties/*` portieren                                                       | ⏳             |
-| **A3** | Operations + Detail (mit Tabs) nach `/trade/operations/*` portieren                                             | ⏳             |
-| **A4** | Licenses-View nach `/trade/licenses/*` portieren                                                                | ⏳             |
-| **A5** | `/trade` Welcome-Dashboard mit real aggregates (Items-Count, Parties-Count, In-Progress-Ops, Risk-Distribution) | ⏳             |
+| Sprint | Scope                                                                                                           | Status               |
+| ------ | --------------------------------------------------------------------------------------------------------------- | -------------------- |
+| **A1** | Items-Liste + Detail-Page nach `/trade/items/*` portieren, Indigo-Theme                                         | ✅ done (`58bbe844`) |
+| **A2** | Counterparties + Detail (Screening + BeneficialOwners) nach `/trade/parties/*` portieren                        | ✅ done (`69c456f2`) |
+| **A3** | Operations + Detail (mit Tabs) nach `/trade/operations/*` portieren                                             | ⏳                   |
+| **A4** | Licenses-View nach `/trade/licenses/*` portieren                                                                | ⏳                   |
+| **A5** | `/trade` Welcome-Dashboard mit real aggregates (Items-Count, Parties-Count, In-Progress-Ops, Risk-Distribution) | ⏳                   |
 
 **Component-Library:** `src/components/trade/*` (BafaPdfButton, ClassificationPanel, BeneficialOwnersPanel, OperationLicensesPanel, OperationLifecyclePanel, OperationLinesPanel, BafaElanK2Document) bleibt geteilt zwischen Welt A und Welt B — werden aus beiden Pfaden importiert.
 
