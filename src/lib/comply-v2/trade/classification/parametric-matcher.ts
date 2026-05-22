@@ -86,9 +86,48 @@ export interface CandidateMatch {
   rationale: string;
 }
 
+/**
+ * Sprint Z3f — three-valued logic result.
+ *
+ * Per the May 2026 ontology research blueprint § 14: "an unknown SEU
+ * rate must NOT silently classify a rad-hard FPGA as below-threshold."
+ *
+ * A `PossibleMatch` is emitted when an entry's predicates partially
+ * match — some matched (true), none refuted (false), but at least one
+ * could not be evaluated because the underlying item attribute is NULL.
+ *
+ * The operator should treat this as "fill in attribute X to confirm
+ * classification" — NOT as a no-match.
+ */
+export interface PossibleMatch {
+  entry: ControlListEntry;
+  /** Predicates that matched (definite true). */
+  matchedPredicates: MatchedPredicate[];
+  /** Predicates that could not be evaluated due to NULL item attribute. */
+  unknownPredicates: Array<{
+    attribute: AttributeName;
+    op: PredicateOp;
+    expectedValue: ParametricPredicate["value"];
+    /** Operator-actionable: "populate this attribute to resolve". */
+    missingAttribute: AttributeName;
+  }>;
+  /** Plain-language explanation for the operator. */
+  rationale: string;
+}
+
 export interface MatcherResult {
   /** Ranked candidates, HIGH first, then MEDIUM, then LOW. */
   candidates: CandidateMatch[];
+  /**
+   * Sprint Z3f — entries that partially match but have ≥1 predicate
+   * UNKNOWN due to NULL item attribute. Operator-actionable: fill in
+   * the missing attribute and re-run.
+   *
+   * Safety property: a `PossibleMatch` is NEVER returned for an entry
+   * whose predicates would refute given the available data. Only the
+   * unknown-attribute case produces a possible match.
+   */
+  possibleMatches: PossibleMatch[];
   /** True when the item has no parametric attributes populated. */
   noAttributesPopulated: boolean;
   /** Always present — every classification surface attaches a disclaimer. */
@@ -111,9 +150,16 @@ export function matchAgainstCrossWalk(
   const noAttributesPopulated = isBagEmpty(item);
 
   const candidates: CandidateMatch[] = [];
+  const possibleMatches: PossibleMatch[] = [];
+
   for (const entry of crossWalk) {
-    const match = evaluateEntry(item, entry);
-    if (match) candidates.push(match);
+    const result = evaluateEntry(item, entry);
+    if (result.kind === "match") {
+      candidates.push(result.match);
+    } else if (result.kind === "possible") {
+      possibleMatches.push(result.possible);
+    }
+    // result.kind === "refute" → entry dropped, no side effect.
   }
 
   // Rank: HIGH > MEDIUM > LOW, then by predicate-match count desc.
@@ -129,37 +175,71 @@ export function matchAgainstCrossWalk(
     return b.matchedPredicates.length - a.matchedPredicates.length;
   });
 
+  // Rank possibles by matched-count desc (most-corroborated first).
+  possibleMatches.sort(
+    (a, b) => b.matchedPredicates.length - a.matchedPredicates.length,
+  );
+
+  // Noise-suppression: when the operator has populated NOTHING, every
+  // entry with a predicate would surface as a possible match. That is
+  // worse-than-useless guidance — it tells them nothing actionable.
+  // Surface the noAttributesPopulated flag instead so the UI can render
+  // a "populate at least one technical attribute" prompt.
+  const surfacedPossibles = noAttributesPopulated ? [] : possibleMatches;
+
   return {
     candidates,
+    possibleMatches: surfacedPossibles,
     noAttributesPopulated,
     disclaimer: MATCHER_DISCLAIMER,
   };
 }
 
-// ─── Per-entry evaluation ───────────────────────────────────────────
+// ─── Per-entry evaluation (Sprint Z3f three-valued logic) ───────────
+
+type EntryEvalResult =
+  | { kind: "match"; match: CandidateMatch }
+  | { kind: "possible"; possible: PossibleMatch }
+  | { kind: "refute" };
 
 function evaluateEntry(
   item: ItemAttributeBag,
   entry: ControlListEntry,
-): CandidateMatch | null {
+): EntryEvalResult {
   // An entry with NO predicates can never match parametrically.
-  if (entry.predicates.length === 0) return null;
+  if (entry.predicates.length === 0) return { kind: "refute" };
 
   const matchedPredicates: MatchedPredicate[] = [];
+  const unknownPredicates: PossibleMatch["unknownPredicates"] = [];
   let hasParametricMatch = false;
   let anyBoundary = false;
 
   for (const pred of entry.predicates) {
     const actual = readAttribute(item, pred.attribute);
 
-    // NULL / undefined → predicate can't be evaluated. We require
-    // EVERY predicate to be evaluable AND match — otherwise the entry
-    // does not qualify.
-    if (actual === null || actual === undefined) return null;
+    // Three-valued logic, branch 1: UNKNOWN
+    // NULL / undefined → predicate cannot be evaluated. We do NOT
+    // refute — we collect into unknownPredicates and continue
+    // evaluating the rest of the entry. The final decision depends
+    // on whether ANY predicate refuted.
+    if (actual === null || actual === undefined) {
+      unknownPredicates.push({
+        attribute: pred.attribute,
+        op: pred.op,
+        expectedValue: pred.value,
+        missingAttribute: pred.attribute,
+      });
+      continue;
+    }
 
     const evalResult = evaluatePredicate(pred, actual);
-    if (!evalResult.matched) return null;
 
+    // Three-valued logic, branch 2: REFUTED
+    // A predicate that returned `matched: false` definitively refutes
+    // the entry — we drop it (no possible-match emission).
+    if (!evalResult.matched) return { kind: "refute" };
+
+    // Three-valued logic, branch 3: MATCHED
     matchedPredicates.push({
       attribute: pred.attribute,
       op: pred.op,
@@ -170,6 +250,25 @@ function evaluateEntry(
 
     if (pred.attribute !== "itemClass") hasParametricMatch = true;
     if (evalResult.boundary) anyBoundary = true;
+  }
+
+  // After scanning all predicates without a refutation:
+  //   - If any are UNKNOWN → possible match (operator must fill in).
+  //   - Otherwise → full match.
+  if (unknownPredicates.length > 0) {
+    return {
+      kind: "possible",
+      possible: {
+        entry,
+        matchedPredicates,
+        unknownPredicates,
+        rationale: buildPossibleRationale(
+          entry,
+          matchedPredicates,
+          unknownPredicates,
+        ),
+      },
+    };
   }
 
   const confidence: MatchConfidence = decideConfidence(
@@ -187,11 +286,28 @@ function evaluateEntry(
   );
 
   return {
-    entry,
-    confidence,
-    matchedPredicates,
-    rationale,
+    kind: "match",
+    match: {
+      entry,
+      confidence,
+      matchedPredicates,
+      rationale,
+    },
   };
+}
+
+function buildPossibleRationale(
+  entry: ControlListEntry,
+  matched: MatchedPredicate[],
+  unknown: PossibleMatch["unknownPredicates"],
+): string {
+  const matchedSummary = matched
+    .map(
+      (p) => `${p.attribute} ${humanOp(p.op)} ${formatValue(p.expectedValue)}`,
+    )
+    .join("; ");
+  const missing = unknown.map((u) => u.missingAttribute).join(", ");
+  return `Partial match against ${entry.canonicalId}: ${matched.length} predicate(s) matched (${matchedSummary || "none"}) but ${unknown.length} require additional data. Populate [${missing}] to resolve.`;
 }
 
 function decideConfidence(

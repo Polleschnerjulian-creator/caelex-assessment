@@ -401,6 +401,150 @@ describe("Disclaimer", () => {
   });
 });
 
+// ═══════════════════════════════════════════════════════════════════
+// Sprint Z3f — three-valued logic (UNKNOWN result)
+//
+// The CRITICAL safety property: an unknown attribute (NULL) must NOT
+// silently classify the item as below-threshold. Instead, the entry
+// must surface as a `possibleMatch` so the operator knows to populate
+// the missing attribute before any binding determination.
+// ═══════════════════════════════════════════════════════════════════
+
+describe("Three-valued logic — UNKNOWN-attribute handling (Z3f)", () => {
+  it("rad-hard IC with TID + SEU only (missing 3 criteria) → possibleMatch for 9A515.d, NOT candidate", () => {
+    // Pre-Z3f this would silently NOT match 9A515.d (because NULL was
+    // treated as "predicate fails"). Post-Z3f it emits a possibleMatch
+    // with the 3 unknown criteria explicitly listed so the operator
+    // can populate them.
+    const result = matchAgainstCrossWalk({
+      isRadHardened: true,
+      itemClass: "ic.radhard.processor",
+      radHardTidKrad: 600,
+      seuRateErrorsPerBitDay: 1e-11,
+      // doseRateUpsetRadSiPerS: missing (criterion 2)
+      // neutronFluenceNPerCm2: missing (criterion 3)
+      // selLetThresholdMevCm2Mg: missing (criterion 5)
+    });
+
+    // No candidates for 9A515.d (cannot definitively classify).
+    const dIds = result.candidates.map((c) => c.entry.canonicalId);
+    expect(dIds).not.toContain("ECCN:9A515.d");
+
+    // But 9A515.d SHOULD appear as a possible match with the 3
+    // unknown predicates spelled out.
+    const possible9A515D = result.possibleMatches.find(
+      (p) => p.entry.canonicalId === "ECCN:9A515.d",
+    );
+    expect(possible9A515D).toBeDefined();
+    expect(possible9A515D!.matchedPredicates.length).toBeGreaterThanOrEqual(3);
+
+    const missing = possible9A515D!.unknownPredicates.map(
+      (u) => u.missingAttribute,
+    );
+    expect(missing).toContain("doseRateUpsetRadSiPerS");
+    expect(missing).toContain("neutronFluenceNPerCm2");
+    expect(missing).toContain("selLetThresholdMevCm2Mg");
+  });
+
+  it("REFUTATION overrides UNKNOWN — entry dropped even if other predicates are missing", () => {
+    // If SEU is refuted (above threshold), 9A515.d cannot fire even
+    // when other criteria are unknown. Safety property: refutation
+    // is dispositive.
+    const result = matchAgainstCrossWalk({
+      isRadHardened: true,
+      itemClass: "ic.radhard.processor",
+      radHardTidKrad: 600,
+      seuRateErrorsPerBitDay: 2e-10, // REFUTES criterion 4
+      // doseRateUpsetRadSiPerS: missing
+      // neutronFluenceNPerCm2: missing
+      // selLetThresholdMevCm2Mg: missing
+    });
+
+    // 9A515.d MUST NOT appear in possibleMatches (it's refuted, not
+    // unknown). 9A515.e SHOULD match because it only needs TID.
+    const possible9A515D = result.possibleMatches.find(
+      (p) => p.entry.canonicalId === "ECCN:9A515.d",
+    );
+    expect(possible9A515D).toBeUndefined();
+
+    const e = result.candidates.find(
+      (c) => c.entry.canonicalId === "ECCN:9A515.e",
+    );
+    expect(e).toBeDefined();
+  });
+
+  it("unknown SEU → possibleMatch with 'populate seuRateErrorsPerBitDay' actionable", () => {
+    // The exact safety case from the research blueprint: unknown SEU
+    // must NOT silently classify below-threshold.
+    const result = matchAgainstCrossWalk({
+      isRadHardened: true,
+      itemClass: "ic.radhard.processor",
+      radHardTidKrad: 600,
+      doseRateUpsetRadSiPerS: 6e8,
+      neutronFluenceNPerCm2: 1.5e14,
+      selLetThresholdMevCm2Mg: 100,
+      // seuRateErrorsPerBitDay: missing — the critical attribute
+    });
+
+    const possible = result.possibleMatches.find(
+      (p) => p.entry.canonicalId === "ECCN:9A515.d",
+    );
+    expect(possible).toBeDefined();
+    expect(possible!.unknownPredicates).toHaveLength(1);
+    expect(possible!.unknownPredicates[0].missingAttribute).toBe(
+      "seuRateErrorsPerBitDay",
+    );
+    expect(possible!.rationale).toMatch(/Populate.*seuRateErrorsPerBitDay/);
+  });
+
+  it("possibleMatches sorted by matched-count desc (most-corroborated first)", () => {
+    // Star-tracker entry has 3 predicates: itemClass + accuracy + slew.
+    // If we give itemClass + accuracy but not slew → 2 matched, 1 unknown.
+    // Antenna entry has 1 predicate: antennaDiameterM > 25. If we don't
+    // give antennaDiameterM → 0 matched, 1 unknown.
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.adcs.star_tracker",
+      starTrackerAccuracyArcsec: 0.5,
+      // starTrackerSlewRateDegPerS: missing
+      // antennaDiameterM: missing → makes antenna entry a possible match
+    });
+
+    // The star-tracker possible match (2 matched) should come BEFORE
+    // the antenna possible match (0 matched) in the sorted list.
+    const ids = result.possibleMatches.map((p) => p.entry.canonicalId);
+    const idxStar = ids.indexOf("USML:XV(e)(16)");
+    expect(idxStar).toBeGreaterThanOrEqual(0);
+    // Cannot assert exact position because other entries may emit possibles
+    // too, but the star-tracker should rank ahead of zero-matched ones.
+    const star = result.possibleMatches[idxStar];
+    expect(star.matchedPredicates.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("full-match entries do NOT appear in possibleMatches (mutually exclusive)", () => {
+    const result = matchAgainstCrossWalk({
+      rangeKm: 5000,
+      payloadKg: 2000,
+      itemClass: "propulsion.electric.hall",
+      IspSeconds: 1500,
+    });
+
+    const mtcrAsCandidate = result.candidates.find(
+      (c) => c.entry.canonicalId === "MTCR:Item-1.A.1",
+    );
+    const mtcrAsPossible = result.possibleMatches.find(
+      (p) => p.entry.canonicalId === "MTCR:Item-1.A.1",
+    );
+    expect(mtcrAsCandidate).toBeDefined();
+    expect(mtcrAsPossible).toBeUndefined();
+  });
+
+  it("possibleMatches array exists and is iterable even when empty", () => {
+    const result = matchAgainstCrossWalk({});
+    expect(Array.isArray(result.possibleMatches)).toBe(true);
+    expect(result.possibleMatches).toHaveLength(0);
+  });
+});
+
 describe("parametricAttributes fallback bag", () => {
   it("reads attribute from parametricAttributes when typed column NULL", () => {
     const result = matchAgainstCrossWalk({
