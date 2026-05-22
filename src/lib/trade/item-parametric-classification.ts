@@ -75,6 +75,20 @@ export interface TradeItemParametricSnapshot {
   antennaAdaptiveBeamforming?: boolean | null;
   // ── Z3g universal qualifier ───────────────────────────────────────
   isSpeciallyDesigned?: boolean | null;
+  // ── Z25 tier-3 extended parametric attributes ─────────────────────
+  // Added 2026-05-22. These are TypeScript-typed BOM/Item fields (not
+  // DB columns) — they flow into the matcher via the parametricAttributes
+  // JSON bag in the same way as Z3e extended attributes.
+  apertureMM?: number | null;
+  groundResolutionMeters?: number | null;
+  signalBandwidthMHz?: number | null;
+  focalLengthMM?: number | null;
+  pixelPitchMicrons?: number | null;
+  maxOrbitAltitudeKm?: number | null;
+  minOrbitAltitudeKm?: number | null;
+  crossLinkBandwidthMbps?: number | null;
+  radHardenedTID_krad?: number | null;
+  temperatureRangeCelsius?: number | null;
   // ── Catch-all freeform JSON ───────────────────────────────────────
   parametricAttributes?: Record<string, unknown> | null;
 }
@@ -166,6 +180,30 @@ function mergeExtendedAttributes(
   ];
 
   for (const key of z3eFields) {
+    const value = item[key];
+    if (value !== null && value !== undefined) {
+      merged[key] = value;
+    }
+  }
+
+  // Z25 tier-3 attributes — same JSON-bag routing pattern as Z3e. Added
+  // 2026-05-22 to cover sensor-level apertures (mm), ground resolution,
+  // signal bandwidth, focal-plane parameters, orbit altitudes, cross-
+  // link rates, rad-hardness, and operating temperature ranges.
+  const z25Fields: Array<keyof TradeItemParametricSnapshot> = [
+    "apertureMM",
+    "groundResolutionMeters",
+    "signalBandwidthMHz",
+    "focalLengthMM",
+    "pixelPitchMicrons",
+    "maxOrbitAltitudeKm",
+    "minOrbitAltitudeKm",
+    "crossLinkBandwidthMbps",
+    "radHardenedTID_krad",
+    "temperatureRangeCelsius",
+  ];
+
+  for (const key of z25Fields) {
     const value = item[key];
     if (value !== null && value !== undefined) {
       merged[key] = value;
