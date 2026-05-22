@@ -1,0 +1,195 @@
+"use server";
+
+/**
+ * Trade EUC server actions (Sprint E5b).
+ *
+ * Thin wrappers around `euc-service.ts` with auth + role check + Zod
+ * input parsing. Same pattern as `program-actions.ts`.
+ */
+
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { isSuperAdmin } from "@/lib/super-admin";
+import { createEucRequest, transitionEucStatus } from "@/lib/trade/euc-service";
+import { logger } from "@/lib/logger";
+import { TradeEUCFormType, TradeEUCStatus } from "@prisma/client";
+
+export type ActionResult =
+  | { ok: true; id?: string }
+  | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
+
+const EDITOR_ROLES = ["OWNER", "ADMIN", "MANAGER"] as const;
+
+async function resolveSessionContext(): Promise<{
+  userId: string;
+  orgId: string;
+  role: string;
+}> {
+  const session = await auth();
+  if (!session?.user?.id) throw new ActionError("Not signed in");
+  const userId = session.user.id;
+
+  if (isSuperAdmin(session.user.email)) {
+    const anyOrg = await prisma.organization.findFirst({
+      where: { isActive: true },
+      select: { id: true },
+      orderBy: { createdAt: "asc" },
+    });
+    if (!anyOrg) throw new ActionError("No active organisation found");
+    return { userId, orgId: anyOrg.id, role: "OWNER" };
+  }
+
+  const membership = await prisma.organizationMember.findFirst({
+    where: { userId, organization: { isActive: true } },
+    select: { organizationId: true, role: true },
+    orderBy: { joinedAt: "asc" },
+  });
+  if (!membership) throw new ActionError("No active organisation membership");
+  return { userId, orgId: membership.organizationId, role: membership.role };
+}
+
+function assertEditor(role: string) {
+  if (!(EDITOR_ROLES as readonly string[]).includes(role)) {
+    throw new ActionError(
+      "Insufficient role — MANAGER or higher required to manage EUCs",
+    );
+  }
+}
+
+class ActionError extends Error {
+  constructor(public readonly publicMessage: string) {
+    super(publicMessage);
+    this.name = "ActionError";
+  }
+}
+
+// ─── Schemas ────────────────────────────────────────────────────────
+
+const optionalIsoDate = z
+  .string()
+  .optional()
+  .transform((v) => (v && v.length > 0 ? new Date(v) : null))
+  .refine((d) => d === null || !Number.isNaN(d.getTime()), {
+    message: "Invalid date",
+  });
+
+const optionalString = z
+  .string()
+  .optional()
+  .transform((v) => {
+    const t = v?.trim();
+    return t && t.length > 0 ? t : null;
+  });
+
+const createSchema = z.object({
+  formType: z.nativeEnum(TradeEUCFormType),
+  partyId: z.string().min(1, "partyId required"),
+  operationId: optionalString,
+  validUntil: optionalIsoDate,
+  notes: optionalString,
+});
+
+const transitionSchema = z.object({
+  eucId: z.string().min(1, "eucId required"),
+  nextStatus: z.nativeEnum(TradeEUCStatus),
+  signedDocumentId: optionalString,
+  validUntil: optionalIsoDate,
+  notes: optionalString,
+});
+
+export type CreateEucInput = z.input<typeof createSchema>;
+export type TransitionEucInput = z.input<typeof transitionSchema>;
+
+// ─── Actions ────────────────────────────────────────────────────────
+
+export async function createEuc(input: CreateEucInput): Promise<ActionResult> {
+  try {
+    const ctx = await resolveSessionContext();
+    assertEditor(ctx.role);
+
+    const parsed = createSchema.safeParse(input);
+    if (!parsed.success) {
+      return {
+        ok: false,
+        error: "Some fields are invalid",
+        fieldErrors: parsed.error.flatten().fieldErrors as Record<
+          string,
+          string[]
+        >,
+      };
+    }
+
+    const created = await createEucRequest({
+      organizationId: ctx.orgId,
+      formType: parsed.data.formType,
+      partyId: parsed.data.partyId,
+      operationId: parsed.data.operationId,
+      validUntil: parsed.data.validUntil,
+      notes: parsed.data.notes,
+      lastActionById: ctx.userId,
+    });
+
+    revalidatePath("/trade/euc");
+    return { ok: true, id: created.id };
+  } catch (err) {
+    if (err instanceof ActionError) {
+      return { ok: false, error: err.publicMessage };
+    }
+    logger.error("euc-actions: create failed", err);
+    return {
+      ok: false,
+      error:
+        err instanceof Error
+          ? err.message
+          : "Unexpected error while creating EUC",
+    };
+  }
+}
+
+export async function advanceEucStatus(
+  input: TransitionEucInput,
+): Promise<ActionResult> {
+  try {
+    const ctx = await resolveSessionContext();
+    assertEditor(ctx.role);
+
+    const parsed = transitionSchema.safeParse(input);
+    if (!parsed.success) {
+      return {
+        ok: false,
+        error: "Some fields are invalid",
+        fieldErrors: parsed.error.flatten().fieldErrors as Record<
+          string,
+          string[]
+        >,
+      };
+    }
+
+    await transitionEucStatus({
+      organizationId: ctx.orgId,
+      eucId: parsed.data.eucId,
+      nextStatus: parsed.data.nextStatus,
+      signedDocumentId: parsed.data.signedDocumentId,
+      validUntil: parsed.data.validUntil,
+      notes: parsed.data.notes,
+      lastActionById: ctx.userId,
+    });
+
+    revalidatePath("/trade/euc");
+    return { ok: true };
+  } catch (err) {
+    if (err instanceof ActionError) {
+      return { ok: false, error: err.publicMessage };
+    }
+    logger.error("euc-actions: status transition failed", err);
+    return {
+      ok: false,
+      error:
+        err instanceof Error
+          ? err.message
+          : "Unexpected error while advancing status",
+    };
+  }
+}
