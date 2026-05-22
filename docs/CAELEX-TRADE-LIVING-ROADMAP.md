@@ -10,7 +10,7 @@ sprint moves from `Backlog` → `Shipped`. The pull request that ships a
 sprint must include the corresponding update to this file in the same
 commit (or the immediate follow-up).
 
-**Last updated.** 2026-05-22 (Sprint W1 just shipped, Z-series queued).
+**Last updated.** 2026-05-22 (Z3a-Z3h + Z8 + Z10 shipped; Z4+ queued).
 
 ---
 
@@ -45,8 +45,14 @@ These are the inputs that drive the roadmap. Treat as primary sources.
 | Cross-links counterparty/operation → EUC/Re-Export/VSD                                             | Y1+Y2+Y3          | —                                                                 |
 | Email templates (license expiry, sanctions hit, catch-all, blocked, welcome)                       | E2                | —                                                                 |
 | License Exception Matrix (BIS STA/ENC/CSA/GOV/TMP + BAFA AGG-12/AGG-27 + EUGEA EU001)              | B3 + D3           | license-exception-matrix.test (35)                                |
+| § 9(1) AWV nuclear catch-all (9 countries, BAFA-notified / aware / keyword)                        | Z1                | catch-all-evaluator.test (covered)                                |
+| EU Annex IV (Reg. 833/2014 Art. 2b) as 7th sanctions layer with hard PROHIBITED gate               | Z2 + Z2b          | eu-annex-iv.test (17)                                             |
+| § 9(2) AWV military-end-use catch-all (19 arms-embargo countries)                                  | Z10               | catch-all-evaluator.test (45)                                     |
+| Parametric control-list cross-walk + three-valued matcher (USML/CCL/EU/MTCR with "specially        | Z3a–Z3h           | parametric-matcher.test (52)                                      |
+| designed" gating, CMG vs reaction-wheel disambiguation, full 9A515.a/.d/.e sub-paragraph rules)    |                   |                                                                   |
+| ICP 2019/1318 seven-element mapping with BAFA SAG eligibility (≥ 80% mandatory)                    | Z8                | icp-mapping-service.test (25)                                     |
 
-**Total Vitest count:** 601+ trade tests passing.
+**Total Vitest count:** 700+ trade tests passing (post Z3h + Z8 + Z10).
 
 ### What's NOT yet built (the gap)
 
@@ -59,7 +65,7 @@ See § 3 below for the prioritised list against the May 2026 research blueprint.
 Each item below has a Z-prefix sprint number and detail enough that a fresh
 session can implement it. Order = top-down execution priority.
 
-### Z1 — § 9 AWV nuclear catch-all (1 sprint) ⏳
+### Z1 — § 9 AWV nuclear catch-all (1 sprint) ✅ SHIPPED
 
 **Why.** Research blueprint § 4 calls out the German § 9(1) AWV nuclear
 end-use catch-all on **non-listed items** to nine specified countries:
@@ -87,7 +93,7 @@ of the nine countries.
 **Out of scope.** UI for marking `nuclearEndUseAware = true` on an
 operation — operators can set it via Astra or future operation-edit UI.
 
-### Z2 — Annex IV (Reg. 833/2014 Art. 2b) as separate sanctions layer (2 sprints)
+### Z2 — Annex IV (Reg. 833/2014 Art. 2b) as separate sanctions layer (2 sprints) ✅ SHIPPED
 
 **Why.** Research blueprint § 7. Council Regulation (EU) 2026/506 of
 23 April 2026 added 60 entities to Annex IV (32 Russian, 28 in third
@@ -123,7 +129,37 @@ distinction.
 `ANNEX_IV_END_USER_PROHIBITION` that triggers when any counterparty
 or intermediary in the operation is on Annex IV.
 
-### Z3 — Parametric control list schema (2-3 sprints)
+### Z3 — Parametric control list schema (2-3 sprints) ✅ SHIPPED (Z3a-Z3h)
+
+**Status (2026-05-22).** Eight sub-sprints landed across the matcher
+moat — the most differentiated part of the product. Production-grade
+parametric classification with:
+
+- 20+ cross-walk entries: USML XV(a)(7)(i), 9A515.a.1-.a.4 (split by
+  EO / SWIR / SAR / OSAM with full sub-paragraph predicates),
+  9A515.d (all 5 conjunctive radiation criteria), 9A515.e, 9A515.x
+  (EP + RW with isSpeciallyDesigned gating), 9A515.g, USML XV(b),
+  USML XV(e)(1) / (e)(11)(iv) / (e)(13) / (e)(16), USML XII anti-jam
+  GNSS, USML IV(d)(2) / (d)(3) MTCR Cat I/II, EU 9A004, MTCR 1.A.1
+- 15+ typed parametric columns on `TradeItem` (aperture, payload,
+  range, Isp, ΔV, GSD, transmit power, radar centre freq / bandwidth,
+  TID, SEU, dose-rate upset, neutron fluence, SEL LET, antenna
+  diameter, star-tracker accuracy / slew rate, total impulse, GNSS
+  max velocity, isSpeciallyDesigned, isAntiJam, …)
+- Three-valued logic (true / false / UNKNOWN): NULL attribute emits a
+  PossibleMatch with actionable "populate X to resolve" rationale;
+  refutation overrides UNKNOWN (defence-in-depth)
+- "Specially designed" predicate integration on 9A515.x catch-alls
+  and USML XV(b) — industrial flywheels and commercial TT&C antennas
+  no longer overfire
+- CMG vs reaction-wheel disambiguation closes the most-frequent
+  classification error documented in the 2014 IFR preamble (79 FR 27184)
+- Boundary tolerance with 1e-9 epsilon for IEEE-754 imprecision;
+  Order-of-Review respected (USML/CCL overlap surfaces BOTH)
+
+52 tests on the matcher; full coverage of every regulatory boundary
+in the May 2026 research blueprint § 5. See-through rule propagation
+across a BOM graph is deferred (needs a BOM model) — queued as Z3i.
 
 **Why.** Research blueprint § 5. The genuine moat. No incumbent
 (Descartes, AEB, SAP GTS, OpenSanctions) models space-domain
@@ -285,7 +321,14 @@ already (43 tests) but the FDPR scenarios are critical and complex.
 - Add ECCN-aware thresholds (0% for 9x515 to D:5, 25%/10% by default).
 - New tests covering the 9 FDPR scenarios.
 
-### Z8 — ICP 2019/1318 seven-element mapping (1 sprint)
+### Z8 — ICP 2019/1318 seven-element mapping (1 sprint) ✅ SHIPPED
+
+**Status (2026-05-22).** Pure data + engine landed. 7 elements, 22
+check items (15 mandatory), auto-satisfaction wiring to existing
+`TradeComplianceProgram` fields, manual override map for auditor
+sign-off, and BAFA SAG-eligibility flag at ≥ 80% mandatory completion.
+UI rendering of the seven-element view on `/trade/program` is
+deferred to a UI sprint (data layer + engine are the moat).
 
 **Why.** Research blueprint § 1 + 7. Our `TradeComplianceProgram` has
 7 sections but they don't 1:1 map to the EU 2019/1318 Recommendation
@@ -328,7 +371,17 @@ EU national lists; Orbis has the corporate ownership data.
   `TradePartyOwnership` table. Refresh on a schedule.
 - Tests + env-var management for the API keys.
 
-### Z10 — § 9(2) AWV + other AWV catch-alls (1 sprint)
+### Z10 — § 9(2) AWV + other AWV catch-alls (1 sprint) ✅ SHIPPED
+
+**Status (2026-05-22).** § 9(2) AWV military-end-use catch-all to
+19 arms-embargo countries (EU+UN+national union) wired into the
+catch-all evaluator. Triggers HIGH on BAFA notification / self-
+attested awareness / declared MILITARY end-use; MEDIUM on sectoral
+keyword match. Decoupled from § 9(1) (Iran fires nuclear only, not
+military, when only a nuclear keyword is present). § 9(3) (chemical/
+biological) and § 9(4) (other embargo destinations) remain queued
+under Z10b — research blueprint doesn't pin a tight specification
+for those yet.
 
 **Why.** Research blueprint § 4 + § 1. § 9 AWV also covers other
 catch-all triggers beyond § 9(1) nuclear — including military-end-use
