@@ -122,6 +122,32 @@ export interface KnowledgeFacts {
    * this signal to fire (f).
    */
   destinationIsOccupiedUkraineRegion?: boolean;
+  /**
+   * True if the operator has knowledge that the foreign item is for
+   * use in the development or production of advanced-computing
+   * integrated circuits (advanced-node IC fabrication for AI/ML
+   * accelerators or memory). Distinct from
+   * `advancedNodeIcFacility` — that flag is destination-tied (Macau/
+   * D:5 facility producing the chips); this is the broader "this
+   * item will be incorporated into AI chip development" signal.
+   *
+   * Per 15 CFR § 734.9(h)(2)(ii), this triggers the Advanced
+   * Computing FDPR for items in 3A090 / 4A090 / 4D090 scope.
+   * Z20d consumes this signal.
+   */
+  advancedComputingEndUse?: boolean;
+  /**
+   * True if the operator has knowledge that the foreign item will be
+   * incorporated into a "supercomputer" as defined by 15 CFR § 772.1
+   * — a computing system having ≥ 100 double-precision PetaFLOPS in
+   * 41,674 ft² (~3,872 m²) or smaller, with related thresholds for
+   * larger floor footprints.
+   *
+   * Per 15 CFR § 734.9(i), this triggers the Supercomputer FDPR
+   * regardless of physical destination — knowledge of the end-use
+   * is the gate. Z20d consumes this signal.
+   */
+  supercomputerEndUse?: boolean;
 
   // ── Red Flags (Supp. 3 to Part 732) ──────────────────────────────
   /**

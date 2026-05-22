@@ -309,9 +309,9 @@ describe("Gate 3b — Percentage threshold edge cases", () => {
   });
 });
 
-// ─── Gate 2 FDPR wiring (Z20a + Z20b + Z20c — 8 of 10 rules) ──────
+// ─── Gate 2 FDPR wiring (Z20a/b/c/d — full coverage of 10 rules) ──
 
-describe("Gate 2 — FDPR engine wired (8 of 10 rules; Z20a/b/c)", () => {
+describe("Gate 2 — FDPR engine wired (all 10 rules; Z20a/b/c/d)", () => {
   it("Every result includes fdprHits + fdprNotYetEvaluatedRules", () => {
     const result = evaluateSubjectToEAR(
       mkInput("BR", [{ nodeId: "L1", usOrigin: true, eccn: "EAR99" }]),
@@ -320,8 +320,8 @@ describe("Gate 2 — FDPR engine wired (8 of 10 rules; Z20a/b/c)", () => {
     expect(Array.isArray(result.fdprHits)).toBe(true);
     expect(result.fdprNotYetEvaluatedRules).toBeDefined();
     expect(Array.isArray(result.fdprNotYetEvaluatedRules)).toBe(true);
-    // 2 rules remain not-yet-evaluated post-Z20c: h/i
-    expect(result.fdprNotYetEvaluatedRules.length).toBeGreaterThanOrEqual(2);
+    // Full coverage post-Z20d — no rules remain unevaluated
+    expect(result.fdprNotYetEvaluatedRules).toHaveLength(0);
   });
 
   it("Foreign 9A515 + US 9E515 tech to PRC → Gate 2 fires, FDPR_APPLICABLE", () => {
@@ -395,12 +395,13 @@ describe("Gate 2 — FDPR engine wired (8 of 10 rules; Z20a/b/c)", () => {
     expect(result.fdprHits).toHaveLength(0);
   });
 
-  it("Disclaimer references 8 of 10 FDPR rules + queued Z20d", () => {
+  it("Disclaimer references full Three-Gate coverage post-Z20d", () => {
     const result = evaluateSubjectToEAR(
       mkInput("BR", [{ nodeId: "L1", usOrigin: true, eccn: "EAR99" }]),
     );
-    expect(result.disclaimer).toMatch(/8 of 10|eight of (the )?ten/i);
-    expect(result.disclaimer).toMatch(/Z20d|Advanced Computing|Supercomputer/i);
+    expect(result.disclaimer).toMatch(/all 10 distinct rules|10 distinct/i);
+    expect(result.disclaimer).toMatch(/Advanced Computing/i);
+    expect(result.disclaimer).toMatch(/Supercomputer/i);
   });
 });
 

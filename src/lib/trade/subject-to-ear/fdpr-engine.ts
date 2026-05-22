@@ -1,7 +1,7 @@
 /**
  * Caelex Trade — Foreign Direct Product Rule (FDPR) engine.
  *
- * Sprints Z20a / Z20b / Z20c. Tier 1 per the Living Execution Plan.
+ * Sprints Z20a / Z20b / Z20c / Z20d. Tier 1 per the Living Execution Plan.
  *
  * 15 CFR § 734.9 codifies 8 FDPR scenarios across 10 distinct rules
  * (because (e) is split into (e)(1)/(2)/(3)). Each rule defines a
@@ -20,7 +20,7 @@
  * produced on US-direct-product tooling. The cascade (Z18) treats
  * FDPR and de-minimis as orthogonal channels (Blueprint 2 § Caveat #6).
  *
- * Rules implemented in this release (8 of 10):
+ * All 10 distinct FDPR rules are now evaluated (Z20a/b/c/d complete):
  *
  *   § 734.9(b) — NS-FDP                 → D:1, E:1, E:2          [Z20a]
  *   § 734.9(c) — 9x515-FDP              → D:5, E:1, E:2          [Z20a]
@@ -30,11 +30,8 @@
  *   § 734.9(e)(3) — Footnote 5 + adv-node-IC → knowledge-gated   [Z20b]
  *   § 734.9(f) — Russia/Belarus/Crimea  → destination-gated      [Z20c]
  *   § 734.9(g) — MEU/Procurement (fn3)  → knowledge-gated (fn3)  [Z20c]
- *
- * Remaining 2 rules stubbed pending Z20d:
- *
- *   § 734.9(h) — Advanced Computing FDP                          [Z20d]
- *   § 734.9(i) — Supercomputer FDP                               [Z20d]
+ *   § 734.9(h) — Advanced Computing     → Macau/D:5 or adv-IC    [Z20d]
+ *   § 734.9(i) — Supercomputer          → worldwide on knowledge [Z20d]
  *
  * Source: Blueprint 2 § 3 + § 9.1 steps 3-5. 15 CFR § 734.9.
  *
@@ -308,16 +305,69 @@ function isRussiaBelarusOrOccupiedUkraine(
   return knowledgeFacts?.destinationIsOccupiedUkraineRegion === true;
 }
 
-// Pure list of "not yet evaluated" rules. Z20a shipped (b)/(c)/(d).
-// Z20b shipped (e)(1)/(2)/(3). Z20c shipped (f) + (g). (h) and (i)
-// remain queued under Z20d.
-const NOT_YET_EVALUATED: FDPRRuleId[] = [
-  "734.9(h)-advanced-computing",
-  "734.9(i)-supercomputer",
-];
+/**
+ * § 734.9(h)/(i) — Advanced-computing foreign-item scope. Foreign item
+ * must be classified under ECCN 3A090, 4A090, 4D090, or one of the
+ * `.z` paragraphs of 3A001/3A002/4A003/4A004/4A005/4A090/5A002/5A992/
+ * 5D002/5D992/5E002/5E992 (the "advanced-computing chip and related
+ * software/tech" classifications added by Oct 2022 IFR + amendments).
+ *
+ * Conservative implementation: match the explicit .090 classifications
+ * plus any 3A001/3A002/4A003/4A004/4A005/5A002 entries — operator
+ * confirms the .z designation in their classification.
+ *
+ * Source: 15 CFR § 734.9(h)(1), (i)(1). 87 FR 62186 (Oct 13, 2022).
+ */
+function isAdvancedComputingForeignItem(
+  eccn: string | null | undefined,
+): boolean {
+  if (!eccn) return false;
+  const n = eccn.replace(/^ECCN:/, "");
+  // Direct .090 hits
+  if (/^3A090\b|^4A090\b|^4D090\b/i.test(n)) return true;
+  // Advanced-computing parent ECCNs with .z paragraphs (operator
+  // confirms .z scope via parametric matcher upstream)
+  if (
+    /^3A001\b/i.test(n) ||
+    /^3A002\b/i.test(n) ||
+    /^4A003\b/i.test(n) ||
+    /^4A004\b/i.test(n) ||
+    /^4A005\b/i.test(n) ||
+    /^5A002\b/i.test(n)
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * § 734.9(h)/(i) — Product scope tech test: US-origin tech/sw in any
+ * of the advanced-computing-tech ECCNs that produce direct products
+ * within § 734.9(h)/(i) reach. This is the union of fn5 production
+ * tech + 4D090/4E001 explicitly named in the rule.
+ *
+ * Source: 15 CFR § 734.9(h)(1)(i)/(ii), § 734.9(i)(1)(i)/(ii).
+ */
+function isAdvancedComputingTechEccn(eccn: string): boolean {
+  if (!eccn) return false;
+  const n = eccn.replace(/^ECCN:/, "");
+  if (isFootnote5TechEccn(eccn)) return true;
+  return (
+    /^3D001\b|^3D002\b|^3D991\b/i.test(n) ||
+    /^3E001\b|^3E002\b|^3E003\b|^3E991\b/i.test(n) ||
+    /^4D001\b|^4D090\b/i.test(n) ||
+    /^4E001\b/i.test(n) ||
+    /^5D001\b/i.test(n) ||
+    /^5E001\b/i.test(n)
+  );
+}
+
+// All 10 distinct FDPR rules now evaluated (Z20a/b/c/d complete).
+// notYetEvaluatedRules returns empty.
+const NOT_YET_EVALUATED: FDPRRuleId[] = [];
 
 const FDPR_DISCLAIMER =
-  "FDPR engine output is SCREENING-LEVEL guidance only. Eight of the ten distinct FDPR rules are evaluated in this release: § 734.9(b) NS-FDP, (c) 9x515-FDP, (d) 600-series-FDP, (e)(1) Entity-List Footnote 1, (e)(2) Entity-List Footnote 4, (e)(3) Entity-List Footnote 5, (f) Russia/Belarus/Crimea, (g) MEU/Procurement Footnote 3. The remaining two (Advanced Computing § 734.9(h), Supercomputer § 734.9(i)) are NOT YET evaluated — operator MUST perform these manually for any transaction involving advanced-computing semiconductors or supercomputer end-use. Final determination requires qualified export-control counsel.";
+  "FDPR engine output is SCREENING-LEVEL guidance only. All ten distinct FDPR rules are now evaluated: § 734.9(b) NS-FDP, (c) 9x515-FDP, (d) 600-series-FDP, (e)(1) Entity-List Footnote 1, (e)(2) Entity-List Footnote 4, (e)(3) Entity-List Footnote 5, (f) Russia/Belarus/Crimea, (g) MEU/Procurement Footnote 3, (h) Advanced Computing, (i) Supercomputer. Coverage of § 734.9 is complete to the rule-citation level — however, the parametric details of each rule (notably the .z-paragraph scope on advanced-computing classifications and the supercomputer FLOPS thresholds) require human compliance-officer review against the operator's specific item characterization. Final determination requires qualified export-control counsel.";
 
 // ─── Engine ─────────────────────────────────────────────────────────
 
@@ -662,6 +712,113 @@ export function evaluateFDPR(input: FDPREvaluationInput): FDPREvaluationResult {
         licenseAuthority:
           "15 CFR § 744.21 — License required for MEU; policy of denial",
       });
+    }
+  }
+
+  // ── § 734.9(h) — Advanced Computing FDPR ─────────────────────────
+  // Trigger: foreign item is in advanced-computing scope (3A090,
+  // 4A090, 4D090, or .z paragraph of 3A001/3A002/4A003/4A004/4A005/
+  // 5A002) AND (destination is Macau or D:5, OR operator has
+  // knowledge of advanced-computing-IC development end-use) AND
+  // direct product of US-origin tech/sw in the advanced-computing
+  // tech scope.
+  //
+  // Source: 15 CFR § 734.9(h). 87 FR 62186 (Oct 13, 2022) — Advanced
+  // Computing IFR. Amended 88 FR 73430 (Oct 25, 2023).
+  const advCompDestinationInScope =
+    isMacauOrD5 ||
+    input.knowledgeFacts?.advancedComputingEndUse === true ||
+    input.knowledgeFacts?.advancedNodeIcFacility === true;
+
+  if (advCompDestinationInScope) {
+    const foreignItemAdvComp =
+      isAdvancedComputingForeignItem(input.foreignItemEccn) ||
+      input.bom.some((line) => isAdvancedComputingForeignItem(line.eccn));
+
+    if (foreignItemAdvComp) {
+      const matchingHLines = input.bom.filter((line) => {
+        const tech = (line.usTechnologyEccns ?? []).some(
+          isAdvancedComputingTechEccn,
+        );
+        const sw = (line.usSoftwareEccns ?? []).some(
+          isAdvancedComputingTechEccn,
+        );
+        const plant = (line.plantTechEccns ?? []).some(
+          isAdvancedComputingTechEccn,
+        );
+        return (
+          (line.madeWithUSTechnology === true && tech) ||
+          (line.madeWithUSSoftware === true && sw) ||
+          (line.producedByPlantThatIsUSDirectProduct === true && plant)
+        );
+      });
+      if (matchingHLines.length > 0) {
+        const triggerDesc = isMacauOrD5
+          ? `Destination ${input.destinationCountry} is Macau/D:5`
+          : input.knowledgeFacts?.advancedComputingEndUse === true
+            ? "Knowledge of advanced-computing-IC development end-use"
+            : "Knowledge of advanced-node-IC facility";
+        hits.push({
+          ruleId: "734.9(h)-advanced-computing",
+          title: "Advanced Computing FDP (§ 734.9(h))",
+          citation:
+            "15 CFR § 734.9(h) — Foreign item in 3A090/4A090/4D090 (or .z paragraphs of 3A001/3A002/4A003/4A004/4A005/5A002), direct product of US-origin advanced-computing tech, destined for Macau/D:5 or advanced-computing-IC end-use",
+          matchingComponentNodeIds: matchingHLines.map((l) => l.nodeId),
+          rationale: `${triggerDesc}. Foreign item is in advanced-computing ECCN scope (3A090/4A090/4D090 or .z paragraph). ${matchingHLines.length} BOM line(s) used US-origin advanced-computing tech/software/plant. Foreign item is subject to the EAR via § 734.9(h) Advanced Computing FDPR. License required under § 742.6 / § 744.23; policy of denial.`,
+          licenseAuthority:
+            "15 CFR § 742.6 + § 744.23 (Advanced Computing / Semiconductor Manufacturing; policy of denial)",
+        });
+      }
+    }
+  }
+
+  // ── § 734.9(i) — Supercomputer FDPR ──────────────────────────────
+  // Trigger: knowledge that the foreign item will be incorporated
+  // into a supercomputer (§ 772.1 definition: ≥ 100 double-precision
+  // PetaFLOPS in 41,674 ft² / ~3,872 m² or smaller). Foreign item
+  // must be in advanced-computing scope. Product scope: US-origin
+  // advanced-computing tech.
+  //
+  // Destination is WORLDWIDE on knowledge — like (g), this catches
+  // third-country procurement schemes routing to a supercomputer
+  // build-out anywhere.
+  //
+  // Source: 15 CFR § 734.9(i). 87 FR 62186 (Oct 13, 2022). § 772.1
+  // for the supercomputer definition.
+  if (input.knowledgeFacts?.supercomputerEndUse === true) {
+    const foreignItemAdvComp =
+      isAdvancedComputingForeignItem(input.foreignItemEccn) ||
+      input.bom.some((line) => isAdvancedComputingForeignItem(line.eccn));
+
+    if (foreignItemAdvComp) {
+      const matchingILines = input.bom.filter((line) => {
+        const tech = (line.usTechnologyEccns ?? []).some(
+          isAdvancedComputingTechEccn,
+        );
+        const sw = (line.usSoftwareEccns ?? []).some(
+          isAdvancedComputingTechEccn,
+        );
+        const plant = (line.plantTechEccns ?? []).some(
+          isAdvancedComputingTechEccn,
+        );
+        return (
+          (line.madeWithUSTechnology === true && tech) ||
+          (line.madeWithUSSoftware === true && sw) ||
+          (line.producedByPlantThatIsUSDirectProduct === true && plant)
+        );
+      });
+      if (matchingILines.length > 0) {
+        hits.push({
+          ruleId: "734.9(i)-supercomputer",
+          title: "Supercomputer FDP (§ 734.9(i))",
+          citation:
+            "15 CFR § 734.9(i) — Foreign item destined for incorporation into supercomputer (≥ 100 PetaFLOPS DP per § 772.1), direct product of US-origin advanced-computing tech",
+          matchingComponentNodeIds: matchingILines.map((l) => l.nodeId),
+          rationale: `Knowledge that the foreign item will be incorporated into a "supercomputer" per § 772.1 (≥ 100 double-precision PetaFLOPS in ≤ 41,674 ft² floor area). Destination ${input.destinationCountry} — § 734.9(i) applies WORLDWIDE on knowledge. ${matchingILines.length} BOM line(s) used US-origin advanced-computing technology. Foreign item subject to the EAR via § 734.9(i) Supercomputer FDPR. License required under § 744.23; policy of denial.`,
+          licenseAuthority:
+            "15 CFR § 744.23 (Supercomputer end-use; policy of denial)",
+        });
+      }
     }
   }
 

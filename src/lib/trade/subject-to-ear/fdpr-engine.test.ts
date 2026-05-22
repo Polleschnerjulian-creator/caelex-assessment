@@ -405,19 +405,15 @@ describe("evaluateFDPR — aggregate behavior", () => {
     expect(result.hits).toHaveLength(0);
   });
 
-  it("Notes 2 not-yet-evaluated rules post-Z20c ((h)/(i))", () => {
+  it("notYetEvaluatedRules is empty post-Z20d (full coverage)", () => {
     const result = evaluateFDPR(mkInput("BR", []));
-    expect(result.notYetEvaluatedRules).toHaveLength(2);
-    expect(result.notYetEvaluatedRules).toContain(
-      "734.9(h)-advanced-computing",
-    );
-    expect(result.notYetEvaluatedRules).toContain("734.9(i)-supercomputer");
+    expect(result.notYetEvaluatedRules).toHaveLength(0);
   });
 
-  it("Disclaimer references the 8 implemented + 2 remaining FDPR rules", () => {
+  it("Disclaimer references all 10 FDPR rules", () => {
     const result = evaluateFDPR(mkInput("BR", []));
     expect(result.disclaimer).toMatch(/SCREENING-LEVEL/);
-    expect(result.disclaimer).toMatch(/eight of the ten|8.*10/i);
+    expect(result.disclaimer).toMatch(/all ten|10 distinct/i);
   });
 
   it("Clean civilian foreign item to A:5 destination → no FDP", () => {
@@ -1044,5 +1040,222 @@ describe("§ 734.9(g) — MEU / Procurement FDPR (Footnote 3)", () => {
     );
     expect(gHit).toBeDefined();
     expect(gHit?.matchingComponentNodeIds).toEqual(["PLANT"]);
+  });
+});
+
+// ─── § 734.9(h) — Advanced Computing FDPR (Z20d) ────────────────────
+
+describe("§ 734.9(h) — Advanced Computing FDPR", () => {
+  it("Foreign 3A090 chip + US 3E001 tech to PRC → fires", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "CN", // D:5
+      foreignItemEccn: "3A090",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "3A090",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["3E001"],
+        },
+      ],
+    });
+    const hHit = result.hits.find(
+      (h) => h.ruleId === "734.9(h)-advanced-computing",
+    );
+    expect(hHit).toBeDefined();
+    expect(hHit?.licenseAuthority).toMatch(/§ 742\.6.*§ 744\.23/);
+  });
+
+  it("Foreign 4D090 (advanced-computing software) + US 4D001 to Macau → fires", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "MO", // Macau
+      foreignItemEccn: "4D090",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "4D090",
+          madeWithUSSoftware: true,
+          usSoftwareEccns: ["4D001"],
+        },
+      ],
+    });
+    expect(result.fdprApplicable).toBe(true);
+    expect(
+      result.hits.some((h) => h.ruleId === "734.9(h)-advanced-computing"),
+    ).toBe(true);
+  });
+
+  it("Foreign 3A001 to friendly destination (Brazil) + adv-computing end-use → fires (knowledge-gated)", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "BR", // B group — but knowledge predicate fires
+      foreignItemEccn: "3A001",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "3A001",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["3E001"],
+        },
+      ],
+      knowledgeFacts: {
+        advancedComputingEndUse: true,
+      },
+    });
+    const hHit = result.hits.find(
+      (h) => h.ruleId === "734.9(h)-advanced-computing",
+    );
+    expect(hHit).toBeDefined();
+    expect(hHit?.rationale).toMatch(/Knowledge of advanced-computing/i);
+  });
+
+  it("Foreign 9A515 (NOT advanced-computing scope) + Macau destination + US tech → does NOT fire (h)", () => {
+    // (h) requires foreign item in advanced-computing scope. 9A515
+    // is military spacecraft — outside (h)(1) reach.
+    const result = evaluateFDPR({
+      destinationCountry: "MO",
+      foreignItemEccn: "9A515.a",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "9A515.a",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["3E001"],
+        },
+      ],
+    });
+    const hHit = result.hits.find(
+      (h) => h.ruleId === "734.9(h)-advanced-computing",
+    );
+    expect(hHit).toBeUndefined();
+  });
+
+  it("Foreign 3A090 to friendly destination, no adv-IC knowledge → does NOT fire", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "DE",
+      foreignItemEccn: "3A090",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "3A090",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["3E001"],
+        },
+      ],
+    });
+    const hHit = result.hits.find(
+      (h) => h.ruleId === "734.9(h)-advanced-computing",
+    );
+    expect(hHit).toBeUndefined();
+  });
+});
+
+// ─── § 734.9(i) — Supercomputer FDPR (Z20d) ─────────────────────────
+
+describe("§ 734.9(i) — Supercomputer FDPR", () => {
+  it("Foreign 3A090 + supercomputer end-use knowledge + US tech → fires worldwide", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "DE", // friendly destination
+      foreignItemEccn: "3A090",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "3A090",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["3E001"],
+        },
+      ],
+      knowledgeFacts: {
+        supercomputerEndUse: true,
+      },
+    });
+    const iHit = result.hits.find((h) => h.ruleId === "734.9(i)-supercomputer");
+    expect(iHit).toBeDefined();
+    expect(iHit?.rationale).toMatch(/WORLDWIDE/i);
+    expect(iHit?.licenseAuthority).toMatch(/§ 744\.23/);
+  });
+
+  it("No supercomputer knowledge → does NOT fire even with adv-computing scope", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "BR",
+      foreignItemEccn: "3A090",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "3A090",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["3E001"],
+        },
+      ],
+    });
+    const iHit = result.hits.find((h) => h.ruleId === "734.9(i)-supercomputer");
+    expect(iHit).toBeUndefined();
+  });
+
+  it("Supercomputer end-use + non-advanced-computing foreign item → does NOT fire (scope mismatch)", () => {
+    // (i) product scope is advanced-computing (3A090/4A090/etc.).
+    // A 9A610 600-series item with supercomputer-end-use knowledge
+    // is outside (i) reach.
+    const result = evaluateFDPR({
+      destinationCountry: "DE",
+      foreignItemEccn: "9A610",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "9A610",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["9E610"],
+        },
+      ],
+      knowledgeFacts: {
+        supercomputerEndUse: true,
+      },
+    });
+    const iHit = result.hits.find((h) => h.ruleId === "734.9(i)-supercomputer");
+    expect(iHit).toBeUndefined();
+  });
+
+  it("PRC destination + 3A090 + supercomputer end-use → BOTH (h) and (i) fire", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "CN",
+      foreignItemEccn: "3A090",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "3A090",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["3E001"],
+        },
+      ],
+      knowledgeFacts: {
+        supercomputerEndUse: true,
+      },
+    });
+    const hHit = result.hits.find(
+      (h) => h.ruleId === "734.9(h)-advanced-computing",
+    );
+    const iHit = result.hits.find((h) => h.ruleId === "734.9(i)-supercomputer");
+    expect(hHit).toBeDefined();
+    expect(iHit).toBeDefined();
+  });
+
+  it("4A090 chip + supercomputer-end-use + plant-direct-product → fires via plant trigger", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "IN", // India — friendly destination
+      foreignItemEccn: "4A090",
+      bom: [
+        {
+          nodeId: "PLANT",
+          eccn: "4A090",
+          producedByPlantThatIsUSDirectProduct: true,
+          plantTechEccns: ["3E001"],
+        },
+      ],
+      knowledgeFacts: {
+        supercomputerEndUse: true,
+      },
+    });
+    const iHit = result.hits.find((h) => h.ruleId === "734.9(i)-supercomputer");
+    expect(iHit).toBeDefined();
+    expect(iHit?.matchingComponentNodeIds).toEqual(["PLANT"]);
   });
 });
