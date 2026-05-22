@@ -31,6 +31,7 @@ import {
   FileSignature,
   AlertOctagon,
   Sparkles,
+  ScanSearch,
   Settings,
   type LucideIcon,
 } from "lucide-react";
@@ -63,6 +64,12 @@ const NAV_SECTIONS: NavSection[] = [
         href: "/trade/items",
         icon: Package,
         activePrefix: "/trade/items",
+      },
+      {
+        label: "Classify (AI)",
+        href: "/trade/classify",
+        icon: ScanSearch,
+        activePrefix: "/trade/classify",
       },
       {
         label: "Counterparties",
