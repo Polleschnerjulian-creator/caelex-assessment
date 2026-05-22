@@ -45,6 +45,7 @@ import {
   type FDPREvaluationResult,
   type FDPRRuleHit,
 } from "./fdpr-engine";
+import type { KnowledgeFacts } from "./knowledge-facts";
 
 // ─── Input shape ────────────────────────────────────────────────────
 
@@ -118,6 +119,13 @@ export interface CascadeInput {
    * methodology (essential / customary / re-exported with).
    */
   usControlledContentPercent?: number;
+  /**
+   * Optional: knowledge facts about the transaction (Z20b). Triggers
+   * Entity-List FDPR scenarios when a transaction party carries
+   * footnote 1/4/5 designation. The upstream sanctions-screening
+   * pipeline (B1/B2/D2) populates this.
+   */
+  knowledgeFacts?: KnowledgeFacts;
 }
 
 // ─── Output shape ───────────────────────────────────────────────────
@@ -189,7 +197,7 @@ const THRESHOLD_STANDARD_PCT = 25; // § 734.4(d)
 const THRESHOLD_E1_E2_PCT = 10; // § 734.4(c)
 
 const CASCADE_DISCLAIMER =
-  "Three-Gate Cascade output is SCREENING-LEVEL guidance. Gate 1 (ITAR see-through) and Gate 3 (§ 734.4 De Minimis) are fully evaluated. Gate 2 (FDPR § 734.9) evaluates 3 of 8 scenarios — NS-FDP (b), 9x515-FDP (c), 600-series-FDP (d). The remaining 5 scenarios (Entity-List footnotes 1/4/5, Russia/Belarus/Crimea, MEU/Procurement footnote 3, Advanced Computing, Supercomputer) require manual analysis pending Z20b-d. Final determination requires qualified export-control counsel.";
+  "Three-Gate Cascade output is SCREENING-LEVEL guidance. Gate 1 (ITAR see-through) and Gate 3 (§ 734.4 De Minimis) are fully evaluated. Gate 2 (FDPR § 734.9) evaluates 6 of 8 scenarios — NS-FDP (b), 9x515-FDP (c), 600-series-FDP (d), Entity-List Footnote 1 (e)(1), Footnote 4 (e)(2), Footnote 5 (e)(3). The remaining 4 scenarios (Russia/Belarus/Crimea § 734.9(f), MEU/Procurement Footnote 3 § 734.9(g), Advanced Computing § 734.9(h), Supercomputer § 734.9(i)) require manual analysis pending Z20c-d. Final determination requires qualified export-control counsel.";
 
 // ─── Engine ─────────────────────────────────────────────────────────
 
@@ -253,6 +261,7 @@ export function evaluateSubjectToEAR(input: CascadeInput): CascadeResult {
     destinationCountry: input.destinationCountry,
     foreignItemEccn: input.foreignItemEccn ?? null,
     bom: input.bom as FDPRBOMComponent[],
+    knowledgeFacts: input.knowledgeFacts,
   });
 
   if (fdprResult.fdprApplicable) {

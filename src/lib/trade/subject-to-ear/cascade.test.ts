@@ -309,9 +309,9 @@ describe("Gate 3b — Percentage threshold edge cases", () => {
   });
 });
 
-// ─── Gate 2 FDPR wiring (Z20a — 3 of 8 scenarios) ──────────────────
+// ─── Gate 2 FDPR wiring (Z20a + Z20b — 6 of 8 scenarios) ──────────
 
-describe("Gate 2 — FDPR engine wired (3 of 8 scenarios; Z20a)", () => {
+describe("Gate 2 — FDPR engine wired (6 of 8 scenarios; Z20a + Z20b)", () => {
   it("Every result includes fdprHits + fdprNotYetEvaluatedRules", () => {
     const result = evaluateSubjectToEAR(
       mkInput("BR", [{ nodeId: "L1", usOrigin: true, eccn: "EAR99" }]),
@@ -320,8 +320,8 @@ describe("Gate 2 — FDPR engine wired (3 of 8 scenarios; Z20a)", () => {
     expect(Array.isArray(result.fdprHits)).toBe(true);
     expect(result.fdprNotYetEvaluatedRules).toBeDefined();
     expect(Array.isArray(result.fdprNotYetEvaluatedRules)).toBe(true);
-    // 5 scenarios are not yet evaluated (e/f/g/h/i + sub-paragraphs)
-    expect(result.fdprNotYetEvaluatedRules.length).toBeGreaterThanOrEqual(5);
+    // 4 scenarios are still not yet evaluated post-Z20b: f/g/h/i
+    expect(result.fdprNotYetEvaluatedRules.length).toBeGreaterThanOrEqual(4);
   });
 
   it("Foreign 9A515 + US 9E515 tech to PRC → Gate 2 fires, FDPR_APPLICABLE", () => {
@@ -395,12 +395,12 @@ describe("Gate 2 — FDPR engine wired (3 of 8 scenarios; Z20a)", () => {
     expect(result.fdprHits).toHaveLength(0);
   });
 
-  it("Disclaimer references 3 of 8 FDPR scenarios + queued Z20b-d", () => {
+  it("Disclaimer references 6 of 8 FDPR scenarios + queued Z20c-d", () => {
     const result = evaluateSubjectToEAR(
       mkInput("BR", [{ nodeId: "L1", usOrigin: true, eccn: "EAR99" }]),
     );
-    expect(result.disclaimer).toMatch(/3 of 8|three of (the )?eight/i);
-    expect(result.disclaimer).toMatch(/Z20[bd]|Entity-List|Russia/i);
+    expect(result.disclaimer).toMatch(/6 of 8|six of (the )?eight/i);
+    expect(result.disclaimer).toMatch(/Z20[cd]|Russia|Advanced Computing/i);
   });
 });
 

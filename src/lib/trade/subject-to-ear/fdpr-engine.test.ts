@@ -405,22 +405,25 @@ describe("evaluateFDPR — aggregate behavior", () => {
     expect(result.hits).toHaveLength(0);
   });
 
-  it("Notes 7 not-yet-evaluated rules (Z20b-d queued)", () => {
+  it("Notes 4 not-yet-evaluated rules post-Z20b ((f)/(g)/(h)/(i))", () => {
     const result = evaluateFDPR(mkInput("BR", []));
-    expect(result.notYetEvaluatedRules).toHaveLength(7);
-    expect(result.notYetEvaluatedRules).toContain("734.9(e)-entity-list-fn1");
+    expect(result.notYetEvaluatedRules).toHaveLength(4);
     expect(result.notYetEvaluatedRules).toContain(
       "734.9(f)-russia-belarus-crimea",
     );
     expect(result.notYetEvaluatedRules).toContain(
+      "734.9(g)-meu-procurement-fn3",
+    );
+    expect(result.notYetEvaluatedRules).toContain(
       "734.9(h)-advanced-computing",
     );
+    expect(result.notYetEvaluatedRules).toContain("734.9(i)-supercomputer");
   });
 
-  it("Disclaimer references the 3 implemented + 5 not-yet-evaluated rules", () => {
+  it("Disclaimer references the 6 implemented + remaining FDPR scenarios", () => {
     const result = evaluateFDPR(mkInput("BR", []));
     expect(result.disclaimer).toMatch(/SCREENING-LEVEL/);
-    expect(result.disclaimer).toMatch(/three of the eight|3.*8|Entity-List/i);
+    expect(result.disclaimer).toMatch(/six of the eight|6.*8/i);
   });
 
   it("Clean civilian foreign item to A:5 destination → no FDP", () => {
@@ -437,5 +440,314 @@ describe("evaluateFDPR — aggregate behavior", () => {
       ),
     );
     expect(result.fdprApplicable).toBe(false);
+  });
+});
+
+// ─── § 734.9(e)(1) — Entity-List FDP Footnote 1 (Z20b) ──────────────
+
+describe("§ 734.9(e)(1) — Entity-List FDP Footnote 1 (Huawei-style)", () => {
+  it("Foreign item + US 3D001 tech + footnote-1 purchaser → fires", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "DE", // even friendly destinations trip on knowledge
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "EAR99",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["3D001"],
+        },
+      ],
+      knowledgeFacts: {
+        purchaser: { entityListed: true, footnote: 1 },
+      },
+    });
+    expect(result.fdprApplicable).toBe(true);
+    expect(
+      result.hits.some((h) => h.ruleId === "734.9(e)-entity-list-fn1"),
+    ).toBe(true);
+  });
+
+  it("Foreign item + US 5E001 tech + footnote-1 end-user → fires", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "BR",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "EAR99",
+          madeWithUSSoftware: true,
+          usSoftwareEccns: ["5E001"],
+        },
+      ],
+      knowledgeFacts: {
+        endUser: { entityListed: true, footnote: 1 },
+      },
+    });
+    expect(
+      result.hits.some((h) => h.ruleId === "734.9(e)-entity-list-fn1"),
+    ).toBe(true);
+  });
+
+  it("Footnote-1 entity in transaction but NO US Cat 3/4/5 D/E tech → does NOT fire", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "BR",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "EAR99",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["9E001"], // 9E not in Cat 3/4/5 scope
+        },
+      ],
+      knowledgeFacts: {
+        purchaser: { entityListed: true, footnote: 1 },
+      },
+    });
+    expect(
+      result.hits.some((h) => h.ruleId === "734.9(e)-entity-list-fn1"),
+    ).toBe(false);
+  });
+
+  it("US 3D001 tech but NO footnote-1 party → does NOT fire", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "BR",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "EAR99",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["3D001"],
+        },
+      ],
+      knowledgeFacts: {
+        purchaser: { entityListed: false },
+      },
+    });
+    expect(
+      result.hits.some((h) => h.ruleId === "734.9(e)-entity-list-fn1"),
+    ).toBe(false);
+  });
+
+  it("License authority cites § 744.11(a)(2)(i)", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "BR",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "EAR99",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["3D001"],
+        },
+      ],
+      knowledgeFacts: {
+        purchaser: { entityListed: true, footnote: 1 },
+      },
+    });
+    const hit = result.hits.find(
+      (h) => h.ruleId === "734.9(e)-entity-list-fn1",
+    );
+    expect(hit?.licenseAuthority).toMatch(/§ 744\.11\(a\)\(2\)\(i\)/);
+  });
+});
+
+// ─── § 734.9(e)(2) — Entity-List FDP Footnote 4 (HikVision) ─────────
+
+describe("§ 734.9(e)(2) — Entity-List FDP Footnote 4 (encryption)", () => {
+  it("Foreign item + US 5D002 (encryption) + footnote-4 entity → fires", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "BR",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "EAR99",
+          madeWithUSSoftware: true,
+          usSoftwareEccns: ["5D002"],
+        },
+      ],
+      knowledgeFacts: {
+        ultimateConsignee: { entityListed: true, footnote: 4 },
+      },
+    });
+    expect(
+      result.hits.some((h) => h.ruleId === "734.9(e)-entity-list-fn4"),
+    ).toBe(true);
+  });
+
+  it("Foreign item + US 3D001 (in fn1 scope, also fn4) + footnote-4 → fires fn4 AND fn1", () => {
+    // 3D001 is in BOTH fn1 and fn4 scope; with footnote-4 entity, both rules fire.
+    const result = evaluateFDPR({
+      destinationCountry: "BR",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "EAR99",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["3D001"],
+        },
+      ],
+      knowledgeFacts: {
+        endUser: { entityListed: true, footnote: 4 },
+      },
+    });
+    expect(
+      result.hits.some((h) => h.ruleId === "734.9(e)-entity-list-fn4"),
+    ).toBe(true);
+    // fn1 requires fn1 PARTY (not fn4), so it should NOT fire even though
+    // the tech ECCN is in fn1 scope.
+    expect(
+      result.hits.some((h) => h.ruleId === "734.9(e)-entity-list-fn1"),
+    ).toBe(false);
+  });
+
+  it("US 5E002 + NO footnote-4 party → does NOT fire", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "BR",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "EAR99",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["5E002"],
+        },
+      ],
+      knowledgeFacts: {},
+    });
+    expect(
+      result.hits.some((h) => h.ruleId === "734.9(e)-entity-list-fn4"),
+    ).toBe(false);
+  });
+});
+
+// ─── § 734.9(e)(3) — Entity-List FDP Footnote 5 + Advanced-Node-IC ─
+
+describe("§ 734.9(e)(3) — Entity-List FDP Footnote 5 / Advanced-Node-IC", () => {
+  it("Foreign 3B001 + US 3D001 + footnote-5 entity → fires", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "BR",
+      foreignItemEccn: "3B001",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "3B001",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["3D001"],
+        },
+      ],
+      knowledgeFacts: {
+        endUser: { entityListed: true, footnote: 5 },
+      },
+    });
+    expect(
+      result.hits.some((h) => h.ruleId === "734.9(e)-entity-list-fn5"),
+    ).toBe(true);
+  });
+
+  it("Foreign 3B002.c + US 3E001 + advanced-node-IC facility in PRC → fires (knowledge trigger without footnote)", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "CN",
+      foreignItemEccn: "3B002",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "3B002",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["3E001"],
+        },
+      ],
+      knowledgeFacts: {
+        advancedNodeIcFacility: true,
+      },
+    });
+    expect(
+      result.hits.some((h) => h.ruleId === "734.9(e)-entity-list-fn5"),
+    ).toBe(true);
+  });
+
+  it("Foreign 3B001 + advanced-node-IC facility but destination NOT Macau/D:5 → does NOT fire", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "BR", // not D:5 / not Macau
+      foreignItemEccn: "3B001",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "3B001",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["3D001"],
+        },
+      ],
+      knowledgeFacts: {
+        advancedNodeIcFacility: true,
+      },
+    });
+    expect(
+      result.hits.some((h) => h.ruleId === "734.9(e)-entity-list-fn5"),
+    ).toBe(false);
+  });
+
+  it("Foreign 9A001 (NOT 3B scope) + footnote-5 → does NOT fire", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "BR",
+      foreignItemEccn: "9A001",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "9A001",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["3D001"],
+        },
+      ],
+      knowledgeFacts: {
+        purchaser: { entityListed: true, footnote: 5 },
+      },
+    });
+    expect(
+      result.hits.some((h) => h.ruleId === "734.9(e)-entity-list-fn5"),
+    ).toBe(false);
+  });
+
+  it("License authority cites § 744.11(a)(2)(v)", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "BR",
+      foreignItemEccn: "3B001",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "3B001",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["3E001"],
+        },
+      ],
+      knowledgeFacts: {
+        endUser: { entityListed: true, footnote: 5 },
+      },
+    });
+    const hit = result.hits.find(
+      (h) => h.ruleId === "734.9(e)-entity-list-fn5",
+    );
+    expect(hit?.licenseAuthority).toMatch(/§ 744\.11\(a\)\(2\)\(v\)/);
+  });
+});
+
+// ─── Entity-List FDPR + cascade integration ────────────────────────
+
+describe("Entity-List FDPR — destination-independent triggering", () => {
+  it("Footnote-1 entity in Germany (A:5) → FDPR still fires (knowledge-driven, not destination-driven)", () => {
+    // Critical contrast with destination-gated rules: a friendly
+    // destination like Germany still trips entity-list FDPR if a
+    // footnote-1 party is in the transaction.
+    const result = evaluateFDPR({
+      destinationCountry: "DE",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "EAR99",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["3D001"],
+        },
+      ],
+      knowledgeFacts: {
+        purchaser: { entityListed: true, footnote: 1 },
+      },
+    });
+    expect(result.fdprApplicable).toBe(true);
   });
 });

@@ -40,6 +40,11 @@
  */
 
 import { resolveCountryGroups } from "./country-groups";
+import {
+  anyPartyHasFootnote,
+  partyRolesWithFootnote,
+  type KnowledgeFacts,
+} from "./knowledge-facts";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -109,6 +114,12 @@ export interface FDPREvaluationInput {
   foreignItemEccn?: string | null;
   /** BOM lines for the foreign-made item, with FDPR provenance. */
   bom: FDPRBOMComponent[];
+  /**
+   * Knowledge facts about the transaction (Z20b). Triggers the
+   * Entity-List FDPR scenarios in § 734.9(e)(1)/(2)/(3) when a
+   * transaction party carries a footnote-1/4/5 designation.
+   */
+  knowledgeFacts?: KnowledgeFacts;
 }
 
 export type FDPRRuleId =
@@ -194,11 +205,70 @@ function isNSControlledTechEccn(eccn: string): boolean {
   return /^[0-9][DE]\d{3}/i.test(normalised);
 }
 
-// Pure list of "not yet evaluated" rules for Z20a release.
-const Z20A_NOT_YET_EVALUATED: FDPRRuleId[] = [
-  "734.9(e)-entity-list-fn1",
-  "734.9(e)-entity-list-fn4",
-  "734.9(e)-entity-list-fn5",
+/**
+ * § 734.9(e)(1) Footnote-1 product scope (Huawei-style): foreign item
+ * is the direct product of EAR-subject tech/sw in 3D001/3D9xx, 3E001/
+ * 3E9xx, 4D001/4D99x, 4E001/4E99x, 5D001/5D991, 5E001/5E991.
+ */
+function isFootnote1TechEccn(eccn: string): boolean {
+  if (!eccn) return false;
+  const n = eccn.replace(/^ECCN:/, "");
+  return (
+    /^3D001\b/i.test(n) ||
+    /^3D9\d\d\b/i.test(n) ||
+    /^3E001\b/i.test(n) ||
+    /^3E9\d\d\b/i.test(n) ||
+    /^4D001\b/i.test(n) ||
+    /^4D99\d\b/i.test(n) ||
+    /^4E001\b/i.test(n) ||
+    /^4E99\d\b/i.test(n) ||
+    /^5D001\b/i.test(n) ||
+    /^5D991\b/i.test(n) ||
+    /^5E001\b/i.test(n) ||
+    /^5E991\b/i.test(n)
+  );
+}
+
+/**
+ * § 734.9(e)(2) Footnote-4 product scope: same as fn1 PLUS 5D002 and
+ * 5E002 (encryption).
+ */
+function isFootnote4TechEccn(eccn: string): boolean {
+  if (!eccn) return false;
+  const n = eccn.replace(/^ECCN:/, "");
+  if (isFootnote1TechEccn(eccn)) return true;
+  return /^5D002\b/i.test(n) || /^5E002\b/i.test(n);
+}
+
+/**
+ * § 734.9(e)(3) Footnote-5 product scope — foreign item ECCNs:
+ * 3B001/3B002/3B903/3B991/3B992/3B993/3B994 (with specific carve-outs
+ * we don't enumerate here — operator review).
+ */
+function isFootnote5ForeignItem(eccn: string | null | undefined): boolean {
+  if (!eccn) return false;
+  const n = eccn.replace(/^ECCN:/, "");
+  return /^3B(001|002|903|991|992|993|994)\b/i.test(n);
+}
+
+/**
+ * § 734.9(e)(3) Footnote-5 production-tech scope: 3D001/3D901/3D991/
+ * 3D993/3D994/3E001/3E901/3E991/3E993/3E994.
+ */
+function isFootnote5TechEccn(eccn: string): boolean {
+  if (!eccn) return false;
+  const n = eccn.replace(/^ECCN:/, "");
+  return (
+    /^3D001\b/i.test(n) ||
+    /^3D9(0[1]|9[134])\b/i.test(n) || // 3D901, 3D991, 3D993, 3D994
+    /^3E001\b/i.test(n) ||
+    /^3E9(0[1]|9[134])\b/i.test(n)
+  );
+}
+
+// Pure list of "not yet evaluated" rules. Z20b shipped (e)(1)/(2)/(3);
+// (f)/(g)/(h)/(i) remain queued under Z20c/d.
+const NOT_YET_EVALUATED: FDPRRuleId[] = [
   "734.9(f)-russia-belarus-crimea",
   "734.9(g)-meu-procurement-fn3",
   "734.9(h)-advanced-computing",
@@ -206,7 +276,7 @@ const Z20A_NOT_YET_EVALUATED: FDPRRuleId[] = [
 ];
 
 const FDPR_DISCLAIMER =
-  "FDPR engine output is SCREENING-LEVEL guidance only. Three of the eight FDPR scenarios are evaluated in this release: § 734.9(b) NS-FDP, § 734.9(c) 9x515-FDP, § 734.9(d) 600-series-FDP. The remaining five (Entity-List footnotes 1/4/5, Russia/Belarus/Crimea, MEU/Procurement footnote 3, Advanced Computing, Supercomputer) are NOT YET evaluated — operator MUST perform these manually for any transaction with knowledge of an Entity-List party, Russia/Belarus destination, or advanced-computing end-use. Final determination requires qualified export-control counsel.";
+  "FDPR engine output is SCREENING-LEVEL guidance only. Six of the eight FDPR scenarios are evaluated in this release: § 734.9(b) NS-FDP, (c) 9x515-FDP, (d) 600-series-FDP, (e)(1) Entity-List Footnote 1, (e)(2) Entity-List Footnote 4, (e)(3) Entity-List Footnote 5. The remaining two (Russia/Belarus/Crimea § 734.9(f), MEU/Procurement Footnote 3 § 734.9(g), Advanced Computing § 734.9(h), Supercomputer § 734.9(i)) are NOT YET evaluated — operator MUST perform these manually for any transaction destined to Russia/Belarus or where an advanced-computing end-use is involved. Final determination requires qualified export-control counsel.";
 
 // ─── Engine ─────────────────────────────────────────────────────────
 
@@ -357,10 +427,118 @@ export function evaluateFDPR(input: FDPREvaluationInput): FDPREvaluationResult {
     }
   }
 
+  // ── § 734.9(e)(1) — Entity-List FDP, Footnote 1 (Huawei) ─────────
+  // Trigger: foreign item is direct product of EAR-subject tech/sw
+  // in 3D001/3D9xx, 3E001/3E9xx, 4D001/4D99x, 4E001/4E99x,
+  // 5D001/5D991, 5E001/5E991. ANY transaction party (incorporator/
+  // purchaser/consignee/end-user) carries footnote 1.
+  if (anyPartyHasFootnote(input.knowledgeFacts, 1)) {
+    const matchingFn1Lines = input.bom.filter((line) => {
+      const tech = (line.usTechnologyEccns ?? []).some(isFootnote1TechEccn);
+      const sw = (line.usSoftwareEccns ?? []).some(isFootnote1TechEccn);
+      const plant = (line.plantTechEccns ?? []).some(isFootnote1TechEccn);
+      return (
+        (line.madeWithUSTechnology === true && tech) ||
+        (line.madeWithUSSoftware === true && sw) ||
+        (line.producedByPlantThatIsUSDirectProduct === true && plant)
+      );
+    });
+    if (matchingFn1Lines.length > 0) {
+      const roles = partyRolesWithFootnote(input.knowledgeFacts, 1);
+      hits.push({
+        ruleId: "734.9(e)-entity-list-fn1",
+        title: "Entity List FDP — Footnote 1 (Huawei-style) (§ 734.9(e)(1))",
+        citation:
+          "15 CFR § 734.9(e)(1) — Foreign item is direct product of EAR-subject Cat 3/4/5 D/E tech/sw, transaction includes footnote-1 entity",
+        matchingComponentNodeIds: matchingFn1Lines.map((l) => l.nodeId),
+        rationale: `Footnote-1 Entity-List party in transaction (roles: ${roles.join(", ")}). ${matchingFn1Lines.length} BOM line(s) used US-origin Cat 3/4/5 D/E technology/software/plant. Foreign item subject to the EAR via § 734.9(e)(1) Footnote-1 FDP. Policy of denial for items above 5G capability.`,
+        licenseAuthority:
+          "15 CFR § 744.11(a)(2)(i) — License required; policy of denial above 5G",
+      });
+    }
+  }
+
+  // ── § 734.9(e)(2) — Entity-List FDP, Footnote 4 (HikVision) ──────
+  // Same as fn1 PLUS 5D002 / 5E002 (encryption).
+  if (anyPartyHasFootnote(input.knowledgeFacts, 4)) {
+    const matchingFn4Lines = input.bom.filter((line) => {
+      const tech = (line.usTechnologyEccns ?? []).some(isFootnote4TechEccn);
+      const sw = (line.usSoftwareEccns ?? []).some(isFootnote4TechEccn);
+      const plant = (line.plantTechEccns ?? []).some(isFootnote4TechEccn);
+      return (
+        (line.madeWithUSTechnology === true && tech) ||
+        (line.madeWithUSSoftware === true && sw) ||
+        (line.producedByPlantThatIsUSDirectProduct === true && plant)
+      );
+    });
+    if (matchingFn4Lines.length > 0) {
+      const roles = partyRolesWithFootnote(input.knowledgeFacts, 4);
+      hits.push({
+        ruleId: "734.9(e)-entity-list-fn4",
+        title: "Entity List FDP — Footnote 4 (HikVision-style) (§ 734.9(e)(2))",
+        citation:
+          "15 CFR § 734.9(e)(2) — Same as (e)(1) PLUS 5D002/5E002 encryption tech, transaction includes footnote-4 entity",
+        matchingComponentNodeIds: matchingFn4Lines.map((l) => l.nodeId),
+        rationale: `Footnote-4 Entity-List party in transaction (roles: ${roles.join(", ")}). ${matchingFn4Lines.length} BOM line(s) used US-origin Cat 3/4/5 D/E or 5D002/5E002 (encryption) tech. Foreign item subject to the EAR via § 734.9(e)(2) Footnote-4 FDP.`,
+        licenseAuthority:
+          "15 CFR § 744.11(a)(2)(iv) — License required; policy of denial",
+      });
+    }
+  }
+
+  // ── § 734.9(e)(3) — Entity-List FDP, Footnote 5 + Advanced-Node-IC ─
+  // Trigger: foreign item is 3B001/3B002/3B903/3B991/3B992/3B993/3B994
+  // AND direct product of 3D001/3D901/3D991/3D993/3D994/3E001/3E901/
+  // 3E991/3E993/3E994 AND ( ANY transaction party carries footnote 5
+  // OR knowledge that the destination is at a facility in Macau/D:5
+  // producing logic or DRAM advanced-node ICs ).
+  const isMacauOrD5 = groups.isMacau || groups.groups.has("D:5");
+  const fn5KnowledgeTrigger =
+    anyPartyHasFootnote(input.knowledgeFacts, 5) ||
+    (input.knowledgeFacts?.advancedNodeIcFacility === true && isMacauOrD5);
+
+  if (fn5KnowledgeTrigger) {
+    // First check: foreign item must be 3B001-3B994.
+    const foreignItemIsFn5Scope =
+      isFootnote5ForeignItem(input.foreignItemEccn) ||
+      input.bom.some((line) => isFootnote5ForeignItem(line.eccn));
+
+    if (foreignItemIsFn5Scope) {
+      const matchingFn5Lines = input.bom.filter((line) => {
+        const tech = (line.usTechnologyEccns ?? []).some(isFootnote5TechEccn);
+        const sw = (line.usSoftwareEccns ?? []).some(isFootnote5TechEccn);
+        const plant = (line.plantTechEccns ?? []).some(isFootnote5TechEccn);
+        return (
+          (line.madeWithUSTechnology === true && tech) ||
+          (line.madeWithUSSoftware === true && sw) ||
+          (line.producedByPlantThatIsUSDirectProduct === true && plant)
+        );
+      });
+      if (matchingFn5Lines.length > 0) {
+        const fn5Roles = partyRolesWithFootnote(input.knowledgeFacts, 5);
+        const triggerDesc =
+          fn5Roles.length > 0
+            ? `Footnote-5 Entity-List party (roles: ${fn5Roles.join(", ")})`
+            : `Advanced-node IC fabrication facility in ${input.destinationCountry} (Macau/D:5)`;
+        hits.push({
+          ruleId: "734.9(e)-entity-list-fn5",
+          title:
+            "Entity List FDP — Footnote 5 + Advanced-Node IC (§ 734.9(e)(3))",
+          citation:
+            "15 CFR § 734.9(e)(3) — Foreign item in 3B001-3B994, direct product of US 3D/3E tech, transaction includes footnote-5 entity OR advanced-node-IC facility in Macau/D:5",
+          matchingComponentNodeIds: matchingFn5Lines.map((l) => l.nodeId),
+          rationale: `${triggerDesc}. Foreign item in 3B001-3B994 scope. ${matchingFn5Lines.length} BOM line(s) used US-origin 3D001/3D901/3D991/3D993/3D994/3E001/3E901/3E991/3E993/3E994. Subject to the EAR via § 734.9(e)(3) Footnote-5 FDP.`,
+          licenseAuthority:
+            "15 CFR § 744.11(a)(2)(v) — License required; advanced-node IC scope",
+        });
+      }
+    }
+  }
+
   return {
     fdprApplicable: hits.length > 0,
     hits,
-    notYetEvaluatedRules: Z20A_NOT_YET_EVALUATED,
+    notYetEvaluatedRules: NOT_YET_EVALUATED,
     disclaimer: FDPR_DISCLAIMER,
   };
 }
