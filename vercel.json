@@ -191,6 +191,10 @@
       "schedule": "30 8 * * *"
     },
     {
+      "path": "/api/cron/trade-euc-expiry",
+      "schedule": "0 9 * * *"
+    },
+    {
       "path": "/api/cron/cowf-heartbeat",
       "schedule": "*/30 * * * *"
     },
