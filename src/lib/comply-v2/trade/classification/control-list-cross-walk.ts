@@ -1404,6 +1404,248 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     notes:
       "STA-eligible: full means License Exception STA may apply to most destinations on Country Group A:5/A:6 (subject to STA preconditions like end-user assurances).",
   },
+
+  // ═══════════════════════════════════════════════════════════════
+  // Sprint Z24a (Tier 3) — EU Annex I Cat 9 core 9A006-9A012
+  //
+  // Adds parametric cross-walk entries for the four EU Cat-9 codes
+  // where the matcher engine needs typed predicates to discriminate
+  // (9A006, 9A008, 9A011, 9A012). 9A007/9A009/9A010 are scope-level
+  // entries (predicate-only on itemClass prefix) and remain captured
+  // via the textual entries in src/data/trade/eu-annex-i.ts.
+  //
+  // Sources:
+  //   - EU Reg. (EU) 2021/821 Annex I, Cat. 9 (consolidated text)
+  //   - Delegated Reg. (EU) 2025/2003 (OJ L 2025/2003, 14.11.2025;
+  //     in force 15.11.2025) — 9A006 cryogenic feed-system carve-in
+  //     at T ≤ 100 K
+  //   - MTCR Annex (current) — Items 2, 3, 19 for the missile-tech
+  //     cross-references
+  // ═══════════════════════════════════════════════════════════════
+  {
+    canonicalId: "EU:9A006",
+    regime: "EU-ANNEX-I",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "006",
+    title:
+      "Components & support equipment for liquid-propellant rocket engines (EU Cat 9)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "propulsion.liquid_rocket.component",
+      },
+      {
+        attribute: "isSpeciallyDesigned",
+        op: "eq",
+        value: true,
+      },
+    ],
+    reasonsForControl: ["WA", "MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A005",
+        relationship: "components_of",
+        notes:
+          "9A006 controls turbopumps, injectors, combustion chambers and other specially-designed components FOR 9A005 liquid-propellant rocket engines.",
+      },
+      {
+        regime: "ITAR-USML",
+        id: "IV(h)",
+        relationship: "analogous",
+        notes:
+          "USML IV(h) controls specially-designed parts and components of USML IV(d) rocket engines. EU 9A006 is the EU pendant.",
+      },
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 3.A.1",
+        relationship: "derived_from",
+        notes:
+          "MTCR Item 3.A.1 covers turbopumps and rocket-engine sub-systems usable in Cat-I/II propulsion.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A006",
+        relationship: "analogous",
+      },
+    ],
+    citation:
+      "Reg. (EU) 2021/821 Annex I, Cat. 9, 9A006 (as amended by Delegated Reg. (EU) 2025/2003 — cryogenic-feed-system carve-in at T ≤ 100 K)",
+    validFrom: "2025-11-15",
+    notes:
+      "The 2025 Delegated Regulation explicitly added cryogenic feed-system components (LH2/LCH4 valves, density-flow meters, density-line heat exchangers) operating at T ≤ 100 K. Coverage of these items shifted from a Note under 9A005 into the body of 9A006.",
+  },
+  {
+    canonicalId: "EU:9A008",
+    regime: "EU-ANNEX-I",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "008",
+    title: "Components for solid-propellant rocket motors (EU Cat 9)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "propulsion.solid_rocket.component",
+      },
+      {
+        attribute: "isSpeciallyDesigned",
+        op: "eq",
+        value: true,
+      },
+    ],
+    reasonsForControl: ["WA", "MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A007",
+        relationship: "components_of",
+        notes:
+          "9A008 controls motor cases, nozzles, igniters, and TVC sub-systems specially designed for 9A007 solid-propellant rocket motors.",
+      },
+      {
+        regime: "ITAR-USML",
+        id: "IV(h)",
+        relationship: "analogous",
+        notes:
+          "USML IV(h) controls parts and components for USML IV(d) rocket motors. Carbon-carbon nozzle throats above thermal-cycle thresholds escalate to MTCR Cat I via USML IV(d)(2).",
+      },
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 3.A.2",
+        relationship: "derived_from",
+        notes:
+          "MTCR Item 3.A.2 — solid-propellant rocket motor cases & nozzles.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A008",
+        relationship: "analogous",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 9, 9A008",
+    validFrom: "2021-09-09",
+    notes:
+      "The 2025/2003 Delegated Regulation did not modify 9A008. Carbon-carbon throats remain the most common screening boundary — re-evaluate any throat with density ≥ 1.85 g/cm³ for MTCR Cat-I escalation.",
+  },
+  {
+    canonicalId: "EU:9A011",
+    regime: "EU-ANNEX-I",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "011",
+    title:
+      "Electric / plasma propulsion systems — Hall-effect, ion, FEEP, PPT (EU Cat 9)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "propulsion.electric",
+      },
+      // Capture threshold: specific impulse ≥ 1,500 s. Below this, the
+      // entry typically does not bite (low-thrust hobbyist / academic
+      // cubesat thrusters fall out).
+      {
+        attribute: "IspSeconds",
+        op: "gte",
+        value: 1500,
+      },
+    ],
+    reasonsForControl: ["WA", "MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "ITAR-USML",
+        id: "XV(e)(11)(iv)",
+        relationship: "successor",
+        notes:
+          "USML XV(e)(11)(iv) controls EP with thrust > 300 mN AND Isp > 1,500 s, OR input power > 15 kW. EU 9A011 is the EU pendant and uses the Isp ≥ 1,500 s capture threshold.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A011",
+        relationship: "analogous",
+      },
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 2",
+        relationship: "derived_from",
+      },
+    ],
+    citation:
+      "Reg. (EU) 2021/821 Annex I, Cat. 9, 9A011 (consolidated as of 2025/2003)",
+    validFrom: "2021-09-09",
+    notes:
+      "Disjunctive thresholds: capture by Isp ≥ 1,500 s; alternative input-power path (≥ 15 kW) is handled via the see-also USML XV(e)(11)(iv)-power-path entry. PCUs/PPUs from US fabs trigger De-minimis even when the thruster itself is EU-origin.",
+  },
+  {
+    canonicalId: "EU:9A012",
+    regime: "EU-ANNEX-I",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "012",
+    title:
+      "Unmanned aerial vehicles & remotely-piloted aircraft systems (EU Cat 9)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "aerospace.uav",
+      },
+      // MTCR Cat-I overlap path: range ≥ 300 km AND payload ≥ 500 kg.
+      // When BOTH predicates hold, this matches as a Cat-I escalation
+      // and the operator-facing UI should surface the 9A104 cross-walk
+      // as well.
+      {
+        attribute: "rangeKm",
+        op: "gte",
+        value: 300,
+      },
+      {
+        attribute: "payloadKg",
+        op: "gte",
+        value: 500,
+      },
+    ],
+    reasonsForControl: ["WA", "MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A104",
+        relationship: "analogous",
+        notes:
+          "9A104 covers sounding rockets and unmanned air vehicles at the MTCR Cat-I threshold (range ≥ 300 km + payload ≥ 500 kg). 9A012 captures the broader UAV class; the two overlap on the high-end Cat-I corner.",
+      },
+      {
+        regime: "ITAR-USML",
+        id: "VIII(a)",
+        relationship: "successor",
+        notes:
+          "Military-grade UAVs and armed-payload variants flow to USML VIII(a). 9A012 explicitly excludes ITAR-controlled military UAVs.",
+      },
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 1.A.2",
+        relationship: "derived_from",
+        notes:
+          "MTCR Item 1.A.2 covers complete UAV systems including cruise missiles at the 300 km / 500 kg Cat-I boundary.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A012",
+        relationship: "analogous",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 9, 9A012",
+    validFrom: "2021-09-09",
+    notes:
+      "Below the 300 km / 500 kg threshold but with autonomous flight-control / out-of-line-of-sight capability, the broader 9A012 capture still bites — the parametric entry above encodes the MTCR Cat-I corner only. Operators with autonomous-capability UAVs below 300 km should classify via the itemClass-prefix path + manual review.",
+  },
 ];
 
 // ─── Helpers ────────────────────────────────────────────────────────
