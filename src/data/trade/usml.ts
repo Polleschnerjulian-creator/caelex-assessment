@@ -9,7 +9,7 @@
  * NOT apply to USML items — even 0.1% US-origin USML content in a foreign
  * product requires ITAR authorization.
  *
- * Source: 22 CFR 121 (eCFR, accessed 2026-05-07)
+ * Source: 22 CFR § 121.1 (eCFR, accessed 2026-05-07)
  * https://www.ecfr.gov/current/title-22/chapter-I/subchapter-M/part-121
  *
  * Aerospace-relevant USML categories:
@@ -20,6 +20,15 @@
  *
  * NOT a verbatim transcription. Descriptions are paraphrases. Full text
  * at eCFR link above.
+ *
+ * ── Z23a (Tier 3 — Ontology Depth Completion, 2026-05-22) ──────────────
+ * Extended XV(a) enumeration from 6 → 15 sub-paragraphs. The original
+ * file (Sprint B2) covered the most common ECR-2014 holdovers; Z23a
+ * added the remaining XV(a) sub-paragraphs per 22 CFR § 121.1 Cat. XV(a)
+ * enumeration (a)(3) through (a)(13), aligning with Blueprint 3 § 3 and
+ * the Caelex Trade Living Execution Plan § 7.
+ *   Source: 22 CFR § 121.1 Cat. XV(a) (eCFR, accessed 2026-05-22)
+ *   https://www.ecfr.gov/current/title-22/chapter-I/subchapter-M/part-121/section-121.1
  */
 
 import type { ClassificationEntry, ClassificationCoverage } from "./schema";
@@ -45,7 +54,7 @@ export const USML_COVERAGE: ClassificationCoverage = {
   ],
   asOfDate: ASOF,
   officialTotalEntriesApprox: 500,
-  caelexCoverageCount: 19,
+  caelexCoverageCount: 28,
 };
 
 export const USML_ENTRIES: ClassificationEntry[] = [
@@ -233,6 +242,132 @@ export const USML_ENTRIES: ClassificationEntry[] = [
     sourceUrl: SOURCE_BASE,
     asOfDate: ASOF,
   },
+
+  // ─── Z23a — XV(a) Full Enumeration (Tier 3, 2026-05-22) ───────────────
+  // Per 22 CFR § 121.1 Cat. XV(a) sub-paragraphs (3)-(6) and (9)-(13).
+  // Source: https://www.ecfr.gov/current/title-22/chapter-I/subchapter-M/part-121/section-121.1
+  // These complete the XV(a) enumeration the original Sprint B2 dataset
+  // (entries (1), (2), (7), (7)(i), (7)(ii), (8)) left incomplete.
+  // ────────────────────────────────────────────────────────────────────
+  {
+    code: "XV(a)(3)",
+    jurisdiction: "USML",
+    title: "Spacecraft with SIGINT, MASINT, or HUMINT payloads",
+    description:
+      "Spacecraft specifically designed or modified to provide signals intelligence (SIGINT), measurement and signature intelligence (MASINT), or human-intelligence-derived payloads. Includes ELINT, COMINT, FISINT, RADINT, and similar intelligence-collection sub-types. No commercial dual-use carve-out.",
+    controlReasons: ["NS", "SI"],
+    crossReferenceTopic: null,
+    sourceUrl: `${SOURCE_BASE}/section-121.1`,
+    asOfDate: ASOF,
+    notes:
+      "Intelligence-gathering spacecraft remain firmly USML even when the bus itself is commercial. The PAYLOAD's intent is the determinative factor. Hosted-payload arrangements with classified tenants typically trigger Cat. XV(a)(3) for the entire spacecraft.",
+  },
+  {
+    code: "XV(a)(4)",
+    jurisdiction: "USML",
+    title: "Spacecraft for autonomous detection and reaction to threats",
+    description:
+      "Spacecraft specifically designed or modified to autonomously detect and react to threats — including incoming kinetic, RF, or directed-energy attacks. Encompasses virtual-satellite constellations (distributed mission architectures with autonomous reconfiguration), defensive maneuvering, and threat-classification AI.",
+    controlReasons: ["NS", "SI"],
+    crossReferenceTopic: null,
+    sourceUrl: `${SOURCE_BASE}/section-121.1`,
+    asOfDate: ASOF,
+    notes:
+      "Defensive autonomy (threat detection, autonomous maneuvering away from a threat) is the discriminator. Routine collision-avoidance with passive debris is XV(a)(10), not (a)(4). Distinguishing between the two requires DDTC commodity-jurisdiction determination for borderline AI-controlled satellites.",
+  },
+  {
+    code: "XV(a)(5)",
+    jurisdiction: "USML",
+    title: "Anti-satellite (ASAT) spacecraft",
+    description:
+      "Spacecraft specifically designed to inflict damage on another spacecraft, regardless of intent (kinetic, non-kinetic, electronic-warfare, or laser dazzle/blind). Companion to XV(a)(8) — (a)(5) controls the ASAT *vehicle*, (a)(8) controls the ASAT *payload* aboard another spacecraft.",
+    controlReasons: ["NS", "SI"],
+    crossReferenceTopic: "manpads-and-anti-spacecraft",
+    sourceUrl: `${SOURCE_BASE}/section-121.1`,
+    asOfDate: ASOF,
+    notes:
+      "Strict liability regime: DDTC has rejected 'inspection only' or 'debris removal only' justifications when the underlying vehicle has demonstrated kinetic-impact capability. RPO vehicles with close-approach maneuvering may be classified as either XV(a)(5) (ASAT-capable) or XV(a)(12) (servicing/inspection) depending on payload and operational concept.",
+  },
+  {
+    code: "XV(a)(6)",
+    jurisdiction: "USML",
+    title: "Spacecraft for space-to-ground weapons functions",
+    description:
+      "Spacecraft specifically designed to deliver kinetic or directed-energy effects from orbit onto terrestrial, sea-borne, or atmospheric targets. Includes orbital strike platforms (kinetic rod / 'rod-from-god' concepts), space-based laser weapons, and any payload designed to release a weapon during atmospheric re-entry.",
+    controlReasons: ["NS", "SI"],
+    crossReferenceTopic: "manpads-and-anti-spacecraft",
+    sourceUrl: `${SOURCE_BASE}/section-121.1`,
+    asOfDate: ASOF,
+    notes:
+      "Note that XV(a)(6) is currently restricted by the Outer Space Treaty (1967) Article IV (no WMD in orbit) but conventional kinetic weapons are not prohibited by treaty. ITAR control persists regardless of treaty status.",
+  },
+  {
+    code: "XV(a)(9)",
+    jurisdiction: "USML",
+    title: "Spacecraft providing GNSS-like PNT signal generation",
+    description:
+      "Spacecraft specifically designed to provide a global or regional positioning, navigation, and timing (PNT) signal comparable to GPS, Galileo, GLONASS, BeiDou, QZSS, or NavIC. Includes encrypted military PNT codes (M-code for GPS, PRS for Galileo). Generation of the PNT signal is the controlling activity — reception is XII(d).",
+    controlReasons: ["NS"],
+    crossReferenceTopic: null,
+    sourceUrl: `${SOURCE_BASE}/section-121.1`,
+    asOfDate: ASOF,
+    notes:
+      "Commercial GNSS-augmentation satellites (e.g. SBAS) may fall under ECCN 9A515 or 9A004 depending on signal characteristics. Direct generation of a primary PNT constellation signal is USML Cat. XV(a)(9). Pseudo-PNT services (e.g. ground-relay timing) are NOT in scope.",
+  },
+  {
+    code: "XV(a)(10)",
+    jurisdiction: "USML",
+    title: "Spacecraft with autonomous collision-avoidance maneuvering",
+    description:
+      "Spacecraft specifically designed or modified to autonomously detect, track, and maneuver to avoid other space objects without ground-segment commanding. The autonomous element is the discriminator — ground-commanded conjunction-avoidance is NOT controlled under (a)(10).",
+    controlReasons: ["NS"],
+    crossReferenceTopic: null,
+    sourceUrl: `${SOURCE_BASE}/section-121.1`,
+    asOfDate: ASOF,
+    notes:
+      "Distinct from XV(a)(4) (autonomous threat detection): (a)(10) covers passive-object avoidance (debris, other satellites); (a)(4) covers active threat detection (incoming attacks). A spacecraft with both capabilities is typically classified under (a)(4), the more restrictive paragraph.",
+  },
+  {
+    code: "XV(a)(11)",
+    jurisdiction: "USML",
+    title: "Sub-orbital re-entry vehicles for crew or cargo recovery",
+    description:
+      "Spacecraft or sub-orbital vehicles specifically designed for re-entry from orbital or sub-orbital trajectories carrying crew or cargo intended for recovery on Earth. Covers reusable crewed capsules with military hosting, cargo-return capsules with classified payloads, and re-entry test vehicles.",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: null,
+    sourceUrl: `${SOURCE_BASE}/section-121.1`,
+    asOfDate: ASOF,
+    notes:
+      "Cross-controlled with MTCR Cat. I via re-entry vehicle technology. Commercial cargo-return capsules (e.g. SpaceX Dragon cargo) may be ECCN 9A004 if no DoD payload is hosted, but the heat-shield / TPS materials remain USML IV(h)(1). Caelex BoM-origin tracking should flag re-entry vehicles for individual DDTC determination.",
+    mtcrCategory: "I",
+  },
+  {
+    code: "XV(a)(12)",
+    jurisdiction: "USML",
+    title: "Spacecraft for in-orbit inspection or grappling",
+    description:
+      "Spacecraft specifically designed to perform close-approach inspection, grappling, docking, capture, or physical interaction with another spacecraft NOT under the same operator's control. Distinguishable from (a)(2) RPO by the involuntary nature — the target satellite has not consented to the interaction.",
+    controlReasons: ["NS"],
+    crossReferenceTopic: "in-orbit-servicing-rpo",
+    sourceUrl: `${SOURCE_BASE}/section-121.1`,
+    asOfDate: ASOF,
+    notes:
+      "DDTC has classified active-debris-removal (ADR) missions with non-cooperative targets under XV(a)(12) even where commercial intent is documented. Commercial servicing of own-fleet satellites is typically ECCN 9A515, but cross-operator servicing requires CJ determination.",
+  },
+  {
+    code: "XV(a)(13)",
+    jurisdiction: "USML",
+    title: "Classified spacecraft (Executive Order 13526 catch-all)",
+    description:
+      "Any spacecraft, the existence, performance, or mission of which is classified pursuant to Executive Order 13526 (or successor). Catch-all paragraph that captures black-program satellites, classified hosted payloads, and any spacecraft whose mission profile is not publicly disclosed.",
+    controlReasons: ["NS", "SI"],
+    crossReferenceTopic: null,
+    sourceUrl: `${SOURCE_BASE}/section-121.1`,
+    asOfDate: ASOF,
+    notes:
+      "If a Caelex customer indicates is_classified=true (per Z25 typed attributes), XV(a)(13) is auto-applied regardless of other technical specifications. Commercial operators rarely interact with XV(a)(13), but commercial buses hosting a classified secondary payload may fall under this paragraph for the duration of the classified mission.",
+  },
+
   {
     code: "XV(c)",
     jurisdiction: "USML",
