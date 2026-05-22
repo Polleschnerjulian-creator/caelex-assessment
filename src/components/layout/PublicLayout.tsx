@@ -4,7 +4,10 @@ import { usePathname } from "next/navigation";
 import Navigation from "@/components/landing/Navigation";
 import Footer from "@/components/landing/Footer";
 
-// Routes that should NOT show navigation + footer
+// Routes that should NOT show navigation + footer (prefix match).
+// IMPORTANT: keep marketing pages OUT of this list. The `/trade` app
+// shell vs `/trade-access` marketing page distinction is handled by
+// the exact-/prefix-match split below.
 const EXCLUDED_ROUTES = [
   "/dashboard",
   "/assure",
@@ -19,7 +22,19 @@ const EXCLUDED_ROUTES = [
   "/testdemo1",
   "/onboarding",
   "/linkedin-banner",
+  // Trade auth + access surfaces — their own TradeAuthShell renders
+  // the chrome, so we suppress the public Navigation/Footer here too.
+  "/trade-login",
+  "/trade-forgot-password",
+  "/trade-reset-password",
+  "/trade-no-access",
 ];
+
+// Routes excluded by an EXACT or `/route/`-prefix match. Used for
+// segments where a sibling marketing page shares the prefix and must
+// NOT be excluded (e.g. `/trade` is the app, `/trade-access` is the
+// marketing page — naïve `.startsWith("/trade")` would catch both).
+const EXACT_OR_SUBPATH_EXCLUDED = ["/trade"];
 
 export default function PublicLayout({
   children,
@@ -28,9 +43,11 @@ export default function PublicLayout({
 }) {
   const pathname = usePathname();
 
-  const isExcluded = EXCLUDED_ROUTES.some((route) =>
-    pathname.startsWith(route),
-  );
+  const isExcluded =
+    EXCLUDED_ROUTES.some((route) => pathname.startsWith(route)) ||
+    EXACT_OR_SUBPATH_EXCLUDED.some(
+      (route) => pathname === route || pathname.startsWith(`${route}/`),
+    );
 
   if (isExcluded) {
     return <>{children}</>;
