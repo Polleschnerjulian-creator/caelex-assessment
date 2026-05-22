@@ -251,7 +251,8 @@ describe("matchLicenseExceptions integration", () => {
         destinationCountry: "FR",
       }),
     );
-    expect(result.applicable.length + result.rejected.length).toBe(7);
+    // 8 evaluators: STA + ENC + CSA (Sprint D3) + GOV + TMP + AGG-12 + AGG-27 + EU001
+    expect(result.applicable.length + result.rejected.length).toBe(8);
     expect(result.applicable.map((a) => a.code)).toEqual(
       expect.arrayContaining([
         "BIS_LICENSE_EXCEPTION_STA",
@@ -283,5 +284,99 @@ describe("matchLicenseExceptions integration", () => {
       expect(a.citation).toBeTruthy();
       expect(a.conditions.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("CSA (BIS §740.X, Oct 2024 IFR) — Sprint D3", () => {
+  it("applies for 9A515.a spacecraft to Australia", () => {
+    const result = matchLicenseExceptions(
+      input({
+        classification: { eccnUS: "9A515.a" },
+        destinationCountry: "AU",
+      }),
+    );
+    expect(applicable(result)).toContain("BIS_LICENSE_EXCEPTION_CSA");
+  });
+
+  it("applies for 9A515 sub-paragraphs to UK", () => {
+    const result = matchLicenseExceptions(
+      input({
+        classification: { eccnUS: "9A515.d" },
+        destinationCountry: "GB",
+      }),
+    );
+    expect(applicable(result)).toContain("BIS_LICENSE_EXCEPTION_CSA");
+  });
+
+  it("applies for 9E515 technology to Canada", () => {
+    const result = matchLicenseExceptions(
+      input({
+        classification: { eccnUS: "9E515" },
+        destinationCountry: "CA",
+      }),
+    );
+    expect(applicable(result)).toContain("BIS_LICENSE_EXCEPTION_CSA");
+  });
+
+  it("rejects when destination is not AU/CA/GB (e.g. NZ — Five-Eyes but not AUKUS-Spacecraft-Carve-Out)", () => {
+    const result = matchLicenseExceptions(
+      input({
+        classification: { eccnUS: "9A515.a" },
+        destinationCountry: "NZ",
+      }),
+    );
+    expect(rejected(result).BIS_LICENSE_EXCEPTION_CSA).toContain(
+      "DESTINATION_NOT_ELIGIBLE",
+    );
+  });
+
+  it("rejects for non-9x515 ECCNs (e.g. 5A002 encryption)", () => {
+    const result = matchLicenseExceptions(
+      input({
+        classification: { eccnUS: "5A002.a" },
+        destinationCountry: "AU",
+      }),
+    );
+    expect(rejected(result).BIS_LICENSE_EXCEPTION_CSA).toContain(
+      "ITEM_NOT_ELIGIBLE",
+    );
+  });
+
+  it("rejects to US-embargoed destination (defensive even though Cuba is never AUKUS)", () => {
+    const result = matchLicenseExceptions(
+      input({
+        classification: { eccnUS: "9A515.a" },
+        destinationCountry: "CU",
+      }),
+    );
+    expect(rejected(result).BIS_LICENSE_EXCEPTION_CSA).toContain(
+      "EMBARGOED_DESTINATION",
+    );
+  });
+
+  it("matches 9B/9C/9D/9E-515 prefix family", () => {
+    for (const eccn of ["9A515.a", "9B515", "9C515", "9D515.b", "9E515"]) {
+      const result = matchLicenseExceptions(
+        input({
+          classification: { eccnUS: eccn },
+          destinationCountry: "AU",
+        }),
+      );
+      expect(applicable(result)).toContain("BIS_LICENSE_EXCEPTION_CSA");
+    }
+  });
+
+  it("provides citation linking to Federal Register 89 FR 84713", () => {
+    const result = matchLicenseExceptions(
+      input({
+        classification: { eccnUS: "9A515.a" },
+        destinationCountry: "GB",
+      }),
+    );
+    const csa = result.applicable.find(
+      (a) => a.code === "BIS_LICENSE_EXCEPTION_CSA",
+    );
+    expect(csa?.citation).toMatch(/89 FR 84713/);
+    expect(csa?.conditions.length).toBeGreaterThanOrEqual(3);
   });
 });

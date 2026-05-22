@@ -548,3 +548,108 @@ describe("combined scenario: ITAR + EU/DE codes", () => {
     expect(bafa).toBeDefined();
   });
 });
+
+// ─── 11. Sprint D4 — license-exception-matrix integration ─────────────
+
+describe("Sprint D4: exceptionContext downgrades REQUIRED → EXCEPTION_MAY_APPLY", () => {
+  it("backward-compatible: no exceptionContext keeps pre-D4 behaviour", () => {
+    const det = determineLicenseRequirements(
+      EU_ONLY_EVAL,
+      makeDeMinimis("DE_MINIMIS_EXCEEDED"),
+      "FR",
+    );
+    // BIS REQUIRED + BAFA REQUIRED — no exception folded in
+    const bis = det.requirements.find((r) => r.authority === "BIS");
+    const bafa = det.requirements.find((r) => r.authority === "BAFA");
+    expect(bis?.status).toBe("REQUIRED");
+    expect(bafa?.status).toBe("REQUIRED");
+    expect(det.applicableExceptions).toBeUndefined();
+  });
+
+  it("downgrades BAFA REQUIRED → EXCEPTION_MAY_APPLY when AGG-12 applies (EU destination)", () => {
+    const det = determineLicenseRequirements(EU_ONLY_EVAL, null, "FR", {
+      classification: {},
+    });
+    const bafa = det.requirements.find((r) => r.authority === "BAFA");
+    expect(bafa?.status).toBe("EXCEPTION_MAY_APPLY");
+    expect(bafa?.licenseType).toBe("LICENSE_EXCEPTION");
+    expect(bafa?.applicableException?.code).toBe("BAFA_AGG_12");
+    expect(bafa?.applicableException?.citation).toContain("AGG Nr. 12");
+    expect(bafa?.applicableException?.conditions.length).toBeGreaterThan(0);
+  });
+
+  it("downgrades BIS REQUIRED → EXCEPTION_MAY_APPLY when STA applies (Country Group A:5)", () => {
+    const det = determineLicenseRequirements(
+      CLEAN_EVAL,
+      makeDeMinimis("DE_MINIMIS_EXCEEDED"),
+      "JP",
+      { classification: { eccnUS: "5A002.a" } },
+    );
+    const bis = det.requirements.find((r) => r.authority === "BIS");
+    expect(bis?.status).toBe("EXCEPTION_MAY_APPLY");
+    expect(bis?.applicableException?.code).toMatch(
+      /^BIS_LICENSE_EXCEPTION_(STA|ENC)$/,
+    );
+  });
+
+  it("does NOT downgrade DENIED requirements (embargo / MTCR Cat I stays blocked)", () => {
+    const det = determineLicenseRequirements(
+      CLEAN_EVAL,
+      makeDeMinimis("EMBARGOED_DESTINATION"),
+      "IR",
+      { classification: { eccnUS: "5A002.a" } },
+    );
+    const bis = det.requirements.find((r) => r.authority === "BIS");
+    expect(bis?.status).toBe("DENIED");
+    expect(bis?.applicableException).toBeUndefined();
+  });
+
+  it("does NOT downgrade LIKELY_REQUIRED (FDPR_TRIGGERED)", () => {
+    const det = determineLicenseRequirements(
+      CLEAN_EVAL,
+      makeDeMinimis("FDPR_TRIGGERED"),
+      "FR",
+      { classification: { eccnUS: "5A002.a" } },
+    );
+    const bis = det.requirements.find((r) => r.authority === "BIS");
+    expect(bis?.status).toBe("LIKELY_REQUIRED");
+    expect(bis?.applicableException).toBeUndefined();
+  });
+
+  it("rolls all applicable exceptions to top-level applicableExceptions", () => {
+    const det = determineLicenseRequirements(
+      EU_ONLY_EVAL,
+      makeDeMinimis("DE_MINIMIS_EXCEEDED"),
+      "FR",
+      { classification: { eccnUS: "5A002.a", eccnEU: "5A002.a" } },
+    );
+    expect(det.applicableExceptions).toBeDefined();
+    expect(det.applicableExceptions!.length).toBeGreaterThan(0);
+    const codes = det.applicableExceptions!.map((e) => e.code);
+    // Multiple exceptions could fire (STA, ENC, AGG-12); at least one
+    expect(codes.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("BAFA REQUIRED stays REQUIRED when no BAFA exception applies (CN outside EU/EEA + outside EU001)", () => {
+    const det = determineLicenseRequirements(
+      EU_ONLY_EVAL,
+      makeDeMinimis("DE_MINIMIS_EXCEEDED"),
+      "CN",
+      { classification: { eccnUS: "9A515.a", eccnEU: "9A004" } },
+    );
+    const bafa = det.requirements.find((r) => r.authority === "BAFA");
+    // AGG-12 rejects (CN not EU/EEA), AGG-27 rejects (not 4D/5D),
+    // EUGEA EU001 rejects (CN not in EU001 allow-list)
+    expect(bafa?.status).toBe("REQUIRED");
+    expect(bafa?.applicableException).toBeUndefined();
+  });
+
+  it("augments reason + recommendedAction with exception detail", () => {
+    const det = determineLicenseRequirements(EU_ONLY_EVAL, null, "DE", {
+      classification: {},
+    });
+    const bafa = det.requirements.find((r) => r.authority === "BAFA");
+    expect(bafa?.reason).toMatch(/AGG Nr\. 12/);
+    expect(bafa?.recommendedAction).toMatch(/Evaluate.*AGG.*conditions/);
+  });
+});

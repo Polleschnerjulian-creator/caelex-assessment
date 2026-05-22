@@ -29,6 +29,11 @@
 
 import type { TriggerEvaluation } from "./property-trigger-engine";
 import type { DeMinimisResult } from "./de-minimis-calculator";
+import {
+  matchLicenseExceptions,
+  type ApplicableException,
+  type ExceptionMatchInput,
+} from "./license-exception-matrix";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -67,6 +72,19 @@ export interface LicenseRequirement {
   recommendedAction: string;
   /** Reference code from the underlying classification. */
   triggerCode?: string;
+  /**
+   * Applicable license exception that may downgrade this requirement
+   * from REQUIRED to EXCEPTION_MAY_APPLY. Populated by the
+   * license-exception-matrix integration (Sprint D4). Only set when
+   * the caller supplies an exceptionContext and a matching exception
+   * was found by `matchLicenseExceptions()`.
+   */
+  applicableException?: {
+    code: string;
+    label: string;
+    citation: string;
+    conditions: string[];
+  };
 }
 
 export type OverallGate = "CLEARED" | "REVIEW_NEEDED" | "BLOCKED";
@@ -98,6 +116,15 @@ export interface LicenseDetermination {
   /** Ordered list of recommended next steps (most urgent first). */
   nextSteps: string[];
 
+  /**
+   * License exceptions that may apply. Populated when the caller
+   * supplies an `exceptionContext` to `determineLicenseRequirements`.
+   * Same list as `LicenseRequirement.applicableException` rolled up
+   * across all jurisdictions — useful for a top-level "exceptions
+   * that might apply" UI panel.
+   */
+  applicableExceptions?: ApplicableException[];
+
   /** Mandatory disclaimer. */
   disclaimer: string;
 }
@@ -115,11 +142,21 @@ const DISCLAIMER =
  * @param deMinimis    Output of `calculateDeMinimis()` from Sprint B5.
  *                     Pass null if de-minimis has not been calculated yet.
  * @param destinationCountry  ISO-2 destination country code (for embargo check).
+ * @param exceptionContext  Optional Sprint-D4 enrichment. When supplied,
+ *                     the function calls `matchLicenseExceptions()` and
+ *                     downgrades REQUIRED → EXCEPTION_MAY_APPLY where an
+ *                     applicable exception is found for the matching
+ *                     authority. Backward-compatible: omitting it
+ *                     preserves the pre-D4 behaviour (matrix isolated).
+ *                     `destinationCountry` from arg 3 is reused — the
+ *                     `ExceptionMatchInput.destinationCountry` is set
+ *                     from this argument and need not be repeated.
  */
 export function determineLicenseRequirements(
   triggerEval: TriggerEvaluation,
   deMinimis: DeMinimisResult | null,
   destinationCountry?: string,
+  exceptionContext?: Omit<ExceptionMatchInput, "destinationCountry">,
 ): LicenseDetermination {
   const requirements: LicenseRequirement[] = [];
   const nextSteps: string[] = [];
@@ -317,6 +354,54 @@ export function determineLicenseRequirements(
     }
   }
 
+  // ─── Sprint D4: fold in license-exception-matrix ──────────────────
+  //
+  // When the caller supplies an exceptionContext, run the exception
+  // matrix and downgrade any REQUIRED requirement whose authority has
+  // a matching applicable exception. Skip DENIED (embargo / MTCR Cat I
+  // — exceptions don't undo those gates) and LIKELY_REQUIRED / UNKNOWN
+  // (not confident enough that an exception fits; keep operator alerted).
+  //
+  // The mapping authority → exception-code-prefix:
+  //   BIS  → "BIS_LICENSE_EXCEPTION_*"  (STA, ENC, GOV, TMP)
+  //   BAFA → "BAFA_AGG_*" + "BAFA_EUGEA_*"
+  //
+  // DDTC ITAR exemptions and UK OGELs are out of scope for the matrix
+  // today, so DDTC + UK requirements pass through unchanged.
+  let applicableExceptions: ApplicableException[] | undefined;
+  if (exceptionContext && destinationCountry) {
+    const matchResult = matchLicenseExceptions({
+      ...exceptionContext,
+      destinationCountry,
+    });
+    applicableExceptions = matchResult.applicable;
+
+    if (matchResult.applicable.length > 0) {
+      for (let i = 0; i < requirements.length; i += 1) {
+        const req = requirements[i];
+        if (req.status !== "REQUIRED") continue;
+        const exc = findExceptionForAuthority(
+          req.authority,
+          matchResult.applicable,
+        );
+        if (!exc) continue;
+        requirements[i] = {
+          ...req,
+          status: "EXCEPTION_MAY_APPLY",
+          licenseType: "LICENSE_EXCEPTION",
+          reason: `${req.reason} However, ${exc.label} (${exc.citation}) may apply — see conditions.`,
+          recommendedAction: `Evaluate ${exc.label} per conditions: ${exc.conditions.join("; ")}. If conditions are met, file appropriate notice/declaration instead of a full license application. Original action: ${req.recommendedAction}`,
+          applicableException: {
+            code: exc.code,
+            label: exc.label,
+            citation: exc.citation,
+            conditions: exc.conditions,
+          },
+        };
+      }
+    }
+  }
+
   // ─── Determine overall gate ───────────────────────────────────────
   const hasBlocked = requirements.some((r) => r.status === "DENIED");
   const hasRequired = requirements.some((r) => r.status === "REQUIRED");
@@ -358,8 +443,37 @@ export function determineLicenseRequirements(
     itarBlock,
     embargoBlock,
     nextSteps,
+    ...(applicableExceptions ? { applicableExceptions } : {}),
     disclaimer: DISCLAIMER,
   };
+}
+
+/**
+ * Map a license authority onto the first applicable exception in the
+ * provided list. BIS exceptions (codes starting with
+ * "BIS_LICENSE_EXCEPTION_") match BIS requirements; BAFA exceptions
+ * ("BAFA_AGG_*" or "BAFA_EUGEA_*") match BAFA / EU_COMPETENT_AUTHORITY
+ * requirements. Returns the first match — the matrix returns
+ * exceptions in a stable evaluator order, so this gives deterministic
+ * picks when several exceptions apply (e.g. STA + ENC for an
+ * encryption item to a Country-Group A:5 destination).
+ */
+function findExceptionForAuthority(
+  authority: LicenseAuthority,
+  applicable: ApplicableException[],
+): ApplicableException | undefined {
+  for (const exc of applicable) {
+    if (authority === "BIS" && exc.code.startsWith("BIS_LICENSE_EXCEPTION_")) {
+      return exc;
+    }
+    if (
+      (authority === "BAFA" || authority === "EU_COMPETENT_AUTHORITY") &&
+      (exc.code.startsWith("BAFA_AGG_") || exc.code.startsWith("BAFA_EUGEA_"))
+    ) {
+      return exc;
+    }
+  }
+  return undefined;
 }
 
 /**

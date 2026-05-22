@@ -175,6 +175,46 @@ const EU_UN_EMBARGOED: ReadonlySet<string> = new Set([
   "ZW",
 ]);
 
+/**
+ * AUKUS-partner destinations — license-exception CSA eligibility scope.
+ *
+ * Per Federal Register 89 FR 84713 (October 23, 2024 IFR), BIS created
+ * the new **License Exception CSA (Commercial Space Activities)** at
+ * 15 CFR §740.X. CSA authorizes most 9A515 / 9E515 spacecraft items
+ * to AUKUS partners (Australia + United Kingdom — US is the exporter
+ * so doesn't appear in the destination list) plus Canada under the
+ * same logic — collectively Five-Eyes minus New Zealand.
+ *
+ * The IFR explicitly removed license-requirements for "certain
+ * spacecraft and related items" to AU/CA/UK, codifying the close-ally
+ * carve-out demanded by industry since 2014 ECR.
+ *
+ * Operators MUST verify that the specific 9A515 sub-paragraph is
+ * within CSA scope — not every .x sub-paragraph qualifies (some .y
+ * are CSA-eligible, certain .e components retain their NS controls).
+ * The conditions field captures this.
+ */
+const CSA_AUKUS_DESTINATIONS: ReadonlySet<string> = new Set([
+  "AU", // Australia
+  "CA", // Canada — included via the parallel "removal of license requirements
+  // for certain spacecraft to AU/CA/UK" rule (89 FR 2024-23932)
+  "GB", // United Kingdom
+]);
+
+/**
+ * Five-Eyes intelligence-sharing alliance — extended pool for future
+ * License-Exception-CSA expansion. NZ is in Five-Eyes but the Oct 2024
+ * IFR did NOT include it in the AUKUS-spacecraft carve-out. We track
+ * the set separately so a future rule can expand without touching
+ * evaluator code.
+ */
+const FIVE_EYES_DESTINATIONS: ReadonlySet<string> = new Set([
+  "AU",
+  "CA",
+  "GB",
+  "NZ",
+]);
+
 /** EU + EEA + Switzerland — destinations where intra-EU AGG-12 applies. */
 const EU_EEA_CH: ReadonlySet<string> = new Set([
   "AT",
@@ -256,6 +296,17 @@ function isStaEligibleEccn(eccn: string | null | undefined): boolean {
 function isEncryptionEccn(eccn: string | null | undefined): boolean {
   if (!eccn) return false;
   return /^5[AD]002\b/i.test(eccn);
+}
+
+/**
+ * 9A515 / 9E515 / 9D515 family — the post-2014-ECR commercial-spacecraft
+ * series, eligible for License Exception CSA. Matches 9A515, 9B515,
+ * 9C515, 9D515, 9E515 series and any sub-paragraph (.a / .b / .d /
+ * .g / .h / .x / .y etc).
+ */
+function isCsaEligibleEccn(eccn: string | null | undefined): boolean {
+  if (!eccn) return false;
+  return /^9[ABCDE]515\b/i.test(eccn);
 }
 
 // ─── BIS exception evaluators ─────────────────────────────────────────
@@ -464,6 +515,63 @@ function evaluateTmp(
   };
 }
 
+function evaluateCsa(
+  input: ExceptionMatchInput,
+): { applicable: ApplicableException } | { rejected: RejectedException } {
+  const eccnUS = input.classification.eccnUS;
+  const dest = input.destinationCountry.toUpperCase();
+  const reasons: RejectReason[] = [];
+  const details: string[] = [];
+
+  if (US_EMBARGOED.has(dest)) {
+    reasons.push("EMBARGOED_DESTINATION");
+    details.push(`Destination ${dest} is US-embargoed`);
+  }
+  if (!CSA_AUKUS_DESTINATIONS.has(dest)) {
+    reasons.push("DESTINATION_NOT_ELIGIBLE");
+    details.push(
+      `Destination ${dest} not in CSA scope (AU / CA / GB only per 89 FR 84713 + 2024-23932)`,
+    );
+  }
+  if (!isCsaEligibleEccn(eccnUS)) {
+    reasons.push("ITEM_NOT_ELIGIBLE");
+    details.push(
+      eccnUS
+        ? `ECCN ${eccnUS} is not in the 9A/9B/9C/9D/9E-515 commercial-spacecraft family`
+        : "No US ECCN classified yet — CSA requires 9x515 series",
+    );
+  }
+
+  if (reasons.length > 0) {
+    return {
+      rejected: {
+        code: "BIS_LICENSE_EXCEPTION_CSA",
+        label: "License Exception CSA",
+        reasons,
+        detail: details.join("; "),
+      },
+    };
+  }
+
+  return {
+    applicable: {
+      code: "BIS_LICENSE_EXCEPTION_CSA",
+      label: "License Exception CSA",
+      authority: "BIS",
+      jurisdiction: "US",
+      citation: "15 CFR §740.X (89 FR 84713, Oct 23, 2024 IFR)",
+      reason: `9x515 commercial-spacecraft ECCN ${eccnUS} to AUKUS partner ${dest} is eligible under License Exception CSA. The Oct 23 2024 IFR removed license requirements for spacecraft / related items to AU / CA / GB.`,
+      conditions: [
+        "Verify specific 9x515 sub-paragraph remains in CSA scope (not every .x / .y is eligible — confirm against §740.X(b) item list)",
+        "Cannot use CSA if any party is on the Entity / MEU / MIEU / DPL list (incl. 50% Affiliate Rule effective Sept 29 2025)",
+        "End-user written statement per §740.X(c) before shipment",
+        "Records per §740.X(d) for 5 years",
+        "CSA does NOT cover 600-series items integrated into the spacecraft",
+      ],
+    },
+  };
+}
+
 // ─── BAFA exception evaluators ────────────────────────────────────────
 
 function evaluateAgg12(
@@ -629,6 +737,7 @@ export function matchLicenseExceptions(
   const evaluators = [
     evaluateSta,
     evaluateEnc,
+    evaluateCsa, // Sprint D3 — Oct 2024 IFR (89 FR 84713)
     evaluateGov,
     evaluateTmp,
     evaluateAgg12,
