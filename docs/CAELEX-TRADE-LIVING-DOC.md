@@ -182,9 +182,9 @@ Per Recherche § 7. Phase A war UI-Portierung — Phase B macht die Engine erst 
 
 | Sprint | Scope                                                                                                           | Status                |
 | ------ | --------------------------------------------------------------------------------------------------------------- | --------------------- |
-| **B1** | UK OFSI Sanctions-Parser + sync-orchestrator registration                                                       | ⏳ in progress        |
-| **B2** | UN Consolidated Sanctions-Parser                                                                                | ⏳                    |
-| **B3** | License-Exception-Matrix (BIS STA/CSA/ENC + EU-AGG-Bedingungen)                                                 | ⏳                    |
+| **B1** | UK OFSI Sanctions-Parser + sync-orchestrator registration                                                       | ✅ done (`4224c9b2`)  |
+| **B2** | UN Consolidated Sanctions-Parser — alle 6 Sources jetzt verdrahtet                                              | ✅ done (`7aee407d`)  |
+| **B3** | License-Exception-Matrix (BIS STA/ENC/GOV/TMP + BAFA AGG-12/27 + EUGEA EU001)                                   | ✅ done (`984584aa`)  |
 | **B4** | CCL-Expansion (24/3000 ECCNs → mehr)                                                                            | ⏳                    |
 | **A4** | Licenses-Inventory (net-new — keine Legacy-UI)                                                                  | ✅ done (`1f7d58a8`)  |
 | **A5** | `/trade` Welcome-Dashboard mit real aggregates (Items-Count, Parties-Count, In-Progress-Ops, Risk-Distribution) | ✅ done (this commit) |
