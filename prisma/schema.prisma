@@ -79,6 +79,9 @@ model User {
   // Sprint E4 — Re-Export Consent Letter lifecycle actions
   tradeReexportActions TradeReexportConsent[] @relation("TradeReexportActionBy")
 
+  // Sprint E1 — Voluntary Self-Disclosure lifecycle actions
+  tradeVsdActions TradeVoluntaryDisclosure[] @relation("TradeVSDActionBy")
+
   // Mission domain (Sprint Mission-1) — first-class Mission entity
   // back-ref. Author of the Mission (creator). Distinct from
   // MissionSpacecraft / MissionPhase which have their own lifecycles.
@@ -3147,6 +3150,12 @@ model Organization {
   // tracked per (requesting-party, operation?). Lifecycle: DRAFTED →
   // SENT → APPROVED / DENIED (or EXPIRED / REVOKED).
   tradeReexportConsents TradeReexportConsent[]
+
+  // Caelex Trade Sprint E1 — Voluntary Self-Disclosures filed by
+  // the org with BIS/DDTC/OFAC/BAFA/EU authorities. Lifecycle:
+  // DISCOVERED → INVESTIGATING → DRAFTED → SUBMITTED →
+  // ACKNOWLEDGED → RESOLVED (or WITHDRAWN escape).
+  tradeVoluntaryDisclosures TradeVoluntaryDisclosure[]
 
   // Mission domain (Sprint Mission-1) — first-class Mission rows
   // (vs the legacy 1:1 Spacecraft=Mission collapse). Org-scoped.
@@ -10963,6 +10972,10 @@ model TradeItem {
   // Wave C Sprint C1 — items appear in operation lines
   operationLines TradeOperationLine[]
 
+  // Sprint E1 — VSDs that reference this item as the locus of the
+  // alleged violation (e.g. misclassified item shipped abroad).
+  vsdDisclosures TradeVoluntaryDisclosure[]
+
   @@index([organizationId, status])
   @@index([organizationId, createdAt])
   @@index([eccnEU])
@@ -11094,6 +11107,11 @@ model TradeParty {
   // Sprint E4 — Re-Export Consent Letters where this party is the
   // requesting (importer/re-exporter) side.
   reexportConsents TradeReexportConsent[]
+
+  // Sprint E1 — VSDs that reference this party as the locus of the
+  // alleged violation (e.g. shipped to this sanctioned party in
+  // error).
+  vsdDisclosures TradeVoluntaryDisclosure[]
 
   @@index([organizationId, canonicalName])
   @@index([organizationId, screeningStatus])
@@ -11408,6 +11426,9 @@ model TradeOperation {
 
   // Sprint E4 — Re-Export Consent Letters tied to this operation
   reexportConsents TradeReexportConsent[]
+
+  // Sprint E1 — VSDs originating from this operation
+  vsdDisclosures TradeVoluntaryDisclosure[]
 
   // ── Mission link (Sprint MA — Mission integration) ──
   /// Optional FK to the Mission this operation supports. Often a
@@ -12032,6 +12053,200 @@ enum TradeReexportStatus {
   DENIED
   EXPIRED
   REVOKED
+}
+
+// ════════════════════════════════════════════════════════════════════
+// COMPLY TRADE — VOLUNTARY SELF-DISCLOSURE (Sprint E1, 2026-05-22)
+// ════════════════════════════════════════════════════════════════════
+// A Voluntary Self-Disclosure (VSD) is a formal submission to an
+// export-control authority disclosing a potential violation
+// discovered during internal review. VSDs:
+//  - reduce penalties by 60-80% on average (BIS Penalty Guidelines)
+//  - avoid criminal referral in most cases
+//  - demonstrate good-faith compliance during future enforcement
+//
+// Different authorities have different VSD frameworks:
+//  - BIS:  15 CFR §764.5 (must file "as soon as possible")
+//  - DDTC: ITAR §127.12 (encouraged but no statutory deadline)
+//  - OFAC: 31 CFR §501.805(c) (within 60 days for some programmes)
+//
+// This is the operator's "I think we screwed up — let's get out in
+// front of it" workflow. The lifecycle:
+//
+//   DISCOVERED  (operator flagged a potential violation)
+//      │
+//      ▼
+//   INVESTIGATING  (internal probe to determine scope)
+//      │
+//      ▼
+//   DRAFTED  (disclosure narrative drafted)
+//      │
+//      ▼
+//   SUBMITTED  (filed with the authority)
+//      │
+//      ▼
+//   ACKNOWLEDGED  (authority confirmed receipt)
+//      │
+//      ▼
+//   RESOLVED  (final outcome — no action / warning / penalty)
+//
+// Escape: any non-terminal → WITHDRAWN (operator pulls the disclosure
+// before authority response — rare but possible during INVESTIGATING).
+
+/// One Voluntary Self-Disclosure tracked through its complete
+/// lifecycle. Linked to the originating compliance gap (operation /
+/// item / party) so the audit trail captures both the violation
+/// and the disclosure response.
+model TradeVoluntaryDisclosure {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  /// Which authority is being disclosed to.
+  authority TradeVSDAuthority
+
+  /// Operator's classification of the alleged violation type. Drives
+  /// which deadline rules apply + downstream filing templates.
+  violationType TradeVSDViolationType
+
+  /// Short human title for the dashboard view (e.g. "Shipped 5A002.a
+  /// to RU without license, Aug 2025"). Required.
+  title String
+
+  /// Detailed narrative of the suspected violation. Plain text — the
+  /// formatted authority filing is rendered later from these fields.
+  description String @db.Text
+
+  /// When the operator first became aware of the potential violation
+  /// (NOT when the violation itself occurred). Starts the BIS-§764.5
+  /// "as soon as possible" clock + the OFAC 60-day clock.
+  discoveredAt DateTime
+
+  /// When the alleged violation occurred. May differ from discoveredAt
+  /// if the violation surfaced months/years later (e.g. during audit).
+  occurredAt DateTime?
+
+  // ── Optional links to the originating compliance entity ──
+  operationId String?
+  operation   TradeOperation? @relation(fields: [operationId], references: [id], onDelete: SetNull)
+
+  itemId String?
+  item   TradeItem? @relation(fields: [itemId], references: [id], onDelete: SetNull)
+
+  partyId String?
+  party   TradeParty? @relation(fields: [partyId], references: [id], onDelete: SetNull)
+
+  /// Lifecycle. See TradeVSDStatus.
+  status TradeVSDStatus @default(DISCOVERED)
+
+  // ── Lifecycle timestamps ──
+  investigatingAt DateTime?
+  draftedAt       DateTime?
+  /// When the disclosure was actually filed with the authority. Starts
+  /// the response clock (BIS typically responds in 6-12 months).
+  submittedAt     DateTime?
+  /// Authority-issued filing reference (BIS case number, etc).
+  filingReference String?
+  acknowledgedAt  DateTime?
+  resolvedAt      DateTime?
+
+  // ── Outcome (set when status = RESOLVED) ──
+  outcome TradeVSDOutcome?
+  /// Penalty amount in USD if outcome = CIVIL_PENALTY (BIS/OFAC fines
+  /// are normally in USD; convert from foreign-authority currency at
+  /// publication date).
+  penaltyAmountUsd Float?
+  /// Settlement text or DOJ-style closing letter language.
+  outcomeNotes     String? @db.Text
+
+  /// User who last advanced the lifecycle (for audit).
+  lastActionById String?
+  lastActionBy   User?   @relation("TradeVSDActionBy", fields: [lastActionById], references: [id], onDelete: SetNull)
+
+  /// Document vault path of the filed disclosure PDF.
+  filingDocumentId String?
+
+  /// Operator-private notes — internal investigation steps,
+  /// privileged communications with counsel, etc. NEVER expose
+  /// these via public APIs.
+  notes String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId, status])
+  @@index([organizationId, authority])
+  @@index([discoveredAt])
+  @@index([operationId])
+  @@index([itemId])
+  @@index([partyId])
+}
+
+/// Which authority the disclosure is filed with.
+enum TradeVSDAuthority {
+  /// US Bureau of Industry & Security (15 CFR §764.5)
+  BIS
+  /// US Directorate of Defense Trade Controls (ITAR §127.12)
+  DDTC
+  /// US Office of Foreign Assets Control (31 CFR §501.805(c))
+  OFAC
+  /// BAFA German Federal Office for Economic Affairs
+  BAFA
+  /// EU competent authority (intra-EU dual-use)
+  EU_COMPETENT_AUTHORITY
+  /// Other foreign authority
+  OTHER
+}
+
+/// Classification of the alleged violation. Influences which BIS/DDTC
+/// guideline applies + which filing template the system surfaces.
+enum TradeVSDViolationType {
+  /// Shipped a controlled item without the required license.
+  UNLICENSED_EXPORT
+  /// Mis-classified an item that should have been controlled.
+  MISCLASSIFICATION
+  /// Shipped to a sanctioned end-user / country (post-screening miss).
+  PROHIBITED_PARTY
+  /// Used a license exception that didn't apply.
+  INVALID_LICENSE_EXCEPTION
+  /// Deemed export (foreign-national access to controlled tech).
+  DEEMED_EXPORT
+  /// Failed to file a required catch-all determination / notification.
+  CATCH_ALL_OMISSION
+  /// Re-exported without required upstream consent.
+  UNAUTHORIZED_REEXPORT
+  /// Failed end-use commitments after delivery.
+  END_USE_VIOLATION
+  /// Other / mixed factual pattern
+  OTHER
+}
+
+/// VSD lifecycle.
+enum TradeVSDStatus {
+  DISCOVERED
+  INVESTIGATING
+  DRAFTED
+  SUBMITTED
+  ACKNOWLEDGED
+  RESOLVED
+  WITHDRAWN
+}
+
+/// Final outcome of the disclosure (set when status = RESOLVED).
+enum TradeVSDOutcome {
+  /// Authority closed the matter with no action — best case.
+  NO_ACTION
+  /// Authority issued a warning letter (no penalty).
+  WARNING_LETTER
+  /// Authority imposed a civil monetary penalty.
+  CIVIL_PENALTY
+  /// Settlement agreement (typically a payment + compliance
+  /// undertakings).
+  SETTLEMENT
+  /// Criminal referral — extremely rare for VSDs, but possible.
+  CRIMINAL_REFERRAL
+  /// VSD withdrawn before resolution (operator pulled the filing).
+  WITHDRAWN
 }
 
 // ╔══════════════════════════════════════════════════════════════════╗
