@@ -197,7 +197,7 @@ const THRESHOLD_STANDARD_PCT = 25; // § 734.4(d)
 const THRESHOLD_E1_E2_PCT = 10; // § 734.4(c)
 
 const CASCADE_DISCLAIMER =
-  "Three-Gate Cascade output is SCREENING-LEVEL guidance. Gate 1 (ITAR see-through) and Gate 3 (§ 734.4 De Minimis) are fully evaluated. Gate 2 (FDPR § 734.9) evaluates 6 of 8 scenarios — NS-FDP (b), 9x515-FDP (c), 600-series-FDP (d), Entity-List Footnote 1 (e)(1), Footnote 4 (e)(2), Footnote 5 (e)(3). The remaining 4 scenarios (Russia/Belarus/Crimea § 734.9(f), MEU/Procurement Footnote 3 § 734.9(g), Advanced Computing § 734.9(h), Supercomputer § 734.9(i)) require manual analysis pending Z20c-d. Final determination requires qualified export-control counsel.";
+  "Three-Gate Cascade output is SCREENING-LEVEL guidance. Gate 1 (ITAR see-through) and Gate 3 (§ 734.4 De Minimis) are fully evaluated. Gate 2 (FDPR § 734.9) evaluates 8 of 10 distinct rules — NS-FDP (b), 9x515-FDP (c), 600-series-FDP (d), Entity-List Footnote 1 (e)(1), Footnote 4 (e)(2), Footnote 5 (e)(3), Russia/Belarus/Crimea (f), MEU/Procurement Footnote 3 (g). The remaining 2 rules (Advanced Computing § 734.9(h), Supercomputer § 734.9(i)) require manual analysis pending Z20d. Final determination requires qualified export-control counsel.";
 
 // ─── Engine ─────────────────────────────────────────────────────────
 
@@ -252,11 +252,12 @@ export function evaluateSubjectToEAR(input: CascadeInput): CascadeResult {
     "Gate 1 ITAR see-through: no USML defense articles in BOM (or all USML lines fall within published USML→EAR carve-outs). Proceeds to Gate 2.",
   );
 
-  // ── Gate 2 — FDPR (Z20a: 3 of 8 scenarios) ───────────────────────
-  // Evaluates § 734.9(b) NS-FDP, (c) 9x515-FDP, (d) 600-series-FDP.
-  // The remaining 5 scenarios (Entity-List, Russia/Belarus, MEU,
-  // Advanced Computing, Supercomputer) require knowledge predicates
-  // and are queued under Z20b-d.
+  // ── Gate 2 — FDPR (Z20a/b/c: 8 of 10 distinct rules) ─────────────
+  // Evaluates § 734.9(b) NS-FDP, (c) 9x515-FDP, (d) 600-series-FDP,
+  // (e)(1)/(2)/(3) Entity-List Footnotes 1/4/5, (f) Russia/Belarus/
+  // Crimea, (g) MEU/Procurement Footnote 3. The remaining 2 rules
+  // (Advanced Computing (h), Supercomputer (i)) are queued under
+  // Z20d and surface as `fdprNotYetEvaluatedRules` for human review.
   const fdprResult: FDPREvaluationResult = evaluateFDPR({
     destinationCountry: input.destinationCountry,
     foreignItemEccn: input.foreignItemEccn ?? null,
@@ -292,7 +293,7 @@ export function evaluateSubjectToEAR(input: CascadeInput): CascadeResult {
     };
   }
   rationale.push(
-    `Gate 2 FDPR: 3 of 8 scenarios evaluated (NS-FDP, 9x515-FDP, 600-series-FDP) — none fired. ${fdprResult.notYetEvaluatedRules.length} scenarios remain queued (Entity-List, Russia/Belarus, MEU, Advanced Computing, Supercomputer — operator must evaluate manually). Proceeds to Gate 3.`,
+    `Gate 2 FDPR: 8 of 10 distinct FDPR rules evaluated (NS-FDP, 9x515-FDP, 600-series-FDP, Entity-List Footnotes 1/4/5, Russia/Belarus/Crimea, MEU/Procurement Footnote 3) — none fired. ${fdprResult.notYetEvaluatedRules.length} rules remain queued (Advanced Computing, Supercomputer — operator must evaluate manually under Z20d scope). Proceeds to Gate 3.`,
   );
 
   // ── Gate 3a — § 734.4(a) hard carve-outs ─────────────────────────

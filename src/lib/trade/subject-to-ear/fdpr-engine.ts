@@ -1,9 +1,10 @@
 /**
  * Caelex Trade — Foreign Direct Product Rule (FDPR) engine.
  *
- * Sprint Z20a. Tier 1 per the Living Execution Plan.
+ * Sprints Z20a / Z20b / Z20c. Tier 1 per the Living Execution Plan.
  *
- * 15 CFR § 734.9 codifies 8 FDPR scenarios. Each scenario defines a
+ * 15 CFR § 734.9 codifies 8 FDPR scenarios across 10 distinct rules
+ * (because (e) is split into (e)(1)/(2)/(3)). Each rule defines a
  * product scope (paragraph .1) and a country/end-user/end-use scope
  * (paragraph .2). A foreign-produced item is "subject to the EAR" if
  * it is either:
@@ -19,20 +20,21 @@
  * produced on US-direct-product tooling. The cascade (Z18) treats
  * FDPR and de-minimis as orthogonal channels (Blueprint 2 § Caveat #6).
  *
- * This sprint (Z20a) implements the 3 simplest scenarios — all
- * destination-gated, no knowledge predicates needed:
+ * Rules implemented in this release (8 of 10):
  *
- *   § 734.9(b) — NS-FDP        → D:1, E:1, E:2
- *   § 734.9(c) — 9x515-FDP     → D:5, E:1, E:2
- *   § 734.9(d) — 600-series    → D:1, D:3, D:4, D:5, E:1, E:2
+ *   § 734.9(b) — NS-FDP                 → D:1, E:1, E:2          [Z20a]
+ *   § 734.9(c) — 9x515-FDP              → D:5, E:1, E:2          [Z20a]
+ *   § 734.9(d) — 600-series             → D:1, D:3, D:4, D:5, E  [Z20a]
+ *   § 734.9(e)(1) — Footnote 1 (Huawei) → knowledge-gated         [Z20b]
+ *   § 734.9(e)(2) — Footnote 4 (HikVision) → knowledge-gated      [Z20b]
+ *   § 734.9(e)(3) — Footnote 5 + adv-node-IC → knowledge-gated   [Z20b]
+ *   § 734.9(f) — Russia/Belarus/Crimea  → destination-gated      [Z20c]
+ *   § 734.9(g) — MEU/Procurement (fn3)  → knowledge-gated (fn3)  [Z20c]
  *
- * The remaining 5 scenarios are stubbed pending Z20b-d:
+ * Remaining 2 rules stubbed pending Z20d:
  *
- *   § 734.9(e) — Entity List FDP (footnotes 1, 4, 5)  → Z20b
- *   § 734.9(f) — Russia / Belarus / Crimea FDPR        → Z20c
- *   § 734.9(g) — MEU / Procurement (footnote 3)        → Z20c
- *   § 734.9(h) — Advanced Computing FDP                → Z20d
- *   § 734.9(i) — Supercomputer FDP                     → Z20d
+ *   § 734.9(h) — Advanced Computing FDP                          [Z20d]
+ *   § 734.9(i) — Supercomputer FDP                               [Z20d]
  *
  * Source: Blueprint 2 § 3 + § 9.1 steps 3-5. 15 CFR § 734.9.
  *
@@ -266,17 +268,56 @@ function isFootnote5TechEccn(eccn: string): boolean {
   );
 }
 
-// Pure list of "not yet evaluated" rules. Z20b shipped (e)(1)/(2)/(3);
-// (f)/(g)/(h)/(i) remain queued under Z20c/d.
+/**
+ * § 734.9(f) and (g) — Product scope test: foreign item is the direct
+ * product of US-origin technology or software specified in ANY ECCN
+ * in product groups D or E in Categories 3-9 of the CCL.
+ *
+ * This is the broadest FDPR product scope on the CCL — it covers
+ * essentially every NS-controlled and dual-use technology in Categories
+ * 3 (Electronics) through 9 (Propulsion/Aerospace).
+ *
+ * Excludes Categories 0/1/2 (Nuclear/Materials/Materials-Processing).
+ * Includes the entire D (software) and E (technology) product groups.
+ *
+ * Source: 15 CFR § 734.9(f)(1)(i), § 734.9(g)(1)(i).
+ */
+function isCat39DEEccn(eccn: string): boolean {
+  if (!eccn) return false;
+  const n = eccn.replace(/^ECCN:/, "");
+  return /^[3-9][DE]\d{3}/i.test(n);
+}
+
+/**
+ * § 734.9(f) — Country scope test: destination is Russia (RU), Belarus
+ * (BY), or in one of the temporarily occupied Ukrainian regions
+ * (Crimea, Donetsk, Luhansk, Kherson, Zaporizhzhia).
+ *
+ * The occupied-region trigger requires an explicit knowledge fact
+ * because ISO 3166 has no codes for them; operators flag this via
+ * `knowledgeFacts.destinationIsOccupiedUkraineRegion`.
+ *
+ * Source: 15 CFR § 734.9(f)(2).
+ */
+function isRussiaBelarusOrOccupiedUkraine(
+  destinationIso: string,
+  knowledgeFacts: KnowledgeFacts | undefined,
+): boolean {
+  const iso = destinationIso.toUpperCase();
+  if (iso === "RU" || iso === "BY") return true;
+  return knowledgeFacts?.destinationIsOccupiedUkraineRegion === true;
+}
+
+// Pure list of "not yet evaluated" rules. Z20a shipped (b)/(c)/(d).
+// Z20b shipped (e)(1)/(2)/(3). Z20c shipped (f) + (g). (h) and (i)
+// remain queued under Z20d.
 const NOT_YET_EVALUATED: FDPRRuleId[] = [
-  "734.9(f)-russia-belarus-crimea",
-  "734.9(g)-meu-procurement-fn3",
   "734.9(h)-advanced-computing",
   "734.9(i)-supercomputer",
 ];
 
 const FDPR_DISCLAIMER =
-  "FDPR engine output is SCREENING-LEVEL guidance only. Six of the eight FDPR scenarios are evaluated in this release: § 734.9(b) NS-FDP, (c) 9x515-FDP, (d) 600-series-FDP, (e)(1) Entity-List Footnote 1, (e)(2) Entity-List Footnote 4, (e)(3) Entity-List Footnote 5. The remaining two (Russia/Belarus/Crimea § 734.9(f), MEU/Procurement Footnote 3 § 734.9(g), Advanced Computing § 734.9(h), Supercomputer § 734.9(i)) are NOT YET evaluated — operator MUST perform these manually for any transaction destined to Russia/Belarus or where an advanced-computing end-use is involved. Final determination requires qualified export-control counsel.";
+  "FDPR engine output is SCREENING-LEVEL guidance only. Eight of the ten distinct FDPR rules are evaluated in this release: § 734.9(b) NS-FDP, (c) 9x515-FDP, (d) 600-series-FDP, (e)(1) Entity-List Footnote 1, (e)(2) Entity-List Footnote 4, (e)(3) Entity-List Footnote 5, (f) Russia/Belarus/Crimea, (g) MEU/Procurement Footnote 3. The remaining two (Advanced Computing § 734.9(h), Supercomputer § 734.9(i)) are NOT YET evaluated — operator MUST perform these manually for any transaction involving advanced-computing semiconductors or supercomputer end-use. Final determination requires qualified export-control counsel.";
 
 // ─── Engine ─────────────────────────────────────────────────────────
 
@@ -532,6 +573,95 @@ export function evaluateFDPR(input: FDPREvaluationInput): FDPREvaluationResult {
             "15 CFR § 744.11(a)(2)(v) — License required; advanced-node IC scope",
         });
       }
+    }
+  }
+
+  // ── § 734.9(f) — Russia / Belarus / Crimea FDPR ──────────────────
+  // Trigger: foreign item is the direct product of US-origin tech/sw
+  // in ANY ECCN in product groups D or E of CCL Categories 3-9
+  // (Electronics through Propulsion/Aerospace) — OR produced by a
+  // plant or major component that is itself the direct product of
+  // such tech — AND destination is Russia, Belarus, or one of the
+  // temporarily occupied Ukrainian regions.
+  //
+  // No knowledge predicate beyond destination. The broadest product
+  // scope of all FDPR rules — Cat 3-9 D/E spans essentially every
+  // NS-controlled and dual-use technology.
+  //
+  // Source: 15 CFR § 734.9(f). Final rule 87 FR 12226 (Mar 3, 2022),
+  // amended multiple times including 87 FR 12856 (Apr 12, 2022) and
+  // 88 FR 12174 (Feb 27, 2023).
+  if (
+    isRussiaBelarusOrOccupiedUkraine(
+      input.destinationCountry,
+      input.knowledgeFacts,
+    )
+  ) {
+    const matchingFLines = input.bom.filter((line) => {
+      const tech = (line.usTechnologyEccns ?? []).some(isCat39DEEccn);
+      const sw = (line.usSoftwareEccns ?? []).some(isCat39DEEccn);
+      const plant = (line.plantTechEccns ?? []).some(isCat39DEEccn);
+      return (
+        (line.madeWithUSTechnology === true && tech) ||
+        (line.madeWithUSSoftware === true && sw) ||
+        (line.producedByPlantThatIsUSDirectProduct === true && plant)
+      );
+    });
+    if (matchingFLines.length > 0) {
+      const destDesc =
+        input.knowledgeFacts?.destinationIsOccupiedUkraineRegion === true
+          ? `${input.destinationCountry} (flagged as occupied Ukrainian region)`
+          : input.destinationCountry;
+      hits.push({
+        ruleId: "734.9(f)-russia-belarus-crimea",
+        title: "Russia/Belarus/Crimea FDP (§ 734.9(f))",
+        citation:
+          "15 CFR § 734.9(f) — Foreign item direct product of US-origin Cat 3-9 D/E tech/sw, destined for Russia, Belarus, or occupied Ukrainian regions",
+        matchingComponentNodeIds: matchingFLines.map((l) => l.nodeId),
+        rationale: `Destination ${destDesc} is in Russia/Belarus/occupied-Ukraine scope per § 734.9(f)(2). ${matchingFLines.length} BOM line(s) used US-origin Cat 3-9 D/E technology / software / production-plant. Foreign item is subject to the EAR via § 734.9(f) Russia/Belarus FDPR. License required under § 746.8; policy of denial except for limited humanitarian / news-media / safety exceptions.`,
+        licenseAuthority:
+          "15 CFR § 746.8 (Russia/Belarus sanctions; policy of denial)",
+      });
+    }
+  }
+
+  // ── § 734.9(g) — MEU / Procurement FDPR (Footnote 3) ─────────────
+  // Trigger: foreign item is the direct product of US-origin tech/sw
+  // in ANY ECCN in product groups D or E of CCL Categories 3-9 (same
+  // product scope as (f)) AND ANY transaction party carries Entity-
+  // List footnote 3 (Russian/Belarusian Military End-User per
+  // § 744.21, or a § 744.21 procurement-pattern entity).
+  //
+  // CRITICAL: destination is WORLDWIDE. Unlike (f), (g) can fire on a
+  // shipment to a friendly destination (e.g. Kazakhstan, Turkey, UAE,
+  // Singapore) if a fn3 entity is anywhere in the transaction chain.
+  // This catches Russia-procurement schemes that route through third
+  // countries.
+  //
+  // Source: 15 CFR § 734.9(g). 87 FR 12226 (Mar 3, 2022).
+  if (anyPartyHasFootnote(input.knowledgeFacts, 3)) {
+    const matchingGLines = input.bom.filter((line) => {
+      const tech = (line.usTechnologyEccns ?? []).some(isCat39DEEccn);
+      const sw = (line.usSoftwareEccns ?? []).some(isCat39DEEccn);
+      const plant = (line.plantTechEccns ?? []).some(isCat39DEEccn);
+      return (
+        (line.madeWithUSTechnology === true && tech) ||
+        (line.madeWithUSSoftware === true && sw) ||
+        (line.producedByPlantThatIsUSDirectProduct === true && plant)
+      );
+    });
+    if (matchingGLines.length > 0) {
+      const fn3Roles = partyRolesWithFootnote(input.knowledgeFacts, 3);
+      hits.push({
+        ruleId: "734.9(g)-meu-procurement-fn3",
+        title: "MEU / Procurement FDP — Footnote 3 (§ 734.9(g))",
+        citation:
+          "15 CFR § 734.9(g) — Foreign item direct product of US-origin Cat 3-9 D/E tech/sw, transaction includes Footnote-3 entity (Russian/Belarusian MEU or § 744.21 procurement scheme)",
+        matchingComponentNodeIds: matchingGLines.map((l) => l.nodeId),
+        rationale: `Footnote-3 Entity-List party (Russian/Belarusian Military End-User or § 744.21 procurement-pattern entity) in transaction (roles: ${fn3Roles.join(", ")}). Destination ${input.destinationCountry} — § 734.9(g) applies WORLDWIDE, not only to Russia/Belarus. ${matchingGLines.length} BOM line(s) used US-origin Cat 3-9 D/E technology. Foreign item subject to the EAR via § 734.9(g) MEU/Procurement FDP. License required under § 744.21; policy of denial.`,
+        licenseAuthority:
+          "15 CFR § 744.21 — License required for MEU; policy of denial",
+      });
     }
   }
 

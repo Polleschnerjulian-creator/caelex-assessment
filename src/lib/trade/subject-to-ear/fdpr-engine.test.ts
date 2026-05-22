@@ -405,25 +405,19 @@ describe("evaluateFDPR — aggregate behavior", () => {
     expect(result.hits).toHaveLength(0);
   });
 
-  it("Notes 4 not-yet-evaluated rules post-Z20b ((f)/(g)/(h)/(i))", () => {
+  it("Notes 2 not-yet-evaluated rules post-Z20c ((h)/(i))", () => {
     const result = evaluateFDPR(mkInput("BR", []));
-    expect(result.notYetEvaluatedRules).toHaveLength(4);
-    expect(result.notYetEvaluatedRules).toContain(
-      "734.9(f)-russia-belarus-crimea",
-    );
-    expect(result.notYetEvaluatedRules).toContain(
-      "734.9(g)-meu-procurement-fn3",
-    );
+    expect(result.notYetEvaluatedRules).toHaveLength(2);
     expect(result.notYetEvaluatedRules).toContain(
       "734.9(h)-advanced-computing",
     );
     expect(result.notYetEvaluatedRules).toContain("734.9(i)-supercomputer");
   });
 
-  it("Disclaimer references the 6 implemented + remaining FDPR scenarios", () => {
+  it("Disclaimer references the 8 implemented + 2 remaining FDPR rules", () => {
     const result = evaluateFDPR(mkInput("BR", []));
     expect(result.disclaimer).toMatch(/SCREENING-LEVEL/);
-    expect(result.disclaimer).toMatch(/six of the eight|6.*8/i);
+    expect(result.disclaimer).toMatch(/eight of the ten|8.*10/i);
   });
 
   it("Clean civilian foreign item to A:5 destination → no FDP", () => {
@@ -749,5 +743,306 @@ describe("Entity-List FDPR — destination-independent triggering", () => {
       },
     });
     expect(result.fdprApplicable).toBe(true);
+  });
+});
+
+// ─── § 734.9(f) — Russia / Belarus / Crimea FDPR (Z20c) ─────────────
+
+describe("§ 734.9(f) — Russia / Belarus / Crimea FDPR", () => {
+  it("Russia destination + foreign item made with US 9E001 (Cat 9 E) → fires", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "RU",
+      foreignItemEccn: "9A610", // any foreign ECCN — (f) doesn't gate on it
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "EAR99",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["9E001"],
+        },
+      ],
+    });
+    expect(result.fdprApplicable).toBe(true);
+    const fHit = result.hits.find(
+      (h) => h.ruleId === "734.9(f)-russia-belarus-crimea",
+    );
+    expect(fHit).toBeDefined();
+    expect(fHit?.matchingComponentNodeIds).toEqual(["L1"]);
+    expect(fHit?.rationale).toMatch(/Russia\/Belarus\/occupied-Ukraine/i);
+    expect(fHit?.licenseAuthority).toMatch(/§ 746\.8/);
+  });
+
+  it("Belarus destination + plant-direct-product 3E001 → fires", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "BY",
+      foreignItemEccn: "EAR99",
+      bom: [
+        {
+          nodeId: "PLANT",
+          eccn: "EAR99",
+          producedByPlantThatIsUSDirectProduct: true,
+          plantTechEccns: ["3E001"],
+        },
+      ],
+    });
+    const fHit = result.hits.find(
+      (h) => h.ruleId === "734.9(f)-russia-belarus-crimea",
+    );
+    expect(fHit).toBeDefined();
+  });
+
+  it("Occupied-Ukraine region (flag) + foreign item made with 5D002 software → fires", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "UA", // Ukraine ISO, but operator flags occupied region
+      foreignItemEccn: "5A002",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "5A002",
+          madeWithUSSoftware: true,
+          usSoftwareEccns: ["5D002"],
+        },
+      ],
+      knowledgeFacts: {
+        destinationIsOccupiedUkraineRegion: true,
+      },
+    });
+    const fHit = result.hits.find(
+      (h) => h.ruleId === "734.9(f)-russia-belarus-crimea",
+    );
+    expect(fHit).toBeDefined();
+    expect(fHit?.rationale).toMatch(/occupied Ukrainian region/i);
+  });
+
+  it("Friendly destination (Germany) + same US 9E001 tech → does NOT fire", () => {
+    // (f) is destination-gated. Without RU/BY/occupied-UA, no trigger.
+    const result = evaluateFDPR({
+      destinationCountry: "DE",
+      foreignItemEccn: "EAR99",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "EAR99",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["9E001"],
+        },
+      ],
+    });
+    const fHit = result.hits.find(
+      (h) => h.ruleId === "734.9(f)-russia-belarus-crimea",
+    );
+    expect(fHit).toBeUndefined();
+  });
+
+  it("Russia destination but only Cat 1/2 US tech in BOM → does NOT fire (Cat 3-9 D/E required)", () => {
+    // (f) product scope is Cat 3-9 D/E. Cat 1 (Materials) and Cat 2
+    // (Materials Processing) are OUTSIDE scope.
+    const result = evaluateFDPR({
+      destinationCountry: "RU",
+      foreignItemEccn: "EAR99",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "EAR99",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["1E001"], // Cat 1 — outside (f) scope
+        },
+      ],
+    });
+    const fHit = result.hits.find(
+      (h) => h.ruleId === "734.9(f)-russia-belarus-crimea",
+    );
+    expect(fHit).toBeUndefined();
+  });
+
+  it("Russia destination + Cat 7 D (avionics software) → fires (Cat 7 in scope)", () => {
+    // Cat 7 = Navigation/Avionics. Direct hit on Cat 3-9 D/E.
+    const result = evaluateFDPR({
+      destinationCountry: "RU",
+      foreignItemEccn: "7A003",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "7A003",
+          madeWithUSSoftware: true,
+          usSoftwareEccns: ["7D003"],
+        },
+      ],
+    });
+    expect(result.fdprApplicable).toBe(true);
+  });
+
+  it("Plain Ukraine destination (no occupied-region flag) + US 9E001 → does NOT fire", () => {
+    // Without the explicit knowledge-fact flag, Ukraine proper is not
+    // in the (f) country scope.
+    const result = evaluateFDPR({
+      destinationCountry: "UA",
+      foreignItemEccn: "EAR99",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "EAR99",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["9E001"],
+        },
+      ],
+    });
+    const fHit = result.hits.find(
+      (h) => h.ruleId === "734.9(f)-russia-belarus-crimea",
+    );
+    expect(fHit).toBeUndefined();
+  });
+});
+
+// ─── § 734.9(g) — MEU / Procurement FDPR Footnote 3 (Z20c) ──────────
+
+describe("§ 734.9(g) — MEU / Procurement FDPR (Footnote 3)", () => {
+  it("Footnote-3 end-user + ANY destination + US 5E001 tech → fires", () => {
+    // Critical: destination can be friendly (Germany, Kazakhstan, UAE).
+    // (g) catches third-country procurement schemes routing to MEU.
+    const result = evaluateFDPR({
+      destinationCountry: "KZ", // Kazakhstan — friendly transit
+      foreignItemEccn: "5A001",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "5A001",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["5E001"],
+        },
+      ],
+      knowledgeFacts: {
+        endUser: { entityListed: true, footnote: 3 },
+      },
+    });
+    expect(result.fdprApplicable).toBe(true);
+    const gHit = result.hits.find(
+      (h) => h.ruleId === "734.9(g)-meu-procurement-fn3",
+    );
+    expect(gHit).toBeDefined();
+    expect(gHit?.rationale).toMatch(/end-user/);
+    expect(gHit?.rationale).toMatch(/WORLDWIDE/i);
+    expect(gHit?.licenseAuthority).toMatch(/§ 744\.21/);
+  });
+
+  it("Footnote-3 incorporator → fires (any party role triggers)", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "TR", // Turkey
+      foreignItemEccn: "7A003",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "7A003",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["7E001"],
+        },
+      ],
+      knowledgeFacts: {
+        incorporator: { entityListed: true, footnote: 3 },
+      },
+    });
+    const gHit = result.hits.find(
+      (h) => h.ruleId === "734.9(g)-meu-procurement-fn3",
+    );
+    expect(gHit).toBeDefined();
+    expect(gHit?.rationale).toMatch(/incorporator/);
+  });
+
+  it("No footnote-3 party (only footnote-1) + Cat 3-9 US tech → does NOT fire (g)", () => {
+    // (g) is footnote-3-specific. A footnote-1 listing alone won't
+    // trigger (g) — though it triggers (e)(1).
+    const result = evaluateFDPR({
+      destinationCountry: "BR",
+      foreignItemEccn: "EAR99",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "EAR99",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["5E001"],
+        },
+      ],
+      knowledgeFacts: {
+        purchaser: { entityListed: true, footnote: 1 },
+      },
+    });
+    const gHit = result.hits.find(
+      (h) => h.ruleId === "734.9(g)-meu-procurement-fn3",
+    );
+    expect(gHit).toBeUndefined();
+  });
+
+  it("Footnote-3 + Cat 1 tech (outside scope) → does NOT fire", () => {
+    // (g) product scope is Cat 3-9 D/E. Cat 1 doesn't trigger.
+    const result = evaluateFDPR({
+      destinationCountry: "BR",
+      foreignItemEccn: "EAR99",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "EAR99",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["1E001"],
+        },
+      ],
+      knowledgeFacts: {
+        endUser: { entityListed: true, footnote: 3 },
+      },
+    });
+    const gHit = result.hits.find(
+      (h) => h.ruleId === "734.9(g)-meu-procurement-fn3",
+    );
+    expect(gHit).toBeUndefined();
+  });
+
+  it("Russia destination + Footnote-3 entity → BOTH (f) and (g) can fire simultaneously", () => {
+    // The high-risk overlap: Russian MEU buying foreign item built
+    // with US Cat 3-9 D/E tech triggers both rules.
+    const result = evaluateFDPR({
+      destinationCountry: "RU",
+      foreignItemEccn: "9A610",
+      bom: [
+        {
+          nodeId: "L1",
+          eccn: "9A610",
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["9E001"],
+        },
+      ],
+      knowledgeFacts: {
+        endUser: { entityListed: true, footnote: 3 },
+      },
+    });
+    const fHit = result.hits.find(
+      (h) => h.ruleId === "734.9(f)-russia-belarus-crimea",
+    );
+    const gHit = result.hits.find(
+      (h) => h.ruleId === "734.9(g)-meu-procurement-fn3",
+    );
+    expect(fHit).toBeDefined();
+    expect(gHit).toBeDefined();
+  });
+
+  it("Plant-direct-product alone (no madeWith) + footnote-3 → fires via plant trigger", () => {
+    const result = evaluateFDPR({
+      destinationCountry: "AE", // UAE — third-country transit
+      foreignItemEccn: "EAR99",
+      bom: [
+        {
+          nodeId: "PLANT",
+          eccn: "EAR99",
+          producedByPlantThatIsUSDirectProduct: true,
+          plantTechEccns: ["6E001"],
+        },
+      ],
+      knowledgeFacts: {
+        ultimateConsignee: { entityListed: true, footnote: 3 },
+      },
+    });
+    const gHit = result.hits.find(
+      (h) => h.ruleId === "734.9(g)-meu-procurement-fn3",
+    );
+    expect(gHit).toBeDefined();
+    expect(gHit?.matchingComponentNodeIds).toEqual(["PLANT"]);
   });
 });

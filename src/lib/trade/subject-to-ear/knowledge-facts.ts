@@ -111,6 +111,17 @@ export interface KnowledgeFacts {
    * transistors, per Red Flag 26 + the FDPR (e)(3) scope).
    */
   advancedNodeIcFacility?: boolean;
+  /**
+   * True if the destination is in a temporarily occupied Ukrainian
+   * region — the Crimea region or the Donetsk, Luhansk, Kherson, or
+   * Zaporizhzhia regions of Ukraine. ISO 3166 does not have a code
+   * for these, so the operator must flag it via this knowledge fact.
+   *
+   * Per 15 CFR § 734.9(f)(2), the country scope of the Russia/Belarus
+   * FDPR includes RU, BY, AND these occupied regions. Z20c consumes
+   * this signal to fire (f).
+   */
+  destinationIsOccupiedUkraineRegion?: boolean;
 
   // ── Red Flags (Supp. 3 to Part 732) ──────────────────────────────
   /**
