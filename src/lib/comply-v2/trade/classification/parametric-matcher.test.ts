@@ -667,3 +667,75 @@ describe("Specially-designed catch-all gating (Z3g)", () => {
     expect(ids).not.toContain("USML:XV(b)");
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────
+// Sprint Z3h — CMG vs Reaction Wheel disambiguation (USML XV(e)(13) vs
+// ECCN 9A515.x-rw). Closes ontology research caveat #7: "Reaction /
+// momentum wheels are explicitly NOT controlled in USML XV(e)(13). They
+// fall to ECCN 9A515.x. Frequent classification error."
+// ─────────────────────────────────────────────────────────────────────
+
+describe("CMG vs Reaction Wheel disambiguation (Z3h)", () => {
+  it("Control Moment Gyro + SD=true → USML XV(e)(13) (ITAR)", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.adcs.cmg.dual_gimbal",
+      isSpeciallyDesigned: true,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("USML:XV(e)(13)");
+    // Must NOT also classify as reaction wheel — that would be the
+    // legacy classification error the 2014 IFR specifically fixed.
+    expect(ids).not.toContain("ECCN:9A515.x-rw");
+  });
+
+  it("Reaction wheel + SD=true → 9A515.x-rw (EAR), NOT USML XV(e)(13)", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.adcs.reaction_wheel.high_precision",
+      isSpeciallyDesigned: true,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("ECCN:9A515.x-rw");
+    // The whole point of the 2014 IFR: reaction wheels are EAR, not ITAR.
+    expect(ids).not.toContain("USML:XV(e)(13)");
+  });
+
+  it("CMG with SD=false → no XV(e)(13) match (aircraft CMG falls outside)", () => {
+    // CMG-stabilised aircraft for earth-observation surveys would have
+    // CMGs that are NOT specially designed for spacecraft — they
+    // belong to other USML categories or EAR.
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.adcs.cmg.legacy",
+      isSpeciallyDesigned: false,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("USML:XV(e)(13)");
+  });
+
+  it("Generic 'spacecraft.adcs' prefix (no CMG / no RW specialisation) hits NEITHER", () => {
+    // A generic ADCS item that hasn't been further-classified as CMG
+    // or reaction-wheel should match neither — operator must
+    // disambiguate. The matcher refuses to guess.
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.adcs.generic",
+      isSpeciallyDesigned: true,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("USML:XV(e)(13)");
+    expect(ids).not.toContain("ECCN:9A515.x-rw");
+  });
+
+  it("XV(e)(13) cites the 9A515.x-rw successor relationship", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.adcs.cmg.dual_gimbal",
+      isSpeciallyDesigned: true,
+    });
+    const cmg = result.candidates.find(
+      (c) => c.entry.canonicalId === "USML:XV(e)(13)",
+    );
+    expect(cmg).toBeDefined();
+    const eccnLink = cmg!.entry.seeAlso.find((l) => l.id === "9A515.x-rw");
+    expect(eccnLink).toBeDefined();
+    expect(eccnLink?.relationship).toBe("successor");
+    expect(eccnLink?.notes).toMatch(/79 FR 27184|classification error/i);
+  });
+});
