@@ -123,6 +123,40 @@ export interface PossibleMatch {
   rationale: string;
 }
 
+/**
+ * Sprint Z3k — near-miss surfacing.
+ *
+ * Many entries refute and get silently dropped. For the operator, this
+ * leaves a critical visibility gap: "I thought this should match —
+ * why didn't it?" A `NearMissMatch` surfaces entries that ALMOST
+ * matched, with the specific predicate that refuted them.
+ *
+ * Selection criteria (intentionally narrow to keep result sets
+ * useful, not noisy):
+ *   - At least one predicate matched (so the entry was "close")
+ *   - Exactly one predicate refuted (the actionable boundary)
+ *   - Zero unknown predicates (otherwise it's a PossibleMatch)
+ *
+ * Example: a 0.51 m EO satellite generates a near-miss for 9A515.a.1
+ * with rationale "Your itemClass matches; aperture 0.51 m fails the
+ * 0.35-0.50 range." The operator can correct the specification or
+ * confirm the classification cleanly went to USML (which uses < 0.50).
+ */
+export interface NearMissMatch {
+  entry: ControlListEntry;
+  /** Predicates that matched (the entry was almost right). */
+  matchedPredicates: MatchedPredicate[];
+  /** The single predicate that refuted the entry. */
+  refutingPredicate: {
+    attribute: AttributeName;
+    op: PredicateOp;
+    expectedValue: ParametricPredicate["value"];
+    actualValue: unknown;
+  };
+  /** Plain-language "why this didn't match" string. */
+  rationale: string;
+}
+
 export interface MatcherResult {
   /** Ranked candidates, HIGH first, then MEDIUM, then LOW. */
   candidates: CandidateMatch[];
@@ -136,6 +170,14 @@ export interface MatcherResult {
    * unknown-attribute case produces a possible match.
    */
   possibleMatches: PossibleMatch[];
+  /**
+   * Sprint Z3k — entries that almost matched. ≥1 predicate matched,
+   * exactly 1 predicate refuted, zero unknowns. The single refuting
+   * predicate is surfaced with both expected and actual values so the
+   * operator can either correct the item spec or accept that the
+   * entry doesn't apply. Ranked by matched-count desc.
+   */
+  nearMisses: NearMissMatch[];
   /** True when the item has no parametric attributes populated. */
   noAttributesPopulated: boolean;
   /** Always present — every classification surface attaches a disclaimer. */
@@ -159,6 +201,7 @@ export function matchAgainstCrossWalk(
 
   const candidates: CandidateMatch[] = [];
   const possibleMatches: PossibleMatch[] = [];
+  const nearMisses: NearMissMatch[] = [];
 
   for (const entry of crossWalk) {
     const result = evaluateEntry(item, entry);
@@ -166,6 +209,8 @@ export function matchAgainstCrossWalk(
       candidates.push(result.match);
     } else if (result.kind === "possible") {
       possibleMatches.push(result.possible);
+    } else if (result.kind === "near-miss") {
+      nearMisses.push(result.nearMiss);
     }
     // result.kind === "refute" → entry dropped, no side effect.
   }
@@ -188,16 +233,28 @@ export function matchAgainstCrossWalk(
     (a, b) => b.matchedPredicates.length - a.matchedPredicates.length,
   );
 
+  // Rank near-misses by matched-count desc — the most-corroborated
+  // near-misses are the most useful operator signals (e.g. an entry
+  // with 2 predicates matched and 1 boundary-refute is more actionable
+  // than an entry with 1 predicate matched and 1 refute).
+  nearMisses.sort(
+    (a, b) => b.matchedPredicates.length - a.matchedPredicates.length,
+  );
+
   // Noise-suppression: when the operator has populated NOTHING, every
   // entry with a predicate would surface as a possible match. That is
   // worse-than-useless guidance — it tells them nothing actionable.
   // Surface the noAttributesPopulated flag instead so the UI can render
-  // a "populate at least one technical attribute" prompt.
+  // a "populate at least one technical attribute" prompt. Same logic
+  // applies to near-misses — with nothing populated, every entry is a
+  // refute and there are no near-misses to surface either.
   const surfacedPossibles = noAttributesPopulated ? [] : possibleMatches;
+  const surfacedNearMisses = noAttributesPopulated ? [] : nearMisses;
 
   return {
     candidates,
     possibleMatches: surfacedPossibles,
+    nearMisses: surfacedNearMisses,
     noAttributesPopulated,
     disclaimer: MATCHER_DISCLAIMER,
   };
@@ -208,6 +265,7 @@ export function matchAgainstCrossWalk(
 type EntryEvalResult =
   | { kind: "match"; match: CandidateMatch }
   | { kind: "possible"; possible: PossibleMatch }
+  | { kind: "near-miss"; nearMiss: NearMissMatch }
   | { kind: "refute" };
 
 function evaluateEntry(
@@ -219,6 +277,7 @@ function evaluateEntry(
 
   const matchedPredicates: MatchedPredicate[] = [];
   const unknownPredicates: PossibleMatch["unknownPredicates"] = [];
+  const refutedPredicates: NearMissMatch["refutingPredicate"][] = [];
   let hasParametricMatch = false;
   let anyBoundary = false;
 
@@ -243,9 +302,19 @@ function evaluateEntry(
     const evalResult = evaluatePredicate(pred, actual);
 
     // Three-valued logic, branch 2: REFUTED
-    // A predicate that returned `matched: false` definitively refutes
-    // the entry — we drop it (no possible-match emission).
-    if (!evalResult.matched) return { kind: "refute" };
+    // A predicate that returned `matched: false`. Sprint Z3k: instead
+    // of returning immediately, we collect the refuting predicate and
+    // keep scanning so we can decide between near-miss and refute at
+    // the end based on the full predicate picture.
+    if (!evalResult.matched) {
+      refutedPredicates.push({
+        attribute: pred.attribute,
+        op: pred.op,
+        expectedValue: pred.value,
+        actualValue: actual,
+      });
+      continue;
+    }
 
     // Three-valued logic, branch 3: MATCHED
     matchedPredicates.push({
@@ -258,6 +327,34 @@ function evaluateEntry(
 
     if (pred.attribute !== "itemClass") hasParametricMatch = true;
     if (evalResult.boundary) anyBoundary = true;
+  }
+
+  // Sprint Z3k — refutation handling. Decide between near-miss and
+  // full refute based on the matched/refuted counts:
+  //   - matched=0 → full refute (entry was never close)
+  //   - matched≥1 + refuted=1 + unknown=0 → near-miss (actionable)
+  //   - matched≥1 + refuted≥2 → full refute (too far off to surface)
+  //   - matched≥1 + refuted≥1 + unknown≥1 → still refute (we don't
+  //     mix near-miss with unknown — too noisy)
+  if (refutedPredicates.length > 0) {
+    const isNearMiss =
+      matchedPredicates.length >= 1 &&
+      refutedPredicates.length === 1 &&
+      unknownPredicates.length === 0;
+    if (!isNearMiss) return { kind: "refute" };
+    return {
+      kind: "near-miss",
+      nearMiss: {
+        entry,
+        matchedPredicates,
+        refutingPredicate: refutedPredicates[0],
+        rationale: buildNearMissRationale(
+          entry,
+          matchedPredicates,
+          refutedPredicates[0],
+        ),
+      },
+    };
   }
 
   // After scanning all predicates without a refutation:
@@ -302,6 +399,19 @@ function evaluateEntry(
       rationale,
     },
   };
+}
+
+function buildNearMissRationale(
+  entry: ControlListEntry,
+  matched: MatchedPredicate[],
+  refuting: NearMissMatch["refutingPredicate"],
+): string {
+  const matchedSummary = matched
+    .map(
+      (p) => `${p.attribute} ${humanOp(p.op)} ${formatValue(p.expectedValue)}`,
+    )
+    .join("; ");
+  return `Near-miss for ${entry.canonicalId}: ${matched.length} predicate(s) matched (${matchedSummary || "none"}) but ${refuting.attribute} ${humanOp(refuting.op)} ${formatValue(refuting.expectedValue)} was refuted by actual value ${formatValue(refuting.actualValue as ParametricPredicate["value"])}. Correct the item attribute or accept that this entry does not apply.`;
 }
 
 function buildPossibleRationale(

@@ -905,3 +905,110 @@ describe("Ground station ITAR/EAR bifurcation (Z3j)", () => {
     expect(ids).not.toContain("USML:XV(b)");
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────
+// Sprint Z3k — Near-miss surfacing. When ≥1 predicate matches AND
+// exactly 1 predicate refutes (and zero unknowns), the entry is a
+// "near-miss" — surfaced with the actionable refuting predicate so the
+// operator can either correct the item spec or accept the entry
+// doesn't apply.
+// ─────────────────────────────────────────────────────────────────────
+
+describe("Near-miss surfacing (Z3k)", () => {
+  it("EO spacecraft with aperture 0.51m → 9A515.a.1 is a near-miss (aperture refutes)", () => {
+    // The classic near-miss: itemClass matches but aperture is just
+    // above the 0.50m upper bound of 9A515.a.1 (which is between
+    // 0.35-0.50). USML XV(a)(7)(i) would still match since it's
+    // < 0.50 too, BUT — wait — 0.51 > 0.50 so XV is ALSO refuted.
+    // Both should appear as near-misses.
+    const result = matchAgainstCrossWalk({
+      apertureMeters: 0.51,
+      itemClass: "spacecraft.remote_sensing.eo",
+    });
+    const nearMissIds = result.nearMisses.map((nm) => nm.entry.canonicalId);
+    expect(nearMissIds).toContain("ECCN:9A515.a.1");
+    // The near-miss should expose the refuting predicate.
+    const nm = result.nearMisses.find(
+      (nm) => nm.entry.canonicalId === "ECCN:9A515.a.1",
+    );
+    expect(nm?.refutingPredicate.attribute).toBe("apertureMeters");
+    expect(nm?.refutingPredicate.actualValue).toBe(0.51);
+  });
+
+  it("Multiple-refute entries are NOT surfaced as near-misses", () => {
+    // An entry where two predicates refute is "too far off" to be
+    // useful as a near-miss. The matcher drops it as a regular refute.
+    // Test fixture: EP system with WAY-below-threshold Isp AND wrong
+    // itemClass → 9A515.x-ep should refute on TWO predicates.
+    const result = matchAgainstCrossWalk({
+      IspSeconds: 100, // below 1000 threshold (refute)
+      itemClass: "household.appliance", // wrong class (refute)
+      isSpeciallyDesigned: true,
+    });
+    const nearMissIds = result.nearMisses.map((nm) => nm.entry.canonicalId);
+    expect(nearMissIds).not.toContain("ECCN:9A515.x-ep");
+  });
+
+  it("Entry with unknown + refute is NOT surfaced as near-miss (kept clean)", () => {
+    // When an entry has both UNKNOWN and REFUTE, the matcher must
+    // surface it as a full refute — not mix into the near-miss list.
+    // Reason: the operator would need to populate AND correct, which
+    // is two ambiguous actions; we prefer to surface unambiguous
+    // single-action signals.
+    const result = matchAgainstCrossWalk({
+      apertureMeters: 0.51, // refutes 9A515.a.1
+      // itemClass intentionally unknown
+    });
+    const nearMissIds = result.nearMisses.map((nm) => nm.entry.canonicalId);
+    expect(nearMissIds).not.toContain("ECCN:9A515.a.1");
+  });
+
+  it("Near-miss rationale exposes both expected and actual values", () => {
+    const result = matchAgainstCrossWalk({
+      apertureMeters: 0.51,
+      itemClass: "spacecraft.remote_sensing.eo",
+    });
+    const nm = result.nearMisses.find(
+      (nm) => nm.entry.canonicalId === "ECCN:9A515.a.1",
+    );
+    expect(nm).toBeDefined();
+    expect(nm!.rationale).toMatch(/0\.51/); // actual
+    expect(nm!.rationale).toMatch(/0\.35|0\.5/); // expected range
+    expect(nm!.rationale).toMatch(/correct.*item.*attribute|does not apply/i);
+  });
+
+  it("Near-misses sorted by matched-count desc (most-corroborated first)", () => {
+    const result = matchAgainstCrossWalk({
+      apertureMeters: 0.51,
+      itemClass: "spacecraft.remote_sensing.eo",
+    });
+    if (result.nearMisses.length >= 2) {
+      for (let i = 1; i < result.nearMisses.length; i++) {
+        expect(
+          result.nearMisses[i].matchedPredicates.length,
+        ).toBeLessThanOrEqual(
+          result.nearMisses[i - 1].matchedPredicates.length,
+        );
+      }
+    }
+  });
+
+  it("Empty bag → no near-misses (suppressed alongside possibles)", () => {
+    const result = matchAgainstCrossWalk({});
+    expect(result.nearMisses).toHaveLength(0);
+    expect(result.noAttributesPopulated).toBe(true);
+  });
+
+  it("Full-match entries do NOT appear in nearMisses (mutually exclusive)", () => {
+    // A correctly-classified item must only appear in `candidates`,
+    // never in `nearMisses` — the three result lists are disjoint.
+    const result = matchAgainstCrossWalk({
+      apertureMeters: 0.4, // squarely in 9A515.a.1 range
+      itemClass: "spacecraft.remote_sensing.eo",
+    });
+    const candidateIds = result.candidates.map((c) => c.entry.canonicalId);
+    const nearMissIds = result.nearMisses.map((nm) => nm.entry.canonicalId);
+    expect(candidateIds).toContain("ECCN:9A515.a.1");
+    expect(nearMissIds).not.toContain("ECCN:9A515.a.1");
+  });
+});
