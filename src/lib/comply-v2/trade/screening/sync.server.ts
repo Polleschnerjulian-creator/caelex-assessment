@@ -30,12 +30,14 @@ import { bisEntityParser } from "./sources/bis-entity";
 import { ddtcDebarredParser } from "./sources/ddtc-debarred";
 import { euFsfParser } from "./sources/eu-fsf";
 import { ukOfsiParser } from "./sources/uk-ofsi";
+import { unConsolidatedParser } from "./sources/un-consolidated";
 import type { SanctionsSourceParser } from "./sources/types";
 import { upsertSnapshot } from "./snapshot-store.server";
 
 /**
- * Registered parsers for the orchestrator. Adding more sources
- * (UN Consolidated remains) is a one-line append.
+ * Registered parsers for the orchestrator. All six sources tracked by
+ * TradeSanctionsList are now wired:
+ *   OFAC_SDN · BIS_ENTITY · DDTC_DEBARRED · EU_FSF · UK_OFSI · UN_CONSOLIDATED
  */
 export const REGISTERED_PARSERS: readonly SanctionsSourceParser[] = [
   ofacSdnParser,
@@ -43,6 +45,7 @@ export const REGISTERED_PARSERS: readonly SanctionsSourceParser[] = [
   ddtcDebarredParser,
   euFsfParser,
   ukOfsiParser,
+  unConsolidatedParser,
 ] as const;
 
 const FETCH_TIMEOUT_MS = 30_000;
