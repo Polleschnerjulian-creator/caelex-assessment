@@ -39,13 +39,19 @@ import {
   type NoDeMinimisCheckResult,
 } from "./no-de-minimis-carve-outs";
 import { resolveCountryGroups } from "./country-groups";
+import {
+  evaluateFDPR,
+  type FDPRBOMComponent,
+  type FDPREvaluationResult,
+  type FDPRRuleHit,
+} from "./fdpr-engine";
 
 // ─── Input shape ────────────────────────────────────────────────────
 
 /**
- * BOM component shape consumed by the cascade. Superset of the
- * carve-out checker's shape (which only needs ECCN + value) plus the
- * USML hit + carve-out routing fields.
+ * BOM component shape consumed by the cascade. Combines the carve-
+ * out checker's shape (ECCN + value), USML routing fields (Gate 1),
+ * and FDPR provenance fields (Gate 2).
  */
 export interface CascadeBOMComponent extends BOMComponentForCarveOut {
   /**
@@ -60,6 +66,22 @@ export interface CascadeBOMComponent extends BOMComponentForCarveOut {
    * Gate 1 stop — the foreign item proceeds to Gates 2/3.
    */
   usmlCarveOutToEar?: boolean;
+  // ── Gate 2 (FDPR) provenance fields ─────────────────────────────
+  /** True if the foreign manufacturer used US-origin technology. */
+  madeWithUSTechnology?: boolean;
+  /** Specific US technology ECCNs used. */
+  usTechnologyEccns?: string[];
+  /** True if the foreign manufacturer used US-origin software. */
+  madeWithUSSoftware?: boolean;
+  /** Specific US software ECCNs used. */
+  usSoftwareEccns?: string[];
+  /**
+   * True if the foreign manufacturer's plant (or major component) is
+   * itself the direct product of US-origin technology.
+   */
+  producedByPlantThatIsUSDirectProduct?: boolean;
+  /** Specific US technology ECCNs the plant is a direct product of. */
+  plantTechEccns?: string[];
 }
 
 export interface CascadeInput {
@@ -70,6 +92,12 @@ export interface CascadeInput {
    * upstream matcher (Z3).
    */
   bom: CascadeBOMComponent[];
+  /**
+   * The finished foreign-made end-item's own ECCN. Used by Gate 2
+   * FDPR rules (c) and (d) that gate on the foreign item's
+   * classification (9x515 or 600-series).
+   */
+  foreignItemEccn?: string | null;
   /**
    * Total fair-market value of the foreign-made item (EUR). Used
    * downstream by Gate 3b percentage math.
@@ -98,7 +126,7 @@ export type CascadeJurisdiction = "ITAR" | "EAR" | "NONE";
 
 export type CascadeGateFired =
   | "ITAR_SEE_THROUGH"
-  | "FDPR_NOT_YET_EVALUATED" // stub until Z20 lands
+  | "FDPR_APPLICABLE"
   | "DE_MINIMIS_CARVE_OUT"
   | "DE_MINIMIS_PERCENTAGE_EXCEEDED"
   | "NONE";
@@ -119,12 +147,18 @@ export interface CascadeResult {
    */
   itarSeeThroughHits: string[];
   /**
-   * Gate-2 detail: FDPR analysis (currently STUBBED; will populate
-   * post-Z20). The cascade returns subjectToEar based on Gates 1 + 3
-   * alone today; the FDPR gate is a known-incomplete TODO that the
-   * UI must surface.
+   * Gate-2 detail: FDPR rules that fired. Empty array if no FDPR
+   * rules matched. The 3 destination-gated scenarios are evaluated
+   * (NS-FDP, 9x515-FDP, 600-series-FDP); the 5 knowledge-predicated
+   * scenarios remain queued (Z20b-d).
    */
-  fdprNotYetImplemented: true;
+  fdprHits: FDPRRuleHit[];
+  /**
+   * Gate-2 detail: FDPR rules NOT YET evaluated (Z20b-d). The UI
+   * MUST surface this so the operator knows which scenarios still
+   * require manual analysis.
+   */
+  fdprNotYetEvaluatedRules: string[];
   /** Gate-3a detail: matching § 734.4(a) carve-outs. */
   deMinimisCarveOuts: CarveOutHit[];
   /** Gate-3b detail: percentage threshold applied. */
@@ -155,7 +189,7 @@ const THRESHOLD_STANDARD_PCT = 25; // § 734.4(d)
 const THRESHOLD_E1_E2_PCT = 10; // § 734.4(c)
 
 const CASCADE_DISCLAIMER =
-  "Three-Gate Cascade output is SCREENING-LEVEL guidance. Gate 1 (ITAR see-through) and Gate 3 (§ 734.4 De Minimis) are fully evaluated. Gate 2 (FDPR § 734.9) is currently a known-incomplete stub — the engine does NOT yet check the 8 FDPR scenarios. Until Z20 ships, FDPR analysis must be performed manually for any transaction destined to D:1/D:4/D:5/E:1/E:2 or where US-origin technology / production-equipment was used. Final determination requires qualified export-control counsel.";
+  "Three-Gate Cascade output is SCREENING-LEVEL guidance. Gate 1 (ITAR see-through) and Gate 3 (§ 734.4 De Minimis) are fully evaluated. Gate 2 (FDPR § 734.9) evaluates 3 of 8 scenarios — NS-FDP (b), 9x515-FDP (c), 600-series-FDP (d). The remaining 5 scenarios (Entity-List footnotes 1/4/5, Russia/Belarus/Crimea, MEU/Procurement footnote 3, Advanced Computing, Supercomputer) require manual analysis pending Z20b-d. Final determination requires qualified export-control counsel.";
 
 // ─── Engine ─────────────────────────────────────────────────────────
 
@@ -192,7 +226,8 @@ export function evaluateSubjectToEAR(input: CascadeInput): CascadeResult {
       subjectToEar: false, // ITAR is NOT "subject to the EAR" — different jurisdiction
       gateFired: "ITAR_SEE_THROUGH",
       itarSeeThroughHits: itarLines.map((l) => l.nodeId),
-      fdprNotYetImplemented: true,
+      fdprHits: [],
+      fdprNotYetEvaluatedRules: [],
       deMinimisCarveOuts: [],
       appliedThresholdPercent: null,
       usControlledContentPercent: null,
@@ -209,19 +244,46 @@ export function evaluateSubjectToEAR(input: CascadeInput): CascadeResult {
     "Gate 1 ITAR see-through: no USML defense articles in BOM (or all USML lines fall within published USML→EAR carve-outs). Proceeds to Gate 2.",
   );
 
-  // ── Gate 2 — FDPR (STUBBED until Z20 lands) ──────────────────────
-  // Per Blueprint 2 § 3 + § 9.1 step 3-9, this evaluates 8 FDPR
-  // scenarios in order: NS-FDP (734.9(b)), 9x515-FDP (734.9(c)),
-  // 600-series-FDP (734.9(d)), Entity-List FDP footnotes 1/4/5
-  // (734.9(e)), Russia/Belarus (734.9(f)), MEU/Procurement (734.9(g)),
-  // Advanced Computing (734.9(h)), Supercomputer (734.9(i)).
-  //
-  // Until Z20 lands, we proceed PAST Gate 2 without analyzing it.
-  // The cascade still produces a Gate-3 determination but the
-  // `fdprNotYetImplemented` flag in the result MUST be surfaced by
-  // the UI so the operator knows Gate 2 is not yet covered.
+  // ── Gate 2 — FDPR (Z20a: 3 of 8 scenarios) ───────────────────────
+  // Evaluates § 734.9(b) NS-FDP, (c) 9x515-FDP, (d) 600-series-FDP.
+  // The remaining 5 scenarios (Entity-List, Russia/Belarus, MEU,
+  // Advanced Computing, Supercomputer) require knowledge predicates
+  // and are queued under Z20b-d.
+  const fdprResult: FDPREvaluationResult = evaluateFDPR({
+    destinationCountry: input.destinationCountry,
+    foreignItemEccn: input.foreignItemEccn ?? null,
+    bom: input.bom as FDPRBOMComponent[],
+  });
+
+  if (fdprResult.fdprApplicable) {
+    rationale.push(
+      `Gate 2 FDPR: ${fdprResult.hits.length} FDPR rule(s) fired (${fdprResult.hits.map((h) => h.ruleId).join(", ")}). FDPR has no de minimis — the foreign item is subject to the EAR regardless of US-content percentage. Cascade halts.`,
+    );
+    for (const hit of fdprResult.hits) {
+      rationale.push(`  - ${hit.ruleId}: ${hit.rationale}`);
+    }
+    return {
+      jurisdiction: "EAR",
+      subjectToEar: true,
+      gateFired: "FDPR_APPLICABLE",
+      itarSeeThroughHits: [],
+      fdprHits: fdprResult.hits,
+      fdprNotYetEvaluatedRules: fdprResult.notYetEvaluatedRules,
+      deMinimisCarveOuts: [],
+      appliedThresholdPercent: null,
+      usControlledContentPercent: input.usControlledContentPercent ?? null,
+      rationale,
+      obligations: {
+        recordkeepingYears: 5,
+        destinationControlStatementRequired: true,
+        recordkeepingBasis:
+          "15 CFR § 762.6 (5-year retention) + § 758.6 (DCS required)",
+      },
+      disclaimer: CASCADE_DISCLAIMER,
+    };
+  }
   rationale.push(
-    "Gate 2 FDPR (§ 734.9 — 8 scenarios): NOT YET EVALUATED (Z20 queued). Operator MUST manually evaluate FDPR for any transaction destined to D:1/D:4/D:5/E:1/E:2 or where US-origin technology / production-equipment was used. Proceeds to Gate 3.",
+    `Gate 2 FDPR: 3 of 8 scenarios evaluated (NS-FDP, 9x515-FDP, 600-series-FDP) — none fired. ${fdprResult.notYetEvaluatedRules.length} scenarios remain queued (Entity-List, Russia/Belarus, MEU, Advanced Computing, Supercomputer — operator must evaluate manually). Proceeds to Gate 3.`,
   );
 
   // ── Gate 3a — § 734.4(a) hard carve-outs ─────────────────────────
@@ -245,7 +307,8 @@ export function evaluateSubjectToEAR(input: CascadeInput): CascadeResult {
       subjectToEar: true,
       gateFired: "DE_MINIMIS_CARVE_OUT",
       itarSeeThroughHits: [],
-      fdprNotYetImplemented: true,
+      fdprHits: fdprResult.hits,
+      fdprNotYetEvaluatedRules: fdprResult.notYetEvaluatedRules,
       deMinimisCarveOuts: carveOutResult.hits,
       appliedThresholdPercent: 0,
       usControlledContentPercent: input.usControlledContentPercent ?? null,
@@ -282,7 +345,8 @@ export function evaluateSubjectToEAR(input: CascadeInput): CascadeResult {
       subjectToEar: false,
       gateFired: "NONE",
       itarSeeThroughHits: [],
-      fdprNotYetImplemented: true,
+      fdprHits: fdprResult.hits,
+      fdprNotYetEvaluatedRules: fdprResult.notYetEvaluatedRules,
       deMinimisCarveOuts: [],
       appliedThresholdPercent: threshold,
       usControlledContentPercent: null,
@@ -305,7 +369,8 @@ export function evaluateSubjectToEAR(input: CascadeInput): CascadeResult {
       subjectToEar: true,
       gateFired: "DE_MINIMIS_PERCENTAGE_EXCEEDED",
       itarSeeThroughHits: [],
-      fdprNotYetImplemented: true,
+      fdprHits: fdprResult.hits,
+      fdprNotYetEvaluatedRules: fdprResult.notYetEvaluatedRules,
       deMinimisCarveOuts: [],
       appliedThresholdPercent: threshold,
       usControlledContentPercent: usPct,
@@ -321,14 +386,15 @@ export function evaluateSubjectToEAR(input: CascadeInput): CascadeResult {
 
   // All gates passed — foreign item is NOT subject to the EAR.
   rationale.push(
-    `Gate 3b percentage threshold: US-controlled content ${usPct.toFixed(2)}% is at or below the ${threshold}% threshold. Foreign item is NOT subject to the EAR (subject to FDPR caveat — Gate 2 not yet evaluated). Document and retain calculation per Supplement No. 2 + § 762.6 for 5 years.`,
+    `Gate 3b percentage threshold: US-controlled content ${usPct.toFixed(2)}% is at or below the ${threshold}% threshold. Foreign item is NOT subject to the EAR (subject to FDPR caveat for the 5 not-yet-evaluated scenarios). Document and retain calculation per Supplement No. 2 + § 762.6 for 5 years.`,
   );
   return {
     jurisdiction: "NONE",
     subjectToEar: false,
     gateFired: "NONE",
     itarSeeThroughHits: [],
-    fdprNotYetImplemented: true,
+    fdprHits: fdprResult.hits,
+    fdprNotYetEvaluatedRules: fdprResult.notYetEvaluatedRules,
     deMinimisCarveOuts: [],
     appliedThresholdPercent: threshold,
     usControlledContentPercent: usPct,

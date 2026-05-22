@@ -309,32 +309,98 @@ describe("Gate 3b — Percentage threshold edge cases", () => {
   });
 });
 
-// ─── Gate 2 stub disclosure ─────────────────────────────────────────
+// ─── Gate 2 FDPR wiring (Z20a — 3 of 8 scenarios) ──────────────────
 
-describe("Gate 2 — FDPR stub (until Z20 lands)", () => {
-  it("Every result has fdprNotYetImplemented=true", () => {
+describe("Gate 2 — FDPR engine wired (3 of 8 scenarios; Z20a)", () => {
+  it("Every result includes fdprHits + fdprNotYetEvaluatedRules", () => {
     const result = evaluateSubjectToEAR(
       mkInput("BR", [{ nodeId: "L1", usOrigin: true, eccn: "EAR99" }]),
     );
-    expect(result.fdprNotYetImplemented).toBe(true);
+    expect(result.fdprHits).toBeDefined();
+    expect(Array.isArray(result.fdprHits)).toBe(true);
+    expect(result.fdprNotYetEvaluatedRules).toBeDefined();
+    expect(Array.isArray(result.fdprNotYetEvaluatedRules)).toBe(true);
+    // 5 scenarios are not yet evaluated (e/f/g/h/i + sub-paragraphs)
+    expect(result.fdprNotYetEvaluatedRules.length).toBeGreaterThanOrEqual(5);
   });
 
-  it("Rationale flags Gate 2 as NOT YET EVALUATED", () => {
-    const result = evaluateSubjectToEAR(
-      mkInput("BR", [{ nodeId: "L1", usOrigin: true, eccn: "EAR99" }], {
-        usControlledContentPercent: 3,
-      }),
+  it("Foreign 9A515 + US 9E515 tech to PRC → Gate 2 fires, FDPR_APPLICABLE", () => {
+    const result = evaluateSubjectToEAR({
+      destinationCountry: "CN",
+      foreignItemEccn: "9A515.a.1",
+      totalValueEur: 12_000_000,
+      bom: [
+        {
+          nodeId: "L1",
+          usOrigin: false, // no physical US content
+          eccn: "EAR99",
+          fairMarketValueEur: 5_000_000,
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["9E515"],
+        },
+      ],
+    });
+    expect(result.gateFired).toBe("FDPR_APPLICABLE");
+    expect(result.subjectToEar).toBe(true);
+    expect(result.fdprHits.some((h) => h.ruleId === "734.9(c)-9x515")).toBe(
+      true,
     );
-    const fullRationale = result.rationale.join("\n");
-    expect(fullRationale).toMatch(/Gate 2|FDPR.*NOT YET/i);
   });
 
-  it("Disclaimer flags Gate 2 incompleteness for UI surfacing", () => {
+  it("0% physical US content + 9E515 plant → FDPR still fires (orthogonal to de-minimis)", () => {
+    // The catastrophic FDPR-at-0% case. No US content in the BOM at all,
+    // but the foreign manufacturer's plant is a direct product of 9E515.
+    // De-minimis math would pass (0% US content); FDPR captures anyway.
+    const result = evaluateSubjectToEAR({
+      destinationCountry: "CN",
+      foreignItemEccn: "9A515.a.1",
+      totalValueEur: 12_000_000,
+      usControlledContentPercent: 0, // would clear de-minimis 25%
+      bom: [
+        {
+          nodeId: "PLANT",
+          usOrigin: false,
+          eccn: "EAR99",
+          fairMarketValueEur: 5_000_000,
+          producedByPlantThatIsUSDirectProduct: true,
+          plantTechEccns: ["9E515"],
+        },
+      ],
+    });
+    expect(result.gateFired).toBe("FDPR_APPLICABLE");
+    expect(result.subjectToEar).toBe(true);
+    // de-minimis percentage was NEVER evaluated because Gate 2 stopped first
+    expect(result.appliedThresholdPercent).toBeNull();
+  });
+
+  it("Foreign 9A515 + US 9E515 to Brazil → FDPR does NOT fire (B group); cascade proceeds to Gate 3", () => {
+    const result = evaluateSubjectToEAR({
+      destinationCountry: "BR",
+      foreignItemEccn: "9A515.a.1",
+      totalValueEur: 12_000_000,
+      usControlledContentPercent: 3.33,
+      bom: [
+        {
+          nodeId: "L1",
+          usOrigin: true,
+          eccn: "9A515.d",
+          fairMarketValueEur: 180_000,
+          madeWithUSTechnology: true,
+          usTechnologyEccns: ["9E515"],
+        },
+      ],
+    });
+    expect(result.gateFired).toBe("NONE");
+    expect(result.subjectToEar).toBe(false);
+    expect(result.fdprHits).toHaveLength(0);
+  });
+
+  it("Disclaimer references 3 of 8 FDPR scenarios + queued Z20b-d", () => {
     const result = evaluateSubjectToEAR(
       mkInput("BR", [{ nodeId: "L1", usOrigin: true, eccn: "EAR99" }]),
     );
-    expect(result.disclaimer).toMatch(/Gate 2|FDPR.*incomplete/i);
-    expect(result.disclaimer).toMatch(/Z20/);
+    expect(result.disclaimer).toMatch(/3 of 8|three of (the )?eight/i);
+    expect(result.disclaimer).toMatch(/Z20[bd]|Entity-List|Russia/i);
   });
 });
 
