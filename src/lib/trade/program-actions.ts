@@ -28,9 +28,12 @@ import { prisma } from "@/lib/prisma";
 import { isSuperAdmin } from "@/lib/super-admin";
 import {
   upsertProgramProfile,
+  ensureProgram,
+  setRequirementStatus,
   type ProgramProfilePatch,
 } from "@/lib/trade/program-service";
 import { logger } from "@/lib/logger";
+import { TradeRequirementStatus } from "@prisma/client";
 
 export type ActionResult =
   | { ok: true }
@@ -327,4 +330,80 @@ export async function updateVoluntaryDisclosures(
     (p) => p as ProgramProfilePatch,
     "voluntaryDisclosures",
   );
+}
+
+// ─── Requirement-status update (Sprint E3d) ─────────────────────────
+
+const requirementStatusSchema = z.object({
+  requirementId: z.string().min(1, "requirementId required"),
+  status: z.enum([
+    "COMPLIANT",
+    "PARTIAL",
+    "NON_COMPLIANT",
+    "NOT_ASSESSED",
+    "NOT_APPLICABLE",
+  ]),
+  notes: optionalString,
+  responsibleParty: optionalString,
+});
+
+export type RequirementStatusInput = z.input<typeof requirementStatusSchema>;
+
+/**
+ * Update a single requirement's status, notes and responsible party.
+ * Looks up the program row for the session's org, then delegates to
+ * `setRequirementStatus()` which handles the upsert.
+ *
+ * Distinct from the section-update flow because the data lives in
+ * `TradeProgramRequirementStatus` (per-requirement child rows) rather
+ * than on the program itself.
+ */
+export async function updateRequirementStatus(
+  input: RequirementStatusInput,
+): Promise<ActionResult> {
+  try {
+    const ctx = await resolveSessionContext();
+    assertEditor(ctx.role);
+
+    const parsed = requirementStatusSchema.safeParse(input);
+    if (!parsed.success) {
+      return {
+        ok: false,
+        error: "Some fields are invalid",
+        fieldErrors: parsed.error.flatten().fieldErrors as Record<
+          string,
+          string[]
+        >,
+      };
+    }
+
+    // We need the program row id — `setRequirementStatus` is keyed on
+    // programId, not orgId. ensureProgram() lazy-creates if missing
+    // (mirrors the program-page behaviour).
+    const program = await ensureProgram(ctx.orgId);
+
+    await setRequirementStatus(
+      program.id,
+      parsed.data.requirementId,
+      parsed.data.status as TradeRequirementStatus,
+      {
+        notes: parsed.data.notes,
+        responsibleParty: parsed.data.responsibleParty,
+      },
+    );
+
+    revalidatePath("/trade/program");
+    return { ok: true };
+  } catch (err) {
+    if (err instanceof ActionError) {
+      return { ok: false, error: err.publicMessage };
+    }
+    logger.error("program-actions: requirement status update failed", err, {
+      requirementId: input.requirementId,
+    });
+    return {
+      ok: false,
+      error: "Unexpected error while saving — please try again",
+    };
+  }
 }

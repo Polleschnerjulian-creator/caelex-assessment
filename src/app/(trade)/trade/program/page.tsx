@@ -127,7 +127,7 @@ export default async function TradeProgramPage() {
         headerAction={editChip("voluntaryDisclosures")}
       />
 
-      <RequirementStatusList statuses={requirementStatuses} />
+      <RequirementStatusList statuses={requirementStatuses} canEdit={canEdit} />
     </div>
   );
 }

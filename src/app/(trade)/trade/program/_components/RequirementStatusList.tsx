@@ -3,19 +3,24 @@ import type {
   TradeProgramRequirementStatus,
   TradeRequirementStatus,
 } from "@prisma/client";
+import { RequirementStatusEditPopover } from "./RequirementStatusEditPopover";
 
 interface RequirementStatusListProps {
   statuses: TradeProgramRequirementStatus[];
+  /**
+   * When true, the status pill becomes an interactive popover (Sprint
+   * E3d). When false, the row stays read-only.
+   */
+  canEdit?: boolean;
 }
 
 /**
- * Read-only list of per-requirement statuses for the compliance program
- * (Sprint T4 skeleton). Renders the rows with a colour-coded status pill;
- * once T5 ships the legacy-data migration, this list will be populated
- * with real `ITAR-*` / `EAR-*` rows out of the box.
+ * Per-requirement status list for the compliance program. Editable
+ * via inline popover when `canEdit` is true (MANAGER+ role).
  */
 export function RequirementStatusList({
   statuses,
+  canEdit = false,
 }: RequirementStatusListProps) {
   return (
     <section
@@ -59,7 +64,11 @@ export function RequirementStatusList({
                   </span>
                 ) : null}
               </div>
-              <StatusBadge status={s.status} />
+              {canEdit ? (
+                <RequirementStatusEditPopover row={s} />
+              ) : (
+                <StatusBadge status={s.status} />
+              )}
             </li>
           ))}
         </ul>
