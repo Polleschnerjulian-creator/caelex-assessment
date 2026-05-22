@@ -308,6 +308,67 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
   },
 
   // ═══════════════════════════════════════════════════════════════
+  // EU 9A005 — Liquid-propellant rocket engines (EU regime)
+  //
+  // Sprint Z3q — EU pendant to USML IV(d) and MTCR Item 2.A.1. The EU
+  // Reg. 2021/821 Annex I 9A005 covers liquid-propellant rocket
+  // engines usable in MTCR Category I missile systems (≥ 300 km range,
+  // ≥ 500 kg payload). The 2025 Delegated Reg. (EU) 2025/2003 retained
+  // the parametric thresholds but updated the definition footnotes.
+  //
+  // Predicate logic: itemClass discrimination via the
+  // `propulsion.liquid_rocket.*` prefix. The MTCR Cat-I parametric
+  // boundary (totalImpulseNs ≥ 1.1×10⁶) doesn't apply here — 9A005 is
+  // a regime-level scope entry, not a parametric threshold one.
+  // ═══════════════════════════════════════════════════════════════
+  {
+    canonicalId: "EU:9A005",
+    regime: "EU-ANNEX-I",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "005",
+    title:
+      "Liquid-propellant rocket engines usable in MTCR Cat I systems (EU Cat 9)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "propulsion.liquid_rocket",
+      },
+    ],
+    reasonsForControl: ["WA", "MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "ITAR-USML",
+        id: "IV(d)(2)",
+        relationship: "analogous",
+        notes:
+          "USML IV(d)(2) controls rocket motors / engines with total impulse ≥ 1.1×10⁶ N·s — the MTCR Cat-I threshold. EU 9A005 is the EU pendant and uses the same boundary.",
+      },
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 2.A.1",
+        relationship: "derived_from",
+        notes:
+          "MTCR Item 2.A.1 — complete liquid-propellant rocket motor systems. The EU implements this multilateral commitment via Annex I 9A005.",
+      },
+      {
+        regime: "DE-AL-TEIL-IB",
+        id: "9A005",
+        relationship: "analogous",
+        notes:
+          "German national AL Teil I A 9A005 mirrors EU Annex I 9A005 exactly (no national supplement).",
+      },
+    ],
+    citation:
+      "Reg. (EU) 2021/821 Annex I, Cat. 9, 9A005 (as amended by Reg. (EU) 2025/2003)",
+    validFrom: "2025-11-15",
+    notes:
+      "Per the 2025 Delegated Regulation, the engine definition was tightened to exclude electric pump-fed systems below a power threshold (still under WA-LIST 25 review). Re-classify pump-fed liquid engines manufactured after 2025-11-15.",
+  },
+
+  // ═══════════════════════════════════════════════════════════════
   // MTCR Cat. I — Complete Launch Vehicles
   // ═══════════════════════════════════════════════════════════════
   {

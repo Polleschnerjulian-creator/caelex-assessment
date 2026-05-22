@@ -1080,3 +1080,63 @@ describe("USML XV(e)(17) hosted payload (Z3m)", () => {
     expect(ids).not.toContain("USML:XV(e)(17)");
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────
+// Sprint Z3q — EU 9A005 liquid-propellant rocket engines. The EU
+// pendant to USML IV(d)(2) and MTCR Item 2.A.1. Closes a coverage
+// gap where liquid-rocket engines had only US/MTCR-side classification.
+// ─────────────────────────────────────────────────────────────────────
+
+describe("EU 9A005 liquid-propellant rocket engines (Z3q)", () => {
+  it("Liquid rocket engine → EU:9A005", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "propulsion.liquid_rocket.bipropellant",
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("EU:9A005");
+  });
+
+  it("EU:9A005 seeAlso links to USML IV(d)(2), MTCR Item 2.A.1, and DE AL 9A005", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "propulsion.liquid_rocket.kerolox",
+    });
+    const eu = result.candidates.find(
+      (c) => c.entry.canonicalId === "EU:9A005",
+    );
+    expect(eu).toBeDefined();
+    const seeAlsoIds = eu!.entry.seeAlso.map((l) => l.id).sort();
+    expect(seeAlsoIds).toEqual(["9A005", "IV(d)(2)", "Item 2.A.1"]);
+  });
+
+  it("EU:9A005 notes reflect the 2025 Delegated Regulation pump-fed clarification", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "propulsion.liquid_rocket.electric_pump",
+    });
+    const eu = result.candidates.find(
+      (c) => c.entry.canonicalId === "EU:9A005",
+    );
+    expect(eu).toBeDefined();
+    expect(eu!.entry.notes).toMatch(/2025|electric pump|WA-LIST/i);
+  });
+
+  it("Solid rocket motor (NOT liquid) → no EU:9A005 match", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "propulsion.chemical.solid_rocket",
+      totalImpulseNs: 1.2e6,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("EU:9A005");
+    // Solid rocket above MTCR Cat-I impulse → USML IV(d)(2)
+    expect(ids).toContain("USML:IV(d)(2)");
+  });
+
+  it("EU:9A005 license exceptions include EU001 (intra-EU general authorisation)", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "propulsion.liquid_rocket.bipropellant",
+    });
+    const eu = result.candidates.find(
+      (c) => c.entry.canonicalId === "EU:9A005",
+    );
+    expect(eu?.entry.licenseExceptions).toContain("EU001");
+  });
+});
