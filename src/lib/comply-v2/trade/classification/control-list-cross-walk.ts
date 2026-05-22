@@ -123,7 +123,8 @@ export type CrossWalkRelationship =
   | "successor" // newer regime classification (post-ECR)
   | "superset_of" // this entry covers strictly more than the linked one
   | "subset_of" // this entry covers strictly less than the linked one
-  | "derived_from"; // multilateral source for a national list
+  | "derived_from" // multilateral source for a national list
+  | "components_of"; // this entry controls components/parts FOR the linked entry's items (e.g. 9A515.g → 9A515.a.1-.a.4)
 
 export interface CrossWalkLink {
   regime: RegimeName;
@@ -819,6 +820,104 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     citation:
       "15 CFR 774 Supp. 1 Cat 9 ECCN 9A515.x (reaction-wheel sub-paragraph)",
     validFrom: "2014-05-13",
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // 9A515.g — Specially designed components for 9A515.a.1-.a.4
+  //
+  // Sprint Z3i — Per the May 2026 ontology research § 3:
+  //   "9A515.g — Components specially designed for the more sensitive
+  //    remote-sensing spacecraft 9A515.a.1-.a.4."
+  //
+  // This is the catch-all parts entry for the four sensitive remote-
+  // sensing categories. Whereas 9A515.x is the *broader* catch-all
+  // covering parts for ANY 9A515.a-.g entry, 9A515.g specifically
+  // targets components designed for the SENSITIVE remote-sensing
+  // satellites (high-resolution EO, SWIR/MWIR/LWIR, SAR, OSAM).
+  //
+  // Distinction from 9A515.x:
+  //   - 9A515.g  → component designed for 9A515.a.1-.a.4 systems
+  //                (NS:2 RS:2 — tighter reasons-for-control)
+  //   - 9A515.x  → component designed for the broader 9A515.a-.g
+  //                family (still NS:2 RS:2 since 2024 IFR but
+  //                covers more downstream sub-paragraphs)
+  //
+  // The itemClass prefix convention introduced here
+  // (`component.spacecraft.remote_sensing.*`) is distinct from the
+  // spacecraft-level prefixes used by 9A515.a.1-.a.4 entries — the
+  // matcher discriminates: an EO satellite goes to .a.1, but a
+  // component DESIGNED FOR an EO satellite goes to .g.
+  // ═══════════════════════════════════════════════════════════════
+  {
+    canonicalId: "ECCN:9A515.g",
+    regime: "EAR-CCL",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "515",
+    subpara: "g",
+    title:
+      "Components specially designed for the sensitive remote-sensing spacecraft 9A515.a.1-.a.4",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "component.spacecraft.remote_sensing",
+      },
+      // Sprint Z3i — 9A515.g is by definition a "specially designed"
+      // catch-all. Without the SD predicate, a generic earth-
+      // observation sensor sold for terrestrial photogrammetry
+      // (e.g. UAV mapping camera) would be over-classified here.
+      { attribute: "isSpeciallyDesigned", op: "eq", value: true },
+    ],
+    reasonsForControl: ["NS:2", "RS:2", "AT:1"],
+    licenseExceptions: ["STA-eligible:partial"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "9A515.a.1",
+        relationship: "components_of",
+        notes:
+          "9A515.g controls components specially designed for 9A515.a.1 (high-resolution EO) spacecraft.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A515.a.2",
+        relationship: "components_of",
+        notes:
+          "9A515.g controls components for 9A515.a.2 (SWIR/MWIR/LWIR) spacecraft.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A515.a.3",
+        relationship: "components_of",
+        notes: "9A515.g controls components for 9A515.a.3 (SAR) spacecraft.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A515.a.4",
+        relationship: "components_of",
+        notes: "9A515.g controls components for 9A515.a.4 (OSAM) spacecraft.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A515.x",
+        relationship: "subset_of",
+        notes:
+          "9A515.x is the broader catch-all for components designed for 9A515.a-.g family; 9A515.g is the narrower scope limited to the sensitive remote-sensing categories.",
+      },
+      {
+        regime: "ITAR-USML",
+        id: "XV(a)(7)",
+        relationship: "predecessor",
+        notes:
+          "Components of USML XV(a)(7) high-resolution remote-sensing spacecraft were moved to 9A515.g in the 2014 IFR.",
+      },
+    ],
+    citation:
+      "15 CFR 774 Supp. 1 Cat 9 ECCN 9A515.g — 'Components specially designed for 9A515.a.1-.a.4 spacecraft.'",
+    validFrom: "2014-05-13",
+    notes:
+      "If a part also fits the broader 9A515.x catch-all, both entries may match — the operator should select the narrower (9A515.g) as the controlling classification per the Order-of-Review principle for sub-paragraph specificity.",
   },
 
   // ═══════════════════════════════════════════════════════════════

@@ -739,3 +739,101 @@ describe("CMG vs Reaction Wheel disambiguation (Z3h)", () => {
     expect(eccnLink?.notes).toMatch(/79 FR 27184|classification error/i);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────
+// Sprint Z3i — 9A515.g (components specially designed for 9A515.a.1-.a.4).
+// This is the narrower catch-all for components destined for the four
+// sensitive remote-sensing spacecraft sub-paragraphs. The new
+// `component.spacecraft.remote_sensing.*` itemClass prefix is distinct
+// from the spacecraft-level prefix used by 9A515.a.1-.a.4 entries.
+// ─────────────────────────────────────────────────────────────────────
+
+describe("9A515.g components for sensitive remote-sensing (Z3i)", () => {
+  it("EO sensor optic SD'd for 9A515.a.1 spacecraft → 9A515.g matches", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "component.spacecraft.remote_sensing.eo_optic",
+      isSpeciallyDesigned: true,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("ECCN:9A515.g");
+  });
+
+  it("SAR antenna SD'd for 9A515.a.3 → 9A515.g matches", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "component.spacecraft.remote_sensing.sar_antenna",
+      isSpeciallyDesigned: true,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("ECCN:9A515.g");
+  });
+
+  it("UAV mapping camera (NOT for spacecraft) → no 9A515.g match", () => {
+    // Even though it's an EO sensor, a UAV mapping camera is sold for
+    // terrestrial photogrammetry — NOT specially designed for the
+    // sensitive remote-sensing spacecraft. Must not over-classify.
+    const result = matchAgainstCrossWalk({
+      itemClass: "component.uav.mapping_camera",
+      isSpeciallyDesigned: true,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("ECCN:9A515.g");
+  });
+
+  it("Spacecraft itself (not a component) → no 9A515.g match", () => {
+    // A high-resolution EO spacecraft goes to 9A515.a.1 NOT 9A515.g.
+    // The component-vs-spacecraft distinction is load-bearing.
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.remote_sensing.eo",
+      apertureMeters: 0.4,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("ECCN:9A515.a.1");
+    expect(ids).not.toContain("ECCN:9A515.g");
+  });
+
+  it("Component without SD flag → emits 9A515.g as PossibleMatch (Z3f three-valued)", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "component.spacecraft.remote_sensing.eo_optic",
+      // isSpeciallyDesigned intentionally not set
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("ECCN:9A515.g");
+    const possibleIds = result.possibleMatches.map((p) => p.entry.canonicalId);
+    expect(possibleIds).toContain("ECCN:9A515.g");
+  });
+
+  it("9A515.g seeAlso links to all four 9A515.a.1-.a.4 sub-paragraphs via 'components_of'", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "component.spacecraft.remote_sensing.eo_optic",
+      isSpeciallyDesigned: true,
+    });
+    const g = result.candidates.find(
+      (c) => c.entry.canonicalId === "ECCN:9A515.g",
+    );
+    expect(g).toBeDefined();
+    const componentLinks = g!.entry.seeAlso.filter(
+      (l) => l.relationship === "components_of",
+    );
+    expect(componentLinks).toHaveLength(4);
+    const linkedIds = componentLinks.map((l) => l.id).sort();
+    expect(linkedIds).toEqual([
+      "9A515.a.1",
+      "9A515.a.2",
+      "9A515.a.3",
+      "9A515.a.4",
+    ]);
+  });
+
+  it("9A515.g is subset_of 9A515.x (narrower scope, both can match)", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "component.spacecraft.remote_sensing.eo_optic",
+      isSpeciallyDesigned: true,
+    });
+    const g = result.candidates.find(
+      (c) => c.entry.canonicalId === "ECCN:9A515.g",
+    );
+    expect(g).toBeDefined();
+    const xLink = g!.entry.seeAlso.find((l) => l.id === "9A515.x");
+    expect(xLink?.relationship).toBe("subset_of");
+  });
+});
