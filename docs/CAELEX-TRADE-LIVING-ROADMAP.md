@@ -10,7 +10,9 @@ sprint moves from `Backlog` → `Shipped`. The pull request that ships a
 sprint must include the corresponding update to this file in the same
 commit (or the immediate follow-up).
 
-**Last updated.** 2026-05-22 (Z3a-Z3h + Z8 + Z10 shipped; Z4+ queued).
+**Last updated.** 2026-05-22 (Z3a-Z3l + Z8 + Z10 shipped — moat layer
+complete with matcher engine + bridge service; Z4 AI Copilot is the
+next major item).
 
 ---
 
@@ -157,9 +159,31 @@ parametric classification with:
 - Boundary tolerance with 1e-9 epsilon for IEEE-754 imprecision;
   Order-of-Review respected (USML/CCL overlap surfaces BOTH)
 
-52 tests on the matcher; full coverage of every regulatory boundary
-in the May 2026 research blueprint § 5. See-through rule propagation
-across a BOM graph is deferred (needs a BOM model) — queued as Z3i.
+71 tests on the matcher (post Z3k); full coverage of every regulatory
+boundary in the May 2026 research blueprint § 5. See-through rule
+propagation across a BOM graph is deferred (needs a BOM model) —
+queued as Z3m.
+
+**Sub-sprints shipped (May 22, 2026 batch 2):**
+
+- **Z3i** — 9A515.g entry (components specially designed for
+  9A515.a.1-.a.4 sensitive remote-sensing satellites). New
+  `component.spacecraft.remote_sensing.*` itemClass prefix
+  convention; introduces `components_of` cross-walk relationship.
+- **Z3j** — 9A515.b entry (EAR civilian TT&C ground station, the
+  pair to USML XV(b)). Bifurcation via `isSpeciallyDesigned`
+  predicate — military → ITAR, civilian → EAR. Closes a coverage
+  gap where civilian TT&C antennas had no match.
+- **Z3k** — Near-miss surfacing. A fourth result lane on
+  `MatcherResult` (`nearMisses`) exposes entries that almost
+  matched: ≥1 matched + exactly 1 refuted + 0 unknowns. Includes
+  the refuting predicate's expected AND actual values so the
+  operator can correct the item spec.
+- **Z3l** — TradeItem → matcher bridge service
+  (`classifyTradeItemParametric`). Pure function that marshals a
+  TradeItem snapshot into the matcher's input shape. This is the
+  integration seam server actions / API routes will use to expose
+  the engine to the UI.
 
 **Why.** Research blueprint § 5. The genuine moat. No incumbent
 (Descartes, AEB, SAP GTS, OpenSanctions) models space-domain
