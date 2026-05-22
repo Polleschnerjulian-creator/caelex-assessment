@@ -199,6 +199,10 @@
       "schedule": "15 9 * * *"
     },
     {
+      "path": "/api/cron/trade-vsd-deadline",
+      "schedule": "30 9 * * *"
+    },
+    {
       "path": "/api/cron/cowf-heartbeat",
       "schedule": "*/30 * * * *"
     },
