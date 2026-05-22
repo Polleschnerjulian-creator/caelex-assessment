@@ -226,6 +226,125 @@ describe("evaluateCatchAll — Notification duty", () => {
   });
 });
 
+describe("evaluateCatchAll — §9(1) AWV nuclear catch-all (Sprint Z1)", () => {
+  // Statutory 9 countries: DZ IQ IR IL JO LY KP PK SY
+  it("destination Iran + BAFA notification → para9Nuclear HIGH", () => {
+    const r = evaluateCatchAll(
+      input({ shipToCountry: "IR", bafaNuclearNotification: true }, [
+        { codes: [] },
+      ]),
+    );
+    expect(r.para9Nuclear).toBe(true);
+    const t = r.triggers.find((t) => t.regulation === "§9(1) AWV");
+    expect(t?.confidence).toBe("high");
+    expect(t?.reason).toMatch(/BAFA has notified/);
+  });
+
+  it("destination Pakistan + operator self-attested nuclear-aware → para9Nuclear HIGH", () => {
+    const r = evaluateCatchAll(
+      input({ shipToCountry: "PK", nuclearEndUseAware: true }, [{ codes: [] }]),
+    );
+    expect(r.para9Nuclear).toBe(true);
+    expect(
+      r.triggers.find(
+        (t) => t.regulation === "§9(1) AWV" && t.confidence === "high",
+      )?.reason,
+    ).toMatch(/self-attested positive knowledge/);
+  });
+
+  it("destination North Korea + nuclear keyword in end-user → para9Nuclear MEDIUM", () => {
+    const r = evaluateCatchAll(
+      input(
+        { shipToCountry: "KP", endUserName: "Yongbyon Centrifuge Facility" },
+        [{ codes: [] }],
+      ),
+    );
+    expect(r.para9Nuclear).toBe(true);
+    expect(
+      r.triggers.find(
+        (t) => t.regulation === "§9(1) AWV" && t.confidence === "medium",
+      ),
+    ).toBeDefined();
+  });
+
+  it("destination Algeria + uranium hexafluoride in sector → para9Nuclear MEDIUM", () => {
+    const r = evaluateCatchAll(
+      input(
+        {
+          shipToCountry: "DZ",
+          endUserSector: "Uranium Hexafluoride Production",
+        },
+        [{ codes: [] }],
+      ),
+    );
+    expect(r.para9Nuclear).toBe(true);
+  });
+
+  it("endUseCountry Iran (ship-to clean) still triggers §9(1) AWV", () => {
+    const r = evaluateCatchAll(
+      input(
+        {
+          shipToCountry: "FR",
+          endUseCountry: "IR",
+          bafaNuclearNotification: true,
+        },
+        [{ codes: [] }],
+      ),
+    );
+    expect(r.para9Nuclear).toBe(true);
+  });
+
+  it("destination not on §9(1) list → no §9(1) trigger even with BAFA flag set", () => {
+    // BAFA-notified flag is meaningless if destination is outside the
+    // statutory 9 countries. The rule scope is statutory.
+    const r = evaluateCatchAll(
+      input({ shipToCountry: "FR", bafaNuclearNotification: true }, [
+        { codes: [] },
+      ]),
+    );
+    expect(r.para9Nuclear).toBe(false);
+    expect(
+      r.triggers.find((t) => t.regulation === "§9(1) AWV"),
+    ).toBeUndefined();
+  });
+
+  it("destination Iran + no notification + no nuclear keyword → no §9(1) trigger", () => {
+    // Country alone isn't enough. §9(1) needs a positive-knowledge
+    // signal (BAFA notice, self-attested aware, or keyword match).
+    const r = evaluateCatchAll(
+      input(
+        { shipToCountry: "IR", endUserName: "Acme Civil Engineering GmbH" },
+        [{ codes: [] }],
+      ),
+    );
+    expect(r.para9Nuclear).toBe(false);
+  });
+
+  it("§9(1) trigger contributes to notificationDuty when no license attached", () => {
+    const r = evaluateCatchAll(
+      input(
+        { shipToCountry: "IR", bafaNuclearNotification: true },
+        [{ codes: [] }],
+        /* hasAttachedLicenses = */ false,
+      ),
+    );
+    expect(r.para9Nuclear).toBe(true);
+    expect(r.notificationDuty).toBe(true);
+  });
+
+  it("§9(1) trigger is suppressed in notificationDuty when license already attached", () => {
+    const r = evaluateCatchAll(
+      input(
+        { shipToCountry: "IR", bafaNuclearNotification: true },
+        [{ codes: [] }],
+        /* hasAttachedLicenses = */ true,
+      ),
+    );
+    expect(r.para9Nuclear).toBe(true);
+    expect(r.notificationDuty).toBe(false);
+  });
+});
+
 describe("evaluateCatchAll — Real-world scenarios", () => {
   it("Iran ministry of defense buying optics — Art. 4 + Art. 5 + §8 AWV all fire", () => {
     const r = evaluateCatchAll(

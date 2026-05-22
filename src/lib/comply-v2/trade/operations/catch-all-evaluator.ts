@@ -130,6 +130,61 @@ const SURVEILLANCE_KEYWORDS = [
 ];
 
 /**
+ * §9(1) AWV nuclear catch-all destinations.
+ * Nine countries enumerated in §9(1) AWV: a license is REQUIRED for
+ * export of non-listed items to these destinations if the operator
+ * has been notified by BAFA OR has positive knowledge that the item
+ * is intended for nuclear-related end-use under Annex I Category 0.
+ *
+ * Source: §9(1) AWV (Außenwirtschaftsverordnung) — German national
+ * extension of the EU Art. 4 catch-all, with a tighter country
+ * scope and explicit nuclear-end-use focus.
+ *
+ * The country list is fixed by statute and has not changed since
+ * the AWV recast — these are countries that the German legislator
+ * specifically identified as nuclear-proliferation concerns:
+ *   DZ Algeria, IQ Iraq, IR Iran, IL Israel, JO Jordan,
+ *   LY Libya, KP North Korea, PK Pakistan, SY Syria
+ */
+const NUCLEAR_PARA9_COUNTRIES = new Set<string>([
+  "DZ",
+  "IQ",
+  "IR",
+  "IL",
+  "JO",
+  "LY",
+  "KP",
+  "PK",
+  "SY",
+]);
+
+/**
+ * Keywords that indicate possible nuclear-related end-use even when
+ * the item itself is not Annex I Cat. 0 controlled. Substring match,
+ * case-insensitive. Conservative list — false positives are
+ * acceptable for a catch-all (operator reviews; legal risk lives in
+ * misses, not in over-flagging).
+ */
+const NUCLEAR_END_USE_KEYWORDS = [
+  "centrifuge",
+  "enrichment",
+  "uranium hexafluoride",
+  "uranium conversion",
+  "plutonium",
+  "isotope separation",
+  "reprocessing",
+  "yellowcake",
+  "heavy water",
+  "tritium",
+  "uf6",
+  "fuel fabrication",
+  "fissile material",
+  "nuclear reactor",
+  "reactor fuel",
+  "nuclear fuel cycle",
+];
+
+/**
  * EU Annex IV item code prefixes — most sensitive dual-use items
  * that require authorization even for intra-EU transfers.
  *
@@ -180,6 +235,23 @@ export interface CatchAllOperationInput {
   declaredEndUse: TradeEndUseClass;
   endUserName?: string | null;
   endUserSector?: string | null;
+  /**
+   * Sprint Z1 — §9(1) AWV nuclear catch-all.
+   *
+   * True when BAFA has notified the operator about a nuclear-end-use
+   * concern for the items in this operation. BAFA notification is
+   * the strongest §9(1) trigger — the operator MUST obtain a licence
+   * regardless of whether the items are Annex I Cat. 0.
+   */
+  bafaNuclearNotification?: boolean;
+  /**
+   * Sprint Z1 — §9(1) AWV nuclear catch-all (positive knowledge).
+   *
+   * True when the operator has positive knowledge of intended
+   * nuclear-related end-use. Self-attested; software cannot verify.
+   * Triggers §9(1) the same as a BAFA notification.
+   */
+  nuclearEndUseAware?: boolean;
 }
 
 export interface CatchAllLineInput {
@@ -219,6 +291,12 @@ export interface CatchAllResult {
   /** True if Art. 10 (intra-EU Annex IV) fires. */
   art10: boolean;
   /**
+   * Sprint Z1 — true if §9(1) AWV nuclear catch-all fires
+   * (destination ∈ 9-country list AND BAFA-notified OR nuclear-aware
+   * OR nuclear-keyword match in end-user / sector).
+   */
+  para9Nuclear: boolean;
+  /**
    * §8 AWV Anzeigepflicht (notification duty) — true if ANY catch-all
    * triggered AND no covering license attached yet.
    */
@@ -239,6 +317,7 @@ export function evaluateCatchAll(input: CatchAllInput): CatchAllResult {
   let art5 = false;
   let art9 = false;
   let art10 = false;
+  let para9Nuclear = false;
 
   const sectorLc = (input.operation.endUserSector ?? "").toLowerCase();
   const userLc = (input.operation.endUserName ?? "").toLowerCase();
@@ -364,12 +443,67 @@ export function evaluateCatchAll(input: CatchAllInput): CatchAllResult {
     }
   }
 
+  // ── §9(1) AWV — Nuclear end-use catch-all to 9 specified countries ──
+  // Triggered when EITHER:
+  //   (a) destination ∈ {DZ, IQ, IR, IL, JO, LY, KP, PK, SY}, AND
+  //   (b) one of:
+  //       - BAFA has notified the operator (highest-confidence signal),
+  //       - operator self-attests positive knowledge of nuclear end-use,
+  //       - end-user / sector / declared end-use contains a nuclear
+  //         keyword (centrifuge, enrichment, uranium hexafluoride, …)
+  //
+  // §9(1) AWV is one of the few catch-alls that applies to NON-LISTED
+  // items — a regular dual-use item with no Annex I match can still
+  // require a licence if the destination + end-use combination fires
+  // this rule. The 9-country list is statutory and exhaustive.
+  const destinationCheckCountry = shipTo;
+  const inNuclearCountryList =
+    NUCLEAR_PARA9_COUNTRIES.has(destinationCheckCountry) ||
+    NUCLEAR_PARA9_COUNTRIES.has(endUse);
+
+  if (inNuclearCountryList) {
+    const matchedCountry = NUCLEAR_PARA9_COUNTRIES.has(destinationCheckCountry)
+      ? destinationCheckCountry
+      : endUse;
+
+    if (input.operation.bafaNuclearNotification) {
+      para9Nuclear = true;
+      triggers.push({
+        regulation: "§9(1) AWV",
+        reason: `BAFA has notified the operator of nuclear-end-use concern for destination ${matchedCountry} — licence REQUIRED for any item, regardless of Annex I status`,
+        confidence: "high",
+      });
+    } else if (input.operation.nuclearEndUseAware) {
+      para9Nuclear = true;
+      triggers.push({
+        regulation: "§9(1) AWV",
+        reason: `Operator self-attested positive knowledge of intended nuclear end-use for destination ${matchedCountry} — licence REQUIRED`,
+        confidence: "high",
+      });
+    } else {
+      // Look for nuclear keywords in end-user name / sector / declared
+      // end-use. Each hit is a separate trigger so the operator can
+      // see exactly which signal fired.
+      for (const kw of NUCLEAR_END_USE_KEYWORDS) {
+        if (sectorLc.includes(kw) || userLc.includes(kw)) {
+          para9Nuclear = true;
+          triggers.push({
+            regulation: "§9(1) AWV",
+            reason: `End-user sector/name contains "${kw}" AND destination ${matchedCountry} is on the §9(1) nuclear-concern list — review for licence requirement on non-listed items`,
+            confidence: "medium",
+          });
+          break;
+        }
+      }
+    }
+  }
+
   // ── §8 AWV Anzeigepflicht (notification duty) ──
   // If any catch-all fires AND no license yet covers the operation,
   // operator MUST notify BAFA before shipment. License attachment
   // resolves the duty (because then the operation has explicit
   // authorization).
-  const anyCatchAll = art4 || art5 || art9 || art10;
+  const anyCatchAll = art4 || art5 || art9 || art10 || para9Nuclear;
   const notificationDuty = anyCatchAll && !input.hasAttachedLicenses;
 
   if (notificationDuty) {
@@ -395,6 +529,7 @@ export function evaluateCatchAll(input: CatchAllInput): CatchAllResult {
     art5,
     art9,
     art10,
+    para9Nuclear,
     notificationDuty,
     triggers: dedupedTriggers,
   };
