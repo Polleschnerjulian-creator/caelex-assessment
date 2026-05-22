@@ -1,8 +1,8 @@
 # Caelex Trade — Living Document
 
-**Letzte Aktualisierung:** 2026-05-21 nach Sprint T5 Production-Deploy.
-**Branch:** `feature/caelex-trade` ist in `main` gemerged.
-**Live URL:** Vercel auto-deploys `main`. Aktueller Prod-Deploy: `dpl_7KPNEJKQn4y3GbiWJrU9J6wk68Zm` (commit `ca612157`).
+**Letzte Aktualisierung:** 2026-05-22 nach Sprint T9 + WCAG-Hotfix Production-Deploy.
+**Branch:** alles auf `main`, alle Batch-2-Commits (T7-T9 + WCAG-Fix) sind gepusht und live.
+**Live URL:** Vercel auto-deploys `main`. Aktueller Prod-Deploy: WCAG-Hotfix `c7061b88` ist READY.
 
 Dieses Dokument überlebt Context-Resets. Wenn du eine neue Claude-Session startest, **lies das hier zuerst**, dann weißt du wo wir stehen.
 
@@ -105,7 +105,7 @@ User-Wortlaut: "Stripe, das kann mir erst mal hinranstellen, jetzt Pricing ist n
 
 **Wann?** Wenn ein zahlender Kunde Trade buchen will. Bis dahin: TRADE-Access via `grantProductAccess()` (Admin-Grant) manuell vergeben.
 
-### ~~T7 — Eigener Login-Flow~~ ✅ DONE (in `feature/caelex-trade-batch2`, not yet pushed)
+### ~~T7 — Eigener Login-Flow~~ ✅ DONE & DEPLOYED
 
 3 Indigo-branded Auth-Pages (Signup skipped per Direktive):
 
@@ -126,7 +126,7 @@ User-Wortlaut: "Stripe, das kann mir erst mal hinranstellen, jetzt Pricing ist n
 
 **Build:** Alle 3 neuen Routes ship als ○ static (2.35–3.79 kB).
 
-### ~~T8 — Astra im Trade-Shell~~ ✅ DONE (in `feature/caelex-trade-batch2`, not yet pushed)
+### ~~T8 — Astra im Trade-Shell~~ ✅ DONE & DEPLOYED
 
 Pragmatischer Minimal-Embed: `/trade/astra` rendert die existierende `<AstraFullPage />` im TradeShell. Trade-Tools (`classify_trade_item`, `screen_trade_party`, `lookup_classification_code`, `lookup_trade_party`) sind seit T0 in `tool-definitions.ts:1937` registriert und greifen sofort.
 
@@ -139,7 +139,7 @@ Pragmatischer Minimal-Embed: `/trade/astra` rendert die existierende `<AstraFull
 
 **Bewusst NICHT in T8:** Separate Conversation-Domain pro Produkt, restringierter Tool-Subset, Trade-System-Prompt → Polish-Sprint später.
 
-### ~~T9 — Launch-Pack (Pricing-Mention + README)~~ ✅ DONE (in `feature/caelex-trade-batch2`, not yet pushed)
+### ~~T9 — Launch-Pack (Pricing-Mention + README)~~ ✅ DONE & DEPLOYED
 
 Minimal-Launch-Pack per User-Direktive "erst zum Laufen bringen":
 
@@ -150,7 +150,7 @@ Minimal-Launch-Pack per User-Direktive "erst zum Laufen bringen":
 
 **Build:** `/pricing` als ○ static (12 kB).
 
-### T10 — Soft-Launch
+### T10 — Soft-Launch _(deferred — Phase-A goes first)_
 
 **Scope:**
 
@@ -158,6 +158,26 @@ Minimal-Launch-Pack per User-Direktive "erst zum Laufen bringen":
 - Telemetry-Wiring (Trade-spezifische Analytics-Events)
 - Final-Verification + Release-Notes
 - Legacy-DB-Tabellen droppen (Sunset-Frist: 2026-08-21, in 90 Tagen)
+
+**Wann?** Erst nach Phase A (UI-Portierung). Ohne real-functional Items/Parties/Operations-UI in `/trade/*` ist ein Soft-Launch sinnlos.
+
+---
+
+## 🚧 Phase A — UI-Portierung (laufend ab 2026-05-22)
+
+Per Recherche `docs/CAELEX-TRADE-FULL-RECHERCHE.md` § 7: Welt A (`/dashboard/trade/*`) ist production-ready CRUD, Welt B (`/trade/*`) hat nur Skelett-Pages. Phase A portiert Welt A → Welt B mit Indigo-Light-Theme.
+
+| Sprint | Scope                                                                                                           | Status         |
+| ------ | --------------------------------------------------------------------------------------------------------------- | -------------- |
+| **A1** | Items-Liste + Detail-Page nach `/trade/items/*` portieren, Indigo-Theme                                         | ⏳ in progress |
+| **A2** | Counterparties + Detail nach `/trade/parties/*` portieren                                                       | ⏳             |
+| **A3** | Operations + Detail (mit Tabs) nach `/trade/operations/*` portieren                                             | ⏳             |
+| **A4** | Licenses-View nach `/trade/licenses/*` portieren                                                                | ⏳             |
+| **A5** | `/trade` Welcome-Dashboard mit real aggregates (Items-Count, Parties-Count, In-Progress-Ops, Risk-Distribution) | ⏳             |
+
+**Component-Library:** `src/components/trade/*` (BafaPdfButton, ClassificationPanel, BeneficialOwnersPanel, OperationLicensesPanel, OperationLifecyclePanel, OperationLinesPanel, BafaElanK2Document) bleibt geteilt zwischen Welt A und Welt B — werden aus beiden Pfaden importiert.
+
+**Sunset-Plan für Welt A** (`/dashboard/trade/*`): Erst nach Phase A komplett. Bis dahin parallel live für Test-Vergleich.
 
 ---
 
@@ -246,6 +266,10 @@ Legacy (intakt für 90-Tage-Audit):
 
 ## 🎯 Nächster konkreter Sprint
 
-**T10 — Soft-Launch.** Push `feature/caelex-trade-batch2` zu main (T7+T8+T9 in einer Welle), Vercel-Deploy abwarten, End-to-End-Verify gegen Prod-URL. Optional: kurze Release-Notes oder LinkedIn-Post.
+**A1 — Items-Portierung.** Legacy `/dashboard/trade/items/*` (909 LOC Liste + 678 LOC Detail) nach neuer Indigo-light-themed Welt `/trade/items/*` migrieren. Erhaltene Funktionalität:
 
-Status-Batch-Counter (Batch 2): **T7+T8+T9 done, 3/6-8 commits**. Sprint T6 ist verschoben, T10 ist eher ein Wrap-Up-Sprint als ein neuer Code-Sprint. Wir können diesen Batch jetzt pushen oder noch sammeln.
+- Listen-Page mit Search, Status-Filter (DRAFT/CLASSIFIED/REQUIRES_REVIEW/ARCHIVED), inline "New Item"-Form
+- Detail-Page mit ClassificationPanel + Notes-CRUD
+- API-Routes bleiben unverändert (`/api/trade/items` + `/api/trade/items/[id]` werden weiter genutzt)
+
+Batch-Counter Phase A: A1 = 1/5 (Phase A hat 5 Sprints).
