@@ -32,6 +32,8 @@ import { OperationLinesPanel } from "../_components/OperationLinesPanel";
 import { OperationLifecyclePanel } from "../_components/OperationLifecyclePanel";
 import { OperationLicensesPanel } from "../_components/OperationLicensesPanel";
 import { BafaPdfButton } from "@/components/trade/BafaPdfButton";
+import { BafaXmlButton } from "@/components/trade/BafaXmlButton";
+import { BafaXsdVersionWarning } from "@/components/trade/BafaXsdVersionWarning";
 
 interface RiskFactorView {
   key: string;
@@ -344,7 +346,11 @@ export default function OperationDetailPage({
         </div>
       )}
 
-      {/* Action bar — related-documents deep-links + BAFA PDF download */}
+      {/* Z5c — drift banner above the action bar when the serializer's
+          XSD-version constant has diverged from the verified target. */}
+      <BafaXsdVersionWarning />
+
+      {/* Action bar — related-documents deep-links + BAFA PDF + XML download */}
       <div className="mb-6 flex flex-wrap items-center justify-end gap-3">
         <Link
           href={`/trade/reexport-consents?operation=${op.id}`}
@@ -368,6 +374,7 @@ export default function OperationDetailPage({
             legalName: op.organization?.name ?? "(Organisation unknown)",
           }}
         />
+        <BafaXmlButton operationId={op.id} operationReference={op.reference} />
       </div>
 
       {/* Lifecycle */}
