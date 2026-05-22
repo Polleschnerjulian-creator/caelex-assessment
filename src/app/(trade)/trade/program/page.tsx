@@ -19,6 +19,7 @@ import {
 import { ProgramSection } from "./_components/ProgramSection";
 import type { ProgramSectionItem } from "./_components/ProgramSection";
 import { RequirementStatusList } from "./_components/RequirementStatusList";
+import { SectionEditChip } from "./_components/SectionEditChip";
 
 export const metadata = {
   title: "Compliance Program — Caelex Trade",
@@ -44,10 +45,26 @@ export default async function TradeProgramPage() {
     redirect("/login?callbackUrl=%2Ftrade%2Fprogram");
   }
 
-  const orgId = await resolveOrgId(session.user.id, session.user.email);
+  const { orgId, canEdit } = await resolveSessionContext(
+    session.user.id,
+    session.user.email,
+  );
   const fetched = await getProgramWithRequirements(orgId);
   const program: ProgramView = fetched?.program ?? (await ensureProgram(orgId));
   const requirementStatuses = fetched?.requirementStatuses ?? [];
+
+  /** Helper: render edit chip only when the viewer can edit. */
+  const editChip = (
+    section:
+      | "companyProfile"
+      | "registration"
+      | "empoweredOfficial"
+      | "jurisdiction"
+      | "licenseCounters"
+      | "trainingAudit"
+      | "voluntaryDisclosures",
+  ) =>
+    canEdit ? <SectionEditChip section={section} program={program} /> : null;
 
   return (
     <div className="space-y-5 px-8 py-10">
@@ -60,9 +77,10 @@ export default async function TradeProgramPage() {
         </h1>
         <p className="mt-1 max-w-2xl text-[13px] text-trade-text-secondary">
           Org-level state of your export-compliance program — registration,
-          Empowered Official, jurisdiction, training and audit cadence. Read-
-          only in T4; edit forms ship in a later sprint after legacy-data
-          migration.
+          Empowered Official, jurisdiction, training and audit cadence.
+          {canEdit
+            ? " Use the Edit chip on each card to update."
+            : " Read-only view — MANAGER+ role required to edit."}
         </p>
       </header>
 
@@ -70,36 +88,43 @@ export default async function TradeProgramPage() {
         icon={Building2}
         title="Company Profile"
         items={companyProfile(program)}
+        headerAction={editChip("companyProfile")}
       />
       <ProgramSection
         icon={FileBadge}
         title="Registration & Infrastructure"
         items={registrationInfo(program)}
+        headerAction={editChip("registration")}
       />
       <ProgramSection
         icon={UserCheck}
         title="Empowered Official (ITAR)"
         items={empoweredOfficial(program)}
+        headerAction={editChip("empoweredOfficial")}
       />
       <ProgramSection
         icon={MapPin}
         title="Jurisdiction Determination"
         items={jurisdiction(program)}
+        headerAction={editChip("jurisdiction")}
       />
       <ProgramSection
         icon={FileCheck}
         title="License Counters"
         items={licenseCounters(program)}
+        headerAction={editChip("licenseCounters")}
       />
       <ProgramSection
         icon={GraduationCap}
         title="Training & Audit Cycle"
         items={trainingAndAudit(program)}
+        headerAction={editChip("trainingAudit")}
       />
       <ProgramSection
         icon={AlertOctagon}
         title="Voluntary Disclosures"
         items={voluntaryDisclosures(program)}
+        headerAction={editChip("voluntaryDisclosures")}
       />
 
       <RequirementStatusList statuses={requirementStatuses} />
@@ -107,21 +132,29 @@ export default async function TradeProgramPage() {
   );
 }
 
-async function resolveOrgId(userId: string, email: string | null | undefined) {
+const EDITOR_ROLES: ReadonlyArray<string> = ["OWNER", "ADMIN", "MANAGER"];
+
+async function resolveSessionContext(
+  userId: string,
+  email: string | null | undefined,
+): Promise<{ orgId: string; canEdit: boolean }> {
   if (isSuperAdmin(email)) {
     const anyOrg = await prisma.organization.findFirst({
       where: { isActive: true },
       select: { id: true },
       orderBy: { createdAt: "asc" },
     });
-    return anyOrg?.id ?? "super-admin-no-org";
+    return { orgId: anyOrg?.id ?? "super-admin-no-org", canEdit: true };
   }
   const membership = await prisma.organizationMember.findFirst({
     where: { userId, organization: { isActive: true } },
-    select: { organization: { select: { id: true } } },
+    select: { organization: { select: { id: true } }, role: true },
     orderBy: { joinedAt: "asc" },
   });
-  return membership?.organization.id ?? "no-org";
+  return {
+    orgId: membership?.organization.id ?? "no-org",
+    canEdit: membership ? EDITOR_ROLES.includes(membership.role) : false,
+  };
 }
 
 function companyProfile(p: ProgramView): ProgramSectionItem[] {
