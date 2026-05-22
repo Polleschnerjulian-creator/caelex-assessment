@@ -59,6 +59,14 @@ export interface ItemAttributeBag {
   isRadHardened?: boolean | null;
   isMilSpec?: boolean | null;
   isAntiJam?: boolean | null;
+  /**
+   * Sprint Z3g — the "specially designed" qualifier (US 15 CFR §772.1,
+   * EU "besonders konstruiert", MTCR "specially designed"). Carried as
+   * a boolean so it can drive predicate refutation on catch-all entries
+   * like 9A515.x and USML XV(b). When NULL, three-valued logic (Z3f)
+   * surfaces the entry as a possibleMatch — "operator review required".
+   */
+  isSpeciallyDesigned?: boolean | null;
   itemClass?: string | null;
   /** Catch-all for attributes that have no typed column yet. */
   parametricAttributes?: Record<string, unknown> | null;
@@ -482,6 +490,7 @@ function isBagEmpty(item: ItemAttributeBag): boolean {
     "isRadHardened",
     "isMilSpec",
     "isAntiJam",
+    "isSpeciallyDesigned",
     "itemClass",
   ];
   for (const k of keys) {

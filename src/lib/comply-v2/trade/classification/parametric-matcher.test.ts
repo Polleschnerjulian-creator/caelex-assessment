@@ -317,10 +317,11 @@ describe("MTCR Cat. I (300 km AND 500 kg combined)", () => {
 });
 
 describe("Electric propulsion (Isp ≥ 1000)", () => {
-  it("Isp 1500 + itemClass propulsion.electric → matches 9A515.x EP", () => {
+  it("Isp 1500 + itemClass propulsion.electric + SD=true → matches 9A515.x EP", () => {
     const result = matchAgainstCrossWalk({
       IspSeconds: 1500,
       itemClass: "propulsion.electric.hall",
+      isSpeciallyDesigned: true,
     });
     const ids = result.candidates.map((c) => c.entry.canonicalId);
     expect(ids).toContain("ECCN:9A515.x-ep");
@@ -330,6 +331,7 @@ describe("Electric propulsion (Isp ≥ 1000)", () => {
     const result = matchAgainstCrossWalk({
       IspSeconds: 800,
       itemClass: "propulsion.electric.hall",
+      isSpeciallyDesigned: true,
     });
     const ids = result.candidates.map((c) => c.entry.canonicalId);
     expect(ids).not.toContain("ECCN:9A515.x-ep");
@@ -566,5 +568,102 @@ describe("parametricAttributes fallback bag", () => {
       (c) => c.entry.canonicalId === "ECCN:9A515.a.1",
     );
     expect(ccl).toBeDefined();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// Sprint Z3g — "Specially designed" boolean predicate (catch-alls).
+// Per ontology research caveat #4: every regime relies on a "specially
+// designed" qualifier. For 9A515.x catch-alls and USML XV(b), the SD
+// flag is load-bearing — a laboratory ion thruster or a commercial
+// TT&C antenna must NOT be misclassified as the spacecraft-grade form.
+// ─────────────────────────────────────────────────────────────────────
+
+describe("Specially-designed catch-all gating (Z3g)", () => {
+  it("EP with isSpeciallyDesigned=false → does NOT match 9A515.x-ep (refute)", () => {
+    const result = matchAgainstCrossWalk({
+      IspSeconds: 1500,
+      itemClass: "propulsion.electric.hall",
+      isSpeciallyDesigned: false, // ← refutes the catch-all
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("ECCN:9A515.x-ep");
+    // Refute also drops it from possibleMatches (refute > unknown).
+    const possibleIds = result.possibleMatches.map((p) => p.entry.canonicalId);
+    expect(possibleIds).not.toContain("ECCN:9A515.x-ep");
+  });
+
+  it("EP with isSpeciallyDesigned undefined → emits 9A515.x-ep as possibleMatch (three-valued)", () => {
+    const result = matchAgainstCrossWalk({
+      IspSeconds: 1500,
+      itemClass: "propulsion.electric.hall",
+      // isSpeciallyDesigned intentionally NOT set
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("ECCN:9A515.x-ep");
+    const possibleIds = result.possibleMatches.map((p) => p.entry.canonicalId);
+    expect(possibleIds).toContain("ECCN:9A515.x-ep");
+    // The unknownPredicates must point at the actionable attribute.
+    const possible = result.possibleMatches.find(
+      (p) => p.entry.canonicalId === "ECCN:9A515.x-ep",
+    );
+    expect(
+      possible?.unknownPredicates.some(
+        (u) => u.missingAttribute === "isSpeciallyDesigned",
+      ),
+    ).toBe(true);
+  });
+
+  it("Reaction wheel + SD=true → matches 9A515.x-rw", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.adcs.reaction_wheel.high_precision",
+      isSpeciallyDesigned: true,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("ECCN:9A515.x-rw");
+  });
+
+  it("Reaction wheel + SD=false → no 9A515.x-rw match (industrial flywheel exclusion)", () => {
+    // Per the 2014 IFR preamble (79 FR 27184): mechanical fly-wheels
+    // not specially designed for spacecraft fall outside 9A515.x.
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.adcs.reaction_wheel.industrial",
+      isSpeciallyDesigned: false,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("ECCN:9A515.x-rw");
+  });
+
+  it("Ground station + SD=true → matches USML:XV(b) (military TT&C)", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "ground.station.ttc.military",
+      isSpeciallyDesigned: true,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("USML:XV(b)");
+  });
+
+  it("Ground station + SD=false → no USML:XV(b) match (commercial TT&C antenna)", () => {
+    // The whole point of the boolean discriminator — commercial TT&C
+    // ground stations are EAR 9A515.b, not ITAR XV(b).
+    const result = matchAgainstCrossWalk({
+      itemClass: "ground.station.ttc.commercial",
+      isSpeciallyDesigned: false,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("USML:XV(b)");
+  });
+
+  it("SD=true alone is insufficient — itemClass + parametric predicates still required", () => {
+    // Setting isSpeciallyDesigned=true on an unrelated item must NOT
+    // pull in 9A515.x-ep. Predicates are conjunctive.
+    const result = matchAgainstCrossWalk({
+      isSpeciallyDesigned: true,
+      itemClass: "satellite.battery.lithium_ion",
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("ECCN:9A515.x-ep");
+    expect(ids).not.toContain("ECCN:9A515.x-rw");
+    expect(ids).not.toContain("USML:XV(b)");
   });
 });

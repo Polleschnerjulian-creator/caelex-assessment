@@ -742,6 +742,11 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     predicates: [
       { attribute: "IspSeconds", op: "gte", value: 1000 },
       { attribute: "itemClass", op: "prefix", value: "propulsion.electric" },
+      // Sprint Z3g — 9A515.x is the "specially designed parts for
+      // 9A515.a-.g" catch-all (15 CFR 774 Supp. 1 Cat 9). A laboratory
+      // ion engine sold for terrestrial research falls outside; only
+      // SD-for-spacecraft variants are controlled here.
+      { attribute: "isSpeciallyDesigned", op: "eq", value: true },
     ],
     reasonsForControl: ["NS:2", "RS:2", "AT:1"],
     licenseExceptions: ["STA-eligible:partial"],
@@ -789,6 +794,12 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
         op: "prefix",
         value: "spacecraft.adcs.reaction_wheel",
       },
+      // Sprint Z3g — Per the 2014 IFR preamble (79 FR 27184), reaction/
+      // momentum wheels were EXCLUDED from USML XV(e)(13) and assigned
+      // to 9A515.x ONLY when specially designed for spacecraft.
+      // Commercial mechanical fly-wheels (e.g. uninterruptible power
+      // supplies, industrial flywheels) are NOT controlled here.
+      { attribute: "isSpeciallyDesigned", op: "eq", value: true },
     ],
     reasonsForControl: ["NS:2", "RS:2"],
     licenseExceptions: ["STA-eligible:partial"],
@@ -860,6 +871,13 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
       "Ground control systems and training simulators specially designed for TT&C of XV(a) spacecraft",
     predicates: [
       { attribute: "itemClass", op: "prefix", value: "ground.station.ttc" },
+      // Sprint Z3g — USML XV(b) explicitly applies only to ground
+      // stations SPECIALLY DESIGNED for TT&C of XV(a) (military or
+      // intelligence) spacecraft. Civilian/commercial TT&C ground
+      // stations fall to 9A515.b (EAR). The boolean discriminator is
+      // load-bearing here — without it we'd misclassify every
+      // commercial TT&C antenna as ITAR.
+      { attribute: "isSpeciallyDesigned", op: "eq", value: true },
     ],
     reasonsForControl: ["ITAR"],
     licenseExceptions: [],
