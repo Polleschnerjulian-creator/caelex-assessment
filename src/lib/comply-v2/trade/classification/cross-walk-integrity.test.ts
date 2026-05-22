@@ -65,6 +65,17 @@ const VALID_ATTRIBUTES: readonly AttributeName[] = [
   "antennaAdaptiveBeamforming",
   // Z3g
   "isSpeciallyDesigned",
+  // Z25 — extended parametric attributes (tier-3, 2026-05-22)
+  "apertureMM",
+  "groundResolutionMeters",
+  "signalBandwidthMHz",
+  "focalLengthMM",
+  "pixelPitchMicrons",
+  "maxOrbitAltitudeKm",
+  "minOrbitAltitudeKm",
+  "crossLinkBandwidthMbps",
+  "radHardenedTID_krad",
+  "temperatureRangeCelsius",
 ];
 
 const VALID_REGIMES: readonly RegimeName[] = [

@@ -90,7 +90,29 @@ export type AttributeName =
   | "gnssMaxVelocityMPerS"
   | "antennaActiveScanning"
   | "antennaAdaptiveBeamforming"
-  | "isSpeciallyDesigned";
+  | "isSpeciallyDesigned"
+  // ─── Z25 Tier-3 extended parametric attributes ────────────────────
+  // Added 2026-05-22 to expand classification accuracy across more
+  // dimensions. Each attribute is operator-supplied via the
+  // parametricAttributes JSON bag (matcher's readAttribute handles
+  // fallthrough automatically). DB-typed columns are NOT added by Z25;
+  // the moat is the predicate logic, not a schema migration.
+  //
+  // See § 7 (Z25) of the Living Execution Plan for ECCN drivers per
+  // attribute. The seed CONTROL_LIST_CROSS_WALK ships one demonstration
+  // entry (6A002 — telescope aperture ≥ 350 mm) that uses apertureMM;
+  // subsequent sprints Z24/Z26 extend coverage across the remaining
+  // attributes (6A003, 3A001, 5A001, 9A004, 9A515.e, ...).
+  | "apertureMM"
+  | "groundResolutionMeters"
+  | "signalBandwidthMHz"
+  | "focalLengthMM"
+  | "pixelPitchMicrons"
+  | "maxOrbitAltitudeKm"
+  | "minOrbitAltitudeKm"
+  | "crossLinkBandwidthMbps"
+  | "radHardenedTID_krad"
+  | "temperatureRangeCelsius";
 
 /**
  * A predicate operator. Pure mathematical / set semantics — no
@@ -1645,6 +1667,69 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     validFrom: "2021-09-09",
     notes:
       "Below the 300 km / 500 kg threshold but with autonomous flight-control / out-of-line-of-sight capability, the broader 9A012 capture still bites — the parametric entry above encodes the MTCR Cat-I corner only. Operators with autonomous-capability UAVs below 300 km should classify via the itemClass-prefix path + manual review.",
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // 6A002.a.1 — Optical telescopes / sensors with aperture ≥ 350 mm
+  //
+  // Demo entry for Z25 — extend in Z24/Z26 sprints.
+  //
+  // Sprint Z25 (2026-05-22): demonstrates the apertureMM tier-3
+  // attribute end-to-end. The EU Annex I 6A002.a.1 entry controls
+  // "imaging sensors" and a large family of optical equipment where
+  // the primary-optic aperture exceeds 350 mm. This is a different
+  // boundary from 9A515.a.1 (sub-0.50 m spacecraft aperture, encoded
+  // in meters); 6A002 is sensor-level optics and conventionally
+  // expressed in millimeters in datasheets.
+  //
+  // The predicate uses the new tier-3 `apertureMM` attribute so
+  // operators datasheet-supplying values in mm don't have to convert
+  // to meters first (and risk a unit-conversion bug at the 350 mm
+  // boundary — which is 0.35 m, where the 9A515.a.1 lower bound also
+  // sits, making confusion very plausible).
+  //
+  // Full Cat-6 coverage (6A002.a.1 sub-paras, 6A003 imaging, 6A005
+  // lasers) follows in Z24/Z26.
+  // ═══════════════════════════════════════════════════════════════
+  {
+    canonicalId: "EU:6A002.a.1",
+    regime: "EU-ANNEX-I",
+    category: "6",
+    productGroup: "A",
+    entryNumber: "002",
+    subpara: "a.1",
+    title:
+      "Optical sensors / imaging telescopes with primary-optic aperture ≥ 350 mm (EU Cat 6)",
+    predicates: [
+      { attribute: "apertureMM", op: "gte", value: 350 },
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "sensor.optical",
+      },
+    ],
+    reasonsForControl: ["WA", "NS"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "6A002.a.1",
+        relationship: "analogous",
+        notes:
+          "CCL 6A002.a.1 mirrors the EU Annex I aperture threshold. Operators with US-origin glass should also evaluate EAR de-minimis if the sensor integrates into a non-US final article.",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "6.A.2.a.1",
+        relationship: "derived_from",
+        notes:
+          "Wassenaar Cat 6 Item A.2.a.1 — the multilateral baseline for optical-sensor aperture controls. The EU and CCL implementations both flow from this list entry.",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 6, 6A002.a.1",
+    validFrom: "2021-09-09",
+    notes:
+      "Demo entry for Z25 — exercises the apertureMM tier-3 parametric attribute. Operators with datasheet apertures in meters should also populate apertureMeters for 9A515.a.1 evaluation; the two predicates target different regulatory boundaries (sensor-level 6A002 vs spacecraft-level 9A515.a.1).",
   },
 ];
 
