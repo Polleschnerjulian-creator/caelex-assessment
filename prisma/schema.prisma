@@ -76,6 +76,9 @@ model User {
   // Sprint E5 — End-Use Certificate lifecycle actions
   tradeEucActions TradeEUCRequest[] @relation("TradeEUCActionBy")
 
+  // Sprint E4 — Re-Export Consent Letter lifecycle actions
+  tradeReexportActions TradeReexportConsent[] @relation("TradeReexportActionBy")
+
   // Mission domain (Sprint Mission-1) — first-class Mission entity
   // back-ref. Author of the Mission (creator). Distinct from
   // MissionSpacecraft / MissionPhase which have their own lifecycles.
@@ -3139,6 +3142,11 @@ model Organization {
   // tracked per (party, operation?). Lifecycle: REQUESTED →
   // SENT_TO_PARTY → RECEIVED → VALIDATED (or EXPIRED / REVOKED).
   tradeEucRequests TradeEUCRequest[]
+
+  // Caelex Trade Sprint E4 — Re-Export Consent Letter requests
+  // tracked per (requesting-party, operation?). Lifecycle: DRAFTED →
+  // SENT → APPROVED / DENIED (or EXPIRED / REVOKED).
+  tradeReexportConsents TradeReexportConsent[]
 
   // Mission domain (Sprint Mission-1) — first-class Mission rows
   // (vs the legacy 1:1 Spacecraft=Mission collapse). Org-scoped.
@@ -11083,6 +11091,10 @@ model TradeParty {
   // Sprint E5 — End-Use Certificate requests against this party
   eucRequests TradeEUCRequest[]
 
+  // Sprint E4 — Re-Export Consent Letters where this party is the
+  // requesting (importer/re-exporter) side.
+  reexportConsents TradeReexportConsent[]
+
   @@index([organizationId, canonicalName])
   @@index([organizationId, screeningStatus])
   @@index([organizationId, status])
@@ -11393,6 +11405,9 @@ model TradeOperation {
 
   // Sprint E5 — End-Use Certificate requests tied to this operation
   eucRequests TradeEUCRequest[]
+
+  // Sprint E4 — Re-Export Consent Letters tied to this operation
+  reexportConsents TradeReexportConsent[]
 
   // ── Mission link (Sprint MA — Mission integration) ──
   /// Optional FK to the Mission this operation supports. Often a
@@ -11877,6 +11892,144 @@ enum TradeEUCStatus {
   SENT_TO_PARTY
   RECEIVED
   VALIDATED
+  EXPIRED
+  REVOKED
+}
+
+// ════════════════════════════════════════════════════════════════════
+// COMPLY TRADE — RE-EXPORT CONSENT LETTERS (Sprint E4, 2026-05-22)
+// ════════════════════════════════════════════════════════════════════
+// A Re-Export Consent Letter is a written authorisation from the
+// ORIGINAL exporter (or their licensing authority) allowing the
+// IMPORTER to re-export the controlled item to a new destination.
+// Legally distinct from EUC: EUC binds the end-user downstream; the
+// re-export consent unlocks the upstream license for a new flow.
+//
+// Legal anchors:
+//  - DE: §17 AWV (Wiederausfuhr-Genehmigung)
+//  - EU: Art. 11 EU 2021/821 (intra-EU re-export of dual-use)
+//  - US: 15 CFR §734.16 + §744 (re-export requires either original
+//        license, license exception, or specific BIS authorisation)
+//
+// MVP scope (E4a): the lifecycle row. PDF rendering of formal request
+// letters + email-to-original-exporter dispatch follow in later
+// sprints. The state machine mirrors the EUC pattern but with the
+// addition of an explicit DENIED terminal (no analogue in EUC — when
+// the original exporter refuses consent, the operation must halt).
+
+/// One Re-Export Consent Letter request lifecycle. Operator creates
+/// a DRAFTED entry once they know they need a new re-export
+/// authorisation. Dispatching to the original exporter transitions
+/// to SENT. The exporter (or their licensing agent) responds with
+/// either APPROVED or DENIED, both terminal-style states. EXPIRED
+/// is the cron-set state after validUntil passes on an APPROVED
+/// consent. REVOKED is the manual operator override.
+model TradeReexportConsent {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  /// Which authority's consent form / authority track this represents.
+  formType TradeReexportFormType
+
+  /// The original export license number that this re-export piggy-backs
+  /// on (e.g. BIS "D123456" or BAFA "EUGEA EU001-2025-DE-0042"). Free-
+  /// text because format varies across authorities.
+  originalLicenseNumber String?
+
+  /// Name of the original exporter (the foreign-licensed party who
+  /// shipped the item to the importer in the first place). Required.
+  originalExporterName String
+
+  /// Country of the original exporter (ISO-3166-1 alpha-2).
+  originalExporterCountry String
+
+  /// The party that received the original export and now wants to
+  /// re-export. The party signing the consent request. Required.
+  requestingPartyId String
+  requestingParty   TradeParty @relation(fields: [requestingPartyId], references: [id], onDelete: Cascade)
+
+  /// New destination country for the re-export. ISO-3166-1 alpha-2.
+  newDestinationCountry String
+
+  /// Name of the new end-user / consignee. Required — without it, no
+  /// authority will grant a re-export consent.
+  newEndUserName String
+
+  /// Optional link to a specific TradeOperation that this re-export
+  /// authorisation gates. NULL = stand-alone consent (covers multiple
+  /// future operations within validity window).
+  operationId String?
+  operation   TradeOperation? @relation(fields: [operationId], references: [id], onDelete: SetNull)
+
+  /// Lifecycle. See TradeReexportStatus.
+  status TradeReexportStatus @default(DRAFTED)
+
+  /// When the consent request was first created internally.
+  requestedAt DateTime  @default(now())
+  /// When the request was dispatched to the original exporter.
+  sentAt      DateTime?
+  /// When the decision came back (regardless of approve / deny).
+  decidedAt   DateTime?
+  /// Validity period for an APPROVED consent (often 12 months from
+  /// approval). Cron sets EXPIRED when this passes.
+  validUntil  DateTime?
+
+  /// User who last advanced the lifecycle.
+  lastActionById String?
+  lastActionBy   User?   @relation("TradeReexportActionBy", fields: [lastActionById], references: [id], onDelete: SetNull)
+
+  /// If status = DENIED, the reason given by the original exporter
+  /// (or the inferred reason). Helps subsequent re-attempts.
+  denialReason String? @db.Text
+
+  /// Document vault path of the signed consent letter (or the denial
+  /// notice). Tracked separately from the operator's request draft.
+  signedDocumentId String?
+
+  /// Operator-private notes.
+  notes String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId, status])
+  @@index([organizationId, formType])
+  @@index([requestingPartyId])
+  @@index([operationId])
+  @@index([validUntil])
+}
+
+/// Which authority's re-export consent track. Different authorities
+/// have different forms and dispatch channels.
+enum TradeReexportFormType {
+  /// BIS re-export authorisation (15 CFR §734.16 / §744 specific
+  /// BIS-issued letter granting re-export rights).
+  BIS_REEXPORT_AUTH
+  /// BAFA Wiederausfuhrgenehmigung per §17 AWV.
+  BAFA_REEXPORT_AUTH
+  /// EU competent-authority intra-EU re-export per Art. 11 EU
+  /// 2021/821 (Annex IV listed items, sensitive intra-EU transfer).
+  EU_INTRA_REEXPORT
+  /// Other foreign-authority consent (e.g. UK ECJU, French SBDU).
+  OTHER
+}
+
+/// Re-Export Consent lifecycle. Note that unlike EUC, both APPROVED
+/// and DENIED are reachable from SENT — DENIED is terminal-style
+/// (operation must halt or seek alternative authorisation).
+///
+/// Full forward path:
+///   DRAFTED → SENT → APPROVED → EXPIRED
+/// Branching:
+///   SENT → DENIED  (operator pursues alternative)
+/// Escape:
+///   any non-terminal → REVOKED
+enum TradeReexportStatus {
+  DRAFTED
+  SENT
+  APPROVED
+  DENIED
   EXPIRED
   REVOKED
 }
