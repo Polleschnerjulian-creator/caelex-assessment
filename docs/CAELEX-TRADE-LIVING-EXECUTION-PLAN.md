@@ -19,7 +19,8 @@
 > 5. The Z3-series Living Roadmap (`CAELEX-TRADE-LIVING-ROADMAP.md`) — superseded for execution priorities but still authoritative for Z3-series sprint details
 > 6. The moat architecture doc (`CAELEX-TRADE-MOAT-ARCHITECTURE.md`) — describes the engine, NOT the backlog
 >
-> **Last updated.** 2026-05-22 (after Z3v ship; before Z18 start).
+> **Last updated.** 2026-05-22 (Z18, Z19, Z21, Z22 shipped — Tier 1 mostly
+> complete; Z20 FDPR scenarios remain).
 
 ---
 
@@ -796,47 +797,47 @@ Until then: pick the next sprint and continue.
 
 This is the table to update on every sprint completion. Move sprints between SHIPPED / IN-PROGRESS / OPEN columns.
 
-| Sprint                                          | Tier | Size                  | Status    | Shipped at |
-| ----------------------------------------------- | ---- | --------------------- | --------- | ---------- |
-| Z18 — Three-Gate Cascade Orchestrator           | 1    | 1-2 sprints           | OPEN      | —          |
-| Z19 — § 734.4(a) Hard Carve-Out Table           | 1    | 1 sprint              | OPEN      | —          |
-| Z20a — NS/9x515/600-series FDPR                 | 1    | 1 sprint              | OPEN      | —          |
-| Z20b — Entity-List FDPR (footnotes 1/4/5)       | 1    | 1 sprint              | OPEN      | —          |
-| Z20c — Russia/Belarus FDPR (.f/.g)              | 1    | 1 sprint              | OPEN      | —          |
-| Z20d — Advanced Computing / Supercomputer FDPR  | 1    | 1 sprint              | OPEN      | —          |
-| Z21 — Affiliates Rule with Stay Tracking        | 1    | 1 sprint              | OPEN      | —          |
-| Z22 — Country Group D:5 Dynamic Resolver        | 1    | 1 sprint              | OPEN      | —          |
-| Z4a — Datasheet PDF Extractor                   | 2    | 1 sprint              | OPEN      | —          |
-| Z4b — Astra Tool: classify-item                 | 2    | 1 sprint              | OPEN      | —          |
-| Z4c — TradeItemClassificationDraft schema       | 2    | 1 sprint              | OPEN      | —          |
-| Z4d — UI: Draft Acceptance Flow                 | 2    | 1 sprint              | OPEN      | —          |
-| Z5a — BAFA XSD Types                            | 2    | 1 sprint              | OPEN      | —          |
-| Z5b — Report Builder + Serializer               | 2    | 1 sprint              | OPEN      | —          |
-| Z5c — UI + XSD Changelog Watcher                | 2    | 1 sprint              | OPEN      | —          |
-| Z23a — USML XV(a) full enumeration              | 3    | 1 sprint              | OPEN      | —          |
-| Z23b — USML XV(e) full enumeration              | 3    | 1-2 sprints           | OPEN      | —          |
-| Z24a — EU 9A006-9A012                           | 3    | 1 sprint              | OPEN      | —          |
-| Z24b — MTCR-derived 9A101-9A121                 | 3    | 1 sprint              | OPEN      | —          |
-| Z24c — Software 9D + Tech 9E                    | 3    | 1 sprint              | OPEN      | —          |
-| Z24d — AM Entries from Reg 2025/2003            | 3    | 1 sprint              | OPEN      | —          |
-| Z25 — Extended Parametric Attributes            | 3    | 1-2 sprints           | OPEN      | —          |
-| Z26 — DE Ausfuhrliste Teil I A + B              | 3    | 1-2 sprints           | OPEN      | —          |
-| Z27 — Annex-I Suffix-Digit Runtime Correlator   | 3    | 1 sprint              | OPEN      | —          |
-| Z28 — Order-of-Review Auto-Trump                | 3    | 1 sprint              | OPEN      | —          |
-| Z29 — Supplement No. 2 One-Time Report Workflow | 4    | 2 sprints             | OPEN      | —          |
-| Z30 — Destination Control Statement Generator   | 4    | 1 sprint              | OPEN      | —          |
-| Z31 — AUKUS+Canada 9A515 License-Free Overlay   | 4    | 1 sprint              | OPEN      | —          |
-| Z32 — Recordkeeping 5-Year Retention Policy     | 4    | 1 sprint              | OPEN      | —          |
-| Z6a-d — EUC + VSD PDF Templates                 | 5    | 3-4 sprints           | OPEN      | —          |
-| Z7 — De Minimis + FDPR Deep-Dive                | 5    | (absorbed by Z18-Z20) | DUPLICATE | —          |
-| Z9 — OpenSanctions / Orbis UBO                  | 5    | 3 sprints             | OPEN      | —          |
-| Z11 — Sammelgenehmigung Lifecycle               | 5    | 3-4 sprints           | OPEN      | —          |
-| Z12 — BOM De Minimis Integration                | 5    | 2 sprints             | OPEN      | —          |
-| Z16 — OFAC 2026 Sham-Transaction Doctrine       | 5    | 2 sprints             | OPEN      | —          |
-| Z13 — Deemed Export Controls                    | 6    | 3 sprints             | OPEN      | —          |
-| Z14 — ATLAS DE + AES US Customs Filing          | 6    | 4 sprints             | OPEN      | —          |
-| Z15 — Predictive Licence-Time Analytics         | 6    | 3 sprints             | OPEN      | —          |
-| Z33 — Training Corpus (BAFA AzG + DDTC CJ)      | 6    | 3 sprints             | OPEN      | —          |
+| Sprint                                          | Tier | Size                  | Status      | Shipped at                                      |
+| ----------------------------------------------- | ---- | --------------------- | ----------- | ----------------------------------------------- |
+| Z18 — Three-Gate Cascade Orchestrator           | 1    | 1-2 sprints           | **SHIPPED** | 2026-05-22 (Gate 2 stubbed pending Z20)         |
+| Z19 — § 734.4(a) Hard Carve-Out Table           | 1    | 1 sprint              | **SHIPPED** | 2026-05-22                                      |
+| Z20a — NS/9x515/600-series FDPR                 | 1    | 1 sprint              | OPEN        | —                                               |
+| Z20b — Entity-List FDPR (footnotes 1/4/5)       | 1    | 1 sprint              | OPEN        | —                                               |
+| Z20c — Russia/Belarus FDPR (.f/.g)              | 1    | 1 sprint              | OPEN        | —                                               |
+| Z20d — Advanced Computing / Supercomputer FDPR  | 1    | 1 sprint              | OPEN        | —                                               |
+| Z21 — Affiliates Rule with Stay Tracking        | 1    | 1 sprint              | **SHIPPED** | 2026-05-22                                      |
+| Z22 — Country Group D:5 Dynamic Resolver        | 1    | 1 sprint              | **SHIPPED** | 2026-05-22 (Z22b queued for daily-cron refresh) |
+| Z4a — Datasheet PDF Extractor                   | 2    | 1 sprint              | OPEN        | —                                               |
+| Z4b — Astra Tool: classify-item                 | 2    | 1 sprint              | OPEN        | —                                               |
+| Z4c — TradeItemClassificationDraft schema       | 2    | 1 sprint              | OPEN        | —                                               |
+| Z4d — UI: Draft Acceptance Flow                 | 2    | 1 sprint              | OPEN        | —                                               |
+| Z5a — BAFA XSD Types                            | 2    | 1 sprint              | OPEN        | —                                               |
+| Z5b — Report Builder + Serializer               | 2    | 1 sprint              | OPEN        | —                                               |
+| Z5c — UI + XSD Changelog Watcher                | 2    | 1 sprint              | OPEN        | —                                               |
+| Z23a — USML XV(a) full enumeration              | 3    | 1 sprint              | OPEN        | —                                               |
+| Z23b — USML XV(e) full enumeration              | 3    | 1-2 sprints           | OPEN        | —                                               |
+| Z24a — EU 9A006-9A012                           | 3    | 1 sprint              | OPEN        | —                                               |
+| Z24b — MTCR-derived 9A101-9A121                 | 3    | 1 sprint              | OPEN        | —                                               |
+| Z24c — Software 9D + Tech 9E                    | 3    | 1 sprint              | OPEN        | —                                               |
+| Z24d — AM Entries from Reg 2025/2003            | 3    | 1 sprint              | OPEN        | —                                               |
+| Z25 — Extended Parametric Attributes            | 3    | 1-2 sprints           | OPEN        | —                                               |
+| Z26 — DE Ausfuhrliste Teil I A + B              | 3    | 1-2 sprints           | OPEN        | —                                               |
+| Z27 — Annex-I Suffix-Digit Runtime Correlator   | 3    | 1 sprint              | OPEN        | —                                               |
+| Z28 — Order-of-Review Auto-Trump                | 3    | 1 sprint              | OPEN        | —                                               |
+| Z29 — Supplement No. 2 One-Time Report Workflow | 4    | 2 sprints             | OPEN        | —                                               |
+| Z30 — Destination Control Statement Generator   | 4    | 1 sprint              | OPEN        | —                                               |
+| Z31 — AUKUS+Canada 9A515 License-Free Overlay   | 4    | 1 sprint              | OPEN        | —                                               |
+| Z32 — Recordkeeping 5-Year Retention Policy     | 4    | 1 sprint              | OPEN        | —                                               |
+| Z6a-d — EUC + VSD PDF Templates                 | 5    | 3-4 sprints           | OPEN        | —                                               |
+| Z7 — De Minimis + FDPR Deep-Dive                | 5    | (absorbed by Z18-Z20) | DUPLICATE   | —                                               |
+| Z9 — OpenSanctions / Orbis UBO                  | 5    | 3 sprints             | OPEN        | —                                               |
+| Z11 — Sammelgenehmigung Lifecycle               | 5    | 3-4 sprints           | OPEN        | —                                               |
+| Z12 — BOM De Minimis Integration                | 5    | 2 sprints             | OPEN        | —                                               |
+| Z16 — OFAC 2026 Sham-Transaction Doctrine       | 5    | 2 sprints             | OPEN        | —                                               |
+| Z13 — Deemed Export Controls                    | 6    | 3 sprints             | OPEN        | —                                               |
+| Z14 — ATLAS DE + AES US Customs Filing          | 6    | 4 sprints             | OPEN        | —                                               |
+| Z15 — Predictive Licence-Time Analytics         | 6    | 3 sprints             | OPEN        | —                                               |
+| Z33 — Training Corpus (BAFA AzG + DDTC CJ)      | 6    | 3 sprints             | OPEN        | —                                               |
 
 ### Already-shipped (for context, not to redo)
 
