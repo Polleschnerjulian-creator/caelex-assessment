@@ -653,3 +653,100 @@ describe("Sprint D4: exceptionContext downgrades REQUIRED → EXCEPTION_MAY_APPL
     expect(bafa?.recommendedAction).toMatch(/Evaluate.*AGG.*conditions/);
   });
 });
+
+// ─── Sprint Z2b — Annex IV Art. 2b hard prohibition gate ───────────
+
+describe("Gate 0 — EU Reg. 833/2014 Annex IV Art. 2b", () => {
+  const ANNEX_IV_HIT = { sanctionsLists: ["EU_ANNEX_IV"] };
+  const NO_SANCTIONS = { sanctionsLists: [] };
+
+  it("dual-use item + Annex IV counterparty → PROHIBITED, gate BLOCKED", () => {
+    const det = determineLicenseRequirements(
+      EU_ONLY_EVAL, // has 9A004 (EU_ANNEX_I)
+      null,
+      "RU",
+      undefined,
+      ANNEX_IV_HIT,
+    );
+    expect(det.annexIVBlock).toBe(true);
+    expect(det.gate).toBe("BLOCKED");
+    const prohibited = det.requirements.find((r) => r.status === "PROHIBITED");
+    expect(prohibited).toBeDefined();
+    expect(prohibited?.jurisdiction).toContain("Annex IV");
+    expect(prohibited?.reason).toMatch(/Art(\.|icle) ?2b/);
+  });
+
+  it("PROHIBITED requirement is NOT downgraded by exception-matrix even when STA/ENC would otherwise apply", () => {
+    // Pass an exceptionContext that would normally make STA/ENC apply
+    // to a 9A004 to AU (low-risk destination) — but the Annex IV hit
+    // should override and keep the PROHIBITED status.
+    const det = determineLicenseRequirements(
+      EU_ONLY_EVAL,
+      null,
+      "AU",
+      { classification: { eccnUS: "5A002.a", eccnEU: "5A002.a" } },
+      ANNEX_IV_HIT,
+    );
+    const prohibited = det.requirements.find((r) => r.status === "PROHIBITED");
+    expect(prohibited).toBeDefined();
+    // Even though exceptions may also be listed for other reqs,
+    // the PROHIBITED one stays PROHIBITED (no applicableException).
+    expect(prohibited?.applicableException).toBeUndefined();
+  });
+
+  it("no screeningContext → annexIVBlock false (backward compat)", () => {
+    const det = determineLicenseRequirements(EU_ONLY_EVAL, null, "RU");
+    expect(det.annexIVBlock).toBe(false);
+    expect(
+      det.requirements.find((r) => r.status === "PROHIBITED"),
+    ).toBeUndefined();
+  });
+
+  it("screeningContext with non-Annex-IV lists does not trigger Gate 0", () => {
+    const det = determineLicenseRequirements(
+      EU_ONLY_EVAL,
+      null,
+      "RU",
+      undefined,
+      { sanctionsLists: ["EU_FSF", "OFAC_SDN"] },
+    );
+    expect(det.annexIVBlock).toBe(false);
+  });
+
+  it("ITAR-only classification (no EU_ANNEX_I / US_CCL code) → Gate 0 does NOT fire", () => {
+    // Items that are purely USML-classified fall outside Art. 2b
+    // because Art. 2b targets Annex I dual-use items. ITAR + Annex IV
+    // is handled by Gate 2 (DDTC) instead.
+    const det = determineLicenseRequirements(
+      ITAR_EVAL,
+      null,
+      "RU",
+      undefined,
+      ANNEX_IV_HIT,
+    );
+    expect(det.annexIVBlock).toBe(false);
+  });
+
+  it("nextSteps surfaces the BLOCKED message at the top", () => {
+    const det = determineLicenseRequirements(
+      EU_ONLY_EVAL,
+      null,
+      "RU",
+      undefined,
+      ANNEX_IV_HIT,
+    );
+    expect(det.nextSteps[0]).toMatch(/BLOCKED/);
+    expect(det.nextSteps[0]).toMatch(/Art(\.|icle) ?2b/);
+  });
+
+  it("clean dual-use item + clean screening → annexIVBlock stays false", () => {
+    const det = determineLicenseRequirements(
+      EU_ONLY_EVAL,
+      null,
+      "FR",
+      undefined,
+      NO_SANCTIONS,
+    );
+    expect(det.annexIVBlock).toBe(false);
+  });
+});

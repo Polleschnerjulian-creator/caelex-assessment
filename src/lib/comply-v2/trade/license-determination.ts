@@ -59,6 +59,7 @@ export type RequirementStatus =
   | "EXCEPTION_MAY_APPLY" // A license exception may be applicable
   | "NLR" // No License Required — item not controlled here
   | "DENIED" // Strong presumption of denial (MTCR Cat. I or embargo)
+  | "PROHIBITED" // Hard prohibition under EU Reg. 833/2014 Art. 2b
   | "UNKNOWN"; // Cannot determine without additional info
 
 export interface LicenseRequirement {
@@ -113,6 +114,14 @@ export interface LicenseDetermination {
    */
   embargoBlock: boolean;
 
+  /**
+   * Sprint Z2b — true if the counterparty is on Reg. 833/2014
+   * Annex IV. Art. 2b carries a HARD prohibition on dual-use exports
+   * to listed entities REGARDLESS of civilian intent. When this fires
+   * the gate becomes BLOCKED with a non-derogable PROHIBITED status.
+   */
+  annexIVBlock: boolean;
+
   /** Ordered list of recommended next steps (most urgent first). */
   nextSteps: string[];
 
@@ -157,9 +166,59 @@ export function determineLicenseRequirements(
   deMinimis: DeMinimisResult | null,
   destinationCountry?: string,
   exceptionContext?: Omit<ExceptionMatchInput, "destinationCountry">,
+  /**
+   * Sprint Z2b — counterparty screening context. When provided and
+   * the operation's counterparty (or intermediary) is matched by
+   * EU_ANNEX_IV, Gate 0 fires with a PROHIBITED requirement that
+   * cannot be derogated via license exceptions.
+   *
+   * Shape mirrors a subset of `screen-party.server.ts` output:
+   *   { sanctionsLists: ["EU_ANNEX_IV", "EU_FSF", ...] }
+   * The keys are the TradeSanctionsList enum values.
+   */
+  screeningContext?: {
+    sanctionsLists: string[];
+  },
 ): LicenseDetermination {
   const requirements: LicenseRequirement[] = [];
   const nextSteps: string[] = [];
+  let annexIVBlock = false;
+
+  // ─── Gate 0: EU Reg. 833/2014 Annex IV (Art. 2b hard prohibition) ──
+  // Highest-priority block. When a counterparty (or intermediary) is
+  // on Annex IV, Art. 2b prohibits export of ANY dual-use item
+  // (Annex I controlled OR catch-all triggered) REGARDLESS of
+  // civilian intent. There is no derogation pathway via licensing
+  // exceptions for this block.
+  //
+  // The item is "dual-use enough to be caught by Art. 2b" when any
+  // suggested code targets EU_ANNEX_I or US_CCL. Items with only
+  // ITAR (USML) classification fall through to Gate 2.
+  if (screeningContext?.sanctionsLists.includes("EU_ANNEX_IV")) {
+    const hasDualUseCode = triggerEval.results.some((r) =>
+      r.suggestedCodes.some(
+        (c) => c.jurisdiction === "EU_ANNEX_I" || c.jurisdiction === "US_CCL",
+      ),
+    );
+
+    if (hasDualUseCode) {
+      annexIVBlock = true;
+      requirements.push({
+        jurisdiction: "EU (Reg. 833/2014 Annex IV)",
+        authority: "EU_COMPETENT_AUTHORITY",
+        status: "PROHIBITED",
+        licenseType: null,
+        reason:
+          "Counterparty is on EU Reg. 833/2014 Annex IV. Article 2b prohibits export of dual-use items to listed entities REGARDLESS of civilian intent. No licence exception derogates this prohibition.",
+        recommendedAction:
+          "DO NOT PROCEED. Cancel the operation and document the cancellation. If urgent business need exists, seek qualified counsel — Art. 2b derogations are limited to a narrow set of grandfathered contracts under Art. 12b. Re-confirm party identity via the latest OJEU amendment regulation.",
+        triggerCode: "EU 833/2014 Art. 2b",
+      });
+      nextSteps.unshift(
+        "BLOCKED: Counterparty on EU Reg. 833/2014 Annex IV. Art. 2b hard prohibition applies — no licence exception derogates. Cancel the operation.",
+      );
+    }
+  }
 
   // ─── Gate 1: MTCR Cat. I ──────────────────────────────────────────
   const mtcrCatIBlock = triggerEval.hasMtcrCatIFlag;
@@ -403,14 +462,18 @@ export function determineLicenseRequirements(
   }
 
   // ─── Determine overall gate ───────────────────────────────────────
-  const hasBlocked = requirements.some((r) => r.status === "DENIED");
+  // PROHIBITED (Annex IV Art. 2b) is treated equivalently to DENIED for
+  // gate-calculation purposes — both produce a BLOCKED overall gate.
+  const hasBlocked = requirements.some(
+    (r) => r.status === "DENIED" || r.status === "PROHIBITED",
+  );
   const hasRequired = requirements.some((r) => r.status === "REQUIRED");
   const hasLikely = requirements.some(
     (r) => r.status === "LIKELY_REQUIRED" || r.status === "UNKNOWN",
   );
 
   let gate: OverallGate;
-  if (hasBlocked || mtcrCatIBlock) {
+  if (hasBlocked || mtcrCatIBlock || annexIVBlock) {
     gate = "BLOCKED";
   } else if (hasRequired || hasLikely) {
     gate = "REVIEW_NEEDED";
@@ -442,6 +505,7 @@ export function determineLicenseRequirements(
     mtcrCatIBlock,
     itarBlock,
     embargoBlock,
+    annexIVBlock,
     nextSteps,
     ...(applicableExceptions ? { applicableExceptions } : {}),
     disclaimer: DISCLAIMER,
