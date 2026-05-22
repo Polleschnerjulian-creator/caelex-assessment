@@ -16,6 +16,8 @@ import {
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isSuperAdmin } from "@/lib/super-admin";
+import { getComplianceHealth } from "@/lib/trade/compliance-health-service";
+import { ComplianceHealthPanel } from "./_components/ComplianceHealthPanel";
 
 export const metadata = {
   title: "Caelex Trade — Dashboard",
@@ -57,7 +59,9 @@ export default async function TradeDashboardPage() {
 
   const orgId = await resolveOrgId(session.user.id, session.user.email);
 
-  // Parallel-fetch all aggregates.
+  // Parallel-fetch all aggregates. complianceHealth bundles
+  // EUC + Re-Export + VSD into a single roundtrip via its own
+  // internal Promise.all (Sprint X1).
   const [
     itemsCount,
     unclassifiedItemsCount,
@@ -67,6 +71,7 @@ export default async function TradeDashboardPage() {
     operationsByStatus,
     licensesActiveCount,
     licensesExpiringSoon,
+    complianceHealth,
   ] = await Promise.all([
     prisma.tradeItem.count({ where: { organizationId: orgId } }),
     prisma.tradeItem.count({
@@ -108,6 +113,7 @@ export default async function TradeDashboardPage() {
       orderBy: { validUntil: "asc" },
       take: 5,
     }),
+    getComplianceHealth(orgId),
   ]);
 
   // Reshape group-by results into lookup maps.
@@ -203,6 +209,9 @@ export default async function TradeDashboardPage() {
           hintTone="muted"
         />
       </section>
+
+      {/* Compliance health — EUC + Re-Export + VSD workflow surfaces */}
+      <ComplianceHealthPanel summary={complianceHealth} />
 
       {/* Empty state (org has no Trade data yet) */}
       {!hasAnyData && (
