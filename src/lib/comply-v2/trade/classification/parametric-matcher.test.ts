@@ -837,3 +837,71 @@ describe("9A515.g components for sensitive remote-sensing (Z3i)", () => {
     expect(xLink?.relationship).toBe("subset_of");
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────
+// Sprint Z3j — Ground station ITAR/EAR bifurcation. The 2014 ECR
+// split TT&C ground stations by SD-for-military: civilian → 9A515.b
+// (EAR), military → USML XV(b) (ITAR). The two are mutually exclusive
+// via the `isSpeciallyDesigned` boolean.
+// ─────────────────────────────────────────────────────────────────────
+
+describe("Ground station ITAR/EAR bifurcation (Z3j)", () => {
+  it("Civilian TT&C antenna (SD=false) → 9A515.b matches, NOT USML XV(b)", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "ground.station.ttc.commercial",
+      isSpeciallyDesigned: false,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("ECCN:9A515.b");
+    expect(ids).not.toContain("USML:XV(b)");
+  });
+
+  it("Military TT&C (SD=true) → USML XV(b) matches, NOT 9A515.b", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "ground.station.ttc.military",
+      isSpeciallyDesigned: true,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("USML:XV(b)");
+    expect(ids).not.toContain("ECCN:9A515.b");
+  });
+
+  it("Ground station with SD undefined → both emit as PossibleMatch (operator must declare)", () => {
+    // The boolean discriminator is null → three-valued logic surfaces
+    // BOTH entries as PossibleMatch. The operator must declare SD to
+    // resolve the ITAR-vs-EAR jurisdiction question. This is exactly
+    // the kind of case where misclassification has the highest cost.
+    const result = matchAgainstCrossWalk({
+      itemClass: "ground.station.ttc.unspecified",
+    });
+    const possibleIds = result.possibleMatches.map((p) => p.entry.canonicalId);
+    expect(possibleIds).toContain("ECCN:9A515.b");
+    expect(possibleIds).toContain("USML:XV(b)");
+  });
+
+  it("9A515.b cites USML XV(b) as 'predecessor' with discriminator note", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "ground.station.ttc.commercial",
+      isSpeciallyDesigned: false,
+    });
+    const eccn = result.candidates.find(
+      (c) => c.entry.canonicalId === "ECCN:9A515.b",
+    );
+    expect(eccn).toBeDefined();
+    const xvLink = eccn!.entry.seeAlso.find((l) => l.id === "XV(b)");
+    expect(xvLink?.relationship).toBe("predecessor");
+    expect(xvLink?.notes).toMatch(/isSpeciallyDesigned|military.*ITAR/i);
+  });
+
+  it("Non-TT&C ground equipment → neither match (e.g. weather radar)", () => {
+    // A ground-based weather radar is not a spacecraft TT&C system —
+    // neither entry should fire. The itemClass prefix is the gate.
+    const result = matchAgainstCrossWalk({
+      itemClass: "ground.equipment.weather_radar",
+      isSpeciallyDesigned: false,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("ECCN:9A515.b");
+    expect(ids).not.toContain("USML:XV(b)");
+  });
+});

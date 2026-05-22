@@ -1064,6 +1064,72 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
   // which broke the threshold flip (BW > 300 MHz should fail .a.3
   // but the itemClass-only entry was still matching on itemClass
   // alone). The Z3d entry is the legally-correct shape.
+
+  // ═══════════════════════════════════════════════════════════════
+  // 9A515.b — Ground control systems for civilian spacecraft (EAR)
+  //
+  // Sprint Z3j — The EAR-side companion to USML:XV(b). The 2014 ECR
+  // bifurcated ground stations:
+  //   - Military / intelligence TT&C → USML XV(b) (ITAR)
+  //   - Civilian / commercial TT&C  → 9A515.b (EAR, STA-eligible)
+  //
+  // The decisive predicate is `isSpeciallyDesigned: false` — if the
+  // operator declares the ground station NOT specially designed for
+  // military spacecraft, it routes to 9A515.b. If declared specially
+  // designed (military), it routes to USML XV(b) via the Z3g entry.
+  // The two are mutually exclusive by design.
+  //
+  // Without this entry, a civilian TT&C antenna would have NO match
+  // in the cross-walk — even though it is in fact controlled under
+  // 9A515.b. This was a coverage gap closed by Z3j.
+  // ═══════════════════════════════════════════════════════════════
+  {
+    canonicalId: "ECCN:9A515.b",
+    regime: "EAR-CCL",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "515",
+    subpara: "b",
+    title:
+      "Ground control systems and training simulators for civilian / commercial spacecraft TT&C (EAR)",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "ground.station.ttc" },
+      // Sprint Z3j — civilian TT&C ground stations are 9A515.b, the
+      // 'not specially designed for military spacecraft' carve-out.
+      // The boolean discriminator IS the regulatory line — SD=true
+      // routes to USML XV(b) (ITAR), SD=false stays on EAR 9A515.b.
+      { attribute: "isSpeciallyDesigned", op: "eq", value: false },
+    ],
+    reasonsForControl: ["NS:2", "RS:2", "AT:1"],
+    licenseExceptions: ["STA-eligible:full"],
+    seeAlso: [
+      {
+        regime: "ITAR-USML",
+        id: "XV(b)",
+        relationship: "predecessor",
+        notes:
+          "Military/intelligence TT&C ground stations remain ITAR XV(b). The discriminator is `isSpeciallyDesigned` — military → ITAR, civilian → EAR 9A515.b.",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A004",
+        relationship: "analogous",
+        notes: "EU rolls civilian ground stations into 9A004 family.",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "Cat 9",
+        relationship: "analogous",
+        notes:
+          "WA-LIST (25) 1 Corr. references ground-based satellite-control equipment in Category 9.",
+      },
+    ],
+    citation:
+      "15 CFR 774 Supp. 1 Cat 9 ECCN 9A515.b — 'Ground control systems and training simulators for spacecraft' (the civilian carve-out from USML XV(b)).",
+    validFrom: "2014-05-13",
+    notes:
+      "STA-eligible: full means License Exception STA may apply to most destinations on Country Group A:5/A:6 (subject to STA preconditions like end-user assurances).",
+  },
 ];
 
 // ─── Helpers ────────────────────────────────────────────────────────
