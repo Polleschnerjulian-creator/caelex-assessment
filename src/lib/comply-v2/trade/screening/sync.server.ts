@@ -31,13 +31,20 @@ import { ddtcDebarredParser } from "./sources/ddtc-debarred";
 import { euFsfParser } from "./sources/eu-fsf";
 import { ukOfsiParser } from "./sources/uk-ofsi";
 import { unConsolidatedParser } from "./sources/un-consolidated";
+import { euAnnexIvParser } from "./sources/eu-annex-iv";
 import type { SanctionsSourceParser } from "./sources/types";
 import { upsertSnapshot } from "./snapshot-store.server";
 
 /**
- * Registered parsers for the orchestrator. All six sources tracked by
+ * Registered parsers for the orchestrator. All seven sources tracked by
  * TradeSanctionsList are now wired:
- *   OFAC_SDN · BIS_ENTITY · DDTC_DEBARRED · EU_FSF · UK_OFSI · UN_CONSOLIDATED
+ *   OFAC_SDN · BIS_ENTITY · DDTC_DEBARRED · EU_FSF · UK_OFSI ·
+ *   UN_CONSOLIDATED · EU_ANNEX_IV (Sprint Z2)
+ *
+ * EU_ANNEX_IV is distinct from EU_FSF — the FSF carries asset-freeze
+ * obligations under Reg. 269/2014, while Annex IV (Reg. 833/2014
+ * Art. 2b) prohibits dual-use exports to listed entities regardless of
+ * civilian intent. Same legal universe, different prohibition surface.
  */
 export const REGISTERED_PARSERS: readonly SanctionsSourceParser[] = [
   ofacSdnParser,
@@ -46,6 +53,7 @@ export const REGISTERED_PARSERS: readonly SanctionsSourceParser[] = [
   euFsfParser,
   ukOfsiParser,
   unConsolidatedParser,
+  euAnnexIvParser,
 ] as const;
 
 const FETCH_TIMEOUT_MS = 30_000;

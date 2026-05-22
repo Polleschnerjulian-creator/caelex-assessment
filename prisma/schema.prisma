@@ -11316,6 +11316,16 @@ enum TradeSanctionsList {
   UK_OFSI
   /// UN Security Council Consolidated Sanctions
   UN_CONSOLIDATED
+  /// EU Reg. 833/2014 Annex IV — Russia sanctions enhanced end-user
+  /// list. Article 2b prohibits export of dual-use items to listed
+  /// entities REGARDLESS of civilian intent. Separate legal surface
+  /// from FSF — same entity may appear in both, but the Annex IV
+  /// hit carries a hard prohibition while FSF can be derogated via
+  /// licensing exceptions. Reg. (EU) 2026/506 of 23 April 2026 added
+  /// 60 entities (32 Russian, 28 in third countries — CN/HK, TR,
+  /// AE, TH) bringing the total to 200+ entities.
+  /// Source: EUR-Lex CELEX 32014R0833 Annex IV.
+  EU_ANNEX_IV
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
