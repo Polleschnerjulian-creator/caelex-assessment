@@ -12,16 +12,16 @@ export const metadata = {
 };
 
 interface ReexportPageProps {
-  searchParams: Promise<{ party?: string }>;
+  searchParams: Promise<{ party?: string; operation?: string }>;
 }
 
 /**
  * /trade/reexport-consents — list of every TradeReexportConsent row
  * in the org (Sprint E4b). Mirrors /trade/euc structurally.
  *
- * ?party=<id> filter scopes the list to one counterparty + adds a
- * filter chip; the filter is enforced server-side via the org-scoped
- * party lookup.
+ * Sprint Y3 — accepts `?party=<id>` and `?operation=<id>` filters,
+ * both server-side enforced via an org-scoped lookup so cross-org
+ * IDs return nothing.
  */
 export default async function ReexportConsentsPage({
   searchParams,
@@ -36,18 +36,28 @@ export default async function ReexportConsentsPage({
     session.user.email,
   );
 
-  const { party: partyFilter } = await searchParams;
-  const filterParty = partyFilter
-    ? await prisma.tradeParty.findFirst({
-        where: { id: partyFilter, organizationId: orgId },
-        select: { id: true, canonicalName: true, countryCode: true },
-      })
-    : null;
+  const sp = await searchParams;
+  const [filterParty, filterOperation] = await Promise.all([
+    sp.party
+      ? prisma.tradeParty.findFirst({
+          where: { id: sp.party, organizationId: orgId },
+          select: { id: true, canonicalName: true, countryCode: true },
+        })
+      : Promise.resolve(null),
+    sp.operation
+      ? prisma.tradeOperation.findFirst({
+          where: { id: sp.operation, organizationId: orgId },
+          select: { id: true, reference: true },
+        })
+      : Promise.resolve(null),
+  ]);
 
   const consents = await listReexportConsents(orgId);
-  const filteredConsents = filterParty
-    ? consents.filter((c) => c.requestingPartyId === filterParty.id)
-    : consents;
+  const filteredConsents = consents.filter((c) => {
+    if (filterParty && c.requestingPartyId !== filterParty.id) return false;
+    if (filterOperation && c.operationId !== filterOperation.id) return false;
+    return true;
+  });
 
   const parties = canEdit
     ? await prisma.tradeParty.findMany({
@@ -91,15 +101,19 @@ export default async function ReexportConsentsPage({
         </div>
       </header>
 
-      {filterParty && (
-        <div className="flex items-center gap-2 rounded-md border border-trade-border bg-trade-bg-page px-3 py-2 text-[12.5px] text-trade-text-secondary">
-          Filtered to{" "}
-          <strong className="text-trade-text-primary">
-            {filterParty.canonicalName}
-          </strong>{" "}
-          <span className="text-trade-text-muted">
-            ({filterParty.countryCode})
-          </span>
+      {(filterParty || filterOperation) && (
+        <div className="flex flex-wrap items-center gap-2 rounded-md border border-trade-border bg-trade-bg-page px-3 py-2 text-[12.5px] text-trade-text-secondary">
+          <span>Filtered to</span>
+          {filterParty && (
+            <strong className="text-trade-text-primary">
+              party: {filterParty.canonicalName} ({filterParty.countryCode})
+            </strong>
+          )}
+          {filterOperation && (
+            <strong className="text-trade-text-primary">
+              operation: {filterOperation.reference}
+            </strong>
+          )}
           <Link
             href="/trade/reexport-consents"
             className="ml-auto inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11.5px] font-medium text-trade-accent-strong hover:bg-trade-accent-soft"

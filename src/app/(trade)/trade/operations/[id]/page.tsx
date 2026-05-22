@@ -25,6 +25,8 @@ import {
   Globe,
   AlertTriangle,
   RefreshCw,
+  FileSignature,
+  AlertOctagon,
 } from "lucide-react";
 import { OperationLinesPanel } from "../_components/OperationLinesPanel";
 import { OperationLifecyclePanel } from "../_components/OperationLifecyclePanel";
@@ -342,8 +344,24 @@ export default function OperationDetailPage({
         </div>
       )}
 
-      {/* Action bar — BAFA PDF download */}
+      {/* Action bar — related-documents deep-links + BAFA PDF download */}
       <div className="mb-6 flex flex-wrap items-center justify-end gap-3">
+        <Link
+          href={`/trade/reexport-consents?operation=${op.id}`}
+          className="flex items-center gap-2 rounded-md border border-trade-border bg-trade-bg-page px-3 py-2.5 text-[12.5px] font-medium text-trade-text-primary transition hover:border-trade-accent hover:text-trade-accent-strong"
+          title="Re-Export consent letters tied to this operation"
+        >
+          <FileSignature className="h-3.5 w-3.5" />
+          Re-Exports
+        </Link>
+        <Link
+          href={`/trade/vsd?operation=${op.id}`}
+          className="flex items-center gap-2 rounded-md border border-trade-border bg-trade-bg-page px-3 py-2.5 text-[12.5px] font-medium text-trade-text-primary transition hover:border-trade-accent hover:text-trade-accent-strong"
+          title="Voluntary self-disclosures originating from this operation"
+        >
+          <AlertOctagon className="h-3.5 w-3.5" />
+          VSDs
+        </Link>
         <BafaPdfButton
           operation={op}
           applicant={{

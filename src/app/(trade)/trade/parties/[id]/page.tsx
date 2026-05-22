@@ -31,6 +31,7 @@ import {
   Hash,
   ExternalLink,
   FileSignature,
+  AlertOctagon,
 } from "lucide-react";
 
 interface ScreeningHit {
@@ -214,11 +215,27 @@ export default function CounterpartyDetailPage({
         <div className="flex shrink-0 items-center gap-2">
           <Link
             href={`/trade/euc?party=${party.id}`}
-            className="flex items-center gap-2 rounded-md border border-trade-border bg-trade-bg-page px-4 py-3 text-[13px] font-medium text-trade-text-primary transition hover:border-trade-accent hover:text-trade-accent-strong"
+            className="flex items-center gap-2 rounded-md border border-trade-border bg-trade-bg-page px-3 py-3 text-[13px] font-medium text-trade-text-primary transition hover:border-trade-accent hover:text-trade-accent-strong"
             title="View end-use certificates for this counterparty"
           >
             <FileSignature className="h-3.5 w-3.5" />
             EUCs
+          </Link>
+          <Link
+            href={`/trade/reexport-consents?party=${party.id}`}
+            className="flex items-center gap-2 rounded-md border border-trade-border bg-trade-bg-page px-3 py-3 text-[13px] font-medium text-trade-text-primary transition hover:border-trade-accent hover:text-trade-accent-strong"
+            title="View re-export consent letters where this counterparty is the requesting party"
+          >
+            <FileSignature className="h-3.5 w-3.5" />
+            Re-Exports
+          </Link>
+          <Link
+            href={`/trade/vsd?party=${party.id}`}
+            className="flex items-center gap-2 rounded-md border border-trade-border bg-trade-bg-page px-3 py-3 text-[13px] font-medium text-trade-text-primary transition hover:border-trade-accent hover:text-trade-accent-strong"
+            title="View voluntary self-disclosures touching this counterparty"
+          >
+            <AlertOctagon className="h-3.5 w-3.5" />
+            VSDs
           </Link>
           <button
             onClick={runScreen}

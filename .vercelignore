@@ -1,0 +1,51 @@
+# Exclude heavy folders from `vercel deploy` source uploads.
+# `git push`-triggered builds ignore this file because Vercel pulls
+# the source straight from GitHub — no upload-tarball involved.
+#
+# These exclusions matter when a Caelex maintainer runs `vercel --prod`
+# locally as a fallback when GitHub push isn't available. The 10MB body
+# limit on direct upload requires us to strip out anything not needed
+# at build time.
+
+# Tauri desktop-app source — 1.9 GB, not part of the web build
+src-tauri/
+
+# Workspace packages compiled to packages/<name>/dist — Vercel rebuilds
+# from source in src/ so the dist/ artifacts add no value
+packages/
+
+# Sentinel telemetry data + scratch — 99 MB, unused at build time
+sentinel/
+
+# Long-form docs + reports — not part of the runtime bundle
+docs/
+reports/
+linkedin_visuals/
+
+# Test suites — Vercel does not run tests during build
+tests/
+
+# Standalone PDFs / DOCX at repo root
+*.pdf
+*.docx
+
+# Local TypeScript build cache — re-derived at build time
+tsconfig.tsbuildinfo
+
+# Local .next cache (Vercel rebuilds anyway)
+.next/
+
+# In archive=tgz mode, .gitignore is bypassed — explicitly exclude
+# heavy build-time artifacts that Vercel re-derives.
+node_modules/
+.git/
+coverage/
+.vercel/cache/
+.turbo/
+.cache/
+*.log
+.DS_Store
+
+# Note: do NOT exclude src/, prisma/, public/, package.json,
+# package-lock.json, next.config.*, tsconfig.json — those are
+# required for the build.
