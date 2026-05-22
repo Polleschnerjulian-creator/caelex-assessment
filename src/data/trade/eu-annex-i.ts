@@ -14,6 +14,17 @@
  * description, cites the official source URL. The official Annex I has
  * approx. 11,000 lines; Caelex covers ~30 entries (the most space-
  * relevant). For full lookup, the user must consult EUR-Lex directly.
+ *
+ * Sprint Z24a (Tier 3) — added 9A006 (components for liquid rocket
+ * propulsion), 9A008 (components for solid rocket motors), and 9A012
+ * (unmanned aerial vehicles). The other Annex I Cat. 9 core entries
+ * referenced by the Z24a brief (9A007, 9A009, 9A010, 9A011) were
+ * already present and untouched. Parametric thresholds for 9A011 +
+ * 9A012 live in `src/lib/comply-v2/trade/classification/
+ * control-list-cross-walk.ts` per the matcher engine architecture
+ * (Sprint Z3b/Z3c) — `ClassificationEntry` itself does not carry a
+ * `parameters` field; thresholds are encoded textually here and
+ * machine-readably in the cross-walk.
  */
 
 import type { ClassificationEntry, ClassificationCoverage } from "./schema";
@@ -38,7 +49,7 @@ export const EU_ANNEX_I_COVERAGE: ClassificationCoverage = {
   ],
   asOfDate: ASOF,
   officialTotalEntriesApprox: 11000,
-  caelexCoverageCount: 29,
+  caelexCoverageCount: 32,
 };
 
 export const EU_ANNEX_I_ENTRIES: ClassificationEntry[] = [
@@ -268,6 +279,21 @@ export const EU_ANNEX_I_ENTRIES: ClassificationEntry[] = [
     sourceUrl: SOURCE_BASE,
     asOfDate: ASOF,
   },
+  // ─── Sprint Z24a — Core 9A006-9A012 (added 2026-05-22) ──────────────
+  {
+    code: "9A006",
+    jurisdiction: "EU_ANNEX_I",
+    title:
+      "Components & support equipment for liquid-propellant rocket engines",
+    description:
+      "Components specially designed for liquid-propellant rocket engines (9A005): turbopumps, gas generators, pre-burners, injector heads, combustion chambers, regeneratively-cooled nozzles, thrust-vector-control actuators, and specially-designed liquid-propellant tanks (excluding cryogenic tanks covered by 9A010). Per Delegated Reg. (EU) 2025/2003, the entry now also captures cryogenic propellant feed systems operating at temperatures ≤ 100 K (LH2/LCH4 feed lines, cryo-valves, density-flow meters).",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "rocket-propulsion-liquid-engines",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    notes:
+      "2025/2003 amendment added the cryogenic-feed-system carve-in (T ≤ 100 K). MTCR Cat. II default; flips to Cat. I when paired with a complete Cat-I propulsion system. See parametric cross-walk EU:9A006 for the typed predicates.",
+  },
   {
     code: "9A007",
     jurisdiction: "EU_ANNEX_I",
@@ -278,6 +304,19 @@ export const EU_ANNEX_I_ENTRIES: ClassificationEntry[] = [
     crossReferenceTopic: "rocket-propulsion-solid-engines",
     sourceUrl: SOURCE_BASE,
     asOfDate: ASOF,
+  },
+  {
+    code: "9A008",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Components for solid-propellant rocket motors",
+    description:
+      "Components specially designed for solid-propellant rocket motors (9A007): motor cases & insulation; propellant grains; nozzles (incl. ablative, carbon-carbon, graphite, refractory-metal); igniters & pyrotechnic safe-arm devices; thrust-vector-control sub-systems (movable nozzles, fluid injection, jet-vanes); and thrust-termination / blow-down vents. Carbon-carbon nozzle throats and case-bonded propellant interfaces are specifically called out.",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "rocket-propulsion-solid-engines",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    notes:
+      "Cross-controlled by USML IV(h) and MTCR Item 3. Carbon-carbon throats above defined density × thermal-cycle thresholds escalate to MTCR Cat I when combined with a Cat-I motor case.",
   },
   {
     code: "9A009",
@@ -306,11 +345,26 @@ export const EU_ANNEX_I_ENTRIES: ClassificationEntry[] = [
     jurisdiction: "EU_ANNEX_I",
     title: "Electric propulsion (Hall-effect, ion, FEEP, PPT)",
     description:
-      "Electric propulsion systems for spacecraft: Hall-effect thrusters, gridded ion thrusters, field-emission thrusters, pulsed plasma thrusters above defined Isp / thrust thresholds.",
+      "Electric propulsion systems for spacecraft: Hall-effect thrusters, gridded ion thrusters, field-emission thrusters, pulsed plasma thrusters above defined Isp / thrust thresholds. Typical capture threshold: specific impulse ≥ 1,500 s OR input power ≥ 15 kW — see parametric cross-walk EU:9A011 for the typed predicates.",
     controlReasons: ["NS", "MT"],
     crossReferenceTopic: "hall-thrusters-electric-propulsion",
     sourceUrl: SOURCE_BASE,
     asOfDate: ASOF,
+  },
+  {
+    code: "9A012",
+    jurisdiction: "EU_ANNEX_I",
+    title:
+      "Unmanned aerial vehicles, specially designed components & related ground equipment",
+    description:
+      "Unmanned aerial vehicles (UAVs), unmanned airships, and remotely-piloted aircraft systems (RPAS) with either: (a) autonomous flight-control / navigation capability (no continuous human-in-the-loop required), OR (b) maximum range ≥ 300 km with payload ≥ 500 kg (MTCR Cat. I overlap with 9A104), OR (c) ability to controlled-fly out-of-natural-line-of-sight of the human operator at altitudes ≥ 6,096 m (FL200). Excludes hobbyist / civil-certified aircraft expressly designed for non-military use below all three thresholds. Cross-control by USML VIII(a) for ITAR-controlled UAVs.",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "complete-launch-vehicles",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+    notes:
+      "MTCR Cat. II default; escalates to Cat. I when range ≥ 300 km AND payload ≥ 500 kg (then 9A104 also applies). The 300 km / 500 kg coupling is the same MTCR-Cat-I tripwire that drives 9A004/9A104 — see parametric cross-walk EU:9A012 for typed predicates. ITAR-controlled UAVs (military-grade RPAS, armed variants) are out-of-scope here; they sit under USML VIII.",
   },
   {
     code: "9A101",
