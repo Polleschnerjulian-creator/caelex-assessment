@@ -19,8 +19,8 @@
 > 5. The Z3-series Living Roadmap (`CAELEX-TRADE-LIVING-ROADMAP.md`) — superseded for execution priorities but still authoritative for Z3-series sprint details
 > 6. The moat architecture doc (`CAELEX-TRADE-MOAT-ARCHITECTURE.md`) — describes the engine, NOT the backlog
 >
-> **Last updated.** 2026-05-22 (Z18, Z19, Z21, Z22 shipped — Tier 1 mostly
-> complete; Z20 FDPR scenarios remain).
+> **Last updated.** 2026-05-22 (Z18, Z19, Z20a, Z21, Z22 shipped —
+> Tier 1 at 5/9 sub-sprints; Z20b/c/d remain).
 
 ---
 
@@ -801,7 +801,7 @@ This is the table to update on every sprint completion. Move sprints between SHI
 | ----------------------------------------------- | ---- | --------------------- | ----------- | ----------------------------------------------- |
 | Z18 — Three-Gate Cascade Orchestrator           | 1    | 1-2 sprints           | **SHIPPED** | 2026-05-22 (Gate 2 stubbed pending Z20)         |
 | Z19 — § 734.4(a) Hard Carve-Out Table           | 1    | 1 sprint              | **SHIPPED** | 2026-05-22                                      |
-| Z20a — NS/9x515/600-series FDPR                 | 1    | 1 sprint              | OPEN        | —                                               |
+| Z20a — NS/9x515/600-series FDPR                 | 1    | 1 sprint              | **SHIPPED** | 2026-05-22 (engine + cascade Gate 2 wired)      |
 | Z20b — Entity-List FDPR (footnotes 1/4/5)       | 1    | 1 sprint              | OPEN        | —                                               |
 | Z20c — Russia/Belarus FDPR (.f/.g)              | 1    | 1 sprint              | OPEN        | —                                               |
 | Z20d — Advanced Computing / Supercomputer FDPR  | 1    | 1 sprint              | OPEN        | —                                               |
