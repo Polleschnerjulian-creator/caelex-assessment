@@ -1,5 +1,6 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { FileSignature } from "lucide-react";
+import { FileSignature, X } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isSuperAdmin } from "@/lib/super-admin";
@@ -10,18 +11,22 @@ export const metadata = {
   title: "End-Use Certificates — Caelex Trade",
 };
 
+interface TradeEucPageProps {
+  searchParams: Promise<{ party?: string }>;
+}
+
 /**
  * /trade/euc — list of every TradeEUCRequest in the org (Sprint E5b).
  *
- * Shows the lifecycle of each EUC at a glance: form type, counterparty,
- * status, validity end-date. The "New EUC" button opens a drawer with
- * the create form; existing rows have an inline status-transition
- * popover.
+ * Sprint E5c — accepts `?party=<id>` to filter to one counterparty;
+ * the filter badge at the top shows the party name + a clear link.
  *
  * Read-only for VIEWER + MEMBER roles. MANAGER+ can create new EUCs
  * and advance lifecycle.
  */
-export default async function TradeEucPage() {
+export default async function TradeEucPage({
+  searchParams,
+}: TradeEucPageProps) {
   const session = await auth();
   if (!session?.user?.id) {
     redirect("/login?callbackUrl=%2Ftrade%2Feuc");
@@ -32,7 +37,21 @@ export default async function TradeEucPage() {
     session.user.email,
   );
 
+  const { party: partyFilter } = await searchParams;
+
+  // Load + filter. We do the org-scope check on the party row itself so
+  // a hand-crafted ?party=<otherOrg> query never leaks rows.
+  const filterParty = partyFilter
+    ? await prisma.tradeParty.findFirst({
+        where: { id: partyFilter, organizationId: orgId },
+        select: { id: true, canonicalName: true, countryCode: true },
+      })
+    : null;
+
   const eucs = await listEucRequests(orgId);
+  const filteredEucs = filterParty
+    ? eucs.filter((e) => e.partyId === filterParty.id)
+    : eucs;
   const parties = canEdit
     ? await prisma.tradeParty.findMany({
         where: { organizationId: orgId },
@@ -75,8 +94,27 @@ export default async function TradeEucPage() {
         </div>
       </header>
 
+      {filterParty && (
+        <div className="flex items-center gap-2 rounded-md border border-trade-border bg-trade-bg-page px-3 py-2 text-[12.5px] text-trade-text-secondary">
+          Filtered to{" "}
+          <strong className="text-trade-text-primary">
+            {filterParty.canonicalName}
+          </strong>{" "}
+          <span className="text-trade-text-muted">
+            ({filterParty.countryCode})
+          </span>
+          <Link
+            href="/trade/euc"
+            className="ml-auto inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11.5px] font-medium text-trade-accent-strong hover:bg-trade-accent-soft"
+          >
+            <X size={12} />
+            Clear filter
+          </Link>
+        </div>
+      )}
+
       <EucListPanel
-        eucs={eucs}
+        eucs={filteredEucs}
         parties={parties}
         operations={operations}
         canEdit={canEdit}

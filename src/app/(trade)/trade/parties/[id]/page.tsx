@@ -30,6 +30,7 @@ import {
   Clock,
   Hash,
   ExternalLink,
+  FileSignature,
 } from "lucide-react";
 
 interface ScreeningHit {
@@ -210,16 +211,26 @@ export default function CounterpartyDetailPage({
             )}
           </div>
         </div>
-        <button
-          onClick={runScreen}
-          disabled={screening}
-          className="flex shrink-0 items-center gap-2 rounded-md bg-trade-accent px-5 py-3 text-[13px] font-semibold text-white transition hover:bg-trade-accent-strong disabled:opacity-60"
-        >
-          <RefreshCw
-            className={`h-3.5 w-3.5 ${screening ? "animate-spin" : ""}`}
-          />
-          {screening ? "Screening…" : "Screen now"}
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <Link
+            href={`/trade/euc?party=${party.id}`}
+            className="flex items-center gap-2 rounded-md border border-trade-border bg-trade-bg-page px-4 py-3 text-[13px] font-medium text-trade-text-primary transition hover:border-trade-accent hover:text-trade-accent-strong"
+            title="View end-use certificates for this counterparty"
+          >
+            <FileSignature className="h-3.5 w-3.5" />
+            EUCs
+          </Link>
+          <button
+            onClick={runScreen}
+            disabled={screening}
+            className="flex items-center gap-2 rounded-md bg-trade-accent px-5 py-3 text-[13px] font-semibold text-white transition hover:bg-trade-accent-strong disabled:opacity-60"
+          >
+            <RefreshCw
+              className={`h-3.5 w-3.5 ${screening ? "animate-spin" : ""}`}
+            />
+            {screening ? "Screening…" : "Screen now"}
+          </button>
+        </div>
       </header>
 
       {screenError && (
