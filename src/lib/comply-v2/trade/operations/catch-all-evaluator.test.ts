@@ -406,6 +406,149 @@ describe("evaluateCatchAll — Real-world scenarios", () => {
   });
 });
 
+describe("evaluateCatchAll — §9(2) AWV military catch-all (Sprint Z10)", () => {
+  // Arms-embargo countries cover EU+UN active embargoes — the
+  // canonical examples below are Russia (RU), Belarus (BY), Iran (IR),
+  // North Korea (KP), Myanmar (MM), Syria (SY), China (CN selective).
+
+  it("destination Russia + BAFA military notification → para9Military HIGH", () => {
+    const r = evaluateCatchAll(
+      input({ shipToCountry: "RU", bafaMilitaryNotification: true }, [
+        { codes: [] },
+      ]),
+    );
+    expect(r.para9Military).toBe(true);
+    const t = r.triggers.find((t) => t.regulation === "§9(2) AWV");
+    expect(t?.confidence).toBe("high");
+    expect(t?.reason).toMatch(/BAFA has notified/);
+  });
+
+  it("destination Belarus + operator self-attested military-aware → para9Military HIGH", () => {
+    const r = evaluateCatchAll(
+      input({ shipToCountry: "BY", militaryEndUseAware: true }, [
+        { codes: [] },
+      ]),
+    );
+    expect(r.para9Military).toBe(true);
+    expect(
+      r.triggers.find(
+        (t) => t.regulation === "§9(2) AWV" && t.confidence === "high",
+      )?.reason,
+    ).toMatch(/self-attested positive knowledge/);
+  });
+
+  it("destination Myanmar + declared MILITARY end-use → para9Military HIGH", () => {
+    // Declared MILITARY to an arms-embargo country is automatic
+    // high-confidence §9(2). This is the most common in-practice
+    // signal — operator already declared the end-use truthfully.
+    const r = evaluateCatchAll(
+      input({ shipToCountry: "MM", declaredEndUse: "MILITARY" }, [
+        { codes: [] },
+      ]),
+    );
+    expect(r.para9Military).toBe(true);
+    const t = r.triggers.find(
+      (t) => t.regulation === "§9(2) AWV" && t.confidence === "high",
+    );
+    expect(t).toBeDefined();
+    expect(t?.reason).toMatch(/Declared end-use is MILITARY/);
+  });
+
+  it("destination China + sector contains 'armed forces' → para9Military MEDIUM", () => {
+    const r = evaluateCatchAll(
+      input(
+        {
+          shipToCountry: "CN",
+          endUserSector: "PLA Strategic Support Force Armed Forces Division",
+        },
+        [{ codes: [] }],
+      ),
+    );
+    expect(r.para9Military).toBe(true);
+    expect(
+      r.triggers.find(
+        (t) => t.regulation === "§9(2) AWV" && t.confidence === "medium",
+      ),
+    ).toBeDefined();
+  });
+
+  it("destination Iran + nuclear keyword → BOTH §9(1) and §9(2) can fire (multi-layer)", () => {
+    // Iran is on both lists — nuclear-concern (§9(1)) AND arms-embargo
+    // (§9(2)). A military-end-user with nuclear-keyword should trip
+    // §9(1) (nuclear) but not necessarily §9(2) (no military signal).
+    // This test asserts the engine doesn't accidentally couple them.
+    const r = evaluateCatchAll(
+      input(
+        {
+          shipToCountry: "IR",
+          endUserName: "Centrifuge Research Institute",
+        },
+        [{ codes: [] }],
+      ),
+    );
+    expect(r.para9Nuclear).toBe(true);
+    expect(r.para9Military).toBe(false); // no military keyword/signal
+  });
+
+  it("destination NOT on arms-embargo list → no §9(2) trigger even with BAFA flag", () => {
+    // BAFA-notified flag is meaningless if destination is outside the
+    // arms-embargo set. Rule scope is statutory.
+    const r = evaluateCatchAll(
+      input({ shipToCountry: "FR", bafaMilitaryNotification: true }, [
+        { codes: [] },
+      ]),
+    );
+    expect(r.para9Military).toBe(false);
+    expect(
+      r.triggers.find((t) => t.regulation === "§9(2) AWV"),
+    ).toBeUndefined();
+  });
+
+  it("destination Russia + clean civil sector → no §9(2) trigger", () => {
+    // Arms-embargo country alone isn't enough. Need a knowledge signal
+    // or a sectoral keyword. A civilian end-user without military
+    // indicators shouldn't fire §9(2).
+    const r = evaluateCatchAll(
+      input(
+        {
+          shipToCountry: "RU",
+          endUserName: "Moscow Research Hospital",
+          endUserSector: "civilian healthcare",
+        },
+        [{ codes: [] }],
+      ),
+    );
+    expect(r.para9Military).toBe(false);
+  });
+
+  it("§9(2) trigger contributes to notificationDuty when no license attached", () => {
+    const r = evaluateCatchAll(
+      input(
+        { shipToCountry: "RU", bafaMilitaryNotification: true },
+        [{ codes: [] }],
+        /* hasAttachedLicenses = */ false,
+      ),
+    );
+    expect(r.notificationDuty).toBe(true);
+    expect(
+      r.triggers.find((t) => t.regulation === "§8 AWV Anzeigepflicht"),
+    ).toBeDefined();
+  });
+
+  it("§9(2) trigger + license attached = no notificationDuty", () => {
+    // License attachment resolves the duty.
+    const r = evaluateCatchAll(
+      input(
+        { shipToCountry: "RU", bafaMilitaryNotification: true },
+        [{ codes: [] }],
+        /* hasAttachedLicenses = */ true,
+      ),
+    );
+    expect(r.para9Military).toBe(true);
+    expect(r.notificationDuty).toBe(false);
+  });
+});
+
 describe("lineInputFromItem helper", () => {
   it("collects all non-null codes into the codes array", () => {
     const r = lineInputFromItem({

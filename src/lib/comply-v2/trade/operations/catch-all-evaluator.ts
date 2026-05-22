@@ -185,6 +185,55 @@ const NUCLEAR_END_USE_KEYWORDS = [
 ];
 
 /**
+ * Sprint Z10 — §9(2) AWV "extended military-end-use" catch-all.
+ *
+ * Germany's national catch-all for conventional military end-use is
+ * wider than the EU Art. 4(1)(b) reading. § 9(2) AWV requires a
+ * licence for non-listed items when shipping to a country subject to
+ * an EU or UN arms embargo (or a German national arms-concern
+ * declaration) AND the operator has notification / positive knowledge
+ * / sectoral indicator of military end-use.
+ *
+ * The country list is the union of:
+ *   - UN Security Council arms embargoes (1267 / various country-
+ *     specific resolutions)
+ *   - EU Council CFSP arms-embargo decisions
+ *   - German national arms-embargo declarations
+ *
+ * Source: BAFA "Embargoländerliste" + AWV § 9(2). The list below is
+ * the active set as of 2026-05; legacy entries that are now lifted
+ * (e.g. historical Ivory Coast embargo) are not included. The
+ * Russian embargo is comprehensive since 2022, Belarus since 2022 in
+ * lockstep, Iran's regime is multi-layered (UN 2231 plus EU+national).
+ *
+ * Note: this overlaps with Art. 4 (EU 2021/821) keyword matching, but
+ * § 9(2) AWV is the operative legal basis for German exporters even
+ * when Art. 4 would also fire — BAFA notification and the German
+ * licence requirement attach to § 9(2), not Art. 4.
+ */
+const ARMS_EMBARGO_PARA9_2_COUNTRIES = new Set<string>([
+  "BY", // Belarus (EU 2022-)
+  "CF", // Central African Republic (UN + EU)
+  "CN", // China (EU 1989; selective military equipment)
+  "CD", // DR Congo (UN partial + EU)
+  "CU", // Cuba (US comprehensive; EU watch)
+  "IR", // Iran (UN + EU + national)
+  "IQ", // Iraq (UN partial; mostly lifted but listed)
+  "LB", // Lebanon (UN non-state + EU)
+  "LY", // Libya (UN + EU)
+  "MM", // Myanmar (EU 2021-)
+  "KP", // North Korea (UN comprehensive + EU + national)
+  "RU", // Russia (EU + national, comprehensive 2022-)
+  "SO", // Somalia (UN partial + EU)
+  "SS", // South Sudan (UN + EU)
+  "SD", // Sudan (UN partial + EU)
+  "SY", // Syria (UN + EU)
+  "VE", // Venezuela (EU)
+  "YE", // Yemen (UN non-state Houthis + EU)
+  "ZW", // Zimbabwe (EU selective)
+]);
+
+/**
  * EU Annex IV item code prefixes — most sensitive dual-use items
  * that require authorization even for intra-EU transfers.
  *
@@ -252,6 +301,23 @@ export interface CatchAllOperationInput {
    * Triggers §9(1) the same as a BAFA notification.
    */
   nuclearEndUseAware?: boolean;
+  /**
+   * Sprint Z10 — §9(2) AWV extended military-end-use catch-all.
+   *
+   * True when BAFA has notified the operator about a military-end-use
+   * concern for the items in this operation. BAFA notification is the
+   * strongest §9(2) trigger — the operator MUST obtain a licence
+   * regardless of whether the items are AL-listed.
+   */
+  bafaMilitaryNotification?: boolean;
+  /**
+   * Sprint Z10 — §9(2) AWV (positive knowledge).
+   *
+   * True when the operator has positive knowledge of intended
+   * conventional-military end-use. Self-attested; software cannot
+   * verify. Triggers §9(2) the same as a BAFA notification.
+   */
+  militaryEndUseAware?: boolean;
 }
 
 export interface CatchAllLineInput {
@@ -297,6 +363,12 @@ export interface CatchAllResult {
    */
   para9Nuclear: boolean;
   /**
+   * Sprint Z10 — true if §9(2) AWV military catch-all fires
+   * (destination ∈ arms-embargo country list AND BAFA-notified OR
+   * military-aware OR military-keyword match in end-user / sector).
+   */
+  para9Military: boolean;
+  /**
    * §8 AWV Anzeigepflicht (notification duty) — true if ANY catch-all
    * triggered AND no covering license attached yet.
    */
@@ -318,6 +390,7 @@ export function evaluateCatchAll(input: CatchAllInput): CatchAllResult {
   let art9 = false;
   let art10 = false;
   let para9Nuclear = false;
+  let para9Military = false;
 
   const sectorLc = (input.operation.endUserSector ?? "").toLowerCase();
   const userLc = (input.operation.endUserName ?? "").toLowerCase();
@@ -498,12 +571,89 @@ export function evaluateCatchAll(input: CatchAllInput): CatchAllResult {
     }
   }
 
+  // ── §9(2) AWV — Extended military-end-use catch-all (Sprint Z10) ──
+  // Triggered when EITHER:
+  //   (a) destination ∈ arms-embargo country set, AND
+  //   (b) one of:
+  //       - BAFA has notified the operator (highest-confidence),
+  //       - operator self-attests positive knowledge of military
+  //         end-use,
+  //       - end-user / sector contains a military keyword.
+  //
+  // §9(2) AWV is the German national extension of the Art. 4(1)(b) EU
+  // military catch-all. Unlike Art. 4 (which is keyword-based and
+  // doesn't require a specific destination), §9(2) attaches to the
+  // arms-embargo country list as a hard precondition. This gives the
+  // operator a cleaner legal hook — if shipping to an embargo country,
+  // the operator must investigate end-use even for non-listed goods.
+  //
+  // Overlap with Art. 4: when both fire, the German licence requirement
+  // attaches to §9(2) AWV, not Art. 4. We emit BOTH triggers so the
+  // operator sees the full picture, and the UI can de-emphasise Art. 4
+  // when §9(2) is already active.
+  const inArmsEmbargoCountryList =
+    ARMS_EMBARGO_PARA9_2_COUNTRIES.has(destinationCheckCountry) ||
+    ARMS_EMBARGO_PARA9_2_COUNTRIES.has(endUse);
+
+  if (inArmsEmbargoCountryList) {
+    const matchedCountry = ARMS_EMBARGO_PARA9_2_COUNTRIES.has(
+      destinationCheckCountry,
+    )
+      ? destinationCheckCountry
+      : endUse;
+
+    if (input.operation.bafaMilitaryNotification) {
+      para9Military = true;
+      triggers.push({
+        regulation: "§9(2) AWV",
+        reason: `BAFA has notified the operator of military-end-use concern for arms-embargo destination ${matchedCountry} — licence REQUIRED for any item, regardless of AL-listing`,
+        confidence: "high",
+      });
+    } else if (input.operation.militaryEndUseAware) {
+      para9Military = true;
+      triggers.push({
+        regulation: "§9(2) AWV",
+        reason: `Operator self-attested positive knowledge of intended military end-use for arms-embargo destination ${matchedCountry} — licence REQUIRED`,
+        confidence: "high",
+      });
+    } else if (
+      input.operation.declaredEndUse === "MILITARY" ||
+      input.operation.declaredEndUse === "WMD_RELATED"
+    ) {
+      // Declared MILITARY/WMD end-use to an arms-embargo country is
+      // an automatic high-confidence §9(2) trigger — strongest signal
+      // short of explicit BAFA notification.
+      para9Military = true;
+      triggers.push({
+        regulation: "§9(2) AWV",
+        reason: `Declared end-use is ${input.operation.declaredEndUse} for arms-embargo destination ${matchedCountry} — §9(2) AWV licence REQUIRED`,
+        confidence: "high",
+      });
+    } else {
+      // Sectoral / end-user keyword indicators. Lower confidence — the
+      // operator should investigate, but the legal duty isn't automatic
+      // without a knowledge signal.
+      for (const kw of MILITARY_KEYWORDS) {
+        if (sectorLc.includes(kw) || userLc.includes(kw)) {
+          para9Military = true;
+          triggers.push({
+            regulation: "§9(2) AWV",
+            reason: `End-user sector/name contains "${kw}" AND destination ${matchedCountry} is on the arms-embargo list — review for §9(2) licence requirement on non-listed items`,
+            confidence: "medium",
+          });
+          break;
+        }
+      }
+    }
+  }
+
   // ── §8 AWV Anzeigepflicht (notification duty) ──
   // If any catch-all fires AND no license yet covers the operation,
   // operator MUST notify BAFA before shipment. License attachment
   // resolves the duty (because then the operation has explicit
   // authorization).
-  const anyCatchAll = art4 || art5 || art9 || art10 || para9Nuclear;
+  const anyCatchAll =
+    art4 || art5 || art9 || art10 || para9Nuclear || para9Military;
   const notificationDuty = anyCatchAll && !input.hasAttachedLicenses;
 
   if (notificationDuty) {
@@ -530,6 +680,7 @@ export function evaluateCatchAll(input: CatchAllInput): CatchAllResult {
     art9,
     art10,
     para9Nuclear,
+    para9Military,
     notificationDuty,
     triggers: dedupedTriggers,
   };
