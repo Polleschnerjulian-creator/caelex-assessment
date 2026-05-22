@@ -34,12 +34,14 @@ import {
   ChevronDown,
   ChevronUp,
   Sparkles,
+  ShieldAlert,
 } from "lucide-react";
 
 import {
   classifyTradeItemParametric,
   type TradeItemParametricSnapshot,
 } from "@/lib/trade/item-parametric-classification";
+import type { CandidateMatch } from "@/lib/comply-v2/trade/classification/parametric-matcher";
 
 // ─── Component ──────────────────────────────────────────────────────
 
@@ -85,6 +87,11 @@ export function ParametricMatcherPanel({ item }: ParametricMatcherPanelProps) {
 
       {!result.noAttributesPopulated && (
         <div className="space-y-4">
+          {/* Sprint Z3r — Elevate see-through-rule warnings to a
+              prominent banner above all sections. The amber inline
+              note on the entry is easy to miss; ITAR § 123.1(b) is
+              high-cost-of-mistake and deserves top-of-panel visibility. */}
+          <SeeThroughBanner candidates={result.candidates} />
           <CandidatesSection result={result} />
           <PossibleMatchesSection
             possibles={result.possibleMatches}
@@ -107,6 +114,72 @@ export function ParametricMatcherPanel({ item }: ParametricMatcherPanelProps) {
 }
 
 // ─── Sections ───────────────────────────────────────────────────────
+
+/**
+ * Sprint Z3r — See-through warning banner.
+ *
+ * The ITAR § 123.1(b) see-through rule is the highest-cost-of-mistake
+ * regulatory boundary in the whole cross-walk (USML jurisdiction
+ * carries across BOM boundaries with NO de minimis carve-out). The
+ * per-candidate amber note is easy to miss; this banner elevates the
+ * warning to top-of-panel red.
+ *
+ * Detection: any candidate whose `entry.notes` field references the
+ * see-through rule or § 123.1(b). The 9A515.x-rw, USML XV(b),
+ * USML XV(e)(13), and USML XV(e)(17) entries all carry these notes
+ * by design.
+ */
+function SeeThroughBanner({ candidates }: { candidates: CandidateMatch[] }) {
+  const seeThroughCandidates = candidates.filter((c) =>
+    containsSeeThroughWarning(c.entry.notes),
+  );
+  if (seeThroughCandidates.length === 0) return null;
+
+  const ids = seeThroughCandidates.map((c) => c.entry.canonicalId).join(", ");
+
+  return (
+    <div
+      role="alert"
+      className="rounded-md border-2 border-red-500 bg-red-50 p-4"
+    >
+      <div className="flex items-start gap-3">
+        <ShieldAlert
+          className="mt-0.5 h-5 w-5 shrink-0 text-red-600"
+          strokeWidth={2}
+        />
+        <div>
+          <p className="text-[12px] font-bold uppercase tracking-[0.1em] text-red-900">
+            ITAR see-through rule applies
+          </p>
+          <p className="mt-1 text-[11px] leading-relaxed text-red-900">
+            One or more candidate classifications trigger the see-through rule
+            under <strong>22 CFR § 123.1(b)</strong>: ITAR jurisdiction
+            propagates across BOM boundaries with{" "}
+            <strong>no de minimis carve-out</strong>. Host products
+            incorporating these items become ITAR-controlled throughout; removal
+            is a "retransfer" requiring DDTC authorization.
+          </p>
+          <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-red-700">
+            Applies to: <code className="font-mono">{ids}</code>
+          </p>
+          <p className="mt-2 text-[10px] italic leading-relaxed text-red-800">
+            Mandatory compliance officer review before any export or re-export
+            action. Do not proceed on engine output alone.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function containsSeeThroughWarning(notes: string | undefined): boolean {
+  if (!notes) return false;
+  return (
+    /see-through/i.test(notes) ||
+    /§\s*123\.1\(b\)/.test(notes) ||
+    /retransfer/i.test(notes)
+  );
+}
 
 function EmptyBagPrompt() {
   return (
