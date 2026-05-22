@@ -180,14 +180,23 @@ Per Recherche `docs/CAELEX-TRADE-FULL-RECHERCHE.md` § 7: Welt A (`/dashboard/tr
 
 Per Recherche § 7. Phase A war UI-Portierung — Phase B macht die Engine erst auf Weltklasse-Niveau funktional. Sanctions-Coverage komplettieren, License-Exceptions, CCL ausweiten.
 
-| Sprint | Scope                                                                                                           | Status                |
-| ------ | --------------------------------------------------------------------------------------------------------------- | --------------------- |
-| **B1** | UK OFSI Sanctions-Parser + sync-orchestrator registration                                                       | ✅ done (`4224c9b2`)  |
-| **B2** | UN Consolidated Sanctions-Parser — alle 6 Sources jetzt verdrahtet                                              | ✅ done (`7aee407d`)  |
-| **B3** | License-Exception-Matrix (BIS STA/ENC/GOV/TMP + BAFA AGG-12/27 + EUGEA EU001)                                   | ✅ done (`984584aa`)  |
-| **B4** | CCL-Expansion (24 → 49 ECCNs — Cat. 3/4/5/6/7/9 space-supply-chain focus)                                       | ✅ done (this commit) |
-| **A4** | Licenses-Inventory (net-new — keine Legacy-UI)                                                                  | ✅ done (`1f7d58a8`)  |
-| **A5** | `/trade` Welcome-Dashboard mit real aggregates (Items-Count, Parties-Count, In-Progress-Ops, Risk-Distribution) | ✅ done (this commit) |
+| Sprint | Scope                                                                         | Status               |
+| ------ | ----------------------------------------------------------------------------- | -------------------- |
+| **B1** | UK OFSI Sanctions-Parser + sync-orchestrator registration                     | ✅ done (`4224c9b2`) |
+| **B2** | UN Consolidated Sanctions-Parser — alle 6 Sources jetzt verdrahtet            | ✅ done (`7aee407d`) |
+| **B3** | License-Exception-Matrix (BIS STA/ENC/GOV/TMP + BAFA AGG-12/27 + EUGEA EU001) | ✅ done (`984584aa`) |
+| **B4** | CCL-Expansion (24 → 49 ECCNs — Cat. 3/4/5/6/7/9 space-supply-chain focus)     | ✅ done (`1e72ac50`) |
+
+---
+
+## 🔔 Phase C — Compliance-Workflows automatisieren (laufend ab 2026-05-22)
+
+| Sprint | Scope                                                                       | Status                |
+| ------ | --------------------------------------------------------------------------- | --------------------- |
+| **C1** | License-Expiry-Reminder-Cron (90/30/7-day buckets → Notification rows)      | ✅ done (this commit) |
+| **C2** | Trade Email-Templates (license expiry, screening hit, voluntary disclosure) | ⏳                    |
+| **C3** | Voluntary-Disclosure-Workflow (BAFA/BIS Selbstanzeige)                      | ⏳                    |
+| **C4** | Document Vault für License-PDFs + BAFA-Anträge                              | ⏳                    |
 
 **Component-Library:** `src/components/trade/*` (BafaPdfButton, ClassificationPanel, BeneficialOwnersPanel, OperationLicensesPanel, OperationLifecyclePanel, OperationLinesPanel, BafaElanK2Document) bleibt geteilt zwischen Welt A und Welt B — werden aus beiden Pfaden importiert.
 

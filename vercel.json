@@ -187,6 +187,10 @@
       "schedule": "0 5 * * 1"
     },
     {
+      "path": "/api/cron/trade-license-expiry",
+      "schedule": "30 8 * * *"
+    },
+    {
       "path": "/api/cron/cowf-heartbeat",
       "schedule": "*/30 * * * *"
     },
