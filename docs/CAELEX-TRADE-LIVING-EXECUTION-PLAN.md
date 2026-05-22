@@ -19,13 +19,14 @@
 > 5. The Z3-series Living Roadmap (`CAELEX-TRADE-LIVING-ROADMAP.md`) — superseded for execution priorities but still authoritative for Z3-series sprint details
 > 6. The moat architecture doc (`CAELEX-TRADE-MOAT-ARCHITECTURE.md`) — describes the engine, NOT the backlog
 >
-> **Last updated.** 2026-05-22 (Z18, Z19, Z20a, Z20b, Z20c, Z20d, Z21, Z22
-> shipped — **Tier 1 functionally COMPLETE**: all 9 sub-sprints landed,
-> 9x515-to-D:5 0% catastrophic trap closed end-to-end, full 15 CFR
-> § 734.9 FDPR coverage of all 10 distinct rules, all 9 § 734.4(a) hard
-> carve-outs, rule-corpus version tracking with stay handling. 213/213
-> subject-to-ear tests passing. Tier 2 work (AI Classification Copilot
-> Z4 + BAFA ELAN-K2 XML Z5) is next-priority queue.).
+> **Last updated.** 2026-05-22 — **Tier 1 complete** (Z18-Z22 + Z20a-d
+> = 9/9 sub-sprints, all 10 FDPR rules + all 9 § 734.4(a) carve-outs)
+> AND **Tier 2 complete** (Z4 a/b/c/d AI Classification Copilot + Z5
+> a/b/c BAFA ELAN-K2 XML) AND **Tier 3 partial** (Z23a USML XV(a) +
+> Z23b USML XV(e) with see-through trigger + Z24a EU 9A006-9A012) AND
+> **Tier 5 partial** (Z6 EU EUC Annex IIIa template). Total: 583
+> trade tests passing across 31 test files. Tier 3 remaining: Z24b-d,
+> Z25-Z28. Tier 4 untouched: Z29-Z32 operational workflows.
 
 ---
 
@@ -812,16 +813,16 @@ This is the table to update on every sprint completion. Move sprints between SHI
 | Z20d — Advanced Computing / Supercomputer FDPR  | 1    | 1 sprint              | **SHIPPED** | 2026-05-22 (FDPR (h)/(i) — closes Tier 1)       |
 | Z21 — Affiliates Rule with Stay Tracking        | 1    | 1 sprint              | **SHIPPED** | 2026-05-22                                      |
 | Z22 — Country Group D:5 Dynamic Resolver        | 1    | 1 sprint              | **SHIPPED** | 2026-05-22 (Z22b queued for daily-cron refresh) |
-| Z4a — Datasheet PDF Extractor                   | 2    | 1 sprint              | OPEN        | —                                               |
-| Z4b — Astra Tool: classify-item                 | 2    | 1 sprint              | OPEN        | —                                               |
-| Z4c — TradeItemClassificationDraft schema       | 2    | 1 sprint              | OPEN        | —                                               |
-| Z4d — UI: Draft Acceptance Flow                 | 2    | 1 sprint              | OPEN        | —                                               |
-| Z5a — BAFA XSD Types                            | 2    | 1 sprint              | OPEN        | —                                               |
-| Z5b — Report Builder + Serializer               | 2    | 1 sprint              | OPEN        | —                                               |
-| Z5c — UI + XSD Changelog Watcher                | 2    | 1 sprint              | OPEN        | —                                               |
-| Z23a — USML XV(a) full enumeration              | 3    | 1 sprint              | OPEN        | —                                               |
-| Z23b — USML XV(e) full enumeration              | 3    | 1-2 sprints           | OPEN        | —                                               |
-| Z24a — EU 9A006-9A012                           | 3    | 1 sprint              | OPEN        | —                                               |
+| Z4a — Datasheet PDF Extractor                   | 2    | 1 sprint              | **SHIPPED** | 2026-05-22 (unpdf-based, 16 tests)              |
+| Z4b — Astra Tool: classify-item                 | 2    | 1 sprint              | **SHIPPED** | 2026-05-22 (classify-from-datasheet tool, 7+7)  |
+| Z4c — TradeItemClassificationDraft schema       | 2    | 1 sprint              | **SHIPPED** | 2026-05-22 (Prisma model + service, 11 tests)   |
+| Z4d — UI: Draft Acceptance Flow                 | 2    | 1 sprint              | **SHIPPED** | 2026-05-22 (/trade/classify, 7 tests)           |
+| Z5a — BAFA XSD Types                            | 2    | 1 sprint              | **SHIPPED** | 2026-05-22 (typed XSD shape, 8 tests)           |
+| Z5b — Report Builder + Serializer               | 2    | 1 sprint              | **SHIPPED** | 2026-05-22 (hand-rolled XML, 21+18 tests)       |
+| Z5c — UI + XSD Changelog Watcher                | 2    | 1 sprint              | **SHIPPED** | 2026-05-22 (drift detector + UI, 6 tests)       |
+| Z23a — USML XV(a) full enumeration              | 3    | 1 sprint              | **SHIPPED** | 2026-05-22 (9 entries appended, 6 tests)        |
+| Z23b — USML XV(e) full enumeration              | 3    | 1-2 sprints           | **SHIPPED** | 2026-05-22 (23 entries + see-through (17))      |
+| Z24a — EU 9A006-9A012                           | 3    | 1 sprint              | **SHIPPED** | 2026-05-22 (3 ECCNs + 4 parametric predicates)  |
 | Z24b — MTCR-derived 9A101-9A121                 | 3    | 1 sprint              | OPEN        | —                                               |
 | Z24c — Software 9D + Tech 9E                    | 3    | 1 sprint              | OPEN        | —                                               |
 | Z24d — AM Entries from Reg 2025/2003            | 3    | 1 sprint              | OPEN        | —                                               |
@@ -833,7 +834,7 @@ This is the table to update on every sprint completion. Move sprints between SHI
 | Z30 — Destination Control Statement Generator   | 4    | 1 sprint              | OPEN        | —                                               |
 | Z31 — AUKUS+Canada 9A515 License-Free Overlay   | 4    | 1 sprint              | OPEN        | —                                               |
 | Z32 — Recordkeeping 5-Year Retention Policy     | 4    | 1 sprint              | OPEN        | —                                               |
-| Z6a-d — EUC + VSD PDF Templates                 | 5    | 3-4 sprints           | OPEN        | —                                               |
+| Z6a-d — EUC + VSD PDF Templates                 | 5    | 3-4 sprints           | PARTIAL     | 2026-05-22 EUC Annex IIIa shipped — VSD pending |
 | Z7 — De Minimis + FDPR Deep-Dive                | 5    | (absorbed by Z18-Z20) | DUPLICATE   | —                                               |
 | Z9 — OpenSanctions / Orbis UBO                  | 5    | 3 sprints             | OPEN        | —                                               |
 | Z11 — Sammelgenehmigung Lifecycle               | 5    | 3-4 sprints           | OPEN        | —                                               |
