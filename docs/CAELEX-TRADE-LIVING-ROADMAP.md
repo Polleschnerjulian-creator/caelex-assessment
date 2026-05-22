@@ -10,9 +10,11 @@ sprint moves from `Backlog` → `Shipped`. The pull request that ships a
 sprint must include the corresponding update to this file in the same
 commit (or the immediate follow-up).
 
-**Last updated.** 2026-05-22 (Z3a-Z3l + Z8 + Z10 shipped — moat layer
-complete with matcher engine + bridge service; Z4 AI Copilot is the
-next major item).
+**Last updated.** 2026-05-22 (Z3a-Z3p + Z8 + Z10 shipped — full moat
+layer complete: matcher engine + bridge service + UI panel +
+see-through propagation + BOM orchestrator. Every documented
+ontology-research caveat is now encoded. Z4 AI Copilot is the next
+major item.).
 
 ---
 
@@ -184,6 +186,31 @@ queued as Z3m.
   TradeItem snapshot into the matcher's input shape. This is the
   integration seam server actions / API routes will use to expose
   the engine to the UI.
+- **Z3m** — USML XV(e)(17) hosted payload entry. Classification
+  rule for hosted payloads performing XV(a) functions. The legal
+  effect (ITAR see-through under § 123.1(b)) is exposed via the
+  entry's `notes` field for operator UI display.
+
+**Sub-sprints shipped (May 22, 2026 batch 3 — in flight):**
+
+- **Z3n** — `ParametricMatcherPanel` UI component wired into
+  `/trade/items/[id]`. Pure client-side rendering of all four
+  MatcherResult lanes (candidates, possibleMatches, nearMisses,
+  empty-bag prompt) with confidence badges, see-through warning
+  callouts, and the disclaimer footer. First user-facing surface
+  of the entire Z3-series moat.
+- **Z3o** — `propagateSeeThroughITAR` pure-function engine. Closes
+  ontology research caveat #5: ITAR + EU Annex IV jurisdictions
+  propagate up the BOM tree (§ 123.1(b) and Reg. 833 Art. 2b are
+  both hard-prohibition no-de-minimis rules). Conservative: UNKNOWN,
+  EAR, MTCR, EU dual-use, Wassenaar do NOT propagate. Input objects
+  are NOT mutated; full audit trail emitted.
+- **Z3p** — `classifyBOM` orchestrator. Composes Z3l (matcher) and
+  Z3o (see-through) into a single end-to-end call for single-level
+  BOMs (parent + direct children). The canonical XV(e)(17) scenario
+  (commercial EAR bus + ITAR hosted payload → bus inherits ITAR
+  with full rationale) now works in one function call. Recursive
+  multi-level walking deferred until `TradeBomEdge` schema lands.
 
 **Why.** Research blueprint § 5. The genuine moat. No incumbent
 (Descartes, AEB, SAP GTS, OpenSanctions) models space-domain
