@@ -47,6 +47,7 @@ import { allLatestSnapshots } from "./snapshot-store.server";
 import type { CanonicalSanctionsEntry } from "./sources/types";
 import { runCascadeForParty } from "./cascade-50pct.server";
 import type { CascadeResult } from "./cascade-50pct";
+import { sendTradeSanctionsHit } from "@/lib/email";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -247,7 +248,88 @@ export async function screenParty(
     "screenParty: completed",
   );
 
+  // Sprint E2: dispatch sanctions-hit email when the screening decision
+  // escalates from CLEAR. Best-effort — if email fails, the screening
+  // result + Notification still persist. Fire-and-forget via try/catch
+  // so the caller doesn't block on SMTP/Resend.
+  if (decision === TradeScreeningDecision.POTENTIAL_MATCH) {
+    void dispatchSanctionsHitEmails(updatedParty, allHits, cascade).catch(
+      (err) => {
+        logger.error(
+          "screenParty: sanctions-hit email dispatch failed (result still persisted)",
+          err,
+          { partyId },
+        );
+      },
+    );
+  }
+
   return result;
+}
+
+/**
+ * Sprint E2 — send `trade_sanctions_hit` email to every OWNER/ADMIN/MANAGER
+ * member of the party's org. Idempotent per (user, party, day) via the
+ * same NotificationLog table — sendEmail() handles dedup at the log
+ * layer, we just need to not call it twice for the same screening result.
+ *
+ * The "decided once per screening" rule lives upstream: this function is
+ * only invoked on a fresh screenParty() call that returned POTENTIAL_MATCH,
+ * so per-screening idempotency is implicit (we don't re-call screenParty
+ * for the same snapshot hash within the same hour — the re-screen cron
+ * checks lastScreenedAt).
+ */
+async function dispatchSanctionsHitEmails(
+  party: TradeParty,
+  hits: PersistableHit[],
+  cascade: CascadeResult | null,
+): Promise<void> {
+  const recipients = await prisma.organizationMember.findMany({
+    where: {
+      organizationId: party.organizationId,
+      role: { in: ["OWNER", "ADMIN", "MANAGER"] },
+    },
+    select: {
+      userId: true,
+      user: { select: { email: true, name: true } },
+    },
+  });
+  if (recipients.length === 0) return;
+
+  // Distinct sanctions lists across hits.
+  const matchedLists = Array.from(new Set(hits.map((h) => h.list as string)));
+  const topScore = hits.length > 0 ? hits[0].score : 0;
+  const sanctionedAncestors =
+    cascade?.ancestors
+      .filter((a) => a.screeningStatus === "CONFIRMED_HIT" || a.isBlocked)
+      .slice(0, 3)
+      .map((a) => ({
+        name: a.ancestorName,
+        effectivePercent: a.effectivePercent,
+      })) ?? [];
+
+  for (const recipient of recipients) {
+    if (!recipient.user?.email) continue;
+    try {
+      await sendTradeSanctionsHit(recipient.user.email, recipient.userId, {
+        recipientName: recipient.user.name ?? "Operator",
+        partyId: party.id,
+        partyName: party.canonicalName,
+        countryCode: party.countryCode,
+        topScore,
+        matchedLists,
+        cascadeHit: cascade?.cascadeHit ?? false,
+        sanctionedAncestorCount: cascade?.sanctionedAncestorCount ?? 0,
+        sanctionedAncestors,
+      });
+    } catch (err) {
+      logger.error(
+        "dispatchSanctionsHitEmails: send failed for recipient",
+        err,
+        { partyId: party.id, userId: recipient.userId },
+      );
+    }
+  }
 }
 
 // ─── Helpers (exported for testing) ─────────────────────────────────

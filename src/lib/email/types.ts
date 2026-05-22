@@ -45,7 +45,12 @@ export type NotificationType =
   | "authorization_update"
   | "compliance_gap"
   | "scheduled_report"
-  | "pulse_nurture"; // Sprint 4E
+  | "pulse_nurture" // Sprint 4E
+  | "trade_license_expiry" // Sprint E2
+  | "trade_sanctions_hit" // Sprint E2
+  | "trade_catch_all_trigger" // Sprint E2
+  | "trade_operation_blocked" // Sprint E2
+  | "trade_welcome_access"; // Sprint E2
 
 export type EntityType =
   | "deadline"
@@ -54,7 +59,11 @@ export type EntityType =
   | "authorization"
   | "summary"
   | "report_archive"
-  | "pulse_lead"; // Sprint 4E
+  | "pulse_lead" // Sprint 4E
+  | "trade_license" // Sprint E2
+  | "trade_party" // Sprint E2
+  | "trade_operation" // Sprint E2
+  | "trade_workspace"; // Sprint E2
 
 export interface EmailResult {
   success: boolean;

@@ -21,6 +21,26 @@ import { renderDeadlineReminder } from "./templates/deadline-reminder";
 import { renderDocumentExpiry } from "./templates/document-expiry";
 import { renderWeeklyDigest } from "./templates/weekly-digest";
 import { renderIncidentAlert } from "./templates/incident-alert";
+import {
+  renderTradeLicenseExpiry,
+  type TradeLicenseExpiryData,
+} from "./templates/trade-license-expiry";
+import {
+  renderTradeSanctionsHit,
+  type TradeSanctionsHitData,
+} from "./templates/trade-sanctions-hit";
+import {
+  renderTradeCatchAllTrigger,
+  type TradeCatchAllTriggerData,
+} from "./templates/trade-catch-all-trigger";
+import {
+  renderTradeOperationBlocked,
+  type TradeOperationBlockedData,
+} from "./templates/trade-operation-blocked";
+import {
+  renderTradeWelcomeAccess,
+  type TradeWelcomeAccessData,
+} from "./templates/trade-welcome-access";
 import { isEmailDispatchHalted, logHaltedEmail } from "./dispatch-halt";
 import { logger } from "@/lib/logger";
 
@@ -412,6 +432,115 @@ export async function sendIncidentAlert(
     entityType: "incident",
     entityId: incidentId,
     metadata: { severity: data.severity, category: data.category },
+  });
+}
+
+// ─── Trade Email Functions (Sprint E2) ───
+
+export async function sendTradeLicenseExpiry(
+  to: string,
+  userId: string,
+  licenseId: string,
+  data: TradeLicenseExpiryData,
+): Promise<EmailResult> {
+  const { html, subject } = await renderTradeLicenseExpiry(data);
+  return sendEmail({
+    to,
+    subject,
+    html,
+    userId,
+    notificationType: "trade_license_expiry",
+    entityType: "trade_license",
+    entityId: licenseId,
+    metadata: {
+      severity: data.severity,
+      daysRemaining: data.daysRemaining,
+      authority: data.authority,
+    },
+  });
+}
+
+export async function sendTradeSanctionsHit(
+  to: string,
+  userId: string,
+  data: TradeSanctionsHitData,
+): Promise<EmailResult> {
+  const { html, subject } = await renderTradeSanctionsHit(data);
+  return sendEmail({
+    to,
+    subject,
+    html,
+    userId,
+    notificationType: "trade_sanctions_hit",
+    entityType: "trade_party",
+    entityId: data.partyId,
+    metadata: {
+      cascadeHit: data.cascadeHit,
+      topScore: data.topScore,
+      matchedListsCount: data.matchedLists.length,
+      sanctionedAncestorCount: data.sanctionedAncestorCount,
+    },
+  });
+}
+
+export async function sendTradeCatchAllTrigger(
+  to: string,
+  userId: string,
+  data: TradeCatchAllTriggerData,
+): Promise<EmailResult> {
+  const { html, subject } = await renderTradeCatchAllTrigger(data);
+  return sendEmail({
+    to,
+    subject,
+    html,
+    userId,
+    notificationType: "trade_catch_all_trigger",
+    entityType: "trade_operation",
+    entityId: data.operationId,
+    metadata: {
+      triggerRule: data.triggerRule,
+      confidence: data.confidence,
+    },
+  });
+}
+
+export async function sendTradeOperationBlocked(
+  to: string,
+  userId: string,
+  data: TradeOperationBlockedData,
+): Promise<EmailResult> {
+  const { html, subject } = await renderTradeOperationBlocked(data);
+  return sendEmail({
+    to,
+    subject,
+    html,
+    userId,
+    notificationType: "trade_operation_blocked",
+    entityType: "trade_operation",
+    entityId: data.operationId,
+    metadata: {
+      blockCause: data.blockCause,
+      counterpartyCountry: data.counterpartyCountry,
+    },
+  });
+}
+
+export async function sendTradeWelcomeAccess(
+  to: string,
+  userId: string,
+  data: TradeWelcomeAccessData,
+): Promise<EmailResult> {
+  const { html, subject } = await renderTradeWelcomeAccess(data);
+  return sendEmail({
+    to,
+    subject,
+    html,
+    userId,
+    notificationType: "trade_welcome_access",
+    entityType: "trade_workspace",
+    metadata: {
+      hasComplianceProgram: data.hasComplianceProgram,
+    },
   });
 }
 

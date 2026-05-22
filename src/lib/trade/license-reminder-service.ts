@@ -21,6 +21,8 @@
 
 import "server-only";
 import { prisma } from "@/lib/prisma";
+import { sendTradeLicenseExpiry } from "@/lib/email";
+import { logger } from "@/lib/logger";
 
 type Bucket = "INFO_90" | "WARN_30" | "CRITICAL_7";
 
@@ -181,6 +183,12 @@ export async function runLicenseExpiryReminders(
  * entityId=licenseId, type=DOCUMENT_EXPIRY) and skip insert if one
  * already exists. This means the cron is safe to run multiple times
  * per day (Vercel retry, manual re-trigger).
+ *
+ * Sprint E2: in addition to the in-app Notification row, also dispatch
+ * an email via `sendTradeLicenseExpiry` — for ALL buckets. The Notification
+ * row drives the in-app inbox; the email drives the operator's primary
+ * channel. Both are gated by the same 24h-idempotency guard, so the email
+ * fires at most once per (user, license, day).
  */
 async function emitNotificationsForLicense(
   license: {
@@ -200,7 +208,10 @@ async function emitNotificationsForLicense(
       organizationId: license.organizationId,
       role: { in: ["OWNER", "ADMIN", "MANAGER"] },
     },
-    select: { userId: true },
+    select: {
+      userId: true,
+      user: { select: { email: true, name: true } },
+    },
   });
 
   if (recipients.length === 0) return 0;
@@ -212,6 +223,7 @@ async function emitNotificationsForLicense(
   const message = `${labelType}${labelNumber} expires on ${
     license.validUntil?.toISOString().slice(0, 10) ?? "unknown date"
   } — ${daysRemaining} day${daysRemaining === 1 ? "" : "s"} remaining. Renew or rotate to an alternate license before any further operation.`;
+  const authority = authorityFromLicenseType(license.licenseType);
 
   let emitted = 0;
   for (const recipient of recipients) {
@@ -243,9 +255,53 @@ async function emitNotificationsForLicense(
       },
     });
     emitted += 1;
+
+    // Sprint E2: best-effort email dispatch. Notification row is the
+    // source of truth — an email failure must NOT roll back the
+    // in-app notification, hence the try/catch swallow.
+    if (recipient.user?.email && license.validUntil) {
+      try {
+        await sendTradeLicenseExpiry(
+          recipient.user.email,
+          recipient.userId,
+          license.id,
+          {
+            recipientName: recipient.user.name ?? "Operator",
+            licenseNumber: license.licenseNumber,
+            licenseType: labelType,
+            authority,
+            validUntil: license.validUntil,
+            daysRemaining,
+            severity: bucket.severity,
+          },
+        );
+      } catch (err) {
+        logger.error(
+          "license-reminder-service: email dispatch failed (notification persisted)",
+          err,
+          {
+            licenseId: license.id,
+            userId: recipient.userId,
+            bucket: bucket.bucket,
+          },
+        );
+      }
+    }
   }
 
   return emitted;
+}
+
+/**
+ * Derive the regulatory authority short-code from the TradeLicenseType
+ * enum value. Used by the email template to surface the correct
+ * authority label (e.g. "BIS", "BAFA", "DDTC").
+ */
+function authorityFromLicenseType(licenseType: string): string {
+  if (licenseType.startsWith("BAFA_")) return "BAFA";
+  if (licenseType.startsWith("BIS_")) return "BIS";
+  if (licenseType.startsWith("DDTC_")) return "DDTC";
+  return "OTHER";
 }
 
 // Exported for tests
