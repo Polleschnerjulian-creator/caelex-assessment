@@ -1047,6 +1047,82 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
   },
 
   // ═══════════════════════════════════════════════════════════════
+  // ECCN 7A005 — Global Navigation Satellite System (GNSS) receivers
+  //
+  // Sprint Z3v — Closes the GNSS coverage gap on the EAR side. The
+  // cross-walk already has USML XII anti-jam GNSS (the high-end
+  // ITAR-side entry); 7A005 is the EAR-side broad GNSS-receiver
+  // control that triggers on velocity / altitude characteristics
+  // typical of missile / launch-vehicle applications.
+  //
+  // The 7A005 parametric criterion is operationally important: a
+  // commercial-grade GNSS receiver suddenly becomes export-controlled
+  // when its claimed maximum velocity exceeds 600 m/s OR maximum
+  // altitude exceeds 18 km (MTCR Item 11 thresholds, embedded into
+  // EAR 7A005 by the COCOM-era Wassenaar harmonisation).
+  //
+  // Uses the Z3e `gnssMaxVelocityMPerS` typed attribute. No altitude
+  // attribute is in the schema yet — operators can populate it via
+  // parametricAttributes JSON if needed (the matcher reads JSON as
+  // fallback). For most space-domain use cases velocity is the
+  // controlling criterion.
+  // ═══════════════════════════════════════════════════════════════
+  {
+    canonicalId: "ECCN:7A005",
+    regime: "EAR-CCL",
+    category: "7",
+    productGroup: "A",
+    entryNumber: "005",
+    title:
+      "GNSS receivers usable above 600 m/s (MTCR Item 11 velocity threshold)",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "gnss.receiver" },
+      // The MTCR Item 11 velocity threshold. Below 600 m/s, a
+      // commercial GNSS receiver typically falls to EAR99
+      // (uncontrolled) or 7A994 (lower-tier). At-or-above 600 m/s
+      // it triggers 7A005 NS/MT controls.
+      { attribute: "gnssMaxVelocityMPerS", op: "gte", value: 600 },
+    ],
+    reasonsForControl: ["NS:2", "MT:1", "AT:1"],
+    licenseExceptions: ["STA-eligible:partial"],
+    seeAlso: [
+      {
+        regime: "ITAR-USML",
+        id: "XII-antijam-gnss",
+        relationship: "predecessor",
+        notes:
+          "Anti-jam variants stay ITAR under USML XII (per the 2024 BIS/DDTC IFR). 7A005 covers the non-anti-jam high-velocity / high-altitude GNSS receivers that fall to EAR.",
+      },
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 11",
+        relationship: "derived_from",
+        notes:
+          "MTCR Item 11 sets the 600 m/s / 18 km thresholds for GNSS receiver controls. 7A005 is the EAR implementation.",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "7A005",
+        relationship: "analogous",
+        notes:
+          "EU Reg. 2021/821 Annex I 7A005 mirrors the EAR threshold values.",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "Cat 7",
+        relationship: "derived_from",
+        notes:
+          "The COCOM-era Wassenaar Cat 7 harmonisation embedded MTCR Item 11 into multilateral GNSS controls. 7A005 is the US implementation.",
+      },
+    ],
+    citation:
+      "15 CFR 774 Supp. 1 Cat 7 ECCN 7A005 — 'GNSS receiving equipment having any of the following: velocity > 600 m/s; altitude > 18 km'",
+    validFrom: "1997-08-01",
+    notes:
+      "A receiver's CLAIMED maximum operating velocity / altitude (typically from the datasheet 'environmental' section) is the controlling spec, not its tested operational range. Many commercial receivers claim < 600 m/s explicitly to stay out of 7A005 — verify against the datasheet, not the marketing copy.",
+  },
+
+  // ═══════════════════════════════════════════════════════════════
   // Anti-jam GNSS receiver (still ITAR Cat XII / formerly XV(c))
   // ═══════════════════════════════════════════════════════════════
   {

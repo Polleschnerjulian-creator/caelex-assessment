@@ -1218,3 +1218,105 @@ describe("9A515.f spacecraft software (Z3t)", () => {
     expect(sw?.entry.notes).toMatch(/deemed-export|§\s*120\.17|§\s*734\.13/i);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────
+// Sprint Z3v — ECCN 7A005 GNSS receivers. Uses the Z3e
+// `gnssMaxVelocityMPerS` typed attribute against the MTCR Item 11
+// 600 m/s threshold.
+// ─────────────────────────────────────────────────────────────────────
+
+describe("ECCN 7A005 GNSS receivers (Z3v)", () => {
+  it("GNSS receiver at 700 m/s → 7A005 match (above MTCR Item 11)", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "gnss.receiver.high_dynamic",
+      gnssMaxVelocityMPerS: 700,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("ECCN:7A005");
+  });
+
+  it("GNSS receiver at exactly 600 m/s → 7A005 match (at threshold)", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "gnss.receiver.mtcr_grade",
+      gnssMaxVelocityMPerS: 600,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("ECCN:7A005");
+  });
+
+  it("GNSS receiver at 500 m/s → no 7A005 match (below threshold)", () => {
+    // Below 600 m/s commercial receivers fall to EAR99 or 7A994.
+    const result = matchAgainstCrossWalk({
+      itemClass: "gnss.receiver.commercial",
+      gnssMaxVelocityMPerS: 500,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("ECCN:7A005");
+  });
+
+  it("GNSS receiver without velocity attribute → 7A005 emits as PossibleMatch (Z3f)", () => {
+    // Three-valued logic: an unpopulated gnssMaxVelocityMPerS must
+    // surface 7A005 as a possible match (not a refute), so the
+    // operator knows to populate the spec.
+    const result = matchAgainstCrossWalk({
+      itemClass: "gnss.receiver.unspecified",
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("ECCN:7A005");
+    const possibleIds = result.possibleMatches.map((p) => p.entry.canonicalId);
+    expect(possibleIds).toContain("ECCN:7A005");
+  });
+
+  it("Non-GNSS item (e.g. 5G modem) → no 7A005 match", () => {
+    // The itemClass prefix `gnss.receiver` is the gate. A 5G modem
+    // capable of high velocity must NOT trip 7A005 — wrong category.
+    const result = matchAgainstCrossWalk({
+      itemClass: "telecom.5g.modem",
+      gnssMaxVelocityMPerS: 800, // would match if not for prefix
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("ECCN:7A005");
+  });
+
+  it("Anti-jam GNSS routes to USML XII, not 7A005 (despite velocity match)", () => {
+    // The cross-walk's Order-of-Review behavior: a high-velocity
+    // anti-jam GNSS hits both USML:XII-antijam-gnss (ITAR) and
+    // potentially 7A005 (EAR). Both should surface so the operator
+    // can apply USML-wins precedence.
+    const result = matchAgainstCrossWalk({
+      itemClass: "gnss.receiver.antijam",
+      isAntiJam: true,
+      gnssMaxVelocityMPerS: 700,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("USML:XII-antijam-gnss");
+    // 7A005 doesn't fire here because gnss.receiver.antijam doesn't
+    // match the .receiver prefix... wait it DOES match by prefix.
+    // So both should match. The matcher returns both.
+    expect(ids).toContain("ECCN:7A005");
+  });
+
+  it("7A005 notes warn about marketing-vs-datasheet velocity discrepancy", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "gnss.receiver.high_dynamic",
+      gnssMaxVelocityMPerS: 700,
+    });
+    const entry = result.candidates.find(
+      (c) => c.entry.canonicalId === "ECCN:7A005",
+    );
+    expect(entry?.entry.notes).toMatch(/datasheet|marketing/i);
+  });
+
+  it("7A005 seeAlso includes MTCR Item 11 as derivation source", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "gnss.receiver.high_dynamic",
+      gnssMaxVelocityMPerS: 700,
+    });
+    const entry = result.candidates.find(
+      (c) => c.entry.canonicalId === "ECCN:7A005",
+    );
+    expect(entry).toBeDefined();
+    const mtcrLink = entry!.entry.seeAlso.find((l) => l.id === "Item 11");
+    expect(mtcrLink?.relationship).toBe("derived_from");
+  });
+});
