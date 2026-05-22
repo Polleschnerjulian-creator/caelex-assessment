@@ -29,18 +29,20 @@ import { ofacSdnParser } from "./sources/ofac-sdn";
 import { bisEntityParser } from "./sources/bis-entity";
 import { ddtcDebarredParser } from "./sources/ddtc-debarred";
 import { euFsfParser } from "./sources/eu-fsf";
+import { ukOfsiParser } from "./sources/uk-ofsi";
 import type { SanctionsSourceParser } from "./sources/types";
 import { upsertSnapshot } from "./snapshot-store.server";
 
 /**
- * Registered parsers for the orchestrator. Adding more sources (UK
- * OFSI / UN Consolidated) is a one-line append.
+ * Registered parsers for the orchestrator. Adding more sources
+ * (UN Consolidated remains) is a one-line append.
  */
 export const REGISTERED_PARSERS: readonly SanctionsSourceParser[] = [
   ofacSdnParser,
   bisEntityParser,
   ddtcDebarredParser,
   euFsfParser,
+  ukOfsiParser,
 ] as const;
 
 const FETCH_TIMEOUT_MS = 30_000;
