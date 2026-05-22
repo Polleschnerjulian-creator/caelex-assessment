@@ -1012,3 +1012,71 @@ describe("Near-miss surfacing (Z3k)", () => {
     expect(nearMissIds).not.toContain("ECCN:9A515.a.1");
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────
+// Sprint Z3m — USML XV(e)(17) hosted payload + see-through rule flag.
+// The legal effect is significant: a hosted payload performing an
+// XV(a) function stays ITAR even on an EAR host bus. Auto-propagation
+// to the host bus is deferred; this sprint just classifies the payload
+// correctly so the operator knows to apply the see-through rule.
+// ─────────────────────────────────────────────────────────────────────
+
+describe("USML XV(e)(17) hosted payload (Z3m)", () => {
+  it("Hosted payload SD'd for XV(a) function → USML XV(e)(17)", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.hosted_payload.high_res_eo",
+      isSpeciallyDesigned: true,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("USML:XV(e)(17)");
+  });
+
+  it("Generic hosted payload (SD=false) → no XV(e)(17) match", () => {
+    // A non-XV(a)-function hosted payload (e.g. civilian commercial
+    // imager) falls to EAR 9A515.x or 9A515.g, NOT ITAR XV(e)(17).
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.hosted_payload.commercial_imager",
+      isSpeciallyDesigned: false,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("USML:XV(e)(17)");
+  });
+
+  it("XV(e)(17) entry notes the see-through rule for operator UI", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.hosted_payload.sar",
+      isSpeciallyDesigned: true,
+    });
+    const entry = result.candidates.find(
+      (c) => c.entry.canonicalId === "USML:XV(e)(17)",
+    );
+    expect(entry).toBeDefined();
+    expect(entry!.entry.notes).toMatch(/see-through rule|§\s*123\.1/i);
+    expect(entry!.entry.notes).toMatch(/retransfer|DDTC authorization/i);
+  });
+
+  it("XV(e)(17) seeAlso → 9A515.g via 'analogous' (civilian alternative)", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.hosted_payload.eo",
+      isSpeciallyDesigned: true,
+    });
+    const entry = result.candidates.find(
+      (c) => c.entry.canonicalId === "USML:XV(e)(17)",
+    );
+    expect(entry).toBeDefined();
+    const eccnLink = entry!.entry.seeAlso.find((l) => l.id === "9A515.g");
+    expect(eccnLink?.relationship).toBe("analogous");
+  });
+
+  it("Spacecraft itself (not a hosted payload) → no XV(e)(17) match", () => {
+    // The hosted-payload qualifier is itemClass-prefix-bound. A
+    // standalone spacecraft (not a hosted payload) must NOT match.
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.remote_sensing.eo",
+      apertureMeters: 0.4,
+      isSpeciallyDesigned: true,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("USML:XV(e)(17)");
+  });
+});

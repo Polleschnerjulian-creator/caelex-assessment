@@ -1066,6 +1066,72 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
   // alone). The Z3d entry is the legally-correct shape.
 
   // ═══════════════════════════════════════════════════════════════
+  // USML XV(e)(17) — Hosted payload performing any XV(a) function
+  //
+  // Sprint Z3m — Per ontology research § 3:
+  //   "(e)(17) primary/secondary/hosted payload performing any (a)
+  //    function (the see-through rule stays on the payload itself;
+  //    a 9A515.a spacecraft hosting an ITAR (e)(17) hosted payload
+  //    remains EAR for the spacecraft and ITAR for the payload)."
+  //
+  // This entry classifies HOSTED payloads (primary or secondary) that
+  // perform functions equivalent to 9A515.a.1-.a.4. The legal effect
+  // is significant — under ITAR § 123.1(b), the see-through rule means
+  // the payload remains ITAR-controlled even when riding on an
+  // otherwise-EAR spacecraft bus. Removal of the payload from the bus
+  // is a "retransfer" requiring ITAR authorization.
+  //
+  // The matcher does NOT auto-propagate ITAR jurisdiction to the host
+  // bus (that requires a BOM model; deferred to Z3n / see-through
+  // sprint). What it DOES do: surface XV(e)(17) as a candidate so the
+  // operator KNOWS to apply the see-through rule manually for now.
+  // ═══════════════════════════════════════════════════════════════
+  {
+    canonicalId: "USML:XV(e)(17)",
+    regime: "ITAR-USML",
+    category: "XV",
+    productGroup: "e",
+    entryNumber: "17",
+    title:
+      "Hosted payload (primary or secondary) performing any 9A515.a function — see-through rule applies",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "spacecraft.hosted_payload",
+      },
+      // XV(e)(17) is ITAR specifically because it performs an XV(a)
+      // function — that's the SD-for-military-grade-remote-sensing
+      // qualifier. Civilian hosted payloads not performing XV(a)
+      // functions fall to EAR 9A515.x or 9A515.g.
+      { attribute: "isSpeciallyDesigned", op: "eq", value: true },
+    ],
+    reasonsForControl: ["ITAR"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "ITAR-USML",
+        id: "XV(a)",
+        relationship: "components_of",
+        notes:
+          "XV(e)(17) catches payloads performing any XV(a) function (high-res EO, SAR, OSAM, etc.) regardless of host-bus jurisdiction.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A515.g",
+        relationship: "analogous",
+        notes:
+          "Non-ITAR hosted payloads designed for 9A515.a.1-.a.4 functions fall to 9A515.g (EAR). The discriminator is whether the payload meets the 'XV(a) function' threshold (military-grade resolution / sensitivity) — civilian-grade goes EAR.",
+      },
+    ],
+    citation:
+      "22 CFR §121.1 USML Cat XV(e)(17) — 'Hosted payload performing any XV(a) function.' ITAR § 123.1(b) see-through rule: payload remains ITAR-controlled across host-bus jurisdiction.",
+    validFrom: "2014-05-13",
+    notes:
+      "OPERATIONAL FLAG: when this entry matches, the operator must apply the see-through rule (ITAR § 123.1(b)) — the payload is ITAR even on an EAR host bus. Removal of the payload from the bus is a 'retransfer' requiring DDTC authorization. Auto-propagation to the host bus is deferred to a future BOM-graph sprint.",
+  },
+
+  // ═══════════════════════════════════════════════════════════════
   // 9A515.b — Ground control systems for civilian spacecraft (EAR)
   //
   // Sprint Z3j — The EAR-side companion to USML:XV(b). The 2014 ECR
