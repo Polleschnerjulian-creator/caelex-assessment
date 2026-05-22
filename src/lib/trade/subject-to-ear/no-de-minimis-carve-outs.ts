@@ -136,57 +136,14 @@ export interface NoDeMinimisCheckResult {
   disclaimer: string;
 }
 
-// ─── Country group constants ────────────────────────────────────────
-
-/**
- * Country Group E:1 — comprehensive embargo (US). Per the controlling
- * 22 CFR § 126.1 list as of 2026-05-22.
- */
-export const COUNTRY_GROUP_E1 = new Set<string>([
-  "IR", // Iran
-  "KP", // North Korea
-  "SY", // Syria
-]);
-
-/**
- * Country Group E:2 — supplementary embargo. Cuba historically; the
- * current Supp. 1 to Part 740 lists Cuba alone in E:2 (it's also
- * listed in E:1 by some readings; the BIS table treats them
- * distinctly).
- */
-export const COUNTRY_GROUP_E2 = new Set<string>(["CU"]);
-
-/**
- * Country Group D:5 — arms-embargo list. Per Blueprint 2 § 4 with the
- * 2026-02-03 Cambodia removal (91 FR 5091). 22 countries. The
- * controlling list is the State Department list under 22 CFR § 126.1;
- * Supp. 1 to Part 740 lags. Z22 dynamic resolver will replace this
- * constant.
- */
-export const COUNTRY_GROUP_D5 = new Set<string>([
-  "AF", // Afghanistan
-  "BY", // Belarus
-  "MM", // Burma (Myanmar)
-  "CF", // Central African Republic
-  "CN", // China (PRC)
-  "CD", // Democratic Republic of the Congo
-  "CU", // Cuba
-  "ER", // Eritrea
-  "HT", // Haiti
-  "IR", // Iran
-  "IQ", // Iraq
-  "KP", // North Korea
-  "LB", // Lebanon
-  "LY", // Libya
-  "NI", // Nicaragua
-  "RU", // Russia
-  "SO", // Somalia
-  "SS", // South Sudan
-  "SD", // Sudan
-  "SY", // Syria
-  "VE", // Venezuela
-  "ZW", // Zimbabwe
-]);
+// Country group constants moved to country-groups.ts (Z22). Re-export
+// for downstream call sites that historically imported from this
+// module — keeps the public API backward-compatible.
+export {
+  COUNTRY_GROUP_D5,
+  COUNTRY_GROUP_E1,
+  COUNTRY_GROUP_E2,
+} from "./country-groups";
 
 // ─── ECCN matchers ──────────────────────────────────────────────────
 
