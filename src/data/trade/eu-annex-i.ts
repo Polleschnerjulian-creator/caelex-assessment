@@ -25,6 +25,13 @@
  * (Sprint Z3b/Z3c) — `ClassificationEntry` itself does not carry a
  * `parameters` field; thresholds are encoded textually here and
  * machine-readably in the cross-walk.
+ *
+ * Sprint Z24b (Tier 3) — added the remaining MTCR-derived 9A1xx
+ * entries: 9A102, 9A103, 9A108, 9A109, 9A110, 9A111, 9A115, 9A116,
+ * 9A117, 9A118, 9A119, 9A120, 9A121. 9A101/9A104/9A105/9A106/9A107
+ * were already present and remain untouched. Parametric predicates
+ * for the MTCR Cat-I tripwires (9A102 / 9A103 / 9A108 / 9A116 /
+ * 9A119) live in the cross-walk.
  */
 
 import type { ClassificationEntry, ClassificationCoverage } from "./schema";
@@ -49,7 +56,7 @@ export const EU_ANNEX_I_COVERAGE: ClassificationCoverage = {
   ],
   asOfDate: ASOF,
   officialTotalEntriesApprox: 11000,
-  caelexCoverageCount: 32,
+  caelexCoverageCount: 45,
 };
 
 export const EU_ANNEX_I_ENTRIES: ClassificationEntry[] = [
@@ -436,6 +443,191 @@ export const EU_ANNEX_I_ENTRIES: ClassificationEntry[] = [
     crossReferenceTopic: null,
     sourceUrl: SOURCE_BASE,
     asOfDate: ASOF,
+  },
+
+  // ─── Z24b — MTCR-derived 9A101-9A121 (EU Reg. 2021/821 Annex I) ─────
+  // Source: EU Reg. (EU) 2021/821 Annex I, Cat. 9 (consolidated text)
+  //         + MTCR Equipment, Software and Technology Annex
+  // The 9A1xx family transposes MTCR Items 1-20 into EU Annex I. Items
+  // that were already shipped (9A101 turbojets, 9A104 sounding rockets,
+  // 9A105 liquid engines Cat-II, 9A106 sub-systems, 9A107 solid motors)
+  // are untouched. This section adds the remaining 9A102, 9A103, 9A108,
+  // 9A109, 9A110, 9A111, 9A115, 9A116, 9A117, 9A118, 9A119, 9A120, 9A121.
+  {
+    code: "9A102",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Reusable space vehicles (MTCR-derived)",
+    description:
+      "Complete reusable space vehicles AND specially-designed subsystems for them, when usable in MTCR Cat. I delivery systems (range ≥ 300 km, payload ≥ 500 kg). Captures the X-37B-class spaceplane envelope; commercial reusable launchers (Falcon 9 first-stage class) are also in scope when their MTCR thresholds are met.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "complete-launch-vehicles",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "I",
+    notes:
+      "Reusability does not lift the MTCR Cat-I presumption-of-denial — the range × payload product, not the operational concept, drives the determination.",
+  },
+  {
+    code: "9A103",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Ramjet, scramjet & combined-cycle propulsion subsystems (MTCR)",
+    description:
+      "Specially-designed subsystems for ramjet, scramjet, pulse-jet or combined-cycle engines (MTCR Item 3.A.5) usable in MTCR Cat. I systems: combustors, fuel-injection systems, fuel-management systems, hypersonic-flow ducts. Cross-control with 9A011 for the electric-propulsion path remains separate.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "rocket-propulsion-liquid-engines",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+    notes:
+      "Air-breathing propulsion. MTCR Item 3 covers parts + subsystems even when the full engine is not yet end-of-life — i.e. development-stage scramjet IP is in scope.",
+  },
+  {
+    code: "9A108",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Components for rocket-propulsion systems (MTCR Item 3.A.4)",
+    description:
+      "Components specially designed for MTCR rocket-propulsion systems (9A105/9A107): combustion chambers, nozzles, gas generators, turbopumps, fluid-control valves rated for cryogenic / corrosive propellants, igniters, and integral propellant tanks. Distinct from the 9A006/9A008 EU-Cat-9-core entries which capture the same items at the broader-than-MTCR thresholds.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "rocket-propulsion-liquid-engines",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+    notes:
+      "9A108 escalates to MTCR Cat I when the parent engine/motor crosses the 1.1×10⁶ N·s total-impulse threshold (i.e. flies in a 9A105/9A107 Cat-I host). See parametric cross-walk EU:9A108 for the typed predicates.",
+  },
+  {
+    code: "9A109",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Hybrid rocket motors (MTCR Cat. II)",
+    description:
+      "Hybrid rocket motors (solid fuel + liquid/gas oxidiser) with total impulse capacity ≥ 1.1×10⁶ N·s. Distinct from the broader 9A009 EU-Cat-9-core entry which captures all hybrid motors regardless of impulse. HyImpulse SR75/SL1, Gilmour Space Eris fall here when the impulse threshold is met.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "cryogenic-systems-spacecraft",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+  },
+  {
+    code: "9A110",
+    jurisdiction: "EU_ANNEX_I",
+    title:
+      "Composite structures, laminates & re-entry-vehicle structures (MTCR Item 6)",
+    description:
+      "Composite structures, laminates and manufactures specially designed for use in 9A004 spacecraft, 9A104 sounding rockets, or other MTCR systems, where material properties (density, specific tensile strength, modulus) exceed defined thresholds. Includes carbon-carbon, carbon-fibre + resin laminates, ceramic matrix composites for ablative thermal protection.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "high-temp-coatings-aerospace",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+    notes:
+      "9A010 (EU-Cat-9-core composites) and 9A110 (MTCR-aligned composites) frequently both apply — they encode the same materials family at two threshold tiers. 9A110 has stricter material-property thresholds.",
+  },
+  {
+    code: "9A111",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Pulse-jet engines (MTCR-controlled)",
+    description:
+      "Pulse-jet engines specially designed for use in MTCR-relevant unmanned air vehicles (9A012-Cat-I corner, cruise missiles). Maximum thrust > 1 kN (excluding civil-certified variants). Captures legacy V-1-style pulse-jets and modern resonance-based variants used in some long-range UAV concepts.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: null,
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+  },
+  {
+    code: "9A115",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Launch support equipment for MTCR systems (MTCR Item 12)",
+    description:
+      "Specialised equipment supporting the launch, handling, storage, fuelling or recovery of MTCR Cat. I systems: transporters, erectors, launchers, propellant-loading equipment, gantries, range-safety-flight-termination receivers, telemetry uplink stations specifically rated for MTCR Cat-I trajectory profiles.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "complete-launch-vehicles",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+    notes:
+      "Commercial spaceport ground equipment (Esrange, SaxaVord, Andøya) frequently triggers 9A115 capture even when the launch vehicle itself is a sub-Cat-I sounding rocket — review the equipment's MTCR-Cat-I-rating-capability not the operational use.",
+  },
+  {
+    code: "9A116",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Re-entry vehicles & equipment (MTCR Item 10)",
+    description:
+      "Re-entry vehicles, re-entry-vehicle thermal protection systems, heat shields, and equipment specially designed to protect MTCR-relevant payloads during atmospheric re-entry. Includes ablative TPS, leading-edge thermal protection, and aero-thermo-shape recovery components. Captures both crewed (Dream Chaser-class) and uncrewed (Atmos Space SR-class) commercial re-entry vehicle envelopes.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "high-temp-coatings-aerospace",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "I",
+    notes:
+      "Re-entry capability is itself an MTCR Cat-I tripwire when paired with a controllable trajectory — even a small re-entry capsule can carry a Cat-I weight if the design supports it.",
+  },
+  {
+    code: "9A117",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Staging mechanisms, separation mechanisms & interstages (MTCR)",
+    description:
+      "Mechanisms for stage separation, interstage-attach-release, payload-release, fairing-jettison or shroud-separation specifically designed for use in MTCR systems. Pyrotechnic, frangible-bolt, marman-clamp-band, and pneumatic actuator variants all captured.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "complete-launch-vehicles",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+  },
+  {
+    code: "9A118",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Devices to regulate combustion (TVC, attitude-control jets, MTCR)",
+    description:
+      "Devices to regulate combustion in MTCR-relevant rocket systems: thrust-vector-control nozzles, gimbal mechanisms, fluid-injection-TVC subsystems, jet-vane assemblies, and movable-aerospike attitude-control jets. Cross-control with 9A106 (rocket subsystems) and 9A008 (solid-motor components).",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "hall-thrusters-electric-propulsion",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+  },
+  {
+    code: "9A119",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Individual rocket stages (MTCR Cat. II)",
+    description:
+      "Individual rocket stages — complete, integrated propulsion + tank + airframe sub-assemblies — when usable in MTCR Cat-I systems. The stage's own total impulse (≥ 1.1×10⁶ N·s) is the threshold, not the host vehicle's. Captures the standalone-stage commercial market (upper-stage kits, kick-stages from D-Orbit, Momentus, Impulse Space).",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "complete-launch-vehicles",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+    notes:
+      "9A119 is the entry that catches upper-stage kit suppliers (kick-stages, OTVs, in-space-tugs) — their stages often clear the 1.1×10⁶ N·s threshold even though their own mission profiles are sub-orbital station-keeping.",
+  },
+  {
+    code: "9A120",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Production equipment for MTCR rocket components (MTCR Item 1.B)",
+    description:
+      "Production equipment specially designed for the manufacture of MTCR-controlled rocket components: precision-machining centres rated for tolerances ≤ 10 µm on rocket-component-size envelopes, filament-winding machines for composite-overwrapped pressure vessels, isostatic presses for propellant-grain manufacture, and dedicated NDT (non-destructive-testing) stations for MTCR-grade solid-propellant grains.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "metal-additive-manufacturing-aerospace",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+    notes:
+      "Production equipment travels with the controls of the items it makes — a filament-winding machine licensed for non-MTCR pressure vessels can become MTCR-controlled simply by being re-tasked for COPV production above MTCR thresholds.",
+  },
+  {
+    code: "9A121",
+    jurisdiction: "EU_ANNEX_I",
+    title:
+      "Electronic computers and accelerometers for MTCR systems (MTCR Item 13)",
+    description:
+      "Electronic computers, hybrid-analog-digital flight controllers, accelerometers and angular-rate sensors specially designed or modified for use in MTCR-controlled rocket systems and unmanned air vehicles. Bias-stability, scale-factor accuracy, and shock-resistance thresholds align with MTCR Item 13. Cross-control with 7A103 (inertial guidance) and 7A105 (GNSS receivers for missiles).",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "spacecraft-rad-hard-electronics",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+    notes:
+      "MTCR Item 13 thresholds are typically tighter than Wassenaar 7A003/7A005 — a flight-controller IMU may be Wassenaar-uncontrolled but MTCR-controlled (Cat II). Always test both regimes.",
   },
 
   // ─── Cat. 9 — Spacecraft Bus & Platforms ───────────────────────────

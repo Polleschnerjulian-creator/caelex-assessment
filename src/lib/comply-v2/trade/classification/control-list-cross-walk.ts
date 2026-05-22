@@ -1646,6 +1646,532 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     notes:
       "Below the 300 km / 500 kg threshold but with autonomous flight-control / out-of-line-of-sight capability, the broader 9A012 capture still bites — the parametric entry above encodes the MTCR Cat-I corner only. Operators with autonomous-capability UAVs below 300 km should classify via the itemClass-prefix path + manual review.",
   },
+
+  // ═══════════════════════════════════════════════════════════════
+  // Sprint Z24b (Tier 3) — MTCR-derived 9A101-9A121
+  //
+  // Adds parametric cross-walk entries for the MTCR-derived 9A1xx
+  // family in EU Annex I Cat 9. The MTCR Cat-I tripwires (range × payload,
+  // total impulse) are the critical hard-edge parameters here — the
+  // matcher must flip from Cat-II review to "strong presumption of denial"
+  // when the Cat-I thresholds are crossed.
+  //
+  // Sources:
+  //   - EU Reg. (EU) 2021/821 Annex I, Cat. 9 (consolidated text)
+  //   - MTCR Equipment, Software and Technology Annex (current)
+  //   - Items 1-20 of the MTCR Annex map to the 9A1xx entries via
+  //     EU's transposition table
+  // ═══════════════════════════════════════════════════════════════
+  {
+    canonicalId: "EU:9A101",
+    regime: "EU-ANNEX-I",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "101",
+    title: "Turbojet/turbofan engines for MTCR-relevant UAVs (EU Cat 9)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "propulsion.turbojet",
+      },
+      // MTCR Item 3.A.1 threshold: max thrust > 400 N (excluding civil-
+      // certified variants). Below this, the entry typically does not
+      // bite — small APU-class turbines fall out.
+      {
+        attribute: "totalImpulseNs",
+        op: "gte",
+        value: 400,
+      },
+    ],
+    reasonsForControl: ["MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 3.A.1",
+        relationship: "derived_from",
+        notes:
+          "MTCR Item 3.A.1 — turbojet/turbofan engines usable in Cat-I UAVs.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A101",
+        relationship: "analogous",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 9, 9A101",
+    validFrom: "2021-09-09",
+    notes:
+      "Civil-certified small turbines (FAA Part 33 / EASA CS-E) are excluded — the carve-out is the dominant compliance path for commercial drone-engine vendors operating below the MTCR-Cat-I-host envelope.",
+  },
+  {
+    canonicalId: "EU:9A102",
+    regime: "EU-ANNEX-I",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "102",
+    title: "Reusable space vehicles (EU Cat 9, MTCR-derived)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "aerospace.reusable_vehicle",
+      },
+      // MTCR Cat-I trip: range ≥ 300 km AND payload ≥ 500 kg. Same
+      // hard-edge tripwire as 9A004/9A012/9A104.
+      {
+        attribute: "rangeKm",
+        op: "gte",
+        value: 300,
+      },
+      {
+        attribute: "payloadKg",
+        op: "gte",
+        value: 500,
+      },
+    ],
+    reasonsForControl: ["MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A004",
+        relationship: "analogous",
+        notes:
+          "9A004 captures the broader space-launch-vehicle envelope; 9A102 is the reusable carve-out.",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A104",
+        relationship: "analogous",
+        notes:
+          "9A104 (sounding rockets at MTCR Cat-I) overlaps where a reusable vehicle is also a sounding-rocket platform.",
+      },
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 1.A.1",
+        relationship: "derived_from",
+        notes: "MTCR Item 1.A.1 — complete rocket systems, reusable variant.",
+      },
+      {
+        regime: "ITAR-USML",
+        id: "IV(d)",
+        relationship: "analogous",
+        notes:
+          "USML IV(d) covers complete launch vehicles whether or not reusable; the SpaceX Starship class falls under USML IV(d), the EU pendant is 9A102.",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 9, 9A102",
+    validFrom: "2021-09-09",
+    notes:
+      "Reusability does NOT lift the MTCR Cat-I presumption-of-denial — the range × payload product is the trigger, not the operational concept. X-37B-class, Dream Chaser-class, and commercial Starship-class vehicles all fall here.",
+  },
+  {
+    canonicalId: "EU:9A103",
+    regime: "EU-ANNEX-I",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "103",
+    title:
+      "Ramjet/scramjet/combined-cycle propulsion subsystems (EU Cat 9, MTCR)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "propulsion.ramjet",
+      },
+      {
+        attribute: "isSpeciallyDesigned",
+        op: "eq",
+        value: true,
+      },
+    ],
+    reasonsForControl: ["MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 3.A.5",
+        relationship: "derived_from",
+        notes:
+          "MTCR Item 3.A.5 — ramjet/scramjet/combined-cycle engine subsystems.",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A111",
+        relationship: "analogous",
+        notes: "9A111 (pulse-jets) is the air-breathing sibling of 9A103.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A103",
+        relationship: "analogous",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 9, 9A103",
+    validFrom: "2021-09-09",
+    notes:
+      "MTCR Item 3 covers parts + subsystems even when the full engine is in development — early-stage scramjet IP can already be MTCR-controlled.",
+  },
+  {
+    canonicalId: "EU:9A104",
+    regime: "EU-ANNEX-I",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "104",
+    title: "Sounding rockets above MTCR thresholds (EU Cat 9)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "aerospace.sounding_rocket",
+      },
+      // MTCR Cat-I tripwire: range ≥ 300 km. 9A104 is the only
+      // EU entry that flips to Cat-I solely on range (without the
+      // payload threshold) — the payload joins as the Cat-I escalation.
+      {
+        attribute: "rangeKm",
+        op: "gte",
+        value: 300,
+      },
+    ],
+    reasonsForControl: ["MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 1.A.2",
+        relationship: "derived_from",
+        notes: "MTCR Item 1.A.2 — sounding rockets at the Cat-I boundary.",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A004",
+        relationship: "subset_of",
+        notes:
+          "9A004 (SLVs + spacecraft) is the broader entry; 9A104 captures the MTCR-Cat-I corner.",
+      },
+      {
+        regime: "ITAR-USML",
+        id: "IV(d)",
+        relationship: "analogous",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 9, 9A104",
+    validFrom: "2021-09-09",
+    notes:
+      "When BOTH range ≥ 300 km AND payload ≥ 500 kg, escalates to MTCR Cat-I 'strong presumption of denial'. Below 300 km but with structural design supporting payload ≥ 500 kg, 9A104 still captures but the Cat-I gate does not yet bite.",
+  },
+  {
+    canonicalId: "EU:9A105",
+    regime: "EU-ANNEX-I",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "105",
+    title: "Liquid-propellant rocket engines, MTCR Cat. II (EU Cat 9)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "propulsion.liquid_rocket",
+      },
+      // MTCR Cat-II threshold: total impulse ≥ 1.1×10⁶ N·s. Below this,
+      // the broader 9A005 captures (Wassenaar-aligned).
+      {
+        attribute: "totalImpulseNs",
+        op: "gte",
+        value: 1_100_000,
+      },
+    ],
+    reasonsForControl: ["MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A005",
+        relationship: "analogous",
+        notes:
+          "9A005 is the Wassenaar-thresholded entry (vacuum thrust ≥ 1 kN); 9A105 escalates the same family at the MTCR Cat-II total-impulse threshold.",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A006",
+        relationship: "components_of",
+        notes:
+          "9A006 catches components-of-9A105 just as it catches components-of-9A005.",
+      },
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 2.A.1.a",
+        relationship: "derived_from",
+        notes:
+          "MTCR Item 2.A.1.a — liquid-propellant rocket engines at the 1.1×10⁶ N·s impulse boundary.",
+      },
+      {
+        regime: "ITAR-USML",
+        id: "IV(d)(1)",
+        relationship: "analogous",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 9, 9A105",
+    validFrom: "2021-09-09",
+    notes:
+      "The 1.1×10⁶ N·s lower threshold is the 9A105/9A107 boundary on the EU side and routinely flips small commercial liquid engines (Aeon-class, Prometheus-class) from sub-MTCR to MTCR Cat-II.",
+  },
+  {
+    canonicalId: "EU:9A106",
+    regime: "EU-ANNEX-I",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "106",
+    title: "Subsystems usable in MTCR rocket systems (EU Cat 9)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "propulsion.rocket_subsystem",
+      },
+      {
+        attribute: "isSpeciallyDesigned",
+        op: "eq",
+        value: true,
+      },
+    ],
+    reasonsForControl: ["MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A105",
+        relationship: "components_of",
+        notes:
+          "9A106 captures subsystems usable in 9A105/9A107 propulsion (TVC, separation mechanisms, stage-attach interfaces).",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A118",
+        relationship: "analogous",
+        notes:
+          "9A118 (devices to regulate combustion) is the in-cylinder counterpart to 9A106's stage-level subsystems.",
+      },
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 3.A.4",
+        relationship: "derived_from",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 9, 9A106",
+    validFrom: "2021-09-09",
+  },
+  {
+    canonicalId: "EU:9A107",
+    regime: "EU-ANNEX-I",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "107",
+    title: "Solid-propellant rocket motors, MTCR Cat. II (EU Cat 9)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "propulsion.solid_rocket",
+      },
+      // MTCR Cat-II threshold: total impulse ≥ 1.1×10⁶ N·s. Below this,
+      // the broader 9A007 captures (Wassenaar-aligned).
+      {
+        attribute: "totalImpulseNs",
+        op: "gte",
+        value: 1_100_000,
+      },
+    ],
+    reasonsForControl: ["MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A007",
+        relationship: "analogous",
+        notes:
+          "9A007 is the Wassenaar entry; 9A107 captures solid motors at the MTCR Cat-II total-impulse threshold.",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A008",
+        relationship: "components_of",
+        notes:
+          "9A008 captures components-of-9A107 just as it captures components-of-9A007.",
+      },
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 2.A.1.b",
+        relationship: "derived_from",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 9, 9A107",
+    validFrom: "2021-09-09",
+  },
+  {
+    canonicalId: "EU:9A108",
+    regime: "EU-ANNEX-I",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "108",
+    title:
+      "Components for MTCR rocket-propulsion systems (EU Cat 9, MTCR Item 3.A.4)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "propulsion.rocket_component",
+      },
+      {
+        attribute: "isSpeciallyDesigned",
+        op: "eq",
+        value: true,
+      },
+    ],
+    reasonsForControl: ["MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A105",
+        relationship: "components_of",
+        notes:
+          "9A108 captures specially-designed components of MTCR Cat-II liquid engines (9A105).",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A107",
+        relationship: "components_of",
+        notes:
+          "9A108 also captures specially-designed components of MTCR Cat-II solid motors (9A107).",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A006",
+        relationship: "analogous",
+        notes:
+          "9A006 is the Wassenaar-thresholded sibling — same items but at the broader (sub-MTCR) capture envelope.",
+      },
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 3.A.4",
+        relationship: "derived_from",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 9, 9A108",
+    validFrom: "2021-09-09",
+    notes:
+      "9A108 escalates to MTCR Cat-I when the parent engine/motor crosses the 1.1×10⁶ N·s threshold (i.e. flies in a 9A105/9A107 Cat-I host). Cross-control with USML IV(h) is the dominant US-side route.",
+  },
+  {
+    canonicalId: "EU:9A116",
+    regime: "EU-ANNEX-I",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "116",
+    title: "Re-entry vehicles & equipment (EU Cat 9, MTCR Item 10)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "aerospace.reentry_vehicle",
+      },
+      // 9A116 is itself a Cat-I tripwire — re-entry capability is the
+      // qualifier. The payload threshold remains relevant for the
+      // strong-presumption-of-denial gate.
+      {
+        attribute: "payloadKg",
+        op: "gte",
+        value: 500,
+      },
+    ],
+    reasonsForControl: ["MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 10",
+        relationship: "derived_from",
+        notes: "MTCR Item 10 — re-entry vehicles + protection equipment.",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A102",
+        relationship: "analogous",
+        notes:
+          "9A102 (reusable space vehicles) overlaps where the reusable element is the re-entry stage.",
+      },
+      {
+        regime: "ITAR-USML",
+        id: "IV(d)",
+        relationship: "analogous",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 9, 9A116",
+    validFrom: "2021-09-09",
+    notes:
+      "Re-entry capability is itself an MTCR Cat-I tripwire when paired with a controllable trajectory — even a small re-entry capsule can carry a Cat-I weight if the design supports it. Atmos Space SR-class, Dream Chaser-class commercial re-entry vehicles fall here.",
+  },
+  {
+    canonicalId: "EU:9A119",
+    regime: "EU-ANNEX-I",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "119",
+    title: "Individual rocket stages, MTCR Cat. II (EU Cat 9)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "propulsion.rocket_stage",
+      },
+      // 9A119 Cat-II tripwire: stage's OWN total impulse ≥ 1.1×10⁶ N·s.
+      // This catches commercial upper-stage / kick-stage vendors whose
+      // stages clear the threshold even though their own mission profile
+      // is sub-orbital station-keeping.
+      {
+        attribute: "totalImpulseNs",
+        op: "gte",
+        value: 1_100_000,
+      },
+    ],
+    reasonsForControl: ["MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A005",
+        relationship: "components_of",
+        notes:
+          "A 9A005 liquid engine assembled into a stage propels that stage into 9A119 capture when the impulse threshold is crossed.",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A007",
+        relationship: "components_of",
+        notes:
+          "Same relationship for solid motors (9A007 → 9A119 when the stage impulse crosses Cat-II).",
+      },
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 2.A.1.c",
+        relationship: "derived_from",
+        notes: "MTCR Item 2.A.1.c — individual stages.",
+      },
+      {
+        regime: "ITAR-USML",
+        id: "IV(d)",
+        relationship: "analogous",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 9, 9A119",
+    validFrom: "2021-09-09",
+    notes:
+      "Catches upper-stage kit suppliers (D-Orbit ION, Momentus Vigoride, Impulse Mira) whose individual stages routinely clear the 1.1×10⁶ N·s threshold despite operating in station-keeping or low-impulse mission profiles. The stage's own design impulse is the test, not its operational duty cycle.",
+  },
 ];
 
 // ─── Helpers ────────────────────────────────────────────────────────
