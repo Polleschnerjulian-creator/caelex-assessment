@@ -195,6 +195,10 @@
       "schedule": "0 9 * * *"
     },
     {
+      "path": "/api/cron/trade-reexport-expiry",
+      "schedule": "15 9 * * *"
+    },
+    {
       "path": "/api/cron/cowf-heartbeat",
       "schedule": "*/30 * * * *"
     },
