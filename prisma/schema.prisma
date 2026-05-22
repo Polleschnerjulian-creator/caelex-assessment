@@ -73,6 +73,9 @@ model User {
   // Comply Trade v2 (Wave C Sprint C1) — operations + license back-refs.
   tradeOperationsCreated TradeOperation[] @relation("TradeOperationAuthor")
 
+  // Sprint E5 — End-Use Certificate lifecycle actions
+  tradeEucActions TradeEUCRequest[] @relation("TradeEUCActionBy")
+
   // Mission domain (Sprint Mission-1) — first-class Mission entity
   // back-ref. Author of the Mission (creator). Distinct from
   // MissionSpacecraft / MissionPhase which have their own lifecycles.
@@ -3131,6 +3134,11 @@ model Organization {
   // audit cycle, voluntary disclosures) that migrated out of the
   // legacy user-scoped ExportControlAssessment model.
   tradeComplianceProgram TradeComplianceProgram?
+
+  // Caelex Trade Sprint E5 — End-Use Certificate requests
+  // tracked per (party, operation?). Lifecycle: REQUESTED →
+  // SENT_TO_PARTY → RECEIVED → VALIDATED (or EXPIRED / REVOKED).
+  tradeEucRequests TradeEUCRequest[]
 
   // Mission domain (Sprint Mission-1) — first-class Mission rows
   // (vs the legacy 1:1 Spacecraft=Mission collapse). Org-scoped.
@@ -11072,6 +11080,9 @@ model TradeParty {
 
   screenings TradeScreeningResult[]
 
+  // Sprint E5 — End-Use Certificate requests against this party
+  eucRequests TradeEUCRequest[]
+
   @@index([organizationId, canonicalName])
   @@index([organizationId, screeningStatus])
   @@index([organizationId, status])
@@ -11379,6 +11390,9 @@ model TradeOperation {
 
   // ── License stack (M:N — see TradeLicense for full lifecycle) ──
   licenses TradeLicense[]
+
+  // Sprint E5 — End-Use Certificate requests tied to this operation
+  eucRequests TradeEUCRequest[]
 
   // ── Mission link (Sprint MA — Mission integration) ──
   /// Optional FK to the Mission this operation supports. Often a
@@ -11746,6 +11760,125 @@ enum TradeRequirementStatus {
   NON_COMPLIANT
   NOT_ASSESSED
   NOT_APPLICABLE
+}
+
+// ════════════════════════════════════════════════════════════════════
+// COMPLY TRADE — END-USE CERTIFICATES (Sprint E5, 2026-05-22)
+// ════════════════════════════════════════════════════════════════════
+// An End-Use Certificate / End-User Certificate (EUC) is a document
+// signed by the foreign buyer affirming end-use commitments — no
+// diversion to prohibited end-users, no unauthorised re-export, no
+// WMD use. EUCs are required for nearly every controlled export and
+// are the operator's primary "show your work" artefact during a BAFA
+// or BIS audit.
+//
+// The five form types we cover at launch:
+//  - BAFA C1  Endverbleibserklärung (basic civilian end-use)
+//  - BAFA C6  with Wiederausfuhr-Vorbehalt (re-export reservation)
+//  - BAFA C7  Hong Kong-specific (post-2025 BAFA list)
+//  - BIS-711  Statement by Ultimate Consignee and Purchaser
+//  - DDTC DS-83  NDAA Compliance Statement (ITAR)
+//
+// MVP scope (E5a): just the lifecycle row. PDF generation, email-to-
+// counterparty + signed-document upload follow in later sprints.
+
+/// One End-Use Certificate request lifecycle. Created internally,
+/// optionally sent to a counterparty, signed PDF returned, then
+/// validated by an operator. Linked to a TradeParty (the foreign
+/// signer) and optionally to a specific TradeOperation when tied
+/// to a shipment.
+model TradeEUCRequest {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  /// Which form type — drives the prefill template + signer
+  /// requirements (BAFA forms need German-language end-user fields;
+  /// BIS-711 needs the purchaser's signature in addition to the
+  /// consignee's; DS-83 needs the foreign-party DDTC registration).
+  formType TradeEUCFormType
+
+  /// Counterparty signing the EUC (typically the foreign end-user
+  /// or ultimate consignee). Required.
+  partyId String
+  party   TradeParty @relation(fields: [partyId], references: [id], onDelete: Cascade)
+
+  /// Optional link to a specific operation. Some EUCs are
+  /// shipment-specific (covers exactly the items in one operation);
+  /// others are blanket EUCs valid across multiple operations within
+  /// a validity window. NULL = freestanding.
+  operationId String?
+  operation   TradeOperation? @relation(fields: [operationId], references: [id], onDelete: SetNull)
+
+  /// Lifecycle. See TradeEUCStatus for the state machine.
+  status TradeEUCStatus @default(REQUESTED)
+
+  /// When the EUC was first created internally.
+  requestedAt DateTime @default(now())
+  /// When the EUC request was dispatched to the counterparty (e.g.
+  /// email or portal link sent). Set on REQUESTED → SENT_TO_PARTY.
+  sentAt      DateTime?
+  /// When the signed PDF was returned by the counterparty. Set on
+  /// SENT_TO_PARTY → RECEIVED.
+  receivedAt  DateTime?
+  /// When an authorised operator manually reviewed and approved the
+  /// returned EUC. Set on RECEIVED → VALIDATED.
+  validatedAt DateTime?
+  /// BAFA forms typically have a 1-2 year validity from signing
+  /// date. EXPIRED status is set by a cron when validUntil passes.
+  validUntil  DateTime?
+
+  /// User who last advanced the lifecycle (for audit). NULL for
+  /// system transitions (cron-driven EXPIRED).
+  lastActionById String?
+  lastActionBy   User?   @relation("TradeEUCActionBy", fields: [lastActionById], references: [id], onDelete: SetNull)
+
+  /// Document vault path of the returned signed PDF, when present.
+  /// Tracked separately from the prefill template — the signed copy
+  /// is the legal artefact, the prefill template is just a draft.
+  signedDocumentId String?
+
+  /// Operator-private notes (review observations, follow-ups).
+  notes String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId, status])
+  @@index([organizationId, formType])
+  @@index([partyId])
+  @@index([operationId])
+  @@index([validUntil])
+}
+
+/// EUC form types we support at launch.
+enum TradeEUCFormType {
+  /// BAFA C1 — Endverbleibserklärung (basic civilian end-use)
+  BAFA_C1
+  /// BAFA C6 — Endverbleibserklärung mit Wiederausfuhr-Vorbehalt
+  BAFA_C6
+  /// BAFA C7 — Hong Kong-spezifische Endverbleibserklärung
+  BAFA_C7
+  /// US BIS Form 711 — Statement by Ultimate Consignee and Purchaser
+  BIS_711
+  /// US DDTC DS-83 — NDAA Compliance Statement (ITAR §126.4(d))
+  DDTC_DS83
+  /// Other jurisdiction (UK Form 5050, EU national forms, etc.)
+  OTHER
+}
+
+/// EUC lifecycle. The full path:
+///   REQUESTED → SENT_TO_PARTY → RECEIVED → VALIDATED
+/// Terminal paths:
+///   any → EXPIRED  (validUntil passed; usually from VALIDATED)
+///   any → REVOKED  (manual invalidation by operator)
+enum TradeEUCStatus {
+  REQUESTED
+  SENT_TO_PARTY
+  RECEIVED
+  VALIDATED
+  EXPIRED
+  REVOKED
 }
 
 // ╔══════════════════════════════════════════════════════════════════╗
