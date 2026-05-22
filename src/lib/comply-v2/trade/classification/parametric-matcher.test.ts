@@ -1140,3 +1140,81 @@ describe("EU 9A005 liquid-propellant rocket engines (Z3q)", () => {
     expect(eu?.entry.licenseExceptions).toContain("EU001");
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────
+// Sprint Z3t — 9A515.f spacecraft mission-element software. New
+// itemClass convention `software.spacecraft.*` distinct from the
+// hardware-side `spacecraft.*` prefix.
+// ─────────────────────────────────────────────────────────────────────
+
+describe("9A515.f spacecraft software (Z3t)", () => {
+  it("Spacecraft flight software SD'd for 9A515.a → 9A515.f match", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "software.spacecraft.flight_software",
+      isSpeciallyDesigned: true,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("ECCN:9A515.f");
+  });
+
+  it("Mission-planning software SD'd for 9A515 → 9A515.f match", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "software.spacecraft.mission_planning",
+      isSpeciallyDesigned: true,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("ECCN:9A515.f");
+  });
+
+  it("Software with SD=false → no 9A515.f match (commercial office app)", () => {
+    // A generic accounting / office app that happens to be sold to
+    // a satellite operator is not SD'd for the spacecraft — must
+    // not be over-classified.
+    const result = matchAgainstCrossWalk({
+      itemClass: "software.spacecraft.accounting",
+      isSpeciallyDesigned: false,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("ECCN:9A515.f");
+  });
+
+  it("Hardware spacecraft (NOT software) → no 9A515.f match", () => {
+    // The new prefix `software.spacecraft.*` is DISTINCT from the
+    // hardware `spacecraft.*` prefix used by 9A515.a entries. The
+    // matcher discriminates.
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.remote_sensing.eo",
+      apertureMeters: 0.4,
+      isSpeciallyDesigned: true,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("ECCN:9A515.f");
+    // But the hardware 9A515.a.1 must still match
+    expect(ids).toContain("ECCN:9A515.a.1");
+  });
+
+  it("9A515.f cites USML XV(f) as predecessor with ECR 2014 note", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "software.spacecraft.flight_software",
+      isSpeciallyDesigned: true,
+    });
+    const sw = result.candidates.find(
+      (c) => c.entry.canonicalId === "ECCN:9A515.f",
+    );
+    expect(sw).toBeDefined();
+    const xvLink = sw!.entry.seeAlso.find((l) => l.id === "XV(f)");
+    expect(xvLink?.relationship).toBe("predecessor");
+    expect(xvLink?.notes).toMatch(/2014 ECR|ITAR XV\(f\)/i);
+  });
+
+  it("9A515.f notes flag deemed-export risk for foreign-national transfer", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "software.spacecraft.tt_and_c",
+      isSpeciallyDesigned: true,
+    });
+    const sw = result.candidates.find(
+      (c) => c.entry.canonicalId === "ECCN:9A515.f",
+    );
+    expect(sw?.entry.notes).toMatch(/deemed-export|§\s*120\.17|§\s*734\.13/i);
+  });
+});

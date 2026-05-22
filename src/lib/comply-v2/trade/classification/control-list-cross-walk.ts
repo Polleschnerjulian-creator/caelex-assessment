@@ -1193,6 +1193,77 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
   },
 
   // ═══════════════════════════════════════════════════════════════
+  // 9A515.f — Spacecraft mission elements / software (EAR-CCL)
+  //
+  // Sprint Z3t — Per ontology research § 3:
+  //   "9A515.f covers spacecraft mission elements: TT&C software,
+  //    mission-planning software, on-board flight software for
+  //    9A515.a-.g spacecraft."
+  //
+  // Software-side closure: until Z3t the cross-walk had hardware
+  // entries only. Spacecraft flight software / mission-planning
+  // software for 9A515.a-.g spacecraft is controlled under 9A515.f
+  // (and goes to USML XV(f) for ITAR-side controls of military
+  // spacecraft software).
+  //
+  // New itemClass convention: `software.spacecraft.*` prefix.
+  // Distinct from `spacecraft.*` (the hardware-side prefix used by
+  // 9A515.a entries). The matcher discriminates: an EO satellite
+  // (hardware) → 9A515.a.1; its flight software → 9A515.f.
+  // ═══════════════════════════════════════════════════════════════
+  {
+    canonicalId: "ECCN:9A515.f",
+    regime: "EAR-CCL",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "515",
+    subpara: "f",
+    title:
+      "Spacecraft mission-element software (flight software, TT&C, mission planning) for 9A515.a-.g",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "software.spacecraft",
+      },
+      // Software is by definition specially designed for the
+      // spacecraft it operates. Generic ground-control or commercial-
+      // office software does NOT match — the prefix is the gate.
+      { attribute: "isSpeciallyDesigned", op: "eq", value: true },
+    ],
+    reasonsForControl: ["NS:2", "RS:2", "AT:1"],
+    licenseExceptions: ["STA-eligible:partial"],
+    seeAlso: [
+      {
+        regime: "ITAR-USML",
+        id: "XV(f)",
+        relationship: "predecessor",
+        notes:
+          "Software for USML XV(a) military / intelligence spacecraft stays ITAR XV(f). The 2014 ECR moved civilian / commercial spacecraft software to 9A515.f.",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "9D004",
+        relationship: "analogous",
+        notes:
+          "EU rolls spacecraft software into 9D004 (separate D-group entry for software). 9A515.f's coverage is broadly equivalent for civilian items.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A515.a.1",
+        relationship: "components_of",
+        notes:
+          "9A515.f software for spacecraft of 9A515.a.1-.a.4 sub-types is controlled at the same NS:2/RS:2/AT:1 reasons-for-control.",
+      },
+    ],
+    citation:
+      "15 CFR 774 Supp. 1 Cat 9 ECCN 9A515.f — 'Software specially designed or modified for the development, production, operation or maintenance of 9A515.a-.g items.'",
+    validFrom: "2014-05-13",
+    notes:
+      "Source code, object code and electronic technical data ALL fall under 9A515.f when specially designed for 9A515.a-.g operation. Transfer to foreign nationals inside the EU may also trigger deemed-export controls (22 CFR § 120.17 / 15 CFR § 734.13) — see Z13 deemed-export sprint.",
+  },
+
+  // ═══════════════════════════════════════════════════════════════
   // 9A515.b — Ground control systems for civilian spacecraft (EAR)
   //
   // Sprint Z3j — The EAR-side companion to USML:XV(b). The 2014 ECR
