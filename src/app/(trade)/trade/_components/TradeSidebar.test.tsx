@@ -84,6 +84,7 @@ vi.mock("lucide-react", () => {
     FileSignature: icon("FileSignature"),
     Layers: icon("Layers"),
     AlertOctagon: icon("AlertOctagon"),
+    Rocket: icon("Rocket"),
     Sparkles: icon("Sparkles"),
     ScanSearch: icon("ScanSearch"),
     Settings: icon("Settings"),
