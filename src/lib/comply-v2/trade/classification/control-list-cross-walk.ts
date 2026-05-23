@@ -2950,6 +2950,245 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     notes:
       "Most-controversial Cat-5 software capture — open-source crypto (OpenSSL, libsodium) can be exempt under Note 4. Operators must walk both Note 3 (Cryptography Note) and Note 4 (publicly-available source) before claiming exemption; satellite-mission crypto stacks rarely qualify because the integration know-how itself remains 5E002 technology.",
   },
+
+  // Z34-Cat3 — EU Annex I Category 3 (Electronics) parametric
+  // cross-walk additions. Pairs with the textual enumeration in
+  // src/data/trade/eu-annex-i-cat3.ts.
+  //
+  // Sources:
+  //   - Reg. (EU) 2021/821 Annex I, Cat 3 (consolidated text)
+  //   - Delegated Reg. (EU) 2025/2003 (OJ L 2025/2003)
+  //   - Z25 Tier-3 parametric attribute `radHardenedTID_krad`
+  //
+  // Three space-critical entries with typed predicates:
+  //   - EU:3A001.a.2 — general rad-hard TID-tolerance gate
+  //   - EU:3A001.a.5 — space-grade rad-hard processor / FPGA
+  //   - EU:3A001.h.1 — atomic-frequency standard (Allan-variance proxy
+  //                    via temperatureRangeCelsius + itemClass — Allan
+  //                    variance itself is not a typed attribute, but
+  //                    the spaceborne-clock itemClass + the operating-
+  //                    temperature range capture the right shape)
+  //   - EU:3A090.a   — Oct 2022 IFR AI-compute TPP > 4800 threshold
+  // ═══════════════════════════════════════════════════════════════
+  {
+    canonicalId: "EU:3A001.a.2",
+    regime: "EU-ANNEX-I",
+    category: "3",
+    productGroup: "A",
+    entryNumber: "001",
+    subpara: "a.2",
+    title:
+      "Microprocessors with composite theoretical performance (CTP) — rad-hard TID gate (EU Cat 3)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "ic.processor",
+      },
+      // Z25 Tier-3 parametric attribute. The brief's "rad-hard TID
+      // tolerance" predicate captures the boundary between general-
+      // purpose 3A001.a.2 microprocessors and the rad-hard-rated
+      // 3A001.a.5 family at TID ≥ 50 krad(Si). Above this the part
+      // typically escalates to .a.5 and the US ECCN 9A515.d/.e.
+      {
+        attribute: "radHardenedTID_krad",
+        op: "gte",
+        value: 50,
+      },
+    ],
+    reasonsForControl: ["WA", "NS"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "3A001.a.5",
+        relationship: "predecessor",
+        notes:
+          "3A001.a.2 is the general microprocessor entry; the rad-hard escalation moves the part to 3A001.a.5 when the full TID + SEU criteria are met.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "3A001.a",
+        relationship: "analogous",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A515.e",
+        relationship: "successor",
+        notes:
+          "When TID ≥ 500 krad(Si), the part may cross from 3A001.a.2 into the US 9A515.e/.d rad-hard space-grade regime.",
+      },
+    ],
+    citation:
+      "Reg. (EU) 2021/821 Annex I, Cat. 3, 3A001.a.2 (consolidated as of 2025/2003)",
+    validFrom: "2021-09-09",
+    notes:
+      "The TID ≥ 50 krad(Si) predicate is the screening threshold above which the matcher should flag rad-hardness for further review. Operators with rad-tolerant (not rad-hard) parts at TID < 50 krad fall out of capture here and into the broader 3A001 textual entries.",
+  },
+  {
+    canonicalId: "EU:3A001.a.5",
+    regime: "EU-ANNEX-I",
+    category: "3",
+    productGroup: "A",
+    entryNumber: "001",
+    subpara: "a.5",
+    title:
+      "Rad-hard microprocessors / FPGAs / memory (TID ≥ 5×10⁴ rad(Si)) (EU Cat 3)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "ic.radhard",
+      },
+      // EU 3A001.a.5: TID ≥ 5×10⁴ rad(Si) = 50 krad. Lower than the
+      // US 9A515.d full-five-criteria threshold (500 krad), so the
+      // EU captures more parts.
+      {
+        attribute: "radHardenedTID_krad",
+        op: "gte",
+        value: 50,
+      },
+      {
+        attribute: "isRadHardened",
+        op: "eq",
+        value: true,
+      },
+    ],
+    reasonsForControl: ["WA", "NS", "MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "9A515.d",
+        relationship: "subset_of",
+        notes:
+          "9A515.d covers the strict five-criteria rad-hard subset (TID ≥ 500 krad + four other thresholds). EU 3A001.a.5 captures the broader rad-hardened space-grade IC family at TID ≥ 50 krad.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A515.e",
+        relationship: "analogous",
+        notes:
+          "9A515.e (added 23 Oct 2024 IFR) captures TID ≥ 500 krad without the other four criteria — closer to the EU 3A001.a.5 shape but at a higher TID threshold.",
+      },
+      {
+        regime: "ITAR-USML",
+        id: "XV(e)(8)",
+        relationship: "predecessor",
+        notes:
+          "Rad-hardened ICs specifically designed for use in military/intelligence spacecraft remain USML XV(e)(8); commercial rad-hard ICs flowed to ECCN 9A515.d/.e post-2014 ECR.",
+      },
+    ],
+    citation:
+      "Reg. (EU) 2021/821 Annex I, Cat. 3, 3A001.a.5 (consolidated as of 2025/2003)",
+    validFrom: "2021-09-09",
+    notes:
+      "European space-grade processor / FPGA family — Cobham GR716, NanoXplore NG-LARGE, BAE RAD750-class, Microchip RTG4 — typically land here even before the US 9A515.d five-criteria gate engages. The EU control is broader by design.",
+  },
+  {
+    canonicalId: "EU:3A001.h.1",
+    regime: "EU-ANNEX-I",
+    category: "3",
+    productGroup: "A",
+    entryNumber: "001",
+    subpara: "h.1",
+    title:
+      "Atomic-frequency standards (Rb/Cs/H-maser) for spaceborne PNT (EU Cat 3)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "frequency-standard.atomic",
+      },
+      // Allan-variance is not a typed attribute. The matcher routes
+      // these via the spaceborne-clock itemClass; predicate captures
+      // the dominant signal. Operators supplying the cross-link path
+      // (Galileo PHM, GPS-IIIF RAFS) are caught by the prefix gate.
+      // A second predicate on temperature-range catches the radiation-
+      // qualified vacuum-cell variants used in spaceborne flight units.
+      {
+        attribute: "temperatureRangeCelsius",
+        op: "gte",
+        value: 100,
+      },
+    ],
+    reasonsForControl: ["WA", "NS"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "3A001.h.1",
+        relationship: "analogous",
+      },
+      {
+        regime: "ITAR-USML",
+        id: "XV(e)(15)",
+        relationship: "successor",
+        notes:
+          "Spaceborne atomic clocks specifically designed for military / GPS-IIIF-class payloads remain USML XV(e)(15). Commercial PNT-payload clocks (Galileo, BeiDou commercial signal) flow to ECCN 3A001.h.1 / 9A515.x.",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 3, 3A001.h.1 (consolidated)",
+    validFrom: "2021-09-09",
+    notes:
+      "The Allan-variance threshold (≤ 1×10⁻¹¹ at 1 s) is the legal definition; the matcher uses spaceborne-itemClass + wide-temperature as the practical screening predicate because Allan-variance is rarely supplied in commercial datasheets as a typed parametric. Spectratime PHM (Galileo IOV/FOC), Frequency Electronics Inc. RAFS (GPS-IIIF), and SAFRAN ASCAR rubidium-vapour lines all fall here.",
+  },
+  {
+    canonicalId: "EU:3A090.a",
+    regime: "EU-ANNEX-I",
+    category: "3",
+    productGroup: "A",
+    entryNumber: "090",
+    subpara: "a",
+    title:
+      "Advanced-computing AI accelerators — TPP > 4800 (Oct 2022 IFR transposition) (EU Cat 3)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "ic.ai-accelerator",
+      },
+      // The Oct 2022 IFR uses Total Processing Performance (TPP) as
+      // the headline gate. TPP is not yet a typed attribute on
+      // TradeItem — operators currently route AI-accelerator parts
+      // via the itemClass prefix and a follow-up manual review of
+      // the published TPP figure. The crossLinkBandwidthMbps Z25
+      // attribute is the closest proxy when the part is paired with
+      // HBM (high-bandwidth memory) above 1 TB/s aggregate (8 stacks
+      // × 1 Tbps); some AI-accelerator datasheets quote HBM bandwidth
+      // in Mbps after unit conversion. Below the proxy threshold the
+      // part still matches via itemClass and goes to the manual review
+      // lane.
+      {
+        attribute: "crossLinkBandwidthMbps",
+        op: "gte",
+        value: 1_000_000,
+      },
+    ],
+    reasonsForControl: ["NS"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "3A090.a",
+        relationship: "analogous",
+        notes:
+          "EU 3A090.a is the direct EU transposition of the US Oct 2022 IFR ECCN 3A090.a. The US version is the original source; the EU version was finalised via the Delegated Reg. 2025/2003.",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "3D090",
+        relationship: "components_of",
+        notes:
+          "3D090 (software) and 3E090 (technology) ride with 3A090.a — the development toolchain and IP are controlled together with the hardware.",
+      },
+    ],
+    citation:
+      "Reg. (EU) 2021/821 Annex I, Cat. 3, 3A090 (added by Delegated Reg. 2025/2003 transposing US Oct 2022 BIS IFR)",
+    validFrom: "2025-11-15",
+    notes:
+      "Headline AI-export control of the decade. Captures Nvidia H100/H200/B100/B200, AMD MI300/MI325, Intel Gaudi3, Google TPU v5e/v5p. Spaceborne on-board-AI inference engines typically do NOT trip this threshold (the H100 sits well above any spaceborne inference part by 1-2 orders of magnitude) — but operators integrating ground-station AI infrastructure into their satellite-data pipeline must classify the ground-side chips here.",
+  },
 ];
 
 // ─── Helpers ────────────────────────────────────────────────────────
