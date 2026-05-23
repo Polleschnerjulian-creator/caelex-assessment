@@ -96,6 +96,9 @@ model User {
   // licences, ITAR TAA/MLA, BIS Form 711 exemptions, etc.)
   tradeDeemedExportActions TradeDeemedExportAuthorization[] @relation("TradeDeemedExportActionBy")
 
+  // Z11 — Sammelgenehmigung (BAFA bulk-authorization) lifecycle actions
+  tradeSammelgenehmigungActions TradeSammelgenehmigung[] @relation("TradeSammelgenehmigungActionBy")
+
   // Mission domain (Sprint Mission-1) — first-class Mission entity
   // back-ref. Author of the Mission (creator). Distinct from
   // MissionSpacecraft / MissionPhase which have their own lifecycles.
@@ -3182,6 +3185,13 @@ model Organization {
   // foreign-national employees to access US-controlled technology
   // in-country (EAR § 734.13 + ITAR § 120.50). Org-scoped lifecycle.
   tradeDeemedExportAuthorizations TradeDeemedExportAuthorization[]
+
+  // Z11 — Sammelgenehmigungen (BAFA bulk-export-authorizations) granted
+  // to the org. Each one covers multiple shipments to the same end-user
+  // over a defined period (typically 1–2 years). Lifecycle: DRAFT →
+  // ACTIVE → (EXHAUSTED | EXPIRED | REVOKED). Per-operation draw-downs
+  // tracked via TradeSammelgenehmigungDrawDown.
+  tradeSammelgenehmigungen TradeSammelgenehmigung[]
 
   // Mission domain (Sprint Mission-1) — first-class Mission rows
   // (vs the legacy 1:1 Spacecraft=Mission collapse). Org-scoped.
@@ -11351,6 +11361,12 @@ model TradeParty {
   // error).
   vsdDisclosures TradeVoluntaryDisclosure[]
 
+  // Z11 — Sammelgenehmigungen where this party is one of the named
+  // allowed end-users. A bulk authorization can cover multiple
+  // end-users; the M:N relation lets a single party be referenced
+  // from many SAGs and a single SAG to list multiple parties.
+  sammelgenehmigungEndUsers TradeSammelgenehmigung[] @relation("SammelgenehmigungEndUser")
+
   @@index([organizationId, canonicalName])
   @@index([organizationId, screeningStatus])
   @@index([organizationId, status])
@@ -11701,6 +11717,12 @@ model TradeOperation {
   // that aggregated this operation. Operations are linked into reports
   // when they ship qualifying ECCN-controlled items in the period.
   supplement2ReportItems TradeSupplement2ReportItem[]
+
+  // Z11 — Sammelgenehmigung draw-down records. When an operation ships
+  // under a bulk authorization (rather than its own per-shipment
+  // licence), a TradeSammelgenehmigungDrawDown row records the
+  // operation → SAG attribution + the value consumed.
+  sammelgenehmigungDrawDowns TradeSammelgenehmigungDrawDown[]
 
   // ── Mission link (Sprint MA — Mission integration) ──
   /// Optional FK to the Mission this operation supports. Often a
@@ -12478,6 +12500,182 @@ enum TradeSupplement2Status {
   FILED
   OVERDUE
   AMENDED
+}
+
+// ════════════════════════════════════════════════════════════════════
+// COMPLY TRADE — SAMMELGENEHMIGUNG / BULK AUTHORIZATION (Z11, Tier 5)
+// ════════════════════════════════════════════════════════════════════
+// A Sammelgenehmigung (often "SAG" internally; BAFA refers to it as a
+// "Sammelausfuhrgenehmigung" or "Allgemeine Genehmigung") is a German
+// bulk-export-authorization granted by BAFA that covers MULTIPLE
+// shipments of the SAME goods to the SAME end-user (or pool of named
+// end-users) within a defined validity period — typically 12-24 months.
+//
+// It replaces the need for a per-shipment Einzelgenehmigung (E-AG) for
+// recurring exports where the parameters do not change. Operators
+// requesting one must usually have an Internal Compliance Programme
+// (ICP) at ≥80% maturity (BAFA "AGG" / "ICP-Z11" eligibility test —
+// shipped earlier as Z8).
+//
+// Legal anchors:
+//   - § 7 AWG (Außenwirtschaftsgesetz) — generic authorisation regime
+//   - § 8 AWV (Außenwirtschaftsverordnung) — operating rules
+//   - 19. AWV-ÄndVO 2024 — current allowance scope (post-Russia changes)
+//   - Art. 12 EU 2021/821 — EU framework underpinning national SAGs
+//   - BAFA "Merkblatt zur Sammelausfuhrgenehmigung" (latest revision)
+//
+// Lifecycle:
+//   DRAFT     — operator opened the row but BAFA grant not yet on file.
+//   ACTIVE    — BAFA grant confirmed, validity window open, capacity
+//               available. Operations may draw down against it.
+//   EXHAUSTED — drawnDownValueEur ≥ totalValueCapEur. No further
+//               draw-downs allowed; operator must either request a
+//               capacity uplift or fall back to per-shipment licences.
+//   EXPIRED   — validUntil < today. Cron-set absorbing state.
+//   REVOKED   — BAFA or operator manually invalidated the SAG.
+//
+// MVP scope (Z11 Tier 5):
+//   - Lifecycle row + draw-down child rows + capacity tracking
+//   - Soft integration via helper for operations engine
+//   - Daily cron for 30/14/3-day expiry reminders
+//   - List + detail UI under /trade/sammelgenehmigungen
+
+/// One Sammelgenehmigung (BAFA bulk export authorization) the org
+/// holds. Captures the BAFA grant terms (reference, validity, allowed
+/// ECCNs / destinations / end-users, total-value cap) plus a running
+/// draw-down ledger so the org can see remaining capacity at a glance.
+model TradeSammelgenehmigung {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  /// BAFA reference number of the granted authorization, e.g.
+  /// "AGG-DE-2026-12345". Free-text because BAFA reference formats
+  /// have changed across decades; we don't enforce a regex.
+  /// Required once the row is ACTIVE; nullable while DRAFT.
+  bafaReference String?
+
+  /// Human-readable label used in operator UI (e.g. "AeroJet Recurring
+  /// Avionics 2026-2027"). Distinct from bafaReference so the operator
+  /// can show a friendly name in dropdowns + summaries.
+  title String
+
+  /// Start of the validity window (typically the BAFA grant date).
+  /// Required even on DRAFT because the operator usually knows the
+  /// intended start date before BAFA confirms.
+  validFrom DateTime
+
+  /// End of the validity window. Cron transitions to EXPIRED on the
+  /// day after validUntil passes.
+  validUntil DateTime
+
+  /// ECCN (or USML) classification codes covered by the authorization.
+  /// Stored as a String[] for flexibility — BAFA typically lists an
+  /// Anlage AL position (e.g. "5A002.a") + optional sub-paragraph.
+  /// At least one entry required when transitioning DRAFT → ACTIVE.
+  allowedECCNs String[] @default([])
+
+  /// Destination countries covered (ISO-3166-1 alpha-2). Multiple
+  /// allowed because some SAGs cover a "destination pool" (e.g. all
+  /// EU + NATO countries). At least one entry required for ACTIVE.
+  allowedDestinations String[] @default([])
+
+  /// Named end-users covered. M:N to TradeParty so the operator can
+  /// list multiple end-users on one SAG and reference one party from
+  /// many SAGs. Empty list is allowed during DRAFT but discouraged
+  /// for ACTIVE (BAFA typically requires the end-user list to be
+  /// explicit). The service layer enforces "non-empty when ACTIVE".
+  allowedEndUsers TradeParty[] @relation("SammelgenehmigungEndUser")
+
+  /// Total value cap in EUR — the BAFA grant always specifies a
+  /// monetary ceiling beyond which the SAG is exhausted regardless
+  /// of validity period. Cron + service refuse draw-downs that would
+  /// push drawnDownValueEur past this cap.
+  totalValueCapEur Float
+
+  /// Running total of draw-downs (EUR) recorded against this SAG.
+  /// Updated by recordDrawDown(); never edited directly. Cron flips
+  /// status to EXHAUSTED when drawnDownValueEur ≥ totalValueCapEur.
+  drawnDownValueEur Float @default(0)
+
+  /// Lifecycle. See state-machine notes above.
+  status TradeSammelgenehmigungStatus @default(DRAFT)
+
+  /// User who last advanced the lifecycle (for audit). NULL for
+  /// system transitions (cron-driven EXPIRED / EXHAUSTED).
+  lastActionById String?
+  lastActionBy   User?   @relation("TradeSammelgenehmigungActionBy", fields: [lastActionById], references: [id], onDelete: SetNull)
+
+  /// Document vault path of the signed BAFA grant PDF, when uploaded.
+  /// Not enforced — operators may keep the grant outside Caelex.
+  grantDocumentId String?
+
+  /// Free-text operator notes (conditions, BAFA back-and-forth).
+  notes String? @db.Text
+
+  /// Draw-down ledger — one row per operation that shipped under
+  /// this SAG. The ledger is the source-of-truth; drawnDownValueEur
+  /// on this row is a denormalised sum for fast queries.
+  drawDowns TradeSammelgenehmigungDrawDown[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId, status])
+  @@index([organizationId, validUntil])
+  @@index([organizationId, bafaReference])
+  @@index([validUntil])
+}
+
+/// One draw-down ledger entry. A draw-down records that a single
+/// TradeOperation was authorised under the parent SAG (rather than
+/// against its own per-shipment licence) and consumed `valueEur` of
+/// the SAG's totalValueCap.
+model TradeSammelgenehmigungDrawDown {
+  id String @id @default(cuid())
+
+  sammelgenehmigungId String
+  sammelgenehmigung   TradeSammelgenehmigung @relation(fields: [sammelgenehmigungId], references: [id], onDelete: Cascade)
+
+  /// The operation that drew down. Set-Null preserves the ledger if
+  /// the operation is later soft-deleted (capacity accounting must
+  /// not be lost retroactively).
+  operationId String?
+  operation   TradeOperation? @relation(fields: [operationId], references: [id], onDelete: SetNull)
+
+  /// Snapshot of the operation reference at draw-down time (in case
+  /// the operation is renamed or removed later).
+  operationReference String
+
+  /// Value of the draw-down in EUR. Always positive — refunds (rare)
+  /// would be modelled as a negative-value ledger entry but the MVP
+  /// service refuses negative values.
+  valueEur Float
+
+  /// When the draw-down was recorded.
+  drawnDownAt DateTime @default(now())
+
+  /// Free-text note (e.g. invoice number, line-item reference).
+  notes String?
+
+  createdAt DateTime @default(now())
+
+  @@index([sammelgenehmigungId, drawnDownAt])
+  @@index([operationId])
+}
+
+/// Sammelgenehmigung lifecycle state machine.
+enum TradeSammelgenehmigungStatus {
+  /// Operator opened the row; BAFA grant not yet on file.
+  DRAFT
+  /// BAFA grant confirmed; validity window open; capacity remaining.
+  ACTIVE
+  /// drawnDownValueEur ≥ totalValueCapEur. Closed to further draw-downs.
+  EXHAUSTED
+  /// validUntil < today. Cron-set absorbing state.
+  EXPIRED
+  /// Manual invalidation by BAFA or operator.
+  REVOKED
 }
 
 // ════════════════════════════════════════════════════════════════════

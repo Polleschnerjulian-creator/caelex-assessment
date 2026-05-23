@@ -203,6 +203,10 @@
       "schedule": "30 9 * * *"
     },
     {
+      "path": "/api/cron/sammelgenehmigung-reminders",
+      "schedule": "30 9 * * *"
+    },
+    {
       "path": "/api/cron/supplement-2-period-open",
       "schedule": "0 2 * * *"
     },
