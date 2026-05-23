@@ -2315,6 +2315,381 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     notes:
       "The 'specially designed for USML XV' qualifier is decisive. A general-purpose rad-hard IC sold catalog-grade is 9A515.d/.e; the same IC engineered to a USML XV programme's qualification flow is XV(c). DDTC CJ recommended for borderline cases.",
   },
+
+  // ═══════════════════════════════════════════════════════════════
+  // Z34-Cat6 — EU Annex I Cat 6 parametric tripwires
+  //
+  // Companion to `src/data/trade/eu-annex-i-cat6.ts` (full Cat-6
+  // enumeration). This block ships the SPACE-CRITICAL parametric
+  // entries — the codes where the parametric matcher needs a hard
+  // numeric threshold to discriminate "controlled" from "not".
+  //
+  // Coverage:
+  //   - 6A002.a.4   focal-plane arrays via pixelPitchMicrons +
+  //                 itemClass prefix
+  //   - 6A002.b     monospectral imaging sensor via pixel-pitch
+  //   - 6A003.b     imaging cameras via frame-rate proxy
+  //                 (signalBandwidthMHz on the read-out interface)
+  //   - 6A004.a     mirrors via apertureMM threshold
+  //   - 6A005.b     semiconductor lasers via transmitPowerW
+  //   - 6A005.c.2   fiber lasers via transmitPowerW
+  //   - 6A006       magnetometers via itemClass + sensor-class
+  //   - 6A008.j     imaging radar (SAR) via groundResolutionMeters
+  //                 (the ICEYE / Capella / Umbra tripwire)
+  //
+  // Note: the EU:6A002.a.1 demo entry (shipped earlier under Z25)
+  // remains untouched; this block adds the remaining sub-paragraphs.
+  //
+  // Sources: Reg. (EU) 2021/821 Annex I, Cat. 6 (consolidated text).
+  // ═══════════════════════════════════════════════════════════════
+
+  {
+    canonicalId: "EU:6A002.a.4",
+    regime: "EU-ANNEX-I",
+    category: "6",
+    productGroup: "A",
+    entryNumber: "002",
+    subpara: "a.4",
+    title: "Focal-plane arrays — fine-pitch large-format (EU Cat 6)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "sensor.optical.fpa",
+      },
+      // Fine-pitch tripwire: pixel pitch ≤ 30 µm and large pixel-
+      // count drive 6A002.a.4 capture. The matcher uses the
+      // pixelPitchMicrons attribute introduced in Z25.
+      {
+        attribute: "pixelPitchMicrons",
+        op: "lte",
+        value: 30,
+      },
+    ],
+    reasonsForControl: ["WA", "NS"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "6A002.a.4",
+        relationship: "analogous",
+        notes:
+          "CCL 6A002.a.4 mirrors EU 6A002.a.4. Operators sourcing US-origin FPAs from Teledyne / Lynred should also evaluate EAR de-minimis.",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "6.A.2.a.4",
+        relationship: "derived_from",
+        notes: "Wassenaar Cat 6 Item A.2.a.4 — the multilateral baseline.",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 6, 6A002.a.4",
+    validFrom: "2021-09-09",
+    notes:
+      "EO smallsat operators (Planet, Satellogic, BlackSky) routinely integrate FPAs that clear this threshold. The pixel-pitch attribute is operator-supplied via the parametricAttributes JSON bag.",
+  },
+
+  {
+    canonicalId: "EU:6A002.b",
+    regime: "EU-ANNEX-I",
+    category: "6",
+    productGroup: "A",
+    entryNumber: "002",
+    subpara: "b",
+    title: "Monospectral imaging sensors — fine-pitch arrays (EU Cat 6)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "sensor.optical.monospectral",
+      },
+      // 6A002.b TDI / push-broom sensors typically trip at finer
+      // pixel pitches than the .a.4 FPA threshold.
+      {
+        attribute: "pixelPitchMicrons",
+        op: "lte",
+        value: 8,
+      },
+    ],
+    reasonsForControl: ["WA", "NS"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "6A002.b",
+        relationship: "analogous",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "6.A.2.b",
+        relationship: "derived_from",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 6, 6A002.b",
+    validFrom: "2021-09-09",
+  },
+
+  {
+    canonicalId: "EU:6A003.b",
+    regime: "EU-ANNEX-I",
+    category: "6",
+    productGroup: "A",
+    entryNumber: "003",
+    subpara: "b",
+    title: "Imaging cameras — high signal-bandwidth read-out (EU Cat 6)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "sensor.optical.camera",
+      },
+      // Frame-rate × pixel-count proxy: read-out signal bandwidth.
+      // Cameras with > 200 MHz read-out interface bandwidth are
+      // typically driving large-format high-frame-rate FPAs.
+      {
+        attribute: "signalBandwidthMHz",
+        op: "gte",
+        value: 200,
+      },
+    ],
+    reasonsForControl: ["WA", "NS"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "6A003.b",
+        relationship: "analogous",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "6.A.3.b",
+        relationship: "derived_from",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 6, 6A003.b",
+    validFrom: "2021-09-09",
+    notes:
+      "Video-from-space operators (UrtheCast Theia, Capella video mode) typically classify here. Frame-rate × resolution drives the read-out-interface bandwidth past the 200 MHz heuristic.",
+  },
+
+  {
+    canonicalId: "EU:6A004.a",
+    regime: "EU-ANNEX-I",
+    category: "6",
+    productGroup: "A",
+    entryNumber: "004",
+    subpara: "a",
+    title: "Optical mirrors — large-aperture monolithic (EU Cat 6)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "optic.mirror",
+      },
+      // Mirror aperture threshold: monolithic mirrors above 250 mm
+      // typically drive 6A004.a capture for spaceborne use.
+      {
+        attribute: "apertureMM",
+        op: "gte",
+        value: 250,
+      },
+    ],
+    reasonsForControl: ["WA", "NS"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "6A004.a",
+        relationship: "analogous",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "6.A.4.a",
+        relationship: "derived_from",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 6, 6A004.a",
+    validFrom: "2021-09-09",
+    notes:
+      "Captures space-telescope primary mirrors + laser-comm pointing mirror segments. Operators with sub-250mm mirrors typically fall out at this predicate but may still match 6A004.f (beam-steering) on slew-rate.",
+  },
+
+  {
+    canonicalId: "EU:6A005.b",
+    regime: "EU-ANNEX-I",
+    category: "6",
+    productGroup: "A",
+    entryNumber: "005",
+    subpara: "b",
+    title: "Semiconductor lasers — high-power diode lasers (EU Cat 6)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "laser.semiconductor",
+      },
+      // Output-power tripwire: semiconductor lasers above 1 W CW
+      // output typically drive 6A005.b capture for industrial /
+      // comms applications. Below 1 W typically EAR99.
+      {
+        attribute: "transmitPowerW",
+        op: "gte",
+        value: 1,
+      },
+    ],
+    reasonsForControl: ["WA", "NS"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "6A005.b",
+        relationship: "analogous",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "6.A.5.b",
+        relationship: "derived_from",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 6, 6A005.b",
+    validFrom: "2021-09-09",
+    notes:
+      "Captures the LiDAR illumination + laser-comm pump-diode market. The transmitPowerW threshold is the discriminator vs sub-watt telecom-grade diodes.",
+  },
+
+  {
+    canonicalId: "EU:6A005.c.2",
+    regime: "EU-ANNEX-I",
+    category: "6",
+    productGroup: "A",
+    entryNumber: "005",
+    subpara: "c.2",
+    title: "Fiber lasers — high-power CW (EU Cat 6)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "laser.fiber",
+      },
+      // Yb-doped fiber laser CW output threshold. ISL transmitters
+      // routinely operate at 5-20 W; this threshold catches them.
+      {
+        attribute: "transmitPowerW",
+        op: "gte",
+        value: 5,
+      },
+    ],
+    reasonsForControl: ["WA", "NS"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "6A005.c.2",
+        relationship: "analogous",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "6.A.5.c.2",
+        relationship: "derived_from",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 6, 6A005.c.2",
+    validFrom: "2021-09-09",
+    notes:
+      "Mynaric Condor, Tesat SCOT80 fiber-laser transmitters fall here. 'ITAR-free' marketing requires verified zero US-DNA — see Caelex De-Minimis-Calculator.",
+  },
+
+  {
+    canonicalId: "EU:6A006",
+    regime: "EU-ANNEX-I",
+    category: "6",
+    productGroup: "A",
+    entryNumber: "006",
+    title: "Magnetometers and magnetic-field sensors (EU Cat 6)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "sensor.magnetic",
+      },
+      // 6A006 is a sensor-class entry — the matcher uses itemClass
+      // discrimination plus the universal isSpeciallyDesigned
+      // qualifier for spaceborne / military-grade variants.
+      {
+        attribute: "isSpeciallyDesigned",
+        op: "eq",
+        value: true,
+      },
+    ],
+    reasonsForControl: ["WA", "NS"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "6A006",
+        relationship: "analogous",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "6.A.6",
+        relationship: "derived_from",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 6, 6A006",
+    validFrom: "2021-09-09",
+    notes:
+      "Spaceborne science magnetometers (Swarm, Cluster-class) typically clear the noise-floor threshold. Bus-attitude-reference fluxgates may also trip depending on noise-floor calibration.",
+  },
+
+  {
+    canonicalId: "EU:6A008.j",
+    regime: "EU-ANNEX-I",
+    category: "6",
+    productGroup: "A",
+    entryNumber: "008",
+    subpara: "j",
+    title: "Imaging radar (SAR) — sub-meter ground resolution (EU Cat 6)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "sensor.radar.sar",
+      },
+      // Sub-meter SAR tripwire: imaging radar systems with ground
+      // sample distance ≤ 3 m drive 6A008.j capture (the Wassenaar
+      // baseline). Below 0.5 m falls into the EU-autonomous AM-006.
+      {
+        attribute: "groundResolutionMeters",
+        op: "lte",
+        value: 3,
+      },
+    ],
+    reasonsForControl: ["WA", "NS"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "6A008.j",
+        relationship: "analogous",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "AM-006",
+        relationship: "subset_of",
+        notes:
+          "Sub-0.5 m GSD SAR is also captured by the EU-autonomous AM-006 (Delegated Reg. 2025/2003). 6A008.j is the Wassenaar baseline for ≤ 3 m GSD.",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "6.A.8.j",
+        relationship: "derived_from",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 6, 6A008.j",
+    validFrom: "2021-09-09",
+    notes:
+      "ICEYE, Capella, Umbra, Iceye-class smallsat SAR operators all clear this threshold. The groundResolutionMeters attribute is the operator-supplied discriminator vs > 3 m GSD synoptic SAR (less restricted).",
+  },
 ];
 
 // ─── Helpers ────────────────────────────────────────────────────────
