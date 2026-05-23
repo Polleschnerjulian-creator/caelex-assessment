@@ -106,6 +106,11 @@ model User {
   // SIEL-TC/OITCL). Lifecycle author of TradeUkEcjuLicense rows.
   tradeUkEcjuLicensesCreated TradeUkEcjuLicense[] @relation("TradeUkEcjuLicenseCreatedBy")
 
+  // Z38-US — FAA AST commercial launch license lifecycle actions
+  // (Part 450 Streamlined Launch & Re-entry licensing). Lifecycle
+  // author of TradeFaaAstLicense rows.
+  tradeFaaAstLicensesCreated TradeFaaAstLicense[] @relation("TradeFaaAstLicenseCreatedBy")
+
   // Caelex Trade — Settings Page (Sprint T-Settings).
   // Trade-scoped API keys created by this user. Distinct from `apiKeys`
   // back-ref above which targets the legacy `ApiKey` model used by the
@@ -3224,6 +3229,12 @@ model Organization {
   // OIEL / OGEL / SIEL-TC / OITCL license types administered by the
   // UK Export Control Joint Unit (Department for Business and Trade).
   tradeUkEcjuLicenses TradeUkEcjuLicense[]
+
+  // Z38-US — FAA AST commercial launch / re-entry licenses issued to
+  // the org under 14 CFR Part 450 (Streamlined Launch & Re-entry
+  // Licensing Rule). Administered by the FAA Office of Commercial
+  // Space Transportation.
+  tradeFaaAstLicenses TradeFaaAstLicense[]
 
   // Mission domain (Sprint Mission-1) — first-class Mission rows
   // (vs the legacy 1:1 Spacecraft=Mission collapse). Org-scoped.
@@ -14808,4 +14819,240 @@ enum TradeUkEcjuLicenseStatus {
   EXPIRED
   REVOKED
   EXHAUSTED
+}
+
+// ── Z38-US-FAA — TradeFaaAstLicense ──
+// ════════════════════════════════════════════════════════════════════
+// COMPLY TRADE — FAA AST COMMERCIAL LAUNCH LICENSING (Z38-US, Tier 4)
+// ════════════════════════════════════════════════════════════════════
+// The FAA Office of Commercial Space Transportation (FAA AST)
+// administers US commercial space launch + re-entry licensing under
+// 14 CFR Part 450 (the "Streamlined Launch & Re-entry Licensing Rule",
+// effective 15 Mar 2021). This is the US licensing path for commercial
+// launch providers (SpaceX, RocketLab, Firefly, ABL, Stoke Space,
+// Blue Origin, etc.) operating from US spaceports or US-licensed
+// vehicles.
+//
+// Caelex Trade now covers the EU (BAFA / DGE / ECJU), the UK (ECJU),
+// and France (CNES LOS). This model adds the *US AST* dimension on
+// top: which vehicle / launch site / operator type a Part 450 licence
+// covers, what the Maximum Probability of Casualty (Ec) threshold is,
+// what the financial-responsibility (Max Probable Loss) determination
+// is, when the licence expires, and what the NEPA environmental
+// review status is.
+//
+// Licence type taxonomy (14 CFR Part 450 + Part 435):
+//
+//   - PART_450_LAUNCH
+//             Streamlined launch licence; Part 450 Subpart B.
+//   - PART_450_REENTRY
+//             Streamlined re-entry licence; Part 450 Subpart B.
+//   - PART_450_VEHICLE_OPERATOR
+//             Vehicle Operator licence (umbrella for a vehicle type
+//             across multiple missions). Part 450 § 450.7.
+//   - PART_435_REENTRY_REUSABLE
+//             Legacy Part 435 re-entry licence for reusable
+//             suborbital vehicles (RLV) pre-Part 450 transition.
+//
+// Legal anchors:
+//   - 14 CFR Part 450 (Streamlined Launch & Re-entry Licensing Rule,
+//     final rule 85 FR 79566, Dec 2020)
+//   - 14 CFR Part 435 (Legacy re-entry of reusable suborbital RLVs)
+//   - 14 CFR Part 440 (Financial Responsibility — MPL determination)
+//   - 49 USC § 70101 et seq. (Commercial Space Launch Activities)
+//   - NEPA (42 USC § 4321 et seq.) — Environmental review
+//   - FAA AST Annual Compendium 2024
+//
+// State machine (lifecycle):
+//   DRAFT → PRE_APP_CONSULTATION → APPLICATION_SUBMITTED
+//         → ENVIRONMENTAL_REVIEW → UNDER_REVIEW
+//         → APPROVED → (EXPIRED | REVOKED)
+//   APPLICATION_SUBMITTED → REJECTED  (terminal)
+//
+// Mandatory § 450.101 Ec compliance: Maximum Probability of Casualty
+// from a single mission MUST be ≤ 1×10⁻⁴ (1e-4). Threshold mirrors EU
+// LOS Ec but is US-side and applies per-mission, not per-orbit.
+//
+// A separate cron flips APPROVED → EXPIRED when validUntil passes; a
+// reminder cron emits 90/30/7-day expiry buckets.
+
+/// One FAA AST commercial launch / re-entry licence under 14 CFR Part
+/// 450 (or legacy Part 435 for reusable suborbital RLVs). Operator
+/// creates a DRAFT once they identify a need; advances through
+/// PRE_APP_CONSULTATION (mandatory § 450.31 sit-down), then files
+/// APPLICATION_SUBMITTED, NEPA ENVIRONMENTAL_REVIEW (CATEX or EA),
+/// FAA technical UNDER_REVIEW, and ultimately APPROVED or REJECTED.
+model TradeFaaAstLicense {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  /// Operator entity name as filed with FAA AST. Typically the US
+  /// legal entity of the launch provider (e.g. "Space Exploration
+  /// Technologies Corp.", "Rocket Lab USA, Inc.").
+  operatorName String
+
+  /// Operator address as filed with FAA AST. Free-text to accommodate
+  /// US postal conventions (street, city, state, ZIP).
+  operatorAddress String @db.Text
+
+  /// Which FAA AST licence type. Drives the validity-period defaults
+  /// (5-year cap for Part 450) + the financial-responsibility
+  /// determination class.
+  licenseType TradeFaaAstLicenseType
+
+  /// FAA AST licence reference once issued (e.g. "LRLO 22-119" or
+  /// "VOL 23-095"). NULL until FAA returns a determination. Format
+  /// varies by licence type — launch references use the LRLO/LLO/VOL
+  /// numbering convention.
+  faaReference String?
+
+  /// Launch / re-entry site identifier. Free-text since FAA AST
+  /// recognises both federal ranges (Cape Canaveral, Vandenberg) and
+  /// commercial spaceports (Boca Chica, Spaceport America, Mojave Air
+  /// & Space Port, Mid-Atlantic Regional Spaceport on Wallops Island,
+  /// Spaceport Camden). Common values:
+  ///   "Cape Canaveral SFS LC-39A", "Cape Canaveral SFS LC-40",
+  ///   "VSFB SLC-4E", "Boca Chica (Starbase)", "Wallops MARS",
+  ///   "Spaceport America", "Mojave Air & Space Port",
+  ///   "Pacific Spaceport Kodiak".
+  launchSite String
+
+  /// Vehicle name as filed with FAA AST (e.g. "Falcon 9", "Electron",
+  /// "Alpha", "Neutron", "New Shepard").
+  vehicleName String
+
+  /// Vehicle classification driving the regulatory regime + Ec
+  /// thresholds. Sub-orbital vehicles have relaxed insurance bands;
+  /// reusable vehicles require additional reentry safety analysis.
+  vehicleType TradeFaaAstVehicleType
+
+  /// Maximum Probability of Casualty (Ec) from a single mission, per
+  /// 14 CFR § 450.101(a)(1). MUST be ≤ 1.0e-4. Stored as float
+  /// (sub-1.0 dimensionless probability). NULL until the operator has
+  /// run flight-safety analysis. Engine: `calculateEcCompliance()`.
+  maximumProbabilityOfCasualtyEc Float?
+
+  /// Required third-party liability insurance cap in USD as
+  /// determined by FAA Max Probable Loss (MPL) analysis under
+  /// 14 CFR Part 440. Stored as integer USD cents to avoid
+  /// floating-point drift (multiply USD by 100). NULL until § 440
+  /// determination is complete.
+  thirdPartyLiabilityCapUsdCents BigInt?
+
+  /// How the financial-responsibility requirement is satisfied per
+  /// 14 CFR Part 440 § 440.9. Drives which proof documents the
+  /// operator must lodge with FAA.
+  financialResponsibilityType TradeFaaAstFinancialResponsibilityType?
+
+  /// Validity-window start. Usually the FAA decision date (the
+  /// "issuance date" stamped on the licence).
+  validFrom DateTime?
+
+  /// Validity-window end. Part 450 caps at 5 years from issuance per
+  /// § 450.39. NULL for DRAFT (not yet known). Drives the reminder
+  /// cron + APPROVED → EXPIRED transition.
+  validUntil DateTime?
+
+  /// Lifecycle status. See TradeFaaAstLicenseStatus.
+  status TradeFaaAstLicenseStatus @default(DRAFT)
+
+  /// User who created the licence row.
+  createdById String?
+  createdBy   User?   @relation("TradeFaaAstLicenseCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  /// Operator-private notes (FAA correspondence, pre-app meeting
+  /// minutes, NEPA EA progress, MPL determination details).
+  notes String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId, status])
+  @@index([organizationId, licenseType])
+  @@index([validUntil])
+  @@index([faaReference])
+}
+
+/// FAA AST licence types administered by the Office of Commercial
+/// Space Transportation. Part 450 is the modern streamlined regime
+/// (post-Dec 2020); Part 435 is the legacy reusable-suborbital-RLV
+/// path still recognised for transitioning licences.
+enum TradeFaaAstLicenseType {
+  /// Part 450 launch licence — single mission or campaign of
+  /// missions of the same vehicle. Subpart B.
+  PART_450_LAUNCH
+
+  /// Part 450 re-entry licence — controlled re-entry of a US-licensed
+  /// vehicle. Subpart B.
+  PART_450_REENTRY
+
+  /// Part 450 Vehicle Operator licence — umbrella authorisation for a
+  /// vehicle TYPE across multiple missions (max 5 years). § 450.7.
+  PART_450_VEHICLE_OPERATOR
+
+  /// Part 435 legacy re-entry licence for reusable suborbital RLVs
+  /// (pre-Part 450 grand-fathered authorisations).
+  PART_435_REENTRY_REUSABLE
+}
+
+/// Vehicle classification driving § 450 + § 440 thresholds.
+enum TradeFaaAstVehicleType {
+  /// Sub-orbital trajectory; apogee in space but no orbital insertion
+  /// (New Shepard, SpaceShipTwo, sounding rockets). Relaxed third-
+  /// party liability caps.
+  SUB_ORBITAL
+
+  /// Orbital insertion (Falcon 9, Electron, Vulcan, Neutron).
+  /// Standard § 440 MPL determination required.
+  ORBITAL
+
+  /// Reusable vehicle (booster + capsule). Requires additional
+  /// reentry safety analysis per § 450 Subpart C.
+  REUSABLE
+
+  /// Expendable vehicle (e.g. Atlas V single-use stages).
+  EXPENDABLE
+}
+
+/// Financial-responsibility category per 14 CFR Part 440 § 440.9. The
+/// operator MUST satisfy one of these before FAA grants the licence.
+enum TradeFaaAstFinancialResponsibilityType {
+  /// FAA-determined Max Probable Loss (MPL) — insurance carrier
+  /// provides coverage to FAA-computed limits per § 440.9(b).
+  /// Standard path for orbital launches.
+  MAX_PROBABLE_LOSS
+
+  /// FAA-determined coverage where MPL analysis is not yet complete
+  /// — FAA sets a default limit until § 440.9 finalised.
+  FAA_DETERMINED
+
+  /// Operator self-insures with proof of financial capacity per
+  /// § 440.9(c). Available to very-large operators (e.g. SpaceX).
+  SELF_INSURED
+}
+
+/// FAA AST licence lifecycle. Forward path:
+///   DRAFT → PRE_APP_CONSULTATION → APPLICATION_SUBMITTED
+///         → ENVIRONMENTAL_REVIEW → UNDER_REVIEW → APPROVED
+/// Terminal-side paths:
+///   APPLICATION_SUBMITTED / UNDER_REVIEW → REJECTED
+///   APPROVED → EXPIRED  (cron when validUntil passes)
+///   APPROVED → REVOKED  (FAA-initiated mid-mission)
+///
+/// PRE_APP_CONSULTATION is § 450.31's mandatory pre-application
+/// consultation phase — operator must engage FAA AST 45+ days before
+/// formal application. ENVIRONMENTAL_REVIEW is the NEPA Categorical
+/// Exclusion (CATEX) or Environmental Assessment (EA) phase, required
+/// for new launch sites or new vehicle configurations.
+enum TradeFaaAstLicenseStatus {
+  DRAFT
+  PRE_APP_CONSULTATION
+  APPLICATION_SUBMITTED
+  ENVIRONMENTAL_REVIEW
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  EXPIRED
+  REVOKED
 }
