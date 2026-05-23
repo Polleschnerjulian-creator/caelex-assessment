@@ -32,6 +32,16 @@
  * were already present and remain untouched. Parametric predicates
  * for the MTCR Cat-I tripwires (9A102 / 9A103 / 9A108 / 9A116 /
  * 9A119) live in the cross-walk.
+ *
+ * Sprint Z24c (Tier 3) — added EU Annex I Cat-9 software entries
+ * (9D001, 9D002, 9D003, 9D004, 9D005, 9D101, 9D103, 9D104) and
+ * technology entries (9E001, 9E002, 9E003, 9E101, 9E102, 9E103,
+ * 9E104). These are the companion entries to the 9A hardware
+ * ECCNs covered by Z24a + Z24b. Software/tech entries are
+ * predominantly textual — the matcher engine treats them as
+ * "deemed-export" capture surfaces, so no parametric thresholds
+ * apply for most. Sources: Reg. (EU) 2021/821 Annex I, Cat. 9
+ * Sections D + E (consolidated).
  */
 
 import type { ClassificationEntry, ClassificationCoverage } from "./schema";
@@ -56,7 +66,7 @@ export const EU_ANNEX_I_COVERAGE: ClassificationCoverage = {
   ],
   asOfDate: ASOF,
   officialTotalEntriesApprox: 11000,
-  caelexCoverageCount: 45,
+  caelexCoverageCount: 60,
 };
 
 export const EU_ANNEX_I_ENTRIES: ClassificationEntry[] = [
@@ -643,6 +653,198 @@ export const EU_ANNEX_I_ENTRIES: ClassificationEntry[] = [
     asOfDate: ASOF,
     notes:
       "ECR 2014 (US) moved commercial sats from USML XV → ECCN 9A515. EU Annex I 9A515 mirrors this post-2014 Wassenaar alignment. Check for mil-spec avionics before assuming commercial exemption.",
+  },
+
+  // ─── Z24c — Cat. 9 Software (9D) entries ───────────────────────────
+  // Source: Reg. (EU) 2021/821 Annex I, Cat. 9 Section D (consolidated).
+  // 9D entries are the software companions to 9A hardware. Capture
+  // surface is "deemed-export" (technology transfer to foreign nationals
+  // even within the EU). No parametric thresholds — textual capture only.
+  {
+    code: "9D001",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Software for development of 9A001-9A012 items",
+    description:
+      "EU Annex I 9D001 — software specially designed for the development of items in 9A001 (gas turbines), 9A004 (SLVs/spacecraft), 9A005-9A011 (rocket propulsion families), or 9A012 (UAVs). Controls flow from Wassenaar 9.D.1. Typical capture: flight-software toolchains, CFD model libraries, control-law simulators.",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "spacecraft-bus-platforms",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+  },
+  {
+    code: "9D002",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Software for production of 9A001-9A012 items",
+    description:
+      "EU Annex I 9D002 — software specially designed for the production of items in 9A001-9A012. Captures manufacturing-execution-system (MES) software, CAM toolpath generators for aerospace machining, and propellant-grain-cure controllers. Controls flow from Wassenaar 9.D.2.",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "spacecraft-bus-platforms",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+  },
+  {
+    code: "9D003",
+    jurisdiction: "EU_ANNEX_I",
+    title: "FADEC software for aero gas turbines",
+    description:
+      "EU Annex I 9D003 — software for Full-Authority Digital Engine Control (FADEC) systems for aero gas turbines covered by 9A001. Includes the source code, executables, and parameter files implementing control laws. Controls flow from Wassenaar 9.D.3.",
+    controlReasons: ["NS"],
+    crossReferenceTopic: null,
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+  },
+  {
+    code: "9D004",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Software for development of gas turbine engine components",
+    description:
+      "EU Annex I 9D004 — software specially designed for the development of digital electronic engine controls or aerodynamic test data libraries for items in 9A001. Captures wind-tunnel-data correlation tools and engine-design optimization suites. Controls flow from Wassenaar 9.D.4.",
+    controlReasons: ["NS"],
+    crossReferenceTopic: null,
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+  },
+  {
+    code: "9D005",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Computational fluid dynamics (CFD) software for hypersonic flows",
+    description:
+      "EU Annex I 9D005 — CFD software for design and analysis of hypersonic-flow regimes (Mach ≥ 5) usable in aerospace vehicles, scramjets, or re-entry-vehicle aerothermodynamics. Cross-reference 9A103 (scramjet subsystems) and 9A116 (re-entry vehicles). Controls flow from Wassenaar 9.D.5.",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "high-temp-coatings-aerospace",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+  },
+  {
+    code: "9D101",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Software for MTCR Cat. II items (9A101-9A121)",
+    description:
+      "EU Annex I 9D101 — software specially designed for use of items in 9A101 (turbojets/turbofans for missiles), 9A102 (reusable space vehicles), 9A104 (sounding rockets), 9A105 (Cat-II liquid engines), 9A106-9A121 (MTCR-derived subsystems). MTCR Item 16.D.1 transposition. Deemed-export capture for missile-program-relevant simulation, guidance, and integration software.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "complete-launch-vehicles",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+  },
+  {
+    code: "9D103",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Software for modelling MTCR-relevant trajectory & integration",
+    description:
+      "EU Annex I 9D103 — software for modelling, simulating, or design-integration analysis of MTCR-relevant systems: trajectory simulators, multi-body dynamics for stage separation, guidance-navigation-control synthesis tools. MTCR Item 16.D.3 transposition.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "complete-launch-vehicles",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+  },
+  {
+    code: "9D104",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Software for ramjet/scramjet & combined-cycle propulsion design",
+    description:
+      "EU Annex I 9D104 — software specifically designed for the design or production of ramjet, scramjet, pulse-jet or combined-cycle propulsion systems covered by 9A103. Captures aerothermodynamic codes, combustor-design suites, and hypersonic-fuel-injection simulators. MTCR Item 3.D.1 transposition.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "rocket-propulsion-liquid-engines",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+    notes:
+      "Hypersonic-propulsion design software remains the long-pole IP-transfer risk for European New-Space. Many universities and SMEs use US-origin CFD code (ANSYS Fluent, STAR-CCM+, OpenFOAM derivatives) which may also trigger US EAR 9D004 / 9D104 on the US side.",
+  },
+
+  // ─── Z24c — Cat. 9 Technology (9E) entries ─────────────────────────
+  // Source: Reg. (EU) 2021/821 Annex I, Cat. 9 Section E (consolidated).
+  // 9E entries cover the technology (drawings, specs, know-how, training)
+  // for development, production, or use of 9A items. Deemed-export
+  // capture is the dominant compliance surface here.
+  {
+    code: "9E001",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Technology for development of 9A & 9B items",
+    description:
+      "EU Annex I 9E001 — technology, according to the General Technology Note, for the development of items in 9A001-9A012 or 9B (test/inspection/production equipment for aerospace). Captures drawings, specifications, manufacturing processes, integration know-how. Controls flow from Wassenaar 9.E.1.",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "spacecraft-bus-platforms",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    notes:
+      "9E001 is the dominant deemed-export trigger for European New-Space — every supplier datasheet, integration drawing, and process-spec shared with a non-EU employee or visitor falls within this scope.",
+  },
+  {
+    code: "9E002",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Technology for production of 9A & 9B items",
+    description:
+      "EU Annex I 9E002 — technology, per the General Technology Note, for the production of items in 9A or 9B. Captures detailed manufacturing-process technology, jig/fixture designs, and qualification-test procedures. Controls flow from Wassenaar 9.E.2.",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "spacecraft-bus-platforms",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+  },
+  {
+    code: "9E003",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Specific aerospace technology (repair, hot-section, FOD)",
+    description:
+      "EU Annex I 9E003 — specific aerospace-engine technology: hot-section components, single-crystal blade alloys, FOD-resistant turbine-blade coatings, gas-path-component repair, and FADEC integration. Targets the technical know-how that distinguishes a competitive engine vendor from a sub-contractor. Controls flow from Wassenaar 9.E.3.",
+    controlReasons: ["NS"],
+    crossReferenceTopic: "high-temp-coatings-aerospace",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+  },
+  {
+    code: "9E101",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Technology for MTCR Cat. II items (9A101-9A111)",
+    description:
+      "EU Annex I 9E101 — technology, per the General Technology Note, for the development or production of MTCR-derived items in 9A101-9A111. Captures the full IP-transfer surface for missile-relevant aerospace: rocket-engine drawings, composite-fabrication specs, GNC algorithms. MTCR Item 16.E.1 transposition.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "complete-launch-vehicles",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+    notes:
+      "9E101 + 9D101 together are the most common license-trigger pair for European New-Space engineering services exports. Deemed-export to non-EU nationals at EU sites is the largest unmanaged risk.",
+  },
+  {
+    code: "9E102",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Technology for use of MTCR Cat. II items",
+    description:
+      "EU Annex I 9E102 — technology, per the General Technology Note, for the use of items in 9A101-9A112 or 9D101. Captures operating manuals, mission-planning know-how, and operator-training materials. MTCR Item 16.E.2 transposition.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "complete-launch-vehicles",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+  },
+  {
+    code: "9E103",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Technology for ramjet/scramjet design (MTCR Item 3)",
+    description:
+      "EU Annex I 9E103 — technology, per the General Technology Note, for the development or production of ramjet, scramjet, pulse-jet or combined-cycle propulsion systems covered by 9A103. Captures hypersonic-flow design know-how. MTCR Item 3.E.1 transposition.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "rocket-propulsion-liquid-engines",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+  },
+  {
+    code: "9E104",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Technology for re-entry vehicles & TPS (MTCR Item 10)",
+    description:
+      "EU Annex I 9E104 — technology, per the General Technology Note, for the development or production of re-entry vehicles, heat shields, and thermal protection systems covered by 9A116. Captures ablative-TPS material specs, aero-thermal-shape design, and trajectory-recovery know-how. MTCR Item 10.E.1 transposition.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "high-temp-coatings-aerospace",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "I",
+    notes:
+      "9E104 carries the MTCR-Cat-I strong-presumption-of-denial when the underlying re-entry vehicle (9A116) clears Cat-I payload thresholds. Commercial re-entry vehicle programs (Atmos Space, The Exploration Company) intersect heavily with this entry.",
   },
 ];
 
