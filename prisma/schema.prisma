@@ -99,6 +99,12 @@ model User {
   // Z11 — Sammelgenehmigung (BAFA bulk-authorization) lifecycle actions
   tradeSammelgenehmigungActions TradeSammelgenehmigung[] @relation("TradeSammelgenehmigungActionBy")
 
+  // Caelex Trade — Settings Page (Sprint T-Settings).
+  // Trade-scoped API keys created by this user. Distinct from `apiKeys`
+  // back-ref above which targets the legacy `ApiKey` model used by the
+  // main platform API; Trade keys carry their own prefix + scope set.
+  tradeApiKeysCreated TradeApiKey[] @relation("TradeApiKeyCreatedBy")
+
   // Mission domain (Sprint Mission-1) — first-class Mission entity
   // back-ref. Author of the Mission (creator). Distinct from
   // MissionSpacecraft / MissionPhase which have their own lifecycles.
@@ -3159,6 +3165,16 @@ model Organization {
   // audit cycle, voluntary disclosures) that migrated out of the
   // legacy user-scoped ExportControlAssessment model.
   tradeComplianceProgram TradeComplianceProgram?
+
+  // Caelex Trade — Settings Page (Sprint T-Settings).
+  // Three org-scoped tables backing /trade/settings: a Trade-specific
+  // org profile (BAFA contact, EORI, DUNS+4, preferred regimes), a
+  // notification-preference row (1:1), and an org-scoped API-key list
+  // distinct from the main `ApiKey` model so Trade keys carry their
+  // own prefix (`caelex_trade_`) and scope vocabulary.
+  tradeOrgProfile              TradeOrgProfile?
+  tradeNotificationPreferences TradeNotificationPreferences?
+  tradeApiKeys                 TradeApiKey[]
 
   // Caelex Trade Sprint E5 — End-Use Certificate requests
   // tracked per (party, operation?). Lifecycle: REQUESTED →
@@ -14286,4 +14302,140 @@ enum TradeDeemedExportAuthorizationStatus {
   ACTIVE
   EXPIRED
   REVOKED
+}
+
+// ════════════════════════════════════════════════════════════════════
+// CAELEX TRADE — SETTINGS PAGE (Sprint T-Settings)
+// ════════════════════════════════════════════════════════════════════
+// Three org-scoped tables backing /trade/settings. All decoupled from
+// the main platform settings: Trade has its own org profile (focused
+// on export-control admin data), its own notification toggles (one
+// per Trade-specific event type), its own API-key list (so Trade
+// keys can carry the `caelex_trade_` prefix and a distinct scope
+// vocabulary without polluting the main `ApiKey` model), and audit
+// settings packed onto the notification-preferences row to keep the
+// migration footprint small.
+
+/// Trade-specific organisation profile — operator fills this in
+/// over time as they onboard. All fields optional; the row is
+/// lazy-created on first /trade/settings visit. Sensitive
+/// identifiers (EORI, DUNS+4, BAFA contact e-mail) are stored as
+/// AES-256-GCM ciphertext via the encryption boundary in
+/// `org-profile-service.ts` — never written to in raw form.
+model TradeOrgProfile {
+  id             String       @id @default(cuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // ── BAFA primary contact (Germany's export-control authority) ──
+  /// Plaintext — name, role, phone are operational and not PII-sensitive.
+  bafaContactName     String?
+  bafaContactRole     String?
+  bafaContactPhone    String?
+  /// AES-256-GCM ciphertext of BAFA contact e-mail. Decrypt via service.
+  bafaContactEmailEnc String?
+
+  // ── EU customs identifier ──
+  /// AES-256-GCM ciphertext of EORI number (Economic Operator
+  /// Registration & Identification — e.g. DE123456789012345).
+  eoriNumberEnc String?
+
+  // ── US Dun & Bradstreet identifier ──
+  /// AES-256-GCM ciphertext of D-U-N-S+4 (13-digit identifier required
+  /// by SAM.gov for entities transacting with US gov / ITAR exporters).
+  dunsPlus4Enc String?
+
+  // ── Jurisdiction + regime preferences ──
+  /// ISO-3166-1 alpha-2 country code of the primary export jurisdiction
+  /// (e.g. "DE", "FR", "US"). Used to bias dashboards + report templates.
+  primaryExportJurisdiction String?
+  /// JSON array of preferred regime tags — any of:
+  ///   "BIS" (US Bureau of Industry & Security),
+  ///   "BAFA" (German Federal Office for Economic Affairs),
+  ///   "DDTC" (US State Dept Directorate of Defense Trade Controls),
+  ///   "ECJU" (UK Export Control Joint Unit).
+  /// Stored as a JSON-encoded string array; service parses on read.
+  preferredRegimesJson      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Per-org email notification preferences for Trade-specific events.
+/// All toggles default ON — operators are opted in to expiry / sanctions
+/// alerts on first visit. Audit-trail settings (retention period,
+/// webhook URL, per-event-type webhook toggles) live on the same row
+/// because they share the same write cadence and access pattern.
+model TradeNotificationPreferences {
+  id             String       @id @default(cuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // ── Email-notification toggles (default true) ──
+  notifyLicenseExpiry           Boolean @default(true)
+  notifyEucExpiry               Boolean @default(true)
+  notifyReexportConsentExpiry   Boolean @default(true)
+  notifySanctionsHit            Boolean @default(true)
+  notifyCatchAllTrigger         Boolean @default(true)
+  notifySupplement2Reminder     Boolean @default(true)
+  notifySammelgenehmigungExpiry Boolean @default(true)
+  notifyVsdDeadline             Boolean @default(true)
+
+  // ── Audit-trail settings ──
+  /// Years to retain audit records before they become archive candidates.
+  /// Default 5y matches 15 CFR § 762.6 (EAR) and 22 CFR § 122.5 (ITAR).
+  auditRetentionYears           Int     @default(5)
+  /// Optional webhook URL — POSTed when audit events fire (if at least
+  /// one of the auditWebhook* toggles is true).
+  auditWebhookUrl               String?
+  /// Per-event-type webhook toggles. All default false — operator
+  /// explicitly opts in to outbound webhooks.
+  auditWebhookOnClassification  Boolean @default(false)
+  auditWebhookOnLicenseDecision Boolean @default(false)
+  auditWebhookOnScreeningHit    Boolean @default(false)
+  auditWebhookOnEucLifecycle    Boolean @default(false)
+  auditWebhookOnVsdSubmitted    Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Trade-scoped API keys — distinct from the main `ApiKey` model so we
+/// can carry a `caelex_trade_` prefix, a smaller scope vocabulary
+/// ("read-only" | "full-access"), and a usage pattern that doesn't
+/// pollute platform-wide rate-limit buckets. The secret is hashed
+/// (SHA-256, salted with ENCRYPTION_KEY via HMAC) and never returned
+/// after creation — the create flow surfaces the plaintext exactly once.
+model TradeApiKey {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  /// Human-readable label set by the creator.
+  name String
+
+  /// HMAC-SHA256 hash of the secret. Never store plaintext.
+  keyHash   String @unique
+  /// First 12 chars of the plaintext key — for identification in lists.
+  /// Pattern: `caelex_trade_<5-char-suffix>` shown as the prefix.
+  keyPrefix String
+
+  /// Permission level. Mirrors the read-only / full-access split that
+  /// users see in the UI — kept as a string column instead of an enum
+  /// so future granularity (per-resource scopes) is a non-breaking add.
+  scopes String[]
+
+  isActive   Boolean   @default(true)
+  lastUsedAt DateTime?
+  expiresAt  DateTime?
+
+  createdById   String
+  createdBy     User      @relation("TradeApiKeyCreatedBy", fields: [createdById], references: [id])
+  createdAt     DateTime  @default(now())
+  revokedAt     DateTime?
+  revokedReason String?
+
+  @@index([organizationId])
+  @@index([keyHash])
+  @@index([keyPrefix])
 }
