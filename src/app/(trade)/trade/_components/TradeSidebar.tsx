@@ -33,6 +33,7 @@ import {
   Sparkles,
   ScanSearch,
   Settings,
+  UserCog,
   type LucideIcon,
 } from "lucide-react";
 
@@ -117,6 +118,12 @@ const NAV_SECTIONS: NavSection[] = [
         href: "/trade/vsd",
         icon: AlertOctagon,
         activePrefix: "/trade/vsd",
+      },
+      {
+        label: "Deemed Exports",
+        href: "/trade/deemed-exports",
+        icon: UserCog,
+        activePrefix: "/trade/deemed-exports",
       },
     ],
   },
