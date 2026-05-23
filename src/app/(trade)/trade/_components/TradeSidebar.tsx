@@ -187,6 +187,13 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: UserCog,
         activePrefix: "/trade/deemed-exports",
       },
+      // Z37-UK — UK ECJU export licences (SIEL/OIEL/OGEL/SIEL-TC/OITCL)
+      {
+        label: "UK ECJU Licences",
+        href: "/trade/uk-ecju",
+        icon: FileCheck,
+        activePrefix: "/trade/uk-ecju",
+      },
     ],
   },
   {

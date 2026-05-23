@@ -245,6 +245,10 @@
     {
       "path": "/api/cron/france-los-reminders",
       "schedule": "20 9 * * *"
+    },
+    {
+      "path": "/api/cron/uk-ecju-reminders",
+      "schedule": "15 9 * * *"
     }
   ]
 }
