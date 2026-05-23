@@ -31,6 +31,7 @@ import {
 import { OperationLinesPanel } from "../_components/OperationLinesPanel";
 import { OperationLifecyclePanel } from "../_components/OperationLifecyclePanel";
 import { OperationLicensesPanel } from "../_components/OperationLicensesPanel";
+import { ShamRiskChip } from "../_components/ShamRiskChip";
 import { BafaPdfButton } from "@/components/trade/BafaPdfButton";
 import { BafaXmlButton } from "@/components/trade/BafaXmlButton";
 import { BafaXsdVersionWarning } from "@/components/trade/BafaXsdVersionWarning";
@@ -346,6 +347,11 @@ export default function OperationDetailPage({
           </ul>
         </div>
       )}
+
+      {/* Z16 — OFAC 2026 Sham-Transaction Doctrine detector chip. Pure
+          read-only surface; clicking "Details" expands red-flags +
+          enforcement citations. Auto-fetches once on mount. */}
+      <ShamRiskChip operationId={op.id} />
 
       {/* Z5c — drift banner above the action bar when the serializer's
           XSD-version constant has diverged from the verified target. */}
