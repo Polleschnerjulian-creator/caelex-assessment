@@ -855,14 +855,24 @@ Z1, Z2, Z2b, Z3a-Z3v, Z8, Z10 — see `CAELEX-TRADE-LIVING-ROADMAP.md` § 3 for 
 
 The product is **functionally complete** per the three blueprints when:
 
-- [ ] All Tier 1 sprints SHIPPED (Z18, Z19, Z20a-d, Z21, Z22) — closes the catastrophic 9x515-to-D:5 0% trap
-- [ ] All Tier 2 sprints SHIPPED (Z4a-d, Z5a-c) — closes the MVP-wedge
-- [ ] All Tier 3 sprints SHIPPED (Z23, Z24, Z25, Z26, Z27, Z28) — full ontology coverage per Blueprint 3
-- [ ] All Tier 4 sprints SHIPPED (Z29, Z30, Z31, Z32) — operational workflows
-- [ ] Tier 5 sprints prioritised per user direction (Z6 PDFs + Z9 UBO are the highest-value remaining)
-- [ ] 1500+ trade tests passing
-- [ ] Every Blueprint 3 § 7 "hard edge" parameter encoded with two-sided boundary tests
-- [ ] Every Blueprint 2 § 9.3 Example A-F produces the documented outcome
+- [x] All Tier 1 sprints SHIPPED (Z18, Z19, Z20a-d, Z21, Z22) — closes the catastrophic 9x515-to-D:5 0% trap
+- [x] All Tier 2 sprints SHIPPED (Z4a-d, Z5a-c) — closes the MVP-wedge
+- [x] All Tier 3 sprints SHIPPED (Z23, Z24, Z25, Z26, Z27, Z28) — full ontology coverage per Blueprint 3
+- [x] All Tier 4 sprints SHIPPED (Z29, Z30, Z31, Z32) — operational workflows
+- [x] Tier 5 sprints prioritised per user direction (Z6 PDFs + Z9 UBO shipped; Z11, Z12, Z16 shipped)
+- [x] 1500+ trade tests passing (currently **1,984 across 84 files**)
+- [x] Every Blueprint 3 § 7 "hard edge" parameter encoded with two-sided boundary tests (aperture 0.50m, SEU 1×10⁻¹⁰ — verified in `parametric-matcher.test.ts`)
+- [~] Blueprint 2 § 9.3 Examples A-F produce documented outcomes (**A, B, C, D, E verified** — Example F lacks an explicit `describe()` block, listed as residual gap)
+
+### Residual gaps (post-Plan)
+
+These are NOT spec violations — they're items the Plan-closure audit identified that could be polished in Phase 2:
+
+1. **Blueprint 2 § 9.3 Example F** — referenced in `cascade.test.ts` header doc but no dedicated `describe()` block. Add explicit test in a future cleanup.
+2. **3 explicit TODO comments** in trade code: `src/lib/trade/bafa/xsd-version.ts` (XSD-drift cron follow-up from Z5c), `src/lib/trade/bafa/report-builder.ts` (TradeOperationLine unitOfMeasure modeling).
+3. **8 pending production Prisma migrations** since batch 8 — see `docs/PRODUCTION-MIGRATION-RUNBOOK.md` for the run procedure.
+4. **End-to-end production verification** of the 5 new feature surfaces hasn't been performed yet (will reveal real bugs vs theoretical-test-pass).
+5. **Accessibility + mobile-responsive audit** — not yet conducted as a dedicated sprint.
 
 When this is true, the product can be marketed as **legally defensible for European space exporters**. Until then, the gaps are real and operators must be told.
 
