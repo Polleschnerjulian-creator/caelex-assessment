@@ -49,6 +49,7 @@ export type RegimeName =
   | "ITAR-USML" // US 22 CFR 121
   | "EU-ANNEX-I" // EU Reg. 2021/821 Annex I
   | "DE-AL-TEIL-IB" // German Ausfuhrliste Teil I B (national dual-use)
+  | "JP-METI" // Japan METI Schedule 1 / 2 (FEFTA + ETCO)
   | "MTCR-ANNEX" // MTCR (multilateral)
   | "WASSENAAR" // Wassenaar Arrangement
   | "NSG" // Nuclear Suppliers Group
@@ -4136,6 +4137,271 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     validFrom: "2021-09-09",
     notes:
       "Z34c demo — exercises hyperspectralBandCount. The 20-band threshold is the canonical multispectral / hyperspectral boundary. WorldView-3 (29 bands — fires), Sentinel-2 MSI (13 bands — does NOT fire), CHRIS-PROBA (62 bands), PRISMA (240 bands), EnMAP (244 bands) all qualify.",
+  },
+
+  // Z35-JP-METI — Japan METI Schedule 1 (Goods)
+  //
+  // Parametric capture for the four most-walked METI categories the
+  // matcher needs to discriminate when classifying for Japanese
+  // operators (Mitsubishi Heavy / IHI / JAXA-partner / ALE / Astroscale
+  // Japan / ispace):
+  //
+  //   - JP-METI:4(1)   — Spacecraft and components.
+  //     Fires on itemClass = spacecraft.* + isSpeciallyDesigned. Mirrors
+  //     EU 9A004 / EAR 9A515.
+  //   - JP-METI:4(2)   — Rocket propulsion. Fires on
+  //     itemClass = propulsion.* + isSpeciallyDesigned. Mirrors EU 9A005.
+  //   - JP-METI:4(7)   — Optical sensors for spacecraft. Fires on
+  //     itemClass = sensor.imager + apertureMM threshold. Mirrors EU
+  //     6A002 (via cross-walk to the Cat 6 imager family).
+  //   - JP-METI:11(1)  — Telecommunications equipment above digital-
+  //     coding-rate thresholds. Fires on itemClass = spacecraft.comms
+  //     prefix. Mirrors EU 5A001.a.
+  //
+  // The fifth entry (JP-METI:11(5)) captures METI crypto items —
+  // every Japanese satellite TT&C link encryptor walks through here.
+  // ═══════════════════════════════════════════════════════════════════
+  {
+    canonicalId: "JP-METI:4(1)",
+    regime: "JP-METI",
+    category: "4",
+    productGroup: "1",
+    entryNumber: "1",
+    title:
+      "Spacecraft and specially designed components (Japan METI Schedule 1 Cat 4(1))",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "spacecraft",
+      },
+      {
+        attribute: "isSpeciallyDesigned",
+        op: "eq",
+        value: true,
+      },
+    ],
+    reasonsForControl: ["NS", "WA"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A004",
+        relationship: "analogous",
+        notes:
+          "EU Annex I 9A004 is the direct dual-use mirror for spacecraft + components.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A515",
+        relationship: "analogous",
+        notes:
+          "US ECCN 9A515 captures spacecraft after the 2014 ECR transfer from USML XV.",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "9.A.4",
+        relationship: "derived_from",
+        notes: "Wassenaar Cat 9 9.A.4 — spacecraft + components.",
+      },
+    ],
+    citation:
+      "Export Trade Control Order (輸出貿易管理令) Appended Table 1, Item 4(1); METI Ministerial Ordinance",
+    validFrom: "2017-11-29",
+    notes:
+      "Japan applies the standard Wassenaar 'predominantly applies' specially-designed criterion. Operators of Mitsubishi Heavy / IHI commercial spacecraft programmes walk this path.",
+  },
+  {
+    canonicalId: "JP-METI:4(2)",
+    regime: "JP-METI",
+    category: "4",
+    productGroup: "2",
+    entryNumber: "2",
+    title:
+      "Rocket propulsion systems and components (Japan METI Schedule 1 Cat 4(2))",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "propulsion",
+      },
+      {
+        attribute: "isSpeciallyDesigned",
+        op: "eq",
+        value: true,
+      },
+    ],
+    reasonsForControl: ["NS", "MT", "WA"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A005",
+        relationship: "analogous",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A105",
+        relationship: "analogous",
+        notes:
+          "9A105 captures MTCR-derived liquid rocket motor components; 9A005 dual-use rocket motors.",
+      },
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 2",
+        relationship: "derived_from",
+        notes:
+          "MTCR Item 2 — complete rocket systems + sub-systems above MTCR threshold.",
+      },
+    ],
+    citation:
+      "Export Trade Control Order Appended Table 1, Item 4(2); METI Ministerial Ordinance",
+    validFrom: "2017-11-29",
+    notes:
+      "IHI Aerospace's BT-4 apogee kick, MHI LE-9 (H3 first stage), and EP thrusters above Isp thresholds all fire. MT control reason triggers Japan's strong-presumption-of-denial gate for MTCR Partner-country exports of the full propulsion subsystem.",
+  },
+  {
+    canonicalId: "JP-METI:4(7)",
+    regime: "JP-METI",
+    category: "4",
+    productGroup: "7",
+    entryNumber: "7",
+    title:
+      "Optical sensors specially designed for spacecraft (Japan METI Schedule 1 Cat 4(7))",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "sensor.imager",
+      },
+      // Aperture tripwire: ≥ 350 mm captures the standard Wassenaar
+      // 6.A.2.a.2 + 6.A.2.b family of space-borne EO imagers above the
+      // commercial-research-imager threshold.
+      {
+        attribute: "apertureMM",
+        op: "gte",
+        value: 350,
+      },
+    ],
+    reasonsForControl: ["NS", "WA"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "6A002",
+        relationship: "analogous",
+        notes:
+          "EU Cat 6A002 is the imager-family mirror — same Wassenaar 6.A.2 origin.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A515.e",
+        relationship: "analogous",
+        notes:
+          "US 9A515.e captures spacecraft-integrated EO sensors; bare imagers cross to 6A002.",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "6.A.2",
+        relationship: "derived_from",
+      },
+    ],
+    citation:
+      "Export Trade Control Order Appended Table 1, Item 4(7); METI Ministerial Ordinance",
+    validFrom: "2017-11-29",
+    notes:
+      "Japanese space-imaging operators: ALOS-3 (panchromatic), Hisaki (UV), and Hayabusa-2 LIDAR all fire on Cat 4(7). Sub-0.5 m aperture EO imagers may cross to USML XV(a)(7) at the spacecraft-integration level.",
+  },
+  {
+    canonicalId: "JP-METI:11(1)",
+    regime: "JP-METI",
+    category: "11",
+    productGroup: "1",
+    entryNumber: "1",
+    title:
+      "Telecommunications equipment above digital-coding rate thresholds (Japan METI Schedule 1 Cat 11(1))",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "spacecraft.communications",
+      },
+    ],
+    reasonsForControl: ["NS", "WA"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "5A001.a",
+        relationship: "analogous",
+        notes:
+          "EU 5A001.a — telecom systems with digital techniques above defined data rates.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "5A001.a",
+        relationship: "analogous",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "5.A.1.a",
+        relationship: "derived_from",
+        notes: "Wassenaar Cat 5 Part 1 — telecommunications systems.",
+      },
+    ],
+    citation:
+      "Export Trade Control Order Appended Table 1, Item 11(1); METI Ministerial Ordinance",
+    validFrom: "2017-11-29",
+    notes:
+      "Captures comm-sat ground-station modems, ISL terminals, antenna arrays above frequency tripwires. Cross-controlled with Cat 1(7) for military anti-jam variants.",
+  },
+  {
+    canonicalId: "JP-METI:11(5)",
+    regime: "JP-METI",
+    category: "11",
+    productGroup: "5",
+    entryNumber: "5",
+    title:
+      "Cryptographic equipment above strength thresholds (Japan METI Schedule 1 Cat 11(5))",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "spacecraft.crypto",
+      },
+      {
+        attribute: "isSpeciallyDesigned",
+        op: "eq",
+        value: true,
+      },
+    ],
+    reasonsForControl: ["NS", "EI", "WA"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "5A002.a",
+        relationship: "analogous",
+        notes: "EU 5A002.a — direct crypto-module mirror.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "5A002.a",
+        relationship: "analogous",
+        notes:
+          "US 5A002 wrapped by EAR Encryption Items framework (ENC, MMKT).",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "5.A.2.a",
+        relationship: "derived_from",
+      },
+    ],
+    citation:
+      "Export Trade Control Order Appended Table 1, Item 11(5); METI Ministerial Ordinance",
+    validFrom: "2017-11-29",
+    notes:
+      "Captures TT&C link encryptors + telemetry crypto units on Japanese commercial + government satellites. METI's mass-market exemption (2018 notice) is narrower than US §740.17 (ENC) — space-rated crypto modules almost never qualify.",
   },
 ];
 

@@ -107,6 +107,7 @@ const VALID_REGIMES: readonly RegimeName[] = [
   "ITAR-USML",
   "EU-ANNEX-I",
   "DE-AL-TEIL-IB",
+  "JP-METI",
   "MTCR-ANNEX",
   "WASSENAAR",
   "NSG",
