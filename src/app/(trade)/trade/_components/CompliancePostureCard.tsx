@@ -68,13 +68,7 @@ export function CompliancePostureCard() {
         </p>
       </div>
 
-      <div
-        className="overflow-hidden rounded-[14px] bg-trade-bg-panel ring-1 ring-black/[0.04] dark:ring-white/[0.06]"
-        style={{
-          boxShadow:
-            "0 1px 2px rgba(15, 23, 42, 0.04), 0 2px 6px rgba(15, 23, 42, 0.03)",
-        }}
-      >
+      <div className="overflow-hidden rounded-[12px] border border-black/[0.07] bg-trade-bg-elevated dark:border-white/[0.06]">
         <div className="flex flex-col gap-8 p-8 lg:flex-row lg:items-center">
           {/* Hero illustration + headline metric */}
           <div className="flex flex-shrink-0 flex-row items-center gap-6 lg:flex-col lg:items-start">

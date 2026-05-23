@@ -52,23 +52,19 @@ function QuickStartCard({
   return (
     <Link
       href={href}
-      className="group relative flex flex-col items-center gap-3 rounded-[14px] bg-trade-bg-panel p-6 ring-1 ring-black/[0.04] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.08)] dark:ring-white/[0.06]"
-      style={{
-        boxShadow:
-          "0 1px 2px rgba(15, 23, 42, 0.04), 0 2px 6px rgba(15, 23, 42, 0.03)",
-      }}
+      className="group relative flex flex-col items-center gap-3 rounded-[12px] border border-black/[0.07] bg-trade-bg-elevated p-6 transition-colors duration-150 hover:bg-trade-bg-subtle dark:border-white/[0.06]"
     >
-      <div className="flex h-24 w-24 items-center justify-center">
+      <div className="flex h-20 w-20 items-center justify-center">
         {illustration}
       </div>
-      <div className="flex flex-col items-center gap-1">
+      <div className="flex flex-col items-center gap-0.5">
         <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-trade-text-muted">
           {label}
         </p>
-        <p className="text-[28px] font-light leading-none tracking-tight text-trade-text-primary tabular-nums">
+        <p className="text-[26px] font-light leading-none tracking-tight text-trade-text-primary tabular-nums">
           {value}
         </p>
-        <p className={`text-[12px] ${hintColor}`}>{hint}</p>
+        <p className={`mt-0.5 text-[12px] ${hintColor}`}>{hint}</p>
       </div>
     </Link>
   );

@@ -15,10 +15,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isSuperAdmin } from "@/lib/super-admin";
 import { getComplianceHealth } from "@/lib/trade/compliance-health-service";
-import { getWelcomeKpis } from "@/lib/trade/welcome-feed/kpi-aggregator";
 import { getActivityFeed } from "@/lib/trade/welcome-feed/activity-feed-service";
 import { ComplianceHealthPanel } from "./_components/ComplianceHealthPanel";
-import { KpiCardsRow } from "./_components/KpiCardsRow";
 import { ActivityFeedPanel } from "./_components/ActivityFeedPanel";
 import {
   UpcomingDeadlinesStrip,
@@ -85,7 +83,6 @@ export default async function TradeDashboardPage() {
     licensesActiveCount,
     licensesExpiringSoon,
     complianceHealth,
-    welcomeKpis,
     activityEvents,
     eucDeadlineRows,
     reexportDeadlineRows,
@@ -138,7 +135,6 @@ export default async function TradeDashboardPage() {
       take: 5,
     }),
     getComplianceHealth(orgId),
-    getWelcomeKpis(orgId, now),
     getActivityFeed(orgId, { now, maxItems: 20, windowDays: 30 }),
     prisma.tradeEUCRequest.findMany({
       where: {
@@ -285,7 +281,7 @@ export default async function TradeDashboardPage() {
 
   return (
     <div
-      className="mx-auto max-w-screen-xl px-8 py-10"
+      className="mx-auto max-w-[1200px] px-10 py-10"
       style={{
         fontFamily:
           '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", system-ui, sans-serif',
@@ -294,11 +290,10 @@ export default async function TradeDashboardPage() {
       {/* Apple-style Workspace header — replaces large H1 + LIVE pill */}
       <WorkspaceHeader orgName={org?.name ?? "your workspace"} />
 
-      {/* KPI cards — headline indicators (Sprint Welcome-Polish) */}
-      <KpiCardsRow kpis={welcomeKpis} />
-
       {/* QuickStart grid — Apple-style hero cards with 3D illustrations.
-          Replaces the previous flat KpiTile grid. */}
+          The previous KpiCardsRow (Key indicators) is suppressed in this
+          iteration to reduce visual duplication — QuickStart covers the
+          same entities with stronger visual hierarchy. */}
       <QuickStartGrid
         itemsCount={itemsCount}
         unclassifiedItemsCount={unclassifiedItemsCount}
