@@ -16,7 +16,8 @@
  *   3. OPERATIONS          — Operations pipeline, Licenses, Classify (AI)
  *   4. LIFECYCLE DOCUMENTS — EUCs, Re-Export Consents, Self-Disclosures
  *                             (VSD), Sammelgenehmigungen
- *   5. REPORTS & WORKFLOWS — Deemed Exports (+ Z33 Training Corpus slot)
+ *   5. REPORTS & WORKFLOWS — Deemed Exports
+ *   7. RESEARCH — Training Corpus (Z33 — BAFA AzG + DDTC CJ precedents)
  *   6. CONFIGURATION       — Compliance Program, Settings
  *
  * Defaults: Overview / Master Data / Operations are expanded. The
@@ -55,6 +56,7 @@ import {
   UserCog,
   Menu,
   X,
+  BookOpen,
   type LucideIcon,
 } from "lucide-react";
 import { TradeSidebarGroup } from "./TradeSidebarGroup";
@@ -178,7 +180,6 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: UserCog,
         activePrefix: "/trade/deemed-exports",
       },
-      // Z33 — Training Corpus link goes here
     ],
   },
   {
@@ -197,6 +198,19 @@ export const NAV_GROUPS: NavGroup[] = [
         href: "/trade/settings",
         icon: Settings,
         activePrefix: "/trade/settings",
+      },
+    ],
+  },
+  {
+    id: "research",
+    label: "Research",
+    defaultExpanded: false,
+    items: [
+      {
+        label: "Training Corpus",
+        href: "/trade/research/training-corpus",
+        icon: BookOpen,
+        activePrefix: "/trade/research/training-corpus",
       },
     ],
   },

@@ -90,6 +90,7 @@ vi.mock("lucide-react", () => {
     UserCog: icon("UserCog"),
     Menu: icon("Menu"),
     X: icon("X"),
+    BookOpen: icon("BookOpen"),
     ChevronRight: icon("ChevronRight"),
   };
 });
