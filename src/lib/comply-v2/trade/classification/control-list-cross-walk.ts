@@ -2690,6 +2690,266 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     notes:
       "ICEYE, Capella, Umbra, Iceye-class smallsat SAR operators all clear this threshold. The groundResolutionMeters attribute is the operator-supplied discriminator vs > 3 m GSD synoptic SAR (less restricted).",
   },
+
+  // Z34-Cat5 — EU Annex I Cat. 5 (Telecom + Information Security)
+  //
+  // Parametric capture for the three space-critical sub-entries the
+  // matcher needs to discriminate at run-time:
+  //
+  //   - EU:5A001.b — inter-satellite link bandwidth tripwire. Operators
+  //     of LEO/MEO constellation ISL terminals (RF + optical) hit this
+  //     directly. Threshold uses Z25's `crossLinkBandwidthMbps`.
+  //   - EU:5A001.f.1 — spread-spectrum / frequency-hopping anti-jam
+  //     radio. The canonical TT&C anti-jam tripwire — fires on the
+  //     `isAntiJam` Z3a flag.
+  //   - EU:5A002.a — crypto modules above the symmetric > 56-bit /
+  //     asymmetric ≥ 512-bit factorisation strength threshold. Every
+  //     satellite TT&C link encryptor + telemetry crypto unit fires
+  //     here.
+  //
+  // Two more entries (EU:5A002.f for QKD, EU:5D002.c for standalone
+  // crypto software) round out the Cat-5 coverage with parametric +
+  // itemClass-prefix capture so the matcher can rank without falling
+  // back to manual review.
+  // ═══════════════════════════════════════════════════════════════════
+  {
+    canonicalId: "EU:5A001.b",
+    regime: "EU-ANNEX-I",
+    category: "5",
+    productGroup: "A",
+    entryNumber: "001",
+    subpara: "b",
+    title:
+      "Telecom radio/MMIC/phased-array equipment incl. inter-satellite-link transmit/receive (EU Cat 5 Part 1)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "spacecraft.communications",
+      },
+      // ISL tripwire: crossLinkBandwidthMbps ≥ 1000 (1 Gbps) — the
+      // structural threshold separating the Mynaric / Tesat / CACI
+      // constellation-grade ISL class from the legacy single-satellite
+      // RF telemetry class. Sourced from Z25 attribute vocabulary.
+      {
+        attribute: "crossLinkBandwidthMbps",
+        op: "gte",
+        value: 1000,
+      },
+    ],
+    reasonsForControl: ["NS"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "5A001.b",
+        relationship: "analogous",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "5.A.1.b",
+        relationship: "derived_from",
+        notes: "Wassenaar Cat. 5 Part 1 — telecommunications systems.",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "AM-005",
+        relationship: "superset_of",
+        notes:
+          "EU-autonomous AM-005 (Delegated Reg. 2025/2003) sits at a stricter capture envelope for the constellation-class OISL use case.",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 5 Part 1, 5A001.b",
+    validFrom: "2021-09-09",
+    notes:
+      "Inter-satellite link entry — Mynaric Condor, Tesat SCOT80, CACI photonic terminals as well as RF-ISL constellation modems (Iridium NEXT-class) fire here. Operators of intra-constellation mesh networks above 1 Gbps must walk a Cat-5-Part-1 classification path.",
+  },
+  {
+    canonicalId: "EU:5A001.f.1",
+    regime: "EU-ANNEX-I",
+    category: "5",
+    productGroup: "A",
+    entryNumber: "001",
+    subpara: "f.1",
+    title:
+      "Spread-spectrum / frequency-hopping anti-jam radio (EU Cat 5 Part 1)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "spacecraft.communications",
+      },
+      // Spread-spectrum anti-jam: matches when the operator-supplied
+      // isAntiJam boolean is true. Cross-control with MTCR Item 11
+      // (whose anti-jam annexes appear via MT control reason).
+      {
+        attribute: "isAntiJam",
+        op: "eq",
+        value: true,
+      },
+    ],
+    reasonsForControl: ["NS", "MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "5A001.f.1",
+        relationship: "analogous",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "5.A.1.f.1",
+        relationship: "derived_from",
+      },
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 11",
+        relationship: "analogous",
+        notes:
+          "MTCR Item 11 — anti-jam TT&C is captured under the broader sub-system controls.",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 5 Part 1, 5A001.f.1",
+    validFrom: "2021-09-09",
+    notes:
+      "Space-critical: GEO / MEO comm-sats with hardened TT&C uplinks (military and dual-use, e.g. Galileo PRS, EGNOS, Iridium NEXT command) fire here directly. The MT reason-for-control means a strong-presumption-of-denial gate triggers for MTCR-Partnership country exports of the full TT&C subsystem.",
+  },
+  {
+    canonicalId: "EU:5A002.a",
+    regime: "EU-ANNEX-I",
+    category: "5",
+    productGroup: "A",
+    entryNumber: "002",
+    subpara: "a",
+    title:
+      "Cryptographic items > 56-bit symmetric / ≥ 512-bit asymmetric (EU Cat 5 Part 2)",
+    predicates: [
+      // Crypto-module capture: keyed on the explicit itemClass plus
+      // the universal isSpeciallyDesigned qualifier — bit-strength
+      // thresholds are walked at license-determination time, not in
+      // the matcher's classification phase, because they require
+      // algorithm-aware parsing the matcher does not perform.
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "spacecraft.crypto",
+      },
+      {
+        attribute: "isSpeciallyDesigned",
+        op: "eq",
+        value: true,
+      },
+    ],
+    reasonsForControl: ["NS", "EI"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "5A002.a",
+        relationship: "analogous",
+        notes:
+          "US CCL 5A002 maps 1:1 with EU 5A002 but is wrapped by the EAR Encryption Items license-exception framework (ENC, MMKT).",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "5.A.2.a",
+        relationship: "derived_from",
+        notes: "Wassenaar Cat. 5 Part 2 — cryptography.",
+      },
+      {
+        regime: "ITAR-USML",
+        id: "XIII(b)",
+        relationship: "analogous",
+        notes:
+          "USML XIII(b) captures crypto items specifically designed for military use, which over-rides 5A002 capture under the see-through rule.",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 5 Part 2, 5A002.a",
+    validFrom: "2021-09-09",
+    notes:
+      "Satellite-payload crypto modules: every TT&C link encryptor (AES-256 + RSA-2048 typical), telemetry confidentiality unit, and on-board key-management module fires here. Operators must check Note 3 (Cryptography Note) for potential mass-market carve-out — but space-rated, FIPS-140-3-evaluated crypto modules almost never qualify for the mass-market exemption.",
+  },
+  {
+    canonicalId: "EU:5A002.f",
+    regime: "EU-ANNEX-I",
+    category: "5",
+    productGroup: "A",
+    entryNumber: "002",
+    subpara: "f",
+    title: "Quantum cryptography (QKD) items (EU Cat 5 Part 2)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "spacecraft.crypto.quantum",
+      },
+      {
+        attribute: "isSpeciallyDesigned",
+        op: "eq",
+        value: true,
+      },
+    ],
+    reasonsForControl: ["NS", "EI"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "WASSENAAR",
+        id: "5.A.2.f",
+        relationship: "derived_from",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "5A002.f",
+        relationship: "analogous",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 5 Part 2, 5A002.f",
+    validFrom: "2021-09-09",
+    notes:
+      "Emerging space relevance — Eagle-1 (ESA / SES QKD demonstrator) and follow-on EU IRIS² QKD payload fire here. Quantum-state-prep + entangled-photon-source hardware on the satellite is the primary capture.",
+  },
+  {
+    canonicalId: "EU:5D002.c",
+    regime: "EU-ANNEX-I",
+    category: "5",
+    productGroup: "D",
+    entryNumber: "002",
+    subpara: "c",
+    title:
+      "Standalone crypto software (libraries, satellite-payload crypto stacks) (EU Cat 5 Part 2)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "spacecraft.software.crypto",
+      },
+    ],
+    reasonsForControl: ["NS", "EI"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "5D002.c",
+        relationship: "analogous",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "5D003",
+        relationship: "analogous",
+        notes:
+          "5D003 is the exemption-by-Note slot for publicly-available crypto software and Cryptography-Note mass-market carve-outs.",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "5.D.2.c",
+        relationship: "derived_from",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 5 Part 2, 5D002.c",
+    validFrom: "2021-09-09",
+    notes:
+      "Most-controversial Cat-5 software capture — open-source crypto (OpenSSL, libsodium) can be exempt under Note 4. Operators must walk both Note 3 (Cryptography Note) and Note 4 (publicly-available source) before claiming exemption; satellite-mission crypto stacks rarely qualify because the integration know-how itself remains 5E002 technology.",
+  },
 ];
 
 // ─── Helpers ────────────────────────────────────────────────────────
