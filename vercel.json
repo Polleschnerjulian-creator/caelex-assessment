@@ -203,6 +203,14 @@
       "schedule": "30 9 * * *"
     },
     {
+      "path": "/api/cron/supplement-2-period-open",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/supplement-2-reminders",
+      "schedule": "45 9 * * *"
+    },
+    {
       "path": "/api/cron/cowf-heartbeat",
       "schedule": "*/30 * * * *"
     },
