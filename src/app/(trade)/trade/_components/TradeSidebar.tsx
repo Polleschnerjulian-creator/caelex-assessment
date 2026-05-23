@@ -35,6 +35,7 @@ import {
   ScanSearch,
   Settings,
   UserCog,
+  BookOpen,
   type LucideIcon,
 } from "lucide-react";
 
@@ -142,6 +143,17 @@ const NAV_SECTIONS: NavSection[] = [
         href: "/trade/astra",
         icon: Sparkles,
         activePrefix: "/trade/astra",
+      },
+    ],
+  },
+  {
+    label: "Research",
+    items: [
+      {
+        label: "Training Corpus",
+        href: "/trade/research/training-corpus",
+        icon: BookOpen,
+        activePrefix: "/trade/research/training-corpus",
       },
     ],
   },
