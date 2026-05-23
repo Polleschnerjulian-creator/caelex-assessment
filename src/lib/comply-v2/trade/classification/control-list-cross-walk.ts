@@ -2257,6 +2257,64 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     notes:
       "Catches upper-stage kit suppliers (D-Orbit ION, Momentus Vigoride, Impulse Mira) whose individual stages routinely clear the 1.1×10⁶ N·s threshold despite operating in station-keeping or low-impulse mission profiles. The stage's own design impulse is the test, not its operational duty cycle.",
   },
+
+  // ═══════════════════════════════════════════════════════════════
+  // USML XV(c) — Rad-hardened microelectronics (Batch 13)
+  //
+  // The historical USML XV(c) sub-category controls rad-hardened
+  // microcircuits **specially designed for USML XV defense articles**.
+  // Post-2014 ECR, most general-purpose rad-hard ICs moved to 9A515.d
+  // (five-criteria conjunctive test) or 9A515.e (TID-only). XV(c)
+  // retains jurisdiction over the specially-designed-for-USML cases.
+  //
+  // The EAR 600-series counterpart is 9A515.d when all five criteria
+  // are met; 9A515.e otherwise. The EU Annex I pendant is 3A001.a.2
+  // (Wassenaar Cat 3A001 rad-hard ICs). Cross-walk graph:
+  //   USML XV(c)   ↔ EAR 9A515.d / .e   ↔ EU 3A001.a.2
+  // ═══════════════════════════════════════════════════════════════
+  {
+    canonicalId: "USML:XV(c)",
+    regime: "ITAR-USML",
+    category: "XV",
+    productGroup: "c",
+    entryNumber: "c",
+    title:
+      "Radiation-hardened microcircuits specially designed for USML XV defense articles",
+    predicates: [
+      { attribute: "isRadHardened", op: "eq", value: true },
+      { attribute: "isSpeciallyDesigned", op: "eq", value: true },
+      { attribute: "itemClass", op: "prefix", value: "ic.radhard" },
+    ],
+    reasonsForControl: ["ITAR"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "9A515.d",
+        relationship: "successor",
+        notes:
+          "9A515.d covers rad-hard ICs meeting all five conjunctive criteria; USML XV(c) retains jurisdiction over ICs specially designed for USML XV defense-article spacecraft regardless of which 9A515.d criteria are met.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A515.e",
+        relationship: "successor",
+        notes:
+          "9A515.e (added 2024 IFR) covers TID-only rad-hard ICs; USML XV(c) applies when the IC is specially designed for a USML XV system.",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "3A001.a.2",
+        relationship: "analogous",
+        notes:
+          "Wassenaar Cat 3A001.a.2 — rad-hard integrated circuits. The EU pendant lives under Cat 3 Electronics rather than Cat 9 Aerospace.",
+      },
+    ],
+    citation: "22 CFR § 121.1 Cat XV(c) (eCFR, accessed 2026-05-23)",
+    validFrom: "2014-05-13",
+    notes:
+      "The 'specially designed for USML XV' qualifier is decisive. A general-purpose rad-hard IC sold catalog-grade is 9A515.d/.e; the same IC engineered to a USML XV programme's qualification flow is XV(c). DDTC CJ recommended for borderline cases.",
+  },
 ];
 
 // ─── Helpers ────────────────────────────────────────────────────────
