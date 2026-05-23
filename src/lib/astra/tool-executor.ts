@@ -124,6 +124,167 @@ function decodeBase64(input: string): Uint8Array {
   return new Uint8Array(buf);
 }
 
+// ─── Trade-feature helpers (used by predict_license_time) ───
+
+/**
+ * Coarse ISO-3166 country code → EAR destination-group bucket.
+ * Used by `predict_license_time` to feed the licence-time predictor.
+ *
+ * Z22 Country-Group Resolver is the authoritative mapper for the full
+ * 250-country set; this helper replicates only the high-confidence
+ * buckets (E embargoed, EU intra-community, CHINA, RUSSIA, Five-Eyes
+ * ALLIED, Group A allies). Unknowns default to "B" (most-favoured-
+ * nation broad bucket), which matches the dataset's "default" rows.
+ */
+export function resolveDestinationGroup(
+  countryCode: string,
+): "A" | "B" | "D" | "E" | "CHINA" | "RUSSIA" | "EU" | "ALLIED" {
+  const cc = countryCode.toUpperCase();
+  // Embargoed (Country Group E:1 / E:2)
+  if (cc === "CU" || cc === "IR" || cc === "KP" || cc === "SY" || cc === "AF") {
+    return "E";
+  }
+  // Bilateral special cases
+  if (cc === "CN" || cc === "HK" || cc === "MO") return "CHINA";
+  if (cc === "RU" || cc === "BY") return "RUSSIA";
+  // EU + EFTA intra-community
+  const EU_PLUS = new Set([
+    "AT",
+    "BE",
+    "BG",
+    "HR",
+    "CY",
+    "CZ",
+    "DK",
+    "EE",
+    "FI",
+    "FR",
+    "DE",
+    "GR",
+    "HU",
+    "IE",
+    "IT",
+    "LV",
+    "LT",
+    "LU",
+    "MT",
+    "NL",
+    "PL",
+    "PT",
+    "RO",
+    "SK",
+    "SI",
+    "ES",
+    "SE",
+    "IS",
+    "LI",
+    "NO",
+    "CH",
+  ]);
+  if (EU_PLUS.has(cc)) return "EU";
+  // Five Eyes / NATO partners not in Group A specifically
+  if (cc === "AU" || cc === "CA" || cc === "NZ" || cc === "GB") {
+    return "ALLIED";
+  }
+  // Country Group A allies (subset — A:1 NATO allies + key A:5/A:6)
+  const A_GROUP = new Set([
+    "JP",
+    "KR",
+    "TW",
+    "IL",
+    "SG",
+    "TR",
+    "IN",
+    "AR",
+    "BR",
+  ]);
+  if (A_GROUP.has(cc)) return "A";
+  // Country Group D — generally restricted
+  const D_GROUP = new Set([
+    "AZ",
+    "BY",
+    "BN",
+    "ZW",
+    "MM",
+    "VE",
+    "SD",
+    "DZ",
+    "EG",
+    "JO",
+    "LB",
+    "LY",
+    "TN",
+    "AE",
+    "PK",
+  ]);
+  if (D_GROUP.has(cc)) return "D";
+  // Default to Group B (most-favoured-nation broad bucket)
+  return "B";
+}
+
+/**
+ * Coarse ECCN string → bucket. Matches the prefixes documented in
+ * src/lib/trade/license-analytics/historical-times.ts.
+ *
+ * USML categories (Roman numerals) and 0Y521 / 0Y6XX encryption
+ * specials are recognised before the generic 600-series / 9x515 /
+ * standard dual-use checks. EAR99 falls out at the bottom.
+ */
+export function resolveEccnBucket(
+  eccn: string,
+):
+  | "0Y_SERIES"
+  | "STANDARD_DUAL_USE"
+  | "SIX_HUNDRED_SERIES"
+  | "9X515"
+  | "USML"
+  | "EAR99" {
+  const e = eccn.trim().toUpperCase();
+  if (!e || e === "EAR99") return "EAR99";
+  // USML — Roman numeral category (e.g. "XV", "XII(d)", "IV(a)(1)")
+  if (/^[IVXLCDM]+(\(|$)/.test(e)) return "USML";
+  // 0Y521 / 0Y6XX encryption + advanced
+  if (/^0[A-Z]521\b/.test(e) || /^0[A-Z]6/.test(e)) return "0Y_SERIES";
+  // 9x515 spacecraft
+  if (/^9[A-Z]515/.test(e)) return "9X515";
+  // 600-series (defence) — digit 6 in third position
+  if (/^[0-9][A-Z]6[0-9]{2}/.test(e)) return "SIX_HUNDRED_SERIES";
+  // Standard dual-use ECCN pattern
+  if (/^[0-9][A-Z][0-9]{3}/.test(e)) return "STANDARD_DUAL_USE";
+  return "EAR99";
+}
+
+/**
+ * Default licence form type per authority. Used when caller omits
+ * `formType` — picks the most-common operator-facing licence.
+ */
+export function defaultFormTypeFor(authority: string): string {
+  switch (authority) {
+    case "BIS":
+      return "BIS_STANDARD";
+    case "DDTC":
+      return "DDTC_DSP5";
+    case "BAFA":
+      return "BAFA_EINZEL";
+    case "ECJU":
+      return "ECJU_SIEL";
+    default:
+      return "BIS_STANDARD";
+  }
+}
+
+/**
+ * Validate that the caller-supplied formType is meaningful for the
+ * chosen authority (rejects e.g. BIS_STANDARD with authority DDTC).
+ */
+export function isValidFormTypeForAuthority(
+  formType: string,
+  authority: string,
+): boolean {
+  const prefix = formType.split("_")[0];
+  return prefix === authority;
+}
+
 // ─── Main Executor ───
 
 export async function executeTool(
@@ -3327,6 +3488,549 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
         lastScreenedAt: p.lastScreenedAt?.toISOString() ?? null,
         blockedReason: p.blockedReason,
       })),
+    };
+  },
+
+  // ─── Trade Feature Bridge Tools (Trade Knowledge Update) ────────
+  //
+  // Each handler is a thin adapter around an existing service in
+  // src/lib/trade/ — no business logic lives in this file. Dynamic
+  // imports keep the cold-path executor lean.
+
+  check_sanctions_status: async (input, userContext) => {
+    const partyName = getString(input, "partyName");
+    if (!partyName || partyName.length < 2) {
+      return {
+        error:
+          "partyName is required (min 2 chars). Provide the legal name of the counterparty to screen.",
+      };
+    }
+    const countryCode = getString(input, "countryCode");
+
+    // Look up the party in the operator's organisation.
+    const { canonicalizeName } =
+      await import("@/lib/comply-v2/trade/screening/sources/types");
+    const canonical = canonicalizeName(partyName);
+
+    const matches = await prisma.tradeParty.findMany({
+      where: {
+        organizationId: userContext.organizationId,
+        ...(countryCode ? { countryCode: countryCode.toUpperCase() } : {}),
+        OR: [
+          { legalName: { contains: partyName, mode: "insensitive" } },
+          { tradeName: { contains: partyName, mode: "insensitive" } },
+          { canonicalName: { contains: canonical } },
+        ],
+      },
+      orderBy: { updatedAt: "desc" },
+      take: 5,
+      select: {
+        id: true,
+        legalName: true,
+        tradeName: true,
+        countryCode: true,
+      },
+    });
+
+    if (matches.length === 0) {
+      return {
+        notFound: true,
+        partyName,
+        countryCode: countryCode ?? null,
+        message: `No TradeParty matching '${partyName}'${countryCode ? ` in ${countryCode}` : ""} exists in your organisation. Create the party first via /trade/parties or use lookup_trade_party with different search terms.`,
+        suggestion:
+          "If this is a new counterparty, onboard it on /trade/parties; the screening cron will then evaluate it on the next pass.",
+      };
+    }
+
+    // Pick the best match (top result) and screen it.
+    const target = matches[0];
+    const { screenParty } =
+      await import("@/lib/comply-v2/trade/screening/screen-party.server");
+
+    const result = await screenParty(target.id, {
+      systemDecisionUserId: userContext.userId,
+    });
+
+    return {
+      partyId: result.partyId,
+      partyName: target.legalName,
+      tradeName: target.tradeName,
+      country: target.countryCode,
+      decision: result.summary.decision,
+      newScreeningStatus: result.party.screeningStatus,
+      hitCount: result.summary.hitCount,
+      topScore: Number(result.summary.topScore.toFixed(4)),
+      listsConsulted: result.summary.listsConsulted,
+      snapshotsMissing: result.summary.snapshotsMissing,
+      topHits: (
+        (result.screeningResult.hits as unknown as Array<{
+          list: string;
+          entryId: string;
+          matchedName: string;
+          score: number;
+        }>) ?? []
+      )
+        .slice(0, 5)
+        .map((h) => ({
+          list: h.list,
+          entryId: h.entryId,
+          matchedName: h.matchedName,
+          score: Number(h.score.toFixed(4)),
+        })),
+      cascade: result.cascade
+        ? {
+            triggered: result.summary.cascadeHit,
+            aggregateSanctionedOwnership: Number(
+              result.cascade.aggregateSanctionedOwnership.toFixed(4),
+            ),
+            sanctionedAncestorCount: result.summary.sanctionedAncestorCount,
+            topAncestors: result.cascade.ancestors.slice(0, 5).map((a) => ({
+              name: a.ancestorName,
+              country: a.countryCode,
+              effectivePercent: Number(a.effectivePercent.toFixed(4)),
+              screeningStatus: a.screeningStatus,
+              isBlocked: a.isBlocked,
+            })),
+          }
+        : null,
+      snapshotHash: result.screeningResult.snapshotHash,
+      alternativeMatches:
+        matches.length > 1
+          ? matches.slice(1).map((m) => ({
+              id: m.id,
+              legalName: m.legalName,
+              country: m.countryCode,
+            }))
+          : [],
+      disclaimer:
+        "Sanctions screening result is informational. Confirmed hits require human triage by an export-control officer. Screened against OFAC SDN, BIS Entity List, DDTC Debarred, OpenSanctions consolidated (Z9). 50%-rule cascade per 31 CFR § 510. Snapshot hash documents exact list versions for audit retention (5 yr per § 762.6 / § 122.5).",
+    };
+  },
+
+  generate_dcs: async (input, userContext) => {
+    const operationId = getString(input, "operationId");
+    if (!operationId) {
+      return {
+        error:
+          "operationId is required. Provide the TradeOperation ID — find it on /trade/operations.",
+      };
+    }
+    const consigneeNameOverride = getString(input, "consigneeName");
+
+    // Fetch operation + lines so we can derive ECCNs + destination.
+    const op = await prisma.tradeOperation.findFirst({
+      where: {
+        id: operationId,
+        organizationId: userContext.organizationId,
+      },
+      include: {
+        lines: {
+          include: {
+            item: {
+              select: { eccnUS: true, eccnEU: true, name: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!op) {
+      return {
+        error: `TradeOperation '${operationId}' not found in your organisation.`,
+      };
+    }
+
+    // Collect ECCNs from the lines — US CCL preferred (DCS is § 758.6
+    // which is a CCL-side rule). Fall back to EU ECCN only if US ECCN
+    // is absent for a given item.
+    const eccns = Array.from(
+      new Set(
+        op.lines
+          .map((l) => l.item.eccnUS ?? l.item.eccnEU ?? "")
+          .filter((e) => e.length > 0),
+      ),
+    );
+
+    if (eccns.length === 0) {
+      return {
+        error:
+          "Operation has no classified items — assign at least one line item with an ECCN before generating a DCS.",
+        operationId: op.id,
+        operationReference: op.reference,
+        lineCount: op.lines.length,
+      };
+    }
+
+    const { generateDestinationControlStatement, DCSGeneratorError } =
+      await import("@/lib/trade/dcs-generator");
+
+    try {
+      const output = generateDestinationControlStatement({
+        eccns,
+        destinationCountry: op.shipToCountry,
+        consigneeName: consigneeNameOverride ?? op.endUserName ?? undefined,
+        shipmentReference: op.reference,
+      });
+
+      return {
+        operationId: op.id,
+        operationReference: op.reference,
+        statement: output.text,
+        variant: output.variant,
+        eccns: output.normalizedEccns,
+        destinationCountry: output.normalizedDestinationCountry,
+        extendedLanguageApplies: output.extendedLanguageApplies,
+        extendedLanguageTriggerEccns: output.extendedLanguageTriggerEccns,
+        citation: output.citation,
+        disclaimer:
+          "The Destination Control Statement must appear verbatim on the commercial invoice, bill of lading, or air waybill (15 CFR § 758.6). Placement on the shipping document is the operator's responsibility; Caelex generates the text only.",
+      };
+    } catch (e) {
+      if (e instanceof DCSGeneratorError) {
+        return { error: e.message };
+      }
+      throw e;
+    }
+  },
+
+  predict_license_time: async (input) => {
+    const authority = getStringEnum(input, "authority", [
+      "BIS",
+      "DDTC",
+      "BAFA",
+      "ECJU",
+    ] as const);
+    if (!authority) {
+      return { error: "authority is required (BIS / DDTC / BAFA / ECJU)." };
+    }
+    const destinationCountry = getString(input, "destinationCountry");
+    if (!destinationCountry || !/^[A-Z]{2}$/.test(destinationCountry)) {
+      return {
+        error:
+          "destinationCountry is required (ISO 3166-1 alpha-2 uppercase, e.g. 'CN', 'DE').",
+      };
+    }
+    const eccn = getString(input, "eccn");
+    if (!eccn) {
+      return { error: "eccn is required (ECCN or USML category)." };
+    }
+    const formTypeRaw = getString(input, "formType");
+    const submissionDateRaw = getString(input, "submissionDate");
+
+    // Map destination country → destination group. Coarse heuristic
+    // sufficient for the predictor — the underlying dataset is keyed
+    // at the group level. Z22 Country-Group Resolver is the
+    // authoritative mapper; we replicate the high-confidence buckets
+    // here (CHINA / RUSSIA / EU / ALLIED) and default to "B" for
+    // unknowns (most-favoured-nation broad bucket).
+    const destinationGroup = resolveDestinationGroup(destinationCountry);
+
+    // Map ECCN → bucket. Pattern-based — see historical-times.ts for
+    // bucket definitions.
+    const eccnBucket = resolveEccnBucket(eccn);
+
+    // Default form type per authority when caller didn't supply one.
+    const formType =
+      formTypeRaw && isValidFormTypeForAuthority(formTypeRaw, authority)
+        ? formTypeRaw
+        : defaultFormTypeFor(authority);
+
+    const { predictLicenseTime } =
+      await import("@/lib/trade/license-analytics/predictor");
+
+    let submissionDate: Date | undefined;
+    if (submissionDateRaw) {
+      const parsed = new Date(submissionDateRaw);
+      if (!isNaN(parsed.getTime())) {
+        submissionDate = parsed;
+      }
+    }
+
+    const prediction = predictLicenseTime({
+      authority: authority as "BIS" | "DDTC" | "BAFA" | "ECJU",
+      formType: formType as
+        | "BIS_STANDARD"
+        | "BIS_RE_EXPORT"
+        | "BIS_DEEMED_EXPORT"
+        | "DDTC_DSP5"
+        | "DDTC_DSP73"
+        | "DDTC_DSP61"
+        | "DDTC_TAA"
+        | "DDTC_MLA"
+        | "BAFA_EINZEL"
+        | "BAFA_SAMMEL"
+        | "BAFA_HOECHSTBETRAG"
+        | "ECJU_SIEL"
+        | "ECJU_OIEL",
+      destinationGroup,
+      eccnBucket,
+      submissionDate,
+    });
+
+    return {
+      authority,
+      destinationCountry,
+      destinationGroup,
+      eccn,
+      eccnBucket,
+      formType,
+      p25Days: prediction.p25Days,
+      medianDays: prediction.medianDays,
+      p75Days: prediction.p75Days,
+      expectedApprovalDate: prediction.expectedApprovalDate.toISOString(),
+      optimisticDate: prediction.optimisticDate.toISOString(),
+      conservativeDate: prediction.conservativeDate.toISOString(),
+      confidence: prediction.confidence,
+      matchTier: prediction.matchTier,
+      dataBasis: prediction.dataBasis,
+      industrySampleSize: prediction.industrySampleSize,
+      orgCalibrationApplied: prediction.orgCalibrationApplied,
+      orgSampleSize: prediction.orgSampleSize,
+      disclaimer:
+        "Processing-time predictions are informational and based on published agency statistics (BIS Annual Report, DDTC Statistical Report, BAFA Jahresbericht, ECJU SDR). Actual times vary with case complexity, examiner load, and inter-agency review. Operators should not commit firm ship dates against the optimistic end of the band.",
+    };
+  },
+
+  find_covering_license: async (input, userContext) => {
+    const eccn = getString(input, "eccn");
+    if (!eccn) {
+      return {
+        error:
+          "eccn is required (ECCN, USML category, or UK control-list entry).",
+      };
+    }
+    const destinationCountry = getString(input, "destinationCountry");
+    if (
+      !destinationCountry ||
+      !/^[A-Z]{2}$/.test(destinationCountry.toUpperCase())
+    ) {
+      return {
+        error:
+          "destinationCountry is required (ISO 3166-1 alpha-2 uppercase, e.g. 'AU', 'FR').",
+      };
+    }
+    const endUserName = getString(input, "endUserName");
+    const valueEur = getNumber(input, "valueEur");
+    const valueGbp = getNumber(input, "valueGbp");
+    const authoritiesRaw = getStringArray(input, "authorities");
+    const authorities = new Set(
+      authoritiesRaw.length > 0 ? authoritiesRaw : ["UK_ECJU", "BAFA_SAG"],
+    );
+
+    const normalizedDestination = destinationCountry.toUpperCase();
+    const results: Record<string, unknown> = {};
+
+    // UK ECJU side
+    if (authorities.has("UK_ECJU")) {
+      const { findCoveringLicenses: findUkLicenses } =
+        await import("@/lib/trade/uk-ecju/uk-ecju-service");
+      const ukLicenses = await findUkLicenses(userContext.organizationId, {
+        controlListEntry: eccn,
+        destination: normalizedDestination,
+        endUser: endUserName ?? null,
+        valueGbp:
+          typeof valueGbp === "number"
+            ? // Convert £ to pence as a bigint, the UK service expects pence
+              BigInt(Math.round(valueGbp * 100))
+            : null,
+      });
+      results.ukEcju = {
+        count: ukLicenses.length,
+        licenses: ukLicenses.slice(0, 10).map((l) => ({
+          id: l.id,
+          licenseType: l.licenseType,
+          ecjuReference: l.ecjuReference,
+          status: l.status,
+          validFrom: l.validFrom?.toISOString() ?? null,
+          validUntil: l.validUntil?.toISOString() ?? null,
+          controlListEntries: l.controlListEntries,
+          destinationCountries: l.destinationCountries,
+          endUserName: l.endUserName,
+          capValueGbpPence: l.capValueGbp ? l.capValueGbp.toString() : null,
+          drawnDownGbpPence: l.drawnDownValueGbp.toString(),
+        })),
+      };
+    }
+
+    // BAFA Sammelgenehmigung side
+    if (authorities.has("BAFA_SAG")) {
+      const { findCoveringSammelgenehmigungen } =
+        await import("@/lib/trade/sammelgenehmigung/sammelgenehmigung-service");
+      const sags = await findCoveringSammelgenehmigungen(
+        userContext.organizationId,
+        {
+          eccn,
+          destinationCountry: normalizedDestination,
+          valueEur: typeof valueEur === "number" ? valueEur : undefined,
+        },
+      );
+      results.bafaSag = {
+        count: sags.length,
+        sammelgenehmigungen: sags.slice(0, 10).map((s) => ({
+          id: s.id,
+          title: s.title,
+          bafaReference: s.bafaReference,
+          status: s.status,
+          validFrom: s.validFrom.toISOString(),
+          validUntil: s.validUntil.toISOString(),
+          allowedECCNs: s.allowedECCNs,
+          allowedDestinations: s.allowedDestinations,
+          totalValueCapEur: s.totalValueCapEur,
+          drawnDownValueEur: s.drawnDownValueEur,
+          remainingCapacityEur: Math.max(
+            0,
+            s.totalValueCapEur - s.drawnDownValueEur,
+          ),
+          allowedEndUserCount: s.allowedEndUsers.length,
+        })),
+      };
+    }
+
+    const totalFound =
+      ((results.ukEcju as { count?: number } | undefined)?.count ?? 0) +
+      ((results.bafaSag as { count?: number } | undefined)?.count ?? 0);
+
+    return {
+      query: {
+        eccn,
+        destinationCountry: normalizedDestination,
+        endUserName: endUserName ?? null,
+        valueEur: valueEur ?? null,
+        valueGbp: valueGbp ?? null,
+        authorities: Array.from(authorities),
+      },
+      totalFound,
+      results,
+      disclaimer:
+        totalFound === 0
+          ? "No covering licence found. Operator must file a new individual licence (BIS / DDTC / BAFA Einzel / ECJU SIEL) before shipping — use predict_license_time to forecast lead time."
+          : "Covering licence(s) found. Operator should confirm the licence conditions match the actual shipment (end-use, technical specs, end-user undertakings) before invoking it. Caelex records the draw-down via the licences page.",
+    };
+  },
+
+  evaluate_sham_risk: async (input, userContext) => {
+    const operationId = getString(input, "operationId");
+    if (!operationId) {
+      return {
+        error:
+          "operationId is required. Find it on /trade/operations or via the operations list.",
+      };
+    }
+
+    const op = await prisma.tradeOperation.findFirst({
+      where: {
+        id: operationId,
+        organizationId: userContext.organizationId,
+      },
+      include: {
+        counterparty: {
+          include: {
+            beneficialOwners: { include: { owner: true } },
+          },
+        },
+        lines: { include: { item: true } },
+        reexportConsents: true,
+      },
+    });
+
+    if (!op) {
+      return {
+        error: `TradeOperation '${operationId}' not found in your organisation.`,
+      };
+    }
+
+    const { detectShamTransactionRisk } =
+      await import("@/lib/trade/ofac-sham-doctrine/detector");
+
+    // Build UBO chain — first level only (Z9b will eventually supply
+    // multi-level Orbis chain).
+    const uboChain = op.counterparty.beneficialOwners.map((edge) => ({
+      id: edge.owner.id,
+      name: edge.owner.legalName,
+      countryCode: edge.owner.countryCode,
+      depth: 1,
+      effectivePercent: edge.percent,
+    }));
+
+    // Map prior re-export consents → ReexportHistoryEntry.
+    const reexportHistory = op.reexportConsents.map((c) => {
+      let status: "APPROVED" | "DENIED" | "PENDING" | "REVOKED";
+      switch (c.status) {
+        case "APPROVED":
+          status = "APPROVED";
+          break;
+        case "DENIED":
+          status = "DENIED";
+          break;
+        case "REVOKED":
+          status = "REVOKED";
+          break;
+        case "EXPIRED":
+          status = "APPROVED";
+          break;
+        case "DRAFTED":
+        case "SENT":
+        default:
+          status = "PENDING";
+          break;
+      }
+      return { id: c.id, status, filedAt: c.createdAt };
+    });
+
+    const detectorInput = {
+      id: op.id,
+      shipToCountry: op.shipToCountry,
+      endUseCountry: op.endUseCountry ?? undefined,
+      counterparty: {
+        id: op.counterparty.id,
+        legalName: op.counterparty.legalName,
+        countryCode: op.counterparty.countryCode,
+        uboChain,
+      },
+      endUser:
+        op.endUserName || op.endUseCountry
+          ? {
+              name: op.endUserName ?? undefined,
+              operatingCountry: op.endUseCountry ?? undefined,
+              reexportHistory,
+            }
+          : undefined,
+      lines: op.lines.map((l) => ({
+        eccn: l.item.eccnUS ?? l.item.eccnEU ?? "EAR99",
+        unitValue: l.unitValue,
+        quantity: l.quantity,
+        currency: l.unitCurrency,
+      })),
+    };
+
+    const result = detectShamTransactionRisk(detectorInput);
+
+    return {
+      operationId: op.id,
+      operationReference: op.reference,
+      counterparty: op.counterparty.legalName,
+      counterpartyCountry: op.counterparty.countryCode,
+      shipToCountry: op.shipToCountry,
+      riskScore: result.riskScore,
+      recommendation: result.recommendation,
+      redFlags: result.redFlags.map((f) => ({
+        type: f.type,
+        severity: f.severity,
+        title: f.title,
+        rationale: f.rationale,
+        evidence: f.evidence,
+        citationCount: f.citations.length,
+        citations: f.citations.slice(0, 3).map((c) => ({
+          enforcementAction: c.name,
+          year: c.year,
+          penaltyUsd: c.penaltyUsd,
+        })),
+      })),
+      skippedChecks: result.skippedChecks,
+      detectorVersion: result.detectorVersion,
+      disclaimer:
+        "Sham-transaction detector result is informational. Recommendations follow OFAC's January 2026 enforcement guidance (JY-2026-013, building on 31 CFR § 501.601). Skipped checks reflect missing input data and must be surfaced to the operator — silently treating 'no data' as 'passed' was the failure mode OFAC flagged in the GVA Capital settlement (June 2025).",
     };
   },
 
