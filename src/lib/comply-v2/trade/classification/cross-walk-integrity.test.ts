@@ -76,6 +76,30 @@ const VALID_ATTRIBUTES: readonly AttributeName[] = [
   "crossLinkBandwidthMbps",
   "radHardenedTID_krad",
   "temperatureRangeCelsius",
+  // Z34c — extended parametric attributes (tier-4, 2026-05-23)
+  // Tier 1 — spacecraft hardware
+  "solarCellEfficiencyPercent",
+  "batterySpecificEnergyWhPerKg",
+  "peakPowerWatts",
+  "antennaGainDbi",
+  "frequencyBandsGhz",
+  "polarisationType",
+  "thermalCycleCount",
+  // Tier 2 — propulsion
+  "propellantType",
+  "thrustNewtons",
+  "nozzleExpansionRatio",
+  "specificImpulseSecondsVacuum",
+  // Tier 3 — mission ops
+  "missionDurationYears",
+  "inclinationDegrees",
+  "apogeeKm",
+  "perigeeKm",
+  // Tier 4 — imaging payloads
+  "swirSpectralBands",
+  "mwirSpectralBands",
+  "lwirSpectralBands",
+  "hyperspectralBandCount",
 ];
 
 const VALID_REGIMES: readonly RegimeName[] = [
@@ -108,6 +132,9 @@ const VALID_PREDICATE_OPS = new Set([
   "between",
   "prefix",
   "in",
+  // Z34c — `contains` (value ∈ attribute[]) for array-valued attributes
+  // like frequencyBandsGhz.
+  "contains",
 ]);
 
 // ─── Integrity tests ────────────────────────────────────────────────
