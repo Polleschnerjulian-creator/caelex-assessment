@@ -99,6 +99,10 @@ model User {
   // Z11 — Sammelgenehmigung (BAFA bulk-authorization) lifecycle actions
   tradeSammelgenehmigungActions TradeSammelgenehmigung[] @relation("TradeSammelgenehmigungActionBy")
 
+  // Z37-UK — UK ECJU export license lifecycle actions (SIEL/OIEL/OGEL/
+  // SIEL-TC/OITCL). Lifecycle author of TradeUkEcjuLicense rows.
+  tradeUkEcjuLicensesCreated TradeUkEcjuLicense[] @relation("TradeUkEcjuLicenseCreatedBy")
+
   // Caelex Trade — Settings Page (Sprint T-Settings).
   // Trade-scoped API keys created by this user. Distinct from `apiKeys`
   // back-ref above which targets the legacy `ApiKey` model used by the
@@ -3208,6 +3212,11 @@ model Organization {
   // ACTIVE → (EXHAUSTED | EXPIRED | REVOKED). Per-operation draw-downs
   // tracked via TradeSammelgenehmigungDrawDown.
   tradeSammelgenehmigungen TradeSammelgenehmigung[]
+
+  // Z37-UK — UK ECJU export licences issued to the org. Covers SIEL /
+  // OIEL / OGEL / SIEL-TC / OITCL license types administered by the
+  // UK Export Control Joint Unit (Department for Business and Trade).
+  tradeUkEcjuLicenses TradeUkEcjuLicense[]
 
   // Mission domain (Sprint Mission-1) — first-class Mission rows
   // (vs the legacy 1:1 Spacecraft=Mission collapse). Org-scoped.
@@ -14438,4 +14447,169 @@ model TradeApiKey {
   @@index([organizationId])
   @@index([keyHash])
   @@index([keyPrefix])
+}
+
+// ── Z37-UK — TradeUkEcjuLicense ──
+// ════════════════════════════════════════════════════════════════════
+// COMPLY TRADE — UK ECJU EXPORT LICENSING (Z37-UK, Tier 4)
+// ════════════════════════════════════════════════════════════════════
+// The UK Export Control Joint Unit (ECJU), part of the Department for
+// Business and Trade, administers UK strategic export controls. UK
+// exporters of dual-use items + military goods require an ECJU licence
+// for transfers to most destinations outside the UK.
+//
+// Caelex Trade already screens UK exporters against OFSI sanctions
+// (D1, B1). This model layers the *licensing* dimension on top: which
+// items / destinations / end-users an ECJU licence covers, what value
+// has been drawn down via shipments, when it expires, what type of
+// licence it is.
+//
+// Licence type taxonomy (UK Export Control Act 2002 + ECJU NTE):
+//
+//   - SIEL    (Standard Individual Export Licence)
+//             Specific item + destination + end-user; single use;
+//             max 2 years validity.
+//   - OIEL    (Open Individual Export Licence)
+//             Broader scope, multiple shipments / end-users; max 3 yr.
+//   - OGEL    (Open General Export Licence)
+//             Pre-approved category; registration-only; indefinite.
+//   - SIEL_TC (Temporary export under SIEL — return-to-UK clause)
+//             Max 12 months validity; the item must be returned.
+//   - OITCL   (Open Individual Trade Control Licence)
+//             Trade controls / brokering of category-C goods.
+//
+// Legal anchors:
+//   - Export Control Act 2002 (c.28)
+//   - Export Control Order 2008 (S.I. 2008/3231)
+//   - ECJU Notice to Exporters (NTE) series
+//   - UK Strategic Export Control List (Mar 2024)
+//
+// State machine (lifecycle):
+//   DRAFT → SUBMITTED → APPROVED → (EXPIRED | REVOKED)
+//   DRAFT → SUBMITTED → REJECTED  (terminal)
+//
+// A separate cron flips APPROVED → EXPIRED when validUntil passes; a
+// reminder cron emits 90/30/7-day expiry buckets.
+
+/// One UK ECJU export licence covering one or more shipments. Operator
+/// creates a DRAFT once they know they need an ECJU licence; advances
+/// to SUBMITTED when filed via SPIRE; flips to APPROVED on ECJU's
+/// decision letter. Draw-down value tracked via recordDrawDown() in
+/// the service layer.
+model TradeUkEcjuLicense {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  /// Applicant entity name as filed with ECJU (typically the org's UK
+  /// legal entity). Required even for DRAFT — operators decide who is
+  /// the applicant before drafting.
+  applicantName String
+
+  /// Applicant's address as filed with ECJU. Free-text to accommodate
+  /// UK postal conventions (line 1, line 2, town, postcode).
+  applicantAddress String @db.Text
+
+  /// Which UK ECJU licence type. Drives validity-period defaults +
+  /// the cap-vs-draw-down semantics.
+  licenseType TradeUkEcjuLicenseType
+
+  /// ECJU's licence reference once issued (e.g. "GBSIEL/2026/0012345").
+  /// NULL until ECJU returns a decision. Format varies by licence
+  /// type — SIEL uses GBSIEL/YYYY/NNNNNNN; OIEL uses GBOIEL/YYYY/NN.
+  ecjuReference String?
+
+  /// UK Strategic Export Control List entry codes the licence covers
+  /// (e.g. ["PL5001a", "ML10", "1A002.b"]). Required for SIEL/OIEL;
+  /// OGEL inherits its scope from the OGEL category page so this can
+  /// be empty for OGEL rows.
+  controlListEntries String[]
+
+  /// Permitted destination countries (ISO-3166-1 alpha-2). SIEL pins
+  /// to one or a small set; OIEL covers broader country baskets; OGEL
+  /// inherits from the OGEL category.
+  destinationCountries String[]
+
+  /// End-user (consignee) name as filed with ECJU. Required for SIEL +
+  /// SIEL-TC + OITCL — these are end-user-specific licences. OIEL +
+  /// OGEL can leave NULL (multiple end-users covered).
+  endUserName String?
+
+  /// End-user address (free-text). Same NULL-ability rules as above.
+  endUserAddress String? @db.Text
+
+  /// Free-text end-use description — what the goods will be used for.
+  /// Required by ECJU for all SIEL applications.
+  endUseDescription String? @db.Text
+
+  /// Validity-window start. Usually the ECJU decision date for SIEL;
+  /// for OGEL, the date the operator registered to use the OGEL.
+  validFrom DateTime?
+
+  /// Validity-window end. Drives the reminder cron + APPROVED→EXPIRED
+  /// transition. NULL for OGEL (indefinite) and DRAFT (not yet known).
+  validUntil DateTime?
+
+  /// Lifecycle status. See TradeUkEcjuLicenseStatus.
+  status TradeUkEcjuLicenseStatus @default(DRAFT)
+
+  /// Total GBP value drawn down via shipments against this licence.
+  /// For SIEL: single-use, so this typically reaches capValueGbp once.
+  /// For OIEL: incrementally drawn as operations ship. Stored as
+  /// integer pence (multiply by 100 to avoid floating-point drift on
+  /// running totals).
+  drawnDownValueGbp BigInt @default(0)
+
+  /// Optional value cap for OIEL/SIEL. When drawnDownValueGbp >=
+  /// capValueGbp, the service marks the licence EXHAUSTED via
+  /// recordDrawDown(). Stored as integer pence.
+  capValueGbp BigInt?
+
+  /// User who created the licence row.
+  createdById String?
+  createdBy   User?   @relation("TradeUkEcjuLicenseCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  /// Operator-private notes (review observations, ECJU correspondence).
+  notes String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId, status])
+  @@index([organizationId, licenseType])
+  @@index([validUntil])
+  @@index([ecjuReference])
+}
+
+/// UK ECJU licence types administered by the Department for Business
+/// and Trade. Drives the lifecycle defaults + reporting requirements.
+enum TradeUkEcjuLicenseType {
+  /// Standard Individual Export Licence — specific item + destination
+  /// + end-user; single-use; max 2 years validity.
+  SIEL
+  /// Open Individual Export Licence — broader scope, multi-shipment,
+  /// multi-end-user; max 3 years validity.
+  OIEL
+  /// Open General Export Licence — pre-approved category, registration-
+  /// only, indefinite validity, scope inherited from category page.
+  OGEL
+  /// Standard Individual Temporary Export Licence — return-to-UK
+  /// clause, max 12 months validity.
+  SIEL_TC
+  /// Open Individual Trade Control Licence — trade controls /
+  /// brokering of category-C goods.
+  OITCL
+}
+
+/// UK ECJU licence lifecycle.
+///   DRAFT → SUBMITTED → APPROVED → (EXPIRED | REVOKED | EXHAUSTED)
+///   DRAFT → SUBMITTED → REJECTED  (terminal — appeal track separate)
+enum TradeUkEcjuLicenseStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+  EXPIRED
+  REVOKED
+  EXHAUSTED
 }
