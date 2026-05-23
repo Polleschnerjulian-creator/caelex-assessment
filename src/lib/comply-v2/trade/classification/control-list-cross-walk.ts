@@ -55,6 +55,16 @@ export type RegimeName =
   | "NSG" // Nuclear Suppliers Group (legacy, retained for back-compat)
   | "NSG-TRIGGER" // NSG Trigger List (INFCIRC/254/Rev.14/Part 1)
   | "NSG-DU" // NSG Dual-Use Annex (INFCIRC/254/Rev.11/Part 2)
+  // Z35-RU-833 — Council Reg. (EU) 833/2014 sanctions annexes for
+  // Russia/Belarus. Three goods-prohibition annexes:
+  //   - VII   Strategic-importance goods (space + advanced tech)
+  //   - XXIII Advanced-tech goods (fab equipment, AI compute)
+  //   - XXIX  Drone-related goods (UAV motors, gimbals, autopilots)
+  // Distinct from EU-ANNEX-I (dual-use licensing) — these are HARD
+  // sanctions prohibitions, not licensable items.
+  | "RUSSIA-833-VII"
+  | "RUSSIA-833-XXIII"
+  | "RUSSIA-833-XXIX"
   | "OTHER";
 
 /**
@@ -4539,6 +4549,250 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     validFrom: "2023-11-21",
     notes:
       "Highest-volume NSG entry by satellite-industry impact. Catches DMG Mori, Mazak, Makino 5-axis machining centres used for thruster injectors, payload structures, mirror substrates. ICP + end-use control critical.",
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // Z35-RU-833 — Russia 833/2014 sanctions cross-walk (2026-05-23)
+  //
+  // Council Regulation (EU) 833/2014 prohibits the export to Russia
+  // and Belarus of items listed in Annexes VII (strategic-importance
+  // goods), XXIII (advanced-tech goods), and XXIX (drone-related
+  // goods). Many of these entries DUPLICATE EU Annex I dual-use
+  // codes — the legal difference is that an Annex I item needs a
+  // licence, while a 833/2014 item cannot be exported to RU/BY at
+  // all (with limited derogations under Art. 12d).
+  //
+  // The cross-walk entries below are PARAMETRIC — the matcher
+  // routes an item with the right itemClass and parametric
+  // characteristics to the 833/2014 entry, which then triggers a
+  // hard-prohibition outcome in the order-of-review engine.
+  //
+  // Full enumeration of 833/2014 annex entries lives in
+  // `src/data/trade/russia-833-deep-annexes.ts`. These cross-walk
+  // entries are the parametric routing layer ONLY — they teach the
+  // matcher how to recognise a 833/2014-blocked item from its
+  // technical characteristics, then the data file carries the
+  // detailed prohibition metadata.
+  // ═══════════════════════════════════════════════════════════════
+
+  // Z35-RU-833 — Annex VII: Spacecraft (9A004 equivalent under sanctions)
+  {
+    canonicalId: "RU833:VII.9A004",
+    regime: "RUSSIA-833-VII",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "004",
+    subpara: "RU833",
+    title:
+      "Spacecraft (any orbit, any application) — EU 833/2014 Annex VII prohibition for RU/BY destinations",
+    predicates: [{ attribute: "itemClass", op: "prefix", value: "spacecraft" }],
+    reasonsForControl: ["UN"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A004",
+        relationship: "analogous",
+        notes:
+          "EU Annex I 9A004 is the dual-use licensing entry. Reg. 833/2014 Annex VII flips this to a hard sanctions prohibition for RU/BY destinations.",
+      },
+    ],
+    citation:
+      "Council Regulation (EU) 833/2014, Annex VII (consolidated 02014R0833)",
+    validFrom: "2022-03-15",
+    notes:
+      "Hard prohibition — no derogation under standard sanctions framework. Order-of-review engine routes this to a STRICT_PROHIBITION outcome when destination=RU/BY.",
+  },
+
+  // Z35-RU-833 — Annex VII: GNSS anti-jam receivers
+  {
+    canonicalId: "RU833:VII.9A012",
+    regime: "RUSSIA-833-VII",
+    category: "7",
+    productGroup: "A",
+    entryNumber: "005",
+    subpara: "RU833.antijam",
+    title:
+      "Anti-jam GNSS receivers and adaptive nulling antennas — EU 833/2014 Annex VII prohibition",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "gnss" },
+      { attribute: "isAntiJam", op: "eq", value: true },
+    ],
+    reasonsForControl: ["UN"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "7A005",
+        relationship: "analogous",
+      },
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 11.A.5",
+        relationship: "derived_from",
+      },
+    ],
+    citation:
+      "Council Regulation (EU) 833/2014, Annex VII, anti-jam GNSS entry (added package 5, April 2022)",
+    validFrom: "2022-04-08",
+    notes:
+      "Anti-jam GNSS is a regular military upgrade vector — one of the highest-risk Russia exports. Strict gate, no derogation.",
+  },
+
+  // Z35-RU-833 — Annex VII: AI compute chips (3A090 family)
+  {
+    canonicalId: "RU833:VII.3A090",
+    regime: "RUSSIA-833-VII",
+    category: "3",
+    productGroup: "A",
+    entryNumber: "090",
+    subpara: "RU833.ai",
+    title:
+      "AI accelerator chips above TPP thresholds — EU 833/2014 Annex VII prohibition",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "electronics.ic.ai" },
+    ],
+    reasonsForControl: ["UN"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "3A090",
+        relationship: "analogous",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "3A090",
+        relationship: "analogous",
+        notes:
+          "EU Annex VII / EAR 3A090 align on the October 2022 IFR AI-compute thresholds.",
+      },
+    ],
+    citation:
+      "Council Regulation (EU) 833/2014, Annex VII, AI-compute clause (added package 11, June 2023)",
+    validFrom: "2023-06-23",
+    notes:
+      "Mirrors the US Oct-2022 IFR — H100/A100/B100-class accelerators blocked for RU/BY. No commercial-use carve-out.",
+  },
+
+  // Z35-RU-833 — Annex XXIII: Semiconductor fab equipment (3B001)
+  {
+    canonicalId: "RU833:XXIII.3B001",
+    regime: "RUSSIA-833-XXIII",
+    category: "3",
+    productGroup: "B",
+    entryNumber: "001",
+    subpara: "RU833.fab",
+    title:
+      "Semiconductor lithography + etch + deposition equipment — EU 833/2014 Annex XXIII prohibition",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "fab-equipment" },
+    ],
+    reasonsForControl: ["UN"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "3B001",
+        relationship: "analogous",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "3B001",
+        relationship: "analogous",
+        notes:
+          "EU Annex XXIII targets the same fab-equipment stack as EAR 3B001 — ASML lithography, Lam etch, ASMI deposition.",
+      },
+    ],
+    citation:
+      "Council Regulation (EU) 833/2014, Annex XXIII (added 14th package, Feb 2024)",
+    validFrom: "2024-02-23",
+    notes:
+      "Formalises what was already export-licence practice for the EU fab-equipment primes.",
+  },
+
+  // Z35-RU-833 — Annex XXIII: GNSS jamming/spoofing equipment
+  {
+    canonicalId: "RU833:XXIII.5A002.c",
+    regime: "RUSSIA-833-XXIII",
+    category: "5",
+    productGroup: "A",
+    entryNumber: "002",
+    subpara: "RU833.jammer",
+    title:
+      "GNSS jamming and spoofing equipment — EU 833/2014 Annex XXIII prohibition",
+    predicates: [{ attribute: "itemClass", op: "prefix", value: "rf.jammer" }],
+    reasonsForControl: ["UN"],
+    licenseExceptions: [],
+    seeAlso: [],
+    citation:
+      "Council Regulation (EU) 833/2014, Annex XXIII (added 14th package, Feb 2024)",
+    validFrom: "2024-02-23",
+    notes:
+      "Hard prohibition — GNSS spoofing/jamming has no civilian carve-out under 833/2014.",
+  },
+
+  // Z35-RU-833 — Annex XXIX: UAV motors above power thresholds
+  {
+    canonicalId: "RU833:XXIX.9A012.motor",
+    regime: "RUSSIA-833-XXIX",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "012",
+    subpara: "RU833.uav-motor",
+    title:
+      "UAV electric motors above 250 W — EU 833/2014 Annex XXIX prohibition",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "uav.propulsion.motor" },
+    ],
+    reasonsForControl: ["UN"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A012",
+        relationship: "analogous",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A610.b",
+        relationship: "analogous",
+      },
+    ],
+    citation:
+      "Council Regulation (EU) 833/2014, Annex XXIX (added 12th package, Dec 2023)",
+    validFrom: "2023-12-19",
+    notes:
+      "Captures consumer-drone-class motors (250-500 W) and military-grade (1-5 kW) propulsion motors. Cross-controlled with Iranian Shahed-class drone supply chain.",
+  },
+
+  // Z35-RU-833 — Annex XXIX: UAV gimballed camera systems
+  {
+    canonicalId: "RU833:XXIX.6A003.gimbal",
+    regime: "RUSSIA-833-XXIX",
+    category: "6",
+    productGroup: "A",
+    entryNumber: "003",
+    subpara: "RU833.uav-gimbal",
+    title:
+      "Gimballed camera systems for UAVs (EO/IR) — EU 833/2014 Annex XXIX prohibition",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "uav.payload.gimbal" },
+    ],
+    reasonsForControl: ["UN"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "6A003",
+        relationship: "analogous",
+      },
+    ],
+    citation:
+      "Council Regulation (EU) 833/2014, Annex XXIX (added 12th package, Dec 2023)",
+    validFrom: "2023-12-19",
+    notes:
+      "Wescam/Controp/EU primes — gimbal is the surveillance-payload core. Cross-controlled with US ITAR XV(c).",
   },
 ];
 
