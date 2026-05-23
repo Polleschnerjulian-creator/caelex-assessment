@@ -29,6 +29,7 @@ import {
 import { ClassificationPanel } from "../_components/ClassificationPanel";
 import type { ClassificationResult } from "../_components/ClassificationPanel";
 import { ParametricMatcherPanel } from "../_components/ParametricMatcherPanel";
+import { DeMinimisPanel } from "./_components/DeMinimisPanel";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -600,6 +601,14 @@ export default function TradeItemDetailPage({
               near-misses with regulatory-citation trails. */}
           <div className="mt-6">
             <ParametricMatcherPanel item={item} />
+          </div>
+
+          {/* Sprint Z12b — BOM-level De Minimis Panel. Server-driven:
+              loads the per-line breakdown + aggregate percentage from
+              GET /api/trade/items/[id]/de-minimis, which runs the pure
+              `calculateBomDeMinimis()` engine over the item's BOM. */}
+          <div className="mt-6">
+            <DeMinimisPanel itemId={item.id} />
           </div>
         </div>
       </div>
