@@ -249,6 +249,10 @@
     {
       "path": "/api/cron/uk-ecju-reminders",
       "schedule": "15 9 * * *"
+    },
+    {
+      "path": "/api/cron/faa-ast-reminders",
+      "schedule": "25 9 * * *"
     }
   ]
 }
