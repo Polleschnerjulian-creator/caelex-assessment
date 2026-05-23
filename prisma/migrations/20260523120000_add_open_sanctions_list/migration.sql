@@ -1,0 +1,25 @@
+-- Caelex Trade Sprint Z9a — OpenSanctions as a separate sanctions-list value.
+--
+-- OpenSanctions (opensanctions.org) is a free aggregated dataset that
+-- consolidates 50+ government and intergovernmental sanctions sources
+-- (OFAC, EU FSF, UK Sanctions List, UN, plus PEP lists, debarred-party
+-- lists, and criminal-watch lists from around the world) into one
+-- normalized JSON feed. Their FtM (Follow-the-Money) entity model is
+-- broadly compatible with our CanonicalSanctionsEntry shape.
+--
+-- Why we model it as a SEPARATE list rather than merging into existing
+-- OFAC_SDN / EU_FSF / etc snapshots:
+--   1. OpenSanctions covers MORE entities than any single source — they
+--      include PEPs, dual-use risk lists, and regional watch-lists that
+--      have no direct US/EU/UK equivalent.
+--   2. The provenance differs — a hit against OPEN_SANCTIONS lets the
+--      operator know "this came from the aggregated index" so they can
+--      drill down to the primary source via OpenSanctions' source attribution.
+--   3. Update cadence differs (hourly for OpenSanctions vs daily for OFAC).
+--      Keeping snapshots independent lets us re-screen against just the
+--      OpenSanctions delta without re-loading every other list.
+--
+-- Source: https://www.opensanctions.org/api/
+-- Docs:   https://www.opensanctions.org/docs/api/
+
+ALTER TYPE "TradeSanctionsList" ADD VALUE 'OPEN_SANCTIONS';

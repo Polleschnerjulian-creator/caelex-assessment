@@ -15,6 +15,7 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { BeneficialOwnersPanel } from "@/components/trade/BeneficialOwnersPanel";
+import { UboResolvedChip } from "@/components/trade/UboResolvedChip";
 import {
   ArrowLeft,
   Globe,
@@ -221,7 +222,7 @@ export default function CounterpartyDetailPage({
             </p>
           )}
           <div
-            className="mt-3 flex items-center gap-3 text-[12px]"
+            className="mt-3 flex flex-wrap items-center gap-3 text-[12px]"
             style={{ color: "rgba(255,255,255,0.55)" }}
           >
             <span className="flex items-center gap-1.5">
@@ -236,6 +237,7 @@ export default function CounterpartyDetailPage({
                 · Blocked: {party.blockedReason ?? "no reason given"}
               </span>
             )}
+            <UboResolvedChip partyId={party.id} />
           </div>
         </div>
         <button
