@@ -68,6 +68,15 @@ export {
 // CRA (EU) 2024/2847
 export { CRA_KNOWLEDGE } from "./cra";
 
+// Trade Features Overview (post-T8 features Astra was not aware of)
+export {
+  TRADE_FEATURE_ENTRIES,
+  TRADE_FEATURES_SUMMARY,
+  getTradeFeatureById,
+  getTradeFeaturesForTool,
+} from "./trade-features-overview";
+export type { TradeFeatureEntry } from "./trade-features-overview";
+
 // ─── Combined Knowledge Base Summary ───
 
 export const REGULATORY_KNOWLEDGE_SUMMARY = `

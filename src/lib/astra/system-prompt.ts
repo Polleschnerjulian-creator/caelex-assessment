@@ -7,6 +7,7 @@
 
 import type { AstraUserContext, ConversationMode } from "./types";
 import { REGULATORY_KNOWLEDGE_SUMMARY } from "./regulatory-knowledge";
+import { TRADE_FEATURES_SUMMARY } from "./regulatory-knowledge/trade-features-overview";
 import { sanitizeForPrompt } from "./sanitize";
 
 // ─── Core Identity ───
@@ -185,6 +186,16 @@ export function buildSystemPrompt(
     RESPONSE_FORMAT,
     TOOL_USAGE,
     REGULATORY_KNOWLEDGE_SUMMARY,
+    // Trade-features overview — injected unconditionally so Astra is
+    // aware of every Trade feature shipped after its original setup
+    // (VSD PDFs, Sammelgenehmigung, Deemed Export, Supplement No. 2,
+    // AUKUS overlay, DCS, OFAC sham doctrine, ELAN-K2 XML, ATLAS+AES,
+    // licence-time predictor, Tier-3 ontology, France LOS, UK ECJU,
+    // FAA AST, Comply bridge, recordkeeping retention, OpenSanctions
+    // + Orbis). Adds ~3 KB to the prompt; well under context budget
+    // and avoids Astra getting blind-sided when an operator asks
+    // about Trade outside the /trade/astra route.
+    TRADE_FEATURES_SUMMARY,
   ];
 
   // Sprint UF15 — Persona-aware instructions inserted before mode-

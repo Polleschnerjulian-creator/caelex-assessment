@@ -1794,6 +1794,202 @@ export const generateComplianceRoadmap: AstraToolDefinition = {
   },
 };
 
+// ─── Trade Feature Bridge Tools (Trade Knowledge Update, post-T8) ───
+
+/**
+ * check_sanctions_status — Astra-friendly wrapper around the Z9
+ * extended sanctions screening service (OpenSanctions + Orbis UBO).
+ *
+ * Differs from `screen_trade_party` (which requires an existing
+ * TradeParty.id) by accepting a party NAME and optional country code.
+ * Looks the party up by canonical name + (optional) country, then
+ * runs the full screening cascade (OFAC SDN, BIS Entity List, DDTC
+ * Debarred, OpenSanctions consolidated, 50%-rule cascade against
+ * Orbis UBO chain). Operators ask "is this party sanctioned?" without
+ * needing to remember Caelex internal IDs.
+ */
+export const checkSanctionsStatus: AstraToolDefinition = {
+  name: "check_sanctions_status",
+  description:
+    "Check whether a party (by name) is on any sanctions list — OFAC SDN, BIS Entity List, DDTC Debarred, OpenSanctions consolidated (UN / EU / UK / AU / CA / CH), plus 50%-rule cascade via Orbis UBO chain (31 CFR § 510). Looks up the TradeParty by canonical name match within the operator's organisation, then invokes `screenParty()` from the screening service. Returns: decision (CLEAR / POTENTIAL_MATCH / CONFIRMED_HIT), top-5 hits with match scores, cascade verdict + top-5 sanctioned ancestors (if any), and the snapshot hash for audit. If no party matches the name, returns a `notFound` result with a suggestion list of close matches. Use when the operator asks 'is X sanctioned?', 'screen ICEYE Polska', or 'check this counterparty before I onboard them'.",
+  input_schema: {
+    type: "object",
+    properties: {
+      partyName: {
+        type: "string",
+        description:
+          "Legal or trade name of the party to screen. Case-insensitive partial-match within the organisation. E.g. 'ICEYE Polska', 'Rosatom', 'Huawei Technologies'.",
+      },
+      countryCode: {
+        type: "string",
+        description:
+          "Optional ISO 3166-1 alpha-2 country code (uppercase) to disambiguate when multiple parties share a name across jurisdictions.",
+      },
+    },
+    required: ["partyName"],
+  },
+};
+
+/**
+ * generate_dcs — wraps the pure DCS generator (Z30) with operation-
+ * level context resolution. Accepts a TradeOperation.id, fetches the
+ * destination + ECCNs from the operation's lines, and emits the
+ * regulator-mandated § 758.6 Destination Control Statement.
+ */
+export const generateDcs: AstraToolDefinition = {
+  name: "generate_dcs",
+  description:
+    "Generate the regulator-mandated Destination Control Statement (15 CFR § 758.6) for a Trade operation. Fetches the operation's destination country and ECCN list, auto-detects 9x515 / 600-series codes to switch into the extended § 758.6(b) language, and emits plain-ASCII text ready to copy onto the commercial invoice / bill of lading / air waybill. Refuses to emit when the upstream cascade explicitly declared DCS not-required. Use when the operator asks 'generate the DCS for OP-XXX', 'what's the destination-control statement for this shipment?', or 'do I need the extended 758.6(b) language?'.",
+  input_schema: {
+    type: "object",
+    properties: {
+      operationId: {
+        type: "string",
+        description:
+          "ID of the TradeOperation to generate the DCS for. Must belong to the user's organisation.",
+      },
+      consigneeName: {
+        type: "string",
+        description:
+          "Optional consignee / ultimate-end-user name to print on the DCS. § 758.6(b) requires this when 9x515 / 600-series codes apply. Defaults to the operation's `endUserName` if omitted.",
+      },
+    },
+    required: ["operationId"],
+  },
+};
+
+/**
+ * predict_license_time — wraps the Z15 Bayesian-blended licence-time
+ * predictor. Returns p25 / median / p75 calendar-day forecasts for
+ * a draft licence application keyed by (authority, destination
+ * country / group, ECCN bucket).
+ */
+export const predictLicenseTimeTool: AstraToolDefinition = {
+  name: "predict_license_time",
+  description:
+    "Forecast how long a licence application will take, in calendar days. Uses the Caelex historical-times dataset (BIS Annual Report, DDTC Statistical Report, BAFA Jahresbericht, ECJU SDR) keyed by authority × form-type × destination-group × ECCN bucket, with optional Bayesian blending against the operator's own history (≥ 5 samples for the same authority+destination). Returns p25 (optimistic) / median / p75 (conservative) days, expected approval date, confidence tier ('high' / 'medium' / 'low'), and the source citation. Use when the operator asks 'how long will my BIS licence take?', 'when can I expect BAFA approval?', or 'should I plan the shipment for Q3 or Q4?'.",
+  input_schema: {
+    type: "object",
+    properties: {
+      authority: {
+        type: "string",
+        description:
+          "Licensing authority. BIS = US Dept of Commerce; DDTC = US Dept of State; BAFA = German BAFA; ECJU = UK Export Control Joint Unit.",
+        enum: ["BIS", "DDTC", "BAFA", "ECJU"],
+      },
+      destinationCountry: {
+        type: "string",
+        description:
+          "ISO 3166-1 alpha-2 destination country code (uppercase). Caelex resolves to the agency-published destination group (A / B / D / E / CHINA / RUSSIA / EU / ALLIED) before lookup.",
+      },
+      eccn: {
+        type: "string",
+        description:
+          "ECCN or USML category being licensed. Caelex maps to the bucket: 0Y_SERIES (encryption), STANDARD_DUAL_USE (3A001/4A001/5A002), SIX_HUNDRED_SERIES (defence), 9X515 (spacecraft), USML (DDTC), or EAR99 (uncontrolled).",
+      },
+      formType: {
+        type: "string",
+        description:
+          "Optional licence form type. If omitted, Caelex picks the most-common form for the authority (BIS_STANDARD / DDTC_DSP5 / BAFA_EINZEL / ECJU_SIEL).",
+        enum: [
+          "BIS_STANDARD",
+          "BIS_RE_EXPORT",
+          "BIS_DEEMED_EXPORT",
+          "DDTC_DSP5",
+          "DDTC_DSP73",
+          "DDTC_DSP61",
+          "DDTC_TAA",
+          "DDTC_MLA",
+          "BAFA_EINZEL",
+          "BAFA_SAMMEL",
+          "BAFA_HOECHSTBETRAG",
+          "ECJU_SIEL",
+          "ECJU_OIEL",
+        ],
+      },
+      submissionDate: {
+        type: "string",
+        description:
+          "Optional planned submission date in ISO 8601 (YYYY-MM-DD). Defaults to today. The expected-approval date is computed as `submissionDate + medianDays`.",
+      },
+    },
+    required: ["authority", "destinationCountry", "eccn"],
+  },
+};
+
+/**
+ * find_covering_license — unified search across UK ECJU + BAFA
+ * Sammelgenehmigung + (when applicable) FAA AST for a licence that
+ * already covers a proposed shipment's (ECCN, destination, end-user,
+ * value). Saves the operator from filing redundant per-shipment
+ * licences when an ACTIVE bulk authorisation already covers them.
+ */
+export const findCoveringLicense: AstraToolDefinition = {
+  name: "find_covering_license",
+  description:
+    "Find an ACTIVE export licence in the operator's portfolio that already covers a proposed shipment — checks UK ECJU SIEL/OIEL/OGEL/OITCL/SIEL-TC and German BAFA Sammelgenehmigungen. Match criteria: licence is APPROVED / ACTIVE, validity window covers today, controlListEntries includes the ECCN (or OGEL with empty entry list = implied), destinationCountries contains the destination, end-user matches (for SIEL-class), and (when value supplied) remaining capacity covers it. Returns matching licences ordered by validUntil ascending (use-it-or-lose-it). Use when the operator asks 'do I already have a licence covering 9A515.a to AU?', 'can I ship under an existing SAG?', or 'find me a covering licence before I file a new one'.",
+  input_schema: {
+    type: "object",
+    properties: {
+      eccn: {
+        type: "string",
+        description:
+          "ECCN / USML category / UK control-list entry being shipped. E.g. '9A515.a', 'PL5002A', '3A001.b.1'.",
+      },
+      destinationCountry: {
+        type: "string",
+        description:
+          "ISO 3166-1 alpha-2 destination country code (uppercase). E.g. 'AU', 'GB', 'FR'.",
+      },
+      endUserName: {
+        type: "string",
+        description:
+          "Optional end-user name (case-insensitive partial match). Required for SIEL / SIEL-TC / OITCL coverage checks.",
+      },
+      valueEur: {
+        type: "number",
+        description:
+          "Optional shipment value in EUR. When supplied, Sammelgenehmigungen must have remaining capacity ≥ this value.",
+      },
+      valueGbp: {
+        type: "number",
+        description:
+          "Optional shipment value in GBP. When supplied, UK ECJU licences with a value cap must have remaining headroom ≥ this value (in pence, computed from this GBP figure).",
+      },
+      authorities: {
+        type: "array",
+        items: { type: "string", enum: ["UK_ECJU", "BAFA_SAG"] },
+        description:
+          "Optional filter to specific authorities. Default: searches both UK_ECJU and BAFA_SAG.",
+      },
+    },
+    required: ["eccn", "destinationCountry"],
+  },
+};
+
+/**
+ * evaluate_sham_risk — wraps the Z16 OFAC Sham-Transaction Doctrine
+ * detector. Fetches a TradeOperation + counterparty + UBO graph +
+ * lines + re-export consents, builds the detector input, and runs
+ * the pure detector to return a risk verdict.
+ */
+export const evaluateShamRisk: AstraToolDefinition = {
+  name: "evaluate_sham_risk",
+  description:
+    "Run the OFAC Sham-Transaction Doctrine detector (Z16, per 31 CFR § 501.601 and OFAC Enforcement Guidelines Update January 2026, JY-2026-013) against a Trade operation. Evaluates the six red-flag categories: indirect ownership chain (UBO depth > 3), shell-company markers (age < 12mo + 0 employees + shell-jurisdiction), geography mismatch, payment-routing divergence, pricing anomaly, and re-export risk history. Returns: aggregated 0-100 risk score, categorical recommendation (PROCEED / ENHANCED_DUE_DILIGENCE / ESCALATE / REJECT), red-flag list with severity + rationale + enforcement-action citations, and skipped-checks list (data gaps surfaced explicitly per the GVA Capital settlement). Use when the operator asks 'check sham risk on OP-XXX', 'why did Caelex flag this operation?', or 'is this transaction at risk of being recharacterised as a sham?'.",
+  input_schema: {
+    type: "object",
+    properties: {
+      operationId: {
+        type: "string",
+        description:
+          "ID of the TradeOperation to evaluate. Must belong to the user's organisation. Use list_missions or the operations page to find the operationId.",
+      },
+    },
+    required: ["operationId"],
+  },
+};
+
 export const ALL_TOOLS: AstraToolDefinition[] = [
   // Compliance Tools
   checkComplianceStatus,
@@ -1870,6 +2066,13 @@ export const ALL_TOOLS: AstraToolDefinition[] = [
   // Trade Counterparty Screening Tools (Wave A Sprint A7)
   screenTradeParty,
   lookupTradeParty,
+
+  // Trade Feature Bridge Tools (Trade Knowledge Update — post-T8 features)
+  checkSanctionsStatus,
+  generateDcs,
+  predictLicenseTimeTool,
+  findCoveringLicense,
+  evaluateShamRisk,
 
   // Mission Domain Tools (Sprint D)
   listMissions,
@@ -1984,6 +2187,11 @@ export const TOOL_CATEGORIES = {
     "classify_from_datasheet",
     "screen_trade_party",
     "lookup_trade_party",
+    "check_sanctions_status",
+    "generate_dcs",
+    "predict_license_time",
+    "find_covering_license",
+    "evaluate_sham_risk",
   ],
   mission: ["list_missions", "get_mission_detail", "get_mission_timeline"],
 } as const;
