@@ -11,7 +11,7 @@ import {
 import {
   LAUNCH_INSURANCE_REQUIREMENTS,
   findInsuranceEntry,
-} from "@/data/trade/launch-insurance-liability";
+} from "@/data/comply/launch-insurance-liability";
 
 // ============================================================================
 // Helpers

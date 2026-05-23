@@ -12,7 +12,7 @@ import {
 import {
   IOS_RPO_REQUIREMENTS,
   findIosEntry,
-} from "@/data/trade/in-orbit-servicing-rpo";
+} from "@/data/comply/in-orbit-servicing-rpo";
 
 // ============================================================================
 // Helpers

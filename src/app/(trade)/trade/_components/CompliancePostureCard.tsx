@@ -1,16 +1,19 @@
 /**
- * Compliance Posture card — surfaces the depth of regulatory coverage
- * Caelex Trade provides across the 9 engines shipped:
+ * Compliance Posture card — surfaces the depth of EXPORT-CONTROL
+ * regulatory coverage Caelex Trade provides. Scope is intentionally
+ * limited to export controls (ITAR/EAR/EU Dual-Use/national authorities/
+ * sanctions/MTCR/Wassenaar/NSG). Operational regulations (debris,
+ * spectrum, in-orbit servicing, launch insurance, cyber/NIS2) live in
+ * Caelex Comply, not Trade.
  *
- *   1. NSG Trigger List + Dual-Use Annex
- *   2. Russia 833/2014 Annexes VII / XXIII / XXIX
- *   3. IADC + FCC Orbital Debris Mitigation
- *   4. In-Orbit Servicing / RPO Regulations
- *   5. Spectrum / ITU Coordination
- *   6. NOAA CRSRA Remote-Sensing Licensing
- *   7. USML XV(g) Software + XV(h) Components
- *   8. Launch Insurance + Third-Party Liability
- *   9. Cyber Baseline (NIS2 / ETSI / NIST / SPD-5 / BSI / ENISA)
+ * Engines surfaced (export-control only):
+ *
+ *   - USML XV(g) Software + XV(h) Components (DDTC)
+ *   - NSG Trigger List + Dual-Use Annex (multilateral)
+ *   - Russia 833/2014 Annexes VII / XXIII / XXIX (EU sanctions)
+ *   - NOAA CRSRA Remote-Sensing (dual-use overlay with export effects)
+ *   - All earlier Z-series engines (Japan METI, India SCOMET, UK ECJU,
+ *     France LOS, BAFA, ATLAS DE, AES US, EU Annex IV, AWV/AL, etc.)
  *
  * Visual design:
  *   - Hero shield illustration on the left (PostureIllustration)
@@ -34,23 +37,31 @@ interface RegimeChip {
   tone?: "default" | "critical";
 }
 
+// Caelex Trade = export controls ONLY. Chips below mirror that
+// scope. Operational regulations (debris mitigation, spectrum, in-orbit
+// servicing, launch insurance, cyber/NIS2) live in Caelex Comply and
+// are NOT surfaced here even though their engines exist in the repo.
 const REGIME_CHIPS: ReadonlyArray<RegimeChip> = [
+  // US export controls
   { label: "ITAR USML", count: 89, tone: "critical" },
   { label: "EAR CCL", count: 142 },
+  { label: "USML XV(g/h)", count: 30 },
+  // EU dual-use + sanctions
   { label: "EU Annex I", count: 241 },
+  { label: "EU Annex IV", count: 27 },
+  { label: "Russia 833", count: 53, tone: "critical" },
+  // Multilateral regimes
   { label: "MTCR", count: 13 },
   { label: "Wassenaar", count: 70 },
   { label: "NSG", count: 47 },
-  { label: "Russia 833", count: 53, tone: "critical" },
+  // National export authorities
+  { label: "BAFA / AWV", count: 28 },
+  { label: "DE Ausfuhrliste", count: 28 },
+  { label: "UK ECJU", count: 24 },
+  { label: "France LOS", count: 18 },
   { label: "Japan METI", count: 40 },
   { label: "India SCOMET", count: 32 },
-  { label: "FCC Part 25", count: 30 },
   { label: "NOAA CRSRA", count: 32 },
-  { label: "IADC + FCC Debris", count: 45 },
-  { label: "In-Orbit Servicing", count: 34 },
-  { label: "Launch Insurance", count: 31 },
-  { label: "Cyber (NIS2/ETSI)", count: 47 },
-  { label: "USML XV(g/h)", count: 30 },
 ];
 
 const TOTAL_ENTRIES = REGIME_CHIPS.reduce((sum, c) => sum + c.count, 0);
@@ -144,8 +155,8 @@ export function CompliancePostureCard() {
               className="text-[12px]"
               style={{ color: "var(--trade-label-tertiary)" }}
             >
-              Coverage: international treaties · 4 multilateral regimes · 12
-              national export authorities · 6 cyber/data baselines
+              Coverage: 3 multilateral regimes · 8 national export authorities ·
+              5 US/EU dual-use + sanctions lists
             </p>
             <CoverageBar />
           </div>

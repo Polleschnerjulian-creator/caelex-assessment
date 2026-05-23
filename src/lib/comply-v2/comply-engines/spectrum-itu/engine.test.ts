@@ -11,7 +11,7 @@ import {
 import {
   SPECTRUM_REQUIREMENTS,
   findSpectrumEntry,
-} from "@/data/trade/spectrum-itu-coordination";
+} from "@/data/comply/spectrum-itu-coordination";
 
 // ============================================================================
 // Helpers

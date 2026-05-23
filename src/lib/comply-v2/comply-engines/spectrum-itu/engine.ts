@@ -40,7 +40,7 @@ import {
   type SpectrumBand,
   type SpectrumRegime,
   type SpectrumRequirementEntry,
-} from "@/data/trade/spectrum-itu-coordination";
+} from "@/data/comply/spectrum-itu-coordination";
 
 /** Orbital regime — used to scope NGSO-specific rules. */
 export type SpectrumOrbitalRegime =
@@ -523,8 +523,7 @@ export function evaluateSpectrumRequirement(
         "Earth-station antenna pattern does not meet ITU-R S.580-6 envelope.",
       );
 
-    case "EARTH_STATION_AUTH": // Earth-station auth requires presence of the relevant jurisdiction
-    // in groundEarthStationCountries; if no ground equipment in scope
+    case "EARTH_STATION_AUTH": // in groundEarthStationCountries; if no ground equipment in scope // Earth-station auth requires presence of the relevant jurisdiction
     // (e.g. all-orbit mission with no national gateway), the rule is
     // NOT_APPLICABLE; otherwise we require an explicit attestation.
     // We approximate via jurisdiction overlap.

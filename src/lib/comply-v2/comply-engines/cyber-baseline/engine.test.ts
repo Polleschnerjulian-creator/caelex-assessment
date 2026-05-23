@@ -11,7 +11,7 @@ import {
 import {
   CYBER_BASELINE_REQUIREMENTS,
   findCyberEntry,
-} from "@/data/trade/cyber-baseline-space-iot";
+} from "@/data/comply/cyber-baseline-space-iot";
 
 // ============================================================================
 // Helpers

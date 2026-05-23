@@ -51,7 +51,7 @@ import {
   type InsurancePhase,
   type InsuranceRegime,
   type InsuranceRequirementEntry,
-} from "@/data/trade/launch-insurance-liability";
+} from "@/data/comply/launch-insurance-liability";
 
 /** Inputs — the mission's insurance + liability profile. */
 export interface LaunchInsuranceProfile {

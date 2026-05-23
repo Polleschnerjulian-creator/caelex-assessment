@@ -26,7 +26,7 @@ import {
   DEBRIS_REQUIREMENTS,
   type DebrisOrbitalRegime,
   type DebrisRequirementEntry,
-} from "@/data/trade/iadc-fcc-orbital-debris";
+} from "@/data/comply/iadc-fcc-orbital-debris";
 
 /** Inputs — the satellite's compliance-relevant profile. */
 export interface SatelliteProfile {

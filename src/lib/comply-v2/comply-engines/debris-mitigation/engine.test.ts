@@ -12,7 +12,7 @@ import {
 import {
   findDebrisEntry,
   DEBRIS_REQUIREMENTS,
-} from "@/data/trade/iadc-fcc-orbital-debris";
+} from "@/data/comply/iadc-fcc-orbital-debris";
 
 // ============================================================================
 // Helpers

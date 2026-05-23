@@ -33,7 +33,7 @@ import {
   type IosOperationalRegime,
   type IosRegime,
   type IosRequirementEntry,
-} from "@/data/trade/in-orbit-servicing-rpo";
+} from "@/data/comply/in-orbit-servicing-rpo";
 
 /** IOS mission type — what the servicer is doing to the client. */
 export type IosMissionType =

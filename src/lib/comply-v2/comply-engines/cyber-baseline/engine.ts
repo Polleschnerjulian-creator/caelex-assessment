@@ -64,7 +64,7 @@ import {
   type CyberRegime,
   type CyberRequirementEntry,
   type SpaceSegment,
-} from "@/data/trade/cyber-baseline-space-iot";
+} from "@/data/comply/cyber-baseline-space-iot";
 
 /** Inputs — the operator's cyber posture profile. */
 export interface CyberPostureProfile {
