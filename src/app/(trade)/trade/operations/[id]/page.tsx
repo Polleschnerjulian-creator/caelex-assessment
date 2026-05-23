@@ -32,6 +32,7 @@ import { OperationLinesPanel } from "../_components/OperationLinesPanel";
 import { OperationLifecyclePanel } from "../_components/OperationLifecyclePanel";
 import { OperationLicensesPanel } from "../_components/OperationLicensesPanel";
 import { ShamRiskChip } from "../_components/ShamRiskChip";
+import { ComplyBridgePanels } from "../_components/ComplyBridgePanels";
 import { BafaPdfButton } from "@/components/trade/BafaPdfButton";
 import { BafaXmlButton } from "@/components/trade/BafaXmlButton";
 import { BafaXsdVersionWarning } from "@/components/trade/BafaXsdVersionWarning";
@@ -424,6 +425,26 @@ export default function OperationDetailPage({
           }}
         />
       </div>
+
+      {/* ── Caelex Comply Cross-Domain Panels ──────────────────────
+          Read-only surface of the related spacecraft's Debris,
+          Spectrum, and Authorization compliance lifecycle data from
+          the main Caelex Comply platform. The panels are
+          independently nullable — each renders an empty state when
+          no Caelex Comply Spacecraft is linked. Linking happens via
+          TradeOperation.missionRef → Mission → MissionSpacecraft →
+          Spacecraft. */}
+      <section className="mb-6" aria-label="Caelex Comply cross-domain status">
+        <div className="mb-3 flex items-baseline justify-between gap-3">
+          <h2 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-trade-text-secondary">
+            Caelex Comply · Cross-Domain
+          </h2>
+          <span className="text-[10px] text-trade-text-muted">
+            Spacecraft lifecycle compliance (read-only)
+          </span>
+        </div>
+        <ComplyBridgePanels operationId={op.id} />
+      </section>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Counterparty + Route */}
