@@ -89,6 +89,9 @@ model User {
   // Sprint E1 — Voluntary Self-Disclosure lifecycle actions
   tradeVsdActions TradeVoluntaryDisclosure[] @relation("TradeVSDActionBy")
 
+  // Z29 — Supplement No. 2 (Part 743) one-time report lifecycle actions
+  tradeSupplement2Actions TradeSupplement2Report[] @relation("TradeSupplement2ActionBy")
+
   // Mission domain (Sprint Mission-1) — first-class Mission entity
   // back-ref. Author of the Mission (creator). Distinct from
   // MissionSpacecraft / MissionPhase which have their own lifecycles.
@@ -3165,6 +3168,11 @@ model Organization {
   // DISCOVERED → INVESTIGATING → DRAFTED → SUBMITTED →
   // ACKNOWLEDGED → RESOLVED (or WITHDRAWN escape).
   tradeVoluntaryDisclosures TradeVoluntaryDisclosure[]
+
+  // Z29 — 15 CFR Part 743 Supplement No. 2 one-time reports filed
+  // by the org. One report per (org, reporting-period) — cron creates
+  // DRAFT skeletons on Jan 1 + Jul 1; operator advances to FILED.
+  tradeSupplement2Reports TradeSupplement2Report[]
 
   // Mission domain (Sprint Mission-1) — first-class Mission rows
   // (vs the legacy 1:1 Spacecraft=Mission collapse). Org-scoped.
@@ -11661,6 +11669,11 @@ model TradeOperation {
   // Sprint E1 — VSDs originating from this operation
   vsdDisclosures TradeVoluntaryDisclosure[]
 
+  // Z29 — Snapshot rows in Part 743 Supplement No. 2 one-time reports
+  // that aggregated this operation. Operations are linked into reports
+  // when they ship qualifying ECCN-controlled items in the period.
+  supplement2ReportItems TradeSupplement2ReportItem[]
+
   // ── Mission link (Sprint MA — Mission integration) ──
   /// Optional FK to the Mission this operation supports. Often a
   /// trade operation is part of a launch campaign or constellation
@@ -12284,6 +12297,159 @@ enum TradeReexportStatus {
   DENIED
   EXPIRED
   REVOKED
+}
+
+// ════════════════════════════════════════════════════════════════════
+// COMPLY TRADE — SUPPLEMENT NO. 2 ONE-TIME REPORT (Z29, Tier 4)
+// ════════════════════════════════════════════════════════════════════
+// 15 CFR Part 743 Supplement No. 2 requires US re-exporters / exporters
+// of certain Wassenaar-controlled HPC and dual-use items to file a
+// semi-annual "one-time" report covering qualifying shipments. Reports
+// cover two periods per calendar year:
+//   - H1 covers Jan 1 — Jun 30, due Jul 31
+//   - H2 covers Jul 1 — Dec 31, due Jan 31 of the following year
+//
+// Qualifying operations are those that shipped items in scope under
+// the Wassenaar list categories listed in Part 743 (e.g. 3A001.x APP
+// thresholds, 4A003 HPCs, 5A002 cryptography) above the per-period
+// thresholds set out in 15 CFR § 743.1 + § 743.2 + Supp. 2 to Part 743.
+//
+// The MVP scope:
+//   1. Schema row tracking each (org, period) report (DRAFT / FILED /
+//      OVERDUE / SUBMITTED-WITH-AMENDMENT lifecycle).
+//   2. Child rows linking the qualifying operations actually covered.
+//   3. Cron-generated DRAFT skeletons opened on Jan 1 + Jul 1.
+//   4. Reminder hooks at T-14 + T-3 days before the due date.
+// Filing the actual PDF and submitting to BIS SNAP-R happens via the
+// existing operator workflow (manual file-upload + status transition).
+//
+// Legal anchors:
+//   - 15 CFR § 743.2 — Annual reporting for Wassenaar HPC + dual-use
+//   - 15 CFR Supplement No. 2 to Part 743 — Reporting requirements
+//   - 84 FR 4920 (Feb 19 2019) — Most recent expansion of scope
+//   - 89 FR 84766 (Oct 23 2024) — AUKUS+Canada carve-outs (Z31)
+
+/// One Supplement No. 2 one-time report covering one reporting period
+/// for one organisation. Created by the Z29 cron on the first day of
+/// each new reporting half (Jan 1 + Jul 1), filed by the operator by
+/// the due-date (Jan 31 / Jul 31). Aggregates qualifying operations
+/// shipped in the period.
+///
+/// Lifecycle:
+///   DRAFT      — cron-created skeleton, operator hasn't reviewed
+///   FILED      — operator filed the report with BIS within deadline
+///   OVERDUE    — cron flips DRAFT → OVERDUE on the day after due-date
+///   AMENDED    — operator filed an amendment after initial FILED
+model TradeSupplement2Report {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  /// Period identifier in `YYYY-Hn` shape (e.g. "2026-H1", "2026-H2").
+  /// Unique per org so the cron can safely upsert without duplicating
+  /// the row if it re-runs.
+  reportingPeriod String
+
+  /// Inclusive start of the covered period (Jan 1 or Jul 1).
+  periodStart DateTime
+
+  /// Exclusive end of the covered period (Jul 1 or Jan 1 of next year).
+  periodEnd DateTime
+
+  /// Due date for filing with BIS — Jul 31 for H1, Jan 31 of next year
+  /// for H2. Drives the reminder cron (T-14, T-3 buckets) + the
+  /// OVERDUE transition on day-after.
+  dueDate DateTime
+
+  /// Lifecycle status. See TradeSupplement2Status.
+  status TradeSupplement2Status @default(DRAFT)
+
+  /// When the operator marked the report FILED. NULL until filed.
+  filedAt DateTime?
+
+  /// When the report was last amended (post-FILED correction). NULL
+  /// for never-amended reports.
+  amendedAt DateTime?
+
+  /// Optional BIS confirmation/reference number returned after SNAP-R
+  /// submission. Free-text (BIS formats vary). Captured for audit.
+  bisReferenceNumber String?
+
+  /// Operator-private notes (filing context, scope decisions).
+  notes String? @db.Text
+
+  /// User who last advanced the lifecycle. NULL for cron-driven rows
+  /// (initial DRAFT skeleton, OVERDUE transition).
+  lastActionById String?
+  lastActionBy   User?   @relation("TradeSupplement2ActionBy", fields: [lastActionById], references: [id], onDelete: SetNull)
+
+  /// Items covered — one row per qualifying TradeOperation in the
+  /// period. Pruned + rebuilt by the service when the report is
+  /// re-aggregated.
+  items TradeSupplement2ReportItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([organizationId, reportingPeriod])
+  @@index([organizationId, status])
+  @@index([organizationId, dueDate])
+  @@index([status, dueDate])
+}
+
+/// One operation covered by a Supplement No. 2 report. Snapshot of
+/// the relevant operation + item attributes at aggregation time so
+/// the report doesn't change retroactively if the operation is edited
+/// after filing.
+model TradeSupplement2ReportItem {
+  id String @id @default(cuid())
+
+  reportId String
+  report   TradeSupplement2Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  /// The original operation this row aggregates. SetNull keeps the
+  /// historical line even if the operation is later soft-deleted.
+  operationId String?
+  operation   TradeOperation? @relation(fields: [operationId], references: [id], onDelete: SetNull)
+
+  /// Snapshot — operation reference at time of aggregation. Avoids
+  /// dangling display if the operation row is later removed.
+  operationReference String
+
+  /// Snapshot — ECCN that triggered the inclusion (e.g. "3A001.b.1").
+  /// Always present because the eligibility test keys on ECCN.
+  eccn String
+
+  /// Snapshot — destination country (ISO-3166-1 alpha-2).
+  destinationCountry String
+
+  /// Snapshot — quantity shipped (units, not value).
+  quantity Float
+
+  /// Snapshot — total value in operation's reporting currency.
+  totalValue Float
+
+  /// ISO 4217 currency the totalValue is denominated in.
+  currency String @default("EUR")
+
+  /// Snapshot — ship date used to bin the operation into the period.
+  shipDate DateTime
+
+  createdAt DateTime @default(now())
+
+  @@index([reportId])
+  @@index([operationId])
+  @@index([eccn])
+}
+
+/// Supplement No. 2 report lifecycle. The cron creates DRAFT rows; the
+/// operator transitions to FILED (or AMENDED post-FILED). OVERDUE is
+/// cron-set on the day after the due-date.
+enum TradeSupplement2Status {
+  DRAFT
+  FILED
+  OVERDUE
+  AMENDED
 }
 
 // ════════════════════════════════════════════════════════════════════
