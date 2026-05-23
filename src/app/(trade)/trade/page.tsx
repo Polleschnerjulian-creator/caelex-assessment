@@ -3,8 +3,6 @@ import { redirect } from "next/navigation";
 import {
   Package,
   Users,
-  FileCheck,
-  Workflow,
   ArrowRight,
   AlertTriangle,
   ShieldCheck,
@@ -26,6 +24,9 @@ import {
   UpcomingDeadlinesStrip,
   assembleDeadlines,
 } from "./_components/UpcomingDeadlinesStrip";
+import { WorkspaceHeader } from "./_components/WorkspaceHeader";
+import { QuickStartGrid } from "./_components/QuickStartGrid";
+import { CompliancePostureCard } from "./_components/CompliancePostureCard";
 
 export const metadata = {
   title: "Caelex Trade — Dashboard",
@@ -74,6 +75,7 @@ export default async function TradeDashboardPage() {
   // internal Promise.all (Sprint X1). KPIs + activity feed +
   // deadline-source rows are added in Sprint Welcome-Polish.
   const [
+    org,
     itemsCount,
     unclassifiedItemsCount,
     partiesTotal,
@@ -91,6 +93,10 @@ export default async function TradeDashboardPage() {
     supplement2DeadlineRows,
     vsdDeadlineRows,
   ] = await Promise.all([
+    prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { name: true },
+    }),
     prisma.tradeItem.count({ where: { organizationId: orgId } }),
     prisma.tradeItem.count({
       where: {
@@ -278,79 +284,40 @@ export default async function TradeDashboardPage() {
   });
 
   return (
-    <div className="mx-auto max-w-screen-xl px-8 py-10">
-      {/* Hero */}
-      <section className="mb-10">
-        <div className="inline-flex items-center gap-2 rounded-full bg-trade-accent-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-trade-accent-strong">
-          <span className="h-1.5 w-1.5 rounded-full bg-trade-accent" />
-          Live
-        </div>
-        <h1 className="mt-4 text-[40px] font-bold leading-tight tracking-tight text-trade-text-primary">
-          Caelex Trade
-        </h1>
-        <p className="mt-2 max-w-xl text-[15px] text-trade-text-secondary">
-          Klassifizieren. Lizenzieren. Liefern. Export-Compliance für Operatoren
-          im Weltraumsektor — ITAR, EAR, EU Dual-Use, Wassenaar, MTCR und
-          nationale Behörden in einem Workspace.
-        </p>
-      </section>
+    <div
+      className="mx-auto max-w-screen-xl px-8 py-10"
+      style={{
+        fontFamily:
+          '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", system-ui, sans-serif',
+      }}
+    >
+      {/* Apple-style Workspace header — replaces large H1 + LIVE pill */}
+      <WorkspaceHeader orgName={org?.name ?? "your workspace"} />
 
       {/* KPI cards — headline indicators (Sprint Welcome-Polish) */}
       <KpiCardsRow kpis={welcomeKpis} />
+
+      {/* QuickStart grid — Apple-style hero cards with 3D illustrations.
+          Replaces the previous flat KpiTile grid. */}
+      <QuickStartGrid
+        itemsCount={itemsCount}
+        unclassifiedItemsCount={unclassifiedItemsCount}
+        partiesTotal={partiesTotal}
+        partiesNeedingReview={partiesNeedingReview}
+        licensesActiveCount={licensesActiveCount}
+        licensesExpiringCount={licensesExpiringSoon.length}
+        openOperations={openOperations}
+        operationsTotal={operationsTotal}
+      />
+
+      {/* Compliance Posture — NEW killer card aggregating the 9 engines */}
+      <CompliancePostureCard />
 
       {/* Upcoming deadlines strip (Sprint Welcome-Polish) */}
       <UpcomingDeadlinesStrip deadlines={upcomingDeadlines} now={now} />
 
       {/* Recent activity feed (Sprint Welcome-Polish) */}
       <ActivityFeedPanel events={activityEvents} now={now} />
-
-      {/* KPI tiles */}
-      <section className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
-        <KpiTile
-          icon={Package}
-          label="Trade Items"
-          href="/trade/items"
-          value={itemsCount}
-          hint={
-            unclassifiedItemsCount > 0
-              ? `${unclassifiedItemsCount} need classification`
-              : "All classified"
-          }
-          hintTone={unclassifiedItemsCount > 0 ? "warn" : "ok"}
-        />
-        <KpiTile
-          icon={Users}
-          label="Counterparties"
-          href="/trade/parties"
-          value={partiesTotal}
-          hint={
-            partiesNeedingReview > 0
-              ? `${partiesNeedingReview} need review`
-              : "All screened"
-          }
-          hintTone={partiesNeedingReview > 0 ? "warn" : "ok"}
-        />
-        <KpiTile
-          icon={FileCheck}
-          label="Active Licenses"
-          href="/trade/licenses"
-          value={licensesActiveCount}
-          hint={
-            licensesExpiringSoon.length > 0
-              ? `${licensesExpiringSoon.length} expiring ≤90d`
-              : "BAFA / BIS / DDTC"
-          }
-          hintTone={licensesExpiringSoon.length > 0 ? "warn" : "muted"}
-        />
-        <KpiTile
-          icon={Workflow}
-          label="Open Operations"
-          href="/trade/operations"
-          value={openOperations}
-          hint={`${operationsTotal} total · ${operationsMap.EXECUTED ?? 0} executed`}
-          hintTone="muted"
-        />
-      </section>
 
       {/* Compliance health — EUC + Re-Export + VSD workflow surfaces */}
       <ComplianceHealthPanel summary={complianceHealth} />
@@ -522,50 +489,6 @@ async function resolveOrgId(
     orderBy: { joinedAt: "asc" },
   });
   return membership?.organization.id ?? "no-org";
-}
-
-// ─── KPI tile ─────────────────────────────────────────────────────────
-
-interface KpiTileProps {
-  icon: LucideIcon;
-  label: string;
-  href: string;
-  value: number;
-  hint: string;
-  hintTone: "ok" | "warn" | "muted";
-}
-
-function KpiTile({
-  icon: Icon,
-  label,
-  href,
-  value,
-  hint,
-  hintTone,
-}: KpiTileProps) {
-  const hintClass = {
-    ok: "text-emerald-600",
-    warn: "text-amber-600",
-    muted: "text-trade-text-muted",
-  }[hintTone];
-
-  return (
-    <Link
-      href={href}
-      className="group block rounded-md border border-trade-border-subtle bg-trade-bg-panel px-4 py-4 transition hover:border-trade-accent hover:bg-trade-bg-elevated"
-    >
-      <div className="flex items-center gap-2 text-trade-text-muted">
-        <Icon size={14} />
-        <span className="text-[11px] font-semibold uppercase tracking-wider">
-          {label}
-        </span>
-      </div>
-      <div className="mt-3 text-[28px] font-bold leading-none tabular-nums text-trade-text-primary">
-        {value}
-      </div>
-      <p className={`mt-1 text-[11px] ${hintClass}`}>{hint}</p>
-    </Link>
-  );
 }
 
 // ─── Screening bucket ─────────────────────────────────────────────────
