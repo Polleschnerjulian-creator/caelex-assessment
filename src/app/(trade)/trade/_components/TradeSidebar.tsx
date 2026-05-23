@@ -194,6 +194,13 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: FileCheck,
         activePrefix: "/trade/uk-ecju",
       },
+      // Z38-US — FAA AST commercial launch licences (14 CFR Part 450)
+      {
+        label: "FAA AST Launch",
+        href: "/trade/faa-ast",
+        icon: Rocket,
+        activePrefix: "/trade/faa-ast",
+      },
     ],
   },
   {
