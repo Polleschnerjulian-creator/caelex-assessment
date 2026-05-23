@@ -98,6 +98,7 @@ const REGIME_TO_JURISDICTION: Record<RegimeName, JurisdictionTag | null> = {
   "ITAR-USML": "ITAR",
   "EU-ANNEX-I": "EU_DUAL_USE",
   "DE-AL-TEIL-IB": "EU_DUAL_USE", // German national list is EU 2021/821-derived
+  "JP-METI": null, // Japan METI Schedule 1/2 — no first-class JAPAN tag yet; propagation handled at the regime layer until a Z36 JAPAN_NATIONAL tag is added
   "MTCR-ANNEX": "MTCR",
   WASSENAAR: "WASSENAAR",
   NSG: null, // Nuclear Suppliers Group — no first-class jurisdiction tag

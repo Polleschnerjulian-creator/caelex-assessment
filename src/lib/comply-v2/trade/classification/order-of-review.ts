@@ -99,6 +99,8 @@ export type ListId =
   | "EU_ANNEX_I"
   /** German Ausfuhrliste Teil I A (Kriegswaffenliste) + Teil I B (national dual-use). */
   | "DE_AUSFUHRLISTE"
+  /** Japan METI Schedule 1 (Goods) + Schedule 2 (Technology) under FEFTA + Export Trade Control Order. */
+  | "JP_METI"
   /** UK Strategic Export Control Lists. */
   | "UK_STRATEGIC"
   /** Wassenaar Arrangement — multilateral baseline. */
@@ -195,6 +197,7 @@ const MULTILATERAL_LISTS: ReadonlySet<ListId> = new Set<ListId>([
  */
 const NATIONAL_SUPPLEMENTAL: ReadonlySet<ListId> = new Set<ListId>([
   "DE_AUSFUHRLISTE",
+  "JP_METI",
   "UK_STRATEGIC",
 ]);
 
@@ -405,6 +408,8 @@ export function normalizeListId(regimeName: string): ListId | null {
     case "DE-AL-TEIL-IA":
     case "DE-AUSFUHRLISTE":
       return "DE_AUSFUHRLISTE";
+    case "JP-METI":
+      return "JP_METI";
     case "UK-STRATEGIC":
     case "UK-STRATEGIC-EXPORT":
       return "UK_STRATEGIC";
@@ -437,6 +442,7 @@ export function normalizeListId(regimeName: string): ListId | null {
  *   - `EU_ANNEX_I` primary → national competent authority (BAFA for DE,
  *     ECJU for UK, etc.) — passes through to the EU framework
  *   - `DE_AUSFUHRLISTE` primary → BAFA
+ *   - `JP_METI` primary → METI (Trade and Economic Cooperation Bureau)
  *   - `UK_STRATEGIC` primary → ECJU
  *   - `null` primary → operator must trace through multilateral to a
  *     national implementation; this helper returns `null` in that case.
@@ -448,7 +454,7 @@ export function normalizeListId(regimeName: string): ListId | null {
  */
 export function deriveLicenseAuthorityHint(
   result: OrderOfReviewResult,
-): "DDTC" | "BIS" | "BAFA" | "ECJU" | "EU_COMPETENT_AUTHORITY" | null {
+): "DDTC" | "BIS" | "BAFA" | "ECJU" | "METI" | "EU_COMPETENT_AUTHORITY" | null {
   if (!result.primaryAuthority) return null;
   switch (result.primaryAuthority.list) {
     case "USML":
@@ -460,6 +466,8 @@ export function deriveLicenseAuthorityHint(
       return "EU_COMPETENT_AUTHORITY";
     case "DE_AUSFUHRLISTE":
       return "BAFA";
+    case "JP_METI":
+      return "METI";
     case "UK_STRATEGIC":
       return "ECJU";
     default:
