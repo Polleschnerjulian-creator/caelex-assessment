@@ -559,6 +559,20 @@ function evaluatePredicate(
       const matched = (v as (number | string)[]).some((x) => x === actual);
       return { matched, boundary: false };
     }
+    case "contains": {
+      // Inverse of `in`: the attribute is the array, the value is a
+      // scalar that must appear inside it. Used for multi-value typed
+      // attributes like `frequencyBandsGhz` where an antenna can carry
+      // a comma-separated list of supported bands (e.g. [12.5, 20.2,
+      // 27.5]) and the predicate asks "is band X covered?".
+      //
+      // Defensive: if the actual value is not an array, treat as a
+      // type-mismatch refute (matched=false) — never throw, the
+      // matcher's three-valued logic depends on graceful refute.
+      if (!Array.isArray(actual)) return { matched: false, boundary: false };
+      const matched = (actual as unknown[]).some((x) => x === v);
+      return { matched, boundary: false };
+    }
     default:
       return { matched: false, boundary: false };
   }
@@ -634,6 +648,8 @@ function humanOp(op: PredicateOp): string {
       return "starts with";
     case "in":
       return "∈";
+    case "contains":
+      return "contains";
   }
 }
 

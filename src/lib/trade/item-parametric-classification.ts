@@ -89,6 +89,56 @@ export interface TradeItemParametricSnapshot {
   crossLinkBandwidthMbps?: number | null;
   radHardenedTID_krad?: number | null;
   temperatureRangeCelsius?: number | null;
+  // ── Z34c tier-4 extended parametric attributes ────────────────────
+  // Added 2026-05-23 to expand classification coverage from ~25 to 44+
+  // typed attributes. Like Z25, these route via the parametricAttributes
+  // JSON bag — no Prisma schema changes are required because the moat
+  // is the predicate logic, not the column layout. See Z34c demo
+  // entries at the bottom of control-list-cross-walk.ts for the ECCN
+  // drivers per attribute.
+  //
+  // Tier 1 — spacecraft hardware
+  /** BOL conversion efficiency of solar cells, percent. 9A515.e tripwire. */
+  solarCellEfficiencyPercent?: number | null;
+  /** Specific energy of the spacecraft battery, Wh per kg. 9A515.x components. */
+  batterySpecificEnergyWhPerKg?: number | null;
+  /** End-of-life electrical-power generation, watts. Bus-class discriminator. */
+  peakPowerWatts?: number | null;
+  /** Antenna boresight gain, dBi. 5A001.b / 9A515 RF payload tier. */
+  antennaGainDbi?: number | null;
+  /** RF bands the antenna / transmitter supports, GHz. Array — use `contains`. */
+  frequencyBandsGhz?: number[] | null;
+  /** Antenna polarisation: 'LP' | 'RHCP' | 'LHCP' | 'dual'. 5A001.b RF tier. */
+  polarisationType?: string | null;
+  /** Hardware-in-the-loop thermal qualification cycles. 9A515.x qual depth. */
+  thermalCycleCount?: number | null;
+  // Tier 2 — propulsion
+  /** Propellant family: 'chemical' | 'electric' | 'hybrid' | 'cold-gas'. 9A005 / 9A515.g sub. */
+  propellantType?: string | null;
+  /** Steady-state thrust at vacuum, newtons. MTCR 2.A.1 / 9A005 boundary. */
+  thrustNewtons?: number | null;
+  /** Nozzle expansion ratio (Aₑ/Aₜ). MTCR 3.A.3 / 9A101 sub-criteria. */
+  nozzleExpansionRatio?: number | null;
+  /** Specific impulse measured at vacuum, seconds. Distinct from Z3a `IspSeconds` (sea-level). */
+  specificImpulseSecondsVacuum?: number | null;
+  // Tier 3 — mission ops
+  /** Design mission lifetime, years. 9A515 long-life qualifier. */
+  missionDurationYears?: number | null;
+  /** Orbital inclination, degrees. SSO / GEO / polar discrimination. */
+  inclinationDegrees?: number | null;
+  /** Apogee altitude, km. Duplicate-check vs `maxOrbitAltitudeKm` (Z25). */
+  apogeeKm?: number | null;
+  /** Perigee altitude, km. Duplicate-check vs `minOrbitAltitudeKm` (Z25). */
+  perigeeKm?: number | null;
+  // Tier 4 — imaging payloads
+  /** Short-wave infrared spectral-band count (0.9–2.5 µm). 6A002.b.5 hook. */
+  swirSpectralBands?: number | null;
+  /** Mid-wave infrared spectral-band count (3–5 µm). 6A002.b.6 hook. */
+  mwirSpectralBands?: number | null;
+  /** Long-wave infrared spectral-band count (8–14 µm). 6A002.b.7 hook. */
+  lwirSpectralBands?: number | null;
+  /** Hyperspectral band count. ≥ 20 contiguous bands triggers 6A002.b.4. */
+  hyperspectralBandCount?: number | null;
   // ── Catch-all freeform JSON ───────────────────────────────────────
   parametricAttributes?: Record<string, unknown> | null;
 }
@@ -204,6 +254,43 @@ function mergeExtendedAttributes(
   ];
 
   for (const key of z25Fields) {
+    const value = item[key];
+    if (value !== null && value !== undefined) {
+      merged[key] = value;
+    }
+  }
+
+  // Z34c tier-4 attributes — added 2026-05-23. Same merge semantics:
+  // typed-snapshot field takes precedence over any pre-existing
+  // parametricAttributes JSON entry. Arrays (frequencyBandsGhz) are
+  // emitted as-is — the matcher's `contains` predicate handles them.
+  const z34cFields: Array<keyof TradeItemParametricSnapshot> = [
+    // Tier 1 — spacecraft hardware
+    "solarCellEfficiencyPercent",
+    "batterySpecificEnergyWhPerKg",
+    "peakPowerWatts",
+    "antennaGainDbi",
+    "frequencyBandsGhz",
+    "polarisationType",
+    "thermalCycleCount",
+    // Tier 2 — propulsion
+    "propellantType",
+    "thrustNewtons",
+    "nozzleExpansionRatio",
+    "specificImpulseSecondsVacuum",
+    // Tier 3 — mission ops
+    "missionDurationYears",
+    "inclinationDegrees",
+    "apogeeKm",
+    "perigeeKm",
+    // Tier 4 — imaging payloads
+    "swirSpectralBands",
+    "mwirSpectralBands",
+    "lwirSpectralBands",
+    "hyperspectralBandCount",
+  ];
+
+  for (const key of z34cFields) {
     const value = item[key];
     if (value !== null && value !== undefined) {
       merged[key] = value;

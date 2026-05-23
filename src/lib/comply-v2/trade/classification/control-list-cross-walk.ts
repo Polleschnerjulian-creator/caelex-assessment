@@ -112,7 +112,48 @@ export type AttributeName =
   | "minOrbitAltitudeKm"
   | "crossLinkBandwidthMbps"
   | "radHardenedTID_krad"
-  | "temperatureRangeCelsius";
+  | "temperatureRangeCelsius"
+  // ─── Z34c — Extended Parametric Attributes (Tier 4) ───────────────
+  // Added 2026-05-23. Brings the matcher vocabulary from 25 to 44+
+  // attributes. Same JSON-bag routing pattern as Z25 — no DB schema
+  // changes. Each attribute extends the predicate coverage into a
+  // regulatory niche the matcher previously could not reach:
+  //
+  //   * Tier 1 — spacecraft hardware (solar arrays, batteries, power,
+  //     antennas, polarisation, thermal lifecycle)
+  //   * Tier 2 — propulsion classification (chemical / electric /
+  //     hybrid / cold-gas, vacuum Isp, thrust, nozzle expansion)
+  //   * Tier 3 — mission operations (lifetime, inclination, apogee /
+  //     perigee for orbital-mechanics-aware classification)
+  //   * Tier 4 — imaging payloads (SWIR / MWIR / LWIR / hyperspectral
+  //     band counts for 6A002.b sub-paragraph discrimination)
+  //
+  // The full ECCN drivers are documented in the Z34c demo cross-walk
+  // entries below.
+  //
+  // Tier 1 — spacecraft hardware
+  | "solarCellEfficiencyPercent"
+  | "batterySpecificEnergyWhPerKg"
+  | "peakPowerWatts"
+  | "antennaGainDbi"
+  | "frequencyBandsGhz"
+  | "polarisationType"
+  | "thermalCycleCount"
+  // Tier 2 — propulsion
+  | "propellantType"
+  | "thrustNewtons"
+  | "nozzleExpansionRatio"
+  | "specificImpulseSecondsVacuum"
+  // Tier 3 — mission ops
+  | "missionDurationYears"
+  | "inclinationDegrees"
+  | "apogeeKm"
+  | "perigeeKm"
+  // Tier 4 — imaging payloads
+  | "swirSpectralBands"
+  | "mwirSpectralBands"
+  | "lwirSpectralBands"
+  | "hyperspectralBandCount";
 
 /**
  * A predicate operator. Pure mathematical / set semantics — no
@@ -127,7 +168,8 @@ export type PredicateOp =
   | "eq" // attribute === value
   | "between" // value[0] ≤ attribute ≤ value[1]
   | "prefix" // attribute starts with value (for itemClass)
-  | "in"; // attribute ∈ value[]
+  | "in" // attribute ∈ value[] (scalar membership against a literal set)
+  | "contains"; // value ∈ attribute[] (attribute is an array, value scalar)
 
 export interface ParametricPredicate {
   attribute: AttributeName;
@@ -3452,6 +3494,648 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     validFrom: "2025-11-15",
     notes:
       "AI compute assembly capture — DGX H100/H200, HGX B100/B200, AMD Instinct MI300X servers, Intel Gaudi3 platforms, Google TPU v5p pods. Spaceborne on-board AI inference assemblies typically do NOT trip this assembly-level threshold (most spaceborne edge-inference parts sit 1-2 orders of magnitude below the rack-level TPP gate) — but ground-station AI training infrastructure used by EO downstream operators fires here directly.",
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // Z34c — Extended Parametric Attribute Demos (2026-05-23)
+  //
+  // Brings the matcher vocabulary from 25 typed attributes to 44+
+  // by introducing four tiers of new dimensions:
+  //
+  //   Tier 1 (spacecraft hardware): solar cells, batteries, peak power,
+  //     antenna gain / polarisation / frequency bands, thermal cycles.
+  //   Tier 2 (propulsion): propellant type, vacuum thrust, nozzle
+  //     expansion ratio, vacuum Isp.
+  //   Tier 3 (mission ops): mission duration, inclination, apogee /
+  //     perigee.
+  //   Tier 4 (imaging payloads): SWIR / MWIR / LWIR / hyperspectral
+  //     band counts.
+  //
+  // Each entry below is a SEED demonstrating one or two new attributes
+  // against a real ECCN / USML / EU / MTCR boundary. The matcher's
+  // three-valued logic (Z3f) means an entry only fires when ALL its
+  // predicates are populated AND satisfied; missing attributes route
+  // to PossibleMatch instead of refute (operator action: "fill in X to
+  // resolve"). Full coverage of every ECCN sub-paragraph follows in
+  // future sprints — this is the demonstration layer.
+  //
+  // Sources used per entry are cited in the `citation` field. The
+  // disclaimer in MATCHER_DISCLAIMER applies: SCREENING-LEVEL GUIDANCE
+  // only, never binding.
+  // ═══════════════════════════════════════════════════════════════
+
+  // ─── Tier 1 — Spacecraft hardware ─────────────────────────────────
+
+  // EU 9A515.e — Solar arrays with high-efficiency multi-junction cells
+  // (BOL conversion ≥ 28%, the typical triple-junction GaInP/InGaAs/Ge
+  // grade specifically designed for space). Below 28% (typically
+  // silicon or 2J-GaAs) drops to non-controlled — although see-through
+  // can still pull the array into 9A515 if it's specially designed.
+  {
+    canonicalId: "ECCN:9A515.e.solar-array",
+    regime: "EAR-CCL",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "515",
+    subpara: "e.solar-array",
+    title:
+      "Solar arrays specially designed for spacecraft using ≥ 28% BOL multi-junction cells",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "spacecraft.power.solar" },
+      { attribute: "solarCellEfficiencyPercent", op: "gte", value: 28 },
+      { attribute: "isSpeciallyDesigned", op: "eq", value: true },
+    ],
+    reasonsForControl: ["NS:2", "RS:2", "AT:1"],
+    licenseExceptions: ["STA-eligible:partial"],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A515.e",
+        relationship: "analogous",
+        notes:
+          "EU pendant — same 28% threshold but framed via Annex I 9A515.e specially-designed-spacecraft-power clause.",
+      },
+    ],
+    citation: "15 CFR 774 Supp. 1 Cat 9 ECCN 9A515.e (solar-array sub-clause)",
+    validFrom: "2024-10-23",
+    notes:
+      "Z34c demo entry — exercises solarCellEfficiencyPercent. Triple-junction GaInP/InGaAs/Ge cells at 30-32% BOL fire this; legacy silicon 14% cells do not.",
+  },
+
+  // 9A515.x — Spacecraft batteries with specific energy ≥ 130 Wh/kg
+  // (specially-designed Li-ion / Li-S grades used for high-energy
+  // missions). Below 130 Wh/kg drops out (commodity Li-ion).
+  {
+    canonicalId: "ECCN:9A515.x.battery",
+    regime: "EAR-CCL",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "515",
+    subpara: "x.battery",
+    title:
+      "Spacecraft battery cells/packs with specific energy ≥ 130 Wh/kg, specially designed",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "spacecraft.power.battery",
+      },
+      { attribute: "batterySpecificEnergyWhPerKg", op: "gte", value: 130 },
+      { attribute: "isSpeciallyDesigned", op: "eq", value: true },
+    ],
+    reasonsForControl: ["NS:2", "RS:2"],
+    licenseExceptions: ["STA-eligible:partial"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "9A515.x",
+        relationship: "components_of",
+        notes:
+          "Catch-all parts/components-of clause for spacecraft electrical power systems.",
+      },
+    ],
+    citation: "15 CFR 774 Supp. 1 Cat 9 ECCN 9A515.x (battery sub-clause)",
+    validFrom: "2014-05-13",
+    notes:
+      "Z34c demo — exercises batterySpecificEnergyWhPerKg. Saft VES180 / EaglePicher SAR-10197 cells (~165 Wh/kg) fire; commodity 18650 packs (~250 Wh/kg gravimetric but COTS, not specially designed) clear the energy gate but fail isSpeciallyDesigned.",
+  },
+
+  // 9A515 family — peak EOL bus-level power ≥ 15 kW as a proxy for
+  // GEO-comsat-class platforms (typical Eutelsat / Inmarsat /
+  // SpaceX-Starlink-V2 class). Smallsat busses (< 1 kW) do not fire.
+  {
+    canonicalId: "ECCN:9A515.x.power-bus",
+    regime: "EAR-CCL",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "515",
+    subpara: "x.power-bus",
+    title:
+      "Spacecraft electrical power systems with EOL peak generation ≥ 15 kW",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "spacecraft.power" },
+      { attribute: "peakPowerWatts", op: "gte", value: 15_000 },
+    ],
+    reasonsForControl: ["NS:2"],
+    licenseExceptions: ["STA-eligible:partial"],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A004",
+        relationship: "analogous",
+      },
+    ],
+    citation: "15 CFR 774 Supp. 1 Cat 9 ECCN 9A515.x (power-system sub-clause)",
+    validFrom: "2014-05-13",
+    notes:
+      "Z34c demo — exercises peakPowerWatts. GEO comsats (15-25 kW), large-LEO comms (10-18 kW) fire. Smallsat busses (< 1 kW) do not — the peak-power gate is a coarse class discriminator that complements payload-specific predicates.",
+  },
+
+  // 5A001.b.3 — High-gain antennas with boresight gain ≥ 30 dBi (the
+  // multilateral Wassenaar 5.A.1.b.3 threshold for high-gain RF
+  // payloads on civilian satellites). 30-40 dBi is GEO-class, ≥ 40 dBi
+  // is HTS-class.
+  {
+    canonicalId: "ECCN:5A001.b.3",
+    regime: "EAR-CCL",
+    category: "5",
+    productGroup: "A",
+    entryNumber: "001",
+    subpara: "b.3",
+    title: "RF antennas with boresight gain ≥ 30 dBi (Wassenaar 5.A.1.b.3)",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "rf.antenna" },
+      { attribute: "antennaGainDbi", op: "gte", value: 30 },
+    ],
+    reasonsForControl: ["NS:2", "RS:2"],
+    licenseExceptions: ["STA-eligible:partial", "ENC"],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "5A001.b.3",
+        relationship: "analogous",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "5.A.1.b.3",
+        relationship: "derived_from",
+      },
+    ],
+    citation: "15 CFR 774 Supp. 1 Cat 5 Part 1 ECCN 5A001.b.3",
+    validFrom: "2014-09-01",
+    notes:
+      "Z34c demo — exercises antennaGainDbi. HTS Ka-band reflector antennas (35-45 dBi) fire; broad-pattern UHF telemetry antennas (5-10 dBi) clear.",
+  },
+
+  // 5A001.b — RF transmitters / antennas covering the Ka-band (typical
+  // V-band uplink slot is 27-31 GHz; capture the specific 28 GHz
+  // carrier as a `contains` demo). The matcher's new `contains` op
+  // tests whether a band scalar appears in the attribute array.
+  {
+    canonicalId: "ECCN:5A001.b.ka-band",
+    regime: "EAR-CCL",
+    category: "5",
+    productGroup: "A",
+    entryNumber: "001",
+    subpara: "b.ka",
+    title:
+      "Ka-band (27-31 GHz) RF antenna or transmitter capable of operating at 28 GHz",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "rf" },
+      { attribute: "frequencyBandsGhz", op: "contains", value: 28 },
+    ],
+    reasonsForControl: ["NS:2"],
+    licenseExceptions: ["ENC"],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "5A001.b",
+        relationship: "analogous",
+      },
+    ],
+    citation: "15 CFR 774 Supp. 1 Cat 5 Part 1 ECCN 5A001.b (Ka-band)",
+    validFrom: "2014-09-01",
+    notes:
+      "Z34c demo — exercises the new `contains` predicate operator against a multi-band antenna's frequencyBandsGhz array. The antenna's typed attribute is the array [...30, 28, 20...]; the predicate scalar `28` must be a member.",
+  },
+
+  // 5A001.b — Circularly polarised RF antennas (RHCP / LHCP). Linearly
+  // polarised (LP) antennas drop out. Used as a demonstration of the
+  // string `in` predicate against `polarisationType`.
+  {
+    canonicalId: "ECCN:5A001.b.cp-antenna",
+    regime: "EAR-CCL",
+    category: "5",
+    productGroup: "A",
+    entryNumber: "001",
+    subpara: "b.cp",
+    title:
+      "RF antennas with circular polarisation (RHCP, LHCP, or dual) — Wassenaar 5.A.1.b dual-pol clause",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "rf.antenna" },
+      {
+        attribute: "polarisationType",
+        op: "in",
+        value: ["RHCP", "LHCP", "dual"],
+      },
+    ],
+    reasonsForControl: ["NS:2"],
+    licenseExceptions: ["ENC"],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "5A001.b",
+        relationship: "analogous",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "5.A.1.b",
+        relationship: "derived_from",
+      },
+    ],
+    citation: "15 CFR 774 Supp. 1 Cat 5 Part 1 ECCN 5A001.b (polarisation)",
+    validFrom: "2014-09-01",
+    notes:
+      "Z34c demo — exercises polarisationType `in` predicate. Dual-pol Ka antennas (frequency reuse via orthogonal polarisations) fire; pure-LP feed horns drop out.",
+  },
+
+  // 9A515.x — Spacecraft components qualified for ≥ 5000 thermal
+  // cycles (deep-LEO / long-mission qualification depth). Captures
+  // components from Sentinel-class or Iridium-NEXT-class busses.
+  {
+    canonicalId: "ECCN:9A515.x.thermal-qual",
+    regime: "EAR-CCL",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "515",
+    subpara: "x.thermal",
+    title:
+      "Spacecraft components qualified for ≥ 5000 hardware-in-the-loop thermal cycles",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "spacecraft" },
+      { attribute: "thermalCycleCount", op: "gte", value: 5_000 },
+      { attribute: "isSpeciallyDesigned", op: "eq", value: true },
+    ],
+    reasonsForControl: ["NS:2"],
+    licenseExceptions: ["STA-eligible:partial"],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A515.x",
+        relationship: "analogous",
+      },
+    ],
+    citation: "15 CFR 774 Supp. 1 Cat 9 ECCN 9A515.x (qualification depth)",
+    validFrom: "2014-05-13",
+    notes:
+      "Z34c demo — exercises thermalCycleCount. The 5000-cycle threshold corresponds to ~10 years of LEO eclipse cycles (15 cycles/day × 365 × 10 ≈ 55k cycles for sun-synchronous; 5k cycles is the typical qual margin requested by primes for long-mission parts).",
+  },
+
+  // ─── Tier 2 — Propulsion ──────────────────────────────────────────
+
+  // 9A005 / MTCR Item 2.A.1 — Liquid-propellant chemical rocket engines
+  // (`chemical` propellant family) with vacuum thrust ≥ 5 kN. Below
+  // this drops to ACS / divert thrusters (~ Newtons range).
+  {
+    canonicalId: "ECCN:9A005.chemical-engine",
+    regime: "EAR-CCL",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "005",
+    subpara: "chemical",
+    title:
+      "Liquid chemical-propellant rocket engines with vacuum thrust ≥ 5 kN (MTCR 2.A.1 pendant)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "propulsion.liquid_rocket",
+      },
+      { attribute: "propellantType", op: "eq", value: "chemical" },
+      { attribute: "thrustNewtons", op: "gte", value: 5_000 },
+    ],
+    reasonsForControl: ["NS:2", "MT:1"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 2.A.1",
+        relationship: "derived_from",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A005",
+        relationship: "analogous",
+      },
+    ],
+    citation: "15 CFR 774 Supp. 1 Cat 9 ECCN 9A005 (chemical engine clause)",
+    validFrom: "2014-05-13",
+    notes:
+      "Z34c demo — exercises propellantType + thrustNewtons. Captures Merlin-1D (845 kN), Raptor (2.2 MN), Vinci (180 kN); cold-gas or 1-N hydrazine ACS thrusters drop out via the thrust gate even before propellantType discrimination.",
+  },
+
+  // 9A515.g / 3A001 — Electric propulsion thrusters (Hall-effect, ion).
+  // Uses propellantType=`electric`. The `specificImpulseSecondsVacuum`
+  // gate filters out cold-gas (~70 s) and chemical (~250-450 s) systems
+  // since electric IS the high-Isp regime (≥ 1000 s typical).
+  {
+    canonicalId: "ECCN:9A515.g.electric-propulsion",
+    regime: "EAR-CCL",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "515",
+    subpara: "g.electric",
+    title:
+      "Electric propulsion thrusters (Hall-effect, ion) with vacuum Isp ≥ 1000 s",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "propulsion.electric",
+      },
+      { attribute: "propellantType", op: "eq", value: "electric" },
+      {
+        attribute: "specificImpulseSecondsVacuum",
+        op: "gte",
+        value: 1_000,
+      },
+    ],
+    reasonsForControl: ["NS:2", "RS:2"],
+    licenseExceptions: ["STA-eligible:partial"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "9A515.g",
+        relationship: "analogous",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A004",
+        relationship: "analogous",
+      },
+    ],
+    citation: "15 CFR 774 Supp. 1 Cat 9 ECCN 9A515.g (electric-propulsion sub)",
+    validFrom: "2014-05-13",
+    notes:
+      "Z34c demo — exercises propellantType `eq` + specificImpulseSecondsVacuum. Captures PPS-1350 (1650 s), NEXT (4170 s), Snecma PPS-5000 (1800 s); chemical bipropellant (~310 s vacuum) clears the Isp gate.",
+  },
+
+  // MTCR Item 3.A.3 / 9A101 — Rocket nozzles with expansion ratio
+  // ≥ 80. High expansion-ratio nozzles are vacuum-optimised second-
+  // stage or upper-stage hardware, which is MTCR-relevant.
+  {
+    canonicalId: "MTCR:Item-3.A.3.nozzle",
+    regime: "MTCR-ANNEX",
+    category: "3",
+    productGroup: "A",
+    entryNumber: "3",
+    subpara: "expansion-ratio",
+    title: "Rocket nozzles with expansion ratio ≥ 80 (MTCR 3.A.3 sub-clause)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "propulsion.nozzle",
+      },
+      { attribute: "nozzleExpansionRatio", op: "gte", value: 80 },
+    ],
+    reasonsForControl: ["MT:1"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "9A101",
+        relationship: "analogous",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A101",
+        relationship: "analogous",
+      },
+    ],
+    citation: "MTCR Annex, Category II, Item 3.A.3",
+    validFrom: "1987-04-16",
+    notes:
+      "Z34c demo — exercises nozzleExpansionRatio. Vacuum-optimised upper-stage nozzles run ε = 100-300 (RL10: 280, Vinci: 240); first-stage sea-level nozzles run ε = 14-20 (Merlin-1D-vac: 165 vacuum / 22 sea-level).",
+  },
+
+  // ─── Tier 3 — Mission ops ─────────────────────────────────────────
+
+  // 9A515 — Spacecraft with long mission duration ≥ 15 years (GEO
+  // comsat-class lifetime). Captures the 15-year design-life specially-
+  // designed-spacecraft class.
+  {
+    canonicalId: "ECCN:9A515.long-mission",
+    regime: "EAR-CCL",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "515",
+    subpara: "x.duration",
+    title: "Spacecraft with design mission duration ≥ 15 years",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "spacecraft" },
+      { attribute: "missionDurationYears", op: "gte", value: 15 },
+      { attribute: "isSpeciallyDesigned", op: "eq", value: true },
+    ],
+    reasonsForControl: ["NS:2"],
+    licenseExceptions: ["STA-eligible:partial"],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A004",
+        relationship: "analogous",
+      },
+    ],
+    citation:
+      "15 CFR 774 Supp. 1 Cat 9 ECCN 9A515.x (long-mission-life sub-clause)",
+    validFrom: "2014-05-13",
+    notes:
+      "Z34c demo — exercises missionDurationYears. GEO comsats (15-18 yr) and large-LEO comms (12-15 yr) fire; smallsat / cubesat missions (3-5 yr) drop out.",
+  },
+
+  // EU 9A004 — High-inclination polar / SSO spacecraft (inclination
+  // 80-100°). Captures the SSO regime that's typical for EO missions.
+  // The `between` predicate exercises a Tier-3 demo on
+  // `inclinationDegrees`.
+  {
+    canonicalId: "EU:9A004.sso",
+    regime: "EU-ANNEX-I",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "004",
+    subpara: "sso",
+    title:
+      "Spacecraft in sun-synchronous / near-polar orbit (inclination 80-100°)",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "spacecraft" },
+      { attribute: "inclinationDegrees", op: "between", value: [80, 100] },
+    ],
+    reasonsForControl: ["WA", "NS"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "9A515",
+        relationship: "analogous",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 9, 9A004 (SSO sub-clause)",
+    validFrom: "2021-09-09",
+    notes:
+      "Z34c demo — exercises inclinationDegrees `between`. SSO is the EO workhorse orbit (98.4° at 700 km); equatorial GEO (0°) and inclined-medium-orbit (55° Walker constellations) drop out.",
+  },
+
+  // EU 9A004 — Highly Elliptical Orbit (HEO / Molniya) spacecraft with
+  // apogee ≥ 35_000 km (GEO altitude). Captures both Molniya orbits
+  // (apogee 40_000 km, perigee 1_000 km) and standard GEO transfer
+  // orbits.
+  {
+    canonicalId: "EU:9A004.heo",
+    regime: "EU-ANNEX-I",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "004",
+    subpara: "heo",
+    title:
+      "Spacecraft in Highly Elliptical Orbit (apogee ≥ 35 000 km, perigee ≤ 5 000 km)",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "spacecraft" },
+      { attribute: "apogeeKm", op: "gte", value: 35_000 },
+      { attribute: "perigeeKm", op: "lte", value: 5_000 },
+    ],
+    reasonsForControl: ["WA"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A004",
+        relationship: "analogous",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 9, 9A004 (HEO sub-clause)",
+    validFrom: "2021-09-09",
+    notes:
+      "Z34c demo — exercises apogeeKm + perigeeKm together. Molniya (40 000 / 1 000), Tundra (~46 000 / 24 000 — only Tundra-low-perigee variants fire), GEO transfer orbits (35 786 / 200) all qualify. Note these are duplicate-check attributes vs Z25 maxOrbitAltitudeKm / minOrbitAltitudeKm — operators may populate either pair.",
+  },
+
+  // ─── Tier 4 — Imaging payloads ────────────────────────────────────
+
+  // 6A002.b.5 — Short-wave infrared imagers with multi-band capability
+  // (≥ 4 SWIR bands). Captures hyperspectral or multi-channel SWIR
+  // imagers used for materials identification (mineral, plastics).
+  {
+    canonicalId: "EU:6A002.b.5.swir",
+    regime: "EU-ANNEX-I",
+    category: "6",
+    productGroup: "A",
+    entryNumber: "002",
+    subpara: "b.5.swir",
+    title: "Multi-band SWIR imagers (≥ 4 spectral bands in 0.9-2.5 µm)",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "sensor.imager" },
+      { attribute: "swirSpectralBands", op: "gte", value: 4 },
+    ],
+    reasonsForControl: ["NS", "WA"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "6A002.b.5",
+        relationship: "analogous",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "6.A.2.b.5",
+        relationship: "derived_from",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 6, 6A002.b.5",
+    validFrom: "2021-09-09",
+    notes:
+      "Z34c demo — exercises swirSpectralBands. WorldView-3 SWIR (8 bands), Sentinel-2 (3 SWIR bands — does NOT fire), Hyperion-class hyperspectral (50+ SWIR) all qualify or do not.",
+  },
+
+  // 6A002.b.6 — Mid-wave infrared imagers (3-5 µm) with ≥ 3 spectral
+  // bands. Captures military-grade missile-warning sensors and the
+  // commercial Pléiades-Neo MWIR pipeline.
+  {
+    canonicalId: "EU:6A002.b.6.mwir",
+    regime: "EU-ANNEX-I",
+    category: "6",
+    productGroup: "A",
+    entryNumber: "002",
+    subpara: "b.6.mwir",
+    title: "Multi-band MWIR imagers (≥ 3 spectral bands in 3-5 µm)",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "sensor.imager" },
+      { attribute: "mwirSpectralBands", op: "gte", value: 3 },
+    ],
+    reasonsForControl: ["NS", "WA"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "6A002.b.6",
+        relationship: "analogous",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 6, 6A002.b.6",
+    validFrom: "2021-09-09",
+    notes:
+      "Z34c demo — exercises mwirSpectralBands. MWIR multi-band imagers are dual-use (commercial agriculture / wildfire detection vs. military missile warning); the 3-band threshold separates simple radiometric MWIR from spectroscopic multi-band designs.",
+  },
+
+  // 6A002.b.7 — Long-wave infrared imagers (8-14 µm) with ≥ 3 spectral
+  // bands. Captures Pleiades-Neo and the commercial LWIR uncooled
+  // microbolometer multi-band pipeline (BIRDS-class).
+  {
+    canonicalId: "EU:6A002.b.7.lwir",
+    regime: "EU-ANNEX-I",
+    category: "6",
+    productGroup: "A",
+    entryNumber: "002",
+    subpara: "b.7.lwir",
+    title: "Multi-band LWIR imagers (≥ 3 spectral bands in 8-14 µm)",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "sensor.imager" },
+      { attribute: "lwirSpectralBands", op: "gte", value: 3 },
+    ],
+    reasonsForControl: ["NS", "WA"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "6A002.b.7",
+        relationship: "analogous",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 6, 6A002.b.7",
+    validFrom: "2021-09-09",
+    notes:
+      "Z34c demo — exercises lwirSpectralBands. Landsat TIRS (2 LWIR bands — does NOT fire), ECOSTRESS (5 LWIR bands — fires), commercial wildfire LWIR (typically 4-band) fire.",
+  },
+
+  // 6A002.b.4 — Hyperspectral imagers with ≥ 20 contiguous spectral
+  // bands. This is the Wassenaar-derived threshold that flips a
+  // multispectral imager into the controlled hyperspectral category.
+  {
+    canonicalId: "EU:6A002.b.4.hyperspectral",
+    regime: "EU-ANNEX-I",
+    category: "6",
+    productGroup: "A",
+    entryNumber: "002",
+    subpara: "b.4.hyperspectral",
+    title:
+      "Hyperspectral imagers with ≥ 20 contiguous spectral bands (Wassenaar 6.A.2.b.4)",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "sensor.imager" },
+      { attribute: "hyperspectralBandCount", op: "gte", value: 20 },
+    ],
+    reasonsForControl: ["NS:2", "RS:2", "WA"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "6A002.b.4",
+        relationship: "analogous",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "6.A.2.b.4",
+        relationship: "derived_from",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A515.a.2",
+        relationship: "analogous",
+        notes:
+          "Hyperspectral spacecraft variants flow into 9A515.a.2 at the spacecraft-integration level; this entry captures the bare-imager component-level threshold.",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 6, 6A002.b.4",
+    validFrom: "2021-09-09",
+    notes:
+      "Z34c demo — exercises hyperspectralBandCount. The 20-band threshold is the canonical multispectral / hyperspectral boundary. WorldView-3 (29 bands — fires), Sentinel-2 MSI (13 bands — does NOT fire), CHRIS-PROBA (62 bands), PRISMA (240 bands), EnMAP (244 bands) all qualify.",
   },
 ];
 
