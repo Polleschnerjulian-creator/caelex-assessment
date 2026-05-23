@@ -19,17 +19,16 @@
 > 5. The Z3-series Living Roadmap (`CAELEX-TRADE-LIVING-ROADMAP.md`) — superseded for execution priorities but still authoritative for Z3-series sprint details
 > 6. The moat architecture doc (`CAELEX-TRADE-MOAT-ARCHITECTURE.md`) — describes the engine, NOT the backlog
 >
-> **Last updated.** 2026-05-23 — Batch 10 ships **8 more sprints** via
-> 6 parallel Worktree-Agents: Z24c/d (retry succeeded with regulation-
-> import framing), Z27 Suffix-Digit Correlator, Z28 Order-of-Review
-> Auto-Trump, Z29 Supplement No. 2 Workflow (schema + 2 crons + UI),
-> Z6b-d VSD PDFs (OFAC/BIS/DDTC), Z12 BOM De Minimis Integration. **Tier
-> 1 complete** (9/9). **Tier 2 complete** (7/7). **Tier 3 COMPLETE
-> (11/11)** ✓. **Tier 4 COMPLETE (4/4)** ✓. **Tier 5 ~40%** done (Z6a-d
->
-> - Z12 shipped — Z9, Z11, Z16 remain). Total: **1,102 trade tests
->   passing** across 54 test files. Only 4 sprints remain across all
->   Tiers 1-4 are now done, the queue is Tier 5 + Tier 6 only.
+> **Last updated.** 2026-05-23 — Batch 11 ships **8 more sprints** via
+> 6 parallel Worktree-Agents: Z9 OpenSanctions + Orbis UBO, Z11
+> Sammelgenehmigung Lifecycle, Z16 OFAC Sham-Doctrine, Z13 Deemed Export
+> Controls, Z14 ATLAS DE + AES US Customs, Z15 Predictive Licence-Time
+> Analytics. **Tiers 1-5 all COMPLETE** ✓ (Tier 5: Z6 + Z9 + Z11 + Z12 +
+> Z16 all shipped). **Tier 6 ~75%** (Z13 + Z14 + Z15 shipped — only Z33
+> Training Corpus remains). Total: **1,984 trade tests passing** across
+> 84 test files. Caelex Trade is now effectively feature-complete
+> against the original execution plan — only Z33 + final UI polish
+> remain in the queue.
 
 ---
 
@@ -839,13 +838,13 @@ This is the table to update on every sprint completion. Move sprints between SHI
 | Z32 — Recordkeeping 5-Year Retention Policy     | 4    | 1 sprint              | **SHIPPED** | 2026-05-22 (policy + audit-center page, 29 tests)                  |
 | Z6a-d — EUC + VSD PDF Templates                 | 5    | 3-4 sprints           | **SHIPPED** | 2026-05-23 (EUC Annex IIIa + OFAC/BIS/DDTC VSD templates)          |
 | Z7 — De Minimis + FDPR Deep-Dive                | 5    | (absorbed by Z18-Z20) | DUPLICATE   | —                                                                  |
-| Z9 — OpenSanctions / Orbis UBO                  | 5    | 3 sprints             | OPEN        | —                                                                  |
-| Z11 — Sammelgenehmigung Lifecycle               | 5    | 3-4 sprints           | OPEN        | —                                                                  |
+| Z9 — OpenSanctions / Orbis UBO                  | 5    | 3 sprints             | **SHIPPED** | 2026-05-23 (parser + UBO adapter + cross-screening, 90 tests)      |
+| Z11 — Sammelgenehmigung Lifecycle               | 5    | 3-4 sprints           | **SHIPPED** | 2026-05-23 (schema + draw-down + cron + UI, 46 tests)              |
 | Z12 — BOM De Minimis Integration                | 5    | 2 sprints             | **SHIPPED** | 2026-05-23 (calculator + adapter + route + UI panel, 31 tests)     |
-| Z16 — OFAC 2026 Sham-Transaction Doctrine       | 5    | 2 sprints             | OPEN        | —                                                                  |
-| Z13 — Deemed Export Controls                    | 6    | 3 sprints             | OPEN        | —                                                                  |
-| Z14 — ATLAS DE + AES US Customs Filing          | 6    | 4 sprints             | OPEN        | —                                                                  |
-| Z15 — Predictive Licence-Time Analytics         | 6    | 3 sprints             | OPEN        | —                                                                  |
+| Z16 — OFAC 2026 Sham-Transaction Doctrine       | 5    | 2 sprints             | **SHIPPED** | 2026-05-23 (6 red-flag detector + chip + 14 enforcement cites)     |
+| Z13 — Deemed Export Controls                    | 6    | 3 sprints             | **SHIPPED** | 2026-05-23 (schema + service + page + sidebar, 25 tests)           |
+| Z14 — ATLAS DE + AES US Customs Filing          | 6    | 4 sprints             | **SHIPPED** | 2026-05-23 (ATLAS+AES payloads + serializers + routes, 101 tests)  |
+| Z15 — Predictive Licence-Time Analytics         | 6    | 3 sprints             | **SHIPPED** | 2026-05-23 (Bayesian-blend predictor + standalone panel, 38 tests) |
 | Z33 — Training Corpus (BAFA AzG + DDTC CJ)      | 6    | 3 sprints             | OPEN        | —                                                                  |
 
 ### Already-shipped (for context, not to redo)
