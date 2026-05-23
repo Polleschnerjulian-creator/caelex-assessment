@@ -29,6 +29,7 @@ import {
   Workflow,
   FileCheck,
   FileSignature,
+  Layers,
   AlertOctagon,
   Sparkles,
   ScanSearch,
@@ -111,6 +112,12 @@ const NAV_SECTIONS: NavSection[] = [
         href: "/trade/reexport-consents",
         icon: FileSignature,
         activePrefix: "/trade/reexport-consents",
+      },
+      {
+        label: "Sammelgenehmigungen",
+        href: "/trade/sammelgenehmigungen",
+        icon: Layers,
+        activePrefix: "/trade/sammelgenehmigungen",
       },
       {
         label: "Self-Disclosures",
