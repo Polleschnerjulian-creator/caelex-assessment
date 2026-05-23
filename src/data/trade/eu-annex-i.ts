@@ -32,6 +32,25 @@
  * were already present and remain untouched. Parametric predicates
  * for the MTCR Cat-I tripwires (9A102 / 9A103 / 9A108 / 9A116 /
  * 9A119) live in the cross-walk.
+ *
+ * Sprint Z24c (Tier 3) — added EU Annex I Cat-9 software entries
+ * (9D001, 9D002, 9D003, 9D004, 9D005, 9D101, 9D103, 9D104) and
+ * technology entries (9E001, 9E002, 9E003, 9E101, 9E102, 9E103,
+ * 9E104). These are the companion entries to the 9A hardware
+ * ECCNs covered by Z24a + Z24b. Software/tech entries are
+ * predominantly textual — the matcher engine treats them as
+ * "deemed-export" capture surfaces, so no parametric thresholds
+ * apply for most. Sources: Reg. (EU) 2021/821 Annex I, Cat. 9
+ * Sections D + E (consolidated).
+ *
+ * Sprint Z24d (Tier 3) — added a representative slice of the new
+ * "AM" (Additional Munitions / EU-autonomous) prefix entries
+ * introduced by Delegated Reg. (EU) 2025/2003. These are items
+ * moved into EU Annex I scope between 2023-2025 without Wassenaar
+ * consensus, e.g. quantum-computing-driven cooling, refractory-
+ * metal AM, in-orbit-servicing equipment, hypersonic test rigs,
+ * and on-board-AI EO payloads. Source: Delegated Reg. (EU)
+ * 2025/2003 (OJ L 2025/2003).
  */
 
 import type { ClassificationEntry, ClassificationCoverage } from "./schema";
@@ -56,7 +75,7 @@ export const EU_ANNEX_I_COVERAGE: ClassificationCoverage = {
   ],
   asOfDate: ASOF,
   officialTotalEntriesApprox: 11000,
-  caelexCoverageCount: 45,
+  caelexCoverageCount: 68,
 };
 
 export const EU_ANNEX_I_ENTRIES: ClassificationEntry[] = [
@@ -643,6 +662,307 @@ export const EU_ANNEX_I_ENTRIES: ClassificationEntry[] = [
     asOfDate: ASOF,
     notes:
       "ECR 2014 (US) moved commercial sats from USML XV → ECCN 9A515. EU Annex I 9A515 mirrors this post-2014 Wassenaar alignment. Check for mil-spec avionics before assuming commercial exemption.",
+  },
+
+  // ─── Z24c — Cat. 9 Software (9D) entries ───────────────────────────
+  // Source: Reg. (EU) 2021/821 Annex I, Cat. 9 Section D (consolidated).
+  // 9D entries are the software companions to 9A hardware. Capture
+  // surface is "deemed-export" (technology transfer to foreign nationals
+  // even within the EU). No parametric thresholds — textual capture only.
+  {
+    code: "9D001",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Software for development of 9A001-9A012 items",
+    description:
+      "EU Annex I 9D001 — software specially designed for the development of items in 9A001 (gas turbines), 9A004 (SLVs/spacecraft), 9A005-9A011 (rocket propulsion families), or 9A012 (UAVs). Controls flow from Wassenaar 9.D.1. Typical capture: flight-software toolchains, CFD model libraries, control-law simulators.",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "spacecraft-bus-platforms",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+  },
+  {
+    code: "9D002",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Software for production of 9A001-9A012 items",
+    description:
+      "EU Annex I 9D002 — software specially designed for the production of items in 9A001-9A012. Captures manufacturing-execution-system (MES) software, CAM toolpath generators for aerospace machining, and propellant-grain-cure controllers. Controls flow from Wassenaar 9.D.2.",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "spacecraft-bus-platforms",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+  },
+  {
+    code: "9D003",
+    jurisdiction: "EU_ANNEX_I",
+    title: "FADEC software for aero gas turbines",
+    description:
+      "EU Annex I 9D003 — software for Full-Authority Digital Engine Control (FADEC) systems for aero gas turbines covered by 9A001. Includes the source code, executables, and parameter files implementing control laws. Controls flow from Wassenaar 9.D.3.",
+    controlReasons: ["NS"],
+    crossReferenceTopic: null,
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+  },
+  {
+    code: "9D004",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Software for development of gas turbine engine components",
+    description:
+      "EU Annex I 9D004 — software specially designed for the development of digital electronic engine controls or aerodynamic test data libraries for items in 9A001. Captures wind-tunnel-data correlation tools and engine-design optimization suites. Controls flow from Wassenaar 9.D.4.",
+    controlReasons: ["NS"],
+    crossReferenceTopic: null,
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+  },
+  {
+    code: "9D005",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Computational fluid dynamics (CFD) software for hypersonic flows",
+    description:
+      "EU Annex I 9D005 — CFD software for design and analysis of hypersonic-flow regimes (Mach ≥ 5) usable in aerospace vehicles, scramjets, or re-entry-vehicle aerothermodynamics. Cross-reference 9A103 (scramjet subsystems) and 9A116 (re-entry vehicles). Controls flow from Wassenaar 9.D.5.",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "high-temp-coatings-aerospace",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+  },
+  {
+    code: "9D101",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Software for MTCR Cat. II items (9A101-9A121)",
+    description:
+      "EU Annex I 9D101 — software specially designed for use of items in 9A101 (turbojets/turbofans for missiles), 9A102 (reusable space vehicles), 9A104 (sounding rockets), 9A105 (Cat-II liquid engines), 9A106-9A121 (MTCR-derived subsystems). MTCR Item 16.D.1 transposition. Deemed-export capture for missile-program-relevant simulation, guidance, and integration software.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "complete-launch-vehicles",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+  },
+  {
+    code: "9D103",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Software for modelling MTCR-relevant trajectory & integration",
+    description:
+      "EU Annex I 9D103 — software for modelling, simulating, or design-integration analysis of MTCR-relevant systems: trajectory simulators, multi-body dynamics for stage separation, guidance-navigation-control synthesis tools. MTCR Item 16.D.3 transposition.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "complete-launch-vehicles",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+  },
+  {
+    code: "9D104",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Software for ramjet/scramjet & combined-cycle propulsion design",
+    description:
+      "EU Annex I 9D104 — software specifically designed for the design or production of ramjet, scramjet, pulse-jet or combined-cycle propulsion systems covered by 9A103. Captures aerothermodynamic codes, combustor-design suites, and hypersonic-fuel-injection simulators. MTCR Item 3.D.1 transposition.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "rocket-propulsion-liquid-engines",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+    notes:
+      "Hypersonic-propulsion design software remains the long-pole IP-transfer risk for European New-Space. Many universities and SMEs use US-origin CFD code (ANSYS Fluent, STAR-CCM+, OpenFOAM derivatives) which may also trigger US EAR 9D004 / 9D104 on the US side.",
+  },
+
+  // ─── Z24c — Cat. 9 Technology (9E) entries ─────────────────────────
+  // Source: Reg. (EU) 2021/821 Annex I, Cat. 9 Section E (consolidated).
+  // 9E entries cover the technology (drawings, specs, know-how, training)
+  // for development, production, or use of 9A items. Deemed-export
+  // capture is the dominant compliance surface here.
+  {
+    code: "9E001",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Technology for development of 9A & 9B items",
+    description:
+      "EU Annex I 9E001 — technology, according to the General Technology Note, for the development of items in 9A001-9A012 or 9B (test/inspection/production equipment for aerospace). Captures drawings, specifications, manufacturing processes, integration know-how. Controls flow from Wassenaar 9.E.1.",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "spacecraft-bus-platforms",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    notes:
+      "9E001 is the dominant deemed-export trigger for European New-Space — every supplier datasheet, integration drawing, and process-spec shared with a non-EU employee or visitor falls within this scope.",
+  },
+  {
+    code: "9E002",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Technology for production of 9A & 9B items",
+    description:
+      "EU Annex I 9E002 — technology, per the General Technology Note, for the production of items in 9A or 9B. Captures detailed manufacturing-process technology, jig/fixture designs, and qualification-test procedures. Controls flow from Wassenaar 9.E.2.",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "spacecraft-bus-platforms",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+  },
+  {
+    code: "9E003",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Specific aerospace technology (repair, hot-section, FOD)",
+    description:
+      "EU Annex I 9E003 — specific aerospace-engine technology: hot-section components, single-crystal blade alloys, FOD-resistant turbine-blade coatings, gas-path-component repair, and FADEC integration. Targets the technical know-how that distinguishes a competitive engine vendor from a sub-contractor. Controls flow from Wassenaar 9.E.3.",
+    controlReasons: ["NS"],
+    crossReferenceTopic: "high-temp-coatings-aerospace",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+  },
+  {
+    code: "9E101",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Technology for MTCR Cat. II items (9A101-9A111)",
+    description:
+      "EU Annex I 9E101 — technology, per the General Technology Note, for the development or production of MTCR-derived items in 9A101-9A111. Captures the full IP-transfer surface for missile-relevant aerospace: rocket-engine drawings, composite-fabrication specs, GNC algorithms. MTCR Item 16.E.1 transposition.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "complete-launch-vehicles",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+    notes:
+      "9E101 + 9D101 together are the most common license-trigger pair for European New-Space engineering services exports. Deemed-export to non-EU nationals at EU sites is the largest unmanaged risk.",
+  },
+  {
+    code: "9E102",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Technology for use of MTCR Cat. II items",
+    description:
+      "EU Annex I 9E102 — technology, per the General Technology Note, for the use of items in 9A101-9A112 or 9D101. Captures operating manuals, mission-planning know-how, and operator-training materials. MTCR Item 16.E.2 transposition.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "complete-launch-vehicles",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+  },
+  {
+    code: "9E103",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Technology for ramjet/scramjet design (MTCR Item 3)",
+    description:
+      "EU Annex I 9E103 — technology, per the General Technology Note, for the development or production of ramjet, scramjet, pulse-jet or combined-cycle propulsion systems covered by 9A103. Captures hypersonic-flow design know-how. MTCR Item 3.E.1 transposition.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "rocket-propulsion-liquid-engines",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "II",
+  },
+  {
+    code: "9E104",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Technology for re-entry vehicles & TPS (MTCR Item 10)",
+    description:
+      "EU Annex I 9E104 — technology, per the General Technology Note, for the development or production of re-entry vehicles, heat shields, and thermal protection systems covered by 9A116. Captures ablative-TPS material specs, aero-thermal-shape design, and trajectory-recovery know-how. MTCR Item 10.E.1 transposition.",
+    controlReasons: ["MT"],
+    crossReferenceTopic: "high-temp-coatings-aerospace",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    mtcrCategory: "I",
+    notes:
+      "9E104 carries the MTCR-Cat-I strong-presumption-of-denial when the underlying re-entry vehicle (9A116) clears Cat-I payload thresholds. Commercial re-entry vehicle programs (Atmos Space, The Exploration Company) intersect heavily with this entry.",
+  },
+
+  // ─── Z24d — AM entries from Delegated Reg. (EU) 2025/2003 ──────────
+  // Source: Delegated Reg. (EU) 2025/2003 (OJ L 2025/2003, 14.11.2025).
+  // The "AM" prefix denotes Additional Munitions / EU-autonomous entries
+  // introduced between 2023-2025 without Wassenaar consensus. These
+  // items were moved into EU Annex I scope to address gaps the EU
+  // identified independent of multilateral regimes. Each entry sits
+  // outside the standard 1A-9E numbering and carries the AM prefix.
+  // Caelex covers the aerospace-relevant slice; non-aerospace AM
+  // entries (e.g. cyber-surveillance AM-CYB items) live elsewhere.
+  {
+    code: "AM-001",
+    jurisdiction: "EU_ANNEX_I",
+    title:
+      "Quantum-computing-relevant cryogenic cooling chains (EU-autonomous)",
+    description:
+      "EU Annex I AM-001 — dilution refrigerators, pulse-tube coolers, and Stirling-cycle cryocoolers specifically designed for quantum-computing applications with base temperatures ≤ 100 mK. Spillover into satellite IR-sensor cooling architectures is the aerospace nexus. EU-autonomous entry without Wassenaar consensus (Delegated Reg. 2025/2003).",
+    controlReasons: ["NS"],
+    crossReferenceTopic: "cryogenic-systems-spacecraft",
+    sourceUrl: SOURCE_DELEG_2025_2003,
+    asOfDate: ASOF,
+    notes:
+      "AM-001 overlaps with 3A504 (Wassenaar-aligned cryogenic cooling) at the upper temperature edge — the aerospace IR-payload market falls under both. AM-001 captures the quantum-driven sub-100mK envelope that 3A504 leaves uncontrolled.",
+  },
+  {
+    code: "AM-002",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Refractory metal powders for AM (EU-autonomous)",
+    description:
+      "EU Annex I AM-002 — atomized refractory metal powders (W, Ta, Mo, Nb, Re, Hf) for additive manufacturing, above defined purity, particle-size, and oxygen-content thresholds. Aerospace use: regenerative-cooled rocket-engine combustion chambers, hot-section turbine components. EU-autonomous entry (Delegated Reg. 2025/2003) — pre-cursor to 1C513 finished-alloy controls.",
+    controlReasons: ["NS"],
+    crossReferenceTopic: "high-entropy-alloys-refractory",
+    sourceUrl: SOURCE_DELEG_2025_2003,
+    asOfDate: ASOF,
+  },
+  {
+    code: "AM-003",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Hypersonic-flow test equipment (EU-autonomous)",
+    description:
+      "EU Annex I AM-003 — ground test equipment for hypersonic-flow regimes (Mach ≥ 5): plasma wind tunnels, arc-heated facilities, and shock-tube installations rated for sustained operation above defined enthalpy + run-time thresholds. EU-autonomous entry (Delegated Reg. 2025/2003) — captures the test infrastructure that underpins 9A103 / 9A116 engineering. Cross-control with US CCL 9B106.",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "high-temp-coatings-aerospace",
+    sourceUrl: SOURCE_DELEG_2025_2003,
+    asOfDate: ASOF,
+  },
+  {
+    code: "AM-004",
+    jurisdiction: "EU_ANNEX_I",
+    title: "On-orbit refuelling / docking equipment (EU-autonomous)",
+    description:
+      "EU Annex I AM-004 — equipment specifically designed for on-orbit refuelling, autonomous rendezvous, proximity operations (RPO), or docking with non-cooperative spacecraft. Captures the dual-use overlap between IOS (in-orbit servicing) commercial offerings and anti-satellite (ASAT) threat potential. EU-autonomous entry (Delegated Reg. 2025/2003).",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "in-orbit-servicing-rpo",
+    sourceUrl: SOURCE_DELEG_2025_2003,
+    asOfDate: ASOF,
+    notes:
+      "AM-004 is the EU's response to the rapid commercialization of in-orbit-servicing (Astroscale, ClearSpace, D-Orbit, Northrop MEV). Cooperative-target docking with prior consent is typically lower-risk; non-cooperative RPO triggers the strong-review path.",
+  },
+  {
+    code: "AM-005",
+    jurisdiction: "EU_ANNEX_I",
+    title:
+      "Optical inter-satellite-link terminals for constellations (EU-autonomous)",
+    description:
+      "EU Annex I AM-005 — optical inter-satellite-link (OISL) terminals specifically designed for high-throughput satellite-to-satellite communication in LEO/MEO constellations, with data-rate × range products above defined thresholds. Captures the constellation-class OISL market (Mynaric Condor, Tesat SCOT80, CACI photonics). EU-autonomous entry (Delegated Reg. 2025/2003) supplementing the broader 5A001.f Wassenaar entry.",
+    controlReasons: ["NS"],
+    crossReferenceTopic: "optical-comm-terminals",
+    sourceUrl: SOURCE_DELEG_2025_2003,
+    asOfDate: ASOF,
+    notes:
+      "AM-005 sits at a stricter capture envelope than 5A001.f — it specifically targets the high-throughput constellation use case (mesh networking, multi-Gbps links) the EU views as having national-security implications independent of Wassenaar consensus.",
+  },
+  {
+    code: "AM-006",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Spaceborne SAR with sub-meter resolution (EU-autonomous)",
+    description:
+      "EU Annex I AM-006 — spaceborne synthetic-aperture radar (SAR) systems with ground sampling distance (GSD) ≤ 0.5 m in any single-look mode. Captures the high-resolution commercial SAR market (ICEYE, Capella, Umbra) above the Wassenaar 6A008 threshold. EU-autonomous entry (Delegated Reg. 2025/2003).",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "synthetic-aperture-radar-payloads",
+    sourceUrl: SOURCE_DELEG_2025_2003,
+    asOfDate: ASOF,
+  },
+  {
+    code: "AM-007",
+    jurisdiction: "EU_ANNEX_I",
+    title:
+      "Spaceborne EO/IR payloads with on-board AI processing (EU-autonomous)",
+    description:
+      "EU Annex I AM-007 — spaceborne electro-optical / infrared imaging payloads with on-board AI / machine-learning inference capability for autonomous target detection, classification, or change-detection. Captures the on-board-edge-compute trend in Earth-observation constellations. EU-autonomous entry (Delegated Reg. 2025/2003) reflecting the EU's AI-Act-aligned concern around autonomous-targeting capability.",
+    controlReasons: ["NS"],
+    crossReferenceTopic: "high-resolution-eo-payloads",
+    sourceUrl: SOURCE_DELEG_2025_2003,
+    asOfDate: ASOF,
+    notes:
+      "AM-007 is a forward-looking entry — the EU drafted it anticipating that on-board AI inference will become the differentiator for the next generation of EO constellations. Compliance teams should flag any payload integrating Coral/Hailo/AmbarellaCV-grade NPUs.",
+  },
+  {
+    code: "AM-008",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Anti-jam GNSS for spaceborne PNT (EU-autonomous)",
+    description:
+      "EU Annex I AM-008 — anti-jam / anti-spoof GNSS receivers specifically designed for spaceborne positioning-navigation-timing (PNT) reception, with controlled-radiation-pattern antennas (CRPA) of ≥ 7 elements OR digital-anti-jam processing above defined J/S thresholds. EU-autonomous entry (Delegated Reg. 2025/2003) supplementing Wassenaar 7A005.",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "gnss-receivers-imus-star-trackers",
+    sourceUrl: SOURCE_DELEG_2025_2003,
+    asOfDate: ASOF,
   },
 ];
 
