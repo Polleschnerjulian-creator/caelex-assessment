@@ -270,37 +270,52 @@ interface SidebarItemProps {
 
 function SidebarItem({ item, active, onNavigate }: SidebarItemProps) {
   const Icon = item.icon;
-  const baseClasses =
-    "group flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] font-medium transition";
-  const enabledClasses = active
-    ? "bg-trade-accent-soft text-trade-accent-strong"
-    : "text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary";
-  const disabledClasses =
-    "cursor-not-allowed text-trade-text-muted hover:bg-transparent";
+
+  // Apple macOS sidebar row recipe:
+  //   - 28px tall (py-1.5 + 13px line-height)
+  //   - 8px horizontal padding inside the row
+  //   - active: solid tinted fill (accent at 14% opacity) + accent label/icon
+  //   - hover (inactive): subtle --trade-fill-4 background
+  //   - disabled: tertiary label, no hover
+  const rowStyle: React.CSSProperties = active
+    ? {
+        background: "color-mix(in srgb, var(--trade-accent) 14%, transparent)",
+        color: "var(--trade-accent-strong)",
+      }
+    : item.comingIn
+      ? { color: "var(--trade-label-tertiary)" }
+      : { color: "var(--trade-label-secondary)" };
+
+  const iconStyle: React.CSSProperties = active
+    ? { color: "var(--trade-accent-strong)" }
+    : { color: "var(--trade-label-tertiary)" };
 
   const content = (
     <>
-      <Icon
-        size={16}
-        className={
-          active
-            ? "text-trade-accent-strong"
-            : "text-trade-text-muted group-hover:text-trade-text-secondary"
-        }
-      />
+      <Icon size={16} strokeWidth={1.75} style={iconStyle} />
       <span className="flex-1 truncate">{item.label}</span>
       {item.comingIn ? (
-        <span className="rounded-sm bg-trade-bg-subtle px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-trade-text-muted">
+        <span
+          className="rounded-[4px] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+          style={{
+            background: "var(--trade-fill-4)",
+            color: "var(--trade-label-tertiary)",
+          }}
+        >
           {item.comingIn}
         </span>
       ) : null}
     </>
   );
 
+  const baseClasses =
+    "group flex items-center gap-2.5 rounded-[6px] px-2 py-1.5 text-[13px] font-medium transition-colors duration-100";
+
   if (item.comingIn) {
     return (
       <div
-        className={`${baseClasses} ${disabledClasses}`}
+        className={`${baseClasses} cursor-not-allowed`}
+        style={rowStyle}
         aria-disabled="true"
         title={`Coming in ${item.comingIn}`}
       >
@@ -312,7 +327,8 @@ function SidebarItem({ item, active, onNavigate }: SidebarItemProps) {
   return (
     <Link
       href={item.href}
-      className={`${baseClasses} ${enabledClasses}`}
+      className={`${baseClasses} ${active ? "" : "hover:bg-[color:var(--trade-fill-4)] hover:text-[color:var(--trade-label)]"}`}
+      style={rowStyle}
       data-active={active}
       onClick={onNavigate}
     >
@@ -338,28 +354,53 @@ function SidebarContent({
 }: SidebarContentProps) {
   return (
     <div className="flex h-full flex-col">
-      {/* Header */}
-      <header className="flex flex-col gap-1 border-b border-trade-border-subtle px-3 py-3">
+      {/* Header — Apple sidebar workspace switcher style.
+          Tight padding, small logo, org name in muted weight. */}
+      <header
+        className="flex items-center gap-2 px-3 py-3"
+        style={{ borderBottom: "1px solid var(--trade-separator)" }}
+      >
         <Image
           src="/logos/trade-studio-light.svg"
           alt="Caelex Trade"
-          width={140}
-          height={56}
-          className="h-10 w-auto dark:hidden"
+          width={120}
+          height={28}
+          className="h-7 w-auto dark:hidden"
           priority
         />
         <Image
           src="/logos/trade-studio-dark.svg"
           alt="Caelex Trade"
-          width={140}
-          height={56}
-          className="hidden h-10 w-auto dark:block"
+          width={120}
+          height={28}
+          className="hidden h-7 w-auto dark:block"
           priority
         />
-        <span className="truncate text-[11px] font-medium uppercase tracking-wider text-trade-text-muted">
+      </header>
+
+      {/* Org row — Apple "current workspace" affordance.
+          Small avatar circle (initial) + org name + chevron hint. */}
+      <div
+        className="flex items-center gap-2 px-3 py-2.5"
+        style={{ borderBottom: "1px solid var(--trade-separator)" }}
+      >
+        <div
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[10px] font-semibold"
+          style={{
+            background:
+              "color-mix(in srgb, var(--trade-accent) 16%, transparent)",
+            color: "var(--trade-accent-strong)",
+          }}
+        >
+          {org.name.charAt(0).toUpperCase()}
+        </div>
+        <span
+          className="flex-1 truncate text-[13px] font-medium"
+          style={{ color: "var(--trade-label)" }}
+        >
           {org.name}
         </span>
-      </header>
+      </div>
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-2 py-3">

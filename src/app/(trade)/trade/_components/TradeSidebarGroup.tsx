@@ -51,20 +51,24 @@ export function TradeSidebarGroup({
 }: TradeSidebarGroupProps) {
   const regionId = `trade-sidebar-group-${id}`;
   return (
-    <section className="mb-3" aria-label={label}>
+    <section className="mb-2" aria-label={label}>
       <button
         type="button"
         onClick={() => onToggle(id)}
         aria-expanded={expanded}
         aria-controls={regionId}
         data-testid={`trade-sidebar-group-toggle-${id}`}
-        className="group flex w-full items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.15em] text-trade-text-muted transition hover:text-trade-text-secondary"
+        className="group flex w-full items-center gap-1 rounded-[6px] px-2 py-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] transition-colors"
+        style={{ color: "var(--trade-label-tertiary)" }}
       >
         <ChevronRight
-          size={12}
+          size={10}
           aria-hidden="true"
-          className="text-trade-text-muted transition-transform duration-150 ease-out group-hover:text-trade-text-secondary"
-          style={{ transform: expanded ? "rotate(90deg)" : "rotate(0deg)" }}
+          className="transition-transform duration-150 ease-out"
+          style={{
+            transform: expanded ? "rotate(90deg)" : "rotate(0deg)",
+            color: "var(--trade-label-quaternary)",
+          }}
         />
         <span className="flex-1 text-left">{label}</span>
       </button>
@@ -73,10 +77,10 @@ export function TradeSidebarGroup({
         role="region"
         aria-label={label}
         hidden={!expanded}
-        className="pl-4"
+        className="pl-0"
       >
         {expanded ? (
-          <ul className="mt-1 flex flex-col gap-0.5">{children}</ul>
+          <ul className="mt-0.5 flex flex-col gap-px">{children}</ul>
         ) : null}
       </div>
     </section>

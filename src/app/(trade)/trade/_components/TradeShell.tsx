@@ -1,20 +1,16 @@
 "use client";
 
 /**
- * Caelex Trade — App Shell — Apple HIG iteration 3.
+ * Caelex Trade — App Shell — clean macOS sidebar pattern.
  *
- * Implements the macOS Big Sur+ unified-window layout per the user's
- * Apple Liquid Glass research:
- *   - Sidebar uses `trade-glass` (translucent, backdrop-blurred, inner
- *     specular highlight) as the chrome-layer material — never on
- *     data surfaces.
- *   - Main content sits on `--trade-surface` (opaque white in light,
- *     opaque black in dark) for legibility-first data display.
- *   - 1px hairline separator instead of gap-padding floating panels.
+ * Sidebar: opaque `--trade-surface-secondary` (#F2F2F7 light, #1C1C1E
+ * dark) — this is Apple's actual macOS sidebar tint, NOT glass. Glass
+ * is reserved for floating chrome (toolbar overlays, command palette,
+ * modals).
  *
- * Glass material is auto-downgraded to opaque under
- * `prefers-reduced-transparency` (Apple HIG mandate / EU Accessibility
- * Act compliance).
+ * Main content: opaque `--trade-surface` (pure white / pure black).
+ *
+ * 1px hairline separator between the two columns. No padding gap.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -34,29 +30,25 @@ export function TradeShell({ org, children }: Props) {
     <div
       className="trade-themed flex h-screen w-screen overflow-hidden text-[color:var(--trade-label)]"
       style={{
-        background: "var(--trade-surface-secondary)",
+        background: "var(--trade-surface)",
         fontFamily:
           '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter Variable", "Inter", "Segoe UI Variable", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
         WebkitFontSmoothing: "antialiased",
         MozOsxFontSmoothing: "grayscale",
       }}
     >
-      {/* Sidebar — chrome layer, glass-regular material.
-          Borderless so the trade-glass border draws the only separator. */}
+      {/* Sidebar — Apple macOS sidebar tint, opaque. */}
       <aside
-        className="trade-glass w-[240px] shrink-0 overflow-hidden"
+        className="w-[240px] shrink-0 overflow-hidden"
         style={{
-          borderTop: "none",
-          borderLeft: "none",
-          borderBottom: "none",
+          background: "var(--trade-surface-secondary)",
           borderRight: "1px solid var(--trade-separator)",
         }}
       >
         <TradeSidebar org={org} />
       </aside>
 
-      {/* Main content area — opaque surface (data-first per Apple HIG).
-          Background is white in light mode, pure black in dark. */}
+      {/* Main content area — opaque surface (data-first per HIG). */}
       <main
         className="flex-1 overflow-y-auto"
         style={{ background: "var(--trade-surface)" }}
