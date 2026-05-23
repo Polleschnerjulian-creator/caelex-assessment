@@ -11555,6 +11555,16 @@ enum TradeSanctionsList {
   /// AE, TH) bringing the total to 200+ entities.
   /// Source: EUR-Lex CELEX 32014R0833 Annex IV.
   EU_ANNEX_IV
+  /// OpenSanctions aggregated index — free dataset that consolidates
+  /// 50+ government sources (OFAC, EU FSF, UK Sanctions List, UN, plus
+  /// PEP and debarred-party lists). Includes entities that have no
+  /// direct US/EU/UK equivalent (regional watch-lists, dual-use risk
+  /// lists, criminal-investigation lists). Hits against OPEN_SANCTIONS
+  /// carry primary-source attribution via FtM (Follow-the-Money) entity
+  /// metadata so the operator can drill into the originating authority.
+  /// Source: https://www.opensanctions.org/api/
+  /// Sprint Z9a.
+  OPEN_SANCTIONS
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
