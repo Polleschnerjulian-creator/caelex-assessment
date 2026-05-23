@@ -111,6 +111,10 @@ const VALID_REGIMES: readonly RegimeName[] = [
   "MTCR-ANNEX",
   "WASSENAAR",
   "NSG",
+  // Z35-RU-833 — Council Reg. (EU) 833/2014 sanctions annexes
+  "RUSSIA-833-VII",
+  "RUSSIA-833-XXIII",
+  "RUSSIA-833-XXIX",
   "OTHER",
 ];
 
