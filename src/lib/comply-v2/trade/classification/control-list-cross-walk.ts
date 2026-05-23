@@ -3189,6 +3189,270 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     notes:
       "Headline AI-export control of the decade. Captures Nvidia H100/H200/B100/B200, AMD MI300/MI325, Intel Gaudi3, Google TPU v5e/v5p. Spaceborne on-board-AI inference engines typically do NOT trip this threshold (the H100 sits well above any spaceborne inference part by 1-2 orders of magnitude) — but operators integrating ground-station AI infrastructure into their satellite-data pipeline must classify the ground-side chips here.",
   },
+
+  // ═══════════════════════════════════════════════════════════════
+  // Z34-Cat4-7 — EU Annex I Cat 4 (Computers) + Cat 7 (Navigation +
+  // Avionics) parametric tripwires.
+  //
+  // Companion to `src/data/trade/eu-annex-i-cat4-7.ts` (full Cat-4 +
+  // Cat-7 enumeration). This block ships the SPACE-CRITICAL parametric
+  // entries — the codes where the matcher needs a hard numeric
+  // threshold or boolean flag to discriminate "controlled" from
+  // "not".
+  //
+  // Coverage:
+  //   - EU:7A002.a   gyro angular-rate accuracy gate (drift via
+  //                  starTrackerAccuracyArcsec proxy + itemClass)
+  //   - EU:7A003     IMU drift rate via spacecraft.imu itemClass +
+  //                  starTrackerAccuracyArcsec proxy (note: the
+  //                  textual 7A003 entry lives in the canonical
+  //                  eu-annex-i.ts; this cross-walk row is the
+  //                  parametric capture only, not a duplicate entry)
+  //   - EU:7A005     GNSS receiver anti-jam + velocity envelope
+  //                  (gnssMaxVelocityMPerS + isAntiJam)
+  //   - EU:4A090     advanced-computing AI compute (TPP proxy via
+  //                  crossLinkBandwidthMbps for HBM-aggregate
+  //                  bandwidth + itemClass prefix)
+  //
+  // Sources: Reg. (EU) 2021/821 Annex I, Cat. 4 + Cat. 7
+  // (consolidated text) + Delegated Reg. 2025/2003 (4A090 family).
+  // ═══════════════════════════════════════════════════════════════
+  {
+    canonicalId: "EU:7A002.a",
+    regime: "EU-ANNEX-I",
+    category: "7",
+    productGroup: "A",
+    entryNumber: "002",
+    subpara: "a",
+    title:
+      "Non-spinning gyros (RLG / FOG / HRG / MEMS) with drift ≤ 0.5 deg/h (EU Cat 7)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "spacecraft.gyro",
+      },
+      // Gyro drift rate is captured here via starTrackerAccuracyArcsec
+      // as the closest available typed parametric — both are angular
+      // precision measurements and the matcher routes spaceborne
+      // gyros through this attribute. A drift gate of ≤ 0.5 deg/h
+      // corresponds to ~1800 arcsec/h; the matcher uses the spaceborne
+      // itemClass + the arcsec gate as a coupled tripwire. The strict
+      // drift figure remains the legal definition; this predicate is
+      // the operational screen.
+      {
+        attribute: "starTrackerAccuracyArcsec",
+        op: "lte",
+        value: 1800,
+      },
+    ],
+    reasonsForControl: ["NS", "MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "7A002.a",
+        relationship: "analogous",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "7.A.2.a",
+        relationship: "derived_from",
+      },
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 9",
+        relationship: "analogous",
+        notes:
+          "MTCR Item 9 — gyros for delivery-vehicle guidance. Sister entry to the EU-Cat-7-MTCR-derived 7A102.",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 7, 7A002.a",
+    validFrom: "2021-09-09",
+    notes:
+      "Non-spinning gyro entry — Northrop Grumman LN-200, KVH DSP-1500, iXBlue Astrix series, Safran SPACENAUTE all fire here. Every spacecraft AOCS with closed-loop attitude control sits behind a 7A002.a-class gyro. MT reason fires when the same gyro is also operationally suitable for a MTCR Cat-I delivery vehicle.",
+  },
+  {
+    canonicalId: "EU:7A003",
+    regime: "EU-ANNEX-I",
+    category: "7",
+    productGroup: "A",
+    entryNumber: "003",
+    title:
+      "Inertial Measurement Units (IMU) with bias / drift below thresholds (EU Cat 7)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "spacecraft.imu",
+      },
+      // IMU integrated drift gate (1 sigma over one month for non-
+      // MTCR; finer for MTCR-aligned units). Same parametric proxy as
+      // 7A002.a — starTrackerAccuracyArcsec stands in for the
+      // integrated angular drift. Operators of LN-200S, ASTRIX-NS,
+      // SIRIUS, MIMU class fire here; cross-control with 7A103 when
+      // MTCR threshold reached.
+      {
+        attribute: "starTrackerAccuracyArcsec",
+        op: "lte",
+        value: 1800,
+      },
+      {
+        attribute: "isSpeciallyDesigned",
+        op: "eq",
+        value: true,
+      },
+    ],
+    reasonsForControl: ["NS", "MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "7A003",
+        relationship: "analogous",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "7.A.3",
+        relationship: "derived_from",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "7A103",
+        relationship: "subset_of",
+        notes:
+          "7A103 is the MTCR-Cat-I-equivalent IMU gate — strictly tighter than 7A003. The same physical IMU can hit both; the matcher should route MTCR-class items via 7A103 for the strong-presumption-of-denial gate.",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 7, 7A003",
+    validFrom: "2021-09-09",
+    notes:
+      "Parametric capture only — the full textual 7A003 ClassificationEntry lives in eu-annex-i.ts. This cross-walk row carries the predicate logic the matcher uses to discriminate at run-time. Every spacecraft with an integrated IMU (gyros + accelerometers in one unit) fires here.",
+  },
+  {
+    canonicalId: "EU:7A005",
+    regime: "EU-ANNEX-I",
+    category: "7",
+    productGroup: "A",
+    entryNumber: "005",
+    title: "GNSS receivers above COCOM velocity / anti-jam envelope (EU Cat 7)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "spacecraft.gnss",
+      },
+      // The COCOM velocity gate (600 m/s) is the historical export-
+      // control envelope around GNSS firmware. Receivers above the
+      // gate fire 7A005 even before anti-jam features come into play.
+      // The Z3e gnssMaxVelocityMPerS attribute is the typed
+      // parametric.
+      {
+        attribute: "gnssMaxVelocityMPerS",
+        op: "gt",
+        value: 600,
+      },
+      // Anti-jam adaptive antenna features escalate the capture and
+      // pull in the MT reason-for-control (cross-walk with 7A105 MTCR
+      // grade).
+      {
+        attribute: "isAntiJam",
+        op: "eq",
+        value: true,
+      },
+    ],
+    reasonsForControl: ["NS", "MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "7A005",
+        relationship: "analogous",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "7.A.5",
+        relationship: "derived_from",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "7A105",
+        relationship: "subset_of",
+        notes:
+          "7A105 is the MTCR-Cat-I-equivalent GNSS-receiver gate (delivery-vehicle suitability). Receivers without COCOM velocity lockout AND with anti-jam features should be routed via 7A105 for the strong-presumption-of-denial gate.",
+      },
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 11",
+        relationship: "analogous",
+        notes:
+          "MTCR Item 11 — guidance set components incl. anti-jam GNSS receivers for delivery vehicles.",
+      },
+    ],
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 7, 7A005",
+    validFrom: "2021-09-09",
+    notes:
+      "Anti-jam GNSS receiver capture — Galileo PRS receivers, GPS M-code receivers, Septentrio AsteRx-m series with anti-jam payload all fire here. The 600 m/s gate corresponds to the historical COCOM limit; receivers that disable above 600 m/s / 18 km altitude typically clear into EAR-99. Spaceborne GNSS-aided orbit determination receivers operating at orbital velocities (~7.5 km/s) clear the velocity gate by an order of magnitude.",
+  },
+  {
+    canonicalId: "EU:4A090",
+    regime: "EU-ANNEX-I",
+    category: "4",
+    productGroup: "A",
+    entryNumber: "090",
+    title:
+      "Advanced-computing AI compute assemblies / systems (Oct 2022 IFR transposition) (EU Cat 4)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "compute.ai-accelerator",
+      },
+      // The Oct 2022 IFR uses Total Processing Performance (TPP) as
+      // the headline gate. TPP itself is not yet a typed attribute on
+      // TradeItem — the matcher routes 4A090 assemblies via the
+      // itemClass prefix plus an HBM-aggregate-bandwidth proxy using
+      // crossLinkBandwidthMbps. A H100/H200-class assembly has
+      // aggregate HBM bandwidth well above 1 TB/s (8 stacks × 1 Tbps
+      // ≈ 1×10^6 Mbps). Sub-threshold parts still match via itemClass
+      // and route to manual review.
+      {
+        attribute: "crossLinkBandwidthMbps",
+        op: "gte",
+        value: 1_000_000,
+      },
+    ],
+    reasonsForControl: ["NS"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "4A090",
+        relationship: "analogous",
+        notes:
+          "EU 4A090 is the direct EU transposition of the US Oct 2022 IFR ECCN 4A090 — the system / assembly-level companion to 3A090's IC-level capture.",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "3A090.a",
+        relationship: "analogous",
+        notes:
+          "3A090.a captures the bare-die advanced-computing ICs; 4A090 captures the rack/server-level assemblies that integrate those ICs (DGX H100, HGX H200, OAM modules).",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "4D090",
+        relationship: "components_of",
+        notes:
+          "4D090 (software) and 4E090 (technology) ride with 4A090 — the CUDA/ROCm toolchain and IP are controlled together with the hardware.",
+      },
+    ],
+    citation:
+      "Reg. (EU) 2021/821 Annex I, Cat. 4, 4A090 (added by Delegated Reg. 2025/2003 transposing US Oct 2022 BIS IFR)",
+    validFrom: "2025-11-15",
+    notes:
+      "AI compute assembly capture — DGX H100/H200, HGX B100/B200, AMD Instinct MI300X servers, Intel Gaudi3 platforms, Google TPU v5p pods. Spaceborne on-board AI inference assemblies typically do NOT trip this assembly-level threshold (most spaceborne edge-inference parts sit 1-2 orders of magnitude below the rack-level TPP gate) — but ground-station AI training infrastructure used by EO downstream operators fires here directly.",
+  },
 ];
 
 // ─── Helpers ────────────────────────────────────────────────────────
