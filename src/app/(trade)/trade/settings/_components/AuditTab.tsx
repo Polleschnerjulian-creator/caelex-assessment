@@ -6,7 +6,7 @@ import type { TradeNotificationPreferencesView } from "@/lib/trade/settings/noti
 import {
   MIN_RETENTION_YEARS,
   MAX_RETENTION_YEARS,
-} from "@/lib/trade/settings/notification-preferences-service";
+} from "@/lib/trade/settings/notification-preferences-constants";
 import { updateAuditSettings } from "@/lib/trade/settings/settings-actions";
 
 interface Props {

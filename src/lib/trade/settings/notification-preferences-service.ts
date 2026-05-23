@@ -33,13 +33,20 @@ export type TradeNotificationPreferencesPatch = Partial<
 >;
 
 /**
- * Validation bounds for the retention window. 1 year is the floor
- * because below that we can't satisfy the EAR/ITAR 5-year retention
- * obligation; 30 years is the ceiling to prevent runaway settings.
+ * Validation bounds for the retention window. Re-exported from a
+ * client-safe constants module so client components (e.g. AuditTab) can
+ * import these without pulling in the server-only Prisma client.
  */
-export const MIN_RETENTION_YEARS = 1;
-export const MAX_RETENTION_YEARS = 30;
-export const DEFAULT_RETENTION_YEARS = 5;
+export {
+  MIN_RETENTION_YEARS,
+  MAX_RETENTION_YEARS,
+  DEFAULT_RETENTION_YEARS,
+} from "./notification-preferences-constants";
+
+import {
+  MIN_RETENTION_YEARS,
+  MAX_RETENTION_YEARS,
+} from "./notification-preferences-constants";
 
 /**
  * Fetch preferences for an org. Returns null when no row exists —
