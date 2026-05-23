@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, ChevronDown } from "lucide-react";
+import { Plus, ChevronDown, Download } from "lucide-react";
 import {
   TradeVSDAuthority,
   TradeVSDViolationType,
@@ -110,6 +110,7 @@ export function VsdListPanel({
                 <th className="pb-2 pr-4 font-medium">Discovered</th>
                 <th className="pb-2 pr-4 font-medium">Status</th>
                 <th className="pb-2 pr-4 font-medium">Outcome</th>
+                <th className="pb-2 pr-4 font-medium">Filing PDF</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-trade-border-subtle">
@@ -151,6 +152,9 @@ export function VsdListPanel({
                         })}
                       </div>
                     ) : null}
+                  </td>
+                  <td className="py-3 pr-4">
+                    <FilingPdfMenu row={v} />
                   </td>
                 </tr>
               ))}
@@ -436,6 +440,85 @@ function StatusTransitionMenu({ row }: { row: VSDWithRelations }) {
               )}
             </>
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Filing PDF dropdown (per-row) ──────────────────────────────────
+
+/**
+ * Z6b-d: download the filing PDF for the disclosure. The default
+ * jurisdiction is derived from the VSD's `authority` (OFAC → OFAC
+ * template, BIS → BIS template, DDTC → DDTC template). The dropdown
+ * also exposes the other two for cases where the operator wants to
+ * preview an alternate format (e.g. concurrent BIS + OFAC filing).
+ */
+function FilingPdfMenu({ row }: { row: VSDWithRelations }) {
+  const [open, setOpen] = useState(false);
+
+  const supportsAuto =
+    row.authority === "OFAC" ||
+    row.authority === "BIS" ||
+    row.authority === "DDTC";
+
+  return (
+    <div className="relative inline-block">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center gap-1 rounded-sm border border-trade-border bg-trade-bg-page px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-trade-text-primary transition-colors hover:bg-trade-hover"
+        aria-haspopup="menu"
+        aria-expanded={open}
+      >
+        <Download size={11} />
+        Filing PDF
+        <ChevronDown size={11} />
+      </button>
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-[calc(100%+4px)] z-20 w-56 rounded-md border border-trade-border bg-trade-bg-panel py-1 shadow-lg"
+        >
+          {supportsAuto && (
+            <a
+              role="menuitem"
+              href={`/api/trade/vsd/${row.id}/pdf`}
+              download
+              onClick={() => setOpen(false)}
+              className="block px-3 py-1.5 text-left text-[12px] text-trade-text-primary transition-colors hover:bg-trade-hover"
+            >
+              ↓ Filing for {AUTHORITY_LABELS[row.authority]}
+            </a>
+          )}
+          <a
+            role="menuitem"
+            href={`/api/trade/vsd/${row.id}/pdf?jurisdiction=ofac`}
+            download
+            onClick={() => setOpen(false)}
+            className="block px-3 py-1.5 text-left text-[12px] text-trade-text-primary transition-colors hover:bg-trade-hover"
+          >
+            ↓ OFAC (31 CFR § 501.806)
+          </a>
+          <a
+            role="menuitem"
+            href={`/api/trade/vsd/${row.id}/pdf?jurisdiction=bis`}
+            download
+            onClick={() => setOpen(false)}
+            className="block px-3 py-1.5 text-left text-[12px] text-trade-text-primary transition-colors hover:bg-trade-hover"
+          >
+            ↓ BIS (15 CFR § 764.5)
+          </a>
+          <a
+            role="menuitem"
+            href={`/api/trade/vsd/${row.id}/pdf?jurisdiction=ddtc`}
+            download
+            onClick={() => setOpen(false)}
+            className="block px-3 py-1.5 text-left text-[12px] text-trade-text-primary transition-colors hover:bg-trade-hover"
+          >
+            ↓ DDTC (22 CFR § 127.12)
+          </a>
         </div>
       )}
     </div>
