@@ -52,7 +52,9 @@ export type RegimeName =
   | "JP-METI" // Japan METI Schedule 1 / 2 (FEFTA + ETCO)
   | "MTCR-ANNEX" // MTCR (multilateral)
   | "WASSENAAR" // Wassenaar Arrangement
-  | "NSG" // Nuclear Suppliers Group
+  | "NSG" // Nuclear Suppliers Group (legacy, retained for back-compat)
+  | "NSG-TRIGGER" // NSG Trigger List (INFCIRC/254/Rev.14/Part 1)
+  | "NSG-DU" // NSG Dual-Use Annex (INFCIRC/254/Rev.11/Part 2)
   | "OTHER";
 
 /**
@@ -4402,6 +4404,141 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     validFrom: "2017-11-29",
     notes:
       "Captures TT&C link encryptors + telemetry crypto units on Japanese commercial + government satellites. METI's mass-market exemption (2018 notice) is narrower than US §740.17 (ENC) — space-rated crypto modules almost never qualify.",
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // Z35-NSG — Nuclear Suppliers Group cross-walk entries
+  //
+  // The full NSG dataset lives in `src/data/trade/nsg-trigger-dual-use.ts`
+  // (Trigger List + Dual-Use Annex, 30+ entries). This block ships
+  // the PARAMETRIC tripwires — the codes where the matcher needs a
+  // discriminator to flag a space-bound item against the NSG lists.
+  //
+  // Coverage:
+  //   - NSG-TRIGGER:3.A   spacecraft nuclear reactors (NTP / NEP /
+  //                       BWXT Advanced Reactor Technologies)
+  //   - NSG-TRIGGER:1.1.A.1.b  nuclear-grade graphite (reactor moderator)
+  //   - NSG-DU:2.A.1      5-axis NC machine tools (spacecraft mfg)
+  //
+  // Sources: INFCIRC/254/Rev.14/Part 1 + INFCIRC/254/Rev.11/Part 2.
+  // ═══════════════════════════════════════════════════════════════
+  {
+    canonicalId: "NSG-TRIGGER:3.A",
+    regime: "NSG-TRIGGER",
+    category: "3",
+    productGroup: "A",
+    entryNumber: "3",
+    title:
+      "Nuclear reactors and especially-designed reactor components (NSG Trigger List)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "spacecraft.nuclear_reactor",
+      },
+    ],
+    reasonsForControl: ["NP"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "0A001",
+        relationship: "analogous",
+        notes:
+          "CCL 0A001 implements the NSG Trigger List reactor entries on the US side. Exports require BIS licence + NRC 10 CFR Part 110 coordination.",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "0A001",
+        relationship: "analogous",
+        notes:
+          "EU Annex I Cat 0 (nuclear materials + reactors) mirrors the NSG Trigger List on the EU side.",
+      },
+    ],
+    citation: "INFCIRC/254/Rev.14/Part 1, Trigger List section 1",
+    validFrom: "2023-11-21",
+    notes:
+      "Catches NASA NTP, BWXT Advanced Reactor Technologies, Lockheed Martin DRACO programme. Strong presumption of denial; effectively non-exportable except under government-to-government cooperation with full IAEA safeguards.",
+  },
+  {
+    canonicalId: "NSG-TRIGGER:1.1.A.1.b",
+    regime: "NSG-TRIGGER",
+    category: "1",
+    productGroup: "A",
+    entryNumber: "1",
+    subpara: "1.b",
+    title: "Nuclear-grade graphite (reactor moderator, NSG Trigger List)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "material.graphite_nuclear_grade",
+      },
+    ],
+    reasonsForControl: ["NP"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "0C004",
+        relationship: "analogous",
+        notes:
+          "CCL 0C004 — graphite > 1.50 g/cm³ density, < 5 ppm boron equivalent.",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "0C004",
+        relationship: "analogous",
+      },
+    ],
+    citation: "INFCIRC/254/Rev.14/Part 1, Trigger List item 2.2",
+    validFrom: "2023-11-21",
+    notes:
+      "Relevant for NTP reactor moderators + ground-test rigs. Procurement is heavily watched by national authorities; end-use statements + NRC coordination required for US flows.",
+  },
+  {
+    canonicalId: "NSG-DU:2.A.1",
+    regime: "NSG-DU",
+    category: "2",
+    productGroup: "A",
+    entryNumber: "1",
+    title:
+      "Numerically-controlled machine tools — 5+ axis simultaneous (NSG Dual-Use Annex)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "manufacturing.machine_tool.nc_5axis",
+      },
+    ],
+    reasonsForControl: ["NP"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "EAR-CCL",
+        id: "2B201",
+        relationship: "analogous",
+        notes:
+          "CCL 2B201 — direct mirror of NSG dual-use 2.A.1 on the US side.",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "2B201",
+        relationship: "analogous",
+        notes: "EU Annex I 2B201 — direct mirror on the EU side.",
+      },
+      {
+        regime: "WASSENAAR",
+        id: "2.B.1",
+        relationship: "analogous",
+        notes:
+          "Wassenaar 2.B.1 is the Wassenaar-aligned envelope; NSG dual-use 2.A.1 is the nuclear-specific sub-set.",
+      },
+    ],
+    citation: "INFCIRC/254/Rev.11/Part 2, Dual-Use Annex item 2.A.1",
+    validFrom: "2023-11-21",
+    notes:
+      "Highest-volume NSG entry by satellite-industry impact. Catches DMG Mori, Mazak, Makino 5-axis machining centres used for thruster injectors, payload structures, mirror substrates. ICP + end-use control critical.",
   },
 ];
 

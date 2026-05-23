@@ -111,6 +111,8 @@ const VALID_REGIMES: readonly RegimeName[] = [
   "MTCR-ANNEX",
   "WASSENAAR",
   "NSG",
+  "NSG-TRIGGER",
+  "NSG-DU",
   "OTHER",
 ];
 
