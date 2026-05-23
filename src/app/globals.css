@@ -4762,7 +4762,7 @@ html:not(.dark) .caelex-v2 .glass-card::after {
    Comply-emerald, Atlas-cyan, and Pharos-amber. */
 
 .trade-themed {
-  /* Light (default) */
+  /* Light (default) — legacy tokens kept for back-compat */
   --trade-bg-page: #f6f7fb;
   --trade-bg-panel: #ffffff;
   --trade-bg-elevated: #fafbff;
@@ -4773,10 +4773,69 @@ html:not(.dark) .caelex-v2 .glass-card::after {
   --trade-text-primary: #111827;
   --trade-text-secondary: #4b5563;
   --trade-text-muted: #6b7280;
-  --trade-accent: #6366f1; /* indigo-500 */
+  --trade-accent: #6366f1; /* indigo-500 — Caelex brand accent */
   --trade-accent-soft: #eef2ff; /* indigo-50 */
   --trade-accent-strong: #4f46e5; /* indigo-600 */
   --trade-hover: #f1f5f9;
+
+  /* ──────────────────────────────────────────────────────────────
+     APPLE HIG semantic tokens (Iteration 3 — based on user's
+     curated research: see Building Caelex on Apple's Liquid Glass).
+     Values come straight from Apple's UIColor system runtime; the
+     `--trade-surface*` / `--trade-label*` / `--trade-fill*` /
+     `--trade-separator*` stacks are the canonical Apple tokens.
+     Newer components should reference these, not the legacy
+     bg/text/border tokens above. */
+
+  /* Surfaces — page (deepest) → grouped → elevated */
+  --trade-surface: #ffffff;
+  --trade-surface-secondary: #f2f2f7;
+  --trade-surface-tertiary: #ffffff;
+  --trade-surface-grouped: #f2f2f7;
+  --trade-surface-grouped-2: #ffffff;
+
+  /* Labels — grayscale w/ alpha, never colored */
+  --trade-label: rgba(0, 0, 0, 1);
+  --trade-label-secondary: rgba(60, 60, 67, 0.6);
+  --trade-label-tertiary: rgba(60, 60, 67, 0.3);
+  --trade-label-quaternary: rgba(60, 60, 67, 0.18);
+  --trade-placeholder: rgba(60, 60, 67, 0.3);
+
+  /* Fills — translucent overlays for hover / selection / chips */
+  --trade-fill-1: rgba(120, 120, 128, 0.2);
+  --trade-fill-2: rgba(120, 120, 128, 0.16);
+  --trade-fill-3: rgba(118, 118, 128, 0.12);
+  --trade-fill-4: rgba(116, 116, 128, 0.08);
+
+  /* Separators — hairlines */
+  --trade-separator: rgba(60, 60, 67, 0.29);
+  --trade-separator-opaque: #c6c6c8;
+
+  /* Status (Apple semantic) — use sparingly per HIG */
+  --trade-accent-success: #34c759; /* systemGreen */
+  --trade-accent-warn: #ff9500; /* systemOrange */
+  --trade-accent-danger: #ff3b30; /* systemRed */
+
+  /* Liquid Glass materials — alpha layered on a backdrop-blurred
+     surface. Chrome-layer only (sidebar, top nav, dialogs, popovers,
+     command palette). NEVER on data tables, forms, or chart bg. */
+  --trade-glass-ultra-thin: rgba(255, 255, 255, 0.5);
+  --trade-glass-thin: rgba(255, 255, 255, 0.65);
+  --trade-glass-regular: rgba(255, 255, 255, 0.78);
+  --trade-glass-thick: rgba(255, 255, 255, 0.88);
+  --trade-glass-chrome: rgba(255, 255, 255, 0.95);
+  --trade-glass-border: rgba(255, 255, 255, 0.18);
+  --trade-glass-highlight: rgba(255, 255, 255, 0.6);
+
+  /* Apple motion easings (SwiftUI-equivalent cubic-béziers) */
+  --trade-ease-out-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --trade-ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --trade-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --trade-ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
+  --trade-dur-fast: 150ms;
+  --trade-dur-base: 220ms;
+  --trade-dur-slow: 350ms;
+
   color-scheme: light;
 }
 
@@ -4796,7 +4855,101 @@ html[data-trade-preload="dark"] .trade-themed {
   --trade-accent-soft: rgba(99, 102, 241, 0.14);
   --trade-accent-strong: #6366f1;
   --trade-hover: #1e293b;
+
+  /* APPLE HIG semantic tokens — dark variants.
+     Per Apple: dark mode is NOT inversion — elevated surfaces
+     become *lighter*, not darker. The systemGray2-6 scale reverses
+     in dark mode. Tints brighten slightly. */
+  --trade-surface: #000000;
+  --trade-surface-secondary: #1c1c1e;
+  --trade-surface-tertiary: #2c2c2e;
+  --trade-surface-grouped: #000000;
+  --trade-surface-grouped-2: #1c1c1e;
+
+  --trade-label: rgba(255, 255, 255, 1);
+  --trade-label-secondary: rgba(235, 235, 245, 0.6);
+  --trade-label-tertiary: rgba(235, 235, 245, 0.3);
+  --trade-label-quaternary: rgba(235, 235, 245, 0.18);
+  --trade-placeholder: rgba(235, 235, 245, 0.3);
+
+  --trade-fill-1: rgba(120, 120, 128, 0.36);
+  --trade-fill-2: rgba(120, 120, 128, 0.32);
+  --trade-fill-3: rgba(118, 118, 128, 0.24);
+  --trade-fill-4: rgba(118, 118, 128, 0.18);
+
+  --trade-separator: rgba(84, 84, 88, 0.6);
+  --trade-separator-opaque: #38383a;
+
+  --trade-accent-success: #30d158;
+  --trade-accent-warn: #ff9f0a;
+  --trade-accent-danger: #ff453a;
+
+  --trade-glass-ultra-thin: rgba(28, 28, 30, 0.55);
+  --trade-glass-thin: rgba(28, 28, 30, 0.65);
+  --trade-glass-regular: rgba(28, 28, 30, 0.78);
+  --trade-glass-thick: rgba(28, 28, 30, 0.88);
+  --trade-glass-chrome: rgba(28, 28, 30, 0.95);
+  --trade-glass-border: rgba(255, 255, 255, 0.08);
+  --trade-glass-highlight: rgba(255, 255, 255, 0.12);
+
   color-scheme: dark;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Apple Liquid Glass utility — chrome-layer only.
+
+   Recipe straight from the user's research doc: backdrop-blur
+   + saturate(180%) for "lively" colour-pull, inner top highlight
+   for convex feel, soft drop-shadow for elevation.
+
+   Honors `prefers-reduced-transparency` per Apple HIG (and EU
+   Accessibility Act): replaces glass with opaque surface fallback. */
+.trade-themed .trade-glass {
+  position: relative;
+  background: var(--trade-glass-regular);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--trade-glass-border);
+  isolation: isolate;
+}
+.trade-themed .trade-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0) 32%
+  );
+  mix-blend-mode: overlay;
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .trade-themed .trade-glass {
+    background: var(--trade-surface-secondary);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .trade-themed .trade-glass {
+    background: var(--trade-surface-secondary);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .trade-themed .trade-glass::before {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trade-themed *,
+  .trade-themed *::before,
+  .trade-themed *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* WCAG 2.2 AA Hot-Fix — mirror of Atlas's Phase-A fix.

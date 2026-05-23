@@ -1,18 +1,20 @@
 "use client";
 
 /**
- * Caelex Trade — App Shell — Apple HIG iteration.
+ * Caelex Trade — App Shell — Apple HIG iteration 3.
  *
- * Layout follows macOS Big Sur+ unified-window pattern (Mail / Music /
- * System Settings / Finder):
- *   - Single continuous surface — sidebar and content touch
- *   - 1px hairline border separates sidebar from content (no gap)
- *   - No rounded panels, no floating shadows
- *   - Sidebar uses subtle elevated background tint (like Apple's
- *     NSVisualEffectView sidebar material)
+ * Implements the macOS Big Sur+ unified-window layout per the user's
+ * Apple Liquid Glass research:
+ *   - Sidebar uses `trade-glass` (translucent, backdrop-blurred, inner
+ *     specular highlight) as the chrome-layer material — never on
+ *     data surfaces.
+ *   - Main content sits on `--trade-surface` (opaque white in light,
+ *     opaque black in dark) for legibility-first data display.
+ *   - 1px hairline separator instead of gap-padding floating panels.
  *
- * The shell is purely visual chrome — auth, productAccess, and org
- * resolution all happen in (trade)/trade/layout.tsx (server component).
+ * Glass material is auto-downgraded to opaque under
+ * `prefers-reduced-transparency` (Apple HIG mandate / EU Accessibility
+ * Act compliance).
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -30,20 +32,35 @@ interface Props {
 export function TradeShell({ org, children }: Props) {
   return (
     <div
-      className="trade-themed flex h-screen w-screen overflow-hidden bg-trade-bg-panel text-trade-text-primary"
+      className="trade-themed flex h-screen w-screen overflow-hidden text-[color:var(--trade-label)]"
       style={{
+        background: "var(--trade-surface-secondary)",
         fontFamily:
-          '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", system-ui, sans-serif',
+          '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter Variable", "Inter", "Segoe UI Variable", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        WebkitFontSmoothing: "antialiased",
+        MozOsxFontSmoothing: "grayscale",
       }}
     >
-      {/* Sidebar — slightly elevated tint (mimics NSVisualEffectView sidebar),
-          1px right hairline. No rounded corners, no shadow. */}
-      <aside className="w-[240px] shrink-0 overflow-hidden border-r border-black/[0.07] bg-trade-bg-elevated dark:border-white/[0.06]">
+      {/* Sidebar — chrome layer, glass-regular material.
+          Borderless so the trade-glass border draws the only separator. */}
+      <aside
+        className="trade-glass w-[240px] shrink-0 overflow-hidden"
+        style={{
+          borderTop: "none",
+          borderLeft: "none",
+          borderBottom: "none",
+          borderRight: "1px solid var(--trade-separator)",
+        }}
+      >
         <TradeSidebar org={org} />
       </aside>
 
-      {/* Main content area — primary surface, no border, no shadow. */}
-      <main className="flex-1 overflow-y-auto bg-trade-bg-panel">
+      {/* Main content area — opaque surface (data-first per Apple HIG).
+          Background is white in light mode, pure black in dark. */}
+      <main
+        className="flex-1 overflow-y-auto"
+        style={{ background: "var(--trade-surface)" }}
+      >
         {children}
       </main>
     </div>

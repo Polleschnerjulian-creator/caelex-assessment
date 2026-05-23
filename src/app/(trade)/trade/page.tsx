@@ -280,13 +280,7 @@ export default async function TradeDashboardPage() {
   });
 
   return (
-    <div
-      className="mx-auto max-w-[1200px] px-10 py-10"
-      style={{
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", system-ui, sans-serif',
-      }}
-    >
+    <div className="mx-auto max-w-[1200px] px-10 py-10">
       {/* Apple-style Workspace header — replaces large H1 + LIVE pill */}
       <WorkspaceHeader orgName={org?.name ?? "your workspace"} />
 

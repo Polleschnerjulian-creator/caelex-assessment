@@ -60,28 +60,52 @@ export function CompliancePostureCard() {
   return (
     <section className="mb-12">
       <div className="mb-5 flex items-baseline justify-between">
-        <h2 className="text-[13px] font-medium uppercase tracking-[0.08em] text-trade-text-muted">
+        <h2
+          className="text-[13px] font-semibold uppercase tracking-[0.06em]"
+          style={{ color: "var(--trade-label-tertiary)" }}
+        >
           Compliance posture
         </h2>
-        <p className="text-[12px] text-trade-text-muted">
+        <p
+          className="text-[12px]"
+          style={{ color: "var(--trade-label-tertiary)" }}
+        >
           What we cover for you
         </p>
       </div>
 
-      <div className="overflow-hidden rounded-[12px] border border-black/[0.07] bg-trade-bg-elevated dark:border-white/[0.06]">
+      <div
+        className="overflow-hidden rounded-[12px]"
+        style={{
+          background: "var(--trade-surface-secondary)",
+          border: "1px solid var(--trade-separator)",
+        }}
+      >
         <div className="flex flex-col gap-8 p-8 lg:flex-row lg:items-center">
           {/* Hero illustration + headline metric */}
           <div className="flex flex-shrink-0 flex-row items-center gap-6 lg:flex-col lg:items-start">
             <PostureIllustration size={104} />
             <div className="flex flex-col">
-              <p className="text-[40px] font-light leading-none tracking-tight text-trade-text-primary tabular-nums">
+              <p
+                className="text-[40px] leading-none tracking-[-0.022em] tabular-nums"
+                style={{ color: "var(--trade-label)", fontWeight: 600 }}
+              >
                 {REGIME_COUNT}
               </p>
-              <p className="mt-1 text-[12px] font-medium uppercase tracking-[0.08em] text-trade-text-muted">
+              <p
+                className="mt-1 text-[12px] font-semibold uppercase tracking-[0.06em]"
+                style={{ color: "var(--trade-label-tertiary)" }}
+              >
                 Regulatory regimes
               </p>
-              <p className="mt-3 text-[13px] text-trade-text-secondary">
-                <span className="text-trade-text-primary tabular-nums">
+              <p
+                className="mt-3 text-[13px]"
+                style={{ color: "var(--trade-label-secondary)" }}
+              >
+                <span
+                  className="tabular-nums"
+                  style={{ color: "var(--trade-label)" }}
+                >
                   {TOTAL_ENTRIES.toLocaleString("en-US")}
                 </span>{" "}
                 control entries
@@ -91,7 +115,10 @@ export function CompliancePostureCard() {
 
           {/* Right side — regime chips */}
           <div className="flex-1">
-            <p className="mb-4 text-[13px] text-trade-text-secondary">
+            <p
+              className="mb-4 text-[14px] leading-[1.4]"
+              style={{ color: "var(--trade-label-secondary)" }}
+            >
               Caelex Trade evaluates your operations against the following
               regimes simultaneously. Every classification, party screen, and
               license determination consults all relevant ones.
@@ -104,10 +131,19 @@ export function CompliancePostureCard() {
           </div>
         </div>
 
-        {/* Footer bar — soft divider then a "coverage bar" */}
-        <div className="border-t border-black/[0.05] bg-trade-bg-elevated px-8 py-4 dark:border-white/[0.06]">
+        {/* Footer bar — separator + coverage bar */}
+        <div
+          className="px-8 py-4"
+          style={{
+            borderTop: "1px solid var(--trade-separator)",
+            background: "var(--trade-surface)",
+          }}
+        >
           <div className="flex items-center justify-between gap-4">
-            <p className="text-[12px] text-trade-text-muted">
+            <p
+              className="text-[12px]"
+              style={{ color: "var(--trade-label-tertiary)" }}
+            >
               Coverage: international treaties · 4 multilateral regimes · 12
               national export authorities · 6 cyber/data baselines
             </p>
@@ -124,15 +160,25 @@ export function CompliancePostureCard() {
 // ============================================================================
 
 function RegimeBadge({ chip }: { chip: RegimeChip }) {
-  const baseStyles =
-    "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-medium transition-colors";
-  const toneStyles =
-    chip.tone === "critical"
-      ? "bg-rose-50 text-rose-700 ring-1 ring-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:ring-rose-900"
-      : "bg-trade-accent-soft text-trade-accent-strong ring-1 ring-trade-accent/15";
+  // Apple status-pill recipe: tinted fill at low alpha + same-hue label.
+  // Critical = danger; default = accent (Caelex indigo).
+  const isCritical = chip.tone === "critical";
 
   return (
-    <span className={`${baseStyles} ${toneStyles}`}>
+    <span
+      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-medium"
+      style={{
+        background: isCritical
+          ? "color-mix(in srgb, var(--trade-accent-danger) 14%, transparent)"
+          : "color-mix(in srgb, var(--trade-accent) 12%, transparent)",
+        color: isCritical
+          ? "var(--trade-accent-danger)"
+          : "var(--trade-accent-strong)",
+        border: isCritical
+          ? "1px solid color-mix(in srgb, var(--trade-accent-danger) 22%, transparent)"
+          : "1px solid color-mix(in srgb, var(--trade-accent) 18%, transparent)",
+      }}
+    >
       <span>{chip.label}</span>
       <span className="text-[11px] font-normal opacity-70 tabular-nums">
         · {chip.count}
@@ -142,18 +188,21 @@ function RegimeBadge({ chip }: { chip: RegimeChip }) {
 }
 
 function CoverageBar() {
-  // Visual bar showing 93% coverage — purely illustrative, mirrors
-  // the marketing claim of "comprehensive coverage with planned gaps
-  // documented in residual-gaps register".
   return (
     <div className="flex items-center gap-3">
-      <div className="relative h-1.5 w-32 overflow-hidden rounded-full bg-trade-bg-subtle">
+      <div
+        className="relative h-1.5 w-32 overflow-hidden rounded-full"
+        style={{ background: "var(--trade-fill-4)" }}
+      >
         <div
-          className="absolute inset-y-0 left-0 rounded-full bg-trade-accent"
-          style={{ width: "93%" }}
+          className="absolute inset-y-0 left-0 rounded-full"
+          style={{ width: "93%", background: "var(--trade-accent)" }}
         />
       </div>
-      <p className="text-[12px] font-medium text-trade-text-primary tabular-nums">
+      <p
+        className="text-[12px] font-medium tabular-nums"
+        style={{ color: "var(--trade-label)" }}
+      >
         93%
       </p>
     </div>
