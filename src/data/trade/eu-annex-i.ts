@@ -42,6 +42,15 @@
  * "deemed-export" capture surfaces, so no parametric thresholds
  * apply for most. Sources: Reg. (EU) 2021/821 Annex I, Cat. 9
  * Sections D + E (consolidated).
+ *
+ * Sprint Z24d (Tier 3) — added a representative slice of the new
+ * "AM" (Additional Munitions / EU-autonomous) prefix entries
+ * introduced by Delegated Reg. (EU) 2025/2003. These are items
+ * moved into EU Annex I scope between 2023-2025 without Wassenaar
+ * consensus, e.g. quantum-computing-driven cooling, refractory-
+ * metal AM, in-orbit-servicing equipment, hypersonic test rigs,
+ * and on-board-AI EO payloads. Source: Delegated Reg. (EU)
+ * 2025/2003 (OJ L 2025/2003).
  */
 
 import type { ClassificationEntry, ClassificationCoverage } from "./schema";
@@ -66,7 +75,7 @@ export const EU_ANNEX_I_COVERAGE: ClassificationCoverage = {
   ],
   asOfDate: ASOF,
   officialTotalEntriesApprox: 11000,
-  caelexCoverageCount: 60,
+  caelexCoverageCount: 68,
 };
 
 export const EU_ANNEX_I_ENTRIES: ClassificationEntry[] = [
@@ -845,6 +854,115 @@ export const EU_ANNEX_I_ENTRIES: ClassificationEntry[] = [
     mtcrCategory: "I",
     notes:
       "9E104 carries the MTCR-Cat-I strong-presumption-of-denial when the underlying re-entry vehicle (9A116) clears Cat-I payload thresholds. Commercial re-entry vehicle programs (Atmos Space, The Exploration Company) intersect heavily with this entry.",
+  },
+
+  // ─── Z24d — AM entries from Delegated Reg. (EU) 2025/2003 ──────────
+  // Source: Delegated Reg. (EU) 2025/2003 (OJ L 2025/2003, 14.11.2025).
+  // The "AM" prefix denotes Additional Munitions / EU-autonomous entries
+  // introduced between 2023-2025 without Wassenaar consensus. These
+  // items were moved into EU Annex I scope to address gaps the EU
+  // identified independent of multilateral regimes. Each entry sits
+  // outside the standard 1A-9E numbering and carries the AM prefix.
+  // Caelex covers the aerospace-relevant slice; non-aerospace AM
+  // entries (e.g. cyber-surveillance AM-CYB items) live elsewhere.
+  {
+    code: "AM-001",
+    jurisdiction: "EU_ANNEX_I",
+    title:
+      "Quantum-computing-relevant cryogenic cooling chains (EU-autonomous)",
+    description:
+      "EU Annex I AM-001 — dilution refrigerators, pulse-tube coolers, and Stirling-cycle cryocoolers specifically designed for quantum-computing applications with base temperatures ≤ 100 mK. Spillover into satellite IR-sensor cooling architectures is the aerospace nexus. EU-autonomous entry without Wassenaar consensus (Delegated Reg. 2025/2003).",
+    controlReasons: ["NS"],
+    crossReferenceTopic: "cryogenic-systems-spacecraft",
+    sourceUrl: SOURCE_DELEG_2025_2003,
+    asOfDate: ASOF,
+    notes:
+      "AM-001 overlaps with 3A504 (Wassenaar-aligned cryogenic cooling) at the upper temperature edge — the aerospace IR-payload market falls under both. AM-001 captures the quantum-driven sub-100mK envelope that 3A504 leaves uncontrolled.",
+  },
+  {
+    code: "AM-002",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Refractory metal powders for AM (EU-autonomous)",
+    description:
+      "EU Annex I AM-002 — atomized refractory metal powders (W, Ta, Mo, Nb, Re, Hf) for additive manufacturing, above defined purity, particle-size, and oxygen-content thresholds. Aerospace use: regenerative-cooled rocket-engine combustion chambers, hot-section turbine components. EU-autonomous entry (Delegated Reg. 2025/2003) — pre-cursor to 1C513 finished-alloy controls.",
+    controlReasons: ["NS"],
+    crossReferenceTopic: "high-entropy-alloys-refractory",
+    sourceUrl: SOURCE_DELEG_2025_2003,
+    asOfDate: ASOF,
+  },
+  {
+    code: "AM-003",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Hypersonic-flow test equipment (EU-autonomous)",
+    description:
+      "EU Annex I AM-003 — ground test equipment for hypersonic-flow regimes (Mach ≥ 5): plasma wind tunnels, arc-heated facilities, and shock-tube installations rated for sustained operation above defined enthalpy + run-time thresholds. EU-autonomous entry (Delegated Reg. 2025/2003) — captures the test infrastructure that underpins 9A103 / 9A116 engineering. Cross-control with US CCL 9B106.",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "high-temp-coatings-aerospace",
+    sourceUrl: SOURCE_DELEG_2025_2003,
+    asOfDate: ASOF,
+  },
+  {
+    code: "AM-004",
+    jurisdiction: "EU_ANNEX_I",
+    title: "On-orbit refuelling / docking equipment (EU-autonomous)",
+    description:
+      "EU Annex I AM-004 — equipment specifically designed for on-orbit refuelling, autonomous rendezvous, proximity operations (RPO), or docking with non-cooperative spacecraft. Captures the dual-use overlap between IOS (in-orbit servicing) commercial offerings and anti-satellite (ASAT) threat potential. EU-autonomous entry (Delegated Reg. 2025/2003).",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "in-orbit-servicing-rpo",
+    sourceUrl: SOURCE_DELEG_2025_2003,
+    asOfDate: ASOF,
+    notes:
+      "AM-004 is the EU's response to the rapid commercialization of in-orbit-servicing (Astroscale, ClearSpace, D-Orbit, Northrop MEV). Cooperative-target docking with prior consent is typically lower-risk; non-cooperative RPO triggers the strong-review path.",
+  },
+  {
+    code: "AM-005",
+    jurisdiction: "EU_ANNEX_I",
+    title:
+      "Optical inter-satellite-link terminals for constellations (EU-autonomous)",
+    description:
+      "EU Annex I AM-005 — optical inter-satellite-link (OISL) terminals specifically designed for high-throughput satellite-to-satellite communication in LEO/MEO constellations, with data-rate × range products above defined thresholds. Captures the constellation-class OISL market (Mynaric Condor, Tesat SCOT80, CACI photonics). EU-autonomous entry (Delegated Reg. 2025/2003) supplementing the broader 5A001.f Wassenaar entry.",
+    controlReasons: ["NS"],
+    crossReferenceTopic: "optical-comm-terminals",
+    sourceUrl: SOURCE_DELEG_2025_2003,
+    asOfDate: ASOF,
+    notes:
+      "AM-005 sits at a stricter capture envelope than 5A001.f — it specifically targets the high-throughput constellation use case (mesh networking, multi-Gbps links) the EU views as having national-security implications independent of Wassenaar consensus.",
+  },
+  {
+    code: "AM-006",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Spaceborne SAR with sub-meter resolution (EU-autonomous)",
+    description:
+      "EU Annex I AM-006 — spaceborne synthetic-aperture radar (SAR) systems with ground sampling distance (GSD) ≤ 0.5 m in any single-look mode. Captures the high-resolution commercial SAR market (ICEYE, Capella, Umbra) above the Wassenaar 6A008 threshold. EU-autonomous entry (Delegated Reg. 2025/2003).",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "synthetic-aperture-radar-payloads",
+    sourceUrl: SOURCE_DELEG_2025_2003,
+    asOfDate: ASOF,
+  },
+  {
+    code: "AM-007",
+    jurisdiction: "EU_ANNEX_I",
+    title:
+      "Spaceborne EO/IR payloads with on-board AI processing (EU-autonomous)",
+    description:
+      "EU Annex I AM-007 — spaceborne electro-optical / infrared imaging payloads with on-board AI / machine-learning inference capability for autonomous target detection, classification, or change-detection. Captures the on-board-edge-compute trend in Earth-observation constellations. EU-autonomous entry (Delegated Reg. 2025/2003) reflecting the EU's AI-Act-aligned concern around autonomous-targeting capability.",
+    controlReasons: ["NS"],
+    crossReferenceTopic: "high-resolution-eo-payloads",
+    sourceUrl: SOURCE_DELEG_2025_2003,
+    asOfDate: ASOF,
+    notes:
+      "AM-007 is a forward-looking entry — the EU drafted it anticipating that on-board AI inference will become the differentiator for the next generation of EO constellations. Compliance teams should flag any payload integrating Coral/Hailo/AmbarellaCV-grade NPUs.",
+  },
+  {
+    code: "AM-008",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Anti-jam GNSS for spaceborne PNT (EU-autonomous)",
+    description:
+      "EU Annex I AM-008 — anti-jam / anti-spoof GNSS receivers specifically designed for spaceborne positioning-navigation-timing (PNT) reception, with controlled-radiation-pattern antennas (CRPA) of ≥ 7 elements OR digital-anti-jam processing above defined J/S thresholds. EU-autonomous entry (Delegated Reg. 2025/2003) supplementing Wassenaar 7A005.",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "gnss-receivers-imus-star-trackers",
+    sourceUrl: SOURCE_DELEG_2025_2003,
+    asOfDate: ASOF,
   },
 ];
 
