@@ -17,7 +17,15 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isSuperAdmin } from "@/lib/super-admin";
 import { getComplianceHealth } from "@/lib/trade/compliance-health-service";
+import { getWelcomeKpis } from "@/lib/trade/welcome-feed/kpi-aggregator";
+import { getActivityFeed } from "@/lib/trade/welcome-feed/activity-feed-service";
 import { ComplianceHealthPanel } from "./_components/ComplianceHealthPanel";
+import { KpiCardsRow } from "./_components/KpiCardsRow";
+import { ActivityFeedPanel } from "./_components/ActivityFeedPanel";
+import {
+  UpcomingDeadlinesStrip,
+  assembleDeadlines,
+} from "./_components/UpcomingDeadlinesStrip";
 
 export const metadata = {
   title: "Caelex Trade — Dashboard",
@@ -58,10 +66,13 @@ export default async function TradeDashboardPage() {
   }
 
   const orgId = await resolveOrgId(session.user.id, session.user.email);
+  const now = new Date();
+  const thirtyDaysAhead = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
   // Parallel-fetch all aggregates. complianceHealth bundles
   // EUC + Re-Export + VSD into a single roundtrip via its own
-  // internal Promise.all (Sprint X1).
+  // internal Promise.all (Sprint X1). KPIs + activity feed +
+  // deadline-source rows are added in Sprint Welcome-Polish.
   const [
     itemsCount,
     unclassifiedItemsCount,
@@ -72,6 +83,13 @@ export default async function TradeDashboardPage() {
     licensesActiveCount,
     licensesExpiringSoon,
     complianceHealth,
+    welcomeKpis,
+    activityEvents,
+    eucDeadlineRows,
+    reexportDeadlineRows,
+    sammelgenehmigungDeadlineRows,
+    supplement2DeadlineRows,
+    vsdDeadlineRows,
   ] = await Promise.all([
     prisma.tradeItem.count({ where: { organizationId: orgId } }),
     prisma.tradeItem.count({
@@ -100,8 +118,8 @@ export default async function TradeDashboardPage() {
         organizationId: orgId,
         status: "ACTIVE",
         validUntil: {
-          lte: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-          gte: new Date(),
+          lte: new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000),
+          gte: now,
         },
       },
       select: {
@@ -114,6 +132,80 @@ export default async function TradeDashboardPage() {
       take: 5,
     }),
     getComplianceHealth(orgId),
+    getWelcomeKpis(orgId, now),
+    getActivityFeed(orgId, { now, maxItems: 20, windowDays: 30 }),
+    prisma.tradeEUCRequest.findMany({
+      where: {
+        organizationId: orgId,
+        status: "VALIDATED",
+        validUntil: { gte: now, lte: thirtyDaysAhead },
+      },
+      select: {
+        id: true,
+        validUntil: true,
+        formType: true,
+        party: { select: { legalName: true } },
+      },
+      orderBy: { validUntil: "asc" },
+    }),
+    prisma.tradeReexportConsent.findMany({
+      where: {
+        organizationId: orgId,
+        status: "APPROVED",
+        validUntil: { gte: now, lte: thirtyDaysAhead },
+      },
+      select: {
+        id: true,
+        validUntil: true,
+        newDestinationCountry: true,
+        newEndUserName: true,
+      },
+      orderBy: { validUntil: "asc" },
+    }),
+    prisma.tradeSammelgenehmigung.findMany({
+      where: {
+        organizationId: orgId,
+        status: "ACTIVE",
+        validUntil: { gte: now, lte: thirtyDaysAhead },
+      },
+      select: {
+        id: true,
+        validUntil: true,
+        title: true,
+        bafaReference: true,
+      },
+      orderBy: { validUntil: "asc" },
+    }),
+    prisma.tradeSupplement2Report.findMany({
+      where: {
+        organizationId: orgId,
+        status: "DRAFT",
+        dueDate: { gte: now, lte: thirtyDaysAhead },
+      },
+      select: {
+        id: true,
+        dueDate: true,
+        reportingPeriod: true,
+      },
+      orderBy: { dueDate: "asc" },
+    }),
+    // VSDs in pre-filing states with imminent authority clocks. We
+    // surface OFAC 60-day, BIS 90-day, others 180-day as deadlineAt
+    // anchors. The map below resolves the deadline anchor based on
+    // authority + discoveredAt.
+    prisma.tradeVoluntaryDisclosure.findMany({
+      where: {
+        organizationId: orgId,
+        status: { in: ["DISCOVERED", "INVESTIGATING", "DRAFTED"] },
+      },
+      select: {
+        id: true,
+        title: true,
+        authority: true,
+        discoveredAt: true,
+      },
+      orderBy: { discoveredAt: "asc" },
+    }),
   ]);
 
   // Reshape group-by results into lookup maps.
@@ -144,6 +236,47 @@ export default async function TradeDashboardPage() {
     operationsTotal > 0 ||
     licensesActiveCount > 0;
 
+  // Resolve VSD authority clocks to concrete deadline dates. The
+  // deadline anchor is `discoveredAt + authority window`. We surface
+  // only deadlines that fall within the next 30 days (i.e. the row is
+  // still pre-clock-crossing but the clock is closing in).
+  const vsdAuthorityWindowDays: Record<string, number> = {
+    OFAC: 60,
+    BIS: 90,
+    DDTC: 180,
+    BAFA: 180,
+    EU_COMPETENT_AUTHORITY: 180,
+    OTHER: 180,
+  };
+  const vsdDeadlinesNext30: Array<{
+    id: string;
+    title: string;
+    authority: string;
+    deadlineAt: Date;
+  }> = [];
+  for (const vsd of vsdDeadlineRows) {
+    const windowDays = vsdAuthorityWindowDays[vsd.authority as string] ?? 180;
+    const deadlineAt = new Date(
+      vsd.discoveredAt.getTime() + windowDays * 24 * 60 * 60 * 1000,
+    );
+    if (deadlineAt >= now && deadlineAt <= thirtyDaysAhead) {
+      vsdDeadlinesNext30.push({
+        id: vsd.id,
+        title: vsd.title,
+        authority: vsd.authority,
+        deadlineAt,
+      });
+    }
+  }
+
+  const upcomingDeadlines = assembleDeadlines({
+    eucs: eucDeadlineRows,
+    reexports: reexportDeadlineRows,
+    sammelgenehmigungen: sammelgenehmigungDeadlineRows,
+    supplement2: supplement2DeadlineRows,
+    vsdDeadlines: vsdDeadlinesNext30,
+  });
+
   return (
     <div className="mx-auto max-w-screen-xl px-8 py-10">
       {/* Hero */}
@@ -161,6 +294,15 @@ export default async function TradeDashboardPage() {
           nationale Behörden in einem Workspace.
         </p>
       </section>
+
+      {/* KPI cards — headline indicators (Sprint Welcome-Polish) */}
+      <KpiCardsRow kpis={welcomeKpis} />
+
+      {/* Upcoming deadlines strip (Sprint Welcome-Polish) */}
+      <UpcomingDeadlinesStrip deadlines={upcomingDeadlines} now={now} />
+
+      {/* Recent activity feed (Sprint Welcome-Polish) */}
+      <ActivityFeedPanel events={activityEvents} now={now} />
 
       {/* KPI tiles */}
       <section className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
