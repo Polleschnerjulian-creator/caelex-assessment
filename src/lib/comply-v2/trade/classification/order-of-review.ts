@@ -419,6 +419,8 @@ export function normalizeListId(regimeName: string): ListId | null {
     case "WASSENAAR":
       return "WASSENAAR";
     case "NSG":
+    case "NSG-TRIGGER":
+    case "NSG-DU":
       return "NSG";
     case "AG":
     case "AUSTRALIA-GROUP":
