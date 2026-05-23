@@ -92,6 +92,10 @@ model User {
   // Z29 — Supplement No. 2 (Part 743) one-time report lifecycle actions
   tradeSupplement2Actions TradeSupplement2Report[] @relation("TradeSupplement2ActionBy")
 
+  // Z13 — Deemed-export authorisation lifecycle actions (deemed-export
+  // licences, ITAR TAA/MLA, BIS Form 711 exemptions, etc.)
+  tradeDeemedExportActions TradeDeemedExportAuthorization[] @relation("TradeDeemedExportActionBy")
+
   // Mission domain (Sprint Mission-1) — first-class Mission entity
   // back-ref. Author of the Mission (creator). Distinct from
   // MissionSpacecraft / MissionPhase which have their own lifecycles.
@@ -3133,14 +3137,14 @@ model Organization {
 
   // Comply Trade v2 (Wave B Sprint B1) — operations-layer items.
   // Counterparties + Operations + Licenses kommen in Wave A/C.
-  tradeItems      TradeItem[]
+  tradeItems                TradeItem[]
   // Comply Trade (Sprint Z4c) — persisted AI Classification Copilot drafts.
   tradeClassificationDrafts TradeItemClassificationDraft[]
   // Comply Trade v2 (Wave A Sprint A1) — counterparty screening.
-  tradeParties    TradeParty[]
+  tradeParties              TradeParty[]
   // Comply Trade v2 (Wave C Sprint C1) — operations lifecycle + licenses.
-  tradeOperations TradeOperation[]
-  tradeLicenses   TradeLicense[]
+  tradeOperations           TradeOperation[]
+  tradeLicenses             TradeLicense[]
 
   // Caelex Trade Sprint T1 — multi-product access ledger.
   // Source of truth for which Caelex products this org may enter.
@@ -3173,6 +3177,11 @@ model Organization {
   // by the org. One report per (org, reporting-period) — cron creates
   // DRAFT skeletons on Jan 1 + Jul 1; operator advances to FILED.
   tradeSupplement2Reports TradeSupplement2Report[]
+
+  // Z13 — Deemed-export authorisation rows tracking permissions for
+  // foreign-national employees to access US-controlled technology
+  // in-country (EAR § 734.13 + ITAR § 120.50). Org-scoped lifecycle.
+  tradeDeemedExportAuthorizations TradeDeemedExportAuthorization[]
 
   // Mission domain (Sprint Mission-1) — first-class Mission rows
   // (vs the legacy 1:1 Spacecraft=Mission collapse). Org-scoped.
@@ -11181,13 +11190,13 @@ model TradeItemClassificationDraft {
   // ── Proposal summary (denormalised for cheap list queries) ──
   /// Highest-confidence proposed code (e.g. "ECCN:9A515.a.1"). NULL
   /// when the draft produced zero matches.
-  proposedEccn String?
+  proposedEccn   String?
   /// Regime for `proposedEccn` ("EAR-CCL", "ITAR-USML", "EU-ANNEX-I",
   /// "MTCR-ANNEX", "DE-AL-TEIL-IB", etc.). NULL with proposedEccn.
   proposedRegime String?
   /// Confidence label propagated from the matcher (HIGH/MEDIUM/LOW).
   /// NULL when proposedEccn is NULL.
-  confidence String?
+  confidence     String?
 
   // ── Full payload (JSON, schema lives in the app layer) ──
   /// The full `ClassificationDraft` blob — proposals[], evidence[],
@@ -11197,7 +11206,7 @@ model TradeItemClassificationDraft {
 
   /// Source descriptor — filename + size + page count, when the draft
   /// came from a PDF. NULL for pasted-text drafts.
-  sourceFilename String?
+  sourceFilename  String?
   /// Optional snapshot of the raw extracted text. Capped at 64 kB at
   /// the service boundary so the row stays small. The Z4d UI never
   /// re-reads this — it's purely for auditing the extraction.
@@ -11205,21 +11214,21 @@ model TradeItemClassificationDraft {
 
   // ── Review / sign-off ──
   /// Operator decision. PENDING until reviewed.
-  decision ClassificationDraftDecision @default(PENDING)
+  decision           ClassificationDraftDecision @default(PENDING)
   /// User who reviewed the draft (NULL = not yet reviewed).
-  reviewedById String?
-  reviewedBy   User?   @relation("ClassificationDraftReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
-  reviewedAt   DateTime?
+  reviewedById       String?
+  reviewedBy         User?                       @relation("ClassificationDraftReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt         DateTime?
   /// Operator note attached to the decision. Captures "why I rejected"
   /// or "why I modified" for the audit trail.
-  reviewNote String? @db.Text
+  reviewNote         String?                     @db.Text
   /// Verbatim disclaimer text shown to the operator at the time of
   /// review. Required for evidentiary value — if the disclaimer wording
   /// later changes, this preserves what they actually saw.
-  disclaimerAtReview String? @db.Text
+  disclaimerAtReview String?                     @db.Text
   /// JSON snapshot of the accepted proposal (after any operator
   /// modifications). NULL until decision = ACCEPTED or MODIFIED.
-  acceptedSnapshot Json?
+  acceptedSnapshot   Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -11664,6 +11673,15 @@ model TradeOperation {
   /// §8 AWV-Anzeigepflicht (notification duty)
   notificationDuty Boolean @default(false)
 
+  /// Z13 — Operator declaration: the technical data / source code in
+  /// this operation is accessible IN-COUNTRY to non-US-national
+  /// employees (deemed-export scenario per EAR § 734.13 / ITAR § 120.50).
+  /// When true, the deemed-export engine cross-references the operation
+  /// lines against active TradeDeemedExportAuthorization rows and
+  /// surfaces coverage gaps. Default false (most operations don't
+  /// involve in-country foreign-national tech access).
+  hasForeignNationalAccess Boolean @default(false)
+
   // ── Lifecycle ──
   status TradeOperationStatus @default(DRAFT)
 
@@ -12104,7 +12122,7 @@ model TradeEUCRequest {
   status TradeEUCStatus @default(REQUESTED)
 
   /// When the EUC was first created internally.
-  requestedAt DateTime @default(now())
+  requestedAt DateTime  @default(now())
   /// When the EUC request was dispatched to the counterparty (e.g.
   /// email or portal link sent). Set on REQUESTED → SENT_TO_PARTY.
   sentAt      DateTime?
@@ -12558,13 +12576,13 @@ model TradeVoluntaryDisclosure {
   resolvedAt      DateTime?
 
   // ── Outcome (set when status = RESOLVED) ──
-  outcome TradeVSDOutcome?
+  outcome          TradeVSDOutcome?
   /// Penalty amount in USD if outcome = CIVIL_PENALTY (BIS/OFAC fines
   /// are normally in USD; convert from foreign-authority currency at
   /// publication date).
   penaltyAmountUsd Float?
   /// Settlement text or DOJ-style closing letter language.
-  outcomeNotes     String? @db.Text
+  outcomeNotes     String?          @db.Text
 
   /// User who last advanced the lifecycle (for audit).
   lastActionById String?
@@ -13903,4 +13921,171 @@ model AtlasTimeEntry {
   @@index([userId, workedOn])
   @@index([mandateId, workedOn])
   @@index([chatId])
+}
+
+// ════════════════════════════════════════════════════════════════════
+// COMPLY TRADE — Z13 DEEMED EXPORT CONTROLS (Tier 6, 2026-05-23)
+// ════════════════════════════════════════════════════════════════════
+// A "deemed export" occurs when controlled technology or source code is
+// RELEASED IN-COUNTRY to a foreign national. The release is "deemed" to
+// be an export to the foreign national's most-recent country of
+// citizenship or permanent residency, and is treated as such by the
+// relevant export-control regime.
+//
+// Legal anchors:
+//  - EAR: 15 CFR § 734.13 (definition of "export") + § 734.20
+//         (deemed exports — release to foreign nationals)
+//  - ITAR: 22 CFR § 120.50 (defense services — "deemed re-export"
+//          framework, includes release of technical data to foreign
+//          persons in the US)
+//  - Citizenship rules: Supplement No. 1 to Part 760 of the EAR —
+//          country of BIRTH + most-recent CITIZENSHIP rules for
+//          determining "foreign national" status under § 734.20.
+//
+// Typical authorisations covering a deemed export:
+//  1. EAR Deemed Export Licence (BIS application, foreign-national
+//     nationality-specific) — covers release to a single FN for a
+//     specific scope of ECCN-controlled tech.
+//  2. ITAR Technical Assistance Agreement (TAA) or Manufacturing
+//     Licence Agreement (MLA) — for USML technical-data release.
+//  3. Licence Exemption: STA (§ 740.20), ENC (§ 740.17), or carve-outs
+//     under specific ECCN entries (e.g. 5E002 + ENC). Requires
+//     positive eligibility certification by the operator.
+//  4. Country-of-birth carve-out: a foreign national naturalised as
+//     a US citizen is NOT a foreign national for § 734.20 purposes.
+//
+// MVP scope: track the AUTHORISATION rows + provide a coverage check
+// "is release of <ECCN> / <USML> to <employee> authorised?" used by
+// the operations engine to surface deemed-export risk.
+//
+// Out of scope (later sprints): bidirectional ITAR-side TAA/MLA
+// drafting; integration with HR systems (foreign-national employee
+// rolls); evidence packaging into VSD/audit pulls.
+//
+// We deliberately do NOT model the employee as an FK to a Caelex
+// User — most foreign-national engineers will not have a Caelex
+// platform login. Instead, `foreignNationalEmployeeId` is an opaque
+// string the operator chooses (typically their HR employee ID).
+//
+
+/// One deemed-export authorisation row. Tracks that a specific
+/// foreign-national employee is permitted to access a specific scope
+/// of controlled technology under a specific legal basis.
+///
+/// Lifecycle: ACTIVE → (validUntil cron) EXPIRED, or manual REVOKED.
+model TradeDeemedExportAuthorization {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  /// Opaque operator-supplied identifier for the foreign-national
+  /// employee. Typically the HR employee ID. We do NOT FK this to the
+  /// Caelex User table because most foreign nationals will not have a
+  /// platform login. Operator is responsible for the mapping.
+  foreignNationalEmployeeId String
+
+  /// Optional human-readable name of the employee for display only.
+  /// Not used for matching — `foreignNationalEmployeeId` is the key.
+  /// Treat as PII; only render in authenticated org-scoped views.
+  foreignNationalName String?
+
+  /// ISO-3166-1 alpha-2 code of the employee's MOST-RECENT country of
+  /// citizenship. This is the "deemed destination" under EAR § 734.20.
+  /// Required because country drives the licence-need analysis (e.g.
+  /// CN/RU/IR/KP nationals typically require a deemed-export licence
+  /// for 9A515 / 9E515 technology releases).
+  foreignNationality String
+
+  /// ISO-3166-1 alpha-2 code of the employee's country of BIRTH. Used
+  /// to flag dual-nationality cases (Supplement No. 1 to Part 760 EAR
+  /// requires applying the MORE RESTRICTIVE of birth vs citizenship
+  /// when assessing foreign-national status).
+  nativeCountry String
+
+  /// Which legal basis covers this authorisation. See enum docstrings.
+  authorizationType TradeDeemedExportAuthorizationType
+
+  /// For EXEMPTION rows: which exemption applies (e.g. "STA-740.20",
+  /// "ENC-740.17", "country-of-birth-naturalised-US-citizen"). Free
+  /// text — the BIS exemption catalogue isn't enum-able cleanly.
+  /// NULL for non-EXEMPTION rows.
+  exemptionBasis String?
+
+  /// External licence number (BIS deemed-export licence number,
+  /// DDTC-DSP TAA/MLA number, etc.). NULL when status is pending or
+  /// when authorisation is an exemption (which has no licence number).
+  authorizationReference String?
+
+  /// ECCN entries this authorisation covers (e.g. ["9E515.a",
+  /// "5E002"]). Empty array = applies to no ECCN-controlled tech
+  /// (e.g. a TAA-only row covers USML categories but not ECCNs).
+  allowedECCNs String[] @default([])
+
+  /// USML categories this authorisation covers (e.g. ["XV", "VIII"]).
+  /// Empty array = applies to no USML-controlled tech (typical for
+  /// pure-EAR deemed-export licences).
+  allowedUSMLCategories String[] @default([])
+
+  /// When the authorisation became effective.
+  validFrom DateTime
+
+  /// When the authorisation expires. NULL = no expiry (rare; only
+  /// applies to country-of-birth + naturalised-citizen exemptions).
+  validUntil DateTime?
+
+  /// Lifecycle status. See TradeDeemedExportAuthorizationStatus.
+  status TradeDeemedExportAuthorizationStatus @default(ACTIVE)
+
+  /// Operator-private notes (review observations, follow-ups,
+  /// privileged communications with counsel).
+  notes String? @db.Text
+
+  /// User who last advanced the lifecycle (for audit). NULL for
+  /// system transitions (cron-set EXPIRED).
+  lastActionById String?
+  lastActionBy   User?   @relation("TradeDeemedExportActionBy", fields: [lastActionById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId, status], map: "TradeDeemedExportAuth_org_status_idx")
+  @@index([organizationId, foreignNationalEmployeeId], map: "TradeDeemedExportAuth_org_fnEmpId_idx")
+  @@index([organizationId, foreignNationality], map: "TradeDeemedExportAuth_org_nat_idx")
+  @@index([validUntil], map: "TradeDeemedExportAuth_validUntil_idx")
+}
+
+/// Legal basis covering a deemed export. Drives which fields are
+/// required + which licensing authority owns the renewal cycle.
+enum TradeDeemedExportAuthorizationType {
+  /// EAR Deemed Export Licence — BIS application, ECCN-specific,
+  /// foreign-national-specific. Issued under 15 CFR § 748.8.
+  /// `authorizationReference` SHOULD contain the BIS licence number.
+  DEEMED_EXPORT_LICENSE
+
+  /// EAR general licence covering tech transfer for items the
+  /// employee is involved in. Less common — most operators rely on
+  /// the dedicated deemed-export licence.
+  EAR_LICENSE
+
+  /// ITAR Technical Assistance Agreement or Manufacturing Licence
+  /// Agreement — issued by DDTC, covers USML-category release to
+  /// the foreign person. `authorizationReference` SHOULD contain the
+  /// DDTC TAA/MLA number.
+  ITAR_TAA_OR_MLA
+
+  /// Licence exemption (e.g. STA, ENC, country-of-birth carve-out,
+  /// naturalised-US-citizen). `exemptionBasis` MUST be populated.
+  /// `authorizationReference` is NULL (exemptions have no number).
+  EXEMPTION
+}
+
+/// Lifecycle for a deemed-export authorisation. Most authorisations
+/// transit from ACTIVE → EXPIRED automatically via cron when
+/// `validUntil` passes. Manual REVOKED is set when an authorisation
+/// is invalidated early (employee departs the controlled programme;
+/// licence revoked by BIS; etc).
+enum TradeDeemedExportAuthorizationStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
 }
