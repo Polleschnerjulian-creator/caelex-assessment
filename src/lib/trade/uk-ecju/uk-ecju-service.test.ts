@@ -84,7 +84,7 @@ const baseLicense = {
   validFrom: null,
   validUntil: null,
   status: "DRAFT" as const,
-  drawnDownValueGbp: 0n,
+  drawnDownValueGbp: BigInt(0),
   capValueGbp: null,
   createdById: "user_1",
   notes: null,
@@ -309,14 +309,14 @@ describe("transitionUkEcjuStatus", () => {
 describe("recordDrawDown", () => {
   it("rejects negative value", async () => {
     await expect(
-      recordDrawDown("org_1", "lic_1", "op_1", -100n),
+      recordDrawDown("org_1", "lic_1", "op_1", -BigInt(100)),
     ).rejects.toThrow(/non-negative/);
   });
 
   it("rejects draw-down against DRAFT licence", async () => {
     mockFindFirst.mockResolvedValue({ ...baseLicense, status: "DRAFT" });
     await expect(
-      recordDrawDown("org_1", "lic_1", "op_1", 100n),
+      recordDrawDown("org_1", "lic_1", "op_1", BigInt(100)),
     ).rejects.toThrow(/Cannot draw down against DRAFT/);
   });
 
@@ -324,17 +324,17 @@ describe("recordDrawDown", () => {
     mockFindFirst.mockResolvedValue({
       ...baseLicense,
       status: "APPROVED",
-      drawnDownValueGbp: 1000n,
-      capValueGbp: 10000n,
+      drawnDownValueGbp: BigInt(1000),
+      capValueGbp: BigInt(10000),
     });
     mockUpdate.mockResolvedValue({
       ...baseLicense,
       status: "APPROVED",
-      drawnDownValueGbp: 3000n,
+      drawnDownValueGbp: BigInt(3000),
     });
-    await recordDrawDown("org_1", "lic_1", "op_99", 2000n);
+    await recordDrawDown("org_1", "lic_1", "op_99", BigInt(2000));
     const call = mockUpdate.mock.calls[0][0];
-    expect(call.data.drawnDownValueGbp).toBe(3000n);
+    expect(call.data.drawnDownValueGbp).toBe(BigInt(3000));
     expect(call.data.status).toBe("APPROVED");
   });
 
@@ -342,24 +342,24 @@ describe("recordDrawDown", () => {
     mockFindFirst.mockResolvedValue({
       ...baseLicense,
       status: "APPROVED",
-      drawnDownValueGbp: 9000n,
-      capValueGbp: 10000n,
+      drawnDownValueGbp: BigInt(9000),
+      capValueGbp: BigInt(10000),
     });
     mockUpdate.mockResolvedValue({
       ...baseLicense,
       status: "EXHAUSTED",
-      drawnDownValueGbp: 10500n,
+      drawnDownValueGbp: BigInt(10500),
     });
-    await recordDrawDown("org_1", "lic_1", "op_99", 1500n);
+    await recordDrawDown("org_1", "lic_1", "op_99", BigInt(1500));
     const call = mockUpdate.mock.calls[0][0];
     expect(call.data.status).toBe("EXHAUSTED");
-    expect(call.data.drawnDownValueGbp).toBe(10500n);
+    expect(call.data.drawnDownValueGbp).toBe(BigInt(10500));
   });
 
   it("throws on cross-org licence id", async () => {
     mockFindFirst.mockResolvedValue(null);
     await expect(
-      recordDrawDown("org_1", "lic_otherorg", "op_1", 100n),
+      recordDrawDown("org_1", "lic_otherorg", "op_1", BigInt(100)),
     ).rejects.toThrow(/not found in this organisation/);
   });
 });
@@ -372,8 +372,8 @@ describe("findCoveringLicenses", () => {
     controlListEntries: ["PL5002A"],
     destinationCountries: ["IN"],
     endUserName: "ISRO Bangalore",
-    capValueGbp: 100000n,
-    drawnDownValueGbp: 0n,
+    capValueGbp: BigInt(100000),
+    drawnDownValueGbp: BigInt(0),
   };
 
   it("returns matching SIEL on exact control-list + destination match", async () => {
@@ -449,14 +449,14 @@ describe("findCoveringLicenses", () => {
     mockFindMany.mockResolvedValue([
       {
         ...approvedSiel,
-        capValueGbp: 10000n,
-        drawnDownValueGbp: 9500n,
+        capValueGbp: BigInt(10000),
+        drawnDownValueGbp: BigInt(9500),
       },
     ]);
     const result = await findCoveringLicenses("org_1", {
       controlListEntry: "PL5002A",
       destination: "IN",
-      valueGbp: 1000n,
+      valueGbp: BigInt(1000),
     });
     expect(result).toHaveLength(0);
   });
@@ -466,7 +466,7 @@ describe("findCoveringLicenses", () => {
     const result = await findCoveringLicenses("org_1", {
       controlListEntry: "PL5002A",
       destination: "IN",
-      valueGbp: 50000n,
+      valueGbp: BigInt(50000),
     });
     expect(result).toHaveLength(1);
   });

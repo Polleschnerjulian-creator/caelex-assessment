@@ -178,17 +178,14 @@ describe("TradeSidebar — group structure", () => {
     expect(settings[0].getAttribute("href")).toBe("/trade/settings");
   });
 
-  it("Z33 Training Corpus slot lives in Reports & Workflows (placeholder comment)", () => {
-    // Read the source string of NAV_GROUPS — the Reports & Workflows
-    // group should expose only Deemed Exports today; Z33 will add the
-    // Training Corpus link in their merge.
+  it("Reports & Workflows exposes Deemed Exports + UK ECJU Licences (Z37-UK)", () => {
+    // The Reports & Workflows group originally exposed only Deemed
+    // Exports; Z37-UK adds the UK ECJU Licences link.
     const reports = NAV_GROUPS.find((g) => g.id === "reports-workflows");
     expect(reports).toBeDefined();
     const labels = reports!.items.map((i) => i.label);
     expect(labels).toContain("Deemed Exports");
-    // Sanity: the placeholder reserves the slot but is comment-only,
-    // so no extra item should sneak in until Z33's merge.
-    expect(labels.length).toBe(1);
+    expect(labels).toContain("UK ECJU Licences");
   });
 });
 

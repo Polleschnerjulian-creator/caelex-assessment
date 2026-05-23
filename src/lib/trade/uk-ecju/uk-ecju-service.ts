@@ -246,7 +246,7 @@ export async function recordDrawDown(
   operationId: string,
   valuePence: bigint,
 ): Promise<TradeUkEcjuLicense> {
-  if (valuePence < 0n) {
+  if (valuePence < BigInt(0)) {
     throw new Error("Draw-down value must be non-negative");
   }
 
