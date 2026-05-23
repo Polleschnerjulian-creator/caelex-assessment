@@ -14461,7 +14461,6 @@ model TradeApiKey {
   @@index([keyPrefix])
 }
 
-<<<<<<< HEAD
 // ── Z34-FR — TradeFranceLosAuthorisation ──
 // ════════════════════════════════════════════════════════════════════
 // CAELEX TRADE — FRANCE LOS AUTHORISATION (Z34-FR, Tier 4, 2026-05-23)
@@ -14504,61 +14503,10 @@ model TradeApiKey {
 /// when DGE pulls authorisation mid-mission (rare — has happened once
 /// in the LOS regime's history, the 2019 SES-3 case).
 model TradeFranceLosAuthorisation {
-=======
-// ── Z37-UK — TradeUkEcjuLicense ──
-// ════════════════════════════════════════════════════════════════════
-// COMPLY TRADE — UK ECJU EXPORT LICENSING (Z37-UK, Tier 4)
-// ════════════════════════════════════════════════════════════════════
-// The UK Export Control Joint Unit (ECJU), part of the Department for
-// Business and Trade, administers UK strategic export controls. UK
-// exporters of dual-use items + military goods require an ECJU licence
-// for transfers to most destinations outside the UK.
-//
-// Caelex Trade already screens UK exporters against OFSI sanctions
-// (D1, B1). This model layers the *licensing* dimension on top: which
-// items / destinations / end-users an ECJU licence covers, what value
-// has been drawn down via shipments, when it expires, what type of
-// licence it is.
-//
-// Licence type taxonomy (UK Export Control Act 2002 + ECJU NTE):
-//
-//   - SIEL    (Standard Individual Export Licence)
-//             Specific item + destination + end-user; single use;
-//             max 2 years validity.
-//   - OIEL    (Open Individual Export Licence)
-//             Broader scope, multiple shipments / end-users; max 3 yr.
-//   - OGEL    (Open General Export Licence)
-//             Pre-approved category; registration-only; indefinite.
-//   - SIEL_TC (Temporary export under SIEL — return-to-UK clause)
-//             Max 12 months validity; the item must be returned.
-//   - OITCL   (Open Individual Trade Control Licence)
-//             Trade controls / brokering of category-C goods.
-//
-// Legal anchors:
-//   - Export Control Act 2002 (c.28)
-//   - Export Control Order 2008 (S.I. 2008/3231)
-//   - ECJU Notice to Exporters (NTE) series
-//   - UK Strategic Export Control List (Mar 2024)
-//
-// State machine (lifecycle):
-//   DRAFT → SUBMITTED → APPROVED → (EXPIRED | REVOKED)
-//   DRAFT → SUBMITTED → REJECTED  (terminal)
-//
-// A separate cron flips APPROVED → EXPIRED when validUntil passes; a
-// reminder cron emits 90/30/7-day expiry buckets.
-
-/// One UK ECJU export licence covering one or more shipments. Operator
-/// creates a DRAFT once they know they need an ECJU licence; advances
-/// to SUBMITTED when filed via SPIRE; flips to APPROVED on ECJU's
-/// decision letter. Draw-down value tracked via recordDrawDown() in
-/// the service layer.
-model TradeUkEcjuLicense {
->>>>>>> feature/uk-ecju-licensing
   id             String       @id @default(cuid())
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-<<<<<<< HEAD
   /// Operator legal name (raison sociale) as it appears on the LOS
   /// dossier. Distinct from the org name in Caelex — the org may run
   /// multiple legal entities filing separate LOS authorisations.
@@ -14642,7 +14590,113 @@ model TradeUkEcjuLicense {
   /// When the operator marked the mission COMPLETED (post de-orbit).
   completedAt   DateTime?
 
-=======
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId, status])
+  @@index([organizationId, authorisationType])
+  @@index([launchVehicleId])
+  @@index([cnesReference])
+  @@index([validUntil])
+}
+
+/// LOS authorisation categories under Code de l'espace L. 331-2.
+enum TradeFranceLosAuthorisationType {
+  /// Launching a space object FROM French territory OR by a French
+  /// operator from any territory (L. 331-2 1°).
+  LAUNCH
+  /// Operating a space object in orbit, regardless of where launched,
+  /// when operations are conducted by a French operator (L. 331-2 2°).
+  OPERATION_IN_ORBIT
+  /// Performing a controlled return of a space object to Earth
+  /// (L. 331-2 3°) — requires the casualty-risk dossier.
+  CONTROLLED_RETURN
+  /// Re-entering a space object that was launched by a third party
+  /// but is operated or recovered by a French entity (L. 331-2 4°).
+  RE_ENTRY_FROM_THIRD_PARTY
+}
+
+/// Spacecraft classification under Arrêté 31 mars 2011 Art. 5. Drives
+/// which technical appendices and casualty-risk thresholds apply.
+enum TradeFranceLosSpacecraftClassification {
+  /// Non-operational object (debris, expended upper stage, etc.) —
+  /// shorter form, debris-mitigation focus only.
+  NON_OPERATIONAL
+  /// Government / defence operational satellite (CNES, DGA, etc.).
+  OPERATIONAL_GOV_DEFENSE
+  /// Commercial operational satellite (operator-driven revenue).
+  OPERATIONAL_COMMERCIAL
+  /// Operational scientific / academic mission.
+  OPERATIONAL_SCIENTIFIC
+}
+
+/// LOS authorisation lifecycle. Forward path:
+///   DRAFT → SUBMITTED → UNDER_REVIEW → AUTHORISED → COMPLETED
+/// Terminal-side paths:
+///   UNDER_REVIEW → REFUSED  (CNES / DGE refusal)
+///   any non-terminal → REVOKED  (regulator-initiated mid-mission)
+enum TradeFranceLosAuthorisationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  AUTHORISED
+  REFUSED
+  REVOKED
+  COMPLETED
+}
+
+// ── Z37-UK — TradeUkEcjuLicense ──
+// ════════════════════════════════════════════════════════════════════
+// COMPLY TRADE — UK ECJU EXPORT LICENSING (Z37-UK, Tier 4)
+// ════════════════════════════════════════════════════════════════════
+// The UK Export Control Joint Unit (ECJU), part of the Department for
+// Business and Trade, administers UK strategic export controls. UK
+// exporters of dual-use items + military goods require an ECJU licence
+// for transfers to most destinations outside the UK.
+//
+// Caelex Trade already screens UK exporters against OFSI sanctions
+// (D1, B1). This model layers the *licensing* dimension on top: which
+// items / destinations / end-users an ECJU licence covers, what value
+// has been drawn down via shipments, when it expires, what type of
+// licence it is.
+//
+// Licence type taxonomy (UK Export Control Act 2002 + ECJU NTE):
+//
+//   - SIEL    (Standard Individual Export Licence)
+//             Specific item + destination + end-user; single use;
+//             max 2 years validity.
+//   - OIEL    (Open Individual Export Licence)
+//             Broader scope, multiple shipments / end-users; max 3 yr.
+//   - OGEL    (Open General Export Licence)
+//             Pre-approved category; registration-only; indefinite.
+//   - SIEL_TC (Temporary export under SIEL — return-to-UK clause)
+//             Max 12 months validity; the item must be returned.
+//   - OITCL   (Open Individual Trade Control Licence)
+//             Trade controls / brokering of category-C goods.
+//
+// Legal anchors:
+//   - Export Control Act 2002 (c.28)
+//   - Export Control Order 2008 (S.I. 2008/3231)
+//   - ECJU Notice to Exporters (NTE) series
+//   - UK Strategic Export Control List (Mar 2024)
+//
+// State machine (lifecycle):
+//   DRAFT → SUBMITTED → APPROVED → (EXPIRED | REVOKED)
+//   DRAFT → SUBMITTED → REJECTED  (terminal)
+//
+// A separate cron flips APPROVED → EXPIRED when validUntil passes; a
+// reminder cron emits 90/30/7-day expiry buckets.
+
+/// One UK ECJU export licence covering one or more shipments. Operator
+/// creates a DRAFT once they know they need an ECJU licence; advances
+/// to SUBMITTED when filed via SPIRE; flips to APPROVED on ECJU's
+/// decision letter. Draw-down value tracked via recordDrawDown() in
+/// the service layer.
+model TradeUkEcjuLicense {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
   /// Applicant entity name as filed with ECJU (typically the org's UK
   /// legal entity). Required even for DRAFT — operators decide who is
   /// the applicant before drafting.
@@ -14714,62 +14768,10 @@ model TradeUkEcjuLicense {
   /// Operator-private notes (review observations, ECJU correspondence).
   notes String? @db.Text
 
->>>>>>> feature/uk-ecju-licensing
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([organizationId, status])
-<<<<<<< HEAD
-  @@index([organizationId, authorisationType])
-  @@index([launchVehicleId])
-  @@index([cnesReference])
-  @@index([validUntil])
-}
-
-/// LOS authorisation categories under Code de l'espace L. 331-2.
-enum TradeFranceLosAuthorisationType {
-  /// Launching a space object FROM French territory OR by a French
-  /// operator from any territory (L. 331-2 1°).
-  LAUNCH
-  /// Operating a space object in orbit, regardless of where launched,
-  /// when operations are conducted by a French operator (L. 331-2 2°).
-  OPERATION_IN_ORBIT
-  /// Performing a controlled return of a space object to Earth
-  /// (L. 331-2 3°) — requires the casualty-risk dossier.
-  CONTROLLED_RETURN
-  /// Re-entering a space object that was launched by a third party
-  /// but is operated or recovered by a French entity (L. 331-2 4°).
-  RE_ENTRY_FROM_THIRD_PARTY
-}
-
-/// Spacecraft classification under Arrêté 31 mars 2011 Art. 5. Drives
-/// which technical appendices and casualty-risk thresholds apply.
-enum TradeFranceLosSpacecraftClassification {
-  /// Non-operational object (debris, expended upper stage, etc.) —
-  /// shorter form, debris-mitigation focus only.
-  NON_OPERATIONAL
-  /// Government / defence operational satellite (CNES, DGA, etc.).
-  OPERATIONAL_GOV_DEFENSE
-  /// Commercial operational satellite (operator-driven revenue).
-  OPERATIONAL_COMMERCIAL
-  /// Operational scientific / academic mission.
-  OPERATIONAL_SCIENTIFIC
-}
-
-/// LOS authorisation lifecycle. Forward path:
-///   DRAFT → SUBMITTED → UNDER_REVIEW → AUTHORISED → COMPLETED
-/// Terminal-side paths:
-///   UNDER_REVIEW → REFUSED  (CNES / DGE refusal)
-///   any non-terminal → REVOKED  (regulator-initiated mid-mission)
-enum TradeFranceLosAuthorisationStatus {
-  DRAFT
-  SUBMITTED
-  UNDER_REVIEW
-  AUTHORISED
-  REFUSED
-  REVOKED
-  COMPLETED
-=======
   @@index([organizationId, licenseType])
   @@index([validUntil])
   @@index([ecjuReference])
@@ -14806,5 +14808,4 @@ enum TradeUkEcjuLicenseStatus {
   EXPIRED
   REVOKED
   EXHAUSTED
->>>>>>> feature/uk-ecju-licensing
 }
