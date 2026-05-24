@@ -4960,6 +4960,22 @@ html[data-trade-preload="dark"] .trade-themed {
   }
 }
 
+/* U-LOW-3 — Density toggle. When `data-trade-density="compact"` is set
+   on the documentElement, list-row paddings shrink by ~30% so users
+   can fit more rows on screen. Targets the common row patterns used by
+   items/parties/operations/licenses list pages without imposing a hard
+   contract on every page (pages that don't follow the pattern simply
+   stay at their default density). */
+html[data-trade-density="compact"] .trade-themed [class*="py-3.5"],
+html[data-trade-density="compact"] .trade-themed [class*="py-3"] {
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+}
+html[data-trade-density="compact"] .trade-themed [class*="py-4"] {
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+}
+
 /* WCAG 2.2 AA Hot-Fix — mirror of Atlas's Phase-A fix.
    The global `.dark h1..h6` rule (defined ~line 1365 of this file)
    has specificity (0,1,1) and forces headings to white in any

@@ -11,6 +11,7 @@ import { OrgProfileTab } from "./_components/OrgProfileTab";
 import { NotificationsTab } from "./_components/NotificationsTab";
 import { ApiKeysTab } from "./_components/ApiKeysTab";
 import { AuditTab } from "./_components/AuditTab";
+import { DensityToggle } from "../_components/DensityToggle";
 
 export const metadata = {
   title: "Settings — Caelex Trade",
@@ -108,6 +109,21 @@ export default async function TradeSettingsPage({
         {activeTab === "api-keys" && <ApiKeysTab apiKeys={apiKeys} />}
         {activeTab === "audit" && <AuditTab preferences={prefs} />}
       </div>
+
+      {/* Appearance — user-level UI preferences (per-device, not per-
+          org). Lives outside the tab system because it's a single
+          control and doesn't need its own tab. Density choice is
+          persisted in localStorage by useTradeDensity. */}
+      <section className="mt-6 rounded-xl border border-trade-border-subtle bg-trade-bg-elevated px-6 py-5">
+        <h2 className="mb-1 text-[15px] font-semibold text-trade-text-primary">
+          Appearance
+        </h2>
+        <p className="mb-4 max-w-2xl text-[12px] text-trade-text-muted">
+          Per-device preference. Compact mode fits ~15&nbsp;% more rows on
+          screen — preferred on laptop displays.
+        </p>
+        <DensityToggle />
+      </section>
     </div>
   );
 }

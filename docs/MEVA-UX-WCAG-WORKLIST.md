@@ -384,9 +384,18 @@ Combined both items into one panel because they answer the same operator questio
 
 **Fix:** Settings → Appearance → Light/Dark/System.
 
-### U-LOW-3 — Density-Toggle (Comfortable/Compact)
+### ✅ U-LOW-3 — Density-Toggle (Comfortable / Compact) **(DONE — Phase 6a)**
 
-**Fix:** Settings → UI → Density. Affects row-height tokens.
+**Shipped:**
+
+- ✅ `useTradeDensity` hook — localStorage-backed (`caelex-trade:density`), reflects choice to `data-trade-density` attr on `<html>` so global CSS selectors adapt without prop-drilling.
+- ✅ `DensityToggle` segmented control (role="radiogroup" + radio buttons) with descriptive hint per option.
+- ✅ CSS rules in `globals.css`: `html[data-trade-density="compact"] .trade-themed [class*="py-3.5/3/4"]` shrinks list-row paddings by ~30 %, fitting ~15 % more rows on screen.
+- ✅ Wired into Settings page as an "Appearance" section below the tabs — discoverable but doesn't clutter the existing tab system.
+
+**Aufwand:** ~1h ✅
+**Impact:** Niedrig-mittel (power-user QoL — laptop displays especially benefit)
+**Files:** `useTradeDensity.ts` (NEW) + `DensityToggle.tsx` (NEW) + Settings `page.tsx` (mount) + `globals.css` (compact rules)
 
 ### ✅ U-LOW-4 — Keyboard-Shortcuts-Cheatsheet **(DONE — Phase 4b, combined with U-HIGH-8)**
 
