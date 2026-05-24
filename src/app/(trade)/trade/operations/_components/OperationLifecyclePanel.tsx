@@ -15,8 +15,6 @@
 
 import { useState } from "react";
 import {
-  Clock,
-  CheckCircle2,
   XCircle,
   AlertTriangle,
   Edit3,
@@ -27,16 +25,16 @@ import {
   ArrowRight,
   type LucideIcon,
 } from "lucide-react";
+import {
+  OperationStepper,
+  happyPathNext,
+  nextActionLabel,
+  type OperationStatus,
+} from "./OperationStepper";
 
-export type OperationStatus =
-  | "DRAFT"
-  | "AWAITING_CLASSIFICATION"
-  | "SCREENING"
-  | "AWAITING_LICENSE"
-  | "LICENSED"
-  | "EXECUTED"
-  | "BLOCKED"
-  | "VOLUNTARY_DISCLOSURE_FILED";
+// Re-export so existing imports `import { OperationStatus } from "./OperationLifecyclePanel"`
+// keep working without ripple changes elsewhere in the tree.
+export type { OperationStatus };
 
 const ALLOWED_TRANSITIONS: Record<OperationStatus, OperationStatus[]> = {
   DRAFT: ["AWAITING_CLASSIFICATION", "BLOCKED"],
@@ -48,15 +46,6 @@ const ALLOWED_TRANSITIONS: Record<OperationStatus, OperationStatus[]> = {
   BLOCKED: ["VOLUNTARY_DISCLOSURE_FILED"],
   VOLUNTARY_DISCLOSURE_FILED: [],
 };
-
-const PIPELINE: OperationStatus[] = [
-  "DRAFT",
-  "AWAITING_CLASSIFICATION",
-  "SCREENING",
-  "AWAITING_LICENSE",
-  "LICENSED",
-  "EXECUTED",
-];
 
 const STATUS_META: Record<
   OperationStatus,
@@ -150,6 +139,15 @@ export function OperationLifecyclePanel({
   const allowed = ALLOWED_TRANSITIONS[status] ?? [];
   const meta = STATUS_META[status];
   const Icon = meta.icon;
+  // Promote ONE allowed transition to the primary CTA — the "happy
+  // path" forward step. Demote the rest to a secondary row so the
+  // user always sees a single obvious next move instead of a wall
+  // of buttons of equal weight.
+  const happyNext = happyPathNext(status);
+  const primaryNext: OperationStatus | null =
+    happyNext && allowed.includes(happyNext) ? happyNext : null;
+  const secondaryActions = allowed.filter((t) => t !== primaryNext);
+  const [showSecondary, setShowSecondary] = useState(false);
 
   async function performTransition(target: OperationStatus) {
     setSubmitting(true);
@@ -186,27 +184,9 @@ export function OperationLifecyclePanel({
         </p>
       </div>
 
-      {/* Pipeline visualization */}
-      <div className="flex items-center gap-2 overflow-x-auto px-5 py-4">
-        {PIPELINE.map((s, i) => (
-          <PipelineStep
-            key={s}
-            status={s}
-            isCurrent={s === status}
-            isPast={
-              PIPELINE.indexOf(status) > i &&
-              status !== "BLOCKED" &&
-              status !== "VOLUNTARY_DISCLOSURE_FILED"
-            }
-            isLast={i === PIPELINE.length - 1}
-          />
-        ))}
-        {(status === "BLOCKED" || status === "VOLUNTARY_DISCLOSURE_FILED") && (
-          <>
-            <div className="h-px w-6 shrink-0 bg-red-200" />
-            <PipelineStep status={status} isCurrent isPast={false} isLast />
-          </>
-        )}
+      {/* Pipeline visualization — proper horizontal stepper (U-HIGH-6) */}
+      <div className="px-5 py-4">
+        <OperationStepper status={status} />
       </div>
 
       {/* Current state description */}
@@ -229,33 +209,72 @@ export function OperationLifecyclePanel({
         </div>
       </div>
 
-      {/* Action buttons (allowed transitions) */}
+      {/* Action area — primary "Next" CTA + collapsed secondary actions.
+          Single recommended path beats a wall-of-buttons for daily ops; the
+          full "Move to" row is one click away under "More actions". */}
       {allowed.length > 0 && (
-        <div className="flex flex-wrap gap-2 border-t border-trade-border-subtle px-5 py-3">
-          <span className="self-center text-[10px] font-semibold uppercase tracking-[0.14em] text-trade-text-muted">
-            Move to:
-          </span>
-          {allowed.map((target) => {
-            const isBlocking =
-              target === "BLOCKED" || target === "VOLUNTARY_DISCLOSURE_FILED";
-            const targetMeta = STATUS_META[target];
-            const buttonClass = isBlocking
-              ? "border border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
-              : target === "EXECUTED"
-                ? "border border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                : "border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100";
-            return (
+        <div className="border-t border-trade-border-subtle px-5 py-3">
+          {primaryNext ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-trade-text-muted">
+                Next
+              </span>
               <button
-                key={target}
-                onClick={() => setPendingTransition(target)}
+                onClick={() => setPendingTransition(primaryNext)}
                 disabled={submitting}
-                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[11px] font-semibold transition disabled:opacity-50 ${buttonClass}`}
+                className="inline-flex items-center gap-2 rounded-md bg-trade-accent px-4 py-2 text-[12px] font-semibold text-white transition hover:bg-trade-accent-strong disabled:opacity-50"
               >
-                {targetMeta.label}
-                <ArrowRight className="h-3 w-3" />
+                {nextActionLabel(primaryNext)}
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
-            );
-          })}
+              {secondaryActions.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowSecondary((v) => !v)}
+                  aria-expanded={showSecondary}
+                  aria-controls="lifecycle-secondary-actions"
+                  className="ml-auto text-[11px] text-trade-text-secondary underline-offset-2 transition hover:text-trade-text-primary hover:underline"
+                >
+                  {showSecondary ? "Hide" : "More actions"}
+                  {showSecondary ? " ↑" : ` (${secondaryActions.length}) ↓`}
+                </button>
+              )}
+            </div>
+          ) : (
+            // No happy-path forward — surface all allowed actions equally
+            // (e.g. EXECUTED with only "BLOCKED" available).
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-trade-text-muted">
+                Available
+              </span>
+              {secondaryActions.map((target) => (
+                <TransitionButton
+                  key={target}
+                  target={target}
+                  onClick={() => setPendingTransition(target)}
+                  submitting={submitting}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Secondary action drawer — visible after toggle. Kept inside
+              the panel chrome to preserve the disclosure visual model. */}
+          {primaryNext && showSecondary && secondaryActions.length > 0 ? (
+            <div
+              id="lifecycle-secondary-actions"
+              className="mt-3 flex flex-wrap gap-2 border-t border-dashed border-trade-border-subtle pt-3"
+            >
+              {secondaryActions.map((target) => (
+                <TransitionButton
+                  key={target}
+                  target={target}
+                  onClick={() => setPendingTransition(target)}
+                  submitting={submitting}
+                />
+              ))}
+            </div>
+          ) : null}
         </div>
       )}
 
@@ -281,54 +300,37 @@ export function OperationLifecyclePanel({
   );
 }
 
-function PipelineStep({
-  status,
-  isCurrent,
-  isPast,
-  isLast,
+/**
+ * Renders one transition action button with hue-by-target styling.
+ * Extracted so both the "primary next" path and the "more actions"
+ * disclosure use the same visual + interaction.
+ */
+function TransitionButton({
+  target,
+  onClick,
+  submitting,
 }: {
-  status: OperationStatus;
-  isCurrent: boolean;
-  isPast: boolean;
-  isLast: boolean;
+  target: OperationStatus;
+  onClick: () => void;
+  submitting: boolean;
 }) {
-  const meta = STATUS_META[status];
-  const Icon = meta.icon;
-
-  const stepClass = isCurrent
-    ? `${meta.bgClass} ${meta.textClass} ring-1`
-    : isPast
-      ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
-      : "bg-trade-bg-subtle text-trade-text-muted ring-1 ring-trade-border-subtle";
-
+  const isBlocking =
+    target === "BLOCKED" || target === "VOLUNTARY_DISCLOSURE_FILED";
+  const targetMeta = STATUS_META[target];
+  const buttonClass = isBlocking
+    ? "border border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+    : target === "EXECUTED"
+      ? "border border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+      : "border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100";
   return (
-    <>
-      <div
-        className={`flex shrink-0 items-center gap-2 rounded-md px-3 py-2 ${stepClass}`}
-      >
-        <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
-        <span className="text-[10px] font-semibold uppercase tracking-widest">
-          {meta.label}
-        </span>
-        {isCurrent && (
-          <span
-            className={`ml-1 h-1.5 w-1.5 rounded-full ${
-              isCurrent ? meta.textClass.replace("text-", "bg-") : ""
-            }`}
-            style={{
-              backgroundColor: "currentColor",
-            }}
-          />
-        )}
-      </div>
-      {!isLast && (
-        <div
-          className={`h-px w-4 shrink-0 ${
-            isPast ? "bg-emerald-300" : "bg-trade-border-subtle"
-          }`}
-        />
-      )}
-    </>
+    <button
+      onClick={onClick}
+      disabled={submitting}
+      className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[11px] font-semibold transition disabled:opacity-50 ${buttonClass}`}
+    >
+      {targetMeta.label}
+      <ArrowRight className="h-3 w-3" aria-hidden="true" />
+    </button>
   );
 }
 

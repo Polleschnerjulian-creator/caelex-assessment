@@ -10,13 +10,13 @@ Update statuses as items ship. Group by phase + impact.
 
 ## 📊 Status Dashboard
 
-| Stream                                     | % done | Last bump                                                       |
-| ------------------------------------------ | ------ | --------------------------------------------------------------- |
-| **WCAG 2.2 AA**                            | ~98%   | W18 progressbar (commit 88db0a1f)                               |
-| **UX — Quick wins**                        | ~60%   | Phase 2 + U-HIGH-4 rich empty-states + Astra ?prefill deep-link |
-| **UX — Phase A (Power-User basics)**       | ~50%   | U-HIGH-3 badges done; U-CRIT-4 palette + U-HIGH-1 inbox pending |
-| **UX — Phase B (Onboarding + Bulk)**       | 0%     | not started                                                     |
-| **UX — Phase C (Strategic deep features)** | 0%     | not started                                                     |
+| Stream                                     | % done | Last bump                                               |
+| ------------------------------------------ | ------ | ------------------------------------------------------- |
+| **WCAG 2.2 AA**                            | ~98%   | W18 progressbar (commit 88db0a1f)                       |
+| **UX — Quick wins**                        | ~70%   | Phase 3b — U-HIGH-6 operation stepper + Next-Action CTA |
+| **UX — Phase A (Power-User basics)**       | ~60%   | U-HIGH-3 + U-HIGH-6 done; palette + inbox still pending |
+| **UX — Phase B (Onboarding + Bulk)**       | 0%     | not started                                             |
+| **UX — Phase C (Strategic deep features)** | 0%     | not started                                             |
 
 ---
 
@@ -188,13 +188,20 @@ Update statuses as items ship. Group by phase + impact.
   **Impact:** Hoch (Power-User efficiency)
   **Files:** Each list page + new `FilterBar` component + DB `TradeUserView` model
 
-### U-HIGH-6 — Workflow Stepper für Operations
+### ✅ U-HIGH-6 — Workflow Stepper für Operations **(DONE — Phase 3b)**
 
-**Was:** Operation-Lifecycle DRAFT→SCREENING→AWAITING_LICENSE→LICENSED→EXECUTED nur als Bar.
-**Fix:** Horizontal Stepper auf Operation-Detail mit Current-Step-Highlight + "Next Action" CTA.
-**Aufwand:** 4h
+**Was:** Operation-Lifecycle DRAFT→SCREENING→AWAITING_LICENSE→LICENSED→EXECUTED nur als kompakte Pill-Reihe.
+**Shipped:**
+
+- ✅ New `src/app/(trade)/trade/operations/_components/OperationStepper.tsx` — proper horizontal stepper: numbered circles for upcoming, accent-fill icon for current, emerald-check for done. Off-pipeline states (BLOCKED / VOLUNTARY_DISCLOSURE_FILED) render the happy path + a separate red terminal pill so direction-of-flow stays readable.
+- ✅ `OperationLifecyclePanel.tsx` refactored to delegate visualization to the new stepper.
+- ✅ "Next Action" primary CTA — single bright button labeled with a verb ("Submit for classification" / "Begin sanctions screening" / "Mark as licensed" / etc.) promoted from the canonical happy-path transition. Other allowed transitions demoted under a "More actions (N) ↓" disclosure so the user sees one obvious next move instead of a wall of buttons.
+- ✅ a11y: `role="group"` + `aria-label` on stepper, `aria-current="step"` on the active node, offscreen "Step N of 6: Label · in progress" verbose announcement per step, `aria-expanded` + `aria-controls` on the disclosure.
+- ✅ Pure-function helpers `happyPathNext` + `nextActionLabel` exported with 8 vitest tests covering the chain (DRAFT→…→EXECUTED), terminal nulls, and verb-phrasing guard.
+
+**Aufwand:** 4h ✅
 **Impact:** Mittel-Hoch (workflow clarity)
-**Files:** `src/app/(trade)/trade/operations/[id]/page.tsx` + new `OperationStepper.tsx`
+**Files:** `OperationStepper.tsx` (NEW) + `OperationStepper.test.ts` (NEW) + `OperationLifecyclePanel.tsx` (refactored)
 
 ### U-HIGH-7 — Contextual Help / Tooltips überall
 
