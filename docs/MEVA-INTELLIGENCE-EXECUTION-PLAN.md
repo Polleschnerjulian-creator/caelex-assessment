@@ -769,4 +769,265 @@ The user said "wir machen alles" — committed.
 
 ---
 
+# 💸 ZERO-EXTERNAL-COST CONSTRAINT (Decision 2026-05-24)
+
+**User-Direktive:** "okay also wir machen das ganze ohne externe kosten zu verursachen"
+
+**Interpretation:** Keine NEUEN Vendor-Beziehungen. Bestehende Infrastruktur
+(Anthropic Claude API — schon im Stack via `ANTHROPIC_API_KEY`, R2 Storage,
+Neon Postgres, Vercel) bleibt. Variable Claude-API-Kosten werden minimiert
+durch Modell-Tiering (Haiku statt Sonnet wo möglich) + aggressive Caching.
+
+Alle Items oben bleiben committed — nur die _Wie-Implementierung_ ändert
+sich. Trade-offs werden bewusst akzeptiert (siehe per-Item-Notizen unten).
+
+---
+
+## Per-Item Zero-Cost-Replacements
+
+### 1A — Multimodal Classification
+
+**Original-Plan:** Claude Vision (Sonnet)
+**Zero-Cost-Plan:** Bleibt Claude Vision — Anthropic ist schon im Stack.
+**Optimierung:** Claude **Haiku** als first-pass (schnell + günstig), Sonnet
+nur als Fallback bei niedrigem confidence-Score. Cached PDF-Extractions
+in Postgres so dass Re-Upload des gleichen PDFs zero cost ist.
+**Trade-off:** Keiner — funktioniert identisch zur Original-Vision.
+
+### 1B — Self-Learning Classification mit RAG
+
+**Original-Plan:** OpenAI text-embedding-3-small + pgvector
+**Zero-Cost-Plan:** **Transformers.js** (`@xenova/transformers`) mit
+`Xenova/all-MiniLM-L6-v2` Modell — läuft komplett im Node-Process, kein
+API-Call. Modell ist 23MB, lädt einmal beim Server-Start.
+**Speicherung:** weiterhin pgvector in Neon Postgres (gratis Extension).
+**Trade-off:** ~10× langsamere Embedding-Generation als OpenAI API (~50ms
+statt 5ms), aber irrelevant für ein async daily job. Embedding-Qualität
+für unsere Domain (kurze Item-Beschreibungen) praktisch identisch.
+
+```
+src/lib/trade/classification/embeddings.server.ts:
+  import { pipeline } from '@xenova/transformers';
+  const embedder = await pipeline('feature-extraction',
+                                   'Xenova/all-MiniLM-L6-v2');
+  const output = await embedder(text, { pooling: 'mean', normalize: true });
+  return Array.from(output.data); // 384-dim vector
+```
+
+### 1C — BAFA-Bescheid Parser
+
+**Original-Plan:** Claude Vision + 10 anonymisierte BAFA-Samples
+**Zero-Cost-Plan:** Bleibt identisch. Samples: Operator macht selbst 10
+Anonymisierungen aus eigenen oder publiken BAFA-Bescheiden (Beispiele
+gibt's auf der BAFA-Website + im BAfA-Bundesblatt frei).
+**Trade-off:** Keiner.
+
+### 1D — Agentic Sanctions Triage
+
+**Original-Plan:** News API (Reuters/FT/NewsAPI €500-2000/mo) + SerpAPI
+LinkedIn €500/mo
+**Zero-Cost-Plan:**
+
+- **News:** GDELT 2.0 — Google's openes Project, free + comprehensive
+  global news (alle Reuters/AP/AFP/etc. Headlines via gdeltproject.org/api)
+- **EDGAR:** Form 8-K material events — free SEC API
+- **OpenSanctions.org:** OFAC + EU + UK + UN consolidated, kostenlos
+  unter CC0 Lizenz (schon im Caelex-Stack laut Recherche)
+- **LinkedIn signal:** **GESTRICHEN** für Zero-Cost-Variant. Lässt sich
+  später optional dazukaufen wenn ROI klar ist.
+  **Trade-off:** Etwas weniger comprehensive signal-coverage (-15% accuracy
+  geschätzt). Aber 85% accuracy ist immer noch viel besser als 0% (was
+  Konkurrenz heute hat).
+
+### 1E — Astra Drafting Pipeline
+
+**Original-Plan:** pdf-lib (open-source ✅) + Adobe Sign integration
+(externer Vendor)
+**Zero-Cost-Plan:**
+
+- **pdf-lib** bleibt — open-source
+- **Adobe Sign:** GESTRICHEN aus MVP. Operator druckt PDF, signiert
+  physisch, scant zurück hoch. Alternativ: stub-only integration die
+  mailto:-link mit attached PDF generiert.
+- E-Signing kommt später wenn Customer-Demand klar ist → können dann
+  open-source Signing-Server selbst hosten (DocuSeal etc.)
+  **Trade-off:** Operator-Workflow für Signing ist 1 Klick mehr.
+
+### 2A — Predictive Sanctions Watch
+
+**Original-Plan:** News API + EDGAR + LinkedIn + SerpAPI + Patents
+**Zero-Cost-Plan:**
+
+- **GDELT** für news (free)
+- **EDGAR** Form 8-K (free SEC API)
+- **USPTO API** für patents (free)
+- **EPO Open Patent Services** für EU patents (free)
+- **LinkedIn:** gestrichen
+  **Trade-off:** -15% accuracy aber rest of plan unchanged. Risk-Score-Algorithmus
+  bleibt identisch.
+
+### 2B — License-Stack Optimizer
+
+**Original-Plan:** Pure analytics on internal data
+**Zero-Cost-Plan:** **Unverändert** — keine externen Costs ohnehin.
+
+### 2C — Response-Time Forecasting
+
+**Original-Plan:** Lightweight ML library (sklearn-equivalent oder Python sidecar)
+**Zero-Cost-Plan:** **Statistische Bootstrap-Variante** statt ML:
+
+- Berechne Median + P25 + P75 + P90 per (license-type × country × value-bucket)
+- "Predicted Response Time: 11-16 Wochen (P25-P75 basierend auf 247 ähnlichen
+  Anträgen)" — funktioniert ab N=5 samples
+- ML-Variante kommt später wenn genug Trainingsdaten + ML-Bibliothek im Stack
+  ist (TensorFlow.js oder ONNX-Runtime sind beide free)
+  **Trade-off:** Statistische Bootstrap-Variante ist tatsächlich oft **besser**
+  als ML mit wenig Daten — keine Overfitting-Risk, transparenter, debugbar.
+
+### 2D — Catch-All Auto-Detection
+
+**Original-Plan:** Web-scraping infra + LinkedIn + News API
+**Zero-Cost-Plan:**
+
+- **Web-scraping:** Cheerio (open-source) + Node's built-in `fetch`. Respektiert
+  `robots.txt`. Counterparty-Website-Crawl: 1 request/sec rate-limited.
+- **News:** GDELT (free) statt News API
+- **LinkedIn director background:** GESTRICHEN — könnte später via openCorporates
+  (gratis API mit rate-limits) als Replacement
+- **Geo-clustering:** statische DB aus eigener Research (kein API call)
+  **Trade-off:** Director-Background-Check fällt weg → -10% catch-all-detection
+  accuracy. Akzeptabel: System schlägt immer noch ECHTE Catch-All-Cases vor;
+  nur die marginalen Cases werden später erkannt.
+
+### 3A — SAP/Oracle SDK
+
+**Original-Plan:** Engineering-Team + Enterprise legal MSA + customer pilots
+**Zero-Cost-Plan:**
+
+- **SDK-Code selbst:** zero cost — open-source SDKs (Node/Python/Java)
+  publishen wir auf npm/PyPI/Maven Central (alle kostenlos)
+- **Legal MSA:** statt €10-20k Anwalt nehmen wir **Mozilla SPL-2.0-MSA-Template**
+  als Basis, modifiziert für Caelex. Free + battle-tested.
+- **Customer pilots:** Direct outreach + free trial — kein paid CAC
+- **Load testing:** k6 (open-source), keine SaaS
+- **Performance monitoring:** existing Sentry (schon im Stack)
+  **Trade-off:** Bei ersten Enterprise-Kunden brauchen wir später vielleicht
+  einen Anwalt für custom MSA-Verhandlungen — aber das ist DEAL-TIME, nicht
+  upfront-investment. Pay-when-needed.
+
+### 3B — Verity Cryptographic Provenance
+
+**Original-Plan:** AWS KMS (~€50/mo)
+**Zero-Cost-Plan:** **In-process key management** mit Node's `crypto` Modul:
+
+- Ed25519 keypair pro Org generiert beim ersten Use
+- Private-Key encrypted-at-rest in Postgres mit `crypto.createCipheriv`
+  (Master-key kommt aus existing `ENCRYPTION_KEY` env var)
+- Public-Key in DB für verification queries
+- Signing direkt in Node via `crypto.sign('ed25519', ...)`
+  **Trade-off:** Niedrigeres Sicherheits-Tier als KMS-backed (Master-Key liegt
+  im env var statt im HSM). Adequate für Tier-1 Customers; KMS-Upgrade später
+  wenn high-stakes Customer es verlangt.
+
+### 3C — What-If Simulator
+
+**Original-Plan:** Pure code, zero external
+**Zero-Cost-Plan:** **Unverändert.**
+
+### 3D — Network-Effect Aggregate Benchmarks
+
+**Original-Plan:** External security audit €15-30k + paid k-anonymity tooling
+**Zero-Cost-Plan:**
+
+- **Anonymization-Layer:** Selbst implementieren mit Standard k-anon (k=5
+  hard-coded). Open-source code so Community + Customer-Sec-Teams
+  selbst auditieren können.
+- **External Security Audit:** GESTRICHEN für MVP. Stattdessen:
+  - Code-Review durch 2 separate Caelex-Engineers
+  - Public bug-bounty mit HackerOne free tier (oder ohne — nur Email-Disclosure)
+  - Audit kommt später wenn ein Enterprise-Customer es als Vertragsbedingung verlangt
+    **Trade-off:** Manche Tier-1-Enterprise-Customers (Banks, Aerospace-Primes)
+    werden audit verlangen bevor sie 3D aktivieren. Akzeptabel — die kommen
+    in Year 2-3, dann passt der Audit-Cost zur Revenue.
+
+### 3E — Conversational Compliance Audit
+
+**Original-Plan:** Existing Claude API
+**Zero-Cost-Plan:** **Unverändert** — Claude ist schon im Stack.
+
+---
+
+## Variable Claude-API-Kosten Optimierung
+
+Auch wenn Anthropic existing relationship ist, ist die VARIABLE per-token
+Kost ein Faktor. Aggressive Optimierung:
+
+| Strategie                                                                                                                                           | Wirkung                                                                 |
+| --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **Modell-Tiering:** Haiku für simple tasks (Doc-Parsing, einfache Klassifikation), Sonnet nur für komplexe Reasoning                                | Haiku ist ~30× günstiger als Sonnet — kann 90% des Volumens absorbieren |
+| **Prompt-Caching:** alle stable system-prompts (regulatory-knowledge, glossary, few-shot-samples) als cached prefix                                 | Cache-Hits sind 90% günstiger                                           |
+| **Aggressive Result-Caching:** PDF-extraction-results, ECCN-predictions, sanctions-triage-briefs in Postgres cachen für Re-Use                      | Zero-cost on cache-hit                                                  |
+| **Batch-Mode:** non-urgent jobs (daily sanctions-watch, weekly catch-all-rescan) via Anthropic Batch API                                            | 50% günstiger                                                           |
+| **Streaming-Responses:** UX-relevante Calls streamen statt zu warten — Operator perceived speed steigt, kein cost-Impact aber besseres Tier möglich |
+| **Strict Token-Budget per Feature:** jede Astra-Funktion bekommt einen Token-Cap, kein runaway-cost                                                 |
+
+Geschätzte ANTHROPIC variable cost bei vollem Phase-3-Deploy mit 50
+aktiven Customers: **€2-4k/Monat** statt €15k+ ohne Optimierung.
+
+---
+
+## Aktualisierte Cost-Tabelle
+
+| Item                         | Original Cost       | Zero-Cost Plan                             | Delta      |
+| ---------------------------- | ------------------- | ------------------------------------------ | ---------- |
+| Anthropic API                | €5-15k/mo           | €2-4k/mo (optimiert)                       | -€11k/mo   |
+| OpenAI embeddings (1B)       | €500/mo             | €0 (Transformers.js local)                 | -€500/mo   |
+| News API (2A, 2D)            | €500-2k/mo          | €0 (GDELT)                                 | -€2k/mo    |
+| SerpAPI LinkedIn (2A, 2D)    | €500/mo             | €0 (gestrichen)                            | -€500/mo   |
+| Web-scraping infra (2D)      | €200-500/mo         | €0 (Cheerio + fetch)                       | -€500/mo   |
+| KMS (3B)                     | €50/mo              | €0 (in-process crypto)                     | -€50/mo    |
+| External security audit (3D) | €15-30k einmalig    | €0 (verschoben)                            | -€30k      |
+| Legal MSA drafting (3A)      | €10-20k einmalig    | €0 (Open-source templates)                 | -€20k      |
+| **TOTAL external**           | **~€100-200k/year** | **~€24-48k/year** (nur Anthropic variable) | **-€75k+** |
+
+**Engineering-Headcount bleibt** — das ist nicht externer Cost sondern
+internal-time-investment. Solo-Pace bleibt bei ~12 Monaten für alle 14
+Items, Team-Pace bei 6-9 Monaten.
+
+---
+
+## Was die Zero-Cost-Variante NICHT verändert
+
+- ✅ Strategie ist identisch — alle 14 Items bleiben committed
+- ✅ Acceptance-Criteria sind identisch (bis auf -10-15% accuracy bei 1D, 2A, 2D
+  wegen LinkedIn-Streichung)
+- ✅ Sprint-Sequencing M1-M7 unverändert
+- ✅ Konkurrenz-Vergleich aus Research-Doc bleibt gültig — alle Konkurrenten
+  zahlen die externen Costs UND sind trotzdem schlechter. Wir sparen Cost
+  UND sind besser.
+
+## Was die Zero-Cost-Variante VERÄNDERT
+
+- ❌ LinkedIn-Signals dropped (1D, 2A, 2D) — Director-Background-Checks
+  fallen weg
+- ❌ Adobe Sign Integration dropped aus 1E — Operator druckt + scant
+- ❌ ML-Modell für 2C → Statistical Bootstrap (oft besser bei kleinen N)
+- ❌ External Security Audit für 3D → Internal Peer Review + Open-Source
+- ❌ Legal Anwalt für 3A MSA → Mozilla-Template-Adaptation
+- ❌ AWS KMS für 3B → In-Process Crypto mit Master-Key aus env var
+- ⚠️ Pay-When-Needed für später: KMS-Upgrade, External Audit, Legal Custom-MSAs
+
+---
+
+## Decision: Zero-Cost-Plan ist final
+
+Alle 14 Items bleiben committed. Implementierung folgt Zero-Cost-Variante.
+Wenn jemals ein einzelnes Item ein externes Tool unbedingt braucht (z.B.
+ein Enterprise-Customer fordert auf KMS-backed Verity), dann ist DAS der
+Decision-Point — kein blanket-budget upfront.
+
+**Next concrete action:** Setup Transformers.js + pgvector locally für
+M1-1B als infrastructure-prep. Alles andere kann direkt mit existing
+Stack starten.
+
 ## SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
