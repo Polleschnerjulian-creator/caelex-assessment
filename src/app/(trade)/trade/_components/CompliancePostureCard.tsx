@@ -199,22 +199,37 @@ function RegimeBadge({ chip }: { chip: RegimeChip }) {
 }
 
 function CoverageBar() {
+  // WCAG SC 1.3.1 + 4.1.2 — progressbar role makes the visual fill
+  // announceable to screen readers. The bar's intrinsic meaning ("93% of
+  // export-control regimes are covered") is otherwise locked behind a
+  // visual treatment that AT users can't perceive.
+  const VALUE = 93;
   return (
     <div className="flex items-center gap-3">
       <div
+        role="progressbar"
+        aria-valuenow={VALUE}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={`Export-control regime coverage: ${VALUE}%`}
         className="relative h-1.5 w-32 overflow-hidden rounded-full"
         style={{ background: "var(--trade-fill-4)" }}
       >
         <div
+          aria-hidden="true"
           className="absolute inset-y-0 left-0 rounded-full"
-          style={{ width: "93%", background: "var(--trade-accent)" }}
+          style={{ width: `${VALUE}%`, background: "var(--trade-accent)" }}
         />
       </div>
+      {/* aria-hidden because the progressbar's aria-label already
+          announces the same number to screen readers — avoid the
+          duplicate "ninety three percent ninety three percent". */}
       <p
+        aria-hidden="true"
         className="text-[12px] font-medium tabular-nums"
         style={{ color: "var(--trade-label)" }}
       >
-        93%
+        {VALUE}%
       </p>
     </div>
   );
