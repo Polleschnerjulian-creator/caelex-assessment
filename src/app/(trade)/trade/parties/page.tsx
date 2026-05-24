@@ -194,7 +194,10 @@ export default function CounterpartiesListPage() {
       )}
 
       {/* Mandatory disclaimer */}
-      <p className="mt-8 max-w-3xl text-[11px] leading-relaxed text-trade-text-muted">
+      <p
+        lang="de"
+        className="mt-8 max-w-3xl text-[11px] leading-relaxed text-trade-text-muted"
+      >
         Sanctions-Screening ist ein Werkzeug zur Decision-Support, kein Counsel.
         Treffer erfordern menschliche Triage durch qualifizierten AV. Verstöße
         gegen <Term>OFAC</Term>/EU-Sanktionen können zu zivilrechtlichen Bußen

@@ -633,7 +633,10 @@ export default function TradeItemsPage() {
           className="mt-0.5 h-3.5 w-3.5 shrink-0 text-trade-text-muted"
           strokeWidth={2}
         />
-        <p className="text-[11px] leading-relaxed text-trade-text-muted">
+        <p
+          lang="de"
+          className="text-[11px] leading-relaxed text-trade-text-muted"
+        >
           Caelex Trade ist ein Compliance-Werkzeug, kein Counsel. Vor jeder
           Export-Entscheidung mit qualifizierter Exportkontroll-Rechtsberatung
           verifizieren (BAFA, BIS, DDTC). AWG/EAR/ITAR-Verstöße können zu

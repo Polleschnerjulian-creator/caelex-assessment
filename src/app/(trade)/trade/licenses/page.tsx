@@ -310,7 +310,10 @@ export default function LicensesPage() {
         </ul>
       )}
 
-      <p className="mt-8 max-w-3xl text-[11px] leading-relaxed text-trade-text-muted">
+      <p
+        lang="de"
+        className="mt-8 max-w-3xl text-[11px] leading-relaxed text-trade-text-muted"
+      >
         Licenses sind nur so gültig wie die zugrundeliegende Bescheid- oder
         License-PDF. Caelex tracked Draw-Down + Expiry — die Auslegung von
         Bedingungen (covered codes, covered countries, end-use restrictions)

@@ -225,7 +225,10 @@ export default function OperationsListPage() {
         </div>
       )}
 
-      <p className="mt-8 max-w-3xl text-[11px] leading-relaxed text-trade-text-muted">
+      <p
+        lang="de"
+        className="mt-8 max-w-3xl text-[11px] leading-relaxed text-trade-text-muted"
+      >
         Trade-Operations sind Decision-Support, kein Auto-Pilot. Status-
         Übergänge LICENSED → EXECUTED erfordern menschliche Bestätigung durch
         qualifizierten AV. Verstöße gegen <Term>AWG</Term>/<Term>EAR</Term>/

@@ -10,13 +10,13 @@ Update statuses as items ship. Group by phase + impact.
 
 ## 📊 Status Dashboard
 
-| Stream                                     | % done   | Last bump                                                                           |
-| ------------------------------------------ | -------- | ----------------------------------------------------------------------------------- |
-| **WCAG 2.2 AA**                            | ~99.3%   | W17 NotificationsTab fieldset/legend coverage                                       |
-| **UX — Quick wins**                        | ~95%     | Phase 4c — U-MED-7 Recently Visited sidebar section (localStorage)                  |
-| **UX — Phase A (Power-User basics)**       | **100%** | Phase 4b — U-HIGH-8 + U-LOW-4 help-center side-panel (26-term glossary + shortcuts) |
-| **UX — Phase B (Onboarding + Bulk)**       | **~60%** | Phase 5e — U-CRIT-5 MVP bulk-select + CSV export on items page (14 tests)           |
-| **UX — Phase C (Strategic deep features)** | 0%       | not started                                                                         |
+| Stream                                     | % done     | Last bump                                                                                                                                |
+| ------------------------------------------ | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **WCAG 2.2 AA**                            | **~99.8%** | W19 + W20 — scopes aria-describedby + lang="de" on disclaimers. Only W14 axe-cli + W15 VoiceOver manual checks remain (tooling/process). |
+| **UX — Quick wins**                        | ~95%       | Phase 4c — U-MED-7 Recently Visited sidebar section (localStorage)                                                                       |
+| **UX — Phase A (Power-User basics)**       | **100%**   | Phase 4b — U-HIGH-8 + U-LOW-4 help-center side-panel (26-term glossary + shortcuts)                                                      |
+| **UX — Phase B (Onboarding + Bulk)**       | **~60%**   | Phase 5e — U-CRIT-5 MVP bulk-select + CSV export on items page (14 tests)                                                                |
+| **UX — Phase C (Strategic deep features)** | 0%         | not started                                                                                                                              |
 
 ---
 
@@ -42,15 +42,15 @@ Update statuses as items ship. Group by phase + impact.
 
 ## 🔴 TODO — WCAG 2.2 AA (remaining ~3%)
 
-| #          | Fix                                                                                                                                                                                                                                                                    | SC            | Aufwand  | Owner  |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | -------- | ------ |
-| W14        | Run `npx @axe-core/cli` on production for actual contrast verification                                                                                                                                                                                                 | 1.4.3         | 30min    | —      |
-| W15        | VoiceOver/NVDA walkthrough of top-10 user flows                                                                                                                                                                                                                        | —             | 4h       | —      |
-| ~~W16~~ ✅ | ~~Per-input `autocomplete` attributes~~ **DONE — Phase 5b**: OrgProfileTab Field accepts `autoComplete` prop now; wired bafa contact (name/role/tel/email), eori/duns (off — encrypted), primaryExportJurisdiction (country), ApiKeys key-name (off).                  | 1.3.5 AA      | 1h ✅    | Claude |
-| ~~W17~~ ✅ | ~~Form fieldset/legend for input groups in Settings~~ **DONE — Phase 5c**: NotificationsTab toggle list wrapped in `<fieldset>` + `<legend>` so AT users hear "Email notifications, group, N checkboxes". OrgProfile/ApiKeys/Audit tabs already had fieldset coverage. | 1.3.1 A       | 30min ✅ | Claude |
-| ~~W18~~ ✅ | ~~Coverage-bar role="img" + aria-valuenow (CompliancePostureCard)~~ **DONE — Phase 2 follow-up** (commit 88db0a1f, used `role="progressbar"` which is more semantic than `role="img"`)                                                                                 | 1.3.1 + 4.1.2 | 15min ✅ | Claude |
-| W19        | NotificationsTab + remaining ApiKeysTab inputs — aria-invalid + describedby                                                                                                                                                                                            | 3.3.1 AA      | 1h       | —      |
-| W20        | More per-section `lang="de"` patches on operations/licenses subtitles                                                                                                                                                                                                  | 3.1.2 AA      | 1h       | —      |
+| #          | Fix                                                                                                                                                                                                                                                                                                                                          | SC            | Aufwand  | Owner  |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | -------- | ------ |
+| W14        | Run `npx @axe-core/cli` on production for actual contrast verification                                                                                                                                                                                                                                                                       | 1.4.3         | 30min    | —      |
+| W15        | VoiceOver/NVDA walkthrough of top-10 user flows                                                                                                                                                                                                                                                                                              | —             | 4h       | —      |
+| ~~W16~~ ✅ | ~~Per-input `autocomplete` attributes~~ **DONE — Phase 5b**: OrgProfileTab Field accepts `autoComplete` prop now; wired bafa contact (name/role/tel/email), eori/duns (off — encrypted), primaryExportJurisdiction (country), ApiKeys key-name (off).                                                                                        | 1.3.5 AA      | 1h ✅    | Claude |
+| ~~W17~~ ✅ | ~~Form fieldset/legend for input groups in Settings~~ **DONE — Phase 5c**: NotificationsTab toggle list wrapped in `<fieldset>` + `<legend>` so AT users hear "Email notifications, group, N checkboxes". OrgProfile/ApiKeys/Audit tabs already had fieldset coverage.                                                                       | 1.3.1 A       | 30min ✅ | Claude |
+| ~~W18~~ ✅ | ~~Coverage-bar role="img" + aria-valuenow (CompliancePostureCard)~~ **DONE — Phase 2 follow-up** (commit 88db0a1f, used `role="progressbar"` which is more semantic than `role="img"`)                                                                                                                                                       | 1.3.1 + 4.1.2 | 15min ✅ | Claude |
+| ~~W19~~ ✅ | ~~NotificationsTab + remaining ApiKeysTab inputs — aria-invalid + describedby~~ **DONE — Phase 5f**: ApiKeysTab scopes fieldset now has `aria-describedby` pointing to the scopes-error message + per-scope checkbox gets `aria-invalid` when scopes error present. NotificationsTab uses implicit label association (already a11y-correct). | 3.3.1 AA      | 30min ✅ | Claude |
+| ~~W20~~ ✅ | ~~More per-section `lang="de"` patches on operations/licenses subtitles~~ **DONE — Phase 5f**: Added `lang="de"` to the German disclaimer paragraphs on items/parties/operations/licenses pages so screen readers switch to German pronunciation for "Sanctions-Screening", "Freiheitsstrafen", etc.                                         | 3.1.2 AA      | 30min ✅ | Claude |
 
 ---
 

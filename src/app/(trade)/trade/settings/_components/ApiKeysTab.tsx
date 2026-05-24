@@ -233,7 +233,14 @@ function CreateKeyForm({
         )}
       </div>
 
-      <fieldset>
+      {/* WCAG SC 3.3.1 — fieldset gets aria-describedby pointing at the
+          scopes error message + each scope checkbox gets aria-invalid
+          when the error is present. */}
+      <fieldset
+        aria-describedby={
+          error?.fields?.scopes ? "api-key-scopes-error" : undefined
+        }
+      >
         <legend className="mb-2 block text-[12px] font-medium text-trade-text-secondary">
           Scope
         </legend>
@@ -243,6 +250,7 @@ function CreateKeyForm({
               type="checkbox"
               name="scope-read"
               defaultChecked
+              aria-invalid={!!error?.fields?.scopes}
               className="mt-0.5 accent-trade-accent"
             />
             <div>
@@ -259,6 +267,7 @@ function CreateKeyForm({
             <input
               type="checkbox"
               name="scope-write"
+              aria-invalid={!!error?.fields?.scopes}
               className="mt-0.5 accent-trade-accent"
             />
             <div>
@@ -273,7 +282,11 @@ function CreateKeyForm({
           </label>
         </div>
         {error?.fields?.scopes && (
-          <p role="alert" className="mt-1 text-[11px] text-red-500">
+          <p
+            id="api-key-scopes-error"
+            role="alert"
+            className="mt-1 text-[11px] text-red-500"
+          >
             {error.fields.scopes.join(", ")}
           </p>
         )}
