@@ -24,6 +24,7 @@ import Link from "next/link";
 import { ListSkeleton } from "../_components/Skeletons";
 import { humanizeEnum, tradeStatusLabel } from "@/lib/trade/format";
 import { EmptyStateRich } from "../_components/EmptyStateRich";
+import { Term } from "../_components/Term";
 import {
   Search,
   Plus,
@@ -227,8 +228,8 @@ export default function OperationsListPage() {
       <p className="mt-8 max-w-3xl text-[11px] leading-relaxed text-trade-text-muted">
         Trade-Operations sind Decision-Support, kein Auto-Pilot. Status-
         Übergänge LICENSED → EXECUTED erfordern menschliche Bestätigung durch
-        qualifizierten AV. Verstöße gegen AWG/EAR/ITAR können zu
-        Freiheitsstrafen bis 10/20 Jahren führen.
+        qualifizierten AV. Verstöße gegen <Term>AWG</Term>/<Term>EAR</Term>/
+        <Term>ITAR</Term> können zu Freiheitsstrafen bis 10/20 Jahren führen.
       </p>
     </div>
   );

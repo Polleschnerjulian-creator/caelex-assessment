@@ -227,17 +227,23 @@ Update statuses as items ship. Group by phase + impact.
 **Impact:** Mittel-Hoch (workflow clarity)
 **Files:** `OperationStepper.tsx` (NEW) + `OperationStepper.test.ts` (NEW) + `OperationLifecyclePanel.tsx` (refactored)
 
-### U-HIGH-7 — Contextual Help / Tooltips überall
+### ✅ U-HIGH-7 — Contextual Help / Inline Tooltips **(DONE — Phase 5a)**
 
-**Was:** Compliance-Jargon ohne Hilfe.
-**Fix:**
+**Shipped:**
 
-- Globaler `<Tooltip>` Component
-- Wrap technical terms ("ECCN", "FDPR", "De Minimis") mit Hover-Definition
-- Inline-Help-Icon (?) neben Form-Labels: opens popover with explanation
-  **Aufwand:** 1 Tag (template + 50+ wrappings)
-  **Impact:** Hoch (lower onboarding curve)
-  **Files:** `src/components/trade/Tooltip.tsx` (NEW) + per-place wrappings
+- ✅ Extracted the 26-term glossary out of `TradeHelpCenter.tsx` into a shared `src/lib/trade/glossary.ts` module so both surfaces (help-center side-panel + inline tooltip) consume one source-of-truth. Lookup is case-insensitive, whitespace-tolerant, with alias support ("AWG", "AWV" both resolve to the "AWG / AWV" entry).
+- ✅ New `src/app/(trade)/trade/_components/Term.tsx` — inline tooltip primitive: dotted underline + hover/focus popover with the glossary definition. Usage: `<Term>ECCN</Term>`. Falls back to plain text when the term isn't in the glossary (no noise on typos / new acronyms).
+- ✅ Accessibility: trigger is `<span tabindex=0 role=button aria-describedby=…>`, tooltip itself has `role="tooltip"`, Esc closes when focused, hover AND focus both open.
+- ✅ Wired into two high-traffic disclaimer paragraphs:
+  - `parties/page.tsx` — wraps **OFAC** in the mandatory-disclaimer copy
+  - `operations/page.tsx` — wraps **AWG**, **EAR**, **ITAR** in the Freiheitsstrafen-disclaimer
+- ✅ 10 vitest tests for `lookupTerm` + glossary integrity (case/whitespace tolerance, alias resolution, no-duplicates, coverage of must-have high-traffic terms).
+
+**Deferred:** 50+ further wrappings across the codebase — the primitive is in place and trivial to extend per page over time. Inline-help-icon next to form labels (popovers with explanations) — separate sprint.
+
+**Aufwand:** ~2.5h ✅ (vs. 1 Tag estimate)
+**Impact:** Hoch (lower onboarding curve) — every "AWG"/"EAR"/"ITAR" mention now reveals its meaning on hover, no jump-out-of-context required
+**Files:** `glossary.ts` (NEW) + `glossary.test.ts` (NEW) + `Term.tsx` (NEW) + `TradeHelpCenter.tsx` (refactor) + 2 list-page disclaimers
 
 ### ✅ U-HIGH-8 + ✅ U-LOW-4 — In-app Help Center side-panel **(DONE — Phase 4b)**
 

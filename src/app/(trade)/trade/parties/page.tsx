@@ -25,6 +25,7 @@ import Link from "next/link";
 import { ListSkeleton } from "../_components/Skeletons";
 import { tradeStatusLabel } from "@/lib/trade/format";
 import { EmptyStateRich } from "../_components/EmptyStateRich";
+import { Term } from "../_components/Term";
 import {
   Search,
   Plus,
@@ -196,8 +197,9 @@ export default function CounterpartiesListPage() {
       <p className="mt-8 max-w-3xl text-[11px] leading-relaxed text-trade-text-muted">
         Sanctions-Screening ist ein Werkzeug zur Decision-Support, kein Counsel.
         Treffer erfordern menschliche Triage durch qualifizierten AV. Verstöße
-        gegen OFAC/EU-Sanktionen können zu zivilrechtlichen Bußen bis $1.5 Mio.
-        pro Vorgang (US) bzw. Freiheitsstrafen bis 10 Jahre (DE) führen.
+        gegen <Term>OFAC</Term>/EU-Sanktionen können zu zivilrechtlichen Bußen
+        bis $1.5 Mio. pro Vorgang (US) bzw. Freiheitsstrafen bis 10 Jahre (DE)
+        führen.
       </p>
     </div>
   );
