@@ -339,7 +339,10 @@ function DraftsList({ drafts, onSelect }: DraftsListProps) {
   if (drafts.length === 0) {
     return (
       <section className="rounded-xl border border-trade-border-subtle bg-trade-bg-elevated px-5 py-12 text-center">
-        <FileText className="mx-auto mb-3 h-7 w-7 text-trade-text-muted" />
+        <FileText
+          aria-hidden="true"
+          className="mx-auto mb-3 h-7 w-7 text-trade-text-muted"
+        />
         <h3 className="mb-1 text-[14.5px] font-semibold text-trade-text-primary">
           No drafts yet
         </h3>

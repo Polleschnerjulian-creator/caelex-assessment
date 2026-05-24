@@ -34,7 +34,7 @@ export function TradeShell({ org, children }: Props) {
     <div
       data-caelex-theme="dark"
       data-trade-theme="dark"
-      lang="de"
+      lang="en"
       className="trade-themed dark comply-dark-canvas flex min-h-screen w-screen overflow-hidden text-white"
       style={{
         fontFamily:

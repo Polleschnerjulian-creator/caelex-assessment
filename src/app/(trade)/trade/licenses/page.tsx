@@ -473,6 +473,7 @@ function EmptyState({ onNew }: { onNew: () => void }) {
   return (
     <div className="rounded-md border border-trade-border-subtle bg-trade-bg-elevated px-8 py-12 text-center">
       <FileCheck
+        aria-hidden="true"
         className="mx-auto mb-3 h-8 w-8 text-trade-text-muted"
         strokeWidth={1.5}
       />

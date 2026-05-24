@@ -319,7 +319,10 @@ function ItemRow({ item }: { item: TradeItemSummary }) {
 function EmptyState({ onNew }: { onNew: () => void }) {
   return (
     <div className="py-16 text-center">
-      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-trade-accent-soft text-trade-accent-strong">
+      <div
+        aria-hidden="true"
+        className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-trade-accent-soft text-trade-accent-strong"
+      >
         <ScanSearch className="h-6 w-6" strokeWidth={1.5} />
       </div>
       <h3 className="mb-1.5 text-[15px] font-semibold text-trade-text-primary">

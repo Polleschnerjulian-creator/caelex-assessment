@@ -450,7 +450,10 @@ export default async function TradeDashboardPage() {
       )}
 
       {/* Footer disclaimer */}
-      <p className="mt-10 max-w-3xl text-[11px] leading-relaxed text-trade-text-muted">
+      <p
+        lang="de"
+        className="mt-10 max-w-3xl text-[11px] leading-relaxed text-trade-text-muted"
+      >
         Caelex Trade ist ein Decision-Support-Werkzeug für Export-Compliance —
         kein Counsel. Jede Klassifizierungs-, Screening- oder Lizenz-
         Entscheidung ist von einem qualifizierten Ausfuhrverantwortlichen zu
