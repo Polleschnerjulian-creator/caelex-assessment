@@ -216,9 +216,15 @@ function CreateKeyForm({
               ? "border-red-500 focus:border-red-500"
               : "border-trade-border-subtle focus:border-trade-accent"
           }`}
+          aria-invalid={!!error?.fields?.name}
+          aria-describedby={error?.fields?.name ? "key-name-error" : undefined}
         />
         {error?.fields?.name && (
-          <p className="mt-1 text-[11px] text-red-500">
+          <p
+            id="key-name-error"
+            role="alert"
+            className="mt-1 text-[11px] text-red-500"
+          >
             {error.fields.name.join(", ")}
           </p>
         )}
@@ -264,7 +270,7 @@ function CreateKeyForm({
           </label>
         </div>
         {error?.fields?.scopes && (
-          <p className="mt-1 text-[11px] text-red-500">
+          <p role="alert" className="mt-1 text-[11px] text-red-500">
             {error.fields.scopes.join(", ")}
           </p>
         )}

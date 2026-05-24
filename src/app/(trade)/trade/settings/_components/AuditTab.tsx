@@ -166,10 +166,19 @@ export function AuditTab({ preferences }: Props) {
               feedback?.kind === "error" &&
               !!feedback.fields?.auditRetentionYears
             }
+            aria-describedby={
+              feedback?.kind === "error" && feedback.fields?.auditRetentionYears
+                ? "auditRetentionYears-error"
+                : undefined
+            }
           />
           {feedback?.kind === "error" &&
             feedback.fields?.auditRetentionYears && (
-              <p className="mt-1 text-[11px] text-red-500">
+              <p
+                id="auditRetentionYears-error"
+                role="alert"
+                className="mt-1 text-[11px] text-red-500"
+              >
                 {feedback.fields.auditRetentionYears.join(", ")}
               </p>
             )}

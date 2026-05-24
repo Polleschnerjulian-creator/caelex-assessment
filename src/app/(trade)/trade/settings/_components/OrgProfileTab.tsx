@@ -268,9 +268,16 @@ function Field({
             : "border-trade-border-subtle focus:border-trade-accent"
         }`}
         aria-invalid={!!error}
+        aria-describedby={error ? `${name}-error` : undefined}
       />
       {error && (
-        <p className="mt-1 text-[11px] text-red-500">{error.join(", ")}</p>
+        <p
+          id={`${name}-error`}
+          role="alert"
+          className="mt-1 text-[11px] text-red-500"
+        >
+          {error.join(", ")}
+        </p>
       )}
     </div>
   );
