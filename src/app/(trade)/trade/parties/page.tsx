@@ -22,6 +22,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { ListSkeleton } from "../_components/Skeletons";
 import {
   Search,
   Plus,
@@ -176,14 +177,7 @@ export default function CounterpartiesListPage() {
 
       {/* List */}
       {loading ? (
-        <div
-          role="status"
-          aria-live="polite"
-          aria-busy="true"
-          className="rounded-md border border-trade-border-subtle bg-trade-bg-elevated px-8 py-12 text-center text-[13px] text-trade-text-secondary"
-        >
-          Loading counterparties…
-        </div>
+        <ListSkeleton rows={5} label="Loading counterparties" />
       ) : parties.length === 0 ? (
         <EmptyState onNew={() => setShowNewForm(true)} />
       ) : (

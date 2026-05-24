@@ -42,6 +42,9 @@ interface NavItem {
   href: string;
   label: string;
   icon: LucideIcon;
+  /** Hover-tooltip explainer for compliance jargon — surfaced via
+   *  `title` attr + hover-tooltip for new users. */
+  tooltip?: string;
   match?: (pathname: string) => boolean;
 }
 
@@ -54,12 +57,19 @@ const SECTIONS: ReadonlyArray<NavSection> = [
   {
     label: "Today",
     items: [
-      { href: "/trade", label: "Overview", icon: Inbox },
+      {
+        href: "/trade",
+        label: "Overview",
+        icon: Inbox,
+        tooltip: "Daily workspace snapshot — KPIs, action inbox, deadlines.",
+      },
       {
         href: "/trade/astra",
         label: "Astra Trade",
         icon: Sparkles,
         match: (p) => p.startsWith("/trade/astra"),
+        tooltip:
+          "AI assistant for export-compliance. Ask classification, screening, license-determination questions in natural language.",
       },
     ],
   },
@@ -71,12 +81,16 @@ const SECTIONS: ReadonlyArray<NavSection> = [
         label: "Items",
         icon: Package,
         match: (p) => p.startsWith("/trade/items"),
+        tooltip:
+          "Trade items (BoM lines) with multi-jurisdiction classification (ECCN / USML / EU Annex I / etc.).",
       },
       {
         href: "/trade/parties",
         label: "Counterparties",
         icon: Users,
         match: (p) => p.startsWith("/trade/parties"),
+        tooltip:
+          "Customers, suppliers, partners. Screened against OFAC SDN, BIS Entity, DDTC Debarred, UK OFSI, UN Consolidated.",
       },
     ],
   },
@@ -88,18 +102,24 @@ const SECTIONS: ReadonlyArray<NavSection> = [
         label: "Pipeline",
         icon: Workflow,
         match: (p) => p.startsWith("/trade/operations"),
+        tooltip:
+          "Atomic shipment lifecycle: Items × Counterparty × Route × License. DRAFT → SCREENING → LICENSED → EXECUTED.",
       },
       {
         href: "/trade/licenses",
         label: "Licenses",
         icon: FileCheck,
         match: (p) => p.startsWith("/trade/licenses"),
+        tooltip:
+          "Active BAFA, BIS, DDTC, EU general authorisations with draw-down tracking + expiry warnings.",
       },
       {
         href: "/trade/classify",
         label: "Classify (AI)",
         icon: ScanSearch,
         match: (p) => p.startsWith("/trade/classify"),
+        tooltip:
+          "Upload a datasheet/PDF — Astra extracts technical attributes + suggests ECCN/USML classification.",
       },
     ],
   },
@@ -111,48 +131,64 @@ const SECTIONS: ReadonlyArray<NavSection> = [
         label: "End-Use Certificates",
         icon: FileSignature,
         match: (p) => p.startsWith("/trade/euc"),
+        tooltip:
+          "End-Use Certificates (EUCs) confirm end-user + end-use for restricted items. Required under § 17 AWV, 15 CFR § 748.10, EU Annex IV.",
       },
       {
         href: "/trade/reexport-consents",
         label: "Re-Export Consents",
         icon: FileSignature,
         match: (p) => p.startsWith("/trade/reexport-consents"),
+        tooltip:
+          "Authorisations from the original exporter allowing onward re-export to a new destination. Required under § 17 AWV + 15 CFR § 734.16.",
       },
       {
         href: "/trade/vsd",
         label: "Self-Disclosures",
         icon: AlertOctagon,
         match: (p) => p.startsWith("/trade/vsd"),
+        tooltip:
+          "Voluntary Self-Disclosures (VSDs) to OFAC / BIS / DDTC / BAFA when a potential violation is discovered. Time-sensitive (60–180 day windows).",
       },
       {
         href: "/trade/sammelgenehmigungen",
         label: "Sammelgenehmigungen",
         icon: Layers,
         match: (p) => p.startsWith("/trade/sammelgenehmigungen"),
+        tooltip:
+          "German BAFA collective export authorisations (AGG / AGE) covering multiple shipments under one approval. Volume-cap + draw-down tracked.",
       },
       {
         href: "/trade/france-los",
         label: "France LOS",
         icon: Rocket,
         match: (p) => p.startsWith("/trade/france-los"),
+        tooltip:
+          "France LOS (Loi sur les Opérations Spatiales) authorisations — casualty-risk ≤1×10⁻⁴ regime for French space launches/operations.",
       },
       {
         href: "/trade/uk-ecju",
         label: "UK ECJU",
         icon: FileCheck,
         match: (p) => p.startsWith("/trade/uk-ecju"),
+        tooltip:
+          "UK ECJU export licences: SIEL, OIEL, OGEL, SIEL-TC, OITCL — for dual-use + military exports from the UK.",
       },
       {
         href: "/trade/faa-ast",
         label: "FAA AST",
         icon: Rocket,
         match: (p) => p.startsWith("/trade/faa-ast"),
+        tooltip:
+          "FAA AST (14 CFR Part 450) commercial space launch + reentry licences. ULP-tolerance Ec calculator inside.",
       },
       {
         href: "/trade/deemed-exports",
         label: "Deemed Exports",
         icon: UserCog,
         match: (p) => p.startsWith("/trade/deemed-exports"),
+        tooltip:
+          "Release of controlled technology to foreign nationals INSIDE the US/EU is treated as an export. Tracks foreign-national access authorisations.",
       },
     ],
   },
@@ -164,18 +200,23 @@ const FOOTER_ITEMS: ReadonlyArray<NavItem> = [
     label: "Compliance Program",
     icon: ShieldCheck,
     match: (p) => p.startsWith("/trade/program"),
+    tooltip:
+      "Internal Compliance Program (ICP) documentation: org structure, training, screening, recordkeeping, audit.",
   },
   {
     href: "/trade/research/training-corpus",
     label: "Training Corpus",
     icon: BookOpen,
     match: (p) => p.startsWith("/trade/research"),
+    tooltip:
+      "Curated BAFA AzG + DDTC CJ precedents — searchable knowledge base for classification reasoning.",
   },
   {
     href: "/trade/settings",
     label: "Settings",
     icon: Settings,
     match: (p) => p.startsWith("/trade/settings"),
+    tooltip: "Workspace settings, notifications, API keys, audit retention.",
   },
 ];
 
@@ -315,6 +356,7 @@ function SidebarRow({ item, active }: SidebarRowProps) {
     <Link
       href={item.href}
       prefetch={true}
+      title={item.tooltip ?? item.label}
       className="group flex items-center gap-3 rounded-md px-2.5 py-1.5 transition-colors duration-150"
       style={{
         background: active ? "rgba(255, 255, 255, 0.07)" : "transparent",
