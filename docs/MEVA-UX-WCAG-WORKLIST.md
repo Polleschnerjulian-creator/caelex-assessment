@@ -303,12 +303,15 @@ Combined both items into one panel because they answer the same operator questio
 **Aufwand:** 1 Tag
 **Files:** Each detail page + new `HistoryPanel.tsx`
 
-### U-MED-4 — Print/Export für Audits
+### ✅ U-MED-4 — Print/Export für Audits **(DONE — Phase 6c MVP)**
 
-**Was:** No "Export as PDF" / "Generate Audit Pack" buttons.
-**Fix:** "Export PDF" auf List pages + "Generate Audit Pack" on dashboards.
-**Aufwand:** 1.5 Tage
-**Files:** Reuse existing PDF generator + per-page buttons
+**Shipped:** Print-friendly CSS in `globals.css` under `@media print` — Cmd+P / Ctrl+P now produces a usable PDF/paper output from any Trade list page without any per-page Print button. Chrome (sidebar, mobile drawer, command palette, help center, bulk-actions bar, skip-link) is hidden; the trade-themed body switches to white background + black text for ink economy; status-pill rings render as thin borders so they stay distinguishable on grayscale prints.
+
+**Deferred:** Multi-page "Audit Pack" PDF generation (would reuse the existing @react-pdf/renderer infrastructure — separate sprint).
+
+**Aufwand:** ~15min ✅ (vs. 1.5 Tage estimate — browser print + CSS is the right MVP, no buttons needed)
+**Impact:** Hoch — operators can print/PDF any list or detail page directly for audit binders
+**Files:** `src/app/globals.css`
 
 ### ✅ U-MED-5 — Card visual priority + status-tinted alerts **(DONE — Phase 3c)**
 

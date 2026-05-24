@@ -4976,6 +4976,51 @@ html[data-trade-density="compact"] .trade-themed [class*="py-4"] {
   padding-bottom: 0.6rem;
 }
 
+/* U-MED-4 MVP — Print-friendly Trade pages. Cmd+P / Ctrl+P now produces
+   a usable PDF / paper output: chrome (sidebar, mobile nav, command
+   palette, help center, toast container, action inbox toggle, bulk-
+   actions bar) is hidden; body switches to light background + dark
+   text for ink economy + readability. Each list page's content area
+   prints with its existing layout. */
+@media print {
+  /* Hide all trade chrome that isn't part of the printed record. */
+  .trade-themed aside[aria-label="Trade navigation"],
+  .trade-themed aside[aria-label="Trade navigation (mobile)"],
+  .trade-themed [role="dialog"],
+  .trade-themed [role="toolbar"][aria-label*="Bulk actions"],
+  .trade-themed button[aria-label="Open navigation"],
+  .trade-themed button[aria-label="Close navigation"],
+  .trade-themed a[href="#main-content"] {
+    display: none !important;
+  }
+
+  /* Force light page background + dark text for paper. */
+  .trade-themed {
+    background: #ffffff !important;
+    color: #0a0a0a !important;
+  }
+
+  /* Make sure hover/transition rules don't bleed into print. */
+  .trade-themed *,
+  .trade-themed *::before,
+  .trade-themed *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  /* Expand the main content area to full width (sidebar is hidden). */
+  .trade-themed main {
+    margin-left: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Status pills + code chips: keep their colour but switch to a
+     thin border so they're still distinguishable on grayscale prints. */
+  .trade-themed [class*="ring-1"] {
+    box-shadow: 0 0 0 1px #cbd5e1 !important;
+  }
+}
+
 /* WCAG 2.2 AA Hot-Fix — mirror of Atlas's Phase-A fix.
    The global `.dark h1..h6` rule (defined ~line 1365 of this file)
    has specificity (0,1,1) and forces headings to white in any
