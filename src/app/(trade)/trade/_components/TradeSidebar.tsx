@@ -37,6 +37,7 @@ import {
   BookOpen,
   type LucideIcon,
 } from "lucide-react";
+import type { SidebarBadgeCounts } from "@/lib/trade/sidebar-badge-counts.server";
 
 interface NavItem {
   href: string;
@@ -46,6 +47,10 @@ interface NavItem {
    *  `title` attr + hover-tooltip for new users. */
   tooltip?: string;
   match?: (pathname: string) => boolean;
+  /** Key into SidebarBadgeCounts — when > 0 we render a pill next to
+   *  the label so operators see "you have 3 things to look at" without
+   *  clicking through. */
+  badgeKey?: keyof SidebarBadgeCounts;
 }
 
 interface NavSection {
@@ -91,6 +96,7 @@ const SECTIONS: ReadonlyArray<NavSection> = [
         match: (p) => p.startsWith("/trade/parties"),
         tooltip:
           "Customers, suppliers, partners. Screened against OFAC SDN, BIS Entity, DDTC Debarred, UK OFSI, UN Consolidated.",
+        badgeKey: "partiesNeedingReview",
       },
     ],
   },
@@ -104,6 +110,7 @@ const SECTIONS: ReadonlyArray<NavSection> = [
         match: (p) => p.startsWith("/trade/operations"),
         tooltip:
           "Atomic shipment lifecycle: Items × Counterparty × Route × License. DRAFT → SCREENING → LICENSED → EXECUTED.",
+        badgeKey: "operationsBlocked",
       },
       {
         href: "/trade/licenses",
@@ -112,6 +119,7 @@ const SECTIONS: ReadonlyArray<NavSection> = [
         match: (p) => p.startsWith("/trade/licenses"),
         tooltip:
           "Active BAFA, BIS, DDTC, EU general authorisations with draw-down tracking + expiry warnings.",
+        badgeKey: "licensesExpiringSoon",
       },
       {
         href: "/trade/classify",
@@ -133,6 +141,7 @@ const SECTIONS: ReadonlyArray<NavSection> = [
         match: (p) => p.startsWith("/trade/euc"),
         tooltip:
           "End-Use Certificates (EUCs) confirm end-user + end-use for restricted items. Required under § 17 AWV, 15 CFR § 748.10, EU Annex IV.",
+        badgeKey: "eucAwaitingAction",
       },
       {
         href: "/trade/reexport-consents",
@@ -149,6 +158,7 @@ const SECTIONS: ReadonlyArray<NavSection> = [
         match: (p) => p.startsWith("/trade/vsd"),
         tooltip:
           "Voluntary Self-Disclosures (VSDs) to OFAC / BIS / DDTC / BAFA when a potential violation is discovered. Time-sensitive (60–180 day windows).",
+        badgeKey: "vsdOpen",
       },
       {
         href: "/trade/sammelgenehmigungen",
@@ -231,9 +241,12 @@ interface Props {
     id: string;
     name: string;
   };
+  /** Per-org "needs attention" counts. Optional — sidebar renders
+   *  cleanly without badges if not provided (e.g. legacy tests). */
+  badgeCounts?: SidebarBadgeCounts;
 }
 
-export function TradeSidebar({ org }: Props) {
+export function TradeSidebar({ org, badgeCounts }: Props) {
   const pathname = usePathname();
 
   // Match V2Sidebar font stack — Inter + Apple system fallback.
@@ -286,6 +299,7 @@ export function TradeSidebar({ org }: Props) {
             label={section.label}
             items={section.items}
             pathname={pathname}
+            badgeCounts={badgeCounts}
             className={idx === 0 ? "" : "mt-5"}
           />
         ))}
@@ -301,6 +315,7 @@ export function TradeSidebar({ org }: Props) {
             key={item.href}
             item={item}
             active={isItemActive(item, pathname)}
+            badgeCounts={badgeCounts}
           />
         ))}
       </div>
@@ -312,6 +327,7 @@ interface SidebarSectionProps {
   label: string;
   items: ReadonlyArray<NavItem>;
   pathname: string;
+  badgeCounts?: SidebarBadgeCounts;
   className?: string;
 }
 
@@ -319,6 +335,7 @@ function SidebarSection({
   label,
   items,
   pathname,
+  badgeCounts,
   className = "",
 }: SidebarSectionProps) {
   return (
@@ -337,7 +354,11 @@ function SidebarSection({
       <ul className="flex flex-col gap-0.5">
         {items.map((item) => (
           <li key={item.href}>
-            <SidebarRow item={item} active={isItemActive(item, pathname)} />
+            <SidebarRow
+              item={item}
+              active={isItemActive(item, pathname)}
+              badgeCounts={badgeCounts}
+            />
           </li>
         ))}
       </ul>
@@ -348,15 +369,32 @@ function SidebarSection({
 interface SidebarRowProps {
   item: NavItem;
   active: boolean;
+  badgeCounts?: SidebarBadgeCounts;
 }
 
-function SidebarRow({ item, active }: SidebarRowProps) {
+function SidebarRow({ item, active, badgeCounts }: SidebarRowProps) {
   const Icon = item.icon;
+  // Resolve the per-item attention count from the parent map, if any.
+  // `> 0` gate keeps the chrome quiet when there's nothing to do — empty
+  // badges create visual noise that desensitises operators to real alerts.
+  const badgeRaw =
+    item.badgeKey && badgeCounts ? badgeCounts[item.badgeKey] : 0;
+  const showBadge = badgeRaw > 0;
+  // Cap visual width at 99+ so the pill doesn't stretch the row. 99 is the
+  // conventional rollover point (Gmail, Slack, Linear all use it).
+  const badgeText = badgeRaw > 99 ? "99+" : String(badgeRaw);
+  // Augmented a11y label: "Counterparties (3 need review)" instead of just
+  // "Counterparties" — VoiceOver reads the full intent without sighted users
+  // having to translate "3" against the section context.
+  const ariaLabel = showBadge
+    ? `${item.label} (${badgeRaw} ${badgeKeyLabel(item.badgeKey)})`
+    : undefined;
   return (
     <Link
       href={item.href}
       prefetch={true}
       title={item.tooltip ?? item.label}
+      aria-label={ariaLabel}
       className="group flex items-center gap-3 rounded-md px-2.5 py-1.5 transition-colors duration-150"
       style={{
         background: active ? "rgba(255, 255, 255, 0.07)" : "transparent",
@@ -379,6 +417,37 @@ function SidebarRow({ item, active }: SidebarRowProps) {
         }}
       />
       <span className="flex-1 truncate">{item.label}</span>
+      {showBadge ? (
+        <span
+          aria-hidden="true"
+          className="ml-auto inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1.5 text-[10px] font-semibold tabular-nums"
+          style={{
+            background: "rgba(255, 255, 255, 0.10)",
+            color: "rgba(255, 255, 255, 0.92)",
+            letterSpacing: "0",
+          }}
+        >
+          {badgeText}
+        </span>
+      ) : null}
     </Link>
   );
+}
+
+/** Short human suffix for the row's aria-label, e.g. "need review". */
+function badgeKeyLabel(key: keyof SidebarBadgeCounts | undefined): string {
+  switch (key) {
+    case "partiesNeedingReview":
+      return "need screening review";
+    case "operationsBlocked":
+      return "blocked";
+    case "licensesExpiringSoon":
+      return "expiring within 14 days";
+    case "eucAwaitingAction":
+      return "awaiting action";
+    case "vsdOpen":
+      return "open self-disclosures";
+    default:
+      return "items";
+  }
 }

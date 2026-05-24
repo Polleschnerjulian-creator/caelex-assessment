@@ -3,6 +3,10 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isSuperAdmin } from "@/lib/super-admin";
 import { hasProductAccess } from "@/lib/products";
+import {
+  getSidebarBadgeCounts,
+  EMPTY_BADGE_COUNTS,
+} from "@/lib/trade/sidebar-badge-counts.server";
 import { TradeShell } from "./_components/TradeShell";
 import { TradeThemeProvider } from "./_components/TradeThemeProvider";
 
@@ -67,10 +71,16 @@ export default async function TradeLayout({
       id: "super-admin-no-org",
       name: "Super-Admin (no org yet)",
     };
+    // Super-admin viewing real org → fetch real counts. Stub org → zeros.
+    const badgeCounts = anyOrg
+      ? await getSidebarBadgeCounts(org.id)
+      : EMPTY_BADGE_COUNTS;
     return (
       <TradeThemeProvider>
         <script dangerouslySetInnerHTML={{ __html: flashGuardScript }} />
-        <TradeShell org={org}>{children}</TradeShell>
+        <TradeShell org={org} badgeCounts={badgeCounts}>
+          {children}
+        </TradeShell>
       </TradeThemeProvider>
     );
   }
@@ -100,10 +110,14 @@ export default async function TradeLayout({
     redirect("/trade-no-access?reason=no-subscription");
   }
 
+  const badgeCounts = await getSidebarBadgeCounts(membership.organization.id);
+
   return (
     <TradeThemeProvider>
       <script dangerouslySetInnerHTML={{ __html: flashGuardScript }} />
-      <TradeShell org={membership.organization}>{children}</TradeShell>
+      <TradeShell org={membership.organization} badgeCounts={badgeCounts}>
+        {children}
+      </TradeShell>
     </TradeThemeProvider>
   );
 }

@@ -38,6 +38,8 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
+import { humanizeEnum } from "@/lib/trade/format";
+import { ListSkeleton } from "../_components/Skeletons";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -449,22 +451,21 @@ export default function TradeItemsPage() {
           <button
             key={s}
             onClick={() => setStatusFilter(s)}
+            aria-pressed={statusFilter === s}
             className={`rounded-md px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] transition ${
               statusFilter === s
                 ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
                 : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
             }`}
           >
-            {s || "All"}
+            {s ? humanizeEnum(s) : "All"}
           </button>
         ))}
       </div>
 
       {/* Content */}
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-6 w-6 animate-spin text-trade-text-muted" />
-        </div>
+        <ListSkeleton rows={5} label="Loading trade items" />
       ) : error ? (
         <div className="flex items-center gap-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 dark:border-red-500/30 dark:bg-red-500/10">
           <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-300" />

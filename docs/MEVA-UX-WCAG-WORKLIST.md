@@ -10,13 +10,13 @@ Update statuses as items ship. Group by phase + impact.
 
 ## 📊 Status Dashboard
 
-| Stream                                     | % done | Last bump                 |
-| ------------------------------------------ | ------ | ------------------------- |
-| **WCAG 2.2 AA**                            | ~97%   | Batch 3 (commit 8299b906) |
-| **UX — Quick wins**                        | 0%     | not started               |
-| **UX — Phase A (Power-User basics)**       | 0%     | not started               |
-| **UX — Phase B (Onboarding + Bulk)**       | 0%     | not started               |
-| **UX — Phase C (Strategic deep features)** | 0%     | not started               |
+| Stream                                     | % done | Last bump                                      |
+| ------------------------------------------ | ------ | ---------------------------------------------- |
+| **WCAG 2.2 AA**                            | ~97%   | Batch 3 (commit 8299b906)                      |
+| **UX — Quick wins**                        | ~40%   | Phase 2 — U-CRIT-1 humanizer + U-HIGH-3 badges |
+| **UX — Phase A (Power-User basics)**       | 0%     | not started                                    |
+| **UX — Phase B (Onboarding + Bulk)**       | 0%     | not started                                    |
+| **UX — Phase C (Strategic deep features)** | 0%     | not started                                    |
 
 ---
 
@@ -56,13 +56,18 @@ Update statuses as items ship. Group by phase + impact.
 
 ## 🔴 KRITISCH — UX Blocker (blockt Daily Work)
 
-### U-CRIT-1 — Enum-Humanizer
+### ✅ U-CRIT-1 — Enum-Humanizer **(DONE — Phase 2)**
 
 **Was:** Status-Strings wie `REQUIRES_REVIEW`, `AWAITING_CLASSIFICATION`, `POTENTIAL_MATCH` werden roh angezeigt.
-**Fix:** Util `humanizeStatus(s: string)` → "Requires Review" / "Awaiting Classification" / etc. Touch all chip/badge renderers (~15 places).
-**Aufwand:** 1h
-**Impact:** Hoch (sofort sichtbar)
-**Files:** `src/lib/trade/format.ts` (NEW) + grep für `STATUS|status\.toUpperCase` in Trade tree
+**Fix:** Util `humanizeEnum(s)` + `tradeStatusLabel(s)` mit PRESERVE_UPPER für Compliance-Acronyms (ITAR/EAR/BAFA/etc.). Wired in:
+
+- `items/page.tsx` — Status-Filter-Pills jetzt humanized (`REQUIRES_REVIEW` → "Requires Review"); auch von `Loader2` → `ListSkeleton`
+- `operations/page.tsx` — Operation-Type-Pill humanized; StatusBadge mit aria-label + title für screen-reader-friendly Full-Label statt Abkürzung
+- `parties/page.tsx` — ScreeningBadge (icon-only) bekommt aria-label + title-tooltip via `<span title>` wrapper
+- `licenses/page.tsx` — STATUS_TABS hatten schon human labels (no-op)
+  **Aufwand:** 1h ✅
+  **Files:** `src/lib/trade/format.ts` (NEW pre-Phase 2) + 4 list pages
+  **Commits:** Phase 2 batch (see git log)
 
 ### U-CRIT-2 — Onboarding Tour + Sample-Data
 
@@ -132,17 +137,22 @@ Update statuses as items ship. Group by phase + impact.
 **Impact:** Mittel-Hoch (perceived performance)
 **Files:** New `src/app/(trade)/trade/_components/Skeletons.tsx` + replace per-page loading divs
 
-### U-HIGH-3 — Notification-Badges auf Sidebar
+### ✅ U-HIGH-3 — Notification-Badges auf Sidebar **(DONE — Phase 2)**
 
 **Was:** Sidebar zeigt keine Counts pro Section.
 **Fix:**
 
-- Pending-counts neben "Counterparties (3 to screen)" / "Licenses (2 expiring)" / "VSD (1 deadline)"
-- Numbers rendered right-aligned + small + accent color
-- Server-fetched in TradeShell + passed as prop
-  **Aufwand:** 2h
-  **Impact:** Hoch (priority signal at-a-glance)
-  **Files:** `src/lib/trade/sidebar-badge-counts.server.ts` (NEW) + TradeSidebar
+- ✅ `getSidebarBadgeCounts(orgId)` aggregator (5 cohorts in parallel: parties needing review / blocked ops / licenses expiring ≤14d / EUCs awaiting action / open VSDs)
+- ✅ Layout fetches counts server-side, passes through TradeShell → TradeSidebar as serializable prop
+- ✅ Right-aligned tabular-nums pills (`rgba(255,255,255,0.10)` chip) only render when count > 0 (avoid alert-fatigue from empty badges)
+- ✅ "99+" rollover cap (Gmail/Slack/Linear convention)
+- ✅ `aria-label` augmentation per row: "Counterparties (3 need screening review)" for VoiceOver clarity
+- ✅ Super-admin "no org" sentinel short-circuits to zeros; graceful degradation if any individual cohort query throws
+- ✅ 9 vitest tests covering filters, short-circuit, parallel exec, and failure path
+
+**Aufwand:** ~1.5h (vs. 2h estimate) ✅
+**Files:** `src/lib/trade/sidebar-badge-counts.server.ts` (NEW) + `sidebar-badge-counts.test.ts` (NEW) + TradeSidebar + TradeShell + layout
+**Commits:** Phase 2 batch
 
 ### U-HIGH-4 — Better Empty-States mit CTAs
 

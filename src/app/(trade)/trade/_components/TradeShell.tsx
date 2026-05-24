@@ -18,16 +18,20 @@
 import * as React from "react";
 import { Menu, X } from "lucide-react";
 import { TradeSidebar } from "./TradeSidebar";
+import type { SidebarBadgeCounts } from "@/lib/trade/sidebar-badge-counts.server";
 
 interface Props {
   org: {
     id: string;
     name: string;
   };
+  /** Server-fetched counts for sidebar attention badges. Optional —
+   *  legacy callers/tests render without badges. */
+  badgeCounts?: SidebarBadgeCounts;
   children: React.ReactNode;
 }
 
-export function TradeShell({ org, children }: Props) {
+export function TradeShell({ org, badgeCounts, children }: Props) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
   return (
@@ -55,7 +59,7 @@ export function TradeShell({ org, children }: Props) {
         className="sticky top-0 hidden h-screen md:block"
         aria-label="Trade navigation"
       >
-        <TradeSidebar org={org} />
+        <TradeSidebar org={org} badgeCounts={badgeCounts} />
       </aside>
 
       {/* Mobile drawer — hamburger button + slide-in panel below md */}
@@ -93,7 +97,7 @@ export function TradeShell({ org, children }: Props) {
             >
               <X size={18} aria-hidden="true" />
             </button>
-            <TradeSidebar org={org} />
+            <TradeSidebar org={org} badgeCounts={badgeCounts} />
           </aside>
         </>
       ) : null}

@@ -22,6 +22,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ListSkeleton } from "../_components/Skeletons";
+import { humanizeEnum, tradeStatusLabel } from "@/lib/trade/format";
 import {
   Search,
   Plus,
@@ -258,8 +259,11 @@ function OperationRowItem({
           <span className="truncate font-mono text-[13px] font-semibold text-trade-text-primary">
             {op.reference}
           </span>
-          <span className="rounded bg-trade-bg-subtle px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-trade-text-secondary ring-1 ring-trade-border-subtle">
-            {op.operationType.replace("_", " ")}
+          <span
+            className="rounded bg-trade-bg-subtle px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-trade-text-secondary ring-1 ring-trade-border-subtle"
+            title={humanizeEnum(op.operationType)}
+          >
+            {humanizeEnum(op.operationType)}
           </span>
           {op.notificationDuty && (
             <span
@@ -385,12 +389,19 @@ function StatusBadge({ status }: { status: OperationRow["status"] }) {
   };
   const c = config[status];
   const Icon = c.icon;
+  const fullLabel = tradeStatusLabel(status);
   return (
     <div
+      role="img"
+      aria-label={`Status: ${fullLabel}`}
+      title={fullLabel}
       className={`flex h-9 w-12 shrink-0 flex-col items-center justify-center rounded-md ring-1 ring-inset ring-trade-border-subtle ${c.className}`}
     >
-      <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
-      <span className="mt-0.5 text-[8px] font-bold uppercase tracking-widest">
+      <Icon className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
+      <span
+        aria-hidden="true"
+        className="mt-0.5 text-[8px] font-bold uppercase tracking-widest"
+      >
         {c.label}
       </span>
     </div>
