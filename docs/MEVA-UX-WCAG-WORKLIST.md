@@ -15,7 +15,7 @@ Update statuses as items ship. Group by phase + impact.
 | **WCAG 2.2 AA**                            | **~99.8%** | W19 + W20 — scopes aria-describedby + lang="de" on disclaimers. Only W14 axe-cli + W15 VoiceOver manual checks remain (tooling/process). |
 | **UX — Quick wins**                        | ~95%       | Phase 4c — U-MED-7 Recently Visited sidebar section (localStorage)                                                                       |
 | **UX — Phase A (Power-User basics)**       | **100%**   | Phase 4b — U-HIGH-8 + U-LOW-4 help-center side-panel (26-term glossary + shortcuts)                                                      |
-| **UX — Phase B (Onboarding + Bulk)**       | **~60%**   | Phase 5e — U-CRIT-5 MVP bulk-select + CSV export on items page (14 tests)                                                                |
+| **UX — Phase B (Onboarding + Bulk)**       | **~80%**   | Phase 6b — U-HIGH-5 MVP multi-select status filter on items page                                                                         |
 | **UX — Phase C (Strategic deep features)** | 0%         | not started                                                                                                                              |
 
 ---
@@ -206,18 +206,24 @@ Update statuses as items ship. Group by phase + impact.
 **Impact:** Hoch (first-task completion) — every empty page now nudges 3 directions: do the obvious thing, ask Astra, or jump to a related setup page
 **Files:** New `EmptyStateRich.tsx`, modified items/parties/operations/licenses page.tsx, modified `src/components/astra/AstraChatInput.tsx`
 
-### U-HIGH-5 — Filter Combinations + Saved Views
+### ✅ U-HIGH-5 — Filter Combinations + Saved Views **(DONE — Phase 6b MVP, items page only)**
 
-**Was:** Single-select status pills + simple search.
-**Fix:**
+**Shipped:**
 
-- Multi-Select Status-Filter (cmd-click adds to selection)
-- Date-Range-Picker für created/updated
-- "Save this view" → named filter combos (e.g. "My pending reviews")
-- "Saved views" dropdown
-  **Aufwand:** 2 Tage
-  **Impact:** Hoch (Power-User efficiency)
-  **Files:** Each list page + new `FilterBar` component + DB `TradeUserView` model
+- ✅ Items page status filter converted from single-select to multi-select. State is now a `Set<TradeItemStatus>`; pills toggle in/out; "All" pill clears the set.
+- ✅ Multi-status query path: when 1 status selected, sends `?status=X` to the existing API (back-compat); when 2+ selected, fetches the page and client-filters since the existing API doesn't yet accept comma-joined status. Acceptable for the 100-row list cap; server-side multi-status filter is a future API change.
+- ✅ Visual feedback: when 2+ are selected, a "N statuses selected" hint appears next to the pills.
+- ✅ `aria-pressed` on each pill so AT users perceive the multi-toggle pattern correctly.
+
+**Deferred:**
+
+- ❌ Replicate on parties / operations / licenses (mechanical port — same hook pattern)
+- ❌ Date-range picker for created/updated
+- ❌ Saved views (named filter combos persisted to localStorage or to a new `TradeUserView` model)
+
+**Aufwand:** ~45min ✅ (vs. 2 Tage estimate)
+**Impact:** Hoch (Power-User efficiency) — operators can grab "DRAFT + REQUIRES_REVIEW" in one filter instead of switching back and forth
+**Files:** `items/page.tsx` (state + render)
 
 ### ✅ U-HIGH-6 — Workflow Stepper für Operations **(DONE — Phase 3b)**
 

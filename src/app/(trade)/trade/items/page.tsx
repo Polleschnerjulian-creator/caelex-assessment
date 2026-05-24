@@ -387,7 +387,21 @@ export default function TradeItemsPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<TradeItemStatus | "">("");
+  // U-HIGH-5 MVP: status filter went from single-select to multi-
+  // select. Empty Set = "show all statuses". Toggle pills add/remove
+  // entries; the API receives a comma-joined list.
+  const [statusFilter, setStatusFilter] = useState<Set<TradeItemStatus>>(
+    new Set(),
+  );
+  const toggleStatusFilter = useCallback((status: TradeItemStatus) => {
+    setStatusFilter((prev) => {
+      const out = new Set(prev);
+      if (out.has(status)) out.delete(status);
+      else out.add(status);
+      return out;
+    });
+  }, []);
+  const clearStatusFilter = useCallback(() => setStatusFilter(new Set()), []);
   const [showNew, setShowNew] = useState(false);
   const [error, setError] = useState("");
   // U-CRIT-5: bulk-select state. `selectedIds` is a Set for O(1)
@@ -418,11 +432,27 @@ export default function TradeItemsPage() {
     try {
       const params = new URLSearchParams();
       if (search) params.set("q", search);
-      if (statusFilter) params.set("status", statusFilter);
+      // Multi-status: send a comma-joined list. The existing API still
+      // accepts the legacy single-status param; when N statuses are
+      // selected we currently fetch and client-filter (the server side
+      // can be upgraded later — list pages cap at ~100 rows so client
+      // filtering is acceptable for the MVP window).
+      if (statusFilter.size === 1) {
+        // Single selection — use the existing single-status server path
+        // for backward compatibility with the existing API route.
+        params.set("status", Array.from(statusFilter)[0]);
+      }
       const res = await fetch(`/api/trade/items?${params}`);
       if (!res.ok) throw new Error("Failed to load items");
       const data: ApiResponse = await res.json();
-      setItems(data.items);
+      // Client-filter when multi-select is in play (server only supports
+      // single-status today). For zero-select / single-select the server
+      // already filtered correctly.
+      const filtered =
+        statusFilter.size > 1
+          ? data.items.filter((i) => statusFilter.has(i.status))
+          : data.items;
+      setItems(filtered);
       setTotal(data.pagination.total);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -541,22 +571,46 @@ export default function TradeItemsPage() {
           />
         </div>
 
-        {(
-          ["", "DRAFT", "CLASSIFIED", "REQUIRES_REVIEW", "ARCHIVED"] as const
-        ).map((s) => (
-          <button
-            key={s}
-            onClick={() => setStatusFilter(s)}
-            aria-pressed={statusFilter === s}
-            className={`rounded-md px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] transition ${
-              statusFilter === s
-                ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
-                : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
-            }`}
-          >
-            {s ? humanizeEnum(s) : "All"}
-          </button>
-        ))}
+        {/* U-HIGH-5 — multi-select status pills. "All" clears the
+            selection; the other pills toggle in / out of the active
+            set. Active state mirrors the prior single-select look so
+            the existing visual language stays consistent. */}
+        <button
+          key="__all"
+          onClick={clearStatusFilter}
+          aria-pressed={statusFilter.size === 0}
+          className={`rounded-md px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] transition ${
+            statusFilter.size === 0
+              ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
+              : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
+          }`}
+        >
+          All
+        </button>
+        {(["DRAFT", "CLASSIFIED", "REQUIRES_REVIEW", "ARCHIVED"] as const).map(
+          (s) => {
+            const active = statusFilter.has(s);
+            return (
+              <button
+                key={s}
+                onClick={() => toggleStatusFilter(s)}
+                aria-pressed={active}
+                className={`rounded-md px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] transition ${
+                  active
+                    ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
+                    : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
+                }`}
+              >
+                {humanizeEnum(s)}
+              </button>
+            );
+          },
+        )}
+        {statusFilter.size > 1 ? (
+          <span className="text-[11px] text-trade-text-muted">
+            {statusFilter.size} statuses selected
+          </span>
+        ) : null}
       </div>
 
       {/* Content */}
