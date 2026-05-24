@@ -31,8 +31,10 @@ import { useCallback, useEffect, useState } from "react";
 import { ListSkeleton } from "../_components/Skeletons";
 import { EmptyStateRich } from "../_components/EmptyStateRich";
 import { BulkActionsBar } from "../_components/BulkActionsBar";
+import { LicensePdfDrop } from "./_components/LicensePdfDrop";
 import { buildCsv, downloadCsv } from "@/lib/trade/csv-export";
 import { useToast } from "@/components/ui/Toast";
+import type { BafaBescheidExtraction } from "@/lib/trade/licenses/bafa-bescheid-types";
 import {
   Search,
   Plus,
@@ -673,6 +675,25 @@ function NewLicenseForm({
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
+  /** Pre-fill form state from a parsed BAFA-Bescheid extraction.
+   *  Only overwrites fields that the PDF actually contained — empty /
+   *  missing extraction-fields leave the existing form state alone, so
+   *  the operator can re-upload a fresh PDF on top of partially-typed
+   *  data without losing what they already entered manually. */
+  const handleExtracted = (extraction: BafaBescheidExtraction) => {
+    if (extraction.licenseType) {
+      // BafaLicenseType ⊂ LicenseType — narrowing is safe.
+      setLicenseType(extraction.licenseType as LicenseType);
+    }
+    if (extraction.licenseNumber) setLicenseNumber(extraction.licenseNumber);
+    if (extraction.issuedAt) setIssuedAt(extraction.issuedAt);
+    if (extraction.validUntil) setValidUntil(extraction.validUntil);
+    if (extraction.totalCapValue !== null) {
+      setTotalCapValue(String(extraction.totalCapValue));
+    }
+    if (extraction.capCurrency) setCapCurrency(extraction.capCurrency);
+  };
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
@@ -727,93 +748,96 @@ function NewLicenseForm({
   );
 
   return (
-    <form
-      onSubmit={submit}
-      className="mb-6 rounded-md border border-trade-border-subtle bg-trade-bg-elevated p-5"
-    >
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="sm:col-span-2">
-          <label className={labelClass}>License type *</label>
-          <select
-            value={licenseType}
-            onChange={(e) => setLicenseType(e.target.value as LicenseType)}
-            className={inputClass}
-          >
-            {Object.entries(typesByGroup).map(([group, types]) => (
-              <optgroup key={group} label={group}>
-                {types.map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className={labelClass}>License number</label>
-          <input
-            type="text"
-            value={licenseNumber}
-            onChange={(e) => setLicenseNumber(e.target.value)}
-            placeholder="e.g. 1AGG12-2026-001"
-            className={`${inputClass} font-mono`}
-          />
-        </div>
-        <div>
-          <label className={labelClass}>Issued at</label>
-          <input
-            type="date"
-            value={issuedAt}
-            onChange={(e) => setIssuedAt(e.target.value)}
-            className={inputClass}
-          />
-        </div>
-        <div>
-          <label className={labelClass}>Valid until</label>
-          <input
-            type="date"
-            value={validUntil}
-            onChange={(e) => setValidUntil(e.target.value)}
-            className={inputClass}
-          />
-        </div>
-        <div className="sm:col-span-1">
-          <label className={labelClass}>Value cap</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              min={0}
-              step="any"
-              value={totalCapValue}
-              onChange={(e) => setTotalCapValue(e.target.value)}
-              placeholder="500000"
-              className={`${inputClass} font-mono`}
-            />
+    <div className="mb-6">
+      <LicensePdfDrop onExtracted={handleExtracted} />
+      <form
+        onSubmit={submit}
+        className="rounded-md border border-trade-border-subtle bg-trade-bg-elevated p-5"
+      >
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="sm:col-span-2">
+            <label className={labelClass}>License type *</label>
+            <select
+              value={licenseType}
+              onChange={(e) => setLicenseType(e.target.value as LicenseType)}
+              className={inputClass}
+            >
+              {Object.entries(typesByGroup).map(([group, types]) => (
+                <optgroup key={group} label={group}>
+                  {types.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className={labelClass}>License number</label>
             <input
               type="text"
-              maxLength={3}
-              value={capCurrency}
-              onChange={(e) => setCapCurrency(e.target.value.toUpperCase())}
-              className={`${inputClass} w-20 font-mono uppercase`}
+              value={licenseNumber}
+              onChange={(e) => setLicenseNumber(e.target.value)}
+              placeholder="e.g. 1AGG12-2026-001"
+              className={`${inputClass} font-mono`}
             />
           </div>
+          <div>
+            <label className={labelClass}>Issued at</label>
+            <input
+              type="date"
+              value={issuedAt}
+              onChange={(e) => setIssuedAt(e.target.value)}
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Valid until</label>
+            <input
+              type="date"
+              value={validUntil}
+              onChange={(e) => setValidUntil(e.target.value)}
+              className={inputClass}
+            />
+          </div>
+          <div className="sm:col-span-1">
+            <label className={labelClass}>Value cap</label>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                min={0}
+                step="any"
+                value={totalCapValue}
+                onChange={(e) => setTotalCapValue(e.target.value)}
+                placeholder="500000"
+                className={`${inputClass} font-mono`}
+              />
+              <input
+                type="text"
+                maxLength={3}
+                value={capCurrency}
+                onChange={(e) => setCapCurrency(e.target.value.toUpperCase())}
+                className={`${inputClass} w-20 font-mono uppercase`}
+              />
+            </div>
+          </div>
         </div>
-      </div>
-      {err && (
-        <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700">
-          {err}
+        {err && (
+          <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700">
+            {err}
+          </div>
+        )}
+        <div className="mt-4 flex justify-end">
+          <button
+            type="submit"
+            disabled={submitting}
+            className="rounded-md bg-trade-accent px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-trade-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {submitting ? "Creating…" : "Create License"}
+          </button>
         </div>
-      )}
-      <div className="mt-4 flex justify-end">
-        <button
-          type="submit"
-          disabled={submitting}
-          className="rounded-md bg-trade-accent px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-trade-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {submitting ? "Creating…" : "Create License"}
-        </button>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 }
