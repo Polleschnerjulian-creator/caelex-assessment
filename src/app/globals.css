@@ -4870,10 +4870,15 @@ html[data-trade-preload="dark"] .trade-themed {
   --trade-surface-grouped-2: #1c1c1e;
 
   --trade-label: rgba(255, 255, 255, 1);
-  --trade-label-secondary: rgba(235, 235, 245, 0.6);
-  --trade-label-tertiary: rgba(235, 235, 245, 0.3);
-  --trade-label-quaternary: rgba(235, 235, 245, 0.18);
-  --trade-placeholder: rgba(235, 235, 245, 0.3);
+  /* Dark-mode label tokens — bumped from Apple defaults to meet
+     WCAG 2.2 AA (4.5:1 small-text contrast on dark surfaces).
+     Apple's stock values (0.6 / 0.3 / 0.18) fail AA on small text;
+     we bump tertiary 0.3→0.55 and quaternary 0.18→0.40 so 11-13px
+     muted labels stay readable. */
+  --trade-label-secondary: rgba(235, 235, 245, 0.78);
+  --trade-label-tertiary: rgba(235, 235, 245, 0.55);
+  --trade-label-quaternary: rgba(235, 235, 245, 0.4);
+  --trade-placeholder: rgba(235, 235, 245, 0.5);
 
   --trade-fill-1: rgba(120, 120, 128, 0.36);
   --trade-fill-2: rgba(120, 120, 128, 0.32);
@@ -5005,4 +5010,56 @@ html[data-trade-theme] .trade-themed label,
    above (text-white wins by source order). Force-override it. */
 .trade-themed[data-trade-theme="dark"] .bg-trade-accent.text-white {
   color: #0a0a0a;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   WCAG 2.2 AA hardening — global focus-visible + skip-link utility
+   inside .trade-themed. EU Accessibility Act compliance baseline.
+
+   Focus-visible: 2px solid white ring + 2px offset, rounded to match
+   most rounded targets. Targets only KEYBOARD focus (`:focus-visible`)
+   so mouse-clicks don't show the ring (Apple default). Skipped for
+   elements that explicitly opt out via `.no-focus-ring`.
+
+   sr-only / focus:not-sr-only: standard Tailwind-style screen-reader-
+   only class for skip-links. */
+.trade-themed :focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.95) !important;
+  outline-offset: 2px !important;
+  border-radius: 6px;
+}
+.trade-themed .no-focus-ring:focus-visible {
+  outline: none !important;
+}
+
+.trade-themed .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.trade-themed .focus\:not-sr-only:focus,
+.trade-themed .focus-visible\:not-sr-only:focus-visible {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  width: auto;
+  height: auto;
+  padding: 8px 16px;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  z-index: 9999;
+  background: #ffffff;
+  color: #0a0a0a;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
 }

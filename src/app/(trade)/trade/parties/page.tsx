@@ -176,7 +176,12 @@ export default function CounterpartiesListPage() {
 
       {/* List */}
       {loading ? (
-        <div className="rounded-md border border-trade-border-subtle bg-trade-bg-elevated px-8 py-12 text-center text-[13px] text-trade-text-secondary">
+        <div
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+          className="rounded-md border border-trade-border-subtle bg-trade-bg-elevated px-8 py-12 text-center text-[13px] text-trade-text-secondary"
+        >
           Loading counterparties…
         </div>
       ) : parties.length === 0 ? (

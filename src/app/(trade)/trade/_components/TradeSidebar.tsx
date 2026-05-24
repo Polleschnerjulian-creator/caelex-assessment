@@ -285,7 +285,9 @@ function SidebarSection({
       <h3
         className="mb-1 px-2.5 text-[10.5px] font-semibold uppercase"
         style={{
-          color: "rgba(255, 255, 255, 0.35)",
+          /* WCAG 2.2 AA — bumped from 0.35 to 0.62 to clear 4.5:1
+             contrast on rgb(20,20,22) sidebar at 10.5px (small text). */
+          color: "rgba(255, 255, 255, 0.62)",
           letterSpacing: "0.08em",
         }}
       >
@@ -327,10 +329,11 @@ function SidebarRow({ item, active }: SidebarRowProps) {
       <Icon
         className="h-[15px] w-[15px] shrink-0"
         strokeWidth={1.75}
+        aria-hidden="true"
         style={{
           color: active
             ? "rgba(255, 255, 255, 0.96)"
-            : "rgba(255, 255, 255, 0.55)",
+            : "rgba(255, 255, 255, 0.65)",
         }}
       />
       <span className="flex-1 truncate">{item.label}</span>
