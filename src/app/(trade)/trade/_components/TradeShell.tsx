@@ -1,29 +1,20 @@
 "use client";
 
 /**
- * Caelex Trade — App Shell — three-column layout.
+ * Caelex Trade — App Shell — matches Caelex Comply V2 chrome.
  *
- *   ┌──┬─────┬────────────────────┐
- *   │R │ Sb  │  Main content      │
- *   │a │ ide │                    │
- *   │i │ bar │                    │
- *   │l │     │                    │
- *   └──┴─────┴────────────────────┘
+ * Layout mirrors `src/components/dashboard/v2/V2Shell.tsx`:
+ *   - Dark canvas (`comply-dark-canvas` via data-caelex-theme="dark")
+ *   - Solid premium sidebar (244px, rgb(20,20,22)) with hairline edge
+ *   - Main content area on canvas, no top bar (yet)
  *
- *   - Rail (56px, dark #0A0A0A) — primary app sections (Today / Data /
- *     Operations / Documents / Astra / Settings). Caelex brand mark
- *     pinned to top.
- *   - Sidebar (240px, light --trade-surface-secondary) — shows the
- *     subsection of items for the currently-active rail section.
- *   - Main (flex, opaque --trade-surface) — page content.
- *
- * Matches the reference UI pattern (Linear / Notion / Apple Mail
- * "Mailboxes column" model).
+ * The `trade-themed` class still scopes Trade's accent tokens (indigo),
+ * but the chrome layer uses the same Caelex dark canvas + sidebar
+ * material as Comply for visual consistency across products.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { TradeRail } from "./TradeRail";
 import { TradeSidebar } from "./TradeSidebar";
 
 interface Props {
@@ -37,34 +28,21 @@ interface Props {
 export function TradeShell({ org, children }: Props) {
   return (
     <div
-      className="trade-themed flex h-screen w-screen overflow-hidden text-[color:var(--trade-label)]"
+      data-caelex-theme="dark"
+      data-trade-theme="dark"
+      className="trade-themed dark comply-dark-canvas flex min-h-screen w-screen overflow-hidden text-white"
       style={{
-        background: "var(--trade-surface)",
         fontFamily:
-          '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter Variable", "Inter", "Segoe UI Variable", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-        WebkitFontSmoothing: "antialiased",
-        MozOsxFontSmoothing: "grayscale",
+          'var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif',
       }}
     >
-      {/* Column 1 — dark icon rail */}
-      <TradeRail />
-
-      {/* Column 2 — light context sidebar */}
-      <aside
-        className="hidden w-[240px] shrink-0 overflow-hidden md:block"
-        style={{
-          background: "var(--trade-surface-secondary)",
-          borderRight: "1px solid var(--trade-separator)",
-        }}
-      >
+      {/* Sidebar — sticky dark rail, same material as Comply V2 */}
+      <aside className="sticky top-0 hidden h-screen md:block">
         <TradeSidebar org={org} />
       </aside>
 
-      {/* Column 3 — main content (opaque per Apple HIG) */}
-      <main
-        className="flex-1 overflow-y-auto"
-        style={{ background: "var(--trade-surface)" }}
-      >
+      {/* Main content area — opaque page surfaces */}
+      <main className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
         {children}
       </main>
     </div>
