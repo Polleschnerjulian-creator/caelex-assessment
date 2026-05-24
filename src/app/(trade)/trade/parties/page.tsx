@@ -24,6 +24,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { ListSkeleton } from "../_components/Skeletons";
 import { tradeStatusLabel } from "@/lib/trade/format";
+import { EmptyStateRich } from "../_components/EmptyStateRich";
 import {
   Search,
   Plus,
@@ -34,6 +35,8 @@ import {
   Globe,
   ChevronRight,
   X,
+  Package,
+  Workflow,
 } from "lucide-react";
 
 interface PartyRow {
@@ -316,26 +319,29 @@ function ScreeningBadge({ status }: { status: PartyRow["screeningStatus"] }) {
 
 function EmptyState({ onNew }: { onNew: () => void }) {
   return (
-    <div className="rounded-md border border-trade-border-subtle bg-trade-bg-elevated px-8 py-12 text-center">
-      <Shield
-        aria-hidden="true"
-        className="mx-auto mb-3 h-8 w-8 text-trade-text-muted"
-        strokeWidth={1.5}
-      />
-      <h3 className="mb-1 text-[14px] font-semibold text-trade-text-primary">
-        No counterparties yet
-      </h3>
-      <p className="mb-5 text-[12px] text-trade-text-secondary">
-        Add a counterparty to screen against OFAC, BIS Entity List, and DDTC
-        Debarred Parties.
-      </p>
-      <button
-        onClick={onNew}
-        className="inline-flex items-center gap-1.5 rounded-md bg-trade-accent px-4 py-2 text-[12px] font-semibold text-white transition hover:bg-trade-accent-strong"
-      >
-        <Plus className="h-3 w-3" /> Add first counterparty
-      </button>
-    </div>
+    <EmptyStateRich
+      icon={Shield}
+      title="No counterparties yet"
+      description="Add a counterparty to screen against OFAC SDN, BIS Entity, DDTC Debarred, UK OFSI, and UN Consolidated. Hits surface immediately with audit-grade snapshots."
+      primaryAction={{ label: "Add first counterparty", onClick: onNew }}
+      astra={{
+        label: "Ask Astra about screening",
+        prefill:
+          "How does Caelex screen counterparties? Which sanctions lists are covered, and how does the OFAC 50% Rule cascade work for beneficial owners?",
+      }}
+      secondaryActions={[
+        {
+          label: "Browse items to ship",
+          href: "/trade/items",
+          icon: Package,
+        },
+        {
+          label: "Plan an operation",
+          href: "/trade/operations",
+          icon: Workflow,
+        },
+      ]}
+    />
   );
 }
 

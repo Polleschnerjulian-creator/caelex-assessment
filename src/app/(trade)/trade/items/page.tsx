@@ -36,10 +36,12 @@ import {
   Loader2,
   Info,
   X,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import { humanizeEnum } from "@/lib/trade/format";
 import { ListSkeleton } from "../_components/Skeletons";
+import { EmptyStateRich } from "../_components/EmptyStateRich";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -317,30 +319,30 @@ function ItemRow({ item }: { item: TradeItemSummary }) {
 }
 
 // ─── Empty state ──────────────────────────────────────────────────────
+// Uses the shared EmptyStateRich so the panel offers more than a dead-
+// end "Add first item" — see U-HIGH-4 in MEVA-UX-WCAG-WORKLIST.md for
+// why this matters for first-task completion.
 
 function EmptyState({ onNew }: { onNew: () => void }) {
   return (
-    <div className="py-16 text-center">
-      <div
-        aria-hidden="true"
-        className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-trade-accent-soft text-trade-accent-strong"
-      >
-        <ScanSearch className="h-6 w-6" strokeWidth={1.5} />
-      </div>
-      <h3 className="mb-1.5 text-[15px] font-semibold text-trade-text-primary">
-        No trade items yet
-      </h3>
-      <p className="mb-5 text-[13px] text-trade-text-secondary">
-        Add your first item to start multi-jurisdiction classification.
-      </p>
-      <button
-        onClick={onNew}
-        className="inline-flex items-center gap-2 rounded-md bg-trade-accent px-4 py-2.5 text-[13px] font-semibold text-white transition hover:bg-trade-accent-strong"
-      >
-        <Plus className="h-4 w-4" />
-        New Item
-      </button>
-    </div>
+    <EmptyStateRich
+      icon={ScanSearch}
+      title="No trade items yet"
+      description="Add your first item — a component, sub-assembly, or product — and Caelex will classify it against ECCN, USML, EU Annex I, MTCR, and your national export list in one pass."
+      primaryAction={{ label: "New item", onClick: onNew }}
+      astra={{
+        label: "Ask Astra how to classify",
+        prefill:
+          "How should I classify a new trade item? Walk me through the multi-jurisdiction process — ECCN, USML, EU Annex I, MTCR, and the German Ausfuhrliste.",
+      }}
+      secondaryActions={[
+        {
+          label: "Browse counterparties",
+          href: "/trade/parties",
+          icon: Users,
+        },
+      ]}
+    />
   );
 }
 

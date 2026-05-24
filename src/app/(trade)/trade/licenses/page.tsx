@@ -29,6 +29,7 @@
 
 import { useEffect, useState } from "react";
 import { ListSkeleton } from "../_components/Skeletons";
+import { EmptyStateRich } from "../_components/EmptyStateRich";
 import {
   Search,
   Plus,
@@ -41,6 +42,7 @@ import {
   ShieldAlert,
   Clock,
   XCircle,
+  Workflow,
   type LucideIcon,
 } from "lucide-react";
 
@@ -465,26 +467,24 @@ function computeExpiryState(
 
 function EmptyState({ onNew }: { onNew: () => void }) {
   return (
-    <div className="rounded-md border border-trade-border-subtle bg-trade-bg-elevated px-8 py-12 text-center">
-      <FileCheck
-        aria-hidden="true"
-        className="mx-auto mb-3 h-8 w-8 text-trade-text-muted"
-        strokeWidth={1.5}
-      />
-      <h3 className="mb-1 text-[14px] font-semibold text-trade-text-primary">
-        No licenses recorded yet
-      </h3>
-      <p className="mb-5 text-[12px] text-trade-text-secondary">
-        Add your first BAFA, BIS or DDTC license so operations can attach it for
-        draw-down tracking.
-      </p>
-      <button
-        onClick={onNew}
-        className="inline-flex items-center gap-1.5 rounded-md bg-trade-accent px-4 py-2 text-[12px] font-semibold text-white transition hover:bg-trade-accent-strong"
-      >
-        <Plus className="h-3 w-3" /> Add first license
-      </button>
-    </div>
+    <EmptyStateRich
+      icon={FileCheck}
+      title="No licenses recorded yet"
+      description="Add your first BAFA-Bescheid, BIS license, DDTC DSP-series authorization, or EU AGG/EUGEA so operations can attach it for draw-down tracking + expiry warnings."
+      primaryAction={{ label: "Add first license", onClick: onNew }}
+      astra={{
+        label: "Ask Astra which license fits",
+        prefill:
+          "I'm exporting a controlled item. Which license should I pursue — single-shipment BAFA-Einzelgenehmigung, German AGG, BIS license, DDTC DSP-5, or an EU general authorization? Compare the options.",
+      }}
+      secondaryActions={[
+        {
+          label: "Review operations needing licenses",
+          href: "/trade/operations",
+          icon: Workflow,
+        },
+      ]}
+    />
   );
 }
 

@@ -23,6 +23,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ListSkeleton } from "../_components/Skeletons";
 import { humanizeEnum, tradeStatusLabel } from "@/lib/trade/format";
+import { EmptyStateRich } from "../_components/EmptyStateRich";
 import {
   Search,
   Plus,
@@ -37,6 +38,8 @@ import {
   Package,
   Calendar,
   ChevronRight,
+  Users,
+  FileCheck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -410,26 +413,34 @@ function StatusBadge({ status }: { status: OperationRow["status"] }) {
 
 function EmptyState({ onNew }: { onNew: () => void }) {
   return (
-    <div className="rounded-md border border-trade-border-subtle bg-trade-bg-elevated px-8 py-12 text-center">
-      <Truck
-        aria-hidden="true"
-        className="mx-auto mb-3 h-8 w-8 text-trade-text-muted"
-        strokeWidth={1.5}
-      />
-      <h3 className="mb-1 text-[14px] font-semibold text-trade-text-primary">
-        No trade operations yet
-      </h3>
-      <p className="mb-5 text-[12px] text-trade-text-secondary">
-        Create an operation to bundle items + counterparty + route + license
-        stack into one auditable delivery transaction.
-      </p>
-      <button
-        onClick={onNew}
-        className="inline-flex items-center gap-1.5 rounded-md bg-trade-accent px-4 py-2 text-[12px] font-semibold text-white transition hover:bg-trade-accent-strong"
-      >
-        <Plus className="h-3 w-3" /> Create first operation
-      </button>
-    </div>
+    <EmptyStateRich
+      icon={Truck}
+      title="No trade operations yet"
+      description="An operation bundles items × counterparty × route × license into one auditable delivery transaction. Lifecycle: DRAFT → SCREENING → LICENSED → EXECUTED."
+      primaryAction={{ label: "Create first operation", onClick: onNew }}
+      astra={{
+        label: "Ask Astra about the workflow",
+        prefill:
+          "Walk me through the full operation lifecycle. What does each stage (DRAFT, SCREENING, AWAITING_LICENSE, LICENSED, EXECUTED) actually require, and when do the AWV §8 / EU 2021/821 Art. 4/5/9/10 catch-alls fire?",
+      }}
+      secondaryActions={[
+        {
+          label: "Set up items first",
+          href: "/trade/items",
+          icon: Package,
+        },
+        {
+          label: "Add counterparties",
+          href: "/trade/parties",
+          icon: Users,
+        },
+        {
+          label: "Check licenses",
+          href: "/trade/licenses",
+          icon: FileCheck,
+        },
+      ]}
+    />
   );
 }
 

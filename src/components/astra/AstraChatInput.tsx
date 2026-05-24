@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Send } from "lucide-react";
 import { useAstra } from "./AstraProvider";
 
@@ -8,6 +9,11 @@ export default function AstraChatInput() {
   const { sendMessage, isTyping, remainingQueries } = useAstra();
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const searchParams = useSearchParams();
+  /** Gate the ?prefill= ingest so it runs exactly once per mount —
+   *  otherwise re-renders would re-apply the prefill and clobber any
+   *  edits the user has made. */
+  const prefillAppliedRef = useRef(false);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -16,6 +22,26 @@ export default function AstraChatInput() {
     el.style.height = "auto";
     el.style.height = Math.min(el.scrollHeight, 160) + "px";
   }, [input]);
+
+  // Pre-fill from `?prefill=…` deep-link (e.g. from the Trade list-page
+  // EmptyStateRich "Ask Astra: …" shortcut). We pre-fill and focus the
+  // textarea, but deliberately do NOT auto-send — the user should always
+  // get the chance to edit or cancel before submitting an AI query.
+  useEffect(() => {
+    if (prefillAppliedRef.current) return;
+    const prefill = searchParams.get("prefill");
+    if (!prefill) return;
+    prefillAppliedRef.current = true;
+    setInput(prefill);
+    // Focus on next tick so the auto-resize effect has already
+    // re-measured the textarea height.
+    setTimeout(() => {
+      textareaRef.current?.focus();
+      // Place caret at end so the user can immediately keep typing.
+      const len = prefill.length;
+      textareaRef.current?.setSelectionRange(len, len);
+    }, 0);
+  }, [searchParams]);
 
   const handleSend = useCallback(() => {
     if (!input.trim() || isTyping) return;

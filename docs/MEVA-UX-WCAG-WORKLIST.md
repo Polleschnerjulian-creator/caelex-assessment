@@ -10,13 +10,13 @@ Update statuses as items ship. Group by phase + impact.
 
 ## 📊 Status Dashboard
 
-| Stream                                     | % done | Last bump                                      |
-| ------------------------------------------ | ------ | ---------------------------------------------- |
-| **WCAG 2.2 AA**                            | ~97%   | Batch 3 (commit 8299b906)                      |
-| **UX — Quick wins**                        | ~40%   | Phase 2 — U-CRIT-1 humanizer + U-HIGH-3 badges |
-| **UX — Phase A (Power-User basics)**       | 0%     | not started                                    |
-| **UX — Phase B (Onboarding + Bulk)**       | 0%     | not started                                    |
-| **UX — Phase C (Strategic deep features)** | 0%     | not started                                    |
+| Stream                                     | % done | Last bump                                                       |
+| ------------------------------------------ | ------ | --------------------------------------------------------------- |
+| **WCAG 2.2 AA**                            | ~98%   | W18 progressbar (commit 88db0a1f)                               |
+| **UX — Quick wins**                        | ~60%   | Phase 2 + U-HIGH-4 rich empty-states + Astra ?prefill deep-link |
+| **UX — Phase A (Power-User basics)**       | ~50%   | U-HIGH-3 badges done; U-CRIT-4 palette + U-HIGH-1 inbox pending |
+| **UX — Phase B (Onboarding + Bulk)**       | 0%     | not started                                                     |
+| **UX — Phase C (Strategic deep features)** | 0%     | not started                                                     |
 
 ---
 
@@ -81,13 +81,13 @@ Update statuses as items ship. Group by phase + impact.
   **Impact:** Hoch (first-user retention)
   **Files:** New `src/lib/trade/sample-data-seeder.server.ts` + `src/app/(trade)/trade/_components/OnboardingTour.tsx`
 
-### U-CRIT-3 — Sidebar Tooltips für Jargon
+### ✅ U-CRIT-3 — Sidebar Tooltips für Jargon **(DONE — pre-Phase 2)**
 
 **Was:** "Sammelgenehmigungen", "Deemed Exports", "FAA AST", "VSD" ohne Erklärung.
-**Fix:** Hover-Tooltip mit 1-Satz-Erklärung pro Item. Optional "Learn more →" Link.
-**Aufwand:** 45min
+**Shipped:** All 15+ NavItems in `TradeSidebar.tsx` carry a 1-sentence `tooltip` field; surface via `title` attr on every `<Link>` row. Example: "Sammelgenehmigungen → German BAFA collective export authorisations (AGG / AGE) covering multiple shipments under one approval. Volume-cap + draw-down tracked."
+**Aufwand:** 45min ✅ (landed in earlier WCAG batch)
 **Impact:** Hoch (new-user comprehension)
-**Files:** `src/app/(trade)/trade/_components/TradeSidebar.tsx` — add `tooltip` field zu NavItem
+**Files:** `src/app/(trade)/trade/_components/TradeSidebar.tsx`
 
 ### U-CRIT-4 — Command Palette ⌘K
 
@@ -154,18 +154,26 @@ Update statuses as items ship. Group by phase + impact.
 **Files:** `src/lib/trade/sidebar-badge-counts.server.ts` (NEW) + `sidebar-badge-counts.test.ts` (NEW) + TradeSidebar + TradeShell + layout
 **Commits:** Phase 2 batch
 
-### U-HIGH-4 — Better Empty-States mit CTAs
+### ✅ U-HIGH-4 — Better Empty-States mit CTAs **(DONE — Phase 3a)**
 
 **Was:** "No items yet" + Button = bare minimum.
-**Fix Per Page:**
+**Shipped (this batch):**
 
-- "Quick-start example" link (creates demo entry, archivable)
-- "Import from CSV / BoM" button
-- "Watch 30-second demo" video link
-- Link to Astra: "Ask Astra: How do I classify X?"
-  **Aufwand:** 1.5h (template + 5 page implementations)
-  **Impact:** Hoch (first-task completion)
-  **Files:** New `EmptyStateRich.tsx` reusable component
+- ✅ Shared `src/app/(trade)/trade/_components/EmptyStateRich.tsx` — icon + title + description + primary CTA + Astra deep-link + arbitrary secondary actions
+- ✅ Items / Parties / Operations / Licenses pages — all 4 EmptyStates rewritten to delegate to EmptyStateRich
+- ✅ `AstraChatInput` patched to read `?prefill=` query param — pre-fills the textarea + focuses + caret-to-end, but does NOT auto-send (user can edit before submitting)
+- ✅ Per-page Astra prompts: "How do I classify a new trade item?" / "How does Caelex screen counterparties?" / "Walk me through the operation lifecycle" / "Which license should I pursue?"
+- ✅ Per-page secondary actions wire cross-entity flows: items → counterparties; parties → items + operations; operations → items + parties + licenses; licenses → operations
+
+**Deferred (not in scope for the immediate batch):**
+
+- ❌ "Quick-start example" link — needs `sample-data-seeder.server.ts` (U-CRIT-2)
+- ❌ "Import from CSV / BoM" button — needs S-2 strategic build
+- ❌ "Watch 30-second demo" video link — no demo assets yet
+
+**Aufwand:** ~1.5h ✅
+**Impact:** Hoch (first-task completion) — every empty page now nudges 3 directions: do the obvious thing, ask Astra, or jump to a related setup page
+**Files:** New `EmptyStateRich.tsx`, modified items/parties/operations/licenses page.tsx, modified `src/components/astra/AstraChatInput.tsx`
 
 ### U-HIGH-5 — Filter Combinations + Saved Views
 
