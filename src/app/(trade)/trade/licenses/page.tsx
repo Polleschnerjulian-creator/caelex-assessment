@@ -27,9 +27,12 @@
  * indirectly via Operation Detail (A3b).
  */
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ListSkeleton } from "../_components/Skeletons";
 import { EmptyStateRich } from "../_components/EmptyStateRich";
+import { BulkActionsBar } from "../_components/BulkActionsBar";
+import { buildCsv, downloadCsv } from "@/lib/trade/csv-export";
+import { useToast } from "@/components/ui/Toast";
 import {
   Search,
   Plus,
@@ -43,6 +46,7 @@ import {
   Clock,
   XCircle,
   Workflow,
+  Download,
   type LucideIcon,
 } from "lucide-react";
 
@@ -203,6 +207,59 @@ export default function LicensesPage() {
     "all",
   );
   const [showNew, setShowNew] = useState(false);
+  // U-CRIT-5 bulk-select state.
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const toast = useToast();
+  const toggleSelect = useCallback((id: string, next: boolean) => {
+    setSelectedIds((prev) => {
+      const out = new Set(prev);
+      if (next) out.add(id);
+      else out.delete(id);
+      return out;
+    });
+  }, []);
+  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds((prev) => {
+      if (prev.size === licenses.length && licenses.length > 0)
+        return new Set();
+      return new Set(licenses.map((l) => l.id));
+    });
+  }, [licenses]);
+
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [search, statusFilter]);
+
+  const handleExportSelected = () => {
+    const rows = licenses.filter((l) => selectedIds.has(l.id));
+    if (rows.length === 0) {
+      toast.warning("Nothing to export", "Select at least one license.");
+      return;
+    }
+    const csv = buildCsv(rows, [
+      { header: "ID", get: (l) => l.id },
+      { header: "License number", get: (l) => l.licenseNumber },
+      { header: "Type", get: (l) => l.licenseType },
+      { header: "Status", get: (l) => l.status },
+      { header: "Issued at", get: (l) => l.issuedAt },
+      { header: "Valid until", get: (l) => l.validUntil },
+      { header: "Drawn down", get: (l) => l.drawnDownValue },
+      { header: "Total cap", get: (l) => l.totalCapValue },
+      { header: "Cap currency", get: (l) => l.capCurrency },
+      { header: "Operations attached", get: (l) => l._count.operations },
+      { header: "Created at", get: (l) => l.createdAt },
+    ]);
+    downloadCsv("caelex-trade-licenses", csv);
+    toast.success(
+      "Export started",
+      `${rows.length} license${rows.length === 1 ? "" : "s"} downloaded as CSV.`,
+    );
+  };
+
+  const allVisibleSelected =
+    licenses.length > 0 && selectedIds.size === licenses.length;
+  const someVisibleSelected = selectedIds.size > 0 && !allVisibleSelected;
 
   useEffect(() => {
     let cancelled = false;
@@ -303,12 +360,57 @@ export default function LicensesPage() {
       ) : licenses.length === 0 ? (
         <EmptyState onNew={() => setShowNew(true)} />
       ) : (
-        <ul className="space-y-3">
-          {licenses.map((lic) => (
-            <LicenseCard key={lic.id} license={lic} />
-          ))}
-        </ul>
+        <>
+          <div className="mb-2 flex items-center gap-3 px-1 text-[11px] text-trade-text-muted">
+            <label className="flex h-10 w-10 cursor-pointer items-center justify-center">
+              <input
+                type="checkbox"
+                checked={allVisibleSelected}
+                ref={(el) => {
+                  if (el) el.indeterminate = someVisibleSelected;
+                }}
+                onChange={toggleSelectAll}
+                aria-label={
+                  allVisibleSelected
+                    ? `Deselect all ${licenses.length} licenses`
+                    : `Select all ${licenses.length} licenses`
+                }
+                className="h-4 w-4 accent-trade-accent"
+              />
+            </label>
+            <span>
+              {selectedIds.size > 0
+                ? `${selectedIds.size} of ${licenses.length} selected`
+                : `${licenses.length} license${licenses.length === 1 ? "" : "s"}`}
+            </span>
+          </div>
+          <ul className="space-y-3">
+            {licenses.map((lic) => (
+              <LicenseCard
+                key={lic.id}
+                license={lic}
+                selected={selectedIds.has(lic.id)}
+                onToggleSelect={toggleSelect}
+              />
+            ))}
+          </ul>
+        </>
       )}
+
+      <BulkActionsBar
+        count={selectedIds.size}
+        onClear={clearSelection}
+        actions={
+          <button
+            type="button"
+            onClick={handleExportSelected}
+            className="inline-flex items-center gap-1.5 rounded-full bg-trade-accent px-3 py-1 text-[12px] font-semibold text-white transition hover:bg-trade-accent-strong"
+          >
+            <Download className="h-3.5 w-3.5" aria-hidden="true" />
+            Export CSV
+          </button>
+        }
+      />
 
       <p
         lang="de"
@@ -326,7 +428,15 @@ export default function LicensesPage() {
 
 // ─── License card ─────────────────────────────────────────────────────
 
-function LicenseCard({ license }: { license: LicenseRow }) {
+function LicenseCard({
+  license,
+  selected,
+  onToggleSelect,
+}: {
+  license: LicenseRow;
+  selected?: boolean;
+  onToggleSelect?: (id: string, next: boolean) => void;
+}) {
   const typeMeta = TYPE_META[license.licenseType] ?? TYPE_META.OTHER;
   const statusMeta = STATUS_META[license.status];
   const StatusIcon = statusMeta.icon;
@@ -339,11 +449,29 @@ function LicenseCard({ license }: { license: LicenseRow }) {
 
   // Expiry classification
   const expiryState = computeExpiryState(license.validUntil);
+  const showCheckbox = !!onToggleSelect;
 
   return (
-    <li className="rounded-md border border-trade-border-subtle bg-trade-bg-panel p-4">
+    <li
+      className={`rounded-md border bg-trade-bg-panel p-4 ${
+        selected
+          ? "border-trade-accent ring-1 ring-trade-accent/30"
+          : "border-trade-border-subtle"
+      }`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-start gap-3">
+          {showCheckbox ? (
+            <label className="flex h-10 w-6 shrink-0 cursor-pointer items-center justify-center">
+              <input
+                type="checkbox"
+                checked={!!selected}
+                onChange={(e) => onToggleSelect!(license.id, e.target.checked)}
+                aria-label={`Select license ${license.licenseNumber ?? license.licenseType}`}
+                className="h-4 w-4 accent-trade-accent"
+              />
+            </label>
+          ) : null}
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-trade-accent-soft text-trade-accent-strong">
             <FileCheck size={20} />
           </div>

@@ -118,7 +118,7 @@ Update statuses as items ship. Group by phase + impact.
 **Impact:** Sehr hoch (Power-User transformation) — any of 27 actions reachable in 2 keystrokes
 **Files:** `TradeCommandPalette.tsx` (NEW) + `TradeShell.tsx` (mount)
 
-### ✅ U-CRIT-5 — Bulk Operations + Checkbox-Column **(DONE — Phase 5e MVP, items page only)**
+### ✅ U-CRIT-5 — Bulk Operations + Checkbox-Column **(DONE — Phase 7a, all 4 list pages)**
 
 **Shipped:**
 
@@ -127,9 +127,15 @@ Update statuses as items ship. Group by phase + impact.
 - ✅ 14 vitest tests covering RFC 4180 escaping (quotes/commas/newlines), formatCell type-coverage (string/number/boolean/null/Date), filename stamping, and full buildCsv round-trips.
 - ✅ Wired into `items/page.tsx`: per-row checkbox column with native-`indeterminate` "some-selected" header, select-all toggle, selection clears on filter change so stale rows don't carry over, Export-CSV button in the bar (13 columns covering full item metadata) + toast feedback on success.
 
-**Deferred to follow-up sprints:**
+**Phase 7a addition:** ported the pattern to all four list pages — parties / operations / licenses now each carry the checkbox column, select-all header, selection-clear-on-filter, and Export CSV action wired to the same `csv-export` utility. Per-page CSV column shapes:
 
-- ❌ Replicate the pattern on parties / operations / licenses (mechanical port — the primitives are now in place)
+- Items — 13 columns (name/sku/manufacturer/status/all 5 classification fields/source/classified-at/created-at)
+- Counterparties — 10 columns (id/legal-name/trade-name/country/status/screening-status/us-person/high-risk-country/last-screened/created-at)
+- Operations — 11 columns (reference/type/status/counterparty/ship-from/ship-to/end-use/risk-score/catch-all-hits/notification-duty)
+- Licenses — 11 columns (license-number/type/status/issued/valid-until/drawn-down/total-cap/cap-currency/operations-attached/created-at)
+
+**Still deferred:**
+
 - ❌ Bulk-Delete / Bulk-Archive (need API mutations + confirmation modal)
 - ❌ "Select all matching filter" pattern across pagination (needs server-side count + a one-click prompt)
 

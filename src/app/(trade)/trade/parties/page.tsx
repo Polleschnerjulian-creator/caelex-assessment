@@ -20,12 +20,15 @@
  * /api/trade/parties).
  */
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { ListSkeleton } from "../_components/Skeletons";
 import { tradeStatusLabel } from "@/lib/trade/format";
 import { EmptyStateRich } from "../_components/EmptyStateRich";
 import { Term } from "../_components/Term";
+import { BulkActionsBar } from "../_components/BulkActionsBar";
+import { buildCsv, downloadCsv } from "@/lib/trade/csv-export";
+import { useToast } from "@/components/ui/Toast";
 import {
   Search,
   Plus,
@@ -38,6 +41,7 @@ import {
   X,
   Package,
   Workflow,
+  Download,
 } from "lucide-react";
 
 interface PartyRow {
@@ -73,6 +77,24 @@ export default function CounterpartiesListPage() {
   const [filter, setFilter] =
     useState<(typeof STATUS_TABS)[number]["key"]>("all");
   const [showNewForm, setShowNewForm] = useState(false);
+  // U-CRIT-5 — bulk-select state.
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const toast = useToast();
+  const toggleSelect = useCallback((id: string, next: boolean) => {
+    setSelectedIds((prev) => {
+      const out = new Set(prev);
+      if (next) out.add(id);
+      else out.delete(id);
+      return out;
+    });
+  }, []);
+  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds((prev) => {
+      if (prev.size === parties.length && parties.length > 0) return new Set();
+      return new Set(parties.map((p) => p.id));
+    });
+  }, [parties]);
 
   useEffect(() => {
     let cancelled = false;
@@ -92,6 +114,40 @@ export default function CounterpartiesListPage() {
       cancelled = true;
     };
   }, [search, filter]);
+
+  // Clear bulk-selection on filter/search change.
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [search, filter]);
+
+  const handleExportSelected = () => {
+    const rows = parties.filter((p) => selectedIds.has(p.id));
+    if (rows.length === 0) {
+      toast.warning("Nothing to export", "Select at least one counterparty.");
+      return;
+    }
+    const csv = buildCsv(rows, [
+      { header: "ID", get: (p) => p.id },
+      { header: "Legal name", get: (p) => p.legalName },
+      { header: "Trade name", get: (p) => p.tradeName },
+      { header: "Country", get: (p) => p.countryCode },
+      { header: "Status", get: (p) => p.status },
+      { header: "Screening status", get: (p) => p.screeningStatus },
+      { header: "US person", get: (p) => p.isUSPerson },
+      { header: "High-risk country", get: (p) => p.isHighRiskCountry },
+      { header: "Last screened", get: (p) => p.lastScreenedAt },
+      { header: "Created at", get: (p) => p.createdAt },
+    ]);
+    downloadCsv("caelex-trade-counterparties", csv);
+    toast.success(
+      "Export started",
+      `${rows.length} counterpart${rows.length === 1 ? "y" : "ies"} downloaded as CSV.`,
+    );
+  };
+
+  const allVisibleSelected =
+    parties.length > 0 && selectedIds.size === parties.length;
+  const someVisibleSelected = selectedIds.size > 0 && !allVisibleSelected;
 
   return (
     <div className="mx-auto max-w-screen-2xl px-8 py-8">
@@ -186,12 +242,60 @@ export default function CounterpartiesListPage() {
       ) : parties.length === 0 ? (
         <EmptyState onNew={() => setShowNewForm(true)} />
       ) : (
-        <div className="overflow-hidden rounded-md border border-trade-border-subtle">
-          {parties.map((p, i) => (
-            <PartyRowItem key={p.id} party={p} isFirst={i === 0} />
-          ))}
-        </div>
+        <>
+          {/* Select-all header row (U-CRIT-5). */}
+          <div className="mb-2 flex items-center gap-3 px-1 text-[11px] text-trade-text-muted">
+            <label className="flex h-10 w-10 cursor-pointer items-center justify-center">
+              <input
+                type="checkbox"
+                checked={allVisibleSelected}
+                ref={(el) => {
+                  if (el) el.indeterminate = someVisibleSelected;
+                }}
+                onChange={toggleSelectAll}
+                aria-label={
+                  allVisibleSelected
+                    ? `Deselect all ${parties.length} counterparties`
+                    : `Select all ${parties.length} counterparties`
+                }
+                className="h-4 w-4 accent-trade-accent"
+              />
+            </label>
+            <span>
+              {selectedIds.size > 0
+                ? `${selectedIds.size} of ${parties.length} selected`
+                : `${parties.length} counterpart${parties.length === 1 ? "y" : "ies"}`}
+            </span>
+          </div>
+          <div className="overflow-hidden rounded-md border border-trade-border-subtle">
+            {parties.map((p, i) => (
+              <PartyRowItem
+                key={p.id}
+                party={p}
+                isFirst={i === 0}
+                selected={selectedIds.has(p.id)}
+                onToggleSelect={toggleSelect}
+              />
+            ))}
+          </div>
+        </>
       )}
+
+      {/* Bulk actions bar */}
+      <BulkActionsBar
+        count={selectedIds.size}
+        onClear={clearSelection}
+        actions={
+          <button
+            type="button"
+            onClick={handleExportSelected}
+            className="inline-flex items-center gap-1.5 rounded-full bg-trade-accent px-3 py-1 text-[12px] font-semibold text-white transition hover:bg-trade-accent-strong"
+          >
+            <Download className="h-3.5 w-3.5" aria-hidden="true" />
+            Export CSV
+          </button>
+        }
+      />
 
       {/* Mandatory disclaimer */}
       <p
@@ -213,51 +317,71 @@ export default function CounterpartiesListPage() {
 function PartyRowItem({
   party,
   isFirst,
+  selected,
+  onToggleSelect,
 }: {
   party: PartyRow;
   isFirst: boolean;
+  selected?: boolean;
+  onToggleSelect?: (id: string, next: boolean) => void;
 }) {
+  const showCheckbox = !!onToggleSelect;
   return (
-    <Link
-      href={`/trade/parties/${party.id}`}
-      className={`group flex items-center gap-4 bg-trade-bg-panel px-5 py-4 transition hover:bg-trade-bg-elevated ${
+    <div
+      className={`group flex items-center bg-trade-bg-panel transition hover:bg-trade-bg-elevated ${
         isFirst ? "" : "border-t border-trade-border-subtle"
-      }`}
+      } ${selected ? "bg-trade-accent-soft/40" : ""}`}
     >
-      <ScreeningBadge status={party.screeningStatus} />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <div className="truncate text-[13px] font-semibold text-trade-text-primary">
-            {party.legalName}
+      {showCheckbox ? (
+        <label className="flex h-full w-10 shrink-0 cursor-pointer items-center justify-center self-stretch">
+          <input
+            type="checkbox"
+            checked={!!selected}
+            onChange={(e) => onToggleSelect!(party.id, e.target.checked)}
+            aria-label={`Select ${party.legalName}`}
+            className="h-4 w-4 accent-trade-accent"
+          />
+        </label>
+      ) : null}
+      <Link
+        href={`/trade/parties/${party.id}`}
+        className="flex flex-1 items-center gap-4 px-5 py-4"
+      >
+        <ScreeningBadge status={party.screeningStatus} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <div className="truncate text-[13px] font-semibold text-trade-text-primary">
+              {party.legalName}
+            </div>
+            {party.tradeName && (
+              <span className="text-[11px] text-trade-text-muted">
+                ({party.tradeName})
+              </span>
+            )}
+            {party.status === "BLOCKED" && (
+              <span className="rounded bg-red-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-red-700 ring-1 ring-red-200">
+                Blocked
+              </span>
+            )}
           </div>
-          {party.tradeName && (
-            <span className="text-[11px] text-trade-text-muted">
-              ({party.tradeName})
-            </span>
-          )}
-          {party.status === "BLOCKED" && (
-            <span className="rounded bg-red-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-red-700 ring-1 ring-red-200">
-              Blocked
-            </span>
-          )}
+          <div className="mt-0.5 flex items-center gap-2 text-[11px] text-trade-text-muted">
+            <Globe className="h-3 w-3" />
+            {party.countryCode}
+            {party.isHighRiskCountry && (
+              <span className="text-amber-600">· high-risk</span>
+            )}
+            {party.isUSPerson && <span>· US person</span>}
+            {party.lastScreenedAt && (
+              <span>
+                · screened{" "}
+                {new Date(party.lastScreenedAt).toLocaleDateString("en-GB")}
+              </span>
+            )}
+          </div>
         </div>
-        <div className="mt-0.5 flex items-center gap-2 text-[11px] text-trade-text-muted">
-          <Globe className="h-3 w-3" />
-          {party.countryCode}
-          {party.isHighRiskCountry && (
-            <span className="text-amber-600">· high-risk</span>
-          )}
-          {party.isUSPerson && <span>· US person</span>}
-          {party.lastScreenedAt && (
-            <span>
-              · screened{" "}
-              {new Date(party.lastScreenedAt).toLocaleDateString("en-GB")}
-            </span>
-          )}
-        </div>
-      </div>
-      <ChevronRight className="h-4 w-4 shrink-0 text-trade-text-muted opacity-0 transition group-hover:opacity-100" />
-    </Link>
+        <ChevronRight className="h-4 w-4 shrink-0 text-trade-text-muted opacity-0 transition group-hover:opacity-100" />
+      </Link>
+    </div>
   );
 }
 
