@@ -70,9 +70,14 @@ export function TradeShell({ org, badgeCounts, children }: Props) {
           Skip to main content
         </a>
 
-        {/* Sidebar — sticky dark rail, same material as Comply V2 */}
+        {/* Sidebar — fixed dark rail pinned to the viewport so it never
+            scrolls away on long pages. Was previously `sticky top-0`,
+            but `sticky` was unreliable inside the `overflow-hidden`
+            outer flex container — `fixed` is bulletproof. The main
+            content gets `md:pl-[244px]` below to leave room for the
+            sidebar's footprint. */}
         <aside
-          className="sticky top-0 hidden h-screen md:block"
+          className="fixed left-0 top-0 z-30 hidden h-screen md:block"
           aria-label="Trade navigation"
         >
           <TradeSidebar org={org} badgeCounts={badgeCounts} />
@@ -119,6 +124,8 @@ export function TradeShell({ org, badgeCounts, children }: Props) {
         ) : null}
 
         {/* Main content area — skip-link target + landmark.
+            md:pl-[244px] reserves the visual space the fixed sidebar
+            occupies so content never slides under it on desktop.
             Wrapped in motion.div with `pathname` as key so each route
             change fades in (U-LOW-5). The inner div uses no max-width
             so the existing page-level layouts continue to control
@@ -126,7 +133,7 @@ export function TradeShell({ org, badgeCounts, children }: Props) {
         <main
           id="main-content"
           tabIndex={-1}
-          className="flex min-w-0 flex-1 flex-col overflow-x-hidden"
+          className="flex min-w-0 flex-1 flex-col overflow-x-hidden md:pl-[244px]"
         >
           <motion.div
             key={pathname}
