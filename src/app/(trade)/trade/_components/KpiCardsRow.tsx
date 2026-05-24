@@ -44,7 +44,8 @@ export function KpiCardsRow({ kpis }: KpiCardsRowProps) {
       </header>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Active Operations */}
+        {/* Active Operations — no priority signal today; could surface a
+            warn tint if BLOCKED-count > 0 in a follow-up sprint. */}
         <KpiCard
           icon={Workflow}
           label="Active Operations"
@@ -55,7 +56,8 @@ export function KpiCardsRow({ kpis }: KpiCardsRowProps) {
           trendPercent={kpis.operations.trendPercent}
         />
 
-        {/* Open Licenses */}
+        {/* Open Licenses — danger tint when ANY license is expiring ≤30d
+            because a single missed expiry can void shipments. */}
         <KpiCard
           icon={FileCheck}
           label="Open Licenses"
@@ -70,9 +72,12 @@ export function KpiCardsRow({ kpis }: KpiCardsRowProps) {
                 }
               : undefined
           }
+          accent={kpis.licenses.expiringSoon > 0 ? "amber" : undefined}
         />
 
-        {/* Pending Reviews */}
+        {/* Pending Reviews — warn tint + slow pulse when there's work to
+            triage; the pulse is what makes the card "tap your shoulder"
+            from across the room, where a static badge would not. */}
         <KpiCard
           icon={ScanSearch}
           label="Pending Reviews"
@@ -84,9 +89,11 @@ export function KpiCardsRow({ kpis }: KpiCardsRowProps) {
               ? { text: "Awaiting review", tone: "warn" }
               : { text: "All clear", tone: "ok" }
           }
+          accent={kpis.reviews.total > 0 ? "amber" : undefined}
+          pulse={kpis.reviews.total > 0}
         />
 
-        {/* Compliance Score */}
+        {/* Compliance Score — accent reflects health band (already wired). */}
         <KpiCard
           icon={ShieldCheck}
           label="Compliance Score"
@@ -128,8 +135,15 @@ interface KpiCardProps {
   /** Trend arrow direction (Operations card only). */
   trend?: "up" | "down" | "flat";
   trendPercent?: number | null;
-  /** Optional left-border accent colour (Compliance Score card). */
+  /** Optional accent — drives both the left-border colour AND a subtle
+   *  full-card tint when set to a non-neutral hue. Used as the primary
+   *  visual signal that this card needs attention. */
   accent?: "emerald" | "amber" | "red";
+  /** When true, wraps the card in a slow soft-pulse animation. Use ONLY
+   *  for cards with genuinely actionable backlogs — overuse desensitises
+   *  the operator. Respects `prefers-reduced-motion` via Tailwind's
+   *  `motion-safe:` modifier on the wrapper. */
+  pulse?: boolean;
 }
 
 function KpiCard({
@@ -143,19 +157,39 @@ function KpiCard({
   trend,
   trendPercent,
   accent,
+  pulse,
 }: KpiCardProps) {
-  const accentClass = accent
+  // Two layers of accent: left-border colour (existing) + soft tint on
+  // the card surface itself (new for U-MED-5). The tint is intentionally
+  // mild — strong enough to differentiate the card at a glance, soft
+  // enough not to wash out the value typography.
+  const accentBorderClass = accent
     ? {
         emerald: "border-l-4 border-l-emerald-500",
         amber: "border-l-4 border-l-amber-500",
         red: "border-l-4 border-l-red-500",
       }[accent]
     : "";
+  const accentTintClass = accent
+    ? {
+        emerald: "bg-emerald-50/40",
+        amber: "bg-amber-50/50",
+        red: "bg-red-50/40",
+      }[accent]
+    : "bg-trade-bg-panel";
+
+  // Pulse uses Tailwind's `animate-pulse` but only under `motion-safe:`
+  // so users with prefers-reduced-motion never see it. Confined to a
+  // soft outer ring rather than the card itself so the actual content
+  // doesn't visibly opacity-flicker — that would impede reading.
+  const pulseRing = pulse
+    ? "motion-safe:before:absolute motion-safe:before:inset-0 motion-safe:before:-z-10 motion-safe:before:rounded-md motion-safe:before:bg-amber-300/30 motion-safe:before:animate-pulse"
+    : "";
 
   return (
     <Link
       href={href}
-      className={`group block rounded-md border border-trade-border-subtle bg-trade-bg-panel p-4 transition hover:border-trade-accent hover:bg-trade-bg-elevated ${accentClass}`}
+      className={`group relative isolate block rounded-md border border-trade-border-subtle p-4 transition hover:border-trade-accent hover:bg-trade-bg-elevated ${accentBorderClass} ${accentTintClass} ${pulseRing}`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 text-trade-text-muted">

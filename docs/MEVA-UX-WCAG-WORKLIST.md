@@ -13,7 +13,7 @@ Update statuses as items ship. Group by phase + impact.
 | Stream                                     | % done | Last bump                                               |
 | ------------------------------------------ | ------ | ------------------------------------------------------- |
 | **WCAG 2.2 AA**                            | ~98%   | W18 progressbar (commit 88db0a1f)                       |
-| **UX — Quick wins**                        | ~70%   | Phase 3b — U-HIGH-6 operation stepper + Next-Action CTA |
+| **UX — Quick wins**                        | ~85%   | Phase 3c — U-MED-5 KPI tint + pulse, U-MED-6 audit done |
 | **UX — Phase A (Power-User basics)**       | ~60%   | U-HIGH-3 + U-HIGH-6 done; palette + inbox still pending |
 | **UX — Phase B (Onboarding + Bulk)**       | 0%     | not started                                             |
 | **UX — Phase C (Strategic deep features)** | 0%     | not started                                             |
@@ -255,12 +255,36 @@ Update statuses as items ship. Group by phase + impact.
 **Aufwand:** 1.5 Tage
 **Files:** Reuse existing PDF generator + per-page buttons
 
-### U-MED-5 — Card visual priority + status-tinted alerts
+### ✅ U-MED-5 — Card visual priority + status-tinted alerts **(DONE — Phase 3c)**
 
 **Was:** All KPI-cards visually equal.
-**Fix:** Tint cards red when compliance-score <80, pulse on pending reviews.
-**Aufwand:** 2h
-**Files:** QuickStartGrid + CompliancePostureCard
+**Shipped:**
+
+- ✅ `KpiCard` extended with full-card `accentTintClass` (soft hue tint on card surface) on top of the existing accent left-border — strong enough to differentiate at a glance, soft enough not to wash out the value
+- ✅ New `pulse` prop: subtle amber outer-ring `animate-pulse` for cards with actionable backlogs. Wrapped in `motion-safe:` so users with `prefers-reduced-motion` never see it
+- ✅ Wiring:
+  - **Open Licenses** → amber accent when `expiringSoon > 0`
+  - **Pending Reviews** → amber accent + pulse when `total > 0`
+  - **Compliance Score** → emerald/amber/red accent via `scoreAccent(score)` (already wired pre-Phase 3c)
+- ✅ Pulse uses a `motion-safe:before:…` pseudo-element so the card content itself never opacity-flickers (would impede reading)
+
+**Aufwand:** ~1h ✅ (vs. 2h estimate)
+**Impact:** Hoch — turns the dashboard from "static cards" into "the dashboard taps you on the shoulder"
+**Files:** `src/app/(trade)/trade/_components/KpiCardsRow.tsx`
+
+### ✅ U-MED-6 — Status-Pills mit Icons (not color-only) **(DONE — pre-Phase 3)**
+
+**Was:** Status conveyed via color only in some chips.
+**Shipped:** Audit confirms all 4 list pages already have an icon prefix on every status pill:
+
+- `items` STATUS_CONFIG: Clock / CheckCircle2 / AlertTriangle / Archive per status
+- `parties` ScreeningBadge: Shield / ShieldCheck / ShieldAlert / AlertTriangle per screening status (icon-only)
+- `operations` StatusBadge: Clock / CheckCircle2 / XCircle / AlertTriangle per status
+- `licenses` STATUS_META: Clock / ShieldCheck / XCircle / ShieldAlert per status
+
+**Aufwand:** 1h ✅ (work landed across earlier port sprints)
+**Impact:** WCAG SC 1.4.1 — colour is never the sole means of conveying status
+**Files:** All 4 list pages
 
 ### U-MED-6 — Status-Pills mit Icons (not color-only)
 
