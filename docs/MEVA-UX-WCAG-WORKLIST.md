@@ -42,15 +42,15 @@ Update statuses as items ship. Group by phase + impact.
 
 ## 🔴 TODO — WCAG 2.2 AA (remaining ~3%)
 
-| #   | Fix                                                                         | SC            | Aufwand | Owner |
-| --- | --------------------------------------------------------------------------- | ------------- | ------- | ----- |
-| W14 | Run `npx @axe-core/cli` on production for actual contrast verification      | 1.4.3         | 30min   | —     |
-| W15 | VoiceOver/NVDA walkthrough of top-10 user flows                             | —             | 4h      | —     |
-| W16 | Per-input `autocomplete` attributes (name/email/address etc.)               | 1.3.5 AA      | 1h      | —     |
-| W17 | Form fieldset/legend for input groups in Settings                           | 1.3.1 A       | 30min   | —     |
-| W18 | Coverage-bar role="img" + aria-valuenow (CompliancePostureCard)             | 1.3.1 + 4.1.2 | 15min   | —     |
-| W19 | NotificationsTab + remaining ApiKeysTab inputs — aria-invalid + describedby | 3.3.1 AA      | 1h      | —     |
-| W20 | More per-section `lang="de"` patches on operations/licenses subtitles       | 3.1.2 AA      | 1h      | —     |
+| #          | Fix                                                                                                                                                                                    | SC            | Aufwand  | Owner  |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | -------- | ------ |
+| W14        | Run `npx @axe-core/cli` on production for actual contrast verification                                                                                                                 | 1.4.3         | 30min    | —      |
+| W15        | VoiceOver/NVDA walkthrough of top-10 user flows                                                                                                                                        | —             | 4h       | —      |
+| W16        | Per-input `autocomplete` attributes (name/email/address etc.)                                                                                                                          | 1.3.5 AA      | 1h       | —      |
+| W17        | Form fieldset/legend for input groups in Settings                                                                                                                                      | 1.3.1 A       | 30min    | —      |
+| ~~W18~~ ✅ | ~~Coverage-bar role="img" + aria-valuenow (CompliancePostureCard)~~ **DONE — Phase 2 follow-up** (commit 88db0a1f, used `role="progressbar"` which is more semantic than `role="img"`) | 1.3.1 + 4.1.2 | 15min ✅ | Claude |
+| W19        | NotificationsTab + remaining ApiKeysTab inputs — aria-invalid + describedby                                                                                                            | 3.3.1 AA      | 1h       | —      |
+| W20        | More per-section `lang="de"` patches on operations/licenses subtitles                                                                                                                  | 3.1.2 AA      | 1h       | —      |
 
 ---
 
