@@ -93,15 +93,18 @@ interface Counterparty {
   screeningStatus: string;
 }
 
-const STATUS_TABS = [
-  { key: "all", label: "All" },
+type OperationStatusKey = OperationRow["status"];
+const STATUS_OPTIONS: ReadonlyArray<{
+  key: OperationStatusKey;
+  label: string;
+}> = [
   { key: "DRAFT", label: "Draft" },
   { key: "SCREENING", label: "Screening" },
   { key: "AWAITING_LICENSE", label: "Awaiting license" },
   { key: "LICENSED", label: "Licensed" },
   { key: "EXECUTED", label: "Executed" },
   { key: "BLOCKED", label: "Blocked" },
-] as const;
+];
 
 const OPERATION_TYPES: { value: string; label: string }[] = [
   { value: "EXPORT", label: "Export (out of EU)" },
@@ -117,8 +120,16 @@ export default function OperationsListPage() {
   const [operations, setOperations] = useState<OperationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] =
-    useState<(typeof STATUS_TABS)[number]["key"]>("all");
+  const [filter, setFilter] = useState<Set<OperationStatusKey>>(new Set());
+  const toggleStatusFilter = useCallback((s: OperationStatusKey) => {
+    setFilter((prev) => {
+      const out = new Set(prev);
+      if (out.has(s)) out.delete(s);
+      else out.add(s);
+      return out;
+    });
+  }, []);
+  const clearStatusFilter = useCallback(() => setFilter(new Set()), []);
   const [showNewForm, setShowNewForm] = useState(false);
   // U-CRIT-5 bulk-select state.
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -145,11 +156,20 @@ export default function OperationsListPage() {
     setLoading(true);
     const params = new URLSearchParams();
     if (search) params.set("q", search);
-    if (filter !== "all") params.set("status", filter);
+    if (filter.size === 1) {
+      params.set("status", Array.from(filter)[0]);
+    }
     fetch(`/api/trade/operations?${params}`)
       .then((r) => r.json())
       .then((data) => {
-        if (!cancelled) setOperations(data.operations ?? []);
+        if (!cancelled) {
+          const fetched: OperationRow[] = data.operations ?? [];
+          setOperations(
+            filter.size > 1
+              ? fetched.filter((o) => filter.has(o.status))
+              : fetched,
+          );
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -252,19 +272,40 @@ export default function OperationsListPage() {
       )}
 
       <div className="mb-5 flex flex-wrap items-center gap-2">
-        {STATUS_TABS.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setFilter(tab.key)}
-            className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
-              filter === tab.key
-                ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
-                : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+        <button
+          key="__all"
+          onClick={clearStatusFilter}
+          aria-pressed={filter.size === 0}
+          className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
+            filter.size === 0
+              ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
+              : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
+          }`}
+        >
+          All
+        </button>
+        {STATUS_OPTIONS.map((opt) => {
+          const active = filter.has(opt.key);
+          return (
+            <button
+              key={opt.key}
+              onClick={() => toggleStatusFilter(opt.key)}
+              aria-pressed={active}
+              className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
+                active
+                  ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
+                  : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
+              }`}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+        {filter.size > 1 ? (
+          <span className="text-[11px] text-trade-text-muted">
+            {filter.size} statuses selected
+          </span>
+        ) : null}
         <div className="ml-auto flex items-center gap-2 rounded-md border border-trade-border bg-trade-bg-panel px-3 py-1.5">
           <Search className="h-3.5 w-3.5 text-trade-text-muted" />
           <input

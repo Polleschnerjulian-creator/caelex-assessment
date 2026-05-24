@@ -62,20 +62,30 @@ interface PartyRow {
   createdAt: string;
 }
 
-const STATUS_TABS = [
-  { key: "all", label: "All" },
+type ScreeningKey = PartyRow["screeningStatus"];
+const SCREENING_OPTIONS: ReadonlyArray<{ key: ScreeningKey; label: string }> = [
   { key: "NOT_SCREENED", label: "Not screened" },
   { key: "POTENTIAL_MATCH", label: "Potential" },
   { key: "CONFIRMED_HIT", label: "Confirmed" },
   { key: "CLEAR", label: "Clear" },
-] as const;
+  { key: "STALE", label: "Stale" },
+];
 
 export default function CounterpartiesListPage() {
   const [parties, setParties] = useState<PartyRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] =
-    useState<(typeof STATUS_TABS)[number]["key"]>("all");
+  // U-HIGH-5 — multi-select screening filter. Empty Set = show all.
+  const [filter, setFilter] = useState<Set<ScreeningKey>>(new Set());
+  const toggleScreeningFilter = useCallback((s: ScreeningKey) => {
+    setFilter((prev) => {
+      const out = new Set(prev);
+      if (out.has(s)) out.delete(s);
+      else out.add(s);
+      return out;
+    });
+  }, []);
+  const clearScreeningFilter = useCallback(() => setFilter(new Set()), []);
   const [showNewForm, setShowNewForm] = useState(false);
   // U-CRIT-5 — bulk-select state.
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -101,11 +111,22 @@ export default function CounterpartiesListPage() {
     setLoading(true);
     const params = new URLSearchParams();
     if (search) params.set("q", search);
-    if (filter !== "all") params.set("screening", filter);
+    // Multi-select: 1 → single-status server path; 2+ → fetch + client
+    // filter (existing API doesn't accept comma-joined screening).
+    if (filter.size === 1) {
+      params.set("screening", Array.from(filter)[0]);
+    }
     fetch(`/api/trade/parties?${params}`)
       .then((r) => r.json())
       .then((data) => {
-        if (!cancelled) setParties(data.parties ?? []);
+        if (!cancelled) {
+          const fetched: PartyRow[] = data.parties ?? [];
+          setParties(
+            filter.size > 1
+              ? fetched.filter((p) => filter.has(p.screeningStatus))
+              : fetched,
+          );
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -209,21 +230,42 @@ export default function CounterpartiesListPage() {
         />
       )}
 
-      {/* Filters */}
+      {/* Filters — U-HIGH-5 multi-select */}
       <div className="mb-5 flex flex-wrap items-center gap-2">
-        {STATUS_TABS.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setFilter(tab.key)}
-            className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
-              filter === tab.key
-                ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
-                : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+        <button
+          key="__all"
+          onClick={clearScreeningFilter}
+          aria-pressed={filter.size === 0}
+          className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
+            filter.size === 0
+              ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
+              : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
+          }`}
+        >
+          All
+        </button>
+        {SCREENING_OPTIONS.map((opt) => {
+          const active = filter.has(opt.key);
+          return (
+            <button
+              key={opt.key}
+              onClick={() => toggleScreeningFilter(opt.key)}
+              aria-pressed={active}
+              className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
+                active
+                  ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
+                  : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
+              }`}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+        {filter.size > 1 ? (
+          <span className="text-[11px] text-trade-text-muted">
+            {filter.size} statuses selected
+          </span>
+        ) : null}
         <div className="ml-auto flex items-center gap-2 rounded-md border border-trade-border bg-trade-bg-panel px-3 py-1.5">
           <Search className="h-3.5 w-3.5 text-trade-text-muted" />
           <input

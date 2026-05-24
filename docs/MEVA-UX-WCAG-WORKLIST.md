@@ -212,7 +212,7 @@ Update statuses as items ship. Group by phase + impact.
 **Impact:** Hoch (first-task completion) — every empty page now nudges 3 directions: do the obvious thing, ask Astra, or jump to a related setup page
 **Files:** New `EmptyStateRich.tsx`, modified items/parties/operations/licenses page.tsx, modified `src/components/astra/AstraChatInput.tsx`
 
-### ✅ U-HIGH-5 — Filter Combinations + Saved Views **(DONE — Phase 6b MVP, items page only)**
+### ✅ U-HIGH-5 — Filter Combinations + Saved Views **(DONE — Phase 7b, all 4 list pages)**
 
 **Shipped:**
 
@@ -221,9 +221,10 @@ Update statuses as items ship. Group by phase + impact.
 - ✅ Visual feedback: when 2+ are selected, a "N statuses selected" hint appears next to the pills.
 - ✅ `aria-pressed` on each pill so AT users perceive the multi-toggle pattern correctly.
 
-**Deferred:**
+**Phase 7b addition:** ported the multi-select filter pattern to parties (5 screening statuses) / operations (6 lifecycle states) / licenses (5 license statuses). Same hook pattern: `Set<status>` state, toggle pills add/remove, "All" pill clears, 1 status uses server-side filter for performance / 2+ falls back to client filter, `aria-pressed` on every pill, "N statuses selected" hint when multi-select active.
 
-- ❌ Replicate on parties / operations / licenses (mechanical port — same hook pattern)
+**Still deferred:**
+
 - ❌ Date-range picker for created/updated
 - ❌ Saved views (named filter combos persisted to localStorage or to a new `TradeUserView` model)
 

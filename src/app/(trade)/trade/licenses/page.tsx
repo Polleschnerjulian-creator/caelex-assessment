@@ -188,8 +188,7 @@ const STATUS_META: Record<
   },
 };
 
-const STATUS_TABS: { key: "all" | LicenseStatus; label: string }[] = [
-  { key: "all", label: "All" },
+const STATUS_OPTIONS: ReadonlyArray<{ key: LicenseStatus; label: string }> = [
   { key: "ACTIVE", label: "Active" },
   { key: "PENDING", label: "Pending" },
   { key: "DRAFT", label: "Draft" },
@@ -203,9 +202,18 @@ export default function LicensesPage() {
   const [licenses, setLicenses] = useState<LicenseRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | LicenseStatus>(
-    "all",
+  const [statusFilter, setStatusFilter] = useState<Set<LicenseStatus>>(
+    new Set(),
   );
+  const toggleStatusFilter = useCallback((s: LicenseStatus) => {
+    setStatusFilter((prev) => {
+      const out = new Set(prev);
+      if (out.has(s)) out.delete(s);
+      else out.add(s);
+      return out;
+    });
+  }, []);
+  const clearStatusFilter = useCallback(() => setStatusFilter(new Set()), []);
   const [showNew, setShowNew] = useState(false);
   // U-CRIT-5 bulk-select state.
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -266,11 +274,20 @@ export default function LicensesPage() {
     setLoading(true);
     const params = new URLSearchParams();
     if (search) params.set("q", search);
-    if (statusFilter !== "all") params.set("status", statusFilter);
+    if (statusFilter.size === 1) {
+      params.set("status", Array.from(statusFilter)[0]);
+    }
     fetch(`/api/trade/licenses?${params}`)
       .then((r) => r.json())
       .then((data) => {
-        if (!cancelled) setLicenses(data.licenses ?? []);
+        if (!cancelled) {
+          const fetched: LicenseRow[] = data.licenses ?? [];
+          setLicenses(
+            statusFilter.size > 1
+              ? fetched.filter((l) => statusFilter.has(l.status))
+              : fetched,
+          );
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -327,21 +344,42 @@ export default function LicensesPage() {
         />
       )}
 
-      {/* Filters */}
+      {/* Filters — U-HIGH-5 multi-select */}
       <div className="mb-5 flex flex-wrap items-center gap-2">
-        {STATUS_TABS.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setStatusFilter(tab.key)}
-            className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
-              statusFilter === tab.key
-                ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
-                : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+        <button
+          key="__all"
+          onClick={clearStatusFilter}
+          aria-pressed={statusFilter.size === 0}
+          className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
+            statusFilter.size === 0
+              ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
+              : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
+          }`}
+        >
+          All
+        </button>
+        {STATUS_OPTIONS.map((opt) => {
+          const active = statusFilter.has(opt.key);
+          return (
+            <button
+              key={opt.key}
+              onClick={() => toggleStatusFilter(opt.key)}
+              aria-pressed={active}
+              className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
+                active
+                  ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
+                  : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
+              }`}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+        {statusFilter.size > 1 ? (
+          <span className="text-[11px] text-trade-text-muted">
+            {statusFilter.size} statuses selected
+          </span>
+        ) : null}
         <div className="ml-auto flex items-center gap-2 rounded-md border border-trade-border bg-trade-bg-panel px-3 py-1.5">
           <Search className="h-3.5 w-3.5 text-trade-text-muted" />
           <input
