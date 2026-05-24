@@ -87,18 +87,21 @@ export function OrgProfileTab({ profile }: Props) {
             label="Contact name"
             defaultValue={profile.bafaContactName ?? ""}
             placeholder="e.g. Dr. Klaus Müller"
+            autoComplete="name"
           />
           <Field
             name="bafaContactRole"
             label="Contact role"
             defaultValue={profile.bafaContactRole ?? ""}
             placeholder="e.g. Sachbearbeiter — Referat 222"
+            autoComplete="organization-title"
           />
           <Field
             name="bafaContactPhone"
             label="Contact phone"
             defaultValue={profile.bafaContactPhone ?? ""}
             placeholder="+49 6196 ..."
+            autoComplete="tel"
           />
           <Field
             name="bafaContactEmail"
@@ -106,6 +109,7 @@ export function OrgProfileTab({ profile }: Props) {
             type="email"
             defaultValue={profile.bafaContactEmail ?? ""}
             placeholder="user@bafa.bund.de"
+            autoComplete="email"
             error={
               feedback?.kind === "error"
                 ? feedback.fields?.bafaContactEmail
@@ -126,6 +130,7 @@ export function OrgProfileTab({ profile }: Props) {
             label="EORI number"
             defaultValue={profile.eoriNumber ?? ""}
             placeholder="e.g. DE123456789012345"
+            autoComplete="off"
             encrypted
           />
           <Field
@@ -133,6 +138,7 @@ export function OrgProfileTab({ profile }: Props) {
             label="US DUNS+4 number"
             defaultValue={profile.dunsPlus4 ?? ""}
             placeholder="13-digit identifier"
+            autoComplete="off"
             encrypted
           />
         </Grid>
@@ -156,6 +162,7 @@ export function OrgProfileTab({ profile }: Props) {
               defaultValue={profile.primaryExportJurisdiction ?? ""}
               placeholder="ISO code — DE, FR, US…"
               maxLength={2}
+              autoComplete="country"
               className="w-full rounded-md border border-trade-border-subtle bg-trade-bg-page px-3 py-2 text-[13px] text-trade-text-primary placeholder:text-trade-text-muted focus:border-trade-accent focus:outline-none"
             />
           </div>
@@ -232,6 +239,9 @@ interface FieldProps {
   /** Render a small "Encrypted" badge — purely informational. */
   encrypted?: boolean;
   error?: string[];
+  /** WCAG SC 1.3.5 — purpose-of-input. Passed through verbatim to the
+   *  native input's autoComplete attr (e.g. "name", "email", "tel"). */
+  autoComplete?: string;
 }
 
 function Field({
@@ -242,6 +252,7 @@ function Field({
   type = "text",
   encrypted,
   error,
+  autoComplete,
 }: FieldProps) {
   return (
     <div>
@@ -262,6 +273,7 @@ function Field({
         type={type}
         defaultValue={defaultValue}
         placeholder={placeholder}
+        autoComplete={autoComplete}
         className={`w-full rounded-md border bg-trade-bg-page px-3 py-2 text-[13px] text-trade-text-primary placeholder:text-trade-text-muted focus:outline-none ${
           error
             ? "border-red-500 focus:border-red-500"

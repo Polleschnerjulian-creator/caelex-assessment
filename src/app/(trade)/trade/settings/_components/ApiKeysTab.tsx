@@ -211,6 +211,9 @@ function CreateKeyForm({
           required
           maxLength={80}
           placeholder="e.g. CI pipeline — production"
+          // API key names are not personal data; browser autofill is
+          // unhelpful here. Explicit off-opt-out per WCAG SC 1.3.5.
+          autoComplete="off"
           className={`w-full rounded-md border bg-trade-bg-page px-3 py-2 text-[13px] text-trade-text-primary placeholder:text-trade-text-muted focus:outline-none ${
             error?.fields?.name
               ? "border-red-500 focus:border-red-500"
