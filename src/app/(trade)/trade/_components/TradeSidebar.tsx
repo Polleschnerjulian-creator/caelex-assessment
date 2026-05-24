@@ -35,6 +35,7 @@ import {
   Settings,
   UserCog,
   BookOpen,
+  HelpCircle,
   type LucideIcon,
 } from "lucide-react";
 import type { SidebarBadgeCounts } from "@/lib/trade/sidebar-badge-counts.server";
@@ -318,6 +319,44 @@ export function TradeSidebar({ org, badgeCounts }: Props) {
             badgeCounts={badgeCounts}
           />
         ))}
+        {/* Help trigger — dispatches a window event consumed by
+            TradeHelpCenter so we don't need to thread state through
+            the shell. Also reachable via the "?" key. */}
+        <button
+          type="button"
+          onClick={() => {
+            if (typeof window !== "undefined") {
+              window.dispatchEvent(new Event("caelex-trade:open-help"));
+            }
+          }}
+          title="Help · glossary · keyboard shortcuts (?)"
+          className="group flex w-full items-center gap-3 rounded-md px-2.5 py-1.5 transition-colors duration-150"
+          style={{
+            background: "transparent",
+            color: "rgba(255, 255, 255, 0.65)",
+            fontSize: "13px",
+            fontWeight: 450,
+            letterSpacing: "-0.005em",
+          }}
+        >
+          <HelpCircle
+            className="h-[15px] w-[15px] shrink-0"
+            strokeWidth={1.75}
+            aria-hidden="true"
+            style={{ color: "rgba(255, 255, 255, 0.65)" }}
+          />
+          <span className="flex-1 truncate text-left">Help</span>
+          <kbd
+            aria-hidden="true"
+            className="rounded px-1 text-[10px] font-mono"
+            style={{
+              background: "rgba(255, 255, 255, 0.08)",
+              color: "rgba(255, 255, 255, 0.60)",
+            }}
+          >
+            ?
+          </kbd>
+        </button>
       </div>
     </nav>
   );

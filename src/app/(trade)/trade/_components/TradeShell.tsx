@@ -19,6 +19,7 @@ import * as React from "react";
 import { Menu, X } from "lucide-react";
 import { TradeSidebar } from "./TradeSidebar";
 import { TradeCommandPalette } from "./TradeCommandPalette";
+import { TradeHelpCenter } from "./TradeHelpCenter";
 import type { SidebarBadgeCounts } from "@/lib/trade/sidebar-badge-counts.server";
 
 interface Props {
@@ -117,6 +118,11 @@ export function TradeShell({ org, badgeCounts, children }: Props) {
           The component owns its own open state + key listener; we don't
           need props here. */}
       <TradeCommandPalette />
+
+      {/* Global "?" help center — same shell-level mount so the panel
+          works from any route. Owns its own open state via "?" key +
+          window event `caelex-trade:open-help`. */}
+      <TradeHelpCenter />
     </div>
   );
 }

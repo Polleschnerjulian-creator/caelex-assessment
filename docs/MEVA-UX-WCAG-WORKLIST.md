@@ -10,13 +10,13 @@ Update statuses as items ship. Group by phase + impact.
 
 ## 📊 Status Dashboard
 
-| Stream                                     | % done | Last bump                                                               |
-| ------------------------------------------ | ------ | ----------------------------------------------------------------------- |
-| **WCAG 2.2 AA**                            | ~98%   | W18 progressbar (commit 88db0a1f)                                       |
-| **UX — Quick wins**                        | ~85%   | Phase 3c — U-MED-5 KPI tint + pulse, U-MED-6 audit done                 |
-| **UX — Phase A (Power-User basics)**       | ~95%   | Phase 4a — U-HIGH-1 Today's Action Inbox (aggregator + panel, 21 tests) |
-| **UX — Phase B (Onboarding + Bulk)**       | 0%     | not started                                                             |
-| **UX — Phase C (Strategic deep features)** | 0%     | not started                                                             |
+| Stream                                     | % done   | Last bump                                                                           |
+| ------------------------------------------ | -------- | ----------------------------------------------------------------------------------- |
+| **WCAG 2.2 AA**                            | ~98%     | W18 progressbar (commit 88db0a1f)                                                   |
+| **UX — Quick wins**                        | ~85%     | Phase 3c — U-MED-5 KPI tint + pulse, U-MED-6 audit done                             |
+| **UX — Phase A (Power-User basics)**       | **100%** | Phase 4b — U-HIGH-8 + U-LOW-4 help-center side-panel (26-term glossary + shortcuts) |
+| **UX — Phase B (Onboarding + Bulk)**       | 0%       | not started                                                                         |
+| **UX — Phase C (Strategic deep features)** | 0%       | not started                                                                         |
 
 ---
 
@@ -229,13 +229,25 @@ Update statuses as items ship. Group by phase + impact.
   **Impact:** Hoch (lower onboarding curve)
   **Files:** `src/components/trade/Tooltip.tsx` (NEW) + per-place wrappings
 
-### U-HIGH-8 — Help-Center / Glossar / Docs-Link in Header
+### ✅ U-HIGH-8 + ✅ U-LOW-4 — In-app Help Center side-panel **(DONE — Phase 4b)**
 
-**Was:** Kein in-app Hilfe-Zugang.
-**Fix:** Header-Button "?" → Side-Panel mit Glossar + FAQs + Astra-Chat-Shortcut.
-**Aufwand:** 1 Tag
-**Impact:** Hoch (self-service support)
-**Files:** New `src/app/(trade)/trade/help/page.tsx` + Header-Button
+Combined both items into one panel because they answer the same operator question ("what am I looking at and how do I use it?"). Splitting them across two surfaces would fragment the answer.
+**Shipped:**
+
+- ✅ New `src/app/(trade)/trade/_components/TradeHelpCenter.tsx` — slide-in side-panel mounted globally in TradeShell.
+- ✅ Triggers (any of): "?" key (Slack/Linear/GitHub convention), "Help" button in sidebar footer, programmatic `window.dispatchEvent(new Event("caelex-trade:open-help"))`.
+- ✅ Smart "?" handler — ignores the keypress when focus is inside an `<input>`, `<textarea>` or contentEditable so typing "?" into search bars doesn't open the panel.
+- ✅ Four sections:
+  - **Quick start with Astra** — 3 pre-filled deep-link prompts (classify / screen / license-choice)
+  - **Glossary** — 26 curated compliance acronyms (ECCN/USML/FDPR/AGG/BAFA/OFAC/CSA/AUKUS/MTCR/NSG/Wassenaar/etc.) with one-line definitions + per-entry category tags. Live search filters across term + definition + category.
+  - **Keyboard shortcuts** — ⌘K/Ctrl+K/⌘/ → palette, ? → help, Esc → close — rendered as `<kbd>` chips.
+  - **Resources** — links to Training Corpus + Compliance Program page.
+- ✅ a11y: `role="dialog"` + `aria-modal="true"` + `aria-labelledby`, Esc-to-close, click-outside-to-close, sidebar trigger has `title` + visible `<kbd>` hint showing the "?" shortcut, close button has `aria-label`, glossary search input has hidden label.
+- ✅ Discoverable: sidebar footer now has a "Help" button with a `kbd-styled` ⌘-style hint chip showing "?" so first-time users find it visually before learning the shortcut.
+
+**Aufwand:** ~2h ✅ (vs. 1 Tag estimate — sharing the surface across U-HIGH-8 + U-LOW-4 halved the work)
+**Impact:** Hoch — self-service answers for the most-Googled compliance acronyms inline + power-user shortcut discovery
+**Files:** `TradeHelpCenter.tsx` (NEW) + `TradeShell.tsx` (mount) + `TradeSidebar.tsx` (trigger button + ? kbd hint)
 
 ---
 
@@ -336,9 +348,9 @@ Update statuses as items ship. Group by phase + impact.
 
 **Fix:** Settings → UI → Density. Affects row-height tokens.
 
-### U-LOW-4 — Keyboard-Shortcuts-Cheatsheet
+### ✅ U-LOW-4 — Keyboard-Shortcuts-Cheatsheet **(DONE — Phase 4b, combined with U-HIGH-8)**
 
-**Fix:** "?" key → modal with all shortcuts.
+**Shipped** as a section of TradeHelpCenter — see U-HIGH-8 entry above.
 
 ### U-LOW-5 — Animated Transitions zwischen Pages
 
