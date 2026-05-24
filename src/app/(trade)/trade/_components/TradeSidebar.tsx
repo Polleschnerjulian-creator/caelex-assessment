@@ -18,7 +18,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Inbox,
@@ -193,7 +192,7 @@ interface Props {
   };
 }
 
-export function TradeSidebar({ org: _org }: Props) {
+export function TradeSidebar({ org }: Props) {
   const pathname = usePathname();
 
   // Match V2Sidebar font stack — Inter + Apple system fallback.
@@ -211,22 +210,24 @@ export function TradeSidebar({ org: _org }: Props) {
         fontFamily: sidebarFont,
       }}
     >
-      {/* Brand — Caelex Trade Studio logo */}
+      {/* Brand — workspace wordmark (org name in big modern type) */}
       <div className="flex h-[72px] items-center px-4">
         <Link
           href="/trade"
-          className="block"
-          aria-label="Caelex Trade — Overview"
+          className="block transition-opacity hover:opacity-80"
+          aria-label={`${org.name} — Overview`}
         >
-          <Image
-            src="/logos/trade-studio-dark.svg"
-            alt="Caelex Trade"
-            width={290}
-            height={130}
-            priority
-            unoptimized
-            style={{ width: "auto", height: 40 }}
-          />
+          <span
+            className="block leading-none"
+            style={{
+              fontSize: "28px",
+              fontWeight: 600,
+              letterSpacing: "-0.025em",
+              color: "rgba(255, 255, 255, 0.96)",
+            }}
+          >
+            {org.name}
+          </span>
         </Link>
       </div>
 
