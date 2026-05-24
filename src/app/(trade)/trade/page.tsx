@@ -20,6 +20,7 @@ import { aggregateActionItems } from "@/lib/trade/action-inbox-aggregator";
 import { ComplianceHealthPanel } from "./_components/ComplianceHealthPanel";
 import { ActivityFeedPanel } from "./_components/ActivityFeedPanel";
 import { ActionInboxPanel } from "./_components/ActionInboxPanel";
+import { OnboardingBanner } from "./_components/OnboardingBanner";
 import {
   UpcomingDeadlinesStrip,
   assembleDeadlines,
@@ -412,29 +413,11 @@ export default async function TradeDashboardPage() {
       {/* Compliance health — EUC + Re-Export + VSD workflow surfaces */}
       <ComplianceHealthPanel summary={complianceHealth} />
 
-      {/* Empty state (org has no Trade data yet) */}
-      {!hasAnyData && (
-        <section className="mb-8 rounded-md border border-trade-border-subtle bg-trade-bg-elevated p-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-trade-accent-soft text-trade-accent-strong">
-            <Package size={28} />
-          </div>
-          <h2 className="text-[20px] font-bold text-trade-text-primary">
-            Erste Items klassifizieren
-          </h2>
-          <p className="mx-auto mt-2 max-w-md text-[13px] text-trade-text-secondary">
-            Starte mit der Klassifizierung deiner Trade-Items gegen US CCL/USML
-            und EU Annex I — danach kannst du Counterparties screenen und
-            Operations aufbauen.
-          </p>
-          <Link
-            href="/trade/items"
-            className="mt-5 inline-flex items-center gap-1.5 rounded-md bg-trade-accent px-4 py-2.5 text-[13px] font-semibold text-white transition hover:bg-trade-accent-strong"
-          >
-            Zur Klassifizierung
-            <ArrowRight size={14} />
-          </Link>
-        </section>
-      )}
+      {/* First-run onboarding banner (U-CRIT-2 MVP). Renders only when
+          the org has zero Trade data — once any item/party/operation
+          exists, the banner hides itself. Offers 4 entry paths:
+          seed sample data, ask Astra, ⌘K palette, help center. */}
+      {!hasAnyData && <OnboardingBanner />}
 
       {/* Expiring licenses alert */}
       {licensesExpiringSoon.length > 0 && (

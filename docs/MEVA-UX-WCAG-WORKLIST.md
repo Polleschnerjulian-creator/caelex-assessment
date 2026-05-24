@@ -69,17 +69,27 @@ Update statuses as items ship. Group by phase + impact.
   **Files:** `src/lib/trade/format.ts` (NEW pre-Phase 2) + 4 list pages
   **Commits:** Phase 2 batch (see git log)
 
-### U-CRIT-2 — Onboarding Tour + Sample-Data
+### ✅ U-CRIT-2 — Onboarding Tour + Sample-Data **(DONE — Phase 4d MVP)**
 
-**Was:** Erster Login = leere App, kein Guide.
-**Fix:**
+**Shipped (MVP):**
 
-- "Seed sample data" Button in Settings → erstellt 3 Items + 2 Parties + 1 Operation
-- 5-Step Joyride-Tour (Today → Items → Parties → Operations → Audit)
-- Toggle "Hide tour" persists in localStorage
-  **Aufwand:** 2 Tage
-  **Impact:** Hoch (first-user retention)
-  **Files:** New `src/lib/trade/sample-data-seeder.server.ts` + `src/app/(trade)/trade/_components/OnboardingTour.tsx`
+- ✅ New `src/lib/trade/sample-data-seeder.server.ts` — idempotent (no-op if org already has any TradeItem/TradeParty/TradeOperation). Creates 3 items (EO payload USML XV(a)+9A515.a, X-band transponder EAR 5A001.b.5, star tracker EAR99), 2 parties (German integrator CLEAR, Indian academic NOT_SCREENED for triage flow demo), 1 operation linking them with reference "SAMPLE-2026-Q1-001". All rows labelled "(Sample)" so operators recognise + delete later.
+- ✅ New `src/lib/trade/sample-data-actions.ts` server action wrapper — auth + super-admin fallback + role gate (MANAGER+) + revalidatePath('/trade', '/trade/items', '/trade/parties', '/trade/operations').
+- ✅ New `src/app/(trade)/trade/_components/OnboardingBanner.tsx` — replaces the bare "Erste Items klassifizieren" block on /trade welcome with a 4-path entry banner:
+  1. **Seed sample data** — one-click with loading / success / already-seeded / error states
+  2. **Ask Astra** — pre-filled "How do I classify my first item?" deep-link
+  3. **⌘K hint** — discoverability for the palette
+  4. **Open help center** — dispatches the same window event the sidebar uses
+- ✅ Banner only renders when `hasAnyData === false` — disappears the moment any Trade row exists.
+
+**Deferred to a later sprint:**
+
+- ❌ 5-step Joyride-style guided tour (heavy 3rd-party dep + multi-page choreography)
+- ❌ "Hide tour permanently" localStorage toggle (no tour to hide yet)
+
+**Aufwand:** ~3h ✅ (vs. 2 Tage estimate — Joyride tour deferred halved scope)
+**Impact:** Sehr hoch (first-user retention) — sample data lets operators experience the full data model in 1 click instead of bouncing on the empty workspace
+**Files:** `sample-data-seeder.server.ts` (NEW) + `sample-data-actions.ts` (NEW) + `OnboardingBanner.tsx` (NEW) + `/trade/page.tsx` (replace bare empty-state)
 
 ### ✅ U-CRIT-3 — Sidebar Tooltips für Jargon **(DONE — pre-Phase 2)**
 
