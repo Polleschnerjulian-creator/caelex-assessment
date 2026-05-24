@@ -13,9 +13,9 @@ Update statuses as items ship. Group by phase + impact.
 | Stream                                     | % done     | Last bump                                                                                                                                |
 | ------------------------------------------ | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | **WCAG 2.2 AA**                            | **~99.8%** | W19 + W20 — scopes aria-describedby + lang="de" on disclaimers. Only W14 axe-cli + W15 VoiceOver manual checks remain (tooling/process). |
-| **UX — Quick wins**                        | ~95%       | Phase 4c — U-MED-7 Recently Visited sidebar section (localStorage)                                                                       |
+| **UX — Quick wins**                        | **~100%**  | Phase 6c — Print CSS + Phase 6d — Autosave indicator + Phase 6a — Density toggle                                                         |
 | **UX — Phase A (Power-User basics)**       | **100%**   | Phase 4b — U-HIGH-8 + U-LOW-4 help-center side-panel (26-term glossary + shortcuts)                                                      |
-| **UX — Phase B (Onboarding + Bulk)**       | **~80%**   | Phase 6b — U-HIGH-5 MVP multi-select status filter on items page                                                                         |
+| **UX — Phase B (Onboarding + Bulk)**       | **~90%**   | Phase 6d — U-MED-1 Autosave (OrgProfile MVP). Only U-MED-2 Optimistic UI + U-MED-3 Audit-Trail UI (blocked on audit-log writes) remain.  |
 | **UX — Phase C (Strategic deep features)** | 0%         | not started                                                                                                                              |
 
 ---
