@@ -126,17 +126,20 @@ export function NotificationsTab({ preferences }: Props) {
       className="space-y-6 rounded-xl border border-trade-border-subtle bg-trade-bg-elevated px-6 py-6"
       aria-busy={isPending}
     >
-      <header>
-        <h2 className="text-[15px] font-semibold text-trade-text-primary">
-          Email notifications
-        </h2>
-        <p className="mt-0.5 text-[12px] text-trade-text-muted">
-          Per-event-type opt-out. All categories default to on; flipping a
-          toggle stops the matching cron from sending you e-mail for it.
-        </p>
-      </header>
+      {/* WCAG SC 1.3.1 — checkboxes grouped via fieldset/legend so
+          screen-reader users hear "Email notifications, group, 7
+          checkboxes" instead of just an unstructured list of toggles. */}
+      <fieldset className="space-y-2 border-0 p-0">
+        <legend className="mb-2 block">
+          <h2 className="text-[15px] font-semibold text-trade-text-primary">
+            Email notifications
+          </h2>
+          <p className="mt-0.5 text-[12px] text-trade-text-muted">
+            Per-event-type opt-out. All categories default to on; flipping a
+            toggle stops the matching cron from sending you e-mail for it.
+          </p>
+        </legend>
 
-      <div className="space-y-2">
         {TOGGLES.map((t) => (
           <label
             key={t.key}
@@ -158,7 +161,7 @@ export function NotificationsTab({ preferences }: Props) {
             </div>
           </label>
         ))}
-      </div>
+      </fieldset>
 
       <div className="flex items-center justify-between border-t border-trade-border-subtle pt-4">
         <div className="text-[12px]">
