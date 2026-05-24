@@ -39,6 +39,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { SidebarBadgeCounts } from "@/lib/trade/sidebar-badge-counts.server";
+import { RecentlyVisitedSection } from "./RecentlyVisitedSection";
 
 interface NavItem {
   href: string;
@@ -304,6 +305,11 @@ export function TradeSidebar({ org, badgeCounts }: Props) {
             className={idx === 0 ? "" : "mt-5"}
           />
         ))}
+
+        {/* Recently visited (U-MED-7) — localStorage-backed last 5 paths.
+            Rendered AFTER the static nav so it doesn't push the canonical
+            navigation down the viewport on first-time users. */}
+        <RecentlyVisitedSection />
       </div>
 
       {/* Footer — divider + Settings/Program/Research */}

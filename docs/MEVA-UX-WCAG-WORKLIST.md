@@ -13,7 +13,7 @@ Update statuses as items ship. Group by phase + impact.
 | Stream                                     | % done   | Last bump                                                                           |
 | ------------------------------------------ | -------- | ----------------------------------------------------------------------------------- |
 | **WCAG 2.2 AA**                            | ~98%     | W18 progressbar (commit 88db0a1f)                                                   |
-| **UX — Quick wins**                        | ~85%     | Phase 3c — U-MED-5 KPI tint + pulse, U-MED-6 audit done                             |
+| **UX — Quick wins**                        | ~95%     | Phase 4c — U-MED-7 Recently Visited sidebar section (localStorage)                  |
 | **UX — Phase A (Power-User basics)**       | **100%** | Phase 4b — U-HIGH-8 + U-LOW-4 help-center side-panel (26-term glossary + shortcuts) |
 | **UX — Phase B (Onboarding + Bulk)**       | 0%       | not started                                                                         |
 | **UX — Phase C (Strategic deep features)** | 0%       | not started                                                                         |
@@ -319,12 +319,21 @@ Combined both items into one panel because they answer the same operator questio
 **Aufwand:** 1h
 **Files:** Counterparty status pills, license status badges
 
-### U-MED-7 — Recently Visited / Pinned Sidebar Items
+### ✅ U-MED-7 — Recently Visited Sidebar Section **(DONE — Phase 4c, partial)**
 
-**Was:** Sidebar static.
-**Fix:** "Recent" section at top of sidebar (last 5 visited pages). "Pin/Unpin" per item.
-**Aufwand:** 1 Tag
-**Files:** TradeSidebar + localStorage state
+**Shipped:**
+
+- ✅ New `useRecentlyVisited()` hook (localStorage-backed, key `caelex-trade:recently-visited`, max 5 entries, de-dupes on revisit so the latest position 0 always reflects the most recently visited)
+- ✅ Excludes the welcome page itself + `/trade/astra` sub-routes (those have their own internal state) from the history
+- ✅ New `RecentlyVisitedSection.tsx` rendered in TradeSidebar BELOW the static nav (so a first-time user with no history doesn't see anything extra; the section only appears once it has entries)
+- ✅ Per-entry label resolved via longest-prefix-match against ROUTE_PREFIXES (e.g. `/trade/items/abc-12` → label "Items" + faded detail "abc-12")
+- ✅ Active state highlight when row matches current pathname
+
+**Deferred:** "Pin/Unpin" per item — needs a second localStorage key + UI primitive; not in MVP.
+
+**Aufwand:** ~1.5h ✅ (vs. 1 Tag estimate)
+**Impact:** Mittel-Hoch (saves the sidebar round-trip for daily-jumping operators)
+**Files:** `useRecentlyVisited.ts` (NEW) + `RecentlyVisitedSection.tsx` (NEW) + `TradeSidebar.tsx` (mount)
 
 ### U-MED-8 — Mobile-Responsive Tables
 
