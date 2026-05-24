@@ -18,6 +18,7 @@
 import * as React from "react";
 import { Menu, X } from "lucide-react";
 import { TradeSidebar } from "./TradeSidebar";
+import { TradeCommandPalette } from "./TradeCommandPalette";
 import type { SidebarBadgeCounts } from "@/lib/trade/sidebar-badge-counts.server";
 
 interface Props {
@@ -110,6 +111,12 @@ export function TradeShell({ org, badgeCounts, children }: Props) {
       >
         {children}
       </main>
+
+      {/* Global ⌘K / Ctrl+K palette — mounted once at shell level so the
+          shortcut works regardless of which sub-route the user is on.
+          The component owns its own open state + key listener; we don't
+          need props here. */}
+      <TradeCommandPalette />
     </div>
   );
 }

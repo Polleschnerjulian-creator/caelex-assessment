@@ -10,13 +10,13 @@ Update statuses as items ship. Group by phase + impact.
 
 ## 📊 Status Dashboard
 
-| Stream                                     | % done | Last bump                                               |
-| ------------------------------------------ | ------ | ------------------------------------------------------- |
-| **WCAG 2.2 AA**                            | ~98%   | W18 progressbar (commit 88db0a1f)                       |
-| **UX — Quick wins**                        | ~85%   | Phase 3c — U-MED-5 KPI tint + pulse, U-MED-6 audit done |
-| **UX — Phase A (Power-User basics)**       | ~60%   | U-HIGH-3 + U-HIGH-6 done; palette + inbox still pending |
-| **UX — Phase B (Onboarding + Bulk)**       | 0%     | not started                                             |
-| **UX — Phase C (Strategic deep features)** | 0%     | not started                                             |
+| Stream                                     | % done | Last bump                                                 |
+| ------------------------------------------ | ------ | --------------------------------------------------------- |
+| **WCAG 2.2 AA**                            | ~98%   | W18 progressbar (commit 88db0a1f)                         |
+| **UX — Quick wins**                        | ~85%   | Phase 3c — U-MED-5 KPI tint + pulse, U-MED-6 audit done   |
+| **UX — Phase A (Power-User basics)**       | ~80%   | Phase 3d — U-CRIT-4 ⌘K palette (27 verbs across 4 groups) |
+| **UX — Phase B (Onboarding + Bulk)**       | 0%     | not started                                               |
+| **UX — Phase C (Strategic deep features)** | 0%     | not started                                               |
 
 ---
 
@@ -89,17 +89,24 @@ Update statuses as items ship. Group by phase + impact.
 **Impact:** Hoch (new-user comprehension)
 **Files:** `src/app/(trade)/trade/_components/TradeSidebar.tsx`
 
-### U-CRIT-4 — Command Palette ⌘K
+### ✅ U-CRIT-4 — Command Palette ⌘K **(DONE — Phase 3d)**
 
-**Was:** Keine globale Quick-Action. Comply V2 hat `CommandPalette` Component — Trade kann sie reusen.
-**Fix:**
+**Shipped:**
 
-- Wire `src/components/dashboard/v2/CommandPalette.tsx` in TradeShell
-- Trade-spezifische Verbs: "Classify item X" / "Add counterparty" / "Find license" / "Generate DCS"
-- ⌘K Keyboard-Shortcut global
-  **Aufwand:** 1 Tag
-  **Impact:** Sehr hoch (Power-User transformation)
-  **Files:** `src/app/(trade)/trade/_components/TradeShell.tsx` + new `TradeCommandPalette.tsx`
+- ✅ New `src/app/(trade)/trade/_components/TradeCommandPalette.tsx` — Trade-scoped palette built on the cmdk primitives from `@/components/ui/v2/command` (Comply V2's shared dialog shell). Self-contained — no coupling to Comply's search server-actions.
+- ✅ 27 statically-defined verbs across 4 groups:
+  - **Navigate** (16 verbs): every sidebar destination (Overview / Items / Counterparties / Pipeline / Licenses / Classify / EUC / Re-Export / VSD / Sammelg / France LOS / UK ECJU / FAA AST / Deemed Exports / Program / Training Corpus)
+  - **Create** (6 verbs): "New trade item / counterparty / operation / license / EUC / VSD" — each navigates to the list page with `?new=1` hint for future auto-open form wiring
+  - **Astra AI** (4 verbs): "Open Astra Trade" + 3 pre-filled deep-link prompts (classify / screen / license-choice) routed via `?prefill=` (the same hook U-HIGH-4 added)
+  - **Settings** (1 verb)
+- ✅ Mounted globally inside `TradeShell` so the shortcut works across every `/trade/*` route
+- ✅ Keyboard contract: ⌘K / Ctrl+K / ⌘/ all toggle (Linear convention), Esc closes (free from Radix Dialog), `e.preventDefault()` so we don't conflict with browser ⌘K-search
+- ✅ a11y: dialog gets `aria-label`, Radix supplies focus-trap + aria-modal + Esc-handling, CommandInput is a proper `<input>` with cmdk's live result-count announcements
+- ✅ Defer-after-close: `setTimeout(..., 0)` between dialog close and `router.push` so the close animation doesn't fight the route change
+
+**Aufwand:** ~3h ✅ (vs. 1 Tag estimate — cmdk primitive made it fast)
+**Impact:** Sehr hoch (Power-User transformation) — any of 27 actions reachable in 2 keystrokes
+**Files:** `TradeCommandPalette.tsx` (NEW) + `TradeShell.tsx` (mount)
 
 ### U-CRIT-5 — Bulk Operations + Checkbox-Column
 
