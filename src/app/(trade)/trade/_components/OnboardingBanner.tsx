@@ -38,6 +38,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { seedSampleTradeDataAction } from "@/lib/trade/sample-data-actions";
+import { useToast } from "@/components/ui/Toast";
 
 type SeedState =
   | { kind: "idle" }
@@ -52,19 +53,32 @@ type SeedState =
 export function OnboardingBanner() {
   const [state, setState] = React.useState<SeedState>({ kind: "idle" });
   const router = useRouter();
+  // Toast is mounted at TradeShell level (Phase 5d). Surface seed
+  // outcomes top-right in addition to the inline state, so users with
+  // the banner scrolled off-screen still see the result.
+  const toast = useToast();
 
   const handleSeed = async () => {
     setState({ kind: "loading" });
     const result = await seedSampleTradeDataAction();
     if (!result.ok) {
       setState({ kind: "error", message: result.error });
+      toast.error("Sample-data seed failed", result.error);
       return;
     }
     if (!result.seeded) {
       setState({ kind: "already-seeded" });
+      toast.info(
+        "Sample data skipped",
+        "Your workspace already has Trade data — nothing to seed.",
+      );
       return;
     }
     setState({ kind: "seeded", counts: result.counts });
+    toast.success(
+      "Sample data seeded",
+      `${result.counts.items} items · ${result.counts.parties} parties · ${result.counts.operations} operation`,
+    );
     // Defer router refresh slightly so the success banner is visible
     // for a beat before the page re-renders with the new data.
     setTimeout(() => router.refresh(), 800);

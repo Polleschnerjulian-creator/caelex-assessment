@@ -361,9 +361,17 @@ Combined both items into one panel because they answer the same operator questio
 
 ## 🟢 LOW — Nice-to-Have
 
-### U-LOW-1 — Toast/Notification-Center
+### ✅ U-LOW-1 — Toast notifications mounted in TradeShell **(DONE — Phase 5d)**
 
-**Fix:** Top-right toast container + persistent notification-history popover.
+**Shipped:**
+
+- ✅ Mounted the existing `ToastProvider` (from `src/components/ui/Toast`) inside TradeShell so any descendent client component can call `useToast()` for success / error / warning / info pills.
+- ✅ Wired into OnboardingBanner seed flow — success, already-seeded, and error each surface a top-right toast in addition to the inline state, so users with the banner scrolled off-screen still see the outcome.
+- ✅ ToastProvider is itself already a11y-correct (`role="region"`, `aria-live="polite"`, auto-dismiss timing).
+
+**Deferred:** Persistent notification-history popover (separate sprint — needs a per-user persistence model).
+**Aufwand:** ~30min ✅ (existing primitive made this trivial)
+**Files:** `TradeShell.tsx` + `OnboardingBanner.tsx`
 
 ### U-LOW-2 — Dark/Light-Mode-Toggle
 
