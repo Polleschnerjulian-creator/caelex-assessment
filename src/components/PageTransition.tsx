@@ -17,6 +17,16 @@ const EXCLUDED_PREFIXES = [
   "/dashboard",
   "/atlas",
   "/assure",
+  // Trade — excluded for the same reason as Atlas. Trade has its own
+  // dark sidebar + per-page skeletons; the full-page pyramid splash
+  // overlays every internal navigation which the user flagged as
+  // "loading screen muss weg".
+  "/trade",
+  "/trade-login",
+  "/trade-no-access",
+  "/trade-access",
+  "/trade-forgot-password",
+  "/trade-reset-password",
   "/login",
   "/signup",
   "/assessment",
