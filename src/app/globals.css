@@ -4851,9 +4851,12 @@ html[data-trade-preload="dark"] .trade-themed {
   --trade-text-primary: #f1f5f9;
   --trade-text-secondary: #d1d5db;
   --trade-text-muted: #9ca3af;
-  --trade-accent: #818cf8; /* indigo-400 — lighter on dark surface */
-  --trade-accent-soft: rgba(99, 102, 241, 0.14);
-  --trade-accent-strong: #6366f1;
+  /* Accent — monochrome WHITE (per user pref). Replaces former indigo
+     so primary buttons + active pills read as Apple/Linear white-on-dark
+     instead of purple. */
+  --trade-accent: #ffffff;
+  --trade-accent-soft: rgba(255, 255, 255, 0.1);
+  --trade-accent-strong: #ffffff;
   --trade-hover: #1e293b;
 
   /* APPLE HIG semantic tokens — dark variants.
@@ -4985,4 +4988,21 @@ html[data-trade-theme] .trade-themed :where(h1, h2, h3, h4, h5, h6),
 html[data-trade-theme] .trade-themed label,
 .trade-themed label {
   color: var(--trade-text-secondary);
+}
+
+/* Primary-button contrast guard — in dark mode the accent is white,
+   so any element painted with `bg-trade-accent` needs its label flipped
+   to near-black to remain readable. Targets the standard Tailwind
+   utility class as used across Trade settings, page CTAs, etc. The
+   `:where()` keeps specificity at (0,2,0) so per-element overrides
+   still win. */
+.trade-themed[data-trade-theme="dark"] :where(.bg-trade-accent),
+.trade-themed[data-trade-theme="dark"]
+  :where(.hover\:bg-trade-accent-strong):hover {
+  color: #0a0a0a;
+}
+/* The `text-white` utility on these elements would still override the
+   above (text-white wins by source order). Force-override it. */
+.trade-themed[data-trade-theme="dark"] .bg-trade-accent.text-white {
+  color: #0a0a0a;
 }
