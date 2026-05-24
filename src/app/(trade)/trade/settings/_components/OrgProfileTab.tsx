@@ -1,7 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Save, CheckCircle2, AlertCircle } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import {
+  Save,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  CloudOff,
+} from "lucide-react";
 import type { TradeOrgProfileView } from "@/lib/trade/settings/org-profile-service";
 import { updateOrgProfile } from "@/lib/trade/settings/settings-actions";
 
@@ -29,6 +35,18 @@ const REGIMES = [
  * pending state without blocking the page. Field-level errors come
  * back via the `ActionResult` discriminated union.
  */
+/** U-MED-1 — autosave debounce window. Long enough that we don't
+ *  thrash the network on every keypress, short enough that the
+ *  operator perceives the save as "automatic, no thinking required". */
+const AUTOSAVE_DEBOUNCE_MS = 1500;
+
+type AutosaveState =
+  | { kind: "clean" }
+  | { kind: "dirty" }
+  | { kind: "saving" }
+  | { kind: "saved"; at: number }
+  | { kind: "error" };
+
 export function OrgProfileTab({ profile }: Props) {
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<
@@ -36,16 +54,20 @@ export function OrgProfileTab({ profile }: Props) {
     | { kind: "error"; message: string; fields?: Record<string, string[]> }
     | null
   >(null);
+  // Autosave state — separate from the explicit submit state so the
+  // operator can still hit "Save changes" for an immediate write and
+  // see classic submit feedback.
+  const [autosave, setAutosave] = useState<AutosaveState>({ kind: "clean" });
+  const formRef = useRef<HTMLFormElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-
+  /** Build the canonical update payload from a FormData. Centralised so
+   *  the explicit submit + debounced autosave produce identical writes. */
+  const buildInput = useCallback((formData: FormData) => {
     const preferredRegimes = REGIMES.filter((r) =>
       formData.get(`regime-${r.code}`),
     ).map((r) => r.code);
-
-    const input = {
+    return {
       bafaContactName: (formData.get("bafaContactName") as string) || "",
       bafaContactRole: (formData.get("bafaContactRole") as string) || "",
       bafaContactPhone: (formData.get("bafaContactPhone") as string) || "",
@@ -56,26 +78,66 @@ export function OrgProfileTab({ profile }: Props) {
         (formData.get("primaryExportJurisdiction") as string) || "",
       preferredRegimes,
     };
+  }, []);
 
-    startTransition(async () => {
+  /** Common save path used by both submit + debounced autosave. */
+  const persist = useCallback(
+    async (
+      input: ReturnType<typeof buildInput>,
+      via: "submit" | "autosave",
+    ) => {
+      if (via === "autosave") setAutosave({ kind: "saving" });
       const result = await updateOrgProfile(input);
       if (result.ok) {
-        setFeedback({ kind: "ok" });
+        if (via === "submit") setFeedback({ kind: "ok" });
+        setAutosave({ kind: "saved", at: Date.now() });
       } else {
-        setFeedback({
-          kind: "error",
-          message: result.error,
-          fields: result.fieldErrors,
-        });
+        if (via === "submit") {
+          setFeedback({
+            kind: "error",
+            message: result.error,
+            fields: result.fieldErrors,
+          });
+        }
+        setAutosave({ kind: "error" });
       }
-    });
+    },
+    [],
+  );
+
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const input = buildInput(new FormData(e.currentTarget));
+    startTransition(() => persist(input, "submit"));
   }
+
+  /** Form-level onChange — bubbles up from every input + checkbox.
+   *  Mark dirty + debounce the autosave call. */
+  const onAnyChange = useCallback(() => {
+    if (!formRef.current) return;
+    setAutosave({ kind: "dirty" });
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      if (!formRef.current) return;
+      const input = buildInput(new FormData(formRef.current));
+      void persist(input, "autosave");
+    }, AUTOSAVE_DEBOUNCE_MS);
+  }, [buildInput, persist]);
+
+  // Cleanup any pending debounce when the component unmounts.
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
   return (
     <form
+      ref={formRef}
       onSubmit={onSubmit}
+      onChange={onAnyChange}
       className="space-y-6 rounded-xl border border-trade-border-subtle bg-trade-bg-elevated px-6 py-6"
-      aria-busy={isPending}
+      aria-busy={isPending || autosave.kind === "saving"}
     >
       <Section
         title="BAFA primary contact"
@@ -193,7 +255,7 @@ export function OrgProfileTab({ profile }: Props) {
         </div>
       </Section>
 
-      <SaveBar isPending={isPending} feedback={feedback} />
+      <SaveBar isPending={isPending} feedback={feedback} autosave={autosave} />
     </form>
   );
 }
@@ -298,37 +360,109 @@ function Field({
 function SaveBar({
   isPending,
   feedback,
+  autosave,
 }: {
   isPending: boolean;
   feedback:
     | { kind: "ok" }
     | { kind: "error"; message: string; fields?: Record<string, string[]> }
     | null;
+  autosave: AutosaveState;
 }) {
   return (
     <div className="flex items-center justify-between border-t border-trade-border-subtle pt-4">
-      <div className="text-[12px]">
+      <div className="flex items-center gap-3 text-[12px]">
+        {/* Explicit-submit feedback takes precedence over autosave —
+            the user pressed the button so we surface the result first. */}
         {feedback?.kind === "ok" && (
           <span className="inline-flex items-center gap-1.5 text-emerald-500">
-            <CheckCircle2 size={14} />
+            <CheckCircle2 size={14} aria-hidden="true" />
             Saved
           </span>
         )}
         {feedback?.kind === "error" && (
-          <span className="inline-flex items-center gap-1.5 text-red-500">
-            <AlertCircle size={14} />
+          <span
+            role="alert"
+            className="inline-flex items-center gap-1.5 text-red-500"
+          >
+            <AlertCircle size={14} aria-hidden="true" />
             {feedback.message}
           </span>
         )}
+        {/* Autosave status — quiet ambient indicator (U-MED-1). */}
+        {!feedback && <AutosaveIndicator state={autosave} />}
       </div>
       <button
         type="submit"
         disabled={isPending}
         className="inline-flex items-center gap-2 rounded-md bg-trade-accent px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-trade-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <Save size={14} />
+        <Save size={14} aria-hidden="true" />
         {isPending ? "Saving…" : "Save changes"}
       </button>
     </div>
   );
+}
+
+/** Tiny ambient indicator that reports the autosave state — dirty,
+ *  saving, saved (with relative time), or error. Polite aria-live so
+ *  screen-reader users hear "Saved" without an announcement storm. */
+function AutosaveIndicator({ state }: { state: AutosaveState }) {
+  // Re-render every minute so the "Saved 1 min ago" relative time
+  // doesn't go stale when the user leaves the form open.
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (state.kind !== "saved") return;
+    const i = setInterval(() => setTick((n) => n + 1), 30_000);
+    return () => clearInterval(i);
+  }, [state.kind]);
+
+  let inner: React.ReactNode = null;
+  if (state.kind === "dirty") {
+    inner = (
+      <>
+        <CloudOff size={12} aria-hidden="true" />
+        <span>Unsaved changes</span>
+      </>
+    );
+  } else if (state.kind === "saving") {
+    inner = (
+      <>
+        <Loader2 size={12} className="animate-spin" aria-hidden="true" />
+        <span>Saving…</span>
+      </>
+    );
+  } else if (state.kind === "saved") {
+    inner = (
+      <>
+        <CheckCircle2 size={12} aria-hidden="true" />
+        <span>Saved {relativeTime(state.at)}</span>
+      </>
+    );
+  } else if (state.kind === "error") {
+    inner = (
+      <>
+        <AlertCircle size={12} aria-hidden="true" />
+        <span>Autosave failed — use Save changes</span>
+      </>
+    );
+  }
+  if (!inner) return null;
+  return (
+    <span
+      aria-live="polite"
+      className={`inline-flex items-center gap-1 text-trade-text-muted ${
+        state.kind === "error" ? "text-amber-700" : ""
+      }`}
+    >
+      {inner}
+    </span>
+  );
+}
+
+function relativeTime(timestamp: number): string {
+  const elapsed = Date.now() - timestamp;
+  if (elapsed < 5_000) return "just now";
+  if (elapsed < 60_000) return `${Math.floor(elapsed / 1000)}s ago`;
+  return `${Math.floor(elapsed / 60_000)} min ago`;
 }

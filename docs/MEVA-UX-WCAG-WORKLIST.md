@@ -282,12 +282,25 @@ Combined both items into one panel because they answer the same operator questio
 
 ## 🟡 MEDIUM — Polish
 
-### U-MED-1 — Autosave + "Saved" indicators
+### ✅ U-MED-1 — Autosave + "Saved" indicators **(DONE — Phase 6d MVP, OrgProfile tab)**
 
-**Was:** Forms keine Autosave, kein "Saving..." Toast.
-**Fix:** Debounced autosave on Settings inputs + inline "✓ Saved 2s ago" indicator.
-**Aufwand:** 1 Tag
-**Files:** Settings tab forms
+**Shipped:**
+
+- ✅ OrgProfileTab form gains a debounced autosave path (`AUTOSAVE_DEBOUNCE_MS = 1500ms`) wired via a single form-level `onChange` listener — no per-field controlled-state refactor needed; the existing uncontrolled inputs still work.
+- ✅ `buildInput()` extracted as a shared helper so the explicit submit and the debounced autosave produce identical writes.
+- ✅ AutosaveIndicator component reports four states inline next to the Save button:
+  - **dirty** — "Unsaved changes" + CloudOff icon
+  - **saving** — "Saving…" + spinner
+  - **saved** — "Saved {relativeTime}" (re-renders every 30s so the relative time stays fresh)
+  - **error** — "Autosave failed — use Save changes" (amber) with a fallback to the explicit-submit path
+- ✅ `aria-live="polite"` on the indicator so screen-reader users hear save outcomes without an announcement storm.
+- ✅ Cleanup useEffect prevents an in-flight debounce from firing after the component unmounts.
+
+**Deferred:** Wire the same pattern into NotificationsTab + AuditTab (mechanical port — separate sprint).
+
+**Aufwand:** ~1h ✅ (vs. 1 Tag estimate — single form-level onChange listener avoided the controlled-state refactor)
+**Impact:** Hoch — operators stop losing 5 fields of unsaved data when they navigate away
+**Files:** `OrgProfileTab.tsx`
 
 ### U-MED-2 — Optimistic UI
 
