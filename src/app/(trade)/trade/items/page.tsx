@@ -42,6 +42,10 @@ import {
 import { humanizeEnum } from "@/lib/trade/format";
 import { ListSkeleton } from "../_components/Skeletons";
 import { EmptyStateRich } from "../_components/EmptyStateRich";
+import { BulkActionsBar } from "../_components/BulkActionsBar";
+import { buildCsv, downloadCsv } from "@/lib/trade/csv-export";
+import { useToast } from "@/components/ui/Toast";
+import { Download } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -269,52 +273,82 @@ function NewItemForm({
 
 // ─── Item row ─────────────────────────────────────────────────────────
 
-function ItemRow({ item }: { item: TradeItemSummary }) {
+interface ItemRowProps {
+  item: TradeItemSummary;
+  /** Selection state passed from parent — undefined disables checkbox. */
+  selected?: boolean;
+  /** Callback when the checkbox toggles. Omit to hide the checkbox. */
+  onToggleSelect?: (id: string, next: boolean) => void;
+}
+
+function ItemRow({ item, selected, onToggleSelect }: ItemRowProps) {
   const hasClassification =
     item.eccnEU || item.eccnUS || item.usmlCategory || item.mtcrCategory;
 
+  // Bulk-select checkbox sits OUTSIDE the Link so its click doesn't
+  // navigate to the detail page (U-CRIT-5).
+  const showCheckbox = !!onToggleSelect;
   return (
-    <Link href={`/trade/items/${item.id}`}>
-      <div className="group flex items-center gap-4 rounded-lg border border-trade-border-subtle bg-trade-bg-panel px-4 py-3.5 transition hover:border-trade-border hover:bg-trade-bg-elevated">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[13px] font-semibold text-trade-text-primary">
-              {item.name}
-            </span>
-            {item.internalSku && (
-              <span className="font-mono text-[11px] text-trade-text-muted">
-                {item.internalSku}
+    <div className="group flex items-center gap-3">
+      {showCheckbox ? (
+        <label className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center">
+          <input
+            type="checkbox"
+            checked={!!selected}
+            onChange={(e) => onToggleSelect!(item.id, e.target.checked)}
+            aria-label={`Select ${item.name}`}
+            className="h-4 w-4 accent-trade-accent"
+          />
+        </label>
+      ) : null}
+      <Link href={`/trade/items/${item.id}`} className="block flex-1">
+        <div
+          className={`flex items-center gap-4 rounded-lg border bg-trade-bg-panel px-4 py-3.5 transition hover:bg-trade-bg-elevated ${
+            selected
+              ? "border-trade-accent ring-1 ring-trade-accent/30"
+              : "border-trade-border-subtle hover:border-trade-border"
+          }`}
+        >
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[13px] font-semibold text-trade-text-primary">
+                {item.name}
               </span>
+              {item.internalSku && (
+                <span className="font-mono text-[11px] text-trade-text-muted">
+                  {item.internalSku}
+                </span>
+              )}
+              <StatusBadge status={item.status} />
+            </div>
+
+            {item.manufacturerName && (
+              <p className="mt-0.5 text-[11px] text-trade-text-muted">
+                {item.manufacturerName}
+              </p>
             )}
-            <StatusBadge status={item.status} />
+
+            {hasClassification && (
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {item.eccnEU && <CodePill code={`EU: ${item.eccnEU}`} />}
+                {item.eccnUS && <CodePill code={`CCL: ${item.eccnUS}`} />}
+                {item.usmlCategory && (
+                  <CodePill code={`USML: ${item.usmlCategory}`} isItar />
+                )}
+                {item.mtcrCategory && (
+                  <CodePill code={`MTCR: ${item.mtcrCategory}`} />
+                )}
+                {item.germanAlEntry && (
+                  <CodePill code={`DE-AL: ${item.germanAlEntry}`} />
+                )}
+              </div>
+            )}
           </div>
 
-          {item.manufacturerName && (
-            <p className="mt-0.5 text-[11px] text-trade-text-muted">
-              {item.manufacturerName}
-            </p>
-          )}
-
-          {hasClassification && (
-            <div className="mt-1.5 flex flex-wrap gap-1.5">
-              {item.eccnEU && <CodePill code={`EU: ${item.eccnEU}`} />}
-              {item.eccnUS && <CodePill code={`CCL: ${item.eccnUS}`} />}
-              {item.usmlCategory && (
-                <CodePill code={`USML: ${item.usmlCategory}`} isItar />
-              )}
-              {item.mtcrCategory && (
-                <CodePill code={`MTCR: ${item.mtcrCategory}`} />
-              )}
-              {item.germanAlEntry && (
-                <CodePill code={`DE-AL: ${item.germanAlEntry}`} />
-              )}
-            </div>
-          )}
+          <ChevronRight className="h-4 w-4 shrink-0 text-trade-text-muted opacity-0 transition group-hover:opacity-100" />
         </div>
-
-        <ChevronRight className="h-4 w-4 shrink-0 text-trade-text-muted opacity-0 transition group-hover:opacity-100" />
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 }
 
@@ -356,6 +390,27 @@ export default function TradeItemsPage() {
   const [statusFilter, setStatusFilter] = useState<TradeItemStatus | "">("");
   const [showNew, setShowNew] = useState(false);
   const [error, setError] = useState("");
+  // U-CRIT-5: bulk-select state. `selectedIds` is a Set for O(1)
+  // membership checks during render. Cleared whenever the filter
+  // changes so a fresh result set doesn't carry stale selections.
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const toast = useToast();
+
+  const toggleSelect = useCallback((id: string, next: boolean) => {
+    setSelectedIds((prev) => {
+      const out = new Set(prev);
+      if (next) out.add(id);
+      else out.delete(id);
+      return out;
+    });
+  }, []);
+  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds((prev) => {
+      if (prev.size === items.length && items.length > 0) return new Set();
+      return new Set(items.map((i) => i.id));
+    });
+  }, [items]);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -380,11 +435,50 @@ export default function TradeItemsPage() {
     fetchItems();
   }, [fetchItems]);
 
+  // Clear stale selection when the filter / search changes — otherwise
+  // rows the user can no longer see would still be "selected".
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [search, statusFilter]);
+
   const handleNewSuccess = (item: TradeItemSummary) => {
     setItems((prev) => [item, ...prev]);
     setTotal((t) => t + 1);
     setShowNew(false);
   };
+
+  /** Build a CSV of the currently-selected items + trigger download. */
+  const handleExportSelected = () => {
+    const selectedItems = items.filter((i) => selectedIds.has(i.id));
+    if (selectedItems.length === 0) {
+      toast.warning("Nothing to export", "Select at least one item first.");
+      return;
+    }
+    const csv = buildCsv(selectedItems, [
+      { header: "ID", get: (i) => i.id },
+      { header: "Name", get: (i) => i.name },
+      { header: "SKU", get: (i) => i.internalSku },
+      { header: "Manufacturer", get: (i) => i.manufacturerName },
+      { header: "Status", get: (i) => i.status },
+      { header: "ECCN (EU)", get: (i) => i.eccnEU },
+      { header: "ECCN (US/CCL)", get: (i) => i.eccnUS },
+      { header: "USML category", get: (i) => i.usmlCategory },
+      { header: "MTCR category", get: (i) => i.mtcrCategory },
+      { header: "DE-AL entry", get: (i) => i.germanAlEntry },
+      { header: "Classification source", get: (i) => i.classificationSource },
+      { header: "Classified at", get: (i) => i.classifiedAt },
+      { header: "Created at", get: (i) => i.createdAt },
+    ]);
+    downloadCsv("caelex-trade-items", csv);
+    toast.success(
+      "Export started",
+      `${selectedItems.length} item${selectedItems.length === 1 ? "" : "s"} downloaded as CSV.`,
+    );
+  };
+
+  const allVisibleSelected =
+    items.length > 0 && selectedIds.size === items.length;
+  const someVisibleSelected = selectedIds.size > 0 && !allVisibleSelected;
 
   return (
     <div className="mx-auto max-w-screen-lg px-8 py-8">
@@ -476,12 +570,62 @@ export default function TradeItemsPage() {
       ) : items.length === 0 && !showNew ? (
         <EmptyState onNew={() => setShowNew(true)} />
       ) : (
-        <div className="space-y-2">
-          {items.map((item) => (
-            <ItemRow key={item.id} item={item} />
-          ))}
-        </div>
+        <>
+          {/* Select-all header row (U-CRIT-5). Sticky on scroll would be
+              nice but adds layout complexity — defer to a later polish. */}
+          <div className="mb-2 flex items-center gap-3 px-1 text-[11px] text-trade-text-muted">
+            <label className="flex h-10 w-10 cursor-pointer items-center justify-center">
+              <input
+                type="checkbox"
+                checked={allVisibleSelected}
+                ref={(el) => {
+                  // Native "indeterminate" state — visible "some selected"
+                  // tick. Only settable via DOM property, not attribute.
+                  if (el) el.indeterminate = someVisibleSelected;
+                }}
+                onChange={toggleSelectAll}
+                aria-label={
+                  allVisibleSelected
+                    ? `Deselect all ${items.length} items`
+                    : `Select all ${items.length} items`
+                }
+                className="h-4 w-4 accent-trade-accent"
+              />
+            </label>
+            <span>
+              {selectedIds.size > 0
+                ? `${selectedIds.size} of ${items.length} selected`
+                : `${items.length} item${items.length === 1 ? "" : "s"}`}
+            </span>
+          </div>
+          <div className="space-y-2">
+            {items.map((item) => (
+              <ItemRow
+                key={item.id}
+                item={item}
+                selected={selectedIds.has(item.id)}
+                onToggleSelect={toggleSelect}
+              />
+            ))}
+          </div>
+        </>
       )}
+
+      {/* Bulk actions bar — fixed bottom, only renders when selection > 0 */}
+      <BulkActionsBar
+        count={selectedIds.size}
+        onClear={clearSelection}
+        actions={
+          <button
+            type="button"
+            onClick={handleExportSelected}
+            className="inline-flex items-center gap-1.5 rounded-full bg-trade-accent px-3 py-1 text-[12px] font-semibold text-white transition hover:bg-trade-accent-strong"
+          >
+            <Download className="h-3.5 w-3.5" aria-hidden="true" />
+            Export CSV
+          </button>
+        }
+      />
 
       {/* Disclaimer */}
       <div className="mt-10 flex items-start gap-2.5 rounded-md border border-trade-border-subtle bg-trade-bg-subtle p-4">

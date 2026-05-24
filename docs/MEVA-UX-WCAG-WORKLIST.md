@@ -15,7 +15,7 @@ Update statuses as items ship. Group by phase + impact.
 | **WCAG 2.2 AA**                            | ~99.3%   | W17 NotificationsTab fieldset/legend coverage                                       |
 | **UX — Quick wins**                        | ~95%     | Phase 4c — U-MED-7 Recently Visited sidebar section (localStorage)                  |
 | **UX — Phase A (Power-User basics)**       | **100%** | Phase 4b — U-HIGH-8 + U-LOW-4 help-center side-panel (26-term glossary + shortcuts) |
-| **UX — Phase B (Onboarding + Bulk)**       | 0%       | not started                                                                         |
+| **UX — Phase B (Onboarding + Bulk)**       | **~60%** | Phase 5e — U-CRIT-5 MVP bulk-select + CSV export on items page (14 tests)           |
 | **UX — Phase C (Strategic deep features)** | 0%       | not started                                                                         |
 
 ---
@@ -118,17 +118,24 @@ Update statuses as items ship. Group by phase + impact.
 **Impact:** Sehr hoch (Power-User transformation) — any of 27 actions reachable in 2 keystrokes
 **Files:** `TradeCommandPalette.tsx` (NEW) + `TradeShell.tsx` (mount)
 
-### U-CRIT-5 — Bulk Operations + Checkbox-Column
+### ✅ U-CRIT-5 — Bulk Operations + Checkbox-Column **(DONE — Phase 5e MVP, items page only)**
 
-**Was:** Single-row clicks blockieren 1000+ Item Workflows.
-**Fix:**
+**Shipped:**
 
-- Checkbox-Column auf Items / Parties / Licenses / Operations
-- Bulk-Toolbar appears when selection >0: "Classify with Astra" / "Export" / "Delete"
-- `select all matching filter` Pattern
-  **Aufwand:** 2-3 Tage
-  **Impact:** Sehr hoch (Power-User Throughput)
-  **Files:** Each list page + new `BulkActionsBar` component
+- ✅ New `src/app/(trade)/trade/_components/BulkActionsBar.tsx` — fixed bottom-center pill toolbar that renders only when `count > 0`. Shows "N selected · Clear · [actions]". role="toolbar" + aria-label for AT.
+- ✅ New `src/lib/trade/csv-export.ts` — RFC 4180-compliant CSV builder + browser-download helper. UTF-8 BOM prepended so Excel (Windows) detects encoding. Filename auto-stamped with ISO date suffix.
+- ✅ 14 vitest tests covering RFC 4180 escaping (quotes/commas/newlines), formatCell type-coverage (string/number/boolean/null/Date), filename stamping, and full buildCsv round-trips.
+- ✅ Wired into `items/page.tsx`: per-row checkbox column with native-`indeterminate` "some-selected" header, select-all toggle, selection clears on filter change so stale rows don't carry over, Export-CSV button in the bar (13 columns covering full item metadata) + toast feedback on success.
+
+**Deferred to follow-up sprints:**
+
+- ❌ Replicate the pattern on parties / operations / licenses (mechanical port — the primitives are now in place)
+- ❌ Bulk-Delete / Bulk-Archive (need API mutations + confirmation modal)
+- ❌ "Select all matching filter" pattern across pagination (needs server-side count + a one-click prompt)
+
+**Aufwand:** ~2.5h ✅ (vs. 2-3 Tage estimate — single page + reusable primitives)
+**Impact:** Sehr hoch (Power-User throughput) — operators can now CSV-export filtered selections in one click instead of copy-pasting from the UI
+**Files:** `BulkActionsBar.tsx` (NEW) + `csv-export.ts` (NEW) + `csv-export.test.ts` (NEW) + `items/page.tsx` (refactor)
 
 ---
 
