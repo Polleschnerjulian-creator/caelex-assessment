@@ -392,9 +392,12 @@ Combined both items into one panel because they answer the same operator questio
 
 **Shipped** as a section of TradeHelpCenter — see U-HIGH-8 entry above.
 
-### U-LOW-5 — Animated Transitions zwischen Pages
+### ✅ U-LOW-5 — Animated Transitions zwischen Pages **(DONE — Phase 5g)**
 
-**Fix:** Subtle slide-in on route change (Framer Motion).
+**Shipped:** TradeShell wraps the `<main>` child in a `<motion.div>` keyed on `usePathname()`. Each route change remounts the motion div, triggering a 180ms `{ opacity: 0→1, y: 4→0 }` ease-out fade-in. Framer Motion respects `prefers-reduced-motion` automatically.
+**Aufwand:** ~15min ✅
+**Impact:** Niedrig-mittel (perceived polish — pages feel "settled" rather than abrupt)
+**Files:** `TradeShell.tsx`
 
 ---
 

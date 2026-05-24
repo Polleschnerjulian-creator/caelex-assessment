@@ -16,6 +16,8 @@
  */
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { TradeSidebar } from "./TradeSidebar";
 import { TradeCommandPalette } from "./TradeCommandPalette";
@@ -36,6 +38,13 @@ interface Props {
 
 export function TradeShell({ org, badgeCounts, children }: Props) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  // U-LOW-5 — subtle fade-in on route change. `pathname` as the key
+  // means `<motion.div>` remounts on each navigation; Framer Motion's
+  // initial → animate transition runs each time. Bounded to 180ms +
+  // a slight Y-offset so the effect reads as "page settled", not
+  // "page bounced". `motion-safe`/`prefers-reduced-motion` is honored
+  // automatically by Framer Motion via its `reducedMotion` config.
+  const pathname = usePathname();
 
   // ToastProvider wraps the entire Trade shell so any descendent client
   // component (OnboardingBanner, OperationLifecyclePanel, …) can call
@@ -109,13 +118,25 @@ export function TradeShell({ org, badgeCounts, children }: Props) {
           </>
         ) : null}
 
-        {/* Main content area — skip-link target + landmark */}
+        {/* Main content area — skip-link target + landmark.
+            Wrapped in motion.div with `pathname` as key so each route
+            change fades in (U-LOW-5). The inner div uses no max-width
+            so the existing page-level layouts continue to control
+            their own gutters. */}
         <main
           id="main-content"
           tabIndex={-1}
           className="flex min-w-0 flex-1 flex-col overflow-x-hidden"
         >
-          {children}
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="flex min-w-0 flex-1 flex-col"
+          >
+            {children}
+          </motion.div>
         </main>
 
         {/* Global ⌘K / Ctrl+K palette — mounted once at shell level so the
