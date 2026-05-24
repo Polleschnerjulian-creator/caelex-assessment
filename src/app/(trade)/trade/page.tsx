@@ -16,8 +16,10 @@ import { prisma } from "@/lib/prisma";
 import { isSuperAdmin } from "@/lib/super-admin";
 import { getComplianceHealth } from "@/lib/trade/compliance-health-service";
 import { getActivityFeed } from "@/lib/trade/welcome-feed/activity-feed-service";
+import { aggregateActionItems } from "@/lib/trade/action-inbox-aggregator";
 import { ComplianceHealthPanel } from "./_components/ComplianceHealthPanel";
 import { ActivityFeedPanel } from "./_components/ActivityFeedPanel";
+import { ActionInboxPanel } from "./_components/ActionInboxPanel";
 import {
   UpcomingDeadlinesStrip,
   assembleDeadlines,
@@ -89,6 +91,11 @@ export default async function TradeDashboardPage() {
     sammelgenehmigungDeadlineRows,
     supplement2DeadlineRows,
     vsdDeadlineRows,
+    // ── U-HIGH-1 action-inbox cohorts (read in parallel with the rest) ──
+    blockedOperationRows,
+    awaitingEucRows,
+    partiesNeedingReviewRows,
+    vsdsDiscoveredRows,
   ] = await Promise.all([
     prisma.organization.findUnique({
       where: { id: orgId },
@@ -208,6 +215,44 @@ export default async function TradeDashboardPage() {
       },
       orderBy: { discoveredAt: "asc" },
     }),
+    // ── U-HIGH-1 action-inbox fetches ──
+    prisma.tradeOperation.findMany({
+      where: { organizationId: orgId, status: "BLOCKED" },
+      select: {
+        id: true,
+        reference: true,
+        counterparty: { select: { legalName: true } },
+      },
+      orderBy: { updatedAt: "desc" },
+      take: 20,
+    }),
+    prisma.tradeEUCRequest.findMany({
+      where: { organizationId: orgId, status: "SENT_TO_PARTY" },
+      select: {
+        id: true,
+        sentAt: true,
+        party: { select: { legalName: true } },
+      },
+      orderBy: { sentAt: "asc" },
+      take: 20,
+    }),
+    prisma.tradeParty.findMany({
+      where: {
+        organizationId: orgId,
+        screeningStatus: {
+          in: ["POTENTIAL_MATCH", "CONFIRMED_HIT", "STALE"],
+        },
+      },
+      select: { id: true, legalName: true, screeningStatus: true },
+      orderBy: { lastScreenedAt: "asc" },
+      take: 20,
+    }),
+    prisma.tradeVoluntaryDisclosure.findMany({
+      where: { organizationId: orgId, status: "DISCOVERED" },
+      select: { id: true, title: true, discoveredAt: true },
+      orderBy: { discoveredAt: "asc" },
+      take: 20,
+    }),
   ]);
 
   // Reshape group-by results into lookup maps.
@@ -279,6 +324,57 @@ export default async function TradeDashboardPage() {
     vsdDeadlines: vsdDeadlinesNext30,
   });
 
+  // Action inbox — pure-function aggregator over the cohorts above.
+  // The aggregator owns severity classification + sorting; the panel
+  // is presentation-only.
+  const actionItems = aggregateActionItems({
+    blockedOperations: blockedOperationRows.map((op) => ({
+      id: op.id,
+      reference: op.reference,
+      counterpartyName: op.counterparty?.legalName ?? null,
+    })),
+    licensesExpiringSoon: licensesExpiringSoon
+      .filter(
+        (l): l is typeof l & { validUntil: Date } => l.validUntil !== null,
+      )
+      .map((l) => ({
+        id: l.id,
+        licenseNumber: l.licenseNumber,
+        licenseType: l.licenseType,
+        validUntil: l.validUntil,
+      })),
+    eucsAwaitingAction: awaitingEucRows.map((euc) => ({
+      id: euc.id,
+      sentAt: euc.sentAt,
+      partyName: euc.party.legalName,
+    })),
+    partiesNeedingReview: partiesNeedingReviewRows
+      // The Prisma enum is wider than the aggregator cohort; narrow at
+      // the boundary so the aggregator's type guarantees hold.
+      .filter(
+        (
+          p,
+        ): p is typeof p & {
+          screeningStatus: "POTENTIAL_MATCH" | "CONFIRMED_HIT" | "STALE";
+        } =>
+          p.screeningStatus === "POTENTIAL_MATCH" ||
+          p.screeningStatus === "CONFIRMED_HIT" ||
+          p.screeningStatus === "STALE",
+      )
+      .map((p) => ({
+        id: p.id,
+        legalName: p.legalName,
+        screeningStatus: p.screeningStatus,
+      })),
+    vsdDeadlinesNear: vsdDeadlinesNext30,
+    vsdsNeedingInvestigation: vsdsDiscoveredRows.map((v) => ({
+      id: v.id,
+      title: v.title,
+      discoveredAt: v.discoveredAt,
+    })),
+    now,
+  });
+
   return (
     <div className="mx-auto max-w-[1200px] px-10 py-10">
       {/* Apple-style Workspace header — replaces large H1 + LIVE pill */}
@@ -301,6 +397,11 @@ export default async function TradeDashboardPage() {
 
       {/* Compliance Posture — NEW killer card aggregating the 9 engines */}
       <CompliancePostureCard />
+
+      {/* Today's Action Inbox (U-HIGH-1) — what needs human action right now.
+          Sits above UpcomingDeadlinesStrip because "act now" beats "act in
+          14 days" for daily-triage attention. */}
+      <ActionInboxPanel items={actionItems} />
 
       {/* Upcoming deadlines strip (Sprint Welcome-Polish) */}
       <UpcomingDeadlinesStrip deadlines={upcomingDeadlines} now={now} />

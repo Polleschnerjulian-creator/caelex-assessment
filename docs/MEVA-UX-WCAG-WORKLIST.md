@@ -10,13 +10,13 @@ Update statuses as items ship. Group by phase + impact.
 
 ## 📊 Status Dashboard
 
-| Stream                                     | % done | Last bump                                                 |
-| ------------------------------------------ | ------ | --------------------------------------------------------- |
-| **WCAG 2.2 AA**                            | ~98%   | W18 progressbar (commit 88db0a1f)                         |
-| **UX — Quick wins**                        | ~85%   | Phase 3c — U-MED-5 KPI tint + pulse, U-MED-6 audit done   |
-| **UX — Phase A (Power-User basics)**       | ~80%   | Phase 3d — U-CRIT-4 ⌘K palette (27 verbs across 4 groups) |
-| **UX — Phase B (Onboarding + Bulk)**       | 0%     | not started                                               |
-| **UX — Phase C (Strategic deep features)** | 0%     | not started                                               |
+| Stream                                     | % done | Last bump                                                               |
+| ------------------------------------------ | ------ | ----------------------------------------------------------------------- |
+| **WCAG 2.2 AA**                            | ~98%   | W18 progressbar (commit 88db0a1f)                                       |
+| **UX — Quick wins**                        | ~85%   | Phase 3c — U-MED-5 KPI tint + pulse, U-MED-6 audit done                 |
+| **UX — Phase A (Power-User basics)**       | ~95%   | Phase 4a — U-HIGH-1 Today's Action Inbox (aggregator + panel, 21 tests) |
+| **UX — Phase B (Onboarding + Bulk)**       | 0%     | not started                                                             |
+| **UX — Phase C (Strategic deep features)** | 0%     | not started                                                             |
 
 ---
 
@@ -124,17 +124,24 @@ Update statuses as items ship. Group by phase + impact.
 
 ## 🟠 HIGH — Verlangsamt Daily Work
 
-### U-HIGH-1 — Today's Action Inbox
+### ✅ U-HIGH-1 — Today's Action Inbox **(DONE — Phase 4a MVP)**
 
 **Was:** /trade Welcome zeigt KPIs + Quick-Start, aber kein triage-actionable feed.
-**Fix:**
+**Shipped (MVP):**
 
-- Auto-aggregiert: ablaufende Licenses, ungescreente Parties, drafts >7d, expiring EUCs, blocked operations
-- Linear-style Inbox: 1 Row pro Issue + Resolve-Action
-- Per-item Snooze + Resolve + Open
-  **Aufwand:** 2 Tage
-  **Impact:** Sehr hoch (daily-triage transformation)
-  **Files:** New `src/lib/trade/action-inbox-aggregator.server.ts` + `src/app/(trade)/trade/_components/ActionInboxPanel.tsx`
+- ✅ New `src/lib/trade/action-inbox-aggregator.ts` — pure-function aggregator that normalises 6 cohorts (BLOCKED operations, expiring licenses ≤30d, EUCs awaiting >7d, POTENTIAL_MATCH/STALE/CONFIRMED_HIT parties, VSD authority-deadlines ≤30d, VSDs sitting in DISCOVERED) into a flat `ActionItem[]`. Severity classification with concrete bands (critical / warning), sort-by-severity-then-by-urgency, no Prisma coupling.
+- ✅ New `src/app/(trade)/trade/_components/ActionInboxPanel.tsx` — Linear-style flat list: severity-coloured leading chip, title + optional subtitle, countdown chip ("in 7d", "sent 12d ago"), per-row deep-link to the source detail page. Top-8 by default + "Show all N items ↓" disclosure for busy orgs. "All clear" empty state with Astra link instead of bare nothing.
+- ✅ Wired into `/trade` welcome page above UpcomingDeadlinesStrip — "act now" beats "act in 14d" for daily-triage attention.
+- ✅ a11y: section `aria-labelledby`, items rendered as a proper `<ul role="list">`, severity announced via offscreen "Severity: Critical/Warning/Info", `aria-expanded` on the disclosure toggle.
+- ✅ 21 vitest tests covering all 6 cohort transforms, severity bands, sort order, id uniqueness across cohorts, and the presentation helpers.
+
+**Deferred to next sprint:**
+
+- ❌ Per-row Snooze / Resolve actions (need mutation API + per-user persistence)
+
+**Aufwand:** ~3h ✅ (vs. 2 Tage estimate — pure-function aggregator + reuse of already-fetched data made it fast)
+**Impact:** Sehr hoch (daily-triage transformation) — every login now starts with "here's what's burning"
+**Files:** `action-inbox-aggregator.ts` + `action-inbox-aggregator.test.ts` + `ActionInboxPanel.tsx` + `/trade/page.tsx`
 
 ### U-HIGH-2 — Skeleton-Screens statt "Loading..." text
 
