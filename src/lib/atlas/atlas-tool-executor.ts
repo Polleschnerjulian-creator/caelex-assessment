@@ -49,6 +49,7 @@ import {
   isBrandingToolName,
   executeBrandingTool,
 } from "./branding-tools.server";
+import { isMandateToolName, executeMandateTool } from "./mandate-tools.server";
 import {
   ALL_SOURCES,
   getLegalSourceById,
@@ -87,97 +88,9 @@ export interface AtlasToolResult {
   navigateUrl?: string;
 }
 
-// ─── find_or_open_matter ─────────────────────────────────────────────
-
-const FindOrOpenMatterInput = z.object({
-  query: z.string().min(2).max(100),
-  action: z.enum(["search", "open"]),
-});
-
-const MATTER_LIMIT = 8;
-
-async function findOrOpenMatter(args: {
-  input: unknown;
-  callerUserId: string;
-  callerOrgId: string;
-}): Promise<AtlasToolResult> {
-  const parsed = FindOrOpenMatterInput.safeParse(args.input);
-  if (!parsed.success) {
-    return {
-      content: JSON.stringify({
-        error: "Invalid tool input",
-        code: "INVALID_INPUT",
-      }),
-      isError: true,
-    };
-  }
-
-  const q = parsed.data.query.trim();
-
-  // Fuzzy contains on name + reference + client org name. Case-
-  // insensitive. We cap at 8 hits — more than that the user should
-  // refine anyway.
-  const matches = await prisma.legalMatter.findMany({
-    where: {
-      lawFirmOrgId: args.callerOrgId,
-      OR: [
-        { name: { contains: q, mode: "insensitive" } },
-        { reference: { contains: q, mode: "insensitive" } },
-        {
-          clientOrg: {
-            name: { contains: q, mode: "insensitive" },
-          },
-        },
-      ],
-    },
-    select: {
-      id: true,
-      name: true,
-      reference: true,
-      status: true,
-      updatedAt: true,
-      clientOrg: { select: { id: true, name: true } },
-    },
-    orderBy: [
-      { status: "asc" }, // ACTIVE comes before SUSPENDED alphabetically
-      { updatedAt: "desc" },
-    ],
-    take: MATTER_LIMIT,
-  });
-
-  const candidates = matches.map((m) => ({
-    id: m.id,
-    name: m.name,
-    reference: m.reference,
-    /* AUDIT-FIX 2026-05-17: clientOrg is nullable (solo-matters have no
-       linked operator org since create_solo_matter shipped). Previously
-       `m.clientOrg.name` crashed with TypeError on null. Fall back to
-       null so the agent can read it as "no client-org linked". */
-    clientName: m.clientOrg?.name ?? null,
-    status: m.status,
-    updatedAt: m.updatedAt,
-    workspaceUrl: `/atlas/network/${m.id}/workspace`,
-    canOpen: m.status === "ACTIVE",
-  }));
-
-  // 'open' action + single ACTIVE match → signal navigation
-  const activeMatches = candidates.filter((c) => c.canOpen);
-  const shouldNavigate =
-    parsed.data.action === "open" && activeMatches.length === 1;
-
-  return {
-    content: JSON.stringify({
-      query: q,
-      action: parsed.data.action,
-      totalMatches: candidates.length,
-      activeMatches: activeMatches.length,
-      matches: candidates,
-      navigate: shouldNavigate ? activeMatches[0].workspaceUrl : null,
-    }),
-    isError: false,
-    navigateUrl: shouldNavigate ? activeMatches[0].workspaceUrl : undefined,
-  };
-}
+/* find_or_open_matter moved to mandate-tools.server.ts as part of
+   Atlas V3 T0.1.b bundle-split (2026-05-26). Routed via the
+   isMandateToolName guard at the top of executeAtlasTool() above. */
 
 // ─── find_operator_organization ─────────────────────────────────────
 //
@@ -3525,6 +3438,17 @@ export async function executeAtlasTool(args: {
       callerOrgId: args.callerOrgId,
     });
   }
+  /* Atlas V3 T0.1.b: route mandate tools to dedicated mandate
+     dispatch. Currently one tool (find_or_open_matter) — the bundle
+     return type carries the optional navigateUrl that the SSE layer
+     forwards to clients for single-match 'open' calls. */
+  if (typeof args.name === "string" && isMandateToolName(args.name)) {
+    return executeMandateTool({
+      name: args.name,
+      input: args.input,
+      callerOrgId: args.callerOrgId,
+    });
+  }
   /* Atlas M2 Vault-RAG: search_mandate_vault is registered in
      ATLAS_TOOLS but intentionally NOT in the AtlasToolName literal-
      union (kept stable as the tool-set grows). Route it via a
@@ -3538,8 +3462,8 @@ export async function executeAtlasTool(args: {
     });
   }
   switch (args.name as AtlasToolName) {
-    case "find_or_open_matter":
-      return findOrOpenMatter(args);
+    /* find_or_open_matter early-routed via isMandateToolName above
+       (Atlas V3 T0.1.b bundle-split). */
     case "find_operator_organization":
       return findOperatorOrganization(args);
     case "create_matter_invite":

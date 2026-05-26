@@ -155,31 +155,34 @@ Catalog`).
 
 ### Last meaningful action
 
-**2026-05-26**: Branding-bundle extracted as proof-of-concept for
-T0.1. `branding-tools.server.ts` created with 2 tools (227 LOC),
-matching the pattern of compliance-tools.server.ts. 11/11 unit
-tests passing. `atlas-tool-executor.ts` reduced by ~100 LOC.
-Pre-existing TypeScript error at `atlas-tool-executor.ts:3628`
-(default switch arm exhaustiveness) confirmed predates this refactor
-(see Decision Log entry). Current branch:
-`feature/m1-1c-bafa-bescheid-parser`.
+**2026-05-26**: Two bundles extracted from `atlas-tool-executor.ts`:
+
+- T0.1.a **Branding** (`branding-tools.server.ts`, 227 LOC, 2 tools,
+  11/11 tests). Commit `94625106`.
+- T0.1.b **Mandate** (`mandate-tools.server.ts`, ~200 LOC, 1 tool,
+  11/11 tests, `navigateUrl` carried in result type). Commit pending.
+
+Pattern proven across 2 new bundles + the 3 existing
+(compliance/validity/document). Pre-existing TS2322 at
+`atlas-tool-executor.ts` default-arm confirmed and not blocking.
+Current branch: `feature/m1-1c-bafa-bescheid-parser`.
 
 ### Current focus
 
-→ **T0.1 — Continue Tool-Executor Bundle-Split** (templates bundle next)
+→ **T0.1.c — Templates bundle next** (4 tools: save/list/use document templates + list_workspace_templates). Has a helper-dependency on `loadMandateScaffoldContext` shared with drafting; either extract that to a shared utility module first or import via re-export from the executor.
 
 ### Tier 0 — Consolidation
 
 - 🟡 **T0.1** Tool-Executor Bundle-Split (`atlas-tool-executor.ts` → 9 bundle files)
   - 🟢 T0.1.a Branding bundle (2 tools, `branding-tools.server.ts`, 11 tests)
-  - 🔴 T0.1.b Templates bundle (4 tools: save/list/use/list-workspace-templates)
-  - 🔴 T0.1.c Korpus bundle (5 tools: search_legal_sources, get_legal_source_by_id, search_cases, get_case_by_id, list_jurisdiction_authorities)
-  - 🔴 T0.1.d Mandate bundle (1 tool: find_or_open_matter + existing search_mandate_vault)
+  - 🟢 T0.1.b Mandate bundle (1 tool, `mandate-tools.server.ts`, 11 tests, navigateUrl supported)
+  - 🔴 T0.1.c Templates bundle (4 tools: save/list/use/list-workspace-templates)
+  - 🔴 T0.1.d Korpus bundle (5 tools: search_legal_sources, get_legal_source_by_id, search_cases, get_case_by_id, list_jurisdiction_authorities)
   - 🔴 T0.1.e Network bundle (3 tools: find_operator_organization, create_matter_invite, create_solo_matter)
   - 🔴 T0.1.f Comparison bundle (2 tools: compare_jurisdictions_for_filing, summarize_changes_since)
   - 🔴 T0.1.g Deadlines bundle (1 tool: get_filing_deadlines)
   - 🔴 T0.1.h Drafting bundle (7 tools: 6 draft\_\* + refine_document)
-  - 🔴 T0.1.i Final: delete obsolete switch + verify shrunk LOC
+  - 🔴 T0.1.i Final: delete obsolete switch + migrate search_mandate_vault into mandate bundle + verify shrunk LOC
 - 🔴 **T0.2** Engine-Unification (3 engines → shared `tool-use-loop.ts`)
 - 🔴 **T0.3** Test-Coverage on critical paths
 - 🔴 **T0.4** Audit-Log silent-failure elimination
@@ -1314,6 +1317,20 @@ or risk learned from prior work.
 > tier-item ID.
 
 ### 2026-05-26
+
+**[COMPLETE] T0.1.b — Mandate bundle extracted.** 1 tool
+(`find_or_open_matter`) moved from `atlas-tool-executor.ts` to new
+`mandate-tools.server.ts` (~200 LOC). Same pattern as
+branding-tools. Crucial difference: `MandateToolResult` extends
+the bundle-result with an optional `navigateUrl` field — the
+chat-engine's SSE layer forwards this as a `navigate` client event
+for single-match 'open' calls. Other bundles return only
+`{content, isError}` since they have no navigation semantics. 11/11
+unit tests passing (covers schema, guard, success paths, navigateUrl
+toggle conditions, edge cases). Future: migrate
+`search_mandate_vault` into this bundle as part of T0.1.i — it's
+currently special-cased in atlas-tool-executor.ts because it
+predates the bundle pattern.
 
 **[COMPLETE] T0.1.a — Branding bundle extracted.** 2 tools
 (`get_org_branding`, `set_org_branding`) moved from
