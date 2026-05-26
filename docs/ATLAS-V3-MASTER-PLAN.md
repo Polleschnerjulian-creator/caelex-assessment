@@ -155,6 +155,28 @@ Catalog`).
 
 ### Last meaningful action
 
+**2026-05-26 (latest)**: T1.B.11 `track_amendment` tool shipped +
+master-plan T1.B/T1.C stale-status cleanup.
+
+- New tool `track_amendment` added to `validity-tools.server.ts`.
+  Upserts `AtlasAlertSubscription` keyed on (userId, targetType,
+  targetId). SOURCE targets are corpus-validated; JURISDICTION
+  targets accept any ISO code. Idempotent — re-subscribing returns
+  the existing row. Same contract as the existing `/api/atlas/alerts/
+subscriptions` HTTP route, but callable in-chat by Astra.
+- `executeValidityTool` now accepts an optional `ctx` (callerUserId
+  - callerOrgId) — backwards-compatible (existing 2-arg call-sites
+    in tests still work). `atlas-tool-executor.ts` updated to forward
+    caller identity.
+- Plan stale-status cleanup: T1.B.9 + T1.B.10 + T1.C.13 + T1.C.15-18
+  were marked 🔴 but were actually shipped in V2 Sprint 4/5. Now
+  correctly marked 🟢 with retrofit-date pointers. T1.B.12 marked
+  🟡 (cron exists at /api/cron/atlas-source-check, but the
+  AtlasAlertSubscription fan-out into AtlasNotification on
+  approved amendments is not yet wired end-to-end).
+- 8 new tests in `validity-tools.server.test.ts`. Total atlas tests:
+  477 passing / 478 total.
+
 **2026-05-26 (later still)**: T0.3 advanced — three more retrofits
 shipped after the batched deploy (c53b902a) was pushed to main:
 
@@ -267,16 +289,16 @@ shipment — Prisma model + thumbs-up/down API + UI hook) OR
 - 🟢 **T1.A.6** Wrap `classify_export_control` engine — shipped V2 Sprint 3
 - 🟢 **T1.A.7** Wrap `check_spectrum_filing` engine — shipped V2 Sprint 3
 - 🟢 **T1.A.8** Wrap `check_copuos_compliance` engine — shipped V2 Sprint 3
-- 🔴 **T1.B.9** `check_article_status` tool
-- 🔴 **T1.B.10** `get_recent_norm_changes` tool
-- 🔴 **T1.B.11** `track_amendment` tool
-- 🔴 **T1.B.12** Real-time EUR-Lex Source-Polling Cron (FREE — EUR-Lex public API)
-- 🔴 **T1.C.13** `extract_text_from_pdf` (npm: unpdf — FREE)
-- 🔴 **T1.C.14** `extract_text_from_docx` (npm: mammoth — FREE)
-- 🔴 **T1.C.15** `find_clauses` (LLM via existing key — no new cost)
-- 🔴 **T1.C.16** `summarize_document` (LLM via existing key)
-- 🔴 **T1.C.17** `classify_document` (LLM via existing key)
-- 🔴 **T1.C.18** `compare_documents` (diff + LLM)
+- 🟢 **T1.B.9** `check_article_status` tool — shipped V2 Sprint 4 in `validity-tools.server.ts`; 33-test retrofit added 2026-05-26
+- 🟢 **T1.B.10** `get_recent_norm_changes` tool — shipped V2 Sprint 4 in `validity-tools.server.ts`
+- 🟢 **T1.B.11** `track_amendment` tool — added 2026-05-26 in `validity-tools.server.ts` (upserts AtlasAlertSubscription on SOURCE or JURISDICTION targets, idempotent, 8 tests)
+- 🟡 **T1.B.12** Real-time EUR-Lex Source-Polling Cron — partial: `/api/cron/atlas-source-check` route exists and runs source-checking; T1.B.12's specific `eurlex-poll` cron design (30-min cadence, RSS feed parse, fan-out to AtlasAlertSubscription watchers) not yet wired end-to-end with track_amendment notifications
+- 🟢 **T1.C.13** `extract_text_from_pdf` tool — shipped V2 Sprint 5 in `document-tools.server.ts`; 24-test retrofit added 2026-05-26
+- 🟡 **T1.C.14** `extract_text_from_docx` — covered by `document-processor.server.ts`'s mammoth path during upload (sets extractedText). No standalone Atlas-tool wrapper because the extracted text is already on AtlasMandateFile.extractedText, reachable via extract_text_from_pdf tool regardless of original MIME.
+- 🟢 **T1.C.15** `find_clauses` tool — shipped V2 Sprint 5 in `document-tools.server.ts`
+- 🟢 **T1.C.16** `summarize_document` tool — shipped V2 Sprint 5 in `document-tools.server.ts`
+- 🟢 **T1.C.17** `classify_document` tool — shipped V2 Sprint 5 in `document-tools.server.ts`
+- 🟢 **T1.C.18** `compare_documents` tool — shipped V2 Sprint 5 in `document-tools.server.ts`
 - 🔴 **T1.C.19** OCR for scanned PDFs (Tesseract.js — FREE, browser-WASM)
 - 🟢 **T1.D.20** `web_search` (DuckDuckGo Instant Answer API, FREE) — `web-tools.server.ts`
 - 🟢 **T1.D.21** `fetch_url` (native fetch + HTML strip, SSRF-guarded against local/private IPs) — `web-tools.server.ts`

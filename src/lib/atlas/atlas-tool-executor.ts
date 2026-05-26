@@ -114,10 +114,18 @@ export async function executeAtlasTool(args: {
   if (typeof args.name === "string" && isComplianceToolName(args.name)) {
     return executeComplianceTool(args.name, args.input);
   }
-  /* Atlas V2 Sprint 4: route validity tools (3 corpus-status helpers)
-     to the dedicated validity dispatch. Pure data, no caller context. */
+  /* Atlas V2 Sprint 4 + V3 T1.B.11: route validity tools (4 now —
+     check_article_status, get_recent_norm_changes, find_related_norms,
+     track_amendment) to the dedicated validity dispatch. The first
+     three are pure-data lookups; track_amendment needs caller
+     identity to write the AtlasAlertSubscription row, so we forward
+     ctx = { callerUserId, callerOrgId }. The dispatcher refuses the
+     write politely when ctx is absent. */
   if (typeof args.name === "string" && isValidityToolName(args.name)) {
-    return executeValidityTool(args.name, args.input);
+    return executeValidityTool(args.name, args.input, {
+      callerUserId: args.callerUserId,
+      callerOrgId: args.callerOrgId,
+    });
   }
   /* Atlas V2 Sprint 5: route document tools (5 file-aware tools) to
      the dedicated document dispatch — they NEED callerUserId +

@@ -32,6 +32,7 @@ import {
   getLegalSourceById,
   type LegalSource,
 } from "@/data/legal-sources";
+import { prisma } from "@/lib/prisma";
 
 /* ── Status taxonomy ─────────────────────────────────────────────────── */
 
@@ -238,6 +239,28 @@ export const VALIDITY_TOOLS: Anthropic.Tool[] = [
       required: ["sourceId"],
     },
   },
+  {
+    name: "track_amendment",
+    description:
+      "Subscribe the calling user to amendment notifications for a specific Atlas source OR a whole jurisdiction. When the source-check cron later detects a substantive change and an admin approves it, the subscriber gets an in-app notification (SOURCE_AMENDED or JURISDICTION_UPDATE). Use when the lawyer asks 'Benachrichtige mich, wenn sich X ändert' / 'Track this regulation' / 'Watch for amendments to ...'. Idempotent — re-subscribing returns the existing subscription.",
+    input_schema: {
+      type: "object",
+      properties: {
+        targetId: {
+          type: "string",
+          description:
+            "For targetType=SOURCE: the Atlas source-ID (e.g. 'DE-WeltraumG', 'EU-NIS2'). Must exist in the corpus. For targetType=JURISDICTION: the ISO-2 code ('DE', 'FR', 'EU', 'INT').",
+        },
+        targetType: {
+          type: "string",
+          enum: ["SOURCE", "JURISDICTION"],
+          description:
+            "Whether to watch a specific source or every change in a whole jurisdiction. Default: SOURCE.",
+        },
+      },
+      required: ["targetId"],
+    },
+  },
 ];
 
 const VALIDITY_TOOL_NAMES = VALIDITY_TOOLS.map((t) => t.name) as string[];
@@ -253,9 +276,20 @@ export interface ValidityToolResult {
   isError: boolean;
 }
 
+/** Optional caller-identity context. Required by `track_amendment`
+ *  which writes a row keyed on (userId, organizationId). The other
+ *  three tools are pure-data lookups against the static corpus and
+ *  ignore this argument. Kept optional so existing call-sites that
+ *  pass only (name, input) keep working. */
+export interface ValidityToolContext {
+  callerUserId: string;
+  callerOrgId: string;
+}
+
 export async function executeValidityTool(
   name: string,
   input: unknown,
+  ctx?: ValidityToolContext,
 ): Promise<ValidityToolResult> {
   switch (name) {
     case "check_article_status":
@@ -264,6 +298,8 @@ export async function executeValidityTool(
       return runGetRecentNormChanges(input);
     case "find_related_norms":
       return runFindRelatedNorms(input);
+    case "track_amendment":
+      return runTrackAmendment(input, ctx);
     default:
       return {
         content: JSON.stringify({ error: `Unknown validity tool: ${name}` }),
@@ -412,5 +448,96 @@ function humanLabelFor(badge: ValidityBadge): string {
       return "Repealed / expired";
     case "unknown":
       return "Unknown / not in corpus";
+  }
+}
+
+/* ── track_amendment (T1.B.11, 2026-05-26) ──────────────────────────── */
+
+interface TrackAmendmentInput {
+  targetId: string;
+  targetType?: "SOURCE" | "JURISDICTION";
+}
+
+async function runTrackAmendment(
+  rawInput: unknown,
+  ctx: ValidityToolContext | undefined,
+): Promise<ValidityToolResult> {
+  if (!ctx) {
+    return {
+      content: JSON.stringify({
+        error:
+          "Auth context required (callerUserId + callerOrgId). Pass via the chat-engine which resolves Atlas auth automatically.",
+      }),
+      isError: true,
+    };
+  }
+  const i = rawInput as TrackAmendmentInput;
+  if (!i?.targetId) {
+    return {
+      content: JSON.stringify({ error: "targetId required" }),
+      isError: true,
+    };
+  }
+  const targetType = i.targetType ?? "SOURCE";
+  if (targetType !== "SOURCE" && targetType !== "JURISDICTION") {
+    return {
+      content: JSON.stringify({
+        error: `Invalid targetType: ${targetType}. Allowed: SOURCE | JURISDICTION.`,
+      }),
+      isError: true,
+    };
+  }
+
+  /* SOURCE-target hygiene: must exist in the static corpus. Mirrors
+     the upsert route at /api/atlas/alerts/subscriptions so we don't
+     silently persist orphan subscriptions on typos / stale ids. */
+  if (targetType === "SOURCE") {
+    const { source } = resolveSourceId(i.targetId);
+    if (!source) {
+      return {
+        content: JSON.stringify({
+          error: `Unknown sourceId '${i.targetId}'. Use search_legal_sources or check_article_status to find the canonical id first.`,
+        }),
+        isError: true,
+      };
+    }
+  }
+
+  try {
+    const sub = await prisma.atlasAlertSubscription.upsert({
+      where: {
+        userId_targetType_targetId: {
+          userId: ctx.callerUserId,
+          targetType,
+          targetId: i.targetId,
+        },
+      },
+      create: {
+        userId: ctx.callerUserId,
+        organizationId: ctx.callerOrgId,
+        targetType,
+        targetId: i.targetId,
+      },
+      /* Idempotent: re-subscribing returns the existing row. */
+      update: {},
+    });
+    return {
+      content: JSON.stringify({
+        subscriptionId: sub.id,
+        targetType: sub.targetType,
+        targetId: sub.targetId,
+        createdAt: sub.createdAt,
+        message: `You'll be notified when an amendment to ${i.targetId} (${targetType}) is approved by an admin. Manage your subscriptions under /atlas/settings/alerts.`,
+      }),
+      isError: false,
+    };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return {
+      content: JSON.stringify({
+        error: `Subscription write failed: ${msg}`,
+      }),
+      isError: true,
+    };
   }
 }

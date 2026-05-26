@@ -14,7 +14,19 @@ import "server-only";
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+/* Prisma mock — only `atlasAlertSubscription.upsert` is exercised
+ * (by track_amendment, T1.B.11). The other 3 tools are pure-data. */
+const { upsertSubscription } = vi.hoisted(() => ({
+  upsertSubscription: vi.fn(),
+}));
+
+vi.mock("@/lib/prisma", () => ({
+  prisma: {
+    atlasAlertSubscription: { upsert: upsertSubscription },
+  },
+}));
 
 /* vi.hoisted runs BEFORE vi.mock (which itself is hoisted to top of
  * file). Without this, mock-factory accesses to module-level constants
@@ -129,16 +141,17 @@ function parse(content: string): Record<string, unknown> {
 /* ── Schema ─────────────────────────────────────────────────────────── */
 
 describe("validity-tools schema", () => {
-  it("exports exactly 3 tools", () => {
-    expect(VALIDITY_TOOLS).toHaveLength(3);
+  it("exports 4 tools (V2 Sprint 4 + V3 T1.B.11)", () => {
+    expect(VALIDITY_TOOLS).toHaveLength(4);
   });
 
-  it("tool names match the V2 Sprint 4 contract", () => {
+  it("tool names match the current contract (Sprint 4 + T1.B.11)", () => {
     const names = VALIDITY_TOOLS.map((t) => t.name).sort();
     expect(names).toEqual([
       "check_article_status",
       "find_related_norms",
       "get_recent_norm_changes",
+      "track_amendment",
     ]);
   });
 
@@ -422,5 +435,148 @@ describe("find_related_norms", () => {
     const payload = parse(result.content);
     /* Resolved to parent EU-NIS2. */
     expect(payload.sourceId).toBe("EU-NIS2");
+  });
+});
+
+/* ── track_amendment tool (T1.B.11) ─────────────────────────────────── */
+
+describe("track_amendment", () => {
+  beforeEach(() => {
+    upsertSubscription.mockReset();
+  });
+
+  it("returns error when caller context is missing (omitted 3rd arg)", async () => {
+    /* Existing call-sites that pass only (name, input) get a clean
+       refusal — never write a row without a user. */
+    const result = await executeValidityTool("track_amendment", {
+      targetId: "DE-WeltraumG",
+    });
+    expect(result.isError).toBe(true);
+    expect(parse(result.content).error).toContain("Auth context");
+    expect(upsertSubscription).not.toHaveBeenCalled();
+  });
+
+  it("validates: missing targetId returns error", async () => {
+    const result = await executeValidityTool(
+      "track_amendment",
+      {},
+      { callerUserId: "u1", callerOrgId: "org-A" },
+    );
+    expect(result.isError).toBe(true);
+    expect(parse(result.content).error).toContain("targetId");
+  });
+
+  it("rejects invalid targetType values", async () => {
+    const result = await executeValidityTool(
+      "track_amendment",
+      { targetId: "DE-WeltraumG", targetType: "BOGUS" },
+      { callerUserId: "u1", callerOrgId: "org-A" },
+    );
+    expect(result.isError).toBe(true);
+    expect(parse(result.content).error).toContain("Invalid targetType");
+  });
+
+  it("rejects SOURCE target when sourceId not in corpus", async () => {
+    const result = await executeValidityTool(
+      "track_amendment",
+      { targetId: "INVALID-XYZ-12345", targetType: "SOURCE" },
+      { callerUserId: "u1", callerOrgId: "org-A" },
+    );
+    expect(result.isError).toBe(true);
+    expect(parse(result.content).error).toContain("Unknown sourceId");
+    expect(upsertSubscription).not.toHaveBeenCalled();
+  });
+
+  it("happy path: SOURCE subscription upserts + returns subscription details", async () => {
+    upsertSubscription.mockResolvedValue({
+      id: "sub-123",
+      targetType: "SOURCE",
+      targetId: "DE-WeltraumG",
+      createdAt: new Date("2026-05-26T12:00:00Z"),
+    });
+
+    const result = await executeValidityTool(
+      "track_amendment",
+      { targetId: "DE-WeltraumG" }, // default targetType=SOURCE
+      { callerUserId: "u1", callerOrgId: "org-A" },
+    );
+
+    expect(result.isError).toBe(false);
+    const payload = parse(result.content);
+    expect(payload.subscriptionId).toBe("sub-123");
+    expect(payload.targetType).toBe("SOURCE");
+    expect(payload.targetId).toBe("DE-WeltraumG");
+    expect(payload.message).toContain("notified");
+  });
+
+  it("JURISDICTION targets skip the corpus check", async () => {
+    upsertSubscription.mockResolvedValue({
+      id: "sub-456",
+      targetType: "JURISDICTION",
+      targetId: "DE",
+      createdAt: new Date(),
+    });
+
+    const result = await executeValidityTool(
+      "track_amendment",
+      { targetId: "DE", targetType: "JURISDICTION" },
+      { callerUserId: "u1", callerOrgId: "org-A" },
+    );
+
+    expect(result.isError).toBe(false);
+    expect(parse(result.content).subscriptionId).toBe("sub-456");
+  });
+
+  it("upsert uses the unique key (userId, targetType, targetId) for idempotency", async () => {
+    upsertSubscription.mockResolvedValue({
+      id: "sub-1",
+      targetType: "SOURCE",
+      targetId: "DE-WeltraumG",
+      createdAt: new Date(),
+    });
+
+    await executeValidityTool(
+      "track_amendment",
+      { targetId: "DE-WeltraumG" },
+      { callerUserId: "u1", callerOrgId: "org-A" },
+    );
+
+    const arg = upsertSubscription.mock.calls[0]?.[0] as {
+      where: {
+        userId_targetType_targetId: {
+          userId: string;
+          targetType: string;
+          targetId: string;
+        };
+      };
+      create: Record<string, unknown>;
+      update: Record<string, unknown>;
+    };
+    expect(arg.where.userId_targetType_targetId).toEqual({
+      userId: "u1",
+      targetType: "SOURCE",
+      targetId: "DE-WeltraumG",
+    });
+    expect(arg.create).toEqual({
+      userId: "u1",
+      organizationId: "org-A",
+      targetType: "SOURCE",
+      targetId: "DE-WeltraumG",
+    });
+    /* Idempotent — empty update payload. */
+    expect(arg.update).toEqual({});
+  });
+
+  it("returns isError=true when prisma upsert throws", async () => {
+    upsertSubscription.mockRejectedValue(new Error("DB connection lost"));
+
+    const result = await executeValidityTool(
+      "track_amendment",
+      { targetId: "DE-WeltraumG" },
+      { callerUserId: "u1", callerOrgId: "org-A" },
+    );
+
+    expect(result.isError).toBe(true);
+    expect(parse(result.content).error).toContain("Subscription write failed");
   });
 });
