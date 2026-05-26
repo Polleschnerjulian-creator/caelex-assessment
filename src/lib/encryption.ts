@@ -44,8 +44,27 @@ const LEGACY_IV_LENGTH = 16;
 const AUTH_TAG_LENGTH = 16;
 const ORG_KEY_PREFIX = "org:";
 
-// OWASP 2024+ recommended scrypt parameters
-const SCRYPT_PARAMS = { N: 32768, r: 8, p: 1 };
+// OWASP 2024+ recommended scrypt parameters.
+//
+// FIX 2026-05-26: explicit `maxmem` required. Node.js' default `maxmem`
+// is 32 MiB (33,554,432 bytes), and these params consume
+// 128 · N · r = 128 · 32768 · 8 ≈ 33,556,480 bytes — about 2 KB above
+// the default ceiling. Result: every fresh write that derived a per-org
+// key threw `RangeError: Invalid scrypt params: error:030000AC:digital
+// envelope routines::memory limit exceeded`. Reads of legacy plaintext
+// rows went through `smartDecrypt` and bypassed scrypt, which masked the
+// issue until the first Atlas chat WRITE landed on Vercel.
+//
+// Setting `maxmem: 128 MiB` gives ~4x headroom over the actual memory
+// footprint and leaves room for any future N/r bump without re-hitting
+// this. Does NOT change derived-key output for existing encrypted data —
+// only the maximum memory the runtime will permit scrypt to allocate.
+const SCRYPT_PARAMS: ScryptOptions = {
+  N: 32768,
+  r: 8,
+  p: 1,
+  maxmem: 128 * 1024 * 1024,
+};
 
 // TTL for cached encryption keys — limits exposure window if process is compromised
 const KEY_CACHE_TTL_MS = 3600000; // 1 hour
