@@ -55,7 +55,26 @@ export interface PipelineRunInput {
    *    already obtained user consent (e.g. via a single up-front
    *    "Run this whole pipeline?" modal). */
   bypassApproval?: boolean;
+  /** T1.E.27 per-step retry policy. When a step's runChat throws OR
+   *  the stream emits an `error` event, retry up to `maxRetries`
+   *  times with backoffMs[i] delay between attempts. Defaults to
+   *  `{ maxRetries: 2, backoffMs: [1000, 3000] }` (≈4s worst-case).
+   *  Pass `{ maxRetries: 0 }` to disable retries entirely. */
+  retryPolicy?: PipelineRetryPolicy;
 }
+
+export interface PipelineRetryPolicy {
+  maxRetries: number;
+  /** Wait between attempts. `backoffMs[i]` is the delay AFTER the i-th
+   *  failure (0-indexed). If shorter than maxRetries, the last entry
+   *  is reused for subsequent retries. Empty array → no waits. */
+  backoffMs: number[];
+}
+
+const DEFAULT_RETRY_POLICY: PipelineRetryPolicy = {
+  maxRetries: 2,
+  backoffMs: [1000, 3000],
+};
 
 /** Per-step approval summary returned by the pre-flight scan. */
 export interface PipelinePendingStepApproval {
@@ -79,6 +98,10 @@ export interface PipelineStepResult {
   isError: boolean;
   /** Error message when isError = true; otherwise undefined. */
   errorMessage?: string;
+  /** T1.E.27: how many retries the step needed before succeeding (or
+   *  before giving up). 0 means first-try success or no retry policy
+   *  in play. */
+  retriedAttempts?: number;
 }
 
 export interface PipelineRunResult {
@@ -174,6 +197,7 @@ export async function runWorkflowPipeline(
   }
 
   const abortOnEmpty = input.abortOnEmptyTurn ?? true;
+  const retryPolicy = input.retryPolicy ?? DEFAULT_RETRY_POLICY;
   let chatId: string | null = null;
   const steps: PipelineStepResult[] = [];
 
@@ -181,24 +205,118 @@ export async function runWorkflowPipeline(
     const step = workflow.pipeline[i];
     const stepStart = Date.now();
 
-    try {
-      const result = await runChat({
-        chatId,
-        userId: input.userId,
-        organizationId: input.organizationId,
-        mandateId: input.mandateId ?? null,
-        userMessage: step.prompt,
-        language: input.language ?? "de",
-        titleHint: i === 0 ? workflow.name : undefined,
-        workflowId: workflow.id,
-        toolToggles:
-          input.toolToggles ??
-          deriveToggles(step.expectedTools, workflow.toolToggles),
+    /* T1.E.27 retry loop. Wraps runChat + consumeChatStream so
+       transient failures (network blip, gateway 503, stream-error
+       event from Anthropic) don't kill the whole pipeline. The
+       maxAttempts = 1 + maxRetries — first try counts. */
+    const maxAttempts = retryPolicy.maxRetries + 1;
+    let attempt = 0;
+    let lastError: string | undefined = undefined;
+    let consumed: {
+      assistantText: string;
+      toolsUsed: string[];
+      errorMessage?: string;
+    } | null = null;
+    let attemptChatId: string | null = chatId;
+    let stepThrew = false;
+    let throwMessage: string | undefined;
+
+    while (attempt < maxAttempts) {
+      try {
+        const result = await runChat({
+          chatId: attemptChatId,
+          userId: input.userId,
+          organizationId: input.organizationId,
+          mandateId: input.mandateId ?? null,
+          userMessage: step.prompt,
+          language: input.language ?? "de",
+          titleHint: i === 0 ? workflow.name : undefined,
+          workflowId: workflow.id,
+          toolToggles:
+            input.toolToggles ??
+            deriveToggles(step.expectedTools, workflow.toolToggles),
+        });
+
+        attemptChatId = result.chatId;
+
+        const streamed = await consumeChatStream(result.stream);
+        consumed = streamed;
+
+        if (streamed.errorMessage === undefined) {
+          /* Success — exit retry loop. */
+          stepThrew = false;
+          throwMessage = undefined;
+          lastError = undefined;
+          break;
+        }
+        /* Stream-error event — retryable. */
+        lastError = streamed.errorMessage;
+      } catch (err) {
+        /* Hard throw — runChat couldn't start / SSE blew up. */
+        stepThrew = true;
+        throwMessage = err instanceof Error ? err.message : String(err);
+        lastError = throwMessage;
+      }
+
+      attempt += 1;
+      if (attempt < maxAttempts) {
+        /* Apply backoff. backoffMs[i-1] for the i-th retry; reuse last
+           entry if the array is shorter than maxRetries. */
+        const idx = Math.min(attempt - 1, retryPolicy.backoffMs.length - 1);
+        const delay = idx >= 0 ? retryPolicy.backoffMs[idx] : 0;
+        logger.warn("[atlas/pipeline] step failed, retrying", {
+          workflowId: workflow.id,
+          stepIndex: i,
+          attempt,
+          nextDelayMs: delay,
+          error: lastError,
+        });
+        if (delay > 0) {
+          await new Promise((r) => setTimeout(r, delay));
+        }
+      }
+    }
+
+    /* Did the retry-loop produce a result? */
+    if (stepThrew) {
+      /* Hard-throw exhausted all retries. */
+      steps.push({
+        stepIndex: i,
+        promptPreview: step.prompt.slice(0, 200),
+        assistantText: "",
+        toolsUsed: [],
+        durationMs: Date.now() - stepStart,
+        isError: true,
+        errorMessage: throwMessage,
+        retriedAttempts: attempt - 1,
       });
+      logger.error("[atlas/pipeline] step threw (retries exhausted)", {
+        workflowId: workflow.id,
+        stepIndex: i,
+        attempts: attempt,
+        error: throwMessage,
+      });
+      break;
+    }
 
-      chatId = result.chatId;
+    if (!consumed) {
+      /* Shouldn't happen — every code path should have set consumed
+         OR set stepThrew. Defensive fallback. */
+      steps.push({
+        stepIndex: i,
+        promptPreview: step.prompt.slice(0, 200),
+        assistantText: "",
+        toolsUsed: [],
+        durationMs: Date.now() - stepStart,
+        isError: true,
+        errorMessage: "unexpected: no consumed stream and no thrown error",
+        retriedAttempts: attempt,
+      });
+      break;
+    }
 
-      const consumed = await consumeChatStream(result.stream);
+    try {
+      chatId = attemptChatId;
 
       const stepResult: PipelineStepResult = {
         stepIndex: i,
@@ -208,6 +326,7 @@ export async function runWorkflowPipeline(
         durationMs: Date.now() - stepStart,
         isError: consumed.errorMessage !== undefined,
         errorMessage: consumed.errorMessage,
+        retriedAttempts: attempt,
       };
       steps.push(stepResult);
 
@@ -215,6 +334,7 @@ export async function runWorkflowPipeline(
         logger.warn("[atlas/pipeline] step aborted on stream error", {
           workflowId: workflow.id,
           stepIndex: i,
+          attempts: attempt + 1,
           error: consumed.errorMessage,
         });
         break;

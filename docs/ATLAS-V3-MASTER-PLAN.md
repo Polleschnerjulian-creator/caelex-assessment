@@ -307,7 +307,7 @@ shipment — Prisma model + thumbs-up/down API + UI hook) OR
 - 🟢 **T1.E.24** Multi-Step Workflow Pipeline foundation (`WorkflowStep[]` runtime) — `workflow-pipeline-runner.server.ts` + 15 unit tests + 1 example pipeline (`eu-space-act-vollanalyse`)
 - 🔴 **T1.E.25** Pipeline-Step UI (progress component)
 - 🟢 **T1.E.26** Per-step approval-gates — shipped 2026-05-26. Pipeline pre-flight scan uses `tool-metadata.requiresApproval` to detect steps with state-changing / external-document-generating tools (draft\_\*, create_matter_invite, etc.). Halts before running ANY step when found, returns `awaitingApproval.pendingSteps[]`. Caller re-invokes with `bypassApproval: true` after user consent. 5 new tests + new example workflow `eu-space-act-mit-antrag` (4-step with draft_authorization_application in step 4).
-- 🔴 **T1.E.27** Step-failure retry-policy with exponential backoff
+- 🟢 **T1.E.27** Step-failure retry-policy with exponential backoff — shipped 2026-05-26. `runWorkflowPipeline` now wraps each step's runChat + stream-consumption in a retry loop with configurable `PipelineRetryPolicy`. Default `{ maxRetries: 2, backoffMs: [1000, 3000] }` (~4s worst-case). Handles both hard runChat throws AND stream-error events. `PipelineStepResult.retriedAttempts` exposes per-step attempt count. `maxRetries: 0` disables retries. 6 new tests cover retry-success on retry #1 (stream-error + throw paths), exhaustion abort, default policy, disable, first-try success retriedAttempts=0.
 - 🔴 **T1.F.28** Browser Web Speech API transcription (FREE — replaces Whisper)
 - 🔴 **T1.F.29** Push-to-talk button in `ChatInput.tsx`
 - 🔴 **T1.F.30** Long-form dictation mode (recording → AtlasMandateFile)

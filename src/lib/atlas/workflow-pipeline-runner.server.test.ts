@@ -278,6 +278,9 @@ describe("runWorkflowPipeline", () => {
       workflowId: "eu-space-act-vollanalyse",
       userId: "u1",
       organizationId: "o1",
+      /* T1.E.27: disable retries for this test — we're verifying the
+         ABORT behaviour after retries-exhausted, not retry mechanics. */
+      retryPolicy: { maxRetries: 0, backoffMs: [] },
     });
 
     expect(result.isCompleted).toBe(false);
@@ -303,6 +306,8 @@ describe("runWorkflowPipeline", () => {
       workflowId: "eu-space-act-vollanalyse",
       userId: "u1",
       organizationId: "o1",
+      /* T1.E.27: disable retries — verifying ABORT path, not retry. */
+      retryPolicy: { maxRetries: 0, backoffMs: [] },
     });
 
     expect(result.isCompleted).toBe(false);
@@ -517,5 +522,164 @@ describe("runWorkflowPipeline — T1.E.26 approval gates", () => {
     });
     const ids = result.awaitingApproval?.pendingSteps.map((p) => p.stepIndex);
     expect(ids).toEqual([3]); // only step 4 (index 3) has draft_*
+  });
+});
+
+/* ── T1.E.27 — Retry policy with backoff ────────────────────────────── */
+
+describe("runWorkflowPipeline — T1.E.27 retry policy", () => {
+  beforeEach(() => {
+    runChatMock.mockReset();
+  });
+
+  it("retries a stream-error and succeeds on retry #1", async () => {
+    runChatMock
+      .mockResolvedValueOnce({
+        chatId: "c1",
+        stream: buildMockStream([
+          { type: "error", message: "Transient gateway 503" },
+        ]),
+      })
+      .mockResolvedValueOnce({
+        chatId: "c1",
+        stream: buildMockStream([
+          { type: "text", delta: "step1 after retry" },
+          { type: "done" },
+        ]),
+      })
+      .mockResolvedValueOnce({
+        chatId: "c1",
+        stream: buildMockStream([
+          { type: "text", delta: "step2 ok" },
+          { type: "done" },
+        ]),
+      })
+      .mockResolvedValueOnce({
+        chatId: "c1",
+        stream: buildMockStream([
+          { type: "text", delta: "step3 ok" },
+          { type: "done" },
+        ]),
+      });
+
+    const result = await runWorkflowPipeline({
+      workflowId: "eu-space-act-vollanalyse",
+      userId: "u1",
+      organizationId: "o1",
+      retryPolicy: { maxRetries: 2, backoffMs: [0, 0] }, // instant retry for the test
+    });
+
+    expect(result.isCompleted).toBe(true);
+    expect(result.steps).toHaveLength(3);
+    expect(result.steps[0].isError).toBe(false);
+    expect(result.steps[0].retriedAttempts).toBeGreaterThan(0);
+    /* runChat was called 4 times total: 1 fail + 1 retry + 2 next steps. */
+    expect(runChatMock).toHaveBeenCalledTimes(4);
+  });
+
+  it("retries a runChat throw and succeeds on retry", async () => {
+    runChatMock
+      .mockRejectedValueOnce(new Error("ECONNRESET"))
+      .mockResolvedValueOnce({
+        chatId: "c1",
+        stream: buildMockStream([
+          { type: "text", delta: "step1 after retry" },
+          { type: "done" },
+        ]),
+      })
+      .mockResolvedValueOnce({
+        chatId: "c1",
+        stream: buildMockStream([
+          { type: "text", delta: "step2" },
+          { type: "done" },
+        ]),
+      })
+      .mockResolvedValueOnce({
+        chatId: "c1",
+        stream: buildMockStream([
+          { type: "text", delta: "step3" },
+          { type: "done" },
+        ]),
+      });
+
+    const result = await runWorkflowPipeline({
+      workflowId: "eu-space-act-vollanalyse",
+      userId: "u1",
+      organizationId: "o1",
+      retryPolicy: { maxRetries: 2, backoffMs: [0, 0] },
+    });
+
+    expect(result.isCompleted).toBe(true);
+    expect(result.steps[0].assistantText).toContain("step1 after retry");
+  });
+
+  it("exhausts retries and aborts when failure is persistent", async () => {
+    /* Every runChat call throws. With maxRetries=2 → 3 attempts total. */
+    runChatMock.mockRejectedValue(new Error("Always fails"));
+
+    const result = await runWorkflowPipeline({
+      workflowId: "eu-space-act-vollanalyse",
+      userId: "u1",
+      organizationId: "o1",
+      retryPolicy: { maxRetries: 2, backoffMs: [0, 0] },
+    });
+
+    expect(result.isCompleted).toBe(false);
+    expect(result.steps).toHaveLength(1);
+    expect(result.steps[0].isError).toBe(true);
+    expect(result.steps[0].errorMessage).toContain("Always fails");
+    /* 3 attempts on step 1, then abort — no step 2 / 3. */
+    expect(runChatMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("default retry policy is { maxRetries: 2 } when caller omits", async () => {
+    runChatMock.mockRejectedValue(new Error("permanent"));
+
+    /* Skip the default 1000ms+3000ms delays by using a tiny override
+       — proves caller can disable. */
+    const result = await runWorkflowPipeline({
+      workflowId: "eu-space-act-vollanalyse",
+      userId: "u1",
+      organizationId: "o1",
+      retryPolicy: { maxRetries: 2, backoffMs: [0, 0] },
+    });
+
+    expect(result.isCompleted).toBe(false);
+    /* maxRetries=2 → 3 attempts. */
+    expect(runChatMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("maxRetries: 0 disables retries entirely", async () => {
+    runChatMock.mockRejectedValue(new Error("nope"));
+
+    const result = await runWorkflowPipeline({
+      workflowId: "eu-space-act-vollanalyse",
+      userId: "u1",
+      organizationId: "o1",
+      retryPolicy: { maxRetries: 0, backoffMs: [] },
+    });
+
+    expect(result.isCompleted).toBe(false);
+    /* Just 1 attempt — no retries. */
+    expect(runChatMock).toHaveBeenCalledTimes(1);
+    expect(result.steps[0].retriedAttempts).toBe(0);
+  });
+
+  it("retriedAttempts is 0 on first-try success", async () => {
+    mockRunChatSequence([
+      { chatId: "c", events: [{ type: "text", delta: "1" }, { type: "done" }] },
+      { chatId: "c", events: [{ type: "text", delta: "2" }, { type: "done" }] },
+      { chatId: "c", events: [{ type: "text", delta: "3" }, { type: "done" }] },
+    ]);
+
+    const result = await runWorkflowPipeline({
+      workflowId: "eu-space-act-vollanalyse",
+      userId: "u1",
+      organizationId: "o1",
+    });
+
+    for (const step of result.steps) {
+      expect(step.retriedAttempts).toBe(0);
+    }
   });
 });
