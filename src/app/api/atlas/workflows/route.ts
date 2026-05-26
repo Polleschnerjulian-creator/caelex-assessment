@@ -5,6 +5,19 @@
  *
  * Read-only, auth-gated. Filterable by ?category= or ?quickstartsOnly=1.
  *
+ * Atlas V3 T1.E enhancement (2026-05-26): each workflow returned now
+ * includes pipeline-derived metadata for the picker UI:
+ *   - stepCount: number of steps in the pipeline (undefined for
+ *     single-prompt workflows)
+ *   - estimatedDurationMs: sum of every step's expected-tool
+ *     durations from the tool-metadata sidecar
+ *   - requiresApproval: true iff any step uses an approval-required
+ *     tool (T1.E.26 gate — the UI badges "consent required" so the
+ *     lawyer knows what they're starting)
+ *
+ * Backwards-compatible: existing fields preserved verbatim, new
+ * fields are additions.
+ *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
@@ -14,11 +27,43 @@ import {
   listWorkflows,
   listCategories,
   type WorkflowCategory,
+  type Workflow,
 } from "@/lib/atlas/workflow-library";
+import { aggregateToolCalls, getToolMetadata } from "@/lib/atlas/tool-metadata";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+interface PipelineEnrichment {
+  stepCount?: number;
+  estimatedDurationMs?: number;
+  requiresApproval?: boolean;
+}
+
+function enrichWorkflow(w: Workflow): Workflow & PipelineEnrichment {
+  if (!w.pipeline || w.pipeline.length === 0) {
+    /* Single-prompt workflow — no pipeline metadata to compute. */
+    return w;
+  }
+  const allTools: string[] = [];
+  let needsApproval = false;
+  for (const step of w.pipeline) {
+    const tools = step.expectedTools ?? [];
+    allTools.push(...tools);
+    for (const t of tools) {
+      const meta = getToolMetadata(t);
+      if (meta?.requiresApproval) needsApproval = true;
+    }
+  }
+  const agg = aggregateToolCalls(allTools);
+  return {
+    ...w,
+    stepCount: w.pipeline.length,
+    estimatedDurationMs: agg.estimatedDurationMs,
+    requiresApproval: needsApproval,
+  };
+}
 
 export async function GET(req: NextRequest) {
   const atlas = await getAtlasAuth();
@@ -36,7 +81,7 @@ export async function GET(req: NextRequest) {
     const workflows = listWorkflows({
       category: category ?? undefined,
       quickstartsOnly,
-    });
+    }).map(enrichWorkflow);
     const categories = listCategories();
 
     return NextResponse.json({
