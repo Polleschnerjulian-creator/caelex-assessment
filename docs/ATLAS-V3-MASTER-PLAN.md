@@ -184,7 +184,7 @@ confirmed not blocking. Current branch: `feature/m1-1c-bafa-bescheid-parser`.
   - 🟢 T0.1.e Network bundle (3 tools, `network-tools.server.ts`, 15 tests; includes dispatchInviteEmailBestEffort helper + matter-service integration + encryption-aware solo-matter create path. SCOPE_LEVELS + createInvite imports moved out of executor.)
   - 🟢 T0.1.f Comparison bundle (2 tools, `comparison-tools.server.ts`, 14 tests; REGULATION_TIMELINE + RegulationPhase imports finally leave the executor with this extraction — the catalogue-data imports are now ALL bundle-local)
   - 🟢 T0.1.g Deadlines bundle (1 tool, `deadlines-tools.server.ts`, 12 tests). REGULATION_TIMELINE import stays in executor — still used by summarize_changes_since (T0.1.f).
-  - 🔴 T0.1.h Drafting bundle (7 tools: 6 draft\_\* + refine_document)
+  - 🟢 T0.1.h Drafting bundle (7 tools, `drafting-tools.server.ts`, 16 tests; largest bundle ~1400 LOC including topLicensingSources helper + DRAFT_DISCLAIMER_DE/PRIVILEGE_BANNER_DE constants + 7 zod schemas + 7 implementations. Uses shared `loadMandateScaffoldContext`.)
   - 🔴 T0.1.i Final: delete obsolete switch + migrate search_mandate_vault into mandate bundle + verify shrunk LOC
 - 🔴 **T0.2** Engine-Unification (3 engines → shared `tool-use-loop.ts`)
 - 🔴 **T0.3** Test-Coverage on critical paths
