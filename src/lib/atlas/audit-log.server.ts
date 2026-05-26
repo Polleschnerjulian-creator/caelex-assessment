@@ -65,70 +65,122 @@ export interface AtlasAuditWriteArgs {
  * should NEVER block a user action. The platform-wide AuditLog
  * service uses the same approach.
  */
+/* T0.4 (2026-05-26): Retry-on-transient-failure. Audit-log writes
+   are critical for the tamper-evidence trail; a single Neon hiccup
+   or pgpool restart shouldn't silently drop a row. We retry up to 3
+   times with exponential-style backoff before falling through to
+   the error-log + give-up path. The hash chain stays correct under
+   retry because each attempt re-fetches `prevHash` — if a concurrent
+   writer inserted between attempts, we chain off the new tail. */
+const RETRY_DELAYS_MS: readonly number[] = [100, 500, 2000];
+
+/** Test seam: lets the unit suite override with [0, 0, 0] so retries
+ *  don't add 2.6s of real wall-clock to every retry-path test. Not
+ *  exported for production consumers — internal-only. */
+let retryDelaysOverride: readonly number[] | null = null;
+export function __setRetryDelaysForTest(
+  delays: readonly number[] | null,
+): void {
+  retryDelaysOverride = delays;
+}
+function getRetryDelays(): readonly number[] {
+  return retryDelaysOverride ?? RETRY_DELAYS_MS;
+}
+
 export async function appendAtlasAudit(
   args: AtlasAuditWriteArgs,
 ): Promise<void> {
-  try {
-    /* Resolve previous-hash per org. We chain per-org so a single
-       compromised org's audit history doesn't invalidate every
-       other org's chain. */
-    let prevHash: string | null = null;
-    if (args.organizationId) {
-      const last = await prisma.atlasAuditLog.findFirst({
-        where: { organizationId: args.organizationId },
-        orderBy: { createdAt: "desc" },
-        select: { hash: true },
-      });
-      prevHash = last?.hash ?? null;
-    } else {
-      /* System events (no org) chain on a global "system" pseudo-org. */
-      const last = await prisma.atlasAuditLog.findFirst({
-        where: { organizationId: null },
-        orderBy: { createdAt: "desc" },
-        select: { hash: true },
-      });
-      prevHash = last?.hash ?? null;
-    }
+  const delays = getRetryDelays();
+  /* attempts = 1 initial + N retries. */
+  const maxAttempts = delays.length + 1;
+  let lastErr: unknown = null;
 
-    const payload = {
-      userId: args.userId,
-      organizationId: args.organizationId,
-      action: args.action,
-      entityType: args.entityType ?? null,
-      entityId: args.entityId ?? null,
-      metadata: args.metadata ?? null,
-      timestamp: new Date().toISOString(),
-    };
-    const canonical = JSON.stringify(payload);
-    const hash = crypto
-      .createHash("sha256")
-      .update((prevHash ?? "") + canonical)
-      .digest("hex");
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      /* Resolve previous-hash per org. We chain per-org so a single
+         compromised org's audit history doesn't invalidate every
+         other org's chain. Re-fetched per attempt so a concurrent
+         writer that inserted between our attempts still produces a
+         valid chain (we tail off whichever row is now last). */
+      let prevHash: string | null = null;
+      if (args.organizationId) {
+        const last = await prisma.atlasAuditLog.findFirst({
+          where: { organizationId: args.organizationId },
+          orderBy: { createdAt: "desc" },
+          select: { hash: true },
+        });
+        prevHash = last?.hash ?? null;
+      } else {
+        /* System events (no org) chain on a global "system" pseudo-org. */
+        const last = await prisma.atlasAuditLog.findFirst({
+          where: { organizationId: null },
+          orderBy: { createdAt: "desc" },
+          select: { hash: true },
+        });
+        prevHash = last?.hash ?? null;
+      }
 
-    await prisma.atlasAuditLog.create({
-      data: {
+      const payload = {
         userId: args.userId,
         organizationId: args.organizationId,
         action: args.action,
         entityType: args.entityType ?? null,
         entityId: args.entityId ?? null,
-        metadata: args.metadata ? (args.metadata as object) : undefined,
-        ipAddress: args.ipAddress ?? null,
-        userAgent: args.userAgent ?? null,
-        hash,
-        prevHash,
-      },
-    });
-  } catch (err) {
-    /* Fire-and-forget: a failed audit-write should NEVER block the
-       user action. Log the error so it surfaces in Sentry/Vercel. */
-    logger.error("[atlas/audit-log] append failed", {
-      action: args.action,
-      userId: args.userId,
-      organizationId: args.organizationId,
-      error: err instanceof Error ? err.message : String(err),
-    });
+        metadata: args.metadata ?? null,
+        timestamp: new Date().toISOString(),
+      };
+      const canonical = JSON.stringify(payload);
+      const hash = crypto
+        .createHash("sha256")
+        .update((prevHash ?? "") + canonical)
+        .digest("hex");
+
+      await prisma.atlasAuditLog.create({
+        data: {
+          userId: args.userId,
+          organizationId: args.organizationId,
+          action: args.action,
+          entityType: args.entityType ?? null,
+          entityId: args.entityId ?? null,
+          metadata: args.metadata ? (args.metadata as object) : undefined,
+          ipAddress: args.ipAddress ?? null,
+          userAgent: args.userAgent ?? null,
+          hash,
+          prevHash,
+        },
+      });
+      /* Success — surface a warn only if we needed retries, so ops
+         can spot DB-flakiness trends. */
+      if (attempt > 0) {
+        logger.warn("[atlas/audit-log] append succeeded after retries", {
+          action: args.action,
+          attemptsTaken: attempt + 1,
+        });
+      }
+      return;
+    } catch (err) {
+      lastErr = err;
+      const isLastAttempt = attempt === maxAttempts - 1;
+      if (!isLastAttempt) {
+        const delay = delays[attempt];
+        if (delay > 0) {
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+        /* else: zero delay (test mode) — loop immediately. */
+      }
+    }
   }
+
+  /* All retries exhausted — log + give up. Fire-and-forget: never
+     throws to the caller (audit-log failure must not block the user
+     action that triggered it). */
+  logger.error("[atlas/audit-log] append failed after retries", {
+    action: args.action,
+    userId: args.userId,
+    organizationId: args.organizationId,
+    attempts: maxAttempts,
+    error: lastErr instanceof Error ? lastErr.message : String(lastErr),
+  });
 }
 
 export interface AtlasAuditQuery {
