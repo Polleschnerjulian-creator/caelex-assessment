@@ -155,17 +155,31 @@ Catalog`).
 
 ### Last meaningful action
 
-**2026-05-26**: Master Plan written. Tier 0 starting. Current branch:
-`feature/m1-1c-bafa-bescheid-parser` (existing). New work goes on
-either same branch or new branch `feature/atlas-v3-tier-0`.
+**2026-05-26**: Branding-bundle extracted as proof-of-concept for
+T0.1. `branding-tools.server.ts` created with 2 tools (227 LOC),
+matching the pattern of compliance-tools.server.ts. 11/11 unit
+tests passing. `atlas-tool-executor.ts` reduced by ~100 LOC.
+Pre-existing TypeScript error at `atlas-tool-executor.ts:3628`
+(default switch arm exhaustiveness) confirmed predates this refactor
+(see Decision Log entry). Current branch:
+`feature/m1-1c-bafa-bescheid-parser`.
 
 ### Current focus
 
-→ **T0.1 — Tool-Executor Bundle-Split** (next-up)
+→ **T0.1 — Continue Tool-Executor Bundle-Split** (templates bundle next)
 
 ### Tier 0 — Consolidation
 
-- 🔴 **T0.1** Tool-Executor Bundle-Split (`atlas-tool-executor.ts` → 9 bundle files)
+- 🟡 **T0.1** Tool-Executor Bundle-Split (`atlas-tool-executor.ts` → 9 bundle files)
+  - 🟢 T0.1.a Branding bundle (2 tools, `branding-tools.server.ts`, 11 tests)
+  - 🔴 T0.1.b Templates bundle (4 tools: save/list/use/list-workspace-templates)
+  - 🔴 T0.1.c Korpus bundle (5 tools: search_legal_sources, get_legal_source_by_id, search_cases, get_case_by_id, list_jurisdiction_authorities)
+  - 🔴 T0.1.d Mandate bundle (1 tool: find_or_open_matter + existing search_mandate_vault)
+  - 🔴 T0.1.e Network bundle (3 tools: find_operator_organization, create_matter_invite, create_solo_matter)
+  - 🔴 T0.1.f Comparison bundle (2 tools: compare_jurisdictions_for_filing, summarize_changes_since)
+  - 🔴 T0.1.g Deadlines bundle (1 tool: get_filing_deadlines)
+  - 🔴 T0.1.h Drafting bundle (7 tools: 6 draft\_\* + refine_document)
+  - 🔴 T0.1.i Final: delete obsolete switch + verify shrunk LOC
 - 🔴 **T0.2** Engine-Unification (3 engines → shared `tool-use-loop.ts`)
 - 🔴 **T0.3** Test-Coverage on critical paths
 - 🔴 **T0.4** Audit-Log silent-failure elimination
@@ -1300,6 +1314,25 @@ or risk learned from prior work.
 > tier-item ID.
 
 ### 2026-05-26
+
+**[COMPLETE] T0.1.a — Branding bundle extracted.** 2 tools
+(`get_org_branding`, `set_org_branding`) moved from
+`atlas-tool-executor.ts` to new `branding-tools.server.ts` (227 LOC).
+Pattern: identical to `compliance-tools.server.ts` —
+`BRANDING_TOOLS: Anthropic.Tool[]`, `isBrandingToolName()`,
+`executeBrandingTool()`. `atlas-tools.ts` updated to spread
+`...BRANDING_TOOLS` into `ATLAS_TOOLS`; AtlasToolName union no
+longer carries the branding names (runtime-resolved instead).
+`atlas-tool-executor.ts` early-routes via the new guard before
+the switch. 11/11 unit tests passing.
+
+**[PRE-EXISTING ERROR DOCUMENTED] `atlas-tool-executor.ts:3628`**:
+TS2322 "Type 'string' is not assignable to type 'never'" in the
+default switch arm. Confirmed predates the V3 branding refactor
+(verified by stash-baseline-typecheck). Likely caused by
+`delegate_subtasks` being in `AtlasToolName` union but not in the
+exhaustive switch (it's handled in agent/route.ts). Not blocking.
+Tracked for cleanup as part of T0.1.i (final phase).
 
 **[DECISION] Master Plan v1 created.** Atlas-V3 succeeds Atlas-V2.
 Scope: consolidate (Tier 0), fill functional gaps (Tier 1), production-
