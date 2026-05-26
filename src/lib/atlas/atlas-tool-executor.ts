@@ -54,6 +54,11 @@ import {
   isDeadlinesToolName,
   executeDeadlinesTool,
 } from "./deadlines-tools.server";
+import { loadMandateScaffoldContext } from "./mandate-scaffold-context.server";
+import {
+  isTemplatesToolName,
+  executeTemplatesTool,
+} from "./templates-tools.server";
 import {
   ALL_SOURCES,
   getLegalSourceById,
@@ -62,7 +67,7 @@ import {
   type LegalSourceType,
   type ComplianceArea,
 } from "@/data/legal-sources";
-import { listTemplateSummaries } from "@/data/atlas-workspace-templates";
+/* listTemplateSummaries moved to templates-tools.server.ts (T0.1.c). */
 import {
   ATLAS_CASES,
   getCaseById,
@@ -929,19 +934,8 @@ function getLegalSourceByIdTool(args: { input: unknown }): AtlasToolResult {
   };
 }
 
-// ─── list_workspace_templates ───────────────────────────────────────
-
-function listWorkspaceTemplates(): AtlasToolResult {
-  const summaries = listTemplateSummaries();
-  return {
-    content: JSON.stringify({
-      template_count: summaries.length,
-      templates: summaries,
-      hint: "Recommend the best-fit template by id. The user clicks it in the UI to seed a new workspace pre-loaded with the relevant Atlas sources.",
-    }),
-    isError: false,
-  };
-}
+/* list_workspace_templates moved to templates-tools.server.ts
+   (Atlas V3 T0.1.c bundle-split, 2026-05-26). */
 
 // ─── list_jurisdiction_authorities ──────────────────────────────────
 
@@ -2268,85 +2262,9 @@ async function summarizeChangesSince(args: {
  * Schriftsatz / Verträge. The scaffolds remind the AI of this.
  * ─────────────────────────────────────────────────────────────────── */
 
-/* Shared context-loader. Pulls everything a draft scaffold typically
-   needs from a single mandate query — parties grouped by type, header
-   metadata, customInstructions, lawyer-owner. Returns null when the
-   mandateId is missing OR the user has no access (membership-gated
-   via the same relation filter we use everywhere else). */
-async function loadMandateScaffoldContext(args: {
-  mandateId: string | null | undefined;
-  callerUserId: string;
-  callerOrgId: string;
-}): Promise<null | {
-  id: string;
-  name: string;
-  jurisdiction: string | null;
-  operatorType: string | null;
-  primaryAuthority: string | null;
-  clientName: string | null;
-  clientContact: string | null;
-  customInstructions: string | null;
-  parties: {
-    id: string;
-    type: string;
-    name: string;
-    role: string | null;
-    contact: string | null;
-    address: string | null;
-    reference: string | null;
-  }[];
-  ownerName: string | null;
-  ownerEmail: string | null;
-}> {
-  if (!args.mandateId) return null;
-  const m = await prisma.atlasMandate.findFirst({
-    where: {
-      id: args.mandateId,
-      organizationId: args.callerOrgId,
-      OR: [
-        { ownerUserId: args.callerUserId },
-        { members: { some: { userId: args.callerUserId } } },
-      ],
-    },
-    select: {
-      id: true,
-      name: true,
-      jurisdiction: true,
-      operatorType: true,
-      primaryAuthority: true,
-      clientName: true,
-      clientContact: true,
-      customInstructions: true,
-      parties: {
-        orderBy: [{ type: "asc" }, { createdAt: "asc" }],
-        select: {
-          id: true,
-          type: true,
-          name: true,
-          role: true,
-          contact: true,
-          address: true,
-          reference: true,
-        },
-      },
-      owner: { select: { name: true, email: true } },
-    },
-  });
-  if (!m) return null;
-  return {
-    id: m.id,
-    name: m.name,
-    jurisdiction: m.jurisdiction,
-    operatorType: m.operatorType,
-    primaryAuthority: m.primaryAuthority,
-    clientName: m.clientName,
-    clientContact: m.clientContact,
-    customInstructions: m.customInstructions,
-    parties: m.parties,
-    ownerName: m.owner?.name ?? null,
-    ownerEmail: m.owner?.email ?? null,
-  };
-}
+/* loadMandateScaffoldContext moved to
+   `./mandate-scaffold-context.server.ts` as part of Atlas V3 T0.1.c
+   bundle-split (2026-05-26). Imported above. Same signature + behaviour. */
 
 const DRAFT_DISCLAIMER_DE =
   "Hinweis: AI-generierter Entwurf. Vor Versand juristisch zu prüfen.";
@@ -2830,294 +2748,12 @@ const RefineDocumentInput = z.object({
    (2026-05-26). The dispatch lives in the early-route guard at the
    top of executeAtlasTool() above. */
 
-/* ─── Sprint 12 D — Document Templates as Chat-Memory ───────────────── */
-
-const SaveDocumentTemplateInput = z.object({
-  name: z.string().trim().min(3).max(100),
-  kind: z.enum(["schriftsatz", "brief", "vertrag", "aktennotiz", "sonstiges"]),
-  body: z.string().min(20).max(50_000),
-  dry_run: z.boolean().optional(),
-});
-
-/* Token-extraction: find common mandate-specific values in the body and
-   replace them with {{token}} placeholders. */
-function tokenizeBody(
-  body: string,
-  ctx: Awaited<ReturnType<typeof loadMandateScaffoldContext>>,
-): { tokenized: string; tokens: string[] } {
-  if (!ctx) return { tokenized: body, tokens: [] };
-  let out = body;
-  const tokens: string[] = [];
-  const replacements: { value: string | null; token: string }[] = [
-    { value: ctx.clientName, token: "client_name" },
-    { value: ctx.clientContact, token: "client_contact" },
-    { value: ctx.primaryAuthority, token: "authority" },
-    { value: ctx.jurisdiction, token: "jurisdiction" },
-    { value: ctx.operatorType, token: "operator_type" },
-    ...ctx.parties.flatMap((p) => [
-      { value: p.name, token: `party_${p.type}_name` },
-      { value: p.reference, token: `party_${p.type}_reference` },
-      { value: p.contact, token: `party_${p.type}_contact` },
-      { value: p.address, token: `party_${p.type}_address` },
-    ]),
-    { value: ctx.ownerName, token: "lawyer_name" },
-    { value: ctx.ownerEmail, token: "lawyer_email" },
-  ];
-  for (const { value, token } of replacements) {
-    if (value && value.length >= 3) {
-      const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      const re = new RegExp(escaped, "g");
-      if (re.test(out)) {
-        out = out.replace(re, `{{${token}}}`);
-        if (!tokens.includes(token)) tokens.push(token);
-      }
-    }
-  }
-  return { tokenized: out, tokens };
-}
-
-async function saveDocumentTemplateTool(args: {
-  input: unknown;
-  callerUserId: string;
-  callerOrgId: string;
-  mandateId?: string | null;
-}): Promise<AtlasToolResult> {
-  const parsed = SaveDocumentTemplateInput.safeParse(args.input);
-  if (!parsed.success) {
-    return {
-      content: JSON.stringify({
-        error: "Invalid input",
-        details: parsed.error.flatten(),
-      }),
-      isError: true,
-    };
-  }
-  const d = parsed.data;
-  const ctx = await loadMandateScaffoldContext({
-    mandateId: args.mandateId,
-    callerUserId: args.callerUserId,
-    callerOrgId: args.callerOrgId,
-  });
-  const { tokenized, tokens } = tokenizeBody(d.body, ctx);
-
-  if (d.dry_run) {
-    return {
-      content: JSON.stringify({
-        dry_run: true,
-        name: d.name,
-        kind: d.kind,
-        tokens,
-        tokenized_preview: tokenized.slice(0, 1000),
-        directive:
-          "Show the lawyer the tokens + preview. Confirm before persisting (call again without dry_run).",
-      }),
-      isError: false,
-    };
-  }
-
-  try {
-    const created = await prisma.atlasDocumentTemplate.upsert({
-      where: {
-        organizationId_name: {
-          organizationId: args.callerOrgId,
-          name: d.name,
-        },
-      },
-      create: {
-        organizationId: args.callerOrgId,
-        name: d.name,
-        kind: d.kind,
-        body: tokenized,
-        tokensJson: JSON.stringify(tokens),
-        sourceMandateId: args.mandateId ?? null,
-        createdByUserId: args.callerUserId,
-      },
-      update: {
-        kind: d.kind,
-        body: tokenized,
-        tokensJson: JSON.stringify(tokens),
-        sourceMandateId: args.mandateId ?? null,
-      },
-      select: { id: true, name: true, kind: true, updatedAt: true },
-    });
-    return {
-      content: JSON.stringify({
-        ok: true,
-        template: created,
-        tokens,
-        directive: `Template '${created.name}' gespeichert (${tokens.length} Tokens). Nutzung: "nutz ${created.name} für Mandant XYZ".`,
-      }),
-      isError: false,
-    };
-  } catch (err) {
-    return {
-      content: JSON.stringify({
-        error: "Save failed",
-        details: err instanceof Error ? err.message : String(err),
-      }),
-      isError: true,
-    };
-  }
-}
-
-const ListDocumentTemplatesInput = z.object({
-  kind: z
-    .enum(["schriftsatz", "brief", "vertrag", "aktennotiz", "sonstiges"])
-    .optional(),
-});
-
-async function listDocumentTemplatesTool(args: {
-  input: unknown;
-  callerOrgId: string;
-}): Promise<AtlasToolResult> {
-  const parsed = ListDocumentTemplatesInput.safeParse(args.input);
-  if (!parsed.success) {
-    return {
-      content: JSON.stringify({
-        error: "Invalid input",
-        details: parsed.error.flatten(),
-      }),
-      isError: true,
-    };
-  }
-  const templates = await prisma.atlasDocumentTemplate.findMany({
-    where: {
-      organizationId: args.callerOrgId,
-      ...(parsed.data.kind ? { kind: parsed.data.kind } : {}),
-    },
-    orderBy: [{ kind: "asc" }, { name: "asc" }],
-    select: {
-      id: true,
-      name: true,
-      kind: true,
-      tokensJson: true,
-      updatedAt: true,
-    },
-    take: 100,
-  });
-  return {
-    content: JSON.stringify({
-      templates: templates.map((t) => ({
-        id: t.id,
-        name: t.name,
-        kind: t.kind,
-        tokenCount: (() => {
-          try {
-            return (JSON.parse(t.tokensJson) as string[]).length;
-          } catch {
-            return 0;
-          }
-        })(),
-        updatedAt: t.updatedAt,
-      })),
-    }),
-    isError: false,
-  };
-}
-
-const UseDocumentTemplateInput = z.object({
-  name: z.string().trim().min(3).max(100).optional(),
-  id: z.string().cuid().optional(),
-});
-
-async function applyDocumentTemplateTool(args: {
-  input: unknown;
-  callerUserId: string;
-  callerOrgId: string;
-  mandateId?: string | null;
-}): Promise<AtlasToolResult> {
-  const parsed = UseDocumentTemplateInput.safeParse(args.input);
-  if (!parsed.success || (!parsed.data.name && !parsed.data.id)) {
-    return {
-      content: JSON.stringify({ error: "Pass either name or id." }),
-      isError: true,
-    };
-  }
-  const template = await prisma.atlasDocumentTemplate.findFirst({
-    where: {
-      organizationId: args.callerOrgId,
-      ...(parsed.data.id
-        ? { id: parsed.data.id }
-        : { name: { equals: parsed.data.name, mode: "insensitive" } }),
-    },
-    select: {
-      id: true,
-      name: true,
-      kind: true,
-      body: true,
-      tokensJson: true,
-    },
-  });
-  if (!template) {
-    return {
-      content: JSON.stringify({
-        error: "Template not found",
-        directive:
-          "Call list_document_templates to show the lawyer what's available.",
-      }),
-      isError: true,
-    };
-  }
-
-  const ctx = await loadMandateScaffoldContext({
-    mandateId: args.mandateId,
-    callerUserId: args.callerUserId,
-    callerOrgId: args.callerOrgId,
-  });
-  let mergedBody = template.body;
-  const today = new Date().toLocaleDateString("de-DE", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-  const resolved: Record<string, string> = { today };
-  if (ctx) {
-    if (ctx.clientName) resolved.client_name = ctx.clientName;
-    if (ctx.clientContact) resolved.client_contact = ctx.clientContact;
-    if (ctx.primaryAuthority) resolved.authority = ctx.primaryAuthority;
-    if (ctx.jurisdiction) resolved.jurisdiction = ctx.jurisdiction;
-    if (ctx.operatorType) resolved.operator_type = ctx.operatorType;
-    if (ctx.ownerName) resolved.lawyer_name = ctx.ownerName;
-    if (ctx.ownerEmail) resolved.lawyer_email = ctx.ownerEmail;
-    for (const p of ctx.parties) {
-      if (p.name) resolved[`party_${p.type}_name`] = p.name;
-      if (p.reference) resolved[`party_${p.type}_reference`] = p.reference;
-      if (p.contact) resolved[`party_${p.type}_contact`] = p.contact;
-      if (p.address) resolved[`party_${p.type}_address`] = p.address;
-    }
-  }
-  const tokens = (() => {
-    try {
-      return JSON.parse(template.tokensJson) as string[];
-    } catch {
-      return [];
-    }
-  })();
-  const unresolved: string[] = [];
-  for (const token of tokens) {
-    const value = resolved[token];
-    if (value !== undefined) {
-      const re = new RegExp(`\\{\\{${token}\\}\\}`, "g");
-      mergedBody = mergedBody.replace(re, value);
-    } else {
-      unresolved.push(token);
-    }
-  }
-  mergedBody = mergedBody.replace(/\{\{today\}\}/g, today);
-
-  return {
-    content: JSON.stringify({
-      template: { name: template.name, kind: template.kind },
-      merged_body: mergedBody,
-      unresolved_tokens: unresolved,
-      directive:
-        unresolved.length > 0
-          ? `Merged body has ${unresolved.length} unresolved token(s): ${unresolved.join(", ")}. Either ask the lawyer for them or fill from chat context.`
-          : "All tokens resolved. Present the merged body to the lawyer and lightly polish based on chat context.",
-    }),
-    isError: false,
-  };
-}
+/* Sprint 12 D — Document Templates as Chat-Memory: SaveDocument-
+   TemplateInput, tokenizeBody, saveDocumentTemplateTool,
+   ListDocumentTemplatesInput, listDocumentTemplatesTool,
+   UseDocumentTemplateInput, applyDocumentTemplateTool — all moved
+   to templates-tools.server.ts as part of Atlas V3 T0.1.c bundle-
+   split (2026-05-26). The unused block below has been removed. */
 
 function refineDocumentTool(args: { input: unknown }): AtlasToolResult {
   const parsed = RefineDocumentInput.safeParse(args.input);
@@ -3232,6 +2868,21 @@ export async function executeAtlasTool(args: {
       input: args.input,
     });
   }
+  /* Atlas V3 T0.1.c: route templates tools (4: list_workspace_templates,
+     save/list/use_document_template) to dedicated templates dispatch.
+     The document-template variants need caller + org + mandate
+     context for tokenization; list_workspace_templates is a pure
+     static-catalogue lookup but uses the same dispatcher for
+     uniformity. */
+  if (typeof args.name === "string" && isTemplatesToolName(args.name)) {
+    return executeTemplatesTool({
+      name: args.name,
+      input: args.input,
+      callerUserId: args.callerUserId,
+      callerOrgId: args.callerOrgId,
+      mandateId: args.mandateId,
+    });
+  }
   /* Atlas M2 Vault-RAG: search_mandate_vault is registered in
      ATLAS_TOOLS but intentionally NOT in the AtlasToolName literal-
      union (kept stable as the tool-set grows). Route it via a
@@ -3257,8 +2908,8 @@ export async function executeAtlasTool(args: {
       return searchLegalSources(args);
     case "get_legal_source_by_id":
       return getLegalSourceByIdTool(args);
-    case "list_workspace_templates":
-      return listWorkspaceTemplates();
+    /* list_workspace_templates early-routed via isTemplatesToolName
+       above (Atlas V3 T0.1.c bundle-split). */
     case "list_jurisdiction_authorities":
       return listJurisdictionAuthorities(args);
     case "search_cases":
@@ -3311,26 +2962,10 @@ export async function executeAtlasTool(args: {
        (Atlas V3 T0.1 bundle-split, 2026-05-26). Cases removed,
        helpers moved to branding-tools.server.ts. */
 
-    /* Sprint 12 D — document templates as chat-memory. */
-    case "save_document_template":
-      return saveDocumentTemplateTool({
-        input: args.input,
-        callerUserId: args.callerUserId,
-        callerOrgId: args.callerOrgId,
-        mandateId: args.mandateId,
-      });
-    case "list_document_templates":
-      return listDocumentTemplatesTool({
-        input: args.input,
-        callerOrgId: args.callerOrgId,
-      });
-    case "use_document_template":
-      return applyDocumentTemplateTool({
-        input: args.input,
-        callerUserId: args.callerUserId,
-        callerOrgId: args.callerOrgId,
-        mandateId: args.mandateId,
-      });
+    /* Sprint 12 D — document templates (save/list/use) early-routed
+       via isTemplatesToolName above (Atlas V3 T0.1.c bundle-split,
+       2026-05-26). Cases + helper functions + zod schemas + tokenize-
+       Body all moved to templates-tools.server.ts. */
     default: {
       const _never: never = args.name;
       return {

@@ -155,31 +155,31 @@ Catalog`).
 
 ### Last meaningful action
 
-**2026-05-26**: Three bundles extracted from `atlas-tool-executor.ts`:
+**2026-05-26**: Four bundles extracted from `atlas-tool-executor.ts`,
+all already cherry-picked + pushed to main as part of the
+7-commit batch deploy (164b0ddc):
 
-- T0.1.a **Branding** (`branding-tools.server.ts`, 227 LOC, 2 tools,
-  11/11 tests). Commit `94625106`.
-- T0.1.b **Mandate** (`mandate-tools.server.ts`, ~200 LOC, 1 tool,
-  11/11 tests, `navigateUrl` carried in result type). Commit `5d75a8a3`.
-- T0.1.g **Deadlines** (`deadlines-tools.server.ts`, ~340 LOC, 1 tool
-  - 4 helpers, 12/12 tests). Commit pending.
+- T0.1.a **Branding** (227 LOC, 2 tools, 11 tests) — on main as `c38c8235`
+- T0.1.b **Mandate** (~200 LOC, 1 tool, 11 tests, navigateUrl) — on main as `8c908668`
+- T0.1.g **Deadlines** (~340 LOC, 1 tool + 4 helpers, 12 tests) — on main as `d938c18d`
+- T0.1.c **Templates** (~470 LOC, 4 tools + tokenizeBody, 14 tests) — commit PENDING (post-deploy session work). Required prior extraction of `loadMandateScaffoldContext` into `mandate-scaffold-context.server.ts` shared module.
 
-Net 34 new tests, all passing. `atlas-tool-executor.ts` down ~330
-LOC across these three. Pattern proven across 3 new bundles + the
-3 existing (compliance/validity/document). Pre-existing TS2322 at
-`atlas-tool-executor.ts` default-arm confirmed and not blocking.
-Current branch: `feature/m1-1c-bafa-bescheid-parser`.
+Net 48 new tests, all passing. `atlas-tool-executor.ts` down
+~830 LOC cumulatively. Pre-existing TS2322 at default-arm
+confirmed not blocking. Current branch: `feature/m1-1c-bafa-bescheid-parser`.
 
 ### Current focus
 
-→ **T0.1.c — Templates bundle next** (4 tools: save/list/use document templates + list_workspace_templates). Has a helper-dependency on `loadMandateScaffoldContext` shared with drafting; either extract that to a shared utility module first or import via re-export from the executor.
+→ **T0.1.d Korpus bundle** (5 tools, ~800 LOC) OR
+→ **T0.1.f Comparison bundle** (2 tools, lets REGULATION_TIMELINE finally leave the executor) OR
+→ **T0.1.h Drafting bundle** (7 tools, biggest, helper-knot with mandate-scaffold-context — now resolved).
 
 ### Tier 0 — Consolidation
 
 - 🟡 **T0.1** Tool-Executor Bundle-Split (`atlas-tool-executor.ts` → 9 bundle files)
   - 🟢 T0.1.a Branding bundle (2 tools, `branding-tools.server.ts`, 11 tests)
   - 🟢 T0.1.b Mandate bundle (1 tool, `mandate-tools.server.ts`, 11 tests, navigateUrl supported)
-  - 🔴 T0.1.c Templates bundle (4 tools: save/list/use/list-workspace-templates)
+  - 🟢 T0.1.c Templates bundle (4 tools, `templates-tools.server.ts`, 14 tests; required helper-extraction `loadMandateScaffoldContext` → `mandate-scaffold-context.server.ts` shared module — used by drafting tools too)
   - 🔴 T0.1.d Korpus bundle (5 tools: search_legal_sources, get_legal_source_by_id, search_cases, get_case_by_id, list_jurisdiction_authorities)
   - 🔴 T0.1.e Network bundle (3 tools: find_operator_organization, create_matter_invite, create_solo_matter)
   - 🔴 T0.1.f Comparison bundle (2 tools: compare_jurisdictions_for_filing, summarize_changes_since)
@@ -1320,6 +1320,27 @@ or risk learned from prior work.
 > tier-item ID.
 
 ### 2026-05-26
+
+**[COMPLETE] T0.1.c — Templates bundle extracted.** 4 tools
+(`list_workspace_templates`, `save_document_template`,
+`list_document_templates`, `use_document_template`) moved from
+`atlas-tool-executor.ts` to new `templates-tools.server.ts` (~470 LOC).
+Includes the `tokenizeBody` helper (used only by save) and all
+zod schemas (SaveDocumentTemplateInput, ListDocumentTemplatesInput,
+UseDocumentTemplateInput).
+
+**Critical side-effect:** `loadMandateScaffoldContext` was extracted
+FIRST into a new shared module `mandate-scaffold-context.server.ts`
+(also exports `MandateScaffoldContext` type). The executor still
+needs this helper for the in-progress draft\_\* tools (T0.1.h),
+templates-bundle needs it for save + use, and pulling it out to a
+shared module avoids circular imports between bundles.
+
+14/14 unit tests passing (schema shape; isTemplatesToolName
+positive/negative; dispatcher for all 4 tools; dry-run vs persist
+paths; missing-template handling; malformed-tokensJson resilience;
+unknown-tool fallback). Tests mock Prisma + the workspace-templates
+data module — zero network, zero DB, zero Anthropic.
 
 **[COMPLETE] T0.1.g — Deadlines bundle extracted.** 1 tool
 (`get_filing_deadlines`) + all 4 helpers (`FilingDeadlinesInput`
