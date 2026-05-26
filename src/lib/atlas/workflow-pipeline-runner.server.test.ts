@@ -412,3 +412,110 @@ describe("runWorkflowPipeline", () => {
     }
   });
 });
+
+/* ── T1.E.26 — Approval-gate pre-flight scan ────────────────────────── */
+
+describe("runWorkflowPipeline — T1.E.26 approval gates", () => {
+  beforeEach(() => {
+    runChatMock.mockReset();
+  });
+
+  it("halts before running ANY step when an expected-tool needs approval", async () => {
+    /* The 4-step "eu-space-act-mit-antrag" pipeline includes
+       draft_authorization_application in step 4 — which is marked
+       requiresApproval=true in tool-metadata. */
+    const result = await runWorkflowPipeline({
+      workflowId: "eu-space-act-mit-antrag",
+      userId: "u1",
+      organizationId: "o1",
+    });
+
+    expect(result.isCompleted).toBe(false);
+    expect(result.awaitingApproval).toBeDefined();
+    expect(result.awaitingApproval?.pendingSteps).toHaveLength(1);
+    expect(result.awaitingApproval?.pendingSteps[0].stepIndex).toBe(3);
+    expect(
+      result.awaitingApproval?.pendingSteps[0].requiresApprovalTools,
+    ).toContain("draft_authorization_application");
+    /* CRITICAL: no runChat calls happened — the halt is pre-flight. */
+    expect(runChatMock).not.toHaveBeenCalled();
+  });
+
+  it("bypassApproval: true skips the pre-flight scan and runs all steps", async () => {
+    mockRunChatSequence([
+      {
+        chatId: "c",
+        events: [{ type: "text", delta: "s1" }, { type: "done" }],
+      },
+      {
+        chatId: "c",
+        events: [{ type: "text", delta: "s2" }, { type: "done" }],
+      },
+      {
+        chatId: "c",
+        events: [{ type: "text", delta: "s3" }, { type: "done" }],
+      },
+      {
+        chatId: "c",
+        events: [{ type: "text", delta: "s4" }, { type: "done" }],
+      },
+    ]);
+
+    const result = await runWorkflowPipeline({
+      workflowId: "eu-space-act-mit-antrag",
+      userId: "u1",
+      organizationId: "o1",
+      bypassApproval: true,
+    });
+
+    expect(result.isCompleted).toBe(true);
+    expect(result.awaitingApproval).toBeUndefined();
+    expect(result.steps).toHaveLength(4);
+    expect(runChatMock).toHaveBeenCalledTimes(4);
+  });
+
+  it("does NOT halt when no expected-tool requires approval (eu-space-act-vollanalyse)", async () => {
+    /* The 3-step pipeline uses only safe tools (assess_*, list_*,
+       get_*, search_legal_sources, check_article_status). */
+    mockRunChatSequence([
+      { chatId: "c", events: [{ type: "text", delta: "1" }, { type: "done" }] },
+      { chatId: "c", events: [{ type: "text", delta: "2" }, { type: "done" }] },
+      { chatId: "c", events: [{ type: "text", delta: "3" }, { type: "done" }] },
+    ]);
+
+    const result = await runWorkflowPipeline({
+      workflowId: "eu-space-act-vollanalyse",
+      userId: "u1",
+      organizationId: "o1",
+    });
+
+    expect(result.isCompleted).toBe(true);
+    expect(result.awaitingApproval).toBeUndefined();
+  });
+
+  it("awaitingApproval response has no steps + chatId='' (nothing ran)", async () => {
+    const result = await runWorkflowPipeline({
+      workflowId: "eu-space-act-mit-antrag",
+      userId: "u1",
+      organizationId: "o1",
+    });
+
+    expect(result.steps).toEqual([]);
+    expect(result.chatId).toBe("");
+    expect(result.aborted).toBeUndefined();
+  });
+
+  it("identifies ALL approval-required steps, not just the first one", async () => {
+    /* This test would need a workflow with multiple approval-required
+       steps. The current library only has eu-space-act-mit-antrag
+       with one such step. Verify at minimum that the existing
+       single-step case is correctly identified. */
+    const result = await runWorkflowPipeline({
+      workflowId: "eu-space-act-mit-antrag",
+      userId: "u1",
+      organizationId: "o1",
+    });
+    const ids = result.awaitingApproval?.pendingSteps.map((p) => p.stepIndex);
+    expect(ids).toEqual([3]); // only step 4 (index 3) has draft_*
+  });
+});

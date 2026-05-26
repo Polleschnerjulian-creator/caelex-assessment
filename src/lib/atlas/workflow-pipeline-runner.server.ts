@@ -30,6 +30,7 @@ import "server-only";
 
 import { runChat } from "./chat-engine.server";
 import { getWorkflowById, type WorkflowStep } from "./workflow-library";
+import { getToolMetadata } from "./tool-metadata";
 import { logger } from "@/lib/logger";
 
 export interface PipelineRunInput {
@@ -45,6 +46,24 @@ export interface PipelineRunInput {
   /** When true, halt the pipeline if a step produces zero text + zero
    *  tool-calls (empty assistant turn). Defaults to true. */
   abortOnEmptyTurn?: boolean;
+  /** T1.E.26 approval-gate behaviour. Pipeline pre-flight scans each
+   *  step's `expectedTools` against `tool-metadata.requiresApproval`.
+   *  - Default (undefined / false): halt before running ANY step if at
+   *    least one upcoming step needs approval. Returns
+   *    `awaitingApproval` so the UI can prompt the user.
+   *  - `true`: skip the pre-flight check entirely — the caller has
+   *    already obtained user consent (e.g. via a single up-front
+   *    "Run this whole pipeline?" modal). */
+  bypassApproval?: boolean;
+}
+
+/** Per-step approval summary returned by the pre-flight scan. */
+export interface PipelinePendingStepApproval {
+  stepIndex: number;
+  /** Tool names from `step.expectedTools` that are marked
+   *  `requiresApproval=true` in tool-metadata. Empty for safe steps;
+   *  this list is only included for steps that need approval. */
+  requiresApprovalTools: string[];
 }
 
 export interface PipelineStepResult {
@@ -73,6 +92,13 @@ export interface PipelineRunResult {
   /** Set when the runner aborted on a hard error (no workflow / no
    *  pipeline). Distinguishes from step-level failures. */
   aborted?: { code: string; message: string };
+  /** T1.E.26: set when the pre-flight approval scan found steps that
+   *  need user consent and `bypassApproval` wasn't passed. The pipeline
+   *  did NOT execute any step in this case — call again with
+   *  `bypassApproval: true` after the user approves. */
+  awaitingApproval?: {
+    pendingSteps: PipelinePendingStepApproval[];
+  };
 }
 
 /* ── Public API ─────────────────────────────────────────────────────── */
@@ -109,6 +135,42 @@ export async function runWorkflowPipeline(
         message: `Workflow has no pipeline: ${input.workflowId}`,
       },
     };
+  }
+
+  /* T1.E.26 pre-flight approval scan. For each step, check whether
+     any tool in `expectedTools` is marked `requiresApproval=true` in
+     tool-metadata. If so AND the caller didn't pass `bypassApproval`,
+     halt before running anything and return the pending-approval
+     list. The UI prompts the user; on consent it re-invokes with
+     `bypassApproval: true`. */
+  if (!input.bypassApproval) {
+    const pendingSteps: PipelinePendingStepApproval[] = [];
+    for (let i = 0; i < workflow.pipeline.length; i++) {
+      const step = workflow.pipeline[i];
+      const tools = step.expectedTools ?? [];
+      const flagged: string[] = [];
+      for (const toolName of tools) {
+        const meta = getToolMetadata(toolName);
+        if (meta?.requiresApproval) flagged.push(toolName);
+      }
+      if (flagged.length > 0) {
+        pendingSteps.push({ stepIndex: i, requiresApprovalTools: flagged });
+      }
+    }
+    if (pendingSteps.length > 0) {
+      logger.info("[atlas/pipeline] halting pre-flight on approval-required", {
+        workflowId: workflow.id,
+        pendingStepCount: pendingSteps.length,
+      });
+      return {
+        workflowId: workflow.id,
+        chatId: "",
+        steps: [],
+        totalDurationMs: Date.now() - startedAt,
+        isCompleted: false,
+        awaitingApproval: { pendingSteps },
+      };
+    }
   }
 
   const abortOnEmpty = input.abortOnEmptyTurn ?? true;

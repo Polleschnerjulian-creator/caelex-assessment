@@ -468,6 +468,50 @@ Verwende präzise juristische Sprache. Quellen klar zitieren (Atlas-Pills).`,
     ],
     estimatedMinutes: 12,
   },
+  {
+    id: "eu-space-act-mit-antrag",
+    emoji: "📝",
+    name: "EU Space Act — Vollanalyse + Antrag-Entwurf (4 Steps, mit Approval-Gate)",
+    description:
+      "Wie eu-space-act-vollanalyse, plus Schritt 4: Authorisierungs-Antrag-Entwurf via draft_authorization_application. Schritt 4 erfordert User-Approval (Tool generiert ein vollständiges Behörden-Dokument).",
+    category: "compliance",
+    startingPrompt:
+      "Starte die EU-Space-Act-Vollanalyse + Antrag-Entwurf für meinen Mandanten. Operator-Typ: [SCO/LO/GSO]. Establishment: [eu/third_country_eu_services/third_country_no_eu]. Mitgliedstaat: [DE/FR/IT/LU/...].",
+    pipeline: [
+      {
+        prompt:
+          "Schritt 1 — Anwendbarkeit. Klassifiziere den Operator nach EU Space Act und bestimme das anwendbare Regime.",
+        expectedTools: ["assess_eu_space_act", "search_legal_sources"],
+      },
+      {
+        prompt: "Schritt 2 — Pflichten + Authorities + Fristen tabellarisch.",
+        expectedTools: [
+          "list_jurisdiction_authorities",
+          "get_filing_deadlines",
+        ],
+      },
+      {
+        prompt:
+          "Schritt 3 — Sachverhaltszusammenfassung für den Antrag (auf Basis Schritt 1+2).",
+        expectedTools: ["search_legal_sources"],
+      },
+      {
+        /* Approval-required step: draft_authorization_application
+           generates a binding document for a national authority — the
+           pre-flight gate halts here unless `bypassApproval: true`. */
+        prompt:
+          "Schritt 4 — Antrag-Entwurf. Erstelle den vollständigen Authorisierungs-Antrag für die zuständige Behörde basierend auf Schritt 1-3.",
+        expectedTools: ["draft_authorization_application"],
+      },
+    ],
+    expectedTools: [
+      "assess_eu_space_act",
+      "list_jurisdiction_authorities",
+      "get_filing_deadlines",
+      "draft_authorization_application",
+    ],
+    estimatedMinutes: 25,
+  },
 ];
 
 export function listWorkflows(opts?: {
