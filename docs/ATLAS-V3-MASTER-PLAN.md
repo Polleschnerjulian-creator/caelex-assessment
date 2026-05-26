@@ -155,7 +155,25 @@ Catalog`).
 
 ### Last meaningful action
 
-**2026-05-26 (latest)**: T1.A retrofit — added test coverage to the 8
+**2026-05-26 (latest)**: T0.3 audit-log hash-chain coverage —
+added `audit-log.server.test.ts` (12 tests). Mocks Prisma + logger;
+verifies sha256-prevHash chaining, per-org isolation, system-event
+ledger, fire-and-forget behaviour on prisma failures, and tamper-
+detection on every part of the canonical payload (prevHash, hash,
+metadata). Uses `vi.useFakeTimers()` to pin the clock so the
+canonical `timestamp` field and `row.createdAt` resolve to the
+same ISO string — addresses the sub-ms race in the impl that would
+otherwise produce flaky hashes.
+
+**2026-05-26 (earlier)**: T0.3 validity-tools retrofit — added
+`validity-tools.server.test.ts` (33 tests). Covers all 6 badge-
+derivation branches (in_force / needs_review / pending / amended /
+repealed / unknown), §-suffix + -Art. suffix resolution, dispatcher,
+
+- the 3 tool surfaces. Uses `vi.hoisted()` to provide a 10-entry
+  fixture corpus.
+
+**2026-05-26**: T1.A retrofit — added test coverage to the 8
 compliance tools (`compliance-tools.server.test.ts`, 44 tests). The
 implementation was shipped in V2 Sprint 3 but had no tests. Coverage
 now exercises schema invariants, the dispatcher's unknown-name path,
@@ -214,7 +232,7 @@ shipment — Prisma model + thumbs-up/down API + UI hook) OR
   - 🟢 T0.1.h Drafting bundle (7 tools, `drafting-tools.server.ts`, 16 tests; largest bundle ~1400 LOC including topLicensingSources helper + DRAFT_DISCLAIMER_DE/PRIVILEGE_BANNER_DE constants + 7 zod schemas + 7 implementations. Uses shared `loadMandateScaffoldContext`.)
   - 🟢 T0.1.i Final cleanup (2026-05-26): search_mandate_vault migrated to mandate-tools.server.ts with all helpers (embed, pgvector query, vault_content tag-wrapping, indirect-prompt-injection guards). Special-case pre-switch routing removed. Dead imports (prisma, Prisma, logger, z, encryptAtlasField, decryptAtlasField, ALL_SOURCES, ATLAS_CASES, LegalSource, LegalCase, ComplianceArea, getLegalSourceById, getAuthoritiesByJurisdiction, getCaseById, getCasesApplyingSource, loadMandateScaffoldContext) removed from executor. **atlas-tool-executor.ts is now ~260 LOC pure dispatcher shell** (down from 3,922 LOC, -93%). All 114 bundle tests passing.
 - 🔴 **T0.2** Engine-Unification (3 engines → shared `tool-use-loop.ts`)
-- 🔴 **T0.3** Test-Coverage on critical paths
+- 🟡 **T0.3** Test-Coverage on critical paths — IN PROGRESS. Tool-bundle test coverage now complete (all 11 bundle/runner files have \*.test.ts: branding 11, mandate 11, deadlines 12, templates 14, korpus 18, network 15, comparison 14, drafting 16, compliance 44 [retrofit], validity 33 [retrofit], web 21, pipeline-runner 15). atlas-encryption (existing) + audit-log (12 new tests, hash-chain integrity) covered. Remaining: chat-engine + document-tools + document-processor + semantic-corpus + chat-title-generator + diff-summarizer + citation-extractor + mandate-scaffold-context (all require Prisma/Anthropic/embedding mocks).
 - 🔴 **T0.4** Audit-Log silent-failure elimination
 - 🔴 **T0.5** Encryption-Migration finalization (dual-read → encrypted-only)
 - 🔴 **T0.6** `atlas-tools.ts` schema cleanup
