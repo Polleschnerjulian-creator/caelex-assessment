@@ -419,6 +419,55 @@ Verwende präzise juristische Sprache. Quellen klar zitieren (Atlas-Pills).`,
     ],
     estimatedMinutes: 6,
   },
+
+  /* ─── Multi-step pipelines (T1.E, 2026-05-26) ─────────────────────────
+   * Sprint 6 reserved `pipeline?: WorkflowStep[]`. T1.E makes it real:
+   * the workflow-pipeline-runner.server.ts module executes these steps
+   * sequentially as turns of the SAME AtlasChat (chatId carried
+   * forward). Each step is a user-prompt; the model's answer becomes
+   * context for the next step.
+   *
+   * Pipelines are opt-in via the future `/api/atlas/workflows/run`
+   * route — the existing single-prompt Quickstart cards still launch
+   * just the `startingPrompt`. ────────────────────────────────────────── */
+  {
+    id: "eu-space-act-vollanalyse",
+    emoji: "🛰️",
+    name: "EU Space Act — Vollanalyse (3 Steps)",
+    description:
+      "Pipeline-Workflow: (1) Anwendbarkeit klären, (2) Pflichten + Authorities + Fristen ableiten, (3) Mandanten-Memo entwerfen. Drei Turns desselben Chats mit fortlaufendem Context.",
+    category: "compliance",
+    startingPrompt:
+      "Starte die EU-Space-Act-Vollanalyse für meinen Mandanten. Operator-Typ: [SCO/LO/GSO]. Establishment: [eu/third_country_eu_services/third_country_no_eu]. Mitgliedstaat: [DE/FR/IT/LU/...].",
+    pipeline: [
+      {
+        prompt:
+          "Schritt 1 — Anwendbarkeit. Klassifiziere den Operator nach EU Space Act und bestimme das anwendbare Regime (Standard / Light). Nenne die einschlägigen Articles + Operator-Module + ggf. Ausnahmen. Quellen als [ATLAS:...]-Pills.",
+        expectedTools: ["assess_eu_space_act", "search_legal_sources"],
+      },
+      {
+        prompt:
+          "Schritt 2 — Pflichten + Authorities. Welche konkreten Compliance-Pflichten ergeben sich aus der Klassifizierung in Schritt 1? Liste pro Pflicht: (a) zuständige Behörde, (b) Fristen, (c) erforderliche Unterlagen. Strukturiert als Tabelle.",
+        expectedTools: [
+          "list_jurisdiction_authorities",
+          "get_filing_deadlines",
+          "search_legal_sources",
+        ],
+      },
+      {
+        prompt:
+          "Schritt 3 — Mandanten-Memo. Entwirf ein formelles Memo (Sachverhalt → Rechtsfrage → Würdigung → Ergebnis → Empfehlung) auf Basis der Erkenntnisse aus Schritt 1 und 2. Disclaimer + Atlas-Pills am Ende.",
+        expectedTools: ["search_legal_sources", "check_article_status"],
+      },
+    ],
+    expectedTools: [
+      "assess_eu_space_act",
+      "list_jurisdiction_authorities",
+      "get_filing_deadlines",
+      "search_legal_sources",
+    ],
+    estimatedMinutes: 12,
+  },
 ];
 
 export function listWorkflows(opts?: {

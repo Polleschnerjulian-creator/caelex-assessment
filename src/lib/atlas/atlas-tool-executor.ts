@@ -56,6 +56,7 @@ import {
   isDraftingToolName,
   executeDraftingTool,
 } from "./drafting-tools.server";
+import { isWebToolName, executeWebTool } from "./web-tools.server";
 
 /* Post-T0.1.i, the executor is a pure dispatcher shell. All bundle-
    level imports (prisma, logger, zod, encryption, data-corpus modules,
@@ -219,6 +220,17 @@ export async function executeAtlasTool(args: {
       callerUserId: args.callerUserId,
       callerOrgId: args.callerOrgId,
       mandateId: args.mandateId,
+    });
+  }
+  /* Atlas V3 T1.D: route web tools (web_search, fetch_url,
+     search_eurlex, search_courtlistener) to dedicated web dispatch.
+     All 4 use FREE public APIs (DuckDuckGo Instant Answer, native
+     fetch + HTML strip, EUR-Lex public search, CourtListener REST
+     free tier). No paid SaaS, no auth required. */
+  if (typeof args.name === "string" && isWebToolName(args.name)) {
+    return executeWebTool({
+      name: args.name,
+      input: args.input,
     });
   }
   /* search_mandate_vault moved into the Mandate bundle as part of
