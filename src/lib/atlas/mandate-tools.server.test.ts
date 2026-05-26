@@ -31,23 +31,30 @@ describe("mandate-tools bundle", () => {
   });
 
   describe("MANDATE_TOOLS schema", () => {
-    it("exports exactly 1 tool (find_or_open_matter)", () => {
-      expect(MANDATE_TOOLS).toHaveLength(1);
-      expect(MANDATE_TOOLS[0]?.name).toBe("find_or_open_matter");
+    it("exports 2 tools (find_or_open_matter + search_mandate_vault)", () => {
+      expect(MANDATE_TOOLS).toHaveLength(2);
+      const names = MANDATE_TOOLS.map((t) => t.name).sort();
+      expect(names).toEqual(["find_or_open_matter", "search_mandate_vault"]);
     });
 
-    it("declares query + action as required", () => {
-      const schema = MANDATE_TOOLS[0]?.input_schema as {
-        required?: string[];
-      };
-      expect(schema.required).toContain("query");
-      expect(schema.required).toContain("action");
+    it("find_or_open_matter declares query + action as required", () => {
+      const tool = MANDATE_TOOLS.find((t) => t.name === "find_or_open_matter");
+      const schema = tool?.input_schema as { required?: string[] };
+      expect(schema?.required).toContain("query");
+      expect(schema?.required).toContain("action");
+    });
+
+    it("search_mandate_vault declares query as required", () => {
+      const tool = MANDATE_TOOLS.find((t) => t.name === "search_mandate_vault");
+      const schema = tool?.input_schema as { required?: string[] };
+      expect(schema?.required).toEqual(["query"]);
     });
   });
 
   describe("isMandateToolName", () => {
-    it("returns true for find_or_open_matter", () => {
+    it("returns true for both mandate tool names", () => {
       expect(isMandateToolName("find_or_open_matter")).toBe(true);
+      expect(isMandateToolName("search_mandate_vault")).toBe(true);
     });
 
     it("returns false for unrelated names", () => {
@@ -189,6 +196,29 @@ describe("mandate-tools bundle", () => {
       });
       expect(result.isError).toBe(true);
       expect(JSON.parse(result.content).error).toContain("Unknown mandate");
+    });
+  });
+
+  describe("executeMandateTool — search_mandate_vault (gates)", () => {
+    it("refuses when no mandate attached", async () => {
+      const result = await executeMandateTool({
+        name: "search_mandate_vault",
+        input: { query: "frequency coordination" },
+        callerOrgId: "org_test_8",
+        mandateId: null,
+      });
+      expect(result.isError).toBe(true);
+      expect(JSON.parse(result.content).error).toContain("Kein Mandat");
+    });
+
+    it("rejects too-short query (zod validation)", async () => {
+      const result = await executeMandateTool({
+        name: "search_mandate_vault",
+        input: { query: "x" }, // < 3 chars
+        callerOrgId: "org_test_9",
+        mandateId: "m_test",
+      });
+      expect(result.isError).toBe(true);
     });
   });
 });

@@ -176,7 +176,7 @@ confirmed not blocking. Current branch: `feature/m1-1c-bafa-bescheid-parser`.
 
 ### Tier 0 — Consolidation
 
-- 🟡 **T0.1** Tool-Executor Bundle-Split (`atlas-tool-executor.ts` → 9 bundle files)
+- 🟢 **T0.1** Tool-Executor Bundle-Split COMPLETE (9 bundle files extracted, monolith → 260 LOC dispatcher shell)
   - 🟢 T0.1.a Branding bundle (2 tools, `branding-tools.server.ts`, 11 tests)
   - 🟢 T0.1.b Mandate bundle (1 tool, `mandate-tools.server.ts`, 11 tests, navigateUrl supported)
   - 🟢 T0.1.c Templates bundle (4 tools, `templates-tools.server.ts`, 14 tests; required helper-extraction `loadMandateScaffoldContext` → `mandate-scaffold-context.server.ts` shared module — used by drafting tools too)
@@ -185,7 +185,7 @@ confirmed not blocking. Current branch: `feature/m1-1c-bafa-bescheid-parser`.
   - 🟢 T0.1.f Comparison bundle (2 tools, `comparison-tools.server.ts`, 14 tests; REGULATION_TIMELINE + RegulationPhase imports finally leave the executor with this extraction — the catalogue-data imports are now ALL bundle-local)
   - 🟢 T0.1.g Deadlines bundle (1 tool, `deadlines-tools.server.ts`, 12 tests). REGULATION_TIMELINE import stays in executor — still used by summarize_changes_since (T0.1.f).
   - 🟢 T0.1.h Drafting bundle (7 tools, `drafting-tools.server.ts`, 16 tests; largest bundle ~1400 LOC including topLicensingSources helper + DRAFT_DISCLAIMER_DE/PRIVILEGE_BANNER_DE constants + 7 zod schemas + 7 implementations. Uses shared `loadMandateScaffoldContext`.)
-  - 🔴 T0.1.i Final: delete obsolete switch + migrate search_mandate_vault into mandate bundle + verify shrunk LOC
+  - 🟢 T0.1.i Final cleanup (2026-05-26): search_mandate_vault migrated to mandate-tools.server.ts with all helpers (embed, pgvector query, vault_content tag-wrapping, indirect-prompt-injection guards). Special-case pre-switch routing removed. Dead imports (prisma, Prisma, logger, z, encryptAtlasField, decryptAtlasField, ALL_SOURCES, ATLAS_CASES, LegalSource, LegalCase, ComplianceArea, getLegalSourceById, getAuthoritiesByJurisdiction, getCaseById, getCasesApplyingSource, loadMandateScaffoldContext) removed from executor. **atlas-tool-executor.ts is now ~260 LOC pure dispatcher shell** (down from 3,922 LOC, -93%). All 114 bundle tests passing.
 - 🔴 **T0.2** Engine-Unification (3 engines → shared `tool-use-loop.ts`)
 - 🔴 **T0.3** Test-Coverage on critical paths
 - 🔴 **T0.4** Audit-Log silent-failure elimination

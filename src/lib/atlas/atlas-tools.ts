@@ -34,11 +34,9 @@ const CORE_ATLAS_TOOLS: Anthropic.Tool[] = [
      create_solo_matter) moved to network-tools.server.ts as part of
      Atlas V3 T0.1.e bundle-split (2026-05-26). Resolved at runtime
      via isNetworkToolName() in atlas-tool-executor.ts. */
-
   /* find_or_open_matter moved to mandate-tools.server.ts as part of
      Atlas V3 T0.1 bundle-split (2026-05-26). Resolved at runtime via
      isMandateToolName() in atlas-tool-executor.ts. */
-
   // ───────────────────────────────────────────────────────────────────
   // Legal-source navigation tools — added 2026-04 to give Astra explicit
   // ID-routing across the catalogue rather than relying on vector recall
@@ -49,51 +47,19 @@ const CORE_ATLAS_TOOLS: Anthropic.Tool[] = [
   // open-ended questions Astra still falls back on vector recall over
   // the embedded library.
   // ───────────────────────────────────────────────────────────────────
-
   /* search_legal_sources, get_legal_source_by_id, list_jurisdiction_authorities,
      search_cases, get_case_by_id moved to korpus-tools.server.ts
      (Atlas V3 T0.1.d bundle-split, 2026-05-26). */
-
   /* compare_jurisdictions_for_filing + summarize_changes_since moved
      to comparison-tools.server.ts (Atlas V3 T0.1.f bundle-split,
      2026-05-26). Resolved at runtime via isComparisonToolName(). */
-
   /* get_filing_deadlines moved to deadlines-tools.server.ts as part
      of Atlas V3 T0.1.g bundle-split (2026-05-26). Resolved at
      runtime via isDeadlinesToolName() in atlas-tool-executor.ts. */
-
-  {
-    name: "search_mandate_vault",
-    description: `Durchsucht die Vault-Files des aktuell angehängten Mandats nach semantischer Ähnlichkeit zur Query (RAG). Nur verfügbar wenn Chat einem Mandat zugewiesen ist — die chat-engine filtert dieses Tool raus wenn kein Mandat attached ist.
-
-Returns up to \`limit\` Treffer (default 5, max 10). Jeder Treffer enthält: \`fileId\` (für Citation-Link), \`filename\`, \`text\` (der relevante Chunk), \`score\` (cosine 0..1), und \`chunkIndex/totalChunks\` für Quellenangabe.
-
-Use cases:
- - "Was steht im Schriftsatz vom 12.3. zur Frequenzkoordination?"
- - "Find die Stelle im BNetzA-Bescheid wo die Widerspruchsfrist genannt wird"
- - "Welche Files erwähnen den Antrag XY?"
-
-Cite sources in your reply with markdown links: \`[Mandats-Datei: filename.pdf](/atlas/mandate/<mandateId>/vault/<fileId>)\`. The chat-view renders these as clickable file references.`,
-    input_schema: {
-      type: "object",
-      properties: {
-        query: {
-          type: "string",
-          description:
-            "Free-text query — was suchst du im Vault? Mind. 3 Zeichen.",
-        },
-        limit: {
-          type: "integer",
-          description: "Max number of chunks to return (default 5, max 10).",
-          default: 5,
-          minimum: 1,
-          maximum: 10,
-        },
-      },
-      required: ["query"],
-    },
-  },
-
+  /* search_mandate_vault moved to mandate-tools.server.ts as part of
+     Atlas V3 T0.1.i final cleanup (2026-05-26). Routed via
+     isMandateToolName() — same bundle pattern as find_or_open_matter,
+     no more special-case pre-switch handler in atlas-tool-executor. */
   /* ── Sprint 12 (2026-05-17): Chat-native Document Drafting ───────────
    * 5 tools that turn natural-language requests like "Schreib mir ne
    * Vollmacht für OrbitCo" or "Antrag an BNetzA für Frequenz" into
