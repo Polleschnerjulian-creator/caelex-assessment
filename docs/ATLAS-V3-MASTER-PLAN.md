@@ -155,24 +155,42 @@ Catalog`).
 
 ### Last meaningful action
 
-**2026-05-26**: Four bundles extracted from `atlas-tool-executor.ts`,
-all already cherry-picked + pushed to main as part of the
-7-commit batch deploy (164b0ddc):
+**2026-05-26 (later)**: T1.E.24 Multi-Step Workflow Pipeline foundation
+shipped.
 
-- T0.1.a **Branding** (227 LOC, 2 tools, 11 tests) — on main as `c38c8235`
-- T0.1.b **Mandate** (~200 LOC, 1 tool, 11 tests, navigateUrl) — on main as `8c908668`
-- T0.1.g **Deadlines** (~340 LOC, 1 tool + 4 helpers, 12 tests) — on main as `d938c18d`
-- T0.1.c **Templates** (~470 LOC, 4 tools + tokenizeBody, 14 tests) — commit PENDING (post-deploy session work). Required prior extraction of `loadMandateScaffoldContext` into `mandate-scaffold-context.server.ts` shared module.
+- `src/lib/atlas/workflow-pipeline-runner.server.ts` (~320 LOC) —
+  `runWorkflowPipeline()` orchestrates sequential `runChat()` calls,
+  carrying `chatId` forward across pipeline steps.
+- `consumeChatStream()` helper parses the SSE byte stream server-side
+  (text deltas, tool*call*\* names, error events, keepalive comments).
+- `deriveToggles()` maps a step's `expectedTools` to the bundle-level
+  toggle map — flips `web: true` only when a web tool is expected.
+- 15 unit tests in `workflow-pipeline-runner.server.test.ts` — mocks
+  `runChat` with `vi.mock`, zero external cost.
+- Example pipeline added to `workflow-library.ts`:
+  `eu-space-act-vollanalyse` (3 steps: Anwendbarkeit → Pflichten/
+  Authorities → Mandanten-Memo).
+- All 274 atlas tests still pass (1 pre-existing auto-embed failure
+  unchanged, needs API keys).
 
-Net 48 new tests, all passing. `atlas-tool-executor.ts` down
-~830 LOC cumulatively. Pre-existing TS2322 at default-arm
-confirmed not blocking. Current branch: `feature/m1-1c-bafa-bescheid-parser`.
+Earlier today (T0.1 + T1.D):
+
+- T0.1.a-i complete — atlas-tool-executor.ts is now a 260 LOC dispatcher
+  shell (down from 3,922 LOC, -93%).
+- T1.D Web Tools (`web-tools.server.ts`, 4 tools, 21 tests) — on
+  feature branch as `ab3fbc54`, not yet pushed.
+
+Current branch: `feature/m1-1c-bafa-bescheid-parser`. Two commits
+ahead of main now (T1.D + T1.E.24).
 
 ### Current focus
 
-→ **T0.1.d Korpus bundle** (5 tools, ~800 LOC) OR
-→ **T0.1.f Comparison bundle** (2 tools, lets REGULATION_TIMELINE finally leave the executor) OR
-→ **T0.1.h Drafting bundle** (7 tools, biggest, helper-knot with mandate-scaffold-context — now resolved).
+→ **T1.A Compliance-Engine Wrappers** (8 engines, each wraps an
+existing `src/lib/*.server.ts` engine into a `*-tools.server.ts`
+bundle entry) OR
+→ **T1.H RLHF feedback table** (smallest possible useful Tier-1
+shipment — Prisma model + thumbs-up/down API + UI hook) OR
+→ **T1.E.25 Pipeline UI** (now that the runner exists).
 
 ### Tier 0 — Consolidation
 
@@ -218,7 +236,7 @@ confirmed not blocking. Current branch: `feature/m1-1c-bafa-bescheid-parser`.
 - 🟢 **T1.D.21** `fetch_url` (native fetch + HTML strip, SSRF-guarded against local/private IPs) — `web-tools.server.ts`
 - 🟢 **T1.D.22** `search_eurlex` (EUR-Lex public search, CELEX-regex extraction) — `web-tools.server.ts`
 - 🟢 **T1.D.23** `search_courtlistener` (CourtListener REST, free tier 5k/day) — `web-tools.server.ts`
-- 🔴 **T1.E.24** Multi-Step Workflow Pipeline implementation (`WorkflowStep[]` runtime)
+- 🟢 **T1.E.24** Multi-Step Workflow Pipeline foundation (`WorkflowStep[]` runtime) — `workflow-pipeline-runner.server.ts` + 15 unit tests + 1 example pipeline (`eu-space-act-vollanalyse`)
 - 🔴 **T1.E.25** Pipeline-Step UI (progress component)
 - 🔴 **T1.E.26** Per-step approval-gates
 - 🔴 **T1.E.27** Step-failure retry-policy with exponential backoff
@@ -840,47 +858,67 @@ chosen, still free up to 2k/month.
 
 ### T1.E — Multi-Step Workflow Pipeline
 
-The Workflow library has a `WorkflowStep[]` type field that's
-unused at runtime. Implement the runtime.
+**Status: T1.E.24 ✅ FOUNDATION SHIPPED (2026-05-26). T1.E.25-27 still
+open — UI / approval-gates / retry-backoff deferred.**
 
-**Files affected:**
+#### T1.E.24 — Runtime foundation (done)
 
-- READ: `src/lib/atlas/workflow-library.ts`
-- CREATE: `src/lib/atlas/workflow-pipeline-runner.server.ts`
-- CREATE: `src/app/api/atlas/workflow/[id]/run/route.ts` (kick off)
-- CREATE: `src/app/api/atlas/workflow/run/[runId]/route.ts` (status)
-- ADD to Prisma: `model AtlasWorkflowRun` (id, workflowId, userId,
-  organizationId, mandateId, steps: WorkflowStepRun[], status,
-  startedAt, endedAt)
-- CREATE: `src/components/atlas/v2/WorkflowRunPipeline.tsx`
+The Workflow library had a `pipeline?: WorkflowStep[]` field reserved in
+Sprint 6 but no runtime executor. T1.E.24 adds the executor: a
+server-only module that walks a workflow's pipeline, invokes
+`runChat()` once per step, carries `chatId` forward, and reports a
+structured result.
 
-**Plan:**
+**Files shipped:**
 
-1. Runner accepts a workflow-id + initial mandate-context.
+- ✅ `src/lib/atlas/workflow-pipeline-runner.server.ts` (~320 LOC) —
+  `runWorkflowPipeline()` + `consumeChatStream()` + `deriveToggles()`
+- ✅ `src/lib/atlas/workflow-pipeline-runner.server.test.ts` — 15
+  unit tests (consumer + orchestration + abort flows), `vi.mock`
+  of chat-engine to keep zero-external-cost
+- ✅ Example pipeline added to `workflow-library.ts`:
+  `eu-space-act-vollanalyse` with 3 steps (Anwendbarkeit →
+  Pflichten/Authorities → Mandanten-Memo)
+
+**What the runner does:**
+
+1. Resolves workflow by id; aborts cleanly with `WORKFLOW_NOT_FOUND` /
+   `NO_PIPELINE` if missing.
 2. For each step:
-   - Compose prompt with previous-step outputs.
-   - Run `runToolUseLoop` (the unified loop from T0.2).
-   - Persist step-result as `WorkflowStepRun`.
-   - Check approval-gate; if required, halt with status=
-     `awaiting_approval`.
-   - On step-failure: retry with exponential backoff (1s, 5s, 30s).
-   - After 3 retries: halt with status=`failed`.
-3. SSE-stream events: `step_started`, `step_completed`, `step_failed`,
-   `pipeline_completed`.
-4. UI: `WorkflowRunPipeline.tsx` shows step-list with live status,
-   expand each for prompt + result, approval-button when blocked.
+   - First step: `chatId = null` → `runChat` creates a fresh chat.
+   - Subsequent steps: carries `chatId` forward so the model sees prior
+     turns as history.
+   - Consumes the SSE stream server-side (`consumeChatStream`), parses
+     `text` / `tool_call_start` / `error` events, accumulates the
+     assistant text and tools-used list.
+   - Aborts on stream-error or empty-turn (configurable via
+     `abortOnEmptyTurn`).
+3. Returns `PipelineRunResult` with per-step duration, tools-used,
+   text-preview, and overall `isCompleted` flag.
 
-**Acceptance criteria:**
+**Toggle derivation:**
 
-- Workflow with `pipeline: [step1, step2, step3]` runs all three
-  sequentially without user input.
-- User sees live progress in UI.
-- Halted-on-approval flow works (resume after approve).
-- Failure-on-retry-exhaustion flow works (clear error to user).
+- Default toggles mirror `runChat()`'s defaults (all bundles on except
+  `documents` + `web`).
+- When a step's `expectedTools` includes a web tool
+  (`search_eurlex` / `web_search` / `fetch_url` / `search_courtlistener`)
+  the runner flips `web: true` for that call.
+- Same logic for `documents` toggle if step expects a document tool.
 
-**Effort:** 7 days.
+#### T1.E.25-27 — Still open
 
-**Cost: ZERO** — pure code + existing infra.
+- T1.E.25 — `WorkflowRunPipeline.tsx` UI (live progress, expandable
+  per-step view, approval-button).
+- T1.E.26 — Per-step approval-gates (`step.requiresApproval?: boolean`).
+- T1.E.27 — Retry-policy with exponential backoff (1s, 5s, 30s; max 3
+  retries before `failed`).
+- Future: Prisma `AtlasWorkflowRun` table for step-level analytics
+  beyond the per-chat `workflowId` link.
+- Future: HTTP route `/api/atlas/workflows/[id]/run` to kick off
+  pipelines from the UI.
+
+**Cost: ZERO** — pure code + existing chat-engine infra. The runner
+just sequences existing `runChat()` calls.
 
 ### T1.F — Voice/Audio (Free-Tier Path)
 
