@@ -46,6 +46,10 @@ import {
   executeDocumentTool,
 } from "./document-tools.server";
 import {
+  isBrandingToolName,
+  executeBrandingTool,
+} from "./branding-tools.server";
+import {
   ALL_SOURCES,
   getLegalSourceById,
   getAuthoritiesByJurisdiction,
@@ -3133,108 +3137,11 @@ const RefineDocumentInput = z.object({
   instruction: z.string().trim().min(1).max(1000),
 });
 
-/* ─── Sprint 12 C — Letterhead via Chat ─────────────────────────────── */
-
-async function getOrgBrandingTool(args: {
-  callerOrgId: string;
-}): Promise<AtlasToolResult> {
-  const b = await prisma.atlasOrgBranding.findUnique({
-    where: { organizationId: args.callerOrgId },
-    select: {
-      letterheadName: true,
-      address: true,
-      phone: true,
-      email: true,
-      website: true,
-      raNumber: true,
-      authority: true,
-      insuranceNote: true,
-      bankName: true,
-      iban: true,
-      bic: true,
-      defaultJurisdiction: true,
-      defaultClosing: true,
-      logoUrl: true,
-      updatedAt: true,
-    },
-  });
-  return {
-    content: JSON.stringify({
-      branding: b ?? null,
-      directive: b
-        ? "Branding is set — use it in any Briefkopf the AI emits."
-        : "Branding is EMPTY. Before producing any Schriftsatz / Brief / Vertrag, ask the lawyer for these MINIMUM fields: Kanzlei-Name, Adresse, Telefon, E-Mail, RA-Nummer, Schlussformel. Then call set_org_branding with the data.",
-    }),
-    isError: false,
-  };
-}
-
-const SetOrgBrandingInput = z.object({
-  letterheadName: z.string().trim().max(200).optional(),
-  address: z.string().trim().max(500).optional(),
-  phone: z.string().trim().max(100).optional(),
-  email: z.string().trim().email().max(200).optional(),
-  website: z.string().trim().max(200).optional(),
-  raNumber: z.string().trim().max(100).optional(),
-  authority: z.string().trim().max(200).optional(),
-  insuranceNote: z.string().trim().max(500).optional(),
-  bankName: z.string().trim().max(100).optional(),
-  iban: z.string().trim().max(40).optional(),
-  bic: z.string().trim().max(20).optional(),
-  defaultJurisdiction: z.string().trim().max(100).optional(),
-  defaultClosing: z.string().trim().max(100).optional(),
-});
-
-async function setOrgBrandingTool(args: {
-  input: unknown;
-  callerOrgId: string;
-}): Promise<AtlasToolResult> {
-  const parsed = SetOrgBrandingInput.safeParse(args.input);
-  if (!parsed.success) {
-    return {
-      content: JSON.stringify({
-        error: "Invalid input",
-        details: parsed.error.flatten(),
-      }),
-      isError: true,
-    };
-  }
-  const data: Record<string, string | undefined> = {};
-  for (const [k, v] of Object.entries(parsed.data)) {
-    if (v !== undefined) data[k] = v;
-  }
-  if (Object.keys(data).length === 0) {
-    return {
-      content: JSON.stringify({
-        error: "No fields provided — pass at least one branding field.",
-      }),
-      isError: true,
-    };
-  }
-  const upserted = await prisma.atlasOrgBranding.upsert({
-    where: { organizationId: args.callerOrgId },
-    create: { organizationId: args.callerOrgId, ...data },
-    update: data,
-    select: {
-      letterheadName: true,
-      address: true,
-      phone: true,
-      email: true,
-      raNumber: true,
-      defaultJurisdiction: true,
-      defaultClosing: true,
-    },
-  });
-  return {
-    content: JSON.stringify({
-      ok: true,
-      branding: upserted,
-      directive:
-        "Branding saved. Future Schriftsatz/Brief/Vertrag drafts will auto-use these fields. Confirm to the lawyer: 'Briefkopf gespeichert — alle künftigen Dokumente nutzen das automatisch.'",
-    }),
-    isError: false,
-  };
-}
+/* Sprint 12 C — Letterhead via Chat: getOrgBrandingTool /
+   setOrgBrandingTool / SetOrgBrandingInput moved to
+   branding-tools.server.ts as part of Atlas V3 T0.1 bundle-split
+   (2026-05-26). The dispatch lives in the early-route guard at the
+   top of executeAtlasTool() above. */
 
 /* ─── Sprint 12 D — Document Templates as Chat-Memory ───────────────── */
 
@@ -3608,6 +3515,16 @@ export async function executeAtlasTool(args: {
       callerOrgId: args.callerOrgId,
     });
   }
+  /* Atlas V3 T0.1: route branding tools (2 letterhead/kanzlei-data
+     tools) to the dedicated branding dispatch. Pure callerOrgId-
+     scoped — no caller-user or mandate context needed. */
+  if (typeof args.name === "string" && isBrandingToolName(args.name)) {
+    return executeBrandingTool({
+      name: args.name,
+      input: args.input,
+      callerOrgId: args.callerOrgId,
+    });
+  }
   /* Atlas M2 Vault-RAG: search_mandate_vault is registered in
      ATLAS_TOOLS but intentionally NOT in the AtlasToolName literal-
      union (kept stable as the tool-set grows). Route it via a
@@ -3682,14 +3599,11 @@ export async function executeAtlasTool(args: {
       });
     case "refine_document":
       return refineDocumentTool({ input: args.input });
-    /* Sprint 12 C — letterhead via chat. */
-    case "get_org_branding":
-      return getOrgBrandingTool({ callerOrgId: args.callerOrgId });
-    case "set_org_branding":
-      return setOrgBrandingTool({
-        input: args.input,
-        callerOrgId: args.callerOrgId,
-      });
+    /* Sprint 12 C — letterhead via chat. get_org_branding /
+       set_org_branding now early-route via isBrandingToolName above
+       (Atlas V3 T0.1 bundle-split, 2026-05-26). Cases removed,
+       helpers moved to branding-tools.server.ts. */
+
     /* Sprint 12 D — document templates as chat-memory. */
     case "save_document_template":
       return saveDocumentTemplateTool({

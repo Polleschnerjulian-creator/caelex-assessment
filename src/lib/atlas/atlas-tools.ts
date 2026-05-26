@@ -20,6 +20,7 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { COMPLIANCE_TOOLS } from "./compliance-tools.server";
 import { VALIDITY_TOOLS } from "./validity-tools.server";
 import { DOCUMENT_TOOLS } from "./document-tools.server";
+import { BRANDING_TOOLS } from "./branding-tools.server";
 
 const CORE_ATLAS_TOOLS: Anthropic.Tool[] = [
   {
@@ -812,67 +813,10 @@ After calling: write the actual note in your reply. Aktennotiz tone is FACTUAL +
     },
   },
 
-  /* ── Sprint 12 C — Letterhead via Chat ─────────────────────────────
-   * Two tools that let the kanzlei pflege its Briefkopf-data inline
-   * in the chat. set_org_branding is the lazy-onboarding step the
-   * draft_* tools trigger when AtlasOrgBranding is empty.
-   * ───────────────────────────────────────────────────────────── */
-  {
-    name: "get_org_branding",
-    description: `Returns the kanzlei's stored Letterhead/Briefkopf data (name, address, phone, email, RA-Nummer, Bankverbindung, default Gerichtsstand, default Schlussformel, logo). Returns { branding: null } when not yet set — the AI uses this signal to ask the lawyer to set it via set_org_branding.
-
-USE: at the start of any draft_schriftsatz / draft_brief / draft_vertrag flow to check whether to use stored branding or to ask the lawyer.`,
-    input_schema: {
-      type: "object",
-      properties: {},
-    },
-  },
-  {
-    name: "set_org_branding",
-    description: `Upserts (creates-or-updates) the kanzlei's Letterhead/Briefkopf. ALL fields optional — pass only what changed. Existing fields are preserved if omitted. The AI calls this when the lawyer pastes branding info into the chat ("hier mein Briefkopf: ..." or in response to the lazy-onboarding prompt).
-
-DO NOT call without explicit lawyer input — set_org_branding is per-kanzlei and changes every future draft. When uncertain, confirm with the lawyer before persisting.`,
-    input_schema: {
-      type: "object",
-      properties: {
-        letterheadName: {
-          type: "string",
-          description:
-            "Kanzlei-Name wie auf dem Briefkopf erscheint (kann von Organization.name abweichen).",
-        },
-        address: {
-          type: "string",
-          description: "Adresse (multi-line erlaubt).",
-        },
-        phone: { type: "string", description: "Telefon (eine Zeile)." },
-        email: { type: "string", description: "Kanzlei-E-Mail." },
-        website: { type: "string", description: "Kanzlei-Website." },
-        raNumber: { type: "string", description: "RA-Liste-Nummer." },
-        authority: {
-          type: "string",
-          description: "Aufsichtsbehörde (z.B. 'Rechtsanwaltskammer Berlin').",
-        },
-        insuranceNote: {
-          type: "string",
-          description:
-            "Berufshaftpflicht-Hinweis (Versicherer + Geltungsbereich).",
-        },
-        bankName: { type: "string", description: "Bank-Name." },
-        iban: { type: "string", description: "IBAN." },
-        bic: { type: "string", description: "BIC." },
-        defaultJurisdiction: {
-          type: "string",
-          description:
-            "Default Gerichtsstand für Verträge (z.B. 'Berlin', 'München').",
-        },
-        defaultClosing: {
-          type: "string",
-          description:
-            "Default-Schlussformel (z.B. 'Mit freundlichen Grüßen', 'Mit besten Grüßen').",
-        },
-      },
-    },
-  },
+  /* Sprint 12 C — Letterhead via Chat: get_org_branding +
+     set_org_branding now live in `branding-tools.server.ts` (Atlas V3
+     T0.1 bundle-split, 2026-05-26). They get merged into ATLAS_TOOLS
+     below via the BRANDING_TOOLS spread. */
 
   /* ── Sprint 12 D — Document Templates as Chat-Memory ────────────────
    * Three tools that let the kanzlei build a personal template library
@@ -1058,16 +1002,19 @@ Cost: K parallel Claude completions, max 1500 tokens each. Real wall-clock speed
   },
 ];
 
-/* Atlas V2 Sprint 3-5: tool bundles merged into the canonical
-   ATLAS_TOOLS array so the chat-engine picks them up automatically.
+/* Atlas V2 Sprint 3-5 + V3 T0.1: tool bundles merged into the
+   canonical ATLAS_TOOLS array so the chat-engine picks them up
+   automatically.
    - Sprint 3: 8 compliance tools (compliance-tools.server.ts)
    - Sprint 4: 3 validity tools (validity-tools.server.ts)
-   - Sprint 5: 5 document tools (document-tools.server.ts) */
+   - Sprint 5: 5 document tools (document-tools.server.ts)
+   - V3 T0.1: 2 branding tools (branding-tools.server.ts) */
 export const ATLAS_TOOLS: Anthropic.Tool[] = [
   ...CORE_ATLAS_TOOLS,
   ...COMPLIANCE_TOOLS,
   ...VALIDITY_TOOLS,
   ...DOCUMENT_TOOLS,
+  ...BRANDING_TOOLS,
   /* Sprint D2 — orchestration tools (agent-mode special-case). */
   ...AGENT_ORCHESTRATION_TOOLS,
 ];
@@ -1098,9 +1045,10 @@ export type AtlasToolName =
   | "draft_vertrag"
   | "draft_aktennotiz"
   | "refine_document"
-  /* Sprint 12 C — letterhead via chat. */
-  | "get_org_branding"
-  | "set_org_branding"
+  /* Sprint 12 C — letterhead via chat. Now lives in branding-tools.server.ts
+     (Atlas V3 T0.1 bundle-split). Names resolved at runtime via
+     isBrandingToolName() in atlas-tool-executor.ts, like the
+     compliance/validity/document bundles. */
   /* Sprint 12 D — document templates as chat-memory. */
   | "save_document_template"
   | "list_document_templates"
