@@ -155,7 +155,16 @@ Catalog`).
 
 ### Last meaningful action
 
-**2026-05-26 (later)**: T1.E.24 Multi-Step Workflow Pipeline foundation
+**2026-05-26 (latest)**: T1.A retrofit — added test coverage to the 8
+compliance tools (`compliance-tools.server.test.ts`, 44 tests). The
+implementation was shipped in V2 Sprint 3 but had no tests. Coverage
+now exercises schema invariants, the dispatcher's unknown-name path,
+each tool's validation errors, and per-tool happy-path branches
+(EU defence-only exemption, NIS2 size/sector matrix, COPUOS LEO/GEO
+protected regions, ITAR-vs-EAR likelihood, GEO/LEO spectrum filing
+path, etc.). Pure-data handlers — zero mocks, zero external cost.
+
+**2026-05-26 (earlier)**: T1.E.24 Multi-Step Workflow Pipeline foundation
 shipped.
 
 - `src/lib/atlas/workflow-pipeline-runner.server.ts` (~320 LOC) —
@@ -213,14 +222,14 @@ shipment — Prisma model + thumbs-up/down API + UI hook) OR
 
 ### Tier 1 — Functional Gaps
 
-- 🔴 **T1.A.1** Wrap `assess_eu_space_act` engine
-- 🔴 **T1.A.2** Wrap `classify_nis2` engine
-- 🔴 **T1.A.3** Wrap `assess_national_space_law` engine
-- 🔴 **T1.A.4** Wrap `assess_uk_space_industry` engine
-- 🔴 **T1.A.5** Wrap `assess_us_regulatory` engine
-- 🔴 **T1.A.6** Wrap `classify_export_control` engine
-- 🔴 **T1.A.7** Wrap `check_spectrum_filing` engine
-- 🔴 **T1.A.8** Wrap `check_copuos_compliance` engine
+- 🟢 **T1.A.1** Wrap `assess_eu_space_act` engine — shipped V2 Sprint 3 (`compliance-tools.server.ts`), test coverage retrofitted T1.A (44 tests in `compliance-tools.server.test.ts`, 2026-05-26)
+- 🟢 **T1.A.2** Wrap `classify_nis2` engine — shipped V2 Sprint 3
+- 🟢 **T1.A.3** Wrap `assess_national_space_law` engine — shipped V2 Sprint 3
+- 🟢 **T1.A.4** Wrap `assess_uk_space_industry` engine — shipped V2 Sprint 3
+- 🟢 **T1.A.5** Wrap `assess_us_regulatory` engine — shipped V2 Sprint 3
+- 🟢 **T1.A.6** Wrap `classify_export_control` engine — shipped V2 Sprint 3
+- 🟢 **T1.A.7** Wrap `check_spectrum_filing` engine — shipped V2 Sprint 3
+- 🟢 **T1.A.8** Wrap `check_copuos_compliance` engine — shipped V2 Sprint 3
 - 🔴 **T1.B.9** `check_article_status` tool
 - 🔴 **T1.B.10** `get_recent_norm_changes` tool
 - 🔴 **T1.B.11** `track_amendment` tool
