@@ -28,6 +28,7 @@ import { KORPUS_TOOLS } from "./korpus-tools.server";
 import { COMPARISON_TOOLS } from "./comparison-tools.server";
 import { NETWORK_TOOLS } from "./network-tools.server";
 import { DRAFTING_TOOLS } from "./drafting-tools.server";
+import { WEB_TOOLS } from "./web-tools.server";
 
 const CORE_ATLAS_TOOLS: Anthropic.Tool[] = [
   /* Network tools (find_operator_organization, create_matter_invite,
@@ -162,6 +163,7 @@ export const ATLAS_TOOLS: Anthropic.Tool[] = [
   ...COMPARISON_TOOLS,
   ...NETWORK_TOOLS,
   ...DRAFTING_TOOLS,
+  ...WEB_TOOLS,
   /* Sprint D2 — orchestration tools (agent-mode special-case). */
   ...AGENT_ORCHESTRATION_TOOLS,
 ];

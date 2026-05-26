@@ -214,10 +214,10 @@ confirmed not blocking. Current branch: `feature/m1-1c-bafa-bescheid-parser`.
 - 🔴 **T1.C.17** `classify_document` (LLM via existing key)
 - 🔴 **T1.C.18** `compare_documents` (diff + LLM)
 - 🔴 **T1.C.19** OCR for scanned PDFs (Tesseract.js — FREE, browser-WASM)
-- 🔴 **T1.D.20** `web_search` (DuckDuckGo Instant Answer API — FREE)
-- 🔴 **T1.D.21** `fetch_url` (Mozilla Readability — npm FREE)
-- 🔴 **T1.D.22** `search_eurlex` (EUR-Lex REST API — FREE)
-- 🔴 **T1.D.23** `search_courtlistener` (CourtListener API — FREE)
+- 🟢 **T1.D.20** `web_search` (DuckDuckGo Instant Answer API, FREE) — `web-tools.server.ts`
+- 🟢 **T1.D.21** `fetch_url` (native fetch + HTML strip, SSRF-guarded against local/private IPs) — `web-tools.server.ts`
+- 🟢 **T1.D.22** `search_eurlex` (EUR-Lex public search, CELEX-regex extraction) — `web-tools.server.ts`
+- 🟢 **T1.D.23** `search_courtlistener` (CourtListener REST, free tier 5k/day) — `web-tools.server.ts`
 - 🔴 **T1.E.24** Multi-Step Workflow Pipeline implementation (`WorkflowStep[]` runtime)
 - 🔴 **T1.E.25** Pipeline-Step UI (progress component)
 - 🔴 **T1.E.26** Per-step approval-gates
