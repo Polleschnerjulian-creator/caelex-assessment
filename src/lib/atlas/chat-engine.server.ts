@@ -38,6 +38,7 @@ import { appendAtlasAudit } from "@/lib/atlas/audit-log.server";
 import { ATLAS_TOOLS, isAtlasToolName } from "@/lib/atlas/atlas-tools";
 import { executeAtlasTool } from "@/lib/atlas/atlas-tool-executor";
 import { extractCitations } from "@/lib/atlas/citation-extractor.server";
+import { getToolMetadata } from "@/lib/atlas/tool-metadata";
 import { generateAndPersistChatTitle } from "./chat-title-generator.server";
 /* SEC-T0-1 step 3 — encryption-at-rest for AtlasMessage.content. Walks
    the JSONB array, encrypts only text-blocks' .text + tool_result
@@ -1412,11 +1413,26 @@ export async function runChat(
             const toolBlock = block as ToolUseBlock;
             finalAssistantBlocks.push(block);
 
+            /* T0.6: enrich the SSE event with tool-metadata so the UI
+               can render a cost-class badge + expected-duration progress
+               estimate + approval-required visual without a second
+               round-trip. The lookup is undefined for unknown tools
+               (e.g. delegate_subtasks routed through agent-mode) —
+               consumers default to no badge in that case. */
+            const meta = getToolMetadata(toolBlock.name);
             send({
               type: "tool_call_start",
               id: toolBlock.id,
               name: toolBlock.name,
               input: toolBlock.input,
+              ...(meta
+                ? {
+                    bundle: meta.bundle,
+                    costClass: meta.costClass,
+                    expectedDurationMs: meta.expectedDurationMs,
+                    requiresApproval: meta.requiresApproval,
+                  }
+                : {}),
             });
 
             const startTs = Date.now();
