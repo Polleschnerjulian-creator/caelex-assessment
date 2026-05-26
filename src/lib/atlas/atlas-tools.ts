@@ -23,6 +23,7 @@ import { DOCUMENT_TOOLS } from "./document-tools.server";
 import { BRANDING_TOOLS } from "./branding-tools.server";
 import { MANDATE_TOOLS } from "./mandate-tools.server";
 import { DEADLINES_TOOLS } from "./deadlines-tools.server";
+import { TEMPLATES_TOOLS } from "./templates-tools.server";
 
 const CORE_ATLAS_TOOLS: Anthropic.Tool[] = [
   {
@@ -263,16 +264,8 @@ Prefer this over vector recall when the user names a specific instrument. Return
     },
   },
 
-  {
-    name: "list_workspace_templates",
-    description: `Lists the available Atlas workspace templates. Each template is a pre-seeded Pinboard with 3-7 source cards covering a common mandate type — DE Satelliten-Lizenz, NIS2-Compliance, Cross-Border DE-FR, Sanctions-Diligence, ITU-Filing, Insurance-Placement.
-
-Use this when the user describes a mandate type and asks "wo fange ich an?", "welche Vorlage passt?", or starts a new mandate. Returns id, title, description, category (license | compliance | comparison | incident | contract), and card count for each. After calling, recommend the best-fit template — the user clicks it in the UI to seed a new workspace.`,
-    input_schema: {
-      type: "object",
-      properties: {},
-    },
-  },
+  /* list_workspace_templates moved to templates-tools.server.ts
+     (Atlas V3 T0.1.c bundle-split, 2026-05-26). */
 
   {
     name: "list_jurisdiction_authorities",
@@ -749,93 +742,10 @@ After calling: write the actual note in your reply. Aktennotiz tone is FACTUAL +
      T0.1 bundle-split, 2026-05-26). They get merged into ATLAS_TOOLS
      below via the BRANDING_TOOLS spread. */
 
-  /* ── Sprint 12 D — Document Templates as Chat-Memory ────────────────
-   * Three tools that let the kanzlei build a personal template library
-   * via natural-language chat — no Templates-Page UI. The lawyer
-   * iterates on a draft, then says "speicher das als Template ..." →
-   * the AI calls save_document_template. Later: "nutz Template X für
-   * Mandant Y" → use_document_template merges + returns ready-to-polish.
-   * ───────────────────────────────────────────────────────────── */
-  {
-    name: "save_document_template",
-    description: `Saves the current document draft (from the AI's most recent reply) as a reusable template in the kanzlei's library. Extracts mandate-specific values from the body and replaces them with {{token}} placeholders for future merging.
-
-USE WHEN the lawyer says: "speicher das als Template 'BNetzA-Standardantrag'", "merk dir die Vollmacht als Vorlage 'Frequenz-Vollmacht'".
-
-Auto-detects + tokenizes these mandate-specific values:
-- {{client_name}} from the current mandate's client party
-- {{today}} from the date in the draft
-- {{aktenzeichen}} from client party reference
-- {{authority}} from mandate.primaryAuthority
-
-The lawyer can review tokens before save by passing dry_run=true.`,
-    input_schema: {
-      type: "object",
-      properties: {
-        name: {
-          type: "string",
-          description:
-            "Template-Name (eindeutig pro Kanzlei). 3-100 chars. Beispiele: 'BNetzA-Standardantrag', 'Erstberatungs-Memo', 'Vollmacht-Frequenzrecht'.",
-        },
-        kind: {
-          type: "string",
-          enum: ["schriftsatz", "brief", "vertrag", "aktennotiz", "sonstiges"],
-          description: "Template-Typ — matches draft-tool kind.",
-        },
-        body: {
-          type: "string",
-          description:
-            "Vollständiger Markdown-Body des Drafts. Die AI fügt {{tokens}} ein, basierend auf den extrahierten mandate-spezifischen Werten.",
-        },
-        dry_run: {
-          type: "boolean",
-          description:
-            "Wenn true: tokenisiert + zeigt Lawyer das Template-Preview ohne zu speichern. Default false.",
-        },
-      },
-      required: ["name", "kind", "body"],
-    },
-  },
-  {
-    name: "list_document_templates",
-    description: `Returns all document templates in the kanzlei's library, optionally filtered by kind. The AI uses this when the lawyer asks "welche Templates haben wir?" or "zeig mir alle Schriftsatz-Templates".
-
-Returns each template's id, name, kind, token-count, last-update — the AI then renders as a plain Markdown list/table.`,
-    input_schema: {
-      type: "object",
-      properties: {
-        kind: {
-          type: "string",
-          enum: ["schriftsatz", "brief", "vertrag", "aktennotiz", "sonstiges"],
-          description:
-            "Optional Filter — nur Templates dieses Typs zurückgeben.",
-        },
-      },
-    },
-  },
-  {
-    name: "use_document_template",
-    description: `Loads a template by name (or id) and merges its {{tokens}} with the current mandate's data. Returns the merged body — the AI uses it as a starting point and lightly polishes (mandate-specific details, today's exact wording, jurisdiction-specific phrasing).
-
-USE WHEN the lawyer says: "nutz BNetzA-Standardantrag für SkyCorp", "nimm Template Vollmacht-Frequenzrecht", "die Standard-Erstberatungs-Memo aber für Mandant XYZ".
-
-After calling: present the merged body to the lawyer + lightly polish based on chat context. Don't blindly emit — apply any specifics from the lawyer's request.`,
-    input_schema: {
-      type: "object",
-      properties: {
-        name: {
-          type: "string",
-          description:
-            "Template-Name (case-insensitive). Wenn nicht eindeutig → AI fragt zurück mit list_document_templates.",
-        },
-        id: {
-          type: "string",
-          description:
-            "Optional Template-ID (cuid). Wenn name UND id leer → Fehler.",
-        },
-      },
-    },
-  },
+  /* Sprint 12 D — Document Templates as Chat-Memory: save/list/use
+     document templates moved to templates-tools.server.ts (Atlas V3
+     T0.1.c bundle-split, 2026-05-26). Resolved at runtime via
+     isTemplatesToolName(). */
 
   {
     name: "refine_document",
@@ -948,6 +858,7 @@ export const ATLAS_TOOLS: Anthropic.Tool[] = [
   ...BRANDING_TOOLS,
   ...MANDATE_TOOLS,
   ...DEADLINES_TOOLS,
+  ...TEMPLATES_TOOLS,
   /* Sprint D2 — orchestration tools (agent-mode special-case). */
   ...AGENT_ORCHESTRATION_TOOLS,
 ];
@@ -964,7 +875,7 @@ export type AtlasToolName =
   | "create_solo_matter"
   | "search_legal_sources"
   | "get_legal_source_by_id"
-  | "list_workspace_templates"
+  /* list_workspace_templates moved to templates-tools.server.ts (T0.1.c). */
   | "list_jurisdiction_authorities"
   | "search_cases"
   | "get_case_by_id"
@@ -983,10 +894,8 @@ export type AtlasToolName =
      (Atlas V3 T0.1 bundle-split). Names resolved at runtime via
      isBrandingToolName() in atlas-tool-executor.ts, like the
      compliance/validity/document bundles. */
-  /* Sprint 12 D — document templates as chat-memory. */
-  | "save_document_template"
-  | "list_document_templates"
-  | "use_document_template"
+  /* Sprint 12 D — document templates moved to templates-tools.server.ts
+     (Atlas V3 T0.1.c bundle-split, 2026-05-26). */
   /* Sprint D2 — agent-mode orchestration. Resolved by the agent
      route's special-case path, NOT by atlas-tool-executor. */
   | "delegate_subtasks";
