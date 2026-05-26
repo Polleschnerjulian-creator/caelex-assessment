@@ -182,7 +182,7 @@ confirmed not blocking. Current branch: `feature/m1-1c-bafa-bescheid-parser`.
   - 🟢 T0.1.c Templates bundle (4 tools, `templates-tools.server.ts`, 14 tests; required helper-extraction `loadMandateScaffoldContext` → `mandate-scaffold-context.server.ts` shared module — used by drafting tools too)
   - 🟢 T0.1.d Korpus bundle (5 tools, `korpus-tools.server.ts`, 18 tests; biggest bundle so far ~880 LOC; semanticSearch import moved with bundle)
   - 🔴 T0.1.e Network bundle (3 tools: find_operator_organization, create_matter_invite, create_solo_matter)
-  - 🔴 T0.1.f Comparison bundle (2 tools: compare_jurisdictions_for_filing, summarize_changes_since)
+  - 🟢 T0.1.f Comparison bundle (2 tools, `comparison-tools.server.ts`, 14 tests; REGULATION_TIMELINE + RegulationPhase imports finally leave the executor with this extraction — the catalogue-data imports are now ALL bundle-local)
   - 🟢 T0.1.g Deadlines bundle (1 tool, `deadlines-tools.server.ts`, 12 tests). REGULATION_TIMELINE import stays in executor — still used by summarize_changes_since (T0.1.f).
   - 🔴 T0.1.h Drafting bundle (7 tools: 6 draft\_\* + refine_document)
   - 🔴 T0.1.i Final: delete obsolete switch + migrate search_mandate_vault into mandate bundle + verify shrunk LOC
