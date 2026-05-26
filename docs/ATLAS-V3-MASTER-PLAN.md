@@ -155,15 +155,18 @@ Catalog`).
 
 ### Last meaningful action
 
-**2026-05-26**: Two bundles extracted from `atlas-tool-executor.ts`:
+**2026-05-26**: Three bundles extracted from `atlas-tool-executor.ts`:
 
 - T0.1.a **Branding** (`branding-tools.server.ts`, 227 LOC, 2 tools,
   11/11 tests). Commit `94625106`.
 - T0.1.b **Mandate** (`mandate-tools.server.ts`, ~200 LOC, 1 tool,
-  11/11 tests, `navigateUrl` carried in result type). Commit pending.
+  11/11 tests, `navigateUrl` carried in result type). Commit `5d75a8a3`.
+- T0.1.g **Deadlines** (`deadlines-tools.server.ts`, ~340 LOC, 1 tool
+  - 4 helpers, 12/12 tests). Commit pending.
 
-Pattern proven across 2 new bundles + the 3 existing
-(compliance/validity/document). Pre-existing TS2322 at
+Net 34 new tests, all passing. `atlas-tool-executor.ts` down ~330
+LOC across these three. Pattern proven across 3 new bundles + the
+3 existing (compliance/validity/document). Pre-existing TS2322 at
 `atlas-tool-executor.ts` default-arm confirmed and not blocking.
 Current branch: `feature/m1-1c-bafa-bescheid-parser`.
 
@@ -180,7 +183,7 @@ Current branch: `feature/m1-1c-bafa-bescheid-parser`.
   - 🔴 T0.1.d Korpus bundle (5 tools: search_legal_sources, get_legal_source_by_id, search_cases, get_case_by_id, list_jurisdiction_authorities)
   - 🔴 T0.1.e Network bundle (3 tools: find_operator_organization, create_matter_invite, create_solo_matter)
   - 🔴 T0.1.f Comparison bundle (2 tools: compare_jurisdictions_for_filing, summarize_changes_since)
-  - 🔴 T0.1.g Deadlines bundle (1 tool: get_filing_deadlines)
+  - 🟢 T0.1.g Deadlines bundle (1 tool, `deadlines-tools.server.ts`, 12 tests). REGULATION_TIMELINE import stays in executor — still used by summarize_changes_since (T0.1.f).
   - 🔴 T0.1.h Drafting bundle (7 tools: 6 draft\_\* + refine_document)
   - 🔴 T0.1.i Final: delete obsolete switch + migrate search_mandate_vault into mandate bundle + verify shrunk LOC
 - 🔴 **T0.2** Engine-Unification (3 engines → shared `tool-use-loop.ts`)
@@ -1317,6 +1320,20 @@ or risk learned from prior work.
 > tier-item ID.
 
 ### 2026-05-26
+
+**[COMPLETE] T0.1.g — Deadlines bundle extracted.** 1 tool
+(`get_filing_deadlines`) + all 4 helpers (`FilingDeadlinesInput`
+zod schema, `OPERATOR_CODE_MAP`, `inferDeadlineJurisdiction`,
+`nextAnnualOccurrence`) moved from `atlas-tool-executor.ts` to new
+`deadlines-tools.server.ts` (~340 LOC). Imports of
+`regulatoryDeadlines` and `RegulatoryDeadline` removed from the
+executor (no longer used after extraction). `REGULATION_TIMELINE`
+and `RegulationPhase` imports REMAIN in the executor because
+`summarize_changes_since` (T0.1.f, not yet extracted) still uses
+them. Once T0.1.f extracts comparison tools, those imports can
+also leave the executor. 12/12 unit tests passing (schema shape,
+guard, input validation, default + filter behaviors, unknown-tool
+fallback). Tests use real data modules — no DB / no Anthropic.
 
 **[COMPLETE] T0.1.b — Mandate bundle extracted.** 1 tool
 (`find_or_open_matter`) moved from `atlas-tool-executor.ts` to new

@@ -22,6 +22,7 @@ import { VALIDITY_TOOLS } from "./validity-tools.server";
 import { DOCUMENT_TOOLS } from "./document-tools.server";
 import { BRANDING_TOOLS } from "./branding-tools.server";
 import { MANDATE_TOOLS } from "./mandate-tools.server";
+import { DEADLINES_TOOLS } from "./deadlines-tools.server";
 
 const CORE_ATLAS_TOOLS: Anthropic.Tool[] = [
   {
@@ -522,46 +523,9 @@ Returns ISO-dated entries grouped by source/jurisdiction with [ATLAS-…] citati
     },
   },
 
-  {
-    name: "get_filing_deadlines",
-    description: `Returns upcoming regulatory filing windows + recurring deadlines an operator must hit. Three buckets: (a) recurring deadlines (annual reports, quarterly data submissions, ITU filings), (b) launch-anchored windows (X days before / after launch), (c) regulatory-lifecycle events (EU Space Act effective dates, FCC rule changes, transition windows).
-
-Use when the user asks "I'm filing in Germany next month, what should I prepare?", "when is the next EU Space Act milestone?", "what deadlines apply to a constellation operator?", or "what's coming up in the next 90 days?".
-
-Returns a structured list with: title, regulatory reference, due-date semantics (annual/launch-relative/one-time), priority (CRITICAL/HIGH/MEDIUM), penalty info if known, and the ATLAS-ID anchoring the deadline to its source. Filter inputs are optional — empty inputs return the global view.
-
-The agent should render this as a chronologically-sorted list, not a generic table. Wrap the final answer with the legal-review disclaimer.`,
-    input_schema: {
-      type: "object",
-      properties: {
-        jurisdiction: {
-          type: "string",
-          description:
-            "Optional. ISO alpha-2 jurisdiction code (DE, FR, UK, US, INT, EU). When supplied, narrows results to deadlines that target this jurisdiction. Otherwise returns multi-jurisdictional + INT/EU deadlines.",
-        },
-        operator_type: {
-          type: "string",
-          enum: [
-            "satellite_operator",
-            "launch_provider",
-            "ground_segment",
-            "in_orbit_services",
-            "constellation_operator",
-            "earth_observation",
-          ],
-          description:
-            "Optional. Operator category — drops deadlines that don't apply to this class (e.g. ITU filings irrelevant for ground-segment-only).",
-        },
-        horizon_days: {
-          type: "number",
-          description:
-            "Optional. Time-window in days from today. Default 365 (one year ahead). Use 90 for the partner's 'what's coming up next quarter' question; 30 for 'what's urgent this month'.",
-          minimum: 7,
-          maximum: 1825,
-        },
-      },
-    },
-  },
+  /* get_filing_deadlines moved to deadlines-tools.server.ts as part
+     of Atlas V3 T0.1.g bundle-split (2026-05-26). Resolved at
+     runtime via isDeadlinesToolName() in atlas-tool-executor.ts. */
 
   {
     name: "search_mandate_vault",
@@ -983,6 +947,7 @@ export const ATLAS_TOOLS: Anthropic.Tool[] = [
   ...DOCUMENT_TOOLS,
   ...BRANDING_TOOLS,
   ...MANDATE_TOOLS,
+  ...DEADLINES_TOOLS,
   /* Sprint D2 — orchestration tools (agent-mode special-case). */
   ...AGENT_ORCHESTRATION_TOOLS,
 ];
@@ -1006,7 +971,7 @@ export type AtlasToolName =
   | "draft_authorization_application"
   | "draft_compliance_brief"
   | "compare_jurisdictions_for_filing"
-  | "get_filing_deadlines"
+  /* get_filing_deadlines moved to deadlines-tools.server.ts (T0.1.g). */
   | "summarize_changes_since"
   /* Sprint 12 — chat-native document drafting. */
   | "draft_schriftsatz"
