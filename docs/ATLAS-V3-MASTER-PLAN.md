@@ -191,7 +191,7 @@ Current branch: `feature/m1-1c-bafa-bescheid-parser`.
 - 🔴 **T0.4** Audit-Log silent-failure elimination
 - 🔴 **T0.5** Encryption-Migration finalization (dual-read → encrypted-only)
 - 🔴 **T0.6** `atlas-tools.ts` schema cleanup
-- 🔴 **T0.7** Logger improvement (distinctive markers for Vercel-log surfacing)
+- ⏸️ **T0.7** Logger improvement — DEFERRED 2026-05-26: dual-emit pattern conflicts with existing `src/lib/logger.test.ts` which asserts `consoleErrorSpy` was called exactly 1× per `logger.error()`. ~15 prod-mode tests need migration first.
 
 ### Tier 1 — Functional Gaps
 
