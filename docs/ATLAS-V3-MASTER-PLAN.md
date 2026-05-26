@@ -180,7 +180,7 @@ confirmed not blocking. Current branch: `feature/m1-1c-bafa-bescheid-parser`.
   - 🟢 T0.1.a Branding bundle (2 tools, `branding-tools.server.ts`, 11 tests)
   - 🟢 T0.1.b Mandate bundle (1 tool, `mandate-tools.server.ts`, 11 tests, navigateUrl supported)
   - 🟢 T0.1.c Templates bundle (4 tools, `templates-tools.server.ts`, 14 tests; required helper-extraction `loadMandateScaffoldContext` → `mandate-scaffold-context.server.ts` shared module — used by drafting tools too)
-  - 🔴 T0.1.d Korpus bundle (5 tools: search_legal_sources, get_legal_source_by_id, search_cases, get_case_by_id, list_jurisdiction_authorities)
+  - 🟢 T0.1.d Korpus bundle (5 tools, `korpus-tools.server.ts`, 18 tests; biggest bundle so far ~880 LOC; semanticSearch import moved with bundle)
   - 🔴 T0.1.e Network bundle (3 tools: find_operator_organization, create_matter_invite, create_solo_matter)
   - 🔴 T0.1.f Comparison bundle (2 tools: compare_jurisdictions_for_filing, summarize_changes_since)
   - 🟢 T0.1.g Deadlines bundle (1 tool, `deadlines-tools.server.ts`, 12 tests). REGULATION_TIMELINE import stays in executor — still used by summarize_changes_since (T0.1.f).

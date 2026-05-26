@@ -59,22 +59,23 @@ import {
   isTemplatesToolName,
   executeTemplatesTool,
 } from "./templates-tools.server";
+import { isKorpusToolName, executeKorpusTool } from "./korpus-tools.server";
 import {
   ALL_SOURCES,
   getLegalSourceById,
   getAuthoritiesByJurisdiction,
   type LegalSource,
-  type LegalSourceType,
   type ComplianceArea,
 } from "@/data/legal-sources";
-/* listTemplateSummaries moved to templates-tools.server.ts (T0.1.c). */
+/* listTemplateSummaries moved to templates-tools.server.ts (T0.1.c).
+   LegalSourceType moved with korpus bundle (T0.1.d). */
 import {
   ATLAS_CASES,
   getCaseById,
   getCasesApplyingSource,
   type LegalCase,
 } from "@/data/legal-cases";
-import { semanticSearch } from "./semantic-corpus.server";
+/* semanticSearch only used by korpus bundle (T0.1.d), moved with it. */
 /* regulatoryDeadlines + RegulatoryDeadline moved to deadlines-tools.server.ts
    as part of Atlas V3 T0.1.g bundle-split. REGULATION_TIMELINE +
    RegulationPhase remain here because summarize_changes_since (T0.1.f, not
@@ -523,58 +524,15 @@ async function dispatchInviteEmailBestEffort(input: {
   }
 }
 
-// ─── search_legal_sources ───────────────────────────────────────────
+/* Korpus tools (search_legal_sources, get_legal_source_by_id,
+   list_jurisdiction_authorities, search_cases, get_case_by_id)
+   moved to korpus-tools.server.ts as part of Atlas V3 T0.1.d
+   bundle-split (2026-05-26). Schemas, constants (VALID_TYPES,
+   VALID_AREAS, MIN_HIT_SCORE, SOURCE_HIT_LIMIT, CASE_HIT_LIMIT),
+   helpers, and semanticSearch import all live there now. */
 
-const VALID_TYPES: LegalSourceType[] = [
-  "international_treaty",
-  "federal_law",
-  "federal_regulation",
-  "technical_standard",
-  "eu_regulation",
-  "eu_directive",
-  "policy_document",
-  "draft_legislation",
-];
+/* ── create_solo_matter (Network bundle T0.1.e — not yet extracted) ── */
 
-const VALID_AREAS: ComplianceArea[] = [
-  "licensing",
-  "registration",
-  "liability",
-  "insurance",
-  "cybersecurity",
-  "export_control",
-  "data_security",
-  "frequency_spectrum",
-  "environmental",
-  "debris_mitigation",
-  "space_traffic_management",
-  "human_spaceflight",
-  "military_dual_use",
-];
-
-const SearchSourcesInput = z.object({
-  query: z.string().min(2).max(200),
-  jurisdiction: z.string().max(5).optional(),
-  type: z
-    .enum(VALID_TYPES as [LegalSourceType, ...LegalSourceType[]])
-    .optional(),
-  compliance_area: z
-    .enum(VALID_AREAS as [ComplianceArea, ...ComplianceArea[]])
-    .optional(),
-});
-
-const SOURCE_HIT_LIMIT = 10;
-const MIN_HIT_SCORE = 0.05;
-
-/* ── create_solo_matter ──────────────────────────────────────────────
- * Lawyer-side-only mandate creation. NO operator-org-id required —
- * clientName / clientContact are free-text strings, matching the
- * existing CreateMandateForm.tsx flow. Sprint B1's approval-gate
- * (auto-triggered by the create_* prefix) handles the lawyer
- * confirmation step.
- *
- * Mirrors POST /api/atlas/mandate but called directly via prisma so
- * the agent route doesn't need to round-trip through HTTP. */
 const CreateSoloMatterInput = z.object({
   name: z.string().trim().min(3).max(200),
   clientName: z.string().trim().max(200).optional(),
@@ -633,8 +591,6 @@ async function createSoloMatterTool(args: {
         jurisdiction: d.jurisdiction || null,
         operatorType: d.operatorType || null,
         primaryAuthority: d.primaryAuthority || null,
-        /* Persist the owner as an explicit member-row so member-based
-           queries always include them. Mirrors POST /api/atlas/mandate. */
         members: {
           create: { userId: args.callerUserId, role: "owner" },
         },
@@ -649,10 +605,6 @@ async function createSoloMatterTool(args: {
         createdAt: true,
       },
     });
-    /* Decrypt clientName before returning to the tool-result so the
-       AI sees plaintext (it just created the mandate; treating the
-       projected row as encrypted bytes would surface garbage in the
-       chat turn). */
     const mandateWithPlain = {
       ...mandate,
       clientName: await decryptAtlasField(mandate.clientName),
@@ -665,9 +617,6 @@ async function createSoloMatterTool(args: {
         mandate: mandateWithPlain,
       }),
       isError: false,
-      /* Navigate the client to the new workspace so the lawyer lands
-         in it immediately (matches the bilateral create_matter_invite
-         post-create navigation). */
       navigateUrl: `/atlas/mandate/${mandateWithPlain.id}`,
     };
   } catch (err) {
@@ -682,615 +631,6 @@ async function createSoloMatterTool(args: {
       isError: true,
     };
   }
-}
-
-async function searchLegalSources(args: {
-  input: unknown;
-}): Promise<AtlasToolResult> {
-  const parsed = SearchSourcesInput.safeParse(args.input);
-  if (!parsed.success) {
-    return {
-      content: JSON.stringify({
-        error: "Invalid tool input",
-        code: "INVALID_INPUT",
-        issues: parsed.error.issues.map((i) => i.path.join(".")),
-      }),
-      isError: true,
-    };
-  }
-
-  const { query, jurisdiction, type, compliance_area } = parsed.data;
-  const q = query.trim().toLowerCase();
-  const tokens = q.split(/\s+/).filter((t) => t.length >= 2);
-
-  type Hit = {
-    id: string;
-    jurisdiction: string;
-    type: string;
-    status: string;
-    title: string;
-    scope_description: string;
-    score: number;
-    /** Component breakdown for debugging — omitted from the model-facing
-     *  payload but keeps reasoning explainable in tests. */
-    keyword_score?: number;
-    semantic_score?: number;
-  };
-
-  // Pre-filter by jurisdiction/type/area; then score remaining by token
-  // overlap on title + scope_description + key_provision titles.
-  const candidates = ALL_SOURCES.filter((s) => {
-    if (jurisdiction && s.jurisdiction !== jurisdiction.toUpperCase()) {
-      return false;
-    }
-    if (type && s.type !== type) return false;
-    if (compliance_area && !s.compliance_areas.includes(compliance_area)) {
-      return false;
-    }
-    return true;
-  });
-
-  // ── Semantic pass (best-effort, fails open to keyword-only) ────────
-  // Cosine-similarity over the prebuilt embeddings catalogue. Returns
-  // null when the catalogue or AI Gateway is unavailable — in that
-  // case we degrade to keyword-only scoring with no user-visible
-  // disruption.
-  const semanticHits = await semanticSearch(query, {
-    types: ["source"],
-    limit: 60,
-  }).catch(() => null);
-  const semanticScores = new Map<string, number>();
-  if (semanticHits) {
-    for (const h of semanticHits) {
-      semanticScores.set(h.entityId, h.score);
-    }
-  }
-
-  const candidateIds = new Set(candidates.map((s) => s.id));
-  const scoreMap = new Map<string, Hit>();
-
-  // Keyword pass — same scoring as before, normalised to 0-1.
-  for (const s of candidates) {
-    const haystack = (
-      s.title_en +
-      " " +
-      (s.title_local ?? "") +
-      " " +
-      (s.scope_description ?? "") +
-      " " +
-      s.key_provisions.map((p) => p.title + " " + p.summary).join(" ")
-    ).toLowerCase();
-    const titleLc = s.title_en.toLowerCase();
-
-    let kw = 0;
-    for (const tok of tokens) {
-      const titleIdx = titleLc.indexOf(tok);
-      if (titleIdx === 0) kw += 0.5;
-      else if (titleIdx > 0) kw += 0.25;
-      else if (haystack.includes(tok)) kw += 0.1;
-    }
-    if (titleLc.includes(q)) kw += 0.3;
-    else if (haystack.includes(q)) kw += 0.15;
-    kw = Math.min(kw, 1);
-
-    const sem = semanticScores.get(s.id) ?? 0;
-    // Hybrid weighting: keyword carries titles + exact substrings;
-    // semantic carries paraphrase + cross-language. 60/40 favours
-    // keyword on the assumption that legal queries are often
-    // citation-shaped ("NIS2 Art. 21", "DE-VVG"), where literal
-    // matches should dominate.
-    const score = Math.min(kw * 0.6 + sem * 0.4, 1);
-    if (score < MIN_HIT_SCORE) continue;
-
-    scoreMap.set(s.id, {
-      id: s.id,
-      jurisdiction: s.jurisdiction,
-      type: s.type,
-      status: s.status,
-      title: s.title_en,
-      scope_description:
-        s.scope_description?.slice(0, 220) ?? "(no scope description)",
-      score: Math.round(score * 100) / 100,
-      keyword_score: Math.round(kw * 100) / 100,
-      semantic_score: Math.round(sem * 100) / 100,
-    });
-  }
-
-  // Surface semantic-only hits for sources that survived the
-  // jurisdiction/type/area pre-filter but had zero keyword overlap
-  // (paraphrase recall — the entire point of adding embeddings).
-  if (semanticHits) {
-    for (const h of semanticHits) {
-      if (scoreMap.has(h.entityId)) continue;
-      if (!candidateIds.has(h.entityId)) continue;
-      const s = ALL_SOURCES.find((x) => x.id === h.entityId);
-      if (!s) continue;
-      const score = h.score * 0.4;
-      if (score < MIN_HIT_SCORE) continue;
-      scoreMap.set(s.id, {
-        id: s.id,
-        jurisdiction: s.jurisdiction,
-        type: s.type,
-        status: s.status,
-        title: s.title_en,
-        scope_description:
-          s.scope_description?.slice(0, 220) ?? "(no scope description)",
-        score: Math.round(score * 100) / 100,
-        keyword_score: 0,
-        semantic_score: Math.round(h.score * 100) / 100,
-      });
-    }
-  }
-
-  const hits = [...scoreMap.values()]
-    .sort((a, b) => b.score - a.score)
-    .slice(0, SOURCE_HIT_LIMIT);
-
-  return {
-    content: JSON.stringify({
-      query,
-      filters: { jurisdiction, type, compliance_area },
-      hit_count: hits.length,
-      hits,
-      semantic_available: semanticHits !== null,
-      hint:
-        hits.length === 0
-          ? "No matches. Try a broader query or remove filters."
-          : "Drill into a specific source via get_legal_source_by_id with its `id`.",
-    }),
-    isError: false,
-  };
-}
-
-// ─── get_legal_source_by_id ─────────────────────────────────────────
-
-const GetSourceByIdInput = z.object({
-  source_id: z
-    .string()
-    .min(2)
-    .max(80)
-    .regex(/^[A-Z0-9][A-Za-z0-9-]+$/, {
-      message: "source_id must be uppercase-prefixed alphanumeric with hyphens",
-    }),
-});
-
-function getLegalSourceByIdTool(args: { input: unknown }): AtlasToolResult {
-  const parsed = GetSourceByIdInput.safeParse(args.input);
-  if (!parsed.success) {
-    return {
-      content: JSON.stringify({
-        error: "Invalid source_id format",
-        code: "INVALID_INPUT",
-      }),
-      isError: true,
-    };
-  }
-  const source = getLegalSourceById(parsed.data.source_id);
-  if (!source) {
-    return {
-      content: JSON.stringify({
-        error: `Source not found: ${parsed.data.source_id}`,
-        code: "NOT_FOUND",
-        hint: "Use search_legal_sources to discover the correct id.",
-      }),
-      isError: true,
-    };
-  }
-
-  // Return a compact projection — full key_provisions, but trimmed
-  // sub-arrays so the model isn't drowned in noise.
-  //
-  // IP/Copyright safeguard (Compliance-Audit 2026-05): cap each
-  // `paragraph_text` at 600 chars + ellipsis. Verbatim statutory text
-  // is gemeinfrei under § 5 UrhG / EU Decision 2011/833/EU / 17 USC
-  // §105 etc., but quoting unbounded paragraphs of NJW-Leitsätze,
-  // ISO/ITU normative text, or Beck-Kommentare into Astra's chat
-  // output would create downstream IP exposure. The lawyer can always
-  // open the official text via `paragraph_url` for the full version.
-  // See `src/lib/atlas/verbatim-attribution.ts` for the per-jurisdiction
-  // licence basis that governs the truncated quote.
-  const PARAGRAPH_TEXT_CAP = 600;
-  const cappedProvisions = source.key_provisions.map((p) => {
-    if (!p.paragraph_text || p.paragraph_text.length <= PARAGRAPH_TEXT_CAP) {
-      return p;
-    }
-    return {
-      ...p,
-      paragraph_text:
-        p.paragraph_text.slice(0, PARAGRAPH_TEXT_CAP).trimEnd() +
-        " […] (truncated — see paragraph_url for full text)",
-      paragraph_text_truncated: true,
-    };
-  });
-
-  return {
-    content: JSON.stringify({
-      id: source.id,
-      jurisdiction: source.jurisdiction,
-      type: source.type,
-      status: source.status,
-      title: source.title_en,
-      title_local: source.title_local,
-      official_reference: source.official_reference,
-      source_url: source.source_url,
-      issuing_body: source.issuing_body,
-      competent_authorities: source.competent_authorities,
-      relevance_level: source.relevance_level,
-      applicable_to: source.applicable_to,
-      compliance_areas: source.compliance_areas,
-      scope_description: source.scope_description,
-      key_provisions: cappedProvisions,
-      related_sources: source.related_sources.slice(0, 12),
-      amends: source.amends,
-      amended_by: source.amended_by?.slice(0, 8),
-      implements: source.implements,
-      superseded_by: source.superseded_by,
-      applies_to_jurisdictions: source.applies_to_jurisdictions?.slice(0, 32),
-      signed_by_jurisdictions: source.signed_by_jurisdictions?.slice(0, 32),
-      notes: source.notes?.slice(0, 8),
-      last_verified: source.last_verified,
-    }),
-    isError: false,
-  };
-}
-
-/* list_workspace_templates moved to templates-tools.server.ts
-   (Atlas V3 T0.1.c bundle-split, 2026-05-26). */
-
-// ─── list_jurisdiction_authorities ──────────────────────────────────
-
-const ListAuthInput = z.object({
-  jurisdiction: z
-    .string()
-    .min(2)
-    .max(5)
-    .regex(/^[A-Z]{2,3}$/, {
-      message: "jurisdiction must be 2-3 uppercase letters",
-    }),
-});
-
-function listJurisdictionAuthorities(args: {
-  input: unknown;
-}): AtlasToolResult {
-  const raw = args.input as { jurisdiction?: unknown };
-  const normalized = {
-    jurisdiction:
-      typeof raw?.jurisdiction === "string"
-        ? raw.jurisdiction.toUpperCase()
-        : raw?.jurisdiction,
-  };
-  const parsed = ListAuthInput.safeParse(normalized);
-  if (!parsed.success) {
-    return {
-      content: JSON.stringify({
-        error: "Invalid jurisdiction code",
-        code: "INVALID_INPUT",
-      }),
-      isError: true,
-    };
-  }
-  const code = parsed.data.jurisdiction;
-  const authorities = getAuthoritiesByJurisdiction(code);
-  if (authorities.length === 0) {
-    return {
-      content: JSON.stringify({
-        jurisdiction: code,
-        authority_count: 0,
-        authorities: [],
-        hint: "No authorities catalogued for this jurisdiction code. Try a different code or 'INT'/'EU'.",
-      }),
-      isError: false,
-    };
-  }
-  return {
-    content: JSON.stringify({
-      jurisdiction: code,
-      authority_count: authorities.length,
-      authorities: authorities.map((a) => ({
-        id: a.id,
-        name: a.name_en,
-        name_local: a.name_local,
-        abbreviation: a.abbreviation,
-        parent_ministry: a.parent_ministry,
-        website: a.website,
-        space_mandate: a.space_mandate,
-        applicable_areas: a.applicable_areas,
-      })),
-    }),
-    isError: false,
-  };
-}
-
-// ─── search_cases ───────────────────────────────────────────────────
-
-const SearchCasesInput = z.object({
-  query: z.string().min(0).max(200).optional(),
-  jurisdiction: z
-    .string()
-    .min(2)
-    .max(5)
-    .regex(/^[A-Z]{2,3}$/)
-    .optional(),
-  compliance_area: z.string().max(40).optional(),
-  applied_source_id: z.string().max(80).optional(),
-});
-
-const CASE_HIT_LIMIT = 10;
-
-async function searchCasesTool(args: {
-  input: unknown;
-}): Promise<AtlasToolResult> {
-  // Normalise upper-case for jurisdiction.
-  const raw = args.input as {
-    query?: unknown;
-    jurisdiction?: unknown;
-    compliance_area?: unknown;
-    applied_source_id?: unknown;
-  };
-  const normalised = {
-    query: typeof raw?.query === "string" ? raw.query : undefined,
-    jurisdiction:
-      typeof raw?.jurisdiction === "string"
-        ? raw.jurisdiction.toUpperCase()
-        : undefined,
-    compliance_area:
-      typeof raw?.compliance_area === "string"
-        ? raw.compliance_area
-        : undefined,
-    applied_source_id:
-      typeof raw?.applied_source_id === "string"
-        ? raw.applied_source_id
-        : undefined,
-  };
-  const parsed = SearchCasesInput.safeParse(normalised);
-  if (!parsed.success) {
-    return {
-      content: JSON.stringify({
-        error: "Invalid tool input",
-        code: "INVALID_INPUT",
-        issues: parsed.error.issues.map((i) => i.path.join(".")),
-      }),
-      isError: true,
-    };
-  }
-
-  const { query, jurisdiction, compliance_area, applied_source_id } =
-    parsed.data;
-  const q = (query ?? "").trim().toLowerCase();
-  const tokens = q.split(/\s+/).filter((t) => t.length >= 2);
-
-  // Pre-filter
-  let candidates: LegalCase[] = ATLAS_CASES;
-  if (jurisdiction) {
-    candidates = candidates.filter((c) => c.jurisdiction === jurisdiction);
-  }
-  if (compliance_area) {
-    candidates = candidates.filter((c) =>
-      c.compliance_areas.includes(
-        compliance_area as LegalCase["compliance_areas"][number],
-      ),
-    );
-  }
-  if (applied_source_id) {
-    candidates = candidates.filter((c) =>
-      c.applied_sources.includes(applied_source_id),
-    );
-  }
-
-  // If no query, return the filtered set ordered by date (newest first).
-  if (!q) {
-    const ordered = [...candidates]
-      .sort((a, b) => b.date_decided.localeCompare(a.date_decided))
-      .slice(0, CASE_HIT_LIMIT);
-    return {
-      content: JSON.stringify({
-        filters: { jurisdiction, compliance_area, applied_source_id },
-        hit_count: ordered.length,
-        hits: ordered.map((c) => ({
-          id: c.id,
-          jurisdiction: c.jurisdiction,
-          forum: c.forum,
-          title: c.title,
-          plaintiff: c.plaintiff,
-          defendant: c.defendant,
-          date_decided: c.date_decided,
-          ruling_summary: c.ruling_summary.slice(0, 220),
-          industry_significance: c.industry_significance.slice(0, 200),
-          applied_sources: c.applied_sources,
-        })),
-        hint:
-          ordered.length === 0
-            ? "No cases match these filters. Be honest with the user — do NOT invent."
-            : "Drill into a specific case via get_case_by_id with its `id`. Reference any case inline as [CASE-...] for hover-preview pills.",
-      }),
-      isError: false,
-    };
-  }
-
-  // ── Semantic pass for case law (best-effort, fail-soft) ──────────
-  // Same hybrid pattern as searchLegalSources — embedding-driven
-  // recall + keyword precision. Returns null when embeddings or AI
-  // Gateway are unavailable; we fall back to keyword-only without a
-  // user-visible error.
-  /* AUDIT-FIX H03 (2026-05-17): `query!` non-null assertion crashed
-     `semanticSearch` when the tool was called with only filter args
-     (the tool definition has no `required` array, so query is
-     legitimately optional). Skip semantic pass entirely when no
-     query — keyword-scoring already handles empty query via
-     `(query ?? "").trim()` below. */
-  const semanticHits =
-    query && query.trim().length > 0
-      ? await semanticSearch(query, {
-          types: ["case"],
-          limit: 40,
-        }).catch(() => null)
-      : null;
-  const semanticScores = new Map<string, number>();
-  if (semanticHits) {
-    for (const h of semanticHits) semanticScores.set(h.entityId, h.score);
-  }
-
-  // Score candidates by token overlap.
-  type Hit = LegalCase & { score: number };
-  const scoreMap = new Map<string, Hit>();
-  const candidateIds = new Set(candidates.map((c) => c.id));
-
-  for (const c of candidates) {
-    const haystack = [
-      c.title,
-      c.plaintiff,
-      c.defendant,
-      c.facts,
-      c.ruling_summary,
-      c.legal_holding,
-      c.industry_significance,
-      ...(c.parties_mentioned ?? []),
-      ...(c.notes ?? []),
-    ]
-      .join(" ")
-      .toLowerCase();
-    const titleLc = c.title.toLowerCase();
-
-    let kw = 0;
-    for (const tok of tokens) {
-      const titleIdx = titleLc.indexOf(tok);
-      if (titleIdx === 0) kw += 0.5;
-      else if (titleIdx > 0) kw += 0.25;
-      else if (haystack.includes(tok)) kw += 0.1;
-    }
-    if (titleLc.includes(q)) kw += 0.3;
-    else if (haystack.includes(q)) kw += 0.15;
-    kw = Math.min(kw, 1);
-
-    const sem = semanticScores.get(c.id) ?? 0;
-    const score = Math.min(kw * 0.6 + sem * 0.4, 1);
-    if (score < MIN_HIT_SCORE) continue;
-
-    scoreMap.set(c.id, { ...c, score });
-  }
-
-  // Surface semantic-only paraphrase hits that survived the
-  // jurisdiction/area/applied_source pre-filter.
-  if (semanticHits) {
-    for (const h of semanticHits) {
-      if (scoreMap.has(h.entityId)) continue;
-      if (!candidateIds.has(h.entityId)) continue;
-      const c = ATLAS_CASES.find((x) => x.id === h.entityId);
-      if (!c) continue;
-      const score = h.score * 0.4;
-      if (score < MIN_HIT_SCORE) continue;
-      scoreMap.set(c.id, { ...c, score });
-    }
-  }
-
-  const hits = [...scoreMap.values()]
-    .sort((a, b) => b.score - a.score)
-    .slice(0, CASE_HIT_LIMIT);
-
-  return {
-    content: JSON.stringify({
-      query,
-      filters: { jurisdiction, compliance_area, applied_source_id },
-      hit_count: hits.length,
-      hits: hits.map((c) => ({
-        id: c.id,
-        jurisdiction: c.jurisdiction,
-        forum: c.forum,
-        title: c.title,
-        plaintiff: c.plaintiff,
-        defendant: c.defendant,
-        date_decided: c.date_decided,
-        ruling_summary: c.ruling_summary.slice(0, 220),
-        industry_significance: c.industry_significance.slice(0, 200),
-        applied_sources: c.applied_sources,
-        score: Math.round(c.score * 100) / 100,
-      })),
-      hint:
-        hits.length === 0
-          ? "No matches. Try a broader query or remove filters. Do NOT invent cases."
-          : "Drill into a specific case via get_case_by_id. Reference inline as [CASE-...] for hover-preview pills.",
-    }),
-    isError: false,
-  };
-}
-
-// ─── get_case_by_id ─────────────────────────────────────────────────
-
-const GetCaseByIdInput = z.object({
-  case_id: z
-    .string()
-    .min(2)
-    .max(100)
-    .regex(/^CASE-[A-Z0-9-]+$/, {
-      message:
-        "case_id must start with 'CASE-' and contain only uppercase alphanumerics + hyphens",
-    }),
-});
-
-function getCaseByIdTool(args: { input: unknown }): AtlasToolResult {
-  const parsed = GetCaseByIdInput.safeParse(args.input);
-  if (!parsed.success) {
-    return {
-      content: JSON.stringify({
-        error: "Invalid case_id format",
-        code: "INVALID_INPUT",
-        hint: "case_id must look like 'CASE-COSMOS-954-1981' or 'CASE-FCC-SWARM-2018'.",
-      }),
-      isError: true,
-    };
-  }
-  const c = getCaseById(parsed.data.case_id);
-  if (!c) {
-    return {
-      content: JSON.stringify({
-        error: `Case not found: ${parsed.data.case_id}`,
-        code: "NOT_FOUND",
-        hint: "Use search_cases to discover the correct id. Do NOT invent.",
-      }),
-      isError: true,
-    };
-  }
-
-  // Cross-reference: how many other cases also touch the same primary
-  // applied_source? Useful for the model to add context.
-  const peerCases =
-    c.applied_sources.length > 0
-      ? getCasesApplyingSource(c.applied_sources[0])
-          .filter((p) => p.id !== c.id)
-          .slice(0, 5)
-          .map((p) => ({ id: p.id, title: p.title }))
-      : [];
-
-  return {
-    content: JSON.stringify({
-      id: c.id,
-      jurisdiction: c.jurisdiction,
-      forum: c.forum,
-      forum_name: c.forum_name,
-      title: c.title,
-      plaintiff: c.plaintiff,
-      defendant: c.defendant,
-      date_decided: c.date_decided,
-      date_filed: c.date_filed,
-      citation: c.citation,
-      case_number: c.case_number,
-      status: c.status,
-      facts: c.facts,
-      ruling_summary: c.ruling_summary,
-      legal_holding: c.legal_holding,
-      remedy: c.remedy,
-      industry_significance: c.industry_significance,
-      compliance_areas: c.compliance_areas,
-      precedential_weight: c.precedential_weight,
-      applied_sources: c.applied_sources,
-      parties_mentioned: c.parties_mentioned ?? [],
-      source_url: c.source_url,
-      notes: c.notes ?? [],
-      peer_cases_on_same_source: peerCases,
-      last_verified: c.last_verified,
-    }),
-    isError: false,
-  };
 }
 
 // ─── draft_authorization_application ─────────────────────────────────
@@ -2883,6 +2223,17 @@ export async function executeAtlasTool(args: {
       mandateId: args.mandateId,
     });
   }
+  /* Atlas V3 T0.1.d: route korpus tools (5: search_legal_sources,
+     get_legal_source_by_id, list_jurisdiction_authorities,
+     search_cases, get_case_by_id) to dedicated korpus dispatch.
+     Pure-data tools, no caller context needed (mandates aren't
+     scoped — the catalogue is global per-deployment). */
+  if (typeof args.name === "string" && isKorpusToolName(args.name)) {
+    return executeKorpusTool({
+      name: args.name,
+      input: args.input,
+    });
+  }
   /* Atlas M2 Vault-RAG: search_mandate_vault is registered in
      ATLAS_TOOLS but intentionally NOT in the AtlasToolName literal-
      union (kept stable as the tool-set grows). Route it via a
@@ -2904,18 +2255,11 @@ export async function executeAtlasTool(args: {
       return createMatterInviteTool(args);
     case "create_solo_matter":
       return createSoloMatterTool(args);
-    case "search_legal_sources":
-      return searchLegalSources(args);
-    case "get_legal_source_by_id":
-      return getLegalSourceByIdTool(args);
-    /* list_workspace_templates early-routed via isTemplatesToolName
-       above (Atlas V3 T0.1.c bundle-split). */
-    case "list_jurisdiction_authorities":
-      return listJurisdictionAuthorities(args);
-    case "search_cases":
-      return searchCasesTool(args);
-    case "get_case_by_id":
-      return getCaseByIdTool(args);
+    /* search_legal_sources, get_legal_source_by_id,
+       list_jurisdiction_authorities, search_cases, get_case_by_id
+       early-routed via isKorpusToolName above (Atlas V3 T0.1.d
+       bundle-split). list_workspace_templates handled by templates
+       bundle (T0.1.c). */
     case "draft_authorization_application":
       return draftAuthorizationApplication(args);
     case "draft_compliance_brief":

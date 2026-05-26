@@ -24,6 +24,7 @@ import { BRANDING_TOOLS } from "./branding-tools.server";
 import { MANDATE_TOOLS } from "./mandate-tools.server";
 import { DEADLINES_TOOLS } from "./deadlines-tools.server";
 import { TEMPLATES_TOOLS } from "./templates-tools.server";
+import { KORPUS_TOOLS } from "./korpus-tools.server";
 
 const CORE_ATLAS_TOOLS: Anthropic.Tool[] = [
   {
@@ -179,176 +180,9 @@ After successful creation, returns the new \`mandateId\`. The client navigates i
   // the embedded library.
   // ───────────────────────────────────────────────────────────────────
 
-  {
-    name: "search_legal_sources",
-    description: `Searches the Atlas legal-source catalogue (treaties, statutes, regulations, technical standards, policy documents, draft legislation) by free-text query. Returns up to 10 matches ranked by relevance, each with id, jurisdiction, type, status, title, and one-line scope_description.
-
-Use this when the user asks discovery-style questions like:
-  - "Welche EU-Sanktionen gegen Russland gelten für Raumfahrt-Hardware?"
-  - "Show me the ITU coordination rules"
-  - "What's in the Critical Raw Materials Act?"
-  - "Find all sources about debris mitigation in Japan"
-
-After calling, paraphrase the matches and offer to drill into a specific source via get_legal_source_by_id.
-
-Filters: jurisdiction (ISO code or "INT"/"EU"), type (international_treaty | federal_law | federal_regulation | technical_standard | eu_regulation | eu_directive | policy_document | draft_legislation), compliance_area (licensing | registration | liability | insurance | cybersecurity | export_control | data_security | frequency_spectrum | environmental | debris_mitigation | space_traffic_management | human_spaceflight | military_dual_use). Combine filters as needed — narrow searches return better results than broad ones.
-
-Score 0-1 per match (substring + title-position). Min returned score is 0.05.`,
-    input_schema: {
-      type: "object",
-      properties: {
-        query: {
-          type: "string",
-          description:
-            "Free-text query string. 2-200 characters. Tokens, abbreviations, and case-insensitive. E.g. 'NIS2 transposition Germany', 'WRC-23', 'Lloyd's space insurance'.",
-        },
-        jurisdiction: {
-          type: "string",
-          description:
-            "Optional jurisdiction filter — ISO alpha-2/3 code (DE, FR, UK, US, ...), 'INT' for international treaties, 'EU' for EU instruments. Omit to search all.",
-        },
-        type: {
-          type: "string",
-          enum: [
-            "international_treaty",
-            "federal_law",
-            "federal_regulation",
-            "technical_standard",
-            "eu_regulation",
-            "eu_directive",
-            "policy_document",
-            "draft_legislation",
-          ],
-          description: "Optional source-type filter. Omit to search all types.",
-        },
-        compliance_area: {
-          type: "string",
-          enum: [
-            "licensing",
-            "registration",
-            "liability",
-            "insurance",
-            "cybersecurity",
-            "export_control",
-            "data_security",
-            "frequency_spectrum",
-            "environmental",
-            "debris_mitigation",
-            "space_traffic_management",
-            "human_spaceflight",
-            "military_dual_use",
-          ],
-          description:
-            "Optional compliance-area filter. Omit to search all areas.",
-        },
-      },
-      required: ["query"],
-    },
-  },
-
-  {
-    name: "get_legal_source_by_id",
-    description: `Retrieves a single Atlas legal-source entry by its canonical id. Returns the full record: title, scope_description, all key_provisions with summaries and complianceImplications, related_sources, amends/amended_by chain, and notes. Use this AFTER search_legal_sources has identified the source the user wants to drill into, OR when the user mentions an ID directly (e.g. "tell me about INT-WASSENAAR" or "Atlas-ID DE-VVG").
-
-Prefer this over vector recall when the user names a specific instrument. Returns isError=true with a 'NOT_FOUND' code if the id does not resolve — then offer search_legal_sources as fallback.`,
-    input_schema: {
-      type: "object",
-      properties: {
-        source_id: {
-          type: "string",
-          description:
-            "Canonical Atlas source id (e.g. 'INT-OST-1967', 'DE-SATDSIG-2007', 'EU-NIS2-2022', 'INT-WASSENAAR'). Format: jurisdiction prefix + hyphen + identifier.",
-        },
-      },
-      required: ["source_id"],
-    },
-  },
-
-  /* list_workspace_templates moved to templates-tools.server.ts
-     (Atlas V3 T0.1.c bundle-split, 2026-05-26). */
-
-  {
-    name: "list_jurisdiction_authorities",
-    description: `Lists the regulatory authorities for a single jurisdiction — name, abbreviation, mandate, applicable areas, and contact info. Use this when the user asks "welche Behörden sind in Frankreich für Raumfahrt zuständig?" or "who licenses launches in Australia?".
-
-For ISO-2/3 country codes the response covers the national regulatory landscape; for "INT"/"EU" returns the multilateral institutions (UNOOSA, ITU, EUSPA, ENISA, EC, etc.).`,
-    input_schema: {
-      type: "object",
-      properties: {
-        jurisdiction: {
-          type: "string",
-          description:
-            "Jurisdiction code (ISO alpha-2/3, 'INT', or 'EU'). E.g. 'DE', 'FR', 'UK', 'US', 'JP', 'IN', 'AU', 'INT', 'EU'.",
-        },
-      },
-      required: ["jurisdiction"],
-    },
-  },
-
-  {
-    name: "search_cases",
-    description: `Searches the Atlas case law / enforcement-action knowledge base. Returns leading court decisions, regulator settlements, and Liability-Convention awards that operators must read alongside the statutes — Cosmos-954, Iridium-Cosmos-2009, FCC Swarm/$900K, FCC DISH/$150K, ITT/$100M ITAR, BAE/$79M, ZTE/$1.19B, Loral-Long-March, Viasat-v-FCC, FAA-SpaceX-2024, FCC-Ligado-2020, Vega VV15/VV22 inquiries, BAFA dual-use Bußgelder, etc.
-
-Use this when:
-  - User asks about ENFORCEMENT precedents ("welche Strafen gibt es für ITAR-Verstöße?", "what are FCC debris penalties?")
-  - User asks about HISTORICAL cases ("hat Cosmos-954 jemals gezahlt?", "warum gibt es keine Article-III-Klagen?")
-  - User wants the PRACTICE alongside the STATUTE ("how do regulators actually apply ISO 24113?")
-  - User mentions a case name or company in litigation context (Swarm, DISH, Loral, Hughes, BAE, ZTE, Viasat, Ligado, AAIB Cornwall, Vega-failure)
-
-Filter parameters:
-  - jurisdiction: ISO-2 / 'INT' / 'EU' to scope by primary forum
-  - compliance_area: filter to area (debris_mitigation, export_control, licensing, frequency_spectrum, liability, etc.)
-  - applied_source_id: filter to cases that explicitly applied a given legal-source id (e.g. all cases applying INT-LIABILITY-1972)
-
-Returns max 10 hits with title, plaintiff vs. defendant, date_decided, ruling_summary, industry_significance, and applied_sources[]. The case ids returned (e.g. CASE-COSMOS-954-1981) can then be passed to get_case_by_id for full detail, or rendered inline as [CASE-COSMOS-954-1981] which the UI surfaces as a hover-preview pill.
-
-Returns empty array if no matches — say so honestly, do NOT invent cases.`,
-    input_schema: {
-      type: "object",
-      properties: {
-        query: {
-          type: "string",
-          description:
-            "Free-text query — case name, company, regulator, key facts. Optional if a filter is supplied.",
-        },
-        jurisdiction: {
-          type: "string",
-          description:
-            "Optional. Restrict to cases where this is the primary forum (ISO alpha-2, 'INT', or 'EU').",
-        },
-        compliance_area: {
-          type: "string",
-          description:
-            "Optional. Restrict to cases tagged with this compliance area (e.g. 'debris_mitigation', 'export_control', 'licensing', 'liability', 'frequency_spectrum').",
-        },
-        applied_source_id: {
-          type: "string",
-          description:
-            "Optional. Return only cases whose applied_sources[] contains this legal-source id (e.g. 'INT-LIABILITY-1972', 'US-ITAR', 'INT-IADC-MITIGATION-2020').",
-        },
-      },
-    },
-  },
-
-  {
-    name: "get_case_by_id",
-    description: `Retrieves a single Atlas case law entry by its canonical id (always 'CASE-' prefix). Returns the full record: title, parties, date_decided, citation, facts, ruling_summary, legal_holding, remedy (monetary + non-monetary), industry_significance, compliance_areas, applied_sources[], parties_mentioned, notes, source_url.
-
-Use this AFTER search_cases has identified the entry the user wants to drill into, OR when the user mentions a case id directly. Returns isError=true with NOT_FOUND if the id does not resolve — never invent.
-
-Render inline references to other cases as [CASE-...] tokens; the UI translates them to hover-preview pills. Same applies to legal-source references like [US-ITAR] in your prose response.`,
-    input_schema: {
-      type: "object",
-      properties: {
-        case_id: {
-          type: "string",
-          description:
-            "Canonical Atlas case id (always starts with 'CASE-'). E.g. 'CASE-COSMOS-954-1981', 'CASE-FCC-SWARM-2018', 'CASE-ITT-ITAR-2007', 'CASE-VEGA-VV15-2019'.",
-        },
-      },
-      required: ["case_id"],
-    },
-  },
+  /* search_legal_sources, get_legal_source_by_id, list_jurisdiction_authorities,
+     search_cases, get_case_by_id moved to korpus-tools.server.ts
+     (Atlas V3 T0.1.d bundle-split, 2026-05-26). */
 
   // ─── Drafting tools ───────────────────────────────────────────────
   // The drafting tools turn Atlas from a research surface into a
@@ -859,6 +693,7 @@ export const ATLAS_TOOLS: Anthropic.Tool[] = [
   ...MANDATE_TOOLS,
   ...DEADLINES_TOOLS,
   ...TEMPLATES_TOOLS,
+  ...KORPUS_TOOLS,
   /* Sprint D2 — orchestration tools (agent-mode special-case). */
   ...AGENT_ORCHESTRATION_TOOLS,
 ];
@@ -873,12 +708,10 @@ export type AtlasToolName =
   | "find_operator_organization"
   | "create_matter_invite"
   | "create_solo_matter"
-  | "search_legal_sources"
-  | "get_legal_source_by_id"
+  /* search_legal_sources, get_legal_source_by_id,
+     list_jurisdiction_authorities, search_cases, get_case_by_id moved
+     to korpus-tools.server.ts (Atlas V3 T0.1.d bundle-split). */
   /* list_workspace_templates moved to templates-tools.server.ts (T0.1.c). */
-  | "list_jurisdiction_authorities"
-  | "search_cases"
-  | "get_case_by_id"
   | "draft_authorization_application"
   | "draft_compliance_brief"
   | "compare_jurisdictions_for_filing"
