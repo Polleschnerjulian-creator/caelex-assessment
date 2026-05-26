@@ -25,6 +25,7 @@ import { MANDATE_TOOLS } from "./mandate-tools.server";
 import { DEADLINES_TOOLS } from "./deadlines-tools.server";
 import { TEMPLATES_TOOLS } from "./templates-tools.server";
 import { KORPUS_TOOLS } from "./korpus-tools.server";
+import { COMPARISON_TOOLS } from "./comparison-tools.server";
 
 const CORE_ATLAS_TOOLS: Anthropic.Tool[] = [
   {
@@ -267,88 +268,9 @@ The scaffold is BILINGUAL where DE translations exist. Every cited authority/sou
     },
   },
 
-  {
-    name: "compare_jurisdictions_for_filing",
-    description: `Generates a structured comparison matrix across jurisdictions for a chosen set of regulatory criteria — to help operators decide where to file or which JV partner to choose. Returns a per-jurisdiction × per-criterion grid with quantitative values (insurance cap, casualty-risk, PMD timeline, indemnification regime, disposal-reliability target, processing time, ITU-coordination support) and the ATLAS-ID source backing each cell.
-
-Use when the user asks "compare UK vs. France vs. Germany for satellite licensing", "where's the best jurisdiction for a small LEO Earth-observation constellation", "which European spaceport has the cheapest indemnification regime", etc.
-
-Returns the comparison as a structured payload the agent renders as a markdown table in the chat. Caveats and unknowns are flagged explicitly so lawyers don't infer presence-of-data from absence-of-warning. Wrap the final comparison with the legal-review disclaimer.`,
-    input_schema: {
-      type: "object",
-      properties: {
-        candidate_jurisdictions: {
-          type: "array",
-          items: { type: "string" },
-          description:
-            "ISO alpha-2 jurisdictions to compare. Empty array = the eight most-active commercial-space jurisdictions (US, UK, FR, DE, IT, NL, AU, NZ).",
-        },
-        criteria: {
-          type: "array",
-          items: {
-            type: "string",
-            enum: [
-              "insurance_cap",
-              "casualty_risk_threshold",
-              "pmd_timeline",
-              "disposal_reliability",
-              "indemnification_regime",
-              "processing_time",
-              "itu_coordination_support",
-              "debris_mitigation_baseline",
-              "fdi_screening",
-              "data_protection_regime",
-            ],
-          },
-          description:
-            "Comparison axes. Empty array = a sensible default set (insurance_cap, casualty_risk_threshold, pmd_timeline, indemnification_regime, debris_mitigation_baseline). Each criterion maps onto specific source provisions; cells without data are marked as 'no data' rather than left blank.",
-        },
-        operator_type: {
-          type: "string",
-          enum: [
-            "satellite_operator",
-            "launch_provider",
-            "ground_segment",
-            "in_orbit_services",
-            "constellation_operator",
-          ],
-          description:
-            "Optional. Operator category — narrows the comparison to the rules that actually bite for this operator class.",
-        },
-      },
-    },
-  },
-
-  {
-    name: "summarize_changes_since",
-    description: `Returns regulatory changes that have occurred since a given date. Three buckets: (a) amendments to legal sources (statute changes, regulation revisions), (b) lifecycle events (regulations entering force, transition windows starting, supersession), and (c) regulatory-feed updates (admin-published AtlasUpdate entries — official notices, market guidance, enforcement signals).
-
-Use when the user asks ANY "what's changed" question — "what's new since my last visit?", "any updates on UK SIA in the last 6 months?", "what amendments hit the EU Space Act this year?", "summarize this quarter's regulatory developments". The agent supplies the 'since' date based on conversational context (date the user mentions, "last week" → 7 days ago, "last quarter" → 90 days ago, etc.).
-
-Returns ISO-dated entries grouped by source/jurisdiction with [ATLAS-…] citations. Render as a chronologically-sorted list grouped by month, NOT a generic table.`,
-    input_schema: {
-      type: "object",
-      properties: {
-        since: {
-          type: "string",
-          description:
-            "ISO-8601 date (YYYY-MM-DD) — the cutoff. Returns events strictly after this date. REQUIRED. The agent should infer this from the user's question (e.g. 'since my last visit on March 1' → 2026-03-01; 'last 30 days' → today minus 30).",
-        },
-        jurisdiction: {
-          type: "string",
-          description:
-            "Optional. ISO alpha-2 jurisdiction (DE, FR, UK, US, EU, INT) — narrows results to amendments and updates targeting this jurisdiction.",
-        },
-        source_ids: {
-          type: "array",
-          items: { type: "string" },
-          description:
-            "Optional. Specific ATLAS source IDs to scope the delta to (e.g. ['UK-SIA-2018', 'EU-NIS2-2022']). When supplied, returns ONLY changes affecting these sources.",
-        },
-      },
-      required: ["since"],
-    },
-  },
+  /* compare_jurisdictions_for_filing + summarize_changes_since moved
+     to comparison-tools.server.ts (Atlas V3 T0.1.f bundle-split,
+     2026-05-26). Resolved at runtime via isComparisonToolName(). */
 
   /* get_filing_deadlines moved to deadlines-tools.server.ts as part
      of Atlas V3 T0.1.g bundle-split (2026-05-26). Resolved at
@@ -694,6 +616,7 @@ export const ATLAS_TOOLS: Anthropic.Tool[] = [
   ...DEADLINES_TOOLS,
   ...TEMPLATES_TOOLS,
   ...KORPUS_TOOLS,
+  ...COMPARISON_TOOLS,
   /* Sprint D2 — orchestration tools (agent-mode special-case). */
   ...AGENT_ORCHESTRATION_TOOLS,
 ];
@@ -714,9 +637,9 @@ export type AtlasToolName =
   /* list_workspace_templates moved to templates-tools.server.ts (T0.1.c). */
   | "draft_authorization_application"
   | "draft_compliance_brief"
-  | "compare_jurisdictions_for_filing"
+  /* compare_jurisdictions_for_filing + summarize_changes_since moved
+     to comparison-tools.server.ts (T0.1.f). */
   /* get_filing_deadlines moved to deadlines-tools.server.ts (T0.1.g). */
-  | "summarize_changes_since"
   /* Sprint 12 — chat-native document drafting. */
   | "draft_schriftsatz"
   | "draft_mandantenbrief"
