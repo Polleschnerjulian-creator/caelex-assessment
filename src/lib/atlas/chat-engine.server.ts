@@ -1886,3 +1886,16 @@ export async function listChatsForUser(args: {
     },
   });
 }
+
+/* ── Test-only exports ───────────────────────────────────────────────
+ * Internal pure-function helpers exported under a marked namespace so
+ * the test suite can exercise them without requiring a full chat-engine
+ * integration setup (Prisma, Anthropic SDK, SSE stream). Production code
+ * MUST NOT import from `__testables` — the indirection is reserved for
+ * `chat-engine.server.test.ts` only. T0.3 (2026-05-26).
+ * ─────────────────────────────────────────────────────────────────── */
+export const __testables = {
+  modelSupportsThinking,
+  deriveTitle,
+  sanitiseHistoryForApi,
+};
