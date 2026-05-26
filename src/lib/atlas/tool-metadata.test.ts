@@ -44,6 +44,7 @@ import {
   getToolMetadata,
   assertAllToolsHaveMetadata,
   metadataStats,
+  aggregateToolCalls,
   type AtlasToolBundle,
 } from "./tool-metadata";
 
@@ -214,6 +215,92 @@ describe("metadataStats", () => {
     expect(bundles).toContain("compliance");
     expect(bundles).toContain("validity");
     expect(bundles).toContain("agent");
+  });
+});
+
+/* ── aggregateToolCalls ─────────────────────────────────────────────── */
+
+describe("aggregateToolCalls", () => {
+  it("returns zero aggregate for empty input", () => {
+    const agg = aggregateToolCalls([]);
+    expect(agg.totalCalls).toBe(0);
+    expect(agg.approvalRequiredCalls).toBe(0);
+    expect(agg.estimatedDurationMs).toBe(0);
+    expect(agg.unknownToolCount).toBe(0);
+    expect(agg.unknownToolNames).toEqual([]);
+  });
+
+  it("counts repeated tool-name occurrences (e.g., 3× same search)", () => {
+    const agg = aggregateToolCalls([
+      "search_legal_sources",
+      "search_legal_sources",
+      "search_legal_sources",
+    ]);
+    expect(agg.totalCalls).toBe(3);
+    expect(agg.byBundle.korpus).toBe(3);
+    expect(agg.byCostClass.medium).toBe(3);
+  });
+
+  it("aggregates across multiple bundles", () => {
+    const agg = aggregateToolCalls([
+      "assess_eu_space_act", // compliance / low
+      "classify_nis2", // compliance / low
+      "check_article_status", // validity / low
+      "search_legal_sources", // korpus / medium
+      "draft_schriftsatz", // drafting / high / approval
+    ]);
+    expect(agg.totalCalls).toBe(5);
+    expect(agg.byBundle.compliance).toBe(2);
+    expect(agg.byBundle.validity).toBe(1);
+    expect(agg.byBundle.korpus).toBe(1);
+    expect(agg.byBundle.drafting).toBe(1);
+    expect(agg.byCostClass.low).toBe(3);
+    expect(agg.byCostClass.medium).toBe(1);
+    expect(agg.byCostClass.high).toBe(1);
+    expect(agg.approvalRequiredCalls).toBe(1); // draft_schriftsatz
+  });
+
+  it("sums expectedDurationMs across all calls", () => {
+    /* assess_eu_space_act = 150ms, draft_schriftsatz = 15000ms */
+    const agg = aggregateToolCalls([
+      "assess_eu_space_act",
+      "draft_schriftsatz",
+    ]);
+    expect(agg.estimatedDurationMs).toBe(150 + 15000);
+  });
+
+  it("buckets unknown tools into unknownToolCount + sorted names", () => {
+    const agg = aggregateToolCalls([
+      "assess_eu_space_act", // known
+      "totally_made_up_tool",
+      "another_phantom",
+      "totally_made_up_tool", // duplicate
+    ]);
+    expect(agg.totalCalls).toBe(4);
+    expect(agg.byBundle.compliance).toBe(1);
+    expect(agg.unknownToolCount).toBe(2); // dedup
+    expect(agg.unknownToolNames).toEqual([
+      "another_phantom",
+      "totally_made_up_tool",
+    ]);
+  });
+
+  it("does NOT count unknown tools toward bundle or cost-class breakdowns", () => {
+    const agg = aggregateToolCalls(["assess_eu_space_act", "phantom_tool"]);
+    /* Sum of byBundle entries should equal known-count (1), not total (2). */
+    const bundleSum = Object.values(agg.byBundle).reduce(
+      (a, b) => a + (b ?? 0),
+      0,
+    );
+    expect(bundleSum).toBe(1);
+  });
+
+  it("preserves array semantics (readonly input)", () => {
+    /* The function signature uses `readonly string[]` so callers can
+       pass a freshly-frozen array without TS errors. */
+    const input: readonly string[] = ["assess_eu_space_act"];
+    const agg = aggregateToolCalls(input);
+    expect(agg.totalCalls).toBe(1);
   });
 });
 

@@ -463,3 +463,61 @@ export function metadataStats(): {
     approvalRequired,
   };
 }
+
+/**
+ * Aggregate a list of TOOL CALLS (potentially with duplicates) into
+ * per-bundle + per-cost-class counts. Used by audit-log enrichment +
+ * analytics dashboards to slice activity by bundle without scanning
+ * the raw tools-used array.
+ *
+ * Unknown tools (no metadata entry) are counted under
+ * `unknownToolCount` rather than silently dropped — caller can alert
+ * on this to catch drift between the live ATLAS_TOOLS array and the
+ * metadata map.
+ */
+export interface ToolCallAggregate {
+  totalCalls: number;
+  byBundle: Partial<Record<AtlasToolBundle, number>>;
+  byCostClass: Partial<Record<AtlasToolCostClass, number>>;
+  approvalRequiredCalls: number;
+  /** Estimated total wall-clock if every call took its
+   *  expected-duration. Useful for surfacing "this turn used ~12s of
+   *  high-cost calls" in admin views. */
+  estimatedDurationMs: number;
+  /** Tools used that aren't in TOOL_METADATA — caller can surface as
+   *  a drift warning. */
+  unknownToolCount: number;
+  unknownToolNames: string[];
+}
+
+export function aggregateToolCalls(
+  toolNames: readonly string[],
+): ToolCallAggregate {
+  const byBundle: Partial<Record<AtlasToolBundle, number>> = {};
+  const byCostClass: Partial<Record<AtlasToolCostClass, number>> = {};
+  let approvalRequiredCalls = 0;
+  let estimatedDurationMs = 0;
+  const unknownTools = new Set<string>();
+
+  for (const name of toolNames) {
+    const meta = TOOL_METADATA[name];
+    if (!meta) {
+      unknownTools.add(name);
+      continue;
+    }
+    byBundle[meta.bundle] = (byBundle[meta.bundle] ?? 0) + 1;
+    byCostClass[meta.costClass] = (byCostClass[meta.costClass] ?? 0) + 1;
+    if (meta.requiresApproval) approvalRequiredCalls += 1;
+    estimatedDurationMs += meta.expectedDurationMs;
+  }
+
+  return {
+    totalCalls: toolNames.length,
+    byBundle,
+    byCostClass,
+    approvalRequiredCalls,
+    estimatedDurationMs,
+    unknownToolCount: unknownTools.size,
+    unknownToolNames: [...unknownTools].sort(),
+  };
+}
