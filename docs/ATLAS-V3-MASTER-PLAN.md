@@ -345,7 +345,7 @@ shipment — Prisma model + thumbs-up/down API + UI hook) OR
 - 🔴 **T2.D.20** Mobile drawer for sidebar
 - 🔴 **T2.D.21** Touch targets ≥44×44 across all atlas surfaces
 - 🔴 **T2.D.22** iOS Safari polish (input-zoom prevention, viewport)
-- 🔴 **T2.E.23** ITU-Filings stub: mark "Beta" or hide
+- 🟢 **T2.E.23** ITU-Filings stub: marked "Beta" (2026-05-26). Page `/atlas/landing-rights/itu-filings` now displays an amber Beta badge next to the H1 + a German caveat explaining that the dataset is hand-curated from public ITU SRS, the ITU-API isn't publicly available, and lawyers should always verify via the SRS deep-link for binding advice. ~15 LOC visual polish.
 - 🔴 **T2.E.24** API-Access: functional OR hide
 - 🔴 **T2.E.25** DATEV-Export functional verification
 - 🔴 **T2.E.26** Network surface status clarification
