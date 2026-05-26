@@ -317,8 +317,24 @@ export function AtlasHomepage() {
           );
         }
         if (res.status >= 500) {
+          /* DIAG-FIX 2026-05-26: surface the backend error message
+             (route.ts now sets body.error + body.code reliably even
+             for outer-catch failures). Falling back to the generic
+             text only when no backend hint is present. The code
+             suffix helps the user paste a precise identifier into
+             support without having to open DevTools. */
+          const backendMsg =
+            body.error && typeof body.error === "string" ? body.error : null;
+          const backendCode =
+            (body as { code?: string }).code &&
+            typeof (body as { code?: string }).code === "string"
+              ? (body as { code?: string }).code
+              : null;
+          const detail = [backendMsg, backendCode].filter(Boolean).join(" · ");
           throw new Error(
-            "Serverfehler — wir werden benachrichtigt. Bitte erneut versuchen.",
+            detail
+              ? `Serverfehler: ${detail}. Bitte erneut versuchen oder Support kontaktieren.`
+              : "Serverfehler — wir werden benachrichtigt. Bitte erneut versuchen.",
           );
         }
         throw new Error(body.error || `HTTP ${res.status}`);
