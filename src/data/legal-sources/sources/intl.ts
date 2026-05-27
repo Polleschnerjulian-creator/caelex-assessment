@@ -6192,4 +6192,122 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     related_sources: ["JP-BASIC-SPACE-LAW-2008", "INT-US-JAPAN-SPACE-WG-2024"],
     last_verified: "2026-05-27",
   },
+  // ============================================================================
+  // SPACE CYBERSECURITY CLUSTER (+4 entries)
+  // ============================================================================
+  // Space-tech-specific cybersecurity frameworks. Material for any commercial-
+  // space firm operating in regulated cybersecurity environments + federal-
+  // procurement cybersecurity compliance.
+  // ============================================================================
+  {
+    id: "INT-CMMC-2-0-DOD",
+    jurisdiction: "INT",
+    type: "certification_standard",
+    status: "in_force",
+    title_en:
+      "US DoD Cybersecurity Maturity Model Certification 2.0 (CMMC 2.0) — Final Rule December 2024",
+    date_enacted: "2020-09-29",
+    date_last_amended: "2024-10-15",
+    source_url: "https://www.acq.osd.mil/cmmc/",
+    issuing_body:
+      "US Department of Defense Office of the Under Secretary of Defense for Acquisition and Sustainment",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["cybersecurity", "procurement", "military_dual_use"],
+    scope_description:
+      "CMMC 2.0 — DoD cybersecurity certification programme for Defense Industrial Base (DIB) contractors, finalised October 2024 with phased implementation 2025-2028. Material structure: (i) Level 1 (Foundational) — 17 controls, self-assessment, for contractors handling Federal Contract Information (FCI); (ii) Level 2 (Advanced) — 110 NIST SP 800-171 controls, mandatory third-party certification by C3PAO for contractors handling Controlled Unclassified Information (CUI); (iii) Level 3 (Expert) — 110 + 24 additional NIST SP 800-172 controls, government-led assessment, for contractors with critical national security information. Material space-industry implications: (i) all USSF + NASA contracts above $500K require CMMC compliance from 2025+; (ii) SpaceX + Northrop Grumman + Lockheed + L3Harris + Maxar all CMMC Level 2 minimum; (iii) commercial-space firms supplying ITAR-controlled space-hardware require CMMC Level 2; (iv) phased implementation: 2025 self-assessment, 2026 third-party assessment, 2027 contract incorporation, 2028 full enforcement. Material baseline for any US space-tech firm seeking DoD contracts.",
+    key_provisions: [
+      "Level 1 — 17 controls self-assessment for FCI",
+      "Level 2 — 110 NIST 800-171 controls + C3PAO third-party for CUI",
+      "Level 3 — 134 controls government-led for critical security info",
+      "Phased implementation 2025-2028",
+    ],
+    related_sources: ["INT-NIST-IR-8401", "US-EO-13556-CUI"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-CISA-FBI-SPACE-ICS-ADVISORY",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "FBI + CISA Joint Cybersecurity Advisory on Space Industry — AA22-138A (May 2022) + AA24-289A (October 2024) Update",
+    date_enacted: "2022-05-18",
+    date_last_amended: "2024-10-15",
+    source_url:
+      "https://www.cisa.gov/news-events/cybersecurity-advisories/aa24-289a",
+    issuing_body:
+      "FBI Cyber Division + CISA + US Space Force Office of Space Commerce",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["cybersecurity", "critical_infrastructure"],
+    scope_description:
+      "FBI + CISA Joint Cybersecurity Advisory on Space Industry — AA22-138A May 2022 'Protecting Against Cyber Threats to Managed Service Providers and their Customers' + AA24-289A October 2024 update specifically addressing space-tech ICS threats. Material implications: (i) advisory identifies space-tech as 'critical infrastructure' sector under CISA designation framework; (ii) Russian APT28 + APT29 + Iranian APT33 + Chinese APT41 explicitly named as space-tech threat actors targeting satcom + ground-segment + supply-chain; (iii) Viasat KA-SAT hack February 2022 (Russian AcidRain wiper malware) explicitly cited as material precedent; (iv) recommendations: zero-trust architecture for ground-segment, MFA mandatory, supply-chain SBOM, IT/OT network segregation; (v) October 2024 update adds specific recommendations for LEO mega-constellation ICS architectures. Material practitioner relevance: any US-aligned space-tech operator must align with CISA advisory recommendations as de facto regulatory baseline + plaintiff-favourable evidence in cyber-attack litigation.",
+    key_provisions: [
+      "Space-tech as 'critical infrastructure' sector",
+      "Russian APT28/APT29 + Iranian APT33 + Chinese APT41 named threats",
+      "Viasat KA-SAT Feb 2022 (AcidRain wiper) material precedent",
+      "Zero-trust + MFA + SBOM + IT/OT segregation recommendations",
+    ],
+    related_sources: [
+      "CASE-VIASAT-KA-SAT-2022",
+      "EU-CER-2022",
+      "INT-NIST-IR-8401",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-SPARTA-AEROSPACE-FRAMEWORK",
+    jurisdiction: "INT",
+    type: "industry_guideline",
+    status: "in_force",
+    title_en:
+      "Aerospace Corporation SPARTA (Space Attack Research and Tactic Analysis) Framework — De Facto MITRE ATT&CK for Space",
+    date_enacted: "2022-10-01",
+    date_last_amended: "2024-09-18",
+    source_url: "https://sparta.aerospace.org/",
+    issuing_body: "Aerospace Corporation + USSF Cyber Operations Squadrons",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["cybersecurity"],
+    scope_description:
+      "SPARTA — Aerospace Corporation's space-cybersecurity threat-modeling framework, structurally analogous to MITRE ATT&CK for IT but specifically adapted to space-tech threat-modeling. Operational since 2022, ~80 documented adversary tactics + techniques mapped to space-tech kill chain. Material practitioner implications: (i) SPARTA adopted by USSF Cyber Operations + NASA Mission Operations + Aerospace Corp as baseline space-cybersecurity threat-modeling; (ii) cross-walk to NIST IR 8401 + MITRE ATT&CK enables integrated IT + space-tech threat analysis; (iii) commercial-space firms (SpaceX + Maxar + Iridium + Spire + Planet) increasingly cite SPARTA in cybersecurity programmes; (iv) SPARTA framework increasingly cited in FCC + FAA + EU CRA conformity-assessment documentation. Material baseline for any space-tech cybersecurity practitioner threat-model design.",
+    key_provisions: [],
+    related_sources: ["INT-NIST-IR-8401", "INT-CISA-FBI-SPACE-ICS-ADVISORY"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-VIASAT-KA-SAT-2022",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "Viasat KA-SAT Cyber Attack (February 2022) — Russian AcidRain Wiper Malware + EU Sanctions Designation + Material Insurance Precedent",
+    date_enacted: "2022-02-24",
+    date_last_amended: "2024-05-10",
+    source_url:
+      "https://www.viasat.com/about/newsroom/blog/ka-sat-network-cyber-attack-overview/",
+    issuing_body:
+      "Viasat Inc + EU Council + Five Eyes Intelligence Community + ANSSI France",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "cybersecurity",
+      "sanctions_compliance",
+      "critical_infrastructure",
+    ],
+    scope_description:
+      "Viasat KA-SAT cyber attack — Russian GRU-attributed AcidRain wiper malware deployed against Viasat KA-SAT ground-segment 24 February 2022 (coinciding with Russian invasion of Ukraine). Material damage: ~30,000 modems wiped across Europe, including Ukrainian military comms + ~5,800 Enercon wind turbine SCADA disconnections in Germany. Material practitioner implications: (i) EU Council February 2024 + May 2024 sanctions designating 4 Russian GRU operatives + 2 entities for Viasat hack — first sanctions-designation specifically for space-tech cyber attack; (ii) AcidRain malware reverse-engineered by SentinelOne + ANSSI — material technical-attribution precedent; (iii) Viasat insurance recovery: limited Lloyd's coverage due to LMA 5267 Cyber Endorsement war-exclusion clause activation — material precedent for war-exclusion application to state-attributed cyber attacks; (iv) Viasat acquisition of Inmarsat completed May 2023 partly accelerated by KA-SAT lessons; (v) EU CER Directive 2022/2557 designating satcom as 'critical entity' explicitly cited Viasat lessons. Material baseline precedent for any space-tech cyber-attack legal-framework analysis.",
+    key_provisions: [],
+    related_sources: [
+      "INT-CISA-FBI-SPACE-ICS-ADVISORY",
+      "INT-LLOYDS-LMA-5212-SPACE-RISKS",
+      "EU-CER-2022",
+    ],
+    last_verified: "2026-05-27",
+  },
 ];
