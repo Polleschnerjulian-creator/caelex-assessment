@@ -122,6 +122,34 @@ export const AUTHORITIES_DE: Authority[] = [
     legal_basis: "Grundgesetz Art. 32 (Auswärtige Beziehungen)",
     applicable_areas: ["registration", "liability"],
   },
+  {
+    id: "DE-BAAINBw",
+    jurisdiction: "DE",
+    name_en:
+      "Federal Office of Bundeswehr Equipment, Information Technology and In-Service Support",
+    name_local:
+      "Bundesamt für Ausrüstung, Informationstechnik und Nutzung der Bundeswehr",
+    abbreviation: "BAAINBw",
+    website: "https://www.baainbw.de",
+    space_mandate:
+      "Federal procurement office for Bundeswehr equipment incl. space-defence systems (SARah constellation, MUSIS, Heinrich Hertz, KOMSAT, EnMAP-Bw extension). Located in Koblenz, ~13,000 staff, annual procurement volume ~€10B+ (50%+ growth post-Sondervermögen Bundeswehr 2022). Operates VO PR 30/53 price-regulation framework + VSVgV defence-procurement framework + Open-Book-Audit authority under § 9 VO PR 30/53.",
+    legal_basis: "BAAINBw-Errichtungsanordnung (2012)",
+    applicable_areas: ["procurement", "military_dual_use"],
+  },
+  {
+    id: "DE-BMWK-PREISAUFSICHT",
+    jurisdiction: "DE",
+    name_en:
+      "Federal Ministry for Economic Affairs and Climate Action — Price Supervision Division",
+    name_local:
+      "Bundesministerium für Wirtschaft und Klimaschutz — Preisrechtsabteilung",
+    abbreviation: "BMWK-PR",
+    website: "https://www.bmwk.de",
+    space_mandate:
+      "BMWK responsible for VO PR 30/53 federal price regulation framework + LSP (Leitsätze für die Preisermittlung). Coordinates price-supervision practice across federal procurement offices (BAAINBw, BWB-IT, BBR) + Länder. Material for any defence-space contractor Open-Book-Audit response strategy.",
+    legal_basis: "VO PR 30/53 + LSP 1953/2024",
+    applicable_areas: ["procurement"],
+  },
 ];
 
 // ─── International Treaties ratified by DE (7) ──────────────────────
@@ -1714,6 +1742,219 @@ const DEFENCE_DOCTRINE_DE: LegalSource[] = [
   },
 ];
 
+// ─── Deutsches Preisrecht + Bundeswehr-Beschaffung Cluster ──────────────
+// VO PR 30/53 + LSP + Open-Book-Audit + VSVgV + GWB Vergaberecht + VHF.
+// Material for any defence-space contractor (Airbus DS, OHB, Rheinmetall,
+// Hensoldt, Mynaric, Tesat-Spacecom, ConstellR, Reflex Aerospace) advising
+// on Bundeswehr procurement structuring + price-audit response.
+
+const PRICE_REGULATION_DE: LegalSource[] = [
+  {
+    id: "DE-VO-PR-30-53",
+    jurisdiction: "DE",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "Verordnung PR Nr. 30/53 über die Preise bei öffentlichen Aufträgen (VO PR 30/53) — German Public Contracts Price Regulation",
+    date_enacted: "1953-11-21",
+    date_last_amended: "2024-04-01",
+    source_url: "https://www.gesetze-im-internet.de/bgpr30_53/",
+    issuing_body: "Bundesministerium für Wirtschaft und Klimaschutz (BMWK)",
+    competent_authorities: ["DE-BAAINBw", "DE-BMWK-PREISAUFSICHT"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "military_dual_use"],
+    scope_description:
+      "VO PR Nr. 30/53 — primärrechtliches deutsches Preisrechtsregime für alle öffentlichen Aufträge oberhalb Bagatellschwelle (€2.500). Material practitioner provisions: (i) § 1 Geltungsbereich umfasst Bundeswehr-Beschaffung + Bundesbau + Länder-Aufträge; (ii) § 4 PRIMÄRE Preishierarchie 'Vorrang des Marktpreises' — fester Marktpreis (FM) hat Vorrang vor Selbstkostenpreis; (iii) § 5 sekundäre Preishierarchie wenn FM nicht ermittelbar: marktüblicher Preis (FM') > Wettbewerbspreis (FBW) > Selbstkostenpreis (SK); (iv) § 6 Selbstkostenfestpreis (SKF) + Selbstkostenrichtpreis (SKR) + Selbstkostenerstattungspreis (SKE) Typologie; (v) § 7 kalkulatorische Zuschläge (typ. 3-5% Gewinn-Zuschlag bei Bundeswehr); (vi) § 8 LSP-Verweis auf Leitsätze für die Preisermittlung. Material für JEDEN deutschen Defence-Space-Contractor: VO PR 30/53 schafft materielle Preisrisiko-Position auch nach Vertragsschluss durch nachträgliche Selbstkostenprüfung.",
+    key_provisions: [
+      "§ 1 — Geltungsbereich (alle öff. Aufträge > €2.500)",
+      "§ 4 — Vorrang des Marktpreises (FM)",
+      "§ 5 — Sekundäre Preishierarchie FM' > FBW > SK",
+      "§ 6 — SKF/SKR/SKE Selbstkostenpreis-Typologie",
+      "§ 7 — Kalkulatorische Zuschläge (3-5% Gewinn typ.)",
+      "§ 9 — Preisprüfung / Open-Book-Audit-Anspruch",
+    ],
+    related_sources: [
+      "DE-LSP-LEITSAETZE-PREISERMITTLUNG",
+      "DE-OPEN-BOOK-AUDIT-PR-30-53-9",
+      "DE-VSVGV-2012",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "DE-LSP-LEITSAETZE-PREISERMITTLUNG",
+    jurisdiction: "DE",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "Leitsätze für die Preisermittlung auf Grund von Selbstkosten (LSP) — Cost-Plus Pricing Methodology",
+    date_enacted: "1953-11-21",
+    date_last_amended: "2024-04-01",
+    source_url: "https://www.gesetze-im-internet.de/lsp/",
+    issuing_body: "Bundesministerium für Wirtschaft und Klimaschutz (BMWK)",
+    competent_authorities: ["DE-BAAINBw", "DE-BMWK-PREISAUFSICHT"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "military_dual_use"],
+    scope_description:
+      "LSP — Leitsätze für die Preisermittlung auf Grund von Selbstkosten. Anlage zu VO PR 30/53. Material Selbstkostenermittlungsmethodik: (i) Nr. 4 Vollkostenrechnung mit Einzelkosten + Gemeinkostenzuschlägen; (ii) Nr. 8 angemessene Verzinsung des betriebsnotwendigen Kapitals (typ. 6.5% kalkulatorisch); (iii) Nr. 47-48 Gewinnzuschlag-Bemessung (3-5% bei Bundeswehr-Standardaufträgen, bis 7% bei Risiko/F&E); (iv) Nr. 53 Sondereinzelkosten der Fertigung + Vertrieb (Konstruktion + Versuche + Werkzeuge); (v) 2024 LSP-Aktualisierung umfasst CPI-bereinigte Stundenverrechnungssätze + KI-Entwicklungskosten + Cyber-Security-Investitionen. Material für jeden Defence-Space-Contractor: LSP-Compliance erforderlich für Selbstkostenpreis-Abrechnung — Nicht-LSP-konforme Buchführung führt zu Preisanpassung + möglicher Rückforderung.",
+    key_provisions: [
+      "Nr. 4 — Vollkostenrechnung Methodik",
+      "Nr. 8 — Verzinsung betriebsnotwendiges Kapital (6.5%)",
+      "Nr. 47-48 — Gewinnzuschlag 3-5% (bis 7% bei Risiko/F&E)",
+      "Nr. 53 — Sondereinzelkosten Fertigung + Vertrieb",
+      "2024 Update — CPI-Stundensätze + KI + Cyber",
+    ],
+    related_sources: ["DE-VO-PR-30-53", "DE-OPEN-BOOK-AUDIT-PR-30-53-9"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "DE-OPEN-BOOK-AUDIT-PR-30-53-9",
+    jurisdiction: "DE",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "§ 9 VO PR 30/53 — Preisprüfung (Open-Book-Audit-Anspruch der Bundeswehr + Federal Procurement Offices)",
+    date_enacted: "1953-11-21",
+    date_last_amended: "2024-04-01",
+    source_url: "https://www.gesetze-im-internet.de/bgpr30_53/__9.html",
+    issuing_body: "Bundesministerium für Wirtschaft und Klimaschutz (BMWK)",
+    competent_authorities: ["DE-BAAINBw", "DE-BMWK-PREISAUFSICHT"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "military_dual_use"],
+    scope_description:
+      "§ 9 VO PR 30/53 — Preisprüfung (Open-Book-Audit). Materielle Praktiker-Provisionen: (i) Abs. 1 Anspruch des Auftraggebers (BAAINBw) auf Vorlage aller selbstkostenbezogenen Unterlagen — Buchführung, Kalkulationen, Stundennachweise, Auftragsdokumentation; (ii) Abs. 2 Prüfungsbefugnis erstreckt sich auf Verbundene Unternehmen + Subunternehmer (§ 15 LSP); (iii) Abs. 3 zehnjährige Aufbewahrungspflicht für selbstkostenbezogene Unterlagen (verlängerte BWG-Frist); (iv) Abs. 4 nachträgliche Preisanpassung bei festgestellten Mehrkosten / Untererfassung — Rückforderungsrisiko UNbeschränkt durch ursprünglichen Vertragspreis; (v) Praxis: BAAINBw-Preisprüfungen typisch 2-5 Jahre nach Vertragserfüllung, Anpassungsraten 5-15% bei Großaufträgen >€100M üblich. Material für jeden Defence-Space-Contractor: § 9 ist die zentrale Risiko-Norm — Verträge nominell 'fest' aber materiell 'open-book' nach VO PR 30/53. Mitigation: Pre-Audit-Documentation + LSP-konforme Buchführung + Verteidigungslinien-Strategie für typische Streit-Themen (Gemeinkosten, kalkulatorische Verzinsung, F&E-Allokation).",
+    key_provisions: [
+      "§ 9 Abs. 1 — Vorlageanspruch Selbstkosten-Unterlagen",
+      "§ 9 Abs. 2 — Prüfungserstreckung auf Verbundene Unternehmen + Subunternehmer",
+      "§ 9 Abs. 3 — Zehnjährige Aufbewahrungspflicht",
+      "§ 9 Abs. 4 — Nachträgliche Preisanpassung + Rückforderung",
+    ],
+    related_sources: [
+      "DE-VO-PR-30-53",
+      "DE-LSP-LEITSAETZE-PREISERMITTLUNG",
+      "DE-BWB-PREISPRUEFUNGSPRAXIS",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "DE-VSVGV-2012",
+    jurisdiction: "DE",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "Verteidigungs- und Sicherheitsspezifische Vergabeverordnung (VSVgV) — Defence + Security Procurement Regulation",
+    date_enacted: "2012-04-12",
+    date_last_amended: "2024-08-15",
+    source_url: "https://www.gesetze-im-internet.de/vsvgv/",
+    issuing_body: "Bundesministerium für Wirtschaft und Klimaschutz (BMWK)",
+    competent_authorities: ["DE-BAAINBw"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "military_dual_use", "fdi_screening"],
+    scope_description:
+      "VSVgV — Verteidigungs- und Sicherheitsspezifische Vergabeverordnung. Umsetzung der Richtlinie 2009/81/EG. Material Defence-Space-Provisionen: (i) § 5 Anwendungsbereich Verteidigungs- + Sicherheitsaufträge oberhalb Schwellenwerte (€443.000 Liefer-/Dienstleistung + €5.538.000 Baumaßnahmen 2024); (ii) § 12 Wahl zwischen offenem Verfahren / Verhandlungsverfahren mit Teilnahmewettbewerb (VVTNW = Standard) / Verhandlungsverfahren ohne TNW (nur bei Art. 346 AEUV essential security interests); (iii) § 22 Sicherheit der Versorgung — VS-Stufen-Spezifikation (VS-NfD bis Streng Geheim); (iv) § 47 nationale Sicherheitsklauseln + Geheimschutzbetreuung; (v) Mai 2024 Reform: Beschleunigung Sondervermögen-Bundeswehr-Beschaffungen durch verkürzte Fristen + erleichterte Verhandlungsverfahren. Material für jeden Defence-Space-Contractor: VSVgV schafft separates Vergaberegime parallel zu GWB + VgV — Verhandlungsverfahren standard statt offenes Verfahren.",
+    key_provisions: [
+      "§ 5 — Anwendungsbereich + Schwellenwerte 2024",
+      "§ 12 — VVTNW Verhandlungsverfahren mit TNW (Standard)",
+      "§ 22 — Sicherheit der Versorgung + VS-Stufen",
+      "§ 47 — Geheimschutzbetreuung",
+      "Mai 2024 Reform — Sondervermögen Beschaffungs-Beschleunigung",
+    ],
+    related_sources: [
+      "DE-GWB-VERGABERECHT-99-148",
+      "EU-DEFENCE-PROCUREMENT-DIR-2009-81",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "DE-GWB-VERGABERECHT-99-148",
+    jurisdiction: "DE",
+    type: "federal_law",
+    status: "in_force",
+    title_en:
+      "§§ 99-148 GWB (Gesetz gegen Wettbewerbsbeschränkungen) — 4. Teil Vergaberecht + Vergabeverfahren",
+    date_enacted: "1957-07-27",
+    date_last_amended: "2024-11-28",
+    source_url: "https://www.gesetze-im-internet.de/gwb/BJNR252110998.html",
+    issuing_body: "Deutscher Bundestag",
+    competent_authorities: ["DE-BAAINBw"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "competition_antitrust"],
+    scope_description:
+      "GWB 4. Teil (§§ 99-148) — primärrechtliches deutsches Vergaberechtsregime. Material Defence-Space-Provisionen: (i) § 99 Geltungsbereich umfasst Bundeswehr + EU-Schwellenwerte; (ii) § 100 Ausnahmen (Art. 346 AEUV essential security interests); (iii) § 115 Eignung Bieter + Selbstreinigung (relevant nach Korruptionsverfahren); (iv) § 124 fakultative Ausschlussgründe (Sanktionslisten-Verbindungen, Russland-Belarus); (v) § 134-135 Rügeobliegenheit + Vergabenachprüfungsverfahren vor Vergabekammer + OLG (typisch 4-8 Wochen Streitlauf); (vi) 2024 Reform-Diskurs: Vergaberechtsmodernisierung incl. ESG-Kriterien-Verankerung + Resilienz-Vorgaben. Material baseline für jeden Bundeswehr-Auftrag: GWB 4. Teil + VgV + VSVgV operieren als komplementäre Regime — Vergabenachprüfung vor Vergabekammern materielle Risiko-Position.",
+    key_provisions: [
+      "§ 99 — Geltungsbereich + EU-Schwellenwerte",
+      "§ 100 — Art. 346 AEUV Ausnahmen",
+      "§ 115 — Eignung + Selbstreinigung",
+      "§ 124 — Fakultative Ausschlussgründe (Sanktionen)",
+      "§§ 134-135 — Rüge + Vergabenachprüfungsverfahren",
+    ],
+    related_sources: ["DE-VSVGV-2012", "DE-VHF-VERGABEHANDBUCH-BUND"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "DE-VHF-VERGABEHANDBUCH-BUND",
+    jurisdiction: "DE",
+    type: "industry_guideline",
+    status: "in_force",
+    title_en:
+      "VHF — Vergabehandbuch des Bundes für die Vergabe von Bauleistungen + Liefer-/Dienstleistungen (Federal Procurement Manual)",
+    date_enacted: "2008-01-01",
+    date_last_amended: "2024-10-15",
+    source_url: "https://www.fib-bund.de/Inhalt/Richtlinien/VHB/",
+    issuing_body:
+      "Bundesministerium für Wohnen, Stadtentwicklung und Bauwesen + BMWK",
+    competent_authorities: ["DE-BAAINBw"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement"],
+    scope_description:
+      "VHF — Vergabehandbuch des Bundes. Material praktische Anleitungsdokument zur GWB + VgV + VSVgV-Umsetzung in Bundeswehr-Beschaffung. Material Provisionen: (i) Modul 'Vergabeunterlagen' Standard-Vertragsbedingungen incl. Allgemeine Vertragsbedingungen für die Ausführung von Leistungen (VOL/B) + besondere Vertragsbedingungen für Bundeswehr (BBVS); (ii) Modul 'Wirtschaftlichkeitsbetrachtung' Marktpreisvergleichsmodul (MPM) + Spitzenpreisbildung — Methodik zur Preisrahmen-Ermittlung; (iii) Modul 'Vertragspflege' Open-Book-Audit-Vorgaben + Selbstkostenpreis-Documentation-Anforderungen; (iv) Modul 'Eskalations-/Preisgleitklauseln' CPI-bezogene Preisanpassungsformeln. Material für Vertragsverhandlung + Streit-Strategie: VHF-Standards sind quasi-verbindlich für Bundeswehr-Verträge — Abweichungen müssen begründet sein.",
+    key_provisions: [
+      "VOL/B + BBVS Vertragsbedingungen",
+      "Marktpreisvergleichsmodul (MPM) + Spitzenpreisbildung",
+      "Open-Book-Audit-Documentation-Anforderungen",
+      "CPI-Preisgleitklauseln",
+    ],
+    related_sources: [
+      "DE-VO-PR-30-53",
+      "DE-VSVGV-2012",
+      "DE-GWB-VERGABERECHT-99-148",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "DE-BWB-PREISPRUEFUNGSPRAXIS",
+    jurisdiction: "DE",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "BAAINBw / BWB Preisprüfungspraxis — Open-Book-Audit Streit-Typologie (Airbus DS + OHB + Hensoldt Defence-Space Cases 2018-2024)",
+    date_enacted: "2018-01-01",
+    date_last_amended: "2024-12-15",
+    source_url:
+      "https://www.baainbw.de/portal/a/baain/start/aufgaben/!ut/p/z1/",
+    issuing_body:
+      "BAAINBw + Bundesrechnungshof + Defence-Space Contractor Erfahrungen",
+    competent_authorities: ["DE-BAAINBw", "DE-BMWK-PREISAUFSICHT"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "military_dual_use"],
+    scope_description:
+      "BAAINBw Preisprüfungspraxis — typische Open-Book-Audit-Streit-Topik bei deutschen Defence-Space-Verträgen. Materielle Praktiker-Erfahrungswerte (2018-2024, dokumentiert über Bundesrechnungshof-Bemerkungen + Defence-Newsletter + DGUR-Vergaberechtskommentare): (i) **Gemeinkosten-Allokation**: Streit über zulässige Gemeinkosten-Schlüssel (Personal vs. Maschinenstunden vs. Materialeinzelkosten) — typische Differenz 3-8% vom Auftragswert; (ii) **F&E-Kapitalisierung**: Streit ob F&E-Aufwand Selbstkosten oder eigenfinanzierte Investition — relevant für space-tech mit hohem F&E-Anteil (Mynaric Laser-Comms, ConstellR Thermal-IR); (iii) **Kalkulatorische Verzinsung**: Streit über betriebsnotwendiges Kapital + Verzinsungssatz (LSP 6.5% vs. Marktzinsen); (iv) **Konzerninterne Verrechnungspreise**: bei multi-jurisdiktionalen Konzernen (Airbus DS Toulouse-Bremen-Friedrichshafen-München) — OECD-Transfer-Pricing vs. LSP-Selbstkostenermittlung Konflikt; (v) **Risikoaufschlag**: Streit über Gewinnzuschlag-Bemessung 3-5% Standard vs. 7% bei F&E/Risiko-Aufträgen. Bundesrechnungshof Bemerkungen 2022 + 2023 zeigen systematische BAAINBw-Tendenz zu konservativer Selbstkostenerstattung. Material baseline für jeden Defence-Space-Contractor Open-Book-Audit-Streit-Strategie.",
+    key_provisions: [],
+    related_sources: [
+      "DE-VO-PR-30-53",
+      "DE-OPEN-BOOK-AUDIT-PR-30-53-9",
+      "DE-LSP-LEITSAETZE-PREISERMITTLUNG",
+    ],
+    last_verified: "2026-05-27",
+  },
+];
+
 // ─── Aggregated Export ───────────────────────────────────────────────
 
 export const LEGAL_SOURCES_DE: LegalSource[] = [
@@ -1723,4 +1964,5 @@ export const LEGAL_SOURCES_DE: LegalSource[] = [
   ...EU_LAW_DE,
   ...POLICY_DE,
   ...DEFENCE_DOCTRINE_DE,
+  ...PRICE_REGULATION_DE,
 ];
