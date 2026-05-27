@@ -1968,6 +1968,144 @@ const TAX_CUSTOMS_US: LegalSource[] = [
   },
 ];
 
+// ─── AML / KYC ────────────────────────────────────────────────────
+// US-specific anti-money-laundering framework. Bank Secrecy Act (31 USC §5311
+// et seq.) is the cornerstone — FinCEN regulations + OFAC sanctions enforcement.
+// Material for satellite-services payment flows + space-tourism KYC.
+
+const AML_KYC_US: LegalSource[] = [
+  {
+    id: "US-FINCEN-BSA",
+    jurisdiction: "US",
+    type: "federal_law",
+    status: "in_force",
+    title_en:
+      "31 U.S.C. §5311 et seq. — Bank Secrecy Act (BSA) + FinCEN Implementing Regulations (31 CFR Chapter X)",
+    date_enacted: "1970-10-26",
+    date_last_amended: "2024-01-01",
+    source_url:
+      "https://www.fincen.gov/resources/statutes-regulations/bank-secrecy-act",
+    issuing_body: "US Congress + FinCEN (Financial Crimes Enforcement Network)",
+    competent_authorities: ["US-FINCEN"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["aml_kyc", "sanctions_compliance"],
+    scope_description:
+      "Bank Secrecy Act (BSA) — primary US AML framework. Modernised by AMLA 2020 (Anti-Money Laundering Act, NDAA Title LXIV) — most significant AML reform since USA PATRIOT Act 2001. Material for space-industry: (i) BSA Currency Transaction Reports (CTRs) for cash payments >$10K on satellite services + ground-station leasing; (ii) Suspicious Activity Reports (SARs) for high-risk satellite-imagery exports to sanctioned end-users; (iii) Corporate Transparency Act (effective Jan 2024) requires beneficial-ownership disclosure for space-tech corporations to FinCEN BOI registry; (iv) AMLA 2020 expanded BSA to cover antiquities + digital assets (relevant for in-space NFT pilots).",
+    key_provisions: [
+      "31 USC §5311 — purpose + scope",
+      "31 USC §5318(g) — Suspicious Activity Reports (SARs)",
+      "31 USC §5318(h) — AML programme requirements (5 pillars)",
+      "31 USC §5336 — Corporate Transparency Act / BOI reporting",
+      "31 CFR §1010.210 — anti-money-laundering programmes",
+    ],
+    related_sources: [
+      "INT-FATF-RECOMMENDATIONS-2012",
+      "INT-WOLFSBERG-PRINCIPLES",
+      "US-OFAC-SANCTIONS-PROGRAMS",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "US-OFAC-SANCTIONS-PROGRAMS",
+    jurisdiction: "US",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "31 CFR Chapter V — OFAC Sanctions Programs (incl. Space-Sector Designations)",
+    date_enacted: "1977-12-28",
+    date_last_amended: "2024-06-12",
+    source_url:
+      "https://ofac.treasury.gov/sanctions-programs-and-country-information",
+    issuing_body: "US Treasury Office of Foreign Assets Control (OFAC)",
+    competent_authorities: ["US-OFAC"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["sanctions_compliance", "aml_kyc"],
+    scope_description:
+      "OFAC Sanctions Programs — 30+ active country/thematic sanctions programmes administered under IEEPA, TWEA, NEA, ISA. Material space-industry programmes: (1) Russia/Ukraine sanctions (EO 14024, EO 14066, EO 14068, EO 14071) — affects Russian space-tech imports + Roscosmos partnerships; (2) Iran sanctions (E.O. 12959, 13599, 13871) — covers satellite-launch services + dual-use technology; (3) North Korea sanctions (EO 13466, 13687, 13722) — extraterritorial reach via secondary sanctions; (4) Cuba sanctions (CACR + 31 CFR Part 515) — limits satcom services; (5) SDN List 50% Rule — any entity 50%+ owned by SDN is itself blocked. Material for space-tech KYC + screening obligations.",
+    key_provisions: [
+      "31 CFR Part 510 — North Korea Sanctions Regulations",
+      "31 CFR Part 515 — Cuban Assets Control Regulations",
+      "31 CFR Part 560 — Iranian Transactions Regulations",
+      "31 CFR Part 587 — Ukraine-Russia Regulations",
+      "50% Rule — extraterritorial application to majority-owned subsidiaries",
+    ],
+    related_sources: [
+      "US-FINCEN-BSA",
+      "US-CSLA-1984",
+      "INT-FATF-RECOMMENDATIONS-2012",
+    ],
+    last_verified: "2026-05-27",
+  },
+];
+
+// ─── AI Compliance ────────────────────────────────────────────────
+// US AI governance — Executive Order 14110 (Biden, Oct 2023) is the primary
+// executive-branch framework. Subsequently modified by Trump EO 14179 (Jan
+// 2025) which rescinded some 14110 provisions but retained others. Material
+// for AI-enabled space-tech.
+
+const AI_COMPLIANCE_US: LegalSource[] = [
+  {
+    id: "US-EO-14110-AI",
+    jurisdiction: "US",
+    type: "policy_document",
+    status: "superseded",
+    title_en:
+      "Executive Order 14110 — Safe, Secure, and Trustworthy Development and Use of AI (rescinded Jan 2025)",
+    date_enacted: "2023-10-30",
+    date_last_amended: "2025-01-20",
+    source_url:
+      "https://www.federalregister.gov/documents/2023/11/01/2023-24283/safe-secure-and-trustworthy-development-and-use-of-artificial-intelligence",
+    issuing_body: "Executive Office of the President (Biden Administration)",
+    competent_authorities: ["US-NIST"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["ai_compliance", "cybersecurity"],
+    scope_description:
+      "EO 14110 (Biden, 30 Oct 2023) — most comprehensive US AI executive action pre-Trump rescission. Established (i) §4.2 reporting requirements for dual-use foundation models (10^26 FLOPs threshold), (ii) §4.4 watermarking requirements for synthetic content, (iii) §4.5 critical-infrastructure AI safety guidance, (iv) §5.1 immigration/talent pipeline initiatives. RESCINDED by Trump EO 14179 'Removing Barriers to AI Innovation' (20 Jan 2025), but many implementing regulations (e.g., NIST AI RMF Generative AI Profile) survived. Material historical context for any US-federal AI procurement engagement — many DoD/IC AI procurements still cite EO 14110 framework + NIST AI RMF.",
+    key_provisions: [
+      "§4.2 — dual-use foundation model reporting (10^26 FLOPs)",
+      "§4.4 — synthetic-content watermarking",
+      "§4.5 — critical infrastructure AI safety",
+      "§10 — AI in federal government (procurement, hiring)",
+      "Rescinded by EO 14179 (20 Jan 2025)",
+    ],
+    related_sources: [
+      "INT-NIST-AI-RMF-2023",
+      "INT-OECD-AI-PRINCIPLES-2019",
+      "US-EO-14179-AI-INNOVATION",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "US-EO-14179-AI-INNOVATION",
+    jurisdiction: "US",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "Executive Order 14179 — Removing Barriers to American Leadership in Artificial Intelligence",
+    date_enacted: "2025-01-23",
+    source_url:
+      "https://www.whitehouse.gov/presidential-actions/2025/01/removing-barriers-to-american-leadership-in-artificial-intelligence/",
+    issuing_body: "Executive Office of the President (Trump Administration)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["ai_compliance"],
+    scope_description:
+      "EO 14179 (Trump, 23 Jan 2025) — rescinded EO 14110 + EO 14148 + several Biden-era AI policies. Replaced with deregulatory framework: §2 requires 180-day AI Action Plan from White House AI/Science Advisor + APNSA. §3 instructs OMB to revise OMB Memos M-24-10 (federal AI use) and M-24-18 (federal AI procurement). Net effect for space-industry: US AI Safety Institute (USAISI) future uncertain; voluntary AI safety commitments from 15 frontier labs (incl. Anthropic, OpenAI) no longer formally administered; NIST AI RMF retained as voluntary baseline. Material for any US-federal space-tech AI procurement post-Jan 2025.",
+    key_provisions: [
+      "§2 — 180-day AI Action Plan requirement",
+      "§3 — revision of OMB M-24-10 + M-24-18",
+      "§4 — rescission of EO 14110 + 14148",
+    ],
+    related_sources: ["US-EO-14110-AI", "INT-NIST-AI-RMF-2023"],
+    last_verified: "2026-05-27",
+  },
+];
+
 // ─── Aggregated Export ────────────────────────────────────────────
 
 export const LEGAL_SOURCES_US: LegalSource[] = [
@@ -1980,4 +2118,6 @@ export const LEGAL_SOURCES_US: LegalSource[] = [
   ...DEFENCE_DOCTRINE_US,
   ...IP_PATENTS_US,
   ...TAX_CUSTOMS_US,
+  ...AML_KYC_US,
+  ...AI_COMPLIANCE_US,
 ];

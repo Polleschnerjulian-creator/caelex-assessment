@@ -4814,4 +4814,250 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     ],
     last_verified: "2026-05-27",
   },
+  // ============================================================================
+  // AML / KYC CLUSTER (4 INT entries)
+  // ============================================================================
+  // Anti-money laundering + KYC framework for satellite-services payments,
+  // satcom subscriptions, in-space financial-services (insurance premia paid
+  // to offshore captives), and ground-station leasing transactions.
+  // ============================================================================
+  {
+    id: "INT-FATF-RECOMMENDATIONS-2012",
+    jurisdiction: "INT",
+    type: "soft_law_resolution",
+    status: "in_force",
+    title_en:
+      "FATF 40 Recommendations on Money Laundering and Terrorist Financing (2012, updated 2023)",
+    date_enacted: "2012-02-16",
+    date_last_amended: "2023-11-23",
+    source_url:
+      "https://www.fatf-gafi.org/publications/fatfrecommendations/documents/fatf-recommendations.html",
+    issuing_body: "Financial Action Task Force (FATF)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["aml_kyc", "sanctions_compliance"],
+    scope_description:
+      "FATF 40 Recommendations — global AML/CFT standard, 200+ jurisdictions implementing through national legislation. Materially binding through grey-list/black-list peer-review mechanism. Material for space-industry: (i) satellite-services subscription payments via correspondent banking (cross-border KYC obligations), (ii) launch insurance premia paid to offshore captives (beneficial-ownership transparency under R.24), (iii) ground-station leasing in high-risk jurisdictions, (iv) virtual-asset payment for satellite imagery (R.15 + INR.15 virtual asset rules). October 2023 updates strengthened beneficial-ownership requirements.",
+    key_provisions: [
+      "R.10 — customer due diligence",
+      "R.12 — politically exposed persons (PEPs)",
+      "R.13 — correspondent banking",
+      "R.15 + INR.15 — virtual assets + VASPs",
+      "R.24-25 — beneficial-ownership transparency",
+    ],
+    related_sources: [
+      "INT-WOLFSBERG-PRINCIPLES",
+      "EU-6AMLD-2018",
+      "US-FINCEN-BSA",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-WOLFSBERG-PRINCIPLES",
+    jurisdiction: "INT",
+    type: "industry_guideline",
+    status: "in_force",
+    title_en:
+      "Wolfsberg Group AML/KYC Principles for Correspondent Banking + Private Banking",
+    date_enacted: "2000-10-30",
+    date_last_amended: "2023-08-01",
+    source_url: "https://wolfsberg-principles.com/standards",
+    issuing_body:
+      "Wolfsberg Group (13 global banks incl. JPM/Citi/Deutsche/UBS)",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["aml_kyc"],
+    scope_description:
+      "Wolfsberg Group AML/KYC Principles — industry standard adopted by major correspondent banks globally. Practical operationalisation of FATF Recommendations. Material for space-industry: (i) Wolfsberg Correspondent Banking Due Diligence Questionnaire (CBDDQ) is gating for satellite-operator international payment flows; (ii) Private Banking Principles affect VVIP space-tourism payment processing (Virgin Galactic, Blue Origin suborbital); (iii) Wolfsberg Anti-Bribery Statement relevant for procurement engagement with foreign space agencies (FCPA/UK Bribery Act linkage). 2023 update added crypto-asset risk-typology guidance.",
+    key_provisions: [
+      "CBDDQ — Correspondent Banking Due Diligence Questionnaire",
+      "Anti-Bribery and Corruption (ABC) Statement",
+      "Wolfsberg Trade Finance Principles",
+    ],
+    related_sources: ["INT-FATF-RECOMMENDATIONS-2012", "EU-6AMLD-2018"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "EU-6AMLD-2018",
+    jurisdiction: "INT",
+    type: "eu_directive",
+    status: "in_force",
+    title_en:
+      "Directive (EU) 2018/1673 — Sixth Anti-Money Laundering Directive (6AMLD)",
+    date_enacted: "2018-10-23",
+    date_last_amended: "2024-05-31",
+    source_url: "https://eur-lex.europa.eu/eli/dir/2018/1673/oj",
+    issuing_body: "European Parliament + Council",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["aml_kyc", "sanctions_compliance"],
+    scope_description:
+      "6AMLD — criminalises 22 predicate offences for money laundering (incl. environmental crimes, cybercrime, tax fraud, IP infringement). Implementation deadline 3 Dec 2020. Established corporate liability for AML offences, minimum 4-year imprisonment, asset-confiscation regime. Material for space-industry: (i) satellite-imagery sales to sanctioned end-users could trigger AML predicate under 'environmental crime' provisions; (ii) launch-service contracts with state-owned enterprises in high-risk jurisdictions; (iii) extraterritorial reach via Article 11 covers EU operators globally. Superseded in part by 2024 AML Package (Reg. 2024/1624 + Dir. 2024/1640 + AMLA Reg. 2024/1620).",
+    key_provisions: [
+      "Art. 2 — list of 22 predicate offences",
+      "Art. 7 — corporate liability for AML",
+      "Art. 8 — sanctions (min. 4yr imprisonment, asset confiscation)",
+      "Art. 11 — extraterritorial jurisdiction",
+    ],
+    related_sources: [
+      "INT-FATF-RECOMMENDATIONS-2012",
+      "INT-WOLFSBERG-PRINCIPLES",
+      "EU-AML-PACKAGE-2024",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "EU-AML-PACKAGE-2024",
+    jurisdiction: "INT",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en:
+      "EU AML Package 2024 — Reg. 2024/1624 (AMLR) + Dir. 2024/1640 (6AMLD revision) + Reg. 2024/1620 (AMLA)",
+    date_enacted: "2024-05-31",
+    date_last_amended: "2024-05-31",
+    source_url:
+      "https://finance.ec.europa.eu/financial-crime/anti-money-laundering-and-countering-financing-terrorism_en",
+    issuing_body: "European Parliament + Council",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["aml_kyc", "sanctions_compliance"],
+    scope_description:
+      "EU AML Package adopted May 2024, applicable from 10 July 2027 (most provisions). Three legal instruments: (1) AMLR (Reg. 2024/1624) — single rulebook directly applicable across MS; (2) revised 6AMLD (Dir. 2024/1640) — strengthens national supervision; (3) AMLA Reg. (Reg. 2024/1620) — establishes EU Anti-Money Laundering Authority based in Frankfurt, operational from 2025. Material space-industry impact: (i) AMLA direct-supervision threshold may capture large satellite-operators (€20B assets); (ii) AMLR Art. 60 cash-payment limit €10,000; (iii) AMLR Art. 79 beneficial-ownership central register interconnection; (iv) AMLR Art. 17 covers crypto-asset transfers (relevant for in-space NFT / blockchain payments experiments).",
+    key_provisions: [
+      "AMLR Art. 17 — crypto-asset service providers in scope",
+      "AMLR Art. 60 — €10,000 cash payment limit",
+      "AMLR Art. 79 — beneficial-ownership register interconnection",
+      "AMLA Reg. — Frankfurt-based EU supervisor for high-risk financial entities",
+    ],
+    related_sources: ["EU-6AMLD-2018", "INT-FATF-RECOMMENDATIONS-2012"],
+    last_verified: "2026-05-27",
+  },
+  // ============================================================================
+  // AI COMPLIANCE CLUSTER (4 INT entries)
+  // ============================================================================
+  // International AI governance frameworks as applied to space-tech: autonomy
+  // systems (RPO, debris-avoidance), EO-imagery AI/ML inference, ground-segment
+  // AI/ML for SDA, AI-driven mission planning. EU AI Act already in corpus.
+  // ============================================================================
+  {
+    id: "INT-OECD-AI-PRINCIPLES-2019",
+    jurisdiction: "INT",
+    type: "soft_law_resolution",
+    status: "in_force",
+    title_en:
+      "OECD Recommendation on Artificial Intelligence (OECD/LEGAL/0449)",
+    date_enacted: "2019-05-22",
+    date_last_amended: "2024-05-03",
+    source_url:
+      "https://legalinstruments.oecd.org/en/instruments/OECD-LEGAL-0449",
+    issuing_body:
+      "OECD (Organisation for Economic Co-operation and Development)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["ai_compliance"],
+    scope_description:
+      "OECD AI Principles — first intergovernmental AI standard, adopted by 47 OECD + partner countries including all major space-faring nations (US, UK, JP, KR, CA, AU, IL, DE, FR, IT, ES, NL). Five values-based principles: (1) inclusive growth + sustainable development, (2) human-centred values + fairness, (3) transparency + explainability, (4) robustness + security + safety, (5) accountability. Updated May 2024 to address generative AI + frontier-model risks. Material baseline for space-tech AI ethics frameworks: ESA Codex of Ethics, NASA Trustworthy AI Framework, JAXA AI Principles all cite OECD baseline.",
+    key_provisions: [
+      "Principle 1.4 — robustness, security + safety",
+      "Principle 1.5 — accountability + auditability",
+      "Recommendation B — investment in AI R&D",
+      "May 2024 update — generative AI + frontier-model addendum",
+    ],
+    related_sources: [
+      "INT-UNESCO-AI-ETHICS-2021",
+      "EU-AI-ACT-2024",
+      "US-EO-14110-AI",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-UNESCO-AI-ETHICS-2021",
+    jurisdiction: "INT",
+    type: "soft_law_resolution",
+    status: "in_force",
+    title_en:
+      "UNESCO Recommendation on the Ethics of Artificial Intelligence (2021)",
+    date_enacted: "2021-11-23",
+    source_url: "https://unesdoc.unesco.org/ark:/48223/pf0000381137",
+    issuing_body: "UNESCO General Conference",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["ai_compliance"],
+    scope_description:
+      "UNESCO AI Ethics Recommendation — adopted by all 193 UNESCO member states (only universal AI ethics instrument). Goes further than OECD principles: explicitly addresses environmental AI footprint, gender equality, indigenous data sovereignty, AI-arms-race concerns. Material for space-industry: (i) Art. 124-127 explicitly address dual-use AI in military/aerospace context; (ii) Art. 137-138 require environmental-impact assessment for AI systems (relevant for high-compute ground-segment SDA); (iii) Art. 92-95 require AI-impact assessments for systems affecting critical infrastructure (satellites are critical infrastructure per EU CER Directive 2022/2557).",
+    key_provisions: [
+      "Art. 92-95 — AI Ethical Impact Assessment (EIA) requirement",
+      "Art. 124-127 — dual-use AI safeguards",
+      "Art. 137-138 — environmental impact assessment",
+    ],
+    related_sources: ["INT-OECD-AI-PRINCIPLES-2019", "EU-AI-ACT-2024"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-NIST-AI-RMF-2023",
+    jurisdiction: "INT",
+    type: "technical_standard",
+    status: "in_force",
+    title_en:
+      "NIST AI Risk Management Framework 1.0 (AI RMF) + Generative AI Profile 2024",
+    date_enacted: "2023-01-26",
+    date_last_amended: "2024-07-26",
+    source_url: "https://www.nist.gov/itl/ai-risk-management-framework",
+    issuing_body: "US National Institute of Standards and Technology (NIST)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["ai_compliance", "cybersecurity"],
+    scope_description:
+      "NIST AI RMF 1.0 — voluntary US framework for AI risk management, structurally analogous to NIST Cybersecurity Framework. Four functions: GOVERN, MAP, MEASURE, MANAGE. Crosswalk published with EU AI Act, ISO/IEC 42001, OECD AI Principles. Material for space-tech AI: (i) explicitly cited in US EO 14110 implementation; (ii) US Space Force adopted AI RMF as baseline for autonomous-systems acquisition; (iii) NASA Trustworthy AI Framework (TAIF) extends AI RMF for mission-critical systems. July 2024 Generative AI Profile addresses LLM-specific risks (relevant for ground-segment ops chatbots, mission-planning copilots).",
+    key_provisions: [
+      "GOVERN function — policies, accountability, culture",
+      "MAP function — context + AI system characterization",
+      "MEASURE function — analyze + assess + track AI risks",
+      "MANAGE function — prioritize + respond + recover",
+      "2024 Generative AI Profile — 200 actions for LLM/foundation models",
+    ],
+    related_sources: [
+      "INT-OECD-AI-PRINCIPLES-2019",
+      "INT-ISO-IEC-42001-2023",
+      "EU-AI-ACT-2024",
+      "US-EO-14110-AI",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-ISO-IEC-42001-2023",
+    jurisdiction: "INT",
+    type: "technical_standard",
+    status: "in_force",
+    title_en: "ISO/IEC 42001:2023 — AI Management Systems (AIMS)",
+    date_enacted: "2023-12-18",
+    source_url: "https://www.iso.org/standard/81230.html",
+    issuing_body:
+      "International Organization for Standardization (ISO) + International Electrotechnical Commission (IEC)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["ai_compliance"],
+    scope_description:
+      "ISO/IEC 42001:2023 — first international certifiable management-system standard for AI, structurally aligned with ISO 27001 (ISMS) and ISO 9001 (QMS). High-Level Structure (HLS) enables integrated management systems. Material for space-industry: (i) certification provides EU AI Act conformity-assessment uplift (recital 121 + Art. 40); (ii) ESA + DLR + CNES adopting as procurement-baseline for AI-enabled spacecraft systems; (iii) Lloyds Register + DNV + Bureau Veritas accredited as 42001 certifiers globally. Companion standards: ISO/IEC 23894 (AI risk management), ISO/IEC TR 24028 (AI trustworthiness overview).",
+    key_provisions: [
+      "Clause 6 — AI risk + impact assessment planning",
+      "Clause 8 — operational AI management controls",
+      "Annex A — 39 AI management controls (categorized by AI lifecycle)",
+      "Annex B — guidance on AI controls",
+    ],
+    related_sources: [
+      "INT-NIST-AI-RMF-2023",
+      "INT-OECD-AI-PRINCIPLES-2019",
+      "EU-AI-ACT-2024",
+    ],
+    last_verified: "2026-05-27",
+  },
 ];
