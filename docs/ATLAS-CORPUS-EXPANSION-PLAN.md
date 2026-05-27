@@ -40,20 +40,39 @@ Drift-safety invariants:
 
 ### Last action
 
-**2026-05-26 (P0 schema landed)**: ComplianceArea union extended from 13 → 29 (+16 values), LegalSourceType union extended from 8 → 20 (+12 values). Schema-drift test added at `src/data/legal-sources/schema-drift.test.ts` (18 tests) — validates that every entry in the 950-source corpus + all authorities uses ONLY canonical union values. Catches typos, stale values, and duplicate IDs at CI time. All 18 drift tests pass against the existing corpus.
+**2026-05-26 (P0 + P1 partial — first session)**:
 
-Total Atlas test count: 568 passing / 569 total (1 pre-existing env-failure unchanged).
+P0 schema landed: ComplianceArea union 13 → 29 (+16), LegalSourceType union 8 → 20 (+12), schema-drift test wired (18 tests).
+
+P1 in progress: 3 of 9 P1 jurisdictions completed:
+
+- **CN** 7 → 38 (+5 authorities, +25 sources)
+- **RU** 5 → 28 (+5 authorities, +18 sources)
+- **SG** 0 → 22 (+6 authorities, +16 sources, NEW jurisdiction)
+
+Total new source-corpus growth this session: **+59 sources, +16 authorities** across 3 jurisdictions. All 18 drift tests pass continuously.
+
+Total Atlas test count: 1589 passing / 1590 total (1 pre-existing env-failure unchanged).
 
 ### Current focus
 
-→ **§ 5.A China expansion** — CN sources from 7 → 30. Schema is now ready for the new entries. After CN, proceed to RU (5 → 25), then 7 new jurisdictions (SG, ID, PH, SA, EG, AR, MX).
+→ **§ 5 P1 remaining** — 6 jurisdictions still to expand/create:
+
+- ID (Indonesia, NEW, target 15 sources)
+- PH (Philippines, NEW, target 12)
+- SA (Saudi Arabia, NEW, target 12)
+- EG (Egypt, NEW, target 12)
+- AR (Argentina, NEW, target 12)
+- MX (Mexico, NEW, target 10)
+
+After P1 → P2 Sub-Domain Clusters (Space Resources, Suborbital, ADR, Megaconstellations, Radio Astronomy, Cybersecurity, Climate Overlay, National Security, Privacy).
 
 ### Tier roll-up (one-line per tier; updated as items flip)
 
 - **P0 Schema:** 🟢 Complete (2026-05-26) — 16 ComplianceAreas + 12 SourceTypes added, 18-test drift validator wired
-- **P1 Critical Jurisdictions (CN/RU + 7 missing):** 🟡 In progress — starting with CN 7 → 30
-- **P2 Sub-Domain Clusters (resources / suborbital / ADR / megacons / dark-sky / cybersec / climate):** 🔴 Not started
-- **P3 EU-modern (AI Act / Data Act / CSRD applied to space) + Financial/Capital + Bilateral/Multilateral:** 🔴 Not started
+- **P1 Critical Jurisdictions:** 🟡 In progress — 3 of 9 done (CN ✓ RU ✓ SG ✓; ID PH SA EG AR MX pending)
+- **P2 Sub-Domain Clusters:** 🔴 Not started
+- **P3 EU-modern + Financial/Capital + Bilateral/Multilateral:** 🔴 Not started
 - **P4 Sub-tier Jurisdiction Deepening (AU/NZ/IN/JP/KR):** 🔴 Not started
 - **P5 Cases Expansion (+~30):** 🔴 Not started
 - **P6 Cross-Reference Pass + Embeddings Rebuild:** 🔴 Not started
