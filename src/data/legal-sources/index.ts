@@ -135,6 +135,7 @@ import { LEGAL_SOURCES_MX, AUTHORITIES_MX } from "./sources/mx";
 import { LEGAL_SOURCES_TW, AUTHORITIES_TW } from "./sources/tw";
 import { LEGAL_SOURCES_KE, AUTHORITIES_KE } from "./sources/ke";
 import { LEGAL_SOURCES_CL, AUTHORITIES_CL } from "./sources/cl";
+import { LEGAL_SOURCES_NG, AUTHORITIES_NG } from "./sources/ng";
 
 // ─── Aggregated data ─────────────────────────────────────────────────
 
@@ -194,6 +195,7 @@ export const ALL_SOURCES: LegalSource[] = [
   ...LEGAL_SOURCES_TW,
   ...LEGAL_SOURCES_KE,
   ...LEGAL_SOURCES_CL,
+  ...LEGAL_SOURCES_NG,
 ];
 
 export const ALL_AUTHORITIES: Authority[] = [
@@ -252,6 +254,7 @@ export const ALL_AUTHORITIES: Authority[] = [
   ...AUTHORITIES_TW,
   ...AUTHORITIES_KE,
   ...AUTHORITIES_CL,
+  ...AUTHORITIES_NG,
 ];
 
 const JURISDICTION_DATA: Map<string, JurisdictionLegalData> = new Map([
@@ -695,6 +698,14 @@ const JURISDICTION_DATA: Map<string, JurisdictionLegalData> = new Map([
       authorities: AUTHORITIES_CL,
     },
   ],
+  [
+    "NG",
+    {
+      jurisdiction: "NG",
+      sources: LEGAL_SOURCES_NG,
+      authorities: AUTHORITIES_NG,
+    },
+  ],
 ]);
 
 // ─── Lookup functions ────────────────────────────────────────────────
@@ -955,3 +966,4 @@ export { LEGAL_SOURCES_NZ, AUTHORITIES_NZ };
 export { LEGAL_SOURCES_TW, AUTHORITIES_TW };
 export { LEGAL_SOURCES_KE, AUTHORITIES_KE };
 export { LEGAL_SOURCES_CL, AUTHORITIES_CL };
+export { LEGAL_SOURCES_NG, AUTHORITIES_NG };
