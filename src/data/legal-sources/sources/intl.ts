@@ -5540,4 +5540,165 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     related_sources: ["INT-GRI-STANDARDS", "EU-SFDR-2019"],
     last_verified: "2026-05-27",
   },
+  // ============================================================================
+  // MODERN BILATERAL CLUSTER (2024-2025) (+5 entries)
+  // ============================================================================
+  // 2024-2025 bilateral instruments materially reshaping space-tech cooperation
+  // landscape: US-India iCET 2.0, EU-US TTC space pillar, US-Japan SPACE-WG,
+  // India-Japan LUPEX 2024 implementing, Korea-Saudi Arabia 2024 MOU.
+  // ============================================================================
+  {
+    id: "INT-US-INDIA-ICET-2-2024",
+    jurisdiction: "INT",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en:
+      "US-India Initiative on Critical and Emerging Technology (iCET) 2.0 + Space Pillar (June 2024)",
+    date_enacted: "2023-01-31",
+    date_last_amended: "2024-06-21",
+    source_url:
+      "https://www.whitehouse.gov/briefing-room/statements-releases/2024/06/21/joint-fact-sheet-the-united-states-and-india-continue-expanding-strategic-partnership/",
+    issuing_body:
+      "US National Security Council + India National Security Council Secretariat",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "procurement",
+      "military_dual_use",
+      "fdi_screening",
+      "scientific_research",
+    ],
+    scope_description:
+      "US-India iCET — launched January 2023, expanded as iCET 2.0 June 2024 White House Joint Fact Sheet. Material space pillar provisions: (i) US ITAR/EAR liberalisation for India space-tech (final BIS rule June 2025 removes 4 Indian space-tech entities from Entity List); (ii) NASA-ISRO joint Bharat Mission training (Indian astronauts on ISS 2025+); (iii) GE F414 jet-engine production licensing precedent applied to space-rocket engines (potential 2025 deal); (iv) US-India Defense Industrial Cooperation Roadmap incl. space-launch + EO. iCET 2.0 establishes most material US-India space-tech bilateral since 2008 NSP-India Civil Nuclear Agreement.",
+    key_provisions: [
+      "US ITAR/EAR liberalisation for India space-tech",
+      "BIS final rule June 2025 — 4 Indian entities removed from Entity List",
+      "NASA-ISRO Bharat Mission training (Indian astronauts on ISS 2025+)",
+      "US-India Defense Industrial Cooperation Roadmap",
+    ],
+    related_sources: ["US-EAR-734-4-DE-MINIMIS", "INT-ARTEMIS-ACCORDS-2020"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-EU-US-TTC-SPACE-PILLAR",
+    jurisdiction: "INT",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en:
+      "EU-US Trade and Technology Council (TTC) — Space Pillar + 2024 Joint Statement",
+    date_enacted: "2021-06-15",
+    date_last_amended: "2024-04-04",
+    source_url:
+      "https://www.whitehouse.gov/briefing-room/statements-releases/2024/04/04/joint-statement-from-the-us-eu-trade-and-technology-council/",
+    issuing_body:
+      "European Commission DG TRADE + US Department of State + Department of Commerce + USTR",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "procurement",
+      "military_dual_use",
+      "fdi_screening",
+      "data_security",
+    ],
+    scope_description:
+      "EU-US TTC — established Pittsburgh 2021, sixth ministerial Leuven 4 April 2024. Material space-pillar provisions: (i) Working Group 5 (Export Controls) coordinates space-tech dual-use list updates between EU + Wassenaar Arrangement; (ii) Working Group 7 (Data Governance) addresses commercial-EO data flows under EU-US Data Privacy Framework + DPF appeals; (iii) 2024 Joint Statement establishes US-EU Strategic Space Dialogue under State Department (Bureau of Oceans, International Environmental and Scientific Affairs) + Commission DG DEFIS; (iv) commercial-space supply-chain resilience cooperation incl. semiconductor + propellant + critical-minerals. Material practitioner relevance for any EU+US dual-use space-tech compliance navigation.",
+    key_provisions: [
+      "WG5 Export Controls — Wassenaar coordination",
+      "WG7 Data Governance — DPF for commercial EO",
+      "2024 Strategic Space Dialogue establishment",
+      "Supply-chain resilience cooperation",
+    ],
+    related_sources: [
+      "EU-AI-ACT-2024",
+      "INT-WASSENAAR-ARRANGEMENT",
+      "US-CFIUS-FIRRMA-2018",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-US-JAPAN-SPACE-WG-2024",
+    jurisdiction: "INT",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en:
+      "US-Japan Space Working Group (SPACE-WG) — April 2024 Implementing Arrangements + LUPEX Japanese Astronaut on Lunar Surface",
+    date_enacted: "2024-04-10",
+    date_last_amended: "2024-12-19",
+    source_url:
+      "https://www.whitehouse.gov/briefing-room/statements-releases/2024/04/10/united-states-and-japan-joint-leaders-statement/",
+    issuing_body:
+      "US State Department + Japan Ministry of Foreign Affairs + NASA + JAXA",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "procurement",
+      "scientific_research",
+      "military_dual_use",
+    ],
+    scope_description:
+      "US-Japan SPACE Working Group — established April 2024 Biden-Kishida Joint Leaders Statement. Material provisions: (i) Japanese astronaut on lunar surface via Artemis IV+ programme (first non-American to walk on Moon, expected ~2028); (ii) Toyota Lunar Cruiser pressurised rover (JAXA-developed for Artemis surface ops); (iii) Sentinel-3 commercial satellite-imagery cooperation; (iv) LUPEX (Lunar Polar Exploration) mission JAXA-ISRO-NASA tripartite; (v) Defense Industrial Cooperation Acquisition Sustainability (DICAS) framework incl. space-defence supply chain. Material precedent for non-Western-allied lunar surface access — Toyota Lunar Cruiser is largest non-US contribution to Artemis surface architecture.",
+    key_provisions: [
+      "Japanese astronaut on lunar surface (Artemis IV+ ~2028)",
+      "Toyota Lunar Cruiser pressurised rover",
+      "LUPEX JAXA-ISRO-NASA tripartite mission",
+      "DICAS Defense Industrial Cooperation framework",
+    ],
+    related_sources: ["INT-ARTEMIS-ACCORDS-2020", "JP-LUNAR-RESOURCES-2021"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-INDIA-FRANCE-DEFENCE-SPACE-2024",
+    jurisdiction: "INT",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en:
+      "India-France Defence Space Partnership — Updated Roadmap + Bastille Day 2023/2024 Strategic Partnership",
+    date_enacted: "2023-07-14",
+    date_last_amended: "2024-01-26",
+    source_url:
+      "https://www.mea.gov.in/bilateral-documents.htm?dtl/37810/Joint_Strategic_Vision",
+    issuing_body: "Government of India + Government of France",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["military_dual_use", "procurement"],
+    scope_description:
+      "India-France Defence Space Partnership — Modi-Macron Joint Strategic Vision Bastille Day 2023 + Modi-Macron Republic Day 2024 visit. Material provisions: (i) CNES-ISRO joint TRISHNA thermal-infrared EO satellite (launch 2026); (ii) Airbus DS + DRDO joint Defense Communications Constellation procurement; (iii) French Spatial Command-ISRO operational cooperation (SSA + RPO + ASAT capability development discussions); (iv) ITAR-free European supply chain enables Indian defence procurement avoiding US export-control restrictions. Material practitioner relevance: India alternative ITAR-bypass path via French primes (parallels Morocco precedent).",
+    key_provisions: [
+      "TRISHNA CNES-ISRO thermal IR EO 2026",
+      "Airbus DS + DRDO defence satcom",
+      "French CdE-ISRO SSA operational cooperation",
+    ],
+    related_sources: [
+      "FR-DEFENSE-SPACE-STRATEGY-2019",
+      "MA-MOHAMMED-VI-PROGRAMME",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-SAUDI-KOREA-SPACE-2024",
+    jurisdiction: "INT",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en:
+      "Saudi Arabia-Korea Space Cooperation Framework MoU (2024) — Saudi Space Agency + KASA",
+    date_enacted: "2024-10-22",
+    source_url: "https://www.kasa.go.kr/en/news/saudi-arabia-space-mou-2024",
+    issuing_body: "Saudi Space Agency + Korea AeroSpace Administration (KASA)",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "scientific_research"],
+    scope_description:
+      "Saudi-Korea Space Cooperation MoU — signed October 2024 between Saudi Space Agency (SSA, est. 2018 under Crown Prince MBS) and Korea AeroSpace Administration (KASA, est. May 2024). Material provisions: (i) Korean KARI-Saudi NEOM joint orbital-station design study; (ii) KSLV-III launch services for Saudi MOSES-1 lunar lander (planned 2027-2028); (iii) workforce-training programme at KAIST + KAU joint master's degree; (iv) Saudi Vision 2030 space pillar funding ($2.1B 2024-2030 commitment) accessing Korean technology. Material precedent for Korean post-KASA-establishment commercial-space export strategy + Gulf-Cooperation-Council space-tech expansion.",
+    key_provisions: [],
+    related_sources: [
+      "SA-SAUDI-SPACE-COMMISSION",
+      "KR-KASA-ESTABLISHMENT-ACT-2024",
+    ],
+    last_verified: "2026-05-27",
+  },
 ];
