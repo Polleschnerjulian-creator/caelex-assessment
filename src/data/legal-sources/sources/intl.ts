@@ -6063,4 +6063,133 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     ],
     last_verified: "2026-05-27",
   },
+  // ============================================================================
+  // LUNAR MISSION CLUSTER 2024-2025 (+5 entries)
+  // ============================================================================
+  // Pivotal year of commercial-lunar economy emergence — 4 successful
+  // commercial lunar landings 2024-2025. Material practitioner framework.
+  // ============================================================================
+  {
+    id: "US-CLPS-PROGRAMME-NASA",
+    jurisdiction: "INT",
+    type: "procurement_framework",
+    status: "in_force",
+    title_en:
+      "NASA Commercial Lunar Payload Services (CLPS) Programme — Fixed-Price Indefinite-Delivery/Indefinite-Quantity (IDIQ) Contract Framework",
+    date_enacted: "2018-11-29",
+    date_last_amended: "2024-12-04",
+    source_url: "https://www.nasa.gov/commercial-lunar-payload-services/",
+    issuing_body:
+      "NASA Headquarters Science Mission Directorate + Exploration Systems Development Mission Directorate",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "scientific_research", "liability"],
+    scope_description:
+      "NASA CLPS Programme — established November 2018 as NASA's primary commercial-lunar-payload procurement vehicle. Material structure: (i) 14 prime contractors selected 2018-2023 incl. Intuitive Machines + Astrobotic + Firefly + Draper + Lockheed Martin + Masten (acquired by Astrobotic 2022) + Blue Origin + ispace US; (ii) IDIQ ceiling $2.6B 2018-2028, with $4.6B follow-on CLPS-2 contracts 2024-2034; (iii) fixed-price task-orders ranging $62M-$130M per mission; (iv) CLPS-1 missions executed: TO-1 Astrobotic Peregrine (Jan 2024 failed), TO-2 Intuitive Machines IM-1 (Feb 2024 tipped-over partial success), TO-3 Firefly Blue Ghost (Jan 2025 success), TO-4 Intuitive Machines IM-2 (Mar 2025 tipped-over partial success). Material practitioner implications: (i) fixed-price model transfers cost-overrun risk to commercial primes — Astrobotic absorbed Peregrine failure $108M; (ii) NASA NPR 8715.5 launch services risk acceptance applies; (iii) NASA Space Act Agreement (SAA) structure for some missions allows shared IP; (iv) Artemis Accords Section 11 obligations cascade to CLPS contractor mission planning.",
+    key_provisions: [
+      "IDIQ ceiling $2.6B 2018-2028 + $4.6B CLPS-2 2024-2034",
+      "Fixed-price task-orders $62M-$130M per mission",
+      "14 prime contractors",
+      "NPR 8715.5 launch services risk acceptance",
+      "Artemis Accords Section 11 cascade",
+    ],
+    related_sources: [
+      "CASE-IM-2-ATHENA-2025",
+      "CASE-ASTROBOTIC-PEREGRINE-2024",
+      "INT-ARTEMIS-ACCORDS-2020",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-ASTROBOTIC-PEREGRINE-2024",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "Astrobotic Peregrine Lunar Lander Failure (January 2024) — First CLPS Mission + Material Fixed-Price Risk Allocation Precedent",
+    date_enacted: "2024-01-08",
+    date_last_amended: "2024-06-21",
+    source_url: "https://www.astrobotic.com/peregrine-mission-one/",
+    issuing_body: "Astrobotic Technology + NASA CLPS Programme",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["liability", "procurement", "debris_mitigation"],
+    scope_description:
+      "Astrobotic Peregrine Mission One — first CLPS Task Order, launched 8 January 2024 on ULA Vulcan Centaur maiden flight from Cape Canaveral. Propellant valve anomaly led to oxidizer leak shortly after deployment from launch vehicle. Mission could not reach lunar orbit + Astrobotic ordered Peregrine into Earth atmosphere reentry 18 January 2024 (over Pacific Ocean for safe disposal). Material practitioner implications: (i) Astrobotic absorbed ~$108M Peregrine development costs under fixed-price CLPS Task Order ($79.5M NASA payment); (ii) commercial payload customers (DHL Moonbox + Elysium Space + Celestis + ispace) lost commercial deliverables — material precedent for commercial-rideshare risk allocation; (iii) human remains aboard via Celestis triggered Navajo Nation objection — material first-of-kind cultural-heritage objection to lunar memorial services; (iv) propellant safety lessons fed into Vulcan Centaur subsequent missions + CLPS Task Order risk assessments. Astrobotic Griffin Mission 1 follow-on planned Q4 2025 with NASA VIPER rover ($350M+ NASA payload).",
+    key_provisions: [],
+    related_sources: ["US-CLPS-PROGRAMME-NASA", "CASE-IM-2-ATHENA-2025"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-FIREFLY-BLUE-GHOST-2025",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "Firefly Aerospace Blue Ghost Mission 1 — First Fully Successful Commercial Lunar Landing (March 2025)",
+    date_enacted: "2025-01-15",
+    date_last_amended: "2025-03-16",
+    source_url: "https://fireflyspace.com/missions/blue-ghost-mission-1/",
+    issuing_body: "Firefly Aerospace + NASA CLPS Programme",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["scientific_research", "procurement"],
+    scope_description:
+      "Firefly Aerospace Blue Ghost Mission 1 — first fully successful commercial lunar landing. Launched 15 January 2025 on SpaceX Falcon 9 from Cape Canaveral, landed Mare Crisium 2 March 2025 (operating in upright configuration, primary success). 10 NASA CLPS payloads + 4 commercial payloads delivered, operated through 14-day lunar day until lunar-night-induced shutdown. Material practitioner implications: (i) CLPS Task Order value $93.3M Firefly received, $101M ULA-equivalent SpaceX launch services included; (ii) first commercial-spacecraft successful soft-landing on Moon, establishing material precedent for CLPS contract structure validation; (iii) ispace M2 (April 2025) + Astrobotic Griffin (Q4 2025) follow-on commercial-lander missions referenced Blue Ghost CONOPS; (iv) Firefly Aerospace IPO November 2024 (FLY:NASDAQ) raised $632M partly on Blue Ghost mission anticipation. Material baseline for any commercial-lunar mission planning.",
+    key_provisions: [],
+    related_sources: ["US-CLPS-PROGRAMME-NASA", "CASE-IM-2-ATHENA-2025"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-CHANG-E-6-LUNAR-SAMPLE-RETURN-2024",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "China Chang'e-6 Far-Side Lunar Sample Return Mission (June 2024) — First Successful Far-Side Lunar Sample Return",
+    date_enacted: "2024-05-03",
+    date_last_amended: "2024-06-25",
+    source_url:
+      "http://www.cnsa.gov.cn/n6758823/n6758833/c10720115/content.html",
+    issuing_body:
+      "China National Space Administration (CNSA) + Chinese Academy of Sciences (CAS)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "scientific_research",
+      "military_dual_use",
+      "fdi_screening",
+    ],
+    scope_description:
+      "China Chang'e-6 — first successful lunar far-side sample return mission. Launched 3 May 2024 from Wenchang on Long March 5, landed Apollo Basin (South Pole-Aitken Basin) 1 June 2024, returned 1.935kg lunar regolith to Earth 25 June 2024. International payload manifest: ESA NILS NEGAtive Ion Lunar System + France DORN radon detector + Italy InRRI laser retroreflector + Pakistan iCube-Q CubeSat (Pakistan's first lunar mission). Material practitioner implications: (i) ESA-CNSA scientific cooperation continued despite US ITAR + EAR restrictions on China commercial transactions; (ii) Wolf Amendment 2011 (continuing restriction §539, NASA + China bilateral cooperation prohibition) does NOT restrict ESA + CNES + ASI + DLR scientific cooperation; (iii) Chinese commercial-lunar ride-share now operational for non-Artemis-aligned states (Pakistan iCube-Q precedent); (iv) Chang'e-7 (2026) + Chang'e-8 (2028) + ILRS International Lunar Research Station planned — Chinese counter-Artemis lunar architecture. Material precedent for non-Western lunar commercial cooperation framework.",
+    key_provisions: [],
+    related_sources: ["PK-ICUBE-Q-CHANG-E-6-LUNAR", "INT-ARTEMIS-ACCORDS-2020"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-JAXA-SLIM-LUNAR-2024",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "JAXA SLIM (Smart Lander for Investigating Moon) — January 2024 'Precision Landing' Sub-100m First-of-Kind Precedent",
+    date_enacted: "2023-09-07",
+    date_last_amended: "2024-08-23",
+    source_url:
+      "https://www.isas.jaxa.jp/en/missions/spacecraft/current/slim.html",
+    issuing_body: "JAXA Institute of Space and Astronautical Science (ISAS)",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["scientific_research"],
+    scope_description:
+      "JAXA SLIM (Smart Lander for Investigating Moon) — successful precision-landing on Shioli Crater 19 January 2024 (5th country to soft-land on Moon after US + USSR + China + India). Achieved sub-100m landing accuracy via image-recognition guidance + Vision-Based Navigation (VBN) — first-of-kind 'pinpoint precision-landing' technology demonstration. Tipped-over at landing but main objectives achieved + operated through 2 lunar days unexpectedly (originally designed for single-lunar-day mission). LEV-1 + LEV-2 (SORA-Q) micro-rovers + multi-band camera all operated. Material practitioner implications: (i) precision-landing tech transferred to JAXA-NASA LUPEX (Lunar Polar Exploration) mission planned 2026-2027 + India ISRO Chandrayaan-4 (planned 2028 sample-return); (ii) precision-landing template adopted by Intuitive Machines IM-2 + Firefly Blue Ghost CONOPS; (iii) Japanese commercial-space tech transfer from JAXA SLIM to ispace + ALE + iSpace ENABLED. Material precedent for sub-100m precision-landing legal-framework + sovereign-tech transfer to commercial sector.",
+    key_provisions: [],
+    related_sources: ["JP-BASIC-SPACE-LAW-2008", "INT-US-JAPAN-SPACE-WG-2024"],
+    last_verified: "2026-05-27",
+  },
 ];
