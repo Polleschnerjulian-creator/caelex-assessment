@@ -20,6 +20,7 @@
 import type { LegalCase } from "./types";
 import { ATLAS_CASES_RESEARCH_2026_05 } from "./cases-additions-research-2026-05";
 import { ATLAS_CASES_P5_2026_05 } from "./cases-additions-p5-2026-05";
+import { ATLAS_CASES_P5B_2026_05 } from "./cases-additions-p5b-2026-05";
 
 export const ATLAS_CASES: LegalCase[] = [
   // ─── Liability-Convention awards / inter-state settlements ──────────
@@ -1685,12 +1686,21 @@ export const ATLAS_CASES: LegalCase[] = [
   // every consumer continues to work without changes.
   ...ATLAS_CASES_RESEARCH_2026_05,
 
-  // ─── P5 bundle 2026-05-26 (15 verified entries) ─────────────────────
+  // ─── P5 bundle 2026-05-26 (13 verified entries) ─────────────────────
   // Per ATLAS-CORPUS-EXPANSION-PLAN.md § 9. Lunar incidents (Beresheet,
   // Hakuto-R, Vikram, Chandrayaan-3, Luna 25), EU competition (Eutelsat-
-  // OneWeb, SES-Intelsat), bankruptcy (Virgin Orbit, Iridium 1999),
-  // cybersec (Viasat KA-SAT AcidRain), FCC enforcement (Dish EchoStar-7
-  // deorbit), SEC SPAC (Momentus), Artemis Accords signings (India,
-  // Saudi Arabia), insurance (Viasat-3 F1).
+  // OneWeb), bankruptcy (Virgin Orbit, Iridium 1999), cybersec (Viasat
+  // KA-SAT AcidRain), FCC enforcement (Dish EchoStar-7 deorbit), Artemis
+  // Accords signings (India, Saudi Arabia), insurance (Viasat-3 F1).
   ...ATLAS_CASES_P5_2026_05,
+
+  // ─── P5b bundle 2026-05-26 (14 verified entries — 2023-2025 events) ──
+  // Starship FAA mishaps (IFT-1 + IFT-5 catch), IM-1 Odysseus tipover,
+  // Polaris Dawn EVA, AX-3 multi-national mission, Galaxy 15 zombie
+  // (recurring case), FCC Kuiper milestone review, FCC SCS framework
+  // (direct-to-cellphone), ITU Resolution 35 NGSO defaults, Starlink V2
+  // modification, Falcon 9 Q4 2023 RUD investigation, EU IRIS²
+  // concession award, EU AI Act space-sector anchoring, UK SaxaVord
+  // spaceport licence.
+  ...ATLAS_CASES_P5B_2026_05,
 ];
