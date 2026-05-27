@@ -44,23 +44,23 @@ Drift-safety invariants:
 
 P0 schema landed: ComplianceArea union 13 → 29 (+16), LegalSourceType union 8 → 20 (+12), schema-drift test wired (18 tests).
 
-P1 in progress: 3 of 9 P1 jurisdictions completed:
+P1 in progress: 5 of 9 P1 jurisdictions completed:
 
 - **CN** 7 → 38 (+5 authorities, +25 sources)
 - **RU** 5 → 28 (+5 authorities, +18 sources)
 - **SG** 0 → 22 (+6 authorities, +16 sources, NEW jurisdiction)
+- **ID** 0 → 18 (+4 authorities, +14 sources, NEW jurisdiction)
+- **PH** 0 → 15 (+3 authorities, +12 sources, NEW jurisdiction)
 
-Total new source-corpus growth this session: **+59 sources, +16 authorities** across 3 jurisdictions. All 18 drift tests pass continuously.
+Total new source-corpus growth this session: **+85 sources, +23 authorities** across 5 jurisdictions. All 18 drift tests pass continuously.
 
 Total Atlas test count: 1589 passing / 1590 total (1 pre-existing env-failure unchanged).
 
 ### Current focus
 
-→ **§ 5 P1 remaining** — 6 jurisdictions still to expand/create:
+→ **§ 5 P1 remaining** — 4 jurisdictions still to create:
 
-- ID (Indonesia, NEW, target 15 sources)
-- PH (Philippines, NEW, target 12)
-- SA (Saudi Arabia, NEW, target 12)
+- SA (Saudi Arabia, NEW, target 12 sources)
 - EG (Egypt, NEW, target 12)
 - AR (Argentina, NEW, target 12)
 - MX (Mexico, NEW, target 10)
@@ -70,7 +70,7 @@ After P1 → P2 Sub-Domain Clusters (Space Resources, Suborbital, ADR, Megaconst
 ### Tier roll-up (one-line per tier; updated as items flip)
 
 - **P0 Schema:** 🟢 Complete (2026-05-26) — 16 ComplianceAreas + 12 SourceTypes added, 18-test drift validator wired
-- **P1 Critical Jurisdictions:** 🟡 In progress — 3 of 9 done (CN ✓ RU ✓ SG ✓; ID PH SA EG AR MX pending)
+- **P1 Critical Jurisdictions:** 🟡 In progress — 5 of 9 done (CN ✓ RU ✓ SG ✓ ID ✓ PH ✓; SA EG AR MX pending)
 - **P2 Sub-Domain Clusters:** 🔴 Not started
 - **P3 EU-modern + Financial/Capital + Bilateral/Multilateral:** 🔴 Not started
 - **P4 Sub-tier Jurisdiction Deepening (AU/NZ/IN/JP/KR):** 🔴 Not started
