@@ -2368,4 +2368,148 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     ],
     last_verified: "2026-05-27",
   },
+  // ============================================================================
+  // EU DIGITAL PLATFORMS CLUSTER (3 entries)
+  // ============================================================================
+  // DSA + DMA + Data Act applied to satellite-imagery + EO-as-a-service
+  // platforms + satcom apps + connected-vehicle satnav data flows.
+  // ============================================================================
+  {
+    id: "EU-DSA-2022",
+    jurisdiction: "EU",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en: "Regulation (EU) 2022/2065 — Digital Services Act (DSA)",
+    date_enacted: "2022-10-19",
+    date_last_amended: "2024-08-23",
+    source_url: "https://eur-lex.europa.eu/eli/reg/2022/2065/oj",
+    issuing_body: "European Parliament + Council",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["data_security", "consumer_protection", "ai_compliance"],
+    scope_description:
+      "Digital Services Act (Reg. (EU) 2022/2065) — applicable to all platforms from 17 February 2024. Material space-industry provisions: (i) Art. 33 designates Very Large Online Platforms (VLOPs) with ≥45M EU monthly active users — Amazon AWS-Kuiper marketplace + SpaceX Starlink subscriber portal could potentially be designated VLOPs at scale; (ii) Art. 34-35 systemic-risk assessment + mitigation obligations including impact on civic discourse + electoral processes (relevant for state-actor manipulation via satellite-imagery platforms); (iii) Art. 26 advertising transparency requirements for satellite-imagery commercial offerings; (iv) Art. 14 trusted-flagger mechanism for illegal-content notification. Compliance gap-analysis material for any space-tech firm operating EU-facing digital platforms with hosted user content.",
+    key_provisions: [
+      "Art. 14 — trusted-flagger mechanism",
+      "Art. 26 — advertising transparency",
+      "Art. 33 — VLOP designation threshold (45M EU MAU)",
+      "Art. 34-35 — systemic-risk assessment + mitigation",
+      "Art. 74 — penalties up to 6% global turnover",
+    ],
+    related_sources: ["EU-DMA-2022"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "EU-DMA-2022",
+    jurisdiction: "EU",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en: "Regulation (EU) 2022/1925 — Digital Markets Act (DMA)",
+    date_enacted: "2022-09-14",
+    date_last_amended: "2024-05-08",
+    source_url: "https://eur-lex.europa.eu/eli/reg/2022/1925/oj",
+    issuing_body: "European Parliament + Council",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["competition_antitrust", "consumer_protection"],
+    scope_description:
+      "Digital Markets Act (Reg. (EU) 2022/1925) — applicable from 2 May 2023, designated gatekeepers from 6 March 2024 (Alphabet, Amazon, Apple, Meta, Microsoft, ByteDance — Booking added May 2024). Material space-industry implications: (i) Art. 3 gatekeeper-designation thresholds (€7.5B EU turnover OR €75B market cap + 45M EU monthly users) — Amazon's Kuiper-related marketplace activities + Apple's Globalstar emergency-SOS partnership both subject to DMA gatekeeper analysis; (ii) Art. 5(b)-(e) interoperability obligations on core platform services; (iii) Art. 6(7) preinstallation + uninstallation rules affecting GNSS-aware navigation apps; (iv) Art. 30 penalties up to 10% global turnover (20% for repeat offenses). Material for satcom-services firms partnering with designated gatekeepers.",
+    key_provisions: [
+      "Art. 3 — gatekeeper designation thresholds",
+      "Art. 5 — obligations on gatekeepers",
+      "Art. 6 — additional obligations (interoperability + data portability)",
+      "Art. 30 — penalties (up to 10% global turnover)",
+    ],
+    related_sources: ["EU-DSA-2022"],
+    last_verified: "2026-05-27",
+  },
+  // ============================================================================
+  // EU R&D FINANCING CLUSTER (3 entries)
+  // ============================================================================
+  // Primary EU public-financing instruments for space-tech R&D + commercial-
+  // space scale-up. Material for grant-funded space-tech firm CFO planning.
+  // ============================================================================
+  {
+    id: "EU-HORIZON-EUROPE-CLUSTER-4-SPACE",
+    jurisdiction: "EU",
+    type: "procurement_framework",
+    status: "in_force",
+    title_en:
+      "Horizon Europe Cluster 4 (Digital, Industry and Space) + Cluster 5 (Climate, Energy and Mobility) — Space R&D Calls",
+    date_enacted: "2021-04-29",
+    date_last_amended: "2024-05-22",
+    source_url:
+      "https://research-and-innovation.ec.europa.eu/funding/funding-opportunities/funding-programmes-and-open-calls/horizon-europe/cluster-4-digital-industry-and-space_en",
+    issuing_body: "European Commission DG RTD + DG DEFIS",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "state_aid", "scientific_research"],
+    scope_description:
+      "Horizon Europe (Reg. (EU) 2021/695) — EU's flagship €95.5B R&D framework programme 2021-2027. Cluster 4 (Digital, Industry and Space) allocates €15.3B incl. €1.6B specifically for space R&D. Material space-industry calls: HORIZON-CL4-SPACE 2024-25 work programme (€460M, calls incl. autonomous in-orbit operations, advanced propulsion, downstream EO/GNSS applications). Funding instruments: (i) Research and Innovation Actions (RIA) up to €5M; (ii) Innovation Actions (IA) up to €4M; (iii) Coordination and Support Actions (CSA) up to €2M. Material for space-tech R&D grant strategy + ESA cofunding stacking arrangements + State Aid compatibility under GBER Art. 25.",
+    key_provisions: [
+      "Cluster 4 allocation — €15.3B (2021-2027) incl. €1.6B space",
+      "Funding rates — 100% for RIA/CSA, 70% for IA (private)",
+      "GBER Art. 25 compatibility — R&D State Aid framework",
+    ],
+    related_sources: ["EU-EIC-ACCELERATOR-2021", "EU-ESA-ARTES-PROGRAMME"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "EU-EIC-ACCELERATOR-2021",
+    jurisdiction: "EU",
+    type: "procurement_framework",
+    status: "in_force",
+    title_en:
+      "European Innovation Council (EIC) — Pathfinder + Transition + Accelerator (Reg. (EU) 2021/695 + Decision EIC Council)",
+    date_enacted: "2021-04-29",
+    date_last_amended: "2024-12-02",
+    source_url: "https://eic.ec.europa.eu/index_en",
+    issuing_body: "European Commission DG RTD + EIC Board",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["state_aid", "procurement"],
+    scope_description:
+      "EIC — EU's flagship breakthrough-tech funding programme. €10.1B budget 2021-2027 across three instruments: (i) Pathfinder (€266M annually, up to €4M per project for early-stage breakthrough research); (ii) Transition (€118M annually, up to €2.5M for proof-of-concept maturation); (iii) Accelerator (€675M annually, grant-plus-equity up to €2.5M grant + €15M EIC Fund equity). Material space-tech EIC alumni: ICEYE (SAR constellation €130M Series D incl. EIC), Helsing (space-defence AI), Astroscale (debris removal). Practitioner material for space-tech CFO planning: EIC equity terms = pre-money valuation cap, automatic tag-along, co-investment requirement triggers.",
+    key_provisions: [
+      "EIC Pathfinder — €4M max per project, 100% funding rate",
+      "EIC Transition — €2.5M max, 100% funding rate",
+      "EIC Accelerator — €2.5M grant + €15M Fund equity",
+      "GBER Art. 22 + Art. 25 compatibility",
+    ],
+    related_sources: ["EU-HORIZON-EUROPE-CLUSTER-4-SPACE"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "EU-ESA-ARTES-PROGRAMME",
+    jurisdiction: "EU",
+    type: "procurement_framework",
+    status: "in_force",
+    title_en:
+      "ESA ARTES (Advanced Research in Telecommunications Systems) — Satcom R&D Procurement Framework",
+    date_enacted: "1980-01-01",
+    date_last_amended: "2024-11-19",
+    source_url: "https://artes.esa.int/",
+    issuing_body: "European Space Agency",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "scientific_research"],
+    scope_description:
+      "ESA ARTES — Europe's primary public-private partnership framework for satcom R&D. ARTES 4.0 launched 2018 with strategic-programme-line structure: (i) Core Competitiveness (ScyLight + Pioneer + Advanced Technology + Strategic Programme Lines); (ii) Future Preparation (FutureSat + FutureGS + FutureSDR); (iii) Partner Projects (Partnership Projects 5G-NTN + Polaris + IRIS² preparation). Operates under ESA Geographical Return Principle (juste retour) — Member-State industry receives contracts proportionate to MS contribution. Material for any satcom firm pursuing ESA cofunding: ARTES contract structure (Type-A fixed-price + Type-B cost-reimbursement), IP-ownership rules (ESA IPR Catalogue), GBER notifications.",
+    key_provisions: [
+      "ARTES 4.0 Strategic Programme Lines structure",
+      "ESA Geographical Return Principle (juste retour)",
+      "Type-A + Type-B contract structures",
+      "ESA IPR Catalogue + background-IP rules",
+    ],
+    related_sources: [
+      "EU-HORIZON-EUROPE-CLUSTER-4-SPACE",
+      "EU-EIC-ACCELERATOR-2021",
+    ],
+    last_verified: "2026-05-27",
+  },
 ];

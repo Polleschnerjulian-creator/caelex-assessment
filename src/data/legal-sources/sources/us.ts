@@ -2106,6 +2106,122 @@ const AI_COMPLIANCE_US: LegalSource[] = [
   },
 ];
 
+// ─── R&D Financing ────────────────────────────────────────────────
+// US federal R&D financing instruments for space-tech: SBIR/STTR
+// (universal small-business set-aside), DARPA (DoD breakthrough R&D),
+// DIU (commercial-tech adoption), In-Q-Tel (IC venture investment).
+// Material for any US space-tech startup federal-financing strategy.
+
+const RD_FINANCING_US: LegalSource[] = [
+  {
+    id: "US-SBIR-STTR-15-USC-638",
+    jurisdiction: "US",
+    type: "federal_law",
+    status: "in_force",
+    title_en:
+      "15 U.S.C. §638 — Small Business Innovation Research (SBIR) + Small Business Technology Transfer (STTR) Programs",
+    date_enacted: "1982-07-22",
+    date_last_amended: "2022-09-30",
+    source_url: "https://www.law.cornell.edu/uscode/text/15/638",
+    issuing_body: "US Congress",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "ip_patents", "scientific_research"],
+    scope_description:
+      "SBIR + STTR Programs (Small Business Innovation Development Act 1982) — mandatory federal-agency set-aside for small-business R&D. 11 agencies participate: DoD, NASA, NIH, NSF, DOE, USDA, DOC, DOT, DHS, ED, EPA. Material space-industry funding: (i) NASA SBIR/STTR ~$210M annually for space-tech Phase I ($150K, 6 months) + Phase II ($850K, 24 months) + Phase III (no funding cap, federal procurement); (ii) DoD SBIR ~$2B annually incl. USSF SBIR (Space Force-specific Phase II awards up to $1.7M); (iii) AFWERX/SpaceWERX Open Topic streamlined process (8-week award cycle). Material legal anchors: Bayh-Dole Act applies (35 USC §200 et seq.) — small-business IP rights preserved. SBIR Reauthorization 2022 made programmes permanent + raised foreign-influence vetting.",
+    key_provisions: [
+      "§638(e) — SBIR Phase I/II/III structure",
+      "§638(n) — STTR program (research-institution partnership)",
+      "§638(t)(6)(C) — foreign-influence vetting (China-affiliated entities)",
+      "Bayh-Dole Act linkage — small-business IP retention",
+    ],
+    related_sources: ["US-PATENTS-IN-SPACE-ACT"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "US-DARPA-10-USC-4001",
+    jurisdiction: "US",
+    type: "federal_law",
+    status: "in_force",
+    title_en:
+      "10 U.S.C. §4001 — Defense Advanced Research Projects Agency (DARPA) + Other Transaction Authority (10 USC §4022)",
+    date_enacted: "1958-02-07",
+    date_last_amended: "2024-12-23",
+    source_url: "https://www.law.cornell.edu/uscode/text/10/4001",
+    issuing_body: "US Congress + Department of Defense",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "procurement",
+      "military_dual_use",
+      "scientific_research",
+    ],
+    scope_description:
+      "DARPA (10 USC §4001 codified 2021, originally established 1958 by EO 10693) — DoD breakthrough-tech R&D agency, ~$4.4B annual budget FY2024. Space-relevant programmes: (i) Blackjack (proliferated LEO military constellation pathfinder); (ii) Robotic Servicing of Geosynchronous Satellites (RSGS); (iii) Defense Production Act Title III investments via DARPA. Key procurement authority: Other Transaction Authority (OTA, 10 USC §4022) — bypasses FAR + DFARS, enables non-traditional defense contractors. SpaceX + Rocket Lab + Northrop Grumman + Lockheed all received DARPA OTA awards. Material for non-traditional space-defence contractor entry: OTA consortium agreements (Space Enterprise Consortium SpEC, Space Force-specific) provide streamlined contracting.",
+    key_provisions: [
+      "10 USC §4001 — DARPA statutory authority",
+      "10 USC §4022 — Other Transaction Authority (OTA)",
+      "Space Enterprise Consortium (SpEC) — USSF OTA mechanism",
+      "Defense Production Act Title III — domestic industrial base support",
+    ],
+    related_sources: ["US-NDAA-TITLE-XVI-2024", "US-USSPACECOM-DOCTRINE"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "US-DIU-DEFENSE-INNOVATION-UNIT",
+    jurisdiction: "US",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "Defense Innovation Unit (DIU) + Commercial Solutions Opening (CSO) Framework",
+    date_enacted: "2015-08-04",
+    date_last_amended: "2024-04-04",
+    source_url: "https://www.diu.mil/",
+    issuing_body: "Department of Defense / Office of the Secretary of Defense",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "military_dual_use"],
+    scope_description:
+      "DIU (originally DIUx) — established 2015 by SecDef Ash Carter. Reports directly to SecDef from 2024 (elevated from CTO reporting). Mandate: accelerate commercial-tech adoption for DoD. Operates Commercial Solutions Opening (CSO) framework under 10 USC §4023 — 60-90 day contract award timeline. Material space-industry CSOs: Space Surveillance + Tracking (Slingshot Aerospace), GPS-Denied Navigation (multiple), commercial-imagery purchasing (NRO Commercial Imagery Initiative coordination). DIU contracted with 60+ space-tech firms since 2017. FY2024 budget request $1B (4x increase from FY2023). Material for any commercial-space firm seeking expedited DoD market entry — CSO contract vehicles dramatically shorter than traditional FAR-based procurement.",
+    key_provisions: [
+      "10 USC §4023 — Commercial Solutions Opening (CSO)",
+      "60-90 day contract award timeline",
+      "Reports directly to SecDef from 2024",
+      "FY2024 budget request $1B (4x increase)",
+    ],
+    related_sources: ["US-DARPA-10-USC-4001", "US-USSPACECOM-DOCTRINE"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "US-IN-Q-TEL-IC-VENTURE",
+    jurisdiction: "US",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "In-Q-Tel — Intelligence Community Strategic Investor (Strategic Vector Investments)",
+    date_enacted: "1999-09-29",
+    date_last_amended: "2024-08-15",
+    source_url: "https://www.iqt.org/",
+    issuing_body: "Central Intelligence Agency (via 501(c)(3) non-profit)",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "military_dual_use", "fdi_screening"],
+    scope_description:
+      "In-Q-Tel — IC's not-for-profit strategic investor, established 1999 under CIA charter. Operates as 501(c)(3) but solely IC-funded (~$120M annual, CIA + NRO + DIA + NGA + NSA). Material space-industry portfolio: Planet Labs (pre-IPO investment 2010s, exited 2023 via SPAC), Black Sky Technology, HawkEye 360, Capella Space, Spire Global, Rebellion Defense (defence AI for space-domain awareness). Investment structure: pre-IPO equity + R&D contract bundling (typical $1-5M investment + $5-15M services contract). Material practitioner implications: In-Q-Tel investment triggers (i) automatic CFIUS clearance for portfolio company foreign-investment rounds (effectively pre-cleared); (ii) heightened export-control scrutiny on portfolio-company foreign sales; (iii) IC End-User Tracking obligations.",
+    key_provisions: [
+      "Section 501(c)(3) non-profit structure",
+      "IC End-User Tracking obligations",
+      "CFIUS pre-clearance via IC investment",
+    ],
+    related_sources: ["US-CFIUS-FIRRMA-2018", "US-NRO-COMMERCIAL-IMAGERY"],
+    last_verified: "2026-05-27",
+  },
+];
+
 // ─── Aggregated Export ────────────────────────────────────────────
 
 export const LEGAL_SOURCES_US: LegalSource[] = [
@@ -2120,4 +2236,5 @@ export const LEGAL_SOURCES_US: LegalSource[] = [
   ...TAX_CUSTOMS_US,
   ...AML_KYC_US,
   ...AI_COMPLIANCE_US,
+  ...RD_FINANCING_US,
 ];
