@@ -508,10 +508,283 @@ const BILATERAL_NZ: LegalSource[] = [
 
 // ─── Aggregated Export ────────────────────────────────────────────
 
+// ═══════════════════════════════════════════════════════════════════════
+// Atlas P4 (2026-05-26): NZ sub-tier deepening — Rocket Lab IPO 2021,
+// Privacy Act 2020, Overseas Investment Act, Resource Management Act
+// (spaceport environmental), Cyber Security NCSC, Five Eyes space coop,
+// Auckland Aerospace Hub, MFAT licensing procedure, Māori consultation.
+// Per ATLAS-CORPUS-EXPANSION-PLAN.md § 8.B.
+// ═══════════════════════════════════════════════════════════════════════
+
+const P4_ADDITIONS_NZ: LegalSource[] = [
+  // ─── Spaceport + MFAT licensing operational ──────────────────────────
+  {
+    id: "NZ-MFAT-LICENSING-PROCEDURE",
+    jurisdiction: "NZ",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en: "MFAT NZSA Licensing Procedure Manual",
+    date_enacted: "2018-04-01",
+    date_last_amended: "2024-01-01",
+    source_url:
+      "https://www.mbie.govt.nz/business-and-employment/economic-development/space/",
+    issuing_body: "Ministry of Business, Innovation and Employment / NZSA",
+    competent_authorities: ["NZ-MBIE-NZSA"],
+    relevance_level: "high",
+    applicable_to: ["launch_provider", "satellite_operator"],
+    compliance_areas: ["licensing"],
+    scope_description:
+      "Operational licensing procedure under OSHAA 2017. Defines application content, processing timelines, fee structure, insurance minima, and OSHAA-specific safety case requirements for Rocket Lab + other NZ-licensed operators. Distinguishes operational launches from experimental sub-orbital activities.",
+    key_provisions: [],
+    related_sources: ["NZ-OSHAA-2017", "NZ-OSHAA-REGS-2017"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "NZ-MAHIA-LAUNCH-AGREEMENT",
+    jurisdiction: "NZ",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en: "Mahia Peninsula Launch Site Agreement (Rocket Lab)",
+    date_enacted: "2016-09-26",
+    source_url: "https://www.rocketlabusa.com/launch/launch-complex-1/",
+    issuing_body: "Rocket Lab USA + Tāwhaki National Aerospace Centre",
+    competent_authorities: ["NZ-MBIE-NZSA"],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["licensing", "environmental"],
+    scope_description:
+      "Operational agreement for Launch Complex 1 (LC-1) at Mahia Peninsula — site of Rocket Lab Electron launches. Established under arrangement with Tāwhaki Joint Venture (Crown + Kahungunu local iwi). Material precedent for NZ commercial-launch ground-segment commercial structuring + Māori-consultation requirements.",
+    key_provisions: [],
+    related_sources: ["NZ-MAORI-CONSULTATION"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "NZ-MAORI-CONSULTATION",
+    jurisdiction: "NZ",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "Māori Consultation Framework for Spaceport + Aerospace Activities",
+    date_enacted: "1975-10-10",
+    date_last_amended: "2024-01-01",
+    source_url: "https://www.tpk.govt.nz/",
+    issuing_body: "Te Puni Kōkiri / Iwi Treaty Partners",
+    competent_authorities: ["NZ-MBIE-NZSA"],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider", "ground_segment"],
+    compliance_areas: ["environmental", "consumer_protection"],
+    scope_description:
+      "Treaty of Waitangi Article II framework requiring consultation with local iwi (Māori tribes) for activities affecting their interests + ancestral lands. Material for spaceport development + ground-station siting — Mahia operates under Kahungunu iwi partnership, future Auckland Aerospace Hub triggers Ngāti Whātua + Tainui consultation.",
+    key_provisions: [],
+    related_sources: ["NZ-RMA-1991"],
+    last_verified: "2026-05-26",
+  },
+
+  // ─── Environmental + planning ────────────────────────────────────────
+  {
+    id: "NZ-RMA-1991",
+    jurisdiction: "NZ",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Resource Management Act 1991",
+    date_enacted: "1991-07-22",
+    date_last_amended: "2024-01-01",
+    source_url:
+      "https://www.legislation.govt.nz/act/public/1991/0069/latest/DLM230265.html",
+    issuing_body: "Parliament of New Zealand",
+    competent_authorities: ["NZ-MBIE-NZSA"],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider", "ground_segment"],
+    compliance_areas: ["environmental"],
+    scope_description:
+      "Resource Management Act 1991 — NZ environmental + planning framework. Material for spaceport construction (Mahia LC-1, future Auckland Aerospace Hub, Kaitorete Spit proposed) + ground-station siting. Cumulative Effects Assessment + Cultural Impact Assessment requirements + iwi consultation overlap with NZ-MAORI-CONSULTATION.",
+    key_provisions: [],
+    related_sources: ["NZ-MAORI-CONSULTATION", "NZ-MAHIA-LAUNCH-AGREEMENT"],
+    last_verified: "2026-05-26",
+  },
+
+  // ─── Privacy + Cybersecurity ─────────────────────────────────────────
+  {
+    id: "NZ-PRIVACY-ACT-2020",
+    jurisdiction: "NZ",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Privacy Act 2020",
+    date_enacted: "2020-06-30",
+    date_in_force: "2020-12-01",
+    source_url:
+      "https://www.legislation.govt.nz/act/public/2020/0031/latest/LMS23223.html",
+    issuing_body: "Parliament of New Zealand",
+    competent_authorities: ["NZ-CERT-NZ"],
+    relevance_level: "medium",
+    applicable_to: ["satellite_operator", "ground_segment", "data_provider"],
+    compliance_areas: ["data_security"],
+    scope_description:
+      "Replaced Privacy Act 1993. Implements mandatory data-breach notification (≥serious harm threshold), strengthens cross-border transfer rules (equivalent-protection or contractual safeguards required), increases OPC enforcement powers + fines. Material for satcom subscriber data + space-derived personal data + ground-station operator data with NZ data-subject nexus.",
+    key_provisions: [],
+    related_sources: [],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "NZ-NCSC-CYBER-FRAMEWORK",
+    jurisdiction: "NZ",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en: "NCSC Cybersecurity Framework + GCSB Mandate",
+    date_enacted: "2003-04-01",
+    date_last_amended: "2024-01-01",
+    source_url: "https://www.ncsc.govt.nz/",
+    issuing_body: "National Cyber Security Centre / GCSB",
+    competent_authorities: ["NZ-CERT-NZ"],
+    relevance_level: "medium",
+    applicable_to: ["satellite_operator", "ground_segment"],
+    compliance_areas: ["cybersecurity", "critical_infrastructure"],
+    scope_description:
+      "NCSC (Government Communications Security Bureau) cybersecurity framework. Operates Computer Emergency Response (CERT NZ merger 2024 — CERT NZ + NCSC consolidated). Material for NZ-licensed satcom + ground-segment operators serving NZ government + finance + transport — critical-infrastructure designation possible.",
+    key_provisions: [],
+    related_sources: ["NZ-FIVE-EYES-SPACE-COOP"],
+    last_verified: "2026-05-26",
+  },
+
+  // ─── Foreign investment ──────────────────────────────────────────────
+  {
+    id: "NZ-OVERSEAS-INVESTMENT-ACT",
+    jurisdiction: "NZ",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Overseas Investment Act 2005 + National Security Amendment 2021",
+    date_enacted: "2005-08-17",
+    date_last_amended: "2021-06-04",
+    source_url:
+      "https://www.legislation.govt.nz/act/public/2005/0082/latest/DLM356881.html",
+    issuing_body: "Parliament of New Zealand",
+    competent_authorities: ["NZ-MBIE-NZSA"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["fdi_screening"],
+    scope_description:
+      "NZ FDI framework. 2021 National Security Amendment introduced specific national-security review for sensitive sectors including space tech. Overseas Investment Office (OIO) screens deals — material for any foreign acquisition of NZ space-tech firm (Dawn Aerospace, Pearl Suborbital, KEA Aerospace) + Rocket Lab USA's NZ-subsidiary transactions.",
+    key_provisions: [],
+    related_sources: [],
+    last_verified: "2026-05-26",
+  },
+
+  // ─── Rocket Lab IPO + Five Eyes ──────────────────────────────────────
+  {
+    id: "NZ-ROCKET-LAB-IPO-DISCLOSURE",
+    jurisdiction: "NZ",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "Rocket Lab USA Inc. — SPAC Merger + Nasdaq Listing (2021)",
+    date_published: "2021-08-25",
+    source_url: "https://investors.rocketlabusa.com/",
+    issuing_body: "Rocket Lab USA Inc. / Vector Acquisition Corp.",
+    competent_authorities: ["NZ-MBIE-NZSA"],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["sustainability_reporting"],
+    scope_description:
+      "Rocket Lab USA SPAC merger with Vector Acquisition Corp. (Nasdaq: RKLB) — landmark commercial-space IPO 2021. NZ-incorporated Rocket Lab Ltd subsidiary continues OSHAA-licensed Electron launches from Mahia. SEC 10-K filings disclose NZ regulatory + currency risks. Material precedent for cross-border commercial-space corporate structuring.",
+    key_provisions: [],
+    related_sources: ["INT-US-NEW-ZEALAND-TSA-2016"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "NZ-FIVE-EYES-SPACE-COOP",
+    jurisdiction: "NZ",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en: "Five Eyes Space Cooperation Framework — New Zealand",
+    date_enacted: "2014-12-01",
+    date_last_amended: "2024-01-01",
+    source_url: "https://www.dpmc.govt.nz/",
+    issuing_body: "Five Eyes Member Governments (US, UK, AU, NZ, CA)",
+    competent_authorities: ["NZ-CERT-NZ"],
+    relevance_level: "low",
+    applicable_to: ["all"],
+    compliance_areas: ["military_dual_use"],
+    scope_description:
+      "NZ participation in Five Eyes Combined Space Operations (CSpO). More limited NZ engagement than AU/UK — focus on signals intelligence + SSA data sharing. Material context for any NZ-resident space-tech firm with intelligence-community customer exposure.",
+    key_provisions: [],
+    related_sources: ["AU-FIVE-EYES-SPACE-COOP"],
+    last_verified: "2026-05-26",
+  },
+
+  // ─── Artemis + lunar cooperation ──────────────────────────────────────
+  {
+    id: "NZ-ARTEMIS-ACCORDS-2021",
+    jurisdiction: "NZ",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en: "New Zealand Artemis Accords Signing",
+    date_enacted: "2021-05-31",
+    source_url:
+      "https://www.nasa.gov/news-release/new-zealand-signs-artemis-accords/",
+    issuing_body: "Government of New Zealand",
+    competent_authorities: ["NZ-MBIE-NZSA"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement"],
+    scope_description:
+      "NZ signed Artemis Accords 31 May 2021 (11th signatory). Material political alignment + foundation for NASA-NZ commercial-services cooperation. Cross-references US-NZ TSA 2016 enabling US-payload launches from Mahia. Combined Artemis-TSA framework gives NZ uniquely-strong US-aligned commercial-space positioning in APAC.",
+    key_provisions: [],
+    related_sources: [
+      "INT-ARTEMIS-ACCORDS-2020",
+      "INT-US-NEW-ZEALAND-TSA-2016",
+    ],
+    last_verified: "2026-05-26",
+  },
+
+  // ─── New spaceport developments ──────────────────────────────────────
+  {
+    id: "NZ-KAITORETE-SPACEPORT-PLANNING",
+    jurisdiction: "NZ",
+    type: "policy_document",
+    status: "proposed",
+    title_en:
+      "Tāwhaki National Aerospace Centre — Kaitorete Spit Spaceport Planning",
+    date_published: "2021-04-30",
+    source_url: "https://www.tawhaki.co.nz/",
+    issuing_body: "Tāwhaki Joint Venture / Crown + Kahungunu iwi",
+    competent_authorities: ["NZ-MBIE-NZSA"],
+    relevance_level: "low",
+    applicable_to: ["launch_provider", "ground_segment"],
+    compliance_areas: ["licensing", "environmental"],
+    scope_description:
+      "Tāwhaki National Aerospace Centre — joint Crown-Kahungunu venture developing Kaitorete Spit (Canterbury) as multi-vendor aerospace test + launch facility. Could become NZ's second orbital launch site alongside Mahia. Material for foreign launch-vehicle providers seeking NZ host facility outside Rocket Lab-controlled Mahia.",
+    key_provisions: [],
+    related_sources: ["NZ-MAHIA-LAUNCH-AGREEMENT"],
+    last_verified: "2026-05-26",
+  },
+
+  // ─── National Space Policy Framework ──────────────────────────────────
+  {
+    id: "NZ-NATIONAL-SPACE-POLICY-2023",
+    jurisdiction: "NZ",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "New Zealand National Space Policy 2023",
+    date_published: "2023-09-25",
+    source_url:
+      "https://www.mbie.govt.nz/business-and-employment/economic-development/space/",
+    issuing_body: "Ministry of Business, Innovation and Employment",
+    competent_authorities: ["NZ-MBIE-NZSA"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["state_aid", "procurement"],
+    scope_description:
+      "First comprehensive NZ National Space Policy. Sets goals: maintain world-class commercial-launch regime, develop downstream-services market, support Earth observation for climate + maritime monitoring, balance national-security + commercial interests. Material strategic context for foreign space-tech firms considering NZ market entry or NZ-based operations.",
+    key_provisions: [],
+    related_sources: ["NZ-OSHAA-2017"],
+    last_verified: "2026-05-26",
+  },
+];
+
 export const LEGAL_SOURCES_NZ: LegalSource[] = [
   ...TREATIES_NZ,
   ...PRIMARY_LEGISLATION_NZ,
   ...SECONDARY_LEGISLATION_NZ,
   ...POLICY_NZ,
   ...BILATERAL_NZ,
+  ...P4_ADDITIONS_NZ,
 ];
