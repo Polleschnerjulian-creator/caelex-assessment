@@ -5423,4 +5423,121 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     related_sources: ["US-FAA-PART-450-LAUNCH-LICENSING", "US-CSLA-1984"],
     last_verified: "2026-05-27",
   },
+  // ============================================================================
+  // SUSTAINABILITY / ESG STANDARDS CLUSTER (4 INT entries)
+  // ============================================================================
+  // International sustainability-reporting standards as applied to space-tech:
+  // TCFD/ISSB climate disclosure, GRI ESG reporting, CDP environmental
+  // disclosure, IRIS+ impact-investing metrics. Material for listed space-tech.
+  // ============================================================================
+  {
+    id: "INT-ISSB-IFRS-S1-S2-2023",
+    jurisdiction: "INT",
+    type: "technical_standard",
+    status: "in_force",
+    title_en:
+      "IFRS S1 + S2 — ISSB Sustainability + Climate Disclosure Standards (2023)",
+    date_enacted: "2023-06-26",
+    date_last_amended: "2024-12-19",
+    source_url:
+      "https://www.ifrs.org/issued-standards/ifrs-sustainability-standards-navigator/",
+    issuing_body:
+      "International Sustainability Standards Board (ISSB) / IFRS Foundation",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["sustainability_reporting", "environmental"],
+    scope_description:
+      "IFRS S1 (General Requirements for Disclosure of Sustainability-related Financial Information) + IFRS S2 (Climate-related Disclosures) — first global sustainability-reporting baseline, effective annual periods beginning 1 January 2024. Builds on + supersedes TCFD Recommendations (FSB-endorsed disclosure, fully absorbed into IFRS S2). 30+ jurisdictions adopting or aligning with ISSB: AU (mandatory 2025), CA (2024 voluntary), HK (2025), JP (proposed 2026), MY/SG (2025 listed companies), BR (proposed 2026), TR (2026), UK (2026). Material for space-tech: (i) Scope 1+2+3 GHG emissions disclosure incl. launch-vehicle emissions; (ii) climate-related transition + physical risks; (iii) industry-specific SASB metrics integrated. Listed space-tech firms (Rocket Lab, Planet, BlackSky, Spire, Astra, Virgin Galactic) all preparing first ISSB-compliant reports for FY2024-2025 cycle.",
+    key_provisions: [
+      "IFRS S1 — sustainability-related financial information",
+      "IFRS S2 — climate-related disclosures (Scope 1+2+3 GHG)",
+      "TCFD Recommendations fully absorbed into IFRS S2",
+      "SASB industry-specific metrics integration",
+    ],
+    related_sources: [
+      "INT-GRI-STANDARDS",
+      "INT-CDP-CARBON-DISCLOSURE",
+      "EU-CSRD-DIRECTIVE-2022",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-GRI-STANDARDS",
+    jurisdiction: "INT",
+    type: "technical_standard",
+    status: "in_force",
+    title_en:
+      "Global Reporting Initiative (GRI) Standards — Universal + Sector + Topic Standards",
+    date_enacted: "2000-06-26",
+    date_last_amended: "2024-01-01",
+    source_url: "https://www.globalreporting.org/standards/",
+    issuing_body:
+      "Global Reporting Initiative (GRI) / Global Sustainability Standards Board (GSSB)",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["sustainability_reporting", "environmental"],
+    scope_description:
+      "GRI Standards — most widely-used global sustainability-reporting framework, ~10,000+ reporting organisations globally. Structure: (i) Universal Standards (GRI 1-3 foundational); (ii) Sector Standards (industry-specific — Oil/Gas + Mining + Agriculture published; aerospace/space sector NOT yet covered as standalone sector); (iii) Topic Standards (GRI 200 economic, 300 environmental, 400 social). Material for space-tech: (i) GRI 305 Emissions covers Scope 1+2+3 incl. launch-vehicle propellant emissions; (ii) GRI 308 Supplier Environmental Assessment relevant for satellite-component supply chain; (iii) double-materiality alignment with EU CSRD/ESRS. Recommended hybrid reporting: GRI for stakeholder-oriented + ISSB/IFRS for investor-oriented.",
+    key_provisions: [
+      "GRI 1-3 — Universal Standards (foundation)",
+      "GRI 305 — Emissions (Scope 1+2+3)",
+      "GRI 308 — Supplier Environmental Assessment",
+      "Sector Standards — aerospace/space NOT yet standalone",
+    ],
+    related_sources: ["INT-ISSB-IFRS-S1-S2-2023", "EU-CSRD-DIRECTIVE-2022"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-CDP-CARBON-DISCLOSURE",
+    jurisdiction: "INT",
+    type: "industry_guideline",
+    status: "in_force",
+    title_en:
+      "CDP (Carbon Disclosure Project) — Climate Change + Water Security + Forests Questionnaires",
+    date_enacted: "2000-12-04",
+    date_last_amended: "2024-03-19",
+    source_url: "https://www.cdp.net/en",
+    issuing_body: "CDP Worldwide (UK-registered charity)",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["sustainability_reporting", "environmental"],
+    scope_description:
+      "CDP — global environmental disclosure system, ~24,000 disclosing organisations + 740+ institutional investor signatories representing $136T AuM. Operates three questionnaires: Climate Change, Water Security, Forests. Disclosure scored A-D-/F. Material for space-tech: (i) launch-vehicle Scope 1 emissions disclosure (rocket-propellant LOX/RP-1/CH4/H2 combustion); (ii) ground-operations Scope 2 electricity (Boca Chica + KSC + Cape Canaveral + Vandenberg + Kourou + Tanegashima + Baikonur power consumption); (iii) supplier engagement Scope 3 for satellite-component manufacturing. CDP 2024 questionnaire fully aligned to ISSB IFRS S2 — single questionnaire produces inputs for both ISSB + GRI + CDP reporting. Material for ESG-conscious institutional investor scrutiny (e.g., BlackRock, State Street, Norway Government Pension Fund Global).",
+    key_provisions: [
+      "Climate Change Questionnaire — Scope 1+2+3 GHG",
+      "Water Security Questionnaire",
+      "Forests Questionnaire (timber + palm oil + cattle + soy)",
+      "2024 alignment with ISSB IFRS S2",
+    ],
+    related_sources: ["INT-ISSB-IFRS-S1-S2-2023", "INT-GRI-STANDARDS"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-IRIS-PLUS-IMPACT-METRICS",
+    jurisdiction: "INT",
+    type: "industry_guideline",
+    status: "in_force",
+    title_en:
+      "IRIS+ Impact Measurement and Management System (GIIN) — Impact-Investing Metrics for Space-Tech",
+    date_enacted: "2009-04-22",
+    date_last_amended: "2024-09-12",
+    source_url: "https://iris.thegiin.org/",
+    issuing_body: "Global Impact Investing Network (GIIN)",
+    competent_authorities: [],
+    relevance_level: "low",
+    applicable_to: ["all"],
+    compliance_areas: ["sustainability_reporting"],
+    scope_description:
+      "IRIS+ — most widely-used impact-investing measurement framework, ~10,000+ users globally, $1.5T impact-investing market alignment. Structure: (i) Strategic Goals (UN SDGs + Impact Themes); (ii) Core Metrics Sets (industry-specific KPIs); (iii) IRIS Catalog (~600 standardized metrics). Material space-tech alignment: SDG 9 Industry/Innovation/Infrastructure (most space-tech defaults here) + SDG 13 Climate Action (EO + climate-monitoring satellites) + SDG 15 Life on Land (forest-monitoring + biodiversity EO). Material for impact-investing fund formation around space-tech themes: GIIN's annual Sizing the Impact Investing Market reports for benchmarking. Increasingly cited by SFDR Article 9 'dark green' fund managers seeking measurable impact attribution.",
+    key_provisions: [
+      "5 Dimensions of Impact (What, Who, How Much, Contribution, Risk)",
+      "IRIS Catalog — ~600 standardized metrics",
+      "UN SDG alignment matrix",
+    ],
+    related_sources: ["INT-GRI-STANDARDS", "EU-SFDR-2019"],
+    last_verified: "2026-05-27",
+  },
 ];
