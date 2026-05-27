@@ -19,6 +19,7 @@
 
 import type { LegalCase } from "./types";
 import { ATLAS_CASES_RESEARCH_2026_05 } from "./cases-additions-research-2026-05";
+import { ATLAS_CASES_P5_2026_05 } from "./cases-additions-p5-2026-05";
 
 export const ATLAS_CASES: LegalCase[] = [
   // ─── Liability-Convention awards / inter-state settlements ──────────
@@ -1683,4 +1684,13 @@ export const ATLAS_CASES: LegalCase[] = [
   // helper in index.ts (getCaseById, getCasesByJurisdiction, etc.) and
   // every consumer continues to work without changes.
   ...ATLAS_CASES_RESEARCH_2026_05,
+
+  // ─── P5 bundle 2026-05-26 (15 verified entries) ─────────────────────
+  // Per ATLAS-CORPUS-EXPANSION-PLAN.md § 9. Lunar incidents (Beresheet,
+  // Hakuto-R, Vikram, Chandrayaan-3, Luna 25), EU competition (Eutelsat-
+  // OneWeb, SES-Intelsat), bankruptcy (Virgin Orbit, Iridium 1999),
+  // cybersec (Viasat KA-SAT AcidRain), FCC enforcement (Dish EchoStar-7
+  // deorbit), SEC SPAC (Momentus), Artemis Accords signings (India,
+  // Saudi Arabia), insurance (Viasat-3 F1).
+  ...ATLAS_CASES_P5_2026_05,
 ];
