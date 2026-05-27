@@ -125,6 +125,7 @@ import { LEGAL_SOURCES_CN, AUTHORITIES_CN } from "./sources/cn";
 import { LEGAL_SOURCES_RU, AUTHORITIES_RU } from "./sources/ru";
 import { LEGAL_SOURCES_BR, AUTHORITIES_BR } from "./sources/br";
 import { LEGAL_SOURCES_ZA, AUTHORITIES_ZA } from "./sources/za";
+import { LEGAL_SOURCES_SG, AUTHORITIES_SG } from "./sources/sg";
 
 // ─── Aggregated data ─────────────────────────────────────────────────
 
@@ -174,6 +175,7 @@ export const ALL_SOURCES: LegalSource[] = [
   ...LEGAL_SOURCES_RU,
   ...LEGAL_SOURCES_BR,
   ...LEGAL_SOURCES_ZA,
+  ...LEGAL_SOURCES_SG,
 ];
 
 export const ALL_AUTHORITIES: Authority[] = [
@@ -222,6 +224,7 @@ export const ALL_AUTHORITIES: Authority[] = [
   ...AUTHORITIES_RU,
   ...AUTHORITIES_BR,
   ...AUTHORITIES_ZA,
+  ...AUTHORITIES_SG,
 ];
 
 const JURISDICTION_DATA: Map<string, JurisdictionLegalData> = new Map([
@@ -583,6 +586,14 @@ const JURISDICTION_DATA: Map<string, JurisdictionLegalData> = new Map([
       jurisdiction: "ZA",
       sources: LEGAL_SOURCES_ZA,
       authorities: AUTHORITIES_ZA,
+    },
+  ],
+  [
+    "SG",
+    {
+      jurisdiction: "SG",
+      sources: LEGAL_SOURCES_SG,
+      authorities: AUTHORITIES_SG,
     },
   ],
 ]);
