@@ -5824,4 +5824,119 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     ],
     last_verified: "2026-05-27",
   },
+  // ============================================================================
+  // ISAM CLUSTER — In-Space Servicing, Assembly + Manufacturing (+4 entries)
+  // ============================================================================
+  // Emerging legal framework for ISAM commercial sector: Astroscale ADRAS-J +
+  // ELSA-d + ELSA-M, ClearSpace-1 + ClearSpace-3, Northrop Grumman MEV-1/MEV-2
+  // + MRV, NASA OSAM-1 + OSAM-2. Material for in-orbit-servicing legal practice.
+  // ============================================================================
+  {
+    id: "CASE-ASTROSCALE-ADRAS-J-2024",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "Astroscale ADRAS-J — World's First Commercial Rendezvous-Proximity-Operations (RPO) Mission to Uncontrolled Debris (February 2024)",
+    date_enacted: "2024-02-18",
+    date_last_amended: "2024-08-26",
+    source_url: "https://astroscale.com/missions/adras-j/",
+    issuing_body:
+      "Astroscale Japan Inc + JAXA Commercial Removal of Debris Demonstration (CRD2)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "debris_mitigation",
+      "liability",
+      "space_traffic_management",
+    ],
+    scope_description:
+      "ADRAS-J (Active Debris Removal by Astroscale-Japan) — world's first commercial RPO mission to an uncontrolled debris object (Japanese H-2A upper stage from 2009, 3-ton mass at ~600km altitude). Launched 18 Feb 2024 from Rocket Lab Electron, achieved 50m proximity 23 April 2024, fly-around inspection 26 Aug 2024. Operates under JAXA CRD2 Phase I contract (¥1.05B / ~US$7M) — first national-government contracted commercial-debris-removal mission globally. Material practitioner implications: (i) liability allocation under OST Art. VII + Liability Convention Art. III for any debris damage during inspection; (ii) JAXA Cabinet Office Article 20-23 SAA 2016 spacecraft-management permit issued to private operator for non-cooperative target — first-of-kind; (iii) Phase II (capture + controlled deorbit ~2027) will require additional licensing review. Material baseline precedent for commercial ADR + ISAM legal framework.",
+    key_provisions: [],
+    related_sources: [
+      "JP-CRD2-2020",
+      "INT-IADC-MITIGATION-2025",
+      "INT-RPO-IOS-FRAMEWORK",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-CLEARSPACE-1-VESPA-2026",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "ClearSpace-1 VESPA Adapter Removal Mission — First ESA Commercial Debris-Removal Contract (Expected 2026)",
+    date_enacted: "2020-11-26",
+    date_last_amended: "2024-08-27",
+    source_url: "https://clearspace.today/clearspace-1-mission/",
+    issuing_body:
+      "ClearSpace SA + European Space Agency Space Safety Programme (S2P)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["debris_mitigation", "procurement", "liability"],
+    scope_description:
+      "ClearSpace-1 — first ESA contracted commercial debris-removal mission, target VESPA (Vega Secondary Payload Adapter, 2013 Vega-VV02 mission upper-stage adapter, 112kg, ~660km altitude). Original launch target Q4 2025, now delayed to 2026 after 2023 in-orbit collision with debris fragments affected target (VESPA partially fragmented August 2023 — material precedent for compounding debris risk). ESA contract value €86M (initial €26M Phase I + €60M Phase II). Material practitioner implications: (i) ESA Industrial Policy procurement structure with PPP financing; (ii) UK Space Industry Act 2018 launch licensing (ClearSpace SA Swiss-domiciled, launching from Vandenberg with FAA Part 450); (iii) target-fragmentation legal questions raised under ESA Risk Sharing Agreement; (iv) ClearSpace-3 commercial-debris-removal RFP expected 2025-2026 expanding model. Material precedent for ESA + EU commercial-debris-removal contractual framework.",
+    key_provisions: [],
+    related_sources: ["EU-CLEARSPACE-1-MISSION", "INT-RPO-IOS-FRAMEWORK"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-NORTHROP-MEV-MISSIONS",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "Northrop Grumman SpaceLogistics MEV-1 + MEV-2 + MRV Missions — First Operational Commercial Satellite-Servicing (2020+)",
+    date_enacted: "2019-10-09",
+    date_last_amended: "2024-11-22",
+    source_url:
+      "https://www.northropgrumman.com/space/space-logistics-services/",
+    issuing_body:
+      "Northrop Grumman SpaceLogistics LLC + Intelsat + FCC + DARPA",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "frequency_spectrum",
+      "liability",
+      "space_traffic_management",
+    ],
+    scope_description:
+      "Northrop Grumman SpaceLogistics MEV Programme — first operational commercial satellite-servicing missions. Material missions: MEV-1 (Oct 2019, docked with Intelsat 901 Feb 2020, 5-year life-extension mission, undocked April 2024 + currently extending Intelsat 10-02); MEV-2 (Aug 2020, docked with Intelsat 10-02 April 2021, 5-year extension); MRV (Mission Robotic Vehicle, planned 2026, robotic-arm servicing); Mission Extension Pods (MEPs, deployable by MRV). Material practitioner implications: (i) FCC Part 25 mission-by-mission licensing template; (ii) Intelsat-Northrop service-agreement structure (~$13M/year per MEV mission); (iii) DARPA RSGS programme original sponsor (transitioned to Northrop commercial); (iv) MEV docking under OST Art. IX consultation framework; (v) IOSSA framework guidance issued FCC October 2024 partly based on MEV operational experience. Material baseline for any commercial satellite-servicing legal structure.",
+    key_provisions: [],
+    related_sources: [
+      "US-FCC-OSAM-ORDER-2024",
+      "INT-RPO-IOS-FRAMEWORK",
+      "US-DARPA-10-USC-4001",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-NASA-OSAM-1-CANCELLATION-2024",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "NASA OSAM-1 Mission Cancellation March 2024 — $2B Cost-Overrun Lessons + ISAM Procurement Reform",
+    date_enacted: "2024-03-01",
+    date_last_amended: "2024-09-15",
+    source_url:
+      "https://www.nasa.gov/missions/osam-1/nasa-update-on-osam-1-mission/",
+    issuing_body: "NASA + Maxar Technologies + Office of Inspector General",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "liability", "scientific_research"],
+    scope_description:
+      "NASA OSAM-1 (On-orbit Servicing, Assembly, and Manufacturing 1, formerly Restore-L) — cancelled 1 March 2024 after $2B cost-overrun (original budget $605M, projected ~$2.05B). Material practitioner implications: (i) NASA OIG report November 2023 cited Maxar prime contractor performance issues + technical complexity underestimation; (ii) cancellation triggered NASA-wide ISAM procurement framework reform — OSAM-2 (manufacturing) shifted to fixed-price CLPS-template like Intuitive Machines lunar-lander contracts; (iii) precedent for cost-plus to fixed-price transition in commercial-space federal procurement; (iv) Maxar received $250M termination settlement; (v) ISAM-related commercial-space funding shifted to DIU + Space Force CSO instruments. Material precedent for any federal commercial-space ISAM contract structuring.",
+    key_provisions: [],
+    related_sources: [
+      "US-DIU-DEFENSE-INNOVATION-UNIT",
+      "INT-RPO-IOS-FRAMEWORK",
+    ],
+    last_verified: "2026-05-27",
+  },
 ];
