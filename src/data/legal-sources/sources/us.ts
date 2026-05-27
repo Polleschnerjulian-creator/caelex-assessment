@@ -2222,6 +2222,123 @@ const RD_FINANCING_US: LegalSource[] = [
   },
 ];
 
+// ─── US State-Level Spaceport Authorities ─────────────────────────
+// State-level US spaceport authorities operate parallel to federal FAA
+// licensing. Material for any commercial-space firm contemplating US
+// spaceport tenancy: California Space Authority + Texas Space Commission
+// + Space Florida + Alaska Aerospace Corp + Hawaii Space Center.
+
+const STATE_SPACEPORT_US: LegalSource[] = [
+  {
+    id: "US-SPACE-FLORIDA-AUTHORITY",
+    jurisdiction: "US",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "Space Florida (Florida Statute Chapter 331) — Spaceport Authority for Cape Canaveral + Kennedy Space Center Commercial Activities",
+    date_enacted: "1989-07-04",
+    date_last_amended: "2024-07-01",
+    source_url: "https://www.spaceflorida.gov/about/",
+    issuing_body: "Florida State Legislature + Space Florida Board",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "state_aid", "licensing"],
+    scope_description:
+      "Space Florida — state-chartered economic development authority for Florida space industry. Established 2006 via merger of three predecessor entities (Florida Space Authority + Florida Aerospace Finance Corp + Florida Space Research Institute). Material practitioner provisions: (i) Florida Statute Chapter 331.301-.376 authorizes commercial spaceport activities at Cape Canaveral Spaceport (joint with USSF + NASA KSC); (ii) $200M+ annual financing capacity for space-tech infrastructure (Phase I Spaceport Improvement Program); (iii) Florida Spaceport Improvement Program funding launch-pad upgrades for SpaceX + Blue Origin + Northrop Grumman + Boeing CCS-39A + CCS-37 + CCS-40 + CCS-41 + LC-13; (iv) Space Florida Industrial Revenue Bonds tax-advantaged financing structure. Material for any commercial-space firm seeking Florida tenancy.",
+    key_provisions: [
+      "FL Statute Ch. 331.301-.376 — spaceport authorisation",
+      "Phase I Spaceport Improvement Program",
+      "Industrial Revenue Bonds tax-advantaged financing",
+    ],
+    related_sources: ["US-CSLA-1984", "US-FAA-PART-450-LAUNCH-LICENSING"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "US-TEXAS-SPACE-COMMISSION-2023",
+    jurisdiction: "US",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "Texas Space Commission Act (Senate Bill 1995, 2023) + Texas Aerospace Research and Space Economy Consortium (TARSEC)",
+    date_enacted: "2023-06-18",
+    date_last_amended: "2024-09-01",
+    source_url: "https://gov.texas.gov/business/page/space-texas",
+    issuing_body: "Texas State Legislature + Office of the Governor",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "state_aid", "scientific_research"],
+    scope_description:
+      "Texas Space Commission Act 2023 — establishes Texas Space Commission as economic-development + research-coordination authority. Material provisions: (i) $350M initial seed funding (~$200M state + $150M federal/private); (ii) TARSEC consortium structure incl. UT Austin + Texas A&M + Rice University; (iii) explicit support for SpaceX Starbase Boca Chica + Blue Origin Van Horn + Firefly + Astra; (iv) Texas Space Commission Strategic Plan FY2025 incl. workforce-development priority targeting 20,000 aerospace jobs by 2030; (v) Cape Canaveral-equivalent commercial-spaceport infrastructure planning at Camp Mabry + Boca Chica + future inland-spaceport feasibility study. Material for any commercial-space firm contemplating Texas tenancy. Texas-specific tax incentives: (i) Texas Economic Development Act Chapter 313 (expired Dec 2022) replaced by Texas Jobs, Energy, Technology + Innovation Act 2024; (ii) sales tax exemption for spacecraft + ground equipment under Tex. Tax Code §151.3186.",
+    key_provisions: [
+      "Senate Bill 1995 (2023) — Texas Space Commission establishment",
+      "$350M initial seed funding",
+      "TARSEC consortium structure",
+      "Tex. Tax Code §151.3186 — spacecraft sales tax exemption",
+    ],
+    related_sources: ["US-CSLA-1984", "CASE-STARSHIP-IFT-FLIGHT-9-2025"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "US-CALIFORNIA-AEROSPACE-FRAMEWORK",
+    jurisdiction: "US",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "California Aerospace Industry Framework — Vandenberg + Mojave + Edwards Air Force Base + LA Air Force Base USSF",
+    date_enacted: "1980-01-01",
+    date_last_amended: "2024-03-15",
+    source_url: "https://www.business.ca.gov/industries/aerospace/",
+    issuing_body:
+      "California Governor's Office of Business + Economic Development (GO-Biz)",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "state_aid", "scientific_research"],
+    scope_description:
+      "California Aerospace Industry — largest US state aerospace economy ($60B+ annual GSP contribution, 290,000+ aerospace workers). Material commercial-space sites: (i) Vandenberg Space Force Base (federal, polar orbit launches, used by SpaceX + Firefly + Astra + Rocket Lab); (ii) Mojave Air + Space Port (FAA Part 420 spaceport since 2004, Virgin Galactic VSS Unity historical operations + Stratolaunch Roc + Northrop test programmes); (iii) Edwards Air Force Base (federal, X-37B + USSF test programmes); (iv) Los Angeles Air Force Base USSF SSC (Space Systems Command HQ + USSF procurement). California Aerospace + Defense Technology Roadmap 2024 prioritises advanced propulsion + space-launch infrastructure. California-specific tax: (i) Cal. Rev. + Tax Code §6378 sales/use tax exemption for spacecraft + ground equipment (limited); (ii) California Competes Tax Credit for new aerospace facility expansion. Material for any commercial-space firm contemplating California tenancy.",
+    key_provisions: [
+      "Vandenberg SFB + Mojave AS + Edwards AFB sites",
+      "Los Angeles AFB USSF Space Systems Command HQ",
+      "Cal. Rev. + Tax Code §6378 — sales/use tax exemption",
+      "California Competes Tax Credit",
+    ],
+    related_sources: ["US-CSLA-1984", "US-USSPACECOM-DOCTRINE"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "US-ALASKA-AEROSPACE-PSCA",
+    jurisdiction: "US",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "Alaska Aerospace Corporation + Pacific Spaceport Complex Alaska (PSCA Kodiak) + Hawaii Space Center (under Development)",
+    date_enacted: "1991-06-19",
+    date_last_amended: "2024-05-15",
+    source_url: "https://akaerospace.com/",
+    issuing_body:
+      "Alaska State Legislature + Alaska Aerospace Corporation Board",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "state_aid"],
+    scope_description:
+      "Alaska Aerospace Corporation (AAC) — state-chartered space corporation, operates Pacific Spaceport Complex Alaska (PSCA Kodiak) since 1998. Material practitioner provisions: (i) PSCA Kodiak (FAA Part 420 spaceport since 1998, polar orbit launches, currently primary US small-launch facility for ABL Space + Astra historical + Rocket Lab + Stoke Space); (ii) AS 14.40.821-.830 corporate authority + Alaska Aerospace Rural Development Initiative; (iii) Defense Innovation Unit + Space Force CSO contracts for hypersonic test programmes at Pacific Spaceport. Hawaii Space Center (under-development, Pacific Spaceport Lualualei feasibility study 2024, target Operations 2027-2028) would establish 4th US Pacific commercial-launch site. Material for any commercial-space firm contemplating Alaska polar-launch + Hawaii equatorial-launch tenancy.",
+    key_provisions: [
+      "PSCA Kodiak — Pacific Spaceport Complex Alaska (1998)",
+      "AS 14.40.821-.830 corporate authority",
+      "DIU + Space Force CSO hypersonic contracts",
+      "Hawaii Space Center under-development (2027-2028 target)",
+    ],
+    related_sources: [
+      "US-DIU-DEFENSE-INNOVATION-UNIT",
+      "US-FAA-PART-450-LAUNCH-LICENSING",
+    ],
+    last_verified: "2026-05-27",
+  },
+];
+
 // ─── Aggregated Export ────────────────────────────────────────────
 
 export const LEGAL_SOURCES_US: LegalSource[] = [
@@ -2237,4 +2354,5 @@ export const LEGAL_SOURCES_US: LegalSource[] = [
   ...AML_KYC_US,
   ...AI_COMPLIANCE_US,
   ...RD_FINANCING_US,
+  ...STATE_SPACEPORT_US,
 ];
