@@ -1684,6 +1684,36 @@ const POLICY_DE: LegalSource[] = [
   },
 ];
 
+// ═══════════════════════════════════════════════════════════════════════
+// Atlas Defence Doctrine layer (2026-05-26): Bundeswehr Weltraumstrategie
+// 2022 + Weltraumkommando (WRGS) Uedem.
+// ═══════════════════════════════════════════════════════════════════════
+
+const DEFENCE_DOCTRINE_DE: LegalSource[] = [
+  {
+    id: "DE-BMVG-SPACE-STRATEGY-2022",
+    jurisdiction: "DE",
+    type: "national_security_doctrine",
+    status: "in_force",
+    title_en: "Bundeswehr Space Strategy + Weltraumkommando (WRGS)",
+    title_local:
+      "Bundeswehr-Weltraumstrategie + Weltraumkommando der Bundeswehr",
+    date_published: "2022-09-13",
+    date_last_amended: "2024-01-01",
+    source_url: "https://www.bmvg.de/de/themen/dossiers/raumfahrt-bundeswehr",
+    issuing_body: "Bundesministerium der Verteidigung (BMVg)",
+    competent_authorities: ["DE-BMWK"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["military_dual_use", "fdi_screening"],
+    scope_description:
+      "Bundeswehr Space Strategy + Weltraumkommando der Bundeswehr (WRGS, established 13 July 2021 in Uedem, North Rhine-Westphalia, ~110 personnel by 2024). Coordinates German military-space operations + interfaces with NATO Space Centre of Excellence. Material context for German space-tech firms with defence touchpoints (OHB SE, Tesat-Spacecom, Rocket Factory Augsburg, Mynaric, Isar Aerospace). Backed by €35B+ Zeitenwende defence-spending commitment 2022+ including space provisions.",
+    key_provisions: [],
+    related_sources: ["EU-STRATEGIC-COMPASS-2022", "INT-NATO-SPACE-DOCTRINE"],
+    last_verified: "2026-05-26",
+  },
+];
+
 // ─── Aggregated Export ───────────────────────────────────────────────
 
 export const LEGAL_SOURCES_DE: LegalSource[] = [
@@ -1692,4 +1722,5 @@ export const LEGAL_SOURCES_DE: LegalSource[] = [
   ...STANDARDS_DE,
   ...EU_LAW_DE,
   ...POLICY_DE,
+  ...DEFENCE_DOCTRINE_DE,
 ];

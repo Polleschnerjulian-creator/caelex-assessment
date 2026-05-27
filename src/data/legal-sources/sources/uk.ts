@@ -2968,6 +2968,46 @@ const SUSTAINABILITY_UK: LegalSource[] = [
   // entry for the Space Industry Regulations 2021 is UK-SI-2021-792 above.
 ];
 
+// ═══════════════════════════════════════════════════════════════════════
+// Atlas Defence Doctrine layer (2026-05-26): UK Defence Space Strategy
+// 2022 + UK Space Command (UKSpC) High Wycombe.
+// ═══════════════════════════════════════════════════════════════════════
+
+const DEFENCE_DOCTRINE_UK: LegalSource[] = [
+  {
+    id: "UK-DEFENCE-SPACE-STRATEGY-2022",
+    jurisdiction: "UK",
+    type: "national_security_doctrine",
+    status: "in_force",
+    title_en: "UK Defence Space Strategy + UK Space Command (UKSpC)",
+    date_published: "2022-02-01",
+    date_last_amended: "2024-01-01",
+    source_url:
+      "https://www.gov.uk/government/publications/defence-space-strategy-operationalising-the-space-domain",
+    issuing_body: "UK Ministry of Defence",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["military_dual_use", "fdi_screening"],
+    scope_description:
+      "UK Defence Space Strategy 'Operationalising the Space Domain'. UK Space Command (UKSpC) established 1 April 2021 at RAF High Wycombe, fully operational July 2022 — tri-service (RAF lead). £1.4B+ multi-year programming through 2032 including Skynet 6 secure satcom + Minerva ISR constellation + active defence capabilities. Material context for any UK space-tech firm with defence touchpoints (Airbus DS UK, BAE Systems, Thales UK, Inmarsat-Viasat, OneWeb-Eutelsat). Cross-references AUKUS pillar-2 advanced capabilities.",
+    key_provisions: [
+      {
+        section: "Strategy Pillars",
+        title: "Capability + cooperation + commercial integration",
+        summary:
+          "Three pillars: develop sovereign + collaborative space capabilities, deepen AUKUS + Five Eyes + NATO cooperation, integrate commercial-space supply chain through Defence Space Portal.",
+      },
+    ],
+    related_sources: [
+      "AU-DTC-AMENDMENT-2024",
+      "INT-NATO-SPACE-DOCTRINE",
+      "INT-US-UK-TSA-2020",
+    ],
+    last_verified: "2026-05-26",
+  },
+];
+
 // ─── Aggregated Export ──────────────────────────────────────────────
 
 export const LEGAL_SOURCES_UK: LegalSource[] = [
@@ -2985,4 +3025,5 @@ export const LEGAL_SOURCES_UK: LegalSource[] = [
   ...POSTBREXIT_UK,
   ...SPACEPORTS_UK,
   ...SUSTAINABILITY_UK,
+  ...DEFENCE_DOCTRINE_UK,
 ];

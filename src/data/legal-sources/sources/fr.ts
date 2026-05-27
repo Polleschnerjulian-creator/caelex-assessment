@@ -2183,6 +2183,46 @@ const FOUNDATIONAL_FR: LegalSource[] = [
   },
 ];
 
+// ═══════════════════════════════════════════════════════════════════════
+// Atlas Defence Doctrine layer (2026-05-26): France Defence Space
+// Strategy 2019 — Commandement de l'Espace (CdE), one of Europe's oldest
+// dedicated defence-space commands.
+// ═══════════════════════════════════════════════════════════════════════
+
+const DEFENCE_DOCTRINE_FR: LegalSource[] = [
+  {
+    id: "FR-DEFENSE-SPACE-STRATEGY-2019",
+    jurisdiction: "FR",
+    type: "national_security_doctrine",
+    status: "in_force",
+    title_en: "French Defence Space Strategy + Commandement de l'Espace",
+    title_local:
+      "Stratégie spatiale de défense — Commandement de l'Espace (CdE)",
+    date_published: "2019-07-25",
+    date_last_amended: "2024-01-01",
+    source_url:
+      "https://www.defense.gouv.fr/air/dossiers/strategie-spatiale-defense",
+    issuing_body: "Ministère des Armées",
+    competent_authorities: ["FR-CNES"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["military_dual_use", "fdi_screening"],
+    scope_description:
+      "France's foundational Defence Space Strategy + creation of Commandement de l'Espace (CdE, established 1 September 2019, headquartered Toulouse) — one of Europe's earliest dedicated defence-space commands, predating UK Space Command (2021), German WRGS (2021), AU Defence Space Command (2022). CdE operates under the French Air and Space Force (renamed 2020). Material context for any French space-tech firm with defence touchpoints (Airbus DS, Thales Alenia Space, ArianeGroup, Safran, MBDA). Backed by €4.3B+ multi-year programming through 2030.",
+    key_provisions: [
+      {
+        section: "Strategy Pillars 1-4",
+        title:
+          "Strategic autonomy + cooperation + active defence + operational capability",
+        summary:
+          "Four pillars: maintain strategic autonomy in space, deepen cooperation with allies (Five Eyes-adjacent + EU + NATO), develop active-defence capabilities (counter-jamming, on-orbit servicing/maneuvers, ASAT cueing), achieve full operational capability for CdE by 2030.",
+      },
+    ],
+    related_sources: ["EU-STRATEGIC-COMPASS-2022", "INT-NATO-SPACE-DOCTRINE"],
+    last_verified: "2026-05-26",
+  },
+];
+
 // ─── Aggregated Export ──────────────────────────────────────────────
 
 export const LEGAL_SOURCES_FR: LegalSource[] = [
@@ -2199,4 +2239,5 @@ export const LEGAL_SOURCES_FR: LegalSource[] = [
   ...ENVIRONMENTAL_FR,
   ...POLICY_FR,
   ...PENDING_TECHNICAL_FR,
+  ...DEFENCE_DOCTRINE_FR,
 ];

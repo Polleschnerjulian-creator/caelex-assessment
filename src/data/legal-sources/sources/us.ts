@@ -1661,6 +1661,165 @@ const P2_ADDITIONS_US: LegalSource[] = [
   },
 ];
 
+// ═══════════════════════════════════════════════════════════════════════
+// Atlas Defence Doctrine layer (2026-05-26): US National Space Policy
+// 2020, NSPM-30 commercial remote sensing, DODD 3100.10 Space Operations,
+// NDAA Title XVI annual, USSPACECOM doctrine, CSO doctrine. Material
+// context for CFIUS / dual-use screening of US space-tech transactions.
+// ═══════════════════════════════════════════════════════════════════════
+
+const DEFENCE_DOCTRINE_US: LegalSource[] = [
+  {
+    id: "US-NSP-2020",
+    jurisdiction: "US",
+    type: "national_security_doctrine",
+    status: "in_force",
+    title_en: "National Space Policy of the United States (2020)",
+    date_published: "2020-12-09",
+    source_url:
+      "https://trumpwhitehouse.archives.gov/wp-content/uploads/2020/12/National-Space-Policy.pdf",
+    issuing_body: "Office of the President of the United States",
+    competent_authorities: ["US-NASA"],
+    relevance_level: "fundamental",
+    applicable_to: ["all"],
+    compliance_areas: ["military_dual_use", "fdi_screening", "procurement"],
+    scope_description:
+      "Foundational US National Space Policy 2020 — comprehensive update of the 2010 framework. Establishes commercial space, national security space, civil space, and intelligence space as four pillars. Articulates US space-domain priorities: assured access, resilient architectures, deterrence, allied cooperation (Five Eyes + Artemis). Material reference for any US space-tech transaction CFIUS-screening + Five Eyes alignment assessment.",
+    key_provisions: [],
+    related_sources: [
+      "US-SPD-5-2020",
+      "US-DODD-3100-10",
+      "US-USSPACECOM-DOCTRINE",
+    ],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "US-NSPM-30-COMMERCIAL-REMOTE-SENSING",
+    jurisdiction: "US",
+    type: "national_security_doctrine",
+    status: "in_force",
+    title_en: "NSPM-30 — Commercial Remote Sensing Policy",
+    date_published: "2017-09-08",
+    date_last_amended: "2020-05-19",
+    source_url:
+      "https://www.nesdis.noaa.gov/about/our-offices/commercial-and-international-affairs",
+    issuing_body: "Office of the President of the United States",
+    competent_authorities: ["US-NOAA-CRSRA", "US-NASA"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "data_provider"],
+    compliance_areas: [
+      "military_dual_use",
+      "data_security",
+      "media_broadcasting",
+    ],
+    scope_description:
+      "National Security Presidential Memorandum 30 — governs US commercial-remote-sensing licensing through NOAA's Commercial Remote Sensing Regulatory Affairs (CRSRA) office. Streamlined Tier 1/2/3 framework introduced 2020 — Tier 1 (capabilities widely available abroad): minimal review; Tier 2 (US-unique unrestricted): standard review; Tier 3 (sensitive): conditions + shutter control. Material for any US-licensed commercial-EO firm (Maxar, Planet, BlackSky, Capella, Umbra, Albedo).",
+    key_provisions: [
+      {
+        section: "Tier framework",
+        title: "Three-tier commercial remote sensing classification",
+        summary:
+          "Tier 1 capabilities widely available abroad — minimal review. Tier 2 US-unique unrestricted — standard licensing. Tier 3 sensitive — additional conditions + shutter-control reservation.",
+      },
+    ],
+    related_sources: ["US-NSP-2020"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "US-DODD-3100-10",
+    jurisdiction: "US",
+    type: "national_security_doctrine",
+    status: "in_force",
+    title_en: "DoD Directive 3100.10 — Space Policy",
+    date_published: "2012-10-18",
+    date_last_amended: "2022-11-02",
+    source_url:
+      "https://www.esd.whs.mil/Portals/54/Documents/DD/issuances/dodd/310010p.pdf",
+    issuing_body: "US Department of Defense",
+    competent_authorities: ["US-NASA"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["military_dual_use", "fdi_screening"],
+    scope_description:
+      "Foundational DoD-wide space policy directive. Establishes the DoD's responsibilities for space-domain operations: organizing, training, equipping space forces; integrating space capabilities into joint operations; coordinating with allies through Combined Space Operations Initiative (CSpO). 2022 revision aligned with US Space Force establishment + post-USSPACECOM-reactivation organisational structure.",
+    key_provisions: [],
+    related_sources: [
+      "US-USSPACECOM-DOCTRINE",
+      "US-NSP-2020",
+      "INT-CSO-COMBINED-SPACE-OPS",
+    ],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "US-NDAA-TITLE-XVI-2024",
+    jurisdiction: "US",
+    type: "federal_law",
+    status: "in_force",
+    title_en:
+      "National Defense Authorization Act — Title XVI Space-Related Provisions (2024)",
+    date_enacted: "2023-12-22",
+    date_last_amended: "2024-12-23",
+    official_reference:
+      "Pub. L. 118-31 Title XVI (FY24); Pub. L. 118-159 (FY25 pending)",
+    source_url: "https://www.congress.gov/",
+    issuing_body: "US Congress",
+    competent_authorities: ["US-NASA"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["military_dual_use", "procurement", "fdi_screening"],
+    scope_description:
+      "Annual NDAA Title XVI — defines US Space Force authority + Space Force procurement + Space Force end-strength + commercial-space integration. FY24 included Tactically Responsive Space (TRS) authorisation, US-allies space-tech sharing provisions, AUKUS-aligned export-control reforms. Material for any commercial-space firm engaging DoD/USSF procurement — annual updates change procurement authorities, end-strength caps, and dual-use carve-outs.",
+    key_provisions: [],
+    related_sources: ["US-DODD-3100-10", "AU-DTC-AMENDMENT-2024"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "US-USSPACECOM-DOCTRINE",
+    jurisdiction: "US",
+    type: "national_security_doctrine",
+    status: "in_force",
+    title_en:
+      "US Space Command Reactivation + Joint Doctrine for Space Operations",
+    date_published: "2019-08-29",
+    date_last_amended: "2024-07-01",
+    source_url: "https://www.spacecom.mil/",
+    issuing_body: "US Department of Defense / US Space Command",
+    competent_authorities: ["US-NASA"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["military_dual_use"],
+    scope_description:
+      "US Space Command (USSPACECOM) reactivated 29 August 2019 — independent combatant command for space operations (formerly subsumed under USSTRATCOM). Operates Joint Doctrine for Space Operations (Joint Publication 3-14). Headquartered (interim) at Peterson Space Force Base, Colorado pending permanent location decision. Material for any commercial-space firm engaging combatant-command procurement + tactically-responsive launch programmes.",
+    key_provisions: [],
+    related_sources: [
+      "US-CSO-DOCTRINE",
+      "US-SPACE-FORCE-PROCUREMENT-FRAMEWORK",
+    ],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "US-CSO-DOCTRINE",
+    jurisdiction: "US",
+    type: "national_security_doctrine",
+    status: "in_force",
+    title_en:
+      "US Space Force — Chief of Space Operations Doctrine + Capstone Documents",
+    date_published: "2019-12-20",
+    date_last_amended: "2024-12-01",
+    source_url: "https://www.spaceforce.mil/",
+    issuing_body: "US Space Force",
+    competent_authorities: ["US-NASA"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["military_dual_use", "procurement"],
+    scope_description:
+      "US Space Force established 20 December 2019 (6th US military service). Operates under Chief of Space Operations (CSO) — General John W. Raymond (founding), then General B. Chance Saltzman from 2022. Capstone Doctrine Publications: 'Spacepower' (June 2020), 'Competitive Endurance' (2023). Material for any commercial-space firm pursuing USSF procurement — Space Systems Command (SSC) + Space Operations Command (SpOC) + Space Training and Readiness Command (STARCOM) operate distinct procurement authorities.",
+    key_provisions: [],
+    related_sources: ["US-USSPACECOM-DOCTRINE"],
+    last_verified: "2026-05-26",
+  },
+];
+
 // ─── Aggregated Export ────────────────────────────────────────────
 
 export const LEGAL_SOURCES_US: LegalSource[] = [
@@ -1670,4 +1829,5 @@ export const LEGAL_SOURCES_US: LegalSource[] = [
   ...POLICY_US,
   ...DEBRIS_RULES_US,
   ...P2_ADDITIONS_US,
+  ...DEFENCE_DOCTRINE_US,
 ];

@@ -233,4 +233,75 @@ export const LEGAL_SOURCES_IL: LegalSource[] = [
     related_sources: ["IL-DEC-LAW-2007"],
     last_verified: "2026-04-22",
   },
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // Atlas Defence Doctrine layer (2026-05-26): Israel defence-space —
+  // Ofek reconnaissance programme, Amos commercial-satellite framework,
+  // IDF Air Force Space Wing. Israel is uniquely dual-use: civilian +
+  // military space programmes substantially overlap.
+  // ═══════════════════════════════════════════════════════════════════════
+  {
+    id: "IL-OFEK-RECONNAISSANCE-PROGRAMME",
+    jurisdiction: "IL",
+    type: "national_security_doctrine",
+    status: "in_force",
+    title_en: "Ofek Military Reconnaissance Satellite Programme",
+    title_local: "תוכנית לוויני הביון אופק",
+    date_published: "1988-09-19",
+    date_last_amended: "2024-01-01",
+    source_url: "https://www.iai.co.il/",
+    issuing_body:
+      "Israeli Ministry of Defence / Israel Aerospace Industries (IAI)",
+    competent_authorities: ["IL-ISA"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["military_dual_use", "fdi_screening"],
+    scope_description:
+      "Ofek series — Israeli military reconnaissance satellites since 1988 (Ofek-1). Current generation (Ofek-13/16) provides high-resolution EO + SAR ISR. Operated by Israeli Air Force Space Wing + IAI as prime contractor. Material context for understanding Israel's uniquely-dual-use space programme: civilian (ISA) + military (MoD/IAI) substantially overlap. Triggers elevated CFIUS / EU 2019/452 / UK NSI Act scrutiny for cross-border deals involving Israeli space-tech firms.",
+    key_provisions: [],
+    related_sources: ["IL-DEC-LAW-2007", "IL-DEFENSE-SPACE-STRATEGY"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "IL-DEFENSE-SPACE-STRATEGY",
+    jurisdiction: "IL",
+    type: "national_security_doctrine",
+    status: "in_force",
+    title_en: "Israeli Defense Force Space Strategy + Air Force Space Wing",
+    title_local: "אגף החלל בחיל האוויר הישראלי",
+    date_published: "2018-01-01",
+    date_last_amended: "2024-10-01",
+    source_url: "https://www.idf.il/en/",
+    issuing_body: "Israeli Defense Forces / Israeli Air Force",
+    competent_authorities: ["IL-ISA"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["military_dual_use", "fdi_screening"],
+    scope_description:
+      "Israeli Air Force Space Wing (formed 2017+) coordinates military-space operations. Strategy emphasises strategic-autonomy (Ofek reconnaissance, Eros commercial, Amos comms) + Iron Beam-class directed-energy + dual-use technology transfer from defence-to-commercial sectors. Material context for any Israeli space-tech firm with defence touchpoints — IAI, Rafael Advanced Defense Systems, Elbit Systems, ImageSat International (iSi).",
+    key_provisions: [],
+    related_sources: ["IL-OFEK-RECONNAISSANCE-PROGRAMME"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "IL-AMOS-COMMERCIAL-FRAMEWORK",
+    jurisdiction: "IL",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "Amos Commercial Satellite Programme (Spacecom Ltd)",
+    title_local: "תוכנית הלוויינים המסחריים עמוס — Spacecom",
+    date_published: "1996-05-16",
+    date_last_amended: "2024-01-01",
+    source_url: "https://www.spacecomsat.com/",
+    issuing_body: "Spacecom Ltd / IAI / Ministry of Communications",
+    competent_authorities: ["IL-MOC"],
+    relevance_level: "medium",
+    applicable_to: ["satellite_operator"],
+    compliance_areas: ["frequency_spectrum", "fdi_screening"],
+    scope_description:
+      "Amos series — Israeli commercial GEO satellites since 1996 (Amos-1). Spacecom Ltd operates Amos-3/Amos-4/Amos-7 (current). Notable case: AMOS-6 loss on Falcon 9 pad explosion 2016 — landmark insurance case (already in cases corpus). 2024 ownership: Hebrew University + Hila Naveh + minority Asian investors. Material precedent for Israeli commercial-satcom + cross-border FDI in Spacecom.",
+    key_provisions: [],
+    related_sources: ["IL-DEFENSE-SPACE-STRATEGY"],
+    last_verified: "2026-05-26",
+  },
 ];

@@ -4527,4 +4527,59 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     related_sources: ["INT-ISS-IGA-1998"],
     last_verified: "2026-05-26",
   },
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // Atlas Defence Doctrine layer (2026-05-26): NATO Combined Space
+  // Operations Initiative + NATO Space Centre of Excellence Toulouse.
+  // Cross-cuts with national defence doctrines US/UK/AU/CA/NZ/FR/DE.
+  // ═══════════════════════════════════════════════════════════════════════
+  {
+    id: "INT-CSO-COMBINED-SPACE-OPS",
+    jurisdiction: "INT",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en: "Combined Space Operations Initiative (CSpO)",
+    date_enacted: "2014-09-01",
+    date_last_amended: "2024-01-01",
+    source_url:
+      "https://www.ukspaceagency.gov.uk/news/combined-space-operations-initiative",
+    issuing_body:
+      "US + UK + AU + CA + NZ + FR + DE (founding members + 2020-2024 additions)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["military_dual_use", "fdi_screening"],
+    scope_description:
+      "Combined Space Operations Initiative (CSpO) — Sub-NATO multilateral framework for defence-space cooperation. Original Five Eyes members (US + UK + AU + CA + NZ) plus France (2020) and Germany (2024). Operates 'Vision 2031' strategic-cooperation framework. Material context for FDI screening + dual-use export-control assessment — CSpO membership is a positive signal in CFIUS / FIRB / NSI Act / FATA reviews. Distinct from formal NATO Space Policy framework (which includes all 32 NATO members).",
+    key_provisions: [],
+    related_sources: [
+      "AU-FIVE-EYES-SPACE-COOP",
+      "NZ-FIVE-EYES-SPACE-COOP",
+      "INT-NATO-SPACE-DOCTRINE",
+    ],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "INT-NATO-SCOE-TOULOUSE",
+    jurisdiction: "INT",
+    type: "procurement_framework",
+    status: "in_force",
+    title_en: "NATO Space Centre of Excellence",
+    date_enacted: "2020-10-22",
+    date_last_amended: "2024-01-01",
+    source_url: "https://www.spacecoe.org/",
+    issuing_body: "NATO + France (Host Nation)",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["military_dual_use", "procurement"],
+    scope_description:
+      "NATO Space Centre of Excellence (SCoE) — established October 2020, hosted by France in Toulouse, co-located with CNES + CdE. NATO-accredited Centre of Excellence: develops doctrine, conducts training, supports interoperability across NATO members. Multinational staffing from US + UK + DE + IT + GR + PL + NL + TR. Material framework for commercial-space firms engaging NATO-aligned defence procurement + doctrine development.",
+    key_provisions: [],
+    related_sources: [
+      "INT-NATO-SPACE-DOCTRINE",
+      "FR-DEFENSE-SPACE-STRATEGY-2019",
+    ],
+    last_verified: "2026-05-26",
+  },
 ];
