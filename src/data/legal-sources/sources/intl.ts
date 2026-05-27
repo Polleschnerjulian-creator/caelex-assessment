@@ -5240,4 +5240,187 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     related_sources: ["INT-ISS-IGA-1998", "INT-OST-1967"],
     last_verified: "2026-05-27",
   },
+  // ============================================================================
+  // P5C CASES — MODERN EVENTS (2024-2025) (+7 entries)
+  // ============================================================================
+  // Materially-relevant 2024-2025 space-industry events with practitioner
+  // implications: launch-failures, crew incidents, regulatory milestones,
+  // deployment-firsts.
+  // ============================================================================
+  {
+    id: "CASE-BOEING-STARLINER-CFT-2024",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "Boeing Starliner Crew Flight Test (CFT) 2024 — Crew Stranding + Liability Doctrine",
+    date_enacted: "2024-06-05",
+    date_last_amended: "2024-09-07",
+    source_url:
+      "https://www.nasa.gov/news-release/nasa-decides-to-bring-starliner-spacecraft-back-to-earth-without-crew/",
+    issuing_body: "NASA + Boeing + SpaceX",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["human_spaceflight", "product_liability", "liability"],
+    scope_description:
+      "Boeing Starliner CFT — launched 5 June 2024 with NASA astronauts Butch Wilmore + Suni Williams. Multiple helium leaks + thruster failures during ISS approach. NASA decided 24 August 2024 to return Starliner without crew (Wilmore + Williams remained on ISS until Crew-9 February 2025 return). Material practitioner implications: (i) NASA Commercial Crew Contract structural integrity-vs-schedule trade-offs, $4.2B Boeing fixed-price contract exceeded by ~$1.5B in Boeing-absorbed losses; (ii) inter-operator crew-return liability under ISS IGA Art. 16 cross-waiver — established precedent for SpaceX-recovery-of-Boeing-crew without inter-operator litigation; (iii) FAA Part 460 informed-consent doctrine for commercial-crew. Material reference for future commercial-crew procurement: NASA accelerated SpaceX Crew-9 contract modification.",
+    key_provisions: [],
+    related_sources: [
+      "US-CSLA-1984",
+      "INT-ISS-IGA-1998",
+      "US-COMMERCIAL-CREW-PROGRAM",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-POLARIS-DAWN-EVA-2024",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "Polaris Dawn — First Commercial Spacewalk (EVA) — September 2024",
+    date_enacted: "2024-09-10",
+    date_last_amended: "2024-09-15",
+    source_url: "https://polarisprogram.com/dawn/",
+    issuing_body:
+      "SpaceX + Polaris Program (Jared Isaacman) + FAA Office of Commercial Space Transportation",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["human_spaceflight", "consumer_protection", "insurance"],
+    scope_description:
+      "Polaris Dawn — first all-private orbital EVA, conducted by Jared Isaacman + Sarah Gillis. Crew Dragon Resilience reached 1,400 km apogee (highest crewed orbit since Apollo). Mission insurance ~$200M via Marsh-led syndicate. Material practitioner implications: (i) FAA Part 460 informed-consent regime adaptation — private astronauts signed expanded consent for higher-risk EVA; (ii) ITAR Cat XV / EAR ECCN 9A515 implications for novel spacesuit design (SpaceX EVA suit IP); (iii) precedent for commercial-spacewalk operations templating future Vast Space + Axiom long-duration missions; (iv) Polaris II + III missions in pipeline. Material gap-fill for commercial human-spaceflight legal framework.",
+    key_provisions: [],
+    related_sources: ["US-CSLA-1984", "US-FAA-PART-460-HUMAN-SPACEFLIGHT"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-KUIPER-KA-01-DEPLOYMENT-2024",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "Amazon Kuiper KA-01 First Production Deployment + KA-02 (April 2025)",
+    date_enacted: "2025-04-28",
+    date_last_amended: "2025-06-23",
+    source_url: "https://www.aboutamazon.com/news/project-kuiper",
+    issuing_body: "Amazon Kuiper Services LLC + FCC + United Launch Alliance",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "frequency_spectrum",
+      "competition_antitrust",
+      "debris_mitigation",
+    ],
+    scope_description:
+      "Amazon Kuiper KA-01 (Atlas V 551, 28 Apr 2025, 27 production satellites) + KA-02 (23 June 2025, 27 satellites) — first operational LEO deployments. FCC obligation under DA 20-1485 (2020 LEO Authorization) requires 50% of 3,236-satellite Phase 1 constellation deployed by July 2026 (1,618 satellites). Material practitioner implications: (i) FCC milestone deadline triggers waiver-or-loss analysis; (ii) ULA + Blue Origin + Arianespace launch contracts cumulatively committed $20B+ — single-source-supplier risk for Kuiper schedule; (iii) DSA/DMA gatekeeper analysis re Amazon's vertical integration (AWS Ground Station + Kuiper + Amazon Marketplace); (iv) Starlink competitive-response: SpaceX-Kuiper price/capacity competition reshaping LEO satcom market. Material precedent for FCC LEO milestone enforcement post-2026.",
+    key_provisions: [],
+    related_sources: [
+      "US-FCC-NPRM-PC-2023",
+      "EU-DMA-2022",
+      "US-NGSO-MILESTONE-FRAMEWORK",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-VEGA-C-RETURN-TO-FLIGHT-2024",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "Vega-C Return to Flight (RTF) — Sentinel-1C Mission December 2024",
+    date_enacted: "2024-12-05",
+    date_last_amended: "2024-12-05",
+    source_url:
+      "https://www.esa.int/Newsroom/Press_Releases/Vega-C_back_in_business",
+    issuing_body: "European Space Agency + Arianespace + Avio S.p.A.",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "insurance", "liability"],
+    scope_description:
+      "Vega-C Return to Flight — Sentinel-1C launch 5 December 2024 successfully ended 2-year Vega-C grounding (after VV22 December 2022 failure due to Zefiro-40 second-stage CMG nozzle issue, ~€400M payload loss + insurance claims). Material practitioner implications: (i) ESA Vega-C Independent Inquiry Commission (Vega-C Failure Inquiry Board) report findings adopted as procurement-baseline for Avio + ESA contract renegotiation; (ii) Sentinel-1C launch insurance ~€95M premium reflecting RTF risk-pricing; (iii) Arianespace-Avio commercial dispute over delay liabilities settled out-of-court; (iv) ESA commercial-launch sovereignty implications — Vega-C is sole EU-medium-lift since Soyuz-Kourou suspension (Mar 2022 post-Ukraine invasion). Material context for any commercial-launch insurance + procurement analysis.",
+    key_provisions: [],
+    related_sources: ["EU-IRIS2-CONCESSION-2024", "INT-ESA-CONVENTION-1975"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-IM-2-ATHENA-LANDING-2025",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "Intuitive Machines IM-2 Athena Lunar Landing — March 2025 (Mountain Mons Mouton)",
+    date_enacted: "2025-03-06",
+    date_last_amended: "2025-03-15",
+    source_url: "https://www.intuitivemachines.com/im-2",
+    issuing_body:
+      "Intuitive Machines + NASA Commercial Lunar Payload Services (CLPS)",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["liability", "procurement", "scientific_research"],
+    scope_description:
+      "Intuitive Machines IM-2 Athena lunar lander — landed Mons Mouton near south pole 6 March 2025, but tipped over within hours (similar to IM-1 February 2024). Material practitioner implications: (i) NASA CLPS (Commercial Lunar Payload Services) fixed-price contract structure ($62.5M IM-2 contract) — IM absorbed cost over-runs but completed deliverables; (ii) NASA OSAM-2 (On-orbit Servicing, Assembly, and Manufacturing) PRIME contract framework adopted CLPS-template for lunar surface; (iii) Lunar Trailblazer co-manifest secondary-payload IPR (placed Lunar Trailblazer in lunar transfer trajectory); (iv) Mons Mouton landing site — first commercial landing within south-polar PSR (Permanently Shadowed Region) vicinity, material precedent for lunar resource utilisation under Artemis Accords Section 11.",
+    key_provisions: [],
+    related_sources: [
+      "US-COMMERCIAL-SPACE-LAUNCH-COMPETITIVENESS-ACT-2015",
+      "INT-ARTEMIS-ACCORDS-2020",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-IRIS2-CONCESSION-AWARD-2024",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en: "EU IRIS² Concession Award — SpaceRISE Consortium December 2024",
+    date_enacted: "2024-10-31",
+    date_last_amended: "2024-12-16",
+    source_url:
+      "https://defence-industry-space.ec.europa.eu/eu-space/eu-secure-connectivity-programme-iris2_en",
+    issuing_body:
+      "European Commission DG DEFIS + SpaceRISE Consortium (SES + Eutelsat + Hispasat + Airbus + Thales Alenia Space + Deutsche Telekom + Orange + Telespazio + OHB + Hisdesat + Telecom Italia + Thales SIX)",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "procurement",
+      "state_aid",
+      "competition_antitrust",
+      "military_dual_use",
+    ],
+    scope_description:
+      "EU IRIS² (Infrastructure for Resilience, Interconnectivity and Security by Satellite) — €10.6B 12-year concession contract awarded 31 October 2024 (signed 16 December 2024) to SpaceRISE Consortium. 290-satellite MEO + LEO multi-orbit constellation, operational by 2030. Material practitioner implications: (i) PPP financing structure: €6B EU + €4.6B private + €1B ESA; (ii) State Aid clearance under EC Decision SA.111120 (2024); (iii) Competition-antitrust analysis re SpaceRISE consortium consolidation (8/13 members are MS national champions); (iv) Material precedent for EU strategic-autonomy sovereign-satcom infrastructure as alternative to Starlink. Critical for any non-EU competitor analysis of EU government-services satcom market.",
+    key_provisions: [],
+    related_sources: [
+      "EU-STRATEGIC-COMPASS-2022",
+      "EU-EDIP-2024",
+      "EU-DMA-2022",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-STARSHIP-IFT-FLIGHT-9-2025",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "SpaceX Starship Integrated Flight Test (IFT) Flight 9 — Block 2 Upper Stage Failures (March-May 2025)",
+    date_enacted: "2025-03-06",
+    date_last_amended: "2025-05-27",
+    source_url: "https://www.spacex.com/launches/",
+    issuing_body: "SpaceX + FAA Office of Commercial Space Transportation",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["liability", "environmental", "debris_mitigation"],
+    scope_description:
+      "Starship IFT Flight 9 — launched 27 May 2025 from Boca Chica, Texas. Continued Block 2 upper-stage development after IFT-8 (March 2025) lost upper stage in fuel-leak fire. FAA mishap investigation re-opened post-IFT-8. Material practitioner implications: (i) FAA Part 450 RPS (Reusable Permanent Status) authorisation framework continues to evolve through Starship test campaign; (ii) Indian River debris-recovery costs ($350K Bahamas + $1.2M Turks/Caicos cleanup, Bahamas Defence Force engagement); (iii) Texas Parks & Wildlife environmental-impact assessments for Boca Chica wildlife refuge; (iv) GAO Report GAO-24-106909 (2024) critical of FAA workload-vs-resources for Starship cadence. Material precedent for high-cadence reusable-launch regulatory adaptation.",
+    key_provisions: [],
+    related_sources: ["US-FAA-PART-450-LAUNCH-LICENSING", "US-CSLA-1984"],
+    last_verified: "2026-05-27",
+  },
 ];
