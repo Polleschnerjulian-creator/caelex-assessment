@@ -44,33 +44,32 @@ Drift-safety invariants:
 
 P0 schema landed: ComplianceArea union 13 → 29 (+16), LegalSourceType union 8 → 20 (+12), schema-drift test wired (18 tests).
 
-P1 in progress: 5 of 9 P1 jurisdictions completed:
+**P1 FULLY COMPLETE — all 9 P1 jurisdictions done in one session.**
 
 - **CN** 7 → 38 (+5 authorities, +25 sources)
 - **RU** 5 → 28 (+5 authorities, +18 sources)
 - **SG** 0 → 22 (+6 authorities, +16 sources, NEW jurisdiction)
 - **ID** 0 → 18 (+4 authorities, +14 sources, NEW jurisdiction)
 - **PH** 0 → 15 (+3 authorities, +12 sources, NEW jurisdiction)
+- **SA** 0 → 16 (+4 authorities, +12 sources, NEW jurisdiction)
+- **EG** 0 → 14 (+3 authorities, +11 sources, NEW jurisdiction)
+- **AR** 0 → 13 (+3 authorities, +10 sources, NEW jurisdiction)
+- **MX** 0 → 13 (+3 authorities, +10 sources, NEW jurisdiction)
 
-Total new source-corpus growth this session: **+85 sources, +23 authorities** across 5 jurisdictions. All 18 drift tests pass continuously.
+Total session output: **+128 sources, +36 authorities** across 9 jurisdictions + 16 ComplianceAreas + 12 SourceTypes + drift validator.
+
+Corpus growth: **950 → 1,078 sources** (+13.5% in one session). All 18 drift tests pass continuously.
 
 Total Atlas test count: 1589 passing / 1590 total (1 pre-existing env-failure unchanged).
 
 ### Current focus
 
-→ **§ 5 P1 remaining** — 4 jurisdictions still to create:
-
-- SA (Saudi Arabia, NEW, target 12 sources)
-- EG (Egypt, NEW, target 12)
-- AR (Argentina, NEW, target 12)
-- MX (Mexico, NEW, target 10)
-
-After P1 → P2 Sub-Domain Clusters (Space Resources, Suborbital, ADR, Megaconstellations, Radio Astronomy, Cybersecurity, Climate Overlay, National Security, Privacy).
+→ **§ 6 P2 Sub-Domain Clusters** — start with space-resource mining cluster (US CSLCA Title IV, LU 2017, JP 2021, UAE 2019, IISL + Hague Building Blocks). Then suborbital + tourism, ADR + IOS, megaconstellations, dark-sky, cybersecurity, climate, national security, privacy.
 
 ### Tier roll-up (one-line per tier; updated as items flip)
 
 - **P0 Schema:** 🟢 Complete (2026-05-26) — 16 ComplianceAreas + 12 SourceTypes added, 18-test drift validator wired
-- **P1 Critical Jurisdictions:** 🟡 In progress — 5 of 9 done (CN ✓ RU ✓ SG ✓ ID ✓ PH ✓; SA EG AR MX pending)
+- **P1 Critical Jurisdictions:** 🟢 Complete (2026-05-26) — 9 of 9 done (CN ✓ RU ✓ SG ✓ ID ✓ PH ✓ SA ✓ EG ✓ AR ✓ MX ✓)
 - **P2 Sub-Domain Clusters:** 🔴 Not started
 - **P3 EU-modern + Financial/Capital + Bilateral/Multilateral:** 🔴 Not started
 - **P4 Sub-tier Jurisdiction Deepening (AU/NZ/IN/JP/KR):** 🔴 Not started
