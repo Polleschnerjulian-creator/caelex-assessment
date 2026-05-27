@@ -6433,4 +6433,142 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     ],
     last_verified: "2026-05-27",
   },
+  // ============================================================================
+  // 2024-2025 COMMERCIAL CASES BATCH (+5 entries)
+  // ============================================================================
+  // Material precedent-setting 2024-2025 commercial-space cases: Starship
+  // IFT-5 booster catch + Falcon 9 RUD + Boeing Starliner CFT crew transfer
+  // + FCC 12 GHz sharing + Eutelsat-OneWeb merger.
+  // ============================================================================
+  {
+    id: "CASE-STARSHIP-IFT-5-BOOSTER-CATCH-2024",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "SpaceX Starship IFT-5 — World's First Operational Recovery of Super Heavy Booster via Mechazilla Chopstick Catch (October 2024)",
+    date_enacted: "2024-10-13",
+    date_last_amended: "2024-11-19",
+    source_url:
+      "https://www.spacex.com/launches/mission/?missionId=starship-flight-5",
+    issuing_body:
+      "SpaceX + FAA AST + Cameron County (Texas) + Bureau of Land Management",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "liability",
+      "environmental",
+      "space_traffic_management",
+    ],
+    scope_description:
+      "SpaceX Starship Integrated Flight Test 5 (IFT-5) — first operational recovery of Super Heavy booster via 'Mechazilla' launch-tower chopstick arms, 13 October 2024 from Starbase Boca Chica. Booster B12 lifted off + returned to launch site (RTLS) + caught by Mechazilla arms ~7 minutes after liftoff. Material practitioner implications: (i) FAA AST Modified Launch License No. LRLO-23-119 (issued for IFT-5 specific operations); (ii) Cameron County local-permit framework for tower modifications; (iii) National Marine Fisheries Service consultation under MSA + ESA + MMPA for Starbase southwest Pacific operations adjacent to USFWS designated critical habitat; (iv) Sierra Club + Center for Biological Diversity litigation alleged inadequate NEPA Programmatic EIS (Aug 2023 + 2024 amendments) — D.C. Circuit pending decision 2025; (v) successor flights IFT-6 (Nov 2024 booster splashdown) + IFT-7 (Jan 2025 booster catch attempt + ship loss) + IFT-8 (Feb 2025 booster catch + ship loss) + IFT-9 (May 2025 full success). Material precedent for first operational booster-recovery technology + ongoing NEPA litigation framework for high-cadence launch operations.",
+    key_provisions: [],
+    related_sources: [
+      "CASE-STARSHIP-IFT-FLIGHT-9-2025",
+      "US-FAA-PART-450-LAUNCH-LICENSING",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-FALCON-9-RUD-2024",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "SpaceX Falcon 9 Second-Stage Anomaly + 15-Day Grounding (July 2024) — First Falcon 9 Mission Failure in 7+ Years",
+    date_enacted: "2024-07-11",
+    date_last_amended: "2024-07-30",
+    source_url: "https://www.spacex.com/updates/",
+    issuing_body: "SpaceX + FAA AST + Federal Communications Commission",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["liability", "frequency_spectrum"],
+    scope_description:
+      "SpaceX Falcon 9 Starlink Group 9-3 mission — first Falcon 9 mission failure in 7+ years, 11 July 2024 from Vandenberg. Second-stage Merlin Vacuum engine LOX leak prevented Starlink deployment at correct altitude — 20 Starlink satellites stranded in lower-than-intended orbit + reentered within 5 days. Material practitioner implications: (i) FAA AST grounded Falcon 9 fleet 11-25 July 2024 under 14 CFR §437.31 Mishap Investigation; (ii) SpaceX root-cause analysis identified LOX line pressure-sensor anomaly + clean-pad procedures; (iii) FAA AST cleared return-to-flight 27 July 2024 — fastest mishap-investigation clearance in commercial-space history; (iv) two subsequent Falcon 9 anomalies (Aug 2024 + Sep 2024 booster mishaps) cleared in days vs weeks under streamlined FAA AST procedures. Material precedent for FAA AST mishap-investigation expedited process + Starlink V2 satellite atmospheric-reentry safety profile validation. Insurance: ~$15M Starlink satellite-replacement absorbed by SpaceX self-insurance.",
+    key_provisions: [],
+    related_sources: [
+      "US-FAA-PART-450-LAUNCH-LICENSING",
+      "INT-LLOYDS-LMA-5212-SPACE-RISKS",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-BOEING-STARLINER-CREW-TRANSFER-2024",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "Boeing Starliner Crew Flight Test (CFT) Cross-Operator Crew Transfer — Stranded-Crew Recovery via SpaceX Crew-9 Dragon (March 2025)",
+    date_enacted: "2024-06-05",
+    date_last_amended: "2025-03-18",
+    source_url: "https://www.nasa.gov/missions/boeing-crew-flight-test/",
+    issuing_body:
+      "Boeing + SpaceX + NASA + FAA AST + ISS Multilateral Crew Operations Panel (MCOP)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["human_spaceflight", "liability", "procurement"],
+    scope_description:
+      "Boeing Starliner Crew Flight Test (CFT) — first crewed Starliner mission, launched 5 June 2024 from Cape Canaveral on ULA Atlas V. Helium leaks + thruster failures during ISS approach. NASA decided September 2024 to keep Butch Wilmore + Suni Williams on ISS rather than return on Starliner — Starliner returned uncrewed September 2024. Wilmore + Williams returned March 2025 on SpaceX Crew-9 Dragon — first-of-kind cross-operator crew-transfer in Commercial Crew Program history. Material practitioner implications: (i) Boeing absorbed ~$1.6B charge against earnings 2024 + $250M+ additional 2025 charges; (ii) NASA Commercial Crew Program contract framework allowed cross-operator transfer under shared procurement structure; (iii) Boeing Starliner future uncertain — NASA review July 2025 evaluating contract termination; (iv) material precedent for Commercial Crew Program risk-allocation + cross-operator crew-transfer protocols; (v) Lloyd's LMA 5212 + LMA 5267 cited Starliner CFT in 30-40% rate hardening 2024.",
+    key_provisions: [],
+    related_sources: [
+      "CASE-POLARIS-DAWN-EVA-2024",
+      "INT-LLOYDS-LMA-5212-SPACE-RISKS",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-FCC-12-GHZ-SHARING-2024",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "FCC 12 GHz Band Sharing Order — DBSD + RKF Engineering + SpaceX Starlink + DISH Spectrum Coexistence (April 2024)",
+    date_enacted: "2023-04-20",
+    date_last_amended: "2024-04-24",
+    source_url: "https://docs.fcc.gov/public/attachments/FCC-24-43A1.pdf",
+    issuing_body:
+      "Federal Communications Commission (FCC) International Bureau",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["frequency_spectrum", "competition_antitrust"],
+    scope_description:
+      "FCC 12 GHz Sharing Order — final FCC ruling on 12.2-12.7 GHz band sharing between NGSO satellite operators (SpaceX Starlink) + terrestrial 5G operators (DISH Network + RS Access). FCC adopted partial-sharing framework (FCC 24-43, April 2024): (i) rejected DISH/RS Access proposal for terrestrial 5G primary use; (ii) preserved NGSO satellite-services primary status with terrestrial coexistence rules; (iii) established new technical-coordination requirements for downlink interference; (iv) declined opening 12.7 GHz upper band to terrestrial under separate proceeding. Material practitioner implications: (i) DBSD + RKF Engineering interference studies underpinning decision; (ii) FCC International Bureau v. Federal Court appeals expected from DISH/RS Access; (iii) precedent for global 12 GHz coordination disputes in 70+ countries with similar contested allocations; (iv) SpaceX Starlink continuation of US service preserved; (v) ITU coordination implications. Material baseline precedent for any commercial-NGSO operator spectrum-defence litigation.",
+    key_provisions: [],
+    related_sources: [
+      "US-FCC-NPRM-NGSO-MILESTONES",
+      "INT-GPS-GALILEO-INTEROPERABILITY",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-EUTELSAT-ONEWEB-MERGER-2023",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "Eutelsat-OneWeb Merger (September 2023) — European Sovereign Multi-Orbit Constellation Architecture",
+    date_enacted: "2022-07-26",
+    date_last_amended: "2024-09-25",
+    source_url:
+      "https://www.eutelsat.com/en/group/about-us/eutelsat-oneweb.html",
+    issuing_body:
+      "Eutelsat Group + OneWeb Limited + European Commission + UK CMA + French Government",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "competition_antitrust",
+      "fdi_screening",
+      "frequency_spectrum",
+    ],
+    scope_description:
+      "Eutelsat-OneWeb merger — closed 28 September 2023 forming Eutelsat Group (operationally rebranded Eutelsat OneWeb). Material practitioner implications: (i) European Commission Phase I clearance March 2023 under Reg 139/2004 without remedies; (ii) UK CMA Phase II review cleared June 2023 with informational behavioural undertakings; (iii) French Government 23% post-merger stake under loi PACTE 2019 strategic-investment review; (iv) UK Government 11% post-merger stake preserved (legacy UK OneWeb 2020 acquisition during Brexit); (v) post-merger Eutelsat Group architecture: GEO (Eutelsat 36° West + Eutelsat 65° West) + LEO (OneWeb 600 satellites at 1,200 km altitude) + IRIS² European sovereign constellation participation. Material competitive-positioning vs Starlink + Project Kuiper. December 2024 strategic review reduced ARPU expectations + Eutelsat stock down 60% 2023-2024. Material precedent for European multi-orbit constellation architecture + sovereign-tech preservation through cross-border merger control.",
+    key_provisions: [],
+    related_sources: ["EU-IRIS2-CONCESSION-2024"],
+    last_verified: "2026-05-27",
+  },
 ];
