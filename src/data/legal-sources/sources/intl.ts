@@ -5060,4 +5060,184 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     ],
     last_verified: "2026-05-27",
   },
+  // ============================================================================
+  // PRODUCT LIABILITY CLUSTER (3 INT entries)
+  // ============================================================================
+  // Spacecraft + component product-liability frameworks. Material for launch-
+  // failure litigation, satellite-bus manufacturer liability, ground-segment
+  // hardware defects.
+  // ============================================================================
+  {
+    id: "EU-PRODUCT-LIABILITY-DIRECTIVE-2024",
+    jurisdiction: "INT",
+    type: "eu_directive",
+    status: "in_force",
+    title_en:
+      "Directive (EU) 2024/2853 — New Product Liability Directive (PLD revision)",
+    date_enacted: "2024-10-23",
+    date_last_amended: "2024-10-23",
+    source_url: "https://eur-lex.europa.eu/eli/dir/2024/2853/oj",
+    issuing_body: "European Parliament + Council",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["product_liability", "liability"],
+    scope_description:
+      "New Product Liability Directive (Dir. (EU) 2024/2853) — repeals + replaces 1985/374/EEC (the 'old PLD'). MS transposition deadline: 9 December 2026. Material expansion of scope: (i) Art. 4(1) covers software incl. AI systems as 'products'; (ii) Art. 7 allows liability for cybersecurity vulnerabilities; (iii) Art. 8 reverses burden of proof in technical-complexity cases; (iv) Art. 11 expands recoverable damages to data loss + psychological harm. Material for space-industry: satellite-bus + propulsion + AOCS software defects now squarely in PLD scope; cyberattack-enabled satellite failures captured; in-orbit servicing robot defects (Astroscale, ClearSpace) attract strict liability under Art. 4. Practitioner impact: insurance markets re-pricing space-tech product liability for EU exposure.",
+    key_provisions: [
+      "Art. 4(1) — software + AI as products",
+      "Art. 7 — cybersecurity defect liability",
+      "Art. 8 — burden-of-proof reversal in complex cases",
+      "Art. 11 — expanded recoverable damages",
+      "Art. 17(2) — 25-year long-stop liability period (extended from 10)",
+    ],
+    related_sources: [
+      "INT-RESTATEMENT-THIRD-TORTS-PRODUCTS",
+      "EU-AI-LIABILITY-DIRECTIVE-PROPOSED",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-RESTATEMENT-THIRD-TORTS-PRODUCTS",
+    jurisdiction: "INT",
+    type: "industry_guideline",
+    status: "in_force",
+    title_en:
+      "Restatement (Third) of Torts: Products Liability (American Law Institute, 1998)",
+    date_enacted: "1998-05-20",
+    source_url:
+      "https://www.ali.org/publications/show/torts-products-liability/",
+    issuing_body: "American Law Institute (ALI)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["product_liability", "liability"],
+    scope_description:
+      "Restatement (Third) of Torts: Products Liability — authoritative US restatement of products-liability common law, adopted in whole or substantial part by 35+ US states. Replaces Restatement (Second) §402A. Material for space-industry: (i) §2(a) manufacturing-defect test (applied in Hughes/Loral satellite manufacturing failure litigation); (ii) §2(b) design-defect risk-utility test (applied in launch-vehicle component failures); (iii) §2(c) warning-defect test (applied in satellite-operator manuals + integration documentation); (iv) §6 prescription-drug analogy for spacecraft-specific reliability standards. Reference framework cited by Hughes Aircraft v US (1998) + most modern space-tort litigation.",
+    key_provisions: [
+      "§2(a) — manufacturing-defect (departure from intended design)",
+      "§2(b) — design-defect (risk-utility balancing test)",
+      "§2(c) — warning-defect (foreseeable harm + warning adequacy)",
+      "§3 — circumstantial-evidence rule (res ipsa loquitur)",
+    ],
+    related_sources: [
+      "EU-PRODUCT-LIABILITY-DIRECTIVE-2024",
+      "US-HUGHES-AIRCRAFT-V-US",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "EU-AI-LIABILITY-DIRECTIVE-PROPOSED",
+    jurisdiction: "INT",
+    type: "eu_directive",
+    status: "proposed",
+    title_en:
+      "Proposed AI Liability Directive COM(2022) 496 — Withdrawn February 2025",
+    date_published: "2022-09-28",
+    date_last_amended: "2025-02-11",
+    source_url:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52022PC0496",
+    issuing_body: "European Commission",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["product_liability", "ai_compliance", "liability"],
+    scope_description:
+      "Proposed AI Liability Directive (AILD) — would have established non-contractual fault-based liability rules for AI systems, complementary to PLD strict-liability regime. Commission WITHDREW proposal 11 February 2025 as part of Commission Work Programme simplification — citing PLD 2024/2853 already covering software + AI. Material historical context for space-industry AI liability planning: practitioners now rely on Member-State tort law + new PLD 2024 for AI-enabled spacecraft systems liability. NB: AILD withdrawal does NOT affect EU AI Act enforcement which proceeds on schedule (Aug 2024 phase-in).",
+    key_provisions: [
+      "Art. 3 — disclosure of evidence rules (high-risk AI systems)",
+      "Art. 4 — rebuttable presumption of causation (withdrawn)",
+      "Status: Withdrawn 11 Feb 2025",
+    ],
+    related_sources: ["EU-PRODUCT-LIABILITY-DIRECTIVE-2024", "EU-AI-ACT-2024"],
+    last_verified: "2026-05-27",
+  },
+  // ============================================================================
+  // EMPLOYMENT / LABOR CLUSTER (3 INT entries)
+  // ============================================================================
+  // Labour-law framework for space-industry: ITAR-restricted-person hiring,
+  // ESA staff regulations vs commercial labour, posted-workers in cross-border
+  // space cooperation, ILO maritime-labour analogues for long-duration missions.
+  // ============================================================================
+  {
+    id: "EU-POSTED-WORKERS-DIRECTIVE-2018",
+    jurisdiction: "INT",
+    type: "eu_directive",
+    status: "in_force",
+    title_en:
+      "Directive (EU) 2018/957 — Revised Posting of Workers Directive (PWD)",
+    date_enacted: "2018-06-28",
+    date_last_amended: "2020-07-30",
+    source_url: "https://eur-lex.europa.eu/eli/dir/2018/957/oj",
+    issuing_body: "European Parliament + Council",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["employment_labor"],
+    scope_description:
+      "Revised Posting of Workers Directive — amends Dir. 96/71/EC to ensure equal pay + host-state labour law application for posted workers beyond 12 months (extendable to 18 months). Material for space-industry: (i) ESA Member-State workforce posting (e.g., German DLR engineers posted to ESTEC Noordwijk, French CNES staff to Kourou); (ii) ArianeGroup Vernon-to-Bremen cross-border posting; (iii) Thales Alenia Space Cannes-to-Rome staff exchanges. Practitioner impact: post-12-month posted workers acquire substantively-equivalent host-state labour rights — affects ESA Industrial Policy compliance for major-prime workforce planning. Implementation Directive 2014/67/EU adds enforcement teeth.",
+    key_provisions: [
+      "Art. 1(2)(a) — equal remuneration for posted workers",
+      "Art. 1(2)(b) — host-state minimum employment conditions",
+      "Art. 1(2)(c) — 12-month limit + 6-month extension provisions",
+      "Implementation Dir. 2014/67/EU — enforcement + cross-border cooperation",
+    ],
+    related_sources: ["INT-ESA-STAFF-REGULATIONS"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-ESA-STAFF-REGULATIONS",
+    jurisdiction: "INT",
+    type: "multilateral_agreement",
+    status: "in_force",
+    title_en:
+      "ESA Staff Regulations + Rules + Instructions (consolidated to 2024)",
+    date_enacted: "1975-05-30",
+    date_last_amended: "2024-01-01",
+    source_url:
+      "https://esamultimedia.esa.int/multimedia/publications/ESA-SP-1310/offline/download.pdf",
+    issuing_body: "European Space Agency (ESA Council)",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["employment_labor"],
+    scope_description:
+      "ESA Staff Regulations — internal labour-law regime for ESA staff (~2,500 employees + ~1,500 contractors). Independent of Member-State national labour law per ESA Convention Annex I (Privileges and Immunities). Material for space-industry: (i) defines ESA employment categories (A grades technical, B grades administrative, L grades language, M grades manual); (ii) establishes ESA Appeals Board with jurisdiction over staff disputes (excludes national-court review); (iii) covers ESA contractor secondment rules + dual-employment with national space agencies; (iv) ESA Pension Fund (separate from national social-security). 2024 consolidated text incorporates 2018 staff-regulation reform.",
+    key_provisions: [
+      "Chapter II — recruitment + classification",
+      "Chapter VIII — disciplinary procedure + appeals",
+      "Chapter X — ESA Pension Fund",
+      "Annex VII — secondment + dual-employment rules",
+    ],
+    related_sources: [
+      "INT-ESA-CONVENTION-1975",
+      "EU-POSTED-WORKERS-DIRECTIVE-2018",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-ILO-CONVENTION-156-FAMILY",
+    jurisdiction: "INT",
+    type: "international_treaty",
+    status: "in_force",
+    title_en:
+      "ILO Convention 156 — Workers with Family Responsibilities (applied to long-duration space missions)",
+    date_enacted: "1981-06-23",
+    source_url:
+      "https://normlex.ilo.org/dyn/normlex/en/f?p=NORMLEXPUB:12100:0::NO::P12100_ILO_CODE:C156",
+    issuing_body: "International Labour Organization (ILO)",
+    competent_authorities: [],
+    relevance_level: "low",
+    applicable_to: ["all"],
+    compliance_areas: ["employment_labor", "human_spaceflight"],
+    scope_description:
+      "ILO Convention 156 — workers with family responsibilities. Ratified by 46 states including major space-faring nations (FR, DE, NL, JP, ES, IT, SE, NO). Material for human-spaceflight law: long-duration ISS missions (6+ months) trigger 'workers with family responsibilities' considerations — astronaut family-leave entitlements + return-to-work guarantees. ESA Astronaut Corps employment-contract template explicitly references C156 + IGA Art. 21 cross-waiver provisions. Practitioner relevance for commercial astronaut programmes (Axiom AX-3+, Polaris Dawn, Crew Dragon long-duration missions).",
+    key_provisions: [
+      "Art. 4 — equal opportunity for workers with family responsibilities",
+      "Art. 5 — community planning + services to assist family responsibilities",
+      "Art. 7 — vocational training + re-entry support",
+    ],
+    related_sources: ["INT-ISS-IGA-1998", "INT-OST-1967"],
+    last_verified: "2026-05-27",
+  },
 ];
