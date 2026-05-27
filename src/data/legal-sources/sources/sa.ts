@@ -1,0 +1,337 @@
+// src/data/legal-sources/sources/sa.ts
+
+/**
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
+ *
+ * Saudi Arabia — space-law sources and authorities.
+ *
+ * Saudi Space Agency (SSA) established 2018 by Royal Decree. Vision
+ * 2030 includes space-sector economic-diversification targets. NEOM
+ * spaceport plan in the Sharaan region. CITC (Communications, Space
+ * & Technology Commission) expanded its mandate in 2024 to include
+ * space-services regulation. Saudi Arabia is an Abraham Accords
+ * signatory — opened the door for space-cooperation MOUs with Israel.
+ *
+ * Atlas P1 (2026-05-26): new jurisdiction, target 12 sources per
+ * ATLAS-CORPUS-EXPANSION-PLAN.md § 5.F.
+ *
+ * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
+ */
+
+import type { LegalSource, Authority } from "../types";
+
+export const AUTHORITIES_SA: Authority[] = [
+  {
+    id: "SA-SSA",
+    jurisdiction: "SA",
+    name_en: "Saudi Space Agency",
+    name_local: "الوكالة الفضائية السعودية",
+    abbreviation: "SSA",
+    parent_ministry: "Office of the Prime Minister",
+    website: "https://saudispace.gov.sa/",
+    space_mandate:
+      "National space agency. Established by Royal Decree 27/12/1439 AH (2018). Coordinates national space policy, manages the Saudi astronaut programme (returned to crewed missions with AX-2 2023), and engages in international cooperation including Artemis Accords (Saudi Arabia signed 2022).",
+    legal_basis: "Royal Decree of 27 Dhu al-Hijjah 1439 AH (2018)",
+    applicable_areas: ["licensing", "registration"],
+  },
+  {
+    id: "SA-CST",
+    jurisdiction: "SA",
+    name_en: "Communications, Space & Technology Commission",
+    name_local: "هيئة الاتصالات والفضاء والتقنية",
+    abbreviation: "CST",
+    parent_ministry: "Ministry of Communications and Information Technology",
+    website: "https://www.cst.gov.sa/",
+    space_mandate:
+      "Renamed in 2024 from CITC (Communications and Information Technology Commission) with expanded space mandate. National notifying administration for ITU filings. Telecommunications + satellite-services licensing. Manages frequency allocations for Saudi satellite networks (Arabsat host) + foreign satcom-service authorisations.",
+    legal_basis: "Council of Ministers Resolution 2024",
+    applicable_areas: ["frequency_spectrum"],
+  },
+  {
+    id: "SA-NCA",
+    jurisdiction: "SA",
+    name_en: "National Cybersecurity Authority",
+    name_local: "الهيئة الوطنية للأمن السيبراني",
+    abbreviation: "NCA",
+    parent_ministry: "Office of the King",
+    website: "https://nca.gov.sa/",
+    space_mandate:
+      "National cybersecurity regulator. Issues Essential Cybersecurity Controls (ECC) framework — applies to satcom + ground-station operators handling Saudi-government data. Critical National Infrastructure (CNI) designation power covers major satcom infrastructure.",
+    legal_basis: "Royal Decree 6801 (2017)",
+    applicable_areas: ["cybersecurity", "critical_infrastructure"],
+  },
+  {
+    id: "SA-SDAIA",
+    jurisdiction: "SA",
+    name_en: "Saudi Data and Artificial Intelligence Authority",
+    name_local: "الهيئة السعودية للبيانات والذكاء الاصطناعي",
+    abbreviation: "SDAIA",
+    parent_ministry: "Office of the Prime Minister",
+    website: "https://sdaia.gov.sa/",
+    space_mandate:
+      "National data + AI authority. Houses the Personal Data Protection Office responsible for PDPL implementation. Applies to satcom subscriber data, satellite-imagery-derived personal data, and ground-station operator data.",
+    legal_basis: "Royal Decree 5/2019",
+    applicable_areas: ["data_security", "ai_compliance"],
+  },
+];
+
+export const LEGAL_SOURCES_SA: LegalSource[] = [
+  {
+    id: "SA-OST-1976",
+    jurisdiction: "SA",
+    type: "international_treaty",
+    status: "in_force",
+    title_en: "Outer Space Treaty — Saudi Arabia Accession",
+    date_enacted: "1976-12-17",
+    source_url: "https://treaties.unoda.org/t/outer_space",
+    issuing_body: "Kingdom of Saudi Arabia",
+    competent_authorities: ["SA-SSA"],
+    relevance_level: "fundamental",
+    applicable_to: ["all"],
+    compliance_areas: ["liability", "registration"],
+    scope_description:
+      "Saudi Arabia is a party to the OST. State-responsibility under Art. VI now operationally administered by SSA + CST + Council of Ministers' coordinated space-policy implementation. No dedicated unified Space Act yet — regime built on sectoral Royal Decrees + CST regulations.",
+    key_provisions: [],
+    related_sources: ["INT-OST-1967", "SA-SSA-DECREE-2018"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "SA-SSA-DECREE-2018",
+    jurisdiction: "SA",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Royal Decree Establishing the Saudi Space Agency",
+    title_local: "المرسوم الملكي بإنشاء الوكالة الفضائية السعودية",
+    date_enacted: "2018-12-27",
+    official_reference: "Royal Decree A/422 of 27 Dhu al-Hijjah 1439 AH",
+    source_url: "https://saudispace.gov.sa/",
+    issuing_body: "Office of the King",
+    competent_authorities: ["SA-SSA"],
+    relevance_level: "fundamental",
+    applicable_to: ["all"],
+    compliance_areas: ["licensing", "registration"],
+    scope_description:
+      "Founding instrument of the Saudi Space Agency. Establishes SSA mandate: national space policy, international cooperation, astronaut programme, space-industry economic-development. SSA does NOT have stand-alone licensing power yet — operates in coordination with CST (frequency) + Council of Ministers (industrial policy).",
+    key_provisions: [
+      {
+        section: "Articles 1-6",
+        title: "SSA Mandate + Council Composition",
+        summary:
+          "SSA chaired by ministerial-level Director. Council composition includes representatives from MoD, MCIT, KACST, SDAIA, and Ministry of Foreign Affairs.",
+      },
+    ],
+    related_sources: ["SA-OST-1976", "SA-VISION-2030-SPACE"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "SA-VISION-2030-SPACE",
+    jurisdiction: "SA",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "Vision 2030 — Space Sector Strategic Plan",
+    title_local: "رؤية المملكة 2030 — قطاع الفضاء",
+    date_published: "2024-01-01",
+    source_url: "https://www.vision2030.gov.sa/",
+    issuing_body: "Council of Economic and Development Affairs",
+    competent_authorities: ["SA-SSA"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["state_aid", "procurement"],
+    scope_description:
+      "Vision 2030's dedicated space-sector roadmap (2024 update). Targets: $2.1B sector by 2030, 20,000+ space-industry jobs, indigenous satellite manufacturing, lunar mission ambitions. Foreign partners eligible for Public Investment Fund (PIF) co-investment + Saudi Industrial Development Fund grants subject to localisation requirements.",
+    key_provisions: [],
+    related_sources: ["SA-SSA-DECREE-2018", "SA-NEOM-SPACEPORT-PLAN"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "SA-NEOM-SPACEPORT-PLAN",
+    jurisdiction: "SA",
+    type: "policy_document",
+    status: "proposed",
+    title_en: "NEOM Spaceport Concept (Sharaan Region)",
+    title_local: "ميناء الفضاء — نيوم — منطقة شرعان",
+    date_published: "2023-01-01",
+    source_url: "https://www.neom.com/en-us/",
+    issuing_body: "NEOM Company / SSA",
+    competent_authorities: ["SA-SSA"],
+    relevance_level: "low",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["licensing", "environmental"],
+    scope_description:
+      "Conceptual planning for a NEOM-region spaceport in Sharaan (north-west Saudi Arabia). Equatorial proximity (~28°N) less attractive than Indonesian/Brazilian equatorial sites, but politically aligned with Vision 2030 ambitions. Regulatory framework yet to be drafted — counsel for interested foreign launch providers should track Council of Ministers + SSA consultations.",
+    key_provisions: [],
+    related_sources: ["SA-VISION-2030-SPACE"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "SA-PDPL-2021",
+    jurisdiction: "SA",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Personal Data Protection Law",
+    title_local: "نظام حماية البيانات الشخصية",
+    date_enacted: "2021-09-24",
+    date_in_force: "2024-09-14",
+    official_reference: "Royal Decree M/19 of 2021 (amended 2023)",
+    source_url: "https://sdaia.gov.sa/en/SDAIA/about/Pages/PDPL.aspx",
+    issuing_body: "Office of the King / SDAIA",
+    competent_authorities: ["SA-SDAIA"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "ground_segment", "data_provider"],
+    compliance_areas: ["data_security"],
+    scope_description:
+      "Saudi Arabia's GDPR-equivalent statute. Fully in force from 14 September 2024 (delayed twice during 2022-2023 to allow for substantial amendments). Applies to satcom subscriber data, satellite-imagery-derived personal data, and ground-station data. Cross-border data transfers tightly restricted absent adequacy + appropriate safeguards.",
+    key_provisions: [
+      {
+        section: "Article 29",
+        title: "Cross-border data transfer",
+        summary:
+          "Cross-border data transfer requires (a) adequacy assessment by SDAIA, (b) appropriate safeguards (BCRs / standard contracts), or (c) explicit consent for specific transfers.",
+      },
+    ],
+    related_sources: ["SA-NCA-ECC-2018"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "SA-NCA-ECC-2018",
+    jurisdiction: "SA",
+    type: "certification_standard",
+    status: "in_force",
+    title_en:
+      "National Cybersecurity Authority Essential Cybersecurity Controls",
+    title_local: "الضوابط الأساسية للأمن السيبراني",
+    date_enacted: "2018-10-01",
+    date_last_amended: "2024-01-01",
+    source_url: "https://nca.gov.sa/ecc.html",
+    issuing_body: "National Cybersecurity Authority",
+    competent_authorities: ["SA-NCA"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "ground_segment"],
+    compliance_areas: ["cybersecurity", "critical_infrastructure"],
+    scope_description:
+      "Mandatory cybersecurity framework. Includes 114 controls across 5 domains. Satcom + ground-station operators designated as Critical National Infrastructure (CNI) must comply with ECC + Critical Systems Cybersecurity Controls (CSCC) and submit to NCA audits.",
+    key_provisions: [],
+    related_sources: ["SA-PDPL-2021"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "SA-EXPORT-CONTROL",
+    jurisdiction: "SA",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en: "Saudi Arabia Export Control Framework (Customs + Foreign Trade)",
+    title_local: "إطار الرقابة على الصادرات",
+    date_enacted: "2020-01-01",
+    source_url: "https://customs.gov.sa/",
+    issuing_body: "General Authority of Customs / Ministry of Investment",
+    competent_authorities: ["SA-CST"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["export_control", "sanctions_compliance"],
+    scope_description:
+      "Saudi Arabia's export-control framework — not yet a unified statute. Applies the GCC Common Customs Law + Saudi Arabian Standards Organisation (SASO) technical regulations + sectoral end-use controls. Saudi Arabia implements UN Security Council sanctions but does not maintain an autonomous sanctions list.",
+    key_provisions: [],
+    related_sources: [],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "SA-COMMERCIAL-COURTS-2020",
+    jurisdiction: "SA",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Commercial Courts Law (Royal Decree M/93)",
+    title_local: "نظام المحاكم التجارية",
+    date_enacted: "2020-08-15",
+    official_reference: "Royal Decree M/93 of 1441 AH",
+    source_url: "https://www.boe.gov.sa/",
+    issuing_body: "Office of the King",
+    competent_authorities: ["SA-SSA"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["liability", "product_liability"],
+    scope_description:
+      "Specialised commercial courts. Material for satcom-services dispute resolution — provides faster, more predictable adjudication than general civil courts. Counsel for foreign space-sector contracts touching Saudi entities should consider Saudi commercial-court jurisdiction clauses vs. international arbitration.",
+    key_provisions: [],
+    related_sources: [],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "SA-INVESTMENT-LAW-2024",
+    jurisdiction: "SA",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Investment Law (replacing Foreign Investment Law)",
+    title_local: "نظام الاستثمار",
+    date_enacted: "2024-08-11",
+    official_reference: "Royal Decree M/19 of 2024",
+    source_url: "https://www.investsaudi.sa/",
+    issuing_body: "Ministry of Investment",
+    competent_authorities: ["SA-SSA"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["fdi_screening"],
+    scope_description:
+      "New investment law (effective Feb 2025) replaces the earlier Foreign Investment Law and unifies treatment of Saudi + foreign investors. Sector-specific restrictions remain — space activities require Ministry of Investment principal licence + SSA endorsement. Foreign ownership now generally permitted up to 100% subject to sector caps.",
+    key_provisions: [],
+    related_sources: ["SA-VISION-2030-SPACE"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "SA-ARABSAT-HOST",
+    jurisdiction: "SA",
+    type: "multilateral_agreement",
+    status: "in_force",
+    title_en: "Arab Satellite Communications Organization Convention",
+    title_local: "اتفاقية المنظمة العربية للاتصالات الفضائية",
+    date_enacted: "1976-04-14",
+    source_url: "https://www.arabsat.com/",
+    issuing_body: "League of Arab States",
+    competent_authorities: ["SA-CST"],
+    relevance_level: "medium",
+    applicable_to: ["satellite_operator"],
+    compliance_areas: ["frequency_spectrum", "procurement"],
+    scope_description:
+      "Saudi Arabia is the host state of Arabsat (headquartered in Riyadh). Multilateral convention establishes Arabsat as a regional satellite operator serving 21 Arab League member states. ITU filings for Arabsat satellite networks coordinated via Saudi Arabia's CST as notifying administration.",
+    key_provisions: [],
+    related_sources: ["INT-ITU-RR"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "SA-ARTEMIS-ACCORDS-2022",
+    jurisdiction: "SA",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en: "Artemis Accords — Saudi Arabia Signing",
+    date_enacted: "2022-07-14",
+    source_url: "https://www.nasa.gov/specials/artemis-accords/",
+    issuing_body: "Saudi Space Agency / NASA",
+    competent_authorities: ["SA-SSA"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement"],
+    scope_description:
+      "Saudi Arabia signed the Artemis Accords in July 2022 — among the first Middle East / GCC signatories. Counterpart to the China-Russia ILRS framework. Sets political-cooperation baseline for Saudi participation in lunar + deep-space missions under US-led framework.",
+    key_provisions: [],
+    related_sources: ["INT-ARTEMIS-ACCORDS-2020"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "SA-IL-ABRAHAM-ACCORDS-SPACE",
+    jurisdiction: "SA",
+    type: "bilateral_agreement",
+    status: "proposed",
+    title_en: "Abraham-Accords-Adjacent Space-Cooperation MOUs (Saudi-Israel)",
+    date_published: "2024-01-01",
+    source_url: "https://saudispace.gov.sa/",
+    issuing_body: "Saudi Space Agency / Israel Space Agency",
+    competent_authorities: ["SA-SSA"],
+    relevance_level: "low",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement"],
+    scope_description:
+      "Saudi Arabia did NOT sign the original 2020 Abraham Accords but bilateral space-cooperation MOUs with Israel have been discussed since 2023 normalisation talks. Status uncertain due to October 2023 events; counsel for Israeli space firms exploring Saudi market should track political signals.",
+    key_provisions: [],
+    related_sources: ["SA-ARTEMIS-ACCORDS-2022"],
+    last_verified: "2026-05-26",
+  },
+];
