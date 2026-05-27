@@ -56,27 +56,30 @@ P0 schema landed: ComplianceArea union 13 → 29 (+16), LegalSourceType union 8 
 - **AR** 0 → 13 (+3 authorities, +10 sources, NEW jurisdiction)
 - **MX** 0 → 13 (+3 authorities, +10 sources, NEW jurisdiction)
 
-P2 partial: international layer of 8 sub-domain clusters (17 INT sources):
-ADR + IOS (4) · Radio Astronomy + Dark Skies (4) · Planetary Protection (1) ·
-Space Cybersecurity (3) · Suborbital Safety + Astronaut Conduct (2) ·
-Climate (2) · Financial AML + NATO (2) · ISS IGA (1).
+P2 substantially complete (40 P2 sources across 4 layers):
 
-Total session output: **+145 sources, +36 authorities** + 16 ComplianceAreas + 12 SourceTypes + drift validator.
+- **INT layer (17)**: ADR/IOS · Dark Skies + RAS · Planetary Protection · Cybersecurity · Suborbital · Climate · AML/NATO · ISS IGA
+- **US layer (8)**: SPD-5 · FCC NPRMs (Pc + NGSO milestones + luminosity) · DOT-FCC MOU · NRQZ Green Bank · CSLA Extension · NASA Lunar Regolith Contracts
+- **EU layer (12)**: ClearSpace-1 · Zero Debris Charter · Clean Space Initiative · AI Act + Data Act + DGA · CSRD + SFDR + Taxonomy · Strategic Compass + EDIP
+- **JP/AU/ZA (3)**: JP CRD2 · AU Murchison Radio-Quiet · ZA SKA Protection Act
 
-Corpus growth: **950 → 1,095 sources** (+15.3% in one session). All 18 drift tests pass continuously.
+Total session output: **+185 sources, +36 authorities** + 16 ComplianceAreas + 12 SourceTypes + drift validator.
+
+Corpus growth: **950 → 1,135 sources** (+19.5% in one session). All 18 drift tests pass continuously.
 
 Total Atlas test count: 1589 passing / 1590 total (1 pre-existing env-failure unchanged).
 
 ### Current focus
 
-→ **§ 6 P2 jurisdiction-specific sub-domain entries** still pending — add JP-CRD2-MISSION-FRAMEWORK, EU-CLEARSPACE-1-FRAMEWORK, EU-ZERO-DEBRIS-CHARTER-2023, US-SPD-3-STM, US-SPD-5-2020, US-FCC-DEBRIS-RULE-2020, UK-CAA-ADR-LICENCE-FRAMEWORK, ZA-SKA-PROTECTION-ACT, AU-MURCHISON-RADIO-QUIET, etc., to respective jurisdiction files. Then P3 EU-modern + bilateral + P4 sub-tier deepening + P5 cases + P6 cross-ref / embeddings.
+→ **§ 7 P3 (EU-modern partially done via § 6 EU layer) + Bilateral expansion** + **§ 8 P4 sub-tier deepening (AU/NZ/IN/JP/KR vertically)** + **§ 9 P5 cases (+35)** + **§ 10 P6 cross-ref + embeddings rebuild**.
+
+Optional P2 polish: UK-CAA-ADR-LICENCE-FRAMEWORK + DE-DLR-DEBRIS-MISSION + CA-CSA-ASTRO entries (deferred — substantially covered by EU ClearSpace + Clean Space Initiative).
 
 ### Tier roll-up (one-line per tier; updated as items flip)
 
 - **P0 Schema:** 🟢 Complete (2026-05-26) — 16 ComplianceAreas + 12 SourceTypes added, 18-test drift validator wired
 - **P1 Critical Jurisdictions:** 🟢 Complete (2026-05-26) — 9 of 9 done (CN ✓ RU ✓ SG ✓ ID ✓ PH ✓ SA ✓ EG ✓ AR ✓ MX ✓)
-- **P2 Sub-Domain Clusters:** 🟡 In progress — INT layer done (17 sources across 8 clusters); jurisdiction-specific entries pending in existing JP/EU/US/UK/AU/ZA files
-- **P2 Sub-Domain Clusters:** 🔴 Not started
+- **P2 Sub-Domain Clusters:** 🟢 Substantially Complete (2026-05-26) — 40 sources across INT (17) + US (8) + EU (12) + JP/AU/ZA (3). UK/DE/CA optional polish deferred.
 - **P3 EU-modern + Financial/Capital + Bilateral/Multilateral:** 🔴 Not started
 - **P4 Sub-tier Jurisdiction Deepening (AU/NZ/IN/JP/KR):** 🔴 Not started
 - **P5 Cases Expansion (+~30):** 🔴 Not started
