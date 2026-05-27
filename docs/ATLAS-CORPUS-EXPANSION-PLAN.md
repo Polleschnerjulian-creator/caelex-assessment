@@ -56,20 +56,26 @@ P0 schema landed: ComplianceArea union 13 → 29 (+16), LegalSourceType union 8 
 - **AR** 0 → 13 (+3 authorities, +10 sources, NEW jurisdiction)
 - **MX** 0 → 13 (+3 authorities, +10 sources, NEW jurisdiction)
 
-Total session output: **+128 sources, +36 authorities** across 9 jurisdictions + 16 ComplianceAreas + 12 SourceTypes + drift validator.
+P2 partial: international layer of 8 sub-domain clusters (17 INT sources):
+ADR + IOS (4) · Radio Astronomy + Dark Skies (4) · Planetary Protection (1) ·
+Space Cybersecurity (3) · Suborbital Safety + Astronaut Conduct (2) ·
+Climate (2) · Financial AML + NATO (2) · ISS IGA (1).
 
-Corpus growth: **950 → 1,078 sources** (+13.5% in one session). All 18 drift tests pass continuously.
+Total session output: **+145 sources, +36 authorities** + 16 ComplianceAreas + 12 SourceTypes + drift validator.
+
+Corpus growth: **950 → 1,095 sources** (+15.3% in one session). All 18 drift tests pass continuously.
 
 Total Atlas test count: 1589 passing / 1590 total (1 pre-existing env-failure unchanged).
 
 ### Current focus
 
-→ **§ 6 P2 Sub-Domain Clusters** — start with space-resource mining cluster (US CSLCA Title IV, LU 2017, JP 2021, UAE 2019, IISL + Hague Building Blocks). Then suborbital + tourism, ADR + IOS, megaconstellations, dark-sky, cybersecurity, climate, national security, privacy.
+→ **§ 6 P2 jurisdiction-specific sub-domain entries** still pending — add JP-CRD2-MISSION-FRAMEWORK, EU-CLEARSPACE-1-FRAMEWORK, EU-ZERO-DEBRIS-CHARTER-2023, US-SPD-3-STM, US-SPD-5-2020, US-FCC-DEBRIS-RULE-2020, UK-CAA-ADR-LICENCE-FRAMEWORK, ZA-SKA-PROTECTION-ACT, AU-MURCHISON-RADIO-QUIET, etc., to respective jurisdiction files. Then P3 EU-modern + bilateral + P4 sub-tier deepening + P5 cases + P6 cross-ref / embeddings.
 
 ### Tier roll-up (one-line per tier; updated as items flip)
 
 - **P0 Schema:** 🟢 Complete (2026-05-26) — 16 ComplianceAreas + 12 SourceTypes added, 18-test drift validator wired
 - **P1 Critical Jurisdictions:** 🟢 Complete (2026-05-26) — 9 of 9 done (CN ✓ RU ✓ SG ✓ ID ✓ PH ✓ SA ✓ EG ✓ AR ✓ MX ✓)
+- **P2 Sub-Domain Clusters:** 🟡 In progress — INT layer done (17 sources across 8 clusters); jurisdiction-specific entries pending in existing JP/EU/US/UK/AU/ZA files
 - **P2 Sub-Domain Clusters:** 🔴 Not started
 - **P3 EU-modern + Financial/Capital + Bilateral/Multilateral:** 🔴 Not started
 - **P4 Sub-tier Jurisdiction Deepening (AU/NZ/IN/JP/KR):** 🔴 Not started
