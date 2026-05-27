@@ -1997,4 +1997,280 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     ],
     last_verified: "2026-04-27",
   },
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // Atlas P2 (2026-05-26): EU sub-domain cluster entries — ADR/IOS missions,
+  // Zero Debris Charter, AI Act applied to space, Data Act applied to in-
+  // orbit-as-a-service, CSRD/SFDR/Taxonomy for space-tech, EU Strategic
+  // Compass. Per ATLAS-CORPUS-EXPANSION-PLAN.md § 6 + § 7.
+  // ═══════════════════════════════════════════════════════════════════════
+
+  // ─── ADR / IOS missions ────────────────────────────────────────────────
+  {
+    id: "EU-CLEARSPACE-1-FRAMEWORK",
+    jurisdiction: "EU",
+    type: "procurement_framework",
+    status: "in_force",
+    title_en: "ESA ClearSpace-1 Mission Contractual Framework",
+    date_published: "2020-11-26",
+    source_url: "https://www.esa.int/Space_Safety/Clean_Space/ClearSpace-1",
+    issuing_body: "European Space Agency",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "high",
+    applicable_to: ["in_orbit_services"],
+    compliance_areas: ["debris_mitigation", "procurement"],
+    scope_description:
+      "ESA's flagship Active Debris Removal contract — €120M+ awarded to ClearSpace SA (Swiss-led consortium) for the first ESA-led ADR mission (targeting Vega launch-adapter Vespa-C). Material precedent for the contractual architecture of public-procured ADR missions: target-state liability, mission-success criteria, cross-waiver among ESA + contractor + launching state.",
+    key_provisions: [
+      {
+        section: "Mission contract",
+        title: "ESA + ClearSpace SA service-acquisition model",
+        summary:
+          "ESA purchases an in-orbit service from a commercial provider rather than operating the mission itself — establishes a service-procurement template counsel can adapt for future ADR contracts.",
+      },
+    ],
+    related_sources: [
+      "EU-ZERO-DEBRIS-CHARTER-2023",
+      "INT-IADC-ADR-STATEMENT-2023",
+    ],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "EU-ZERO-DEBRIS-CHARTER-2023",
+    jurisdiction: "EU",
+    type: "soft_law_resolution",
+    status: "in_force",
+    title_en: "ESA Zero Debris Charter",
+    date_published: "2023-11-06",
+    source_url: "https://esoc.esa.int/zero-debris-charter",
+    issuing_body: "European Space Agency",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["debris_mitigation", "sustainability_reporting"],
+    scope_description:
+      "Voluntary commitment to no-debris-by-2030 for ESA missions + signatory commercial operators. 100+ industry signatories by 2025 (including SpaceX, OneWeb, Amazon Kuiper, Airbus). Goes beyond IADC mitigation baseline: ≥99% post-mission disposal reliability, controlled reentry preference, ADR-readiness clauses in new mission design.",
+    key_provisions: [
+      {
+        section: "Charter commitments",
+        title: "Zero-debris-by-2030 framework",
+        summary:
+          "Signatories commit to: (a) ≥99% disposal reliability, (b) post-mission disposal within 5 years, (c) controlled reentry where feasible, (d) ADR-readiness design for non-disposable assets.",
+      },
+    ],
+    related_sources: [
+      "EU-CLEARSPACE-1-FRAMEWORK",
+      "INT-IADC-MEGACONSTELLATIONS",
+    ],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "EU-CLEAN-SPACE-INITIATIVE",
+    jurisdiction: "EU",
+    type: "procurement_framework",
+    status: "in_force",
+    title_en: "ESA Clean Space Initiative",
+    date_published: "2012-01-01",
+    source_url: "https://www.esa.int/Space_Safety/Clean_Space",
+    issuing_body: "European Space Agency",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["debris_mitigation", "environmental", "procurement"],
+    scope_description:
+      "ESA's umbrella initiative covering EcoDesign, CleanSat (debris-mitigation tech), e.Deorbit/ClearSpace, In-Orbit Servicing, and ESA Zero Debris Approach. Procurement provisions: ESA mission tenders since 2018 require Clean Space compliance demonstration. Material for ESA-supplier contracts.",
+    key_provisions: [],
+    related_sources: [
+      "EU-CLEARSPACE-1-FRAMEWORK",
+      "EU-ZERO-DEBRIS-CHARTER-2023",
+    ],
+    last_verified: "2026-05-26",
+  },
+
+  // ─── EU AI Act + Data Act + DGA applied to space ────────────────────
+  {
+    id: "EU-AI-ACT-2024-SPACE",
+    jurisdiction: "EU",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en:
+      "EU AI Act (Regulation 2024/1689) — Application to Autonomous Space Systems",
+    date_enacted: "2024-07-12",
+    date_in_force: "2026-08-02",
+    official_reference: "Regulation (EU) 2024/1689",
+    source_url: "https://eur-lex.europa.eu/eli/reg/2024/1689/oj",
+    issuing_body: "European Parliament + Council",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "high",
+    applicable_to: [
+      "satellite_operator",
+      "constellation_operator",
+      "in_orbit_services",
+    ],
+    compliance_areas: ["ai_compliance", "cybersecurity"],
+    scope_description:
+      "EU AI Act applies to AI systems placed on EU market or whose output is used in EU. Material for space sector: (a) autonomous collision-avoidance systems with ML components may qualify as high-risk AI (Annex III); (b) AI-driven satellite-tasking + remote-sensing inference systems used by EU customers must satisfy transparency + risk-management obligations; (c) GPAI obligations on foundation models used in space-data analysis.",
+    key_provisions: [
+      {
+        section: "Article 6 + Annex III",
+        title: "High-risk AI categorisation",
+        summary:
+          "AI systems controlling critical infrastructure (incl. satcom for emergency services) classified high-risk. Conformity assessment + post-market monitoring obligations.",
+      },
+    ],
+    related_sources: ["EU-NIS2-2022", "INT-NIST-IR-8401"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "EU-DATA-ACT-2023",
+    jurisdiction: "EU",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en:
+      "EU Data Act (Regulation 2023/2854) — In-Orbit-as-a-Service Data Flows",
+    date_enacted: "2023-12-13",
+    date_in_force: "2025-09-12",
+    official_reference: "Regulation (EU) 2023/2854",
+    source_url: "https://eur-lex.europa.eu/eli/reg/2023/2854/oj",
+    issuing_body: "European Parliament + Council",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "medium",
+    applicable_to: ["satellite_operator", "in_orbit_services", "data_provider"],
+    compliance_areas: ["data_security", "competition_antitrust"],
+    scope_description:
+      "EU Data Act regulates business-to-business + business-to-government data sharing for connected products. Applies to in-orbit-as-a-service offerings (IOS, life-extension, refueling) where the operator generates data about customer satellite operations. Customer rights to data portability + cross-provider interoperability.",
+    key_provisions: [],
+    related_sources: ["EU-GDPR-2016"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "EU-DGA-2022",
+    jurisdiction: "EU",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en: "EU Data Governance Act (Regulation 2022/868) — Space Data Space",
+    date_enacted: "2022-05-30",
+    date_in_force: "2023-09-24",
+    official_reference: "Regulation (EU) 2022/868",
+    source_url: "https://eur-lex.europa.eu/eli/reg/2022/868/oj",
+    issuing_body: "European Parliament + Council",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "low",
+    applicable_to: ["data_provider"],
+    compliance_areas: ["data_security"],
+    scope_description:
+      "Establishes common European data spaces. Space Data Space announced 2024 — federated framework for EU space-data exchange across Copernicus + Galileo + IRIS² + national programmes + commercial operators. Material for satellite-data resellers + downstream analytics firms.",
+    key_provisions: [],
+    related_sources: ["EU-DATA-ACT-2023"],
+    last_verified: "2026-05-26",
+  },
+
+  // ─── Sustainability reporting ────────────────────────────────────────
+  {
+    id: "EU-CSRD-DIRECTIVE-2022",
+    jurisdiction: "EU",
+    type: "eu_directive",
+    status: "in_force",
+    title_en: "EU Corporate Sustainability Reporting Directive (2022/2464)",
+    date_enacted: "2022-12-14",
+    date_in_force: "2024-01-05",
+    official_reference: "Directive (EU) 2022/2464",
+    source_url: "https://eur-lex.europa.eu/eli/dir/2022/2464/oj",
+    issuing_body: "European Parliament + Council",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["sustainability_reporting", "environmental"],
+    scope_description:
+      "EU CSRD applies to large EU-listed + non-listed companies meeting size thresholds. Space companies meeting CSRD thresholds (≥250 employees OR ≥€50M turnover) must report against ESRS standards including launch-emissions, debris-mitigation performance, space-supply-chain due diligence. Phased compliance 2024-2028 depending on company size.",
+    key_provisions: [],
+    related_sources: ["EU-SFDR-2019", "EU-TAXONOMY-DELEGATED"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "EU-SFDR-2019",
+    jurisdiction: "EU",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en: "EU Sustainable Finance Disclosure Regulation (2019/2088)",
+    date_enacted: "2019-11-27",
+    date_in_force: "2021-03-10",
+    official_reference: "Regulation (EU) 2019/2088",
+    source_url: "https://eur-lex.europa.eu/eli/reg/2019/2088/oj",
+    issuing_body: "European Parliament + Council",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["sustainability_reporting"],
+    scope_description:
+      "SFDR applies to EU asset managers + financial advisers marketing space-tech investments. Article 6/8/9 product classification + Principal Adverse Impact (PAI) reporting on space-related ESG indicators. Counsel for space-tech fund formation must navigate SFDR ESG disclosure design.",
+    key_provisions: [],
+    related_sources: ["EU-CSRD-DIRECTIVE-2022", "EU-TAXONOMY-DELEGATED"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "EU-TAXONOMY-DELEGATED",
+    jurisdiction: "EU",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en: "EU Taxonomy Delegated Acts — Space Activities Classification",
+    date_enacted: "2021-12-09",
+    date_last_amended: "2024-01-01",
+    official_reference: "Climate Delegated Act (EU) 2021/2139 + amendments",
+    source_url:
+      "https://finance.ec.europa.eu/sustainable-finance/tools-and-standards/eu-taxonomy-sustainable-activities_en",
+    issuing_body: "European Commission",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["sustainability_reporting"],
+    scope_description:
+      "EU Taxonomy Delegated Acts define which economic activities qualify as environmentally sustainable. Space activities NOT yet listed as taxonomy-aligned (gap noted in 2024 Commission review). Until amended, space-tech investors disclose Article 7 non-eligibility — material for SFDR Article 9 fund design.",
+    key_provisions: [],
+    related_sources: ["EU-SFDR-2019", "EU-CSRD-DIRECTIVE-2022"],
+    last_verified: "2026-05-26",
+  },
+
+  // ─── Strategic Compass + EDIP ────────────────────────────────────────
+  {
+    id: "EU-STRATEGIC-COMPASS-2022",
+    jurisdiction: "EU",
+    type: "national_security_doctrine",
+    status: "in_force",
+    title_en: "EU Strategic Compass for Security and Defence (2022)",
+    date_published: "2022-03-21",
+    source_url:
+      "https://www.eeas.europa.eu/eeas/strategic-compass-security-and-defence-1_en",
+    issuing_body: "European Council",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["military_dual_use", "fdi_screening"],
+    scope_description:
+      "EU Strategic Compass establishes a 5-year action plan for EU security + defence including a dedicated Space Strategy for Security and Defence section. Articulates EU posture: space as a strategic domain, sovereignty over space-based services (IRIS², Galileo PRS), resilience to threats from China + Russia space programmes.",
+    key_provisions: [],
+    related_sources: ["EU-IRIS2-CONCESSION-2024", "EU-GOVSATCOM-DEC"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "EU-EDIP-2024",
+    jurisdiction: "EU",
+    type: "eu_regulation",
+    status: "proposed",
+    title_en:
+      "European Defence Industry Programme (EDIP) — Proposed Regulation",
+    date_published: "2024-03-05",
+    source_url:
+      "https://defence-industry-space.ec.europa.eu/eu-defence-industry-programme-edip_en",
+    issuing_body: "European Commission",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "military_dual_use"],
+    scope_description:
+      "EDIP proposed €1.5B (2025-2027) programme to scale EU defence-industrial capacity including space-defence overlap. Eligible activities include dual-use space technology development (resilient PNT, secure satcom, SSA capacity). Pending Council + Parliament adoption.",
+    key_provisions: [],
+    related_sources: ["EU-STRATEGIC-COMPASS-2022", "EU-IRIS2-CONCESSION-2024"],
+    last_verified: "2026-05-26",
+  },
 ];
