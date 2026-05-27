@@ -1472,6 +1472,195 @@ const DEBRIS_RULES_US: LegalSource[] = [
   },
 ];
 
+// ═══════════════════════════════════════════════════════════════════
+// Atlas P2 (2026-05-26): US sub-domain cluster entries — SPD-5 cyber,
+// FCC megaconstellation NPRMs, NRQZ, CSLA extension, NASA lunar
+// regolith contracts. Per ATLAS-CORPUS-EXPANSION-PLAN.md § 6.D + § 6.E
+// + § 6.F + § 6.H + § 6.J.
+// ═══════════════════════════════════════════════════════════════════
+
+const P2_ADDITIONS_US: LegalSource[] = [
+  // ─── Cybersecurity ─────────────────────────────────────────────────
+  {
+    id: "US-SPD-5-2020",
+    jurisdiction: "US",
+    type: "national_security_doctrine",
+    status: "in_force",
+    title_en:
+      "Space Policy Directive 5 — Cybersecurity Principles for Space Systems",
+    date_published: "2020-09-04",
+    source_url:
+      "https://trumpwhitehouse.archives.gov/presidential-actions/memorandum-space-policy-directive-5-cybersecurity-principles-space-systems/",
+    issuing_body: "Office of the President of the United States",
+    competent_authorities: ["US-NASA"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "ground_segment", "launch_provider"],
+    compliance_areas: ["cybersecurity", "critical_infrastructure"],
+    scope_description:
+      "Foundational US space-cybersecurity directive. Articulates 5 high-level principles: protect against unauthorized access, mitigate communications jamming + spoofing, protect ground segment + command links, protect launch + reentry systems, ensure supply-chain integrity. Implemented operationally via NIST IR 8270 + 8401 + DOD CMMC 2.0 for federal contractors.",
+    key_provisions: [
+      {
+        section: "Section 4",
+        title: "Space-system cybersecurity principles",
+        summary:
+          "Directs federal departments to integrate cybersecurity into space-system design, employ encryption + authentication, protect ground-segment + command links, and address supply-chain risks.",
+      },
+    ],
+    related_sources: ["INT-NIST-IR-8270", "INT-NIST-IR-8401"],
+    last_verified: "2026-05-26",
+  },
+
+  // ─── FCC megaconstellation rules (current + proposed) ──────────────
+  {
+    id: "US-FCC-NPRM-PC-METRIC-2023",
+    jurisdiction: "US",
+    type: "federal_regulation",
+    status: "proposed",
+    title_en: "FCC NPRM on Probability-of-Collision Reporting (2023)",
+    date_published: "2023-12-01",
+    source_url:
+      "https://www.fcc.gov/document/fcc-proposes-orbital-debris-rule-updates",
+    issuing_body: "Federal Communications Commission",
+    competent_authorities: ["US-FCC"],
+    relevance_level: "high",
+    applicable_to: ["constellation_operator", "satellite_operator"],
+    compliance_areas: ["debris_mitigation", "space_traffic_management"],
+    scope_description:
+      "FCC Notice of Proposed Rulemaking proposing standardised Probability-of-Collision (Pc) reporting thresholds for NGSO operators. Would establish Pc disclosure as a licensing condition + harmonise reporting formats with CCSDS CDM. Status: pending Final Rule.",
+    key_provisions: [],
+    related_sources: ["US-FCC-5YR-PMD-2022", "INT-CCSDS-CDM-508"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "US-FCC-NGSO-MILESTONES-NPRM-2024",
+    jurisdiction: "US",
+    type: "federal_regulation",
+    status: "proposed",
+    title_en: "FCC NPRM on NGSO Milestone Compliance (2024)",
+    date_published: "2024-07-01",
+    source_url:
+      "https://www.fcc.gov/document/fcc-proposes-ngso-milestone-rules",
+    issuing_body: "Federal Communications Commission",
+    competent_authorities: ["US-FCC"],
+    relevance_level: "high",
+    applicable_to: ["constellation_operator"],
+    compliance_areas: ["frequency_spectrum", "licensing"],
+    scope_description:
+      "FCC NPRM tightening milestone-compliance rules for NGSO authorisations: clearer deployment-fraction thresholds, stricter enforcement against spectrum-warehousing applicants, and procedural mechanisms to revoke licences from non-progressing constellations. Aligns FCC with the ITU Resolution 35 BIU milestone framework.",
+    key_provisions: [],
+    related_sources: ["INT-ITU-RES-35"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "US-FCC-LUMINOSITY-NPRM-2024",
+    jurisdiction: "US",
+    type: "federal_regulation",
+    status: "proposed",
+    title_en: "FCC NPRM on Satellite Luminosity Reporting",
+    date_published: "2024-09-01",
+    source_url:
+      "https://www.fcc.gov/document/fcc-proposes-satellite-luminosity-rule",
+    issuing_body: "Federal Communications Commission",
+    competent_authorities: ["US-FCC"],
+    relevance_level: "medium",
+    applicable_to: ["constellation_operator"],
+    compliance_areas: ["scientific_research", "media_broadcasting"],
+    scope_description:
+      "FCC NPRM proposing luminosity reporting requirements for NGSO satellites — measured magnitudes, mitigation steps (dark coatings, sunshades, sun-pointing avoidance manoeuvres). Coordinated with IAU CPS and NSF Astro. Industry response divided: SpaceX cooperative, Amazon Kuiper resistant. Status: pending Final Rule.",
+    key_provisions: [],
+    related_sources: ["INT-IAU-CPS-CENTER", "INT-IAU-RES-B5-2024"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "US-DOT-FCC-MOU-2018",
+    jurisdiction: "US",
+    type: "policy_document",
+    status: "in_force",
+    title_en: "DOT-FCC Memorandum of Understanding on Commercial Space",
+    date_enacted: "2018-06-15",
+    source_url:
+      "https://www.fcc.gov/document/fcc-and-dot-sign-memorandum-understanding-commercial-space",
+    issuing_body:
+      "Department of Transportation + Federal Communications Commission",
+    competent_authorities: ["US-FCC", "US-FAA"],
+    relevance_level: "low",
+    applicable_to: ["launch_provider", "satellite_operator"],
+    compliance_areas: ["licensing"],
+    scope_description:
+      "Inter-agency MOU coordinating FAA (launch + reentry) + FCC (frequency + satellite-licensing) responsibilities. Establishes joint-review procedure for activities crossing both agencies' jurisdictions (commercial launches operating non-FCC-licensed spectrum, etc.).",
+    key_provisions: [],
+    related_sources: [],
+    last_verified: "2026-05-26",
+  },
+
+  // ─── Dark Skies / Radio Astronomy ───────────────────────────────────
+  {
+    id: "US-NRQZ-GREEN-BANK",
+    jurisdiction: "US",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "National Radio Quiet Zone — Green Bank Radio Quiet Protection",
+    date_enacted: "1958-01-01",
+    source_url: "https://greenbankobservatory.org/about-nrqz/",
+    issuing_body:
+      "Federal Communications Commission + National Telecommunications and Information Administration",
+    competent_authorities: ["US-FCC"],
+    relevance_level: "medium",
+    applicable_to: ["satellite_operator", "constellation_operator"],
+    compliance_areas: ["frequency_spectrum", "scientific_research"],
+    scope_description:
+      "13,000-square-mile zone in West Virginia + Virginia where FCC + NTIA jointly coordinate transmitter power + frequency assignments to protect the Green Bank Telescope + the NSA Sugar Grove site. NGSO operators with downlinks coordinated through NRQZ Administrator to avoid interference into protected radio-astronomy bands.",
+    key_provisions: [],
+    related_sources: ["INT-ITU-RR-ART-29"],
+    last_verified: "2026-05-26",
+  },
+
+  // ─── Space Tourism + Resources ──────────────────────────────────────
+  {
+    id: "US-CSLA-EXTENSION-2023",
+    jurisdiction: "US",
+    type: "federal_law",
+    status: "in_force",
+    title_en:
+      "Commercial Space Launch Act Extension (2023) — Informed-Consent Moratorium",
+    date_enacted: "2023-12-22",
+    official_reference:
+      "Pub. L. 118-31 (FY24 NDAA Section 1828); 51 U.S.C. § 50905(c)",
+    source_url: "https://www.congress.gov/bill/118th-congress/house-bill/2670",
+    issuing_body: "US Congress",
+    competent_authorities: ["US-FAA"],
+    relevance_level: "high",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["consumer_protection", "human_spaceflight"],
+    scope_description:
+      "Extends the original 2004 Commercial Space Launch Amendments Act moratorium on FAA regulation of commercial human-spaceflight occupant safety (the 'learning period'). Extended to October 2025 (subject to further extension). Practical effect: suborbital + orbital crewed commercial operations rely on informed-consent (FAA Part 460) rather than safety-standards. Virgin Galactic + Blue Origin operate under this regime.",
+    key_provisions: [],
+    related_sources: [],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "US-NASA-LUNAR-REGOLITH-CONTRACTS",
+    jurisdiction: "US",
+    type: "procurement_framework",
+    status: "in_force",
+    title_en:
+      "NASA Lunar Regolith Contract Awards (2020) — Commercial Space-Resource Precedent",
+    date_published: "2020-12-03",
+    source_url:
+      "https://www.nasa.gov/press-release/nasa-selects-companies-to-collect-lunar-resources-for-artemis-demonstrations/",
+    issuing_body: "National Aeronautics and Space Administration",
+    competent_authorities: ["US-NASA"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "ip_patents"],
+    scope_description:
+      "NASA awarded $1-$15k contracts to four companies (Lunar Outpost, Masten Space, ispace, Maxar) for the demonstration purchase of small quantities of lunar regolith — the first legally-precedential commercial space-resource transaction. Operationalises US CSLCA 2015 + Artemis Accords Section 10. Counter-positioned to Moon-Agreement res-nullius framing.",
+    key_provisions: [],
+    related_sources: ["US-CSLCA-2015", "INT-ARTEMIS-ACCORDS-2020"],
+    last_verified: "2026-05-26",
+  },
+];
+
 // ─── Aggregated Export ────────────────────────────────────────────
 
 export const LEGAL_SOURCES_US: LegalSource[] = [
@@ -1480,4 +1669,5 @@ export const LEGAL_SOURCES_US: LegalSource[] = [
   ...EXPORT_CONTROL_US,
   ...POLICY_US,
   ...DEBRIS_RULES_US,
+  ...P2_ADDITIONS_US,
 ];
