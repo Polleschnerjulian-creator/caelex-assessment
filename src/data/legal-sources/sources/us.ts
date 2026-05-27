@@ -2339,6 +2339,124 @@ const STATE_SPACEPORT_US: LegalSource[] = [
   },
 ];
 
+// ─── Suborbital + Commercial Human Spaceflight ───────────────────
+// FAA Part 460 informed-consent regime + 'learning period' moratorium
+// + Virgin Galactic + Blue Origin + Axiom + Polaris Dawn commercial
+// human-spaceflight case-law. Material for any commercial-space-tourism
+// + private-astronaut mission counsel.
+
+const SUBORBITAL_TOURISM_US: LegalSource[] = [
+  {
+    id: "US-FAA-PART-460-HUMAN-SPACEFLIGHT",
+    jurisdiction: "US",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "14 CFR Part 460 — Human Space Flight Requirements + Informed Consent Regime",
+    date_enacted: "2006-12-15",
+    date_last_amended: "2024-12-19",
+    source_url:
+      "https://www.ecfr.gov/current/title-14/chapter-III/subchapter-C/part-460",
+    issuing_body: "FAA Office of Commercial Space Transportation (AST)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["human_spaceflight", "consumer_protection", "liability"],
+    scope_description:
+      "14 CFR Part 460 — primary US framework for commercial human spaceflight. Operates under FAA AST 'learning period' moratorium (CSLA 2004 + extended 2015 + 2025 NDAA extension through 2028) limiting FAA from regulating occupant safety. Instead Part 460 mandates: (i) §460.45 informed consent (written, signed pre-flight, must disclose all 'safety record' incl. fatal/serious-injury history); (ii) §460.51 crew training requirements; (iii) §460.53 medical screening; (iv) §460.45(b) waiver of US claims for participants. Material for any commercial-space-tourism operator: Virgin Galactic + Blue Origin + SpaceX private-astronaut missions (Inspiration4 + Axiom + Polaris Dawn) all operate under Part 460 informed-consent regime. 'Learning period' extension to 2028 included in 2025 NDAA → moratorium continues but Congress likely transitioning to safety-standards regime 2028+.",
+    key_provisions: [
+      "§460.45 — informed consent (written, pre-flight, fatal/serious-injury disclosure)",
+      "§460.51 — crew training requirements",
+      "§460.53 — medical screening",
+      "§460.45(b) — waiver of US claims for participants",
+      "CSLA 2004 'learning period' moratorium extended to 2028",
+    ],
+    related_sources: [
+      "US-CSLA-1984",
+      "CASE-VIRGIN-GALACTIC-COMMERCIAL-OPS",
+      "CASE-POLARIS-DAWN-EVA-2024",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-VIRGIN-GALACTIC-COMMERCIAL-OPS",
+    jurisdiction: "US",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "Virgin Galactic Commercial Suborbital Operations — Unity 22 + Galactic 01-06 + Pivotal Galactic 07 (June 2024 Final Unity Flight)",
+    date_enacted: "2021-07-11",
+    date_last_amended: "2024-06-08",
+    source_url: "https://www.virgingalactic.com/",
+    issuing_body:
+      "Virgin Galactic Holdings + FAA AST + New Mexico Spaceport Authority",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["human_spaceflight", "consumer_protection"],
+    scope_description:
+      "Virgin Galactic VSS Unity — first FAA AST-licensed commercial suborbital human-spaceflight (Unity 22 11 July 2021 Richard Branson + crew). Subsequent commercial missions: Unity 25 (May 2023 first commercial paying customers), Galactic 01 (June 2023 Italian Air Force scientific mission $600K/seat), Galactic 02-06 (Aug 2023 - May 2024 monthly cadence, ~$450K-$600K/seat private participants), Galactic 07 (June 2024 final Unity flight). VSS Unity retired June 2024 for Delta-class replacement transition. Material practitioner implications: (i) FAA Mishap Investigation reports July 2023 Unity 25 + September 2023 Galactic 02 (anomalous trajectory deviations) — both cleared without operations suspension under FAA AST 'learning period' regime; (ii) informed-consent template establishes baseline industry waiver framework; (iii) Delta-class commercial operations planned 2026-2027; (iv) Virgin Galactic NASDAQ stock $SPCE declined 96% 2021-2024 — material precedent for commercial-suborbital business-model challenges. Material baseline for FAA Part 460 informed-consent regime operational practice.",
+    key_provisions: [],
+    related_sources: [
+      "US-FAA-PART-460-HUMAN-SPACEFLIGHT",
+      "US-NEW-MEXICO-SPACEPORT-ACT",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-BLUE-ORIGIN-NS-COMMERCIAL-OPS",
+    jurisdiction: "US",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "Blue Origin New Shepard Commercial Operations — NS-16 to NS-29 + NS-23 September 2022 Booster Anomaly + 2024 Return-to-Flight",
+    date_enacted: "2021-07-20",
+    date_last_amended: "2024-08-29",
+    source_url: "https://www.blueorigin.com/new-shepard/",
+    issuing_body:
+      "Blue Origin LLC + FAA AST + Bureau of Land Management (Texas)",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["human_spaceflight", "consumer_protection", "liability"],
+    scope_description:
+      "Blue Origin New Shepard commercial operations — first crewed flight NS-16 (20 July 2021 Jeff Bezos + crew). Through 2024: 11 commercial crewed flights (NS-16 through NS-25 + NS-26 + NS-28 + NS-29) carrying 40+ private participants + scientific payloads. Material practitioner events: (i) NS-23 September 2022 uncrewed booster anomaly — Capsule Escape System operated successfully + payload recovered safely, but 15-month grounding under FAA AST Mishap Investigation; (ii) Return-to-flight December 2023 NS-24 uncrewed payload, followed NS-25 crewed May 2024; (iii) FAA AST cleared anomaly cause (engine combustion chamber failure) but established new safety-zone procedures for Bezos-class private-astronaut missions; (iv) commercial pricing not publicly disclosed but reportedly ~$500K-$1M/seat. Material precedent for: FAA AST Mishap Investigation process under 'learning period' regime, Capsule Escape System safety-record validation, and ongoing FAA AST operational oversight despite 'learning period' moratorium.",
+    key_provisions: [],
+    related_sources: [
+      "US-FAA-PART-460-HUMAN-SPACEFLIGHT",
+      "CASE-VIRGIN-GALACTIC-COMMERCIAL-OPS",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-AXIOM-PRIVATE-ASTRONAUT-MISSIONS",
+    jurisdiction: "US",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "Axiom Space Private Astronaut Missions Ax-1 to Ax-4 (2022-2025) — First Commercial Orbital + ISS Private Mission Framework",
+    date_enacted: "2022-04-08",
+    date_last_amended: "2025-04-15",
+    source_url: "https://www.axiomspace.com/missions/",
+    issuing_body:
+      "Axiom Space Inc + NASA + SpaceX + ISS Multilateral Crew Operations Panel (MCOP)",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["human_spaceflight", "procurement", "liability"],
+    scope_description:
+      "Axiom Space Private Astronaut Missions — first commercial orbital + ISS private-astronaut programme. Missions executed: Ax-1 (April 2022, 17-day ISS stay, $55M/seat reported), Ax-2 (May 2023, 10-day stay, Saudi astronauts including first Arab woman in space), Ax-3 (Jan 2024, 18-day stay, Turkish + Italian + Swedish astronauts), Ax-4 (April 2025, 14-day stay, Indian astronaut Shubhanshu Shukla — first Indian on ISS). Material practitioner implications: (i) NASA Private Astronaut Missions (PAM) framework via Federal Acquisition Regulation (FAR) Part 12 commercial-item acquisition; (ii) ISS Multilateral Crew Operations Panel (MCOP) approval required for private-astronaut access; (iii) per-mission NASA reimbursement ~$5.2M for crew time + supplies; (iv) commercial-pricing $55M-$70M per seat all-inclusive; (v) Axiom Station modular commercial-LEO development planned 2026-2028 (Hub-1 module replacing ISS function). Material precedent for any commercial-orbital-tourism operator: full operational framework now established.",
+    key_provisions: [
+      "FAR Part 12 commercial-item acquisition",
+      "ISS MCOP approval required",
+      "NASA reimbursement ~$5.2M crew time + supplies",
+      "Commercial pricing $55M-$70M per seat",
+    ],
+    related_sources: ["US-FAA-PART-460-HUMAN-SPACEFLIGHT", "INT-ISS-IGA-1998"],
+    last_verified: "2026-05-27",
+  },
+];
+
 // ─── Aggregated Export ────────────────────────────────────────────
 
 export const LEGAL_SOURCES_US: LegalSource[] = [
@@ -2355,4 +2473,5 @@ export const LEGAL_SOURCES_US: LegalSource[] = [
   ...AI_COMPLIANCE_US,
   ...RD_FINANCING_US,
   ...STATE_SPACEPORT_US,
+  ...SUBORBITAL_TOURISM_US,
 ];
