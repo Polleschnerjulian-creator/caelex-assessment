@@ -4266,4 +4266,265 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     related_sources: ["INT-OST-1967"],
     last_verified: "2026-05-26",
   },
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // Atlas P3 (2026-05-26): Bilateral Technology Safeguards Agreements (TIA)
+  // + Lunar cooperation MoUs + Spectrum-coordination MOUs.
+  //
+  // TIAs are critical for understanding WHY certain launches use certain
+  // ranges — they exempt US-built payloads + technology from ITAR re-export
+  // controls when launched from approved foreign sites.
+  //
+  // Per ATLAS-CORPUS-EXPANSION-PLAN.md § 7.C.
+  // ═══════════════════════════════════════════════════════════════════════
+
+  // ─── US Technology Safeguards Agreements (TIAs) ───────────────────────
+  {
+    id: "INT-US-NORWAY-ANDOYA-TIA-2021",
+    jurisdiction: "INT",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en: "US-Norway Technology Safeguards Agreement — Andøya Spaceport",
+    date_enacted: "2021-12-21",
+    date_in_force: "2022-08-01",
+    source_url:
+      "https://www.state.gov/u-s-norway-technology-safeguards-agreement/",
+    issuing_body: "Governments of US + Norway",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["launch_provider", "satellite_operator"],
+    compliance_areas: ["export_control", "military_dual_use"],
+    scope_description:
+      "Bilateral TIA permitting US-export-controlled payloads + launch technology to be exported to + launched from Andøya Spaceport (Norway). Without TIA, US-built satellites + launch components face ITAR re-export complications when transiting Norwegian territory. TIA enables Norway's commercial-launch ambitions (Isar Aerospace + Rocket Factory Augsburg first launches from Andøya 2025).",
+    key_provisions: [
+      {
+        section: "TIA Articles I-V",
+        title: "Technology-control + handling obligations",
+        summary:
+          "Norway commits to ITAR-equivalent technology-control measures: secure facilities, access restrictions, accountability protocols. US-export-controlled items handled exclusively by US-cleared personnel pre-integration; Norway exempt from re-export-licence requirements for narrow purpose of Andøya operations.",
+      },
+    ],
+    related_sources: ["NO-ANDOYA-SPACEPORT", "US-ITAR-22-CFR-120"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "INT-US-UK-TSA-2020",
+    jurisdiction: "INT",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en: "US-UK Technology Safeguards Agreement — UK Spaceports",
+    date_enacted: "2020-06-16",
+    date_in_force: "2020-06-16",
+    source_url:
+      "https://www.gov.uk/government/publications/uk-us-technology-safeguards-agreement",
+    issuing_body: "Governments of US + UK",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["launch_provider", "satellite_operator"],
+    compliance_areas: ["export_control", "military_dual_use"],
+    scope_description:
+      "Bilateral TSA enabling US-export-controlled satellites + launch technology to operate from UK spaceports (SaxaVord, Sutherland, Spaceport Cornwall). Foundational for the UK commercial-launch sector — Virgin Orbit Cornwall launch (2023) operated under this TSA. Renews on 10-year cycle.",
+    key_provisions: [],
+    related_sources: [
+      "UK-SIA-2018-SPACEFLIGHT-OP",
+      "CASE-UK-SAXAVORD-LICENCE-2023",
+    ],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "INT-US-AUSTRALIA-TSA-2019",
+    jurisdiction: "INT",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en: "US-Australia Technology Safeguards Agreement",
+    date_enacted: "2019-10-19",
+    date_in_force: "2021-06-04",
+    source_url:
+      "https://www.state.gov/u-s-australia-technology-safeguards-agreement-tsa/",
+    issuing_body: "Governments of US + Australia",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider", "satellite_operator"],
+    compliance_areas: ["export_control", "military_dual_use"],
+    scope_description:
+      "Bilateral TSA enabling US-export-controlled space technology to be exported to + launched from Australian spaceports (Arnhem Land, Whalers Way). Material for Equatorial Launch Australia + Southern Launch sites + Gilmour Space domestic operations including foreign payloads. Subsumes earlier 2008 framework.",
+    key_provisions: [],
+    related_sources: ["AU-SLR-ACT-2018"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "INT-US-NEW-ZEALAND-TSA-2016",
+    jurisdiction: "INT",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en: "US-New Zealand Technology Safeguards Agreement — Mahia",
+    date_enacted: "2016-09-08",
+    date_in_force: "2017-06-13",
+    source_url:
+      "https://www.state.gov/u-s-new-zealand-technology-safeguards-agreement/",
+    issuing_body: "Governments of US + New Zealand",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider", "satellite_operator"],
+    compliance_areas: ["export_control", "military_dual_use"],
+    scope_description:
+      "Bilateral TSA enabling Rocket Lab's US-licensed launches from Mahia (NZ). Foundational for the Rocket Lab Electron commercial-launch business operating predominantly US-payload manifests from a NZ launch site. Cited in 2020+ Rocket Lab US dual-listing IPO disclosures.",
+    key_provisions: [],
+    related_sources: ["NZ-OUTER-SPACE-HIGH-ALTITUDE-ACT-2017"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "INT-US-BRAZIL-TIA-2019",
+    jurisdiction: "INT",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en: "US-Brazil Technology Safeguards Agreement — Alcântara",
+    date_enacted: "2019-03-19",
+    date_in_force: "2019-12-23",
+    source_url:
+      "https://www.state.gov/u-s-brazil-technology-safeguards-agreement/",
+    issuing_body: "Governments of US + Brazil",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["launch_provider", "satellite_operator"],
+    compliance_areas: ["export_control", "military_dual_use"],
+    scope_description:
+      "Bilateral TIA enabling US-built payloads + launch components to be launched from Brazilian Alcântara Launch Center (CLA). Successor to abandoned 2000 framework. CLA's equatorial latitude (~2.3°S) makes it strategically valuable for GEO + escape-trajectory launches. Material for any commercial-launch provider considering CLA operations.",
+    key_provisions: [],
+    related_sources: ["BR-AEB-ALCANTARA-IC", "BR-AEB-SAFEGUARDS-US-TIA"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "INT-US-KAZAKHSTAN-TSA-2024",
+    jurisdiction: "INT",
+    type: "bilateral_agreement",
+    status: "proposed",
+    title_en: "US-Kazakhstan Technology Safeguards Agreement (Proposed)",
+    date_published: "2024-09-01",
+    source_url: "https://www.state.gov/",
+    issuing_body: "Governments of US + Kazakhstan (negotiations)",
+    competent_authorities: [],
+    relevance_level: "low",
+    applicable_to: ["launch_provider"],
+    compliance_areas: ["export_control"],
+    scope_description:
+      "Negotiations between US + Kazakhstan since 2023 to enable US-export-controlled payloads at Baikonur (notwithstanding Russian operational control of the lease) + future Kazakh launch sites. Strategic implications: parallel to Kazakhstan's gradual reduction of Russian space-cooperation dependency. Status as of 2025-Q1: under negotiation, not yet finalised.",
+    key_provisions: [],
+    related_sources: ["RU-BAIKONUR-LEASE"],
+    last_verified: "2026-05-26",
+  },
+
+  // ─── Lunar cooperation bilateral MoUs ─────────────────────────────────
+  {
+    id: "INT-INDIA-JAPAN-LUPEX-MOU",
+    jurisdiction: "INT",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en: "India-Japan LUPEX Lunar Polar Exploration MoU",
+    date_enacted: "2017-03-01",
+    date_last_amended: "2023-05-18",
+    source_url: "https://www.isro.gov.in/lupex.html",
+    issuing_body: "ISRO + JAXA",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["scientific_research", "procurement"],
+    scope_description:
+      "Bilateral lunar-polar exploration cooperation. JAXA provides H3 rocket + rover; ISRO provides lander. Mission planned for ~2027-2028. Material precedent for inter-agency lunar cooperation outside Artemis Accords framework — India + Japan are both Artemis signatories but LUPEX predates + operates independently.",
+    key_provisions: [],
+    related_sources: ["INT-ARTEMIS-ACCORDS-2020"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "INT-KOREA-NASA-ARTEMIS-MOU",
+    jurisdiction: "INT",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en: "Korea-NASA Artemis Cooperation Framework",
+    date_enacted: "2021-05-24",
+    date_last_amended: "2024-04-08",
+    source_url:
+      "https://www.nasa.gov/news-release/nasa-and-koreas-aerospace-agency-extend-artemis-cooperation/",
+    issuing_body: "NASA + Korea Aerospace Research Institute (KARI) / KASA",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["scientific_research", "procurement"],
+    scope_description:
+      "Bilateral framework for Korean cooperation in Artemis programme. Korea signed Artemis Accords May 2021; bilateral implementation MoUs deepen specific cooperation (Korean Pathfinder Lunar Orbiter — KPLO, launched 2022, used NASA's Deep Space Network). 2024 extension covers KASA-NASA continued cooperation post-KASA establishment.",
+    key_provisions: [],
+    related_sources: ["INT-ARTEMIS-ACCORDS-2020", "KR-KASA-LAW-2024"],
+    last_verified: "2026-05-26",
+  },
+
+  // ─── Spectrum / GNSS coordination MoUs ────────────────────────────────
+  {
+    id: "INT-GPS-GALILEO-COMPATIBILITY",
+    jurisdiction: "INT",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en: "US-EU GPS-Galileo Compatibility + Interoperability Agreement",
+    date_enacted: "2004-06-26",
+    date_last_amended: "2017-10-01",
+    source_url: "https://www.gps.gov/policy/cooperation/europe/2004-agreement/",
+    issuing_body: "Governments of US + EU Member States",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "data_provider"],
+    compliance_areas: ["frequency_spectrum"],
+    scope_description:
+      "Foundational US-EU agreement on GNSS interoperability. Establishes interoperability of GPS L1 + Galileo E1 civilian signals — material for every GNSS-enabled device manufacturer + downstream service provider. Technical-cooperation working group meets annually. 2017 update reflected GPS III + Galileo Full Operational Capability deployment.",
+    key_provisions: [],
+    related_sources: ["EU-GALILEO-PRS-2011"],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "INT-GPS-QZSS-COMPATIBILITY",
+    jurisdiction: "INT",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en: "US-Japan GPS-QZSS Cooperation Agreement",
+    date_enacted: "2002-09-17",
+    date_last_amended: "2017-10-01",
+    source_url: "https://www.gps.gov/policy/cooperation/japan/",
+    issuing_body: "Governments of US + Japan",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["satellite_operator", "data_provider"],
+    compliance_areas: ["frequency_spectrum"],
+    scope_description:
+      "US-Japan cooperation on GPS + Japan's Quasi-Zenith Satellite System (QZSS — regional augmentation for Japan + East Asia). QZSS interoperable with GPS for L1 + L5 civil signals. Material for any GNSS receiver manufacturer + augmentation-services provider serving East Asia + Australia.",
+    key_provisions: [],
+    related_sources: [],
+    last_verified: "2026-05-26",
+  },
+  {
+    id: "INT-NASA-ISS-IGA-IMPLEMENTING-MOUS",
+    jurisdiction: "INT",
+    type: "multilateral_agreement",
+    status: "in_force",
+    title_en:
+      "NASA-RSA / NASA-ESA / NASA-JAXA / NASA-CSA ISS IGA Implementing MoUs",
+    date_enacted: "1998-01-29",
+    date_last_amended: "2024-01-01",
+    source_url:
+      "https://www.nasa.gov/mission_pages/station/structure/elements/partners_agreement.html",
+    issuing_body: "NASA + Roscosmos + ESA + JAXA + CSA (implementing agencies)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["procurement", "ip_patents", "employment_labor"],
+    scope_description:
+      "Operational implementing MoUs under the ISS IGA framework (INT-ISS-IGA-1998). Each partner pair has bilateral MoUs detailing utilisation allocation, crew rotation, payload integration, data sharing, IP licensing. NASA-RSA MoU operationally critical for ISS continuity through 2030 deorbit despite political tensions. NASA-ESA + NASA-JAXA MoUs cover commercial-crew + commercial-cargo provisions.",
+    key_provisions: [
+      {
+        section: "Annexes per implementing MoU",
+        title: "Operational utilisation + crew + payload",
+        summary:
+          "Detailed allocation of ISS utilisation hours, crew slots, payload integration windows. Negotiated annually + 5-year programmatic cycles. Material for any commercial-ISS sponsor — payload integration depends on these MoU mechanisms.",
+      },
+    ],
+    related_sources: ["INT-ISS-IGA-1998"],
+    last_verified: "2026-05-26",
+  },
 ];
