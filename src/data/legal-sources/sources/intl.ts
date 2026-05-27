@@ -6310,4 +6310,127 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     ],
     last_verified: "2026-05-27",
   },
+  // ============================================================================
+  // GNSS SOVEREIGN SYSTEMS CLUSTER (+4 entries)
+  // ============================================================================
+  // Material navigation infrastructure framework — GPS Selective Availability,
+  // Galileo PRS, GLONASS sanctions, BeiDou BRI expansion, ITU coordination.
+  // ============================================================================
+  {
+    id: "INT-GPS-SELECTIVE-AVAILABILITY",
+    jurisdiction: "INT",
+    type: "policy_document",
+    status: "in_force",
+    title_en:
+      "GPS Selective Availability + Anti-Spoofing — US Sovereign GNSS Architecture",
+    date_enacted: "1990-07-01",
+    date_last_amended: "2024-07-29",
+    source_url: "https://www.gps.gov/policy/cooperation/spectrum/",
+    issuing_body: "US Space Force + Department of Transportation (DOT)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "military_dual_use",
+      "frequency_spectrum",
+      "critical_infrastructure",
+    ],
+    scope_description:
+      "GPS architecture — US Space Force operated since 1995, free for civil use globally. Material practitioner provisions: (i) Selective Availability (SA) intentional degradation discontinued 1 May 2000 by Presidential Decision (Clinton EO); (ii) SA-on-Demand authority preserved (can be re-enabled regionally during conflict); (iii) M-Code (Military Code) operational since 2017 (GPS Block IIF + GPS III), provides anti-jamming + anti-spoofing for US + allied military; (iv) GPS Civil Signals: L1 C/A + L2C + L5 (aviation safety-of-life). Material commercial implications: (i) GPS-denied environments (Ukraine 2022+ + Middle East 2023+) drive commercial-GNSS resilience requirements; (ii) GPS III + GPS IIIF deployment (2025-2030) provides 3x signal strength + 8x anti-jamming over prior generations; (iii) US Space Force Resilient GPS (R-GPS) Other Transaction Authority awarded 2024 (Astranis + Sierra Space + L3Harris + Lockheed). Material baseline for any GNSS-dependent commercial-space firm operational risk assessment.",
+    key_provisions: [
+      "Selective Availability discontinued 2000 + on-demand authority preserved",
+      "M-Code operational since 2017 (GPS Block IIF + GPS III)",
+      "Civil signals L1 C/A + L2C + L5",
+      "GPS III + IIIF 3x signal strength + 8x anti-jamming",
+      "R-GPS OTA 2024 commercial backup capability",
+    ],
+    related_sources: [
+      "INT-GPS-GALILEO-INTEROPERABILITY",
+      "INT-GLONASS-SANCTIONS-EXPOSURE",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-GPS-GALILEO-INTEROPERABILITY",
+    jurisdiction: "INT",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en:
+      "US-EU GPS-Galileo Interoperability Agreement (2004) + 2024 Joint Statement on Multi-GNSS Architecture",
+    date_enacted: "2004-06-26",
+    date_last_amended: "2024-09-25",
+    source_url: "https://www.gps.gov/policy/cooperation/europe/",
+    issuing_body:
+      "US State Department + European Commission DG DEFIS + EU Agency for the Space Programme (EUSPA)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["frequency_spectrum", "scientific_research"],
+    scope_description:
+      "US-EU GPS-Galileo Interoperability Agreement — landmark 2004 agreement establishing GPS + Galileo signal compatibility + civil interoperability. Material practitioner provisions: (i) Annex I L1 signal compatibility (GPS L1 C/A + Galileo E1 OS share central frequency 1575.42 MHz); (ii) Annex II Multi-Constellation/Multi-Frequency Receiver standards; (iii) civil user-receiver dual-system access; (iv) 2024 Joint Statement extending cooperation to GPS IIIF + Galileo Second Generation (2026+); (v) emergency-coordination protocols for service interruptions. Material for any commercial-GNSS receiver manufacturer + space-tech firm operating GNSS-dependent services: dual-system receivers now industry standard (Trimble + u-blox + Quectel + Septentrio), enabling 99.9%+ continuity even during single-system anomalies. ITAR-exempt civil receiver hardware enables global commercial supply chain.",
+    key_provisions: [
+      "Annex I — L1 1575.42 MHz signal compatibility",
+      "Annex II — Multi-Constellation/Multi-Frequency receiver standards",
+      "Civil dual-system access",
+      "2024 GPS IIIF + Galileo G2 cooperation extension",
+    ],
+    related_sources: ["INT-GPS-SELECTIVE-AVAILABILITY", "EU-GALILEO-PRS-2011"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-GLONASS-SANCTIONS-EXPOSURE",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "Russia GLONASS Post-Ukraine Sanctions Exposure — IGS Station Closures + Commercial-Receiver Compliance Cascading",
+    date_enacted: "2022-02-24",
+    date_last_amended: "2024-06-12",
+    source_url: "https://www.glonass-iac.ru/en/",
+    issuing_body:
+      "Roscosmos GLONASS Information Analytical Center + EU Council + OFAC",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "sanctions_compliance",
+      "frequency_spectrum",
+      "critical_infrastructure",
+    ],
+    scope_description:
+      "GLONASS Sanctions Exposure post-Ukraine 2022 — Russian GLONASS sovereign GNSS subject to escalating Western sanctions pressure: (i) International GNSS Service (IGS) closed 18 Russian-territory GLONASS reference stations 2022; (ii) Brazilian GLONASS reference station (closest to equator) closed October 2024 under US Treasury pressure; (iii) GLONASS-K2 next-generation satellite production delayed by Western chip embargo (TI + Microchip + Infineon chip access blocked); (iv) Roscosmos sanctioned by OFAC SDN List February 2022 + EU 4th sanctions package February 2022. Material commercial-receiver implications: (i) GLONASS signal continues operational + civil receiver compatibility preserved; (ii) dual-use receivers receiving GLONASS data face no direct sanctions trigger; (iii) Russian-supplied receiver hardware (NIITP-PRO + Topcon Russia) subject to export-control restrictions; (iv) commercial-space firms providing receivers/services to GLONASS face heightened sanctions-compliance due diligence. Material precedent for sanctions-environment GNSS operational continuity analysis.",
+    key_provisions: [],
+    related_sources: ["RU-OFAC-EU-SANCTIONS", "INT-GPS-SELECTIVE-AVAILABILITY"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-BEIDOU-BRI-EXPANSION",
+    jurisdiction: "INT",
+    type: "bilateral_agreement",
+    status: "in_force",
+    title_en:
+      "BeiDou Belt-and-Road Expansion — Pakistan + Saudi Arabia + Egypt + Thailand + Iran Sovereign GNSS Cooperation Framework",
+    date_enacted: "2018-12-27",
+    date_last_amended: "2024-11-05",
+    source_url: "https://en.beidou.gov.cn/",
+    issuing_body:
+      "China Satellite Navigation Office (CSNO) + China National Space Administration (CNSA)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "frequency_spectrum",
+      "military_dual_use",
+      "fdi_screening",
+    ],
+    scope_description:
+      "BeiDou Global Service operational since December 2018 (BDS-3 constellation, 35 satellites). Material BRI Sovereign GNSS Cooperation MoUs: (i) Pakistan (2019, BeiDou ground stations Islamabad + Karachi); (ii) Saudi Arabia (2019, Riyadh + Jeddah ground stations); (iii) Egypt (2019, Cairo + Alexandria ground stations); (iv) Thailand (2020, Bangkok + Phuket); (v) Iran (2022, Tehran + Mashhad — material concerning given EU + US sanctions); (vi) Algeria + Tunisia + Morocco (2024 expansion). Material practitioner implications: (i) BeiDou ground-station presence increases Chinese signal-strength + accuracy in partner states relative to GPS + Galileo + GLONASS; (ii) BeiDou Authorised Service (analogous to Galileo PRS) provides encrypted military signal to partner-state militaries; (iii) emerging commercial-receiver vendor differentiation: dual-system (GPS+Galileo) vs triple-system (+GLONASS) vs quad-system (+BeiDou); (iv) US BIS Entity List restrictions on receiver vendors selling to PRC-aligned-state military users. Material baseline for commercial-receiver vendor sanctions-compliance + multi-GNSS-architecture strategy.",
+    key_provisions: [],
+    related_sources: [
+      "PK-PAKSAT-CHINA-CGWIC",
+      "NG-NIGCOMSAT-CHINA-EXIM-FINANCING",
+      "DZ-ALCOMSAT-1-CHINA-CGWIC",
+    ],
+    last_verified: "2026-05-27",
+  },
 ];
