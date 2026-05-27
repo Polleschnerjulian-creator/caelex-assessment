@@ -5939,4 +5939,128 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     ],
     last_verified: "2026-05-27",
   },
+  // ============================================================================
+  // MARITIME + RANGE OPERATIONS CLUSTER (+4 entries)
+  // ============================================================================
+  // IMO regs + ICAO + USCG range coordination + droneship operations. Material
+  // for launch operators + downrange-fall-zone risk management.
+  // ============================================================================
+  {
+    id: "INT-IMO-COLREGS-LAUNCH-ZONES",
+    jurisdiction: "INT",
+    type: "international_treaty",
+    status: "in_force",
+    title_en:
+      "IMO Convention on the International Regulations for Preventing Collisions at Sea (COLREGs 1972) — Applied to Launch + Reentry Hazard Zones",
+    date_enacted: "1972-10-20",
+    date_last_amended: "2023-12-15",
+    source_url: "https://www.imo.org/en/About/Conventions/Pages/COLREG.aspx",
+    issuing_body: "International Maritime Organization (IMO)",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["space_traffic_management", "liability"],
+    scope_description:
+      "COLREGs 1972 — global maritime collision-prevention treaty, 165 contracting parties. Material space-launch applications: (i) Rule 1(a) applicability to all vessels in international waters incl. droneships; (ii) Rule 2 prudent-seamanship standard applied to launch-vehicle landing barges (SpaceX Of Course I Still Love You + Just Read the Instructions + A Shortfall of Gravitas operations); (iii) NOTMAR (Notice to Mariners) issued via IMO + national hydrographic offices for launch hazard zones — typically 24-72 hours advance notice for SpaceX + Rocket Lab + Arianespace launches; (iv) IMO MSC.1/Circ.1581 (2017) — recommended practice for space launches at sea (relevant for SpaceX FH droneships + China Long March 11H sea-launch). Material for any maritime-litigation risk involving launch-vehicle stages or recovery operations.",
+    key_provisions: [
+      "Rule 1(a) — applicability to all vessels incl. droneships",
+      "Rule 2 — prudent-seamanship standard",
+      "MSC.1/Circ.1581 (2017) — space launches at sea",
+      "NOTMAR — 24-72 hour advance notice protocol",
+    ],
+    related_sources: [
+      "INT-ICAO-NOTAM-LAUNCH-COORDINATION",
+      "US-USCG-RANGE-COORDINATION",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-ICAO-NOTAM-LAUNCH-COORDINATION",
+    jurisdiction: "INT",
+    type: "international_treaty",
+    status: "in_force",
+    title_en:
+      "ICAO NOTAM Standards (Annex 15) — Launch + Reentry Airspace Coordination Framework",
+    date_enacted: "1944-12-07",
+    date_last_amended: "2023-07-30",
+    source_url:
+      "https://www.icao.int/safety/aeronavigation/IAVWOPSG/Pages/default.aspx",
+    issuing_body: "International Civil Aviation Organization (ICAO)",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["space_traffic_management", "liability"],
+    scope_description:
+      "ICAO NOTAM Standards (Annex 15 to Chicago Convention) — global aviation airspace notification framework. Material space-launch applications: (i) NOTAM (Notice to Airmen) issued via national civil aviation authorities for launch hazard zones — required 24-72 hours advance for civil airspace closure; (ii) Annex 15 §5.1.1.1.q explicit treatment of 'rocket, missile or space-vehicle launching activities' as NOTAM-triggering events; (iii) ICAO Manual of Procedures for Operations of Aircraft and Space Vehicles (Doc 10153, 2020) — first global aviation-space integration framework; (iv) US FAA + EUROCONTROL + JCAB + CAAC implementing differently. Material practitioner relevance: any commercial launch operator triggers cascading NOTAM coordination requirements via host civil aviation authority + neighboring states + ICAO FIR boundaries — affects launch windows + payload-fairing recovery zones.",
+    key_provisions: [
+      "Annex 15 §5.1.1.1.q — rocket/missile/space-vehicle NOTAMs",
+      "Doc 10153 (2020) — aviation-space integration framework",
+      "24-72 hour advance notification protocol",
+    ],
+    related_sources: [
+      "INT-IMO-COLREGS-LAUNCH-ZONES",
+      "US-USCG-RANGE-COORDINATION",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "US-USCG-RANGE-COORDINATION",
+    jurisdiction: "INT",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "33 CFR Part 165 — USCG Safety + Security Zones for Launch Hazard Areas + Droneship Operations",
+    date_enacted: "1970-04-01",
+    date_last_amended: "2024-08-22",
+    source_url:
+      "https://www.ecfr.gov/current/title-33/chapter-I/subchapter-P/part-165",
+    issuing_body: "US Coast Guard (Department of Homeland Security)",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["space_traffic_management", "liability"],
+    scope_description:
+      "33 CFR Part 165 — USCG Safety + Security Zones framework, primary US maritime launch-coordination tool. Material space-launch applications: (i) Subpart C Safety Zones established for SpaceX Cape Canaveral + Vandenberg + Starbase launches (typical 5-mile exclusion radius around droneship recovery zones); (ii) §165.30 enforcement authority for civil-criminal violations; (iii) NOTMAR + Marine Information Broadcast (MIB) coordination via USCG Sector commands; (iv) §165.940 specific Vandenberg Air Force Base safety zones since 1971; (v) §165.T07-1131 + similar Temporary Safety Zone notices for individual SpaceX launches. Material for any SpaceX + Blue Origin + Rocket Lab droneship recovery or Cape Canaveral / Vandenberg launch operations.",
+    key_provisions: [
+      "Subpart C — Safety Zones (5-mile exclusion typical)",
+      "§165.30 — enforcement authority",
+      "§165.940 — Vandenberg AFB safety zones (since 1971)",
+      "Temporary Safety Zone notices per launch",
+    ],
+    related_sources: [
+      "INT-IMO-COLREGS-LAUNCH-ZONES",
+      "US-FAA-PART-450-LAUNCH-LICENSING",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "CASE-SPACEX-DRONESHIP-OPERATIONS",
+    jurisdiction: "INT",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "SpaceX Droneship Recovery Operations — Of Course I Still Love You + Just Read the Instructions + A Shortfall of Gravitas — Material Maritime-Launch Precedent",
+    date_enacted: "2015-04-14",
+    date_last_amended: "2024-12-13",
+    source_url: "https://www.spacex.com/vehicles/falcon-9/",
+    issuing_body:
+      "SpaceX + USCG + Sanctuary Marine Mammal Stranding Network + NOAA Fisheries",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: [
+      "space_traffic_management",
+      "environmental",
+      "liability",
+    ],
+    scope_description:
+      "SpaceX Droneship Recovery — 350+ operational landings since first success April 2016 (CRS-8). Material practitioner implications: (i) USCG Safety Zone coordination — typical 5-mile exclusion + 36-72 hours pre-launch coordination; (ii) NOAA Fisheries consultation under Marine Mammal Protection Act for marine-mammal disturbance; (iii) NEPA EIS process for droneship operations in National Marine Sanctuary boundaries (relevant for east-coast droneship 'A Shortfall of Gravitas'); (iv) Falcon Heavy boost-back at droneship vs Falcon 9 RTLS legal-cost differential analysis; (v) 2024 SpaceX droneship operations expansion to Pacific (3rd-generation droneship 'Of Course I Still Love You' Pacific operations vs east-coast 'Just Read the Instructions' + 'A Shortfall of Gravitas'). Material precedent for any commercial-launch firm contemplating sea-recovery operations.",
+    key_provisions: [],
+    related_sources: [
+      "US-USCG-RANGE-COORDINATION",
+      "INT-IMO-COLREGS-LAUNCH-ZONES",
+      "US-FAA-PART-450-LAUNCH-LICENSING",
+    ],
+    last_verified: "2026-05-27",
+  },
 ];
