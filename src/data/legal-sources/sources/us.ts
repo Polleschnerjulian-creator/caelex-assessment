@@ -1820,6 +1820,154 @@ const DEFENCE_DOCTRINE_US: LegalSource[] = [
   },
 ];
 
+// ─── IP / Patents in Space ────────────────────────────────────────────
+// US-specific patent law as applied to in-orbit infringement and FTO analysis.
+// 35 USC §105 (Patents-in-Space Act) is the cornerstone — only national patent
+// statute globally that explicitly extraterritorialises patent infringement
+// to space objects registered to the United States.
+
+const IP_PATENTS_US: LegalSource[] = [
+  {
+    id: "US-PATENTS-IN-SPACE-ACT",
+    jurisdiction: "US",
+    type: "federal_law",
+    status: "in_force",
+    title_en:
+      "35 U.S.C. §105 — Inventions in Outer Space (Patents-in-Space Act)",
+    date_enacted: "1990-11-15",
+    source_url: "https://www.law.cornell.edu/uscode/text/35/105",
+    issuing_body: "US Congress",
+    competent_authorities: ["US-USPTO"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["ip_patents"],
+    scope_description:
+      "35 USC §105 (Pub. L. 101-580, 'Patents-in-Space Act 1990') — only national patent statute globally that explicitly extends patent infringement liability to acts performed on space objects under US jurisdiction or control. §105(a): any space object under US jurisdiction/control is deemed US territory for patent purposes, subject to international agreements. §105(b): carve-out for space objects identified as foreign-registered under international agreements — even if owned/operated by US persons. Material for FTO analysis of constellation operators: registry-state determines applicable patent law (see OST Art. VIII).",
+    key_provisions: [
+      "§105(a) — extraterritorial application to US-registered space objects",
+      "§105(b) — international-agreement carve-out for foreign-registered objects",
+    ],
+    related_sources: [
+      "INT-OST-ART-VIII-IP-JURISDICTION",
+      "INT-REGISTRATION-CONVENTION-1976",
+      "US-USPTO-CLASS-244",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "US-USPTO-CLASS-244",
+    jurisdiction: "US",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "USPTO Patent Classification — Class 244 (Aeronautics and Astronautics)",
+    date_enacted: "1899-01-01",
+    date_last_amended: "2024-01-01",
+    source_url:
+      "https://www.uspto.gov/web/patents/classification/uspc244/sched244.htm",
+    issuing_body: "US Patent and Trademark Office (USPTO)",
+    competent_authorities: ["US-USPTO"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["ip_patents"],
+    scope_description:
+      "USPTO Patent Class 244 (Aeronautics and Astronautics) — primary classification bucket for space-tech patents. Subclasses material to space-industry FTO: 244/158 (spacecraft), 244/159 (spacecraft propulsion), 244/164 (attitude control), 244/171 (orbital trajectory), 244/172 (space-vehicle docking). USPTO transitioning to Cooperative Patent Classification (CPC) — Class 244 maps to CPC B64G (Cosmonautics). Material for prior-art searches + freedom-to-operate analysis on satellite/launch-vehicle patents.",
+    key_provisions: [],
+    related_sources: ["US-PATENTS-IN-SPACE-ACT", "INT-PCT-1970"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "US-HUGHES-AIRCRAFT-V-US",
+    jurisdiction: "US",
+    type: "case_law",
+    status: "in_force",
+    title_en:
+      "Hughes Aircraft Co. v. United States — Doctrine of Equivalents in Spacecraft Patent Infringement",
+    date_enacted: "1998-04-13",
+    source_url: "https://supreme.justia.com/cases/federal/us/520/939/",
+    issuing_body: "US Federal Circuit Court of Appeals",
+    competent_authorities: ["US-USPTO"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["ip_patents", "liability"],
+    scope_description:
+      "Hughes Aircraft Co. v. United States — landmark 28-year patent infringement litigation (1973-2001) on spacecraft attitude-control patent (Williams Patent, US Patent 3,758,051). Federal Circuit applied doctrine of equivalents to find infringement despite literal claim-element substitution. Total recovery exceeded $114M including interest. Foundational US case for patent infringement analysis in space-hardware litigation — established principles still applied in modern satellite patent disputes (e.g. Maxar v Planet 2024).",
+    key_provisions: [
+      "Doctrine of Equivalents — substantial equivalence test for satellite components",
+      "Prosecution-history estoppel — limits on doctrine-of-equivalents range",
+    ],
+    related_sources: ["US-PATENTS-IN-SPACE-ACT", "US-USPTO-CLASS-244"],
+    last_verified: "2026-05-27",
+  },
+];
+
+// ─── Tax / Customs ────────────────────────────────────────────────
+// US-specific tax/customs provisions for space-hardware imports/exports.
+// 19 USC §1313 Duty Drawback is the cornerstone — refunds duties on
+// re-exported space-hardware (eg launch services exported from US ports).
+
+const TAX_CUSTOMS_US: LegalSource[] = [
+  {
+    id: "US-19-USC-1313-DRAWBACK",
+    jurisdiction: "US",
+    type: "federal_law",
+    status: "in_force",
+    title_en:
+      "19 U.S.C. §1313 — Drawback and Refunds (Duty Drawback for Re-exported Goods)",
+    date_enacted: "1789-01-01",
+    date_last_amended: "2018-02-24",
+    source_url: "https://www.law.cornell.edu/uscode/text/19/1313",
+    issuing_body: "US Congress",
+    competent_authorities: ["US-CBP"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["tax_customs"],
+    scope_description:
+      "19 USC §1313 — Duty Drawback regime. Refunds 99% of customs duties/IRS taxes paid on imported components used in articles subsequently exported (or destroyed under customs supervision). Modernized by TFTEA 2018 (Trade Facilitation and Trade Enforcement Act) — extended drawback period to 5 years, simplified claim procedures. Material for US space-hardware supply chain: e.g., satellite manufacturer imports propulsion components (HS 8803.90), integrates into satellite, exports completed satellite for foreign launch — drawback refunds duties paid on imported components. Industry users: Maxar, Northrop Grumman, Lockheed Martin, SpaceX.",
+    key_provisions: [
+      "§1313(a) — same-condition drawback (re-exported as imported)",
+      "§1313(b) — substitution drawback (HS 8-digit interchangeable goods)",
+      "§1313(j) — unused merchandise drawback",
+      "§1313(r) — 5-year drawback period (post-TFTEA 2018)",
+    ],
+    related_sources: [
+      "INT-TARIC-HS-CODES-SPACE",
+      "INT-WTO-VALUATION-AGREEMENT",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "US-19-CFR-PART-141-ENTRY",
+    jurisdiction: "US",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en:
+      "19 CFR Part 141 — Customs Entry of Imported Merchandise (Customs Marking + Country-of-Origin)",
+    date_enacted: "1977-01-01",
+    date_last_amended: "2024-08-15",
+    source_url: "https://www.ecfr.gov/current/title-19/chapter-I/part-141",
+    issuing_body: "US Customs and Border Protection (CBP)",
+    competent_authorities: ["US-CBP"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["tax_customs", "export_control"],
+    scope_description:
+      "19 CFR Part 141 — comprehensive customs entry regulations. Establishes entry procedures, country-of-origin marking requirements (19 USC §1304), and substantial-transformation test for determining COO. Material for space-hardware imports: satellite components manufactured in multiple jurisdictions (US, EU, Israel, Japan) require COO analysis under substantial-transformation doctrine. Critical interaction with ITAR/EAR — COO determines applicable export-control regime under EAR §734.4 De Minimis Rule + ITAR §123.9 Foreign Defense Articles.",
+    key_provisions: [
+      "§141.85 — entry summary requirements",
+      "§141.89 — additional information required by statute",
+      "19 USC §1304 — country-of-origin marking",
+      "Substantial transformation test — determines COO for multi-country assembly",
+    ],
+    related_sources: [
+      "US-EAR-734-4-DE-MINIMIS",
+      "US-19-USC-1313-DRAWBACK",
+      "INT-TARIC-HS-CODES-SPACE",
+    ],
+    last_verified: "2026-05-27",
+  },
+];
+
 // ─── Aggregated Export ────────────────────────────────────────────
 
 export const LEGAL_SOURCES_US: LegalSource[] = [
@@ -1830,4 +1978,6 @@ export const LEGAL_SOURCES_US: LegalSource[] = [
   ...DEBRIS_RULES_US,
   ...P2_ADDITIONS_US,
   ...DEFENCE_DOCTRINE_US,
+  ...IP_PATENTS_US,
+  ...TAX_CUSTOMS_US,
 ];

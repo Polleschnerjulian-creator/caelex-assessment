@@ -2273,4 +2273,99 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
     related_sources: ["EU-STRATEGIC-COMPASS-2022", "EU-IRIS2-CONCESSION-2024"],
     last_verified: "2026-05-26",
   },
+  // ============================================================================
+  // EU TAX / CUSTOMS CLUSTER (3 entries)
+  // ============================================================================
+  // VAT treatment of satcom services (place-of-supply rules) + CBAM applied to
+  // space-hardware imports + UCC framework for satellite-bonded warehousing.
+  // ============================================================================
+  {
+    id: "EU-VAT-DIRECTIVE-2006-112",
+    jurisdiction: "EU",
+    type: "eu_directive",
+    status: "in_force",
+    title_en:
+      "Council Directive 2006/112/EC — Common System of Value Added Tax (VAT Directive)",
+    date_enacted: "2006-11-28",
+    date_last_amended: "2024-12-19",
+    source_url:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:02006L0112-20240101",
+    issuing_body: "Council of the European Union",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["tax_customs"],
+    scope_description:
+      "VAT Directive (2006/112/EC) — primary EU VAT framework, 27 MS implementing legislation. Material space-industry provisions: (1) Art. 44-59 — place-of-supply rules for satcom services (B2B = recipient location; B2C = effective use + enjoyment); (2) Art. 148 — VAT exemption for fuelling/provisioning of vessels including spacecraft for international/intra-Community traffic (limited application); (3) Art. 151 — exemptions for diplomatic + international-organisation supplies (relevant for ESA + EUSPA procurement); (4) Art. 169 — input-VAT recovery for non-EU customer supplies. VAT in the Digital Age (ViDA) reform package adopted Dec 2024 → e-invoicing + platform-economy rules phased 2026-2030.",
+    key_provisions: [
+      "Art. 44-59 — place-of-supply rules (B2B + B2C satcom)",
+      "Art. 138-141 — intra-Community supply exemptions",
+      "Art. 146-153 — exemptions for international transport + diplomatic supplies",
+      "Art. 169 — input-VAT recovery rules",
+      "ViDA Package — e-invoicing + platform-economy + single-VAT-registration (phased 2026-2030)",
+    ],
+    related_sources: [
+      "INT-TARIC-HS-CODES-SPACE",
+      "INT-WTO-VALUATION-AGREEMENT",
+      "EU-CBAM-2023",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "EU-CBAM-2023",
+    jurisdiction: "EU",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en:
+      "Regulation (EU) 2023/956 — Carbon Border Adjustment Mechanism (CBAM)",
+    date_enacted: "2023-05-10",
+    date_last_amended: "2024-09-04",
+    source_url: "https://eur-lex.europa.eu/eli/reg/2023/956/oj",
+    issuing_body: "European Parliament + Council",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["tax_customs", "environmental"],
+    scope_description:
+      "CBAM Regulation (EU) 2023/956 — Carbon Border Adjustment Mechanism. Transitional phase Oct 2023 - Dec 2025 (quarterly reporting only), definitive phase from 1 Jan 2026 (CBAM certificates required). Covers iron + steel, aluminium, cement, fertilisers, electricity, hydrogen. Space-industry relevance: aluminium structures + titanium alloys + steel components in launch vehicles + satellite buses are CBAM-relevant imports. Importers required to declare embedded emissions + surrender CBAM certificates equal to embedded emissions × EU-ETS price minus carbon-price-paid-abroad. Material for Asian + LATAM space-component suppliers selling into EU primes.",
+    key_provisions: [
+      "Art. 4 — covered goods (Annex I): aluminium, iron/steel, cement, fertilisers, electricity, hydrogen",
+      "Art. 5-6 — authorised CBAM declarant + reporting obligations",
+      "Art. 22 — CBAM certificate price-mechanism (EU-ETS-linked)",
+      "Art. 31 — transitional phase rules (Oct 2023 - Dec 2025)",
+    ],
+    related_sources: ["EU-VAT-DIRECTIVE-2006-112", "INT-TARIC-HS-CODES-SPACE"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "EU-UCC-952-2013",
+    jurisdiction: "EU",
+    type: "eu_regulation",
+    status: "in_force",
+    title_en: "Regulation (EU) 952/2013 — Union Customs Code (UCC)",
+    date_enacted: "2013-10-09",
+    date_last_amended: "2024-06-25",
+    source_url:
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:02013R0952-20240625",
+    issuing_body: "European Parliament + Council",
+    competent_authorities: ["EU-EC"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["tax_customs", "export_control"],
+    scope_description:
+      "Union Customs Code (UCC) — primary EU customs framework, fully operational since May 2016. Material space-industry provisions: (1) Art. 240-249 — customs warehousing (used for satellite components in transit between EU MS assembly sites); (2) Art. 256-258 — inward processing (duty suspension on imports for re-export, eg satellite-component imports for re-export as completed satellites); (3) Art. 259 — outward processing (EU components sent abroad for processing, re-imported); (4) Art. 38-39 — AEO (Authorised Economic Operator) status — material for primes like Airbus DS + Thales Alenia Space + OHB. UCC Reform Proposal (May 2023) — proposed EU Customs Authority + new IT environment by 2028.",
+    key_provisions: [
+      "Art. 38-39 — Authorised Economic Operator (AEO) status",
+      "Art. 240-249 — customs warehousing",
+      "Art. 256-258 — inward processing relief",
+      "Art. 259-262 — outward processing relief",
+      "Art. 70-76 — customs valuation (transaction value + adjustments)",
+    ],
+    related_sources: [
+      "EU-VAT-DIRECTIVE-2006-112",
+      "INT-TARIC-HS-CODES-SPACE",
+      "INT-WTO-VALUATION-AGREEMENT",
+    ],
+    last_verified: "2026-05-27",
+  },
 ];

@@ -4582,4 +4582,236 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     ],
     last_verified: "2026-05-26",
   },
+  // ============================================================================
+  // IP / PATENTS IN SPACE CLUSTER (5 entries)
+  // ============================================================================
+  // Jurisdictional anchor (OST Art. VIII) + global patent treaties (Paris, PCT,
+  // EPC) + practitioner doctrine (AIPPI). Material gap for IP counsel advising
+  // commercial-space clients on patent-prosecution / freedom-to-operate in LEO.
+  // ============================================================================
+  {
+    id: "INT-OST-ART-VIII-IP-JURISDICTION",
+    jurisdiction: "INT",
+    type: "international_treaty",
+    status: "in_force",
+    title_en:
+      "OST Article VIII — Jurisdictional Anchor for Intellectual Property in Outer Space",
+    date_enacted: "1967-10-10",
+    source_url:
+      "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/introouterspacetreaty.html",
+    issuing_body: "United Nations / UNOOSA",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["ip_patents", "liability"],
+    scope_description:
+      "OST Article VIII establishes that the State of Registry retains jurisdiction and control over space objects + personnel thereof while in outer space. This is the foundational jurisdictional anchor for IP-in-space — patent law of the registry-state extends quasi-territorially to in-orbit activities on the registered object. Drives nationality-of-launch determinations for patent-infringement analysis (e.g. 35 USC §105 US Patents-in-Space Act; analogous treatment under EPO + JPO doctrine). Critical for FTO analysis in multi-flag constellation operations.",
+    key_provisions: [
+      "Art. VIII para. 1 — registry state retains jurisdiction + control",
+      "Art. VIII para. 2 — ownership of space objects unaffected by their presence in outer space",
+    ],
+    related_sources: [
+      "INT-REGISTRATION-CONVENTION-1976",
+      "US-PATENTS-IN-SPACE-ACT",
+      "INT-PARIS-CONVENTION-PATENTS-1883",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-PARIS-CONVENTION-PATENTS-1883",
+    jurisdiction: "INT",
+    type: "international_treaty",
+    status: "in_force",
+    title_en:
+      "Paris Convention for the Protection of Industrial Property (1883, last revised Stockholm 1967)",
+    date_enacted: "1883-03-20",
+    date_last_amended: "1979-09-28",
+    source_url: "https://www.wipo.int/treaties/en/ip/paris/",
+    issuing_body: "WIPO (World Intellectual Property Organization)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["ip_patents"],
+    scope_description:
+      "Paris Convention — foundational multilateral patent treaty, 179 member states. Establishes (i) national treatment principle (foreign applicants treated like nationals), (ii) right of priority (12-month patent priority claim from first filing in any member state), (iii) common rules for patentability. Material for space-tech startups filing global patent portfolios: enables priority-claim cascading across PCT national-phase entries. Co-administered with TRIPS Agreement (WTO).",
+    key_provisions: [
+      "Art. 2 — national treatment",
+      "Art. 4 — right of priority (12 months for patents/utility models, 6 months for industrial designs/trademarks)",
+      "Art. 5quater — patented process protection extends to imported products",
+    ],
+    related_sources: ["INT-PCT-1970", "INT-EPO-EPC-1973"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-PCT-1970",
+    jurisdiction: "INT",
+    type: "international_treaty",
+    status: "in_force",
+    title_en: "Patent Cooperation Treaty (PCT)",
+    date_enacted: "1970-06-19",
+    date_last_amended: "2024-07-01",
+    source_url: "https://www.wipo.int/pct/en/texts/articles/atoc.html",
+    issuing_body: "WIPO (World Intellectual Property Organization)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["ip_patents"],
+    scope_description:
+      "Patent Cooperation Treaty — 158 contracting states (as of 2026). Enables filing a single 'international patent application' that triggers patent-pending status simultaneously in all designated PCT members. International Search Report (ISR) + Written Opinion issued by ISA (EPO, USPTO, JPO, KIPO, etc.). National-phase entry deadline typically 30/31 months from priority date. Operative pathway for space-tech IP — most satellite-component patents (propulsion, optical-payload, software-defined radio) prosecuted via PCT to maintain global priority before commercial deployment.",
+    key_provisions: [
+      "Art. 11 — international filing date",
+      "Art. 15 — international search",
+      "Art. 22/39 — national-phase entry deadlines (30/31 months)",
+    ],
+    related_sources: [
+      "INT-PARIS-CONVENTION-PATENTS-1883",
+      "INT-EPO-EPC-1973",
+      "US-PATENTS-IN-SPACE-ACT",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-EPO-EPC-1973",
+    jurisdiction: "INT",
+    type: "international_treaty",
+    status: "in_force",
+    title_en:
+      "European Patent Convention (EPC) — European Patent Organisation Framework",
+    date_enacted: "1973-10-05",
+    date_last_amended: "2023-06-01",
+    source_url: "https://www.epo.org/en/legal/epc",
+    issuing_body: "European Patent Organisation",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["ip_patents"],
+    scope_description:
+      "European Patent Convention — 39 contracting states (27 EU MS + UK + CH + TR + NO + IS + LI + MC + SM + RS + AL + MK + ME + MT). EPO grants a single European patent valid in designated states (post-grant validation/translation required). Unitary Patent Court (UPC) operational since June 2023: 18 EU MS opted in, single-patent / single-litigation regime. Space-tech industries (Airbus, ArianeGroup, OHB, Thales Alenia Space, ESA contractors) are major EPO filers — material framework for European space IP strategy.",
+    key_provisions: [
+      "Art. 52-57 — patentability requirements",
+      "Art. 75-86 — filing & examination procedure",
+      "Art. 99-105 — opposition & appeal",
+      "UPCA Art. 32 — UPC exclusive competence post-transition",
+    ],
+    related_sources: [
+      "INT-PCT-1970",
+      "INT-PARIS-CONVENTION-PATENTS-1883",
+      "EU-UNITARY-PATENT-COURT",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-AIPPI-IP-IN-SPACE",
+    jurisdiction: "INT",
+    type: "industry_guideline",
+    status: "in_force",
+    title_en:
+      "AIPPI Resolutions on Intellectual Property in Outer Space (Q244 / Q269)",
+    date_enacted: "2014-09-17",
+    date_last_amended: "2022-09-13",
+    source_url:
+      "https://www.aippi.org/library-of-resolutions/?committee_id=q244",
+    issuing_body:
+      "AIPPI (International Association for the Protection of Intellectual Property)",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["ip_patents"],
+    scope_description:
+      "AIPPI Resolutions Q244 (2014, IP in outer space) + Q269 (2022, AI-generated inventions including space-tech AI). Authoritative practitioner doctrine on (i) extraterritorial application of national patent law to in-orbit activities, (ii) infringement-analysis under OST Art. VIII jurisdictional anchor, (iii) treatment of multi-flag constellations for FTO purposes, (iv) AI-as-inventor questions for space-tech autonomy systems. Not binding but heavily cited by EPO Boards of Appeal + USPTO PTAB + IP courts globally.",
+    key_provisions: [
+      "Q244 Resolution 1 — registry-state law applies to in-orbit infringement",
+      "Q244 Resolution 4 — recommend harmonisation of national in-space patent provisions",
+      "Q269 — AI cannot be named inventor under most jurisdictions (DABUS line of cases)",
+    ],
+    related_sources: [
+      "INT-OST-ART-VIII-IP-JURISDICTION",
+      "US-PATENTS-IN-SPACE-ACT",
+    ],
+    last_verified: "2026-05-27",
+  },
+  // ============================================================================
+  // TAX / CUSTOMS CLUSTER (3 INT entries — EU + US entries in eu.ts / us.ts)
+  // ============================================================================
+  {
+    id: "INT-TARIC-HS-CODES-SPACE",
+    jurisdiction: "INT",
+    type: "multilateral_agreement",
+    status: "in_force",
+    title_en:
+      "WCO Harmonized System (HS) Codes — Space-Hardware Tariff Classification",
+    date_enacted: "1988-01-01",
+    date_last_amended: "2022-01-01",
+    source_url:
+      "https://www.wcoomd.org/en/topics/nomenclature/instrument-and-tools/hs-nomenclature-2022-edition.aspx",
+    issuing_body: "World Customs Organization (WCO)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["tax_customs", "export_control"],
+    scope_description:
+      "WCO Harmonized System 2022 — global tariff nomenclature, 183 contracting parties + 200+ countries using HS for customs duties (covers 98% of world trade). Material space-hardware HS codes: HS 8802.60 (spacecraft, suborbital and spacecraft launch vehicles, satellites), HS 8803.90 (parts of spacecraft), HS 8526.91 (radio navigation aid apparatus incl. GNSS receivers), HS 9014.20 (instruments for aeronautical/space navigation), HS 9015.80 (geophysical/hydrographic instruments). Drives customs duties + import VAT + statistical reporting + dual-use export-control screening (sync with EU dual-use Annex IV + US Commerce Control List ECCN cross-walk).",
+    key_provisions: [
+      "HS 8802.60 — spacecraft, satellites, launch vehicles (duty-free in most jurisdictions for civil use)",
+      "HS 8803.90 — parts of goods of heading 8801/8802",
+      "Chapter 88 General Note 4 — bonded warehousing for spacecraft under construction",
+    ],
+    related_sources: [
+      "EU-VAT-DIRECTIVE-2006-112",
+      "US-19-USC-1313-DRAWBACK",
+      "INT-WTO-VALUATION-AGREEMENT",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-WTO-VALUATION-AGREEMENT",
+    jurisdiction: "INT",
+    type: "international_treaty",
+    status: "in_force",
+    title_en:
+      "WTO Agreement on Implementation of Article VII of GATT 1994 (Customs Valuation Agreement)",
+    date_enacted: "1995-01-01",
+    source_url: "https://www.wto.org/english/docs_e/legal_e/20-val_01_e.htm",
+    issuing_body: "World Trade Organization (WTO)",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["tax_customs"],
+    scope_description:
+      "WTO Customs Valuation Agreement — binding for 164 WTO members. Establishes hierarchical methods for determining customs value of imported goods: (1) transaction value, (2) transaction value of identical goods, (3) transaction value of similar goods, (4) deductive value, (5) computed value, (6) fall-back method. Material for space-hardware imports where parent-subsidiary intra-group transfers raise transfer-pricing questions (e.g. SpaceX EU subsidiary importing Starlink terminals from US manufacturer; Airbus DS Toulouse importing components from German subs).",
+    key_provisions: [
+      "Art. 1 — transaction value as primary method",
+      "Art. 8 — additions to transaction value (royalties, assists, packing)",
+      "Art. 15 — definition of 'related parties' for transfer-pricing analysis",
+    ],
+    related_sources: ["INT-TARIC-HS-CODES-SPACE", "EU-VAT-DIRECTIVE-2006-112"],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-WTO-IT-AGREEMENT-EXPANSION-2015",
+    jurisdiction: "INT",
+    type: "international_treaty",
+    status: "in_force",
+    title_en:
+      "WTO Information Technology Agreement Expansion (ITA-2) — Duty Elimination for IT/Telecom Goods including Space-Adjacent Hardware",
+    date_enacted: "2015-12-19",
+    date_last_amended: "2024-07-01",
+    source_url: "https://www.wto.org/english/tratop_e/inftec_e/inftec_e.htm",
+    issuing_body: "World Trade Organization (WTO)",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["tax_customs"],
+    scope_description:
+      "WTO ITA-2 (Nairobi 2015) — 53 participants representing 90% of world trade in IT goods, expanded ITA-1 (1996). Eliminates customs duties on 201 additional IT products including semiconductor manufacturing equipment, optical media, GPS/GNSS navigation devices, satellite radio receivers, and certain telecom infrastructure. Material context for space-tech supply-chain — ground-segment hardware (GNSS chipsets, terminals, modems) benefits from zero-duty access in participating markets. Phased implementation 2016–2024, fully in force as of July 2024.",
+    key_provisions: [
+      "Annex A — list of 201 covered products",
+      "Annex B — phased duty-reduction schedule",
+    ],
+    related_sources: [
+      "INT-TARIC-HS-CODES-SPACE",
+      "INT-WTO-VALUATION-AGREEMENT",
+    ],
+    last_verified: "2026-05-27",
+  },
 ];
