@@ -5701,4 +5701,127 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     ],
     last_verified: "2026-05-27",
   },
+  // ============================================================================
+  // INSURANCE CLUSTER — LLOYD'S LMA + CAPTIVE FRAMEWORKS (+4 entries)
+  // ============================================================================
+  // Lloyd's LMA clauses + Marsh Aerospace + captive-insurance domiciles.
+  // Material for commercial-space risk management + post-Starliner/Polaris
+  // Dawn/Vega-C insurance market reshaping.
+  // ============================================================================
+  {
+    id: "INT-LLOYDS-LMA-5212-SPACE-RISKS",
+    jurisdiction: "INT",
+    type: "insurance_clause",
+    status: "in_force",
+    title_en:
+      "Lloyd's Market Association LMA 5212 — Space Risks Exclusion Clause + LMA 5267 Cyber Endorsement",
+    date_enacted: "2003-11-25",
+    date_last_amended: "2023-11-09",
+    source_url:
+      "https://www.lmalloyds.com/LMA/Underwriting/Marine/Marine_Forms_and_Wordings/Cargo_Wordings.aspx",
+    issuing_body: "Lloyd's Market Association (LMA)",
+    competent_authorities: [],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["insurance", "liability", "cybersecurity"],
+    scope_description:
+      "Lloyd's LMA 5212 (Space Risks Exclusion Clause, Aerospace Class) + LMA 5267 (Cyber Endorsement) — primary standard clauses for commercial space insurance market. Lloyd's syndicate composition: 53 lead Aerospace syndicates write ~$700M premium annually across launch (35%), in-orbit (40%), liability (15%), engineering (10%). Material 2024 reshaping: (i) Starliner CFT crew-stranding + Vega-C VV22 failure drove 30-40% rate hardening; (ii) LMA Cyber Endorsement 2023 update strengthens ransomware + cyber-causation exclusions; (iii) Polaris Dawn EVA pricing template; (iv) emerging In-Orbit Servicing risks (Astroscale + ClearSpace) drive new LMA clauses 2024-2025. Material baseline for any space-tech CFO + counsel structuring launch + operational insurance.",
+    key_provisions: [
+      "LMA 5212 — Space Risks Exclusion baseline",
+      "LMA 5267 — Cyber Endorsement (ransomware + cyber-causation)",
+      "Lloyd's Aerospace syndicate composition (53 lead, $700M premium)",
+      "2024 30-40% rate hardening post-Starliner/Vega-C",
+    ],
+    related_sources: [
+      "INT-IIASL-AEROSPACE-INSURANCE",
+      "INT-AON-MUNICH-RE-SPACE",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-IIASL-AEROSPACE-INSURANCE",
+    jurisdiction: "INT",
+    type: "industry_guideline",
+    status: "in_force",
+    title_en:
+      "International Insurance Association of Space Lawyers (IIASL) + International Union of Aerospace Insurers (IUAI) Market Standards",
+    date_enacted: "1972-06-15",
+    date_last_amended: "2024-09-25",
+    source_url: "https://www.iuai.org/",
+    issuing_body:
+      "International Union of Aerospace Insurers (IUAI) — Lloyds + Munich Re + Swiss Re + AIG + Allianz + Atrium consortium",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["insurance", "liability"],
+    scope_description:
+      "IUAI — global aerospace insurance industry association, includes major Lloyd's syndicates + Munich Re + Swiss Re + AIG + Allianz + Atrium. Operates IUAI Working Groups on: (i) Launch & Liability; (ii) In-Orbit; (iii) Cyber Risk; (iv) New Space Markets (small-sat + mega-constellations). 2024 IUAI Annual Statistics: $750M total premium globally, $1.2B largest single-loss capacity, ~$3B total industry capacity. Material reference for any commercial-space insurance broker + risk-management counsel. IIASL parallel academic + practitioner network (~200 members) operates as policy-formation forum.",
+    key_provisions: [],
+    related_sources: [
+      "INT-LLOYDS-LMA-5212-SPACE-RISKS",
+      "INT-AON-MUNICH-RE-SPACE",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-AON-MUNICH-RE-SPACE",
+    jurisdiction: "INT",
+    type: "industry_guideline",
+    status: "in_force",
+    title_en:
+      "Aon Aerospace Space Insurance Annual Report + Munich Re Space Reinsurance Programme",
+    date_enacted: "1998-06-17",
+    date_last_amended: "2024-12-04",
+    source_url: "https://www.aon.com/risk-services/space-insurance.jsp",
+    issuing_body: "Aon plc + Munich Re Group",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["insurance", "liability"],
+    scope_description:
+      "Aon Aerospace Space Annual Report — most-cited commercial-space insurance market benchmark (Marsh JLT 2020+ + Willis Towers Watson alternative reports). 2024 highlights: (i) ~$390M total commercial-space premium 2024 (down 18% from $475M 2023 due to Starlink + Kuiper self-insurance shift); (ii) ~$700M total industry capacity; (iii) Vega-C VV22 + Starliner CFT drove 30-40% rate hardening; (iv) emerging In-Orbit Servicing insurance gap (Astroscale + ClearSpace need new products). Munich Re Space Reinsurance Programme — largest reinsurer with ~$200M capacity. Material for any space-tech insurance procurement + risk-pricing analysis.",
+    key_provisions: [
+      "Aon 2024 Annual Report — $390M premium, $700M capacity",
+      "Munich Re ~$200M reinsurance capacity",
+      "Marsh JLT alternative space-insurance reports",
+      "2024 30-40% rate hardening post-failures",
+    ],
+    related_sources: [
+      "INT-LLOYDS-LMA-5212-SPACE-RISKS",
+      "INT-CAPTIVE-INSURANCE-DOMICILES",
+    ],
+    last_verified: "2026-05-27",
+  },
+  {
+    id: "INT-CAPTIVE-INSURANCE-DOMICILES",
+    jurisdiction: "INT",
+    type: "industry_guideline",
+    status: "in_force",
+    title_en:
+      "Captive Insurance Domicile Frameworks — Bermuda + Guernsey + Cayman + Vermont + Luxembourg + Singapore for Space-Tech",
+    date_enacted: "1978-09-01",
+    date_last_amended: "2024-11-15",
+    source_url: "https://www.iaisweb.org/",
+    issuing_body:
+      "International Association of Insurance Supervisors (IAIS) + domicile regulators (BMA Bermuda / GFSC Guernsey / CIMA Cayman / Vermont DCFR / CSSF Luxembourg / MAS Singapore)",
+    competent_authorities: [],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["insurance", "tax_customs", "fdi_screening"],
+    scope_description:
+      "Captive Insurance Domiciles — alternative-risk-transfer frameworks for space-tech firms. Major space-tech captive domiciles: (i) Bermuda — BMA Class 3A captive licence, ~$1M minimum capital, Solvency II equivalent (SES + Eutelsat + Maxar use Bermuda); (ii) Guernsey — GFSC Protected Cell Companies (PCC), £100K min capital, attractive for small-sat firms; (iii) Cayman — CIMA Class B captive, $120K min capital; (iv) Vermont — most popular US domicile, $250K min capital, ARION/Risk Retention Group structure; (v) Luxembourg — CSSF SOPARFI + captive reinsurance, EU passport benefits; (vi) Singapore — MAS captive, SGD 400K min capital, Asia-Pacific entry. Material for space-tech CFO seeking premium-cost optimisation + Solvency II compliance navigation.",
+    key_provisions: [
+      "Bermuda BMA Class 3A — Solvency II equivalent",
+      "Guernsey GFSC PCC — Protected Cell Companies",
+      "Cayman CIMA Class B — $120K min capital",
+      "Vermont DCFR — most popular US domicile",
+      "Luxembourg CSSF — EU passport benefits",
+      "Singapore MAS — Asia-Pacific captive entry",
+    ],
+    related_sources: [
+      "INT-LLOYDS-LMA-5212-SPACE-RISKS",
+      "INT-AON-MUNICH-RE-SPACE",
+    ],
+    last_verified: "2026-05-27",
+  },
 ];
