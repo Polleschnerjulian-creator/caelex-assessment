@@ -82,6 +82,7 @@ Optional P2 polish: UK-CAA-ADR-LICENCE-FRAMEWORK + DE-DLR-DEBRIS-MISSION + CA-CS
 - **P2 Sub-Domain Clusters:** 🟢 Substantially Complete (2026-05-26) — 40 sources across INT (17) + US (8) + EU (12) + JP/AU/ZA (3). UK/DE/CA optional polish deferred.
 - **P5 Cases Expansion:** 🟢 Complete (2026-05-26) — +27 cases across 2 bundles (P5: lunar incidents, EU competition, bankruptcy, cybersec, FCC, SEC SPAC, Artemis signings, insurance; P5b: Starship FAA, IM-1 lunar, Polaris Dawn EVA, AX-3, Galaxy 15, Kuiper milestone, SCS framework, ITU Res. 35, Starlink V2, Falcon 9 RUD, IRIS² award, EU AI Act anchoring, UK SaxaVord). Cases corpus 55 → 82 entries (+49%).
 - **P3 Bilateral expansion:** 🟢 Done (2026-05-26) — +11 instruments. US TIAs (6: Norway/UK/AU/NZ/BR + proposed KZ), Lunar bilateral MoUs (2: India-Japan LUPEX, Korea-NASA Artemis), GNSS coordination (2: GPS-Galileo, GPS-QZSS), ISS IGA implementing MoUs (1). The TIA layer explains WHY certain ranges can host US-payload launches despite ITAR.
+- **P4 Sub-tier deepening:** 🟡 In progress — IN (12 → 31), KR (11 → 26) done. AU / NZ / JP pending.
 - **P3 EU-modern + Financial/Capital + Bilateral/Multilateral:** 🔴 Not started
 - **P4 Sub-tier Jurisdiction Deepening (AU/NZ/IN/JP/KR):** 🔴 Not started
 - **P5 Cases Expansion (+~30):** 🔴 Not started
