@@ -40,26 +40,18 @@ Drift-safety invariants:
 
 ### Last action
 
-**2026-05-26 (kickoff)**: This document created. Master plan ATLAS-V3 sits at:
+**2026-05-26 (P0 schema landed)**: ComplianceArea union extended from 13 → 29 (+16 values), LegalSourceType union extended from 8 → 20 (+12 values). Schema-drift test added at `src/data/legal-sources/schema-drift.test.ts` (18 tests) — validates that every entry in the 950-source corpus + all authorities uses ONLY canonical union values. Catches typos, stale values, and duplicate IDs at CI time. All 18 drift tests pass against the existing corpus.
 
-- 950 legal sources across 45 jurisdictions
-- 55 cases
-- 8 LegalSourceType union values
-- 13 ComplianceArea union values
-- 8 technical-standards deep-dives
-- 11 regulatory deep-dives (jurisdictions)
-- 14 landing-rights profiles
-
-This expansion plan defines the path from **950 → ~1,800** sources, **55 → ~110** cases, **13 → 28** compliance areas, **8 → 20** source-types.
+Total Atlas test count: 568 passing / 569 total (1 pre-existing env-failure unchanged).
 
 ### Current focus
 
-→ **§ 4 Schema Expansion (P0)** — MUST happen first, otherwise new sources can't be properly typed.
+→ **§ 5.A China expansion** — CN sources from 7 → 30. Schema is now ready for the new entries. After CN, proceed to RU (5 → 25), then 7 new jurisdictions (SG, ID, PH, SA, EG, AR, MX).
 
 ### Tier roll-up (one-line per tier; updated as items flip)
 
-- **P0 Schema:** 🔴 Not started
-- **P1 Critical Jurisdictions (CN/RU + 7 missing):** 🔴 Not started
+- **P0 Schema:** 🟢 Complete (2026-05-26) — 16 ComplianceAreas + 12 SourceTypes added, 18-test drift validator wired
+- **P1 Critical Jurisdictions (CN/RU + 7 missing):** 🟡 In progress — starting with CN 7 → 30
 - **P2 Sub-Domain Clusters (resources / suborbital / ADR / megacons / dark-sky / cybersec / climate):** 🔴 Not started
 - **P3 EU-modern (AI Act / Data Act / CSRD applied to space) + Financial/Capital + Bilateral/Multilateral:** 🔴 Not started
 - **P4 Sub-tier Jurisdiction Deepening (AU/NZ/IN/JP/KR):** 🔴 Not started

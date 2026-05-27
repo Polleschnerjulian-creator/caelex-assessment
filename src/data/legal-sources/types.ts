@@ -14,13 +14,31 @@
 // ─── Enums ───────────────────────────────────────────────────────────
 
 export type LegalSourceType =
-  | "international_treaty"
+  // ─── Hard law (binding) ───────────────────────────────────────────
+  | "international_treaty" // UN OST 1967, Liability 1972, etc.
   | "federal_law"
   | "federal_regulation"
-  | "technical_standard"
   | "eu_regulation"
   | "eu_directive"
-  | "policy_document"
+  // ─── Standards / technical ────────────────────────────────────────
+  | "technical_standard" // CCSDS, ISO 24113, ECSS series
+  | "certification_standard" // Atlas P0: EUCC, EUCS, NIST 800-53 controls (ground-segment)
+  | "industry_guideline" // Atlas P0: IATA / IAA Cosmic Studies, Marsh JL2020/008 series
+  | "insurance_clause" // Atlas P0: Lloyds LMA series clauses for space risks
+  | "scientific_protocol" // Atlas P0: IAU Resolutions, COSPAR Planetary Protection Policy
+  // ─── Soft law / political ─────────────────────────────────────────
+  | "policy_document" // National space policies, white papers
+  | "soft_law_resolution" // Atlas P0: UNGA Resolutions, IAEA Safety Standards, IAU Recommendations
+  | "national_security_doctrine" // Atlas P0: US NSP 2020, NATO Space Policy 2019, BMVg-Direktive
+  // ─── Bilateral / multilateral non-treaty ──────────────────────────
+  | "bilateral_agreement" // Atlas P0: Artemis Accords, ISS IGA, US-RU Soyuz IGA
+  | "multilateral_agreement" // Atlas P0: ESA Convention, EUMETSAT Convention, INTERSPUTNIK
+  // ─── Adjacent legal instruments ───────────────────────────────────
+  | "case_law" // Atlas P0: court rulings + regulatory decisions (FCC orders, EU Commission)
+  | "procurement_framework" // Atlas P0: ESA Industrial Policy, EU IRIS² Concession
+  | "safety_regulation" // Atlas P0: FAA Part 450 range safety, NOTAM, NOTMAR
+  | "tax_treaty" // Atlas P0: DTA impacts on satellite-operator VPEs
+  // ─── Pre-enactment ────────────────────────────────────────────────
   | "draft_legislation";
 
 export type LegalSourceStatus =
@@ -40,6 +58,7 @@ export type RelevanceLevel =
   | "low";
 
 export type ComplianceArea =
+  // ─── Original 13 (V1 schema) ──────────────────────────────────────
   | "licensing"
   | "registration"
   | "liability"
@@ -52,7 +71,24 @@ export type ComplianceArea =
   | "debris_mitigation"
   | "space_traffic_management"
   | "human_spaceflight"
-  | "military_dual_use";
+  | "military_dual_use"
+  // ─── Atlas P0 (2026-05-26): 15 additions for space-adjacent law ───
+  | "competition_antitrust" // EU SES/Inmarsat, FRAND, spectrum-auction antitrust
+  | "state_aid" // EU beihilfen-clearance, ESA programmes, Airbus DS, OneWeb-rescue
+  | "procurement" // EU defence-procurement, ESA geographical return, EDIP, IRIS²
+  | "tax_customs" // VAT on satcom services, TARIC on space-hardware, CBAM
+  | "sanctions_compliance" // OFAC SDN / EU Consolidated / UK OFSI (separate from export_control)
+  | "ip_patents" // Patents in Space Act (US), Art. 28 OST workaround, USPTO Class 244
+  | "product_liability" // Defective satellite-component liability (separate from state liability)
+  | "fdi_screening" // CFIUS, EU 2019/452, UK NSI Act 2021, DE AWG/AWV §§ 55-62
+  | "ai_compliance" // EU AI Act 2024 on autonomous collision avoidance + remote sensing AI
+  | "aml_kyc" // Satcom services to sanctioned end-users, FATF guidance
+  | "consumer_protection" // Space-tourism informed consent (FAA Part 460, UK SIA)
+  | "employment_labor" // Astronaut contracts, crew safety, space-tourism worker classification
+  | "scientific_research" // Bioethics in microgravity, COSPAR Planetary Protection
+  | "media_broadcasting" // Direct-broadcasting content rules, IAU dark/quiet sky
+  | "critical_infrastructure" // EU CER Directive 2022/2557 (separate from NIS2)
+  | "sustainability_reporting"; // EU CSRD + SFDR + Taxonomy for space-tech investments
 
 export type OperatorApplicability =
   | "satellite_operator"
