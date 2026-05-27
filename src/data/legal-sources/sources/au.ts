@@ -404,4 +404,28 @@ export const LEGAL_SOURCES_AU: LegalSource[] = [
     ],
     last_verified: "2026-04-27",
   },
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // Atlas P2 (2026-05-26): AU sub-domain entries — Murchison Radio-Quiet
+  // Zone (SKA-Low precursor + ASKAP).
+  // ═══════════════════════════════════════════════════════════════════════
+  {
+    id: "AU-MURCHISON-RADIO-QUIET",
+    jurisdiction: "AU",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en: "Murchison Radio-astronomy Observatory Radio Quiet Zone",
+    date_enacted: "2005-01-01",
+    source_url: "https://www.acma.gov.au/",
+    issuing_body: "Australian Communications and Media Authority",
+    competent_authorities: ["AU-ASA"],
+    relevance_level: "medium",
+    applicable_to: ["satellite_operator", "constellation_operator"],
+    compliance_areas: ["frequency_spectrum", "scientific_research"],
+    scope_description:
+      "70-km-radius radio-quiet zone in Western Australia protecting the Murchison Radio-astronomy Observatory (MWA + ASKAP + SKA-Low precursor). ACMA coordinates terrestrial + satellite-downlink frequency assignments to avoid interference into protected low-frequency RAS bands. Material for NGSO operators with broad spectral footprints downlinking over Australian territory.",
+    key_provisions: [],
+    related_sources: ["INT-ITU-RR-ART-29", "ZA-SKA-PROTECTION-ACT"],
+    last_verified: "2026-05-26",
+  },
 ];

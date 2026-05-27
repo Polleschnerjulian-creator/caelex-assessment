@@ -464,4 +464,37 @@ export const LEGAL_SOURCES_JP: LegalSource[] = [
     ],
     last_verified: "2026-04-27",
   },
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // Atlas P2 (2026-05-26): JP sub-domain entries — CRD2 ADR demonstration.
+  // ═══════════════════════════════════════════════════════════════════════
+  {
+    id: "JP-CRD2-MISSION-FRAMEWORK",
+    jurisdiction: "JP",
+    type: "procurement_framework",
+    status: "in_force",
+    title_en: "JAXA Commercial Removal of Debris Demonstration (CRD2)",
+    date_published: "2020-02-13",
+    source_url: "https://www.kenkai.jaxa.jp/eng/business/crd2.html",
+    issuing_body: "Japan Aerospace Exploration Agency",
+    competent_authorities: ["JP-JAXA"],
+    relevance_level: "high",
+    applicable_to: ["in_orbit_services"],
+    compliance_areas: ["debris_mitigation", "procurement"],
+    scope_description:
+      "JAXA's flagship commercial debris-removal demonstration programme. Phase I (2020-2024) awarded to Astroscale Japan — ADRAS-J mission inspected H-IIA upper stage 2024. Phase II (2024 onwards) targets actual deorbit demonstration. Contractual architecture: JAXA-as-customer purchasing a debris-removal service, not operating the mission. Material precedent for Asia-Pacific ADR market.",
+    key_provisions: [
+      {
+        section: "Phase I + Phase II structure",
+        title: "Service-acquisition model",
+        summary:
+          "Phase I: rendezvous + proximity operations + characterisation. Phase II: capture + controlled deorbit. Service-acquisition model parallel to ESA ClearSpace-1.",
+      },
+    ],
+    related_sources: [
+      "EU-CLEARSPACE-1-FRAMEWORK",
+      "INT-IADC-ADR-STATEMENT-2023",
+    ],
+    last_verified: "2026-05-26",
+  },
 ];

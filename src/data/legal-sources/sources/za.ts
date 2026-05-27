@@ -132,4 +132,37 @@ export const LEGAL_SOURCES_ZA: LegalSource[] = [
     related_sources: ["INT-OST-1967"],
     last_verified: "2026-04-22",
   },
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // Atlas P2 (2026-05-26): ZA sub-domain entries — Astronomy Geographic
+  // Advantage Act (SKA Protection) + protection of Karoo radio-quiet zone.
+  // ═══════════════════════════════════════════════════════════════════════
+  {
+    id: "ZA-SKA-PROTECTION-ACT",
+    jurisdiction: "ZA",
+    type: "federal_law",
+    status: "in_force",
+    title_en: "Astronomy Geographic Advantage Act 21 of 2007 (SKA Protection)",
+    date_enacted: "2007-12-05",
+    official_reference: "Act 21 of 2007",
+    source_url:
+      "https://www.gov.za/documents/astronomy-geographic-advantage-act",
+    issuing_body: "Parliament of South Africa",
+    competent_authorities: ["ZA-SANSA"],
+    relevance_level: "high",
+    applicable_to: ["satellite_operator", "constellation_operator"],
+    compliance_areas: ["frequency_spectrum", "scientific_research"],
+    scope_description:
+      "South Africa's foundational SKA-protection statute. Establishes Astronomy Advantage Areas in the Karoo region (Northern Cape) — protects the SKA-Mid + MeerKAT precursor + future SKA-Mid array from radio-frequency interference. Material for NGSO operators downlinking over southern Africa: regulated frequency assignments + power-flux-density limits.",
+    key_provisions: [
+      {
+        section: "Sections 5-10",
+        title: "Astronomy Advantage Areas + restrictions",
+        summary:
+          "Areas declared by Minister; activities producing radio-frequency interference within declared areas require authorisation from the Astronomy Management Authority + may trigger emission-limit conditions.",
+      },
+    ],
+    related_sources: ["INT-ITU-RR-ART-29", "AU-MURCHISON-RADIO-QUIET"],
+    last_verified: "2026-05-26",
+  },
 ];
