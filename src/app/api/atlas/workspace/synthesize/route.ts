@@ -25,7 +25,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
+import { getAtlasAuth } from "@/lib/atlas-auth";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 import { buildAnthropicClient } from "@/lib/atlas/anthropic-client";
@@ -66,8 +66,8 @@ Antwortformat (JSON, kein anderer Text):
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     // own tighter cost-DoS guardrail rather than sharing astra_chat.
     const rl = await checkRateLimit(
       "atlas_workspace_ai",
-      getIdentifier(request, session.user.id),
+      getIdentifier(request, atlas.userId),
     );
     if (!rl.success) {
       return NextResponse.json(
