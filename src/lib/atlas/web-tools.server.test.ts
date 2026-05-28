@@ -13,7 +13,12 @@ import "server-only";
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-import { WEB_TOOLS, isWebToolName, executeWebTool } from "./web-tools.server";
+import {
+  WEB_TOOLS,
+  isWebToolName,
+  executeWebTool,
+  isPublicHttpUrl,
+} from "./web-tools.server";
 
 const originalFetch = global.fetch;
 
@@ -324,5 +329,88 @@ describe("web-tools bundle", () => {
       expect(result.isError).toBe(true);
       expect(JSON.parse(result.content).error).toContain("Unknown web");
     });
+  });
+});
+
+describe("isPublicHttpUrl — SSRF hardening (S2)", () => {
+  it("allows a normal public https URL", () => {
+    expect(isPublicHttpUrl("https://eur-lex.europa.eu/x").ok).toBe(true);
+  });
+
+  it("blocks IPv6 loopback [::1]", () => {
+    expect(isPublicHttpUrl("http://[::1]:8080/").ok).toBe(false);
+  });
+
+  it("blocks IPv4-mapped IPv6 pointing at cloud metadata", () => {
+    expect(
+      isPublicHttpUrl("http://[::ffff:169.254.169.254]/latest/meta-data/").ok,
+    ).toBe(false);
+  });
+
+  it("blocks IPv6 ULA (fd00::/8)", () => {
+    expect(isPublicHttpUrl("http://[fd00::1]/").ok).toBe(false);
+  });
+
+  it("blocks decimal-encoded loopback (2130706433 = 127.0.0.1)", () => {
+    expect(isPublicHttpUrl("http://2130706433/").ok).toBe(false);
+  });
+
+  it("blocks hex-encoded loopback (0x7f000001 = 127.0.0.1)", () => {
+    expect(isPublicHttpUrl("http://0x7f000001/").ok).toBe(false);
+  });
+
+  it("still blocks plain dotted private/loopback ranges", () => {
+    expect(isPublicHttpUrl("http://169.254.169.254/").ok).toBe(false);
+    expect(isPublicHttpUrl("http://10.1.2.3/").ok).toBe(false);
+  });
+});
+
+describe("fetch_url — SSRF via redirect (S1)", () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("refuses a redirect that resolves to a private target", async () => {
+    global.fetch = vi.fn(
+      async () =>
+        new Response(null, {
+          status: 302,
+          headers: { location: "http://169.254.169.254/latest/meta-data/" },
+        }),
+    ) as typeof fetch;
+    const result = await executeWebTool({
+      name: "fetch_url",
+      input: { url: "https://innocent.example.com/redir" },
+    });
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content).detail).toMatch(/block/i);
+  });
+
+  it("follows a redirect to another public target", async () => {
+    let call = 0;
+    global.fetch = vi.fn(async () => {
+      call++;
+      if (call === 1) {
+        return new Response(null, {
+          status: 302,
+          headers: { location: "https://public.example.org/article" },
+        });
+      }
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(
+            new TextEncoder().encode("<main><p>Hello redirect</p></main>"),
+          );
+          controller.close();
+        },
+      });
+      return new Response(stream, { status: 200, statusText: "OK" });
+    }) as typeof fetch;
+    const result = await executeWebTool({
+      name: "fetch_url",
+      input: { url: "https://innocent.example.com/redir" },
+    });
+    expect(result.isError).toBe(false);
+    expect(JSON.parse(result.content).text).toContain("Hello redirect");
   });
 });

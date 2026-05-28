@@ -41,6 +41,11 @@ const FETCH_TIMEOUT_MS = 15_000;
  *  first ~50KB of readable text anyway. */
 const FETCH_MAX_BYTES = 500_000;
 
+/** Max redirect hops to follow for a single fetch. Each hop is
+ *  re-validated against isPublicHttpUrl so a public URL can't 30x-bounce
+ *  into a private / metadata target (SSRF-via-redirect). */
+const MAX_REDIRECTS = 5;
+
 /** Standard browser-ish user-agent so public APIs and HTML endpoints
  *  don't 403 us. Caelex-branded so the recipient can attribute the
  *  traffic if they need to. */
@@ -177,45 +182,71 @@ async function safeFetchText(
   const timeoutHandle = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
   try {
-    const res = await fetch(url, {
-      ...init,
-      signal: controller.signal,
-      headers: {
-        "user-agent": USER_AGENT,
-        accept:
-          "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
-        ...(init.headers ?? {}),
-      },
-    });
-    if (!res.ok) {
-      return { ok: false, error: `HTTP ${res.status} ${res.statusText}` };
-    }
-    /* Stream the body but cap at FETCH_MAX_BYTES so a 100MB endpoint
-       can't tie up memory. We use the byte-stream + manual decoding
-       so we get precise size-control before string allocation. */
-    const reader = res.body?.getReader();
-    if (!reader) {
-      return { ok: false, error: "Response body unavailable" };
-    }
-    const decoder = new TextDecoder("utf-8", { fatal: false });
-    let total = 0;
-    let buffer = "";
-    for (;;) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      total += value.byteLength;
-      buffer += decoder.decode(value, { stream: true });
-      if (total >= FETCH_MAX_BYTES) {
-        try {
-          reader.cancel();
-        } catch {
-          /* fire-and-forget cancel — don't unwind. */
-        }
-        break;
+    /* Follow redirects MANUALLY so every hop is re-validated against
+       isPublicHttpUrl. With the default `redirect: "follow"`, a public
+       URL that 30x-redirects to http://169.254.169.254/ (cloud metadata)
+       or an internal host would be fetched transparently — the initial-
+       URL check in fetchUrl() is not enough. */
+    let currentUrl = url;
+    for (let hop = 0; ; hop++) {
+      const guard = isPublicHttpUrl(currentUrl);
+      if (!guard.ok) {
+        return { ok: false, error: `Blocked target: ${guard.reason}` };
       }
+      if (hop > MAX_REDIRECTS) {
+        return { ok: false, error: "Too many redirects" };
+      }
+      const res = await fetch(currentUrl, {
+        ...init,
+        signal: controller.signal,
+        redirect: "manual",
+        headers: {
+          "user-agent": USER_AGENT,
+          accept:
+            "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
+          ...(init.headers ?? {}),
+        },
+      });
+      if (res.status >= 300 && res.status < 400) {
+        const location = res.headers.get("location");
+        if (!location) {
+          return { ok: false, error: `HTTP ${res.status} without Location` };
+        }
+        /* Resolve relative redirects against the current URL; the next
+           loop iteration re-validates the destination before fetching. */
+        currentUrl = new URL(location, currentUrl).toString();
+        continue;
+      }
+      if (!res.ok) {
+        return { ok: false, error: `HTTP ${res.status} ${res.statusText}` };
+      }
+      /* Stream the body but cap at FETCH_MAX_BYTES so a 100MB endpoint
+         can't tie up memory. We use the byte-stream + manual decoding
+         so we get precise size-control before string allocation. */
+      const reader = res.body?.getReader();
+      if (!reader) {
+        return { ok: false, error: "Response body unavailable" };
+      }
+      const decoder = new TextDecoder("utf-8", { fatal: false });
+      let total = 0;
+      let buffer = "";
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        total += value.byteLength;
+        buffer += decoder.decode(value, { stream: true });
+        if (total >= FETCH_MAX_BYTES) {
+          try {
+            reader.cancel();
+          } catch {
+            /* fire-and-forget cancel — don't unwind. */
+          }
+          break;
+        }
+      }
+      buffer += decoder.decode();
+      return { ok: true, body: buffer };
     }
-    buffer += decoder.decode();
-    return { ok: true, body: buffer };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return { ok: false, error: msg };
@@ -275,7 +306,7 @@ function stripHtml(html: string): string {
 /** Validate URL is public-internet-bound and not a local/private target.
  *  Defends against SSRF — Atlas should not be a proxy into the host's
  *  metadata services or private network. */
-function isPublicHttpUrl(
+export function isPublicHttpUrl(
   raw: string,
 ): { ok: true; url: URL } | { ok: false; reason: string } {
   let url: URL;
@@ -288,6 +319,24 @@ function isPublicHttpUrl(
     return { ok: false, reason: `Unsupported protocol: ${url.protocol}` };
   }
   const host = url.hostname.toLowerCase();
+  /* IPv6 literals arrive bracketed from URL.hostname (e.g. "[::1]").
+     Node already normalises numeric IPv4 encodings (decimal/hex/octal)
+     to dotted form, so the IPv4 checks below cover those — but IPv6
+     loopback / unspecified / link-local / ULA + IPv4-mapped addresses
+     would otherwise sail straight through. */
+  if (host.startsWith("[")) {
+    const v6 = host.slice(1, -1).replace(/%.*$/, "");
+    if (
+      v6 === "::1" ||
+      v6 === "::" ||
+      v6.startsWith("::ffff:") ||
+      /^fe80/i.test(v6) ||
+      /^f[cd]/i.test(v6)
+    ) {
+      return { ok: false, reason: "Local / private IPv6 target blocked" };
+    }
+    return { ok: true, url };
+  }
   /* Block obvious local/internal targets. Not exhaustive (a determined
      attacker can resolve a domain to 127.0.0.1 etc.), but covers the
      common case + accidents. Production hardening = run behind an
