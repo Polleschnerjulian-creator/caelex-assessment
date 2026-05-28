@@ -98,25 +98,30 @@ export async function GET(req: NextRequest) {
       continue;
     }
 
+    /* Claim the slot BEFORE the long-running call: advance nextRunAt
+       up-front so a maxDuration timeout (runs take 30-120s, budget is
+       300s) or a mid-run crash can't leave the mandate still "due" on
+       the next tick — which would re-dispatch the same goal (double
+       Claude spend) and orphan the in-flight AtlasAgentRun at
+       status="running". Halted/errored runs are intentionally deferred
+       to their next scheduled slot rather than retried on the very next
+       tick; the lawyer can disable via settings if a mandate keeps
+       halting. */
+    const nextRunAt = computeNextRunAt(m.backgroundAgentSchedule, now);
+    await prisma.atlasMandate.update({
+      where: { id: m.id },
+      data: {
+        backgroundAgentLastRunAt: now,
+        backgroundAgentNextRunAt: nextRunAt,
+      },
+    });
+
     try {
       const result = await runAgentInBackground({
         userId: m.ownerUserId,
         organizationId: m.organizationId,
         mandateId: m.id,
         goal: m.backgroundAgentGoal,
-      });
-
-      /* Schedule next iteration regardless of run-status — even halted
-         / errored runs should be re-attempted on the next cycle. The
-         lawyer can disable via the settings UI if a mandate keeps
-         halting. */
-      const nextRunAt = computeNextRunAt(m.backgroundAgentSchedule, now);
-      await prisma.atlasMandate.update({
-        where: { id: m.id },
-        data: {
-          backgroundAgentLastRunAt: now,
-          backgroundAgentNextRunAt: nextRunAt,
-        },
       });
 
       results.push({
