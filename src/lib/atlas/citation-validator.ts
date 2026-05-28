@@ -23,18 +23,20 @@
 import { ALL_SOURCES } from "@/data/legal-sources";
 import { ATLAS_CASES } from "@/data/legal-cases";
 
-// Pre-compute lookup sets at module load. ALL_SOURCES has ~620
-// entries, ATLAS_CASES ~44 — both fit easily in memory and the
-// Set.has() lookups are O(1).
+// Pre-compute lookup sets at module load. Both catalogues fit easily
+// in memory and the Set.has() lookups are O(1).
 const SOURCE_IDS: ReadonlySet<string> = new Set(ALL_SOURCES.map((s) => s.id));
 const CASE_IDS: ReadonlySet<string> = new Set(ATLAS_CASES.map((c) => c.id));
 
-// Bracket-citation pattern. Matches [ATLAS-FOO-BAR-2024] and
-// [CASE-COSMOS-954-1981]. Same regex shape as the citation-pill
-// renderer in src/components/atlas/CitationPill.tsx — kept in
-// step deliberately so what renders as a pill is what we validate.
-const ATLAS_PILL_RE = /\[ATLAS-[A-Z0-9-]+\]/g;
-const CASE_PILL_RE = /\[CASE-[A-Z0-9-]+\]/g;
+// Bracket-citation pattern. Real catalogue IDs are jurisdiction- or
+// category-prefixed: [DE-VVG], [INT-OST-1967], [EU-NIS2-2022],
+// [CASE-COSMOS-954-1981]. The previous `[ATLAS-…]` shape matched NONE
+// of them — no real ID starts with "ATLAS-" — so source citations went
+// completely unvalidated and hallucinated ones slipped through (BUG
+// C1). We now match any `[PREFIX-…]` token and resolve it against the
+// catalogue. The ≥1-hyphen requirement skips prose footnotes ([1]) and
+// the V2 colon format ([ATLAS:…], validated by citation-extractor).
+const CITATION_RE = /\[([A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+)\]/g;
 
 export interface CitationCheck {
   /** Total bracket-citations encountered in the text. */
@@ -54,27 +56,19 @@ export interface CitationCheck {
  * silent hallucination).
  */
 export function validateCitations(text: string): CitationCheck {
-  const sourceMatches = text.match(ATLAS_PILL_RE) ?? [];
-  const caseMatches = text.match(CASE_PILL_RE) ?? [];
   const verified: string[] = [];
   const unverified: string[] = [];
 
-  for (const match of sourceMatches) {
-    // Strip the surrounding brackets to recover the raw ID.
-    const id = match.slice(1, -1);
-    if (SOURCE_IDS.has(id)) {
-      verified.push(match);
+  // matchAll() returns a fresh iterator per call, so the shared
+  // module-level /g regex stays concurrency-safe under warm-start
+  // serverless (mirrors the citation-extractor BUG-T1-3 fix).
+  for (const m of text.matchAll(CITATION_RE)) {
+    const literal = m[0];
+    const id = m[1];
+    if (SOURCE_IDS.has(id) || CASE_IDS.has(id)) {
+      verified.push(literal);
     } else {
-      unverified.push(match);
-    }
-  }
-
-  for (const match of caseMatches) {
-    const id = match.slice(1, -1);
-    if (CASE_IDS.has(id)) {
-      verified.push(match);
-    } else {
-      unverified.push(match);
+      unverified.push(literal);
     }
   }
 
