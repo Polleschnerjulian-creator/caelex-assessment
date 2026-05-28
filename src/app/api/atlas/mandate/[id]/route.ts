@@ -18,6 +18,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { logger } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 import { deleteMandateAndR2Files } from "@/lib/atlas/document-processor.server";
 /* SEC-T0-1 step 2 — encryption-at-rest for PII fields on AtlasMandate.
    See docs/AUDIT-ATLAS-V2.md for the full audit-fix plan. */
@@ -321,7 +322,7 @@ export async function PATCH(
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     logger.error("[atlas/mandate/id] PATCH failed", {
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
       mandateId: id,
       error: msg,
     });
@@ -390,7 +391,7 @@ export async function DELETE(
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       logger.error("[atlas/mandate/id] DELETE failed", {
-        userId: atlas.userId,
+        userId: maskId(atlas.userId),
         mandateId: id,
         error: msg,
       });
@@ -422,7 +423,7 @@ export async function DELETE(
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     logger.error("[atlas/mandate/id] DELETE failed", {
-      userId: atlas.userId,
+      userId: maskId(atlas.userId),
       mandateId: id,
       error: msg,
     });
