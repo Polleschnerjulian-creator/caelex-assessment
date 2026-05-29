@@ -41,7 +41,20 @@ function inlineMdToHtml(s: string): string {
   let out = escapeHtml(s);
   /* Links [text](url) — process first so url-chars don't get formatted */
   out = out.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, text, url) => {
-    const safeUrl = url.replace(/"/g, "&quot;");
+    /* L3: block dangerous URL schemes (javascript:, data:, vbscript:) —
+       this HTML is injected into the contenteditable editor, so an
+       unsanitised href executes on click. A scheme is word-chars before
+       the first ':'; allow only http/https/mailto, plus scheme-less
+       relative/anchor links. Disallowed → drop the link, keep the text. */
+    const raw = String(url).trim();
+    const scheme = raw.match(/^([a-zA-Z][a-zA-Z0-9+.-]*):/);
+    if (
+      scheme &&
+      !["http", "https", "mailto"].includes(scheme[1].toLowerCase())
+    ) {
+      return text;
+    }
+    const safeUrl = raw.replace(/"/g, "&quot;");
     return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${text}</a>`;
   });
   /* Bold **text** */

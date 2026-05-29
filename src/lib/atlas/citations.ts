@@ -94,7 +94,7 @@ export const CITATION_RULES: CitationRule[] = [
     catalogueSourceId: () => "EU-NIS2-2022",
   },
   {
-    re: /\bArt\.\s*(I{1,3}|IV|V|VI{0,3}|IX|X{0,3})\s*(OST|Outer Space Treaty)/gi,
+    re: /\bArt\.\s*(XVII|XVI|XV|XIV|XIII|XII|XI|X|IX|VIII|VII|VI|V|IV|III|II|I)\s*(OST|Outer Space Treaty)/gi,
     label: (m) => `OST Art. ${m[1]}`,
     hint: () => "Weltraumvertrag 1967",
     catalogueSourceId: () => "INT-OST-1967",
