@@ -27,6 +27,7 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 
@@ -38,12 +39,21 @@ const SHARE_TTL_MS = SHARE_TTL_DAYS * 24 * 60 * 60 * 1000;
 const HARD_MAX_AGE_MS = 180 * 24 * 60 * 60 * 1000;
 
 export async function GET(req: NextRequest) {
+  // L5: fail closed (other crons 500 when CRON_SECRET is unset rather than
+  // running open) + timing-safe comparison.
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret) {
-    const auth = req.headers.get("authorization") ?? "";
-    if (auth !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  if (!cronSecret) {
+    return NextResponse.json({ error: "Service unavailable" }, { status: 500 });
+  }
+  const header = req.headers.get("authorization") ?? "";
+  const expected = `Bearer ${cronSecret}`;
+  const headerBuf = Buffer.from(header);
+  const expectedBuf = Buffer.from(expected);
+  if (
+    headerBuf.length !== expectedBuf.length ||
+    !timingSafeEqual(headerBuf, expectedBuf)
+  ) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {

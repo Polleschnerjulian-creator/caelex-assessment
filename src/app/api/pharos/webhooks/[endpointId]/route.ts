@@ -85,8 +85,10 @@ export async function POST(
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     logger.error(`[pharos-webhook-receiver] ${msg}`);
+    // M9: public unauthenticated endpoint — never echo the raw internal
+    // error message in the response body.
     return NextResponse.json(
-      { ok: false, status: "ERROR", reason: msg },
+      { ok: false, status: "ERROR", reason: "internal error" },
       { status: 500, headers: PUBLIC_HEADERS },
     );
   }
