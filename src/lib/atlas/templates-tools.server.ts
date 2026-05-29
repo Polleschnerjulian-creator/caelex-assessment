@@ -188,7 +188,13 @@ function tokenizeBody(
     { value: ctx.ownerName, token: "lawyer_name" },
     { value: ctx.ownerEmail, token: "lawyer_email" },
   ];
-  for (const { value, token } of replacements) {
+  /* M12: substitute longer values first so a short value (e.g. client
+     "Spire") that is a substring of a longer one (e.g. party "Spire
+     Global") can't corrupt the longer match order-dependently. */
+  const ordered = [...replacements].sort(
+    (a, b) => (b.value?.length ?? 0) - (a.value?.length ?? 0),
+  );
+  for (const { value, token } of ordered) {
     if (value && value.length >= 3) {
       const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       const re = new RegExp(escaped, "g");

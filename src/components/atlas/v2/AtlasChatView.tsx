@@ -251,6 +251,13 @@ export function AtlasChatView({ chatId }: Props) {
         const data = (await res.json()) as { chat: ChatRecord };
         if (!isMountedRef.current) return;
         setChat(data.chat);
+      } catch {
+        /* L10: a network-level fetch rejection (offline/DNS) otherwise
+           propagates as an unhandled rejection with no user feedback.
+           Surface it on a user-initiated load; stay quiet on silent polls. */
+        if (!silent && isMountedRef.current) {
+          setError("Verbindung fehlgeschlagen.");
+        }
       } finally {
         if (!silent && isMountedRef.current) setLoading(false);
       }
