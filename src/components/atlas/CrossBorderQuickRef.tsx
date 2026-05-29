@@ -94,7 +94,7 @@ function buildCard(code: AtlasExtendedJurisdictionCode): QuickRefCard {
     sourceCount: sources.length,
     authorities: authorities.slice(0, 3).map((a) => ({
       id: a.id,
-      abbreviation: a.abbreviation,
+      abbreviation: a.abbreviation ?? "",
     })),
     topAreas,
   };

@@ -8,6 +8,7 @@ import type {
 import {
   getTranslatedSource,
   getTranslatedAuthority,
+  normalizeKeyProvision,
 } from "@/data/legal-sources";
 import type {
   SpaceLawCountryCode,
@@ -396,16 +397,19 @@ export default function JurisdictionExport({
                     ) : null}
                     {source.key_provisions.length > 0 ? (
                       <div className="print-source-provisions">
-                        {source.key_provisions.slice(0, 3).map((p, i) => (
-                          <ProvisionLine
-                            key={i}
-                            provision={p}
-                            translatedSummary={
-                              translated.getProvisionTranslation(p.section)
-                                ?.summary ?? null
-                            }
-                          />
-                        ))}
+                        {source.key_provisions
+                          .slice(0, 3)
+                          .map(normalizeKeyProvision)
+                          .map((p, i) => (
+                            <ProvisionLine
+                              key={i}
+                              provision={p}
+                              translatedSummary={
+                                translated.getProvisionTranslation(p.section)
+                                  ?.summary ?? null
+                              }
+                            />
+                          ))}
                       </div>
                     ) : null}
                   </div>

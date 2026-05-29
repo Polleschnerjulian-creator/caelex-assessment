@@ -36,6 +36,7 @@ import {
   ALL_SOURCES,
   getAuthoritiesByJurisdiction,
   type LegalSource,
+  normalizeKeyProvision,
 } from "@/data/legal-sources";
 import {
   ATLAS_CASES,
@@ -460,7 +461,8 @@ function draftAuthorizationApplication(args: {
     text: string;
   }> = [];
   for (const s of sources) {
-    for (const p of s.key_provisions) {
+    for (const rawP of s.key_provisions) {
+      const p = normalizeKeyProvision(rawP);
       const blob = `${p.title} ${p.summary}`.toLowerCase();
       if (
         blob.includes("insurance") ||

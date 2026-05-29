@@ -19,6 +19,7 @@ import {
   getLegalSourceById,
   type LegalSource,
   type KeyProvision,
+  normalizeKeyProvision,
 } from "@/data/legal-sources";
 import { SPACE_LAW_COUNTRY_CODES } from "@/lib/space-law-types";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
@@ -51,7 +52,9 @@ export async function generateMetadata({ params }: PageProps) {
     title: `${treaty.title_en} — Atlas`,
     description:
       treaty.scope_description ??
-      treaty.key_provisions[0]?.summary ??
+      (treaty.key_provisions[0]
+        ? normalizeKeyProvision(treaty.key_provisions[0]).summary
+        : undefined) ??
       "International space law instrument.",
   };
 }
@@ -429,7 +432,11 @@ export default async function TreatyDetailPage({ params }: PageProps) {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {treaty.key_provisions.map((p, i) => (
-              <ProvisionCard key={i} provision={p} index={i} />
+              <ProvisionCard
+                key={i}
+                provision={normalizeKeyProvision(p)}
+                index={i}
+              />
             ))}
           </div>
         </section>

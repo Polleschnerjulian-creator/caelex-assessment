@@ -295,6 +295,16 @@ export interface LegislativeMilestone {
   verification_note?: string;
 }
 
+/**
+ * Normalise a key-provision that may be a bare string (legacy data-entry
+ * shorthand) into the structured KeyProvision shape, so consumers always
+ * see {section,title,summary}. A string becomes the title + summary with
+ * an empty section.
+ */
+export function normalizeKeyProvision(p: string | KeyProvision): KeyProvision {
+  return typeof p === "string" ? { section: "", title: p, summary: p } : p;
+}
+
 export interface LegalSource {
   id: string;
   jurisdiction: string;
@@ -321,7 +331,15 @@ export interface LegalSource {
   applicable_to: OperatorApplicability[];
   compliance_areas: ComplianceArea[];
 
-  key_provisions: KeyProvision[];
+  /**
+   * Structured key provisions. Many jurisdiction files use the bare-
+   * string shorthand ("Art. 2 — …") instead of the full object; both
+   * are accepted here and normalised to KeyProvision via
+   * normalizeKeyProvision() at the consumption boundary. (Widened
+   * 2026-05 to stop the corpus emitting 500+ TS2322 errors that only
+   * shipped because next.config sets ignoreBuildErrors off-CI.)
+   */
+  key_provisions: (string | KeyProvision)[];
   scope_description?: string;
 
   related_sources: string[];
@@ -377,18 +395,35 @@ export interface LegalSource {
   last_verified: string;
 }
 
+/**
+ * A LegalSource whose key_provisions are guaranteed to be structured
+ * KeyProvision objects. The index aggregation normalises bare-string
+ * entries via normalizeKeyProvision(); consumers that render provision
+ * fields depend on this rather than the permissive LegalSource input.
+ */
+export type NormalizedLegalSource = Omit<LegalSource, "key_provisions"> & {
+  key_provisions: KeyProvision[];
+};
+
 export interface Authority {
   id: string;
   jurisdiction: string;
   name_en: string;
-  name_local: string;
-  abbreviation: string;
+  // name_local / abbreviation / space_mandate were widened to optional
+  // (2026-05): ~50 jurisdiction-onboarding authorities omit them and use
+  // the free-text `role_description` instead. Consumers must tolerate
+  // undefined (e.g. `a.space_mandate ?? ""`).
+  name_local?: string;
+  abbreviation?: string;
   parent_ministry?: string;
   website: string;
   contact_email?: string;
   contact_phone?: string;
   address?: string;
-  space_mandate: string;
+  space_mandate?: string;
+  /** Free-text role description used by newer jurisdiction files in
+   *  place of the structured space_mandate field. */
+  role_description?: string;
   legal_basis?: string;
   applicable_areas: ComplianceArea[];
 }

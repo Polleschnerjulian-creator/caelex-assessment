@@ -16,7 +16,10 @@ import type {
   LegalSourceStatus,
   ComplianceArea,
   JurisdictionLegalData,
+  NormalizedLegalSource,
 } from "./types";
+
+import { normalizeKeyProvision } from "./types";
 
 export type {
   LegalSource,
@@ -29,7 +32,10 @@ export type {
   OperatorApplicability,
   KeyProvision,
   Amendment,
+  NormalizedLegalSource,
 } from "./types";
+
+export { normalizeKeyProvision } from "./types";
 
 import {
   LEGAL_SOURCE_TRANSLATIONS_DE,
@@ -150,7 +156,14 @@ import { LEGAL_SOURCES_CO, AUTHORITIES_CO } from "./sources/co";
 
 // ─── Aggregated data ─────────────────────────────────────────────────
 
-export const ALL_SOURCES: LegalSource[] = [
+/** Normalise a raw source: convert any bare-string key_provisions into
+ *  structured KeyProvision objects so every consumer sees the strict
+ *  shape regardless of how the jurisdiction file authored them. */
+function normalizeSource(s: LegalSource): NormalizedLegalSource {
+  return { ...s, key_provisions: s.key_provisions.map(normalizeKeyProvision) };
+}
+
+export const ALL_SOURCES: NormalizedLegalSource[] = [
   ...LEGAL_SOURCES_INT,
   ...LEGAL_SOURCES_EU,
   ...LEGAL_SOURCES_DE,
@@ -218,7 +231,7 @@ export const ALL_SOURCES: LegalSource[] = [
   ...LEGAL_SOURCES_KP,
   ...LEGAL_SOURCES_MN,
   ...LEGAL_SOURCES_CO,
-];
+].map(normalizeSource);
 
 export const ALL_AUTHORITIES: Authority[] = [
   ...AUTHORITIES_INT,
@@ -831,10 +844,12 @@ const JURISDICTION_DATA: Map<string, JurisdictionLegalData> = new Map([
 
 // ─── Lookup functions ────────────────────────────────────────────────
 
-export function getLegalSourcesByJurisdiction(code: string): LegalSource[] {
+export function getLegalSourcesByJurisdiction(
+  code: string,
+): NormalizedLegalSource[] {
   // Country-specific sources
   const data = JURISDICTION_DATA.get(code);
-  const national = data?.sources ?? [];
+  const national = (data?.sources ?? []).map(normalizeSource);
 
   // Plus international + EU instruments that list this country in
   // applies_to_jurisdictions. Single-source-of-truth: the canonical
@@ -857,16 +872,18 @@ export function getLegalSourcesByJurisdiction(code: string): LegalSource[] {
  * Useful when the UI wants to show "national laws" separately from
  * "international instruments that apply here".
  */
-export function getNationalSources(code: string): LegalSource[] {
+export function getNationalSources(code: string): NormalizedLegalSource[] {
   const data = JURISDICTION_DATA.get(code);
-  return data?.sources ?? [];
+  return (data?.sources ?? []).map(normalizeSource);
 }
 
 /**
  * Returns only the international + EU instruments that apply to a country.
  * Filters by applies_to_jurisdictions.
  */
-export function getApplicableInternationalSources(code: string): LegalSource[] {
+export function getApplicableInternationalSources(
+  code: string,
+): NormalizedLegalSource[] {
   return ALL_SOURCES.filter(
     (s) =>
       (s.jurisdiction === "INT" || s.jurisdiction === "EU") &&
@@ -877,17 +894,21 @@ export function getApplicableInternationalSources(code: string): LegalSource[] {
 export function getLegalSourcesByComplianceArea(
   jurisdiction: string,
   area: ComplianceArea,
-): LegalSource[] {
+): NormalizedLegalSource[] {
   return getLegalSourcesByJurisdiction(jurisdiction).filter((s) =>
     s.compliance_areas.includes(area),
   );
 }
 
-export function getLegalSourcesByType(type: LegalSourceType): LegalSource[] {
+export function getLegalSourcesByType(
+  type: LegalSourceType,
+): NormalizedLegalSource[] {
   return ALL_SOURCES.filter((s) => s.type === type);
 }
 
-export function getLegalSourceById(id: string): LegalSource | undefined {
+export function getLegalSourceById(
+  id: string,
+): NormalizedLegalSource | undefined {
   return ALL_SOURCES.find((s) => s.id === id);
 }
 
@@ -903,7 +924,7 @@ export function getAuthorityById(id: string): Authority | undefined {
 export function getLegalBasisChain(
   jurisdiction: string,
   area: ComplianceArea,
-): LegalSource[] {
+): NormalizedLegalSource[] {
   const sources = getLegalSourcesByComplianceArea(jurisdiction, area);
   // Sort by relevance: fundamental > critical > high > medium > low
   const order: Record<string, number> = {
@@ -918,12 +939,12 @@ export function getLegalBasisChain(
   );
 }
 
-export function getRelatedSources(sourceId: string): LegalSource[] {
+export function getRelatedSources(sourceId: string): NormalizedLegalSource[] {
   const source = getLegalSourceById(sourceId);
   if (!source) return [];
   return source.related_sources
     .map((id) => getLegalSourceById(id))
-    .filter((s): s is LegalSource => s !== undefined);
+    .filter((s): s is NormalizedLegalSource => s !== undefined);
 }
 
 export function getLegalSourceStats(): Record<

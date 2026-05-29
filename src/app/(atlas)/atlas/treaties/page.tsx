@@ -6,6 +6,7 @@ import {
   type TreatySlug,
 } from "@/data/treaties";
 import type { LegalSource } from "@/data/legal-sources";
+import { normalizeKeyProvision } from "@/data/legal-sources";
 
 /**
  * /atlas/treaties — hub for international space-treaty deep-dives.
@@ -178,9 +179,14 @@ export default function TreatiesHubPage() {
                         </p>
                       ) : null}
 
-                      {source.key_provisions[0]?.summary ? (
+                      {source.key_provisions[0] &&
+                      normalizeKeyProvision(source.key_provisions[0])
+                        .summary ? (
                         <p className="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed line-clamp-3">
-                          {source.key_provisions[0].summary}
+                          {
+                            normalizeKeyProvision(source.key_provisions[0])
+                              .summary
+                          }
                         </p>
                       ) : null}
                     </div>

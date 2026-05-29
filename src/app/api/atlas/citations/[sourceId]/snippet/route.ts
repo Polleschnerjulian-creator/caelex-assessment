@@ -74,8 +74,12 @@ export async function GET(
   const firstProvision = source.key_provisions?.[0];
   const snippetRaw =
     source.scope_description ||
-    firstProvision?.paragraph_text ||
-    firstProvision?.summary ||
+    (typeof firstProvision === "object"
+      ? firstProvision.paragraph_text
+      : undefined) ||
+    (typeof firstProvision === "object"
+      ? firstProvision.summary
+      : firstProvision) ||
     "";
   const snippet = snippetRaw.slice(0, SNIPPET_MAX_CHARS);
 

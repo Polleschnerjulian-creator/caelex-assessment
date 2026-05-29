@@ -18,6 +18,7 @@ import {
   getAuthoritiesByJurisdiction,
   getTranslatedSource,
   getTranslatedAuthority,
+  normalizeKeyProvision,
 } from "@/data/legal-sources";
 import type {
   LegalSource,
@@ -279,7 +280,10 @@ function SourceEntry({ source }: { source: LegalSource }) {
         </p>
       )}
 
-      <KeyProvisionsToggle provisions={source.key_provisions} source={source} />
+      <KeyProvisionsToggle
+        provisions={source.key_provisions.map(normalizeKeyProvision)}
+        source={source}
+      />
     </div>
   );
 }
