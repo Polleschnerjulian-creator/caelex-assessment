@@ -30,18 +30,15 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Two-step delete: lookup first to enforce ownership, then delete.
-    // Single deleteMany would also work but the explicit check makes
-    // the audit trail cleaner if we ever log this path.
-    const entry = await prisma.atlasResearchEntry.findUnique({
-      where: { id },
-      select: { userId: true },
+    // L1: atomic owner-scoped delete (closes the find-then-delete-by-bare-id
+    // TOCTOU). Unknown id OR not-the-caller's entry both yield count 0 →
+    // same 404 so we don't leak that the id exists for someone else.
+    const res = await prisma.atlasResearchEntry.deleteMany({
+      where: { id, userId: atlas.userId },
     });
-    if (!entry || entry.userId !== atlas.userId) {
+    if (res.count === 0) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
-
-    await prisma.atlasResearchEntry.delete({ where: { id } });
     return NextResponse.json({ ok: true });
   } catch (err) {
     const errMsg = err instanceof Error ? err.message : String(err);

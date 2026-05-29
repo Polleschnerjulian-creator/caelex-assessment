@@ -65,9 +65,16 @@ export async function PATCH(
   if (parsed.data.tags !== undefined) data.tags = parsed.data.tags;
 
   try {
-    const updated = await prisma.atlasNote.update({
-      where: { id },
+    /* L1: atomic owner-scoped mutation — no find-then-mutate-by-bare-id. */
+    const res = await prisma.atlasNote.updateMany({
+      where: { id, userId: atlas.userId },
       data,
+    });
+    if (res.count === 0) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    const updated = await prisma.atlasNote.findUnique({
+      where: { id },
       select: {
         id: true,
         excerpt: true,
@@ -107,7 +114,13 @@ export async function DELETE(
     return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
   try {
-    await prisma.atlasNote.delete({ where: { id } });
+    /* L1: atomic owner-scoped delete — no find-then-delete-by-bare-id. */
+    const res = await prisma.atlasNote.deleteMany({
+      where: { id, userId: atlas.userId },
+    });
+    if (res.count === 0) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
     logger.info("[atlas/notes] deleted", { userId: atlas.userId, noteId: id });
     return NextResponse.json({ ok: true });
   } catch (err) {

@@ -78,8 +78,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // M10: provisioning a signing secret is an OWNER/ADMIN action (matches
+  // the oversight-create gate) — a MEMBER/VIEWER of the authority org must
+  // not be able to mint a webhook secret. Restrict to OWNER/ADMIN orgs.
   const memberships = await prisma.organizationMember.findMany({
-    where: { userId: session.user.id },
+    where: { userId: session.user.id, role: { in: ["OWNER", "ADMIN"] } },
     select: { organizationId: true },
   });
   const orgIds = memberships.map((m) => m.organizationId);
@@ -116,6 +119,6 @@ export async function POST(request: NextRequest) {
         { status: 409 },
       );
     }
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json({ error: "Provisioning failed" }, { status: 500 });
   }
 }

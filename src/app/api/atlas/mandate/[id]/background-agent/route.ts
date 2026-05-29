@@ -58,6 +58,8 @@ async function loadMandateForCaller(
     },
     select: {
       id: true,
+      ownerUserId: true,
+      members: { where: { userId }, select: { role: true } },
       backgroundAgentEnabled: true,
       backgroundAgentSchedule: true,
       backgroundAgentGoal: true,
@@ -133,6 +135,19 @@ export async function PUT(
   );
   if (!mandate) {
     return NextResponse.json({ error: "Mandate not found" }, { status: 404 });
+  }
+
+  /* M5: configuring the background agent (autonomous, billable, injects
+     its goal into Claude + can chain tool calls) is owner/reviewer-only —
+     a collaborator/viewer must not silently arm firm automation. Mirrors
+     the sensitive-field policy in mandate/[id] PATCH (SEC-H7). */
+  const isOwner = mandate.ownerUserId === atlas.userId;
+  const callerRole = mandate.members[0]?.role ?? null;
+  if (!isOwner && callerRole !== "reviewer") {
+    return NextResponse.json(
+      { error: "Forbidden — owner or reviewer role required" },
+      { status: 403 },
+    );
   }
 
   /* Validate combined state: if enabling, schedule + goal both
