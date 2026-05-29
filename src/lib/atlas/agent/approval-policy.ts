@@ -33,6 +33,15 @@ const DANGEROUS_PREFIXES = [
   "send_",
   "schedule_",
   "finalize_",
+  // H2 (2026-05): persistent org-level writes + sub-agent fan-out were
+  // flagged requiresApproval in tool-metadata but slipped past the gate
+  // because they don't match the four prefixes above. set_org_branding /
+  // save_document_template mutate firm-wide settings; delegate_subtasks
+  // spawns parallel sub-agents. Reversible drafts (draft_*/refine_*)
+  // deliberately stay OUT — they're in-memory artefacts the lawyer reads.
+  "set_",
+  "save_",
+  "delegate_",
 ] as const;
 
 /** True when the tool requires an explicit lawyer-approval gate. */
@@ -57,6 +66,12 @@ export function approvalRationale(toolName: string): string {
   }
   if (toolName.startsWith("finalize_")) {
     return "Finalisiert ein Dokument / einen Schriftsatz.";
+  }
+  if (toolName.startsWith("set_") || toolName.startsWith("save_")) {
+    return "Ändert dauerhafte Kanzlei-/Organisations-Einstellungen.";
+  }
+  if (toolName.startsWith("delegate_")) {
+    return "Startet mehrere autonome Sub-Agenten (zusätzliche Kosten).";
   }
   return "Schritt mit Side-Effects — Anwalt-Freigabe erforderlich.";
 }
