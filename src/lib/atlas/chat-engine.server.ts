@@ -1330,7 +1330,14 @@ export async function runChat(
                 userId: input.userId,
                 error: msg,
               });
-              send({ type: "error", message: msg });
+              // M6: stream a generic message — the raw upstream error (may
+              // carry Anthropic/Prisma internals, URLs, model ids) stays in
+              // the server log only.
+              send({
+                type: "error",
+                message:
+                  "Die Anfrage ist fehlgeschlagen. Bitte erneut versuchen.",
+              });
             });
 
             /* Wait for the upstream turn to finish. */
@@ -1694,7 +1701,11 @@ export async function runChat(
           userId: input.userId,
           error: msg,
         });
-        send({ type: "error", message: msg });
+        // M6: generic client-facing message; real error stays in the log.
+        send({
+          type: "error",
+          message: "Die Anfrage ist fehlgeschlagen. Bitte erneut versuchen.",
+        });
 
         /* AUDIT-FIX H1: Best-effort UPDATE of the placeholder so the
            assistant-side row is never empty/orphaned. We persist
