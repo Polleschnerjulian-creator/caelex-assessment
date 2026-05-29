@@ -37,6 +37,20 @@ import "server-only";
  */
 
 import type Anthropic from "@anthropic-ai/sdk";
+import { getLegalSourceById } from "@/data/legal-sources";
+
+/* H6: only emit an [ATLAS:id] citation pill when the id resolves in the
+   corpus — directly OR via the standard -Art./-§ parent strip. These
+   tools previously synthesised article-level ids (ITU-RR-Art-9,
+   EU-NIS2-Art.21, UK-<mangled>, …) that don't resolve, producing
+   fabricated citation pills. Non-resolving refs degrade to plain text so
+   the model can still reference them without asserting a fake source. */
+function atlasCite(id: string): string {
+  const parent = id.replace(/-§.*$/i, "").replace(/-Art\..*$/i, "");
+  return getLegalSourceById(id) || getLegalSourceById(parent)
+    ? `[ATLAS:${id}]`
+    : id;
+}
 
 export interface ComplianceToolResult {
   content: string;
@@ -395,7 +409,7 @@ function assessEuSpaceAct(rawInput: unknown): ComplianceToolResult {
           "Confirm defence-only classification with national MoD authority.",
           "Map applicable national defence-procurement obligations.",
         ],
-        citations: ["[ATLAS:EU-SPACE-ACT-Art.2(3)]"],
+        citations: [atlasCite("EU-SPACE-ACT-Art.2(3)")],
       }),
       isError: false,
     };
@@ -413,7 +427,7 @@ function assessEuSpaceAct(rawInput: unknown): ComplianceToolResult {
           "Verify NO EU customers are being served (any EU customer triggers third_country_eu_services regime).",
           "Map national authority of operator's home jurisdiction (e.g. FCC + ITAR if US).",
         ],
-        citations: ["[ATLAS:EU-SPACE-ACT-Art.4]"],
+        citations: [atlasCite("EU-SPACE-ACT-Art.4")],
       }),
       isError: false,
     };
@@ -460,9 +474,9 @@ function assessEuSpaceAct(rawInput: unknown): ComplianceToolResult {
         "Pre-application meeting with national authority recommended.",
       ],
       citations: [
-        "[ATLAS:EU-SPACE-ACT-Art.2]",
-        "[ATLAS:EU-SPACE-ACT-Art.8]",
-        regime === "STANDARD_REGIME" && "[ATLAS:EU-SPACE-ACT-Art.18]",
+        atlasCite("EU-SPACE-ACT-Art.2"),
+        atlasCite("EU-SPACE-ACT-Art.8"),
+        regime === "STANDARD_REGIME" && atlasCite("EU-SPACE-ACT-Art.18"),
       ].filter(Boolean),
     }),
     isError: false,
@@ -583,10 +597,10 @@ function classifyNis2(rawInput: unknown): ComplianceToolResult {
               "Document board-level approval of cybersecurity policy (Art. 20).",
             ],
       citations: [
-        "[ATLAS:EU-NIS2-Art.3]",
-        "[ATLAS:EU-NIS2-Art.21]",
-        "[ATLAS:EU-NIS2-Art.23]",
-        classification === "essential" && "[ATLAS:EU-NIS2-Art.32]",
+        atlasCite("EU-NIS2-Art.3"),
+        atlasCite("EU-NIS2-Art.21"),
+        atlasCite("EU-NIS2-Art.23"),
+        classification === "essential" && atlasCite("EU-NIS2-Art.32"),
       ].filter(Boolean),
     }),
     isError: false,
@@ -740,7 +754,7 @@ function assessNationalSpaceLaw(rawInput: unknown): ComplianceToolResult {
         ? { keyArticles: brief.keyArticles }
         : {}),
       summary: `${i.jurisdiction} regime applicable to ${i.operatorType} under ${brief.lawName}. Authority: ${brief.authority}. Insurance min: ${brief.insuranceMin}. Liability: ${brief.liabilityCap}.`,
-      citations: [`[ATLAS:${brief.sourceId}]`],
+      citations: [atlasCite(brief.sourceId)],
       nextSteps: [
         `Run \`get_legal_source({ id: "${brief.sourceId}" })\` for verbatim wording.`,
         `Run \`compare_jurisdictions_for_filing\` to compare against neighbouring regimes.`,
@@ -812,7 +826,7 @@ function assessUkSpaceIndustry(rawInput: unknown): ComplianceToolResult {
         "Pre-application meeting with CAA Spaceflight team.",
         "Engage Reuschlaw / Bird&Bird / specialist UK counsel for application.",
       ],
-      citations: t.key.map((k) => `[ATLAS:UK-${k.replace(/[\s.()]/g, "")}]`),
+      citations: t.key.map((k) => atlasCite(`UK-${k.replace(/[\s.()]/g, "")}`)),
     }),
     isError: false,
   };
@@ -896,7 +910,7 @@ function assessUsRegulatory(rawInput: unknown): ComplianceToolResult {
           : "Run classify_export_control() in parallel.",
         "Pre-application meeting with the lead agency.",
       ],
-      citations: m.key.map((k) => `[ATLAS:US-${k.replace(/[\s/.]/g, "-")}]`),
+      citations: m.key.map((k) => atlasCite(`US-${k.replace(/[\s/.]/g, "-")}`)),
     }),
     isError: false,
   };
@@ -949,9 +963,9 @@ function classifyExportControl(rawInput: unknown): ComplianceToolResult {
         `Always: deemed-export analysis for any non-US-person engineers.`,
       ],
       citations: [
-        "[ATLAS:US-ITAR-USML-Cat-XV]",
-        "[ATLAS:US-EAR-CCL-Cat-9]",
-        "[ATLAS:EU-DUAL-USE-2021-821-Annex-I]",
+        atlasCite("US-ITAR-USML-Cat-XV"),
+        atlasCite("US-EAR-CCL-Cat-9"),
+        atlasCite("EU-DUAL-USE-2021-821-Annex-I"),
       ],
     }),
     isError: false,
@@ -1025,9 +1039,9 @@ function checkSpectrumFiling(rawInput: unknown): ComplianceToolResult {
         "Identify potentially-affected administrations early (especially neighbouring orbital slots for GEO).",
       ],
       citations: [
-        "[ATLAS:ITU-RR-Art-9]",
-        "[ATLAS:ITU-RR-Art-11]",
-        "[ATLAS:ITU-RR-Appendix-4]",
+        atlasCite("ITU-RR-Art-9"),
+        atlasCite("ITU-RR-Art-11"),
+        atlasCite("ITU-RR-Appendix-4"),
       ],
     }),
     isError: false,
@@ -1101,9 +1115,9 @@ function checkCopuosCompliance(rawInput: unknown): ComplianceToolResult {
         "Set up SSA/conjunction-warning subscription (LeoLabs, Slingshot, or 18 SDS) — needed for collision-avoidance under IADC 5.5.",
       ],
       citations: [
-        "[ATLAS:INT-IADC-MITIGATION-2020]",
-        "[ATLAS:INT-COPUOS-LTS-2018]",
-        "[ATLAS:INT-UN-REG-CONV-1976]",
+        atlasCite("INT-IADC-MITIGATION-2020"),
+        atlasCite("INT-COPUOS-LTS-2018"),
+        atlasCite("INT-UN-REG-CONV-1976"),
       ],
     }),
     isError: false,
