@@ -35,6 +35,7 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { checkMandateMembership } from "@/lib/atlas/mandate-membership";
 
 /* ── Result type ────────────────────────────────────────────────────── */
 
@@ -229,6 +230,7 @@ const SearchMandateVaultInput = z.object({
  */
 async function searchMandateVault(args: {
   input: unknown;
+  callerUserId: string;
   callerOrgId: string;
   mandateId: string | null;
 }): Promise<MandateToolResult> {
@@ -253,6 +255,22 @@ async function searchMandateVault(args: {
     };
   }
   const { query, limit } = parsed.data;
+
+  /* SEC (M3): vault chunks are mandate-scoped, but org-scoping alone let
+     any org member read a sibling mandate's vault by passing its id.
+     Gate on owner/member membership — the same check the API routes use
+     (checkMandateMembership). Validated input first, DB check second. */
+  const isMember = await checkMandateMembership(
+    args.mandateId,
+    args.callerUserId,
+    args.callerOrgId,
+  );
+  if (!isMember) {
+    return {
+      content: JSON.stringify({ error: "Kein Zugriff auf dieses Mandat." }),
+      isError: true,
+    };
+  }
 
   const { embedTexts } = await import("@/lib/atlas/knowledge/embed.server");
 
@@ -396,6 +414,7 @@ async function searchMandateVault(args: {
 export async function executeMandateTool(args: {
   name: string;
   input: unknown;
+  callerUserId: string;
   callerOrgId: string;
   mandateId?: string | null;
 }): Promise<MandateToolResult> {
@@ -405,6 +424,7 @@ export async function executeMandateTool(args: {
     case "search_mandate_vault":
       return searchMandateVault({
         input: args.input,
+        callerUserId: args.callerUserId,
         callerOrgId: args.callerOrgId,
         mandateId: args.mandateId ?? null,
       });

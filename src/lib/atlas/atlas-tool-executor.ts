@@ -156,6 +156,7 @@ export async function executeAtlasTool(args: {
     return executeMandateTool({
       name: args.name,
       input: args.input,
+      callerUserId: args.callerUserId,
       callerOrgId: args.callerOrgId,
       mandateId: args.mandateId,
     });

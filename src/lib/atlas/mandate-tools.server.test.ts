@@ -15,6 +15,9 @@ vi.mock("@/lib/prisma", () => ({
     legalMatter: {
       findMany: vi.fn(),
     },
+    atlasMandate: {
+      findFirst: vi.fn(),
+    },
   },
 }));
 
@@ -219,6 +222,19 @@ describe("mandate-tools bundle", () => {
         mandateId: "m_test",
       });
       expect(result.isError).toBe(true);
+    });
+
+    it("denies vault search for a non-member of the mandate (M3)", async () => {
+      vi.mocked(prisma.atlasMandate.findFirst).mockResolvedValue(null);
+      const result = await executeMandateTool({
+        name: "search_mandate_vault",
+        input: { query: "frequency coordination" },
+        callerUserId: "user_outsider",
+        callerOrgId: "org_test_10",
+        mandateId: "m_not_mine",
+      });
+      expect(result.isError).toBe(true);
+      expect(JSON.parse(result.content).error).toContain("Kein Zugriff");
     });
   });
 });
