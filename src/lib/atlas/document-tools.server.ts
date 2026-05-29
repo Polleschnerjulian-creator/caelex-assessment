@@ -411,9 +411,20 @@ async function runFindClauses(
     };
   }
   const matches: { snippet: string; offset: number; pattern: string }[] = [];
-  for (const re of patterns) {
-    const m = file.extractedText.match(re);
-    if (m && m.index !== undefined) {
+  const seenOffsets = new Set<number>();
+  /* L13: surface ALL occurrences per pattern, not just the first. The
+     CLAUSE_PATTERNS are case-insensitive but not global, so the old
+     `String.match` returned at most one hit per pattern — a contract
+     with three liability clauses surfaced only one. Use a global clone
+     + matchAll, dedupe overlapping hits from different patterns by start
+     offset, and keep the 5-snippet cap. */
+  outer: for (const re of patterns) {
+    const gre = re.flags.includes("g")
+      ? re
+      : new RegExp(re.source, `${re.flags}g`);
+    for (const m of file.extractedText.matchAll(gre)) {
+      if (m.index === undefined || seenOffsets.has(m.index)) continue;
+      seenOffsets.add(m.index);
       const start = Math.max(0, m.index - 100);
       const end = Math.min(file.extractedText.length, m.index + 400);
       matches.push({
@@ -426,8 +437,8 @@ async function runFindClauses(
         offset: m.index,
         pattern: re.source,
       });
+      if (matches.length >= 5) break outer;
     }
-    if (matches.length >= 5) break;
   }
   return {
     content: JSON.stringify({
