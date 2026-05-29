@@ -4,6 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { parseFeed, normaliseUrl } from "@/lib/atlas/feed-parser";
 import { ALL_SOURCES } from "@/data/legal-sources";
+import {
+  isPublicHttpUrl,
+  fetchFollowingRedirects,
+} from "@/lib/atlas/url-safety";
 
 /**
  * Atlas feed-discovery cron.
@@ -95,22 +99,6 @@ function isValidCronSecret(header: string, secret: string): boolean {
   }
 }
 
-function isSafeHttpUrl(url: string): boolean {
-  try {
-    const u = new URL(url);
-    if (u.protocol !== "http:" && u.protocol !== "https:") return false;
-    const host = u.hostname;
-    if (host === "localhost" || host === "0.0.0.0") return false;
-    if (host.startsWith("127.") || host.startsWith("10.")) return false;
-    if (host.startsWith("192.168.")) return false;
-    if (/^172\.(1[6-9]|2\d|3[01])\./.test(host)) return false;
-    if (host === "169.254.169.254") return false;
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 async function readBodyBounded(resp: Response): Promise<string> {
   if (!resp.body) return "";
   const reader = resp.body.getReader();
@@ -165,7 +153,7 @@ export async function GET(request: Request) {
   let candidatesSkipped = 0;
 
   for (const feed of FEEDS) {
-    if (!isSafeHttpUrl(feed.url)) {
+    if (!isPublicHttpUrl(feed.url)) {
       feedsErr++;
       continue;
     }
@@ -173,16 +161,25 @@ export async function GET(request: Request) {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
-      const resp = await fetch(feed.url, {
+      const fetched = await fetchFollowingRedirects(feed.url, {
         signal: controller.signal,
         headers: {
           "User-Agent": "ATLAS-FeedDiscovery/1.0 (Caelex Space Law Database)",
           Accept:
             "application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.8",
         },
-        redirect: "follow",
       });
       clearTimeout(timeout);
+
+      if (!fetched.ok) {
+        logger.warn("atlas feed fetch blocked/failed", {
+          feed: feed.id,
+          reason: fetched.reason,
+        });
+        feedsErr++;
+        continue;
+      }
+      const resp = fetched.response;
 
       if (!resp.ok) {
         logger.warn("atlas feed fetch non-ok", {

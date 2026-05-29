@@ -3,6 +3,10 @@ import { timingSafeEqual, createHash } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { summariseDiff } from "@/lib/atlas/diff-summarizer.server";
+import {
+  isPublicHttpUrl,
+  fetchFollowingRedirects,
+} from "@/lib/atlas/url-safety";
 
 // Import all legal sources
 import {
@@ -161,23 +165,8 @@ export async function GET(request: Request) {
       ).map((r) => [r.sourceId, r]),
     );
 
-    // C9: whitelist the URL protocol + reject private / loopback targets
-    // before ever calling fetch().
-    function isSafeHttpUrl(url: string): boolean {
-      try {
-        const u = new URL(url);
-        if (u.protocol !== "http:" && u.protocol !== "https:") return false;
-        const host = u.hostname;
-        if (host === "localhost" || host === "0.0.0.0") return false;
-        if (host.startsWith("127.") || host.startsWith("10.")) return false;
-        if (host.startsWith("192.168.")) return false;
-        if (/^172\.(1[6-9]|2\d|3[01])\./.test(host)) return false;
-        if (host === "169.254.169.254") return false; // cloud-metadata
-        return true;
-      } catch {
-        return false;
-      }
-    }
+    // C9 + H4: URL-safety (incl. IPv6) and per-redirect-hop revalidation
+    // live in @/lib/atlas/url-safety now (shared with feed-discovery).
 
     // C9: read up to MAX_BODY_BYTES from the response stream, stop early
     // past that threshold so a hostile gigabyte body can't OOM the runtime.
@@ -205,7 +194,7 @@ export async function GET(request: Request) {
     // caught by the caller so we always land in a final upsert.
     type Stat = "changed" | "unchanged" | "error";
     async function processOne(source: (typeof batch)[number]): Promise<Stat> {
-      if (!isSafeHttpUrl(source.source_url)) {
+      if (!isPublicHttpUrl(source.source_url)) {
         await prisma.atlasSourceCheck.upsert({
           where: { sourceId: source.id },
           create: {
@@ -229,18 +218,38 @@ export async function GET(request: Request) {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
 
-        const response = await fetch(source.source_url, {
+        const fetched = await fetchFollowingRedirects(source.source_url, {
           signal: controller.signal,
           headers: {
             "User-Agent": "ATLAS-SourceMonitor/1.0 (Caelex Space Law Database)",
             Accept:
               "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
           },
-          redirect: "follow",
         });
 
         clearTimeout(timeout);
 
+        if (!fetched.ok) {
+          await prisma.atlasSourceCheck.upsert({
+            where: { sourceId: source.id },
+            create: {
+              sourceId: source.id,
+              jurisdiction: source.jurisdiction,
+              sourceUrl: source.source_url,
+              status: "ERROR",
+              errorMessage: fetched.reason,
+              lastChecked: new Date(),
+            },
+            update: {
+              status: "ERROR",
+              errorMessage: fetched.reason,
+              lastChecked: new Date(),
+            },
+          });
+          return "error";
+        }
+
+        const response = fetched.response;
         const httpStatus = response.status;
 
         if (!response.ok) {
