@@ -259,6 +259,51 @@ describe("Atlas corpus — authorities drift safety", () => {
   });
 });
 
+/* ── Referential integrity (cross-references resolve) ───────────────── */
+
+describe("Atlas corpus — referential integrity", () => {
+  /* related_sources / amended_by / superseded_by hold LegalSource ids
+   * (e.g. "INT-OST-1967"). A dangling ref renders a dead cross-link in
+   * the jurisdiction/treaty UI and a broken "related sources" tool hit.
+   * This guard turns that data-rot from "noticed eventually" into "fails
+   * the build the moment a ref is typo'd or its target is removed". */
+  const SOURCE_IDS: ReadonlySet<string> = new Set(ALL_SOURCES.map((s) => s.id));
+
+  it("every related_sources id resolves to a known source", () => {
+    const offenders: string[] = [];
+    for (const s of ALL_SOURCES) {
+      for (const ref of s.related_sources ?? []) {
+        if (!SOURCE_IDS.has(ref)) {
+          offenders.push(`${s.id}: related_sources -> "${ref}"`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it("every amended_by id resolves to a known source", () => {
+    const offenders: string[] = [];
+    for (const s of ALL_SOURCES) {
+      for (const ref of s.amended_by ?? []) {
+        if (!SOURCE_IDS.has(ref)) {
+          offenders.push(`${s.id}: amended_by -> "${ref}"`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it("superseded_by (when set) resolves to a known source", () => {
+    const offenders: string[] = [];
+    for (const s of ALL_SOURCES) {
+      if (s.superseded_by && !SOURCE_IDS.has(s.superseded_by)) {
+        offenders.push(`${s.id}: superseded_by -> "${s.superseded_by}"`);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+});
+
 /* ── Schema-side invariants ─────────────────────────────────────────── */
 
 describe("Atlas corpus — union cardinality (defensive checks)", () => {

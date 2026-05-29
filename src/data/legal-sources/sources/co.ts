@@ -186,10 +186,7 @@ export const LEGAL_SOURCES_CO: LegalSource[] = [
     scope_description:
       "Andean Community Decisión 832 + Pacific Alliance Framework Agreement — establish multilateral space cooperation framework for Latin American sovereign satellite + EO programmes. Material practitioner implications: (i) CAN Decisión 832 (2018) authorises pooled satellite imagery procurement + sharing; (ii) Pacific Alliance Space Working Group (since 2017) established Mexico-Colombia-Peru-Chile cooperation on Pacific-Alliance EO constellation feasibility (Andes monitoring); (iii) Latin American + Caribbean Space Agency (ALCE) — proposed by Mexico + Argentina + Brazil 2020, Colombia + Peru + Chile joined 2022, currently in feasibility study; (iv) UNASUR Space Cooperation Initiative (suspended 2019 with UNASUR institutional crisis but legal framework preserved). Material baseline for any Latin American multilateral space-procurement opportunity.",
     key_provisions: [],
-    related_sources: [
-      "CO-DECRETO-2516-2024-CCE",
-      "BR-AEB-NATIONAL-SPACE-POLICY",
-    ],
+    related_sources: ["CO-DECRETO-2516-2024-CCE"],
     last_verified: "2026-05-27",
   },
 ];

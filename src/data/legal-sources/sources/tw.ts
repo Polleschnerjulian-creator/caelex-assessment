@@ -206,7 +206,7 @@ export const LEGAL_SOURCES_TW: LegalSource[] = [
       "Foreign Trade Act Art. 13-2 — export catch-all controls",
       "Cross-Strait Act Art. 35 — mainland China technology-transfer restrictions",
     ],
-    related_sources: ["INT-WASSENAAR-ARRANGEMENT", "INT-MTCR-1987"],
+    related_sources: ["INT-WASSENAAR", "INT-MTCR"],
     last_verified: "2026-05-27",
   },
   {
@@ -238,11 +238,7 @@ export const LEGAL_SOURCES_TW: LegalSource[] = [
       "BIS 89 FR 96106 (Dec 2024) — further extensions",
       "Cross-Strait Act Art. 35 — mainland chip-fab restrictions",
     ],
-    related_sources: [
-      "TW-STRATEGIC-HIGH-TECH-EXPORT-CONTROL",
-      "US-CHIPS-ACT-2022",
-      "EU-CHIPS-ACT-2023",
-    ],
+    related_sources: ["TW-STRATEGIC-HIGH-TECH-EXPORT-CONTROL"],
     last_verified: "2026-05-27",
   },
   {
@@ -290,10 +286,7 @@ export const LEGAL_SOURCES_TW: LegalSource[] = [
     scope_description:
       "INDEC + Raytheon US$2.2B satcom + Link-22 tactical-data-link procurement (DSCA Major Arms Sale, August 2024). Material precedent for Taiwan defence-space procurement: (i) US FMS (Foreign Military Sales) framework, not direct-commercial-sales; (ii) Taiwan Relations Act §3(b) authorisation; (iii) Taiwan-specific ITAR-exemption framework under DDTC AGREEMENT mechanism. Practitioner relevance for any US-Taiwan defence-space partnership: triggers extensive interagency review (DoD, State, Commerce, NSC) + Congressional notification + likely PRC retaliation.",
     key_provisions: [],
-    related_sources: [
-      "TW-STRATEGIC-HIGH-TECH-EXPORT-CONTROL",
-      "US-ITAR-22-CFR",
-    ],
+    related_sources: ["TW-STRATEGIC-HIGH-TECH-EXPORT-CONTROL", "US-ITAR"],
     last_verified: "2026-05-27",
   },
 ];

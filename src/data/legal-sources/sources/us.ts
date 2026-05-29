@@ -1791,10 +1791,7 @@ const DEFENCE_DOCTRINE_US: LegalSource[] = [
     scope_description:
       "US Space Command (USSPACECOM) reactivated 29 August 2019 — independent combatant command for space operations (formerly subsumed under USSTRATCOM). Operates Joint Doctrine for Space Operations (Joint Publication 3-14). Headquartered (interim) at Peterson Space Force Base, Colorado pending permanent location decision. Material for any commercial-space firm engaging combatant-command procurement + tactically-responsive launch programmes.",
     key_provisions: [],
-    related_sources: [
-      "US-CSO-DOCTRINE",
-      "US-SPACE-FORCE-PROCUREMENT-FRAMEWORK",
-    ],
+    related_sources: ["US-CSO-DOCTRINE"],
     last_verified: "2026-05-26",
   },
   {
@@ -1847,11 +1844,7 @@ const IP_PATENTS_US: LegalSource[] = [
       "§105(a) — extraterritorial application to US-registered space objects",
       "§105(b) — international-agreement carve-out for foreign-registered objects",
     ],
-    related_sources: [
-      "INT-OST-ART-VIII-IP-JURISDICTION",
-      "INT-REGISTRATION-CONVENTION-1976",
-      "US-USPTO-CLASS-244",
-    ],
+    related_sources: ["INT-OST-ART-VIII-IP-JURISDICTION", "US-USPTO-CLASS-244"],
     last_verified: "2026-05-27",
   },
   {
@@ -1959,11 +1952,7 @@ const TAX_CUSTOMS_US: LegalSource[] = [
       "19 USC §1304 — country-of-origin marking",
       "Substantial transformation test — determines COO for multi-country assembly",
     ],
-    related_sources: [
-      "US-EAR-734-4-DE-MINIMIS",
-      "US-19-USC-1313-DRAWBACK",
-      "INT-TARIC-HS-CODES-SPACE",
-    ],
+    related_sources: ["US-19-USC-1313-DRAWBACK", "INT-TARIC-HS-CODES-SPACE"],
     last_verified: "2026-05-27",
   },
 ];
@@ -2217,7 +2206,7 @@ const RD_FINANCING_US: LegalSource[] = [
       "IC End-User Tracking obligations",
       "CFIUS pre-clearance via IC investment",
     ],
-    related_sources: ["US-CFIUS-FIRRMA-2018", "US-NRO-COMMERCIAL-IMAGERY"],
+    related_sources: [],
     last_verified: "2026-05-27",
   },
 ];
@@ -2251,7 +2240,7 @@ const STATE_SPACEPORT_US: LegalSource[] = [
       "Phase I Spaceport Improvement Program",
       "Industrial Revenue Bonds tax-advantaged financing",
     ],
-    related_sources: ["US-CSLA-1984", "US-FAA-PART-450-LAUNCH-LICENSING"],
+    related_sources: ["US-CSLA-1984"],
     last_verified: "2026-05-27",
   },
   {
@@ -2331,10 +2320,7 @@ const STATE_SPACEPORT_US: LegalSource[] = [
       "DIU + Space Force CSO hypersonic contracts",
       "Hawaii Space Center under-development (2027-2028 target)",
     ],
-    related_sources: [
-      "US-DIU-DEFENSE-INNOVATION-UNIT",
-      "US-FAA-PART-450-LAUNCH-LICENSING",
-    ],
+    related_sources: ["US-DIU-DEFENSE-INNOVATION-UNIT"],
     last_verified: "2026-05-27",
   },
 ];
@@ -2397,10 +2383,7 @@ const SUBORBITAL_TOURISM_US: LegalSource[] = [
     scope_description:
       "Virgin Galactic VSS Unity — first FAA AST-licensed commercial suborbital human-spaceflight (Unity 22 11 July 2021 Richard Branson + crew). Subsequent commercial missions: Unity 25 (May 2023 first commercial paying customers), Galactic 01 (June 2023 Italian Air Force scientific mission $600K/seat), Galactic 02-06 (Aug 2023 - May 2024 monthly cadence, ~$450K-$600K/seat private participants), Galactic 07 (June 2024 final Unity flight). VSS Unity retired June 2024 for Delta-class replacement transition. Material practitioner implications: (i) FAA Mishap Investigation reports July 2023 Unity 25 + September 2023 Galactic 02 (anomalous trajectory deviations) — both cleared without operations suspension under FAA AST 'learning period' regime; (ii) informed-consent template establishes baseline industry waiver framework; (iii) Delta-class commercial operations planned 2026-2027; (iv) Virgin Galactic NASDAQ stock $SPCE declined 96% 2021-2024 — material precedent for commercial-suborbital business-model challenges. Material baseline for FAA Part 460 informed-consent regime operational practice.",
     key_provisions: [],
-    related_sources: [
-      "US-FAA-PART-460-HUMAN-SPACEFLIGHT",
-      "US-NEW-MEXICO-SPACEPORT-ACT",
-    ],
+    related_sources: ["US-FAA-PART-460-HUMAN-SPACEFLIGHT"],
     last_verified: "2026-05-27",
   },
   {

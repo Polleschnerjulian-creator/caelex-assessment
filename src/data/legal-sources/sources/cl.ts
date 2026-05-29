@@ -97,7 +97,7 @@ export const LEGAL_SOURCES_CL: LegalSource[] = [
       "Art. 14 (1995 HQ Agreement) — immunity for ESO staff",
       "ALMA Trilateral (2002) — US/EU/JP joint management",
     ],
-    related_sources: ["INT-EUMETSAT-CONVENTION", "CL-DARK-SKIES-DS-43-2012"],
+    related_sources: ["INT-EUMETSAT-1983", "CL-DARK-SKIES-DS-43-2012"],
     last_verified: "2026-05-27",
   },
   {
@@ -123,10 +123,7 @@ export const LEGAL_SOURCES_CL: LegalSource[] = [
       "Art. 9 — blue-light 500nm cut-off",
       "DS 1/2023 — 4-year phase-in extending to all Chilean territory",
     ],
-    related_sources: [
-      "CL-CHILE-ESO-AGREEMENT-1963",
-      "INT-IAU-DARK-QUIET-SKIES-2022",
-    ],
+    related_sources: ["CL-CHILE-ESO-AGREEMENT-1963"],
     last_verified: "2026-05-27",
   },
   {
@@ -247,10 +244,7 @@ export const LEGAL_SOURCES_CL: LegalSource[] = [
     scope_description:
       "Vera Rubin Observatory (formerly LSST — Large Synoptic Survey Telescope) — 8.4m optical/wide-field survey telescope at Cerro Pachón, first-light 2025, decade-long survey 2026-2036. Will detect ~10,000x more transient events than any prior telescope. CRITICAL impact assessment for LEO mega-constellations: Rubin observatory will publicly track + characterize satellite-trails affecting astronomical data quality. Material for Starlink/Kuiper/OneWeb operators: Rubin streak-detection pipeline becomes de facto compliance-verification framework for IAU/UN COPUOS dark-quiet-skies guidelines. Practitioner relevance for constellation-operator IAU Centre for Protection of the Dark and Quiet Sky engagement.",
     key_provisions: [],
-    related_sources: [
-      "CL-DARK-SKIES-DS-43-2012",
-      "INT-IAU-DARK-QUIET-SKIES-2022",
-    ],
+    related_sources: ["CL-DARK-SKIES-DS-43-2012"],
     last_verified: "2026-05-27",
   },
 ];

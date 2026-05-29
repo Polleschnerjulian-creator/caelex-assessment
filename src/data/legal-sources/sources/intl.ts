@@ -4304,7 +4304,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
           "Norway commits to ITAR-equivalent technology-control measures: secure facilities, access restrictions, accountability protocols. US-export-controlled items handled exclusively by US-cleared personnel pre-integration; Norway exempt from re-export-licence requirements for narrow purpose of Andøya operations.",
       },
     ],
-    related_sources: ["NO-ANDOYA-SPACEPORT", "US-ITAR-22-CFR-120"],
+    related_sources: ["US-ITAR"],
     last_verified: "2026-05-26",
   },
   {
@@ -4325,10 +4325,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     scope_description:
       "Bilateral TSA enabling US-export-controlled satellites + launch technology to operate from UK spaceports (SaxaVord, Sutherland, Spaceport Cornwall). Foundational for the UK commercial-launch sector — Virgin Orbit Cornwall launch (2023) operated under this TSA. Renews on 10-year cycle.",
     key_provisions: [],
-    related_sources: [
-      "UK-SIA-2018-SPACEFLIGHT-OP",
-      "CASE-UK-SAXAVORD-LICENCE-2023",
-    ],
+    related_sources: [],
     last_verified: "2026-05-26",
   },
   {
@@ -4370,7 +4367,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     scope_description:
       "Bilateral TSA enabling Rocket Lab's US-licensed launches from Mahia (NZ). Foundational for the Rocket Lab Electron commercial-launch business operating predominantly US-payload manifests from a NZ launch site. Cited in 2020+ Rocket Lab US dual-listing IPO disclosures.",
     key_provisions: [],
-    related_sources: ["NZ-OUTER-SPACE-HIGH-ALTITUDE-ACT-2017"],
+    related_sources: ["NZ-OSHAA-2017"],
     last_verified: "2026-05-26",
   },
   {
@@ -4391,7 +4388,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     scope_description:
       "Bilateral TIA enabling US-built payloads + launch components to be launched from Brazilian Alcântara Launch Center (CLA). Successor to abandoned 2000 framework. CLA's equatorial latitude (~2.3°S) makes it strategically valuable for GEO + escape-trajectory launches. Material for any commercial-launch provider considering CLA operations.",
     key_provisions: [],
-    related_sources: ["BR-AEB-ALCANTARA-IC", "BR-AEB-SAFEGUARDS-US-TIA"],
+    related_sources: [],
     last_verified: "2026-05-26",
   },
   {
@@ -4453,7 +4450,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     scope_description:
       "Bilateral framework for Korean cooperation in Artemis programme. Korea signed Artemis Accords May 2021; bilateral implementation MoUs deepen specific cooperation (Korean Pathfinder Lunar Orbiter — KPLO, launched 2022, used NASA's Deep Space Network). 2024 extension covers KASA-NASA continued cooperation post-KASA establishment.",
     key_provisions: [],
-    related_sources: ["INT-ARTEMIS-ACCORDS-2020", "KR-KASA-LAW-2024"],
+    related_sources: ["INT-ARTEMIS-ACCORDS-2020", "KR-KASA-ESTABLISHMENT-2024"],
     last_verified: "2026-05-26",
   },
 
@@ -4611,7 +4608,6 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
       "Art. VIII para. 2 — ownership of space objects unaffected by their presence in outer space",
     ],
     related_sources: [
-      "INT-REGISTRATION-CONVENTION-1976",
       "US-PATENTS-IN-SPACE-ACT",
       "INT-PARIS-CONVENTION-PATENTS-1883",
     ],
@@ -4693,11 +4689,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
       "Art. 99-105 — opposition & appeal",
       "UPCA Art. 32 — UPC exclusive competence post-transition",
     ],
-    related_sources: [
-      "INT-PCT-1970",
-      "INT-PARIS-CONVENTION-PATENTS-1883",
-      "EU-UNITARY-PATENT-COURT",
-    ],
+    related_sources: ["INT-PCT-1970", "INT-PARIS-CONVENTION-PATENTS-1883"],
     last_verified: "2026-05-27",
   },
   {
@@ -4970,7 +4962,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     ],
     related_sources: [
       "INT-UNESCO-AI-ETHICS-2021",
-      "EU-AI-ACT-2024",
+      "EU-AI-ACT-2024-SPACE",
       "US-EO-14110-AI",
     ],
     last_verified: "2026-05-27",
@@ -4996,7 +4988,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
       "Art. 124-127 — dual-use AI safeguards",
       "Art. 137-138 — environmental impact assessment",
     ],
-    related_sources: ["INT-OECD-AI-PRINCIPLES-2019", "EU-AI-ACT-2024"],
+    related_sources: ["INT-OECD-AI-PRINCIPLES-2019", "EU-AI-ACT-2024-SPACE"],
     last_verified: "2026-05-27",
   },
   {
@@ -5026,7 +5018,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     related_sources: [
       "INT-OECD-AI-PRINCIPLES-2019",
       "INT-ISO-IEC-42001-2023",
-      "EU-AI-ACT-2024",
+      "EU-AI-ACT-2024-SPACE",
       "US-EO-14110-AI",
     ],
     last_verified: "2026-05-27",
@@ -5056,7 +5048,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     related_sources: [
       "INT-NIST-AI-RMF-2023",
       "INT-OECD-AI-PRINCIPLES-2019",
-      "EU-AI-ACT-2024",
+      "EU-AI-ACT-2024-SPACE",
     ],
     last_verified: "2026-05-27",
   },
@@ -5149,7 +5141,10 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
       "Art. 4 — rebuttable presumption of causation (withdrawn)",
       "Status: Withdrawn 11 Feb 2025",
     ],
-    related_sources: ["EU-PRODUCT-LIABILITY-DIRECTIVE-2024", "EU-AI-ACT-2024"],
+    related_sources: [
+      "EU-PRODUCT-LIABILITY-DIRECTIVE-2024",
+      "EU-AI-ACT-2024-SPACE",
+    ],
     last_verified: "2026-05-27",
   },
   // ============================================================================
@@ -5209,10 +5204,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
       "Chapter X — ESA Pension Fund",
       "Annex VII — secondment + dual-employment rules",
     ],
-    related_sources: [
-      "INT-ESA-CONVENTION-1975",
-      "EU-POSTED-WORKERS-DIRECTIVE-2018",
-    ],
+    related_sources: ["EU-POSTED-WORKERS-DIRECTIVE-2018"],
     last_verified: "2026-05-27",
   },
   {
@@ -5266,11 +5258,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     scope_description:
       "Boeing Starliner CFT — launched 5 June 2024 with NASA astronauts Butch Wilmore + Suni Williams. Multiple helium leaks + thruster failures during ISS approach. NASA decided 24 August 2024 to return Starliner without crew (Wilmore + Williams remained on ISS until Crew-9 February 2025 return). Material practitioner implications: (i) NASA Commercial Crew Contract structural integrity-vs-schedule trade-offs, $4.2B Boeing fixed-price contract exceeded by ~$1.5B in Boeing-absorbed losses; (ii) inter-operator crew-return liability under ISS IGA Art. 16 cross-waiver — established precedent for SpaceX-recovery-of-Boeing-crew without inter-operator litigation; (iii) FAA Part 460 informed-consent doctrine for commercial-crew. Material reference for future commercial-crew procurement: NASA accelerated SpaceX Crew-9 contract modification.",
     key_provisions: [],
-    related_sources: [
-      "US-CSLA-1984",
-      "INT-ISS-IGA-1998",
-      "US-COMMERCIAL-CREW-PROGRAM",
-    ],
+    related_sources: ["US-CSLA-1984", "INT-ISS-IGA-1998"],
     last_verified: "2026-05-27",
   },
   {
@@ -5317,11 +5305,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     scope_description:
       "Amazon Kuiper KA-01 (Atlas V 551, 28 Apr 2025, 27 production satellites) + KA-02 (23 June 2025, 27 satellites) — first operational LEO deployments. FCC obligation under DA 20-1485 (2020 LEO Authorization) requires 50% of 3,236-satellite Phase 1 constellation deployed by July 2026 (1,618 satellites). Material practitioner implications: (i) FCC milestone deadline triggers waiver-or-loss analysis; (ii) ULA + Blue Origin + Arianespace launch contracts cumulatively committed $20B+ — single-source-supplier risk for Kuiper schedule; (iii) DSA/DMA gatekeeper analysis re Amazon's vertical integration (AWS Ground Station + Kuiper + Amazon Marketplace); (iv) Starlink competitive-response: SpaceX-Kuiper price/capacity competition reshaping LEO satcom market. Material precedent for FCC LEO milestone enforcement post-2026.",
     key_provisions: [],
-    related_sources: [
-      "US-FCC-NPRM-PC-2023",
-      "EU-DMA-2022",
-      "US-NGSO-MILESTONE-FRAMEWORK",
-    ],
+    related_sources: ["EU-DMA-2022", "US-FCC-NGSO-MILESTONES-NPRM-2024"],
     last_verified: "2026-05-27",
   },
   {
@@ -5343,7 +5327,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     scope_description:
       "Vega-C Return to Flight — Sentinel-1C launch 5 December 2024 successfully ended 2-year Vega-C grounding (after VV22 December 2022 failure due to Zefiro-40 second-stage CMG nozzle issue, ~€400M payload loss + insurance claims). Material practitioner implications: (i) ESA Vega-C Independent Inquiry Commission (Vega-C Failure Inquiry Board) report findings adopted as procurement-baseline for Avio + ESA contract renegotiation; (ii) Sentinel-1C launch insurance ~€95M premium reflecting RTF risk-pricing; (iii) Arianespace-Avio commercial dispute over delay liabilities settled out-of-court; (iv) ESA commercial-launch sovereignty implications — Vega-C is sole EU-medium-lift since Soyuz-Kourou suspension (Mar 2022 post-Ukraine invasion). Material context for any commercial-launch insurance + procurement analysis.",
     key_provisions: [],
-    related_sources: ["EU-IRIS2-CONCESSION-2024", "INT-ESA-CONVENTION-1975"],
+    related_sources: ["EU-IRIS2-CONCESSION-2024"],
     last_verified: "2026-05-27",
   },
   {
@@ -5365,10 +5349,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     scope_description:
       "Intuitive Machines IM-2 Athena lunar lander — landed Mons Mouton near south pole 6 March 2025, but tipped over within hours (similar to IM-1 February 2024). Material practitioner implications: (i) NASA CLPS (Commercial Lunar Payload Services) fixed-price contract structure ($62.5M IM-2 contract) — IM absorbed cost over-runs but completed deliverables; (ii) NASA OSAM-2 (On-orbit Servicing, Assembly, and Manufacturing) PRIME contract framework adopted CLPS-template for lunar surface; (iii) Lunar Trailblazer co-manifest secondary-payload IPR (placed Lunar Trailblazer in lunar transfer trajectory); (iv) Mons Mouton landing site — first commercial landing within south-polar PSR (Permanently Shadowed Region) vicinity, material precedent for lunar resource utilisation under Artemis Accords Section 11.",
     key_provisions: [],
-    related_sources: [
-      "US-COMMERCIAL-SPACE-LAUNCH-COMPETITIVENESS-ACT-2015",
-      "INT-ARTEMIS-ACCORDS-2020",
-    ],
+    related_sources: ["US-CSLCA-2015", "INT-ARTEMIS-ACCORDS-2020"],
     last_verified: "2026-05-27",
   },
   {
@@ -5420,7 +5401,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     scope_description:
       "Starship IFT Flight 9 — launched 27 May 2025 from Boca Chica, Texas. Continued Block 2 upper-stage development after IFT-8 (March 2025) lost upper stage in fuel-leak fire. FAA mishap investigation re-opened post-IFT-8. Material practitioner implications: (i) FAA Part 450 RPS (Reusable Permanent Status) authorisation framework continues to evolve through Starship test campaign; (ii) Indian River debris-recovery costs ($350K Bahamas + $1.2M Turks/Caicos cleanup, Bahamas Defence Force engagement); (iii) Texas Parks & Wildlife environmental-impact assessments for Boca Chica wildlife refuge; (iv) GAO Report GAO-24-106909 (2024) critical of FAA workload-vs-resources for Starship cadence. Material precedent for high-cadence reusable-launch regulatory adaptation.",
     key_provisions: [],
-    related_sources: ["US-FAA-PART-450-LAUNCH-LICENSING", "US-CSLA-1984"],
+    related_sources: ["US-CSLA-1984"],
     last_verified: "2026-05-27",
   },
   // ============================================================================
@@ -5577,7 +5558,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
       "NASA-ISRO Bharat Mission training (Indian astronauts on ISS 2025+)",
       "US-India Defense Industrial Cooperation Roadmap",
     ],
-    related_sources: ["US-EAR-734-4-DE-MINIMIS", "INT-ARTEMIS-ACCORDS-2020"],
+    related_sources: ["INT-ARTEMIS-ACCORDS-2020"],
     last_verified: "2026-05-27",
   },
   {
@@ -5610,11 +5591,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
       "2024 Strategic Space Dialogue establishment",
       "Supply-chain resilience cooperation",
     ],
-    related_sources: [
-      "EU-AI-ACT-2024",
-      "INT-WASSENAAR-ARRANGEMENT",
-      "US-CFIUS-FIRRMA-2018",
-    ],
+    related_sources: ["EU-AI-ACT-2024-SPACE", "INT-WASSENAAR"],
     last_verified: "2026-05-27",
   },
   {
@@ -5646,7 +5623,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
       "LUPEX JAXA-ISRO-NASA tripartite mission",
       "DICAS Defense Industrial Cooperation framework",
     ],
-    related_sources: ["INT-ARTEMIS-ACCORDS-2020", "JP-LUNAR-RESOURCES-2021"],
+    related_sources: ["INT-ARTEMIS-ACCORDS-2020"],
     last_verified: "2026-05-27",
   },
   {
@@ -5695,10 +5672,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     scope_description:
       "Saudi-Korea Space Cooperation MoU — signed October 2024 between Saudi Space Agency (SSA, est. 2018 under Crown Prince MBS) and Korea AeroSpace Administration (KASA, est. May 2024). Material provisions: (i) Korean KARI-Saudi NEOM joint orbital-station design study; (ii) KSLV-III launch services for Saudi MOSES-1 lunar lander (planned 2027-2028); (iii) workforce-training programme at KAIST + KAU joint master's degree; (iv) Saudi Vision 2030 space pillar funding ($2.1B 2024-2030 commitment) accessing Korean technology. Material precedent for Korean post-KASA-establishment commercial-space export strategy + Gulf-Cooperation-Council space-tech expansion.",
     key_provisions: [],
-    related_sources: [
-      "SA-SAUDI-SPACE-COMMISSION",
-      "KR-KASA-ESTABLISHMENT-ACT-2024",
-    ],
+    related_sources: ["KR-KASA-ESTABLISHMENT-2024"],
     last_verified: "2026-05-27",
   },
   // ============================================================================
@@ -5854,11 +5828,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     scope_description:
       "ADRAS-J (Active Debris Removal by Astroscale-Japan) — world's first commercial RPO mission to an uncontrolled debris object (Japanese H-2A upper stage from 2009, 3-ton mass at ~600km altitude). Launched 18 Feb 2024 from Rocket Lab Electron, achieved 50m proximity 23 April 2024, fly-around inspection 26 Aug 2024. Operates under JAXA CRD2 Phase I contract (¥1.05B / ~US$7M) — first national-government contracted commercial-debris-removal mission globally. Material practitioner implications: (i) liability allocation under OST Art. VII + Liability Convention Art. III for any debris damage during inspection; (ii) JAXA Cabinet Office Article 20-23 SAA 2016 spacecraft-management permit issued to private operator for non-cooperative target — first-of-kind; (iii) Phase II (capture + controlled deorbit ~2027) will require additional licensing review. Material baseline precedent for commercial ADR + ISAM legal framework.",
     key_provisions: [],
-    related_sources: [
-      "JP-CRD2-2020",
-      "INT-IADC-MITIGATION-2025",
-      "INT-RPO-IOS-FRAMEWORK",
-    ],
+    related_sources: ["JP-CRD2-MISSION-FRAMEWORK", "INT-IADC-MITIGATION-2025"],
     last_verified: "2026-05-27",
   },
   {
@@ -5880,7 +5850,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     scope_description:
       "ClearSpace-1 — first ESA contracted commercial debris-removal mission, target VESPA (Vega Secondary Payload Adapter, 2013 Vega-VV02 mission upper-stage adapter, 112kg, ~660km altitude). Original launch target Q4 2025, now delayed to 2026 after 2023 in-orbit collision with debris fragments affected target (VESPA partially fragmented August 2023 — material precedent for compounding debris risk). ESA contract value €86M (initial €26M Phase I + €60M Phase II). Material practitioner implications: (i) ESA Industrial Policy procurement structure with PPP financing; (ii) UK Space Industry Act 2018 launch licensing (ClearSpace SA Swiss-domiciled, launching from Vandenberg with FAA Part 450); (iii) target-fragmentation legal questions raised under ESA Risk Sharing Agreement; (iv) ClearSpace-3 commercial-debris-removal RFP expected 2025-2026 expanding model. Material precedent for ESA + EU commercial-debris-removal contractual framework.",
     key_provisions: [],
-    related_sources: ["EU-CLEARSPACE-1-MISSION", "INT-RPO-IOS-FRAMEWORK"],
+    related_sources: ["EU-CLEARSPACE-1-FRAMEWORK"],
     last_verified: "2026-05-27",
   },
   {
@@ -5907,11 +5877,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     scope_description:
       "Northrop Grumman SpaceLogistics MEV Programme — first operational commercial satellite-servicing missions. Material missions: MEV-1 (Oct 2019, docked with Intelsat 901 Feb 2020, 5-year life-extension mission, undocked April 2024 + currently extending Intelsat 10-02); MEV-2 (Aug 2020, docked with Intelsat 10-02 April 2021, 5-year extension); MRV (Mission Robotic Vehicle, planned 2026, robotic-arm servicing); Mission Extension Pods (MEPs, deployable by MRV). Material practitioner implications: (i) FCC Part 25 mission-by-mission licensing template; (ii) Intelsat-Northrop service-agreement structure (~$13M/year per MEV mission); (iii) DARPA RSGS programme original sponsor (transitioned to Northrop commercial); (iv) MEV docking under OST Art. IX consultation framework; (v) IOSSA framework guidance issued FCC October 2024 partly based on MEV operational experience. Material baseline for any commercial satellite-servicing legal structure.",
     key_provisions: [],
-    related_sources: [
-      "US-FCC-OSAM-ORDER-2024",
-      "INT-RPO-IOS-FRAMEWORK",
-      "US-DARPA-10-USC-4001",
-    ],
+    related_sources: ["US-FCC-OSAM-ORDER-2024", "US-DARPA-10-USC-4001"],
     last_verified: "2026-05-27",
   },
   {
@@ -5933,10 +5899,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     scope_description:
       "NASA OSAM-1 (On-orbit Servicing, Assembly, and Manufacturing 1, formerly Restore-L) — cancelled 1 March 2024 after $2B cost-overrun (original budget $605M, projected ~$2.05B). Material practitioner implications: (i) NASA OIG report November 2023 cited Maxar prime contractor performance issues + technical complexity underestimation; (ii) cancellation triggered NASA-wide ISAM procurement framework reform — OSAM-2 (manufacturing) shifted to fixed-price CLPS-template like Intuitive Machines lunar-lander contracts; (iii) precedent for cost-plus to fixed-price transition in commercial-space federal procurement; (iv) Maxar received $250M termination settlement; (v) ISAM-related commercial-space funding shifted to DIU + Space Force CSO instruments. Material precedent for any federal commercial-space ISAM contract structuring.",
     key_provisions: [],
-    related_sources: [
-      "US-DIU-DEFENSE-INNOVATION-UNIT",
-      "INT-RPO-IOS-FRAMEWORK",
-    ],
+    related_sources: ["US-DIU-DEFENSE-INNOVATION-UNIT"],
     last_verified: "2026-05-27",
   },
   // ============================================================================
@@ -6027,10 +5990,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
       "§165.940 — Vandenberg AFB safety zones (since 1971)",
       "Temporary Safety Zone notices per launch",
     ],
-    related_sources: [
-      "INT-IMO-COLREGS-LAUNCH-ZONES",
-      "US-FAA-PART-450-LAUNCH-LICENSING",
-    ],
+    related_sources: ["INT-IMO-COLREGS-LAUNCH-ZONES"],
     last_verified: "2026-05-27",
   },
   {
@@ -6059,7 +6019,6 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     related_sources: [
       "US-USCG-RANGE-COORDINATION",
       "INT-IMO-COLREGS-LAUNCH-ZONES",
-      "US-FAA-PART-450-LAUNCH-LICENSING",
     ],
     last_verified: "2026-05-27",
   },
@@ -6095,7 +6054,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
       "Artemis Accords Section 11 cascade",
     ],
     related_sources: [
-      "CASE-IM-2-ATHENA-2025",
+      "CASE-IM-2-ATHENA-LANDING-2025",
       "CASE-ASTROBOTIC-PEREGRINE-2024",
       "INT-ARTEMIS-ACCORDS-2020",
     ],
@@ -6119,7 +6078,10 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     scope_description:
       "Astrobotic Peregrine Mission One — first CLPS Task Order, launched 8 January 2024 on ULA Vulcan Centaur maiden flight from Cape Canaveral. Propellant valve anomaly led to oxidizer leak shortly after deployment from launch vehicle. Mission could not reach lunar orbit + Astrobotic ordered Peregrine into Earth atmosphere reentry 18 January 2024 (over Pacific Ocean for safe disposal). Material practitioner implications: (i) Astrobotic absorbed ~$108M Peregrine development costs under fixed-price CLPS Task Order ($79.5M NASA payment); (ii) commercial payload customers (DHL Moonbox + Elysium Space + Celestis + ispace) lost commercial deliverables — material precedent for commercial-rideshare risk allocation; (iii) human remains aboard via Celestis triggered Navajo Nation objection — material first-of-kind cultural-heritage objection to lunar memorial services; (iv) propellant safety lessons fed into Vulcan Centaur subsequent missions + CLPS Task Order risk assessments. Astrobotic Griffin Mission 1 follow-on planned Q4 2025 with NASA VIPER rover ($350M+ NASA payload).",
     key_provisions: [],
-    related_sources: ["US-CLPS-PROGRAMME-NASA", "CASE-IM-2-ATHENA-2025"],
+    related_sources: [
+      "US-CLPS-PROGRAMME-NASA",
+      "CASE-IM-2-ATHENA-LANDING-2025",
+    ],
     last_verified: "2026-05-27",
   },
   {
@@ -6140,7 +6102,10 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     scope_description:
       "Firefly Aerospace Blue Ghost Mission 1 — first fully successful commercial lunar landing. Launched 15 January 2025 on SpaceX Falcon 9 from Cape Canaveral, landed Mare Crisium 2 March 2025 (operating in upright configuration, primary success). 10 NASA CLPS payloads + 4 commercial payloads delivered, operated through 14-day lunar day until lunar-night-induced shutdown. Material practitioner implications: (i) CLPS Task Order value $93.3M Firefly received, $101M ULA-equivalent SpaceX launch services included; (ii) first commercial-spacecraft successful soft-landing on Moon, establishing material precedent for CLPS contract structure validation; (iii) ispace M2 (April 2025) + Astrobotic Griffin (Q4 2025) follow-on commercial-lander missions referenced Blue Ghost CONOPS; (iv) Firefly Aerospace IPO November 2024 (FLY:NASDAQ) raised $632M partly on Blue Ghost mission anticipation. Material baseline for any commercial-lunar mission planning.",
     key_provisions: [],
-    related_sources: ["US-CLPS-PROGRAMME-NASA", "CASE-IM-2-ATHENA-2025"],
+    related_sources: [
+      "US-CLPS-PROGRAMME-NASA",
+      "CASE-IM-2-ATHENA-LANDING-2025",
+    ],
     last_verified: "2026-05-27",
   },
   {
@@ -6223,7 +6188,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
       "Level 3 — 134 controls government-led for critical security info",
       "Phased implementation 2025-2028",
     ],
-    related_sources: ["INT-NIST-IR-8401", "US-EO-13556-CUI"],
+    related_sources: ["INT-NIST-IR-8401"],
     last_verified: "2026-05-27",
   },
   {
@@ -6400,7 +6365,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     scope_description:
       "GLONASS Sanctions Exposure post-Ukraine 2022 — Russian GLONASS sovereign GNSS subject to escalating Western sanctions pressure: (i) International GNSS Service (IGS) closed 18 Russian-territory GLONASS reference stations 2022; (ii) Brazilian GLONASS reference station (closest to equator) closed October 2024 under US Treasury pressure; (iii) GLONASS-K2 next-generation satellite production delayed by Western chip embargo (TI + Microchip + Infineon chip access blocked); (iv) Roscosmos sanctioned by OFAC SDN List February 2022 + EU 4th sanctions package February 2022. Material commercial-receiver implications: (i) GLONASS signal continues operational + civil receiver compatibility preserved; (ii) dual-use receivers receiving GLONASS data face no direct sanctions trigger; (iii) Russian-supplied receiver hardware (NIITP-PRO + Topcon Russia) subject to export-control restrictions; (iv) commercial-space firms providing receivers/services to GLONASS face heightened sanctions-compliance due diligence. Material precedent for sanctions-environment GNSS operational continuity analysis.",
     key_provisions: [],
-    related_sources: ["RU-OFAC-EU-SANCTIONS", "INT-GPS-SELECTIVE-AVAILABILITY"],
+    related_sources: ["INT-GPS-SELECTIVE-AVAILABILITY"],
     last_verified: "2026-05-27",
   },
   {
@@ -6464,10 +6429,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     scope_description:
       "SpaceX Starship Integrated Flight Test 5 (IFT-5) — first operational recovery of Super Heavy booster via 'Mechazilla' launch-tower chopstick arms, 13 October 2024 from Starbase Boca Chica. Booster B12 lifted off + returned to launch site (RTLS) + caught by Mechazilla arms ~7 minutes after liftoff. Material practitioner implications: (i) FAA AST Modified Launch License No. LRLO-23-119 (issued for IFT-5 specific operations); (ii) Cameron County local-permit framework for tower modifications; (iii) National Marine Fisheries Service consultation under MSA + ESA + MMPA for Starbase southwest Pacific operations adjacent to USFWS designated critical habitat; (iv) Sierra Club + Center for Biological Diversity litigation alleged inadequate NEPA Programmatic EIS (Aug 2023 + 2024 amendments) — D.C. Circuit pending decision 2025; (v) successor flights IFT-6 (Nov 2024 booster splashdown) + IFT-7 (Jan 2025 booster catch attempt + ship loss) + IFT-8 (Feb 2025 booster catch + ship loss) + IFT-9 (May 2025 full success). Material precedent for first operational booster-recovery technology + ongoing NEPA litigation framework for high-cadence launch operations.",
     key_provisions: [],
-    related_sources: [
-      "CASE-STARSHIP-IFT-FLIGHT-9-2025",
-      "US-FAA-PART-450-LAUNCH-LICENSING",
-    ],
+    related_sources: ["CASE-STARSHIP-IFT-FLIGHT-9-2025"],
     last_verified: "2026-05-27",
   },
   {
@@ -6488,10 +6450,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
     scope_description:
       "SpaceX Falcon 9 Starlink Group 9-3 mission — first Falcon 9 mission failure in 7+ years, 11 July 2024 from Vandenberg. Second-stage Merlin Vacuum engine LOX leak prevented Starlink deployment at correct altitude — 20 Starlink satellites stranded in lower-than-intended orbit + reentered within 5 days. Material practitioner implications: (i) FAA AST grounded Falcon 9 fleet 11-25 July 2024 under 14 CFR §437.31 Mishap Investigation; (ii) SpaceX root-cause analysis identified LOX line pressure-sensor anomaly + clean-pad procedures; (iii) FAA AST cleared return-to-flight 27 July 2024 — fastest mishap-investigation clearance in commercial-space history; (iv) two subsequent Falcon 9 anomalies (Aug 2024 + Sep 2024 booster mishaps) cleared in days vs weeks under streamlined FAA AST procedures. Material precedent for FAA AST mishap-investigation expedited process + Starlink V2 satellite atmospheric-reentry safety profile validation. Insurance: ~$15M Starlink satellite-replacement absorbed by SpaceX self-insurance.",
     key_provisions: [],
-    related_sources: [
-      "US-FAA-PART-450-LAUNCH-LICENSING",
-      "INT-LLOYDS-LMA-5212-SPACE-RISKS",
-    ],
+    related_sources: ["INT-LLOYDS-LMA-5212-SPACE-RISKS"],
     last_verified: "2026-05-27",
   },
   {
@@ -6539,7 +6498,7 @@ export const LEGAL_SOURCES_INT: LegalSource[] = [
       "FCC 12 GHz Sharing Order — final FCC ruling on 12.2-12.7 GHz band sharing between NGSO satellite operators (SpaceX Starlink) + terrestrial 5G operators (DISH Network + RS Access). FCC adopted partial-sharing framework (FCC 24-43, April 2024): (i) rejected DISH/RS Access proposal for terrestrial 5G primary use; (ii) preserved NGSO satellite-services primary status with terrestrial coexistence rules; (iii) established new technical-coordination requirements for downlink interference; (iv) declined opening 12.7 GHz upper band to terrestrial under separate proceeding. Material practitioner implications: (i) DBSD + RKF Engineering interference studies underpinning decision; (ii) FCC International Bureau v. Federal Court appeals expected from DISH/RS Access; (iii) precedent for global 12 GHz coordination disputes in 70+ countries with similar contested allocations; (iv) SpaceX Starlink continuation of US service preserved; (v) ITU coordination implications. Material baseline precedent for any commercial-NGSO operator spectrum-defence litigation.",
     key_provisions: [],
     related_sources: [
-      "US-FCC-NPRM-NGSO-MILESTONES",
+      "US-FCC-NGSO-MILESTONES-NPRM-2024",
       "INT-GPS-GALILEO-INTEROPERABILITY",
     ],
     last_verified: "2026-05-27",

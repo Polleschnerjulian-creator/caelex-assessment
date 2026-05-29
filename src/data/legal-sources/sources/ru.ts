@@ -584,7 +584,6 @@ export const LEGAL_SOURCES_RU: LegalSource[] = [
       "Roscosmos-ESA Soyuz cooperation framework (including OneWeb-related launches). Frozen indefinitely March 2022. ESA has since pivoted to Ariane 6 + commercial-provider alternatives.",
     key_provisions: [],
     related_sources: ["RU-FR-SOYUZ-IGA"],
-    superseded_by: "RU-EU-SOYUZ-IGA-FROZEN-2022",
     last_verified: "2026-05-26",
   },
   {
@@ -655,7 +654,7 @@ export const LEGAL_SOURCES_RU: LegalSource[] = [
     scope_description:
       "Russian direct-ascent ASAT system. 15 November 2021 Nudol test destroyed Kosmos-1408 satellite — produced 1,500+ catalogued debris pieces threatening ISS + other LEO assets. Cited in the 2022 UN moratorium proposal on destructive ASAT testing (sponsored by US, supported by 36+ states; Russia + China voted against).",
     key_provisions: [],
-    related_sources: ["CASE-RUSSIA-ASAT-2021"],
+    related_sources: [],
     last_verified: "2026-05-26",
   },
 

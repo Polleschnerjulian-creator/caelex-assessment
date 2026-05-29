@@ -1862,10 +1862,7 @@ const PRICE_REGULATION_DE: LegalSource[] = [
       "§ 47 — Geheimschutzbetreuung",
       "Mai 2024 Reform — Sondervermögen Beschaffungs-Beschleunigung",
     ],
-    related_sources: [
-      "DE-GWB-VERGABERECHT-99-148",
-      "EU-DEFENCE-PROCUREMENT-DIR-2009-81",
-    ],
+    related_sources: ["DE-GWB-VERGABERECHT-99-148"],
     last_verified: "2026-05-27",
   },
   {

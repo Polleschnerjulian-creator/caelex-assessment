@@ -148,10 +148,7 @@ export const LEGAL_SOURCES_NG: LegalSource[] = [
       "2011 Agreement Art. 7 — CGWIC operational support",
       "2023 MoU §3 — NIGCOMSAT-2 follow-on commitment",
     ],
-    related_sources: [
-      "CN-CGWIC-COMMERCIAL-LAUNCH",
-      "INT-AFRICAN-SPACE-AGENCY-CONVENTION",
-    ],
+    related_sources: [],
     last_verified: "2026-05-27",
   },
   {

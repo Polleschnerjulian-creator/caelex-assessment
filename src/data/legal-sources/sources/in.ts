@@ -428,7 +428,7 @@ export const LEGAL_SOURCES_IN: LegalSource[] = [
     scope_description:
       "NewSpace India Limited (NSIL) — DOS-owned commercial arm replacing Antrix Corporation as the commercial face of Indian space programme. Operates GSLV/PSLV launch services, GSAT satellite leasing, technology transfer, and NavIC commercial-services contracts. Material counterparty for foreign customers seeking Indian launch services or ISRO-built satellites.",
     key_provisions: [],
-    related_sources: ["IN-ANTRIX-NSIL", "IN-DOS"],
+    related_sources: ["IN-ANTRIX-NSIL"],
     last_verified: "2026-05-26",
   },
   {

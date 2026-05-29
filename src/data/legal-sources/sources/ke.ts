@@ -115,10 +115,7 @@ export const LEGAL_SOURCES_KE: LegalSource[] = [
       "§18 — national spacecraft registry",
       "§24 — AfSA coordination obligations",
     ],
-    related_sources: [
-      "KE-EXECUTIVE-ORDER-1-2017-KSA",
-      "INT-AFRICAN-SPACE-AGENCY-CONVENTION",
-    ],
+    related_sources: ["KE-EXECUTIVE-ORDER-1-2017-KSA"],
     last_verified: "2026-05-27",
   },
   {
@@ -148,7 +145,7 @@ export const LEGAL_SOURCES_KE: LegalSource[] = [
     ],
     related_sources: [
       "KE-EXECUTIVE-ORDER-1-2017-KSA",
-      "IT-ASI-MALINDI-PROGRAMME",
+      "KE-ITALY-MALINDI-AGREEMENT-1964",
     ],
     last_verified: "2026-05-27",
   },
@@ -196,10 +193,7 @@ export const LEGAL_SOURCES_KE: LegalSource[] = [
     scope_description:
       "1KUNS-PF — Kenya's first satellite, 1U CubeSat deployed from ISS Kibo module 11 May 2018. Built by University of Nairobi under UNOOSA/JAXA KiboCUBE Programme. Material precedent for Kenya satellite registration: registered under Italy initially (via Malindi heritage + ASI cooperation), later transferred to Kenya registration in 2019 following KSA operationalization. First test case for Kenya's UN Registration Convention compliance — established practice of registry-state transfer through diplomatic note exchange.",
     key_provisions: [],
-    related_sources: [
-      "KE-ITALY-MALINDI-AGREEMENT-1964",
-      "INT-REGISTRATION-CONVENTION-1976",
-    ],
+    related_sources: ["KE-ITALY-MALINDI-AGREEMENT-1964"],
     last_verified: "2026-05-27",
   },
   {
