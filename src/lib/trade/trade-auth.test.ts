@@ -1,0 +1,128 @@
+/**
+ * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
+ *
+ * Unit tests for the getTradeAuth() shared session + org + product-access helper.
+ *
+ * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
+ */
+
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { Mock } from "vitest";
+
+// ─── Mocks ───────────────────────────────────────────────────────────────────
+
+vi.mock("@/lib/auth", () => ({ auth: vi.fn() }));
+vi.mock("@/lib/middleware/organization-guard", () => ({
+  getCurrentOrganization: vi.fn(),
+}));
+vi.mock("@/lib/products", () => ({ hasProductAccess: vi.fn() }));
+
+// server-only guard would throw in test environment; mock it away
+vi.mock("server-only", () => ({}));
+
+// ─── Imports (after mocks are registered) ────────────────────────────────────
+
+import { getTradeAuth } from "./trade-auth";
+import { auth } from "@/lib/auth";
+import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { hasProductAccess } from "@/lib/products";
+
+const mockAuth = auth as Mock;
+const mockGetCurrentOrganization = getCurrentOrganization as Mock;
+const mockHasProductAccess = hasProductAccess as Mock;
+
+// ─── Fixtures ────────────────────────────────────────────────────────────────
+
+const MOCK_SESSION = { user: { id: "user-abc" } };
+const MOCK_ORG = {
+  userId: "user-abc",
+  organizationId: "org-xyz",
+  role: "MEMBER" as const,
+  permissions: [],
+  organization: {
+    id: "org-xyz",
+    name: "Test Org",
+    slug: "test-org",
+    plan: "STARTER",
+    isActive: true,
+  },
+};
+
+// ─── Tests ───────────────────────────────────────────────────────────────────
+
+describe("getTradeAuth()", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns null when auth() resolves null (no session)", async () => {
+    mockAuth.mockResolvedValue(null);
+
+    const result = await getTradeAuth();
+
+    expect(result).toBeNull();
+    expect(mockGetCurrentOrganization).not.toHaveBeenCalled();
+    expect(mockHasProductAccess).not.toHaveBeenCalled();
+  });
+
+  it("returns null when session has no user.id", async () => {
+    mockAuth.mockResolvedValue({ user: {} });
+
+    const result = await getTradeAuth();
+
+    expect(result).toBeNull();
+    expect(mockGetCurrentOrganization).not.toHaveBeenCalled();
+    expect(mockHasProductAccess).not.toHaveBeenCalled();
+  });
+
+  it("returns null when getCurrentOrganization returns null (no org membership)", async () => {
+    mockAuth.mockResolvedValue(MOCK_SESSION);
+    mockGetCurrentOrganization.mockResolvedValue(null);
+
+    const result = await getTradeAuth();
+
+    expect(result).toBeNull();
+    expect(mockHasProductAccess).not.toHaveBeenCalled();
+  });
+
+  it("returns null when hasProductAccess returns false (no TRADE entitlement)", async () => {
+    mockAuth.mockResolvedValue(MOCK_SESSION);
+    mockGetCurrentOrganization.mockResolvedValue(MOCK_ORG);
+    mockHasProductAccess.mockResolvedValue(false);
+
+    const result = await getTradeAuth();
+
+    expect(result).toBeNull();
+    expect(mockHasProductAccess).toHaveBeenCalledWith("org-xyz", "TRADE");
+  });
+
+  it("returns TradeAuthContext when all three checks pass", async () => {
+    mockAuth.mockResolvedValue(MOCK_SESSION);
+    mockGetCurrentOrganization.mockResolvedValue(MOCK_ORG);
+    mockHasProductAccess.mockResolvedValue(true);
+
+    const result = await getTradeAuth();
+
+    expect(result).toEqual({
+      userId: "user-abc",
+      organizationId: "org-xyz",
+      role: "MEMBER",
+    });
+    expect(mockHasProductAccess).toHaveBeenCalledWith("org-xyz", "TRADE");
+  });
+
+  it("passes the org's organizationId (not user id) to hasProductAccess", async () => {
+    const orgWithDifferentIds = {
+      ...MOCK_ORG,
+      userId: "user-111",
+      organizationId: "org-999",
+    };
+    mockAuth.mockResolvedValue({ user: { id: "user-111" } });
+    mockGetCurrentOrganization.mockResolvedValue(orgWithDifferentIds);
+    mockHasProductAccess.mockResolvedValue(true);
+
+    await getTradeAuth();
+
+    expect(mockHasProductAccess).toHaveBeenCalledWith("org-999", "TRADE");
+  });
+});
