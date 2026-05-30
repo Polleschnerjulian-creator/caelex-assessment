@@ -49,6 +49,7 @@ import {
   type UboNode,
   type UboTree,
 } from "./sources/orbis-ubo";
+import { canonicalizeName } from "./sources/types";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -215,6 +216,50 @@ function findRootNodeId(tree: UboTree): string | null {
 }
 
 /**
+ * Build a lookup from normalised legal name → existing party id from
+ * baseSummaries. Used during UBO merge to reconcile a UBO node against an
+ * already-known party so we never give the same entity two different ids.
+ *
+ * We index every entry in baseSummaries (skipping the target itself, whose
+ * reconciliation is handled via the root bridge). Entries with an empty or
+ * whitespace-only canonical name are excluded to avoid false positives.
+ */
+function buildExistingPartyNameIndex(
+  baseSummaries: Map<string, AncestorSummary>,
+  realTargetPartyId: string,
+): Map<string, string> {
+  const index = new Map<string, string>();
+  for (const [id, summary] of baseSummaries) {
+    if (id === realTargetPartyId) continue;
+    const canonical = canonicalizeName(summary.legalName);
+    if (canonical.length > 0) {
+      index.set(canonical, id);
+    }
+  }
+  return index;
+}
+
+/**
+ * Resolve the cascade-side id for a non-root UBO node.
+ *
+ * If the UBO node's normalised name matches an existing party in the
+ * `nameIndex`, return that party's real id (identity reconciliation).
+ * Otherwise mint a fresh `UBO::` id (existing behaviour for new nodes).
+ *
+ * Using exact full-normalised-name equality (not fuzzy) avoids merging
+ * distinct entities that merely share common words.
+ */
+function resolveUboNodeId(
+  node: UboNode,
+  nameIndex: Map<string, string>,
+): string {
+  const canonical = canonicalizeName(node.name);
+  const existingId =
+    canonical.length > 0 ? nameIndex.get(canonical) : undefined;
+  return existingId ?? toCascadeId(node.id);
+}
+
+/**
  * Merge an Orbis UBO tree into an existing cascade input. Pure function.
  *
  * @param baseEdges - existing TradePartyOwnership-derived edges
@@ -269,25 +314,68 @@ export function mergeUboTreeIntoCascade(
     };
   }
 
+  // Build a name-based index of existing parties for identity reconciliation
+  // (T-M2): a UBO non-root node whose normalised name matches an existing
+  // party maps to that party's real id rather than getting a new UBO:: id.
+  const existingNameIndex = buildExistingPartyNameIndex(
+    baseSummaries,
+    realTargetPartyId,
+  );
+
+  // Map uboNode.id → resolved cascade id (real party id OR UBO:: id).
+  // Built during the summary-insertion pass so the edge pass can reuse it.
+  const uboIdToCascadeId = new Map<string, string>();
+
   // Add every UBO node EXCEPT the root as a synthetic ancestor.
   // The root is the real TradeParty — its summary is already in
   // baseSummaries (or will be looked up by realTargetPartyId).
   for (const node of tree.nodes) {
     if (node.id === uboRoot) continue;
-    const summary = uboNodeToAncestorSummary(node);
-    // Real party wins if the cascade-namespaced ID somehow collides
-    // (shouldn't happen because of the UBO:: prefix, but the guard is
-    // cheap insurance).
-    if (!mergedSummaries.has(summary.id)) {
-      mergedSummaries.set(summary.id, summary);
+
+    const resolvedId = resolveUboNodeId(node, existingNameIndex);
+    uboIdToCascadeId.set(node.id, resolvedId);
+
+    // If this node reconciled to an EXISTING party, the summary is already
+    // in mergedSummaries (cloned from baseSummaries) — nothing to add.
+    // Only genuinely-new nodes (UBO:: ids) need a synthetic summary entry.
+    if (!mergedSummaries.has(resolvedId)) {
+      const summary = uboNodeToAncestorSummary(node);
+      // Patch the id to the resolved id (which is the UBO:: form here).
+      mergedSummaries.set(resolvedId, { ...summary, id: resolvedId });
     }
   }
 
-  // Splice in UBO edges. Each edge is namespaced + the leaf bridge
-  // remaps the root-owned edge onto the real target party id.
+  // Build a set of existing-edge keys for dedup: "ownerId|ownedId|controlType".
+  // When a UBO edge reconciles to real party ids on both sides AND a matching
+  // base edge already exists, we skip the UBO edge to avoid double-counting
+  // the same ownership stake (the declared TradePartyOwnership is authoritative).
+  const baseEdgeKeys = new Set<string>(
+    baseEdges.map((e) => `${e.ownerId}|${e.ownedId}|${e.controlType}`),
+  );
+
+  // Splice in UBO edges, remapping node ids through uboIdToCascadeId so
+  // reconciled nodes point at their real party id rather than UBO:: ids.
   const mergedEdges: OwnershipEdgeSummary[] = [...baseEdges];
   for (const edge of tree.edges) {
-    mergedEdges.push(uboEdgeToCascadeEdge(edge, uboRoot, realTargetPartyId));
+    const resolvedOwnedId =
+      edge.ownedId === uboRoot
+        ? realTargetPartyId
+        : (uboIdToCascadeId.get(edge.ownedId) ?? toCascadeId(edge.ownedId));
+    const resolvedOwnerId =
+      uboIdToCascadeId.get(edge.ownerId) ?? toCascadeId(edge.ownerId);
+
+    // Dedup: if both endpoints resolved to real (non-UBO::) ids AND a base
+    // edge with the same (owner, owned, controlType) already exists, the UBO
+    // edge represents the SAME ownership fact — skip it to prevent double-count.
+    const edgeKey = `${resolvedOwnerId}|${resolvedOwnedId}|${edge.controlType}`;
+    if (baseEdgeKeys.has(edgeKey)) continue;
+
+    mergedEdges.push({
+      ownerId: resolvedOwnerId,
+      ownedId: resolvedOwnedId,
+      percent: edge.percent,
+      controlType: edge.controlType,
+    });
   }
 
   // UI summary

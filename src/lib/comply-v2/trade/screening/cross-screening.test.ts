@@ -339,6 +339,184 @@ describe("mergeUboTreeIntoCascade — merges with existing TradePartyOwnership",
   });
 });
 
+// ─── mergeUboTreeIntoCascade — UBO identity reconciliation (T-M2) ───
+
+describe("mergeUboTreeIntoCascade — dedup UBO nodes against existing parties (T-M2)", () => {
+  /**
+   * Scenario: the same beneficial owner appears BOTH as a real declared
+   * TradeParty (already in baseSummaries with a real CUID id) AND as a
+   * non-root UBO node in the Orbis tree. Before T-M2 the merge created
+   * a second UBO:: entry with a different id, causing the cascade to see
+   * TWO edges from the same owner (one real, one synthetic) and sum their
+   * stakes — a false positive.
+   *
+   * The entity "Shared Holding B.V." (normalised: "shared holding") is:
+   *   - real party id "real-shared-owner" with a 30% economic edge to target
+   *   - non-root UBO node "ORBIS-NL-SHARED" with a 30% economic edge to target
+   *
+   * After reconciliation by normalised name:
+   *   - Only ONE summary for "real-shared-owner" (UBO:: suppressed)
+   *   - The UBO edge is remapped to "real-shared-owner" (no duplicate)
+   *   - The cascade sees ≤ 30% from this owner, NOT 60%
+   */
+  const TARGET_ID = "target-party-id";
+  const SHARED_OWNER_ID = "real-shared-owner";
+  const SHARED_OWNER_NAME = "Shared Holding B.V.";
+
+  // Minimal UBO tree: root = target, one non-root node = the shared owner
+  const uboTree = {
+    rootEntityId: "UBO-ROOT",
+    nodes: [
+      {
+        id: "UBO-ROOT",
+        kind: "entity" as const,
+        name: "Target Entity GmbH",
+        countryCode: "DE",
+        bvdId: "UBO-ROOT",
+      },
+      {
+        id: "ORBIS-NL-SHARED",
+        kind: "entity" as const,
+        // Same legal name as the real party (normalised: "shared holding")
+        name: SHARED_OWNER_NAME,
+        countryCode: "NL",
+        bvdId: "NLSHARED",
+        isSanctioned: false,
+      },
+    ],
+    edges: [
+      {
+        ownerId: "ORBIS-NL-SHARED",
+        ownedId: "UBO-ROOT",
+        percent: 0.3,
+        controlType: "economic" as const,
+      },
+    ],
+    depth: 1,
+    fetchedAt: "2026-05-30T00:00:00.000Z",
+    confidence: 0.9,
+  };
+
+  // Base cascade: real declared ownership, same owner, same 30%
+  const baseEdges: OwnershipEdgeSummary[] = [
+    {
+      ownerId: SHARED_OWNER_ID,
+      ownedId: TARGET_ID,
+      percent: 0.3,
+      controlType: "economic",
+    },
+  ];
+  const baseSummaries = new Map<string, AncestorSummary>([
+    [TARGET_ID, makeSummary(TARGET_ID)],
+    [
+      SHARED_OWNER_ID,
+      makeSummary(SHARED_OWNER_ID, { legalName: SHARED_OWNER_NAME }),
+    ],
+  ]);
+
+  it("RED → GREEN: the shared owner appears exactly once in partySummaries (no UBO:: duplicate)", () => {
+    const result = mergeUboTreeIntoCascade(
+      baseEdges,
+      baseSummaries,
+      uboTree,
+      TARGET_ID,
+      "mock",
+    );
+
+    // Count how many summary entries relate to "Shared Holding B.V." by name
+    const matchingEntries = Array.from(result.partySummaries.values()).filter(
+      (s) => s.legalName === SHARED_OWNER_NAME,
+    );
+    expect(matchingEntries).toHaveLength(1);
+
+    // The surviving entry MUST use the real party id, not UBO::
+    expect(matchingEntries[0].id).toBe(SHARED_OWNER_ID);
+    expect(isUboAncestorId(matchingEntries[0].id)).toBe(false);
+  });
+
+  it("RED → GREEN: merged edges reference the real party id for the shared owner (no UBO:: owner)", () => {
+    const result = mergeUboTreeIntoCascade(
+      baseEdges,
+      baseSummaries,
+      uboTree,
+      TARGET_ID,
+      "mock",
+    );
+
+    // Both edges (base + UBO-remapped) should point from real-shared-owner
+    const ownerIds = result.edges.map((e) => e.ownerId);
+    expect(ownerIds.every((id) => !isUboAncestorId(id))).toBe(true);
+    // Specifically the UBO edge was remapped to the real owner id
+    const edgesToTarget = result.edges.filter((e) => e.ownedId === TARGET_ID);
+    expect(edgesToTarget.every((e) => e.ownerId === SHARED_OWNER_ID)).toBe(
+      true,
+    );
+  });
+
+  it("RED → GREEN: cascade does NOT see 60% double-count — effective ownership ≤ 30%", () => {
+    const result = mergeUboTreeIntoCascade(
+      baseEdges,
+      baseSummaries,
+      uboTree,
+      TARGET_ID,
+      "mock",
+    );
+    const cascade = analyzeCascade({
+      targetPartyId: TARGET_ID,
+      edges: result.edges,
+      partySummaries: result.partySummaries,
+    });
+    // The shared owner is CLEAR, so no cascade hit regardless of stake.
+    // But the critical assertion is that effective ownership is at most 30%,
+    // not the doubled 60% that the bug produced.
+    const ownerAncestor = cascade.ancestors.find(
+      (a) => a.ancestorId === SHARED_OWNER_ID,
+    );
+    if (ownerAncestor) {
+      expect(ownerAncestor.effectivePercent).toBeCloseTo(0.3, 3);
+    }
+  });
+
+  it("genuinely-distinct UBO nodes (no name match) still get UBO:: namespace", () => {
+    // Add a second UBO node with a DIFFERENT name — it must NOT be reconciled
+    const treeWithExtra = {
+      ...uboTree,
+      nodes: [
+        ...uboTree.nodes,
+        {
+          id: "ORBIS-DE-DISTINCT",
+          kind: "entity" as const,
+          name: "Unrelated Grand Parent AG",
+          countryCode: "DE",
+          bvdId: "DEDISTINCT",
+          isSanctioned: false,
+        },
+      ],
+      edges: [
+        ...uboTree.edges,
+        {
+          ownerId: "ORBIS-DE-DISTINCT",
+          ownedId: "ORBIS-NL-SHARED",
+          percent: 0.8,
+          controlType: "economic" as const,
+        },
+      ],
+    };
+    const result = mergeUboTreeIntoCascade(
+      baseEdges,
+      baseSummaries,
+      treeWithExtra,
+      TARGET_ID,
+      "mock",
+    );
+    const distinctEntry = Array.from(result.partySummaries.values()).find((s) =>
+      s.legalName.includes("Unrelated"),
+    );
+    expect(distinctEntry).toBeDefined();
+    expect(isUboAncestorId(distinctEntry!.id)).toBe(true);
+  });
+});
+
 // ─── uboChipStatus ──────────────────────────────────────────────────
 
 function summary(over: Partial<UboResolutionSummary>): UboResolutionSummary {
