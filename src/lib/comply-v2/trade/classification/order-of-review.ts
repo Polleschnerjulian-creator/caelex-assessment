@@ -296,12 +296,19 @@ export function resolveOrderOfReview(
   // ─── Tier 3: EAR / CCL ────────────────────────────────────────────
   const earMatch = jurisdictional.find((m) => m.list === "EAR_CCL");
   if (earMatch) {
+    // Key on object identity (m !== earMatch) so that non-primary EAR_CCL
+    // sibling matches (e.g. a second sub-paragraph like 9A515.x alongside
+    // 9A515.g) are surfaced as parallel obligations rather than silently
+    // dropped. EU Annex I and national lists are also parallel (T-M20).
     const parallel = jurisdictional.filter(
       (m) =>
-        m.list !== "EAR_CCL" &&
+        m !== earMatch &&
         // EU Annex I is parallel (different jurisdiction); same for
         // national lists. ITAR / Annex IV would have already trumped.
-        (m.list === "EU_ANNEX_I" || NATIONAL_SUPPLEMENTAL.has(m.list)),
+        // Non-primary EAR_CCL siblings are also parallel same-regime obligations.
+        (m.list === "EAR_CCL" ||
+          m.list === "EU_ANNEX_I" ||
+          NATIONAL_SUPPLEMENTAL.has(m.list)),
     );
     return {
       primaryAuthority: earMatch,
@@ -316,8 +323,14 @@ export function resolveOrderOfReview(
   // ─── Tier 4: EU Annex I ───────────────────────────────────────────
   const annexIMatch = jurisdictional.find((m) => m.list === "EU_ANNEX_I");
   if (annexIMatch) {
-    const parallel = jurisdictional.filter((m) =>
-      NATIONAL_SUPPLEMENTAL.has(m.list),
+    // Key on object identity (m !== annexIMatch) so that non-primary
+    // EU_ANNEX_I sibling matches (e.g. a second Annex I entry on the same
+    // item) are surfaced as parallel obligations rather than silently
+    // dropped. National lists are also parallel (T-M20).
+    const parallel = jurisdictional.filter(
+      (m) =>
+        m !== annexIMatch &&
+        (m.list === "EU_ANNEX_I" || NATIONAL_SUPPLEMENTAL.has(m.list)),
     );
     return {
       primaryAuthority: annexIMatch,

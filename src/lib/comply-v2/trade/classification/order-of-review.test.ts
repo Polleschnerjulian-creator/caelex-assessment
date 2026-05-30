@@ -536,6 +536,95 @@ describe("Z28 — rationale carries operator-actionable context", () => {
   });
 });
 
+// ─── T-M20: same-regime sibling matches must not be silently dropped ─
+
+describe("Z28 — T-M20: same-regime sibling matches are surfaced, not dropped", () => {
+  it("two EAR_CCL matches → first is primary, second appears in parallelLists (not dropped)", () => {
+    // Documented real case: item matches both 9A515.g and 9A515.x.
+    // Before the fix, the second EAR_CCL entry vanished from every bucket
+    // because the parallel filter keyed on m.list !== "EAR_CCL".
+    const earG: ListMatch = {
+      list: "EAR_CCL",
+      entry: "9A515.g",
+      citation: "15 CFR Part 774 Supp. 1, ECCN 9A515.g",
+    };
+    const earX: ListMatch = {
+      list: "EAR_CCL",
+      entry: "9A515.x",
+      citation: "15 CFR Part 774 Supp. 1, ECCN 9A515.x",
+    };
+
+    const result = resolveOrderOfReview([earG, earX]);
+
+    expect(result.primaryAuthority?.list).toBe("EAR_CCL");
+
+    // The total count of EAR_CCL entries across primary + parallel must be 2.
+    const earInPrimary = result.primaryAuthority?.list === "EAR_CCL" ? 1 : 0;
+    const earInParallel = result.parallelLists.filter(
+      (m) => m.list === "EAR_CCL",
+    ).length;
+    expect(earInPrimary + earInParallel).toBe(2);
+
+    // Neither entry should be in supersededLists (EAR is not trumped by itself).
+    expect(
+      result.supersededLists.filter((m) => m.list === "EAR_CCL"),
+    ).toHaveLength(0);
+  });
+
+  it("two EAR_CCL + EU_ANNEX_I → both EAR_CCL entries accounted for, EU parallel too", () => {
+    const earG: ListMatch = {
+      list: "EAR_CCL",
+      entry: "9A515.g",
+      citation: "15 CFR Part 774 Supp. 1, ECCN 9A515.g",
+    };
+    const earX: ListMatch = {
+      list: "EAR_CCL",
+      entry: "9A515.x",
+      citation: "15 CFR Part 774 Supp. 1, ECCN 9A515.x",
+    };
+
+    const result = resolveOrderOfReview([earG, earX, EU_ANNEX_I_9A001]);
+
+    expect(result.primaryAuthority?.list).toBe("EAR_CCL");
+
+    const earInPrimary = result.primaryAuthority?.list === "EAR_CCL" ? 1 : 0;
+    const earInParallel = result.parallelLists.filter(
+      (m) => m.list === "EAR_CCL",
+    ).length;
+    expect(earInPrimary + earInParallel).toBe(2);
+
+    // EU_ANNEX_I must also appear in parallel.
+    expect(result.parallelLists.map((m) => m.list)).toContain("EU_ANNEX_I");
+  });
+
+  it("two EU_ANNEX_I matches → first is primary, second appears in parallelLists (not dropped)", () => {
+    const annexIA: ListMatch = {
+      list: "EU_ANNEX_I",
+      entry: "9A001.a",
+      citation: "EU Reg. 2021/821 Annex I, 9A001.a",
+    };
+    const annexIB: ListMatch = {
+      list: "EU_ANNEX_I",
+      entry: "9A001.b",
+      citation: "EU Reg. 2021/821 Annex I, 9A001.b",
+    };
+
+    const result = resolveOrderOfReview([annexIA, annexIB]);
+
+    expect(result.primaryAuthority?.list).toBe("EU_ANNEX_I");
+
+    const euInPrimary = result.primaryAuthority?.list === "EU_ANNEX_I" ? 1 : 0;
+    const euInParallel = result.parallelLists.filter(
+      (m) => m.list === "EU_ANNEX_I",
+    ).length;
+    expect(euInPrimary + euInParallel).toBe(2);
+
+    expect(
+      result.supersededLists.filter((m) => m.list === "EU_ANNEX_I"),
+    ).toHaveLength(0);
+  });
+});
+
 // ─── Real-world composition scenarios ───────────────────────────────
 
 describe("Z28 — composite real-world inputs", () => {
