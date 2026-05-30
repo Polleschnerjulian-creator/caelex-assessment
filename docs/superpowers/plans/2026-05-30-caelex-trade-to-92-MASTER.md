@@ -125,7 +125,7 @@ Legend: ⬜ not started · 🟡 in progress · ✅ done · 🔵 blocked-on-user
   - `tokenSetRatio("rosneft oil company","oil company rosneft") ≥ 0.95` (order-invariant)
   - `tokenSetRatio("zhang wei","wei zhang") ≥ 0.95`
   - `tokenSetRatio("spire global","planet labs") < 0.5`
-  - `tokenSetRatio("spire global","spire global systems holding")` between 0.5 and 0.85 (partial)
+  - `tokenSetRatio("spire global","spire global systems holding")` in (0.5, 0.95). NOTE: actual ≈0.86 = POTENTIAL_MATCH. This is INTENDED for sanctions screening — a superset/holding-suffix name SHOULD reach the human-review band, not be logged-only. The original "<0.85" guess was wrong (false-negative-averse domain); corrected to <0.95.
 - [ ] **A1.2** run → verify FAIL (module missing)
 - [ ] **A1.3 GREEN** — implement `tokenSetRatio(a,b)`: split each on whitespace into a Set, compute Jaccard over tokens AND a token-sorted Jaro-Winkler, return the max. Pure, no deps. (Token-sort = join sorted tokens with space, then `jaroWinkler` from `fuzzy-match.ts`.)
 - [ ] **A1.4** run → PASS
