@@ -2925,3 +2925,157 @@ describe("screen_trade_party handler (T-H10: read-only, no un-gated write)", () 
     expect(mockScreenParty).not.toHaveBeenCalled();
   });
 });
+
+// ─── check_sanctions_status handler — T-H10 second half (read-only) ───
+//
+// BEFORE (old behaviour, now removed):
+//   The handler dynamically imported screenParty() and called it with
+//   systemDecisionUserId — persisting a TradeScreeningResult, mutating
+//   screeningStatus, and potentially sending a sanctions-hit email with
+//   no human approval. Same un-gated-write hole as screen_trade_party.
+//
+// AFTER (new read-only behaviour, this suite encodes it):
+//   The handler MUST NOT call screenParty() at all. It looks up the
+//   party by name (org-scoped), returns the current persisted
+//   screeningStatus + lastScreenedAt + a read-only note, and leaves
+//   any fresh screening to the gated UI "Screen" action.
+
+describe("check_sanctions_status handler (T-H10 second half: read-only, no un-gated write)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockScreenParty.mockReset();
+  });
+
+  it("returns error when partyName is missing", async () => {
+    const result = await executeTool(
+      makeToolCall("check_sanctions_status", {}),
+      defaultUserContext,
+    );
+    expect(result.success).toBe(true);
+    const data = result.data as Record<string, unknown>;
+    expect(data.error).toBeDefined();
+    expect(mockScreenParty).not.toHaveBeenCalled();
+  });
+
+  it("returns notFound when no matching party exists in org", async () => {
+    mockPrisma.tradeParty.findMany.mockResolvedValueOnce([]);
+
+    const result = await executeTool(
+      makeToolCall("check_sanctions_status", { partyName: "Unknown Corp" }),
+      defaultUserContext,
+    );
+    expect(result.success).toBe(true);
+    const data = result.data as Record<string, unknown>;
+    expect(data.notFound).toBe(true);
+    expect(mockScreenParty).not.toHaveBeenCalled();
+  });
+
+  it("does NOT call screenParty() — no un-gated write or email (security invariant)", async () => {
+    mockPrisma.tradeParty.findMany.mockResolvedValueOnce([
+      {
+        id: "party-10",
+        legalName: "Roscosmos Export GmbH",
+        tradeName: null,
+        countryCode: "RU",
+        screeningStatus: "CONFIRMED_HIT",
+        lastScreenedAt: new Date("2026-03-01T12:00:00Z"),
+      },
+    ]);
+
+    await executeTool(
+      makeToolCall("check_sanctions_status", {
+        partyName: "Roscosmos Export GmbH",
+        countryCode: "RU",
+      }),
+      defaultUserContext,
+    );
+
+    // CRITICAL: screenParty must never be called from the AI tool path.
+    expect(mockScreenParty).not.toHaveBeenCalled();
+  });
+
+  it("returns the party's current persisted screeningStatus without triggering a fresh screen", async () => {
+    mockPrisma.tradeParty.findMany.mockResolvedValueOnce([
+      {
+        id: "party-11",
+        legalName: "ICEYE Polska Sp. z o.o.",
+        tradeName: "ICEYE",
+        countryCode: "PL",
+        screeningStatus: "CLEAR",
+        lastScreenedAt: new Date("2026-04-10T09:00:00Z"),
+      },
+    ]);
+
+    const result = await executeTool(
+      makeToolCall("check_sanctions_status", {
+        partyName: "ICEYE Polska",
+      }),
+      defaultUserContext,
+    );
+    expect(result.success).toBe(true);
+    const data = result.data as Record<string, unknown>;
+
+    expect(data.partyId).toBe("party-11");
+    expect(data.status).toBe("CLEAR");
+    expect(data.lastScreenedAt).toBeDefined();
+    expect(mockScreenParty).not.toHaveBeenCalled();
+  });
+
+  it("includes a read-only note directing user to the UI Screen action", async () => {
+    mockPrisma.tradeParty.findMany.mockResolvedValueOnce([
+      {
+        id: "party-12",
+        legalName: "Acme Launch GmbH",
+        tradeName: null,
+        countryCode: "DE",
+        screeningStatus: "NOT_SCREENED",
+        lastScreenedAt: null,
+      },
+    ]);
+
+    const result = await executeTool(
+      makeToolCall("check_sanctions_status", { partyName: "Acme Launch GmbH" }),
+      defaultUserContext,
+    );
+    expect(result.success).toBe(true);
+    const data = result.data as Record<string, unknown>;
+
+    expect(typeof data.note).toBe("string");
+    // Must communicate read-only semantics
+    expect((data.note as string).toLowerCase()).toContain("read-only");
+    expect(mockScreenParty).not.toHaveBeenCalled();
+  });
+
+  it("populates alternativeMatches when multiple parties matched", async () => {
+    mockPrisma.tradeParty.findMany.mockResolvedValueOnce([
+      {
+        id: "party-13",
+        legalName: "Alpha Corp",
+        tradeName: null,
+        countryCode: "US",
+        screeningStatus: "CLEAR",
+        lastScreenedAt: new Date("2026-02-20T00:00:00Z"),
+      },
+      {
+        id: "party-14",
+        legalName: "Alpha Corp International",
+        tradeName: null,
+        countryCode: "US",
+        screeningStatus: "NOT_SCREENED",
+        lastScreenedAt: null,
+      },
+    ]);
+
+    const result = await executeTool(
+      makeToolCall("check_sanctions_status", { partyName: "Alpha Corp" }),
+      defaultUserContext,
+    );
+    expect(result.success).toBe(true);
+    const data = result.data as Record<string, unknown>;
+    const alts = data.alternativeMatches as Array<{ id: string }>;
+    expect(Array.isArray(alts)).toBe(true);
+    expect(alts.length).toBe(1);
+    expect(alts[0].id).toBe("party-14");
+    expect(mockScreenParty).not.toHaveBeenCalled();
+  });
+});

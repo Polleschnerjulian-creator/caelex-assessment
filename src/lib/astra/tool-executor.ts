@@ -3495,6 +3495,8 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
         legalName: true,
         tradeName: true,
         countryCode: true,
+        screeningStatus: true,
+        lastScreenedAt: true,
       },
     });
 
@@ -3509,58 +3511,24 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
       };
     }
 
-    // Pick the best match (top result) and screen it.
+    // ─── T-H10 (second half): read-only — no un-gated write or email ────
+    // The AI is NOT permitted to call screenParty() from this tool path.
+    // Doing so would persist a TradeScreeningResult, mutate screeningStatus,
+    // and send a sanctions-hit email with no human approval.
+    //
+    // Return the current persisted status only. To run a fresh screening
+    // (which writes a result and may notify reviewers), the user must use
+    // the "Screen" action in the counterparty UI (the gated POST
+    // /api/trade/parties/[id]/screen route), which keeps a human in the loop.
     const target = matches[0];
-    const { screenParty } =
-      await import("@/lib/comply-v2/trade/screening/screen-party.server");
-
-    const result = await screenParty(target.id, {
-      systemDecisionUserId: userContext.userId,
-    });
 
     return {
-      partyId: result.partyId,
+      partyId: target.id,
       partyName: target.legalName,
       tradeName: target.tradeName,
       country: target.countryCode,
-      decision: result.summary.decision,
-      newScreeningStatus: result.party.screeningStatus,
-      hitCount: result.summary.hitCount,
-      topScore: Number(result.summary.topScore.toFixed(4)),
-      listsConsulted: result.summary.listsConsulted,
-      snapshotsMissing: result.summary.snapshotsMissing,
-      topHits: (
-        (result.screeningResult.hits as unknown as Array<{
-          list: string;
-          entryId: string;
-          matchedName: string;
-          score: number;
-        }>) ?? []
-      )
-        .slice(0, 5)
-        .map((h) => ({
-          list: h.list,
-          entryId: h.entryId,
-          matchedName: h.matchedName,
-          score: Number(h.score.toFixed(4)),
-        })),
-      cascade: result.cascade
-        ? {
-            triggered: result.summary.cascadeHit,
-            aggregateSanctionedOwnership: Number(
-              result.cascade.aggregateSanctionedOwnership.toFixed(4),
-            ),
-            sanctionedAncestorCount: result.summary.sanctionedAncestorCount,
-            topAncestors: result.cascade.ancestors.slice(0, 5).map((a) => ({
-              name: a.ancestorName,
-              country: a.countryCode,
-              effectivePercent: Number(a.effectivePercent.toFixed(4)),
-              screeningStatus: a.screeningStatus,
-              isBlocked: a.isBlocked,
-            })),
-          }
-        : null,
-      snapshotHash: result.screeningResult.snapshotHash,
+      status: target.screeningStatus,
+      lastScreenedAt: target.lastScreenedAt?.toISOString() ?? null,
       alternativeMatches:
         matches.length > 1
           ? matches.slice(1).map((m) => ({
@@ -3569,6 +3537,7 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
               country: m.countryCode,
             }))
           : [],
+      note: "Read-only: this shows the last recorded screening status. To run a NEW sanctions screening (which records a result and may notify reviewers), use the Screen action on the counterparty page — the assistant cannot run screenings autonomously.",
       disclaimer:
         "Sanctions screening result is informational. Confirmed hits require human triage by an export-control officer. Screened against OFAC SDN, BIS Entity List, DDTC Debarred, OpenSanctions consolidated (Z9). 50%-rule cascade per 31 CFR § 510. Snapshot hash documents exact list versions for audit retention (5 yr per § 762.6 / § 122.5).",
     };
