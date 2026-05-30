@@ -32,6 +32,10 @@ const { mockLogAuditEvent, mockPrisma } = vi.hoisted(() => {
         updateMany: vi.fn().mockResolvedValue({ count: 0 }),
       },
       nCACorrespondence: { findMany: vi.fn().mockResolvedValue([]) },
+      tradeParty: {
+        findFirst: vi.fn().mockResolvedValue(null),
+        findMany: vi.fn().mockResolvedValue([]),
+      },
     },
   };
 });
@@ -145,6 +149,12 @@ vi.mock("@/lib/services/whatif-simulation-service", () => ({
 }));
 
 vi.mock("@/lib/services/incident-response-service", () => ({}));
+
+// ─── Mock for trade screening server (dynamic import inside screen_trade_party + check_sanctions_status) ───
+const mockScreenParty = vi.fn();
+vi.mock("@/lib/comply-v2/trade/screening/screen-party.server", () => ({
+  screenParty: (...args: unknown[]) => mockScreenParty(...args),
+}));
 
 import { executeTool, TOOL_HANDLERS } from "./tool-executor";
 import type { AstraToolCall, AstraUserContext } from "./types";
@@ -2811,5 +2821,107 @@ describe("estimate_compliance_cost_time additional steps", () => {
     const cost = data.estimatedCost as Record<string, unknown>;
     expect(cost.min).toBe(10000);
     expect(cost.max).toBe(50000);
+  });
+});
+
+// ─── screen_trade_party handler — B3 / T-H10 security fix ───
+//
+// BEFORE (old behaviour, now removed):
+//   The handler called screenParty(partyId) directly from the AI path,
+//   which persisted a TradeScreeningResult, mutated screeningStatus, and
+//   sent a sanctions-hit email with no human approval.
+//
+// AFTER (new read-only behaviour, this suite encodes it):
+//   The handler MUST NOT call screenParty() at all. It returns the party's
+//   current persisted screening status from the DB, plus a `note` telling
+//   the user to use the UI "Screen" action (gated POST route) to run a
+//   fresh screening. A human stays in the loop.
+
+describe("screen_trade_party handler (T-H10: read-only, no un-gated write)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockScreenParty.mockReset();
+  });
+
+  it("returns error when partyId is missing", async () => {
+    const result = await executeTool(
+      makeToolCall("screen_trade_party", {}),
+      defaultUserContext,
+    );
+    expect(result.success).toBe(true);
+    const data = result.data as Record<string, unknown>;
+    expect(data.error).toBeDefined();
+    expect(mockScreenParty).not.toHaveBeenCalled();
+  });
+
+  it("returns error when party is not found in org scope", async () => {
+    mockPrisma.tradeParty.findFirst.mockResolvedValueOnce(null);
+
+    const result = await executeTool(
+      makeToolCall("screen_trade_party", { partyId: "party-999" }),
+      defaultUserContext,
+    );
+    expect(result.success).toBe(true);
+    const data = result.data as Record<string, unknown>;
+    expect(data.error).toBeDefined();
+    expect(mockScreenParty).not.toHaveBeenCalled();
+  });
+
+  it("does NOT call screenParty() — no un-gated write or email (security invariant)", async () => {
+    mockPrisma.tradeParty.findFirst.mockResolvedValueOnce({
+      id: "party-1",
+      legalName: "ICEYE Polska Sp. z o.o.",
+      screeningStatus: "CLEAR",
+      lastScreenedAt: new Date("2026-01-15T10:00:00Z"),
+    });
+
+    await executeTool(
+      makeToolCall("screen_trade_party", { partyId: "party-1" }),
+      defaultUserContext,
+    );
+
+    // CRITICAL: screenParty must never be called from the AI tool path.
+    expect(mockScreenParty).not.toHaveBeenCalled();
+  });
+
+  it("returns the party's current persisted screeningStatus without triggering a fresh screen", async () => {
+    mockPrisma.tradeParty.findFirst.mockResolvedValueOnce({
+      id: "party-1",
+      legalName: "ICEYE Polska Sp. z o.o.",
+      screeningStatus: "POTENTIAL_MATCH",
+      lastScreenedAt: new Date("2026-04-20T08:30:00Z"),
+    });
+
+    const result = await executeTool(
+      makeToolCall("screen_trade_party", { partyId: "party-1" }),
+      defaultUserContext,
+    );
+    expect(result.success).toBe(true);
+    const data = result.data as Record<string, unknown>;
+
+    expect(data.partyId).toBe("party-1");
+    expect(data.status).toBe("POTENTIAL_MATCH");
+    expect(data.lastScreenedAt).toBeDefined();
+  });
+
+  it("includes a read-only note directing user to the UI Screen action", async () => {
+    mockPrisma.tradeParty.findFirst.mockResolvedValueOnce({
+      id: "party-2",
+      legalName: "Acme Launch GmbH",
+      screeningStatus: "NOT_SCREENED",
+      lastScreenedAt: null,
+    });
+
+    const result = await executeTool(
+      makeToolCall("screen_trade_party", { partyId: "party-2" }),
+      defaultUserContext,
+    );
+    expect(result.success).toBe(true);
+    const data = result.data as Record<string, unknown>;
+
+    expect(typeof data.note).toBe("string");
+    // Must mention that the assistant cannot run screenings autonomously
+    expect((data.note as string).toLowerCase()).toContain("read-only");
+    expect(mockScreenParty).not.toHaveBeenCalled();
   });
 });

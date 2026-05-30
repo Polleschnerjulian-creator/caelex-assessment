@@ -3328,6 +3328,17 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
 
   // ─── Trade Counterparty Screening Tools (Wave A Sprint A7) ────────
 
+  // ─── T-H10 (B3): read-only — no un-gated write or email ───────────
+  // The AI is NOT permitted to invoke the mutating screenParty() function
+  // from this tool path. Doing so would persist a TradeScreeningResult,
+  // mutate screeningStatus, and send a sanctions-hit email with no human
+  // approval — an unacceptable autonomous side-effect.
+  //
+  // This handler now only reads the party's current persisted state from
+  // the DB and returns it. To run a fresh screening (which writes a result
+  // and may notify reviewers), the user must use the "Screen" action in
+  // the counterparty UI (the gated POST /api/trade/parties/[id]/screen
+  // route), which keeps a human in the loop.
   screen_trade_party: async (input, userContext) => {
     const partyId = getString(input, "partyId");
     if (!partyId) {
@@ -3337,10 +3348,15 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
       };
     }
 
-    // Org-scope check before invoking the screening engine
+    // Org-scope check — also select the current persisted screening state.
     const party = await prisma.tradeParty.findFirst({
       where: { id: partyId, organizationId: userContext.organizationId },
-      select: { id: true, legalName: true },
+      select: {
+        id: true,
+        legalName: true,
+        screeningStatus: true,
+        lastScreenedAt: true,
+      },
     });
     if (!party) {
       return {
@@ -3348,63 +3364,13 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
       };
     }
 
-    const { screenParty } =
-      await import("@/lib/comply-v2/trade/screening/screen-party.server");
-
-    const result = await screenParty(partyId, {
-      systemDecisionUserId: userContext.userId,
-    });
-
+    // Return the current persisted status only — no screenParty() call.
     return {
-      partyId: result.partyId,
+      partyId: party.id,
       partyName: party.legalName,
-      decision: result.summary.decision,
-      newScreeningStatus: result.party.screeningStatus,
-      hitCount: result.summary.hitCount,
-      topScore: Number(result.summary.topScore.toFixed(4)),
-      listsConsulted: result.summary.listsConsulted,
-      snapshotsMissing: result.summary.snapshotsMissing,
-      // Top 5 hits for the model to summarize back to the user
-      topHits: (
-        (result.screeningResult.hits as unknown as Array<{
-          list: string;
-          entryId: string;
-          matchedName: string;
-          score: number;
-        }>) ?? []
-      )
-        .slice(0, 5)
-        .map((h) => ({
-          list: h.list,
-          entryId: h.entryId,
-          matchedName: h.matchedName,
-          score: Number(h.score.toFixed(4)),
-        })),
-      snapshotHash: result.screeningResult.snapshotHash,
-
-      // 50%-rule cascade analysis (Sprint A6)
-      cascade: result.cascade
-        ? {
-            hit: result.summary.cascadeHit,
-            aggregateSanctionedOwnership: Number(
-              result.cascade.aggregateSanctionedOwnership.toFixed(4),
-            ),
-            sanctionedAncestorCount: result.summary.sanctionedAncestorCount,
-            // Top 5 ancestors with biggest effective ownership
-            topAncestors: result.cascade.ancestors.slice(0, 5).map((a) => ({
-              id: a.ancestorId,
-              name: a.ancestorName,
-              country: a.countryCode,
-              effectivePercent: Number(a.effectivePercent.toFixed(4)),
-              screeningStatus: a.screeningStatus,
-              isBlocked: a.isBlocked,
-              pathCount: a.pathCount,
-            })),
-          }
-        : null,
-
-      disclaimer:
-        "Sanctions hits require human triage by a qualified export-control officer. Score bands follow FATF/Wolfsberg standard: ≥0.95 confirmed, ≥0.85 potential, ≥0.75 weak. The 50%-rule cascade applies when sanctioned ancestors hold ≥50% combined ownership (31 CFR § 510). Snapshot hash documents the exact list versions used at screening time for audit (5+ years per §22 AWV / 15 CFR Part 762).",
+      status: party.screeningStatus,
+      lastScreenedAt: party.lastScreenedAt?.toISOString() ?? null,
+      note: "Read-only: to run a fresh sanctions screening (which records a result and may notify reviewers), use the Screen action in the counterparty page. The assistant cannot run screenings autonomously.",
     };
   },
 
