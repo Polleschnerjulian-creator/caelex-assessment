@@ -284,4 +284,71 @@ function formatVal(v: number | boolean | string): string {
   return JSON.stringify(v);
 }
 
+// ─── Vision-skip predicate ─────────────────────────────────────────────
+
+/**
+ * Returns true when the Vision extractor can be safely skipped because
+ * the regex extractor already produced a strong, complete result.
+ *
+ * Vision's primary value is RECALL: catching attributes in tables,
+ * scanned PDFs, or unusual phrasings that regex misses. It is only safe
+ * to skip Vision when regex is clearly sufficient — i.e. the PDF parsed
+ * cleanly (so regex was not blind) AND the extraction is non-trivial
+ * with the key classification anchor (itemClass) present.
+ *
+ * Skip predicate — ALL of the following must hold:
+ *   1. `regex` is non-null.
+ *   2. `regex.parseError` is falsy — if the PDF failed to parse, regex
+ *      extracted nothing from a scanned/encrypted document; Vision's
+ *      image-based recall is essential in that case.
+ *   3. `itemClass` is present in the attributes bag — it is the keystone
+ *      attribute that drives classification. If regex missed itemClass,
+ *      Vision should run regardless of how many other attrs were found.
+ *   4. Total extracted attributes (top-level keys excluding
+ *      `parametricAttributes`, plus all keys inside
+ *      `parametricAttributes`) is at least 3. This threshold is
+ *      deliberately conservative: a single attribute hit (or two) is too
+ *      thin a basis to declare the regex result "complete"; we need at
+ *      least itemClass + 2 supporting attributes.
+ *
+ * Trade-off note: skipping Vision saves one Claude call (~$0.02,
+ * 8–25 s) but forgoes Vision's table/scanned-PDF recall. The threshold
+ * is conservative so Vision still runs on weak or parse-failed extractions
+ * where its recall is genuinely valuable. A future enhancement could let
+ * the operator force Vision via a `forceVision` query param.
+ */
+export function shouldSkipVision(regex: DatasheetExtraction | null): boolean {
+  // Rule 1: need an actual extraction object.
+  if (regex === null) return false;
+
+  // Rule 2: scanned/encrypted PDFs parse cleanly for Vision but not for
+  // text-based regex; if parseError is set, Vision must run.
+  if (regex.parseError) return false;
+
+  const bag = regex.attributes as Record<string, unknown>;
+
+  // Rule 3: itemClass is the classification keystone — without it Vision
+  // should run even if other parametric attributes were found.
+  if (!bag.itemClass) return false;
+
+  // Rule 4: count all extracted attributes.
+  //   Top-level bag keys (excluding the nested parametricAttributes map).
+  const topLevel = Object.keys(bag).filter(
+    (k) =>
+      k !== "parametricAttributes" && bag[k] !== undefined && bag[k] !== null,
+  ).length;
+
+  //   Extended-vocabulary attributes stored inside parametricAttributes.
+  const parametric =
+    bag.parametricAttributes != null
+      ? Object.keys(bag.parametricAttributes as object).length
+      : 0;
+
+  const totalAttributes = topLevel + parametric;
+
+  // Require at least 3 total attributes (inclusive of itemClass).
+  // This ensures the regex result is non-trivial before we skip Vision.
+  return totalAttributes >= 3;
+}
+
 // SPDX-License-Identifier: LicenseRef-Caelex-Proprietary

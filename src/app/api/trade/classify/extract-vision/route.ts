@@ -40,7 +40,10 @@ import {
 import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { extractDatasheet } from "@/lib/trade/datasheet-extractor";
 import { extractDatasheetViaVision } from "@/lib/trade/classification/claude-vision-extractor.server";
-import { mergeExtractions } from "@/lib/trade/classification/extraction-merger";
+import {
+  mergeExtractions,
+  shouldSkipVision,
+} from "@/lib/trade/classification/extraction-merger";
 
 const MAX_PDF_BYTES = 5 * 1024 * 1024;
 const ALLOWED_ROLES = new Set(["OWNER", "ADMIN", "MANAGER"]);
@@ -124,30 +127,51 @@ export async function POST(req: Request) {
     const buf = Buffer.from(await fileEntry.arrayBuffer());
     const startMs = Date.now();
 
-    // Run BOTH extractors in parallel. `Promise.allSettled` so a failure
-    // in one doesn't kill the other — we still want the regex baseline
-    // if Vision hits a quota error.
-    const [regexSettled, visionSettled] = await Promise.allSettled([
-      extractDatasheet(buf),
-      extractDatasheetViaVision(buf),
-    ]);
-
-    const regex =
-      regexSettled.status === "fulfilled" ? regexSettled.value : null;
-    if (regexSettled.status === "rejected") {
+    // Step 1 — always run the fast regex extractor.
+    let regex: Awaited<ReturnType<typeof extractDatasheet>> | null = null;
+    try {
+      regex = await extractDatasheet(buf);
+    } catch (err) {
       logger.warn("regex extractor crashed", {
         userId: tradeAuth.userId,
-        err: String(regexSettled.reason),
+        err: String(err),
       });
     }
 
-    const visionResult =
-      visionSettled.status === "fulfilled" ? visionSettled.value : null;
-    if (visionSettled.status === "rejected") {
-      logger.warn("vision extractor crashed", {
-        userId: tradeAuth.userId,
-        err: String(visionSettled.reason),
-      });
+    // Step 2 — decide whether Vision is needed.
+    // `shouldSkipVision` returns true only when the regex extraction is
+    // clean (no parse error), itemClass is present, and at least 3
+    // attributes were found. In that case Vision's recall is not needed
+    // and we skip the expensive Claude call (~$0.02, 8–25 s).
+    // When Vision is skipped its result is modelled as a non-ok result so
+    // the merger treats it as vision=null — regex values flow through
+    // unchanged. The response exposes `skippedVision` so the operator
+    // can force a re-run if they want Vision's table/scanned-PDF recall.
+    const skipVision = shouldSkipVision(regex);
+
+    type VisionOutcome = Awaited<ReturnType<typeof extractDatasheetViaVision>>;
+    let visionResult: VisionOutcome | null = null;
+
+    if (skipVision) {
+      // Cast a synthetic skipped result — ok: false so the merger treats
+      // it identically to a Vision failure (regex wins everywhere).
+      visionResult = {
+        ok: false as const,
+        error: "skipped: regex extraction was complete (cost optimisation)",
+      } as VisionOutcome;
+    } else {
+      const visionSettled = await Promise.allSettled([
+        extractDatasheetViaVision(buf),
+      ]);
+      const [settled] = visionSettled;
+      if (settled.status === "fulfilled") {
+        visionResult = settled.value;
+      } else {
+        logger.warn("vision extractor crashed", {
+          userId: tradeAuth.userId,
+          err: String(settled.reason),
+        });
+      }
     }
 
     const merged = mergeExtractions({
@@ -166,6 +190,7 @@ export async function POST(req: Request) {
       attributeCount: merged.attributes.length,
       warningCount: merged.warnings.length,
       regexAvailable: regex !== null,
+      skippedVision: skipVision,
       visionAvailable: visionResult?.ok ?? false,
       visionLatencyMs: visionResult?.ok ? visionResult.latencyMs : null,
       visionModelUsed: visionResult?.ok ? visionResult.modelUsed : null,
@@ -175,6 +200,11 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       extraction: merged,
+      /** True when Vision was skipped because the regex extraction was
+       *  already clean + complete (cost optimisation, Sprint G3). The
+       *  operator can force a re-run by re-submitting with forceVision=true
+       *  in a future iteration. */
+      skippedVision: skipVision,
       meta: {
         fileName: fileEntry.name,
         fileSize: fileEntry.size,

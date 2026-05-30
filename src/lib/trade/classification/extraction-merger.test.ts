@@ -13,6 +13,7 @@ import {
   mergeExtractions,
   valuesAgree,
   NUMERIC_AGREEMENT_TOLERANCE,
+  shouldSkipVision,
 } from "./extraction-merger";
 import type { DatasheetExtraction } from "@/lib/trade/datasheet-extractor";
 import type { VisionAttribute } from "./claude-vision-extractor.server";
@@ -308,6 +309,110 @@ describe("NUMERIC_AGREEMENT_TOLERANCE", () => {
   it("is between 0 and 1 (relative error)", () => {
     expect(NUMERIC_AGREEMENT_TOLERANCE).toBeGreaterThan(0);
     expect(NUMERIC_AGREEMENT_TOLERANCE).toBeLessThan(1);
+  });
+});
+
+// ─── shouldSkipVision — cost-optimisation predicate ───────────────────
+//
+// Vision (Claude) is expensive (~$0.02/parse, 8-25 s latency). It is safe
+// to skip ONLY when the regex extractor already produced a STRONG result:
+//   1. clean PDF parse (no parseError)
+//   2. itemClass is present (the keystone for classification)
+//   3. at least 3 total extracted attributes (top-level + parametric)
+//
+// When Vision is skipped, the merger treats it as vision=null — regex
+// values flow through unchanged, which is correct because the predicate
+// only fires when regex is already complete.
+
+describe("shouldSkipVision", () => {
+  // Helper: build a minimal DatasheetExtraction with given attrs / parseError
+  function mkRegex(
+    attrs: Record<string, number | boolean | string>,
+    opts: { parseError?: string; withParametric?: Record<string, number> } = {},
+  ): DatasheetExtraction {
+    const { parseError, withParametric } = opts;
+    const bag = { ...attrs } as DatasheetExtraction["attributes"];
+    if (withParametric) {
+      (bag as Record<string, unknown>).parametricAttributes = {
+        ...withParametric,
+      };
+    }
+    return {
+      rawText: "test text",
+      pageCount: 1,
+      attributes: bag,
+      evidence: [],
+      parseError,
+    };
+  }
+
+  it("returns false when regex is null (Vision always needed)", () => {
+    expect(shouldSkipVision(null)).toBe(false);
+  });
+
+  it("returns false when regex has a parseError (scanned/encrypted PDF — Vision essential for recall)", () => {
+    const r = mkRegex(
+      {
+        itemClass: "spacecraft.remote_sensing.eo",
+        apertureMeters: 0.5,
+        payloadKg: 500,
+      },
+      { parseError: "PDF encrypted or corrupted" },
+    );
+    expect(shouldSkipVision(r)).toBe(false);
+  });
+
+  it("returns false when regex found <3 attributes even with itemClass and clean parse", () => {
+    // Only 2 attributes: itemClass + apertureMeters
+    const r = mkRegex({
+      itemClass: "spacecraft.remote_sensing.eo",
+      apertureMeters: 0.5,
+    });
+    expect(shouldSkipVision(r)).toBe(false);
+  });
+
+  it("returns false when regex found ≥3 attributes but itemClass is missing", () => {
+    // 3 attributes but no itemClass → Vision may still classify the item
+    const r = mkRegex({ apertureMeters: 0.5, payloadKg: 500, rangeKm: 300 });
+    expect(shouldSkipVision(r)).toBe(false);
+  });
+
+  it("returns true when regex has clean parse + itemClass + exactly 3 attributes", () => {
+    // itemClass counts toward the 3 — 3 top-level: itemClass + 2 others
+    const r = mkRegex({
+      itemClass: "spacecraft.remote_sensing.eo",
+      apertureMeters: 0.5,
+      payloadKg: 500,
+    });
+    expect(shouldSkipVision(r)).toBe(true);
+  });
+
+  it("returns true with itemClass + 2 top-level + 1 parametric (total 4, clean parse)", () => {
+    const r = mkRegex(
+      { itemClass: "avionics.attitude.star_tracker", apertureMeters: 0.5 },
+      { withParametric: { spectralBandCount: 12 } },
+    );
+    // Total: itemClass + apertureMeters + spectralBandCount = 3
+    expect(shouldSkipVision(r)).toBe(true);
+  });
+
+  it("returns false when only parametric attrs present and no itemClass", () => {
+    const r = mkRegex(
+      {},
+      {
+        withParametric: {
+          spectralBandCount: 12,
+          peakWavelengthNm: 850,
+          radarBandwidthMhz: 100,
+        },
+      },
+    );
+    expect(shouldSkipVision(r)).toBe(false);
+  });
+
+  it("returns false when attributes bag is empty (nothing extracted)", () => {
+    const r = mkRegex({});
+    expect(shouldSkipVision(r)).toBe(false);
   });
 });
 
