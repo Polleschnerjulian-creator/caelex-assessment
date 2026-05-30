@@ -38,6 +38,7 @@ import { logger } from "@/lib/logger";
 
 import {
   classifyScore,
+  matchByIdentifier,
   screenAgainstEntries,
   SCORE_POTENTIAL_MATCH,
   SCORE_WEAK_MATCH,
@@ -131,16 +132,50 @@ export async function screenParty(
     );
   }
 
+  // Build party's identifier list for exact-match pre-check (Sprint A3).
+  // Only include non-null, non-empty values present on the loaded party.
+  const partyIdentifiers: { type: string; value: string }[] = [
+    party.leiCode ? { type: "lei", value: party.leiCode } : null,
+    party.vatNumber ? { type: "vat", value: party.vatNumber } : null,
+    party.ducnsNumber ? { type: "duns", value: party.ducnsNumber } : null,
+    party.cageCode ? { type: "cage", value: party.cageCode } : null,
+  ].filter((id): id is { type: string; value: string } => id !== null);
+
   // Run fuzzy match across ALL snapshots. List is preserved on each hit.
+  // For each entry we first attempt an exact identifier pre-check: if the
+  // party's LEI/VAT/DUNS/CAGE matches an entry identifier exactly, that is
+  // a definitive hit (score 1.0) independent of the name score (Sprint A3).
   const allHits: PersistableHit[] = [];
   const hashesByList: Partial<Record<TradeSanctionsList, string>> = {};
 
   for (const [list, snapshot] of snapshots) {
     hashesByList[list] = snapshot.hash;
     const entries = snapshot.entries as unknown as CanonicalSanctionsEntry[];
-    const hits = screenAgainstEntries(party.canonicalName, entries, threshold);
-    for (const hit of hits) {
-      allHits.push({ ...hit, list });
+
+    // Track entryIds that already produced an identifier hit so we don't
+    // double-count them from the fuzzy-name pass below.
+    const identifierHitIds = new Set<string>();
+
+    if (partyIdentifiers.length > 0) {
+      for (const entry of entries) {
+        const idHit = matchByIdentifier(partyIdentifiers, entry);
+        if (idHit) {
+          allHits.push({ ...idHit, list });
+          identifierHitIds.add(entry.entryId);
+        }
+      }
+    }
+
+    // Name-based fuzzy screening for entries NOT already caught by identifier.
+    const nameHits = screenAgainstEntries(
+      party.canonicalName,
+      entries,
+      threshold,
+    );
+    for (const hit of nameHits) {
+      if (!identifierHitIds.has(hit.entryId)) {
+        allHits.push({ ...hit, list });
+      }
     }
   }
 

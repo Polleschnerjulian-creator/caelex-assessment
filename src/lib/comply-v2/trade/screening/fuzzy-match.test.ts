@@ -18,6 +18,7 @@ import {
   scoreEntry,
   screenAgainstEntries,
   classifyScore,
+  matchByIdentifier,
   SCORE_CONFIRMED_HIT,
   SCORE_POTENTIAL_MATCH,
   SCORE_WEAK_MATCH,
@@ -246,6 +247,130 @@ describe("scoreEntry token-order matching", () => {
     const hit = scoreEntry(query, PLANET_LABS_ENTRY);
     expect(hit).not.toBeNull();
     expect(hit!.score).toBeLessThan(SCORE_WEAK_MATCH);
+  });
+});
+
+// ─── matchByIdentifier tests (Sprint A3: exact identifier pre-check) ───
+
+describe("matchByIdentifier", () => {
+  const ENTRY_WITH_LEI: CanonicalSanctionsEntry = {
+    entryId: "lei-entry-1",
+    names: ["Sinister Corp"],
+    addresses: [],
+    identifiers: [{ type: "lei", value: "529900T8BM49AURSDO55" }],
+    listMetadata: {},
+  };
+
+  const ENTRY_WITH_MULTI_IDS: CanonicalSanctionsEntry = {
+    entryId: "multi-id-entry",
+    names: ["Multi Corp"],
+    addresses: [],
+    identifiers: [
+      { type: "passport", value: "AB123456" },
+      { type: "lei", value: "529900T8BM49AURSDO55" },
+      { type: "tax_id", value: "12-3456789" },
+    ],
+    listMetadata: {},
+  };
+
+  const ENTRY_NO_IDS: CanonicalSanctionsEntry = {
+    entryId: "no-id-entry",
+    names: ["No Identifier Corp"],
+    addresses: [],
+    identifiers: [],
+    listMetadata: {},
+  };
+
+  it("returns a definitive hit (score 1.0) when query identifier value exactly matches entry identifier value", () => {
+    const hit = matchByIdentifier(
+      [{ type: "lei", value: "529900T8BM49AURSDO55" }],
+      ENTRY_WITH_LEI,
+    );
+    expect(hit).not.toBeNull();
+    expect(hit!.score).toBe(1.0);
+    expect(hit!.matchedFields).toEqual(["identifier"]);
+    expect(hit!.entryId).toBe("lei-entry-1");
+  });
+
+  it("match is case-insensitive and ignores internal spaces", () => {
+    // query: lowercase with spaces → should normalise to same as "529900T8BM49AURSDO55"
+    const hit = matchByIdentifier(
+      [{ type: "lei", value: "5299 00t8bm49aursdo55" }],
+      ENTRY_WITH_LEI,
+    );
+    expect(hit).not.toBeNull();
+    expect(hit!.score).toBe(1.0);
+    expect(hit!.matchedFields).toEqual(["identifier"]);
+  });
+
+  it("returns null when no query identifier matches any entry identifier", () => {
+    const hit = matchByIdentifier(
+      [{ type: "lei", value: "XXXXXXXXXXXXXXXXXXXXXXXX" }],
+      ENTRY_WITH_LEI,
+    );
+    expect(hit).toBeNull();
+  });
+
+  it("returns null for empty query identifier value (no false hit on empty=empty)", () => {
+    const entryWithEmptyId: CanonicalSanctionsEntry = {
+      ...ENTRY_WITH_LEI,
+      identifiers: [{ type: "lei", value: "" }],
+    };
+    const hit = matchByIdentifier(
+      [{ type: "lei", value: "" }],
+      entryWithEmptyId,
+    );
+    expect(hit).toBeNull();
+  });
+
+  it("returns null when entry has no identifiers (empty array)", () => {
+    const hit = matchByIdentifier(
+      [{ type: "lei", value: "529900T8BM49AURSDO55" }],
+      ENTRY_NO_IDS,
+    );
+    expect(hit).toBeNull();
+  });
+
+  it("returns null when query identifiers list is empty", () => {
+    const hit = matchByIdentifier([], ENTRY_WITH_LEI);
+    expect(hit).toBeNull();
+  });
+
+  it("matches any identifier in a multi-identifier entry", () => {
+    // Passport match on the multi-id entry
+    const hit = matchByIdentifier(
+      [{ type: "passport", value: "AB123456" }],
+      ENTRY_WITH_MULTI_IDS,
+    );
+    expect(hit).not.toBeNull();
+    expect(hit!.score).toBe(1.0);
+    expect(hit!.entryId).toBe("multi-id-entry");
+  });
+
+  it("uses the first name in the entry as matchedName", () => {
+    const hit = matchByIdentifier(
+      [{ type: "lei", value: "529900T8BM49AURSDO55" }],
+      ENTRY_WITH_LEI,
+    );
+    expect(hit!.matchedName).toBe("Sinister Corp");
+  });
+
+  it("whitespace-only query identifier does NOT match", () => {
+    const hit = matchByIdentifier(
+      [{ type: "lei", value: "   " }],
+      ENTRY_WITH_LEI,
+    );
+    expect(hit).toBeNull();
+  });
+
+  it("strips punctuation when normalising (hyphens in tax-id)", () => {
+    // Entry tax_id "12-3456789", query "123456789" (no hyphen) → same after strip
+    const hit = matchByIdentifier(
+      [{ type: "tax_id", value: "123456789" }],
+      ENTRY_WITH_MULTI_IDS,
+    );
+    expect(hit).not.toBeNull();
+    expect(hit!.score).toBe(1.0);
   });
 });
 
