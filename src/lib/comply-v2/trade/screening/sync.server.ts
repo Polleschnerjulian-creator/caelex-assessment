@@ -25,7 +25,12 @@ import "server-only";
 
 import { logger } from "@/lib/logger";
 import type { TradeSanctionsList } from "@prisma/client";
-import { ofacSdnParser } from "./sources/ofac-sdn";
+import {
+  ofacSdnParser,
+  parseOfacAltAliases,
+  mergeAliasesIntoEntries,
+  OFAC_ALT_URL,
+} from "./sources/ofac-sdn";
 import { bisEntityParser } from "./sources/bis-entity";
 import { ddtcDebarredParser } from "./sources/ddtc-debarred";
 import { euFsfParser } from "./sources/eu-fsf";
@@ -109,7 +114,32 @@ export async function syncOneList(
       raw = await fetchWithTimeout(url, FETCH_TIMEOUT_MS);
     }
 
-    const entries = parser.parse(raw);
+    let entries = parser.parse(raw);
+
+    // OFAC-specific: merge AKA aliases from the companion alt.csv.
+    // Fail-soft — a failed alt.csv fetch must never drop the primary SDN
+    // entries; aliases are a bonus that improve recall but are not required
+    // for the snapshot to be valid.
+    if (parser.list === "OFAC_SDN") {
+      try {
+        const altRaw = options?.fetchOverride
+          ? await options.fetchOverride(OFAC_ALT_URL)
+          : await fetchWithTimeout(OFAC_ALT_URL, FETCH_TIMEOUT_MS);
+        const aliasMap = parseOfacAltAliases(altRaw);
+        entries = mergeAliasesIntoEntries(entries, aliasMap);
+        logger.info(
+          { list: parser.list, aliasUids: aliasMap.size },
+          "sanctions sync: merged OFAC alt.csv aliases",
+        );
+      } catch (altErr) {
+        const msg = altErr instanceof Error ? altErr.message : String(altErr);
+        logger.warn(
+          { list: parser.list, err: msg, altUrl: OFAC_ALT_URL },
+          "sanctions sync: alt.csv fetch failed — proceeding without aliases (fail-soft)",
+        );
+        // Primary entries are already in `entries` — continue with them unchanged.
+      }
+    }
 
     if (entries.length === 0) {
       // Stub parser or genuinely empty upstream. No-op rather than

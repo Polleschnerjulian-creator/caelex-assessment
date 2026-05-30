@@ -210,6 +210,89 @@ export function parseCsv(text: string): string[][] {
   return rows;
 }
 
+/**
+ * URL for the OFAC alt.csv file containing AKA/FKA/NKA aliases.
+ * Each row links an ent_num to an alternate name for the same SDN entry.
+ */
+export const OFAC_ALT_URL = "https://www.treasury.gov/ofac/downloads/alt.csv";
+
+/**
+ * Parse the OFAC alt.csv into a Map of ent_num → canonicalized alias names.
+ *
+ * alt.csv columns (positional, no header row):
+ *   0: ent_num      — SDN uid (links to sdn.csv column 0)
+ *   1: alt_num      — alias ordinal (ignored)
+ *   2: alt_type     — "aka" | "fka" | "nka" (ignored for matching purposes)
+ *   3: alt_name     — the alias name
+ *   4: alt_remarks  — free text (ignored)
+ *
+ * Rows with missing ent_num, missing/empty alt_name, or alt_name equal
+ * to the OFAC null sentinel "-0-" are dropped. Aliases that canonicalize
+ * to an empty string are dropped. Duplicates (same canonical form for the
+ * same uid) are deduped.
+ *
+ * PURE — no I/O, no side effects.
+ */
+export function parseOfacAltAliases(altCsv: string): Map<string, string[]> {
+  const result = new Map<string, string[]>();
+  if (!altCsv || typeof altCsv !== "string") return result;
+
+  const rows = parseCsv(altCsv);
+  for (const row of rows) {
+    if (row.length < 4) continue;
+
+    const entNum = row[0]?.trim();
+    const altName = row[3]?.trim();
+
+    if (!entNum || !altName || altName === OFAC_NULL) continue;
+
+    const canonical = canonicalizeName(altName);
+    if (!canonical) continue;
+
+    const existing = result.get(entNum);
+    if (existing) {
+      if (!existing.includes(canonical)) {
+        existing.push(canonical);
+      }
+    } else {
+      result.set(entNum, [canonical]);
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Merge alias names from an alt.csv alias map into canonical SDN entries.
+ *
+ * For each entry whose entryId appears as a key in aliasMap, the aliases
+ * are appended to entry.names (primary name first, deduped). Entries with
+ * no corresponding alias map key are returned unchanged.
+ *
+ * PURE — returns a new array; input entries are not mutated.
+ */
+export function mergeAliasesIntoEntries(
+  entries: CanonicalSanctionsEntry[],
+  aliasMap: Map<string, string[]>,
+): CanonicalSanctionsEntry[] {
+  if (aliasMap.size === 0) return entries;
+
+  return entries.map((entry) => {
+    const aliases = aliasMap.get(entry.entryId);
+    if (!aliases || aliases.length === 0) return entry;
+
+    // Dedupe: only append aliases not already in names
+    const existingSet = new Set(entry.names);
+    const newAliases = aliases.filter((a) => !existingSet.has(a));
+    if (newAliases.length === 0) return entry;
+
+    return {
+      ...entry,
+      names: [...entry.names, ...newAliases],
+    };
+  });
+}
+
 export const ofacSdnParser: SanctionsSourceParser = {
   list: TradeSanctionsList.OFAC_SDN,
   defaultSourceUrl: DEFAULT_URL,
