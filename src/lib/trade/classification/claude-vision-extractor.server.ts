@@ -39,6 +39,11 @@ import "server-only";
 import { buildAnthropicClient } from "@/lib/atlas/anthropic-client";
 import { logger } from "@/lib/logger";
 import type { AttributeName } from "@/lib/comply-v2/trade/classification/control-list-cross-walk";
+import {
+  visionCacheKey,
+  getCachedVision,
+  setCachedVision,
+} from "./vision-cache";
 
 /** Per-extraction confidence. Same scale as the BAFA parser for UI
  *  consistency. */
@@ -210,7 +215,11 @@ const PROMPT_VOCABULARY: ReadonlyArray<{
   },
 ];
 
-const MAX_OUTPUT_TOKENS = 3072;
+// The extraction JSON is a bounded object: ~22 known attributes each a short
+// scalar + confidence + reasoning string + a small warnings array. Worst-case
+// ~300–400 tokens (verified in vision-cache.test.ts "output size guard").
+// 1024 provides ~3× headroom while cutting billed output tokens by 2/3.
+const MAX_OUTPUT_TOKENS = 1024;
 
 const SYSTEM_PROMPT = buildSystemPrompt();
 
@@ -277,6 +286,13 @@ export async function extractDatasheetViaVision(
     };
   }
 
+  // Content-hash cache: byte-identical PDF → return cached extraction with
+  // no Claude call. Only ok:true results are cached; failures fall through
+  // so they remain retryable (see vision-cache.ts file header).
+  const cacheKey = visionCacheKey(Buffer.from(pdfBytes));
+  const cached = getCachedVision(cacheKey);
+  if (cached) return cached;
+
   const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
 
   try {
@@ -325,13 +341,16 @@ export async function extractDatasheetViaVision(
     }
 
     const { attributes, warnings } = normaliseExtraction(parsed.value);
-    return {
+    const result: VisionExtractionResult = {
       ok: true,
       attributes,
       warnings,
       modelUsed: setup.model,
       latencyMs: Date.now() - startMs,
     };
+    // Cache only successful extractions — failures remain retryable.
+    setCachedVision(cacheKey, result);
+    return result;
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown Anthropic error";
     logger.error(`[vision-extractor] Anthropic call failed: ${msg}`);

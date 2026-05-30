@@ -52,6 +52,7 @@ vi.mock("@/lib/logger", () => ({
 }));
 
 import { extractDatasheetViaVision } from "./claude-vision-extractor.server";
+import { _clearVisionCache } from "./vision-cache";
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
@@ -62,6 +63,10 @@ function stubResponse(text: string): void {
 const FAKE_PDF = Buffer.from("%PDF-1.4\nfake datasheet bytes");
 
 beforeEach(() => {
+  // Clear the vision cache so each test starts from a fresh state —
+  // otherwise FAKE_PDF (same bytes) would be served from cache and skip
+  // the mock's messages.create, breaking assertions on the call count.
+  _clearVisionCache();
   mockState.lastCall = null;
   mockState.returnNull = false;
   mockState.shouldThrow = null;
@@ -558,6 +563,85 @@ describe("extractDatasheetViaVision — request shape", () => {
     expect(Buffer.from(docBlock!.source!.data, "base64").length).toBe(
       FAKE_PDF.length,
     );
+  });
+});
+
+// ─── Content-hash cache integration ──────────────────────────────────
+//
+// Tests that extractDatasheetViaVision uses the vision cache correctly:
+//   - second call with same bytes → messages.create NOT called again
+//   - call with different bytes → messages.create IS called again
+//   - ok:false failures are NOT cached → second call retries
+//
+// Cache is cleared by the global beforeEach above (which calls _clearVisionCache).
+
+describe("extractDatasheetViaVision — content-hash cache", () => {
+  it("second call with identical bytes is served from cache — messages.create called once", async () => {
+    stubResponse('{"attributes":[],"warnings":[]}');
+
+    const BUF = Buffer.from("identical-pdf-bytes");
+    const res1 = await extractDatasheetViaVision(BUF);
+
+    // Now mutate mockState.lastCall to detect if create was called again
+    mockState.lastCall = "sentinel";
+    const res2 = await extractDatasheetViaVision(BUF);
+
+    // If cache hit, messages.create was NOT called → lastCall remains "sentinel"
+    expect(mockState.lastCall).toBe("sentinel");
+
+    // Both results should be deeply equal
+    expect(res1.ok).toBe(true);
+    expect(res2.ok).toBe(true);
+    expect(res2).toEqual(res1);
+  });
+
+  it("call with different bytes hits messages.create again", async () => {
+    stubResponse('{"attributes":[],"warnings":[]}');
+
+    const BUF_1 = Buffer.from("pdf-bytes-variant-1");
+    const BUF_2 = Buffer.from("pdf-bytes-variant-2");
+
+    await extractDatasheetViaVision(BUF_1);
+
+    mockState.lastCall = "sentinel";
+    await extractDatasheetViaVision(BUF_2);
+
+    // Cache miss → messages.create called → lastCall is no longer "sentinel"
+    expect(mockState.lastCall).not.toBe("sentinel");
+  });
+
+  it("ok:false result is NOT cached — second call retries messages.create", async () => {
+    // First call: malformed JSON → ok:false
+    stubResponse("NOT_JSON_AT_ALL");
+    const BUF = Buffer.from("transient-error-pdf");
+    const res1 = await extractDatasheetViaVision(BUF);
+    expect(res1.ok).toBe(false);
+
+    // Now fix the response
+    stubResponse('{"attributes":[],"warnings":[]}');
+    mockState.lastCall = "sentinel";
+
+    const res2 = await extractDatasheetViaVision(BUF);
+    // If failure was NOT cached, messages.create was called → lastCall updated
+    expect(mockState.lastCall).not.toBe("sentinel");
+    expect(res2.ok).toBe(true);
+  });
+
+  it("ok:false API error (throw) is NOT cached — second call retries", async () => {
+    const BUF = Buffer.from("api-error-pdf");
+
+    // First call throws → ok:false
+    mockState.shouldThrow = new Error("Quota exceeded");
+    const res1 = await extractDatasheetViaVision(BUF);
+    expect(res1.ok).toBe(false);
+    mockState.shouldThrow = null;
+
+    // Second call should succeed and reach messages.create
+    stubResponse('{"attributes":[],"warnings":[]}');
+    mockState.lastCall = "sentinel";
+    const res2 = await extractDatasheetViaVision(BUF);
+    expect(mockState.lastCall).not.toBe("sentinel");
+    expect(res2.ok).toBe(true);
   });
 });
 
