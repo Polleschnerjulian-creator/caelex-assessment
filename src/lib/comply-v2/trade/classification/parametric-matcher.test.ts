@@ -377,6 +377,100 @@ describe("Empty / no-attributes bag", () => {
   });
 });
 
+// ─── T-M16: USML XV(e)(11)(iv) electric-propulsion predicate fix ─────
+//
+// Bug: the old entry used `transmitPowerW gte 0.3` (a comms transmit-
+// power threshold) as a nonsense stand-in for the real USML rule.
+// Any EP item with a comms transmit power ≥ 0.3 W (which is virtually
+// every EP thruster with accompanying RF hardware) would be flagged
+// ITAR XV(e)(11)(iv) — a false positive.
+//
+// Real rule: thrust > 300 mN AND Isp > 1500 s  (thrustNewtons ≥ 0.3
+// AND specificImpulseSecondsVacuum ≥ 1500), OR input power > 15 kW
+// (peakPowerWatts > 15000). The disjunction is expressed as two
+// entries; the matcher ORs across entries.
+// ─────────────────────────────────────────────────────────────────────
+describe("T-M16 — USML XV(e)(11)(iv) electric-propulsion predicate", () => {
+  it(
+    "FALSE-POSITIVE fix: EP item with only transmitPowerW=5 (comms power, NO thrust/Isp/EP-power)" +
+      " must NOT match XV(e)(11)(iv) nor the power-path entry",
+    () => {
+      // This is the archetypal false-positive scenario the old bogus
+      // `transmitPowerW gte 0.3` predicate would trigger on.
+      // A Hall-thruster assembly that happens to have an RF transceiver
+      // for telemetry (5 W comms power) must NOT be flagged ITAR
+      // XV(e)(11)(iv) purely because of the transceiver.
+      const result = matchAgainstCrossWalk({
+        itemClass: "propulsion.electric.hall",
+        transmitPowerW: 5, // comms transmit power — NOT EP input power
+        // No thrustNewtons, no specificImpulseSecondsVacuum, no peakPowerWatts
+      });
+      const ids = result.candidates.map((c) => c.entry.canonicalId);
+      expect(ids).not.toContain("USML:XV(e)(11)(iv)");
+      expect(ids).not.toContain("USML:XV(e)(11)(iv)-power-path");
+    },
+  );
+
+  it(
+    "high-thrust + high-Isp EP item (thrust 0.5 N AND Isp 2000 s)" +
+      " DOES match XV(e)(11)(iv) (thrust-and-Isp path)",
+    () => {
+      // thrustNewtons=0.5 (500 mN, above 300 mN threshold)
+      // specificImpulseSecondsVacuum=2000 (above 1500 s threshold)
+      // itemClass=propulsion.electric — all three predicates must match.
+      const result = matchAgainstCrossWalk({
+        itemClass: "propulsion.electric.ion",
+        parametricAttributes: {
+          thrustNewtons: 0.5,
+          specificImpulseSecondsVacuum: 2000,
+        },
+      });
+      const ids = result.candidates.map((c) => c.entry.canonicalId);
+      expect(ids).toContain("USML:XV(e)(11)(iv)");
+    },
+  );
+
+  it(
+    "low-thrust EP (thrust 0.05 N, well below 0.3 N) even with high Isp" +
+      " must NOT match XV(e)(11)(iv) thrust-and-Isp path",
+    () => {
+      const result = matchAgainstCrossWalk({
+        itemClass: "propulsion.electric.ion",
+        parametricAttributes: {
+          thrustNewtons: 0.05,
+          specificImpulseSecondsVacuum: 3000,
+        },
+      });
+      const ids = result.candidates.map((c) => c.entry.canonicalId);
+      expect(ids).not.toContain("USML:XV(e)(11)(iv)");
+    },
+  );
+
+  it("EP item with input power > 15 kW (20000 W) DOES match XV(e)(11)(iv)-power-path", () => {
+    // This exercises the second disjunct: high input power (>15 kW).
+    // The matcher OR's across entries — the power-path entry fires independently.
+    const result = matchAgainstCrossWalk({
+      itemClass: "propulsion.electric.hall",
+      parametricAttributes: {
+        peakPowerWatts: 20_000, // 20 kW, above 15 kW threshold
+      },
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("USML:XV(e)(11)(iv)-power-path");
+  });
+
+  it("EP item with input power < 15 kW (10000 W) does NOT match XV(e)(11)(iv)-power-path", () => {
+    const result = matchAgainstCrossWalk({
+      itemClass: "propulsion.electric.hall",
+      parametricAttributes: {
+        peakPowerWatts: 10_000, // 10 kW, below 15 kW threshold
+      },
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("USML:XV(e)(11)(iv)-power-path");
+  });
+});
+
 describe("Ranking order", () => {
   it("HIGH confidence appears before MEDIUM in results", () => {
     const result = matchAgainstCrossWalk({

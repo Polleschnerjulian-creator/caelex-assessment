@@ -718,6 +718,13 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
   // ═══════════════════════════════════════════════════════════════
   // USML XV(e) — high-value sub-paragraph predicates (Z3d)
   // ═══════════════════════════════════════════════════════════════
+  // T-M16 fix (2026-05-30): Replaced the bogus `transmitPowerW gte 0.3`
+  // stand-in (a comms transmit-power threshold that falsely fired on any
+  // EP item with RF hardware) with the REAL conjunctive predicates:
+  //   thrustNewtons ≥ 0.3  (= 300 mN; thrustNewtons stores thrust in N)
+  //   specificImpulseSecondsVacuum ≥ 1500
+  // The disjunctive >15 kW input-power path is a separate entry below
+  // (XV(e)(11)(iv)-power-path); the matcher ORs across entries.
   {
     canonicalId: "USML:XV(e)(11)(iv)",
     regime: "ITAR-USML",
@@ -726,14 +733,13 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     entryNumber: "11",
     subpara: "(iv)",
     title:
-      "Electric propulsion (plasma/ion) with thrust > 300 mN AND Isp > 1500 s, OR input power > 15 kW",
+      "Electric propulsion (plasma/ion) with thrust > 300 mN AND Isp > 1500 s",
     predicates: [
       { attribute: "itemClass", op: "prefix", value: "propulsion.electric" },
-      // Two-rule disjunction is hard to express in a flat AND-predicate
-      // list. The matcher applies the stricter test: BOTH thrust + Isp
-      // must be above. The 15kW power path is handled by a separate
-      // entry below (XV(e)(11)(iv)-power-path).
-      { attribute: "transmitPowerW", op: "gte", value: 0.3 }, // thrust expressed as power proxy? no — use real predicate
+      // thrustNewtons is stored in Newtons; 300 mN = 0.3 N.
+      { attribute: "thrustNewtons", op: "gte", value: 0.3 },
+      // specificImpulseSecondsVacuum is stored in seconds.
+      { attribute: "specificImpulseSecondsVacuum", op: "gte", value: 1500 },
     ],
     reasonsForControl: ["ITAR"],
     licenseExceptions: [],
@@ -750,7 +756,46 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     citation: "22 CFR §121.1 Cat XV(e)(11)(iv)",
     validFrom: "2017-01-15",
     notes:
-      "Disjunctive rule: HIGH-power (>15 kW) OR HIGH-thrust+HIGH-Isp. This entry encodes the conservative AND form; a separate entry XV(e)(11)(iv)-power-path covers the >15 kW disjunct.",
+      "Conjunctive thrust-AND-Isp path of the disjunctive USML rule. The >15 kW input-power disjunct is encoded as a separate entry XV(e)(11)(iv)-power-path (matcher ORs across entries). T-M16.",
+  },
+  // T-M16 — the XV(e)(11)(iv) >15 kW input-power disjunct.
+  // peakPowerWatts is stored in Watts; 15 kW = 15 000 W.
+  {
+    canonicalId: "USML:XV(e)(11)(iv)-power-path",
+    regime: "ITAR-USML",
+    category: "XV",
+    productGroup: "e",
+    entryNumber: "11",
+    subpara: "(iv)-power-path",
+    title:
+      "Electric propulsion (plasma/ion) with input power > 15 kW (power-path disjunct of XV(e)(11)(iv))",
+    predicates: [
+      { attribute: "itemClass", op: "prefix", value: "propulsion.electric" },
+      // peakPowerWatts stores EP input power in Watts; 15 kW = 15 000 W.
+      { attribute: "peakPowerWatts", op: "gte", value: 15_000 },
+    ],
+    reasonsForControl: ["ITAR"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "ITAR-USML",
+        id: "XV(e)(11)(iv)",
+        relationship: "analogous",
+        notes:
+          "Sibling entry encoding the thrust+Isp conjunctive path of the same XV(e)(11)(iv) disjunctive rule.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A515.x-ep",
+        relationship: "successor",
+        notes:
+          "EP below the 15 kW threshold falls to 9A515.x EP sub-paragraph.",
+      },
+    ],
+    citation: "22 CFR §121.1 Cat XV(e)(11)(iv)",
+    validFrom: "2017-01-15",
+    notes:
+      "Power-path disjunct of the XV(e)(11)(iv) rule. Captures Hall-effect, ion, or plasma thrusters whose input power exceeds 15 kW regardless of thrust/Isp. T-M16.",
   },
   {
     canonicalId: "USML:XV(e)(16)",
