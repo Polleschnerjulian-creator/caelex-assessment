@@ -78,8 +78,10 @@ async function getItemForOrg(id: string, organizationId: string) {
   });
 }
 
-/** Run all three pure engines on the item and return the classification. */
-function computeClassification(
+/** Run all three pure engines on the item and return the classification.
+ * Exported for unit testing (T-H6). Pure — no IO.
+ */
+export function computeClassification(
   item: Awaited<ReturnType<typeof getItemForOrg>>,
 ) {
   if (!item) return null;
@@ -118,6 +120,9 @@ function computeClassification(
     triggerEval,
     deMinimis,
     item.countryOfOrigin ?? undefined,
+    undefined,
+    undefined,
+    { eccnEU: item.eccnEU, eccnUS: item.eccnUS },
   );
 
   return { triggerEval, deMinimis, licenseDetermination };

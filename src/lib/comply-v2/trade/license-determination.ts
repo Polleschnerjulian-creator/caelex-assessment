@@ -179,6 +179,21 @@ export function determineLicenseRequirements(
   screeningContext?: {
     sanctionsLists: string[];
   },
+  /**
+   * T-M5 — actual classified ECCN codes for the item, as stored on the
+   * trade item record (set by operator manual classification or Astra
+   * suggestion). These are DISTINCT from the heuristic trigger engine's
+   * *suggested* codes: the trigger engine may fire no rules for an item
+   * that has been directly classified (e.g. no aperture/keyword signal),
+   * yet the item is unambiguously dual-use because eccnEU / eccnUS is set.
+   *
+   * Gate 0 (Art. 2b Annex IV prohibition) must fire whenever the item
+   * carries a real dual-use ECCN, regardless of whether the heuristic
+   * engine also flagged it. USML/ITAR codes live in `usmlCategory`, not
+   * here, so a non-empty eccnEU / eccnUS always denotes dual-use (Annex I
+   * or CCL).  Omit or pass null values to preserve pre-T-M5 behaviour.
+   */
+  actualCodes?: { eccnEU?: string | null; eccnUS?: string | null },
 ): LicenseDetermination {
   const requirements: LicenseRequirement[] = [];
   const nextSteps: string[] = [];
@@ -195,11 +210,19 @@ export function determineLicenseRequirements(
   // suggested code targets EU_ANNEX_I or US_CCL. Items with only
   // ITAR (USML) classification fall through to Gate 2.
   if (screeningContext?.sanctionsLists.includes("EU_ANNEX_IV")) {
-    const hasDualUseCode = triggerEval.results.some((r) =>
-      r.suggestedCodes.some(
-        (c) => c.jurisdiction === "EU_ANNEX_I" || c.jurisdiction === "US_CCL",
-      ),
-    );
+    // T-M5: "dual-use enough" = heuristic engine suggested an Annex-I/CCL code
+    // OR the item already carries a real dual-use ECCN (operator manual
+    // classification). The two paths are independent — either one suffices.
+    // USML-only items (eccnEU/eccnUS both absent/null) do NOT trigger this
+    // gate; they fall through to Gate 2 (DDTC).
+    const hasDualUseCode =
+      triggerEval.results.some((r) =>
+        r.suggestedCodes.some(
+          (c) => c.jurisdiction === "EU_ANNEX_I" || c.jurisdiction === "US_CCL",
+        ),
+      ) ||
+      !!actualCodes?.eccnEU?.trim() ||
+      !!actualCodes?.eccnUS?.trim();
 
     if (hasDualUseCode) {
       annexIVBlock = true;

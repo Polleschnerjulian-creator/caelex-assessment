@@ -749,4 +749,88 @@ describe("Gate 0 — EU Reg. 833/2014 Annex IV Art. 2b", () => {
     );
     expect(det.annexIVBlock).toBe(false);
   });
+
+  // ── T-M5: actual ECCN codes must fire Gate 0 even when trigger engine found nothing ──
+
+  it("T-M5 positive: empty trigger results + actual eccnEU set + Annex IV → Art.2b PROHIBITED fires", () => {
+    // Simulates a manually-classified dual-use item (eccnEU set by operator) with
+    // ZERO heuristic trigger results (no aperture/keyword signal fired the engine).
+    // Under EU Reg. 833/2014 Art. 2b the item IS dual-use (it has a real Annex-I ECCN)
+    // and the counterparty IS on Annex IV, so the hard prohibition MUST fire.
+    const det = determineLicenseRequirements(
+      CLEAN_EVAL, // empty triggerEval.results — heuristic found nothing
+      null,
+      "RU",
+      undefined,
+      ANNEX_IV_HIT,
+      { eccnEU: "5A002", eccnUS: null },
+    );
+    expect(det.annexIVBlock).toBe(true);
+    expect(det.gate).toBe("BLOCKED");
+    const prohibited = det.requirements.find((r) => r.status === "PROHIBITED");
+    expect(prohibited).toBeDefined();
+    expect(prohibited?.jurisdiction).toContain("Annex IV");
+    expect(prohibited?.reason).toMatch(/Art(\.|icle) ?2b/);
+  });
+
+  it("T-M5 positive: empty trigger results + actual eccnUS set + Annex IV → Art.2b PROHIBITED fires", () => {
+    const det = determineLicenseRequirements(
+      CLEAN_EVAL,
+      null,
+      "RU",
+      undefined,
+      ANNEX_IV_HIT,
+      { eccnEU: null, eccnUS: "3A001" },
+    );
+    expect(det.annexIVBlock).toBe(true);
+    expect(det.gate).toBe("BLOCKED");
+    const prohibited = det.requirements.find((r) => r.status === "PROHIBITED");
+    expect(prohibited).toBeDefined();
+  });
+
+  it("T-M5 negative: empty trigger results + NO actual codes + Annex IV → Art.2b does NOT fire (unclassified item)", () => {
+    // An item with no dual-use classification at all (no trigger suggestion, no actual ECCN)
+    // must NOT trigger the Art. 2b hard prohibition — we cannot presume dual-use status.
+    const det = determineLicenseRequirements(
+      CLEAN_EVAL, // empty results, no flags
+      null,
+      "RU",
+      undefined,
+      ANNEX_IV_HIT,
+      { eccnEU: null, eccnUS: null }, // no actual dual-use codes
+    );
+    expect(det.annexIVBlock).toBe(false);
+    const prohibited = det.requirements.find((r) => r.status === "PROHIBITED");
+    expect(prohibited).toBeUndefined();
+  });
+
+  it("T-M5 negative: empty trigger + no actualCodes arg + Annex IV → backward-compat, no false-fire", () => {
+    // Omitting actualCodes entirely (old callers) must not break existing behaviour.
+    const det = determineLicenseRequirements(
+      CLEAN_EVAL,
+      null,
+      "RU",
+      undefined,
+      ANNEX_IV_HIT,
+      // actualCodes omitted
+    );
+    expect(det.annexIVBlock).toBe(false);
+  });
+
+  it("T-M5 USML-only: ITAR-flagged item with no eccnEU/eccnUS + Annex IV → Art.2b still does NOT fire", () => {
+    // USML/ITAR (munitions) items are not dual-use. Gate 0 keys on eccnEU/eccnUS
+    // (dual-use lists). A purely ITAR item has no eccnEU or eccnUS; the DDTC
+    // gate (Gate 2) handles it. Art. 2b must not be triggered by ITAR codes.
+    const det = determineLicenseRequirements(
+      ITAR_EVAL, // hasItarFlag=true, USML codes in results but no EU_ANNEX_I/US_CCL
+      null,
+      "RU",
+      undefined,
+      ANNEX_IV_HIT,
+      { eccnEU: null, eccnUS: null }, // no actual dual-use ECCN
+    );
+    expect(det.annexIVBlock).toBe(false);
+    const prohibited = det.requirements.find((r) => r.status === "PROHIBITED");
+    expect(prohibited).toBeUndefined();
+  });
 });
