@@ -299,7 +299,13 @@ export async function extractDatasheetViaVision(
     const response = await setup.client.messages.create({
       model: setup.model,
       max_tokens: MAX_OUTPUT_TOKENS,
-      system: SYSTEM_PROMPT,
+      system: [
+        {
+          type: "text" as const,
+          text: SYSTEM_PROMPT,
+          cache_control: { type: "ephemeral" as const },
+        },
+      ],
       messages: [
         {
           role: "user",

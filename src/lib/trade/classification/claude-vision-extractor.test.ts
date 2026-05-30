@@ -564,6 +564,34 @@ describe("extractDatasheetViaVision — request shape", () => {
       FAKE_PDF.length,
     );
   });
+
+  it("sends the system prompt as a cached array block (G1 — prompt caching)", async () => {
+    stubResponse('{"attributes":[],"warnings":[]}');
+    await extractDatasheetViaVision(FAKE_PDF);
+    const args = mockState.lastCall as {
+      system: unknown;
+    };
+    // system must be an array (not a plain string)
+    expect(Array.isArray(args.system)).toBe(true);
+    const systemBlocks = args.system as Array<{
+      type: string;
+      text: string;
+      cache_control?: { type: string };
+    }>;
+    // exactly one block
+    expect(systemBlocks).toHaveLength(1);
+    const block = systemBlocks[0];
+    // type must be "text"
+    expect(block.type).toBe("text");
+    // cache_control must signal ephemeral caching
+    expect(block.cache_control).toEqual({ type: "ephemeral" });
+    // system text must be non-empty (same content as SYSTEM_PROMPT)
+    expect(typeof block.text).toBe("string");
+    expect(block.text.length).toBeGreaterThan(0);
+    // verify it still contains the vocabulary (spot-check)
+    expect(block.text).toContain("apertureMeters");
+    expect(block.text).toContain("frequencyGhz");
+  });
 });
 
 // ─── Content-hash cache integration ──────────────────────────────────
