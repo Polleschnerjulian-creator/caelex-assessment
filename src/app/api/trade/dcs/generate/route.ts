@@ -37,14 +37,13 @@
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import {
   checkRateLimit,
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 import {
   generateDestinationControlStatement,
   DCSGeneratorError,
@@ -70,26 +69,16 @@ const requestSchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
 
-    const rl = await checkRateLimit("api", getIdentifier(req, userId));
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(req, tradeAuth.userId),
+    );
     if (!rl.success) return createRateLimitResponse(rl);
-
-    // Org-scoping: DCS is shipment-related and follows the same
-    // org-membership requirement as the rest of /api/trade. We do not
-    // currently persist generated DCS rows; the org check exists so
-    // that suspended / off-boarded users cannot use the endpoint.
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const body = await req.json().catch(() => null);
     if (!body || typeof body !== "object") {

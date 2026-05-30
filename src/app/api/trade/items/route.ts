@@ -7,7 +7,6 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import {
@@ -15,7 +14,7 @@ import {
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { z } from "zod";
 
 // ─── Validation ───────────────────────────────────────────────────────
@@ -47,22 +46,16 @@ const CreateTradeItemSchema = z.object({
 
 export async function GET(req: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
 
-    const rl = await checkRateLimit("api", getIdentifier(req, userId));
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(req, tradeAuth.userId),
+    );
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
@@ -71,7 +64,7 @@ export async function GET(req: Request) {
     const limit = Math.min(50, parseInt(searchParams.get("limit") ?? "20", 10));
 
     const where = {
-      organizationId: org.organizationId,
+      organizationId: tradeAuth.organizationId,
       ...(status
         ? {
             status: status as
@@ -146,22 +139,16 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
 
-    const rl = await checkRateLimit("api", getIdentifier(req, userId));
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(req, tradeAuth.userId),
+    );
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const body = await req.json();
     const parsed = CreateTradeItemSchema.safeParse(body);
@@ -175,8 +162,8 @@ export async function POST(req: Request) {
     const data = parsed.data;
     const item = await prisma.tradeItem.create({
       data: {
-        organizationId: org.organizationId,
-        createdById: userId,
+        organizationId: tradeAuth.organizationId,
+        createdById: tradeAuth.userId,
         name: data.name,
         internalSku: data.internalSku,
         manufacturerName: data.manufacturerName,

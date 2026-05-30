@@ -31,14 +31,13 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import {
   checkRateLimit,
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { extractDatasheet } from "@/lib/trade/datasheet-extractor";
 import { extractDatasheetViaVision } from "@/lib/trade/classification/claude-vision-extractor.server";
 import { mergeExtractions } from "@/lib/trade/classification/extraction-merger";
@@ -48,27 +47,18 @@ const ALLOWED_ROLES = new Set(["OWNER", "ADMIN", "MANAGER"]);
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
 
     const rl = await checkRateLimit(
       "document_generation",
-      getIdentifier(req, userId),
+      getIdentifier(req, tradeAuth.userId),
     );
     if (!rl.success) return createRateLimitResponse(rl);
 
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
-
-    if (!ALLOWED_ROLES.has(org.role)) {
+    if (!ALLOWED_ROLES.has(tradeAuth.role)) {
       return NextResponse.json(
         {
           error:
@@ -146,7 +136,7 @@ export async function POST(req: Request) {
       regexSettled.status === "fulfilled" ? regexSettled.value : null;
     if (regexSettled.status === "rejected") {
       logger.warn("regex extractor crashed", {
-        userId,
+        userId: tradeAuth.userId,
         err: String(regexSettled.reason),
       });
     }
@@ -155,7 +145,7 @@ export async function POST(req: Request) {
       visionSettled.status === "fulfilled" ? visionSettled.value : null;
     if (visionSettled.status === "rejected") {
       logger.warn("vision extractor crashed", {
-        userId,
+        userId: tradeAuth.userId,
         err: String(visionSettled.reason),
       });
     }
@@ -169,8 +159,8 @@ export async function POST(req: Request) {
     });
 
     logger.info("trade classify vision extraction completed", {
-      userId,
-      orgId: org.organizationId,
+      userId: tradeAuth.userId,
+      orgId: tradeAuth.organizationId,
       fileName: fileEntry.name,
       fileSize: fileEntry.size,
       attributeCount: merged.attributes.length,

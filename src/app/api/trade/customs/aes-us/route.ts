@@ -25,7 +25,6 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import {
@@ -33,27 +32,21 @@ import {
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { buildAesXml } from "@/lib/trade/customs-filing/aes-us";
 
 export async function GET(req: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
 
-    const rl = await checkRateLimit("export", getIdentifier(req, userId));
+    const rl = await checkRateLimit(
+      "export",
+      getIdentifier(req, tradeAuth.userId),
+    );
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const url = new URL(req.url);
     const operationId = url.searchParams.get("operationId");
@@ -66,7 +59,7 @@ export async function GET(req: Request) {
 
     // Pull the operation with the full graph the builder needs.
     const operation = await prisma.tradeOperation.findFirst({
-      where: { id: operationId, organizationId: org.organizationId },
+      where: { id: operationId, organizationId: tradeAuth.organizationId },
       include: {
         organization: {
           select: { id: true, name: true },
