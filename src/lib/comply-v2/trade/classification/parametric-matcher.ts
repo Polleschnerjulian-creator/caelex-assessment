@@ -182,10 +182,129 @@ export interface MatcherResult {
   noAttributesPopulated: boolean;
   /** Always present — every classification surface attaches a disclaimer. */
   disclaimer: string;
+  /**
+   * T-M19 — Sanity warnings for attribute values that fall outside the
+   * physical plausibility range defined in ATTRIBUTE_SANITY_RANGES.
+   *
+   * A mis-normalised value (e.g. frequencyGhz=1200 meaning 1200 MHz
+   * entered as GHz, a 1000× unit error) cannot drive a confident
+   * classification. Each warning names the attribute, the actual value,
+   * and the plausible range so the operator can verify the unit.
+   *
+   * Empty array when all supplied attributes are in-range.
+   */
+  sanityWarnings: string[];
 }
 
 const MATCHER_DISCLAIMER =
   "Parametric matcher output is SCREENING-LEVEL GUIDANCE only. Final classification must be reviewed by a qualified compliance officer and, for high-value or borderline items, confirmed via a binding ruling (BAFA AzG / DDTC CJ / BIS CCATS).";
+
+// ─── T-M19: Attribute sanity ranges ─────────────────────────────────
+//
+// Each entry defines the PHYSICAL PLAUSIBLE RANGE for a numeric attribute
+// in its canonical unit (the unit the matcher expects). Ranges are
+// deliberately generous — only gross order-of-magnitude errors (e.g.
+// MHz entered as GHz, a 1000× off) should be flagged. No real datasheet
+// value should ever be rejected.
+//
+// When an attribute value falls OUTSIDE its range the matcher treats it
+// as UNKNOWN (same as a NULL attribute) and surfaces a sanity warning.
+// This prevents a mis-normalised value from silently driving a confident
+// match or refute — worst case is "needs human verification" instead of
+// a wrong-ECCN.
+//
+// Only numeric attributes with a meaningful physical range are included.
+// Boolean, string, and itemClass attributes are deliberately excluded.
+//
+// CALIBRATION NOTES (do not tighten these without checking existing tests):
+//   apertureMeters:            test values 0.4–0.51; cross-walk 0.35–0.5
+//   radarCenterFreqGhz:        test values 5; W-band 95 GHz also real
+//   radarBandwidthMhz:         test values 200, 400; cross-walk up to 300+
+//   IspSeconds:                test values 800, 1500; ion thrusters ~9000
+//   specificImpulseSecondsVacuum: test values 2000, 3000; arcjet ~1000
+//   thrustNewtons:             test values 0.05, 0.3, 0.5; large EP up to 1 N+
+//   peakPowerWatts:            test values 10 000, 20 000; cross-walk 15 000
+//   seuRateErrorsPerBitDay:    test values 1e-11, 1e-10, 2e-10
+//   radHardTidKrad:            test values 100, 600; cross-walk 500
+//   doseRateUpsetRadSiPerS:    test values 6e8; cross-walk 5e8
+//   neutronFluenceNPerCm2:     test values 5e13, 1.5e14; cross-walk 1e14
+//   selLetThresholdMevCm2Mg:   test values 60, 100; cross-walk 80
+//   rangeKm:                   test values 299–5000
+//   payloadKg:                 test values 499–2000
+//   totalImpulseNs:            test values 400 (cross-walk), 5e5, 1.2e6
+//   gnssMaxVelocityMPerS:      test values 500, 600, 700
+//   antennaDiameterM:          test values 30; cross-walk >25
+//   starTrackerAccuracyArcsec: test values 0.5
+//   starTrackerSlewRateDegPerS: test values 1.5, 5
+//   peakWavelengthNm:          test values 1500; cross-walk 900
+//   transmitPowerW:             test values 5
+//   apertureMM:                cross-walk 350
+//   peakPowerWatts: also used for EP power, test up to 20 000
+/**
+ * Physical plausibility ranges per numeric attribute (T-M19).
+ *
+ * An attribute value outside [min, max] is treated as UNKNOWN by the
+ * matcher — it cannot drive a confident match or refute. A sanity
+ * warning is added to `MatcherResult.sanityWarnings`.
+ *
+ * Only numeric attributes are present; booleans/strings/itemClass are
+ * deliberately excluded.
+ */
+export const ATTRIBUTE_SANITY_RANGES: Record<
+  string,
+  { min: number; max: number }
+> = {
+  // Aperture in metres: from 1 mm mirrors to 100 m radio dishes.
+  apertureMeters: { min: 0.001, max: 100 },
+  // Aperture in millimetres (tier-3 attribute, 6A002 etc.).
+  apertureMM: { min: 1, max: 100_000 },
+  // Payload mass in kg: cubesat (0.1 kg) to heavy lift (1 000 000 kg).
+  payloadKg: { min: 0.001, max: 1_000_000 },
+  // Range in km: short-range missiles to ICBM+ (20 000 km).
+  rangeKm: { min: 1, max: 100_000 },
+  // Specific impulse (Isp) in seconds: cold-gas ~50 s to ion ~20 000 s.
+  IspSeconds: { min: 10, max: 20_000 },
+  // GSD (ground sampling distance) in metres: sub-10 cm to 10 km.
+  gsdMeters: { min: 0.01, max: 10_000 },
+  // RF transmit power in Watts: milliwatt to megawatt.
+  transmitPowerW: { min: 0.001, max: 10_000_000 },
+  // Carrier frequency in GHz: UHF 0.3 GHz to THz-regime 300 GHz.
+  frequencyGhz: { min: 0.01, max: 300 },
+  // TID hardness in krad(Si): 1 krad to 10 000 krad.
+  radHardTidKrad: { min: 1, max: 10_000 },
+  // SEU rate in errors/bit/day: extremely hardened (1e-15) to typical (1e-5).
+  seuRateErrorsPerBitDay: { min: 1e-15, max: 1e-5 },
+  // Delta-V in m/s: station-keeping (1) to escape-velocity class (50 000).
+  deltaVMetersPerSecond: { min: 0.001, max: 50_000 },
+  // Radar center frequency in GHz: P-band (0.3) to W-band (110) + margin.
+  radarCenterFreqGhz: { min: 0.1, max: 300 },
+  // Radar bandwidth in MHz: 1 MHz to 10 000 MHz (10 GHz UWB).
+  radarBandwidthMhz: { min: 0.1, max: 10_000 },
+  // Antenna diameter in metres: small patch to 500 m radio telescope.
+  antennaDiameterM: { min: 0.001, max: 500 },
+  // Star tracker accuracy in arcsec: sub-arcsec (0.001) to coarse (3600).
+  starTrackerAccuracyArcsec: { min: 0.001, max: 3_600 },
+  // Star tracker slew rate in deg/s: very slow (0.001) to agile (1000).
+  starTrackerSlewRateDegPerS: { min: 0.001, max: 1_000 },
+  // Total impulse in N·s: small thruster (1 N·s) to heavy SLV (1e12 N·s).
+  totalImpulseNs: { min: 1, max: 1e12 },
+  // Neutron fluence in N/cm²: 1e10 to 1e16 N/cm².
+  neutronFluenceNPerCm2: { min: 1e8, max: 1e16 },
+  // SEL LET threshold in MeV·cm²/mg: 1 to 1000.
+  selLetThresholdMevCm2Mg: { min: 1, max: 1_000 },
+  // Dose-rate upset threshold in Rad(Si)/s: 1e4 to 1e12.
+  doseRateUpsetRadSiPerS: { min: 1e4, max: 1e12 },
+  // GNSS max velocity in m/s: pedestrian (1) to escape velocity (50 000).
+  gnssMaxVelocityMPerS: { min: 1, max: 50_000 },
+  // Spectral peak wavelength in nm: deep UV (100) to far IR (100 000).
+  peakWavelengthNm: { min: 100, max: 100_000 },
+  // Thrust in Newtons: nanosat cold-gas (0.0001 N) to large rocket engine.
+  thrustNewtons: { min: 0.0001, max: 100_000 },
+  // Specific impulse in vacuum seconds: cold-gas (50) to ion (20 000).
+  specificImpulseSecondsVacuum: { min: 10, max: 20_000 },
+  // Peak power in Watts: milliwatt to gigawatt (nuclear / MEO EP).
+  peakPowerWatts: { min: 0.001, max: 1_000_000_000 },
+};
 
 // ─── Core matcher ───────────────────────────────────────────────────
 
@@ -199,12 +318,15 @@ export function matchAgainstCrossWalk(
 ): MatcherResult {
   const noAttributesPopulated = isBagEmpty(item);
 
+  // T-M19: collect out-of-range attribute names + build warnings.
+  const { outOfRangeAttributes, sanityWarnings } = checkSanityRanges(item);
+
   const candidates: CandidateMatch[] = [];
   const possibleMatches: PossibleMatch[] = [];
   const nearMisses: NearMissMatch[] = [];
 
   for (const entry of crossWalk) {
-    const result = evaluateEntry(item, entry);
+    const result = evaluateEntry(item, entry, outOfRangeAttributes);
     if (result.kind === "match") {
       candidates.push(result.match);
     } else if (result.kind === "possible") {
@@ -257,7 +379,80 @@ export function matchAgainstCrossWalk(
     nearMisses: surfacedNearMisses,
     noAttributesPopulated,
     disclaimer: MATCHER_DISCLAIMER,
+    sanityWarnings,
   };
+}
+
+// ─── T-M19: Sanity-range checker ───────────────────────────────────
+
+/**
+ * Walk the item attribute bag and collect:
+ *   1. `outOfRangeAttributes` — a Set of attribute names whose values
+ *      fall outside ATTRIBUTE_SANITY_RANGES. The matcher routes these
+ *      to the UNKNOWN branch (same as a NULL attribute) so they cannot
+ *      drive a confident match or refute.
+ *   2. `sanityWarnings` — operator-facing strings describing each
+ *      implausible value with the actual value and the expected range.
+ *
+ * Only numeric attributes present in ATTRIBUTE_SANITY_RANGES are
+ * checked. Boolean, string, and itemClass attributes are untouched.
+ */
+function checkSanityRanges(item: ItemAttributeBag): {
+  outOfRangeAttributes: ReadonlySet<string>;
+  sanityWarnings: string[];
+} {
+  const outOfRange = new Set<string>();
+  const warnings: string[] = [];
+
+  // Check typed columns first, then parametricAttributes.
+  const bagRecord = item as Record<string, unknown>;
+  const paramBag =
+    item.parametricAttributes && typeof item.parametricAttributes === "object"
+      ? (item.parametricAttributes as Record<string, unknown>)
+      : null;
+
+  const allSources: Array<[string, Record<string, unknown>]> = [
+    ["typed", bagRecord],
+  ];
+  if (paramBag) {
+    allSources.push(["param", paramBag]);
+  }
+
+  // Track which attributes we've already checked to avoid double-warnings
+  // when both typed column and parametricAttributes have a value.
+  const checked = new Set<string>();
+
+  for (const [, source] of allSources) {
+    for (const attrName of Object.keys(source)) {
+      if (checked.has(attrName)) continue;
+      const range = ATTRIBUTE_SANITY_RANGES[attrName];
+      if (!range) continue; // no range defined → skip
+
+      // Prefer typed column value over parametric bag (same as readAttribute).
+      const val =
+        bagRecord[attrName] !== undefined && bagRecord[attrName] !== null
+          ? bagRecord[attrName]
+          : (paramBag?.[attrName] ?? undefined);
+
+      if (typeof val !== "number") continue; // not numeric → skip
+      if (val === null) continue;
+
+      checked.add(attrName);
+
+      if (val < range.min || val > range.max) {
+        outOfRange.add(attrName);
+        warnings.push(
+          `Sanity check (T-M19): attribute "${attrName}" value ${val} is outside the ` +
+            `plausible range [${range.min}, ${range.max}] for its canonical unit. ` +
+            `Possible unit-normalisation error (e.g. MHz entered as GHz). ` +
+            `The attribute is treated as UNKNOWN for this classification run — ` +
+            `verify the value before accepting any classification result.`,
+        );
+      }
+    }
+  }
+
+  return { outOfRangeAttributes: outOfRange, sanityWarnings: warnings };
 }
 
 // ─── Per-entry evaluation (Sprint Z3f three-valued logic) ───────────
@@ -271,6 +466,7 @@ type EntryEvalResult =
 function evaluateEntry(
   item: ItemAttributeBag,
   entry: ControlListEntry,
+  outOfRangeAttributes: ReadonlySet<string>,
 ): EntryEvalResult {
   // An entry with NO predicates can never match parametrically.
   if (entry.predicates.length === 0) return { kind: "refute" };
@@ -290,6 +486,23 @@ function evaluateEntry(
     // evaluating the rest of the entry. The final decision depends
     // on whether ANY predicate refuted.
     if (actual === null || actual === undefined) {
+      unknownPredicates.push({
+        attribute: pred.attribute,
+        op: pred.op,
+        expectedValue: pred.value,
+        missingAttribute: pred.attribute,
+      });
+      continue;
+    }
+
+    // T-M19: SANITY-RANGE check. If the attribute value is outside its
+    // physical plausibility range, treat it as UNKNOWN — exactly the same
+    // branch as a NULL attribute. This prevents a mis-normalised value
+    // (e.g. frequencyGhz=1200 meaning 1200 MHz entered as GHz) from
+    // silently driving a confident match or refute. The warning was
+    // already collected by checkSanityRanges(); here we just route to
+    // the UNKNOWN path so the three-valued safety invariant holds.
+    if (outOfRangeAttributes.has(pred.attribute)) {
       unknownPredicates.push({
         attribute: pred.attribute,
         op: pred.op,

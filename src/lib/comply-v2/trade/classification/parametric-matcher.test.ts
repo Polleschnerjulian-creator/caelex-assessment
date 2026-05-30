@@ -29,6 +29,7 @@
 import { describe, it, expect } from "vitest";
 import {
   matchAgainstCrossWalk,
+  ATTRIBUTE_SANITY_RANGES,
   type ItemAttributeBag,
 } from "./parametric-matcher";
 
@@ -1412,5 +1413,189 @@ describe("ECCN 7A005 GNSS receivers (Z3v)", () => {
     expect(entry).toBeDefined();
     const mtcrLink = entry!.entry.seeAlso.find((l) => l.id === "Item 11");
     expect(mtcrLink?.relationship).toBe("derived_from");
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// T-M19 — Sanity-range guard for mis-normalised attribute values.
+//
+// Risk: `evaluatePredicate` compares raw numbers with no unit awareness.
+// If an extractor emits a mis-normalised value (e.g. frequencyGhz=1200
+// meaning 1200 MHz instead of 1.2 GHz, a classic 1000x unit error),
+// the matcher would silently compare against the wrong scale and FLIP
+// the jurisdiction — an invisible wrong-ECCN.
+//
+// Fix: ATTRIBUTE_SANITY_RANGES defines generous physical plausible ranges
+// per numeric attribute. An out-of-range value is treated as UNKNOWN
+// (routes to the existing possibleMatch/needs-verification path) with a
+// warning, instead of driving a confident match or refute.
+//
+// The ranges are deliberately generous — they must never reject a real
+// datasheet value. Only gross order-of-magnitude errors (1000x off) are
+// caught.
+// ─────────────────────────────────────────────────────────────────────
+
+describe("T-M19 — Sanity-range guard for mis-normalised attributes", () => {
+  it("REGRESSION: in-range frequencyGhz still matches normally (no regression)", () => {
+    // A SAR satellite with center freq 5 GHz (well within [0.01, 300])
+    // must match exactly as before. The sanity guard must not break anything.
+    // radarCenterFreqGhz is passed via parametricAttributes (not a typed
+    // column on ItemAttributeBag) — same pattern as the existing Z3d tests.
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.remote_sensing.sar",
+      parametricAttributes: {
+        radarCenterFreqGhz: 5,
+        radarBandwidthMhz: 200,
+      },
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("ECCN:9A515.a.3");
+  });
+
+  it("REGRESSION: in-range apertureMeters 0.4 m still produces HIGH confidence match", () => {
+    // This mirrors the existing test for 0.40 m — the sanity guard must
+    // not interfere with solidly in-range values.
+    const result = matchAgainstCrossWalk({
+      apertureMeters: 0.4,
+      itemClass: "spacecraft.remote_sensing.eo",
+    });
+    const ccl = result.candidates.find(
+      (c) => c.entry.canonicalId === "ECCN:9A515.a.1",
+    );
+    expect(ccl).toBeDefined();
+    expect(ccl!.confidence).toBe("HIGH");
+  });
+
+  it("OUT-OF-RANGE frequencyGhz=1200 (classic MHz-as-GHz error, 1000x off) does NOT produce a confident match", () => {
+    // 1200 GHz is not physically plausible for a spacecraft SAR radar
+    // (W-band tops out at ~110 GHz). A value of 1200 almost certainly
+    // means 1200 MHz entered as GHz. The matcher must NOT confidently
+    // classify this — it should route to the unknown/possible/needs-
+    // verification path, not emit a confident ECCN:9A515.a.3 match.
+    //
+    // radarCenterFreqGhz passes through parametricAttributes (not a typed
+    // column on ItemAttributeBag) — same pattern as the existing Z3d tests.
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.remote_sensing.sar",
+      parametricAttributes: {
+        radarCenterFreqGhz: 1200, // 1000x too big — a classic unit error
+        radarBandwidthMhz: 200,
+      },
+    });
+    // Must NOT appear as a confident candidate.
+    const candidateIds = result.candidates.map((c) => c.entry.canonicalId);
+    expect(candidateIds).not.toContain("ECCN:9A515.a.3");
+
+    // The out-of-range attribute should route to the unknown path.
+    // Additionally, a warning must be present.
+    const outOfRangeWarnings = result.sanityWarnings;
+    expect(outOfRangeWarnings.length).toBeGreaterThan(0);
+    expect(
+      outOfRangeWarnings.some((w: string) => w.includes("radarCenterFreqGhz")),
+    ).toBe(true);
+  });
+
+  it("OUT-OF-RANGE value treated as UNKNOWN — routes to possibleMatch not confident match", () => {
+    // When radarCenterFreqGhz is implausibly large, the entry cannot be
+    // confidently classified. It should appear as a possibleMatch
+    // (because radarCenterFreqGhz is treated as if unknown), so the
+    // operator knows to verify the value — not silently classified.
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.remote_sensing.sar",
+      parametricAttributes: {
+        radarCenterFreqGhz: 1200, // out of range → treated as unknown
+        radarBandwidthMhz: 200,
+      },
+    });
+    const candidateIds = result.candidates.map((c) => c.entry.canonicalId);
+    const possibleIds = result.possibleMatches.map((p) => p.entry.canonicalId);
+
+    // Must not be in candidates.
+    expect(candidateIds).not.toContain("ECCN:9A515.a.3");
+    // Should surface in possibles (itemClass matches; radarCenterFreqGhz unknown).
+    expect(possibleIds).toContain("ECCN:9A515.a.3");
+  });
+
+  it("OUT-OF-RANGE value does NOT produce a confident refute either (unknown, not false)", () => {
+    // The safety invariant: an out-of-range value must not confidently
+    // REFUTE an entry either. It should be treated as UNKNOWN so the
+    // entry remains a possible match, not silently dropped.
+    // This mirrors the existing Z3f safety property:
+    //   "an unknown SEU rate must NOT silently classify below-threshold."
+    // Same principle: an out-of-range value must not silently DROP an entry.
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.remote_sensing.sar",
+      parametricAttributes: {
+        radarCenterFreqGhz: 1200, // out-of-range → unknown
+        radarBandwidthMhz: 200,
+      },
+    });
+    // The entry must NOT be silently dropped from the result set —
+    // it must appear somewhere (possible or candidate), never just gone.
+    const allIds = [
+      ...result.candidates.map((c) => c.entry.canonicalId),
+      ...result.possibleMatches.map((p) => p.entry.canonicalId),
+    ];
+    expect(allIds).toContain("ECCN:9A515.a.3");
+  });
+
+  it("GENEROUS range: radarCenterFreqGhz=95 (real W-band) is IN the sanity range — no false rejection", () => {
+    // W-band SAR (95 GHz) is a real technology. The sanity range [0.1, 300]
+    // must admit 95 GHz without flagging it as out-of-range.
+    // Note: 95 GHz does NOT match 9A515.a.3 (which requires center freq
+    // between 1-10 GHz) — that is correct predicate logic, not a sanity
+    // rejection. The test verifies only that no sanity warning is emitted.
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.remote_sensing.sar",
+      parametricAttributes: {
+        radarCenterFreqGhz: 95, // real W-band value — must be in sanity range
+        radarBandwidthMhz: 200,
+      },
+    });
+    // No sanity warning for radarCenterFreqGhz — 95 is physically plausible.
+    expect(result.sanityWarnings).toHaveLength(0);
+    // Confirm the value is not being treated as out-of-range by the guard.
+    expect(
+      result.sanityWarnings.some((w: string) =>
+        w.includes("radarCenterFreqGhz"),
+      ),
+    ).toBe(false);
+  });
+
+  it("SANITY_RANGES exported and contains the expected attributes", () => {
+    // Smoke-test that the export exists and covers the key numeric attributes.
+    // If this fails, the implementation is missing the export.
+    expect(ATTRIBUTE_SANITY_RANGES).toBeDefined();
+    expect(typeof ATTRIBUTE_SANITY_RANGES).toBe("object");
+    // Key attributes that must have ranges:
+    const expected = [
+      "apertureMeters",
+      "radarCenterFreqGhz",
+      "radarBandwidthMhz",
+      "IspSeconds",
+      "specificImpulseSecondsVacuum",
+      "thrustNewtons",
+      "peakPowerWatts",
+      "seuRateErrorsPerBitDay",
+      "radHardTidKrad",
+    ];
+    for (const attr of expected) {
+      expect(ATTRIBUTE_SANITY_RANGES).toHaveProperty(attr);
+      const r = ATTRIBUTE_SANITY_RANGES[attr];
+      expect(typeof r.min).toBe("number");
+      expect(typeof r.max).toBe("number");
+      expect(r.min).toBeLessThan(r.max);
+    }
+  });
+
+  it("sanityWarnings array present in MatcherResult even when no warnings triggered", () => {
+    // The MatcherResult must always carry a sanityWarnings array (empty
+    // when all values are in range) so callers can rely on the field.
+    const result = matchAgainstCrossWalk({
+      apertureMeters: 0.4,
+      itemClass: "spacecraft.remote_sensing.eo",
+    });
+    expect(Array.isArray(result.sanityWarnings)).toBe(true);
+    expect(result.sanityWarnings).toHaveLength(0);
   });
 });
