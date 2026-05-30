@@ -8,7 +8,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import {
@@ -16,7 +16,6 @@ import {
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { emitTradeEvent } from "@/lib/comply-v2/trade/ops-events.server";
 import { z } from "zod";
@@ -82,26 +81,18 @@ export async function GET(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
+    const { userId, organizationId } = tradeAuth;
 
     const rl = await checkRateLimit("api", getIdentifier(req, userId));
     if (!rl.success) return createRateLimitResponse(rl);
 
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
-
     const { id } = await context.params;
     const operation = await prisma.tradeOperation.findFirst({
-      where: { id, organizationId: org.organizationId },
+      where: { id, organizationId },
       include: {
         organization: {
           select: {
@@ -189,27 +180,19 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
+    const { userId, organizationId } = tradeAuth;
 
     const rl = await checkRateLimit("api", getIdentifier(req, userId));
     if (!rl.success) return createRateLimitResponse(rl);
 
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
-
     const { id } = await context.params;
 
     const existing = await prisma.tradeOperation.findFirst({
-      where: { id, organizationId: org.organizationId },
+      where: { id, organizationId },
       select: { id: true, status: true, reference: true },
     });
     if (!existing) {
@@ -278,7 +261,7 @@ export async function PATCH(
     if (data.status && data.status !== existing.status) {
       await logAuditEvent({
         userId,
-        organizationId: org.organizationId,
+        organizationId,
         action: "trade_operation_status_changed",
         entityType: "trade_operation",
         entityId: id,
@@ -289,7 +272,7 @@ export async function PATCH(
         userAgent: reqCtx.userAgent,
       });
       await emitTradeEvent("trade.operation.status_changed", {
-        organizationId: org.organizationId,
+        organizationId,
         summary: `${existing.reference} · ${existing.status} → ${data.status}`,
         data: {
           operationId: id,
@@ -302,7 +285,7 @@ export async function PATCH(
     } else {
       await logAuditEvent({
         userId,
-        organizationId: org.organizationId,
+        organizationId,
         action: "trade_operation_updated",
         entityType: "trade_operation",
         entityId: id,

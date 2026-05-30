@@ -16,14 +16,13 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { logger } from "@/lib/logger";
 import {
   checkRateLimit,
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import {
   getDebrisStatus,
   getSpectrumStatus,
@@ -35,30 +34,22 @@ export async function GET(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
+    const { userId, organizationId } = tradeAuth;
 
     const rl = await checkRateLimit("api", getIdentifier(req, userId));
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const { id } = await context.params;
 
     // Parallel fetch — three independent reads, no inter-dependencies.
     const [debris, spectrum, authorization] = await Promise.all([
-      getDebrisStatus(id, org.organizationId),
-      getSpectrumStatus(id, org.organizationId),
-      getAuthorizationStatus(id, org.organizationId),
+      getDebrisStatus(id, organizationId),
+      getSpectrumStatus(id, organizationId),
+      getAuthorizationStatus(id, organizationId),
     ]);
 
     return NextResponse.json({

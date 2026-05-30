@@ -18,7 +18,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import {
@@ -26,7 +26,6 @@ import {
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { emitTradeEvent } from "@/lib/comply-v2/trade/ops-events.server";
 import { z } from "zod";
@@ -47,22 +46,14 @@ export async function POST(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
+    const { userId, organizationId } = tradeAuth;
 
     const rl = await checkRateLimit("api", getIdentifier(req, userId));
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const { id: operationId } = await context.params;
 
@@ -79,11 +70,11 @@ export async function POST(
     // Verify operation + item are both in caller's org
     const [operation, item] = await Promise.all([
       prisma.tradeOperation.findFirst({
-        where: { id: operationId, organizationId: org.organizationId },
+        where: { id: operationId, organizationId },
         select: { id: true, reference: true, status: true },
       }),
       prisma.tradeItem.findFirst({
-        where: { id: data.itemId, organizationId: org.organizationId },
+        where: { id: data.itemId, organizationId },
         select: { id: true, name: true, status: true },
       }),
     ]);
@@ -165,7 +156,7 @@ export async function POST(
     const reqCtx = getRequestContext(req);
     await logAuditEvent({
       userId,
-      organizationId: org.organizationId,
+      organizationId,
       action: "trade_operation_line_added",
       entityType: "trade_operation_line",
       entityId: line.id,
@@ -182,7 +173,7 @@ export async function POST(
       userAgent: reqCtx.userAgent,
     });
     await emitTradeEvent("trade.operation.line_added", {
-      organizationId: org.organizationId,
+      organizationId,
       summary: `${operation.reference} · +${item.name} × ${data.quantity} ${data.unitCurrency}`,
       data: {
         operationId,

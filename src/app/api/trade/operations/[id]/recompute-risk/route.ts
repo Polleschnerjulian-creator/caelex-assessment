@@ -18,14 +18,13 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { logger } from "@/lib/logger";
 import {
   checkRateLimit,
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { emitTradeEvent } from "@/lib/comply-v2/trade/ops-events.server";
 import { recomputeOperation } from "@/lib/comply-v2/trade/operations/recompute.server";
@@ -35,26 +34,18 @@ export async function POST(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
+    const { userId, organizationId } = tradeAuth;
 
     const rl = await checkRateLimit("api", getIdentifier(req, userId));
     if (!rl.success) return createRateLimitResponse(rl);
 
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
-
     const { id } = await context.params;
 
-    const result = await recomputeOperation(id, org.organizationId);
+    const result = await recomputeOperation(id, organizationId);
 
     if (!result) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -80,7 +71,7 @@ export async function POST(
     const reqCtx = getRequestContext(req);
     await logAuditEvent({
       userId,
-      organizationId: org.organizationId,
+      organizationId,
       action: "trade_operation_risk_recomputed",
       entityType: "trade_operation",
       entityId: id,
@@ -101,7 +92,7 @@ export async function POST(
       userAgent: reqCtx.userAgent,
     });
     await emitTradeEvent("trade.operation.risk_recomputed", {
-      organizationId: org.organizationId,
+      organizationId,
       summary: `Risk ${result.risk.score}/100 (${result.risk.band})${result.catchAll.notificationDuty ? " · §8 AWV Anzeigepflicht" : ""}`,
       data: {
         operationId: id,

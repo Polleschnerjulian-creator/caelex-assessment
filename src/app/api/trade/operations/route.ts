@@ -15,7 +15,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import {
@@ -23,7 +23,6 @@ import {
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { emitTradeEvent } from "@/lib/comply-v2/trade/ops-events.server";
 import { z } from "zod";
@@ -72,22 +71,14 @@ const CreateTradeOperationSchema = z.object({
 
 export async function GET(req: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
+    const { userId, organizationId } = tradeAuth;
 
     const rl = await checkRateLimit("api", getIdentifier(req, userId));
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("q") ?? "";
@@ -97,7 +88,7 @@ export async function GET(req: Request) {
     const limit = Math.min(50, parseInt(searchParams.get("limit") ?? "20", 10));
 
     const where: Prisma.TradeOperationWhereInput = {
-      organizationId: org.organizationId,
+      organizationId,
     };
     if (status && status in TradeOperationStatus) {
       where.status = status as TradeOperationStatus;
@@ -167,22 +158,14 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
+    const { userId, organizationId } = tradeAuth;
 
     const rl = await checkRateLimit("api", getIdentifier(req, userId));
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const body = await req.json();
     const parsed = CreateTradeOperationSchema.safeParse(body);
@@ -196,7 +179,7 @@ export async function POST(req: Request) {
 
     // Verify counterparty exists in same org
     const counterparty = await prisma.tradeParty.findFirst({
-      where: { id: data.counterpartyId, organizationId: org.organizationId },
+      where: { id: data.counterpartyId, organizationId },
       select: { id: true, status: true, screeningStatus: true },
     });
     if (!counterparty) {
@@ -218,7 +201,7 @@ export async function POST(req: Request) {
     try {
       const operation = await prisma.tradeOperation.create({
         data: {
-          organizationId: org.organizationId,
+          organizationId,
           createdById: userId,
           reference: data.reference,
           description: data.description,
@@ -244,7 +227,7 @@ export async function POST(req: Request) {
           operationId: operation.id,
           reference: operation.reference,
           counterpartyId: operation.counterpartyId,
-          orgId: org.organizationId,
+          orgId: organizationId,
           userId,
         },
         "trade operation created",
@@ -254,7 +237,7 @@ export async function POST(req: Request) {
       const reqCtx = getRequestContext(req);
       await logAuditEvent({
         userId,
-        organizationId: org.organizationId,
+        organizationId,
         action: "trade_operation_created",
         entityType: "trade_operation",
         entityId: operation.id,
@@ -273,7 +256,7 @@ export async function POST(req: Request) {
 
       // Live feed: Ops Console SSE stream
       await emitTradeEvent("trade.operation.created", {
-        organizationId: org.organizationId,
+        organizationId,
         summary: `${operation.reference} · ${operation.operationType.replace(/_/g, " ")} · ${operation.shipFromCountry}→${operation.shipToCountry}`,
         data: {
           operationId: operation.id,

@@ -15,7 +15,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import {
@@ -23,7 +23,6 @@ import {
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { z } from "zod";
 
 const PatchLineSchema = z.object({
@@ -42,22 +41,14 @@ export async function DELETE(
   context: { params: Promise<{ id: string; lineId: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
+    const { userId, organizationId } = tradeAuth;
 
     const rl = await checkRateLimit("api", getIdentifier(req, userId));
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const { id: operationId, lineId } = await context.params;
 
@@ -65,7 +56,7 @@ export async function DELETE(
       where: {
         id: lineId,
         operationId,
-        operation: { organizationId: org.organizationId },
+        operation: { organizationId },
       },
       select: {
         id: true,
@@ -121,22 +112,14 @@ export async function PATCH(
   context: { params: Promise<{ id: string; lineId: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
+    const { userId, organizationId } = tradeAuth;
 
     const rl = await checkRateLimit("api", getIdentifier(req, userId));
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const { id: operationId, lineId } = await context.params;
 
@@ -154,7 +137,7 @@ export async function PATCH(
       where: {
         id: lineId,
         operationId,
-        operation: { organizationId: org.organizationId },
+        operation: { organizationId },
       },
       select: {
         id: true,

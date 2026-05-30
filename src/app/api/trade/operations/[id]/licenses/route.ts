@@ -12,7 +12,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import {
@@ -20,7 +20,6 @@ import {
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { emitTradeEvent } from "@/lib/comply-v2/trade/ops-events.server";
 import { z } from "zod";
@@ -34,22 +33,14 @@ export async function POST(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
+    const { userId, organizationId } = tradeAuth;
 
     const rl = await checkRateLimit("api", getIdentifier(req, userId));
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const { id: operationId } = await context.params;
 
@@ -66,11 +57,11 @@ export async function POST(
     // Verify both records are in caller's org
     const [operation, license] = await Promise.all([
       prisma.tradeOperation.findFirst({
-        where: { id: operationId, organizationId: org.organizationId },
+        where: { id: operationId, organizationId },
         select: { id: true, status: true, reference: true },
       }),
       prisma.tradeLicense.findFirst({
-        where: { id: licenseId, organizationId: org.organizationId },
+        where: { id: licenseId, organizationId },
         select: { id: true, licenseType: true, status: true },
       }),
     ]);
@@ -131,7 +122,7 @@ export async function POST(
     const reqCtx = getRequestContext(req);
     await logAuditEvent({
       userId,
-      organizationId: org.organizationId,
+      organizationId,
       action: "trade_license_attached",
       entityType: "trade_license",
       entityId: licenseId,
@@ -141,7 +132,7 @@ export async function POST(
       userAgent: reqCtx.userAgent,
     });
     await emitTradeEvent("trade.license.attached", {
-      organizationId: org.organizationId,
+      organizationId,
       summary: `${operation.reference} · +license ${license.licenseType.replace(/_/g, " ")}`,
       data: {
         operationId,
