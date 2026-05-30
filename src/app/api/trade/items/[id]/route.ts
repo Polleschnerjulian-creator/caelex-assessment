@@ -18,10 +18,7 @@ import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { z } from "zod";
 
 import { evaluateTradeItemSubset } from "@/lib/comply-v2/trade/property-trigger-engine";
-import {
-  calculateDeMinimis,
-  getDestinationTier,
-} from "@/lib/comply-v2/trade/de-minimis-calculator";
+import { calculateDeMinimis } from "@/lib/comply-v2/trade/de-minimis-calculator";
 import { determineLicenseRequirements } from "@/lib/comply-v2/trade/license-determination";
 
 // ─── Validation ───────────────────────────────────────────────────────
@@ -99,6 +96,18 @@ export function computeClassification(
     usmlCategory: item.usmlCategory,
   });
 
+  // Item-level classification is DESTINATION-AGNOSTIC.
+  // Destination (export country) lives on TradeOperation, not TradeItem.
+  // Passing countryOfOrigin (where the item was MADE) as the destination was a
+  // critical correctness bug (T-H6): a US-made item evaluated as destination=US,
+  // an Iran-made item would fire the embargo gate — both wrong.
+  // Fix: omit destination entirely at this level.
+  //   - de-minimis: destinationTier="STANDARD" (most permissive / destination-unknown
+  //     baseline) so only the US-content-percentage math is meaningful here;
+  //     destinationCountry omitted (undefined) so embargoed-destination gate cannot
+  //     fire against the origin country.
+  //   - license determination: destinationCountry=undefined — destination-specific
+  //     embargo/de-minimis/license gates run per TradeOperation, not per item.
   let deMinimis = null;
   if (item.usContentPercent !== null && item.usContentPercent !== undefined) {
     deMinimis = calculateDeMinimis({
@@ -106,23 +115,26 @@ export function computeClassification(
       hasItarContent: triggerEval.hasItarFlag,
       designedWithUSTech: item.designedWithUSTech ?? false,
       manufacturedWithUSEquipment: item.manufacturedWithUSEquipment ?? false,
-      destinationTier: item.countryOfOrigin
-        ? getDestinationTier(item.countryOfOrigin)
-        : "STANDARD",
-      destinationCountry: item.countryOfOrigin ?? undefined,
+      // Destination is unknown at item level — use STANDARD (25%) as the
+      // destination-agnostic baseline. Destination-specific tier (10%/embargo)
+      // is evaluated per TradeOperation when the actual destination is known.
+      destinationTier: "STANDARD",
+      // destinationCountry intentionally omitted (undefined) — T-H6.
       usContentEccns: [item.eccnEU, item.eccnUS].filter(
         (v): v is string => !!v,
       ),
     });
   }
 
+  // destinationCountry=undefined: destination is not known at item level.
+  // Destination-specific embargo / license gates are evaluated per TradeOperation.
   const licenseDetermination = determineLicenseRequirements(
     triggerEval,
     deMinimis,
-    item.countryOfOrigin ?? undefined,
+    undefined, // T-H6: destination unknown at item level
     undefined,
     undefined,
-    { eccnEU: item.eccnEU, eccnUS: item.eccnUS },
+    { eccnEU: item.eccnEU, eccnUS: item.eccnUS }, // T-M5: pass actual codes for Gate 0
   );
 
   return { triggerEval, deMinimis, licenseDetermination };
