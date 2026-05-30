@@ -40,6 +40,8 @@ function jaccard(a: string[], b: string[]): number {
  * This is order-invariant for identical token sets.
  */
 function tokenSortJaroWinkler(a: string[], b: string[]): number {
+  // Sort uses Unicode code-point order; inputs are expected ASCII post-canonicalization
+  // (canonicalizeName lowercases/transliterates upstream), so order is deterministic.
   const sortedA = [...a].sort().join(" ");
   const sortedB = [...b].sort().join(" ");
   return jaroWinkler(sortedA, sortedB);
