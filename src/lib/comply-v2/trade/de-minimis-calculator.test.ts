@@ -142,24 +142,37 @@ describe("standard 25% threshold (STANDARD tier)", () => {
   });
 });
 
-// ─── 4. Restricted 10% threshold (D:1 countries) ─────────────────────
+// ─── 4. D:1 threshold (RESTRICTED tier) — corrected to 25% per §734.4 ───
+//
+// T-M4 fix: §734.4(c)/(d) gives E:1/E:2 the 10% reduced threshold; D:1
+// countries (CN/RU/BY/VE) get the standard 25% threshold. The cascade.ts
+// authoritative engine (lines 343-346) confirms: threshold = E:1||E:2
+// → 10%, otherwise → 25%. Pre-existing tests that assumed D:1=10% encoded
+// the bug and have been corrected below with §734.4 justification.
 
-describe("restricted 10% threshold (RESTRICTED tier / D:1)", () => {
-  it("returns DE_MINIMIS_ELIGIBLE when content ≤ 10%", () => {
+describe("D:1 threshold (RESTRICTED tier) — 25% per §734.4", () => {
+  // Was: "returns DE_MINIMIS_ELIGIBLE when content ≤ 10%"
+  // Fixed: D:1 uses 25% (§734.4(d)), so content ≤ 25% is eligible.
+  it("returns DE_MINIMIS_ELIGIBLE when content ≤ 25% (D:1 standard threshold)", () => {
     const r = calculateDeMinimis(
-      make({ usControlledContentPercent: 10, destinationTier: "RESTRICTED" }),
+      make({ usControlledContentPercent: 25, destinationTier: "RESTRICTED" }),
     );
     expect(r.outcome).toBe("DE_MINIMIS_ELIGIBLE");
   });
 
-  it("returns DE_MINIMIS_EXCEEDED when content > 10%", () => {
+  // Was: "returns DE_MINIMIS_EXCEEDED when content > 10%"
+  // Fixed: D:1 → 25% threshold; content must exceed 25% to be exceeded.
+  it("returns DE_MINIMIS_EXCEEDED when content > 25% (D:1)", () => {
     const r = calculateDeMinimis(
-      make({ usControlledContentPercent: 11, destinationTier: "RESTRICTED" }),
+      make({ usControlledContentPercent: 26, destinationTier: "RESTRICTED" }),
     );
     expect(r.outcome).toBe("DE_MINIMIS_EXCEEDED");
   });
 
-  it("returns DE_MINIMIS_EXCEEDED for China (CN) at 12%", () => {
+  // Was: "returns DE_MINIMIS_EXCEEDED for China (CN) at 12%"
+  // Fixed: 12% < 25% → eligible for D:1. §734.4 does not give D:1 a
+  // reduced threshold; only E:1/E:2 get the 10% reduced level.
+  it("returns DE_MINIMIS_ELIGIBLE for China (CN) at 12% (below 25% D:1 threshold)", () => {
     const r = calculateDeMinimis(
       make({
         usControlledContentPercent: 12,
@@ -167,17 +180,21 @@ describe("restricted 10% threshold (RESTRICTED tier / D:1)", () => {
         destinationCountry: "CN",
       }),
     );
-    expect(r.outcome).toBe("DE_MINIMIS_EXCEEDED");
+    expect(r.outcome).toBe("DE_MINIMIS_ELIGIBLE");
   });
 
-  it("applied threshold is 10 for RESTRICTED", () => {
+  // Was: "applied threshold is 10 for RESTRICTED"
+  // Fixed: D:1 → 25% per §734.4(d); 10% is E:1/E:2 only (§734.4(c)).
+  it("applied threshold is 25 for RESTRICTED (D:1)", () => {
     const r = calculateDeMinimis(
       make({ usControlledContentPercent: 5, destinationTier: "RESTRICTED" }),
     );
-    expect(r.appliedThresholdPercent).toBe(10);
+    expect(r.appliedThresholdPercent).toBe(25);
   });
 
-  it("item eligible at 20% for STANDARD but exceeded for RESTRICTED", () => {
+  // Was: "item eligible at 20% for STANDARD but exceeded for RESTRICTED"
+  // Fixed: both STANDARD and D:1 (RESTRICTED) use 25% → both eligible at 20%.
+  it("item eligible at 20% for both STANDARD and RESTRICTED (same 25% threshold)", () => {
     const pct = 20;
     const standard = calculateDeMinimis(
       make({ usControlledContentPercent: pct, destinationTier: "STANDARD" }),
@@ -186,7 +203,7 @@ describe("restricted 10% threshold (RESTRICTED tier / D:1)", () => {
       make({ usControlledContentPercent: pct, destinationTier: "RESTRICTED" }),
     );
     expect(standard.outcome).toBe("DE_MINIMIS_ELIGIBLE");
-    expect(restricted.outcome).toBe("DE_MINIMIS_EXCEEDED");
+    expect(restricted.outcome).toBe("DE_MINIMIS_ELIGIBLE");
   });
 });
 
@@ -321,6 +338,41 @@ describe("getDestinationTier", () => {
     expect(getDestinationTier("ir")).toBe("EMBARGOED");
     expect(getDestinationTier("cn")).toBe("RESTRICTED");
     expect(getDestinationTier("de")).toBe("STANDARD");
+  });
+
+  // T-M3: Sudan was removed from Country Group E:1 in 2020; it must NOT
+  // be treated as embargoed. 15 CFR Part 740, Supplement No. 1.
+  it("T-M3: returns STANDARD for Sudan (SD) — removed from E:1 in 2020", () => {
+    expect(getDestinationTier("SD")).toBe("STANDARD");
+  });
+
+  it("T-M3: calculateDeMinimis to Sudan (SD) does NOT return EMBARGOED_DESTINATION", () => {
+    const r = calculateDeMinimis(
+      make({ destinationCountry: "SD", destinationTier: "STANDARD" }),
+    );
+    expect(r.outcome).not.toBe("EMBARGOED_DESTINATION");
+  });
+
+  // T-M4: D:1 countries (CN/RU/BY/VE) use the 25% standard threshold per
+  // §734.4(c)/(d) — the 10% reduced threshold is E:1/E:2 only.
+  // Authoritative source: cascade.ts lines 343-346 (THRESHOLD_STANDARD_PCT=25
+  // for non-E groups; THRESHOLD_E1_E2_PCT=10 for E:1/E:2 only).
+  it("T-M4: D:1 destination at 20% US content is DE_MINIMIS_ELIGIBLE (25% threshold)", () => {
+    const r = calculateDeMinimis(
+      make({
+        usControlledContentPercent: 20,
+        destinationTier: "RESTRICTED",
+        destinationCountry: "CN",
+      }),
+    );
+    expect(r.outcome).toBe("DE_MINIMIS_ELIGIBLE");
+  });
+
+  it("T-M4: appliedThresholdPercent is 25 for D:1 (RESTRICTED) tier", () => {
+    const r = calculateDeMinimis(
+      make({ usControlledContentPercent: 5, destinationTier: "RESTRICTED" }),
+    );
+    expect(r.appliedThresholdPercent).toBe(25);
   });
 });
 

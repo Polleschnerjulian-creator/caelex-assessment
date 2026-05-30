@@ -9,8 +9,8 @@
  * be exported without EAR authorization if the US-origin controlled
  * content does not exceed the threshold by value:
  *
- *   - 25% threshold: countries NOT on Country Group D:1/E:1 list
- *   - 10% threshold: Country Group D:1 countries (e.g. China, Russia)
+ *   - 25% threshold: standard destinations AND Country Group D:1 (§ 734.4(d))
+ *   - 10% threshold: Country Group E:1 / E:2 only (§ 734.4(c)) — NOT D:1
  *   - 0% threshold:  ITAR-controlled (USML) items — no de-minimis applies
  *
  * IMPORTANT EXCEPTIONS (rule does NOT apply):
@@ -44,10 +44,13 @@
 /**
  * Destination-country risk tier for de-minimis threshold selection.
  *
- *   STANDARD  — most countries → 25% threshold (§ 734.4(a)(1))
- *   RESTRICTED — Country Group D:1 countries → 10% threshold (§ 734.4(a)(2))
- *   EMBARGOED  — Country Group E:1 (Cuba, Iran, North Korea, Syria, Sudan)
+ *   STANDARD  — most countries → 25% threshold (§ 734.4(d))
+ *   RESTRICTED — Country Group D:1 countries → 25% threshold (§ 734.4(d))
+ *                Note: D:1 does NOT get a reduced threshold; only E:1/E:2
+ *                get the 10% reduced level under § 734.4(c).
+ *   EMBARGOED  — Country Group E:1 (Cuba, Iran, North Korea, Syria)
  *                → EAR authorization required regardless of percentage
+ *                Note: Sudan was removed from E:1 in 2020 and is NOT embargoed.
  */
 export type DestinationTier = "STANDARD" | "RESTRICTED" | "EMBARGOED";
 
@@ -143,25 +146,29 @@ export interface DeMinimisResult {
 
 // ─── Threshold constants ──────────────────────────────────────────────
 
-const THRESHOLD_STANDARD = 25; // 15 CFR § 734.4(a)(1)
-const THRESHOLD_RESTRICTED = 10; // 15 CFR § 734.4(a)(2) — Country Group D:1
+const THRESHOLD_STANDARD = 25; // 15 CFR § 734.4(d) — standard destinations AND Country Group D:1
+const THRESHOLD_RESTRICTED = 25; // 15 CFR § 734.4(d) — Country Group D:1 uses the standard 25% threshold
+//                                    (the 10% reduced threshold is E:1/E:2 only, per § 734.4(c))
 const THRESHOLD_ITAR = 0; // No de-minimis for ITAR
 
 /**
  * Country Group E:1 — comprehensive embargo; EAR auth always required.
  * Note: This is NOT exhaustive. Country groups change. Always verify
  * against the current Supplement 1 to EAR Part 740.
+ *
+ * Sudan ("SD") was removed from Country Group E:1 in 2020 and is NOT
+ * included here. Verify against the current BIS country group tables.
  */
 const EMBARGOED_COUNTRIES = new Set([
-  "CU", // Cuba
+  "CU", // Cuba (E:2, treated as embargoed for de-minimis purposes)
   "IR", // Iran
   "KP", // North Korea
   "SY", // Syria
-  "SD", // Sudan
 ]);
 
 /**
- * Country Group D:1 — 10% threshold applies.
+ * Country Group D:1 — 25% standard threshold applies (§ 734.4(d)).
+ * The 10% reduced threshold is for E:1/E:2 only (§ 734.4(c)), NOT D:1.
  * Includes countries of concern for national security.
  * NOT exhaustive — verify against current BIS Supplement 1 to Part 740.
  */
@@ -204,7 +211,7 @@ const SPECIAL_ECCN_PREFIXES = ["9A515", "5E002", "0A501", "0E001"];
  *   manufacturedWithUSEquipment: false,
  *   destinationTier: "RESTRICTED", // Country Group D:1
  * });
- * // result.outcome === "DE_MINIMIS_EXCEEDED" — 12% > 10% D:1 threshold
+ * // result.outcome === "DE_MINIMIS_ELIGIBLE" — 12% ≤ 25% D:1 threshold (§ 734.4(d))
  */
 export function calculateDeMinimis(input: DeMinimisInput): DeMinimisResult {
   const reasons: string[] = [];
@@ -322,7 +329,7 @@ export function calculateDeMinimis(input: DeMinimisInput): DeMinimisResult {
     : THRESHOLD_STANDARD;
 
   const thresholdLabel = isRestrictedCountry
-    ? `10% (Country Group D:1 / ${input.destinationCountry ?? "restricted destination"})`
+    ? `25% (Country Group D:1 / ${input.destinationCountry ?? "restricted destination"} — standard threshold per § 734.4(d))`
     : `25% (standard destinations)`;
 
   // ─── De-minimis calculation ───────────────────────────────────────
