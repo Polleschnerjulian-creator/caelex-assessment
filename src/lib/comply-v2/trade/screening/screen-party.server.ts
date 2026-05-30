@@ -45,6 +45,7 @@ import {
   type FuzzyHit,
 } from "./fuzzy-match";
 import { allLatestSnapshots } from "./snapshot-store.server";
+import { REGISTERED_PARSERS } from "./sync.server";
 import type { CanonicalSanctionsEntry } from "./sources/types";
 import { runCascadeForParty } from "./cascade-50pct.server";
 import type { CascadeResult } from "./cascade-50pct";
@@ -426,20 +427,18 @@ export function combineHashes(
  * Compute which sanctions lists were NOT consulted because no snapshot
  * exists yet. Surfaces "you should have synced X first" in the UI.
  *
- * Currently hard-coded against the registered parsers. Could be made
- * dynamic if the parser registry becomes user-configurable.
+ * Single source of truth: the expected set is derived from
+ * REGISTERED_PARSERS (sync.server.ts) so this list stays in sync
+ * automatically as new parsers are added. Previously this hardcoded
+ * only 4 of the 8 registered sources (T-M12).
+ *
+ * NOTE: this is OBSERVABILITY only — it does NOT affect the fail-closed
+ * decision gate (A4 / CRITICAL_LISTS). Keep them separate.
  */
 export function missingLists(
   consulted: TradeSanctionsList[],
 ): TradeSanctionsList[] {
-  // List the canonical 6-list set explicitly. If A3 adds EU/UK/UN
-  // parsers, append them here too.
-  const expected: TradeSanctionsList[] = [
-    "OFAC_SDN",
-    "BIS_ENTITY",
-    "DDTC_DEBARRED",
-    "EU_FSF",
-  ] as TradeSanctionsList[];
+  const expected = REGISTERED_PARSERS.map((p) => p.list);
   const consultedSet = new Set(consulted);
   return expected.filter((l) => !consultedSet.has(l));
 }

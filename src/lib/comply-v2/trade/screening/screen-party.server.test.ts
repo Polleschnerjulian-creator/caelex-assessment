@@ -355,3 +355,81 @@ describe("CRITICAL_LISTS constant", () => {
     expect(CRITICAL_LISTS).toHaveLength(4);
   });
 });
+
+// ─── T-M12: missingLists covers ALL 8 registered sources ─────────────────────
+//
+// Before this fix, missingLists() only expected 4 lists (OFAC_SDN, BIS_ENTITY,
+// DDTC_DEBARRED, EU_FSF). The screening engine registers 8 parsers, so a
+// never-synced UK_OFSI / UN_CONSOLIDATED / EU_ANNEX_IV / OPEN_SANCTIONS was
+// silently omitted from the coverage-gap report (present-by-omission bug).
+
+describe("missingLists — T-M12: all 8 registered sources covered", () => {
+  it("includes UK_OFSI and UN_CONSOLIDATED when only OFAC_SDN is consulted", async () => {
+    const { missingLists } = await import("./screen-party.server");
+    const missing = missingLists([TradeSanctionsList.OFAC_SDN]);
+    expect(missing).toContain(TradeSanctionsList.UK_OFSI);
+    expect(missing).toContain(TradeSanctionsList.UN_CONSOLIDATED);
+  });
+
+  it("includes EU_ANNEX_IV and OPEN_SANCTIONS when only OFAC_SDN is consulted", async () => {
+    const { missingLists } = await import("./screen-party.server");
+    const missing = missingLists([TradeSanctionsList.OFAC_SDN]);
+    expect(missing).toContain(TradeSanctionsList.EU_ANNEX_IV);
+    expect(missing).toContain(TradeSanctionsList.OPEN_SANCTIONS);
+  });
+
+  it("returns empty array when all 8 registered lists are consulted", async () => {
+    const { missingLists } = await import("./screen-party.server");
+    const allEight = [
+      TradeSanctionsList.OFAC_SDN,
+      TradeSanctionsList.BIS_ENTITY,
+      TradeSanctionsList.DDTC_DEBARRED,
+      TradeSanctionsList.EU_FSF,
+      TradeSanctionsList.UK_OFSI,
+      TradeSanctionsList.UN_CONSOLIDATED,
+      TradeSanctionsList.EU_ANNEX_IV,
+      TradeSanctionsList.OPEN_SANCTIONS,
+    ];
+    expect(missingLists(allEight)).toHaveLength(0);
+  });
+
+  it("snapshotsMissing on result includes UK_OFSI when only OFAC_SDN snapshot is present", async () => {
+    // Integration: verify missingLists is wired into the result's snapshotsMissing field.
+    // We already have a screenParty test that uses only UK_OFSI; this one uses only
+    // OFAC_SDN to confirm the previously-omitted lists now surface.
+    const snapshots = new Map<TradeSanctionsList, object>();
+    snapshots.set(
+      TradeSanctionsList.OFAC_SDN,
+      makeSnapshot(TradeSanctionsList.OFAC_SDN),
+    );
+    mockAllLatestSnapshots.mockResolvedValue(snapshots);
+
+    // OFAC_SDN is present but EU_FSF / UN_CONSOLIDATED / BIS_ENTITY are missing
+    // → fail-closed POTENTIAL_MATCH (critical lists missing).
+    mockScreeningResultCreate.mockResolvedValue(
+      mockTransactionReturn(
+        TradeScreeningDecision.POTENTIAL_MATCH,
+        TradeScreeningStatus.POTENTIAL_MATCH,
+      )[0],
+    );
+    mockPartyUpdate.mockResolvedValue(
+      mockTransactionReturn(
+        TradeScreeningDecision.POTENTIAL_MATCH,
+        TradeScreeningStatus.POTENTIAL_MATCH,
+      )[1],
+    );
+
+    const result = await screenParty(CLEAN_PARTY.id);
+
+    // UK_OFSI, EU_ANNEX_IV, OPEN_SANCTIONS must now appear in snapshotsMissing.
+    expect(result.summary.snapshotsMissing).toContain(
+      TradeSanctionsList.UK_OFSI,
+    );
+    expect(result.summary.snapshotsMissing).toContain(
+      TradeSanctionsList.EU_ANNEX_IV,
+    );
+    expect(result.summary.snapshotsMissing).toContain(
+      TradeSanctionsList.OPEN_SANCTIONS,
+    );
+  });
+});
