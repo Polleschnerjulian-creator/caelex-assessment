@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 import { z } from "zod";
 
 /**
@@ -80,31 +81,49 @@ export async function POST(
     );
   }
 
-  const clearance = await prisma.atlasConflictClearance.upsert({
-    where: {
-      mandateId_matchedMandateId_normalizedName: {
+  try {
+    const clearance = await prisma.atlasConflictClearance.upsert({
+      where: {
+        mandateId_matchedMandateId_normalizedName: {
+          mandateId,
+          matchedMandateId,
+          normalizedName,
+        },
+      },
+      create: {
+        organizationId: atlas.organizationId,
         mandateId,
         matchedMandateId,
         normalizedName,
+        severity,
+        status,
+        clearanceReason: reason ?? null,
+        clearedByUserId: atlas.userId,
       },
-    },
-    create: {
-      organizationId: atlas.organizationId,
+      update: {
+        status,
+        clearanceReason: reason ?? null,
+        clearedByUserId: atlas.userId,
+        clearedAt: new Date(),
+      },
+    });
+    logger.info("[atlas/conflicts] cleared", {
       mandateId,
+      userId: atlas.userId,
       matchedMandateId,
-      normalizedName,
       severity,
       status,
-      clearanceReason: reason ?? null,
-      clearedByUserId: atlas.userId,
-    },
-    update: {
-      status,
-      clearanceReason: reason ?? null,
-      clearedByUserId: atlas.userId,
-      clearedAt: new Date(),
-    },
-  });
-
-  return NextResponse.json({ clearance });
+    });
+    return NextResponse.json({ clearance });
+  } catch (err) {
+    logger.error("[atlas/conflicts] clear failed", {
+      mandateId,
+      userId: atlas.userId,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return NextResponse.json(
+      { error: "Failed to record clearance" },
+      { status: 500 },
+    );
+  }
 }

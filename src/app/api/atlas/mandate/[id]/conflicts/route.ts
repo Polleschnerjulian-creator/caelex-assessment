@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 import { detectConflicts } from "@/lib/atlas/conflict-check-detect.server";
 
 /**
@@ -32,10 +33,21 @@ export async function GET(
     return NextResponse.json({ error: "Mandate not found" }, { status: 404 });
   }
 
-  const conflicts = await detectConflicts({
-    orgId: atlas.organizationId,
-    mandateId,
-  });
-
-  return NextResponse.json({ conflicts });
+  try {
+    const conflicts = await detectConflicts({
+      orgId: atlas.organizationId,
+      mandateId,
+    });
+    return NextResponse.json({ conflicts });
+  } catch (err) {
+    logger.error("[atlas/conflicts] detect failed", {
+      mandateId,
+      userId: atlas.userId,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return NextResponse.json(
+      { error: "Failed to detect conflicts" },
+      { status: 500 },
+    );
+  }
 }
