@@ -293,4 +293,16 @@ describe("mergeAliasesIntoEntries", () => {
     const merged = mergeAliasesIntoEntries(entries, new Map());
     expect(merged[0].names).toEqual(["primary co"]);
   });
+
+  it("empty alias map fast-path returns a NEW array reference (reference consistency)", () => {
+    // Fix 2: the empty-map fast-path must return a copy, not the same array.
+    // Before the fix, `return entries` shared identity with the input; after,
+    // `return [...entries]` always returns a fresh array.
+    const entries = [makeEntry("12345", "primary co")];
+    const merged = mergeAliasesIntoEntries(entries, new Map());
+    // Content is equal ...
+    expect(merged).toEqual(entries);
+    // ... but not the SAME array reference.
+    expect(merged).not.toBe(entries);
+  });
 });

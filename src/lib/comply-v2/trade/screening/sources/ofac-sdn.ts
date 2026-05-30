@@ -275,7 +275,7 @@ export function mergeAliasesIntoEntries(
   entries: CanonicalSanctionsEntry[],
   aliasMap: Map<string, string[]>,
 ): CanonicalSanctionsEntry[] {
-  if (aliasMap.size === 0) return entries;
+  if (aliasMap.size === 0) return [...entries];
 
   return entries.map((entry) => {
     const aliases = aliasMap.get(entry.entryId);
