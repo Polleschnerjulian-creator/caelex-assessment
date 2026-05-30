@@ -84,18 +84,18 @@ Recommended execution sequence: **A → B → G → C → D → E → F → H �
 
 ## 4. ✅ STATUS BOARD (update after every task)
 
-| Sprint                      | Status         | Branch commits | Notes                  |
-| --------------------------- | -------------- | -------------- | ---------------------- |
-| A — Screening hardening     | ⬜ not started | —              | highest priority       |
-| B — Authz & API gate        | ⬜ not started | —              |                        |
-| G — Claude cost engineering | ⬜ not started | —              | user's constraint      |
-| C — Correctness bugs        | ⬜ not started | —              |                        |
-| D — Schema & money          | ⬜ not started | —              | needs migration (user) |
-| E — National forms          | ⬜ not started | —              |                        |
-| F — Architecture cleanup    | ⬜ not started | —              |                        |
-| H — Data corpus             | ⬜ not started | —              | long-running           |
-| I — Tests & prod-readiness  | ⬜ not started | —              | needs user ops         |
-| Docs reconcile              | ⬜ not started | —              |                        |
+| Sprint                      | Status         | Branch commits                     | Notes                                                                                                                                                                                                                                                            |
+| --------------------------- | -------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A — Screening hardening     | 🟡 in progress | A1 e24d72a9+bd71ede6 · A2 6e590410 | A1✅ token-set helper (both gates). A2✅ scoreEntry max(jaro,token-set) — **T-H2 CLOSED**, 288 screening tests green (both gates). NEXT: A3 identifier-match → A4 fail-closed → A5 missingLists → A6 control_no_equity → A7 OFAC aliases → A8 cross-screen dedup |
+| B — Authz & API gate        | ⬜ not started | —                                  |                                                                                                                                                                                                                                                                  |
+| G — Claude cost engineering | ⬜ not started | —                                  | user's constraint                                                                                                                                                                                                                                                |
+| C — Correctness bugs        | ⬜ not started | —                                  |                                                                                                                                                                                                                                                                  |
+| D — Schema & money          | ⬜ not started | —                                  | needs migration (user)                                                                                                                                                                                                                                           |
+| E — National forms          | ⬜ not started | —                                  |                                                                                                                                                                                                                                                                  |
+| F — Architecture cleanup    | ⬜ not started | —                                  |                                                                                                                                                                                                                                                                  |
+| H — Data corpus             | ⬜ not started | —                                  | long-running                                                                                                                                                                                                                                                     |
+| I — Tests & prod-readiness  | ⬜ not started | —                                  | needs user ops                                                                                                                                                                                                                                                   |
+| Docs reconcile              | ⬜ not started | —                                  |                                                                                                                                                                                                                                                                  |
 
 Legend: ⬜ not started · 🟡 in progress · ✅ done · 🔵 blocked-on-user
 
