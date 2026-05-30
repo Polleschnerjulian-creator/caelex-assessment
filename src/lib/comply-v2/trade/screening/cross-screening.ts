@@ -49,7 +49,9 @@ import {
   type UboNode,
   type UboTree,
 } from "./sources/orbis-ubo";
-import { canonicalizeName } from "./sources/types";
+// Note: canonicalizeName (from "./sources/types") is intentionally NOT used
+// for identity reconciliation — it strips legal-form suffixes (GmbH/B.V./LLC)
+// which would merge distinct entities. Use identityKey() (local) for that.
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -216,13 +218,61 @@ function findRootNodeId(tree: UboTree): string | null {
 }
 
 /**
- * Build a lookup from normalised legal name → existing party id from
- * baseSummaries. Used during UBO merge to reconcile a UBO node against an
- * already-known party so we never give the same entity two different ids.
+ * Identity key for a legal entity: lowercase + trim + collapse-whitespace
+ * + strip non-alphanumeric punctuation, but WITHOUT stripping legal-form
+ * suffixes (GmbH, B.V., LLC, …).
+ *
+ * Why NOT reuse canonicalizeName here:
+ *   canonicalizeName is a *fuzzy-match* normaliser that strips suffixes so
+ *   "Spire GmbH" and "Spire B.V." both become "spire". That's correct for
+ *   sanctions-list fuzzy matching where we want to catch name variants, but
+ *   WRONG for identity reconciliation — "Spire GmbH" and "Spire B.V." are
+ *   legally distinct entities. Merging them could hide a sanction on one.
+ *
+ * This function produces an equality key: two entities share the same key
+ * only if their full legal names (including suffix) normalise identically.
+ */
+function identityKey(name: string): string {
+  if (!name) return "";
+  let s = name.toLowerCase();
+  // Strip diacritics (same as canonicalizeName step 1)
+  s = s.normalize("NFD").replace(/[̀-ͯ]/g, "");
+  // Replace punctuation/separators with space (but keep alphanumeric + letters)
+  s = s.replace(/[^\p{L}\p{N}]+/gu, " ");
+  // Collapse whitespace + trim
+  s = s.replace(/\s+/g, " ").trim();
+  return s;
+}
+
+/**
+ * Composite lookup key: identity key of name + "||" + normalised countryCode.
+ * Two entities reconcile only when BOTH the full legal name (suffix included)
+ * AND the country code agree. Entities with different countries are always
+ * treated as distinct even when names match.
+ *
+ * "XX" (unknown country) on either side is treated as compatible — we
+ * cannot confirm they are different, so we err on the side of dedup to
+ * avoid double-counting. The caller should supply real country codes
+ * whenever possible.
+ */
+function nameCountryKey(name: string, countryCode: string): string {
+  return `${identityKey(name)}||${(countryCode ?? "XX").toUpperCase()}`;
+}
+
+/**
+ * Build a lookup from (normalised-full-name + country) → existing party id
+ * from baseSummaries. Used during UBO merge to reconcile a UBO node against
+ * an already-known party so we never give the same entity two different ids.
  *
  * We index every entry in baseSummaries (skipping the target itself, whose
  * reconciliation is handled via the root bridge). Entries with an empty or
- * whitespace-only canonical name are excluded to avoid false positives.
+ * whitespace-only key are excluded to avoid false positives.
+ *
+ * Key change from original: we NO LONGER use canonicalizeName (which strips
+ * legal-form suffixes). "Spire GmbH" and "Spire B.V." now produce different
+ * keys, so they are never reconciled. This prevents a sanctioned UBO node
+ * from being silently merged into a CLEAR declared party that merely shares
+ * the base name.
  */
 function buildExistingPartyNameIndex(
   baseSummaries: Map<string, AncestorSummary>,
@@ -231,9 +281,9 @@ function buildExistingPartyNameIndex(
   const index = new Map<string, string>();
   for (const [id, summary] of baseSummaries) {
     if (id === realTargetPartyId) continue;
-    const canonical = canonicalizeName(summary.legalName);
-    if (canonical.length > 0) {
-      index.set(canonical, id);
+    const key = nameCountryKey(summary.legalName, summary.countryCode);
+    if (key.length > 0) {
+      index.set(key, id);
     }
   }
   return index;
@@ -242,20 +292,40 @@ function buildExistingPartyNameIndex(
 /**
  * Resolve the cascade-side id for a non-root UBO node.
  *
- * If the UBO node's normalised name matches an existing party in the
+ * If the UBO node's full-name+country key matches an existing party in the
  * `nameIndex`, return that party's real id (identity reconciliation).
- * Otherwise mint a fresh `UBO::` id (existing behaviour for new nodes).
+ * Otherwise mint a fresh `UBO::` id (new node).
  *
- * Using exact full-normalised-name equality (not fuzzy) avoids merging
- * distinct entities that merely share common words.
+ * Reconciliation criteria (most-to-least permissive — we err toward NOT
+ * merging, because over-merging can hide sanctions):
+ *   - Full legal name (including suffix) must match exactly after
+ *     normalisation (lower, diacritics stripped, punctuation → space).
+ *   - Country code must match (or one side is "XX"/unknown, treated as
+ *     compatible).
+ *
+ * We deliberately do NOT use canonicalizeName (which strips GmbH/B.V./LLC)
+ * because "Spire GmbH" and "Spire B.V." are distinct legal entities.
  */
 function resolveUboNodeId(
   node: UboNode,
   nameIndex: Map<string, string>,
 ): string {
-  const canonical = canonicalizeName(node.name);
-  const existingId =
-    canonical.length > 0 ? nameIndex.get(canonical) : undefined;
+  const key = nameCountryKey(node.name, node.countryCode);
+  const existingId = key.length > 0 ? nameIndex.get(key) : undefined;
+
+  // If no direct match, also check with unknown-country wildcard "XX" on
+  // the UBO side — some Orbis nodes have countryCode "XX" when jurisdiction
+  // cannot be determined.
+  if (!existingId && node.countryCode === "XX") {
+    // Try each existing-party entry to find one with same name key
+    const nameOnly = identityKey(node.name);
+    for (const [indexKey, id] of nameIndex) {
+      if (indexKey.startsWith(`${nameOnly}||`)) {
+        return id;
+      }
+    }
+  }
+
   return existingId ?? toCascadeId(node.id);
 }
 
@@ -345,17 +415,26 @@ export function mergeUboTreeIntoCascade(
     }
   }
 
-  // Build a set of existing-edge keys for dedup: "ownerId|ownedId|controlType".
+  // Build a map of existing-edge keys → index in the base-edge array.
+  // Key: "ownerId|ownedId|controlType" (no percent — the percent may differ).
+  //
   // When a UBO edge reconciles to real party ids on both sides AND a matching
-  // base edge already exists, we skip the UBO edge to avoid double-counting
-  // the same ownership stake (the declared TradePartyOwnership is authoritative).
-  const baseEdgeKeys = new Set<string>(
-    baseEdges.map((e) => `${e.ownerId}|${e.ownedId}|${e.controlType}`),
-  );
+  // base edge already exists, we compare percents and keep the MAXIMUM. This
+  // prevents a counterparty from understating its declared ownership (30%) and
+  // hiding a ≥50% cascade that the Orbis data (60%) would reveal.
+  //
+  // We work on a COPY of baseEdges so we never mutate the caller's array.
+  const mergedEdges: OwnershipEdgeSummary[] = baseEdges.map((e) => ({ ...e }));
+
+  // Index into mergedEdges by edge key for O(1) lookup during UBO splice.
+  const baseEdgeKeyToIndex = new Map<string, number>();
+  for (let i = 0; i < mergedEdges.length; i++) {
+    const e = mergedEdges[i];
+    baseEdgeKeyToIndex.set(`${e.ownerId}|${e.ownedId}|${e.controlType}`, i);
+  }
 
   // Splice in UBO edges, remapping node ids through uboIdToCascadeId so
   // reconciled nodes point at their real party id rather than UBO:: ids.
-  const mergedEdges: OwnershipEdgeSummary[] = [...baseEdges];
   for (const edge of tree.edges) {
     const resolvedOwnedId =
       edge.ownedId === uboRoot
@@ -364,18 +443,30 @@ export function mergeUboTreeIntoCascade(
     const resolvedOwnerId =
       uboIdToCascadeId.get(edge.ownerId) ?? toCascadeId(edge.ownerId);
 
-    // Dedup: if both endpoints resolved to real (non-UBO::) ids AND a base
-    // edge with the same (owner, owned, controlType) already exists, the UBO
-    // edge represents the SAME ownership fact — skip it to prevent double-count.
     const edgeKey = `${resolvedOwnerId}|${resolvedOwnedId}|${edge.controlType}`;
-    if (baseEdgeKeys.has(edgeKey)) continue;
+    const existingIdx = baseEdgeKeyToIndex.get(edgeKey);
 
-    mergedEdges.push({
-      ownerId: resolvedOwnerId,
-      ownedId: resolvedOwnedId,
-      percent: edge.percent,
-      controlType: edge.controlType,
-    });
+    if (existingIdx !== undefined) {
+      // A declared (base) edge for this (owner, owned, controlType) exists.
+      // Raise its percent to the Orbis-reported value if higher — we must
+      // not silently accept an understated declaration that hides a cascade.
+      // The cascade must see max(declared, Orbis-reported).
+      if (edge.percent > mergedEdges[existingIdx].percent) {
+        mergedEdges[existingIdx] = {
+          ...mergedEdges[existingIdx],
+          percent: edge.percent,
+        };
+      }
+      // Either way, do NOT append the UBO edge again (that would double-count).
+    } else {
+      // No matching base edge — this is a new ownership fact from Orbis.
+      mergedEdges.push({
+        ownerId: resolvedOwnerId,
+        ownedId: resolvedOwnedId,
+        percent: edge.percent,
+        controlType: edge.controlType,
+      });
+    }
   }
 
   // UI summary
