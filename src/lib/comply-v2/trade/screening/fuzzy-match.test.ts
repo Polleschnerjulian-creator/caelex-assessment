@@ -281,7 +281,8 @@ describe("matchByIdentifier", () => {
     listMetadata: {},
   };
 
-  it("returns a definitive hit (score 1.0) when query identifier value exactly matches entry identifier value", () => {
+  it("returns a definitive hit (score 1.0) when query identifier type AND value both match entry identifier", () => {
+    // Same type + same value → definitive hit.
     const hit = matchByIdentifier(
       [{ type: "lei", value: "529900T8BM49AURSDO55" }],
       ENTRY_WITH_LEI,
@@ -290,6 +291,38 @@ describe("matchByIdentifier", () => {
     expect(hit!.score).toBe(1.0);
     expect(hit!.matchedFields).toEqual(["identifier"]);
     expect(hit!.entryId).toBe("lei-entry-1");
+  });
+
+  it("returns null when query identifier value matches but type differs (no cross-type false positive)", () => {
+    // party VAT "12345" vs entry passport "12345" — same value, different type → NO match.
+    const entryWithPassport: CanonicalSanctionsEntry = {
+      entryId: "cross-type-entry",
+      names: ["Some Person"],
+      addresses: [],
+      identifiers: [{ type: "passport", value: "12345" }],
+      listMetadata: {},
+    };
+    const noHit = matchByIdentifier(
+      [{ type: "vat", value: "12345" }],
+      entryWithPassport,
+    );
+    expect(noHit).toBeNull();
+
+    // same type (lei) + same value after normalisation → still hits.
+    const entryWithLei: CanonicalSanctionsEntry = {
+      entryId: "same-type-entry",
+      names: ["Legit Corp"],
+      addresses: [],
+      identifiers: [{ type: "lei", value: "5299 00t8bm49aursdo55" }],
+      listMetadata: {},
+    };
+    const hit = matchByIdentifier(
+      [{ type: "lei", value: "529900T8BM49AURSDO55" }],
+      entryWithLei,
+    );
+    expect(hit).not.toBeNull();
+    expect(hit!.score).toBe(1.0);
+    expect(hit!.matchedFields).toEqual(["identifier"]);
   });
 
   it("match is case-insensitive and ignores internal spaces", () => {

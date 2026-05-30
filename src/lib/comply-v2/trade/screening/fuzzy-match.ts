@@ -172,16 +172,21 @@ function normaliseIdentifierValue(raw: string): string {
 /**
  * Exact-identifier pre-check for sanctions screening.
  *
- * If ANY query identifier's normalised value exactly matches ANY
- * identifier value on the sanctions entry (same normalisation), this is
- * a definitive hit — score 1.0, matchedFields: ["identifier"].
+ * If ANY query identifier's normalised type+value exactly matches ANY
+ * identifier on the sanctions entry (same normalisation for both), this
+ * is a definitive hit — score 1.0, matchedFields: ["identifier"].
  *
  * Rules:
- *   - Empty / whitespace-only identifier values NEVER match (guards
- *     against the "" === "" false-positive edge-case).
- *   - Normalisation: trim → uppercase → strip spaces+punctuation, so
+ *   - BOTH type AND value must match. A party VAT "12345" will NOT match
+ *     a sanctions-entry passport "12345". This eliminates cross-type
+ *     numeric collisions that would produce false CONFIRMED hits.
+ *   - Type comparison: case-insensitive and trimmed
+ *     (normalise with .trim().toLowerCase()).
+ *   - Value normalisation: trim → uppercase → strip spaces+punctuation, so
  *     "5299 00t8bm49aursdo55" matches "529900T8BM49AURSDO55" and
  *     "12-3456789" matches "123456789".
+ *   - Empty / whitespace-only identifier values NEVER match (guards
+ *     against the "" === "" false-positive edge-case).
  *   - Pure: no I/O, no async, safe to call in hot screening loops.
  *
  * @param queryIdentifiers  Identifiers carried on the party being screened.
@@ -196,20 +201,28 @@ export function matchByIdentifier(
     return null;
   }
 
-  // Build normalised set of entry identifier values for O(1) lookup.
-  const entryNormSet = new Set<string>();
+  // Build normalised map of (type → Set<normValue>) for O(1) lookup.
+  // Key: normalised type (trimmed + lowercased). Value: set of normalised values.
+  const entryByType = new Map<string, Set<string>>();
   for (const id of entry.identifiers) {
-    const norm = normaliseIdentifierValue(id.value);
-    if (norm.length > 0) {
-      entryNormSet.add(norm);
+    const normType = id.type.trim().toLowerCase();
+    const normValue = normaliseIdentifierValue(id.value);
+    if (normValue.length === 0) continue;
+    let bucket = entryByType.get(normType);
+    if (!bucket) {
+      bucket = new Set<string>();
+      entryByType.set(normType, bucket);
     }
+    bucket.add(normValue);
   }
 
   for (const qId of queryIdentifiers) {
     const normQuery = normaliseIdentifierValue(qId.value);
     // Guard: empty/whitespace-only query values must not match.
     if (normQuery.length === 0) continue;
-    if (entryNormSet.has(normQuery)) {
+    const normType = qId.type.trim().toLowerCase();
+    const bucket = entryByType.get(normType);
+    if (bucket?.has(normQuery)) {
       return {
         entryId: entry.entryId,
         matchedName: entry.names[0] ?? "",
