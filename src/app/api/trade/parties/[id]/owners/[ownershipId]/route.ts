@@ -11,7 +11,6 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import {
@@ -19,29 +18,23 @@ import {
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 
 export async function DELETE(
   req: Request,
   context: { params: Promise<{ id: string; ownershipId: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
 
-    const rl = await checkRateLimit("api", getIdentifier(req, userId));
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(req, tradeAuth.userId),
+    );
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const { id, ownershipId } = await context.params;
 
@@ -51,7 +44,7 @@ export async function DELETE(
       where: {
         id: ownershipId,
         ownedId: id,
-        owned: { organizationId: org.organizationId },
+        owned: { organizationId: tradeAuth.organizationId },
       },
       select: { id: true, ownerId: true, ownedId: true, percent: true },
     });
@@ -67,7 +60,7 @@ export async function DELETE(
         ownedId: id,
         ownerId: edge.ownerId,
         percent: edge.percent,
-        userId,
+        userId: tradeAuth.userId,
       },
       "trade ownership edge deleted",
     );

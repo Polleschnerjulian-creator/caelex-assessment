@@ -15,7 +15,6 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import {
@@ -23,7 +22,7 @@ import {
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 
 import { screenParty } from "@/lib/comply-v2/trade/screening/screen-party.server";
 import { emitTradeEvent } from "@/lib/comply-v2/trade/ops-events.server";
@@ -33,22 +32,16 @@ export async function POST(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
 
-    const rl = await checkRateLimit("sensitive", getIdentifier(req, userId));
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, tradeAuth.userId),
+    );
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const { id } = await context.params;
 
@@ -56,19 +49,21 @@ export async function POST(
     // parties across tenants by letting screenParty throw a generic
     // "not found" without org context.
     const exists = await prisma.tradeParty.findFirst({
-      where: { id, organizationId: org.organizationId },
+      where: { id, organizationId: tradeAuth.organizationId },
       select: { id: true },
     });
     if (!exists) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    const result = await screenParty(id, { systemDecisionUserId: userId });
+    const result = await screenParty(id, {
+      systemDecisionUserId: tradeAuth.userId,
+    });
 
     logger.info(
       {
         partyId: id,
-        userId,
+        userId: tradeAuth.userId,
         decision: result.summary.decision,
         hitCount: result.summary.hitCount,
         topScore: result.summary.topScore,
@@ -77,7 +72,7 @@ export async function POST(
     );
 
     await emitTradeEvent("trade.party.screened", {
-      organizationId: org.organizationId,
+      organizationId: tradeAuth.organizationId,
       summary: `${result.party.legalName} · ${result.summary.decision}${result.summary.hitCount > 0 ? ` · ${result.summary.hitCount} hits, top ${result.summary.topScore.toFixed(2)}` : ""}${result.summary.cascadeHit ? " · 50%-rule cascade hit" : ""}`,
       data: {
         partyId: id,
@@ -86,7 +81,7 @@ export async function POST(
         hitCount: result.summary.hitCount,
         topScore: result.summary.topScore,
         cascadeHit: result.summary.cascadeHit,
-        userId,
+        userId: tradeAuth.userId,
       },
     });
 

@@ -8,7 +8,6 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import {
@@ -16,7 +15,7 @@ import {
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { z } from "zod";
 import { TradePartyStatus } from "@prisma/client";
 
@@ -47,26 +46,20 @@ export async function GET(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
 
-    const rl = await checkRateLimit("api", getIdentifier(req, userId));
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(req, tradeAuth.userId),
+    );
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const { id } = await context.params;
     const party = await prisma.tradeParty.findFirst({
-      where: { id, organizationId: org.organizationId },
+      where: { id, organizationId: tradeAuth.organizationId },
       include: {
         screenings: {
           orderBy: { createdAt: "desc" },
@@ -104,27 +97,21 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
 
-    const rl = await checkRateLimit("api", getIdentifier(req, userId));
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(req, tradeAuth.userId),
+    );
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const { id } = await context.params;
 
     const existing = await prisma.tradeParty.findFirst({
-      where: { id, organizationId: org.organizationId },
+      where: { id, organizationId: tradeAuth.organizationId },
       select: { id: true, legalName: true },
     });
     if (!existing) {
@@ -153,7 +140,7 @@ export async function PATCH(
     });
 
     logger.info(
-      { partyId: id, userId, fields: Object.keys(data) },
+      { partyId: id, userId: tradeAuth.userId, fields: Object.keys(data) },
       "trade party updated",
     );
 

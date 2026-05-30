@@ -15,14 +15,13 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import {
   checkRateLimit,
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { runCrossScreening } from "@/lib/comply-v2/trade/screening/cross-screening.server";
 
 export async function GET(
@@ -30,28 +29,22 @@ export async function GET(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
 
-    const rl = await checkRateLimit("api", getIdentifier(req, userId));
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(req, tradeAuth.userId),
+    );
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const { id } = await context.params;
 
     const result = await runCrossScreening({
       partyId: id,
-      organizationId: org.organizationId,
+      organizationId: tradeAuth.organizationId,
     });
 
     return NextResponse.json({

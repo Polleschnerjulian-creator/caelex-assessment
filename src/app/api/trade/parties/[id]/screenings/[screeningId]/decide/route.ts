@@ -23,7 +23,6 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import {
@@ -31,7 +30,7 @@ import {
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { z } from "zod";
 import { TradeScreeningStatus, TradePartyStatus } from "@prisma/client";
 import { emitTradeEvent } from "@/lib/comply-v2/trade/ops-events.server";
@@ -46,22 +45,16 @@ export async function POST(
   context: { params: Promise<{ id: string; screeningId: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
 
-    const rl = await checkRateLimit("sensitive", getIdentifier(req, userId));
+    const rl = await checkRateLimit(
+      "sensitive",
+      getIdentifier(req, tradeAuth.userId),
+    );
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const { id: partyId, screeningId } = await context.params;
 
@@ -80,7 +73,7 @@ export async function POST(
       where: {
         id: screeningId,
         partyId,
-        party: { organizationId: org.organizationId },
+        party: { organizationId: tradeAuth.organizationId },
       },
       select: { id: true, decision: true },
     });
@@ -120,7 +113,7 @@ export async function POST(
         where: { id: screeningId },
         data: {
           decision,
-          decidedById: userId,
+          decidedById: tradeAuth.userId,
           decidedAt: now,
           notes,
         },
@@ -140,14 +133,14 @@ export async function POST(
         partyId,
         screeningId,
         decision,
-        userId,
+        userId: tradeAuth.userId,
         partyStatusAfter: updatedParty.status,
       },
       "screening decision recorded",
     );
 
     await emitTradeEvent("trade.screening.decided", {
-      organizationId: org.organizationId,
+      organizationId: tradeAuth.organizationId,
       summary: `${updatedParty.legalName} · screening triaged → ${decision}${decision === "CONFIRMED_HIT" ? " (BLOCKED)" : ""}`,
       data: {
         partyId,
@@ -155,18 +148,18 @@ export async function POST(
         screeningId,
         decision,
         partyStatusAfter: updatedParty.status,
-        userId,
+        userId: tradeAuth.userId,
       },
     });
     if (decision === "CONFIRMED_HIT") {
       await emitTradeEvent("trade.party.blocked", {
-        organizationId: org.organizationId,
+        organizationId: tradeAuth.organizationId,
         summary: `${updatedParty.legalName} BLOCKED — confirmed sanctions hit`,
         data: {
           partyId,
           legalName: updatedParty.legalName,
           reason: "Sanctions match confirmed by reviewer",
-          userId,
+          userId: tradeAuth.userId,
         },
       });
     }

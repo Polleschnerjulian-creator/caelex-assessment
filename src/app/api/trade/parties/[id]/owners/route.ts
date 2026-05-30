@@ -12,7 +12,6 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import {
@@ -20,7 +19,7 @@ import {
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { z } from "zod";
 
 const AddOwnerSchema = z
@@ -43,28 +42,22 @@ export async function GET(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
 
-    const rl = await checkRateLimit("api", getIdentifier(req, userId));
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(req, tradeAuth.userId),
+    );
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const { id } = await context.params;
 
     // Verify org-scope: the OWNED party must be in caller's org
     const target = await prisma.tradeParty.findFirst({
-      where: { id, organizationId: org.organizationId },
+      where: { id, organizationId: tradeAuth.organizationId },
       select: { id: true },
     });
     if (!target) {
@@ -107,22 +100,16 @@ export async function POST(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
 
-    const rl = await checkRateLimit("api", getIdentifier(req, userId));
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(req, tradeAuth.userId),
+    );
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const { id } = await context.params;
 
@@ -146,11 +133,11 @@ export async function POST(
     // Both parties must be in the same org
     const [target, owner] = await Promise.all([
       prisma.tradeParty.findFirst({
-        where: { id, organizationId: org.organizationId },
+        where: { id, organizationId: tradeAuth.organizationId },
         select: { id: true, legalName: true },
       }),
       prisma.tradeParty.findFirst({
-        where: { id: ownerId, organizationId: org.organizationId },
+        where: { id: ownerId, organizationId: tradeAuth.organizationId },
         select: { id: true, legalName: true },
       }),
     ]);
@@ -196,7 +183,7 @@ export async function POST(
           ownerId,
           percent,
           controlType,
-          userId,
+          userId: tradeAuth.userId,
         },
         "trade ownership edge created",
       );

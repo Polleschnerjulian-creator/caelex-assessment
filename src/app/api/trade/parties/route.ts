@@ -11,7 +11,6 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import {
@@ -19,7 +18,7 @@ import {
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { z } from "zod";
 import { TradePartyStatus, TradeScreeningStatus, Prisma } from "@prisma/client";
 
@@ -65,22 +64,16 @@ const CreateTradePartySchema = z.object({
 
 export async function GET(req: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
 
-    const rl = await checkRateLimit("api", getIdentifier(req, userId));
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(req, tradeAuth.userId),
+    );
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("q") ?? "";
@@ -90,7 +83,7 @@ export async function GET(req: Request) {
     const limit = Math.min(50, parseInt(searchParams.get("limit") ?? "20", 10));
 
     const where: Prisma.TradePartyWhereInput = {
-      organizationId: org.organizationId,
+      organizationId: tradeAuth.organizationId,
     };
 
     if (status && status in TradePartyStatus) {
@@ -146,22 +139,16 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
 
-    const rl = await checkRateLimit("api", getIdentifier(req, userId));
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(req, tradeAuth.userId),
+    );
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const body = await req.json();
     const parsed = CreateTradePartySchema.safeParse(body);
@@ -178,8 +165,8 @@ export async function POST(req: Request) {
 
     const party = await prisma.tradeParty.create({
       data: {
-        organizationId: org.organizationId,
-        createdById: userId,
+        organizationId: tradeAuth.organizationId,
+        createdById: tradeAuth.userId,
         legalName: data.legalName,
         tradeName: data.tradeName,
         countryCode: data.countryCode,
@@ -196,19 +183,23 @@ export async function POST(req: Request) {
     });
 
     await emitTradeEvent("trade.party.created", {
-      organizationId: org.organizationId,
+      organizationId: tradeAuth.organizationId,
       summary: `${party.legalName} · ${party.countryCode}${isHighRisk ? " · high-risk country" : ""}`,
       data: {
         partyId: party.id,
         legalName: party.legalName,
         countryCode: party.countryCode,
         isHighRiskCountry: isHighRisk,
-        userId,
+        userId: tradeAuth.userId,
       },
     });
 
     logger.info(
-      { partyId: party.id, orgId: org.organizationId, userId },
+      {
+        partyId: party.id,
+        orgId: tradeAuth.organizationId,
+        userId: tradeAuth.userId,
+      },
       "trade party created",
     );
 

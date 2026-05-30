@@ -13,7 +13,6 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import {
@@ -21,7 +20,7 @@ import {
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { z } from "zod";
 import { Prisma, TradeLicenseStatus, TradeLicenseType } from "@prisma/client";
 
@@ -50,22 +49,16 @@ const CreateLicenseSchema = z.object({
 
 export async function GET(req: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
 
-    const rl = await checkRateLimit("api", getIdentifier(req, userId));
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(req, tradeAuth.userId),
+    );
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
@@ -73,7 +66,7 @@ export async function GET(req: Request) {
     const search = searchParams.get("q") ?? "";
 
     const where: Prisma.TradeLicenseWhereInput = {
-      organizationId: org.organizationId,
+      organizationId: tradeAuth.organizationId,
     };
     if (status && status in TradeLicenseStatus) {
       where.status = status as TradeLicenseStatus;
@@ -117,22 +110,16 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
 
-    const rl = await checkRateLimit("api", getIdentifier(req, userId));
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(req, tradeAuth.userId),
+    );
     if (!rl.success) return createRateLimitResponse(rl);
-
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
 
     const body = await req.json();
     const parsed = CreateLicenseSchema.safeParse(body);
@@ -146,7 +133,7 @@ export async function POST(req: Request) {
 
     const license = await prisma.tradeLicense.create({
       data: {
-        organizationId: org.organizationId,
+        organizationId: tradeAuth.organizationId,
         licenseType: data.licenseType,
         licenseNumber: data.licenseNumber,
         issuedAt: data.issuedAt ? new Date(data.issuedAt) : null,
@@ -164,7 +151,7 @@ export async function POST(req: Request) {
         licenseId: license.id,
         licenseType: data.licenseType,
         licenseNumber: data.licenseNumber,
-        userId,
+        userId: tradeAuth.userId,
       },
       "trade license created",
     );

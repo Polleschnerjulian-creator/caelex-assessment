@@ -19,7 +19,7 @@ import {
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { isSuperAdmin } from "@/lib/super-admin";
 import {
   buildAnnexIIIaDocument,
@@ -32,19 +32,19 @@ export async function GET(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
+    // Super-admins bypass the TRADE entitlement gate and may impersonate
+    // any active org. Normal users go through getTradeAuth().
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
 
-    const rl = await checkRateLimit("api", getIdentifier(req, userId));
-    if (!rl.success) return createRateLimitResponse(rl);
-
-    // Resolve org. Super-admins may impersonate any active org.
+    let userId: string;
     let organizationId: string | null = null;
     let organizationName: string | null = null;
+
     if (isSuperAdmin(session.user.email)) {
+      userId = session.user.id;
       const anyOrg = await prisma.organization.findFirst({
         where: { isActive: true },
         select: { id: true, name: true },
@@ -53,12 +53,21 @@ export async function GET(
       organizationId = anyOrg?.id ?? null;
       organizationName = anyOrg?.name ?? null;
     } else {
-      const ctx = await getCurrentOrganization(userId);
-      if (ctx) {
-        organizationId = ctx.organizationId;
-        organizationName = ctx.organization.name;
+      const tradeAuth = await getTradeAuth();
+      if (!tradeAuth) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
+      userId = tradeAuth.userId;
+      organizationId = tradeAuth.organizationId;
+      const org = await prisma.organization.findUnique({
+        where: { id: tradeAuth.organizationId },
+        select: { name: true },
+      });
+      organizationName = org?.name ?? null;
     }
+
+    const rl = await checkRateLimit("api", getIdentifier(req, userId));
+    if (!rl.success) return createRateLimitResponse(rl);
 
     if (!organizationId) {
       return NextResponse.json(

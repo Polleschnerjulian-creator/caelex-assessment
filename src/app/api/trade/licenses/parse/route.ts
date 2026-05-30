@@ -27,14 +27,13 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import {
   checkRateLimit,
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
-import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { parseBafaBescheid } from "@/lib/trade/licenses/bafa-bescheid-parser.server";
 
 /** Maximum PDF size in bytes — 5 MB. BAFA-Bescheide are typically 200-
@@ -47,28 +46,19 @@ const ALLOWED_ROLES = new Set(["OWNER", "ADMIN", "MANAGER"]);
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const userId = session.user.id;
 
     // Expensive AI call → use document_generation tier (5/hr per user).
     const rl = await checkRateLimit(
       "document_generation",
-      getIdentifier(req, userId),
+      getIdentifier(req, tradeAuth.userId),
     );
     if (!rl.success) return createRateLimitResponse(rl);
 
-    const org = await getCurrentOrganization(userId);
-    if (!org) {
-      return NextResponse.json(
-        { error: "No active organization" },
-        { status: 403 },
-      );
-    }
-
-    if (!ALLOWED_ROLES.has(org.role)) {
+    if (!ALLOWED_ROLES.has(tradeAuth.role)) {
       return NextResponse.json(
         {
           error:
@@ -143,8 +133,8 @@ export async function POST(req: Request) {
 
     if (!parseResult.ok) {
       logger.warn("trade BAFA-Bescheid parse failed", {
-        userId,
-        orgId: org.organizationId,
+        userId: tradeAuth.userId,
+        orgId: tradeAuth.organizationId,
         fileSize: fileEntry.size,
         error: parseResult.error,
       });
@@ -158,8 +148,8 @@ export async function POST(req: Request) {
     }
 
     logger.info("trade BAFA-Bescheid parsed", {
-      userId,
-      orgId: org.organizationId,
+      userId: tradeAuth.userId,
+      orgId: tradeAuth.organizationId,
       fileName: fileEntry.name,
       fileSize: fileEntry.size,
       licenseType: parseResult.extraction.licenseType,
