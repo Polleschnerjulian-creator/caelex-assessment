@@ -30,9 +30,9 @@ import { prisma } from "@/lib/prisma";
 import {
   TradeScreeningStatus,
   TradeScreeningDecision,
+  TradeSanctionsList,
   type TradeParty,
   type TradeScreeningResult,
-  type TradeSanctionsList,
 } from "@prisma/client";
 import { logger } from "@/lib/logger";
 
@@ -49,6 +49,25 @@ import type { CanonicalSanctionsEntry } from "./sources/types";
 import { runCascadeForParty } from "./cascade-50pct.server";
 import type { CascadeResult } from "./cascade-50pct";
 import { sendTradeSanctionsHit } from "@/lib/email";
+
+// ─── Critical lists (T-H3: fail-closed gate) ────────────────────────
+//
+// When a screening result would otherwise be CLEAR, but one or more of
+// these primary designated-party lists was ABSENT from the snapshot Map
+// (cron down, sync failure, etc.), the result is escalated to
+// POTENTIAL_MATCH / POTENTIAL_MATCH so a human reviews it.
+// This prevents an infra failure from silently producing a "compliant"
+// verdict.
+//
+// Only primary single-authority lists are critical; aggregated / optional
+// lists (UK_OFSI, DDTC_DEBARRED, EU_ANNEX_IV, OPEN_SANCTIONS) are
+// supplementary — their absence does NOT block a CLEAR.
+export const CRITICAL_LISTS: TradeSanctionsList[] = [
+  TradeSanctionsList.OFAC_SDN,
+  TradeSanctionsList.EU_FSF,
+  TradeSanctionsList.UN_CONSOLIDATED,
+  TradeSanctionsList.BIS_ENTITY,
+];
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -196,6 +215,18 @@ export async function screenParty(
   const cascadeHit = cascade?.cascadeHit ?? false;
   const cascadeAncestorCount = cascade?.sanctionedAncestorCount ?? 0;
 
+  // ── T-H3: Identify missing critical-list snapshots ────────────────
+  // Compute which critical lists were not consulted due to missing
+  // snapshots (cron down, sync failure, etc.). This is done before the
+  // decision block so we can escalate CLEAR → POTENTIAL_MATCH.
+  const missingCritical = CRITICAL_LISTS.filter((l) => !snapshots.has(l));
+  if (missingCritical.length > 0) {
+    logger.warn(
+      { partyId, missingCritical },
+      "screenParty: critical sanctions list(s) missing — a would-be-CLEAR result will be escalated to POTENTIAL_MATCH (T-H3)",
+    );
+  }
+
   let decision: TradeScreeningDecision;
   let newStatus: TradeScreeningStatus;
   if (
@@ -207,6 +238,13 @@ export async function screenParty(
   ) {
     // Any of: name match (any band) OR cascade-detected sanctioned
     // ownership requires human review before clearing.
+    decision = TradeScreeningDecision.POTENTIAL_MATCH;
+    newStatus = TradeScreeningStatus.POTENTIAL_MATCH;
+  } else if (missingCritical.length > 0) {
+    // T-H3: Would otherwise be CLEAR, but a critical list's snapshot is
+    // unavailable. An infra failure must NOT silently produce a "compliant"
+    // verdict. Escalate to POTENTIAL_MATCH so a human reviews it.
+    // Uses existing enum values — no migration required.
     decision = TradeScreeningDecision.POTENTIAL_MATCH;
     newStatus = TradeScreeningStatus.POTENTIAL_MATCH;
   } else {
