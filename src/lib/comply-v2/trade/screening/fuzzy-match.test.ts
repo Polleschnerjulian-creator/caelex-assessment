@@ -22,6 +22,7 @@ import {
   SCORE_POTENTIAL_MATCH,
   SCORE_WEAK_MATCH,
 } from "./fuzzy-match";
+import { canonicalizeName } from "./sources/types";
 import type { CanonicalSanctionsEntry } from "./sources/types";
 
 describe("commonPrefixLength", () => {
@@ -207,6 +208,44 @@ describe("scoreEntry", () => {
     const hit = scoreEntry("huawei tech", SAMPLE_OFAC_ENTRY);
     expect(hit!.matchedName).toBe("huawei tech");
     expect(hit!.score).toBe(1);
+  });
+});
+
+describe("scoreEntry token-order matching", () => {
+  const ROSNEFT_ENTRY: CanonicalSanctionsEntry = {
+    entryId: "e1",
+    names: ["oil company rosneft"],
+    addresses: [],
+    identifiers: [],
+    listMetadata: { sdnType: "entity", programs: ["RUSSIA-EO14024"] },
+  };
+
+  const PLANET_LABS_ENTRY: CanonicalSanctionsEntry = {
+    entryId: "e2",
+    names: ["planet labs"],
+    addresses: [],
+    identifiers: [],
+    listMetadata: {},
+  };
+
+  it("scores word-order variant >= 0.85 (catches the T-H2 false negative)", () => {
+    // Query is "rosneft oil company" — entry name is "oil company rosneft"
+    // Pure Jaro-Winkler scores this ~0.67 (different word order), so it was CLEAR.
+    // With tokenSetRatio blended, the sorted tokens match and score >= 0.85.
+    const query = canonicalizeName("rosneft oil company");
+    const hit = scoreEntry(query, ROSNEFT_ENTRY);
+    expect(hit).not.toBeNull();
+    expect(hit!.score).toBeGreaterThanOrEqual(0.85);
+  });
+
+  it("does NOT false-positive on a clearly different entity", () => {
+    // "planet labs" vs "rosneft oil company" — no shared tokens, so
+    // tokenSetRatio returns 0; final score equals raw Jaro-Winkler (~0.50),
+    // well below the WEAK_MATCH threshold of 0.75.
+    const query = canonicalizeName("rosneft oil company");
+    const hit = scoreEntry(query, PLANET_LABS_ENTRY);
+    expect(hit).not.toBeNull();
+    expect(hit!.score).toBeLessThan(SCORE_WEAK_MATCH);
   });
 });
 

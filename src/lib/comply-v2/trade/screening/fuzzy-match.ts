@@ -30,6 +30,7 @@
  */
 
 import type { CanonicalSanctionsEntry } from "./sources/types";
+import { tokenSetRatio } from "./token-set";
 
 // ─── Score thresholds (exported for use across screening engine) ───
 
@@ -164,7 +165,10 @@ export function scoreEntry(
   let bestScore = 0;
   let bestName = entry.names[0];
   for (const name of entry.names) {
-    const s = jaroWinkler(queryCanonical, name);
+    const s = Math.max(
+      jaroWinkler(queryCanonical, name),
+      tokenSetRatio(queryCanonical, name),
+    );
     if (s > bestScore) {
       bestScore = s;
       bestName = name;
