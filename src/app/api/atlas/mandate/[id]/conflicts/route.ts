@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAtlasAuth } from "@/lib/atlas-auth";
-import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { checkMandateMembership } from "@/lib/atlas/mandate-membership";
 import { detectConflicts } from "@/lib/atlas/conflict-check-detect.server";
 
 /**
@@ -25,18 +25,25 @@ export async function GET(
   }
   const { id: mandateId } = await params;
 
-  const mandate = await prisma.atlasMandate.findFirst({
-    where: { id: mandateId, organizationId: atlas.organizationId },
-    select: { id: true },
-  });
-  if (!mandate) {
-    return NextResponse.json({ error: "Mandate not found" }, { status: 404 });
+  // Gate on mandate MEMBERSHIP (owner or explicit member), not just org —
+  // matches every sibling Atlas mandate route. Without this, any org
+  // member (incl. a VIEWER or someone behind an ethical wall) could read
+  // the matched party + matter names of a mandate they're walled off from.
+  if (
+    !(await checkMandateMembership(
+      mandateId,
+      atlas.userId,
+      atlas.organizationId,
+    ))
+  ) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   try {
     const conflicts = await detectConflicts({
       orgId: atlas.organizationId,
       mandateId,
+      callerUserId: atlas.userId,
     });
     return NextResponse.json({ conflicts });
   } catch (err) {

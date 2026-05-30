@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { checkMandateMembership } from "@/lib/atlas/mandate-membership";
 import { z } from "zod";
 
 /**
@@ -32,12 +33,17 @@ export async function POST(
   }
   const { id: mandateId } = await params;
 
-  const mandate = await prisma.atlasMandate.findFirst({
-    where: { id: mandateId, organizationId: atlas.organizationId },
-    select: { id: true },
-  });
-  if (!mandate) {
-    return NextResponse.json({ error: "Mandate not found" }, { status: 404 });
+  // Gate on mandate MEMBERSHIP of the primary mandate (owner or member),
+  // not just org — a clearance is a sign-off recorded against THIS
+  // mandate, so only its members may write it. Matches sibling routes.
+  if (
+    !(await checkMandateMembership(
+      mandateId,
+      atlas.userId,
+      atlas.organizationId,
+    ))
+  ) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   let body: unknown;

@@ -120,4 +120,35 @@ describe("detectConflicts", () => {
     const matches = await detectConflicts({ orgId: "o1", mandateId: "nope" });
     expect(matches).toHaveLength(0);
   });
+
+  it("gates the target lookup on mandate membership when callerUserId is given", async () => {
+    // A non-member's findFirst resolves null (the membership OR-filter
+    // excludes them), so the scan must short-circuit to [] — no party
+    // names of a walled-off mandate leak.
+    mockedPrisma.atlasMandate.findFirst.mockResolvedValue(null);
+
+    const matches = await detectConflicts({
+      orgId: "o1",
+      mandateId: "m1",
+      callerUserId: "stranger",
+    });
+
+    expect(matches).toHaveLength(0);
+    // the membership OR-filter must be present on the target lookup
+    const where = mockedPrisma.atlasMandate.findFirst.mock.calls[0][0].where;
+    expect(where.OR).toEqual([
+      { ownerUserId: "stranger" },
+      { members: { some: { userId: "stranger" } } },
+    ]);
+  });
+
+  it("omits the membership filter when callerUserId is absent (firm-wide scan)", async () => {
+    mockedPrisma.atlasMandate.findFirst.mockResolvedValue(target);
+    mockedPrisma.atlasMandate.findMany.mockResolvedValue([]);
+
+    await detectConflicts({ orgId: "o1", mandateId: "m1" });
+
+    const where = mockedPrisma.atlasMandate.findFirst.mock.calls[0][0].where;
+    expect(where.OR).toBeUndefined();
+  });
 });

@@ -41,11 +41,28 @@ export interface ConflictMatch {
 export async function detectConflicts(args: {
   orgId: string;
   mandateId: string;
+  /** When provided, the TARGET mandate lookup is gated on mandate
+   *  membership (owner OR explicit member), matching the convention of
+   *  every other Atlas mandate route. A non-member gets `[]` — no party
+   *  names of a walled-off mandate leak. Omit only for trusted server-
+   *  side firm-wide scans. The cross-mandate `others` scan stays
+   *  org-wide by design (a conflict check must see matters you're not
+   *  on). */
+  callerUserId?: string;
 }): Promise<ConflictMatch[]> {
-  const { orgId, mandateId } = args;
+  const { orgId, mandateId, callerUserId } = args;
 
   const target = await prisma.atlasMandate.findFirst({
-    where: { id: mandateId, organizationId: orgId },
+    where: {
+      id: mandateId,
+      organizationId: orgId,
+      ...(callerUserId && {
+        OR: [
+          { ownerUserId: callerUserId },
+          { members: { some: { userId: callerUserId } } },
+        ],
+      }),
+    },
     select: {
       id: true,
       parties: { select: { id: true, name: true, type: true } },
