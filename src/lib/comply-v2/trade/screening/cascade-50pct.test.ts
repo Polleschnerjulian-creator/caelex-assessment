@@ -302,6 +302,8 @@ describe("analyzeCascade", () => {
       // 50%-rule cascade does not aggregate non-equity control
       expect(result.cascadeHit).toBe(false);
       expect(result.ancestors).toEqual([]);
+      // T-H5: sanctioned trustee IS counted in the separate control-only signal
+      expect(result.sanctionedControlOnlyCount).toBe(1);
     });
 
     it("includes 'voting' edges in calculation", () => {
@@ -358,6 +360,88 @@ describe("analyzeCascade", () => {
       expect(result.cascadeHit).toBe(false); // below 50%
       // But sanctioned ancestor present — operator should still review
       expect(result.sanctionedAncestorCount).toBe(1);
+    });
+  });
+
+  // ─── T-H5: sanctioned control-without-equity (OFAC trustee doctrine) ──────
+  describe("T-H5: sanctioned control-only owner signal", () => {
+    it("sets sanctionedControlOnlyCount=1 for a sanctioned trustee (CONFIRMED_HIT, control_no_equity)", () => {
+      // X is a sanctioned trustee: holds control over T but 0% equity.
+      // The 50%-rule equity math must NOT be affected.
+      const result = analyzeCascade({
+        targetPartyId: "T",
+        edges: [edge("X", "T", 0.0, "control_no_equity")],
+        partySummaries: new Map([
+          party("T", "Target"),
+          party("X", "Sanctioned Trustee", "CONFIRMED_HIT"),
+        ]),
+      });
+      // Equity math unchanged
+      expect(result.cascadeHit).toBe(false);
+      expect(result.aggregateSanctionedOwnership).toBe(0);
+      expect(result.ancestors).toEqual([]);
+      // Separate control-only signal
+      expect(result.sanctionedControlOnlyCount).toBe(1);
+    });
+
+    it("sets sanctionedControlOnlyCount=0 for a CLEAR trustee", () => {
+      const result = analyzeCascade({
+        targetPartyId: "T",
+        edges: [edge("X", "T", 0.0, "control_no_equity")],
+        partySummaries: new Map([
+          party("T", "Target"),
+          party("X", "Clean Trustee", "CLEAR"),
+        ]),
+      });
+      expect(result.cascadeHit).toBe(false);
+      expect(result.sanctionedControlOnlyCount).toBe(0);
+    });
+
+    it("counts isBlocked trustee as sanctioned even without CONFIRMED_HIT status", () => {
+      const result = analyzeCascade({
+        targetPartyId: "T",
+        edges: [edge("X", "T", 0.0, "control_no_equity")],
+        partySummaries: new Map([
+          party("T", "Target"),
+          party("X", "Manually Blocked Trustee", "CLEAR", "US", true),
+        ]),
+      });
+      expect(result.sanctionedControlOnlyCount).toBe(1);
+      // Equity math still unchanged
+      expect(result.cascadeHit).toBe(false);
+    });
+
+    it("handles mixed: sanctioned equity owner (60%) + sanctioned trustee — equity cascade hits, control-only also counted", () => {
+      // Both signals fire; equity cascade takes priority as the stronger signal.
+      const result = analyzeCascade({
+        targetPartyId: "T",
+        edges: [
+          edge("A", "T", 0.6), // equity → cascade hit
+          edge("B", "T", 0.0, "control_no_equity"), // control only
+        ],
+        partySummaries: new Map([
+          party("T", "Target"),
+          party("A", "Sanctioned Owner A", "CONFIRMED_HIT"),
+          party("B", "Sanctioned Trustee B", "CONFIRMED_HIT"),
+        ]),
+      });
+      expect(result.cascadeHit).toBe(true);
+      expect(result.aggregateSanctionedOwnership).toBeCloseTo(0.6);
+      expect(result.sanctionedControlOnlyCount).toBe(1);
+    });
+
+    it("sets sanctionedControlOnlyCount=0 when there are no control_no_equity edges at all", () => {
+      const result = analyzeCascade({
+        targetPartyId: "T",
+        edges: [edge("X", "T", 0.6)],
+        partySummaries: new Map([
+          party("T", "Target"),
+          party("X", "Sanctioned Owner", "CONFIRMED_HIT"),
+        ]),
+      });
+      // Standard equity cascade — no control-only edges at all
+      expect(result.cascadeHit).toBe(true);
+      expect(result.sanctionedControlOnlyCount).toBe(0);
     });
   });
 });

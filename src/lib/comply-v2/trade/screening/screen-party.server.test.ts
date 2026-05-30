@@ -433,3 +433,131 @@ describe("missingLists — T-M12: all 8 registered sources covered", () => {
     );
   });
 });
+
+// ─── T-H5: sanctioned control-without-equity escalation ──────────────────────
+//
+// A party with no name/identifier hit AND no equity cascade hit BUT whose
+// cascade analysis finds a sanctioned control-only owner (trustee / director /
+// signatory) must NOT be returned as CLEAR. The correct result is
+// POTENTIAL_MATCH (human review), not auto-CLEAR.
+//
+// This is softer than a 50%-rule cascade hit (which is definitive), hence
+// POTENTIAL_MATCH rather than auto-CONFIRMED_HIT. The existing enum
+// POTENTIAL_MATCH covers both cases.
+
+describe("screenParty — T-H5: sanctioned control-without-equity escalation", () => {
+  it(
+    "escalates to POTENTIAL_MATCH when cascade has sanctionedControlOnlyCount > 0 " +
+      "and the party would otherwise be CLEAR (no name hits, no equity cascade)",
+    async () => {
+      // Arrange: all critical list snapshots present → would normally be CLEAR.
+      // But cascade returns sanctionedControlOnlyCount=1 (sanctioned trustee).
+      mockAllLatestSnapshots.mockResolvedValue(allCriticalSnapshots());
+      mockRunCascadeForParty.mockResolvedValue({
+        cascadeHit: false, // no equity cascade
+        sanctionedAncestorCount: 0, // no equity-based sanctioned ancestor
+        aggregateSanctionedOwnership: 0,
+        ancestors: [],
+        sanctionedControlOnlyCount: 1, // T-H5: sanctioned trustee present
+      });
+
+      mockScreeningResultCreate.mockResolvedValue(
+        mockTransactionReturn(
+          TradeScreeningDecision.POTENTIAL_MATCH,
+          TradeScreeningStatus.POTENTIAL_MATCH,
+        )[0],
+      );
+      mockPartyUpdate.mockResolvedValue(
+        mockTransactionReturn(
+          TradeScreeningDecision.POTENTIAL_MATCH,
+          TradeScreeningStatus.POTENTIAL_MATCH,
+        )[1],
+      );
+
+      // Act
+      const result = await screenParty(CLEAN_PARTY.id);
+
+      // Assert: sanctioned control-only owner must trigger POTENTIAL_MATCH review
+      expect(result.summary.decision).toBe(
+        TradeScreeningDecision.POTENTIAL_MATCH,
+      );
+      expect(result.party.screeningStatus).toBe(
+        TradeScreeningStatus.POTENTIAL_MATCH,
+      );
+    },
+  );
+
+  it(
+    "stays CLEAR when cascade has sanctionedControlOnlyCount=0 " +
+      "and there are no other hits",
+    async () => {
+      // Arrange: all critical lists present, cascade is fully clean.
+      mockAllLatestSnapshots.mockResolvedValue(allCriticalSnapshots());
+      mockRunCascadeForParty.mockResolvedValue({
+        cascadeHit: false,
+        sanctionedAncestorCount: 0,
+        aggregateSanctionedOwnership: 0,
+        ancestors: [],
+        sanctionedControlOnlyCount: 0, // no control-only signal
+      });
+
+      mockScreeningResultCreate.mockResolvedValue(
+        mockTransactionReturn(
+          TradeScreeningDecision.CLEAR,
+          TradeScreeningStatus.CLEAR,
+        )[0],
+      );
+      mockPartyUpdate.mockResolvedValue(
+        mockTransactionReturn(
+          TradeScreeningDecision.CLEAR,
+          TradeScreeningStatus.CLEAR,
+        )[1],
+      );
+
+      // Act
+      const result = await screenParty(CLEAN_PARTY.id);
+
+      // Assert: no false escalation when control-only count is zero
+      expect(result.summary.decision).toBe(TradeScreeningDecision.CLEAR);
+      expect(result.party.screeningStatus).toBe(TradeScreeningStatus.CLEAR);
+    },
+  );
+
+  it(
+    "does NOT downgrade to POTENTIAL_MATCH from a stronger equity cascade hit " +
+      "when both signals fire simultaneously",
+    async () => {
+      // An equity cascade hit (cascadeHit=true) + a control-only hit.
+      // Both paths lead to POTENTIAL_MATCH. Ensure the combined path still
+      // produces POTENTIAL_MATCH (not accidentally CLEAR).
+      mockAllLatestSnapshots.mockResolvedValue(allCriticalSnapshots());
+      mockRunCascadeForParty.mockResolvedValue({
+        cascadeHit: true, // equity cascade
+        sanctionedAncestorCount: 1,
+        aggregateSanctionedOwnership: 0.6,
+        ancestors: [],
+        sanctionedControlOnlyCount: 1, // control-only as well
+      });
+
+      mockScreeningResultCreate.mockResolvedValue(
+        mockTransactionReturn(
+          TradeScreeningDecision.POTENTIAL_MATCH,
+          TradeScreeningStatus.POTENTIAL_MATCH,
+        )[0],
+      );
+      mockPartyUpdate.mockResolvedValue(
+        mockTransactionReturn(
+          TradeScreeningDecision.POTENTIAL_MATCH,
+          TradeScreeningStatus.POTENTIAL_MATCH,
+        )[1],
+      );
+
+      const result = await screenParty(CLEAN_PARTY.id);
+
+      expect(result.summary.decision).toBe(
+        TradeScreeningDecision.POTENTIAL_MATCH,
+      );
+      expect(result.summary.cascadeHit).toBe(true);
+    },
+  );
+});

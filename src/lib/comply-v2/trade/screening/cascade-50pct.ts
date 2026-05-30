@@ -165,6 +165,19 @@ export interface CascadeResult {
    * `UK_OFSI`, `UN_CONSOLIDATED`).
    */
   triggerSources?: string[];
+  /**
+   * T-H5 (Sprint A, Task A6) — OFAC post-Dec-2025 trustee / control doctrine.
+   *
+   * Count of direct `control_no_equity` edges whose OWNER is sanctioned
+   * (screeningStatus === CONFIRMED_HIT or isBlocked). These edges are
+   * intentionally EXCLUDED from the 50%-rule equity math — control without
+   * equity is a softer signal requiring human review rather than auto-block.
+   *
+   * When > 0, `screenParty` escalates a would-be CLEAR result to
+   * POTENTIAL_MATCH. This field is INDEPENDENT of `cascadeHit` and
+   * `aggregateSanctionedOwnership`; the equity math is unchanged.
+   */
+  sanctionedControlOnlyCount: number;
 }
 
 // ─── Algorithm ──────────────────────────────────────────────────────
@@ -181,9 +194,23 @@ export function analyzeCascade(input: CascadeInput): CascadeResult {
 
   // Build adjacency: ownedId → list of (ownerId, percent, controlType)
   // We're traversing UPWARD (target → owners) so we index by ownedId.
+  // Only economic and voting edges participate in the 50% equity math.
   const upwardAdj = new Map<string, OwnershipEdgeSummary[]>();
+  // T-H5: collect direct control_no_equity edges on the TARGET separately.
+  // These don't aggregate into the equity percentage but their owner's
+  // sanctioned status is a separate escalation signal.
+  const controlOnlyDirectEdges: OwnershipEdgeSummary[] = [];
   for (const edge of input.edges) {
-    if (!ECONOMIC_OR_VOTING.has(edge.controlType)) continue;
+    if (!ECONOMIC_OR_VOTING.has(edge.controlType)) {
+      // Track control_no_equity edges that directly reference the target.
+      if (
+        edge.controlType === "control_no_equity" &&
+        edge.ownedId === input.targetPartyId
+      ) {
+        controlOnlyDirectEdges.push(edge);
+      }
+      continue;
+    }
     let bucket = upwardAdj.get(edge.ownedId);
     if (!bucket) {
       bucket = [];
@@ -290,6 +317,21 @@ export function analyzeCascade(input: CascadeInput): CascadeResult {
   // Cap the aggregate to 1.0 to avoid > 100% from rounding artifacts
   const cappedSanctioned = Math.min(aggregateSanctioned, 1);
 
+  // T-H5: count sanctioned control-only owners. Re-uses the same sanctioned
+  // determination already used for equity ancestors: CONFIRMED_HIT OR isBlocked.
+  // Only direct edges on the target party are counted (depth-1 trustees/directors).
+  let sanctionedControlOnlyCount = 0;
+  for (const controlEdge of controlOnlyDirectEdges) {
+    const ownerSummary = input.partySummaries.get(controlEdge.ownerId);
+    if (!ownerSummary) continue;
+    if (
+      ownerSummary.screeningStatus === "CONFIRMED_HIT" ||
+      ownerSummary.isBlocked
+    ) {
+      sanctionedControlOnlyCount++;
+    }
+  }
+
   return {
     partyId: input.targetPartyId,
     ancestors,
@@ -297,5 +339,6 @@ export function analyzeCascade(input: CascadeInput): CascadeResult {
     cascadeHit: cappedSanctioned >= 0.5,
     sanctionedAncestorCount: sanctionedCount,
     totalCascadedOwnership: Math.min(totalCascaded, 1),
+    sanctionedControlOnlyCount,
   };
 }

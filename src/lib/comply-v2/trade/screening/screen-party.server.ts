@@ -215,6 +215,10 @@ export async function screenParty(
   const band = classifyScore(topScore);
   const cascadeHit = cascade?.cascadeHit ?? false;
   const cascadeAncestorCount = cascade?.sanctionedAncestorCount ?? 0;
+  // T-H5: control-without-equity signal (post-Dec-2025 OFAC trustee doctrine).
+  // Separate from the equity 50%-rule — a sanctioned trustee/controller with
+  // 0% equity triggers human review, not auto-block.
+  const sanctionedControlOnlyCount = cascade?.sanctionedControlOnlyCount ?? 0;
 
   // ── T-H3: Identify missing critical-list snapshots ────────────────
   // Compute which critical lists were not consulted due to missing
@@ -239,6 +243,18 @@ export async function screenParty(
   ) {
     // Any of: name match (any band) OR cascade-detected sanctioned
     // ownership requires human review before clearing.
+    decision = TradeScreeningDecision.POTENTIAL_MATCH;
+    newStatus = TradeScreeningStatus.POTENTIAL_MATCH;
+  } else if (sanctionedControlOnlyCount > 0) {
+    // T-H5: sanctioned control-without-equity owner (post-Dec-2025 OFAC
+    // trustee doctrine). Softer than a 50%-rule cascade hit — the legal
+    // effect is not as definitive, but OFAC control doctrine requires a
+    // human to review. Escalate to POTENTIAL_MATCH rather than auto-block.
+    // Uses existing enum values — no migration required.
+    logger.warn(
+      { partyId, sanctionedControlOnlyCount },
+      "screenParty: sanctioned control-without-equity owner detected (T-H5) — escalating to POTENTIAL_MATCH",
+    );
     decision = TradeScreeningDecision.POTENTIAL_MATCH;
     newStatus = TradeScreeningStatus.POTENTIAL_MATCH;
   } else if (missingCritical.length > 0) {
@@ -318,6 +334,7 @@ export async function screenParty(
       cascadeHit,
       sanctionedAncestorCount: cascadeAncestorCount,
       cascadeAggregate: cascade?.aggregateSanctionedOwnership.toFixed(3),
+      sanctionedControlOnlyCount,
     },
     "screenParty: completed",
   );
