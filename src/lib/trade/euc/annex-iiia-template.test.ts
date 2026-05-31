@@ -225,6 +225,71 @@ describe("buildAnnexIIIaDocument", () => {
   });
 });
 
+// ─── T-H11: humanEndUse must map real TradeEndUseClass values ─────────────────
+// Tests go through buildAnnexIIIaDocument because humanEndUse is not exported.
+// The rendered "Declared end-use category" field value is what appears on the
+// legally-signed Annex IIIa EUC, so it must never contain raw SCREAMING_SNAKE.
+
+describe("humanEndUse (T-H11) — end-use label rendering", () => {
+  function endUseLabelFor(declaredEndUse: string): string | null | undefined {
+    const input = baseEucInput();
+    if (input.operation) {
+      input.operation.declaredEndUse = declaredEndUse;
+    }
+    const doc = buildAnnexIIIaDocument(input);
+    const endUseSection = doc.sections.find(
+      (s) => s.id === "end_use_statement",
+    );
+    return endUseSection?.fields.find(
+      (f) => f.label === "Declared end-use category",
+    )?.value;
+  }
+
+  it("CIVIL → human label (regression guard)", () => {
+    expect(endUseLabelFor("CIVIL")).toBe("Civilian / commercial");
+  });
+
+  it("MILITARY → human label (regression guard)", () => {
+    expect(endUseLabelFor("MILITARY")).toBe("Military");
+  });
+
+  it("UNKNOWN → human label (regression guard)", () => {
+    expect(endUseLabelFor("UNKNOWN")).toBe("Not yet determined");
+  });
+
+  it("DUAL_USE → contains 'dual-use', not the raw enum token", () => {
+    const label = endUseLabelFor("DUAL_USE");
+    expect(label).toContain("dual-use");
+    expect(label).not.toBe("DUAL_USE");
+    expect(label).not.toContain("_");
+  });
+
+  it("WMD_RELATED → contains 'WMD', not the raw enum token", () => {
+    const label = endUseLabelFor("WMD_RELATED");
+    expect(label).toContain("WMD");
+    expect(label).not.toBe("WMD_RELATED");
+    // Raw SCREAMING_SNAKE must not appear on the signed certificate.
+    expect(label).not.toMatch(/^WMD_RELATED$/);
+  });
+
+  it("RESEARCH (BAFA superset) → human label", () => {
+    const label = endUseLabelFor("RESEARCH");
+    expect(label).toBe("Research");
+  });
+
+  it("GOVERNMENT (BAFA superset) → human label", () => {
+    const label = endUseLabelFor("GOVERNMENT");
+    expect(label).toBe("Government / institutional");
+  });
+
+  it("unknown token (FOO_BAR) → Title Case fallback, no underscores, not all-caps", () => {
+    const label = endUseLabelFor("FOO_BAR");
+    expect(label).toBe("Foo Bar");
+    expect(label).not.toContain("_");
+    expect(label).not.toBe("FOO_BAR");
+  });
+});
+
 describe("renderAnnexIIIaPdf", () => {
   it("returns a non-empty PDF Buffer for a populated document", () => {
     const doc = buildAnnexIIIaDocument(baseEucInput());

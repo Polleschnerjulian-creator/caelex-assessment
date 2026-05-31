@@ -515,14 +515,26 @@ function humanEndUse(declared: string): string {
   switch (declared) {
     case "CIVIL":
       return "Civilian / commercial";
+    case "DUAL_USE":
+      return "Mixed civilian / military (dual-use)";
     case "MILITARY":
       return "Military";
-    case "DUAL":
-      return "Mixed civilian / military (dual-use)";
+    case "WMD_RELATED":
+      return "WMD-related (Art. 4(1)(a) catch-all concern)";
+    case "RESEARCH":
+      return "Research";
+    case "GOVERNMENT":
+      return "Government / institutional";
     case "UNKNOWN":
       return "Not yet determined";
     default:
-      return declared;
+      // Unknown token: render a readable fallback rather than a raw
+      // SCREAMING_SNAKE enum value on a signed certificate.
+      return declared
+        .toLowerCase()
+        .split("_")
+        .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+        .join(" ");
   }
 }
 
