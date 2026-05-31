@@ -72,6 +72,9 @@ export function BeneficialOwnersPanel({
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Per-row confirm state: holds the edge id currently awaiting deletion
+  // confirmation. Only one row can be in confirming state at a time.
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -104,6 +107,8 @@ export function BeneficialOwnersPanel({
       setOwners((prev) => prev.filter((o) => o.id !== ownershipId));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Network error");
+    } finally {
+      setConfirmingId(null);
     }
   }
 
@@ -312,16 +317,45 @@ export function BeneficialOwnersPanel({
                   )}
                 </div>
               </div>
-              <button
-                onClick={() => deleteOwner(edge.id)}
-                className="shrink-0 rounded-md p-1.5 transition-colors"
-                style={{
-                  color: "rgba(255,255,255,0.4)",
-                }}
-                title="Remove ownership edge"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
+              {confirmingId === edge.id ? (
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <button
+                    onClick={() => deleteOwner(edge.id)}
+                    className="rounded-md px-2 py-1 text-[11px] font-semibold transition-all"
+                    style={{
+                      background: "rgba(239,68,68,0.18)",
+                      color: "rgb(248,113,113)",
+                      boxShadow: "inset 0 0 0 0.5px rgba(239,68,68,0.35)",
+                    }}
+                    aria-label="Confirm removal"
+                  >
+                    Confirm
+                  </button>
+                  <button
+                    onClick={() => setConfirmingId(null)}
+                    className="rounded-md px-2 py-1 text-[11px] font-semibold transition-all"
+                    style={{
+                      background: "rgba(255,255,255,0.06)",
+                      color: "rgba(255,255,255,0.55)",
+                      boxShadow: "inset 0 0 0 0.5px rgba(255,255,255,0.12)",
+                    }}
+                    aria-label="Cancel removal"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmingId(edge.id)}
+                  className="shrink-0 rounded-md p-1.5 transition-colors"
+                  style={{
+                    color: "rgba(255,255,255,0.4)",
+                  }}
+                  title="Remove ownership edge"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              )}
             </li>
           ))}
         </ul>
