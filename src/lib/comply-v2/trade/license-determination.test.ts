@@ -654,6 +654,22 @@ describe("Sprint D4: exceptionContext downgrades REQUIRED → EXCEPTION_MAY_APPL
   });
 });
 
+// ─── evalWith helper (used by Gate 3.5 tests) ─────────────────────────────────
+// Builds a TriggerEvaluation with no triggered results (equivalent to CLEAN_EVAL
+// but callable as evalWith() per the gate-3.5 test spec).
+function evalWith(
+  results: TriggerEvaluation["results"] = [],
+): TriggerEvaluation {
+  return {
+    results,
+    hasItarFlag: false,
+    hasMtcrCatIFlag: false,
+    requiresHumanReview: results.length > 0,
+    maxConfidence: results.length > 0 ? "HIGH" : null,
+    triggeredRuleCount: results.length,
+  };
+}
+
 // ─── Sprint Z2b — Annex IV Art. 2b hard prohibition gate ───────────
 
 describe("Gate 0 — EU Reg. 833/2014 Annex IV Art. 2b", () => {
@@ -832,5 +848,78 @@ describe("Gate 0 — EU Reg. 833/2014 Annex IV Art. 2b", () => {
     expect(det.annexIVBlock).toBe(false);
     const prohibited = det.requirements.find((r) => r.status === "PROHIBITED");
     expect(prohibited).toBeUndefined();
+  });
+});
+
+describe("Gate 3.5 — declared control-code backstop (T-M5 completion)", () => {
+  it("upgrades a declared dual-use eccnEU to REVIEW_NEEDED for a non-EU destination", () => {
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "CN",
+      undefined,
+      undefined,
+      { eccnEU: "9A515.a" },
+    );
+    expect(det.gate).toBe("REVIEW_NEEDED");
+    expect(
+      det.requirements.some((r) => r.triggerCode === "ACTUAL_CODE_DECLARED"),
+    ).toBe(true);
+  });
+  it("leaves a declared dual-use eccnEU CLEARED for an intra-EU destination", () => {
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "FR",
+      undefined,
+      undefined,
+      { eccnEU: "9A515.a" },
+    );
+    expect(det.gate).toBe("CLEARED");
+  });
+  it("does not upgrade for an EAR99 US code", () => {
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "CN",
+      undefined,
+      undefined,
+      { eccnUS: "EAR99" },
+    );
+    expect(det.gate).toBe("CLEARED");
+  });
+  it("upgrades when the destination is unknown (conservative)", () => {
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      undefined,
+      undefined,
+      undefined,
+      { eccnEU: "9A515.a" },
+    );
+    expect(det.gate).toBe("REVIEW_NEEDED");
+  });
+  it("upgrades a declared USML category to REVIEW_NEEDED regardless of destination", () => {
+    const detEU = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "FR",
+      undefined,
+      undefined,
+      { usmlCategory: "XV(e)" },
+    );
+    const detNonEU = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "CN",
+      undefined,
+      undefined,
+      { usmlCategory: "XV(e)" },
+    );
+    expect(detEU.gate).toBe("REVIEW_NEEDED");
+    expect(detNonEU.gate).toBe("REVIEW_NEEDED");
+    expect(
+      detEU.requirements.some((r) => r.triggerCode === "ACTUAL_USML_DECLARED"),
+    ).toBe(true);
   });
 });

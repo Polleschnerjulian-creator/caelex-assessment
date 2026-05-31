@@ -29,6 +29,7 @@
 
 import type { TriggerEvaluation } from "./property-trigger-engine";
 import type { DeMinimisResult } from "./de-minimis-calculator";
+import { EU_MEMBER_STATES_SET } from "@/lib/space-law-types";
 import {
   matchLicenseExceptions,
   type ApplicableException,
@@ -193,7 +194,11 @@ export function determineLicenseRequirements(
    * here, so a non-empty eccnEU / eccnUS always denotes dual-use (Annex I
    * or CCL).  Omit or pass null values to preserve pre-T-M5 behaviour.
    */
-  actualCodes?: { eccnEU?: string | null; eccnUS?: string | null },
+  actualCodes?: {
+    eccnEU?: string | null;
+    eccnUS?: string | null;
+    usmlCategory?: string | null;
+  },
 ): LicenseDetermination {
   const requirements: LicenseRequirement[] = [];
   const nextSteps: string[] = [];
@@ -482,6 +487,61 @@ export function determineLicenseRequirements(
         };
       }
     }
+  }
+
+  // ── Gate 3.5: declared control-code backstop (T-M5 completion) ───────
+  // Declared control codes must drive the gate even when NO heuristic
+  // trigger fired (e.g. a manually-declared ECCN/USML with no physical
+  // signals):
+  //   • EU Annex I dual-use (eccnEU, or eccnUS ≠ EAR99): export OUTSIDE the
+  //     EU needs a licence determination → REVIEW_NEEDED. Intra-EU transfers
+  //     of non-Annex-IV items are exempt → stay cleared.
+  //   • USML / ITAR (usmlCategory): DDTC authorisation is needed for ANY
+  //     export/transfer (no intra-EU exemption) → REVIEW_NEEDED always.
+  // This completes the T-M5 wiring: actualCodes now affect the GENERAL gate,
+  // not only the Annex IV prohibition. It can only tighten the gate.
+  const eccnEUCode = actualCodes?.eccnEU?.trim();
+  const eccnUSCode = actualCodes?.eccnUS?.trim();
+  const usmlCode = actualCodes?.usmlCategory?.trim();
+  const hasControlledDualUseCode =
+    !!eccnEUCode || (!!eccnUSCode && eccnUSCode.toUpperCase() !== "EAR99");
+  const destinationOutsideEU =
+    !destinationCountry ||
+    !EU_MEMBER_STATES_SET.has(destinationCountry.trim().toUpperCase());
+  const actualCodeAlreadyCovered = requirements.some(
+    (r) =>
+      r.triggerCode === "ACTUAL_CODE_DECLARED" ||
+      r.triggerCode === "ACTUAL_USML_DECLARED" ||
+      r.status === "DENIED" ||
+      r.status === "PROHIBITED",
+  );
+  if (usmlCode && !actualCodeAlreadyCovered) {
+    requirements.push({
+      jurisdiction: "US (ITAR / USML)",
+      authority: "DDTC",
+      status: "REQUIRED",
+      licenseType: "SPECIFIC_LICENSE",
+      reason: `Item is classified as ITAR-controlled (USML ${usmlCode}). A DDTC authorisation is required for any export, re-export or transfer; there is no intra-EU exemption for ITAR items.`,
+      recommendedAction: `Obtain the applicable DDTC authorisation (e.g. DSP-5 / TAA) before any transfer.`,
+      triggerCode: "ACTUAL_USML_DECLARED",
+    });
+  } else if (
+    hasControlledDualUseCode &&
+    destinationOutsideEU &&
+    !actualCodeAlreadyCovered
+  ) {
+    const code = eccnEUCode || eccnUSCode;
+    requirements.push({
+      jurisdiction: destinationCountry
+        ? `Export to ${destinationCountry}`
+        : "Export (destination unspecified)",
+      authority: "BAFA",
+      status: "REQUIRED",
+      licenseType: "BAFA_ANTRAG",
+      reason: `Item is classified as export-controlled (ECCN ${code}). Export of an EU Annex I dual-use item outside the EU requires an export-licence determination, even when no heuristic trigger fired. Intra-EU transfers of non-Annex-IV items are exempt.`,
+      recommendedAction: `Determine the applicable licence (a specific BAFA licence or an EU general/global authorisation) for destination ${destinationCountry ?? "(unspecified)"} before shipping.`,
+      triggerCode: "ACTUAL_CODE_DECLARED",
+    });
   }
 
   // ─── Determine overall gate ───────────────────────────────────────

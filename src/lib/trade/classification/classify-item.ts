@@ -117,7 +117,11 @@ export function classifyItemForOperation(
     destinationCountry,
     undefined,
     opts.screeningContext,
-    { eccnEU: item.eccnEU ?? null, eccnUS: item.eccnUS ?? null },
+    {
+      eccnEU: item.eccnEU ?? null,
+      eccnUS: item.eccnUS ?? null,
+      usmlCategory: item.usmlCategory ?? null,
+    },
   );
 
   return { triggerEval, deMinimis, licenseDetermination };
