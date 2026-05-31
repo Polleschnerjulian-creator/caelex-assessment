@@ -397,11 +397,14 @@ export async function recordDrawDown(
   }
 
   return prisma.$transaction(async (tx) => {
+    // Read only the IMMUTABLE cap + status. totalValueCapEur never changes
+    // after creation so the bound derived from it is race-safe. T-H7.
     const current = await tx.tradeSammelgenehmigung.findFirst({
       where: {
         id: input.sammelgenehmigungId,
         organizationId: input.organizationId,
       },
+      select: { id: true, status: true, totalValueCapEur: true },
     });
     if (!current) {
       throw new Error("Sammelgenehmigung not found in this organisation");
@@ -412,13 +415,36 @@ export async function recordDrawDown(
       );
     }
 
-    const newDrawn = current.drawnDownValueEur + input.valueEur;
-    if (newDrawn > current.totalValueCapEur) {
+    // ATOMIC GUARD (T-H7): increment only while drawnDownValueEur stays
+    // within cap. The WHERE re-evaluates drawnDownValueEur at row-lock
+    // time, so a concurrent draw that already moved the total past the
+    // bound makes this match 0 rows → we reject. cap is immutable so
+    // `bound` is race-safe.
+    const bound = current.totalValueCapEur - input.valueEur;
+    const incremented = await tx.tradeSammelgenehmigung.updateMany({
+      where: {
+        id: current.id,
+        organizationId: input.organizationId,
+        status: "ACTIVE",
+        drawnDownValueEur: { lte: bound },
+      },
+      data: { drawnDownValueEur: { increment: input.valueEur } },
+    });
+
+    if (incremented.count === 0) {
+      // Either a concurrent draw consumed the headroom, or this single
+      // draw exceeds the cap. Read back to produce a precise message.
+      const after = await tx.tradeSammelgenehmigung.findFirst({
+        where: { id: current.id },
+        select: { drawnDownValueEur: true, totalValueCapEur: true },
+      });
+      const wouldBe = (after?.drawnDownValueEur ?? 0) + input.valueEur;
       throw new Error(
-        `Draw-down would exceed cap: ${newDrawn.toFixed(2)} EUR > ${current.totalValueCapEur.toFixed(2)} EUR`,
+        `Draw-down would exceed cap: ${wouldBe.toFixed(2)} EUR > ${(after?.totalValueCapEur ?? current.totalValueCapEur).toFixed(2)} EUR`,
       );
     }
 
+    // Record the ledger entry (operation already org-verified above the tx).
     const drawDown = await tx.tradeSammelgenehmigungDrawDown.create({
       data: {
         sammelgenehmigungId: current.id,
@@ -429,20 +455,30 @@ export async function recordDrawDown(
       },
     });
 
-    const triggeredExhausted = newDrawn >= current.totalValueCapEur;
-    await tx.tradeSammelgenehmigung.update({
-      where: { id: current.id },
-      data: {
-        drawnDownValueEur: newDrawn,
-        ...(triggeredExhausted ? { status: "EXHAUSTED" as const } : {}),
+    // Flip to EXHAUSTED iff the (now-updated) total reached the cap.
+    // Atomic, idempotent: only matches while still ACTIVE and at/over cap.
+    const exhaustedFlip = await tx.tradeSammelgenehmigung.updateMany({
+      where: {
+        id: current.id,
+        status: "ACTIVE",
+        drawnDownValueEur: { gte: current.totalValueCapEur },
       },
+      data: { status: "EXHAUSTED" },
     });
+    const triggeredExhausted = exhaustedFlip.count > 0;
 
-    return {
-      drawDown,
-      remainingCapacityEur: Math.max(0, current.totalValueCapEur - newDrawn),
-      triggeredExhausted,
-    };
+    // Read back the authoritative remaining capacity.
+    const fresh = await tx.tradeSammelgenehmigung.findFirst({
+      where: { id: current.id },
+      select: { drawnDownValueEur: true, totalValueCapEur: true },
+    });
+    const remainingCapacityEur = Math.max(
+      0,
+      (fresh?.totalValueCapEur ?? current.totalValueCapEur) -
+        (fresh?.drawnDownValueEur ?? 0),
+    );
+
+    return { drawDown, remainingCapacityEur, triggeredExhausted };
   });
 }
 
