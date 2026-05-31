@@ -106,25 +106,9 @@ const SECTIONS: ReadonlyArray<NavSection> = [
       },
     ],
   },
-  {
-    label: "Mehr",
-    items: [
-      {
-        href: "/trade/program",
-        label: "Compliance-Programm",
-        icon: ShieldCheck,
-        match: (p) => p.startsWith("/trade/program"),
-        tooltip: "Dein ICP, Abdeckung & Regelwerk.",
-      },
-      {
-        href: "/trade/settings",
-        label: "Einstellungen",
-        icon: Settings,
-        match: (p) => p.startsWith("/trade/settings"),
-        tooltip: "Organisation, BAFA-Profil, Mitglieder.",
-      },
-    ],
-  },
+  // NOTE: Compliance-Programm + Einstellungen are NOT a SECTIONS group —
+  // they live in FOOTER_ITEMS (rendered separately below) per the existing
+  // sidebar pattern. Adding them here too would render them twice.
 ];
 
 const FOOTER_ITEMS: ReadonlyArray<NavItem> = [
