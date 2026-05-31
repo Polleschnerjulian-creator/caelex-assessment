@@ -1,33 +1,17 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  Package,
-  Users,
-  ArrowRight,
-  AlertTriangle,
-  ShieldCheck,
-  ShieldAlert,
-  Clock,
-  CalendarClock,
-  type LucideIcon,
-} from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isSuperAdmin } from "@/lib/super-admin";
 import { getComplianceHealth } from "@/lib/trade/compliance-health-service";
 import { getActivityFeed } from "@/lib/trade/welcome-feed/activity-feed-service";
 import { aggregateActionItems } from "@/lib/trade/action-inbox-aggregator";
-import { ComplianceHealthPanel } from "./_components/ComplianceHealthPanel";
-import { ActivityFeedPanel } from "./_components/ActivityFeedPanel";
+import { pickHeroAction } from "@/lib/trade/home-hero";
 import { ActionInboxPanel } from "./_components/ActionInboxPanel";
-import { OnboardingBanner } from "./_components/OnboardingBanner";
-import {
-  UpcomingDeadlinesStrip,
-  assembleDeadlines,
-} from "./_components/UpcomingDeadlinesStrip";
-import { WorkspaceHeader } from "./_components/WorkspaceHeader";
-import { QuickStartGrid } from "./_components/QuickStartGrid";
-import { CompliancePostureCard } from "./_components/CompliancePostureCard";
+import { assembleDeadlines } from "./_components/UpcomingDeadlinesStrip";
+import { HomeHero } from "./_components/HomeHero";
+import { HomeOnboarding } from "./_components/HomeOnboarding";
+import { MiniStatsStrip } from "./_components/MiniStatsStrip";
+import { TradeCommandTrigger } from "./_components/TradeCommandTrigger";
 
 export const metadata = {
   title: "Caelex Trade — Dashboard",
@@ -78,15 +62,15 @@ export default async function TradeDashboardPage() {
   const [
     org,
     itemsCount,
-    unclassifiedItemsCount,
+    _unclassifiedItemsCount,
     partiesTotal,
     partiesByStatus,
     operationsTotal,
     operationsByStatus,
     licensesActiveCount,
     licensesExpiringSoon,
-    complianceHealth,
-    activityEvents,
+    _complianceHealth,
+    _activityEvents,
     eucDeadlineRows,
     reexportDeadlineRows,
     sammelgenehmigungDeadlineRows,
@@ -266,19 +250,19 @@ export default async function TradeDashboardPage() {
     operationsMap[row.status] = row._count._all;
   }
 
-  const openOperations =
+  const _openOperations =
     (operationsMap.DRAFT ?? 0) +
     (operationsMap.AWAITING_CLASSIFICATION ?? 0) +
     (operationsMap.SCREENING ?? 0) +
     (operationsMap.AWAITING_LICENSE ?? 0) +
     (operationsMap.LICENSED ?? 0);
 
-  const partiesNeedingReview =
+  const _partiesNeedingReview =
     (partiesMap.POTENTIAL_MATCH ?? 0) +
     (partiesMap.CONFIRMED_HIT ?? 0) +
     (partiesMap.STALE ?? 0);
 
-  const hasAnyData =
+  const _hasAnyData =
     itemsCount > 0 ||
     partiesTotal > 0 ||
     operationsTotal > 0 ||
@@ -317,7 +301,7 @@ export default async function TradeDashboardPage() {
     }
   }
 
-  const upcomingDeadlines = assembleDeadlines({
+  const _upcomingDeadlines = assembleDeadlines({
     eucs: eucDeadlineRows,
     reexports: reexportDeadlineRows,
     sammelgenehmigungen: sammelgenehmigungDeadlineRows,
@@ -376,173 +360,49 @@ export default async function TradeDashboardPage() {
     now,
   });
 
+  const heroState = pickHeroAction(actionItems, {
+    items: itemsCount,
+    parties: partiesTotal,
+    operations: operationsTotal,
+  });
+  const showOnboarding = heroState.variant === "onboarding";
+  const miniStats = [
+    { label: "Vorgänge aktiv", value: String(operationsTotal) },
+    { label: "Artikel", value: String(itemsCount) },
+    { label: "Partner", value: String(partiesTotal) },
+    { label: "Regime aktiv", value: "16" },
+  ];
+
   return (
-    <div className="mx-auto max-w-[1200px] px-10 py-10">
-      {/* Apple-style Workspace header — replaces large H1 + LIVE pill */}
-      <WorkspaceHeader orgName={org?.name ?? "your workspace"} />
-
-      {/* QuickStart grid — Apple-style hero cards with 3D illustrations.
-          The previous KpiCardsRow (Key indicators) is suppressed in this
-          iteration to reduce visual duplication — QuickStart covers the
-          same entities with stronger visual hierarchy. */}
-      <QuickStartGrid
-        itemsCount={itemsCount}
-        unclassifiedItemsCount={unclassifiedItemsCount}
-        partiesTotal={partiesTotal}
-        partiesNeedingReview={partiesNeedingReview}
-        licensesActiveCount={licensesActiveCount}
-        licensesExpiringCount={licensesExpiringSoon.length}
-        openOperations={openOperations}
-        operationsTotal={operationsTotal}
-      />
-
-      {/* Compliance Posture — NEW killer card aggregating the 9 engines */}
-      <CompliancePostureCard />
-
-      {/* Today's Action Inbox (U-HIGH-1) — what needs human action right now.
-          Sits above UpcomingDeadlinesStrip because "act now" beats "act in
-          14 days" for daily-triage attention. */}
-      <ActionInboxPanel items={actionItems} />
-
-      {/* Upcoming deadlines strip (Sprint Welcome-Polish) */}
-      <UpcomingDeadlinesStrip deadlines={upcomingDeadlines} now={now} />
-
-      {/* Recent activity feed (Sprint Welcome-Polish) */}
-      <ActivityFeedPanel events={activityEvents} now={now} />
-
-      {/* Compliance health — EUC + Re-Export + VSD workflow surfaces */}
-      <ComplianceHealthPanel summary={complianceHealth} />
-
-      {/* First-run onboarding banner (U-CRIT-2 MVP). Renders only when
-          the org has zero Trade data — once any item/party/operation
-          exists, the banner hides itself. Offers 4 entry paths:
-          seed sample data, ask Astra, ⌘K palette, help center. */}
-      {!hasAnyData && <OnboardingBanner />}
-
-      {/* Expiring licenses alert */}
-      {licensesExpiringSoon.length > 0 && (
-        <section className="mb-8 rounded-md border border-amber-200 bg-amber-50 p-5">
-          <div className="flex items-start gap-3">
-            <CalendarClock className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
-            <div className="flex-1">
-              <h3 className="text-[14px] font-semibold text-amber-800">
-                {licensesExpiringSoon.length} license
-                {licensesExpiringSoon.length === 1 ? "" : "s"} expiring within
-                90 days
-              </h3>
-              <ul className="mt-2 space-y-1 text-[12px] text-amber-900">
-                {licensesExpiringSoon.map((lic) => {
-                  const days = Math.floor(
-                    (new Date(lic.validUntil!).getTime() - Date.now()) /
-                      (1000 * 60 * 60 * 24),
-                  );
-                  return (
-                    <li key={lic.id} className="flex items-center gap-2">
-                      <span className="font-mono">
-                        {lic.licenseNumber ?? lic.licenseType}
-                      </span>
-                      <span>
-                        — {days}d left (until{" "}
-                        {new Date(lic.validUntil!).toLocaleDateString("en-GB")})
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-              <Link
-                href="/trade/licenses"
-                className="mt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-amber-700 transition hover:text-amber-900"
-              >
-                Review licenses
-                <ArrowRight size={12} />
-              </Link>
-            </div>
+    <div className="mx-auto max-w-4xl px-6 py-8">
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="text-xs text-trade-text-muted">
+            {new Date().toLocaleDateString("de-DE", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+            })}{" "}
+            · {org?.name ?? "Workspace"}
           </div>
-        </section>
+          <h1 className="mt-1 text-2xl font-semibold text-trade-text-primary">
+            {showOnboarding ? "Willkommen 👋" : "Guten Tag 👋"}
+          </h1>
+        </div>
+        <TradeCommandTrigger />
+      </div>
+
+      {showOnboarding ? (
+        <div className="mt-6">
+          <HomeOnboarding />
+        </div>
+      ) : (
+        <div className="mt-6 space-y-6">
+          <HomeHero state={heroState} />
+          <ActionInboxPanel items={actionItems} />
+          <MiniStatsStrip stats={miniStats} />
+        </div>
       )}
-
-      {/* Sanctions screening strip */}
-      {partiesTotal > 0 && (
-        <section className="mb-8 rounded-md border border-trade-border-subtle bg-trade-bg-panel p-5">
-          <div className="mb-3 flex items-baseline justify-between">
-            <h2 className="text-[12px] font-semibold uppercase tracking-[0.14em] text-trade-text-secondary">
-              Counterparty Screening
-            </h2>
-            <Link
-              href="/trade/parties"
-              className="text-[11px] text-trade-text-secondary transition hover:text-trade-text-primary"
-            >
-              View all →
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-            <ScreeningBucket
-              label="Clear"
-              count={partiesMap.CLEAR ?? 0}
-              total={partiesTotal}
-              icon={ShieldCheck}
-              tone="ok"
-            />
-            <ScreeningBucket
-              label="Potential"
-              count={partiesMap.POTENTIAL_MATCH ?? 0}
-              total={partiesTotal}
-              icon={AlertTriangle}
-              tone="warn"
-            />
-            <ScreeningBucket
-              label="Confirmed"
-              count={partiesMap.CONFIRMED_HIT ?? 0}
-              total={partiesTotal}
-              icon={ShieldAlert}
-              tone="danger"
-            />
-            <ScreeningBucket
-              label="Stale"
-              count={partiesMap.STALE ?? 0}
-              total={partiesTotal}
-              icon={Clock}
-              tone="stale"
-            />
-            <ScreeningBucket
-              label="Not screened"
-              count={partiesMap.NOT_SCREENED ?? 0}
-              total={partiesTotal}
-              icon={Users}
-              tone="muted"
-            />
-          </div>
-        </section>
-      )}
-
-      {/* Operations pipeline */}
-      {operationsTotal > 0 && (
-        <section className="mb-8 rounded-md border border-trade-border-subtle bg-trade-bg-panel p-5">
-          <div className="mb-3 flex items-baseline justify-between">
-            <h2 className="text-[12px] font-semibold uppercase tracking-[0.14em] text-trade-text-secondary">
-              Operations Pipeline
-            </h2>
-            <Link
-              href="/trade/operations"
-              className="text-[11px] text-trade-text-secondary transition hover:text-trade-text-primary"
-            >
-              View all →
-            </Link>
-          </div>
-          <PipelineBar opsByStatus={operationsMap} total={operationsTotal} />
-        </section>
-      )}
-
-      {/* Footer disclaimer */}
-      <p
-        lang="de"
-        className="mt-10 max-w-3xl text-[11px] leading-relaxed text-trade-text-muted"
-      >
-        Caelex Trade ist ein Decision-Support-Werkzeug für Export-Compliance —
-        kein Counsel. Jede Klassifizierungs-, Screening- oder Lizenz-
-        Entscheidung ist von einem qualifizierten Ausfuhrverantwortlichen zu
-        verifizieren, bevor Güter physisch oder elektronisch bewegt werden.
-      </p>
     </div>
   );
 }
@@ -565,139 +425,4 @@ async function resolveOrgId(
     orderBy: { joinedAt: "asc" },
   });
   return membership?.organization.id ?? "no-org";
-}
-
-// ─── Screening bucket ─────────────────────────────────────────────────
-
-interface ScreeningBucketProps {
-  label: string;
-  count: number;
-  total: number;
-  icon: LucideIcon;
-  tone: "ok" | "warn" | "danger" | "stale" | "muted";
-}
-
-function ScreeningBucket({
-  label,
-  count,
-  total,
-  icon: Icon,
-  tone,
-}: ScreeningBucketProps) {
-  const pct = total > 0 ? (count / total) * 100 : 0;
-  const toneClass = {
-    ok: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-    warn: "bg-amber-50 text-amber-700 ring-amber-200",
-    danger: "bg-red-50 text-red-700 ring-red-200",
-    stale: "bg-orange-50 text-orange-700 ring-orange-200",
-    muted:
-      "bg-trade-bg-subtle text-trade-text-secondary ring-trade-border-subtle",
-  }[tone];
-
-  return (
-    <div className={`rounded-md p-3 ring-1 ${toneClass}`}>
-      <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest">
-        <Icon className="h-3 w-3" />
-        {label}
-      </div>
-      <div className="mt-1 text-[22px] font-bold leading-none tabular-nums">
-        {count}
-      </div>
-      <div className="mt-0.5 text-[10px] opacity-75">{pct.toFixed(0)}%</div>
-    </div>
-  );
-}
-
-// ─── Pipeline bar ─────────────────────────────────────────────────────
-
-function PipelineBar({
-  opsByStatus,
-  total,
-}: {
-  opsByStatus: Record<string, number>;
-  total: number;
-}) {
-  const segments: {
-    status: string;
-    label: string;
-    count: number;
-    className: string;
-  }[] = [
-    {
-      status: "DRAFT",
-      label: "Draft",
-      count: opsByStatus.DRAFT ?? 0,
-      className: "bg-slate-300",
-    },
-    {
-      status: "AWAITING_CLASSIFICATION",
-      label: "Classification",
-      count: opsByStatus.AWAITING_CLASSIFICATION ?? 0,
-      className: "bg-amber-300",
-    },
-    {
-      status: "SCREENING",
-      label: "Screening",
-      count: opsByStatus.SCREENING ?? 0,
-      className: "bg-amber-400",
-    },
-    {
-      status: "AWAITING_LICENSE",
-      label: "License",
-      count: opsByStatus.AWAITING_LICENSE ?? 0,
-      className: "bg-amber-500",
-    },
-    {
-      status: "LICENSED",
-      label: "Licensed",
-      count: opsByStatus.LICENSED ?? 0,
-      className: "bg-blue-400",
-    },
-    {
-      status: "EXECUTED",
-      label: "Executed",
-      count: opsByStatus.EXECUTED ?? 0,
-      className: "bg-emerald-500",
-    },
-    {
-      status: "BLOCKED",
-      label: "Blocked",
-      count: opsByStatus.BLOCKED ?? 0,
-      className: "bg-red-500",
-    },
-    {
-      status: "VOLUNTARY_DISCLOSURE_FILED",
-      label: "VDisc",
-      count: opsByStatus.VOLUNTARY_DISCLOSURE_FILED ?? 0,
-      className: "bg-red-700",
-    },
-  ];
-
-  const nonZero = segments.filter((s) => s.count > 0);
-
-  return (
-    <div>
-      <div className="flex h-3 w-full overflow-hidden rounded-full bg-trade-bg-subtle">
-        {nonZero.map((s) => (
-          <div
-            key={s.status}
-            className={s.className}
-            style={{ width: `${(s.count / total) * 100}%` }}
-            title={`${s.label}: ${s.count}`}
-          />
-        ))}
-      </div>
-      <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-4">
-        {segments.map((s) => (
-          <div key={s.status} className="flex items-center gap-2 text-[11px]">
-            <span className={`h-2 w-2 shrink-0 rounded ${s.className}`} />
-            <span className="text-trade-text-secondary">{s.label}</span>
-            <span className="ml-auto font-mono text-trade-text-primary">
-              {s.count}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 }
