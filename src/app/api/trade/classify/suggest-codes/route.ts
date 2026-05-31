@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     );
     return NextResponse.json({ suggestions });
   } catch (err) {
-    logger.error({ err }, "POST /api/trade/classify/suggest-codes failed");
+    logger.error("POST /api/trade/classify/suggest-codes failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
