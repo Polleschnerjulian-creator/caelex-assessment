@@ -49,6 +49,12 @@ const SEVERITY_ICONS: Record<ActionSeverity, LucideIcon> = {
   info: Info,
 };
 
+const SEVERITY_BORDER: Record<ActionSeverity, string> = {
+  critical: "border-l-red-500",
+  warning: "border-l-amber-500",
+  info: "border-l-indigo-500",
+};
+
 const INITIAL_VISIBLE = 8;
 
 interface Props {
@@ -92,8 +98,8 @@ export function ActionInboxPanel({ items }: Props) {
       ) : (
         <>
           <ul
-            className="divide-y divide-trade-border-subtle"
-            // role="list" survives the divide-y override in some screen
+            className="flex flex-col gap-2 p-3"
+            // role="list" survives styling overrides in some screen
             // reader heuristics that drop list semantics from styled lists.
             role="list"
           >
@@ -132,7 +138,7 @@ function InboxRow({ item }: { item: ActionItem }) {
   return (
     <Link
       href={item.href}
-      className="group flex items-start gap-3 px-5 py-3 transition hover:bg-trade-bg-elevated"
+      className={`group flex items-start gap-3 rounded-lg border border-trade-border border-l-[3px] ${SEVERITY_BORDER[item.severity]} bg-trade-bg-panel px-4 py-3 transition hover:bg-trade-hover`}
     >
       <div
         aria-hidden="true"
@@ -142,19 +148,17 @@ function InboxRow({ item }: { item: ActionItem }) {
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
-          <p className="truncate text-[13px] font-medium text-trade-text-primary">
+          <p className="truncate text-sm font-medium text-trade-text-primary">
             {item.title}
           </p>
           {item.countdown ? (
-            <span
-              className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums ${chipBg} ${toneClass}`}
-            >
+            <span className="ml-auto shrink-0 text-xs text-trade-text-muted">
               {item.countdown}
             </span>
           ) : null}
         </div>
         {item.subtitle ? (
-          <p className="mt-0.5 truncate text-[12px] text-trade-text-secondary">
+          <p className="mt-0.5 truncate text-xs text-trade-text-muted">
             {item.subtitle}
           </p>
         ) : null}
@@ -180,7 +184,7 @@ function EmptyAllClear() {
         <CheckCircle2 className="h-5 w-5 text-emerald-600" strokeWidth={1.75} />
       </div>
       <p className="text-[13px] font-semibold text-trade-text-primary">
-        All clear
+        Keine offenen Punkte — alles erledigt.
       </p>
       <p className="max-w-sm text-[12px] text-trade-text-secondary">
         Nothing needs human action right now. New blocked operations, expiring
