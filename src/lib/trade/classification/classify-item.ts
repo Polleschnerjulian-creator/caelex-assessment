@@ -99,10 +99,11 @@ export function classifyItemForOperation(
   const triggerEval = evaluateItemSignals(signals);
 
   const deMinimis =
-    item.usContentPercent != null
+    item.usContentPercent !== null && item.usContentPercent !== undefined
       ? calculateDeMinimis({
           usControlledContentPercent: item.usContentPercent,
-          hasItarContent: item.usmlCategory != null,
+          hasItarContent:
+            item.usmlCategory !== null && item.usmlCategory !== undefined,
           designedWithUSTech: item.designedWithUSTech ?? false,
           manufacturedWithUSEquipment:
             item.manufacturedWithUSEquipment ?? false,
