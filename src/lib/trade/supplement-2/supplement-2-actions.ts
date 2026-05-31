@@ -10,51 +10,22 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { isSuperAdmin } from "@/lib/super-admin";
 import { logger } from "@/lib/logger";
 import {
   markFiled,
   generateReport,
   parseReportingPeriod,
 } from "./supplement-2-service";
+import {
+  resolveActionContext,
+  TradeActionError as ActionError,
+} from "@/lib/trade/resolve-action-context";
 
 export type ActionResult =
   | { ok: true; id?: string }
   | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
 
 const EDITOR_ROLES = ["OWNER", "ADMIN", "MANAGER"] as const;
-
-class ActionError extends Error {}
-
-async function resolveSessionContext(): Promise<{
-  userId: string;
-  orgId: string;
-  role: string;
-}> {
-  const session = await auth();
-  if (!session?.user?.id) throw new ActionError("Not signed in");
-  const userId = session.user.id;
-
-  if (isSuperAdmin(session.user.email)) {
-    const anyOrg = await prisma.organization.findFirst({
-      where: { isActive: true },
-      select: { id: true },
-      orderBy: { createdAt: "asc" },
-    });
-    if (!anyOrg) throw new ActionError("No active organisation found");
-    return { userId, orgId: anyOrg.id, role: "OWNER" };
-  }
-
-  const membership = await prisma.organizationMember.findFirst({
-    where: { userId, organization: { isActive: true } },
-    select: { organizationId: true, role: true },
-    orderBy: { joinedAt: "asc" },
-  });
-  if (!membership) throw new ActionError("No active organisation membership");
-  return { userId, orgId: membership.organizationId, role: membership.role };
-}
 
 function assertEditor(role: string) {
   if (!(EDITOR_ROLES as readonly string[]).includes(role)) {
@@ -86,7 +57,7 @@ export async function markReportFiled(input: unknown): Promise<ActionResult> {
       };
     }
 
-    const { userId, orgId, role } = await resolveSessionContext();
+    const { userId, orgId, role } = await resolveActionContext();
     assertEditor(role);
 
     const report = await markFiled({
@@ -130,7 +101,7 @@ export async function regenerateReport(input: unknown): Promise<ActionResult> {
       };
     }
 
-    const { userId, orgId, role } = await resolveSessionContext();
+    const { userId, orgId, role } = await resolveActionContext();
     assertEditor(role);
 
     const period = parseReportingPeriod(parsed.data.reportingPeriod);

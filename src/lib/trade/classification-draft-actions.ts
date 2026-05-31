@@ -24,10 +24,11 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { ClassificationDraftDecision } from "@prisma/client";
 
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { isSuperAdmin } from "@/lib/super-admin";
 import { logger } from "@/lib/logger";
+import {
+  resolveActionContext,
+  TradeActionError as ActionError,
+} from "@/lib/trade/resolve-action-context";
 
 import {
   extractDatasheet,
@@ -54,41 +55,6 @@ export type DecisionActionResult =
 // ─── Auth helpers ──────────────────────────────────────────────────
 
 const EDITOR_ROLES = ["OWNER", "ADMIN", "MANAGER", "MEMBER"] as const;
-
-class ActionError extends Error {
-  constructor(public readonly publicMessage: string) {
-    super(publicMessage);
-    this.name = "ActionError";
-  }
-}
-
-async function resolveSessionContext(): Promise<{
-  userId: string;
-  orgId: string;
-  role: string;
-}> {
-  const session = await auth();
-  if (!session?.user?.id) throw new ActionError("Not signed in");
-  const userId = session.user.id;
-
-  if (isSuperAdmin(session.user.email)) {
-    const anyOrg = await prisma.organization.findFirst({
-      where: { isActive: true },
-      select: { id: true },
-      orderBy: { createdAt: "asc" },
-    });
-    if (!anyOrg) throw new ActionError("No active organisation found");
-    return { userId, orgId: anyOrg.id, role: "OWNER" };
-  }
-
-  const membership = await prisma.organizationMember.findFirst({
-    where: { userId, organization: { isActive: true } },
-    select: { organizationId: true, role: true },
-    orderBy: { joinedAt: "asc" },
-  });
-  if (!membership) throw new ActionError("No active organisation membership");
-  return { userId, orgId: membership.organizationId, role: membership.role };
-}
 
 function assertEditor(role: string) {
   if (!(EDITOR_ROLES as readonly string[]).includes(role)) {
@@ -181,7 +147,7 @@ export async function decideDraft(
   input: DecideDraftInput,
 ): Promise<DecisionActionResult> {
   try {
-    const ctx = await resolveSessionContext();
+    const ctx = await resolveActionContext();
     assertEditor(ctx.role);
 
     const parsed = decideSchema.safeParse(input);
@@ -232,7 +198,7 @@ export async function decideDraft(
  * PENDING + ACCEPTED + REJECTED drafts for the current org.
  */
 export async function listDraftsForCurrentOrg() {
-  const ctx = await resolveSessionContext();
+  const ctx = await resolveActionContext();
   return listDrafts(
     { organizationId: ctx.orgId, userId: ctx.userId },
     { take: 50 },
@@ -251,7 +217,7 @@ async function runGenerateAction<TSchema extends z.ZodTypeAny>(
   extract: (parsed: z.infer<TSchema>) => Promise<DatasheetExtraction>,
 ): Promise<ClassifyActionResult> {
   try {
-    const ctx = await resolveSessionContext();
+    const ctx = await resolveActionContext();
     assertEditor(ctx.role);
 
     const parsed = schema.safeParse(input);

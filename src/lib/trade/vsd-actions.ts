@@ -13,9 +13,6 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { isSuperAdmin } from "@/lib/super-admin";
 import { createVsd, transitionVsdStatus } from "@/lib/trade/vsd-service";
 import { logger } from "@/lib/logger";
 import {
@@ -24,6 +21,10 @@ import {
   TradeVSDStatus,
   TradeVSDOutcome,
 } from "@prisma/client";
+import {
+  resolveActionContext,
+  TradeActionError as ActionError,
+} from "@/lib/trade/resolve-action-context";
 
 export type ActionResult =
   | { ok: true; id?: string }
@@ -31,46 +32,11 @@ export type ActionResult =
 
 const EDITOR_ROLES = ["OWNER", "ADMIN", "MANAGER"] as const;
 
-async function resolveSessionContext(): Promise<{
-  userId: string;
-  orgId: string;
-  role: string;
-}> {
-  const session = await auth();
-  if (!session?.user?.id) throw new ActionError("Not signed in");
-  const userId = session.user.id;
-
-  if (isSuperAdmin(session.user.email)) {
-    const anyOrg = await prisma.organization.findFirst({
-      where: { isActive: true },
-      select: { id: true },
-      orderBy: { createdAt: "asc" },
-    });
-    if (!anyOrg) throw new ActionError("No active organisation found");
-    return { userId, orgId: anyOrg.id, role: "OWNER" };
-  }
-
-  const membership = await prisma.organizationMember.findFirst({
-    where: { userId, organization: { isActive: true } },
-    select: { organizationId: true, role: true },
-    orderBy: { joinedAt: "asc" },
-  });
-  if (!membership) throw new ActionError("No active organisation membership");
-  return { userId, orgId: membership.organizationId, role: membership.role };
-}
-
 function assertEditor(role: string) {
   if (!(EDITOR_ROLES as readonly string[]).includes(role)) {
     throw new ActionError(
       "Insufficient role — MANAGER or higher required to manage voluntary disclosures",
     );
-  }
-}
-
-class ActionError extends Error {
-  constructor(public readonly publicMessage: string) {
-    super(publicMessage);
-    this.name = "ActionError";
   }
 }
 
@@ -140,7 +106,7 @@ export async function createVsdAction(
   input: CreateVsdInput,
 ): Promise<ActionResult> {
   try {
-    const ctx = await resolveSessionContext();
+    const ctx = await resolveActionContext();
     assertEditor(ctx.role);
 
     const parsed = createSchema.safeParse(input);
@@ -191,7 +157,7 @@ export async function advanceVsdStatus(
   input: TransitionVsdInput,
 ): Promise<ActionResult> {
   try {
-    const ctx = await resolveSessionContext();
+    const ctx = await resolveActionContext();
     assertEditor(ctx.role);
 
     const parsed = transitionSchema.safeParse(input);

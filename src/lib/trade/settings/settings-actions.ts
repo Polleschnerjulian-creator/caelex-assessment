@@ -22,10 +22,11 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { isSuperAdmin } from "@/lib/super-admin";
 import { logger } from "@/lib/logger";
+import {
+  resolveActionContext,
+  TradeActionError as ActionError,
+} from "@/lib/trade/resolve-action-context";
 import {
   upsertProfile,
   isTradeRegime,
@@ -58,47 +59,6 @@ export type CreateApiKeyResult =
  * because API-key creation and webhook URLs are billing-adjacent.
  */
 const SETTINGS_EDITOR_ROLES = ["OWNER", "ADMIN"] as const;
-
-class ActionError extends Error {
-  constructor(public readonly publicMessage: string) {
-    super(publicMessage);
-    this.name = "ActionError";
-  }
-}
-
-async function resolveSessionContext(): Promise<{
-  userId: string;
-  orgId: string;
-  role: string;
-}> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    throw new ActionError("Not signed in");
-  }
-  const userId = session.user.id;
-
-  if (isSuperAdmin(session.user.email)) {
-    const anyOrg = await prisma.organization.findFirst({
-      where: { isActive: true },
-      select: { id: true },
-      orderBy: { createdAt: "asc" },
-    });
-    if (!anyOrg) {
-      throw new ActionError("No active organisation found");
-    }
-    return { userId, orgId: anyOrg.id, role: "OWNER" };
-  }
-
-  const membership = await prisma.organizationMember.findFirst({
-    where: { userId, organization: { isActive: true } },
-    select: { organizationId: true, role: true },
-    orderBy: { joinedAt: "asc" },
-  });
-  if (!membership) {
-    throw new ActionError("No active organisation membership");
-  }
-  return { userId, orgId: membership.organizationId, role: membership.role };
-}
 
 function assertSettingsEditor(role: string) {
   if (!(SETTINGS_EDITOR_ROLES as readonly string[]).includes(role)) {
@@ -152,7 +112,7 @@ export async function updateOrgProfile(
   input: OrgProfileInput,
 ): Promise<ActionResult> {
   try {
-    const ctx = await resolveSessionContext();
+    const ctx = await resolveActionContext();
     assertSettingsEditor(ctx.role);
 
     const parsed = orgProfileSchema.safeParse(input);
@@ -211,7 +171,7 @@ export async function updateNotifications(
   input: NotificationsInput,
 ): Promise<ActionResult> {
   try {
-    const ctx = await resolveSessionContext();
+    const ctx = await resolveActionContext();
     assertSettingsEditor(ctx.role);
 
     const parsed = notificationsSchema.safeParse(input);
@@ -269,7 +229,7 @@ export async function updateAuditSettings(
   input: AuditInput,
 ): Promise<ActionResult> {
   try {
-    const ctx = await resolveSessionContext();
+    const ctx = await resolveActionContext();
     assertSettingsEditor(ctx.role);
 
     const parsed = auditSchema.safeParse(input);
@@ -331,7 +291,7 @@ export async function createTradeApiKey(
   input: CreateApiKeyInput,
 ): Promise<CreateApiKeyResult> {
   try {
-    const ctx = await resolveSessionContext();
+    const ctx = await resolveActionContext();
     assertSettingsEditor(ctx.role);
 
     const parsed = createKeySchema.safeParse(input);
@@ -395,7 +355,7 @@ export async function revokeTradeApiKey(
   input: RevokeApiKeyInput,
 ): Promise<ActionResult> {
   try {
-    const ctx = await resolveSessionContext();
+    const ctx = await resolveActionContext();
     assertSettingsEditor(ctx.role);
 
     const parsed = revokeKeySchema.safeParse(input);
