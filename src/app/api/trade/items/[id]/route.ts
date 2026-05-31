@@ -134,7 +134,11 @@ export function computeClassification(
     undefined, // T-H6: destination unknown at item level
     undefined,
     undefined,
-    { eccnEU: item.eccnEU, eccnUS: item.eccnUS }, // T-M5: pass actual codes for Gate 0
+    {
+      eccnEU: item.eccnEU,
+      eccnUS: item.eccnUS,
+      usmlCategory: item.usmlCategory,
+    }, // T-M5: pass actual codes (incl. USML) to the gate
   );
 
   return { triggerEval, deMinimis, licenseDetermination };

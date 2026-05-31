@@ -888,7 +888,7 @@ describe("Gate 3.5 — declared control-code backstop (T-M5 completion)", () => 
     );
     expect(det.gate).toBe("CLEARED");
   });
-  it("upgrades when the destination is unknown (conservative)", () => {
+  it("does NOT fire the dual-use branch for an unknown destination (item-level, destination-agnostic)", () => {
     const det = determineLicenseRequirements(
       evalWith(),
       null,
@@ -897,6 +897,63 @@ describe("Gate 3.5 — declared control-code backstop (T-M5 completion)", () => 
       undefined,
       { eccnEU: "9A515.a" },
     );
+    expect(det.gate).toBe("CLEARED");
+  });
+  it("treats Bulgaria as intra-EU (EU-27, not the space-law subset)", () => {
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "BG",
+      undefined,
+      undefined,
+      { eccnEU: "9A515.a" },
+    );
+    expect(det.gate).toBe("CLEARED");
+  });
+  it("does not duplicate the DDTC requirement when heuristic ITAR already fired", () => {
+    const det = determineLicenseRequirements(
+      ITAR_EVAL,
+      null,
+      "CN",
+      undefined,
+      undefined,
+      { usmlCategory: "XV(e)" },
+    );
+    const ddtc = det.requirements.filter((r) => r.authority === "DDTC");
+    expect(ddtc).toHaveLength(1);
+    expect(det.gate).not.toBe("CLEARED");
+  });
+  it("surfaces BOTH a DDTC and a BAFA requirement for an item that is ITAR and EU dual-use", () => {
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "CN",
+      undefined,
+      undefined,
+      { eccnEU: "9A515.a", usmlCategory: "XV(e)" },
+    );
+    expect(
+      det.requirements.some((r) => r.triggerCode === "ACTUAL_USML_DECLARED"),
+    ).toBe(true);
+    expect(
+      det.requirements.some((r) => r.triggerCode === "ACTUAL_CODE_DECLARED"),
+    ).toBe(true);
+    expect(det.gate).toBe("REVIEW_NEEDED");
+  });
+  it("keeps the declared-ECCN requirement REQUIRED even when an exception context is supplied", () => {
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "CN",
+      { classification: {} },
+      undefined,
+      { eccnEU: "9A515.a" },
+    );
+    const req = det.requirements.find(
+      (r) => r.triggerCode === "ACTUAL_CODE_DECLARED",
+    );
+    expect(req).toBeDefined();
+    expect(req!.status).toBe("REQUIRED");
     expect(det.gate).toBe("REVIEW_NEEDED");
   });
   it("upgrades a declared USML category to REVIEW_NEEDED regardless of destination", () => {
