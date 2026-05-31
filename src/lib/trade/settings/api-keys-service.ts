@@ -44,7 +44,7 @@ export interface TradeApiKeyView {
   isActive: boolean;
   lastUsedAt: Date | null;
   expiresAt: Date | null;
-  createdById: string;
+  createdById: string | null;
   createdAt: Date;
   revokedAt: Date | null;
   revokedReason: string | null;

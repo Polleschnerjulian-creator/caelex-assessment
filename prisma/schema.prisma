@@ -12535,6 +12535,7 @@ model TradeSupplement2ReportItem {
 
   createdAt DateTime @default(now())
 
+  @@unique([reportId, operationId])
   @@index([reportId])
   @@index([operationId])
   @@index([eccn])
@@ -14461,8 +14462,8 @@ model TradeApiKey {
   lastUsedAt DateTime?
   expiresAt  DateTime?
 
-  createdById   String
-  createdBy     User      @relation("TradeApiKeyCreatedBy", fields: [createdById], references: [id])
+  createdById   String?
+  createdBy     User?     @relation("TradeApiKeyCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   createdAt     DateTime  @default(now())
   revokedAt     DateTime?
   revokedReason String?
