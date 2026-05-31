@@ -20,20 +20,13 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Inbox,
-  Package,
-  Users,
-  ShieldCheck,
-  Workflow,
-  FileCheck,
-  FileSignature,
-  Layers,
-  AlertOctagon,
-  Rocket,
+  Home,
   Sparkles,
-  ScanSearch,
+  Workflow,
+  Boxes,
+  FileText,
+  ShieldCheck,
   Settings,
-  UserCog,
   BookOpen,
   HelpCircle,
   type LucideIcon,
@@ -62,152 +55,73 @@ interface NavSection {
 
 const SECTIONS: ReadonlyArray<NavSection> = [
   {
-    label: "Today",
+    label: "Start",
     items: [
       {
         href: "/trade",
-        label: "Overview",
-        icon: Inbox,
-        tooltip: "Daily workspace snapshot — KPIs, action inbox, deadlines.",
+        label: "Home",
+        icon: Home,
+        match: (p) => p === "/trade",
+        tooltip: "Deine Schaltzentrale — was als Nächstes zu tun ist.",
       },
       {
         href: "/trade/astra",
-        label: "Astra Trade",
+        label: "Astra",
         icon: Sparkles,
         match: (p) => p.startsWith("/trade/astra"),
-        tooltip:
-          "AI assistant for export-compliance. Ask classification, screening, license-determination questions in natural language.",
+        tooltip: "Frag einfach — KI-Assistent für Export-Compliance.",
       },
     ],
   },
   {
-    label: "Master Data",
+    label: "Arbeit",
     items: [
-      {
-        href: "/trade/items",
-        label: "Items",
-        icon: Package,
-        match: (p) => p.startsWith("/trade/items"),
-        tooltip:
-          "Trade items (BoM lines) with multi-jurisdiction classification (ECCN / USML / EU Annex I / etc.).",
-      },
-      {
-        href: "/trade/parties",
-        label: "Counterparties",
-        icon: Users,
-        match: (p) => p.startsWith("/trade/parties"),
-        tooltip:
-          "Customers, suppliers, partners. Screened against OFAC SDN, BIS Entity, DDTC Debarred, UK OFSI, UN Consolidated.",
-        badgeKey: "partiesNeedingReview",
-      },
-    ],
-  },
-  {
-    label: "Operations",
-    items: [
-      {
-        href: "/trade/operations/new",
-        label: "Geführter Vorgang",
-        icon: Sparkles,
-        match: (p: string) => p.startsWith("/trade/operations/new"),
-        tooltip: "Geführter Ausfuhrvorgang: Was? An wen? Wohin? → ein Urteil.",
-      },
       {
         href: "/trade/operations",
-        label: "Pipeline",
+        label: "Vorgänge",
         icon: Workflow,
         match: (p) => p.startsWith("/trade/operations"),
         tooltip:
-          "Atomic shipment lifecycle: Items × Counterparty × Route × License. DRAFT → SCREENING → LICENSED → EXECUTED.",
+          "Ausfuhrvorgänge: Was? An wen? Wohin? → ein Urteil. + Pipeline + Lizenzen.",
         badgeKey: "operationsBlocked",
       },
       {
-        href: "/trade/licenses",
-        label: "Licenses",
-        icon: FileCheck,
-        match: (p) => p.startsWith("/trade/licenses"),
-        tooltip:
-          "Active BAFA, BIS, DDTC, EU general authorisations with draw-down tracking + expiry warnings.",
-        badgeKey: "licensesExpiringSoon",
+        href: "/trade/master-data",
+        label: "Stammdaten",
+        icon: Boxes,
+        match: (p) =>
+          p.startsWith("/trade/master-data") ||
+          p.startsWith("/trade/items") ||
+          p.startsWith("/trade/parties"),
+        tooltip: "Artikel & Partner — automatisch klassifiziert & gescreent.",
+        badgeKey: "partiesNeedingReview",
       },
       {
-        href: "/trade/classify",
-        label: "Classify (AI)",
-        icon: ScanSearch,
-        match: (p) => p.startsWith("/trade/classify"),
-        tooltip:
-          "Upload a datasheet/PDF — Astra extracts technical attributes + suggests ECCN/USML classification.",
+        href: "/trade/documents",
+        label: "Dokumente",
+        icon: FileText,
+        match: (p) => p.startsWith("/trade/documents"),
+        tooltip: "Alle Genehmigungen & Nachweise an einem Ort.",
+        badgeKey: "eucAwaitingAction",
       },
     ],
   },
   {
-    label: "Documents",
+    label: "Mehr",
     items: [
       {
-        href: "/trade/euc",
-        label: "End-Use Certificates",
-        icon: FileSignature,
-        match: (p) => p.startsWith("/trade/euc"),
-        tooltip:
-          "End-Use Certificates (EUCs) confirm end-user + end-use for restricted items. Required under § 17 AWV, 15 CFR § 748.10, EU Annex IV.",
-        badgeKey: "eucAwaitingAction",
+        href: "/trade/program",
+        label: "Compliance-Programm",
+        icon: ShieldCheck,
+        match: (p) => p.startsWith("/trade/program"),
+        tooltip: "Dein ICP, Abdeckung & Regelwerk.",
       },
       {
-        href: "/trade/reexport-consents",
-        label: "Re-Export Consents",
-        icon: FileSignature,
-        match: (p) => p.startsWith("/trade/reexport-consents"),
-        tooltip:
-          "Authorisations from the original exporter allowing onward re-export to a new destination. Required under § 17 AWV + 15 CFR § 734.16.",
-      },
-      {
-        href: "/trade/vsd",
-        label: "Self-Disclosures",
-        icon: AlertOctagon,
-        match: (p) => p.startsWith("/trade/vsd"),
-        tooltip:
-          "Voluntary Self-Disclosures (VSDs) to OFAC / BIS / DDTC / BAFA when a potential violation is discovered. Time-sensitive (60–180 day windows).",
-        badgeKey: "vsdOpen",
-      },
-      {
-        href: "/trade/sammelgenehmigungen",
-        label: "Sammelgenehmigungen",
-        icon: Layers,
-        match: (p) => p.startsWith("/trade/sammelgenehmigungen"),
-        tooltip:
-          "German BAFA collective export authorisations (AGG / AGE) covering multiple shipments under one approval. Volume-cap + draw-down tracked.",
-      },
-      {
-        href: "/trade/france-los",
-        label: "France LOS",
-        icon: Rocket,
-        match: (p) => p.startsWith("/trade/france-los"),
-        tooltip:
-          "France LOS (Loi sur les Opérations Spatiales) authorisations — casualty-risk ≤1×10⁻⁴ regime for French space launches/operations.",
-      },
-      {
-        href: "/trade/uk-ecju",
-        label: "UK ECJU",
-        icon: FileCheck,
-        match: (p) => p.startsWith("/trade/uk-ecju"),
-        tooltip:
-          "UK ECJU export licences: SIEL, OIEL, OGEL, SIEL-TC, OITCL — for dual-use + military exports from the UK.",
-      },
-      {
-        href: "/trade/faa-ast",
-        label: "FAA AST",
-        icon: Rocket,
-        match: (p) => p.startsWith("/trade/faa-ast"),
-        tooltip:
-          "FAA AST (14 CFR Part 450) commercial space launch + reentry licences. ULP-tolerance Ec calculator inside.",
-      },
-      {
-        href: "/trade/deemed-exports",
-        label: "Deemed Exports",
-        icon: UserCog,
-        match: (p) => p.startsWith("/trade/deemed-exports"),
-        tooltip:
-          "Release of controlled technology to foreign nationals INSIDE the US/EU is treated as an export. Tracks foreign-national access authorisations.",
+        href: "/trade/settings",
+        label: "Einstellungen",
+        icon: Settings,
+        match: (p) => p.startsWith("/trade/settings"),
+        tooltip: "Organisation, BAFA-Profil, Mitglieder.",
       },
     ],
   },
