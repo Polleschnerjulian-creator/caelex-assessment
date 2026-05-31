@@ -156,11 +156,18 @@ describe("listEligibleOperations", () => {
     expect(result).toHaveLength(0);
   });
 
-  it("falls back to scheduledShipDate when actualShipDate is null", async () => {
+  // T-H8: the old test encoded the bug (scheduled-only ops being included).
+  // A BIS Supplement No. 2 report covers exports that ACTUALLY occurred, so
+  // only EXECUTED ops with actualShipDate set are eligible. An op with
+  // actualShipDate=null is not shipped and must not appear in the report.
+  // The query now filters status=EXECUTED AND actualShipDate in-period, so
+  // the DB will never return a null-actualShipDate row. Test updated accordingly.
+  it("uses actualShipDate (not scheduledShipDate) to bin an EXECUTED operation (T-H8)", async () => {
+    const shipDate = new Date("2026-04-10T00:00:00.000Z");
     mockOpFindMany.mockResolvedValueOnce([
       makeOperation({
-        actualShipDate: null,
-        scheduledShipDate: new Date("2026-04-10T00:00:00.000Z"),
+        actualShipDate: shipDate,
+        scheduledShipDate: new Date("2026-03-01T00:00:00.000Z"),
       }),
     ]);
     const result = await listEligibleOperations(
@@ -199,6 +206,39 @@ describe("listEligibleOperations", () => {
     );
     expect(result[0].items).toHaveLength(2);
     expect(result[0].totalValue).toBe(3000); // 2*500 + 1*2000
+  });
+
+  // T-H8: verify the where clause contains status=EXECUTED and actualShipDate range
+  it("passes status=EXECUTED and actualShipDate range to findMany (T-H8)", async () => {
+    mockOpFindMany.mockResolvedValueOnce([]);
+    await listEligibleOperations("org_1", PERIOD.start, PERIOD.end);
+    const callArgs = mockOpFindMany.mock.calls[0][0];
+    expect(callArgs.where.status).toBe("EXECUTED");
+    expect(callArgs.where.actualShipDate).toEqual({
+      gte: PERIOD.start,
+      lt: PERIOD.end,
+    });
+    // Must NOT contain an OR branch that allows scheduledShipDate-only ops
+    expect(callArgs.where.OR).toBeUndefined();
+  });
+
+  // T-H8: a DRAFT op with only scheduledShipDate in-period must NOT be included
+  it("excludes DRAFT operations that only have a scheduledShipDate in the period (T-H8)", async () => {
+    // The mock returns a DRAFT op (status not EXECUTED, actualShipDate null)
+    // with scheduledShipDate in-period. After the fix the where clause
+    // must never request such rows, so we simulate the DB correctly filtering
+    // them out by having findMany return nothing.
+    mockOpFindMany.mockResolvedValueOnce([]);
+    const result = await listEligibleOperations(
+      "org_1",
+      PERIOD.start,
+      PERIOD.end,
+    );
+    expect(result).toHaveLength(0);
+    // Confirm the query did NOT ask for scheduledShipDate-only rows
+    const callArgs = mockOpFindMany.mock.calls[0][0];
+    expect(callArgs.where.status).toBe("EXECUTED");
+    expect(callArgs.where.OR).toBeUndefined();
   });
 
   it("prefers eccnUS over eccnEU when both are present", async () => {

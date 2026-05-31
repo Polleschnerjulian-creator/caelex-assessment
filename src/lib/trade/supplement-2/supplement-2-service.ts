@@ -107,15 +107,14 @@ export async function listEligibleOperations(
   const operations = await prisma.tradeOperation.findMany({
     where: {
       organizationId,
-      // The shipment must actually have happened to be reportable.
-      // EXECUTED is the post-ship terminal state in the trade lifecycle.
-      OR: [
-        { actualShipDate: { gte: periodStart, lt: periodEnd } },
-        {
-          actualShipDate: null,
-          scheduledShipDate: { gte: periodStart, lt: periodEnd },
-        },
-      ],
+      // T-H8: Only EXECUTED operations (goods physically shipped) belong
+      // in a BIS Supplement No. 2 report. The report covers exports that
+      // ACTUALLY OCCURRED in the period. DRAFT / AWAITING_* / LICENSED /
+      // BLOCKED ops have not shipped and must not be reported to BIS.
+      // The scheduled-ship-date-only branch that existed here was a bug:
+      // it let unshipped operations appear as filed exports.
+      status: "EXECUTED",
+      actualShipDate: { gte: periodStart, lt: periodEnd },
     },
     select: {
       id: true,
@@ -162,9 +161,11 @@ export async function listEligibleOperations(
     }
     if (eligible.length === 0) continue;
 
-    // Determine the canonical ship date for binning.
-    const shipDate = op.actualShipDate ?? op.scheduledShipDate;
-    if (!shipDate) continue; // shouldn't happen given the WHERE clause
+    // T-H8: status=EXECUTED guarantees actualShipDate is set; the
+    // scheduledShipDate fallback is gone along with the bug. The null
+    // guard below is a belt-and-suspenders TypeScript safety check only.
+    const shipDate = op.actualShipDate;
+    if (!shipDate) continue; // unreachable post-T-H8 (EXECUTED implies actualShipDate set)
 
     // Use the first eligible line's currency as the operation's
     // reporting currency. In practice all lines on one operation share
