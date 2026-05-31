@@ -409,6 +409,95 @@ describe("PRICING_ANOMALY", () => {
   });
 });
 
+// ─── 5b. PRICING_ANOMALY — non-EUR currency handling (T-M15) ──────
+
+describe("PRICING_ANOMALY — non-EUR currency exclusion (T-M15)", () => {
+  it("does NOT flag a non-EUR line against a EUR median (false-positive guard)", () => {
+    // GBP 50 vs EUR 100 median: the no-op code treated this as ratio=0.5 → flagged.
+    // Correct: non-EUR lines must be excluded (skipped kind) since we cannot
+    // fabricate an FX rate. With only one non-EUR line and no other lines,
+    // the result must be skipped, never flagged.
+    const op = mkOperation({
+      shipToCountry: "GB",
+      lines: [
+        {
+          eccn: "9A515.d",
+          unitValue: 50, // GBP 50 — raw number looks tiny vs EUR 100 median
+          quantity: 1,
+          currency: "GBP",
+        },
+      ],
+    });
+    const ctx: ShamDetectorContext = {
+      historicalMediansEur: { "9A515.d__GB": 100 },
+    };
+    const result = detectShamTransactionRisk(op, ctx);
+    // Must NOT produce a PRICING_ANOMALY flag from a non-EUR line.
+    const flag = result.redFlags.find((f) => f.type === "PRICING_ANOMALY");
+    expect(flag).toBeUndefined();
+  });
+
+  it("mixed operation: EUR under-median line flags, non-EUR line is ignored as worst", () => {
+    // The EUR line at 40% of median should be the worst; the GBP line at a raw
+    // number that would look even worse (e.g. 10 vs 100 → 10%) must be ignored.
+    // We only want the EUR-line flag, and the non-EUR line must NOT be worst.
+    const op = mkOperation({
+      shipToCountry: "AE",
+      lines: [
+        {
+          eccn: "9A515.d",
+          unitValue: 40_000, // EUR 40k = 40% of 100k median → should flag
+          quantity: 1,
+          currency: "EUR",
+        },
+        {
+          eccn: "9A515.x",
+          unitValue: 5_000, // USD 5k — raw number looks terrible (5%) but must be excluded
+          quantity: 1,
+          currency: "USD",
+        },
+      ],
+    });
+    const ctx: ShamDetectorContext = {
+      historicalMediansEur: {
+        "9A515.d__AE": 100_000,
+        "9A515.x__AE": 100_000, // median exists, but line is USD → exclude
+      },
+    };
+    const result = detectShamTransactionRisk(op, ctx);
+    const flag = result.redFlags.find((f) => f.type === "PRICING_ANOMALY");
+    // Must flag (EUR line is genuinely under-median).
+    expect(flag).toBeDefined();
+    // The worst must be the EUR 9A515.d line, not the USD 9A515.x line.
+    expect(flag!.evidence.eccn).toBe("9A515.d");
+    // The ratio must reflect the EUR line (40 000 / 100 000 = 0.4), not the USD line.
+    expect(flag!.evidence.ratio).toBeCloseTo(0.4, 2);
+  });
+
+  it("regression: EUR-only flag/clear behavior unchanged", () => {
+    // Mirror of the existing "fires when line invoiced at < 80% of historical median"
+    // test to confirm the EUR path is untouched by the fix.
+    const op = mkOperation({
+      shipToCountry: "AE",
+      lines: [
+        {
+          eccn: "9A515.d",
+          unitValue: 70_000, // 70% — below threshold → flag
+          quantity: 1,
+          currency: "EUR",
+        },
+      ],
+    });
+    const ctx: ShamDetectorContext = {
+      historicalMediansEur: { "9A515.d__AE": 100_000 },
+    };
+    const result = detectShamTransactionRisk(op, ctx);
+    const flag = result.redFlags.find((f) => f.type === "PRICING_ANOMALY");
+    expect(flag).toBeDefined();
+    expect(flag!.evidence.ratio).toBeCloseTo(0.7, 2);
+  });
+});
+
 // ─── 6. REEXPORT_RISK_HISTORY ──────────────────────────────────────
 
 describe("REEXPORT_RISK_HISTORY", () => {

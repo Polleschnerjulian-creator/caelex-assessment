@@ -666,11 +666,12 @@ function checkPricingAnomaly(
     const key = `${line.eccn}__${operation.shipToCountry}`;
     const median = medians[key];
     if (typeof median !== "number" || median <= 0) continue;
-    // Normalize to EUR for ratio; for v1 we accept caller-supplied EUR
-    // values directly. Non-EUR pricing data is the caller's responsibility
-    // to FX-normalize.
-    const valueEur = line.currency === "EUR" ? line.unitValue : line.unitValue;
-    const ratio = valueEur / median;
+    // The historical medians are EUR-denominated. A non-EUR line is not
+    // comparable without an FX rate we deliberately do not fabricate, so it
+    // is excluded from the pricing-anomaly ratio (T-M15) rather than
+    // mis-compared as if its raw amount were already EUR.
+    if (line.currency !== "EUR") continue;
+    const ratio = line.unitValue / median;
     if (!worst || ratio < worst.ratio) {
       worst = { eccn: line.eccn, line, median, ratio };
     }
