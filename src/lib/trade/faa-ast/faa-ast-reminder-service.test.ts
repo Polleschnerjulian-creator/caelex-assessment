@@ -12,6 +12,10 @@
  *   8. No recipients → no Notifications
  *   9. Per-license error captures in `perLicense[]` instead of throwing
  *  10. Summary aggregates totals correctly
+ *  11. Phase 3: stale in-review (>90d updatedAt) → WARNING notification
+ *  12. Phase 3: not-yet-stale (≤90d updatedAt) → no notification
+ *  13. Phase 3: APPROVED licence not picked up by Phase 3
+ *  14. Phase 3: idempotency guard prevents duplicate within 24h
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -266,5 +270,119 @@ describe("runFaaAstExpiryAndReminders", () => {
     expect(summary.emittedNotifications).toBe(2);
     // Only the ≤7-day licence triggers email
     expect(summary.emittedEmails).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 3 — stale in-review reminder tests
+// ---------------------------------------------------------------------------
+describe("runFaaAstExpiryAndReminders — Phase 3 stale review", () => {
+  /** Helper: a Date that is `n` days BEFORE NOW */
+  function daysAgo(n: number): Date {
+    return new Date(NOW.getTime() - n * 24 * 60 * 60 * 1000);
+  }
+
+  it("Phase 3: UNDER_REVIEW stale >90 days → emits WARNING notification", async () => {
+    // Phase 2 findMany (APPROVED within 90d window) → empty
+    mockFindMany.mockResolvedValueOnce([]);
+    // Phase 3 findMany (in-review, updatedAt stale) → one stale license
+    mockFindMany.mockResolvedValueOnce([
+      {
+        id: "lic_stale",
+        organizationId: "org_stale",
+        licenseType: "PART_450_LAUNCH",
+        faaReference: "LRLO 22-STALE",
+        status: "UNDER_REVIEW",
+        updatedAt: daysAgo(100),
+      },
+    ]);
+    mockMemberFindMany.mockResolvedValue([
+      {
+        userId: "u_mgr",
+        user: { email: "mgr@example.com", name: "Manager" },
+      },
+    ]);
+
+    const summary = await runFaaAstExpiryAndReminders(NOW);
+
+    // Phase 3 counts
+    expect(summary.staleReviewScanned).toBe(1);
+    expect(summary.staleReviewNotifications).toBe(1);
+
+    // Notification must be WARNING severity
+    const notifCall = mockNotifCreate.mock.calls.find(
+      (c) => c[0].data.entityType === "trade-faa-ast-stale-review",
+    );
+    expect(notifCall).toBeDefined();
+    expect(notifCall![0].data.severity).toBe("WARNING");
+    expect(notifCall![0].data.entityId).toBe("lic_stale");
+  });
+
+  it("Phase 3: UNDER_REVIEW with updatedAt only 30 days ago → no Phase-3 notification", async () => {
+    // Phase 2 → empty
+    mockFindMany.mockResolvedValueOnce([]);
+    // Phase 3 → empty (the query threshold filters it out)
+    mockFindMany.mockResolvedValueOnce([]);
+
+    const summary = await runFaaAstExpiryAndReminders(NOW);
+
+    expect(summary.staleReviewScanned).toBe(0);
+    expect(summary.staleReviewNotifications).toBe(0);
+    expect(mockNotifCreate).not.toHaveBeenCalled();
+  });
+
+  it("Phase 3: APPROVED licence is NOT picked up (only in-review statuses)", async () => {
+    // Phase 2 → one APPROVED near expiry
+    mockFindMany.mockResolvedValueOnce([
+      {
+        id: "lic_approved",
+        organizationId: "org_1",
+        licenseType: "PART_450_LAUNCH",
+        faaReference: "LRLO 22-APPR",
+        validUntil: inDays(5),
+        operatorName: "SpaceX",
+        vehicleName: "Falcon 9",
+        launchSite: "VSFB",
+      },
+    ]);
+    // Phase 3 → empty (APPROVED not matched)
+    mockFindMany.mockResolvedValueOnce([]);
+    mockMemberFindMany.mockResolvedValue([
+      { userId: "u_1", user: { email: "a@b.com", name: "A" } },
+    ]);
+
+    const summary = await runFaaAstExpiryAndReminders(NOW);
+
+    // Phase 2 should have created a notification for APPROVED
+    expect(summary.emittedNotifications).toBe(1);
+    // Phase 3 scanned zero stale-review candidates
+    expect(summary.staleReviewScanned).toBe(0);
+    expect(summary.staleReviewNotifications).toBe(0);
+  });
+
+  it("Phase 3 idempotency: 24h guard prevents duplicate notification on re-run", async () => {
+    // Phase 2 → empty
+    mockFindMany.mockResolvedValueOnce([]);
+    // Phase 3 → one stale license
+    mockFindMany.mockResolvedValueOnce([
+      {
+        id: "lic_idem",
+        organizationId: "org_idem",
+        licenseType: "PART_450_VEHICLE_OPERATOR",
+        faaReference: "VOLO 22-IDEM",
+        status: "APPLICATION_SUBMITTED",
+        updatedAt: daysAgo(95),
+      },
+    ]);
+    mockMemberFindMany.mockResolvedValue([
+      { userId: "u_mgr2", user: { email: "mgr2@example.com", name: "Mgr2" } },
+    ]);
+    // Simulate existing Phase-3 notification created within last 24h
+    mockNotifFindFirst.mockResolvedValue({ id: "existing_phase3" });
+
+    const summary = await runFaaAstExpiryAndReminders(NOW);
+
+    expect(summary.staleReviewNotifications).toBe(0);
+    expect(mockNotifCreate).not.toHaveBeenCalled();
   });
 });

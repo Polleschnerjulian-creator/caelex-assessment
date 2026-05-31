@@ -2,19 +2,22 @@
  * Trade FAA AST licence expiry + reminder service (Z38-US, Tier 4).
  *
  * Mirrors `uk-ecju-reminder-service.ts` and `france-los-reminder-
- * service.ts`. Two-phase pass:
+ * service.ts`. Three-phase pass:
  *
  *   1. Expire APPROVED licences whose `validUntil` has passed → set
  *      status to EXPIRED.
  *   2. Notify MANAGER+ org members for APPROVED licences approaching
  *      expiry in 90 / 30 / 7-day buckets. CRITICAL bucket (≤7d) also
  *      dispatches an email via the trade-license-expiry template.
- *
- * Additional FAA-specific phase:
  *   3. APPLICATION_SUBMITTED + ENVIRONMENTAL_REVIEW + UNDER_REVIEW
  *      rows that have been stale for > 90 days get a "follow-up with
  *      FAA AST" reminder. The 180-day Part 450 review clock is FAA's
  *      target, so 90-day stagnation is worth surfacing.
+ *      Staleness is measured by `updatedAt` (no `submittedAt` field
+ *      exists on TradeFaaAstLicense). Uses entityType
+ *      "trade-faa-ast-stale-review" for idempotency, distinct from
+ *      Phase 2's "trade-faa-ast-license", so the same 24h guard applies
+ *      independently to each phase.
  *
  * Idempotency: per-(user, license) 24-hour guard prevents duplicate
  * Notification rows on cron retries.
@@ -83,6 +86,10 @@ export interface FaaAstExpirySummary {
   emittedNotifications: number;
   emittedEmails: number;
   perLicense: FaaAstReminderResult[];
+  /** Phase 3: how many in-review licences were found stale (>90d updatedAt) */
+  staleReviewScanned: number;
+  /** Phase 3: how many WARNING notifications were created for stale in-review licences */
+  staleReviewNotifications: number;
   totalElapsedMs: number;
 }
 
@@ -174,12 +181,77 @@ export async function runFaaAstExpiryAndReminders(
     }
   }
 
+  // Phase 3 — FAA-specific: stale in-review licences (T-M13).
+  //
+  // Licences sitting in APPLICATION_SUBMITTED / ENVIRONMENTAL_REVIEW /
+  // UNDER_REVIEW without any status change for >90 days are surfaced as a
+  // WARNING follow-up nudge (the FAA Part 450 review target is 180 days;
+  // 90-day stagnation is worth surfacing to MANAGER+ members).
+  //
+  // Stale clock: `updatedAt` (@updatedAt on the Prisma model). There is no
+  // `submittedAt` field on TradeFaaAstLicense — updatedAt is the honest
+  // last-activity signal.
+  const staleCutoff = new Date(nowMs - 90 * 24 * 60 * 60 * 1000);
+
+  const staleReviewCandidates = await prisma.tradeFaaAstLicense.findMany({
+    where: {
+      status: {
+        in: ["APPLICATION_SUBMITTED", "ENVIRONMENTAL_REVIEW", "UNDER_REVIEW"],
+      },
+      updatedAt: { lt: staleCutoff },
+    },
+    select: {
+      id: true,
+      organizationId: true,
+      licenseType: true,
+      faaReference: true,
+      status: true,
+      updatedAt: true,
+    },
+  });
+
+  let staleReviewNotifications = 0;
+
+  for (const staleLicense of staleReviewCandidates) {
+    // updatedAt is always set by Prisma (@updatedAt), but guard defensively.
+    if (!staleLicense.updatedAt) continue;
+    // Days stale = floor((now - updatedAt) / day)
+    const daysStale = Math.floor(
+      (nowMs - staleLicense.updatedAt.getTime()) / (1000 * 60 * 60 * 24),
+    );
+    const ref =
+      staleLicense.faaReference ?? `(${staleLicense.licenseType} draft)`;
+    const statusLabel = formatStatus(staleLicense.status);
+    const title = `FAA AST application ${ref} stale >${daysStale} days — follow up with FAA AST`;
+    const message =
+      `FAA AST ${formatLicenseType(staleLicense.licenseType)} licence ${ref} has been in ` +
+      `${statusLabel} status for ${daysStale} day${daysStale === 1 ? "" : "s"} without an update. ` +
+      `The FAA Part 450 review target is 180 days — contact your AST case officer to confirm ` +
+      `progress and avoid delays approaching the 180-day clock.`;
+
+    try {
+      const notifs = await emitStaleReviewForLicense(
+        staleLicense,
+        title,
+        message,
+      );
+      staleReviewNotifications += notifs;
+    } catch (err) {
+      logger.warn(
+        `faa-ast-reminder Phase 3: failed for license ${staleLicense.id}: ${err instanceof Error ? err.message : String(err)}`,
+        { licenseId: staleLicense.id },
+      );
+    }
+  }
+
   return {
     scanned: candidates.length,
     expired: expiredResult.count,
     emittedNotifications,
     emittedEmails,
     perLicense,
+    staleReviewScanned: staleReviewCandidates.length,
+    staleReviewNotifications,
     totalElapsedMs: Date.now() - start,
   };
 }
@@ -291,4 +363,83 @@ function formatLicenseType(licenseType: string): string {
     PART_435_REENTRY_REUSABLE: "Part 435 RLV Re-Entry",
   };
   return map[licenseType] ?? licenseType;
+}
+
+function formatStatus(status: string): string {
+  const map: Record<string, string> = {
+    APPLICATION_SUBMITTED: "Application Submitted",
+    ENVIRONMENTAL_REVIEW: "Environmental Review",
+    UNDER_REVIEW: "Under Review",
+  };
+  return map[status] ?? status;
+}
+
+// ---------------------------------------------------------------------------
+// Phase 3 helper — emit a WARNING notification for a stale in-review licence.
+// Reuses the same recipient query, idempotency guard, and notification-create
+// pattern as Phase 2's emitForLicense. Uses a distinct entityType
+// ("trade-faa-ast-stale-review") so the idempotency key is independent of
+// Phase 2's "trade-faa-ast-license" bucket.
+// ---------------------------------------------------------------------------
+
+interface StaleReviewLicense {
+  id: string;
+  organizationId: string;
+  licenseType: string;
+  faaReference: string | null;
+  status: string;
+  updatedAt: Date;
+}
+
+async function emitStaleReviewForLicense(
+  license: StaleReviewLicense,
+  title: string,
+  message: string,
+): Promise<number> {
+  const recipients = await prisma.organizationMember.findMany({
+    where: {
+      organizationId: license.organizationId,
+      role: { in: ["OWNER", "ADMIN", "MANAGER"] },
+    },
+    select: {
+      userId: true,
+      user: { select: { email: true, name: true } },
+    },
+  });
+  if (recipients.length === 0) return 0;
+
+  const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  let notifications = 0;
+
+  for (const recipient of recipients) {
+    // Idempotency guard: distinct from Phase 2 (entityType differs).
+    const existing = await prisma.notification.findFirst({
+      where: {
+        userId: recipient.userId,
+        entityType: "trade-faa-ast-stale-review",
+        entityId: license.id,
+        type: "DOCUMENT_EXPIRY",
+        createdAt: { gte: dayAgo },
+      },
+      select: { id: true },
+    });
+    if (existing) continue;
+
+    await prisma.notification.create({
+      data: {
+        userId: recipient.userId,
+        organizationId: license.organizationId,
+        type: "DOCUMENT_EXPIRY",
+        severity: "WARNING",
+        title,
+        message,
+        actionUrl: `/trade/faa-ast/${license.id}`,
+        entityType: "trade-faa-ast-stale-review",
+        entityId: license.id,
+      },
+    });
+    notifications += 1;
+  }
+
+  return notifications;
 }
