@@ -46,6 +46,10 @@ import { BulkActionsBar } from "../_components/BulkActionsBar";
 import { buildCsv, downloadCsv } from "@/lib/trade/csv-export";
 import { useToast } from "@/components/ui/Toast";
 import { Download } from "lucide-react";
+import {
+  DatasheetDropzone,
+  type DatasheetApplyPayload,
+} from "../_components/DatasheetDropzone";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -153,6 +157,7 @@ function NewItemForm({
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [applied, setApplied] = useState<DatasheetApplyPayload | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -174,6 +179,36 @@ function NewItemForm({
         throw new Error(j.error ?? "Failed to create item");
       }
       const { item } = await res.json();
+
+      // Additive: if a datasheet suggested a code, apply the top one. The
+      // create flow is never blocked — any failure falls through to the
+      // plain onSuccess(item) below so manual classification stays available.
+      const top = applied?.suggestions[0];
+      if (top && item?.id) {
+        try {
+          const regime = top.regime?.toUpperCase() ?? "";
+          let codePatch: Record<string, string>;
+          if (regime.includes("USML")) {
+            codePatch = { usmlCategory: top.code };
+          } else if (regime.includes("EAR") || regime.includes("CCL")) {
+            codePatch = { eccnUS: top.code };
+          } else {
+            codePatch = { eccnEU: top.code };
+          }
+          const patchRes = await fetch(`/api/trade/items/${item.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(codePatch),
+          });
+          if (patchRes.ok) {
+            const { item: classified } = await patchRes.json();
+            onSuccess(classified);
+            return;
+          }
+        } catch {
+          // fall through — item is created, code can be set manually
+        }
+      }
       onSuccess(item);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -202,6 +237,16 @@ function NewItemForm({
         </div>
 
         <div className="space-y-3">
+          <DatasheetDropzone onApply={setApplied} />
+          {applied?.suggestions[0] && (
+            <p className="text-[12px] text-trade-text-muted">
+              Übernommen:{" "}
+              <span className="font-medium text-trade-text-primary">
+                {applied.suggestions[0].code}
+              </span>{" "}
+              — wird beim Anlegen gesetzt.
+            </p>
+          )}
           <div>
             <label className="mb-1 block text-[11px] font-medium text-trade-text-secondary">
               Name *
