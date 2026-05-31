@@ -27,11 +27,20 @@ Replace three near-identical, fully-bespoke Trade list pages with **one reusable
 A generic, column-driven table component plus a thin state hook, with the **testable logic extracted into a pure module** (node-testable — important because jsdom component tests hang on this machine).
 
 ```
-src/lib/trade/table-state.ts            ← PURE: sort comparator, selection-set ops, density map (node tests)
+src/lib/trade/table-state.ts            ← PURE: sort comparator + selection-set ops (node tests)
 src/app/(trade)/trade/_components/
-    TradeTable.tsx                      ← generic <TradeTable<T>> component (uses the pure module)
-    useTableState.ts                    ← thin hook: useState around the pure helpers (sort + density)
+    TradeTable.tsx                      ← generic <TradeTable<T>> (owns sort state locally; consumes useTradeDensity)
 ```
+
+**Density correction (discovered during planning):** density is already a
+global concern. `useTradeDensity` (localStorage + `data-trade-density`
+attribute) + `globals.css` drive row compaction automatically; `DensityToggle`
+(Settings) writes to it. So `TradeTable` **consumes the existing
+`useTradeDensity`** rather than inventing local density state, and there is
+**no separate `useTableState` file** — with density gone, the only remaining
+state is sort, which lives inline in `TradeTable`. The toolbar gets a compact
+density button wired to `useTradeDensity.setDensity` (the full `DensityToggle`
+fieldset stays in Settings).
 
 Reuses existing shared components — does NOT rebuild them:
 
@@ -76,8 +85,12 @@ export function toggleSelectAll(
   visibleIds: string[],
 ): Set<string>;
 
-export type Density = "comfortable" | "compact";
-export const DENSITY_ROW_PADDING: Record<Density, string>; // { comfortable: "py-3", compact: "py-1.5" }
+// NOTE: density is intentionally NOT in this module. It is already a
+// global, persisted preference via the existing `useTradeDensity` hook
+// (writes `data-trade-density` on documentElement) and `globals.css`
+// (4961-4972) auto-compacts `py-3`/`py-4` inside `.trade-themed`. So rows
+// just use `py-3` and respond to the global toggle for free. This module
+// is sort + selection only.
 ```
 
 All pure, deterministic, no React, no DOM → covered by fast node tests.
@@ -122,20 +135,11 @@ interface TradeTableProps<T> {
 }
 ```
 
-**Ownership split:** the page keeps owning `search` value + `selectedIds` + status `filters` (minimal migration churn, drives existing CSV export). `TradeTable` owns the **new** concerns — sort + density — via `useTableState`.
+**Ownership split:** the page keeps owning `search` value + `selectedIds` + status `filters` (minimal migration churn, drives existing CSV export). `TradeTable` owns **sort** (inline `useState`); **density** is the existing global `useTradeDensity` preference, not table state.
 
-### Hook — `useTableState`
+### Sort state (inline in `TradeTable`)
 
-```ts
-function useTableState(initialSort?: SortState): {
-  sort: SortState;
-  toggleSort: (key: string) => void; // wraps nextSort
-  density: Density;
-  setDensity: (d: Density) => void;
-};
-```
-
-The table applies `sortRows` to `rows` when `sort.key` matches a column with `sortBy`; otherwise renders server order.
+No separate hook. `TradeTable` holds `const [sort, setSort] = useState<SortState>(initialSort ?? { key: null, dir: "asc" })` and a `toggleSort = (key) => setSort((s) => nextSort(s, key))`. It applies `sortRows` to `rows` when `sort.key` matches a column with `sortBy`; otherwise renders server order. Density is read from the existing global `useTradeDensity()` for the toolbar button only — row padding is handled by `globals.css`.
 
 ## Visual Treatment (the "modern" part)
 
@@ -169,16 +173,15 @@ Given the documented jsdom hang on this machine:
 
 ## File Structure
 
-| File                                                    | Responsibility                                  |
-| ------------------------------------------------------- | ----------------------------------------------- |
-| `src/lib/trade/table-state.ts`                          | Pure sort/selection/density logic (node-tested) |
-| `src/lib/trade/table-state.test.ts`                     | Node tests for the pure module                  |
-| `src/app/(trade)/trade/_components/useTableState.ts`    | Thin React hook (sort + density)                |
-| `src/app/(trade)/trade/_components/TradeTable.tsx`      | Generic column-driven table                     |
-| `src/app/(trade)/trade/_components/TradeTable.test.tsx` | Best-effort render test (jsdom)                 |
-| `src/app/(trade)/trade/parties/page.tsx`                | Migrate to TradeTable + party columns           |
-| `src/app/(trade)/trade/items/page.tsx`                  | Migrate to TradeTable + item columns            |
-| `src/app/(trade)/trade/operations/page.tsx`             | Migrate to TradeTable + operation columns       |
+| File                                                    | Responsibility                                                        |
+| ------------------------------------------------------- | --------------------------------------------------------------------- |
+| `src/lib/trade/table-state.ts`                          | Pure sort + selection logic (node-tested)                             |
+| `src/lib/trade/table-state.test.ts`                     | Node tests for the pure module                                        |
+| `src/app/(trade)/trade/_components/TradeTable.tsx`      | Generic column-driven table (sort inline; consumes `useTradeDensity`) |
+| `src/app/(trade)/trade/_components/TradeTable.test.tsx` | Best-effort render test (jsdom)                                       |
+| `src/app/(trade)/trade/parties/page.tsx`                | Migrate to TradeTable + party columns                                 |
+| `src/app/(trade)/trade/items/page.tsx`                  | Migrate to TradeTable + item columns                                  |
+| `src/app/(trade)/trade/operations/page.tsx`             | Migrate to TradeTable + operation columns                             |
 
 ## Risks & Decisions
 
