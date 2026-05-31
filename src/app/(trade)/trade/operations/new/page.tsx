@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { VerdictPanel } from "./_components/VerdictPanel";
+import { ItemPicker } from "./_components/ItemPicker";
+import { PartyPicker } from "./_components/PartyPicker";
 
 type Step = "was" | "anWen" | "wohin" | "ergebnis";
 
@@ -116,15 +118,12 @@ export default function NewOperationWizardPage() {
       {step === "was" && (
         <section className="space-y-4">
           <h2 className="text-lg text-white">Was lieferst du?</h2>
-          <label className="block text-sm text-trade-text-muted">
-            Artikel-ID
-            <input
-              className="mt-1 w-full rounded-lg bg-white/[0.04] px-3 py-2 text-white"
-              value={draft.itemId}
-              onChange={(e) => patch({ itemId: e.target.value })}
-              placeholder="z. B. itm_…"
-            />
-          </label>
+          <div className="block text-sm text-trade-text-muted">
+            Artikel
+            <div className="mt-1">
+              <ItemPicker onSelect={(it) => patch({ itemId: it.id })} />
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <label className="block text-sm text-trade-text-muted">
               Menge
@@ -160,15 +159,12 @@ export default function NewOperationWizardPage() {
       {step === "anWen" && (
         <section className="space-y-4">
           <h2 className="text-lg text-white">An wen?</h2>
-          <label className="block text-sm text-trade-text-muted">
-            Gegenpartei-ID
-            <input
-              className="mt-1 w-full rounded-lg bg-white/[0.04] px-3 py-2 text-white"
-              value={draft.counterpartyId}
-              onChange={(e) => patch({ counterpartyId: e.target.value })}
-              placeholder="z. B. tp_…"
-            />
-          </label>
+          <div className="block text-sm text-trade-text-muted">
+            Gegenpartei
+            <div className="mt-1">
+              <PartyPicker onSelect={(p) => patch({ counterpartyId: p.id })} />
+            </div>
+          </div>
           <div className="flex gap-3">
             <button
               onClick={() => setStep("was")}
