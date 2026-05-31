@@ -1351,7 +1351,7 @@ import { pickHeroAction } from "@/lib/trade/home-hero";
 import { HomeHero } from "./_components/HomeHero";
 import { HomeOnboarding } from "./_components/HomeOnboarding";
 import { MiniStatsStrip } from "./_components/MiniStatsStrip";
-import { TradeCommandPalette } from "./_components/TradeCommandPalette";
+import { TradeCommandTrigger } from "./_components/TradeCommandTrigger";
 ```
 
 - [ ] **Step 3: Compute the hero + onboarding flags** right after `const actionItems = aggregateActionItems({...})`, using the confirmed names `itemsCount` / `partiesTotal` / `operationsTotal`:
