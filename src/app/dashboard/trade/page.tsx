@@ -30,9 +30,19 @@ export const metadata = {
 /**
  * Trade Operations — overview / landing page.
  *
- * Sprint B1 stub upgraded by Sprint B7: now links to the live Item
- * Classification list (/dashboard/trade/items). Wave A adds the
- * Counterparty-Screening list; Wave C adds the Operations-Lifecycle.
+ * @deprecated LEGACY SURFACE. The canonical Trade UI is the standalone
+ *   route group `src/app/(trade)/trade/**` (served at `/trade`), which the
+ *   active product work — incl. the Ausfuhrvorgang-Assistent — builds on.
+ *   This `/dashboard/trade/**` surface (7 pages) is retained ONLY because it
+ *   is still reachable (V2Sidebar links here, no redirect yet) and because
+ *   `src/components/trade/*` is SHARED between both surfaces (e.g.
+ *   ClassificationPanel, BafaPdfButton are imported by `(trade)/trade/**`
+ *   too). Removing it is a product/deprecation decision (Sprint F / F1),
+ *   NOT a safe mechanical delete: it requires (1) repointing
+ *   V2Sidebar.tsx → `/trade`, (2) a `/dashboard/trade/* → /trade` redirect,
+ *   (3) deleting only the LEGACY-ONLY panels (Operation*Panel,
+ *   UboResolvedChip, BeneficialOwnersPanel) while KEEPING the shared ones,
+ *   and (4) e2e verification. Do not delete piecemeal.
  *
  * Two-Layer-Split (Plan § 2):
  *   - Layer 1 (Posture, existiert): /dashboard/modules/export-control
