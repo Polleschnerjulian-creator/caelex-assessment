@@ -4841,23 +4841,21 @@ html:not(.dark) .caelex-v2 .glass-card::after {
 
 .trade-themed[data-trade-theme="dark"],
 html[data-trade-preload="dark"] .trade-themed {
-  --trade-bg-page: #0a0c12;
-  --trade-bg-panel: #131722;
-  --trade-bg-elevated: #1a1f2e;
-  --trade-bg-subtle: #10141d;
-  --trade-border: #262d39;
-  --trade-border-subtle: #1a2029;
-  --trade-border-strong: #374151;
-  --trade-text-primary: #f1f5f9;
-  --trade-text-secondary: #d1d5db;
-  --trade-text-muted: #9ca3af;
-  /* Accent — monochrome WHITE (per user pref). Replaces former indigo
-     so primary buttons + active pills read as Apple/Linear white-on-dark
-     instead of purple. */
-  --trade-accent: #ffffff;
-  --trade-accent-soft: rgba(255, 255, 255, 0.1);
-  --trade-accent-strong: #ffffff;
-  --trade-hover: #1e293b;
+  --trade-bg-page: #08080c;
+  --trade-bg-panel: #0c0c11;
+  --trade-bg-elevated: #14141b;
+  --trade-bg-subtle: #101016;
+  --trade-border: #1c1c24;
+  --trade-border-subtle: #16161c;
+  --trade-border-strong: #2a2a35;
+  --trade-text-primary: #fafafa;
+  --trade-text-secondary: #a1a1aa;
+  --trade-text-muted: #52525b;
+  /* Accent — indigo (Linear×Bloomberg palette, ui phase 1). */
+  --trade-accent: #6366f1;
+  --trade-accent-soft: rgba(99, 102, 241, 0.14);
+  --trade-accent-strong: #4f46e5;
+  --trade-hover: #14141b;
 
   /* APPLE HIG semantic tokens — dark variants.
      Per Apple: dark mode is NOT inversion — elevated surfaces
