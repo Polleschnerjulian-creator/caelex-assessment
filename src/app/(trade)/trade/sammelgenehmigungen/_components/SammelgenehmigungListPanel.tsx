@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TradeSammelgenehmigungStatus } from "@prisma/client";
 import type { SammelgenehmigungWithRelations } from "@/lib/trade/sammelgenehmigung/sammelgenehmigung-service";
+import { fromCents } from "@/lib/trade/money";
 
 /**
  * Sammelgenehmigung list panel (Z11c).
@@ -162,12 +163,12 @@ export function SammelgenehmigungListPanel({ rows, canEdit }: Props) {
                     </td>
                     <td className="py-3 pr-4">
                       <CapacityBar
-                        drawn={row.drawnDownValueEur}
-                        total={row.totalValueCapEur}
+                        drawn={fromCents(row.drawnDownValueEur)}
+                        total={fromCents(row.totalValueCapEur)}
                       />
                     </td>
                     <td className="py-3 pr-4 text-trade-text-secondary">
-                      {formatEur(row.totalValueCapEur)}
+                      {formatEur(fromCents(row.totalValueCapEur))}
                     </td>
                     <td className="py-3 pr-4 text-trade-text-secondary">
                       {row.allowedEndUsers.length === 0

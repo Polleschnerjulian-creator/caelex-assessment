@@ -126,8 +126,10 @@ function makeSag(overrides: Record<string, unknown> = {}) {
     validUntil: VALID_UNTIL,
     allowedECCNs: ["5A002.a"],
     allowedDestinations: ["US"],
-    totalValueCapEur: 1_000_000,
-    drawnDownValueEur: 200_000,
+    // BigInt cents: 1 000 000 EUR = 100 000 000 cents
+    totalValueCapEur: BigInt(100_000_000),
+    // BigInt cents: 200 000 EUR = 20 000 000 cents
+    drawnDownValueEur: BigInt(20_000_000),
     status: "ACTIVE" as const,
     lastActionById: "user_1",
     grantDocumentId: null,
@@ -183,19 +185,21 @@ describe("getSammelgenehmigung", () => {
 });
 
 describe("getAvailableCapacity", () => {
-  it("returns totalCap minus drawnDown", async () => {
+  it("returns totalCap minus drawnDown (as euros number)", async () => {
     mockSagFindFirst.mockResolvedValueOnce({
-      totalValueCapEur: 1_000_000,
-      drawnDownValueEur: 200_000,
+      // 1 000 000 EUR = 100_000_000 cents; 200 000 EUR = 20_000_000 cents
+      totalValueCapEur: BigInt(100_000_000),
+      drawnDownValueEur: BigInt(20_000_000),
     });
     const cap = await getAvailableCapacity("org_1", "sag_1");
-    expect(cap).toBe(800_000);
+    expect(cap).toBe(800_000); // 80_000_000 cents → 800 000 EUR
   });
 
   it("clamps to zero when drawn exceeds cap (shouldn't happen but defence in depth)", async () => {
     mockSagFindFirst.mockResolvedValueOnce({
-      totalValueCapEur: 1_000_000,
-      drawnDownValueEur: 1_100_000,
+      // 1 000 000 EUR cap, 1 100 000 EUR drawn (both in cents)
+      totalValueCapEur: BigInt(100_000_000),
+      drawnDownValueEur: BigInt(110_000_000),
     });
     const cap = await getAvailableCapacity("org_1", "sag_1");
     expect(cap).toBe(0);
@@ -271,8 +275,9 @@ describe("findCoveringSammelgenehmigungen", () => {
   it("excludes SAGs without enough remaining capacity", async () => {
     mockSagFindMany.mockResolvedValueOnce([
       makeSag({
-        totalValueCapEur: 1_000_000,
-        drawnDownValueEur: 999_000,
+        // 1 000 000 EUR cap, 999 000 EUR drawn → only 1 000 EUR remaining
+        totalValueCapEur: BigInt(100_000_000),
+        drawnDownValueEur: BigInt(99_900_000),
       }),
     ]);
     const result = await findCoveringSammelgenehmigungen(
@@ -326,6 +331,8 @@ describe("createSammelgenehmigung", () => {
         data: expect.objectContaining({
           status: "DRAFT",
           organizationId: "org_1",
+          // totalValueCapEur stored in bigint cents: 500_000 EUR = 50_000_000 cents
+          totalValueCapEur: BigInt(50_000_000),
           allowedEndUsers: { connect: [{ id: "party_1" }] },
         }),
       }),
@@ -459,25 +466,27 @@ describe("activateSammelgenehmigung", () => {
 // live Postgres in Sprint I2.
 describe("recordDrawDown", () => {
   it("uses atomic updateMany increment (not absolute write) within cap (T-H7)", async () => {
-    // Arrange: cap=1M, already drawn=0, drawing 50k → bound=950k
+    // Arrange: cap=1M EUR (100_000_000 cents), drawn=0, drawing 50k EUR (5_000_000 cents)
+    // bound = 100_000_000n - 5_000_000n = 95_000_000n
     mockOperationFindFirst.mockResolvedValueOnce({
       id: "op_1",
       reference: "ISAR-2026-001",
     });
-    // 1st findFirst inside tx: cap read
+    // 1st findFirst inside tx: cap read (bigint cents)
     mockSagFindFirst.mockResolvedValueOnce({
       ...makeSag(),
-      drawnDownValueEur: 0,
-      totalValueCapEur: 1_000_000,
+      drawnDownValueEur: BigInt(0),
+      totalValueCapEur: BigInt(100_000_000),
     });
     // increment updateMany: count=1 (success)
     mockSagUpdateMany.mockResolvedValueOnce({ count: 1 });
     // EXHAUSTED flip updateMany: count=0 (not exhausted yet)
     mockSagUpdateMany.mockResolvedValueOnce({ count: 0 });
-    // 2nd findFirst: readback for remaining capacity
+    // 2nd findFirst: readback for remaining capacity (bigint cents)
+    // after draw: 5_000_000 cents drawn, 100_000_000 cap → 95_000_000 remaining = 950_000 EUR
     mockSagFindFirst.mockResolvedValueOnce({
-      drawnDownValueEur: 50_000,
-      totalValueCapEur: 1_000_000,
+      drawnDownValueEur: BigInt(5_000_000),
+      totalValueCapEur: BigInt(100_000_000),
     });
     mockDrawDownCreate.mockResolvedValueOnce({ id: "dd_1" });
 
@@ -490,43 +499,45 @@ describe("recordDrawDown", () => {
 
     expect(result.remainingCapacityEur).toBe(950_000);
     expect(result.triggeredExhausted).toBe(false);
-    // Must use increment, NOT absolute drawnDownValueEur: 50_000
+    // Must use increment with bigint cents, NOT absolute drawnDownValueEur
     expect(mockSagUpdateMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
           id: "sag_1",
-          drawnDownValueEur: { lte: 950_000 }, // bound = cap - value
+          // bound in bigint cents: 100_000_000 - 5_000_000 = 95_000_000
+          drawnDownValueEur: { lte: BigInt(95_000_000) },
         }),
-        data: { drawnDownValueEur: { increment: 50_000 } },
+        data: { drawnDownValueEur: { increment: BigInt(5_000_000) } },
       }),
     );
-    // The old absolute update must NOT have been called with drawnDownValueEur: 50_000
+    // The old absolute update must NOT have been called
     expect(mockSagUpdate).not.toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ drawnDownValueEur: 50_000 }),
+        data: expect.objectContaining({ drawnDownValueEur: BigInt(5_000_000) }),
       }),
     );
   });
 
   it("flips status to EXHAUSTED when draw exactly reaches cap (T-H7)", async () => {
-    // Arrange: cap=1M, drawn=999k, drawing 1k → exact exhaustion
+    // Arrange: cap=1M EUR (100_000_000n cents), drawn=999k EUR (99_900_000n cents),
+    // drawing 1k EUR (100_000n cents) → exact exhaustion
     mockOperationFindFirst.mockResolvedValueOnce({
       id: "op_1",
       reference: "ISAR-2026-001",
     });
     mockSagFindFirst.mockResolvedValueOnce({
       ...makeSag(),
-      drawnDownValueEur: 999_000,
-      totalValueCapEur: 1_000_000,
+      drawnDownValueEur: BigInt(99_900_000),
+      totalValueCapEur: BigInt(100_000_000),
     });
     // increment updateMany succeeds
     mockSagUpdateMany.mockResolvedValueOnce({ count: 1 });
     // EXHAUSTED flip: count=1 (triggered)
     mockSagUpdateMany.mockResolvedValueOnce({ count: 1 });
-    // readback
+    // readback: exactly at cap → remaining = 0
     mockSagFindFirst.mockResolvedValueOnce({
-      drawnDownValueEur: 1_000_000,
-      totalValueCapEur: 1_000_000,
+      drawnDownValueEur: BigInt(100_000_000),
+      totalValueCapEur: BigInt(100_000_000),
     });
     mockDrawDownCreate.mockResolvedValueOnce({ id: "dd_1" });
 
@@ -539,12 +550,12 @@ describe("recordDrawDown", () => {
 
     expect(result.remainingCapacityEur).toBe(0);
     expect(result.triggeredExhausted).toBe(true);
-    // Verify the EXHAUSTED flip updateMany was called with gte cap
+    // Verify the EXHAUSTED flip updateMany was called with gte cap (bigint cents)
     expect(mockSagUpdateMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
           status: "ACTIVE",
-          drawnDownValueEur: { gte: 1_000_000 },
+          drawnDownValueEur: { gte: BigInt(100_000_000) },
         }),
         data: { status: "EXHAUSTED" },
       }),
@@ -559,18 +570,18 @@ describe("recordDrawDown", () => {
       id: "op_1",
       reference: "ISAR-2026-001",
     });
-    // cap read (immutable)
+    // cap read (immutable): 1M EUR cap, 850k EUR drawn (bigint cents)
     mockSagFindFirst.mockResolvedValueOnce({
       ...makeSag(),
-      drawnDownValueEur: 850_000,
-      totalValueCapEur: 1_000_000,
+      drawnDownValueEur: BigInt(85_000_000),
+      totalValueCapEur: BigInt(100_000_000),
     });
     // increment updateMany: count=0 → concurrent draw consumed headroom
     mockSagUpdateMany.mockResolvedValueOnce({ count: 0 });
-    // readback for precise error message: drawnDownValueEur=950_000 after concurrent draw
+    // readback for precise error message: 950k EUR drawn after concurrent draw
     mockSagFindFirst.mockResolvedValueOnce({
-      drawnDownValueEur: 950_000,
-      totalValueCapEur: 1_000_000,
+      drawnDownValueEur: BigInt(95_000_000),
+      totalValueCapEur: BigInt(100_000_000),
     });
 
     await expect(
@@ -625,25 +636,25 @@ describe("recordDrawDown", () => {
   });
 
   it("refuses single draw that exceeds the cap (direct path, not concurrent)", async () => {
-    // A single draw of 200k against 100k remaining. The atomic WHERE
-    // (drawnDownValueEur <= cap-value = 800k) will be satisfied by 900k
-    // only if 900k <= 800k which is false → count=0 → throws.
-    // We simulate that by having updateMany return count=0.
+    // A single draw of 200k EUR against 100k EUR remaining.
+    // The atomic WHERE (drawnDownValueEur <= cap-value = 80_000_000n) will be
+    // satisfied by 90_000_000n only if 90_000_000n <= 80_000_000n which is false
+    // → count=0 → throws. We simulate by having updateMany return count=0.
     mockOperationFindFirst.mockResolvedValueOnce({
       id: "op_1",
       reference: "ISAR-2026-001",
     });
     mockSagFindFirst.mockResolvedValueOnce({
       ...makeSag(),
-      drawnDownValueEur: 900_000,
-      totalValueCapEur: 1_000_000,
+      drawnDownValueEur: BigInt(90_000_000),
+      totalValueCapEur: BigInt(100_000_000),
     });
-    // count=0: atomic guard fires (900k <= 800k is false)
+    // count=0: atomic guard fires (90M <= 80M is false)
     mockSagUpdateMany.mockResolvedValueOnce({ count: 0 });
     // readback
     mockSagFindFirst.mockResolvedValueOnce({
-      drawnDownValueEur: 900_000,
-      totalValueCapEur: 1_000_000,
+      drawnDownValueEur: BigInt(90_000_000),
+      totalValueCapEur: BigInt(100_000_000),
     });
 
     await expect(

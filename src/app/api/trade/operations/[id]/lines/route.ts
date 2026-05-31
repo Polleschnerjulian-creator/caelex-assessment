@@ -29,6 +29,7 @@ import {
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { emitTradeEvent } from "@/lib/comply-v2/trade/ops-events.server";
 import { z } from "zod";
+import { toCents, fromCents } from "@/lib/trade/money";
 
 const AddLineSchema = z.object({
   itemId: z.string().min(1).max(50),
@@ -111,7 +112,7 @@ export async function POST(
         operationId,
         itemId: data.itemId,
         quantity: data.quantity,
-        unitValue: data.unitValue,
+        unitValue: toCents(data.unitValue),
         unitCurrency: data.unitCurrency,
       },
       include: {
@@ -187,7 +188,8 @@ export async function POST(
       },
     });
 
-    return NextResponse.json({ line }, { status: 201 });
+    const serializedLine = { ...line, unitValue: fromCents(line.unitValue) };
+    return NextResponse.json({ line: serializedLine }, { status: 201 });
   } catch (err) {
     logger.error({ err }, "POST /api/trade/operations/[id]/lines failed");
     return NextResponse.json({ error: "Internal error" }, { status: 500 });

@@ -24,6 +24,7 @@ import {
   TradeOperationStatus,
   TradeOperationType,
 } from "@prisma/client";
+import { fromCents, fromCentsNullable } from "@/lib/trade/money";
 
 const UpdateTradeOperationSchema = z.object({
   description: z.string().max(2000).optional(),
@@ -166,7 +167,20 @@ export async function GET(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ operation });
+    // Serialize bigint cents → euros numbers for JSON
+    const serializedOperation = {
+      ...operation,
+      lines: operation.lines.map((l) => ({
+        ...l,
+        unitValue: fromCents(l.unitValue),
+      })),
+      licenses: operation.licenses.map((lic) => ({
+        ...lic,
+        drawnDownValue: fromCents(lic.drawnDownValue),
+        totalCapValue: fromCentsNullable(lic.totalCapValue),
+      })),
+    };
+    return NextResponse.json({ operation: serializedOperation });
   } catch (err) {
     logger.error({ err }, "GET /api/trade/operations/[id] failed");
     return NextResponse.json({ error: "Internal error" }, { status: 500 });

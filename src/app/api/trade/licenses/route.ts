@@ -23,6 +23,11 @@ import {
 import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { z } from "zod";
 import { Prisma, TradeLicenseStatus, TradeLicenseType } from "@prisma/client";
+import {
+  toCentsNullable,
+  fromCents,
+  fromCentsNullable,
+} from "@/lib/trade/money";
 
 const CreateLicenseSchema = z.object({
   licenseType: z.nativeEnum(TradeLicenseType),
@@ -99,7 +104,13 @@ export async function GET(req: Request) {
       },
     });
 
-    return NextResponse.json({ licenses });
+    // BigInt fields are not JSON-serializable — convert cents→euros here.
+    const serialized = licenses.map((l) => ({
+      ...l,
+      drawnDownValue: fromCents(l.drawnDownValue),
+      totalCapValue: fromCentsNullable(l.totalCapValue),
+    }));
+    return NextResponse.json({ licenses: serialized });
   } catch (err) {
     logger.error({ err }, "GET /api/trade/licenses failed");
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
@@ -139,7 +150,7 @@ export async function POST(req: Request) {
         issuedAt: data.issuedAt ? new Date(data.issuedAt) : null,
         validUntil: data.validUntil ? new Date(data.validUntil) : null,
         conditions: data.conditions as Prisma.InputJsonValue,
-        totalCapValue: data.totalCapValue,
+        totalCapValue: toCentsNullable(data.totalCapValue),
         capCurrency: data.capCurrency.toUpperCase(),
         status: data.status,
         documentId: data.documentId,
@@ -156,7 +167,12 @@ export async function POST(req: Request) {
       "trade license created",
     );
 
-    return NextResponse.json({ license }, { status: 201 });
+    const serializedLicense = {
+      ...license,
+      drawnDownValue: fromCents(license.drawnDownValue),
+      totalCapValue: fromCentsNullable(license.totalCapValue),
+    };
+    return NextResponse.json({ license: serializedLicense }, { status: 201 });
   } catch (err) {
     logger.error({ err }, "POST /api/trade/licenses failed");
     return NextResponse.json({ error: "Internal error" }, { status: 500 });

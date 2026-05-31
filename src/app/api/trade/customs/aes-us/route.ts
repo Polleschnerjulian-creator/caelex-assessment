@@ -34,6 +34,7 @@ import {
 } from "@/lib/ratelimit";
 import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { buildAesXml } from "@/lib/trade/customs-filing/aes-us";
+import { fromCents } from "@/lib/trade/money";
 
 export async function GET(req: Request) {
   try {
@@ -126,7 +127,7 @@ export async function GET(req: Request) {
         lines: operation.lines.map((l) => ({
           id: l.id,
           quantity: l.quantity,
-          unitValue: l.unitValue,
+          unitValue: fromCents(l.unitValue),
           unitCurrency: l.unitCurrency,
           item: l.item,
           appliedLicense: l.appliedLicense,

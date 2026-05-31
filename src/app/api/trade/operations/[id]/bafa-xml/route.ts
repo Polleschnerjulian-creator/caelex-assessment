@@ -37,6 +37,7 @@ import {
 import { buildBafaXmlReport } from "@/lib/trade/bafa";
 import { buildApplicant } from "@/lib/trade/bafa/applicant-from-org";
 import { getProfile } from "@/lib/trade/settings/org-profile-service";
+import { fromCents } from "@/lib/trade/money";
 
 export async function GET(
   req: Request,
@@ -168,7 +169,7 @@ export async function GET(
         lines: operation.lines.map((l) => ({
           id: l.id,
           quantity: l.quantity,
-          unitValue: l.unitValue,
+          unitValue: fromCents(l.unitValue),
           unitCurrency: l.unitCurrency,
           item: l.item,
           appliedLicense: l.appliedLicense,

@@ -9,6 +9,7 @@ import {
   getSammelgenehmigung,
   getAvailableCapacity,
 } from "@/lib/trade/sammelgenehmigung/sammelgenehmigung-service";
+import { fromCents } from "@/lib/trade/money";
 
 export const metadata = {
   title: "Sammelgenehmigung — Caelex Trade",
@@ -45,8 +46,9 @@ export default async function SammelgenehmigungDetailPage({
   if (!row) notFound();
 
   const remaining = await getAvailableCapacity(orgId, id);
-  const cap = row.totalValueCapEur;
-  const drawn = row.drawnDownValueEur;
+  // Convert bigint cents → euros numbers for display
+  const cap = fromCents(row.totalValueCapEur);
+  const drawn = fromCents(row.drawnDownValueEur);
   const pct = cap > 0 ? Math.min(100, (drawn / cap) * 100) : 0;
   let barTone = "bg-emerald-500";
   if (pct >= 90) barTone = "bg-red-500";
@@ -206,7 +208,7 @@ export default async function SammelgenehmigungDetailPage({
                     {new Date(dd.drawnDownAt).toISOString().slice(0, 10)}
                   </td>
                   <td className="py-2 pr-4 text-right tabular-nums text-trade-text-primary">
-                    {formatEur(dd.valueEur)}
+                    {formatEur(fromCents(dd.valueEur))}
                   </td>
                   <td className="py-2 pr-4 text-trade-text-muted">
                     {dd.notes ?? "—"}

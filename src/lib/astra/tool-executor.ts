@@ -7,6 +7,7 @@
 
 import "server-only";
 import { prisma } from "@/lib/prisma";
+import { fromCents } from "@/lib/trade/money";
 import type { AstraToolCall, AstraToolResult, AstraUserContext } from "./types";
 import { logAuditEvent } from "@/lib/audit";
 import {
@@ -3811,11 +3812,12 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
           validUntil: s.validUntil.toISOString(),
           allowedECCNs: s.allowedECCNs,
           allowedDestinations: s.allowedDestinations,
-          totalValueCapEur: s.totalValueCapEur,
-          drawnDownValueEur: s.drawnDownValueEur,
-          remainingCapacityEur: Math.max(
-            0,
-            s.totalValueCapEur - s.drawnDownValueEur,
+          totalValueCapEur: fromCents(s.totalValueCapEur),
+          drawnDownValueEur: fromCents(s.drawnDownValueEur),
+          remainingCapacityEur: fromCents(
+            s.totalValueCapEur - s.drawnDownValueEur < BigInt(0)
+              ? BigInt(0)
+              : s.totalValueCapEur - s.drawnDownValueEur,
           ),
           allowedEndUserCount: s.allowedEndUsers.length,
         })),
@@ -3933,7 +3935,7 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
           : undefined,
       lines: op.lines.map((l) => ({
         eccn: l.item.eccnUS ?? l.item.eccnEU ?? "EAR99",
-        unitValue: l.unitValue,
+        unitValue: fromCents(l.unitValue),
         quantity: l.quantity,
         currency: l.unitCurrency,
       })),

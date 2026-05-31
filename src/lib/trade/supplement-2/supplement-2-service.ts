@@ -6,6 +6,7 @@ import {
 } from "@prisma/client";
 
 import { isEligibleEccn } from "./eligible-eccns";
+import { fromCents } from "@/lib/trade/money";
 import {
   type ReportingPeriod,
   makeReportingPeriod,
@@ -154,7 +155,7 @@ export async function listEligibleOperations(
           lineId: line.id,
           eccn: eccn as string,
           quantity: line.quantity,
-          lineValue: line.quantity * line.unitValue,
+          lineValue: line.quantity * fromCents(line.unitValue),
           currency: line.unitCurrency,
         });
       }

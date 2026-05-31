@@ -110,7 +110,8 @@ function makeOperation(overrides: Record<string, unknown> = {}) {
       {
         id: "line_1",
         quantity: 5,
-        unitValue: 1000,
+        // BigInt cents: €1000 = 100_000 cents
+        unitValue: BigInt(100_000),
         unitCurrency: "USD",
         item: { eccnEU: null, eccnUS: "5A002.a.1.a" },
       },
@@ -141,7 +142,7 @@ describe("listEligibleOperations", () => {
           {
             id: "line_x",
             quantity: 1,
-            unitValue: 100,
+            unitValue: BigInt(10_000),
             unitCurrency: "EUR",
             item: { eccnEU: "9A515.a", eccnUS: "9A515.a" },
           },
@@ -185,14 +186,16 @@ describe("listEligibleOperations", () => {
           {
             id: "line_a",
             quantity: 2,
-            unitValue: 500,
+            // BigInt cents: €500 = 50_000 cents
+            unitValue: BigInt(50_000),
             unitCurrency: "USD",
             item: { eccnEU: null, eccnUS: "5A002.a" },
           },
           {
             id: "line_b",
             quantity: 1,
-            unitValue: 2000,
+            // BigInt cents: €2000 = 200_000 cents
+            unitValue: BigInt(200_000),
             unitCurrency: "USD",
             item: { eccnEU: null, eccnUS: "4A003.b" },
           },
@@ -248,7 +251,7 @@ describe("listEligibleOperations", () => {
           {
             id: "line_z",
             quantity: 1,
-            unitValue: 100,
+            unitValue: BigInt(10_000),
             unitCurrency: "EUR",
             item: { eccnEU: "9A515.a", eccnUS: "5A002.a" },
           },
@@ -336,14 +339,15 @@ describe("generateReport", () => {
           {
             id: "line_a",
             quantity: 3,
-            unitValue: 100,
+            // BigInt cents: €100 = 10_000 cents
+            unitValue: BigInt(10_000),
             unitCurrency: "USD",
             item: { eccnEU: null, eccnUS: "5A002.a" },
           },
           {
             id: "line_b",
             quantity: 2,
-            unitValue: 100,
+            unitValue: BigInt(10_000),
             unitCurrency: "USD",
             item: { eccnEU: null, eccnUS: "5A002.a" },
           },

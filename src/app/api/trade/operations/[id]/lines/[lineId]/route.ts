@@ -24,6 +24,7 @@ import {
   getIdentifier,
 } from "@/lib/ratelimit";
 import { z } from "zod";
+import { fromCents } from "@/lib/trade/money";
 
 const PatchLineSchema = z.object({
   /**
@@ -221,7 +222,11 @@ export async function PATCH(
       "trade operation line license assignment updated",
     );
 
-    return NextResponse.json({ line: updated });
+    const serializedLine = {
+      ...updated,
+      unitValue: fromCents(updated.unitValue),
+    };
+    return NextResponse.json({ line: serializedLine });
   } catch (err) {
     logger.error(
       { err },

@@ -5,6 +5,7 @@ import {
   type TradeSammelgenehmigungStatus,
   type TradeSammelgenehmigungDrawDown,
 } from "@prisma/client";
+import { toCents, fromCents } from "@/lib/trade/money";
 
 /**
  * Caelex Trade — Sammelgenehmigung (BAFA bulk-export-authorization)
@@ -153,7 +154,8 @@ export async function getAvailableCapacity(
     select: { totalValueCapEur: true, drawnDownValueEur: true },
   });
   if (!row) return null;
-  return Math.max(0, row.totalValueCapEur - row.drawnDownValueEur);
+  const diff = row.totalValueCapEur - row.drawnDownValueEur;
+  return fromCents(diff < BigInt(0) ? BigInt(0) : diff);
 }
 
 /**
@@ -210,11 +212,8 @@ export async function findCoveringSammelgenehmigungen(
     // cover it. We don't fail soft on equality — exactly-equals is
     // acceptable (draws SAG to zero remaining).
     if (criteria.valueEur !== undefined && criteria.valueEur > 0) {
-      const remaining = Math.max(
-        0,
-        sag.totalValueCapEur - sag.drawnDownValueEur,
-      );
-      if (remaining < criteria.valueEur) return false;
+      const remainingCents = sag.totalValueCapEur - sag.drawnDownValueEur;
+      if (remainingCents < toCents(criteria.valueEur)) return false;
     }
     return true;
   });
@@ -303,7 +302,7 @@ export async function createSammelgenehmigung(
       validUntil: input.validUntil,
       allowedECCNs: input.allowedECCNs ?? [],
       allowedDestinations: input.allowedDestinations ?? [],
-      totalValueCapEur: input.totalValueCapEur,
+      totalValueCapEur: toCents(input.totalValueCapEur),
       grantDocumentId: input.grantDocumentId ?? null,
       notes: input.notes ?? null,
       status: "DRAFT",
@@ -420,7 +419,8 @@ export async function recordDrawDown(
     // time, so a concurrent draw that already moved the total past the
     // bound makes this match 0 rows → we reject. cap is immutable so
     // `bound` is race-safe.
-    const bound = current.totalValueCapEur - input.valueEur;
+    const valueCents = toCents(input.valueEur);
+    const bound = current.totalValueCapEur - valueCents;
     const incremented = await tx.tradeSammelgenehmigung.updateMany({
       where: {
         id: current.id,
@@ -428,7 +428,7 @@ export async function recordDrawDown(
         status: "ACTIVE",
         drawnDownValueEur: { lte: bound },
       },
-      data: { drawnDownValueEur: { increment: input.valueEur } },
+      data: { drawnDownValueEur: { increment: valueCents } },
     });
 
     if (incremented.count === 0) {
@@ -438,9 +438,10 @@ export async function recordDrawDown(
         where: { id: current.id },
         select: { drawnDownValueEur: true, totalValueCapEur: true },
       });
-      const wouldBe = (after?.drawnDownValueEur ?? 0) + input.valueEur;
+      const afterDrawn = after?.drawnDownValueEur ?? current.totalValueCapEur;
+      const capCents = after?.totalValueCapEur ?? current.totalValueCapEur;
       throw new Error(
-        `Draw-down would exceed cap: ${wouldBe.toFixed(2)} EUR > ${(after?.totalValueCapEur ?? current.totalValueCapEur).toFixed(2)} EUR`,
+        `Draw-down would exceed cap: ${fromCents(afterDrawn + valueCents).toFixed(2)} EUR > ${fromCents(capCents).toFixed(2)} EUR`,
       );
     }
 
@@ -450,7 +451,7 @@ export async function recordDrawDown(
         sammelgenehmigungId: current.id,
         operationId: operation.id,
         operationReference: operation.reference,
-        valueEur: input.valueEur,
+        valueEur: valueCents,
         notes: input.notes ?? null,
       },
     });
@@ -472,11 +473,12 @@ export async function recordDrawDown(
       where: { id: current.id },
       select: { drawnDownValueEur: true, totalValueCapEur: true },
     });
-    const remainingCapacityEur = Math.max(
-      0,
-      (fresh?.totalValueCapEur ?? current.totalValueCapEur) -
-        (fresh?.drawnDownValueEur ?? 0),
-    );
+    const freshCapCents = fresh?.totalValueCapEur ?? current.totalValueCapEur;
+    const freshDrawnCents = fresh?.drawnDownValueEur ?? freshCapCents;
+    const remainingCentsDiff = freshCapCents - freshDrawnCents;
+    const remainingCents =
+      remainingCentsDiff < BigInt(0) ? BigInt(0) : remainingCentsDiff;
+    const remainingCapacityEur = fromCents(remainingCents);
 
     return { drawDown, remainingCapacityEur, triggeredExhausted };
   });

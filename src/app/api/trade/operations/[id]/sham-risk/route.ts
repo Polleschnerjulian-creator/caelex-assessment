@@ -37,6 +37,7 @@ import {
   type ShamDetectorCounterparty,
   type ReexportHistoryEntry,
 } from "@/lib/trade/ofac-sham-doctrine/detector";
+import { fromCents } from "@/lib/trade/money";
 
 export async function GET(
   req: Request,
@@ -160,7 +161,7 @@ export async function GET(
           : undefined,
       lines: op.lines.map((l) => ({
         eccn: l.item.eccnUS ?? l.item.eccnEU ?? "EAR99",
-        unitValue: l.unitValue,
+        unitValue: fromCents(l.unitValue),
         quantity: l.quantity,
         currency: l.unitCurrency,
       })),
