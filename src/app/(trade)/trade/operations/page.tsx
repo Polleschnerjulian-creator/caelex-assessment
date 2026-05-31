@@ -31,6 +31,7 @@ import { useToast } from "@/components/ui/Toast";
 import {
   Search,
   Plus,
+  Sparkles,
   X,
   ArrowRight,
   Globe,
@@ -242,24 +243,32 @@ export default function OperationsListPage() {
             Stack. Lifecycle DRAFT → SCREENING → LICENSED → EXECUTED.
           </p>
         </div>
-        <button
-          onClick={() => setShowNewForm((s) => !s)}
-          className={
-            showNewForm
-              ? "flex shrink-0 items-center gap-2 rounded-md border border-red-200 bg-red-50 px-4 py-2.5 text-[13px] font-semibold text-red-700 transition hover:bg-red-100"
-              : "flex shrink-0 items-center gap-2 rounded-md bg-trade-accent px-4 py-2.5 text-[13px] font-semibold text-white transition hover:bg-trade-accent-strong"
-          }
-        >
-          {showNewForm ? (
-            <>
-              <X className="h-3.5 w-3.5" /> Cancel
-            </>
-          ) : (
-            <>
-              <Plus className="h-3.5 w-3.5" /> New Operation
-            </>
-          )}
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <Link
+            href="/trade/operations/new"
+            className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600"
+          >
+            <Sparkles className="h-4 w-4" /> Geführter Vorgang
+          </Link>
+          <button
+            onClick={() => setShowNewForm((s) => !s)}
+            className={
+              showNewForm
+                ? "flex shrink-0 items-center gap-2 rounded-md border border-red-200 bg-red-50 px-4 py-2.5 text-[13px] font-semibold text-red-700 transition hover:bg-red-100"
+                : "flex shrink-0 items-center gap-2 rounded-md bg-trade-accent px-4 py-2.5 text-[13px] font-semibold text-white transition hover:bg-trade-accent-strong"
+            }
+          >
+            {showNewForm ? (
+              <>
+                <X className="h-3.5 w-3.5" /> Cancel
+              </>
+            ) : (
+              <>
+                <Plus className="h-3.5 w-3.5" /> New Operation
+              </>
+            )}
+          </button>
+        </div>
       </header>
 
       {showNewForm && (

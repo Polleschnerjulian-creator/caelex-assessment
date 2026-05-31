@@ -106,6 +106,13 @@ const SECTIONS: ReadonlyArray<NavSection> = [
     label: "Operations",
     items: [
       {
+        href: "/trade/operations/new",
+        label: "Geführter Vorgang",
+        icon: Sparkles,
+        match: (p: string) => p.startsWith("/trade/operations/new"),
+        tooltip: "Geführter Ausfuhrvorgang: Was? An wen? Wohin? → ein Urteil.",
+      },
+      {
         href: "/trade/operations",
         label: "Pipeline",
         icon: Workflow,
