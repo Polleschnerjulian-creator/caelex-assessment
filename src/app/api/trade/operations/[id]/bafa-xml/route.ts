@@ -35,6 +35,8 @@ import {
   getIdentifier,
 } from "@/lib/ratelimit";
 import { buildBafaXmlReport } from "@/lib/trade/bafa";
+import { buildApplicant } from "@/lib/trade/bafa/applicant-from-org";
+import { getProfile } from "@/lib/trade/settings/org-profile-service";
 
 export async function GET(
   req: Request,
@@ -63,6 +65,8 @@ export async function GET(
           select: {
             id: true,
             name: true,
+            vatNumber: true,
+            billingAddress: true,
           },
         },
         counterparty: {
@@ -115,12 +119,31 @@ export async function GET(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
+    // Fetch the decrypted trade org profile for BAFA contact details.
+    // A missing profile (null) must NOT 500 — buildApplicant degrades gracefully.
+    let tradeProfile = null;
+    try {
+      tradeProfile = await getProfile(organizationId);
+    } catch (profileErr) {
+      logger.error(
+        "bafa-xml: getProfile failed, continuing without trade profile",
+        profileErr,
+      );
+    }
+
+    // Build a synthetic org object for the helper — the Prisma include returns
+    // organization as a nested object; guard for null (shouldn't happen given
+    // where: { organizationId } filter, but TypeScript knows it's optional).
+    const orgForApplicant = {
+      id: operation.organization?.id ?? organizationId,
+      name: operation.organization?.name ?? "(Organisation unknown)",
+      vatNumber: operation.organization?.vatNumber ?? null,
+      billingAddress: operation.organization?.billingAddress ?? null,
+    };
+
     const xml = buildBafaXmlReport({
       generatedAt: new Date(),
-      applicant: {
-        legalName: operation.organization?.name ?? "(Organisation unknown)",
-        addressCountry: "DE",
-      },
+      applicant: buildApplicant(orgForApplicant, tradeProfile),
       operation: {
         id: operation.id,
         reference: operation.reference,
