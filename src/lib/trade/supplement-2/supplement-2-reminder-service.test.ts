@@ -202,6 +202,58 @@ describe("runSupplement2RemindersAndOverdue", () => {
     expect(summary.perReport).toHaveLength(2);
   });
 
+  // T-M1: OVERDUE reports must be included in Phase 2 so they receive
+  // the CRITICAL reminder every run until FILED. Before the fix, Phase 2
+  // filtered status="DRAFT" only, so OVERDUE reports (already transitioned
+  // in Phase 1) never received a notification or email.
+  it("T-M1: OVERDUE report 5 days past due gets CRITICAL notification + email", async () => {
+    const overdueReport = {
+      id: "report_overdue",
+      organizationId: "org_1",
+      reportingPeriod: "2025-H2",
+      // dueDate is 5 days BEFORE NOW → daysRemaining = -5 → CRITICAL_0 bucket
+      dueDate: new Date(NOW.getTime() - 5 * 24 * 60 * 60 * 1000),
+      status: "OVERDUE",
+    };
+    mockReportFindMany.mockResolvedValueOnce([overdueReport]);
+    mockMemberFindMany.mockResolvedValueOnce([
+      {
+        userId: "user_mgr",
+        user: { email: "mgr@example.com", name: "Manager" },
+      },
+    ]);
+
+    const summary = await runSupplement2RemindersAndOverdue(NOW);
+
+    // (a) a CRITICAL notification was created
+    expect(mockNotifCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          severity: "CRITICAL",
+          entityType: "trade-supplement-2",
+          entityId: "report_overdue",
+        }),
+      }),
+    );
+    expect(summary.emittedNotifications).toBe(1);
+
+    // (b) the CRITICAL email was dispatched
+    expect(mockSendEmail).toHaveBeenCalledOnce();
+    expect(summary.emittedEmails).toBe(1);
+  });
+
+  it("T-M1: Phase 2 findMany where includes status OVERDUE (not DRAFT-only)", async () => {
+    // Ensure the candidates query explicitly includes OVERDUE so the
+    // fix is structurally locked in — not just a behavioural side-effect.
+    await runSupplement2RemindersAndOverdue(NOW);
+
+    // findMany is called once for the Phase 2 candidates query
+    const candidatesCall = mockReportFindMany.mock.calls[0]?.[0];
+    expect(candidatesCall).toBeDefined();
+    // The where.status must be an object with an `in` array containing both statuses
+    expect(candidatesCall.where.status).toEqual({ in: ["DRAFT", "OVERDUE"] });
+  });
+
   it("collects per-report errors without aborting the run", async () => {
     mockReportFindMany.mockResolvedValueOnce([
       reportDueIn(3, { id: "r1" }),

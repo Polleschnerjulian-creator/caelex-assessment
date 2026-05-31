@@ -114,14 +114,14 @@ export async function runSupplement2RemindersAndOverdue(
   // ── Phase 1: auto-transition DRAFT past dueDate → OVERDUE ──
   const overdueTransitions = await markOverdueReports(now);
 
-  // ── Phase 2: gather DRAFT reports within 14-day window ──
-  // (Including past-due — those got transitioned in Phase 1 but the
-  // post-transition find query catches OVERDUE separately. We scan
-  // DRAFT because anything just-flipped to OVERDUE will fire a
-  // CRITICAL alert on the NEXT run; we don't double-fire here.)
+  // ── Phase 2: gather DRAFT + OVERDUE reports within the 14-day window ──
+  // OVERDUE reports (past dueDate, transitioned in Phase 1) MUST be
+  // included: their negative days-remaining maps to the CRITICAL bucket,
+  // firing the critical notification + email every run until the report is
+  // FILED. The 24h idempotency guard prevents duplicate same-day emails.
   const candidates = await prisma.tradeSupplement2Report.findMany({
     where: {
-      status: "DRAFT",
+      status: { in: ["DRAFT", "OVERDUE"] },
       dueDate: {
         lte: new Date(nowMs + window14Days),
       },
