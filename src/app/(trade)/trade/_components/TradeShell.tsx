@@ -148,9 +148,11 @@ export function TradeShell({ org, badgeCounts, children }: Props) {
 
         {/* Global ⌘K / Ctrl+K palette — mounted once at shell level so the
           shortcut works regardless of which sub-route the user is on.
-          The component owns its own open state + key listener; we don't
-          need props here. */}
-        <TradeCommandPalette />
+          `showPill={false}` keeps this instance invisible (keyboard +
+          `TRADE_COMMAND_EVENT` driven only); visible trigger pills live in
+          page headers (e.g. Home) and dispatch the event to open this one.
+          The component owns its own open state + key listener. */}
+        <TradeCommandPalette showPill={false} />
 
         {/* Global "?" help center — same shell-level mount so the panel
           works from any route. Owns its own open state via "?" key +

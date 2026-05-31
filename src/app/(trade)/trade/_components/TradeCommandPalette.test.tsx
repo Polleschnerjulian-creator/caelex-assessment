@@ -21,7 +21,10 @@ vi.mock(
 const push = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 
-import { TradeCommandPalette } from "./TradeCommandPalette";
+import {
+  TradeCommandPalette,
+  TRADE_COMMAND_EVENT,
+} from "./TradeCommandPalette";
 
 beforeEach(() => push.mockReset());
 
@@ -54,5 +57,20 @@ describe("TradeCommandPalette", () => {
     fireEvent.keyDown(window, { key: "k", metaKey: true });
     fireEvent.click(screen.getByText(/Neuer Vorgang/i));
     expect(push).toHaveBeenCalledWith("/trade/operations/new");
+  });
+
+  it("hides the pill but stays keyboard-driven when showPill=false (shell mount)", () => {
+    render(<TradeCommandPalette showPill={false} />);
+    expect(screen.queryByTestId("cmdk-pill")).toBeNull();
+    // still opens on ⌘K
+    fireEvent.keyDown(window, { key: "k", metaKey: true });
+    expect(screen.getByTestId("cmdk-list")).toBeTruthy();
+  });
+
+  it("opens when the TRADE_COMMAND_EVENT window event is dispatched (header pill → shell palette)", () => {
+    render(<TradeCommandPalette showPill={false} />);
+    expect(screen.queryByTestId("cmdk-list")).toBeNull();
+    fireEvent(window, new Event(TRADE_COMMAND_EVENT));
+    expect(screen.getByTestId("cmdk-list")).toBeTruthy();
   });
 });

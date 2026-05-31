@@ -27,22 +27,28 @@ interface Command {
   keywords?: string;
 }
 
+/** Window event any trigger pill can dispatch to open the shell-level palette. */
+export const TRADE_COMMAND_EVENT = "caelex-trade:open-command";
+
 const COMMANDS: Command[] = [
+  // ── Verbs (the redesign's task-first entries) ──
   {
     label: "Neuer Vorgang",
     href: "/trade/operations/new",
-    keywords: "ausfuhr export anlegen operation",
+    keywords: "ausfuhr export anlegen operation darf ich liefern",
   },
   {
     label: "Partner screenen",
     href: "/trade/parties",
-    keywords: "counterparty sanktion screening",
+    keywords: "counterparty gegenpartei sanktion screening ofac",
   },
   {
     label: "Artikel klassifizieren",
     href: "/trade/items",
-    keywords: "classify eccn usml item",
+    keywords: "classify eccn usml item ware",
   },
+  // ── Navigation (every reachable route, so ⌘K is the full catch-all) ──
+  { label: "Home", href: "/trade", keywords: "übersicht overview start" },
   {
     label: "Pipeline öffnen",
     href: "/trade/operations",
@@ -52,12 +58,52 @@ const COMMANDS: Command[] = [
   {
     label: "Dokumente",
     href: "/trade/documents",
-    keywords: "euc vsd genehmigung",
+    keywords: "euc vsd genehmigung nachweise",
+  },
+  {
+    label: "End-Use Certificates",
+    href: "/trade/euc",
+    keywords: "euc endverwender certificate",
+  },
+  {
+    label: "Re-Export Consents",
+    href: "/trade/reexport-consents",
+    keywords: "reexport zustimmung",
+  },
+  {
+    label: "Self-Disclosures (VSD)",
+    href: "/trade/vsd",
+    keywords: "vsd selbstanzeige voluntary",
+  },
+  {
+    label: "Sammelgenehmigungen",
+    href: "/trade/sammelgenehmigungen",
+    keywords: "sag bulk bafa sammel",
+  },
+  {
+    label: "France LOS",
+    href: "/trade/france-los",
+    keywords: "frankreich licence",
+  },
+  {
+    label: "UK ECJU",
+    href: "/trade/uk-ecju",
+    keywords: "uk oiel siel strategic",
+  },
+  {
+    label: "FAA AST",
+    href: "/trade/faa-ast",
+    keywords: "faa launch part 450 us",
+  },
+  {
+    label: "Deemed Exports",
+    href: "/trade/deemed-exports",
+    keywords: "deemed technologie zugang z13",
   },
   {
     label: "Astra fragen",
     href: "/trade/astra",
-    keywords: "ai assistent frage",
+    keywords: "ai assistent frage chat",
   },
   {
     label: "Compliance-Programm",
@@ -67,11 +113,22 @@ const COMMANDS: Command[] = [
   {
     label: "Einstellungen",
     href: "/trade/settings",
-    keywords: "settings konfiguration",
+    keywords: "settings konfiguration profil",
   },
 ];
 
-export function TradeCommandPalette() {
+/**
+ * @param showPill  when true, render the visible trigger pill (used in the
+ *   Home header). When false (the shell-level global mount), the palette is
+ *   keyboard/event-driven only — no pill — so it never double-renders with a
+ *   header pill. Both instances would otherwise show; the shell mount stays
+ *   invisible and just owns the global ⌘K + `TRADE_COMMAND_EVENT` listener.
+ */
+export function TradeCommandPalette({
+  showPill = true,
+}: {
+  showPill?: boolean;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -85,8 +142,15 @@ export function TradeCommandPalette() {
         setOpen(false);
       }
     }
+    function onOpenEvent() {
+      setOpen(true);
+    }
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener(TRADE_COMMAND_EVENT, onOpenEvent);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener(TRADE_COMMAND_EVENT, onOpenEvent);
+    };
   }, []);
 
   const results = useMemo(() => {
@@ -110,14 +174,16 @@ export function TradeCommandPalette() {
 
   return (
     <>
-      <button
-        data-testid="cmdk-pill"
-        onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 rounded-lg border border-trade-border bg-trade-bg-elevated px-3 py-1.5 text-xs text-trade-text-muted transition hover:bg-trade-hover"
-      >
-        <Search className="h-3.5 w-3.5" />
-        <span>⌘K&nbsp;&nbsp;Suchen oder Aktion…</span>
-      </button>
+      {showPill && (
+        <button
+          data-testid="cmdk-pill"
+          onClick={() => setOpen(true)}
+          className="inline-flex items-center gap-2 rounded-lg border border-trade-border bg-trade-bg-elevated px-3 py-1.5 text-xs text-trade-text-muted transition hover:bg-trade-hover"
+        >
+          <Search className="h-3.5 w-3.5" />
+          <span>⌘K&nbsp;&nbsp;Suchen oder Aktion…</span>
+        </button>
+      )}
 
       {open && (
         <div
