@@ -11811,7 +11811,9 @@ model TradeOperationLine {
   item        TradeItem      @relation(fields: [itemId], references: [id], onDelete: Restrict)
 
   quantity     Float
-  unitValue    Float
+  /// EUR value per unit, stored as integer euro cents (BigInt) to avoid
+  /// floating-point drift on value rollups (T-H12). Convert via lib/trade/money.
+  unitValue    BigInt
   /// ISO 4217 currency code (EUR, USD, GBP, ...)
   unitCurrency String @default("EUR")
 
@@ -11857,11 +11859,11 @@ model TradeLicense {
   /// Sum of (quantity × unitValue × FX-converted) drawn down by all
   /// operations referencing this license. Updated atomically by the
   /// license-drawdown engine (Sprint C3) on operation status changes.
-  drawnDownValue Float  @default(0)
+  drawnDownValue BigInt @default(0)
   /// The cap from the underlying license document (BAFA-Bescheid value
   /// limit, BIS-license value limit). Null = no cap (e.g. unrestricted
-  /// AGG for low-risk codes).
-  totalCapValue  Float?
+  /// AGG for low-risk codes). Integer euro cents (T-H12).
+  totalCapValue  BigInt?
   /// Cap currency (matches conditions.valueCap.currency typically)
   capCurrency    String @default("EUR")
 
@@ -12639,13 +12641,14 @@ model TradeSammelgenehmigung {
   /// Total value cap in EUR — the BAFA grant always specifies a
   /// monetary ceiling beyond which the SAG is exhausted regardless
   /// of validity period. Cron + service refuse draw-downs that would
-  /// push drawnDownValueEur past this cap.
-  totalValueCapEur Float
+  /// push drawnDownValueEur past this cap. Integer euro cents (T-H12).
+  totalValueCapEur BigInt
 
   /// Running total of draw-downs (EUR) recorded against this SAG.
   /// Updated by recordDrawDown(); never edited directly. Cron flips
   /// status to EXHAUSTED when drawnDownValueEur ≥ totalValueCapEur.
-  drawnDownValueEur Float @default(0)
+  /// Integer euro cents (T-H12) — exact, no float drift on the running total.
+  drawnDownValueEur BigInt @default(0)
 
   /// Lifecycle. See state-machine notes above.
   status TradeSammelgenehmigungStatus @default(DRAFT)
@@ -12698,8 +12701,8 @@ model TradeSammelgenehmigungDrawDown {
 
   /// Value of the draw-down in EUR. Always positive — refunds (rare)
   /// would be modelled as a negative-value ledger entry but the MVP
-  /// service refuses negative values.
-  valueEur Float
+  /// service refuses negative values. Integer euro cents (T-H12).
+  valueEur BigInt
 
   /// When the draw-down was recorded.
   drawnDownAt DateTime @default(now())
