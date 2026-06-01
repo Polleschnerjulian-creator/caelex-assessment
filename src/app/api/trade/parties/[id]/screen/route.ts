@@ -92,7 +92,6 @@ export async function POST(
     });
   } catch (err) {
     logger.error({ err }, "POST /api/trade/parties/[id]/screen failed");
-    const message = err instanceof Error ? err.message : "Internal error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

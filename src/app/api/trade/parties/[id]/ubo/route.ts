@@ -53,7 +53,6 @@ export async function GET(
     });
   } catch (err) {
     logger.error({ err }, "GET /api/trade/parties/[id]/ubo failed");
-    const message = err instanceof Error ? err.message : "Internal error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

@@ -102,12 +102,11 @@ export async function POST(req: Request) {
           newPotentialMatches++;
         }
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        items.push({ partyId: id, ok: false, error: message });
+        items.push({ partyId: id, ok: false, error: "Screening failed" });
         failed++;
         logger.error("screen-batch: item failed", {
           partyId: id,
-          err: message,
+          err: err instanceof Error ? err.message : String(err),
         });
       }
     }
@@ -124,7 +123,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ summary, items });
   } catch (err) {
     logger.error("POST /api/trade/parties/screen-batch failed", { err });
-    const message = err instanceof Error ? err.message : "Internal error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
