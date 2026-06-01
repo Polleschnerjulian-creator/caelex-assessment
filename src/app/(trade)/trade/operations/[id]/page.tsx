@@ -27,6 +27,7 @@ import {
   RefreshCw,
   FileSignature,
   AlertOctagon,
+  Sparkles,
 } from "lucide-react";
 import { TradeTable, type TradeColumn } from "../../_components/TradeTable";
 import { OperationLinesPanel } from "../_components/OperationLinesPanel";
@@ -255,6 +256,12 @@ export default function OperationDetailPage({
     op.status === "VOLUNTARY_DISCLOSURE_FILED" ||
     op.status === "BLOCKED";
 
+  // Astra deep-link context — German operator-voiced prompt seeded with the
+  // real operation reference + destination, asking for a verdict on open
+  // licenses and catch-all/notify exposure (same /trade/astra?prefill=…
+  // pattern used by EmptyStateRich + TradeHelpCenter).
+  const astraQuery = `Bewerte den Ausfuhrvorgang "${op.reference}" nach ${op.shipToCountry} — Verdict, offene Lizenzen, Catch-all/Notify-Risiken: was muss ich tun?`;
+
   return (
     <div className="mx-auto max-w-screen-2xl px-8 py-8">
       <Link
@@ -280,6 +287,14 @@ export default function OperationDetailPage({
               {op.description}
             </p>
           )}
+          <div className="mt-3">
+            <Link
+              href={`/trade/astra?prefill=${encodeURIComponent(astraQuery)}`}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-trade-border bg-trade-bg-panel px-3 py-2 text-[13px] text-trade-text-primary transition hover:bg-trade-hover"
+            >
+              <Sparkles className="h-4 w-4 text-trade-accent" /> Astra fragen
+            </Link>
+          </div>
         </div>
         <div className="shrink-0 text-right">
           <div
