@@ -2,6 +2,8 @@
 
 import { useCallback, useRef, useState } from "react";
 import { FileText, Sparkles, Loader2, Check } from "lucide-react";
+import { ClassificationCoverageNote } from "./ClassificationCoverageNote";
+import { assessSuggestionCoverage } from "@/lib/trade/classification-coverage";
 
 interface Suggestion {
   code: string;
@@ -116,43 +118,53 @@ export function DatasheetDropzone({
       )}
 
       {done && !error && (
-        <div className="rounded-lg border border-trade-border bg-trade-bg-panel p-3">
-          <div className="text-xs uppercase tracking-wide text-trade-text-muted">
-            Vorschlag — du bestätigst
-          </div>
-          {suggestions.length === 0 ? (
-            <div className="mt-2 text-sm text-trade-text-muted">
-              Keine eindeutige Einstufung aus dem Datenblatt. Attribute wurden
-              gelesen ({attributes.length}) — bitte manuell prüfen.
-            </div>
-          ) : (
-            <ul className="mt-2 space-y-1.5">
-              {suggestions.slice(0, 5).map((s) => (
-                <li
-                  key={s.canonicalId}
-                  className="flex items-center gap-2 text-sm"
-                >
-                  <span className="font-medium text-trade-text-primary">
-                    {s.code}
-                  </span>
-                  <span
-                    className={`rounded px-1.5 py-0.5 text-[10px] ${CONFIDENCE_CLS[s.confidence]}`}
+        <div className="space-y-2">
+          {/* Honesty note — always rendered based on actual suggestion quality */}
+          <ClassificationCoverageNote
+            verdict={assessSuggestionCoverage(suggestions)}
+          />
+
+          {/* Suggestion list — only when there are suggestions */}
+          {suggestions.length > 0 && (
+            <div className="rounded-lg border border-trade-border bg-trade-bg-panel p-3">
+              <ul className="space-y-1.5">
+                {suggestions.slice(0, 5).map((s) => (
+                  <li
+                    key={s.canonicalId}
+                    className="flex items-center gap-2 text-sm"
                   >
-                    {s.confidence}
-                  </span>
-                  <span className="truncate text-xs text-trade-text-muted">
-                    {s.title}
-                  </span>
-                </li>
-              ))}
-            </ul>
+                    <span className="font-medium text-trade-text-primary">
+                      {s.code}
+                    </span>
+                    <span
+                      className={`rounded px-1.5 py-0.5 text-[10px] ${CONFIDENCE_CLS[s.confidence]}`}
+                    >
+                      {s.confidence}
+                    </span>
+                    <span className="truncate text-xs text-trade-text-muted">
+                      {s.title}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => onApply({ attributes, suggestions })}
+                className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-trade-accent px-4 py-2 text-xs font-semibold text-white transition hover:bg-trade-accent-strong"
+              >
+                <Check className="h-3.5 w-3.5" /> Übernehmen
+              </button>
+            </div>
           )}
-          <button
-            onClick={() => onApply({ attributes, suggestions })}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-trade-accent px-4 py-2 text-xs font-semibold text-white transition hover:bg-trade-accent-strong"
-          >
-            <Check className="h-3.5 w-3.5" /> Übernehmen
-          </button>
+
+          {/* When no suggestions: still show Übernehmen to accept attributes-only */}
+          {suggestions.length === 0 && (
+            <button
+              onClick={() => onApply({ attributes, suggestions })}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-trade-border bg-trade-bg-panel px-4 py-2 text-xs font-semibold text-trade-text-secondary transition hover:bg-trade-hover"
+            >
+              <Check className="h-3.5 w-3.5" /> Attribute übernehmen
+            </button>
+          )}
         </div>
       )}
     </div>
