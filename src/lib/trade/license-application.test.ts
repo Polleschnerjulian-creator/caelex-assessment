@@ -4,9 +4,11 @@ import {
   mapToTradeLicenseType,
   deriveRequiredDocuments,
   authorityPortal,
+  buildLicenseApplicationDraft,
   LIABILITY_COPY,
   APPLICATION_DISCLAIMER,
   type EngineDetermination,
+  type OperationContext,
 } from "./license-application";
 
 // Minimal LicenseDetermination fixtures (only the fields the module reads).
@@ -250,5 +252,81 @@ describe("liability copy", () => {
       /reicht .* NICHTS ein|nicht ein|kein.* Antrag.* eingereicht/i,
     );
     expect(APPLICATION_DISCLAIMER).toMatch(/keine Rechtsberatung/i);
+  });
+});
+
+const ctx: OperationContext = {
+  operationId: "op_1",
+  reference: "AV-RU-ABC",
+  counterpartyName: "Acme Foreign GmbH",
+  shipToCountry: "RU",
+  endUseCountry: null,
+  declaredEndUse: "CIVIL",
+  triggerCodes: ["9A515.a"],
+  totalValueEur: 250000,
+  currency: "EUR",
+};
+const reqBAFAfull = {
+  authority: "BAFA",
+  status: "REQUIRED",
+  licenseType: "BAFA_ANTRAG",
+  jurisdiction: "Export to RU",
+  reason: "EU-Anhang-I-Dual-Use, Ausfuhr nach RU",
+  recommendedAction: "ELAN-K2",
+} as const;
+
+describe("buildLicenseApplicationDraft", () => {
+  const draft = buildLicenseApplicationDraft(
+    { requirement: reqBAFAfull, blocked: false },
+    ctx,
+  );
+
+  it("maps to a fileable TradeLicenseType (BAFA_EINZEL) and flags approximate", () => {
+    expect(draft.licenseType).toBe("BAFA_EINZEL");
+    expect(draft.approximate).toBe(true);
+  });
+  it("DELIBERATELY blanks authority number + both dates (never fabricated)", () => {
+    expect(draft.licenseNumber).toBeUndefined();
+    expect(draft.issuedAt).toBeUndefined();
+    expect(draft.validUntil).toBeUndefined();
+  });
+  it("status is DRAFT and lineage is stamped via conditions.applicationFor", () => {
+    expect(draft.status).toBe("DRAFT");
+    expect(draft.conditions.applicationFor).toBe("op_1");
+  });
+  it("pre-fills coveredCodes (trigger), coveredCountries (destination), end-use, cap", () => {
+    expect(draft.conditions.coveredCodes).toEqual(["9A515.a"]);
+    expect(draft.conditions.coveredCountries).toEqual(["RU"]);
+    expect(draft.conditions.endUseRestrictions).toEqual([
+      "civilian end-use only",
+    ]);
+    expect(draft.totalCapValue).toBe(250000);
+    expect(draft.capCurrency).toBe("EUR");
+  });
+  it("includes the endUseCountry in coveredCountries when distinct", () => {
+    const d = buildLicenseApplicationDraft(
+      { requirement: reqBAFAfull, blocked: false },
+      { ...ctx, endUseCountry: "KZ" },
+    );
+    expect(d.conditions.coveredCountries).toEqual(["RU", "KZ"]);
+  });
+  it("carries the verbatim disclaimer + a human carriedSummary", () => {
+    expect(draft.disclaimer).toBe(APPLICATION_DISCLAIMER);
+    expect(draft.carriedSummary).toMatch(/AV-RU-ABC/);
+  });
+  it("THROWS for a blocked target (no draft for a hard-blocked export)", () => {
+    expect(() =>
+      buildLicenseApplicationDraft(
+        {
+          requirement: {
+            ...reqBAFAfull,
+            status: "PROHIBITED",
+            licenseType: null,
+          },
+          blocked: true,
+        },
+        ctx,
+      ),
+    ).toThrow();
   });
 });

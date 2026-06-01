@@ -301,3 +301,106 @@ export const LIABILITY_COPY = {
     "Automatisch — als Vorschlag, nicht als Freigabe. Endgültige Einstufung " +
     "bestätigt der Ausfuhrverantwortliche.",
 } as const;
+
+// ─── Application-draft builder (clone/prefill — mirrors renewal) ──────
+
+/** End-use classes the operation can declare (TradeEndUseClass enum). */
+export type DeclaredEndUse =
+  | "CIVIL"
+  | "DUAL_USE"
+  | "MILITARY"
+  | "WMD_RELATED"
+  | "UNKNOWN";
+
+export interface OperationContext {
+  operationId: string;
+  reference: string;
+  counterpartyName: string;
+  shipToCountry: string;
+  endUseCountry: string | null;
+  declaredEndUse: DeclaredEndUse;
+  /** ECCN/USML codes that triggered the requirement (for conditions.coveredCodes). */
+  triggerCodes: string[];
+  /** Σ line value as a STARTING cap (euros — API serialises cents→euros). */
+  totalValueEur: number | null;
+  currency: string;
+}
+
+export interface LicenseApplicationDraft {
+  licenseType: TradeLicenseType;
+  /** UI hedges "wahrscheinliche Einstufung — bestätigen" when true. */
+  approximate: boolean;
+  licenseNumber: undefined; // authority no. unknown until issued — NEVER fabricated
+  issuedAt: undefined;
+  validUntil: undefined;
+  totalCapValue: number | null; // starting cap
+  capCurrency: string;
+  conditions: Record<string, unknown>; // coveredCodes/Countries + endUse + applicationFor + notes
+  status: "DRAFT";
+  carriedSummary: string;
+  disclaimer: string;
+}
+
+const END_USE_RESTRICTION: Record<DeclaredEndUse, string[]> = {
+  CIVIL: ["civilian end-use only"],
+  DUAL_USE: ["dual-use — end-use to be confirmed"],
+  MILITARY: ["military end-use declared"],
+  WMD_RELATED: ["WMD-related end-use flagged — seek counsel"],
+  UNKNOWN: ["end-use undeclared — clarify before proceeding"],
+};
+
+/**
+ * Clone the operation/item/party context into a new-licence DRAFT payload.
+ * Deterministic field-copy — no LLM, no network — mirroring
+ * buildLicenseRenewalDraft. The authority number + dates are intentionally
+ * blank (a fresh application has none until issued). THROWS for a blocked
+ * target: there is no licence application for a hard-blocked export.
+ */
+export function buildLicenseApplicationDraft(
+  target: ApplicationTarget,
+  ctx: OperationContext,
+): LicenseApplicationDraft {
+  if (target.blocked) {
+    throw new Error(
+      "buildLicenseApplicationDraft called for a blocked target — no application path exists.",
+    );
+  }
+  const { tradeLicenseType, approximate } = mapToTradeLicenseType(
+    target.requirement.authority,
+    target.requirement.licenseType,
+  );
+
+  const coveredCountries = [ctx.shipToCountry];
+  if (ctx.endUseCountry && ctx.endUseCountry !== ctx.shipToCountry) {
+    coveredCountries.push(ctx.endUseCountry);
+  }
+
+  const conditions: Record<string, unknown> = {
+    coveredCodes: [...ctx.triggerCodes],
+    coveredCountries,
+    endUseRestrictions: END_USE_RESTRICTION[ctx.declaredEndUse],
+    applicationFor: ctx.operationId, // lineage (mirrors renewalOf) — no migration
+    notes:
+      `Antragsentwurf aus Vorgang ${ctx.reference}; Gegenpartei ${ctx.counterpartyName}; ` +
+      `Grund: ${target.requirement.reason}`,
+  };
+
+  const carriedSummary =
+    `Vorbefüllt aus Vorgang ${ctx.reference} — Lizenztyp, betroffene Codes, ` +
+    `Zielland und Endverwendung. Nummer, Ausstellungsdatum und Gültigkeit ` +
+    `trägst du ein, sobald die Behörde die Genehmigung erteilt.`;
+
+  return {
+    licenseType: tradeLicenseType,
+    approximate,
+    licenseNumber: undefined,
+    issuedAt: undefined,
+    validUntil: undefined,
+    totalCapValue: ctx.totalValueEur,
+    capCurrency: ctx.currency,
+    conditions,
+    status: "DRAFT",
+    carriedSummary,
+    disclaimer: APPLICATION_DISCLAIMER,
+  };
+}
