@@ -25,6 +25,7 @@ import {
   Workflow,
   Boxes,
   FileText,
+  ScanLine,
   ShieldCheck,
   Settings,
   BookOpen,
@@ -94,6 +95,14 @@ const SECTIONS: ReadonlyArray<NavSection> = [
           p.startsWith("/trade/items") ||
           p.startsWith("/trade/parties"),
         tooltip: "Artikel & Partner — automatisch klassifiziert & gescreent.",
+      },
+      {
+        href: "/trade/screening",
+        label: "Screening",
+        icon: ScanLine,
+        match: (p) => p.startsWith("/trade/screening"),
+        tooltip:
+          "Sanktions-Treffer triagieren — Potential Matches, veraltete & ungescreente Partner.",
         badgeKey: "partiesNeedingReview",
       },
       {
