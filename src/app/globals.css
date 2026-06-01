@@ -4762,21 +4762,23 @@ html:not(.dark) .caelex-v2 .glass-card::after {
    Comply-emerald, Atlas-cyan, and Pharos-amber. */
 
 .trade-themed {
-  /* Light (default) — legacy tokens kept for back-compat */
-  --trade-bg-page: #f6f7fb;
-  --trade-bg-panel: #ffffff;
+  /* Light (default) — aligned to the approved "Passage" mockup
+     (.mockups/passage-light.html) for crisper hairlines + a softer
+     selected-row fill. Palantir × Apple: cool, near-neutral grays. */
+  --trade-bg-page: #f7f8fb; /* mockup --page */
+  --trade-bg-panel: #ffffff; /* mockup --panel */
   --trade-bg-elevated: #fafbff;
-  --trade-bg-subtle: #f1f3fa;
-  --trade-border: #e2e6f0;
-  --trade-border-subtle: #eef1f8;
-  --trade-border-strong: #cdd3e2;
+  --trade-bg-subtle: #eceef2; /* mockup .row.on selected fill */
+  --trade-border: #ececf1; /* mockup --line */
+  --trade-border-subtle: #f1f2f6; /* mockup --line-2 */
+  --trade-border-strong: #e1e3ea; /* mockup --line-strong */
   --trade-text-primary: #111827;
   --trade-text-secondary: #4b5563;
   --trade-text-muted: #6b7280;
   --trade-accent: #6366f1; /* indigo-500 — Caelex brand accent */
   --trade-accent-soft: #eef2ff; /* indigo-50 */
   --trade-accent-strong: #4f46e5; /* indigo-600 */
-  --trade-hover: #f1f5f9;
+  --trade-hover: #f6f7f9; /* mockup .row:hover */
 
   /* ──────────────────────────────────────────────────────────────
      APPLE HIG semantic tokens (Iteration 3 — based on user's
