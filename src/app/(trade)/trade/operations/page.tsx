@@ -23,6 +23,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { humanizeEnum, tradeStatusLabel } from "@/lib/trade/format";
 import { EmptyStateRich } from "../_components/EmptyStateRich";
 import { Term } from "../_components/Term";
@@ -113,11 +114,33 @@ const OPERATION_TYPES: { value: string; label: string }[] = [
   { value: "CLOUD_PROVISION", label: "Cloud provision" },
 ];
 
+/** Valid status keys that may arrive via the `?status=` URL param. */
+const VALID_STATUS_KEYS: ReadonlySet<OperationStatusKey> = new Set([
+  "DRAFT",
+  "SCREENING",
+  "AWAITING_LICENSE",
+  "LICENSED",
+  "EXECUTED",
+  "BLOCKED",
+]);
+
 export default function OperationsListPage() {
+  const searchParams = useSearchParams();
   const [operations, setOperations] = useState<OperationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Set<OperationStatusKey>>(new Set());
+
+  // Seed the filter from the ?status= URL param whenever it changes.
+  // Only drives the filter when the param is present and valid; absent param
+  // leaves any manually-set filter intact (panel row cleared = user deselected).
+  useEffect(() => {
+    const param = searchParams.get("status");
+    if (param && VALID_STATUS_KEYS.has(param as OperationStatusKey)) {
+      setFilter(new Set([param as OperationStatusKey]));
+    }
+  }, [searchParams]);
+
   const toggleStatusFilter = useCallback((s: OperationStatusKey) => {
     setFilter((prev) => {
       const out = new Set(prev);

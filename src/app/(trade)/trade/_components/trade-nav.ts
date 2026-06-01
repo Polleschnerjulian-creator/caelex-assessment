@@ -234,21 +234,29 @@ export const PANELS: Record<string, SectionPanel> = {
       {
         label: "Status",
         items: [
-          { label: "Entwurf", href: "/trade/operations", glyph: "slate" },
-          { label: "Screening", href: "/trade/operations", glyph: "amber" },
+          {
+            label: "Entwurf",
+            href: "/trade/operations?status=DRAFT",
+            glyph: "slate",
+          },
+          {
+            label: "Screening",
+            href: "/trade/operations?status=SCREENING",
+            glyph: "amber",
+          },
           {
             label: "Lizenz nötig",
-            href: "/trade/operations",
+            href: "/trade/operations?status=AWAITING_LICENSE",
             glyph: "orange",
           },
           {
             label: "Freigegeben",
-            href: "/trade/operations",
+            href: "/trade/operations?status=LICENSED",
             glyph: "green",
           },
           {
             label: "Blockiert",
-            href: "/trade/operations",
+            href: "/trade/operations?status=BLOCKED",
             glyph: "red",
             badgeKey: "operationsBlocked",
           },

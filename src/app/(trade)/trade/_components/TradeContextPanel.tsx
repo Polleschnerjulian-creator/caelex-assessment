@@ -22,7 +22,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   PANELS,
   activeRailKey,
@@ -49,15 +49,57 @@ const GLYPH_STYLE: Record<PanelGlyph, { bg: string; fg: string }> = {
   indigo: { bg: "#eef0ff", fg: "#5b5bf0" },
 };
 
-/** Active-row test: explicit matcher wins, else exact href or href-prefix. */
-function isRowActive(item: PanelItem, pathname: string): boolean {
+/**
+ * Active-row test — query-string-aware.
+ *
+ * Priority order:
+ *   1. Explicit `item.match` function (bypass everything).
+ *   2. Status-filter rows: href contains `?status=X` → active when pathname
+ *      is `/trade/operations` AND `currentStatusParam === X`.
+ *   3. "Alle" / base rows at `/trade/operations` (no param) → active when on
+ *      that path AND there is NO active status param.
+ *   4. Fallback: exact href match or href-prefix match (ignores query).
+ */
+function isRowActive(
+  item: PanelItem,
+  pathname: string,
+  currentStatusParam: string | null,
+): boolean {
   if (item.match) return item.match(pathname);
-  if (pathname === item.href) return true;
-  return pathname.startsWith(item.href + "/");
+
+  // Parse any ?status= value baked into the item's href.
+  let itemStatusParam: string | null = null;
+  try {
+    itemStatusParam = new URL(item.href, "http://x").searchParams.get("status");
+  } catch {
+    // malformed href — fall through to legacy logic
+  }
+
+  // The plain pathname (strip query) that the item targets.
+  const itemPathname = item.href.split("?")[0];
+
+  if (itemStatusParam !== null) {
+    // Status-filter row: match path + exact param value.
+    return pathname === itemPathname && currentStatusParam === itemStatusParam;
+  }
+
+  if (
+    itemPathname === "/trade/operations" &&
+    pathname === "/trade/operations"
+  ) {
+    // "Alle" row (no status param in href): active only when no param is set.
+    return currentStatusParam === null;
+  }
+
+  // Default: exact match or prefix match on the plain pathname.
+  if (pathname === itemPathname) return true;
+  return pathname.startsWith(itemPathname + "/");
 }
 
 export function TradeContextPanel({ badgeCounts }: Props) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentStatusParam = searchParams.get("status");
   const section = PANELS[activeRailKey(pathname)] ?? PANELS.home;
 
   return (
@@ -110,7 +152,7 @@ export function TradeContextPanel({ badgeCounts }: Props) {
                 <li key={item.href + item.label}>
                   <PanelRow
                     item={item}
-                    active={isRowActive(item, pathname)}
+                    active={isRowActive(item, pathname, currentStatusParam)}
                     badgeCounts={badgeCounts}
                   />
                 </li>
