@@ -131,13 +131,17 @@ export default function OperationsListPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Set<OperationStatusKey>>(new Set());
 
-  // Seed the filter from the ?status= URL param whenever it changes.
-  // Only drives the filter when the param is present and valid; absent param
-  // leaves any manually-set filter intact (panel row cleared = user deselected).
+  // Drive the status filter from the ?status= URL param — the contextual
+  // panel is the primary filter control. Valid param → that single status;
+  // "Alle" / no param → cleared. The effect only re-runs on navigation
+  // (searchParams is stable across non-nav re-renders), so an in-page pill
+  // toggle made between navigations is preserved.
   useEffect(() => {
     const param = searchParams.get("status");
     if (param && VALID_STATUS_KEYS.has(param as OperationStatusKey)) {
       setFilter(new Set([param as OperationStatusKey]));
+    } else {
+      setFilter(new Set());
     }
   }, [searchParams]);
 
