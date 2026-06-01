@@ -100,11 +100,11 @@ export default function NewOperationWizardPage() {
       <div className="mb-6 flex items-center gap-3">
         <Link
           href="/trade/operations"
-          className="inline-flex items-center gap-1 text-sm text-trade-text-muted hover:text-white"
+          className="inline-flex items-center gap-1 text-sm text-trade-text-muted hover:text-trade-text-primary"
         >
           <ArrowLeft className="h-4 w-4" /> Pipeline
         </Link>
-        <h1 className="text-xl font-semibold text-white">
+        <h1 className="text-xl font-semibold text-trade-text-primary">
           Neuer Ausfuhrvorgang
         </h1>
       </div>
@@ -117,7 +117,7 @@ export default function NewOperationWizardPage() {
 
       {step === "was" && (
         <section className="space-y-4">
-          <h2 className="text-lg text-white">Was lieferst du?</h2>
+          <h2 className="text-lg text-trade-text-primary">Was lieferst du?</h2>
           <div className="block text-sm text-trade-text-muted">
             Artikel
             <div className="mt-1">
@@ -130,7 +130,7 @@ export default function NewOperationWizardPage() {
               <input
                 type="number"
                 min={1}
-                className="mt-1 w-full rounded-lg bg-white/[0.04] px-3 py-2 text-white"
+                className="mt-1 w-full rounded-lg border border-trade-border bg-trade-bg-panel px-3 py-2 text-trade-text-primary"
                 value={draft.quantity}
                 onChange={(e) => patch({ quantity: Number(e.target.value) })}
               />
@@ -140,7 +140,7 @@ export default function NewOperationWizardPage() {
               <input
                 type="number"
                 min={0}
-                className="mt-1 w-full rounded-lg bg-white/[0.04] px-3 py-2 text-white"
+                className="mt-1 w-full rounded-lg border border-trade-border bg-trade-bg-panel px-3 py-2 text-trade-text-primary"
                 value={draft.unitValue}
                 onChange={(e) => patch({ unitValue: Number(e.target.value) })}
               />
@@ -149,7 +149,7 @@ export default function NewOperationWizardPage() {
           <button
             disabled={!draft.itemId}
             onClick={() => setStep("anWen")}
-            className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-5 py-2.5 text-white disabled:opacity-40"
+            className="inline-flex items-center gap-2 rounded-lg bg-trade-accent px-5 py-2.5 text-white transition hover:bg-trade-accent-strong disabled:opacity-40"
           >
             Weiter <ArrowRight className="h-4 w-4" />
           </button>
@@ -158,7 +158,7 @@ export default function NewOperationWizardPage() {
 
       {step === "anWen" && (
         <section className="space-y-4">
-          <h2 className="text-lg text-white">An wen?</h2>
+          <h2 className="text-lg text-trade-text-primary">An wen?</h2>
           <div className="block text-sm text-trade-text-muted">
             Gegenpartei
             <div className="mt-1">
@@ -168,14 +168,14 @@ export default function NewOperationWizardPage() {
           <div className="flex gap-3">
             <button
               onClick={() => setStep("was")}
-              className="rounded-lg border border-white/15 px-5 py-2.5 text-white"
+              className="rounded-lg border border-trade-border px-5 py-2.5 text-trade-text-primary transition hover:bg-trade-hover"
             >
               Zurück
             </button>
             <button
               disabled={!draft.counterpartyId}
               onClick={() => setStep("wohin")}
-              className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-5 py-2.5 text-white disabled:opacity-40"
+              className="inline-flex items-center gap-2 rounded-lg bg-trade-accent px-5 py-2.5 text-white transition hover:bg-trade-accent-strong disabled:opacity-40"
             >
               Weiter <ArrowRight className="h-4 w-4" />
             </button>
@@ -185,13 +185,13 @@ export default function NewOperationWizardPage() {
 
       {step === "wohin" && (
         <section className="space-y-4">
-          <h2 className="text-lg text-white">Wohin und wozu?</h2>
+          <h2 className="text-lg text-trade-text-primary">Wohin und wozu?</h2>
           <div className="grid grid-cols-2 gap-4">
             <label className="block text-sm text-trade-text-muted">
               Zielland (ISO-2)
               <input
                 maxLength={2}
-                className="mt-1 w-full rounded-lg bg-white/[0.04] px-3 py-2 uppercase text-white"
+                className="mt-1 w-full rounded-lg border border-trade-border bg-trade-bg-panel px-3 py-2 uppercase text-trade-text-primary"
                 value={draft.shipToCountry}
                 onChange={(e) =>
                   patch({ shipToCountry: e.target.value.toUpperCase() })
@@ -202,7 +202,7 @@ export default function NewOperationWizardPage() {
             <label className="block text-sm text-trade-text-muted">
               Verwendung
               <select
-                className="mt-1 w-full rounded-lg bg-white/[0.04] px-3 py-2 text-white"
+                className="mt-1 w-full rounded-lg border border-trade-border bg-trade-bg-panel px-3 py-2 text-trade-text-primary"
                 value={draft.declaredEndUse}
                 onChange={(e) =>
                   patch({
@@ -220,7 +220,7 @@ export default function NewOperationWizardPage() {
           <label className="block text-sm text-trade-text-muted">
             Endverwender (optional)
             <input
-              className="mt-1 w-full rounded-lg bg-white/[0.04] px-3 py-2 text-white"
+              className="mt-1 w-full rounded-lg border border-trade-border bg-trade-bg-panel px-3 py-2 text-trade-text-primary"
               value={draft.endUserName}
               onChange={(e) => patch({ endUserName: e.target.value })}
             />
@@ -228,14 +228,14 @@ export default function NewOperationWizardPage() {
           <div className="flex gap-3">
             <button
               onClick={() => setStep("anWen")}
-              className="rounded-lg border border-white/15 px-5 py-2.5 text-white"
+              className="rounded-lg border border-trade-border px-5 py-2.5 text-trade-text-primary transition hover:bg-trade-hover"
             >
               Zurück
             </button>
             <button
               disabled={draft.shipToCountry.length !== 2 || submitting}
               onClick={createOperationAndAssess}
-              className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-5 py-2.5 text-white disabled:opacity-40"
+              className="inline-flex items-center gap-2 rounded-lg bg-trade-accent px-5 py-2.5 text-white transition hover:bg-trade-accent-strong disabled:opacity-40"
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
               Prüfen: Darf ich liefern?
