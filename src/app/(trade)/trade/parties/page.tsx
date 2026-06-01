@@ -22,20 +22,17 @@
  * UI Phase 3A: bespoke list replaced with TradeTable<PartyRow>.
  */
 
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { tradeStatusLabel } from "@/lib/trade/format";
 import { EmptyStateRich } from "../_components/EmptyStateRich";
 import { Term } from "../_components/Term";
 import { buildCsv, downloadCsv } from "@/lib/trade/csv-export";
 import { useToast } from "@/components/ui/Toast";
 import { TradeTable, type TradeColumn } from "../_components/TradeTable";
+import { ScreeningBadge } from "../_components/ScreeningBadge";
 import {
   Plus,
   Shield,
-  ShieldAlert,
-  ShieldCheck,
-  AlertTriangle,
   Globe,
   X,
   Package,
@@ -376,67 +373,6 @@ export default function CounterpartiesListPage() {
 }
 
 // ─── Subcomponents ───────────────────────────────────────────────────
-
-function ScreeningBadge({ status }: { status: PartyRow["screeningStatus"] }) {
-  const className = "h-5 w-5 shrink-0";
-  // Humanized label powers tooltips AND screen-reader announcements.
-  // Without it, icon-only badges are invisible to assistive tech.
-  // Wrapping in <span title=...> guarantees a visible browser tooltip
-  // across all browsers — title on raw <svg> isn't universally honored.
-  const label = `Screening status: ${tradeStatusLabel(status)}`;
-  const a11yProps = {
-    role: "img" as const,
-    "aria-label": label,
-  };
-  const wrap = (icon: ReactNode) => (
-    <span title={label} className="inline-flex">
-      {icon}
-    </span>
-  );
-  if (status === "CLEAR") {
-    return wrap(
-      <ShieldCheck
-        {...a11yProps}
-        className={`${className} text-emerald-600`}
-        strokeWidth={1.75}
-      />,
-    );
-  }
-  if (status === "POTENTIAL_MATCH") {
-    return wrap(
-      <AlertTriangle
-        {...a11yProps}
-        className={`${className} text-amber-500`}
-        strokeWidth={1.75}
-      />,
-    );
-  }
-  if (status === "CONFIRMED_HIT") {
-    return wrap(
-      <ShieldAlert
-        {...a11yProps}
-        className={`${className} text-red-600`}
-        strokeWidth={1.75}
-      />,
-    );
-  }
-  if (status === "STALE") {
-    return wrap(
-      <Shield
-        {...a11yProps}
-        className={`${className} text-orange-500`}
-        strokeWidth={1.75}
-      />,
-    );
-  }
-  return wrap(
-    <Shield
-      {...a11yProps}
-      className={`${className} text-trade-text-muted`}
-      strokeWidth={1.5}
-    />,
-  );
-}
 
 function EmptyState({ onNew }: { onNew: () => void }) {
   return (
