@@ -24,6 +24,7 @@ import {
   Sparkles,
   Workflow,
   Boxes,
+  Compass,
   FileText,
   ScanLine,
   ShieldCheck,
@@ -64,6 +65,14 @@ const SECTIONS: ReadonlyArray<NavSection> = [
         icon: Home,
         match: (p) => p === "/trade",
         tooltip: "Deine Schaltzentrale — was als Nächstes zu tun ist.",
+      },
+      {
+        href: "/trade/applicability",
+        label: "Geltungsbereich",
+        icon: Compass,
+        match: (p) => p.startsWith("/trade/applicability"),
+        tooltip:
+          "Betrifft mich Exportkontrolle? — welche Regime gelten + was du tun musst.",
       },
       {
         href: "/trade/astra",
