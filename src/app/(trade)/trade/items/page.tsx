@@ -20,19 +20,19 @@
  * API contract is identical — `/api/trade/items` and the response
  * shape (TradeItemSummary[]) are shared with the legacy world during
  * the Phase-A migration window.
+ *
+ * UI Phase 3A: bespoke list replaced with TradeTable<TradeItemSummary>.
  */
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   Plus,
-  Search,
   ScanSearch,
   AlertTriangle,
   CheckCircle2,
   Clock,
   Archive,
-  ChevronRight,
   Loader2,
   Info,
   X,
@@ -40,9 +40,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { humanizeEnum } from "@/lib/trade/format";
-import { ListSkeleton } from "../_components/Skeletons";
 import { EmptyStateRich } from "../_components/EmptyStateRich";
-import { BulkActionsBar } from "../_components/BulkActionsBar";
 import { buildCsv, downloadCsv } from "@/lib/trade/csv-export";
 import { useToast } from "@/components/ui/Toast";
 import { Download } from "lucide-react";
@@ -50,6 +48,7 @@ import {
   DatasheetDropzone,
   type DatasheetApplyPayload,
 } from "../_components/DatasheetDropzone";
+import { TradeTable, type TradeColumn } from "../_components/TradeTable";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -316,87 +315,6 @@ function NewItemForm({
   );
 }
 
-// ─── Item row ─────────────────────────────────────────────────────────
-
-interface ItemRowProps {
-  item: TradeItemSummary;
-  /** Selection state passed from parent — undefined disables checkbox. */
-  selected?: boolean;
-  /** Callback when the checkbox toggles. Omit to hide the checkbox. */
-  onToggleSelect?: (id: string, next: boolean) => void;
-}
-
-function ItemRow({ item, selected, onToggleSelect }: ItemRowProps) {
-  const hasClassification =
-    item.eccnEU || item.eccnUS || item.usmlCategory || item.mtcrCategory;
-
-  // Bulk-select checkbox sits OUTSIDE the Link so its click doesn't
-  // navigate to the detail page (U-CRIT-5).
-  const showCheckbox = !!onToggleSelect;
-  return (
-    <div className="group flex items-center gap-3">
-      {showCheckbox ? (
-        <label className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center">
-          <input
-            type="checkbox"
-            checked={!!selected}
-            onChange={(e) => onToggleSelect!(item.id, e.target.checked)}
-            aria-label={`Select ${item.name}`}
-            className="h-4 w-4 accent-trade-accent"
-          />
-        </label>
-      ) : null}
-      <Link href={`/trade/items/${item.id}`} className="block flex-1">
-        <div
-          className={`flex items-center gap-4 rounded-lg border bg-trade-bg-panel px-4 py-3.5 transition hover:bg-trade-bg-elevated ${
-            selected
-              ? "border-trade-accent ring-1 ring-trade-accent/30"
-              : "border-trade-border-subtle hover:border-trade-border"
-          }`}
-        >
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[13px] font-semibold text-trade-text-primary">
-                {item.name}
-              </span>
-              {item.internalSku && (
-                <span className="font-mono text-[11px] text-trade-text-muted">
-                  {item.internalSku}
-                </span>
-              )}
-              <StatusBadge status={item.status} />
-            </div>
-
-            {item.manufacturerName && (
-              <p className="mt-0.5 text-[11px] text-trade-text-muted">
-                {item.manufacturerName}
-              </p>
-            )}
-
-            {hasClassification && (
-              <div className="mt-1.5 flex flex-wrap gap-1.5">
-                {item.eccnEU && <CodePill code={`EU: ${item.eccnEU}`} />}
-                {item.eccnUS && <CodePill code={`CCL: ${item.eccnUS}`} />}
-                {item.usmlCategory && (
-                  <CodePill code={`USML: ${item.usmlCategory}`} isItar />
-                )}
-                {item.mtcrCategory && (
-                  <CodePill code={`MTCR: ${item.mtcrCategory}`} />
-                )}
-                {item.germanAlEntry && (
-                  <CodePill code={`DE-AL: ${item.germanAlEntry}`} />
-                )}
-              </div>
-            )}
-          </div>
-
-          <ChevronRight className="h-4 w-4 shrink-0 text-trade-text-muted opacity-0 transition group-hover:opacity-100" />
-        </div>
-      </Link>
-    </div>
-  );
-}
-
 // ─── Empty state ──────────────────────────────────────────────────────
 // Uses the shared EmptyStateRich so the panel offers more than a dead-
 // end "Add first item" — see U-HIGH-4 in MEVA-UX-WCAG-WORKLIST.md for
@@ -454,22 +372,6 @@ export default function TradeItemsPage() {
   // changes so a fresh result set doesn't carry stale selections.
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const toast = useToast();
-
-  const toggleSelect = useCallback((id: string, next: boolean) => {
-    setSelectedIds((prev) => {
-      const out = new Set(prev);
-      if (next) out.add(id);
-      else out.delete(id);
-      return out;
-    });
-  }, []);
-  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
-  const toggleSelectAll = useCallback(() => {
-    setSelectedIds((prev) => {
-      if (prev.size === items.length && items.length > 0) return new Set();
-      return new Set(items.map((i) => i.id));
-    });
-  }, [items]);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -551,9 +453,109 @@ export default function TradeItemsPage() {
     );
   };
 
-  const allVisibleSelected =
-    items.length > 0 && selectedIds.size === items.length;
-  const someVisibleSelected = selectedIds.size > 0 && !allVisibleSelected;
+  // ─── Column definitions ──────────────────────────────────────────────
+  // Each column ports the exact visuals from the former ItemRow.
+
+  const columns: TradeColumn<TradeItemSummary>[] = [
+    {
+      key: "name",
+      header: "Name / SKU",
+      sortBy: (i) => i.name.toLowerCase(),
+      render: (i) => (
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[13px] font-semibold text-trade-text-primary">
+              {i.name}
+            </span>
+            {i.internalSku && (
+              <span className="font-mono text-[11px] text-trade-text-muted">
+                {i.internalSku}
+              </span>
+            )}
+          </div>
+          {i.manufacturerName && (
+            <p className="mt-0.5 text-[11px] text-trade-text-muted">
+              {i.manufacturerName}
+            </p>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      sortBy: (i) => i.status,
+      render: (i) => <StatusBadge status={i.status} />,
+    },
+    {
+      key: "codes",
+      header: "Codes",
+      render: (i) => {
+        const hasClassification =
+          i.eccnEU ||
+          i.eccnUS ||
+          i.usmlCategory ||
+          i.mtcrCategory ||
+          i.germanAlEntry;
+        if (!hasClassification)
+          return <span className="text-trade-text-muted">—</span>;
+        return (
+          <div className="flex flex-wrap gap-1.5">
+            {i.eccnEU && <CodePill code={`EU: ${i.eccnEU}`} />}
+            {i.eccnUS && <CodePill code={`CCL: ${i.eccnUS}`} />}
+            {i.usmlCategory && (
+              <CodePill code={`USML: ${i.usmlCategory}`} isItar />
+            )}
+            {i.mtcrCategory && <CodePill code={`MTCR: ${i.mtcrCategory}`} />}
+            {i.germanAlEntry && <CodePill code={`DE-AL: ${i.germanAlEntry}`} />}
+          </div>
+        );
+      },
+    },
+  ];
+
+  // ─── Filter pills (passed as `filters` slot) ─────────────────────────
+
+  const filterSlot = (
+    <>
+      <button
+        key="__all"
+        onClick={clearStatusFilter}
+        aria-pressed={statusFilter.size === 0}
+        className={`rounded-md px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] transition ${
+          statusFilter.size === 0
+            ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
+            : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
+        }`}
+      >
+        All
+      </button>
+      {(["DRAFT", "CLASSIFIED", "REQUIRES_REVIEW", "ARCHIVED"] as const).map(
+        (s) => {
+          const active = statusFilter.has(s);
+          return (
+            <button
+              key={s}
+              onClick={() => toggleStatusFilter(s)}
+              aria-pressed={active}
+              className={`rounded-md px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] transition ${
+                active
+                  ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
+                  : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
+              }`}
+            >
+              {humanizeEnum(s)}
+            </button>
+          );
+        },
+      )}
+      {statusFilter.size > 1 ? (
+        <span className="text-[11px] text-trade-text-muted">
+          {statusFilter.size} statuses selected
+        </span>
+      ) : null}
+    </>
+  );
 
   return (
     <div className="mx-auto max-w-screen-lg px-8 py-8">
@@ -601,120 +603,26 @@ export default function TradeItemsPage() {
         </div>
       )}
 
-      {/* Filters */}
-      <div className="mb-5 flex flex-wrap items-center gap-3">
-        <div className="relative flex-1" style={{ minWidth: 200 }}>
-          <Search
-            className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-trade-text-muted"
-            strokeWidth={2}
-          />
-          <input
-            className="w-full rounded-md border border-trade-border bg-trade-bg-panel py-2 pl-9 pr-3 text-[13px] text-trade-text-primary placeholder:text-trade-text-muted outline-none transition focus:border-trade-accent focus:ring-2 focus:ring-trade-accent/30"
-            placeholder="Search items, SKUs, codes…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-
-        {/* U-HIGH-5 — multi-select status pills. "All" clears the
-            selection; the other pills toggle in / out of the active
-            set. Active state mirrors the prior single-select look so
-            the existing visual language stays consistent. */}
-        <button
-          key="__all"
-          onClick={clearStatusFilter}
-          aria-pressed={statusFilter.size === 0}
-          className={`rounded-md px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] transition ${
-            statusFilter.size === 0
-              ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
-              : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
-          }`}
-        >
-          All
-        </button>
-        {(["DRAFT", "CLASSIFIED", "REQUIRES_REVIEW", "ARCHIVED"] as const).map(
-          (s) => {
-            const active = statusFilter.has(s);
-            return (
-              <button
-                key={s}
-                onClick={() => toggleStatusFilter(s)}
-                aria-pressed={active}
-                className={`rounded-md px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] transition ${
-                  active
-                    ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
-                    : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
-                }`}
-              >
-                {humanizeEnum(s)}
-              </button>
-            );
-          },
-        )}
-        {statusFilter.size > 1 ? (
-          <span className="text-[11px] text-trade-text-muted">
-            {statusFilter.size} statuses selected
-          </span>
-        ) : null}
-      </div>
-
-      {/* Content */}
-      {loading ? (
-        <ListSkeleton rows={5} label="Loading trade items" />
-      ) : error ? (
-        <div className="flex items-center gap-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 dark:border-red-500/30 dark:bg-red-500/10">
+      {/* Error state */}
+      {error && (
+        <div className="mb-5 flex items-center gap-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 dark:border-red-500/30 dark:bg-red-500/10">
           <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-300" />
           <p className="text-[13px] text-red-700 dark:text-red-300">{error}</p>
         </div>
-      ) : items.length === 0 && !showNew ? (
-        <EmptyState onNew={() => setShowNew(true)} />
-      ) : (
-        <>
-          {/* Select-all header row (U-CRIT-5). Sticky on scroll would be
-              nice but adds layout complexity — defer to a later polish. */}
-          <div className="mb-2 flex items-center gap-3 px-1 text-[11px] text-trade-text-muted">
-            <label className="flex h-10 w-10 cursor-pointer items-center justify-center">
-              <input
-                type="checkbox"
-                checked={allVisibleSelected}
-                ref={(el) => {
-                  // Native "indeterminate" state — visible "some selected"
-                  // tick. Only settable via DOM property, not attribute.
-                  if (el) el.indeterminate = someVisibleSelected;
-                }}
-                onChange={toggleSelectAll}
-                aria-label={
-                  allVisibleSelected
-                    ? `Deselect all ${items.length} items`
-                    : `Select all ${items.length} items`
-                }
-                className="h-4 w-4 accent-trade-accent"
-              />
-            </label>
-            <span>
-              {selectedIds.size > 0
-                ? `${selectedIds.size} of ${items.length} selected`
-                : `${items.length} item${items.length === 1 ? "" : "s"}`}
-            </span>
-          </div>
-          <div className="space-y-2">
-            {items.map((item) => (
-              <ItemRow
-                key={item.id}
-                item={item}
-                selected={selectedIds.has(item.id)}
-                onToggleSelect={toggleSelect}
-              />
-            ))}
-          </div>
-        </>
       )}
 
-      {/* Bulk actions bar — fixed bottom, only renders when selection > 0 */}
-      <BulkActionsBar
-        count={selectedIds.size}
-        onClear={clearSelection}
-        actions={
+      {/* TradeTable — owns toolbar (search + filter pills), sticky sortable
+          headers, selection checkboxes, and BulkActionsBar. */}
+      <TradeTable<TradeItemSummary>
+        rows={items}
+        columns={columns}
+        getRowId={(i) => i.id}
+        rowHref={(i) => `/trade/items/${i.id}`}
+        selectable
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
+        bulkNoun="item"
+        bulkActions={
           <button
             type="button"
             onClick={handleExportSelected}
@@ -724,6 +632,15 @@ export default function TradeItemsPage() {
             Export CSV
           </button>
         }
+        search={{
+          value: search,
+          onChange: setSearch,
+          placeholder: "Search items, SKUs, codes…",
+        }}
+        filters={filterSlot}
+        resultCount={items.length}
+        loading={loading}
+        emptyState={<EmptyState onNew={() => setShowNew(true)} />}
       />
 
       {/* Disclaimer */}
