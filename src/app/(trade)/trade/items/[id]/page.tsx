@@ -33,6 +33,8 @@ import { ParametricMatcherPanel } from "../_components/ParametricMatcherPanel";
 import { DeMinimisPanel } from "./_components/DeMinimisPanel";
 import { DeemedExportWarning } from "./_components/DeemedExportWarning";
 import { evaluateDeemedExportRisk } from "@/lib/trade/deemed-export";
+import { ClassificationCoverageNote } from "../../_components/ClassificationCoverageNote";
+import { assessItemClassificationHonesty } from "@/lib/trade/classification-coverage";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -476,8 +478,31 @@ export default function TradeItemDetailPage({
             </div>
           </section>
 
+          {/* Classification Honesty Note — shown when there are no codes and the
+              item is not yet fully classified. Returns null for controlled items
+              (DeemedExportWarning handles those) and for ARCHIVED items. */}
+          {(() => {
+            const hasCodes = Boolean(
+              item.eccnEU ||
+              item.eccnUS ||
+              item.usmlCategory ||
+              item.mtcrCategory,
+            );
+            const coverageVerdict = assessItemClassificationHonesty({
+              status: item.status,
+              hasCodes,
+            });
+            return coverageVerdict ? (
+              <div className="mb-6">
+                <ClassificationCoverageNote verdict={coverageVerdict} />
+              </div>
+            ) : null;
+          })()}
+
           {/* Deemed-Export Guardrail — shown after classification codes where
-              the operator can see the controlled codes that drive the risk. */}
+              the operator can see the controlled codes that drive the risk.
+              Only renders for controlled items (risk.level !== "none"), so
+              it and the coverage note above are mutually exclusive. */}
           <div className="mb-6">
             <DeemedExportWarning
               risk={evaluateDeemedExportRisk({
