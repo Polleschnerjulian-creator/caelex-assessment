@@ -17,35 +17,31 @@
  * A3b will port the per-operation detail page (Tabs: Overview / Lines /
  * Licenses / Screening / Workflow / Documents) once the three large
  * sub-panels (Lines, Lifecycle, Licenses) ship as light variants.
+ *
+ * UI Phase 3A: bespoke list replaced with TradeTable<OperationRow>.
  */
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ListSkeleton } from "../_components/Skeletons";
 import { humanizeEnum, tradeStatusLabel } from "@/lib/trade/format";
 import { EmptyStateRich } from "../_components/EmptyStateRich";
 import { Term } from "../_components/Term";
-import { BulkActionsBar } from "../_components/BulkActionsBar";
 import { buildCsv, downloadCsv } from "@/lib/trade/csv-export";
 import { useToast } from "@/components/ui/Toast";
+import { TradeTable, type TradeColumn } from "../_components/TradeTable";
 import {
-  Search,
   Plus,
   Sparkles,
   X,
-  ArrowRight,
-  Globe,
   Truck,
-  AlertTriangle,
-  Clock,
-  CheckCircle2,
-  XCircle,
   Package,
-  Calendar,
-  ChevronRight,
   Users,
   FileCheck,
   Download,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
   type LucideIcon,
 } from "lucide-react";
 
@@ -132,25 +128,9 @@ export default function OperationsListPage() {
   }, []);
   const clearStatusFilter = useCallback(() => setFilter(new Set()), []);
   const [showNewForm, setShowNewForm] = useState(false);
-  // U-CRIT-5 bulk-select state.
+  // U-CRIT-5 bulk-select state (owned by page, passed to TradeTable).
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const toast = useToast();
-  const toggleSelect = useCallback((id: string, next: boolean) => {
-    setSelectedIds((prev) => {
-      const out = new Set(prev);
-      if (next) out.add(id);
-      else out.delete(id);
-      return out;
-    });
-  }, []);
-  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
-  const toggleSelectAll = useCallback(() => {
-    setSelectedIds((prev) => {
-      if (prev.size === operations.length && operations.length > 0)
-        return new Set();
-      return new Set(operations.map((o) => o.id));
-    });
-  }, [operations]);
 
   useEffect(() => {
     let cancelled = false;
@@ -180,6 +160,7 @@ export default function OperationsListPage() {
     };
   }, [search, filter]);
 
+  // Clear bulk-selection on filter/search change.
   useEffect(() => {
     setSelectedIds(new Set());
   }, [search, filter]);
@@ -217,9 +198,162 @@ export default function OperationsListPage() {
     );
   };
 
-  const allVisibleSelected =
-    operations.length > 0 && selectedIds.size === operations.length;
-  const someVisibleSelected = selectedIds.size > 0 && !allVisibleSelected;
+  // ─── Column definitions ─────────────────────────────────────────────
+  // Ports the exact cell visuals from the former OperationRowItem.
+
+  const columns: TradeColumn<OperationRow>[] = [
+    {
+      key: "status",
+      header: "Status",
+      sortBy: (o) => o.status,
+      render: (o) => <StatusBadge status={o.status} />,
+    },
+    {
+      key: "reference",
+      header: "Reference",
+      sortBy: (o) => o.reference,
+      render: (o) => {
+        const catchAllCount =
+          Number(o.catchAllArt4Hit) +
+          Number(o.catchAllArt5Hit) +
+          Number(o.catchAllArt9Hit) +
+          Number(o.catchAllArt10Hit);
+        return (
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="truncate font-mono text-[13px] font-semibold text-trade-text-primary">
+                {o.reference}
+              </span>
+              <span
+                className="rounded bg-trade-bg-subtle px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-trade-text-secondary ring-1 ring-trade-border-subtle"
+                title={humanizeEnum(o.operationType)}
+              >
+                {humanizeEnum(o.operationType)}
+              </span>
+              {o.notificationDuty && (
+                <span
+                  className="rounded bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-amber-700 ring-1 ring-amber-200"
+                  title="§8 AWV Anzeigepflicht"
+                >
+                  Notify
+                </span>
+              )}
+              {catchAllCount > 0 && (
+                <span
+                  className="rounded bg-red-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-red-700 ring-1 ring-red-200"
+                  title="Catch-all article triggered"
+                >
+                  Catch-all ×{catchAllCount}
+                </span>
+              )}
+            </div>
+            <div className="mt-0.5 text-[11px] text-trade-text-muted">
+              {o.counterparty.legalName}
+              {o.counterparty.isHighRiskCountry && (
+                <span className="text-amber-600"> · high-risk</span>
+              )}
+              {o._count.lines > 0 && ` · ${o._count.lines} lines`}
+              {o._count.licenses > 0 && ` · ${o._count.licenses} licenses`}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      key: "route",
+      header: "Route",
+      render: (o) => (
+        <span className="text-[13px] text-trade-text-secondary">
+          {o.shipFromCountry} → {o.shipToCountry}
+          {o.endUseCountry && o.endUseCountry !== o.shipToCountry && (
+            <span className="text-trade-text-muted">
+              {" "}
+              → {o.endUseCountry} (end-use)
+            </span>
+          )}
+        </span>
+      ),
+    },
+    {
+      key: "scheduledShipDate",
+      header: "Ship date",
+      sortBy: (o) => o.scheduledShipDate ?? "",
+      align: "right",
+      render: (o) =>
+        o.scheduledShipDate ? (
+          <span className="tabular-nums text-[12px] text-trade-text-secondary">
+            {new Date(o.scheduledShipDate).toLocaleDateString("en-GB")}
+          </span>
+        ) : (
+          <span className="text-[12px] text-trade-text-muted">—</span>
+        ),
+    },
+    {
+      key: "riskScore",
+      header: "Risk",
+      sortBy: (o) => o.riskScore ?? -1,
+      align: "right",
+      render: (o) =>
+        o.riskScore !== null ? (
+          <div className="text-right">
+            <div
+              className={`text-[14px] font-bold tabular-nums ${
+                o.riskScore >= 70
+                  ? "text-red-600"
+                  : o.riskScore >= 40
+                    ? "text-amber-600"
+                    : "text-emerald-600"
+              }`}
+            >
+              {o.riskScore}
+            </div>
+          </div>
+        ) : (
+          <span className="text-[12px] text-trade-text-muted">—</span>
+        ),
+    },
+  ];
+
+  // ─── Filter pills (passed as `filters` slot) ────────────────────────
+
+  const filterSlot = (
+    <>
+      <button
+        key="__all"
+        onClick={clearStatusFilter}
+        aria-pressed={filter.size === 0}
+        className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
+          filter.size === 0
+            ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
+            : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
+        }`}
+      >
+        All
+      </button>
+      {STATUS_OPTIONS.map((opt) => {
+        const active = filter.has(opt.key);
+        return (
+          <button
+            key={opt.key}
+            onClick={() => toggleStatusFilter(opt.key)}
+            aria-pressed={active}
+            className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
+              active
+                ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
+                : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
+            }`}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+      {filter.size > 1 ? (
+        <span className="text-[11px] text-trade-text-muted">
+          {filter.size} statuses selected
+        </span>
+      ) : null}
+    </>
+  );
 
   return (
     <div className="mx-auto max-w-screen-2xl px-8 py-8">
@@ -280,100 +414,18 @@ export default function OperationsListPage() {
         />
       )}
 
-      <div className="mb-5 flex flex-wrap items-center gap-2">
-        <button
-          key="__all"
-          onClick={clearStatusFilter}
-          aria-pressed={filter.size === 0}
-          className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
-            filter.size === 0
-              ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
-              : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
-          }`}
-        >
-          All
-        </button>
-        {STATUS_OPTIONS.map((opt) => {
-          const active = filter.has(opt.key);
-          return (
-            <button
-              key={opt.key}
-              onClick={() => toggleStatusFilter(opt.key)}
-              aria-pressed={active}
-              className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
-                active
-                  ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
-                  : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
-              }`}
-            >
-              {opt.label}
-            </button>
-          );
-        })}
-        {filter.size > 1 ? (
-          <span className="text-[11px] text-trade-text-muted">
-            {filter.size} statuses selected
-          </span>
-        ) : null}
-        <div className="ml-auto flex items-center gap-2 rounded-md border border-trade-border bg-trade-bg-panel px-3 py-1.5">
-          <Search className="h-3.5 w-3.5 text-trade-text-muted" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by reference…"
-            className="w-64 bg-transparent text-[13px] text-trade-text-primary outline-none placeholder:text-trade-text-muted"
-          />
-        </div>
-      </div>
-
-      {loading ? (
-        <ListSkeleton rows={5} label="Loading operations" />
-      ) : operations.length === 0 ? (
-        <EmptyState onNew={() => setShowNewForm(true)} />
-      ) : (
-        <>
-          <div className="mb-2 flex items-center gap-3 px-1 text-[11px] text-trade-text-muted">
-            <label className="flex h-10 w-10 cursor-pointer items-center justify-center">
-              <input
-                type="checkbox"
-                checked={allVisibleSelected}
-                ref={(el) => {
-                  if (el) el.indeterminate = someVisibleSelected;
-                }}
-                onChange={toggleSelectAll}
-                aria-label={
-                  allVisibleSelected
-                    ? `Deselect all ${operations.length} operations`
-                    : `Select all ${operations.length} operations`
-                }
-                className="h-4 w-4 accent-trade-accent"
-              />
-            </label>
-            <span>
-              {selectedIds.size > 0
-                ? `${selectedIds.size} of ${operations.length} selected`
-                : `${operations.length} operation${operations.length === 1 ? "" : "s"}`}
-            </span>
-          </div>
-          <div className="overflow-hidden rounded-md border border-trade-border-subtle">
-            {operations.map((op, i) => (
-              <OperationRowItem
-                key={op.id}
-                op={op}
-                isFirst={i === 0}
-                selected={selectedIds.has(op.id)}
-                onToggleSelect={toggleSelect}
-              />
-            ))}
-          </div>
-        </>
-      )}
-
-      <BulkActionsBar
-        count={selectedIds.size}
-        onClear={clearSelection}
-        actions={
+      {/* TradeTable — owns toolbar (search + filter pills), sticky sortable
+          headers, selection checkboxes, and BulkActionsBar. */}
+      <TradeTable<OperationRow>
+        rows={operations}
+        columns={columns}
+        getRowId={(o) => o.id}
+        rowHref={(o) => `/trade/operations/${o.id}`}
+        selectable
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
+        bulkNoun="operation"
+        bulkActions={
           <button
             type="button"
             onClick={handleExportSelected}
@@ -383,6 +435,15 @@ export default function OperationsListPage() {
             Export CSV
           </button>
         }
+        search={{
+          value: search,
+          onChange: setSearch,
+          placeholder: "Search by reference…",
+        }}
+        filters={filterSlot}
+        resultCount={operations.length}
+        loading={loading}
+        emptyState={<EmptyState onNew={() => setShowNewForm(true)} />}
       />
 
       <p
@@ -399,134 +460,6 @@ export default function OperationsListPage() {
 }
 
 // ─── Subcomponents ───────────────────────────────────────────────────
-
-function OperationRowItem({
-  op,
-  isFirst,
-  selected,
-  onToggleSelect,
-}: {
-  op: OperationRow;
-  isFirst: boolean;
-  selected?: boolean;
-  onToggleSelect?: (id: string, next: boolean) => void;
-}) {
-  const catchAllCount =
-    Number(op.catchAllArt4Hit) +
-    Number(op.catchAllArt5Hit) +
-    Number(op.catchAllArt9Hit) +
-    Number(op.catchAllArt10Hit);
-  const showCheckbox = !!onToggleSelect;
-
-  return (
-    <div
-      className={`group flex items-stretch bg-trade-bg-panel transition hover:bg-trade-bg-elevated ${
-        isFirst ? "" : "border-t border-trade-border-subtle"
-      } ${selected ? "bg-trade-accent-soft/40" : ""}`}
-    >
-      {showCheckbox ? (
-        <label className="flex w-10 shrink-0 cursor-pointer items-center justify-center self-stretch">
-          <input
-            type="checkbox"
-            checked={!!selected}
-            onChange={(e) => onToggleSelect!(op.id, e.target.checked)}
-            aria-label={`Select operation ${op.reference}`}
-            className="h-4 w-4 accent-trade-accent"
-          />
-        </label>
-      ) : null}
-      <Link
-        href={`/trade/operations/${op.id}`}
-        className="flex flex-1 items-center gap-4 px-5 py-4"
-      >
-        <StatusBadge status={op.status} />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="truncate font-mono text-[13px] font-semibold text-trade-text-primary">
-              {op.reference}
-            </span>
-            <span
-              className="rounded bg-trade-bg-subtle px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-trade-text-secondary ring-1 ring-trade-border-subtle"
-              title={humanizeEnum(op.operationType)}
-            >
-              {humanizeEnum(op.operationType)}
-            </span>
-            {op.notificationDuty && (
-              <span
-                className="rounded bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-amber-700 ring-1 ring-amber-200"
-                title="§8 AWV Anzeigepflicht"
-              >
-                Notify
-              </span>
-            )}
-            {catchAllCount > 0 && (
-              <span
-                className="rounded bg-red-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-red-700 ring-1 ring-red-200"
-                title="Catch-all article triggered"
-              >
-                Catch-all ×{catchAllCount}
-              </span>
-            )}
-          </div>
-          <div className="mt-0.5 flex items-center gap-2 text-[11px] text-trade-text-muted">
-            <Truck className="h-3 w-3" />
-            {op.shipFromCountry}
-            <ArrowRight className="h-2.5 w-2.5 opacity-50" />
-            {op.shipToCountry}
-            {op.endUseCountry && op.endUseCountry !== op.shipToCountry && (
-              <>
-                <ArrowRight className="h-2.5 w-2.5 opacity-50" />
-                <span>{op.endUseCountry} (end-use)</span>
-              </>
-            )}
-            <span>·</span>
-            <Globe className="h-3 w-3" />
-            <span className="text-trade-text-secondary">
-              {op.counterparty.legalName}
-            </span>
-            {op.counterparty.isHighRiskCountry && (
-              <span className="text-amber-600">· high-risk</span>
-            )}
-            <span>·</span>
-            <Package className="h-3 w-3" />
-            <span>{op._count.lines} lines</span>
-            {op._count.licenses > 0 && (
-              <span>· {op._count.licenses} licenses</span>
-            )}
-            {op.scheduledShipDate && (
-              <>
-                <span>·</span>
-                <Calendar className="h-3 w-3" />
-                <span>
-                  {new Date(op.scheduledShipDate).toLocaleDateString("en-GB")}
-                </span>
-              </>
-            )}
-          </div>
-        </div>
-        {op.riskScore !== null && (
-          <div className="shrink-0 text-right">
-            <div
-              className={`text-[16px] font-bold tabular-nums ${
-                op.riskScore >= 70
-                  ? "text-red-600"
-                  : op.riskScore >= 40
-                    ? "text-amber-600"
-                    : "text-emerald-600"
-              }`}
-            >
-              {op.riskScore}
-            </div>
-            <div className="text-[9px] font-semibold uppercase tracking-widest text-trade-text-muted">
-              Risk
-            </div>
-          </div>
-        )}
-        <ChevronRight className="h-4 w-4 shrink-0 text-trade-text-muted opacity-0 transition group-hover:opacity-100" />
-      </Link>
-    </div>
-  );
-}
 
 function StatusBadge({ status }: { status: OperationRow["status"] }) {
   const config: Record<
