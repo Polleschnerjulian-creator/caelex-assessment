@@ -12,7 +12,7 @@
  *   - Disclaimer ist überall Single-Source
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 import {
   assessSuggestionCoverage,
   assessItemClassificationHonesty,
