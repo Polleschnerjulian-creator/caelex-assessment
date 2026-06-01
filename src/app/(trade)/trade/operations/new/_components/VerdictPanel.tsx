@@ -130,11 +130,11 @@ export function VerdictPanel({ operationId }: { operationId: string }) {
         {assessment.steps.map((s) => (
           <li
             key={s.step}
-            className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3"
+            className="flex items-start gap-3 rounded-lg border border-trade-border bg-trade-bg-panel px-4 py-3"
           >
             <StepIcon status={s.status} />
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-medium text-white">
+              <div className="text-sm font-medium text-trade-text-primary">
                 {STEP_LABEL[s.step] ?? s.step}
               </div>
               <div className="text-sm text-trade-text-muted">{s.summary}</div>
@@ -148,7 +148,7 @@ export function VerdictPanel({ operationId }: { operationId: string }) {
               <button
                 onClick={() => void runScreen()}
                 disabled={screening}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-trade-accent px-3 py-1.5 text-xs font-medium text-white transition hover:bg-trade-accent-strong disabled:opacity-50"
               >
                 {screening ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -169,9 +169,9 @@ export function VerdictPanel({ operationId }: { operationId: string }) {
             .map((l) => (
               <details
                 key={l.lineId}
-                className="rounded-lg border border-white/10 bg-white/[0.02] px-4 py-3"
+                className="rounded-lg border border-trade-border bg-trade-bg-subtle px-4 py-3"
               >
-                <summary className="cursor-pointer text-sm text-white">
+                <summary className="cursor-pointer text-sm text-trade-text-primary">
                   Einstufungsdetails — {l.itemName}
                 </summary>
                 <div className="mt-3">
@@ -200,7 +200,7 @@ export function VerdictPanel({ operationId }: { operationId: string }) {
                 {p.actionHref && (
                   <Link
                     href={p.actionHref}
-                    className="text-emerald-400 hover:underline"
+                    className="text-trade-accent hover:underline"
                   >
                     öffnen
                   </Link>
@@ -214,13 +214,13 @@ export function VerdictPanel({ operationId }: { operationId: string }) {
       <div className="flex items-center gap-3">
         <button
           onClick={() => void load()}
-          className="inline-flex items-center gap-2 rounded-lg border border-white/15 px-4 py-2 text-sm text-white"
+          className="inline-flex items-center gap-2 rounded-lg border border-trade-border px-4 py-2 text-sm text-trade-text-primary transition hover:bg-trade-hover"
         >
           <RefreshCw className="h-4 w-4" /> Erneut prüfen
         </button>
         <Link
           href={`/trade/operations/${operationId}`}
-          className="rounded-lg bg-emerald-500 px-4 py-2 text-sm text-white"
+          className="rounded-lg bg-trade-accent px-4 py-2 text-sm text-white transition hover:bg-trade-accent-strong"
         >
           Zum Vorgang
         </Link>
