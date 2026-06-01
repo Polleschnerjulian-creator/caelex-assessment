@@ -198,7 +198,7 @@ export function AuthorizationPanel({ data, loading }: AuthorizationPanelProps) {
       <div className="flex items-center justify-end border-t border-trade-border-subtle pt-3">
         <Link
           href="/dashboard/modules/authorization"
-          className="inline-flex items-center gap-1 rounded border border-trade-border-subtle bg-white/60 px-2 py-1 text-[11px] font-medium text-trade-accent transition hover:bg-white hover:text-trade-accent-strong"
+          className="inline-flex items-center gap-1 rounded border border-trade-border-subtle bg-trade-bg-panel px-2 py-1 text-[11px] font-medium text-trade-accent transition hover:bg-trade-hover hover:text-trade-accent-strong"
         >
           Open Authorization module <ArrowUpRight className="h-3 w-3" />
         </Link>

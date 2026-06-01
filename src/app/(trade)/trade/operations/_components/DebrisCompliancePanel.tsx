@@ -212,7 +212,7 @@ export function DebrisCompliancePanel({
         </div>
         <Link
           href="/dashboard/modules/debris"
-          className="inline-flex items-center gap-1 rounded border border-trade-border-subtle bg-white/60 px-2 py-1 font-medium text-trade-accent transition hover:bg-white hover:text-trade-accent-strong"
+          className="inline-flex items-center gap-1 rounded border border-trade-border-subtle bg-trade-bg-panel px-2 py-1 font-medium text-trade-accent transition hover:bg-trade-hover hover:text-trade-accent-strong"
         >
           Open Debris module <ArrowUpRight className="h-3 w-3" />
         </Link>
