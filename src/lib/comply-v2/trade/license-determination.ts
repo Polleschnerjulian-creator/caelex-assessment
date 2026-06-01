@@ -29,6 +29,7 @@
 
 import type { TriggerEvaluation } from "./property-trigger-engine";
 import type { DeMinimisResult } from "./de-minimis-calculator";
+import { EMBARGOED_COUNTRIES } from "./de-minimis-calculator";
 import { EU27_MEMBER_STATES } from "@/lib/comply-v2/trade/eu-member-states";
 import {
   matchLicenseExceptions,
@@ -267,6 +268,34 @@ export function determineLicenseRequirements(
     );
   }
 
+  // ─── Gate 1.5: Comprehensive embargo destination (standalone) ─────
+  // An embargoed destination (EAR Country Group E:1/E:2 — Cuba, Iran,
+  // North Korea, Syria) is blocked by the DESTINATION itself, independent
+  // of US-content / de-minimis. Previously the only embargo block lived
+  // inside the de-minimis switch (Gate 3), which runs only when a US
+  // content percentage is supplied — so e.g. an EAR99 item with no
+  // usContentPercent shipped to Iran slipped through CLEARED. This gate
+  // closes that gap: destination-only, fires regardless of de-minimis.
+  const embargoDest = destinationCountry?.trim().toUpperCase();
+  const embargoDestinationBlock = Boolean(
+    embargoDest && EMBARGOED_COUNTRIES.has(embargoDest),
+  );
+  if (embargoDestinationBlock) {
+    requirements.push({
+      jurisdiction: `Comprehensive embargo (${embargoDest})`,
+      authority: "BIS",
+      status: "DENIED",
+      licenseType: "SPECIFIC_LICENSE",
+      reason: `Destination ${embargoDest} is in EAR Country Group E:1/E:2 (comprehensive US/EU embargo). Export is prohibited absent a specific licence; presumptive denial — independent of US-content / de-minimis.`,
+      recommendedAction:
+        "Do not proceed. Comprehensive-embargo destinations require a specific licence (BIS/BAFA) and denial is the presumptive outcome. Obtain qualified export-control counsel before any further step.",
+      triggerCode: "EMBARGO_DESTINATION",
+    });
+    nextSteps.unshift(
+      `BLOCKED: ${embargoDest} is a comprehensive-embargo destination (EAR E:1/E:2). Export prohibited absent a specific licence — presumptive denial.`,
+    );
+  }
+
   // ─── Gate 2: ITAR / USML ──────────────────────────────────────────
   const itarBlock = triggerEval.hasItarFlag;
   if (itarBlock) {
@@ -307,18 +336,22 @@ export function determineLicenseRequirements(
         break;
 
       case "EMBARGOED_DESTINATION":
-        requirements.push({
-          jurisdiction: "US (EAR)",
-          authority: "BIS",
-          status: "DENIED",
-          licenseType: "SPECIFIC_LICENSE",
-          reason: `Destination (${destinationCountry ?? "embargoed"}) is subject to comprehensive US embargo. BIS-specific license required; most applications denied.`,
-          recommendedAction:
-            "Do not proceed. US comprehensive embargo destinations require BIS-specific license; denial is the presumptive outcome. Legal review required.",
-        });
-        nextSteps.push(
-          "BLOCKED: Destination is on embargoed country list. BIS license required; presumptive denial.",
-        );
+        // Skip if Gate 1.5 already raised the standalone embargo block for
+        // this destination — avoid a duplicate DENIED requirement.
+        if (!embargoDestinationBlock) {
+          requirements.push({
+            jurisdiction: "US (EAR)",
+            authority: "BIS",
+            status: "DENIED",
+            licenseType: "SPECIFIC_LICENSE",
+            reason: `Destination (${destinationCountry ?? "embargoed"}) is subject to comprehensive US embargo. BIS-specific license required; most applications denied.`,
+            recommendedAction:
+              "Do not proceed. US comprehensive embargo destinations require BIS-specific license; denial is the presumptive outcome. Legal review required.",
+          });
+          nextSteps.push(
+            "BLOCKED: Destination is on embargoed country list. BIS license required; presumptive denial.",
+          );
+        }
         break;
 
       case "DE_MINIMIS_EXCEEDED":
@@ -594,6 +627,7 @@ export function determineLicenseRequirements(
   }
 
   const embargoBlock =
+    embargoDestinationBlock ||
     deMinimis?.outcome === "EMBARGOED_DESTINATION" ||
     requirements.some(
       (r) => r.status === "DENIED" && r.jurisdiction.includes("embargo"),

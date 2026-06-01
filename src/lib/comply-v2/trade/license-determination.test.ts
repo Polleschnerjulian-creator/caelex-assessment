@@ -298,6 +298,46 @@ describe("de-minimis: EMBARGOED_DESTINATION", () => {
   });
 });
 
+describe("Gate 1.5 — standalone embargo destination (no de-minimis)", () => {
+  it("BLOCKS an embargoed destination even when no de-minimis was computed", () => {
+    // The bug this gate fixes: an EAR99-ish item (no triggers) shipped with
+    // no usContentPercent → de-minimis is null → previously CLEARED. The
+    // destination alone must block.
+    const det = determineLicenseRequirements(CLEAN_EVAL, null, "IR");
+    expect(det.gate).toBe("BLOCKED");
+    expect(det.embargoBlock).toBe(true);
+    const req = det.requirements.find(
+      (r) => r.triggerCode === "EMBARGO_DESTINATION",
+    );
+    expect(req?.status).toBe("DENIED");
+    expect(req?.reason).toContain("IR");
+  });
+
+  it("normalises destination case (lowercase ir → IR)", () => {
+    const det = determineLicenseRequirements(CLEAN_EVAL, null, "ir");
+    expect(det.embargoBlock).toBe(true);
+    expect(det.gate).toBe("BLOCKED");
+  });
+
+  it("does NOT block a non-embargoed destination", () => {
+    const det = determineLicenseRequirements(CLEAN_EVAL, null, "IN");
+    expect(det.embargoBlock).toBe(false);
+    expect(det.gate).toBe("CLEARED");
+  });
+
+  it("does not double-count when de-minimis ALSO reports EMBARGOED_DESTINATION", () => {
+    const dm = makeDeMinimis("EMBARGOED_DESTINATION");
+    const det = determineLicenseRequirements(CLEAN_EVAL, dm, "IR");
+    const embargoReqs = det.requirements.filter(
+      (r) =>
+        r.status === "DENIED" &&
+        r.jurisdiction.toLowerCase().includes("embargo"),
+    );
+    expect(embargoReqs).toHaveLength(1);
+    expect(det.embargoBlock).toBe(true);
+  });
+});
+
 describe("de-minimis: DE_MINIMIS_EXCEEDED", () => {
   it("adds BIS REQUIRED requirement", () => {
     const dm = makeDeMinimis("DE_MINIMIS_EXCEEDED", {
