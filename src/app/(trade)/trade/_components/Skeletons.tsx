@@ -33,7 +33,7 @@ export function Skeleton({
     <div
       aria-hidden="true"
       className={`animate-pulse rounded ${width} ${height} ${className}`}
-      style={{ background: "rgba(255, 255, 255, 0.06)" }}
+      style={{ background: "var(--trade-bg-subtle)" }}
     />
   );
 }
@@ -47,8 +47,8 @@ export function ListRowSkeleton() {
     <div
       className="flex items-center gap-4 rounded-md border px-4 py-3"
       style={{
-        borderColor: "rgba(255, 255, 255, 0.06)",
-        background: "rgba(255, 255, 255, 0.02)",
+        borderColor: "var(--trade-border-subtle)",
+        background: "var(--trade-bg-panel)",
       }}
     >
       <Skeleton width="w-8" height="h-8" className="rounded-md" />
