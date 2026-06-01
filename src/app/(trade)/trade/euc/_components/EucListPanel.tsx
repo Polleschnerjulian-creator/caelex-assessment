@@ -177,7 +177,7 @@ function toneFor(status: TradeEUCStatus): string {
     case "REQUESTED":
       return "bg-slate-100 text-slate-700";
     case "SENT_TO_PARTY":
-      return "bg-indigo-100 text-indigo-700";
+      return "bg-slate-200 text-slate-700";
     case "RECEIVED":
       return "bg-amber-100 text-amber-700";
     case "VALIDATED":

@@ -177,7 +177,7 @@ function toneFor(status: TradeReexportStatus): string {
     case "DRAFTED":
       return "bg-slate-100 text-slate-700";
     case "SENT":
-      return "bg-indigo-100 text-indigo-700";
+      return "bg-slate-200 text-slate-700";
     case "APPROVED":
       return "bg-emerald-100 text-emerald-700";
     case "DENIED":

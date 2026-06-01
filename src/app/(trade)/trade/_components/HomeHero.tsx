@@ -9,7 +9,7 @@ const SEVERITY_GLOW: Record<"critical" | "warning" | "info", string> = {
     "from-red-600/90 to-rose-600/80 shadow-[0_8px_30px_rgba(220,38,38,0.35)]",
   warning:
     "from-amber-600/90 to-orange-600/80 shadow-[0_8px_30px_rgba(217,119,6,0.30)]",
-  info: "from-indigo-600 to-indigo-500 shadow-[0_8px_30px_rgba(79,70,229,0.35)]",
+  info: "from-[#44454e] to-[#1c1d22] shadow-[0_8px_30px_rgba(20,21,26,0.4)]",
 };
 
 export function HomeHero({ state }: { state: HeroState }) {
@@ -19,7 +19,7 @@ export function HomeHero({ state }: { state: HeroState }) {
   const gradient =
     state.variant === "action"
       ? SEVERITY_GLOW[state.severity]
-      : "from-indigo-600 to-indigo-500 shadow-[0_8px_30px_rgba(79,70,229,0.35)]";
+      : "from-[#44454e] to-[#1c1d22] shadow-[0_8px_30px_rgba(20,21,26,0.4)]";
 
   const label = state.variant === "action" ? "Deine nächste Aktion" : "Status";
 
@@ -37,7 +37,7 @@ export function HomeHero({ state }: { state: HeroState }) {
       <div className="text-xs text-white/90">{state.subtitle}</div>
       <Link
         href={state.cta.href}
-        className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-xs font-semibold text-indigo-700 transition hover:bg-white/90"
+        className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-xs font-semibold text-zinc-900 transition hover:bg-white/90"
       >
         {state.cta.label}
         <ArrowRight className="h-3.5 w-3.5" />

@@ -46,7 +46,7 @@ const GLYPH_STYLE: Record<PanelGlyph, { bg: string; fg: string }> = {
   orange: { bg: "#feeee7", fg: "#fb6f3b" },
   green: { bg: "#e8f8ee", fg: "#2fb457" },
   red: { bg: "#fdecea", fg: "#f23b30" },
-  indigo: { bg: "#eef0ff", fg: "#5b5bf0" },
+  indigo: { bg: "#e9eaef", fg: "#5b6675" }, // neutralised (was indigo #5b5bf0)
 };
 
 /**

@@ -52,7 +52,7 @@ const SEVERITY_ICONS: Record<ActionSeverity, LucideIcon> = {
 const SEVERITY_BORDER: Record<ActionSeverity, string> = {
   critical: "border-l-red-500",
   warning: "border-l-amber-500",
-  info: "border-l-indigo-500",
+  info: "border-l-slate-400",
 };
 
 const INITIAL_VISIBLE = 8;

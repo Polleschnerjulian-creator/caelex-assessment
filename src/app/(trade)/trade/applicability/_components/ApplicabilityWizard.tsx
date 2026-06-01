@@ -252,8 +252,8 @@ export function ApplicabilityWizard() {
 
   return (
     <section data-testid="applicability-wizard" className="space-y-5">
-      {/* Indigo header — sibling of HomeOnboarding. */}
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-500 px-6 py-5 shadow-[0_8px_30px_rgba(79,70,229,0.35)]">
+      {/* Neutral dark-slate header — sibling of HomeOnboarding. */}
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-[#44454e] to-[#1c1d22] px-6 py-5 shadow-[0_8px_30px_rgba(20,21,26,0.4)]">
         <div className="text-[10px] font-medium uppercase tracking-wide text-white/80">
           Betrifft mich das überhaupt?
         </div>
@@ -324,7 +324,7 @@ export function ApplicabilityWizard() {
             type="checkbox"
             checked={ack}
             onChange={(e) => setAck(e.target.checked)}
-            className="mt-0.5 h-4 w-4 shrink-0 accent-indigo-600"
+            className="mt-0.5 h-4 w-4 shrink-0 accent-trade-accent"
           />
           <span className="text-[12px] leading-relaxed text-trade-text-secondary">
             {ACK_TEXT}

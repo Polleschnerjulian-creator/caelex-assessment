@@ -64,7 +64,7 @@ const STATUS_COLOURS: Record<TradeFaaAstLicenseStatus, string> = {
   PRE_APP_CONSULTATION: "bg-purple-100 text-purple-800",
   APPLICATION_SUBMITTED: "bg-blue-100 text-blue-800",
   ENVIRONMENTAL_REVIEW: "bg-teal-100 text-teal-800",
-  UNDER_REVIEW: "bg-indigo-100 text-indigo-800",
+  UNDER_REVIEW: "bg-slate-200 text-slate-800",
   APPROVED: "bg-emerald-100 text-emerald-800",
   REJECTED: "bg-red-100 text-red-800",
   EXPIRED: "bg-amber-100 text-amber-800",
