@@ -7,7 +7,11 @@
  * export-control applicability triage. Answers the clueless first-timer's
  * real first question ("does export control even apply to us, and which
  * rules?") before dropping them into classify + screen. Once the triage is
- * done, the home swaps this for a compact "dein Geltungsbereich" chip.
+ * done, the home swaps this for a compact "dein Geltungsbereich" row.
+ *
+ * Premium technical language (Apple × Palantir, light): a flat, hairline-
+ * framed ORIENTIERUNG section — no card, no gradient — leading with a
+ * confident headline and the page's single solid-ink primary action.
  *
  * Presentational only (tsc/eslint/review-gated; jsdom hangs on this machine).
  *
@@ -15,39 +19,38 @@
  */
 
 import Link from "next/link";
-import { Compass, ArrowRight } from "lucide-react";
 
 export function ApplicabilityGateBanner() {
   return (
-    <Link
-      href="/trade/applicability"
-      data-testid="applicability-gate-banner"
-      className="group relative block overflow-hidden rounded-xl border border-trade-accent/40 bg-gradient-to-br from-indigo-600 to-indigo-500 px-6 py-5 shadow-[0_8px_30px_rgba(79,70,229,0.30)] transition hover:shadow-[0_10px_36px_rgba(79,70,229,0.40)]"
-    >
-      <div className="flex items-center gap-4">
-        <div
-          aria-hidden="true"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white/15 text-white"
-        >
-          <Compass className="h-6 w-6" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="text-[10px] font-medium uppercase tracking-wide text-white/80">
-            Neu hier?
-          </div>
-          <div className="mt-0.5 text-[16px] font-semibold text-white">
-            Klär in ~2 Minuten, welche Exportkontroll-Regeln für dich gelten.
-          </div>
-          <div className="mt-0.5 text-[13px] text-white/90">
-            Eine ehrliche Orientierung — keine Rechtsberatung. Danach zeigt dir
-            Trade genau deine Schritte.
-          </div>
-        </div>
-        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-[13px] font-semibold text-indigo-700 transition group-hover:bg-white/95">
-          Einschätzung starten
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+    <section className="py-7">
+      <div className="mb-5 flex items-baseline justify-between">
+        <span className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-trade-text-muted">
+          Orientierung
+        </span>
+        <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-trade-text-muted">
+          ~2 Min
         </span>
       </div>
-    </Link>
+
+      <Link
+        href="/trade/applicability"
+        data-testid="applicability-gate-banner"
+        className="group flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between sm:gap-7"
+      >
+        <div className="max-w-[500px]">
+          <h2 className="text-[18px] font-semibold leading-snug tracking-[-0.018em] text-trade-text-primary">
+            Klär, welche Exportkontroll-Regeln für dich gelten.
+          </h2>
+          <p className="mt-2 text-[13.5px] leading-relaxed text-trade-text-muted">
+            Eine ehrliche Orientierung — keine Rechtsberatung. Danach zeigt
+            Passage genau die Schritte, die für deinen Geltungsbereich zählen.
+          </p>
+        </div>
+        <span className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg bg-trade-text-primary px-[17px] text-[12.5px] font-semibold text-trade-bg-panel shadow-sm transition group-hover:-translate-y-px">
+          Einschätzung starten
+          <span className="font-mono opacity-80">→</span>
+        </span>
+      </Link>
+    </section>
   );
 }

@@ -32,7 +32,7 @@ import { HomeOnboarding } from "./HomeOnboarding";
 describe("HomeOnboarding", () => {
   it("renders the 3-step getting-started checklist with CTAs", () => {
     render(<HomeOnboarding />);
-    expect(screen.getByText(/Willkommen bei Passage/i)).toBeTruthy();
+    expect(screen.getByText(/Erste Schritte/i)).toBeTruthy();
     expect(screen.getByText(/Was lieferst du/i)).toBeTruthy();
     expect(screen.getByText(/An wen/i)).toBeTruthy();
     expect(screen.getByText(/Darf ich liefern/i)).toBeTruthy();

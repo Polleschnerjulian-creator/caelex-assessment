@@ -399,45 +399,74 @@ export default async function TradeDashboardPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-8">
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <div className="text-xs text-trade-text-muted">
-            {new Date().toLocaleDateString("de-DE", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-            })}{" "}
-            · {org?.name ?? "Workspace"}
+          <div className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-trade-text-muted">
+            Passage — Exportkontrolle
           </div>
-          <h1 className="mt-1 text-2xl font-semibold text-trade-text-primary">
-            {showOnboarding ? "Willkommen 👋" : "Guten Tag 👋"}
+          <h1 className="mt-3 text-[32px] font-semibold leading-[1.05] tracking-[-0.028em] text-trade-text-primary">
+            {showOnboarding ? "Willkommen." : "Guten Tag."}
           </h1>
+          <div className="mt-3.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 font-mono text-[11px] uppercase tracking-[0.05em] text-trade-text-muted">
+            <span>{org?.name ?? "Workspace"}</span>
+            <span
+              className="h-2.5 w-px bg-trade-border-strong"
+              aria-hidden="true"
+            />
+            <span>{applicabilityRegimeLabel}</span>
+            <span
+              className="h-2.5 w-px bg-trade-border-strong"
+              aria-hidden="true"
+            />
+            <span className="inline-flex items-center gap-1.5">
+              <span
+                className="h-[5px] w-[5px] rounded-full"
+                style={{
+                  background: applicabilityDone
+                    ? "var(--trade-accent-success)"
+                    : "var(--trade-accent-warn)",
+                }}
+                aria-hidden="true"
+              />
+              {applicabilityDone ? "Aktiv" : "Setup"}
+            </span>
+          </div>
         </div>
         <TradeCommandTrigger />
       </div>
+      <hr className="mt-6 h-px border-0 bg-trade-border" />
 
       {showOnboarding ? (
-        <div className="mt-6 space-y-5">
+        <div>
           {applicabilityDone ? (
-            <Link
-              href="/trade/applicability"
-              className="flex items-center justify-between gap-3 rounded-lg border border-trade-border bg-trade-bg-panel px-4 py-3 transition hover:bg-trade-hover"
-            >
-              <div className="min-w-0">
-                <div className="text-[10px] font-medium uppercase tracking-wide text-trade-text-muted">
-                  Dein Geltungsbereich
-                </div>
-                <div className="mt-0.5 truncate text-[13px] font-medium text-trade-text-primary">
+            <section className="py-7">
+              <div className="mb-5 flex items-baseline justify-between">
+                <span className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-trade-text-muted">
+                  Geltungsbereich
+                </span>
+                <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-trade-text-muted">
+                  Aktiv
+                </span>
+              </div>
+              <Link
+                href="/trade/applicability"
+                className="group flex items-center justify-between gap-4"
+              >
+                <div className="min-w-0 truncate text-[14px] font-medium text-trade-text-primary">
                   {applicabilityRegimeLabel}
                 </div>
-              </div>
-              <span className="shrink-0 text-[12px] font-medium text-trade-accent-strong">
-                Einschätzung ansehen
-              </span>
-            </Link>
+                <span className="flex shrink-0 items-center gap-2 whitespace-nowrap font-mono text-[10.5px] uppercase tracking-[0.12em] text-trade-text-muted transition group-hover:text-trade-text-secondary">
+                  Einschätzung ansehen
+                  <span className="text-[13px] transition-transform group-hover:translate-x-0.5">
+                    →
+                  </span>
+                </span>
+              </Link>
+            </section>
           ) : (
             <ApplicabilityGateBanner />
           )}
+          <hr className="h-px border-0 bg-trade-border" />
           <HomeOnboarding />
         </div>
       ) : (

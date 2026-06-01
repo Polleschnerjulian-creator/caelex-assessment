@@ -1,71 +1,131 @@
 "use client";
 
 import Link from "next/link";
-import { Package, Users, Rocket, ArrowRight } from "lucide-react";
+
+/**
+ * HomeOnboarding — the first-run "workflow" for a brand-new org.
+ *
+ * Premium technical language (Apple × Palantir, light): the three steps are
+ * rendered as a numbered *pipeline* — connected nodes (node 1 = current) —
+ * because they literally are a flow: classify → screen → verdict. No cards,
+ * no emojis; hairline structure, monospace micro-labels, and the lone
+ * functional colours live in the verdict legend (go / caution / stop).
+ *
+ * Each row is a Link to the step's surface; the trailing mono tag echoes the
+ * destination. The single primary action ("Einschätzung starten") lives in
+ * the sibling ApplicabilityGateBanner; this section closes with a quiet ghost
+ * shortcut straight into a guided operation.
+ */
 
 const STEPS = [
   {
-    icon: Package,
-    title: "① Was lieferst du?",
-    body: "Artikel anlegen — wird automatisch klassifiziert (ECCN/USML).",
+    n: 1,
+    title: "Was lieferst du?",
+    body: "Artikel anlegen — automatische Klassifizierung nach ECCN / USML.",
+    trail: "Artikel",
     href: "/trade/items",
   },
   {
-    icon: Users,
-    title: "② An wen?",
-    body: "Partner anlegen — wird automatisch gegen Sanktionslisten gescreent.",
+    n: 2,
+    title: "An wen?",
+    body: "Partner anlegen — Screening gegen Sanktions- und Denied-Party-Listen.",
+    trail: "Partner",
     href: "/trade/parties",
   },
   {
-    icon: Rocket,
-    title: "③ Darf ich liefern?",
-    body: "Geführten Vorgang starten → 🟢 / 🟡 / 🔴 Urteil in einem Flow.",
+    n: 3,
+    title: "Darf ich liefern?",
+    body: "Geführter Vorgang — ein klares Urteil in einem Flow.",
+    trail: "Vorgang",
     href: "/trade/operations/new",
   },
 ] as const;
 
+const VERDICTS = [
+  { label: "Freigegeben", color: "var(--trade-accent-success)" },
+  { label: "Auflage", color: "var(--trade-accent-warn)" },
+  { label: "Blockiert", color: "var(--trade-accent-danger)" },
+] as const;
+
 export function HomeOnboarding() {
   return (
-    <section data-testid="home-onboarding" className="space-y-5">
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-500 px-6 py-5 shadow-[0_8px_30px_rgba(79,70,229,0.35)]">
-        <div className="text-[10px] font-medium uppercase tracking-wide text-white/80">
+    <section data-testid="home-onboarding" className="py-7">
+      <div className="mb-5 flex items-baseline justify-between">
+        <span className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-trade-text-muted">
           Erste Schritte
-        </div>
-        <div className="mt-1 text-lg font-semibold text-white">
-          Willkommen bei Passage 👋
-        </div>
-        <div className="text-sm text-white/90">
-          Lass uns deinen ersten Ausfuhrvorgang prüfen — in drei Schritten.
-        </div>
+        </span>
+        <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-trade-text-muted">
+          Workflow
+        </span>
       </div>
 
-      <ol className="space-y-2">
-        {STEPS.map((s) => (
-          <li key={s.title}>
-            <Link
-              href={s.href}
-              className="flex items-center gap-3 rounded-lg border border-trade-border bg-trade-bg-panel px-4 py-3 transition hover:bg-trade-hover"
+      {/* numbered pipeline — connected nodes, no cards */}
+      <div>
+        {STEPS.map((s, i) => (
+          <Link
+            key={s.n}
+            href={s.href}
+            className="group relative grid grid-cols-[28px_1fr_auto] items-center gap-[18px] rounded-lg py-[17px] pr-2 transition hover:bg-trade-hover"
+          >
+            {/* connector to the next node (relative → robust to row height) */}
+            {i < STEPS.length - 1 ? (
+              <span
+                aria-hidden="true"
+                className="absolute left-[14px] top-1/2 -z-0 h-full w-px -translate-x-1/2 bg-trade-border-strong"
+              />
+            ) : null}
+            <span
+              className={
+                s.n === 1
+                  ? "relative z-[1] flex h-7 w-7 items-center justify-center rounded-full bg-trade-text-primary font-mono text-[11px] text-trade-bg-panel"
+                  : "relative z-[1] flex h-7 w-7 items-center justify-center rounded-full border border-trade-border-strong bg-trade-bg-page font-mono text-[11px] text-trade-text-muted"
+              }
             >
-              <s.icon className="h-5 w-5 text-trade-accent" />
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-trade-text-primary">
-                  {s.title}
-                </div>
-                <div className="text-xs text-trade-text-muted">{s.body}</div>
+              {s.n}
+            </span>
+            <div className="min-w-0">
+              <div className="text-[14.5px] font-semibold tracking-[-0.012em] text-trade-text-primary">
+                {s.title}
               </div>
-              <ArrowRight className="h-4 w-4 text-trade-text-muted" />
-            </Link>
-          </li>
+              <div className="mt-0.5 text-[12.5px] leading-snug text-trade-text-muted">
+                {s.body}
+              </div>
+            </div>
+            <span className="flex items-center gap-2 whitespace-nowrap font-mono text-[10.5px] uppercase tracking-[0.12em] text-trade-text-muted transition group-hover:text-trade-text-secondary">
+              {s.trail}
+              <span className="text-[13px] transition-transform group-hover:translate-x-0.5">
+                →
+              </span>
+            </span>
+          </Link>
         ))}
-      </ol>
+      </div>
 
-      <Link
-        href="/trade/operations/new"
-        className="inline-flex items-center gap-2 rounded-lg bg-trade-accent px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-trade-accent-strong"
-      >
-        Ersten Vorgang starten
-        <ArrowRight className="h-4 w-4" />
-      </Link>
+      {/* verdict legend — the only colour, and it carries meaning */}
+      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 pl-[46px] font-mono text-[10.5px] uppercase tracking-[0.08em] text-trade-text-muted">
+        <span className="text-trade-text-muted/70">Urteil</span>
+        {VERDICTS.map((v) => (
+          <span key={v.label} className="inline-flex items-center gap-1.5">
+            <span
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ background: v.color }}
+              aria-hidden="true"
+            />
+            {v.label}
+          </span>
+        ))}
+      </div>
+
+      <hr className="mt-6 h-px border-0 bg-trade-border" />
+      <div className="pt-6">
+        <Link
+          href="/trade/operations/new"
+          className="inline-flex h-10 items-center gap-2 rounded-lg border border-trade-border-strong px-[17px] text-[12.5px] font-semibold text-trade-text-primary transition hover:border-trade-text-muted hover:bg-trade-bg-elevated"
+        >
+          Ersten Vorgang starten
+          <span className="font-mono opacity-80">→</span>
+        </Link>
+      </div>
     </section>
   );
 }
