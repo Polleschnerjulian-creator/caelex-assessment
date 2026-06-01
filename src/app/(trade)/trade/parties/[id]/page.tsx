@@ -32,6 +32,7 @@ import {
   ExternalLink,
   FileSignature,
   AlertOctagon,
+  Sparkles,
 } from "lucide-react";
 
 interface ScreeningHit {
@@ -213,6 +214,16 @@ export default function CounterpartyDetailPage({
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          <Link
+            href={`/trade/astra?prefill=${encodeURIComponent(
+              `Prüfe das Screening für "${party.legalName}" (${party.countryCode}) — ist ein Treffer real oder ein Fehlalarm, und was ist zu tun?`,
+            )}`}
+            className="flex items-center gap-2 rounded-md border border-trade-border bg-trade-bg-panel px-3 py-3 text-[13px] font-medium text-trade-text-primary transition hover:bg-trade-hover"
+            title="Astra zum Screening dieses Counterparts befragen"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-trade-accent" />
+            Astra fragen
+          </Link>
           <Link
             href={`/trade/euc?party=${party.id}`}
             className="flex items-center gap-2 rounded-md border border-trade-border bg-trade-bg-page px-3 py-3 text-[13px] font-medium text-trade-text-primary transition hover:border-trade-accent hover:text-trade-accent-strong"
