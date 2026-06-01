@@ -28,6 +28,7 @@ import {
   FileSignature,
   AlertOctagon,
 } from "lucide-react";
+import { TradeTable, type TradeColumn } from "../../_components/TradeTable";
 import { OperationLinesPanel } from "../_components/OperationLinesPanel";
 import { OperationLifecyclePanel } from "../_components/OperationLifecyclePanel";
 import { OperationLicensesPanel } from "../_components/OperationLicensesPanel";
@@ -646,6 +647,29 @@ function KV({
   );
 }
 
+// Shared severity → swatch class (used by both the +weight badge and the
+// severity pill, exactly as the legacy RiskFactorRow did).
+function riskSeverityClass(severity: RiskFactorView["severity"]): string {
+  switch (severity) {
+    case "critical":
+      return "bg-red-100 text-red-700";
+    case "high":
+      return "bg-orange-100 text-orange-700";
+    case "medium":
+      return "bg-amber-100 text-amber-700";
+    default:
+      return "bg-trade-bg-subtle text-trade-text-secondary";
+  }
+}
+
+// Ordinal for sorting the Severity column high→low (low=0 … critical=3).
+const RISK_SEVERITY_RANK: Record<RiskFactorView["severity"], number> = {
+  low: 0,
+  medium: 1,
+  high: 2,
+  critical: 3,
+};
+
 function RiskFactorsPanel({ risk }: { risk: RiskScoreView }) {
   const bandClass =
     risk.band === "high"
@@ -660,6 +684,47 @@ function RiskFactorsPanel({ risk }: { risk: RiskScoreView }) {
         ? "text-amber-700"
         : "text-emerald-700";
 
+  const columns: TradeColumn<RiskFactorView>[] = [
+    {
+      key: "weight",
+      header: "Weight",
+      sortBy: (f) => f.weight,
+      render: (f) => (
+        <span
+          className={`inline-block rounded px-2 py-1 text-center font-mono text-[12px] font-bold tabular-nums ${riskSeverityClass(
+            f.severity,
+          )}`}
+          style={{ minWidth: "3.5ch" }}
+        >
+          +{f.weight}
+        </span>
+      ),
+    },
+    {
+      key: "reason",
+      header: "Factor",
+      sortBy: (f) => f.reason.toLowerCase(),
+      render: (f) => (
+        <span className="text-[12px] text-trade-text-primary">{f.reason}</span>
+      ),
+    },
+    {
+      key: "severity",
+      header: "Severity",
+      align: "right",
+      sortBy: (f) => RISK_SEVERITY_RANK[f.severity],
+      render: (f) => (
+        <span
+          className={`inline-block rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest ${riskSeverityClass(
+            f.severity,
+          )}`}
+        >
+          {f.severity}
+        </span>
+      ),
+    },
+  ];
+
   return (
     <section className={`mb-6 rounded-md border ${bandClass}`}>
       <div className="flex items-center justify-between border-b border-trade-border-subtle px-5 py-3">
@@ -673,44 +738,14 @@ function RiskFactorsPanel({ risk }: { risk: RiskScoreView }) {
           {risk.factors.length === 1 ? "contributing factor" : "factors"}
         </span>
       </div>
-      <ul>
-        {risk.factors.map((f) => (
-          <RiskFactorRow key={f.key} factor={f} />
-        ))}
-      </ul>
+      <div className="p-3">
+        <TradeTable<RiskFactorView>
+          rows={risk.factors}
+          columns={columns}
+          getRowId={(f) => f.key}
+        />
+      </div>
     </section>
-  );
-}
-
-function RiskFactorRow({ factor }: { factor: RiskFactorView }) {
-  const sevClass =
-    factor.severity === "critical"
-      ? "bg-red-100 text-red-700"
-      : factor.severity === "high"
-        ? "bg-orange-100 text-orange-700"
-        : factor.severity === "medium"
-          ? "bg-amber-100 text-amber-700"
-          : "bg-trade-bg-subtle text-trade-text-secondary";
-
-  return (
-    <li className="flex items-center gap-3 border-b border-trade-border-subtle px-5 py-2.5 last:border-0">
-      <div
-        className={`shrink-0 rounded px-2 py-1 text-center font-mono text-[12px] font-bold tabular-nums ${sevClass}`}
-        style={{ minWidth: "3.5ch" }}
-      >
-        +{factor.weight}
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="text-[12px] text-trade-text-primary">
-          {factor.reason}
-        </div>
-      </div>
-      <span
-        className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest ${sevClass}`}
-      >
-        {factor.severity}
-      </span>
-    </li>
   );
 }
 
