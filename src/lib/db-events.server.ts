@@ -82,6 +82,7 @@ export type DbChannel =
   | "trade.party.screened"
   | "trade.party.blocked"
   | "trade.screening.decided"
+  | "trade.screening.batch"
   | "trade.sanctions.synced";
 
 const VALID_CHANNELS: ReadonlySet<DbChannel> = new Set<DbChannel>([
@@ -100,6 +101,7 @@ const VALID_CHANNELS: ReadonlySet<DbChannel> = new Set<DbChannel>([
   "trade.party.screened",
   "trade.party.blocked",
   "trade.screening.decided",
+  "trade.screening.batch",
   "trade.sanctions.synced",
 ]);
 
