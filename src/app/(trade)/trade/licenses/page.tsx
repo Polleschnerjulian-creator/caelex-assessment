@@ -32,6 +32,14 @@ import { ListSkeleton } from "../_components/Skeletons";
 import { EmptyStateRich } from "../_components/EmptyStateRich";
 import { BulkActionsBar } from "../_components/BulkActionsBar";
 import { LicensePdfDrop } from "./_components/LicensePdfDrop";
+import {
+  TYPE_META,
+  STATUS_META,
+  STATUS_OPTIONS,
+  type LicenseRow,
+  type LicenseType,
+  type LicenseStatus,
+} from "./_components/license-types";
 import { buildCsv, downloadCsv } from "@/lib/trade/csv-export";
 import { useToast } from "@/components/ui/Toast";
 import type { BafaBescheidExtraction } from "@/lib/trade/licenses/bafa-bescheid-types";
@@ -40,163 +48,11 @@ import {
   Plus,
   X,
   FileCheck,
-  AlertTriangle,
   Calendar,
   CalendarClock,
-  ShieldCheck,
-  ShieldAlert,
-  Clock,
-  XCircle,
   Workflow,
   Download,
-  type LucideIcon,
 } from "lucide-react";
-
-// ─── Types ────────────────────────────────────────────────────────────
-
-type LicenseStatus =
-  | "DRAFT"
-  | "PENDING"
-  | "ACTIVE"
-  | "REVOKED"
-  | "EXPIRED"
-  | "EXHAUSTED";
-
-type LicenseType =
-  | "BAFA_EINZEL"
-  | "BAFA_AGG_12"
-  | "BAFA_AGG_16"
-  | "BAFA_AGG_27"
-  | "BAFA_AGG_47"
-  | "BAFA_EUGEA_EU001"
-  | "BAFA_EUGEA_EU002"
-  | "BIS_EAR"
-  | "BIS_LICENSE_EXCEPTION_STA"
-  | "BIS_LICENSE_EXCEPTION_CSA"
-  | "BIS_LICENSE_EXCEPTION_ENC"
-  | "DDTC_DSP5"
-  | "DDTC_DSP73"
-  | "DDTC_TAA"
-  | "DDTC_MLA"
-  | "OTHER";
-
-interface LicenseRow {
-  id: string;
-  licenseType: LicenseType;
-  licenseNumber: string | null;
-  issuedAt: string | null;
-  validUntil: string | null;
-  conditions: Record<string, unknown>;
-  drawnDownValue: number;
-  totalCapValue: number | null;
-  capCurrency: string;
-  status: LicenseStatus;
-  documentId: string | null;
-  createdAt: string;
-  _count: { operations: number };
-}
-
-// ─── License-type metadata ────────────────────────────────────────────
-
-const TYPE_META: Record<
-  LicenseType,
-  {
-    label: string;
-    jurisdiction: string;
-    group: "BAFA" | "BIS" | "DDTC" | "EU" | "OTHER";
-  }
-> = {
-  BAFA_EINZEL: {
-    label: "BAFA Einzelausfuhr",
-    jurisdiction: "DE",
-    group: "BAFA",
-  },
-  BAFA_AGG_12: { label: "BAFA AGG 12", jurisdiction: "DE", group: "BAFA" },
-  BAFA_AGG_16: { label: "BAFA AGG 16", jurisdiction: "DE", group: "BAFA" },
-  BAFA_AGG_27: { label: "BAFA AGG 27", jurisdiction: "DE", group: "BAFA" },
-  BAFA_AGG_47: { label: "BAFA AGG 47", jurisdiction: "DE", group: "BAFA" },
-  BAFA_EUGEA_EU001: {
-    label: "EUGEA EU001",
-    jurisdiction: "EU",
-    group: "EU",
-  },
-  BAFA_EUGEA_EU002: {
-    label: "EUGEA EU002",
-    jurisdiction: "EU",
-    group: "EU",
-  },
-  BIS_EAR: { label: "BIS EAR License", jurisdiction: "US", group: "BIS" },
-  BIS_LICENSE_EXCEPTION_STA: {
-    label: "BIS License Exception STA",
-    jurisdiction: "US",
-    group: "BIS",
-  },
-  BIS_LICENSE_EXCEPTION_CSA: {
-    label: "BIS License Exception CSA",
-    jurisdiction: "US",
-    group: "BIS",
-  },
-  BIS_LICENSE_EXCEPTION_ENC: {
-    label: "BIS License Exception ENC",
-    jurisdiction: "US",
-    group: "BIS",
-  },
-  DDTC_DSP5: { label: "DDTC DSP-5", jurisdiction: "US", group: "DDTC" },
-  DDTC_DSP73: {
-    label: "DDTC DSP-73 (temporary)",
-    jurisdiction: "US",
-    group: "DDTC",
-  },
-  DDTC_TAA: { label: "DDTC TAA", jurisdiction: "US", group: "DDTC" },
-  DDTC_MLA: { label: "DDTC MLA", jurisdiction: "US", group: "DDTC" },
-  OTHER: { label: "Other", jurisdiction: "—", group: "OTHER" },
-};
-
-// ─── Status meta ──────────────────────────────────────────────────────
-
-const STATUS_META: Record<
-  LicenseStatus,
-  { label: string; icon: LucideIcon; className: string }
-> = {
-  DRAFT: {
-    label: "Draft",
-    icon: Clock,
-    className: "bg-trade-bg-subtle text-trade-text-secondary",
-  },
-  PENDING: {
-    label: "Pending",
-    icon: Clock,
-    className: "bg-amber-50 text-amber-700",
-  },
-  ACTIVE: {
-    label: "Active",
-    icon: ShieldCheck,
-    className: "bg-emerald-50 text-emerald-700",
-  },
-  REVOKED: {
-    label: "Revoked",
-    icon: XCircle,
-    className: "bg-red-50 text-red-700",
-  },
-  EXPIRED: {
-    label: "Expired",
-    icon: XCircle,
-    className: "bg-red-50 text-red-700",
-  },
-  EXHAUSTED: {
-    label: "Exhausted",
-    icon: ShieldAlert,
-    className: "bg-orange-50 text-orange-700",
-  },
-};
-
-const STATUS_OPTIONS: ReadonlyArray<{ key: LicenseStatus; label: string }> = [
-  { key: "ACTIVE", label: "Active" },
-  { key: "PENDING", label: "Pending" },
-  { key: "DRAFT", label: "Draft" },
-  { key: "EXPIRED", label: "Expired" },
-  { key: "EXHAUSTED", label: "Exhausted" },
-];
 
 // ─── Component ────────────────────────────────────────────────────────
 
