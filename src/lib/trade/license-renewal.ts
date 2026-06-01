@@ -72,3 +72,76 @@ export function deriveExpiryState(
 
   return { daysRemaining: days, urgency, isRenewalDue, label, sortValue };
 }
+
+export interface RenewableLicense {
+  id: string;
+  licenseType: string;
+  licenseNumber: string | null;
+  validUntil: string | null;
+  totalCapValue: number | null; // euros (API-serialized)
+  capCurrency: string;
+  conditions: Record<string, unknown>;
+  operationIds?: string[];
+}
+
+export interface LicenseRenewalDraft {
+  licenseType: string;
+  licenseNumber: undefined; // new authority no. unknown until issued
+  issuedAt: undefined;
+  validUntil: undefined; // operator sets the new validity window
+  totalCapValue: number | null;
+  capCurrency: string;
+  conditions: Record<string, unknown>; // prior conditions + { renewalOf }
+  status: "DRAFT";
+  carriedSummary: string;
+  disclaimer: string;
+}
+
+const RENEWAL_DISCLAIMER =
+  "Creating a renewal in Caelex does NOT file an application with BAFA / BIS / DDTC. " +
+  "This produces an internal DRAFT licence record only — you must submit the renewal " +
+  "through the competent authority's own channel (BAFA ELAN, BIS SNAP-R, DDTC DECCS, " +
+  "etc.) and re-verify every condition (covered codes, covered countries, end-use " +
+  "restrictions, value cap) against the new Bescheid/licence before any shipment. " +
+  "The authority may impose different conditions; carried-forward conditions are a " +
+  "starting point, not a guarantee.";
+
+/**
+ * Clone a prior licence into a renewal create-payload. Deterministic
+ * field-copy — no LLM, no network. The number/issuedAt/validUntil are
+ * intentionally blank: a renewal is a NEW authorisation with new dates.
+ * Caller (LicenseRenewalModal) lets the human edit then POSTs to
+ * /api/trade/licenses.
+ */
+export function buildLicenseRenewalDraft(
+  prior: RenewableLicense,
+): LicenseRenewalDraft {
+  // Shallow-clone conditions so we never mutate the caller's object.
+  const conditions: Record<string, unknown> = {
+    ...prior.conditions,
+    renewalOf: prior.id,
+  };
+
+  const numberPart = prior.licenseNumber ? ` ${prior.licenseNumber}` : "";
+  const capPart =
+    prior.totalCapValue != null
+      ? ` · cap ${prior.totalCapValue.toLocaleString("en-GB")} ${prior.capCurrency}`
+      : "";
+  const carriedSummary =
+    `Carried from ${prior.licenseType}${numberPart}: type, conditions` +
+    `${capPart}. New licence number, issue date, and validity window must be ` +
+    `entered when the renewed authorisation is issued.`;
+
+  return {
+    licenseType: prior.licenseType,
+    licenseNumber: undefined,
+    issuedAt: undefined,
+    validUntil: undefined,
+    totalCapValue: prior.totalCapValue,
+    capCurrency: prior.capCurrency,
+    conditions,
+    status: "DRAFT",
+    carriedSummary,
+    disclaimer: RENEWAL_DISCLAIMER,
+  };
+}
