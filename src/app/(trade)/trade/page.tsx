@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isSuperAdmin } from "@/lib/super-admin";
@@ -10,6 +11,7 @@ import { ActionInboxPanel } from "./_components/ActionInboxPanel";
 import { assembleDeadlines } from "./_components/UpcomingDeadlinesStrip";
 import { HomeHero } from "./_components/HomeHero";
 import { HomeOnboarding } from "./_components/HomeOnboarding";
+import { ApplicabilityGateBanner } from "./_components/ApplicabilityGateBanner";
 import { MiniStatsStrip } from "./_components/MiniStatsStrip";
 import { TradeCommandTrigger } from "./_components/TradeCommandTrigger";
 
@@ -81,6 +83,8 @@ export default async function TradeDashboardPage() {
     awaitingEucRows,
     partiesNeedingReviewRows,
     vsdsDiscoveredRows,
+    // ── Applicability front-door state (gate banner vs "dein Geltungsbereich") ──
+    applicabilityProfile,
   ] = await Promise.all([
     prisma.organization.findUnique({
       where: { id: orgId },
@@ -238,6 +242,15 @@ export default async function TradeDashboardPage() {
       orderBy: { discoveredAt: "asc" },
       take: 20,
     }),
+    // Applicability front-door: completion marker gates the home banner; the
+    // persisted regime tags feed the "dein Geltungsbereich" summary chip.
+    prisma.tradeOrgProfile.findUnique({
+      where: { organizationId: orgId },
+      select: {
+        applicabilityCompletedAt: true,
+        preferredRegimesJson: true,
+      },
+    }),
   ]);
 
   // Reshape group-by results into lookup maps.
@@ -366,6 +379,17 @@ export default async function TradeDashboardPage() {
     operations: operationsTotal,
   });
   const showOnboarding = heroState.variant === "onboarding";
+
+  // Applicability front-door state. Until the triage is completed, the
+  // onboarding branch leads with the gate banner; once done, it shows a
+  // compact "dein Geltungsbereich" chip summarising the regimes that apply.
+  const applicabilityDone = Boolean(
+    applicabilityProfile?.applicabilityCompletedAt,
+  );
+  const applicabilityRegimeLabel = summariseRegimes(
+    applicabilityProfile?.preferredRegimesJson ?? null,
+  );
+
   const miniStats = [
     { label: "Vorgänge aktiv", value: String(operationsTotal) },
     { label: "Artikel", value: String(itemsCount) },
@@ -393,7 +417,27 @@ export default async function TradeDashboardPage() {
       </div>
 
       {showOnboarding ? (
-        <div className="mt-6">
+        <div className="mt-6 space-y-5">
+          {applicabilityDone ? (
+            <Link
+              href="/trade/applicability"
+              className="flex items-center justify-between gap-3 rounded-lg border border-trade-border bg-trade-bg-panel px-4 py-3 transition hover:bg-trade-hover"
+            >
+              <div className="min-w-0">
+                <div className="text-[10px] font-medium uppercase tracking-wide text-trade-text-muted">
+                  Dein Geltungsbereich
+                </div>
+                <div className="mt-0.5 truncate text-[13px] font-medium text-trade-text-primary">
+                  {applicabilityRegimeLabel}
+                </div>
+              </div>
+              <span className="shrink-0 text-[12px] font-medium text-trade-accent-strong">
+                Einschätzung ansehen
+              </span>
+            </Link>
+          ) : (
+            <ApplicabilityGateBanner />
+          )}
           <HomeOnboarding />
         </div>
       ) : (
@@ -425,4 +469,29 @@ async function resolveOrgId(
     orderBy: { joinedAt: "asc" },
   });
   return membership?.organization.id ?? "no-org";
+}
+
+/**
+ * Render the persisted `preferredRegimesJson` (e.g. `["BAFA","BIS"]`) as a
+ * short German "dein Geltungsbereich" summary for the home chip. Always
+ * leads with EU Dual-Use (the baseline most orgs share); appends the
+ * national/US authorities the triage flagged. Tolerant of malformed JSON.
+ */
+function summariseRegimes(raw: string | null): string {
+  const baseline = "EU Dual-Use";
+  if (!raw) return baseline;
+  let tags: string[] = [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (Array.isArray(parsed)) {
+      tags = parsed.filter((t): t is string => typeof t === "string");
+    }
+  } catch {
+    return baseline;
+  }
+  const labels: string[] = [baseline];
+  if (tags.includes("BAFA")) labels.push("BAFA");
+  if (tags.includes("BIS")) labels.push("US EAR (BIS)");
+  if (tags.includes("DDTC")) labels.push("US ITAR (DDTC)");
+  return labels.join(" · ");
 }
