@@ -4,20 +4,21 @@ import { Suspense, useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff, AlertCircle, CheckCircle2, Check } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react";
 import { safeTradeUrl } from "@/lib/safe-redirect";
 import { translateAuthError } from "@/lib/auth-errors";
 
 /**
- * /trade-login — Caelex Trade sign-in (Sprint T7).
+ * /trade-login — Caelex Trade sign-in (Sprint T7, "Passage" v3).
  *
- * Fullscreen dark split-screen "Passage" presentation (Apple × Palantir):
- * LEFT = black brand panel (~54%) with a faint crosshair + 4 symmetric diagonal
- * rays, a centered "trinity" mark and a "Passage®" wordmark; RIGHT = darker form
- * panel (~46%) with a vertically-centered 380px column — stacked underline
- * Email/Passwort fields, a clean full-width pill "Anmelden" submit, an "ODER"
- * divider, and an outline "Mit Google fortfahren" button. Both panels fill the
- * entire viewport (no device frame, no max-width, no outer rounding/shadow).
+ * Fullscreen split-screen "Get Started" presentation (Apple × Palantir):
+ * LEFT  = rounded gray-gradient brand card (~52%, hidden < md) with the
+ *         "Passage" wordmark + a welcome heading at the top and three
+ *         numbered step cards at the bottom that narrate Passage's signature
+ *         flow — Was lieferst du? → An wen? → Darf ich liefern?
+ * RIGHT = dark form (~48%) with a vertically-centered 360px column: a Google
+ *         button, an "oder" divider, FILLED dark Email/Passwort fields and a
+ *         full-width white "Anmelden" button.
  *
  * Auth is unchanged from the original shell: same NextAuth credentials +
  * Google providers as the rest of Caelex. callbackUrl is validated via
@@ -32,17 +33,29 @@ import { translateAuthError } from "@/lib/auth-errors";
  * and swapped in later without touching auth logic.
  */
 
-/* ── shared palette, ported verbatim from the v2 mockup (.mockups/index.html) ── */
+/* ── shared palette, ported verbatim from the v3 mockup (.mockups/index.html) ── */
 const C = {
-  bg: "#08080a",
-  panel: "#0c0c0e",
-  brand: "#060607",
-  line: "rgba(255,255,255,.05)",
-  line2: "rgba(255,255,255,.12)",
+  bg: "#08080a", // app frame backdrop
+  inp: "#161619", // filled inputs + Google button
+  inpLine: "rgba(255,255,255,.08)",
+  line: "rgba(255,255,255,.07)",
   ink: "#fafafa",
-  mut: "#9b9ba3",
-  mut2: "#5b5b63",
+  mut: "#a1a1aa",
+  mut2: "#6b6b73",
 } as const;
+
+/** Left-panel step cards — narrate Passage's signature operation flow. The
+ *  first card is "active" (white) to mirror the reference's onboarding feel. */
+const STEPS = [
+  {
+    n: 1,
+    title: "Was lieferst du?",
+    sub: "Artikel klassifizieren",
+    active: true,
+  },
+  { n: 2, title: "An wen?", sub: "Partner screenen", active: false },
+  { n: 3, title: "Darf ich liefern?", sub: "Urteil erhalten", active: false },
+] as const;
 
 export default function TradeLoginPage() {
   return (
@@ -84,90 +97,152 @@ function TrinityMark({
   );
 }
 
-/** Left brand panel: faint crosshair + 4 diagonal rays, wordmark, centered
- *  mark, copyright. Hidden on small screens so the form takes the full width. */
+/** Left brand panel: rounded gray-gradient card, wordmark + heading at the
+ *  top, three step cards at the bottom. Hidden on small screens so the form
+ *  takes the full width. */
 function BrandPanel() {
   return (
     <section
-      className="relative hidden overflow-hidden md:block"
-      style={{ flex: "1 1 54%", background: C.brand }}
+      className="relative hidden flex-col justify-between overflow-hidden md:flex"
+      style={{
+        flex: "1 1 52%",
+        borderRadius: 18,
+        padding: 46,
+        background:
+          "radial-gradient(115% 95% at 22% 12%, #5b5c66 0%, #44454e 26%, #2c2d34 52%, #1c1d22 76%, #141519 100%)",
+      }}
     >
-      {/* guides: faint crosshair centered on the mark + 4 symmetric diagonal rays */}
-      <div className="pointer-events-none absolute inset-0">
-        <span
-          className="absolute left-1/2 top-0 bottom-0"
-          style={{ width: 1, background: C.line }}
-        />
-        <span
-          className="absolute left-0 right-0 top-1/2"
-          style={{ height: 1, background: C.line }}
-        />
-        {[34, 146, 214, 326].map((deg) => (
+      {/* soft bottom-right highlight for depth */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(70% 55% at 80% 88%, rgba(255,255,255,.05), transparent 60%)",
+        }}
+      />
+
+      {/* top: wordmark + welcome heading */}
+      <div className="relative z-[2]">
+        <div className="flex items-center" style={{ gap: 10 }}>
+          <TrinityMark className="h-[19px] w-[19px]" />
           <span
-            key={deg}
-            className="absolute left-1/2 top-1/2"
             style={{
-              width: "54vw",
-              height: 1,
-              transformOrigin: "left center",
-              transform: `rotate(${deg}deg)`,
-              background:
-                "linear-gradient(90deg,rgba(255,255,255,.05),transparent 70%)",
+              fontSize: 15,
+              fontWeight: 600,
+              letterSpacing: "-.01em",
+              color: C.ink,
             }}
-          />
+          >
+            Passage
+            <sup style={{ fontSize: 7, opacity: 0.55, marginLeft: 1 }}>®</sup>
+          </span>
+        </div>
+
+        <div style={{ marginTop: 40 }}>
+          <h1
+            style={{
+              fontSize: 40,
+              fontWeight: 600,
+              letterSpacing: "-.03em",
+              lineHeight: 1.06,
+              color: C.ink,
+            }}
+          >
+            Willkommen
+            <br />
+            bei Passage
+          </h1>
+          <p
+            style={{
+              fontSize: 14,
+              color: "rgba(255,255,255,.66)",
+              maxWidth: 340,
+              lineHeight: 1.55,
+              marginTop: 14,
+            }}
+          >
+            Klassifizieren, lizenzieren, liefern — Exportkontrolle in drei
+            klaren Schritten. Melde dich an, um fortzufahren.
+          </p>
+        </div>
+      </div>
+
+      {/* bottom: step cards */}
+      <div className="relative z-[2] flex" style={{ gap: 14 }}>
+        {STEPS.map((step) => (
+          <div
+            key={step.n}
+            className="flex-1"
+            style={{
+              borderRadius: 14,
+              padding: "16px 16px 20px",
+              minHeight: 104,
+              background: step.active ? "#fafafa" : "rgba(255,255,255,.07)",
+              border: step.active
+                ? "1px solid transparent"
+                : "1px solid rgba(255,255,255,.08)",
+              backdropFilter: step.active ? undefined : "blur(8px)",
+              WebkitBackdropFilter: step.active ? undefined : "blur(8px)",
+              boxShadow: step.active
+                ? "0 8px 30px -10px rgba(0,0,0,.5)"
+                : undefined,
+            }}
+          >
+            <div
+              className="grid place-items-center"
+              style={{
+                width: 26,
+                height: 26,
+                borderRadius: "50%",
+                fontSize: 12,
+                fontWeight: 600,
+                marginBottom: 18,
+                background: step.active ? "#0a0a0b" : "rgba(255,255,255,.12)",
+                color: "#fff",
+              }}
+            >
+              {step.n}
+            </div>
+            <div
+              style={{
+                fontSize: 13.5,
+                fontWeight: 500,
+                lineHeight: 1.3,
+                color: step.active ? "#0a0a0b" : "rgba(255,255,255,.92)",
+              }}
+            >
+              {step.title}
+              <span
+                style={{
+                  display: "block",
+                  fontSize: 11.5,
+                  fontWeight: 400,
+                  color: step.active ? "#52525b" : "rgba(255,255,255,.5)",
+                  marginTop: 3,
+                }}
+              >
+                {step.sub}
+              </span>
+            </div>
+          </div>
         ))}
-      </div>
-
-      {/* wordmark top-left */}
-      <div
-        className="absolute z-[2] flex items-center"
-        style={{ top: 34, left: 38, gap: 10 }}
-      >
-        <TrinityMark className="h-5 w-5" />
-        <span
-          style={{
-            fontSize: 15,
-            fontWeight: 600,
-            letterSpacing: "-.01em",
-            color: C.ink,
-          }}
-        >
-          Passage
-          <sup style={{ fontSize: 7, opacity: 0.55, marginLeft: 1 }}>®</sup>
-        </span>
-      </div>
-
-      {/* centered mark */}
-      <div className="absolute inset-0 grid place-items-center">
-        <TrinityMark ariaLabel="Passage" className="h-[120px] w-[120px]" />
-      </div>
-
-      {/* copyright bottom-left */}
-      <div
-        className="absolute z-[2]"
-        style={{ bottom: 30, left: 38, fontSize: 11, color: C.mut2 }}
-      >
-        © Caelex 2026 · Alle Rechte vorbehalten
       </div>
     </section>
   );
 }
 
-/** Fullscreen split-screen shell with the brand panel; children render inside
- *  the right-hand form panel (vertically-centered 380px column). Used both for
+/** Fullscreen split-screen shell with the brand card; children render inside
+ *  the right-hand form panel (vertically-centered 360px column). Used both for
  *  the Suspense fallback and the page. */
 function PassageShell({ children }: { children?: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen w-screen" style={{ background: C.bg }}>
+    <div
+      className="flex min-h-screen w-full"
+      style={{ background: C.bg, padding: 14, gap: 0 }}
+    >
       <BrandPanel />
       <section
-        className="relative flex w-full flex-col justify-center md:w-auto"
-        style={{
-          flex: "0 0 46%",
-          background: C.panel,
-          borderLeft: `1px solid ${C.line}`,
-          padding: "48px 0",
-        }}
+        className="relative flex w-full flex-col justify-center md:w-auto md:flex-[0_0_48%]"
         data-form-panel
       >
         {children}
@@ -188,7 +263,6 @@ function TradeLoginInner() {
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(false);
   const [error, setError] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -231,47 +305,63 @@ function TradeLoginInner() {
     setSubmitting(false);
   }
 
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    fontSize: 12.5,
+    fontWeight: 500,
+    color: C.mut,
+    marginBottom: 7,
+  };
+  const fieldBoxStyle: React.CSSProperties = {
+    background: C.inp,
+    border: `1px solid ${C.inpLine}`,
+    borderRadius: 11,
+    padding: "0 12px",
+    height: 44,
+    transition: "border-color .15s",
+  };
+  const inputStyle: React.CSSProperties = {
+    background: "transparent",
+    border: 0,
+    outline: 0,
+    color: C.ink,
+    fontSize: 14,
+  };
+
   return (
     <PassageShell>
-      {/* top-right: create-account → talk to sales (same real target as before) */}
-      <a
-        href="mailto:sales@caelex.eu?subject=Caelex%20Trade%20Access"
-        className="absolute transition-colors"
-        style={{
-          top: 34,
-          right: 46,
-          fontSize: 13,
-          color: C.mut,
-          textDecoration: "none",
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.color = C.ink)}
-        onMouseLeave={(e) => (e.currentTarget.style.color = C.mut)}
-      >
-        Konto erstellen
-      </a>
-
-      {/* vertically-centered 380px form column */}
+      {/* vertically-centered 360px form column */}
       <div
         className="w-full"
-        style={{ maxWidth: 380, margin: "0 auto", padding: "0 24px" }}
+        style={{ maxWidth: 360, margin: "0 auto", padding: "0 24px" }}
       >
-        <h1
+        <h2
           style={{
-            fontSize: 40,
+            fontSize: 26,
             fontWeight: 600,
-            letterSpacing: "-.03em",
-            lineHeight: 1,
+            letterSpacing: "-.02em",
+            textAlign: "center",
             color: C.ink,
-            marginBottom: 38,
           }}
         >
-          Login
-        </h1>
+          Anmelden
+        </h2>
+        <p
+          style={{
+            fontSize: 13.5,
+            color: C.mut,
+            textAlign: "center",
+            marginTop: 7,
+            marginBottom: 26,
+          }}
+        >
+          Melde dich an, um fortzufahren.
+        </p>
 
-        {/* status banners — sit just below the heading, above the fields */}
+        {/* status banners — sit above the providers/fields */}
         {resetSuccess ? (
           <div
-            className="mb-6 flex items-start gap-2 rounded-md px-3 py-2 text-[13px]"
+            className="mb-5 flex items-start gap-2 rounded-md px-3 py-2 text-[13px]"
             style={{
               border: "1px solid rgba(16,185,129,.3)",
               background: "rgba(16,185,129,.1)",
@@ -285,7 +375,7 @@ function TradeLoginInner() {
 
         {error ? (
           <div
-            className="mb-6 flex items-start gap-2 rounded-md px-3 py-2 text-[13px]"
+            className="mb-5 flex items-start gap-2 rounded-md px-3 py-2 text-[13px]"
             style={{
               border: "1px solid rgba(239,68,68,.3)",
               background: "rgba(239,68,68,.1)",
@@ -297,30 +387,63 @@ function TradeLoginInner() {
           </div>
         ) : null}
 
+        {/* Google — full-width filled dark button */}
+        <button
+          type="button"
+          onClick={handleGoogle}
+          disabled={submitting}
+          className="flex w-full items-center justify-center gap-[9px] transition-colors hover:!border-white/[.16] hover:!bg-[#1d1d21] disabled:cursor-not-allowed disabled:opacity-60"
+          style={{
+            height: 44,
+            borderRadius: 11,
+            border: `1px solid ${C.inpLine}`,
+            background: C.inp,
+            color: C.ink,
+            fontSize: 13.5,
+            fontWeight: 500,
+            cursor: "pointer",
+          }}
+        >
+          <span
+            className="grid place-items-center"
+            style={{
+              width: 16,
+              height: 16,
+              borderRadius: 3,
+              background: "#fff",
+            }}
+          >
+            <GoogleGlyph />
+          </span>
+          Mit Google fortfahren
+        </button>
+
+        {/* oder divider */}
+        <div
+          className="flex items-center"
+          style={{
+            gap: 12,
+            margin: "20px 0",
+            color: C.mut2,
+            fontSize: 11,
+            textTransform: "uppercase",
+            letterSpacing: ".1em",
+          }}
+        >
+          <span style={{ height: 1, flex: 1, background: C.line }} />
+          oder
+          <span style={{ height: 1, flex: 1, background: C.line }} />
+        </div>
+
         <form onSubmit={handleCredentials}>
-          {/* stacked underline fields: Email above Passwort */}
-          <div style={{ marginBottom: 24 }}>
-            <label
-              htmlFor="trade-email"
-              style={{
-                display: "block",
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: ".05em",
-                textTransform: "uppercase",
-                color: C.mut2,
-                marginBottom: 9,
-              }}
-            >
+          {/* Email — filled dark box */}
+          <div style={{ marginBottom: 16 }}>
+            <label htmlFor="trade-email" style={labelStyle}>
               Email
             </label>
             <div
-              className="flex items-center [&:focus-within]:!border-white/50"
-              style={{
-                borderBottom: `1px solid ${C.line2}`,
-                padding: "8px 0",
-                transition: "border-color .15s",
-              }}
+              className="flex items-center [&:focus-within]:!border-white/30"
+              style={fieldBoxStyle}
             >
               <input
                 id="trade-email"
@@ -330,41 +453,20 @@ function TradeLoginInner() {
                 required
                 autoComplete="email"
                 placeholder="you@example.com"
-                className="flex-1 placeholder:text-[#3a3a42]"
-                style={{
-                  background: "transparent",
-                  border: 0,
-                  outline: 0,
-                  color: C.ink,
-                  fontSize: 15,
-                  letterSpacing: "-.01em",
-                }}
+                className="flex-1 placeholder:text-[#3f3f46]"
+                style={inputStyle}
               />
             </div>
           </div>
 
-          <div style={{ marginBottom: 30 }}>
-            <label
-              htmlFor="trade-password"
-              style={{
-                display: "block",
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: ".05em",
-                textTransform: "uppercase",
-                color: C.mut2,
-                marginBottom: 9,
-              }}
-            >
+          {/* Passwort — filled dark box with eye toggle + forgot link */}
+          <div style={{ marginBottom: 8 }}>
+            <label htmlFor="trade-password" style={labelStyle}>
               Passwort
             </label>
             <div
-              className="flex items-center gap-2 [&:focus-within]:!border-white/50"
-              style={{
-                borderBottom: `1px solid ${C.line2}`,
-                padding: "8px 0",
-                transition: "border-color .15s",
-              }}
+              className="flex items-center gap-2 [&:focus-within]:!border-white/30"
+              style={fieldBoxStyle}
             >
               <input
                 id="trade-password"
@@ -374,15 +476,8 @@ function TradeLoginInner() {
                 required
                 autoComplete="current-password"
                 placeholder="••••••••"
-                className="flex-1 placeholder:text-[#3a3a42]"
-                style={{
-                  background: "transparent",
-                  border: 0,
-                  outline: 0,
-                  color: C.ink,
-                  fontSize: 15,
-                  letterSpacing: "-.01em",
-                }}
+                className="flex-1 placeholder:text-[#3f3f46]"
+                style={inputStyle}
               />
               <button
                 type="button"
@@ -391,88 +486,39 @@ function TradeLoginInner() {
                   showPassword ? "Passwort verbergen" : "Passwort anzeigen"
                 }
                 className="grid cursor-pointer place-items-center transition-colors hover:text-zinc-300"
-                style={{
-                  color: C.mut2,
-                  background: "transparent",
-                  border: 0,
-                }}
+                style={{ color: C.mut2, background: "transparent", border: 0 }}
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
-          </div>
-
-          {/* remember + forgot row */}
-          <div
-            className="flex items-center"
-            style={{
-              fontSize: 13,
-              color: C.mut,
-              margin: "4px 0 30px",
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setRemember((v) => !v)}
-              aria-pressed={remember}
-              className="flex cursor-pointer items-center gap-2"
-              style={{
-                background: "transparent",
-                border: 0,
-                color: "inherit",
-                font: "inherit",
-                padding: 0,
-              }}
-            >
-              <span
-                className="grid place-items-center"
-                style={{
-                  width: 16,
-                  height: 16,
-                  borderRadius: 5,
-                  border: `1px solid ${C.line2}`,
-                  background: remember
-                    ? "rgba(255,255,255,.10)"
-                    : "transparent",
-                }}
+            <div style={{ textAlign: "right", marginTop: 9 }}>
+              <Link
+                href="/trade-forgot-password"
+                className="transition-colors hover:text-zinc-300"
+                style={{ fontSize: 12.5, color: C.mut, textDecoration: "none" }}
               >
-                <Check
-                  size={9}
-                  strokeWidth={3}
-                  style={{ color: C.mut, opacity: remember ? 1 : 0 }}
-                />
-              </span>
-              Angemeldet bleiben
-            </button>
-            <Link
-              href="/trade-forgot-password"
-              className="transition-colors hover:text-zinc-400"
-              style={{
-                marginLeft: "auto",
-                color: C.mut2,
-                textDecoration: "none",
-              }}
-            >
-              Passwort vergessen?
-            </Link>
+                Passwort vergessen?
+              </Link>
+            </div>
           </div>
 
-          {/* full-width pill credentials submit */}
+          {/* full-width white submit */}
           <button
             type="submit"
             disabled={submitting}
             className="flex w-full items-center justify-center gap-2 transition-all hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-70"
             style={{
-              height: 48,
-              borderRadius: 12,
+              height: 46,
+              borderRadius: 11,
               border: 0,
+              marginTop: 8,
               cursor: submitting ? "not-allowed" : "pointer",
               background: "#fafafa",
               color: "#08080a",
               fontSize: 14,
               fontWeight: 600,
               letterSpacing: "-.01em",
-              boxShadow: "0 4px 18px -6px rgba(255,255,255,.25)",
+              boxShadow: "0 4px 18px -6px rgba(255,255,255,.22)",
             }}
           >
             {submitting ? (
@@ -487,75 +533,29 @@ function TradeLoginInner() {
                 aria-hidden="true"
               />
             ) : (
-              <>
-                Anmelden
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M5 12h14M13 6l6 6-6 6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </>
+              "Anmelden"
             )}
           </button>
-
-          {/* ODER divider */}
-          <div
-            className="flex items-center"
-            style={{
-              gap: 12,
-              margin: "20px 0",
-              color: C.mut2,
-              fontSize: 11,
-              textTransform: "uppercase",
-              letterSpacing: ".1em",
-            }}
-          >
-            <span style={{ height: 1, flex: 1, background: C.line }} />
-            oder
-            <span style={{ height: 1, flex: 1, background: C.line }} />
-          </div>
-
-          {/* full-width outline Google button */}
-          <button
-            type="button"
-            onClick={handleGoogle}
-            disabled={submitting}
-            className="flex w-full items-center justify-center gap-[9px] transition-colors hover:!border-white/[.22] hover:!bg-white/[.04] disabled:cursor-not-allowed disabled:opacity-60"
-            style={{
-              height: 46,
-              borderRadius: 12,
-              border: `1px solid ${C.line2}`,
-              background: "transparent",
-              color: C.ink,
-              fontSize: 14,
-              fontWeight: 500,
-              cursor: "pointer",
-            }}
-          >
-            <span
-              className="grid place-items-center"
-              style={{
-                width: 16,
-                height: 16,
-                borderRadius: 3,
-                background: "#fff",
-              }}
-            >
-              <GoogleGlyph />
-            </span>
-            Mit Google fortfahren
-          </button>
         </form>
+
+        {/* footer: request access (same real target as before) */}
+        <p
+          style={{
+            textAlign: "center",
+            marginTop: 20,
+            fontSize: 13,
+            color: C.mut2,
+          }}
+        >
+          Noch kein Konto?{" "}
+          <a
+            href="mailto:sales@caelex.eu?subject=Caelex%20Trade%20Access"
+            className="transition-colors hover:text-zinc-300"
+            style={{ color: C.ink, fontWeight: 500, textDecoration: "none" }}
+          >
+            Konto erstellen
+          </a>
+        </p>
       </div>
     </PassageShell>
   );
