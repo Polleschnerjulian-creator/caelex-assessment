@@ -14393,6 +14393,17 @@ model TradeOrgProfile {
   /// Stored as a JSON-encoded string array; service parses on read.
   preferredRegimesJson      String?
 
+  // ── Applicability onboarding (front-door triage) ──
+  /// JSON snapshot of the last ApplicabilityResult (answers + verdicts +
+  /// rule version). NULL = the org has never completed the applicability
+  /// triage → the Trade home shows the gate banner.
+  applicabilityResultJson  String?   @db.Text
+  /// When the triage was completed/acknowledged. NULL = not done.
+  applicabilityCompletedAt DateTime?
+  /// Rule-set version that produced the snapshot (APPLICABILITY_RULE_VERSION),
+  /// so a future rule-boundary change can detect staleness and re-prompt.
+  applicabilityRuleVersion Int?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
