@@ -8,7 +8,7 @@ import { getDeemedExportAuthorization } from "@/lib/trade/deemed-export/deemed-e
 import { DeemedExportDetailPanel } from "../_components/DeemedExportDetailPanel";
 
 export const metadata = {
-  title: "Deemed Export — Caelex Trade",
+  title: "Deemed Export — Passage",
 };
 
 interface PageProps {

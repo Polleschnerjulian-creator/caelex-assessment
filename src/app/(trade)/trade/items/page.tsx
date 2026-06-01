@@ -653,7 +653,7 @@ export default function TradeItemsPage() {
           lang="de"
           className="text-[11px] leading-relaxed text-trade-text-muted"
         >
-          Caelex Trade ist ein Compliance-Werkzeug, kein Counsel. Vor jeder
+          Passage ist ein Compliance-Werkzeug, kein Counsel. Vor jeder
           Export-Entscheidung mit qualifizierter Exportkontroll-Rechtsberatung
           verifizieren (BAFA, BIS, DDTC). AWG/EAR/ITAR-Verstöße können zu
           Freiheitsstrafen bis 20 Jahren und Bußen bis USD 1 Mio. führen.

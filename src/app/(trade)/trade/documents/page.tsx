@@ -16,7 +16,7 @@ import { isSuperAdmin } from "@/lib/super-admin";
 import { listUnifiedDocuments } from "@/lib/trade/unified-documents.server";
 import { UnifiedDocumentsTable } from "./_components/UnifiedDocumentsTable";
 
-export const metadata = { title: "Dokumente — Caelex Trade" };
+export const metadata = { title: "Dokumente — Passage" };
 
 const DOC_TYPES = [
   {

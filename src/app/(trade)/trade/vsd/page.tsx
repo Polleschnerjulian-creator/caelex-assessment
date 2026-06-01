@@ -8,7 +8,7 @@ import { listVsds } from "@/lib/trade/vsd-service";
 import { VsdListPanel } from "./_components/VsdListPanel";
 
 export const metadata = {
-  title: "Voluntary Self-Disclosures — Caelex Trade",
+  title: "Voluntary Self-Disclosures — Passage",
 };
 
 interface VsdPageProps {
@@ -97,7 +97,7 @@ export default async function VsdPage({ searchParams }: VsdPageProps) {
       <header className="mb-2 flex items-end justify-between gap-4">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wider text-trade-accent">
-            Caelex Trade — Disclosures
+            Passage — Disclosures
           </p>
           <div className="mt-2 flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-md bg-trade-accent-soft text-trade-accent-strong">

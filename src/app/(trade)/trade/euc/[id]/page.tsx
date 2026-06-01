@@ -13,7 +13,7 @@ import { getEucRequest } from "@/lib/trade/euc-service";
 import { TradeEUCFormType, TradeEUCStatus } from "@prisma/client";
 
 export const metadata = {
-  title: "EUC detail — Caelex Trade",
+  title: "EUC detail — Passage",
 };
 
 interface PageProps {
@@ -60,7 +60,7 @@ export default async function TradeEucDetailPage({ params }: PageProps) {
       <header className="flex items-end justify-between gap-4">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wider text-trade-accent">
-            Caelex Trade — Documents
+            Passage — Documents
           </p>
           <div className="mt-2 flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-md bg-trade-accent-soft text-trade-accent-strong">

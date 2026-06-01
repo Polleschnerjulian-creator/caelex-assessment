@@ -13,7 +13,7 @@ import Link from "next/link";
 import { ScreeningTriageTable } from "./ScreeningTriageTable";
 import { Term } from "../_components/Term";
 
-export const metadata = { title: "Screening Triage · Caelex Trade" };
+export const metadata = { title: "Screening Triage · Passage" };
 
 export default function ScreeningTriagePage() {
   return (
