@@ -4,30 +4,210 @@ import { Suspense, useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, CheckCircle2, Check } from "lucide-react";
 import { safeTradeUrl } from "@/lib/safe-redirect";
 import { translateAuthError } from "@/lib/auth-errors";
-import { TradeAuthShell } from "./_components/TradeAuthShell";
 
 /**
  * /trade-login — Caelex Trade sign-in (Sprint T7).
  *
- * Indigo-branded equivalent of /atlas-login. Uses the same NextAuth
- * credentials + Google providers as the rest of Caelex. callbackUrl
- * is validated via safeTradeUrl to keep brand-isolation: a hostile
+ * Premium dark split-screen "Passage" presentation (golden-suisse style):
+ * LEFT = black brand panel with crosshair + diagonal guide lines, a centered
+ * "trinity" mark and a "Passage®" wordmark; RIGHT = darker form panel with an
+ * underline-style Email/Passwort form and a circular "ANMELDEN" submit.
+ *
+ * Auth is unchanged from the original shell: same NextAuth credentials +
+ * Google providers as the rest of Caelex. callbackUrl is validated via
+ * safeTradeUrl to keep brand-isolation: a hostile
  * `?callbackUrl=https://evil.com` falls back to /trade.
  *
- * Pre-fills email from `?email=` (used for deep-links out of sales
- * mails). Reset-success state is shown via `?reset=success`.
+ * Pre-fills email from `?email=` (used for deep-links out of sales mails).
+ * Reset-success state is shown via `?reset=success`.
+ *
+ * NOTE: the trinity SVG below is a stand-in mark ported verbatim from the
+ * approved mockup. A real asset can be dropped at public/passage-mark.svg
+ * and swapped in later without touching auth logic.
  */
 
 export default function TradeLoginPage() {
   return (
-    <Suspense
-      fallback={<TradeAuthShell title="Sign in">{null}</TradeAuthShell>}
-    >
+    <Suspense fallback={<PassageShell />}>
       <TradeLoginInner />
     </Suspense>
+  );
+}
+
+/** Trinity "Passage" mark — three petals rotated 120°. Ported verbatim from
+ *  the approved mockup (.mockups/index.html). Stand-in until a real asset
+ *  lands at public/passage-mark.svg. */
+function TrinityMark({
+  className,
+  ariaLabel,
+}: {
+  className?: string;
+  ariaLabel?: string;
+}) {
+  return (
+    <svg
+      viewBox="0 0 100 100"
+      className={className}
+      aria-label={ariaLabel}
+      aria-hidden={ariaLabel ? undefined : true}
+    >
+      <g fill="#f4f4f5">
+        <path d="M50 12 C60 26 63 38 56 47 C53 44 47 44 44 47 C37 38 40 26 50 12Z" />
+        <path
+          d="M50 12 C60 26 63 38 56 47 C53 44 47 44 44 47 C37 38 40 26 50 12Z"
+          transform="rotate(120 50 50)"
+        />
+        <path
+          d="M50 12 C60 26 63 38 56 47 C53 44 47 44 44 47 C37 38 40 26 50 12Z"
+          transform="rotate(240 50 50)"
+        />
+      </g>
+    </svg>
+  );
+}
+
+/** Left brand panel: guide lines, wordmark, centered mark, copyright.
+ *  Hidden on small screens so the form takes the full width on mobile. */
+function BrandPanel() {
+  return (
+    <section
+      className="relative hidden flex-1 overflow-hidden md:block"
+      style={{ background: "#070708", flexBasis: "56%" }}
+    >
+      {/* guide lines: vertical + horizontal crosshair + two diagonals */}
+      <div className="pointer-events-none absolute inset-0">
+        <span
+          className="absolute left-1/2 top-0 bottom-0"
+          style={{ width: 1, background: "rgba(255,255,255,.06)" }}
+        />
+        <span
+          className="absolute left-0 right-0 top-1/2"
+          style={{ height: 1, background: "rgba(255,255,255,.06)" }}
+        />
+        <span className="absolute inset-0">
+          <span
+            className="absolute top-1/2"
+            style={{
+              left: "-30%",
+              width: "160%",
+              height: 1,
+              background:
+                "linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent)",
+              transformOrigin: "center",
+              transform: "rotate(33deg)",
+            }}
+          />
+          <span
+            className="absolute top-1/2"
+            style={{
+              left: "-30%",
+              width: "160%",
+              height: 1,
+              background:
+                "linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent)",
+              transformOrigin: "center",
+              transform: "rotate(-33deg)",
+            }}
+          />
+        </span>
+      </div>
+
+      {/* wordmark top-left */}
+      <div
+        className="absolute z-[2] flex items-center"
+        style={{ top: 30, left: 32, gap: 10 }}
+      >
+        <TrinityMark className="h-[22px] w-[22px]" />
+        <span
+          style={{
+            fontSize: 16,
+            fontWeight: 600,
+            letterSpacing: "-.01em",
+            color: "#f4f4f5",
+          }}
+        >
+          Passage
+          <sup
+            style={{
+              fontSize: 8,
+              opacity: 0.6,
+              fontWeight: 500,
+              marginLeft: 1,
+            }}
+          >
+            ®
+          </sup>
+        </span>
+      </div>
+
+      {/* centered mark */}
+      <div className="absolute inset-0 grid place-items-center">
+        <TrinityMark ariaLabel="Passage" className="h-[168px] w-[168px]" />
+      </div>
+
+      {/* copyright bottom-left */}
+      <div
+        className="absolute z-[2]"
+        style={{
+          bottom: 26,
+          left: 32,
+          fontSize: 11,
+          color: "#71717a",
+          letterSpacing: ".01em",
+        }}
+      >
+        © Caelex 2026 · Alle Rechte vorbehalten
+      </div>
+    </section>
+  );
+}
+
+/** Full split-screen shell with the brand panel; children render inside the
+ *  right-hand form panel. Used both for the Suspense fallback and the page. */
+function PassageShell({ children }: { children?: React.ReactNode }) {
+  return (
+    <div
+      className="grid min-h-screen place-items-center"
+      style={{ background: "#1c1c1f", padding: 24 }}
+    >
+      <div
+        className="flex w-full overflow-hidden"
+        style={{
+          maxWidth: 1180,
+          borderRadius: 22,
+          background: "#0a0a0b",
+          boxShadow:
+            "0 40px 90px -30px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.04)",
+        }}
+      >
+        <BrandPanel />
+        <section
+          className="relative w-full md:w-auto md:flex-none"
+          style={{
+            flexBasis: undefined,
+            background:
+              "radial-gradient(120% 80% at 80% 0%, #161618 0%, #0f0f11 60%)",
+            padding: "40px 48px",
+            minHeight: "min(737px, 90vh)",
+          }}
+          data-form-panel
+        >
+          <div
+            className="hidden md:block"
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderLeft: "1px solid rgba(255,255,255,.06)",
+              pointerEvents: "none",
+            }}
+          />
+          {children}
+        </section>
+      </div>
+    </div>
   );
 }
 
@@ -43,6 +223,7 @@ function TradeLoginInner() {
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(false);
   const [error, setError] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -86,120 +267,291 @@ function TradeLoginInner() {
   }
 
   return (
-    <TradeAuthShell
-      title="Sign in to Caelex Trade"
-      subtitle="Klassifizieren. Lizenzieren. Liefern."
-      footer={
-        <span>
-          New to Caelex Trade?{" "}
-          <a
-            href="mailto:sales@caelex.eu?subject=Caelex%20Trade%20Access"
-            className="font-medium text-indigo-400 hover:text-indigo-300"
-          >
-            Talk to Sales
-          </a>
-        </span>
-      }
-    >
+    <PassageShell>
+      {/* top-right: create-account → talk to sales (same real target as before) */}
+      <a
+        href="mailto:sales@caelex.eu?subject=Caelex%20Trade%20Access"
+        className="absolute transition-colors"
+        style={{
+          top: 30,
+          right: 40,
+          fontSize: 12.5,
+          color: "#a1a1aa",
+          textDecoration: "none",
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = "#f4f4f5")}
+        onMouseLeave={(e) => (e.currentTarget.style.color = "#a1a1aa")}
+      >
+        Konto erstellen
+      </a>
+
+      <h1
+        style={{
+          marginTop: 118,
+          fontSize: 46,
+          fontWeight: 600,
+          letterSpacing: "-.03em",
+          color: "#f4f4f5",
+          lineHeight: 1,
+        }}
+      >
+        Login
+      </h1>
+
+      {/* status banners — sit just below the heading, above the fields */}
       {resetSuccess ? (
-        <div className="mb-4 flex items-start gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-[13px] text-emerald-200">
+        <div
+          className="mt-5 flex items-start gap-2 rounded-md px-3 py-2 text-[13px]"
+          style={{
+            border: "1px solid rgba(16,185,129,.3)",
+            background: "rgba(16,185,129,.1)",
+            color: "#a7f3d0",
+          }}
+        >
           <CheckCircle2 size={16} className="mt-0.5 flex-shrink-0" />
-          <span>Password updated. You can sign in now.</span>
+          <span>Passwort aktualisiert. Du kannst dich jetzt anmelden.</span>
         </div>
       ) : null}
 
-      <form onSubmit={handleCredentials} className="flex flex-col gap-3">
-        <label className="flex flex-col gap-1.5">
-          <span className="font-body text-[12px] font-medium uppercase tracking-wide text-zinc-400">
-            Email
-          </span>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            autoComplete="email"
-            className="h-11 rounded-md border border-white/[0.1] bg-white/[0.04] px-3 font-body text-[14px] text-zinc-50 placeholder:text-zinc-600 outline-none transition-colors focus:border-indigo-500/60 focus:bg-white/[0.06]"
-            placeholder="you@example.com"
-          />
-        </label>
+      {error ? (
+        <div
+          className="mt-5 flex items-start gap-2 rounded-md px-3 py-2 text-[13px]"
+          style={{
+            border: "1px solid rgba(239,68,68,.3)",
+            background: "rgba(239,68,68,.1)",
+            color: "#fecaca",
+          }}
+        >
+          <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
+          <span>{error}</span>
+        </div>
+      ) : null}
 
-        <label className="flex flex-col gap-1.5">
-          <span className="font-body text-[12px] font-medium uppercase tracking-wide text-zinc-400">
-            Password
-          </span>
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="current-password"
-              className="h-11 w-full rounded-md border border-white/[0.1] bg-white/[0.04] px-3 pr-10 font-body text-[14px] text-zinc-50 placeholder:text-zinc-600 outline-none transition-colors focus:border-indigo-500/60 focus:bg-white/[0.06]"
-              placeholder="••••••••"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword((v) => !v)}
-              aria-label={showPassword ? "Hide password" : "Show password"}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors hover:text-zinc-300"
+      <form onSubmit={handleCredentials}>
+        {/* two underline fields side-by-side (stack on very narrow screens) */}
+        <div className="mt-[34px] flex flex-col gap-[26px] sm:flex-row">
+          <div className="flex flex-1 flex-col gap-2">
+            <label
+              htmlFor="trade-email"
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: ".04em",
+                textTransform: "uppercase",
+                color: "#71717a",
+              }}
             >
-              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
+              Email
+            </label>
+            <div
+              className="flex items-center py-1.5 [&:focus-within]:!border-white/40"
+              style={{ borderBottom: "1px solid rgba(255,255,255,.10)" }}
+            >
+              <input
+                id="trade-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+                placeholder="you@example.com"
+                className="flex-1 placeholder:text-[#3f3f46]"
+                style={{
+                  background: "transparent",
+                  border: 0,
+                  outline: 0,
+                  color: "#f4f4f5",
+                  fontSize: 14,
+                  letterSpacing: "-.01em",
+                }}
+              />
+            </div>
           </div>
-        </label>
 
-        {error ? (
-          <div className="flex items-start gap-2 rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-[13px] text-red-200">
-            <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
-            <span>{error}</span>
+          <div className="flex flex-1 flex-col gap-2">
+            <label
+              htmlFor="trade-password"
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: ".04em",
+                textTransform: "uppercase",
+                color: "#71717a",
+              }}
+            >
+              Passwort
+            </label>
+            <div
+              className="flex items-center gap-2 py-1.5 [&:focus-within]:!border-white/40"
+              style={{ borderBottom: "1px solid rgba(255,255,255,.10)" }}
+            >
+              <input
+                id="trade-password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+                placeholder="••••••••"
+                className="flex-1 placeholder:text-[#3f3f46]"
+                style={{
+                  background: "transparent",
+                  border: 0,
+                  outline: 0,
+                  color: "#f4f4f5",
+                  fontSize: 14,
+                  letterSpacing: "-.01em",
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={
+                  showPassword ? "Passwort verbergen" : "Passwort anzeigen"
+                }
+                className="grid cursor-pointer place-items-center transition-colors hover:text-zinc-300"
+                style={{
+                  color: "#71717a",
+                  background: "transparent",
+                  border: 0,
+                }}
+              >
+                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
+            </div>
           </div>
-        ) : null}
+        </div>
 
+        {/* remember + forgot row */}
+        <div
+          className="flex items-center"
+          style={{ marginTop: 22, gap: 10, fontSize: 12.5, color: "#a1a1aa" }}
+        >
+          <button
+            type="button"
+            onClick={() => setRemember((v) => !v)}
+            aria-pressed={remember}
+            className="flex cursor-pointer items-center gap-2"
+            style={{
+              background: "transparent",
+              border: 0,
+              color: "inherit",
+              font: "inherit",
+              padding: 0,
+            }}
+          >
+            <span
+              className="grid place-items-center"
+              style={{
+                width: 16,
+                height: 16,
+                borderRadius: "50%",
+                border: "1px solid rgba(255,255,255,.10)",
+                background: remember ? "rgba(255,255,255,.10)" : "transparent",
+              }}
+            >
+              <Check
+                size={9}
+                strokeWidth={3}
+                style={{
+                  color: "#71717a",
+                  opacity: remember ? 1 : 0,
+                }}
+              />
+            </span>
+            Angemeldet bleiben
+          </button>
+          <Link
+            href="/trade-forgot-password"
+            className="transition-colors hover:text-zinc-400"
+            style={{
+              marginLeft: "auto",
+              color: "#71717a",
+              textDecoration: "none",
+            }}
+          >
+            Passwort vergessen?
+          </Link>
+        </div>
+
+        {/* Google affordance — subtle text + icon */}
+        <button
+          type="button"
+          onClick={handleGoogle}
+          disabled={submitting}
+          className="flex w-max cursor-pointer items-center transition-colors hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-60"
+          style={{
+            marginTop: 26,
+            gap: 9,
+            fontSize: 12.5,
+            color: "#a1a1aa",
+            background: "transparent",
+            border: 0,
+            padding: 0,
+          }}
+        >
+          <span
+            className="grid place-items-center"
+            style={{
+              width: 15,
+              height: 15,
+              borderRadius: 3,
+              background: "#fff",
+            }}
+          >
+            <GoogleGlyph />
+          </span>
+          Mit Google fortfahren
+        </button>
+
+        {/* circular credentials submit, bottom-right */}
         <button
           type="submit"
           disabled={submitting}
-          className="mt-1 h-11 rounded-md bg-indigo-500 font-body text-[14px] font-semibold text-white transition-all hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
+          aria-label="Anmelden"
+          className="absolute grid place-items-center transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+          style={{
+            bottom: 38,
+            right: 40,
+            width: 96,
+            height: 96,
+            borderRadius: "50%",
+            background: "#fafafa",
+            color: "#0a0a0b",
+            border: 0,
+            cursor: submitting ? "not-allowed" : "pointer",
+            fontSize: 12,
+            fontWeight: 600,
+            letterSpacing: ".08em",
+            boxShadow: "0 8px 30px -8px rgba(255,255,255,.25)",
+          }}
         >
-          {submitting ? "Signing in…" : "Sign in"}
+          {submitting ? (
+            <span
+              className="inline-block animate-spin rounded-full"
+              style={{
+                width: 18,
+                height: 18,
+                border: "2px solid rgba(10,10,11,.25)",
+                borderTopColor: "#0a0a0b",
+              }}
+              aria-hidden="true"
+            />
+          ) : (
+            "ANMELDEN"
+          )}
         </button>
       </form>
-
-      <div className="my-5 flex items-center gap-3">
-        <div className="h-px flex-1 bg-white/[0.08]" />
-        <span className="font-body text-[11px] uppercase tracking-wider text-zinc-500">
-          or
-        </span>
-        <div className="h-px flex-1 bg-white/[0.08]" />
-      </div>
-
-      <button
-        type="button"
-        onClick={handleGoogle}
-        disabled={submitting}
-        className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-white/[0.12] bg-white/[0.04] font-body text-[14px] font-medium text-zinc-100 transition-colors hover:border-white/[0.18] hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        <GoogleGlyph />
-        Continue with Google
-      </button>
-
-      <div className="mt-5 text-center">
-        <Link
-          href="/trade-forgot-password"
-          className="font-body text-[13px] text-zinc-400 transition-colors hover:text-indigo-300"
-        >
-          Forgot password?
-        </Link>
-      </div>
-    </TradeAuthShell>
+    </PassageShell>
   );
 }
 
+/** Google "G" glyph (the real multi-color mark), sized for the white chip. */
 function GoogleGlyph() {
   return (
     <svg
-      width="16"
-      height="16"
+      width="9"
+      height="9"
       viewBox="0 0 24 24"
       xmlns="http://www.w3.org/2000/svg"
     >
