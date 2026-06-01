@@ -14,7 +14,7 @@ import { AuditTab } from "./_components/AuditTab";
 import { DensityToggle } from "../_components/DensityToggle";
 
 export const metadata = {
-  title: "Settings — Caelex Trade",
+  title: "Settings — Passage",
 };
 
 const VALID_TABS = ["profile", "notifications", "api-keys", "audit"] as const;
@@ -79,15 +79,15 @@ export default async function TradeSettingsPage({
     <div className="space-y-5 px-8 py-10">
       <header className="mb-2">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-trade-accent">
-          Caelex Trade — Org Admin
+          Passage — Org Admin
         </p>
         <h1 className="mt-2 text-[28px] font-bold tracking-tight text-trade-text-primary">
           Settings
         </h1>
         <p className="mt-1 max-w-2xl text-[13px] text-trade-text-secondary">
-          Org-level settings specific to Caelex Trade — primary BAFA contact,
-          customs identifiers, notification preferences, and API access. Visible
-          to OWNER and ADMIN members only.
+          Org-level settings specific to Passage — primary BAFA contact, customs
+          identifiers, notification preferences, and API access. Visible to
+          OWNER and ADMIN members only.
         </p>
       </header>
 

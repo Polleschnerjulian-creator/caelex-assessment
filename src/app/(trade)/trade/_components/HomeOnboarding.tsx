@@ -32,7 +32,7 @@ export function HomeOnboarding() {
           Erste Schritte
         </div>
         <div className="mt-1 text-lg font-semibold text-white">
-          Willkommen bei Caelex Trade 👋
+          Willkommen bei Passage 👋
         </div>
         <div className="text-sm text-white/90">
           Lass uns deinen ersten Ausfuhrvorgang prüfen — in drei Schritten.

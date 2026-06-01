@@ -12,7 +12,7 @@ import {
 import { TrainingCorpusClient } from "./_components/TrainingCorpusClient";
 
 export const metadata = {
-  title: "Training Corpus — Caelex Trade",
+  title: "Training Corpus — Passage",
   description:
     "Anonymised BAFA AzG and DDTC CJ decisions, curated for operator research into license-required, no-license-required, USML and EAR precedents.",
 };
@@ -65,7 +65,7 @@ export default async function TrainingCorpusPage({ searchParams }: PageProps) {
     <div className="space-y-6 px-8 py-10">
       <header className="flex flex-col gap-2">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-trade-accent">
-          Caelex Trade — Research
+          Passage — Research
         </p>
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-md bg-trade-accent-soft text-trade-accent-strong">

@@ -16,7 +16,7 @@ import { MiniStatsStrip } from "./_components/MiniStatsStrip";
 import { TradeCommandTrigger } from "./_components/TradeCommandTrigger";
 
 export const metadata = {
-  title: "Caelex Trade — Dashboard",
+  title: "Passage — Dashboard",
 };
 
 /**
