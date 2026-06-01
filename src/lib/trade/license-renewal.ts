@@ -42,7 +42,7 @@ export function deriveExpiryState(
   validUntil: string | Date | null,
   now: Date = new Date(),
 ): LicenseExpiryState {
-  if (validUntil == null) {
+  if (validUntil === null || validUntil === undefined) {
     return {
       daysRemaining: null,
       urgency: "ok",
@@ -124,7 +124,7 @@ export function buildLicenseRenewalDraft(
 
   const numberPart = prior.licenseNumber ? ` ${prior.licenseNumber}` : "";
   const capPart =
-    prior.totalCapValue != null
+    prior.totalCapValue !== null && prior.totalCapValue !== undefined
       ? ` · cap ${prior.totalCapValue.toLocaleString("en-GB")} ${prior.capCurrency}`
       : "";
   const carriedSummary =
