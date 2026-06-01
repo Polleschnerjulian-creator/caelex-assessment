@@ -9,7 +9,7 @@ import {
 import { RetentionPanel } from "./_components/RetentionPanel";
 
 export const metadata = {
-  title: "Audit Center — Caelex Trade",
+  title: "Audit Center — Passage",
 };
 
 /**
@@ -58,7 +58,7 @@ export default async function TradeAuditCenterPage() {
         </h1>
         <p className="mt-1 text-[13px] text-trade-text-muted">
           Recordkeeping obligations, retention windows, and tamper-evident trail
-          for Caelex Trade.
+          for Passage.
         </p>
       </header>
 

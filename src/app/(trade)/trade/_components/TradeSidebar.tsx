@@ -180,7 +180,7 @@ export function TradeSidebar({ org, badgeCounts }: Props) {
 
   return (
     <nav
-      aria-label="Caelex Trade navigation"
+      aria-label="Passage navigation"
       className="flex h-full w-[244px] shrink-0 flex-col"
       style={{
         background: "rgb(20, 20, 22)",

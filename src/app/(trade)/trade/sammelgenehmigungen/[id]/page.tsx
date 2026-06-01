@@ -12,7 +12,7 @@ import {
 import { fromCents } from "@/lib/trade/money";
 
 export const metadata = {
-  title: "Sammelgenehmigung — Caelex Trade",
+  title: "Sammelgenehmigung — Passage",
 };
 
 interface PageProps {
@@ -68,7 +68,7 @@ export default async function SammelgenehmigungDetailPage({
 
       <header className="mb-2">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-trade-accent">
-          Caelex Trade — Authorization
+          Passage — Authorization
         </p>
         <div className="mt-2 flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-md bg-trade-accent-soft text-trade-accent-strong">

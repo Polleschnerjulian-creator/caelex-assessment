@@ -354,7 +354,7 @@ export default function LicensesPage() {
       <header className="mb-7 flex items-end justify-between gap-6 border-b border-trade-border-subtle pb-5">
         <div className="min-w-0">
           <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-trade-text-muted">
-            Caelex Trade /{" "}
+            Passage /{" "}
             <span className="text-trade-text-secondary">Licenses</span>
           </div>
           <h1 className="text-[28px] font-bold leading-tight tracking-tight text-trade-text-primary">

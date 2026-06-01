@@ -56,7 +56,7 @@ const QUICK_START_PROMPTS: ReadonlyArray<QuickStartPrompt> = [
   {
     label: "How do I classify my first item?",
     prefill:
-      "I'm new to Caelex Trade. Walk me through classifying my first item — ECCN, USML, EU Annex I, MTCR, and the German Ausfuhrliste in one pass. What information do I need?",
+      "I'm new to Passage. Walk me through classifying my first item — ECCN, USML, EU Annex I, MTCR, and the German Ausfuhrliste in one pass. What information do I need?",
   },
   {
     label: "How does sanctions screening work here?",
@@ -173,7 +173,7 @@ export function TradeHelpCenter() {
               id="trade-help-heading"
               className="text-[13px] font-semibold text-trade-text-primary"
             >
-              Caelex Trade — Help
+              Passage — Help
             </h2>
           </div>
           <button

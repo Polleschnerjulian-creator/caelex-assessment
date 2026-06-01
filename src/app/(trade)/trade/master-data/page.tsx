@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Package, Users } from "lucide-react";
 
-export const metadata = { title: "Stammdaten — Caelex Trade" };
+export const metadata = { title: "Stammdaten — Passage" };
 
 const AREAS = [
   {

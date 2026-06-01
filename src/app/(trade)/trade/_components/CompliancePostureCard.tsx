@@ -130,9 +130,9 @@ export function CompliancePostureCard() {
               className="mb-4 text-[14px] leading-[1.4]"
               style={{ color: "var(--trade-label-secondary)" }}
             >
-              Caelex Trade evaluates your operations against the following
-              regimes simultaneously. Every classification, party screen, and
-              license determination consults all relevant ones.
+              Passage evaluates your operations against the following regimes
+              simultaneously. Every classification, party screen, and license
+              determination consults all relevant ones.
             </p>
             <div className="flex flex-wrap gap-2">
               {REGIME_CHIPS.map((chip) => (

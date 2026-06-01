@@ -5,7 +5,7 @@ import { getApplicability } from "@/lib/trade/applicability/applicability-servic
 import { ApplicabilityView } from "./_components/ApplicabilityView";
 
 export const metadata = {
-  title: "Caelex Trade — Geltungsbereich",
+  title: "Passage — Geltungsbereich",
 };
 
 /**
