@@ -27,11 +27,11 @@
  * indirectly via Operation Detail (A3b).
  */
 
-import { useCallback, useEffect, useState } from "react";
-import { ListSkeleton } from "../_components/Skeletons";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { EmptyStateRich } from "../_components/EmptyStateRich";
-import { BulkActionsBar } from "../_components/BulkActionsBar";
+import { TradeTable, type TradeColumn } from "../_components/TradeTable";
 import { LicensePdfDrop } from "./_components/LicensePdfDrop";
+import { LicenseRenewalModal } from "./_components/LicenseRenewalModal";
 import {
   TYPE_META,
   STATUS_META,
@@ -40,19 +40,45 @@ import {
   type LicenseType,
   type LicenseStatus,
 } from "./_components/license-types";
+import { deriveExpiryState } from "@/lib/trade/license-renewal";
 import { buildCsv, downloadCsv } from "@/lib/trade/csv-export";
 import { useToast } from "@/components/ui/Toast";
 import type { BafaBescheidExtraction } from "@/lib/trade/licenses/bafa-bescheid-types";
 import {
-  Search,
   Plus,
   X,
   FileCheck,
-  Calendar,
   CalendarClock,
+  AlertTriangle,
   Workflow,
   Download,
 } from "lucide-react";
+
+// Jurisdiction groups (TYPE_META[type].group) used by the quick-filter.
+type JurisGroup = "BAFA" | "BIS" | "DDTC" | "EU" | "OTHER";
+const JURIS_OPTIONS: readonly JurisGroup[] = [
+  "BAFA",
+  "BIS",
+  "DDTC",
+  "EU",
+  "OTHER",
+];
+const EXPIRY_OPTIONS: ReadonlyArray<{ key: 30 | 60 | 90; label: string }> = [
+  { key: 30, label: "≤30d" },
+  { key: 60, label: "≤60d" },
+  { key: 90, label: "≤90d" },
+];
+
+/**
+ * Draw-down percentage in EUROS (API already serialized cents→euros — do
+ * NOT re-introduce cents math). Returns -1 for uncapped licences so they
+ * sort last and never match the low-capacity filter.
+ */
+function drawnPct(l: LicenseRow): number {
+  return l.totalCapValue && l.totalCapValue > 0
+    ? (l.drawnDownValue / l.totalCapValue) * 100
+    : -1;
+}
 
 // ─── Component ────────────────────────────────────────────────────────
 
@@ -72,30 +98,31 @@ export default function LicensesPage() {
     });
   }, []);
   const clearStatusFilter = useCallback(() => setStatusFilter(new Set()), []);
-  const [showNew, setShowNew] = useState(false);
-  // U-CRIT-5 bulk-select state.
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const toast = useToast();
-  const toggleSelect = useCallback((id: string, next: boolean) => {
-    setSelectedIds((prev) => {
+
+  // Client-side quick-filters (on the loaded page, like Phase 3A).
+  const [jurisFilter, setJurisFilter] = useState<Set<JurisGroup>>(new Set());
+  const toggleJurisFilter = useCallback((g: JurisGroup) => {
+    setJurisFilter((prev) => {
       const out = new Set(prev);
-      if (next) out.add(id);
-      else out.delete(id);
+      if (out.has(g)) out.delete(g);
+      else out.add(g);
       return out;
     });
   }, []);
-  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
-  const toggleSelectAll = useCallback(() => {
-    setSelectedIds((prev) => {
-      if (prev.size === licenses.length && licenses.length > 0)
-        return new Set();
-      return new Set(licenses.map((l) => l.id));
-    });
-  }, [licenses]);
+  const [expiryFilter, setExpiryFilter] = useState<30 | 60 | 90 | null>(null);
+  const [lowCapacityOnly, setLowCapacityOnly] = useState(false);
 
+  const [showNew, setShowNew] = useState(false);
+  // U-CRIT-5 bulk-select state (page-owned, passed to TradeTable).
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  // Which licence's renewal panel is open (null = none).
+  const [renewingId, setRenewingId] = useState<string | null>(null);
+  const toast = useToast();
+
+  // Clear bulk-selection on any filter/search change.
   useEffect(() => {
     setSelectedIds(new Set());
-  }, [search, statusFilter]);
+  }, [search, statusFilter, jurisFilter, expiryFilter, lowCapacityOnly]);
 
   const handleExportSelected = () => {
     const rows = licenses.filter((l) => selectedIds.has(l.id));
@@ -122,10 +149,6 @@ export default function LicensesPage() {
       `${rows.length} license${rows.length === 1 ? "" : "s"} downloaded as CSV.`,
     );
   };
-
-  const allVisibleSelected =
-    licenses.length > 0 && selectedIds.size === licenses.length;
-  const someVisibleSelected = selectedIds.size > 0 && !allVisibleSelected;
 
   useEffect(() => {
     let cancelled = false;
@@ -154,6 +177,176 @@ export default function LicensesPage() {
       cancelled = true;
     };
   }, [search, statusFilter]);
+
+  // Client-side jurisdiction / expiry / capacity filtering on the loaded
+  // page (no new query params — same constraint as Phase 3A).
+  const visibleLicenses = useMemo(
+    () =>
+      licenses.filter((l) => {
+        const group = (TYPE_META[l.licenseType] ?? TYPE_META.OTHER).group;
+        if (jurisFilter.size > 0 && !jurisFilter.has(group)) return false;
+        if (expiryFilter !== null) {
+          const days = deriveExpiryState(l.validUntil).daysRemaining;
+          if ((days ?? Infinity) > expiryFilter) return false;
+        }
+        if (lowCapacityOnly && drawnPct(l) <= 80) return false;
+        return true;
+      }),
+    [licenses, jurisFilter, expiryFilter, lowCapacityOnly],
+  );
+
+  // ─── Columns (ported from the former LicenseCard visuals) ───────────
+
+  const columns: TradeColumn<LicenseRow>[] = [
+    {
+      key: "licenseType",
+      header: "Type & jurisdiction",
+      sortBy: (l) => (TYPE_META[l.licenseType] ?? TYPE_META.OTHER).label,
+      render: (l) => {
+        const m = TYPE_META[l.licenseType] ?? TYPE_META.OTHER;
+        return (
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-trade-text-primary">
+              {m.label}
+            </span>
+            <span className="rounded bg-trade-bg-subtle px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-trade-text-secondary ring-1 ring-trade-border-subtle">
+              {m.jurisdiction}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      key: "licenseNumber",
+      header: "Number",
+      sortBy: (l) => l.licenseNumber ?? "",
+      render: (l) => (
+        <span className="flex items-center gap-1.5">
+          <span className="font-mono text-[12px] text-trade-text-secondary">
+            {l.licenseNumber ?? "—"}
+          </span>
+          {(l.conditions as Record<string, unknown>)?.renewalOf ? (
+            <span className="rounded bg-trade-accent-soft px-1 py-0.5 text-[9px] font-bold uppercase tracking-widest text-trade-accent-strong">
+              renewal
+            </span>
+          ) : null}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      sortBy: (l) => l.status,
+      render: (l) => <LicenseStatusBadge status={l.status} />,
+    },
+    {
+      key: "validUntil",
+      header: "Expiry",
+      sortBy: (l) => deriveExpiryState(l.validUntil).sortValue,
+      render: (l) => <ExpiryBadge validUntil={l.validUntil} />,
+    },
+    {
+      key: "drawdown",
+      header: "Remaining capacity",
+      align: "right",
+      sortBy: (l) => drawnPct(l),
+      render: (l) => <DrawdownCell license={l} />,
+    },
+    {
+      key: "conditions",
+      header: "Conditions",
+      render: (l) => <ConditionsCell conditions={l.conditions} />,
+    },
+    {
+      key: "renew",
+      header: "",
+      align: "right",
+      render: (l) =>
+        deriveExpiryState(l.validUntil).isRenewalDue ? (
+          <button
+            type="button"
+            onClick={() => setRenewingId(l.id)}
+            className="rounded-md border border-trade-accent bg-trade-accent-soft px-2.5 py-1 text-[12px] font-semibold text-trade-accent-strong transition hover:bg-trade-accent hover:text-white"
+          >
+            Renew
+          </button>
+        ) : null,
+    },
+  ];
+
+  // ─── Filter pills (passed as `filters` slot) ────────────────────────
+
+  const pillClass = (active: boolean) =>
+    `rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
+      active
+        ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
+        : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
+    }`;
+
+  const filterSlot = (
+    <>
+      {/* Status (1 → server param; 2+ → client filter) */}
+      <button
+        key="__all"
+        onClick={clearStatusFilter}
+        aria-pressed={statusFilter.size === 0}
+        className={pillClass(statusFilter.size === 0)}
+      >
+        All
+      </button>
+      {STATUS_OPTIONS.map((opt) => (
+        <button
+          key={opt.key}
+          onClick={() => toggleStatusFilter(opt.key)}
+          aria-pressed={statusFilter.has(opt.key)}
+          className={pillClass(statusFilter.has(opt.key))}
+        >
+          {opt.label}
+        </button>
+      ))}
+
+      {/* Jurisdiction (client-side on TYPE_META.group) */}
+      <span className="mx-1 h-4 w-px bg-trade-border-subtle" aria-hidden />
+      {JURIS_OPTIONS.map((g) => (
+        <button
+          key={g}
+          onClick={() => toggleJurisFilter(g)}
+          aria-pressed={jurisFilter.has(g)}
+          className={pillClass(jurisFilter.has(g))}
+        >
+          {g}
+        </button>
+      ))}
+
+      {/* Expiry quick-filter (single-select; click again clears) */}
+      <span className="mx-1 h-4 w-px bg-trade-border-subtle" aria-hidden />
+      {EXPIRY_OPTIONS.map((opt) => (
+        <button
+          key={opt.key}
+          onClick={() =>
+            setExpiryFilter((cur) => (cur === opt.key ? null : opt.key))
+          }
+          aria-pressed={expiryFilter === opt.key}
+          className={pillClass(expiryFilter === opt.key)}
+        >
+          {opt.label}
+        </button>
+      ))}
+
+      {/* Capacity quick-filter */}
+      <button
+        onClick={() => setLowCapacityOnly((v) => !v)}
+        aria-pressed={lowCapacityOnly}
+        className={pillClass(lowCapacityOnly)}
+      >
+        Remaining &lt; 20%
+      </button>
+    </>
+  );
+
+  const renewing = renewingId
+    ? licenses.find((l) => l.id === renewingId)
+    : undefined;
 
   return (
     <div className="mx-auto max-w-screen-xl px-8 py-8">
@@ -202,101 +395,39 @@ export default function LicensesPage() {
         />
       )}
 
-      {/* Filters — U-HIGH-5 multi-select */}
-      <div className="mb-5 flex flex-wrap items-center gap-2">
-        <button
-          key="__all"
-          onClick={clearStatusFilter}
-          aria-pressed={statusFilter.size === 0}
-          className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
-            statusFilter.size === 0
-              ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
-              : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
-          }`}
-        >
-          All
-        </button>
-        {STATUS_OPTIONS.map((opt) => {
-          const active = statusFilter.has(opt.key);
-          return (
-            <button
-              key={opt.key}
-              onClick={() => toggleStatusFilter(opt.key)}
-              aria-pressed={active}
-              className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
-                active
-                  ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
-                  : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
-              }`}
-            >
-              {opt.label}
-            </button>
-          );
-        })}
-        {statusFilter.size > 1 ? (
-          <span className="text-[11px] text-trade-text-muted">
-            {statusFilter.size} statuses selected
-          </span>
-        ) : null}
-        <div className="ml-auto flex items-center gap-2 rounded-md border border-trade-border bg-trade-bg-panel px-3 py-1.5">
-          <Search className="h-3.5 w-3.5 text-trade-text-muted" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search license number…"
-            className="w-64 bg-transparent text-[13px] text-trade-text-primary outline-none placeholder:text-trade-text-muted"
-          />
-        </div>
-      </div>
-
-      {/* List */}
-      {loading ? (
-        <ListSkeleton rows={5} label="Loading licenses" />
-      ) : licenses.length === 0 ? (
-        <EmptyState onNew={() => setShowNew(true)} />
-      ) : (
-        <>
-          <div className="mb-2 flex items-center gap-3 px-1 text-[11px] text-trade-text-muted">
-            <label className="flex h-10 w-10 cursor-pointer items-center justify-center">
-              <input
-                type="checkbox"
-                checked={allVisibleSelected}
-                ref={(el) => {
-                  if (el) el.indeterminate = someVisibleSelected;
-                }}
-                onChange={toggleSelectAll}
-                aria-label={
-                  allVisibleSelected
-                    ? `Deselect all ${licenses.length} licenses`
-                    : `Select all ${licenses.length} licenses`
-                }
-                className="h-4 w-4 accent-trade-accent"
-              />
-            </label>
-            <span>
-              {selectedIds.size > 0
-                ? `${selectedIds.size} of ${licenses.length} selected`
-                : `${licenses.length} license${licenses.length === 1 ? "" : "s"}`}
-            </span>
-          </div>
-          <ul className="space-y-3">
-            {licenses.map((lic) => (
-              <LicenseCard
-                key={lic.id}
-                license={lic}
-                selected={selectedIds.has(lic.id)}
-                onToggleSelect={toggleSelect}
-              />
-            ))}
-          </ul>
-        </>
+      {/* Renewal panel — opens inline above the table (mirrors NewLicenseForm). */}
+      {renewing && (
+        <LicenseRenewalModal
+          prior={{
+            id: renewing.id,
+            licenseType: renewing.licenseType,
+            licenseNumber: renewing.licenseNumber,
+            validUntil: renewing.validUntil,
+            totalCapValue: renewing.totalCapValue,
+            capCurrency: renewing.capCurrency,
+            conditions: renewing.conditions,
+          }}
+          onClose={() => setRenewingId(null)}
+          onRenewed={(row) => {
+            setLicenses((prev) => [row, ...prev]);
+            setRenewingId(null);
+          }}
+        />
       )}
 
-      <BulkActionsBar
-        count={selectedIds.size}
-        onClear={clearSelection}
-        actions={
+      {/* TradeTable — owns toolbar (search + filter pills), sticky sortable
+          headers, selection checkboxes, and BulkActionsBar. Default sort =
+          expiry ascending ("soonest first"). rowHref intentionally UNSET
+          (no detail page yet → keeps the in-cell Renew button clickable). */}
+      <TradeTable<LicenseRow>
+        rows={visibleLicenses}
+        columns={columns}
+        getRowId={(l) => l.id}
+        selectable
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
+        bulkNoun="license"
+        bulkActions={
           <button
             type="button"
             onClick={handleExportSelected}
@@ -306,6 +437,16 @@ export default function LicensesPage() {
             Export CSV
           </button>
         }
+        search={{
+          value: search,
+          onChange: setSearch,
+          placeholder: "Search license number…",
+        }}
+        filters={filterSlot}
+        resultCount={visibleLicenses.length}
+        loading={loading}
+        emptyState={<EmptyState onNew={() => setShowNew(true)} />}
+        initialSort={{ key: "validUntil", dir: "asc" }}
       />
 
       <p
@@ -322,172 +463,137 @@ export default function LicensesPage() {
   );
 }
 
-// ─── License card ─────────────────────────────────────────────────────
+// ─── Cell subcomponents (local; ScreeningBadge stays parties-local) ────
 
-function LicenseCard({
-  license,
-  selected,
-  onToggleSelect,
-}: {
-  license: LicenseRow;
-  selected?: boolean;
-  onToggleSelect?: (id: string, next: boolean) => void;
-}) {
-  const typeMeta = TYPE_META[license.licenseType] ?? TYPE_META.OTHER;
-  const statusMeta = STATUS_META[license.status];
-  const StatusIcon = statusMeta.icon;
-
-  // Drawdown progress (only when totalCapValue is set)
-  const drawnPct =
-    license.totalCapValue && license.totalCapValue > 0
-      ? (license.drawnDownValue / license.totalCapValue) * 100
-      : null;
-
-  // Expiry classification
-  const expiryState = computeExpiryState(license.validUntil);
-  const showCheckbox = !!onToggleSelect;
-
+/** Status pill from STATUS_META (existing label + icon + classes). */
+function LicenseStatusBadge({ status }: { status: LicenseStatus }) {
+  const meta = STATUS_META[status];
+  const Icon = meta.icon;
   return (
-    <li
-      className={`rounded-md border bg-trade-bg-panel p-4 ${
-        selected
-          ? "border-trade-accent ring-1 ring-trade-accent/30"
-          : "border-trade-border-subtle"
-      }`}
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest ${meta.className}`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-1 items-start gap-3">
-          {showCheckbox ? (
-            <label className="flex h-10 w-6 shrink-0 cursor-pointer items-center justify-center">
-              <input
-                type="checkbox"
-                checked={!!selected}
-                onChange={(e) => onToggleSelect!(license.id, e.target.checked)}
-                aria-label={`Select license ${license.licenseNumber ?? license.licenseType}`}
-                className="h-4 w-4 accent-trade-accent"
-              />
-            </label>
-          ) : null}
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-trade-accent-soft text-trade-accent-strong">
-            <FileCheck size={20} />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[14px] font-semibold text-trade-text-primary">
-                {typeMeta.label}
-              </span>
-              <span className="rounded bg-trade-bg-subtle px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-trade-text-secondary ring-1 ring-trade-border-subtle">
-                {typeMeta.jurisdiction}
-              </span>
-              {license.licenseNumber && (
-                <span className="font-mono text-[12px] text-trade-text-secondary">
-                  {license.licenseNumber}
-                </span>
-              )}
-              {expiryState && (
-                <span
-                  className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest ring-1 ${expiryState.className}`}
-                  title={expiryState.title}
-                >
-                  <CalendarClock className="h-3 w-3" />
-                  {expiryState.label}
-                </span>
-              )}
-            </div>
-            <div className="mt-1 flex flex-wrap items-center gap-3 text-[11px] text-trade-text-muted">
-              {license.issuedAt && (
-                <span className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  Issued{" "}
-                  {new Date(license.issuedAt).toLocaleDateString("en-GB")}
-                </span>
-              )}
-              {license.validUntil && (
-                <span className="flex items-center gap-1">
-                  <CalendarClock className="h-3 w-3" />
-                  Until{" "}
-                  {new Date(license.validUntil).toLocaleDateString("en-GB")}
-                </span>
-              )}
-              <span>
-                {license._count.operations}{" "}
-                {license._count.operations === 1 ? "operation" : "operations"}{" "}
-                covered
-              </span>
-            </div>
-          </div>
-        </div>
-        <span
-          className={`flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest ${statusMeta.className}`}
-        >
-          <StatusIcon className="h-3 w-3" strokeWidth={2} />
-          {statusMeta.label}
-        </span>
-      </div>
-
-      {/* Drawdown progress */}
-      {drawnPct !== null && (
-        <div className="mt-4">
-          <div className="mb-1 flex items-baseline justify-between text-[10px] font-semibold uppercase tracking-widest text-trade-text-muted">
-            <span>Draw-Down</span>
-            <span className="font-mono">
-              {license.drawnDownValue.toLocaleString("en-GB", {
-                maximumFractionDigits: 0,
-              })}{" "}
-              /{" "}
-              {license.totalCapValue?.toLocaleString("en-GB", {
-                maximumFractionDigits: 0,
-              })}{" "}
-              {license.capCurrency} · {drawnPct.toFixed(1)}%
-            </span>
-          </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-trade-bg-subtle">
-            <div
-              className={`h-full transition-all ${
-                drawnPct >= 90
-                  ? "bg-red-500"
-                  : drawnPct >= 70
-                    ? "bg-amber-500"
-                    : "bg-trade-accent"
-              }`}
-              style={{ width: `${Math.min(100, drawnPct).toFixed(2)}%` }}
-            />
-          </div>
-        </div>
-      )}
-    </li>
+      <Icon className="h-3 w-3" strokeWidth={2} />
+      {meta.label}
+    </span>
   );
 }
 
-function computeExpiryState(
-  validUntil: string | null,
-): { label: string; className: string; title: string } | null {
-  if (!validUntil) return null;
-  const days = Math.floor(
-    (new Date(validUntil).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+/** Expiry pill driven by the pure deriveExpiryState (90/30/7 buckets). */
+function ExpiryBadge({ validUntil }: { validUntil: string | null }) {
+  const s = deriveExpiryState(validUntil);
+  // ok / no-date → nothing to flag.
+  if (s.urgency === "ok") {
+    return <span className="text-[12px] text-trade-text-muted">—</span>;
+  }
+  const cls =
+    s.urgency === "expired" || s.urgency === "critical"
+      ? "bg-red-50 text-red-700 ring-red-200"
+      : s.urgency === "warning"
+        ? "bg-amber-50 text-amber-700 ring-amber-200"
+        : "bg-trade-bg-subtle text-trade-text-secondary ring-trade-border-subtle";
+  const title =
+    s.daysRemaining !== null && s.daysRemaining < 0
+      ? `License validUntil ${validUntil}`
+      : `License expires in ${s.daysRemaining} days`;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest ring-1 ${cls}`}
+      title={title}
+    >
+      <CalendarClock className="h-3 w-3" />
+      {s.label}
+    </span>
   );
-  if (days < 0) {
-    return {
-      label: `Expired ${-days}d ago`,
-      className: "bg-red-50 text-red-700 ring-red-200",
-      title: `License validUntil ${validUntil}`,
-    };
+}
+
+/** Draw-down bar + "drawn / cap CUR · NN%" (euros), or "—" when uncapped. */
+function DrawdownCell({ license }: { license: LicenseRow }) {
+  const pct =
+    license.totalCapValue && license.totalCapValue > 0
+      ? (license.drawnDownValue / license.totalCapValue) * 100
+      : null;
+  if (pct === null) {
+    return <span className="text-[12px] text-trade-text-muted">—</span>;
   }
-  if (days <= 30) {
-    return {
-      label: `${days}d left`,
-      className: "bg-red-50 text-red-700 ring-red-200",
-      title: `License expires in ${days} days`,
-    };
+  return (
+    <div className="ml-auto w-40">
+      <div className="mb-1 text-right font-mono text-[11px] text-trade-text-secondary">
+        {license.drawnDownValue.toLocaleString("en-GB", {
+          maximumFractionDigits: 0,
+        })}{" "}
+        /{" "}
+        {license.totalCapValue?.toLocaleString("en-GB", {
+          maximumFractionDigits: 0,
+        })}{" "}
+        {license.capCurrency} · {pct.toFixed(1)}%
+      </div>
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-trade-bg-subtle">
+        <div
+          className={`h-full transition-all ${
+            pct >= 90
+              ? "bg-red-500"
+              : pct >= 70
+                ? "bg-amber-500"
+                : "bg-trade-accent"
+          }`}
+          style={{ width: `${Math.min(100, pct).toFixed(2)}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/** Compact conditions indicator ("5 codes · 3 countries · restricted"). */
+function ConditionsCell({
+  conditions,
+}: {
+  conditions: Record<string, unknown>;
+}) {
+  const codes = Array.isArray(conditions.coveredCodes)
+    ? conditions.coveredCodes
+    : [];
+  const countries = Array.isArray(conditions.coveredCountries)
+    ? conditions.coveredCountries
+    : [];
+  const restrictions = Array.isArray(conditions.endUseRestrictions)
+    ? conditions.endUseRestrictions
+    : [];
+
+  const parts: string[] = [];
+  if (codes.length)
+    parts.push(`${codes.length} code${codes.length === 1 ? "" : "s"}`);
+  if (countries.length)
+    parts.push(
+      `${countries.length} countr${countries.length === 1 ? "y" : "ies"}`,
+    );
+
+  if (parts.length === 0 && restrictions.length === 0) {
+    return <span className="text-[12px] text-trade-text-muted">none</span>;
   }
-  if (days <= 90) {
-    return {
-      label: `${days}d left`,
-      className: "bg-amber-50 text-amber-700 ring-amber-200",
-      title: `License expires in ${days} days`,
-    };
-  }
-  return null;
+
+  const title = [
+    codes.length ? `Codes: ${codes.join(", ")}` : null,
+    countries.length ? `Countries: ${countries.join(", ")}` : null,
+    restrictions.length ? `Restrictions: ${restrictions.join(", ")}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 text-[12px] text-trade-text-secondary"
+      title={title}
+    >
+      {parts.join(" · ")}
+      {restrictions.length > 0 && (
+        <span className="inline-flex items-center gap-1 text-amber-600">
+          <AlertTriangle className="h-3 w-3" />
+          restricted
+        </span>
+      )}
+    </span>
+  );
 }
 
 // ─── Empty state ──────────────────────────────────────────────────────
