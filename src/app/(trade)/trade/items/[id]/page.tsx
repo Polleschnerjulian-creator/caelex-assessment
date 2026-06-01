@@ -24,6 +24,7 @@ import {
   AlertTriangle,
   ChevronRight,
   RefreshCw,
+  Sparkles,
 } from "lucide-react";
 
 import { ClassificationPanel } from "../_components/ClassificationPanel";
@@ -383,6 +384,18 @@ export default function TradeItemDetailPage({
                 </>
               ) : (
                 <>
+                  <Link
+                    href={`/trade/astra?prefill=${encodeURIComponent(
+                      `Hilf mir, den Artikel "${item.name}"${
+                        item.internalSku ? ` (SKU ${item.internalSku})` : ""
+                      } einzustufen — welche ECCN / USML / Dual-Use-Nummer trifft zu und warum?`,
+                    )}`}
+                    className="flex items-center gap-1.5 rounded-md border border-trade-border bg-trade-bg-panel px-3 py-2 text-[12px] text-trade-text-primary transition hover:bg-trade-hover"
+                    title="Astra zur Einstufung dieses Artikels befragen"
+                  >
+                    <Sparkles className="h-3.5 w-3.5 text-trade-accent" />
+                    Astra fragen
+                  </Link>
                   <button
                     onClick={recomputeClassification}
                     disabled={recomputing}
