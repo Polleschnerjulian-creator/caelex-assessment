@@ -31,6 +31,8 @@ import { ClassificationPanel } from "../_components/ClassificationPanel";
 import type { ClassificationResult } from "../_components/ClassificationPanel";
 import { ParametricMatcherPanel } from "../_components/ParametricMatcherPanel";
 import { DeMinimisPanel } from "./_components/DeMinimisPanel";
+import { DeemedExportWarning } from "./_components/DeemedExportWarning";
+import { evaluateDeemedExportRisk } from "@/lib/trade/deemed-export";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -473,6 +475,22 @@ export default function TradeItemDetailPage({
               </div>
             </div>
           </section>
+
+          {/* Deemed-Export Guardrail — shown after classification codes where
+              the operator can see the controlled codes that drive the risk. */}
+          <div className="mb-6">
+            <DeemedExportWarning
+              risk={evaluateDeemedExportRisk({
+                isControlled: Boolean(
+                  item.eccnEU ||
+                  item.eccnUS ||
+                  item.usmlCategory ||
+                  item.mtcrCategory,
+                ),
+              })}
+              itemName={item.name}
+            />
+          </div>
 
           {/* Physical properties */}
           <section className="mb-6">
