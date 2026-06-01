@@ -4749,36 +4749,41 @@ html:not(.dark) .caelex-v2 .glass-card::after {
 }
 
 /* ════════════════════════════════════════════════════════════════════
-   CAELEX TRADE — Indigo accent product palette (Sprint T2, 2026-05-21)
+   CAELEX TRADE — Schwarz/Grau/Weiß palette (Apple × Palantir, 2026-06-01)
    ════════════════════════════════════════════════════════════════════
    Scoped to the Trade sub-app. The Trade shell adds the `.trade-themed`
    class + a `data-trade-theme="light|dark"` attribute on the document
    root via TradeThemeProvider. All `--trade-*` tokens are scoped to
    that class so they never leak into Comply/Atlas/Pharos.
 
-   Light palette is the default; dark palette inherits Linear/Apple
-   off-black surface conventions. Indigo (#6366f1 / #818cf8) is the
-   product's signature accent — chosen to clearly differentiate from
-   Comply-emerald, Atlas-cyan, and Pharos-amber. */
+   "Ruhige Kommandozentrale": Palantir-Dichte als Skelett, Apple-Klarheit
+   als Veredelung. Streng monochrom (Schwarz/Weiß/Grau) — der Akzent ist
+   ein NEUTRALES Grau: dunkler Slate #404854 im Light, helles #C5CBD3 im
+   Dark (Dark-Buttons bekommen dunklen Text via Contrast-Guard). Light ist
+   Default; Farbe trägt Bedeutung nur über die vier Status-Intents. */
 
 .trade-themed {
   /* Light (default) — aligned to the approved "Passage" mockup
      (.mockups/passage-light.html) for crisper hairlines + a softer
      selected-row fill. Palantir × Apple: cool, near-neutral grays. */
-  --trade-bg-page: #f7f8fb; /* mockup --page */
-  --trade-bg-panel: #ffffff; /* mockup --panel */
-  --trade-bg-elevated: #fafbff;
-  --trade-bg-subtle: #eceef2; /* mockup .row.on selected fill */
-  --trade-border: #ececf1; /* mockup --line */
-  --trade-border-subtle: #f1f2f6; /* mockup --line-2 */
-  --trade-border-strong: #e1e3ea; /* mockup --line-strong */
-  --trade-text-primary: #111827;
-  --trade-text-secondary: #4b5563;
-  --trade-text-muted: #6b7280;
-  --trade-accent: #6366f1; /* indigo-500 — Caelex brand accent */
-  --trade-accent-soft: #eef2ff; /* indigo-50 */
-  --trade-accent-strong: #4f46e5; /* indigo-600 */
-  --trade-hover: #f6f7f9; /* mockup .row:hover */
+  /* Design-system tokens (Apple × Palantir, Schwarz/Grau/Weiß).
+     bg.base→page, bg.surface→panel, bg.elevated→elevated,
+     bg.sunken→subtle, bg.overlay→overlay. */
+  --trade-bg-page: #f6f7f9; /* bg.base — app backdrop (recessed) */
+  --trade-bg-panel: #ffffff; /* bg.surface — cards/panels */
+  --trade-bg-elevated: #ffffff; /* bg.elevated — depth via shadow, not tint */
+  --trade-bg-subtle: #edeff2; /* bg.sunken — table head, inset areas */
+  --trade-bg-overlay: #ffffff; /* bg.overlay — modals/menus */
+  --trade-border: #dce0e5; /* border.default — card/input frames */
+  --trade-border-subtle: #edeff2; /* border.subtle — hairline dividers */
+  --trade-border-strong: #c5cbd3; /* border.strong — active edges */
+  --trade-text-primary: #16181b; /* text.primary (kein reines Schwarz) */
+  --trade-text-secondary: #5f6b7c; /* text.secondary */
+  --trade-text-muted: #6b7280; /* readable muted (placeholder = --trade-placeholder) */
+  --trade-accent: #404854; /* accent — kühles Dunkelgrau (Slate), weißer Text 8.9:1 (AAA) */
+  --trade-accent-soft: rgba(64, 72, 84, 0.09); /* accent.muted — fill */
+  --trade-accent-strong: #2f343c; /* accent.hover — dunkler */
+  --trade-hover: #f6f7f9; /* row hover */
 
   /* ──────────────────────────────────────────────────────────────
      APPLE HIG semantic tokens (Iteration 3 — based on user's
@@ -4814,9 +4819,9 @@ html:not(.dark) .caelex-v2 .glass-card::after {
   --trade-separator-opaque: #c6c6c8;
 
   /* Status (Apple semantic) — use sparingly per HIG */
-  --trade-accent-success: #34c759; /* systemGreen */
-  --trade-accent-warn: #ff9500; /* systemOrange */
-  --trade-accent-danger: #ff3b30; /* systemRed */
+  --trade-accent-success: #238551; /* Blueprint green3 */
+  --trade-accent-warn: #c87619; /* Blueprint orange3 — Status-Warnung (burnt amber) */
+  --trade-accent-danger: #cd4246; /* Blueprint red3 */
 
   /* Liquid Glass materials — alpha layered on a backdrop-blurred
      surface. Chrome-layer only (sidebar, top nav, dialogs, popovers,
@@ -4843,21 +4848,23 @@ html:not(.dark) .caelex-v2 .glass-card::after {
 
 .trade-themed[data-trade-theme="dark"],
 html[data-trade-preload="dark"] .trade-themed {
-  --trade-bg-page: #08080c;
-  --trade-bg-panel: #0c0c11;
-  --trade-bg-elevated: #14141b;
-  --trade-bg-subtle: #101016;
-  --trade-border: #1c1c24;
-  --trade-border-subtle: #16161c;
-  --trade-border-strong: #2a2a35;
-  --trade-text-primary: #fafafa;
-  --trade-text-secondary: #a1a1aa;
-  --trade-text-muted: #52525b;
-  /* Accent — indigo (Linear×Bloomberg palette, ui phase 1). */
-  --trade-accent: #6366f1;
-  --trade-accent-soft: rgba(99, 102, 241, 0.14);
-  --trade-accent-strong: #4f46e5;
-  --trade-hover: #14141b;
+  --trade-bg-page: #08090a; /* bg.base — deepest (recessed) */
+  --trade-bg-panel: #0f1011; /* bg.surface */
+  --trade-bg-elevated: #16181b; /* bg.elevated — heller = advanced (Apple) */
+  --trade-bg-subtle: #101016; /* bg.sunken */
+  --trade-bg-overlay: #1c1f22; /* bg.overlay — modals/menus */
+  --trade-border: rgba(255, 255, 255, 0.12); /* border.default */
+  --trade-border-subtle: rgba(255, 255, 255, 0.06); /* border.subtle hairline */
+  --trade-border-strong: #2f343c; /* border.strong — active edges */
+  --trade-text-primary: #f2f4f7; /* text.primary (kein reines Weiß) */
+  --trade-text-secondary: #a9b0b8; /* text.secondary */
+  --trade-text-muted: #6b7280; /* readable muted (war #52525b → AA-bump) */
+  /* Accent — kühles Hellgrau; bg-trade-accent-Buttons bekommen dunklen
+     Text via Contrast-Guard (s.u.), Links/Icons bleiben hellgrau. */
+  --trade-accent: #c5cbd3;
+  --trade-accent-soft: rgba(197, 203, 211, 0.14);
+  --trade-accent-strong: #dce0e5; /* heller bei Hover */
+  --trade-hover: #16181b;
 
   /* APPLE HIG semantic tokens — dark variants.
      Per Apple: dark mode is NOT inversion — elevated surfaces
@@ -4888,9 +4895,9 @@ html[data-trade-preload="dark"] .trade-themed {
   --trade-separator: rgba(84, 84, 88, 0.6);
   --trade-separator-opaque: #38383a;
 
-  --trade-accent-success: #30d158;
-  --trade-accent-warn: #ff9f0a;
-  --trade-accent-danger: #ff453a;
+  --trade-accent-success: #32a467; /* dark green */
+  --trade-accent-warn: #ec9a3c; /* dark amber — Status-Warnung */
+  --trade-accent-danger: #e76a6e; /* dark red */
 
   --trade-glass-ultra-thin: rgba(28, 28, 30, 0.55);
   --trade-glass-thin: rgba(28, 28, 30, 0.65);
