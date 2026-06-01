@@ -2,6 +2,10 @@ import { describe, it, expect } from "vitest";
 import {
   selectApplicationTarget,
   mapToTradeLicenseType,
+  deriveRequiredDocuments,
+  authorityPortal,
+  LIABILITY_COPY,
+  APPLICATION_DISCLAIMER,
   type EngineDetermination,
 } from "./license-application";
 
@@ -166,5 +170,85 @@ describe("mapToTradeLicenseType", () => {
         mapToTradeLicenseType(auth, lt).tradeLicenseType,
       );
     }
+  });
+});
+
+describe("deriveRequiredDocuments", () => {
+  const reqBAFA = {
+    authority: "BAFA",
+    status: "REQUIRED",
+    licenseType: "BAFA_ANTRAG",
+    jurisdiction: "Export to RU",
+    reason: "r",
+    recommendedAction: "a",
+  } as const;
+  const reqDDTC = {
+    authority: "DDTC",
+    status: "REQUIRED",
+    licenseType: "DSP5",
+    jurisdiction: "US (ITAR)",
+    reason: "r",
+    recommendedAction: "a",
+  } as const;
+  const reqDenied = {
+    authority: "BIS",
+    status: "DENIED",
+    licenseType: "SPECIFIC_LICENSE",
+    jurisdiction: "embargo",
+    reason: "Embargo",
+    recommendedAction: "stop",
+  } as const;
+
+  it("BAFA REQUIRED → includes a mandatory EUC with a /trade/euc link", () => {
+    const r = deriveRequiredDocuments({ requirement: reqBAFA, blocked: false });
+    expect(r.stopGuidance).toBeUndefined();
+    const euc = r.documents.find((d) => d.key === "EUC");
+    expect(euc?.mandatory).toBe(true);
+    expect(euc?.actionHref).toBe("/trade/euc");
+  });
+
+  it("DDTC REQUIRED → includes DS-83 / end-use statement", () => {
+    const r = deriveRequiredDocuments({ requirement: reqDDTC, blocked: false });
+    expect(
+      r.documents.some((d) => d.key === "DDTC_DS83" || d.key === "EUC"),
+    ).toBe(true);
+  });
+
+  it("blocked target → NO documents, returns stopGuidance instead", () => {
+    const r = deriveRequiredDocuments({
+      requirement: reqDenied,
+      blocked: true,
+    });
+    expect(r.documents).toHaveLength(0);
+    expect(r.stopGuidance && r.stopGuidance.length).toBeGreaterThan(0);
+  });
+});
+
+describe("authorityPortal", () => {
+  it("returns a label + url for each authority", () => {
+    expect(authorityPortal("BAFA").url).toContain("bafa");
+    expect(authorityPortal("DDTC").label.length).toBeGreaterThan(0);
+    expect(authorityPortal("BIS").url).toContain("http");
+  });
+});
+
+describe("liability copy", () => {
+  it("REVIEW/BLOCKED banner carries the mandatory phrases", () => {
+    expect(LIABILITY_COPY.verdictBanner).toMatch(/keine Rechtsberatung/i);
+    expect(LIABILITY_COPY.verdictBanner).toMatch(
+      /Verantwortung bleibt bei dir/i,
+    );
+    expect(LIABILITY_COPY.verdictBanner).toMatch(/fachkundige Freigabe/i);
+  });
+  it("GO note is honest about ongoing obligations (record-keeping)", () => {
+    expect(LIABILITY_COPY.goNote).toMatch(/5 Jahre/);
+    expect(LIABILITY_COPY.goNote).toMatch(/re-?verifizieren/i);
+  });
+  it("auto-suggest cue + application disclaimer say it's not a clearance / not submitted", () => {
+    expect(LIABILITY_COPY.autoSuggestCue).toMatch(/Vorschlag/i);
+    expect(APPLICATION_DISCLAIMER).toMatch(
+      /reicht .* NICHTS ein|nicht ein|kein.* Antrag.* eingereicht/i,
+    );
+    expect(APPLICATION_DISCLAIMER).toMatch(/keine Rechtsberatung/i);
   });
 });

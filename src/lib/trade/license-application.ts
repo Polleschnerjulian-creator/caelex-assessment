@@ -154,3 +154,150 @@ export function mapToTradeLicenseType(
       return { tradeLicenseType: "OTHER", approximate: true };
   }
 }
+
+// ─── Required-documents derivation ────────────────────────────────────
+
+export interface RequiredDoc {
+  key: string;
+  label: string;
+  why: string;
+  mandatory: boolean;
+  actionHref?: string;
+}
+
+export interface RequiredDocsResult {
+  documents: RequiredDoc[];
+  /** Set ONLY for blocked targets — replaces the docs/apply UI with a stop. */
+  stopGuidance?: string;
+}
+
+const EUC_DOC: RequiredDoc = {
+  key: "EUC",
+  label: "Endverbleibserklärung (EUC)",
+  why: "Die Behörde verlangt eine unterschriebene Endverbleibs-/Endverwendungserklärung des Endempfängers.",
+  mandatory: true,
+  actionHref: "/trade/euc",
+};
+const TECH_SPEC_DOC: RequiredDoc = {
+  key: "TECH_SPEC",
+  label: "Technische Spezifikation des Guts",
+  why: "Beleg der Gütereigenschaften für die Einstufung im Antrag.",
+  mandatory: true,
+};
+const BOM_DOC: RequiredDoc = {
+  key: "BOM",
+  label: "Stückliste / Bill of Materials",
+  why: "Stützt De-minimis / Ursprungsangaben.",
+  mandatory: false,
+};
+
+/**
+ * Per-authority required-docs lookup. Static (no external call). For a
+ * blocked target, returns NO documents and a stopGuidance string — a novice
+ * must never be invited to "prepare an application" for a hard-blocked export.
+ */
+export function deriveRequiredDocuments(
+  target: ApplicationTarget,
+): RequiredDocsResult {
+  if (target.blocked) {
+    return {
+      documents: [],
+      stopGuidance:
+        `Kein Genehmigungsantrag möglich: ${target.requirement.reason} ` +
+        `Vorgang abbrechen und Abbruch dokumentieren, Parteiidentität gegen die ` +
+        `aktuelle Liste re-verifizieren und qualifizierte Exportkontroll-Rechtsberatung ` +
+        `hinzuziehen, bevor irgendetwas unternommen wird.`,
+    };
+  }
+  switch (target.requirement.authority) {
+    case "DDTC":
+      return {
+        documents: [
+          {
+            ...EUC_DOC,
+            label: "End-Use Certificate / DSP-83",
+            key: "DDTC_DS83",
+          },
+          TECH_SPEC_DOC,
+          {
+            key: "LOE",
+            label: "Letter of Explanation + Endempfänger-Angaben",
+            why: "DDTC verlangt eine Begründung und vollständige Consignee/End-User-Angaben.",
+            mandatory: true,
+          },
+        ],
+      };
+    case "BIS":
+      return {
+        documents: [
+          {
+            key: "BIS_711",
+            label: "BIS-711 (Statement by Ultimate Consignee & Purchaser)",
+            why: "Pflichtformular für eine BIS-Einzelgenehmigung (15 CFR §748).",
+            mandatory: true,
+          },
+          TECH_SPEC_DOC,
+          {
+            key: "END_USE_STMT",
+            label: "End-Use / End-User-Erklärung",
+            why: "BIS verlangt Angaben zu Endverwendung und Endempfänger.",
+            mandatory: true,
+          },
+        ],
+      };
+    case "BAFA":
+    case "EU_COMPETENT_AUTHORITY":
+    default:
+      return { documents: [EUC_DOC, TECH_SPEC_DOC, BOM_DOC] };
+  }
+}
+
+// ─── Authority portal deep-links ──────────────────────────────────────
+
+export function authorityPortal(authority: LicenseAuthority): {
+  label: string;
+  url: string;
+} {
+  switch (authority) {
+    case "DDTC":
+      return { label: "DDTC DECCS", url: "https://www.pmddtc.state.gov/" };
+    case "BIS":
+      return { label: "BIS SNAP-R", url: "https://www.bis.doc.gov/" };
+    case "BAFA":
+    case "EU_COMPETENT_AUTHORITY":
+    default:
+      return { label: "BAFA ELAN-K2", url: "https://elan.bafa.bund.de/" };
+  }
+}
+
+// ─── Liability / over-trust copy — SINGLE SOURCE OF TRUTH ─────────────
+
+export const APPLICATION_DISCLAIMER =
+  "Caelex bereitet hier nur einen internen ENTWURF (DRAFT) vor und reicht " +
+  "bei keiner Behörde NICHTS ein — weder bei BAFA noch bei BIS oder DDTC. " +
+  "Den Antrag musst du selbst über den Behördenkanal (BAFA ELAN-K2, BIS " +
+  "SNAP-R, DDTC DECCS) einreichen und vor jeder Lieferung alle Bedingungen " +
+  "gegen den erteilten Bescheid re-verifizieren. Dies ist keine Rechtsberatung " +
+  "und ersetzt keinen qualifizierten Ausfuhrverantwortlichen. Die vorbefüllten " +
+  "Angaben sind ein Ausgangspunkt, keine Garantie — die Behörde kann andere " +
+  "Bedingungen festlegen.";
+
+export const LIABILITY_COPY = {
+  /** LOUDEST: under the verdict headline on REVIEW & BLOCKED. */
+  verdictBanner:
+    "Entscheidungsunterstützung — keine Freigabe und keine Rechtsberatung. " +
+    "Caelex klassifiziert und screent automatisch, um dir Arbeit abzunehmen — " +
+    "die Verantwortung bleibt bei dir. Bei „Prüfung nötig“ / „Verboten“ und in " +
+    "jedem Zweifelsfall vor der Lieferung fachkundige Freigabe einholen " +
+    "(qualifizierter Ausfuhrverantwortlicher / Rechtsberatung).",
+  /** HONEST GREEN: under the verdict headline on GO. */
+  goNote:
+    "Darf liefern — aber nicht „nichts tun“. Auch ohne Genehmigung gelten " +
+    "Pflichten: Ausfuhrnachweise 5 Jahre aufbewahren, EUC/Endverwendung " +
+    "dokumentieren und vor jeder Lieferung re-verifizieren (Einstufung, " +
+    "Empfänger, Ziel können sich ändern). Bei neuen Erkenntnissen erneut prüfen.",
+  /** PERSISTENT-LIGHT: inline near auto-classify / auto-screen claims. */
+  autoSuggestCue:
+    "Automatisch — als Vorschlag, nicht als Freigabe. Endgültige Einstufung " +
+    "bestätigt der Ausfuhrverantwortliche.",
+} as const;
