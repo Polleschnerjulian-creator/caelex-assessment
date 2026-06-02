@@ -65,11 +65,11 @@ export function AtlasShellV2({ children }: Props) {
       <KeyboardHelpOverlay open={kbd.helpOpen} onClose={kbd.closeHelp} />
       {/* Sprint 5b (2026-05-18) — Cmd+K Quick-Switcher (Linear-style) */}
       <CommandPalette />
-      {/* Global AI-Mode launcher: the floating Sparkles button + the
-          `atlas-ai-mode-open` event listener that the drafting pages'
-          openAIMode() calls depend on. Mounted here (as a shell peer)
-          because the legacy AtlasShell — which previously hosted it —
-          is no longer the live shell. */}
+      {/* AI-Mode host: the overlay + the `atlas-ai-mode-open` event
+          listener that the drafting pages' openAIMode() calls depend on.
+          (The floating top-right Sparkles button was removed on request,
+          2026-06-02; AI Mode now opens only via openAIMode().) Mounted
+          here as a shell peer. */}
       <AIModeLauncher />
     </div>
   );
