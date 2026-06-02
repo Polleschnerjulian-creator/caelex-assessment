@@ -25,6 +25,8 @@ import {
   Boxes,
   ScanLine,
   FileText,
+  FileCheck,
+  Users,
   Sparkles,
   Settings,
   ShieldCheck,
@@ -383,6 +385,145 @@ export const PANELS: Record<string, SectionPanel> = {
     ],
   },
 };
+
+/* ────────────────────────────────────────────────────────────────────────
+ * SIDEBAR — flat, sectioned single-sidebar nav (Neon-console shell).
+ * Replaces the rail+panel master-detail with one always-visible sidebar
+ * (icons + labels, grouped by area), like Neon's PROJECT / BRANCH / APP
+ * BACKEND. Rendered by TradeSidebarNav.tsx.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/** One icon+label row in the flat sidebar. */
+export interface SidebarNavItem {
+  label: string;
+  href: string;
+  icon: LucideIcon;
+  match: (pathname: string) => boolean;
+  /** Optional attention count key → renders a small badge when > 0. */
+  badgeKey?: keyof SidebarBadgeCounts;
+}
+
+/** A labelled group of sidebar rows. */
+export interface SidebarNavGroup {
+  label: string;
+  items: SidebarNavItem[];
+}
+
+export const SIDEBAR_GROUPS: ReadonlyArray<SidebarNavGroup> = [
+  {
+    label: "Start",
+    items: [
+      {
+        label: "Home",
+        href: "/trade",
+        icon: Home,
+        match: (p) => p === "/trade",
+      },
+      {
+        label: "Geltungsbereich",
+        href: "/trade/applicability",
+        icon: Compass,
+        match: (p) => p.startsWith("/trade/applicability"),
+      },
+      {
+        label: "Astra",
+        href: "/trade/astra",
+        icon: Sparkles,
+        match: (p) => p.startsWith("/trade/astra"),
+      },
+    ],
+  },
+  {
+    label: "Arbeit",
+    items: [
+      {
+        label: "Vorgänge",
+        href: "/trade/operations",
+        icon: Workflow,
+        match: (p) => p.startsWith("/trade/operations"),
+        badgeKey: "operationsBlocked",
+      },
+      {
+        label: "Screening",
+        href: "/trade/screening",
+        icon: ScanLine,
+        match: (p) => p.startsWith("/trade/screening"),
+        badgeKey: "partiesNeedingReview",
+      },
+    ],
+  },
+  {
+    label: "Stammdaten",
+    items: [
+      {
+        label: "Artikel",
+        href: "/trade/items",
+        icon: Boxes,
+        match: (p) =>
+          p.startsWith("/trade/items") || p.startsWith("/trade/master-data"),
+      },
+      {
+        label: "Partner",
+        href: "/trade/parties",
+        icon: Users,
+        match: (p) => p.startsWith("/trade/parties"),
+        badgeKey: "partiesNeedingReview",
+      },
+    ],
+  },
+  {
+    label: "Compliance",
+    items: [
+      {
+        label: "Lizenzen",
+        href: "/trade/licenses",
+        icon: FileCheck,
+        match: (p) => p.startsWith("/trade/licenses"),
+      },
+      {
+        label: "Dokumente",
+        href: "/trade/documents",
+        icon: FileText,
+        match: (p) =>
+          p.startsWith("/trade/documents") ||
+          p.startsWith("/trade/euc") ||
+          p.startsWith("/trade/vsd") ||
+          p.startsWith("/trade/reexport-consents") ||
+          p.startsWith("/trade/sammelgenehmigungen") ||
+          p.startsWith("/trade/france-los") ||
+          p.startsWith("/trade/uk-ecju") ||
+          p.startsWith("/trade/faa-ast") ||
+          p.startsWith("/trade/deemed-exports"),
+      },
+    ],
+  },
+];
+
+/** Bottom-pinned sidebar rows (settings, programme). */
+export const SIDEBAR_FOOTER: ReadonlyArray<SidebarNavItem> = [
+  {
+    label: "Compliance-Programm",
+    href: "/trade/program",
+    icon: ShieldCheck,
+    match: (p) => p.startsWith("/trade/program"),
+  },
+  {
+    label: "Einstellungen",
+    href: "/trade/settings",
+    icon: Settings,
+    match: (p) =>
+      p.startsWith("/trade/settings") || p.startsWith("/trade/research"),
+  },
+];
+
+/** Active sidebar item's label for a pathname (top-bar breadcrumb tail). */
+export function activeNavLabel(pathname: string): string | null {
+  for (const g of SIDEBAR_GROUPS) {
+    for (const it of g.items) if (it.match(pathname)) return it.label;
+  }
+  for (const it of SIDEBAR_FOOTER) if (it.match(pathname)) return it.label;
+  return null;
+}
 
 /**
  * Resolve the active rail key for a pathname — first RAIL item whose

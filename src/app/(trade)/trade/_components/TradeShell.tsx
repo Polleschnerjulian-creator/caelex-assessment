@@ -1,16 +1,20 @@
 "use client";
 
 /**
- * Caelex Trade — App Shell — "Passage" light two-column architecture.
+ * Caelex Trade — App Shell — "Passage" Neon-console architecture.
  *
- * Layout (per `.mockups/passage-light.html`):
- *   ┌──────┬───────────────┬──────────────────────────┐
- *   │ rail │ context panel │  content (page children) │
- *   │ 62px │    250px      │  flex-1                   │
- *   └──────┴───────────────┴──────────────────────────┘
- *   - rail  → black icon chrome (TradeRail), always dark
- *   - panel → white themed contextual nav (TradeContextPanel)
- *   - main  → md:pl-[312px] (62 + 250) so content clears both columns
+ * Layout (per `.mockups/neon-shell.html`):
+ *   ┌─────────────────────────────────────────────────┐
+ *   │ top bar (full width, sticky, 52px)              │
+ *   ├───────────────┬─────────────────────────────────┤
+ *   │ sidebar 240px │  content (page children, flex-1) │
+ *   │ (sticky)      │                                  │
+ *   └───────────────┴─────────────────────────────────┘
+ *   - top bar → TradeTopBar: brand + breadcrumb + ⌘K + Astra + help +
+ *     avatar, sticky over both columns (like Neon's top bar)
+ *   - sidebar → TradeSidebarNav: one flat, sectioned light sidebar
+ *     (icons + labels), sticky below the top bar
+ *   - main    → flex-1, document-scrolled
  *
  * THEME: the shell no longer hard-forces dark. It carries `trade-themed`
  * (which holds the `--trade-*` tokens) and lets the `data-trade-theme`
@@ -32,8 +36,8 @@ import * as React from "react";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
-import { TradeRail } from "./TradeRail";
-import { TradeContextPanel } from "./TradeContextPanel";
+import { TradeTopBar } from "./TradeTopBar";
+import { TradeSidebarNav } from "./TradeSidebarNav";
 import { TradeCommandPalette } from "./TradeCommandPalette";
 import { TradeHelpCenter } from "./TradeHelpCenter";
 import { ToastProvider } from "@/components/ui/Toast";
@@ -67,7 +71,7 @@ export function TradeShell({ org, badgeCounts, children }: Props) {
     <ToastProvider>
       <div
         lang="de"
-        className="trade-themed flex min-h-screen w-screen overflow-hidden text-trade-text-primary"
+        className="trade-themed min-h-screen w-full text-trade-text-primary"
         style={{
           background: "var(--trade-bg-page)",
           fontFamily:
@@ -83,54 +87,71 @@ export function TradeShell({ org, badgeCounts, children }: Props) {
           Zum Hauptinhalt springen
         </a>
 
-        {/* Two-column nav — black icon rail (62px) + white contextual panel
-            (250px). Both fixed to the viewport so they never scroll away on
-            long pages; main content gets md:pl-[312px] to clear them. */}
-        <aside
-          className="fixed left-0 top-0 z-30 hidden h-screen w-[62px] md:block"
-          aria-label="Trade navigation"
-        >
-          <TradeRail org={org} badgeCounts={badgeCounts} />
-        </aside>
-        <aside
-          className="fixed left-[62px] top-0 z-30 hidden h-screen w-[250px] md:block"
-          aria-label="Trade section navigation"
-        >
-          <TradeContextPanel badgeCounts={badgeCounts} />
-        </aside>
+        {/* Top bar — sticky, full width, over both the sidebar + content
+            (the Neon-console shell). 52px tall. */}
+        <div className="sticky top-0 z-40">
+          <TradeTopBar org={org} />
+        </div>
 
-        {/* Mobile drawer — hamburger button + slide-in panel below md */}
+        {/* Mobile menu button — sits in the top bar's left slot below md
+            (the top-bar logo is hidden on mobile). Opens the nav drawer. */}
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
           aria-label="Navigation öffnen"
           aria-expanded={mobileOpen}
-          className="fixed left-3 top-3 z-40 inline-flex h-10 w-10 items-center justify-center rounded-md md:hidden"
+          className="fixed left-3 top-[10px] z-50 inline-flex h-8 w-8 items-center justify-center rounded-lg md:hidden"
           style={{
             background: "var(--trade-bg-panel)",
-            border: "0.5px solid var(--trade-border)",
+            border: "1px solid var(--trade-border)",
             color: "var(--trade-text-primary)",
           }}
         >
-          <Menu size={20} aria-hidden="true" />
+          <Menu size={18} aria-hidden="true" />
         </button>
 
+        <div className="flex">
+          {/* Single sidebar — sticky below the top bar (desktop). */}
+          <aside
+            className="sticky top-[52px] hidden h-[calc(100vh-52px)] w-[240px] shrink-0 md:block"
+            aria-label="Trade navigation"
+          >
+            <TradeSidebarNav badgeCounts={badgeCounts} />
+          </aside>
+
+          {/* Main content — skip-link target + landmark. Wrapped in
+              motion.div with `pathname` as key so each route change fades in
+              (U-LOW-5). No max-width — page layouts own their gutters. */}
+          <main
+            id="main-content"
+            tabIndex={-1}
+            className="flex min-w-0 flex-1 flex-col"
+          >
+            <motion.div
+              key={pathname}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              className="flex min-w-0 flex-1 flex-col"
+            >
+              {children}
+            </motion.div>
+          </main>
+        </div>
+
+        {/* Mobile drawer — slide-in single sidebar below md */}
         {mobileOpen ? (
           <>
             <div
-              className="fixed inset-0 z-40 bg-black/40 md:hidden"
+              className="fixed inset-0 z-[45] bg-black/40 md:hidden"
               onClick={() => setMobileOpen(false)}
               aria-hidden="true"
             />
             <aside
-              className="fixed inset-y-0 left-0 z-50 flex md:hidden"
+              className="fixed inset-y-0 left-0 z-50 w-[260px] md:hidden"
               aria-label="Trade navigation (mobile)"
             >
-              {/* Rail + panel together so the mobile drawer mirrors desktop */}
-              <div className="h-full w-[62px]">
-                <TradeRail org={org} badgeCounts={badgeCounts} />
-              </div>
-              <div className="relative h-full w-[250px]">
+              <div className="relative h-full">
                 <button
                   type="button"
                   onClick={() => setMobileOpen(false)}
@@ -140,41 +161,17 @@ export function TradeShell({ org, badgeCounts, children }: Props) {
                 >
                   <X size={18} aria-hidden="true" />
                 </button>
-                <TradeContextPanel badgeCounts={badgeCounts} />
+                <TradeSidebarNav badgeCounts={badgeCounts} />
               </div>
             </aside>
           </>
         ) : null}
 
-        {/* Main content area — skip-link target + landmark.
-            md:pl-[312px] reserves the visual space the two fixed columns
-            occupy so content never slides under them on desktop.
-            Wrapped in motion.div with `pathname` as key so each route
-            change fades in (U-LOW-5). The inner div uses no max-width
-            so the existing page-level layouts continue to control
-            their own gutters. */}
-        <main
-          id="main-content"
-          tabIndex={-1}
-          className="flex min-w-0 flex-1 flex-col overflow-x-hidden md:pl-[312px]"
-        >
-          <motion.div
-            key={pathname}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
-            className="flex min-w-0 flex-1 flex-col"
-          >
-            {children}
-          </motion.div>
-        </main>
-
         {/* Global ⌘K / Ctrl+K palette — mounted once at shell level so the
           shortcut works regardless of which sub-route the user is on.
           `showPill={false}` keeps this instance invisible (keyboard +
-          `TRADE_COMMAND_EVENT` driven only); visible trigger pills live in
-          page headers (e.g. Home) and dispatch the event to open this one.
-          The component owns its own open state + key listener. */}
+          `TRADE_COMMAND_EVENT` driven only); the top bar dispatches the
+          event to open this one. */}
         <TradeCommandPalette showPill={false} />
 
         {/* Global "?" help center — same shell-level mount so the panel
