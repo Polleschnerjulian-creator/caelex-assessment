@@ -18,6 +18,7 @@ import { ArrowUpRight } from "lucide-react";
 
 export type TabKey =
   | "profile"
+  | "screening"
   | "notifications"
   | "api-keys"
   | "audit"
@@ -46,7 +47,10 @@ const SECTIONS: ReadonlyArray<NavSection> = [
   },
   {
     label: "Compliance",
-    items: [{ tab: "notifications", label: "Benachrichtigungen" }],
+    items: [
+      { tab: "screening", label: "Screening" },
+      { tab: "notifications", label: "Benachrichtigungen" },
+    ],
   },
   {
     label: "Entwickler",

@@ -5,8 +5,10 @@ import { isSuperAdmin } from "@/lib/super-admin";
 import { ensureProfile } from "@/lib/trade/settings/org-profile-service";
 import { ensurePreferences } from "@/lib/trade/settings/notification-preferences-service";
 import { listApiKeys } from "@/lib/trade/settings/api-keys-service";
+import { getEffectiveScreeningConfig } from "@/lib/trade/settings/screening-config-service";
 import { SettingsSubNav, type TabKey } from "./_components/SettingsSubNav";
 import { OrgProfileTab } from "./_components/OrgProfileTab";
+import { ScreeningTab } from "./_components/ScreeningTab";
 import { NotificationsTab } from "./_components/NotificationsTab";
 import { ApiKeysTab } from "./_components/ApiKeysTab";
 import { AuditTab } from "./_components/AuditTab";
@@ -18,6 +20,7 @@ export const metadata = {
 
 const VALID_TABS = [
   "profile",
+  "screening",
   "notifications",
   "api-keys",
   "audit",
@@ -74,10 +77,11 @@ export default async function TradeSettingsPage({
   // Fetch the data each tab needs in parallel. The non-active tabs
   // are pre-rendered too so client-side tab switches don't show
   // empty cards while data streams in.
-  const [profile, prefs, apiKeys] = await Promise.all([
+  const [profile, prefs, apiKeys, screeningConfig] = await Promise.all([
     ensureProfile(orgId),
     ensurePreferences(orgId),
     listApiKeys(orgId),
+    getEffectiveScreeningConfig(orgId),
   ]);
 
   return (
@@ -97,6 +101,9 @@ export default async function TradeSettingsPage({
 
         <div className="min-w-0 max-w-3xl flex-1">
           {activeTab === "profile" && <OrgProfileTab profile={profile} />}
+          {activeTab === "screening" && (
+            <ScreeningTab config={screeningConfig} />
+          )}
           {activeTab === "notifications" && (
             <NotificationsTab preferences={prefs} />
           )}
