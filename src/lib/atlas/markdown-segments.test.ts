@@ -26,57 +26,28 @@ describe("parseSegments", () => {
     expect(out[0]).toEqual({ type: "text", content: "" });
   });
 
-  /* NOTE: GFM pipe-table detection uses a regex `/^\s*\|?[\s:-]+\|[\s:-|]+/`
-     that matches the separator line. JS regex char-class quirks around
-     the `-` and `:` chars affect what's accepted; the prod parser
-     correctly handles real-world tables emitted by the AI, but the
-     synthetic test fixtures here happen to round-trip differently
-     depending on env. The functional integration tests (visible PDF
-     output) are the canonical correctness signal. */
-  it("preserves the body content even when table-detection differs", () => {
-    const md = `| A | B |
-|---|---|
-| 1 | 2 |`;
+  /* A-M8 regression (2026-06-02): the separator regex fix ensures compact
+     GFM table separators like |---|---| are correctly detected. Each sub-test
+     below asserts unconditionally on the now-correct behaviour. */
+
+  it("A-M8: compact GFM table is detected as exactly one table segment", () => {
+    /* Canonical compact GFM table — separator uses minimal dashes. */
+    const md = "| a | b |\n|---|---|\n| 1 | 2 |";
     const out = parseSegments(md);
-    expect(out.length).toBeGreaterThanOrEqual(1);
-    // The whole body is captured somewhere — either as text or as table.
-    const allContent = out
-      .map((s) =>
-        s.type === "text"
-          ? s.content
-          : [s.headers.join(" "), ...s.rows.map((r) => r.join(" "))].join(" "),
-      )
-      .join("\n");
-    expect(allContent).toContain("A");
-    expect(allContent).toContain("B");
-    expect(allContent).toContain("1");
-    expect(allContent).toContain("2");
+    const tableSegments = out.filter((s) => s.type === "table");
+    expect(tableSegments).toHaveLength(1);
+    const table =
+      tableSegments[0] as import("./markdown-segments").TableSegment;
+    expect(table.headers).toEqual(["a", "b"]);
+    expect(table.rows).toEqual([["1", "2"]]);
   });
 
-  /* A-M8 regression (2026-06-02): the DOCX letter-kind double-parse was
-     fixed by routing through parseSegments() as the single source of truth
-     for both text and table segments (matching the PDF and non-letter DOCX
-     paths). The key invariant: for any body, parseSegments() must partition
-     the content into non-overlapping segments where every piece of content
-     appears in EXACTLY ONE segment. The tests below verify this invariant.
-
-     Note: parseSegments() uses a regex that may classify some GFM tables
-     as text segments (when the separator line format does not match). That
-     is a separate pre-existing limitation and does NOT constitute the
-     double-parse bug — the old DOCX code produced BOTH a garbled-text
-     rendering AND a Word-table rendering in the same document. The fixed
-     code produces each piece of content exactly once, whether it ends up
-     as text or table. */
-
-  it("A-M8: content appears in exactly one segment (no duplicates)", () => {
-    /* Both text and (where detected) table content must appear once only.
-       We use a body with text + a GFM table header that has a matching
-       separator so parseSegments CAN detect it as a table segment. */
+  it("A-M8: table content is not duplicated across segments", () => {
     const body = [
       "Intro line.",
       "",
       "| A | B |",
-      "|---|---|", // separator detected by the regex (short enough)
+      "|---|---|",
       "| 1 | 2 |",
       "",
       "Outro line.",
@@ -84,28 +55,43 @@ describe("parseSegments", () => {
 
     const segments = parseSegments(body);
 
-    /* Count how many times "Intro line" appears across all segments. */
+    /* Each piece of prose must appear in exactly one segment. */
     const allText = segments.map((s) =>
       s.type === "text"
         ? s.content
         : [s.headers.join(" "), ...s.rows.map((r) => r.join(" "))].join(" "),
     );
-    const introCount = allText.filter((t) => t.includes("Intro")).length;
-    const outroCount = allText.filter((t) => t.includes("Outro")).length;
-    expect(introCount).toBe(1);
-    expect(outroCount).toBe(1);
+    expect(allText.filter((t) => t.includes("Intro")).length).toBe(1);
+    expect(allText.filter((t) => t.includes("Outro")).length).toBe(1);
+
+    /* The table must be a table segment, not a text segment. */
+    const tableSegments = segments.filter((s) => s.type === "table");
+    expect(tableSegments).toHaveLength(1);
+    const textSegments = segments.filter((s) => s.type === "text");
+    const textContent = textSegments
+      .map((s) => (s as import("./markdown-segments").TextSegment).content)
+      .join("\n");
+    /* Cell values must not bleed into surrounding text segments. */
+    expect(textContent).not.toContain("| A |");
+    expect(textContent).not.toContain("| 1 |");
   });
 
-  it("A-M8: table content does not leak into sibling text segments", () => {
-    /* When parseSegments does detect a table, the cells must NOT also
-       appear in adjacent text segments. This is the core anti-double-parse
-       invariant at the segment layer. */
+  it("A-M8: non-table pipe line (no separator row) is NOT misclassified as table", () => {
+    /* A single line with pipes but no following separator → text segment. */
+    const md = "| just text |";
+    const out = parseSegments(md);
+    const tableSegments = out.filter((s) => s.type === "table");
+    expect(tableSegments).toHaveLength(0);
+    expect(out[0].type).toBe("text");
+  });
+
+  it("A-M8: table cell content does not appear in adjacent text segments", () => {
     const uniqueToken = "UNIQUE_CELL_VALUE_XYZ";
     const body = [
       "Before table.",
       "",
-      `| H1 | H2 |`,
-      `|-----|-----|`,
+      "| H1 | H2 |",
+      "|---|---|",
       `| ${uniqueToken} | val2 |`,
       "",
       "After table.",
@@ -115,22 +101,19 @@ describe("parseSegments", () => {
     const textSegments = segments.filter((s) => s.type === "text");
     const tableSegments = segments.filter((s) => s.type === "table");
 
-    /* If parseSegments detects the table, the unique token must be in
-       exactly one segment — the table, not a text segment. */
-    if (tableSegments.length > 0) {
-      const textContent = textSegments
-        .map((s) => (s as { type: "text"; content: string }).content)
-        .join("\n");
-      expect(textContent).not.toContain(uniqueToken);
-    }
-    /* If parseSegments treats it as text (detection miss), all content
-       is in text segments — still not duplicated. Either path is fine;
-       the double-parse bug was about rendering the same table TWICE. */
+    /* Detection must now work — assert unconditionally. */
+    expect(tableSegments).toHaveLength(1);
+    const textContent = textSegments
+      .map((s) => (s as import("./markdown-segments").TextSegment).content)
+      .join("\n");
+    expect(textContent).not.toContain(uniqueToken);
+
+    /* Token appears in exactly one segment. */
     const totalOccurrences = segments.filter((s) => {
       if (s.type === "text") return s.content.includes(uniqueToken);
       return s.rows.flat().some((c) => c.includes(uniqueToken));
     }).length;
-    expect(totalOccurrences).toBeLessThanOrEqual(1);
+    expect(totalOccurrences).toBe(1);
   });
 });
 

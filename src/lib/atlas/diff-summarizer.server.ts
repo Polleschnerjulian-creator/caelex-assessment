@@ -70,7 +70,9 @@ export async function summariseDiff(params: {
 }): Promise<DiffSummary | null> {
   const setup = buildAnthropicClient();
   if (!setup) {
-    logger.warn("ANTHROPIC_API_KEY missing — atlas diff summariser disabled");
+    logger.warn(
+      "No Anthropic credentials (AI_GATEWAY_API_KEY/ANTHROPIC_API_KEY) — atlas diff summariser disabled",
+    );
     return null;
   }
   const { client, model: MODEL } = setup;

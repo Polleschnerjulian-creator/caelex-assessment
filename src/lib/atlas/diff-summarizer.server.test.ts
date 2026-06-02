@@ -134,7 +134,7 @@ describe("summariseDiff", () => {
     });
     expect(result).toBeNull();
     expect(vi.mocked(logger.warn)).toHaveBeenCalledWith(
-      expect.stringContaining("ANTHROPIC_API_KEY missing"),
+      expect.stringContaining("No Anthropic credentials"),
     );
     expect(mockCreate).not.toHaveBeenCalled();
   });

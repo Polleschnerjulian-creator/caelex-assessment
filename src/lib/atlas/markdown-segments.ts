@@ -52,7 +52,7 @@ export function parseSegments(body: string): MarkdownSegment[] {
     if (
       line.includes("|") &&
       i + 1 < lines.length &&
-      /^\s*\|?[\s:-]+\|[\s:-|]+/.test(lines[i + 1])
+      /^\s*\|?[\s:-]+\|[\s:|-]+/.test(lines[i + 1])
     ) {
       flushText();
       const headers = splitRow(line);
