@@ -188,6 +188,7 @@ export async function dispatchDeadlineWarnings(
   if (targets.length === 0) return { created: 0 };
   try {
     const deadlineIds = targets.map((t) => t.deadlineId);
+    // 20h window: with a daily cron this fires at most one reminder per deadline per day.
     const since = new Date(Date.now() - 20 * 60 * 60 * 1000);
     const recent = await prisma.atlasNotification.findMany({
       where: {

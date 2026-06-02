@@ -33,7 +33,11 @@ import { EmptyState } from "../_components/EmptyState";
 
 interface Notification {
   id: string;
-  kind: "SOURCE_AMENDED" | "JURISDICTION_UPDATE" | "ADMIN_BROADCAST";
+  kind:
+    | "SOURCE_AMENDED"
+    | "JURISDICTION_UPDATE"
+    | "ADMIN_BROADCAST"
+    | "DEADLINE_WARNING";
   title: string;
   summary: string;
   targetType: string;
@@ -74,6 +78,12 @@ const KIND_CONFIG: Record<
     bg: "bg-emerald-50",
     border: "border-emerald-200",
   },
+  DEADLINE_WARNING: {
+    icon: Bell,
+    color: "text-amber-600",
+    bg: "bg-amber-50",
+    border: "border-amber-200",
+  },
 };
 
 function formatRelativeTime(iso: string): string {
@@ -106,6 +116,12 @@ function deepLinkFor(n: Notification): string {
     if (n.targetId === "EU") return "/atlas/eu";
     if (n.targetId === "INT") return "/atlas/international";
     return `/atlas/jurisdictions/${n.targetId}`;
+  }
+  if (n.targetType === "DEADLINE") {
+    // targetId is the raw deadline UUID — there is no public
+    // /atlas/deadlines/[id] route yet, so fall back to the Atlas home
+    // rather than constructing a 404 link.
+    return "/atlas";
   }
   return "/atlas";
 }
