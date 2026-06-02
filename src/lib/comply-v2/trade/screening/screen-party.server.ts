@@ -40,11 +40,10 @@ import {
   classifyScore,
   matchByIdentifier,
   screenAgainstEntries,
-  SCORE_POTENTIAL_MATCH,
-  SCORE_WEAK_MATCH,
   type FuzzyHit,
 } from "./fuzzy-match";
 import { allLatestSnapshots } from "./snapshot-store.server";
+import { getEffectiveScreeningConfig } from "@/lib/trade/settings/screening-config-service";
 import { REGISTERED_PARSERS } from "./sync.server";
 import type { CanonicalSanctionsEntry } from "./sources/types";
 import { runCascadeForParty } from "./cascade-50pct.server";
@@ -82,9 +81,10 @@ export interface PersistableHit extends FuzzyHit {
 
 export interface ScreenPartyOptions {
   /**
-   * Override the score threshold below which hits are discarded.
-   * Default = SCORE_WEAK_MATCH (0.75). Pass POTENTIAL_MATCH (0.85)
-   * for stricter screening or 0 to capture everything (debug).
+   * Override the score threshold below which hits are discarded. When
+   * unset, the org's configured `matchThreshold` is used (0.75 if the org
+   * never changed it). Pass a higher value for stricter screening or 0 to
+   * capture everything (debug).
    */
   scoreThreshold?: number;
 
@@ -138,8 +138,25 @@ export async function screenParty(
     throw new Error(`TradeParty not found: ${partyId}`);
   }
 
-  const threshold = options.scoreThreshold ?? SCORE_WEAK_MATCH;
-  const snapshots = await allLatestSnapshots();
+  // Per-org screening config (settings → engine). Falls back to audited
+  // defaults (all lists, threshold 0.75 = SCORE_WEAK_MATCH) when no row
+  // exists, so behaviour is preserved for orgs that never touched settings.
+  const config = await getEffectiveScreeningConfig(party.organizationId);
+  // An explicit option (debug / stricter re-screen) still wins over config.
+  const threshold = options.scoreThreshold ?? config.matchThreshold;
+
+  const allSnapshots = await allLatestSnapshots();
+  // Restrict to the org's enabled lists. The config layer guarantees the
+  // critical lists are ALWAYS present (fail-closed), so this only skips
+  // optional lists the operator turned off — it can never drop a critical
+  // designated-party list. The T-H3 gate below still escalates if a
+  // critical list's snapshot is genuinely missing (infra failure).
+  const enabledSet = new Set<TradeSanctionsList>(
+    config.enabledLists as TradeSanctionsList[],
+  );
+  const snapshots = new Map(
+    [...allSnapshots].filter(([list]) => enabledSet.has(list)),
+  );
   const listsConsulted = Array.from(snapshots.keys());
 
   // No snapshots at all — cron hasn't completed any successful sync yet.

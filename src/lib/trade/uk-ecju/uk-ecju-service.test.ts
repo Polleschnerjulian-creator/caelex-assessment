@@ -34,25 +34,41 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { mockFindMany, mockFindFirst, mockCreate, mockUpdate } = vi.hoisted(
-  () => ({
-    mockFindMany: vi.fn(),
-    mockFindFirst: vi.fn(),
-    mockCreate: vi.fn(),
-    mockUpdate: vi.fn(),
-  }),
-);
-
-vi.mock("@/lib/prisma", () => ({
-  prisma: {
-    tradeUkEcjuLicense: {
-      findMany: mockFindMany,
-      findFirst: mockFindFirst,
-      create: mockCreate,
-      update: mockUpdate,
-    },
-  },
+const {
+  mockFindMany,
+  mockFindFirst,
+  mockCreate,
+  mockUpdate,
+  mockUpdateMany,
+  mockFindFirstOrThrow,
+} = vi.hoisted(() => ({
+  mockFindMany: vi.fn(),
+  mockFindFirst: vi.fn(),
+  mockCreate: vi.fn(),
+  mockUpdate: vi.fn(),
+  mockUpdateMany: vi.fn(),
+  mockFindFirstOrThrow: vi.fn(),
 }));
+
+vi.mock("@/lib/prisma", () => {
+  const tradeUkEcjuLicense = {
+    findMany: mockFindMany,
+    findFirst: mockFindFirst,
+    create: mockCreate,
+    update: mockUpdate,
+    updateMany: mockUpdateMany,
+    findFirstOrThrow: mockFindFirstOrThrow,
+  };
+  return {
+    prisma: {
+      tradeUkEcjuLicense,
+      // recordDrawDown wraps its read-guard-write in a transaction; the mock
+      // runs the callback with the same mocked client as `tx`.
+      $transaction: async (fn: (tx: unknown) => unknown) =>
+        fn({ tradeUkEcjuLicense }),
+    },
+  };
+});
 
 import {
   listUkEcjuLicenses,
@@ -327,15 +343,23 @@ describe("recordDrawDown", () => {
       drawnDownValueGbp: BigInt(1000),
       capValueGbp: BigInt(10000),
     });
+    mockUpdateMany.mockResolvedValue({ count: 1 });
+    mockFindFirstOrThrow.mockResolvedValue({
+      drawnDownValueGbp: BigInt(3000),
+      capValueGbp: BigInt(10000),
+    });
     mockUpdate.mockResolvedValue({
       ...baseLicense,
       status: "APPROVED",
       drawnDownValueGbp: BigInt(3000),
     });
     await recordDrawDown("org_1", "lic_1", "op_99", BigInt(2000));
-    const call = mockUpdate.mock.calls[0][0];
-    expect(call.data.drawnDownValueGbp).toBe(BigInt(3000));
-    expect(call.data.status).toBe("APPROVED");
+    // increment applied atomically via a cap-guarded updateMany …
+    const um = mockUpdateMany.mock.calls[0][0];
+    expect(um.data.drawnDownValueGbp).toEqual({ increment: BigInt(2000) });
+    expect(um.where.drawnDownValueGbp).toEqual({ lte: BigInt(8000) });
+    // … post-increment total (3000 < 10000) keeps it APPROVED.
+    expect(mockUpdate.mock.calls[0][0].data.status).toBe("APPROVED");
   });
 
   it("flips to EXHAUSTED when cap reached", async () => {
@@ -345,15 +369,31 @@ describe("recordDrawDown", () => {
       drawnDownValueGbp: BigInt(9000),
       capValueGbp: BigInt(10000),
     });
-    mockUpdate.mockResolvedValue({
-      ...baseLicense,
-      status: "EXHAUSTED",
-      drawnDownValueGbp: BigInt(10500),
+    mockUpdateMany.mockResolvedValue({ count: 1 });
+    mockFindFirstOrThrow.mockResolvedValue({
+      drawnDownValueGbp: BigInt(10000),
+      capValueGbp: BigInt(10000),
     });
-    await recordDrawDown("org_1", "lic_1", "op_99", BigInt(1500));
-    const call = mockUpdate.mock.calls[0][0];
-    expect(call.data.status).toBe("EXHAUSTED");
-    expect(call.data.drawnDownValueGbp).toBe(BigInt(10500));
+    mockUpdate.mockResolvedValue({ ...baseLicense, status: "EXHAUSTED" });
+    await recordDrawDown("org_1", "lic_1", "op_99", BigInt(1000));
+    expect(mockUpdate.mock.calls[0][0].data.status).toBe("EXHAUSTED");
+  });
+
+  it("rejects an over-cap draw-down (no silent overdraw)", async () => {
+    mockFindFirst.mockResolvedValue({
+      ...baseLicense,
+      status: "APPROVED",
+      drawnDownValueGbp: BigInt(9000),
+      capValueGbp: BigInt(10000),
+    });
+    // cap-guarded updateMany matches 0 rows → headroom exceeded by a
+    // concurrent draw or this single over-cap draw.
+    mockUpdateMany.mockResolvedValue({ count: 0 });
+    await expect(
+      recordDrawDown("org_1", "lic_1", "op_99", BigInt(2000)),
+    ).rejects.toThrow(/exceed licence cap/);
+    // never writes the over-cap total
+    expect(mockUpdate).not.toHaveBeenCalled();
   });
 
   it("throws on cross-org licence id", async () => {

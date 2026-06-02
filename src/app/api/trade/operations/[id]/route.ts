@@ -251,9 +251,32 @@ export async function PATCH(
       updates.closedAt = new Date();
     }
 
-    const operation = await prisma.tradeOperation.update({
-      where: { id },
+    // Atomic guard against a status-transition TOCTOU: re-assert the status
+    // we validated against (and the org) in the WHERE, so a concurrent PATCH
+    // can't silently clobber a just-committed transition (e.g. a BLOCKED
+    // decision flipped back to AWAITING_LICENSE). count 0 ⇒ the row moved
+    // under us ⇒ 409 retry. The status guard only applies when this PATCH
+    // actually changes status; non-status edits stay org-scoped.
+    const guardOnStatus = Boolean(
+      data.status && data.status !== existing.status,
+    );
+    const writeResult = await prisma.tradeOperation.updateMany({
+      where: guardOnStatus
+        ? { id, organizationId, status: existing.status }
+        : { id, organizationId },
       data: updates,
+    });
+    if (writeResult.count === 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Operation was modified concurrently — please reload and retry.",
+        },
+        { status: 409 },
+      );
+    }
+    const operation = await prisma.tradeOperation.findFirstOrThrow({
+      where: { id, organizationId },
     });
 
     logger.info(

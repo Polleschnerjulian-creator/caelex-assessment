@@ -45,6 +45,7 @@ import {
   type TradeApiKeyScope,
   type CreatedTradeApiKey,
 } from "@/lib/trade/settings/api-keys-service";
+import { updateScreeningConfig } from "@/lib/trade/settings/screening-config-service";
 
 export type ActionResult =
   | { ok: true }
@@ -390,6 +391,53 @@ export async function revokeTradeApiKey(
     return {
       ok: false,
       error: "Unexpected error while revoking key — please try again",
+    };
+  }
+}
+
+// ─── Screening configuration ───────────────────────────────────────────
+
+const screeningSchema = z.object({
+  enabledLists: z.array(z.string()),
+  matchThreshold: z.coerce.number(),
+  autoBlockOnConfirmedHit: z.boolean(),
+  reScreenIntervalDays: z.union([z.coerce.number(), z.null()]),
+});
+
+export type ScreeningInput = z.input<typeof screeningSchema>;
+
+export async function updateScreening(
+  input: ScreeningInput,
+): Promise<ActionResult> {
+  try {
+    const ctx = await resolveActionContext();
+    assertSettingsEditor(ctx.role);
+
+    const parsed = screeningSchema.safeParse(input);
+    if (!parsed.success) {
+      return {
+        ok: false,
+        error: "Some fields are invalid",
+        fieldErrors: parsed.error.flatten().fieldErrors as Record<
+          string,
+          string[]
+        >,
+      };
+    }
+
+    // The service normalises (clamps the threshold, drops unknown list
+    // keys, coerces the cadence), so nothing out-of-range is persisted.
+    await updateScreeningConfig(ctx.orgId, parsed.data, ctx.userId);
+    revalidatePath("/trade/settings");
+    return { ok: true };
+  } catch (err) {
+    if (err instanceof ActionError) {
+      return { ok: false, error: err.publicMessage };
+    }
+    logger.error("settings-actions: updateScreening failed", err);
+    return {
+      ok: false,
+      error: "Unexpected error while saving — please try again",
     };
   }
 }

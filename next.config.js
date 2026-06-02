@@ -225,6 +225,12 @@ const nextConfig = {
   experimental: {
     // Type-safe server actions
     typedRoutes: false, // Enable when ready
+    // Build-memory (Next 15 OOM mitigation): keep webpack's peak heap low
+    // during "Creating an optimized production build". The app grew past
+    // the 8 GB Vercel container ceiling (Phase 3–5 added ~30 components +
+    // routes) and SIGKILL'd at compile. This trades a little build time for
+    // a much lower memory peak — pairs with cpus:1 below.
+    webpackMemoryOptimizations: true,
     // Limit server action body size to 10MB (prevents abuse)
     serverActions: {
       bodySizeLimit: "10mb",

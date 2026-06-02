@@ -24,12 +24,17 @@ import {
   AlertTriangle,
   ChevronRight,
   RefreshCw,
+  Sparkles,
 } from "lucide-react";
 
 import { ClassificationPanel } from "../_components/ClassificationPanel";
 import type { ClassificationResult } from "../_components/ClassificationPanel";
 import { ParametricMatcherPanel } from "../_components/ParametricMatcherPanel";
 import { DeMinimisPanel } from "./_components/DeMinimisPanel";
+import { DeemedExportWarning } from "./_components/DeemedExportWarning";
+import { evaluateDeemedExportRisk } from "@/lib/trade/deemed-export";
+import { ClassificationCoverageNote } from "../../_components/ClassificationCoverageNote";
+import { assessItemClassificationHonesty } from "@/lib/trade/classification-coverage";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -383,6 +388,18 @@ export default function TradeItemDetailPage({
                 </>
               ) : (
                 <>
+                  <Link
+                    href={`/trade/astra?prefill=${encodeURIComponent(
+                      `Hilf mir, den Artikel "${item.name}"${
+                        item.internalSku ? ` (SKU ${item.internalSku})` : ""
+                      } einzustufen — welche ECCN / USML / Dual-Use-Nummer trifft zu und warum?`,
+                    )}`}
+                    className="flex items-center gap-1.5 rounded-md border border-trade-border bg-trade-bg-panel px-3 py-2 text-[12px] text-trade-text-primary transition hover:bg-trade-hover"
+                    title="Astra zur Einstufung dieses Artikels befragen"
+                  >
+                    <Sparkles className="h-3.5 w-3.5 text-trade-accent" />
+                    Astra fragen
+                  </Link>
                   <button
                     onClick={recomputeClassification}
                     disabled={recomputing}
@@ -460,6 +477,45 @@ export default function TradeItemDetailPage({
               </div>
             </div>
           </section>
+
+          {/* Classification Honesty Note — shown when there are no codes and the
+              item is not yet fully classified. Returns null for controlled items
+              (DeemedExportWarning handles those) and for ARCHIVED items. */}
+          {(() => {
+            const hasCodes = Boolean(
+              item.eccnEU ||
+              item.eccnUS ||
+              item.usmlCategory ||
+              item.mtcrCategory,
+            );
+            const coverageVerdict = assessItemClassificationHonesty({
+              status: item.status,
+              hasCodes,
+            });
+            return coverageVerdict ? (
+              <div className="mb-6">
+                <ClassificationCoverageNote verdict={coverageVerdict} />
+              </div>
+            ) : null;
+          })()}
+
+          {/* Deemed-Export Guardrail — shown after classification codes where
+              the operator can see the controlled codes that drive the risk.
+              Only renders for controlled items (risk.level !== "none"), so
+              it and the coverage note above are mutually exclusive. */}
+          <div className="mb-6">
+            <DeemedExportWarning
+              risk={evaluateDeemedExportRisk({
+                isControlled: Boolean(
+                  item.eccnEU ||
+                  item.eccnUS ||
+                  item.usmlCategory ||
+                  item.mtcrCategory,
+                ),
+              })}
+              itemName={item.name}
+            />
+          </div>
 
           {/* Physical properties */}
           <section className="mb-6">

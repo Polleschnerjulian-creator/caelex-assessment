@@ -18,26 +18,21 @@
  * page title for compliance jargon clarity, but the URL slug uses
  * "parties" (matching the existing /trade/parties skeleton + the API
  * /api/trade/parties).
+ *
+ * UI Phase 3A: bespoke list replaced with TradeTable<PartyRow>.
  */
 
-import { useCallback, useEffect, useState, type ReactNode } from "react";
-import Link from "next/link";
-import { ListSkeleton } from "../_components/Skeletons";
-import { tradeStatusLabel } from "@/lib/trade/format";
+import { useCallback, useEffect, useState } from "react";
 import { EmptyStateRich } from "../_components/EmptyStateRich";
 import { Term } from "../_components/Term";
-import { BulkActionsBar } from "../_components/BulkActionsBar";
 import { buildCsv, downloadCsv } from "@/lib/trade/csv-export";
 import { useToast } from "@/components/ui/Toast";
+import { TradeTable, type TradeColumn } from "../_components/TradeTable";
+import { ScreeningBadge } from "../_components/ScreeningBadge";
 import {
-  Search,
   Plus,
   Shield,
-  ShieldAlert,
-  ShieldCheck,
-  AlertTriangle,
   Globe,
-  ChevronRight,
   X,
   Package,
   Workflow,
@@ -87,24 +82,9 @@ export default function CounterpartiesListPage() {
   }, []);
   const clearScreeningFilter = useCallback(() => setFilter(new Set()), []);
   const [showNewForm, setShowNewForm] = useState(false);
-  // U-CRIT-5 — bulk-select state.
+  // U-CRIT-5 — bulk-select state (owned by page, passed to TradeTable).
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const toast = useToast();
-  const toggleSelect = useCallback((id: string, next: boolean) => {
-    setSelectedIds((prev) => {
-      const out = new Set(prev);
-      if (next) out.add(id);
-      else out.delete(id);
-      return out;
-    });
-  }, []);
-  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
-  const toggleSelectAll = useCallback(() => {
-    setSelectedIds((prev) => {
-      if (prev.size === parties.length && parties.length > 0) return new Set();
-      return new Set(parties.map((p) => p.id));
-    });
-  }, [parties]);
 
   useEffect(() => {
     let cancelled = false;
@@ -166,27 +146,131 @@ export default function CounterpartiesListPage() {
     );
   };
 
-  const allVisibleSelected =
-    parties.length > 0 && selectedIds.size === parties.length;
-  const someVisibleSelected = selectedIds.size > 0 && !allVisibleSelected;
+  // ─── Column definitions ─────────────────────────────────────────────
+  // Each column ports the exact visuals from the former PartyRowItem.
+
+  const columns: TradeColumn<PartyRow>[] = [
+    {
+      key: "screeningStatus",
+      header: "Screening",
+      sortBy: (p) => p.screeningStatus,
+      render: (p) => <ScreeningBadge status={p.screeningStatus} />,
+    },
+    {
+      key: "legalName",
+      header: "Legal name",
+      sortBy: (p) => p.legalName.toLowerCase(),
+      render: (p) => (
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="truncate text-[13px] font-semibold text-trade-text-primary">
+              {p.legalName}
+            </span>
+            {p.tradeName && (
+              <span className="text-[11px] text-trade-text-muted">
+                ({p.tradeName})
+              </span>
+            )}
+            {p.status === "BLOCKED" && (
+              <span className="rounded bg-red-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-red-700 ring-1 ring-red-200">
+                Blocked
+              </span>
+            )}
+          </div>
+          <div className="mt-0.5 flex items-center gap-2 text-[11px] text-trade-text-muted">
+            <Globe className="h-3 w-3" />
+            {p.countryCode}
+            {p.isHighRiskCountry && (
+              <span className="text-amber-600">· high-risk</span>
+            )}
+            {p.isUSPerson && <span>· US person</span>}
+            {p.lastScreenedAt && (
+              <span>
+                · screened{" "}
+                {new Date(p.lastScreenedAt).toLocaleDateString("en-GB")}
+              </span>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "countryCode",
+      header: "Country",
+      sortBy: (p) => p.countryCode,
+      render: (p) => (
+        <span className="text-[13px] text-trade-text-secondary">
+          {p.countryCode}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      sortBy: (p) => p.status,
+      render: (p) =>
+        p.status === "BLOCKED" ? (
+          <span className="rounded bg-red-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-red-700 ring-1 ring-red-200">
+            Blocked
+          </span>
+        ) : p.status === "ARCHIVED" ? (
+          <span className="rounded bg-trade-bg-elevated px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-trade-text-muted ring-1 ring-trade-border">
+            Archived
+          </span>
+        ) : (
+          <span className="text-[12px] text-trade-text-muted">Active</span>
+        ),
+    },
+  ];
+
+  // ─── Filter pills (passed as `filters` slot) ────────────────────────
+
+  const filterSlot = (
+    <>
+      <button
+        key="__all"
+        onClick={clearScreeningFilter}
+        aria-pressed={filter.size === 0}
+        className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
+          filter.size === 0
+            ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
+            : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
+        }`}
+      >
+        All
+      </button>
+      {SCREENING_OPTIONS.map((opt) => {
+        const active = filter.has(opt.key);
+        return (
+          <button
+            key={opt.key}
+            onClick={() => toggleScreeningFilter(opt.key)}
+            aria-pressed={active}
+            className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
+              active
+                ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
+                : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
+            }`}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+      {filter.size > 1 ? (
+        <span className="text-[11px] text-trade-text-muted">
+          {filter.size} statuses selected
+        </span>
+      ) : null}
+    </>
+  );
 
   return (
     <div className="mx-auto max-w-screen-2xl px-8 py-8">
       {/* Header */}
-      <header className="mb-7 flex items-end justify-between gap-6 border-b border-trade-border-subtle pb-5">
+      <header className="mb-6 flex items-end justify-between gap-6">
         <div className="min-w-0">
-          <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-trade-text-muted">
-            <Link
-              href="/trade"
-              className="transition hover:text-trade-text-primary"
-            >
-              Trade Operations
-            </Link>{" "}
-            <span className="text-trade-border-strong">/</span>{" "}
-            <span className="text-trade-text-secondary">Counterparties</span>
-          </div>
           <h1 className="text-[28px] font-bold leading-tight tracking-tight text-trade-text-primary">
-            Counterparty Screening
+            Partner
           </h1>
           <p className="mt-1.5 max-w-2xl text-[14px] text-trade-text-secondary">
             OFAC SDN, BIS Entity List, DDTC Debarred — fuzzy-match
@@ -197,17 +281,17 @@ export default function CounterpartiesListPage() {
           onClick={() => setShowNewForm((s) => !s)}
           className={
             showNewForm
-              ? "flex shrink-0 items-center gap-2 rounded-md border border-red-200 bg-red-50 px-4 py-2.5 text-[13px] font-semibold text-red-700 transition hover:bg-red-100"
-              : "flex shrink-0 items-center gap-2 rounded-md bg-trade-accent px-4 py-2.5 text-[13px] font-semibold text-white transition hover:bg-trade-accent-strong"
+              ? "flex shrink-0 items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-[13px] font-medium text-red-700 transition hover:bg-red-100"
+              : "flex shrink-0 items-center gap-2 rounded-lg bg-trade-text-primary px-4 py-2 text-[13px] font-medium text-trade-bg-panel transition hover:opacity-90"
           }
         >
           {showNewForm ? (
             <>
-              <X className="h-3.5 w-3.5" /> Cancel
+              <X className="h-3.5 w-3.5" /> Abbrechen
             </>
           ) : (
             <>
-              <Plus className="h-3.5 w-3.5" /> New Counterparty
+              <Plus className="h-3.5 w-3.5" /> Neuer Partner
             </>
           )}
         </button>
@@ -230,104 +314,18 @@ export default function CounterpartiesListPage() {
         />
       )}
 
-      {/* Filters — U-HIGH-5 multi-select */}
-      <div className="mb-5 flex flex-wrap items-center gap-2">
-        <button
-          key="__all"
-          onClick={clearScreeningFilter}
-          aria-pressed={filter.size === 0}
-          className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
-            filter.size === 0
-              ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
-              : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
-          }`}
-        >
-          All
-        </button>
-        {SCREENING_OPTIONS.map((opt) => {
-          const active = filter.has(opt.key);
-          return (
-            <button
-              key={opt.key}
-              onClick={() => toggleScreeningFilter(opt.key)}
-              aria-pressed={active}
-              className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
-                active
-                  ? "border border-trade-accent bg-trade-accent-soft text-trade-accent-strong"
-                  : "border border-trade-border-subtle bg-trade-bg-panel text-trade-text-secondary hover:bg-trade-hover hover:text-trade-text-primary"
-              }`}
-            >
-              {opt.label}
-            </button>
-          );
-        })}
-        {filter.size > 1 ? (
-          <span className="text-[11px] text-trade-text-muted">
-            {filter.size} statuses selected
-          </span>
-        ) : null}
-        <div className="ml-auto flex items-center gap-2 rounded-md border border-trade-border bg-trade-bg-panel px-3 py-1.5">
-          <Search className="h-3.5 w-3.5 text-trade-text-muted" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name…"
-            className="w-64 bg-transparent text-[13px] text-trade-text-primary outline-none placeholder:text-trade-text-muted"
-          />
-        </div>
-      </div>
-
-      {/* List */}
-      {loading ? (
-        <ListSkeleton rows={5} label="Loading counterparties" />
-      ) : parties.length === 0 ? (
-        <EmptyState onNew={() => setShowNewForm(true)} />
-      ) : (
-        <>
-          {/* Select-all header row (U-CRIT-5). */}
-          <div className="mb-2 flex items-center gap-3 px-1 text-[11px] text-trade-text-muted">
-            <label className="flex h-10 w-10 cursor-pointer items-center justify-center">
-              <input
-                type="checkbox"
-                checked={allVisibleSelected}
-                ref={(el) => {
-                  if (el) el.indeterminate = someVisibleSelected;
-                }}
-                onChange={toggleSelectAll}
-                aria-label={
-                  allVisibleSelected
-                    ? `Deselect all ${parties.length} counterparties`
-                    : `Select all ${parties.length} counterparties`
-                }
-                className="h-4 w-4 accent-trade-accent"
-              />
-            </label>
-            <span>
-              {selectedIds.size > 0
-                ? `${selectedIds.size} of ${parties.length} selected`
-                : `${parties.length} counterpart${parties.length === 1 ? "y" : "ies"}`}
-            </span>
-          </div>
-          <div className="overflow-hidden rounded-md border border-trade-border-subtle">
-            {parties.map((p, i) => (
-              <PartyRowItem
-                key={p.id}
-                party={p}
-                isFirst={i === 0}
-                selected={selectedIds.has(p.id)}
-                onToggleSelect={toggleSelect}
-              />
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* Bulk actions bar */}
-      <BulkActionsBar
-        count={selectedIds.size}
-        onClear={clearSelection}
-        actions={
+      {/* TradeTable — owns toolbar (search + filter pills), sticky sortable
+          headers, selection checkboxes, and BulkActionsBar. */}
+      <TradeTable<PartyRow>
+        rows={parties}
+        columns={columns}
+        getRowId={(p) => p.id}
+        rowHref={(p) => `/trade/parties/${p.id}`}
+        selectable
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
+        bulkNoun="counterparty"
+        bulkActions={
           <button
             type="button"
             onClick={handleExportSelected}
@@ -337,6 +335,15 @@ export default function CounterpartiesListPage() {
             Export CSV
           </button>
         }
+        search={{
+          value: search,
+          onChange: setSearch,
+          placeholder: "Search counterparties…",
+        }}
+        filters={filterSlot}
+        resultCount={parties.length}
+        loading={loading}
+        emptyState={<EmptyState onNew={() => setShowNewForm(true)} />}
       />
 
       {/* Mandatory disclaimer */}
@@ -356,144 +363,12 @@ export default function CounterpartiesListPage() {
 
 // ─── Subcomponents ───────────────────────────────────────────────────
 
-function PartyRowItem({
-  party,
-  isFirst,
-  selected,
-  onToggleSelect,
-}: {
-  party: PartyRow;
-  isFirst: boolean;
-  selected?: boolean;
-  onToggleSelect?: (id: string, next: boolean) => void;
-}) {
-  const showCheckbox = !!onToggleSelect;
-  return (
-    <div
-      className={`group flex items-center bg-trade-bg-panel transition hover:bg-trade-bg-elevated ${
-        isFirst ? "" : "border-t border-trade-border-subtle"
-      } ${selected ? "bg-trade-accent-soft/40" : ""}`}
-    >
-      {showCheckbox ? (
-        <label className="flex h-full w-10 shrink-0 cursor-pointer items-center justify-center self-stretch">
-          <input
-            type="checkbox"
-            checked={!!selected}
-            onChange={(e) => onToggleSelect!(party.id, e.target.checked)}
-            aria-label={`Select ${party.legalName}`}
-            className="h-4 w-4 accent-trade-accent"
-          />
-        </label>
-      ) : null}
-      <Link
-        href={`/trade/parties/${party.id}`}
-        className="flex flex-1 items-center gap-4 px-5 py-4"
-      >
-        <ScreeningBadge status={party.screeningStatus} />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <div className="truncate text-[13px] font-semibold text-trade-text-primary">
-              {party.legalName}
-            </div>
-            {party.tradeName && (
-              <span className="text-[11px] text-trade-text-muted">
-                ({party.tradeName})
-              </span>
-            )}
-            {party.status === "BLOCKED" && (
-              <span className="rounded bg-red-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-red-700 ring-1 ring-red-200">
-                Blocked
-              </span>
-            )}
-          </div>
-          <div className="mt-0.5 flex items-center gap-2 text-[11px] text-trade-text-muted">
-            <Globe className="h-3 w-3" />
-            {party.countryCode}
-            {party.isHighRiskCountry && (
-              <span className="text-amber-600">· high-risk</span>
-            )}
-            {party.isUSPerson && <span>· US person</span>}
-            {party.lastScreenedAt && (
-              <span>
-                · screened{" "}
-                {new Date(party.lastScreenedAt).toLocaleDateString("en-GB")}
-              </span>
-            )}
-          </div>
-        </div>
-        <ChevronRight className="h-4 w-4 shrink-0 text-trade-text-muted opacity-0 transition group-hover:opacity-100" />
-      </Link>
-    </div>
-  );
-}
-
-function ScreeningBadge({ status }: { status: PartyRow["screeningStatus"] }) {
-  const className = "h-5 w-5 shrink-0";
-  // Humanized label powers tooltips AND screen-reader announcements.
-  // Without it, icon-only badges are invisible to assistive tech.
-  // Wrapping in <span title=...> guarantees a visible browser tooltip
-  // across all browsers — title on raw <svg> isn't universally honored.
-  const label = `Screening status: ${tradeStatusLabel(status)}`;
-  const a11yProps = {
-    role: "img" as const,
-    "aria-label": label,
-  };
-  const wrap = (icon: ReactNode) => (
-    <span title={label} className="inline-flex">
-      {icon}
-    </span>
-  );
-  if (status === "CLEAR") {
-    return wrap(
-      <ShieldCheck
-        {...a11yProps}
-        className={`${className} text-emerald-600`}
-        strokeWidth={1.75}
-      />,
-    );
-  }
-  if (status === "POTENTIAL_MATCH") {
-    return wrap(
-      <AlertTriangle
-        {...a11yProps}
-        className={`${className} text-amber-500`}
-        strokeWidth={1.75}
-      />,
-    );
-  }
-  if (status === "CONFIRMED_HIT") {
-    return wrap(
-      <ShieldAlert
-        {...a11yProps}
-        className={`${className} text-red-600`}
-        strokeWidth={1.75}
-      />,
-    );
-  }
-  if (status === "STALE") {
-    return wrap(
-      <Shield
-        {...a11yProps}
-        className={`${className} text-orange-500`}
-        strokeWidth={1.75}
-      />,
-    );
-  }
-  return wrap(
-    <Shield
-      {...a11yProps}
-      className={`${className} text-trade-text-muted`}
-      strokeWidth={1.5}
-    />,
-  );
-}
-
 function EmptyState({ onNew }: { onNew: () => void }) {
   return (
     <EmptyStateRich
       icon={Shield}
-      title="No counterparties yet"
-      description="Add a counterparty to screen against OFAC SDN, BIS Entity, DDTC Debarred, UK OFSI, and UN Consolidated. Hits surface immediately with audit-grade snapshots."
+      title="Noch keine Partner"
+      description="Lege einen Partner an, um gegen OFAC SDN, BIS Entity, DDTC Debarred, UK OFSI und UN Consolidated zu screenen. Treffer erscheinen sofort mit prüfsicheren Snapshots."
       primaryAction={{ label: "Add first counterparty", onClick: onNew }}
       astra={{
         label: "Ask Astra about screening",

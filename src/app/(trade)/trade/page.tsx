@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isSuperAdmin } from "@/lib/super-admin";
@@ -10,11 +11,12 @@ import { ActionInboxPanel } from "./_components/ActionInboxPanel";
 import { assembleDeadlines } from "./_components/UpcomingDeadlinesStrip";
 import { HomeHero } from "./_components/HomeHero";
 import { HomeOnboarding } from "./_components/HomeOnboarding";
+import { ApplicabilityGateBanner } from "./_components/ApplicabilityGateBanner";
 import { MiniStatsStrip } from "./_components/MiniStatsStrip";
 import { TradeCommandTrigger } from "./_components/TradeCommandTrigger";
 
 export const metadata = {
-  title: "Caelex Trade — Dashboard",
+  title: "Passage — Dashboard",
 };
 
 /**
@@ -81,6 +83,8 @@ export default async function TradeDashboardPage() {
     awaitingEucRows,
     partiesNeedingReviewRows,
     vsdsDiscoveredRows,
+    // ── Applicability front-door state (gate banner vs "dein Geltungsbereich") ──
+    applicabilityProfile,
   ] = await Promise.all([
     prisma.organization.findUnique({
       where: { id: orgId },
@@ -238,6 +242,15 @@ export default async function TradeDashboardPage() {
       orderBy: { discoveredAt: "asc" },
       take: 20,
     }),
+    // Applicability front-door: completion marker gates the home banner; the
+    // persisted regime tags feed the "dein Geltungsbereich" summary chip.
+    prisma.tradeOrgProfile.findUnique({
+      where: { organizationId: orgId },
+      select: {
+        applicabilityCompletedAt: true,
+        preferredRegimesJson: true,
+      },
+    }),
   ]);
 
   // Reshape group-by results into lookup maps.
@@ -366,6 +379,17 @@ export default async function TradeDashboardPage() {
     operations: operationsTotal,
   });
   const showOnboarding = heroState.variant === "onboarding";
+
+  // Applicability front-door state. Until the triage is completed, the
+  // onboarding branch leads with the gate banner; once done, it shows a
+  // compact "dein Geltungsbereich" chip summarising the regimes that apply.
+  const applicabilityDone = Boolean(
+    applicabilityProfile?.applicabilityCompletedAt,
+  );
+  const applicabilityRegimeLabel = summariseRegimes(
+    applicabilityProfile?.preferredRegimesJson ?? null,
+  );
+
   const miniStats = [
     { label: "Vorgänge aktiv", value: String(operationsTotal) },
     { label: "Artikel", value: String(itemsCount) },
@@ -374,33 +398,71 @@ export default async function TradeDashboardPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-8">
-      <div className="flex items-start justify-between">
+    <div className="mx-auto max-w-5xl px-6 py-8">
+      <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <div className="text-xs text-trade-text-muted">
-            {new Date().toLocaleDateString("de-DE", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-            })}{" "}
-            · {org?.name ?? "Workspace"}
-          </div>
-          <h1 className="mt-1 text-2xl font-semibold text-trade-text-primary">
-            {showOnboarding ? "Willkommen 👋" : "Guten Tag 👋"}
+          <h1 className="text-[24px] font-bold tracking-[-0.02em] text-trade-text-primary">
+            {showOnboarding ? "Willkommen" : "Übersicht"}
           </h1>
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-trade-text-muted">
+            <span>{org?.name ?? "Workspace"}</span>
+            <span aria-hidden="true" className="text-trade-border-strong">
+              ·
+            </span>
+            <span>{applicabilityRegimeLabel}</span>
+            <span aria-hidden="true" className="text-trade-border-strong">
+              ·
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span
+                className="h-[6px] w-[6px] rounded-full"
+                style={{
+                  background: applicabilityDone
+                    ? "var(--trade-accent-success)"
+                    : "var(--trade-accent-warn)",
+                }}
+                aria-hidden="true"
+              />
+              {applicabilityDone ? "Aktiv" : "Setup"}
+            </span>
+          </p>
         </div>
         <TradeCommandTrigger />
       </div>
 
       {showOnboarding ? (
-        <div className="mt-6">
+        <div className="space-y-4">
+          {applicabilityDone ? (
+            <Link
+              href="/trade/applicability"
+              className="group flex items-center justify-between gap-4 rounded-xl border border-trade-border bg-trade-bg-panel px-5 py-4 shadow-[var(--trade-shadow-card)] transition hover:border-trade-border-strong"
+            >
+              <div className="min-w-0">
+                <div className="text-[12px] text-trade-text-muted">
+                  Geltungsbereich
+                </div>
+                <div className="mt-0.5 truncate text-[14px] font-medium text-trade-text-primary">
+                  {applicabilityRegimeLabel}
+                </div>
+              </div>
+              <span
+                className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[13px] font-medium"
+                style={{ color: "var(--trade-link)" }}
+              >
+                Einschätzung ansehen
+                <span aria-hidden="true">→</span>
+              </span>
+            </Link>
+          ) : (
+            <ApplicabilityGateBanner />
+          )}
           <HomeOnboarding />
         </div>
       ) : (
-        <div className="mt-6 space-y-6">
+        <div className="space-y-4">
+          <MiniStatsStrip stats={miniStats} />
           <HomeHero state={heroState} />
           <ActionInboxPanel items={actionItems} />
-          <MiniStatsStrip stats={miniStats} />
         </div>
       )}
     </div>
@@ -425,4 +487,29 @@ async function resolveOrgId(
     orderBy: { joinedAt: "asc" },
   });
   return membership?.organization.id ?? "no-org";
+}
+
+/**
+ * Render the persisted `preferredRegimesJson` (e.g. `["BAFA","BIS"]`) as a
+ * short German "dein Geltungsbereich" summary for the home chip. Always
+ * leads with EU Dual-Use (the baseline most orgs share); appends the
+ * national/US authorities the triage flagged. Tolerant of malformed JSON.
+ */
+function summariseRegimes(raw: string | null): string {
+  const baseline = "EU Dual-Use";
+  if (!raw) return baseline;
+  let tags: string[] = [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (Array.isArray(parsed)) {
+      tags = parsed.filter((t): t is string => typeof t === "string");
+    }
+  } catch {
+    return baseline;
+  }
+  const labels: string[] = [baseline];
+  if (tags.includes("BAFA")) labels.push("BAFA");
+  if (tags.includes("BIS")) labels.push("US EAR (BIS)");
+  if (tags.includes("DDTC")) labels.push("US ITAR (DDTC)");
+  return labels.join(" · ");
 }

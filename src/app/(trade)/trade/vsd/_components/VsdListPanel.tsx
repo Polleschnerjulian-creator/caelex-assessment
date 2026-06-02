@@ -202,9 +202,9 @@ function toneFor(status: TradeVSDStatus): string {
     case "DRAFTED":
       return "bg-slate-100 text-slate-700";
     case "SUBMITTED":
-      return "bg-indigo-100 text-indigo-700";
+      return "bg-slate-200 text-slate-700";
     case "ACKNOWLEDGED":
-      return "bg-indigo-200 text-indigo-800";
+      return "bg-slate-300 text-slate-800";
     case "RESOLVED":
       return "bg-emerald-100 text-emerald-700";
     case "WITHDRAWN":

@@ -17,7 +17,7 @@ import AstraFullPage from "@/components/astra/AstraFullPage";
  */
 
 export const metadata = {
-  title: "Astra — Caelex Trade",
+  title: "Astra — Passage",
 };
 
 export default function TradeAstraPage() {

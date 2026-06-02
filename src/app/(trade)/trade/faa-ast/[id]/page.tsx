@@ -18,7 +18,7 @@ import {
 } from "../_components/FaaAstListPanel";
 
 export const metadata = {
-  title: "FAA AST Licence — Caelex Trade",
+  title: "FAA AST Licence — Passage",
 };
 
 interface DetailPageProps {

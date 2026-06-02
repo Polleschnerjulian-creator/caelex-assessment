@@ -159,7 +159,10 @@ const THRESHOLD_ITAR = 0; // No de-minimis for ITAR
  * Sudan ("SD") was removed from Country Group E:1 in 2020 and is NOT
  * included here. Verify against the current BIS country group tables.
  */
-const EMBARGOED_COUNTRIES = new Set([
+// Exported so the licence-determination engine can apply the SAME embargo
+// set in its standalone destination gate (single source of truth — avoids
+// the two engines diverging on which destinations are embargoed).
+export const EMBARGOED_COUNTRIES = new Set([
   "CU", // Cuba (E:2, treated as embargoed for de-minimis purposes)
   "IR", // Iran
   "KP", // North Korea

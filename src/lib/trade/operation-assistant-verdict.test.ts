@@ -71,6 +71,44 @@ const clearScreen: ScreeningAssessment = {
   partyBlocked: false,
 };
 
+describe("deriveVerdict - screening staleness (M4)", () => {
+  const now = new Date("2026-06-01T00:00:00Z");
+
+  it("downgrades a CLEAR party screened > 30 days ago to a gap (REVIEW)", () => {
+    const stale: ScreeningAssessment = {
+      status: "CLEAR",
+      partyName: "Acme Space SAS",
+      partyBlocked: false,
+      lastScreenedAt: new Date("2026-04-01T00:00:00Z"), // ~61 days before now
+    };
+    const result = deriveVerdict([line()], stale, now);
+    const screen = result.steps.find((s) => s.step === "screen")!;
+    expect(screen.status).toBe("gap");
+    expect(screen.summary).toMatch(/veraltet/i);
+    expect(result.verdict).toBe("REVIEW");
+  });
+
+  it("keeps a CLEAR party screened within 30 days as done (GO)", () => {
+    const fresh: ScreeningAssessment = {
+      status: "CLEAR",
+      partyName: "Acme Space SAS",
+      partyBlocked: false,
+      lastScreenedAt: new Date("2026-05-20T00:00:00Z"), // ~12 days before now
+    };
+    const result = deriveVerdict([line()], fresh, now);
+    const screen = result.steps.find((s) => s.step === "screen")!;
+    expect(screen.status).toBe("done");
+    expect(result.verdict).toBe("GO");
+  });
+
+  it("does not downgrade when lastScreenedAt is absent (freshness unknown)", () => {
+    const result = deriveVerdict([line()], clearScreen, now);
+    const screen = result.steps.find((s) => s.step === "screen")!;
+    expect(screen.status).toBe("done");
+    expect(result.verdict).toBe("GO");
+  });
+});
+
 describe("deriveVerdict - green path", () => {
   it("GO only when every line is CLEARED and the party is fresh-CLEAR", () => {
     const r = deriveVerdict([line()], clearScreen);

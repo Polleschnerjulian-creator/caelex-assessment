@@ -24,7 +24,9 @@ import {
   Sparkles,
   Workflow,
   Boxes,
+  Compass,
   FileText,
+  ScanLine,
   ShieldCheck,
   Settings,
   BookOpen,
@@ -65,6 +67,14 @@ const SECTIONS: ReadonlyArray<NavSection> = [
         tooltip: "Deine Schaltzentrale — was als Nächstes zu tun ist.",
       },
       {
+        href: "/trade/applicability",
+        label: "Geltungsbereich",
+        icon: Compass,
+        match: (p) => p.startsWith("/trade/applicability"),
+        tooltip:
+          "Betrifft mich Exportkontrolle? — welche Regime gelten + was du tun musst.",
+      },
+      {
         href: "/trade/astra",
         label: "Astra",
         icon: Sparkles,
@@ -94,6 +104,14 @@ const SECTIONS: ReadonlyArray<NavSection> = [
           p.startsWith("/trade/items") ||
           p.startsWith("/trade/parties"),
         tooltip: "Artikel & Partner — automatisch klassifiziert & gescreent.",
+      },
+      {
+        href: "/trade/screening",
+        label: "Screening",
+        icon: ScanLine,
+        match: (p) => p.startsWith("/trade/screening"),
+        tooltip:
+          "Sanktions-Treffer triagieren — Potential Matches, veraltete & ungescreente Partner.",
         badgeKey: "partiesNeedingReview",
       },
       {
@@ -162,7 +180,7 @@ export function TradeSidebar({ org, badgeCounts }: Props) {
 
   return (
     <nav
-      aria-label="Caelex Trade navigation"
+      aria-label="Passage navigation"
       className="flex h-full w-[244px] shrink-0 flex-col"
       style={{
         background: "rgb(20, 20, 22)",

@@ -7,7 +7,7 @@ import { listUkEcjuLicenses } from "@/lib/trade/uk-ecju/uk-ecju-service";
 import { UkEcjuListPanel } from "./_components/UkEcjuListPanel";
 
 export const metadata = {
-  title: "UK ECJU Licences — Caelex Trade",
+  title: "UK ECJU Licences — Passage",
 };
 
 /**
@@ -38,7 +38,7 @@ export default async function TradeUkEcjuPage() {
       <header className="mb-2 flex items-end justify-between gap-4">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wider text-trade-accent">
-            Caelex Trade — Reports &amp; Workflows
+            Passage — Reports &amp; Workflows
           </p>
           <div className="mt-2 flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-md bg-trade-accent-soft text-trade-accent-strong">

@@ -94,7 +94,7 @@ export function OnboardingBanner() {
     <section className="mb-8 overflow-hidden rounded-md border border-trade-border-subtle bg-trade-bg-elevated">
       <header className="border-b border-trade-border-subtle px-6 py-4">
         <h2 className="text-[18px] font-semibold text-trade-text-primary">
-          Welcome to Caelex Trade
+          Welcome to Passage
         </h2>
         <p className="mt-1 max-w-2xl text-[13px] text-trade-text-secondary">
           Your workspace is empty. Pick the entry point that fits — explore with
@@ -119,7 +119,7 @@ export function OnboardingBanner() {
               href={
                 "/trade/astra?prefill=" +
                 encodeURIComponent(
-                  "I'm new to Caelex Trade. Walk me through classifying my first item — ECCN, USML, EU Annex I, MTCR, and the German Ausfuhrliste in one pass. What information do I need?",
+                  "I'm new to Passage. Walk me through classifying my first item — ECCN, USML, EU Annex I, MTCR, and the German Ausfuhrliste in one pass. What information do I need?",
                 )
               }
               className="inline-flex items-center gap-2 rounded-md bg-trade-accent px-4 py-2 text-[12px] font-semibold text-white transition hover:bg-trade-accent-strong"

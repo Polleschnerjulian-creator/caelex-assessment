@@ -7,7 +7,7 @@ import { listDeemedExportAuthorizations } from "@/lib/trade/deemed-export/deemed
 import { DeemedExportListPanel } from "./_components/DeemedExportListPanel";
 
 export const metadata = {
-  title: "Deemed Exports — Caelex Trade",
+  title: "Deemed Exports — Passage",
 };
 
 /**
@@ -41,7 +41,7 @@ export default async function TradeDeemedExportsPage() {
       <header className="mb-2 flex items-end justify-between gap-4">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wider text-trade-accent">
-            Caelex Trade — Personnel
+            Passage — Personnel
           </p>
           <div className="mt-2 flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-md bg-trade-accent-soft text-trade-accent-strong">

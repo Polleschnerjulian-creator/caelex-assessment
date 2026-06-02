@@ -8,7 +8,7 @@ import { listReexportConsents } from "@/lib/trade/reexport-service";
 import { ReexportListPanel } from "./_components/ReexportListPanel";
 
 export const metadata = {
-  title: "Re-Export Consents — Caelex Trade",
+  title: "Re-Export Consents — Passage",
 };
 
 interface ReexportPageProps {
@@ -80,7 +80,7 @@ export default async function ReexportConsentsPage({
       <header className="mb-2 flex items-end justify-between gap-4">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wider text-trade-accent">
-            Caelex Trade — Documents
+            Passage — Documents
           </p>
           <div className="mt-2 flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-md bg-trade-accent-soft text-trade-accent-strong">

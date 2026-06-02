@@ -60,7 +60,7 @@ const DECISION_TONE: Record<Exclude<DecisionKey, "ALL">, string> = {
   USML: "border-amber-400/40 bg-amber-50 text-amber-900 dark:bg-amber-500/10 dark:text-amber-200",
   EAR: "border-emerald-400/40 bg-emerald-50 text-emerald-900 dark:bg-emerald-500/10 dark:text-emerald-200",
   SPLIT:
-    "border-violet-400/40 bg-violet-50 text-violet-900 dark:bg-violet-500/10 dark:text-violet-200",
+    "border-slate-400/40 bg-slate-50 text-slate-900 dark:bg-slate-500/10 dark:text-slate-200",
 };
 
 function toCorpusEntries(

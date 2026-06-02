@@ -193,7 +193,7 @@ export function ShamRiskChip({ operationId }: ShamRiskChipProps) {
           <button
             type="button"
             onClick={() => setExpanded((v) => !v)}
-            className={`inline-flex items-center gap-1 rounded border ${c.border} bg-white/60 px-2 py-1 text-[10px] font-medium ${c.text} transition hover:bg-white`}
+            className={`inline-flex items-center gap-1 rounded border ${c.border} bg-trade-bg-panel px-2 py-1 text-[10px] font-medium ${c.text} transition hover:bg-trade-hover`}
             aria-expanded={expanded}
           >
             {expanded ? (
@@ -214,7 +214,7 @@ export function ShamRiskChip({ operationId }: ShamRiskChipProps) {
           {result.redFlags.map((flag, i) => (
             <article
               key={`${flag.type}-${i}`}
-              className="rounded border border-trade-border-subtle bg-white/80 p-3"
+              className="rounded border border-trade-border-subtle bg-trade-bg-panel p-3"
             >
               <div className="mb-1.5 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">

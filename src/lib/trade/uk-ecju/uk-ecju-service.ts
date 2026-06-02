@@ -250,38 +250,80 @@ export async function recordDrawDown(
     throw new Error("Draw-down value must be non-negative");
   }
 
-  const current = await prisma.tradeUkEcjuLicense.findFirst({
-    where: { id: licenseId, organizationId },
-  });
-  if (!current) {
-    throw new Error("UK ECJU licence not found in this organisation");
-  }
+  return prisma.$transaction(async (tx) => {
+    const current = await tx.tradeUkEcjuLicense.findFirst({
+      where: { id: licenseId, organizationId },
+      select: {
+        id: true,
+        status: true,
+        capValueGbp: true,
+        drawnDownValueGbp: true,
+        notes: true,
+      },
+    });
+    if (!current) {
+      throw new Error("UK ECJU licence not found in this organisation");
+    }
 
-  // Only APPROVED licences can be drawn down against — refuse DRAFT
-  // (not yet issued), REJECTED (ECJU denied), EXPIRED (validity passed)
-  // and REVOKED (operator-cancelled).
-  if (current.status !== "APPROVED") {
-    throw new Error(
-      `Cannot draw down against ${current.status} licence — must be APPROVED`,
-    );
-  }
+    // Only APPROVED licences can be drawn down against — refuse DRAFT
+    // (not yet issued), REJECTED (ECJU denied), EXPIRED (validity passed)
+    // and REVOKED (operator-cancelled).
+    if (current.status !== "APPROVED") {
+      throw new Error(
+        `Cannot draw down against ${current.status} licence — must be APPROVED`,
+      );
+    }
 
-  const newTotal = current.drawnDownValueGbp + valuePence;
-  const willExhaust =
-    current.capValueGbp !== null && newTotal >= current.capValueGbp;
+    // ATOMIC GUARD (mirrors the Sammelgenehmigung T-H7 fix): increment only
+    // while drawnDownValueGbp stays within cap. The WHERE re-evaluates the
+    // total at row-lock time, so a concurrent draw that already consumed the
+    // headroom makes this match 0 rows → we reject instead of silently
+    // overdrawing (lost-update). capValueGbp is nullable (uncapped OIEL) →
+    // only apply the bound guard when a cap is set.
+    const capBoundWhere =
+      current.capValueGbp !== null
+        ? { drawnDownValueGbp: { lte: current.capValueGbp - valuePence } }
+        : {};
+    const incremented = await tx.tradeUkEcjuLicense.updateMany({
+      where: {
+        id: current.id,
+        organizationId,
+        status: "APPROVED",
+        ...capBoundWhere,
+      },
+      data: { drawnDownValueGbp: { increment: valuePence } },
+    });
+    if (incremented.count === 0) {
+      // A concurrent draw consumed the headroom, or this single draw exceeds
+      // the cap. Either way: reject rather than overdraw past the cap.
+      const newTotal = current.drawnDownValueGbp + valuePence;
+      throw new Error(
+        `Draw-down would exceed licence cap: ${newTotal}p > ${current.capValueGbp}p`,
+      );
+    }
 
-  const noteSuffix = `[${new Date().toISOString().slice(0, 10)}] Drew down ${valuePence}p for operation ${operationId} (new total: ${newTotal}p)`;
-  const mergedNotes = current.notes
-    ? `${current.notes}\n${noteSuffix}`
-    : noteSuffix;
+    // Re-read the post-increment total to compute the EXHAUSTED flip and the
+    // running note. (The note append is best-effort under heavy concurrency;
+    // the authoritative ledger is the upcoming TradeUkEcjuDrawDown table.)
+    const after = await tx.tradeUkEcjuLicense.findFirstOrThrow({
+      where: { id: current.id },
+      select: { drawnDownValueGbp: true, capValueGbp: true },
+    });
+    const willExhaust =
+      after.capValueGbp !== null &&
+      after.drawnDownValueGbp >= after.capValueGbp;
+    const noteSuffix = `[${new Date().toISOString().slice(0, 10)}] Drew down ${valuePence}p for operation ${operationId} (new total: ${after.drawnDownValueGbp}p)`;
+    const mergedNotes = current.notes
+      ? `${current.notes}\n${noteSuffix}`
+      : noteSuffix;
 
-  return prisma.tradeUkEcjuLicense.update({
-    where: { id: licenseId },
-    data: {
-      drawnDownValueGbp: newTotal,
-      status: willExhaust ? "EXHAUSTED" : current.status,
-      notes: mergedNotes,
-    },
+    return tx.tradeUkEcjuLicense.update({
+      where: { id: current.id },
+      data: {
+        status: willExhaust ? "EXHAUSTED" : current.status,
+        notes: mergedNotes,
+      },
+    });
   });
 }
 

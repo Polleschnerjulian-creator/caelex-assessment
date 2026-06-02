@@ -1,0 +1,332 @@
+import { describe, it, expect } from "vitest";
+import {
+  selectApplicationTarget,
+  mapToTradeLicenseType,
+  deriveRequiredDocuments,
+  authorityPortal,
+  buildLicenseApplicationDraft,
+  LIABILITY_COPY,
+  APPLICATION_DISCLAIMER,
+  type EngineDetermination,
+  type OperationContext,
+} from "./license-application";
+
+// Minimal LicenseDetermination fixtures (only the fields the module reads).
+function det(
+  reqs: Array<Partial<EngineDetermination["requirements"][number]>>,
+  gate: EngineDetermination["gate"] = "REVIEW_NEEDED",
+): EngineDetermination {
+  return {
+    gate,
+    requirements: reqs.map((r) => ({
+      jurisdiction: "X",
+      authority: "BAFA",
+      status: "REQUIRED",
+      licenseType: "BAFA_ANTRAG",
+      reason: "r",
+      recommendedAction: "a",
+      ...r,
+    })),
+    mtcrCatIBlock: false,
+    itarBlock: false,
+    embargoBlock: false,
+    annexIVBlock: false,
+    nextSteps: [],
+    disclaimer: "d",
+  } as EngineDetermination;
+}
+
+describe("selectApplicationTarget", () => {
+  it("returns null when no determinations / no actionable requirement", () => {
+    expect(selectApplicationTarget([])).toBeNull();
+    expect(
+      selectApplicationTarget([det([{ status: "NLR", licenseType: "NLR" }])]),
+    ).toBeNull();
+  });
+
+  it("prefers the most severe status across all lines (PROHIBITED > DENIED > REQUIRED > LIKELY > UNKNOWN)", () => {
+    const t = selectApplicationTarget([
+      det([{ status: "REQUIRED", authority: "BAFA" }]),
+      det([
+        {
+          status: "PROHIBITED",
+          authority: "EU_COMPETENT_AUTHORITY",
+          licenseType: null,
+        },
+      ]),
+      det([{ status: "LIKELY_REQUIRED", authority: "BIS" }]),
+    ]);
+    expect(t?.requirement.status).toBe("PROHIBITED");
+    expect(t?.blocked).toBe(true);
+  });
+
+  it("within REQUIRED, picks by deterministic authority order (DDTC, then BIS, then BAFA, then EU)", () => {
+    const t = selectApplicationTarget([
+      det([
+        { status: "REQUIRED", authority: "BAFA", licenseType: "BAFA_ANTRAG" },
+      ]),
+      det([{ status: "REQUIRED", authority: "DDTC", licenseType: "DSP5" }]),
+    ]);
+    expect(t?.requirement.authority).toBe("DDTC");
+    expect(t?.blocked).toBe(false);
+  });
+
+  it("flags blocked for DENIED and MTCR too", () => {
+    expect(
+      selectApplicationTarget([
+        det([
+          {
+            status: "DENIED",
+            authority: "BIS",
+            licenseType: "SPECIFIC_LICENSE",
+          },
+        ]),
+      ])?.blocked,
+    ).toBe(true);
+  });
+});
+
+describe("mapToTradeLicenseType", () => {
+  it("is total: every engine (authority, type) pair maps to a concrete TradeLicenseType", () => {
+    const pairs = [
+      ["BAFA", "BAFA_ANTRAG"],
+      ["BAFA", "SPECIFIC_LICENSE"],
+      ["BAFA", null],
+      ["EU_COMPETENT_AUTHORITY", "GENERAL_LICENSE"],
+      ["EU_COMPETENT_AUTHORITY", null],
+      ["DDTC", "DSP5"],
+      ["DDTC", "TAA"],
+      ["DDTC", "SPECIFIC_LICENSE"],
+      ["DDTC", null],
+      ["BIS", "SPECIFIC_LICENSE"],
+      ["BIS", "LICENSE_EXCEPTION"],
+      ["BIS", null],
+      ["MTCR_REVIEW", null],
+    ] as const;
+    for (const [auth, lt] of pairs) {
+      const m = mapToTradeLicenseType(auth, lt);
+      expect(typeof m.tradeLicenseType).toBe("string");
+      expect(m.tradeLicenseType.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("maps BAFA→BAFA_EINZEL, DDTC DSP5→DDTC_DSP5, DDTC TAA→DDTC_TAA, BIS→BIS_EAR", () => {
+    expect(mapToTradeLicenseType("BAFA", "BAFA_ANTRAG").tradeLicenseType).toBe(
+      "BAFA_EINZEL",
+    );
+    expect(mapToTradeLicenseType("DDTC", "DSP5").tradeLicenseType).toBe(
+      "DDTC_DSP5",
+    );
+    expect(mapToTradeLicenseType("DDTC", "TAA").tradeLicenseType).toBe(
+      "DDTC_TAA",
+    );
+    expect(
+      mapToTradeLicenseType("BIS", "SPECIFIC_LICENSE").tradeLicenseType,
+    ).toBe("BIS_EAR");
+  });
+
+  it("hedges (approximate=true) when the engine type is ambiguous", () => {
+    expect(mapToTradeLicenseType("BIS", "SPECIFIC_LICENSE").approximate).toBe(
+      true,
+    );
+    expect(mapToTradeLicenseType("BAFA", "BAFA_ANTRAG").approximate).toBe(true); // could be AGG/EUGEA
+    expect(mapToTradeLicenseType("MTCR_REVIEW", null).approximate).toBe(true);
+  });
+
+  it("NEVER auto-selects a general authorisation / licence exception (conservative bias)", () => {
+    // BAFA must default to the safest individual licence, never AGG/EUGEA.
+    expect(mapToTradeLicenseType("BAFA", "BAFA_ANTRAG").tradeLicenseType).toBe(
+      "BAFA_EINZEL",
+    );
+    // EU competent authority for a DE operator routes via BAFA individual.
+    expect(
+      mapToTradeLicenseType("EU_COMPETENT_AUTHORITY", "GENERAL_LICENSE")
+        .tradeLicenseType,
+    ).toBe("BAFA_EINZEL");
+    // BIS must default to the individual EAR licence, never a LICENSE_EXCEPTION (STA/ENC/CSA).
+    expect(
+      mapToTradeLicenseType("BIS", "LICENSE_EXCEPTION").tradeLicenseType,
+    ).toBe("BIS_EAR");
+    // None of the conservative defaults are a general-authorisation enum value.
+    const generalAuthTypes = [
+      "BAFA_AGG_12",
+      "BAFA_AGG_16",
+      "BAFA_AGG_27",
+      "BAFA_AGG_47",
+      "BAFA_EUGEA_EU001",
+      "BAFA_EUGEA_EU002",
+      "BIS_LICENSE_EXCEPTION_STA",
+      "BIS_LICENSE_EXCEPTION_CSA",
+      "BIS_LICENSE_EXCEPTION_ENC",
+    ];
+    const allPairs = [
+      ["BAFA", "BAFA_ANTRAG"],
+      ["BAFA", null],
+      ["EU_COMPETENT_AUTHORITY", "GENERAL_LICENSE"],
+      ["BIS", "LICENSE_EXCEPTION"],
+      ["BIS", null],
+      ["DDTC", "DSP5"],
+    ] as const;
+    for (const [auth, lt] of allPairs) {
+      expect(generalAuthTypes).not.toContain(
+        mapToTradeLicenseType(auth, lt).tradeLicenseType,
+      );
+    }
+  });
+});
+
+describe("deriveRequiredDocuments", () => {
+  const reqBAFA = {
+    authority: "BAFA",
+    status: "REQUIRED",
+    licenseType: "BAFA_ANTRAG",
+    jurisdiction: "Export to RU",
+    reason: "r",
+    recommendedAction: "a",
+  } as const;
+  const reqDDTC = {
+    authority: "DDTC",
+    status: "REQUIRED",
+    licenseType: "DSP5",
+    jurisdiction: "US (ITAR)",
+    reason: "r",
+    recommendedAction: "a",
+  } as const;
+  const reqDenied = {
+    authority: "BIS",
+    status: "DENIED",
+    licenseType: "SPECIFIC_LICENSE",
+    jurisdiction: "embargo",
+    reason: "Embargo",
+    recommendedAction: "stop",
+  } as const;
+
+  it("BAFA REQUIRED → includes a mandatory EUC with a /trade/euc link", () => {
+    const r = deriveRequiredDocuments({ requirement: reqBAFA, blocked: false });
+    expect(r.stopGuidance).toBeUndefined();
+    const euc = r.documents.find((d) => d.key === "EUC");
+    expect(euc?.mandatory).toBe(true);
+    expect(euc?.actionHref).toBe("/trade/euc");
+  });
+
+  it("DDTC REQUIRED → includes DS-83 / end-use statement", () => {
+    const r = deriveRequiredDocuments({ requirement: reqDDTC, blocked: false });
+    expect(
+      r.documents.some((d) => d.key === "DDTC_DS83" || d.key === "EUC"),
+    ).toBe(true);
+  });
+
+  it("blocked target → NO documents, returns stopGuidance instead", () => {
+    const r = deriveRequiredDocuments({
+      requirement: reqDenied,
+      blocked: true,
+    });
+    expect(r.documents).toHaveLength(0);
+    expect(r.stopGuidance && r.stopGuidance.length).toBeGreaterThan(0);
+  });
+});
+
+describe("authorityPortal", () => {
+  it("returns a label + url for each authority", () => {
+    expect(authorityPortal("BAFA").url).toContain("bafa");
+    expect(authorityPortal("DDTC").label.length).toBeGreaterThan(0);
+    expect(authorityPortal("BIS").url).toContain("http");
+  });
+});
+
+describe("liability copy", () => {
+  it("REVIEW/BLOCKED banner carries the mandatory phrases", () => {
+    expect(LIABILITY_COPY.verdictBanner).toMatch(/keine Rechtsberatung/i);
+    expect(LIABILITY_COPY.verdictBanner).toMatch(
+      /Verantwortung bleibt bei dir/i,
+    );
+    expect(LIABILITY_COPY.verdictBanner).toMatch(/fachkundige Freigabe/i);
+  });
+  it("GO note is honest about ongoing obligations (record-keeping)", () => {
+    expect(LIABILITY_COPY.goNote).toMatch(/5 Jahre/);
+    expect(LIABILITY_COPY.goNote).toMatch(/re-?verifizieren/i);
+  });
+  it("auto-suggest cue + application disclaimer say it's not a clearance / not submitted", () => {
+    expect(LIABILITY_COPY.autoSuggestCue).toMatch(/Vorschlag/i);
+    expect(APPLICATION_DISCLAIMER).toMatch(
+      /reicht .* NICHTS ein|nicht ein|kein.* Antrag.* eingereicht/i,
+    );
+    expect(APPLICATION_DISCLAIMER).toMatch(/keine Rechtsberatung/i);
+  });
+});
+
+const ctx: OperationContext = {
+  operationId: "op_1",
+  reference: "AV-RU-ABC",
+  counterpartyName: "Acme Foreign GmbH",
+  shipToCountry: "RU",
+  endUseCountry: null,
+  declaredEndUse: "CIVIL",
+  triggerCodes: ["9A515.a"],
+  totalValueEur: 250000,
+  currency: "EUR",
+};
+const reqBAFAfull = {
+  authority: "BAFA",
+  status: "REQUIRED",
+  licenseType: "BAFA_ANTRAG",
+  jurisdiction: "Export to RU",
+  reason: "EU-Anhang-I-Dual-Use, Ausfuhr nach RU",
+  recommendedAction: "ELAN-K2",
+} as const;
+
+describe("buildLicenseApplicationDraft", () => {
+  const draft = buildLicenseApplicationDraft(
+    { requirement: reqBAFAfull, blocked: false },
+    ctx,
+  );
+
+  it("maps to a fileable TradeLicenseType (BAFA_EINZEL) and flags approximate", () => {
+    expect(draft.licenseType).toBe("BAFA_EINZEL");
+    expect(draft.approximate).toBe(true);
+  });
+  it("DELIBERATELY blanks authority number + both dates (never fabricated)", () => {
+    expect(draft.licenseNumber).toBeUndefined();
+    expect(draft.issuedAt).toBeUndefined();
+    expect(draft.validUntil).toBeUndefined();
+  });
+  it("status is DRAFT and lineage is stamped via conditions.applicationFor", () => {
+    expect(draft.status).toBe("DRAFT");
+    expect(draft.conditions.applicationFor).toBe("op_1");
+  });
+  it("pre-fills coveredCodes (trigger), coveredCountries (destination), end-use, cap", () => {
+    expect(draft.conditions.coveredCodes).toEqual(["9A515.a"]);
+    expect(draft.conditions.coveredCountries).toEqual(["RU"]);
+    expect(draft.conditions.endUseRestrictions).toEqual([
+      "civilian end-use only",
+    ]);
+    expect(draft.totalCapValue).toBe(250000);
+    expect(draft.capCurrency).toBe("EUR");
+  });
+  it("includes the endUseCountry in coveredCountries when distinct", () => {
+    const d = buildLicenseApplicationDraft(
+      { requirement: reqBAFAfull, blocked: false },
+      { ...ctx, endUseCountry: "KZ" },
+    );
+    expect(d.conditions.coveredCountries).toEqual(["RU", "KZ"]);
+  });
+  it("carries the verbatim disclaimer + a human carriedSummary", () => {
+    expect(draft.disclaimer).toBe(APPLICATION_DISCLAIMER);
+    expect(draft.carriedSummary).toMatch(/AV-RU-ABC/);
+  });
+  it("THROWS for a blocked target (no draft for a hard-blocked export)", () => {
+    expect(() =>
+      buildLicenseApplicationDraft(
+        {
+          requirement: {
+            ...reqBAFAfull,
+            status: "PROHIBITED",
+            licenseType: null,
+          },
+          blocked: true,
+        },
+        ctx,
+      ),
+    ).toThrow();
+  });
+});

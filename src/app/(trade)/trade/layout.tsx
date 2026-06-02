@@ -42,9 +42,9 @@ import { TradeThemeProvider } from "./_components/TradeThemeProvider";
 const flashGuardScript = `(function(){try{var t=localStorage.getItem('trade-theme');var r=t==='dark'?'dark':'light';document.documentElement.setAttribute('data-trade-preload',r);document.documentElement.setAttribute('data-trade-theme',r);}catch(e){}})();`;
 
 export const metadata = {
-  title: "Caelex Trade",
+  title: "Caelex Passage",
   description:
-    "Caelex Trade — Klassifizieren. Lizenzieren. Liefern. Export-Compliance für Operatoren im Weltraumsektor.",
+    "Caelex Passage — Klassifizieren. Lizenzieren. Liefern. Export-Compliance für Operatoren im Weltraumsektor.",
 };
 
 export default async function TradeLayout({

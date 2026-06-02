@@ -7,7 +7,7 @@ import { listReports } from "@/lib/trade/supplement-2/supplement-2-service";
 import { Supplement2ListPanel } from "./_components/Supplement2ListPanel";
 
 export const metadata = {
-  title: "Supplement No. 2 Reports — Caelex Trade",
+  title: "Supplement No. 2 Reports — Passage",
 };
 
 /**
@@ -39,7 +39,7 @@ export default async function TradeSupplement2Page() {
       <header className="mb-2 flex items-end justify-between gap-4">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wider text-trade-accent">
-            Caelex Trade — Reports
+            Passage — Reports
           </p>
           <div className="mt-2 flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-md bg-trade-accent-soft text-trade-accent-strong">

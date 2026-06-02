@@ -268,7 +268,7 @@ export function RegistrationForm({
         label="Screening Vendor"
         value={screeningVendor}
         onChange={setScreeningVendor}
-        placeholder="Caelex Trade, Visual Compliance, Descartes, …"
+        placeholder="Passage, Visual Compliance, Descartes, …"
       />
 
       <FormFooter onCancel={onCancel} isPending={isPending} error={error} />

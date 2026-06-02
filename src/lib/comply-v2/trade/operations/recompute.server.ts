@@ -11,6 +11,8 @@
  *   TradeOperation.catchAllArt9Hit   ← from catch-all engine
  *   TradeOperation.catchAllArt10Hit  ← from catch-all engine
  *   TradeOperation.notificationDuty  ← from catch-all engine
+ *   TradeOperation.para9NuclearHit   ← from catch-all engine (§9(1) AWV)
+ *   TradeOperation.para9MilitaryHit  ← from catch-all engine (§9(2) AWV)
  *
  * Both engines are pure functions; this file is the I/O glue.
  *
@@ -101,6 +103,12 @@ export async function recomputeOperation(
       declaredEndUse: op.declaredEndUse,
       endUserName: op.endUserName,
       endUserSector: op.endUserSector,
+      // §9(1)/§9(2) AWV self-attested knowledge signals — previously never
+      // forwarded, so the high-confidence §9 paths could never fire.
+      bafaNuclearNotification: op.bafaNuclearNotification,
+      nuclearEndUseAware: op.nuclearEndUseAware,
+      bafaMilitaryNotification: op.bafaMilitaryNotification,
+      militaryEndUseAware: op.militaryEndUseAware,
     },
     lines: op.lines.map((l) => catchAllLineInput(l.item)),
     hasAttachedLicenses: op._count.licenses > 0,
@@ -116,6 +124,8 @@ export async function recomputeOperation(
       catchAllArt9Hit: catchAll.art9,
       catchAllArt10Hit: catchAll.art10,
       notificationDuty: catchAll.notificationDuty,
+      para9NuclearHit: catchAll.para9Nuclear,
+      para9MilitaryHit: catchAll.para9Military,
     },
   });
 

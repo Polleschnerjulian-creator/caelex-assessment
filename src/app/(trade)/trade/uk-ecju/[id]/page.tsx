@@ -13,7 +13,7 @@ import {
 } from "../_components/UkEcjuListPanel";
 
 export const metadata = {
-  title: "UK ECJU Licence — Caelex Trade",
+  title: "UK ECJU Licence — Passage",
 };
 
 interface DetailPageProps {

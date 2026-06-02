@@ -22,7 +22,7 @@ import { RequirementStatusList } from "./_components/RequirementStatusList";
 import { SectionEditChip } from "./_components/SectionEditChip";
 
 export const metadata = {
-  title: "Compliance Program — Caelex Trade",
+  title: "Compliance Program — Passage",
 };
 
 /**
@@ -70,7 +70,7 @@ export default async function TradeProgramPage() {
     <div className="space-y-5 px-8 py-10">
       <header className="mb-2">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-trade-accent">
-          Caelex Trade — Posture
+          Passage — Posture
         </p>
         <h1 className="mt-2 text-[28px] font-bold tracking-tight text-trade-text-primary">
           Compliance Program

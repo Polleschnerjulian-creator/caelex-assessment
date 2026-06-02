@@ -1,23 +1,31 @@
 import { redirect } from "next/navigation";
-import { Building2, Bell, KeyRound, ShieldAlert } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isSuperAdmin } from "@/lib/super-admin";
 import { ensureProfile } from "@/lib/trade/settings/org-profile-service";
 import { ensurePreferences } from "@/lib/trade/settings/notification-preferences-service";
 import { listApiKeys } from "@/lib/trade/settings/api-keys-service";
-import { SettingsTabs, type TabKey } from "./_components/SettingsTabs";
+import { getEffectiveScreeningConfig } from "@/lib/trade/settings/screening-config-service";
+import { SettingsSubNav, type TabKey } from "./_components/SettingsSubNav";
 import { OrgProfileTab } from "./_components/OrgProfileTab";
+import { ScreeningTab } from "./_components/ScreeningTab";
 import { NotificationsTab } from "./_components/NotificationsTab";
 import { ApiKeysTab } from "./_components/ApiKeysTab";
 import { AuditTab } from "./_components/AuditTab";
 import { DensityToggle } from "../_components/DensityToggle";
 
 export const metadata = {
-  title: "Settings — Caelex Trade",
+  title: "Settings — Passage",
 };
 
-const VALID_TABS = ["profile", "notifications", "api-keys", "audit"] as const;
+const VALID_TABS = [
+  "profile",
+  "screening",
+  "notifications",
+  "api-keys",
+  "audit",
+  "appearance",
+] as const;
 
 /**
  * /trade/settings — Trade-specific organisation settings.
@@ -69,61 +77,52 @@ export default async function TradeSettingsPage({
   // Fetch the data each tab needs in parallel. The non-active tabs
   // are pre-rendered too so client-side tab switches don't show
   // empty cards while data streams in.
-  const [profile, prefs, apiKeys] = await Promise.all([
+  const [profile, prefs, apiKeys, screeningConfig] = await Promise.all([
     ensureProfile(orgId),
     ensurePreferences(orgId),
     listApiKeys(orgId),
+    getEffectiveScreeningConfig(orgId),
   ]);
 
   return (
-    <div className="space-y-5 px-8 py-10">
-      <header className="mb-2">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-trade-accent">
-          Caelex Trade — Org Admin
-        </p>
-        <h1 className="mt-2 text-[28px] font-bold tracking-tight text-trade-text-primary">
-          Settings
+    <div className="px-8 py-10">
+      <header className="mb-7">
+        <h1 className="text-[28px] font-bold tracking-tight text-trade-text-primary">
+          Einstellungen
         </h1>
-        <p className="mt-1 max-w-2xl text-[13px] text-trade-text-secondary">
-          Org-level settings specific to Caelex Trade — primary BAFA contact,
-          customs identifiers, notification preferences, and API access. Visible
-          to OWNER and ADMIN members only.
+        <p className="mt-1.5 max-w-2xl text-[13px] text-trade-text-secondary">
+          Org-weite Passage-Konfiguration — Stammdaten, Benachrichtigungen,
+          API-Zugang und mehr. Sichtbar für OWNER und ADMIN.
         </p>
       </header>
 
-      <SettingsTabs
-        active={activeTab}
-        tabs={[
-          { key: "profile", label: "Organization Profile", icon: Building2 },
-          { key: "notifications", label: "Notifications", icon: Bell },
-          { key: "api-keys", label: "API Keys", icon: KeyRound },
-          { key: "audit", label: "Audit Trail", icon: ShieldAlert },
-        ]}
-      />
+      <div className="flex flex-col gap-8 lg:flex-row">
+        <SettingsSubNav active={activeTab} />
 
-      <div className="pt-2">
-        {activeTab === "profile" && <OrgProfileTab profile={profile} />}
-        {activeTab === "notifications" && (
-          <NotificationsTab preferences={prefs} />
-        )}
-        {activeTab === "api-keys" && <ApiKeysTab apiKeys={apiKeys} />}
-        {activeTab === "audit" && <AuditTab preferences={prefs} />}
+        <div className="min-w-0 max-w-3xl flex-1">
+          {activeTab === "profile" && <OrgProfileTab profile={profile} />}
+          {activeTab === "screening" && (
+            <ScreeningTab config={screeningConfig} />
+          )}
+          {activeTab === "notifications" && (
+            <NotificationsTab preferences={prefs} />
+          )}
+          {activeTab === "api-keys" && <ApiKeysTab apiKeys={apiKeys} />}
+          {activeTab === "audit" && <AuditTab preferences={prefs} />}
+          {activeTab === "appearance" && (
+            <section className="rounded-xl border border-trade-border bg-trade-bg-panel px-6 py-5 shadow-[var(--trade-shadow-card)]">
+              <h2 className="mb-1 text-[15px] font-semibold text-trade-text-primary">
+                Darstellung
+              </h2>
+              <p className="mb-4 max-w-2xl text-[12px] text-trade-text-muted">
+                Pro-Gerät-Einstellung. Kompaktmodus zeigt ~15&nbsp;% mehr Zeilen
+                auf einmal — ideal auf Laptop-Displays.
+              </p>
+              <DensityToggle />
+            </section>
+          )}
+        </div>
       </div>
-
-      {/* Appearance — user-level UI preferences (per-device, not per-
-          org). Lives outside the tab system because it's a single
-          control and doesn't need its own tab. Density choice is
-          persisted in localStorage by useTradeDensity. */}
-      <section className="mt-6 rounded-xl border border-trade-border-subtle bg-trade-bg-elevated px-6 py-5">
-        <h2 className="mb-1 text-[15px] font-semibold text-trade-text-primary">
-          Appearance
-        </h2>
-        <p className="mb-4 max-w-2xl text-[12px] text-trade-text-muted">
-          Per-device preference. Compact mode fits ~15&nbsp;% more rows on
-          screen — preferred on laptop displays.
-        </p>
-        <DensityToggle />
-      </section>
     </div>
   );
 }

@@ -335,7 +335,7 @@ function KeysList({ keys }: { keys: TradeApiKeyView[] }) {
           No API keys yet
         </p>
         <p className="mt-1 text-[12px] text-trade-text-muted">
-          Create one above to start using the Caelex Trade API.
+          Create one above to start using the Passage API.
         </p>
       </div>
     );

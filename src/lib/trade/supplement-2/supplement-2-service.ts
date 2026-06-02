@@ -61,7 +61,12 @@ export interface EligibleItem {
   eccn: string;
   /** Quantity shipped on this line. */
   quantity: number;
-  /** Line value (quantity * unitValue). */
+  /** Line value in integer cents (exact; rounded to the cent once per line).
+   *  Totals are summed in cents and converted to euros exactly once, so a
+   *  multi-line / multi-ECCN BIS Supplement No. 2 filing doesn't accrue
+   *  float drift. */
+  lineValueCents: bigint;
+  /** Line value in major units (display only — derived from lineValueCents). */
   lineValue: number;
   /** ISO 4217 currency for this line. */
   currency: string;
@@ -151,11 +156,17 @@ export async function listEligibleOperations(
       // classify against EU Annex I if shipping out of an EU subsidiary.
       const eccn = line.item.eccnUS ?? line.item.eccnEU;
       if (isEligibleEccn(eccn)) {
+        // quantity is a Float, so one float multiply is unavoidable — round
+        // to the nearest cent HERE, then sum in exact BigInt cents below.
+        const lineValueCents = BigInt(
+          Math.round(line.quantity * Number(line.unitValue)),
+        );
         eligible.push({
           lineId: line.id,
           eccn: eccn as string,
           quantity: line.quantity,
-          lineValue: line.quantity * fromCents(line.unitValue),
+          lineValueCents,
+          lineValue: fromCents(lineValueCents),
           currency: line.unitCurrency,
         });
       }
@@ -173,7 +184,10 @@ export async function listEligibleOperations(
     // a currency; mixed currency lines are explicitly summed at face
     // value and the operator must reconcile in their filing.
     const reportingCurrency = eligible[0].currency;
-    const totalValue = eligible.reduce((sum, item) => sum + item.lineValue, 0);
+    // Sum in exact integer cents, convert to euros exactly once (no drift).
+    const totalValue = fromCents(
+      eligible.reduce((sum, item) => sum + item.lineValueCents, BigInt(0)),
+    );
 
     result.push({
       operationId: op.id,
@@ -286,17 +300,17 @@ export async function generateReport(
     // Aggregate by ECCN within the operation
     const byEccn = new Map<
       string,
-      { quantity: number; totalValue: number; currency: string }
+      { quantity: number; totalValueCents: bigint; currency: string }
     >();
     for (const item of op.items) {
       const existing = byEccn.get(item.eccn);
       if (existing) {
         existing.quantity += item.quantity;
-        existing.totalValue += item.lineValue;
+        existing.totalValueCents += item.lineValueCents;
       } else {
         byEccn.set(item.eccn, {
           quantity: item.quantity,
-          totalValue: item.lineValue,
+          totalValueCents: item.lineValueCents,
           currency: item.currency,
         });
       }
@@ -308,7 +322,8 @@ export async function generateReport(
         eccn,
         destinationCountry: op.destinationCountry,
         quantity: agg.quantity,
-        totalValue: agg.totalValue,
+        // Convert the exact cents sum to the euro snapshot value once.
+        totalValue: fromCents(agg.totalValueCents),
         currency: agg.currency,
         shipDate: op.shipDate,
       });

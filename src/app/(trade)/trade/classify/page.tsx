@@ -8,7 +8,7 @@ import { listDrafts } from "@/lib/trade/classification-draft-service";
 import { ClassifyPageClient } from "./_components/ClassifyPageClient";
 
 export const metadata = {
-  title: "AI Classification Copilot — Caelex Trade",
+  title: "AI Classification Copilot — Passage",
   description:
     "Drop a datasheet PDF or paste vendor text. Get a defensible ECCN / USML / EU Annex I classification draft for operator review.",
 };
