@@ -69,7 +69,7 @@ export function ActionInboxPanel({ items }: Props) {
   return (
     <section
       aria-labelledby="action-inbox-heading"
-      className="mb-8 rounded-md border border-trade-border-subtle bg-trade-bg-panel"
+      className="overflow-hidden rounded-xl border border-trade-border bg-trade-bg-panel shadow-[var(--trade-shadow-card)]"
     >
       <header className="flex items-center justify-between gap-3 border-b border-trade-border-subtle px-5 py-3">
         <div className="flex items-center gap-2">
@@ -77,19 +77,19 @@ export function ActionInboxPanel({ items }: Props) {
             id="action-inbox-heading"
             className="text-[13px] font-semibold text-trade-text-primary"
           >
-            Today&rsquo;s action inbox
+            Heute zu erledigen
           </h2>
           {items.length > 0 ? (
             <span
               className="rounded-full bg-trade-bg-subtle px-2 py-0.5 text-[10px] font-semibold tabular-nums text-trade-text-secondary"
-              aria-label={`${items.length} items need attention`}
+              aria-label={`${items.length} Punkte brauchen Aufmerksamkeit`}
             >
               {items.length}
             </span>
           ) : null}
         </div>
         <p className="text-[11px] text-trade-text-muted">
-          What needs human action right now.
+          Was jetzt deine Aufmerksamkeit braucht.
         </p>
       </header>
 
@@ -118,8 +118,8 @@ export function ActionInboxPanel({ items }: Props) {
                 className="text-[11px] font-semibold text-trade-text-secondary transition hover:text-trade-text-primary"
               >
                 {expanded
-                  ? "Show top 8 only ↑"
-                  : `Show all ${items.length} items ↓`}
+                  ? "Nur Top 8 anzeigen ↑"
+                  : `Alle ${items.length} anzeigen ↓`}
               </button>
             </div>
           ) : null}
@@ -187,16 +187,16 @@ function EmptyAllClear() {
         Keine offenen Punkte — alles erledigt.
       </p>
       <p className="max-w-sm text-[12px] text-trade-text-secondary">
-        Nothing needs human action right now. New blocked operations, expiring
-        licenses, screening hits, and approaching deadlines will surface here as
-        they arise.
+        Aktuell ist nichts zu tun. Neue blockierte Vorgänge, ablaufende
+        Lizenzen, Screening-Treffer und nahende Fristen erscheinen hier, sobald
+        sie auftreten.
       </p>
       <Link
         href="/trade/astra"
         className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-trade-border-subtle bg-trade-bg-elevated px-3 py-1.5 text-[11px] font-medium text-trade-text-secondary transition hover:border-trade-accent hover:text-trade-text-primary"
       >
         <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-        Ask Astra what to work on next
+        Astra fragen, was als Nächstes ansteht
       </Link>
     </div>
   );

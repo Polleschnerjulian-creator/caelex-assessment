@@ -459,10 +459,10 @@ export default async function TradeDashboardPage() {
           <HomeOnboarding />
         </div>
       ) : (
-        <div className="mt-6 space-y-6">
+        <div className="space-y-4">
+          <MiniStatsStrip stats={miniStats} />
           <HomeHero state={heroState} />
           <ActionInboxPanel items={actionItems} />
-          <MiniStatsStrip stats={miniStats} />
         </div>
       )}
     </div>
