@@ -15,8 +15,7 @@
  * its children in one. The ToastContainer is rendered inline — toast messages
  * appear within the settings panel rather than at the root of the document.
  *
- * Security log: The /atlas/settings/security-log page is not yet built.
- * A placeholder link is rendered as a follow-up hook (see TODO below).
+ * Security log: Links to /atlas/settings/security-log (per-user event view).
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -62,7 +61,7 @@ function SubDivider() {
  *   1. Zwei-Faktor-Authentifizierung (MfaSetupCard)
  *   2. Passkeys / Sicherheitsschlüssel (PasskeyManagementCard)
  *   3. Aktive Sitzungen (ActiveSessionsCard)
- *   4. Sicherheitsprotokoll (link card → /atlas/settings/security-log, TODO)
+ *   4. Sicherheitsprotokoll (link card → /atlas/settings/security-log)
  *
  * Wrapped in <ToastProvider> because MfaSetupCard + PasskeyManagementCard +
  * ActiveSessionsCard all call useToast(), and the Atlas shell does not
@@ -140,16 +139,12 @@ export function SecuritySection() {
 
         <SubDivider />
 
-        {/* ── 4. Sicherheitsprotokoll (TODO: build /atlas/settings/security-log) ── */}
+        {/* ── 4. Sicherheitsprotokoll ── */}
         <div>
           <SectionHeader
             title="Sicherheitsprotokoll"
             description="Audit-Trail für Anmeldungen, 2FA-Änderungen und Passkey-Verwaltung."
           />
-          {/* TODO: Build /atlas/settings/security-log page (not yet implemented).
-              When ready, replace this link card with the actual SecurityLogCard
-              component. The route is pre-wired here so settings hub wiring
-              (settings/page.tsx) can reference it immediately. */}
           <div className="rounded-2xl bg-white/60 dark:bg-white/[0.035] border border-black/[0.04] dark:border-white/[0.06] overflow-hidden">
             <Link
               href="/atlas/settings/security-log"
@@ -162,8 +157,7 @@ export function SecuritySection() {
                     Sicherheitsprotokoll anzeigen
                   </span>
                   <p className="text-[12px] text-slate-400 dark:text-white/30 mt-0.5">
-                    Noch nicht verfügbar — wird in einem zukünftigen Update
-                    bereitgestellt
+                    Anmeldungen, 2FA-Änderungen und Passkey-Ereignisse
                   </p>
                 </div>
               </div>
