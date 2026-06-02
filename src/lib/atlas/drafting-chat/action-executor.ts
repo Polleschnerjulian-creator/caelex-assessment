@@ -162,6 +162,9 @@ export function applyClientAction(action: ClientAction): void {
           privileged: action.privileged,
           mandateId: action.mandateId,
           mandateName: action.mandateName,
+          /* A-H10: persist the generated body so My Drafts can show and
+             restore the full document text, not just the prompt. */
+          body: action.body,
         });
         break;
 

@@ -194,9 +194,9 @@ export type ClientAction =
     }
   | {
       /* Flat shape (matches the engine's `{type, ...toolInput}` spread).
-         Body is intentionally NOT persisted into the library — only the
-         prompt + metadata is stored, since the generated body lives in
-         the toolCalls[i].generatedBody field of the chat response. */
+         A-H10: body IS now persisted. The engine threads the most-recent
+         generate_draft body from the same turn onto this action so Marie
+         can view/restore the full generated text from My Drafts. */
       type: "push_to_library";
       kind: DraftKind;
       title: string;
@@ -205,6 +205,11 @@ export type ClientAction =
       privileged: boolean;
       mandateId?: string;
       mandateName?: string;
+      /** A-H10 — The generated body text. Threaded from the most-recent
+       *  generate_draft call in the same turn. Optional: if the LLM calls
+       *  push_to_library without a preceding generate_draft (unusual), the
+       *  library entry will have no body (prompt-only, legacy behaviour). */
+      body?: string;
     };
 
 /* ── Final chat-turn response ─────────────────────────────────────── */

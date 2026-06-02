@@ -234,6 +234,10 @@ export default function DraftingHistoryPage() {
      whose history is currently expanded (or null if none). */
   const [versionsOpenFor, setVersionsOpenFor] = useState<string | null>(null);
 
+  /* A-H10: per-entry body-text toggle. Tracks the entry id whose
+     generated body is currently expanded (or null if none). */
+  const [bodyOpenFor, setBodyOpenFor] = useState<string | null>(null);
+
   const handleDelete = (id: string) => {
     deleteDraftLibraryEntry(id);
     refresh();
@@ -504,6 +508,31 @@ export default function DraftingHistoryPage() {
                       />
                       {isDe ? "Wiederholen" : "Restore"}
                     </button>
+                    {/* A-H10: show generated body toggle. Only renders
+                        when the entry has a persisted body. */}
+                    {entry.body && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setBodyOpenFor((cur) =>
+                            cur === entry.id ? null : entry.id,
+                          )
+                        }
+                        title={
+                          isDe
+                            ? "Generierten Volltext ein-/ausblenden"
+                            : "Show / hide generated body"
+                        }
+                        className="inline-flex items-center gap-1 text-[10.5px] font-medium px-2 py-1 rounded border border-[var(--atlas-border)] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)] hover:bg-[var(--atlas-bg-surface-muted)] transition-colors"
+                      >
+                        <FileText
+                          size={10}
+                          strokeWidth={1.8}
+                          aria-hidden="true"
+                        />
+                        {isDe ? "Volltext" : "Body"}
+                      </button>
+                    )}
                     {/* Bundle 38: share-for-review action. */}
                     <button
                       type="button"
@@ -678,6 +707,39 @@ export default function DraftingHistoryPage() {
                       })}
                     </div>
                   )}
+
+                {/* A-H10: generated body panel. Renders when the user
+                    toggles the "Volltext / Body" button. Entries without
+                    a body (legacy) never show this section. */}
+                {bodyOpenFor === entry.id && entry.body && (
+                  <div className="flex flex-col gap-1.5 rounded border border-[var(--atlas-border-subtle)] bg-[var(--atlas-bg-surface-muted)] p-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[10.5px] font-semibold uppercase tracking-wider text-[var(--atlas-text-muted)]">
+                        {isDe ? "Generierter Volltext" : "Generated body"}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => openAIMode({ prompt: entry.prompt })}
+                        className="inline-flex items-center gap-1 text-[10.5px] text-[var(--atlas-text-muted)] hover:text-[var(--atlas-text-primary)] transition-colors"
+                        title={
+                          isDe
+                            ? "Prompt erneut dispatchen und neuen Volltext generieren"
+                            : "Re-dispatch prompt to regenerate"
+                        }
+                      >
+                        <Sparkles
+                          size={10}
+                          strokeWidth={1.8}
+                          aria-hidden="true"
+                        />
+                        {isDe ? "Neu generieren" : "Regenerate"}
+                      </button>
+                    </div>
+                    <pre className="text-[10.5px] text-[var(--atlas-text-secondary)] whitespace-pre-wrap font-mono max-h-80 overflow-y-auto leading-snug">
+                      {entry.body}
+                    </pre>
+                  </div>
+                )}
 
                 {isEditing ? (
                   <div className="flex flex-col gap-2">

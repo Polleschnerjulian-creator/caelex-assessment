@@ -245,6 +245,10 @@ export interface DraftLibraryEntry {
   /** Bundle 41 — jurisdiction this entry was generated against, used
    *  by the parallel-set view to label each variant. */
   jurisdiction?: string;
+  /** A-H10 — Generated body text produced by the AI model. Optional for
+   *  backward compat with entries created before this field existed
+   *  (legacy entries show prompt-only in the My Drafts view). */
+  body?: string;
   ts: number;
 }
 

@@ -225,6 +225,11 @@ export async function processChat(args: {
   const actions: ClientAction[] = [];
   let totalInputTokens = 0;
   let totalOutputTokens = 0;
+  /* A-H10: track the most-recent generate_draft body in this turn so it
+     can be threaded onto the push_to_library client action. Resets each
+     time a new generate_draft completes so we always attach the body
+     from the closest preceding draft call. */
+  let lastGeneratedBody: string | undefined;
 
   let finalMessage: ChatMessage | null = null;
 
@@ -274,6 +279,12 @@ export async function processChat(args: {
           totalInputTokens += result.toolInputTokens ?? 0;
           totalOutputTokens += result.toolOutputTokens ?? 0;
 
+          /* A-H10: capture the body from generate_draft so it can be
+             threaded onto a subsequent push_to_library action. */
+          if (toolName === "generate_draft" && result.generatedBody) {
+            lastGeneratedBody = result.generatedBody;
+          }
+
           toolCalls.push({
             id: toolUseId,
             name: toolName,
@@ -296,9 +307,16 @@ export async function processChat(args: {
         } else if (isClientTool(toolName)) {
           /* Package as a ClientAction. The tool_result we send back to
              the LLM is an optimistic ack so it can keep reasoning. */
+          /* A-H10: if this is push_to_library, thread the most-recent
+             generate_draft body from this turn onto the action. */
+          const extraFields =
+            toolName === "push_to_library" && lastGeneratedBody !== undefined
+              ? { body: lastGeneratedBody }
+              : {};
           const action: ClientAction = {
             type: toolName,
             ...toolInput,
+            ...extraFields,
           } as ClientAction;
           actions.push(action);
 
