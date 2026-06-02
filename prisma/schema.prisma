@@ -11732,6 +11732,20 @@ model TradeOperation {
   /// §8 AWV-Anzeigepflicht (notification duty)
   notificationDuty Boolean @default(false)
 
+  /// §9(1)/§9(2) AWV self-attested knowledge inputs (operator declarations).
+  /// Drive the high-confidence §9 catch-all triggers in the evaluator —
+  /// distinct from the keyword/declaredEndUse paths, which already fire from
+  /// existing fields. Default false; set via the operation end-use form / API.
+  bafaNuclearNotification  Boolean @default(false)
+  nuclearEndUseAware       Boolean @default(false)
+  bafaMilitaryNotification Boolean @default(false)
+  militaryEndUseAware      Boolean @default(false)
+  /// §9(1)/§9(2) AWV catch-all RESULTS (derived by the catch-all evaluator,
+  /// persisted by recompute so the specific §9 trigger is queryable — not
+  /// just folded into notificationDuty).
+  para9NuclearHit  Boolean @default(false)
+  para9MilitaryHit Boolean @default(false)
+
   /// Z13 — Operator declaration: the technical data / source code in
   /// this operation is accessible IN-COUNTRY to non-US-national
   /// employees (deemed-export scenario per EAR § 734.13 / ITAR § 120.50).
