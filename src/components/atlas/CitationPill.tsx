@@ -181,7 +181,9 @@ export function CitationPill({ id, href, kind = "source" }: CitationPillProps) {
                     <span className="block text-[10.5px] text-emerald-300/80 font-mono mb-1">
                       {preview.verbatim_section} —{" "}
                       <span className="italic text-white/40">
-                        verbatim text
+                        {language === "de"
+                          ? "Bestimmungstext (Korpus)"
+                          : "Provision text (corpus)"}
                       </span>
                     </span>
                   )}
@@ -203,6 +205,15 @@ export function CitationPill({ id, href, kind = "source" }: CitationPillProps) {
                   <span className="mt-1.5 block text-[9.5px] text-white/40 leading-tight">
                     {language === "de" ? "Quelle: " : "Source: "}
                     {getVerbatimAttribution(preview.jurisdiction).publisher}
+                  </span>
+                  {/* A-M2: paragraph_text is hand-authored corpus data, not a
+                      byte-for-byte copy of the official gazette. Show a
+                      disclaimer so lawyers know to verify before relying on
+                      this excerpt in legal documents. */}
+                  <span className="mt-1 block text-[9.5px] text-amber-400/60 leading-tight italic">
+                    {language === "de"
+                      ? "Kann redaktionell sein — am amtlichen Quelltext verifizieren."
+                      : "May be editorial — verify against the official source text."}
                   </span>
                 </>
               ) : (

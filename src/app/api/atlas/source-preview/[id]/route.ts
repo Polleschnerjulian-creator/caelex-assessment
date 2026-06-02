@@ -85,7 +85,7 @@ export async function GET(
       headers: {
         // Tooltip-grade cache: refresh hourly, serve stale up to 24h
         // while revalidating. The catalogue rarely changes mid-session.
-        "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+        "Cache-Control": "private, max-age=3600, stale-while-revalidate=86400",
       },
     },
   );
