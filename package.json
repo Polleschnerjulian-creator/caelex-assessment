@@ -44,6 +44,7 @@
     "lighthouse": "lhci autorun",
     "build:widget": "npx tsx widget.build.ts",
     "atlas:embed": "npx tsx --env-file-if-exists=.env.local scripts/atlas-embed.ts",
+    "check:embeddings": "tsx scripts/check-embeddings-freshness.ts",
     "atlas:encrypt-backfill": "npx tsx --env-file-if-exists=.env.local scripts/encrypt-atlas-backfill.ts",
     "atlas:encrypt-backfill:dry": "npx tsx --env-file-if-exists=.env.local scripts/encrypt-atlas-backfill.ts --dry-run",
     "desktop:dev": "tauri dev",

@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "fix/**", "feat/**", "chore/**"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  lint-and-test:
+    name: Lint, typecheck & test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit / integration tests
+        run: npm run test:run
+
+      # ── Atlas embeddings freshness check ─────────────────────────
+      # Informational only. A non-zero exit is EXPECTED while the
+      # embeddings index is stale (regeneration requires Vercel AI
+      # Gateway credentials that are not available in CI). This step
+      # surfaces the staleness so it cannot grow silently; it must
+      # never block the build.
+      - name: Check Atlas embeddings freshness (informational)
+        run: npm run check:embeddings
+        continue-on-error: true
