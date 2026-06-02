@@ -26,6 +26,15 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+vi.mock("./atlas-encryption", () => ({
+  decryptAtlasField: vi.fn(async (v: string | null | undefined) => {
+    if (v === null || v === undefined) return v;
+    if (typeof v === "string" && v.startsWith("ENC:"))
+      return v.slice("ENC:".length);
+    return v;
+  }),
+}));
+
 import { loadMandateScaffoldContext } from "./mandate-scaffold-context.server";
 
 beforeEach(() => {
@@ -259,5 +268,56 @@ describe("loadMandateScaffoldContext", () => {
       { type: "asc" },
       { createdAt: "asc" },
     ]);
+  });
+
+  it("decrypts clientName, clientContact, and customInstructions PII fields (A-H2)", async () => {
+    findFirst.mockResolvedValue({
+      id: "m-99",
+      name: "SecretCo Matter",
+      jurisdiction: "DE",
+      operatorType: "spacecraft_operator",
+      primaryAuthority: "BMWK",
+      clientName: "ENC:Alice Example GmbH",
+      clientContact: "ENC:alice@secret.example",
+      customInstructions: "ENC:Always use formal German.",
+      parties: [],
+      owner: { name: "Dr. Lawyer", email: "lawyer@firm.example" },
+    });
+
+    const result = await loadMandateScaffoldContext({
+      mandateId: "m-99",
+      callerUserId: "u1",
+      callerOrgId: "org-A",
+    });
+
+    expect(result).not.toBeNull();
+    expect(result?.clientName).toBe("Alice Example GmbH");
+    expect(result?.clientContact).toBe("alice@secret.example");
+    expect(result?.customInstructions).toBe("Always use formal German.");
+  });
+
+  it("passes null PII fields through decryption without error (A-H2)", async () => {
+    findFirst.mockResolvedValue({
+      id: "m-100",
+      name: "Minimal Mandate",
+      jurisdiction: null,
+      operatorType: null,
+      primaryAuthority: null,
+      clientName: null,
+      clientContact: null,
+      customInstructions: null,
+      parties: [],
+      owner: null,
+    });
+
+    const result = await loadMandateScaffoldContext({
+      mandateId: "m-100",
+      callerUserId: "u1",
+      callerOrgId: "org-A",
+    });
+
+    expect(result?.clientName).toBeNull();
+    expect(result?.clientContact).toBeNull();
+    expect(result?.customInstructions).toBeNull();
   });
 });

@@ -27,6 +27,7 @@ import "server-only";
  */
 
 import { prisma } from "@/lib/prisma";
+import { decryptAtlasField } from "./atlas-encryption";
 
 export interface MandateScaffoldContext {
   id: string;
@@ -90,15 +91,23 @@ export async function loadMandateScaffoldContext(args: {
     },
   });
   if (!m) return null;
+  /* SEC-T0-1 / A-H2: decrypt PII fields before returning. Mirrors the
+     pattern in mandate-context.ts. decryptAtlasField is idempotent on
+     plaintext and null — safe during the dual-read transition period. */
+  const [clientName, clientContact, customInstructions] = await Promise.all([
+    decryptAtlasField(m.clientName),
+    decryptAtlasField(m.clientContact),
+    decryptAtlasField(m.customInstructions),
+  ]);
   return {
     id: m.id,
     name: m.name,
     jurisdiction: m.jurisdiction,
     operatorType: m.operatorType,
     primaryAuthority: m.primaryAuthority,
-    clientName: m.clientName,
-    clientContact: m.clientContact,
-    customInstructions: m.customInstructions,
+    clientName,
+    clientContact,
+    customInstructions,
     parties: m.parties,
     ownerName: m.owner?.name ?? null,
     ownerEmail: m.owner?.email ?? null,

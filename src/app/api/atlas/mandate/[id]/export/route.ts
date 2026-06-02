@@ -31,6 +31,7 @@ import { getAtlasAuth } from "@/lib/atlas-auth";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { decryptAtlasField } from "@/lib/atlas/atlas-encryption";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -183,6 +184,16 @@ export async function GET(
       );
     }
 
+    /* SEC-T0-1 / A-H2: decrypt PII fields before rendering into Markdown.
+       decryptAtlasField is idempotent on plaintext + null — safe during
+       the dual-read transition. Parallel awaits; other fields are
+       non-encrypted and need no special handling. */
+    const [clientName, clientContact, customInstructions] = await Promise.all([
+      decryptAtlasField(mandate.clientName),
+      decryptAtlasField(mandate.clientContact),
+      decryptAtlasField(mandate.customInstructions),
+    ]);
+
     /* Build the Markdown document. */
     const lines: string[] = [];
     lines.push(`# Mandats-Akte: ${mandate.name}`);
@@ -204,9 +215,8 @@ export async function GET(
       lines.push(`- **Archiviert:** ${formatDate(mandate.archivedAt)}`);
     if (mandate.closedAt)
       lines.push(`- **Geschlossen:** ${formatDate(mandate.closedAt)}`);
-    if (mandate.clientName) lines.push(`- **Klient:** ${mandate.clientName}`);
-    if (mandate.clientContact)
-      lines.push(`- **Klient-Kontakt:** ${mandate.clientContact}`);
+    if (clientName) lines.push(`- **Klient:** ${clientName}`);
+    if (clientContact) lines.push(`- **Klient-Kontakt:** ${clientContact}`);
     if (mandate.jurisdiction)
       lines.push(`- **Jurisdiktion:** ${mandate.jurisdiction}`);
     if (mandate.operatorType)
@@ -326,10 +336,10 @@ export async function GET(
     }
 
     /* Custom Instructions */
-    if (mandate.customInstructions) {
+    if (customInstructions) {
       lines.push("## Custom Instructions");
       lines.push("");
-      lines.push(mandate.customInstructions);
+      lines.push(customInstructions);
       lines.push("");
     }
 
