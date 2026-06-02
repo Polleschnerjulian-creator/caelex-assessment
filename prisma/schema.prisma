@@ -116,6 +116,7 @@ model User {
   // back-ref above which targets the legacy `ApiKey` model used by the
   // main platform API; Trade keys carry their own prefix + scope set.
   tradeApiKeysCreated TradeApiKey[] @relation("TradeApiKeyCreatedBy")
+  tradeScreeningConfigsUpdated TradeScreeningConfig[] @relation("TradeScreeningConfigUpdatedBy")
 
   // Mission domain (Sprint Mission-1) — first-class Mission entity
   // back-ref. Author of the Mission (creator). Distinct from
@@ -3187,6 +3188,8 @@ model Organization {
   tradeOrgProfile              TradeOrgProfile?
   tradeNotificationPreferences TradeNotificationPreferences?
   tradeApiKeys                 TradeApiKey[]
+  tradeScreeningConfig         TradeScreeningConfig?
+  tradeReminderConfig          TradeReminderConfig?
 
   // Caelex Trade Sprint E5 — End-Use Certificate requests
   // tracked per (party, operation?). Lifecycle: REQUESTED →
@@ -14456,6 +14459,59 @@ model TradeNotificationPreferences {
   auditWebhookOnScreeningHit    Boolean @default(false)
   auditWebhookOnEucLifecycle    Boolean @default(false)
   auditWebhookOnVsdSubmitted    Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Trade-scoped screening configuration — one per org. Drives which
+/// sanction lists are checked, how strict the fuzzy match is, the
+/// auto-block policy, and the re-screen cadence. The screening engine
+/// reads this (falling back to code defaults when no row exists), so
+/// toggling a list or threshold here is an auditable compliance decision.
+model TradeScreeningConfig {
+  id             String       @id @default(cuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  /// Enabled sanction-list keys (e.g. "OFAC_SDN", "BIS_ENTITY",
+  /// "DDTC_DEBARRED", "EU_CONSOLIDATED", "UN_CONSOLIDATED", "UK_OFSI").
+  /// String[] not an enum so adding a list source is a non-breaking change.
+  enabledLists String[] @default(["OFAC_SDN", "BIS_ENTITY", "DDTC_DEBARRED", "EU_CONSOLIDATED", "UN_CONSOLIDATED"])
+
+  /// Jaro-Winkler similarity cutoff a hit must reach to surface.
+  /// Clamped to [0.70, 0.95] in the service layer.
+  matchThreshold Float @default(0.85)
+
+  /// Auto-block an operation when a CONFIRMED_HIT exists.
+  autoBlockOnConfirmedHit Boolean @default(true)
+
+  /// Re-screen existing parties every N days. null = no auto re-screen.
+  reScreenIntervalDays Int? @default(30)
+
+  updatedById String?
+  updatedBy   User?    @relation("TradeScreeningConfigUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+/// Trade-scoped reminder cadence config — one per org. The trade cron
+/// reminder jobs read this (falling back to code defaults) to decide how
+/// many days ahead to nudge for licence expiry, EUC follow-ups,
+/// Supplement-2 filings, and VSD deadlines.
+model TradeReminderConfig {
+  id             String       @id @default(cuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  /// Lead-time(s) in days before a licence's validUntil to send warnings.
+  licenceExpiryLeadDays Int[] @default([90, 60, 30])
+  /// Days after an EUC is sent before nudging if still unreturned.
+  eucReminderDays Int @default(21)
+  /// Days before a Supplement-2 filing deadline to remind.
+  supplement2ReminderDays Int @default(14)
+  /// Days before a VSD authority deadline to remind.
+  vsdReminderDays Int @default(30)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
