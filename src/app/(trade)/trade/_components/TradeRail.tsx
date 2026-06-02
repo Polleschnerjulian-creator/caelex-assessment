@@ -1,19 +1,22 @@
 "use client";
 
 /**
- * Caelex Trade — Black icon rail (Passage shell, column 1).
+ * Caelex Trade — Icon rail (Passage shell, column 1).
  *
- * The slim ~62px dark rail that carries the top-level sections as icon-only
- * <Link>s. This is CHROME — it stays dark in both light and dark themes
- * (like the mockup), so all colors here are hardcoded rather than tokenised.
+ * The slim ~62px rail that carries the top-level sections as icon-only
+ * <Link>s. Neon-console light: the rail is now TOKENISED — it follows the
+ * trade theme (light surface in light mode, dark in dark mode) instead of
+ * staying hardcoded dark. The brand mark + org-avatar chips stay dark as
+ * deliberate accents.
  *
- * Visual contract mirrors `.mockups/passage-light.html` `.rail` / `.ri` /
- * `.mark` / `.av`:
- *   - black `#0b0c0f` → `#101216` top-down gradient, 0.5px right hairline
- *   - icons at rgba(255,255,255,.56); hover lifts to .92 on a .06 wash
- *   - active = white icon on rgba(255,255,255,.12) rounded-square + a 3px
- *     white left indicator
- *   - logo mark (passage glyph) up top, org-initials chip at the bottom
+ * Visual contract (Neon light):
+ *   - rail surface `var(--trade-bg-panel)`, 1px right hairline
+ *     `var(--trade-border)`
+ *   - icons at `--trade-text-muted`; hover lifts to `--trade-text-primary`
+ *     on a `--trade-hover` wash
+ *   - active = `--trade-text-primary` icon on `--trade-bg-subtle`
+ *     rounded-square + a 3px `--trade-text-primary` left indicator
+ *   - dark logo mark (passage glyph) up top, dark org-initials chip bottom
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -73,8 +76,8 @@ export function TradeRail({ org, badgeCounts }: Props) {
       aria-label="Passage navigation"
       className="flex h-full w-full flex-col items-center"
       style={{
-        background: "linear-gradient(180deg, #101216, #0b0c0f)",
-        borderRight: "0.5px solid rgba(255, 255, 255, 0.06)",
+        background: "var(--trade-bg-panel)",
+        borderRight: "1px solid var(--trade-border)",
         padding: "14px 0",
         gap: "6px",
       }}
@@ -91,8 +94,7 @@ export function TradeRail({ org, badgeCounts }: Props) {
           borderRadius: 10,
           marginBottom: 10,
           background: "linear-gradient(160deg, #26282f, #141519)",
-          boxShadow:
-            "inset 0 1px 0 rgba(255,255,255,.10), 0 2px 6px rgba(0,0,0,.4)",
+          boxShadow: "0 1px 2px rgba(0,0,0,.15)",
         }}
       >
         <PassageMark />
@@ -159,18 +161,15 @@ function RailIcon({ item, active, attention }: RailIconProps) {
   const Icon = item.icon;
   const [hover, setHover] = React.useState(false);
 
-  // Color/background resolve to match the mockup's `.ri` / `.ri:hover` /
-  // `.ri.on`. Inline styles (not Tailwind) so the hardcoded chrome colors
-  // never get rewritten by the light/dark token system.
-  const color = active
-    ? "#ffffff"
-    : hover
-      ? "rgba(255,255,255,.92)"
-      : "rgba(255,255,255,.56)";
+  // Color/background follow the trade theme via inline CSS vars, so the
+  // rail flips light/dark with `data-trade-theme` (was hardcoded dark to
+  // match the `.ri` / `.ri:hover` / `.ri.on` states in the old mockup).
+  const color =
+    active || hover ? "var(--trade-text-primary)" : "var(--trade-text-muted)";
   const background = active
-    ? "rgba(255,255,255,.12)"
+    ? "var(--trade-bg-subtle)"
     : hover
-      ? "rgba(255,255,255,.06)"
+      ? "var(--trade-hover)"
       : "transparent";
 
   return (
@@ -206,7 +205,7 @@ function RailIcon({ item, active, attention }: RailIconProps) {
             width: 3,
             height: 18,
             borderRadius: 3,
-            background: "#fff",
+            background: "var(--trade-text-primary)",
           }}
         />
       ) : null}
@@ -225,7 +224,7 @@ function RailIcon({ item, active, attention }: RailIconProps) {
             height: 6,
             borderRadius: "50%",
             background: "#ff9500",
-            boxShadow: "0 0 0 2px #0b0c0f",
+            boxShadow: "0 0 0 2px var(--trade-bg-panel)",
           }}
         />
       ) : null}
