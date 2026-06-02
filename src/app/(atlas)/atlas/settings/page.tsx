@@ -51,6 +51,7 @@ import {
 import { AccountBanner } from "@/components/atlas/AccountBanner";
 import { AtlasDataRightsCard } from "./AtlasDataRightsCard";
 import { LetterheadSettings } from "@/components/atlas/v2/LetterheadSettings";
+import { invalidateFirmBranding } from "@/components/atlas/useFirmBranding";
 
 // Computed inventory counts — derived from the same barrel exports the
 // rest of Atlas uses, so the settings stats never drift from reality.
@@ -263,6 +264,11 @@ export default function SettingsPage() {
   const [confirmRevokeId, setConfirmRevokeId] = useState<string | null>(null);
   const [resentId, setResentId] = useState<string | null>(null);
 
+  // Platform-admin gating — fetched once from /api/atlas/settings/context
+  // so admin-only sidebar links are hidden from non-admins client-side.
+  // Server-side gates on those pages are still the authoritative barrier.
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
+
   // Password change state — three controlled inputs + per-input visibility
   // toggle. `passwordStatus` carries the same idle/saving/saved/error
   // semantics as `profileSave` so the SaveIndicator pattern stays
@@ -364,7 +370,7 @@ export default function SettingsPage() {
     }
   }, [currentPwd, newPwd, confirmPwd, language]);
 
-  /* ──── Fetch profile + firm on mount ──── */
+  /* ──── Fetch profile + firm + context on mount ──── */
   useEffect(() => {
     fetch("/api/atlas/settings/profile")
       .then((r) => (r.ok ? r.json() : null))
@@ -381,6 +387,14 @@ export default function SettingsPage() {
       })
       .catch(() => {})
       .finally(() => setFirmLoading(false));
+
+    // D5: fetch isPlatformAdmin to gate admin-only sidebar links.
+    fetch("/api/atlas/settings/context")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.isPlatformAdmin) setIsPlatformAdmin(true);
+      })
+      .catch(() => {});
   }, []);
 
   /* ──── Lazy-load team when tab is clicked ──── */
@@ -484,6 +498,11 @@ export default function SettingsPage() {
         body: JSON.stringify({ name: firm.name }),
       })
         .then((r) => {
+          if (r.ok) {
+            // D8: bust the module-level firm-branding cache so PDF exports
+            // pick up the new name without waiting for a page reload.
+            invalidateFirmBranding();
+          }
           setFirmSave(r.ok ? "saved" : "error");
         })
         .catch(() => setFirmSave("error"));
@@ -519,7 +538,13 @@ export default function SettingsPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ logoUrl: dataUrl }),
         })
-          .then((r) => setFirmSave(r.ok ? "saved" : "error"))
+          .then((r) => {
+            if (r.ok) {
+              // D8: bust firm-branding cache so PDF exports get the new logo.
+              invalidateFirmBranding();
+            }
+            setFirmSave(r.ok ? "saved" : "error");
+          })
           .catch(() => setFirmSave("error"));
       };
       reader.readAsDataURL(file);
@@ -536,7 +561,14 @@ export default function SettingsPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ logoUrl: null }),
     })
-      .then((r) => setFirmSave(r.ok ? "saved" : "error"))
+      .then((r) => {
+        if (r.ok) {
+          // D8: bust firm-branding cache so PDF exports no longer include
+          // the removed logo.
+          invalidateFirmBranding();
+        }
+        setFirmSave(r.ok ? "saved" : "error");
+      })
       .catch(() => setFirmSave("error"));
   }, []);
 
@@ -833,65 +865,69 @@ export default function SettingsPage() {
                 <span className="truncate">{tab.label}</span>
               </button>
             ))}
-            {/* Admin-only quick-jumps to operations sub-pages. Hidden
-                via render-not-render — non-admins simply don't see
-                these. (Server-side gates are still enforced on those
-                pages.) */}
-            <div className="my-2 hidden border-t border-slate-200 dark:border-white/[0.06] md:block" />
-            <Link
-              href="/atlas/settings/audit"
-              className="flex shrink-0 items-center gap-2.5 rounded-md px-3 py-2 text-left text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.03] dark:hover:text-slate-200"
-            >
-              <ScrollText
-                size={14}
-                strokeWidth={1.5}
-                className="shrink-0 opacity-70"
-              />
-              <span className="truncate">
-                {language === "de" ? "Audit-Log" : "Audit log"}
-              </span>
-              <ArrowRight
-                size={11}
-                strokeWidth={1.5}
-                className="ml-auto opacity-40"
-              />
-            </Link>
-            <Link
-              href="/atlas/settings/cost"
-              className="flex shrink-0 items-center gap-2.5 rounded-md px-3 py-2 text-left text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.03] dark:hover:text-slate-200"
-            >
-              <Database
-                size={14}
-                strokeWidth={1.5}
-                className="shrink-0 opacity-70"
-              />
-              <span className="truncate">
-                {language === "de" ? "AI-Kosten" : "AI cost"}
-              </span>
-              <ArrowRight
-                size={11}
-                strokeWidth={1.5}
-                className="ml-auto opacity-40"
-              />
-            </Link>
-            <Link
-              href="/atlas/settings/eval"
-              className="flex shrink-0 items-center gap-2.5 rounded-md px-3 py-2 text-left text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.03] dark:hover:text-slate-200"
-            >
-              <Sparkles
-                size={14}
-                strokeWidth={1.5}
-                className="shrink-0 opacity-70"
-              />
-              <span className="truncate">
-                {language === "de" ? "Quality-Bench" : "Quality bench"}
-              </span>
-              <ArrowRight
-                size={11}
-                strokeWidth={1.5}
-                className="ml-auto opacity-40"
-              />
-            </Link>
+            {/* Admin-only quick-jumps to operations sub-pages. Gated by
+                isPlatformAdmin — non-admins don't see these links at all.
+                Server-side gates on those pages are still the authoritative
+                barrier; this is a UI-hygiene guard only. */}
+            {isPlatformAdmin && (
+              <>
+                <div className="my-2 hidden border-t border-slate-200 dark:border-white/[0.06] md:block" />
+                <Link
+                  href="/atlas/settings/audit"
+                  className="flex shrink-0 items-center gap-2.5 rounded-md px-3 py-2 text-left text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.03] dark:hover:text-slate-200"
+                >
+                  <ScrollText
+                    size={14}
+                    strokeWidth={1.5}
+                    className="shrink-0 opacity-70"
+                  />
+                  <span className="truncate">
+                    {language === "de" ? "Audit-Log" : "Audit log"}
+                  </span>
+                  <ArrowRight
+                    size={11}
+                    strokeWidth={1.5}
+                    className="ml-auto opacity-40"
+                  />
+                </Link>
+                <Link
+                  href="/atlas/settings/cost"
+                  className="flex shrink-0 items-center gap-2.5 rounded-md px-3 py-2 text-left text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.03] dark:hover:text-slate-200"
+                >
+                  <Database
+                    size={14}
+                    strokeWidth={1.5}
+                    className="shrink-0 opacity-70"
+                  />
+                  <span className="truncate">
+                    {language === "de" ? "AI-Kosten" : "AI cost"}
+                  </span>
+                  <ArrowRight
+                    size={11}
+                    strokeWidth={1.5}
+                    className="ml-auto opacity-40"
+                  />
+                </Link>
+                <Link
+                  href="/atlas/settings/eval"
+                  className="flex shrink-0 items-center gap-2.5 rounded-md px-3 py-2 text-left text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.03] dark:hover:text-slate-200"
+                >
+                  <Sparkles
+                    size={14}
+                    strokeWidth={1.5}
+                    className="shrink-0 opacity-70"
+                  />
+                  <span className="truncate">
+                    {language === "de" ? "Quality-Bench" : "Quality bench"}
+                  </span>
+                  <ArrowRight
+                    size={11}
+                    strokeWidth={1.5}
+                    className="ml-auto opacity-40"
+                  />
+                </Link>
+              </>
+            )}
           </nav>
         </aside>
 
@@ -1236,79 +1272,6 @@ export default function SettingsPage() {
                       );
                     })}
                   </div>
-                </section>
-
-                {/* Appearance */}
-                <section>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Sun
-                      className="h-4 w-4 text-slate-400 dark:text-slate-500"
-                      strokeWidth={1.5}
-                      aria-hidden="true"
-                    />
-                    <h2 className="text-[12px] font-semibold text-slate-500 dark:text-slate-400 tracking-[0.1em] uppercase">
-                      Appearance
-                    </h2>
-                    <span className="ml-auto text-[11px] text-slate-400 dark:text-slate-500">
-                      Currently:{" "}
-                      <span className="font-medium text-slate-700 dark:text-slate-300">
-                        {resolvedTheme === "dark" ? "Dark" : "Light"}
-                      </span>
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-3">
-                    {(
-                      [
-                        { value: "light", label: "Light", icon: Sun },
-                        { value: "dark", label: "Dark", icon: Moon },
-                        { value: "system", label: "System", icon: Monitor },
-                      ] as const
-                    ).map((opt) => {
-                      const Icon = opt.icon;
-                      const isActive = theme === opt.value;
-                      return (
-                        <button
-                          key={opt.value}
-                          onClick={() => setTheme(opt.value as AtlasTheme)}
-                          aria-pressed={isActive}
-                          className={`
-                        relative flex flex-col items-start gap-2
-                        px-4 py-4 rounded-xl border-2 transition-all duration-200
-                        ${
-                          isActive
-                            ? "border-gray-900 bg-white dark:bg-[#1a1a1a] shadow-sm"
-                            : "border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#1a1a1a] hover:border-slate-400 dark:hover:border-white/[0.16]"
-                        }
-                      `}
-                        >
-                          <Icon
-                            className={`h-4 w-4 ${isActive ? "text-slate-900 dark:text-slate-100" : "text-slate-400 dark:text-slate-500"}`}
-                            strokeWidth={1.5}
-                            aria-hidden="true"
-                          />
-                          <span
-                            className={`text-[13px] font-medium ${isActive ? "text-slate-900 dark:text-slate-100" : "text-slate-700 dark:text-slate-300"}`}
-                          >
-                            {opt.label}
-                          </span>
-                          {isActive && (
-                            <div className="absolute top-2 right-2 flex items-center justify-center h-4 w-4 rounded-full bg-gray-900">
-                              <Check
-                                className="h-2.5 w-2.5 text-white"
-                                strokeWidth={3}
-                                aria-hidden="true"
-                              />
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-3">
-                    Applies to Atlas only — your dashboard theme is unchanged.
-                    Stored in this browser.
-                  </p>
                 </section>
 
                 {/* Sign out — explicit account-action below the
@@ -2412,7 +2375,30 @@ export default function SettingsPage() {
 
                 {/* DSGVO Artifacts — Order follows Art. 28 → Art. 13/14 → Art. 22 → ePrivacy → Art. 5 TOMs */}
                 <section className="rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#1a1a1a] divide-y divide-slate-100 dark:divide-white/[0.04]">
-                  {/* AVV / DPA */}
+                  {/* D6: Org-specific DPA execution record — discoverable from
+                      Compliance tab. Links directly to /atlas/settings/dpa
+                      (the per-org AVV status & signing flow), distinct from
+                      the public /legal/dpa (the template text below). */}
+                  <ComplianceRow
+                    icon={<FileText size={16} aria-hidden="true" />}
+                    title={
+                      language === "de" ? "Ihr AVV-Status" : "Your DPA status"
+                    }
+                    description={
+                      language === "de"
+                        ? "Organisationsspezifischer Auftragsverarbeitungsvertrag (AVV) zwischen Ihrer Kanzlei und Caelex — Unterzeichnungsstatus, Dokumente und Verlauf."
+                        : "Your organisation's Data Processing Agreement (DPA) with Caelex — signing status, documents and history."
+                    }
+                    badge={t("atlas.settings_compliance_badge_art28")}
+                    links={[
+                      {
+                        label: language === "de" ? "AVV öffnen" : "Open DPA",
+                        href: "/atlas/settings/dpa",
+                      },
+                    ]}
+                  />
+
+                  {/* AVV / DPA — template / public text */}
                   <ComplianceRow
                     icon={<FileText size={16} aria-hidden="true" />}
                     title={t("atlas.settings_compliance_dpa_title")}

@@ -59,6 +59,21 @@ function ensureLoaded(): Promise<FirmBranding> {
   return inFlight;
 }
 
+/**
+ * Invalidate the module-level firm-branding cache.
+ *
+ * Call this after a successful firm name/logo PATCH so the next
+ * consumer (e.g. PDF export) refetches the updated values rather
+ * than serving stale cached data until the tab is reloaded.
+ *
+ * Any in-flight fetch is also cancelled (by nulling `inFlight`) so
+ * the next ensureLoaded() call kicks a fresh request.
+ */
+export function invalidateFirmBranding(): void {
+  cached = null;
+  inFlight = null;
+}
+
 export function useFirmBranding(): FirmBranding {
   // Synchronous-first read so a print click that happens after the
   // first mount (cache populated) never races the fetch.
