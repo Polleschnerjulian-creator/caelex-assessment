@@ -128,7 +128,8 @@ const LANGUAGE_OPTIONS: { code: Language; label: string; native: string }[] = [
   { code: "de", label: "German", native: "Deutsch" },
 ];
 
-const MAX_LOGO_SIZE = 512 * 1024; // 512 KB
+// MAX_LOGO_SIZE removed — logo size cap (2 MB) is now enforced inside
+// handleLogoUpload and on the server at /api/atlas/settings/logo.
 const DEBOUNCE_MS = 500;
 
 /* ────────────────────────────────────────────
@@ -513,42 +514,69 @@ export default function SettingsPage() {
 
   /* ──── Logo handlers ──── */
   const handleLogoUpload = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
+      // Reset the input so the same file can be re-selected after an error.
+      e.target.value = "";
 
-      if (file.size > MAX_LOGO_SIZE) {
-        alert(t("atlas.settings_logo_size_error"));
-        return;
-      }
-
-      if (!file.type.startsWith("image/")) {
+      // Client-side pre-checks (mirrors server validation — defence in depth).
+      const ALLOWED_LOGO_TYPES = [
+        "image/png",
+        "image/jpeg",
+        "image/webp",
+        "image/svg+xml",
+      ];
+      if (!ALLOWED_LOGO_TYPES.includes(file.type)) {
         alert(t("atlas.settings_image_file_error"));
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = reader.result as string;
-        setFirm((prev) => (prev ? { ...prev, logoUrl: dataUrl } : prev));
-        // Save to API
-        setFirmSave("saving");
-        fetch("/api/atlas/settings/firm", {
+      const MAX_LOGO_BYTES = 2 * 1024 * 1024; // 2 MB
+      if (file.size > MAX_LOGO_BYTES) {
+        alert(t("atlas.settings_logo_size_error"));
+        return;
+      }
+
+      setFirmSave("saving");
+
+      try {
+        // ── Step 1: upload to R2 via the new logo endpoint ──
+        const form = new FormData();
+        form.append("file", file);
+
+        const uploadRes = await fetch("/api/atlas/settings/logo", {
+          method: "POST",
+          body: form,
+        });
+
+        if (!uploadRes.ok) {
+          const data = await uploadRes.json().catch(() => null);
+          console.error("Logo upload failed", data);
+          setFirmSave("error");
+          return;
+        }
+
+        const { url: logoUrl } = (await uploadRes.json()) as { url: string };
+
+        // ── Step 2: optimistically update local state ──
+        setFirm((prev) => (prev ? { ...prev, logoUrl } : prev));
+
+        // ── Step 3: persist the https:// URL via the firm PATCH ──
+        const patchRes = await fetch("/api/atlas/settings/firm", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ logoUrl: dataUrl }),
-        })
-          .then((r) => {
-            if (r.ok) {
-              // D8: bust firm-branding cache so PDF exports get the new logo.
-              invalidateFirmBranding();
-            }
-            setFirmSave(r.ok ? "saved" : "error");
-          })
-          .catch(() => setFirmSave("error"));
-      };
-      reader.readAsDataURL(file);
-      e.target.value = "";
+          body: JSON.stringify({ logoUrl }),
+        });
+
+        if (patchRes.ok) {
+          // D8: bust firm-branding cache so PDF exports get the new logo.
+          invalidateFirmBranding();
+        }
+        setFirmSave(patchRes.ok ? "saved" : "error");
+      } catch {
+        setFirmSave("error");
+      }
     },
     [t],
   );
@@ -1620,11 +1648,16 @@ export default function SettingsPage() {
                           </div>
                         )}
 
-                        {firm?.isOwner && (
+                        {/* D2 fix: was firm?.isOwner — widened to canEditFirm
+                            so ADMIN users (who see the upload/replace buttons
+                            gated on canEditFirm) can actually trigger the
+                            picker. isOwner gate left the input out of the DOM
+                            for ADMINs, making fileRef.current?.click() a no-op. */}
+                        {canEditFirm && (
                           <input
                             ref={fileRef}
                             type="file"
-                            accept="image/*"
+                            accept="image/png,image/jpeg,image/webp,image/svg+xml"
                             onChange={handleLogoUpload}
                             aria-label={t("atlas.settings_upload_logo_aria")}
                             className="hidden"
