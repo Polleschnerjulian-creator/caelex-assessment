@@ -32,6 +32,12 @@ export interface ScreeningAssessment {
   status: TradeScreeningStatus;
   partyName: string;
   partyBlocked: boolean;
+  /** When the counterparty was last screened. A CLEAR party whose last
+   *  screening is older than SCREENING_STALE_AFTER_DAYS is treated as a gap
+   *  (not a clean GO), so the verdict reflects screening freshness in real
+   *  time rather than trusting a possibly-outdated stored CLEAR. Omitted /
+   *  null = freshness unknown → not downgraded. */
+  lastScreenedAt?: Date | null;
 }
 export interface VerdictResult {
   verdict: Verdict;
@@ -45,6 +51,11 @@ const VERDICT_EMOJI: Record<Verdict, string> = {
   REVIEW: "\u{1F7E1}",
   BLOCKED: "\u{1F534}",
 };
+
+/** A CLEAR counterparty whose last screening is older than this is treated as
+ *  a screening gap by the verdict (matches the trade-rescreen-stale cron's
+ *  STALE_AFTER_DAYS = 30). */
+const SCREENING_STALE_AFTER_DAYS = 30;
 
 function worst(a: StepStatus, b: StepStatus): StepStatus {
   if (a === "blocked" || b === "blocked") return "blocked";
@@ -74,6 +85,7 @@ function licenseRequired(c: ClassificationResult): boolean {
 export function deriveVerdict(
   lines: LineAssessment[],
   screening: ScreeningAssessment,
+  now: Date = new Date(),
 ): VerdictResult {
   const pendenzen: Pendenz[] = [];
 
@@ -100,6 +112,14 @@ export function deriveVerdict(
   }
 
   // Step 2: screen
+  // Defence-in-depth: a CLEAR party whose last screening predates the
+  // staleness window is downgraded to a gap, so the verdict never returns a
+  // clean GO on screening data that may predate a sanctions-list update.
+  const screeningStale =
+    screening.status === "CLEAR" &&
+    !!screening.lastScreenedAt &&
+    now.getTime() - screening.lastScreenedAt.getTime() >
+      SCREENING_STALE_AFTER_DAYS * 24 * 60 * 60 * 1000;
   let screenStep: StepResult;
   if (screening.partyBlocked || screening.status === "CONFIRMED_HIT") {
     screenStep = {
@@ -118,15 +138,21 @@ export function deriveVerdict(
     pendenzen.push({ label: `Screening von „${screening.partyName}“ klaeren` });
   } else if (
     screening.status === "NOT_SCREENED" ||
-    screening.status === "STALE"
+    screening.status === "STALE" ||
+    screeningStale
   ) {
+    const notScreened = screening.status === "NOT_SCREENED";
     screenStep = {
       step: "screen",
       status: "gap",
-      summary: `${screening.partyName}: ${screening.status === "STALE" ? "Screening veraltet" : "noch nicht gescreent"}`,
-      why: "Gegenpartei muss gegen OFAC/EU/UN/BIS gescreent werden.",
+      summary: `${screening.partyName}: ${notScreened ? "noch nicht gescreent" : "Screening veraltet"}`,
+      why: notScreened
+        ? "Gegenpartei muss gegen OFAC/EU/UN/BIS gescreent werden."
+        : `Letztes Screening aelter als ${SCREENING_STALE_AFTER_DAYS} Tage — vor Lieferung neu screenen.`,
     };
-    pendenzen.push({ label: `„${screening.partyName}“ screenen` });
+    pendenzen.push({
+      label: `„${screening.partyName}“ ${notScreened ? "screenen" : "neu screenen"}`,
+    });
   } else {
     screenStep = {
       step: "screen",

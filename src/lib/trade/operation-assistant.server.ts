@@ -54,7 +54,12 @@ export async function assessOperation(
     where: { id: operationId, organizationId: ctx.organizationId },
     include: {
       counterparty: {
-        select: { legalName: true, screeningStatus: true, status: true },
+        select: {
+          legalName: true,
+          screeningStatus: true,
+          status: true,
+          lastScreenedAt: true,
+        },
       },
       lines: { include: { item: true } },
     },
@@ -99,6 +104,7 @@ export async function assessOperation(
     status: operation.counterparty.screeningStatus,
     partyName: operation.counterparty.legalName,
     partyBlocked: operation.counterparty.status === "BLOCKED",
+    lastScreenedAt: operation.counterparty.lastScreenedAt,
   };
 
   const verdict = deriveVerdict(lineAssessments, screening);
