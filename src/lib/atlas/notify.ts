@@ -161,6 +161,73 @@ export async function dispatchSourceAmendment(params: {
   }
 }
 
+interface DeadlineTarget {
+  deadlineId: string;
+  mandateId: string;
+  mandateName: string;
+  title: string;
+  phrase: string;
+  organizationId: string;
+  userIds: Set<string>;
+}
+
+/**
+ * Fan out a DEADLINE_WARNING notification to the mandate owner + members
+ * for each deadline that is within its warn-window (or overdue). Called
+ * from the atlas-deadline-reminders cron.
+ *
+ * Deduplication: any (userId, deadlineId) pair already notified within
+ * the last 20 hours is skipped — prevents re-notification on every
+ * daily cron run during the warn window.
+ *
+ * Non-blocking: failures log a warning and return {created: 0}.
+ */
+export async function dispatchDeadlineWarnings(
+  targets: DeadlineTarget[],
+): Promise<{ created: number }> {
+  if (targets.length === 0) return { created: 0 };
+  try {
+    const deadlineIds = targets.map((t) => t.deadlineId);
+    const since = new Date(Date.now() - 20 * 60 * 60 * 1000);
+    const recent = await prisma.atlasNotification.findMany({
+      where: {
+        kind: AtlasNotificationKind.DEADLINE_WARNING,
+        targetType: "DEADLINE",
+        targetId: { in: deadlineIds },
+        createdAt: { gte: since },
+      },
+      select: { userId: true, targetId: true },
+    });
+    const seen = new Set(recent.map((r) => `${r.userId}:${r.targetId}`));
+    const data = targets.flatMap((t) =>
+      [...t.userIds]
+        .filter((uid) => !seen.has(`${uid}:${t.deadlineId}`))
+        .map((uid) => ({
+          userId: uid,
+          organizationId: t.organizationId,
+          kind: AtlasNotificationKind.DEADLINE_WARNING,
+          title: `Frist: ${t.title} (${t.mandateName})`,
+          summary: `${t.title} — ${t.phrase}.`,
+          targetType: "DEADLINE",
+          targetId: t.deadlineId,
+          sourceId: null,
+        })),
+    );
+    if (data.length === 0) return { created: 0 };
+    await prisma.atlasNotification.createMany({ data, skipDuplicates: false });
+    logger.info("Atlas deadline-warning fan-out complete", {
+      targets: targets.length,
+      created: data.length,
+    });
+    return { created: data.length };
+  } catch (err) {
+    logger.warn("Atlas deadline-warning dispatch failed (non-blocking)", {
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return { created: 0 };
+  }
+}
+
 /**
  * Fan out a JURISDICTION_UPDATE notification to subscribers of the
  * given jurisdiction. Called when an admin publishes an AtlasUpdate

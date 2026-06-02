@@ -22,16 +22,17 @@ import "server-only";
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { findMany, createMany, getSource } = vi.hoisted(() => ({
+const { findMany, createMany, notifFindMany, getSource } = vi.hoisted(() => ({
   findMany: vi.fn(),
   createMany: vi.fn(),
+  notifFindMany: vi.fn(),
   getSource: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     atlasAlertSubscription: { findMany },
-    atlasNotification: { createMany },
+    atlasNotification: { findMany: notifFindMany, createMany },
   },
 }));
 
@@ -41,6 +42,7 @@ vi.mock("@prisma/client", () => ({
     SOURCE_AMENDED: "SOURCE_AMENDED",
     JURISDICTION_UPDATE: "JURISDICTION_UPDATE",
     ADMIN_BROADCAST: "ADMIN_BROADCAST",
+    DEADLINE_WARNING: "DEADLINE_WARNING",
   },
 }));
 
@@ -57,12 +59,17 @@ vi.mock("@/lib/logger", () => ({
   },
 }));
 
-import { dispatchSourceAmendment, dispatchJurisdictionUpdate } from "./notify";
+import {
+  dispatchSourceAmendment,
+  dispatchJurisdictionUpdate,
+  dispatchDeadlineWarnings,
+} from "./notify";
 import { logger } from "@/lib/logger";
 
 beforeEach(() => {
   findMany.mockReset();
   createMany.mockReset();
+  notifFindMany.mockReset();
   getSource.mockReset();
   vi.mocked(logger.info).mockReset();
   vi.mocked(logger.warn).mockReset();
@@ -315,6 +322,155 @@ describe("dispatchJurisdictionUpdate", () => {
       expect.objectContaining({
         error: expect.stringContaining("network timeout"),
       }),
+    );
+  });
+});
+
+/* ── dispatchDeadlineWarnings ───────────────────────────────────────── */
+
+describe("dispatchDeadlineWarnings", () => {
+  it("returns {created:0} immediately when targets array is empty", async () => {
+    const result = await dispatchDeadlineWarnings([]);
+    expect(result).toEqual({ created: 0 });
+    expect(notifFindMany).not.toHaveBeenCalled();
+    expect(createMany).not.toHaveBeenCalled();
+  });
+
+  it("skips (userId, deadlineId) pairs already notified within 20h", async () => {
+    // One pair was notified recently → should be suppressed
+    notifFindMany.mockResolvedValue([
+      { userId: "u1", targetId: "dl-1" }, // already seen within 20h
+    ]);
+    createMany.mockResolvedValue({ count: 1 });
+
+    const result = await dispatchDeadlineWarnings([
+      {
+        deadlineId: "dl-1",
+        mandateId: "m-1",
+        mandateName: "Mandate A",
+        title: "Filing X",
+        phrase: "fällig in 3 Tagen",
+        organizationId: "org-1",
+        userIds: new Set(["u1", "u2"]), // u1 already seen, u2 is new
+      },
+    ]);
+
+    // Only u2 should be created
+    expect(result.created).toBe(1);
+    const data = createMany.mock.calls[0]?.[0]?.data as Array<{
+      userId: string;
+    }>;
+    expect(data).toHaveLength(1);
+    expect(data[0].userId).toBe("u2");
+  });
+
+  it("createManys one row per remaining user×deadline with DEADLINE_WARNING kind", async () => {
+    notifFindMany.mockResolvedValue([]); // nothing seen recently
+    createMany.mockResolvedValue({ count: 2 });
+
+    await dispatchDeadlineWarnings([
+      {
+        deadlineId: "dl-2",
+        mandateId: "m-2",
+        mandateName: "Mandate B",
+        title: "Submission Y",
+        phrase: "überfällig seit 1 Tag",
+        organizationId: "org-2",
+        userIds: new Set(["u3", "u4"]),
+      },
+    ]);
+
+    const data = createMany.mock.calls[0]?.[0]?.data as Array<{
+      userId: string;
+      kind: string;
+      targetType: string;
+      targetId: string;
+    }>;
+    expect(data).toHaveLength(2);
+    for (const row of data) {
+      expect(row.kind).toBe("DEADLINE_WARNING");
+      expect(row.targetType).toBe("DEADLINE");
+      expect(row.targetId).toBe("dl-2");
+    }
+    const userIds = data.map((r) => r.userId);
+    expect(new Set(userIds)).toEqual(new Set(["u3", "u4"]));
+  });
+
+  it("queries recent DEADLINE_WARNING rows scoped to the provided deadlineIds", async () => {
+    notifFindMany.mockResolvedValue([]);
+    createMany.mockResolvedValue({ count: 0 });
+
+    await dispatchDeadlineWarnings([
+      {
+        deadlineId: "dl-3",
+        mandateId: "m-3",
+        mandateName: "Mandate C",
+        title: "Hearing Z",
+        phrase: "fällig heute",
+        organizationId: "org-3",
+        userIds: new Set(["u5"]),
+      },
+    ]);
+
+    const arg = notifFindMany.mock.calls[0]?.[0] as {
+      where: {
+        kind: string;
+        targetType: string;
+        targetId: { in: string[] };
+        createdAt: { gte: Date };
+      };
+    };
+    expect(arg.where.kind).toBe("DEADLINE_WARNING");
+    expect(arg.where.targetType).toBe("DEADLINE");
+    expect(arg.where.targetId.in).toContain("dl-3");
+    // createdAt.gte should be within the last hour (i.e., 20h ago ± buffer)
+    const approx20hAgo = Date.now() - 20 * 60 * 60 * 1000;
+    expect(arg.where.createdAt.gte.getTime()).toBeGreaterThan(
+      approx20hAgo - 5000,
+    );
+    expect(arg.where.createdAt.gte.getTime()).toBeLessThan(approx20hAgo + 5000);
+  });
+
+  it("returns {created:0} when all user×deadline pairs are already deduped", async () => {
+    notifFindMany.mockResolvedValue([
+      { userId: "u6", targetId: "dl-4" }, // already seen
+    ]);
+
+    const result = await dispatchDeadlineWarnings([
+      {
+        deadlineId: "dl-4",
+        mandateId: "m-4",
+        mandateName: "Mandate D",
+        title: "Deadline D",
+        phrase: "fällig in 1 Tag",
+        organizationId: "org-4",
+        userIds: new Set(["u6"]), // only user, already deduped
+      },
+    ]);
+
+    expect(result.created).toBe(0);
+    expect(createMany).not.toHaveBeenCalled();
+  });
+
+  it("is non-blocking: prisma failure → created=0 + warn log, no throw", async () => {
+    notifFindMany.mockRejectedValue(new Error("DB timeout"));
+
+    const result = await dispatchDeadlineWarnings([
+      {
+        deadlineId: "dl-5",
+        mandateId: "m-5",
+        mandateName: "Mandate E",
+        title: "Filing E",
+        phrase: "fällig in 2 Tagen",
+        organizationId: "org-5",
+        userIds: new Set(["u7"]),
+      },
+    ]);
+
+    expect(result).toEqual({ created: 0 });
+    expect(vi.mocked(logger.warn)).toHaveBeenCalledWith(
+      expect.stringContaining("deadline-warning dispatch failed"),
+      expect.objectContaining({ error: expect.stringContaining("DB timeout") }),
     );
   });
 });

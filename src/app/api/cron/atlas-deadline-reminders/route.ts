@@ -19,9 +19,19 @@ import { NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { dispatchDeadlineWarnings } from "@/lib/atlas/notify";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
+
+function phraseFor(daysToGo: number): string {
+  if (daysToGo < 0) {
+    const n = Math.abs(daysToGo);
+    return `überfällig seit ${n} Tag${n === 1 ? "" : "en"}`;
+  }
+  if (daysToGo === 0) return "fällig heute";
+  return `fällig in ${daysToGo} Tag${daysToGo === 1 ? "" : "en"}`;
+}
 
 function isValidCronSecret(header: string, secret: string): boolean {
   try {
@@ -77,6 +87,7 @@ export async function GET(request: Request) {
       title: string;
       dueAt: Date;
       daysToGo: number;
+      organizationId: string;
       userIds: Set<string>;
     }> = [];
 
@@ -94,40 +105,28 @@ export async function GET(request: Request) {
         title: d.title,
         dueAt: d.dueAt,
         daysToGo,
+        organizationId: d.mandate.organizationId,
         userIds,
       });
     }
 
-    /* For now, just structured logging — the AtlasNotificationKind
-       enum doesn't include "deadline_warning" yet, and adding it
-       requires a schema migration that would need to deploy in
-       sync with this cron. Logged targets show up in Sentry /
-       Vercel logs so the user can verify the sweep is finding the
-       right rows. Next sprint: add the enum value + dispatch real
-       in-app notifications + emails. */
-    for (const t of targets) {
-      const phrase =
-        t.daysToGo < 0
-          ? `überfällig seit ${Math.abs(t.daysToGo)} Tag${
-              Math.abs(t.daysToGo) === 1 ? "" : "en"
-            }`
-          : t.daysToGo === 0
-            ? "fällig heute"
-            : `fällig in ${t.daysToGo} Tag${t.daysToGo === 1 ? "" : "en"}`;
-      logger.info("[atlas/deadline-reminders] target", {
+    const { created } = await dispatchDeadlineWarnings(
+      targets.map((t) => ({
         deadlineId: t.deadlineId,
         mandateId: t.mandateId,
         mandateName: t.mandateName,
         title: t.title,
-        phrase,
-        notifyUserCount: t.userIds.size,
-      });
-    }
+        phrase: phraseFor(t.daysToGo),
+        organizationId: t.organizationId,
+        userIds: t.userIds,
+      })),
+    );
 
     const durationMs = Date.now() - startedAt;
     logger.info("Atlas deadline reminders completed", {
       checked: open.length,
       hits: targets.length,
+      created,
       durationMs,
     });
 
@@ -135,6 +134,7 @@ export async function GET(request: Request) {
       ok: true,
       checked: open.length,
       hits: targets.length,
+      created,
       durationMs,
     });
   } catch (err) {

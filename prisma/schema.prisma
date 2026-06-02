@@ -9349,6 +9349,10 @@ enum AtlasNotificationKind {
   // An admin published a general AtlasUpdate that's broadcast to
   // every member of every org. No subscription required.
   ADMIN_BROADCAST
+
+  // A mandate deadline is within its warn-window (or overdue). Fanned
+  // out by the atlas-deadline-reminders cron to the mandate owner + members.
+  DEADLINE_WARNING
 }
 
 model AtlasNotification {
