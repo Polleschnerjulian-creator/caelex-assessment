@@ -20,28 +20,26 @@ export default async function AtlasDpaPage() {
   const atlas = await getAtlasAuth();
   if (!atlas) redirect("/atlas-signin");
 
-  /* Find or create (server component idempotently bootstraps the
-     execution record so the download-button always has something to
-     reference). */
+  /* AUDIT-FIX H21 (page): was findUnique + conditional create which races
+     under concurrent page loads (both see "not exists" → both try create →
+     unique-constraint 500 on one). Atomic upsert eliminates the race.
+     Empty `update` keeps the page-load side-effect-free for existing rows. */
   const dpaContentHash = await computeDpaContentHash();
-  let execution = await prisma.organizationDPAExecution.findUnique({
+  const execution = await prisma.organizationDPAExecution.upsert({
     where: {
       organizationId_dpaVersion: {
         organizationId: atlas.organizationId,
         dpaVersion: DPA_TEMPLATE_VERSION,
       },
     },
+    create: {
+      organizationId: atlas.organizationId,
+      dpaVersion: DPA_TEMPLATE_VERSION,
+      dpaContentHash,
+      status: "PENDING",
+    },
+    update: {},
   });
-  if (!execution) {
-    execution = await prisma.organizationDPAExecution.create({
-      data: {
-        organizationId: atlas.organizationId,
-        dpaVersion: DPA_TEMPLATE_VERSION,
-        dpaContentHash,
-        status: "PENDING",
-      },
-    });
-  }
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10 text-[var(--atlas-text-primary)]">
