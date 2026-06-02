@@ -818,13 +818,17 @@ ${wrappedTextA}
 
 Dokument B: ${b.filename}
 ${wrappedTextB}`;
+  /* A-H11 follow-up: Sanitize dimension before prompt interpolation.
+   * A crafted dimension containing quotes, backticks, or newlines could
+   * distort the nested system prompt structure → strip those chars. */
+  const safeDimension = i.dimension.replace(/[\r\n"`]/g, " ").trim();
   try {
     const resp = await setup.client.messages.create({
       model: setup.model,
       max_tokens: 1500,
       temperature: 0.3,
       /* A-H11: System prompt for nested compare call. */
-      system: `Du bist eine Anwaltsassistentin für Weltraumrecht. Vergleiche die folgenden zwei Dokumente entlang der Dimension: "${i.dimension}".
+      system: `Du bist eine Anwaltsassistentin für Weltraumrecht. Vergleiche die folgenden zwei Dokumente entlang der Dimension: "${safeDimension}".
 
 Output STRICT structure:
 1. Kurz-Diff (3-5 Bullet-Punkte): Wo unterscheiden sich A und B?
