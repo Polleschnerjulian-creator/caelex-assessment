@@ -30,7 +30,7 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAtlasAuth } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
@@ -253,8 +253,13 @@ export async function GET(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    /* AUDIT-FIX A-M4: use getAtlasAuth() (LAW_FIRM/BOTH orgType gate)
+     * and scope the workspace lookup to organizationId — was previously
+     * raw auth() + { id, userId } which allowed any authenticated user
+     * (including OPERATOR orgs) to export any workspace they owned the
+     * userId for, bypassing the Atlas org-type gate. */
+    const atlas = await getAtlasAuth();
+    if (!atlas) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -264,7 +269,7 @@ export async function GET(
     // tier (10/h) is the right ceiling.
     const rl = await checkRateLimit(
       "atlas_workspace_ai",
-      getIdentifier(request, session.user.id),
+      getIdentifier(request, atlas.userId),
     );
     if (!rl.success) {
       return NextResponse.json(
@@ -284,7 +289,7 @@ export async function GET(
     }
 
     const ws = await prisma.atlasWorkspace.findFirst({
-      where: { id, userId: session.user.id },
+      where: { id, userId: atlas.userId, organizationId: atlas.organizationId },
       select: {
         id: true,
         title: true,

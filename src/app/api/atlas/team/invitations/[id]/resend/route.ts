@@ -95,8 +95,8 @@ export async function POST(
     const inviteUrl = `${appUrl}/accept-invite?token=${encodeURIComponent(invitation.token)}`;
 
     // Re-send the branded email. Wrapped in try/catch so a Resend
-    // outage doesn't unwind the token rotation — the owner can still
-    // share the returned inviteUrl manually from the UI.
+    // outage doesn't unwind the token rotation — token is valid and
+    // the owner can trigger another resend when Resend recovers.
     try {
       const { isEmailDispatchHalted, logHaltedEmail } =
         await import("@/lib/email/dispatch-halt");
@@ -139,12 +139,17 @@ export async function POST(
       resentBy: maskId(atlas.userId),
     });
 
+    // A-L7: do NOT echo inviteUrl (or the raw token it embeds) in the
+    // HTTP response. Mirrors the deliberate suppression in POST
+    // /api/atlas/team (see HIGH-2 comment there). The URL leaks into
+    // browser DevTools, logs, and any intercepting proxy; the email
+    // is the only intentional disclosure channel.
+    // The UI only needs id/email/expiresAt to refresh the pending row.
     return NextResponse.json({
       invitation: {
         id: invitation.id,
         email: invitation.email,
         expiresAt: invitation.expiresAt,
-        inviteUrl,
       },
     });
   } catch (err) {
