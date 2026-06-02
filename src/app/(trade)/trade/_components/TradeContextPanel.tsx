@@ -107,20 +107,24 @@ export function TradeContextPanel({ badgeCounts }: Props) {
       aria-label={section.title}
       className="flex h-full w-full flex-col"
       style={{
-        background: "var(--trade-bg-panel)",
+        // Same canvas as the content area (one continuous surface, divided
+        // only by the hairline) so the shell reads "aus einem Guss" rather
+        // than a white panel beside a grey page.
+        background: "var(--trade-bg-page)",
         borderRight: "0.5px solid var(--trade-border)",
-        padding: "16px 12px 12px",
+        padding: "18px 12px 12px",
       }}
     >
-      {/* Panel title */}
+      {/* Panel title — mono eyebrow, matching the content's micro-labels */}
       <h1
-        className="flex items-center gap-2"
+        className="flex items-center gap-2 font-mono"
         style={{
-          fontSize: 16,
-          fontWeight: 650,
-          letterSpacing: "-0.012em",
-          color: "var(--trade-text-primary)",
-          padding: "4px 8px 12px",
+          fontSize: 10.5,
+          fontWeight: 600,
+          textTransform: "uppercase",
+          letterSpacing: "0.2em",
+          color: "var(--trade-text-muted)",
+          padding: "4px 9px 14px",
         }}
       >
         {section.title}
@@ -135,13 +139,14 @@ export function TradeContextPanel({ badgeCounts }: Props) {
           <div key={group.label ?? `g${gi}`}>
             {group.label ? (
               <div
+                className="font-mono"
                 style={{
-                  fontSize: 10.5,
-                  fontWeight: 680,
+                  fontSize: 10,
+                  fontWeight: 600,
                   textTransform: "uppercase",
-                  letterSpacing: "0.07em",
+                  letterSpacing: "0.16em",
                   color: "var(--trade-text-muted)",
-                  padding: "16px 9px 5px",
+                  padding: "16px 9px 6px",
                 }}
               >
                 {group.label}
@@ -182,10 +187,13 @@ function PanelRow({ item, active, badgeCounts }: PanelRowProps) {
 
   // Row background: active → soft selected fill; hover → faint wash. Both
   // pull from tokens so the panel adapts in dark mode.
+  // Translucent gray washes (not solid bg-subtle/hover) so the active +
+  // hover states read on the grey sidebar canvas in both themes — hover is
+  // the same colour as the panel bg now, so a solid fill would vanish.
   const background = active
-    ? "var(--trade-bg-subtle)"
+    ? "var(--trade-fill-2)"
     : hover
-      ? "var(--trade-hover)"
+      ? "var(--trade-fill-4)"
       : "transparent";
   const color = active
     ? "var(--trade-text-primary)"

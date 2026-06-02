@@ -134,7 +134,8 @@ export function TradeRail({ org, badgeCounts }: Props) {
           height: 34,
           borderRadius: 11,
           marginTop: 4,
-          background: "linear-gradient(150deg, #6d6df3, #4b4be0)",
+          // Neutral graphite (was indigo) — keep the rail strictly monochrome.
+          background: "linear-gradient(150deg, #3c3f46, #222329)",
           color: "#fff",
           fontSize: 11,
           fontWeight: 600,
