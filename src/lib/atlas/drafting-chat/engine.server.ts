@@ -313,6 +313,7 @@ export async function processChat(args: {
             toolName === "push_to_library" && lastGeneratedBody !== undefined
               ? { body: lastGeneratedBody }
               : {};
+          if (toolName === "push_to_library") lastGeneratedBody = undefined; // consume: one body per push
           const action: ClientAction = {
             type: toolName,
             ...toolInput,
