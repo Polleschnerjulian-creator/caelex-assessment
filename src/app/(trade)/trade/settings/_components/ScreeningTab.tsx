@@ -12,7 +12,7 @@
  */
 
 import { useState, useTransition } from "react";
-import { Save, CheckCircle2, AlertCircle } from "lucide-react";
+import { Save, CheckCircle2, AlertCircle, Info } from "lucide-react";
 import { updateScreening } from "@/lib/trade/settings/settings-actions";
 import {
   SCREENING_LISTS,
@@ -115,6 +115,20 @@ export function ScreeningTab({ config }: { config: ScreeningConfig }) {
           wie oft neu gescreent wird. Gilt für alle Partner-Screenings dieser
           Org.
         </p>
+      </div>
+
+      {/* Honest preview notice — the config persists, but the screening
+          engine doesn't read it yet (engine wiring is a separate pass). An
+          inert config is fail-safe (the audited defaults stay in force), so
+          this notice exists only to prevent false confidence. */}
+      <div className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-[12.5px] leading-relaxed text-amber-900">
+        <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+        <div>
+          <span className="font-semibold">Voransicht.</span> Änderungen werden
+          gespeichert, wirken aber noch nicht aufs Live-Screening — das läuft
+          aktuell mit den geprüften Standardwerten (alle Pflichtlisten aktiv,
+          Schwelle&nbsp;0.85). Die Engine-Anbindung folgt in Kürze.
+        </div>
       </div>
 
       {/* Sanction lists */}
