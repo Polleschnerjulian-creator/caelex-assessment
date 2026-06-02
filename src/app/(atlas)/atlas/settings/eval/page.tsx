@@ -21,8 +21,10 @@
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { requirePlatformAdmin } from "@/lib/atlas-auth";
 
 interface LastRun {
   ranAt: string | null;
@@ -50,7 +52,10 @@ function loadLastRun(): LastRun | null {
   }
 }
 
-export default function AtlasEvalPage() {
+export default async function AtlasEvalPage() {
+  const admin = await requirePlatformAdmin();
+  if (!admin) redirect("/atlas");
+
   const run = loadLastRun();
 
   return (
