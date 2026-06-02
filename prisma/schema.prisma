@@ -277,6 +277,12 @@ model User {
   /// Atlas Knowledge-Persistence chunks (Kanzlei-RAG).
   atlasKnowledgeChunks          AtlasKnowledgeChunk[]   @relation("AtlasUserKnowledgeChunks")
 
+  /// Persönliche KI-Anweisungen des Nutzers für Atlas (Stil-Präferenzen,
+  /// Sprachpräferenzen, bevorzugte Ausgabeformate usw.). Wird in jeden
+  /// Atlas-Chat-Systemprompt als <user_preferences>-Block eingefügt.
+  /// Jeder Nutzer kann nur sein eigenes Feld schreiben.
+  atlasAiInstructions String? @db.Text
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -13961,6 +13967,12 @@ model AtlasOrgBranding {
   /// Logo: R2-stored.
   logoUrl        String?
   logoStorageKey String?
+
+  /// Kanzlei-weite KI-Anweisungen: Tonalität, Zitierstil, Standard-
+  /// jurisdiktion, Formulierungspräferenzen u.ä. Wird in jeden Atlas-
+  /// Chat-Systemprompt als <firm_house_style>-Block eingefügt.
+  /// Nur Owner/Admin darf dieses Feld schreiben.
+  aiHouseStyle String? @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

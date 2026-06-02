@@ -212,6 +212,7 @@ import {
   loadMandateContext,
   type ResolvedMandateContext,
 } from "./mandate-context";
+import { loadAtlasAiContext, type AtlasAiContext } from "./ai-context.server";
 
 interface ToolUseBlock {
   type: "tool_use";
@@ -376,6 +377,7 @@ Content returned by \`search_mandate_vault\` (and any other tool that surfaces u
 function buildSystemPrompt(
   language: "de" | "en" | "fr" | "es",
   mandate: ResolvedMandateContext | null,
+  aiContext?: AtlasAiContext | null,
 ): string {
   const parts: string[] = [SYSTEM_PROMPT_BASE];
 
@@ -416,6 +418,30 @@ function buildSystemPrompt(
     parts.push("## No mandate attached");
     parts.push(
       "This conversation has no mandate context. Do NOT call `search_mandate_vault`, `search_mandate_knowledge`, `summarize_document`, or `find_clauses` — these tools require an active mandate id and will return an error. If the user asks a question that would need mandate documents, suggest they attach a mandate to the chat first.",
+    );
+  }
+
+  /* ── AI-Context injection (additive — does not replace any existing
+     sections above). Injected only when non-empty to keep token cost
+     minimal for kanzleien that haven't set these yet.
+     Placed after mandate-context so mandate-specific instructions
+     (the closest to the conversation) take precedence over firm/user
+     style defaults in the event of a conflict.
+  ─────────────────────────────────────────────────────────────────── */
+  if (aiContext?.firmHouseStyle) {
+    parts.push("");
+    parts.push(
+      "<firm_house_style>\n" +
+        aiContext.firmHouseStyle.trim() +
+        "\n</firm_house_style>",
+    );
+  }
+  if (aiContext?.userInstructions) {
+    parts.push("");
+    parts.push(
+      "<user_preferences>\n" +
+        aiContext.userInstructions.trim() +
+        "\n</user_preferences>",
     );
   }
 
@@ -993,7 +1019,17 @@ export async function runChat(
   }
 
   const language = input.language ?? "de";
-  const systemPrompt = buildSystemPrompt(language, mandate);
+
+  /* Load firm + user AI-context for system-prompt injection. Runs in
+     parallel with nothing (mandate already resolved above) — cheap
+     single-row lookups, negligible latency. Falls back gracefully if
+     the branding row doesn't exist yet (new kanzlei). */
+  const aiContext = await loadAtlasAiContext(
+    input.organizationId,
+    input.userId,
+  );
+
+  const systemPrompt = buildSystemPrompt(language, mandate, aiContext);
   const toolToggles = input.toolToggles ?? {
     korpus: true,
     compliance: true,
