@@ -477,3 +477,87 @@ describe("check_copuos_compliance", () => {
     expect(payload.region as string).toContain("Outside protected");
   });
 });
+
+/* ── A-M21: Zod input validation for compliance tools ───────────────── */
+
+describe("A-M21 — Zod input validation for compliance tools", () => {
+  it("assess_eu_space_act: rejects invalid operatorType enum value", async () => {
+    /* Before: `rawInput as SpaceActInput` would accept any string for operatorType.
+       After: Zod enum validates and rejects unknown values. */
+    const result = await executeComplianceTool("assess_eu_space_act", {
+      operatorType: "INVALID_OPERATOR",
+      establishment: "eu",
+    });
+    expect(result.isError).toBe(true);
+    expect(parse(result.content).error).toContain("operatorType");
+  });
+
+  it("assess_eu_space_act: rejects invalid establishment enum value", async () => {
+    const result = await executeComplianceTool("assess_eu_space_act", {
+      operatorType: "spacecraft_operator",
+      establishment: "INVALID_ESTABLISHMENT",
+    });
+    expect(result.isError).toBe(true);
+  });
+
+  it("classify_nis2: rejects invalid sizeClass enum value", async () => {
+    const result = await executeComplianceTool("classify_nis2", {
+      sector: "space",
+      sizeClass: "INVALID_SIZE",
+      memberState: "DE",
+    });
+    expect(result.isError).toBe(true);
+  });
+
+  it("classify_nis2: rejects missing memberState", async () => {
+    const result = await executeComplianceTool("classify_nis2", {
+      sector: "space",
+      sizeClass: "large",
+    });
+    expect(result.isError).toBe(true);
+  });
+
+  it("classify_export_control: rejects over-long item string", async () => {
+    const result = await executeComplianceTool("classify_export_control", {
+      item: "x".repeat(501),
+    });
+    expect(result.isError).toBe(true);
+  });
+
+  it("check_spectrum_filing: rejects invalid frequencyBand", async () => {
+    const result = await executeComplianceTool("check_spectrum_filing", {
+      frequencyBand: "X-INVALID",
+      orbitType: "LEO",
+    });
+    expect(result.isError).toBe(true);
+  });
+
+  it("check_copuos_compliance: rejects non-numeric orbitalAltitudeKm", async () => {
+    const result = await executeComplianceTool("check_copuos_compliance", {
+      orbitalAltitudeKm: "not-a-number" as unknown as number,
+    });
+    expect(result.isError).toBe(true);
+  });
+
+  it("assess_uk_space_industry: rejects invalid activityType enum", async () => {
+    const result = await executeComplianceTool("assess_uk_space_industry", {
+      activityType: "bogus_type",
+    });
+    expect(result.isError).toBe(true);
+  });
+
+  it("assess_us_regulatory: rejects invalid activityType enum", async () => {
+    const result = await executeComplianceTool("assess_us_regulatory", {
+      activityType: "bogus_type",
+    });
+    expect(result.isError).toBe(true);
+  });
+
+  it("assess_national_space_law: rejects over-long operatorType", async () => {
+    const result = await executeComplianceTool("assess_national_space_law", {
+      jurisdiction: "DE",
+      operatorType: "x".repeat(101),
+    });
+    expect(result.isError).toBe(true);
+  });
+});

@@ -300,4 +300,37 @@ describe("network-tools bundle", () => {
       expect(JSON.parse(result.content).error).toContain("Unknown network");
     });
   });
+
+  /* ── A-M6: Error masking — create_solo_matter ───────────────────────── */
+
+  describe("A-M6 — create_solo_matter error masking", () => {
+    it("does NOT include raw Prisma error details in DB_ERROR response", async () => {
+      /* Before the fix: returned `detail: msg.slice(0,200)` which leaked
+         raw Prisma/constraint error text into tool results (visible to the model). */
+      vi.mocked(prisma.atlasMandate.create).mockRejectedValueOnce(
+        new Error(
+          "Unique constraint violation on field `clientName` — internal DB error ref #12345",
+        ),
+      );
+      const result = await executeNetworkTool({
+        name: "create_solo_matter",
+        input: { name: "Crash Test Matter" },
+        callerUserId: "u1",
+        callerOrgId: "o1",
+      });
+      expect(result.isError).toBe(true);
+      const payload = JSON.parse(result.content);
+      expect(payload.code).toBe("DB_ERROR");
+      /* A-M6: raw error must NOT appear in the tool result. */
+      expect(JSON.stringify(payload)).not.toContain(
+        "Unique constraint violation",
+      );
+      expect(JSON.stringify(payload)).not.toContain("clientName");
+      expect(JSON.stringify(payload)).not.toContain("#12345");
+      /* Generic message is present. */
+      expect(payload.error).toBe("Mandate creation failed");
+      /* `detail` field must be absent. */
+      expect(payload.detail).toBeUndefined();
+    });
+  });
 });

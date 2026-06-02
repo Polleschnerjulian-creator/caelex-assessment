@@ -657,13 +657,16 @@ async function createSoloMatter(args: {
       navigateUrl: `/atlas/mandate/${mandateWithPlain.id}`,
     };
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    logger.error(`[atlas/create_solo_matter] failed: ${msg}`);
+    /* A-M6: Do not leak raw Prisma error text into tool results (which
+       go to the model and can be echoed to the user). Log full details
+       server-side; return a generic message without the raw detail. */
+    logger.error("[atlas/create_solo_matter] failed", {
+      error: err instanceof Error ? err.message : String(err),
+    });
     return {
       content: JSON.stringify({
         error: "Mandate creation failed",
         code: "DB_ERROR",
-        detail: msg.slice(0, 200),
       }),
       isError: true,
     };

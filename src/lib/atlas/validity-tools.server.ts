@@ -27,12 +27,14 @@ import "server-only";
  */
 
 import type Anthropic from "@anthropic-ai/sdk";
+import { z } from "zod";
 import {
   ALL_SOURCES,
   getLegalSourceById,
   type LegalSource,
 } from "@/data/legal-sources";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 /* ── Status taxonomy ─────────────────────────────────────────────────── */
 
@@ -308,18 +310,20 @@ export async function executeValidityTool(
   }
 }
 
-interface CheckStatusInput {
-  articleOrSourceId: string;
-}
+/* A-M21: Zod schemas for validity tools — validate at entry. */
+const CheckStatusInputSchema = z.object({
+  articleOrSourceId: z.string().min(1).max(200),
+});
 
 function runCheckArticleStatus(rawInput: unknown): ValidityToolResult {
-  const i = rawInput as CheckStatusInput;
-  if (!i?.articleOrSourceId) {
+  const parsed = CheckStatusInputSchema.safeParse(rawInput);
+  if (!parsed.success) {
     return {
       content: JSON.stringify({ error: "articleOrSourceId required" }),
       isError: true,
     };
   }
+  const i = parsed.data;
   const check = checkValidity(i.articleOrSourceId);
   if (check.badge === "unknown") {
     return {
@@ -344,17 +348,19 @@ function runCheckArticleStatus(rawInput: unknown): ValidityToolResult {
   };
 }
 
-interface RecentChangesInput {
-  jurisdiction?: string;
-  daysBack?: number;
-  onlyChanged?: boolean;
-}
+const RecentChangesInputSchema = z.object({
+  jurisdiction: z.string().min(2).max(10).optional(),
+  daysBack: z.number().int().min(1).max(730).optional(),
+  onlyChanged: z.boolean().optional(),
+});
 
 function runGetRecentNormChanges(rawInput: unknown): ValidityToolResult {
-  const i = (rawInput ?? {}) as RecentChangesInput;
-  const daysBack = typeof i.daysBack === "number" ? i.daysBack : 90;
+  /* A-M21: use Zod; on failure fall back to defaults (tool has no required fields). */
+  const parseResult = RecentChangesInputSchema.safeParse(rawInput ?? {});
+  const safeInput = parseResult.success ? parseResult.data : {};
+  const daysBack = safeInput.daysBack ?? 90;
   const cutoff = Date.now() - daysBack * 24 * 60 * 60 * 1000;
-  const jur = i.jurisdiction?.toUpperCase();
+  const jur = safeInput.jurisdiction?.toUpperCase();
 
   const hits: ValidityCheck[] = [];
   for (const source of ALL_SOURCES) {
@@ -365,7 +371,7 @@ function runGetRecentNormChanges(rawInput: unknown): ValidityToolResult {
       source.status !== "in_force" ||
       (source.amended_by?.length ?? 0) > 0 ||
       !!source.superseded_by;
-    if (i.onlyChanged && !isChanged) continue;
+    if (safeInput.onlyChanged && !isChanged) continue;
     if (!recentlyVerified && !isChanged) continue;
     hits.push(checkValidity(source.id));
     if (hits.length >= 25) break;
@@ -376,7 +382,7 @@ function runGetRecentNormChanges(rawInput: unknown): ValidityToolResult {
       query: {
         jurisdiction: jur ?? null,
         daysBack,
-        onlyChanged: !!i.onlyChanged,
+        onlyChanged: !!safeInput.onlyChanged,
       },
       count: hits.length,
       results: hits,
@@ -386,18 +392,19 @@ function runGetRecentNormChanges(rawInput: unknown): ValidityToolResult {
   };
 }
 
-interface RelatedNormsInput {
-  sourceId: string;
-}
+const RelatedNormsInputSchema = z.object({
+  sourceId: z.string().min(1).max(200),
+});
 
 function runFindRelatedNorms(rawInput: unknown): ValidityToolResult {
-  const i = rawInput as RelatedNormsInput;
-  if (!i?.sourceId) {
+  const parsed = RelatedNormsInputSchema.safeParse(rawInput);
+  if (!parsed.success) {
     return {
       content: JSON.stringify({ error: "sourceId required" }),
       isError: true,
     };
   }
+  const i = parsed.data;
   const { source } = resolveSourceId(i.sourceId);
   if (!source) {
     return {
@@ -453,10 +460,10 @@ function humanLabelFor(badge: ValidityBadge): string {
 
 /* ── track_amendment (T1.B.11, 2026-05-26) ──────────────────────────── */
 
-interface TrackAmendmentInput {
-  targetId: string;
-  targetType?: "SOURCE" | "JURISDICTION";
-}
+const TrackAmendmentInputSchema = z.object({
+  targetId: z.string().min(1).max(200),
+  targetType: z.enum(["SOURCE", "JURISDICTION"]).optional(),
+});
 
 async function runTrackAmendment(
   rawInput: unknown,
@@ -471,22 +478,16 @@ async function runTrackAmendment(
       isError: true,
     };
   }
-  const i = rawInput as TrackAmendmentInput;
-  if (!i?.targetId) {
+  /* A-M21 */
+  const parsed = TrackAmendmentInputSchema.safeParse(rawInput);
+  if (!parsed.success) {
     return {
       content: JSON.stringify({ error: "targetId required" }),
       isError: true,
     };
   }
+  const i = parsed.data;
   const targetType = i.targetType ?? "SOURCE";
-  if (targetType !== "SOURCE" && targetType !== "JURISDICTION") {
-    return {
-      content: JSON.stringify({
-        error: `Invalid targetType: ${targetType}. Allowed: SOURCE | JURISDICTION.`,
-      }),
-      isError: true,
-    };
-  }
 
   /* SOURCE-target hygiene: must exist in the static corpus. Mirrors
      the upsert route at /api/atlas/alerts/subscriptions so we don't
@@ -532,10 +533,17 @@ async function runTrackAmendment(
       isError: false,
     };
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
+    /* A-M6: Do not leak raw Prisma error text into tool results (which
+       go to the model and can be echoed to the user). Log full details
+       server-side; return a generic message. */
+    logger.warn("[atlas/track_amendment] subscription upsert failed", {
+      error: err instanceof Error ? err.message : String(err),
+      targetId: i.targetId,
+      targetType,
+    });
     return {
       content: JSON.stringify({
-        error: `Subscription write failed: ${msg}`,
+        error: "Subscription write failed",
       }),
       isError: true,
     };

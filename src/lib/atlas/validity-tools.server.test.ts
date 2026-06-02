@@ -466,14 +466,19 @@ describe("track_amendment", () => {
     expect(parse(result.content).error).toContain("targetId");
   });
 
-  it("rejects invalid targetType values", async () => {
+  it("rejects invalid targetType values (A-M21: now via Zod enum, generic error message)", async () => {
+    /* A-M21: Zod enum replaces the manual `if (targetType !== 'SOURCE' && ...)` check.
+       The old code returned `Invalid targetType: BOGUS. Allowed: SOURCE | JURISDICTION.`
+       — which leaked the enum. Now Zod returns a generic validation failure. */
     const result = await executeValidityTool(
       "track_amendment",
       { targetId: "DE-WeltraumG", targetType: "BOGUS" },
       { callerUserId: "u1", callerOrgId: "org-A" },
     );
     expect(result.isError).toBe(true);
-    expect(parse(result.content).error).toContain("Invalid targetType");
+    /* Generic error from Zod — must NOT expose "Invalid targetType" detail. */
+    expect(parse(result.content).error).toBeDefined();
+    expect(parse(result.content).error).not.toContain("Allowed:");
   });
 
   it("rejects SOURCE target when sourceId not in corpus", async () => {
@@ -578,5 +583,72 @@ describe("track_amendment", () => {
 
     expect(result.isError).toBe(true);
     expect(parse(result.content).error).toContain("Subscription write failed");
+  });
+
+  /* A-M6: raw error must NOT be exposed in tool results. */
+  it("A-M6: does NOT leak raw Prisma error details in the tool result", async () => {
+    upsertSubscription.mockRejectedValue(
+      new Error(
+        "PrismaClientKnownRequestError: Unique constraint failed on the fields: (`userId`,`targetType`,`targetId`) — constraint=`idx_subscription_unique_key`",
+      ),
+    );
+
+    const result = await executeValidityTool(
+      "track_amendment",
+      { targetId: "DE-WeltraumG" },
+      { callerUserId: "u1", callerOrgId: "org-A" },
+    );
+
+    expect(result.isError).toBe(true);
+    const payload = parse(result.content);
+    /* Must NOT contain raw Prisma error text. */
+    expect(JSON.stringify(payload)).not.toContain(
+      "PrismaClientKnownRequestError",
+    );
+    expect(JSON.stringify(payload)).not.toContain(
+      "idx_subscription_unique_key",
+    );
+    /* Generic message only. */
+    expect(payload.error).toBe("Subscription write failed");
+  });
+});
+
+/* ── A-M21: Zod validation tests for validity tools ─────────────────── */
+
+describe("A-M21 — Zod input validation for validity tools", () => {
+  it("check_article_status: rejects missing articleOrSourceId via Zod", async () => {
+    const result = await executeValidityTool("check_article_status", {});
+    expect(result.isError).toBe(true);
+    expect(parse(result.content).error).toContain("articleOrSourceId");
+  });
+
+  it("find_related_norms: rejects missing sourceId via Zod", async () => {
+    const result = await executeValidityTool("find_related_norms", {});
+    expect(result.isError).toBe(true);
+    expect(parse(result.content).error).toContain("sourceId");
+  });
+
+  it("track_amendment: Zod rejects invalid targetType values", async () => {
+    /* Zod enum replaces the manual `if (targetType !== 'SOURCE' && ...)` check. */
+    const result = await executeValidityTool(
+      "track_amendment",
+      { targetId: "DE-WeltraumG", targetType: "INVALID_TYPE" },
+      { callerUserId: "u1", callerOrgId: "org-A" },
+    );
+    expect(result.isError).toBe(true);
+    /* Generic error from Zod parse failure. */
+    expect(parse(result.content).error).toContain("targetId");
+  });
+
+  it("get_recent_norm_changes: invalid daysBack (string) falls back to defaults gracefully", async () => {
+    /* Zod rejects non-numeric daysBack; tool falls back to {} so defaults apply. */
+    const result = await executeValidityTool("get_recent_norm_changes", {
+      daysBack: "not-a-number" as unknown as number,
+    });
+    /* Should succeed with defaults — not return isError. */
+    expect(result.isError).toBe(false);
+    const payload = parse(result.content);
+    /* Default daysBack=90 should be applied. */
+    expect((payload.query as { daysBack: number }).daysBack).toBe(90);
   });
 });

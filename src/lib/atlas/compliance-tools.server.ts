@@ -37,6 +37,7 @@ import "server-only";
  */
 
 import type Anthropic from "@anthropic-ai/sdk";
+import { z } from "zod";
 import { getLegalSourceById } from "@/data/legal-sources";
 
 /* H6: only emit an [ATLAS:id] citation pill when the id resolves in the
@@ -373,22 +374,31 @@ export async function executeComplianceTool(
    Citations use the [ATLAS:source-id] convention so the chat-engine's
    citation extractor picks them up. */
 
-interface SpaceActInput {
-  operatorType:
-    | "spacecraft_operator"
-    | "launch_operator"
-    | "ground_segment_operator"
-    | "in_orbit_servicing"
-    | "space_traffic_coordination"
-    | "space_data_provider"
-    | "other";
-  establishment: "eu" | "third_country_eu_services" | "third_country_no_eu";
-  defenceOnly?: boolean;
-}
+/* A-M21: Zod schemas for every compliance tool — validate at entry so
+   manual `rawInput as XInput` casts can't silently accept malformed
+   inputs. On parse failure return a clean tool error, never throw raw. */
+
+const SpaceActInputSchema = z.object({
+  operatorType: z.enum([
+    "spacecraft_operator",
+    "launch_operator",
+    "ground_segment_operator",
+    "in_orbit_servicing",
+    "space_traffic_coordination",
+    "space_data_provider",
+    "other",
+  ]),
+  establishment: z.enum([
+    "eu",
+    "third_country_eu_services",
+    "third_country_no_eu",
+  ]),
+  defenceOnly: z.boolean().optional(),
+});
 
 function assessEuSpaceAct(rawInput: unknown): ComplianceToolResult {
-  const i = rawInput as SpaceActInput;
-  if (!i?.operatorType || !i?.establishment) {
+  const parsed = SpaceActInputSchema.safeParse(rawInput);
+  if (!parsed.success) {
     return {
       content: JSON.stringify({
         error: "operatorType + establishment required",
@@ -396,6 +406,7 @@ function assessEuSpaceAct(rawInput: unknown): ComplianceToolResult {
       isError: true,
     };
   }
+  const i = parsed.data;
 
   /* Defence-only exemption (Art. 2(3)). */
   if (i.defenceOnly) {
@@ -483,16 +494,16 @@ function assessEuSpaceAct(rawInput: unknown): ComplianceToolResult {
   };
 }
 
-interface Nis2Input {
-  sector: string;
-  sizeClass: "small" | "medium" | "large";
-  memberState: string;
-  criticalForSocietalFunction?: boolean;
-}
+const Nis2InputSchema = z.object({
+  sector: z.string().min(1),
+  sizeClass: z.enum(["small", "medium", "large"]),
+  memberState: z.string().min(2).max(10),
+  criticalForSocietalFunction: z.boolean().optional(),
+});
 
 function classifyNis2(rawInput: unknown): ComplianceToolResult {
-  const i = rawInput as Nis2Input;
-  if (!i?.sector || !i?.sizeClass || !i?.memberState) {
+  const parsed = Nis2InputSchema.safeParse(rawInput);
+  if (!parsed.success) {
     return {
       content: JSON.stringify({
         error: "sector + sizeClass + memberState required",
@@ -500,6 +511,7 @@ function classifyNis2(rawInput: unknown): ComplianceToolResult {
       isError: true,
     };
   }
+  const i = parsed.data;
 
   /* NIS2 Annex I = essential-entity sectors; Annex II = important.
      Space is Annex I point 11; ICT service management is Annex I point 8;
@@ -607,15 +619,23 @@ function classifyNis2(rawInput: unknown): ComplianceToolResult {
   };
 }
 
-interface NationalSpaceLawInput {
-  jurisdiction: string;
-  operatorType: string;
-  focus?: string;
-}
+const NationalSpaceLawInputSchema = z.object({
+  jurisdiction: z.string().min(2).max(10),
+  operatorType: z.string().min(1).max(100),
+  focus: z
+    .enum([
+      "authorization",
+      "liability_insurance",
+      "registration",
+      "supervision",
+      "all",
+    ])
+    .optional(),
+});
 
 function assessNationalSpaceLaw(rawInput: unknown): ComplianceToolResult {
-  const i = rawInput as NationalSpaceLawInput;
-  if (!i?.jurisdiction || !i?.operatorType) {
+  const parsed = NationalSpaceLawInputSchema.safeParse(rawInput);
+  if (!parsed.success) {
     return {
       content: JSON.stringify({
         error: "jurisdiction + operatorType required",
@@ -623,6 +643,7 @@ function assessNationalSpaceLaw(rawInput: unknown): ComplianceToolResult {
       isError: true,
     };
   }
+  const i = parsed.data;
 
   /* Jurisdictional briefs — compact, matched to Atlas's national-space-law
      dataset. Each entry must have at least: regime, authority, insurance,
@@ -764,26 +785,30 @@ function assessNationalSpaceLaw(rawInput: unknown): ComplianceToolResult {
   };
 }
 
-interface UkInput {
-  activityType:
-    | "launch"
-    | "spaceflight_operator"
-    | "range_control"
-    | "spaceport"
-    | "satellite_operation";
-  ukEstablished?: boolean;
-}
+const UK_ACTIVITY_TYPES = [
+  "launch",
+  "spaceflight_operator",
+  "range_control",
+  "spaceport",
+  "satellite_operation",
+] as const;
+
+const UkInputSchema = z.object({
+  activityType: z.enum(UK_ACTIVITY_TYPES),
+  ukEstablished: z.boolean().optional(),
+});
 
 function assessUkSpaceIndustry(rawInput: unknown): ComplianceToolResult {
-  const i = rawInput as UkInput;
-  if (!i?.activityType) {
+  const parsed = UkInputSchema.safeParse(rawInput);
+  if (!parsed.success) {
     return {
       content: JSON.stringify({ error: "activityType required" }),
       isError: true,
     };
   }
+  const i = parsed.data;
   const tracks: Record<
-    UkInput["activityType"],
+    (typeof UK_ACTIVITY_TYPES)[number],
     { licence: string; insurance: string; key: string[] }
   > = {
     launch: {
@@ -832,28 +857,32 @@ function assessUkSpaceIndustry(rawInput: unknown): ComplianceToolResult {
   };
 }
 
-interface UsInput {
-  activityType:
-    | "satellite_communications"
-    | "remote_sensing"
-    | "launch"
-    | "reentry"
-    | "human_spaceflight"
-    | "manufacturing"
-    | "ground_station";
-  usEstablished?: boolean;
-}
+const US_ACTIVITY_TYPES = [
+  "satellite_communications",
+  "remote_sensing",
+  "launch",
+  "reentry",
+  "human_spaceflight",
+  "manufacturing",
+  "ground_station",
+] as const;
+
+const UsInputSchema = z.object({
+  activityType: z.enum(US_ACTIVITY_TYPES),
+  usEstablished: z.boolean().optional(),
+});
 
 function assessUsRegulatory(rawInput: unknown): ComplianceToolResult {
-  const i = rawInput as UsInput;
-  if (!i?.activityType) {
+  const parsed = UsInputSchema.safeParse(rawInput);
+  if (!parsed.success) {
     return {
       content: JSON.stringify({ error: "activityType required" }),
       isError: true,
     };
   }
+  const i = parsed.data;
   const map: Record<
-    UsInput["activityType"],
+    (typeof US_ACTIVITY_TYPES)[number],
     { agency: string; licence: string; key: string[] }
   > = {
     satellite_communications: {
@@ -916,20 +945,21 @@ function assessUsRegulatory(rawInput: unknown): ComplianceToolResult {
   };
 }
 
-interface ExportControlInput {
-  item: string;
-  endUse?: "civil" | "dual_use" | "military" | "unknown";
-  destinationCountry?: string;
-}
+const ExportControlInputSchema = z.object({
+  item: z.string().min(1).max(500),
+  endUse: z.enum(["civil", "dual_use", "military", "unknown"]).optional(),
+  destinationCountry: z.string().min(2).max(10).optional(),
+});
 
 function classifyExportControl(rawInput: unknown): ComplianceToolResult {
-  const i = rawInput as ExportControlInput;
-  if (!i?.item) {
+  const parsed = ExportControlInputSchema.safeParse(rawInput);
+  if (!parsed.success) {
     return {
       content: JSON.stringify({ error: "item required" }),
       isError: true,
     };
   }
+  const i = parsed.data;
   /* Heuristic classification — best-effort. Real classification needs
      deep-dive on the specific item against USML / CCL / Annex I lists. */
   const item = i.item.toLowerCase();
@@ -972,15 +1002,15 @@ function classifyExportControl(rawInput: unknown): ComplianceToolResult {
   };
 }
 
-interface SpectrumInput {
-  frequencyBand: "L" | "S" | "C" | "X" | "Ku" | "K" | "Ka" | "Q" | "V" | "W";
-  orbitType: "LEO" | "MEO" | "GEO" | "HEO" | "L1_L2";
-  notifyingAdministration?: string;
-}
+const SpectrumInputSchema = z.object({
+  frequencyBand: z.enum(["L", "S", "C", "X", "Ku", "K", "Ka", "Q", "V", "W"]),
+  orbitType: z.enum(["LEO", "MEO", "GEO", "HEO", "L1_L2"]),
+  notifyingAdministration: z.string().min(2).max(10).optional(),
+});
 
 function checkSpectrumFiling(rawInput: unknown): ComplianceToolResult {
-  const i = rawInput as SpectrumInput;
-  if (!i?.frequencyBand || !i?.orbitType) {
+  const parsed = SpectrumInputSchema.safeParse(rawInput);
+  if (!parsed.success) {
     return {
       content: JSON.stringify({
         error: "frequencyBand + orbitType required",
@@ -988,7 +1018,8 @@ function checkSpectrumFiling(rawInput: unknown): ComplianceToolResult {
       isError: true,
     };
   }
-  const bandHzMap: Record<SpectrumInput["frequencyBand"], string> = {
+  const i = parsed.data;
+  const bandHzMap: Record<string, string> = {
     L: "1-2 GHz",
     S: "2-4 GHz",
     C: "4-8 GHz",
@@ -1048,21 +1079,24 @@ function checkSpectrumFiling(rawInput: unknown): ComplianceToolResult {
   };
 }
 
-interface CopuosInput {
-  orbitalAltitudeKm: number;
-  massKg?: number;
-  propulsionType?: "chemical" | "electric" | "cold_gas" | "none" | "unknown";
-  controlledReentry?: boolean;
-}
+const CopuosInputSchema = z.object({
+  orbitalAltitudeKm: z.number().finite().min(0).max(500_000),
+  massKg: z.number().finite().min(0).max(1_000_000).optional(),
+  propulsionType: z
+    .enum(["chemical", "electric", "cold_gas", "none", "unknown"])
+    .optional(),
+  controlledReentry: z.boolean().optional(),
+});
 
 function checkCopuosCompliance(rawInput: unknown): ComplianceToolResult {
-  const i = rawInput as CopuosInput;
-  if (!i?.orbitalAltitudeKm) {
+  const parsed = CopuosInputSchema.safeParse(rawInput);
+  if (!parsed.success) {
     return {
       content: JSON.stringify({ error: "orbitalAltitudeKm required" }),
       isError: true,
     };
   }
+  const i = parsed.data;
   const inLeoProtected = i.orbitalAltitudeKm <= 2000;
   const inGeoProtected =
     i.orbitalAltitudeKm >= 35586 && i.orbitalAltitudeKm <= 35986;
