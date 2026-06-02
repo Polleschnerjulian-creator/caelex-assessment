@@ -2,8 +2,11 @@ import { describe, it, expect } from "vitest";
 import {
   SCREENING_DEFAULTS,
   SCREENING_LIST_KEYS,
+  CRITICAL_LIST_KEYS,
   THRESHOLD_MIN,
   THRESHOLD_MAX,
+  isCriticalList,
+  withCriticalLists,
   clampThreshold,
   sanitizeLists,
   sanitizeInterval,
@@ -11,16 +14,45 @@ import {
 } from "./screening-config";
 
 describe("screening-config defaults", () => {
-  it("ships the audited defaults (0.85, 5 lists, auto-block, 30d)", () => {
-    expect(SCREENING_DEFAULTS.matchThreshold).toBe(0.85);
-    expect(SCREENING_DEFAULTS.enabledLists).toHaveLength(5);
+  it("ships all lists on, threshold 0.75 (engine WEAK_MATCH), auto-block, 30d", () => {
+    expect(SCREENING_DEFAULTS.matchThreshold).toBe(0.75);
+    expect(SCREENING_DEFAULTS.enabledLists).toHaveLength(
+      SCREENING_LIST_KEYS.length,
+    );
     expect(SCREENING_DEFAULTS.autoBlockOnConfirmedHit).toBe(true);
     expect(SCREENING_DEFAULTS.reScreenIntervalDays).toBe(30);
   });
-  it("only enables real list keys by default", () => {
+  it("only references real list keys by default", () => {
     for (const k of SCREENING_DEFAULTS.enabledLists) {
       expect(SCREENING_LIST_KEYS).toContain(k);
     }
+  });
+});
+
+describe("critical lists (fail-closed gate)", () => {
+  it("the four primary designated-party lists are critical", () => {
+    expect([...CRITICAL_LIST_KEYS].sort()).toEqual(
+      ["BIS_ENTITY", "EU_FSF", "OFAC_SDN", "UN_CONSOLIDATED"].sort(),
+    );
+  });
+  it("isCriticalList reflects membership", () => {
+    expect(isCriticalList("OFAC_SDN")).toBe(true);
+    expect(isCriticalList("UK_OFSI")).toBe(false);
+  });
+  it("withCriticalLists always unions the critical lists, canonical order", () => {
+    expect(withCriticalLists([])).toEqual([
+      "OFAC_SDN",
+      "BIS_ENTITY",
+      "EU_FSF",
+      "UN_CONSOLIDATED",
+    ]);
+    expect(withCriticalLists(["UK_OFSI"])).toEqual([
+      "OFAC_SDN",
+      "BIS_ENTITY",
+      "EU_FSF",
+      "UN_CONSOLIDATED",
+      "UK_OFSI",
+    ]);
   });
 });
 
@@ -73,20 +105,39 @@ describe("normalizeScreeningConfig", () => {
   it("returns a fresh copy of defaults for null input", () => {
     const out = normalizeScreeningConfig(null);
     expect(out).toEqual(SCREENING_DEFAULTS);
-    expect(out).not.toBe(SCREENING_DEFAULTS); // copy, not the same ref
+    expect(out).not.toBe(SCREENING_DEFAULTS);
+    expect(out.enabledLists).not.toBe(SCREENING_DEFAULTS.enabledLists);
   });
-  it("clamps + sanitises a raw/partial input", () => {
+
+  it("FAIL-CLOSED: critical lists survive even if the input omits them", () => {
+    const out = normalizeScreeningConfig({ enabledLists: ["UK_OFSI"] });
+    for (const c of CRITICAL_LIST_KEYS) {
+      expect(out.enabledLists).toContain(c);
+    }
+    expect(out.enabledLists).toContain("UK_OFSI");
+  });
+
+  it("clamps the threshold and coerces the cadence", () => {
     const out = normalizeScreeningConfig({
-      enabledLists: ["OFAC_SDN", "NOPE"],
       matchThreshold: 0.4,
       reScreenIntervalDays: 0,
     });
-    expect(out.enabledLists).toEqual(["OFAC_SDN"]);
     expect(out.matchThreshold).toBe(THRESHOLD_MIN);
     expect(out.reScreenIntervalDays).toBeNull();
-    // unspecified field falls back to default
     expect(out.autoBlockOnConfirmedHit).toBe(true);
   });
+
+  it("drops unknown list keys but keeps valid + critical ones", () => {
+    const out = normalizeScreeningConfig({
+      enabledLists: ["OPEN_SANCTIONS", "NOPE"],
+    });
+    expect(out.enabledLists).toContain("OPEN_SANCTIONS");
+    expect(out.enabledLists).not.toContain("NOPE");
+    for (const c of CRITICAL_LIST_KEYS) {
+      expect(out.enabledLists).toContain(c);
+    }
+  });
+
   it("preserves a valid explicit autoBlock=false", () => {
     expect(
       normalizeScreeningConfig({ autoBlockOnConfirmedHit: false })

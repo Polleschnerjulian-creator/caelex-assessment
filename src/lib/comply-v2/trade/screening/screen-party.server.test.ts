@@ -37,6 +37,7 @@ const {
   mockAllLatestSnapshots,
   mockRunCascadeForParty,
   mockOrgMemberFindMany,
+  mockScreeningConfigFindUnique,
 } = vi.hoisted(() => ({
   mockPartyFindUnique: vi.fn(),
   mockScreeningResultCreate: vi.fn(),
@@ -45,6 +46,7 @@ const {
   mockAllLatestSnapshots: vi.fn(),
   mockRunCascadeForParty: vi.fn(),
   mockOrgMemberFindMany: vi.fn(),
+  mockScreeningConfigFindUnique: vi.fn(),
 }));
 
 // ─── Mock modules ────────────────────────────────────────────────────────────
@@ -62,6 +64,9 @@ vi.mock("@/lib/prisma", () => ({
     },
     organizationMember: {
       findMany: mockOrgMemberFindMany,
+    },
+    tradeScreeningConfig: {
+      findUnique: mockScreeningConfigFindUnique,
     },
     $transaction: mockTransaction,
   },
@@ -171,6 +176,10 @@ beforeEach(() => {
   mockPartyFindUnique.mockResolvedValue(CLEAN_PARTY);
   mockRunCascadeForParty.mockResolvedValue(null); // no ownership graph
   mockOrgMemberFindMany.mockResolvedValue([]); // no email recipients
+  // No per-org screening config row → engine falls back to audited
+  // defaults (all 8 lists enabled, threshold 0.75), so the snapshot
+  // filter is a no-op and these fixtures behave as before the config wire.
+  mockScreeningConfigFindUnique.mockResolvedValue(null);
 
   // Default: $transaction resolves with what the two inner calls would return.
   // Each test overrides this per expected decision.

@@ -12,7 +12,7 @@
  */
 
 import { useState, useTransition } from "react";
-import { Save, CheckCircle2, AlertCircle, Info } from "lucide-react";
+import { Save, CheckCircle2, AlertCircle, Info, Lock } from "lucide-react";
 import { updateScreening } from "@/lib/trade/settings/settings-actions";
 import {
   SCREENING_LISTS,
@@ -117,17 +117,18 @@ export function ScreeningTab({ config }: { config: ScreeningConfig }) {
         </p>
       </div>
 
-      {/* Honest preview notice — the config persists, but the screening
-          engine doesn't read it yet (engine wiring is a separate pass). An
-          inert config is fail-safe (the audited defaults stay in force), so
-          this notice exists only to prevent false confidence. */}
-      <div className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-[12.5px] leading-relaxed text-amber-900">
+      {/* Honest scope notice — lists + threshold are wired into the engine;
+          auto-block + cadence persist but their subsystems (operation policy
+          + re-screen cron) aren't wired yet, so we say so precisely. */}
+      <div className="flex items-start gap-2.5 rounded-lg border border-trade-border bg-trade-bg-subtle px-4 py-3 text-[12.5px] leading-relaxed text-trade-text-secondary">
         <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
         <div>
-          <span className="font-semibold">Voransicht.</span> Änderungen werden
-          gespeichert, wirken aber noch nicht aufs Live-Screening — das läuft
-          aktuell mit den geprüften Standardwerten (alle Pflichtlisten aktiv,
-          Schwelle&nbsp;0.85). Die Engine-Anbindung folgt in Kürze.
+          <span className="font-semibold text-trade-text-primary">
+            Sanktionslisten und Match-Schwelle wirken live
+          </span>{" "}
+          aufs Screening. Auto-Block und Re-Screening-Takt werden gespeichert;
+          ihre Anbindung folgt — bis dahin gelten die Standardwerte (Auto-Block
+          an, alle&nbsp;30&nbsp;Tage).
         </div>
       </div>
 
@@ -154,11 +155,20 @@ export function ScreeningTab({ config }: { config: ScreeningConfig }) {
                 {list.authority}
               </div>
             </div>
-            <Switch
-              on={enabled.has(list.key)}
-              onToggle={() => toggleList(list.key)}
-              label={`${list.label} ${enabled.has(list.key) ? "deaktivieren" : "aktivieren"}`}
-            />
+            {list.critical ? (
+              <span
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-trade-bg-subtle px-2.5 py-1 text-[11px] font-medium text-trade-text-secondary ring-1 ring-trade-border-subtle"
+                title="Pflichtliste — immer aktiv (fail-closed)"
+              >
+                <Lock className="h-3 w-3" aria-hidden="true" /> Pflicht
+              </span>
+            ) : (
+              <Switch
+                on={enabled.has(list.key)}
+                onToggle={() => toggleList(list.key)}
+                label={`${list.label} ${enabled.has(list.key) ? "deaktivieren" : "aktivieren"}`}
+              />
+            )}
           </div>
         ))}
       </div>
