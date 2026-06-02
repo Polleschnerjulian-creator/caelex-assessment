@@ -212,9 +212,12 @@ describe("extract_text_from_pdf", () => {
       callerUserId: "u1",
       callerOrgId: "org-A",
     });
-    const payload = parse(result.content) as { text: string };
+    const payload = parse(result.content) as {
+      text: string;
+      sizeChars: number;
+    };
     expect(payload.text).toContain("truncated at 20000");
-    expect((payload as { sizeChars: number }).sizeChars).toBe(30_000);
+    expect(payload.sizeChars).toBe(30_000);
   });
 
   it("respects custom maxChars up to 50_000 cap (A-M21: Zod now rejects > 50_000)", async () => {

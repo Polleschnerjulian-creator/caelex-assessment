@@ -51,7 +51,7 @@ describe("compliance-tools schema", () => {
 
   it("every tool has a non-empty description and input_schema", () => {
     for (const t of COMPLIANCE_TOOLS) {
-      expect(t.description.length).toBeGreaterThan(20);
+      expect((t.description ?? "").length).toBeGreaterThan(20);
       expect(t.input_schema).toBeDefined();
       expect((t.input_schema as { type?: string }).type).toBe("object");
     }
