@@ -20,6 +20,8 @@
 import { getMandateStore } from "../mandate-store";
 import { listPlanWorkspaces } from "../plan-workspace-store";
 import { getDraftLibrary } from "../drafting-history";
+import { getClauses } from "../clause-library";
+import { getAttachedClauseIds } from "./attached-clauses-store";
 import type { BrowserContext } from "./types";
 
 const PRIVILEGE_STORAGE_KEY = "atlas-drafting-privileged-mode";
@@ -76,10 +78,10 @@ export function buildBrowserContext(opts: {
       mandateId: d.mandateId,
       mandateName: d.mandateName,
     })),
-    /* Bundle 46 MVP: attached clauses live in studio React state, not
-       persisted. Empty here. Bundle 47 lifts them into a store so the
-       chat surface can see them. */
-    attachedClauses: [],
+    attachedClauses: (() => {
+      const attachedIds = new Set(getAttachedClauseIds());
+      return getClauses().filter((c) => attachedIds.has(c.id));
+    })(),
     outputLang: opts.outputLang,
     privileged,
   };

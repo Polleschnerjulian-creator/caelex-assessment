@@ -33,6 +33,7 @@ import {
 } from "../plan-workspace-store";
 import { getPlanTemplate } from "../plan-templates";
 import { pushDraftLibrary } from "../drafting-history";
+import { attachClause, detachClause } from "./attached-clauses-store";
 import type { ClientAction } from "./types";
 
 /* Apply one action. Failures are caught + logged; the caller continues
@@ -145,15 +146,11 @@ export function applyClientAction(action: ClientAction): void {
       }
 
       case "attach_clause_to_session":
+        attachClause(action.clauseId);
+        break;
+
       case "detach_clause_from_session":
-        /* Session-state for attached clauses currently lives in the
-           studio page's React state — not in a persistent store. The
-           chat surface doesn't have access to it via localStorage.
-           Future bundle: lift attached-clauses into a tiny store and
-           wire both surfaces through it. For now, no-op. */
-        console.info(
-          `[chat action-executor] ${action.type} requested for clause ${action.clauseId} — deferred until clause-attachment store exists`,
-        );
+        detachClause(action.clauseId);
         break;
 
       case "push_to_library":
