@@ -22,8 +22,19 @@ import "server-only";
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { findFirst, decryptField, wrapVault, buildClient } = vi.hoisted(() => ({
+const {
+  findFirst,
+  findMany,
+  update,
+  mandateFindFirst,
+  decryptField,
+  wrapVault,
+  buildClient,
+} = vi.hoisted(() => ({
   findFirst: vi.fn(),
+  findMany: vi.fn(),
+  update: vi.fn(),
+  mandateFindFirst: vi.fn(),
   decryptField: vi.fn(),
   wrapVault: vi.fn(),
   buildClient: vi.fn(),
@@ -31,7 +42,8 @@ const { findFirst, decryptField, wrapVault, buildClient } = vi.hoisted(() => ({
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    atlasMandateFile: { findFirst },
+    atlasMandateFile: { findFirst, findMany, update },
+    atlasMandate: { findFirst: mandateFindFirst },
   },
 }));
 
@@ -59,6 +71,9 @@ function parse(content: string): Record<string, unknown> {
 
 beforeEach(() => {
   findFirst.mockReset();
+  findMany.mockReset();
+  update.mockReset();
+  mandateFindFirst.mockReset();
   decryptField.mockReset();
   wrapVault.mockReset();
   buildClient.mockReset();
@@ -66,6 +81,8 @@ beforeEach(() => {
   decryptField.mockImplementation(async (v: string | null) => v);
   /* Default wrap: append a marker so tests can verify wrapping happened. */
   wrapVault.mockImplementation((text: string) => `<vc>${text}</vc>`);
+  /* Default update: resolve to nothing (tests override as needed). */
+  update.mockResolvedValue({});
 });
 
 /* ── Schema + guards ────────────────────────────────────────────────── */
@@ -760,6 +777,122 @@ describe("A-H11 — Vault wrapping in nested Anthropic calls", () => {
     expect((userContent.match(/<vc>/g) ?? []).length).toBeGreaterThanOrEqual(2);
   });
 
+  it("classify_document: out-of-set documentType from LLM is coerced to 'Other' (A-M20)", async () => {
+    findFirst.mockResolvedValue({
+      id: "f1",
+      filename: "evil.txt",
+      mimeType: "text/plain",
+      sizeBytes: 100,
+      documentType: null,
+      extractedText: "Some document text",
+      mandateId: "m1",
+    });
+    decryptField.mockResolvedValue("Some document text");
+
+    /* LLM returns a hallucinated/injected type not in the allowed set. */
+    buildClient.mockReturnValue({
+      client: {
+        messages: {
+          create: vi.fn().mockResolvedValue({
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  documentType: "PWNED'; DROP TABLE atlasmandatefile; --",
+                  subtype: "injection",
+                  parties: [],
+                  jurisdiction: null,
+                  language: "en",
+                  effectiveDate: null,
+                  containsItar: false,
+                  containsClassifiedInfo: false,
+                }),
+              },
+            ],
+            usage: { input_tokens: 50, output_tokens: 20 },
+          }),
+        },
+      },
+      model: "claude-haiku-4-5",
+      mode: "direct",
+    });
+
+    const result = await executeDocumentTool({
+      name: "classify_document",
+      input: { fileId: "f1" },
+      callerUserId: "u1",
+      callerOrgId: "org-A",
+    });
+
+    /* Tool should succeed (classification still returned to caller). */
+    expect(result.isError).toBe(false);
+
+    /* The DB update must NOT have stored the injected string verbatim. */
+    expect(update).toHaveBeenCalledTimes(1);
+    const updateCall = update.mock.calls[0][0] as {
+      data: { documentType: string };
+    };
+    expect(updateCall.data.documentType).toBe("Other");
+    expect(updateCall.data.documentType).not.toContain("PWNED");
+    expect(updateCall.data.documentType).not.toContain("DROP TABLE");
+  });
+
+  it("classify_document: valid documentType from LLM is persisted verbatim (A-M20)", async () => {
+    findFirst.mockResolvedValue({
+      id: "f2",
+      filename: "contract.pdf",
+      mimeType: "application/pdf",
+      sizeBytes: 5000,
+      documentType: null,
+      extractedText: "This is a satellite procurement contract.",
+      mandateId: "m1",
+    });
+    decryptField.mockResolvedValue("This is a satellite procurement contract.");
+
+    buildClient.mockReturnValue({
+      client: {
+        messages: {
+          create: vi.fn().mockResolvedValue({
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  documentType: "Contract",
+                  subtype: "satellite procurement",
+                  parties: ["Operator GmbH", "Launch Co"],
+                  jurisdiction: "DE",
+                  language: "en",
+                  effectiveDate: "2026-01-01",
+                  containsItar: false,
+                  containsClassifiedInfo: false,
+                }),
+              },
+            ],
+            usage: { input_tokens: 60, output_tokens: 25 },
+          }),
+        },
+      },
+      model: "claude-haiku-4-5",
+      mode: "direct",
+    });
+
+    const result = await executeDocumentTool({
+      name: "classify_document",
+      input: { fileId: "f2" },
+      callerUserId: "u1",
+      callerOrgId: "org-A",
+    });
+
+    expect(result.isError).toBe(false);
+
+    /* Valid type → persisted exactly. */
+    expect(update).toHaveBeenCalledTimes(1);
+    const updateCall = update.mock.calls[0][0] as {
+      data: { documentType: string };
+    };
+    expect(updateCall.data.documentType).toBe("Contract");
+  });
+
   it("compare_documents: sanitizes dimension — raw quotes and newlines do NOT reach nested system prompt (A-H11 follow-up)", async () => {
     const mockFileA = {
       id: "fA",
@@ -834,5 +967,161 @@ describe("A-H11 — Vault wrapping in nested Anthropic calls", () => {
     /* The system prompt must still be defined and contain the structural text. */
     expect(systemPrompt).toContain("Dimension:");
     expect(systemPrompt).toContain("Output STRICT structure");
+  });
+});
+
+/* ── A-M3: search_mandate_knowledge bounded scan ───────────────────── */
+
+describe("A-M3 — search_mandate_knowledge bounded scan", () => {
+  /** Helper: build a mock mandate row. */
+  const mockMandate = { id: "m1", name: "Test Mandate" };
+
+  /** Helper: build a mock file row with given text (already "decrypted"). */
+  function mockFileRow(
+    id: string,
+    text: string,
+  ): {
+    id: string;
+    filename: string;
+    mimeType: string;
+    documentType: null;
+    extractedText: string;
+  } {
+    return {
+      id,
+      filename: `${id}.txt`,
+      mimeType: "text/plain",
+      documentType: null,
+      extractedText: text,
+    };
+  }
+
+  it("passes take:100 and orderBy:createdAt:desc to findMany (A-M3: file-count cap)", async () => {
+    mandateFindFirst.mockResolvedValue(mockMandate);
+    /* Return an empty array — we only care that findMany received the right args. */
+    findMany.mockResolvedValue([]);
+
+    await executeDocumentTool({
+      name: "search_mandate_knowledge",
+      input: { mandateId: "m1", query: "liability" },
+      callerUserId: "u1",
+      callerOrgId: "org-A",
+    });
+
+    expect(findMany).toHaveBeenCalledTimes(1);
+    const callArg = findMany.mock.calls[0][0] as {
+      take?: number;
+      orderBy?: { createdAt?: string };
+    };
+
+    /* A-M3 assertion: take must be set and ≤ 100. */
+    expect(callArg.take).toBeDefined();
+    expect(callArg.take).toBeLessThanOrEqual(100);
+
+    /* A-M3 assertion: ordered by createdAt descending (most-recent first). */
+    expect(callArg.orderBy).toMatchObject({ createdAt: "desc" });
+  });
+
+  it("stops decrypting once cumulative chars exceed the size cap (A-M3: size guard)", async () => {
+    mandateFindFirst.mockResolvedValue(mockMandate);
+
+    /* Build files where the first two together exceed 5 MB. */
+    const bigText = "x".repeat(3_000_000); // 3 MB each
+    findMany.mockResolvedValue([
+      mockFileRow("f1", bigText),
+      mockFileRow("f2", bigText),
+      mockFileRow("f3", "small file content"),
+    ]);
+    /* decrypt passes through (mock default). */
+
+    const result = await executeDocumentTool({
+      name: "search_mandate_knowledge",
+      input: { mandateId: "m1", query: "xxx" },
+      callerUserId: "u1",
+      callerOrgId: "org-A",
+    });
+
+    /* f1 (3 MB) + f2 (3 MB) = 6 MB → cap triggers before or during f2.
+       f3 must NOT have been decrypted (only f1 and at most f2 are processed). */
+    /* The key check: f3 was never passed to decryptField because the cap fired.
+       We verify via filesScanned in the result (< 3 means f3 was skipped). */
+    const payload = JSON.parse(result.content) as {
+      filesScanned: number;
+      truncated?: boolean;
+      truncationNote?: string;
+    };
+    expect(payload.filesScanned).toBeLessThan(3);
+
+    /* A-M3: truncation flag must be set. */
+    expect(payload.truncated).toBe(true);
+    expect(typeof payload.truncationNote).toBe("string");
+    expect((payload.truncationNote as string).length).toBeGreaterThan(0);
+  });
+
+  it("sets truncated:true when findMany returns exactly SEARCH_FILE_LIMIT rows (A-M3: file-count signal)", async () => {
+    mandateFindFirst.mockResolvedValue(mockMandate);
+
+    /* Return exactly 100 rows (the take limit) — signals there may be more. */
+    const rows = Array.from({ length: 100 }, (_, i) =>
+      mockFileRow(`f${i}`, "short content"),
+    );
+    findMany.mockResolvedValue(rows);
+
+    const result = await executeDocumentTool({
+      name: "search_mandate_knowledge",
+      input: { mandateId: "m1", query: "nevermatches$$$$" },
+      callerUserId: "u1",
+      callerOrgId: "org-A",
+    });
+
+    const payload = JSON.parse(result.content) as {
+      truncated?: boolean;
+    };
+    /* 100 rows returned = we hit the take cap → flag is set. */
+    expect(payload.truncated).toBe(true);
+  });
+
+  it("does NOT set truncated when fewer than 100 rows returned (A-M3: no false alarm)", async () => {
+    mandateFindFirst.mockResolvedValue(mockMandate);
+
+    /* Only 3 small files — well under the caps. */
+    findMany.mockResolvedValue([
+      mockFileRow("f1", "alpha beta gamma"),
+      mockFileRow("f2", "delta epsilon"),
+      mockFileRow("f3", "zeta eta"),
+    ]);
+
+    const result = await executeDocumentTool({
+      name: "search_mandate_knowledge",
+      input: { mandateId: "m1", query: "alpha" },
+      callerUserId: "u1",
+      callerOrgId: "org-A",
+    });
+
+    const payload = JSON.parse(result.content) as {
+      truncated?: boolean;
+      totalHits: number;
+    };
+    /* Under the cap → no truncation flag. */
+    expect(payload.truncated).toBeUndefined();
+    /* Still finds the match. */
+    expect(payload.totalHits).toBeGreaterThan(0);
+  });
+
+  it("happy path: mandate access denied → isError:true (access control still works)", async () => {
+    mandateFindFirst.mockResolvedValue(null); // not found / not a member
+
+    const result = await executeDocumentTool({
+      name: "search_mandate_knowledge",
+      input: { mandateId: "m-unknown", query: "test" },
+      callerUserId: "u1",
+      callerOrgId: "org-A",
+    });
+
+    expect(result.isError).toBe(true);
+    const payload = JSON.parse(result.content) as { error: string };
+    expect(payload.error).toContain("not found");
+    /* findMany must NOT have been called — no scan without access check passing. */
+    expect(findMany).not.toHaveBeenCalled();
   });
 });
