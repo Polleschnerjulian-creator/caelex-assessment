@@ -91,14 +91,21 @@ export async function POST(request: Request) {
     );
 
     // Resolve org context for the DPO email.
+    // NOTE: GDPR Art. 17 is a universal right — this route is intentionally
+    // accessible to any authenticated user, including those without an Atlas
+    // (LAW_FIRM/BOTH) org. When no org membership exists we use the user's
+    // email as a neutral identifier rather than the misleading "(no org)"
+    // Atlas-branded label.
     const membership = await prisma.organizationMember.findFirst({
       where: { userId },
       include: {
         organization: { select: { id: true, name: true, slug: true } },
       },
     });
-    const orgName = membership?.organization?.name ?? "(no org)";
-    const orgSlug = membership?.organization?.slug ?? "(no slug)";
+    const orgName =
+      membership?.organization?.name ??
+      `Kein zugeordnetes Unternehmen (${userEmail})`;
+    const orgSlug = membership?.organization?.slug ?? "(kein Unternehmen)";
     const orgId = membership?.organization?.id ?? null;
     const isOrgOwner = membership?.role === "OWNER";
 
