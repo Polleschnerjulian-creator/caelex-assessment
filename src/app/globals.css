@@ -4784,6 +4784,10 @@ html:not(.dark) .caelex-v2 .glass-card::after {
   --trade-accent-soft: rgba(64, 72, 84, 0.09); /* accent.muted — fill */
   --trade-accent-strong: #2f343c; /* accent.hover — dunkler */
   --trade-hover: #f6f7f9; /* row hover */
+  /* Neon-style: soft card shadow + functional blue link */
+  --trade-shadow-card:
+    0 1px 2px rgba(12, 13, 14, 0.04), 0 1px 3px rgba(12, 13, 14, 0.06);
+  --trade-link: #2563eb;
 
   /* ──────────────────────────────────────────────────────────────
      APPLE HIG semantic tokens (Iteration 3 — based on user's
@@ -4865,6 +4869,10 @@ html[data-trade-preload="dark"] .trade-themed {
   --trade-accent-soft: rgba(197, 203, 211, 0.14);
   --trade-accent-strong: #dce0e5; /* heller bei Hover */
   --trade-hover: #16181b;
+  /* Neon-style: subtle card shadow (dark) + functional blue link */
+  --trade-shadow-card:
+    0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --trade-link: #60a5fa;
 
   /* APPLE HIG semantic tokens — dark variants.
      Per Apple: dark mode is NOT inversion — elevated surfaces

@@ -107,24 +107,24 @@ export function TradeContextPanel({ badgeCounts }: Props) {
       aria-label={section.title}
       className="flex h-full w-full flex-col"
       style={{
-        // Same canvas as the content area (one continuous surface, divided
-        // only by the hairline) so the shell reads "aus einem Guss" rather
-        // than a white panel beside a grey page.
-        background: "var(--trade-bg-page)",
-        borderRight: "0.5px solid var(--trade-border)",
+        // Neon-console style: white sidebar panel beside the light-grey
+        // content, divided by a 1px border. Section labels are plain sans
+        // uppercase (Neon's nav vocabulary).
+        background: "var(--trade-bg-panel)",
+        borderRight: "1px solid var(--trade-border)",
         padding: "18px 12px 12px",
       }}
     >
-      {/* Panel title — mono eyebrow, matching the content's micro-labels */}
+      {/* Panel title — sans uppercase section label (Neon) */}
       <h1
-        className="flex items-center gap-2 font-mono"
+        className="flex items-center gap-2"
         style={{
-          fontSize: 10.5,
+          fontSize: 11,
           fontWeight: 600,
           textTransform: "uppercase",
-          letterSpacing: "0.2em",
+          letterSpacing: "0.04em",
           color: "var(--trade-text-muted)",
-          padding: "4px 9px 14px",
+          padding: "4px 9px 12px",
         }}
       >
         {section.title}
@@ -139,14 +139,13 @@ export function TradeContextPanel({ badgeCounts }: Props) {
           <div key={group.label ?? `g${gi}`}>
             {group.label ? (
               <div
-                className="font-mono"
                 style={{
-                  fontSize: 10,
+                  fontSize: 10.5,
                   fontWeight: 600,
                   textTransform: "uppercase",
-                  letterSpacing: "0.16em",
+                  letterSpacing: "0.06em",
                   color: "var(--trade-text-muted)",
-                  padding: "16px 9px 6px",
+                  padding: "16px 9px 5px",
                 }}
               >
                 {group.label}
