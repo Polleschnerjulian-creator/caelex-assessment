@@ -37,6 +37,22 @@ export const dynamic = "force-dynamic";
    triggered background run can take 30-120s. */
 export const maxDuration = 300;
 
+/* A-M18: per-org daily AI spend cap.
+   Default: $20 USD / org / calendar day (UTC).
+   Override via ATLAS_MAX_ORG_DAILY_AI_SPEND_USD env var.
+   Intent: 50 mandates × every-6h = up to 200 billable runs/day; without
+   a cap a single misconfigured org could exhaust the Anthropic budget.
+   The cap is intentionally org-scoped, not global, so one org can't
+   starve another. */
+const MAX_ORG_DAILY_AI_SPEND_USD: number = (() => {
+  const raw = process.env.ATLAS_MAX_ORG_DAILY_AI_SPEND_USD;
+  if (raw) {
+    const parsed = parseFloat(raw);
+    if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  }
+  return 20;
+})();
+
 export async function GET(req: NextRequest) {
   /* CRON_SECRET auth — matches the pattern used by the other 17
      Vercel crons in this repo. */
@@ -79,6 +95,39 @@ export async function GET(req: NextRequest) {
     mandateIds: due.map((m) => m.id),
   });
 
+  /* A-M18: Compute per-org AI spend for today (UTC) ONCE per tick, not
+     per mandate, so we do a single aggregate query rather than N queries.
+     We sum costUsd for all AtlasAgentRun rows belonging to each org that
+     started today and have a terminal or in-progress status (running
+     runs already booked to the budget; skipped/cancelled have costUsd=0).
+     The Map is keyed by organizationId. Orgs not in due[] are not queried. */
+  const startOfToday = new Date(now);
+  startOfToday.setUTCHours(0, 0, 0, 0);
+
+  const dueOrgIds = [...new Set(due.map((m) => m.organizationId))];
+
+  /* Group today's spend by org. Prisma groupBy with _sum is the correct
+     approach; the resulting array has one entry per org with a non-zero
+     spend today. Orgs with zero spend today won't appear — that's fine,
+     we treat missing = $0. */
+  const spendRows = await prisma.atlasAgentRun.groupBy({
+    by: ["organizationId"],
+    where: {
+      organizationId: { in: dueOrgIds },
+      startedAt: { gte: startOfToday },
+    },
+    _sum: { costUsd: true },
+  });
+
+  const orgSpendToday = new Map<string, number>();
+  for (const row of spendRows) {
+    orgSpendToday.set(row.organizationId, row._sum.costUsd ?? 0);
+  }
+
+  /* Track which orgs we've already decided to skip this tick so we don't
+     re-check per mandate (the cap is org-level, one check per org). */
+  const orgSkipped = new Set<string>();
+
   const results: Array<{
     mandateId: string;
     status: string;
@@ -95,6 +144,28 @@ export async function GET(req: NextRequest) {
         mandateId: m.id,
         schedule: m.backgroundAgentSchedule,
       });
+      continue;
+    }
+
+    /* A-M18: daily budget gate — check once per org, skip all its
+       mandates for the rest of this tick if the cap is reached. */
+    if (!orgSkipped.has(m.organizationId)) {
+      const spentToday = orgSpendToday.get(m.organizationId) ?? 0;
+      if (spentToday >= MAX_ORG_DAILY_AI_SPEND_USD) {
+        orgSkipped.add(m.organizationId);
+        logger.warn(
+          "[atlas/cron/background-agents] org daily AI spend cap reached — skipping remaining mandates for org",
+          {
+            organizationId: m.organizationId,
+            spentTodayUsd: spentToday,
+            capUsd: MAX_ORG_DAILY_AI_SPEND_USD,
+            mandateId: m.id,
+          },
+        );
+      }
+    }
+    if (orgSkipped.has(m.organizationId)) {
+      results.push({ mandateId: m.id, status: "skipped_budget_cap" });
       continue;
     }
 
@@ -130,6 +201,16 @@ export async function GET(req: NextRequest) {
         runId: result.runId,
         error: result.message,
       });
+
+      /* A-M18: update the in-memory spend tracker so subsequent mandates
+         in this same tick see the accumulated cost from runs we already
+         dispatched (the DB rows from this tick won't be visible in the
+         query we ran above). We use the costUsd recorded on the run result
+         when available; fall back to 0 so we don't over-estimate. */
+      if (result.costUsd && result.costUsd > 0) {
+        const prev = orgSpendToday.get(m.organizationId) ?? 0;
+        orgSpendToday.set(m.organizationId, prev + result.costUsd);
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       logger.error("[atlas/cron/background-agents] dispatch failed", {

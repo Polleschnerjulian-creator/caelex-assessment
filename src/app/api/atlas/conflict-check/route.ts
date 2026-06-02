@@ -158,6 +158,7 @@ export async function POST(req: NextRequest) {
 
     const hits: ConflictHit[] = [];
     for (const m of mandates) {
+      const hasAccess = accessByMandate.get(m.id) === true;
       const haystacks: { text: string; field: ConflictHit["matchedField"] }[] =
         [];
       if (m.clientName) {
@@ -166,7 +167,16 @@ export async function POST(req: NextRequest) {
           field: "clientName",
         });
       }
-      if (m.customInstructions) {
+      /* A-M11 (existence-oracle fix): customInstructions (case strategy,
+         party names, sensitive counsel notes) is included in the haystack
+         ONLY for mandates the caller is a member/owner of. For mandates
+         they do NOT belong to, we restrict to clientName only — which is
+         the §43a-required identity field and already exposed via AUDIT-FIX
+         H07. Including customInstructions for non-member mandates would
+         allow binary probing of another lawyer's case strategy (a
+         confidentiality breach under §43a BRAO / §203 StGB) even though
+         the actual content is already redacted in the response. */
+      if (hasAccess && m.customInstructions) {
         haystacks.push({
           text: m.customInstructions.toLowerCase(),
           field: "instructions",
@@ -189,8 +199,10 @@ export async function POST(req: NextRequest) {
                but the raw CUID never leaves the server. The hash is
                not reversible — partner whose mandate matched gets a
                separate in-app notification (out of scope for this
-               commit, see future SEC-T2 follow-up). */
-            const hasAccess = accessByMandate.get(m.id) === true;
+               commit, see future SEC-T2 follow-up).
+
+               A-M11: hasAccess is computed once per mandate in the
+               outer loop and reused here — no re-lookup needed. */
             const safeMandateId = hasAccess
               ? m.id
               : `redacted-${createHash("sha256").update(m.id).digest("hex").slice(0, 12)}`;
