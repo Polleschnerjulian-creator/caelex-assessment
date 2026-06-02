@@ -270,15 +270,8 @@ export function LibraryView() {
         )}
         {notProvisioned && (
           <div className="mb-4 px-3 py-2.5 rounded-lg bg-amber-500/[0.06] text-amber-300/90 ring-1 ring-amber-500/20 text-[11.5px] leading-relaxed">
-            <div className="font-medium mb-0.5">
-              Bibliothek wird gerade eingerichtet.
-            </div>
-            Die Datenbank-Migration{" "}
-            <code className="font-mono text-[10.5px] bg-white/5 px-1.5 py-0.5 rounded">
-              20260425130000_add_atlas_research_entry
-            </code>{" "}
-            ist noch ausstehend. Sobald sie angewendet ist, erscheinen hier
-            deine gespeicherten Einträge.
+            Die Bibliothek wird gerade eingerichtet — bitte in Kürze erneut
+            versuchen.
           </div>
         )}
 

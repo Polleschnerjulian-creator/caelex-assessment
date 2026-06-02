@@ -147,6 +147,35 @@ turndown.addRule("atlasCrossRef", {
   },
 });
 
+/* Sprint 11 — LegalOrderedList round-trip preservation. TipTap renders
+   <ol type="I">, <ol type="A">, etc. for roman/alpha legal lists.
+   Standard turndown collapses them to "1. 2. 3." losing the list-type
+   attribute — data loss for German legal filings on every save cycle.
+
+   Fix: intercept <ol> nodes that carry a non-default `type` attribute
+   and emit them as raw inline HTML. marked (used on the other side in
+   markdownToHtml) parses inline HTML in GFM mode by default, so the
+   <ol type="…"> survives the full MD→HTML→save→MD→reopen round-trip.
+
+   Type "1" (decimal) is the HTML default — we let those fall through
+   to turndown's normal ordered-list handling so we don't break regular
+   1./2./3. lists. */
+turndown.addRule("legalOrderedList", {
+  filter: (node) => {
+    if (node.nodeName !== "OL") return false;
+    const t = (node as HTMLElement).getAttribute("type");
+    return !!t && t !== "1";
+  },
+  replacement: (_content, node) => {
+    /* Re-serialise the entire <ol type="…">…</ol> subtree as raw HTML.
+       turndown normally strips the outer <ol> and converts <li> children
+       recursively; here we bypass that and keep the full HTML so that
+       marked can restore the TipTap node with the correct listType
+       attribute on reload. */
+    return "\n\n" + (node as HTMLElement).outerHTML + "\n\n";
+  },
+});
+
 /* Custom rule: task-list-item — turndown's gfm-plugin handles task-
    lists but the syntax can be inconsistent. Lock it down here. */
 turndown.addRule("taskListItem", {
