@@ -97,9 +97,6 @@ async function main(): Promise<void> {
     if (!byType[type]) byType[type] = { expected: 0, embedded: 0, missing: 0 };
     byType[type].expected++;
   }
-  const missingSet = new Set(
-    gap.missingIds.length === gap.missing ? gap.missingIds : [],
-  );
   // For full breakdown we need the complete missing set (not capped)
   const embeddedSet = new Set(embeddedIds);
   for (const id of expectedIds) {

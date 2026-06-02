@@ -5,8 +5,8 @@ import { isSuperAdmin } from "@/lib/super-admin";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 /*
  * Atlas V2 (Sprint 1, 2026-05-12) — Chat-First shell.
- * The legacy AtlasShell is still importable as './AtlasShell' but is
- * no longer mounted by default. See docs/ATLAS-V2-MASTER-PLAN.md.
+ * The legacy AtlasShell was removed in the Atlas correctness batch;
+ * the live shell is AtlasShellV2. See docs/ATLAS-V2-MASTER-PLAN.md.
  */
 import { AtlasShellV2 } from "@/components/atlas/v2/AtlasShellV2";
 import { AtlasV2Bootstrap } from "@/components/atlas/v2/AtlasV2Bootstrap";
