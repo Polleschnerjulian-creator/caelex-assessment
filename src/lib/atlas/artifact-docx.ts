@@ -673,9 +673,34 @@ async function buildDocument(
       }),
     );
 
-    children.push(
-      ...renderBody(parsed.remainingBody, { Paragraph, TextRun, HeadingLevel }),
-    );
+    /* A-M8 (2026-06-02): use parseSegments() so tables in the letter body
+       render as Word tables (matching the non-letter DOCX + PDF paths).
+       Previously renderBody() was called directly here — it does not
+       detect table syntax, so table markdown leaked through as garbled
+       paragraph text. The trailing second-pass block (below) that
+       re-parsed and appended tables is removed; this single pass is
+       the source of truth for both text and table segments. */
+    const letterSegments = parseSegments(parsed.remainingBody);
+    for (const seg of letterSegments) {
+      if (seg.type === "text") {
+        children.push(
+          ...renderBody(seg.content, { Paragraph, TextRun, HeadingLevel }),
+        );
+      } else {
+        children.push(
+          renderTable(seg, {
+            Paragraph,
+            TextRun,
+            Table,
+            TableRow,
+            TableCell,
+            WidthType,
+            BorderStyle,
+          }),
+        );
+        children.push(new Paragraph({ children: [], spacing: { after: 160 } }));
+      }
+    }
   } else {
     /* ── METADATA + DOCUMENT kinds: title-block header ─────────────── */
     let bodyText = input.body;
@@ -830,34 +855,6 @@ async function buildDocument(
           ...renderBody(seg.content, { Paragraph, TextRun, HeadingLevel }),
         );
       } else {
-        children.push(
-          renderTable(seg, {
-            Paragraph,
-            TextRun,
-            Table,
-            TableRow,
-            TableCell,
-            WidthType,
-            BorderStyle,
-          }),
-        );
-        children.push(new Paragraph({ children: [], spacing: { after: 160 } }));
-      }
-    }
-  }
-
-  /* Add table-segments for letter-kinds too (after the body builder). */
-  if (LETTER_KINDS.has(input.kind)) {
-    /* The letter body was already rendered above without table-segment
-       support — re-parse and append any tables that appeared in the
-       remaining body. (Tables in letters are rare but possible.) */
-    const parsed = parseLetterHeader(input.body);
-    const segments = parseSegments(parsed.remainingBody);
-    /* We've already added text segments via renderBody; only append
-       tables here. To prevent double-rendering, we strip-add only
-       table-segments to a NEW children array and slot them at the end. */
-    for (const seg of segments) {
-      if (seg.type === "table") {
         children.push(
           renderTable(seg, {
             Paragraph,

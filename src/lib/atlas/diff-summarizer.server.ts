@@ -2,6 +2,7 @@ import "server-only";
 
 import Anthropic from "@anthropic-ai/sdk";
 import { logger } from "@/lib/logger";
+import { buildAnthropicClient } from "./anthropic-client";
 
 /**
  * Atlas amendment-detection summariser.
@@ -15,9 +16,12 @@ import { logger } from "@/lib/logger";
  * Silent-fails (returns null summary) when ANTHROPIC_API_KEY is missing
  * so the cron never breaks on config-drift — admins can still review
  * the raw hash change in that case.
+ *
+ * A-M7 (2026-06-02): routes through the shared buildAnthropicClient()
+ * so this engine honours EU-Gateway / Bedrock routing on the same path
+ * as all other Atlas engines. Direct `new Anthropic({ apiKey })` removed.
  */
 
-const MODEL = process.env.ATLAS_DIFF_MODEL || "claude-haiku-4-5-20251001";
 const MAX_TOKENS = 512;
 const MAX_INPUT_CHARS = 40_000; // ~10k tokens each side keeps costs bounded
 
@@ -28,15 +32,6 @@ export interface DiffSummary {
   keyChanges: string[];
   /** True when the model judged the diff to be non-substantive. */
   isCosmetic: boolean;
-}
-
-function getClient(): Anthropic | null {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    logger.warn("ANTHROPIC_API_KEY missing — atlas diff summariser disabled");
-    return null;
-  }
-  return new Anthropic({ apiKey });
 }
 
 function extractText(message: Anthropic.Messages.Message): string {
@@ -73,8 +68,12 @@ export async function summariseDiff(params: {
   previousContent: string;
   newContent: string;
 }): Promise<DiffSummary | null> {
-  const client = getClient();
-  if (!client) return null;
+  const setup = buildAnthropicClient();
+  if (!setup) {
+    logger.warn("ANTHROPIC_API_KEY missing — atlas diff summariser disabled");
+    return null;
+  }
+  const { client, model: MODEL } = setup;
 
   const prev = cleanForDiff(params.previousContent).slice(0, MAX_INPUT_CHARS);
   const next = cleanForDiff(params.newContent).slice(0, MAX_INPUT_CHARS);
