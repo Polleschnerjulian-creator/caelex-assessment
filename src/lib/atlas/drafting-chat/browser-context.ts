@@ -78,6 +78,12 @@ export function buildBrowserContext(opts: {
       mandateId: d.mandateId,
       mandateName: d.mandateName,
     })),
+    /* Chat surface: attached clauses come from `attached-clauses-store`
+       (written by action-executor on attach/detach). NOTE: the drafting
+       STUDIO page keeps its OWN React-state attachment and does NOT share
+       this store yet — cross-surface unification is a deliberate future
+       bundle. Resolution is library-order (getClauses newest-first), not
+       attach-order; fine for the verbatim clause directive. */
     attachedClauses: (() => {
       const attachedIds = new Set(getAttachedClauseIds());
       return getClauses().filter((c) => attachedIds.has(c.id));
