@@ -25,7 +25,6 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
 import {
   Plus,
   ScanSearch,
@@ -560,20 +559,10 @@ export default function TradeItemsPage() {
   return (
     <div className="mx-auto max-w-screen-lg px-8 py-8">
       {/* Header */}
-      <header className="mb-7 flex items-end justify-between gap-6 border-b border-trade-border-subtle pb-5">
+      <header className="mb-6 flex items-end justify-between gap-6">
         <div>
-          <div className="mb-1 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.14em] text-trade-text-muted">
-            <Link
-              href="/trade"
-              className="transition hover:text-trade-text-primary"
-            >
-              Trade Operations
-            </Link>
-            <span>/</span>
-            <span className="text-trade-text-secondary">Items</span>
-          </div>
-          <h1 className="text-[24px] font-bold tracking-tight text-trade-text-primary">
-            Item Classification
+          <h1 className="text-[28px] font-bold tracking-tight text-trade-text-primary">
+            Artikel
           </h1>
           <p className="mt-1 text-[13px] text-trade-text-secondary">
             {total > 0
@@ -585,10 +574,10 @@ export default function TradeItemsPage() {
         {!showNew && (
           <button
             onClick={() => setShowNew(true)}
-            className="flex shrink-0 items-center gap-2 rounded-md bg-trade-accent px-4 py-2.5 text-[13px] font-semibold text-white transition hover:bg-trade-accent-strong"
+            className="flex shrink-0 items-center gap-2 rounded-lg bg-trade-text-primary px-4 py-2 text-[13px] font-medium text-trade-bg-panel transition hover:opacity-90"
           >
             <Plus className="h-4 w-4" />
-            New Item
+            Neuer Artikel
           </button>
         )}
       </header>

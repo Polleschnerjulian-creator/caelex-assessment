@@ -23,7 +23,6 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { EmptyStateRich } from "../_components/EmptyStateRich";
 import { Term } from "../_components/Term";
 import { buildCsv, downloadCsv } from "@/lib/trade/csv-export";
@@ -268,20 +267,10 @@ export default function CounterpartiesListPage() {
   return (
     <div className="mx-auto max-w-screen-2xl px-8 py-8">
       {/* Header */}
-      <header className="mb-7 flex items-end justify-between gap-6 border-b border-trade-border-subtle pb-5">
+      <header className="mb-6 flex items-end justify-between gap-6">
         <div className="min-w-0">
-          <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-trade-text-muted">
-            <Link
-              href="/trade"
-              className="transition hover:text-trade-text-primary"
-            >
-              Trade Operations
-            </Link>{" "}
-            <span className="text-trade-border-strong">/</span>{" "}
-            <span className="text-trade-text-secondary">Counterparties</span>
-          </div>
           <h1 className="text-[28px] font-bold leading-tight tracking-tight text-trade-text-primary">
-            Counterparty Screening
+            Partner
           </h1>
           <p className="mt-1.5 max-w-2xl text-[14px] text-trade-text-secondary">
             OFAC SDN, BIS Entity List, DDTC Debarred — fuzzy-match
@@ -292,17 +281,17 @@ export default function CounterpartiesListPage() {
           onClick={() => setShowNewForm((s) => !s)}
           className={
             showNewForm
-              ? "flex shrink-0 items-center gap-2 rounded-md border border-red-200 bg-red-50 px-4 py-2.5 text-[13px] font-semibold text-red-700 transition hover:bg-red-100"
-              : "flex shrink-0 items-center gap-2 rounded-md bg-trade-accent px-4 py-2.5 text-[13px] font-semibold text-white transition hover:bg-trade-accent-strong"
+              ? "flex shrink-0 items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-[13px] font-medium text-red-700 transition hover:bg-red-100"
+              : "flex shrink-0 items-center gap-2 rounded-lg bg-trade-text-primary px-4 py-2 text-[13px] font-medium text-trade-bg-panel transition hover:opacity-90"
           }
         >
           {showNewForm ? (
             <>
-              <X className="h-3.5 w-3.5" /> Cancel
+              <X className="h-3.5 w-3.5" /> Abbrechen
             </>
           ) : (
             <>
-              <Plus className="h-3.5 w-3.5" /> New Counterparty
+              <Plus className="h-3.5 w-3.5" /> Neuer Partner
             </>
           )}
         </button>
