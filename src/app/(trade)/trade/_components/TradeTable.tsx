@@ -110,8 +110,8 @@ export function TradeTable<T>({
           <input
             value={search.value}
             onChange={(e) => search.onChange(e.target.value)}
-            placeholder={search.placeholder ?? "Search…"}
-            className="w-56 rounded-md border border-trade-border bg-trade-bg-panel px-3 py-1.5 text-[13px] text-trade-text-primary placeholder:text-trade-text-muted outline-none focus:border-trade-accent"
+            placeholder={search.placeholder ?? "Suchen…"}
+            className="w-56 rounded-lg border border-trade-border bg-trade-bg-panel px-3 py-1.5 text-[13px] text-trade-text-primary placeholder:text-trade-text-muted outline-none focus:border-trade-accent"
           />
         )}
         {filters && (
@@ -120,29 +120,29 @@ export function TradeTable<T>({
         <div className="ml-auto flex items-center gap-3">
           {typeof resultCount === "number" && (
             <span className="text-[12px] text-trade-text-muted">
-              {resultCount} results
+              {resultCount} Einträge
             </span>
           )}
           <div
-            className="inline-flex rounded-md border border-trade-border-subtle bg-trade-bg-panel p-0.5"
+            className="inline-flex rounded-lg border border-trade-border bg-trade-bg-subtle p-0.5"
             role="group"
-            aria-label="Row density"
+            aria-label="Zeilendichte"
           >
             <button
               type="button"
-              aria-label="Comfortable rows"
+              aria-label="Komfortabel"
               aria-pressed={density === "comfortable"}
               onClick={() => setDensity("comfortable")}
-              className={`rounded p-1 transition ${density === "comfortable" ? "bg-trade-accent text-white" : "text-trade-text-muted hover:text-trade-text-primary"}`}
+              className={`rounded-md p-1 transition ${density === "comfortable" ? "bg-trade-bg-panel text-trade-text-primary shadow-sm" : "text-trade-text-muted hover:text-trade-text-primary"}`}
             >
               <AlignJustify className="h-4 w-4" />
             </button>
             <button
               type="button"
-              aria-label="Compact rows"
+              aria-label="Kompakt"
               aria-pressed={density === "compact"}
               onClick={() => setDensity("compact")}
-              className={`rounded p-1 transition ${density === "compact" ? "bg-trade-accent text-white" : "text-trade-text-muted hover:text-trade-text-primary"}`}
+              className={`rounded-md p-1 transition ${density === "compact" ? "bg-trade-bg-panel text-trade-text-primary shadow-sm" : "text-trade-text-muted hover:text-trade-text-primary"}`}
             >
               <List className="h-4 w-4" />
             </button>
@@ -152,14 +152,16 @@ export function TradeTable<T>({
 
       {/* Body */}
       {loading ? (
-        <ListSkeleton rows={6} label="Loading rows…" />
+        <ListSkeleton rows={6} label="Zeilen werden geladen…" />
       ) : displayRows.length === 0 ? (
-        <div>{emptyState}</div>
+        <div className="rounded-xl border border-trade-border bg-trade-bg-panel px-6 py-12 shadow-[var(--trade-shadow-card)]">
+          {emptyState}
+        </div>
       ) : (
-        <div className="rounded-lg border border-trade-border-subtle">
+        <div className="overflow-hidden rounded-xl border border-trade-border bg-trade-bg-panel shadow-[var(--trade-shadow-card)]">
           <table className="w-full border-collapse text-[13px]">
-            <thead className="sticky top-0 z-10 bg-trade-bg-panel">
-              <tr className="border-b border-trade-border-subtle text-[11px] uppercase tracking-wide text-trade-text-muted">
+            <thead className="bg-trade-bg-subtle">
+              <tr className="border-b border-trade-border text-[11px] uppercase tracking-wide text-trade-text-muted">
                 {selectable && (
                   <th className="w-10 px-3 py-2 text-left">
                     <input
