@@ -549,8 +549,8 @@ function EmptyState({ onNew }: { onNew: () => void }) {
   return (
     <EmptyStateRich
       icon={Truck}
-      title="No trade operations yet"
-      description="An operation bundles items × counterparty × route × license into one auditable delivery transaction. Lifecycle: DRAFT → SCREENING → LICENSED → EXECUTED."
+      title="Noch keine Vorgänge"
+      description="Ein Vorgang bündelt Artikel × Partner × Route × Lizenz zu einer prüfbaren Liefertransaktion. Lebenszyklus: ENTWURF → SCREENING → LIZENZIERT → AUSGEFÜHRT."
       primaryAction={{ label: "Create first operation", onClick: onNew }}
       astra={{
         label: "Ask Astra about the workflow",

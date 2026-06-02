@@ -323,8 +323,8 @@ function EmptyState({ onNew }: { onNew: () => void }) {
   return (
     <EmptyStateRich
       icon={ScanSearch}
-      title="No trade items yet"
-      description="Add your first item — a component, sub-assembly, or product — and Caelex will classify it against ECCN, USML, EU Annex I, MTCR, and your national export list in one pass."
+      title="Noch keine Artikel"
+      description="Lege deinen ersten Artikel an — Komponente, Baugruppe oder Produkt — und Caelex klassifiziert ihn in einem Durchgang gegen ECCN, USML, EU-Anhang I, MTCR und deine nationale Ausfuhrliste."
       primaryAction={{ label: "New item", onClick: onNew }}
       astra={{
         label: "Ask Astra how to classify",
@@ -566,8 +566,8 @@ export default function TradeItemsPage() {
           </h1>
           <p className="mt-1 text-[13px] text-trade-text-secondary">
             {total > 0
-              ? `${total} item${total !== 1 ? "s" : ""} — multi-jurisdiction export classification`
-              : "Multi-jurisdiction export classification per BoM line item"}
+              ? `${total} Artikel — Klassifizierung über mehrere Jurisdiktionen`
+              : "Export-Klassifizierung pro Stücklisten-Position über mehrere Jurisdiktionen"}
           </p>
         </div>
 

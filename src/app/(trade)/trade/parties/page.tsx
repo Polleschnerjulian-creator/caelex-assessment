@@ -367,8 +367,8 @@ function EmptyState({ onNew }: { onNew: () => void }) {
   return (
     <EmptyStateRich
       icon={Shield}
-      title="No counterparties yet"
-      description="Add a counterparty to screen against OFAC SDN, BIS Entity, DDTC Debarred, UK OFSI, and UN Consolidated. Hits surface immediately with audit-grade snapshots."
+      title="Noch keine Partner"
+      description="Lege einen Partner an, um gegen OFAC SDN, BIS Entity, DDTC Debarred, UK OFSI und UN Consolidated zu screenen. Treffer erscheinen sofort mit prüfsicheren Snapshots."
       primaryAction={{ label: "Add first counterparty", onClick: onNew }}
       astra={{
         label: "Ask Astra about screening",

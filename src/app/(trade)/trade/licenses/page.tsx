@@ -598,8 +598,8 @@ function EmptyState({ onNew }: { onNew: () => void }) {
   return (
     <EmptyStateRich
       icon={FileCheck}
-      title="No licenses recorded yet"
-      description="Add your first BAFA-Bescheid, BIS license, DDTC DSP-series authorization, or EU AGG/EUGEA so operations can attach it for draw-down tracking + expiry warnings."
+      title="Noch keine Lizenzen erfasst"
+      description="Erfasse deinen ersten BAFA-Bescheid, deine BIS-Lizenz, DDTC-DSP-Genehmigung oder EU-AGG/EUGEA, damit Vorgänge sie für Draw-Down-Tracking + Ablaufwarnungen verknüpfen können."
       primaryAction={{ label: "Add first license", onClick: onNew }}
       astra={{
         label: "Ask Astra which license fits",
