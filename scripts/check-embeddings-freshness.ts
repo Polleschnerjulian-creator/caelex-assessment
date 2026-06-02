@@ -19,9 +19,13 @@
  *   0 — fully up to date (all corpus IDs embedded)
  *   1 — stale (missing embeddings detected)
  *
- * In CI this is run with `continue-on-error: true` — a non-zero exit
- * is EXPECTED today and must NOT block the build. The step is
- * informational only until embeddings are regenerated.
+ * Run via: `npm run check:embeddings`
+ *
+ * Wiring this as a CI step (non-blocking / `continue-on-error: true`) is a
+ * follow-up to be added to the project's real CI workflow. That workflow does
+ * not live on the `main` branch, so no ci.yml is injected here. A maintainer
+ * should add a step that calls `npm run check:embeddings` with
+ * `continue-on-error: true` once the real workflow is available.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
