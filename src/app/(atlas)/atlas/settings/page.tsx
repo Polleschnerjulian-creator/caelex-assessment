@@ -11,6 +11,7 @@ import {
   User,
   Users,
   Mail,
+  Bell,
   Loader2,
   UserPlus,
   Trash2,
@@ -51,6 +52,9 @@ import {
 import { AccountBanner } from "@/components/atlas/AccountBanner";
 import { AtlasDataRightsCard } from "./AtlasDataRightsCard";
 import { LetterheadSettings } from "@/components/atlas/v2/LetterheadSettings";
+import { SecuritySection } from "@/components/atlas/v2/SecuritySection";
+import { NotificationsSection } from "@/components/atlas/v2/NotificationsSection";
+import { AIContextSection } from "@/components/atlas/v2/AIContextSection";
 import { invalidateFirmBranding } from "@/components/atlas/useFirmBranding";
 
 // Computed inventory counts — derived from the same barrel exports the
@@ -73,7 +77,15 @@ const ATLAS_STATS = {
 // Sprint 11 (2026-05-12): "appearance" tab added for theme picker —
 // matches Claude.ai's settings sidebar where Appearance is its own
 // section between Profile + Account.
-type Tab = "personal" | "appearance" | "firm" | "team" | "compliance";
+type Tab =
+  | "personal"
+  | "appearance"
+  | "notifications"
+  | "security"
+  | "ai-context"
+  | "firm"
+  | "team"
+  | "compliance";
 
 interface ProfileData {
   name: string;
@@ -833,6 +845,21 @@ export default function SettingsPage() {
       icon: <Sun size={14} strokeWidth={1.5} aria-hidden="true" />,
     },
     {
+      id: "notifications",
+      label: language === "de" ? "Benachrichtigungen" : "Notifications",
+      icon: <Bell size={14} strokeWidth={1.5} aria-hidden="true" />,
+    },
+    {
+      id: "security",
+      label: language === "de" ? "Sicherheit" : "Security",
+      icon: <Lock size={14} strokeWidth={1.5} aria-hidden="true" />,
+    },
+    {
+      id: "ai-context",
+      label: language === "de" ? "KI-Kontext" : "AI context",
+      icon: <Sparkles size={14} strokeWidth={1.5} aria-hidden="true" />,
+    },
+    {
       id: "firm",
       label: t("atlas.settings_tab_firm"),
       icon: <Building2 size={14} strokeWidth={1.5} aria-hidden="true" />,
@@ -1484,6 +1511,23 @@ export default function SettingsPage() {
                 </section>
               </div>
             )}
+
+            {/* ═══════════════════════════════════════════
+            Notifications Tab
+            ═══════════════════════════════════════════ */}
+            {activeTab === "notifications" && (
+              <NotificationsSection userEmail={profile?.email ?? ""} />
+            )}
+
+            {/* ═══════════════════════════════════════════
+            Security Tab
+            ═══════════════════════════════════════════ */}
+            {activeTab === "security" && <SecuritySection />}
+
+            {/* ═══════════════════════════════════════════
+            AI Context Tab
+            ═══════════════════════════════════════════ */}
+            {activeTab === "ai-context" && <AIContextSection />}
 
             {/* ═══════════════════════════════════════════
             Firm Tab
