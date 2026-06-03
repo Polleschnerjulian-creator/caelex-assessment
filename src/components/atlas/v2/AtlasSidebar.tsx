@@ -29,6 +29,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import Image from "next/image";
 import {
   Briefcase,
   Folder as FolderIcon,
@@ -253,11 +254,20 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
       {/* ── Top: Wordmark + Search ──────────────────────────────── */}
       <div className="flex flex-col gap-3 px-3 pt-4 pb-2">
         <div className="flex items-center justify-between px-1">
-          <span
-            className="text-[20px] font-medium tracking-tight text-atlas-text-primary [font-family:ui-serif,Georgia,'Cambria_Style',serif]"
-            aria-label="Atlas"
-          >
-            Atlas
+          <span className="inline-flex items-center gap-2" aria-label="Atlas">
+            <Image
+              src="/brand/atlas-icon.png"
+              alt=""
+              width={24}
+              height={24}
+              priority
+              /* Logo is solid black on transparent; invert to white in
+                 dark mode so it reads on the dark sidebar panel. */
+              className="h-6 w-6 shrink-0 object-contain dark:invert"
+            />
+            <span className="text-[20px] font-medium tracking-tight text-atlas-text-primary [font-family:ui-serif,Georgia,'Cambria_Style',serif]">
+              Atlas
+            </span>
           </span>
         </div>
         <SidebarSearchBox value={searchQuery} onChange={setSearchQuery} />
