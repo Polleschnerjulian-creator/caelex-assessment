@@ -13,7 +13,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Briefcase,
@@ -107,6 +107,12 @@ import type {
 interface Props {
   chatId: string;
 }
+
+/** F6 — Bounded render: show at most this many of the most-recent messages
+ *  by default. Older messages are revealed one batch at a time via the
+ *  "Ältere Nachrichten laden" button.  Kept low enough to cap DOM size on
+ *  long legal threads while still showing a full multi-turn exchange. */
+const INITIAL_RENDER_COUNT = 30;
 
 interface InFlightToolCall {
   id: string;
@@ -209,6 +215,15 @@ export function AtlasChatView({ chatId }: Props) {
   const [userIsAtBottom, setUserIsAtBottom] = useState(true);
   /* Sprint 4b (2026-05-18) — Chat-area-level drag-drop overlay state. */
   const [chatDragOver, setChatDragOver] = useState(false);
+
+  /* F6 — How many messages (from the end) are currently mounted in the
+     DOM.  Grows by INITIAL_RENDER_COUNT each time the user clicks "load
+     earlier".  Reset to INITIAL_RENDER_COUNT whenever the active chat
+     changes so switching chats always starts from the bottom. */
+  const [renderCount, setRenderCount] = useState(INITIAL_RENDER_COUNT);
+  useEffect(() => {
+    setRenderCount(INITIAL_RENDER_COUNT);
+  }, [chatId]);
 
   /* Keep messagesLengthRef synced with the latest chat — this is a
      read-channel for the polling-effect that doesn't trigger re-arm. */
@@ -714,58 +729,69 @@ export function AtlasChatView({ chatId }: Props) {
      truncate-from-message endpoint is atomic in the DB (deleteMany in
      a single round-trip), so partial-failure can't leave a half-
      truncated chat. */
-  const handleEditMessage = async (messageId: string, newText: string) => {
-    if (!chat) return;
-    try {
-      /* includeMessage=true removes the pivot + everything after, so
-         the new prompt becomes the new pivot. */
-      await fetch(`/api/atlas/chat/${chat.id}/truncate-from-message`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ messageId, includeMessage: true }),
-      });
-      /* Optimistically prune the messages-array so the UI doesn't
-         flash the deleted bubbles. The silent reload after the new
-         stream will replace this with the canonical state. */
-      setChat((prev) => {
-        if (!prev) return prev;
-        const idx = prev.messages.findIndex((m) => m.id === messageId);
-        if (idx < 0) return prev;
-        return { ...prev, messages: prev.messages.slice(0, idx) };
-      });
-      void handleFollowup(newText, {});
-    } catch (err) {
-      console.error("Edit-message failed", err);
-      setError("Bearbeiten fehlgeschlagen — bitte erneut versuchen.");
-    }
-  };
+  /* F6 — wrapped in useCallback so stable references are passed to the
+     memoized MessageRow; avoids re-rendering all rows on every parent
+     state change (streaming tokens, scroll, etc.). */
+  const handleEditMessage = useCallback(
+    async (messageId: string, newText: string) => {
+      if (!chat) return;
+      try {
+        /* includeMessage=true removes the pivot + everything after, so
+           the new prompt becomes the new pivot. */
+        await fetch(`/api/atlas/chat/${chat.id}/truncate-from-message`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ messageId, includeMessage: true }),
+        });
+        /* Optimistically prune the messages-array so the UI doesn't
+           flash the deleted bubbles. The silent reload after the new
+           stream will replace this with the canonical state. */
+        setChat((prev) => {
+          if (!prev) return prev;
+          const idx = prev.messages.findIndex((m) => m.id === messageId);
+          if (idx < 0) return prev;
+          return { ...prev, messages: prev.messages.slice(0, idx) };
+        });
+        void handleFollowup(newText, {});
+      } catch (err) {
+        console.error("Edit-message failed", err);
+        setError("Bearbeiten fehlgeschlagen — bitte erneut versuchen.");
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [chat?.id],
+  );
 
-  const handleRetryMessage = async (messageId: string) => {
-    if (!chat) return;
-    const userMsg = chat.messages.find((m) => m.id === messageId);
-    if (!userMsg) return;
-    const userText = extractText(userMsg.content);
-    if (!userText) return;
-    try {
-      /* includeMessage=false keeps the user-prompt, drops everything
-         after (the assistant response we want to regenerate). */
-      await fetch(`/api/atlas/chat/${chat.id}/truncate-from-message`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ messageId, includeMessage: false }),
-      });
-      setChat((prev) => {
-        if (!prev) return prev;
-        const idx = prev.messages.findIndex((m) => m.id === messageId);
-        if (idx < 0) return prev;
-        return { ...prev, messages: prev.messages.slice(0, idx + 1) };
-      });
-      void handleFollowup(userText, {});
-    } catch (err) {
-      console.error("Retry-message failed", err);
-      setError("Neu generieren fehlgeschlagen — bitte erneut versuchen.");
-    }
-  };
+  const handleRetryMessage = useCallback(
+    async (messageId: string) => {
+      if (!chat) return;
+      const userMsg = chat.messages.find((m) => m.id === messageId);
+      if (!userMsg) return;
+      const userText = extractText(userMsg.content);
+      if (!userText) return;
+      try {
+        /* includeMessage=false keeps the user-prompt, drops everything
+           after (the assistant response we want to regenerate). */
+        await fetch(`/api/atlas/chat/${chat.id}/truncate-from-message`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ messageId, includeMessage: false }),
+        });
+        setChat((prev) => {
+          if (!prev) return prev;
+          const idx = prev.messages.findIndex((m) => m.id === messageId);
+          if (idx < 0) return prev;
+          return { ...prev, messages: prev.messages.slice(0, idx + 1) };
+        });
+        void handleFollowup(userText, {});
+      } catch (err) {
+        console.error("Retry-message failed", err);
+        setError("Neu generieren fehlgeschlagen — bitte erneut versuchen.");
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [chat?.id],
+  );
 
   const handleEvent = (evt: { type: string } & Record<string, unknown>) => {
     /* H23 — Defensive guard. The reader-loop already short-circuits
@@ -1102,20 +1128,59 @@ export function AtlasChatView({ chatId }: Props) {
         className="relative flex-1 overflow-y-auto px-6 py-6"
       >
         <div className="mx-auto max-w-3xl space-y-6">
-          {chat.messages.map((m) => {
+          {/* F6 — bounded render: show the last `renderCount` messages.
+              All messages stay in state; older ones are unmounted until
+              the user explicitly loads them via the button below. */}
+          {(() => {
+            const total = chat.messages.length;
+            const hiddenCount = Math.max(0, total - renderCount);
+            const visibleMessages = chat.messages.slice(hiddenCount);
             return (
-              <div key={m.id}>
-                <MessageRow
-                  message={m}
-                  chatId={chatId}
-                  mandateId={chat.mandateId ?? null}
-                  onOpenArtifact={setOpenArtifact}
-                  onEditMessage={handleEditMessage}
-                  onRetryMessage={handleRetryMessage}
-                />
-              </div>
+              <>
+                {hiddenCount > 0 && (
+                  <div className="flex justify-center py-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        /* Preserve scroll position: record current
+                           scrollHeight before expanding, then after the
+                           DOM updates restore the offset so the viewport
+                           stays on the same content instead of jumping. */
+                        const el = scrollRef.current;
+                        const prevHeight = el?.scrollHeight ?? 0;
+                        setRenderCount((c) =>
+                          Math.min(c + INITIAL_RENDER_COUNT, total),
+                        );
+                        /* rAF gives React one tick to commit the new rows
+                           before we adjust scrollTop. */
+                        requestAnimationFrame(() => {
+                          if (!el) return;
+                          el.scrollTop += el.scrollHeight - prevHeight;
+                        });
+                      }}
+                      className="rounded-full border border-slate-200 bg-white px-4 py-1.5 text-xs font-medium text-slate-500 shadow-sm transition-colors hover:border-slate-300 hover:text-slate-700 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-slate-400 dark:hover:border-white/[0.14] dark:hover:text-slate-300"
+                    >
+                      {hiddenCount === 1
+                        ? "1 ältere Nachricht laden"
+                        : `${hiddenCount} ältere Nachrichten laden`}
+                    </button>
+                  </div>
+                )}
+                {visibleMessages.map((m) => (
+                  <div key={m.id}>
+                    <MessageRow
+                      message={m}
+                      chatId={chatId}
+                      mandateId={chat.mandateId ?? null}
+                      onOpenArtifact={setOpenArtifact}
+                      onEditMessage={handleEditMessage}
+                      onRetryMessage={handleRetryMessage}
+                    />
+                  </div>
+                ))}
+              </>
             );
-          })}
+          })()}
 
           {streaming && (
             <StreamingMessage
@@ -1437,7 +1502,12 @@ function detectArtifact(text: string): {
   return { kind, title, preview };
 }
 
-function MessageRow({
+/* F6 — MessageRow is wrapped in React.memo below so that growing the
+   render window or streaming tokens in the parent don't force all
+   already-mounted rows to re-render.  The memo equality is reference
+   equality on props; the stable useCallback refs for onEditMessage /
+   onRetryMessage ensure the check passes on streaming parent re-renders. */
+function MessageRowInner({
   message,
   chatId,
   mandateId,
@@ -1670,6 +1740,10 @@ function MessageRow({
     </div>
   );
 }
+
+/* F6 — Memoized public alias.  All render-sites use `MessageRow` so nothing
+   else in this file needs to change; the memo wrapper is transparent. */
+const MessageRow = memo(MessageRowInner);
 
 /* ── Live "Atlas arbeitet" panel + persisted summary ─────────────────────
  *
