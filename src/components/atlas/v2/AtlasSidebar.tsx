@@ -265,7 +265,7 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
                  dark mode so it reads on the dark sidebar panel. */
               className="h-6 w-6 shrink-0 object-contain dark:invert"
             />
-            <span className="text-[20px] font-medium tracking-tight text-atlas-text-primary [font-family:ui-serif,Georgia,'Cambria_Style',serif]">
+            <span className="font-display text-[23px] font-semibold tracking-[-0.01em] text-atlas-text-primary">
               Atlas
             </span>
           </span>
