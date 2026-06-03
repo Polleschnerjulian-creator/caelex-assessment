@@ -23,6 +23,11 @@
  *   { type: "text", delta }
  *   { type: "tool_call_start", id, name, input }
  *   { type: "tool_call_complete", id, name, durationMs, summary }
+ *   { type: "approval_required", assistantMessageId, toolUseId, toolName,
+ *       input, rationale }   ← A-H1 inline gate: turn paused before a
+ *       side-effecting tool. Always followed by { type: "done" } with NO
+ *       messageId/usage (it's a PARTIAL turn). Resume via a follow-up POST
+ *       carrying `resumeApproval`.
  *   { type: "done", messageId, usage: { inputTokens, outputTokens, costUsd } }
  *   { type: "error", message }
  *
@@ -39,6 +44,17 @@ import { ATLAS_TOOLS, isAtlasToolName } from "@/lib/atlas/atlas-tools";
 import { executeAtlasTool } from "@/lib/atlas/atlas-tool-executor";
 import { extractCitations } from "@/lib/atlas/citation-extractor.server";
 import { getToolMetadata } from "@/lib/atlas/tool-metadata";
+/* A-H1 (2026-06-03) — inline approval gate. Chat-mode chains
+   side-effecting tools (create_/send_/schedule_/finalize_/set_/save_/
+   delegate_) autonomously since the Powerhouse merger. Without a gate
+   the lawyer never approves a permanent write before it lands. We reuse
+   the canonical agent-mode gate predicate so chat + agent share ONE
+   policy (NOT the per-tool `requiresApproval` metadata flag, which is
+   display-only and diverges from the prefix-list). */
+import {
+  requiresApproval,
+  approvalRationale,
+} from "@/lib/atlas/agent/approval-policy";
 import { generateAndPersistChatTitle } from "./chat-title-generator.server";
 /* SEC-T0-1 step 3 — encryption-at-rest for AtlasMessage.content. Walks
    the JSONB array, encrypts only text-blocks' .text + tool_result
@@ -198,6 +214,20 @@ export interface ChatEngineInput {
   /** Workflow that launched this chat — recorded on AtlasChat for
    *  later analytics + admin dashboards. */
   workflowId?: string;
+  /** A-H1 inline approval gate — resume a turn that paused awaiting
+   *  lawyer approval of a side-effecting tool. When present, `userMessage`
+   *  may be "" and `images` are ignored (no new user input — we replay
+   *  the paused turn from the persisted sentinel). The placeholder
+   *  assistant row identified by `assistantMessageId` carries the
+   *  `_pendingApproval` sentinel that holds the frozen Anthropic
+   *  conversation + token counters needed to continue. */
+  resumeApproval?: {
+    assistantMessageId: string;
+    toolUseId: string;
+    decision: "approved" | "rejected" | "modified";
+    /** Lawyer-edited tool input, only honoured when decision === "modified". */
+    modifiedInput?: Record<string, unknown>;
+  };
 }
 
 export interface ChatEngineResult {
@@ -226,6 +256,93 @@ interface ToolResultBlock {
   tool_use_id: string;
   content: string;
   is_error?: boolean;
+}
+
+/* ── A-H1 inline approval gate — pending-approval sentinel ───────────
+ * When the chat tool-loop hits a side-effecting tool (requiresApproval),
+ * it does NOT execute. Instead it freezes everything needed to resume
+ * the turn into the placeholder assistant row's `citations` JSONB under
+ * the `_pendingApproval` key — mirroring the existing
+ * `{_streamingPlaceholder:true}` sentinel pattern. The resume request
+ * (a second POST carrying input.resumeApproval) loads this row,
+ * reconstructs the Anthropic conversation, executes-or-skips the gated
+ * tool with the lawyer's decision, and continues the model loop.
+ *
+ * CRITICAL invariant for Anthropic correctness: the frozen `conversation`
+ * already ends with the partial assistant turn (pushed BEFORE the tool
+ * loop), and that assistant turn contains EXACTLY the tool_use blocks
+ * whose ids are covered by `completedToolResults` (non-gated tools that
+ * ran earlier this iteration) PLUS the single gated `toolUseId`. We
+ * truncate the assistant turn at the gated block on pause (dropping any
+ * tool_use blocks the model emitted AFTER it) precisely so this pairing
+ * holds — Anthropic 400s if any tool_use id in the assistant turn lacks
+ * a matching tool_result in the following user turn.
+ */
+const PENDING_APPROVAL_KEY = "_pendingApproval";
+
+interface PendingApprovalSentinel {
+  toolUseId: string;
+  toolName: string;
+  originalInput: Record<string, unknown>;
+  rationale: string;
+  requestedAt: string;
+  /** Anthropic-format messages array AS IT STANDS — already ends with
+   *  the (truncated) partial assistant turn. Never re-append it on resume. */
+  conversation: Anthropic.MessageParam[];
+  /** tool_result blocks already produced for NON-gated tools earlier in
+   *  the paused iteration. Combined with the gated tool's result they
+   *  must cover every tool_use id in the partial assistant turn. */
+  completedToolResults: ToolResultBlock[];
+  /** finalAssistantBlocks accumulated so far (text/thinking/tool_use up
+   *  to + including the gated block) — merged with post-resume blocks so
+   *  the persisted AtlasMessage.content carries the full turn. */
+  partialAssistantBlocks: Anthropic.ContentBlock[];
+  iterationIndex: number;
+  textBuffer: string;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  totalCacheCreationTokens: number;
+  totalCacheReadTokens: number;
+  toolsUsedThisTurn: string[];
+}
+
+/** Build the `citations` JSONB value that flags a paused turn. Pure —
+ *  unit-testable without Prisma/Anthropic. */
+function buildPendingApprovalSentinel(
+  s: PendingApprovalSentinel,
+): Record<string, unknown> {
+  return { [PENDING_APPROVAL_KEY]: s };
+}
+
+/** Extract + shallow-validate a pending-approval sentinel from a
+ *  persisted `citations` JSONB value. Returns null when the row carries
+ *  no (or a malformed) sentinel. Pure — unit-testable. */
+function parsePendingApprovalSentinel(
+  citations: unknown,
+): PendingApprovalSentinel | null {
+  if (!citations || typeof citations !== "object" || Array.isArray(citations)) {
+    return null;
+  }
+  const raw = (citations as Record<string, unknown>)[PENDING_APPROVAL_KEY];
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const s = raw as Partial<PendingApprovalSentinel>;
+  /* Structural guard: the fields the resume path dereferences MUST be
+     present + the right shape. A half-written sentinel (e.g. a crash
+     mid-persist) is treated as "no pending approval" → resume throws
+     the not-found error rather than dereferencing undefined. */
+  if (
+    typeof s.toolUseId !== "string" ||
+    typeof s.toolName !== "string" ||
+    typeof s.iterationIndex !== "number" ||
+    !Array.isArray(s.conversation) ||
+    !Array.isArray(s.completedToolResults) ||
+    !Array.isArray(s.partialAssistantBlocks) ||
+    typeof s.originalInput !== "object" ||
+    s.originalInput === null
+  ) {
+    return null;
+  }
+  return s as PendingApprovalSentinel;
 }
 
 /* ── System prompt ────────────────────────────────────────────────── */
@@ -1048,18 +1165,70 @@ export async function runChat(
     mandate: true,
   };
 
-  /* Initialise chat + persist user-turn BEFORE streaming starts. */
-  const { chatId, history } = await ensureChatAndHistory({
-    chatId: input.chatId,
-    userId: input.userId,
-    organizationId: input.organizationId,
-    mandateId: input.mandateId ?? null,
-    toolToggles,
-    newUserMessage: input.userMessage,
-    newUserImages: input.images,
-    titleHint: input.titleHint,
-    workflowId: input.workflowId,
-  });
+  /* ── A-H1 inline approval gate — RESUME branch ──────────────────────
+     A resumeApproval payload means this POST is NOT a fresh user turn —
+     it carries the lawyer's decision on a tool the previous turn paused
+     on. We must NOT call ensureChatAndHistory (that would persist a new,
+     empty user-message row). Instead we load the paused placeholder row +
+     its frozen `_pendingApproval` sentinel and reconstruct the turn
+     inside the stream below.
+
+     SECURITY: the WHERE clause scopes the row to the caller's org + user
+     (via the chat relation). Without it a caller could resume — and thus
+     EXECUTE a side-effecting tool against — another tenant's paused turn
+     by guessing an assistantMessageId. This org/user gate is mandatory. */
+  let resumeSentinel: PendingApprovalSentinel | null = null;
+  let chatId: string;
+  let history: Anthropic.MessageParam[];
+  if (input.resumeApproval) {
+    const row = await prisma.atlasMessage.findFirst({
+      where: {
+        id: input.resumeApproval.assistantMessageId,
+        chat: {
+          ownerUserId: input.userId,
+          organizationId: input.organizationId,
+        },
+      },
+      select: { chatId: true, citations: true },
+    });
+    if (!row) {
+      throw new Error("Chat not found");
+    }
+    const sentinel = parsePendingApprovalSentinel(row.citations);
+    if (!sentinel) {
+      throw new Error(
+        "ATLAS_APPROVAL_NO_PENDING: message carries no pending-approval sentinel",
+      );
+    }
+    /* Defence-in-depth: the resumed toolUseId must match the one we paused
+       on. A mismatch means the client is replaying a stale/forged decision
+       against the wrong tool — refuse rather than execute. */
+    if (sentinel.toolUseId !== input.resumeApproval.toolUseId) {
+      throw new Error(
+        "ATLAS_APPROVAL_TOOL_MISMATCH: resume toolUseId does not match the paused tool",
+      );
+    }
+    resumeSentinel = sentinel;
+    chatId = row.chatId;
+    /* History is reconstructed from the sentinel.conversation inside the
+       stream — `history` is unused on the resume path. */
+    history = [];
+  } else {
+    /* Initialise chat + persist user-turn BEFORE streaming starts. */
+    const ensured = await ensureChatAndHistory({
+      chatId: input.chatId,
+      userId: input.userId,
+      organizationId: input.organizationId,
+      mandateId: input.mandateId ?? null,
+      toolToggles,
+      newUserMessage: input.userMessage,
+      newUserImages: input.images,
+      titleHint: input.titleHint,
+      workflowId: input.workflowId,
+    });
+    chatId = ensured.chatId;
+    history = ensured.history;
+  }
 
   const encoder = new TextEncoder();
 
@@ -1099,25 +1268,41 @@ export async function runChat(
         }
       }, 15_000);
 
-      const conversation: Anthropic.MessageParam[] = [...history];
-      const toolsUsedThisTurn: string[] = [];
-      let totalInputTokens = 0;
-      let totalOutputTokens = 0;
+      /* A-H1: on resume, seed ALL turn-state from the frozen sentinel
+         (the sentinel.conversation already ends with the truncated partial
+         assistant turn — never re-append it) so the model loop continues
+         exactly where it paused. On a fresh turn, seed from `history`. */
+      const conversation: Anthropic.MessageParam[] = resumeSentinel
+        ? [...resumeSentinel.conversation]
+        : [...history];
+      const toolsUsedThisTurn: string[] = resumeSentinel
+        ? [...resumeSentinel.toolsUsedThisTurn]
+        : [];
+      let totalInputTokens = resumeSentinel?.totalInputTokens ?? 0;
+      let totalOutputTokens = resumeSentinel?.totalOutputTokens ?? 0;
       /* AUDIT-FIX H10: accumulate prompt-cache token classes across
          tool-loop iterations so the final costUsd reflects real
          Anthropic pricing (cache-read ~10× cheaper, cache-write
          ~25% more expensive than uncached input). */
-      let totalCacheCreationTokens = 0;
-      let totalCacheReadTokens = 0;
-      let assistantTextBuffer = "";
+      let totalCacheCreationTokens =
+        resumeSentinel?.totalCacheCreationTokens ?? 0;
+      let totalCacheReadTokens = resumeSentinel?.totalCacheReadTokens ?? 0;
+      let assistantTextBuffer = resumeSentinel?.textBuffer ?? "";
       /* finalAssistantBlocks holds the blocks we persist into the
          AtlasMessage.content jsonb so the chat-view can replay the
          assistant turn faithfully. With Extended Thinking enabled we
          also persist `thinking` + `redacted_thinking` blocks for the
          legal audit trail (lawyer can re-inspect Atlas's chain of
          thought when reviewing a past answer). The type union here
-         widens to include thinking blocks. */
-      const finalAssistantBlocks: Array<Anthropic.ContentBlock> = [];
+         widens to include thinking blocks.
+
+         A-H1: on resume, prime with the blocks accumulated BEFORE the
+         pause (text/thinking + the non-gated + gated tool_use blocks) so
+         the final persisted content is the FULL turn (pre-pause merged
+         with post-resume blocks), not just the post-resume tail. */
+      const finalAssistantBlocks: Array<Anthropic.ContentBlock> = resumeSentinel
+        ? [...resumeSentinel.partialAssistantBlocks]
+        : [];
       /* AUDIT-FIX C7: Track whether the tool-loop exited because the
          model returned a final answer (good) vs. because we hit the
          MAX_TOOL_ITERATIONS guard (bad — model wanted to keep calling
@@ -1181,21 +1366,122 @@ export async function runChat(
       let aborted = false;
 
       try {
-        /* AUDIT-FIX H1: persist placeholder upfront so any stream
-           interruption past this point still leaves a row. */
-        const assistantPlaceholder = await prisma.atlasMessage.create({
-          data: {
-            chatId,
-            role: "assistant",
-            content: [] as unknown as object,
-            toolsUsed: [],
-            citations: { _streamingPlaceholder: true } as unknown as object,
-          },
-          select: { id: true },
-        });
-        assistantMessageId = assistantPlaceholder.id;
-
         let iter = 0;
+        if (resumeSentinel && input.resumeApproval) {
+          /* ── A-H1 RESUME: apply the lawyer's decision ──────────────────
+             Reuse the EXISTING placeholder row (the one that holds the
+             sentinel) — do NOT create a new one. The success-persist UPDATE
+             at the end overwrites the sentinel with the real content +
+             citations (or DbNull), so the row ends the turn clean. */
+          assistantMessageId = input.resumeApproval.assistantMessageId;
+          const decision = input.resumeApproval.decision;
+
+          let resultContent: string;
+          let isError = false;
+          if (decision === "rejected") {
+            /* Lawyer declined the step. Feed a structured cancellation back
+               to the model so it can acknowledge + continue without the
+               side-effect. No tool_call_start (the tool never runs). */
+            resultContent = JSON.stringify({
+              error: "USER_CANCELLED: Der Anwalt hat diesen Schritt abgelehnt.",
+            });
+            isError = true;
+            send({
+              type: "tool_call_complete",
+              id: resumeSentinel.toolUseId,
+              name: resumeSentinel.toolName,
+              durationMs: 0,
+              summary: "Abgelehnt",
+              isError: true,
+            });
+          } else {
+            /* approved | modified — run the gated tool now. "modified" uses
+               the lawyer-edited input; otherwise the original frozen input. */
+            const effectiveInput =
+              decision === "modified" && input.resumeApproval.modifiedInput
+                ? input.resumeApproval.modifiedInput
+                : resumeSentinel.originalInput;
+            send({
+              type: "tool_call_start",
+              id: resumeSentinel.toolUseId,
+              name: resumeSentinel.toolName,
+              input: effectiveInput,
+            });
+            const startTs = Date.now();
+            let summary = "";
+            /* Reuse the SAME try/catch discipline as the normal tool path. */
+            try {
+              if (!isAtlasToolName(resumeSentinel.toolName)) {
+                throw new Error(`Unknown tool: ${resumeSentinel.toolName}`);
+              }
+              const out = await executeAtlasTool({
+                name: resumeSentinel.toolName,
+                input: effectiveInput,
+                callerUserId: input.userId,
+                callerOrgId: input.organizationId,
+                mandateId: input.mandateId ?? null,
+              });
+              resultContent = out.content;
+              isError = out.isError;
+              summary = out.isError
+                ? `Tool error`
+                : `OK · ${out.content.length} chars`;
+              if (!isError) toolsUsedThisTurn.push(resumeSentinel.toolName);
+            } catch (err) {
+              const msg = err instanceof Error ? err.message : String(err);
+              resultContent = JSON.stringify({ error: msg });
+              isError = true;
+              summary = `Error: ${msg.slice(0, 80)}`;
+            }
+            send({
+              type: "tool_call_complete",
+              id: resumeSentinel.toolUseId,
+              name: resumeSentinel.toolName,
+              durationMs: Date.now() - startTs,
+              summary,
+              isError,
+            });
+          }
+
+          /* Pairing guarantee: completedToolResults (non-gated tools from
+             the paused iteration) + this gated tool_result together cover
+             EVERY tool_use id in the partial assistant turn that already
+             ends `conversation`. Push them as the user turn, then fall into
+             the model loop to stream the rest of the answer. */
+          const toolResults: ToolResultBlock[] = [
+            ...resumeSentinel.completedToolResults,
+            {
+              type: "tool_result",
+              tool_use_id: resumeSentinel.toolUseId,
+              content: resultContent,
+              is_error: isError || undefined,
+            },
+          ];
+          conversation.push({
+            role: "user",
+            content:
+              toolResults as unknown as Anthropic.MessageParam["content"],
+          });
+          /* Continue numbering from where the paused turn left off so the
+             MAX_TOOL_ITERATIONS budget still bounds the whole turn. */
+          iter = resumeSentinel.iterationIndex;
+          /* NOTE: NO `return` — we fall through into the while-loop below. */
+        } else {
+          /* AUDIT-FIX H1: persist placeholder upfront so any stream
+             interruption past this point still leaves a row. */
+          const assistantPlaceholder = await prisma.atlasMessage.create({
+            data: {
+              chatId,
+              role: "assistant",
+              content: [] as unknown as object,
+              toolsUsed: [],
+              citations: { _streamingPlaceholder: true } as unknown as object,
+            },
+            select: { id: true },
+          });
+          assistantMessageId = assistantPlaceholder.id;
+        }
+
         while (iter < MAX_TOOL_ITERATIONS) {
           iter++;
 
@@ -1483,6 +1769,113 @@ export async function runChat(
                   }
                 : {}),
             });
+
+            /* ── A-H1 inline approval gate ───────────────────────────────
+               Side-effecting tool reached (create_/send_/schedule_/
+               finalize_/set_/save_/delegate_). Do NOT execute. Freeze the
+               turn into the placeholder row's citations.{_pendingApproval}
+               sentinel + emit `approval_required`, then close the stream as
+               a PARTIAL turn (no messageId, no usage). A follow-up POST
+               carrying resumeApproval reconstructs + continues.
+
+               Pairing invariant: the partial assistant turn was pushed to
+               `conversation` above (~"Append the assistant turn") as THIS
+               iteration's FULL finalMessage.content — which may include
+               tool_use blocks AFTER the gated one. We OVERWRITE that last
+               turn with finalMessage.content sliced up to + INCLUDING the
+               gated block. We slice finalMessage.content (NOT the cross-
+               iteration `finalAssistantBlocks` accumulator, which also
+               carries blocks from EARLIER while-loop iterations and would
+               wrongly bloat this single turn). Dropping later tool_use
+               blocks is mandatory: on resume the tool_results we replay =
+               completedToolResults (the non-gated results already in this
+               iteration's `toolResults`) + the single gated result. Those
+               must cover EVERY tool_use id in this assistant turn or
+               Anthropic 400s. Re-deciding any dropped calls happens
+               naturally on the next model round after resume. */
+            if (requiresApproval(toolBlock.name)) {
+              const rationale = approvalRationale(toolBlock.name);
+              /* Slice THIS iteration's content up to + including the gated
+                 block so the turn's tool_use ids == completedToolResults
+                 (earlier non-gated tools this iteration) + this gated id. */
+              const gatedIdx = finalMessage.content.indexOf(block);
+              const truncatedTurnBlocks = finalMessage.content.slice(
+                0,
+                gatedIdx + 1,
+              );
+              const truncatedAssistantTurn: Anthropic.MessageParam = {
+                role: "assistant",
+                content:
+                  truncatedTurnBlocks as unknown as Anthropic.MessageParam["content"],
+              };
+              if (
+                conversation.length > 0 &&
+                conversation[conversation.length - 1].role === "assistant"
+              ) {
+                conversation[conversation.length - 1] = truncatedAssistantTurn;
+              } else {
+                /* Defensive — the assistant turn is always the last push
+                   before the tool loop; if it somehow isn't, append rather
+                   than corrupt an unrelated turn. */
+                conversation.push(truncatedAssistantTurn);
+              }
+
+              const sentinel: PendingApprovalSentinel = {
+                toolUseId: toolBlock.id,
+                toolName: toolBlock.name,
+                originalInput: toolBlock.input,
+                rationale,
+                requestedAt: new Date().toISOString(),
+                conversation,
+                completedToolResults: toolResults,
+                partialAssistantBlocks: finalAssistantBlocks,
+                iterationIndex: iter,
+                textBuffer: assistantTextBuffer,
+                totalInputTokens,
+                totalOutputTokens,
+                totalCacheCreationTokens,
+                totalCacheReadTokens,
+                toolsUsedThisTurn,
+              };
+
+              /* Persist the sentinel onto the placeholder row. Cap the
+                 serialized blob with the same 1 MB discipline used on
+                 content (the conversation can carry past-turn text +
+                 tool_results). assistantMessageId is non-null here —
+                 placeholder is created at the top of try{}. */
+              if (assistantMessageId) {
+                const cappedSentinel = sanitizeContentForPersistence(
+                  buildPendingApprovalSentinel(sentinel),
+                  { chatId, role: "assistant" },
+                );
+                await prisma.atlasMessage.update({
+                  where: { id: assistantMessageId },
+                  data: {
+                    citations: cappedSentinel as object,
+                    inputTokens:
+                      totalInputTokens > 0 ? totalInputTokens : undefined,
+                    outputTokens:
+                      totalOutputTokens > 0 ? totalOutputTokens : undefined,
+                    toolsUsed: Array.from(new Set(toolsUsedThisTurn)),
+                  },
+                });
+              }
+
+              send({
+                type: "approval_required",
+                assistantMessageId,
+                toolUseId: toolBlock.id,
+                toolName: toolBlock.name,
+                input: toolBlock.input,
+                rationale,
+              });
+              send({ type: "done" });
+              /* Mark as a clean exit so the loop-exhaustion error path is
+                 not taken, then leave the stream-start fn entirely (finally
+                 tears down the keep-alive + closes the controller). */
+              loopExitedWithFinalAnswer = true;
+              return;
+            }
 
             const startTs = Date.now();
             let summary = "";
@@ -1967,4 +2360,11 @@ export const __testables = {
   modelSupportsThinking,
   deriveTitle,
   sanitiseHistoryForApi,
+  /* A-H1 inline approval gate — pure sentinel build/parse helpers. The
+     full pause/resume control flow needs Anthropic + Prisma + SSE
+     (integration territory), but the sentinel round-trip + structural
+     validation is pure and unit-testable here. */
+  buildPendingApprovalSentinel,
+  parsePendingApprovalSentinel,
+  PENDING_APPROVAL_KEY,
 };

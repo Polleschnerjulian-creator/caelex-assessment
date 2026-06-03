@@ -36,6 +36,7 @@ import { CitationsPanel, type CitationRecord } from "./CitationsPanel";
 import { MarkdownContent } from "./MarkdownContent";
 import { AtlasGlyph } from "./AtlasGlyph";
 import { labelFor, CATEGORY_DOT } from "@/lib/atlas/tool-labels";
+import { ChatApprovalGate } from "./ChatApprovalGate";
 import {
   downloadChatAsPdf,
   generateChatPdfBlob,
@@ -139,6 +140,20 @@ export function AtlasChatView({ chatId }: Props) {
   /* Seed value for the composer textarea — used when a programmatic
      event (e.g. quickstart link) wants to pre-fill the input. */
   const [composerSeed, setComposerSeed] = useState<string | undefined>();
+
+  /* Approval gate — when the backend emits `approval_required` the
+     stream pauses and this state activates the inline ChatApprovalGate.
+     Cleared when the resume stream's `done` event arrives.
+     `approvalSubmitting` is true while the resume POST + SSE read is
+     in flight, so buttons are disabled during that period. */
+  const [pendingApproval, setPendingApproval] = useState<{
+    assistantMessageId: string;
+    toolUseId: string;
+    toolName: string;
+    input: Record<string, unknown>;
+    rationale: string;
+  } | null>(null);
+  const [approvalSubmitting, setApprovalSubmitting] = useState(false);
 
   /* Sprint 7a (2026-05-18) — Listen for quote-events from AssistantActions.
      The quote-button dispatches "atlas-v2-composer-seed" with the
@@ -394,6 +409,45 @@ export function AtlasChatView({ chatId }: Props) {
       setAttachedMandate(null);
     }
   }, [chat?.mandateId, chat?.mandate]);
+
+  /* Reload re-presentation of a pending approval gate.
+     When the page reloads mid-gate, the backend has persisted the
+     gate metadata inside the assistant message's `citations` field as
+     `_pendingApproval`. Scan messages once after load and restore the
+     gate state so the UI re-presents the card without requiring a
+     new stream. Only fires when pendingApproval is not already set
+     (avoids overwriting a freshly-emitted gate from a live stream). */
+  useEffect(() => {
+    if (!chat || pendingApproval) return;
+    for (const msg of [...chat.messages].reverse()) {
+      if (msg.role !== "assistant") continue;
+      const cits = msg.citations;
+      if (
+        cits !== null &&
+        typeof cits === "object" &&
+        !Array.isArray(cits) &&
+        "_pendingApproval" in (cits as Record<string, unknown>)
+      ) {
+        const pa = (cits as Record<string, unknown>)[
+          "_pendingApproval"
+        ] as Record<string, unknown>;
+        if (pa && typeof pa.toolUseId === "string") {
+          setPendingApproval({
+            assistantMessageId: msg.id,
+            toolUseId: pa.toolUseId as string,
+            toolName: (pa.toolName as string) ?? "",
+            input: (pa.originalInput as Record<string, unknown>) ?? {},
+            rationale: (pa.rationale as string) ?? "",
+          });
+          break;
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chat?.id]);
+  /* ↑ Intentionally only react to chat.id changing (initial load /
+     chat switch), not every message-array update. The gate survives
+     in pendingApproval state once set — no need to re-scan. */
 
   /* Persist a mandate-attach change to the DB via the dedicated
      attach-mandate endpoint. Optimistic UI: the chip updates locally
@@ -754,6 +808,21 @@ export function AtlasChatView({ chatId }: Props) {
       case "error":
         setError(evt.message as string);
         break;
+      case "approval_required":
+        /* Backend paused before a consequential tool call. Record the
+           gate metadata so ChatApprovalGate renders in the message
+           area. Clear in-flight tools so the streaming trace doesn't
+           show a dangling spinner — the turn is fully paused. */
+        setPendingApproval({
+          assistantMessageId: evt.assistantMessageId as string,
+          toolUseId: evt.toolUseId as string,
+          toolName: evt.toolName as string,
+          input: (evt.input as Record<string, unknown>) ?? {},
+          rationale: (evt.rationale as string) ?? "",
+        });
+        setStreaming(false);
+        setInFlightTools([]);
+        break;
       case "done":
         /* PERF-T1-2: capture messageId so handleFollowup can do a
            targeted single-message hydration after the SSE closes
@@ -765,6 +834,173 @@ export function AtlasChatView({ chatId }: Props) {
         break;
       default:
         break;
+    }
+  };
+
+  /**
+   * Shared SSE reader — reads a fetch Response whose body is an
+   * `application/x-ndjson` / SSE stream and dispatches each parsed
+   * event through `handleEvent`. Returns the final messageId (from
+   * the `done` event) if any, so callers can do targeted hydration.
+   *
+   * Extracted so both `handleFollowup` and `handleApprovalDecision`
+   * use the same decode path without duplication.
+   */
+  const streamFrom = async (res: Response): Promise<void> => {
+    if (!res.body) throw new Error("Empty response body");
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!isMountedRef.current) return;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const json = line.slice(6).trim();
+        if (!json) continue;
+        try {
+          const evt = JSON.parse(json) as { type: string } & Record<
+            string,
+            unknown
+          >;
+          handleEvent(evt);
+        } catch (parseErr) {
+          if (parseErr instanceof SyntaxError) continue;
+          console.warn(
+            "[atlas-chat] handleEvent failed in streamFrom",
+            parseErr,
+          );
+        }
+      }
+    }
+  };
+
+  /**
+   * Handle a lawyer's approve / reject / modify decision on a pending
+   * approval gate. POSTs the resume payload to /api/atlas/chat and
+   * consumes the resulting SSE stream exactly like a normal turn.
+   * On the stream's `done` event, clears `pendingApproval` and
+   * hydrates the finished message via targeted single-message fetch
+   * (same pattern as handleFollowup's PERF-T1-2 path).
+   */
+  const handleApprovalDecision = async (
+    decision: "approved" | "rejected" | "modified",
+    modifiedInput?: Record<string, unknown>,
+  ) => {
+    if (!chat || !pendingApproval) return;
+    if (!isMountedRef.current) return;
+
+    setApprovalSubmitting(true);
+    setStreaming(true);
+    setStreamingText("");
+    setStreamingThinking("");
+    setInFlightTools([]);
+    setError(null);
+    userIsAtBottomRef.current = true;
+
+    /* Cancel any previous in-flight fetch (shouldn't be one, but be safe). */
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
+    const signal = abortRef.current.signal;
+
+    assistantMessageIdFromDoneRef.current = null;
+    let reloadFailed = false;
+
+    try {
+      const res = await fetch("/api/atlas/chat", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        signal,
+        body: JSON.stringify({
+          chatId: chat.id,
+          message: "",
+          resumeApproval: {
+            assistantMessageId: pendingApproval.assistantMessageId,
+            toolUseId: pendingApproval.toolUseId,
+            decision,
+            modifiedInput,
+          },
+        }),
+      });
+
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(body.error ?? `HTTP ${res.status}`);
+      }
+
+      await streamFrom(res);
+
+      /* After stream: hydrate the finished assistant message. */
+      if (!isMountedRef.current) return;
+      const assistantMessageId = assistantMessageIdFromDoneRef.current;
+      if (assistantMessageId) {
+        try {
+          const hydRes = await fetch(
+            `/api/atlas/messages/${assistantMessageId}`,
+            { signal },
+          );
+          if (!hydRes.ok) throw new Error(`HTTP ${hydRes.status}`);
+          const { message: hydrated } = (await hydRes.json()) as {
+            message: import("./types").ChatMessageRecord;
+          };
+          if (!isMountedRef.current) return;
+          setChat((prev) => {
+            if (!prev) return prev;
+            const without = prev.messages.filter((m) => m.id !== hydrated.id);
+            return { ...prev, messages: [...without, hydrated] };
+          });
+        } catch (hydErr) {
+          if (!isMountedRef.current) return;
+          if (hydErr instanceof DOMException && hydErr.name === "AbortError")
+            return;
+          console.warn("[atlas-chat] approval-resume hydration failed", hydErr);
+          reloadFailed = true;
+          setError(
+            "Antwort gespeichert, aber Aktualisierung fehlgeschlagen. Beim nächsten Laden synchronisiert.",
+          );
+        }
+      } else {
+        /* No messageId — fall back to full reload. */
+        try {
+          await reload(true);
+        } catch (reloadErr) {
+          if (!isMountedRef.current) return;
+          if (
+            reloadErr instanceof DOMException &&
+            reloadErr.name === "AbortError"
+          )
+            return;
+          reloadFailed = true;
+          setError("Antwort gespeichert, aber Aktualisierung fehlgeschlagen.");
+        }
+      }
+
+      if (!isMountedRef.current) return;
+      /* Gate resolved — clear the pending state. */
+      setPendingApproval(null);
+      window.dispatchEvent(new Event("atlas-v2-sidebar-refresh"));
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") return;
+      if (!isMountedRef.current) return;
+      /* Resume failed (e.g. 409 stale sentinel from a concurrent tab, or a
+         5xx) — dismiss the gate so the lawyer isn't stuck with a frozen
+         approval card, and surface the error. */
+      setPendingApproval(null);
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      if (isMountedRef.current) {
+        setApprovalSubmitting(false);
+        setStreaming(false);
+        if (!reloadFailed) {
+          setStreamingText("");
+          setStreamingThinking("");
+        }
+        setInFlightTools([]);
+      }
     }
   };
 
@@ -886,6 +1122,22 @@ export function AtlasChatView({ chatId }: Props) {
               tools={inFlightTools}
               text={streamingText}
               thinking={streamingThinking}
+            />
+          )}
+
+          {/* Approval gate — rendered when the backend paused on a
+              consequential tool call. Positioned right after the last
+              streaming/assistant message, before the composer, so the
+              card reads as a continuation of the current turn. */}
+          {pendingApproval && (
+            <ChatApprovalGate
+              toolName={pendingApproval.toolName}
+              toolInput={pendingApproval.input}
+              rationale={pendingApproval.rationale}
+              submitting={approvalSubmitting}
+              onDecide={(decision, modifiedInput) => {
+                void handleApprovalDecision(decision, modifiedInput);
+              }}
             />
           )}
 

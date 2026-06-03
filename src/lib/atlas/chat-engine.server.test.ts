@@ -30,7 +30,13 @@ import { describe, it, expect, vi } from "vitest";
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     atlasChat: { findFirst: vi.fn(), update: vi.fn(), create: vi.fn() },
-    atlasMessage: { create: vi.fn(), findMany: vi.fn() },
+    atlasMessage: {
+      create: vi.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      update: vi.fn(),
+      count: vi.fn(),
+    },
     atlasAuditLog: { create: vi.fn(), findFirst: vi.fn() },
   },
 }));
@@ -69,8 +75,14 @@ vi.mock("@/lib/logger", () => ({
 }));
 
 import { __testables } from "./chat-engine.server";
-const { modelSupportsThinking, deriveTitle, sanitiseHistoryForApi } =
-  __testables;
+const {
+  modelSupportsThinking,
+  deriveTitle,
+  sanitiseHistoryForApi,
+  buildPendingApprovalSentinel,
+  parsePendingApprovalSentinel,
+  PENDING_APPROVAL_KEY,
+} = __testables;
 
 /* ── modelSupportsThinking ──────────────────────────────────────────── */
 
@@ -333,5 +345,159 @@ describe("sanitiseHistoryForApi", () => {
     /* Second assistant — thinking + tool_use stripped, only text survives. */
     const a2blocks = out[3].content as Array<{ type: string }>;
     expect(a2blocks.every((b) => b.type === "text")).toBe(true);
+  });
+});
+
+/* ── A-H1 inline approval gate — sentinel build/parse ────────────────── */
+
+describe("pending-approval sentinel (A-H1)", () => {
+  /* A representative frozen sentinel: a turn that paused on a gated
+     create_* tool after a non-gated search_* tool already ran. The
+     conversation already ends with the (truncated) partial assistant
+     turn whose tool_use ids are { t-search, t-create } — exactly the
+     ids covered by completedToolResults (t-search) + the gated id
+     (t-create). This is the pairing the resume path replays. */
+  const sampleSentinel = () => ({
+    toolUseId: "t-create",
+    toolName: "create_deadline",
+    originalInput: { title: "Widerspruchsfrist", dueDate: "2026-07-01" },
+    rationale: "Erzeugt einen permanenten Datensatz.",
+    requestedAt: "2026-06-03T10:00:00.000Z",
+    conversation: [
+      { role: "user" as const, content: "Trag die Frist ein." },
+      {
+        role: "assistant" as const,
+        content: [
+          { type: "text", text: "Ich suche zuerst die Frist." },
+          {
+            type: "tool_use",
+            id: "t-search",
+            name: "search_legal_sources",
+            input: { q: "Frist" },
+          },
+          {
+            type: "tool_use",
+            id: "t-create",
+            name: "create_deadline",
+            input: { title: "Widerspruchsfrist" },
+          },
+        ],
+      },
+    ],
+    completedToolResults: [
+      {
+        type: "tool_result" as const,
+        tool_use_id: "t-search",
+        content: "{...}",
+      },
+    ],
+    partialAssistantBlocks: [
+      { type: "text", text: "Ich suche zuerst die Frist." },
+      {
+        type: "tool_use",
+        id: "t-search",
+        name: "search_legal_sources",
+        input: { q: "Frist" },
+      },
+      {
+        type: "tool_use",
+        id: "t-create",
+        name: "create_deadline",
+        input: { title: "Widerspruchsfrist" },
+      },
+    ] as never,
+    iterationIndex: 2,
+    textBuffer: "Ich suche zuerst die Frist.",
+    totalInputTokens: 1200,
+    totalOutputTokens: 340,
+    totalCacheCreationTokens: 0,
+    totalCacheReadTokens: 800,
+    toolsUsedThisTurn: ["search_legal_sources"],
+  });
+
+  it("wraps the sentinel under the _pendingApproval key", () => {
+    const built = buildPendingApprovalSentinel(sampleSentinel() as never);
+    expect(Object.keys(built)).toEqual([PENDING_APPROVAL_KEY]);
+    expect(PENDING_APPROVAL_KEY).toBe("_pendingApproval");
+  });
+
+  it("round-trips build → parse with full fidelity", () => {
+    const original = sampleSentinel();
+    /* Simulate a Prisma JSONB round-trip (serialise + deserialise). */
+    const persisted = JSON.parse(
+      JSON.stringify(buildPendingApprovalSentinel(original as never)),
+    );
+    const parsed = parsePendingApprovalSentinel(persisted);
+    expect(parsed).not.toBeNull();
+    expect(parsed!.toolUseId).toBe("t-create");
+    expect(parsed!.toolName).toBe("create_deadline");
+    expect(parsed!.iterationIndex).toBe(2);
+    expect(parsed!.totalInputTokens).toBe(1200);
+    expect(parsed!.totalCacheReadTokens).toBe(800);
+    expect(parsed!.toolsUsedThisTurn).toEqual(["search_legal_sources"]);
+    expect(parsed!.textBuffer).toBe("Ich suche zuerst die Frist.");
+    /* Pairing invariant survives the round-trip: completedToolResults +
+       the gated toolUseId cover EVERY tool_use id in the assistant turn. */
+    const assistantTurn = parsed!.conversation[1].content as Array<{
+      type: string;
+      id?: string;
+    }>;
+    const toolUseIds = assistantTurn
+      .filter((b) => b.type === "tool_use")
+      .map((b) => b.id);
+    const coveredIds = [
+      ...parsed!.completedToolResults.map((r) => r.tool_use_id),
+      parsed!.toolUseId,
+    ];
+    expect(new Set(coveredIds)).toEqual(new Set(toolUseIds));
+  });
+
+  it("returns null for the streaming-placeholder sentinel (not pending-approval)", () => {
+    expect(
+      parsePendingApprovalSentinel({ _streamingPlaceholder: true }),
+    ).toBeNull();
+  });
+
+  it("returns null for the streaming-failed sentinel", () => {
+    expect(
+      parsePendingApprovalSentinel({ _streamingFailed: true, reason: "x" }),
+    ).toBeNull();
+  });
+
+  it("returns null for a real citations array (no sentinel)", () => {
+    expect(
+      parsePendingApprovalSentinel([
+        { index: 1, sourceId: "DE-WeltraumG-§1", validity: "in_force" },
+      ]),
+    ).toBeNull();
+  });
+
+  it("returns null for null / non-object citations", () => {
+    expect(parsePendingApprovalSentinel(null)).toBeNull();
+    expect(parsePendingApprovalSentinel(undefined)).toBeNull();
+    expect(parsePendingApprovalSentinel("string")).toBeNull();
+    expect(parsePendingApprovalSentinel(42)).toBeNull();
+  });
+
+  it("returns null for a half-written sentinel (missing required fields)", () => {
+    /* A crash mid-persist could leave a partial sentinel. The structural
+       guard must reject it so the resume path throws NO_PENDING rather
+       than dereferencing undefined (e.g. .conversation). */
+    const broken = {
+      [PENDING_APPROVAL_KEY]: {
+        toolUseId: "t-create",
+        toolName: "create_deadline",
+        /* conversation / completedToolResults / partialAssistantBlocks /
+           originalInput / iterationIndex all missing */
+      },
+    };
+    expect(parsePendingApprovalSentinel(broken)).toBeNull();
+  });
+
+  it("returns null when conversation is present but not an array", () => {
+    const built = buildPendingApprovalSentinel(sampleSentinel() as never);
+    (built[PENDING_APPROVAL_KEY] as Record<string, unknown>).conversation =
+      "not-an-array";
+    expect(parsePendingApprovalSentinel(built)).toBeNull();
   });
 });

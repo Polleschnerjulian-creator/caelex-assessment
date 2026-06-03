@@ -40,14 +40,30 @@ const ImageInput = z.object({
   data: z.string().min(1).max(7_500_000),
 });
 
+/* A-H1 inline approval gate — resume payload. Sent on a SECOND POST to
+   carry the lawyer's decision on a tool the previous turn paused on.
+   When present, `message` may be "" and `images` are ignored — the engine
+   replays the paused turn from the persisted sentinel rather than
+   appending new user input. */
+const ResumeApproval = z.object({
+  assistantMessageId: z.string().cuid(),
+  toolUseId: z.string().min(1).max(200),
+  decision: z.enum(["approved", "rejected", "modified"]),
+  /** Lawyer-edited tool input — only honoured when decision === "modified". */
+  modifiedInput: z.record(z.string(), z.unknown()).optional(),
+});
+
 const PostBody = z.object({
   /** Existing chat to continue. Null/omit to start a new chat. */
   chatId: z.string().cuid().nullable().optional(),
   /** Mandate scope. Null/omit for a global chat. */
   mandateId: z.string().cuid().nullable().optional(),
   /** New user message. ≤ 12k chars (~3k tokens). Allowed to be empty
-   *  when at least one image is attached (image-only turns). */
+   *  when at least one image is attached (image-only turns) OR when a
+   *  resumeApproval payload is present (no new user input on resume). */
   message: z.string().max(12_000),
+  /** A-H1: resume a paused approval gate. See ResumeApproval. */
+  resumeApproval: ResumeApproval.optional(),
   /** Per-bundle on/off state at submission time. */
   toolToggles: z.record(z.string(), z.boolean()).optional(),
   /** UI language for the system-prompt locale hints. */
@@ -116,10 +132,14 @@ export async function POST(req: NextRequest) {
     /* Belt + suspenders: at least one of message-text or images must be
        present. Zod allows empty `message` so image-only turns work, but
        we reject the all-empty case here so the engine never sees a
-       content-less user turn. */
+       content-less user turn.
+       A-H1: a resumeApproval payload is itself the turn's payload — no new
+       user text/image is required (the engine replays the paused turn from
+       the persisted sentinel), so skip the empty-message guard for it. */
     const hasText = parsed.data.message.trim().length > 0;
     const hasImages = (parsed.data.images?.length ?? 0) > 0;
-    if (!hasText && !hasImages) {
+    const isResume = !!parsed.data.resumeApproval;
+    if (!hasText && !hasImages && !isResume) {
       return NextResponse.json(
         { error: "Bad request", details: "Empty message" },
         { status: 400 },
@@ -142,6 +162,9 @@ export async function POST(req: NextRequest) {
           "de",
         titleHint: parsed.data.titleHint,
         workflowId: parsed.data.workflowId,
+        /* A-H1: resume a paused approval gate. The engine ignores
+           userMessage/images when this is set. */
+        resumeApproval: parsed.data.resumeApproval,
       });
 
       return new Response(stream, {
@@ -165,6 +188,23 @@ export async function POST(req: NextRequest) {
       }
       if (msg.includes("Mandate not found") || msg.includes("Chat not found")) {
         return NextResponse.json({ error: msg }, { status: 404 });
+      }
+      /* A-H1: resume-approval errors. NO_PENDING / TOOL_MISMATCH mean the
+         paused turn is gone or the decision targets the wrong tool — a 409
+         conflict (the client's view of the gate is stale), not a 500. The
+         cross-tenant case throws "Chat not found" above (404) so we never
+         confirm the existence of another tenant's row. */
+      if (
+        msg.startsWith("ATLAS_APPROVAL_NO_PENDING") ||
+        msg.startsWith("ATLAS_APPROVAL_TOOL_MISMATCH")
+      ) {
+        return NextResponse.json(
+          {
+            error: "Approval gate is no longer pending",
+            code: "APPROVAL_STALE",
+          },
+          { status: 409 },
+        );
       }
       // AUDIT-FIX M23: mask userId (CUID) before logging
       // DIAG-FIX 2026-05-26: include err.name + stack so we see whether
