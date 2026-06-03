@@ -1,0 +1,5 @@
+# Generated Atlas embedding catalogue — machine-written by
+# scripts/atlas-embed.ts, deterministically formatted (id-sorted, 2-space)
+# and ~20 MB of float arrays. Prettier must not rewrite it (slow + pointless,
+# and it would fight the generator's canonical formatting).
+src/data/atlas/embeddings.json
