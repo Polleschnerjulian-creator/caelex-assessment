@@ -41,7 +41,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { MarkdownContent } from "@/components/atlas/v2/MarkdownContent";
-import { AtlasMark } from "@/components/atlas/v2/AtlasLogo";
+import { AtlasGlyph } from "@/components/atlas/v2/AtlasGlyph";
 import { labelFor } from "@/lib/atlas/tool-labels";
 import { exportDraftAsWord } from "@/lib/atlas/draft-export";
 import { downloadArtifactAsPdf } from "@/lib/atlas/artifact-pdf";
@@ -901,8 +901,8 @@ export default function AgentPage() {
           {/* Active run indicator */}
           {running && steps.length === 0 && !finalText && (
             <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-3 text-[12.5px] text-slate-600 dark:border-white/[0.08] dark:text-slate-400">
-              <span className="inline-flex animate-pulse text-slate-700 dark:text-slate-200">
-                <AtlasMark size={10} />
+              <span className="inline-flex shrink-0 items-center justify-center rounded-lg bg-white p-1 text-slate-900 shadow-sm ring-1 ring-black/[0.06]">
+                <AtlasGlyph size={14} animated />
               </span>
               Atlas plant die Schritte…
             </div>

@@ -34,7 +34,7 @@ import {
 import { ChatInput } from "./ChatInput";
 import { CitationsPanel, type CitationRecord } from "./CitationsPanel";
 import { MarkdownContent } from "./MarkdownContent";
-import { AtlasMark } from "./AtlasLogo";
+import { AtlasGlyph } from "./AtlasGlyph";
 import { labelFor, CATEGORY_DOT } from "@/lib/atlas/tool-labels";
 import {
   downloadChatAsPdf,
@@ -1500,8 +1500,8 @@ function StreamingMessage({
                   className="shrink-0 text-slate-500 dark:text-slate-400"
                 />
               ) : (
-                <span className="inline-flex shrink-0 animate-pulse text-slate-700 motion-reduce:animate-none dark:text-slate-200">
-                  <AtlasMark size={10} />
+                <span className="inline-flex shrink-0 items-center justify-center rounded-lg bg-white p-1 text-slate-900 shadow-sm ring-1 ring-black/[0.06]">
+                  <AtlasGlyph size={14} animated />
                 </span>
               )}
               <span className="text-[12px] font-medium text-slate-700 dark:text-slate-200">

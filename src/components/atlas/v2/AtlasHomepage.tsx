@@ -30,7 +30,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChatInput } from "./ChatInput";
 import { MarkdownContent } from "./MarkdownContent";
-import { AtlasMark } from "./AtlasLogo";
+import { AtlasGlyph } from "./AtlasGlyph";
 import type { ChatImageAttachment } from "./types";
 
 /* Sprint 19b (2026-05-19) — Personalized homepage greeting.
@@ -482,8 +482,8 @@ export function AtlasHomepage() {
                 aria-live="polite"
                 className="flex items-center gap-2 text-[12.5px] text-slate-600 dark:text-slate-400"
               >
-                <span className="inline-flex animate-pulse text-slate-700 motion-reduce:animate-none dark:text-slate-200">
-                  <AtlasMark size={10} />
+                <span className="inline-flex shrink-0 items-center justify-center rounded-lg bg-white p-1 text-slate-900 shadow-sm ring-1 ring-black/[0.06]">
+                  <AtlasGlyph size={14} animated />
                 </span>
                 <span className="font-medium">{activity}…</span>
               </div>
@@ -519,9 +519,15 @@ export function AtlasHomepage() {
   return (
     <div className="flex h-full flex-col items-center justify-center px-6">
       <div className="w-full max-w-[720px]">
-        <h1 className="mb-10 text-center text-[28px] font-normal tracking-tight text-slate-900 dark:text-slate-100 [font-family:ui-serif,Georgia,'Cambria_Style',serif]">
-          {greeting}
-        </h1>
+        <div className="mb-10 flex items-center justify-center gap-3">
+          <AtlasGlyph
+            size={36}
+            className="shrink-0 text-slate-900 dark:text-slate-100"
+          />
+          <h1 className="text-[28px] font-normal tracking-tight text-slate-900 dark:text-slate-100 [font-family:ui-serif,Georgia,'Cambria_Style',serif]">
+            {greeting}
+          </h1>
+        </div>
 
         <ChatInput
           initialValue={seedValue}

@@ -825,6 +825,36 @@ body {
   background-color: rgba(148, 163, 184, 0.7);
 }
 
+/* ── Atlas trinity glyph — staggered blade "bloom" (the thinking state).
+   The three blade <path>s each scale around the glyph centre; the
+   per-path animation-delay (0 / 500 / 1000 ms, set inline by AtlasGlyph)
+   walks the bloom bottom-right -> top -> bottom-left -> loop. The
+   animation only runs for users who haven't requested reduced motion;
+   otherwise the blades stay still. */
+.atlas-glyph__blade {
+  /* transform-box:view-box makes transform-origin resolve against the
+     0..100 viewBox so each blade scales from the mark's centre. */
+  transform-box: view-box;
+  transform-origin: 50px 50px;
+}
+@keyframes atlas-glyph-bloom {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  10% {
+    transform: scale(1.16);
+  }
+  32% {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .atlas-glyph--animated .atlas-glyph__blade {
+    animation: atlas-glyph-bloom 1.5s ease-in-out infinite;
+  }
+}
+
 /* Landing light selection */
 .landing-light ::selection {
   background: rgba(107, 114, 128, 0.15);
