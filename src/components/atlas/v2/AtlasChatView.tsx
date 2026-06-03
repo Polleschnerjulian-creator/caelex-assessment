@@ -1855,13 +1855,13 @@ function AssistantActions({
   };
 
   return (
-    <div className="mt-1 flex items-center gap-1 opacity-50 transition-opacity hover:opacity-100 focus-within:opacity-100">
+    <div className="mt-1.5 flex items-center gap-0.5 opacity-60 transition-opacity hover:opacity-100 focus-within:opacity-100">
       <button
         type="button"
         onClick={handleCopy}
         title={copied ? "Kopiert!" : "Antwort kopieren"}
         aria-label="Antwort kopieren"
-        className="inline-flex h-6 items-center gap-1 rounded px-1.5 text-[11px] text-slate-500 transition-colors hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-200"
+        className="inline-flex h-7 items-center gap-1.5 rounded-lg px-2 text-[11px] text-slate-500 transition-colors hover:bg-black/[0.05] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-slate-200"
       >
         {copied ? (
           <CheckIcon
@@ -1878,7 +1878,7 @@ function AssistantActions({
         onClick={handleQuote}
         title="Zitieren (Selection oder ganze Antwort) — landet in Chat-Input"
         aria-label="Antwort zitieren"
-        className="inline-flex h-6 items-center gap-1 rounded px-1.5 text-[11px] text-slate-500 transition-colors hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-200"
+        className="inline-flex h-7 items-center gap-1.5 rounded-lg px-2 text-[11px] text-slate-500 transition-colors hover:bg-black/[0.05] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-slate-200"
       >
         <Quote size={11} />
         <span>Zitieren</span>
@@ -1895,12 +1895,12 @@ function AssistantActions({
               : "Als Notiz speichern"
         }
         aria-label="Antwort als Notiz speichern"
-        className={`inline-flex h-6 items-center gap-1 rounded px-1.5 text-[11px] transition-colors ${
+        className={`inline-flex h-7 items-center gap-1.5 rounded-lg px-2 text-[11px] transition-colors ${
           noteState === "saved"
             ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"
             : noteState === "error"
               ? "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300"
-              : "text-slate-500 hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-200"
+              : "text-slate-500 hover:bg-black/[0.05] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-slate-200"
         }`}
       >
         {noteState === "saving" ? (
@@ -1927,12 +1927,16 @@ function AssistantActions({
           waren beide Exporter nur im Agent-Mode-ArtifactCard verfügbar
           → User musste im regular Chat "kann Atlas PDF?" fragen + AI
           sagte "nein". Jetzt: jede Antwort downloadbar als PDF/DOCX. */}
+      <span
+        className="mx-1 h-3.5 w-px shrink-0 bg-black/[0.07] dark:bg-white/[0.1]"
+        aria-hidden="true"
+      />
       <button
         type="button"
         onClick={downloadAsPdf}
         title="Antwort als PDF herunterladen"
         aria-label="Antwort als PDF herunterladen"
-        className="inline-flex h-6 items-center gap-1 rounded px-1.5 text-[11px] text-slate-500 transition-colors hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-200"
+        className="inline-flex h-7 items-center gap-1.5 rounded-lg px-2 text-[11px] text-slate-500 transition-colors hover:bg-black/[0.05] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-slate-200"
       >
         <FileText size={11} />
         <span>PDF</span>
@@ -1942,7 +1946,7 @@ function AssistantActions({
         onClick={downloadAsDocx}
         title="Antwort als Word (.docx) herunterladen"
         aria-label="Antwort als Word herunterladen"
-        className="inline-flex h-6 items-center gap-1 rounded px-1.5 text-[11px] text-slate-500 transition-colors hover:bg-black/[0.04] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-200"
+        className="inline-flex h-7 items-center gap-1.5 rounded-lg px-2 text-[11px] text-slate-500 transition-colors hover:bg-black/[0.05] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-slate-200"
       >
         <FileType size={11} />
         <span>DOCX</span>

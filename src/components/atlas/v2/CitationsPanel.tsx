@@ -54,7 +54,7 @@ export function CitationsPanel({ citations }: Props) {
      widget. Matches the lawyer's expected document layout. */
   return (
     <div className="mt-4 border-t border-slate-200 pt-3 dark:border-white/[0.06]">
-      <div className="mb-2 flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-slate-500">
+      <div className="mb-2.5 flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
         <BookOpen size={10} />
         Quellen ({citations.length})
       </div>
@@ -63,7 +63,7 @@ export function CitationsPanel({ citations }: Props) {
           <li
             key={`${c.sourceId}-${c.index}`}
             id={`citation-${encodeURIComponent(c.sourceId)}`}
-            className="flex items-baseline gap-2 text-[11.5px] leading-snug text-slate-600 dark:text-slate-400 scroll-mt-24"
+            className="group/cite -mx-2 flex scroll-mt-24 items-baseline gap-2 rounded-lg px-2 py-1 text-[11.5px] leading-snug text-slate-600 transition-colors hover:bg-black/[0.025] dark:text-slate-400 dark:hover:bg-white/[0.03]"
           >
             <span className="shrink-0 tabular-nums text-slate-400 dark:text-slate-500">
               {c.index}.

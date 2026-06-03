@@ -50,7 +50,7 @@ import {
   Mail,
   Command,
 } from "lucide-react";
-import { AtlasMark } from "./AtlasLogo";
+import { AtlasGlyph } from "./AtlasGlyph";
 
 /* Sprint 19 (2026-05-19) — Storage-key bumped von "atlas-v2-onboarding-
    seen" auf "...-v2-seen" damit existing users (die den alten 5-slide
@@ -445,7 +445,7 @@ function VisualWelcomeV2() {
   return (
     <div className="flex flex-col items-center gap-3 text-slate-700 dark:text-slate-200">
       <div className="relative">
-        <AtlasMark size={48} />
+        <AtlasGlyph size={48} animated />
         <span className="absolute -right-3 -top-1 rounded-md bg-emerald-500 px-1.5 py-0.5 text-[8.5px] font-bold text-white shadow-sm">
           v2
         </span>
