@@ -125,8 +125,19 @@ export async function POST(req: NextRequest) {
   /* AUDIT-FIX H20: reject files whose declared MIME isn't on the
      audio-format whitelist. Prevents arbitrary uploads from being
      forwarded to the Whisper API as "audio". */
-  const declaredMime = file.type || "";
+  /* Normalise before the whitelist check: browsers attach codec parameters
+     the exact-match Set doesn't hold — Chrome/Firefox MediaRecorder produces
+     "audio/webm;codecs=opus", Safari may produce "audio/mp4;codecs=...".
+     Strip everything from ';' onward, trim, lowercase, so the base type
+     ("audio/webm" / "audio/mp4") matches. (Bug: every Chrome voice note was
+     rejected 400 before reaching OpenAI.) */
+  const declaredMime = (file.type || "").split(";")[0].trim().toLowerCase();
   if (!ALLOWED_AUDIO_MIMES.has(declaredMime)) {
+    logger.warn("[atlas/transcribe] audio MIME rejected", {
+      userId: maskId(atlas.userId),
+      rawType: file.type,
+      normalised: declaredMime,
+    });
     return NextResponse.json(
       {
         error: `Audio-Format nicht unterstützt (${declaredMime || "unbekannt"}). Erlaubt: WebM, MP4, M4A, WAV, MP3, OGG.`,
