@@ -226,8 +226,10 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
 
   /* Filter + bucket the chats. Search is case-insensitive substring
      match on the title (which is now AI-generated post-D2/Sprint-E,
-     so titles are 3-5 word summaries instead of raw user input). */
-  const bucketedChats = useMemo(() => {
+     so titles are 3-5 word summaries instead of raw user input).
+     `overflowCount` tracks how many chats were dropped by the per-bucket
+     DOM cap so we can show a subtle hint row when the cap fires. */
+  const { bucketedChats, overflowCount } = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     const filtered = q
       ? chats.filter((c) => (c.title ?? "").toLowerCase().includes(q))
@@ -238,11 +240,21 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
       "Letzte 7 Tage": [],
       Älter: [],
     };
+    const overflow: Record<ChatBucket, number> = {
+      Heute: 0,
+      Gestern: 0,
+      "Letzte 7 Tage": 0,
+      Älter: 0,
+    };
     for (const c of filtered) {
       const b = bucketFor(c.updatedAt ?? c.createdAt);
-      if (byBucket[b].length < MAX_CHATS_PER_BUCKET) byBucket[b].push(c);
+      if (byBucket[b].length < MAX_CHATS_PER_BUCKET) {
+        byBucket[b].push(c);
+      } else {
+        overflow[b]++;
+      }
     }
-    return byBucket;
+    return { bucketedChats: byBucket, overflowCount: overflow };
   }, [chats, searchQuery]);
 
   const handleNewChat = () => {
@@ -330,6 +342,7 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
           BUCKET_ORDER.map((bucket) => {
             const items = bucketedChats[bucket];
             if (items.length === 0) return null;
+            const overflow = overflowCount[bucket];
             return (
               <SidebarSection key={bucket} label={bucket}>
                 {items.map((c) => (
@@ -341,6 +354,11 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
                     active={activeChatId === c.id}
                   />
                 ))}
+                {overflow > 0 && (
+                  <div className="px-3 py-1 text-[11px] text-atlas-text-muted">
+                    … +{overflow} weitere (suchen)
+                  </div>
+                )}
               </SidebarSection>
             );
           })

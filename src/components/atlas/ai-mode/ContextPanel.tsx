@@ -23,15 +23,14 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { SemanticMatch } from "@/hooks/useAtlasSemanticSearch";
-import { ALL_SOURCES } from "@/data/legal-sources";
 import {
   ALL_LANDING_RIGHTS_PROFILES,
   ALL_CASE_STUDIES,
 } from "@/data/landing-rights";
-import { extractCitations, type Citation } from "@/lib/atlas/citations";
+import { extractCitations } from "@/lib/atlas/citations";
 import styles from "./ai-mode.module.css";
 
 interface ContextPanelProps {
@@ -57,56 +56,63 @@ interface HydratedSource {
 // (Phase 3 — Citations Highlighter). One source of truth.
 
 // ─── Source hydration ─────────────────────────────────────────────────
+//
+// Non-"source" types (profile, case-study) are resolved synchronously
+// from their respective small in-memory datasets — those are not the
+// 3 MB corpus. Only "source" type is resolved via on-demand API fetch.
+//
+// Response shape from GET /api/atlas/source-preview/[id]:
+//   { title, scope_description, jurisdiction, type, status,
+//     verbatim_section, verbatim_snippet, verbatim_url }
+//
+// `official_reference` is not exposed by that route; we fall back to
+// `scope_description` for the `meta` field (similar descriptive role).
 
-function hydrateMatches(matches: SemanticMatch[]): HydratedSource[] {
-  return matches
-    .map((m): HydratedSource | null => {
-      const [, rawId] = m.id.split(":");
-      if (!rawId) return null;
-      if (m.type === "source") {
-        const s = ALL_SOURCES.find((x) => x.id === rawId);
-        if (!s) return null;
-        return {
-          id: s.id,
-          type: "source",
-          title: s.title_en,
-          jurisdiction: s.jurisdiction,
-          meta: s.official_reference ?? undefined,
-          score: m.score,
-          href: `/atlas/sources/${s.id}`,
-        };
-      }
-      if (m.type === "profile") {
-        const p = ALL_LANDING_RIGHTS_PROFILES.find(
-          (x) => x.jurisdiction === rawId,
-        );
-        if (!p) return null;
-        return {
-          id: p.jurisdiction,
-          type: "profile",
-          title: `Landing Rights · ${p.jurisdiction}`,
-          jurisdiction: p.jurisdiction,
-          meta: p.overview.regime_type,
-          score: m.score,
-          href: `/atlas/landing-rights/${p.jurisdiction.toLowerCase()}`,
-        };
-      }
-      if (m.type === "case-study") {
-        const c = ALL_CASE_STUDIES.find((x) => x.id === rawId);
-        if (!c) return null;
-        return {
-          id: c.id,
-          type: "case-study",
-          title: c.title,
-          jurisdiction: c.jurisdiction,
-          meta: c.operator,
-          score: m.score,
-          href: `/atlas/landing-rights/case-studies/${c.id}`,
-        };
-      }
-      return null;
-    })
-    .filter((x): x is HydratedSource => x !== null);
+interface SourcePreviewResponse {
+  title: string;
+  scope_description: string;
+  jurisdiction: string;
+  type: string;
+  status: string;
+  verbatim_section: string | null;
+  verbatim_snippet: string | null;
+  verbatim_url: string | null;
+}
+
+/** Resolve a raw match that does NOT require an API call (profile / case-study). */
+function hydrateNonSourceMatch(m: SemanticMatch): HydratedSource | null {
+  const [, rawId] = m.id.split(":");
+  if (!rawId) return null;
+
+  if (m.type === "profile") {
+    const p = ALL_LANDING_RIGHTS_PROFILES.find((x) => x.jurisdiction === rawId);
+    if (!p) return null;
+    return {
+      id: p.jurisdiction,
+      type: "profile",
+      title: `Landing Rights · ${p.jurisdiction}`,
+      jurisdiction: p.jurisdiction,
+      meta: p.overview.regime_type,
+      score: m.score,
+      href: `/atlas/landing-rights/${p.jurisdiction.toLowerCase()}`,
+    };
+  }
+
+  if (m.type === "case-study") {
+    const c = ALL_CASE_STUDIES.find((x) => x.id === rawId);
+    if (!c) return null;
+    return {
+      id: c.id,
+      type: "case-study",
+      title: c.title,
+      jurisdiction: c.jurisdiction,
+      meta: c.operator,
+      score: m.score,
+      href: `/atlas/landing-rights/case-studies/${c.id}`,
+    };
+  }
+
+  return null;
 }
 
 // ─── Live semantic fetch ──────────────────────────────────────────────
@@ -119,6 +125,8 @@ function useSemanticSources(query: string | null): {
   const [sources, setSources] = useState<HydratedSource[]>([]);
   const [loading, setLoading] = useState(false);
   const [reason, setReason] = useState<string | null>(null);
+  // Cache resolved source records so we don't re-fetch on re-renders.
+  const sourceCache = useRef<Map<string, HydratedSource | null>>(new Map());
 
   useEffect(() => {
     if (!query || query.length < 3) {
@@ -130,36 +138,94 @@ function useSemanticSources(query: string | null): {
     const ac = new AbortController();
     setLoading(true);
     setReason(null);
-    fetch("/api/atlas/semantic-search", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query, limit: 6 }),
-      signal: ac.signal,
-    })
-      .then(async (res) => {
+
+    (async () => {
+      try {
+        const res = await fetch("/api/atlas/semantic-search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query, limit: 6 }),
+          signal: ac.signal,
+        });
+
         if (!res.ok) {
           setSources([]);
           setReason(res.status === 429 ? "rate_limited" : "error");
           return;
         }
+
         const data = (await res.json()) as {
           matches: SemanticMatch[];
           reason?: string;
         };
+
         if (data.reason === "not_indexed") {
           setSources([]);
           setReason("not_indexed");
           return;
         }
-        setSources(hydrateMatches(data.matches));
+
+        // Resolve all matches. Non-source types are synchronous; source
+        // type is fetched on-demand (one request per unique source id,
+        // with a session-level cache).
+        const resolved = await Promise.all(
+          data.matches.map(async (m): Promise<HydratedSource | null> => {
+            if (m.type !== "source") return hydrateNonSourceMatch(m);
+
+            const [, rawId] = m.id.split(":");
+            if (!rawId) return null;
+
+            // Return from cache if already fetched.
+            if (sourceCache.current.has(rawId)) {
+              const cached = sourceCache.current.get(rawId)!;
+              if (!cached) return null;
+              // Update score (can vary per query).
+              return { ...cached, score: m.score };
+            }
+
+            // Fetch the single source record on-demand.
+            try {
+              const sRes = await fetch(
+                `/api/atlas/source-preview/${encodeURIComponent(rawId)}`,
+                { signal: ac.signal },
+              );
+              if (!sRes.ok) {
+                sourceCache.current.set(rawId, null);
+                return null;
+              }
+              const s = (await sRes.json()) as SourcePreviewResponse;
+              const hydrated: HydratedSource = {
+                id: rawId,
+                type: "source",
+                title: s.title,
+                jurisdiction: s.jurisdiction,
+                // official_reference not in source-preview API; use
+                // scope_description as the descriptive meta fallback.
+                meta: s.scope_description ?? undefined,
+                score: m.score,
+                href: `/atlas/sources/${rawId}`,
+              };
+              sourceCache.current.set(rawId, hydrated);
+              return hydrated;
+            } catch (err) {
+              if ((err as Error).name === "AbortError") throw err;
+              sourceCache.current.set(rawId, null);
+              return null;
+            }
+          }),
+        );
+
+        if (ac.signal.aborted) return;
+        setSources(resolved.filter((x): x is HydratedSource => x !== null));
         setReason(null);
-      })
-      .catch((err) => {
+      } catch (err) {
         if ((err as Error).name === "AbortError") return;
         setSources([]);
         setReason("error");
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        if (!ac.signal.aborted) setLoading(false);
+      }
+    })();
 
     return () => ac.abort();
   }, [query]);
