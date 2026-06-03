@@ -840,22 +840,26 @@ export function ChatInput({
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
-      className={`relative rounded-[28px] border bg-white px-3 pt-3 pb-2 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-colors dark:bg-[#1a1a1a] dark:shadow-[0_8px_24px_rgba(0,0,0,0.25)] ${
-        /* Glassmorphism: pill bg is DARKER than the canvas (canvas
-           #212121, pill #1a1a1a) + soft shadow so the composer
-           visually lifts off the canvas. The textarea inside uses
-           `bg-transparent` and therefore inherits this same #1a1a1a
-           — no inner "field-within-a-field" effect.
-
-           This is the intentional design choice the lawyer
-           confirmed they prefer over the canvas-matching variant. */
+      className={`relative rounded-[28px] border bg-atlas-bg-panel px-3 pt-3 pb-2 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-colors dark:shadow-[0_8px_24px_rgba(0,0,0,0.25)] ${
+        /* Seamless composer: the pill fill uses the SAME token as the
+           surrounding <main> canvas (`bg-atlas-bg-panel` → --bg-panel:
+           #ffffff light / #0a0a0a dark), so it blends into the canvas
+           instead of sitting on it as a lighter block. The earlier
+           hardcoded `dark:#1a1a1a` was tuned to be DARKER than a then-
+           #212121 canvas, but the panel palette later shifted to
+           #0a0a0a — leaving the pill 16 levels LIGHTER than its canvas,
+           the "stands out" look the user asked to remove (2026-06-03).
+           Affordance now comes from the hairline border + soft shadow
+           alone; token-driven so it stays in sync if the palette moves
+           again. The textarea inside is `bg-transparent` and inherits
+           this fill — no field-within-a-field effect. */
         dragOver
           ? "border-slate-400 bg-slate-50 dark:border-white/[0.24] dark:bg-white/[0.04]"
           : "border-slate-200 focus-within:border-slate-300 dark:border-white/[0.08] dark:focus-within:border-white/[0.16]"
       }`}
     >
       {dragOver && (
-        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-[28px] bg-white/80 backdrop-blur-sm dark:bg-[#1a1a1a]/80">
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-[28px] bg-white/80 backdrop-blur-sm dark:bg-[#0a0a0a]/80">
           <div className="flex items-center gap-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">
             <Paperclip size={14} />
             Datei oder Bild hier ablegen
