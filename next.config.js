@@ -316,6 +316,24 @@ const nextConfig = {
         }),
       );
     }
+
+    // ── Disable webpack's persistent filesystem cache (2026-06-03) ───────
+    // The perf-pass import-graph change (AIMode + AtlasEntity moved from
+    // static imports to dynamic `ssr:false` chunks) left Vercel's RESTORED
+    // `.next/cache` inconsistent with the new module graph, deadlocking
+    // "Generating static pages" at ~462/925 → 45-min build timeout (three
+    // consecutive failed prod builds). Builds WITHOUT a cache restore —
+    // every local build, and Vercel with VERCEL_FORCE_NO_BUILD_CACHE — were
+    // always green (938/938). Setting `cache: false` makes webpack ignore
+    // the restored cache and recompile cleanly each build, which guarantees
+    // the poisoned generation can never be re-read. This is the same class
+    // of static-gen-deadlock fix as `serverExternalPackages` above, applied
+    // at the cache layer. Cost: the single-threaded (cpus:1) compile no
+    // longer reuses incremental state (~a few min slower). Revisit once
+    // stable — a `config.cache.version` bump can restore fast incremental
+    // caching while still invalidating the one poisoned generation.
+    config.cache = false;
+
     return config;
   },
 };
