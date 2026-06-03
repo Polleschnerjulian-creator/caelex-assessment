@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   Library,
@@ -21,6 +21,7 @@ import {
 } from "@/data/legal-sources";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { EmptyState } from "../_components/EmptyState";
+import { useVirtualizer } from "@tanstack/react-virtual";
 
 /**
  * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
@@ -39,6 +40,11 @@ import { EmptyState } from "../_components/EmptyState";
  * Visual language matches /atlas/cases (the case law counterpart) but
  * uses emerald accents (the same hue as `[ATLAS-…]` citation pills) to
  * read as statutory-text sources rather than adjudication outcomes.
+ *
+ * RENDERING: The result list is virtualized via @tanstack/react-virtual so
+ * only visible rows mount in the DOM. Rows are chunked into pairs to preserve
+ * the 2-column grid layout. Dynamic measurement (measureElement) handles
+ * variable-height cards (optional title_local, scopeDescription fields).
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -129,6 +135,90 @@ const COMPLIANCE_LABEL: Record<ComplianceArea, { en: string; de: string }> = {
   military_dual_use: { en: "Military / dual-use", de: "Militär / Dual-Use" },
 };
 
+// Estimate for initial virtualizer pass — refined by measureElement
+const ESTIMATED_ROW_HEIGHT = 200;
+
+/** Render a single source card (li content) */
+function SourceCard({
+  source,
+  language,
+  isDe,
+}: {
+  source: LegalSource;
+  language: string;
+  isDe: boolean;
+}) {
+  const tr = getTranslatedSource(source, language);
+  const status = STATUS_LABEL[source.status];
+  const typeLabel = TYPE_LABEL[source.type];
+
+  return (
+    <li className="group rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#1a1a1a] hover:bg-slate-50 dark:hover:bg-white/[0.04] shadow-sm hover:shadow transition-all">
+      <Link
+        href={`/atlas/sources/${encodeURIComponent(source.id)}`}
+        className="block p-4"
+      >
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider font-mono text-slate-500 dark:text-slate-400">
+            <span>{source.jurisdiction}</span>
+            <span>·</span>
+            <span>{isDe ? typeLabel.de : typeLabel.en}</span>
+            {source.date_in_force && (
+              <>
+                <span>·</span>
+                <span>{source.date_in_force.slice(0, 4)}</span>
+              </>
+            )}
+          </div>
+          <span
+            className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${RELEVANCE_TONE[source.relevance_level]}`}
+          >
+            {source.relevance_level}
+          </span>
+        </div>
+
+        <h3 className="text-[14px] font-semibold text-slate-900 dark:text-slate-100 mb-1 leading-snug line-clamp-2">
+          {tr.title}
+        </h3>
+
+        {source.title_local && source.title_local !== tr.title && (
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 italic mb-2 line-clamp-1">
+            {source.title_local}
+          </p>
+        )}
+
+        {tr.scopeDescription && (
+          <p className="text-[11px] text-slate-700 dark:text-slate-300 line-clamp-2 mb-3">
+            {tr.scopeDescription}
+          </p>
+        )}
+
+        <div className="flex items-center justify-between gap-2 flex-wrap pt-2 border-t border-slate-100 dark:border-white/[0.04]">
+          <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[180px]">
+            <Building2 className="h-3 w-3 flex-shrink-0" strokeWidth={1.5} />
+            <span className="truncate">{source.issuing_body}</span>
+          </span>
+          {status && (
+            <span
+              className={`inline-flex items-center gap-1 text-[10px] font-medium ${status.tone}`}
+            >
+              <Calendar className="h-3 w-3" strokeWidth={1.5} />
+              {isDe ? status.de : status.en}
+            </span>
+          )}
+          <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 ml-auto truncate max-w-[140px]">
+            {source.id}
+          </span>
+          <ArrowRight
+            className="h-3 w-3 text-slate-400 dark:text-slate-500 group-hover:text-emerald-600 transition-colors"
+            strokeWidth={1.5}
+          />
+        </div>
+      </Link>
+    </li>
+  );
+}
+
 export default function SourcesIndexPage() {
   const { language } = useLanguage();
   const [query, setQuery] = useState("");
@@ -175,20 +265,82 @@ export default function SourcesIndexPage() {
     });
   }, [query, type, jurisdiction, area, language]);
 
-  // Cap render to first 200 rows when there's no filter, otherwise show all
-  // matches. Browsing the full 900+ corpus on a single page would render
-  // 900 cards on initial paint and tank LCP — the cap stays invisible the
-  // moment a user types anything.
+  /**
+   * No cap when filters are active — virtualization makes rendering cost O(visible)
+   * regardless of how many matches there are.  A VIEW_CAP hint is still shown on the
+   * unfiltered view so users understand the corpus size, but we no longer slice the
+   * array — all results are reachable by scrolling.
+   */
   const VIEW_CAP = 200;
   const filtersActive =
     !!query.trim() ||
     type !== "all" ||
     jurisdiction !== "all" ||
     area !== "all";
-  const displayed = filtersActive ? filtered : filtered.slice(0, VIEW_CAP);
-  const truncated = !filtersActive && filtered.length > VIEW_CAP;
+  // With virtualization we render ALL filtered results — no silent truncation.
+  const displayed = filtered;
+  // Hint only shown in unfiltered state when there are more than VIEW_CAP sources
+  const showCapHint = !filtersActive && filtered.length > VIEW_CAP;
 
   const isDe = language === "de";
+
+  /**
+   * Virtualizer setup.
+   *
+   * Layout: We preserve the original 2-column grid (1-col on mobile) by
+   * chunking `displayed` into pairs — each virtual "row" holds [left, right?].
+   * The virtualizer measures each row div via a ResizeObserver (measureElement),
+   * so variable-height cards (long titles, optional scopeDescription) are
+   * handled correctly without manual estimation.
+   *
+   * Scroll container: We give the list area `flex-1 overflow-y-auto` so it
+   * fills the remaining vertical space in the flex column and provides the
+   * scroll surface. The virtualizer attaches to this div via parentRef.
+   */
+
+  // Each virtual item = one 2-column row (1 or 2 cards)
+  const rowPairs = useMemo(() => {
+    const rows: [LegalSource, LegalSource | null][] = [];
+    for (let i = 0; i < displayed.length; i += 2) {
+      rows.push([displayed[i], displayed[i + 1] ?? null]);
+    }
+    return rows;
+  }, [displayed]);
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const virtualizer = useVirtualizer({
+    count: rowPairs.length,
+    getScrollElement: () => scrollContainerRef.current,
+    estimateSize: () => ESTIMATED_ROW_HEIGHT,
+    overscan: 5,
+    // Dynamic measurement: ResizeObserver per row div
+    measureElement:
+      typeof window !== "undefined"
+        ? (el) => el.getBoundingClientRect().height
+        : undefined,
+  });
+
+  // Scroll back to top whenever the filter/search result set changes
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+    // Reset virtualizer scroll position too
+    virtualizer.scrollToIndex(0, { align: "start" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [displayed]);
+
+  const virtualItems = virtualizer.getVirtualItems();
+  const totalSize = virtualizer.getTotalSize();
+
+  // Callback ref: attaches measureElement to each row's DOM node
+  const measureRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (node) virtualizer.measureElement(node);
+    },
+    [virtualizer],
+  );
 
   return (
     <div className="flex flex-col h-full min-h-screen bg-white dark:bg-[#212121] p-4 gap-3">
@@ -336,12 +488,12 @@ export default function SourcesIndexPage() {
 
         <span className="ml-auto text-[11px] text-slate-400 dark:text-slate-500">
           {filtered.length} {isDe ? "Treffer" : "results"}
-          {truncated &&
-            ` · ${isDe ? `oberste ${VIEW_CAP} angezeigt` : `top ${VIEW_CAP} shown`}`}
+          {showCapHint &&
+            ` · ${isDe ? `alle ${filtered.length} via Scroll` : `all ${filtered.length} reachable via scroll`}`}
         </span>
       </div>
 
-      {/* Result list — F-RES-6 standardised empty-state */}
+      {/* Result list — virtualized, F-RES-6 standardised empty-state */}
       {displayed.length === 0 ? (
         <EmptyState
           icon={<Search size={16} strokeWidth={1.5} />}
@@ -358,99 +510,44 @@ export default function SourcesIndexPage() {
           }
         />
       ) : (
-        <ul className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          {displayed.map((s) => {
-            const tr = getTranslatedSource(s, language);
-            const status = STATUS_LABEL[s.status];
-            const typeLabel = TYPE_LABEL[s.type];
-            return (
-              <li
-                key={s.id}
-                className="group rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#1a1a1a] hover:bg-slate-50 dark:hover:bg-white/[0.04] shadow-sm hover:shadow transition-all"
-              >
-                <Link
-                  href={`/atlas/sources/${encodeURIComponent(s.id)}`}
-                  className="block p-4"
+        /* Scroll container — fills remaining vertical space in the flex column */
+        <div
+          ref={scrollContainerRef}
+          className="flex-1 overflow-y-auto min-h-0"
+          style={{ contain: "strict" }}
+        >
+          {/* Virtual spacer — totalSize sets the scrollable height */}
+          <div style={{ height: totalSize, position: "relative" }}>
+            {virtualItems.map((virtualRow) => {
+              const [left, right] = rowPairs[virtualRow.index];
+              return (
+                <div
+                  key={virtualRow.key}
+                  data-index={virtualRow.index}
+                  ref={measureRef}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    transform: `translateY(${virtualRow.start}px)`,
+                    paddingBottom: "12px", // gap-3 equivalent between rows
+                  }}
                 >
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider font-mono text-slate-500 dark:text-slate-400">
-                      <span>{s.jurisdiction}</span>
-                      <span>·</span>
-                      <span>{isDe ? typeLabel.de : typeLabel.en}</span>
-                      {s.date_in_force && (
-                        <>
-                          <span>·</span>
-                          <span>{s.date_in_force.slice(0, 4)}</span>
-                        </>
-                      )}
-                    </div>
-                    <span
-                      className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${RELEVANCE_TONE[s.relevance_level]}`}
-                    >
-                      {s.relevance_level}
-                    </span>
-                  </div>
-
-                  <h3 className="text-[14px] font-semibold text-slate-900 dark:text-slate-100 mb-1 leading-snug line-clamp-2">
-                    {tr.title}
-                  </h3>
-
-                  {s.title_local && s.title_local !== tr.title && (
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 italic mb-2 line-clamp-1">
-                      {s.title_local}
-                    </p>
-                  )}
-
-                  {tr.scopeDescription && (
-                    <p className="text-[11px] text-slate-700 dark:text-slate-300 line-clamp-2 mb-3">
-                      {tr.scopeDescription}
-                    </p>
-                  )}
-
-                  <div className="flex items-center justify-between gap-2 flex-wrap pt-2 border-t border-slate-100 dark:border-white/[0.04]">
-                    <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[180px]">
-                      <Building2
-                        className="h-3 w-3 flex-shrink-0"
-                        strokeWidth={1.5}
+                  <ul className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                    <SourceCard source={left} language={language} isDe={isDe} />
+                    {right && (
+                      <SourceCard
+                        source={right}
+                        language={language}
+                        isDe={isDe}
                       />
-                      <span className="truncate">{s.issuing_body}</span>
-                    </span>
-                    {status && (
-                      <span
-                        className={`inline-flex items-center gap-1 text-[10px] font-medium ${status.tone}`}
-                      >
-                        <Calendar className="h-3 w-3" strokeWidth={1.5} />
-                        {isDe ? status.de : status.en}
-                      </span>
                     )}
-                    <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 ml-auto truncate max-w-[140px]">
-                      {s.id}
-                    </span>
-                    <ArrowRight
-                      className="h-3 w-3 text-slate-400 dark:text-slate-500 group-hover:text-emerald-600 transition-colors"
-                      strokeWidth={1.5}
-                    />
-                  </div>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-
-      {truncated && (
-        <div className="text-[11px] text-slate-500 dark:text-slate-400 text-center py-4">
-          {isDe ? (
-            <>
-              Es gibt {filtered.length} relevante Quellen. Suche oder filtere um
-              den vollen Katalog zu durchsuchen.
-            </>
-          ) : (
-            <>
-              {filtered.length} relevant sources total. Use search or filters to
-              explore the full catalogue.
-            </>
-          )}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
