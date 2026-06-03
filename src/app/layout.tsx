@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import PublicLayout from "@/components/layout/PublicLayout";
@@ -19,17 +19,6 @@ const inter = Inter({
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-jetbrains",
-  display: "swap",
-});
-
-/* Geometric display sans for the Atlas wordmark — activates the
-   `font-display` token already declared in tailwind.config.ts. Loaded
-   via next/font/google, which self-hosts at build time (no runtime
-   Google connection → DSGVO-safe, matching the preconnect removal). */
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-space-grotesk",
   display: "swap",
 });
 
@@ -183,7 +172,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable}`}
+      className={`${inter.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
       <head>
