@@ -43,11 +43,23 @@ import {
   AtlasChatPrivacyModal,
   useChatPrivacyGate,
 } from "@/components/atlas/AtlasChatPrivacyGate";
-import {
-  AtlasEntity,
-  type AtlasEntityHandle,
-  type AtlasMode,
-} from "./AtlasEntity";
+// AtlasEntity pulls in three.js + five postprocessing passes — defer it so
+// it lands in its own async chunk and never blocks the initial render of
+// AIMode (which is itself already lazy-loaded by AIModeLauncher).
+// The types are purely erased at compile time so they remain as-is.
+import type { AtlasEntityHandle, AtlasMode } from "./AtlasEntity";
+import dynamic from "next/dynamic";
+
+const AtlasEntity = dynamic(
+  () => import("./AtlasEntity").then((m) => m.AtlasEntity),
+  {
+    ssr: false,
+    // Render nothing while the WebGL scene streams in — AIMode is already
+    // visible and interactive; the orb area simply stays dark until the
+    // three.js chunk resolves (usually <500 ms on a normal connection).
+    loading: () => null,
+  },
+);
 import { AtlasMarkdown } from "./AtlasMarkdown";
 import { ContextPanel } from "./ContextPanel";
 import {

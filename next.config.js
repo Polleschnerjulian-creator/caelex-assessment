@@ -262,6 +262,13 @@ const nextConfig = {
     //     guarantees no concurrent peak, fits trivially in 8GB
     //     container. Cost: 60-90s slower build, but reliable.
     cpus: 1,
+    // Tree-shake lucide-react icon barrel — the library exports 1500+
+    // icons from a single barrel file; without this hint webpack cannot
+    // statically determine which icons are used and pulls the whole
+    // thing into every chunk that touches lucide. With this flag Next.js
+    // rewrites the imports to per-icon paths before bundling, shrinking
+    // the shared chunk by hundreds of KB.
+    optimizePackageImports: ["lucide-react"],
   },
 
   // Webpack configuration
