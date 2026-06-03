@@ -12,13 +12,14 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextRequest, after } from "next/server";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import {
   uploadFileToMandate,
   listMandateFiles,
 } from "@/lib/atlas/document-processor.server";
 import { logger } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -112,6 +113,64 @@ export async function POST(
           embedResult.status !== "embedded" ? embedResult.reason : undefined,
       });
     })();
+
+    /* Auto-extract deadline suggestions after the response is sent.
+       `after()` (Next.js 15) runs the callback AFTER the HTTP response
+       is flushed — the upload call-site gets its 201 immediately; the
+       Haiku call happens in the background without blocking the user.
+
+       Guards:
+       - Skip when extractedText is absent/short (binaries, images,
+         scanned PDFs with no text layer) — the shared helper checks
+         MIN_EXTRACTED_TEXT_CHARS (100 chars) on the decrypted plaintext.
+         `result.hasInlineText` is a reliable proxy: if the upload
+         produced no text, extraction will no-op; we skip the after()
+         allocation entirely.
+       - A try/catch inside after() swallows ALL failures — extraction
+         must NEVER cause the upload to appear to fail in the response
+         that was already sent.
+
+       Spend-cap note: the cron's org-daily-spend guard (A-M18) is
+       coupled to AtlasAgentRun.costUsd and is not reusable for
+       individual Haiku calls without schema work. Haiku costs ~$0.001
+       per file and the @@unique dedup prevents re-charging on
+       re-uploads, so runaway cost is extremely unlikely. We log a
+       warning if extraction is called on an org that already ran many
+       manual extractions today (no blocking). */
+    if (result.hasInlineText) {
+      const capturedFileId = result.fileId;
+      const capturedMandateId = mandateId;
+      const capturedOrgId = atlas.organizationId;
+      after(async () => {
+        try {
+          const { extractDeadlineSuggestionsForFile } =
+            await import("@/lib/atlas/deadline-extraction.server");
+          const extraction = await extractDeadlineSuggestionsForFile({
+            fileId: capturedFileId,
+            mandateId: capturedMandateId,
+            organizationId: capturedOrgId,
+          });
+          logger.info("[atlas/vault] auto-deadline-extraction completed", {
+            fileId: maskId(capturedFileId),
+            mandateId: maskId(capturedMandateId),
+            created: extraction.created,
+          });
+        } catch (extractErr) {
+          /* Swallow — extraction failure must not affect the upload. */
+          logger.warn(
+            "[atlas/vault] auto-deadline-extraction failed (swallowed)",
+            {
+              fileId: maskId(capturedFileId),
+              mandateId: maskId(capturedMandateId),
+              error:
+                extractErr instanceof Error
+                  ? extractErr.message
+                  : String(extractErr),
+            },
+          );
+        }
+      });
+    }
 
     return NextResponse.json({ file: result }, { status: 201 });
   } catch (err) {

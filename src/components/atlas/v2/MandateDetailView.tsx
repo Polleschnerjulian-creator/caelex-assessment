@@ -448,7 +448,19 @@ export function MandateDetailView({ mandateId }: Props) {
             <div className="space-y-3">
               <MandateFileUpload
                 mandateId={mandate.id}
-                onChanged={() => setFilesRefreshKey((n) => n + 1)}
+                onChanged={() => {
+                  setFilesRefreshKey((n) => n + 1);
+                  /* Notify MandateDeadlineSuggestions that a new file
+                     was uploaded so it starts a short polling window.
+                     Auto-extraction runs via after() on the server;
+                     the suggestions panel polls its GET endpoint a few
+                     times over ~15s to surface the results. */
+                  window.dispatchEvent(
+                    new CustomEvent("atlas-v2-file-uploaded", {
+                      detail: { mandateId: mandate.id },
+                    }),
+                  );
+                }}
                 disabled={isArchived || isClosed}
               />
               <MandateFilesList

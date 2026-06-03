@@ -20,7 +20,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2, Sparkles, Check, X, FileText } from "lucide-react";
 
 interface SuggestionItem {
@@ -62,6 +62,10 @@ export function MandateDeadlineSuggestions({
   const [loading, setLoading] = useState(!initialData);
   const [resolvingId, setResolvingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** True while we're in the post-upload auto-extraction polling window. */
+  const [autoExtracting, setAutoExtracting] = useState(false);
+  /** Refs for timer cleanup so we don't leak intervals on unmount. */
+  const pollTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -111,6 +115,44 @@ export function MandateDeadlineSuggestions({
       );
   }, [load, mandateId]);
 
+  /* Post-upload bounded poll — auto-extraction runs server-side via
+     after() and may take 3-12s (Haiku cold-start + document size).
+     On `atlas-v2-file-uploaded` we refetch at 4s, 8s, and 14s then
+     stop. The window covers typical Haiku latency without polling
+     forever. A subtle hint is shown while polling is active. */
+  useEffect(() => {
+    const POLL_DELAYS_MS = [4_000, 8_000, 14_000] as const;
+
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<{ mandateId: string }>;
+      if (ce.detail?.mandateId !== mandateId) return;
+
+      /* Clear any previous in-flight timers (e.g. rapid re-upload). */
+      pollTimersRef.current.forEach(clearTimeout);
+      pollTimersRef.current = [];
+
+      setAutoExtracting(true);
+
+      const timers = POLL_DELAYS_MS.map((delay, idx) =>
+        setTimeout(async () => {
+          await load();
+          /* After the last scheduled poll, clear the extracting hint. */
+          if (idx === POLL_DELAYS_MS.length - 1) {
+            setAutoExtracting(false);
+          }
+        }, delay),
+      );
+      pollTimersRef.current = timers;
+    };
+
+    window.addEventListener("atlas-v2-file-uploaded", handler);
+    return () => {
+      window.removeEventListener("atlas-v2-file-uploaded", handler);
+      /* Cleanup timers when the component unmounts mid-poll. */
+      pollTimersRef.current.forEach(clearTimeout);
+    };
+  }, [load, mandateId]);
+
   const handleResolve = async (
     suggestionId: string,
     action: "accept" | "dismiss",
@@ -148,10 +190,13 @@ export function MandateDeadlineSuggestions({
     }
   };
 
-  /* Zero-noise: don't render anything if there are no suggestions.
+  /* Zero-noise: don't render anything if there are no suggestions AND
+     we're not in the post-upload polling window (which would show the
+     "Atlas prüft das Dokument…" hint even when no suggestions exist yet).
      Skip the section heading too — the parent decides whether to wrap
      with a wider container. */
-  if (!loading && suggestions.length === 0 && !error) return null;
+  if (!loading && suggestions.length === 0 && !error && !autoExtracting)
+    return null;
 
   return (
     <section
@@ -169,6 +214,15 @@ export function MandateDeadlineSuggestions({
         <span className="text-[10.5px] text-slate-500 dark:text-slate-400">
           aus Vault-Dateien extrahiert · zum Aktivieren bestätigen
         </span>
+        {autoExtracting && (
+          <span className="ml-auto flex items-center gap-1 text-[10.5px] text-amber-600 dark:text-amber-400">
+            <Loader2
+              size={10}
+              className="animate-spin motion-reduce:animate-none"
+            />
+            Atlas prüft das Dokument auf Fristen…
+          </span>
+        )}
       </div>
 
       {loading && (
