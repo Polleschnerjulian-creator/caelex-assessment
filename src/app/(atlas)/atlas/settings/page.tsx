@@ -521,12 +521,9 @@ export default function SettingsPage() {
       e.target.value = "";
 
       // Client-side pre-checks (mirrors server validation — defence in depth).
-      const ALLOWED_LOGO_TYPES = [
-        "image/png",
-        "image/jpeg",
-        "image/webp",
-        "image/svg+xml",
-      ];
+      // SVG intentionally excluded (matches the server allowlist) — it can
+      // carry active script; a raster-only allowlist avoids the XSS surface.
+      const ALLOWED_LOGO_TYPES = ["image/png", "image/jpeg", "image/webp"];
       if (!ALLOWED_LOGO_TYPES.includes(file.type)) {
         alert(t("atlas.settings_image_file_error"));
         return;
@@ -1657,7 +1654,7 @@ export default function SettingsPage() {
                           <input
                             ref={fileRef}
                             type="file"
-                            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                            accept="image/png,image/jpeg,image/webp"
                             onChange={handleLogoUpload}
                             aria-label={t("atlas.settings_upload_logo_aria")}
                             className="hidden"

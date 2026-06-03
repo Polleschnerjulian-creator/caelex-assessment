@@ -6,7 +6,9 @@
  *
  * Auth:   getAtlasAuth() — authenticated Atlas session required.
  * Perm:   canManageFirm (OWNER + ADMIN). Mirrors the firm PATCH gate.
- * Limits: 2 MB, image/png | image/jpeg | image/webp | image/svg+xml only.
+ * Limits: 2 MB, image/png | image/jpeg | image/webp only. (SVG is
+ *         intentionally excluded — it can carry active script; a raster
+ *         allowlist removes the stored-XSS surface entirely.)
  */
 import { NextRequest, NextResponse } from "next/server";
 import { canManageFirm, getAtlasAuth } from "@/lib/atlas-auth";
@@ -21,12 +23,7 @@ import { maskId } from "@/lib/atlas/log-masking";
 export const runtime = "nodejs";
 
 /** Image MIME types accepted for firm logos. */
-const ALLOWED_IMAGE_TYPES = [
-  "image/png",
-  "image/jpeg",
-  "image/webp",
-  "image/svg+xml",
-] as const;
+const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"] as const;
 type AllowedImageType = (typeof ALLOWED_IMAGE_TYPES)[number];
 
 /** 2 MB cap — generous for a logo, keeps presign/server-upload path cheap. */
@@ -100,7 +97,7 @@ export async function POST(request: NextRequest) {
   }
 
   // ── Derive a safe filename ──
-  const ext = mimeType.split("/")[1]?.replace("svg+xml", "svg") ?? "png";
+  const ext = mimeType.split("/")[1] ?? "png";
   const safeFilename = `logo-${Date.now()}.${ext}`;
 
   // ── Upload to R2 ──
