@@ -21,7 +21,9 @@
 
 import "server-only";
 
+import type { TradeOperationStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { emitTradeEvent } from "@/lib/comply-v2/trade/ops-events.server";
 import {
   computeRiskScore,
   lineInputFromItem as riskLineInput,
@@ -32,10 +34,18 @@ import {
   lineInputFromItem as catchAllLineInput,
   type CatchAllResult,
 } from "./catch-all-evaluator";
+import { deriveOperationStatus } from "./derive-status";
 
 export interface RecomputeResult {
   risk: RiskScoreResult;
   catchAll: CatchAllResult;
+  /**
+   * Tier 1.7 — the auto-derived lifecycle status transition, or null when no
+   * automatic status change happened (operation in a human-gated state, the
+   * derived target equalled the current status, or a concurrent change won the
+   * CAS race).
+   */
+  statusChange: { from: TradeOperationStatus; to: TradeOperationStatus } | null;
 }
 
 /**
@@ -67,6 +77,8 @@ export async function recomputeOperation(
               usmlCategory: true,
               mtcrCategory: true,
               germanAlEntry: true,
+              // Tier 1.7 — classification readiness drives the prep-band status.
+              status: true,
             },
           },
         },
@@ -114,7 +126,8 @@ export async function recomputeOperation(
     hasAttachedLicenses: op._count.licenses > 0,
   });
 
-  // Persist all derived fields atomically
+  // Persist all derived risk/catch-all fields. Unconditional by id — these are
+  // always safe to overwrite with a fresh computation.
   await prisma.tradeOperation.update({
     where: { id: operationId },
     data: {
@@ -129,5 +142,42 @@ export async function recomputeOperation(
     },
   });
 
-  return { risk, catchAll };
+  // ── Tier 1.7: verdict/fact-driven status auto-advance ──
+  // Reflect the operation's facts onto its lifecycle status across the
+  // fact-grounded prep band only (DRAFT→AWAITING_CLASSIFICATION→SCREENING→
+  // AWAITING_LICENSE). Human-Freigabe / terminal states (LICENSED, EXECUTED,
+  // BLOCKED, VOLUNTARY_DISCLOSURE_FILED) are never auto-set or overwritten —
+  // deriveOperationStatus returns null for them.
+  let statusChange: RecomputeResult["statusChange"] = null;
+  const derivedStatus = deriveOperationStatus(op.status, {
+    activeLineCount: op.lines.length,
+    hasUnclassifiedItem: op.lines.some((l) => l.item.status !== "CLASSIFIED"),
+    counterpartyScreening: op.counterparty?.screeningStatus ?? null,
+  });
+  if (derivedStatus) {
+    // CAS guard: re-assert the status we read so a concurrent manual PATCH
+    // (e.g. an operator BLOCK) can't be silently clobbered. count 0 ⇒ the row
+    // moved under us ⇒ yield to the human decision.
+    const swap = await prisma.tradeOperation.updateMany({
+      where: { id: operationId, organizationId, status: op.status },
+      data: { status: derivedStatus },
+    });
+    if (swap.count === 1) {
+      statusChange = { from: op.status, to: derivedStatus };
+      await emitTradeEvent("trade.operation.status_changed", {
+        organizationId,
+        summary: `${op.reference} · ${op.status} → ${derivedStatus} (auto)`,
+        data: {
+          operationId,
+          reference: op.reference,
+          from: op.status,
+          to: derivedStatus,
+          auto: true,
+          trigger: "recompute",
+        },
+      });
+    }
+  }
+
+  return { risk, catchAll, statusChange };
 }
