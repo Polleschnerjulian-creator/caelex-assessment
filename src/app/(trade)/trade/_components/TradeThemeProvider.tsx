@@ -45,12 +45,13 @@ const TradeThemeContext = createContext<TradeThemeContextValue | undefined>(
 const STORAGE_KEY = "trade-theme";
 
 function readInitial(): TradeTheme {
-  if (typeof window === "undefined") return "light";
+  if (typeof window === "undefined") return "system";
   const stored = window.localStorage.getItem(STORAGE_KEY);
   if (stored === "light" || stored === "dark" || stored === "system") {
     return stored;
   }
-  return "light";
+  // No stored preference → follow the OS (resolved via matchMedia downstream).
+  return "system";
 }
 
 function resolve(theme: TradeTheme): ResolvedTradeTheme {

@@ -13,6 +13,7 @@ import { NotificationsTab } from "./_components/NotificationsTab";
 import { ApiKeysTab } from "./_components/ApiKeysTab";
 import { AuditTab } from "./_components/AuditTab";
 import { DensityToggle } from "../_components/DensityToggle";
+import { ThemeToggle } from "../_components/ThemeToggle";
 
 export const metadata = {
   title: "Settings — Passage",
@@ -115,10 +116,15 @@ export default async function TradeSettingsPage({
                 Darstellung
               </h2>
               <p className="mb-4 max-w-2xl text-[12px] text-trade-text-muted">
-                Pro-Gerät-Einstellung. Kompaktmodus zeigt ~15&nbsp;% mehr Zeilen
-                auf einmal — ideal auf Laptop-Displays.
+                Pro-Gerät-Einstellung — gilt nur in diesem Browser. Hell/Dunkel
+                folgt standardmäßig dem System; Kompaktmodus zeigt ~15&nbsp;%
+                mehr Zeilen auf einmal.
               </p>
-              <DensityToggle />
+              <div className="space-y-6">
+                <ThemeToggle />
+                <div className="h-px bg-trade-border-subtle" />
+                <DensityToggle />
+              </div>
             </section>
           )}
         </div>

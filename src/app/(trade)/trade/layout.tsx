@@ -39,7 +39,7 @@ import { TradeThemeProvider } from "./_components/TradeThemeProvider";
  *   attribute, never via string concatenation.
  */
 
-const flashGuardScript = `(function(){try{var t=localStorage.getItem('trade-theme');var r=t==='dark'?'dark':'light';document.documentElement.setAttribute('data-trade-preload',r);document.documentElement.setAttribute('data-trade-theme',r);}catch(e){}})();`;
+const flashGuardScript = `(function(){try{var t=localStorage.getItem('trade-theme');var r=t==='dark'?'dark':t==='light'?'light':(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-trade-preload',r);document.documentElement.setAttribute('data-trade-theme',r);}catch(e){}})();`;
 
 export const metadata = {
   title: "Caelex Passage",
