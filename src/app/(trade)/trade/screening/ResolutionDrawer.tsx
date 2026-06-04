@@ -20,7 +20,12 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
 import {
   X,
   ShieldAlert,
@@ -84,6 +89,9 @@ export function ResolutionDrawer({ partyId, onClose, onResolved }: Props) {
     null,
   );
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const asideRef = useRef<HTMLElement>(null);
+  const [confirmArmed, setConfirmArmed] = useState(false);
+  const confirmTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load full detail (includes screenings w/ hits + cascade) on open.
   useEffect(() => {
@@ -112,6 +120,55 @@ export function ResolutionDrawer({ partyId, onClose, onResolved }: Props) {
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
   }, [onClose]);
+
+  // Modal hygiene: lock body scroll while open, restore focus to the opener
+  // on close, and clear any pending confirm-arm timer.
+  useEffect(() => {
+    const trigger = document.activeElement as HTMLElement | null;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      trigger?.focus?.();
+      if (confirmTimer.current) clearTimeout(confirmTimer.current);
+    };
+  }, []);
+
+  // Focus trap: keep Tab within the dialog (WCAG 2.4.3 for aria-modal).
+  function trapTab(e: ReactKeyboardEvent) {
+    if (e.key !== "Tab") return;
+    const root = asideRef.current;
+    if (!root) return;
+    const focusable = Array.from(
+      root.querySelectorAll<HTMLElement>(
+        'button, [href], textarea, input, select, [tabindex]:not([tabindex="-1"])',
+      ),
+    ).filter((el) => !el.hasAttribute("disabled"));
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
+  // Confirm-hit is destructive (blocks the party — reversible only by a fresh
+  // screening). Require a 2nd click within 4s so a stray click can't block a
+  // real customer.
+  function onConfirmHit() {
+    if (!confirmArmed) {
+      setConfirmArmed(true);
+      confirmTimer.current = setTimeout(() => setConfirmArmed(false), 4000);
+      return;
+    }
+    if (confirmTimer.current) clearTimeout(confirmTimer.current);
+    setConfirmArmed(false);
+    void decide("CONFIRMED_HIT");
+  }
 
   // The screening we decide on = latest POTENTIAL_MATCH.
   const screening =
@@ -181,11 +238,13 @@ export function ResolutionDrawer({ partyId, onClose, onResolved }: Props) {
         aria-hidden="true"
       />
       <aside
+        ref={asideRef}
         role="dialog"
         aria-modal="true"
         aria-label={`Resolve screening match for ${party?.legalName ?? "counterparty"}`}
         className="fixed inset-y-0 right-0 z-50 flex w-full max-w-xl flex-col overflow-y-auto border-l border-trade-border bg-trade-bg-panel shadow-2xl"
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={trapTab}
       >
         {/* Header */}
         <div className="flex items-start justify-between gap-4 border-b border-trade-border-subtle px-6 py-5">
@@ -348,7 +407,10 @@ export function ResolutionDrawer({ partyId, onClose, onResolved }: Props) {
                 ref={textareaRef}
                 autoFocus
                 value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                onChange={(e) => {
+                  setNotes(e.target.value);
+                  setConfirmArmed(false);
+                }}
                 maxLength={2000}
                 rows={4}
                 placeholder="e.g. Distinct legal entity — different country and registration number; not the sanctioned party."
@@ -385,16 +447,23 @@ export function ResolutionDrawer({ partyId, onClose, onResolved }: Props) {
               </button>
               <button
                 type="button"
-                onClick={() => decide("CONFIRMED_HIT")}
+                onClick={onConfirmHit}
                 disabled={!reasonValid || busy}
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-[13px] font-semibold text-white transition hover:bg-red-700 disabled:opacity-40"
+                aria-label="Confirm sanctions hit — blocks the party"
+                className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-semibold text-white transition disabled:opacity-40 ${
+                  confirmArmed
+                    ? "bg-red-700 ring-2 ring-red-300 ring-offset-1"
+                    : "bg-red-600 hover:bg-red-700"
+                }`}
               >
                 {submitting === "CONFIRMED" ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <ShieldAlert className="h-4 w-4" />
                 )}
-                Confirm hit — blocks party
+                {confirmArmed
+                  ? "Click again to block"
+                  : "Confirm hit — blocks party"}
               </button>
             </div>
           </div>

@@ -34,29 +34,35 @@ vi.mock("@/lib/comply-v2/trade/ops-events.server", () => ({
   emitTradeEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("@/lib/prisma", () => ({
-  prisma: {
+vi.mock("@/lib/prisma", () => {
+  const prisma = {
     tradeScreeningResult: {
       findFirst: vi.fn().mockResolvedValue(null),
       update: vi
         .fn()
         .mockResolvedValue({ id: "sr-1", decision: "CONFIRMED_HIT" }),
+      // CAS: conditional write — returns { count } like Prisma updateMany.
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
     },
     tradeParty: {
-      update: vi
-        .fn()
-        .mockResolvedValue({
-          id: "p-1",
-          legalName: "Test Corp",
-          status: "BLOCKED",
-        }),
+      update: vi.fn().mockResolvedValue({
+        id: "p-1",
+        legalName: "Test Corp",
+        status: "BLOCKED",
+      }),
     },
-    $transaction: vi.fn().mockResolvedValue([
-      { id: "sr-1", decision: "CONFIRMED_HIT" },
-      { id: "p-1", legalName: "Test Corp", status: "BLOCKED" },
-    ]),
-  },
-}));
+    // Support BOTH the legacy array form and the interactive-callback form
+    // ($transaction(async (tx) => …)) so the route can do an atomic CAS.
+    $transaction: vi
+      .fn()
+      .mockImplementation((arg: unknown) =>
+        typeof arg === "function"
+          ? (arg as (tx: unknown) => unknown)(prisma)
+          : Promise.all(arg as Promise<unknown>[]),
+      ),
+  };
+  return { prisma };
+});
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -132,5 +138,61 @@ describe("POST /api/trade/parties/[id]/screenings/[screeningId]/decide — auth 
 
     expect(res.status).not.toBe(403);
     expect(res.status).toBe(404);
+  });
+});
+
+describe("POST decide — concurrency CAS (compare-and-swap)", () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it("returns 409 and does NOT block the party when the screening is no longer POTENTIAL_MATCH at write time (CAS count 0)", async () => {
+    const { getTradeAuth } = await import("@/lib/trade/trade-auth");
+    vi.mocked(getTradeAuth).mockResolvedValue(validAuth);
+    const { prisma } = await import("@/lib/prisma");
+    vi.mocked(prisma.tradeScreeningResult.findFirst).mockResolvedValue({
+      id: "sr-1",
+      decision: "POTENTIAL_MATCH",
+    } as never);
+    // A concurrent reviewer decided this row between our read and write.
+    vi.mocked(prisma.tradeScreeningResult.updateMany).mockResolvedValue({
+      count: 0,
+    } as never);
+
+    const { POST } = await import("./route");
+    const res = await POST(
+      makeReq("POST", { decision: "CONFIRMED_HIT", notes: "Verified hit." }),
+      ctx(),
+    );
+
+    expect(res.status).toBe(409);
+    expect(prisma.tradeParty.update).not.toHaveBeenCalled();
+  });
+
+  it("returns 200 and updates the party when the CAS wins (count 1)", async () => {
+    const { getTradeAuth } = await import("@/lib/trade/trade-auth");
+    vi.mocked(getTradeAuth).mockResolvedValue(validAuth);
+    const { prisma } = await import("@/lib/prisma");
+    vi.mocked(prisma.tradeScreeningResult.findFirst).mockResolvedValue({
+      id: "sr-1",
+      decision: "POTENTIAL_MATCH",
+    } as never);
+    vi.mocked(prisma.tradeScreeningResult.updateMany).mockResolvedValue({
+      count: 1,
+    } as never);
+    vi.mocked(prisma.tradeParty.update).mockResolvedValue({
+      id: "p-1",
+      legalName: "Test Corp",
+      status: "BLOCKED",
+    } as never);
+
+    const { POST } = await import("./route");
+    const res = await POST(
+      makeReq("POST", { decision: "CONFIRMED_HIT", notes: "Verified hit." }),
+      ctx(),
+    );
+
+    expect(res.status).toBe(200);
+    expect(prisma.tradeParty.update).toHaveBeenCalled();
   });
 });

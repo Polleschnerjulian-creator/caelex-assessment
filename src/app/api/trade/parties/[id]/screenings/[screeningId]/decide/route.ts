@@ -108,25 +108,48 @@ export async function POST(
         : undefined;
 
     const now = new Date();
-    const [updatedScreening, updatedParty] = await prisma.$transaction([
-      prisma.tradeScreeningResult.update({
-        where: { id: screeningId },
+
+    // Atomic compare-and-swap. The findFirst above is only a fast pre-check —
+    // two reviewers can both pass it and race to write. updateMany with the
+    // current `decision` in the WHERE makes exactly ONE concurrent decide win
+    // (count === 1); the loser sees count === 0, we abort the transaction and
+    // return 409, leaving the party untouched. This closes the check-then-act
+    // TOCTOU on a sanctions decision (a CLEAR and a CONFIRMED_HIT could
+    // otherwise overwrite each other, last-write-wins, both 200).
+    const txResult = await prisma.$transaction(async (tx) => {
+      const swap = await tx.tradeScreeningResult.updateMany({
+        where: { id: screeningId, partyId, decision: "POTENTIAL_MATCH" },
         data: {
           decision,
           decidedById: tradeAuth.userId,
           decidedAt: now,
           notes,
         },
-      }),
-      prisma.tradeParty.update({
+      });
+      if (swap.count === 0) {
+        return { raced: true as const };
+      }
+      const party = await tx.tradeParty.update({
         where: { id: partyId },
         data: {
           screeningStatus: newScreeningStatus,
           ...(newPartyStatus ? { status: newPartyStatus } : {}),
           ...(newBlockedReason ? { blockedReason: newBlockedReason } : {}),
         },
-      }),
-    ]);
+      });
+      return { raced: false as const, party };
+    });
+
+    if (txResult.raced) {
+      return NextResponse.json(
+        {
+          error:
+            "This screening was just decided by another reviewer. Refresh the queue.",
+        },
+        { status: 409 },
+      );
+    }
+    const updatedParty = txResult.party;
 
     logger.info(
       {
@@ -165,7 +188,7 @@ export async function POST(
     }
 
     return NextResponse.json({
-      screening: updatedScreening,
+      screening: { id: screeningId, decision, decidedAt: now },
       party: updatedParty,
     });
   } catch (err) {

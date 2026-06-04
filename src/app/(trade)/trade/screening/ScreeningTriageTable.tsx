@@ -17,7 +17,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "@/components/ui/Toast";
 import { Globe, RefreshCw, ScanLine, Loader2 } from "lucide-react";
 import { TradeTable, type TradeColumn } from "../_components/TradeTable";
@@ -60,10 +60,23 @@ export function ScreeningTriageTable() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [drawerId, setDrawerId] = useState<string | null>(null);
   const [rescreening, setRescreening] = useState(false);
+  // Debounce the search box so typing doesn't fire a fetch per keystroke.
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  // Abort the prior in-flight reload so a slower older response can't overwrite
+  // a newer query's results (out-of-order race).
+  const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 250);
+    return () => clearTimeout(t);
+  }, [search]);
 
   // Fetch the queue. ALL ⇒ fetch the 3 queue statuses + merge; a specific
   // chip ⇒ single ?screening= server call (incl. CONFIRMED_HIT on demand).
   const reload = useCallback(async () => {
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
     setLoading(true);
     try {
       const statuses: TriageScreeningStatus[] =
@@ -73,27 +86,32 @@ export function ScreeningTriageTable() {
       const results = await Promise.all(
         statuses.map((s) => {
           const p = new URLSearchParams({ screening: s, limit: "50" });
-          if (search) p.set("q", search);
-          return fetch(`/api/trade/parties?${p}`).then((r) => r.json());
+          if (debouncedSearch) p.set("q", debouncedSearch);
+          return fetch(`/api/trade/parties?${p}`, {
+            signal: ctrl.signal,
+          }).then((r) => r.json());
         }),
       );
+      if (ctrl.signal.aborted) return;
       const merged: TriageInputRow[] = results.flatMap(
         (d) => (d.parties as TriageInputRow[]) ?? [],
       );
       setRaw(merged);
-    } catch {
+    } catch (e) {
+      // A superseded reload aborts its fetches — expected, not an error.
+      if ((e as Error)?.name === "AbortError") return;
       toast.error("Could not load queue", "Please try again.");
     } finally {
-      setLoading(false);
+      if (!ctrl.signal.aborted) setLoading(false);
     }
-  }, [filterKey, search, toast]);
+  }, [filterKey, debouncedSearch, toast]);
 
   useEffect(() => {
     void reload();
   }, [reload]);
   useEffect(() => {
     setSelectedIds(new Set());
-  }, [filterKey, search]);
+  }, [filterKey, debouncedSearch]);
 
   const include = useMemo<ReadonlySet<TriageScreeningStatus>>(
     () =>

@@ -171,7 +171,11 @@ describe("POST /api/trade/parties/screen-batch", () => {
       (i: { partyId: string }) => i.partyId === "b",
     );
     expect(failed.ok).toBe(false);
-    expect(failed.error).toMatch(/boom/);
+    // A-M6: the per-item error is MASKED to the client (the raw cause "boom"
+    // is logged server-side only, never surfaced). Assert the generic message,
+    // not the raw throw — the route correctly does NOT leak err.message.
+    expect(failed.error).toBe("Screening failed");
+    expect(failed.error).not.toMatch(/boom/);
   });
 
   it("counts newPotentialMatches from per-item decisions", async () => {
