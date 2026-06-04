@@ -21,6 +21,7 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { logger } from "@/lib/logger";
+import { prisma } from "@/lib/prisma";
 import { syncAllLists } from "@/lib/comply-v2/trade/screening/sync.server";
 import { emitDbEvent } from "@/lib/db-events.server";
 
@@ -71,19 +72,49 @@ export async function GET(request: Request) {
 
     logger.info(summary, "trade-sync-sanctions completed");
 
-    // Broadcast to Ops Console — only when something actually changed
-    // (idempotent runs are common when upstream content hasn't moved).
     const changedLists = result.results.filter((r) => r.changed);
+    let flaggedForRescreen = 0;
     if (changedLists.length > 0) {
+      // Event-driven rescreen trigger: a sanctions-list change means every
+      // active counterparty must be re-checked against the new entries. Flag
+      // CLEAR / NOT_SCREENED active parties STALE so the trade-rescreen-stale
+      // cron (runs 30 min later, 300s budget) re-screens them immediately —
+      // instead of waiting up to the 30-day staleness window, during which a
+      // newly-listed entity would go undetected. POTENTIAL_MATCH (pending
+      // triage) and CONFIRMED_HIT are left untouched so in-flight review state
+      // is preserved.
+      try {
+        const flagged = await prisma.tradeParty.updateMany({
+          where: {
+            status: "ACTIVE",
+            screeningStatus: { in: ["CLEAR", "NOT_SCREENED"] },
+          },
+          data: { screeningStatus: "STALE" },
+        });
+        flaggedForRescreen = flagged.count;
+        logger.info(
+          { flaggedForRescreen, changedLists: changedLists.length },
+          "[trade-sync-sanctions] flagged active parties STALE on list delta",
+        );
+      } catch (e) {
+        logger.warn(
+          { err: e instanceof Error ? e.message : String(e) },
+          "[trade-sync-sanctions] flag-for-rescreen failed (non-fatal)",
+        );
+      }
+
+      // Broadcast to Ops Console — only when something actually changed
+      // (idempotent runs are common when upstream content hasn't moved).
       try {
         await emitDbEvent("trade.sanctions.synced", {
-          summary: `Sanctions sync: ${changedLists.length} list(s) updated · ${changedLists.map((r) => `${r.list}(+${r.entryCount})`).join(", ")}`,
+          summary: `Sanctions sync: ${changedLists.length} list(s) updated · ${changedLists.map((r) => `${r.list}(+${r.entryCount})`).join(", ")} · ${flaggedForRescreen} parties flagged for rescreen`,
           totalElapsedMs: result.totalElapsedMs,
           changedLists: changedLists.map((r) => ({
             list: r.list,
             entryCount: r.entryCount,
             hashPrefix: r.hash?.slice(0, 12),
           })),
+          flaggedForRescreen,
           emittedAt: new Date().toISOString(),
         });
       } catch (e) {
@@ -94,7 +125,7 @@ export async function GET(request: Request) {
       }
     }
 
-    return NextResponse.json(summary);
+    return NextResponse.json({ ...summary, flaggedForRescreen });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     logger.error({ err: message }, "trade-sync-sanctions failed");
