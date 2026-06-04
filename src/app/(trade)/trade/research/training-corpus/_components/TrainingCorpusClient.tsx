@@ -51,16 +51,12 @@ const DECISION_LABEL: Record<DecisionKey, string> = {
 };
 
 const DECISION_TONE: Record<Exclude<DecisionKey, "ALL">, string> = {
-  LICENSE_REQUIRED:
-    "border-amber-400/40 bg-amber-50 text-amber-900 dark:bg-amber-500/10 dark:text-amber-200",
-  NO_LICENSE_REQUIRED:
-    "border-emerald-400/40 bg-emerald-50 text-emerald-900 dark:bg-emerald-500/10 dark:text-emerald-200",
-  CATCH_ALL_TRIGGERED:
-    "border-red-400/40 bg-red-50 text-red-900 dark:bg-red-500/10 dark:text-red-200",
-  USML: "border-amber-400/40 bg-amber-50 text-amber-900 dark:bg-amber-500/10 dark:text-amber-200",
-  EAR: "border-emerald-400/40 bg-emerald-50 text-emerald-900 dark:bg-emerald-500/10 dark:text-emerald-200",
-  SPLIT:
-    "border-slate-400/40 bg-slate-50 text-slate-900 dark:bg-slate-500/10 dark:text-slate-200",
+  LICENSE_REQUIRED: "trade-chip-warn",
+  NO_LICENSE_REQUIRED: "trade-chip-success",
+  CATCH_ALL_TRIGGERED: "trade-chip-danger",
+  USML: "trade-chip-warn",
+  EAR: "trade-chip-success",
+  SPLIT: "trade-chip-neutral",
 };
 
 function toCorpusEntries(
@@ -279,7 +275,7 @@ function FilterBar({
             onChange={(e) =>
               onJurisdictionChange(e.target.value as JurisdictionFilter)
             }
-            className="rounded-md border border-trade-border-subtle bg-trade-bg-default px-2 py-1.5 text-[13px] text-trade-text-primary focus:border-trade-accent focus:outline-none"
+            className="rounded-md border border-trade-border-subtle bg-trade-bg-elevated px-2 py-1.5 text-[13px] text-trade-text-primary focus:border-trade-accent focus:outline-none"
           >
             <option value="ALL">All</option>
             <option value="BAFA">BAFA AzG (Germany)</option>
@@ -291,7 +287,7 @@ function FilterBar({
           <select
             value={decision}
             onChange={(e) => onDecisionChange(e.target.value as DecisionKey)}
-            className="rounded-md border border-trade-border-subtle bg-trade-bg-default px-2 py-1.5 text-[13px] text-trade-text-primary focus:border-trade-accent focus:outline-none"
+            className="rounded-md border border-trade-border-subtle bg-trade-bg-elevated px-2 py-1.5 text-[13px] text-trade-text-primary focus:border-trade-accent focus:outline-none"
           >
             <option value="ALL">All</option>
             <option value="LICENSE_REQUIRED">
@@ -313,7 +309,7 @@ function FilterBar({
             value={eccnPrefix}
             placeholder="e.g. 9A or XV(e)"
             onChange={(e) => onEccnPrefixChange(e.target.value)}
-            className="rounded-md border border-trade-border-subtle bg-trade-bg-default px-2 py-1.5 text-[13px] text-trade-text-primary focus:border-trade-accent focus:outline-none"
+            className="rounded-md border border-trade-border-subtle bg-trade-bg-elevated px-2 py-1.5 text-[13px] text-trade-text-primary focus:border-trade-accent focus:outline-none"
           />
         </label>
       </div>
@@ -345,7 +341,7 @@ function CaseCard({
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span
-              className={`rounded-sm border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${tone}`}
+              className={`rounded-sm px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${tone}`}
             >
               {DECISION_LABEL[decisionKey]}
             </span>
@@ -439,7 +435,7 @@ function SimilarityPanel({
             value={eccn}
             placeholder="e.g. 9A515.b or XV(e)(13)"
             onChange={(e) => onEccnChange(e.target.value)}
-            className="rounded-md border border-trade-border-subtle bg-trade-bg-default px-2 py-1.5 text-[13px] text-trade-text-primary focus:border-trade-accent focus:outline-none"
+            className="rounded-md border border-trade-border-subtle bg-trade-bg-elevated px-2 py-1.5 text-[13px] text-trade-text-primary focus:border-trade-accent focus:outline-none"
           />
         </label>
         <label className="flex flex-col gap-1 text-[12px] text-trade-text-secondary">
@@ -450,7 +446,7 @@ function SimilarityPanel({
             placeholder="e.g. JP, RU, CN"
             maxLength={2}
             onChange={(e) => onDestinationChange(e.target.value.toUpperCase())}
-            className="rounded-md border border-trade-border-subtle bg-trade-bg-default px-2 py-1.5 text-[13px] uppercase text-trade-text-primary focus:border-trade-accent focus:outline-none"
+            className="rounded-md border border-trade-border-subtle bg-trade-bg-elevated px-2 py-1.5 text-[13px] uppercase text-trade-text-primary focus:border-trade-accent focus:outline-none"
           />
         </label>
       </div>
@@ -464,7 +460,7 @@ function SimilarityPanel({
             {ranked.map((r, idx) => (
               <li
                 key={`${r.entry.jurisdiction}-${r.entry.entry.id}`}
-                className="rounded-md border border-trade-border-subtle bg-trade-bg-default px-3 py-2"
+                className="rounded-md border border-trade-border-subtle bg-trade-bg-elevated px-3 py-2"
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-semibold text-trade-text-primary">

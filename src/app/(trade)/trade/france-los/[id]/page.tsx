@@ -59,16 +59,13 @@ const STATUS_LABELS: Record<TradeFranceLosAuthorisationStatus, string> = {
 };
 
 const STATUS_TONE: Record<TradeFranceLosAuthorisationStatus, string> = {
-  DRAFT: "bg-trade-bg-subtle text-trade-text-secondary",
-  SUBMITTED: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-  UNDER_REVIEW:
-    "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
-  AUTHORISED:
-    "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300",
-  REFUSED: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
-  REVOKED: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
-  COMPLETED:
-    "bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200",
+  DRAFT: "trade-chip-neutral",
+  SUBMITTED: "trade-chip-info",
+  UNDER_REVIEW: "trade-chip-warn",
+  AUTHORISED: "trade-chip-success",
+  REFUSED: "trade-chip-danger",
+  REVOKED: "trade-chip-danger",
+  COMPLETED: "trade-chip-neutral",
 };
 
 function formatDate(d: Date | null | undefined): string {
@@ -275,15 +272,11 @@ function CasualtyRiskCard({
       ? AlertTriangle
       : XCircle;
   const tone = compliant
-    ? "border-emerald-200 bg-emerald-50/40 dark:bg-emerald-900/10"
+    ? "trade-chip-success"
     : casualtyRisk === null
-      ? "border-amber-200 bg-amber-50/40 dark:bg-amber-900/10"
-      : "border-red-200 bg-red-50/40 dark:bg-red-900/10";
-  const iconTone = compliant
-    ? "text-emerald-600"
-    : casualtyRisk === null
-      ? "text-amber-600"
-      : "text-red-600";
+      ? "trade-chip-warn"
+      : "trade-chip-danger";
+  const iconTone = "text-current";
 
   return (
     <section

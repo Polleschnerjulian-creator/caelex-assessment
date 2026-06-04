@@ -56,17 +56,17 @@ function GateBadge({ gate }: { gate: LicenseDetermination["gate"] }) {
     CLEARED: {
       icon: ShieldCheck,
       label: "Cleared",
-      className: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+      className: "trade-chip-success",
     },
     REVIEW_NEEDED: {
       icon: ShieldAlert,
       label: "Review Needed",
-      className: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+      className: "trade-chip-warn",
     },
     BLOCKED: {
       icon: ShieldX,
       label: "Blocked",
-      className: "bg-red-50 text-red-700 ring-1 ring-red-200",
+      className: "trade-chip-danger",
     },
   }[gate];
 
@@ -89,27 +89,27 @@ function RequirementCard({ req }: { req: LicenseRequirement }) {
 
   const statusConfig: Record<string, { className: string; label: string }> = {
     REQUIRED: {
-      className: "bg-red-50 text-red-700",
+      className: "trade-chip-danger",
       label: "Required",
     },
     LIKELY_REQUIRED: {
-      className: "bg-amber-50 text-amber-700",
+      className: "trade-chip-warn",
       label: "Likely Required",
     },
     EXCEPTION_MAY_APPLY: {
-      className: "bg-emerald-50 text-emerald-700",
+      className: "trade-chip-success",
       label: "Exception May Apply",
     },
     NLR: {
-      className: "bg-trade-bg-subtle text-trade-text-secondary",
+      className: "trade-chip-neutral",
       label: "NLR",
     },
     DENIED: {
-      className: "bg-red-100 text-red-700",
+      className: "trade-chip-danger",
       label: "Denied",
     },
     UNKNOWN: {
-      className: "bg-amber-50 text-amber-700",
+      className: "trade-chip-warn",
       label: "Unknown",
     },
   };
@@ -174,17 +174,16 @@ function RequirementCard({ req }: { req: LicenseRequirement }) {
 
 function TriggerRow({ result }: { result: TriggerResult }) {
   const confidenceClass: Record<string, string> = {
-    HIGH: "text-emerald-600",
-    MEDIUM: "text-amber-600",
-    LOW: "text-slate-500",
+    HIGH: "trade-chip-success",
+    MEDIUM: "trade-chip-warn",
+    LOW: "trade-chip-neutral",
   };
-  const colorClass =
-    confidenceClass[result.confidence] ?? "text-trade-text-muted";
+  const colorClass = confidenceClass[result.confidence] ?? "trade-chip-neutral";
 
   return (
     <div className="flex items-start gap-3 rounded-md bg-trade-bg-subtle px-3 py-2.5">
       <Zap
-        className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${colorClass}`}
+        className="mt-0.5 h-3.5 w-3.5 shrink-0 text-trade-text-secondary"
         strokeWidth={2}
       />
       <div className="min-w-0 flex-1">
@@ -193,7 +192,7 @@ function TriggerRow({ result }: { result: TriggerResult }) {
             {result.reason}
           </span>
           <span
-            className={`rounded-full bg-trade-bg-panel px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-widest ring-1 ring-trade-border-subtle ${colorClass}`}
+            className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-widest ${colorClass}`}
           >
             {result.confidence}
           </span>
@@ -205,7 +204,7 @@ function TriggerRow({ result }: { result: TriggerResult }) {
                 key={`${c.jurisdiction}-${c.code}`}
                 className={
                   c.itar
-                    ? "rounded bg-red-50 px-1.5 py-0.5 font-mono text-[10px] text-red-700 ring-1 ring-red-200"
+                    ? "rounded px-1.5 py-0.5 font-mono text-[10px] trade-chip-danger"
                     : "rounded bg-trade-bg-panel px-1.5 py-0.5 font-mono text-[10px] text-trade-text-secondary ring-1 ring-trade-border-subtle"
                 }
               >
@@ -231,11 +230,11 @@ function DeMinimisRow({ dm }: { dm: DeMinimisResult }) {
     REQUIRES_LEGAL_REVIEW: "Legal Review Required",
   };
   const riskClass: Record<string, string> = {
-    HIGH: "text-red-600",
-    MEDIUM: "text-amber-600",
-    LOW: "text-emerald-600",
+    HIGH: "trade-chip-danger",
+    MEDIUM: "trade-chip-warn",
+    LOW: "trade-chip-success",
   };
-  const riskColor = riskClass[dm.riskLevel] ?? "text-trade-text-muted";
+  const riskColor = riskClass[dm.riskLevel] ?? "trade-chip-neutral";
 
   return (
     <div className="flex items-center justify-between gap-3 rounded-md border border-trade-border-subtle bg-trade-bg-subtle px-3 py-2.5">
@@ -273,17 +272,17 @@ export function ClassificationPanel({ classification }: Props) {
       <div className="flex flex-wrap items-center gap-3">
         <GateBadge gate={ld.gate} />
         {ld.mtcrCatIBlock && (
-          <span className="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-red-700 ring-1 ring-red-200">
+          <span className="rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-widest trade-chip-danger">
             MTCR Cat. I
           </span>
         )}
         {ld.itarBlock && (
-          <span className="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-red-700 ring-1 ring-red-200">
+          <span className="rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-widest trade-chip-danger">
             ITAR
           </span>
         )}
         {ld.embargoBlock && (
-          <span className="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-red-700 ring-1 ring-red-200">
+          <span className="rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-widest trade-chip-danger">
             Embargo
           </span>
         )}
@@ -362,12 +361,9 @@ export function ClassificationPanel({ classification }: Props) {
 
       {/* Cleared with no triggers */}
       {ld.gate === "CLEARED" && triggerEval.triggeredRuleCount === 0 && (
-        <div className="flex items-center gap-3 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3">
-          <CheckCircle2
-            className="h-4 w-4 shrink-0 text-emerald-600"
-            strokeWidth={2}
-          />
-          <p className="text-[12px] leading-relaxed text-emerald-800">
+        <div className="flex items-center gap-3 rounded-md px-4 py-3 trade-chip-success">
+          <CheckCircle2 className="h-4 w-4 shrink-0" strokeWidth={2} />
+          <p className="text-[12px] leading-relaxed">
             No controlled-item triggers detected based on current property data.
             Conduct end-user and end-use screening before shipment.
           </p>

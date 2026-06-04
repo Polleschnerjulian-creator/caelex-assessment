@@ -162,6 +162,14 @@ const config: Config = {
         "trade-accent-soft": "var(--trade-accent-soft)",
         "trade-accent-strong": "var(--trade-accent-strong)",
         "trade-hover": "var(--trade-hover)",
+        // Semantic status text colors — map to the flipping --trade-accent-*
+        // vars (redefined brighter in the dark palette). Use for inline
+        // semantic TEXT / icons (e.g. text-trade-accent-danger); colored
+        // pills/badges use the .trade-chip-* classes instead.
+        "trade-accent-success": "var(--trade-accent-success)",
+        "trade-accent-warn": "var(--trade-accent-warn)",
+        "trade-accent-danger": "var(--trade-accent-danger)",
+        "trade-link": "var(--trade-link)",
       },
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],

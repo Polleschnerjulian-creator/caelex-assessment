@@ -472,7 +472,7 @@ function ReviewModal({
       onClick={onClose}
     >
       <div
-        className="relative flex max-h-[90vh] w-full max-w-[760px] flex-col gap-0 overflow-hidden rounded-2xl bg-trade-bg-panel shadow-2xl ring-1 ring-black/[0.06] dark:ring-white/[0.06]"
+        className="relative flex max-h-[90vh] w-full max-w-[760px] flex-col gap-0 overflow-hidden rounded-2xl bg-trade-bg-panel shadow-2xl ring-1 ring-trade-border"
         onClick={(e) => e.stopPropagation()}
       >
         <header className="flex shrink-0 items-center justify-between border-b border-trade-border-subtle px-5 py-3">
@@ -593,7 +593,7 @@ function ReviewModal({
               )}
 
               <Section title="Disclaimer">
-                <p className="rounded-md border border-amber-300/40 bg-amber-50/40 px-3 py-2 text-[11.5px] leading-[1.5] text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                <p className="trade-chip-warn rounded-md px-3 py-2 text-[11.5px] leading-[1.5]">
                   {payload.disclaimer}
                 </p>
               </Section>
@@ -623,7 +623,7 @@ function ReviewModal({
               type="button"
               disabled={pending}
               onClick={() => submitDecision("REJECTED")}
-              className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12.5px] font-medium text-red-600 transition hover:bg-red-500/10 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12.5px] font-medium text-trade-accent-danger transition hover:bg-trade-hover disabled:opacity-50"
             >
               <XCircle className="h-3.5 w-3.5" />
               Reject
@@ -685,19 +685,17 @@ interface BannerProps {
 
 function Banner({ icon: Icon, tone, message, onDismiss }: BannerProps) {
   const toneClass =
-    tone === "success"
-      ? "border-emerald-300/40 bg-emerald-50/60 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200"
-      : "border-red-300/40 bg-red-50/60 text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200";
+    tone === "success" ? "trade-chip-success" : "trade-chip-danger";
   return (
     <div
-      className={`flex items-center gap-2 rounded-md border px-3 py-1.5 text-[12.5px] ${toneClass}`}
+      className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-[12.5px] ${toneClass}`}
     >
       <Icon className="h-3.5 w-3.5" />
       <span className="flex-1">{message}</span>
       <button
         type="button"
         onClick={onDismiss}
-        className="rounded p-0.5 transition hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
+        className="rounded p-0.5 transition hover:bg-trade-hover"
       >
         <X className="h-3.5 w-3.5" />
       </button>
@@ -711,20 +709,17 @@ const DECISION_CONFIG: Record<
 > = {
   PENDING: {
     label: "Pending",
-    className:
-      "bg-amber-50 text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30",
+    className: "trade-chip-warn",
     Icon: Clock,
   },
   ACCEPTED: {
     label: "Accepted",
-    className:
-      "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30",
+    className: "trade-chip-success",
     Icon: CheckCircle2,
   },
   REJECTED: {
     label: "Rejected",
-    className:
-      "bg-red-50 text-red-700 ring-1 ring-red-200 dark:bg-red-500/10 dark:text-red-300 dark:ring-red-500/30",
+    className: "trade-chip-danger",
     Icon: XCircle,
   },
   MODIFIED: {
@@ -751,13 +746,13 @@ function DecisionBadge({ decision }: { decision: Decision }) {
 function ConfidencePill({ confidence }: { confidence: string }) {
   const tone =
     confidence === "HIGH"
-      ? "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30"
+      ? "trade-chip-success"
       : confidence === "MEDIUM"
-        ? "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30"
-        : "bg-trade-bg-subtle text-trade-text-muted ring-trade-border-subtle";
+        ? "trade-chip-warn"
+        : "trade-chip-neutral";
   return (
     <span
-      className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ring-1 ${tone}`}
+      className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${tone}`}
     >
       {confidence}
     </span>

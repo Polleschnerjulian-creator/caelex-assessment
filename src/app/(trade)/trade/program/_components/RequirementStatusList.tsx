@@ -84,23 +84,23 @@ function StatusBadge({ status }: { status: TradeRequirementStatus }) {
   > = {
     COMPLIANT: {
       label: "Compliant",
-      tone: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
+      tone: "trade-chip-success",
     },
     PARTIAL: {
       label: "Partial",
-      tone: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
+      tone: "trade-chip-warn",
     },
     NON_COMPLIANT: {
       label: "Non-compliant",
-      tone: "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300",
+      tone: "trade-chip-danger",
     },
     NOT_ASSESSED: {
       label: "Not assessed",
-      tone: "bg-slate-100 text-slate-600 dark:bg-slate-500/15 dark:text-slate-300",
+      tone: "trade-chip-neutral",
     },
     NOT_APPLICABLE: {
       label: "Not applicable",
-      tone: "bg-slate-100 text-slate-500 dark:bg-slate-500/10 dark:text-slate-400",
+      tone: "trade-chip-neutral",
     },
   };
   const { label, tone } = config[status];

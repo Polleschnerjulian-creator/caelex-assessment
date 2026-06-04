@@ -88,26 +88,22 @@ const STATUS_CONFIG: Record<
 > = {
   DRAFT: {
     label: "Draft",
-    className:
-      "bg-trade-bg-subtle text-trade-text-muted ring-1 ring-trade-border-subtle",
+    className: "trade-chip-neutral",
     Icon: Clock,
   },
   CLASSIFIED: {
     label: "Classified",
-    className:
-      "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30",
+    className: "trade-chip-success",
     Icon: CheckCircle2,
   },
   REQUIRES_REVIEW: {
     label: "Review",
-    className:
-      "bg-amber-50 text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30",
+    className: "trade-chip-warn",
     Icon: AlertTriangle,
   },
   ARCHIVED: {
     label: "Archived",
-    className:
-      "bg-trade-bg-subtle text-trade-text-muted ring-1 ring-trade-border-subtle opacity-70",
+    className: "trade-chip-neutral opacity-70",
     Icon: Archive,
   },
 };
@@ -132,7 +128,7 @@ function CodePill({ code, isItar }: { code: string; isItar?: boolean }) {
     <span
       className={
         isItar
-          ? "rounded px-1.5 py-0.5 font-mono text-[10px] bg-red-50 text-red-700 ring-1 ring-red-200 dark:bg-red-500/10 dark:text-red-300 dark:ring-red-500/30"
+          ? "rounded px-1.5 py-0.5 font-mono text-[10px] trade-chip-danger"
           : "rounded px-1.5 py-0.5 font-mono text-[10px] bg-trade-bg-subtle text-trade-text-secondary ring-1 ring-trade-border-subtle"
       }
     >
@@ -283,7 +279,7 @@ function NewItemForm({
         </div>
 
         {error && (
-          <p className="mt-2 text-[12px] text-red-600 dark:text-red-300">
+          <p className="mt-2 rounded-md px-2 py-1 text-[12px] trade-chip-danger">
             {error}
           </p>
         )}
@@ -594,9 +590,9 @@ export default function TradeItemsPage() {
 
       {/* Error state */}
       {error && (
-        <div className="mb-5 flex items-center gap-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 dark:border-red-500/30 dark:bg-red-500/10">
-          <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-300" />
-          <p className="text-[13px] text-red-700 dark:text-red-300">{error}</p>
+        <div className="mb-5 flex items-center gap-3 rounded-md px-4 py-3 trade-chip-danger">
+          <AlertTriangle className="h-4 w-4 shrink-0" />
+          <p className="text-[13px]">{error}</p>
         </div>
       )}
 
