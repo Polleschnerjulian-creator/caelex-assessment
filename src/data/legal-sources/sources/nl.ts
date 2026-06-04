@@ -6,8 +6,14 @@
  * PROPRIETARY AND CONFIDENTIAL
  * Netherlands space law sources — complete legal framework for jurisdiction NL.
  *
- * Sources: wetten.overheid.nl, officielebekendmakingen.nl, spaceoffice.nl
- * Last verified: 2026-04-09
+ * Sources: wetten.overheid.nl, officielebekendmakingen.nl, rdi.nl, UNOOSA, EUR-Lex
+ * Last verified: 2026-04-09 (full corpus); NL space-law entries re-verified
+ * 2026-06 via deep-research (primary sources). Key corrections: regulator is
+ * RDI (formerly Agentschap Telecom, renamed 1 Jan 2023), licence issued by the
+ * Minister of Economic Affairs; liability CAPPED at the sum insured (Art. 12),
+ * not unlimited; Act in force 1 Jan 2008 (consolidated 1 Jul 2025); unguided-
+ * satellite extension is the Besluit ongeleide satellieten (2015), not a 2013
+ * amendment; NIS2/Cbw passed Tweede Kamer 15 Apr 2026 (not yet in force).
  *
  * Notable: Netherlands is the ONLY major space-faring nation to have ratified
  * ALL 5 UN space treaties including the Moon Agreement (1983).
@@ -30,9 +36,9 @@ export const AUTHORITIES_NL: Authority[] = [
     abbreviation: "NSO",
     website: "https://www.spaceoffice.nl",
     space_mandate:
-      "National space agency and primary contact for space activities licensing under the WRA 2007. Manages the Dutch space programme, ESA delegation, and international cooperation. Maintains the national registry of space objects (dual-part: operational + decommissioned).",
-    legal_basis: "Wet ruimtevaartactiviteiten (WRA) 2007",
-    applicable_areas: ["licensing", "registration", "debris_mitigation"],
+      "National space agency: manages the Dutch space programme, ESA delegation, and international cooperation. NOTE: NSO is NOT the licensing authority -- the space-activities licence is issued by the Minister of Economic Affairs and handled by the RDI. (Prior data overstated NSO's licensing/registry role.)",
+    legal_basis: "Netherlands Space Office mandate (policy/programmes)",
+    applicable_areas: ["licensing"],
   },
   {
     id: "NL-EZK",
@@ -49,14 +55,14 @@ export const AUTHORITIES_NL: Authority[] = [
   {
     id: "NL-RDI",
     jurisdiction: "NL",
-    name_en: "National Inspectorate for Digital Infrastructure",
+    name_en: "Dutch Authority for Digital Infrastructure",
     name_local: "Rijksinspectie Digitale Infrastructuur",
     abbreviation: "RDI",
-    website: "https://www.rdi.nl",
+    website: "https://www.rdi.nl/onderwerpen/ruimtevaart",
     space_mandate:
-      "Spectrum management and radio frequency coordination for satellite services. Formerly Agentschap Telecom. National frequency regulator responsible for ITU filings and coordination of satellite frequency assignments under the Telecommunicatiewet.",
-    legal_basis: "Telecommunicatiewet",
-    applicable_areas: ["frequency_spectrum"],
+      "Renamed from Agentschap Telecom on 1 January 2023. Handles the space-activities LICENCE on behalf of the Minister of Economic Affairs and supervises compliance under Art. 13 of the Space Activities Act (Besluit aanwijzing toezichthouders, BWBR0038004). Also the national frequency regulator: ITU filings and satellite frequency coordination under the Telecommunicatiewet.",
+    legal_basis: "Wet ruimtevaartactiviteiten (Art. 13); Telecommunicatiewet",
+    applicable_areas: ["licensing", "registration", "frequency_spectrum"],
   },
   {
     id: "NL-NCSC",
@@ -321,7 +327,7 @@ const TREATIES_NL: LegalSource[] = [
         summary:
           "The Netherlands as launching State is absolutely liable for damage caused by its space objects on the surface of the Earth. Drives the liability regime in WRA 2007 Chapter 4.",
         complianceImplication:
-          "WRA 2007 implements a flexible liability regime — no fixed statutory cap. The Minister sets liability limits case-by-case in the licence conditions. This is more flexible than the German or French approach.",
+          "WRA 2007: liability is CAPPED at the per-licence sum insured (Art. 12), with no fixed statutory minimum amount (the Minister sets the required cover per licence under Section 3(4)). NOT unlimited.",
       },
       {
         section: "Art. III",
@@ -334,7 +340,7 @@ const TREATIES_NL: LegalSource[] = [
     notes: [
       "Netherlands ratified 26 March 1981.",
       "Trb. 1974, 11.",
-      "The flexible liability regime in WRA 2007 (no fixed cap, case-by-case) contrasts with the strict approach of Luxembourg (unlimited, no backstop) and France (EUR 60M cap).",
+      "WRA 2007 liability is capped at the per-licence sum insured (Art. 12) -- no fixed numeric cap and no government backstop; the Minister sets the required cover per licence (Section 3(4)).",
     ],
     last_verified: "2026-04-09",
   },
@@ -436,14 +442,15 @@ const PRIMARY_LEGISLATION_NL: LegalSource[] = [
     jurisdiction: "NL",
     type: "federal_law",
     status: "in_force",
-    title_en: "Space Activities Act (Wet ruimtevaartactiviteiten — WRA)",
+    title_en: "Space Activities Act (Wet ruimtevaartactiviteiten -- WRA)",
     title_local: "Wet ruimtevaartactiviteiten",
-    date_enacted: "2006-12-14",
-    date_in_force: "2007-01-01",
-    official_reference: "Stb. 2006, 580 / Stb. 2007, 12",
-    source_url: "https://wetten.overheid.nl/BWBR0021418",
+    date_enacted: "2007-01-24",
+    date_in_force: "2008-01-01",
+    official_reference:
+      "BWBR0021418; in force 1 Jan 2008 (Besluit Stb. 2007, 492); consolidated text valid from 1 July 2025",
+    source_url: "https://wetten.overheid.nl/BWBR0021418/2025-07-01",
     issuing_body: "Staten-Generaal",
-    competent_authorities: ["NL-EZK", "NL-NSO"],
+    competent_authorities: ["NL-EZK", "NL-RDI"],
     relevance_level: "critical",
     applicable_to: ["all"],
     compliance_areas: [
@@ -471,20 +478,21 @@ const PRIMARY_LEGISLATION_NL: LegalSource[] = [
           "Ground segment operators commanding foreign-launched satellites from the Netherlands also require a WRA licence — broad jurisdictional reach.",
       },
       {
-        section: "§ 3 (Art. 7-9)",
-        title: "Registration — dual-part registry",
+        section:
+          "Registration (Besluit register ruimtevoorwerpen, BWBR0022944)",
+        title: "Registration -- national register of space objects",
         summary:
-          "Space objects must be registered in the national registry maintained by the NSO. The registry has two parts: operational objects and decommissioned objects. Transfer of control triggers re-registration obligations.",
+          "Space objects must be registered in the Netherlands national register of space objects, established under the Besluit register ruimtevoorwerpen (BWBR0022944). Transfer of control triggers re-registration obligations.",
         complianceImplication:
-          "The dual-part registry is a Dutch innovation. Decommissioned objects remain tracked — relevant for debris mitigation compliance.",
+          "All space objects for which the Netherlands bears international responsibility must be registered. (The operational maintainer of the register is not independently re-verified here; the legal basis is the Besluit register ruimtevoorwerpen.)",
       },
       {
-        section: "§ 4 (Art. 10-11)",
-        title: "Liability — flexible regime, no fixed cap",
+        section: "Section 3(4) + Art. 12 (Chapter 4)",
+        title: "Liability -- capped at the sum insured",
         summary:
-          "Operators are liable for damage caused by their space activities. The State has a right of recourse against the operator. There is NO fixed statutory liability cap — the Minister sets liability limits on a case-by-case basis in the licence conditions.",
+          "The licence-holder must maintain the 'maximum possible cover' for liability arising from the space activities (Section 3(4)); there is no fixed statutory minimum AMOUNT (the Minister sets the required sum per licence). Under Chapter 4 (Art. 12) the State has a right of recourse, BUT the operator's liability and the State's recourse are CAPPED at the sum insured.",
         complianceImplication:
-          "The flexible liability regime is a key differentiator. Unlike Germany (no cap), France (EUR 60M), or Luxembourg (unlimited, no backstop), the Netherlands determines liability limits per licence. This creates both opportunity and uncertainty.",
+          "Key point: NL liability is NOT unlimited -- it is capped at the per-licence sum insured (Art. 12). There is no fixed numeric ceiling (the cap is the variable sum insured) and no government backstop. (Whether intent/gross negligence lifts the cap is unsettled.)",
       },
       {
         section: "§ 5 (Art. 12-14)",
@@ -503,10 +511,10 @@ const PRIMARY_LEGISLATION_NL: LegalSource[] = [
           "Criminal sanctions are relatively modest compared to Luxembourg (EUR 1.25M) or France (EUR 200K + imprisonment). Classified as an economic offence under the Wet op de economische delicten.",
       },
       {
-        section: "§ 7 (Art. 18-28)",
+        section: "Transitional and final provisions",
         title: "Transitional and final provisions",
         summary:
-          "Existing operators had transitional period to obtain licences. The law entered into force on 1 January 2007 (Stb. 2007, 12).",
+          "Existing operators had a transitional period to obtain licences. The Act (Wet van 24 januari 2007) entered into force on 1 January 2008 (per Besluit Stb. 2007, 492).",
       },
     ],
     scope_description:
@@ -522,12 +530,13 @@ const PRIMARY_LEGISLATION_NL: LegalSource[] = [
     caelex_engine_mapping: ["space-law-engine.server"],
     caelex_data_file_mapping: ["national-space-laws.ts"],
     notes: [
-      "One of Europe's earliest comprehensive space laws — predates the French LOS 2008, UK Space Industry Act 2018, and Luxembourg's 2017/2020 laws.",
-      "Stb. 2006, 580 (Royal Decree) / Stb. 2007, 12 (entry into force).",
-      "Unique dual-part registry: operational objects + decommissioned objects.",
-      "Flexible liability: no fixed cap, case-by-case in licence conditions — most nuanced approach in Europe.",
-      "Art. 3a extends jurisdiction to command-and-control from Dutch territory — broad reach.",
-      "Review recommended: the government has indicated potential modernization to address mega-constellations and in-orbit servicing.",
+      "One of Europe's earliest comprehensive space laws -- predates the French LOS 2008, UK Space Industry Act 2018, and Luxembourg's 2017/2020 laws.",
+      "Wet van 24 januari 2007 (BWBR0021418); in force 1 Jan 2008 (Besluit Stb. 2007, 492); consolidated text valid from 1 July 2025. (Verified 2026-06; the prior 'Stb. 2006, 580 / Stb. 2007, 12' references were incorrect.)",
+      "Liability is CAPPED at the per-licence sum insured (Art. 12) -- NOT unlimited; no fixed numeric ceiling and no government backstop.",
+      "Scope extended to unguided/small satellites managed from NL by the Besluit ongeleide satellieten (BWBR0036190, in force 1 July 2015).",
+      "Regulator: RDI (Rijksinspectie Digitale Infrastructuur), formerly Agentschap Telecom until 1 Jan 2023; the licence is issued by the Minister of Economic Affairs.",
+      "Art. 3a extends jurisdiction to command-and-control from Dutch territory -- broad reach.",
+      "Review recommended: potential modernization for mega-constellations and in-orbit servicing.",
     ],
     last_verified: "2026-04-09",
   },
@@ -602,14 +611,14 @@ const IMPLEMENTING_LEGISLATION_NL: LegalSource[] = [
     type: "federal_regulation",
     status: "in_force",
     title_en:
-      "Space Objects Registry Decree (Besluit Register Ruimtevoorwerpen)",
-    title_local: "Besluit Register Ruimtevoorwerpen",
+      "Space Objects Registry Decree (Besluit register ruimtevoorwerpen)",
+    title_local: "Besluit register ruimtevoorwerpen",
     date_enacted: "2008-02-13",
     date_in_force: "2008-03-01",
     official_reference: "Stb. 2008, 53",
-    source_url: "https://wetten.overheid.nl/BWBR0023441",
+    source_url: "https://wetten.overheid.nl/BWBR0022944",
     issuing_body: "Kroon (Council of State advice)",
-    competent_authorities: ["NL-NSO"],
+    competent_authorities: ["NL-EZK", "NL-RDI"],
     relevance_level: "high",
     applicable_to: ["all"],
     compliance_areas: ["registration"],
@@ -625,10 +634,48 @@ const IMPLEMENTING_LEGISLATION_NL: LegalSource[] = [
     ],
     related_sources: ["NL-WRA-2007", "NL-REGISTRATION-1975"],
     notes: [
-      "Stb. 2008, 53 — implements WRA Chapter 5 and the Registration Convention.",
-      "Part A: operational objects. Part B: decommissioned objects — Dutch innovation in space object tracking.",
+      "Identifier corrected to BWBR0022944 (primary-source-verified as the 'Besluit register ruimtevoorwerpen'; prior BWBR0023441 was unverified). Date/Stb to re-confirm when wetten.overheid.nl is reachable.",
+      "Implements WRA registration obligations and the Registration Convention.",
+      "Part A: operational objects. Part B: decommissioned objects -- Dutch innovation in space object tracking.",
     ],
-    last_verified: "2026-04-09",
+    last_verified: "2026-06",
+  },
+  {
+    id: "NL-BESLUIT-ONGELEIDE-2015",
+    jurisdiction: "NL",
+    type: "federal_regulation",
+    status: "in_force",
+    title_en: "Unguided Satellites Decree (Besluit ongeleide satellieten)",
+    title_local: "Besluit ongeleide satellieten",
+    date_enacted: "2015-01-19",
+    date_in_force: "2015-07-01",
+    official_reference: "Stb. 2015, 18",
+    source_url: "https://wetten.overheid.nl/BWBR0036190",
+    issuing_body: "Kroon",
+    competent_authorities: ["NL-EZK", "NL-RDI"],
+    relevance_level: "high",
+    applicable_to: [
+      "satellite_operator",
+      "constellation_operator",
+      "ground_segment",
+    ],
+    compliance_areas: ["licensing"],
+    key_provisions: [
+      {
+        section: "Art. 1",
+        title: "Extension to unguided satellites",
+        summary:
+          "Extends the Space Activities Act to the remote management, from the Netherlands via a communication link, of an unguided (non-steerable) space object -- closing the gap for small/cubesat operators whose objects cannot manoeuvre.",
+        complianceImplication:
+          "Operators commanding unguided/small satellites from the Netherlands require a WRA licence even though the object cannot be steered. Based on the delegation in Art. 2(2) of the Act.",
+      },
+    ],
+    related_sources: ["NL-WRA-2007"],
+    notes: [
+      "Besluit van 19 januari 2015 (Stb. 2015, 18; BWBR0036190), in force 1 July 2015.",
+      "Corrects the common misconception of a '2013 amendment' -- the unguided-satellite extension is this 2015 decree. Verified 2026-06.",
+    ],
+    last_verified: "2026-06",
   },
 ];
 
@@ -771,15 +818,15 @@ const CYBERSECURITY_NL: LegalSource[] = [
         summary:
           "Draft law transposing the NIS2 Directive (EU 2022/2555). Space sector explicitly included as an essential service sector. Enhanced cybersecurity obligations, mandatory incident reporting, and supply chain security requirements. NCSC responsibilities expanded.",
         complianceImplication:
-          "Space operators will face significantly enhanced cybersecurity obligations under the Cbw. The Netherlands missed the 17 October 2024 transposition deadline. Operators should prepare proactively.",
+          "Space operators will face significantly enhanced cybersecurity obligations under the Cbw. Status (mid-2026): passed by the Tweede Kamer on 15 April 2026, pending the Eerste Kamer, entry into force targeted Q2 2026 -- NOT yet formally in force; the Wbni remains applicable until then. NL missed the 17 Oct 2024 deadline (EC reasoned opinion 7 May 2025). Operators should prepare proactively.",
       },
     ],
     related_sources: ["NL-WBNI-2018"],
     notes: [
-      "Netherlands missed the 17 October 2024 NIS2 transposition deadline.",
-      "Internet consultation completed May 2024. Parliamentary process ongoing.",
-      "Wbni remains applicable until the Cbw enters into force.",
-      "Space explicitly included as essential service sector — expanded scope compared to NIS1.",
+      "Status mid-2026: passed Tweede Kamer 15 April 2026; pending Eerste Kamer; EIF targeted Q2 2026 (not yet formally in force).",
+      "Netherlands missed the 17 October 2024 NIS2 deadline; EC reasoned opinion 7 May 2025.",
+      "Cbw replaces the Wbni; the Wbni remains applicable until the Cbw enters into force.",
+      "Space explicitly included as essential-service sector -- expanded scope compared to NIS1.",
     ],
     last_verified: "2026-04-09",
   },

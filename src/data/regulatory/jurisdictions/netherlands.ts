@@ -51,12 +51,13 @@ const NL_REQUIREMENTS: NationalRequirement[] = [
   {
     id: "NL-SAA-5",
     nationalRef: {
-      law: "Space Activities Act 2007",
-      article: "Art. 5",
+      law: "Space Activities Act 2007 / Besluit register ruimtevoorwerpen",
+      article: "Art. 5; Besluit register ruimtevoorwerpen (BWBR0022944)",
       title: "Registration of space objects",
       fullText:
-        "The operator shall register every space object launched under a Dutch permit with " +
-        "the Netherlands national register maintained by NSO. The register entry must include " +
+        "The operator shall register every space object launched under a Dutch permit in " +
+        "the Netherlands national register of space objects (established under the Besluit " +
+        "register ruimtevoorwerpen, BWBR0022944). The register entry must include " +
         "the name of the launching state, an identifying designation or registration number, " +
         "the date and territory of launch, basic orbital parameters, and the general function " +
         "of the space object. Registration must be performed as soon as practicable after launch.",
@@ -81,14 +82,15 @@ const NL_REQUIREMENTS: NationalRequirement[] = [
     nationalRef: {
       law: "Space Activities Act 2007",
       article: "Art. 7",
-      title: "Insurance obligation",
+      title: "Insurance obligation and liability cap",
       fullText:
-        "The operator shall maintain adequate third-party liability insurance or equivalent " +
-        "financial guarantee for the full duration of the space activity. There is no statutory " +
-        "minimum; the Minister determines the required coverage amount on a case-by-case basis " +
-        "taking into account the nature, scale, and risk profile of the activity. " +
-        "The Netherlands does not cap operator liability; the operator remains fully liable " +
-        "without a ceiling for damage caused to third parties.",
+        "The operator shall maintain the 'maximum possible cover' for the liability arising " +
+        "from the space activities (Section 3(4)), account taken of what can reasonably be " +
+        "insured; there is no fixed statutory minimum amount -- the Minister sets the required " +
+        "sum per licence. Under Chapter 4 (Art. 12) the State has a right of recourse: if it must " +
+        "pay compensation under Art. VII of the Outer Space Treaty or the Liability Convention it " +
+        "may recover from the operator, BUT the operator's liability and the State's recourse are " +
+        "CAPPED at the sum insured specified under Section 3(4).",
     },
     standardsMapping: [
       {
@@ -142,15 +144,16 @@ const NL_REQUIREMENTS: NationalRequirement[] = [
   {
     id: "NL-SAA-9",
     nationalRef: {
-      law: "Space Activities Act 2007",
-      article: "Art. 9",
+      law: "Space Activities Act 2007 / Besluit aanwijzing toezichthouders",
+      article: "Art. 13(1) (BWBR0038004)",
       title: "Supervision and inspection",
       fullText:
-        "NSO may designate inspectors with authority to verify compliance with permit conditions. " +
-        "Operators must provide access to facilities, systems, and records upon request. " +
-        "NSO must be notified without undue delay of: anomalies materially affecting mission safety; " +
-        "loss of command and control; unplanned manoeuvres; and cybersecurity incidents affecting " +
-        "space operations. Operators submit annual compliance reports to NSO.",
+        "RDI inspectors are charged with supervision of compliance under Art. 13(1) of the Act " +
+        "(Besluit aanwijzing toezichthouders, BWBR0038004, in force 1 Jan 2023). " +
+        "Operators must provide access to facilities, systems, and records upon request and " +
+        "notify the regulator without undue delay of: anomalies materially affecting mission " +
+        "safety; loss of command and control; unplanned manoeuvres; and cybersecurity incidents " +
+        "affecting space operations.",
     },
     standardsMapping: [
       {
@@ -170,27 +173,26 @@ const NL_REQUIREMENTS: NationalRequirement[] = [
 // ─── Knowledge Base ───────────────────────────────────────────────────────────
 
 const KNOWLEDGE_NSO = `
-## Netherlands Space Office (NSO) — Licensing Regime
+## Netherlands Space-Activities Licensing Regime (RDI / Minister of Economic Affairs)
 
 ### Legal Framework
-- Space Activities Act 2007 (Wet Ruimtevaartactiviteiten, Stb. 2007/444): the primary act
-- Regeling ruimtevaartactiviteiten: ministerial decree setting detailed permit conditions
-- NSO serves as the competent authority (NCA) on behalf of the Ministry of Economic Affairs and Climate Policy
-- Netherlands is a state party to all five UN space treaties
+- Space Activities Act 2007 (Wet ruimtevaartactiviteiten, BWBR0021418; in force 1 Jan 2008; consolidated text 1 July 2025): the primary act. Extended to unguided/small satellites managed from NL by the Besluit ongeleide satellieten (BWBR0036190, 2015).
+- Implementing instruments: Regeling aanvraag vergunning ruimtevaartactiviteiten en registratie (BWBR0023494) + Besluit register ruimtevoorwerpen (BWBR0022944)
+- The licence is issued by the Minister of Economic Affairs ("Our Minister"); licence implementation, supervision (Art. 13) and ITU notification are carried out by the RDI (Rijksinspectie Digitale Infrastructuur, formerly Agentschap Telecom until 1 Jan 2023). NSO is the national space agency for policy/programmes, NOT the licence issuer.
+- Netherlands is a state party to all five UN space treaties (incl. the Moon Agreement, ratified 17 Feb 1983 -- the only major space-faring nation fully bound)
 
 ### Key Characteristics
-- No fixed statutory minimum insurance amount — NSO determines coverage requirement per mission
-- Full operator liability without a government cap: operators bear unlimited third-party liability
-  (this is less commercially attractive than the UK/France model with government backstops)
+- No fixed statutory minimum insurance amount: the Minister sets the required 'maximum possible cover' per licence (Section 3(4))
+- Operator liability and the State's right of recourse are CAPPED at the sum insured (Art. 12) -- NOT unlimited. No government backstop; instead the State has a right of recourse against the operator up to the sum insured.
 - Risk-based, proportionate approach: NSO tailors permit conditions to mission risk profile
 - Small satellite and constellation operators report NSO as having relatively pragmatic, accessible process
 
 ### Permit Application Process
-1. Pre-application meeting with NSO recommended for novel missions
-2. Application to NSO (submitted via Ministry of Economic Affairs portal)
+1. Pre-application contact with RDI recommended for novel missions; apply at least 6 months ahead (business.gov.nl)
+2. The space-activities licence application is handled by the RDI on behalf of the Minister of Economic Affairs
 3. Technical review: DMP, insurance, registration plan, operational safety case
-4. NSO consults with Dutch Space Research Organisation (SRON) and Ministry of Defence where needed
-5. Permit issued with conditions; typical timeline 3-6 months for straightforward missions
+4. The Ministry/RDI consults other bodies (e.g. Ministry of Defence, SRON/NSO) where needed
+5. Licence issued with conditions; plan for a multi-month process for straightforward missions
 
 ### Debris Mitigation Expectations
 NSO applies IADC Guidelines Rev.2 as the primary reference:
@@ -201,10 +203,10 @@ NSO applies IADC Guidelines Rev.2 as the primary reference:
 - DRAMA (ESA) or NASA DAS accepted for orbital lifetime and casualty risk analysis
 
 ### Cybersecurity (NIS2 Context)
-- Post-2024: Dutch NIS2 transposition (Cyberbeveiligingswet, Cbw) applies to qualifying space operators
+- NIS2 transposition (Cyberbeveiligingswet, Cbw, replacing the Wbni) was passed by the Tweede Kamer on 15 April 2026 and is pending the Eerste Kamer; entry into force targeted for Q2 2026 -- NOT yet formally in force as of mid-2026. The Wbni remains applicable until then.
 - NCSC-NL (Nationaal Cyber Security Centrum) is the national cybersecurity authority
-- Space operators above the NIS2 size threshold must register with NCSC-NL and report significant incidents
-- NSO may impose cybersecurity permit conditions referencing NCSC-NL guidelines and IEC 62443
+- Once the Cbw is in force, space operators above the NIS2 size threshold register with NCSC-NL and report significant incidents
+- The regulator (RDI) may impose cybersecurity permit conditions referencing NCSC-NL guidelines and IEC 62443
 
 ### Compliance Matrix Format
 NSO does not prescribe a mandatory matrix format. Industry standard:
@@ -215,10 +217,11 @@ NSO does not prescribe a mandatory matrix format. Industry standard:
 
 function buildKnowledgeBase(): string {
   return [
-    "## NSO (NETHERLANDS SPACE OFFICE) — REGULATORY KNOWLEDGE",
+    "## NETHERLANDS SPACE-ACTIVITIES REGULATORY KNOWLEDGE (RDI / Minister of Economic Affairs)",
     "",
     "The following knowledge reflects the Netherlands Space Activities Act 2007 licensing regime. " +
-      "Apply this knowledge when generating documents for NSO-licensed operators.",
+      "Apply this knowledge when generating documents for operators licensed under the Dutch Space " +
+      "Activities Act (licence issued by the Minister of Economic Affairs, implemented by the RDI).",
     "",
     KNOWLEDGE_NSO,
   ].join("\n");
@@ -231,30 +234,49 @@ const NETHERLANDS_JURISDICTION: JurisdictionData = {
   name: "Netherlands",
 
   nca: {
-    name: "NSO",
-    fullName: "Netherlands Space Office (Nationaal Ruimtevaart Instituut)",
-    website: "https://www.spaceoffice.nl",
+    name: "RDI",
+    fullName:
+      "Rijksinspectie Digitale Infrastructuur (Dutch Authority for Digital Infrastructure), acting for the Minister of Economic Affairs (the de jure licensing authority). NSO (Netherlands Space Office) is the national space agency for policy/programmes, NOT the licence issuer.",
+    website: "https://www.rdi.nl/onderwerpen/ruimtevaart",
     language: "nl",
     executiveSummaryLanguage: "en",
   },
 
   spaceLaw: {
-    name: "Space Activities Act 2007 (Wet Ruimtevaartactiviteiten)",
+    name: "Space Activities Act 2007 (Wet ruimtevaartactiviteiten)",
     citation:
-      "Wet van 24 oktober 2007, houdende regels omtrent ruimtevaartactiviteiten, Stb. 2007/444",
+      "Wet van 24 januari 2007, houdende regels omtrent ruimtevaartactiviteiten en de instelling van een register van ruimtevoorwerpen (BWBR0021418); in force 1 Jan 2008; consolidated text valid from 1 July 2025",
     yearEnacted: 2007,
-    yearAmended: null,
+    yearAmended: 2015,
     status: "enacted",
-    url: "https://wetten.overheid.nl/BWBR0023147",
+    url: "https://wetten.overheid.nl/BWBR0021418/2025-07-01",
   },
 
   additionalLaws: [
     {
-      name: "Regeling ruimtevaartactiviteiten",
-      citation: "Ministerial Decree (Stcrt. 2008/61)",
+      name: "Regeling aanvraag vergunning ruimtevaartactiviteiten en registratie",
+      citation:
+        "Ministerial regulation (BWBR0023494), under Art. 4(2)-(3) of the Act",
       scope:
-        "Detailed permit conditions: debris mitigation, insurance requirements, technical " +
-        "standards, and supervisory obligations under the Space Activities Act 2007.",
+        "Application/permit and registration procedure, technical standards, insurance, " +
+        "debris mitigation and supervisory obligations under the Space Activities Act 2007.",
+      status: "enacted",
+    },
+    {
+      name: "Besluit register ruimtevoorwerpen",
+      citation: "Decree (BWBR0022944)",
+      scope:
+        "Legal basis and structure of the national register of space objects (the grondslag " +
+        "cited by the registration Regeling).",
+      status: "enacted",
+    },
+    {
+      name: "Besluit ongeleide satellieten",
+      citation:
+        "Decree of 19 Jan 2015 (Stb. 2015, 18; BWBR0036190), in force 1 July 2015",
+      scope:
+        "Extends the Act to the remote management, from the Netherlands via a communication " +
+        "link, of an unguided (non-steerable) space object -- i.e. small/unguided satellites.",
       status: "enacted",
     },
   ],
@@ -264,13 +286,15 @@ const NETHERLANDS_JURISDICTION: JurisdictionData = {
   insurance: {
     minimumTPL: null,
     formula:
-      "No fixed minimum. NSO determines the required coverage amount per mission based on " +
-      "risk profile. Operator bears unlimited third-party liability — no government cap. " +
-      "Coverage typically reflects realistic maximum probable loss for the mission.",
+      "No fixed statutory minimum. The Minister sets the required 'maximum possible cover' per " +
+      "licence (Section 3(4)), account taken of what can reasonably be insured. Operator " +
+      "liability and the State's right of recourse are CAPPED at the sum insured (Art. 12) -- " +
+      "i.e. not unlimited; the ceiling is the (per-licence, non-fixed) sum insured. No government " +
+      "backstop; instead the State has a right of recourse against the operator.",
     cap: null,
     governmentGuarantee: false,
     legalBasis:
-      "Space Activities Act 2007, Art. 7; Regeling ruimtevaartactiviteiten",
+      "Wet ruimtevaartactiviteiten, Section 3(4) (cover) and Art. 12 (recourse/cap)",
   },
 
   complianceMatrixFormat: {

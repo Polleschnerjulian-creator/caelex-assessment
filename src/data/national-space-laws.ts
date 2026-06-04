@@ -603,16 +603,30 @@ const NL: JurisdictionLaw = {
     nameLocal: "Wet ruimtevaartactiviteiten",
     yearEnacted: 2007,
     status: "enacted",
-    officialUrl: "https://wetten.overheid.nl/BWBR0021418/2021-07-01",
+    // BWBR0021418 -- "Wet van 24 januari 2007, houdende regels omtrent
+    // ruimtevaartactiviteiten en de instelling van een register van
+    // ruimtevoorwerpen". In force 1 Jan 2008 (per Besluit Stb. 2007, 492).
+    // Current consolidated text valid from 1 July 2025. Scope extended to
+    // unguided/small satellites managed from NL by the Besluit ongeleide
+    // satellieten (Stb. 2015, 18; BWBR0036190, in force 1 July 2015).
+    // Verified 2026-06 (deep-research, primary sources).
+    officialUrl: "https://wetten.overheid.nl/BWBR0021418/2025-07-01",
     keyArticles: "Articles 1-16",
   },
 
   licensingAuthority: {
-    name: "Ministry of Economic Affairs (Agentschap Telecom)",
-    nameLocal: "Agentschap Telecom",
-    website: "https://www.agentschaptelecom.nl",
+    // De jure the licence is issued by the Minister of Economic Affairs
+    // ("Our Minister", Section 3). Licence implementation, supervision
+    // (Art. 13, Besluit aanwijzing toezichthouders BWBR0038004) and ITU
+    // notification are delegated to the RDI (Rijksinspectie Digitale
+    // Infrastructuur) -- the renamed Agentschap Telecom (rename effective
+    // 1 Jan 2023). business.gov.nl: the licence is "from the Dutch Authority
+    // for Digital Infrastructure (RDI)"; apply >= 6 months ahead.
+    name: "Minister of Economic Affairs; implemented by RDI (Rijksinspectie Digitale Infrastructuur)",
+    nameLocal: "Rijksinspectie Digitale Infrastructuur (RDI)",
+    website: "https://www.rdi.nl/onderwerpen/ruimtevaart",
     contactEmail: "space@minezk.nl",
-    parentMinistry: "Ministry of Economic Affairs and Climate Policy",
+    parentMinistry: "Ministry of Economic Affairs and Climate (EZK)",
   },
 
   licensingRequirements: [
@@ -631,10 +645,10 @@ const NL: JurisdictionLaw = {
       category: "insurance",
       title: "Third-Party Liability Insurance",
       description:
-        "Mandatory insurance covering third-party liability. Minimum coverage starts at \u20ac3M for small satellites, scaling with mission risk profile.",
+        "Mandatory cover for third-party liability arising from the space activity. No fixed statutory minimum amount: the Minister sets the required 'maximum possible cover' per licence under Section 3(4), having regard to what can reasonably be insured for the mission's risk. Operator liability and the State's right of recourse are capped at the sum insured (Art. 12).",
       mandatory: true,
       applicableTo: ALL_GENERAL_ACTIVITIES,
-      articleRef: "Art. 3(3)(d)",
+      articleRef: "Section 3(4); Art. 12",
     },
     {
       id: "nl-financial-guarantee",
@@ -702,16 +716,33 @@ const NL: JurisdictionLaw = {
       entityTypes: ["non_eu"],
       articleRef: "Art. 2(3)",
     },
+    {
+      id: "nl-rule-unguided-satellites",
+      description:
+        "The Act also applies to the remote management, from the Netherlands via a communication link, of an UNGUIDED (non-steerable) space object -- extending the licence regime to small/unguided satellites operated from NL.",
+      condition:
+        "Operating/commanding an unguided space object from Dutch territory via a communication link",
+      applies: true,
+      activityTypes: ALL_GENERAL_ACTIVITIES,
+      entityTypes: ["domestic", "eu_other", "non_eu"],
+      articleRef:
+        "Besluit ongeleide satellieten (Stb. 2015, 18; BWBR0036190, in force 1 July 2015), under Art. 2(2)",
+    },
   ],
 
   insuranceLiability: {
     mandatoryInsurance: true,
     minimumCoverage:
-      "\u20ac3,000,000 (small satellites); higher for larger missions",
+      "No fixed statutory minimum; the Minister sets the required 'maximum possible cover' per licence (Section 3(4)), based on what can reasonably be insured for the mission's risk profile.",
     coverageFormula:
-      "Risk-based assessment; scales with mission mass, orbit, and operational complexity",
+      "Per-licence determination by the Minister under Section 3(4) ('maximum possible cover'); scales with mission mass, orbit, and operational risk.",
     governmentIndemnification: false,
-    liabilityRegime: "tiered",
+    // Liability and the State's right of recourse are CAPPED at the sum
+    // insured (Art. 12, Chapter 4): if the State pays compensation under
+    // Art. VII OST / the Liability Convention it recovers from the operator
+    // up to the sum insured. (Whether intent/gross negligence lifts the cap
+    // is unsettled -- UNVERIFIED.)
+    liabilityRegime: "capped",
     thirdPartyRequired: true,
   },
 
@@ -753,10 +784,10 @@ const NL: JurisdictionLaw = {
       "Art. 55-73 EU Space Act (Debris Mitigation)",
     ],
     transitionNotes:
-      "Netherlands expected to transition smoothly given existing alignment with international standards. Agentschap Telecom or successor likely to be designated national authority.",
+      "Netherlands expected to transition smoothly given existing alignment with international standards. The RDI (Rijksinspectie Digitale Infrastructuur, formerly Agentschap Telecom until 1 Jan 2023), under the Minister of Economic Affairs, is the likely designated national competent authority.",
   },
 
-  lastUpdated: "2026-01",
+  lastUpdated: "2026-06",
 };
 
 // ─── Luxembourg (LU) ───
