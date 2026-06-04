@@ -6,8 +6,10 @@
  * Atlas v2 Sidebar redesign — atomic flat-row item.
  *
  * Renders a single sidebar row: optional icon + label + optional right-side
- * action button. Hover = bg-elevated. Active = amber-dot on left + bg-subtle.
- * NO card background, NO border, NO rounded button (per Claude Code aesthetic).
+ * action button. Apple-style selection — an inset rounded pill. Hover =
+ * bg-elevated; Active = bg-subtle fill + medium-weight label + full-strength
+ * icon. No colored accent bar (the amber left-edge dot was retired 2026-06-04 —
+ * emphasis is carried by the fill + type weight, not by hue).
  *
  * Supports both NextLink (page navigation) and onClick (action button) variants.
  *
@@ -36,25 +38,24 @@ type SidebarItemProps =
   | (BaseProps & { href?: never; onClick: (e: MouseEvent) => void });
 
 const baseClasses =
-  "group relative flex items-center gap-2.5 px-3 py-1.5 text-[13px] text-atlas-text-primary transition-colors duration-150";
+  "group relative flex items-center gap-2.5 mx-1.5 rounded-lg px-1.5 py-1.5 text-[13px] text-atlas-text-primary transition-colors duration-150";
 
 const idleClasses = "hover:bg-atlas-bg-elevated";
-const activeClasses = "bg-atlas-bg-subtle";
+const activeClasses = "bg-atlas-bg-subtle font-medium";
 
 export function SidebarItem(props: SidebarItemProps) {
   const className = `${baseClasses} ${props.active ? activeClasses : idleClasses}`;
 
   const content = (
     <>
-      {/* Active-state amber dot (4px), left edge */}
-      {props.active && (
-        <span
-          aria-hidden
-          className="absolute left-0 top-1/2 h-4 w-[3px] -translate-y-1/2 rounded-r-sm bg-atlas-amber"
-        />
-      )}
       {props.icon && (
-        <span className="flex h-4 w-4 shrink-0 items-center justify-center text-atlas-text-secondary group-hover:text-atlas-text-primary">
+        <span
+          className={`flex h-4 w-4 shrink-0 items-center justify-center transition-colors group-hover:text-atlas-text-primary ${
+            props.active
+              ? "text-atlas-text-primary"
+              : "text-atlas-text-secondary"
+          }`}
+        >
           {props.icon}
         </span>
       )}
@@ -86,7 +87,7 @@ export function SidebarItem(props: SidebarItemProps) {
     <button
       type="button"
       onClick={props.onClick}
-      className={`${className} w-full text-left`}
+      className={`${className} text-left`}
     >
       {content}
     </button>
