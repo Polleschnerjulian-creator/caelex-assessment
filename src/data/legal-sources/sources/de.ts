@@ -6,28 +6,44 @@
  * PROPRIETARY AND CONFIDENTIAL
  * German space law sources — complete legal framework for jurisdiction DE.
  *
- * Sources: Auswärtiges Amt, BMWK, BAFA, BSI, BNetzA, DLR, gesetze-im-internet.de
- * Last verified: 2026-04-13
+ * Sources: Auswärtiges Amt, BMFTR, BMWE, BAFA, BSI, BNetzA, DLR, gesetze-im-internet.de
+ * Last verified: 2026-06-04
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
 import type { LegalSource, Authority } from "../types";
 
-// ─── German Authorities (8) ──────────────────────────────────────────
+// ─── German Authorities (11) ──────────────────────────────────────────
 
 export const AUTHORITIES_DE: Authority[] = [
   {
+    // NOTE (2026-06): the former BMWK (Wirtschaft und Klimaschutz) was split in
+    // the 6 May 2025 Merz cabinet. Economy/energy functions → BMWE (this entry);
+    // space policy + the future Weltraumgesetz → the new BMFTR (DE-BMFTR below).
+    // The id is kept as the economy-ministry successor key.
     id: "DE-BMWK",
     jurisdiction: "DE",
-    name_en: "Federal Ministry for Economic Affairs and Climate Action",
-    name_local: "Bundesministerium für Wirtschaft und Klimaschutz",
-    abbreviation: "BMWK",
-    website: "https://www.bmwk.de",
-    contact_email: "raumfahrt@bmwk.bund.de",
+    name_en: "Federal Ministry for Economic Affairs and Energy",
+    name_local: "Bundesministerium für Wirtschaft und Energie",
+    abbreviation: "BMWE",
+    website: "https://www.bundeswirtschaftsministerium.de",
     space_mandate:
-      "Lead ministry for space policy. Designated future licensing authority under a national space law. Currently oversees SatDSiG implementation and coordinates DLR's space agency role.",
-    legal_basis: "Grundgesetz Art. 65 (Ressortprinzip); SatDSiG § 3",
+      "Economy/energy ministry (renamed from BMWK on 6 May 2025). Parent of BAFA, which administers SatDSiG remote-sensing licensing (§ 24) and dual-use export control. Space policy and the future national space law sit with the separate BMFTR.",
+    legal_basis: "Grundgesetz Art. 65 (Ressortprinzip)",
+    applicable_areas: ["data_security"],
+  },
+  {
+    id: "DE-BMFTR",
+    jurisdiction: "DE",
+    name_en: "Federal Ministry for Research, Technology and Space",
+    name_local: "Bundesministerium für Forschung, Technologie und Raumfahrt",
+    abbreviation: "BMFTR",
+    website: "https://www.bmftr.bund.de",
+    space_mandate:
+      "Lead ministry for space policy (created 6 May 2025 by adding 'Raumfahrt' to the former BMBF and moving space competence out of the former BMWK). Owner of the draft Weltraumgesetz (WRG) and the designated future national licensing authority. Oversees DLR's space-agency role; does NOT itself issue licences today.",
+    legal_basis:
+      "Grundgesetz Art. 65 (Ressortprinzip); Organisationserlass 2025",
     applicable_areas: ["licensing", "registration", "data_security"],
   },
   {
@@ -39,8 +55,8 @@ export const AUTHORITIES_DE: Authority[] = [
     website: "https://www.dlr.de/rd",
     contact_email: "info-ra@dlr.de",
     space_mandate:
-      "Manages the German national space programme on behalf of BMWK. Represents Germany in ESA governance. Provides technical assessment for licensing decisions. Operates the German Space Situational Awareness Centre (GSSAC).",
-    legal_basis: "BMWK delegation; DLR-Gesetz",
+      "Manages the German national space programme on behalf of the BMFTR. Represents Germany in ESA governance. Provides technical assessment for licensing decisions. Operates the German Space Situational Awareness Centre (GSSAC).",
+    legal_basis: "BMFTR delegation; DLR-Gesetz / RAÜG",
     applicable_areas: [
       "licensing",
       "registration",
@@ -146,7 +162,7 @@ export const AUTHORITIES_DE: Authority[] = [
     abbreviation: "BMWK-PR",
     website: "https://www.bmwk.de",
     space_mandate:
-      "BMWK responsible for VO PR 30/53 federal price regulation framework + LSP (Leitsätze für die Preisermittlung). Coordinates price-supervision practice across federal procurement offices (BAAINBw, BWB-IT, BBR) + Länder. Material for any defence-space contractor Open-Book-Audit response strategy.",
+      "BMWE (formerly BMWK) responsible for VO PR 30/53 federal price regulation framework + LSP (Leitsätze für die Preisermittlung). Coordinates price-supervision practice across federal procurement offices (BAAINBw, BWB-IT, BBR) + Länder. Material for any defence-space contractor Open-Book-Audit response strategy.",
     legal_basis: "VO PR 30/53 + LSP 1953/2024",
     applicable_areas: ["procurement"],
   },
@@ -154,7 +170,159 @@ export const AUTHORITIES_DE: Authority[] = [
 
 // ─── International Treaties ratified by DE (7) ──────────────────────
 
-const TREATIES_DE: LegalSource[] = [];
+const TREATIES_DE: LegalSource[] = [
+  {
+    id: "DE-OST-1967",
+    jurisdiction: "DE",
+    type: "international_treaty",
+    status: "in_force",
+    title_en: "Outer Space Treaty — German party status",
+    title_local:
+      "Vertrag über die Grundsätze zur Regelung der Tätigkeiten von Staaten bei der Erforschung und Nutzung des Weltraums einschließlich des Mondes und anderer Himmelskörper (Weltraumvertrag)",
+    un_reference:
+      "UNOOSA treaty-status grid (A/AC.105/C.2/2024/CRP.3): Germany = R (party)",
+    source_url:
+      "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/status/index.html",
+    issuing_body:
+      "United Nations (UNCOPUOS) — ratified by the Federal Republic of Germany",
+    competent_authorities: ["DE-AA"],
+    relevance_level: "fundamental",
+    applicable_to: ["all"],
+    compliance_areas: ["liability", "registration"],
+    key_provisions: [
+      "Art. VI — international responsibility of States for national space activities (governmental and non-governmental), requiring authorisation and continuing supervision",
+      "Art. VII — international liability of the launching State for damage caused by its space objects",
+    ],
+    scope_description:
+      "Germany is a full party to the 1967 Outer Space Treaty. Art. VI is the treaty-law root of the authorisation/supervision duty that the planned national Weltraumgesetz (WRG) is meant to operationalise — until then Germany has no comprehensive domestic licensing regime. Exact German ratification date not independently re-verified in this pass (see audit doc).",
+    related_sources: ["INT-OST-1967", "DE-WRG-ECKPUNKTE-2024"],
+    notes: [
+      "Party status verified via the UNOOSA status grid (deep-research 2026-06, 3-0). Individual ratification dates were NOT in the verified claim set — left unstated rather than fabricated.",
+    ],
+    last_verified: "2026-06-04",
+  },
+  {
+    id: "DE-RESCUE-1968",
+    jurisdiction: "DE",
+    type: "international_treaty",
+    status: "in_force",
+    title_en: "Rescue Agreement — German party status",
+    title_local:
+      "Übereinkommen über die Rettung und Rückführung von Raumfahrern sowie die Rückgabe von in den Weltraum gestarteten Gegenständen",
+    un_reference: "UNOOSA treaty-status grid: Germany = R (party)",
+    source_url:
+      "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/status/index.html",
+    issuing_body:
+      "United Nations (UNCOPUOS) — party: Federal Republic of Germany",
+    competent_authorities: ["DE-AA"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["liability", "human_spaceflight"],
+    key_provisions: [
+      "Obligation to rescue and return astronauts in distress and to return recovered space objects to the launching authority",
+    ],
+    scope_description:
+      "Germany is a full party to the 1968 Rescue Agreement (ARRA).",
+    related_sources: ["INT-RESCUE-1968", "INT-OST-1967"],
+    notes: [
+      "Party status verified via UNOOSA status grid (2026-06). Exact accession date not in the verified set.",
+    ],
+    last_verified: "2026-06-04",
+  },
+  {
+    id: "DE-LIABILITY-1972",
+    jurisdiction: "DE",
+    type: "international_treaty",
+    status: "in_force",
+    title_en: "Liability Convention — German party status",
+    title_local:
+      "Übereinkommen über die völkerrechtliche Haftung für Schäden durch Weltraumgegenstände",
+    un_reference: "UNOOSA treaty-status grid: Germany = R (party)",
+    source_url:
+      "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/status/index.html",
+    issuing_body:
+      "United Nations (UNCOPUOS) — party: Federal Republic of Germany",
+    competent_authorities: ["DE-AA"],
+    relevance_level: "fundamental",
+    applicable_to: ["all"],
+    compliance_areas: ["liability", "insurance"],
+    key_provisions: [
+      "Art. II — absolute liability of the launching State for damage on the surface of the Earth or to aircraft in flight",
+      "Art. III — fault-based liability for damage caused elsewhere than on the surface of the Earth",
+    ],
+    scope_description:
+      "Germany is a full party to the 1972 Liability Convention. As a launching State, Germany bears international liability for damage caused by German space objects; absent a national space law there is currently no domestic statutory cap on the State's recourse against operators — the planned WRG would introduce one (fault-independent recourse capped at 10% of average annual turnover, max €50M per damage event).",
+    related_sources: [
+      "INT-LIABILITY-1972",
+      "INT-OST-1967",
+      "DE-WRG-ECKPUNKTE-2024",
+    ],
+    notes: [
+      "Party status verified via UNOOSA status grid (2026-06). Exact ratification date not in the verified set.",
+    ],
+    last_verified: "2026-06-04",
+  },
+  {
+    id: "DE-REGISTRATION-1975",
+    jurisdiction: "DE",
+    type: "international_treaty",
+    status: "in_force",
+    title_en: "Registration Convention — German party status",
+    title_local:
+      "Übereinkommen über die Registrierung von in den Weltraum gestarteten Gegenständen",
+    un_reference: "UNOOSA treaty-status grid: Germany = R (party)",
+    source_url:
+      "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/status/index.html",
+    issuing_body:
+      "United Nations (UNCOPUOS) — party: Federal Republic of Germany",
+    competent_authorities: ["DE-AA"],
+    relevance_level: "high",
+    applicable_to: ["all"],
+    compliance_areas: ["registration"],
+    key_provisions: [
+      "Obligation of the launching State to maintain a national registry of space objects and to furnish registration data to the UN Secretary-General",
+    ],
+    scope_description:
+      "Germany is a full party to the 1975 Registration Convention. Germany has no comprehensive domestic space-object-registry statute (one is part of the planned WRG); registration data is furnished to UNOOSA through the Federal Foreign Office (Auswärtiges Amt). The operational compiling body (Auswärtiges Amt vs DLR) was NOT pinned in this pass — see audit doc.",
+    related_sources: [
+      "INT-REGISTRATION-1975",
+      "INT-OST-1967",
+      "DE-WRG-ECKPUNKTE-2024",
+    ],
+    notes: [
+      "Party status verified via UNOOSA status grid (2026-06). Operational national-registry maintainer left open (not in the verified set).",
+    ],
+    last_verified: "2026-06-04",
+  },
+  {
+    id: "DE-MOON-1979",
+    jurisdiction: "DE",
+    type: "international_treaty",
+    status: "not_ratified",
+    title_en: "Moon Agreement — Germany is NOT a party",
+    title_local:
+      "Übereinkommen zur Regelung der Tätigkeiten von Staaten auf dem Mond und anderen Himmelskörpern (Mondvertrag)",
+    un_reference:
+      "UNOOSA treaty-status grid: Germany column blank (neither party nor signatory)",
+    source_url:
+      "https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/status/index.html",
+    issuing_body: "United Nations (UNCOPUOS)",
+    competent_authorities: ["DE-AA"],
+    relevance_level: "medium",
+    applicable_to: ["all"],
+    compliance_areas: ["liability"],
+    key_provisions: [
+      "Declares the Moon and its natural resources the 'common heritage of mankind' and contemplates an international resource-exploitation regime — the provisions that deterred major space-faring nations from joining",
+    ],
+    scope_description:
+      "Germany is NOT a party to (and has not signed) the 1979 Moon Agreement, consistent with all other major space-faring nations. Only 17 States are parties. German lunar-resource activity is therefore governed by the Outer Space Treaty, not the Moon Agreement's common-heritage regime.",
+    related_sources: ["INT-MOON-1979", "INT-OST-1967"],
+    notes: [
+      "Non-party status verified (deep-research 2026-06, 3-0): UNOOSA status grid plus an independent enumeration of the 17 parties, both excluding Germany.",
+    ],
+    last_verified: "2026-06-04",
+  },
+];
 
 // ─── German National Laws (10) ───────────────────────────────────────
 
@@ -327,7 +495,7 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
     applicable_to: ["all"],
     compliance_areas: ["export_control"],
     scope_description:
-      "Primary federal authority for export control and inbound investment screening. Captures spacecraft components, ground station equipment, cryptographic modules, and non-EU acquisitions of German space companies (≥10 % voting rights triggers BMWK notification). The export-control hub for any German space-sector cross-border transaction.",
+      "Primary federal authority for export control and inbound investment screening. Captures spacecraft components, ground station equipment, cryptographic modules, and non-EU acquisitions of German space companies (≥10 % voting rights triggers BMWE notification). The export-control hub for any German space-sector cross-border transaction.",
     key_provisions: [
       {
         section: "§§ 4-8",
@@ -339,9 +507,9 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
         section: "§§ 55 ff. AWV",
         title: "Investment screening",
         summary:
-          "Acquisitions of German companies by non-EU/EFTA investors are subject to BMWK review if the company operates in sensitive sectors including space/defence.",
+          "Acquisitions of German companies by non-EU/EFTA investors are subject to BMWE review if the company operates in sensitive sectors including space/defence.",
         complianceImplication:
-          "Foreign investment in German space companies triggers mandatory notification to BMWK if the investor acquires ≥10% of voting rights.",
+          "Foreign investment in German space companies triggers mandatory notification to BMWE if the investor acquires ≥10% of voting rights.",
       },
     ],
     related_sources: ["DE-AWV-2013", "DE-DUALUSE-2021"],
@@ -457,11 +625,12 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
     status: "in_force",
     title_en: "BSI Act (with NIS2 Implementation)",
     title_local:
-      "Gesetz über das Bundesamt für Sicherheit in der Informationstechnik (BSI-Gesetz — BSIG), geändert durch NIS2UmsuCG",
-    date_last_amended: "2025-03-01",
-    official_reference: "BGBl. I, zuletzt geändert durch NIS2UmsuCG",
+      "Gesetz über das Bundesamt für Sicherheit in der Informationstechnik (BSI-Gesetz — BSIG 2025), neugefasst durch das NIS2UmsuCG",
+    date_last_amended: "2025-12-06",
+    official_reference:
+      "BSIG 2025, BGBl. 2025 I Nr. 301 (neugefasst durch NIS2UmsuCG)",
     amended_by: ["DE-NIS2UMSUCG-DRAFT"],
-    source_url: "https://www.gesetze-im-internet.de/bsig_2009/",
+    source_url: "https://www.gesetze-im-internet.de/bsig_2025/",
     issuing_body: "Bundestag",
     competent_authorities: ["DE-BSI"],
     relevance_level: "critical",
@@ -472,7 +641,7 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
     ],
     compliance_areas: ["cybersecurity"],
     scope_description:
-      "German national transposition of NIS2 cybersecurity obligations for entities in sectors of high criticality, including the space sector (NIS2 Annex I). Governs risk-management duties (§§ 30-31), 24h/72h incident reporting, BSI registration (§ 33), and the critical-component clearance regime (§ 41) for ground segment and mission-control systems.",
+      'German national transposition of NIS2, IN FORCE since 6 Dec 2025 via the recast BSIG 2025. Space ("Weltraum") is Sector 7 of Anlage 1 (Sektoren hoher Kritikalität): operators of ground infrastructure supporting space-based services are covered. Governs risk-management duties (§ 30 BSIG), 24h/72h incident reporting, BSI registration, and a critical-component regime for ground segment and mission-control systems; the recast raised supervised entities from ~4,500 to ~29,500.',
     key_provisions: [
       {
         section: "§§ 30-31",
@@ -492,7 +661,7 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
         section: "§ 41",
         title: "Critical components",
         summary:
-          "Use of critical components in covered infrastructure requires notification to BSI. BMWK may prohibit use of specific components from untrusted vendors.",
+          "Use of critical components in covered infrastructure requires notification to BSI. The Federal Ministry of the Interior (BMI) may prohibit use of specific components from untrusted vendors.",
         complianceImplication:
           "Ground segment and mission control systems using components from certain vendors may require BSI clearance.",
       },
@@ -505,21 +674,18 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
       "cybersecurity-requirements.ts",
     ],
     notes: [
-      "NIS2UmsuCG transposed the NIS2 Directive into German law, making space explicitly a sector of high criticality.",
-      "§§ 30-31 BSIG are the German equivalents of NIS2 Art. 21 (risk management) and Art. 23 (incident reporting).",
+      'IN FORCE since 6 Dec 2025: the NIS2UmsuCG recast the BSIG (BSIG 2025, BGBl. 2025 I Nr. 301), transposing Directive (EU) 2022/2555 and listing "Weltraum" (Space) as Sector 7 of Anlage 1.',
+      "§ 30 BSIG (risk-management measures) is the German implementation of NIS2 Art. 21; 24h/72h incident reporting implements Art. 23.",
+      "Exact recast section numbers beyond § 30 (reporting/registration) should be confirmed against the consolidated BSIG 2025 text — see audit doc.",
     ],
     legislative_history: [
-      // ⚠️ Audit-honesty note (2026-04-28): the NIS2UmsuCG legislative
-      // path was stripped down to entries that can be hand-verified.
-      // Specific BR-Drs. / BT-Drs. / BGBl. references and committee
-      // protocol numbers were removed because they were drafted from
-      // plausibility, not from the parliamentary record. The actual
-      // status of the NIS2UmsuCG (as of April 2026) requires
-      // verification against `dipbt.bundestag.de` and `bgbl.de`.
-      //
-      // The original BSIG 2009 enactment is a stable historical fact
-      // and can be left as a placeholder pending exact-page lookup
-      // in the Bundesgesetzblatt archive.
+      // ✅ Verified (2026-06-04): the NIS2UmsuCG is now IN FORCE. Path
+      // (per recht.bund.de / BMI tracker / BSI press release):
+      // Regierungsentwurf 30 Jul 2025 → Bundestag 13 Nov 2025 → Bundesrat
+      // 20 Nov 2025 → ausgefertigt 2 Dec 2025 → verkündet 5 Dec 2025
+      // (BGBl. 2025 I Nr. 301) → in Kraft 6 Dec 2025. It recast the BSIG
+      // (now "BSIG 2025", identifier bsig_2025 on gesetze-im-internet.de).
+      // The original BSIG 2009 promulgation below is retained as history.
       {
         date: "2009-08-14",
         type: "promulgation",
@@ -710,7 +876,7 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
       "BGBl. I 1990 S. 1014; Neufassung v. 22.8.1998 BGBl. I S. 2510",
     source_url: "https://www.gesetze-im-internet.de/ra_g/",
     issuing_body: "Bundestag",
-    competent_authorities: ["DE-BMWK", "DE-DLR"],
+    competent_authorities: ["DE-BMFTR", "DE-DLR"],
     relevance_level: "fundamental",
     applicable_to: ["all"],
     compliance_areas: ["licensing", "registration"],
@@ -719,7 +885,7 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
         section: "§ 1",
         title: "Transfer of space-administration tasks to DLR",
         summary:
-          "The federal government may transfer administrative tasks in the field of space flight to the Deutsches Zentrum für Luft- und Raumfahrt (DLR). This is the legal basis for DLR acting as the federal space agency — managing funding, coordinating ESA contributions, and running national programmes on behalf of the BMWK.",
+          "The federal government may transfer administrative tasks in the field of space flight to the Deutsches Zentrum für Luft- und Raumfahrt (DLR). This is the legal basis for DLR acting as the federal space agency — managing funding, coordinating ESA contributions, and running national programmes on behalf of the BMFTR (space competence moved there from the former BMWK in 2025).",
         complianceImplication:
           "All operators dealing with DLR as the funding/programme authority are dealing with an entity acting under RAÜG § 1 mandate — not under a private contract.",
       },
@@ -737,7 +903,7 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
       },
     ],
     scope_description:
-      "Foundational federal framework law delegating space-administration tasks to DLR. Works in concert with the non-statutory BMWK-DLR assignment agreements that specify which tasks are actually transferred in any given budget year. RAÜG itself is short — its significance is in the constitutional delegation, not the text.",
+      "Foundational federal framework law delegating space-administration tasks to DLR. Works in concert with the non-statutory BMFTR-DLR assignment agreements that specify which tasks are actually transferred in any given budget year. RAÜG itself is short — its significance is in the constitutional delegation, not the text.",
     related_sources: ["DE-GG-SPACE", "DE-RAUMFAHRTSTRATEGIE-2023"],
     notes: [
       "Germany has no space-specific licensing agency. Where other jurisdictions have a dedicated spaceflight regulator, Germany spreads competence across BAFA (SatDSiG + export control), BNetzA (TKG + spectrum), LBA (LuftVG + airspace), and BSI (cybersecurity). DLR under RAÜG § 1 administers programmes and funding but does not issue operator licences.",
@@ -763,7 +929,7 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
     official_reference:
       "BGBl. I 2008 S. 508, zuletzt geändert durch Art. 1 V v. 16.10.2023 (BGBl. 2023 I Nr. 278)",
     source_url: "https://www.gesetze-im-internet.de/satdsiv/",
-    issuing_body: "Bundesregierung (BMWK)",
+    issuing_body: "Bundesregierung (BMFTR; vormals BMWK)",
     competent_authorities: ["DE-BAFA", "DE-BSI"],
     relevance_level: "critical",
     applicable_to: ["satellite_operator", "data_provider"],
@@ -879,22 +1045,25 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
   },
 
   {
-    // NIS2UmsuCG — still a draft as of April 2026. The Ampel
-    // government's Regierungsentwurf (BT-Drs. 20/13367, July 2024)
-    // stalled when the coalition collapsed in November 2024. The
-    // CDU/SPD coalition (2025) has announced resumed transposition
-    // but no verkündetes Gesetz exists yet — confirmed by absence
-    // from the gesetze-im-internet.de alphabetical index.
+    // ✅ Verified IN FORCE (2026-06-04). The 2024 Ampel Regierungsentwurf
+    // (BT-Drs. 20/13367) lapsed when that coalition collapsed; the Merz
+    // government re-tabled it (Regierungsentwurf 30 Jul 2025), Bundestag
+    // 13 Nov 2025, Bundesrat 20 Nov 2025, ausgefertigt 2 Dec 2025,
+    // verkündet 5 Dec 2025 (BGBl. 2025 I Nr. 301), in Kraft 6 Dec 2025.
+    // id kept as a legacy key (the embeddings index references it).
     id: "DE-NIS2UMSUCG-DRAFT",
     jurisdiction: "DE",
-    type: "draft_legislation",
-    status: "draft",
-    title_en: "NIS-2 Transposition and Cybersecurity Strengthening Act (draft)",
+    type: "federal_law",
+    status: "in_force",
+    title_en:
+      "NIS-2 Transposition and Cybersecurity Strengthening Act (NIS2UmsuCG)",
     title_local:
-      "Gesetz zur Umsetzung der NIS-2-Richtlinie und zur Stärkung der Cybersicherheit (NIS-2-Umsetzungs- und Cybersicherheitsstärkungsgesetz — NIS2UmsuCG)",
-    date_published: "2024-07-24",
-    parliamentary_reference: "BT-Drs. 20/13367 (Regierungsentwurf, 2024)",
-    source_url: "https://dserver.bundestag.de/btd/20/133/2013367.pdf",
+      "Gesetz zur Umsetzung der NIS-2-Richtlinie und zur Regelung wesentlicher Grundzüge des Informationssicherheitsmanagements in der Bundesverwaltung (NIS2UmsuCG)",
+    date_published: "2025-12-05",
+    parliamentary_reference:
+      "Regierungsentwurf 30 Jul 2025; Bundestag 13 Nov 2025; Bundesrat 20 Nov 2025",
+    official_reference: "BGBl. 2025 I Nr. 301 (in Kraft 6 Dec 2025)",
+    source_url: "https://www.recht.bund.de/bgbl/1/2025/301/VO.html",
     issuing_body: "Bundesministerium des Innern (BMI)",
     amends: "DE-BSIG-NIS2",
     competent_authorities: ["DE-BSI"],
@@ -911,9 +1080,9 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
         section: "Art. 1 (BSI-Gesetz-Neufassung)",
         title: "Re-codification of the BSI Act",
         summary:
-          'The draft would repeal the existing BSIG and replace it with a new, NIS2-aligned BSI Act. Expands scope from the previous ~2000 KRITIS-Betreiber to an estimated ~30 000 „wichtige" and „besonders wichtige Einrichtungen". Space infrastructure is included in Anlage 1 (Sektor 9).',
+          'The Act (in force 6 Dec 2025) recast the existing BSIG into a new, NIS2-aligned BSI Act (BSIG 2025). Expands scope from the previous ~2000 KRITIS-Betreiber to an estimated ~30 000 „wichtige" and „besonders wichtige Einrichtungen". Space („Weltraum") is Sector 7 of Anlage 1.',
         complianceImplication:
-          "Scope expansion is dramatic — most commercial ground stations and constellation operators will become in-scope once the law is enacted. Operators should begin gap analyses against draft BSIG now even though the law is not yet in force.",
+          "Scope expansion is dramatic — most commercial ground stations and constellation operators are now in-scope (in force since 6 Dec 2025). Operators should complete BSIG 2025 gap analyses and register with the BSI.",
       },
       {
         section: "Art. 1 § 30 (Meldepflichten)",
@@ -935,7 +1104,7 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
       },
     ],
     scope_description:
-      "The formal transposition instrument for NIS2 Directive (EU) 2022/2555 into German federal law. Germany missed the October 2024 transposition deadline when the Ampel coalition collapsed in November 2024. The CDU/SPD coalition commitment (Koalitionsvertrag 2025) is to resume the transposition; no new Regierungsentwurf has been tabled publicly as of April 2026. The 2024 BT-Drs. 20/13367 remains the best public indicator of the eventual law's content.",
+      'The formal transposition instrument for NIS2 Directive (EU) 2022/2555 into German federal law — IN FORCE since 6 Dec 2025 (BGBl. 2025 I Nr. 301), ~14 months after the missed 17 Oct 2024 deadline. It recast the BSIG (BSIG 2025), with the BSI as competent authority and "Weltraum" (Space) as Sector 7 of Anlage 1. Risk-management measures sit in § 30 BSIG.',
     related_sources: [
       "DE-BSIG-NIS2",
       "DE-KRITIS-DACHG-2026",
@@ -944,11 +1113,11 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
     ],
     implements: "EU-NIS2-2022",
     notes: [
-      "Status as of 2026-04-22: NOT YET VERKÜNDET. The law is absent from the alphabetical index on gesetze-im-internet.de — the authoritative test of enactment. Operators currently rely on the existing BSIG (DE-BSIG-NIS2 entry) which contains partial NIS2-aligned provisions from earlier amendments, plus direct application of EU-NIS2-2022 where no national transposition exists.",
-      "When verkündet, this entry should be updated: id → DE-NIS2UMSUCG-<year>, status → in_force, add date_enacted and official_reference.",
-      "Commission infringement proceedings against Germany for non-transposition were opened in May 2024 (INFR(2024)2115).",
+      "Status (verified 2026-06-04): IN FORCE since 6 Dec 2025 (BGBl. 2025 I Nr. 301). Confirmed via recht.bund.de (Bundesgesetzblatt), the BMI Gesetzgebungsverfahren tracker, and the BSI press release of 5 Dec 2025.",
+      "The id is retained as DE-NIS2UMSUCG-DRAFT for cross-reference / embeddings stability; despite the legacy slug, status is now in_force.",
+      "Commission infringement proceedings for late transposition were opened in 2024 (INFR(2024)2115); the 2025 enactment closes the national-transposition gap.",
     ],
-    last_verified: "2026-04-22",
+    last_verified: "2026-06-04",
   },
 
   {
@@ -970,7 +1139,7 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
     official_reference: "BGBl. 2026 I Nr. 66",
     source_url: "https://www.gesetze-im-internet.de/kritisdachg/",
     issuing_body: "Bundestag",
-    competent_authorities: ["DE-BSI", "DE-BMWK"],
+    competent_authorities: ["DE-BSI", "DE-BMFTR"],
     relevance_level: "critical",
     applicable_to: [
       "satellite_operator",
@@ -1119,7 +1288,7 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
       "Anlage AL zur AWV (BGBl. I 2013 S. 2865); fortlaufend geändert durch Verordnungen zur Änderung der AWV, zuletzt v. 16.12.2024",
     source_url:
       "https://www.bafa.de/DE/Aussenwirtschaft/Ausfuhrkontrolle/Gueterlisten/Ausfuhrliste/ausfuhrliste_node.html",
-    issuing_body: "Bundesministerium für Wirtschaft und Klimaschutz (BMWK)",
+    issuing_body: "Bundesministerium für Wirtschaft und Energie (BMWE)",
     competent_authorities: ["DE-BAFA", "DE-BMWK"],
     relevance_level: "high",
     applicable_to: ["all"],
@@ -1147,7 +1316,7 @@ const NATIONAL_LAWS_DE: LegalSource[] = [
       },
     ],
     scope_description:
-      "The operational classification list used by German exporters to determine whether a space-related good, software, or technology requires an export authorisation. Formally an Anlage to the Außenwirtschaftsverordnung (AWV); updated far more frequently than the base regulation via targeted Änderungsverordnungen published by BMWK in the Bundesanzeiger. Sits alongside the EU Dual-Use Regulation ((EU) 2021/821) — dual-use items are controlled at EU level, military items are controlled here.",
+      "The operational classification list used by German exporters to determine whether a space-related good, software, or technology requires an export authorisation. Formally an Anlage to the Außenwirtschaftsverordnung (AWV); updated far more frequently than the base regulation via targeted Änderungsverordnungen published by BMWE in the Bundesanzeiger. Sits alongside the EU Dual-Use Regulation ((EU) 2021/821) — dual-use items are controlled at EU level, military items are controlled here.",
     related_sources: [
       "DE-AWG-2013",
       "DE-AWV-2013",
@@ -1437,8 +1606,8 @@ const POLICY_DE: LegalSource[] = [
     date_published: "2023-09-01",
     source_url:
       "https://www.bmwk.de/Redaktion/DE/Publikationen/Technologie/raumfahrtstrategie-der-bundesregierung.html",
-    issuing_body: "Bundesregierung / BMWK",
-    competent_authorities: ["DE-BMWK"],
+    issuing_body: "Bundesregierung / BMFTR",
+    competent_authorities: ["DE-BMFTR"],
     relevance_level: "medium",
     applicable_to: ["all"],
     compliance_areas: ["licensing"],
@@ -1468,8 +1637,9 @@ const POLICY_DE: LegalSource[] = [
     parliamentary_reference: "BT-Drs. 20/12775",
     source_url:
       "https://www.bundeswirtschaftsministerium.de/Redaktion/DE/Downloads/E/eckpunkte-der-bundesregierung-fuer-ein-weltraumgesetz.pdf",
-    issuing_body: "BMWK / Raumfahrtkoordinatorin Anna Christmann",
-    competent_authorities: ["DE-BMWK"],
+    issuing_body:
+      "BMFTR (vormals BMWK) / Raumfahrtkoordinatorin Anna Christmann",
+    competent_authorities: ["DE-BMFTR"],
     relevance_level: "high",
     applicable_to: ["all"],
     compliance_areas: [
@@ -1553,7 +1723,7 @@ const POLICY_DE: LegalSource[] = [
     source_url:
       "https://www.bundesregierung.de/breg-de/service/gesetzesvorhaben/koalitionsvertrag-2025",
     issuing_body: "CDU/CSU, SPD",
-    competent_authorities: ["DE-BMWK"],
+    competent_authorities: ["DE-BMFTR"],
     relevance_level: "medium",
     applicable_to: ["all"],
     compliance_areas: ["licensing"],
@@ -1586,8 +1756,8 @@ const POLICY_DE: LegalSource[] = [
     source_url:
       "https://www.bmwk.de/Redaktion/DE/Pressemitteilungen/2024/raumfahrtland-deutschland.html",
     issuing_body:
-      "Federal-Land coordination (BMWK + Länder economic ministries)",
-    competent_authorities: ["DE-BMWK"],
+      "Federal-Land coordination (BMFTR + Länder economic ministries)",
+    competent_authorities: ["DE-BMFTR"],
     relevance_level: "low",
     applicable_to: ["all"],
     compliance_areas: ["licensing"],
@@ -1671,10 +1841,12 @@ const POLICY_DE: LegalSource[] = [
     title_local:
       "Entwurf Bundes-Weltraumgesetz — Vermeidung von Weltraumtrümmern (Titel IV)",
     date_published: "2024-07-15",
-    official_reference: "BMWK Referentenentwurf 2024",
-    source_url: "https://www.bmwk.de/Redaktion/DE/Pressemitteilungen/2024",
-    issuing_body: "Bundesministerium für Wirtschaft und Klimaschutz (BMWK)",
-    competent_authorities: ["DE-BMWK", "DE-DLR"],
+    official_reference:
+      "Referentenentwurf 2024 (Eckpunkte; WRG now led by BMFTR)",
+    source_url: "https://www.bmftr.bund.de",
+    issuing_body:
+      "Bundesministerium für Forschung, Technologie und Raumfahrt (BMFTR)",
+    competent_authorities: ["DE-BMFTR", "DE-DLR"],
     relevance_level: "fundamental",
     applicable_to: ["satellite_operator", "launch_provider"],
     compliance_areas: ["debris_mitigation", "licensing", "liability"],
@@ -1759,7 +1931,7 @@ const PRICE_REGULATION_DE: LegalSource[] = [
     date_enacted: "1953-11-21",
     date_last_amended: "2024-04-01",
     source_url: "https://www.gesetze-im-internet.de/bgpr30_53/",
-    issuing_body: "Bundesministerium für Wirtschaft und Klimaschutz (BMWK)",
+    issuing_body: "Bundesministerium für Wirtschaft und Energie (BMWE)",
     competent_authorities: ["DE-BAAINBw", "DE-BMWK-PREISAUFSICHT"],
     relevance_level: "high",
     applicable_to: ["all"],
@@ -1791,7 +1963,7 @@ const PRICE_REGULATION_DE: LegalSource[] = [
     date_enacted: "1953-11-21",
     date_last_amended: "2024-04-01",
     source_url: "https://www.gesetze-im-internet.de/lsp/",
-    issuing_body: "Bundesministerium für Wirtschaft und Klimaschutz (BMWK)",
+    issuing_body: "Bundesministerium für Wirtschaft und Energie (BMWE)",
     competent_authorities: ["DE-BAAINBw", "DE-BMWK-PREISAUFSICHT"],
     relevance_level: "high",
     applicable_to: ["all"],
@@ -1818,7 +1990,7 @@ const PRICE_REGULATION_DE: LegalSource[] = [
     date_enacted: "1953-11-21",
     date_last_amended: "2024-04-01",
     source_url: "https://www.gesetze-im-internet.de/bgpr30_53/__9.html",
-    issuing_body: "Bundesministerium für Wirtschaft und Klimaschutz (BMWK)",
+    issuing_body: "Bundesministerium für Wirtschaft und Energie (BMWE)",
     competent_authorities: ["DE-BAAINBw", "DE-BMWK-PREISAUFSICHT"],
     relevance_level: "high",
     applicable_to: ["all"],
@@ -1848,7 +2020,7 @@ const PRICE_REGULATION_DE: LegalSource[] = [
     date_enacted: "2012-04-12",
     date_last_amended: "2024-08-15",
     source_url: "https://www.gesetze-im-internet.de/vsvgv/",
-    issuing_body: "Bundesministerium für Wirtschaft und Klimaschutz (BMWK)",
+    issuing_body: "Bundesministerium für Wirtschaft und Energie (BMWE)",
     competent_authorities: ["DE-BAAINBw"],
     relevance_level: "high",
     applicable_to: ["all"],
@@ -1903,7 +2075,7 @@ const PRICE_REGULATION_DE: LegalSource[] = [
     date_last_amended: "2024-10-15",
     source_url: "https://www.fib-bund.de/Inhalt/Richtlinien/VHB/",
     issuing_body:
-      "Bundesministerium für Wohnen, Stadtentwicklung und Bauwesen + BMWK",
+      "Bundesministerium für Wohnen, Stadtentwicklung und Bauwesen + BMWE",
     competent_authorities: ["DE-BAAINBw"],
     relevance_level: "medium",
     applicable_to: ["all"],

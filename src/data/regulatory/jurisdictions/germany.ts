@@ -452,7 +452,7 @@ const SATDSIG_REQUIREMENTS: NationalRequirement[] = [
       title: "EO System Operation Approval (Genehmigung)",
       fullText:
         "German entities operating qualifying high-resolution Earth observation satellite systems " +
-        "require SatDSiG approval from BMWK. 'German entity' includes German nationals, companies " +
+        "require SatDSiG approval from BAFA (competent authority, § 24 SatDSiG). 'German entity' includes German nationals, companies " +
         "with registered office in Germany, and operators using ground stations in Germany. " +
         "Approval covers system design, data distribution policy, sensitivity classification. " +
         "NOT applicable to non-EO missions (communications, navigation, science/research without qualifying EO payloads).",
@@ -474,9 +474,9 @@ const SATDSIG_REQUIREMENTS: NationalRequirement[] = [
         "All data from qualifying systems must be classified into sensitivity levels. " +
         "High information content thresholds (SatDSiV): Optical ≤2.5m, Thermal IR ≤5m, " +
         "Microwave/SAR ≤3m, Hyperspectral >49 channels at ≤10m ground resolution. " +
-        "Sensitive requests based on target country (classified BMWK lists), target area type " +
+        "Sensitive requests based on target country (classified BAFA lists), target area type " +
         "(military installations, critical infrastructure), and timeliness (near-real-time more sensitive). " +
-        "Security assessment for data exceeding 0.4m ground resolution threshold.",
+        "Security assessment applies to data from systems meeting the SatDSiV high-information-content thresholds (optical ≤2.5m / SAR ≤3m / thermal IR ≤5m).",
     },
     standardsMapping: [],
     euSpaceActProposal: null,
@@ -521,13 +521,13 @@ Eckpunkte (key points) were published by the Federal Government in September 202
    - DLR (Deutsches Zentrum für Luft- und Raumfahrt) holds administrative authority for space activities
    - DLR prepares the German space plan (Raumfahrtplan), executes national programs, represents Germany at ESA
    - DLR decides on objections (Widersprüche) to its own administrative acts
-   - Subject to supervision by commissioning federal ministries (primarily BMWK)
+   - Subject to supervision by commissioning federal ministries (primarily the BMFTR for space policy, since 6 May 2025)
 
 2. **SatDSiG (Satellitendatensicherheitsgesetz, 2007)**
    - ONLY applies to high-resolution Earth observation (Erdbeobachtung) systems
    - Requires approval (Genehmigung) for operation of EO systems by German entities
    - Sensitivity classification (Sensitivitätseinstufung) for data distribution
-   - Authority: BMWK (Federal Ministry for Economic Affairs and Climate Action)
+   - Authority: BAFA (Federal Office for Economic Affairs and Export Control — competent authority under § 24 SatDSiG); BSI performs the security assessment
    - NOT a general space law — covers only remote sensing data security
 
 3. **SatDSiV (Satellitendatensicherheitsverordnung)**
@@ -540,8 +540,9 @@ Eckpunkte (key points) were published by the Federal Government in September 202
    - Defines sensitive requests based on country lists, target areas, timeliness
 
 ### Institutional Responsibilities
-- **BMWK** (Bundesministerium für Wirtschaft und Klimaschutz): Primary ministry for space policy
-- **DLR**: Space agency and administrative authority under RAÜG
+- **BMFTR** (Bundesministerium für Forschung, Technologie und Raumfahrt): Primary ministry for space policy and owner of the future Weltraumgesetz (since 6 May 2025; space competence moved here from the former BMWK)
+- **BAFA** (Bundesamt für Wirtschaft und Ausfuhrkontrolle): Competent authority for SatDSiG remote-sensing licensing (§ 24) and dual-use export control; sits under the economy ministry (BMWE, formerly BMWK)
+- **DLR**: Space agency and administrative authority under RAÜG (acts on behalf of the BMFTR)
 - **BSI** (Bundesamt für Sicherheit in der Informationstechnik): Cybersecurity authority for space systems
 - **BNetzA** (Bundesnetzagentur): Frequency regulation and, under EU Space Act, NCA functions
 - **Bundeswehr**: Military space interests, potential service requisition under WRG`,
@@ -556,7 +557,7 @@ compliance documentation for German-authorized missions.
 
 ### Authorization Requirement (Genehmigungsvorbehalt)
 - All space activities (Weltraumaktivitäten) by non-state operators require authorization
-- Authority: A new agency under BMWK will be established as the licensing body
+- Authority: A new national licensing authority under the BMFTR will be established
 - Satellite constellations (Satellitenkonstellationen) are treated as a single space activity
   (einheitliche Weltraumaktivität) — one authorization covers the entire constellation
 - Launch site operation (Startplätze) requires separate approval (Zulassungserfordernis)
@@ -585,7 +586,7 @@ compliance documentation for German-authorized missions.
 
 ### Registration (Registrierung)
 - National registry for space objects per UN Registration Convention
-- Registry maintained by BMWK authority (Registerbehörde)
+- Registry maintained by the designated authority under the BMFTR (Registerbehörde)
 - All German-authorized space objects must be registered
 - Information sharing with UN Office for Outer Space Affairs (UNOOSA)
 
@@ -668,8 +669,11 @@ for Cybersecurity (Allianz für Cyber-Sicherheit).
   `## NIS2 German Implementation — NIS2UmsuCG
 
 ### NIS-2-Umsetzungs- und Cybersicherheitsstärkungsgesetz (NIS2UmsuCG)
-Germany's transposition of the NIS2 Directive into national law. This is the primary
-cybersecurity compliance framework for space operators under German jurisdiction.
+Germany's transposition of the NIS2 Directive into national law — IN FORCE since 6 Dec 2025
+(BGBl. 2025 I Nr. 301), recasting the BSI Act (BSIG 2025). "Weltraum" (Space) is Sector 7 of
+Anlage 1 (Sektoren hoher Kritikalität). This is the primary, currently-binding cybersecurity
+compliance framework for space operators under German jurisdiction; risk-management measures
+sit in § 30 BSIG.
 
 ### Key Provisions for Space Operators
 1. **Scope Determination (Anwendungsbereich)**
@@ -778,7 +782,7 @@ Earth observation satellite systems. It is NOT a general space law and does NOT 
 - Low-resolution imaging systems
 
 ### Authorization Requirement
-- German entities operating qualifying EO systems need SatDSiG approval from BMWK
+- German entities operating qualifying EO systems need SatDSiG approval from BAFA (§ 24 SatDSiG)
 - "German entity" includes: German nationals, companies with registered office in Germany,
   and operators using ground stations in Germany
 - Approval covers: system design, data distribution policy, sensitivity classification
@@ -786,7 +790,7 @@ Earth observation satellite systems. It is NOT a general space law and does NOT 
 ### Data Sensitivity Framework
 - All data from qualifying systems classified into sensitivity levels
 - Sensitive requests (sensible Anfragen): Based on:
-  - Target country (classified country lists maintained by BMWK)
+  - Target country (classified country lists maintained by BAFA)
   - Target area type (military installations, critical infrastructure)
   - Timeliness (near-real-time data is more sensitive)
 - Data distribution requires compliance with sensitivity classification
@@ -843,10 +847,15 @@ const GERMANY_JURISDICTION: JurisdictionData = {
   code: "DE",
   name: "Germany",
 
+  // No single NCA: Germany has no comprehensive space law. Space policy
+  // sits with the BMFTR (since 6 May 2025); SatDSiG/export with BAFA;
+  // cybersecurity with BSI; spectrum with BNetzA. DLR is the programme
+  // agency (RAÜG), not a regulator.
   nca: {
-    name: "DLR (space) + BSI (cybersecurity) + BNetzA (spectrum)",
+    name: "BMFTR (space policy) + BAFA (SatDSiG/export) + BSI (cybersecurity) + BNetzA (spectrum)",
     fullName:
-      "Deutsches Zentrum für Luft- und Raumfahrt / " +
+      "Bundesministerium für Forschung, Technologie und Raumfahrt / " +
+      "Bundesamt für Wirtschaft und Ausfuhrkontrolle / " +
       "Bundesamt für Sicherheit in der Informationstechnik / " +
       "Bundesnetzagentur",
     website: "https://www.bnetza.de",
@@ -874,10 +883,11 @@ const GERMANY_JURISDICTION: JurisdictionData = {
     },
     {
       name: "NIS-2-Umsetzungs- und Cybersicherheitsstärkungsgesetz (NIS2UmsuCG)",
-      citation: "NIS2UmsuCG 2024",
+      citation: "NIS2UmsuCG, BGBl. 2025 I Nr. 301 (in force 6 Dec 2025)",
       scope:
-        "Cybersecurity obligations for essential/important entities including space operators; " +
-        "BSI as supervisory authority; incident reporting; penalties up to €10M or 2% turnover",
+        "Cybersecurity obligations for essential/important entities including space operators " +
+        '("Weltraum" = Sector 7 of Anlage 1, BSIG 2025); BSI as supervisory authority; ' +
+        "incident reporting; penalties up to €10M or 2% turnover",
       status: "enacted",
     },
     {
@@ -970,7 +980,7 @@ const GERMANY_JURISDICTION: JurisdictionData = {
     {
       type: "SATDSIG_APPROVAL",
       description:
-        "SatDSiG approval (Genehmigung) from BMWK — required ONLY for Earth observation operators " +
+        "SatDSiG approval (Genehmigung) from BAFA (§ 24) — required ONLY for Earth observation operators " +
         "with high-resolution imaging systems. Not applicable to non-EO missions.",
       acceptedAsShortcut: false,
     },

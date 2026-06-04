@@ -1268,35 +1268,39 @@ const DE: JurisdictionLaw = {
     yearEnacted: 2007,
     status: "none",
     officialUrl:
-      "https://www.gesetze-im-internet.de/satdsig/BJNR276810007.html",
+      "https://www.gesetze-im-internet.de/satdsig/BJNR259000007.html",
     keyArticles:
       "\u00a7\u00a7 1-30 SatDSiG (remote sensing only; no comprehensive space law)",
   },
 
   // Germany has no single licensing authority because no comprehensive space
-  // law exists. The authority varies by activity:
+  // law is in force. The authority varies by activity (status: mid-2026):
   //
-  //   Remote sensing data (SatDSiG)         → BMWK (Federal Ministry for Economic Affairs and Climate Action)
-  //   Spectrum / ITU filings                 → BNetzA (Federal Network Agency)
+  //   Remote sensing data (SatDSiG)         → BAFA (competent authority, Sec. 24 SatDSiG; BSI security assessment)
+  //   Spectrum / ITU filings                 → BNetzA (Sec. 91(5) / Sec. 95 TKG 2021)
   //   Aviation safety for launches           → LBA (Federal Aviation Office)
-  //   Export control (dual-use, ITAR-equiv.) → BAFA (Federal Office for Economic Affairs and Export Control)
-  //   Space research / funding programmes    → DLR Raumfahrtagentur (acts on behalf of BMWK)
+  //   Export control (dual-use)              → BAFA (AWG/AWV + EU Reg. 2021/821)
+  //   Space policy + future space law (WRG)  → BMFTR (Fed. Ministry for Research, Technology and Space, since 6 May 2025)
+  //   Space programmes / ESA / funding       → DLR (Deutsche Raumfahrtagentur), on behalf of BMFTR
+  //   International space law + UN registr.   → Auswaertiges Amt (Federal Foreign Office)
   //
-  // DLR is the German Aerospace Center — a research organization. It operates
-  // the Raumfahrtagentur which manages the federal space budget and represents
-  // Germany in ESA governance, but it is NOT a regulatory or licensing
-  // authority. Operators seeking licenses must contact the activity-specific
-  // federal authority above. The licensingAuthority entry below represents
-  // the BMWK as the overall ministerial owner; additional authorities are
-  // captured in notes and licensingRequirements.
+  // The 2025 Merz-cabinet reshuffle moved space policy out of the former BMWK
+  // into the new BMFTR; the economy ministry was renamed BMWE (Wirtschaft und
+  // Energie). DLR is the German Aerospace Center — a research organization
+  // operating the Deutsche Raumfahrtagentur; it manages the federal space
+  // budget and represents Germany in ESA, but it is NOT a regulator and cannot
+  // issue licences. The licensingAuthority entry below names BMFTR as the
+  // ministerial owner for space policy; the only operative licensing regime
+  // today (remote sensing) is run by BAFA. Additional authorities are captured
+  // in notes and licensingRequirements.
   licensingAuthority: {
-    name: "Federal Ministry for Economic Affairs and Climate Action (BMWK) \u2014 with activity-specific federal authorities",
+    name: "Federal Ministry for Research, Technology and Space (BMFTR) \u2014 space-policy owner; SatDSiG licensing via BAFA, with activity-specific federal authorities",
     nameLocal:
-      "Bundesministerium f\u00fcr Wirtschaft und Klimaschutz \u2014 mit t\u00e4tigkeitsspezifischen Fachbeh\u00f6rden",
-    website: "https://www.bmwk.de",
-    contactEmail: "raumfahrt@bmwk.bund.de",
+      "Bundesministerium f\u00fcr Forschung, Technologie und Raumfahrt (BMFTR) \u2014 mit t\u00e4tigkeitsspezifischen Fachbeh\u00f6rden (SatDSiG: BAFA)",
+    website: "https://www.bmftr.bund.de",
+    contactEmail: "poststelle@bafa.bund.de",
     parentMinistry:
-      "Federal Ministry for Economic Affairs and Climate Action (BMWK)",
+      "Federal Ministry for Research, Technology and Space (BMFTR, since 6 May 2025)",
   },
 
   licensingRequirements: [
@@ -1304,23 +1308,24 @@ const DE: JurisdictionLaw = {
       id: "de-data-handling",
       category: "data_handling",
       title:
-        "Remote Sensing Data Handling License (BMWK \u2014 SatDSiG competent authority)",
+        "Remote Sensing Data Handling License (BAFA \u2014 SatDSiG competent authority, \u00a7 24)",
       description:
-        "Authorization required for operating high-resolution Earth observation systems and distributing remote sensing data. Covers acquisition, processing, and dissemination of satellite imagery. SatDSiG is enforced by BMWK, not by DLR. Applications go via the Federal Ministry for Economic Affairs and Climate Action.",
+        "Authorization required for operating high-resolution Earth observation systems and distributing remote sensing data. Covers acquisition, processing, and dissemination of satellite imagery. SatDSiG is administered by BAFA (\u00a7 24), with security/sensitivity assessment by the BSI \u2014 not by DLR. Applications go to BAFA.",
       mandatory: true,
       applicableTo: ["earth_observation"],
       articleRef:
-        "\u00a7 3 SatDSiG \u2014 BMWK contact: raumfahrt@bmwk.bund.de",
+        "\u00a7\u00a7 3, 24 SatDSiG \u2014 competent authority: BAFA (www.bafa.de)",
     },
     {
       id: "de-security-clearance",
       category: "security_clearance",
-      title: "Security Assessment for High-Resolution Data (BMWK + BND)",
+      title:
+        "Sensitivity / Security Assessment for High-Resolution Data (BAFA + BSI)",
       description:
-        "Security clearance required for distribution of high-resolution satellite data exceeding the 0.4m ground resolution threshold. Subject to Federal Intelligence Service (BND) and BMWK review.",
+        'Sensitivity check (Sensitivit\u00e4tspr\u00fcfung) required before distribution of high-resolution satellite data. The SatDSiV \u00a7 1 threshold for a "hochwertiges Erdfernerkundungssystem" is a ground sampling distance of 2.5m or better (general optical case). Administered by BAFA as competent authority, with security assessment by the BSI.',
       mandatory: true,
       applicableTo: ["earth_observation"],
-      articleRef: "\u00a7 17 SatDSiG",
+      articleRef: "\u00a7\u00a7 17-18 SatDSiG; SatDSiV \u00a7 1",
     },
     {
       id: "de-spectrum",
@@ -1335,7 +1340,7 @@ const DE: JurisdictionLaw = {
         "earth_observation",
       ],
       articleRef:
-        "\u00a7 55 TKG (Telekommunikationsgesetz); BNetzA: https://www.bundesnetzagentur.de",
+        "\u00a7 91 Abs. 5 TKG 2021 (Frequenzzuteilung) + \u00a7 95 TKG 2021 (satellite orbital/frequency rights); BNetzA: https://www.bundesnetzagentur.de",
     },
     {
       id: "de-aviation-safety",
@@ -1413,9 +1418,9 @@ const DE: JurisdictionLaw = {
     remoteSensingLicense: true,
     dataDistributionRestrictions: true,
     resolutionRestrictions:
-      "0.4m ground resolution threshold for sensitivity classification; distribution of high-resolution data subject to Federal Government approval",
+      'SatDSiV § 1 threshold: ground sampling distance of 2.5m or better classifies a "hochwertiges Erdfernerkundungssystem"; distribution of high-resolution data subject to BAFA authorisation / sensitivity check',
     dataPolicyUrl:
-      "https://www.gesetze-im-internet.de/satdsig/BJNR276810007.html",
+      "https://www.gesetze-im-internet.de/satdsig/BJNR259000007.html",
   },
 
   timeline: {
@@ -1440,19 +1445,21 @@ const DE: JurisdictionLaw = {
       "Art. 96-100 EU Space Act (Environmental \u2014 new requirements)",
     ],
     transitionNotes:
-      "Germany will need to designate a national competent authority (likely DLR or a new agency). The long-discussed Weltraumgesetz (comprehensive space law) may be enacted alongside EU implementation.",
+      "Germany will need to designate a national competent authority — expected to be the BMFTR (not DLR, which is a research/programme agency, not a regulator). The Weltraumgesetz (WRG) is being drafted: the government published Eckpunkte on 4 Sept 2024 (BT-Drs. 20/12775) and a BMFTR Referentenentwurf was in progress as of early 2026, paced in part by the pending EU Space Act.",
   },
 
   notes: [
-    "Weltraumgesetz (comprehensive space law) has been discussed since 2019 but not enacted",
+    "No comprehensive national space law is in force. The government published Weltraumgesetz Eckpunkte (key points) on 4 Sept 2024 (BT-Drs. 20/12775); a BMFTR Referentenentwurf (WRG) was in progress as of early 2026. The planned regime would introduce an authorisation requirement (Genehmigungsvorbehalt), a national space-object register, and a fault-independent State right of recourse capped at 10% of average annual turnover (max \u20ac50M per damage event) \u2014 NOT yet law.",
     "Operators currently rely on general administrative law for non-remote-sensing activities",
     "DLR is the German Aerospace Center (research organization) \u2014 it is NOT a regulator or licensing authority and cannot issue space activity licenses",
-    "DLR Raumfahrtagentur manages the federal space budget and represents Germany in ESA, but regulatory authority rests with BMWK (policy), BNetzA (spectrum), LBA (launch airspace), and BAFA (export control)",
-    "SatDSiG is the only space-specific legislation, covering remote sensing data security only",
-    "Competent authority under the future EU Space Act is expected to be BMWK with technical support from DLR Raumfahrtagentur",
+    "DLR (Deutsche Raumfahrtagentur) manages the federal space budget and represents Germany in ESA, but regulatory authority rests with BMFTR (space policy, since 6 May 2025), BAFA (SatDSiG remote sensing \u00a7 24 + dual-use export control), BNetzA (\u00a7 91 TKG spectrum/ITU), LBA (launch airspace), and the Ausw\u00e4rtiges Amt (treaties + UN registration)",
+    "SatDSiG is the only space-specific German federal law, covering remote sensing data security only (competent authority: BAFA \u00a7 24; security assessment: BSI)",
+    'Cybersecurity does bind German space operators today: the NIS2UmsuCG entered into force 6 Dec 2025 (BGBl. 2025 I Nr. 301), recasting the BSI Act (BSIG 2025) and listing "Weltraum" (Space) as Sector 7 of Anlage 1 \u2014 operators of ground infrastructure supporting space-based services fall under BSI-supervised NIS2 duties',
+    "Germany is a party to the four core UN space treaties (Outer Space Treaty, Rescue Agreement, Liability Convention, Registration Convention) but is NOT a party to the 1979 Moon Agreement",
+    "Competent authority under the proposed EU Space Act (COM(2025) 335) is expected to be the BMFTR with technical support from DLR",
   ],
 
-  lastUpdated: "2026-04",
+  lastUpdated: "2026-06",
 };
 
 // ─── Italy (IT) ───
