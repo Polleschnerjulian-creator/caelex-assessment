@@ -12,7 +12,7 @@
  * and determineLicenseRequirements receives undefined for destinationCountry.
  */
 
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // ── Module stubs — must appear before any dynamic import of the route ──────────
 
@@ -20,14 +20,23 @@ import { describe, it, expect, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 
 // Stub prisma — computeClassification is pure and never calls DB, but the
-// module-level import of prisma must not fail.
+// module-level import of prisma must not fail. tradeOperation.findMany is used
+// by the Tier 1.8 recompute-on-classification fan-out in PATCH.
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     tradeItem: {
       findFirst: vi.fn(),
       update: vi.fn(),
     },
+    tradeOperation: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
   },
+}));
+
+// Stub the recompute hub — Tier 1.8 fans out to it per affected operation.
+vi.mock("@/lib/comply-v2/trade/operations/recompute.server", () => ({
+  recomputeOperation: vi.fn().mockResolvedValue({ statusChange: null }),
 }));
 
 // Stub auth/trade-auth — not used by computeClassification but needed for module import
@@ -52,7 +61,10 @@ vi.mock("@/lib/logger", () => ({
 }));
 
 // ── Import the function under test ─────────────────────────────────────────────
-import { computeClassification } from "./route";
+import { computeClassification, PATCH } from "./route";
+import { prisma } from "@/lib/prisma";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
+import { recomputeOperation } from "@/lib/comply-v2/trade/operations/recompute.server";
 
 // ── Minimal item shape matching Awaited<ReturnType<typeof getItemForOrg>> ─────
 
@@ -199,5 +211,106 @@ describe("computeClassification — T-H6: origin must not be used as destination
     expect(result!.deMinimis!.outcome).toBe("DE_MINIMIS_EXCEEDED");
     expect(result!.deMinimis!.appliedThresholdPercent).toBe(25);
     expect(result!.deMinimis!.usControlledContentPercent).toBe(30);
+  });
+});
+
+// ── Tier 1.8: classifying an item recomputes the operations that use it ──────────
+
+describe("PATCH /api/trade/items/[id] — Tier 1.8 recompute-on-classification", () => {
+  const auth = {
+    userId: "user-1",
+    organizationId: "org-1",
+    role: "MANAGER" as import("@prisma/client").OrganizationRole,
+  };
+
+  function req(body: unknown): Request {
+    return new Request("http://localhost/api/trade/items/item-1", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  }
+  const ctx = (id = "item-1") => ({ params: Promise.resolve({ id }) });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(getTradeAuth).mockResolvedValue(auth);
+    vi.mocked(prisma.tradeOperation.findMany).mockResolvedValue([] as never);
+    vi.mocked(recomputeOperation).mockResolvedValue({
+      statusChange: null,
+    } as never);
+  });
+
+  it("recomputes every non-terminal operation that includes a freshly-classified item", async () => {
+    // Existing item is DRAFT; the PATCH sets a control code → auto-advances to CLASSIFIED.
+    vi.mocked(prisma.tradeItem.findFirst).mockResolvedValue({
+      id: "item-1",
+      organizationId: "org-1",
+      status: "DRAFT",
+    } as never);
+    vi.mocked(prisma.tradeItem.update).mockResolvedValue({
+      id: "item-1",
+      status: "CLASSIFIED",
+    } as never);
+    vi.mocked(prisma.tradeOperation.findMany).mockResolvedValue([
+      { id: "op-1" },
+      { id: "op-2" },
+    ] as never);
+
+    const res = await PATCH(req({ eccnEU: "9A004" }), ctx());
+    expect(res.status).toBe(200);
+
+    // Fan-out filter: this item's lines, this org, excluding terminal/halted states.
+    expect(prisma.tradeOperation.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          organizationId: "org-1",
+          lines: { some: { itemId: "item-1" } },
+          status: {
+            notIn: ["EXECUTED", "VOLUNTARY_DISCLOSURE_FILED", "BLOCKED"],
+          },
+        }),
+      }),
+    );
+    expect(recomputeOperation).toHaveBeenCalledTimes(2);
+    expect(recomputeOperation).toHaveBeenCalledWith("op-1", "org-1");
+    expect(recomputeOperation).toHaveBeenCalledWith("op-2", "org-1");
+  });
+
+  it("does NOT recompute when the PATCH changes no classification-relevant field", async () => {
+    // A name-only edit: not classified, status unchanged → no fan-out.
+    vi.mocked(prisma.tradeItem.findFirst).mockResolvedValue({
+      id: "item-1",
+      organizationId: "org-1",
+      status: "CLASSIFIED",
+    } as never);
+    vi.mocked(prisma.tradeItem.update).mockResolvedValue({
+      id: "item-1",
+      status: "CLASSIFIED",
+    } as never);
+
+    const res = await PATCH(req({ name: "Renamed Widget" }), ctx());
+    expect(res.status).toBe(200);
+    expect(prisma.tradeOperation.findMany).not.toHaveBeenCalled();
+    expect(recomputeOperation).not.toHaveBeenCalled();
+  });
+
+  it("a recompute failure is non-fatal — the item PATCH still succeeds (200)", async () => {
+    vi.mocked(prisma.tradeItem.findFirst).mockResolvedValue({
+      id: "item-1",
+      organizationId: "org-1",
+      status: "DRAFT",
+    } as never);
+    vi.mocked(prisma.tradeItem.update).mockResolvedValue({
+      id: "item-1",
+      status: "CLASSIFIED",
+    } as never);
+    vi.mocked(prisma.tradeOperation.findMany).mockResolvedValue([
+      { id: "op-1" },
+    ] as never);
+    vi.mocked(recomputeOperation).mockRejectedValue(new Error("boom"));
+
+    const res = await PATCH(req({ eccnUS: "9A515.a" }), ctx());
+    expect(res.status).toBe(200);
   });
 });

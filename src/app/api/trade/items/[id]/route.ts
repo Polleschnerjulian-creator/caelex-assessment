@@ -20,6 +20,7 @@ import { z } from "zod";
 import { evaluateTradeItemSubset } from "@/lib/comply-v2/trade/property-trigger-engine";
 import { calculateDeMinimis } from "@/lib/comply-v2/trade/de-minimis-calculator";
 import { determineLicenseRequirements } from "@/lib/comply-v2/trade/license-determination";
+import { recomputeOperation } from "@/lib/comply-v2/trade/operations/recompute.server";
 
 // ─── Validation ───────────────────────────────────────────────────────
 
@@ -238,6 +239,47 @@ export async function PATCH(
           : {}),
       },
     });
+
+    // ── Tier 1.8: recompute the operations this item rides on ──
+    // Classifying an item (or changing its codes) changes what every operation
+    // that includes it IS — its risk, catch-all, required licenses and, via
+    // Tier 1.7, its lifecycle status. Refresh each non-terminal operation so a
+    // freshly-classified item auto-advances those ops from
+    // AWAITING_CLASSIFICATION → SCREENING WITHOUT the operator re-opening each
+    // one. Best-effort + fully isolated: a fan-out failure must never fail the
+    // item PATCH (the classification is already persisted above).
+    const classificationChanged =
+      isBeingClassified || item.status !== existing.status;
+    if (classificationChanged) {
+      try {
+        const affected = await prisma.tradeOperation.findMany({
+          where: {
+            organizationId: tradeAuth.organizationId,
+            lines: { some: { itemId: id } },
+            // Skip terminal / halted operations — their state is frozen and a
+            // reclassification does not reopen them.
+            status: {
+              notIn: ["EXECUTED", "VOLUNTARY_DISCLOSURE_FILED", "BLOCKED"],
+            },
+          },
+          select: { id: true },
+        });
+        for (const op of affected) {
+          await recomputeOperation(op.id, tradeAuth.organizationId);
+        }
+        if (affected.length > 0) {
+          logger.info(
+            { itemId: id, operationsRecomputed: affected.length },
+            "[trade/items/:id PATCH] Tier 1.8 recompute fan-out",
+          );
+        }
+      } catch (e) {
+        logger.warn(
+          { itemId: id, err: e instanceof Error ? e.message : String(e) },
+          "[trade/items/:id PATCH] operation recompute fan-out failed — non-fatal",
+        );
+      }
+    }
 
     return NextResponse.json({ item });
   } catch (err) {
