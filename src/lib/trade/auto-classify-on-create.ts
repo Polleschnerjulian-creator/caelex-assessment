@@ -43,20 +43,31 @@ type ClassificationField =
   | "usmlCategory"
   | "mtcrCategory";
 
+export interface AutoClassificationSuggestion {
+  code: string;
+  canonicalId: string;
+  regime: string;
+  confidence: "HIGH" | "MEDIUM" | "LOW";
+  rationale: string;
+}
+
 export interface AutoClassification {
   /** Patch to merge into the TradeItem create (overrides the DRAFT default). */
   patch: Partial<Record<ClassificationField, string>> & {
     classificationSource: "ASTRA_SUGGESTED";
     status: "REQUIRES_REVIEW";
   };
-  /** The underlying suggestion (for an optional UI toast / audit note). */
-  suggestion: {
-    code: string;
-    canonicalId: string;
-    regime: string;
-    confidence: "HIGH" | "MEDIUM" | "LOW";
-    rationale: string;
-  };
+  /**
+   * The primary suggestion — the highest-ranked mappable candidate. Kept for
+   * backward-compatible single-suggestion logging / UI toast.
+   */
+  suggestion: AutoClassificationSuggestion;
+  /**
+   * Every applied suggestion — one per distinct regime field written to the
+   * patch. A dual-listed item (e.g. US EAR + EU dual-use) yields several; the
+   * matcher's top mappable candidate is `suggestions[0]` (== `suggestion`).
+   */
+  suggestions: AutoClassificationSuggestion[];
 }
 
 /**
@@ -103,12 +114,13 @@ const PARAMETRIC_FIELDS: ReadonlyArray<
 ];
 
 /**
- * Pure: derive a single auto-classification SUGGESTION from an item's
- * parametric attributes. Returns null when there is nothing safe to suggest:
+ * Pure: derive auto-classification SUGGESTIONS from an item's parametric
+ * attributes. Returns the best HIGH/MEDIUM candidate for EVERY regime field a
+ * dual-listed item matches (US EAR / EU dual-use / USML / MTCR) — not just the
+ * single top one. Returns null when there is nothing safe to suggest:
  *  - the user already declared any control code (never override a human),
- *  - no parametric attribute is present,
- *  - the matcher's top candidate is below MEDIUM confidence, or
- *  - the top candidate's regime maps to no known field.
+ *  - no parametric attribute is present, or
+ *  - no candidate is at least MEDIUM AND maps to a known regime field.
  * Never throws; no I/O.
  */
 export function deriveAutoClassification(
@@ -137,28 +149,40 @@ export function deriveAutoClassification(
   }
   if (attributes.length === 0) return null;
 
-  // 3. Deterministic matcher. Candidates are ranked HIGH→MEDIUM→LOW; take the
-  //    top one that is at least MEDIUM (LOW is too speculative to auto-write).
-  const top = attributesToCandidateCodes(attributes).find(
-    (c) => c.confidence === "HIGH" || c.confidence === "MEDIUM",
-  );
-  if (!top) return null;
+  // 3. Deterministic matcher. Candidates are ranked HIGH→MEDIUM→LOW. Collect the
+  //    best (first-ranked) HIGH/MEDIUM candidate for EACH regime field — so an
+  //    item controlled under e.g. US EAR + EU dual-use gets BOTH codes written,
+  //    not just the top one. LOW is too speculative to auto-write; unmappable
+  //    regimes (no known field) are skipped.
+  const byField = new Map<ClassificationField, AutoClassificationSuggestion>();
+  for (const c of attributesToCandidateCodes(attributes)) {
+    if (c.confidence !== "HIGH" && c.confidence !== "MEDIUM") continue;
+    const field = fieldForCanonicalId(c.canonicalId);
+    if (!field || byField.has(field)) continue; // ranked → first per field wins
+    byField.set(field, {
+      code: c.code,
+      canonicalId: c.canonicalId,
+      regime: c.regime,
+      confidence: c.confidence,
+      rationale: c.rationale,
+    });
+  }
+  if (byField.size === 0) return null;
 
-  const field = fieldForCanonicalId(top.canonicalId);
-  if (!field) return null;
+  const suggestions = [...byField.values()];
+  const patch: AutoClassification["patch"] = {
+    classificationSource: "ASTRA_SUGGESTED",
+    status: "REQUIRES_REVIEW",
+  };
+  for (const [field, s] of byField) {
+    patch[field] = s.code;
+  }
 
   return {
-    patch: {
-      [field]: top.code,
-      classificationSource: "ASTRA_SUGGESTED",
-      status: "REQUIRES_REVIEW",
-    },
-    suggestion: {
-      code: top.code,
-      canonicalId: top.canonicalId,
-      regime: top.regime,
-      confidence: top.confidence,
-      rationale: top.rationale,
-    },
+    patch,
+    // suggestions are inserted in candidate-rank order → [0] is the top
+    // mappable candidate (the backward-compatible primary suggestion).
+    suggestion: suggestions[0],
+    suggestions,
   };
 }

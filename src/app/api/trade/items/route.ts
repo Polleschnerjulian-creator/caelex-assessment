@@ -205,11 +205,20 @@ export async function POST(req: Request) {
         itemId: item.id,
         canonicalId: auto.suggestion.canonicalId,
         confidence: auto.suggestion.confidence,
+        // Tier 1.3 — a dual-listed item is auto-classified under several regimes.
+        regimes: auto.suggestions.map((s) => s.regime),
       });
     }
 
     return NextResponse.json(
-      { item, autoClassification: auto?.suggestion ?? null },
+      {
+        item,
+        // `autoClassification` (singular) = the primary suggestion, kept for
+        // backward-compat. `autoClassifications` (plural) = every regime the
+        // item was auto-classified under (Tier 1.3 multi-regime).
+        autoClassification: auto?.suggestion ?? null,
+        autoClassifications: auto?.suggestions ?? null,
+      },
       { status: 201 },
     );
   } catch (err) {
