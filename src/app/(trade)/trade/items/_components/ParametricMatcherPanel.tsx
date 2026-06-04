@@ -35,23 +35,71 @@ import {
   ChevronUp,
   Sparkles,
   ShieldAlert,
+  Check,
+  Loader2,
 } from "lucide-react";
 
 import {
   classifyTradeItemParametric,
   type TradeItemParametricSnapshot,
 } from "@/lib/trade/item-parametric-classification";
+import { fieldForCanonicalId } from "@/lib/trade/auto-classify-on-create";
 import type { CandidateMatch } from "@/lib/comply-v2/trade/classification/parametric-matcher";
 
 // ─── Component ──────────────────────────────────────────────────────
 
 export interface ParametricMatcherPanelProps {
   item: TradeItemParametricSnapshot;
+  /** TradeItem id — enables the one-click "Übernehmen" (apply candidate) PATCH. */
+  itemId?: string;
+  /** Called after a candidate is applied so the parent can reload the item. */
+  onApplied?: () => void;
 }
 
-export function ParametricMatcherPanel({ item }: ParametricMatcherPanelProps) {
+export function ParametricMatcherPanel({
+  item,
+  itemId,
+  onApplied,
+}: ParametricMatcherPanelProps) {
   const result = useMemo(() => classifyTradeItemParametric(item), [item]);
   const [showDetails, setShowDetails] = useState(false);
+  const [applying, setApplying] = useState<string | null>(null);
+  const [applyError, setApplyError] = useState<string | null>(null);
+
+  // One-click apply of a matcher candidate. Conservative by design: this is a
+  // SUGGESTION pending review (ASTRA_SUGGESTED + REQUIRES_REVIEW), never a
+  // binding human classification — mirrors auto-classify-on-create. The
+  // operator confirms it fully in Edit mode (→ USER_DECLARED / CLASSIFIED).
+  async function applyCandidate(c: CandidateMatch) {
+    if (!itemId) return;
+    const field = fieldForCanonicalId(c.entry.canonicalId);
+    if (!field) return;
+    const code = c.entry.canonicalId.slice(
+      c.entry.canonicalId.indexOf(":") + 1,
+    );
+    setApplyError(null);
+    setApplying(c.entry.canonicalId);
+    try {
+      const res = await fetch(`/api/trade/items/${itemId}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          [field]: code,
+          classificationSource: "ASTRA_SUGGESTED",
+          status: "REQUIRES_REVIEW",
+        }),
+      });
+      if (!res.ok) {
+        setApplyError("Übernehmen fehlgeschlagen. Bitte erneut versuchen.");
+        return;
+      }
+      onApplied?.();
+    } catch {
+      setApplyError("Netzwerkfehler beim Übernehmen.");
+    } finally {
+      setApplying(null);
+    }
+  }
 
   return (
     <section className="rounded-lg border border-trade-border-subtle bg-trade-bg-panel p-5">
@@ -92,7 +140,13 @@ export function ParametricMatcherPanel({ item }: ParametricMatcherPanelProps) {
               note on the entry is easy to miss; ITAR § 123.1(b) is
               high-cost-of-mistake and deserves top-of-panel visibility. */}
           <SeeThroughBanner candidates={result.candidates} />
-          <CandidatesSection result={result} />
+          <CandidatesSection
+            result={result}
+            canApply={!!itemId}
+            applying={applying}
+            applyError={applyError}
+            onApply={applyCandidate}
+          />
           <PossibleMatchesSection
             possibles={result.possibleMatches}
             expanded={showDetails}
@@ -208,8 +262,16 @@ function EmptyBagPrompt() {
 
 function CandidatesSection({
   result,
+  canApply,
+  applying,
+  applyError,
+  onApply,
 }: {
   result: ReturnType<typeof classifyTradeItemParametric>;
+  canApply: boolean;
+  applying: string | null;
+  applyError: string | null;
+  onApply: (c: CandidateMatch) => void;
 }) {
   if (result.candidates.length === 0) {
     return (
@@ -229,38 +291,68 @@ function CandidatesSection({
         <Target className="h-3.5 w-3.5" strokeWidth={2} />
         Candidates ({result.candidates.length})
       </h3>
+      {applyError && (
+        <p className="mb-2 text-[11px] text-trade-accent-danger">
+          {applyError}
+        </p>
+      )}
       <div className="space-y-2">
-        {result.candidates.map((c) => (
-          <div
-            key={c.entry.canonicalId}
-            className="rounded-md border border-trade-border-subtle bg-trade-bg-subtle p-3"
-          >
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 min-w-0">
-                <code className="text-[11px] font-semibold text-trade-text-primary">
-                  {c.entry.canonicalId}
-                </code>
-                <ConfidenceBadge confidence={c.confidence} />
+        {result.candidates.map((c) => {
+          const mappable =
+            canApply && fieldForCanonicalId(c.entry.canonicalId) !== null;
+          const isApplying = applying === c.entry.canonicalId;
+          return (
+            <div
+              key={c.entry.canonicalId}
+              className="rounded-md border border-trade-border-subtle bg-trade-bg-subtle p-3"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <code className="text-[11px] font-semibold text-trade-text-primary">
+                    {c.entry.canonicalId}
+                  </code>
+                  <ConfidenceBadge confidence={c.confidence} />
+                </div>
+                <span className="text-[10px] uppercase tracking-[0.1em] text-trade-text-muted">
+                  {c.entry.regime}
+                </span>
               </div>
-              <span className="text-[10px] uppercase tracking-[0.1em] text-trade-text-muted">
-                {c.entry.regime}
-              </span>
+              <p className="mt-1 text-[11px] leading-relaxed text-trade-text-secondary">
+                {c.entry.title}
+              </p>
+              <p className="mt-1.5 text-[10px] italic leading-relaxed text-trade-text-muted">
+                {c.rationale}
+              </p>
+              {c.entry.notes && (
+                <div className="mt-2 rounded border-l-2 border-amber-500 bg-amber-50 px-2 py-1.5">
+                  <p className="text-[10px] leading-relaxed text-amber-900">
+                    {c.entry.notes}
+                  </p>
+                </div>
+              )}
+              {mappable && (
+                <div className="mt-2.5 flex items-center justify-end gap-2">
+                  <span className="text-[9px] uppercase tracking-[0.1em] text-trade-text-muted">
+                    als Vorschlag (Review) übernehmen
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => onApply(c)}
+                    disabled={applying !== null}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-trade-border bg-trade-bg-panel px-2.5 py-1 text-[11px] font-medium text-trade-text-secondary transition hover:bg-trade-hover hover:text-trade-text-primary disabled:opacity-50"
+                  >
+                    {isApplying ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Check className="h-3 w-3" />
+                    )}
+                    Übernehmen
+                  </button>
+                </div>
+              )}
             </div>
-            <p className="mt-1 text-[11px] leading-relaxed text-trade-text-secondary">
-              {c.entry.title}
-            </p>
-            <p className="mt-1.5 text-[10px] italic leading-relaxed text-trade-text-muted">
-              {c.rationale}
-            </p>
-            {c.entry.notes && (
-              <div className="mt-2 rounded border-l-2 border-amber-500 bg-amber-50 px-2 py-1.5">
-                <p className="text-[10px] leading-relaxed text-amber-900">
-                  {c.entry.notes}
-                </p>
-              </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

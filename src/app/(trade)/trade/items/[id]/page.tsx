@@ -656,7 +656,11 @@ export default function TradeItemDetailPage({
               attributes; surfaces candidates / possible-matches /
               near-misses with regulatory-citation trails. */}
           <div className="mt-6">
-            <ParametricMatcherPanel item={item} />
+            <ParametricMatcherPanel
+              item={item}
+              itemId={item.id}
+              onApplied={loadItem}
+            />
           </div>
 
           {/* Sprint Z12b — BOM-level De Minimis Panel. Server-driven:
