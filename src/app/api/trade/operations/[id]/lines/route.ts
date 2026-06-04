@@ -28,6 +28,8 @@ import {
 } from "@/lib/ratelimit";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { emitTradeEvent } from "@/lib/comply-v2/trade/ops-events.server";
+import { screenParty } from "@/lib/comply-v2/trade/screening/screen-party.server";
+import { recomputeOperation } from "@/lib/comply-v2/trade/operations/recompute.server";
 import { z } from "zod";
 import { toCents, fromCents } from "@/lib/trade/money";
 
@@ -72,7 +74,15 @@ export async function POST(
     const [operation, item] = await Promise.all([
       prisma.tradeOperation.findFirst({
         where: { id: operationId, organizationId },
-        select: { id: true, reference: true, status: true },
+        select: {
+          id: true,
+          reference: true,
+          status: true,
+          counterpartyId: true,
+          counterparty: {
+            select: { id: true, screeningStatus: true, lastScreenedAt: true },
+          },
+        },
       }),
       prisma.tradeItem.findFirst({
         where: { id: data.itemId, organizationId },
@@ -187,6 +197,33 @@ export async function POST(
         userId,
       },
     });
+
+    // ── Tier 1.1: auto-refresh derived state after a composition change ──
+    // Adding a line changes what the operation IS, so its verdict + risk are
+    // now stale. Auto-screen the counterparty (only if unscreened/stale, to
+    // avoid redundant screens) and recompute risk + catch-all — so the next
+    // /assess and the risk panel are fresh WITHOUT the operator clicking
+    // "Screen" + "Recompute". Best-effort: a refresh failure must NOT fail the
+    // line-add (the line is already persisted + audited above).
+    try {
+      const cp = operation.counterparty;
+      const STALE_MS = 30 * 24 * 60 * 60 * 1000;
+      const needsScreen =
+        !!cp &&
+        (cp.screeningStatus === "NOT_SCREENED" ||
+          cp.screeningStatus === "STALE" ||
+          !cp.lastScreenedAt ||
+          Date.now() - cp.lastScreenedAt.getTime() > STALE_MS);
+      if (cp && needsScreen) {
+        await screenParty(cp.id);
+      }
+      await recomputeOperation(operationId, organizationId);
+    } catch (e) {
+      logger.warn(
+        { operationId, err: e instanceof Error ? e.message : String(e) },
+        "[lines POST] auto-refresh (screen/recompute) failed — non-fatal",
+      );
+    }
 
     const serializedLine = { ...line, unitValue: fromCents(line.unitValue) };
     return NextResponse.json({ line: serializedLine }, { status: 201 });
