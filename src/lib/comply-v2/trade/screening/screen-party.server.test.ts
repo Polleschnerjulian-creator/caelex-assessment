@@ -38,6 +38,7 @@ const {
   mockRunCascadeForParty,
   mockOrgMemberFindMany,
   mockScreeningConfigFindUnique,
+  mockNotificationCreateMany,
 } = vi.hoisted(() => ({
   mockPartyFindUnique: vi.fn(),
   mockScreeningResultCreate: vi.fn(),
@@ -47,6 +48,7 @@ const {
   mockRunCascadeForParty: vi.fn(),
   mockOrgMemberFindMany: vi.fn(),
   mockScreeningConfigFindUnique: vi.fn(),
+  mockNotificationCreateMany: vi.fn(),
 }));
 
 // ─── Mock modules ────────────────────────────────────────────────────────────
@@ -67,6 +69,9 @@ vi.mock("@/lib/prisma", () => ({
     },
     tradeScreeningConfig: {
       findUnique: mockScreeningConfigFindUnique,
+    },
+    notification: {
+      createMany: mockNotificationCreateMany,
     },
     $transaction: mockTransaction,
   },
@@ -569,4 +574,66 @@ describe("screenParty — T-H5: sanctioned control-without-equity escalation", (
       expect(result.summary.cascadeHit).toBe(true);
     },
   );
+});
+
+// ─── Tests: Tier 1.2 — in-app notification on a NEW escalation ────────────────
+describe("screenParty — Tier 1.2: in-app notification on new escalation", () => {
+  // Drive a POTENTIAL_MATCH via the T-H3 missing-critical-list path (no name
+  // hits needed): a non-critical list present but OFAC_SDN absent → fail-closed.
+  function arrangePotentialMatch() {
+    const snapshots = new Map<TradeSanctionsList, object>();
+    snapshots.set(
+      TradeSanctionsList.UK_OFSI,
+      makeSnapshot(TradeSanctionsList.UK_OFSI),
+    );
+    mockAllLatestSnapshots.mockResolvedValue(snapshots);
+    mockScreeningResultCreate.mockResolvedValue(
+      mockTransactionReturn(
+        TradeScreeningDecision.POTENTIAL_MATCH,
+        TradeScreeningStatus.POTENTIAL_MATCH,
+      )[0],
+    );
+    mockPartyUpdate.mockResolvedValue(
+      mockTransactionReturn(
+        TradeScreeningDecision.POTENTIAL_MATCH,
+        TradeScreeningStatus.POTENTIAL_MATCH,
+      )[1],
+    );
+    mockOrgMemberFindMany.mockResolvedValue([{ userId: "u_owner_1" }]);
+  }
+
+  it("creates in-app notifications when a not-yet-flagged party newly escalates to POTENTIAL_MATCH", async () => {
+    mockPartyFindUnique.mockResolvedValue(CLEAN_PARTY); // prior: NOT_SCREENED
+    arrangePotentialMatch();
+
+    const result = await screenParty(CLEAN_PARTY.id);
+
+    expect(result.summary.decision).toBe(
+      TradeScreeningDecision.POTENTIAL_MATCH,
+    );
+    expect(mockNotificationCreateMany).toHaveBeenCalledTimes(1);
+    const arg = mockNotificationCreateMany.mock.calls[0][0];
+    expect(Array.isArray(arg.data)).toBe(true);
+    expect(arg.data[0]).toMatchObject({
+      userId: "u_owner_1",
+      type: "COMPLIANCE_ACTION_REQUIRED",
+      severity: "URGENT",
+      entityId: CLEAN_PARTY.id,
+    });
+  });
+
+  it("does NOT re-notify in-app when the party was ALREADY flagged (no re-screen clutter)", async () => {
+    mockPartyFindUnique.mockResolvedValue({
+      ...CLEAN_PARTY,
+      screeningStatus: "POTENTIAL_MATCH" as TradeScreeningStatus,
+    });
+    arrangePotentialMatch();
+
+    const result = await screenParty(CLEAN_PARTY.id);
+
+    expect(result.summary.decision).toBe(
+      TradeScreeningDecision.POTENTIAL_MATCH,
+    );
+    expect(mockNotificationCreateMany).not.toHaveBeenCalled();
+  });
 });

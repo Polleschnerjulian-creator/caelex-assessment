@@ -32,6 +32,8 @@ import {
   TradeScreeningDecision,
   TradeSanctionsList,
   type TradeParty,
+  NotificationType,
+  NotificationSeverity,
   type TradeScreeningResult,
 } from "@prisma/client";
 import { logger } from "@/lib/logger";
@@ -370,6 +372,28 @@ export async function screenParty(
         );
       },
     );
+
+    // Tier 1.2 — in-app PUSH on a NEW escalation. The only push before was
+    // email (easy to miss); also surface a Notification in the app bell.
+    // Transition-gated: only when the party was NOT already flagged, so a
+    // routine re-screen of a still-flagged party doesn't re-spam the centre.
+    // `party.screeningStatus` is the PRIOR value (loaded before the update).
+    // Awaited (fast local DB write) for determinism, but best-effort — a
+    // notification failure must never fail the screening.
+    const wasAlreadyFlagged =
+      party.screeningStatus === TradeScreeningStatus.POTENTIAL_MATCH ||
+      party.screeningStatus === TradeScreeningStatus.CONFIRMED_HIT;
+    if (!wasAlreadyFlagged) {
+      try {
+        await createSanctionsHitNotifications(updatedParty, allHits, cascade);
+      } catch (err) {
+        logger.error(
+          "screenParty: sanctions-hit in-app notification failed (result still persisted)",
+          err,
+          { partyId },
+        );
+      }
+    }
   }
 
   return result;
@@ -438,6 +462,50 @@ async function dispatchSanctionsHitEmails(
       );
     }
   }
+}
+
+/**
+ * Tier 1.2 — create an in-app Notification for every OWNER/ADMIN/MANAGER of the
+ * party's org when it NEWLY escalates to POTENTIAL_MATCH. Complements the email
+ * path (which is easy to miss). Reuses the generic Notification model (no
+ * migration): type COMPLIANCE_ACTION_REQUIRED, severity URGENT, deep-linking to
+ * the screening triage queue. Caller transition-gates this so it fires once per
+ * escalation, not on every re-screen of an already-flagged party.
+ */
+async function createSanctionsHitNotifications(
+  party: TradeParty,
+  hits: PersistableHit[],
+  cascade: CascadeResult | null,
+): Promise<void> {
+  const recipients = await prisma.organizationMember.findMany({
+    where: {
+      organizationId: party.organizationId,
+      role: { in: ["OWNER", "ADMIN", "MANAGER"] },
+    },
+    select: { userId: true },
+  });
+  if (recipients.length === 0) return;
+
+  const matchedLists = Array.from(new Set(hits.map((h) => h.list as string)));
+  const reason = cascade?.cascadeHit
+    ? `50%-Eigentums-Kaskade (${cascade.sanctionedAncestorCount} sanktionierte/r Eigentümer)`
+    : matchedLists.length > 0
+      ? `Treffer auf ${matchedLists.join(", ")}`
+      : "Sanktionslisten-Prüfung erfordert Review";
+
+  await prisma.notification.createMany({
+    data: recipients.map((r) => ({
+      userId: r.userId,
+      organizationId: party.organizationId,
+      type: NotificationType.COMPLIANCE_ACTION_REQUIRED,
+      severity: NotificationSeverity.URGENT,
+      title: `Sanktions-Treffer: ${party.canonicalName}`,
+      message: `${party.canonicalName}${party.countryCode ? ` (${party.countryCode})` : ""} wurde als POTENTIAL_MATCH eingestuft — ${reason}. Bitte in der Screening-Triage prüfen.`,
+      actionUrl: "/trade/screening",
+      entityType: "trade_party",
+      entityId: party.id,
+    })),
+  });
 }
 
 // ─── Helpers (exported for testing) ─────────────────────────────────
