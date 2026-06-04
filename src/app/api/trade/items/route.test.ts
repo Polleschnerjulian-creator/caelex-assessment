@@ -39,6 +39,12 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+// Mock the deterministic matcher so the auto-classification path is
+// reproducible without depending on the control-list corpus data.
+vi.mock("@/lib/trade/classify-suggest", () => ({
+  attributesToCandidateCodes: vi.fn().mockReturnValue([]),
+}));
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function makeReq(method: string, body?: unknown): Request {
@@ -117,5 +123,64 @@ describe("POST /api/trade/items — auth gate (T-H1)", () => {
 
     expect(res.status).not.toBe(403);
     expect(res.status).toBe(400);
+  });
+});
+
+describe("POST /api/trade/items — event-driven auto-classification", () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it("auto-suggests a control code from parametric attributes (ASTRA_SUGGESTED + REQUIRES_REVIEW)", async () => {
+    const { getTradeAuth } = await import("@/lib/trade/trade-auth");
+    vi.mocked(getTradeAuth).mockResolvedValue(validAuth);
+
+    const { attributesToCandidateCodes } =
+      await import("@/lib/trade/classify-suggest");
+    vi.mocked(attributesToCandidateCodes).mockReturnValue([
+      {
+        code: "9A515.a.1",
+        canonicalId: "ECCN:9A515.a.1",
+        regime: "EAR-CCL",
+        title: "Spacecraft",
+        confidence: "HIGH",
+        rationale: "aperture above threshold",
+      },
+    ]);
+
+    const { prisma } = await import("@/lib/prisma");
+    const { POST } = await import("./route");
+    const res = await POST(
+      makeReq("POST", { name: "Telescope", apertureMeters: 0.7 }),
+    );
+
+    expect(res.status).toBe(201);
+    const createArg = vi.mocked(prisma.tradeItem.create).mock.calls.at(-1)?.[0];
+    expect(createArg?.data).toMatchObject({
+      eccnUS: "9A515.a.1",
+      classificationSource: "ASTRA_SUGGESTED",
+      status: "REQUIRES_REVIEW",
+    });
+    const body = await res.json();
+    expect(body.autoClassification?.canonicalId).toBe("ECCN:9A515.a.1");
+  });
+
+  it("does NOT auto-classify when the user already declared a code (human wins)", async () => {
+    const { getTradeAuth } = await import("@/lib/trade/trade-auth");
+    vi.mocked(getTradeAuth).mockResolvedValue(validAuth);
+
+    const { attributesToCandidateCodes } =
+      await import("@/lib/trade/classify-suggest");
+    const { prisma } = await import("@/lib/prisma");
+    const { POST } = await import("./route");
+    const res = await POST(
+      makeReq("POST", { name: "X", apertureMeters: 0.7, eccnUS: "EAR99" }),
+    );
+
+    expect(res.status).toBe(201);
+    expect(attributesToCandidateCodes).not.toHaveBeenCalled();
+    const createArg = vi.mocked(prisma.tradeItem.create).mock.calls.at(-1)?.[0];
+    expect(createArg?.data.status).toBe("DRAFT");
+    expect(createArg?.data.classificationSource).toBeUndefined();
   });
 });

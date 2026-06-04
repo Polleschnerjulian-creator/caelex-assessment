@@ -15,6 +15,7 @@ import {
   getIdentifier,
 } from "@/lib/ratelimit";
 import { getTradeAuth } from "@/lib/trade/trade-auth";
+import { deriveAutoClassification } from "@/lib/trade/auto-classify-on-create";
 import { z } from "zod";
 
 // ─── Validation ───────────────────────────────────────────────────────
@@ -160,6 +161,14 @@ export async function POST(req: Request) {
     }
 
     const data = parsed.data;
+
+    // Event-driven auto-classification (Passage automation): if the user
+    // declared no control code, run the deterministic parametric matcher on the
+    // item's attributes and attach the top candidate as an ASTRA_SUGGESTED
+    // suggestion in REQUIRES_REVIEW — the human confirms it in the classify
+    // copilot. Pure + synchronous + zero external cost; never overrides a human.
+    const auto = deriveAutoClassification(data);
+
     const item = await prisma.tradeItem.create({
       data: {
         organizationId: tradeAuth.organizationId,
@@ -185,10 +194,24 @@ export async function POST(req: Request) {
         isMilSpec: data.isMilSpec ?? false,
         isAntiJam: data.isAntiJam ?? false,
         status: "DRAFT",
+        // Overrides status → REQUIRES_REVIEW + sets classificationSource +
+        // the regime-mapped code field when a suggestion was derived.
+        ...(auto?.patch ?? {}),
       },
     });
 
-    return NextResponse.json({ item }, { status: 201 });
+    if (auto) {
+      logger.info("[trade/items POST] auto-classified (suggestion)", {
+        itemId: item.id,
+        canonicalId: auto.suggestion.canonicalId,
+        confidence: auto.suggestion.confidence,
+      });
+    }
+
+    return NextResponse.json(
+      { item, autoClassification: auto?.suggestion ?? null },
+      { status: 201 },
+    );
   } catch (err) {
     logger.error("[trade/items POST]", err);
     return NextResponse.json(
