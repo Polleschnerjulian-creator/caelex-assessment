@@ -22,6 +22,26 @@ reasoning** — it is three things:
 
 Most of the highest-impact wins are **wire-ups with no DB migration**.
 
+## Build status (this session, 2026-06)
+
+Each Tier-0 lever was verified against the code **before** building (the analysis
+subagents were not adversarially checked — and two of four Tier-0 claims were wrong):
+
+- **0.1 — already DONE.** All 6 reminder crons ARE registered in `vercel.json`
+  (63 crons total). The "unscheduled" claim was stale (subagent hadn't read far
+  enough into `vercel.json`).
+- **0.2 — ✅ SHIPPED.** One-click "Übernehmen" on the matcher panel writes the
+  candidate to the item (`ASTRA_SUGGESTED` + `REQUIRES_REVIEW`, reusing
+  `fieldForCanonicalId`). Closes the "operator retypes the code" dead-end.
+- **0.3 — RE-SCOPED (NOT trivial; do NOT do the naive fix).** `upsertSnapshot`
+  is hash-deduped → `fetchedAt` = last content-**change**, not last sync-**check**.
+  A stable list legitimately has an old `fetchedAt`, so a naive max-age gate would
+  **mass-escalate every unchanged list to a false hit**. Correct fix needs a
+  sync-liveness signal (touch `fetchedAt` every run, or a dedicated `lastSyncedAt`)
+  - the engine gate — its own scoped task, touches the sanctions decision path.
+- **0.4 — needs external fact.** Verify the live UK-OFSI endpoint before changing
+  it (don't guess a gov.uk URL); or formally move UK coverage to OpenSanctions.
+
 ## The four cross-cutting patterns
 
 **A. Engines exist; triggers/wiring don't.** Classification matcher, screening,
