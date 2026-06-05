@@ -122,14 +122,20 @@ const CLEAN_PARTY = {
   screeningHits: null,
 };
 
-/** A snapshot row shape — only the fields screenParty reads. */
-function makeSnapshot(list: TradeSanctionsList, hash = "abc123") {
+/** A snapshot row shape — only the fields screenParty reads.
+ * `fetchedAt` defaults to NOW (fresh) so the SNAPSHOT-STALENESS gate never
+ * fires spuriously; pass an old date to exercise staleness. */
+function makeSnapshot(
+  list: TradeSanctionsList,
+  hash = "abc123",
+  fetchedAt: Date = new Date(),
+) {
   return {
     id: `snap_${list}`,
     list,
     hash,
     entries: [], // empty → no name hits against "XYZ GmbH Musterstadt"
-    fetchedAt: new Date("2026-05-01T00:00:00Z"),
+    fetchedAt,
     entryCount: 0,
     sourceUrl: "https://example.test/source",
     upstreamVersion: null,
@@ -635,5 +641,70 @@ describe("screenParty — Tier 1.2: in-app notification on new escalation", () =
       TradeScreeningDecision.POTENTIAL_MATCH,
     );
     expect(mockNotificationCreateMany).not.toHaveBeenCalled();
+  });
+});
+
+// ─── Tests: SNAPSHOT-STALENESS fail-closed behaviour ─────────────────────────
+
+describe("screenParty — SNAPSHOT-STALENESS: fail-closed on stale critical snapshot", () => {
+  const DAY_MS = 24 * 60 * 60 * 1000;
+
+  it("escalates to POTENTIAL_MATCH when a critical snapshot is older than the TTL (would otherwise be CLEAR)", async () => {
+    // All four critical lists present, but OFAC_SDN was fetched 3 days ago
+    // (> the 48h TTL) — the sync cron silently stopped refreshing it.
+    const snaps = allCriticalSnapshots();
+    snaps.set(
+      TradeSanctionsList.OFAC_SDN,
+      makeSnapshot(
+        TradeSanctionsList.OFAC_SDN,
+        "stale",
+        new Date(Date.now() - 3 * DAY_MS),
+      ),
+    );
+    mockAllLatestSnapshots.mockResolvedValue(snaps);
+
+    mockScreeningResultCreate.mockResolvedValue(
+      mockTransactionReturn(
+        TradeScreeningDecision.POTENTIAL_MATCH,
+        TradeScreeningStatus.POTENTIAL_MATCH,
+      )[0],
+    );
+    mockPartyUpdate.mockResolvedValue(
+      mockTransactionReturn(
+        TradeScreeningDecision.POTENTIAL_MATCH,
+        TradeScreeningStatus.POTENTIAL_MATCH,
+      )[1],
+    );
+
+    const result = await screenParty(CLEAN_PARTY.id);
+
+    expect(result.summary.decision).toBe(
+      TradeScreeningDecision.POTENTIAL_MATCH,
+    );
+    expect(result.summary.snapshotsStale).toContain(
+      TradeSanctionsList.OFAC_SDN,
+    );
+  });
+
+  it("stays CLEAR when all critical snapshots are fresh (no false escalation)", async () => {
+    mockAllLatestSnapshots.mockResolvedValue(allCriticalSnapshots()); // all fresh
+
+    mockScreeningResultCreate.mockResolvedValue(
+      mockTransactionReturn(
+        TradeScreeningDecision.CLEAR,
+        TradeScreeningStatus.CLEAR,
+      )[0],
+    );
+    mockPartyUpdate.mockResolvedValue(
+      mockTransactionReturn(
+        TradeScreeningDecision.CLEAR,
+        TradeScreeningStatus.CLEAR,
+      )[1],
+    );
+
+    const result = await screenParty(CLEAN_PARTY.id);
+
+    expect(result.summary.decision).toBe(TradeScreeningDecision.CLEAR);
+    expect(result.summary.snapshotsStale).toHaveLength(0);
   });
 });

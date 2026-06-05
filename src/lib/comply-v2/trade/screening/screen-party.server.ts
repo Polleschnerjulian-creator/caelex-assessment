@@ -71,6 +71,20 @@ export const CRITICAL_LISTS: TradeSanctionsList[] = [
   TradeSanctionsList.BIS_ENTITY,
 ];
 
+// ─── Snapshot staleness (SNAPSHOT-STALENESS gate) ───────────────────
+//
+// A critical-list snapshot that is PRESENT but older than this TTL is
+// treated like a missing one: a would-be-CLEAR is escalated to
+// POTENTIAL_MATCH. The T-H3 gate only catches an ABSENT snapshot; if the
+// daily sync cron silently stops (network, auth, upstream URL drift) the
+// latest snapshot just goes stale, and screening a party CLEAR against a
+// weeks-old OFAC list is no safer than screening against none.
+//
+// 48h gives the daily cron one fully-missed run of slack before a screen
+// escalates. This is a fail-closed POLICY choice (no regulatory SLA on
+// list freshness), so it lives as a constant, not a verified legal value.
+export const CRITICAL_SNAPSHOT_MAX_AGE_MS = 48 * 60 * 60 * 1000;
+
 // ─── Types ──────────────────────────────────────────────────────────
 
 /**
@@ -119,6 +133,8 @@ export interface ScreenPartyResult {
     decision: TradeScreeningDecision;
     listsConsulted: TradeSanctionsList[];
     snapshotsMissing: TradeSanctionsList[];
+    /** Critical lists whose latest snapshot is older than the staleness TTL. */
+    snapshotsStale: TradeSanctionsList[];
     /** Whether the 50%-rule cascade triggered (≥50% sanctioned ownership). */
     cascadeHit: boolean;
     /** Number of CONFIRMED_HIT ancestors found via cascade traversal. */
@@ -251,6 +267,25 @@ export async function screenParty(
     );
   }
 
+  // ── SNAPSHOT-STALENESS: critical lists present but past their TTL ──
+  // A snapshot that exists but is older than CRITICAL_SNAPSHOT_MAX_AGE_MS
+  // means the sync cron has silently stopped refreshing it — clearing a
+  // party against it is no safer than clearing against a missing list.
+  // Escalate a would-be-CLEAR exactly like the T-H3 missing-list gate.
+  const nowMs = Date.now();
+  const staleCritical = CRITICAL_LISTS.filter((l) => {
+    const snap = snapshots.get(l);
+    return (
+      !!snap && nowMs - snap.fetchedAt.getTime() > CRITICAL_SNAPSHOT_MAX_AGE_MS
+    );
+  });
+  if (staleCritical.length > 0) {
+    logger.warn(
+      { partyId, staleCritical, maxAgeMs: CRITICAL_SNAPSHOT_MAX_AGE_MS },
+      "screenParty: critical sanctions list snapshot(s) STALE — a would-be-CLEAR result will be escalated to POTENTIAL_MATCH (SNAPSHOT-STALENESS)",
+    );
+  }
+
   let decision: TradeScreeningDecision;
   let newStatus: TradeScreeningStatus;
   if (
@@ -276,11 +311,12 @@ export async function screenParty(
     );
     decision = TradeScreeningDecision.POTENTIAL_MATCH;
     newStatus = TradeScreeningStatus.POTENTIAL_MATCH;
-  } else if (missingCritical.length > 0) {
-    // T-H3: Would otherwise be CLEAR, but a critical list's snapshot is
-    // unavailable. An infra failure must NOT silently produce a "compliant"
-    // verdict. Escalate to POTENTIAL_MATCH so a human reviews it.
-    // Uses existing enum values — no migration required.
+  } else if (missingCritical.length > 0 || staleCritical.length > 0) {
+    // T-H3 / SNAPSHOT-STALENESS: Would otherwise be CLEAR, but a critical
+    // list's snapshot is unavailable (missing) or past its freshness TTL
+    // (sync cron silently stopped). An infra failure must NOT silently
+    // produce a "compliant" verdict. Escalate to POTENTIAL_MATCH so a human
+    // reviews it. Uses existing enum values — no migration required.
     decision = TradeScreeningDecision.POTENTIAL_MATCH;
     newStatus = TradeScreeningStatus.POTENTIAL_MATCH;
   } else {
@@ -340,6 +376,7 @@ export async function screenParty(
       decision,
       listsConsulted,
       snapshotsMissing: missingLists(listsConsulted),
+      snapshotsStale: staleCritical,
     },
   };
 
