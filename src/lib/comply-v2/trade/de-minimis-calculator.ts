@@ -39,6 +39,11 @@
  * Pure — no database calls, no async, no side-effects.
  */
 
+import {
+  COUNTRY_GROUP_E1,
+  COUNTRY_GROUP_E2,
+} from "@/lib/trade/subject-to-ear/country-groups";
+
 // ─── Types ────────────────────────────────────────────────────────────
 
 /**
@@ -159,14 +164,16 @@ const THRESHOLD_ITAR = 0; // No de-minimis for ITAR
  * Sudan ("SD") was removed from Country Group E:1 in 2020 and is NOT
  * included here. Verify against the current BIS country group tables.
  */
-// Exported so the licence-determination engine can apply the SAME embargo
-// set in its standalone destination gate (single source of truth — avoids
-// the two engines diverging on which destinations are embargoed).
-export const EMBARGOED_COUNTRIES = new Set([
-  "CU", // Cuba (E:2, treated as embargoed for de-minimis purposes)
-  "IR", // Iran
-  "KP", // North Korea
-  "SY", // Syria
+// Single source of truth (DM-1): the comprehensive-embargo set IS Country
+// Group E:1 ∪ E:2, derived from subject-to-ear/country-groups.ts so the two
+// engines can never diverge on which destinations are embargoed. E:1 =
+// {IR, KP, SY}; E:2 = {CU} (Cuba is treated as embargoed for de-minimis).
+// Previously this was a hand-maintained duplicate literal — the audit's
+// DM-1 drift risk. Membership is unchanged ({CU, IR, KP, SY}); a golden-
+// master test pins it.
+export const EMBARGOED_COUNTRIES = new Set<string>([
+  ...COUNTRY_GROUP_E1,
+  ...COUNTRY_GROUP_E2,
 ]);
 
 /**

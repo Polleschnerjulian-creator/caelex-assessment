@@ -19,6 +19,7 @@ import {
   calculateDeMinimis,
   getDestinationTier,
   formatDeMinimisResultForDisplay,
+  EMBARGOED_COUNTRIES,
   type DeMinimisInput,
 } from "./de-minimis-calculator";
 
@@ -402,5 +403,16 @@ describe("formatDeMinimisResultForDisplay", () => {
     const r = calculateDeMinimis(make({ hasItarContent: true }));
     const display = formatDeMinimisResultForDisplay(r);
     expect(display.toLowerCase()).toContain("itar");
+  });
+});
+
+// ─── EMBARGOED_COUNTRIES single source of truth (DM-1) ────────────────
+
+describe("EMBARGOED_COUNTRIES single source of truth (DM-1)", () => {
+  it("is exactly Country Group E:1 ∪ E:2 = {CU, IR, KP, SY} (no drift, no behavior change)", () => {
+    // Pins the set after deriving it from subject-to-ear/country-groups.ts.
+    // If E:1/E:2 ever change there, this fails loudly so the de-minimis
+    // embargo gate's membership change is reviewed, not silent.
+    expect([...EMBARGOED_COUNTRIES].sort()).toEqual(["CU", "IR", "KP", "SY"]);
   });
 });
