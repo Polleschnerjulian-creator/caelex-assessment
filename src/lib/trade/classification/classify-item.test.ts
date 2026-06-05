@@ -70,4 +70,24 @@ describe("classifyItemForOperation", () => {
     });
     expect(res.licenseDetermination.gate).toBe("BLOCKED");
   });
+
+  it("surfaces a declared USML XV(e) paragraph as a corpus match (DCW-1 — previously invisible to the classifier)", () => {
+    const res = classifyItemForOperation(
+      { name: "Hosted payload host bus", usmlCategory: "XV(e)(17)" },
+      { destinationCountry: "FR" },
+    );
+    expect(res.corpusMatches.length).toBeGreaterThan(0);
+    expect(res.corpusMatches.some((m) => m.entry.isItar)).toBe(true);
+    expect(res.corpusMatches.some((m) => m.entry.isSeeThroughTrigger)).toBe(
+      true,
+    );
+  });
+
+  it("returns empty corpusMatches when the item declares no control code", () => {
+    const res = classifyItemForOperation(
+      { name: "Plain widget" },
+      { destinationCountry: "FR" },
+    );
+    expect(res.corpusMatches).toEqual([]);
+  });
 });

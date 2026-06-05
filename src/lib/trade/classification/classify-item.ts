@@ -23,6 +23,10 @@ import {
   determineLicenseRequirements,
   type LicenseDetermination,
 } from "@/lib/comply-v2/trade/license-determination";
+import {
+  matchDeclaredCodes,
+  type CorpusCodeMatch,
+} from "@/lib/comply-v2/trade/classification/corpus-code-matcher";
 
 // ─── Public types ─────────────────────────────────────────────────────
 
@@ -31,6 +35,14 @@ export interface ClassificationResult {
   triggerEval: TriggerEvaluation;
   deMinimis: DeMinimisResult | null;
   licenseDetermination: LicenseDetermination;
+  /**
+   * Control-list corpus matches for the item's DECLARED codes (DCW-1).
+   * Recognises/validates codes the parametric trigger engine cannot see —
+   * USML XV paragraphs, Wassenaar, Japan METI, India SCOMET, DE Ausfuhrliste.
+   * Enrichment + validation only; `licenseDetermination` stays authoritative.
+   * Empty when no declared code resolves (never implies "uncontrolled").
+   */
+  corpusMatches: CorpusCodeMatch[];
 }
 
 /**
@@ -125,5 +137,15 @@ export function classifyItemForOperation(
     },
   );
 
-  return { triggerEval, deMinimis, licenseDetermination };
+  // DCW-1: recognise the item's DECLARED control codes against the full
+  // normalized corpus. The parametric engine above only matches predicates,
+  // so a declared USML XV(e) paragraph / Wassenaar / etc. code would
+  // otherwise resolve to nothing in the classification layer.
+  const corpusMatches = matchDeclaredCodes({
+    eccnEU: item.eccnEU ?? null,
+    eccnUS: item.eccnUS ?? null,
+    usmlCategory: item.usmlCategory ?? null,
+  });
+
+  return { triggerEval, deMinimis, licenseDetermination, corpusMatches };
 }
