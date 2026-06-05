@@ -3,6 +3,10 @@ import {
   type ItemAttributeBag,
   type MatchConfidence,
 } from "@/lib/comply-v2/trade/classification/parametric-matcher";
+import {
+  buildClassificationDraft,
+  type ProposedClassification,
+} from "./classification-draft-builder";
 
 /**
  * A single extracted attribute (the subset of VisionAttribute / MergedAttribute
@@ -85,4 +89,53 @@ export function attributesToCandidateCodes(
       rationale: c.rationale,
     };
   });
+}
+
+/** Map a draft proposal → the UI's CodeSuggestion shape. */
+function proposalToSuggestion(p: ProposedClassification): CodeSuggestion {
+  const canonicalId = p.canonicalId;
+  const code = canonicalId.includes(":")
+    ? canonicalId.slice(canonicalId.indexOf(":") + 1)
+    : canonicalId;
+  return {
+    code,
+    canonicalId,
+    regime: String(p.regime),
+    title: p.title,
+    confidence: p.confidence,
+    rationale: p.rationale,
+  };
+}
+
+/**
+ * Rich variant for the INTERACTIVE datasheet path
+ * (`/api/trade/classify/suggest-codes`). Runs the full `composeDraft`
+ * pipeline — parametric candidates + best possible-match + top near-miss +
+ * the DCW-1 corpus keyword fallback (only when `text` is supplied) — and maps
+ * the proposals to UI suggestions.
+ *
+ * Confidence is propagated verbatim: only true parametric candidates reach
+ * HIGH/MEDIUM. Possible-match, near-miss and keyword hints are all LOW, so the
+ * honesty layer (`assessSuggestionCoverage`) renders them as "nur schwache
+ * Treffer — bitte fachlich bestätigen", never as a determination.
+ *
+ * Why this exists separately from `attributesToCandidateCodes`: that lean
+ * function is also consumed by `auto-classify-on-create`, which AUTO-WRITES
+ * codes and must stay strict (HIGH/MEDIUM candidates only). The interactive
+ * surface, where a human reviews every hint, can afford the wider recall.
+ *
+ * Pure. No I/O. Empty attributes + non-distinctive text → empty out.
+ */
+export function suggestionsFromAttributesAndText(
+  attributes: ReadonlyArray<SuggestInputAttribute>,
+  text?: string,
+): CodeSuggestion[] {
+  const bag = attributesToBag(attributes);
+  const draft = buildClassificationDraft({
+    rawText: text ?? "",
+    pageCount: 1,
+    attributes: bag,
+    evidence: [],
+  });
+  return draft.proposals.map(proposalToSuggestion);
 }

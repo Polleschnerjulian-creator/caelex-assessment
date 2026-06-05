@@ -60,10 +60,13 @@ export function DatasheetDropzone({
       const attrs: ExtractedAttribute[] = exBody.extraction?.attributes ?? [];
       setAttributes(attrs);
 
+      // Forward the datasheet's raw text too: it unlocks the corpus keyword
+      // fallback for codes the parametric (attribute) matcher structurally
+      // can't see — declared codes + distinctive control-list terms.
       const sgRes = await fetch("/api/trade/classify/suggest-codes", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ attributes: attrs }),
+        body: JSON.stringify({ attributes: attrs, text: exBody.rawText ?? "" }),
       });
       const sgBody = await sgRes.json();
       setSuggestions(sgRes.ok ? (sgBody.suggestions ?? []) : []);

@@ -200,6 +200,10 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       extraction: merged,
+      /** Raw datasheet text (capped) so the classify step can run the DCW-1
+       *  corpus keyword fallback for codes the parametric matcher can't see.
+       *  Capped at 60k chars — ample for token-presence hints, bounds payload. */
+      rawText: (regex?.rawText ?? "").slice(0, 60_000),
       /** True when Vision was skipped because the regex extraction was
        *  already clean + complete (cost optimisation, Sprint G3). The
        *  operator can force a re-run by re-submitting with forceVision=true

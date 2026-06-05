@@ -7,7 +7,7 @@ import {
 } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 import {
-  attributesToCandidateCodes,
+  suggestionsFromAttributesAndText,
   type SuggestInputAttribute,
 } from "@/lib/trade/classify-suggest";
 
@@ -27,16 +27,25 @@ export async function POST(req: Request) {
 
     const body = (await req.json().catch(() => null)) as {
       attributes?: unknown;
+      text?: unknown;
     } | null;
     if (!body || !Array.isArray(body.attributes)) {
       return NextResponse.json(
-        { error: "Expected { attributes: SuggestInputAttribute[] }" },
+        {
+          error: "Expected { attributes: SuggestInputAttribute[], text?: string }",
+        },
         { status: 400 },
       );
     }
 
-    const suggestions = attributesToCandidateCodes(
+    // `text` (the datasheet's raw text) is optional — when present it unlocks
+    // the DCW-1 corpus keyword fallback for codes the parametric matcher can't
+    // see (declared codes, distinctive control-list terms). Suggestion-only +
+    // LOW confidence; never a determination.
+    const text = typeof body.text === "string" ? body.text : undefined;
+    const suggestions = suggestionsFromAttributesAndText(
       body.attributes as SuggestInputAttribute[],
+      text,
     );
     return NextResponse.json({ suggestions });
   } catch (err) {
