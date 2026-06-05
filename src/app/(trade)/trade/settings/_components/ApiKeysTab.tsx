@@ -216,7 +216,7 @@ function CreateKeyForm({
           autoComplete="off"
           className={`w-full rounded-md border bg-trade-bg-page px-3 py-2 text-[13px] text-trade-text-primary placeholder:text-trade-text-muted focus:outline-none ${
             error?.fields?.name
-              ? "border-red-500 focus:border-red-500"
+              ? "border-trade-accent-danger focus:border-trade-accent-danger"
               : "border-trade-border-subtle focus:border-trade-accent"
           }`}
           aria-invalid={!!error?.fields?.name}
@@ -226,7 +226,7 @@ function CreateKeyForm({
           <p
             id="key-name-error"
             role="alert"
-            className="mt-1 text-[11px] text-red-500"
+            className="mt-1 text-[11px] text-trade-accent-danger"
           >
             {error.fields.name.join(", ")}
           </p>
@@ -285,7 +285,7 @@ function CreateKeyForm({
           <p
             id="api-key-scopes-error"
             role="alert"
-            className="mt-1 text-[11px] text-red-500"
+            className="mt-1 text-[11px] text-trade-accent-danger"
           >
             {error.fields.scopes.join(", ")}
           </p>
@@ -293,8 +293,8 @@ function CreateKeyForm({
       </fieldset>
 
       {error && !error.fields && (
-        <div className="rounded-md border border-red-500 bg-red-500/10 px-3 py-2 text-[12px] text-red-500">
-          <AlertCircle size={12} className="mr-1 inline-block" />
+        <div className="trade-chip-danger rounded-md px-3 py-2 text-[12px]">
+          <AlertCircle size={12} className="mr-1 inline-block text-current" />
           {error.message}
         </div>
       )}
@@ -381,7 +381,7 @@ function ApiKeyRow({ apiKey }: { apiKey: TradeApiKeyView }) {
               {apiKey.name}
             </span>
             {!apiKey.isActive && (
-              <span className="rounded-sm border border-red-500/40 bg-red-500/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-red-500">
+              <span className="trade-chip-danger rounded-sm px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
                 Revoked
               </span>
             )}
@@ -414,7 +414,7 @@ function ApiKeyRow({ apiKey }: { apiKey: TradeApiKeyView }) {
                   type="button"
                   onClick={revoke}
                   disabled={isPending}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-red-500 px-3 py-1.5 text-[12px] font-medium text-white hover:bg-red-600 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-md bg-trade-accent-danger px-3 py-1.5 text-[12px] font-medium text-white hover:bg-trade-accent-danger disabled:opacity-50"
                 >
                   <Trash2 size={12} />
                   {isPending ? "Revoking…" : "Confirm revoke"}
@@ -432,7 +432,7 @@ function ApiKeyRow({ apiKey }: { apiKey: TradeApiKeyView }) {
               <button
                 type="button"
                 onClick={() => setConfirming(true)}
-                className="inline-flex items-center gap-1.5 rounded-md border border-trade-border-subtle bg-trade-bg-page px-3 py-1.5 text-[12px] font-medium text-trade-text-primary hover:border-red-500 hover:text-red-500"
+                className="inline-flex items-center gap-1.5 rounded-md border border-trade-border-subtle bg-trade-bg-page px-3 py-1.5 text-[12px] font-medium text-trade-text-primary hover:border-trade-accent-danger hover:text-trade-accent-danger"
               >
                 <Trash2 size={12} />
                 Revoke
@@ -442,7 +442,7 @@ function ApiKeyRow({ apiKey }: { apiKey: TradeApiKeyView }) {
         )}
       </div>
       {error && (
-        <p className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-red-500">
+        <p className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-trade-accent-danger">
           <AlertCircle size={12} />
           {error}
         </p>
@@ -453,7 +453,7 @@ function ApiKeyRow({ apiKey }: { apiKey: TradeApiKeyView }) {
         </p>
       )}
       {!error && apiKey.isActive && confirming && (
-        <p className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-red-500">
+        <p className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-trade-accent-danger">
           <AlertCircle size={12} />
           Revoking is permanent — any integration using this key will break.
         </p>

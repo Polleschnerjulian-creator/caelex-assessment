@@ -40,19 +40,19 @@ interface LevelConfig {
 
 const LEVEL_CONFIG: Record<CoverageVerdict["level"], LevelConfig> = {
   "no-data": {
-    wrapper: "rounded-md border border-amber-300 bg-amber-50 p-3",
-    iconColor: "text-amber-600",
-    headlineColor: "text-amber-900 font-semibold",
-    messageColor: "text-amber-800",
-    disclaimerColor: "text-amber-700",
+    wrapper: "rounded-md p-3 trade-chip-warn",
+    iconColor: "text-current",
+    headlineColor: "text-current font-semibold",
+    messageColor: "text-current",
+    disclaimerColor: "text-current",
     Icon: AlertTriangle,
   },
   uncertain: {
-    wrapper: "rounded-md border border-amber-200 bg-amber-50/60 p-3",
-    iconColor: "text-amber-500",
-    headlineColor: "text-amber-800 font-medium",
-    messageColor: "text-amber-700",
-    disclaimerColor: "text-amber-600",
+    wrapper: "rounded-md p-3 trade-chip-warn",
+    iconColor: "text-current",
+    headlineColor: "text-current font-medium",
+    messageColor: "text-current",
+    disclaimerColor: "text-current",
     Icon: Info,
   },
   matched: {

@@ -272,7 +272,7 @@ function IdleZone({
       <button
         type="button"
         onClick={onPickFile}
-        className="inline-flex items-center gap-1.5 rounded-md border border-trade-border bg-white px-3 py-1.5 text-[12px] font-medium text-trade-text-primary transition hover:border-trade-accent hover:text-trade-accent"
+        className="inline-flex items-center gap-1.5 rounded-md border border-trade-border bg-trade-bg-panel px-3 py-1.5 text-[12px] font-medium text-trade-text-primary transition hover:border-trade-accent hover:text-trade-accent"
       >
         <Upload className="h-3.5 w-3.5" />
         PDF auswählen
@@ -319,7 +319,7 @@ function ResultPanel({
     <div className="p-5">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
-          <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-emerald-600" />
+          <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-trade-accent-success" />
           <div className="min-w-0">
             <p className="truncate text-[13px] font-semibold text-trade-text-primary">
               {fileName}
@@ -412,10 +412,10 @@ function ResultPanel({
       )}
 
       {extraction.warnings.length > 0 && (
-        <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3">
+        <div className="mt-3 rounded-md p-3 trade-chip-warn">
           <div className="flex items-start gap-2">
-            <AlertTriangle className="h-4 w-4 flex-shrink-0 text-amber-600" />
-            <div className="space-y-1 text-[12px] text-amber-800">
+            <AlertTriangle className="h-4 w-4 flex-shrink-0 text-current" />
+            <div className="space-y-1 text-[12px] text-current">
               {extraction.warnings.map((w, i) => (
                 <p key={i}>{w}</p>
               ))}
@@ -428,7 +428,7 @@ function ResultPanel({
         <button
           type="button"
           onClick={onDismiss}
-          className="rounded-md border border-trade-border bg-white px-3 py-1.5 text-[12px] font-medium text-trade-text-secondary transition hover:text-trade-text-primary"
+          className="rounded-md border border-trade-border bg-trade-bg-panel px-3 py-1.5 text-[12px] font-medium text-trade-text-secondary transition hover:text-trade-text-primary"
         >
           Verwerfen
         </button>
@@ -456,7 +456,7 @@ function ErrorPanel({ fileName, error, warnings, onRetry }: ErrorPanelProps) {
   return (
     <div className="p-5">
       <div className="flex items-start gap-3">
-        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-red-50 text-red-600">
+        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full trade-chip-danger">
           <AlertTriangle className="h-4 w-4" />
         </div>
         <div className="min-w-0 flex-1">
@@ -466,9 +466,11 @@ function ErrorPanel({ fileName, error, warnings, onRetry }: ErrorPanelProps) {
               <span className="truncate">{fileName}</span>
             </p>
           )}
-          <p className="text-[13px] font-semibold text-red-700">{error}</p>
+          <p className="text-[13px] font-semibold text-trade-accent-danger">
+            {error}
+          </p>
           {warnings && warnings.length > 0 && (
-            <ul className="mt-2 space-y-1 text-[12px] text-amber-700">
+            <ul className="mt-2 space-y-1 text-[12px] text-trade-accent-warn">
               {warnings.map((w, i) => (
                 <li key={i}>{w}</li>
               ))}
@@ -477,7 +479,7 @@ function ErrorPanel({ fileName, error, warnings, onRetry }: ErrorPanelProps) {
           <button
             type="button"
             onClick={onRetry}
-            className="mt-3 rounded-md border border-trade-border bg-white px-3 py-1 text-[12px] font-medium text-trade-text-primary transition hover:border-trade-accent hover:text-trade-accent"
+            className="mt-3 rounded-md border border-trade-border bg-trade-bg-panel px-3 py-1 text-[12px] font-medium text-trade-text-primary transition hover:border-trade-accent hover:text-trade-accent"
           >
             Anderes PDF auswählen
           </button>
@@ -532,22 +534,22 @@ const CONFIDENCE_META: Record<
 > = {
   high: {
     label: "Hoch",
-    className: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+    className: "trade-chip-success",
     title: "Hohe Konfidenz — Claude ist sich sicher",
   },
   medium: {
     label: "Mittel",
-    className: "bg-sky-50 text-sky-700 ring-1 ring-sky-200",
+    className: "trade-chip-info",
     title: "Mittlere Konfidenz — bitte kurz prüfen",
   },
   low: {
     label: "Niedrig",
-    className: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+    className: "trade-chip-warn",
     title: "Niedrige Konfidenz — bitte manuell prüfen / korrigieren",
   },
   missing: {
     label: "Fehlt",
-    className: "bg-zinc-100 text-zinc-600 ring-1 ring-zinc-200",
+    className: "trade-chip-neutral",
     title: "Im Bescheid nicht gefunden — manuell ergänzen",
   },
 };

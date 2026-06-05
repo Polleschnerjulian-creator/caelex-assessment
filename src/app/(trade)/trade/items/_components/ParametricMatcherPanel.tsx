@@ -192,20 +192,17 @@ function SeeThroughBanner({ candidates }: { candidates: CandidateMatch[] }) {
   const ids = seeThroughCandidates.map((c) => c.entry.canonicalId).join(", ");
 
   return (
-    <div
-      role="alert"
-      className="rounded-md border-2 border-red-500 bg-red-50 p-4"
-    >
+    <div role="alert" className="trade-chip-danger rounded-md border-2 p-4">
       <div className="flex items-start gap-3">
         <ShieldAlert
-          className="mt-0.5 h-5 w-5 shrink-0 text-red-600"
+          className="mt-0.5 h-5 w-5 shrink-0 text-current"
           strokeWidth={2}
         />
         <div>
-          <p className="text-[12px] font-bold uppercase tracking-[0.1em] text-red-900">
+          <p className="text-[12px] font-bold uppercase tracking-[0.1em]">
             ITAR see-through rule applies
           </p>
-          <p className="mt-1 text-[11px] leading-relaxed text-red-900">
+          <p className="mt-1 text-[11px] leading-relaxed">
             One or more candidate classifications trigger the see-through rule
             under <strong>22 CFR § 123.1(b)</strong>: ITAR jurisdiction
             propagates across BOM boundaries with{" "}
@@ -213,10 +210,10 @@ function SeeThroughBanner({ candidates }: { candidates: CandidateMatch[] }) {
             incorporating these items become ITAR-controlled throughout; removal
             is a "retransfer" requiring DDTC authorization.
           </p>
-          <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-red-700">
+          <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.12em]">
             Applies to: <code className="font-mono">{ids}</code>
           </p>
-          <p className="mt-2 text-[10px] italic leading-relaxed text-red-800">
+          <p className="mt-2 text-[10px] italic leading-relaxed">
             Mandatory compliance officer review before any export or re-export
             action. Do not proceed on engine output alone.
           </p>
@@ -240,7 +237,7 @@ function EmptyBagPrompt() {
     <div className="rounded-md border border-trade-border-subtle bg-trade-bg-subtle p-4">
       <div className="flex items-start gap-3">
         <AlertTriangle
-          className="mt-0.5 h-4 w-4 shrink-0 text-amber-600"
+          className="mt-0.5 h-4 w-4 shrink-0 text-trade-accent-warn"
           strokeWidth={2}
         />
         <div>
@@ -324,10 +321,8 @@ function CandidatesSection({
                 {c.rationale}
               </p>
               {c.entry.notes && (
-                <div className="mt-2 rounded border-l-2 border-amber-500 bg-amber-50 px-2 py-1.5">
-                  <p className="text-[10px] leading-relaxed text-amber-900">
-                    {c.entry.notes}
-                  </p>
+                <div className="trade-chip-warn mt-2 rounded border-l-2 px-2 py-1.5">
+                  <p className="text-[10px] leading-relaxed">{c.entry.notes}</p>
                 </div>
               )}
               {mappable && (
@@ -377,20 +372,18 @@ function PossibleMatchesSection({
         {visible.map((p) => (
           <div
             key={p.entry.canonicalId}
-            className="rounded-md border border-amber-200 bg-amber-50 p-3"
+            className="trade-chip-warn rounded-md border p-3"
           >
             <div className="flex items-center justify-between gap-3">
-              <code className="text-[11px] font-semibold text-amber-900">
+              <code className="text-[11px] font-semibold">
                 {p.entry.canonicalId}
               </code>
-              <span className="text-[10px] uppercase tracking-[0.1em] text-amber-700">
+              <span className="text-[10px] uppercase tracking-[0.1em]">
                 {p.unknownPredicates.length} missing
               </span>
             </div>
-            <p className="mt-1 text-[11px] leading-relaxed text-amber-900">
-              {p.entry.title}
-            </p>
-            <p className="mt-1.5 text-[10px] italic leading-relaxed text-amber-700">
+            <p className="mt-1 text-[11px] leading-relaxed">{p.entry.title}</p>
+            <p className="mt-1.5 text-[10px] italic leading-relaxed">
               Populate:{" "}
               {p.unknownPredicates.map((u) => u.missingAttribute).join(", ")}
             </p>
@@ -438,8 +431,8 @@ function NearMissesSection({
             <p className="mt-1 text-[11px] leading-relaxed text-trade-text-secondary">
               {nm.entry.title}
             </p>
-            <div className="mt-2 rounded border-l-2 border-red-500 bg-red-50 px-2 py-1.5">
-              <p className="text-[10px] leading-relaxed text-red-900">
+            <div className="mt-2 rounded border-l-2 border-trade-accent-danger px-2 py-1.5 trade-chip-danger">
+              <p className="text-[10px] leading-relaxed">
                 <strong>{nm.refutingPredicate.attribute}</strong>{" "}
                 {nm.refutingPredicate.op}{" "}
                 {formatValue(nm.refutingPredicate.expectedValue)} — got{" "}
@@ -466,9 +459,9 @@ function ConfidenceBadge({
   confidence: "HIGH" | "MEDIUM" | "LOW";
 }) {
   const styles: Record<typeof confidence, string> = {
-    HIGH: "bg-emerald-100 text-emerald-900 ring-1 ring-emerald-200",
-    MEDIUM: "bg-amber-100 text-amber-900 ring-1 ring-amber-200",
-    LOW: "bg-zinc-100 text-zinc-700 ring-1 ring-zinc-200",
+    HIGH: "trade-chip-success",
+    MEDIUM: "trade-chip-warn",
+    LOW: "trade-chip-neutral",
   };
   return (
     <span

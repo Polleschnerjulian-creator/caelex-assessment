@@ -338,7 +338,7 @@ function Field({
         autoComplete={autoComplete}
         className={`w-full rounded-md border bg-trade-bg-page px-3 py-2 text-[13px] text-trade-text-primary placeholder:text-trade-text-muted focus:outline-none ${
           error
-            ? "border-red-500 focus:border-red-500"
+            ? "border-trade-accent-danger focus:border-trade-accent-danger"
             : "border-trade-border-subtle focus:border-trade-accent"
         }`}
         aria-invalid={!!error}
@@ -348,7 +348,7 @@ function Field({
         <p
           id={`${name}-error`}
           role="alert"
-          className="mt-1 text-[11px] text-red-500"
+          className="mt-1 text-[11px] text-trade-accent-danger"
         >
           {error.join(", ")}
         </p>
@@ -375,7 +375,7 @@ function SaveBar({
         {/* Explicit-submit feedback takes precedence over autosave —
             the user pressed the button so we surface the result first. */}
         {feedback?.kind === "ok" && (
-          <span className="inline-flex items-center gap-1.5 text-emerald-500">
+          <span className="inline-flex items-center gap-1.5 text-trade-accent-success">
             <CheckCircle2 size={14} aria-hidden="true" />
             Saved
           </span>
@@ -383,7 +383,7 @@ function SaveBar({
         {feedback?.kind === "error" && (
           <span
             role="alert"
-            className="inline-flex items-center gap-1.5 text-red-500"
+            className="inline-flex items-center gap-1.5 text-trade-accent-danger"
           >
             <AlertCircle size={14} aria-hidden="true" />
             {feedback.message}
@@ -452,7 +452,7 @@ function AutosaveIndicator({ state }: { state: AutosaveState }) {
     <span
       aria-live="polite"
       className={`inline-flex items-center gap-1 text-trade-text-muted ${
-        state.kind === "error" ? "text-amber-700" : ""
+        state.kind === "error" ? "text-trade-accent-warn" : ""
       }`}
     >
       {inner}

@@ -58,35 +58,27 @@ interface DebrisCompliancePanelProps {
 
 const STATUS_META: Record<
   DebrisStatusView["status"],
-  { label: string; bg: string; border: string; text: string; badge: string }
+  { label: string; chip: string; text: string }
 > = {
   compliant: {
     label: "Compliant",
-    bg: "bg-emerald-50",
-    border: "border-emerald-200",
-    text: "text-emerald-700",
-    badge: "bg-emerald-600 text-white",
+    chip: "trade-chip-success",
+    text: "text-trade-accent-success",
   },
   non_compliant: {
     label: "Non-Compliant",
-    bg: "bg-red-50",
-    border: "border-red-200",
-    text: "text-red-700",
-    badge: "bg-red-600 text-white",
+    chip: "trade-chip-danger",
+    text: "text-trade-accent-danger",
   },
   under_review: {
     label: "Under Review",
-    bg: "bg-amber-50",
-    border: "border-amber-200",
-    text: "text-amber-700",
-    badge: "bg-amber-500 text-white",
+    chip: "trade-chip-warn",
+    text: "text-trade-accent-warn",
   },
   unknown: {
     label: "Unknown",
-    bg: "bg-trade-bg-panel",
-    border: "border-trade-border-subtle",
+    chip: "trade-chip-neutral",
     text: "text-trade-text-secondary",
-    badge: "bg-trade-text-muted text-white",
   },
 };
 
@@ -97,11 +89,19 @@ function YesNoIcon({
 }): ReactNode {
   if (value === "yes" || value === true) {
     return (
-      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" aria-label="yes" />
+      <CheckCircle2
+        className="h-3.5 w-3.5 text-trade-accent-success"
+        aria-label="yes"
+      />
     );
   }
   if (value === "no" || value === false) {
-    return <XCircle className="h-3.5 w-3.5 text-red-600" aria-label="no" />;
+    return (
+      <XCircle
+        className="h-3.5 w-3.5 text-trade-accent-danger"
+        aria-label="no"
+      />
+    );
   }
   if (value === "exempt" || value === "n_a") {
     return (
@@ -154,13 +154,13 @@ export function DebrisCompliancePanel({
 
   return (
     <section
-      className={`rounded-md border ${meta.border} ${meta.bg} p-5`}
+      className={`rounded-md ${meta.chip} p-5`}
       aria-label="Caelex Comply: debris compliance"
     >
       <header className="mb-3 flex items-start justify-between gap-3">
         <PanelHeader />
         <span
-          className={`shrink-0 rounded px-2 py-[2px] text-[10px] font-bold uppercase tracking-widest ${meta.badge}`}
+          className={`shrink-0 rounded px-2 py-[2px] text-[10px] font-bold uppercase tracking-widest ${meta.chip}`}
         >
           {meta.label}
         </span>

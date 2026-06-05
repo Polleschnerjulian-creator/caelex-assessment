@@ -202,12 +202,12 @@ export default function CounterpartyDetailPage({
             <span className="flex items-center gap-1.5">
               <Globe className="h-3 w-3" /> {party.countryCode}
               {party.isHighRiskCountry && (
-                <span className="text-amber-600">· high-risk</span>
+                <span className="text-trade-accent-warn">· high-risk</span>
               )}
             </span>
             {party.isUSPerson && <span>· US person</span>}
             {party.status === "BLOCKED" && (
-              <span className="text-red-600">
+              <span className="text-trade-accent-danger">
                 · Blocked: {party.blockedReason ?? "no reason given"}
               </span>
             )}
@@ -262,7 +262,7 @@ export default function CounterpartyDetailPage({
       </header>
 
       {screenError && (
-        <div className="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-[13px] text-red-700">
+        <div className="trade-chip-danger mb-6 rounded-md px-4 py-3 text-[13px]">
           {screenError}
         </div>
       )}
@@ -393,24 +393,30 @@ function ScreeningIcon({ status }: { status: PartyDetail["screeningStatus"] }) {
   if (status === "CLEAR")
     return (
       <ShieldCheck
-        className={`${className} text-emerald-600`}
+        className={`${className} text-trade-accent-success`}
         strokeWidth={1.75}
       />
     );
   if (status === "POTENTIAL_MATCH")
     return (
       <AlertTriangle
-        className={`${className} text-amber-500`}
+        className={`${className} text-trade-accent-warn`}
         strokeWidth={1.75}
       />
     );
   if (status === "CONFIRMED_HIT")
     return (
-      <ShieldAlert className={`${className} text-red-600`} strokeWidth={1.75} />
+      <ShieldAlert
+        className={`${className} text-trade-accent-danger`}
+        strokeWidth={1.75}
+      />
     );
   if (status === "STALE")
     return (
-      <Clock className={`${className} text-orange-500`} strokeWidth={1.75} />
+      <Clock
+        className={`${className} text-trade-accent-warn`}
+        strokeWidth={1.75}
+      />
     );
   return (
     <Shield
@@ -423,13 +429,13 @@ function ScreeningIcon({ status }: { status: PartyDetail["screeningStatus"] }) {
 function statusPanelClass(status: PartyDetail["screeningStatus"]): string {
   switch (status) {
     case "CLEAR":
-      return "border-emerald-200 bg-emerald-50";
+      return "trade-chip-success border-trade-border";
     case "POTENTIAL_MATCH":
-      return "border-amber-300 bg-amber-50";
+      return "trade-chip-warn border-trade-border";
     case "CONFIRMED_HIT":
-      return "border-red-300 bg-red-50";
+      return "trade-chip-danger border-trade-border";
     case "STALE":
-      return "border-orange-300 bg-orange-50";
+      return "trade-chip-warn border-trade-border";
     case "NOT_SCREENED":
     default:
       return "border-trade-border-subtle bg-trade-bg-panel";
@@ -524,7 +530,7 @@ function ScreeningRowItem({
               {row.hits.length > 0 && ` · top ${topScore.toFixed(3)}`}
             </span>
             {isPending && (
-              <span className="ml-2 rounded bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-amber-700 ring-1 ring-amber-200">
+              <span className="trade-chip-warn ml-2 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest">
                 Needs review
               </span>
             )}
@@ -556,9 +562,9 @@ function ScreeningRowItem({
               <span
                 className={
                   h.score >= 0.95
-                    ? "font-mono text-red-600"
+                    ? "font-mono text-trade-accent-danger"
                     : h.score >= 0.85
-                      ? "font-mono text-amber-600"
+                      ? "font-mono text-trade-accent-warn"
                       : "font-mono text-trade-text-secondary"
                 }
               >
@@ -584,7 +590,7 @@ function ScreeningRowItem({
             <div className="flex gap-2 pt-1">
               <button
                 onClick={() => setTriageMode("CONFIRMED_HIT")}
-                className="rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-[11px] font-semibold text-red-700 transition hover:bg-red-100"
+                className="trade-chip-danger rounded-md border border-trade-border px-3 py-1.5 text-[11px] font-semibold transition"
               >
                 Confirm sanctions hit (block)
               </button>
@@ -612,7 +618,9 @@ function ScreeningRowItem({
                 className="w-full resize-y rounded-md border border-trade-border bg-trade-bg-panel px-3 py-2 text-[12px] text-trade-text-primary outline-none transition focus:border-trade-accent focus:ring-2 focus:ring-trade-accent/30"
               />
               {err && (
-                <div className="mt-2 text-[11px] text-red-600">{err}</div>
+                <div className="mt-2 text-[11px] text-trade-accent-danger">
+                  {err}
+                </div>
               )}
               <div className="mt-2 flex justify-end gap-2">
                 <button
@@ -630,7 +638,7 @@ function ScreeningRowItem({
                   disabled={submitting || notes.trim().length === 0}
                   className={`rounded-md px-3 py-1.5 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${
                     triageMode === "CONFIRMED_HIT"
-                      ? "border border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+                      ? "trade-chip-danger border border-trade-border"
                       : "bg-trade-accent text-white hover:bg-trade-accent-strong"
                   }`}
                 >
@@ -655,15 +663,15 @@ function DecisionPill({ decision }: { decision: ScreeningRow["decision"] }) {
     { className: string; label: string }
   > = {
     CLEAR: {
-      className: "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200",
+      className: "trade-chip-success",
       label: "✓",
     },
     POTENTIAL_MATCH: {
-      className: "bg-amber-100 text-amber-700 ring-1 ring-amber-200",
+      className: "trade-chip-warn",
       label: "?",
     },
     CONFIRMED_HIT: {
-      className: "bg-red-100 text-red-700 ring-1 ring-red-200",
+      className: "trade-chip-danger",
       label: "!",
     },
     FALSE_POSITIVE_DISMISSED: {
@@ -694,15 +702,17 @@ function CascadeChainView({ cascade }: { cascade: CascadeView }) {
     <div
       className={`rounded-md border p-3 ${
         cascade.cascadeHit
-          ? "border-red-300 bg-red-50"
+          ? "trade-chip-danger"
           : sanctionedAncestors.length > 0
-            ? "border-amber-200 bg-amber-50"
+            ? "trade-chip-warn"
             : "border-trade-border-subtle bg-trade-bg-subtle"
       }`}
     >
       <div
         className={`mb-2 flex items-center justify-between text-[10px] font-semibold uppercase tracking-widest ${
-          cascade.cascadeHit ? "text-red-700" : "text-trade-text-secondary"
+          cascade.cascadeHit
+            ? "text-trade-accent-danger"
+            : "text-trade-text-secondary"
         }`}
       >
         <span>50%-Rule Cascade</span>
@@ -759,13 +769,13 @@ function CascadeAncestorRow({
     <div
       className={`flex items-center gap-2 rounded px-2 py-1.5 text-[11px] ${
         isSanctioned
-          ? "bg-red-100 text-red-700"
+          ? "trade-chip-danger"
           : "bg-trade-bg-panel text-trade-text-primary ring-1 ring-trade-border-subtle"
       }`}
     >
       <span
         className={`font-mono ${
-          isSanctioned ? "text-red-700" : "text-trade-text-muted"
+          isSanctioned ? "text-trade-accent-danger" : "text-trade-text-muted"
         }`}
         style={{ minWidth: "4ch" }}
       >
