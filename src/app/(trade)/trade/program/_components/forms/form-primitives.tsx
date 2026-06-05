@@ -215,7 +215,7 @@ export function FormFooter({ onCancel, isPending, error }: FormFooterProps) {
   return (
     <div className="mt-6 space-y-3">
       {error && (
-        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[12.5px] text-red-700">
+        <p className="trade-chip-danger rounded-md px-3 py-2 text-[12.5px]">
           {error}
         </p>
       )}

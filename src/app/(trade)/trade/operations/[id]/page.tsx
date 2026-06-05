@@ -302,10 +302,10 @@ export default function OperationDetailPage({
               op.riskScore === null
                 ? "text-trade-text-muted"
                 : op.riskScore >= 70
-                  ? "text-red-600"
+                  ? "text-trade-accent-danger"
                   : op.riskScore >= 40
-                    ? "text-amber-600"
-                    : "text-emerald-600"
+                    ? "text-trade-accent-warn"
+                    : "text-trade-accent-success"
             }`}
           >
             {op.riskScore ?? "—"}
@@ -327,7 +327,7 @@ export default function OperationDetailPage({
       </header>
 
       {riskError && (
-        <div className="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-[13px] text-red-700">
+        <div className="mb-6 rounded-md px-4 py-3 text-[13px] trade-chip-danger">
           {riskError}
         </div>
       )}
@@ -337,17 +337,17 @@ export default function OperationDetailPage({
 
       {/* Catch-all banner */}
       {(catchAllHits.length > 0 || op.notificationDuty) && (
-        <div className="mb-6 rounded-md border border-red-200 bg-red-50 p-4">
+        <div className="mb-6 rounded-md p-4 trade-chip-danger">
           <div className="mb-2 flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-red-600" />
-            <h2 className="text-[12px] font-semibold uppercase tracking-widest text-red-700">
+            <AlertTriangle className="h-4 w-4 text-current" />
+            <h2 className="text-[12px] font-semibold uppercase tracking-widest text-current">
               Catch-all Triggered
             </h2>
           </div>
-          <ul className="space-y-1.5 text-[12px] text-red-900">
+          <ul className="space-y-1.5 text-[12px] text-current">
             {catchAllHits.map((c) => (
               <li key={c.code}>
-                <span className="mr-2 font-mono text-[11px] text-red-700">
+                <span className="mr-2 font-mono text-[11px] text-current">
                   {c.code}
                 </span>
                 {c.label}
@@ -355,7 +355,7 @@ export default function OperationDetailPage({
             ))}
             {op.notificationDuty && (
               <li>
-                <span className="mr-2 font-mono text-[11px] text-amber-700">
+                <span className="mr-2 font-mono text-[11px] text-trade-accent-warn">
                   §8 AWV
                 </span>
                 Anzeigepflicht — operator must notify BAFA before shipment
@@ -482,7 +482,7 @@ export default function OperationDetailPage({
                   <Globe className="h-3 w-3" />
                   {op.counterparty.countryCode}
                   {op.counterparty.isHighRiskCountry && (
-                    <span className="text-amber-600">· high-risk</span>
+                    <span className="text-trade-accent-warn">· high-risk</span>
                   )}
                   <span>·</span>
                   <span>
@@ -626,7 +626,7 @@ function CountryStop({
           muted
             ? "text-trade-text-muted"
             : primary
-              ? "text-emerald-600"
+              ? "text-trade-accent-success"
               : "text-trade-text-primary"
         }`}
       >
@@ -667,13 +667,13 @@ function KV({
 function riskSeverityClass(severity: RiskFactorView["severity"]): string {
   switch (severity) {
     case "critical":
-      return "bg-red-100 text-red-700";
+      return "trade-chip-danger";
     case "high":
-      return "bg-orange-100 text-orange-700";
+      return "trade-chip-warn";
     case "medium":
-      return "bg-amber-100 text-amber-700";
+      return "trade-chip-warn";
     default:
-      return "bg-trade-bg-subtle text-trade-text-secondary";
+      return "trade-chip-neutral";
   }
 }
 
@@ -688,16 +688,11 @@ const RISK_SEVERITY_RANK: Record<RiskFactorView["severity"], number> = {
 function RiskFactorsPanel({ risk }: { risk: RiskScoreView }) {
   const bandClass =
     risk.band === "high"
-      ? "border-red-200 bg-red-50"
+      ? "trade-chip-danger"
       : risk.band === "medium"
-        ? "border-amber-200 bg-amber-50"
-        : "border-emerald-200 bg-emerald-50";
-  const bandText =
-    risk.band === "high"
-      ? "text-red-700"
-      : risk.band === "medium"
-        ? "text-amber-700"
-        : "text-emerald-700";
+        ? "trade-chip-warn"
+        : "trade-chip-success";
+  const bandText = "text-current";
 
   const columns: TradeColumn<RiskFactorView>[] = [
     {
@@ -771,19 +766,19 @@ function StatusInlineBadge({ status }: { status: Operation["status"] }) {
   > = {
     DRAFT: { className: "text-trade-text-secondary", label: "DRAFT" },
     AWAITING_CLASSIFICATION: {
-      className: "text-amber-700",
+      className: "text-trade-accent-warn",
       label: "AWAITING CLASSIFICATION",
     },
-    SCREENING: { className: "text-amber-700", label: "SCREENING" },
+    SCREENING: { className: "text-trade-accent-warn", label: "SCREENING" },
     AWAITING_LICENSE: {
-      className: "text-amber-700",
+      className: "text-trade-accent-warn",
       label: "AWAITING LICENSE",
     },
-    LICENSED: { className: "text-blue-700", label: "LICENSED" },
-    EXECUTED: { className: "text-emerald-700", label: "EXECUTED" },
-    BLOCKED: { className: "text-red-700", label: "BLOCKED" },
+    LICENSED: { className: "text-trade-link", label: "LICENSED" },
+    EXECUTED: { className: "text-trade-accent-success", label: "EXECUTED" },
+    BLOCKED: { className: "text-trade-accent-danger", label: "BLOCKED" },
     VOLUNTARY_DISCLOSURE_FILED: {
-      className: "text-red-700",
+      className: "text-trade-accent-danger",
       label: "VOLUNTARY DISCLOSURE",
     },
   };

@@ -50,9 +50,9 @@ export default async function SammelgenehmigungDetailPage({
   const cap = fromCents(row.totalValueCapEur);
   const drawn = fromCents(row.drawnDownValueEur);
   const pct = cap > 0 ? Math.min(100, (drawn / cap) * 100) : 0;
-  let barTone = "bg-emerald-500";
-  if (pct >= 90) barTone = "bg-red-500";
-  else if (pct >= 70) barTone = "bg-amber-500";
+  let barTone = "bg-trade-accent-success";
+  if (pct >= 90) barTone = "bg-trade-accent-danger";
+  else if (pct >= 70) barTone = "bg-trade-accent-warn";
 
   return (
     <div className="space-y-6 px-8 py-10">
@@ -106,7 +106,7 @@ export default async function SammelgenehmigungDetailPage({
         <SummaryCard
           label="Remaining"
           value={formatEur(remaining ?? cap - drawn)}
-          tone="text-emerald-700"
+          tone="text-trade-accent-success"
         />
       </section>
 
@@ -120,7 +120,7 @@ export default async function SammelgenehmigungDetailPage({
             {formatEur(drawn)} of {formatEur(cap)} drawn ({pct.toFixed(1)}%)
           </span>
         </header>
-        <div className="h-3 w-full overflow-hidden rounded-sm bg-slate-200">
+        <div className="h-3 w-full overflow-hidden rounded-sm bg-trade-bg-subtle">
           <div className={`h-full ${barTone}`} style={{ width: `${pct}%` }} />
         </div>
       </section>
@@ -259,11 +259,11 @@ function SummaryCard({
 
 function StatusPill({ status }: { status: TradeSammelgenehmigungStatus }) {
   const tone = {
-    DRAFT: "bg-slate-100 text-slate-700",
-    ACTIVE: "bg-emerald-100 text-emerald-700",
-    EXHAUSTED: "bg-amber-100 text-amber-800",
-    EXPIRED: "bg-slate-200 text-slate-500",
-    REVOKED: "bg-red-100 text-red-700",
+    DRAFT: "trade-chip-neutral",
+    ACTIVE: "trade-chip-success",
+    EXHAUSTED: "trade-chip-warn",
+    EXPIRED: "trade-chip-neutral",
+    REVOKED: "trade-chip-danger",
   }[status];
   return (
     <span

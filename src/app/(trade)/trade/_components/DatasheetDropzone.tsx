@@ -24,9 +24,9 @@ export interface DatasheetApplyPayload {
 }
 
 const CONFIDENCE_CLS: Record<"HIGH" | "MEDIUM" | "LOW", string> = {
-  HIGH: "bg-green-500/15 text-green-400",
-  MEDIUM: "bg-amber-500/15 text-amber-400",
-  LOW: "bg-zinc-500/15 text-zinc-400",
+  HIGH: "trade-chip-success",
+  MEDIUM: "trade-chip-warn",
+  LOW: "trade-chip-neutral",
 };
 
 export function DatasheetDropzone({
@@ -112,7 +112,7 @@ export function DatasheetDropzone({
       )}
 
       {error && (
-        <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+        <div className="trade-chip-danger rounded-lg px-3 py-2 text-sm">
           {error} — du kannst die Codes weiterhin manuell eingeben.
         </div>
       )}

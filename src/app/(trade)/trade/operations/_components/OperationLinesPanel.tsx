@@ -117,7 +117,7 @@ export function OperationLinesPanel({
             onClick={() => setShowAddForm((s) => !s)}
             className={
               showAddForm
-                ? "flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700 transition hover:bg-red-100"
+                ? "trade-chip-danger flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px] font-semibold transition"
                 : "flex items-center gap-1.5 rounded-md bg-trade-accent px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-trade-accent-strong"
             }
           >
@@ -135,7 +135,7 @@ export function OperationLinesPanel({
       </div>
 
       {unclassifiedCount > 0 && (
-        <div className="border-b border-amber-200 bg-amber-50 px-5 py-2.5 text-[12px] text-amber-700">
+        <div className="trade-chip-warn border-b px-5 py-2.5 text-[12px]">
           <AlertTriangle className="mr-1.5 inline h-3.5 w-3.5" />
           {unclassifiedCount}{" "}
           {unclassifiedCount === 1 ? "line has" : "lines have"} no
@@ -158,7 +158,7 @@ export function OperationLinesPanel({
       )}
 
       {error && (
-        <div className="border-b border-red-200 bg-red-50 px-5 py-2 text-[12px] text-red-700">
+        <div className="trade-chip-danger border-b px-5 py-2 text-[12px]">
           {error}
         </div>
       )}
@@ -211,7 +211,7 @@ function LineRowItem({
     <li className="flex items-center gap-4 border-b border-trade-border-subtle px-5 py-3 last:border-0">
       <Package
         className={`h-4 w-4 shrink-0 ${
-          isUnclassified ? "text-amber-500" : "text-trade-text-muted"
+          isUnclassified ? "text-trade-accent-warn" : "text-trade-text-muted"
         }`}
         strokeWidth={1.75}
       />
@@ -234,7 +234,7 @@ function LineRowItem({
               ))}
             </>
           ) : (
-            <span className="text-amber-600">· unclassified</span>
+            <span className="text-trade-accent-warn">· unclassified</span>
           )}
         </div>
       </div>
@@ -246,11 +246,11 @@ function LineRowItem({
       </div>
       <div className="shrink-0">
         {line.appliedLicense ? (
-          <span className="rounded bg-blue-50 px-2 py-1 font-mono text-[10px] text-blue-700 ring-1 ring-blue-200">
+          <span className="trade-chip-info rounded px-2 py-1 font-mono text-[10px] ring-1">
             {line.appliedLicense.licenseType.replace(/_/g, " ")}
           </span>
         ) : (
-          <span className="rounded bg-amber-50 px-2 py-1 text-[10px] text-amber-700 ring-1 ring-amber-200">
+          <span className="trade-chip-warn rounded px-2 py-1 text-[10px] ring-1">
             no license
           </span>
         )}
@@ -258,7 +258,7 @@ function LineRowItem({
       {!isReadOnly && (
         <button
           onClick={onDelete}
-          className="shrink-0 rounded-md p-1.5 text-trade-text-muted transition hover:bg-red-50 hover:text-red-700"
+          className="shrink-0 rounded-md p-1.5 text-trade-text-muted transition hover:bg-trade-hover hover:text-trade-accent-danger"
           title="Remove line"
         >
           <Trash2 className="h-3.5 w-3.5" />
@@ -387,7 +387,9 @@ function AddLineForm({
                             </span>
                           ))
                         ) : (
-                          <span className="text-amber-600">unclassified</span>
+                          <span className="text-trade-accent-warn">
+                            unclassified
+                          </span>
                         )}
                       </div>
                     </div>
@@ -460,7 +462,11 @@ function AddLineForm({
               {(quantity * unitValue).toFixed(2)} {unitCurrency}
             </span>
           </div>
-          {err && <div className="mt-2 text-[11px] text-red-600">{err}</div>}
+          {err && (
+            <div className="mt-2 text-[11px] text-trade-accent-danger">
+              {err}
+            </div>
+          )}
           <div className="mt-3 flex justify-end">
             <button
               onClick={submit}

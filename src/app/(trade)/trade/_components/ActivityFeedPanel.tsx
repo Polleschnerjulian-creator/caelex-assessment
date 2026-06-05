@@ -161,19 +161,19 @@ function iconForCategory(category: ActivityEvent["category"]): LucideIcon {
 function toneForCategory(category: ActivityEvent["category"]): string {
   switch (category) {
     case "vsd":
-      return "bg-red-50 text-red-600";
+      return "trade-chip-danger";
     case "license":
     case "sammelgenehmigung":
-      return "bg-emerald-50 text-emerald-700";
+      return "trade-chip-success";
     case "party":
-      return "bg-amber-50 text-amber-700";
+      return "trade-chip-warn";
     case "euc":
     case "reexport":
-      return "bg-blue-50 text-blue-700";
+      return "trade-chip-info";
     case "operation":
     case "item":
     default:
-      return "bg-trade-bg-subtle text-trade-text-secondary";
+      return "trade-chip-neutral";
   }
 }
 

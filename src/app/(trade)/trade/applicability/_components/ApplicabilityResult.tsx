@@ -72,22 +72,22 @@ const LEVEL: Record<
   { dot: string; label: string; chipText: string; chipBg: string }
 > = {
   CLEARLY_APPLIES: {
-    dot: "bg-red-500",
+    dot: "bg-trade-accent-danger",
     label: "trifft zu",
-    chipText: "text-red-700",
-    chipBg: "bg-red-50",
+    chipText: "",
+    chipBg: "trade-chip-danger",
   },
   LIKELY_APPLIES: {
-    dot: "bg-amber-500",
+    dot: "bg-trade-accent-warn",
     label: "trifft wahrscheinlich zu — bestätigen",
-    chipText: "text-amber-700",
-    chipBg: "bg-amber-50",
+    chipText: "",
+    chipBg: "trade-chip-warn",
   },
   OUT_OF_SCOPE_ON_THESE_FACTS: {
     dot: "bg-trade-text-muted",
     label: "auf diesen Angaben außerhalb des Anwendungsbereichs — prüfen",
-    chipText: "text-trade-text-secondary",
-    chipBg: "bg-trade-bg-subtle",
+    chipText: "",
+    chipBg: "trade-chip-neutral",
   },
 };
 
@@ -116,7 +116,7 @@ function VerdictCard({ verdict }: { verdict: RegimeVerdict }) {
                 {level.label}
               </span>
               {verdict.fromUncertainty ? (
-                <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+                <span className="rounded-full px-2 py-0.5 text-[10px] font-medium trade-chip-warn">
                   wegen Unsicherheit hochgestuft
                 </span>
               ) : null}

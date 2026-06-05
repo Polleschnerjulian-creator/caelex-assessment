@@ -110,7 +110,7 @@ export default function NewOperationWizardPage() {
       </div>
 
       {error && (
-        <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <div className="mb-4 rounded-lg border px-4 py-3 text-sm trade-chip-danger">
           {error}
         </div>
       )}

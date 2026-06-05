@@ -40,7 +40,7 @@ export function ScreeningBadge({ status }: { status: ScreeningStatus }) {
     return wrap(
       <ShieldCheck
         {...a11yProps}
-        className={`${className} text-emerald-600`}
+        className={`${className} text-trade-accent-success`}
         strokeWidth={1.75}
       />,
     );
@@ -49,7 +49,7 @@ export function ScreeningBadge({ status }: { status: ScreeningStatus }) {
     return wrap(
       <AlertTriangle
         {...a11yProps}
-        className={`${className} text-amber-500`}
+        className={`${className} text-trade-accent-warn`}
         strokeWidth={1.75}
       />,
     );
@@ -58,7 +58,7 @@ export function ScreeningBadge({ status }: { status: ScreeningStatus }) {
     return wrap(
       <ShieldAlert
         {...a11yProps}
-        className={`${className} text-red-600`}
+        className={`${className} text-trade-accent-danger`}
         strokeWidth={1.75}
       />,
     );
@@ -67,7 +67,7 @@ export function ScreeningBadge({ status }: { status: ScreeningStatus }) {
     return wrap(
       <Shield
         {...a11yProps}
-        className={`${className} text-orange-500`}
+        className={`${className} text-trade-accent-warn`}
         strokeWidth={1.75}
       />,
     );

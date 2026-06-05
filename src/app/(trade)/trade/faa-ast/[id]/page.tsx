@@ -86,35 +86,29 @@ export default async function FaaAstDetailPage({ params }: DetailPageProps) {
 
       {ecCheck && (
         <section
-          className={`rounded-xl border p-5 ${
-            ecCheck.compliant
-              ? "border-emerald-200 bg-emerald-50"
-              : "border-red-200 bg-red-50"
+          className={`rounded-xl p-5 ${
+            ecCheck.compliant ? "trade-chip-success" : "trade-chip-danger"
           }`}
         >
           <h2 className="mb-2 text-[13px] font-semibold uppercase tracking-wide text-trade-text-muted">
             § 450.101 Ec compliance
           </h2>
-          <p
-            className={`text-[14px] font-semibold ${
-              ecCheck.compliant ? "text-emerald-800" : "text-red-800"
-            }`}
-          >
+          <p className="text-[14px] font-semibold text-current">
             {ecCheck.compliant
               ? "COMPLIANT"
               : "NON-COMPLIANT — refine flight-safety analysis"}
           </p>
           <p className="mt-1 text-[12.5px] text-trade-text-secondary">
             Ec ={" "}
-            <code className="rounded bg-white px-1.5 py-0.5">
+            <code className="rounded bg-trade-bg-panel px-1.5 py-0.5">
               {ecCheck.ec.toExponential(2)}
             </code>{" "}
             · Threshold ={" "}
-            <code className="rounded bg-white px-1.5 py-0.5">
+            <code className="rounded bg-trade-bg-panel px-1.5 py-0.5">
               {EC_THRESHOLD_PER_MISSION.toExponential(2)}
             </code>{" "}
             · Margin ratio ={" "}
-            <code className="rounded bg-white px-1.5 py-0.5">
+            <code className="rounded bg-trade-bg-panel px-1.5 py-0.5">
               {ecCheck.marginRatio.toFixed(3)}
             </code>
           </p>

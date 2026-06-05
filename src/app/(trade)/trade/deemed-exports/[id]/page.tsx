@@ -83,7 +83,7 @@ export default async function DeemedExportDetailPage({ params }: PageProps) {
       </header>
 
       {isDualNationality && (
-        <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2.5 text-[12.5px] text-amber-800">
+        <div className="flex items-start gap-2 rounded-md px-3 py-2.5 text-[12.5px] trade-chip-warn">
           <AlertTriangle size={14} className="mt-0.5 shrink-0" />
           <div>
             <strong className="font-semibold">Dual-nationality notice.</strong>{" "}
@@ -96,7 +96,7 @@ export default async function DeemedExportDetailPage({ params }: PageProps) {
       )}
 
       {isExpiringSoon && (
-        <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2.5 text-[12.5px] text-amber-800">
+        <div className="flex items-start gap-2 rounded-md px-3 py-2.5 text-[12.5px] trade-chip-warn">
           <AlertTriangle size={14} className="mt-0.5 shrink-0" />
           <div>
             <strong className="font-semibold">Expiring within 90 days.</strong>{" "}

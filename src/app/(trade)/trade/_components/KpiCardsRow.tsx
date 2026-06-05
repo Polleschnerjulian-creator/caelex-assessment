@@ -172,9 +172,9 @@ function KpiCard({
     : "";
   const accentTintClass = accent
     ? {
-        emerald: "bg-emerald-50/40",
-        amber: "bg-amber-50/50",
-        red: "bg-red-50/40",
+        emerald: "bg-trade-bg-panel",
+        amber: "bg-trade-bg-panel",
+        red: "bg-trade-bg-panel",
       }[accent]
     : "bg-trade-bg-panel";
 
@@ -232,10 +232,10 @@ function KpiCard({
 
 function Badge({ tone, children }: { tone: Tone; children: React.ReactNode }) {
   const toneClass = {
-    ok: "bg-emerald-50 text-emerald-700",
-    warn: "bg-amber-100 text-amber-700",
-    danger: "bg-red-100 text-red-700",
-    muted: "bg-trade-bg-subtle text-trade-text-secondary",
+    ok: "trade-chip-success",
+    warn: "trade-chip-warn",
+    danger: "trade-chip-danger",
+    muted: "trade-chip-neutral",
   }[tone];
   return (
     <span
@@ -257,7 +257,7 @@ function TrendArrow({
 }) {
   if (trend === "up") {
     return (
-      <span className="inline-flex items-center gap-0.5 text-[12px] font-semibold text-emerald-600">
+      <span className="inline-flex items-center gap-0.5 text-[12px] font-semibold text-trade-accent-success">
         <ArrowUpRight size={14} />
         {percent === null ? "new" : `${percent > 0 ? "+" : ""}${percent}%`}
       </span>
@@ -265,7 +265,7 @@ function TrendArrow({
   }
   if (trend === "down") {
     return (
-      <span className="inline-flex items-center gap-0.5 text-[12px] font-semibold text-red-600">
+      <span className="inline-flex items-center gap-0.5 text-[12px] font-semibold text-trade-accent-danger">
         <ArrowDownRight size={14} />
         {percent === null ? "—" : `${percent}%`}
       </span>

@@ -179,7 +179,7 @@ export function ScreeningTriageTable() {
               </span>
             )}
             {r.status === "BLOCKED" && (
-              <span className="rounded bg-red-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-red-700 ring-1 ring-red-200">
+              <span className="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest trade-chip-danger">
                 Blocked
               </span>
             )}
@@ -188,7 +188,7 @@ export function ScreeningTriageTable() {
             <Globe className="h-3 w-3" />
             {r.countryCode}
             {r.isHighRiskCountry && (
-              <span className="text-amber-600">· high-risk</span>
+              <span className="text-trade-accent-warn">· high-risk</span>
             )}
             {r.isUSPerson && <span>· US person</span>}
           </div>

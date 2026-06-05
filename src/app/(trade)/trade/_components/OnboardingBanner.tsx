@@ -215,7 +215,7 @@ function SeedButton({
 
   if (state.kind === "seeded") {
     return (
-      <span className="inline-flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-1.5 text-[12px] font-semibold text-emerald-700">
+      <span className="trade-chip-success inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-[12px] font-semibold">
         <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
         Seeded {state.counts.items} items · {state.counts.parties} parties ·{" "}
         {state.counts.operations} operation
@@ -225,7 +225,7 @@ function SeedButton({
 
   if (state.kind === "already-seeded") {
     return (
-      <span className="inline-flex items-center gap-2 rounded-md bg-amber-50 px-3 py-1.5 text-[12px] font-semibold text-amber-700">
+      <span className="trade-chip-warn inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-[12px] font-semibold">
         Already has data — sample seed skipped
       </span>
     );
@@ -244,7 +244,7 @@ function SeedButton({
         </button>
         <span
           role="alert"
-          className="inline-flex items-center gap-1 text-[11px] text-red-700"
+          className="inline-flex items-center gap-1 text-[11px] text-trade-accent-danger"
         >
           <AlertTriangle className="h-3 w-3" aria-hidden="true" />
           {state.message}

@@ -52,7 +52,7 @@ const SEVERITY_ICONS: Record<ActionSeverity, LucideIcon> = {
 const SEVERITY_BORDER: Record<ActionSeverity, string> = {
   critical: "border-l-red-500",
   warning: "border-l-amber-500",
-  info: "border-l-slate-400",
+  info: "border-l-trade-border",
 };
 
 const INITIAL_VISIBLE = 8;
@@ -179,9 +179,9 @@ function EmptyAllClear() {
     <div className="flex flex-col items-center gap-2 px-5 py-8 text-center">
       <div
         aria-hidden="true"
-        className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50"
+        className="trade-chip-success flex h-10 w-10 items-center justify-center rounded-full"
       >
-        <CheckCircle2 className="h-5 w-5 text-emerald-600" strokeWidth={1.75} />
+        <CheckCircle2 className="h-5 w-5 text-current" strokeWidth={1.75} />
       </div>
       <p className="text-[13px] font-semibold text-trade-text-primary">
         Keine offenen Punkte — alles erledigt.

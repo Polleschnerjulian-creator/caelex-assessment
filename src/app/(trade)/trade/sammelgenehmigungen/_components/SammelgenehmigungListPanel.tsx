@@ -35,15 +35,15 @@ const STATUS_LABELS: Record<TradeSammelgenehmigungStatus, string> = {
 function statusTone(status: TradeSammelgenehmigungStatus): string {
   switch (status) {
     case "DRAFT":
-      return "bg-slate-100 text-slate-700";
+      return "trade-chip-neutral";
     case "ACTIVE":
-      return "bg-emerald-100 text-emerald-700";
+      return "trade-chip-success";
     case "EXHAUSTED":
-      return "bg-amber-100 text-amber-800";
+      return "trade-chip-warn";
     case "EXPIRED":
-      return "bg-slate-200 text-slate-500";
+      return "trade-chip-neutral";
     case "REVOKED":
-      return "bg-red-100 text-red-700";
+      return "trade-chip-danger";
   }
 }
 
@@ -78,12 +78,12 @@ function CapacityBar({
   total: number;
 }): JSX.Element {
   const pct = total > 0 ? Math.min(100, (drawn / total) * 100) : 0;
-  let bar = "bg-emerald-500";
-  if (pct >= 90) bar = "bg-red-500";
-  else if (pct >= 70) bar = "bg-amber-500";
+  let bar = "bg-trade-accent-success";
+  if (pct >= 90) bar = "bg-trade-accent-danger";
+  else if (pct >= 70) bar = "bg-trade-accent-warn";
   return (
     <div className="flex items-center gap-2">
-      <div className="h-1.5 w-24 overflow-hidden rounded-sm bg-slate-200">
+      <div className="h-1.5 w-24 overflow-hidden rounded-sm bg-trade-bg-subtle">
         <div className={`h-full ${bar}`} style={{ width: `${pct}%` }} />
       </div>
       <span className="text-[11px] text-trade-text-secondary">
@@ -156,7 +156,7 @@ export function SammelgenehmigungListPanel({ rows, canEdit }: Props) {
                         {new Date(row.validUntil).toISOString().slice(0, 10)}
                       </span>
                       {expiringSoon && (
-                        <span className="ml-2 inline-flex items-center rounded-sm bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-800">
+                        <span className="ml-2 inline-flex items-center rounded-sm trade-chip-warn px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
                           {daysLeft}d left
                         </span>
                       )}

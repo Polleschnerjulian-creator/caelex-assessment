@@ -175,17 +175,17 @@ function StatusPill({ status }: { status: TradeEUCStatus }) {
 function toneFor(status: TradeEUCStatus): string {
   switch (status) {
     case "REQUESTED":
-      return "bg-slate-100 text-slate-700";
+      return "trade-chip-neutral";
     case "SENT_TO_PARTY":
-      return "bg-slate-200 text-slate-700";
+      return "trade-chip-neutral";
     case "RECEIVED":
-      return "bg-amber-100 text-amber-700";
+      return "trade-chip-warn";
     case "VALIDATED":
-      return "bg-emerald-100 text-emerald-700";
+      return "trade-chip-success";
     case "EXPIRED":
-      return "bg-slate-200 text-slate-500";
+      return "trade-chip-neutral";
     case "REVOKED":
-      return "bg-red-100 text-red-700";
+      return "trade-chip-danger";
   }
 }
 
@@ -238,7 +238,7 @@ function StatusTransitionMenu({ row }: { row: EucWithRelations }) {
             </button>
           ))}
           {error && (
-            <p className="border-t border-trade-border-subtle px-3 py-2 text-[11px] text-red-700">
+            <p className="border-t border-trade-border-subtle px-3 py-2 text-[11px] text-trade-accent-danger">
               {error}
             </p>
           )}
@@ -397,7 +397,7 @@ function CreateEucForm({
       </div>
 
       {error && (
-        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[12.5px] text-red-700">
+        <p className="rounded-md trade-chip-danger px-3 py-2 text-[12.5px]">
           {error}
         </p>
       )}

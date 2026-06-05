@@ -259,7 +259,7 @@ export default function OperationsListPage() {
               </span>
               {o.notificationDuty && (
                 <span
-                  className="rounded bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-amber-700 ring-1 ring-amber-200"
+                  className="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest trade-chip-warn"
                   title="§8 AWV Anzeigepflicht"
                 >
                   Notify
@@ -267,7 +267,7 @@ export default function OperationsListPage() {
               )}
               {catchAllCount > 0 && (
                 <span
-                  className="rounded bg-red-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-red-700 ring-1 ring-red-200"
+                  className="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest trade-chip-danger"
                   title="Catch-all article triggered"
                 >
                   Catch-all ×{catchAllCount}
@@ -277,7 +277,7 @@ export default function OperationsListPage() {
             <div className="mt-0.5 text-[11px] text-trade-text-muted">
               {o.counterparty.legalName}
               {o.counterparty.isHighRiskCountry && (
-                <span className="text-amber-600"> · high-risk</span>
+                <span className="text-trade-accent-warn"> · high-risk</span>
               )}
               {o._count.lines > 0 && ` · ${o._count.lines} lines`}
               {o._count.licenses > 0 && ` · ${o._count.licenses} licenses`}
@@ -326,10 +326,10 @@ export default function OperationsListPage() {
             <div
               className={`text-[14px] font-bold tabular-nums ${
                 o.riskScore >= 70
-                  ? "text-red-600"
+                  ? "text-trade-accent-danger"
                   : o.riskScore >= 40
-                    ? "text-amber-600"
-                    : "text-emerald-600"
+                    ? "text-trade-accent-warn"
+                    : "text-trade-accent-success"
               }`}
             >
               {o.riskScore}
@@ -405,7 +405,7 @@ export default function OperationsListPage() {
             onClick={() => setShowNewForm((s) => !s)}
             className={
               showNewForm
-                ? "flex shrink-0 items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-[13px] font-medium text-red-700 transition hover:bg-red-100"
+                ? "flex shrink-0 items-center gap-2 rounded-lg border px-4 py-2 text-[13px] font-medium transition trade-chip-danger hover:bg-trade-hover"
                 : "flex shrink-0 items-center gap-2 rounded-lg border border-trade-border bg-trade-bg-panel px-4 py-2 text-[13px] font-medium text-trade-text-primary transition hover:bg-trade-hover"
             }
           >
@@ -490,37 +490,37 @@ function StatusBadge({ status }: { status: OperationRow["status"] }) {
     },
     AWAITING_CLASSIFICATION: {
       icon: Clock,
-      className: "bg-amber-50 text-amber-700",
+      className: "trade-chip-warn",
       label: "Class.",
     },
     SCREENING: {
       icon: Clock,
-      className: "bg-amber-50 text-amber-700",
+      className: "trade-chip-warn",
       label: "Screen",
     },
     AWAITING_LICENSE: {
       icon: Clock,
-      className: "bg-amber-50 text-amber-700",
+      className: "trade-chip-warn",
       label: "License",
     },
     LICENSED: {
       icon: CheckCircle2,
-      className: "bg-blue-50 text-blue-700",
+      className: "trade-chip-info",
       label: "Licensed",
     },
     EXECUTED: {
       icon: CheckCircle2,
-      className: "bg-emerald-50 text-emerald-700",
+      className: "trade-chip-success",
       label: "Executed",
     },
     BLOCKED: {
       icon: XCircle,
-      className: "bg-red-50 text-red-700",
+      className: "trade-chip-danger",
       label: "Blocked",
     },
     VOLUNTARY_DISCLOSURE_FILED: {
       icon: AlertTriangle,
-      className: "bg-red-50 text-red-700",
+      className: "trade-chip-danger",
       label: "VDISC",
     },
   };
@@ -796,7 +796,7 @@ function NewOperationForm({
         </div>
       </div>
       {err && (
-        <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700">
+        <div className="mt-3 rounded-md px-3 py-2 text-[12px] trade-chip-danger">
           {err}
         </div>
       )}

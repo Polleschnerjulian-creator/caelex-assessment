@@ -177,7 +177,7 @@ export function AuditTab({ preferences }: Props) {
               <p
                 id="auditRetentionYears-error"
                 role="alert"
-                className="mt-1 text-[11px] text-red-500"
+                className="mt-1 text-[11px] text-trade-accent-danger"
               >
                 {feedback.fields.auditRetentionYears.join(", ")}
               </p>
@@ -254,13 +254,13 @@ export function AuditTab({ preferences }: Props) {
       <div className="flex items-center justify-between border-t border-trade-border-subtle pt-4">
         <div className="text-[12px]">
           {feedback?.kind === "ok" && (
-            <span className="inline-flex items-center gap-1.5 text-emerald-500">
+            <span className="inline-flex items-center gap-1.5 text-trade-accent-success">
               <CheckCircle2 size={14} />
               Audit settings saved
             </span>
           )}
           {feedback?.kind === "error" && !feedback.fields && (
-            <span className="inline-flex items-center gap-1.5 text-red-500">
+            <span className="inline-flex items-center gap-1.5 text-trade-accent-danger">
               <AlertCircle size={14} />
               {feedback.message}
             </span>

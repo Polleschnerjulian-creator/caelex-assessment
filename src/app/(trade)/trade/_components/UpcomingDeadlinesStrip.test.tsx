@@ -175,7 +175,7 @@ describe("UpcomingDeadlinesStrip render", () => {
     const { container } = render(
       <UpcomingDeadlinesStrip deadlines={deadlines} now={NOW} />,
     );
-    expect(container.querySelector(".bg-red-50")).not.toBeNull();
+    expect(container.querySelector(".trade-chip-danger")).not.toBeNull();
   });
 
   it("uses 'Today' / 'Tomorrow' labels in the chip footer", () => {

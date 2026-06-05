@@ -62,17 +62,17 @@ export function WasJetztPanel({
   if (target.blocked) {
     return (
       <section
-        className="rounded-xl border border-red-500/40 bg-red-500/5 px-5 py-4"
+        className="rounded-xl border px-5 py-4 trade-chip-danger"
         data-testid="was-jetzt-blocked"
       >
-        <div className="mb-2 flex items-center gap-2 text-[15px] font-semibold text-red-200">
+        <div className="mb-2 flex items-center gap-2 text-[15px] font-semibold text-current">
           <XCircle className="h-5 w-5" /> Was jetzt? — Lieferung verboten, kein
           Antrag möglich
         </div>
         <p className="mb-2 text-sm text-trade-text-secondary">
           <strong>Warum?</strong> {target.requirement.reason}
         </p>
-        <p className="text-sm text-red-200">{docs.stopGuidance}</p>
+        <p className="text-sm text-current">{docs.stopGuidance}</p>
       </section>
     );
   }
@@ -88,10 +88,10 @@ export function WasJetztPanel({
 
   return (
     <section
-      className="space-y-4 rounded-xl border border-amber-500/40 bg-amber-500/5 px-5 py-4"
+      className="space-y-4 rounded-xl border px-5 py-4 trade-chip-warn"
       data-testid="was-jetzt-review"
     >
-      <div className="flex items-center gap-2 text-[15px] font-semibold text-amber-200">
+      <div className="flex items-center gap-2 text-[15px] font-semibold text-current">
         <AlertTriangle className="h-5 w-5" /> Was jetzt?
       </div>
       <p className="text-sm text-trade-text-secondary">

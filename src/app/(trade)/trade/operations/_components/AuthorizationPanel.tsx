@@ -50,27 +50,27 @@ const STATUS_META: Record<
 > = {
   compliant: {
     label: "Approved",
-    bg: "bg-emerald-50",
-    border: "border-emerald-200",
-    badge: "bg-emerald-600 text-white",
+    bg: "trade-chip-success",
+    border: "",
+    badge: "trade-chip-success",
   },
   non_compliant: {
     label: "Rejected",
-    bg: "bg-red-50",
-    border: "border-red-200",
-    badge: "bg-red-600 text-white",
+    bg: "trade-chip-danger",
+    border: "",
+    badge: "trade-chip-danger",
   },
   under_review: {
     label: "Under Review",
-    bg: "bg-amber-50",
-    border: "border-amber-200",
-    badge: "bg-amber-500 text-white",
+    bg: "trade-chip-warn",
+    border: "",
+    badge: "trade-chip-warn",
   },
   unknown: {
     label: "Not Started",
-    bg: "bg-trade-bg-panel",
-    border: "border-trade-border-subtle",
-    badge: "bg-trade-text-muted text-white",
+    bg: "trade-chip-neutral",
+    border: "",
+    badge: "trade-chip-neutral",
   },
 };
 
@@ -102,9 +102,9 @@ const NIS2_TONE: Record<
   Exclude<AuthorizationStatusView["nis2Classification"], null>,
   string
 > = {
-  essential: "text-red-700 bg-red-100",
-  important: "text-amber-700 bg-amber-100",
-  out_of_scope: "text-trade-text-secondary bg-trade-bg-subtle",
+  essential: "trade-chip-danger",
+  important: "trade-chip-warn",
+  out_of_scope: "trade-chip-neutral",
 };
 
 export function AuthorizationPanel({ data, loading }: AuthorizationPanelProps) {

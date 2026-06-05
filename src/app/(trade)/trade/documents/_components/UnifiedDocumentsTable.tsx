@@ -49,20 +49,20 @@ const DOC_TYPE_ORDER: ReadonlyArray<UnifiedDocType> = [
  *  vocabulary already used by the per-type list panels so the merged view
  *  reads consistently with the dedicated pages. */
 const TONE_CLASS: Readonly<Record<UnifiedStatusTone, string>> = {
-  positive: "bg-emerald-100 text-emerald-700",
-  progress: "bg-slate-200 text-slate-700",
-  pending: "bg-slate-100 text-slate-700",
-  warning: "bg-amber-100 text-amber-700",
-  critical: "bg-red-100 text-red-700",
-  neutral: "bg-slate-200 text-slate-500",
+  positive: "trade-chip-success",
+  progress: "trade-chip-neutral",
+  pending: "trade-chip-neutral",
+  warning: "trade-chip-warn",
+  critical: "trade-chip-danger",
+  neutral: "trade-chip-neutral",
 };
 
 /** Expiry bucket → the "Gültig bis" cell colour. */
 const EXPIRY_CLASS: Readonly<Record<ExpiryBucket, string>> = {
   none: "text-trade-text-muted",
   later: "text-trade-text-secondary",
-  soon: "text-amber-600 font-medium",
-  expired: "text-red-600 font-medium",
+  soon: "text-trade-accent-warn font-medium",
+  expired: "text-trade-accent-danger font-medium",
 };
 
 type ExpiryFilter = "all" | "soon" | "expired";

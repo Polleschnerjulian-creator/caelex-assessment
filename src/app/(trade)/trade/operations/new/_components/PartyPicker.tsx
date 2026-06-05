@@ -18,9 +18,12 @@ async function searchParties(q: string): Promise<PartyRow[]> {
 }
 
 const SCREEN_LABEL: Record<string, { text: string; cls: string }> = {
-  CLEAR: { text: "✓ sauber", cls: "text-green-500" },
-  POTENTIAL_MATCH: { text: "? möglicher Treffer", cls: "text-amber-500" },
-  CONFIRMED_HIT: { text: "✕ Treffer", cls: "text-red-500" },
+  CLEAR: { text: "✓ sauber", cls: "text-trade-accent-success" },
+  POTENTIAL_MATCH: {
+    text: "? möglicher Treffer",
+    cls: "text-trade-accent-warn",
+  },
+  CONFIRMED_HIT: { text: "✕ Treffer", cls: "text-trade-accent-danger" },
   STALE: { text: "veraltet", cls: "text-trade-text-muted" },
   NOT_SCREENED: { text: "ungescreent", cls: "text-trade-text-muted" },
 };

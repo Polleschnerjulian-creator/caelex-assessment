@@ -304,9 +304,9 @@ export default function TradeItemDetailPage({
   if (error || !item) {
     return (
       <div className="mx-auto max-w-screen-lg px-8 py-8">
-        <div className="flex items-center gap-3 rounded-md border border-red-200 bg-red-50 px-4 py-3">
-          <AlertTriangle className="h-4 w-4 text-red-600" />
-          <p className="text-[13px] text-red-700">
+        <div className="flex items-center gap-3 rounded-md px-4 py-3 trade-chip-danger">
+          <AlertTriangle className="h-4 w-4 text-current" />
+          <p className="text-[13px] text-current">
             {error || "Item not found"}
           </p>
         </div>
@@ -576,7 +576,7 @@ export default function TradeItemDetailPage({
                       key={label}
                       className={
                         val
-                          ? "rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-200"
+                          ? "rounded-full px-2 py-0.5 text-[10px] font-medium trade-chip-warn"
                           : "rounded-full bg-trade-bg-subtle px-2 py-0.5 text-[10px] font-medium text-trade-text-muted ring-1 ring-trade-border-subtle"
                       }
                     >

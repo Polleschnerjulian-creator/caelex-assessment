@@ -60,15 +60,15 @@ export const STATUS_LABELS: Record<TradeFaaAstLicenseStatus, string> = {
 };
 
 const STATUS_COLOURS: Record<TradeFaaAstLicenseStatus, string> = {
-  DRAFT: "bg-slate-100 text-slate-700",
-  PRE_APP_CONSULTATION: "bg-purple-100 text-purple-800",
-  APPLICATION_SUBMITTED: "bg-blue-100 text-blue-800",
-  ENVIRONMENTAL_REVIEW: "bg-teal-100 text-teal-800",
-  UNDER_REVIEW: "bg-slate-200 text-slate-800",
-  APPROVED: "bg-emerald-100 text-emerald-800",
-  REJECTED: "bg-red-100 text-red-800",
-  EXPIRED: "bg-amber-100 text-amber-800",
-  REVOKED: "bg-zinc-200 text-zinc-700",
+  DRAFT: "trade-chip-neutral",
+  PRE_APP_CONSULTATION: "trade-chip-info",
+  APPLICATION_SUBMITTED: "trade-chip-info",
+  ENVIRONMENTAL_REVIEW: "trade-chip-info",
+  UNDER_REVIEW: "trade-chip-neutral",
+  APPROVED: "trade-chip-success",
+  REJECTED: "trade-chip-danger",
+  EXPIRED: "trade-chip-warn",
+  REVOKED: "trade-chip-neutral",
 };
 
 export function FaaAstListPanel({ licenses, canEdit }: FaaAstListPanelProps) {
@@ -368,9 +368,7 @@ function CreateLicenseDrawer({ onClose }: CreateLicenseDrawerProps) {
           </Field>
 
           {error && (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-red-700">
-              {error}
-            </p>
+            <p className="rounded-md trade-chip-danger px-3 py-2">{error}</p>
           )}
 
           <div className="flex items-center justify-end gap-2 pt-2">

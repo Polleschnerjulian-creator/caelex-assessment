@@ -172,7 +172,7 @@ export default function CounterpartiesListPage() {
               </span>
             )}
             {p.status === "BLOCKED" && (
-              <span className="rounded bg-red-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-red-700 ring-1 ring-red-200">
+              <span className="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest trade-chip-danger">
                 Blocked
               </span>
             )}
@@ -181,7 +181,7 @@ export default function CounterpartiesListPage() {
             <Globe className="h-3 w-3" />
             {p.countryCode}
             {p.isHighRiskCountry && (
-              <span className="text-amber-600">· high-risk</span>
+              <span className="text-trade-accent-warn">· high-risk</span>
             )}
             {p.isUSPerson && <span>· US person</span>}
             {p.lastScreenedAt && (
@@ -210,7 +210,7 @@ export default function CounterpartiesListPage() {
       sortBy: (p) => p.status,
       render: (p) =>
         p.status === "BLOCKED" ? (
-          <span className="rounded bg-red-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-red-700 ring-1 ring-red-200">
+          <span className="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest trade-chip-danger">
             Blocked
           </span>
         ) : p.status === "ARCHIVED" ? (
@@ -281,7 +281,7 @@ export default function CounterpartiesListPage() {
           onClick={() => setShowNewForm((s) => !s)}
           className={
             showNewForm
-              ? "flex shrink-0 items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-[13px] font-medium text-red-700 transition hover:bg-red-100"
+              ? "flex shrink-0 items-center gap-2 rounded-lg border border-trade-border px-4 py-2 text-[13px] font-medium trade-chip-danger transition"
               : "flex shrink-0 items-center gap-2 rounded-lg bg-trade-text-primary px-4 py-2 text-[13px] font-medium text-trade-bg-panel transition hover:opacity-90"
           }
         >
@@ -486,7 +486,7 @@ function NewPartyForm({ onCreated }: { onCreated: (p: NewPartyResp) => void }) {
         </div>
       </div>
       {err && (
-        <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700">
+        <div className="mt-3 rounded-md border border-trade-border px-3 py-2 text-[12px] trade-chip-danger">
           {err}
         </div>
       )}

@@ -176,7 +176,7 @@ export function LicenseApplicationModal({
 
       {/* Approximate-type hedge */}
       {draft.approximate && (
-        <p className="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-800">
+        <p className="mb-3 rounded-md border px-3 py-2 text-[11px] trade-chip-warn">
           Wahrscheinliche Einstufung als {typeMeta.label}. Bestätige den genauen
           Lizenztyp vor der Einreichung.
         </p>
@@ -236,7 +236,7 @@ export function LicenseApplicationModal({
                   {endUseRestrictions.map((c) => (
                     <span
                       key={c}
-                      className="rounded bg-amber-50 px-1.5 py-0.5 text-[11px] text-amber-700 ring-1 ring-amber-200"
+                      className="rounded px-1.5 py-0.5 text-[11px] trade-chip-warn"
                     >
                       {c}
                     </span>
@@ -303,14 +303,14 @@ export function LicenseApplicationModal({
         {/* Mandatory disclaimer — carried verbatim from the pure builder. */}
         <p
           lang="de"
-          className="mt-4 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-800"
+          className="mt-4 flex items-start gap-2 rounded-md border px-3 py-2 text-[11px] leading-relaxed trade-chip-warn"
         >
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>{draft.disclaimer}</span>
         </p>
 
         {err && (
-          <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700">
+          <div className="mt-3 rounded-md px-3 py-2 text-[12px] trade-chip-danger">
             {err}
           </div>
         )}

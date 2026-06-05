@@ -177,7 +177,7 @@ function WorkflowCard({
           {total}
         </p>
         {needsAction > 0 && (
-          <span className="inline-flex items-center gap-1 rounded-sm bg-amber-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-amber-700">
+          <span className="trade-chip-warn inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider">
             {needsAction} {needsActionLabel ?? "need action"}
           </span>
         )}
@@ -207,9 +207,9 @@ function WorkflowCard({
 function toneClass(tone: RowTone): string {
   switch (tone) {
     case "ok":
-      return "text-emerald-700";
+      return "text-trade-accent-success";
     case "warn":
-      return "text-amber-700";
+      return "text-trade-accent-warn";
     case "muted":
     default:
       return "text-trade-text-secondary";

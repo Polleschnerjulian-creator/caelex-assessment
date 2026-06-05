@@ -249,7 +249,7 @@ export function ResolutionDrawer({ partyId, onClose, onResolved }: Props) {
         {/* Header */}
         <div className="flex items-start justify-between gap-4 border-b border-trade-border-subtle px-6 py-5">
           <div className="min-w-0">
-            <div className="mb-1 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-600">
+            <div className="mb-1 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-trade-accent-warn">
               <ShieldAlert className="h-3.5 w-3.5" />
               Potential sanctions match
             </div>
@@ -299,7 +299,7 @@ export function ResolutionDrawer({ partyId, onClose, onResolved }: Props) {
 
           {party && screening && (
             <>
-              <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] leading-relaxed text-amber-800">
+              <p className="mb-4 rounded-lg border border-trade-border px-3 py-2 text-[12px] leading-relaxed trade-chip-warn">
                 The engine auto-prepared this match. You confirm. Review the
                 matched sanctioned entity against the counterparty below, then
                 resolve with a justification — every decision is audit-logged.
@@ -321,7 +321,7 @@ export function ResolutionDrawer({ partyId, onClose, onResolved }: Props) {
                     className="rounded-lg border border-trade-border-subtle bg-trade-bg-subtle p-3"
                   >
                     <div className="mb-2 flex items-center justify-between">
-                      <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-amber-700">
+                      <span className="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest trade-chip-warn">
                         {h.list}
                       </span>
                       <span className="text-[12px] font-semibold text-trade-text-primary">
@@ -427,7 +427,7 @@ export function ResolutionDrawer({ partyId, onClose, onResolved }: Props) {
         {party && screening && (
           <div className="border-t border-trade-border-subtle px-6 py-4">
             <p className="mb-3 flex items-start gap-1.5 text-[11px] leading-relaxed text-trade-text-muted">
-              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-trade-accent-warn" />
               Confirming a hit BLOCKS {party.legalName} from new operations.
               This is reversible only by running a fresh screening.
             </p>

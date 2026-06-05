@@ -196,19 +196,19 @@ function StatusPill({ status }: { status: TradeVSDStatus }) {
 function toneFor(status: TradeVSDStatus): string {
   switch (status) {
     case "DISCOVERED":
-      return "bg-red-100 text-red-700";
+      return "trade-chip-danger";
     case "INVESTIGATING":
-      return "bg-amber-100 text-amber-700";
+      return "trade-chip-warn";
     case "DRAFTED":
-      return "bg-slate-100 text-slate-700";
+      return "trade-chip-neutral";
     case "SUBMITTED":
-      return "bg-slate-200 text-slate-700";
+      return "trade-chip-neutral";
     case "ACKNOWLEDGED":
-      return "bg-slate-300 text-slate-800";
+      return "trade-chip-neutral";
     case "RESOLVED":
-      return "bg-emerald-100 text-emerald-700";
+      return "trade-chip-success";
     case "WITHDRAWN":
-      return "bg-slate-200 text-slate-500";
+      return "trade-chip-neutral";
   }
 }
 
@@ -322,7 +322,7 @@ function StatusTransitionMenu({ row }: { row: VSDWithRelations }) {
                 autoFocus
               />
               {error && (
-                <p className="mt-2 rounded border border-red-200 bg-red-50 px-2 py-1 text-[11px] text-red-700">
+                <p className="mt-2 rounded border trade-chip-danger px-2 py-1 text-[11px]">
                   {error}
                 </p>
               )}
@@ -395,7 +395,7 @@ function StatusTransitionMenu({ row }: { row: VSDWithRelations }) {
               />
 
               {error && (
-                <p className="mt-2 rounded border border-red-200 bg-red-50 px-2 py-1 text-[11px] text-red-700">
+                <p className="mt-2 rounded border trade-chip-danger px-2 py-1 text-[11px]">
                   {error}
                 </p>
               )}
@@ -434,7 +434,7 @@ function StatusTransitionMenu({ row }: { row: VSDWithRelations }) {
                 </button>
               ))}
               {error && (
-                <p className="border-t border-trade-border-subtle px-3 py-2 text-[11px] text-red-700">
+                <p className="border-t border-trade-border-subtle px-3 py-2 text-[11px] text-trade-accent-danger">
                   {error}
                 </p>
               )}
@@ -760,7 +760,7 @@ function CreateVsdForm({
       </div>
 
       {error && (
-        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[12.5px] text-red-700">
+        <p className="rounded-md border trade-chip-danger px-3 py-2 text-[12.5px]">
           {error}
         </p>
       )}

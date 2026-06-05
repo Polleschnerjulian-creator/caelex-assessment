@@ -131,7 +131,7 @@ export function BeneficialOwnersPanel({
           onClick={() => setShowAddForm((s) => !s)}
           className={
             showAddForm
-              ? "flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700 transition hover:bg-red-100"
+              ? "flex items-center gap-1.5 rounded-md border border-trade-border px-2.5 py-1 text-[11px] font-semibold trade-chip-danger transition"
               : "flex items-center gap-1.5 rounded-md bg-trade-accent px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-trade-accent-strong"
           }
         >
@@ -148,8 +148,8 @@ export function BeneficialOwnersPanel({
       </div>
 
       {directCascadeHit && (
-        <div className="border-b border-red-200 bg-red-50 px-5 py-3">
-          <div className="flex items-start gap-2 text-[12px] text-red-700">
+        <div className="border-b border-trade-border px-5 py-3 trade-chip-danger">
+          <div className="flex items-start gap-2 text-[12px] text-current">
             <ShieldAlert
               className="mt-0.5 h-4 w-4 shrink-0"
               strokeWidth={1.75}
@@ -165,8 +165,8 @@ export function BeneficialOwnersPanel({
         </div>
       )}
       {!directCascadeHit && directSanctionedSum > 0 && (
-        <div className="border-b border-amber-200 bg-amber-50 px-5 py-3">
-          <div className="flex items-start gap-2 text-[12px] text-amber-700">
+        <div className="border-b border-trade-border px-5 py-3 trade-chip-warn">
+          <div className="flex items-start gap-2 text-[12px] text-current">
             <AlertTriangle
               className="mt-0.5 h-4 w-4 shrink-0"
               strokeWidth={1.75}
@@ -195,7 +195,7 @@ export function BeneficialOwnersPanel({
       )}
 
       {error && (
-        <div className="border-b border-red-200 bg-red-50 px-5 py-2 text-[12px] text-red-700">
+        <div className="border-b border-trade-border px-5 py-2 text-[12px] trade-chip-danger">
           {error}
         </div>
       )}
@@ -223,7 +223,7 @@ export function BeneficialOwnersPanel({
                     {edge.owner.legalName}
                   </span>
                   {edge.owner.status === "BLOCKED" && (
-                    <span className="rounded bg-red-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-red-700 ring-1 ring-red-200">
+                    <span className="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest trade-chip-danger">
                       Blocked
                     </span>
                   )}
@@ -231,7 +231,7 @@ export function BeneficialOwnersPanel({
                 <div className="mt-0.5 flex items-center gap-2 text-[11px] text-trade-text-muted">
                   <span>{edge.owner.countryCode}</span>
                   {edge.owner.isHighRiskCountry && (
-                    <span className="text-amber-600">· high-risk</span>
+                    <span className="text-trade-accent-warn">· high-risk</span>
                   )}
                   <span>·</span>
                   <span className="text-trade-text-secondary">
@@ -244,7 +244,7 @@ export function BeneficialOwnersPanel({
               </div>
               <button
                 onClick={() => deleteOwner(edge.id)}
-                className="shrink-0 rounded-md p-1.5 text-trade-text-muted transition hover:bg-red-50 hover:text-red-700"
+                className="shrink-0 rounded-md p-1.5 text-trade-text-muted transition hover:bg-trade-hover hover:text-trade-accent-danger"
                 title="Remove ownership edge"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -267,13 +267,16 @@ function OwnerStatusIcon({
   const className = "h-4 w-4 shrink-0";
   if (status === "CONFIRMED_HIT") {
     return (
-      <ShieldAlert className={`${className} text-red-600`} strokeWidth={1.75} />
+      <ShieldAlert
+        className={`${className} text-trade-accent-danger`}
+        strokeWidth={1.75}
+      />
     );
   }
   if (status === "POTENTIAL_MATCH") {
     return (
       <AlertTriangle
-        className={`${className} text-amber-500`}
+        className={`${className} text-trade-accent-warn`}
         strokeWidth={1.75}
       />
     );
@@ -281,7 +284,7 @@ function OwnerStatusIcon({
   if (status === "CLEAR") {
     return (
       <ShieldCheck
-        className={`${className} text-emerald-600`}
+        className={`${className} text-trade-accent-success`}
         strokeWidth={1.75}
       />
     );
@@ -466,7 +469,11 @@ function AddOwnerForm({
               </select>
             </div>
           </div>
-          {err && <div className="mt-2 text-[11px] text-red-600">{err}</div>}
+          {err && (
+            <div className="mt-2 text-[11px] text-trade-accent-danger">
+              {err}
+            </div>
+          )}
           <div className="mt-3 flex justify-end">
             <button
               onClick={submit}

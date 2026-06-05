@@ -333,7 +333,7 @@ export function ApplicabilityWizard() {
       ) : null}
 
       {error ? (
-        <p className="text-[12px] text-red-600" role="alert">
+        <p className="text-[12px] text-trade-accent-danger" role="alert">
           {error}
         </p>
       ) : null}

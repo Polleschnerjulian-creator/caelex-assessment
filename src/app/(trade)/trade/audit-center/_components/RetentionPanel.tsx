@@ -183,11 +183,11 @@ function SummaryCard({ label, value, helper, tone }: SummaryCardProps) {
 function valueTone(tone: SummaryCardProps["tone"]): string {
   switch (tone) {
     case "ok":
-      return "text-emerald-700";
+      return "text-trade-accent-success";
     case "warn":
-      return "text-amber-700";
+      return "text-trade-accent-warn";
     case "alert":
-      return "text-red-700";
+      return "text-trade-accent-danger";
     case "muted":
     default:
       return "text-trade-text-primary";
@@ -249,28 +249,28 @@ function StatusBadge({ status }: { status: RetentionStatusKind }) {
   switch (status) {
     case "expired":
       return (
-        <span className="inline-flex items-center gap-1 rounded-sm bg-red-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-red-700">
+        <span className="trade-chip-danger inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
           <AlertTriangle size={10} />
           Expired
         </span>
       );
     case "expiring-soon":
       return (
-        <span className="inline-flex items-center gap-1 rounded-sm bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-700">
+        <span className="trade-chip-warn inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
           <Clock size={10} />
           Expiring soon
         </span>
       );
     case "active":
       return (
-        <span className="inline-flex items-center gap-1 rounded-sm bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
+        <span className="trade-chip-success inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
           Active
         </span>
       );
     case "pending":
     default:
       return (
-        <span className="inline-flex items-center gap-1 rounded-sm bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-600">
+        <span className="trade-chip-neutral inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
           Pending trigger
         </span>
       );

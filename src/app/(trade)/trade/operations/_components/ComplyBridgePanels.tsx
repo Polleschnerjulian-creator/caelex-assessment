@@ -72,13 +72,13 @@ export function ComplyBridgePanels({ operationId }: ComplyBridgePanelsProps) {
   if (error) {
     return (
       <section
-        className="rounded-md border border-amber-200 bg-amber-50 p-4"
+        className="trade-chip-warn rounded-md border p-4"
         aria-label="Caelex Comply bridge — unavailable"
       >
-        <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-800">
+        <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-current">
           Caelex Comply data unavailable
         </div>
-        <p className="text-[12px] text-amber-700">{error}</p>
+        <p className="text-[12px] text-current">{error}</p>
       </section>
     );
   }

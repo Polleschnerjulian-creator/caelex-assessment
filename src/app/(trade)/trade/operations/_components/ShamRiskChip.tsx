@@ -68,32 +68,32 @@ function bandColors(recommendation: ShamRiskResult["recommendation"]): {
   switch (recommendation) {
     case "REJECT":
       return {
-        border: "border-red-300",
-        bg: "bg-red-50",
-        text: "text-red-700",
-        badge: "bg-red-600 text-white",
+        border: "",
+        bg: "trade-chip-danger",
+        text: "text-trade-accent-danger",
+        badge: "trade-chip-danger",
       };
     case "ESCALATE":
       return {
-        border: "border-orange-300",
-        bg: "bg-orange-50",
-        text: "text-orange-700",
-        badge: "bg-orange-600 text-white",
+        border: "",
+        bg: "trade-chip-danger",
+        text: "text-trade-accent-danger",
+        badge: "trade-chip-danger",
       };
     case "ENHANCED_DUE_DILIGENCE":
       return {
-        border: "border-amber-300",
-        bg: "bg-amber-50",
-        text: "text-amber-700",
-        badge: "bg-amber-500 text-white",
+        border: "",
+        bg: "trade-chip-warn",
+        text: "text-trade-accent-warn",
+        badge: "trade-chip-warn",
       };
     case "PROCEED":
     default:
       return {
-        border: "border-emerald-200",
-        bg: "bg-emerald-50",
-        text: "text-emerald-700",
-        badge: "bg-emerald-600 text-white",
+        border: "",
+        bg: "trade-chip-success",
+        text: "text-trade-accent-success",
+        badge: "trade-chip-success",
       };
   }
 }
@@ -141,7 +141,7 @@ export function ShamRiskChip({ operationId }: ShamRiskChipProps) {
 
   if (error) {
     return (
-      <div className="mb-6 inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] text-amber-700">
+      <div className="trade-chip-warn mb-6 inline-flex items-center gap-2 rounded-md border px-3 py-2 text-[12px]">
         <ShieldAlert className="h-3.5 w-3.5" />
         Sham-risk evaluation unavailable: {error}
       </div>

@@ -58,16 +58,17 @@ const STEP_LABEL: Record<string, string> = {
   form: "Formular",
 };
 const VERDICT_CLASS: Record<Verdict, string> = {
-  GO: "border-emerald-500/40 bg-emerald-500/10 text-emerald-200",
-  REVIEW: "border-amber-500/40 bg-amber-500/10 text-amber-200",
-  BLOCKED: "border-red-500/40 bg-red-500/10 text-red-200",
+  GO: "trade-chip-success",
+  REVIEW: "trade-chip-warn",
+  BLOCKED: "trade-chip-danger",
 };
 
 function StepIcon({ status }: { status: StepStatus }) {
   if (status === "done")
-    return <CheckCircle2 className="h-5 w-5 text-emerald-400" />;
-  if (status === "blocked") return <XCircle className="h-5 w-5 text-red-400" />;
-  return <AlertTriangle className="h-5 w-5 text-amber-400" />;
+    return <CheckCircle2 className="h-5 w-5 text-trade-accent-success" />;
+  if (status === "blocked")
+    return <XCircle className="h-5 w-5 text-trade-accent-danger" />;
+  return <AlertTriangle className="h-5 w-5 text-trade-accent-warn" />;
 }
 
 /**
@@ -228,7 +229,7 @@ export function VerdictPanel({ operationId }: { operationId: string }) {
   }
   if (error) {
     return (
-      <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+      <div className="rounded-lg border px-4 py-3 text-sm trade-chip-danger">
         {error}
       </div>
     );
@@ -247,7 +248,7 @@ export function VerdictPanel({ operationId }: { operationId: string }) {
           prominent as the verdict itself. GO = honest green note; REVIEW =
           amber, BLOCKED = red (loudest). Copy is single-sourced + tested. */}
       {assessment.verdict === "GO" ? (
-        <div className="flex items-start gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 px-4 py-3 text-sm text-emerald-100">
+        <div className="flex items-start gap-2 rounded-lg border px-4 py-3 text-sm trade-chip-success">
           <Info className="mt-0.5 h-4 w-4 shrink-0" />
           <span>{LIABILITY_COPY.goNote}</span>
         </div>
@@ -255,8 +256,8 @@ export function VerdictPanel({ operationId }: { operationId: string }) {
         <div
           className={`flex items-start gap-2 rounded-lg border px-4 py-3 text-sm font-medium ${
             assessment.verdict === "BLOCKED"
-              ? "border-red-500/40 bg-red-500/10 text-red-100"
-              : "border-amber-500/40 bg-amber-500/10 text-amber-100"
+              ? "trade-chip-danger"
+              : "trade-chip-warn"
           }`}
         >
           <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" />
@@ -340,8 +341,8 @@ export function VerdictPanel({ operationId }: { operationId: string }) {
       )}
 
       {assessment.pendenzen.length > 0 && (
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-3">
-          <div className="mb-2 text-sm font-medium text-amber-200">
+        <div className="rounded-lg border px-4 py-3 trade-chip-warn">
+          <div className="mb-2 text-sm font-medium text-current">
             Offene Punkte
           </div>
           <ul className="space-y-1.5">

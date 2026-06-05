@@ -366,7 +366,7 @@ export default function LicensesPage() {
           onClick={() => setShowNew((s) => !s)}
           className={
             showNew
-              ? "flex shrink-0 items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-[13px] font-medium text-red-700 transition hover:bg-red-100"
+              ? "flex shrink-0 items-center gap-2 rounded-lg border px-4 py-2 text-[13px] font-medium trade-chip-danger transition hover:bg-trade-hover"
               : "flex shrink-0 items-center gap-2 rounded-lg bg-trade-text-primary px-4 py-2 text-[13px] font-medium text-trade-bg-panel transition hover:opacity-90"
           }
         >
@@ -484,9 +484,9 @@ function ExpiryBadge({ validUntil }: { validUntil: string | null }) {
   }
   const cls =
     s.urgency === "expired" || s.urgency === "critical"
-      ? "bg-red-50 text-red-700 ring-red-200"
+      ? "trade-chip-danger ring-trade-border-subtle"
       : s.urgency === "warning"
-        ? "bg-amber-50 text-amber-700 ring-amber-200"
+        ? "trade-chip-warn ring-trade-border-subtle"
         : "bg-trade-bg-subtle text-trade-text-secondary ring-trade-border-subtle";
   const title =
     s.daysRemaining !== null && s.daysRemaining < 0
@@ -528,9 +528,9 @@ function DrawdownCell({ license }: { license: LicenseRow }) {
         <div
           className={`h-full transition-all ${
             pct >= 90
-              ? "bg-red-500"
+              ? "bg-trade-accent-danger"
               : pct >= 70
-                ? "bg-amber-500"
+                ? "bg-trade-accent-warn"
                 : "bg-trade-accent"
           }`}
           style={{ width: `${Math.min(100, pct).toFixed(2)}%` }}
@@ -583,7 +583,7 @@ function ConditionsCell({
     >
       {parts.join(" · ")}
       {restrictions.length > 0 && (
-        <span className="inline-flex items-center gap-1 text-amber-600">
+        <span className="inline-flex items-center gap-1 text-trade-accent-warn">
           <AlertTriangle className="h-3 w-3" />
           restricted
         </span>
@@ -782,7 +782,7 @@ function NewLicenseForm({
           </div>
         </div>
         {err && (
-          <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700">
+          <div className="mt-3 rounded-md trade-chip-danger px-3 py-2 text-[12px]">
             {err}
           </div>
         )}

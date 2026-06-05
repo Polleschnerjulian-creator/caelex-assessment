@@ -175,17 +175,17 @@ function StatusPill({ status }: { status: TradeReexportStatus }) {
 function toneFor(status: TradeReexportStatus): string {
   switch (status) {
     case "DRAFTED":
-      return "bg-slate-100 text-slate-700";
+      return "trade-chip-neutral";
     case "SENT":
-      return "bg-slate-200 text-slate-700";
+      return "trade-chip-neutral";
     case "APPROVED":
-      return "bg-emerald-100 text-emerald-700";
+      return "trade-chip-success";
     case "DENIED":
-      return "bg-red-100 text-red-700";
+      return "trade-chip-danger";
     case "EXPIRED":
-      return "bg-slate-200 text-slate-500";
+      return "trade-chip-neutral";
     case "REVOKED":
-      return "bg-red-100 text-red-700";
+      return "trade-chip-danger";
   }
 }
 
@@ -269,7 +269,7 @@ function StatusTransitionMenu({ row }: { row: ReexportWithRelations }) {
                 autoFocus
               />
               {error && (
-                <p className="mt-2 rounded border border-red-200 bg-red-50 px-2 py-1 text-[11px] text-red-700">
+                <p className="mt-2 rounded trade-chip-danger px-2 py-1 text-[11px]">
                   {error}
                 </p>
               )}
@@ -308,7 +308,7 @@ function StatusTransitionMenu({ row }: { row: ReexportWithRelations }) {
                 </button>
               ))}
               {error && (
-                <p className="border-t border-trade-border-subtle px-3 py-2 text-[11px] text-red-700">
+                <p className="border-t border-trade-border-subtle px-3 py-2 text-[11px] text-trade-accent-danger">
                   {error}
                 </p>
               )}
@@ -534,7 +534,7 @@ function CreateReexportForm({
       </div>
 
       {error && (
-        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[12.5px] text-red-700">
+        <p className="rounded-md trade-chip-danger px-3 py-2 text-[12.5px]">
           {error}
         </p>
       )}

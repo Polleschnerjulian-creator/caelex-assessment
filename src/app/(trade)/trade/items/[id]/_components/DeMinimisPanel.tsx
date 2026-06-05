@@ -108,28 +108,28 @@ const CLASSIFICATION_CONFIG: Record<
 > = {
   US_CONTROLLED: {
     label: "US-controlled — counted",
-    pillClassName: "bg-red-50 text-red-700 ring-1 ring-red-200",
-    iconColor: "text-red-600",
+    pillClassName: "trade-chip-danger",
+    iconColor: "text-trade-accent-danger",
   },
   US_EAR99_EXCLUDED: {
     label: "US EAR99 — excluded",
-    pillClassName: "bg-slate-100 text-slate-700 ring-1 ring-slate-200",
-    iconColor: "text-slate-500",
+    pillClassName: "trade-chip-neutral",
+    iconColor: "text-trade-text-muted",
   },
   US_USML_EXCLUDED: {
     label: "US USML — Gate 1 (ITAR)",
-    pillClassName: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
-    iconColor: "text-amber-600",
+    pillClassName: "trade-chip-warn",
+    iconColor: "text-trade-accent-warn",
   },
   NON_US_CONTENT: {
     label: "Non-US — excluded",
-    pillClassName: "bg-slate-100 text-slate-700 ring-1 ring-slate-200",
-    iconColor: "text-slate-500",
+    pillClassName: "trade-chip-neutral",
+    iconColor: "text-trade-text-muted",
   },
   ZERO_VALUE: {
     label: "Zero-value — skipped",
-    pillClassName: "bg-slate-50 text-slate-500 ring-1 ring-slate-200",
-    iconColor: "text-slate-400",
+    pillClassName: "trade-chip-neutral",
+    iconColor: "text-trade-text-muted",
   },
 };
 
@@ -148,25 +148,25 @@ function PercentageHeader({
     band = {
       icon: ShieldX,
       label: "Exceeds 25% standard threshold",
-      className: "bg-red-50 text-red-700 ring-1 ring-red-200",
+      className: "trade-chip-danger",
     };
   } else if (thresholdAnalysis.exceedsD1TenPercent) {
     band = {
       icon: ShieldAlert,
       label: "Exceeds 10% D:1 threshold",
-      className: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+      className: "trade-chip-warn",
     };
   } else if (thresholdAnalysis.hasAnyUsControlledContent) {
     band = {
       icon: ShieldCheck,
       label: "Below 10% — but E:1/E:2 0% rule still applies",
-      className: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+      className: "trade-chip-success",
     };
   } else {
     band = {
       icon: ShieldCheck,
       label: "No US-controlled content",
-      className: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+      className: "trade-chip-success",
     };
   }
   const BandIcon = band.icon;
@@ -226,7 +226,7 @@ function ThresholdChip({
     <div
       className={`flex items-center gap-1.5 rounded-md px-2 py-1.5 ${
         crossed
-          ? "bg-red-50 text-red-700 ring-1 ring-red-200"
+          ? "trade-chip-danger"
           : "bg-trade-bg-subtle text-trade-text-secondary ring-1 ring-trade-border-subtle"
       }`}
     >
@@ -335,7 +335,7 @@ export function DeMinimisPanel({ itemId }: { itemId: string }) {
         )}
 
         {error && !loading && (
-          <div className="flex items-center gap-3 rounded-md bg-red-50 px-3 py-2.5 text-red-700 ring-1 ring-red-200">
+          <div className="flex items-center gap-3 rounded-md px-3 py-2.5 trade-chip-danger">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span className="text-[12px]">
               Could not load de-minimis calculation: {error}

@@ -233,7 +233,7 @@ export function LicenseRenewalModal({
                   {endUseRestrictions.map((c) => (
                     <span
                       key={c}
-                      className="rounded bg-amber-50 px-1.5 py-0.5 text-[11px] text-amber-700 ring-1 ring-amber-200"
+                      className="rounded trade-chip-warn px-1.5 py-0.5 text-[11px] ring-1 ring-trade-border-subtle"
                     >
                       {c}
                     </span>
@@ -300,14 +300,14 @@ export function LicenseRenewalModal({
         {/* Mandatory disclaimer — carried verbatim from the pure builder. */}
         <p
           lang="en"
-          className="mt-4 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-800"
+          className="mt-4 flex items-start gap-2 rounded-md trade-chip-warn px-3 py-2 text-[11px] leading-relaxed"
         >
-          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-current" />
           <span>{draft.disclaimer}</span>
         </p>
 
         {err && (
-          <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700">
+          <div className="mt-3 rounded-md trade-chip-danger px-3 py-2 text-[12px]">
             {err}
           </div>
         )}

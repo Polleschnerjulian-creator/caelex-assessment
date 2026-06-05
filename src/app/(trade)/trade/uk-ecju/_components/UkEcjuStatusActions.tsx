@@ -143,9 +143,7 @@ export function UkEcjuStatusActions({
           </label>
 
           {error && (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-red-700">
-              {error}
-            </p>
+            <p className="rounded-md trade-chip-danger px-3 py-2">{error}</p>
           )}
 
           <div className="flex items-center gap-2">

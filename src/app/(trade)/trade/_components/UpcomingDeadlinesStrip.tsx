@@ -109,20 +109,20 @@ function DeadlineChip({
   const Icon = iconForKind(deadline.kind);
 
   const urgencyClasses = {
-    red: "border-red-200 bg-red-50",
-    amber: "border-amber-200 bg-amber-50",
+    red: "trade-chip-danger",
+    amber: "trade-chip-warn",
     slate: "border-trade-border-subtle bg-trade-bg-panel",
   }[urgency];
 
   const labelClass = {
-    red: "text-red-700",
-    amber: "text-amber-700",
+    red: "text-current",
+    amber: "text-current",
     slate: "text-trade-text-secondary",
   }[urgency];
 
   const iconClass = {
-    red: "text-red-600",
-    amber: "text-amber-600",
+    red: "text-current",
+    amber: "text-current",
     slate: "text-trade-text-muted",
   }[urgency];
 

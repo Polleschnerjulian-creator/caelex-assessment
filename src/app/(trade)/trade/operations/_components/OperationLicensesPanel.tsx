@@ -121,7 +121,7 @@ export function OperationLicensesPanel({
             onClick={() => setShowAddPane((s) => !s)}
             className={
               showAddPane
-                ? "flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700 transition hover:bg-red-100"
+                ? "trade-chip-danger flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px] font-semibold transition"
                 : "flex items-center gap-1.5 rounded-md bg-trade-accent px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-trade-accent-strong"
             }
           >
@@ -151,7 +151,7 @@ export function OperationLicensesPanel({
       )}
 
       {error && (
-        <div className="border-b border-red-200 bg-red-50 px-5 py-2 text-[12px] text-red-700">
+        <div className="trade-chip-danger border-b px-5 py-2 text-[12px]">
           {error}
         </div>
       )}
@@ -197,12 +197,12 @@ function LicenseRow({
 
   const statusClass =
     license.status === "ACTIVE"
-      ? "text-emerald-700 bg-emerald-50 ring-emerald-200"
+      ? "trade-chip-success"
       : license.status === "EXPIRED" ||
           license.status === "REVOKED" ||
           license.status === "EXHAUSTED"
-        ? "text-red-700 bg-red-50 ring-red-200"
-        : "text-trade-text-secondary bg-trade-bg-subtle ring-trade-border-subtle";
+        ? "trade-chip-danger"
+        : "trade-chip-neutral";
 
   return (
     <li className="flex items-center gap-4 border-b border-trade-border-subtle px-5 py-3 last:border-0">
@@ -251,9 +251,9 @@ function LicenseRow({
           <div
             className={`font-mono text-[12px] tabular-nums ${
               drawdown >= 90
-                ? "text-red-600"
+                ? "text-trade-accent-danger"
                 : drawdown >= 70
-                  ? "text-amber-600"
+                  ? "text-trade-accent-warn"
                   : "text-trade-text-primary"
             }`}
           >
@@ -265,7 +265,7 @@ function LicenseRow({
       {!isReadOnly && (
         <button
           onClick={onDetach}
-          className="shrink-0 rounded-md p-1.5 text-trade-text-muted transition hover:bg-red-50 hover:text-red-700"
+          className="shrink-0 rounded-md p-1.5 text-trade-text-muted transition hover:bg-trade-hover hover:text-trade-accent-danger"
           title="Detach license"
         >
           <Trash2 className="h-3.5 w-3.5" />
@@ -434,7 +434,9 @@ function AttachExistingForm({
           <strong>Quick-create</strong> to add one.
         </p>
       )}
-      {err && <div className="mt-2 text-[11px] text-red-600">{err}</div>}
+      {err && (
+        <div className="mt-2 text-[11px] text-trade-accent-danger">{err}</div>
+      )}
     </>
   );
 }
@@ -548,7 +550,9 @@ function QuickCreateForm({
           />
         </div>
       </div>
-      {err && <div className="mt-2 text-[11px] text-red-600">{err}</div>}
+      {err && (
+        <div className="mt-2 text-[11px] text-trade-accent-danger">{err}</div>
+      )}
       <div className="mt-3 flex justify-end">
         <button
           onClick={submit}

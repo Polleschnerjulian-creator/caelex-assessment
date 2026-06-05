@@ -41,13 +41,13 @@ export const STATUS_LABELS: Record<TradeUkEcjuLicenseStatus, string> = {
 };
 
 const STATUS_COLOURS: Record<TradeUkEcjuLicenseStatus, string> = {
-  DRAFT: "bg-slate-100 text-slate-700",
-  SUBMITTED: "bg-blue-100 text-blue-800",
-  APPROVED: "bg-emerald-100 text-emerald-800",
-  REJECTED: "bg-red-100 text-red-800",
-  EXPIRED: "bg-amber-100 text-amber-800",
-  REVOKED: "bg-zinc-200 text-zinc-700",
-  EXHAUSTED: "bg-orange-100 text-orange-800",
+  DRAFT: "trade-chip-neutral",
+  SUBMITTED: "trade-chip-info",
+  APPROVED: "trade-chip-success",
+  REJECTED: "trade-chip-danger",
+  EXPIRED: "trade-chip-warn",
+  REVOKED: "trade-chip-neutral",
+  EXHAUSTED: "trade-chip-warn",
 };
 
 export function UkEcjuListPanel({ licenses, canEdit }: UkEcjuListPanelProps) {
@@ -322,9 +322,7 @@ function CreateLicenseDrawer({ onClose }: CreateLicenseDrawerProps) {
           </Field>
 
           {error && (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-red-700">
-              {error}
-            </p>
+            <p className="rounded-md trade-chip-danger px-3 py-2">{error}</p>
           )}
 
           <div className="flex items-center justify-end gap-2 pt-2">

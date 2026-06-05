@@ -188,7 +188,7 @@ function StepperNode({
   //   upcoming: muted ring with the numeral
   const circleClass = (() => {
     if (state === "done") {
-      return "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-300";
+      return "trade-chip-success ring-1";
     }
     if (state === "current") {
       return "bg-trade-accent text-white ring-2 ring-trade-accent ring-offset-2 ring-offset-trade-bg-panel shadow-sm";
@@ -276,12 +276,12 @@ function TerminalPill({ status }: { status: OperationStatus }) {
       aria-current="step"
     >
       <div
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-700 ring-2 ring-red-300 ring-offset-2 ring-offset-trade-bg-panel"
+        className="trade-chip-danger flex h-8 w-8 items-center justify-center rounded-full ring-2 ring-offset-2 ring-offset-trade-bg-panel"
         title={meta.fullLabel}
       >
         <Icon className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
       </div>
-      <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-red-700">
+      <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-trade-accent-danger">
         {meta.shortLabel}
       </span>
       <span className="sr-only">

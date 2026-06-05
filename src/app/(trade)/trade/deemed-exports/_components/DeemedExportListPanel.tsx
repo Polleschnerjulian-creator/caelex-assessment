@@ -178,7 +178,7 @@ function CoveragePills({ eccns, usmls }: { eccns: string[]; usmls: string[] }) {
       {usmls.slice(0, 3).map((c) => (
         <span
           key={`u-${c}`}
-          className="inline-flex items-center rounded bg-amber-50 px-1.5 py-0.5 font-mono text-[10.5px] text-amber-700"
+          className="inline-flex items-center rounded px-1.5 py-0.5 font-mono text-[10.5px] trade-chip-warn"
         >
           USML {c}
         </span>
@@ -211,11 +211,11 @@ function StatusPill({
 function toneFor(status: TradeDeemedExportAuthorizationStatus): string {
   switch (status) {
     case "ACTIVE":
-      return "bg-emerald-100 text-emerald-700";
+      return "trade-chip-success";
     case "EXPIRED":
-      return "bg-slate-200 text-slate-500";
+      return "trade-chip-neutral";
     case "REVOKED":
-      return "bg-red-100 text-red-700";
+      return "trade-chip-danger";
   }
 }
 
@@ -438,7 +438,7 @@ function CreateDeemedExportForm({ onSuccess, onCancel }: CreateFormProps) {
       </div>
 
       {error && (
-        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[12.5px] text-red-700">
+        <p className="rounded-md px-3 py-2 text-[12.5px] trade-chip-danger">
           {error}
         </p>
       )}

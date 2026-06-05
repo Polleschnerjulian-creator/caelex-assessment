@@ -166,13 +166,13 @@ export function NotificationsTab({ preferences }: Props) {
       <div className="flex items-center justify-between border-t border-trade-border-subtle pt-4">
         <div className="text-[12px]">
           {feedback?.kind === "ok" && (
-            <span className="inline-flex items-center gap-1.5 text-emerald-500">
+            <span className="inline-flex items-center gap-1.5 text-trade-accent-success">
               <CheckCircle2 size={14} />
               Preferences saved
             </span>
           )}
           {feedback?.kind === "error" && (
-            <span className="inline-flex items-center gap-1.5 text-red-500">
+            <span className="inline-flex items-center gap-1.5 text-trade-accent-danger">
               <AlertCircle size={14} />
               {feedback.message}
             </span>

@@ -157,7 +157,7 @@ export function RequirementStatusEditPopover({
           </div>
 
           {error && (
-            <p className="mt-3 rounded border border-red-200 bg-red-50 px-2 py-1 text-[11.5px] text-red-700">
+            <p className="trade-chip-danger mt-3 rounded px-2 py-1 text-[11.5px]">
               {error}
             </p>
           )}
@@ -192,14 +192,14 @@ function labelFor(status: TradeRequirementStatus): string {
 function toneFor(status: TradeRequirementStatus): string {
   switch (status) {
     case "COMPLIANT":
-      return "bg-emerald-100 text-emerald-700 hover:bg-emerald-200";
+      return "trade-chip-success";
     case "PARTIAL":
-      return "bg-amber-100 text-amber-700 hover:bg-amber-200";
+      return "trade-chip-warn";
     case "NON_COMPLIANT":
-      return "bg-red-100 text-red-700 hover:bg-red-200";
+      return "trade-chip-danger";
     case "NOT_ASSESSED":
-      return "bg-slate-100 text-slate-600 hover:bg-slate-200";
+      return "trade-chip-neutral";
     case "NOT_APPLICABLE":
-      return "bg-slate-100 text-slate-500 hover:bg-slate-200";
+      return "trade-chip-neutral";
   }
 }

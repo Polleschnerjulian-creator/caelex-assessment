@@ -185,7 +185,7 @@ export function DeemedExportDetailPanel({ row, canEdit }: DetailPanelProps) {
               type="button"
               onClick={revoke}
               disabled={isPending}
-              className="rounded-md border border-red-200 bg-red-50 px-4 py-2 text-[12.5px] font-semibold text-red-700 transition-colors hover:bg-red-100 disabled:opacity-60"
+              className="rounded-md px-4 py-2 text-[12.5px] font-semibold transition-colors trade-chip-danger disabled:opacity-60"
             >
               Revoke authorisation
             </button>
@@ -196,7 +196,7 @@ export function DeemedExportDetailPanel({ row, canEdit }: DetailPanelProps) {
           </div>
 
           {error && (
-            <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[12.5px] text-red-700">
+            <p className="mt-3 rounded-md px-3 py-2 text-[12.5px] trade-chip-danger">
               {error}
             </p>
           )}
@@ -209,11 +209,11 @@ export function DeemedExportDetailPanel({ row, canEdit }: DetailPanelProps) {
 function toneFor(status: TradeDeemedExportAuthorizationStatus): string {
   switch (status) {
     case "ACTIVE":
-      return "bg-emerald-100 text-emerald-700";
+      return "trade-chip-success";
     case "EXPIRED":
-      return "bg-slate-200 text-slate-500";
+      return "trade-chip-neutral";
     case "REVOKED":
-      return "bg-red-100 text-red-700";
+      return "trade-chip-danger";
   }
 }
 

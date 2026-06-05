@@ -67,56 +67,56 @@ const STATUS_META: Record<
   AWAITING_CLASSIFICATION: {
     label: "Classification",
     icon: ScanSearch,
-    textClass: "text-amber-700",
-    bgClass: "bg-amber-50 ring-amber-200",
+    textClass: "text-trade-accent-warn",
+    bgClass: "trade-chip-warn",
     description:
       "All lines need classification codes (ECCN/USML/MTCR/AL) before screening.",
   },
   SCREENING: {
     label: "Screening",
     icon: FileSearch,
-    textClass: "text-amber-700",
-    bgClass: "bg-amber-50 ring-amber-200",
+    textClass: "text-trade-accent-warn",
+    bgClass: "trade-chip-warn",
     description:
       "Counterparty sanctions screening must complete CLEAR before license determination.",
   },
   AWAITING_LICENSE: {
     label: "License",
     icon: FileSearch,
-    textClass: "text-amber-700",
-    bgClass: "bg-amber-50 ring-amber-200",
+    textClass: "text-trade-accent-warn",
+    bgClass: "trade-chip-warn",
     description:
       "Each line needs an applied license (or eligibility under an AGG/EUGEA).",
   },
   LICENSED: {
     label: "Licensed",
     icon: ShieldCheck,
-    textClass: "text-blue-700",
-    bgClass: "bg-blue-50 ring-blue-200",
+    textClass: "text-trade-link",
+    bgClass: "trade-chip-info",
     description:
       "All lines covered by valid licenses. Ready to execute (ship goods).",
   },
   EXECUTED: {
     label: "Executed",
     icon: Truck,
-    textClass: "text-emerald-700",
-    bgClass: "bg-emerald-50 ring-emerald-200",
+    textClass: "text-trade-accent-success",
+    bgClass: "trade-chip-success",
     description:
       "Goods physically shipped. Operation is closed but discoverable in audit.",
   },
   BLOCKED: {
     label: "Blocked",
     icon: XCircle,
-    textClass: "text-red-700",
-    bgClass: "bg-red-50 ring-red-200",
+    textClass: "text-trade-accent-danger",
+    bgClass: "trade-chip-danger",
     description:
       "Sanctions hit, license denied, or operator-blocked. No further shipment.",
   },
   VOLUNTARY_DISCLOSURE_FILED: {
     label: "VDisc Filed",
     icon: AlertTriangle,
-    textClass: "text-red-700",
-    bgClass: "bg-red-50 ring-red-200",
+    textClass: "text-trade-accent-danger",
+    bgClass: "trade-chip-danger",
     description:
       "Operator filed voluntary self-disclosure with BAFA/BIS. Final state.",
   },
@@ -279,7 +279,7 @@ export function OperationLifecyclePanel({
       )}
 
       {err && (
-        <div className="border-t border-red-200 bg-red-50 px-5 py-2 text-[12px] text-red-700">
+        <div className="trade-chip-danger border-t px-5 py-2 text-[12px]">
           {err}
         </div>
       )}
@@ -318,10 +318,10 @@ function TransitionButton({
     target === "BLOCKED" || target === "VOLUNTARY_DISCLOSURE_FILED";
   const targetMeta = STATUS_META[target];
   const buttonClass = isBlocking
-    ? "border border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+    ? "trade-chip-danger border"
     : target === "EXECUTED"
-      ? "border border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-      : "border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100";
+      ? "trade-chip-success border"
+      : "trade-chip-info border";
   return (
     <button
       onClick={onClick}
@@ -356,10 +356,10 @@ function ConfirmTransition({
 
   const confirmClass =
     to === "EXECUTED"
-      ? "border border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+      ? "trade-chip-success border"
       : isHighStakes
-        ? "border border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
-        : "border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100";
+        ? "trade-chip-danger border"
+        : "trade-chip-info border";
 
   return (
     <div className="border-t border-trade-border-subtle bg-trade-bg-subtle p-4">
@@ -371,7 +371,7 @@ function ConfirmTransition({
         {toMeta.description}
       </p>
       {isHighStakes && (
-        <div className="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-800">
+        <div className="trade-chip-warn mb-3 rounded-md border px-3 py-2 text-[11px]">
           <AlertTriangle className="mr-1.5 inline h-3 w-3" />
           {to === "EXECUTED" &&
             "Confirms goods physically shipped. Auto-sets actualShipDate + closedAt."}

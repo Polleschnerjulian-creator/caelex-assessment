@@ -127,13 +127,13 @@ export default async function DocumentsPage() {
           <p className="text-[12px] text-trade-text-muted">
             {summary.total} {summary.total === 1 ? "Dokument" : "Dokumente"}
             {summary.expiringSoon > 0 && (
-              <span className="text-amber-600">
+              <span className="text-trade-accent-warn">
                 {" · "}
                 {summary.expiringSoon} bald fällig
               </span>
             )}
             {summary.expired > 0 && (
-              <span className="text-red-600">
+              <span className="text-trade-accent-danger">
                 {" · "}
                 {summary.expired} abgelaufen
               </span>

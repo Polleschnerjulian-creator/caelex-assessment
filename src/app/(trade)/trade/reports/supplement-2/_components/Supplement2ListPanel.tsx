@@ -123,12 +123,12 @@ function StatusPill({ status }: { status: TradeSupplement2Status }) {
 function toneFor(status: TradeSupplement2Status): string {
   switch (status) {
     case "DRAFT":
-      return "bg-slate-100 text-slate-700";
+      return "trade-chip-neutral";
     case "FILED":
-      return "bg-emerald-100 text-emerald-700";
+      return "trade-chip-success";
     case "OVERDUE":
-      return "bg-red-100 text-red-700";
+      return "trade-chip-danger";
     case "AMENDED":
-      return "bg-amber-100 text-amber-700";
+      return "trade-chip-warn";
   }
 }

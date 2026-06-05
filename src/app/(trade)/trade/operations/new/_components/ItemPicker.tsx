@@ -42,11 +42,11 @@ export function ItemPicker({
           <div className="text-xs text-trade-text-muted">
             {r.internalSku ? `${r.internalSku} · ` : ""}
             {classified(r) ? (
-              <span className="text-green-500">
+              <span className="text-trade-accent-success">
                 ✓ klassifiziert{r.eccnEU ? ` · ${r.eccnEU}` : ""}
               </span>
             ) : (
-              <span className="text-amber-500">○ unklassifiziert</span>
+              <span className="text-trade-accent-warn">○ unklassifiziert</span>
             )}
           </div>
         </div>
