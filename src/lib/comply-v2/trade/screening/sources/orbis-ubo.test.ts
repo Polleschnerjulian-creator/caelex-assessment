@@ -6,10 +6,12 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import {
   mockOrbisUboAdapter,
   getOrbisUboAdapter,
+  unconfiguredUboAdapter,
+  UboSourceNotConfiguredError,
   computeTreeDepth,
   listAncestors,
   OrbisEntityNotFoundError,
@@ -188,13 +190,44 @@ describe("listAncestors", () => {
   });
 });
 
-describe("getOrbisUboAdapter", () => {
-  it("returns the mock adapter by default", () => {
-    const adapter = getOrbisUboAdapter();
-    expect(adapter.name).toBe("mock");
+describe("getOrbisUboAdapter — fixtures only in test/dev, unconfigured in prod", () => {
+  const savedNodeEnv = process.env.NODE_ENV;
+  const savedFixtures = process.env.UBO_USE_FIXTURES;
+  afterEach(() => {
+    process.env.NODE_ENV = savedNodeEnv;
+    if (savedFixtures === undefined) delete process.env.UBO_USE_FIXTURES;
+    else process.env.UBO_USE_FIXTURES = savedFixtures;
   });
 
-  it("returned adapter satisfies the OrbisUboAdapter contract", async () => {
+  it("returns the mock adapter under NODE_ENV=test", () => {
+    process.env.NODE_ENV = "test";
+    delete process.env.UBO_USE_FIXTURES;
+    expect(getOrbisUboAdapter().name).toBe("mock");
+  });
+
+  it("returns the mock adapter when UBO_USE_FIXTURES=1 (explicit local dev)", () => {
+    process.env.NODE_ENV = "development";
+    process.env.UBO_USE_FIXTURES = "1";
+    expect(getOrbisUboAdapter().name).toBe("mock");
+  });
+
+  it("returns the UNCONFIGURED adapter in production with no fixtures flag — never serves fabricated trees", () => {
+    process.env.NODE_ENV = "production";
+    delete process.env.UBO_USE_FIXTURES;
+    expect(getOrbisUboAdapter().name).toBe("unconfigured");
+  });
+
+  it("the unconfigured adapter throws on a fixture-keyed id (a real party can no longer get a fabricated tree)", async () => {
+    // "RU98765432" is a fixture key with a sanctioned UBO. The unconfigured
+    // adapter must NOT serve it — it throws instead of fabricating a hit.
+    await expect(
+      unconfiguredUboAdapter.fetchUboTree("RU98765432"),
+    ).rejects.toBeInstanceOf(UboSourceNotConfiguredError);
+  });
+
+  it("returned adapter satisfies the OrbisUboAdapter contract (test env → mock)", async () => {
+    process.env.NODE_ENV = "test";
+    delete process.env.UBO_USE_FIXTURES;
     const adapter = getOrbisUboAdapter();
     expect(typeof adapter.fetchUboTree).toBe("function");
     const tree = await adapter.fetchUboTree("DE12345678");

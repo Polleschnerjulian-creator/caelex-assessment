@@ -186,6 +186,23 @@ export class OrbisAuthError extends Error {
   }
 }
 
+/**
+ * Thrown by the unconfigured adapter when no real UBO data source is wired
+ * (no ORBIS_API_KEY / real client). Deliberately DISTINCT from
+ * OrbisEntityNotFoundError: "we never asked a real source" must NOT read as
+ * "we asked Orbis and it found nothing" — the latter is false assurance.
+ */
+export class UboSourceNotConfiguredError extends Error {
+  constructor() {
+    super(
+      "No UBO data source configured (Orbis/BvD credentials absent). " +
+        "UBO-augmented ownership cascade is unavailable; ownership beyond " +
+        "declared edges is NOT checked.",
+    );
+    this.name = "UboSourceNotConfiguredError";
+  }
+}
+
 // ─── Adapter contract ────────────────────────────────────────────────
 
 /**
@@ -556,6 +573,20 @@ export const mockOrbisUboAdapter: OrbisUboAdapter = {
   },
 };
 
+/**
+ * Production default until a real Orbis client exists. Serves NO data —
+ * every lookup throws UboSourceNotConfiguredError so the caller fails
+ * honestly instead of (a) serving a FABRICATED fixture tree for a real
+ * counterparty whose lookup key happens to match a fixture key, or
+ * (b) returning a silent not-found that reads as "checked, clean".
+ */
+export const unconfiguredUboAdapter: OrbisUboAdapter = {
+  name: "unconfigured",
+  async fetchUboTree(): Promise<UboTree> {
+    throw new UboSourceNotConfiguredError();
+  },
+};
+
 // ─── Tree helpers (exported for tests + cross-screening) ────────────
 
 /**
@@ -719,5 +750,14 @@ export function listAncestors(tree: UboTree): UboNode[] {
  *     : mockOrbisUboAdapter;
  */
 export function getOrbisUboAdapter(): OrbisUboAdapter {
-  return mockOrbisUboAdapter;
+  // The real Orbis client is not implemented yet. Until it is, NEVER serve
+  // the fixture mock in production: a real counterparty whose lookup key
+  // matches a fixture would get a FABRICATED UBO tree, and every other real
+  // party a silent not-found that reads as "checked, clean" (false
+  // assurance). Fixtures are for tests + explicit local dev only
+  // (UBO_USE_FIXTURES=1). Everything else gets the honest unconfigured
+  // adapter, which throws UboSourceNotConfiguredError.
+  const useFixtures =
+    process.env.NODE_ENV === "test" || process.env.UBO_USE_FIXTURES === "1";
+  return useFixtures ? mockOrbisUboAdapter : unconfiguredUboAdapter;
 }

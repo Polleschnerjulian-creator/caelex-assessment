@@ -29,6 +29,7 @@ import {
 import {
   getOrbisUboAdapter,
   OrbisEntityNotFoundError,
+  UboSourceNotConfiguredError,
   type UboTree,
 } from "./sources/orbis-ubo";
 import {
@@ -194,6 +195,16 @@ async function tryFetchUboTree(lookupKey: string): Promise<UboTree | null> {
   } catch (err) {
     if (err instanceof OrbisEntityNotFoundError) {
       // Quiet path — entity simply isn't in Orbis. Common case.
+      return null;
+    }
+    if (err instanceof UboSourceNotConfiguredError) {
+      // No real UBO source wired. The cascade proceeds on DECLARED ownership
+      // only — ownership beyond declared edges is NOT checked. Logged
+      // distinctly so this never silently reads as "UBO checked, clean".
+      logger.warn(
+        { lookupKey },
+        "tryFetchUboTree: UBO source not configured — cascade uses declared ownership only (indirect/UBO ownership NOT checked)",
+      );
       return null;
     }
     logger.warn(
