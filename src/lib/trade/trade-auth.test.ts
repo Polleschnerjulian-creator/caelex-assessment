@@ -16,6 +16,10 @@ vi.mock("@/lib/middleware/organization-guard", () => ({
   getCurrentOrganization: vi.fn(),
 }));
 vi.mock("@/lib/products", () => ({ hasProductAccess: vi.fn() }));
+vi.mock("@/lib/super-admin", () => ({ isSuperAdmin: vi.fn() }));
+vi.mock("@/lib/prisma", () => ({
+  prisma: { organization: { findFirst: vi.fn() } },
+}));
 
 // server-only guard would throw in test environment; mock it away
 vi.mock("server-only", () => ({}));
@@ -26,10 +30,14 @@ import { getTradeAuth } from "./trade-auth";
 import { auth } from "@/lib/auth";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { hasProductAccess } from "@/lib/products";
+import { isSuperAdmin } from "@/lib/super-admin";
+import { prisma } from "@/lib/prisma";
 
 const mockAuth = auth as Mock;
 const mockGetCurrentOrganization = getCurrentOrganization as Mock;
 const mockHasProductAccess = hasProductAccess as Mock;
+const mockIsSuperAdmin = isSuperAdmin as Mock;
+const mockOrgFindFirst = prisma.organization.findFirst as Mock;
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -53,6 +61,9 @@ const MOCK_ORG = {
 describe("getTradeAuth()", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: ordinary (non-super-admin) user, so the existing membership +
+    // entitlement tests below exercise the normal gate unchanged.
+    mockIsSuperAdmin.mockReturnValue(false);
   });
 
   it("returns null when auth() resolves null (no session)", async () => {
@@ -124,5 +135,65 @@ describe("getTradeAuth()", () => {
     await getTradeAuth();
 
     expect(mockHasProductAccess).toHaveBeenCalledWith("org-999", "TRADE");
+  });
+
+  // ─── Super-admin bypass ──────────────────────────────────────────────────
+  // Parity with the (trade) layout, resolveActionContext(), resolveTradeOrgId(),
+  // and getAtlasAuth(): platform owners reach Trade APIs regardless of org
+  // membership or TRADE entitlement. Without this, a super-admin sees the Trade
+  // UI (the layout lets them in) but every /api/trade/* call 403s.
+
+  it("bypasses membership + entitlement for a super-admin, resolving the oldest active org as OWNER", async () => {
+    mockAuth.mockResolvedValue({
+      user: { id: "owner-1", email: "founder@caelex.eu" },
+    });
+    mockIsSuperAdmin.mockReturnValue(true);
+    mockOrgFindFirst.mockResolvedValue({ id: "org-oldest" });
+
+    const result = await getTradeAuth();
+
+    expect(result).toEqual({
+      userId: "owner-1",
+      organizationId: "org-oldest",
+      role: "OWNER",
+    });
+    // Same query the (trade) layout + resolveActionContext use → the API
+    // operates on the SAME org the shell displays.
+    expect(mockOrgFindFirst).toHaveBeenCalledWith({
+      where: { isActive: true },
+      select: { id: true },
+      orderBy: { createdAt: "asc" },
+    });
+    // Must NOT fall through to the membership / entitlement gate.
+    expect(mockGetCurrentOrganization).not.toHaveBeenCalled();
+    expect(mockHasProductAccess).not.toHaveBeenCalled();
+  });
+
+  it("returns null for a super-admin when no active org exists", async () => {
+    mockAuth.mockResolvedValue({
+      user: { id: "owner-1", email: "founder@caelex.eu" },
+    });
+    mockIsSuperAdmin.mockReturnValue(true);
+    mockOrgFindFirst.mockResolvedValue(null);
+
+    const result = await getTradeAuth();
+
+    expect(result).toBeNull();
+    expect(mockGetCurrentOrganization).not.toHaveBeenCalled();
+  });
+
+  it("does NOT bypass for a non-super-admin with a valid email (still hits the entitlement gate)", async () => {
+    mockAuth.mockResolvedValue({
+      user: { id: "user-abc", email: "member@example.com" },
+    });
+    mockIsSuperAdmin.mockReturnValue(false);
+    mockGetCurrentOrganization.mockResolvedValue(MOCK_ORG);
+    mockHasProductAccess.mockResolvedValue(false);
+
+    const result = await getTradeAuth();
+
+    expect(result).toBeNull();
+    expect(mockOrgFindFirst).not.toHaveBeenCalled();
+    expect(mockHasProductAccess).toHaveBeenCalledWith("org-xyz", "TRADE");
   });
 });
