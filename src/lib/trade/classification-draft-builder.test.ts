@@ -219,3 +219,26 @@ describe("composeDraft — proposals capped at 3", () => {
     expect(draft.proposals[0].canonicalId).toBe("ECCN:9A001");
   });
 });
+
+describe("composeDraft — corpus keyword fallback (DCW-1)", () => {
+  it("surfaces a LOW-confidence corpus_keyword proposal when the parametric matcher is sparse", () => {
+    // No numeric attributes → 0 parametric candidates. The distinctive terms
+    // match the USML XV(e) "Lithium-thionyl chloride ... batteries" entry
+    // (>=2 token hits) — a code the predicate matcher structurally can't see.
+    const draft = buildClassificationDraft(
+      extractFromText(
+        "Lithium-thionyl chloride chemistry cells for power storage units.",
+      ),
+    );
+    const kw = draft.proposals.filter((p) => p.source === "corpus_keyword");
+    expect(kw.length).toBeGreaterThan(0);
+    expect(kw.every((p) => p.confidence === "LOW")).toBe(true);
+  });
+
+  it("does NOT add corpus_keyword noise to plain text (requires >=2 distinct term hits)", () => {
+    const draft = buildClassificationDraft(extractFromText("Marketing copy."));
+    expect(
+      draft.proposals.filter((p) => p.source === "corpus_keyword"),
+    ).toEqual([]);
+  });
+});

@@ -78,7 +78,11 @@ export function matchByCode(code: string): CorpusCodeMatch[] {
  * for the human classifier, never an automatic determination. Ranked by the
  * number of distinct query tokens (>=3 chars) that appear.
  */
-export function matchByKeyword(text: string, limit = 10): CorpusCodeMatch[] {
+export function matchByKeyword(
+  text: string,
+  limit = 10,
+  minHits = 1,
+): CorpusCodeMatch[] {
   const tokens = Array.from(
     new Set(
       text
@@ -93,7 +97,7 @@ export function matchByKeyword(text: string, limit = 10): CorpusCodeMatch[] {
     const hay = `${entry.title} ${entry.description}`.toLowerCase();
     let hits = 0;
     for (const t of tokens) if (hay.includes(t)) hits++;
-    if (hits > 0) scored.push({ entry, hits });
+    if (hits >= minHits) scored.push({ entry, hits });
   }
   scored.sort((a, b) => b.hits - a.hits);
   return scored.slice(0, limit).map(({ entry, hits }) => ({

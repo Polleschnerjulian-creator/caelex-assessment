@@ -25,6 +25,10 @@ import {
   type NearMissMatch,
   type PossibleMatch,
 } from "@/lib/comply-v2/trade/classification/parametric-matcher";
+import {
+  matchByKeyword,
+  type CorpusCodeMatch,
+} from "@/lib/comply-v2/trade/classification/corpus-code-matcher";
 import type { DatasheetExtraction, EvidenceSpan } from "./datasheet-extractor";
 
 // ─── Public output shape ────────────────────────────────────────────
@@ -60,11 +64,13 @@ export interface ProposedClassification {
    */
   evidence: EvidenceSpan[];
   /**
-   * Source signal: full match vs partial vs near-miss. Lets the UI
-   * render different chrome (green tick / amber caution / grey
-   * "near miss").
+   * Source signal: full match vs partial vs near-miss vs corpus keyword.
+   * Lets the UI render different chrome (green tick / amber caution / grey
+   * "near miss" / blue "keyword hint"). `corpus_keyword` is a LOW-confidence
+   * control-list text match (DCW-1) surfaced only as a fallback when the
+   * parametric matcher is sparse — it has no datasheet evidence spans.
    */
-  source: "candidate" | "possible_match" | "near_miss";
+  source: "candidate" | "possible_match" | "near_miss" | "corpus_keyword";
 }
 
 /**
@@ -149,6 +155,25 @@ export function composeDraft(
     );
   }
 
+  // DCW-1: corpus keyword fallback. When the parametric matcher is sparse
+  // (< 3 proposals), surface up to a couple of control-list entries whose
+  // TEXT matches the datasheet — LOW-confidence hints for codes the
+  // predicate matcher structurally cannot see (USML XV paragraphs,
+  // Wassenaar, Japan METI, India SCOMET, DE Ausfuhrliste). Deduped against
+  // the parametric proposals. Suggestion-only + LOW + disclaimer travels —
+  // it can never be a determination, so it carries no false-negative risk.
+  if (proposals.length < 3 && extraction.rawText.trim().length > 0) {
+    const seen = new Set(proposals.map((p) => p.canonicalId));
+    // Require >=2 distinct datasheet tokens per entry — a single common word
+    // ("system", "satellite") must not surface a control-list entry.
+    for (const m of matchByKeyword(extraction.rawText, 8, 2)) {
+      if (proposals.length >= 3) break;
+      if (seen.has(m.entry.canonicalId)) continue;
+      seen.add(m.entry.canonicalId);
+      proposals.push(corpusMatchToProposal(m));
+    }
+  }
+
   const attributesNeeded = collectAttributesNeeded(matcherResult);
   const primary = proposals[0] ?? null;
 
@@ -164,6 +189,21 @@ export function composeDraft(
 }
 
 // ─── Adapters ───────────────────────────────────────────────────────
+
+/** Map a corpus keyword match → a LOW-confidence proposal (DCW-1). */
+function corpusMatchToProposal(m: CorpusCodeMatch): ProposedClassification {
+  return {
+    canonicalId: m.entry.canonicalId,
+    regime: m.entry.regime,
+    title: m.entry.title,
+    citation: m.entry.sourceUrl,
+    reasonsForControl: [...m.entry.controlReason],
+    confidence: "LOW",
+    rationale: m.rationale,
+    evidence: [],
+    source: "corpus_keyword",
+  };
+}
 
 function candidateToProposal(
   candidate: CandidateMatch,
