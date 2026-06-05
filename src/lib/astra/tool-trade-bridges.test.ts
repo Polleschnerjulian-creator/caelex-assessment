@@ -165,7 +165,7 @@ describe("evaluate_sham_risk schema", () => {
 
   it("cites 31 CFR § 501.601 and the OFAC enforcement update", () => {
     expect(evaluateShamRisk.description).toContain("31 CFR § 501.601");
-    expect(evaluateShamRisk.description).toContain("JY-2026-013");
+    expect(evaluateShamRisk.description).toContain("31 March 2026");
   });
 
   it("enumerates the 4 recommendation tiers", () => {

@@ -5,8 +5,8 @@
  *
  * Pure function `detectShamTransactionRisk(operation, context?)` that scans
  * a Caelex `TradeOperation` for the six classes of sham-transaction red
- * flags identified in OFAC's January 2026 enforcement guidance update
- * (Treasury Press Release JY-2026-013, building on 31 CFR § 501.601).
+ * flags identified in OFAC's 31 March 2026 Sanctions Advisory, "Guidance on
+ * Sham Transactions and Sanctions Evasion" (building on 31 CFR § 501.601).
  *
  * The red-flag taxonomy:
  *
@@ -51,10 +51,10 @@
  *
  * Sources:
  *   - 31 CFR § 501.601 (recordkeeping + reporting framework).
- *   - OFAC Enforcement Guidelines Update, January 2026 (Press Release
- *     JY-2026-013).
- *   - GVA Capital Management settlement (June 2025) — control-in-fact
- *     case law applied here for the indirect-ownership threshold.
+ *   - OFAC Sanctions Advisory, 31 March 2026 — "Guidance on Sham
+ *     Transactions and Sanctions Evasion".
+ *   - GVA Capital Ltd. settlement (June 2025) — knowledge/proxy-control
+ *     enforcement applied here for the indirect-ownership threshold.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */

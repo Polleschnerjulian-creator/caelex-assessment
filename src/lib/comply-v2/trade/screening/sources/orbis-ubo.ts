@@ -10,8 +10,9 @@
  * entity through whatever chain of intermediate vehicles.
  *
  * Why UBO data matters for trade compliance:
- *   1. The OFAC 50%-rule + post-Dec-2025 control-in-fact doctrine apply
- *      to ULTIMATE ownership, not just direct ownership. A counterparty
+ *   1. The OFAC 50%-rule, plus OFAC's 31 March 2026 sham-transaction
+ *      guidance on indirect control, apply to ULTIMATE ownership (not just
+ *      direct ownership). A counterparty
  *      with no sanctioned direct owner can still be sanctioned-by-cascade
  *      if their grand-grand-parent is on the SDN list.
  *   2. Publicly-declared ownership (what a counterparty discloses on a

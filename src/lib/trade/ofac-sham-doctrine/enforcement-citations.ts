@@ -3,13 +3,15 @@
  *
  * Sprint Z16. Tier 5 per the Living Execution Plan.
  *
- * The OFAC "sham transaction" doctrine — formalized in the January 2026
- * enforcement guidance update (Treasury Press Release JY-2026-013) — captures
- * transactions structured to circumvent sanctions through intermediaries,
- * shell companies, or artificial chains.
+ * The OFAC "sham transaction" doctrine — set out in OFAC's 31 March 2026
+ * Sanctions Advisory, "Guidance on Sham Transactions and Sanctions Evasion"
+ * (ofac.treasury.gov/recent-actions/20260331_33) — captures transactions
+ * structured to circumvent sanctions through intermediaries, shell companies,
+ * proxies, or artificial chains, and expands scrutiny beyond the 50% Rule to
+ * indirect control through family members, trusts, and offshore structures.
  *
  * 31 CFR § 501.601 retains the underlying recordkeeping + reporting
- * obligation; the January 2026 guidance clarifies that "structured to obscure
+ * obligation; the March 2026 advisory clarifies that "structured to obscure
  * the true counterparty, beneficial owner, end-user, or end-use" is the
  * substantive test OFAC applies when assessing whether a transaction was
  * sham. The Sham-Transaction Risk Score is the Caelex-side surfacing of
@@ -106,16 +108,17 @@ export const SHAM_DOCTRINE_CITATIONS: Record<
         "https://ofac.treasury.gov/system/files/2022/burisma-holdings-settlement.pdf",
     },
     {
-      name: "GVA Capital Management",
+      name: "GVA Capital Ltd.",
       year: 2025,
-      penaltyUsd: 215_000_000,
+      penaltyUsd: 215_988_868,
       factPattern:
-        "California fund manager processed transactions for a 50%-rule-blocked " +
-        "Cayman entity through a 3-tier nested-fund structure; OFAC applied " +
-        "the post-Dec-2025 control-in-fact doctrine to find the structure " +
-        "constituted a sham transaction.",
-      publicLink:
-        "https://ofac.treasury.gov/system/files/2025/gva-capital-settlement.pdf",
+        "Silicon Valley venture-capital firm willfully continued to manage " +
+        "SDN Suleiman Kerimov's investments through his nephew Nariman " +
+        "Gadzhiev acting as proxy (Apr 2018-May 2021), despite legal advice " +
+        "that any transfer could not directly or indirectly involve Kerimov; " +
+        "OFAC applied knowledge-based control-through-a-proxy liability (not " +
+        "the 50% Rule). Statutory-maximum penalty.",
+      publicLink: "https://ofac.treasury.gov/recent-actions/20250612",
     },
     {
       name: "Standard Chartered Bank (UK)",
@@ -283,10 +286,11 @@ export const OFAC_SHAM_DOCTRINE_REGULATORY_BASIS = {
   primaryCfrDescription:
     "Records and reports of blocked transactions (general recordkeeping " +
     "framework on which the sham-doctrine guidance rests).",
-  guidanceDate: "2026-01-15",
+  guidanceDate: "2026-03-31",
   guidanceCitation:
-    "OFAC Enforcement Guidelines Update, January 2026 — Sham Transactions " +
-    "and Structuring to Evade Sanctions (Treasury Press Release JY-2026-013).",
+    'OFAC Sanctions Advisory, 31 March 2026 — "Guidance on Sham ' +
+    'Transactions and Sanctions Evasion" ' +
+    "(ofac.treasury.gov/recent-actions/20260331_33).",
   guidanceSummary:
     "Transactions structured to obscure the true counterparty, beneficial " +
     "owner, end-user, or end-use will be evaluated against the same standard " +

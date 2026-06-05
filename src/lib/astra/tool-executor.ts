@@ -3967,7 +3967,7 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
       skippedChecks: result.skippedChecks,
       detectorVersion: result.detectorVersion,
       disclaimer:
-        "Sham-transaction detector result is informational. Recommendations follow OFAC's January 2026 enforcement guidance (JY-2026-013, building on 31 CFR § 501.601). Skipped checks reflect missing input data and must be surfaced to the operator — silently treating 'no data' as 'passed' was the failure mode OFAC flagged in the GVA Capital settlement (June 2025).",
+        "Sham-transaction detector result is informational. Recommendations follow OFAC's 31 March 2026 Sanctions Advisory on Sham Transactions and Sanctions Evasion (building on 31 CFR § 501.601). Skipped checks reflect missing input data and must be surfaced to the operator — silently treating 'no data' as 'passed' was the failure mode OFAC flagged in the GVA Capital settlement (June 2025).",
     };
   },
 

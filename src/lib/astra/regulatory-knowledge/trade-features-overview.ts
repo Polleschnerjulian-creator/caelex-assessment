@@ -135,7 +135,7 @@ export const TRADE_FEATURE_ENTRIES: readonly TradeFeatureEntry[] = [
     id: "ofac-sham-doctrine",
     name: "OFAC Sham-Transaction Doctrine Detector",
     regulationAnchor:
-      "31 CFR § 501.601, OFAC Enforcement Guidelines Update January 2026 (JY-2026-013)",
+      "31 CFR § 501.601, OFAC Sanctions Advisory of 31 March 2026 (Guidance on Sham Transactions and Sanctions Evasion)",
     summary:
       "Scans a Trade operation for the six OFAC sham-transaction red flags: indirect ownership chain (UBO depth > 3), shell-company markers, geography mismatch, payment-routing divergence, pricing anomaly, and re-export risk history. Emits a 0-100 risk score, categorical recommendation (PROCEED / EDD / ESCALATE / REJECT), and skipped-checks list with enforcement-action citations.",
     examples: [
