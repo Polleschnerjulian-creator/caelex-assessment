@@ -38,6 +38,7 @@
 const SUPER_ADMIN_EMAILS_RAW = [
   "julian@caelex.eu",
   "niklas@caelex.eu",
+  "test-operator@caelex.eu",
   "polleschnerjulian@gmail.com",
   "niklas0506wieczorek@gmail.com",
 ] as const;
