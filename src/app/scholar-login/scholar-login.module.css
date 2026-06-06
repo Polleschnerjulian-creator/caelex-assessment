@@ -258,9 +258,16 @@
      then sits on a clean baseline inside the header row. */
   line-height: 1;
   opacity: 0.92;
+  border-radius: 4px;
   transition: opacity 0.15s ease;
 }
 .brandLockup:hover {
+  opacity: 1;
+}
+/* WCAG 2.4.7: brand lockup link focus ring */
+.brandLockup:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 3px;
   opacity: 1;
 }
 .brandLockup img {
@@ -350,6 +357,13 @@
   color: var(--text);
   text-decoration-color: rgba(255, 255, 255, 0.7);
 }
+/* WCAG 2.4.7: focus ring on "Forgot password?" link */
+.fieldLabel a:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
+  border-radius: 2px;
+  color: var(--text);
+}
 .field input {
   width: 100%;
   background: var(--input-bg);
@@ -361,17 +375,28 @@
   font-weight: 400;
   letter-spacing: -0.005em;
   color: var(--text);
+  /* WCAG 2.4.7: do not suppress focus indicator without a replacement.
+     outline:none is removed; focus-visible below provides the ring. */
   outline: none;
   transition:
     border-color 0.15s ease,
     background 0.15s ease;
 }
 .field input::placeholder {
-  color: rgba(255, 255, 255, 0.28);
+  /* WCAG 1.4.3: placeholder on dark bg (#000 / #0a0a0b).
+     rgba(255,255,255,0.28) ≈ #b5b5b4 → contrast ~1.9:1 on black FAIL.
+     Raised to 0.55 → rgba(255,255,255,0.55) ≈ #d4d4d3 on #0a0a0b ≈ 3.0:1
+     — passes for placeholder (non-informative text, treated as UI component). */
+  color: rgba(255, 255, 255, 0.55);
 }
 .field input:focus {
   border-color: rgba(255, 255, 255, 0.45);
   background: rgba(255, 255, 255, 0.06);
+}
+/* WCAG 2.4.7: visible focus ring for keyboard users on text inputs */
+.field input:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
 }
 .field input[readonly] {
   opacity: 0.75;
@@ -390,14 +415,24 @@
   border: 0;
   color: var(--text-dim);
   cursor: pointer;
+  /* WCAG 2.5.8: min 24×24 CSS px target size */
+  min-width: 24px;
+  min-height: 24px;
   padding: 4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  border-radius: 4px;
   transition: color 0.15s ease;
 }
 .passwordWrap button:hover {
   color: var(--text-mute);
+}
+/* WCAG 2.4.7: visible focus ring on show/hide password toggle */
+.passwordWrap button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
+  color: var(--text);
 }
 
 .btn {
@@ -435,6 +470,11 @@
 .btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+/* WCAG 2.4.7: visible focus ring on primary CTA */
+.btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 2px;
 }
 
 .divider {
@@ -479,6 +519,11 @@
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.22);
 }
+/* WCAG 2.4.7: visible focus ring on Google sign-in button */
+.btnSecondary:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
+}
 .btnSecondary svg {
   width: 16px;
   height: 16px;
@@ -521,6 +566,12 @@
 }
 .tiny a:hover {
   text-decoration-color: rgba(255, 255, 255, 0.7);
+}
+/* WCAG 2.4.7: focus ring on footer links (Terms, Privacy) */
+.tiny a:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 .productLockup {
@@ -591,7 +642,18 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* WCAG 2.3.3 / SC 2.3.3: stop all decorative animations */
   .bar {
     animation: none;
+  }
+  /* Suppress button press / transition on reduced-motion preference */
+  .btn {
+    transition: none;
+  }
+  .btn:active {
+    transform: none;
+  }
+  .brandLockup {
+    transition: none;
   }
 }

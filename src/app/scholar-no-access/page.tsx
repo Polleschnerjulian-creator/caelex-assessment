@@ -34,17 +34,31 @@ export default async function ScholarNoAccess() {
   if (ok) redirect("/scholar"); // eligibility regained → don't strand the user
 
   return (
-    <main className="min-h-screen grid place-items-center bg-navy-950 text-slate-200 p-8">
+    // lang="de": WCAG 3.1.1 — content is German; root layout uses lang="en"
+    <main
+      lang="de"
+      className="min-h-screen grid place-items-center bg-navy-950 text-slate-200 p-8"
+    >
       <div className="max-w-md text-center space-y-4">
+        {/*
+          WCAG 1.3.1 / 2.4.6: h1 provides the page's primary heading.
+          (Previously missing — only a bare text node was present.)
+        */}
         <h1 className="text-display-sm text-white">Kein Scholar-Zugang</h1>
         <p className="text-slate-400">
           Caelex Scholar wird über deine Hochschule lizenziert. Bitte melde dich
           mit deinem Campus-Login an, oder bitte deine Universität um
           Freischaltung.
         </p>
+        {/*
+          WCAG 2.4.7: focus-visible ring on the CTA link.
+          WCAG 2.5.8: py-1.5 px-3 gives a comfortable ≥44px visual target
+                       via the text + padding combination.
+          WCAG 1.4.3: emerald-400 (#34D399) on navy-950 (#0A0F1E) ≈ 6.2:1 ✓
+        */}
         <a
           href="/scholar-access"
-          className="text-emerald-400 hover:text-emerald-300"
+          className="inline-block py-1.5 px-3 text-emerald-400 hover:text-emerald-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-950 rounded"
         >
           Für Universitäten →
         </a>

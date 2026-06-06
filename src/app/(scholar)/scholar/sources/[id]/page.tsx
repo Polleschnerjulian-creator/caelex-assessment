@@ -102,28 +102,54 @@ export default function ScholarSourceDetailPage() {
   }, [id]);
 
   return (
-    <div className="space-y-6">
-      {/* Back link — always rendered */}
+    // lang="de": WCAG 3.1.1 — content is German; root layout uses lang="en".
+    <div lang="de" className="space-y-6">
+      {/*
+        WCAG 2.4.7: back link needs visible focus indicator.
+        WCAG 2.5.8: inline-flex with py-1 gives ≥24px height target.
+        The link is also the first focusable element so it receives focus
+        naturally when the page loads via keyboard nav.
+      */}
       <Link
         href="/scholar"
-        className="inline-flex items-center gap-1.5 text-small text-slate-400 hover:text-emerald-400 transition-colors"
+        className="inline-flex items-center gap-1.5 py-1 text-small text-slate-400 hover:text-emerald-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 rounded"
       >
-        <ArrowLeft size={13} />
+        <ArrowLeft size={13} aria-hidden="true" />
         Zurück zur Suche
       </Link>
 
-      {/* Loading */}
+      {/*
+        WCAG 4.1.3: loading state announced via role="status".
+        Screen readers announce "Lade Rechtsquelle…" when the spinner appears.
+      */}
       {state.kind === "loading" && (
-        <div className="flex items-center justify-center gap-3 py-24 text-slate-400 text-body">
-          <Loader2 size={20} className="animate-spin text-emerald-500" />
-          Lade Rechtsquelle…
+        <div
+          role="status"
+          aria-live="polite"
+          className="flex items-center justify-center gap-3 py-24 text-slate-400 text-body"
+        >
+          <Loader2
+            size={20}
+            className="animate-spin text-emerald-500"
+            aria-hidden="true"
+          />
+          <span>Lade Rechtsquelle…</span>
         </div>
       )}
 
-      {/* Error */}
+      {/*
+        WCAG 4.1.3 / 1.3.1: error announced via role="alert" (assertive live region).
+      */}
       {state.kind === "error" && (
-        <div className="flex items-start gap-3 rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3">
-          <AlertCircle size={16} className="text-red-400 mt-0.5 shrink-0" />
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3"
+        >
+          <AlertCircle
+            size={16}
+            className="text-red-400 mt-0.5 shrink-0"
+            aria-hidden="true"
+          />
           <p className="text-small text-red-300">{state.message}</p>
         </div>
       )}
@@ -131,7 +157,11 @@ export default function ScholarSourceDetailPage() {
       {/* Not found */}
       {state.kind === "notfound" && (
         <div className="text-center py-24 space-y-3">
-          <FileText size={36} className="text-slate-600 mx-auto" />
+          <FileText
+            size={36}
+            className="text-slate-600 mx-auto"
+            aria-hidden="true"
+          />
           <p className="text-title font-medium text-slate-300">
             Quelle nicht gefunden
           </p>
@@ -140,9 +170,9 @@ export default function ScholarSourceDetailPage() {
           </p>
           <Link
             href="/scholar"
-            className="inline-flex items-center gap-1.5 text-small text-emerald-400 hover:text-emerald-300 transition-colors mt-2"
+            className="inline-flex items-center gap-1.5 py-1 text-small text-emerald-400 hover:text-emerald-300 transition-colors mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 rounded"
           >
-            <ArrowLeft size={13} />
+            <ArrowLeft size={13} aria-hidden="true" />
             Zurück zur Suche
           </Link>
         </div>
@@ -160,6 +190,11 @@ function SourceView({ source }: { source: SourceDetail }) {
       {/* Header card */}
       <div className="rounded-lg border border-navy-700 bg-navy-900 p-6 space-y-4">
         <div className="space-y-1">
+          {/*
+            WCAG 1.3.1 / 2.4.6: <h1> provides the document title for this
+            source. The visually-hidden page-level h1 is in the shell; this
+            is the first visible heading on the content area.
+          */}
           <h1 className="text-display-sm font-semibold text-white leading-snug">
             {source.title}
           </h1>
@@ -196,13 +231,17 @@ function SourceView({ source }: { source: SourceDetail }) {
 
         {source.sourceUrl && (
           <div className="border-t border-navy-700 pt-4">
+            {/*
+              WCAG 2.4.7: focus-visible ring on external link.
+              WCAG 2.5.8: py-1 gives ≥24px height target.
+            */}
             <a
               href={source.sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-small text-emerald-400 hover:text-emerald-300 transition-colors"
+              className="inline-flex items-center gap-1.5 py-1 text-small text-emerald-400 hover:text-emerald-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 rounded"
             >
-              <ExternalLink size={13} />
+              <ExternalLink size={13} aria-hidden="true" />
               Amtliche Quelle ansehen →
             </a>
           </div>
@@ -211,11 +250,14 @@ function SourceView({ source }: { source: SourceDetail }) {
 
       {/* Key provisions */}
       {source.keyProvisions.length > 0 && (
-        <section className="space-y-4">
-          <h2 className="text-heading font-semibold text-white">
+        <section aria-labelledby="provisions-heading" className="space-y-4">
+          <h2
+            id="provisions-heading"
+            className="text-heading font-semibold text-white"
+          >
             Schlüsselbestimmungen
           </h2>
-          <ul className="space-y-4">
+          <ul className="space-y-4" role="list">
             {source.keyProvisions.map((provision, i) => (
               <ProvisionCard
                 key={`${provision.section}-${i}`}
@@ -257,7 +299,11 @@ function ProvisionCard({
       {/* Compliance implication */}
       {provision.complianceImplication && (
         <div className="flex items-start gap-2 bg-amber-400/5 border border-amber-400/20 rounded-md px-3 py-2.5">
-          <ChevronRight size={13} className="text-amber-400 mt-0.5 shrink-0" />
+          <ChevronRight
+            size={13}
+            className="text-amber-400 mt-0.5 shrink-0"
+            aria-hidden="true"
+          />
           <p className="text-small text-amber-200/80 leading-relaxed">
             <span className="font-medium text-amber-300">
               Compliance-Hinweis:{" "}
@@ -279,9 +325,9 @@ function ProvisionCard({
                 href={(provision.paragraphUrl ?? sourceUrl)!}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-small text-emerald-400 hover:text-emerald-300 transition-colors"
+                className="inline-flex items-center gap-1 py-1 text-small text-emerald-400 hover:text-emerald-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 rounded"
               >
-                <ExternalLink size={12} />
+                <ExternalLink size={12} aria-hidden="true" />
                 Vollständiger Text bei der amtlichen Quelle →
               </a>
             )}
