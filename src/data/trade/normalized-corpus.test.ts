@@ -47,10 +47,23 @@ describe("NORMALIZED_CORPUS_UNION — shape + provenance", () => {
       "JP_METI",
       "IN_SCOMET",
       "DE_AUSFUHRLISTE",
+      "EU_ANNEX_I",
+      "NSG",
+      "RU_833",
     ];
     for (const r of expected) expect(regimes.has(r)).toBe(true);
-    // Union should be well beyond the 99-entry parametric cross-walk.
-    expect(NORMALIZED_CORPUS_UNION.length).toBeGreaterThan(180);
+    // Union should be well beyond the 99-entry parametric cross-walk —
+    // now incl. the full EU Annex I + NSG + Russia-833 corpora.
+    expect(NORMALIZED_CORPUS_UNION.length).toBeGreaterThan(300);
+  });
+
+  it("wires in the previously-dead EU Annex I / NSG / Russia-833 corpora", () => {
+    const byRegime = (r: CorpusRegime) =>
+      NORMALIZED_CORPUS_UNION.filter((e) => e.regime === r);
+    // EU Annex I is the core EU dual-use list — must be materially present.
+    expect(byRegime("EU_ANNEX_I").length).toBeGreaterThan(20);
+    expect(byRegime("NSG").length).toBeGreaterThan(0);
+    expect(byRegime("RU_833").length).toBeGreaterThan(0);
   });
 });
 
@@ -89,6 +102,8 @@ describe("NORMALIZED_CORPUS_UNION — honest provenance (no fabricated reasons)"
       "JP_METI",
       "IN_SCOMET",
       "DE_AUSFUHRLISTE",
+      "NSG",
+      "RU_833",
     ]);
     for (const e of NORMALIZED_CORPUS_UNION) {
       if (noReasonRegimes.has(e.regime)) {

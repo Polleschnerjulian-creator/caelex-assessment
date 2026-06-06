@@ -42,6 +42,25 @@ import {
   DE_AUSFUHRLISTE_ENTRIES,
   DE_AUSFUHRLISTE_AS_OF,
 } from "./de-ausfuhrliste";
+import { EU_ANNEX_I_ENTRIES } from "./eu-annex-i";
+import { EU_ANNEX_I_CAT3_ENTRIES } from "./eu-annex-i-cat3";
+import {
+  EU_ANNEX_I_CAT4_ENTRIES,
+  EU_ANNEX_I_CAT7_ENTRIES,
+} from "./eu-annex-i-cat4-7";
+import { EU_ANNEX_I_CAT5_ENTRIES } from "./eu-annex-i-cat5";
+import { EU_ANNEX_I_CAT6_ENTRIES } from "./eu-annex-i-cat6";
+import {
+  NSG_TRIGGER_LIST_ENTRIES,
+  NSG_DUAL_USE_ENTRIES,
+  type NsgEntry,
+} from "./nsg-trigger-dual-use";
+import {
+  RUSSIA_833_ANNEX_VII_ENTRIES,
+  RUSSIA_833_ANNEX_XXIII_ENTRIES,
+  RUSSIA_833_ANNEX_XXIX_ENTRIES,
+  type Russia833Entry,
+} from "./russia-833-deep-annexes";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -54,7 +73,10 @@ export type CorpusRegime =
   | "WASSENAAR"
   | "JP_METI"
   | "IN_SCOMET"
-  | "DE_AUSFUHRLISTE";
+  | "DE_AUSFUHRLISTE"
+  | "EU_ANNEX_I"
+  | "NSG"
+  | "RU_833";
 
 /**
  * The one flat shape every control-list corpus normalizes to. Only fields
@@ -224,6 +246,45 @@ function adaptDeAusfuhrliste(): NormalizedCorpusEntry[] {
   }));
 }
 
+/** NSG Trigger List (Part 1) + Dual-Use (Part 2) — INFCIRC/254. */
+function adaptNsg(entries: readonly NsgEntry[]): NormalizedCorpusEntry[] {
+  return entries.map((e) => ({
+    canonicalId: `NSG:${e.code}`,
+    code: e.code,
+    regime: "NSG" as const,
+    list:
+      e.list === "TRIGGER"
+        ? "NSG Trigger List (Part 1)"
+        : "NSG Dual-Use (Part 2)",
+    title: e.title,
+    description: e.description,
+    controlReason: [],
+    sourceUrl: e.sourceUrl,
+    asOfDate: e.asOfDate,
+    isItar: false,
+    euAnnexIRef: e.euAnnexIRef,
+    earCclRef: e.earCclRef,
+  }));
+}
+
+/** EU Reg. 833/2014 (Russia) deep-annex entries (VII / XXIII / XXIX). */
+function adaptRussia833(
+  entries: readonly Russia833Entry[],
+): NormalizedCorpusEntry[] {
+  return entries.map((e) => ({
+    canonicalId: `RU_833:${e.code}`,
+    code: e.code,
+    regime: "RU_833" as const,
+    list: "EU Reg. 833/2014 (Russia)",
+    title: e.title,
+    description: e.description,
+    controlReason: [],
+    sourceUrl: e.sourceUrl,
+    asOfDate: e.asOfDate,
+    isItar: false,
+  }));
+}
+
 // ─── The union ──────────────────────────────────────────────────────
 
 /**
@@ -261,6 +322,39 @@ export const NORMALIZED_CORPUS_UNION: NormalizedCorpusEntry[] = (() => {
     ...adaptJapanMeti(),
     ...adaptIndiaScomet(),
     ...adaptDeAusfuhrliste(),
+    // EU Annex I (Reg. 2021/821) — the core EU dual-use list, all categories.
+    ...adaptClassificationEntries(EU_ANNEX_I_ENTRIES, "EU_ANNEX_I", "EU Annex I"),
+    ...adaptClassificationEntries(
+      EU_ANNEX_I_CAT3_ENTRIES,
+      "EU_ANNEX_I",
+      "EU Annex I Cat. 3",
+    ),
+    ...adaptClassificationEntries(
+      EU_ANNEX_I_CAT4_ENTRIES,
+      "EU_ANNEX_I",
+      "EU Annex I Cat. 4",
+    ),
+    ...adaptClassificationEntries(
+      EU_ANNEX_I_CAT5_ENTRIES,
+      "EU_ANNEX_I",
+      "EU Annex I Cat. 5",
+    ),
+    ...adaptClassificationEntries(
+      EU_ANNEX_I_CAT6_ENTRIES,
+      "EU_ANNEX_I",
+      "EU Annex I Cat. 6",
+    ),
+    ...adaptClassificationEntries(
+      EU_ANNEX_I_CAT7_ENTRIES,
+      "EU_ANNEX_I",
+      "EU Annex I Cat. 7",
+    ),
+    // NSG (INFCIRC/254) Trigger List + Dual-Use; EU Reg. 833/2014 (Russia).
+    ...adaptNsg(NSG_TRIGGER_LIST_ENTRIES),
+    ...adaptNsg(NSG_DUAL_USE_ENTRIES),
+    ...adaptRussia833(RUSSIA_833_ANNEX_VII_ENTRIES),
+    ...adaptRussia833(RUSSIA_833_ANNEX_XXIII_ENTRIES),
+    ...adaptRussia833(RUSSIA_833_ANNEX_XXIX_ENTRIES),
   ];
   const seen = new Set<string>();
   const deduped: NormalizedCorpusEntry[] = [];
