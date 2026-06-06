@@ -11,6 +11,7 @@ import {
   FileText,
   ChevronRight,
 } from "lucide-react";
+import { ScholarPage } from "../../_components/ScholarPage";
 
 /**
  * Caelex Scholar — source detail page (Task 3.4).
@@ -103,7 +104,7 @@ export default function ScholarSourceDetailPage() {
 
   return (
     // lang="de": WCAG 3.1.1 — content is German; root layout uses lang="en".
-    <div lang="de" className="space-y-6">
+    <ScholarPage>
       {/*
         WCAG 2.4.7: back link needs visible focus indicator.
         WCAG 2.5.8: inline-flex with py-1 gives ≥24px height target.
@@ -112,7 +113,7 @@ export default function ScholarSourceDetailPage() {
       */}
       <Link
         href="/scholar"
-        className="inline-flex items-center gap-1.5 py-1 text-small text-slate-400 hover:text-emerald-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 rounded"
+        className="inline-flex items-center gap-1.5 py-1 mb-6 text-[12px] text-gray-700 hover:text-gray-900 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA] rounded"
       >
         <ArrowLeft size={13} aria-hidden="true" />
         Zurück zur Suche
@@ -180,7 +181,7 @@ export default function ScholarSourceDetailPage() {
 
       {/* Loaded */}
       {state.kind === "ok" && <SourceView source={state.source} />}
-    </div>
+    </ScholarPage>
   );
 }
 

@@ -7,9 +7,10 @@
  * Next.js 15: searchParams is a Promise — await it.
  *
  * WCAG 2.2 AA:
- *   - <main> + <h1>; form filter bar with labelled <select>s
- *   - Source rows: focus-visible ring, gray-700+ text on white
- *   - lang="de" on root element
+ *   - <main> landmark provided by ScholarPage; <h1> via PageHeader
+ *   - Filter form with labelled <select>s
+ *   - Source rows rendered via shared SourceRow (focus ring, gray-700+ on white)
+ *   - lang="de" on root element (ScholarPage)
  *   - Submit button has accessible name
  */
 
@@ -21,33 +22,13 @@ import { BookOpen, Scale } from "lucide-react";
 import { ALL_SOURCES, getAvailableJurisdictions } from "@/data/legal-sources";
 import { getCountryName } from "@/data/iso-3166-countries";
 import type { LegalSourceType } from "@/data/legal-sources";
+import { ScholarPage } from "../_components/ScholarPage";
+import { PageHeader } from "../_components/PageHeader";
+import { SourceRow } from "../_components/SourceRow";
+import type { SourceRowData } from "../_components/SourceRow";
 
 // Cap to avoid dumping enormous unreadable lists
 const DISPLAY_CAP = 200;
-
-// ─── Type labels ─────────────────────────────────────────────────────
-const TYPE_LABELS: Record<string, string> = {
-  international_treaty: "Treaty",
-  federal_law: "Law",
-  federal_regulation: "Regulation",
-  technical_standard: "Standard",
-  eu_regulation: "EU Reg",
-  eu_directive: "EU Dir",
-  policy_document: "Policy",
-  draft_legislation: "Draft",
-  certification_standard: "Std",
-  industry_guideline: "Guide",
-  insurance_clause: "Clause",
-  scientific_protocol: "Protocol",
-  soft_law_resolution: "Resolution",
-  national_security_doctrine: "Doctrine",
-  bilateral_agreement: "Bilateral",
-  multilateral_agreement: "Multilateral",
-  case_law: "Case Law",
-  procurement_framework: "Procurement",
-  safety_regulation: "Safety",
-  tax_treaty: "Tax",
-};
 
 // Human-readable type labels for the filter <select>
 const TYPE_DISPLAY_NAMES: Record<string, string> = {
@@ -71,15 +52,6 @@ const TYPE_DISPLAY_NAMES: Record<string, string> = {
   procurement_framework: "Beschaffungsrahmen",
   safety_regulation: "Sicherheitsvorschrift",
   tax_treaty: "Doppelbesteuerungsabkommen",
-};
-
-// ─── Relevance dot ───────────────────────────────────────────────────
-const RELEVANCE_DOT: Record<string, { bg: string; label: string }> = {
-  fundamental: { bg: "bg-gray-900", label: "Fundamental" },
-  critical: { bg: "bg-red-600", label: "Kritisch" },
-  high: { bg: "bg-amber-600", label: "Hoch" },
-  medium: { bg: "bg-gray-500", label: "Mittel" },
-  low: { bg: "bg-gray-400", label: "Niedrig" },
 };
 
 // Special jurisdiction display names not in ISO-3166
@@ -133,30 +105,13 @@ export default async function LibraryPage({ searchParams }: Props) {
   const isCapped = totalCount > DISPLAY_CAP;
 
   return (
-    <main lang="de" className="min-h-screen bg-[#F7F8FA] px-8 lg:px-16 py-12">
-      {/* Page heading */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-3">
-          <BookOpen
-            size={15}
-            className="text-gray-500"
-            strokeWidth={1.5}
-            aria-hidden="true"
-          />
-          <span className="text-[10px] font-semibold text-gray-600 tracking-[0.2em] uppercase">
-            Caelex Scholar
-          </span>
-        </div>
-        {/*
-          WCAG 1.3.1 / 2.4.6: visible h1 — gray-900 on #F7F8FA ≥15:1 ✓
-        */}
-        <h1 className="text-[32px] font-light text-gray-900 tracking-[-0.02em] leading-tight">
-          Bibliothek
-        </h1>
-        <p className="mt-2 text-[13px] text-gray-600">
-          Alle Rechtsquellen durchsuchen und filtern
-        </p>
-      </div>
+    <ScholarPage>
+      <PageHeader
+        eyebrow="Caelex Scholar"
+        title="Bibliothek"
+        subtitle="Alle Rechtsquellen durchsuchen und filtern"
+        icon={BookOpen}
+      />
 
       {/* ─── Filter bar (accessible form, GET method) ─── */}
       {/*
@@ -266,7 +221,7 @@ export default async function LibraryPage({ searchParams }: Props) {
             size={13}
             className="text-gray-500"
             strokeWidth={1.5}
-            aria-hidden="true"
+            aria-hidden={true}
           />
           <h2
             id="library-sources-heading"
@@ -283,52 +238,19 @@ export default async function LibraryPage({ searchParams }: Props) {
         ) : (
           <ul className="space-y-1" role="list">
             {capped.map((source) => {
-              const dotInfo = source.relevance_level
-                ? (RELEVANCE_DOT[source.relevance_level] ?? RELEVANCE_DOT.low)
-                : RELEVANCE_DOT.low;
-
+              const rowData: SourceRowData = {
+                id: source.id,
+                jurisdiction: source.jurisdiction,
+                type: source.type,
+                status: source.status,
+                title: source.title_en,
+                officialReference: source.official_reference ?? null,
+                relevanceLevel: source.relevance_level ?? null,
+                scopeDescription: source.scope_description ?? null,
+              };
               return (
                 <li key={source.id}>
-                  {/*
-                    WCAG 2.5.8: py-3.5 gives ≥44px height ✓
-                    WCAG 2.4.7: focus-visible ring ✓
-                    WCAG 1.4.3: gray-800 on white = 8.6:1 ✓
-                  */}
-                  <Link
-                    href={`/scholar/sources/${encodeURIComponent(source.id)}`}
-                    className="flex items-center gap-4 px-5 py-3.5 text-left rounded-xl bg-white border border-transparent hover:border-gray-200 hover:shadow-sm motion-safe:transition-all motion-safe:duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
-                  >
-                    {/*
-                      WCAG 1.4.11: dot UI component. bg-gray-500 on white = 4.6:1 ✓
-                    */}
-                    <span
-                      className={`h-2 w-2 rounded-full flex-shrink-0 ${dotInfo.bg}`}
-                      aria-hidden="true"
-                    />
-                    <span className="sr-only">Relevanz: {dotInfo.label}</span>
-
-                    {/* Type label */}
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-gray-600 w-12 flex-shrink-0">
-                      {TYPE_LABELS[source.type] ?? source.type}
-                    </span>
-
-                    {/* Title + official reference */}
-                    <div className="flex-1 min-w-0">
-                      <span className="text-[14px] font-medium text-gray-800 truncate block group-hover:text-black motion-safe:transition-colors">
-                        {source.title_en}
-                      </span>
-                      {source.official_reference && (
-                        <span className="text-[10px] text-gray-600">
-                          {source.official_reference}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Jurisdiction */}
-                    <span className="text-[11px] font-bold text-gray-600 flex-shrink-0">
-                      {source.jurisdiction}
-                    </span>
-                  </Link>
+                  <SourceRow source={rowData} />
                 </li>
               );
             })}
@@ -350,6 +272,6 @@ export default async function LibraryPage({ searchParams }: Props) {
           </span>
         </div>
       </footer>
-    </main>
+    </ScholarPage>
   );
 }

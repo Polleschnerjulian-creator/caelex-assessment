@@ -1,47 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Scale } from "lucide-react";
-
-// ─── Type labels (maps API type strings → short display labels) ──────
-
-const TYPE_LABELS: Record<string, string> = {
-  international_treaty: "Treaty",
-  federal_law: "Law",
-  federal_regulation: "Regulation",
-  technical_standard: "Standard",
-  eu_regulation: "EU Reg",
-  eu_directive: "EU Dir",
-  policy_document: "Policy",
-  draft_legislation: "Draft",
-  certification_standard: "Std",
-  industry_guideline: "Guide",
-  insurance_clause: "Clause",
-  scientific_protocol: "Protocol",
-  soft_law_resolution: "Resolution",
-  national_security_doctrine: "Doctrine",
-  bilateral_agreement: "Bilateral",
-  multilateral_agreement: "Multilateral",
-  case_law: "Case Law",
-  procurement_framework: "Procurement",
-  safety_regulation: "Safety",
-  tax_treaty: "Tax",
-};
-
-// ─── Relevance dot — bg class + accessible label ──────────────────────
-// WCAG 1.4.11: UI components that convey information need ≥3:1 contrast.
-// bg-gray-300 (#D1D5DB) on white = 1.4:1 → replaced with bg-gray-500 (#6B7280) = 4.6:1.
-// bg-gray-200 (#E5E7EB) on white = 1.2:1 → replaced with bg-gray-400 (#9CA3AF) = 2.9:1
-//   — still marginal for non-text, so bumped to bg-gray-500 for safety.
-
-const RELEVANCE_DOT: Record<string, { bg: string; label: string }> = {
-  fundamental: { bg: "bg-gray-900", label: "Fundamental" },
-  critical: { bg: "bg-red-600", label: "Kritisch" },
-  high: { bg: "bg-amber-600", label: "Hoch" },
-  medium: { bg: "bg-gray-500", label: "Mittel" },
-  low: { bg: "bg-gray-400", label: "Niedrig" },
-};
+import Link from "next/link";
+import { Globe2, BookOpen, Scale } from "lucide-react";
+import { ScholarPage } from "./_components/ScholarPage";
+import { SourceRow } from "./_components/SourceRow";
+import type { SourceRowData } from "./_components/SourceRow";
 
 // ─── German greeting by hour ─────────────────────────────────────────
 
@@ -85,10 +49,43 @@ interface SearchResult {
   hits: SearchHit[];
 }
 
+// ─── Example chips for empty state ──────────────────────────────────
+
+const EXAMPLE_CHIPS = [
+  "Outer Space Treaty",
+  "NIS2 Directive",
+  "EU Space Act",
+  "Debris mitigation",
+  "Launch authorisation",
+  "ITAR regulations",
+];
+
+// ─── Entry cards for empty state navigation ──────────────────────────
+
+const ENTRY_CARDS = [
+  {
+    href: "/scholar/jurisdictions",
+    icon: Globe2,
+    label: "Jurisdiktionen",
+    description: "Rechtsquellen nach Land oder Region",
+  },
+  {
+    href: "/scholar/library",
+    icon: BookOpen,
+    label: "Bibliothek",
+    description: "Alle Quellen filtern und durchsuchen",
+  },
+  {
+    href: "/scholar/cases",
+    icon: Scale,
+    label: "Rechtsprechung",
+    description: "Urteile und Durchsetzungsmaßnahmen",
+  },
+];
+
 // ─── Page ─────────────────────────────────────────────────────────────
 
 export default function ScholarSearchPage() {
-  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [query, setQuery] = useState("");
@@ -179,6 +176,9 @@ export default function ScholarSearchPage() {
       : result.hits.slice(0, 10)
     : [];
 
+  // Whether to show the empty-state below the search box
+  const isIdle = !query && !loading && !error && !hasResults && !isNoResults;
+
   // WCAG 4.1.3: live region text summarises current search state
   const liveText = loading
     ? "Durchsuche Rechtsquellen…"
@@ -191,11 +191,8 @@ export default function ScholarSearchPage() {
           : "";
 
   return (
-    // WCAG 1.3.1 / 2.4.1: wrap in <main> so the page has a landmark
-    // lang="de": WCAG 3.1.1 — content is German; root layout uses lang="en".
-    // Setting lang on the content element gives AT the correct language cue
-    // without touching the shared root layout.
-    <main lang="de" className="min-h-screen bg-[#F7F8FA] px-8 lg:px-16">
+    // ScholarPage provides the max-w-6xl container + <main lang="de">
+    <ScholarPage>
       {/* WCAG 2.4.6 / 1.3.1: visually-hidden page title */}
       <h1 className="sr-only">Caelex Scholar — Rechtsquellen durchsuchen</h1>
 
@@ -211,9 +208,9 @@ export default function ScholarSearchPage() {
 
       {/* ─── Centered search area ─── */}
       <div
-        className={`motion-safe:transition-all motion-safe:duration-700 motion-safe:ease-out ${hasResults || isNoResults || loading || error ? "pt-10" : "pt-[22vh]"}`}
+        className={`motion-safe:transition-all motion-safe:duration-700 motion-safe:ease-out ${hasResults || isNoResults || loading || error ? "pt-4" : "pt-[18vh]"}`}
       >
-        {/* Greeting — WCAG 1.4.3: gray-500 (#6B7280) on #F7F8FA ≈ 4.7:1 ✓ */}
+        {/* Greeting — WCAG 1.4.3: gray-600 (#4B5563) on #F7F8FA ≈ 6.0:1 ✓ */}
         <p
           className={`font-normal text-gray-600 tracking-[-0.01em] motion-safe:transition-all motion-safe:duration-700 motion-safe:ease-out ${hasResults || isNoResults || loading || error ? "text-[15px] mb-3" : "text-[24px] lg:text-[28px] mb-8"}`}
         >
@@ -225,8 +222,6 @@ export default function ScholarSearchPage() {
           {/*
             WCAG 1.3.1 / 3.3.2: aria-label provides programmatic label.
             WCAG 2.4.7: focus-visible ring replaces the outline:none style.
-            The border-b animation still works; we add a focus-visible ring
-            offset so the bottom-border focus cue remains visible.
           */}
           <label htmlFor="scholar-search" className="sr-only">
             Rechtsquellen durchsuchen
@@ -305,14 +300,6 @@ export default function ScholarSearchPage() {
           </span>
         </div>
 
-        {/* Hint when idle and query is empty
-            WCAG 1.4.3: gray-600 on #F7F8FA ≈ 6.0:1 ✓ */}
-        {!query && !loading && !error && !hasResults && !isNoResults && (
-          <p className="text-[11px] text-gray-600 mt-6">
-            Mindestens 2 Zeichen eingeben — Suche startet automatisch
-          </p>
-        )}
-
         {/* Loading indicator
             WCAG 1.4.3: gray-600 on #F7F8FA ≈ 6.0:1 ✓ */}
         {loading && (
@@ -355,6 +342,64 @@ export default function ScholarSearchPage() {
         )}
       </div>
 
+      {/* ─── Empty state: chips + entry cards ─── */}
+      {isIdle && (
+        <div className="mt-10 space-y-8">
+          {/* Example search chips */}
+          <div>
+            <p className="text-[10px] font-semibold text-gray-500 tracking-[0.15em] uppercase mb-3">
+              Beispielsuchen
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {EXAMPLE_CHIPS.map((chip) => (
+                <button
+                  key={chip}
+                  type="button"
+                  onClick={() => {
+                    setQuery(chip);
+                    inputRef.current?.focus();
+                  }}
+                  className="text-[12px] text-gray-700 bg-white border border-gray-200 rounded-full px-3.5 py-1.5 hover:border-gray-400 hover:text-gray-900 motion-safe:transition-all motion-safe:duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Entry cards — Jurisdictions / Library / Cases */}
+          <div>
+            <p className="text-[10px] font-semibold text-gray-500 tracking-[0.15em] uppercase mb-3">
+              Erkunden
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {ENTRY_CARDS.map(({ href, icon: Icon, label, description }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="group flex items-start gap-3 bg-white border border-gray-100 rounded-xl p-4 hover:border-gray-300 hover:shadow-sm motion-safe:transition-all motion-safe:duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
+                >
+                  <Icon
+                    size={16}
+                    className="text-gray-400 mt-0.5 flex-shrink-0 group-hover:text-gray-600 motion-safe:transition-colors"
+                    strokeWidth={1.5}
+                    aria-hidden={true}
+                  />
+                  <div className="min-w-0">
+                    <span className="block text-[13px] font-medium text-gray-800 group-hover:text-black motion-safe:transition-colors">
+                      {label}
+                    </span>
+                    <span className="block text-[11px] text-gray-500 mt-0.5">
+                      {description}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ─── Results ─── */}
       {hasResults && (
         <div className="space-y-6 pb-20">
@@ -364,12 +409,11 @@ export default function ScholarSearchPage() {
                 size={13}
                 className="text-gray-500"
                 strokeWidth={1.5}
-                aria-hidden="true"
+                aria-hidden={true}
               />
               {/*
                 WCAG 1.3.1: h2 provides heading structure for results section.
                 WCAG 1.4.3: gray-600 (#4B5563) on #F7F8FA ≈ 6.0:1 ✓
-                             gray-500 (#6B7280) on #F7F8FA ≈ 4.7:1 ✓
               */}
               <h2 className="text-[10px] font-semibold text-gray-600 tracking-[0.2em] uppercase">
                 Rechtsquellen
@@ -378,60 +422,19 @@ export default function ScholarSearchPage() {
             {/* WCAG 1.3.1: list semantics for result items */}
             <ul className="space-y-1" role="list">
               {displayedHits.map((hit) => {
-                const dotInfo = hit.relevanceLevel
-                  ? (RELEVANCE_DOT[hit.relevanceLevel] ?? RELEVANCE_DOT.low)
-                  : RELEVANCE_DOT.low;
+                const rowData: SourceRowData = {
+                  id: hit.id,
+                  jurisdiction: hit.jurisdiction,
+                  type: hit.type,
+                  status: hit.status,
+                  title: hit.title,
+                  officialReference: hit.officialReference,
+                  relevanceLevel: hit.relevanceLevel,
+                  scopeDescription: hit.scopeDescription,
+                };
                 return (
                   <li key={hit.id}>
-                    {/*
-                      WCAG 2.5.8: py-3.5 gives ≥44px height ✓
-                      WCAG 2.4.7: focus-visible ring on result rows
-                      WCAG 1.4.3: gray-700 (#374151) on white = 7.4:1 ✓
-                    */}
-                    <button
-                      type="button"
-                      onClick={() =>
-                        router.push(
-                          `/scholar/sources/${encodeURIComponent(hit.id)}`,
-                        )
-                      }
-                      className="w-full flex items-center gap-4 px-5 py-3.5 text-left rounded-xl bg-white border border-transparent hover:border-gray-200 hover:shadow-sm motion-safe:transition-all motion-safe:duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
-                    >
-                      {/*
-                        WCAG 1.4.11: dot used to convey relevance info.
-                        Paired with sr-only text so it's not icon-only.
-                        bg-gray-500 on white = 4.6:1 ✓; bg-gray-400 = 2.9:1
-                        — bumped minimum to bg-gray-500 for "low" too.
-                      */}
-                      <span
-                        className={`h-2 w-2 rounded-full flex-shrink-0 ${dotInfo.bg}`}
-                        aria-hidden="true"
-                      />
-                      <span className="sr-only">Relevanz: {dotInfo.label}</span>
-
-                      {/* Type label — WCAG 1.4.3: gray-600 on white ≈ 5.7:1 ✓ */}
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-gray-600 w-12 flex-shrink-0">
-                        {TYPE_LABELS[hit.type] ?? hit.type}
-                      </span>
-
-                      {/* Title + official reference */}
-                      <div className="flex-1 min-w-0">
-                        <span className="text-[14px] font-medium text-gray-800 truncate block group-hover:text-black motion-safe:transition-colors">
-                          {hit.title}
-                        </span>
-                        {hit.officialReference && (
-                          // WCAG 1.4.3: gray-600 on white ≈ 5.7:1 ✓
-                          <span className="text-[10px] text-gray-600">
-                            {hit.officialReference}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Jurisdiction — gray-600 on white ≈ 5.7:1 ✓ */}
-                      <span className="text-[11px] font-bold text-gray-600 flex-shrink-0">
-                        {hit.jurisdiction}
-                      </span>
-                    </button>
+                    <SourceRow source={rowData} />
                   </li>
                 );
               })}
@@ -511,7 +514,6 @@ export default function ScholarSearchPage() {
             </span>
             {/*
               WCAG 2.5.8: footer links need ≥24px targets.
-              Added inline-block + py-1 to meet the 24px CSS height floor.
               WCAG 2.4.7: focus-visible ring on footer links.
               WCAG 1.4.3: gray-700 (#374151) on white = 7.4:1 ✓
             */}
@@ -546,6 +548,6 @@ export default function ScholarSearchPage() {
           </div>
         </div>
       </footer>
-    </main>
+    </ScholarPage>
   );
 }

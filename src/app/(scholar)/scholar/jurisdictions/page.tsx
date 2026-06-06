@@ -5,11 +5,11 @@
  * the client bundle.
  *
  * WCAG 2.2 AA:
- *   - <main> landmark + real <h1>
+ *   - <main> landmark provided by ScholarPage; real <h1> via PageHeader
  *   - Card links have visible focus ring (focus-visible:ring-2)
  *   - Text contrast: gray-700 on white ≥7.4:1 ✓; gray-600 on white ≥5.7:1 ✓
  *   - Interactive targets ≥44px (card min-h-[72px] ✓)
- *   - lang="de" on root element
+ *   - lang="de" on root element (ScholarPage)
  */
 
 export const dynamic = "force-dynamic";
@@ -22,6 +22,8 @@ import {
   getLegalSourceStats,
 } from "@/data/legal-sources";
 import { getCountryName } from "@/data/iso-3166-countries";
+import { ScholarPage } from "../_components/ScholarPage";
+import { PageHeader } from "../_components/PageHeader";
 
 // Special jurisdiction display names not in ISO-3166
 const SPECIAL_NAMES: Record<string, string> = {
@@ -47,30 +49,13 @@ export default function JurisdictionsPage() {
   });
 
   return (
-    <main lang="de" className="min-h-screen bg-[#F7F8FA] px-8 lg:px-16 py-12">
-      {/* Page heading */}
-      <div className="mb-10">
-        <div className="flex items-center gap-2 mb-3">
-          <Globe2
-            size={15}
-            className="text-gray-500"
-            strokeWidth={1.5}
-            aria-hidden="true"
-          />
-          <span className="text-[10px] font-semibold text-gray-600 tracking-[0.2em] uppercase">
-            Caelex Scholar
-          </span>
-        </div>
-        {/*
-          WCAG 1.3.1 / 2.4.6: visible h1 — contrast gray-900 on #F7F8FA ≥15:1 ✓
-        */}
-        <h1 className="text-[32px] font-light text-gray-900 tracking-[-0.02em] leading-tight">
-          Jurisdiktionen
-        </h1>
-        <p className="mt-2 text-[13px] text-gray-600 leading-relaxed">
-          {sorted.length} Jurisdiktionen mit Weltraumrecht-Quellen
-        </p>
-      </div>
+    <ScholarPage>
+      <PageHeader
+        eyebrow="Caelex Scholar"
+        title="Jurisdiktionen"
+        subtitle={`${sorted.length} Jurisdiktionen mit Weltraumrecht-Quellen`}
+        icon={Globe2}
+      />
 
       {/*
         Card grid — 2 cols on md, 3 on lg, 4 on xl.
@@ -115,8 +100,6 @@ export default function JurisdictionsPage() {
                   Country name — WCAG 1.4.3: gray-800 on white = 8.6:1 ✓
                 */}
                 <span className="mt-2 text-[13px] font-medium text-gray-800 leading-snug group-hover:text-black motion-safe:transition-colors">
-                  {/* Screen reader gets full accessible name from the combined
-                      text content of the link; no aria-label needed here */}
                   {label}
                 </span>
               </Link>
@@ -139,6 +122,6 @@ export default function JurisdictionsPage() {
           </span>
         </div>
       </footer>
-    </main>
+    </ScholarPage>
   );
 }
