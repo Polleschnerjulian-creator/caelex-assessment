@@ -295,6 +295,14 @@ export const rateLimiters = redis
         prefix: "ratelimit:astra_chat",
       }),
 
+      // Scholar corpus search: 60/min per student (interactive research)
+      scholar: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(60, "1 m"),
+        analytics: true,
+        prefix: "ratelimit:scholar",
+      }),
+
       // Atlas voice-input transcription: 30 per hour per user.
       // A 30s clip at gpt-4o-mini-transcribe ($0.003/min) costs
       // ~$0.0015. At 30/h max spend per user is ~$0.045/h — safely
@@ -483,6 +491,7 @@ const fallbackLimiters = {
   nexus: new InMemoryRateLimiter(15, 3600000),
   hub: new InMemoryRateLimiter(30, 60000), // 30/min vs 60/min (Redis)
   astra_chat: new InMemoryRateLimiter(30, 3600000), // 30/hr vs 60/hr (Redis)
+  scholar: new InMemoryRateLimiter(30, 60000), // 30/min dev
   transcription: new InMemoryRateLimiter(15, 3600000), // 15/hr dev vs 30/hr (Redis)
   atlas_chat_upload: new InMemoryRateLimiter(10, 3600000), // 10/hr dev vs 20/hr (Redis)
   atlas_semantic: new InMemoryRateLimiter(20, 60000), // 20/min dev vs 40/min (Redis)
@@ -526,6 +535,7 @@ export type RateLimitType =
   | "nexus"
   | "hub"
   | "astra_chat"
+  | "scholar"
   | "transcription"
   | "atlas_chat_upload"
   | "atlas_semantic"
