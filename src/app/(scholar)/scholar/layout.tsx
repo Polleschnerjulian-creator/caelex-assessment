@@ -35,16 +35,18 @@ export default async function ScholarLayout({
   }
 
   return (
-    <div className="min-h-screen bg-navy-950 text-slate-200">
-      <header className="border-b border-navy-700 px-6 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-[#F7F8FA] text-gray-900">
+      <header className="border-b border-gray-100 bg-white/80 backdrop-blur-sm px-8 lg:px-16 py-3 flex items-center justify-between sticky top-0 z-10">
         <a href="/scholar" className="flex items-baseline gap-2">
-          <span className="text-title font-semibold text-white">
+          <span className="text-[14px] font-semibold text-gray-900 tracking-[-0.01em]">
             Caelex Scholar
           </span>
-          <span className="text-caption text-slate-400">powered by Atlas</span>
+          <span className="text-[10px] text-gray-400 font-normal">
+            powered by Atlas
+          </span>
         </a>
       </header>
-      <main className="mx-auto max-w-5xl px-6 py-8">{children}</main>
+      <main>{children}</main>
     </div>
   );
 }
