@@ -178,7 +178,10 @@ export type AuditAction =
   // Email-only intake; manual processing within 30-day GDPR window.
   // Stage-2 will add per-request DB rows + cron-driven processing.
   | "atlas_data_export_requested"
-  | "atlas_data_deletion_requested";
+  | "atlas_data_deletion_requested"
+  // Scholar
+  | "scholar_search"
+  | "scholar_view_source";
 
 // Entity types for audit logging
 export type AuditEntityType =
@@ -245,7 +248,9 @@ export type AuditEntityType =
   | "mission"
   | "mission_spacecraft"
   // Regulatory feed (Sprint UF40 / P1-P7).
-  | "regulatory_update";
+  | "regulatory_update"
+  // Scholar
+  | "scholar_source";
 
 export interface AuditLogEntry {
   userId: string;
