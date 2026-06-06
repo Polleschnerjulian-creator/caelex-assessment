@@ -4,6 +4,17 @@ vi.mock("server-only", () => ({}));
 vi.mock("@/lib/atlas/korpus-tools.server", () => ({
   executeKorpusTool: vi.fn(),
 }));
+vi.mock("@/data/legal-sources", () => ({
+  getLegalSourceById: vi.fn((id: string) => {
+    if (id === "DE-SATDSIG-2007") {
+      return {
+        relevance_level: "high",
+        official_reference: "BGBl. I 2007 S. 2278",
+      };
+    }
+    return undefined;
+  }),
+}));
 
 import { executeKorpusTool } from "@/lib/atlas/korpus-tools.server";
 import { scholarSearchSources } from "./scholar-search.server";
@@ -50,6 +61,8 @@ describe("scholarSearchSources", () => {
           title: "Satellite Data Security Act",
           scopeDescription: "EO operators only",
           score: 0.8,
+          relevanceLevel: "high",
+          officialReference: "BGBl. I 2007 S. 2278",
         },
       ],
     });

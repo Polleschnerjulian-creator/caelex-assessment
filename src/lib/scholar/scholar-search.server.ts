@@ -1,5 +1,6 @@
 import "server-only";
 import { executeKorpusTool } from "@/lib/atlas/korpus-tools.server";
+import { getLegalSourceById } from "@/data/legal-sources";
 
 export interface ScholarSearchHit {
   id: string;
@@ -9,6 +10,8 @@ export interface ScholarSearchHit {
   title: string;
   scopeDescription: string | null;
   score: number;
+  relevanceLevel: string | null;
+  officialReference: string | null;
 }
 
 export interface ScholarSearchResult {
@@ -74,14 +77,19 @@ export async function scholarSearchSources(
     query: payload.query,
     hitCount: payload.hit_count,
     semanticAvailable: payload.semantic_available,
-    hits: payload.hits.map((h) => ({
-      id: h.id,
-      jurisdiction: h.jurisdiction,
-      type: h.type,
-      status: h.status,
-      title: h.title,
-      scopeDescription: h.scope_description ?? null,
-      score: h.score,
-    })),
+    hits: payload.hits.map((h) => {
+      const source = getLegalSourceById(h.id);
+      return {
+        id: h.id,
+        jurisdiction: h.jurisdiction,
+        type: h.type,
+        status: h.status,
+        title: h.title,
+        scopeDescription: h.scope_description ?? null,
+        score: h.score,
+        relevanceLevel: source?.relevance_level ?? null,
+        officialReference: source?.official_reference ?? null,
+      };
+    }),
   };
 }
