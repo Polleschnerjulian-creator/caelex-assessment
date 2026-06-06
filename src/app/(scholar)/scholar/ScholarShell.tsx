@@ -3,7 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, LogOut, type LucideIcon } from "lucide-react";
+import {
+  Search,
+  Globe2,
+  BookOpen,
+  Scale,
+  LogOut,
+  type LucideIcon,
+} from "lucide-react";
 import { signOut } from "next-auth/react";
 
 // ─── Nav items — hardcoded German, no i18n dependency ──────────────
@@ -22,6 +29,21 @@ const MAIN_NAV: NavItem[] = [
     href: "/scholar",
     icon: Search,
     exact: true,
+  },
+  {
+    label: "Jurisdiktionen",
+    href: "/scholar/jurisdictions",
+    icon: Globe2,
+  },
+  {
+    label: "Bibliothek",
+    href: "/scholar/library",
+    icon: BookOpen,
+  },
+  {
+    label: "Rechtsprechung",
+    href: "/scholar/cases",
+    icon: Scale,
   },
 ];
 
