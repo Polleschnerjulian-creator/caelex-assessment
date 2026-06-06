@@ -5,10 +5,10 @@
  * Next.js 15: params is a Promise — await it.
  *
  * WCAG 2.2 AA:
- *   - <main> + <h1>; logical heading structure (h2 per section)
+ *   - <main> landmark provided by ScholarPage; <h1> visible in header card
  *   - External links have accessible name + rel="noopener"
  *   - Applied-sources list links to /scholar/sources/<id>
- *   - lang="de" on root element
+ *   - lang="de" on root element (ScholarPage)
  *   - Back link has py-1 for ≥24px target
  */
 
@@ -18,8 +18,9 @@ export const runtime = "nodejs";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ExternalLink } from "lucide-react";
-import { getCaseById, getCasesApplyingSource } from "@/data/legal-cases";
+import { getCaseById } from "@/data/legal-cases";
 import { getLegalSourceById } from "@/data/legal-sources";
+import { ScholarPage } from "../../_components/ScholarPage";
 
 // ─── Status labels ──────────────────────────────────────────────────
 const STATUS_LABELS: Record<string, string> = {
@@ -70,7 +71,7 @@ export default async function CaseDetailPage({ params }: Props) {
   };
 
   return (
-    <main lang="de" className="min-h-screen bg-[#F7F8FA] px-8 lg:px-16 py-12">
+    <ScholarPage>
       {/*
         WCAG 2.5.8: py-1 → ≥24px height ✓
         WCAG 2.4.7: focus-visible ring ✓
@@ -78,9 +79,9 @@ export default async function CaseDetailPage({ params }: Props) {
       */}
       <Link
         href="/scholar/cases"
-        className="inline-flex items-center gap-1.5 py-1 mb-8 text-[12px] text-gray-700 hover:text-gray-900 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA] rounded"
+        className="inline-flex items-center gap-1.5 py-1 mb-6 text-[12px] text-gray-700 hover:text-gray-900 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA] rounded"
       >
-        <ArrowLeft size={13} aria-hidden="true" />
+        <ArrowLeft size={13} aria-hidden={true} />
         Zurück zur Rechtsprechung
       </Link>
 
@@ -149,7 +150,7 @@ export default async function CaseDetailPage({ params }: Props) {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 py-1 text-[12px] text-gray-700 hover:text-gray-900 underline underline-offset-2 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-white rounded"
             >
-              <ExternalLink size={12} aria-hidden="true" />
+              <ExternalLink size={12} aria-hidden={true} />
               Amtliche Entscheidung ansehen
             </a>
           </div>
@@ -358,6 +359,6 @@ export default async function CaseDetailPage({ params }: Props) {
           </span>
         </div>
       </footer>
-    </main>
+    </ScholarPage>
   );
 }

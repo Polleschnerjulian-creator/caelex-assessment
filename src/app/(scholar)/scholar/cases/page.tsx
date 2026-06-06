@@ -5,9 +5,10 @@
  * Next.js 15: searchParams is a Promise — await it.
  *
  * WCAG 2.2 AA:
- *   - <main> + <h1>; filter form with labelled <select>s
- *   - Case rows: focus-visible ring, gray-700+ text on white
- *   - lang="de" on root element
+ *   - <main> landmark provided by ScholarPage; <h1> via PageHeader
+ *   - Filter form with labelled <select>s
+ *   - Case rows rendered via shared CaseRow (overlap fixed, focus ring)
+ *   - lang="de" on root element (ScholarPage)
  */
 
 export const dynamic = "force-dynamic";
@@ -22,6 +23,10 @@ import {
 } from "@/data/legal-cases";
 import type { CaseForum } from "@/data/legal-cases";
 import { getCountryName } from "@/data/iso-3166-countries";
+import { ScholarPage } from "../_components/ScholarPage";
+import { PageHeader } from "../_components/PageHeader";
+import { CaseRow } from "../_components/CaseRow";
+import type { CaseRowData } from "../_components/CaseRow";
 
 // Special jurisdiction display names not in ISO-3166
 const SPECIAL_NAMES: Record<string, string> = {
@@ -43,16 +48,6 @@ const FORUM_LABELS: Record<CaseForum, string> = {
   treaty_award: "Vertragsschiedsspruch",
   administrative_appeal: "Verwaltungsbeschwerde",
   arbitral_award: "Schiedsspruch",
-};
-
-// Status labels
-const STATUS_LABELS: Record<string, string> = {
-  decided: "Entschieden",
-  settled: "Vergleich",
-  pending: "Ausstehend",
-  withdrawn: "Zurückgezogen",
-  vacated: "Aufgehoben",
-  appeal_pending: "Berufung",
 };
 
 interface Props {
@@ -88,30 +83,13 @@ export default async function CasesPage({ searchParams }: Props) {
   });
 
   return (
-    <main lang="de" className="min-h-screen bg-[#F7F8FA] px-8 lg:px-16 py-12">
-      {/* Page heading */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-3">
-          <Scale
-            size={15}
-            className="text-gray-500"
-            strokeWidth={1.5}
-            aria-hidden="true"
-          />
-          <span className="text-[10px] font-semibold text-gray-600 tracking-[0.2em] uppercase">
-            Caelex Scholar
-          </span>
-        </div>
-        {/*
-          WCAG 1.3.1 / 2.4.6: visible h1 — gray-900 on #F7F8FA ≥15:1 ✓
-        */}
-        <h1 className="text-[32px] font-light text-gray-900 tracking-[-0.02em] leading-tight">
-          Rechtsprechung
-        </h1>
-        <p className="mt-2 text-[13px] text-gray-600">
-          Urteile, Entscheidungen und Durchsetzungsmaßnahmen im Weltraumrecht
-        </p>
-      </div>
+    <ScholarPage>
+      <PageHeader
+        eyebrow="Caelex Scholar"
+        title="Rechtsprechung"
+        subtitle="Urteile, Entscheidungen und Durchsetzungsmaßnahmen im Weltraumrecht"
+        icon={Scale}
+      />
 
       {/* ─── Filter bar ─── */}
       {/*
@@ -205,7 +183,7 @@ export default async function CasesPage({ searchParams }: Props) {
             size={13}
             className="text-gray-500"
             strokeWidth={1.5}
-            aria-hidden="true"
+            aria-hidden={true}
           />
           <h2
             id="cases-list-heading"
@@ -221,49 +199,24 @@ export default async function CasesPage({ searchParams }: Props) {
           </p>
         ) : (
           <ul className="space-y-1" role="list">
-            {filtered.map((c) => (
-              <li key={c.id}>
-                {/*
-                  WCAG 2.5.8: py-3.5 gives ≥44px height ✓
-                  WCAG 2.4.7: focus-visible ring ✓
-                  WCAG 1.4.3: gray-800 on white = 8.6:1 ✓
-                */}
-                <Link
-                  href={`/scholar/cases/${encodeURIComponent(c.id)}`}
-                  className="flex items-center gap-4 px-5 py-3.5 rounded-xl bg-white border border-transparent hover:border-gray-200 hover:shadow-sm motion-safe:transition-all motion-safe:duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
-                >
-                  {/* Forum label — WCAG 1.4.3: gray-600 on white ≈ 5.7:1 ✓ */}
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-gray-600 w-16 flex-shrink-0">
-                    {FORUM_LABELS[c.forum]?.split(" ")[0] ?? c.forum}
-                  </span>
-
-                  {/* Title + parties */}
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[14px] font-medium text-gray-800 truncate block group-hover:text-black motion-safe:transition-colors">
-                      {c.title}
-                    </span>
-                    <span className="text-[10px] text-gray-600 truncate block">
-                      {c.forum_name}
-                    </span>
-                  </div>
-
-                  {/* Date */}
-                  <span className="text-[10px] text-gray-600 flex-shrink-0 whitespace-nowrap">
-                    {c.date_decided}
-                  </span>
-
-                  {/* Status badge */}
-                  <span className="text-[9px] font-semibold text-gray-600 bg-gray-100 rounded-md px-2 py-0.5 flex-shrink-0 whitespace-nowrap">
-                    {STATUS_LABELS[c.status] ?? c.status}
-                  </span>
-
-                  {/* Jurisdiction */}
-                  <span className="text-[11px] font-bold text-gray-600 flex-shrink-0">
-                    {c.jurisdiction}
-                  </span>
-                </Link>
-              </li>
-            ))}
+            {filtered.map((c) => {
+              const rowData: CaseRowData = {
+                id: c.id,
+                jurisdiction: c.jurisdiction,
+                forum: c.forum,
+                forum_name: c.forum_name,
+                title: c.title,
+                plaintiff: c.plaintiff,
+                defendant: c.defendant,
+                date_decided: c.date_decided,
+                status: c.status,
+              };
+              return (
+                <li key={c.id}>
+                  <CaseRow c={rowData} />
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
@@ -282,6 +235,6 @@ export default async function CasesPage({ searchParams }: Props) {
           </span>
         </div>
       </footer>
-    </main>
+    </ScholarPage>
   );
 }
