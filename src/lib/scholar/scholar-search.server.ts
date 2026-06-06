@@ -59,10 +59,17 @@ export async function scholarSearchSources(
       compliance_area: input.complianceArea,
     },
   });
-  const payload = JSON.parse(result.content) as RawSearchPayload;
   if (result.isError) {
-    throw new Error(payload.error ?? "Scholar search failed");
+    let message = "Scholar search failed";
+    try {
+      message =
+        (JSON.parse(result.content) as { error?: string }).error ?? message;
+    } catch {
+      /* non-JSON error content — keep generic message */
+    }
+    throw new Error(message);
   }
+  const payload = JSON.parse(result.content) as RawSearchPayload;
   return {
     query: payload.query,
     hitCount: payload.hit_count,

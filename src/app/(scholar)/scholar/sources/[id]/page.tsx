@@ -220,6 +220,7 @@ function SourceView({ source }: { source: SourceDetail }) {
               <ProvisionCard
                 key={`${provision.section}-${i}`}
                 provision={provision}
+                sourceUrl={source.sourceUrl}
               />
             ))}
           </ul>
@@ -229,7 +230,13 @@ function SourceView({ source }: { source: SourceDetail }) {
   );
 }
 
-function ProvisionCard({ provision }: { provision: KeyProvision }) {
+function ProvisionCard({
+  provision,
+  sourceUrl,
+}: {
+  provision: KeyProvision;
+  sourceUrl?: string | null;
+}) {
   return (
     <li className="rounded-lg border border-navy-700 bg-navy-900 p-5 space-y-3">
       {/* Section + title */}
@@ -266,17 +273,18 @@ function ProvisionCard({ provision }: { provision: KeyProvision }) {
           <p className="text-small text-slate-400 leading-relaxed font-mono whitespace-pre-wrap">
             {provision.paragraphText}
           </p>
-          {provision.paragraphTextTruncated && provision.paragraphUrl && (
-            <a
-              href={provision.paragraphUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-small text-emerald-400 hover:text-emerald-300 transition-colors"
-            >
-              <ExternalLink size={12} />
-              Vollständiger Text bei der amtlichen Quelle →
-            </a>
-          )}
+          {provision.paragraphTextTruncated &&
+            (provision.paragraphUrl ?? sourceUrl) && (
+              <a
+                href={(provision.paragraphUrl ?? sourceUrl)!}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-small text-emerald-400 hover:text-emerald-300 transition-colors"
+              >
+                <ExternalLink size={12} />
+                Vollständiger Text bei der amtlichen Quelle →
+              </a>
+            )}
         </div>
       )}
     </li>

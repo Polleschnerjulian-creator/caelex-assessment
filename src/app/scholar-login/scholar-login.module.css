@@ -1,7 +1,7 @@
 /* ==============================================================
-   Atlas login page — full-viewport dark stage with animated
+   Scholar login page — full-viewport dark stage with animated
    light bars. Scoped via .root so nothing leaks outside the
-   /login route (no body-level rules).
+   /scholar-login route (no body-level rules).
    ============================================================== */
 
 .root {

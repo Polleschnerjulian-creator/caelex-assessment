@@ -51,7 +51,7 @@ export function getScholarSourceDetail(id: string): ScholarSourceDetail | null {
         summary: p.summary,
         complianceImplication: p.complianceImplication,
         paragraphText: truncated
-          ? full!.slice(0, PARAGRAPH_TEXT_CAP) + TRUNCATION_SUFFIX
+          ? full!.slice(0, PARAGRAPH_TEXT_CAP).trimEnd() + TRUNCATION_SUFFIX
           : full,
         paragraphTextTruncated: truncated,
         paragraphUrl: p.paragraph_url,
