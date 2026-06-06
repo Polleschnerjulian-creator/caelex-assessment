@@ -67,13 +67,15 @@ export async function getActiveProducts(
 export async function grantProductAccess(input: {
   organizationId: string;
   product: ProductCode;
-  source: "MANUAL" | "TRIAL_PROMO";
+  source: "MANUAL" | "TRIAL_PROMO" | "INSTITUTIONAL";
   status?: "ACTIVE" | "TRIAL";
   expiresAt?: Date | null;
   grantedById?: string;
   notes?: string;
+  seatCap?: number | null;
 }) {
   const status = input.status ?? "ACTIVE";
+  const seatCap = input.seatCap ?? null;
   return prisma.organizationProductAccess.upsert({
     where: {
       organizationId_product: {
@@ -89,6 +91,7 @@ export async function grantProductAccess(input: {
       expiresAt: input.expiresAt ?? null,
       grantedById: input.grantedById ?? null,
       notes: input.notes ?? null,
+      seatCap,
     },
     update: {
       status,
@@ -96,6 +99,7 @@ export async function grantProductAccess(input: {
       suspendedReason: null,
       expiresAt: input.expiresAt ?? null,
       notes: input.notes ?? null,
+      seatCap,
     },
   });
 }

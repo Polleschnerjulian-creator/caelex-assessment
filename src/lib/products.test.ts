@@ -191,6 +191,31 @@ describe("grantProductAccess", () => {
       notes: "enterprise sales grant",
     });
   });
+
+  it("writes INSTITUTIONAL source and seatCap into the upsert data", async () => {
+    mockUpsert.mockResolvedValue({
+      id: "opa_2",
+      organizationId: "org1",
+      product: "SCHOLAR",
+      status: "ACTIVE",
+    });
+
+    await grantProductAccess({
+      organizationId: "org1",
+      product: "SCHOLAR",
+      source: "INSTITUTIONAL",
+      seatCap: 500,
+      grantedById: "u1",
+    });
+
+    expect(mockUpsert).toHaveBeenCalledTimes(1);
+    const call = mockUpsert.mock.calls[0][0];
+    expect(call.create).toMatchObject({
+      source: "INSTITUTIONAL",
+      seatCap: 500,
+    });
+    expect(call.update).toMatchObject({ seatCap: 500 });
+  });
 });
 
 // ─── revokeProductAccess ─────────────────────────────────────────────────
