@@ -28,13 +28,20 @@ const EXCLUDED_ROUTES = [
   "/trade-forgot-password",
   "/trade-reset-password",
   "/trade-no-access",
+  // Scholar auth + access surfaces — Scholar has its own light shell.
+  "/scholar-login",
+  "/scholar-forgot-password",
+  "/scholar-reset-password",
+  "/scholar-no-access",
 ];
 
 // Routes excluded by an EXACT or `/route/`-prefix match. Used for
 // segments where a sibling marketing page shares the prefix and must
 // NOT be excluded (e.g. `/trade` is the app, `/trade-access` is the
 // marketing page — naïve `.startsWith("/trade")` would catch both).
-const EXACT_OR_SUBPATH_EXCLUDED = ["/trade"];
+// `/scholar` is the app shell; `/scholar-access` (if it exists) is
+// the marketing page — same pattern as `/trade` vs `/trade-access`.
+const EXACT_OR_SUBPATH_EXCLUDED = ["/trade", "/scholar"];
 
 export default function PublicLayout({
   children,
