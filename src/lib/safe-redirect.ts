@@ -55,6 +55,31 @@ export function safeAtlasUrl(
 }
 
 /**
+ * Scholar-scoped variant — mirror of safeAtlasUrl for the Scholar
+ * research surface. Only paths inside `/scholar`, `/scholar/*`, and
+ * the `/scholar-*` auth pages are accepted. A `?callbackUrl=/dashboard`
+ * on /scholar-login falls through to `/scholar`, preventing accidental
+ * cross-brand smuggling.
+ */
+export function safeScholarUrl(
+  raw: string | null | undefined,
+  fallback = "/scholar",
+): string {
+  if (!raw) return fallback;
+  if (raw.startsWith("//")) return fallback;
+  if (raw.includes("://")) return fallback;
+  if (!raw.startsWith("/")) return fallback;
+  if (
+    raw === "/scholar" ||
+    raw.startsWith("/scholar/") ||
+    raw.startsWith("/scholar-")
+  ) {
+    return raw;
+  }
+  return fallback;
+}
+
+/**
  * Trade-scoped variant — Sprint T7 mirror of safeAtlasUrl. Same strict
  * brand-isolation logic: only paths inside the Trade product surface
  * (`/trade`, `/trade/*`, and the `/trade-*` auth/marketing pages) are
