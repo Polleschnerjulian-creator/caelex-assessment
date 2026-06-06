@@ -3444,6 +3444,7 @@ model OrganizationProductAccess {
   // Audit
   grantedById String? // User.id — set when source = MANUAL
   notes       String? // free-text admin note
+  seatCap     Int?    // null = unlimited; institutional seat ceiling (Scholar)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3460,6 +3461,7 @@ enum ProductCode {
   TRADE
   ATLAS
   PHAROS
+  SCHOLAR
 }
 
 enum ProductAccessStatus {
@@ -3475,6 +3477,7 @@ enum ProductAccessSource {
   LEGACY_BACKFILL // one-time migration from pre-ProductAccess state
   TRIAL_PROMO // automatic trial (e.g. 6-month Trade Starter loyalty bonus)
   ORG_TYPE // derived from orgType (Atlas/Pharos pre-cutover)
+  INSTITUTIONAL // free per-org Scholar grant to a university
 }
 
 enum OrganizationRole {
