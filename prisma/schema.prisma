@@ -15160,3 +15160,33 @@ enum TradeFaaAstLicenseStatus {
   EXPIRED
   REVOKED
 }
+
+// ─── Scholar ──────────────────────────────────────────────────────────────────
+
+/// Per-user research preferences for Caelex Scholar.
+/// Intentionally decoupled from the core User model (no relation field on User)
+/// so Scholar schema additions don't require a User migration.
+model ScholarUserPreferences {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  sourceLanguage       String   @default("original") // original | de | fr | en
+  defaultJurisdiction  String?  // ISO code or null
+  citationFormat       String   @default("din")      // din | oscola | bluebook
+  semanticSearch       Boolean  @default(true)
+  resultsPerPage       Int      @default(20)
+  searchHistoryEnabled Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+/// Scholar search history — for Wave 3 UX (recent searches, analytics).
+/// Created now so the table exists on deploy; no UI yet.
+model ScholarSearchHistory {
+  id           String   @id @default(cuid())
+  userId       String
+  query        String
+  jurisdiction String?
+  createdAt    DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
