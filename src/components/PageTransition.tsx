@@ -27,6 +27,11 @@ const EXCLUDED_PREFIXES = [
   "/trade-access",
   "/trade-forgot-password",
   "/trade-reset-password",
+  // Scholar — same rationale as Atlas/Trade above: Scholar has its own light
+  // shell with per-page content, so the full-page Caelex-logo splash fired on
+  // every internal /scholar navigation ("loadingscreen zwischen seiten"). The
+  // startsWith match covers /scholar, /scholar/* AND the /scholar-* auth pages.
+  "/scholar",
   "/login",
   "/signup",
   "/assessment",
