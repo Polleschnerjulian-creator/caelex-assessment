@@ -1,5 +1,5 @@
 import "server-only";
-import { getLegalSourceById } from "@/data/legal-sources";
+import { getLegalSourceById, getTranslatedSource } from "@/data/legal-sources";
 
 // Mirrors PARAGRAPH_TEXT_CAP in the Atlas korpus engine (IP guardrail: closed-licence
 // normative text must never be served verbatim in full). Keep the two in sync.
@@ -29,19 +29,42 @@ export interface ScholarSourceDetail {
   keyProvisions: ScholarProvision[];
 }
 
-export function getScholarSourceDetail(id: string): ScholarSourceDetail | null {
+/**
+ * Fetch full source detail, optionally translated.
+ *
+ * @param id       - Legal source ID (e.g. "DE-SATDSIG-2007")
+ * @param language - User's sourceLanguage preference: "original" | "de" | "fr" | "en".
+ *                   "original" means no translation is applied (title_en / title_local
+ *                   are surfaced as-is, matching the pre-Wave-1 behaviour).
+ *                   Any other value is forwarded to getTranslatedSource which resolves
+ *                   the translation registry and falls back gracefully.
+ */
+export function getScholarSourceDetail(
+  id: string,
+  language?: string,
+): ScholarSourceDetail | null {
   const s = getLegalSourceById(id);
   if (!s) return null;
+
+  // Resolve display language. "original" and undefined both mean "no translation".
+  const lang = language && language !== "original" ? language : "en";
+  const translated = getTranslatedSource(s, lang);
+
   return {
     id: s.id,
     jurisdiction: s.jurisdiction,
     type: s.type,
     status: s.status,
-    title: s.title_en,
+    // When language == "original" we fall back to title_local (if set) then title_en,
+    // matching the original behaviour. Otherwise use the resolved translation title.
+    title:
+      language === "original" || !language
+        ? (s.title_local ?? s.title_en)
+        : translated.title,
     titleLocal: s.title_local,
     sourceUrl: s.source_url,
     issuingBody: s.issuing_body,
-    scopeDescription: s.scope_description,
+    scopeDescription: translated.scopeDescription ?? s.scope_description,
     keyProvisions: s.key_provisions.map((p) => {
       const full = p.paragraph_text;
       const truncated = !!full && full.length > PARAGRAPH_TEXT_CAP;

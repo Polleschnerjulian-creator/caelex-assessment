@@ -19,7 +19,9 @@ export const runtime = "nodejs";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink, ChevronRight } from "lucide-react";
+import { auth } from "@/lib/auth";
 import { getScholarSourceDetail } from "@/lib/scholar/source-detail.server";
+import { getScholarPreferences } from "@/lib/scholar/preferences.server";
 import { ScholarPage } from "../../_components/ScholarPage";
 
 interface PageProps {
@@ -28,7 +30,16 @@ interface PageProps {
 
 export default async function ScholarSourceDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const source = getScholarSourceDetail(id);
+
+  // Read user's sourceLanguage preference server-side; default "original" when
+  // unauthenticated (layout redirects anyway, but be safe).
+  const session = await auth();
+  const prefs = session?.user?.id
+    ? await getScholarPreferences(session.user.id)
+    : null;
+  const sourceLanguage = prefs?.sourceLanguage ?? "original";
+
+  const source = getScholarSourceDetail(id, sourceLanguage);
   if (!source) notFound();
 
   return (

@@ -19,16 +19,22 @@ export const runtime = "nodejs";
 
 import Link from "next/link";
 import { BookOpen, Scale } from "lucide-react";
-import { ALL_SOURCES, getAvailableJurisdictions } from "@/data/legal-sources";
+import {
+  ALL_SOURCES,
+  getAvailableJurisdictions,
+  getTranslatedSource,
+} from "@/data/legal-sources";
 import { getCountryName } from "@/data/iso-3166-countries";
 import type { LegalSourceType } from "@/data/legal-sources";
+import { auth } from "@/lib/auth";
+import { getScholarPreferences } from "@/lib/scholar/preferences.server";
 import { ScholarPage } from "../_components/ScholarPage";
 import { PageHeader } from "../_components/PageHeader";
 import { SourceRow } from "../_components/SourceRow";
 import type { SourceRowData } from "../_components/SourceRow";
 
-// Cap to avoid dumping enormous unreadable lists
-const DISPLAY_CAP = 200;
+// Hard upper cap — safety rail regardless of user pref.
+const HARD_CAP = 200;
 
 // Human-readable type labels for the filter <select>
 const TYPE_DISPLAY_NAMES: Record<string, string> = {
@@ -72,11 +78,29 @@ export default async function LibraryPage({ searchParams }: Props) {
   // Next.js 15: searchParams is a Promise
   const sp = await searchParams;
 
+  // Load user preferences for default jurisdiction + results-per-page cap.
+  // Falls back gracefully when unauthenticated (layout redirects, but be safe).
+  const session = await auth();
+  const prefs = session?.user?.id
+    ? await getScholarPreferences(session.user.id)
+    : null;
+
   const typeFilter = typeof sp.type === "string" && sp.type ? sp.type : "";
-  const jurisdictionFilter =
+
+  // URL param takes precedence; fall back to saved defaultJurisdiction pref.
+  const rawJurisdiction =
     typeof sp.jurisdiction === "string" && sp.jurisdiction
       ? sp.jurisdiction.toUpperCase()
-      : "";
+      : (prefs?.defaultJurisdiction?.toUpperCase() ?? "");
+  const jurisdictionFilter = rawJurisdiction;
+
+  // Effective results-per-page: URL ?limit param > saved pref > default 20.
+  const prefLimit = prefs?.resultsPerPage ?? 20;
+  const urlLimit = typeof sp.limit === "string" ? parseInt(sp.limit, 10) : NaN;
+  const DISPLAY_CAP = Math.min(
+    HARD_CAP,
+    isNaN(urlLimit) ? prefLimit : urlLimit,
+  );
 
   // Derive distinct filter options from the full corpus (sorted alphabetically)
   const allTypes = Array.from(
@@ -103,6 +127,11 @@ export default async function LibraryPage({ searchParams }: Props) {
   const totalCount = filtered.length;
   const capped = filtered.slice(0, DISPLAY_CAP);
   const isCapped = totalCount > DISPLAY_CAP;
+
+  // Resolve display language for source titles.
+  // "original" → no translation overlay (title_local ?? title_en).
+  const sourceLanguage = prefs?.sourceLanguage ?? "original";
+  const displayLang = sourceLanguage === "original" ? "en" : sourceLanguage;
 
   return (
     <ScholarPage>
@@ -238,15 +267,26 @@ export default async function LibraryPage({ searchParams }: Props) {
         ) : (
           <ul className="space-y-1" role="list">
             {capped.map((source) => {
+              // Apply source-language translation if user opted in.
+              // When sourceLanguage == "original", use title_local (if set)
+              // then title_en — preserving pre-Wave-1 behaviour.
+              const tx = getTranslatedSource(source, displayLang);
+              const displayTitle =
+                sourceLanguage === "original"
+                  ? (source.title_local ?? source.title_en)
+                  : tx.title;
+              const displayScope =
+                tx.scopeDescription ?? source.scope_description ?? null;
+
               const rowData: SourceRowData = {
                 id: source.id,
                 jurisdiction: source.jurisdiction,
                 type: source.type,
                 status: source.status,
-                title: source.title_en,
+                title: displayTitle,
                 officialReference: source.official_reference ?? null,
                 relevanceLevel: source.relevance_level ?? null,
-                scopeDescription: source.scope_description ?? null,
+                scopeDescription: displayScope,
               };
               return (
                 <li key={source.id}>

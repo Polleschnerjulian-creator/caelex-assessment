@@ -1,7 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
-vi.mock("@/data/legal-sources", () => ({ getLegalSourceById: vi.fn() }));
+vi.mock("@/data/legal-sources", () => ({
+  getLegalSourceById: vi.fn(),
+  // getTranslatedSource is now called by source-detail.server.ts; stub it to
+  // return a passthrough so existing tests that only care about truncation still work.
+  getTranslatedSource: vi.fn(
+    (source: { title_en: string; scope_description?: string }) => ({
+      title: source.title_en,
+      scopeDescription: source.scope_description,
+      getProvisionTranslation: () => null,
+    }),
+  ),
+}));
 
 import { getLegalSourceById } from "@/data/legal-sources";
 import { getScholarSourceDetail } from "./source-detail.server";
