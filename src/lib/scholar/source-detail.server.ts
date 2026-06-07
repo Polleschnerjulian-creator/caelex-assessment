@@ -27,6 +27,76 @@ export interface ScholarSourceDetail {
   issuingBody?: string;
   scopeDescription?: string;
   keyProvisions: ScholarProvision[];
+
+  // ─── Wave-2 corpus enrichment (projection-only, no DB) ──────────────
+  // All optional: omitted when the underlying LegalSource doesn't carry
+  // the field, so the reading UI can render-when-present without nulls.
+
+  /** ISO date the instrument was enacted/adopted. */
+  dateEnacted?: string;
+  /** ISO date the instrument entered into force / commenced. */
+  dateInForce?: string;
+  /** ISO date of the most recent amendment. */
+  dateLastAmended?: string;
+
+  /** Competent authorities responsible for this instrument. */
+  competentAuthorities?: string[];
+
+  /** Official gazette / consolidated-text reference (BGBl., OJ, CFR…). */
+  officialReference?: string;
+  /** Parliamentary / procedure reference (BT-Drucksache, COM doc…). */
+  parliamentaryReference?: string;
+  /** UN-document reference (A/RES/…, treaty registration). */
+  unReference?: string;
+
+  /** ISO date the corpus record was last human-verified. */
+  lastVerified?: string;
+
+  /** ISO-alpha-2 codes of jurisdictions party to / bound by this source. */
+  appliesToJurisdictions?: string[];
+  /** ISO-alpha-2 codes of signatory-only jurisdictions. */
+  signedByJurisdictions?: string[];
+
+  /** Raw related-source IDs (thin refs; UI resolves on demand). */
+  relatedSources?: string[];
+  /** Raw ID of the instrument this source amends. */
+  amends?: string;
+  /** Raw IDs of instruments that amend this source. */
+  amendedBy?: string[];
+  /** Raw ID of the parent instrument this source implements/transposes. */
+  implements?: string;
+  /** Raw ID of the successor instrument that superseded this source. */
+  supersededBy?: string;
+
+  /**
+   * Coarse "how does this bind?" hint derived from `type` — lets the UI
+   * render a type band without re-deriving the mapping. Undefined when
+   * the type has no obvious applicability band.
+   */
+  appliesToType?: string;
+}
+
+/**
+ * Coarse applicability hint derived from a LegalSource.type. Projection-
+ * only sugar for the reading UI; returns undefined for types without an
+ * obvious "how does it bind" story (the UI then shows no band).
+ */
+function deriveAppliesToType(type: string): string | undefined {
+  switch (type) {
+    case "eu_regulation":
+      return "directly-applicable";
+    case "eu_directive":
+      return "needs-transposition";
+    case "international_treaty":
+      return "treaty-binds-parties";
+    case "federal_law":
+    case "federal_regulation":
+      return "national-binding";
+    case "draft_legislation":
+      return "not-yet-in-force";
+    default:
+      return undefined;
+  }
 }
 
 /**
@@ -65,6 +135,34 @@ export function getScholarSourceDetail(
     sourceUrl: s.source_url,
     issuingBody: s.issuing_body,
     scopeDescription: translated.scopeDescription ?? s.scope_description,
+
+    // ─── Wave-2 enrichment: surface rich corpus fields when present.
+    // Each is passed through verbatim (no translation) and stays
+    // undefined when the source omits it, so the projection never
+    // invents data. Arrays are only attached when non-empty.
+    dateEnacted: s.date_enacted,
+    dateInForce: s.date_in_force,
+    dateLastAmended: s.date_last_amended,
+    competentAuthorities: s.competent_authorities?.length
+      ? s.competent_authorities
+      : undefined,
+    officialReference: s.official_reference,
+    parliamentaryReference: s.parliamentary_reference,
+    unReference: s.un_reference,
+    lastVerified: s.last_verified,
+    appliesToJurisdictions: s.applies_to_jurisdictions?.length
+      ? s.applies_to_jurisdictions
+      : undefined,
+    signedByJurisdictions: s.signed_by_jurisdictions?.length
+      ? s.signed_by_jurisdictions
+      : undefined,
+    relatedSources: s.related_sources?.length ? s.related_sources : undefined,
+    amends: s.amends,
+    amendedBy: s.amended_by?.length ? s.amended_by : undefined,
+    implements: s.implements,
+    supersededBy: s.superseded_by,
+    appliesToType: deriveAppliesToType(s.type),
+
     keyProvisions: s.key_provisions.map((p) => {
       const full = p.paragraph_text;
       const truncated = !!full && full.length > PARAGRAPH_TEXT_CAP;
