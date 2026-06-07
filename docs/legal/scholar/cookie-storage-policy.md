@@ -2,7 +2,7 @@
 
 > **ENTWURF / DRAFT — Vorlage; vor Veröffentlichung bzw. Unterzeichnung durch qualifizierte Rechtsberatung zu prüfen und anzupassen. Keine Rechtsberatung. / Template; must be reviewed and adapted by qualified legal counsel before publication or execution. Not legal advice.**
 
-- **Stand / Last updated:** {{DATE}}
+- **Stand / Last updated:** 7 June 2026
 - **Version:** 0.1 (Entwurf / Draft)
 - **Binding language:** German (DE). English is a convenience translation.
 - **Public surface:** `/scholar/legal/cookies` — rendered DE+EN via `LegalDoc`. Content files: `src/app/(scholar)/scholar/legal/_content/cookies-{de,en}.ts`.

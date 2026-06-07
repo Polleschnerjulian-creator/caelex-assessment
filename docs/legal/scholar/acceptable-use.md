@@ -5,7 +5,7 @@
 > Template; must be reviewed and adapted by qualified legal counsel before
 > publication or execution. Not legal advice.**
 
-- **Stand / Last updated:** {{DATE}}
+- **Stand / Last updated:** 7 June 2026
 - **Version:** 0.1 (Entwurf / Draft)
 - **Verbindliche Sprachfassung / Binding language:** Deutsch (DE); English is a
   convenience translation, German prevails.

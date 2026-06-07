@@ -11,25 +11,13 @@ export const COOKIES_EN: ScholarLegalDoc = {
   lang: "en",
   title: "Cookie & Storage Notice",
   subtitle: "Caelex Scholar",
-  version: "Version 0.1 (Draft)",
-  lastUpdated: "{{DATE}}",
+  version: "1.0",
+  lastUpdated: "7 June 2026",
   preamble: [
     "This notice explains which cookies and comparable storage technologies Caelex Scholar uses on your device, for what purpose, on what legal basis, and for how long. It supplements the Caelex Scholar Privacy Policy.",
     "Caelex Scholar is a sign-in-protected (SSO-gated) legal-research database licensed through your university. It is free of charge for you.",
   ],
   sections: [
-    {
-      id: "s0",
-      number: "Notice",
-      title: "Draft — template",
-      blocks: [
-        {
-          type: "callout",
-          variant: "warn",
-          text: "ENTWURF / DRAFT — Vorlage; vor Veröffentlichung bzw. Unterzeichnung durch qualifizierte Rechtsberatung zu prüfen und anzupassen. Keine Rechtsberatung. / Template; must be reviewed and adapted by qualified legal counsel before publication or execution. Not legal advice.",
-        },
-      ],
-    },
     {
       id: "s1",
       number: "Section 1",
@@ -210,10 +198,6 @@ export const COOKIES_EN: ScholarLegalDoc = {
         {
           type: "p",
           text: "We update this notice when the cookies in use or the legal requirements change. The version published at caelex.eu/scholar/legal/cookies, bearing the date shown above, is authoritative.",
-        },
-        {
-          type: "p",
-          text: "[TBD: confirm with counsel: the final classification of all storage operations as 'strictly necessary', and the enumeration of any cookies set by university identity providers.]",
         },
       ],
     },

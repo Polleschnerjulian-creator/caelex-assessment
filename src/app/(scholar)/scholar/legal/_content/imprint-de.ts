@@ -21,8 +21,8 @@ export const IMPRINT_DE: ScholarLegalDoc = {
   lang: "de",
   title: "Impressum",
   subtitle: "Caelex Scholar — Angaben nach § 5 DDG, § 18 MStV",
-  version: "Version 0.1 (Entwurf)",
-  lastUpdated: "{{DATE}}",
+  version: "1.0",
+  lastUpdated: "7. Juni 2026",
   preamble: [
     "Gesetzlich vorgeschriebene Angaben für den Dienst Caelex Scholar (caelex.eu/scholar). Verbindlich ist die deutsche Fassung; die englische Fassung dient nur der Information.",
   ],

@@ -7,7 +7,7 @@
 > ║ legal counsel before publication or execution. Not legal advice. ║
 > ╚══════════════════════════════════════════════════════════════════════════╝
 
-**Stand / Last updated:** {{DATE}}
+**Stand / Last updated:** 7 June 2026
 **Version:** 0.1 (Entwurf / Draft)
 **Dokumenttyp / Document type:** Internes Compliance-Dokument — NICHT zur Veröffentlichung. / Internal compliance record — NOT for publication.
 **Geltungsbereich / Scope:** Caelex Scholar (`caelex.eu/scholar`) — Festlegung der Rechtsgrundlage je Verarbeitungszweck + Interessenabwägungen (LIA) für auf Art. 6(1)(f) gestützte Verarbeitungen. / Per-purpose lawful basis + LIAs for Art. 6(1)(f) processing.
@@ -119,6 +119,6 @@ EN: Strongly reduced identifiability via hashing/truncation; the evidence intere
 
 | Version | Stand / Date | Änderung / Change                                                                                                                                                                                                                             | Autor / Author   |
 | ------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
-| 0.1     | {{DATE}}     | Erstentwurf; Zweck→Basis-Karte + LIA-1 (Sicherheit), LIA-2 (Analytik, vorsorglich), LIA-3 (Consent-Nachweis). Grounded in Live-Code (Privacy-by-default verifiziert). / Initial draft; purpose→basis map + three LIAs. Grounded in live code. | Claude (Entwurf) |
+| 0.1     | 7 June 2026  | Erstentwurf; Zweck→Basis-Karte + LIA-1 (Sicherheit), LIA-2 (Analytik, vorsorglich), LIA-3 (Consent-Nachweis). Grounded in Live-Code (Privacy-by-default verifiziert). / Initial draft; purpose→basis map + three LIAs. Grounded in live code. | Claude (Entwurf) |
 
 > **Offene Punkte / Open items:** Eine Grundlage für L3 festlegen ((a) vs (b)); `LoginEvent`- und `ConsentRecord`-Fristen + fehlende Sweeps; Art.-8-Allokation im AVV; finale Einordnung der Doppelrolle. **Alle [TBD] durch Rechtsberatung bestätigen — kein user-facing Text ohne Sign-off.** / Resolve all [TBD] with counsel; no user-facing text without sign-off.

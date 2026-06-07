@@ -16,8 +16,8 @@ export const ACCEPTABLE_USE_EN: ScholarLegalDoc = {
   lang: "en",
   title: "Acceptable Use Policy",
   subtitle: "Caelex Scholar — Nutzungsrichtlinie",
-  version: "Version 0.1 (Draft)",
-  lastUpdated: "{{DATE}}",
+  version: "1.0",
+  lastUpdated: "7 June 2026",
   preamble: [
     "This Acceptable Use Policy supplements the Caelex Scholar Terms of Use and forms part of them. It sets out what use of Scholar is permitted and what is prohibited, in order to protect the Service, its corpus and all users.",
     "The German version is binding; this English version is a non-binding translation.",
@@ -121,7 +121,7 @@ export const ACCEPTABLE_USE_EN: ScholarLegalDoc = {
         {
           type: "callout",
           variant: "info",
-          text: "The specific limits may change at any time for security and stability reasons. Circumventing or deliberately maxing out the rate limit is prohibited. [TBD: align the specific user-facing limits with the operations/security team.]",
+          text: "The specific limits may change at any time for security and stability reasons. Circumventing or deliberately maxing out the rate limit is prohibited.",
         },
       ],
     },

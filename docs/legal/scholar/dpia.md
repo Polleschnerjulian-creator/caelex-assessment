@@ -10,7 +10,7 @@
 # Data Protection Impact Assessment (DPIA) — Caelex Scholar
 
 **Rechtsgrundlage / Legal basis:** Art. 35 DSGVO / GDPR · WP248 rev.01 (Art.-29-Gruppe) · DSK „Muss-Liste" (Liste der Verarbeitungstätigkeiten, für die eine DSFA durchzuführen ist)
-**Stand / Last updated:** {{DATE}}
+**Stand / Last updated:** 7 June 2026
 **Version:** 0.1 (Entwurf / Draft)
 **Dokumenten-Owner / Owner:** Verantwortlicher (Caelex — Inhaber Julian Polleschner) · Entwurf erstellt zur Vorlage an Rechtsberatung / DSB
 **Verbindliche Sprache / Binding language:** Deutsch. Englisch ist eine Arbeitsübersetzung. / German is binding; English is a convenience translation.

@@ -7,7 +7,7 @@
 > ║ legal counsel before publication or execution. Not legal advice. ║
 > ╚══════════════════════════════════════════════════════════════════════════╝
 
-**Stand / Last updated:** {{DATE}}
+**Stand / Last updated:** 7 June 2026
 **Version:** 0.1 (Entwurf / Draft)
 **Dokumenttyp / Document type:** Internes Compliance-Dokument — NICHT zur Veröffentlichung. / Internal compliance record — NOT for publication.
 **Geltungsbereich / Scope:** Caelex Scholar (`caelex.eu/scholar`) — kostenlose, hochschullizenzierte (B2B2C), SSO-gesteuerte Rechtsrecherche-Datenbank "powered by Atlas".
@@ -230,9 +230,9 @@ Siehe **Anhang 3** (identisch zu den im AVV als Anlage beizufügenden TOMs). / S
 
 ## Anhang 1 — Empfänger / Sub-Auftragsverarbeiter (Scholar-relevant) / Annex 1 — Recipients / sub-processors (Scholar-relevant)
 
-> **DE.** Maßgeblich ist das gepflegte Register `src/app/legal/sub-processors/_content/sub-processors-data.ts` (Single Source of Truth, öffentlich unter `/legal/sub-processors`). Die folgende Tabelle ist die **Scholar-Teilmenge** mit Stand {{DATE}}. Bei Änderung: 30-Tage-Vorabinformation (AVV § 10) und Aktualisierung **beider** Quellen.
+> **DE.** Maßgeblich ist das gepflegte Register `src/app/legal/sub-processors/_content/sub-processors-data.ts` (Single Source of Truth, öffentlich unter `/legal/sub-processors`). Die folgende Tabelle ist die **Scholar-Teilmenge** mit Stand 7 June 2026. Bei Änderung: 30-Tage-Vorabinformation (AVV § 10) und Aktualisierung **beider** Quellen.
 >
-> **EN.** The maintained register `…/sub-processors-data.ts` is the single source of truth (public at `/legal/sub-processors`). Below is the **Scholar subset** as of {{DATE}}. On change: 30-day advance notice and update **both** sources.
+> **EN.** The maintained register `…/sub-processors-data.ts` is the single source of truth (public at `/legal/sub-processors`). Below is the **Scholar subset** as of 7 June 2026. On change: 30-day advance notice and update **both** sources.
 
 | Anbieter / Provider                            | Rolle / Role                                        | Zweck (Scholar) / Purpose                                                                     | Datenstandort / Location        | Transfer                                       | Scholar-relevant?                                                   |
 | ---------------------------------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------- |
@@ -306,6 +306,6 @@ Siehe **Anhang 3** (identisch zu den im AVV als Anlage beizufügenden TOMs). / S
 
 | Version | Stand / Date | Änderung / Change                                                                                                                                                                                                      | Autor / Author   |
 | ------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
-| 0.1     | {{DATE}}     | Erstentwurf (Controller- + Processor-Record), grounded in Live-Code (`feat/caelex-scholar`). Lawyer-Review ausstehend. / Initial draft (controller + processor records), grounded in live code. Pending lawyer review. | Claude (Entwurf) |
+| 0.1     | 7 June 2026  | Erstentwurf (Controller- + Processor-Record), grounded in Live-Code (`feat/caelex-scholar`). Lawyer-Review ausstehend. / Initial draft (controller + processor records), grounded in live code. Pending lawyer review. | Claude (Entwurf) |
 
 > **Offene Punkte (Zusammenfassung) / Open items (summary):** DSB-Benennung (A.0); Aufbewahrungsfristen `LoginEvent` & `ConsentRecord` (A.4/A.7); Scholar-spezifische TIA (Anhang 2); finale Rechtsgrundlage Semantiksuche (A.3); Bestätigung, dass Anthropic/Stripe/R2 nicht im Scholar-Datenfluss liegen (Anhang 1); Pro-Hochschule-Felder in Teil B. **Alle [TBD]-Marker durch Rechtsberatung klären.** / Resolve all [TBD] markers with counsel.

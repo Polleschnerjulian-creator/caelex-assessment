@@ -7,7 +7,7 @@
 > ║ legal counsel before publication or execution. Not legal advice. ║
 > ╚══════════════════════════════════════════════════════════════════════════╝
 
-**Stand / Last updated:** {{DATE}}
+**Stand / Last updated:** 7 June 2026
 **Version:** 0.1 (Entwurf / Draft)
 **Dokumenttyp / Document type:** Internes Compliance-Dokument — NICHT zur Veröffentlichung. / Internal compliance record — NOT for publication.
 **Geltungsbereich / Scope:** Caelex Scholar (`caelex.eu/scholar`) — personenbezogene Datenkategorien des SSO-gesteuerten Recherchedienstes. / Personal-data categories of the SSO-gated research service.
@@ -90,6 +90,6 @@
 
 | Version | Stand / Date | Änderung / Change                                                                                                                                                            | Autor / Author   |
 | ------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
-| 0.1     | {{DATE}}     | Erstentwurf; grounded in Live-Code (90-Tage-Sweep + kaskadierende Löschung verifiziert). / Initial draft; grounded in live code (90-day sweep + cascading erasure verified). | Claude (Entwurf) |
+| 0.1     | 7 June 2026  | Erstentwurf; grounded in Live-Code (90-Tage-Sweep + kaskadierende Löschung verifiziert). / Initial draft; grounded in live code (90-day sweep + cascading erasure verified). | Claude (Entwurf) |
 
 > **Offene Punkte / Open items:** Fristen R1-Auslauf, R8 `LoginEvent`, R10 `ConsentRecord`, R11/R12 Anbieter-Retention, R13 Export-Persistenz, Neon-Backup-Fenster (§4), Opt-out-Sofortlöschung (§3). **Alle [TBD] durch Rechtsberatung / Betrieb klären.** / Resolve all [TBD] with counsel/ops.

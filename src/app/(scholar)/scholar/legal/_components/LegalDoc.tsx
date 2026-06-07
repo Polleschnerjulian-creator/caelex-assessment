@@ -158,22 +158,8 @@ export async function LegalDoc({
     <ScholarPage>
       {/* Reading measure: ~68ch for comfortable legal prose. */}
       <article lang={edition.lang} className="mx-auto w-full max-w-[68ch]">
-        {/* ── Mandatory DRAFT / ENTWURF banner ── */}
-        <div
-          role="note"
-          aria-label={t(locale, LEGAL, "draftBannerLabel")}
-          className="rounded-lg border-2 border-gray-900 bg-gray-50 px-5 py-4"
-        >
-          <p className="text-small font-semibold uppercase tracking-[0.06em] text-gray-900">
-            {t(locale, LEGAL, "draftBannerLabel")}
-          </p>
-          <p className={`${SCHOLAR_TYPE.bodyMuted} mt-1`}>
-            {t(locale, LEGAL, "draftBanner")}
-          </p>
-        </div>
-
         {/* ── Title ── */}
-        <header className="mt-8">
+        <header>
           <h1 className={SCHOLAR_TYPE.docTitle}>{edition.title}</h1>
           {edition.subtitle && (
             <p className={`${SCHOLAR_TYPE.bodyMuted} mt-2`}>

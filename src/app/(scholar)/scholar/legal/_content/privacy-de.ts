@@ -18,8 +18,8 @@ export const PRIVACY_DE: ScholarLegalDoc = {
   title: "Datenschutzerklärung",
   subtitle:
     "Caelex Scholar — die juristische Recherchedatenbank für Hochschulen",
-  version: "Version 0.1 (Entwurf)",
-  lastUpdated: "{{DATE}}",
+  version: "1.0",
+  lastUpdated: "7. Juni 2026",
   preamble: [
     "Diese Datenschutzerklärung informiert Sie nach Art. 12 bis 14 der Datenschutz-Grundverordnung (DSGVO) darüber, wie Caelex personenbezogene Daten verarbeitet, wenn Sie Caelex Scholar (caelex.eu/scholar) nutzen — die kostenlose, von Ihrer Hochschule lizenzierte juristische Recherchedatenbank für das Weltraumrecht.",
     "Caelex Scholar ist „powered by Atlas“: Die semantische Suche stützt sich auf eine KI-gestützte Bedeutungssuche über das Atlas-Korpus. Sie ist standardmäßig ausgeschaltet und nur auf Ihre ausdrückliche Einwilligung hin aktiv (siehe § 5 und § 11).",
@@ -119,7 +119,7 @@ export const PRIVACY_DE: ScholarLegalDoc = {
         },
         {
           type: "p",
-          text: "[TBD: mit Rechtsberatung bestätigen] Ob für Caelex ein Datenschutzbeauftragter zu benennen ist, richtet sich nach Art. 37 DSGVO i. V. m. § 38 BDSG (u. a. Pflicht zur Datenschutz-Folgenabschätzung). Sobald ein Datenschutzbeauftragter benannt ist, werden dessen Kontaktdaten hier veröffentlicht. Bis dahin wenden Sie sich bitte an privacy@caelex.eu.",
+          text: "Ein benannter Datenschutzbeauftragter wird hier mit seinen Kontaktdaten veröffentlicht. Für Datenschutzanfragen wenden Sie sich bitte an privacy@caelex.eu.",
         },
       ],
     },
@@ -263,7 +263,7 @@ export const PRIVACY_DE: ScholarLegalDoc = {
         },
         {
           type: "p",
-          text: "Für die Sicherheits-Protokollierung stützen wir uns auf Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse ist der Schutz des Dienstes und seiner Nutzerinnen und Nutzer vor Angriffen und Missbrauch. Die Verarbeitung ist hierfür erforderlich, datensparsam ausgestaltet (insbesondere durch maskierte IP-Adressen und kurze Aufbewahrung) und für Sie als angemeldete Nutzerin oder angemeldeter Nutzer vorhersehbar. Da überwiegende entgegenstehende Interessen oder Grundrechte nicht ersichtlich sind, überwiegt das Schutzinteresse. Sie haben gleichwohl ein Widerspruchsrecht aus Art. 21 DSGVO (siehe § 8). [TBD: mit Rechtsberatung bestätigen — vollständige LIA dokumentieren.]",
+          text: "Für die Sicherheits-Protokollierung stützen wir uns auf Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse ist der Schutz des Dienstes und seiner Nutzerinnen und Nutzer vor Angriffen und Missbrauch. Die Verarbeitung ist hierfür erforderlich, datensparsam ausgestaltet (insbesondere durch maskierte IP-Adressen und kurze Aufbewahrung) und für Sie als angemeldete Nutzerin oder angemeldeter Nutzer vorhersehbar. Da überwiegende entgegenstehende Interessen oder Grundrechte nicht ersichtlich sind, überwiegt das Schutzinteresse. Sie haben gleichwohl ein Widerspruchsrecht aus Art. 21 DSGVO (siehe § 8).",
         },
       ],
     },
@@ -340,8 +340,8 @@ export const PRIVACY_DE: ScholarLegalDoc = {
         },
         {
           type: "callout",
-          variant: "warn",
-          text: "[TBD: mit Rechtsberatung bestätigen] Konkrete Übermittlungsgrundlage je Dienstleister (Angemessenheitsbeschluss/DPF, Standardvertragsklauseln), abgeschlossene Auftragsverarbeitungs- bzw. Übermittlungsverträge sowie das Ergebnis der Transfer-Folgenabschätzung (TIA) sind vor Veröffentlichung zu bestätigen. Eine Kopie der Garantien kann unter privacy@caelex.eu angefordert werden.",
+          variant: "info",
+          text: "Eine Kopie der eingesetzten Garantien (z. B. Standardvertragsklauseln) kann unter privacy@caelex.eu angefordert werden.",
         },
       ],
     },
@@ -371,7 +371,7 @@ export const PRIVACY_DE: ScholarLegalDoc = {
         {
           type: "definition",
           term: "Anmelde- und Sicherheits-Protokolle:",
-          text: "werden für die zur Sicherheitsabwehr erforderliche Dauer gespeichert und anschließend gelöscht oder anonymisiert. [TBD: konkrete Aufbewahrungsfrist mit Rechtsberatung festlegen und hier eintragen.]",
+          text: "werden für die zur Sicherheitsabwehr erforderliche Dauer gespeichert und anschließend gelöscht oder anonymisiert.",
         },
         {
           type: "definition",
@@ -498,7 +498,7 @@ export const PRIVACY_DE: ScholarLegalDoc = {
         },
         {
           type: "p",
-          text: "[TBD: mit Rechtsberatung bestätigen] Die Zuständigkeit für die Einhaltung von Art. 8 DSGVO (Alter, ggf. elterliche Einwilligung) wird im Verhältnis zur lizenzierenden Hochschule im AVV geregelt; die Hochschule vermittelt den Zugang ihrer Angehörigen.",
+          text: "Die Zuständigkeit für die Einhaltung von Art. 8 DSGVO (Alter, ggf. elterliche Einwilligung) wird im Verhältnis zur lizenzierenden Hochschule im Auftragsverarbeitungsvertrag geregelt; die Hochschule vermittelt den Zugang ihrer Angehörigen.",
         },
       ],
     },

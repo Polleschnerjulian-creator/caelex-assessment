@@ -21,7 +21,7 @@ components that hand the DE+EN editions to the frozen `LegalDoc` shell, which
 renders the mandatory DRAFT banner and the Stand/Version meta line.
 
 **Conventions.** German is the binding language; English is a convenience
-translation. `{{DATE}}` is a placeholder for the Stand/Last-updated date and is
+translation. `7 June 2026` is a placeholder for the Stand/Last-updated date and is
 set when counsel signs off. Version starts at `0.1 (Entwurf / Draft)`.
 
 **Open items flagged for counsel** (see also the gap-analysis spec

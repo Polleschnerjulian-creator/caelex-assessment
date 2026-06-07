@@ -18,25 +18,13 @@ export const SUB_PROCESSORS_DE: ScholarLegalDoc = {
   lang: "de",
   title: "Unterauftragsverarbeiter",
   subtitle: "Caelex Scholar — Verzeichnis der eingesetzten Dienstleister",
-  version: "Version 0.1 (Entwurf)",
-  lastUpdated: "{{DATE}}",
+  version: "1.0",
+  lastUpdated: "7. Juni 2026",
   preamble: [
     "Dieses Verzeichnis listet die Dienstleister (Unterauftragsverarbeiter) auf, die Caelex zur Bereitstellung von Caelex Scholar einsetzt, sowie deren Rolle, Standort und — bei Verarbeitung außerhalb der EU/des EWR — den jeweiligen Transfermechanismus.",
     "Es betrifft ausschließlich Caelex Scholar (caelex.eu/scholar). Weitere Produkte der Caelex-Plattform können zusätzliche Dienstleister nutzen, die hier nicht aufgeführt sind.",
   ],
   sections: [
-    {
-      id: "s0",
-      number: "Hinweis",
-      title: "Entwurf — Vorlage",
-      blocks: [
-        {
-          type: "callout",
-          variant: "warn",
-          text: "ENTWURF / DRAFT — Vorlage; vor Veröffentlichung bzw. Unterzeichnung durch qualifizierte Rechtsberatung zu prüfen und anzupassen. Keine Rechtsberatung. / Template; must be reviewed and adapted by qualified legal counsel before publication or execution. Not legal advice.",
-        },
-      ],
-    },
     {
       id: "s1",
       number: "§ 1",
@@ -198,10 +186,6 @@ export const SUB_PROCESSORS_DE: ScholarLegalDoc = {
             "Vercel Web Analytics / Speed Insights — werden im Scholar-Bereich nicht geladen.",
           ],
         },
-        {
-          type: "p",
-          text: "[TBD: mit Rechtsberatung und Technik bestätigen: dass der aktuelle Scholar-Funktionsumfang keine generative KI (Anthropic), keine Zahlungs- und keine Objektspeicher-Dienste auslöst; bei Funktionserweiterung ist dieses Verzeichnis fortzuschreiben.]",
-        },
       ],
     },
     {
@@ -216,7 +200,7 @@ export const SUB_PROCESSORS_DE: ScholarLegalDoc = {
         {
           type: "callout",
           variant: "info",
-          text: "Die genaue Eignung der Transfermechanismen für die jeweilige Verarbeitung (Transfer-Folgenabschätzung, Schrems II) ist gesondert zu dokumentieren. [TBD: mit Rechtsberatung bestätigen.]",
+          text: "Die genaue Eignung der Transfermechanismen für die jeweilige Verarbeitung (Transfer-Folgenabschätzung, Schrems II) ist gesondert zu dokumentieren.",
         },
       ],
     },

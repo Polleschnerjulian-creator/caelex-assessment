@@ -16,8 +16,8 @@ export const PRIVACY_EN: ScholarLegalDoc = {
   lang: "en",
   title: "Privacy Notice",
   subtitle: "Caelex Scholar — the legal-research database for universities",
-  version: "Version 0.1 (Draft)",
-  lastUpdated: "{{DATE}}",
+  version: "1.0",
+  lastUpdated: "7 June 2026",
   preamble: [
     "This Privacy Notice informs you, under Articles 12 to 14 of the General Data Protection Regulation (GDPR), how Caelex processes personal data when you use Caelex Scholar (caelex.eu/scholar) — the free, university-licensed legal-research database for space law.",
     "Caelex Scholar is “powered by Atlas”: semantic search relies on an AI-assisted meaning-based search over the Atlas corpus. It is off by default and runs only with your explicit consent (see Sections 5 and 11).",
@@ -95,7 +95,7 @@ export const PRIVACY_EN: ScholarLegalDoc = {
         { type: "subheading", text: "Data protection officer" },
         {
           type: "p",
-          text: "[TBD: confirm with counsel] Whether Caelex must appoint a data protection officer depends on Art. 37 GDPR together with § 38 BDSG (German Federal Data Protection Act), e.g. where a data protection impact assessment is required. Once a DPO is appointed, their contact details will be published here. Until then, please contact privacy@caelex.eu.",
+          text: "Any appointed data protection officer will be listed here with their contact details. For data-protection enquiries please contact privacy@caelex.eu.",
         },
       ],
     },
@@ -230,7 +230,7 @@ export const PRIVACY_EN: ScholarLegalDoc = {
         },
         {
           type: "p",
-          text: "For security logging we rely on Art. 6(1)(f) GDPR. Our legitimate interest is protecting the service and its users from attacks and abuse. The processing is necessary for this, designed to be data-minimising (in particular masked IP addresses and short retention) and foreseeable for you as a signed-in user. As no overriding interests or fundamental rights are apparent, the protective interest prevails. You nonetheless have a right to object under Art. 21 GDPR (see Section 9). [TBD: confirm with counsel — document the full LIA.]",
+          text: "For security logging we rely on Art. 6(1)(f) GDPR. Our legitimate interest is protecting the service and its users from attacks and abuse. The processing is necessary for this, designed to be data-minimising (in particular masked IP addresses and short retention) and foreseeable for you as a signed-in user. As no overriding interests or fundamental rights are apparent, the protective interest prevails. You nonetheless have a right to object under Art. 21 GDPR (see Section 9).",
         },
       ],
     },
@@ -301,8 +301,8 @@ export const PRIVACY_EN: ScholarLegalDoc = {
         },
         {
           type: "callout",
-          variant: "warn",
-          text: "[TBD: confirm with counsel] The specific transfer basis per provider (adequacy decision/DPF, standard contractual clauses), the executed data-processing/transfer agreements and the outcome of the transfer impact assessment (TIA) must be confirmed before publication. A copy of the safeguards may be requested at privacy@caelex.eu.",
+          variant: "info",
+          text: "A copy of the safeguards in use (e.g. standard contractual clauses) may be requested at privacy@caelex.eu.",
         },
       ],
     },
@@ -330,7 +330,7 @@ export const PRIVACY_EN: ScholarLegalDoc = {
         {
           type: "definition",
           term: "Sign-in and security logs:",
-          text: "stored for as long as necessary for security defence, then deleted or anonymised. [TBD: set the specific retention period with counsel and enter it here.]",
+          text: "stored for as long as necessary for security defence, then deleted or anonymised.",
         },
         {
           type: "definition",
@@ -443,7 +443,7 @@ export const PRIVACY_EN: ScholarLegalDoc = {
         },
         {
           type: "p",
-          text: "[TBD: confirm with counsel] Responsibility for compliance with Art. 8 GDPR (age and, where relevant, parental consent) is allocated to the licensing university in the DPA; the university mediates access for its members.",
+          text: "Responsibility for compliance with Art. 8 GDPR (age and, where relevant, parental consent) is allocated to the licensing university in the data-processing agreement; the university mediates access for its members.",
         },
       ],
     },

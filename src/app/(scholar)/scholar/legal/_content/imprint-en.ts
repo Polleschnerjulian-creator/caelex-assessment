@@ -17,8 +17,8 @@ export const IMPRINT_EN: ScholarLegalDoc = {
   lang: "en",
   title: "Imprint",
   subtitle: "Caelex Scholar — legal notice under § 5 DDG, § 18 MStV",
-  version: "Version 0.1 (Draft)",
-  lastUpdated: "{{DATE}}",
+  version: "1.0",
+  lastUpdated: "7 June 2026",
   preamble: [
     "Legally required information for the Caelex Scholar service (caelex.eu/scholar). The German version is binding; this English version is for information only.",
   ],

@@ -11,7 +11,7 @@
 
 **Rechtsgrundlage / Legal basis:** Art. 44–49 DSGVO / GDPR · EuGH C-311/18 („Schrems II") · EDSA-Empfehlungen 01/2020 (ergänzende Maßnahmen) · EDSA-Empfehlungen 02/2020 (European Essential Guarantees)
 **Gegenstand / Subject:** Drittland-Exposition durch US-Mutter­konzerne **Vercel** (Hosting/CDN) und **OpenAI** (Embeddings für die semantische Suche); nachrangig sonstige Sub-Auftragsverarbeiter mit US-/Drittland-Bezug.
-**Stand / Last updated:** {{DATE}}
+**Stand / Last updated:** 7 June 2026
 **Version:** 0.1 (Entwurf / Draft)
 **Verbindliche Sprache / Binding language:** Deutsch; Englisch ist eine Arbeitsübersetzung.
 

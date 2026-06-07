@@ -11,7 +11,7 @@
 
 **Rechtsgrundlage / Legal basis:** Verordnung (EU) 2024/1689 (KI-Verordnung / AI Act)
 **Gegenstand / Subject:** Risikoklassifizierung des KI-Systems „semantische Suche" in Caelex Scholar; Pflichten nach Art. 50 (Transparenz) und Art. 4 (KI-Kompetenz); Geltungstermine.
-**Stand / Last updated:** {{DATE}}
+**Stand / Last updated:** 7 June 2026
 **Version:** 0.1 (Entwurf / Draft)
 **Verbindliche Sprache / Binding language:** Deutsch; Englisch ist eine Arbeitsübersetzung.
 

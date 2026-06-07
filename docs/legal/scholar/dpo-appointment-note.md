@@ -12,7 +12,7 @@
 | **Dokument / Document**                     | DPO requirement analysis + appointment & contact template — Caelex Scholar                                                                   |
 | **Status**                                  | ENTWURF / DRAFT — lawyer review required (classification call)                                                                               |
 | **Version**                                 | 0.1 (Entwurf / Draft)                                                                                                                        |
-| **Stand / Last updated**                    | {{DATE}}                                                                                                                                     |
+| **Stand / Last updated**                    | 7 June 2026                                                                                                                                  |
 | **Verbindliche Sprache / Binding language** | Deutsch (binding); English convenience translation                                                                                           |
 | **Maßgebliche Spec / Source spec**          | `docs/superpowers/specs/2026-06-07-caelex-scholar-legal-compliance.md` (G15, abhängig von G14 DPIA)                                          |
 | **Betroffene Stelle / Entity**              | Caelex — Einzelunternehmen, Inhaber Julian Polleschner, Berlin (Verantwortlicher für eigene Zwecke; Auftragsverarbeiter für die Universität) |
@@ -100,7 +100,7 @@
 > 3. Es besteht **kein Interessenkonflikt** (Art. 38 Abs. 6); insbesondere übt der/die DSB keine Tätigkeit aus, die Zweck/Mittel der Verarbeitung bestimmt.
 > 4. Kontaktdaten werden gemäß **Art. 37 Abs. 7 DSGVO** veröffentlicht und der **zuständigen Aufsichtsbehörde** mitgeteilt.
 >
-> Ort, Datum / Place, date: ****\_\_\_\_**** Verantwortlicher: ****\_\_\_\_**** DSB / DPO: ****\_\_\_\_****
+> Ort, Datum / Place, date: \***\*\_\_\_\_\*\*** Verantwortlicher: \***\*\_\_\_\_\*\*** DSB / DPO: \***\*\_\_\_\_\*\***
 
 ---
 

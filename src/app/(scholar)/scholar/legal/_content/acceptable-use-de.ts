@@ -18,8 +18,8 @@ export const ACCEPTABLE_USE_DE: ScholarLegalDoc = {
   lang: "de",
   title: "Nutzungsrichtlinie",
   subtitle: "Caelex Scholar — Acceptable Use Policy",
-  version: "Version 0.1 (Entwurf)",
-  lastUpdated: "{{DATE}}",
+  version: "1.0",
+  lastUpdated: "7. Juni 2026",
   preamble: [
     "Diese Nutzungsrichtlinie (Acceptable Use Policy) ergänzt die Nutzungsbedingungen von Caelex Scholar und ist deren Bestandteil. Sie beschreibt, welche Nutzung von Scholar zulässig ist und welche untersagt ist, um den Dienst, seinen Quellenbestand und alle Nutzerinnen und Nutzer zu schützen.",
     "Verbindlich ist die deutsche Fassung; die englische Fassung ist eine unverbindliche Übersetzung.",
@@ -123,7 +123,7 @@ export const ACCEPTABLE_USE_DE: ScholarLegalDoc = {
         {
           type: "callout",
           variant: "info",
-          text: "Die konkreten Grenzwerte können sich aus Sicherheits- und Stabilitätsgründen jederzeit ändern. Ein Umgehen oder absichtliches Ausreizen der Ratenbegrenzung ist untersagt. [TBD: konkrete, nutzerseitig kommunizierte Grenzwerte mit dem Betriebs-/Sicherheitsteam abstimmen.]",
+          text: "Die konkreten Grenzwerte können sich aus Sicherheits- und Stabilitätsgründen jederzeit ändern. Ein Umgehen oder absichtliches Ausreizen der Ratenbegrenzung ist untersagt.",
         },
       ],
     },

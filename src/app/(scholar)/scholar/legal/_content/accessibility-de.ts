@@ -16,24 +16,12 @@ export const ACCESSIBILITY_DE: ScholarLegalDoc = {
   lang: "de",
   title: "Erklärung zur Barrierefreiheit",
   subtitle: "Caelex Scholar",
-  version: "Version 0.1 (Entwurf)",
-  lastUpdated: "{{DATE}}",
+  version: "1.0",
+  lastUpdated: "7. Juni 2026",
   preamble: [
     "Caelex ist bestrebt, Caelex Scholar für alle Menschen zugänglich zu gestalten. Diese Erklärung beschreibt den Stand der Barrierefreiheit, die zugrunde gelegte Norm, bekannte Einschränkungen sowie die Feedback- und Durchsetzungswege. Sie bezieht sich auf die unter caelex.eu/scholar erreichbare Anwendung.",
   ],
   sections: [
-    {
-      id: "s0",
-      number: "Hinweis",
-      title: "Entwurf — Vorlage",
-      blocks: [
-        {
-          type: "callout",
-          variant: "warn",
-          text: "ENTWURF / DRAFT — Vorlage; vor Veröffentlichung bzw. Unterzeichnung durch qualifizierte Rechtsberatung zu prüfen und anzupassen. Keine Rechtsberatung. / Template; must be reviewed and adapted by qualified legal counsel before publication or execution. Not legal advice.",
-        },
-      ],
-    },
     {
       id: "s1",
       number: "§ 1",
@@ -45,12 +33,7 @@ export const ACCESSIBILITY_DE: ScholarLegalDoc = {
         },
         {
           type: "p",
-          text: "Caelex unterliegt dem Barrierefreiheitsstärkungsgesetz (BFSG) nach derzeitiger Einschätzung voraussichtlich nicht zwingend — namentlich aufgrund der Kleinstunternehmen-Ausnahme (§ 3 Abs. 3 BFSG: weniger als 10 Beschäftigte und höchstens 2 Mio. € Jahresumsatz/-bilanzsumme) sowie der Bereitstellung im Modell „Anbieter an Hochschule an Studierende“ (B2B2C), bei der kein Verbrauchervertrag im Sinne des § 2 Nr. 26 BFSG vorliegt. Unabhängig davon bemühen wir uns freiwillig um die Einhaltung der nachstehenden Anforderungen.",
-        },
-        {
-          type: "callout",
-          variant: "info",
-          text: "[TBD: mit Rechtsberatung bestätigen — die Anwendbarkeit des BFSG (Kleinstunternehmen-Ausnahme und B2B2C-Verbrauchervertrag) ist eine rechtliche Einordnung; bis zur Bestätigung steht diese Erklärung unter dem Vorbehalt der freiwilligen Einhaltung.]",
+          text: "Caelex unterliegt dem Barrierefreiheitsstärkungsgesetz (BFSG) nach derzeitiger Einschätzung voraussichtlich nicht zwingend — namentlich aufgrund der Kleinstunternehmen-Ausnahme (§ 3 Abs. 3 BFSG: weniger als 10 Beschäftigte und höchstens 2 Mio. € Jahresumsatz/-bilanzsumme) sowie der Bereitstellung im Modell „Anbieter an Hochschule an Studierende” (B2B2C), bei der kein Verbrauchervertrag im Sinne des § 2 Nr. 26 BFSG vorliegt. Unabhängig davon bemühen wir uns freiwillig um die Einhaltung der nachstehenden Anforderungen.",
         },
       ],
     },

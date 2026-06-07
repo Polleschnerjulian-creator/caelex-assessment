@@ -61,7 +61,7 @@ export interface ScholarLegalDoc {
   version: string;
   /**
    * Last-updated / "Stand" value shown in the meta line. Authors may use the
-   * `{{DATE}}` placeholder until a real date is set; LegalDoc renders it as-is.
+   * `7 June 2026` placeholder until a real date is set; LegalDoc renders it as-is.
    */
   lastUpdated: string;
   /** Optional lead paragraphs shown above the first section. */

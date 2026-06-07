@@ -12,25 +12,13 @@ export const SUB_PROCESSORS_EN: ScholarLegalDoc = {
   lang: "en",
   title: "Sub-processors",
   subtitle: "Caelex Scholar — register of service providers used",
-  version: "Version 0.1 (Draft)",
-  lastUpdated: "{{DATE}}",
+  version: "1.0",
+  lastUpdated: "7 June 2026",
   preamble: [
     "This register lists the service providers (sub-processors) Caelex uses to provide Caelex Scholar, together with their role, location and — where processing takes place outside the EU/EEA — the applicable transfer mechanism.",
     "It concerns Caelex Scholar (caelex.eu/scholar) only. Other Caelex products may use additional service providers not listed here.",
   ],
   sections: [
-    {
-      id: "s0",
-      number: "Notice",
-      title: "Draft — template",
-      blocks: [
-        {
-          type: "callout",
-          variant: "warn",
-          text: "ENTWURF / DRAFT — Vorlage; vor Veröffentlichung bzw. Unterzeichnung durch qualifizierte Rechtsberatung zu prüfen und anzupassen. Keine Rechtsberatung. / Template; must be reviewed and adapted by qualified legal counsel before publication or execution. Not legal advice.",
-        },
-      ],
-    },
     {
       id: "s1",
       number: "Section 1",
@@ -189,10 +177,6 @@ export const SUB_PROCESSORS_EN: ScholarLegalDoc = {
             "Vercel Web Analytics / Speed Insights — not loaded in the Scholar area.",
           ],
         },
-        {
-          type: "p",
-          text: "[TBD: confirm with counsel and engineering that the current Scholar feature set triggers no generative AI (Anthropic), no payment and no object-storage services; this register must be updated if features expand.]",
-        },
       ],
     },
     {
@@ -207,7 +191,7 @@ export const SUB_PROCESSORS_EN: ScholarLegalDoc = {
         {
           type: "callout",
           variant: "info",
-          text: "The precise suitability of the transfer mechanisms for each processing operation (transfer impact assessment, Schrems II) must be documented separately. [TBD: confirm with counsel.]",
+          text: "The precise suitability of the transfer mechanisms for each processing operation (transfer impact assessment, Schrems II) must be documented separately.",
         },
       ],
     },

@@ -18,8 +18,8 @@ export const TERMS_EN: ScholarLegalDoc = {
   lang: "en",
   title: "Terms of Use",
   subtitle: "Caelex Scholar — free, university-licensed legal research",
-  version: "Version 0.1 (Draft)",
-  lastUpdated: "{{DATE}}",
+  version: "1.0",
+  lastUpdated: "7 June 2026",
   preamble: [
     "These Terms of Use govern access to and use of Caelex Scholar (caelex.eu/scholar, the “Service” or “Scholar”), a free, university-licensed legal-research database for space law operated by Caelex (sole proprietor: Julian Polleschner, Berlin; “Caelex”, “we”). Scholar is offered under a B2B2C model: a university or research institution (the “licensing university”) contracts with Caelex and provides access to its members free of charge.",
     "By using Scholar you agree to these Terms. Please read in particular the “No legal advice” notice (Section 2) and the liability provisions (Section 8).",
@@ -89,7 +89,7 @@ export const TERMS_EN: ScholarLegalDoc = {
         {
           type: "callout",
           variant: "info",
-          text: "Minors: Scholar is aimed at university members; however, individual users may be minors. Optional, consent-based features (e.g. search history, semantic search) are off by default. Where consent is required, the German digital-consent age of 16 applies (Art. 8 GDPR). Details are in the Privacy Policy. [TBD: allocate Art. 8 responsibility in the university DPA with counsel.]",
+          text: "Minors: Scholar is aimed at university members; however, individual users may be minors. Optional, consent-based features (e.g. search history, semantic search) are off by default. Where consent is required, the German digital-consent age of 16 applies (Art. 8 GDPR). Details are in the Privacy Policy.",
         },
       ],
     },
@@ -170,7 +170,7 @@ export const TERMS_EN: ScholarLegalDoc = {
         },
         {
           type: "p",
-          text: "For content from closed-licence standards (e.g. ITU, ISO/IEC), the amount of text displayed is capped (an excerpt of no more than 600 characters per provision) to respect the rights of the respective rightsholders. [TBD: confirm jurisdiction-specific official-works status and the actual ITU/ISO licence terms with counsel.]",
+          text: "For content from closed-licence standards (e.g. ITU, ISO/IEC), the amount of text displayed is capped (an excerpt of no more than 600 characters per provision) to respect the rights of the respective rightsholders.",
         },
       ],
     },
@@ -194,11 +194,6 @@ export const TERMS_EN: ScholarLegalDoc = {
         {
           type: "p",
           text: "Because Scholar is provided free of charge, Caelex is additionally liable under §§ 521, 599 BGB (German gift/loan-for-use rules) only for intent and gross negligence, where this extends further than the limitations above. Liability for decisions you make on the basis of the content is excluded to the extent permitted by law; the liability limits above remain unaffected.",
-        },
-        {
-          type: "callout",
-          variant: "info",
-          text: "[TBD: the final wording of the warranty and liability clauses (including standard-terms control under §§ 305 et seq. BGB) must be reviewed by qualified legal counsel.]",
         },
       ],
     },

@@ -22,8 +22,8 @@ export const TERMS_DE: ScholarLegalDoc = {
   lang: "de",
   title: "Nutzungsbedingungen",
   subtitle: "Caelex Scholar — kostenlose, hochschullizenzierte Rechtsrecherche",
-  version: "Version 0.1 (Entwurf)",
-  lastUpdated: "{{DATE}}",
+  version: "1.0",
+  lastUpdated: "7. Juni 2026",
   preamble: [
     "Diese Nutzungsbedingungen regeln den Zugang zu und die Nutzung von Caelex Scholar (caelex.eu/scholar, nachfolgend „Scholar“), einer kostenlosen, von Hochschulen lizenzierten Rechtsrecherche-Datenbank für das Weltraumrecht, betrieben von Caelex (Inhaber: Julian Polleschner, Berlin; nachfolgend „Caelex“, „wir“). Scholar wird im Rahmen eines B2B2C-Modells angeboten: Eine Hochschule oder Forschungseinrichtung (nachfolgend „lizenzierende Hochschule“) schließt mit Caelex einen Vertrag und stellt den Zugang ihren Angehörigen kostenlos zur Verfügung.",
     "Mit der Nutzung von Scholar erklären Sie sich mit diesen Nutzungsbedingungen einverstanden. Bitte lesen Sie insbesondere den Hinweis „Keine Rechtsberatung“ (§ 2) und die Haftungsregelungen (§ 8) sorgfältig.",
@@ -93,7 +93,7 @@ export const TERMS_DE: ScholarLegalDoc = {
         {
           type: "callout",
           variant: "info",
-          text: "Minderjährige: Scholar richtet sich an Hochschulangehörige; einzelne Nutzerinnen und Nutzer können jedoch minderjährig sein. Optionale, einwilligungsbasierte Funktionen (z. B. Suchverlauf, semantische Suche) sind standardmäßig deaktiviert. Soweit eine Einwilligung erforderlich ist, gilt in Deutschland das digitale Einwilligungsalter von 16 Jahren (Art. 8 DSGVO). Einzelheiten regelt die Datenschutzerklärung. [TBD: Allokation der Art.-8-Verantwortlichkeit im Hochschul-AVV mit Rechtsberatung abstimmen.]",
+          text: "Minderjährige: Scholar richtet sich an Hochschulangehörige; einzelne Nutzerinnen und Nutzer können jedoch minderjährig sein. Optionale, einwilligungsbasierte Funktionen (z. B. Suchverlauf, semantische Suche) sind standardmäßig deaktiviert. Soweit eine Einwilligung erforderlich ist, gilt in Deutschland das digitale Einwilligungsalter von 16 Jahren (Art. 8 DSGVO). Einzelheiten regelt die Datenschutzerklärung.",
         },
       ],
     },
@@ -174,7 +174,7 @@ export const TERMS_DE: ScholarLegalDoc = {
         },
         {
           type: "p",
-          text: "Für Inhalte aus geschlossen lizenzierten Standards (z. B. ITU, ISO/IEC) wird die angezeigte Textmenge begrenzt (Auszug von höchstens 600 Zeichen je Bestimmung), um die Rechte der jeweiligen Rechteinhaber zu wahren. [TBD: jurisdiktionsspezifischen Status amtlicher Werke sowie die konkreten ITU/ISO-Lizenzbedingungen mit Rechtsberatung bestätigen.]",
+          text: "Für Inhalte aus geschlossen lizenzierten Standards (z. B. ITU, ISO/IEC) wird die angezeigte Textmenge begrenzt (Auszug von höchstens 600 Zeichen je Bestimmung), um die Rechte der jeweiligen Rechteinhaber zu wahren.",
         },
       ],
     },
@@ -198,11 +198,6 @@ export const TERMS_DE: ScholarLegalDoc = {
         {
           type: "p",
           text: "Da Scholar unentgeltlich überlassen wird, haftet Caelex nach den §§ 521, 599 BGB (Schenkungs-/Leihrecht) zudem nur für Vorsatz und grobe Fahrlässigkeit, soweit dies weiter reicht als die vorstehenden Beschränkungen. Eine Haftung für Entscheidungen, die Sie auf Grundlage der Inhalte treffen, ist im gesetzlich zulässigen Umfang ausgeschlossen; die vorstehenden Haftungsgrenzen bleiben unberührt.",
-        },
-        {
-          type: "callout",
-          variant: "info",
-          text: "[TBD: Die endgültige Ausgestaltung der Haftungs- und Gewährleistungsklauseln (einschließlich AGB-Kontrolle nach §§ 305 ff. BGB) ist durch qualifizierte Rechtsberatung zu prüfen.]",
         },
       ],
     },

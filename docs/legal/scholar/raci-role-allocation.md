@@ -12,7 +12,7 @@
 | **Dokument / Document**                     | Controller/Processor RACI per processing activity — Caelex Scholar              |
 | **Status**                                  | ENTWURF / DRAFT — lawyer review required                                        |
 | **Version**                                 | 0.1 (Entwurf / Draft)                                                           |
-| **Stand / Last updated**                    | {{DATE}}                                                                        |
+| **Stand / Last updated**                    | 7 June 2026                                                                     |
 | **Verbindliche Sprache / Binding language** | Deutsch (binding); English convenience translation                              |
 | **Maßgebliche Spec / Source spec**          | `docs/superpowers/specs/2026-06-07-caelex-scholar-legal-compliance.md` (G1)     |
 | **Zugehörig / Related**                     | Anlage 4 zum `university-avv-art28.md`; ergänzt durch `dpo-appointment-note.md` |

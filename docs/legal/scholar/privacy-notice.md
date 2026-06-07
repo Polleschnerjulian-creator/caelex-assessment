@@ -5,7 +5,7 @@
 > Template; must be reviewed and adapted by qualified legal counsel before
 > publication or execution. Not legal advice.**
 
-- **Stand / Last updated:** {{DATE}}
+- **Stand / Last updated:** 7 June 2026
 - **Version:** 0.1 (Entwurf / Draft)
 - **Surface:** Caelex Scholar (`caelex.eu/scholar`) — free, university-licensed
   (B2B2C), SSO-gated legal-research database, "powered by Atlas".

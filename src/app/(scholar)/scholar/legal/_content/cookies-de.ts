@@ -19,25 +19,13 @@ export const COOKIES_DE: ScholarLegalDoc = {
   lang: "de",
   title: "Cookie- und Speicher-Hinweis",
   subtitle: "Caelex Scholar",
-  version: "Version 0.1 (Entwurf)",
-  lastUpdated: "{{DATE}}",
+  version: "1.0",
+  lastUpdated: "7. Juni 2026",
   preamble: [
     "Dieser Hinweis erklärt, welche Cookies und vergleichbaren Speichertechnologien Caelex Scholar in Ihrem Endgerät einsetzt, zu welchem Zweck, auf welcher Rechtsgrundlage und für welche Dauer. Er ergänzt die Datenschutzerklärung von Caelex Scholar.",
     "Caelex Scholar ist eine über Ihre Hochschule lizenzierte, anmeldepflichtige (SSO-gestützte) Rechtsrecherche-Datenbank. Sie ist für Sie kostenfrei.",
   ],
   sections: [
-    {
-      id: "s0",
-      number: "Hinweis",
-      title: "Entwurf — Vorlage",
-      blocks: [
-        {
-          type: "callout",
-          variant: "warn",
-          text: "ENTWURF / DRAFT — Vorlage; vor Veröffentlichung bzw. Unterzeichnung durch qualifizierte Rechtsberatung zu prüfen und anzupassen. Keine Rechtsberatung. / Template; must be reviewed and adapted by qualified legal counsel before publication or execution. Not legal advice.",
-        },
-      ],
-    },
     {
       id: "s1",
       number: "§ 1",
@@ -219,10 +207,6 @@ export const COOKIES_DE: ScholarLegalDoc = {
         {
           type: "p",
           text: "Wir aktualisieren diesen Hinweis, wenn sich die eingesetzten Cookies oder die rechtlichen Anforderungen ändern. Maßgeblich ist die jeweils unter caelex.eu/scholar/legal/cookies veröffentlichte Fassung mit dem oben angegebenen Stand.",
-        },
-        {
-          type: "p",
-          text: "[TBD: mit Rechtsberatung bestätigen: endgültige Einordnung sämtlicher Speichervorgänge als „unbedingt erforderlich“ sowie die Aufzählung etwaiger durch Identitätsanbieter der Hochschule gesetzter Cookies.]",
         },
       ],
     },

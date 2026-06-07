@@ -11,24 +11,12 @@ export const ACCESSIBILITY_EN: ScholarLegalDoc = {
   lang: "en",
   title: "Accessibility Statement",
   subtitle: "Caelex Scholar",
-  version: "Version 0.1 (Draft)",
-  lastUpdated: "{{DATE}}",
+  version: "1.0",
+  lastUpdated: "7 June 2026",
   preamble: [
     "Caelex is committed to making Caelex Scholar accessible to everyone. This statement describes the current state of accessibility, the standard applied, known limitations, and the feedback and enforcement channels. It applies to the application at caelex.eu/scholar.",
   ],
   sections: [
-    {
-      id: "s0",
-      number: "Notice",
-      title: "Draft — template",
-      blocks: [
-        {
-          type: "callout",
-          variant: "warn",
-          text: "ENTWURF / DRAFT — Vorlage; vor Veröffentlichung bzw. Unterzeichnung durch qualifizierte Rechtsberatung zu prüfen und anzupassen. Keine Rechtsberatung. / Template; must be reviewed and adapted by qualified legal counsel before publication or execution. Not legal advice.",
-        },
-      ],
-    },
     {
       id: "s1",
       number: "Section 1",
@@ -41,11 +29,6 @@ export const ACCESSIBILITY_EN: ScholarLegalDoc = {
         {
           type: "p",
           text: "On current assessment, Caelex is likely not mandatorily subject to the German Accessibility Reinforcement Act (BFSG) — in particular due to the microenterprise exemption (Section 3(3) BFSG: fewer than 10 staff and at most EUR 2M annual turnover/balance-sheet total) and the provider-to-university-to-students (B2B2C) model, under which there is no consumer contract within the meaning of Section 2 No. 26 BFSG. Irrespective of this, we voluntarily aim to meet the requirements set out below.",
-        },
-        {
-          type: "callout",
-          variant: "info",
-          text: "[TBD: confirm with counsel — the applicability of the BFSG (microenterprise exemption and B2B2C consumer-contract trigger) is a legal classification; pending confirmation, this statement is made on the basis of voluntary compliance.]",
         },
       ],
     },

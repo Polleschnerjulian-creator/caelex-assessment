@@ -12,7 +12,7 @@
 | **Dokument / Document**                     | University Data Processing Agreement (AVV, Art. 28 DSGVO) — Caelex Scholar                                                |
 | **Status**                                  | ENTWURF / DRAFT — lawyer review required before execution                                                                 |
 | **Version**                                 | 0.1 (Entwurf / Draft)                                                                                                     |
-| **Stand / Last updated**                    | {{DATE}}                                                                                                                  |
+| **Stand / Last updated**                    | 7 June 2026                                                                                                               |
 | **Verbindliche Sprache / Binding language** | Deutsch (binding). English is a convenience translation; in case of conflict the German wording prevails.                 |
 | **Gilt für / Scope**                        | Caelex Scholar (`caelex.eu/scholar`) — university-licensed, SSO-gated legal-research service                              |
 | **Maßgebliche Spec / Source spec**          | `docs/superpowers/specs/2026-06-07-caelex-scholar-legal-compliance.md` (G1, G2, G17)                                      |
@@ -304,12 +304,12 @@ Caelex assists the University, taking into account the nature of processing and 
 
 ## Unterschriften / Signatures
 
-| Verantwortlicher / Controller (Universität)    | Auftragsverarbeiter / Processor (Caelex)       |
-| ---------------------------------------------- | ---------------------------------------------- |
-| Ort, Datum / Place, date: ******\_\_\_\_****** | Ort, Datum / Place, date: ******\_\_\_\_****** |
-| Name: [TBD]                                    | Name: Julian Polleschner                       |
-| Funktion / Title: [TBD]                        | Funktion / Title: Inhaber                      |
-| Unterschrift / Signature: ****\_\_\_\_****     | Unterschrift / Signature: ****\_\_\_\_****     |
+| Verantwortlicher / Controller (Universität)        | Auftragsverarbeiter / Processor (Caelex)           |
+| -------------------------------------------------- | -------------------------------------------------- |
+| Ort, Datum / Place, date: **\*\***\_\_\_\_**\*\*** | Ort, Datum / Place, date: **\*\***\_\_\_\_**\*\*** |
+| Name: [TBD]                                        | Name: Julian Polleschner                           |
+| Funktion / Title: [TBD]                            | Funktion / Title: Inhaber                          |
+| Unterschrift / Signature: \***\*\_\_\_\_\*\***     | Unterschrift / Signature: \***\*\_\_\_\_\*\***     |
 
 ---
 

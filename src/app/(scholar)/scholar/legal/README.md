@@ -53,7 +53,7 @@ export const PRIVACY_DE: ScholarLegalDoc = {
   title: "Datenschutzerklärung",
   subtitle: "Caelex Scholar", // optional
   version: "Version 0.1 (Entwurf)",
-  lastUpdated: "{{DATE}}", // placeholder OK until a real date is set
+  lastUpdated: "7 June 2026", // placeholder OK until a real date is set
   preamble: ["…"], // optional lead paragraphs
   sections: [
     {

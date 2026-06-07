@@ -10,7 +10,7 @@
 # Personal-Data-Breach Runbook — Caelex Scholar
 
 **Rechtsgrundlage / Legal basis:** Art. 4 Nr. 12, Art. 33, Art. 34 DSGVO / GDPR · EDSA-Leitlinien 9/2022 (Meldung von Verletzungen) · EDSA-Leitlinien 01/2021 (Beispiele) · BDSG
-**Stand / Last updated:** {{DATE}}
+**Stand / Last updated:** 7 June 2026
 **Version:** 0.1 (Entwurf / Draft)
 **Verbindliche Sprache / Binding language:** Deutsch; Englisch ist eine Arbeitsübersetzung.
 
