@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getScholarAuth } from "@/lib/scholar/scholar-auth";
 import { scholarSearchSources } from "@/lib/scholar/scholar-search.server";
+import { logSearch } from "@/lib/scholar/search-history.server";
 import {
   checkRateLimit,
   createRateLimitResponse,
@@ -36,6 +37,17 @@ export async function POST(req: Request) {
 
   try {
     const result = await scholarSearchSources(parsed.data);
+
+    // Best-effort search history logging — a logging failure must NEVER
+    // propagate to the caller (wrapping in void + try/catch).
+    void logSearch(
+      auth.userId,
+      parsed.data.query,
+      parsed.data.jurisdiction,
+    ).catch(() => {
+      /* intentionally swallowed */
+    });
+
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(
