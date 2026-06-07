@@ -37,14 +37,18 @@ const VALID_CITATION_FORMATS = ["din", "oscola", "bluebook"] as const;
 const RESULTS_PER_PAGE_MIN = 10;
 const RESULTS_PER_PAGE_MAX = 50;
 
+// Privacy-by-default (Art. 25(2) GDPR): semanticSearch (AI processing) and
+// searchHistoryEnabled (behavioural logging) default to FALSE — opt-in only.
+// Must stay in sync with the @default(false) values in prisma/schema.prisma
+// (model ScholarUserPreferences). See spec G5/G6/G18.
 const DEFAULTS: ScholarPreferences = {
   sourceLanguage: "original",
   uiLanguage: "en",
   defaultJurisdiction: null,
   citationFormat: "din",
-  semanticSearch: true,
+  semanticSearch: false,
   resultsPerPage: 20,
-  searchHistoryEnabled: true,
+  searchHistoryEnabled: false,
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

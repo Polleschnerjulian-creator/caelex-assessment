@@ -39,8 +39,19 @@ function isValidCronSecret(header: string, secret: string): boolean {
  *   - AstraConversation (+ messages)             → deleted after     6 months
  *   - CrossVerification                          → deleted after     6 months
  *   - SentinelPacket                             → deleted after     1 year
+ *   - ScholarSearchHistory                       → deleted after     90 days
  *   - ComplianceEvidence past validUntil         → flipped to EXPIRED
  *   - DataRoom past expiresAt                    → closed
+ *
+ * Note: ConsentRecord (TDDDG §25 / Art. 7(1) consent-proof log) is
+ * intentionally NOT swept here. Its IP/UA/session fields are already
+ * coarsened + SHA-256-hashed at write time (see lib/consent-log.ts),
+ * so the rows are not personally identifying on their own, and the
+ * Art. 7(1) Nachweispflicht needs them retained for the limitation
+ * period of any consent dispute. Retention is therefore tied to the
+ * consent lifecycle (a later "revoke" supersedes the prior record),
+ * not a fixed TTL. Revisit if a fixed Löschfrist is adopted in
+ * /legal/privacy § 3.
  *
  * Note: AuditLog (hash-chained compliance trail) is intentionally
  * NOT deleted here. Per privacy § 3(3) and DPA § 4.3 it is retained
@@ -89,6 +100,7 @@ export async function GET(req: Request) {
     oldAstraMessages: 0,
     oldSentinelPackets: 0,
     oldCrossVerifications: 0,
+    oldScholarSearchHistory: 0,
     expiredEvidence: 0,
     closedDataRooms: 0,
   };
@@ -224,6 +236,26 @@ export async function GET(req: Request) {
       sentinelPackets: oldSentinelPackets.count,
     });
 
+    // Batch 5b: Caelex Scholar search-history retention (GDPR Art. 5(1)(e))
+    //
+    // Scholar search history is opt-in behavioural data (default OFF —
+    // see lib/scholar/preferences.server.ts). Even when a student opts
+    // in, the rows have no business value past a short window, so we cap
+    // them at 90 days. ScholarSearchHistory has a bare `userId` with no
+    // FK to User, so account deletion is handled explicitly elsewhere
+    // (api/user/delete) — this sweep is the time-based complement that
+    // keeps live accounts from accumulating an unbounded query trail.
+    const oldScholarSearchHistory =
+      await prisma.scholarSearchHistory.deleteMany({
+        where: { createdAt: { lt: ninetyDaysAgo } },
+      });
+    results.oldScholarSearchHistory = oldScholarSearchHistory.count;
+    if (oldScholarSearchHistory.count > 0) {
+      logger.info("Scholar search-history retention cleanup", {
+        scholarSearchHistory: oldScholarSearchHistory.count,
+      });
+    }
+
     // Batch 6: Close expired data rooms
     try {
       const { closeExpiredDataRooms } =
@@ -268,6 +300,7 @@ export async function GET(req: Request) {
       results.oldAstraMessages +
       results.oldSentinelPackets +
       results.oldCrossVerifications +
+      results.oldScholarSearchHistory +
       results.closedDataRooms;
 
     logger.info("Data retention cleanup complete", {

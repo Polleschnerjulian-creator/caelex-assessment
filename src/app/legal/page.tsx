@@ -12,6 +12,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { LEGAL_CATEGORIES, type LegalCategory } from "@/lib/legal/navigation";
+import { SUB_PROCESSORS } from "./sub-processors/_content/sub-processors-data";
 
 const ICONS: Record<
   LegalCategory["icon"],
@@ -64,7 +65,9 @@ export default function LegalHubPage() {
             {[
               { n: "18", label: "Dokumente · Documents" },
               { n: "2", label: "Sprachen · Languages" },
-              { n: "7", label: "Sub-Processors" },
+              // X2: derived from the single source of truth so the stat
+              // never drifts from the published register (was hardcoded "7").
+              { n: String(SUB_PROCESSORS.length), label: "Sub-Processors" },
               { n: "10J", label: "Archivierung · Retention" },
             ].map((s) => (
               <div

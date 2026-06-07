@@ -163,6 +163,23 @@ export async function DELETE(req: Request) {
         data: { userId: null },
       });
 
+      // Erase Caelex Scholar data (Art. 17 GDPR — right to erasure).
+      // The Scholar tables are intentionally decoupled from the User model
+      // (bare `userId String`, no FK/relation — see schema "Scholar" section),
+      // so the `tx.user.delete()` cascade below CANNOT reach them. Without
+      // these explicit deletes the rows would be orphaned in the database.
+      // Order: children before parents. ScholarReadingListItem cascades from
+      // ScholarReadingList (onDelete: Cascade on the list relation), but we
+      // delete items explicitly too so the erasure is observable and robust
+      // against future relation changes.
+      await tx.scholarReadingListItem.deleteMany({
+        where: { list: { userId } },
+      });
+      await tx.scholarReadingList.deleteMany({ where: { userId } });
+      await tx.scholarBookmark.deleteMany({ where: { userId } });
+      await tx.scholarSearchHistory.deleteMany({ where: { userId } });
+      await tx.scholarUserPreferences.deleteMany({ where: { userId } });
+
       // Delete organizations where user is sole member
       const soloOrgs = await tx.organizationMember.findMany({
         where: {

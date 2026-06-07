@@ -19,7 +19,12 @@ export const A11Y_DE: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Diese Erklärung gilt für die unter caelex.eu erreichbare Website und die Caelex-Plattform einschließlich aller Produktlinien, die nach § 1 Abs. 2 BFSG in den Anwendungsbereich des Gesetzes fallen (insbesondere Dienstleistungen im elektronischen Geschäftsverkehr gegenüber Verbrauchern).",
+          text: "Diese Erklärung gilt für die unter caelex.eu erreichbare Website und die Caelex-Plattform einschließlich aller Produktlinien.",
+        },
+        // TODO: legal review before relying on the 'voluntary / not-in-scope' assertion (BFSG applicability is a [LAWYER] item — spec E7 / §4 Nr. 6). Confirm the microenterprise exemption (§ 3 Abs. 3 BFSG, <10 Beschäftigte und ≤ 2 Mio. €) and the B2B2C consumer-contract trigger (§ 2 Nr. 26 BFSG) before publishing this paragraph as binding.
+        {
+          type: "p",
+          text: "Caelex unterliegt dem Barrierefreiheitsstärkungsgesetz (BFSG) nach derzeitiger Einschätzung voraussichtlich nicht zwingend — namentlich aufgrund der Kleinstunternehmen-Ausnahme (§ 3 Abs. 3 BFSG) sowie der B2B2C-Bereitstellung über lizenzierende Hochschulen, bei der kein Verbrauchervertrag im Sinne des § 2 Nr. 26 BFSG vorliegt. Unabhängig davon bemühen wir uns freiwillig um die Einhaltung der nachstehenden Anforderungen.",
         },
       ],
     },
@@ -30,11 +35,11 @@ export const A11Y_DE: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Die Caelex-Plattform wird fortlaufend an den Anforderungen der Web Content Accessibility Guidelines (WCAG) 2.1 Level AA gemessen. Das ist die von BFSG / BITV 2.0 / EN 301 549 referenzierte Norm.",
+          text: "Die Caelex-Plattform wird fortlaufend an den Web Content Accessibility Guidelines (WCAG) 2.2 Level AA gemessen. Damit überschreiten wir die von BFSG / BITV 2.0 / EN 301 549 als Baseline referenzierte Norm WCAG 2.1 AA.",
         },
         {
           type: "p",
-          text: "Wir streben die vollständige Übereinstimmung mit WCAG 2.1 AA an. Die Plattform ist in wesentlichen Teilen barrierefrei; in einigen, nachfolgend aufgeführten Bereichen arbeiten wir an der Beseitigung verbliebener Barrieren.",
+          text: "Wir streben freiwillig die vollständige Übereinstimmung mit WCAG 2.2 AA an. Die Plattform ist in wesentlichen Teilen barrierefrei; in einigen, nachfolgend aufgeführten Bereichen arbeiten wir an der Beseitigung verbliebener Barrieren.",
         },
       ],
     },
@@ -101,7 +106,7 @@ export const A11Y_DE: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Bleiben Ihre Anliegen nach Kontaktaufnahme mit uns unbeantwortet oder unbefriedigend, können Sie sich an die Marktüberwachungsbehörde nach BFSG wenden. Zuständig ist in der Regel die Marktüberwachung des Bundeslandes des Anbietersitzes (für Caelex: Berlin).",
+          text: "Bleiben Ihre Anliegen nach Kontaktaufnahme mit uns unbeantwortet oder unbefriedigend, können Sie sich an die Schlichtungsstelle nach § 16 BGG wenden: Schlichtungsstelle nach § 16 BGG / MLBF AöR, Carl-Miller-Str. 6, 39112 Magdeburg, www.mlbf-barrierefrei.de.",
         },
       ],
     },

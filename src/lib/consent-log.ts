@@ -1,5 +1,5 @@
 /**
- * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
+ * Copyright 2026 Caelex (Inhaber: Julian Polleschner), Berlin. All rights reserved.
  *
  * Server-side consent-log helper. Hashes IP and User-Agent before
  * persisting to satisfy DSGVO Art. 5 (Datenminimierung) while still

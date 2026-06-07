@@ -1,5 +1,5 @@
 /**
- * Copyright 2026 Julian Polleschner (Caelex Einzelunternehmen). All rights reserved.
+ * Copyright 2026 Caelex (Inhaber: Julian Polleschner), Berlin. All rights reserved.
  *
  * POST /api/consent/log — record a cookie/processing consent decision.
  *

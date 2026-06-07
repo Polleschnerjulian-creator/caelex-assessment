@@ -19,7 +19,12 @@ export const A11Y_EN: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "This statement applies to the website at caelex.eu and the Caelex platform including all product lines falling within the scope of BFSG Section 1(2), in particular electronic commerce services to consumers.",
+          text: "This statement applies to the website at caelex.eu and the Caelex platform including all product lines.",
+        },
+        // TODO: legal review before relying on the 'voluntary / not-in-scope' assertion (BFSG applicability is a [LAWYER] item — spec E7 / §4 item 6). Confirm the microenterprise exemption (BFSG Section 3(3), <10 staff and ≤ EUR 2M) and the B2B2C consumer-contract trigger (BFSG Section 2 No. 26) before publishing this paragraph as binding.
+        {
+          type: "p",
+          text: "On current assessment, Caelex is likely not mandatorily subject to the German Accessibility Reinforcement Act (BFSG) — in particular due to the microenterprise exemption (BFSG Section 3(3)) and the B2B2C model, under which the service is provided through licensing universities rather than under a consumer contract within the meaning of BFSG Section 2 No. 26. Irrespective of this, we voluntarily aim to meet the requirements set out below.",
         },
       ],
     },
@@ -30,11 +35,11 @@ export const A11Y_EN: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "The Caelex platform is continuously measured against Web Content Accessibility Guidelines (WCAG) 2.1 Level AA — the standard referenced by BFSG / BITV 2.0 / EN 301 549.",
+          text: "The Caelex platform is continuously measured against Web Content Accessibility Guidelines (WCAG) 2.2 Level AA, exceeding WCAG 2.1 AA — the baseline standard referenced by BFSG / BITV 2.0 / EN 301 549.",
         },
         {
           type: "p",
-          text: "We aim for full WCAG 2.1 AA conformance. Major parts of the platform are accessible; some areas, listed below, are under active remediation.",
+          text: "We voluntarily aim for full WCAG 2.2 AA conformance. Major parts of the platform are accessible; some areas, listed below, are under active remediation.",
         },
       ],
     },
@@ -101,7 +106,7 @@ export const A11Y_EN: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "If your concerns remain unresolved after contacting us, you may refer the matter to the BFSG market surveillance authority. Competent authority is typically the state market surveillance body in the state of the provider (for Caelex: Berlin).",
+          text: "If your concerns remain unresolved after contacting us, you may refer the matter to the conciliation body under Section 16 BGG: Schlichtungsstelle nach § 16 BGG / MLBF AöR, Carl-Miller-Str. 6, 39112 Magdeburg, Germany, www.mlbf-barrierefrei.de.",
         },
       ],
     },

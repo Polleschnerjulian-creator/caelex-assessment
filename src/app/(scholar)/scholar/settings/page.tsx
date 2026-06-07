@@ -45,7 +45,7 @@ import {
   Lock,
   Download,
   History,
-  Mail,
+  Trash2,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
@@ -78,6 +78,7 @@ import {
   HistoryToggleForm,
   ClearHistoryForm,
 } from "../_components/SettingsForms";
+import { DeleteAccountButton } from "../_components/DeleteAccountButton";
 import { SettingsTabs } from "./_components/SettingsTabs";
 import type { TabDefinition } from "./_components/SettingsTabs";
 import {
@@ -367,16 +368,6 @@ export default async function SettingsPage() {
     value: code,
     label: LOCALE_LABELS[code],
   }));
-
-  // Pre-fill deletion mailto body (localized to the active UI locale)
-  const deletionMailto = `mailto:cs@caelex.eu?subject=${encodeURIComponent(
-    t(locale, SETTINGS, "deletionMailSubject"),
-  )}&body=${encodeURIComponent(
-    t(locale, SETTINGS, "deletionMailBody").replace(
-      "{email}",
-      user?.email ?? t(locale, SETTINGS, "deletionMailFallback"),
-    ),
-  )}`;
 
   // ── Build tab panels as server-rendered ReactNodes ──────────────────────────
   // These are ReactNodes (valid RSC→Client transfer), NOT functions.
@@ -754,10 +745,10 @@ export default async function SettingsPage() {
           </a>
         </div>
 
-        {/* Account deletion */}
+        {/* Account deletion (self-service erasure, Art. 17 GDPR) */}
         <div className="px-5 py-5">
           <div className="flex items-center gap-2 mb-2">
-            <Mail size={13} className="text-gray-400" aria-hidden="true" />
+            <Trash2 size={13} className="text-gray-400" aria-hidden="true" />
             <p className={SECTION_LABEL_CLS}>
               {t(locale, SETTINGS, "deletionLabel")}
             </p>
@@ -765,13 +756,7 @@ export default async function SettingsPage() {
           <p className="text-[13px] text-gray-600 leading-relaxed mb-3">
             {t(locale, SETTINGS, "deletionDesc")}
           </p>
-          <a
-            href={deletionMailto}
-            className="inline-flex items-center gap-1.5 text-[12px] font-medium text-gray-600 hover:text-gray-900 border border-gray-200 hover:border-gray-400 rounded-lg px-4 py-2 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
-          >
-            <Mail size={12} aria-hidden="true" />
-            {t(locale, SETTINGS, "deletionButton")}
-          </a>
+          <DeleteAccountButton isOAuthOnly={!credentialsAccount} />
         </div>
       </div>
     </section>

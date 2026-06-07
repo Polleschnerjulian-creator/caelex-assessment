@@ -218,6 +218,10 @@ export function PrefsForm({
         <p className="mt-1 text-[11px] text-gray-500">
           {t(locale, SETTINGS, "semanticSearchHint")}
         </p>
+        {/* Just-in-time privacy note (G6): what is processed, off by default. */}
+        <p className="mt-1.5 text-[11px] text-gray-500 leading-relaxed">
+          {t(locale, SETTINGS, "semanticSearchJitNote")}
+        </p>
       </div>
 
       {/* Treffer pro Seite */}
@@ -586,6 +590,10 @@ export function HistoryToggleForm({ action, enabled }: HistoryToggleFormProps) {
               : t(locale, COMMON, "activate")}
         </button>
       </div>
+      {/* Just-in-time privacy note (G5): what is stored, off by default. */}
+      <p className="mt-2 text-[11px] text-gray-500 leading-relaxed">
+        {t(locale, SETTINGS, "historyJitNote")}
+      </p>
       <StatusBanner result={result} />
     </form>
   );

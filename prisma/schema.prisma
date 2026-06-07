@@ -15173,9 +15173,13 @@ model ScholarUserPreferences {
   uiLanguage           String   @default("en")       // UI chrome locale: en | de | it | fr | es
   defaultJurisdiction  String?  // ISO code or null
   citationFormat       String   @default("din")      // din | oscola | bluebook
-  semanticSearch       Boolean  @default(true)
+  // Privacy-by-default (Art. 25(2) GDPR): semantic search (AI processing) and
+  // search-history logging (behavioural data) are OPT-IN — off until the user
+  // explicitly enables them in Settings. Especially important for the Scholar
+  // audience, which may include minors. See spec G5/G6/G18.
+  semanticSearch       Boolean  @default(false)
   resultsPerPage       Int      @default(20)
-  searchHistoryEnabled Boolean  @default(true)
+  searchHistoryEnabled Boolean  @default(false)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 }

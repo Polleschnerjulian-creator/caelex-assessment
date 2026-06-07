@@ -6,6 +6,7 @@ import { Globe2, BookOpen, Scale, AlertCircle } from "lucide-react";
 import { ScholarPage } from "./_components/ScholarPage";
 import { Eyebrow } from "./_components/Eyebrow";
 import { RelevanceGlyph } from "./_components/RelevanceGlyph";
+import { AiDisclosure } from "./_components/AiDisclosure";
 import { SCHOLAR_TYPE } from "./_components/scholar-type";
 import { t, type ScholarLocale } from "./_i18n/core";
 import { useScholarLocale } from "./_i18n/LocaleProvider";
@@ -441,6 +442,16 @@ export default function ScholarSearchPage() {
           />
         </div>
 
+        {/* AI-transparency disclosure (EU AI Act Art. 50 — AI1/AI5).
+            Persistent across every state: it lives under the search controls
+            so it shows whether idle, loading, with results, or no-results.
+            Strictly monochrome (SCHOLAR_TYPE.meta + gray Info glyph). */}
+        <AiDisclosure
+          label={t(locale, SEARCH, "aiDisclosureLabel")}
+          text={t(locale, SEARCH, "aiDisclosure")}
+          className="mt-4"
+        />
+
         {/* Subtle stats line — only shown when idle
             WCAG 1.4.3: gray-600 (#4B5563) on #F7F8FA ≈ 6.0:1 ✓ */}
         <div
@@ -605,6 +616,17 @@ export default function ScholarSearchPage() {
                 {t(locale, SEARCH, "resultsHeading")}
               </h2>
             </div>
+
+            {/* AI-transparency disclosure on the results list itself
+                (EU AI Act Art. 50 — AI1/AI5). Mirrors the notice under the
+                search controls so the "AI-ranked + verify + not legal advice"
+                framing stays with the results. Strictly monochrome. */}
+            <AiDisclosure
+              label={t(locale, SEARCH, "aiDisclosureLabel")}
+              text={t(locale, SEARCH, "aiDisclosure")}
+              className="mb-3"
+            />
+
             {/* WCAG 1.3.1: list semantics for result items */}
             <ul className="space-y-1" role="list">
               {displayedHits.map((hit) => (

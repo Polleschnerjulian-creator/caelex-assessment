@@ -57,6 +57,14 @@ export const SEARCH = {
     searchFailed: "The search failed. Please try again.",
     networkError: "Network error. Please check your connection.",
 
+    // ── AI transparency disclosure (EU AI Act Art. 50) ──
+    // Persistent monochrome notice near the search input + on results:
+    // results are AI-ranked → verify against the official source; research
+    // aid, not legal advice.
+    aiDisclosureLabel: "About these results",
+    aiDisclosure:
+      "Results are ranked with AI semantic search — verify against the official source. Caelex Scholar is a research aid, not legal advice.",
+
     // ── Result count + search-mode signal ──
     resultOne: "result",
     resultMany: "results",
@@ -153,6 +161,11 @@ export const SEARCH = {
     // ── Errors ──
     searchFailed: "Die Suche ist fehlgeschlagen. Bitte versuche es erneut.",
     networkError: "Netzwerkfehler. Bitte prüfe deine Verbindung.",
+
+    // ── AI transparency disclosure (EU AI Act Art. 50) ──
+    aiDisclosureLabel: "Über diese Ergebnisse",
+    aiDisclosure:
+      "Die Ergebnisse werden mit KI-gestützter semantischer Suche sortiert — bitte mit der amtlichen Quelle abgleichen. Caelex Scholar ist ein Recherchewerkzeug und keine Rechtsberatung.",
 
     // ── Result count + search-mode signal ──
     resultOne: "Ergebnis",
@@ -251,6 +264,11 @@ export const SEARCH = {
     searchFailed: "La ricerca non è riuscita. Riprova.",
     networkError: "Errore di rete. Controlla la connessione.",
 
+    // ── AI transparency disclosure (EU AI Act Art. 50) ──
+    aiDisclosureLabel: "Informazioni su questi risultati",
+    aiDisclosure:
+      "I risultati sono ordinati con ricerca semantica basata sull’IA — verifica sempre con la fonte ufficiale. Caelex Scholar è uno strumento di ricerca, non una consulenza legale.",
+
     // ── Result count + search-mode signal ──
     resultOne: "risultato",
     resultMany: "risultati",
@@ -348,6 +366,11 @@ export const SEARCH = {
     searchFailed: "La recherche a échoué. Veuillez réessayer.",
     networkError: "Erreur réseau. Veuillez vérifier votre connexion.",
 
+    // ── AI transparency disclosure (EU AI Act Art. 50) ──
+    aiDisclosureLabel: "À propos de ces résultats",
+    aiDisclosure:
+      "Les résultats sont classés par recherche sémantique assistée par IA — vérifiez auprès de la source officielle. Caelex Scholar est un outil de recherche, et non un avis juridique.",
+
     // ── Result count + search-mode signal ──
     resultOne: "résultat",
     resultMany: "résultats",
@@ -444,6 +467,11 @@ export const SEARCH = {
     // ── Errors ──
     searchFailed: "La búsqueda ha fallado. Inténtalo de nuevo.",
     networkError: "Error de red. Comprueba tu conexión.",
+
+    // ── AI transparency disclosure (EU AI Act Art. 50) ──
+    aiDisclosureLabel: "Acerca de estos resultados",
+    aiDisclosure:
+      "Los resultados se ordenan mediante búsqueda semántica con IA — verifícalos con la fuente oficial. Caelex Scholar es una herramienta de investigación, no asesoramiento jurídico.",
 
     // ── Result count + search-mode signal ──
     resultOne: "resultado",

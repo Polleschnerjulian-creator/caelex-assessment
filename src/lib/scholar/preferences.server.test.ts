@@ -29,14 +29,15 @@ import {
   updateScholarPreferences,
 } from "./preferences.server";
 
+// Privacy-by-default (G5/G6/G18): semanticSearch + searchHistoryEnabled are OFF.
 const DEFAULTS = {
   sourceLanguage: "original",
   uiLanguage: "en",
   defaultJurisdiction: null,
   citationFormat: "din",
-  semanticSearch: true,
+  semanticSearch: false,
   resultsPerPage: 20,
-  searchHistoryEnabled: true,
+  searchHistoryEnabled: false,
 };
 
 beforeEach(() => {
@@ -57,6 +58,16 @@ describe("getScholarPreferences", () => {
     });
     // Must NOT call upsert — read-only, no row creation on read
     expect(mockUpsert).not.toHaveBeenCalled();
+  });
+
+  it("defaults privacy toggles OFF (G5/G6/G18 — privacy by default)", async () => {
+    mockFindUnique.mockResolvedValue(null);
+
+    const prefs = await getScholarPreferences("new-user");
+
+    // Behavioural logging + AI processing must be opt-in, not opt-out.
+    expect(prefs.searchHistoryEnabled).toBe(false);
+    expect(prefs.semanticSearch).toBe(false);
   });
 
   it("returns stored values when a row exists", async () => {

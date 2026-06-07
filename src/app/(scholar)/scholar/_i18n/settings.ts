@@ -92,6 +92,9 @@ export const SETTINGS = {
     semanticSearchOff: "Disabled (keyword search only)",
     semanticSearchHint:
       "Semantic search uses embeddings for context-aware results.",
+    // Just-in-time privacy note (Art. 13 GDPR transparency). Off by default.
+    semanticSearchJitNote:
+      "When on, your search query is sent to our AI provider to compute an embedding for ranking. Queries are not used to train AI models. This is off by default.",
     resultsPerPageLabel: "Results per page",
     savePrefs: "Save settings",
 
@@ -171,6 +174,9 @@ export const SETTINGS = {
     historyToggleAriaLabel: "Search-history setting",
     recordSearchHistory: "Record search history",
     currentlyPrefix: "Currently:",
+    // Just-in-time privacy note (Art. 13 GDPR transparency). Off by default.
+    historyJitNote:
+      "When on, each search (the query text and any jurisdiction filter) is stored in your account so it can pre-fill the library filters. You can view, clear or disable this at any time. This is off by default.",
 
     // ── ClearHistoryForm ──
     clearHistoryAriaLabel: "Clear search history",
@@ -184,15 +190,28 @@ export const SETTINGS = {
       "Download a JSON file with your account, your settings and your search history. The right to data portability is set out in Art. 20 GDPR.",
     exportButton: "Download data",
 
-    // ── Account deletion ──
-    deletionLabel: "Request account deletion",
+    // ── Account deletion (self-service, Art. 17 GDPR) ──
+    deletionLabel: "Delete account",
     deletionDesc:
-      "Since your access is provided through your university, account deletion is handled by your institution's support. Send us an email — we coordinate the deletion with your university (Art. 17 GDPR, right to be forgotten).",
-    deletionButton: "Request deletion (cs@caelex.eu)",
-    deletionMailSubject: "Deletion request – Caelex Scholar",
-    deletionMailBody:
-      "Dear Caelex team,\n\nI hereby request the deletion of my Caelex Scholar account.\n\nEmail address: {email}\n\nKind regards",
-    deletionMailFallback: "(please fill in)",
+      "Permanently delete your Caelex Scholar account and all associated data — your settings, search history, bookmarks and reading lists. This exercises your right to erasure (Art. 17 GDPR) and cannot be undone.",
+    deletionButton: "Delete account",
+    // Confirmation dialog
+    deleteDialogTitle: "Delete account",
+    deleteDialogIntro: "Deleting your account will permanently remove:",
+    deleteEffectPreferences: "Your research settings and preferences",
+    deleteEffectHistory: "Your search history",
+    deleteEffectBookmarks: "Your bookmarks and reading lists",
+    deleteEffectIrreversible: "This action is irreversible",
+    deletePasswordLabel: "Enter your password",
+    deletePasswordHint: "Required to confirm your identity.",
+    // {phrase} is replaced with the exact confirmation text (not translated —
+    // it must match the server-side check).
+    deleteConfirmLabel: "Type {phrase} to confirm",
+    deleteConfirmPlaceholder: "DELETE MY ACCOUNT",
+    deleteCancelButton: "Cancel",
+    deleteConfirmButton: "Delete permanently",
+    deleteDeletingButton: "Deleting…",
+    deleteErrorGeneric: "Could not delete your account. Please try again.",
 
     // ── Tab 5: About Scholar ──
     aboutHeading: "About Caelex Scholar",
@@ -301,6 +320,9 @@ export const SETTINGS = {
     semanticSearchOff: "Deaktiviert (nur Keyword-Suche)",
     semanticSearchHint:
       "Semantische Suche nutzt Embeddings für kontextbezogene Ergebnisse.",
+    // Just-in-time-Datenschutzhinweis (Art. 13 DSGVO). Standardmäßig deaktiviert.
+    semanticSearchJitNote:
+      "Wenn aktiviert, wird deine Suchanfrage an unseren KI-Anbieter gesendet, um ein Embedding für das Ranking zu berechnen. Anfragen werden nicht zum Training von KI-Modellen verwendet. Standardmäßig deaktiviert.",
     resultsPerPageLabel: "Treffer pro Seite",
     savePrefs: "Einstellungen speichern",
 
@@ -381,6 +403,9 @@ export const SETTINGS = {
     historyToggleAriaLabel: "Suchverlauf-Einstellung",
     recordSearchHistory: "Suchverlauf aufzeichnen",
     currentlyPrefix: "Aktuell:",
+    // Just-in-time-Datenschutzhinweis (Art. 13 DSGVO). Standardmäßig deaktiviert.
+    historyJitNote:
+      "Wenn aktiviert, wird jede Suche (der Suchtext und ein etwaiger Jurisdiktionsfilter) in deinem Konto gespeichert, um die Bibliotheksfilter vorzubelegen. Du kannst dies jederzeit ansehen, löschen oder deaktivieren. Standardmäßig deaktiviert.",
 
     // ── ClearHistoryForm ──
     clearHistoryAriaLabel: "Suchverlauf löschen",
@@ -394,15 +419,28 @@ export const SETTINGS = {
       "Lade eine JSON-Datei mit deinem Konto, deinen Einstellungen und deinem Suchverlauf herunter. Das Recht auf Datenübertragbarkeit ist in Art. 20 DSGVO geregelt.",
     exportButton: "Daten herunterladen",
 
-    // ── Account deletion ──
-    deletionLabel: "Konto-Löschung anfragen",
+    // ── Account deletion (self-service, Art. 17 DSGVO) ──
+    deletionLabel: "Konto löschen",
     deletionDesc:
-      "Da dein Zugang über deine Hochschule bereitgestellt wird, erfolgt die Kontolöschung über den Support deiner Institution. Schreibe uns eine E-Mail — wir koordinieren die Löschung mit deiner Hochschule (Art. 17 DSGVO, Recht auf Vergessenwerden).",
-    deletionButton: "Löschung anfragen (cs@caelex.eu)",
-    deletionMailSubject: "Löschantrag – Caelex Scholar",
-    deletionMailBody:
-      "Sehr geehrtes Caelex-Team,\n\nhiermit beantrage ich die Löschung meines Caelex Scholar-Kontos.\n\nE-Mail-Adresse: {email}\n\nMit freundlichen Grüßen",
-    deletionMailFallback: "(bitte eintragen)",
+      "Lösche dein Caelex Scholar-Konto und alle zugehörigen Daten dauerhaft — deine Einstellungen, deinen Suchverlauf, deine Merkliste und deine Leselisten. Damit übst du dein Recht auf Löschung aus (Art. 17 DSGVO). Dieser Vorgang kann nicht rückgängig gemacht werden.",
+    deletionButton: "Konto löschen",
+    // Confirmation dialog
+    deleteDialogTitle: "Konto löschen",
+    deleteDialogIntro:
+      "Durch das Löschen deines Kontos werden dauerhaft entfernt:",
+    deleteEffectPreferences: "Deine Recherche-Einstellungen und Präferenzen",
+    deleteEffectHistory: "Dein Suchverlauf",
+    deleteEffectBookmarks: "Deine Merkliste und Leselisten",
+    deleteEffectIrreversible: "Dieser Vorgang ist unwiderruflich",
+    deletePasswordLabel: "Gib dein Passwort ein",
+    deletePasswordHint: "Erforderlich, um deine Identität zu bestätigen.",
+    deleteConfirmLabel: "Gib {phrase} ein, um zu bestätigen",
+    deleteConfirmPlaceholder: "DELETE MY ACCOUNT",
+    deleteCancelButton: "Abbrechen",
+    deleteConfirmButton: "Endgültig löschen",
+    deleteDeletingButton: "Wird gelöscht…",
+    deleteErrorGeneric:
+      "Dein Konto konnte nicht gelöscht werden. Bitte versuche es erneut.",
 
     // ── Tab 5: Über Scholar ──
     aboutHeading: "Über Caelex Scholar",
@@ -511,6 +549,9 @@ export const SETTINGS = {
     semanticSearchOff: "Disattivata (solo ricerca per parole chiave)",
     semanticSearchHint:
       "La ricerca semantica utilizza gli embedding per risultati contestuali.",
+    // Avviso sulla privacy just-in-time (art. 13 GDPR). Disattivata per impostazione predefinita.
+    semanticSearchJitNote:
+      "Quando è attiva, la tua query di ricerca viene inviata al nostro fornitore di IA per calcolare un embedding ai fini del ranking. Le query non vengono utilizzate per addestrare modelli di IA. Disattivata per impostazione predefinita.",
     resultsPerPageLabel: "Risultati per pagina",
     savePrefs: "Salva impostazioni",
 
@@ -591,6 +632,9 @@ export const SETTINGS = {
     historyToggleAriaLabel: "Impostazione della cronologia delle ricerche",
     recordSearchHistory: "Registra la cronologia delle ricerche",
     currentlyPrefix: "Attualmente:",
+    // Avviso sulla privacy just-in-time (art. 13 GDPR). Disattivata per impostazione predefinita.
+    historyJitNote:
+      "Quando è attiva, ogni ricerca (il testo della query ed eventuali filtri per giurisdizione) viene salvata nel tuo account per precompilare i filtri della biblioteca. Puoi visualizzarla, cancellarla o disattivarla in qualsiasi momento. Disattivata per impostazione predefinita.",
 
     // ── ClearHistoryForm ──
     clearHistoryAriaLabel: "Cancella la cronologia delle ricerche",
@@ -604,15 +648,27 @@ export const SETTINGS = {
       "Scarica un file JSON con il tuo account, le tue impostazioni e la tua cronologia delle ricerche. Il diritto alla portabilità dei dati è disciplinato dall'art. 20 GDPR.",
     exportButton: "Scarica i dati",
 
-    // ── Account deletion ──
-    deletionLabel: "Richiedi la cancellazione dell'account",
+    // ── Account deletion (self-service, art. 17 GDPR) ──
+    deletionLabel: "Elimina account",
     deletionDesc:
-      "Poiché il tuo accesso è fornito tramite la tua università, la cancellazione dell'account avviene tramite l'assistenza della tua istituzione. Scrivici un'email — coordineremo la cancellazione con la tua università (art. 17 GDPR, diritto all'oblio).",
-    deletionButton: "Richiedi la cancellazione (cs@caelex.eu)",
-    deletionMailSubject: "Richiesta di cancellazione – Caelex Scholar",
-    deletionMailBody:
-      "Gentile team Caelex,\n\ncon la presente richiedo la cancellazione del mio account Caelex Scholar.\n\nIndirizzo email: {email}\n\nCordiali saluti",
-    deletionMailFallback: "(da compilare)",
+      "Elimina definitivamente il tuo account Caelex Scholar e tutti i dati associati — le tue impostazioni, la cronologia delle ricerche, i segnalibri e le liste di lettura. In questo modo eserciti il tuo diritto alla cancellazione (art. 17 GDPR). L'operazione non può essere annullata.",
+    deletionButton: "Elimina account",
+    // Confirmation dialog
+    deleteDialogTitle: "Elimina account",
+    deleteDialogIntro:
+      "L'eliminazione del tuo account rimuoverà definitivamente:",
+    deleteEffectPreferences: "Le tue impostazioni e preferenze di ricerca",
+    deleteEffectHistory: "La tua cronologia delle ricerche",
+    deleteEffectBookmarks: "I tuoi segnalibri e le tue liste di lettura",
+    deleteEffectIrreversible: "Questa operazione è irreversibile",
+    deletePasswordLabel: "Inserisci la tua password",
+    deletePasswordHint: "Necessaria per confermare la tua identità.",
+    deleteConfirmLabel: "Digita {phrase} per confermare",
+    deleteConfirmPlaceholder: "DELETE MY ACCOUNT",
+    deleteCancelButton: "Annulla",
+    deleteConfirmButton: "Elimina definitivamente",
+    deleteDeletingButton: "Eliminazione…",
+    deleteErrorGeneric: "Impossibile eliminare il tuo account. Riprova.",
 
     // ── Tab 5: Info su Scholar ──
     aboutHeading: "Info su Caelex Scholar",
@@ -722,6 +778,9 @@ export const SETTINGS = {
     semanticSearchOff: "Désactivée (recherche par mots-clés uniquement)",
     semanticSearchHint:
       "La recherche sémantique utilise des plongements (embeddings) pour des résultats contextuels.",
+    // Avis de confidentialité juste-à-temps (art. 13 RGPD). Désactivée par défaut.
+    semanticSearchJitNote:
+      "Lorsqu'elle est activée, votre requête de recherche est envoyée à notre fournisseur d'IA pour calculer un plongement (embedding) servant au classement. Les requêtes ne sont pas utilisées pour entraîner des modèles d'IA. Désactivée par défaut.",
     resultsPerPageLabel: "Résultats par page",
     savePrefs: "Enregistrer les paramètres",
 
@@ -802,6 +861,9 @@ export const SETTINGS = {
     historyToggleAriaLabel: "Paramètre de l'historique de recherche",
     recordSearchHistory: "Enregistrer l'historique de recherche",
     currentlyPrefix: "Actuellement :",
+    // Avis de confidentialité juste-à-temps (art. 13 RGPD). Désactivé par défaut.
+    historyJitNote:
+      "Lorsqu'il est activé, chaque recherche (le texte de la requête et tout filtre de juridiction) est enregistrée dans votre compte afin de préremplir les filtres de la bibliothèque. Vous pouvez la consulter, l'effacer ou la désactiver à tout moment. Désactivé par défaut.",
 
     // ── ClearHistoryForm ──
     clearHistoryAriaLabel: "Effacer l'historique de recherche",
@@ -816,15 +878,28 @@ export const SETTINGS = {
       "Téléchargez un fichier JSON contenant votre compte, vos paramètres et votre historique de recherche. Le droit à la portabilité des données est prévu à l'art. 20 RGPD.",
     exportButton: "Télécharger les données",
 
-    // ── Account deletion ──
-    deletionLabel: "Demander la suppression du compte",
+    // ── Account deletion (self-service, art. 17 RGPD) ──
+    deletionLabel: "Supprimer le compte",
     deletionDesc:
-      "Votre accès étant fourni par votre université, la suppression du compte s'effectue via l'assistance de votre établissement. Écrivez-nous un e-mail — nous coordonnons la suppression avec votre université (art. 17 RGPD, droit à l'oubli).",
-    deletionButton: "Demander la suppression (cs@caelex.eu)",
-    deletionMailSubject: "Demande de suppression – Caelex Scholar",
-    deletionMailBody:
-      "Chère équipe Caelex,\n\nje demande par la présente la suppression de mon compte Caelex Scholar.\n\nAdresse e-mail : {email}\n\nCordialement",
-    deletionMailFallback: "(à compléter)",
+      "Supprimez définitivement votre compte Caelex Scholar et toutes les données associées — vos paramètres, votre historique de recherche, vos favoris et vos listes de lecture. Vous exercez ainsi votre droit à l'effacement (art. 17 RGPD). Cette action est irréversible.",
+    deletionButton: "Supprimer le compte",
+    // Confirmation dialog
+    deleteDialogTitle: "Supprimer le compte",
+    deleteDialogIntro:
+      "La suppression de votre compte effacera définitivement :",
+    deleteEffectPreferences: "Vos paramètres et préférences de recherche",
+    deleteEffectHistory: "Votre historique de recherche",
+    deleteEffectBookmarks: "Vos favoris et vos listes de lecture",
+    deleteEffectIrreversible: "Cette action est irréversible",
+    deletePasswordLabel: "Saisissez votre mot de passe",
+    deletePasswordHint: "Requis pour confirmer votre identité.",
+    deleteConfirmLabel: "Saisissez {phrase} pour confirmer",
+    deleteConfirmPlaceholder: "DELETE MY ACCOUNT",
+    deleteCancelButton: "Annuler",
+    deleteConfirmButton: "Supprimer définitivement",
+    deleteDeletingButton: "Suppression…",
+    deleteErrorGeneric:
+      "Impossible de supprimer votre compte. Veuillez réessayer.",
 
     // ── Tab 5: À propos de Scholar ──
     aboutHeading: "À propos de Caelex Scholar",
@@ -934,6 +1009,9 @@ export const SETTINGS = {
     semanticSearchOff: "Desactivada (solo búsqueda por palabras clave)",
     semanticSearchHint:
       "La búsqueda semántica utiliza embeddings para obtener resultados contextuales.",
+    // Aviso de privacidad just-in-time (art. 13 RGPD). Desactivada de forma predeterminada.
+    semanticSearchJitNote:
+      "Cuando está activada, tu consulta de búsqueda se envía a nuestro proveedor de IA para calcular un embedding con fines de clasificación. Las consultas no se utilizan para entrenar modelos de IA. Desactivada de forma predeterminada.",
     resultsPerPageLabel: "Resultados por página",
     savePrefs: "Guardar ajustes",
 
@@ -1013,6 +1091,9 @@ export const SETTINGS = {
     historyToggleAriaLabel: "Ajuste del historial de búsquedas",
     recordSearchHistory: "Registrar el historial de búsquedas",
     currentlyPrefix: "Actualmente:",
+    // Aviso de privacidad just-in-time (art. 13 RGPD). Desactivado de forma predeterminada.
+    historyJitNote:
+      "Cuando está activado, cada búsqueda (el texto de la consulta y cualquier filtro de jurisdicción) se guarda en tu cuenta para precompletar los filtros de la biblioteca. Puedes consultarlo, borrarlo o desactivarlo en cualquier momento. Desactivado de forma predeterminada.",
 
     // ── ClearHistoryForm ──
     clearHistoryAriaLabel: "Borrar el historial de búsquedas",
@@ -1027,15 +1108,27 @@ export const SETTINGS = {
       "Descarga un archivo JSON con tu cuenta, tus ajustes y tu historial de búsquedas. El derecho a la portabilidad de los datos está regulado en el art. 20 RGPD.",
     exportButton: "Descargar datos",
 
-    // ── Account deletion ──
-    deletionLabel: "Solicitar la eliminación de la cuenta",
+    // ── Account deletion (self-service, art. 17 RGPD) ──
+    deletionLabel: "Eliminar cuenta",
     deletionDesc:
-      "Dado que tu acceso se proporciona a través de tu universidad, la eliminación de la cuenta se gestiona mediante el soporte de tu institución. Escríbenos un correo electrónico — coordinaremos la eliminación con tu universidad (art. 17 RGPD, derecho al olvido).",
-    deletionButton: "Solicitar la eliminación (cs@caelex.eu)",
-    deletionMailSubject: "Solicitud de eliminación – Caelex Scholar",
-    deletionMailBody:
-      "Estimado equipo de Caelex:\n\npor la presente solicito la eliminación de mi cuenta de Caelex Scholar.\n\nDirección de correo electrónico: {email}\n\nUn cordial saludo",
-    deletionMailFallback: "(rellénalo, por favor)",
+      "Elimina de forma permanente tu cuenta de Caelex Scholar y todos los datos asociados — tus ajustes, tu historial de búsquedas, tus marcadores y tus listas de lectura. Así ejerces tu derecho de supresión (art. 17 RGPD). Esta acción no se puede deshacer.",
+    deletionButton: "Eliminar cuenta",
+    // Confirmation dialog
+    deleteDialogTitle: "Eliminar cuenta",
+    deleteDialogIntro: "Al eliminar tu cuenta se borrará de forma permanente:",
+    deleteEffectPreferences: "Tus ajustes y preferencias de búsqueda",
+    deleteEffectHistory: "Tu historial de búsquedas",
+    deleteEffectBookmarks: "Tus marcadores y listas de lectura",
+    deleteEffectIrreversible: "Esta acción es irreversible",
+    deletePasswordLabel: "Introduce tu contraseña",
+    deletePasswordHint: "Necesaria para confirmar tu identidad.",
+    deleteConfirmLabel: "Escribe {phrase} para confirmar",
+    deleteConfirmPlaceholder: "DELETE MY ACCOUNT",
+    deleteCancelButton: "Cancelar",
+    deleteConfirmButton: "Eliminar permanentemente",
+    deleteDeletingButton: "Eliminando…",
+    deleteErrorGeneric:
+      "No se ha podido eliminar tu cuenta. Inténtalo de nuevo.",
 
     // ── Tab 5: Acerca de Scholar ──
     aboutHeading: "Acerca de Caelex Scholar",
