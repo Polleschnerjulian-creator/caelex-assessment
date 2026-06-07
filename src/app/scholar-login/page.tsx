@@ -5,7 +5,8 @@ import { getSession, signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Eye, EyeOff } from "lucide-react";
+import { ChevronDown, Eye, EyeOff } from "lucide-react";
+import Navigation from "@/components/landing/Navigation";
 import { analytics } from "@/lib/analytics";
 import { safeScholarUrl } from "@/lib/safe-redirect";
 import { translateAuthError } from "@/lib/auth-errors";
@@ -13,47 +14,36 @@ import { translateAuthError } from "@/lib/auth-errors";
 /**
  * Caelex Scholar — Login.
  *
- * Cinematic full-bleed hero (Apollo 17 lunar-rover photograph, NASA /
- * public domain) with a huge tight-set "SCHOLAR" wordmark lower-left, a
- * glass login panel beneath it, and a Palantir-style meta-label column
- * bottom-right. Layered gradients double as the contrast scrim so text
- * stays legible over the photo (WCAG 1.4.3).
+ * Two-section page in the spirit of palantir.com/platforms/aip:
  *
- * Auth is unchanged from the previous build: NextAuth credentials +
- * Google providers, MFA hand-off, callbackUrl + email prefill. The
- * destination is the Scholar surface; safeScholarUrl rejects callbacks
- * outside /scholar so `?callbackUrl=https://evil.com` (or /dashboard)
- * can't smuggle the session anywhere else.
+ *   1. Hero (100vh): the shared landing-page <Navigation> (liquid-glass bar,
+ *      Caelex logo) floating over a full-bleed Apollo 17 lunar-rover photo
+ *      (NASA / public domain). A giant tight-set SCHOLAR wordmark sits at the
+ *      bottom-left, a Palantir-style meta-label column at the bottom-right,
+ *      and a "scroll to sign in" cue.
+ *   2. Login (scroll down): the actual sign-in form on a navy backdrop.
+ *
+ * The fixed Navigation keeps a white logo in dark mode, so BOTH sections are
+ * dark — that's why the login section uses navy-950, not white (WCAG 1.4.3).
+ *
+ * Auth is unchanged: NextAuth credentials + Google, MFA hand-off, callbackUrl
+ * + email prefill. safeScholarUrl rejects callbacks outside /scholar so
+ * `?callbackUrl=https://evil.com` (or /dashboard) can't smuggle the session.
  *
  * WCAG 2.2 AA:
- *   - lang="de" inherited from <html>; copy is German to match the app
  *   - decorative hero image has alt="" (1.1.1)
- *   - <h1> = product name (sr-only "Caelex " prefix for full context)
- *   - every input has an associated <label>; show/hide toggle is labelled
+ *   - single <h1> = product name (sr-only "Caelex " for full context)
+ *   - login section uses <h2>; every input has an associated <label>
  *   - focus-visible rings on all interactive elements (2.4.7)
  *   - target size ≥24px via py-2.5 on inputs/buttons (2.5.8)
  *   - error region uses role="alert" (4.1.3)
+ *   - gradients keep all copy ≥4.5:1 over the photo (1.4.3)
  */
 
-const CAELEX_WORDMARK_SRC = "/brand/caelex-wordmark.png";
 const HERO_SRC = "/scholar-hero.jpg";
 
 interface SignInResult {
   error?: string;
-}
-
-/** Caelex wordmark — official PNG, optimised + cached via next/image. */
-function CaelexWordmark({ height = 24 }: { height?: number }) {
-  return (
-    <Image
-      src={CAELEX_WORDMARK_SRC}
-      alt="caelex"
-      width={height * 5}
-      height={height}
-      priority
-      style={{ height, width: "auto" }}
-    />
-  );
 }
 
 // ─── Shared field styles ────────────────────────────────────────────────────
@@ -65,8 +55,8 @@ const LABEL_CLS = "mb-1.5 block text-[12px] font-medium text-white/70";
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  // safeScholarUrl restricts callbacks to the Scholar surface — an
-  // absolute or off-surface callbackUrl falls back to "/scholar".
+  // safeScholarUrl restricts callbacks to the Scholar surface — an absolute or
+  // off-surface callbackUrl falls back to "/scholar".
   const callbackUrl = safeScholarUrl(
     searchParams.get("callbackUrl"),
     "/scholar",
@@ -118,8 +108,8 @@ function LoginForm() {
           `/auth/mfa-challenge?callbackUrl=${encodeURIComponent(callbackUrl)}`,
         );
       } else {
-        // Hard nav — router.push races the cookie write on slow links and
-        // can leave the user stuck on /scholar-login with a live session.
+        // Hard nav — router.push races the cookie write on slow links and can
+        // leave the user stuck on /scholar-login with a live session.
         window.location.assign(callbackUrl);
       }
     } catch {
@@ -158,7 +148,7 @@ function LoginForm() {
           <span>Passwort</span>
           <Link
             href="/forgot-password"
-            className="font-normal text-white/50 transition-colors hover:text-white/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded"
+            className="rounded font-normal text-white/50 transition-colors hover:text-white/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
           >
             Passwort vergessen?
           </Link>
@@ -180,7 +170,7 @@ function LoginForm() {
             aria-label={
               showPassword ? "Passwort verbergen" : "Passwort anzeigen"
             }
-            className="absolute right-2 top-1/2 -translate-y-1/2 grid h-7 w-7 place-items-center rounded text-white/40 transition-colors hover:text-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+            className="absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded text-white/40 transition-colors hover:text-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
           >
             {showPassword ? (
               <EyeOff size={15} strokeWidth={1.5} />
@@ -204,7 +194,7 @@ function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-[14px] font-semibold text-gray-900 transition-colors hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-[14px] font-semibold text-gray-900 transition-colors hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0F1E] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {loading ? (
           <>
@@ -225,7 +215,7 @@ function LoginForm() {
       <button
         type="button"
         onClick={handleGoogleSignIn}
-        className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-white/15 bg-white/[0.04] px-4 py-2.5 text-[14px] font-medium text-white transition-colors hover:bg-white/[0.09] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+        className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-white/15 bg-white/[0.04] px-4 py-2.5 text-[14px] font-medium text-white transition-colors hover:bg-white/[0.09] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0F1E]"
       >
         <svg
           viewBox="0 0 24 24"
@@ -258,21 +248,21 @@ function LoginForm() {
         Universität noch nicht dabei?{" "}
         <Link
           href="/scholar-access"
-          className="text-white/65 underline-offset-2 transition-colors hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded"
+          className="rounded text-white/65 underline-offset-2 transition-colors hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
         >
           Zugang für deine Institution anfragen
         </Link>
         . Mit der Anmeldung stimmst du unseren{" "}
         <Link
           href="/legal/terms"
-          className="text-white/65 underline-offset-2 transition-colors hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded"
+          className="rounded text-white/65 underline-offset-2 transition-colors hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
         >
           Nutzungsbedingungen
         </Link>{" "}
         und{" "}
         <Link
           href="/legal/privacy"
-          className="text-white/65 underline-offset-2 transition-colors hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded"
+          className="rounded text-white/65 underline-offset-2 transition-colors hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
         >
           Datenschutzhinweisen
         </Link>{" "}
@@ -300,91 +290,89 @@ function MetaItem({ lines }: { lines: string[] }) {
 
 export default function ScholarLoginPage() {
   return (
-    <div className="relative min-h-screen w-full overflow-x-hidden bg-black text-white antialiased">
-      {/* ── Cinematic hero (decorative) ─────────────────────────────────── */}
-      <Image
-        src={HERO_SRC}
-        alt=""
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover object-[center_42%] grayscale"
-      />
-      {/* Contrast scrims — bottom + left fade to near-black so all copy is
-          legible over the photo (WCAG 1.4.3). */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/20"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/25 to-transparent"
-      />
+    <div className="bg-black text-white antialiased">
+      {/* Shared landing-page navigation — liquid-glass bar, white logo. */}
+      <Navigation theme="dark" />
 
-      {/* ── Top bar ─────────────────────────────────────────────────────── */}
-      <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-6 py-6 sm:px-10 lg:px-16">
-        <Link
-          href="https://www.caelex.eu"
-          aria-label="Caelex Startseite"
-          className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-        >
-          <CaelexWordmark height={26} />
-        </Link>
-        <Link
-          href="/scholar-access"
-          className="group inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.04] px-4 py-2 text-[12px] font-medium text-white/80 backdrop-blur-sm transition-colors hover:bg-white/[0.1] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-        >
-          Für Universitäten
-          <span
-            aria-hidden="true"
-            className="transition-transform group-hover:translate-x-0.5"
+      {/* ── Section 1: cinematic hero (full viewport) ───────────────────── */}
+      <section className="relative h-screen w-full overflow-hidden">
+        <Image
+          src={HERO_SRC}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[center_42%] grayscale"
+        />
+        {/* Contrast scrims: darken top (nav) + bottom (wordmark/labels). */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-transparent"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-transparent"
+        />
+
+        {/* Giant wordmark — bottom-left, tight-set (Palantir "AIP" style). */}
+        <h1 className="absolute bottom-7 left-0 z-10 px-5 font-semibold leading-[0.78] tracking-[-0.05em] text-white text-[clamp(76px,17vw,300px)] sm:bottom-9 sm:px-10 lg:px-14">
+          <span className="sr-only">Caelex </span>SCHOLAR
+        </h1>
+
+        {/* Meta-label column — bottom-right, with a scroll-to-sign-in cue. */}
+        <div className="absolute bottom-9 right-5 z-10 hidden flex-col items-start gap-4 md:flex lg:right-14">
+          <a
+            href="#login"
+            className="group flex items-center gap-2 rounded text-[11px] font-medium uppercase tracking-[0.1em] text-white/75 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
           >
-            →
-          </span>
-        </Link>
-      </header>
-
-      {/* ── Main: wordmark + tagline + login, anchored lower-left ────────── */}
-      <main className="relative z-10 flex min-h-screen flex-col justify-end px-6 pb-14 pt-28 sm:px-10 lg:px-16">
-        <div className="w-full max-w-6xl">
-          <h1 className="font-semibold leading-[0.85] tracking-[-0.045em] text-white text-[clamp(60px,12vw,168px)]">
-            <span className="sr-only">Caelex </span>SCHOLAR
-          </h1>
-          <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-white/70 sm:text-[17px]">
-            Die durchsuchbare Weltraumrecht-Datenbank für Universitäten und
-            Forschung. Laufend gepflegt, immer auf dem aktuellen Stand.
-          </p>
-
-          <div className="mt-8 w-full max-w-sm">
-            <div className="rounded-2xl border border-white/10 bg-black/45 p-6 shadow-2xl backdrop-blur-xl sm:p-7">
-              <h2 className="text-[16px] font-semibold tracking-[-0.01em] text-white">
-                Anmelden
-              </h2>
-              <p className="mb-5 mt-1 text-[12px] text-white/50">
-                Weiter zu deinem Arbeitsbereich.
-              </p>
-              <Suspense
-                fallback={
-                  <div
-                    aria-hidden="true"
-                    className="h-[340px] animate-pulse rounded-lg bg-white/[0.03]"
-                  />
-                }
-              >
-                <LoginForm />
-              </Suspense>
-            </div>
-          </div>
+            Zum Anmelden
+            <ChevronDown
+              size={14}
+              className="motion-safe:animate-bounce"
+              aria-hidden="true"
+            />
+          </a>
+          <MetaItem lines={["Durchsuchbare", "Rechtsdatenbank"]} />
+          <MetaItem lines={["Für Universitäten", "& Forschung"]} />
+          <MetaItem lines={["Powered by Atlas"]} />
+          <MetaItem lines={["© 2026 Caelex", "Technologies"]} />
         </div>
-      </main>
+      </section>
 
-      {/* ── Bottom-right meta labels (Palantir-style) ───────────────────── */}
-      <div className="pointer-events-none absolute bottom-14 right-6 z-10 hidden flex-col items-start gap-4 md:flex lg:right-16">
-        <MetaItem lines={["Durchsuchbare", "Rechtsdatenbank"]} />
-        <MetaItem lines={["Für Universitäten", "& Forschung"]} />
-        <MetaItem lines={["Powered by Atlas"]} />
-        <MetaItem lines={["© 2026 Caelex", "Technologies"]} />
-      </div>
+      {/* ── Section 2: sign-in (revealed on scroll) ─────────────────────── */}
+      <section
+        id="login"
+        className="relative flex min-h-screen w-full flex-col items-center justify-center bg-[#0A0F1E] px-6 py-28"
+      >
+        <div className="w-full max-w-sm">
+          <div className="mb-7 text-center">
+            <h2 className="text-[24px] font-semibold tracking-[-0.02em] text-white">
+              Bei Scholar anmelden
+            </h2>
+            <p className="mx-auto mt-2 max-w-xs text-[14px] leading-relaxed text-white/55">
+              Die durchsuchbare Weltraumrecht-Datenbank für Universitäten und
+              Forschung.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl backdrop-blur-xl sm:p-7">
+            <Suspense
+              fallback={
+                <div
+                  aria-hidden="true"
+                  className="h-[340px] animate-pulse rounded-lg bg-white/[0.03]"
+                />
+              }
+            >
+              <LoginForm />
+            </Suspense>
+          </div>
+
+          <p className="mt-6 text-center text-[11px] tracking-[0.04em] text-white/35">
+            Caelex Scholar · Powered by Atlas
+          </p>
+        </div>
+      </section>
     </div>
   );
 }
