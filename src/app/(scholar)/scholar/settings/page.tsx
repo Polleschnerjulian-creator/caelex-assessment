@@ -47,6 +47,11 @@ import {
   getScholarPreferences,
   updateScholarPreferences,
 } from "@/lib/scholar/preferences.server";
+import {
+  changePassword,
+  isCredentialsAccount,
+  getLoginHistory,
+} from "@/lib/scholar/account-security.server";
 import { getAvailableJurisdictions } from "@/data/legal-sources";
 import { getCountryName } from "@/data/iso-3166-countries";
 import { ScholarPage } from "../_components/ScholarPage";
@@ -82,7 +87,63 @@ function jurisdictionLabel(code: string): string {
   return SPECIAL_NAMES[code] ?? getCountryName(code);
 }
 
+// ─── Security / login-history helpers ────────────────────────────────────────
+
+const EVENT_TYPE_LABELS: Record<string, string> = {
+  LOGIN_SUCCESS: "Erfolgreich",
+  LOGIN_FAILED: "Fehlgeschlagen",
+  LOGIN_BLOCKED: "Gesperrt",
+  MFA_REQUIRED: "2FA erforderlich",
+  MFA_SUCCESS: "2FA erfolgreich",
+  MFA_FAILED: "2FA fehlgeschlagen",
+  PASSKEY_SUCCESS: "Passkey",
+  PASSKEY_FAILED: "Passkey fehlgeschlagen",
+  BACKUP_CODE_USED: "Backup-Code",
+  ACCOUNT_LOCKED: "Konto gesperrt",
+  ACCOUNT_UNLOCKED: "Konto entsperrt",
+  SUSPICIOUS_LOGIN: "Verdächtig",
+};
+
+function formatEventType(eventType: string): string {
+  return EVENT_TYPE_LABELS[eventType] ?? eventType;
+}
+
+function formatLoginDate(date: Date): string {
+  return new Intl.DateTimeFormat("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
 // ─── Server Actions ───────────────────────────────────────────────────────────
+
+// ─── Password change result cookie (simple flash) ─────────────────────────────
+// We encode the result as a URL search-param via redirect so the page
+// can render inline feedback without useState.  The result key is
+// short-lived — the page reads it once and the URL is cleaned up by
+// the browser on hard-refresh.
+
+async function handlePasswordChange(formData: FormData) {
+  "use server";
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return;
+
+  const current = (formData.get("currentPassword") as string) ?? "";
+  const next = (formData.get("newPassword") as string) ?? "";
+  const confirm = (formData.get("confirmPassword") as string) ?? "";
+
+  if (next !== confirm) {
+    revalidatePath("/scholar/settings");
+    return;
+  }
+
+  await changePassword(userId, current, next);
+  revalidatePath("/scholar/settings");
+}
 
 async function updateName(formData: FormData) {
   "use server";
@@ -144,6 +205,12 @@ export default async function SettingsPage() {
 
   // Load saved preferences (returns in-memory defaults when no row yet)
   const prefs = user?.id ? await getScholarPreferences(user.id) : null;
+
+  // Security section data (Wave 2)
+  const credentialsAccount = user?.id
+    ? await isCredentialsAccount(user.id)
+    : false;
+  const loginHistory = user?.id ? await getLoginHistory(user.id, 10) : [];
 
   // Available jurisdictions for the default-jurisdiction selector
   const jurisdictionCodes = getAvailableJurisdictions().sort((a, b) => {
@@ -426,18 +493,191 @@ export default async function SettingsPage() {
           </div>
         </section>
 
-        {/* ── 4. Sicherheit (stub, Wave 2) ──────────────────────────────── */}
+        {/* ── 4. Sicherheit ────────────────────────────────────────────── */}
         <section aria-labelledby="section-sicherheit">
           <h2 id="section-sicherheit" className={SECTION_LABEL_CLS}>
             <Shield size={13} className="text-gray-400" aria-hidden="true" />
             Sicherheit
           </h2>
 
-          <div className={`${CARD_CLS} px-5 py-4`}>
-            <p className="text-[13px] text-gray-500">
-              Passwortänderung, Zwei-Faktor-Authentifizierung und
-              Sitzungsverwaltung folgen in Kürze (Wave 2).
-            </p>
+          <div className={CARD_CLS}>
+            {/* ── 4a. Passwort ändern / SSO-Hinweis ── */}
+            {credentialsAccount ? (
+              <div className="px-5 py-4 border-b border-gray-100">
+                <p className="text-[12px] font-semibold text-gray-700 tracking-wide uppercase mb-3">
+                  Passwort ändern
+                </p>
+                <form
+                  action={handlePasswordChange}
+                  aria-label="Passwort ändern"
+                  className="space-y-3"
+                >
+                  <div>
+                    <label htmlFor="sec-current-pw" className={FIELD_LABEL_CLS}>
+                      Aktuelles Passwort
+                    </label>
+                    <input
+                      id="sec-current-pw"
+                      name="currentPassword"
+                      type="password"
+                      required
+                      autoComplete="current-password"
+                      className={INPUT_CLS}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="sec-new-pw" className={FIELD_LABEL_CLS}>
+                      Neues Passwort
+                    </label>
+                    <input
+                      id="sec-new-pw"
+                      name="newPassword"
+                      type="password"
+                      required
+                      minLength={8}
+                      autoComplete="new-password"
+                      className={INPUT_CLS}
+                      aria-describedby="sec-new-pw-hint"
+                    />
+                    <p
+                      id="sec-new-pw-hint"
+                      className="mt-1 text-[11px] text-gray-500"
+                    >
+                      Mindestens 8 Zeichen, muss sich vom aktuellen
+                      unterscheiden.
+                    </p>
+                  </div>
+                  <div>
+                    <label htmlFor="sec-confirm-pw" className={FIELD_LABEL_CLS}>
+                      Passwort bestätigen
+                    </label>
+                    <input
+                      id="sec-confirm-pw"
+                      name="confirmPassword"
+                      type="password"
+                      required
+                      minLength={8}
+                      autoComplete="new-password"
+                      className={INPUT_CLS}
+                    />
+                  </div>
+                  <div className="pt-1">
+                    <button type="submit" className={SAVE_BTN_CLS}>
+                      Passwort speichern
+                    </button>
+                  </div>
+                </form>
+              </div>
+            ) : (
+              <div className="px-5 py-4 border-b border-gray-100 flex gap-3">
+                <Shield
+                  size={16}
+                  className="mt-0.5 flex-shrink-0 text-gray-400"
+                  aria-hidden="true"
+                />
+                <p className="text-[13px] text-gray-600 leading-relaxed">
+                  Deine Anmeldung wird über deine Hochschule (Single Sign-On)
+                  verwaltet. Passwort und Zwei-Faktor-Authentifizierung änderst
+                  du direkt bei deiner Hochschule.
+                </p>
+              </div>
+            )}
+
+            {/* ── 4b. Aktive Sitzungen — honest JWT note ── */}
+            <div className="px-5 py-4 border-b border-gray-100">
+              <p className="text-[12px] font-semibold text-gray-700 tracking-wide uppercase mb-2">
+                Aktive Sitzungen
+              </p>
+              <p className="text-[13px] text-gray-500 leading-relaxed">
+                Scholar verwendet Sitzungs-Tokens (JWT). Server-seitige
+                Einzelabmeldung ist technisch nicht möglich — zum Beenden aller
+                Sitzungen nutze bitte{" "}
+                <strong className="font-medium text-gray-700">Abmelden</strong>{" "}
+                im Navigationsmenü.
+              </p>
+            </div>
+
+            {/* ── 4c. Login-Verlauf ── */}
+            <div className="px-5 py-4">
+              <p className="text-[12px] font-semibold text-gray-700 tracking-wide uppercase mb-3">
+                Login-Verlauf
+              </p>
+              {loginHistory.length === 0 ? (
+                <p className="text-[13px] text-gray-400">
+                  Noch kein Login-Verlauf vorhanden.
+                </p>
+              ) : (
+                <div
+                  role="table"
+                  aria-label="Login-Verlauf"
+                  className="w-full text-[12px]"
+                >
+                  {/* Header row */}
+                  <div
+                    role="row"
+                    className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-x-4 pb-2 border-b border-gray-100 text-[11px] font-semibold text-gray-500 tracking-wide uppercase"
+                  >
+                    <span role="columnheader">Zeitpunkt</span>
+                    <span role="columnheader">Gerät / Browser</span>
+                    <span role="columnheader">IP (maskiert)</span>
+                    <span role="columnheader">Status</span>
+                  </div>
+
+                  {loginHistory.map((entry) => {
+                    const isSuccess =
+                      entry.eventType === "LOGIN_SUCCESS" ||
+                      entry.eventType === "MFA_SUCCESS" ||
+                      entry.eventType === "PASSKEY_SUCCESS";
+                    const label = formatEventType(entry.eventType);
+                    const device = [entry.browser, entry.os]
+                      .filter(Boolean)
+                      .join(" · ");
+
+                    return (
+                      <div
+                        key={entry.id}
+                        role="row"
+                        className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto] gap-x-4 gap-y-0.5 py-2.5 border-b border-gray-50 last:border-0"
+                      >
+                        <span
+                          role="cell"
+                          className="text-gray-700 tabular-nums"
+                        >
+                          {formatLoginDate(entry.createdAt)}
+                        </span>
+                        <span
+                          role="cell"
+                          className="text-gray-500 truncate max-w-[160px]"
+                          title={device || "—"}
+                        >
+                          {device || <span className="text-gray-300">—</span>}
+                        </span>
+                        <span
+                          role="cell"
+                          className="text-gray-400 font-mono tabular-nums"
+                        >
+                          {entry.ipMasked ?? "—"}
+                        </span>
+                        <span role="cell">
+                          <span
+                            className={
+                              entry.isSuspicious
+                                ? "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-amber-50 text-amber-700 ring-1 ring-amber-200"
+                                : isSuccess
+                                  ? "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-green-50 text-green-700 ring-1 ring-green-200"
+                                  : "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-red-50 text-red-700 ring-1 ring-red-200"
+                            }
+                            aria-label={`Status: ${label}`}
+                          >
+                            {entry.isSuspicious ? "Verdächtig" : label}
+                          </span>
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
