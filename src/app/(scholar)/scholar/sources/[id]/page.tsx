@@ -12,8 +12,15 @@
  *   (provisions + right-rail InDocTOC) → Schlüsselbestimmungen (ProvisionCard
  *   list) → footer (last-verified + disclaimer).
  *
- * Per-type bands (treaty parties / directive transposition / …) and the
- * cross-reference block are deliberately OUT of scope here — a later phase.
+ * Per-type identity bands (concept §3a–§3d) sit between the header card and
+ * "Schlüsselbestimmungen", each rendered ONLY when its data exists (graceful —
+ * never an empty band): treaty "Vertragsparteien" + "Nur unterzeichnet";
+ * EU-regulation "Unmittelbar geltend" note; EU-directive transposition note +
+ * "Gilt für Mitgliedstaaten". Preamble/recital provisions collapse into a
+ * <details> below the substantive articles. National laws add nothing beyond
+ * the shell (authorities already render in the MetadataStrip).
+ *
+ * The cross-reference link block is still deliberately OUT of scope — Phase 3.
  *
  * STRICTLY MONOCHROME: black / white / gray-* only — zero other hues anywhere.
  * Every reading size comes from the shared SCHOLAR_TYPE tokens — no text-[Npx].
@@ -37,6 +44,11 @@ import { ExternalLink } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { getScholarSourceDetail } from "@/lib/scholar/source-detail.server";
 import { getScholarPreferences } from "@/lib/scholar/preferences.server";
+// Server component → may read @/data directly (the client-only "API-only" rule
+// does not apply here). getCountryName resolves ISO-alpha-2 → readable name and
+// returns the code unchanged for anything it doesn't know, so a band never
+// shows a blank entry.
+import { getCountryName } from "@/data/iso-3166-countries";
 
 import { ScholarPage } from "../../_components/ScholarPage";
 import { SCHOLAR_TYPE } from "../../_components/scholar-type";
@@ -95,6 +107,41 @@ function formatDate(iso?: string): string | null {
   });
 }
 
+// ─── Recital / preamble detection (concept §3b/§3c, recital collapse) ────
+// A provision is preamble-grade when EITHER its section or its title reads as a
+// preamble / recital / Erwägungsgrund. These get collapsed by default so the
+// substantive articles stay open; if nothing matches, the collapse is skipped
+// entirely (graceful — never an empty <details>).
+const PREAMBLE_RE = /präambel|preamble|recital|erwägung/i;
+function isPreambleProvision(section?: string, title?: string): boolean {
+  return PREAMBLE_RE.test(section ?? "") || PREAMBLE_RE.test(title ?? "");
+}
+
+// ─── Country-list band — labelled block of jurisdictions (concept §3a/§3c) ──
+// Shared by the treaty "Vertragsparteien" / "Nur unterzeichnet" lists and the
+// directive "Gilt für Mitgliedstaaten" list. Monochrome labelled block: an
+// Eyebrow label over an inline wrap of country chips. Each chip resolves to a
+// readable country name (code fallback). Renders nothing when the list is empty
+// so a band never appears without data. Presentational — no hooks, no client.
+function CountryListBand({ label, codes }: { label: string; codes: string[] }) {
+  if (codes.length === 0) return null;
+  return (
+    <div className="space-y-2">
+      <Eyebrow>{label}</Eyebrow>
+      <ul className="flex flex-wrap gap-1.5" role="list">
+        {codes.map((code) => (
+          <li
+            key={code}
+            className="rounded border border-gray-200 bg-gray-100 px-2 py-0.5 text-small text-gray-700"
+          >
+            {getCountryName(code)}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export default async function ScholarSourceDetailPage({ params }: PageProps) {
   const { id } = await params;
 
@@ -142,6 +189,31 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
     const label = p.section || p.title;
     return { ...p, anchorId: slugifyProvision(label, i), tocLabel: label };
   });
+
+  // Recital collapse (concept §3b/§3c): split preamble/recital entries out from
+  // the substantive articles. Substantive provisions stay expanded; preamble
+  // entries are wrapped in a collapsed <details> below them. The TOC lists the
+  // substantive provisions only — preamble is secondary, kept out of the rail.
+  const substantiveProvisions = provisions.filter(
+    (p) => !isPreambleProvision(p.section, p.title),
+  );
+  const preambleProvisions = provisions.filter((p) =>
+    isPreambleProvision(p.section, p.title),
+  );
+
+  // ─── Per-type identity band data (concept §3a–§3d) ──────────────────
+  // Each is gated on real data so a band never renders empty.
+  const treatyParties = source.appliesToJurisdictions ?? [];
+  const treatySignatories = source.signedByJurisdictions ?? [];
+  const directiveMemberStates = source.appliesToJurisdictions ?? [];
+  // Does this source warrant ANY type band? (drives the wrapper so the spacing
+  // block is omitted entirely when there's nothing type-specific to show).
+  const hasTreatyBand =
+    source.type === "international_treaty" &&
+    (treatyParties.length > 0 || treatySignatories.length > 0);
+  const hasRegulationBand = source.appliesToType === "directly-applicable";
+  const hasDirectiveBand = source.appliesToType === "needs-transposition";
+  const hasTypeBand = hasTreatyBand || hasRegulationBand || hasDirectiveBand;
 
   const lastVerified = formatDate(source.lastVerified);
 
@@ -222,6 +294,74 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
           )}
         </header>
 
+        {/*
+          ─── Per-type identity band (concept §3a–§3d) ────────────────
+          Rendered only when the source's type carries type-specific data, so
+          each instrument "reads as itself". Bordered monochrome panel sitting
+          between the header and the provisions. Omitted entirely (no empty
+          shell) when nothing type-specific applies.
+        */}
+        {hasTypeBand && (
+          <section
+            aria-labelledby="type-band-heading"
+            className="rounded-2xl border border-gray-200/70 bg-white p-6 shadow-sm space-y-4"
+          >
+            {/* sr-only label keeps the section programmatically named without
+                adding a visible heading that would compete with the card h1. */}
+            <h2 id="type-band-heading" className="sr-only">
+              Einordnung nach Rechtsquellentyp
+            </h2>
+
+            {/* §3a — international treaty: parties + signatory-only sub-list. */}
+            {hasTreatyBand && (
+              <div className="space-y-4">
+                <CountryListBand
+                  label="Vertragsparteien"
+                  codes={treatyParties}
+                />
+                <CountryListBand
+                  label="Nur unterzeichnet"
+                  codes={treatySignatories}
+                />
+              </div>
+            )}
+
+            {/* §3b — EU regulation: directly-applicable affordance note. */}
+            {hasRegulationBand && (
+              <div className="space-y-1">
+                <Eyebrow>Rechtswirkung</Eyebrow>
+                <p className={SCHOLAR_TYPE.body}>
+                  <span className="font-semibold text-gray-900">
+                    Unmittelbar geltend.
+                  </span>{" "}
+                  Eine EU-Verordnung gilt in allen Mitgliedstaaten direkt — ohne
+                  Umsetzung in nationales Recht.
+                </p>
+              </div>
+            )}
+
+            {/* §3c — EU directive: transposition note + member-state list. */}
+            {hasDirectiveBand && (
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <Eyebrow>Rechtswirkung</Eyebrow>
+                  <p className={SCHOLAR_TYPE.body}>
+                    <span className="font-semibold text-gray-900">
+                      Umsetzung in nationales Recht erforderlich.
+                    </span>{" "}
+                    Eine EU-Richtlinie bindet die Mitgliedstaaten hinsichtlich
+                    des Ziels; die Form der Umsetzung bleibt ihnen überlassen.
+                  </p>
+                </div>
+                <CountryListBand
+                  label="Gilt für Mitgliedstaaten"
+                  codes={directiveMemberStates}
+                />
+              </div>
+            )}
+          </section>
+        )}
+
         {/* ─── Body: prose column + right rail (TOC) on lg ──────────── */}
         {provisions.length > 0 ? (
           <div className="lg:grid lg:grid-cols-[1fr_15rem] lg:gap-10">
@@ -245,7 +385,7 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
                 </summary>
                 <div className="mt-3">
                   <InDocTOC
-                    items={provisions.map((p) => ({
+                    items={substantiveProvisions.map((p) => ({
                       id: p.anchorId,
                       label: p.tocLabel,
                     }))}
@@ -254,7 +394,7 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
               </details>
 
               <ul className="space-y-8" role="list">
-                {provisions.map((p) => (
+                {substantiveProvisions.map((p) => (
                   <ProvisionCard
                     key={p.anchorId}
                     id={p.anchorId}
@@ -270,13 +410,45 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
                   />
                 ))}
               </ul>
+
+              {/*
+                Recital / preamble collapse (concept §3b/§3c): preamble entries
+                are wrapped in a <details> collapsed by default, so the
+                substantive articles above stay open while the long
+                Erwägungsgründe stay tucked away. Rendered only when such
+                entries exist (graceful — skipped silently otherwise).
+              */}
+              {preambleProvisions.length > 0 && (
+                <details className="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm">
+                  <summary className="cursor-pointer rounded text-small font-medium text-gray-700 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]">
+                    Präambel / Erwägungsgründe
+                  </summary>
+                  <ul className="mt-4 space-y-8" role="list">
+                    {preambleProvisions.map((p) => (
+                      <ProvisionCard
+                        key={p.anchorId}
+                        id={p.anchorId}
+                        section={p.section}
+                        title={p.title}
+                        summary={p.summary}
+                        complianceImplication={p.complianceImplication}
+                        paragraphText={p.paragraphText}
+                        paragraphTruncated={p.paragraphTextTruncated}
+                        paragraphUrl={p.paragraphUrl}
+                        sourceUrl={source.sourceUrl}
+                        citationBase={source.title}
+                      />
+                    ))}
+                  </ul>
+                </details>
+              )}
             </section>
 
             {/* Right rail — sticky in-document TOC (lg+ only). */}
             <aside className="hidden lg:order-2 lg:block">
               <div className="sticky top-20">
                 <InDocTOC
-                  items={provisions.map((p) => ({
+                  items={substantiveProvisions.map((p) => ({
                     id: p.anchorId,
                     label: p.tocLabel,
                   }))}

@@ -1,12 +1,89 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Fragment, type ReactNode } from "react";
 import Link from "next/link";
 import { Globe2, BookOpen, Scale, AlertCircle } from "lucide-react";
 import { ScholarPage } from "./_components/ScholarPage";
-import { SourceRow } from "./_components/SourceRow";
-import type { SourceRowData } from "./_components/SourceRow";
+import { Eyebrow } from "./_components/Eyebrow";
+import { RelevanceGlyph } from "./_components/RelevanceGlyph";
 import { SCHOLAR_TYPE } from "./_components/scholar-type";
+
+// ─── German source-type labels (Eyebrow kicker per row) ──────────────
+// Monochrome eyebrow text only — no colour. Falls back to the raw type
+// string for any code not mapped here.
+const TYPE_LABELS_DE: Record<string, string> = {
+  international_treaty: "Vertrag",
+  federal_law: "Gesetz",
+  federal_regulation: "Verordnung",
+  technical_standard: "Standard",
+  eu_regulation: "EU-Verordnung",
+  eu_directive: "EU-Richtlinie",
+  policy_document: "Leitlinie",
+  draft_legislation: "Entwurf",
+  certification_standard: "Zertifizierung",
+  industry_guideline: "Leitfaden",
+  insurance_clause: "Klausel",
+  scientific_protocol: "Protokoll",
+  soft_law_resolution: "Resolution",
+  national_security_doctrine: "Doktrin",
+  bilateral_agreement: "Bilateral",
+  multilateral_agreement: "Multilateral",
+  case_law: "Rechtsprechung",
+  procurement_framework: "Vergabe",
+  safety_regulation: "Sicherheit",
+  tax_treaty: "Steuer",
+};
+
+// ─── Safe matched-term highlighter ───────────────────────────────────
+// Splits plain text on the query tokens and wraps matches in a monochrome
+// emphasis span (weight + subtle gray bg — NEVER colour). Operates on the
+// raw string only (no HTML parsing / no dangerouslySetInnerHTML), so it
+// cannot break markup or inject anything.
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Build a single case-insensitive regex from the query's word tokens
+// (≥2 chars, deduped, longest-first so multi-word matches win over their
+// substrings). Returns null when there is nothing meaningful to match.
+function buildHighlightRegex(query: string): RegExp | null {
+  const tokens = Array.from(
+    new Set(
+      query
+        .trim()
+        .toLowerCase()
+        .split(/\s+/)
+        .filter((t) => t.length >= 2),
+    ),
+  ).sort((a, b) => b.length - a.length);
+  if (tokens.length === 0) return null;
+  return new RegExp(`(${tokens.map(escapeRegExp).join("|")})`, "gi");
+}
+
+function highlightMatches(text: string, regex: RegExp | null): ReactNode {
+  if (!regex || !text) return text;
+  // String.split with a capturing group keeps the delimiters; odd indices
+  // are the matched fragments.
+  const parts = text.split(regex);
+  if (parts.length === 1) return text;
+  // A <span> (not <mark>) is used deliberately: <mark>'s user-agent and
+  // forced-colors styling can introduce a non-gray hue (yellow / system
+  // Mark colour), which would violate the strict-monochrome mandate. Weight
+  // + a subtle gray background carry the emphasis with zero colour.
+  return parts.map((part, i) =>
+    i % 2 === 1 ? (
+      <span
+        key={i}
+        className="bg-gray-100 text-gray-900 font-semibold rounded px-0.5"
+      >
+        {part}
+      </span>
+    ) : (
+      <Fragment key={i}>{part}</Fragment>
+    ),
+  );
+}
 
 // ─── German greeting by hour ─────────────────────────────────────────
 
@@ -38,7 +115,10 @@ interface SearchHit {
   status: string;
   title: string;
   scopeDescription: string | null;
+  snippet: string | null;
   score: number;
+  keywordScore: number | null;
+  semanticScore: number | null;
   relevanceLevel: string | null;
   officialReference: string | null;
 }
@@ -53,12 +133,12 @@ interface SearchResult {
 // ─── Example chips for empty state ──────────────────────────────────
 
 const EXAMPLE_CHIPS = [
-  "Outer Space Treaty",
-  "NIS2 Directive",
+  "Weltraumvertrag",
+  "NIS2-Richtlinie",
   "EU Space Act",
-  "Debris mitigation",
-  "Launch authorisation",
-  "ITAR regulations",
+  "Vermeidung von Weltraummüll",
+  "Startgenehmigung",
+  "ITAR-Vorschriften",
 ];
 
 // ─── Entry cards for empty state navigation ──────────────────────────
@@ -83,6 +163,70 @@ const ENTRY_CARDS = [
     description: "Urteile und Durchsetzungsmaßnahmen",
   },
 ];
+
+// ─── Scannable search-result row ─────────────────────────────────────
+// Each hit is a link to /scholar/sources/[id]. Layout is built for fast
+// scanning: relevance glyph · type eyebrow · title (matched terms in
+// weight + subtle gray) · jurisdiction · identifier (mono) · 2-line
+// snippet. STRICTLY MONOCHROME — black / white / gray only.
+
+function SearchResultRow({
+  hit,
+  highlight,
+}: {
+  hit: SearchHit;
+  highlight: RegExp | null;
+}) {
+  const typeLabel = TYPE_LABELS_DE[hit.type] ?? hit.type;
+  const snippet = hit.snippet ?? hit.scopeDescription;
+
+  return (
+    <Link
+      href={"/scholar/sources/" + encodeURIComponent(hit.id)}
+      className="flex items-start gap-4 px-5 py-3.5 rounded-2xl bg-white border border-transparent hover:border-gray-200/70 hover:shadow-sm motion-safe:transition-all motion-safe:duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
+    >
+      {/* Relevance — monochrome bars + sr-only label (WCAG 1.4.1 / 1.4.11).
+          Rendered only when a relevance level exists. */}
+      {hit.relevanceLevel && (
+        <RelevanceGlyph level={hit.relevanceLevel} className="mt-1" />
+      )}
+
+      {/* Type eyebrow — shared monochrome token (text-micro, gray-500) */}
+      <Eyebrow className="w-20 flex-shrink-0 mt-1 truncate">
+        {typeLabel}
+      </Eyebrow>
+
+      {/* Title + identifier + snippet */}
+      <div className="flex-1 min-w-0">
+        {/* h3 keeps the doc-title → result hierarchy under the section h2 */}
+        <h3 className="text-body-lg font-medium text-gray-900 leading-snug line-clamp-2 group-hover:text-black motion-safe:transition-colors">
+          {highlightMatches(hit.title, highlight)}
+        </h3>
+
+        {/* Identifier (mono) — only when present */}
+        {hit.officialReference && (
+          <span className={`${SCHOLAR_TYPE.mono} truncate block mt-0.5`}>
+            {hit.officialReference}
+          </span>
+        )}
+
+        {/* Snippet — 2-line clamp, matched terms emphasised */}
+        {snippet && (
+          <p
+            className={`${SCHOLAR_TYPE.meta} leading-normal line-clamp-2 mt-1`}
+          >
+            {highlightMatches(snippet, highlight)}
+          </p>
+        )}
+      </div>
+
+      {/* Jurisdiction — meta token, bold for the short code */}
+      <span className={`${SCHOLAR_TYPE.meta} font-bold flex-shrink-0 mt-1`}>
+        {hit.jurisdiction}
+      </span>
+    </Link>
+  );
+}
 
 // ─── Page ─────────────────────────────────────────────────────────────
 
@@ -176,6 +320,10 @@ export default function ScholarSearchPage() {
       ? result.hits
       : result.hits.slice(0, 10)
     : [];
+
+  // Matched-term highlighter, built from the query the results belong to
+  // (not the live input) so emphasis stays in sync with displayed hits.
+  const highlightRegex = result ? buildHighlightRegex(result.query) : null;
 
   // Whether to show the empty-state below the search box
   const isIdle = !query && !loading && !error && !hasResults && !isNoResults;
@@ -332,12 +480,15 @@ export default function ScholarSearchPage() {
         {/* Result count row — gray-600 on #F7F8FA ≈ 6.0:1 ✓ */}
         {hasResults && !loading && (
           <div className="flex items-center gap-3 mt-1 mb-8" aria-hidden="true">
-            <span className="text-[11px] text-gray-600">
+            <span className={SCHOLAR_TYPE.meta}>
               {result!.hitCount}{" "}
               {result!.hitCount === 1 ? "Ergebnis" : "Ergebnisse"}
             </span>
-            {!result!.semanticAvailable && (
-              <span className="text-[10px] text-gray-600">Stichwortsuche</span>
+            {/* Search-mode signal — quiet monochrome note (spec §2e) */}
+            {result!.semanticAvailable ? (
+              <span className={SCHOLAR_TYPE.meta}>Semantische Suche aktiv</span>
+            ) : (
+              <span className={SCHOLAR_TYPE.meta}>Stichwortsuche</span>
             )}
           </div>
         )}
@@ -424,31 +575,18 @@ export default function ScholarSearchPage() {
               />
               {/*
                 WCAG 1.3.1: h2 provides heading structure for results section.
-                WCAG 1.4.3: gray-600 (#4B5563) on #F7F8FA ≈ 6.0:1 ✓
+                Section label uses the shared monochrome eyebrow token
+                (text-micro, gray-500) — no ad-hoc px size.
               */}
-              <h2 className="text-[12px] font-semibold text-gray-500 tracking-[-0.01em]">
-                Rechtsquellen
-              </h2>
+              <h2 className={SCHOLAR_TYPE.eyebrow}>Rechtsquellen</h2>
             </div>
             {/* WCAG 1.3.1: list semantics for result items */}
             <ul className="space-y-1" role="list">
-              {displayedHits.map((hit) => {
-                const rowData: SourceRowData = {
-                  id: hit.id,
-                  jurisdiction: hit.jurisdiction,
-                  type: hit.type,
-                  status: hit.status,
-                  title: hit.title,
-                  officialReference: hit.officialReference,
-                  relevanceLevel: hit.relevanceLevel,
-                  scopeDescription: hit.scopeDescription,
-                };
-                return (
-                  <li key={hit.id}>
-                    <SourceRow source={rowData} />
-                  </li>
-                );
-              })}
+              {displayedHits.map((hit) => (
+                <li key={hit.id}>
+                  <SearchResultRow hit={hit} highlight={highlightRegex} />
+                </li>
+              ))}
 
               {/* Show-all / less toggle
                   WCAG 2.5.8: py-3 → at least 44px height with the text ✓

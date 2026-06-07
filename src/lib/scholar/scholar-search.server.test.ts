@@ -60,11 +60,47 @@ describe("scholarSearchSources", () => {
           status: "in_force",
           title: "Satellite Data Security Act",
           scopeDescription: "EO operators only",
+          snippet: "EO operators only",
           score: 0.8,
+          keywordScore: 0.6,
+          semanticScore: 0.9,
           relevanceLevel: "high",
           officialReference: "BGBl. I 2007 S. 2278",
         },
       ],
+    });
+  });
+
+  it("falls back to null snippet + null sub-scores when the engine omits them", async () => {
+    mockExec.mockResolvedValue({
+      isError: false,
+      content: JSON.stringify({
+        query: "satellite",
+        filters: {},
+        hit_count: 1,
+        semantic_available: false,
+        hint: "",
+        hits: [
+          {
+            id: "DE-SATDSIG-2007",
+            jurisdiction: "DE",
+            type: "federal_law",
+            status: "in_force",
+            title: "Satellite Data Security Act",
+            score: 0.4,
+            // scope_description, keyword_score, semantic_score all omitted
+          },
+        ],
+      }),
+    });
+    const out = await scholarSearchSources({ query: "satellite" });
+    expect(out.semanticAvailable).toBe(false);
+    expect(out.hits[0]).toMatchObject({
+      scopeDescription: null,
+      snippet: null,
+      keywordScore: null,
+      semanticScore: null,
+      relevanceLevel: "high", // still enriched from the source record
     });
   });
 

@@ -9,7 +9,20 @@ export interface ScholarSearchHit {
   status: string;
   title: string;
   scopeDescription: string | null;
+  /**
+   * Short excerpt for the result row (≤220 chars). The korpus engine's only
+   * per-hit excerpt is the (capped) scope_description, so `snippet` aliases it
+   * — surfaced as its own field so the search UI reads as a scannable excerpt
+   * rather than reusing the detail-page "scope" semantics. `null` when the
+   * source has no scope description.
+   */
+  snippet: string | null;
+  /** Overall relevance 0–1 (keyword + semantic blend) used for ordering. */
   score: number;
+  /** Keyword-only sub-score 0–1, when the engine reports it. */
+  keywordScore: number | null;
+  /** Semantic-only sub-score 0–1, when the engine reports it. */
+  semanticScore: number | null;
   relevanceLevel: string | null;
   officialReference: string | null;
 }
@@ -36,6 +49,8 @@ interface RawSourceHit {
   title: string;
   scope_description?: string;
   score: number;
+  keyword_score?: number;
+  semantic_score?: number;
 }
 interface RawSearchPayload {
   query: string;
@@ -79,14 +94,18 @@ export async function scholarSearchSources(
     semanticAvailable: payload.semantic_available,
     hits: payload.hits.map((h) => {
       const source = getLegalSourceById(h.id);
+      const excerpt = h.scope_description ?? null;
       return {
         id: h.id,
         jurisdiction: h.jurisdiction,
         type: h.type,
         status: h.status,
         title: h.title,
-        scopeDescription: h.scope_description ?? null,
+        scopeDescription: excerpt,
+        snippet: excerpt,
         score: h.score,
+        keywordScore: h.keyword_score ?? null,
+        semanticScore: h.semantic_score ?? null,
         relevanceLevel: source?.relevance_level ?? null,
         officialReference: source?.official_reference ?? null,
       };
