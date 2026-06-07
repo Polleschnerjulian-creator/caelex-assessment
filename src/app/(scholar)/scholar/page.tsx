@@ -2,10 +2,11 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Globe2, BookOpen, Scale } from "lucide-react";
+import { Globe2, BookOpen, Scale, AlertCircle } from "lucide-react";
 import { ScholarPage } from "./_components/ScholarPage";
 import { SourceRow } from "./_components/SourceRow";
 import type { SourceRowData } from "./_components/SourceRow";
+import { SCHOLAR_TYPE } from "./_components/scholar-type";
 
 // ─── German greeting by hour ─────────────────────────────────────────
 
@@ -311,10 +312,20 @@ export default function ScholarSearchPage() {
           </div>
         )}
 
-        {/* Error — WCAG 1.4.3: red-700 on white ≈ 5.3:1 ✓ */}
+        {/* Error — monochrome. WCAG 1.4.3: gray-900 message ≈ 15:1, gray-500 glyph ≈ 4.6:1 ✓ */}
         {error && !loading && (
-          <div className="mt-1 mb-8" role="alert">
-            <span className="text-[11px] text-red-700">{error}</span>
+          <div
+            className="mt-1 mb-8 flex items-center gap-2 border border-gray-200 bg-gray-50 rounded-lg px-3 py-2"
+            role="alert"
+          >
+            <AlertCircle
+              size={14}
+              className="text-gray-500 flex-shrink-0"
+              aria-hidden
+            />
+            <span className={`${SCHOLAR_TYPE.meta} text-gray-900`}>
+              {error}
+            </span>
           </div>
         )}
 

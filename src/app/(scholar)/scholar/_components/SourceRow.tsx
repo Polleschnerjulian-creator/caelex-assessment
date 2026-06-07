@@ -4,13 +4,20 @@
  * Presentational only: no hooks, no data imports.
  * Works in both server components and the client search page.
  *
+ * STRICTLY MONOCHROME: black / white / gray-* only — zero other hues.
+ * Type sizes come from the shared semantic tokens (SCHOLAR_TYPE / Eyebrow),
+ * never ad-hoc text-[Npx]. Relevance is the monochrome RelevanceGlyph.
+ *
  * WCAG 2.5.8: py-3.5 gives ≥44px height ✓
  * WCAG 2.4.7: focus-visible ring on the Link ✓
- * WCAG 1.4.3: gray-800 on white = 8.6:1 ✓; gray-600 on white ≈ 5.7:1 ✓
- * WCAG 1.4.11: relevance dot is paired with sr-only text ✓
+ * WCAG 1.4.3: gray-900 on white ≈ 15:1 ✓; gray-600 on white ≈ 5.7:1 ✓
+ * WCAG 1.4.11: relevance is RelevanceGlyph (gray bars + sr-only text) ✓
  */
 
 import Link from "next/link";
+import { SCHOLAR_TYPE } from "./scholar-type";
+import { Eyebrow } from "./Eyebrow";
+import { RelevanceGlyph } from "./RelevanceGlyph";
 
 // ─── Type-label lookup (all pages share this) ────────────────────────
 const TYPE_LABELS: Record<string, string> = {
@@ -36,15 +43,7 @@ const TYPE_LABELS: Record<string, string> = {
   tax_treaty: "Tax",
 };
 
-// ─── Relevance dot ───────────────────────────────────────────────────
-// WCAG 1.4.11: bg-gray-500 on white = 4.6:1 ✓
-const RELEVANCE_DOT: Record<string, { bg: string; label: string }> = {
-  fundamental: { bg: "bg-gray-900", label: "Fundamental" },
-  critical: { bg: "bg-red-600", label: "Kritisch" },
-  high: { bg: "bg-amber-600", label: "Hoch" },
-  medium: { bg: "bg-gray-500", label: "Mittel" },
-  low: { bg: "bg-gray-400", label: "Niedrig" },
-};
+// Relevance is rendered by <RelevanceGlyph> (monochrome bars + sr-only text).
 
 export interface SourceRowData {
   id: string;
@@ -62,46 +61,38 @@ interface SourceRowProps {
 }
 
 export function SourceRow({ source }: SourceRowProps) {
-  const dotInfo = source.relevanceLevel
-    ? (RELEVANCE_DOT[source.relevanceLevel] ?? RELEVANCE_DOT.low)
-    : RELEVANCE_DOT.low;
-
   return (
     <Link
       href={"/scholar/sources/" + encodeURIComponent(source.id)}
       className="flex items-center gap-4 px-5 py-3.5 rounded-2xl bg-white border border-transparent hover:border-gray-200/70 hover:shadow-sm motion-safe:transition-all motion-safe:duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
     >
-      {/* Relevance dot — WCAG 1.4.11: paired with sr-only text */}
-      <span
-        className={`h-2 w-2 rounded-full flex-shrink-0 ${dotInfo.bg}`}
-        aria-hidden={true}
-      />
-      <span className="sr-only">Relevanz: {dotInfo.label}</span>
+      {/* Relevance — monochrome bars + sr-only label (WCAG 1.4.1 / 1.4.11) */}
+      <RelevanceGlyph level={source.relevanceLevel ?? "low"} />
 
-      {/* Type label — WCAG 1.4.3: gray-600 on white ≈ 5.7:1 ✓ */}
-      <span className="text-[9px] font-bold uppercase tracking-[0.04em] text-gray-500 w-12 flex-shrink-0">
+      {/* Type label — shared monochrome eyebrow token (text-micro, gray-500) */}
+      <Eyebrow className="w-12 flex-shrink-0">
         {TYPE_LABELS[source.type] ?? source.type}
-      </span>
+      </Eyebrow>
 
       {/* Title + official reference / scope */}
       <div className="flex-1 min-w-0">
-        <span className="text-[14px] font-medium text-gray-800 truncate block group-hover:text-black motion-safe:transition-colors">
+        <span className="text-body-lg font-medium text-gray-900 truncate block group-hover:text-black motion-safe:transition-colors">
           {source.title}
         </span>
         {source.officialReference && (
-          <span className="text-[10px] text-gray-600 truncate block">
+          <span className={`${SCHOLAR_TYPE.meta} truncate block`}>
             {source.officialReference}
           </span>
         )}
         {!source.officialReference && source.scopeDescription && (
-          <span className="text-[10px] text-gray-600 truncate block">
+          <span className={`${SCHOLAR_TYPE.meta} truncate block`}>
             {source.scopeDescription}
           </span>
         )}
       </div>
 
-      {/* Jurisdiction */}
-      <span className="text-[11px] font-bold text-gray-600 flex-shrink-0">
+      {/* Jurisdiction — meta token, kept bold for the short code */}
+      <span className={`${SCHOLAR_TYPE.meta} font-bold flex-shrink-0`}>
         {source.jurisdiction}
       </span>
     </Link>
