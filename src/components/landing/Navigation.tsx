@@ -12,6 +12,8 @@ interface NavigationProps {
   theme?: "light" | "dark";
   /** Full-bleed header bar (edge-to-edge) instead of the centered floating bar. */
   fullWidth?: boolean;
+  /** Transparent bar + outlined (ghost) buttons for floating over a dark hero. */
+  ghost?: boolean;
 }
 
 // ─── Navigation Structure (Palantir-style multi-section) ────────────────────
@@ -214,6 +216,7 @@ const SEARCH_PAGES = [
 export default function Navigation({
   theme = "dark",
   fullWidth = false,
+  ghost = false,
 }: NavigationProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -407,22 +410,24 @@ export default function Navigation({
             {/* Glass Bar */}
             <div
               className={`flex items-center justify-between w-full ${fullWidth ? "rounded-none px-6 md:px-10" : "rounded-xl px-5"} py-2.5 transition-all duration-700 ${
-                isLight
-                  ? scrolled
-                    ? // Palantir-style near-invisible glass: the bar itself
-                      // almost disappears, so the logo + buttons read as
-                      // floating over the content instead of living inside
-                      // a framed container. No visible border, no shadow,
-                      // minimal blur, very low opacity — just enough to
-                      // tint the pixels behind the floating elements.
-                      //   bg-white/20 (~80% bleed-through, nearly see-through)
-                      //   backdrop-blur-sm = 4px (softens but doesn't smear)
-                      //   no border, no shadow, no inset highlight
-                      "bg-white/20 backdrop-blur-sm backdrop-saturate-150"
-                    : "bg-transparent"
-                  : scrolled
-                    ? "bg-white/[0.08] backdrop-blur-2xl backdrop-saturate-150 border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]"
-                    : "bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]"
+                ghost
+                  ? "bg-transparent"
+                  : isLight
+                    ? scrolled
+                      ? // Palantir-style near-invisible glass: the bar itself
+                        // almost disappears, so the logo + buttons read as
+                        // floating over the content instead of living inside
+                        // a framed container. No visible border, no shadow,
+                        // minimal blur, very low opacity — just enough to
+                        // tint the pixels behind the floating elements.
+                        //   bg-white/20 (~80% bleed-through, nearly see-through)
+                        //   backdrop-blur-sm = 4px (softens but doesn't smear)
+                        //   no border, no shadow, no inset highlight
+                        "bg-white/20 backdrop-blur-sm backdrop-saturate-150"
+                      : "bg-transparent"
+                    : scrolled
+                      ? "bg-white/[0.08] backdrop-blur-2xl backdrop-saturate-150 border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]"
+                      : "bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]"
               }`}
             >
               {/* Logo */}
@@ -442,29 +447,49 @@ export default function Navigation({
                 {/* Get Started CTA — white bg, subtle border, soft radius */}
                 <Link
                   href="/get-started"
-                  className="hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-lg bg-white text-[#111827] border border-[#E5E7EB] hover:bg-[#F9FAFB] transition-all duration-300"
+                  className={`hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-lg transition-all duration-300 ${
+                    ghost
+                      ? "border border-white/30 bg-transparent text-white backdrop-blur-sm hover:bg-white/10"
+                      : "bg-white text-[#111827] border border-[#E5E7EB] hover:bg-[#F9FAFB]"
+                  }`}
                 >
                   Get Started
                 </Link>
 
                 {/* Search + Hamburger — white bg, subtle border, soft radius */}
-                <div className="flex items-center rounded-lg bg-white border border-[#E5E7EB] overflow-hidden">
+                <div
+                  className={`flex items-center overflow-hidden rounded-lg ${
+                    ghost
+                      ? "border border-white/30 bg-transparent backdrop-blur-sm"
+                      : "bg-white border border-[#E5E7EB]"
+                  }`}
+                >
                   <button
                     ref={searchTriggerRef}
                     onClick={() => {
                       setSearchOpen(true);
                       setMenuOpen(false);
                     }}
-                    className="flex items-center justify-center w-10 h-10 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] transition-colors duration-200"
+                    className={`flex items-center justify-center w-10 h-10 transition-colors duration-200 ${
+                      ghost
+                        ? "text-white/80 hover:text-white hover:bg-white/10"
+                        : "text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6]"
+                    }`}
                     aria-label="Search"
                   >
                     <Search size={16} strokeWidth={2} aria-hidden="true" />
                   </button>
-                  <div className="w-px h-5 bg-[#E5E7EB]" />
+                  <div
+                    className={`w-px h-5 ${ghost ? "bg-white/25" : "bg-[#E5E7EB]"}`}
+                  />
                   <button
                     ref={menuTriggerRef}
                     onClick={() => setMenuOpen(!menuOpen)}
-                    className="flex items-center justify-center w-10 h-10 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] transition-colors duration-200"
+                    className={`flex items-center justify-center w-10 h-10 transition-colors duration-200 ${
+                      ghost
+                        ? "text-white/80 hover:text-white hover:bg-white/10"
+                        : "text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6]"
+                    }`}
                     aria-label={menuOpen ? "Close menu" : "Open menu"}
                     aria-expanded={menuOpen}
                     aria-controls="nav-menu"

@@ -289,8 +289,9 @@ function MetaItem({ lines }: { lines: string[] }) {
 export default function ScholarLoginPage() {
   return (
     <div className="bg-black text-white antialiased">
-      {/* Shared landing-page navigation — edge-to-edge liquid-glass bar. */}
-      <Navigation theme="dark" fullWidth />
+      {/* Shared landing-page navigation — edge-to-edge, transparent, ghost
+          buttons (floats over the hero like Palantir). */}
+      <Navigation theme="dark" fullWidth ghost />
 
       {/* ── Section 1: cinematic hero (full viewport) ───────────────────── */}
       <section className="relative h-screen w-full overflow-hidden">
