@@ -37,6 +37,9 @@
 import { useCallback, useState, useTransition } from "react";
 import { Bookmark, BookmarkCheck } from "lucide-react";
 import { toggleBookmarkAction } from "@/lib/scholar/saved-items-actions";
+import { t } from "../_i18n/core";
+import { SAVED } from "../_i18n/saved";
+import { useScholarLocale } from "../_i18n/LocaleProvider";
 
 export function BookmarkButton({
   itemType,
@@ -47,6 +50,7 @@ export function BookmarkButton({
   itemId: string;
   initialBookmarked: boolean;
 }) {
+  const locale = useScholarLocale();
   const [bookmarked, setBookmarked] = useState(initialBookmarked);
   const [isPending, startTransition] = useTransition();
 
@@ -76,7 +80,9 @@ export function BookmarkButton({
     });
   }, [bookmarked, itemType, itemId]);
 
-  const label = bookmarked ? "Gemerkt" : "Merken";
+  const label = bookmarked
+    ? t(locale, SAVED, "bookmarkSaved")
+    : t(locale, SAVED, "bookmarkSave");
 
   return (
     <button
@@ -107,8 +113,8 @@ export function BookmarkButton({
       {/* Polite live region so screen readers hear the state transition. */}
       <span className="sr-only" role="status" aria-live="polite">
         {bookmarked
-          ? "Zur Merkliste hinzugefügt"
-          : "Von der Merkliste entfernt"}
+          ? t(locale, SAVED, "bookmarkAddedAnnounce")
+          : t(locale, SAVED, "bookmarkRemovedAnnounce")}
       </span>
     </button>
   );

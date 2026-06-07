@@ -73,12 +73,21 @@ import {
   NameForm,
   PrefsForm,
   SourceLangForm,
+  InterfaceLangForm,
   PasswordForm,
   HistoryToggleForm,
   ClearHistoryForm,
 } from "../_components/SettingsForms";
 import { SettingsTabs } from "./_components/SettingsTabs";
 import type { TabDefinition } from "./_components/SettingsTabs";
+import {
+  t,
+  LOCALE_LABELS,
+  SCHOLAR_LOCALES,
+  type ScholarLocale,
+} from "../_i18n/core";
+import { SETTINGS } from "../_i18n/settings";
+import { getScholarLocale } from "../_i18n/locale.server";
 
 // ─── Shared panel styles ──────────────────────────────────────────────────────
 
@@ -104,27 +113,40 @@ function jurisdictionLabel(code: string): string {
 
 // ─── Security / login-history helpers ────────────────────────────────────────
 
-const EVENT_TYPE_LABELS: Record<string, string> = {
-  LOGIN_SUCCESS: "Erfolgreich",
-  LOGIN_FAILED: "Fehlgeschlagen",
-  LOGIN_BLOCKED: "Gesperrt",
-  MFA_REQUIRED: "2FA erforderlich",
-  MFA_SUCCESS: "2FA erfolgreich",
-  MFA_FAILED: "2FA fehlgeschlagen",
-  PASSKEY_SUCCESS: "Passkey",
-  PASSKEY_FAILED: "Passkey fehlgeschlagen",
-  BACKUP_CODE_USED: "Backup-Code",
-  ACCOUNT_LOCKED: "Konto gesperrt",
-  ACCOUNT_UNLOCKED: "Konto entsperrt",
-  SUSPICIOUS_LOGIN: "Verdächtig",
+// Login-event type → SETTINGS-namespace key. Anything unmapped falls back to the
+// raw event string (never blank).
+const EVENT_TYPE_KEYS: Record<string, keyof (typeof SETTINGS)["en"]> = {
+  LOGIN_SUCCESS: "eventLoginSuccess",
+  LOGIN_FAILED: "eventLoginFailed",
+  LOGIN_BLOCKED: "eventLoginBlocked",
+  MFA_REQUIRED: "eventMfaRequired",
+  MFA_SUCCESS: "eventMfaSuccess",
+  MFA_FAILED: "eventMfaFailed",
+  PASSKEY_SUCCESS: "eventPasskeySuccess",
+  PASSKEY_FAILED: "eventPasskeyFailed",
+  BACKUP_CODE_USED: "eventBackupCodeUsed",
+  ACCOUNT_LOCKED: "eventAccountLocked",
+  ACCOUNT_UNLOCKED: "eventAccountUnlocked",
+  SUSPICIOUS_LOGIN: "eventSuspiciousLogin",
 };
 
-function formatEventType(eventType: string): string {
-  return EVENT_TYPE_LABELS[eventType] ?? eventType;
+function formatEventType(eventType: string, locale: ScholarLocale): string {
+  const key = EVENT_TYPE_KEYS[eventType];
+  return key ? t(locale, SETTINGS, key) : eventType;
 }
 
-function formatLoginDate(date: Date): string {
-  return new Intl.DateTimeFormat("de-DE", {
+// Map the Scholar UI locale to a BCP-47 tag so dates render in the reader's
+// conventions (e.g. de-DE dd.mm.yyyy). Falls back to en-GB.
+const DATE_LOCALE: Record<ScholarLocale, string> = {
+  en: "en-GB",
+  de: "de-DE",
+  it: "it-IT",
+  fr: "fr-FR",
+  es: "es-ES",
+};
+
+function formatLoginDate(date: Date, locale: ScholarLocale): string {
+  return new Intl.DateTimeFormat(DATE_LOCALE[locale], {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -133,8 +155,8 @@ function formatLoginDate(date: Date): string {
   }).format(date);
 }
 
-function formatSearchDate(date: Date): string {
-  return new Intl.DateTimeFormat("de-DE", {
+function formatSearchDate(date: Date, locale: ScholarLocale): string {
+  return new Intl.DateTimeFormat(DATE_LOCALE[locale], {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -152,13 +174,15 @@ async function handleUpdateName(
   "use server";
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) return { ok: false, message: "Nicht angemeldet." };
+  if (!userId)
+    return { ok: false, message: t("en", SETTINGS, "msgNotSignedIn") };
+  const locale = await getScholarLocale(userId);
 
   const raw = formData.get("name");
   if (typeof raw !== "string")
-    return { ok: false, message: "Ungültige Eingabe." };
+    return { ok: false, message: t(locale, SETTINGS, "msgInvalidInput") };
   const name = raw.trim().slice(0, 100);
-  if (!name) return { ok: false, message: "Name darf nicht leer sein." };
+  if (!name) return { ok: false, message: t(locale, SETTINGS, "msgNameEmpty") };
 
   try {
     await prisma.user.update({ where: { id: userId }, data: { name } });
@@ -167,7 +191,7 @@ async function handleUpdateName(
   } catch {
     return {
       ok: false,
-      message: "Speichern fehlgeschlagen. Bitte erneut versuchen.",
+      message: t(locale, SETTINGS, "msgSaveFailed"),
     };
   }
 }
@@ -179,7 +203,9 @@ async function handleSavePrefs(
   "use server";
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) return { ok: false, message: "Nicht angemeldet." };
+  if (!userId)
+    return { ok: false, message: t("en", SETTINGS, "msgNotSignedIn") };
+  const locale = await getScholarLocale(userId);
 
   const defaultJurisdiction =
     (formData.get("defaultJurisdiction") as string | null) || null;
@@ -187,6 +213,10 @@ async function handleSavePrefs(
   const semanticSearch = formData.get("semanticSearch") === "on";
   const resultsPerPage = parseInt(formData.get("resultsPerPage") as string, 10);
   const sourceLanguage = formData.get("sourceLanguage") as string;
+  // UI chrome locale (Interface language). Distinct from sourceLanguage
+  // (the legal-TEXT display language). Only present when the interface-language
+  // form is submitted; other prefs forms omit it, so it stays untouched.
+  const uiLanguage = formData.get("uiLanguage") as string | null;
 
   const patch: Parameters<typeof updateScholarPreferences>[1] = {};
   if (defaultJurisdiction !== undefined)
@@ -195,13 +225,17 @@ async function handleSavePrefs(
   patch.semanticSearch = semanticSearch;
   if (!isNaN(resultsPerPage)) patch.resultsPerPage = resultsPerPage;
   if (sourceLanguage) patch.sourceLanguage = sourceLanguage;
+  if (uiLanguage) patch.uiLanguage = uiLanguage;
 
   try {
     await updateScholarPreferences(userId, patch);
     revalidatePath("/scholar/settings");
     return { ok: true };
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "Speichern fehlgeschlagen.";
+    const msg =
+      e instanceof Error
+        ? e.message
+        : t(locale, SETTINGS, "msgSaveFailedShort");
     return { ok: false, message: msg };
   }
 }
@@ -213,20 +247,22 @@ async function handlePasswordChange(
   "use server";
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) return { ok: false, message: "Nicht angemeldet." };
+  if (!userId)
+    return { ok: false, message: t("en", SETTINGS, "msgNotSignedIn") };
+  const locale = await getScholarLocale(userId);
 
   const current = (formData.get("currentPassword") as string) ?? "";
   const next = (formData.get("newPassword") as string) ?? "";
   const confirm = (formData.get("confirmPassword") as string) ?? "";
 
   if (next !== confirm) {
-    return { ok: false, message: "Die Passwörter stimmen nicht überein." };
+    return { ok: false, message: t(locale, SETTINGS, "passwordMismatch") };
   }
 
   const result = await changePassword(userId, current, next);
   if (result.success) {
     revalidatePath("/scholar/settings");
-    return { ok: true, message: "✓ Passwort geändert" };
+    return { ok: true, message: t(locale, SETTINGS, "passwordChanged") };
   }
   return { ok: false, message: result.message };
 }
@@ -238,7 +274,9 @@ async function handleToggleHistory(
   "use server";
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) return { ok: false, message: "Nicht angemeldet." };
+  if (!userId)
+    return { ok: false, message: t("en", SETTINGS, "msgNotSignedIn") };
+  const locale = await getScholarLocale(userId);
 
   const val = formData.get("searchHistoryEnabled");
   const searchHistoryEnabled = val === "on";
@@ -249,11 +287,11 @@ async function handleToggleHistory(
     return {
       ok: true,
       message: searchHistoryEnabled
-        ? "✓ Suchverlauf aktiviert"
-        : "✓ Suchverlauf deaktiviert",
+        ? t(locale, SETTINGS, "msgSearchHistoryEnabled")
+        : t(locale, SETTINGS, "msgSearchHistoryDisabled"),
     };
   } catch {
-    return { ok: false, message: "Speichern fehlgeschlagen." };
+    return { ok: false, message: t(locale, SETTINGS, "msgSaveFailedShort") };
   }
 }
 
@@ -264,16 +302,21 @@ async function handleClearHistory(
   "use server";
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) return { ok: false, message: "Nicht angemeldet." };
+  if (!userId)
+    return { ok: false, message: t("en", SETTINGS, "msgNotSignedIn") };
+  const locale = await getScholarLocale(userId);
 
   try {
     await clearSearchHistory(userId);
     revalidatePath("/scholar/settings");
-    return { ok: true, message: "✓ Suchverlauf gelöscht" };
+    return {
+      ok: true,
+      message: t(locale, SETTINGS, "msgSearchHistoryCleared"),
+    };
   } catch {
     return {
       ok: false,
-      message: "Löschen fehlgeschlagen. Bitte erneut versuchen.",
+      message: t(locale, SETTINGS, "msgDeleteFailed"),
     };
   }
 }
@@ -283,6 +326,10 @@ async function handleClearHistory(
 export default async function SettingsPage() {
   const session = await auth();
   const user = session?.user;
+
+  // Resolve the UI locale once, server-side, and thread it down. Client form
+  // components read the same locale from the LocaleProvider via useScholarLocale().
+  const locale = await getScholarLocale(user?.id);
 
   const superAdmin = isSuperAdmin(user?.email);
   let orgName: string | null = null;
@@ -303,7 +350,7 @@ export default async function SettingsPage() {
     if (b === "INT") return 1;
     if (a === "EU") return -1;
     if (b === "EU") return 1;
-    return jurisdictionLabel(a).localeCompare(jurisdictionLabel(b), "de");
+    return jurisdictionLabel(a).localeCompare(jurisdictionLabel(b), locale);
   });
 
   // Pre-compute serialisable {code,label}[] pairs.
@@ -313,11 +360,22 @@ export default async function SettingsPage() {
     label: jurisdictionLabel(code),
   }));
 
-  // Pre-fill deletion mailto body
+  // Interface-language selector options — native-language names from
+  // LOCALE_LABELS, in the canonical SCHOLAR_LOCALES order. Pre-computed as
+  // serialisable {value,label}[] for the client InterfaceLangForm.
+  const uiLanguageOptions = SCHOLAR_LOCALES.map((code) => ({
+    value: code,
+    label: LOCALE_LABELS[code],
+  }));
+
+  // Pre-fill deletion mailto body (localized to the active UI locale)
   const deletionMailto = `mailto:cs@caelex.eu?subject=${encodeURIComponent(
-    "Löschantrag – Caelex Scholar",
+    t(locale, SETTINGS, "deletionMailSubject"),
   )}&body=${encodeURIComponent(
-    `Sehr geehrtes Caelex-Team,\n\nhiermit beantrage ich die Löschung meines Caelex Scholar-Kontos.\n\nE-Mail-Adresse: ${user?.email ?? "(bitte eintragen)"}\n\nMit freundlichen Grüßen`,
+    t(locale, SETTINGS, "deletionMailBody").replace(
+      "{email}",
+      user?.email ?? t(locale, SETTINGS, "deletionMailFallback"),
+    ),
   )}`;
 
   // ── Build tab panels as server-rendered ReactNodes ──────────────────────────
@@ -328,12 +386,9 @@ export default async function SettingsPage() {
   const kontoPanel = (
     <section aria-labelledby="panel-heading-konto">
       <h2 id="panel-heading-konto" className={PANEL_HEADING_CLS}>
-        Konto
+        {t(locale, SETTINGS, "accountHeading")}
       </h2>
-      <p className={PANEL_DESC_CLS}>
-        Verwalte deinen Anzeigenamen und sieh deine Kontodaten ein. E-Mail- und
-        Institutsangaben werden von deiner Hochschule verwaltet.
-      </p>
+      <p className={PANEL_DESC_CLS}>{t(locale, SETTINGS, "accountDesc")}</p>
 
       <div className={`${CARD_CLS} mt-6`}>
         {/* Name (editable) */}
@@ -343,7 +398,7 @@ export default async function SettingsPage() {
         <dl className="divide-y divide-gray-100">
           <div className="flex items-baseline gap-4 px-5 py-4">
             <dt className="w-32 flex-shrink-0 text-[12px] text-gray-500">
-              E-Mail
+              {t(locale, SETTINGS, "fieldEmail")}
             </dt>
             <dd className="text-[13px] text-gray-900">
               {user?.email ?? <span className="text-gray-400">—</span>}
@@ -353,17 +408,17 @@ export default async function SettingsPage() {
           {superAdmin ? (
             <div className="flex items-baseline gap-4 px-5 py-4">
               <dt className="w-32 flex-shrink-0 text-[12px] text-gray-500">
-                Rolle
+                {t(locale, SETTINGS, "fieldRole")}
               </dt>
               <dd className="text-[13px] text-gray-900 font-medium">
-                Plattform-Administrator · Vollzugriff
+                {t(locale, SETTINGS, "roleSuperAdmin")}
               </dd>
             </div>
           ) : (
             <>
               <div className="flex items-baseline gap-4 px-5 py-4">
                 <dt className="w-32 flex-shrink-0 text-[12px] text-gray-500">
-                  Hochschule
+                  {t(locale, SETTINGS, "fieldUniversity")}
                 </dt>
                 <dd className="text-[13px] text-gray-900 font-medium">
                   {orgName ?? (
@@ -373,10 +428,10 @@ export default async function SettingsPage() {
               </div>
               <div className="flex items-baseline gap-4 px-5 py-4">
                 <dt className="w-32 flex-shrink-0 text-[12px] text-gray-500">
-                  Rolle
+                  {t(locale, SETTINGS, "fieldRole")}
                 </dt>
                 <dd className="text-[13px] text-gray-600">
-                  Lizenziert über deine Hochschule
+                  {t(locale, SETTINGS, "roleLicensed")}
                 </dd>
               </div>
             </>
@@ -390,20 +445,17 @@ export default async function SettingsPage() {
   const recherchePanel = (
     <section aria-labelledby="panel-heading-recherche">
       <h2 id="panel-heading-recherche" className={PANEL_HEADING_CLS}>
-        Recherche &amp; Sprache
+        {t(locale, SETTINGS, "researchHeading")}
       </h2>
-      <p className={PANEL_DESC_CLS}>
-        Passe die Voreinstellungen für deine Suchen an — Standard-Jurisdiktion,
-        Zitationsformat, semantische Suche und die bevorzugte Quellsprache.
-      </p>
+      <p className={PANEL_DESC_CLS}>{t(locale, SETTINGS, "researchDesc")}</p>
 
       {/* Research prefs */}
       <div className={`${CARD_CLS} mt-6 px-6 py-6`}>
-        <p className={SECTION_LABEL_CLS}>Suchverhalten</p>
+        <p className={SECTION_LABEL_CLS}>
+          {t(locale, SETTINGS, "searchBehaviourLabel")}
+        </p>
         <p className="text-[12px] text-gray-500 mb-4 leading-relaxed">
-          Diese Einstellungen gelten für alle Recherchen in der
-          Scholar-Bibliothek. Du kannst sie jederzeit pro Suchanfrage
-          überschreiben.
+          {t(locale, SETTINGS, "searchBehaviourDesc")}
         </p>
         {/* PrefsForm renders all four prefs fields + save button */}
         <PrefsForm
@@ -418,13 +470,40 @@ export default async function SettingsPage() {
 
       <hr className={DIVIDER_CLS} />
 
-      {/* Source language */}
+      {/* Interface language (UI chrome locale) — distinct from source language */}
       <div className={`${CARD_CLS} px-6 py-6`}>
-        <p className={SECTION_LABEL_CLS}>Quellsprache</p>
+        <p className={SECTION_LABEL_CLS}>
+          {t(locale, SETTINGS, "interfaceSectionLabel")}
+        </p>
         <p className="text-[12px] text-gray-500 mb-4 leading-relaxed">
-          Bestimmt, in welcher Sprache Quelltexte angezeigt werden, sofern
-          Übersetzungen vorliegen. Wähle „Original", um stets den authentischen
-          Gesetzestext zu sehen.
+          {t(locale, SETTINGS, "interfaceSectionDesc")}
+        </p>
+        {/*
+          InterfaceLangForm carries the other prefs (incl. sourceLanguage) as
+          hidden fields so the single handleSavePrefs action receives every
+          value in one submit and only changes uiLanguage.
+        */}
+        <InterfaceLangForm
+          action={handleSavePrefs}
+          options={uiLanguageOptions}
+          defaultJurisdiction={prefs?.defaultJurisdiction ?? null}
+          citationFormat={prefs?.citationFormat ?? "din"}
+          semanticSearch={prefs?.semanticSearch !== false}
+          resultsPerPage={prefs?.resultsPerPage ?? 20}
+          sourceLanguage={prefs?.sourceLanguage ?? "original"}
+          uiLanguage={prefs?.uiLanguage ?? "en"}
+        />
+      </div>
+
+      <hr className={DIVIDER_CLS} />
+
+      {/* Source language (legal-TEXT display language) */}
+      <div className={`${CARD_CLS} px-6 py-6`}>
+        <p className={SECTION_LABEL_CLS}>
+          {t(locale, SETTINGS, "sourceLanguageLabel")}
+        </p>
+        <p className="text-[12px] text-gray-500 mb-4 leading-relaxed">
+          {t(locale, SETTINGS, "sourceLanguageDesc")}
         </p>
         {/*
           SourceLangForm carries the other prefs as hidden fields so the
@@ -446,21 +525,19 @@ export default async function SettingsPage() {
   const sicherheitPanel = (
     <section aria-labelledby="panel-heading-sicherheit">
       <h2 id="panel-heading-sicherheit" className={PANEL_HEADING_CLS}>
-        Sicherheit
+        {t(locale, SETTINGS, "securityHeading")}
       </h2>
-      <p className={PANEL_DESC_CLS}>
-        Passwort ändern, aktive Sitzungen verstehen und den Login-Verlauf deines
-        Kontos einsehen.
-      </p>
+      <p className={PANEL_DESC_CLS}>{t(locale, SETTINGS, "securityDesc")}</p>
 
       <div className={`${CARD_CLS} mt-6`}>
         {/* Password / SSO note */}
         {credentialsAccount ? (
           <div className="px-5 py-5 border-b border-gray-100">
-            <p className={`${SECTION_LABEL_CLS} mb-3`}>Passwort ändern</p>
+            <p className={`${SECTION_LABEL_CLS} mb-3`}>
+              {t(locale, SETTINGS, "changePasswordLabel")}
+            </p>
             <p className="text-[12px] text-gray-500 mb-4 leading-relaxed">
-              Wähle ein starkes Passwort mit mindestens 8 Zeichen. Es wird
-              sicher gehasht und niemals im Klartext gespeichert.
+              {t(locale, SETTINGS, "changePasswordDesc")}
             </p>
             <PasswordForm action={handlePasswordChange} />
           </div>
@@ -473,12 +550,10 @@ export default async function SettingsPage() {
             />
             <div>
               <p className="text-[13px] font-medium text-gray-800 mb-1">
-                Anmeldung über Single Sign-On
+                {t(locale, SETTINGS, "ssoNoteTitle")}
               </p>
               <p className="text-[13px] text-gray-600 leading-relaxed">
-                Deine Anmeldung wird über deine Hochschule verwaltet. Passwort
-                und Zwei-Faktor-Authentifizierung änderst du direkt bei deiner
-                Hochschule.
+                {t(locale, SETTINGS, "ssoNoteBody")}
               </p>
             </div>
           </div>
@@ -486,42 +561,50 @@ export default async function SettingsPage() {
 
         {/* Active sessions note */}
         <div className="px-5 py-5 border-b border-gray-100">
-          <p className={`${SECTION_LABEL_CLS} mb-2`}>Aktive Sitzungen</p>
+          <p className={`${SECTION_LABEL_CLS} mb-2`}>
+            {t(locale, SETTINGS, "activeSessionsLabel")}
+          </p>
           <p className="text-[13px] text-gray-500 leading-relaxed">
-            Scholar verwendet kurzlebige Sitzungs-Tokens (JWT). Eine
-            serverseitige Einzelabmeldung ist technisch nicht vorgesehen — zum
-            Beenden aller Sitzungen nutze{" "}
-            <strong className="font-medium text-gray-700">Abmelden</strong> im
-            Navigationsmenü. Neue Logins auf unbekannten Geräten erscheinen im
-            Login-Verlauf unten.
+            {t(locale, SETTINGS, "activeSessionsBody1")}{" "}
+            <strong className="font-medium text-gray-700">
+              {t(locale, SETTINGS, "activeSessionsSignOut")}
+            </strong>{" "}
+            {t(locale, SETTINGS, "activeSessionsBody2")}
           </p>
         </div>
 
         {/* Login history */}
         <div className="px-5 py-5">
-          <p className={`${SECTION_LABEL_CLS} mb-3`}>Login-Verlauf</p>
+          <p className={`${SECTION_LABEL_CLS} mb-3`}>
+            {t(locale, SETTINGS, "loginHistoryLabel")}
+          </p>
           <p className="text-[12px] text-gray-500 mb-4 leading-relaxed">
-            Die letzten 10 Anmeldeversuche deines Kontos. Verdächtige Einträge
-            sind amber markiert.
+            {t(locale, SETTINGS, "loginHistoryDesc")}
           </p>
           {loginHistory.length === 0 ? (
             <p className="text-[13px] text-gray-400">
-              Noch kein Login-Verlauf vorhanden.
+              {t(locale, SETTINGS, "loginHistoryEmpty")}
             </p>
           ) : (
             <div
               role="table"
-              aria-label="Login-Verlauf"
+              aria-label={t(locale, SETTINGS, "loginHistoryTableLabel")}
               className="w-full text-[12px]"
             >
               <div
                 role="row"
                 className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-x-4 pb-2 border-b border-gray-100 text-[11px] font-semibold text-gray-500 tracking-[-0.01em]"
               >
-                <span role="columnheader">Zeitpunkt</span>
-                <span role="columnheader">Gerät / Browser</span>
-                <span role="columnheader">IP (maskiert)</span>
-                <span role="columnheader">Status</span>
+                <span role="columnheader">
+                  {t(locale, SETTINGS, "colTimestamp")}
+                </span>
+                <span role="columnheader">
+                  {t(locale, SETTINGS, "colDevice")}
+                </span>
+                <span role="columnheader">{t(locale, SETTINGS, "colIp")}</span>
+                <span role="columnheader">
+                  {t(locale, SETTINGS, "colStatus")}
+                </span>
               </div>
 
               {loginHistory.map((entry) => {
@@ -529,7 +612,7 @@ export default async function SettingsPage() {
                   entry.eventType === "LOGIN_SUCCESS" ||
                   entry.eventType === "MFA_SUCCESS" ||
                   entry.eventType === "PASSKEY_SUCCESS";
-                const label = formatEventType(entry.eventType);
+                const label = formatEventType(entry.eventType, locale);
                 const device = [entry.browser, entry.os]
                   .filter(Boolean)
                   .join(" · ");
@@ -541,7 +624,7 @@ export default async function SettingsPage() {
                     className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto] gap-x-4 gap-y-0.5 py-2.5 border-b border-gray-50 last:border-0"
                   >
                     <span role="cell" className="text-gray-700 tabular-nums">
-                      {formatLoginDate(entry.createdAt)}
+                      {formatLoginDate(entry.createdAt, locale)}
                     </span>
                     <span
                       role="cell"
@@ -565,9 +648,11 @@ export default async function SettingsPage() {
                               ? "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-green-50 text-green-700 ring-1 ring-green-200"
                               : "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-red-50 text-red-700 ring-1 ring-red-200"
                         }
-                        aria-label={`Status: ${label}`}
+                        aria-label={`${t(locale, SETTINGS, "statusAriaPrefix")} ${label}`}
                       >
-                        {entry.isSuspicious ? "Verdächtig" : label}
+                        {entry.isSuspicious
+                          ? t(locale, SETTINGS, "eventSuspiciousLogin")
+                          : label}
                       </span>
                     </span>
                   </div>
@@ -584,33 +669,30 @@ export default async function SettingsPage() {
   const datenschutzPanel = (
     <section aria-labelledby="panel-heading-datenschutz">
       <h2 id="panel-heading-datenschutz" className={PANEL_HEADING_CLS}>
-        Datenschutz
+        {t(locale, SETTINGS, "privacyHeading")}
       </h2>
-      <p className={PANEL_DESC_CLS}>
-        Steuere, was Scholar über dich speichert, exportiere deine Daten (Art.
-        20 DSGVO) oder beantrage die Löschung deines Kontos (Art. 17 DSGVO).
-      </p>
+      <p className={PANEL_DESC_CLS}>{t(locale, SETTINGS, "privacyDesc")}</p>
 
       <div className={`${CARD_CLS} mt-6`}>
         {/* Search history list */}
         <div className="px-5 py-5 border-b border-gray-100">
           <div className="flex items-center gap-2 mb-2">
             <History size={13} className="text-gray-400" aria-hidden="true" />
-            <p className={SECTION_LABEL_CLS}>Suchverlauf</p>
+            <p className={SECTION_LABEL_CLS}>
+              {t(locale, SETTINGS, "searchHistoryLabel")}
+            </p>
           </div>
           <p className="text-[12px] text-gray-500 mb-4 leading-relaxed">
-            Scholar speichert deine letzten Suchanfragen, um die
-            Bibliotheksfilter vorzubelegen. Du kannst den Verlauf jederzeit
-            einsehen, löschen oder die Aufzeichnung deaktivieren.
+            {t(locale, SETTINGS, "searchHistoryDesc")}
           </p>
 
           {searchHistory.length === 0 ? (
             <p className="text-[13px] text-gray-400 mb-4">
-              Kein Suchverlauf gespeichert.
+              {t(locale, SETTINGS, "searchHistoryEmpty")}
             </p>
           ) : (
             <ul
-              aria-label="Gespeicherte Suchen"
+              aria-label={t(locale, SETTINGS, "savedSearchesAriaLabel")}
               className="space-y-1 mb-4 max-h-48 overflow-y-auto"
             >
               {searchHistory.map((entry) => (
@@ -627,7 +709,7 @@ export default async function SettingsPage() {
                     )}
                   </span>
                   <span className="flex-shrink-0 text-[11px] text-gray-400 tabular-nums">
-                    {formatSearchDate(entry.createdAt)}
+                    {formatSearchDate(entry.createdAt, locale)}
                   </span>
                 </li>
               ))}
@@ -642,7 +724,9 @@ export default async function SettingsPage() {
 
         {/* History toggle */}
         <div className="px-5 py-5 border-b border-gray-100">
-          <p className={`${SECTION_LABEL_CLS} mb-3`}>Aufzeichnung</p>
+          <p className={`${SECTION_LABEL_CLS} mb-3`}>
+            {t(locale, SETTINGS, "recordingLabel")}
+          </p>
           <HistoryToggleForm
             action={handleToggleHistory}
             enabled={prefs?.searchHistoryEnabled !== false}
@@ -653,12 +737,12 @@ export default async function SettingsPage() {
         <div className="px-5 py-5 border-b border-gray-100">
           <div className="flex items-center gap-2 mb-2">
             <Download size={13} className="text-gray-400" aria-hidden="true" />
-            <p className={SECTION_LABEL_CLS}>Meine Daten exportieren</p>
+            <p className={SECTION_LABEL_CLS}>
+              {t(locale, SETTINGS, "exportLabel")}
+            </p>
           </div>
           <p className="text-[13px] text-gray-600 leading-relaxed mb-3">
-            Lade eine JSON-Datei mit deinem Konto, deinen Einstellungen und
-            deinem Suchverlauf herunter. Das Recht auf Datenübertragbarkeit ist
-            in Art.&nbsp;20 DSGVO geregelt.
+            {t(locale, SETTINGS, "exportDesc")}
           </p>
           <a
             href="/api/scholar/account/export"
@@ -666,7 +750,7 @@ export default async function SettingsPage() {
             className="inline-flex items-center gap-1.5 text-[12px] font-medium text-gray-900 border border-gray-300 hover:border-gray-500 rounded-lg px-4 py-2 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
           >
             <Download size={12} aria-hidden="true" />
-            Daten herunterladen
+            {t(locale, SETTINGS, "exportButton")}
           </a>
         </div>
 
@@ -674,20 +758,19 @@ export default async function SettingsPage() {
         <div className="px-5 py-5">
           <div className="flex items-center gap-2 mb-2">
             <Mail size={13} className="text-gray-400" aria-hidden="true" />
-            <p className={SECTION_LABEL_CLS}>Konto-Löschung anfragen</p>
+            <p className={SECTION_LABEL_CLS}>
+              {t(locale, SETTINGS, "deletionLabel")}
+            </p>
           </div>
           <p className="text-[13px] text-gray-600 leading-relaxed mb-3">
-            Da dein Zugang über deine Hochschule bereitgestellt wird, erfolgt
-            die Kontolöschung über den Support deiner Institution. Schreibe uns
-            eine E-Mail — wir koordinieren die Löschung mit deiner Hochschule
-            (Art.&nbsp;17 DSGVO, Recht auf Vergessenwerden).
+            {t(locale, SETTINGS, "deletionDesc")}
           </p>
           <a
             href={deletionMailto}
             className="inline-flex items-center gap-1.5 text-[12px] font-medium text-gray-600 hover:text-gray-900 border border-gray-200 hover:border-gray-400 rounded-lg px-4 py-2 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
           >
             <Mail size={12} aria-hidden="true" />
-            Löschung anfragen (cs@caelex.eu)
+            {t(locale, SETTINGS, "deletionButton")}
           </a>
         </div>
       </div>
@@ -698,64 +781,62 @@ export default async function SettingsPage() {
   const uberPanel = (
     <section aria-labelledby="panel-heading-uber">
       <h2 id="panel-heading-uber" className={PANEL_HEADING_CLS}>
-        Über Caelex Scholar
+        {t(locale, SETTINGS, "aboutHeading")}
       </h2>
-      <p className={PANEL_DESC_CLS}>
-        Technische Details, Version und rechtliche Informationen zur
-        Scholar-Plattform.
-      </p>
+      <p className={PANEL_DESC_CLS}>{t(locale, SETTINGS, "aboutDesc")}</p>
 
       <div className={`${CARD_CLS} mt-6`}>
         {/* Powered by */}
         <div className="px-5 py-5 border-b border-gray-100">
-          <p className={`${SECTION_LABEL_CLS} mb-3`}>Plattform</p>
+          <p className={`${SECTION_LABEL_CLS} mb-3`}>
+            {t(locale, SETTINGS, "platformLabel")}
+          </p>
           <p className="text-[13px] text-gray-700 leading-relaxed">
-            Caelex Scholar ist powered by{" "}
-            <span className="font-medium text-gray-900">Atlas</span> — der
-            Rechtsrecherche-Engine von Caelex. Atlas indiziert Gesetze,
-            Verordnungen und Urteile aus 10+ europäischen Jurisdiktionen und
-            stellt sie über semantische Suche und strukturierte Filter zur
-            Verfügung.
+            {t(locale, SETTINGS, "platformBody1Prefix")}{" "}
+            <span className="font-medium text-gray-900">Atlas</span>{" "}
+            {t(locale, SETTINGS, "platformBody1Suffix")}
           </p>
           <p className="mt-2 text-[12px] text-gray-500 leading-relaxed">
-            Scholar richtet sich an Hochschulnutzerinnen und -nutzer für die
-            juristische Recherche im Studium und in der Forschung. Die Plattform
-            ersetzt keine Rechtsberatung.
+            {t(locale, SETTINGS, "platformBody2")}
           </p>
         </div>
 
         {/* Version */}
         <div className="px-5 py-4 border-b border-gray-100">
-          <p className={`${SECTION_LABEL_CLS} mb-2`}>Version</p>
+          <p className={`${SECTION_LABEL_CLS} mb-2`}>
+            {t(locale, SETTINGS, "versionLabel")}
+          </p>
           <p className="text-[13px] text-gray-600">
-            Scholar · Atlas Engine · Caelex Platform
+            {t(locale, SETTINGS, "versionValue")}
           </p>
         </div>
 
         {/* Legal links */}
         <div className="px-5 py-5">
-          <p className={`${SECTION_LABEL_CLS} mb-3`}>Rechtliches</p>
+          <p className={`${SECTION_LABEL_CLS} mb-3`}>
+            {t(locale, SETTINGS, "legalLabel")}
+          </p>
           <nav
-            aria-label="Rechtliche Informationen"
+            aria-label={t(locale, SETTINGS, "legalNavLabel")}
             className="flex flex-wrap gap-x-5 gap-y-2"
           >
             <Link
               href="/legal/privacy"
               className="inline-block py-1 text-[13px] text-gray-600 hover:text-gray-900 underline underline-offset-2 decoration-gray-300 hover:decoration-gray-600 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 rounded"
             >
-              Datenschutzerklärung
+              {t(locale, SETTINGS, "legalPrivacy")}
             </Link>
             <Link
               href="/legal/terms"
               className="inline-block py-1 text-[13px] text-gray-600 hover:text-gray-900 underline underline-offset-2 decoration-gray-300 hover:decoration-gray-600 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 rounded"
             >
-              Allgemeine Geschäftsbedingungen
+              {t(locale, SETTINGS, "legalTerms")}
             </Link>
             <Link
               href="/legal/impressum"
               className="inline-block py-1 text-[13px] text-gray-600 hover:text-gray-900 underline underline-offset-2 decoration-gray-300 hover:decoration-gray-600 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 rounded"
             >
-              Impressum
+              {t(locale, SETTINGS, "legalImpressum")}
             </Link>
           </nav>
         </div>
@@ -782,31 +863,31 @@ export default async function SettingsPage() {
   const tabs: TabDefinition[] = [
     {
       id: "konto",
-      label: "Konto",
+      label: t(locale, SETTINGS, "tabAccount"),
       icon: <User size={14} />,
       content: kontoPanel,
     },
     {
       id: "recherche",
-      label: "Recherche & Sprache",
+      label: t(locale, SETTINGS, "tabResearch"),
       icon: <BookOpen size={14} />,
       content: recherchePanel,
     },
     {
       id: "sicherheit",
-      label: "Sicherheit",
+      label: t(locale, SETTINGS, "tabSecurity"),
       icon: <Shield size={14} />,
       content: sicherheitPanel,
     },
     {
       id: "datenschutz",
-      label: "Datenschutz",
+      label: t(locale, SETTINGS, "tabPrivacy"),
       icon: <Lock size={14} />,
       content: datenschutzPanel,
     },
     {
       id: "uber",
-      label: "Über Scholar",
+      label: t(locale, SETTINGS, "tabAbout"),
       icon: <Info size={14} />,
       content: uberPanel,
     },
@@ -815,9 +896,9 @@ export default async function SettingsPage() {
   return (
     <ScholarPage>
       <PageHeader
-        eyebrow="Caelex Scholar"
-        title="Einstellungen"
-        subtitle="Konto, Recherche-Präferenzen und Datenschutz verwalten."
+        eyebrow={t(locale, SETTINGS, "pageEyebrow")}
+        title={t(locale, SETTINGS, "pageTitle")}
+        subtitle={t(locale, SETTINGS, "pageSubtitle")}
         icon={Settings}
       />
 
@@ -833,10 +914,15 @@ export default async function SettingsPage() {
             <span className="text-[10px] font-semibold text-gray-600 tracking-[-0.01em]">
               Scholar
             </span>
-            <span className="text-[9px] text-gray-600">by Caelex</span>
+            <span className="text-[9px] text-gray-600">
+              {t(locale, SETTINGS, "footerBy")}
+            </span>
           </div>
           <span className="text-[9px] text-gray-600">
-            © {new Date().getFullYear()} Caelex
+            {t(locale, SETTINGS, "footerCopyright").replace(
+              "{year}",
+              String(new Date().getFullYear()),
+            )}
           </span>
         </div>
       </footer>

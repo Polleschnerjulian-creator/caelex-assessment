@@ -31,6 +31,7 @@ import {
 
 const DEFAULTS = {
   sourceLanguage: "original",
+  uiLanguage: "en",
   defaultJurisdiction: null,
   citationFormat: "din",
   semanticSearch: true,
@@ -63,6 +64,7 @@ describe("getScholarPreferences", () => {
       userId: "user-2",
       id: "clxyz",
       sourceLanguage: "de",
+      uiLanguage: "de",
       defaultJurisdiction: "DE",
       citationFormat: "oscola",
       semanticSearch: false,
@@ -77,12 +79,33 @@ describe("getScholarPreferences", () => {
 
     expect(prefs).toEqual({
       sourceLanguage: "de",
+      uiLanguage: "de",
       defaultJurisdiction: "DE",
       citationFormat: "oscola",
       semanticSearch: false,
       resultsPerPage: 30,
       searchHistoryEnabled: false,
     });
+  });
+
+  it("defaults uiLanguage to 'en' when the stored row lacks/has an invalid value", async () => {
+    // Simulate a pre-migration row (no uiLanguage column) — resolves to "en".
+    const stored = {
+      userId: "user-2b",
+      id: "clxyz2",
+      sourceLanguage: "original",
+      defaultJurisdiction: null,
+      citationFormat: "din",
+      semanticSearch: true,
+      resultsPerPage: 20,
+      searchHistoryEnabled: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    mockFindUnique.mockResolvedValue(stored);
+
+    const prefs = await getScholarPreferences("user-2b");
+    expect(prefs.uiLanguage).toBe("en");
   });
 });
 
@@ -219,6 +242,33 @@ describe("updateScholarPreferences", () => {
       await expect(
         updateScholarPreferences("user-lang", { sourceLanguage: lang }),
       ).resolves.not.toThrow();
+    }
+  });
+
+  it("rejects an invalid uiLanguage", async () => {
+    await expect(
+      updateScholarPreferences("user-ui", {
+        uiLanguage: "zh" as "en",
+      }),
+    ).rejects.toThrow(/uiLanguage/);
+    expect(mockUpsert).not.toHaveBeenCalled();
+  });
+
+  it("accepts all valid uiLanguage values and round-trips them", async () => {
+    for (const lang of ["en", "de", "it", "fr", "es"] as const) {
+      const returnRow = {
+        ...DEFAULTS,
+        userId: "user-ui-ok",
+        id: "cluilang",
+        uiLanguage: lang,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      mockUpsert.mockResolvedValue(returnRow);
+      const result = await updateScholarPreferences("user-ui-ok", {
+        uiLanguage: lang,
+      });
+      expect(result.uiLanguage).toBe(lang);
     }
   });
 });

@@ -26,6 +26,8 @@
 
 import { ExternalLink } from "lucide-react";
 
+import { DEFAULT_SCHOLAR_LOCALE, t, type ScholarLocale } from "../_i18n/core";
+import { SOURCE } from "../_i18n/source";
 import { SCHOLAR_TYPE } from "./scholar-type";
 import { CopyCitation } from "./CopyCitation";
 
@@ -50,6 +52,8 @@ interface ProvisionCardProps {
   sourceUrl?: string;
   /** Citation prefix (the document title) prepended to the copied pinpoint. */
   citationBase?: string;
+  /** Active Scholar UI locale (default "en"). */
+  locale?: ScholarLocale;
 }
 
 export function ProvisionCard({
@@ -63,11 +67,18 @@ export function ProvisionCard({
   paragraphUrl,
   sourceUrl,
   citationBase,
+  locale = DEFAULT_SCHOLAR_LOCALE,
 }: ProvisionCardProps) {
   // Pinpoint citation: "<document title>, <section|title>" — falls back to the
   // provision title when the provision carries no section label.
   const citationText = `${citationBase ? citationBase + ", " : ""}${section ?? title}`;
   const fullTextHref = paragraphUrl ?? sourceUrl;
+  // Localised copy-button label: "<section> kopieren" when a section exists,
+  // else the generic "Zitat kopieren". The {section} placeholder in the
+  // copySection string is filled here.
+  const copyLabel = section
+    ? t(locale, SOURCE, "copySection").replace("{section}", section)
+    : t(locale, SOURCE, "copyCitation");
 
   return (
     <li
@@ -91,12 +102,12 @@ export function ProvisionCard({
         <p className={`max-w-[68ch] ${SCHOLAR_TYPE.body}`}>{summary}</p>
       )}
 
-      {/* Compliance-Hinweis — NEUTRAL callout (replaces the old amber box). */}
+      {/* Compliance note — NEUTRAL callout (replaces the old amber box). */}
       {complianceImplication && (
         <div className="rounded border-l-2 border-gray-400 bg-gray-50 px-3 py-2.5">
           <p className="text-small text-gray-700">
             <span className="font-semibold text-gray-900">
-              Compliance-Hinweis:{" "}
+              {t(locale, SOURCE, "complianceNote")}{" "}
             </span>
             {complianceImplication}
           </p>
@@ -117,7 +128,7 @@ export function ProvisionCard({
               className="inline-flex items-center gap-1.5 rounded py-1 text-small text-gray-700 hover:text-gray-900 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
             >
               <ExternalLink size={13} aria-hidden="true" />
-              Vollständiger Text bei der amtlichen Quelle →
+              {t(locale, SOURCE, "fullTextAtOfficialSource")}
             </a>
           )}
         </div>
@@ -125,10 +136,7 @@ export function ProvisionCard({
 
       {/* Copy pinpoint citation. The section is independently deep-linkable via #id. */}
       <div className="pt-1">
-        <CopyCitation
-          text={citationText}
-          label={section ? `${section} kopieren` : "Zitat kopieren"}
-        />
+        <CopyCitation text={citationText} label={copyLabel} />
       </div>
     </li>
   );

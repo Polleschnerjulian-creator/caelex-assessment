@@ -15,32 +15,34 @@
  */
 
 import Link from "next/link";
+import { DEFAULT_SCHOLAR_LOCALE, t, type ScholarLocale } from "../_i18n/core";
+import { SOURCE } from "../_i18n/source";
 import { SCHOLAR_TYPE } from "./scholar-type";
 import { Eyebrow } from "./Eyebrow";
 import { RelevanceGlyph } from "./RelevanceGlyph";
 
-// ─── Type-label lookup (all pages share this) ────────────────────────
-const TYPE_LABELS: Record<string, string> = {
-  international_treaty: "Treaty",
-  federal_law: "Law",
-  federal_regulation: "Regulation",
-  technical_standard: "Standard",
-  eu_regulation: "EU Reg",
-  eu_directive: "EU Dir",
-  policy_document: "Policy",
-  draft_legislation: "Draft",
-  certification_standard: "Std",
-  industry_guideline: "Guide",
-  insurance_clause: "Clause",
-  scientific_protocol: "Protocol",
-  soft_law_resolution: "Resolution",
-  national_security_doctrine: "Doctrine",
-  bilateral_agreement: "Bilateral",
-  multilateral_agreement: "Multilateral",
-  case_law: "Case Law",
-  procurement_framework: "Procurement",
-  safety_regulation: "Safety",
-  tax_treaty: "Tax",
+// ─── Type → SOURCE-namespace short-label key (all pages share this) ──
+const TYPE_LABEL_KEYS: Record<string, keyof (typeof SOURCE)["en"]> = {
+  international_treaty: "rowTypeInternationalTreaty",
+  federal_law: "rowTypeFederalLaw",
+  federal_regulation: "rowTypeFederalRegulation",
+  technical_standard: "rowTypeTechnicalStandard",
+  eu_regulation: "rowTypeEuRegulation",
+  eu_directive: "rowTypeEuDirective",
+  policy_document: "rowTypePolicyDocument",
+  draft_legislation: "rowTypeDraftLegislation",
+  certification_standard: "rowTypeCertificationStandard",
+  industry_guideline: "rowTypeIndustryGuideline",
+  insurance_clause: "rowTypeInsuranceClause",
+  scientific_protocol: "rowTypeScientificProtocol",
+  soft_law_resolution: "rowTypeSoftLawResolution",
+  national_security_doctrine: "rowTypeNationalSecurityDoctrine",
+  bilateral_agreement: "rowTypeBilateralAgreement",
+  multilateral_agreement: "rowTypeMultilateralAgreement",
+  case_law: "rowTypeCaseLaw",
+  procurement_framework: "rowTypeProcurementFramework",
+  safety_regulation: "rowTypeSafetyRegulation",
+  tax_treaty: "rowTypeTaxTreaty",
 };
 
 // Relevance is rendered by <RelevanceGlyph> (monochrome bars + sr-only text).
@@ -58,21 +60,26 @@ export interface SourceRowData {
 
 interface SourceRowProps {
   source: SourceRowData;
+  locale?: ScholarLocale;
 }
 
-export function SourceRow({ source }: SourceRowProps) {
+export function SourceRow({
+  source,
+  locale = DEFAULT_SCHOLAR_LOCALE,
+}: SourceRowProps) {
+  const typeKey = TYPE_LABEL_KEYS[source.type];
+  const typeLabel = typeKey ? t(locale, SOURCE, typeKey) : source.type;
+
   return (
     <Link
       href={"/scholar/sources/" + encodeURIComponent(source.id)}
       className="flex items-center gap-4 px-5 py-3.5 rounded-2xl bg-white border border-transparent hover:border-gray-200/70 hover:shadow-sm motion-safe:transition-all motion-safe:duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
     >
       {/* Relevance — monochrome bars + sr-only label (WCAG 1.4.1 / 1.4.11) */}
-      <RelevanceGlyph level={source.relevanceLevel ?? "low"} />
+      <RelevanceGlyph level={source.relevanceLevel ?? "low"} locale={locale} />
 
       {/* Type label — shared monochrome eyebrow token (text-micro, gray-500) */}
-      <Eyebrow className="w-12 flex-shrink-0">
-        {TYPE_LABELS[source.type] ?? source.type}
-      </Eyebrow>
+      <Eyebrow className="w-12 flex-shrink-0">{typeLabel}</Eyebrow>
 
       {/* Title + official reference / scope */}
       <div className="flex-1 min-w-0">

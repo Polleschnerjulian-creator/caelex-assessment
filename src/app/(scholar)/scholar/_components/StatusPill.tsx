@@ -23,20 +23,28 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-// ─── Status → German label + monochrome glyph ───────────────────────
+import { DEFAULT_SCHOLAR_LOCALE, t, type ScholarLocale } from "../_i18n/core";
+import { SOURCE } from "../_i18n/source";
+
+// ─── Status → SOURCE-namespace label key + monochrome glyph ──────────
 // Keys are normalised (lowercased, trimmed) before lookup. Covers both
 // legal-source statuses (in_force / superseded / repealed / draft …) and
-// case statuses (decided / final / pending / appealed …).
-const STATUS_MAP: Record<string, { label: string; icon: LucideIcon }> = {
-  in_force: { label: "In Kraft", icon: Check },
-  superseded: { label: "Abgelöst", icon: Archive },
-  repealed: { label: "Aufgehoben", icon: Ban },
-  draft: { label: "Entwurf", icon: FileEdit },
-  proposed: { label: "Entwurf", icon: FileEdit },
-  decided: { label: "Entschieden", icon: Gavel },
-  final: { label: "Entschieden", icon: Gavel },
-  pending: { label: "Anhängig", icon: Clock },
-  appealed: { label: "Berufung", icon: Scale },
+// case statuses (decided / final / pending / appealed …). The label is
+// resolved at render time via t(locale, SOURCE, labelKey) so the pill is
+// fully localised; the icon stays keyed by status.
+const STATUS_MAP: Record<
+  string,
+  { labelKey: keyof (typeof SOURCE)["en"]; icon: LucideIcon }
+> = {
+  in_force: { labelKey: "statusInForce", icon: Check },
+  superseded: { labelKey: "statusSuperseded", icon: Archive },
+  repealed: { labelKey: "statusRepealed", icon: Ban },
+  draft: { labelKey: "statusDraft", icon: FileEdit },
+  proposed: { labelKey: "statusDraft", icon: FileEdit },
+  decided: { labelKey: "statusDecided", icon: Gavel },
+  final: { labelKey: "statusDecided", icon: Gavel },
+  pending: { labelKey: "statusPending", icon: Clock },
+  appealed: { labelKey: "statusAppealed", icon: Scale },
 };
 
 // Humanise an unknown raw status: "appeal_pending" → "Appeal pending".
@@ -49,14 +57,19 @@ function humanise(raw: string): string {
 interface StatusPillProps {
   status: string;
   className?: string;
+  locale?: ScholarLocale;
 }
 
-export function StatusPill({ status, className }: StatusPillProps) {
+export function StatusPill({
+  status,
+  className,
+  locale = DEFAULT_SCHOLAR_LOCALE,
+}: StatusPillProps) {
   // Tolerant lookup: lowercase + trim so "In_Force" / " in_force " still map.
   const key = status.toLowerCase().trim();
   const known = STATUS_MAP[key];
 
-  const label = known ? known.label : humanise(status);
+  const label = known ? t(locale, SOURCE, known.labelKey) : humanise(status);
   const Icon = known ? known.icon : null;
 
   return (

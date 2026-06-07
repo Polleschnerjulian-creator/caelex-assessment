@@ -22,20 +22,25 @@ import {
   getLegalSourceStats,
 } from "@/data/legal-sources";
 import { getCountryName } from "@/data/iso-3166-countries";
+import { auth } from "@/lib/auth";
 import { ScholarPage } from "../_components/ScholarPage";
 import { PageHeader } from "../_components/PageHeader";
+import { getScholarLocale } from "../_i18n/locale.server";
+import { t, type ScholarLocale } from "../_i18n/core";
+import { COMMON } from "../_i18n/common";
+import { BROWSE } from "../_i18n/browse";
 
-// Special jurisdiction display names not in ISO-3166
-const SPECIAL_NAMES: Record<string, string> = {
-  INT: "International",
-  EU: "European Union",
-};
-
-function getJurisdictionLabel(code: string): string {
-  return SPECIAL_NAMES[code] ?? getCountryName(code);
+// Special jurisdiction display names not in ISO-3166 — localised via BROWSE.
+function getJurisdictionLabel(code: string, locale: ScholarLocale): string {
+  if (code === "INT") return t(locale, BROWSE, "jurisdictionINT");
+  if (code === "EU") return t(locale, BROWSE, "jurisdictionEU");
+  return getCountryName(code);
 }
 
-export default function JurisdictionsPage() {
+export default async function JurisdictionsPage() {
+  const session = await auth();
+  const locale = await getScholarLocale(session?.user?.id);
+
   const codes = getAvailableJurisdictions();
   const stats = getLegalSourceStats();
 
@@ -45,15 +50,21 @@ export default function JurisdictionsPage() {
     if (b === "INT") return 1;
     if (a === "EU") return -1;
     if (b === "EU") return 1;
-    return getJurisdictionLabel(a).localeCompare(getJurisdictionLabel(b), "de");
+    return getJurisdictionLabel(a, locale).localeCompare(
+      getJurisdictionLabel(b, locale),
+      locale,
+    );
   });
 
   return (
     <ScholarPage>
       <PageHeader
         eyebrow="Caelex Scholar"
-        title="Jurisdiktionen"
-        subtitle={`${sorted.length} Jurisdiktionen mit Weltraumrecht-Quellen`}
+        title={t(locale, BROWSE, "jurisdictionsTitle")}
+        subtitle={t(locale, BROWSE, "jurisdictionsSubtitle").replace(
+          "{n}",
+          String(sorted.length),
+        )}
         icon={Globe2}
       />
 
@@ -68,7 +79,7 @@ export default function JurisdictionsPage() {
       >
         {sorted.map((code) => {
           const sourceCount = stats[code]?.total ?? 0;
-          const label = getJurisdictionLabel(code);
+          const label = getJurisdictionLabel(code, locale);
 
           return (
             <li key={code}>
@@ -92,7 +103,10 @@ export default function JurisdictionsPage() {
                     {code}
                   </span>
                   <span className="text-[9px] text-gray-500 tabular-nums flex-shrink-0">
-                    {sourceCount} {sourceCount === 1 ? "Quelle" : "Quellen"}
+                    {sourceCount}{" "}
+                    {sourceCount === 1
+                      ? t(locale, COMMON, "source")
+                      : t(locale, COMMON, "sources")}
                   </span>
                 </div>
 
@@ -115,7 +129,9 @@ export default function JurisdictionsPage() {
             <span className="text-[10px] font-semibold text-gray-600 tracking-[-0.01em]">
               Scholar
             </span>
-            <span className="text-[9px] text-gray-600">by Caelex</span>
+            <span className="text-[9px] text-gray-600">
+              {t(locale, BROWSE, "footerBy")}
+            </span>
           </div>
           <span className="text-[9px] text-gray-600">
             © {new Date().getFullYear()} Caelex

@@ -68,25 +68,28 @@ import { ProvisionCard } from "../../_components/ProvisionCard";
 import { CrossRefBlock } from "../../_components/CrossRefBlock";
 import { BookmarkButton } from "../../_components/BookmarkButton";
 import { AddToListMenu } from "../../_components/AddToListMenu";
+import { t, type ScholarLocale } from "../../_i18n/core";
+import { SOURCE } from "../../_i18n/source";
+import { getScholarLocale } from "../../_i18n/locale.server";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-// ─── Source type → human German eyebrow label ──────────────────────────
+// ─── Source type → SOURCE-namespace eyebrow key ─────────────────────────
 // Covers the populated corpus types; anything unmapped is humanised so the
 // eyebrow never shows a raw snake_case enum.
-const TYPE_LABELS: Record<string, string> = {
-  international_treaty: "TREATY",
-  eu_regulation: "EU-VERORDNUNG",
-  eu_directive: "EU-RICHTLINIE",
-  federal_law: "GESETZ",
-  federal_regulation: "VERORDNUNG",
+const TYPE_LABEL_KEYS: Record<string, keyof (typeof SOURCE)["en"]> = {
+  international_treaty: "typeTreaty",
+  eu_regulation: "typeEuRegulation",
+  eu_directive: "typeEuDirective",
+  federal_law: "typeFederalLaw",
+  federal_regulation: "typeFederalRegulation",
 };
 
-function typeLabel(type: string): string {
-  const known = TYPE_LABELS[type];
-  if (known) return known;
+function typeLabel(type: string, locale: ScholarLocale): string {
+  const key = TYPE_LABEL_KEYS[type];
+  if (key) return t(locale, SOURCE, key);
   // Humanise + uppercase an unmapped type: "draft_legislation" → "DRAFT LEGISLATION".
   return type.replace(/_/g, " ").trim().toUpperCase();
 }
@@ -106,12 +109,25 @@ function slugifyProvision(raw: string, index: number): string {
   return base ? `prov-${base}-${index}` : `prov-${index}`;
 }
 
-// ─── German date formatting (de-DE, dd.mm.yyyy), tolerant of bad input ──
-function formatDate(iso?: string): string | null {
+// ─── Locale-aware numeric date formatting, tolerant of bad input ────────
+// Maps the Scholar UI locale to a BCP-47 tag so dates render in the reader's
+// conventions (e.g. de-DE dd.mm.yyyy, en-GB dd/mm/yyyy). Falls back to en-GB.
+const DATE_LOCALE: Record<ScholarLocale, string> = {
+  en: "en-GB",
+  de: "de-DE",
+  it: "it-IT",
+  fr: "fr-FR",
+  es: "es-ES",
+};
+
+function formatDate(
+  iso: string | undefined,
+  locale: ScholarLocale,
+): string | null {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  return d.toLocaleDateString("de-DE", {
+  return d.toLocaleDateString(DATE_LOCALE[locale], {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -164,6 +180,10 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
     : null;
   const sourceLanguage = prefs?.sourceLanguage ?? "original";
 
+  // Resolve the UI locale once and thread it to every server display comp /
+  // localised string below. Defaults to "en" when unauthenticated.
+  const locale = await getScholarLocale(session?.user?.id);
+
   const source = getScholarSourceDetail(id, sourceLanguage);
   if (!source) notFound();
 
@@ -178,16 +198,16 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
       ])
     : [false, []];
 
-  // ─── Derive the dates line: "Erlassen … · In Kraft … · Geändert …" ──
+  // ─── Derive the dates line: "Enacted … · In force … · Amended …" ──
   // Only the date fields that exist are joined, so the line never shows an
   // empty milestone.
   const dateParts: string[] = [];
-  const enacted = formatDate(source.dateEnacted);
-  const inForce = formatDate(source.dateInForce);
-  const amended = formatDate(source.dateLastAmended);
-  if (enacted) dateParts.push(`Erlassen ${enacted}`);
-  if (inForce) dateParts.push(`In Kraft ${inForce}`);
-  if (amended) dateParts.push(`Geändert ${amended}`);
+  const enacted = formatDate(source.dateEnacted, locale);
+  const inForce = formatDate(source.dateInForce, locale);
+  const amended = formatDate(source.dateLastAmended, locale);
+  if (enacted) dateParts.push(`${t(locale, SOURCE, "dateEnacted")} ${enacted}`);
+  if (inForce) dateParts.push(`${t(locale, SOURCE, "dateInForce")} ${inForce}`);
+  if (amended) dateParts.push(`${t(locale, SOURCE, "dateAmended")} ${amended}`);
   const datesLine = dateParts.length > 0 ? dateParts.join(" · ") : null;
 
   // First populated identifier wins (official → parliamentary → un), rendered mono.
@@ -237,12 +257,13 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
   const hasDirectiveBand = source.appliesToType === "needs-transposition";
   const hasTypeBand = hasTreatyBand || hasRegulationBand || hasDirectiveBand;
 
-  const lastVerified = formatDate(source.lastVerified);
+  const lastVerified = formatDate(source.lastVerified, locale);
 
   return (
     <ScholarPage>
-      {/* Context-aware back link — returns to wherever the reader came from. */}
-      <BackLink fallbackHref="/scholar/library" fallbackLabel="Zurück" />
+      {/* Context-aware back link — returns to wherever the reader came from.
+          The label is localised inside BackLink via the LocaleProvider. */}
+      <BackLink fallbackHref="/scholar/library" />
 
       {/*
         Sticky doc-title bar — subtle "where am I" affordance (concept §2b:
@@ -261,7 +282,7 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
         {/* ─── Header card ─────────────────────────────────────────── */}
         <header className="rounded-2xl border border-gray-200/70 bg-white p-6 shadow-sm space-y-4">
           <div className="space-y-1">
-            <Eyebrow>{typeLabel(source.type)}</Eyebrow>
+            <Eyebrow>{typeLabel(source.type, locale)}</Eyebrow>
             {/*
               WCAG 1.3.1 / 2.4.6: the document title is the page's h1 — the
               first visible heading on the content area.
@@ -277,12 +298,26 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
           {/* Metadata strip — status leads as the pill; rest are key:value pairs. */}
           <MetadataStrip
             status={source.status}
+            locale={locale}
             items={[
-              { label: "Jurisdiktion", value: source.jurisdiction },
-              { label: "Herausgeber", value: source.issuingBody },
-              { label: "Kennung", value: identifier, mono: true },
-              { label: "Daten", value: datesLine },
-              { label: "Zuständige Behörden", value: authorities },
+              {
+                label: t(locale, SOURCE, "metaJurisdiction"),
+                value: source.jurisdiction,
+              },
+              {
+                label: t(locale, SOURCE, "metaIssuingBody"),
+                value: source.issuingBody,
+              },
+              {
+                label: t(locale, SOURCE, "metaIdentifier"),
+                value: identifier,
+                mono: true,
+              },
+              { label: t(locale, SOURCE, "metaDates"), value: datesLine },
+              {
+                label: t(locale, SOURCE, "metaCompetentAuthorities"),
+                value: authorities,
+              },
             ]}
           />
 
@@ -309,7 +344,7 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
                   className="inline-flex items-center gap-1.5 rounded py-1 text-small text-gray-700 hover:text-gray-900 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
                 >
                   <ExternalLink size={13} aria-hidden="true" />
-                  Amtliche Quelle ansehen →
+                  {t(locale, SOURCE, "viewOfficialSource")}
                 </a>
               )}
               <BookmarkButton
@@ -325,7 +360,7 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
             </div>
             {isTranslated && (
               <p className="text-small text-gray-600">
-                Caelex-Übersetzung — nicht der amtliche Wortlaut
+                {t(locale, SOURCE, "caelexTranslationNote")}
               </p>
             )}
           </div>
@@ -346,18 +381,18 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
             {/* sr-only label keeps the section programmatically named without
                 adding a visible heading that would compete with the card h1. */}
             <h2 id="type-band-heading" className="sr-only">
-              Einordnung nach Rechtsquellentyp
+              {t(locale, SOURCE, "typeBandHeading")}
             </h2>
 
             {/* §3a — international treaty: parties + signatory-only sub-list. */}
             {hasTreatyBand && (
               <div className="space-y-4">
                 <CountryListBand
-                  label="Vertragsparteien"
+                  label={t(locale, SOURCE, "treatyParties")}
                   codes={treatyParties}
                 />
                 <CountryListBand
-                  label="Nur unterzeichnet"
+                  label={t(locale, SOURCE, "treatySignatoriesOnly")}
                   codes={treatySignatories}
                 />
               </div>
@@ -366,13 +401,12 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
             {/* §3b — EU regulation: directly-applicable affordance note. */}
             {hasRegulationBand && (
               <div className="space-y-1">
-                <Eyebrow>Rechtswirkung</Eyebrow>
+                <Eyebrow>{t(locale, SOURCE, "legalEffect")}</Eyebrow>
                 <p className={SCHOLAR_TYPE.body}>
                   <span className="font-semibold text-gray-900">
-                    Unmittelbar geltend.
+                    {t(locale, SOURCE, "directlyApplicable")}
                   </span>{" "}
-                  Eine EU-Verordnung gilt in allen Mitgliedstaaten direkt — ohne
-                  Umsetzung in nationales Recht.
+                  {t(locale, SOURCE, "directlyApplicableBody")}
                 </p>
               </div>
             )}
@@ -381,17 +415,16 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
             {hasDirectiveBand && (
               <div className="space-y-4">
                 <div className="space-y-1">
-                  <Eyebrow>Rechtswirkung</Eyebrow>
+                  <Eyebrow>{t(locale, SOURCE, "legalEffect")}</Eyebrow>
                   <p className={SCHOLAR_TYPE.body}>
                     <span className="font-semibold text-gray-900">
-                      Umsetzung in nationales Recht erforderlich.
+                      {t(locale, SOURCE, "transpositionRequired")}
                     </span>{" "}
-                    Eine EU-Richtlinie bindet die Mitgliedstaaten hinsichtlich
-                    des Ziels; die Form der Umsetzung bleibt ihnen überlassen.
+                    {t(locale, SOURCE, "transpositionRequiredBody")}
                   </p>
                 </div>
                 <CountryListBand
-                  label="Gilt für Mitgliedstaaten"
+                  label={t(locale, SOURCE, "appliesToMemberStates")}
                   codes={directiveMemberStates}
                 />
               </div>
@@ -408,7 +441,7 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
               className="space-y-4 lg:order-1"
             >
               <h2 id="provisions-heading" className={SCHOLAR_TYPE.partHeading}>
-                Schlüsselbestimmungen
+                {t(locale, SOURCE, "keyProvisions")}
               </h2>
 
               {/*
@@ -418,7 +451,7 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
               */}
               <details className="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm lg:hidden">
                 <summary className="cursor-pointer rounded text-small font-medium text-gray-700 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]">
-                  Inhalt
+                  {t(locale, SOURCE, "tocContent")}
                 </summary>
                 <div className="mt-3">
                   <InDocTOC
@@ -444,6 +477,7 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
                     paragraphUrl={p.paragraphUrl}
                     sourceUrl={source.sourceUrl}
                     citationBase={source.title}
+                    locale={locale}
                   />
                 ))}
               </ul>
@@ -458,7 +492,7 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
               {preambleProvisions.length > 0 && (
                 <details className="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm">
                   <summary className="cursor-pointer rounded text-small font-medium text-gray-700 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]">
-                    Präambel / Erwägungsgründe
+                    {t(locale, SOURCE, "preambleRecitals")}
                   </summary>
                   <ul className="mt-4 space-y-8" role="list">
                     {preambleProvisions.map((p) => (
@@ -474,6 +508,7 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
                         paragraphUrl={p.paragraphUrl}
                         sourceUrl={source.sourceUrl}
                         citationBase={source.title}
+                        locale={locale}
                       />
                     ))}
                   </ul>
@@ -504,18 +539,18 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
         <CrossRefBlock
           related={source.resolvedRelatedSources ?? []}
           citingCases={source.citingCases ?? []}
+          locale={locale}
         />
 
         {/* ─── Footer: last-verified + disclaimer ──────────────────── */}
         <footer className="space-y-1 border-t border-gray-200 pt-6">
           {lastVerified && (
             <p className="text-small text-gray-600">
-              Zuletzt verifiziert {lastVerified}
+              {t(locale, SOURCE, "lastVerified")} {lastVerified}
             </p>
           )}
           <p className="text-small text-gray-600">
-            Kein Rechtsrat. Caelex Scholar dient ausschließlich der Recherche —
-            maßgeblich ist stets der amtliche Wortlaut.
+            {t(locale, SOURCE, "disclaimer")}
           </p>
         </footer>
       </div>

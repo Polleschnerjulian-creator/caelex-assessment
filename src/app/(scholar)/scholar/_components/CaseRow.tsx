@@ -20,20 +20,22 @@
 
 import Link from "next/link";
 
+import { DEFAULT_SCHOLAR_LOCALE, t, type ScholarLocale } from "../_i18n/core";
+import { SOURCE } from "../_i18n/source";
 import { Eyebrow } from "./Eyebrow";
 import { SCHOLAR_TYPE } from "./scholar-type";
 import { StatusPill } from "./StatusPill";
 
-// ─── Forum-type display labels (German) ─────────────────────────────
-const FORUM_TYPE_LABELS: Record<string, string> = {
-  court: "Gericht",
-  regulator_order: "Behörde",
-  regulator_settlement: "Beh. Vergl.",
-  criminal_settlement: "Strafvergl.",
-  civil_settlement: "Zivilvergl.",
-  treaty_award: "Vertrag",
-  administrative_appeal: "Verw.-Beschwerde",
-  arbitral_award: "Schiedsspruch",
+// ─── Forum-type → SOURCE-namespace label key ────────────────────────
+const FORUM_TYPE_KEYS: Record<string, keyof (typeof SOURCE)["en"]> = {
+  court: "forumCourt",
+  regulator_order: "forumRegulatorOrder",
+  regulator_settlement: "forumRegulatorSettlement",
+  criminal_settlement: "forumCriminalSettlement",
+  civil_settlement: "forumCivilSettlement",
+  treaty_award: "forumTreatyAward",
+  administrative_appeal: "forumAdministrativeAppeal",
+  arbitral_award: "forumArbitralAward",
 };
 
 export interface CaseRowData {
@@ -50,10 +52,12 @@ export interface CaseRowData {
 
 interface CaseRowProps {
   c: CaseRowData;
+  locale?: ScholarLocale;
 }
 
-export function CaseRow({ c }: CaseRowProps) {
-  const forumLabel = FORUM_TYPE_LABELS[c.forum] ?? c.forum;
+export function CaseRow({ c, locale = DEFAULT_SCHOLAR_LOCALE }: CaseRowProps) {
+  const forumKey = FORUM_TYPE_KEYS[c.forum];
+  const forumLabel = forumKey ? t(locale, SOURCE, forumKey) : c.forum;
 
   return (
     <Link
@@ -89,7 +93,7 @@ export function CaseRow({ c }: CaseRowProps) {
       </span>
 
       {/* Status */}
-      <StatusPill status={c.status} className="shrink-0" />
+      <StatusPill status={c.status} className="shrink-0" locale={locale} />
 
       {/* Jurisdiction */}
       <span className={`shrink-0 w-8 text-right ${SCHOLAR_TYPE.metaLabel}`}>

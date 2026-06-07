@@ -14,12 +14,16 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
+import { useScholarLocale } from "./_i18n/LocaleProvider";
+import { t } from "./_i18n/core";
+import { NAV } from "./_i18n/nav";
 
-// ─── Nav items — hardcoded German, no i18n dependency ──────────────
+// ─── Nav items — i18n via NAV namespace ────────────────────────────
+//   `labelKey` resolves through t(locale, NAV, labelKey) at render time.
 //   Add future real routes here. Do NOT add items whose href doesn't exist.
 
 interface NavItem {
-  label: string;
+  labelKey: keyof (typeof NAV)["en"];
   href: string;
   icon: LucideIcon;
   exact?: boolean;
@@ -27,28 +31,28 @@ interface NavItem {
 
 const MAIN_NAV: NavItem[] = [
   {
-    label: "Suche",
+    labelKey: "search",
     href: "/scholar",
     icon: Search,
     exact: true,
   },
   {
-    label: "Jurisdiktionen",
+    labelKey: "jurisdictions",
     href: "/scholar/jurisdictions",
     icon: Globe2,
   },
   {
-    label: "Bibliothek",
+    labelKey: "library",
     href: "/scholar/library",
     icon: BookOpen,
   },
   {
-    label: "Rechtsprechung",
+    labelKey: "caseLaw",
     href: "/scholar/cases",
     icon: Scale,
   },
   {
-    label: "Merkliste",
+    labelKey: "watchlist",
     href: "/scholar/saved",
     icon: Bookmark,
   },
@@ -66,6 +70,7 @@ export default function ScholarShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const locale = useScholarLocale();
   // WCAG 2.1.1 / 2.4.11: sidebar must expand on keyboard focus-within,
   // not only on mouse hover, so keyboard users see the nav labels.
   const [hovered, setHovered] = useState(false);
@@ -89,9 +94,9 @@ export default function ScholarShell({
     : "none";
 
   return (
-    // lang="de": WCAG 3.1.1 — Scholar UI is German; root layout uses lang="en"
+    // WCAG 3.1.1: lang reflects the active Scholar UI locale (root layout is en).
     <div
-      lang="de"
+      lang={locale}
       className="antialiased landing-light h-screen w-screen overflow-hidden bg-[#F7F8FA]"
       style={{ colorScheme: "light" }}
     >
@@ -151,7 +156,7 @@ export default function ScholarShell({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/caelex-logo-white.png"
-                alt="Caelex Scholar"
+                alt={t(locale, NAV, "logoAlt")}
                 className="h-5 w-5 object-contain"
               />
             </div>
@@ -161,7 +166,7 @@ export default function ScholarShell({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/caelex-logo-white.png"
-                alt="Caelex Scholar"
+                alt={t(locale, NAV, "logoAlt")}
                 className="h-7 w-7 object-contain flex-shrink-0"
               />
               <div className="flex flex-col overflow-hidden">
@@ -169,7 +174,7 @@ export default function ScholarShell({
                   Scholar
                 </span>
                 <span className="text-[9px] font-normal tracking-[0.01em] text-white/50 whitespace-nowrap">
-                  powered by Atlas
+                  {t(locale, NAV, "poweredByAtlas")}
                 </span>
               </div>
             </>
@@ -182,7 +187,7 @@ export default function ScholarShell({
             markup changes.
         */}
         <nav
-          aria-label="Seitennavigation"
+          aria-label={t(locale, NAV, "sidebarNav")}
           className={[
             "flex-1 overflow-y-auto overflow-x-hidden py-2",
             expanded ? "px-2 bg-[#1a1a1a]" : "px-1.5",
@@ -200,11 +205,12 @@ export default function ScholarShell({
               {MAIN_NAV.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.href, item.exact);
+                const label = t(locale, NAV, item.labelKey);
                 return (
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      aria-label={item.label}
+                      aria-label={label}
                       aria-current={active ? "page" : undefined}
                       onClick={(e) => (e.currentTarget as HTMLElement).blur()}
                       className={[
@@ -228,7 +234,7 @@ export default function ScholarShell({
                         className="pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-lg bg-[#1a1a1a] px-3 py-1.5 text-[11px] font-medium text-white/90 opacity-0 shadow-xl border border-white/10 transition-opacity duration-150 group-hover:opacity-100"
                         aria-hidden="true"
                       >
-                        {item.label}
+                        {label}
                       </span>
                     </Link>
                   </li>
@@ -241,6 +247,7 @@ export default function ScholarShell({
               {MAIN_NAV.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.href, item.exact);
+                const label = t(locale, NAV, item.labelKey);
                 return (
                   <li key={item.href}>
                     <Link
@@ -263,7 +270,7 @@ export default function ScholarShell({
                         aria-hidden={true}
                       />
                       <span className="text-[12px] tracking-[-0.01em]">
-                        {item.label}
+                        {label}
                       </span>
                     </Link>
                   </li>
@@ -289,8 +296,8 @@ export default function ScholarShell({
               {/* Settings */}
               <Link
                 href="/scholar/settings"
-                aria-label="Einstellungen"
-                title="Einstellungen"
+                aria-label={t(locale, NAV, "settings")}
+                title={t(locale, NAV, "settings")}
                 onClick={(e) => (e.currentTarget as HTMLElement).blur()}
                 className={[
                   "flex items-center justify-center h-9 w-9 rounded-xl",
@@ -310,8 +317,8 @@ export default function ScholarShell({
               {/* Sign out */}
               <button
                 type="button"
-                aria-label="Abmelden"
-                title="Abmelden"
+                aria-label={t(locale, NAV, "signOut")}
+                title={t(locale, NAV, "signOut")}
                 onClick={() => signOut({ callbackUrl: "/scholar-login" })}
                 className="flex items-center justify-center h-9 w-9 rounded-xl bg-[#1a1a1a] text-white/70 hover:text-white hover:bg-[#2a2a2a] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-[#1a1a1a]"
               >
@@ -328,7 +335,7 @@ export default function ScholarShell({
               {/* Settings */}
               <Link
                 href="/scholar/settings"
-                aria-label="Einstellungen"
+                aria-label={t(locale, NAV, "settings")}
                 onClick={(e) => (e.currentTarget as HTMLElement).blur()}
                 className={[
                   "flex items-center gap-3 h-9 px-3 rounded-xl transition-all duration-150 whitespace-nowrap",
@@ -344,13 +351,13 @@ export default function ScholarShell({
                   aria-hidden={true}
                 />
                 <span className="text-[12px] tracking-[-0.01em]">
-                  Einstellungen
+                  {t(locale, NAV, "settings")}
                 </span>
               </Link>
               {/* Sign out */}
               <button
                 type="button"
-                aria-label="Abmelden"
+                aria-label={t(locale, NAV, "signOut")}
                 onClick={() => signOut({ callbackUrl: "/scholar-login" })}
                 className="flex items-center gap-3 h-9 px-3 rounded-xl transition-all duration-150 whitespace-nowrap text-white/60 hover:text-white/70 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-[#1a1a1a]"
               >
@@ -359,7 +366,9 @@ export default function ScholarShell({
                   strokeWidth={1.5}
                   aria-hidden={true}
                 />
-                <span className="text-[12px] tracking-[-0.01em]">Abmelden</span>
+                <span className="text-[12px] tracking-[-0.01em]">
+                  {t(locale, NAV, "signOut")}
+                </span>
               </button>
             </div>
           )}

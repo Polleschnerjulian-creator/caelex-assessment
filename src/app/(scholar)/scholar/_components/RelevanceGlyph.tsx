@@ -16,6 +16,9 @@
  *   color alone ✓
  */
 
+import { DEFAULT_SCHOLAR_LOCALE, t, type ScholarLocale } from "../_i18n/core";
+import { SOURCE } from "../_i18n/source";
+
 // ─── Level → filled-bar count (0–4) ──────────────────────────────────
 // Darkness/length conveys strength. Normalised to lowercase before lookup.
 const RELEVANCE_BARS: Record<string, number> = {
@@ -27,13 +30,13 @@ const RELEVANCE_BARS: Record<string, number> = {
   unknown: 0,
 };
 
-// ─── Level → German screen-reader word ───────────────────────────────
-const RELEVANCE_LABEL: Record<string, string> = {
-  fundamental: "Grundlegend",
-  critical: "Kritisch",
-  high: "Hoch",
-  medium: "Mittel",
-  low: "Gering",
+// ─── Level → SOURCE-namespace screen-reader-word key ─────────────────
+const RELEVANCE_LABEL_KEY: Record<string, keyof (typeof SOURCE)["en"]> = {
+  fundamental: "relevanceFundamental",
+  critical: "relevanceCritical",
+  high: "relevanceHigh",
+  medium: "relevanceMedium",
+  low: "relevanceLow",
 };
 
 const TOTAL_BARS = 4;
@@ -41,12 +44,20 @@ const TOTAL_BARS = 4;
 interface RelevanceGlyphProps {
   level: string;
   className?: string;
+  locale?: ScholarLocale;
 }
 
-export function RelevanceGlyph({ level, className }: RelevanceGlyphProps) {
+export function RelevanceGlyph({
+  level,
+  className,
+  locale = DEFAULT_SCHOLAR_LOCALE,
+}: RelevanceGlyphProps) {
   const key = level.toLowerCase();
   const filledCount = RELEVANCE_BARS[key] ?? 0;
-  const humanLevel = RELEVANCE_LABEL[key] ?? "Unbekannt";
+  const labelKey = RELEVANCE_LABEL_KEY[key];
+  const humanLevel = labelKey
+    ? t(locale, SOURCE, labelKey)
+    : t(locale, SOURCE, "relevanceUnknown");
 
   return (
     <span
@@ -66,7 +77,9 @@ export function RelevanceGlyph({ level, className }: RelevanceGlyphProps) {
           aria-hidden={true}
         />
       ))}
-      <span className="sr-only">Relevanz: {humanLevel}</span>
+      <span className="sr-only">
+        {t(locale, SOURCE, "relevancePrefix")} {humanLevel}
+      </span>
     </span>
   );
 }

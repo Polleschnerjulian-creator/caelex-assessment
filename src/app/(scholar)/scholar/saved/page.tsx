@@ -38,6 +38,9 @@ import { ScholarPage } from "../_components/ScholarPage";
 import { PageHeader } from "../_components/PageHeader";
 import { SCHOLAR_TYPE } from "../_components/scholar-type";
 import { RemoveBookmarkButton, CreateListForm } from "./SavedControls";
+import { t, type ScholarLocale } from "../_i18n/core";
+import { SAVED } from "../_i18n/saved";
+import { getScholarLocale } from "../_i18n/locale.server";
 
 // ─── Card shell (matches the light-canvas convention) ─────────────────────────
 const CARD_CLS = "rounded-2xl bg-white border border-gray-200/70 shadow-sm";
@@ -45,6 +48,7 @@ const CARD_CLS = "rounded-2xl bg-white border border-gray-200/70 shadow-sm";
 export default async function SavedPage() {
   const session = await auth();
   const userId = session?.user?.id ?? null;
+  const locale = await getScholarLocale(userId);
 
   const [bookmarks, lists] = userId
     ? await Promise.all([getBookmarks(userId), getReadingLists(userId)])
@@ -54,8 +58,8 @@ export default async function SavedPage() {
     <ScholarPage>
       <PageHeader
         eyebrow="Caelex Scholar"
-        title="Merkliste"
-        subtitle="Gemerkte Quellen und Entscheidungen sowie deine Leselisten für Recherche und Lehre an einem Ort"
+        title={t(locale, SAVED, "pageTitle")}
+        subtitle={t(locale, SAVED, "pageSubtitle")}
         icon={Bookmark}
       />
 
@@ -72,22 +76,21 @@ export default async function SavedPage() {
             id="saved-bookmarks-heading"
             className={SCHOLAR_TYPE.sectionHeading}
           >
-            Gemerkte Quellen &amp; Fälle
+            {t(locale, SAVED, "bookmarksHeading")}
           </h2>
         </div>
 
         {bookmarks.length === 0 ? (
           <div className={`${CARD_CLS} px-5 py-8`}>
             <p className={SCHOLAR_TYPE.bodyMuted}>
-              Noch nichts gemerkt — nutze das Lesezeichen auf einer Quelle oder
-              Entscheidung.
+              {t(locale, SAVED, "bookmarksEmpty")}
             </p>
           </div>
         ) : (
           <ul className="space-y-1" role="list">
             {bookmarks.map((item) => (
               <li key={`${item.itemType}:${item.itemId}`}>
-                <SavedRow item={item} />
+                <SavedRow item={item} locale={locale} />
               </li>
             ))}
           </ul>
@@ -104,16 +107,14 @@ export default async function SavedPage() {
             aria-hidden={true}
           />
           <h2 id="saved-lists-heading" className={SCHOLAR_TYPE.sectionHeading}>
-            Leselisten
+            {t(locale, SAVED, "listsHeading")}
           </h2>
         </div>
 
         {lists.length === 0 ? (
           <div className={`${CARD_CLS} px-5 py-8 mb-6`}>
             <p className={SCHOLAR_TYPE.bodyMuted}>
-              Noch keine Leselisten. Leselisten eignen sich gut als Kurslisten
-              für die Lehre — bündle die Pflichtlektüre eines Seminars und teile
-              sie mit deinen Studierenden.
+              {t(locale, SAVED, "listsEmpty")}
             </p>
           </div>
         ) : (
@@ -144,7 +145,9 @@ export default async function SavedPage() {
                     className={`flex-shrink-0 tabular-nums ${SCHOLAR_TYPE.meta}`}
                   >
                     {list.itemCount}{" "}
-                    {list.itemCount === 1 ? "Eintrag" : "Einträge"}
+                    {list.itemCount === 1
+                      ? t(locale, SAVED, "entryOne")
+                      : t(locale, SAVED, "entryOther")}
                   </span>
                 </Link>
               </li>
@@ -155,7 +158,7 @@ export default async function SavedPage() {
         {/* Inline create form */}
         <div className={`${CARD_CLS} p-5`}>
           <h3 className={`${SCHOLAR_TYPE.provisionLabel} mb-3`}>
-            Neue Liste erstellen
+            {t(locale, SAVED, "createListHeading")}
           </h3>
           <CreateListForm />
         </div>
@@ -181,9 +184,18 @@ export default async function SavedPage() {
 
 // ─── One bookmark row: link (title → href) + remove control ───────────────────
 
-function SavedRow({ item }: { item: ResolvedItem }) {
+function SavedRow({
+  item,
+  locale,
+}: {
+  item: ResolvedItem;
+  locale: ScholarLocale;
+}) {
   const Icon = item.itemType === "case" ? Scale : FileText;
-  const typeLabel = item.itemType === "case" ? "Entscheidung" : "Quelle";
+  const typeLabel =
+    item.itemType === "case"
+      ? t(locale, SAVED, "typeCase")
+      : t(locale, SAVED, "typeSource");
 
   return (
     <div className="flex items-center gap-2 rounded-2xl bg-white border border-transparent hover:border-gray-200/70 hover:shadow-sm motion-safe:transition-all motion-safe:duration-200 group">

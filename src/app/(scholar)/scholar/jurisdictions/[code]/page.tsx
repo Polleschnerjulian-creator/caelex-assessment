@@ -59,15 +59,15 @@ import { Eyebrow } from "../../_components/Eyebrow";
 import { SCHOLAR_TYPE } from "../../_components/scholar-type";
 import { SourceRow } from "../../_components/SourceRow";
 import type { SourceRowData } from "../../_components/SourceRow";
+import { getScholarLocale } from "../../_i18n/locale.server";
+import { t, type ScholarLocale } from "../../_i18n/core";
+import { BROWSE } from "../../_i18n/browse";
 
-// Special jurisdiction display names not in ISO-3166
-const SPECIAL_NAMES: Record<string, string> = {
-  INT: "International",
-  EU: "European Union",
-};
-
-function getJurisdictionLabel(code: string): string {
-  return SPECIAL_NAMES[code] ?? getCountryName(code);
+// Special jurisdiction display names not in ISO-3166 — localised via BROWSE.
+function getJurisdictionLabel(code: string, locale: ScholarLocale): string {
+  if (code === "INT") return t(locale, BROWSE, "jurisdictionINT");
+  if (code === "EU") return t(locale, BROWSE, "jurisdictionEU");
+  return getCountryName(code);
 }
 
 // ─── Language-pref resolvers (mirror source-detail.server.ts) ──────────
@@ -136,12 +136,14 @@ function SourceListSection({
   icon: Icon,
   sources,
   language,
+  locale,
 }: {
   id: string;
   heading: string;
   icon: typeof Scale;
   sources: NormalizedLegalSource[];
   language: string;
+  locale: ScholarLocale;
 }) {
   if (sources.length === 0) return null;
   return (
@@ -163,7 +165,7 @@ function SourceListSection({
       <ul className="space-y-1" role="list">
         {sources.map((source) => (
           <li key={source.id}>
-            <SourceRow source={toRowData(source, language)} />
+            <SourceRow source={toRowData(source, language)} locale={locale} />
           </li>
         ))}
       </ul>
@@ -194,6 +196,9 @@ export default async function JurisdictionDetailPage({ params }: Props) {
     : null;
   const sourceLanguage = prefs?.sourceLanguage ?? "original";
 
+  // Resolve the UI locale once for all chrome strings on this page.
+  const locale = await getScholarLocale(session?.user?.id);
+
   // Split the corpus the way concept §4 asks: national law vs. the
   // international / EU instruments that apply here. For INT/EU jurisdictions
   // the "applicable international" set is empty by construction, so that
@@ -210,21 +215,25 @@ export default async function JurisdictionDetailPage({ params }: Props) {
     notFound();
   }
 
-  const label = getJurisdictionLabel(code);
+  const label = getJurisdictionLabel(code, locale);
 
   return (
     <ScholarPage>
       {/* Context-aware back link (shared primitive — text-small token, ≥24px). */}
       <BackLink
         fallbackHref="/scholar/jurisdictions"
-        fallbackLabel="Zurück zu Jurisdiktionen"
+        fallbackLabel={t(locale, BROWSE, "backToJurisdictions")}
         className="mb-6"
       />
 
       <PageHeader
         eyebrow={code}
         title={label}
-        subtitle={`${totalSources} ${totalSources === 1 ? "Rechtsquelle" : "Rechtsquellen"}`}
+        subtitle={`${totalSources} ${
+          totalSources === 1
+            ? t(locale, BROWSE, "legalSource")
+            : t(locale, BROWSE, "legalSources")
+        }`}
       />
 
       <div className="space-y-10">
@@ -243,7 +252,7 @@ export default async function JurisdictionDetailPage({ params }: Props) {
                 id="authorities-heading"
                 className={SCHOLAR_TYPE.sectionHeading}
               >
-                Zuständige Behörden
+                {t(locale, BROWSE, "competentAuthorities")}
               </h2>
             </div>
 
@@ -283,7 +292,7 @@ export default async function JurisdictionDetailPage({ params }: Props) {
                         className="mt-2 inline-flex items-center gap-1.5 rounded py-1 text-small text-gray-700 hover:text-gray-900 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
                       >
                         <ExternalLink size={13} aria-hidden={true} />
-                        Website ansehen →
+                        {t(locale, BROWSE, "viewWebsite")}
                       </a>
                     )}
                   </li>
@@ -296,19 +305,21 @@ export default async function JurisdictionDetailPage({ params }: Props) {
         {/* ─── Nationales Recht ────────────────────────────────────── */}
         <SourceListSection
           id="national"
-          heading="Nationales Recht"
+          heading={t(locale, BROWSE, "nationalLaw")}
           icon={Scale}
           sources={nationalSources}
           language={sourceLanguage}
+          locale={locale}
         />
 
         {/* ─── Anwendbares Völkerrecht / EU-Recht ──────────────────── */}
         <SourceListSection
           id="international"
-          heading="Anwendbares Völkerrecht / EU-Recht"
+          heading={t(locale, BROWSE, "applicableInternationalLaw")}
           icon={Globe2}
           sources={internationalSources}
           language={sourceLanguage}
+          locale={locale}
         />
       </div>
 
@@ -317,7 +328,9 @@ export default async function JurisdictionDetailPage({ params }: Props) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Eyebrow>Scholar</Eyebrow>
-            <span className={SCHOLAR_TYPE.meta}>by Caelex</span>
+            <span className={SCHOLAR_TYPE.meta}>
+              {t(locale, BROWSE, "footerBy")}
+            </span>
           </div>
           <span className={SCHOLAR_TYPE.meta}>
             © {new Date().getFullYear()} Caelex

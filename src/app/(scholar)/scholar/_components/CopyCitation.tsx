@@ -34,6 +34,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, Copy } from "lucide-react";
 
+import { t } from "../_i18n/core";
+import { COMMON } from "../_i18n/common";
+import { SOURCE } from "../_i18n/source";
+import { useScholarLocale } from "../_i18n/LocaleProvider";
+
 // Size note: this button uses the `text-small` (12px) utility directly —
 // the same reading-meta size as SCHOLAR_TYPE.meta / .mono in ./scholar-type,
 // so it sits flush with surrounding citation metadata. SCHOLAR_TYPE exposes
@@ -51,6 +56,7 @@ export function CopyCitation({
   label?: string;
   className?: string;
 }) {
+  const locale = useScholarLocale();
   const [copied, setCopied] = useState(false);
   // Hold the timeout so a rapid re-click resets the 2s window cleanly and we
   // can clear it on unmount (no setState-after-unmount warning).
@@ -82,8 +88,13 @@ export function CopyCitation({
     }
   }, [text]);
 
-  const idleLabel = label ?? "Zitat kopieren";
-  const visibleLabel = copied ? "Kopiert" : idleLabel;
+  // Idle label: the caller's localised label (ProvisionCard passes one) or the
+  // generic "Copy citation" fallback. The transient success state uses the
+  // shared "Copied" word (visible) and the fuller "Citation copied" (a11y).
+  const idleLabel = label ?? t(locale, SOURCE, "copyCitation");
+  const copiedShort = t(locale, COMMON, "copied");
+  const copiedLong = t(locale, SOURCE, "copyCitationDone");
+  const visibleLabel = copied ? copiedShort : idleLabel;
 
   return (
     <button
@@ -91,7 +102,7 @@ export function CopyCitation({
       onClick={handleCopy}
       // Accessible name reflects the action + transient result; the visible
       // <span> below carries the same text for sighted users.
-      aria-label={copied ? "Zitat kopiert" : idleLabel}
+      aria-label={copied ? copiedLong : idleLabel}
       className={
         "inline-flex items-center gap-1.5 rounded-md border border-gray-300 px-2.5 py-1 " +
         "text-small text-gray-700 hover:bg-gray-50 " +
@@ -110,7 +121,7 @@ export function CopyCitation({
       <span>{visibleLabel}</span>
       {/* Polite live region so screen readers hear the success transition. */}
       <span className="sr-only" role="status" aria-live="polite">
-        {copied ? "Zitat kopiert" : ""}
+        {copied ? copiedLong : ""}
       </span>
     </button>
   );

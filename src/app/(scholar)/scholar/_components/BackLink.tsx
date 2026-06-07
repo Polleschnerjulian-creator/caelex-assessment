@@ -30,10 +30,17 @@
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
+import { t } from "../_i18n/core";
+import { SOURCE } from "../_i18n/source";
+import { useScholarLocale } from "../_i18n/LocaleProvider";
+
 interface BackLinkProps {
   /** Where to go when there is no browser history to return to. Default "/scholar". */
   fallbackHref?: string;
-  /** Visible label. Default "Zurück". */
+  /**
+   * Visible label. Defaults to the localised "Back" (SOURCE.back) when omitted,
+   * resolved against the active Scholar UI locale via the provider.
+   */
   fallbackLabel?: string;
   /** Extra classes appended to the base link styling. */
   className?: string;
@@ -41,10 +48,14 @@ interface BackLinkProps {
 
 export function BackLink({
   fallbackHref = "/scholar",
-  fallbackLabel = "Zurück",
+  fallbackLabel,
   className,
 }: BackLinkProps) {
+  const locale = useScholarLocale();
   const router = useRouter();
+
+  // Fall back to the localised "Back" when no explicit label is provided.
+  const label = fallbackLabel ?? t(locale, SOURCE, "back");
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     // Prefer real back-navigation when there is history to return to; this is
@@ -65,7 +76,7 @@ export function BackLink({
       }`}
     >
       <ArrowLeft size={13} aria-hidden="true" />
-      {fallbackLabel}
+      {label}
     </a>
   );
 }

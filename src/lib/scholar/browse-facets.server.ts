@@ -26,6 +26,8 @@ import {
   type LegalSourceType,
   type ComplianceArea,
 } from "@/data/legal-sources";
+import { t, type ScholarLocale } from "@/app/(scholar)/scholar/_i18n/core";
+import { BROWSE } from "@/app/(scholar)/scholar/_i18n/browse";
 
 // ─── Public types ──────────────────────────────────────────────────────────
 
@@ -68,63 +70,78 @@ export interface BrowseResult {
   totalCount: number;
 }
 
-// ─── German label maps (local — surface-isolated, no Atlas import) ───────────
-// Defined here so the Library never imports from the frozen Atlas surface.
+// ─── Facet-vocabulary label maps (machine value → BROWSE namespace key) ───────
+// Surface-isolated: the Library never imports from the frozen Atlas surface.
+// Display strings live in _i18n/browse.ts (EN source of truth + de/it/fr/es);
+// these maps only point each controlled machine value at its translation key.
+// Resolve a label with labelForType / labelForArea (locale-aware).
 
-export const TYPE_LABELS_DE: Record<string, string> = {
-  international_treaty: "Internationaler Vertrag",
-  federal_law: "Bundesgesetz",
-  federal_regulation: "Bundesverordnung",
-  technical_standard: "Technischer Standard",
-  eu_regulation: "EU-Verordnung",
-  eu_directive: "EU-Richtlinie",
-  policy_document: "Politikdokument",
-  draft_legislation: "Gesetzentwurf",
-  certification_standard: "Zertifizierungsstandard",
-  industry_guideline: "Branchenrichtlinie",
-  insurance_clause: "Versicherungsklausel",
-  scientific_protocol: "Wissenschaftliches Protokoll",
-  soft_law_resolution: "Soft-Law-Resolution",
-  national_security_doctrine: "Nationale Sicherheitsdoktrin",
-  bilateral_agreement: "Bilaterales Abkommen",
-  multilateral_agreement: "Multilaterales Abkommen",
-  case_law: "Rechtsprechung",
-  procurement_framework: "Beschaffungsrahmen",
-  safety_regulation: "Sicherheitsvorschrift",
-  tax_treaty: "Doppelbesteuerungsabkommen",
+const TYPE_LABEL_KEYS: Record<string, keyof (typeof BROWSE)["en"]> = {
+  international_treaty: "typeInternationalTreaty",
+  federal_law: "typeFederalLaw",
+  federal_regulation: "typeFederalRegulation",
+  technical_standard: "typeTechnicalStandard",
+  eu_regulation: "typeEuRegulation",
+  eu_directive: "typeEuDirective",
+  policy_document: "typePolicyDocument",
+  draft_legislation: "typeDraftLegislation",
+  certification_standard: "typeCertificationStandard",
+  industry_guideline: "typeIndustryGuideline",
+  insurance_clause: "typeInsuranceClause",
+  scientific_protocol: "typeScientificProtocol",
+  soft_law_resolution: "typeSoftLawResolution",
+  national_security_doctrine: "typeNationalSecurityDoctrine",
+  bilateral_agreement: "typeBilateralAgreement",
+  multilateral_agreement: "typeMultilateralAgreement",
+  case_law: "typeCaseLaw",
+  procurement_framework: "typeProcurementFramework",
+  safety_regulation: "typeSafetyRegulation",
+  tax_treaty: "typeTaxTreaty",
 };
 
-export const AREA_LABELS_DE: Record<string, string> = {
-  licensing: "Lizenzierung",
-  registration: "Registrierung",
-  liability: "Haftung",
-  insurance: "Versicherung",
-  cybersecurity: "Cybersicherheit",
-  export_control: "Exportkontrolle",
-  data_security: "Datensicherheit",
-  frequency_spectrum: "Frequenzspektrum",
-  environmental: "Umwelt",
-  debris_mitigation: "Weltraummüll",
-  space_traffic_management: "Weltraumverkehr",
-  human_spaceflight: "Bemannte Raumfahrt",
-  military_dual_use: "Militärisch / Dual-Use",
-  competition_antitrust: "Wettbewerbsrecht",
-  state_aid: "Beihilfen",
-  procurement: "Beschaffung",
-  tax_customs: "Steuern & Zoll",
-  sanctions_compliance: "Sanktionen",
-  ip_patents: "Patente & IP",
-  product_liability: "Produkthaftung",
-  fdi_screening: "Investitionsprüfung",
-  ai_compliance: "KI-Compliance",
-  aml_kyc: "Geldwäsche / KYC",
-  consumer_protection: "Verbraucherschutz",
-  employment_labor: "Arbeitsrecht",
-  scientific_research: "Wissenschaft",
-  media_broadcasting: "Medien & Rundfunk",
-  critical_infrastructure: "Kritische Infrastruktur",
-  sustainability_reporting: "Nachhaltigkeitsberichte",
+const AREA_LABEL_KEYS: Record<string, keyof (typeof BROWSE)["en"]> = {
+  licensing: "areaLicensing",
+  registration: "areaRegistration",
+  liability: "areaLiability",
+  insurance: "areaInsurance",
+  cybersecurity: "areaCybersecurity",
+  export_control: "areaExportControl",
+  data_security: "areaDataSecurity",
+  frequency_spectrum: "areaFrequencySpectrum",
+  environmental: "areaEnvironmental",
+  debris_mitigation: "areaDebrisMitigation",
+  space_traffic_management: "areaSpaceTrafficManagement",
+  human_spaceflight: "areaHumanSpaceflight",
+  military_dual_use: "areaMilitaryDualUse",
+  competition_antitrust: "areaCompetitionAntitrust",
+  state_aid: "areaStateAid",
+  procurement: "areaProcurement",
+  tax_customs: "areaTaxCustoms",
+  sanctions_compliance: "areaSanctionsCompliance",
+  ip_patents: "areaIpPatents",
+  product_liability: "areaProductLiability",
+  fdi_screening: "areaFdiScreening",
+  ai_compliance: "areaAiCompliance",
+  aml_kyc: "areaAmlKyc",
+  consumer_protection: "areaConsumerProtection",
+  employment_labor: "areaEmploymentLabor",
+  scientific_research: "areaScientificResearch",
+  media_broadcasting: "areaMediaBroadcasting",
+  critical_infrastructure: "areaCriticalInfrastructure",
+  sustainability_reporting: "areaSustainabilityReporting",
 };
+
+/** Locale-aware label for a legal-source type machine value. */
+function labelForType(value: string, locale: ScholarLocale): string {
+  const key = TYPE_LABEL_KEYS[value];
+  return key ? t(locale, BROWSE, key) : value;
+}
+
+/** Locale-aware label for a compliance-area machine value. */
+function labelForArea(value: string, locale: ScholarLocale): string {
+  const key = AREA_LABEL_KEYS[value];
+  return key ? t(locale, BROWSE, key) : value;
+}
 
 // ─── Decade buckets (Chronologie) ────────────────────────────────────────────
 
@@ -140,16 +157,23 @@ const DECADE_ORDER = [
   "2020s",
 ] as const;
 
-const DECADE_LABELS: Record<string, string> = {
-  "pre-1960": "Vor 1960",
-  "1960s": "1960er",
-  "1970s": "1970er",
-  "1980s": "1980er",
-  "1990s": "1990er",
-  "2000s": "2000er",
-  "2010s": "2010er",
-  "2020s": "2020er",
+// Decade-bucket machine value → BROWSE key (display strings in _i18n/browse.ts).
+const DECADE_LABEL_KEYS: Record<string, keyof (typeof BROWSE)["en"]> = {
+  "pre-1960": "decadePre1960",
+  "1960s": "decade1960s",
+  "1970s": "decade1970s",
+  "1980s": "decade1980s",
+  "1990s": "decade1990s",
+  "2000s": "decade2000s",
+  "2010s": "decade2010s",
+  "2020s": "decade2020s",
 };
+
+/** Locale-aware label for a decade-bucket machine value. */
+function labelForDecade(value: string, locale: ScholarLocale): string {
+  const key = DECADE_LABEL_KEYS[value];
+  return key ? t(locale, BROWSE, key) : value;
+}
 
 /**
  * The chronology anchor for a source: prefer date_in_force (the date it became
@@ -178,11 +202,27 @@ function decadeBucket(year: number | null): string | null {
 }
 
 // ─── Jurisdiction label (kept local; INT/EU specials) ────────────────────────
+// INT/EU are not in ISO-3166; their display names are localised via BROWSE.
 
-const SPECIAL_JURISDICTION_NAMES: Record<string, string> = {
-  INT: "International",
-  EU: "Europäische Union",
+const SPECIAL_JURISDICTION_KEYS: Record<string, keyof (typeof BROWSE)["en"]> = {
+  INT: "jurisdictionINT",
+  EU: "jurisdictionEU",
 };
+
+/**
+ * Resolve a jurisdiction code to a display name: INT/EU via BROWSE (locale-aware),
+ * everything else via the caller-supplied ISO-3166 resolver. Falls back to the
+ * raw code as a last resort.
+ */
+function labelForJurisdiction(
+  code: string,
+  locale: ScholarLocale,
+  jurisdictionName: (c: string) => string,
+): string {
+  const key = SPECIAL_JURISDICTION_KEYS[code];
+  if (key) return t(locale, BROWSE, key);
+  return jurisdictionName(code) ?? code;
+}
 
 // ─── Selection parsing ───────────────────────────────────────────────────────
 
@@ -295,10 +335,13 @@ const RELEVANCE_ORDER: Record<string, number> = {
  * @param jurisdictionName  resolver for a jurisdiction code → display name
  *                          (the page passes its ISO-3166 helper so we don't
  *                          duplicate the country table here)
+ * @param locale  active Scholar UI locale for facet labels + group headings
+ *                 (EN fallback when omitted, e.g. unauthenticated)
  */
 export function buildBrowse(
   sel: BrowseSelection,
   jurisdictionName: (code: string) => string,
+  locale: ScholarLocale = "en",
 ): BrowseResult {
   // ── Facet: Quellentyp ──────────────────────────────────────────────────
   const typeBase = passingExcept("type", sel);
@@ -309,10 +352,12 @@ export function buildBrowse(
   const typeOptions: FacetOption[] = Array.from(typeCounts.entries())
     .map(([value, count]) => ({
       value,
-      label: TYPE_LABELS_DE[value] ?? value,
+      label: labelForType(value, locale),
       count,
     }))
-    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "de"));
+    .sort(
+      (a, b) => b.count - a.count || a.label.localeCompare(b.label, locale),
+    );
 
   // ── Facet: Jurisdiktion ────────────────────────────────────────────────
   const jurBase = passingExcept("jurisdiction", sel);
@@ -323,17 +368,16 @@ export function buildBrowse(
   const jurOptions: FacetOption[] = Array.from(jurCounts.entries())
     .map(([value, count]) => ({
       value,
-      label:
-        SPECIAL_JURISDICTION_NAMES[value] ?? jurisdictionName(value) ?? value,
+      label: labelForJurisdiction(value, locale, jurisdictionName),
       count,
     }))
     .sort((a, b) => {
-      // Pin INT then EU to the top; rest alphabetical by German label.
+      // Pin INT then EU to the top; rest alphabetical by localised label.
       if (a.value === "INT") return -1;
       if (b.value === "INT") return 1;
       if (a.value === "EU") return -1;
       if (b.value === "EU") return 1;
-      return a.label.localeCompare(b.label, "de");
+      return a.label.localeCompare(b.label, locale);
     });
 
   // ── Facet: Thema (compliance_areas) ────────────────────────────────────
@@ -347,10 +391,12 @@ export function buildBrowse(
   const areaOptions: FacetOption[] = Array.from(areaCounts.entries())
     .map(([value, count]) => ({
       value,
-      label: AREA_LABELS_DE[value] ?? value,
+      label: labelForArea(value, locale),
       count,
     }))
-    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "de"));
+    .sort(
+      (a, b) => b.count - a.count || a.label.localeCompare(b.label, locale),
+    );
 
   // ── Facet: Chronologie (decade buckets) ────────────────────────────────
   const decBase = passingExcept("decade", sel);
@@ -364,15 +410,31 @@ export function buildBrowse(
     decCounts.has(d),
   ).map((d) => ({
     value: d,
-    label: DECADE_LABELS[d],
+    label: labelForDecade(d, locale),
     count: decCounts.get(d) ?? 0,
   }));
 
   const groups: FacetGroup[] = [
-    { key: "type", heading: "Quellentyp", options: typeOptions },
-    { key: "jurisdiction", heading: "Jurisdiktion", options: jurOptions },
-    { key: "area", heading: "Thema", options: areaOptions },
-    { key: "decade", heading: "Chronologie", options: decOptions },
+    {
+      key: "type",
+      heading: t(locale, BROWSE, "groupType"),
+      options: typeOptions,
+    },
+    {
+      key: "jurisdiction",
+      heading: t(locale, BROWSE, "groupJurisdiction"),
+      options: jurOptions,
+    },
+    {
+      key: "area",
+      heading: t(locale, BROWSE, "groupArea"),
+      options: areaOptions,
+    },
+    {
+      key: "decade",
+      heading: t(locale, BROWSE, "groupDecade"),
+      options: decOptions,
+    },
   ];
 
   // ── Filtered result list (AND across all groups) ───────────────────────
@@ -476,33 +538,39 @@ export function hasActiveFilters(sel: BrowseSelection): boolean {
   );
 }
 
-/** Human-readable label for an active value, for chip display. */
+/** Human-readable, locale-aware label for an active value, for chip display. */
 export function labelForValue(
   group: FacetGroupKey,
   value: string,
   jurisdictionName: (code: string) => string,
+  locale: ScholarLocale = "en",
 ): string {
   switch (group) {
     case "type":
-      return TYPE_LABELS_DE[value] ?? value;
+      return labelForType(value, locale);
     case "area":
-      return AREA_LABELS_DE[value] ?? value;
+      return labelForArea(value, locale);
     case "decade":
-      return DECADE_LABELS[value] ?? value;
+      return labelForDecade(value, locale);
     case "jurisdiction":
-      return (
-        SPECIAL_JURISDICTION_NAMES[value] ?? jurisdictionName(value) ?? value
-      );
+      return labelForJurisdiction(value, locale, jurisdictionName);
   }
 }
 
-/** German heading for a group key (for chip a11y text). */
-export const GROUP_HEADINGS: Record<FacetGroupKey, string> = {
-  type: "Quellentyp",
-  jurisdiction: "Jurisdiktion",
-  area: "Thema",
-  decade: "Chronologie",
+/** Locale-aware heading for a group key (for chip a11y text). */
+const GROUP_HEADING_KEYS: Record<FacetGroupKey, keyof (typeof BROWSE)["en"]> = {
+  type: "groupType",
+  jurisdiction: "groupJurisdiction",
+  area: "groupArea",
+  decade: "groupDecade",
 };
+
+export function groupHeading(
+  group: FacetGroupKey,
+  locale: ScholarLocale = "en",
+): string {
+  return t(locale, BROWSE, GROUP_HEADING_KEYS[group]);
+}
 
 // Re-export the corpus types used in page props for convenience.
 export type { NormalizedLegalSource, LegalSourceType, ComplianceArea };

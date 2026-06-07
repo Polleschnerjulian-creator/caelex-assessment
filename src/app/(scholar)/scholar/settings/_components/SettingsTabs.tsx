@@ -25,6 +25,9 @@ import {
   type ReactNode,
   type KeyboardEvent,
 } from "react";
+import { t } from "../../_i18n/core";
+import { SETTINGS } from "../../_i18n/settings";
+import { useScholarLocale } from "../../_i18n/LocaleProvider";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -44,6 +47,7 @@ type Props = {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function SettingsTabs({ tabs, defaultTab }: Props) {
+  const locale = useScholarLocale();
   const [activeId, setActiveId] = useState<string>(
     () => defaultTab ?? tabs[0]?.id ?? "",
   );
@@ -95,7 +99,7 @@ export function SettingsTabs({ tabs, defaultTab }: Props) {
       {/* ── Left: category rail (desktop) / horizontal strip (mobile) ────── */}
       <nav
         role="tablist"
-        aria-label="Einstellungs-Kategorien"
+        aria-label={t(locale, SETTINGS, "tablistLabel")}
         aria-orientation="vertical"
         className={[
           // mobile: horizontal scrollable strip

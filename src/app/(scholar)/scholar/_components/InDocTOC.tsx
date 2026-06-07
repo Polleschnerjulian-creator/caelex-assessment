@@ -30,6 +30,9 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { t } from "../_i18n/core";
+import { SOURCE } from "../_i18n/source";
+import { useScholarLocale } from "../_i18n/LocaleProvider";
 import { SCHOLAR_TYPE } from "./scholar-type";
 
 export interface InDocTOCItem {
@@ -39,14 +42,18 @@ export interface InDocTOCItem {
 
 export function InDocTOC({
   items,
-  title = "Inhalt",
+  title,
   className,
 }: {
   items: InDocTOCItem[];
   title?: string;
   className?: string;
 }) {
+  const locale = useScholarLocale();
   const [activeId, setActiveId] = useState<string | null>(null);
+  // Default the visible TOC title to the localised "Contents" when no explicit
+  // title is supplied; an explicit prop still wins.
+  const tocTitle = title ?? t(locale, SOURCE, "tocContent");
   // Hold the latest active id without re-subscribing the observer.
   const activeIdRef = useRef<string | null>(null);
 
@@ -154,8 +161,11 @@ export function InDocTOC({
   if (items.length === 0) return null;
 
   return (
-    <nav aria-label="Inhaltsverzeichnis" className={className ?? undefined}>
-      <p className={`mb-2 ${SCHOLAR_TYPE.eyebrow}`}>{title}</p>
+    <nav
+      aria-label={t(locale, SOURCE, "tocNavLabel")}
+      className={className ?? undefined}
+    >
+      <p className={`mb-2 ${SCHOLAR_TYPE.eyebrow}`}>{tocTitle}</p>
       <ul className="flex flex-col">
         {items.map((item) => {
           const isActive = item.id === activeId;

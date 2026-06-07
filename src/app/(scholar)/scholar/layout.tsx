@@ -4,6 +4,8 @@ import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { hasProductAccess } from "@/lib/products";
 import { isSuperAdmin } from "@/lib/super-admin";
 import ScholarShell from "./ScholarShell";
+import { getScholarLocale } from "./_i18n/locale.server";
+import { ScholarLocaleProvider } from "./_i18n/LocaleProvider";
 
 /**
  * Caelex Scholar — Route-group layout (Tasks 3.1/3.2).
@@ -18,6 +20,12 @@ import ScholarShell from "./ScholarShell";
  *
  * Chrome (sidebar + full-page shell) is provided by the client component
  * ScholarShell, mirroring the pattern used by the old AtlasShell.
+ *
+ * i18n: the UI locale is resolved ONCE here from the user's persisted
+ * preference (getScholarLocale) and provided to the whole client subtree via
+ * ScholarLocaleProvider. Client components read it with useScholarLocale();
+ * server pages resolve their own locale with getScholarLocale and pass it down
+ * as a prop. The <html lang> for the surface is set on ScholarShell's wrapper.
  */
 export default async function ScholarLayout({
   children,
@@ -38,5 +46,14 @@ export default async function ScholarLayout({
     if (!ok) redirect("/scholar-no-access");
   }
 
-  return <ScholarShell>{children}</ScholarShell>;
+  const locale = await getScholarLocale(session.user.id);
+
+  // ScholarShell is a client component; it reads the locale from context via
+  // useScholarLocale() (per the wiring contract: client comps use the hook, not
+  // props). The provider must therefore wrap it.
+  return (
+    <ScholarLocaleProvider locale={locale}>
+      <ScholarShell>{children}</ScholarShell>
+    </ScholarLocaleProvider>
+  );
 }

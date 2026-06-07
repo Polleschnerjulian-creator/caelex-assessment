@@ -16,6 +16,10 @@
  */
 
 import { useActionState, useEffect, useRef } from "react";
+import { t } from "../_i18n/core";
+import { COMMON } from "../_i18n/common";
+import { SETTINGS } from "../_i18n/settings";
+import { useScholarLocale } from "../_i18n/LocaleProvider";
 
 // ─── Shared result type (matches what server actions return) ──────────────────
 
@@ -27,6 +31,7 @@ export type ActionResult =
 // ─── Shared status banner ─────────────────────────────────────────────────────
 
 function StatusBanner({ result }: { result: ActionResult }) {
+  const locale = useScholarLocale();
   if (!result) return null;
 
   if (result.ok) {
@@ -36,7 +41,7 @@ function StatusBanner({ result }: { result: ActionResult }) {
         aria-live="polite"
         className="mt-2 text-[12px] text-green-700 font-medium"
       >
-        {result.message ?? "✓ Gespeichert"}
+        {result.message ?? t(locale, SETTINGS, "bannerSavedDefault")}
       </p>
     );
   }
@@ -67,6 +72,7 @@ type NameFormProps = {
 };
 
 export function NameForm({ action, defaultValue }: NameFormProps) {
+  const locale = useScholarLocale();
   const [result, dispatch, isPending] = useActionState<ActionResult, FormData>(
     action,
     null,
@@ -75,13 +81,13 @@ export function NameForm({ action, defaultValue }: NameFormProps) {
   return (
     <form
       action={dispatch}
-      aria-label="Name ändern"
+      aria-label={t(locale, SETTINGS, "nameFormAriaLabel")}
       className="px-5 py-4 border-b border-gray-100"
     >
       <div className="flex items-end gap-3">
         <div className="flex-1">
           <label htmlFor="settings-name" className={FIELD_LABEL_CLS}>
-            Name
+            {t(locale, SETTINGS, "nameLabel")}
           </label>
           <input
             id="settings-name"
@@ -95,7 +101,7 @@ export function NameForm({ action, defaultValue }: NameFormProps) {
             aria-describedby="settings-name-hint"
           />
           <p id="settings-name-hint" className="mt-1 text-[11px] text-gray-500">
-            Maximal 100 Zeichen, darf nicht leer sein.
+            {t(locale, SETTINGS, "nameHint")}
           </p>
           <StatusBanner result={result} />
         </div>
@@ -105,7 +111,9 @@ export function NameForm({ action, defaultValue }: NameFormProps) {
           disabled={isPending}
           aria-disabled={isPending}
         >
-          {isPending ? "…" : "Speichern"}
+          {isPending
+            ? t(locale, SETTINGS, "pendingEllipsis")
+            : t(locale, COMMON, "save")}
         </button>
       </div>
     </form>
@@ -131,6 +139,7 @@ export function PrefsForm({
   semanticSearch,
   resultsPerPage,
 }: PrefsFormProps) {
+  const locale = useScholarLocale();
   const [result, dispatch, isPending] = useActionState<ActionResult, FormData>(
     action,
     null,
@@ -139,13 +148,13 @@ export function PrefsForm({
   return (
     <form
       action={dispatch}
-      aria-label="Recherche-Präferenzen speichern"
+      aria-label={t(locale, SETTINGS, "prefsFormAriaLabel")}
       className="space-y-5"
     >
       {/* Standard-Jurisdiktion */}
       <div>
         <label htmlFor="pref-jurisdiction" className={FIELD_LABEL_CLS}>
-          Standard-Jurisdiktion
+          {t(locale, SETTINGS, "defaultJurisdictionLabel")}
         </label>
         <select
           id="pref-jurisdiction"
@@ -153,7 +162,9 @@ export function PrefsForm({
           defaultValue={defaultJurisdiction ?? ""}
           className={INPUT_CLS}
         >
-          <option value="">Keine (alle Jurisdiktionen)</option>
+          <option value="">
+            {t(locale, SETTINGS, "defaultJurisdictionNone")}
+          </option>
           {jurisdictions.map((j) => (
             <option key={j.code} value={j.code}>
               {j.code} — {j.label}
@@ -161,14 +172,14 @@ export function PrefsForm({
           ))}
         </select>
         <p className="mt-1 text-[11px] text-gray-500">
-          Wird in der Bibliothek als vorausgewählter Filter verwendet.
+          {t(locale, SETTINGS, "defaultJurisdictionHint")}
         </p>
       </div>
 
       {/* Zitationsformat */}
       <div>
         <label htmlFor="pref-citation" className={FIELD_LABEL_CLS}>
-          Zitationsformat
+          {t(locale, SETTINGS, "citationFormatLabel")}
         </label>
         <select
           id="pref-citation"
@@ -176,16 +187,22 @@ export function PrefsForm({
           defaultValue={citationFormat}
           className={INPUT_CLS}
         >
-          <option value="din">Deutsche Zitierweise (DIN 1505)</option>
-          <option value="oscola">OSCOLA</option>
-          <option value="bluebook">Bluebook</option>
+          <option value="din">
+            {t(locale, SETTINGS, "citationFormatDin")}
+          </option>
+          <option value="oscola">
+            {t(locale, SETTINGS, "citationFormatOscola")}
+          </option>
+          <option value="bluebook">
+            {t(locale, SETTINGS, "citationFormatBluebook")}
+          </option>
         </select>
       </div>
 
       {/* Semantische Suche */}
       <div>
         <label htmlFor="pref-semantic" className={FIELD_LABEL_CLS}>
-          Semantische Suche
+          {t(locale, SETTINGS, "semanticSearchLabel")}
         </label>
         <select
           id="pref-semantic"
@@ -193,18 +210,20 @@ export function PrefsForm({
           defaultValue={semanticSearch ? "on" : "off"}
           className={INPUT_CLS}
         >
-          <option value="on">Aktiviert</option>
-          <option value="off">Deaktiviert (nur Keyword-Suche)</option>
+          <option value="on">{t(locale, SETTINGS, "semanticSearchOn")}</option>
+          <option value="off">
+            {t(locale, SETTINGS, "semanticSearchOff")}
+          </option>
         </select>
         <p className="mt-1 text-[11px] text-gray-500">
-          Semantische Suche nutzt Embeddings für kontextbezogene Ergebnisse.
+          {t(locale, SETTINGS, "semanticSearchHint")}
         </p>
       </div>
 
       {/* Treffer pro Seite */}
       <div>
         <label htmlFor="pref-results" className={FIELD_LABEL_CLS}>
-          Treffer pro Seite
+          {t(locale, SETTINGS, "resultsPerPageLabel")}
         </label>
         <select
           id="pref-results"
@@ -226,7 +245,9 @@ export function PrefsForm({
           disabled={isPending}
           aria-disabled={isPending}
         >
-          {isPending ? "…" : "Einstellungen speichern"}
+          {isPending
+            ? t(locale, SETTINGS, "pendingEllipsis")
+            : t(locale, SETTINGS, "savePrefs")}
         </button>
         <StatusBanner result={result} />
       </div>
@@ -253,6 +274,7 @@ export function SourceLangForm({
   resultsPerPage,
   sourceLanguage,
 }: SourceLangFormProps) {
+  const locale = useScholarLocale();
   const [result, dispatch, isPending] = useActionState<ActionResult, FormData>(
     action,
     null,
@@ -261,7 +283,7 @@ export function SourceLangForm({
   return (
     <form
       action={dispatch}
-      aria-label="Quellsprache speichern"
+      aria-label={t(locale, SETTINGS, "sourceLangFormAriaLabel")}
       className="space-y-4"
     >
       {/* Hidden carry-fields so savePrefs gets all values */}
@@ -284,7 +306,7 @@ export function SourceLangForm({
 
       <div>
         <label htmlFor="pref-source-lang" className={FIELD_LABEL_CLS}>
-          Quellsprache
+          {t(locale, SETTINGS, "sourceLanguageLabel")}
         </label>
         <select
           id="pref-source-lang"
@@ -292,14 +314,15 @@ export function SourceLangForm({
           defaultValue={sourceLanguage}
           className={INPUT_CLS}
         >
-          <option value="original">Original (Sprache des Dokuments)</option>
-          <option value="de">Deutsch</option>
-          <option value="fr">Français</option>
-          <option value="en">English</option>
+          <option value="original">
+            {t(locale, SETTINGS, "sourceLangOriginal")}
+          </option>
+          <option value="de">{t(locale, SETTINGS, "sourceLangDe")}</option>
+          <option value="fr">{t(locale, SETTINGS, "sourceLangFr")}</option>
+          <option value="en">{t(locale, SETTINGS, "sourceLangEn")}</option>
         </select>
         <p className="mt-2 text-[12px] text-gray-600 leading-relaxed">
-          Bestimmt, in welcher Sprache Quelltexte angezeigt werden, sofern
-          Übersetzungen vorliegen.
+          {t(locale, SETTINGS, "sourceLangHint")}
         </p>
       </div>
 
@@ -310,7 +333,111 @@ export function SourceLangForm({
           disabled={isPending}
           aria-disabled={isPending}
         >
-          {isPending ? "…" : "Sprache speichern"}
+          {isPending
+            ? t(locale, SETTINGS, "pendingEllipsis")
+            : t(locale, SETTINGS, "saveSourceLang")}
+        </button>
+        <StatusBanner result={result} />
+      </div>
+    </form>
+  );
+}
+
+// ─── 3b. Interface (UI chrome) language form ──────────────────────────────────
+// Distinct from SourceLangForm: this controls the language of the Scholar
+// INTERFACE (menus/labels/buttons), persisted as ScholarUserPreferences.
+// uiLanguage. Options come from LOCALE_LABELS (native-language names). The
+// single handleSavePrefs action receives the existing prefs as hidden carry-
+// fields plus the chosen uiLanguage.
+
+type InterfaceLangFormProps = {
+  action: (prev: ActionResult, formData: FormData) => Promise<ActionResult>;
+  /** Native-language labels for each selectable UI locale (from LOCALE_LABELS). */
+  options: { value: string; label: string }[];
+  defaultJurisdiction: string | null;
+  citationFormat: string;
+  semanticSearch: boolean;
+  resultsPerPage: number;
+  sourceLanguage: string;
+  uiLanguage: string;
+};
+
+export function InterfaceLangForm({
+  action,
+  options,
+  defaultJurisdiction,
+  citationFormat,
+  semanticSearch,
+  resultsPerPage,
+  sourceLanguage,
+  uiLanguage,
+}: InterfaceLangFormProps) {
+  const locale = useScholarLocale();
+  const [result, dispatch, isPending] = useActionState<ActionResult, FormData>(
+    action,
+    null,
+  );
+
+  return (
+    <form
+      action={dispatch}
+      aria-label={t(locale, SETTINGS, "interfaceFormAriaLabel")}
+      className="space-y-4"
+    >
+      {/* Hidden carry-fields so savePrefs receives every existing value */}
+      <input
+        type="hidden"
+        name="defaultJurisdiction"
+        value={defaultJurisdiction ?? ""}
+      />
+      <input type="hidden" name="citationFormat" value={citationFormat} />
+      <input
+        type="hidden"
+        name="semanticSearch"
+        value={semanticSearch ? "on" : "off"}
+      />
+      <input
+        type="hidden"
+        name="resultsPerPage"
+        value={String(resultsPerPage)}
+      />
+      <input type="hidden" name="sourceLanguage" value={sourceLanguage} />
+
+      <div>
+        <label htmlFor="pref-ui-lang" className={FIELD_LABEL_CLS}>
+          {t(locale, SETTINGS, "interfaceLanguageLabel")}
+        </label>
+        <select
+          id="pref-ui-lang"
+          name="uiLanguage"
+          defaultValue={uiLanguage}
+          className={INPUT_CLS}
+          aria-describedby="pref-ui-lang-hint"
+        >
+          {options.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+        <p
+          id="pref-ui-lang-hint"
+          className="mt-2 text-[12px] text-gray-600 leading-relaxed"
+        >
+          {t(locale, SETTINGS, "interfaceLanguageHint")}
+        </p>
+      </div>
+
+      <div className="pt-1">
+        <button
+          type="submit"
+          className={SAVE_BTN_CLS}
+          disabled={isPending}
+          aria-disabled={isPending}
+        >
+          {isPending
+            ? t(locale, SETTINGS, "pendingEllipsis")
+            : t(locale, SETTINGS, "saveInterfaceLanguage")}
         </button>
         <StatusBanner result={result} />
       </div>
@@ -325,6 +452,7 @@ type PasswordFormProps = {
 };
 
 export function PasswordForm({ action }: PasswordFormProps) {
+  const locale = useScholarLocale();
   const [result, dispatch, isPending] = useActionState<ActionResult, FormData>(
     action,
     null,
@@ -342,12 +470,12 @@ export function PasswordForm({ action }: PasswordFormProps) {
     <form
       ref={formRef}
       action={dispatch}
-      aria-label="Passwort ändern"
+      aria-label={t(locale, SETTINGS, "passwordFormAriaLabel")}
       className="space-y-3"
     >
       <div>
         <label htmlFor="sec-current-pw" className={FIELD_LABEL_CLS}>
-          Aktuelles Passwort
+          {t(locale, SETTINGS, "currentPasswordLabel")}
         </label>
         <input
           id="sec-current-pw"
@@ -360,7 +488,7 @@ export function PasswordForm({ action }: PasswordFormProps) {
       </div>
       <div>
         <label htmlFor="sec-new-pw" className={FIELD_LABEL_CLS}>
-          Neues Passwort
+          {t(locale, SETTINGS, "newPasswordLabel")}
         </label>
         <input
           id="sec-new-pw"
@@ -373,12 +501,12 @@ export function PasswordForm({ action }: PasswordFormProps) {
           aria-describedby="sec-new-pw-hint"
         />
         <p id="sec-new-pw-hint" className="mt-1 text-[11px] text-gray-500">
-          Mindestens 8 Zeichen, muss sich vom aktuellen unterscheiden.
+          {t(locale, SETTINGS, "newPasswordHint")}
         </p>
       </div>
       <div>
         <label htmlFor="sec-confirm-pw" className={FIELD_LABEL_CLS}>
-          Passwort bestätigen
+          {t(locale, SETTINGS, "confirmPasswordLabel")}
         </label>
         <input
           id="sec-confirm-pw"
@@ -397,7 +525,9 @@ export function PasswordForm({ action }: PasswordFormProps) {
           disabled={isPending}
           aria-disabled={isPending}
         >
-          {isPending ? "…" : "Passwort speichern"}
+          {isPending
+            ? t(locale, SETTINGS, "pendingEllipsis")
+            : t(locale, SETTINGS, "savePassword")}
         </button>
         <StatusBanner result={result} />
       </div>
@@ -413,13 +543,17 @@ type HistoryToggleFormProps = {
 };
 
 export function HistoryToggleForm({ action, enabled }: HistoryToggleFormProps) {
+  const locale = useScholarLocale();
   const [result, dispatch, isPending] = useActionState<ActionResult, FormData>(
     action,
     null,
   );
 
   return (
-    <form action={dispatch} aria-label="Suchverlauf-Einstellung">
+    <form
+      action={dispatch}
+      aria-label={t(locale, SETTINGS, "historyToggleAriaLabel")}
+    >
       <input
         type="hidden"
         name="searchHistoryEnabled"
@@ -428,12 +562,14 @@ export function HistoryToggleForm({ action, enabled }: HistoryToggleFormProps) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-[13px] text-gray-900 font-medium">
-            Suchverlauf aufzeichnen
+            {t(locale, SETTINGS, "recordSearchHistory")}
           </p>
           <p className="text-[12px] text-gray-500 mt-0.5">
-            Aktuell:{" "}
+            {t(locale, SETTINGS, "currentlyPrefix")}{" "}
             <span className={enabled ? "text-green-700" : "text-gray-500"}>
-              {enabled ? "Aktiviert" : "Deaktiviert"}
+              {enabled
+                ? t(locale, COMMON, "enabled")
+                : t(locale, COMMON, "disabled")}
             </span>
           </p>
         </div>
@@ -443,7 +579,11 @@ export function HistoryToggleForm({ action, enabled }: HistoryToggleFormProps) {
           aria-disabled={isPending}
           className="text-[12px] font-medium text-gray-700 border border-gray-200 hover:border-gray-400 hover:text-gray-900 rounded-lg px-3 py-2 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 disabled:opacity-50"
         >
-          {isPending ? "…" : enabled ? "Deaktivieren" : "Aktivieren"}
+          {isPending
+            ? t(locale, SETTINGS, "pendingEllipsis")
+            : enabled
+              ? t(locale, COMMON, "deactivate")
+              : t(locale, COMMON, "activate")}
         </button>
       </div>
       <StatusBanner result={result} />
@@ -462,18 +602,22 @@ export function ClearHistoryForm({
   action,
   hasHistory,
 }: ClearHistoryFormProps) {
+  const locale = useScholarLocale();
   const [result, dispatch, isPending] = useActionState<ActionResult, FormData>(
     action,
     null,
   );
 
   return (
-    <form action={dispatch} aria-label="Suchverlauf löschen">
+    <form
+      action={dispatch}
+      aria-label={t(locale, SETTINGS, "clearHistoryAriaLabel")}
+    >
       <div className="flex items-center justify-between">
         <p className="text-[13px] text-gray-700">
           {hasHistory
-            ? "Gespeicherte Suchen werden dauerhaft gelöscht."
-            : "Kein Suchverlauf vorhanden."}
+            ? t(locale, SETTINGS, "clearHistoryWarn")
+            : t(locale, SETTINGS, "clearHistoryEmpty")}
         </p>
         <button
           type="submit"
@@ -481,7 +625,9 @@ export function ClearHistoryForm({
           aria-disabled={isPending || !hasHistory}
           className="text-[12px] font-medium text-red-600 border border-red-200 hover:border-red-400 hover:text-red-700 rounded-lg px-3 py-2 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {isPending ? "…" : "Suchverlauf löschen"}
+          {isPending
+            ? t(locale, SETTINGS, "pendingEllipsis")
+            : t(locale, SETTINGS, "clearHistoryButton")}
         </button>
       </div>
       <StatusBanner result={result} />

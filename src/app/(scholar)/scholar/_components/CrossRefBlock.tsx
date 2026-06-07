@@ -30,23 +30,28 @@
 
 import Link from "next/link";
 
+import { DEFAULT_SCHOLAR_LOCALE, t, type ScholarLocale } from "../_i18n/core";
+import { SOURCE } from "../_i18n/source";
 import { SCHOLAR_TYPE } from "./scholar-type";
 import { Eyebrow } from "./Eyebrow";
 
-// ─── Source type → human German eyebrow label ──────────────────────────
-// Mirrors the source-detail page's TYPE_LABELS so a related-source chip reads
+// ─── Source type → SOURCE-namespace eyebrow key ────────────────────────
+// Mirrors the source-detail page's type mapping so a related-source chip reads
 // in the same vocabulary as the page it links to. Anything unmapped is
 // humanised + uppercased so the eyebrow never shows a raw snake_case enum.
-const TYPE_LABELS: Record<string, string> = {
-  international_treaty: "TREATY",
-  eu_regulation: "EU-VERORDNUNG",
-  eu_directive: "EU-RICHTLINIE",
-  federal_law: "GESETZ",
-  federal_regulation: "VERORDNUNG",
+const TYPE_LABEL_KEYS: Record<string, keyof (typeof SOURCE)["en"]> = {
+  international_treaty: "typeTreaty",
+  eu_regulation: "typeEuRegulation",
+  eu_directive: "typeEuDirective",
+  federal_law: "typeFederalLaw",
+  federal_regulation: "typeFederalRegulation",
 };
 
-function typeLabel(type: string): string {
-  return TYPE_LABELS[type] ?? type.replace(/_/g, " ").trim().toUpperCase();
+function typeLabel(type: string, locale: ScholarLocale): string {
+  const key = TYPE_LABEL_KEYS[type];
+  return key
+    ? t(locale, SOURCE, key)
+    : type.replace(/_/g, " ").trim().toUpperCase();
 }
 
 // Shared link affordance — identical focus ring + hover treatment for both
@@ -71,9 +76,14 @@ export interface CrossRefCitingCase {
 interface CrossRefBlockProps {
   related: CrossRefRelated[];
   citingCases: CrossRefCitingCase[];
+  locale?: ScholarLocale;
 }
 
-export function CrossRefBlock({ related, citingCases }: CrossRefBlockProps) {
+export function CrossRefBlock({
+  related,
+  citingCases,
+  locale = DEFAULT_SCHOLAR_LOCALE,
+}: CrossRefBlockProps) {
   // Render nothing when there is no graph to show (concept §2d — block appears
   // only when something resolves).
   if (related.length === 0 && citingCases.length === 0) return null;
@@ -90,7 +100,7 @@ export function CrossRefBlock({ related, citingCases }: CrossRefBlockProps) {
             id="crossref-related-heading"
             className={SCHOLAR_TYPE.partHeading}
           >
-            Verwandte Quellen
+            {t(locale, SOURCE, "relatedSources")}
           </h2>
           <ul className="flex flex-col gap-1" role="list">
             {related.map((r) => (
@@ -100,7 +110,7 @@ export function CrossRefBlock({ related, citingCases }: CrossRefBlockProps) {
                   className={LINK_CLASS}
                 >
                   <Eyebrow className="text-gray-600">
-                    {typeLabel(r.type)}
+                    {typeLabel(r.type, locale)}
                   </Eyebrow>
                   <span
                     className={`block ${SCHOLAR_TYPE.body} group-hover:text-black motion-safe:transition-colors`}
@@ -121,7 +131,7 @@ export function CrossRefBlock({ related, citingCases }: CrossRefBlockProps) {
           className="rounded-2xl border border-gray-200/70 bg-white p-6 shadow-sm space-y-4"
         >
           <h2 id="crossref-cases-heading" className={SCHOLAR_TYPE.partHeading}>
-            Fälle, die diese Quelle anwenden
+            {t(locale, SOURCE, "citingCases")}
           </h2>
           <ul className="flex flex-col gap-1" role="list">
             {citingCases.map((c) => (

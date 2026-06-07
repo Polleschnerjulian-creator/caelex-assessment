@@ -7,31 +7,36 @@ import { ScholarPage } from "./_components/ScholarPage";
 import { Eyebrow } from "./_components/Eyebrow";
 import { RelevanceGlyph } from "./_components/RelevanceGlyph";
 import { SCHOLAR_TYPE } from "./_components/scholar-type";
+import { t, type ScholarLocale } from "./_i18n/core";
+import { useScholarLocale } from "./_i18n/LocaleProvider";
+import { SEARCH, exampleChips } from "./_i18n/search";
 
-// ─── German source-type labels (Eyebrow kicker per row) ──────────────
-// Monochrome eyebrow text only — no colour. Falls back to the raw type
-// string for any code not mapped here.
-const TYPE_LABELS_DE: Record<string, string> = {
-  international_treaty: "Vertrag",
-  federal_law: "Gesetz",
-  federal_regulation: "Verordnung",
-  technical_standard: "Standard",
-  eu_regulation: "EU-Verordnung",
-  eu_directive: "EU-Richtlinie",
-  policy_document: "Leitlinie",
-  draft_legislation: "Entwurf",
-  certification_standard: "Zertifizierung",
-  industry_guideline: "Leitfaden",
-  insurance_clause: "Klausel",
-  scientific_protocol: "Protokoll",
-  soft_law_resolution: "Resolution",
-  national_security_doctrine: "Doktrin",
-  bilateral_agreement: "Bilateral",
-  multilateral_agreement: "Multilateral",
-  case_law: "Rechtsprechung",
-  procurement_framework: "Vergabe",
-  safety_regulation: "Sicherheit",
-  tax_treaty: "Steuer",
+// ─── Source-type → SEARCH-namespace full-form label key (Eyebrow kicker) ──
+// Monochrome eyebrow text only — no colour. The search rows render a wider
+// type column than SourceRow, so they use the full-form `type*` labels in the
+// SEARCH namespace (these are the exact strings the page showed before i18n).
+// Falls back to the raw type string for any code not mapped here.
+const TYPE_LABEL_KEYS: Record<string, keyof (typeof SEARCH)["en"]> = {
+  international_treaty: "typeInternationalTreaty",
+  federal_law: "typeFederalLaw",
+  federal_regulation: "typeFederalRegulation",
+  technical_standard: "typeTechnicalStandard",
+  eu_regulation: "typeEuRegulation",
+  eu_directive: "typeEuDirective",
+  policy_document: "typePolicyDocument",
+  draft_legislation: "typeDraftLegislation",
+  certification_standard: "typeCertificationStandard",
+  industry_guideline: "typeIndustryGuideline",
+  insurance_clause: "typeInsuranceClause",
+  scientific_protocol: "typeScientificProtocol",
+  soft_law_resolution: "typeSoftLawResolution",
+  national_security_doctrine: "typeNationalSecurityDoctrine",
+  bilateral_agreement: "typeBilateralAgreement",
+  multilateral_agreement: "typeMultilateralAgreement",
+  case_law: "typeCaseLaw",
+  procurement_framework: "typeProcurementFramework",
+  safety_regulation: "typeSafetyRegulation",
+  tax_treaty: "typeTaxTreaty",
 };
 
 // ─── Safe matched-term highlighter ───────────────────────────────────
@@ -85,14 +90,16 @@ function highlightMatches(text: string, regex: RegExp | null): ReactNode {
   );
 }
 
-// ─── German greeting by hour ─────────────────────────────────────────
+// ─── Greeting key by hour (resolved against the active locale) ───────
 
-function getGreeting(): string {
+type GreetingKey = "greetingMorning" | "greetingAfternoon" | "greetingEvening";
+
+function getGreetingKey(): GreetingKey {
   const hour = new Date().getHours();
-  if (hour < 5) return "Guten Abend";
-  if (hour < 12) return "Guten Morgen";
-  if (hour < 17) return "Guten Tag";
-  return "Guten Abend";
+  if (hour < 5) return "greetingEvening";
+  if (hour < 12) return "greetingMorning";
+  if (hour < 17) return "greetingAfternoon";
+  return "greetingEvening";
 }
 
 // ─── Debounce hook ───────────────────────────────────────────────────
@@ -130,37 +137,32 @@ interface SearchResult {
   hits: SearchHit[];
 }
 
-// ─── Example chips for empty state ──────────────────────────────────
-
-const EXAMPLE_CHIPS = [
-  "Weltraumvertrag",
-  "NIS2-Richtlinie",
-  "EU Space Act",
-  "Vermeidung von Weltraummüll",
-  "Startgenehmigung",
-  "ITAR-Vorschriften",
-];
-
 // ─── Entry cards for empty state navigation ──────────────────────────
-
-const ENTRY_CARDS = [
+// Icon + i18n label/description keys; resolved against the active locale
+// at render time. Strictly monochrome — icons inherit gray.
+const ENTRY_CARDS: {
+  href: string;
+  icon: typeof Globe2;
+  labelKey: keyof (typeof SEARCH)["en"];
+  descKey: keyof (typeof SEARCH)["en"];
+}[] = [
   {
     href: "/scholar/jurisdictions",
     icon: Globe2,
-    label: "Jurisdiktionen",
-    description: "Rechtsquellen nach Land oder Region",
+    labelKey: "cardJurisdictionsLabel",
+    descKey: "cardJurisdictionsDesc",
   },
   {
     href: "/scholar/library",
     icon: BookOpen,
-    label: "Bibliothek",
-    description: "Alle Quellen filtern und durchsuchen",
+    labelKey: "cardLibraryLabel",
+    descKey: "cardLibraryDesc",
   },
   {
     href: "/scholar/cases",
     icon: Scale,
-    label: "Rechtsprechung",
-    description: "Urteile und Durchsetzungsmaßnahmen",
+    labelKey: "cardCasesLabel",
+    descKey: "cardCasesDesc",
   },
 ];
 
@@ -173,11 +175,14 @@ const ENTRY_CARDS = [
 function SearchResultRow({
   hit,
   highlight,
+  locale,
 }: {
   hit: SearchHit;
   highlight: RegExp | null;
+  locale: ScholarLocale;
 }) {
-  const typeLabel = TYPE_LABELS_DE[hit.type] ?? hit.type;
+  const typeKey = TYPE_LABEL_KEYS[hit.type];
+  const typeLabel = typeKey ? t(locale, SEARCH, typeKey) : hit.type;
   const snippet = hit.snippet ?? hit.scopeDescription;
 
   return (
@@ -188,7 +193,11 @@ function SearchResultRow({
       {/* Relevance — monochrome bars + sr-only label (WCAG 1.4.1 / 1.4.11).
           Rendered only when a relevance level exists. */}
       {hit.relevanceLevel && (
-        <RelevanceGlyph level={hit.relevanceLevel} className="mt-1" />
+        <RelevanceGlyph
+          level={hit.relevanceLevel}
+          locale={locale}
+          className="mt-1"
+        />
       )}
 
       {/* Type eyebrow — shared monochrome token (text-micro, gray-500) */}
@@ -231,13 +240,17 @@ function SearchResultRow({
 // ─── Page ─────────────────────────────────────────────────────────────
 
 export default function ScholarSearchPage() {
+  const locale = useScholarLocale();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [query, setQuery] = useState("");
   const [jurisdiction, setJurisdiction] = useState("");
   const debouncedQuery = useDebouncedValue(query, 250);
 
-  const [greeting] = useState(getGreeting);
+  // Greeting key is fixed for the page lifetime (picked from the local hour);
+  // the visible text is resolved against the active locale at render.
+  const [greetingKey] = useState(getGreetingKey);
+  const greeting = t(locale, SEARCH, greetingKey);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SearchResult | null>(null);
@@ -275,7 +288,7 @@ export default function ScholarSearchPage() {
           const data = await res.json().catch(() => ({}));
           setError(
             (data as { error?: string }).error ??
-              "Die Suche ist fehlgeschlagen. Bitte versuche es erneut.",
+              t(locale, SEARCH, "searchFailed"),
           );
           setResult(null);
           return;
@@ -284,8 +297,7 @@ export default function ScholarSearchPage() {
         setResult(data);
       })
       .catch(() => {
-        if (!cancelled)
-          setError("Netzwerkfehler. Bitte prüfe deine Verbindung.");
+        if (!cancelled) setError(t(locale, SEARCH, "networkError"));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -294,7 +306,7 @@ export default function ScholarSearchPage() {
     return () => {
       cancelled = true;
     };
-  }, [debouncedQuery, jurisdiction]);
+  }, [debouncedQuery, jurisdiction, locale]);
 
   // Cmd+K / Ctrl+K to focus; Escape to clear
   useEffect(() => {
@@ -330,20 +342,23 @@ export default function ScholarSearchPage() {
 
   // WCAG 4.1.3: live region text summarises current search state
   const liveText = loading
-    ? "Durchsuche Rechtsquellen…"
+    ? t(locale, SEARCH, "searching")
     : error
       ? error
       : isNoResults
-        ? `Keine Treffer für ${result!.query}.`
+        ? t(locale, SEARCH, "noResultsLive").replace("{query}", result!.query)
         : hasResults
-          ? `${result!.hitCount} ${result!.hitCount === 1 ? "Ergebnis" : "Ergebnisse"} gefunden.`
+          ? t(locale, SEARCH, "resultsFoundLive").replace(
+              "{count}",
+              String(result!.hitCount),
+            )
           : "";
 
   return (
     // ScholarPage provides the max-w-6xl container + <main lang="de">
     <ScholarPage>
       {/* WCAG 2.4.6 / 1.3.1: visually-hidden page title */}
-      <h1 className="sr-only">Caelex Scholar — Rechtsquellen durchsuchen</h1>
+      <h1 className="sr-only">{t(locale, SEARCH, "pageTitle")}</h1>
 
       {/* WCAG 4.1.3: aria-live region for status messages */}
       <div
@@ -373,7 +388,7 @@ export default function ScholarSearchPage() {
             WCAG 2.4.7: focus-visible ring replaces the outline:none style.
           */}
           <label htmlFor="scholar-search" className="sr-only">
-            Rechtsquellen durchsuchen
+            {t(locale, SEARCH, "searchLabel")}
           </label>
           <input
             ref={inputRef}
@@ -381,8 +396,8 @@ export default function ScholarSearchPage() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Rechtsquellen, Gesetze, Verordnungen durchsuchen …"
-            aria-label="Rechtsquellen durchsuchen"
+            placeholder={t(locale, SEARCH, "searchPlaceholder")}
+            aria-label={t(locale, SEARCH, "searchLabel")}
             spellCheck={false}
             autoComplete="off"
             className={`
@@ -413,14 +428,14 @@ export default function ScholarSearchPage() {
             htmlFor="scholar-jurisdiction"
             className="text-[11px] text-gray-600 tracking-[-0.01em] whitespace-nowrap"
           >
-            Jurisdiction:
+            {t(locale, SEARCH, "jurisdictionLabel")}
           </label>
           <input
             id="scholar-jurisdiction"
             type="text"
             value={jurisdiction}
             onChange={(e) => setJurisdiction(e.target.value)}
-            placeholder="z.B. DE, EU, FR …"
+            placeholder={t(locale, SEARCH, "jurisdictionPlaceholder")}
             className="bg-transparent border-0 border-b border-gray-300 outline-none text-[12px] text-gray-600 placeholder:text-gray-500 focus-visible:border-gray-700 focus-visible:ring-1 focus-visible:ring-gray-700 focus-visible:ring-offset-1 focus-visible:ring-offset-[#F7F8FA] transition-colors w-24 pb-0.5"
             style={{ boxShadow: "none" }}
           />
@@ -433,19 +448,19 @@ export default function ScholarSearchPage() {
           className={`flex items-center gap-4 motion-safe:transition-all motion-safe:duration-500 ${hasResults || isNoResults || loading || error ? "opacity-0 h-0 overflow-hidden" : "opacity-100 h-auto mt-4"}`}
         >
           <span className="text-[11px] text-gray-500 tracking-[-0.01em]">
-            Weltraumrecht durchsuchen
+            {t(locale, SEARCH, "statsSearchSpaceLaw")}
           </span>
           <span className="text-[4px] text-gray-400" aria-hidden="true">
             &#9679;
           </span>
           <span className="text-[11px] text-gray-500 tracking-[-0.01em]">
-            Gesetze &amp; Verordnungen
+            {t(locale, SEARCH, "statsLawsRegulations")}
           </span>
           <span className="text-[4px] text-gray-400" aria-hidden="true">
             &#9679;
           </span>
           <span className="text-[11px] text-gray-500 tracking-[-0.01em]">
-            mehrere Jurisdiktionen
+            {t(locale, SEARCH, "statsMultipleJurisdictions")}
           </span>
         </div>
 
@@ -455,7 +470,7 @@ export default function ScholarSearchPage() {
           <div className="flex items-center gap-2 mt-1 mb-8" aria-hidden="true">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-gray-500 motion-safe:animate-pulse" />
             <span className="text-[11px] text-gray-600">
-              Durchsuche Rechtsquellen…
+              {t(locale, SEARCH, "searching")}
             </span>
           </div>
         )}
@@ -482,13 +497,19 @@ export default function ScholarSearchPage() {
           <div className="flex items-center gap-3 mt-1 mb-8" aria-hidden="true">
             <span className={SCHOLAR_TYPE.meta}>
               {result!.hitCount}{" "}
-              {result!.hitCount === 1 ? "Ergebnis" : "Ergebnisse"}
+              {result!.hitCount === 1
+                ? t(locale, SEARCH, "resultOne")
+                : t(locale, SEARCH, "resultMany")}
             </span>
             {/* Search-mode signal — quiet monochrome note (spec §2e) */}
             {result!.semanticAvailable ? (
-              <span className={SCHOLAR_TYPE.meta}>Semantische Suche aktiv</span>
+              <span className={SCHOLAR_TYPE.meta}>
+                {t(locale, SEARCH, "semanticActive")}
+              </span>
             ) : (
-              <span className={SCHOLAR_TYPE.meta}>Stichwortsuche</span>
+              <span className={SCHOLAR_TYPE.meta}>
+                {t(locale, SEARCH, "keywordSearch")}
+              </span>
             )}
           </div>
         )}
@@ -497,8 +518,10 @@ export default function ScholarSearchPage() {
         {isNoResults && (
           <div className="mt-1 mb-8" aria-hidden="true">
             <span className="text-[11px] text-gray-600">
-              Keine Treffer für &ldquo;{result!.query}&rdquo; — andere
-              Suchbegriffe oder Jurisdiction versuchen.
+              {t(locale, SEARCH, "noResultsHint").replace(
+                "{query}",
+                result!.query,
+              )}
             </span>
           </div>
         )}
@@ -510,10 +533,10 @@ export default function ScholarSearchPage() {
           {/* Example search chips */}
           <div>
             <p className="text-[13px] font-semibold text-gray-900 tracking-[-0.01em] mb-3">
-              Beispielsuchen
+              {t(locale, SEARCH, "exampleSearches")}
             </p>
             <div className="flex flex-wrap gap-2">
-              {EXAMPLE_CHIPS.map((chip) => (
+              {exampleChips(locale).map((chip) => (
                 <button
                   key={chip}
                   type="button"
@@ -532,10 +555,10 @@ export default function ScholarSearchPage() {
           {/* Entry cards — Jurisdictions / Library / Cases */}
           <div>
             <p className="text-[13px] font-semibold text-gray-900 tracking-[-0.01em] mb-3">
-              Erkunden
+              {t(locale, SEARCH, "explore")}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {ENTRY_CARDS.map(({ href, icon: Icon, label, description }) => (
+              {ENTRY_CARDS.map(({ href, icon: Icon, labelKey, descKey }) => (
                 <Link
                   key={href}
                   href={href}
@@ -549,10 +572,10 @@ export default function ScholarSearchPage() {
                   />
                   <div className="min-w-0">
                     <span className="block text-[13px] font-medium text-gray-800 group-hover:text-black motion-safe:transition-colors">
-                      {label}
+                      {t(locale, SEARCH, labelKey)}
                     </span>
                     <span className="block text-[11px] text-gray-500 mt-0.5">
-                      {description}
+                      {t(locale, SEARCH, descKey)}
                     </span>
                   </div>
                 </Link>
@@ -565,7 +588,7 @@ export default function ScholarSearchPage() {
       {/* ─── Results ─── */}
       {hasResults && (
         <div className="space-y-6 pb-20">
-          <section aria-label="Suchergebnisse">
+          <section aria-label={t(locale, SEARCH, "resultsAriaLabel")}>
             <div className="flex items-center gap-2 mb-2">
               <Scale
                 size={13}
@@ -578,13 +601,19 @@ export default function ScholarSearchPage() {
                 Section label uses the shared monochrome eyebrow token
                 (text-micro, gray-500) — no ad-hoc px size.
               */}
-              <h2 className={SCHOLAR_TYPE.eyebrow}>Rechtsquellen</h2>
+              <h2 className={SCHOLAR_TYPE.eyebrow}>
+                {t(locale, SEARCH, "resultsHeading")}
+              </h2>
             </div>
             {/* WCAG 1.3.1: list semantics for result items */}
             <ul className="space-y-1" role="list">
               {displayedHits.map((hit) => (
                 <li key={hit.id}>
-                  <SearchResultRow hit={hit} highlight={highlightRegex} />
+                  <SearchResultRow
+                    hit={hit}
+                    highlight={highlightRegex}
+                    locale={locale}
+                  />
                 </li>
               ))}
 
@@ -601,7 +630,10 @@ export default function ScholarSearchPage() {
                     aria-controls="scholar-results"
                     className="w-full py-3 text-[12px] font-medium text-gray-600 hover:text-gray-900 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA] rounded"
                   >
-                    Alle {result!.hits.length} anzeigen
+                    {t(locale, SEARCH, "showAll").replace(
+                      "{total}",
+                      String(result!.hits.length),
+                    )}
                   </button>
                 </li>
               )}
@@ -614,7 +646,7 @@ export default function ScholarSearchPage() {
                     aria-controls="scholar-results"
                     className="w-full py-3 text-[12px] font-medium text-gray-600 hover:text-gray-900 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA] rounded"
                   >
-                    Weniger anzeigen
+                    {t(locale, SEARCH, "showLess")}
                   </button>
                 </li>
               )}
@@ -631,49 +663,48 @@ export default function ScholarSearchPage() {
           <div className="flex items-center gap-2">
             {/* WCAG 1.4.3: gray-600 on white ≈ 5.7:1 ✓ */}
             <span className="text-[10px] font-semibold text-gray-600 tracking-[-0.01em]">
-              Scholar
+              {t(locale, SEARCH, "footerScholar")}
             </span>
-            <span className="text-[9px] text-gray-600">by Caelex</span>
+            <span className="text-[9px] text-gray-600">
+              {t(locale, SEARCH, "footerByCaelex")}
+            </span>
           </div>
 
           {/* WCAG 1.4.3: gray-600 on white ≈ 5.7:1 ✓ */}
           <div className="space-y-3 text-[10px] text-gray-600 leading-[1.7]">
             <p>
               <span className="font-semibold text-gray-700">
-                Kein Rechtsrat.
+                {t(locale, SEARCH, "footerNoAdviceLead")}
               </span>{" "}
-              Caelex Scholar ist ein Recherche- und Informationswerkzeug. Die
-              bereitgestellten Informationen, Daten und Analysen stellen keine
-              Rechts-, Compliance- oder sonstige professionelle Beratung dar.
-              Nutzer müssen alle Informationen eigenständig verifizieren und
-              qualifizierte Rechtsberatung hinzuziehen.
+              {t(locale, SEARCH, "footerNoAdviceBody")}
             </p>
 
             <p>
-              <span className="font-semibold text-gray-700">Keine Gewähr.</span>{" "}
-              Caelex übernimmt keine Gewähr für Richtigkeit, Vollständigkeit
-              oder Aktualität der Daten. Regulatorische Rahmenbedingungen können
-              sich ohne Vorankündigung ändern.
+              <span className="font-semibold text-gray-700">
+                {t(locale, SEARCH, "footerNoWarrantyLead")}
+              </span>{" "}
+              {t(locale, SEARCH, "footerNoWarrantyBody")}
             </p>
           </div>
 
           <div className="flex items-center justify-between pt-3 border-t border-gray-100">
             <span className="text-[9px] text-gray-600">
-              © {new Date().getFullYear()} Caelex — Alle Rechte vorbehalten
+              © {new Date().getFullYear()} Caelex —{" "}
+              {t(locale, SEARCH, "footerRightsReserved")}
             </span>
             {/*
               WCAG 2.5.8: footer links need ≥24px targets.
               WCAG 2.4.7: focus-visible ring on footer links.
               WCAG 1.4.3: gray-700 (#374151) on white = 7.4:1 ✓
             */}
-            <nav aria-label="Rechtliche Links">
+            <nav aria-label={t(locale, SEARCH, "footerLegalLinksLabel")}>
               <ul className="flex items-center gap-4 list-none">
                 <li>
                   <a
                     href="/legal/privacy"
                     className="inline-block py-1 text-[9px] text-gray-700 hover:text-gray-900 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 rounded"
                   >
-                    Datenschutz
+                    {t(locale, SEARCH, "footerPrivacy")}
                   </a>
                 </li>
                 <li>
@@ -681,7 +712,7 @@ export default function ScholarSearchPage() {
                     href="/legal/terms"
                     className="inline-block py-1 text-[9px] text-gray-700 hover:text-gray-900 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 rounded"
                   >
-                    AGB
+                    {t(locale, SEARCH, "footerTerms")}
                   </a>
                 </li>
                 <li>
@@ -689,7 +720,7 @@ export default function ScholarSearchPage() {
                     href="/legal/impressum"
                     className="inline-block py-1 text-[9px] text-gray-700 hover:text-gray-900 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 rounded"
                   >
-                    Impressum
+                    {t(locale, SEARCH, "footerImprint")}
                   </a>
                 </li>
               </ul>

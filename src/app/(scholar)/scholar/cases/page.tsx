@@ -37,14 +37,21 @@ import {
   CASES_BY_FORUM,
 } from "@/data/legal-cases";
 import type { CaseForum } from "@/data/legal-cases";
+import { auth } from "@/lib/auth";
 import { getCountryName } from "@/data/iso-3166-countries";
 import { ScholarPage } from "../_components/ScholarPage";
 import { PageHeader } from "../_components/PageHeader";
 import { CaseRow } from "../_components/CaseRow";
 import type { CaseRowData } from "../_components/CaseRow";
 import { SCHOLAR_TYPE } from "../_components/scholar-type";
+import { t, type ScholarLocale } from "../_i18n/core";
+import { CASES } from "../_i18n/cases";
+import { getScholarLocale } from "../_i18n/locale.server";
 
-// Special jurisdiction display names not in ISO-3166
+// Special jurisdiction display names not in ISO-3166. These resolve to
+// English-language place names (corpus data, not UI chrome) and so are not
+// translated — getCountryName likewise returns canonical names. The BCP-47
+// tag used for localeCompare ordering is derived from the UI locale below.
 const SPECIAL_NAMES: Record<string, string> = {
   INT: "International",
   EU: "European Union",
@@ -54,51 +61,57 @@ function getJurisdictionLabel(code: string): string {
   return SPECIAL_NAMES[code] ?? getCountryName(code);
 }
 
-// Human-readable forum names for the filter dropdown
-const FORUM_LABELS: Record<CaseForum, string> = {
-  court: "Gericht",
-  regulator_order: "Behördliche Anordnung",
-  regulator_settlement: "Behördlicher Vergleich",
-  criminal_settlement: "Strafvergleich",
-  civil_settlement: "Zivilvergleich",
-  treaty_award: "Vertragsschiedsspruch",
-  administrative_appeal: "Verwaltungsbeschwerde",
-  arbitral_award: "Schiedsspruch",
+// CaseForum → CASES-namespace key (full dropdown names; the compact row
+// labels live in the SOURCE namespace and are applied inside CaseRow).
+const FORUM_LABEL_KEYS: Record<CaseForum, keyof (typeof CASES)["en"]> = {
+  court: "forumCourt",
+  regulator_order: "forumRegulatorOrder",
+  regulator_settlement: "forumRegulatorSettlement",
+  criminal_settlement: "forumCriminalSettlement",
+  civil_settlement: "forumCivilSettlement",
+  treaty_award: "forumTreatyAward",
+  administrative_appeal: "forumAdministrativeAppeal",
+  arbitral_award: "forumArbitralAward",
 };
 
-// German labels for the compliance-area (Thema) filter. Covers every
-// ComplianceArea value that appears in the case corpus; unknown keys
-// fall back to a humanised form so the dropdown never shows a raw enum.
-const AREA_LABELS: Record<string, string> = {
-  licensing: "Zulassung & Genehmigung",
-  registration: "Registrierung",
-  liability: "Haftung",
-  insurance: "Versicherung",
-  cybersecurity: "Cybersicherheit",
-  export_control: "Exportkontrolle",
-  data_security: "Datensicherheit",
-  frequency_spectrum: "Frequenzen & Spektrum",
-  environmental: "Umwelt",
-  debris_mitigation: "Weltraumschrott",
-  space_traffic_management: "Weltraumverkehr",
-  human_spaceflight: "Bemannte Raumfahrt",
-  military_dual_use: "Militärisch / Dual-Use",
-  competition_antitrust: "Wettbewerb & Kartellrecht",
-  state_aid: "Beihilfen",
-  procurement: "Vergabe",
-  tax_customs: "Steuern & Zoll",
-  sanctions_compliance: "Sanktionen",
-  ip_patents: "Geistiges Eigentum",
-  product_liability: "Produkthaftung",
-  fdi_screening: "Investitionskontrolle",
-  ai_compliance: "KI-Konformität",
-  aml_kyc: "Geldwäsche & KYC",
-  consumer_protection: "Verbraucherschutz",
-  employment_labor: "Arbeitsrecht",
-  scientific_research: "Wissenschaft & Forschung",
-  media_broadcasting: "Medien & Rundfunk",
-  critical_infrastructure: "Kritische Infrastruktur",
-  sustainability_reporting: "Nachhaltigkeitsberichte",
+function getForumLabel(forum: string, locale: ScholarLocale): string {
+  const key = FORUM_LABEL_KEYS[forum as CaseForum];
+  return key ? t(locale, CASES, key) : forum;
+}
+
+// ComplianceArea → CASES-namespace key. Covers every ComplianceArea value that
+// appears in the case corpus; unknown keys fall back to a humanised form so the
+// dropdown never shows a raw enum.
+const AREA_LABEL_KEYS: Record<string, keyof (typeof CASES)["en"]> = {
+  licensing: "areaLicensing",
+  registration: "areaRegistration",
+  liability: "areaLiability",
+  insurance: "areaInsurance",
+  cybersecurity: "areaCybersecurity",
+  export_control: "areaExportControl",
+  data_security: "areaDataSecurity",
+  frequency_spectrum: "areaFrequencySpectrum",
+  environmental: "areaEnvironmental",
+  debris_mitigation: "areaDebrisMitigation",
+  space_traffic_management: "areaSpaceTrafficManagement",
+  human_spaceflight: "areaHumanSpaceflight",
+  military_dual_use: "areaMilitaryDualUse",
+  competition_antitrust: "areaCompetitionAntitrust",
+  state_aid: "areaStateAid",
+  procurement: "areaProcurement",
+  tax_customs: "areaTaxCustoms",
+  sanctions_compliance: "areaSanctionsCompliance",
+  ip_patents: "areaIpPatents",
+  product_liability: "areaProductLiability",
+  fdi_screening: "areaFdiScreening",
+  ai_compliance: "areaAiCompliance",
+  aml_kyc: "areaAmlKyc",
+  consumer_protection: "areaConsumerProtection",
+  employment_labor: "areaEmploymentLabor",
+  scientific_research: "areaScientificResearch",
+  media_broadcasting: "areaMediaBroadcasting",
+  critical_infrastructure: "areaCriticalInfrastructure",
+  sustainability_reporting: "areaSustainabilityReporting",
 };
 
 function humaniseKey(raw: string): string {
@@ -107,9 +120,20 @@ function humaniseKey(raw: string): string {
   return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
 
-function getAreaLabel(area: string): string {
-  return AREA_LABELS[area] ?? humaniseKey(area);
+function getAreaLabel(area: string, locale: ScholarLocale): string {
+  const key = AREA_LABEL_KEYS[area];
+  return key ? t(locale, CASES, key) : humaniseKey(area);
 }
+
+// UI locale → BCP-47 tag for locale-aware option ordering (mirrors the
+// source lane). Falls back to en-GB collation.
+const COLLATION_LOCALE: Record<ScholarLocale, string> = {
+  en: "en-GB",
+  de: "de-DE",
+  it: "it-IT",
+  fr: "fr-FR",
+  es: "es-ES",
+};
 
 // Cap rendered rows so a future corpus growth can't produce a runaway
 // DOM. The full corpus is 82 cases today; the cap is a safety ceiling
@@ -124,6 +148,12 @@ interface Props {
 
 export default async function CasesPage({ searchParams }: Props) {
   const sp = await searchParams;
+
+  // Resolve the UI locale once and thread it to every localised label /
+  // string below. Defaults to "en" when unauthenticated.
+  const session = await auth();
+  const locale = await getScholarLocale(session?.user?.id);
+  const collation = COLLATION_LOCALE[locale];
 
   // ─── Parse URL params (all filters are URL-driven) ────────────────
   const firstParam = (v: string | string[] | undefined): string =>
@@ -146,7 +176,10 @@ export default async function CasesPage({ searchParams }: Props) {
     if (b === "INT") return 1;
     if (a === "EU") return -1;
     if (b === "EU") return 1;
-    return getJurisdictionLabel(a).localeCompare(getJurisdictionLabel(b), "de");
+    return getJurisdictionLabel(a).localeCompare(
+      getJurisdictionLabel(b),
+      collation,
+    );
   });
 
   const allForums = Object.keys(CASES_BY_FORUM) as CaseForum[];
@@ -161,7 +194,10 @@ export default async function CasesPage({ searchParams }: Props) {
   const allAreas = [...areaCounts.keys()].sort((a, b) => {
     const diff = (areaCounts.get(b) ?? 0) - (areaCounts.get(a) ?? 0);
     if (diff !== 0) return diff;
-    return getAreaLabel(a).localeCompare(getAreaLabel(b), "de");
+    return getAreaLabel(a, locale).localeCompare(
+      getAreaLabel(b, locale),
+      collation,
+    );
   });
 
   // ─── Apply filters server-side ────────────────────────────────────
@@ -219,8 +255,8 @@ export default async function CasesPage({ searchParams }: Props) {
     <ScholarPage>
       <PageHeader
         eyebrow="Caelex Scholar"
-        title="Rechtsprechung"
-        subtitle="Urteile, Entscheidungen und Durchsetzungsmaßnahmen im Weltraumrecht"
+        title={t(locale, CASES, "pageTitle")}
+        subtitle={t(locale, CASES, "pageSubtitle")}
         icon={Scale}
       />
 
@@ -233,7 +269,7 @@ export default async function CasesPage({ searchParams }: Props) {
       <form
         method="get"
         action="/scholar/cases"
-        aria-label="Rechtsprechung durchsuchen und filtern"
+        aria-label={t(locale, CASES, "formAriaLabel")}
         className="mb-8 pb-8 border-b border-gray-300"
       >
         {/* Keyword search */}
@@ -242,7 +278,7 @@ export default async function CasesPage({ searchParams }: Props) {
             htmlFor="cases-q"
             className={`mb-1 block ${SCHOLAR_TYPE.metaLabel}`}
           >
-            Suche
+            {t(locale, CASES, "searchLabel")}
           </label>
           <div className="relative">
             <Search
@@ -256,7 +292,7 @@ export default async function CasesPage({ searchParams }: Props) {
               type="search"
               name="q"
               defaultValue={query}
-              placeholder="Fallname, Forum oder Beteiligte…"
+              placeholder={t(locale, CASES, "searchPlaceholder")}
               autoComplete="off"
               className={
                 "w-full bg-white border border-gray-300 rounded-lg pl-9 pr-3 py-2.5 placeholder:text-gray-500 motion-safe:transition-colors hover:border-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA] " +
@@ -270,7 +306,7 @@ export default async function CasesPage({ searchParams }: Props) {
           {/* Thema (compliance-area) filter */}
           <div className="flex flex-col gap-1 min-w-[200px]">
             <label htmlFor="cases-area" className={SCHOLAR_TYPE.metaLabel}>
-              Thema
+              {t(locale, CASES, "areaLabel")}
             </label>
             <select
               id="cases-area"
@@ -278,10 +314,10 @@ export default async function CasesPage({ searchParams }: Props) {
               defaultValue={areaFilter}
               className={fieldClass}
             >
-              <option value="">Alle Themen</option>
+              <option value="">{t(locale, CASES, "areaAll")}</option>
               {allAreas.map((area) => (
                 <option key={area} value={area}>
-                  {getAreaLabel(area)} ({areaCounts.get(area)})
+                  {getAreaLabel(area, locale)} ({areaCounts.get(area)})
                 </option>
               ))}
             </select>
@@ -293,7 +329,7 @@ export default async function CasesPage({ searchParams }: Props) {
               htmlFor="cases-jurisdiction"
               className={SCHOLAR_TYPE.metaLabel}
             >
-              Jurisdiktion
+              {t(locale, CASES, "jurisdictionLabel")}
             </label>
             <select
               id="cases-jurisdiction"
@@ -301,7 +337,7 @@ export default async function CasesPage({ searchParams }: Props) {
               defaultValue={jurisdictionFilter}
               className={fieldClass}
             >
-              <option value="">Alle Jurisdiktionen</option>
+              <option value="">{t(locale, CASES, "jurisdictionAll")}</option>
               {allJurisdictions.map((code) => (
                 <option key={code} value={code}>
                   {code} — {getJurisdictionLabel(code)}
@@ -313,7 +349,7 @@ export default async function CasesPage({ searchParams }: Props) {
           {/* Forum filter */}
           <div className="flex flex-col gap-1 min-w-[200px]">
             <label htmlFor="cases-forum" className={SCHOLAR_TYPE.metaLabel}>
-              Forum
+              {t(locale, CASES, "forumLabel")}
             </label>
             <select
               id="cases-forum"
@@ -321,10 +357,10 @@ export default async function CasesPage({ searchParams }: Props) {
               defaultValue={forumFilter}
               className={fieldClass}
             >
-              <option value="">Alle Foren</option>
+              <option value="">{t(locale, CASES, "forumAll")}</option>
               {allForums.map((f) => (
                 <option key={f} value={f}>
-                  {FORUM_LABELS[f] ?? f}
+                  {getForumLabel(f, locale)}
                 </option>
               ))}
             </select>
@@ -333,7 +369,7 @@ export default async function CasesPage({ searchParams }: Props) {
           {/* Date sort */}
           <div className="flex flex-col gap-1 min-w-[200px]">
             <label htmlFor="cases-sort" className={SCHOLAR_TYPE.metaLabel}>
-              Sortierung
+              {t(locale, CASES, "sortLabel")}
             </label>
             <select
               id="cases-sort"
@@ -341,8 +377,8 @@ export default async function CasesPage({ searchParams }: Props) {
               defaultValue={sort}
               className={fieldClass}
             >
-              <option value="newest">Neueste zuerst</option>
-              <option value="oldest">Älteste zuerst</option>
+              <option value="newest">{t(locale, CASES, "sortNewest")}</option>
+              <option value="oldest">{t(locale, CASES, "sortOldest")}</option>
             </select>
           </div>
 
@@ -356,7 +392,7 @@ export default async function CasesPage({ searchParams }: Props) {
               SCHOLAR_TYPE.body
             }
           >
-            Anwenden
+            {t(locale, CASES, "apply")}
           </button>
         </div>
       </form>
@@ -364,40 +400,46 @@ export default async function CasesPage({ searchParams }: Props) {
       {/* ─── Active-filter chips (each removes ONE param) ─── */}
       {hasActiveFilter && (
         <div className="mb-4 flex flex-wrap items-center gap-2">
-          <span className={`sr-only`}>Aktive Filter:</span>
+          <span className={`sr-only`}>
+            {t(locale, CASES, "activeFiltersSr")}
+          </span>
           {query && (
             <FilterChip
-              label="Suche"
+              label={t(locale, CASES, "chipSearch")}
               value={`„${query}“`}
               href={removeParamHref("q")}
+              removeLabel={t(locale, CASES, "removeChip")}
             />
           )}
           {areaFilter && (
             <FilterChip
-              label="Thema"
-              value={getAreaLabel(areaFilter)}
+              label={t(locale, CASES, "chipTopic")}
+              value={getAreaLabel(areaFilter, locale)}
               href={removeParamHref("area")}
+              removeLabel={t(locale, CASES, "removeChip")}
             />
           )}
           {jurisdictionFilter && (
             <FilterChip
-              label="Jurisdiktion"
+              label={t(locale, CASES, "chipJurisdiction")}
               value={getJurisdictionLabel(jurisdictionFilter)}
               href={removeParamHref("jurisdiction")}
+              removeLabel={t(locale, CASES, "removeChip")}
             />
           )}
           {forumFilter && (
             <FilterChip
-              label="Forum"
-              value={FORUM_LABELS[forumFilter as CaseForum] ?? forumFilter}
+              label={t(locale, CASES, "chipForum")}
+              value={getForumLabel(forumFilter, locale)}
               href={removeParamHref("forum")}
+              removeLabel={t(locale, CASES, "removeChip")}
             />
           )}
           <Link
             href="/scholar/cases"
             className={`rounded px-1 py-1 underline underline-offset-2 text-gray-600 hover:text-gray-900 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA] ${SCHOLAR_TYPE.meta}`}
           >
-            Alle zurücksetzen
+            {t(locale, CASES, "resetAll")}
           </Link>
         </div>
       )}
@@ -405,9 +447,14 @@ export default async function CasesPage({ searchParams }: Props) {
       {/* Result count */}
       <div className="mb-4" aria-live="polite" aria-atomic="true">
         <span className={SCHOLAR_TYPE.meta}>
-          {total} {total === 1 ? "Entscheidung" : "Entscheidungen"}
-          {hasActiveFilter ? " (gefiltert)" : ""}
-          {capped ? ` · erste ${RESULT_CAP} angezeigt` : ""}
+          {total}{" "}
+          {total === 1
+            ? t(locale, CASES, "decisionOne")
+            : t(locale, CASES, "decisionMany")}
+          {hasActiveFilter ? ` ${t(locale, CASES, "filteredSuffix")}` : ""}
+          {capped
+            ? ` · ${t(locale, CASES, "capNotice").replace("{cap}", String(RESULT_CAP))}`
+            : ""}
         </span>
       </div>
 
@@ -421,13 +468,13 @@ export default async function CasesPage({ searchParams }: Props) {
             aria-hidden={true}
           />
           <h2 id="cases-list-heading" className={SCHOLAR_TYPE.metaLabel}>
-            Fälle
+            {t(locale, CASES, "casesHeading")}
           </h2>
         </div>
 
         {visible.length === 0 ? (
           <p className={`py-8 ${SCHOLAR_TYPE.bodyMuted}`}>
-            Keine Entscheidungen für die gewählten Kriterien gefunden.
+            {t(locale, CASES, "noResults")}
           </p>
         ) : (
           <ul className="space-y-1" role="list">
@@ -445,7 +492,7 @@ export default async function CasesPage({ searchParams }: Props) {
               };
               return (
                 <li key={c.id}>
-                  <CaseRow c={rowData} />
+                  <CaseRow c={rowData} locale={locale} />
                 </li>
               );
             })}
@@ -454,8 +501,10 @@ export default async function CasesPage({ searchParams }: Props) {
 
         {capped && (
           <p className={`mt-4 ${SCHOLAR_TYPE.meta}`}>
-            {total - RESULT_CAP} weitere Entscheidungen ausgeblendet — bitte die
-            Suche oder Filter verfeinern.
+            {t(locale, CASES, "capHidden").replace(
+              "{hidden}",
+              String(total - RESULT_CAP),
+            )}
           </p>
         )}
       </section>
@@ -465,7 +514,9 @@ export default async function CasesPage({ searchParams }: Props) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className={SCHOLAR_TYPE.metaLabel}>Scholar</span>
-            <span className={SCHOLAR_TYPE.meta}>by Caelex</span>
+            <span className={SCHOLAR_TYPE.meta}>
+              {t(locale, CASES, "footerBrandBy")}
+            </span>
           </div>
           <span className={SCHOLAR_TYPE.meta}>
             © {new Date().getFullYear()} Caelex
@@ -488,10 +539,12 @@ function FilterChip({
   label,
   value,
   href,
+  removeLabel,
 }: {
   label: string;
   value: string;
   href: string;
+  removeLabel: string;
 }) {
   return (
     <Link
@@ -502,7 +555,7 @@ function FilterChip({
         <span className="text-gray-500">{label}:</span>{" "}
         <span className="font-medium text-gray-900">{value}</span>
       </span>
-      <span className="sr-only">entfernen</span>
+      <span className="sr-only">{removeLabel}</span>
       <X
         size={13}
         strokeWidth={2}

@@ -15170,6 +15170,7 @@ model ScholarUserPreferences {
   id                   String   @id @default(cuid())
   userId               String   @unique
   sourceLanguage       String   @default("original") // original | de | fr | en
+  uiLanguage           String   @default("en")       // UI chrome locale: en | de | it | fr | es
   defaultJurisdiction  String?  // ISO code or null
   citationFormat       String   @default("din")      // din | oscola | bluebook
   semanticSearch       Boolean  @default(true)

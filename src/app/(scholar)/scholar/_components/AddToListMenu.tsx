@@ -54,6 +54,9 @@ import {
   addToListAction,
   createListAction,
 } from "@/lib/scholar/saved-items-actions";
+import { t } from "../_i18n/core";
+import { SAVED } from "../_i18n/saved";
+import { useScholarLocale } from "../_i18n/LocaleProvider";
 
 const CONFIRM_RESET_MS = 1800;
 
@@ -71,6 +74,7 @@ export function AddToListMenu({
   itemId: string;
   lists: ListSummary[];
 }) {
+  const locale = useScholarLocale();
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false); // inline "new list" input shown
   const [newName, setNewName] = useState("");
@@ -137,12 +141,18 @@ export function AddToListMenu({
     if (creating) newInputRef.current?.focus();
   }, [creating]);
 
-  // Show a transient "Hinzugefügt zu {name}" confirmation, then close.
-  const flashConfirm = useCallback((listName: string) => {
-    setConfirm(`Hinzugefügt zu ${listName}`);
-    if (confirmTimer.current) clearTimeout(confirmTimer.current);
-    confirmTimer.current = setTimeout(() => setConfirm(null), CONFIRM_RESET_MS);
-  }, []);
+  // Show a transient "Added to {name}" confirmation, then close.
+  const flashConfirm = useCallback(
+    (listName: string) => {
+      setConfirm(t(locale, SAVED, "addedToList").replace("{name}", listName));
+      if (confirmTimer.current) clearTimeout(confirmTimer.current);
+      confirmTimer.current = setTimeout(
+        () => setConfirm(null),
+        CONFIRM_RESET_MS,
+      );
+    },
+    [locale],
+  );
 
   const handleAddExisting = useCallback(
     (list: ListSummary) => {
@@ -151,23 +161,23 @@ export function AddToListMenu({
         try {
           const res = await addToListAction(list.id, itemType, itemId);
           if (!res.ok) {
-            setError("Konnte nicht hinzugefügt werden.");
+            setError(t(locale, SAVED, "addFailed"));
             return;
           }
           flashConfirm(list.name);
           close();
         } catch {
-          setError("Konnte nicht hinzugefügt werden.");
+          setError(t(locale, SAVED, "addFailed"));
         }
       });
     },
-    [itemType, itemId, flashConfirm, close],
+    [itemType, itemId, flashConfirm, close, locale],
   );
 
   const handleCreateAndAdd = useCallback(() => {
     const name = newName.trim();
     if (!name) {
-      setError("Bitte einen Namen eingeben.");
+      setError(t(locale, SAVED, "enterName"));
       return;
     }
     setError(null);
@@ -175,21 +185,21 @@ export function AddToListMenu({
       try {
         const created = await createListAction(name);
         if (!created.ok || !created.id) {
-          setError("Liste konnte nicht erstellt werden.");
+          setError(t(locale, SAVED, "createListFailed"));
           return;
         }
         const added = await addToListAction(created.id, itemType, itemId);
         if (!added.ok) {
-          setError("Erstellt, aber nicht hinzugefügt.");
+          setError(t(locale, SAVED, "createdNotAdded"));
           return;
         }
         flashConfirm(name);
         close();
       } catch {
-        setError("Liste konnte nicht erstellt werden.");
+        setError(t(locale, SAVED, "createListFailed"));
       }
     });
-  }, [newName, itemType, itemId, flashConfirm, close]);
+  }, [newName, itemType, itemId, flashConfirm, close, locale]);
 
   return (
     <div ref={rootRef} className="relative inline-block">
@@ -209,7 +219,7 @@ export function AddToListMenu({
         }
       >
         <ListPlus size={13} className="text-gray-700" aria-hidden={true} />
-        <span>Zu Leseliste hinzufügen</span>
+        <span>{t(locale, SAVED, "addToList")}</span>
       </button>
 
       {/* Polite live region — announces the confirmation/error outside the menu
@@ -222,7 +232,7 @@ export function AddToListMenu({
         <div
           id={menuId}
           role="menu"
-          aria-label="Zu Leseliste hinzufügen"
+          aria-label={t(locale, SAVED, "addToListMenuLabel")}
           className="absolute right-0 z-20 mt-2 w-64 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg"
         >
           {/* Existing lists — each is a menu item that files the current item. */}
@@ -252,7 +262,7 @@ export function AddToListMenu({
           ) : (
             !creating && (
               <p className="px-2.5 py-2 text-small text-gray-600">
-                Noch keine Leselisten.
+                {t(locale, SAVED, "noListsYet")}
               </p>
             )
           )}
@@ -278,12 +288,12 @@ export function AddToListMenu({
               }
             >
               <Plus size={14} className="text-gray-700" aria-hidden={true} />
-              <span>Neue Liste…</span>
+              <span>{t(locale, SAVED, "newListItem")}</span>
             </button>
           ) : (
             <div className="space-y-2 p-1.5">
               <label htmlFor={`${menuId}-new`} className="sr-only">
-                Name der neuen Leseliste
+                {t(locale, SAVED, "newListNameSr")}
               </label>
               <input
                 ref={newInputRef}
@@ -297,7 +307,7 @@ export function AddToListMenu({
                     handleCreateAndAdd();
                   }
                 }}
-                placeholder="Listenname"
+                placeholder={t(locale, SAVED, "newListPlaceholder")}
                 maxLength={120}
                 disabled={isPending}
                 className={
@@ -323,7 +333,7 @@ export function AddToListMenu({
                 }
               >
                 <Check size={13} aria-hidden={true} />
-                Erstellen &amp; hinzufügen
+                {t(locale, SAVED, "createAndAdd")}
               </button>
             </div>
           )}
@@ -342,7 +352,7 @@ export function AddToListMenu({
       {confirm && !open && (
         <span className="ml-2 inline-flex items-center gap-1 text-small text-gray-700">
           <Check size={13} className="text-gray-700" aria-hidden={true} />
-          Hinzugefügt
+          {t(locale, SAVED, "added")}
         </span>
       )}
     </div>

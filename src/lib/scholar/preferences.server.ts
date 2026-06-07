@@ -7,6 +7,7 @@
  *
  * Validation:
  *   - sourceLanguage  ∈ { original, de, fr, en }
+ *   - uiLanguage      ∈ { en, de, it, fr, es }   (default "en")
  *   - citationFormat  ∈ { din, oscola, bluebook }
  *   - resultsPerPage  clamped to [10, 50]
  * Any other patch field is passed through; unknown fields are ignored by Prisma.
@@ -18,6 +19,7 @@ import { prisma } from "@/lib/prisma";
 
 export interface ScholarPreferences {
   sourceLanguage: string;
+  uiLanguage: string;
   defaultJurisdiction: string | null;
   citationFormat: string;
   semanticSearch: boolean;
@@ -28,12 +30,16 @@ export interface ScholarPreferences {
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const VALID_SOURCE_LANGUAGES = ["original", "de", "fr", "en"] as const;
+// UI chrome locale — keep in sync with ScholarLocale in
+// src/app/(scholar)/scholar/_i18n/core.ts. Default + fallback is "en".
+const VALID_UI_LANGUAGES = ["en", "de", "it", "fr", "es"] as const;
 const VALID_CITATION_FORMATS = ["din", "oscola", "bluebook"] as const;
 const RESULTS_PER_PAGE_MIN = 10;
 const RESULTS_PER_PAGE_MAX = 50;
 
 const DEFAULTS: ScholarPreferences = {
   sourceLanguage: "original",
+  uiLanguage: "en",
   defaultJurisdiction: null,
   citationFormat: "din",
   semanticSearch: true,
@@ -45,6 +51,7 @@ const DEFAULTS: ScholarPreferences = {
 
 function rowToPrefs(row: {
   sourceLanguage: string;
+  uiLanguage?: string | null;
   defaultJurisdiction: string | null;
   citationFormat: string;
   semanticSearch: boolean;
@@ -53,6 +60,13 @@ function rowToPrefs(row: {
 }): ScholarPreferences {
   return {
     sourceLanguage: row.sourceLanguage,
+    // Defensive default: pre-migration rows (or partial mocks) may lack the
+    // column; UI locale always resolves to a valid value, fallback "en".
+    uiLanguage: VALID_UI_LANGUAGES.includes(
+      row.uiLanguage as (typeof VALID_UI_LANGUAGES)[number],
+    )
+      ? (row.uiLanguage as string)
+      : "en",
     defaultJurisdiction: row.defaultJurisdiction,
     citationFormat: row.citationFormat,
     semanticSearch: row.semanticSearch,
@@ -74,6 +88,18 @@ function validateAndSanitizePatch(
     ) {
       throw new Error(
         `Invalid sourceLanguage "${patch.sourceLanguage}". Must be one of: ${VALID_SOURCE_LANGUAGES.join(", ")}`,
+      );
+    }
+  }
+
+  if ("uiLanguage" in patch) {
+    if (
+      !VALID_UI_LANGUAGES.includes(
+        patch.uiLanguage as (typeof VALID_UI_LANGUAGES)[number],
+      )
+    ) {
+      throw new Error(
+        `Invalid uiLanguage "${patch.uiLanguage}". Must be one of: ${VALID_UI_LANGUAGES.join(", ")}`,
       );
     }
   }

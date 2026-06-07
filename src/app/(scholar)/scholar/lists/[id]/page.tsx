@@ -41,6 +41,9 @@ import {
   RemoveFromListButton,
   ListManageControls,
 } from "../../saved/SavedControls";
+import { t, type ScholarLocale } from "../../_i18n/core";
+import { SAVED } from "../../_i18n/saved";
+import { getScholarLocale } from "../../_i18n/locale.server";
 
 const CARD_CLS = "rounded-2xl bg-white border border-gray-200/70 shadow-sm";
 
@@ -53,6 +56,7 @@ export default async function ReadingListPage({ params }: PageProps) {
 
   const session = await auth();
   const userId = session?.user?.id ?? null;
+  const locale = await getScholarLocale(userId);
 
   // No session → treat as not found (the layout already gates auth; this is
   // a defensive fallback that never leaks another user's list).
@@ -63,12 +67,12 @@ export default async function ReadingListPage({ params }: PageProps) {
     <ScholarPage>
       <BackLink
         fallbackHref="/scholar/saved"
-        fallbackLabel="Zurück zur Merkliste"
+        fallbackLabel={t(locale, SAVED, "backToSaved")}
       />
 
       <div className="mt-4">
         <PageHeader
-          eyebrow="Leseliste"
+          eyebrow={t(locale, SAVED, "listEyebrow")}
           title={list.name}
           subtitle={list.description ?? undefined}
         />
@@ -83,27 +87,27 @@ export default async function ReadingListPage({ params }: PageProps) {
       <section aria-labelledby="list-items-heading">
         <div className="mb-3 flex items-center justify-between gap-3">
           <h2 id="list-items-heading" className={SCHOLAR_TYPE.sectionHeading}>
-            Einträge
+            {t(locale, SAVED, "itemsHeading")}
           </h2>
           <span className={`tabular-nums ${SCHOLAR_TYPE.meta}`}>
             {list.items.length}{" "}
-            {list.items.length === 1 ? "Eintrag" : "Einträge"}
+            {list.items.length === 1
+              ? t(locale, SAVED, "entryOne")
+              : t(locale, SAVED, "entryOther")}
           </span>
         </div>
 
         {list.items.length === 0 ? (
           <div className={`${CARD_CLS} px-5 py-8`}>
             <p className={SCHOLAR_TYPE.bodyMuted}>
-              Diese Liste ist noch leer. Öffne eine Quelle oder Entscheidung und
-              füge sie dieser Liste hinzu, um deine Pflichtlektüre
-              zusammenzustellen.
+              {t(locale, SAVED, "listEmpty")}
             </p>
           </div>
         ) : (
           <ul className="space-y-1" role="list">
             {list.items.map((item) => (
               <li key={`${item.itemType}:${item.itemId}`}>
-                <ListItemRow listId={list.id} item={item} />
+                <ListItemRow listId={list.id} item={item} locale={locale} />
               </li>
             ))}
           </ul>
@@ -130,9 +134,20 @@ export default async function ReadingListPage({ params }: PageProps) {
 
 // ─── One list item: link (title → href) + remove control ──────────────────────
 
-function ListItemRow({ listId, item }: { listId: string; item: ResolvedItem }) {
+function ListItemRow({
+  listId,
+  item,
+  locale,
+}: {
+  listId: string;
+  item: ResolvedItem;
+  locale: ScholarLocale;
+}) {
   const Icon = item.itemType === "case" ? Scale : FileText;
-  const typeLabel = item.itemType === "case" ? "Entscheidung" : "Quelle";
+  const typeLabel =
+    item.itemType === "case"
+      ? t(locale, SAVED, "typeCase")
+      : t(locale, SAVED, "typeSource");
 
   return (
     <div className="flex items-center gap-2 rounded-2xl bg-white border border-transparent hover:border-gray-200/70 hover:shadow-sm motion-safe:transition-all motion-safe:duration-200 group">

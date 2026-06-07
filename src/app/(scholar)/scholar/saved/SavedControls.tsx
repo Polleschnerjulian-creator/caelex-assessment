@@ -39,6 +39,10 @@ import {
 } from "@/lib/scholar/saved-items-actions";
 import type { ScholarItemType } from "@/lib/scholar/saved-items.server";
 import { SCHOLAR_TYPE } from "../_components/scholar-type";
+import { t } from "../_i18n/core";
+import { SAVED } from "../_i18n/saved";
+import { COMMON } from "../_i18n/common";
+import { useScholarLocale } from "../_i18n/LocaleProvider";
 
 // ─── Shared class fragments (monochrome) ──────────────────────────────────────
 
@@ -73,6 +77,7 @@ export function RemoveBookmarkButton({
   itemId: string;
   title: string;
 }) {
+  const locale = useScholarLocale();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState(false);
 
@@ -92,15 +97,17 @@ export function RemoveBookmarkButton({
         onClick={onClick}
         disabled={pending}
         aria-disabled={pending}
-        title="Aus Merkliste entfernen"
+        title={t(locale, SAVED, "removeFromSavedTitle")}
         className={ICON_BTN}
       >
         <Trash2 className="h-4 w-4" strokeWidth={1.75} aria-hidden={true} />
-        <span className="sr-only">„{title}“ aus Merkliste entfernen</span>
+        <span className="sr-only">
+          {t(locale, SAVED, "removeFromSavedSr").replace("{title}", title)}
+        </span>
       </button>
       {error && (
         <span role="alert" className="sr-only">
-          Entfernen fehlgeschlagen. Bitte erneut versuchen.
+          {t(locale, SAVED, "removeFailed")}
         </span>
       )}
     </>
@@ -120,6 +127,7 @@ export function RemoveFromListButton({
   itemId: string;
   title: string;
 }) {
+  const locale = useScholarLocale();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState(false);
 
@@ -138,15 +146,17 @@ export function RemoveFromListButton({
         onClick={onClick}
         disabled={pending}
         aria-disabled={pending}
-        title="Aus Liste entfernen"
+        title={t(locale, SAVED, "removeFromListTitle")}
         className={ICON_BTN}
       >
         <X className="h-4 w-4" strokeWidth={1.75} aria-hidden={true} />
-        <span className="sr-only">„{title}“ aus dieser Liste entfernen</span>
+        <span className="sr-only">
+          {t(locale, SAVED, "removeFromListSr").replace("{title}", title)}
+        </span>
       </button>
       {error && (
         <span role="alert" className="sr-only">
-          Entfernen fehlgeschlagen. Bitte erneut versuchen.
+          {t(locale, SAVED, "removeFailed")}
         </span>
       )}
     </>
@@ -156,6 +166,7 @@ export function RemoveFromListButton({
 // ─── Create a new reading list (inline form) ──────────────────────────────────
 
 export function CreateListForm() {
+  const locale = useScholarLocale();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [pending, startTransition] = useTransition();
@@ -165,7 +176,7 @@ export function CreateListForm() {
     e.preventDefault();
     const trimmed = name.trim();
     if (!trimmed) {
-      setError("Bitte gib einen Namen für die Liste ein.");
+      setError(t(locale, SAVED, "nameRequired"));
       return;
     }
     setError(null);
@@ -178,7 +189,7 @@ export function CreateListForm() {
         setName("");
         setDescription("");
       } else {
-        setError("Liste konnte nicht erstellt werden. Bitte erneut versuchen.");
+        setError(t(locale, SAVED, "createFailed"));
       }
     });
   }
@@ -186,12 +197,12 @@ export function CreateListForm() {
   return (
     <form
       onSubmit={onSubmit}
-      aria-label="Neue Leseliste erstellen"
+      aria-label={t(locale, SAVED, "createFormLabel")}
       className="space-y-3"
     >
       <div>
         <label htmlFor="new-list-name" className={SCHOLAR_TYPE.metaLabel}>
-          Name der Liste
+          {t(locale, SAVED, "listNameLabel")}
         </label>
         <input
           id="new-list-name"
@@ -200,15 +211,17 @@ export function CreateListForm() {
           onChange={(e) => setName(e.target.value)}
           maxLength={120}
           required
-          placeholder="z. B. Seminar Weltraumrecht — Woche 3"
+          placeholder={t(locale, SAVED, "listNamePlaceholder")}
           className={`mt-1 ${INPUT_CLS}`}
           aria-describedby={error ? "new-list-error" : undefined}
         />
       </div>
       <div>
         <label htmlFor="new-list-desc" className={SCHOLAR_TYPE.metaLabel}>
-          Beschreibung{" "}
-          <span className="font-normal text-gray-500">(optional)</span>
+          {t(locale, SAVED, "listDescLabel")}{" "}
+          <span className="font-normal text-gray-500">
+            ({t(locale, COMMON, "optional")})
+          </span>
         </label>
         <input
           id="new-list-desc"
@@ -216,7 +229,7 @@ export function CreateListForm() {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           maxLength={280}
-          placeholder="Kurzer Hinweis für Studierende oder das Team"
+          placeholder={t(locale, SAVED, "listDescPlaceholder")}
           className={`mt-1 ${INPUT_CLS}`}
         />
       </div>
@@ -237,7 +250,9 @@ export function CreateListForm() {
           className={PRIMARY_BTN}
         >
           <Plus className="h-4 w-4" strokeWidth={2} aria-hidden={true} />
-          {pending ? "Wird erstellt …" : "Liste erstellen"}
+          {pending
+            ? t(locale, SAVED, "creating")
+            : t(locale, SAVED, "createList")}
         </button>
       </div>
     </form>
@@ -253,6 +268,7 @@ export function ListManageControls({
   listId: string;
   currentName: string;
 }) {
+  const locale = useScholarLocale();
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(currentName);
@@ -263,7 +279,7 @@ export function ListManageControls({
     e.preventDefault();
     const trimmed = name.trim();
     if (!trimmed) {
-      setError("Der Name darf nicht leer sein.");
+      setError(t(locale, SAVED, "nameNotEmpty"));
       return;
     }
     setError(null);
@@ -272,7 +288,7 @@ export function ListManageControls({
       if (res.ok) {
         setEditing(false);
       } else {
-        setError("Umbenennen fehlgeschlagen. Bitte erneut versuchen.");
+        setError(t(locale, SAVED, "renameFailed"));
       }
     });
   }
@@ -281,7 +297,7 @@ export function ListManageControls({
     // Native confirm keeps the destructive control honest without adding a
     // modal dependency; it is keyboard-accessible and screen-reader announced.
     const ok = window.confirm(
-      `Leseliste „${currentName}“ wirklich löschen? Die enthaltenen Verweise gehen verloren (die Quellen selbst bleiben erhalten).`,
+      t(locale, SAVED, "deleteConfirm").replace("{name}", currentName),
     );
     if (!ok) return;
     setError(null);
@@ -290,7 +306,7 @@ export function ListManageControls({
       if (res.ok) {
         router.push("/scholar/saved");
       } else {
-        setError("Löschen fehlgeschlagen. Bitte erneut versuchen.");
+        setError(t(locale, SAVED, "deleteFailed"));
       }
     });
   }
@@ -299,11 +315,11 @@ export function ListManageControls({
     return (
       <form
         onSubmit={onRename}
-        aria-label="Leseliste umbenennen"
+        aria-label={t(locale, SAVED, "renameFormLabel")}
         className="flex flex-col gap-2 sm:flex-row sm:items-center"
       >
         <label htmlFor="rename-list" className="sr-only">
-          Neuer Name der Liste
+          {t(locale, SAVED, "renameInputSr")}
         </label>
         <input
           id="rename-list"
@@ -324,7 +340,7 @@ export function ListManageControls({
             className={PRIMARY_BTN}
           >
             <Check className="h-4 w-4" strokeWidth={2} aria-hidden={true} />
-            {pending ? "Speichert …" : "Speichern"}
+            {pending ? t(locale, SAVED, "saving") : t(locale, COMMON, "save")}
           </button>
           <button
             type="button"
@@ -336,7 +352,7 @@ export function ListManageControls({
             disabled={pending}
             className={GHOST_BTN}
           >
-            Abbrechen
+            {t(locale, COMMON, "cancel")}
           </button>
         </div>
         {error && (
@@ -360,7 +376,7 @@ export function ListManageControls({
         className={GHOST_BTN}
       >
         <Pencil className="h-4 w-4" strokeWidth={1.75} aria-hidden={true} />
-        Umbenennen
+        {t(locale, SAVED, "rename")}
       </button>
       <button
         type="button"
@@ -370,7 +386,7 @@ export function ListManageControls({
         className={GHOST_BTN}
       >
         <Trash2 className="h-4 w-4" strokeWidth={1.75} aria-hidden={true} />
-        {pending ? "Löscht …" : "Löschen"}
+        {pending ? t(locale, SAVED, "deleting") : t(locale, COMMON, "delete")}
       </button>
       {error && (
         <p role="alert" className="text-small font-medium text-gray-900">

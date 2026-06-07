@@ -19,6 +19,8 @@
  * whereas inline pairs degrade gracefully to a stacked list.
  */
 
+import { DEFAULT_SCHOLAR_LOCALE, t, type ScholarLocale } from "../_i18n/core";
+import { SOURCE } from "../_i18n/source";
 import { SCHOLAR_TYPE } from "./scholar-type";
 import { StatusPill } from "./StatusPill";
 
@@ -32,6 +34,7 @@ interface MetadataStripProps {
   status?: string;
   items: MetadataItem[];
   className?: string;
+  locale?: ScholarLocale;
 }
 
 // Treat null / undefined / "" as "no value" → skip the pair entirely.
@@ -44,6 +47,7 @@ export function MetadataStrip({
   status,
   items,
   className,
+  locale = DEFAULT_SCHOLAR_LOCALE,
 }: MetadataStripProps) {
   const visibleItems = items.filter((item) => hasValue(item.value));
 
@@ -59,9 +63,9 @@ export function MetadataStrip({
     >
       {status && (
         <div className="flex items-center">
-          <dt className="sr-only">Status</dt>
+          <dt className="sr-only">{t(locale, SOURCE, "statusSrLabel")}</dt>
           <dd className="m-0">
-            <StatusPill status={status} />
+            <StatusPill status={status} locale={locale} />
           </dd>
         </div>
       )}

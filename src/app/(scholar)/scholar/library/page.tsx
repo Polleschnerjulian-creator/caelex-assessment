@@ -43,7 +43,7 @@ import {
   selectionWithSort,
   hasActiveFilters,
   labelForValue,
-  GROUP_HEADINGS,
+  groupHeading,
   type BrowseSelection,
   type FacetGroup,
   type FacetGroupKey,
@@ -55,29 +55,39 @@ import { SourceRow } from "../_components/SourceRow";
 import type { SourceRowData } from "../_components/SourceRow";
 import { SCHOLAR_TYPE } from "../_components/scholar-type";
 import { Eyebrow } from "../_components/Eyebrow";
+import { getScholarLocale } from "../_i18n/locale.server";
+import { t, type ScholarLocale } from "../_i18n/core";
+import { COMMON } from "../_i18n/common";
+import { BROWSE } from "../_i18n/browse";
 
 // Hard upper cap — safety rail regardless of user pref.
 const HARD_CAP = 200;
 
-// Special jurisdiction display names not in ISO-3166.
-const SPECIAL_NAMES: Record<string, string> = {
-  INT: "International",
-  EU: "Europäische Union",
-};
-
-function getJurisdictionLabel(code: string): string {
-  return SPECIAL_NAMES[code] ?? getCountryName(code);
+// Special jurisdiction display names not in ISO-3166. INT/EU are handled
+// centrally (locale-aware) by browse-facets.server.ts; this resolver is only
+// invoked for real ISO-3166 codes, with INT/EU kept as a localised fallback.
+function makeJurisdictionLabel(
+  locale: ScholarLocale,
+): (code: string) => string {
+  return (code: string) => {
+    if (code === "INT") return t(locale, BROWSE, "jurisdictionINT");
+    if (code === "EU") return t(locale, BROWSE, "jurisdictionEU");
+    return getCountryName(code);
+  };
 }
 
 interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-// ─── Sort control options ─────────────────────────────────────────────────────
-const SORT_OPTIONS: { value: SortKey; label: string }[] = [
-  { value: "relevance", label: "Relevanz" },
-  { value: "date_desc", label: "Neueste zuerst" },
-  { value: "date_asc", label: "Älteste zuerst" },
+// ─── Sort control options (labels resolved per-locale at render) ───────────────
+const SORT_OPTIONS: {
+  value: SortKey;
+  labelKey: keyof (typeof BROWSE)["en"];
+}[] = [
+  { value: "relevance", labelKey: "sortRelevance" },
+  { value: "date_desc", labelKey: "sortNewest" },
+  { value: "date_asc", labelKey: "sortOldest" },
 ];
 
 export default async function LibraryPage({ searchParams }: Props) {
@@ -90,6 +100,10 @@ export default async function LibraryPage({ searchParams }: Props) {
   const prefs = session?.user?.id
     ? await getScholarPreferences(session.user.id)
     : null;
+
+  // Resolve the UI locale once and thread it into the facet engine + render.
+  const locale = await getScholarLocale(session?.user?.id);
+  const getJurisdictionLabel = makeJurisdictionLabel(locale);
 
   // Parse the URL-driven facet selection.
   const selection = parseBrowseSelection(sp);
@@ -117,6 +131,7 @@ export default async function LibraryPage({ searchParams }: Props) {
   const { groups, sources, totalCount } = buildBrowse(
     selection,
     getJurisdictionLabel,
+    locale,
   );
 
   const capped = sources.slice(0, DISPLAY_CAP);
@@ -146,7 +161,7 @@ export default async function LibraryPage({ searchParams }: Props) {
       activeChips.push({
         group: group.key,
         value,
-        label: labelForValue(group.key, value, getJurisdictionLabel),
+        label: labelForValue(group.key, value, getJurisdictionLabel, locale),
       });
     }
   }
@@ -155,8 +170,8 @@ export default async function LibraryPage({ searchParams }: Props) {
     <ScholarPage>
       <PageHeader
         eyebrow="Caelex Scholar"
-        title="Bibliothek"
-        subtitle="Den gesamten Rechtsquellen-Korpus nach Typ, Jurisdiktion, Thema und Zeitraum durchsuchen"
+        title={t(locale, BROWSE, "libraryTitle")}
+        subtitle={t(locale, BROWSE, "librarySubtitle")}
         icon={BookOpen}
       />
 
@@ -168,17 +183,19 @@ export default async function LibraryPage({ searchParams }: Props) {
         {/* ─── Facet rail ─────────────────────────────────────────────── */}
         <aside
           className="lg:w-72 lg:flex-shrink-0"
-          aria-label="Filter nach Facetten"
+          aria-label={t(locale, BROWSE, "ariaFacetFilter")}
         >
           <div className="rounded-2xl bg-white border border-gray-200/70 shadow-sm p-5 lg:sticky lg:top-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className={SCHOLAR_TYPE.sectionHeading}>Filter</h2>
+              <h2 className={SCHOLAR_TYPE.sectionHeading}>
+                {t(locale, BROWSE, "filter")}
+              </h2>
               {filtersActive && (
                 <Link
                   href="/scholar/library"
                   className="text-small text-gray-700 hover:text-gray-900 underline underline-offset-2 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA] rounded px-1 py-1"
                 >
-                  Zurücksetzen
+                  {t(locale, BROWSE, "reset")}
                 </Link>
               )}
             </div>
@@ -189,6 +206,7 @@ export default async function LibraryPage({ searchParams }: Props) {
                   key={group.key}
                   group={group}
                   selection={selection}
+                  locale={locale}
                 />
               ))}
             </div>
@@ -196,11 +214,14 @@ export default async function LibraryPage({ searchParams }: Props) {
         </aside>
 
         {/* ─── Results column ─────────────────────────────────────────── */}
-        <section className="flex-1 min-w-0" aria-label="Suchergebnisse">
+        <section
+          className="flex-1 min-w-0"
+          aria-label={t(locale, BROWSE, "ariaResults")}
+        >
           {/* Active-filter chips */}
           {activeChips.length > 0 && (
             <div className="mb-5">
-              <h3 className="sr-only">Aktive Filter</h3>
+              <h3 className="sr-only">{t(locale, BROWSE, "activeFilters")}</h3>
               <ul className="flex flex-wrap items-center gap-2" role="list">
                 {activeChips.map((chip) => {
                   const without = selectionWithout(
@@ -216,7 +237,7 @@ export default async function LibraryPage({ searchParams }: Props) {
                       >
                         <span className="text-small">
                           <span className="text-gray-600">
-                            {GROUP_HEADINGS[chip.group]}:
+                            {groupHeading(chip.group, locale)}:
                           </span>{" "}
                           <span className="font-medium text-gray-900">
                             {chip.label}
@@ -229,7 +250,9 @@ export default async function LibraryPage({ searchParams }: Props) {
                           aria-hidden={true}
                         />
                         <span className="sr-only">
-                          Filter „{chip.label}“ entfernen
+                          {t(locale, BROWSE, "removeFilterPrefix")}
+                          {chip.label}
+                          {t(locale, BROWSE, "removeFilterSuffix")}
                         </span>
                       </Link>
                     </li>
@@ -246,31 +269,33 @@ export default async function LibraryPage({ searchParams }: Props) {
                 <span className="font-semibold text-gray-900">
                   {totalCount}
                 </span>{" "}
-                {totalCount === 1 ? "Quelle" : "Quellen"}
-                {filtersActive ? " (gefiltert)" : ""}
+                {totalCount === 1
+                  ? t(locale, COMMON, "source")
+                  : t(locale, COMMON, "sources")}
+                {filtersActive ? t(locale, BROWSE, "filteredSuffix") : ""}
               </span>
             </div>
-            <SortControl selection={selection} />
+            <SortControl selection={selection} locale={locale} />
           </div>
 
-          {/* Cap notice */}
+          {/* Cap notice — render {n} (bold) and {total} from the localised template */}
           {isCapped && (
             <p
               className="mb-4 rounded-xl bg-gray-50 border-l-2 border-gray-400 px-3 py-2 text-small text-gray-700"
               role="note"
             >
-              Es werden die ersten{" "}
-              <span className="font-semibold text-gray-900">{DISPLAY_CAP}</span>{" "}
-              von {totalCount} Quellen angezeigt — verfeinere die Filter, um die
-              übrigen zu sehen.
+              <CapNotice
+                template={t(locale, BROWSE, "capNotice")}
+                displayCap={DISPLAY_CAP}
+                total={totalCount}
+              />
             </p>
           )}
 
           {/* Results list */}
           {capped.length === 0 ? (
             <p className={`${SCHOLAR_TYPE.bodyMuted} py-10`}>
-              Keine Quellen für die gewählten Filter gefunden. Entferne einen
-              Filter oder setze die Auswahl zurück.
+              {t(locale, BROWSE, "emptyFilters")}
             </p>
           ) : (
             <ul className="space-y-1" role="list">
@@ -298,7 +323,7 @@ export default async function LibraryPage({ searchParams }: Props) {
                 };
                 return (
                   <li key={source.id}>
-                    <SourceRow source={rowData} />
+                    <SourceRow source={rowData} locale={locale} />
                   </li>
                 );
               })}
@@ -314,7 +339,9 @@ export default async function LibraryPage({ searchParams }: Props) {
             <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-600">
               Scholar
             </span>
-            <span className="text-caption text-gray-600">by Caelex</span>
+            <span className="text-caption text-gray-600">
+              {t(locale, BROWSE, "footerBy")}
+            </span>
           </div>
           <span className="text-caption text-gray-600">
             © {new Date().getFullYear()} Caelex
@@ -330,9 +357,11 @@ export default async function LibraryPage({ searchParams }: Props) {
 function FacetGroupBlock({
   group,
   selection,
+  locale,
 }: {
   group: FacetGroup;
   selection: BrowseSelection;
+  locale: ScholarLocale;
 }) {
   if (group.options.length === 0) return null;
 
@@ -410,8 +439,11 @@ function FacetGroupBlock({
                 {/* Screen-reader selection state */}
                 <span className="sr-only">
                   {isOn
-                    ? `, ausgewählt — entfernen`
-                    : `, ${opt.count} Quellen — auswählen`}
+                    ? t(locale, BROWSE, "srSelectedRemove")
+                    : t(locale, BROWSE, "srUnselectedSelect").replace(
+                        "{count}",
+                        String(opt.count),
+                      )}
                 </span>
               </Link>
             </li>
@@ -424,14 +456,20 @@ function FacetGroupBlock({
 
 // ─── Sort control (URL-driven segmented links) ────────────────────────────────
 
-function SortControl({ selection }: { selection: BrowseSelection }) {
+function SortControl({
+  selection,
+  locale,
+}: {
+  selection: BrowseSelection;
+  locale: ScholarLocale;
+}) {
   return (
     <div className="flex items-center gap-2">
       <span
         className={`${SCHOLAR_TYPE.metaLabel} hidden sm:inline`}
         id="sort-label"
       >
-        Sortieren:
+        {t(locale, BROWSE, "sortLabel")}
       </span>
       <div
         className="inline-flex items-center rounded-lg border border-gray-300 bg-white p-0.5"
@@ -453,12 +491,49 @@ function SortControl({ selection }: { selection: BrowseSelection }) {
                   : "text-gray-700 hover:text-gray-900 hover:bg-gray-100")
               }
             >
-              {opt.label}
-              {isActive && <span className="sr-only"> (aktiv)</span>}
+              {t(locale, BROWSE, opt.labelKey)}
+              {isActive && (
+                <span className="sr-only">
+                  {t(locale, BROWSE, "sortActiveSuffix")}
+                </span>
+              )}
             </Link>
           );
         })}
       </div>
     </div>
+  );
+}
+
+// ─── Cap notice (renders a localised template with a bold {n} and plain {total}) ─
+// The template carries {n} and {total} placeholders (any order). We tokenise on
+// both, render {n} inside a bold span (matching the previous emphasis) and
+// {total} as plain text, so the sentence stays correct in every locale.
+function CapNotice({
+  template,
+  displayCap,
+  total,
+}: {
+  template: string;
+  displayCap: number;
+  total: number;
+}) {
+  const parts = template.split(/(\{n\}|\{total\})/g);
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (part === "{n}") {
+          return (
+            <span key={i} className="font-semibold text-gray-900">
+              {displayCap}
+            </span>
+          );
+        }
+        if (part === "{total}") {
+          return <span key={i}>{total}</span>;
+        }
+        return <span key={i}>{part}</span>;
+      })}
+    </>
   );
 }

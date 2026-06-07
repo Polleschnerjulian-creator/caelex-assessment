@@ -60,32 +60,50 @@ import { InDocTOC } from "../../_components/InDocTOC";
 import { CopyCitation } from "../../_components/CopyCitation";
 import { BookmarkButton } from "../../_components/BookmarkButton";
 import { AddToListMenu } from "../../_components/AddToListMenu";
+import { t, type ScholarLocale } from "../../_i18n/core";
+import { COMMON } from "../../_i18n/common";
+import { CASES } from "../../_i18n/cases";
+import { getScholarLocale } from "../../_i18n/locale.server";
 
 interface Props {
   params: Promise<{ id: string }>;
 }
 
-// ─── Precedential-weight → German label ────────────────────────────────
+// ─── Precedential-weight → CASES-namespace key ─────────────────────────
 // The weight enum is NOT translated by getTranslatedCase (it stays on the
 // source record), so it is localised here for the metadata strip.
-const WEIGHT_LABELS: Record<string, string> = {
-  binding: "Bindend",
-  persuasive: "Überzeugend",
-  settled_facts: "Vergleichspraxis",
-  non_precedential: "Keine Präzedenzwirkung",
-  treaty_only: "Völkerrechtlich",
+const WEIGHT_LABEL_KEYS: Record<string, keyof (typeof CASES)["en"]> = {
+  binding: "weightBinding",
+  persuasive: "weightPersuasive",
+  settled_facts: "weightSettledFacts",
+  non_precedential: "weightNonPrecedential",
+  treaty_only: "weightTreatyOnly",
 };
 
-function weightLabel(raw: string): string {
-  return WEIGHT_LABELS[raw] ?? raw.replace(/_/g, " ").trim();
+function weightLabel(raw: string, locale: ScholarLocale): string {
+  const key = WEIGHT_LABEL_KEYS[raw];
+  return key ? t(locale, CASES, key) : raw.replace(/_/g, " ").trim();
 }
 
-// ─── German date formatting (de-DE, dd.mm.yyyy), tolerant of bad input ──
-function formatDate(iso?: string): string | null {
+// ─── Locale-aware numeric date formatting, tolerant of bad input ────────
+// Maps the Scholar UI locale to a BCP-47 tag so dates render in the reader's
+// conventions (e.g. de-DE dd.mm.yyyy). Falls back to en-GB. Mirrors sources/[id].
+const DATE_LOCALE: Record<ScholarLocale, string> = {
+  en: "en-GB",
+  de: "de-DE",
+  it: "it-IT",
+  fr: "fr-FR",
+  es: "es-ES",
+};
+
+function formatDate(
+  iso: string | undefined,
+  locale: ScholarLocale,
+): string | null {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  return d.toLocaleDateString("de-DE", {
+  return d.toLocaleDateString(DATE_LOCALE[locale], {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -106,6 +124,10 @@ export default async function CaseDetailPage({ params }: Props) {
     ? await getScholarPreferences(session.user.id)
     : null;
   const sourceLanguage = prefs?.sourceLanguage ?? "original";
+
+  // Resolve the UI locale once and thread it to every localised label /
+  // string below. Defaults to "en" when unauthenticated.
+  const locale = await getScholarLocale(session?.user?.id);
 
   // Per-user saved-state for the header action row (Merkliste + Leselisten).
   // Guarded on the session: unauthenticated readers get defaults (the layout
@@ -157,9 +179,9 @@ export default async function CaseDetailPage({ params }: Props) {
     .filter((s): s is NonNullable<typeof s> => Boolean(s));
 
   // ─── Derived display values ──────────────────────────────────────────
-  const dateDecided = formatDate(c.date_decided);
-  const dateFiled = formatDate(c.date_filed);
-  const lastVerified = formatDate(c.last_verified);
+  const dateDecided = formatDate(c.date_decided, locale);
+  const dateFiled = formatDate(c.date_filed, locale);
+  const lastVerified = formatDate(c.last_verified, locale);
 
   // Canonical citation for the copy button — prefer the formal citation, fall
   // back to the case caption so the button always has a meaningful string.
@@ -174,18 +196,23 @@ export default async function CaseDetailPage({ params }: Props) {
   const hasNotes = !!view.notes && view.notes.length > 0;
 
   const tocItems: { id: string; label: string }[] = [
-    { id: "facts", label: "Sachverhalt" },
-    { id: "ruling", label: "Entscheidung" },
-    { id: "holding", label: "Leitsatz" },
-    { id: "significance", label: "Bedeutung" },
-    ...(hasRemedy ? [{ id: "remedy", label: "Rechtsfolge" }] : []),
-    ...(hasNotes ? [{ id: "notes", label: "Hinweise" }] : []),
+    { id: "facts", label: t(locale, CASES, "sectionFacts") },
+    { id: "ruling", label: t(locale, CASES, "sectionRuling") },
+    { id: "holding", label: t(locale, CASES, "sectionHolding") },
+    { id: "significance", label: t(locale, CASES, "sectionSignificance") },
+    ...(hasRemedy
+      ? [{ id: "remedy", label: t(locale, CASES, "sectionRemedy") }]
+      : []),
+    ...(hasNotes
+      ? [{ id: "notes", label: t(locale, CASES, "sectionNotes") }]
+      : []),
   ];
 
   return (
     <ScholarPage>
-      {/* Context-aware back link — returns to wherever the reader came from. */}
-      <BackLink fallbackHref="/scholar/cases" fallbackLabel="Zurück" />
+      {/* Context-aware back link — returns to wherever the reader came from.
+          The label is localised inside BackLink via the LocaleProvider. */}
+      <BackLink fallbackHref="/scholar/cases" />
 
       {/*
         Sticky doc-title bar — subtle "where am I" affordance (concept §2b:
@@ -212,7 +239,10 @@ export default async function CaseDetailPage({ params }: Props) {
             <h1 className={SCHOLAR_TYPE.docTitle}>{view.title}</h1>
             {/* Parties line — "Kläger gegen Beklagter". */}
             <p className={SCHOLAR_TYPE.bodyMuted}>
-              {view.plaintiff} <span className="text-gray-500">gegen</span>{" "}
+              {view.plaintiff}{" "}
+              <span className="text-gray-500">
+                {t(locale, CASES, "versus")}
+              </span>{" "}
               {view.defendant}
             </p>
           </div>
@@ -224,17 +254,29 @@ export default async function CaseDetailPage({ params }: Props) {
           */}
           <MetadataStrip
             status={c.status}
+            locale={locale}
             items={[
               {
-                label: "Präzedenzgewicht",
-                value: weightLabel(c.precedential_weight),
+                label: t(locale, CASES, "metaPrecedentialWeight"),
+                value: weightLabel(c.precedential_weight, locale),
               },
-              { label: "Forum", value: view.forumName },
-              { label: "Jurisdiktion", value: c.jurisdiction },
-              { label: "Entschieden", value: dateDecided },
-              { label: "Eingereicht", value: dateFiled },
-              { label: "Aktenzeichen", value: c.case_number, mono: true },
-              { label: "Zitierung", value: c.citation, mono: true },
+              { label: t(locale, CASES, "metaForum"), value: view.forumName },
+              {
+                label: t(locale, CASES, "metaJurisdiction"),
+                value: c.jurisdiction,
+              },
+              { label: t(locale, CASES, "metaDecided"), value: dateDecided },
+              { label: t(locale, CASES, "metaFiled"), value: dateFiled },
+              {
+                label: t(locale, CASES, "metaCaseNumber"),
+                value: c.case_number,
+                mono: true,
+              },
+              {
+                label: t(locale, CASES, "metaCitation"),
+                value: c.citation,
+                mono: true,
+              },
             ]}
           />
 
@@ -248,10 +290,13 @@ export default async function CaseDetailPage({ params }: Props) {
                 className="inline-flex items-center gap-1.5 rounded py-1 text-small text-gray-700 hover:text-gray-900 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
               >
                 <ExternalLink size={13} aria-hidden="true" />
-                Amtliche Entscheidung ansehen →
+                {t(locale, CASES, "viewOfficialDecision")}
               </a>
             )}
-            <CopyCitation text={citationText} label="Zitierung kopieren" />
+            <CopyCitation
+              text={citationText}
+              label={t(locale, CASES, "copyCitation")}
+            />
             <BookmarkButton
               itemType="case"
               itemId={c.id}
@@ -262,7 +307,7 @@ export default async function CaseDetailPage({ params }: Props) {
 
           {isTranslated && (
             <p className="text-small text-gray-600">
-              Caelex-Übersetzung — nicht der amtliche Wortlaut
+              {t(locale, CASES, "caelexTranslationNote")}
             </p>
           )}
         </header>
@@ -278,7 +323,7 @@ export default async function CaseDetailPage({ params }: Props) {
             */}
             <details className="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm lg:hidden">
               <summary className="cursor-pointer rounded text-small font-medium text-gray-700 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]">
-                Inhalt
+                {t(locale, COMMON, "content")}
               </summary>
               <div className="mt-3">
                 <InDocTOC items={tocItems} />
@@ -292,7 +337,7 @@ export default async function CaseDetailPage({ params }: Props) {
               className="scroll-mt-24 rounded-2xl border border-gray-200/70 bg-white p-6 shadow-sm space-y-3"
             >
               <h2 id="facts-heading" className={SCHOLAR_TYPE.sectionHeading}>
-                Sachverhalt
+                {t(locale, CASES, "sectionFacts")}
               </h2>
               <p
                 className={`max-w-[68ch] whitespace-pre-line ${SCHOLAR_TYPE.body}`}
@@ -308,7 +353,7 @@ export default async function CaseDetailPage({ params }: Props) {
               className="scroll-mt-24 rounded-2xl border border-gray-200/70 bg-white p-6 shadow-sm space-y-3"
             >
               <h2 id="ruling-heading" className={SCHOLAR_TYPE.sectionHeading}>
-                Entscheidung
+                {t(locale, CASES, "sectionRuling")}
               </h2>
               <p
                 className={`max-w-[68ch] whitespace-pre-line ${SCHOLAR_TYPE.body}`}
@@ -324,7 +369,7 @@ export default async function CaseDetailPage({ params }: Props) {
               className="scroll-mt-24 rounded-2xl border border-gray-200/70 bg-white p-6 shadow-sm space-y-3"
             >
               <h2 id="holding-heading" className={SCHOLAR_TYPE.sectionHeading}>
-                Leitsatz
+                {t(locale, CASES, "sectionHolding")}
               </h2>
               <p className={`max-w-[68ch] ${SCHOLAR_TYPE.body}`}>
                 {view.legalHolding}
@@ -341,7 +386,7 @@ export default async function CaseDetailPage({ params }: Props) {
                 id="significance-heading"
                 className={SCHOLAR_TYPE.sectionHeading}
               >
-                Bedeutung
+                {t(locale, CASES, "sectionSignificance")}
               </h2>
               <p className={`max-w-[68ch] ${SCHOLAR_TYPE.body}`}>
                 {view.industrySignificance}
@@ -356,15 +401,15 @@ export default async function CaseDetailPage({ params }: Props) {
                 className="scroll-mt-24 rounded-2xl border border-gray-200/70 bg-white p-6 shadow-sm space-y-3"
               >
                 <h2 id="remedy-heading" className={SCHOLAR_TYPE.sectionHeading}>
-                  Rechtsfolge
+                  {t(locale, CASES, "sectionRemedy")}
                 </h2>
                 {c.remedy?.monetary && c.remedy.amount_usd != null && (
                   <p className={`max-w-[68ch] ${SCHOLAR_TYPE.body}`}>
-                    Geldbuße:{" "}
+                    {t(locale, CASES, "remedyFine")}{" "}
                     <span className="font-semibold">
                       {c.remedy.amount_local
-                        ? `${c.remedy.amount_local.currency} ${c.remedy.amount_local.amount.toLocaleString("de-DE")}`
-                        : `USD ${c.remedy.amount_usd.toLocaleString("de-DE")}`}
+                        ? `${c.remedy.amount_local.currency} ${c.remedy.amount_local.amount.toLocaleString(DATE_LOCALE[locale])}`
+                        : `USD ${c.remedy.amount_usd.toLocaleString(DATE_LOCALE[locale])}`}
                     </span>
                   </p>
                 )}
@@ -392,7 +437,7 @@ export default async function CaseDetailPage({ params }: Props) {
                 className="scroll-mt-24 rounded-2xl border border-gray-200/70 bg-white p-6 shadow-sm space-y-3"
               >
                 <h2 id="notes-heading" className={SCHOLAR_TYPE.sectionHeading}>
-                  Hinweise
+                  {t(locale, CASES, "sectionNotes")}
                 </h2>
                 <ul
                   className="max-w-[68ch] list-disc space-y-2 pl-5"
@@ -417,7 +462,7 @@ export default async function CaseDetailPage({ params }: Props) {
                   id="parties-heading"
                   className={SCHOLAR_TYPE.sectionHeading}
                 >
-                  Beteiligte
+                  {t(locale, CASES, "sectionParties")}
                 </h2>
                 <ul className="flex flex-wrap gap-2" role="list">
                   {c.parties_mentioned.map((party, i) => (
@@ -442,7 +487,7 @@ export default async function CaseDetailPage({ params }: Props) {
                   id="sources-heading"
                   className={SCHOLAR_TYPE.sectionHeading}
                 >
-                  Angewandte Rechtsquellen
+                  {t(locale, CASES, "sectionAppliedSources")}
                 </h2>
                 <ul className="space-y-1" role="list">
                   {appliedSources.map((source) => (
@@ -481,12 +526,11 @@ export default async function CaseDetailPage({ params }: Props) {
         <footer className="space-y-1 border-t border-gray-200 pt-6">
           {lastVerified && (
             <p className="text-small text-gray-600">
-              Zuletzt verifiziert {lastVerified}
+              {t(locale, CASES, "lastVerified")} {lastVerified}
             </p>
           )}
           <p className="text-small text-gray-600">
-            Kein Rechtsrat. Caelex Scholar dient ausschließlich der Recherche —
-            maßgeblich ist stets der amtliche Wortlaut.
+            {t(locale, CASES, "disclaimer")}
           </p>
         </footer>
       </div>
