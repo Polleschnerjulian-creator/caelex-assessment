@@ -46,6 +46,10 @@ import { auth } from "@/lib/auth";
 import { getCaseById, getTranslatedCase } from "@/data/legal-cases";
 import { getLegalSourceById } from "@/data/legal-sources";
 import { getScholarPreferences } from "@/lib/scholar/preferences.server";
+import {
+  isBookmarked,
+  getReadingLists,
+} from "@/lib/scholar/saved-items.server";
 
 import { ScholarPage } from "../../_components/ScholarPage";
 import { SCHOLAR_TYPE } from "../../_components/scholar-type";
@@ -54,6 +58,8 @@ import { Eyebrow } from "../../_components/Eyebrow";
 import { MetadataStrip } from "../../_components/MetadataStrip";
 import { InDocTOC } from "../../_components/InDocTOC";
 import { CopyCitation } from "../../_components/CopyCitation";
+import { BookmarkButton } from "../../_components/BookmarkButton";
+import { AddToListMenu } from "../../_components/AddToListMenu";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -100,6 +106,17 @@ export default async function CaseDetailPage({ params }: Props) {
     ? await getScholarPreferences(session.user.id)
     : null;
   const sourceLanguage = prefs?.sourceLanguage ?? "original";
+
+  // Per-user saved-state for the header action row (Merkliste + Leselisten).
+  // Guarded on the session: unauthenticated readers get defaults (the layout
+  // redirects anyway). The two reads are independent → fetch them in parallel.
+  const userId = session?.user?.id ?? null;
+  const [initialBookmarked, readingLists] = userId
+    ? await Promise.all([
+        isBookmarked(userId, "case", c.id),
+        getReadingLists(userId),
+      ])
+    : [false, []];
 
   // ─── Wire getTranslatedCase ──────────────────────────────────────────
   // "original" and "en" both mean "show the English source-of-truth fields".
@@ -235,6 +252,12 @@ export default async function CaseDetailPage({ params }: Props) {
               </a>
             )}
             <CopyCitation text={citationText} label="Zitierung kopieren" />
+            <BookmarkButton
+              itemType="case"
+              itemId={c.id}
+              initialBookmarked={initialBookmarked}
+            />
+            <AddToListMenu itemType="case" itemId={c.id} lists={readingLists} />
           </div>
 
           {isTranslated && (

@@ -48,6 +48,10 @@ import { ExternalLink } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { getScholarSourceDetail } from "@/lib/scholar/source-detail.server";
 import { getScholarPreferences } from "@/lib/scholar/preferences.server";
+import {
+  isBookmarked,
+  getReadingLists,
+} from "@/lib/scholar/saved-items.server";
 // Server component → may read @/data directly (the client-only "API-only" rule
 // does not apply here). getCountryName resolves ISO-alpha-2 → readable name and
 // returns the code unchanged for anything it doesn't know, so a band never
@@ -62,6 +66,8 @@ import { MetadataStrip } from "../../_components/MetadataStrip";
 import { InDocTOC } from "../../_components/InDocTOC";
 import { ProvisionCard } from "../../_components/ProvisionCard";
 import { CrossRefBlock } from "../../_components/CrossRefBlock";
+import { BookmarkButton } from "../../_components/BookmarkButton";
+import { AddToListMenu } from "../../_components/AddToListMenu";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -160,6 +166,17 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
 
   const source = getScholarSourceDetail(id, sourceLanguage);
   if (!source) notFound();
+
+  // Per-user saved-state for the header action row (Merkliste + Leselisten).
+  // Guarded on the session: unauthenticated readers get defaults (the layout
+  // redirects anyway). The two reads are independent → fetch them in parallel.
+  const userId = session?.user?.id ?? null;
+  const [initialBookmarked, readingLists] = userId
+    ? await Promise.all([
+        isBookmarked(userId, "source", source.id),
+        getReadingLists(userId),
+      ])
+    : [false, []];
 
   // ─── Derive the dates line: "Erlassen … · In Kraft … · Geändert …" ──
   // Only the date fields that exist are joined, so the line never shows an
@@ -276,9 +293,14 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
             </p>
           )}
 
-          {/* Official source + translation provenance note. */}
-          {(source.sourceUrl || isTranslated) && (
-            <div className="space-y-2 border-t border-gray-200 pt-4">
+          {/*
+            Action row — official source link + saved-item controls. Always
+            rendered (the Merkliste / Leseliste actions don't depend on a
+            sourceUrl), so the bookmark + list affordances sit next to the
+            "Amtliche Quelle ansehen" link in the header card.
+          */}
+          <div className="space-y-2 border-t border-gray-200 pt-4">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
               {source.sourceUrl && (
                 <a
                   href={source.sourceUrl}
@@ -290,13 +312,23 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
                   Amtliche Quelle ansehen →
                 </a>
               )}
-              {isTranslated && (
-                <p className="text-small text-gray-600">
-                  Caelex-Übersetzung — nicht der amtliche Wortlaut
-                </p>
-              )}
+              <BookmarkButton
+                itemType="source"
+                itemId={source.id}
+                initialBookmarked={initialBookmarked}
+              />
+              <AddToListMenu
+                itemType="source"
+                itemId={source.id}
+                lists={readingLists}
+              />
             </div>
-          )}
+            {isTranslated && (
+              <p className="text-small text-gray-600">
+                Caelex-Übersetzung — nicht der amtliche Wortlaut
+              </p>
+            )}
+          </div>
         </header>
 
         {/*

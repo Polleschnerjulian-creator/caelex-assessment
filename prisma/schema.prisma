@@ -15190,3 +15190,42 @@ model ScholarSearchHistory {
 
   @@index([userId, createdAt])
 }
+
+/// Caelex Scholar — one-click saved items ("Merkliste"). Decoupled from User.
+model ScholarBookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  itemType  String   // "source" | "case"
+  itemId    String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, itemType, itemId])
+  @@index([userId, createdAt])
+}
+
+/// Caelex Scholar — named reading lists (course lists for teaching). Decoupled from User.
+model ScholarReadingList {
+  id          String                   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+  items       ScholarReadingListItem[]
+
+  @@index([userId, createdAt])
+}
+
+model ScholarReadingListItem {
+  id        String             @id @default(cuid())
+  listId    String
+  list      ScholarReadingList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  itemType  String             // "source" | "case"
+  itemId    String
+  note      String?
+  position  Int                @default(0)
+  createdAt DateTime           @default(now())
+
+  @@unique([listId, itemType, itemId])
+  @@index([listId, position])
+}

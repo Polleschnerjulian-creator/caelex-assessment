@@ -8,6 +8,7 @@ import {
   Globe2,
   BookOpen,
   Scale,
+  Bookmark,
   LogOut,
   Settings,
   type LucideIcon,
@@ -45,6 +46,11 @@ const MAIN_NAV: NavItem[] = [
     label: "Rechtsprechung",
     href: "/scholar/cases",
     icon: Scale,
+  },
+  {
+    label: "Merkliste",
+    href: "/scholar/saved",
+    icon: Bookmark,
   },
 ];
 
