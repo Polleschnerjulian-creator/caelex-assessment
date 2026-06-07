@@ -10,6 +10,7 @@ import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger, maskEmail } from "@/lib/logger";
+import { logSecurityEvent } from "@/lib/audit";
 import bcrypt from "bcryptjs";
 import {
   CSRF_COOKIE_NAME,
@@ -41,7 +42,7 @@ export async function DELETE(req: Request) {
     const cookieStore = await cookies();
     const csrfCookie = cookieStore.get(CSRF_COOKIE_NAME)?.value;
     const csrfHeader = req.headers.get(CSRF_HEADER_NAME);
-    if (!validateCsrfToken(csrfCookie, csrfHeader)) {
+    if (!(await validateCsrfToken(csrfCookie, csrfHeader))) {
       return NextResponse.json(
         { error: "Invalid CSRF token" },
         { status: 403 },
@@ -180,6 +181,14 @@ export async function DELETE(req: Request) {
       await tx.scholarSearchHistory.deleteMany({ where: { userId } });
       await tx.scholarUserPreferences.deleteMany({ where: { userId } });
 
+      // Erase email-keyed brute-force records (IP + user-agent) for this user.
+      // LoginAttempt has no User FK (it is keyed by email so it works pre-auth),
+      // so the user.delete() cascade below CANNOT reach it — without this the
+      // rows would survive deletion (Art. 17 erasure gap).
+      if (user.email) {
+        await tx.loginAttempt.deleteMany({ where: { email: user.email } });
+      }
+
       // Delete organizations where user is sole member
       const soloOrgs = await tx.organizationMember.findMany({
         where: {
@@ -211,8 +220,17 @@ export async function DELETE(req: Request) {
 
     logger.info("[account-deletion] Account deleted successfully", {
       userId,
-      email: user.email,
+      email: maskEmail(user.email || ""),
     });
+
+    // Persisted, queryable audit record (SecurityEvent has no User FK, so it
+    // survives the deletion). Self-error-swallowing — never breaks the response.
+    void logSecurityEvent(
+      "ACCOUNT_DELETION",
+      "MEDIUM",
+      "User self-deleted their account (Art. 17)",
+      { userId },
+    ).catch(() => {});
 
     return NextResponse.json({
       success: true,

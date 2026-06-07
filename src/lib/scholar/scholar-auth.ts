@@ -20,6 +20,16 @@ export async function getScholarAuth(): Promise<ScholarAuthContext | null> {
   const session = await auth();
   if (!session?.user?.id) return null;
 
+  // MFA gate (defense-in-depth): a credentials user who completed step-1
+  // (password) but NOT step-2 (TOTP) carries mfaRequired=true / mfaVerified=false
+  // on the session. Refuse Scholar access until the second factor is satisfied —
+  // mirrors the middleware /dashboard gate (middleware.ts). This is the single
+  // choke point for all 3 /api/scholar/* routes AND every server action that
+  // resolves the user via getScholarAuth(), so the second factor can no longer
+  // be skipped by deep-linking into /scholar. ScholarLayout performs the
+  // matching page-level redirect to /auth/mfa-challenge.
+  if (session.user.mfaRequired && !session.user.mfaVerified) return null;
+
   // Super-admin god-mode (mirrors (scholar)/layout.tsx + getTradeAuth):
   // platform owners skip the SCHOLAR entitlement gate and resolve to the
   // OLDEST active org with a synthetic OWNER role. WITHOUT this, an admin is

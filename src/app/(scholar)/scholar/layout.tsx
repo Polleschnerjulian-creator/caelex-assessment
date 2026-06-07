@@ -37,6 +37,15 @@ export default async function ScholarLayout({
     redirect("/scholar-login?callbackUrl=%2Fscholar");
   }
 
+  // MFA gate (page layer): a session that passed password but not the TOTP
+  // second factor (mfaRequired && !mfaVerified) is sent to finish the challenge
+  // before any Scholar page renders. getScholarAuth() enforces the same
+  // condition for /api/scholar/* and the server actions; this redirect is the
+  // page-level counterpart (mirrors the middleware /dashboard MFA gate).
+  if (session.user.mfaRequired && !session.user.mfaVerified) {
+    redirect("/auth/mfa-challenge?callbackUrl=%2Fscholar");
+  }
+
   // Super-admins (platform owners) reach Scholar regardless of entitlement.
   if (!isSuperAdmin(session.user.email)) {
     const org = await getCurrentOrganization(session.user.id);

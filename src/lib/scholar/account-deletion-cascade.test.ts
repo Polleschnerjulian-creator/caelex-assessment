@@ -29,6 +29,7 @@ const {
   txBookmarkDeleteMany,
   txSearchHistoryDeleteMany,
   txPreferencesDeleteMany,
+  txLoginAttemptDeleteMany,
   txOrgMemberFindMany,
   txOrgDeleteMany,
   txUserDelete,
@@ -45,6 +46,7 @@ const {
   txBookmarkDeleteMany: vi.fn(),
   txSearchHistoryDeleteMany: vi.fn(),
   txPreferencesDeleteMany: vi.fn(),
+  txLoginAttemptDeleteMany: vi.fn(),
   txOrgMemberFindMany: vi.fn(),
   txOrgDeleteMany: vi.fn(),
   txUserDelete: vi.fn(),
@@ -87,6 +89,7 @@ const tx = {
   scholarBookmark: { deleteMany: txBookmarkDeleteMany },
   scholarSearchHistory: { deleteMany: txSearchHistoryDeleteMany },
   scholarUserPreferences: { deleteMany: txPreferencesDeleteMany },
+  loginAttempt: { deleteMany: txLoginAttemptDeleteMany },
   organizationMember: { findMany: txOrgMemberFindMany },
   organization: { deleteMany: txOrgDeleteMany },
   user: { delete: txUserDelete },
@@ -147,6 +150,10 @@ describe("DELETE /api/user/delete — Scholar erasure cascade (G7)", () => {
     });
     expect(txPreferencesDeleteMany).toHaveBeenCalledWith({
       where: { userId: "user-1" },
+    });
+    // LoginAttempt is keyed by email (no User FK) — erased explicitly (Art. 17).
+    expect(txLoginAttemptDeleteMany).toHaveBeenCalledWith({
+      where: { email: "ada@example.com" },
     });
     // The user row is still deleted (cascade for FK-linked tables).
     expect(txUserDelete).toHaveBeenCalledWith({ where: { id: "user-1" } });

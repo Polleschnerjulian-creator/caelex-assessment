@@ -107,4 +107,30 @@ describe("getScholarAuth", () => {
 
     expect(await getScholarAuth()).toBeNull();
   });
+
+  it("returns null when MFA is required but not yet verified", async () => {
+    mockAuth.mockResolvedValue({
+      user: { id: "u1", mfaRequired: true, mfaVerified: false },
+    } as never);
+    mockGetOrg.mockResolvedValue(orgCtx);
+    mockHasAccess.mockResolvedValue(true);
+    // Entitlement would pass, but the TOTP second factor is pending → no access.
+    expect(await getScholarAuth()).toBeNull();
+    // Short-circuits before any org/entitlement lookup.
+    expect(mockGetOrg).not.toHaveBeenCalled();
+    expect(mockHasAccess).not.toHaveBeenCalled();
+  });
+
+  it("allows access once MFA is verified", async () => {
+    mockAuth.mockResolvedValue({
+      user: { id: "u1", mfaRequired: true, mfaVerified: true },
+    } as never);
+    mockGetOrg.mockResolvedValue(orgCtx);
+    mockHasAccess.mockResolvedValue(true);
+    expect(await getScholarAuth()).toEqual({
+      userId: "u1",
+      organizationId: "org1",
+      role: "MEMBER",
+    });
+  });
 });

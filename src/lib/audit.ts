@@ -808,7 +808,9 @@ export type SecurityEventType =
   | "PASSWORD_CHANGE"
   | "MFA_BYPASS_ATTEMPT"
   | "API_ABUSE"
-  | "INJECTION_ATTEMPT";
+  | "INJECTION_ATTEMPT"
+  | "ACCOUNT_DELETION"
+  | "CONSENT_CHANGE";
 
 /**
  * Log a security event

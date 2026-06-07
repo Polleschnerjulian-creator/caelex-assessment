@@ -17,6 +17,7 @@ import {
   getIdentifier,
 } from "@/lib/ratelimit";
 import { getSafeErrorMessage } from "@/lib/validations";
+import { logSecurityEvent } from "@/lib/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,6 +38,11 @@ export async function GET(req: Request) {
   try {
     const data = await gatherScholarUserData(auth.userId);
     const json = JSON.stringify(data, null, 2);
+
+    // Audit the DSAR export (Art. 15/30) — a persisted, queryable record.
+    void logSecurityEvent("DATA_EXPORT", "LOW", "scholar:account export", {
+      userId: auth.userId,
+    }).catch(() => {});
 
     return new Response(json, {
       status: 200,

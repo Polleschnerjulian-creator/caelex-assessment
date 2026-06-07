@@ -120,6 +120,33 @@ function validateAndSanitizePatch(
     }
   }
 
+  if ("defaultJurisdiction" in patch) {
+    const dj = patch.defaultJurisdiction;
+    if (dj === null || dj === undefined || dj === "") {
+      sanitized.defaultJurisdiction = null;
+    } else if (
+      typeof dj === "string" &&
+      /^[A-Z]{2,3}$/.test(dj.toUpperCase())
+    ) {
+      // Jurisdiction codes are 2–3 letter ISO/region codes (incl. INT, EU).
+      sanitized.defaultJurisdiction = dj.toUpperCase();
+    } else {
+      throw new Error(`Invalid defaultJurisdiction "${String(dj)}".`);
+    }
+  }
+
+  // Consent flags must be real booleans — a malformed patch (e.g. from a
+  // hand-crafted request) should fail validation cleanly, not 500 in Prisma.
+  if ("semanticSearch" in patch && typeof patch.semanticSearch !== "boolean") {
+    throw new Error("semanticSearch must be a boolean");
+  }
+  if (
+    "searchHistoryEnabled" in patch &&
+    typeof patch.searchHistoryEnabled !== "boolean"
+  ) {
+    throw new Error("searchHistoryEnabled must be a boolean");
+  }
+
   if ("resultsPerPage" in patch && patch.resultsPerPage !== undefined) {
     sanitized.resultsPerPage = Math.min(
       RESULTS_PER_PAGE_MAX,

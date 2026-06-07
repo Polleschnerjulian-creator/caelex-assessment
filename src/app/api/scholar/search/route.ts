@@ -3,6 +3,8 @@ import { z } from "zod";
 import { getScholarAuth } from "@/lib/scholar/scholar-auth";
 import { scholarSearchSources } from "@/lib/scholar/scholar-search.server";
 import { logSearch } from "@/lib/scholar/search-history.server";
+import { getScholarPreferences } from "@/lib/scholar/preferences.server";
+import { logSecurityEvent } from "@/lib/audit";
 import {
   checkRateLimit,
   createRateLimitResponse,
@@ -25,7 +27,13 @@ export async function POST(req: Request) {
   if (!auth) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const rl = await checkRateLimit("scholar", getIdentifier(req, auth.userId));
-  if (!rl.success) return createRateLimitResponse(rl);
+  if (!rl.success) {
+    // Detection signal — repeated denials per user surface abuse/scraping.
+    void logSecurityEvent("RATE_LIMIT_EXCEEDED", "LOW", "scholar:search", {
+      userId: auth.userId,
+    }).catch(() => {});
+    return createRateLimitResponse(rl);
+  }
 
   const parsed = SearchBody.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
@@ -36,7 +44,14 @@ export async function POST(req: Request) {
   }
 
   try {
-    const result = await scholarSearchSources(parsed.data);
+    // Honour the per-user AI-search consent (privacy-by-default; default off).
+    // Opted-out users get a keyword-only search that never calls the paid
+    // embedding provider — no query leaves Caelex for OpenAI without consent,
+    // and an attacker cannot drive embedding spend through opted-out accounts.
+    const prefs = await getScholarPreferences(auth.userId);
+    const result = await scholarSearchSources(parsed.data, {
+      semantic: prefs.semanticSearch,
+    });
 
     // Best-effort search history logging — a logging failure must NEVER
     // propagate to the caller (wrapping in void + try/catch).

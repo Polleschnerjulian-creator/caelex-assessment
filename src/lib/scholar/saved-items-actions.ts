@@ -5,19 +5,30 @@
  *
  * Thin "use server" wrappers around the IDOR-safe data layer in
  * `saved-items.server.ts`. Each action:
- *   1. resolves the current user via `auth()` → session.user.id;
- *      if there is no session, it returns { ok: false } (no throw).
- *   2. calls the service with that userId (the service does the per-user
- *      filtering — these wrappers never trust a userId from the client).
- *   3. revalidates the affected routes so the saved/list/detail surfaces
- *      reflect the mutation.
+ *   1. resolves the caller via getScholarAuth() — session → active org →
+ *      SCHOLAR product entitlement (+ the MFA gate). It NEVER trusts a userId
+ *      from the client; { ok: false } is returned when the caller is not an
+ *      entitled, MFA-satisfied Scholar user (no throw). This matches the
+ *      /api/scholar/* read routes — writes are gated on the SAME entitlement,
+ *      not merely on session presence (closes the "logged-in non-Scholar user
+ *      can still mutate Scholar rows" gap).
+ *   2. enforces a per-user write rate limit (Upstash "scholar" tier). Server
+ *      actions POST to page routes, which the API-only middleware limiter does
+ *      NOT cover, so without this they were unthrottled (storage-spam vector).
+ *   3. validates + bounds every input with Zod (itemType enum, itemId/listId
+ *      length, name/description/note caps) before touching the data layer,
+ *      which independently re-caps + corpus-validates as defense-in-depth.
+ *   4. calls the service with the resolved userId and revalidates the affected
+ *      routes so the saved/list/detail surfaces reflect the mutation.
  *
  * Args are plain serialisable strings (NOT FormData) so client components
  * can call these directly.
  */
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth";
+import { z } from "zod";
+import { getScholarAuth } from "@/lib/scholar/scholar-auth";
+import { checkRateLimit } from "@/lib/ratelimit";
 import {
   toggleBookmark,
   createReadingList as createReadingListSvc,
@@ -28,11 +39,37 @@ import {
   type ScholarItemType,
 } from "@/lib/scholar/saved-items.server";
 
-/** Resolve the signed-in user id, or null when there is no session. */
-async function currentUserId(): Promise<string | null> {
-  const session = await auth();
-  return session?.user?.id ?? null;
+// ─── Auth + rate-limit + validation helpers ────────────────────────────────────
+
+/**
+ * Resolve the entitled Scholar user id (session → active org → SCHOLAR + MFA),
+ * or null. Writes are gated on the same entitlement as the read routes.
+ */
+async function authedUserId(): Promise<string | null> {
+  const ctx = await getScholarAuth();
+  return ctx?.userId ?? null;
 }
+
+/**
+ * Per-user write throttle. Server actions are not covered by the API-only
+ * middleware rate limiter, so each mutating action is throttled here using the
+ * existing Upstash "scholar" tier, keyed per-user.
+ */
+async function writeRateOk(userId: string): Promise<boolean> {
+  const rl = await checkRateLimit("scholar", `scholar-write:${userId}`);
+  return rl.success;
+}
+
+// itemId is not regex-constrained (corpus ids vary) — it is length-capped here
+// and existence-checked against the corpus in the data layer (resolveItem), and
+// only ever flows into parameterised Prisma queries + revalidatePath, so there
+// is no injection surface. listId is a cuid.
+const ItemTypeSchema = z.enum(["source", "case"]);
+const ItemIdSchema = z.string().min(1).max(96);
+const ListIdSchema = z.string().min(1).max(64);
+const NameSchema = z.string().trim().min(1).max(120);
+const DescriptionSchema = z.string().trim().max(500);
+const NoteSchema = z.string().trim().max(500);
 
 /**
  * Revalidate the detail page for an item so its bookmark/star state
@@ -50,19 +87,29 @@ function revalidateDetailPath(itemType: ScholarItemType, itemId: string): void {
 
 /**
  * Toggle a bookmark for the current user. Returns the new state.
- * { ok: false } when there is no session.
+ * { ok: false } when the caller is unauthorised, rate-limited or sends bad input.
  */
 export async function toggleBookmarkAction(
   itemType: ScholarItemType,
   itemId: string,
 ): Promise<{ ok: boolean; bookmarked?: boolean }> {
-  const userId = await currentUserId();
+  const userId = await authedUserId();
   if (!userId) return { ok: false };
+  if (!(await writeRateOk(userId))) return { ok: false };
 
-  const { bookmarked } = await toggleBookmark(userId, itemType, itemId);
+  const parsed = z
+    .object({ itemType: ItemTypeSchema, itemId: ItemIdSchema })
+    .safeParse({ itemType, itemId });
+  if (!parsed.success) return { ok: false };
+
+  const { bookmarked } = await toggleBookmark(
+    userId,
+    parsed.data.itemType,
+    parsed.data.itemId,
+  );
 
   revalidatePath("/scholar/saved");
-  revalidateDetailPath(itemType, itemId);
+  revalidateDetailPath(parsed.data.itemType, parsed.data.itemId);
   return { ok: true, bookmarked };
 }
 
@@ -75,19 +122,29 @@ export async function removeBookmarkAction(
   itemType: ScholarItemType,
   itemId: string,
 ): Promise<{ ok: boolean }> {
-  const userId = await currentUserId();
+  const userId = await authedUserId();
   if (!userId) return { ok: false };
+  if (!(await writeRateOk(userId))) return { ok: false };
+
+  const parsed = z
+    .object({ itemType: ItemTypeSchema, itemId: ItemIdSchema })
+    .safeParse({ itemType, itemId });
+  if (!parsed.success) return { ok: false };
 
   // toggleBookmark returns the resulting state. If it came back `true` the
   // row was absent and we just created it — toggle again to remove. The
   // delete branch is keyed off the @@unique([userId,…]) so it stays per-user.
-  const first = await toggleBookmark(userId, itemType, itemId);
+  const first = await toggleBookmark(
+    userId,
+    parsed.data.itemType,
+    parsed.data.itemId,
+  );
   if (first.bookmarked) {
-    await toggleBookmark(userId, itemType, itemId);
+    await toggleBookmark(userId, parsed.data.itemType, parsed.data.itemId);
   }
 
   revalidatePath("/scholar/saved");
-  revalidateDetailPath(itemType, itemId);
+  revalidateDetailPath(parsed.data.itemType, parsed.data.itemId);
   return { ok: true };
 }
 
@@ -98,16 +155,27 @@ export async function createListAction(
   name: string,
   description?: string,
 ): Promise<{ ok: boolean; id?: string }> {
-  const userId = await currentUserId();
+  const userId = await authedUserId();
   if (!userId) return { ok: false };
+  if (!(await writeRateOk(userId))) return { ok: false };
 
-  const trimmed = name.trim();
-  if (!trimmed) return { ok: false };
+  const parsed = z
+    .object({ name: NameSchema, description: DescriptionSchema.optional() })
+    .safeParse({ name, description });
+  if (!parsed.success) return { ok: false };
 
-  const { id } = await createReadingListSvc(userId, trimmed, description);
-
-  revalidatePath("/scholar/saved");
-  return { ok: true, id };
+  try {
+    const { id } = await createReadingListSvc(
+      userId,
+      parsed.data.name,
+      parsed.data.description,
+    );
+    revalidatePath("/scholar/saved");
+    return { ok: true, id };
+  } catch {
+    // e.g. per-user list cap reached
+    return { ok: false };
+  }
 }
 
 /** Rename a reading list owned by the current user. */
@@ -115,16 +183,23 @@ export async function renameListAction(
   listId: string,
   name: string,
 ): Promise<{ ok: boolean }> {
-  const userId = await currentUserId();
+  const userId = await authedUserId();
   if (!userId) return { ok: false };
+  if (!(await writeRateOk(userId))) return { ok: false };
 
-  const trimmed = name.trim();
-  if (!trimmed) return { ok: false };
+  const parsed = z
+    .object({ listId: ListIdSchema, name: NameSchema })
+    .safeParse({ listId, name });
+  if (!parsed.success) return { ok: false };
 
-  const ok = await renameReadingListSvc(userId, listId, trimmed);
+  const ok = await renameReadingListSvc(
+    userId,
+    parsed.data.listId,
+    parsed.data.name,
+  );
 
   revalidatePath("/scholar/saved");
-  revalidatePath(`/scholar/lists/${listId}`);
+  revalidatePath(`/scholar/lists/${parsed.data.listId}`);
   return { ok };
 }
 
@@ -132,13 +207,17 @@ export async function renameListAction(
 export async function deleteListAction(
   listId: string,
 ): Promise<{ ok: boolean }> {
-  const userId = await currentUserId();
+  const userId = await authedUserId();
   if (!userId) return { ok: false };
+  if (!(await writeRateOk(userId))) return { ok: false };
 
-  const ok = await deleteReadingListSvc(userId, listId);
+  const parsed = ListIdSchema.safeParse(listId);
+  if (!parsed.success) return { ok: false };
+
+  const ok = await deleteReadingListSvc(userId, parsed.data);
 
   revalidatePath("/scholar/saved");
-  revalidatePath(`/scholar/lists/${listId}`);
+  revalidatePath(`/scholar/lists/${parsed.data}`);
   return { ok };
 }
 
@@ -149,14 +228,31 @@ export async function addToListAction(
   itemId: string,
   note?: string,
 ): Promise<{ ok: boolean }> {
-  const userId = await currentUserId();
+  const userId = await authedUserId();
   if (!userId) return { ok: false };
+  if (!(await writeRateOk(userId))) return { ok: false };
 
-  const ok = await addToReadingListSvc(userId, listId, itemType, itemId, note);
+  const parsed = z
+    .object({
+      listId: ListIdSchema,
+      itemType: ItemTypeSchema,
+      itemId: ItemIdSchema,
+      note: NoteSchema.optional(),
+    })
+    .safeParse({ listId, itemType, itemId, note });
+  if (!parsed.success) return { ok: false };
+
+  const ok = await addToReadingListSvc(
+    userId,
+    parsed.data.listId,
+    parsed.data.itemType,
+    parsed.data.itemId,
+    parsed.data.note,
+  );
 
   revalidatePath("/scholar/saved");
-  revalidatePath(`/scholar/lists/${listId}`);
-  revalidateDetailPath(itemType, itemId);
+  revalidatePath(`/scholar/lists/${parsed.data.listId}`);
+  revalidateDetailPath(parsed.data.itemType, parsed.data.itemId);
   return { ok };
 }
 
@@ -166,13 +262,28 @@ export async function removeFromListAction(
   itemType: ScholarItemType,
   itemId: string,
 ): Promise<{ ok: boolean }> {
-  const userId = await currentUserId();
+  const userId = await authedUserId();
   if (!userId) return { ok: false };
+  if (!(await writeRateOk(userId))) return { ok: false };
 
-  const ok = await removeFromReadingListSvc(userId, listId, itemType, itemId);
+  const parsed = z
+    .object({
+      listId: ListIdSchema,
+      itemType: ItemTypeSchema,
+      itemId: ItemIdSchema,
+    })
+    .safeParse({ listId, itemType, itemId });
+  if (!parsed.success) return { ok: false };
+
+  const ok = await removeFromReadingListSvc(
+    userId,
+    parsed.data.listId,
+    parsed.data.itemType,
+    parsed.data.itemId,
+  );
 
   revalidatePath("/scholar/saved");
-  revalidatePath(`/scholar/lists/${listId}`);
-  revalidateDetailPath(itemType, itemId);
+  revalidatePath(`/scholar/lists/${parsed.data.listId}`);
+  revalidateDetailPath(parsed.data.itemType, parsed.data.itemId);
   return { ok };
 }

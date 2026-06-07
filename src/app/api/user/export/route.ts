@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
 import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { logSecurityEvent } from "@/lib/audit";
 
 // GET /api/user/export - GDPR Art. 20 data portability export
 export async function GET() {
@@ -325,6 +326,11 @@ export async function GET() {
       ncaSubmissions,
       comments,
     };
+
+    // Audit the DSAR/portability export (Art. 20/30) — persisted record.
+    void logSecurityEvent("DATA_EXPORT", "LOW", "user:data export", {
+      userId,
+    }).catch(() => {});
 
     return new NextResponse(JSON.stringify(exportData, null, 2), {
       headers: {

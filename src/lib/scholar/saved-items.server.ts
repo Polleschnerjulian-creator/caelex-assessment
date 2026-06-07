@@ -37,6 +37,19 @@ export interface ResolvedItem {
   href: string;
 }
 
+// ─── Abuse limits ──────────────────────────────────────────────────────────────
+// Generous per-user ceilings: legitimate teaching/research never hits them, but
+// an automated abuser cannot grow these tables without bound. Enforced in the
+// data layer so the cap holds regardless of caller (defense-in-depth on top of
+// the server-action Zod validation). Lengths are also clamped here as a final
+// guard against oversized payloads.
+const MAX_BOOKMARKS_PER_USER = 5000;
+const MAX_LISTS_PER_USER = 500;
+const MAX_ITEMS_PER_LIST = 2000;
+const MAX_NAME_LEN = 120;
+const MAX_DESCRIPTION_LEN = 500;
+const MAX_NOTE_LEN = 500;
+
 // ─── Corpus resolution (private) ───────────────────────────────────────────────
 
 /**
@@ -95,6 +108,15 @@ export async function toggleBookmark(
     return { bookmarked: false };
   }
 
+  // Only bookmark ids that resolve to a real corpus item — blocks storing
+  // arbitrary/junk rows. (Deletes above are always allowed so a stale bookmark
+  // can be cleared even if its corpus id was later retired.)
+  if (!resolveItem(itemType, itemId)) return { bookmarked: false };
+
+  // Storage-abuse guard: cap total bookmarks per user.
+  const count = await prisma.scholarBookmark.count({ where: { userId } });
+  if (count >= MAX_BOOKMARKS_PER_USER) return { bookmarked: false };
+
   await prisma.scholarBookmark.create({ data: { userId, itemType, itemId } });
   return { bookmarked: true };
 }
@@ -139,8 +161,19 @@ export async function createReadingList(
   name: string,
   description?: string,
 ): Promise<{ id: string }> {
+  // Storage-abuse guard: cap reading lists per user.
+  const count = await prisma.scholarReadingList.count({ where: { userId } });
+  if (count >= MAX_LISTS_PER_USER) {
+    throw new Error("Reading list limit reached");
+  }
   const list = await prisma.scholarReadingList.create({
-    data: { userId, name, description: description ?? null },
+    data: {
+      userId,
+      name: name.slice(0, MAX_NAME_LEN),
+      description: description
+        ? description.slice(0, MAX_DESCRIPTION_LEN)
+        : null,
+    },
     select: { id: true },
   });
   return { id: list.id };
@@ -157,7 +190,7 @@ export async function renameReadingList(
 ): Promise<boolean> {
   const res = await prisma.scholarReadingList.updateMany({
     where: { id: listId, userId },
-    data: { name },
+    data: { name: name.slice(0, MAX_NAME_LEN) },
   });
   return res.count > 0;
 }
@@ -261,9 +294,23 @@ export async function addToReadingList(
   });
   if (!owned) return false;
 
+  // Only add ids that resolve to a real corpus item — blocks junk rows.
+  if (!resolveItem(itemType, itemId)) return false;
+
+  // Storage-abuse guard: cap items per list.
+  const itemCount = await prisma.scholarReadingListItem.count({
+    where: { listId },
+  });
+  if (itemCount >= MAX_ITEMS_PER_LIST) return false;
+
   await prisma.scholarReadingListItem.upsert({
     where: { listId_itemType_itemId: { listId, itemType, itemId } },
-    create: { listId, itemType, itemId, note: note ?? null },
+    create: {
+      listId,
+      itemType,
+      itemId,
+      note: note ? note.slice(0, MAX_NOTE_LEN) : null,
+    },
     update: {}, // dup add → leave the existing row untouched
   });
   return true;

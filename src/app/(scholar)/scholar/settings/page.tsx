@@ -48,6 +48,9 @@ import {
   Trash2,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
+import { getScholarAuth } from "@/lib/scholar/scholar-auth";
+import { checkRateLimit } from "@/lib/ratelimit";
+import { logSecurityEvent } from "@/lib/audit";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { isSuperAdmin } from "@/lib/super-admin";
 import { prisma } from "@/lib/prisma";
@@ -168,13 +171,21 @@ function formatSearchDate(date: Date, locale: ScholarLocale): string {
 
 // ─── Server Actions ───────────────────────────────────────────────────────────
 
+// Resolve the entitled Scholar user (session → active org → SCHOLAR + MFA), or
+// null. Settings mutations are gated on the SAME entitlement as the rest of the
+// surface — not merely on session presence — so a logged-in user from another
+// product (Atlas/Trade) without a Scholar licence cannot drive these actions.
+async function settingsUserId(): Promise<string | null> {
+  const ctx = await getScholarAuth();
+  return ctx?.userId ?? null;
+}
+
 async function handleUpdateName(
   _prev: ActionResult,
   formData: FormData,
 ): Promise<ActionResult> {
   "use server";
-  const session = await auth();
-  const userId = session?.user?.id;
+  const userId = await settingsUserId();
   if (!userId)
     return { ok: false, message: t("en", SETTINGS, "msgNotSignedIn") };
   const locale = await getScholarLocale(userId);
@@ -202,8 +213,7 @@ async function handleSavePrefs(
   formData: FormData,
 ): Promise<ActionResult> {
   "use server";
-  const session = await auth();
-  const userId = session?.user?.id;
+  const userId = await settingsUserId();
   if (!userId)
     return { ok: false, message: t("en", SETTINGS, "msgNotSignedIn") };
   const locale = await getScholarLocale(userId);
@@ -230,14 +240,17 @@ async function handleSavePrefs(
 
   try {
     await updateScholarPreferences(userId, patch);
+    // Audit the AI-search consent state (Art. 7(1) GDPR — demonstrable consent).
+    void logSecurityEvent("CONSENT_CHANGE", "LOW", "scholar:semanticSearch", {
+      userId,
+      semanticSearch,
+    }).catch(() => {});
     revalidatePath("/scholar/settings");
     return { ok: true };
-  } catch (e) {
-    const msg =
-      e instanceof Error
-        ? e.message
-        : t(locale, SETTINGS, "msgSaveFailedShort");
-    return { ok: false, message: msg };
+  } catch {
+    // Generic message only — never forward raw error.message (could echo
+    // validation internals / Prisma details) to the client.
+    return { ok: false, message: t(locale, SETTINGS, "msgSaveFailedShort") };
   }
 }
 
@@ -246,11 +259,18 @@ async function handlePasswordChange(
   formData: FormData,
 ): Promise<ActionResult> {
   "use server";
-  const session = await auth();
-  const userId = session?.user?.id;
+  const userId = await settingsUserId();
   if (!userId)
     return { ok: false, message: t("en", SETTINGS, "msgNotSignedIn") };
   const locale = await getScholarLocale(userId);
+
+  // Throttle password-change attempts per user (online brute-force guard).
+  // Server actions are NOT covered by the API-only middleware limiter, so gate
+  // here on the existing "sensitive" tier (5/hr Redis), keyed per-user.
+  const rl = await checkRateLimit("sensitive", `scholar-pwchange:${userId}`);
+  if (!rl.success) {
+    return { ok: false, message: t(locale, SETTINGS, "msgSaveFailedShort") };
+  }
 
   const current = (formData.get("currentPassword") as string) ?? "";
   const next = (formData.get("newPassword") as string) ?? "";
@@ -273,8 +293,7 @@ async function handleToggleHistory(
   formData: FormData,
 ): Promise<ActionResult> {
   "use server";
-  const session = await auth();
-  const userId = session?.user?.id;
+  const userId = await settingsUserId();
   if (!userId)
     return { ok: false, message: t("en", SETTINGS, "msgNotSignedIn") };
   const locale = await getScholarLocale(userId);
@@ -284,6 +303,11 @@ async function handleToggleHistory(
 
   try {
     await updateScholarPreferences(userId, { searchHistoryEnabled });
+    // Audit the search-history consent decision (Art. 7(1) GDPR).
+    void logSecurityEvent("CONSENT_CHANGE", "LOW", "scholar:searchHistory", {
+      userId,
+      searchHistoryEnabled,
+    }).catch(() => {});
     revalidatePath("/scholar/settings");
     return {
       ok: true,
@@ -301,8 +325,7 @@ async function handleClearHistory(
   _formData: FormData,
 ): Promise<ActionResult> {
   "use server";
-  const session = await auth();
-  const userId = session?.user?.id;
+  const userId = await settingsUserId();
   if (!userId)
     return { ok: false, message: t("en", SETTINGS, "msgNotSignedIn") };
   const locale = await getScholarLocale(userId);

@@ -14,6 +14,24 @@ vi.mock("@/data/legal-sources", () => ({
     }
     return undefined;
   }),
+  // Used by the keyword-only (semantic-opted-out) path.
+  ALL_SOURCES: [
+    {
+      id: "DE-SATDSIG-2007",
+      jurisdiction: "DE",
+      type: "federal_law",
+      status: "in_force",
+      title_en: "Satellite Data Security Act",
+      title_local: "Satellitendatensicherheitsgesetz",
+      scope_description: "EO operators only",
+      key_provisions: [
+        { title: "Licensing", summary: "operators must register" },
+      ],
+      compliance_areas: ["data_security"],
+      relevance_level: "high",
+      official_reference: "BGBl. I 2007 S. 2278",
+    },
+  ],
 }));
 
 import { executeKorpusTool } from "@/lib/atlas/korpus-tools.server";
@@ -142,5 +160,38 @@ describe("scholarSearchSources", () => {
       }),
     });
     await expect(scholarSearchSources({ query: "x" })).rejects.toThrow();
+  });
+
+  it("uses a keyword-only path (NO embedding call) when semantic is opted out", async () => {
+    const out = await scholarSearchSources(
+      { query: "satellite" },
+      { semantic: false },
+    );
+    // The paid hybrid engine (which embeds the query via OpenAI) is NEVER invoked.
+    expect(mockExec).not.toHaveBeenCalled();
+    expect(out.semanticAvailable).toBe(false);
+    expect(out.hits[0]).toMatchObject({
+      id: "DE-SATDSIG-2007",
+      title: "Satellite Data Security Act",
+      semanticScore: null,
+      relevanceLevel: "high",
+    });
+    expect(out.hits[0].score).toBeGreaterThan(0);
+  });
+
+  it("still uses the hybrid engine when semantic is opted in", async () => {
+    mockExec.mockResolvedValue({
+      isError: false,
+      content: JSON.stringify({
+        query: "satellite",
+        filters: {},
+        hit_count: 0,
+        semantic_available: true,
+        hint: "",
+        hits: [],
+      }),
+    });
+    await scholarSearchSources({ query: "satellite" }, { semantic: true });
+    expect(mockExec).toHaveBeenCalledTimes(1);
   });
 });
