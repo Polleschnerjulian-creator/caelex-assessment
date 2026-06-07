@@ -17,6 +17,7 @@ import { signOut } from "next-auth/react";
 import { useScholarLocale } from "./_i18n/LocaleProvider";
 import { t } from "./_i18n/core";
 import { NAV } from "./_i18n/nav";
+import { ScholarFooter } from "./_components/ScholarFooter";
 
 // ─── Nav items — i18n via NAV namespace ────────────────────────────
 //   `labelKey` resolves through t(locale, NAV, labelKey) at render time.
@@ -387,7 +388,17 @@ export default function ScholarShell({
           willChange: "margin-left",
         }}
       >
-        <div className="min-h-full">{children}</div>
+        {/*
+          Flex column so the footer sits at the BOTTOM of every Scholar page:
+          on short pages `flex-1` pushes it to the viewport bottom; on long
+          pages it flows naturally after the content. It lives inside this
+          <main> (the content column that tracks the sidebar width via
+          marginLeft) so it never overlaps the fixed sidebar.
+        */}
+        <div className="flex flex-col min-h-full">
+          <div className="flex-1">{children}</div>
+          <ScholarFooter />
+        </div>
       </main>
     </div>
   );
