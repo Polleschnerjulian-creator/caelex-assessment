@@ -401,17 +401,17 @@ export default function Navigation({
       >
         <div
           className={
-            fullWidth ? "w-full" : "max-w-[1400px] mx-auto px-6 md:px-12"
+            fullWidth
+              ? "w-full px-3 sm:px-4"
+              : "max-w-[1400px] mx-auto px-6 md:px-12"
           }
         >
-          <div
-            className={`flex justify-between h-20 ${fullWidth ? "items-stretch" : "items-center"}`}
-          >
+          <div className="flex items-center justify-between h-20">
             {/* Glass Bar */}
             <div
-              className={`flex items-center justify-between w-full ${fullWidth ? "rounded-none px-6 md:px-10" : "rounded-xl px-5"} py-2.5 transition-all duration-700 ${
+              className={`flex items-center justify-between w-full ${fullWidth ? "rounded-2xl px-6 md:px-8" : "rounded-xl px-5"} py-2.5 transition-all duration-700 ${
                 ghost
-                  ? "bg-transparent"
+                  ? "bg-white/[0.08] backdrop-blur-xl backdrop-saturate-150"
                   : isLight
                     ? scrolled
                       ? // Palantir-style near-invisible glass: the bar itself
