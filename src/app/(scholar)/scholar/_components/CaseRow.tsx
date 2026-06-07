@@ -79,13 +79,13 @@ export function CaseRow({ c }: CaseRowProps) {
   return (
     <Link
       href={"/scholar/cases/" + encodeURIComponent(c.id)}
-      className="flex items-center gap-4 px-5 py-3.5 rounded-xl bg-white border border-transparent hover:border-gray-200 hover:shadow-sm motion-safe:transition-all motion-safe:duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
+      className="flex items-center gap-4 px-5 py-3.5 rounded-2xl bg-white border border-transparent hover:border-gray-200/70 hover:shadow-sm motion-safe:transition-all motion-safe:duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
     >
       {/*
         OVERLAP FIX: fixed width + shrink-0 means this column NEVER grows
         into the title column. truncate prevents long labels from spilling.
       */}
-      <span className="w-28 shrink-0 text-[9px] font-bold uppercase tracking-wider text-gray-500 truncate">
+      <span className="w-28 shrink-0 text-[9px] font-bold uppercase tracking-[0.04em] text-gray-500 truncate">
         {forumLabel}
       </span>
 

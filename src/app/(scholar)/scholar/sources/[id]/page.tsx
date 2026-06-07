@@ -60,7 +60,7 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
 
       <div className="space-y-8">
         {/* Header card */}
-        <div className="rounded-lg border border-gray-200 bg-white p-6 space-y-4 shadow-sm">
+        <div className="rounded-2xl border border-gray-200/70 bg-white p-6 space-y-4 shadow-sm">
           <div className="space-y-1">
             {/*
               WCAG 1.3.1 / 2.4.6: <h1> provides the document title for this
@@ -133,7 +133,7 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
               {source.keyProvisions.map((provision, i) => (
                 <li
                   key={`${provision.section}-${i}`}
-                  className="rounded-lg border border-gray-200 bg-white p-5 space-y-3 shadow-sm"
+                  className="rounded-2xl border border-gray-200/70 bg-white p-6 space-y-3 shadow-sm"
                 >
                   {/* Section + title */}
                   <div className="flex items-start gap-3">

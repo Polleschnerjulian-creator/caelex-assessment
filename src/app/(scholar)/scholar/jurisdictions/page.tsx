@@ -76,7 +76,7 @@ export default function JurisdictionsPage() {
                 href={`/scholar/jurisdictions/${encodeURIComponent(code.toLowerCase())}`}
                 className={[
                   "group flex flex-col justify-between min-h-[72px]",
-                  "bg-white border border-gray-100 rounded-xl p-4",
+                  "bg-white border border-gray-200/70 rounded-2xl p-5",
                   "hover:border-gray-300 hover:shadow-sm",
                   "motion-safe:transition-all motion-safe:duration-200",
                   // WCAG 2.4.7: visible focus ring
@@ -86,7 +86,7 @@ export default function JurisdictionsPage() {
                 {/* Country code badge */}
                 <div className="flex items-start justify-between gap-2">
                   <span
-                    className="text-[10px] font-bold tracking-widest text-gray-500 uppercase"
+                    className="text-[10px] font-bold tracking-[-0.01em] text-gray-500"
                     aria-hidden="true"
                   >
                     {code}
@@ -112,8 +112,8 @@ export default function JurisdictionsPage() {
       <footer className="mt-20 pt-8 border-t border-gray-100 pb-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold text-gray-600 tracking-wider">
-              SCHOLAR
+            <span className="text-[10px] font-semibold text-gray-600 tracking-[-0.01em]">
+              Scholar
             </span>
             <span className="text-[9px] text-gray-600">by Caelex</span>
           </div>

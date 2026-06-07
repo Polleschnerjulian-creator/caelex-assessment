@@ -86,7 +86,7 @@ export default function ScholarShell({
     // lang="de": WCAG 3.1.1 — Scholar UI is German; root layout uses lang="en"
     <div
       lang="de"
-      className="landing-light h-screen w-screen overflow-hidden bg-[#F7F8FA]"
+      className="antialiased landing-light h-screen w-screen overflow-hidden bg-[#F7F8FA]"
       style={{ colorScheme: "light" }}
     >
       {/* ─── Sidebar ─── */}
@@ -159,10 +159,10 @@ export default function ScholarShell({
                 className="h-7 w-7 object-contain flex-shrink-0"
               />
               <div className="flex flex-col overflow-hidden">
-                <span className="text-[13px] font-semibold tracking-[0.12em] text-white/90 whitespace-nowrap">
-                  SCHOLAR
+                <span className="text-[13px] font-semibold tracking-[-0.01em] text-white/90 whitespace-nowrap">
+                  Scholar
                 </span>
-                <span className="text-[8px] font-medium tracking-[0.2em] text-white/70 uppercase whitespace-nowrap">
+                <span className="text-[9px] font-normal tracking-[0.01em] text-white/50 whitespace-nowrap">
                   powered by Atlas
                 </span>
               </div>
@@ -256,7 +256,7 @@ export default function ScholarShell({
                         strokeWidth={active ? 2 : 1.5}
                         aria-hidden={true}
                       />
-                      <span className="text-[12px] tracking-wide">
+                      <span className="text-[12px] tracking-[-0.01em]">
                         {item.label}
                       </span>
                     </Link>
@@ -337,7 +337,9 @@ export default function ScholarShell({
                   strokeWidth={isActive("/scholar/settings") ? 2 : 1.5}
                   aria-hidden={true}
                 />
-                <span className="text-[12px] tracking-wide">Einstellungen</span>
+                <span className="text-[12px] tracking-[-0.01em]">
+                  Einstellungen
+                </span>
               </Link>
               {/* Sign out */}
               <button
@@ -351,7 +353,7 @@ export default function ScholarShell({
                   strokeWidth={1.5}
                   aria-hidden={true}
                 />
-                <span className="text-[12px] tracking-wide">Abmelden</span>
+                <span className="text-[12px] tracking-[-0.01em]">Abmelden</span>
               </button>
             </div>
           )}

@@ -92,7 +92,7 @@ export default async function JurisdictionDetailPage({ params }: Props) {
           {/* WCAG 1.3.1: h2 for section heading */}
           <h2
             id="sources-heading"
-            className="text-[10px] font-semibold text-gray-600 tracking-[0.2em] uppercase"
+            className="text-[12px] font-semibold text-gray-500 tracking-[-0.01em]"
           >
             Rechtsquellen
           </h2>
@@ -124,8 +124,8 @@ export default async function JurisdictionDetailPage({ params }: Props) {
       <footer className="mt-20 pt-8 border-t border-gray-100 pb-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold text-gray-600 tracking-wider">
-              SCHOLAR
+            <span className="text-[10px] font-semibold text-gray-600 tracking-[-0.01em]">
+              Scholar
             </span>
             <span className="text-[9px] text-gray-600">by Caelex</span>
           </div>

@@ -9,7 +9,7 @@ export function ScholarPage({ children }: { children: React.ReactNode }) {
   return (
     <main
       lang="de"
-      className="mx-auto w-full max-w-6xl px-6 lg:px-8 py-10 min-h-screen"
+      className="mx-auto w-full max-w-6xl px-6 lg:px-8 py-12 min-h-screen"
     >
       {children}
     </main>

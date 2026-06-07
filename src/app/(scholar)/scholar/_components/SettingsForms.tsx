@@ -57,7 +57,7 @@ const INPUT_CLS =
   "w-full text-[13px] text-gray-900 bg-white border border-gray-200 rounded-lg px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 motion-safe:transition-colors hover:border-gray-300";
 
 const FIELD_LABEL_CLS =
-  "block text-[11px] font-semibold text-gray-700 tracking-wide uppercase mb-1";
+  "block text-[12px] font-semibold text-gray-700 tracking-[-0.01em] mb-1";
 
 // ─── 1. Name form ──────────────────────────────────────────────────────────────
 

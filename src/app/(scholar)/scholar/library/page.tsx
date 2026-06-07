@@ -160,7 +160,7 @@ export default async function LibraryPage({ searchParams }: Props) {
           */}
           <label
             htmlFor="library-type"
-            className="text-[10px] font-semibold text-gray-700 tracking-wide uppercase"
+            className="text-[12px] font-semibold text-gray-700 tracking-[-0.01em]"
           >
             Quellentyp
           </label>
@@ -183,7 +183,7 @@ export default async function LibraryPage({ searchParams }: Props) {
         <div className="flex flex-col gap-1">
           <label
             htmlFor="library-jurisdiction"
-            className="text-[10px] font-semibold text-gray-700 tracking-wide uppercase"
+            className="text-[12px] font-semibold text-gray-700 tracking-[-0.01em]"
           >
             Jurisdiktion
           </label>
@@ -254,7 +254,7 @@ export default async function LibraryPage({ searchParams }: Props) {
           />
           <h2
             id="library-sources-heading"
-            className="text-[10px] font-semibold text-gray-600 tracking-[0.2em] uppercase"
+            className="text-[12px] font-semibold text-gray-500 tracking-[-0.01em]"
           >
             Rechtsquellen
           </h2>
@@ -302,8 +302,8 @@ export default async function LibraryPage({ searchParams }: Props) {
       <footer className="mt-20 pt-8 border-t border-gray-100 pb-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold text-gray-600 tracking-wider">
-              SCHOLAR
+            <span className="text-[10px] font-semibold text-gray-600 tracking-[-0.01em]">
+              Scholar
             </span>
             <span className="text-[9px] text-gray-600">by Caelex</span>
           </div>

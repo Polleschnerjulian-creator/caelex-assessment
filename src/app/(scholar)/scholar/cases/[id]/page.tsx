@@ -88,11 +88,8 @@ export default async function CaseDetailPage({ params }: Props) {
       {/* ─── Header card ─── */}
       <div className="bg-white border border-gray-100 rounded-2xl p-8 mb-8 space-y-4">
         {/* Parties */}
-        <p className="text-[11px] font-semibold tracking-widest text-gray-500 uppercase">
-          {c.plaintiff}{" "}
-          <span className="text-gray-400 font-normal normal-case tracking-normal">
-            gegen
-          </span>{" "}
+        <p className="text-[12px] font-semibold tracking-[-0.01em] text-gray-500">
+          {c.plaintiff} <span className="text-gray-400 font-normal">gegen</span>{" "}
           {c.defendant}
         </p>
 
@@ -169,7 +166,7 @@ export default async function CaseDetailPage({ params }: Props) {
           */}
           <h2
             id="section-facts"
-            className="text-[11px] font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3"
+            className="text-[13px] font-semibold tracking-[-0.01em] text-gray-900 mb-3"
           >
             Sachverhalt
           </h2>
@@ -188,7 +185,7 @@ export default async function CaseDetailPage({ params }: Props) {
         >
           <h2
             id="section-ruling"
-            className="text-[11px] font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3"
+            className="text-[13px] font-semibold tracking-[-0.01em] text-gray-900 mb-3"
           >
             Entscheidung
           </h2>
@@ -204,7 +201,7 @@ export default async function CaseDetailPage({ params }: Props) {
         >
           <h2
             id="section-holding"
-            className="text-[11px] font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3"
+            className="text-[13px] font-semibold tracking-[-0.01em] text-gray-900 mb-3"
           >
             Leitsatz / Holding
           </h2>
@@ -220,7 +217,7 @@ export default async function CaseDetailPage({ params }: Props) {
         >
           <h2
             id="section-significance"
-            className="text-[11px] font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3"
+            className="text-[13px] font-semibold tracking-[-0.01em] text-gray-900 mb-3"
           >
             Bedeutung
           </h2>
@@ -237,7 +234,7 @@ export default async function CaseDetailPage({ params }: Props) {
           >
             <h2
               id="section-remedy"
-              className="text-[11px] font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3"
+              className="text-[13px] font-semibold tracking-[-0.01em] text-gray-900 mb-3"
             >
               Rechtsfolge / Sanktion
             </h2>
@@ -276,7 +273,7 @@ export default async function CaseDetailPage({ params }: Props) {
           >
             <h2
               id="section-sources"
-              className="text-[11px] font-semibold tracking-[0.15em] uppercase text-gray-500 mb-4"
+              className="text-[13px] font-semibold tracking-[-0.01em] text-gray-900 mb-4"
             >
               Angewandte Rechtsquellen
             </h2>
@@ -293,7 +290,7 @@ export default async function CaseDetailPage({ params }: Props) {
                       href={`/scholar/sources/${encodeURIComponent(source.id)}`}
                       className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-transparent hover:border-gray-200 hover:bg-gray-50 motion-safe:transition-all motion-safe:duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                     >
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-gray-600 w-8 flex-shrink-0">
+                      <span className="text-[9px] font-bold uppercase tracking-[0.04em] text-gray-600 w-8 flex-shrink-0">
                         {source.jurisdiction}
                       </span>
                       <span className="text-[13px] font-medium text-gray-800 group-hover:text-black motion-safe:transition-colors flex-1 min-w-0 truncate">
@@ -315,7 +312,7 @@ export default async function CaseDetailPage({ params }: Props) {
           >
             <h2
               id="section-notes"
-              className="text-[11px] font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3"
+              className="text-[13px] font-semibold tracking-[-0.01em] text-gray-900 mb-3"
             >
               Hinweise
             </h2>
@@ -349,8 +346,8 @@ export default async function CaseDetailPage({ params }: Props) {
         </div>
         <div className="flex items-center justify-between pt-3 border-t border-gray-100">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold text-gray-600 tracking-wider">
-              SCHOLAR
+            <span className="text-[10px] font-semibold text-gray-600 tracking-[-0.01em]">
+              Scholar
             </span>
             <span className="text-[9px] text-gray-600">by Caelex</span>
           </div>

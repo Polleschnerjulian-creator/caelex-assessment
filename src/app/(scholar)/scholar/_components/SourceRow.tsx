@@ -69,7 +69,7 @@ export function SourceRow({ source }: SourceRowProps) {
   return (
     <Link
       href={"/scholar/sources/" + encodeURIComponent(source.id)}
-      className="flex items-center gap-4 px-5 py-3.5 rounded-xl bg-white border border-transparent hover:border-gray-200 hover:shadow-sm motion-safe:transition-all motion-safe:duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
+      className="flex items-center gap-4 px-5 py-3.5 rounded-2xl bg-white border border-transparent hover:border-gray-200/70 hover:shadow-sm motion-safe:transition-all motion-safe:duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
     >
       {/* Relevance dot — WCAG 1.4.11: paired with sr-only text */}
       <span
@@ -79,7 +79,7 @@ export function SourceRow({ source }: SourceRowProps) {
       <span className="sr-only">Relevanz: {dotInfo.label}</span>
 
       {/* Type label — WCAG 1.4.3: gray-600 on white ≈ 5.7:1 ✓ */}
-      <span className="text-[9px] font-bold uppercase tracking-wider text-gray-600 w-12 flex-shrink-0">
+      <span className="text-[9px] font-bold uppercase tracking-[0.04em] text-gray-500 w-12 flex-shrink-0">
         {TYPE_LABELS[source.type] ?? source.type}
       </span>
 

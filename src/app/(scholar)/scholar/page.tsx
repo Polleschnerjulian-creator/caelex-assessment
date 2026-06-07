@@ -262,7 +262,7 @@ export default function ScholarSearchPage() {
           */}
           <label
             htmlFor="scholar-jurisdiction"
-            className="text-[10px] text-gray-600 tracking-wide whitespace-nowrap"
+            className="text-[11px] text-gray-600 tracking-[-0.01em] whitespace-nowrap"
           >
             Jurisdiction:
           </label>
@@ -283,19 +283,19 @@ export default function ScholarSearchPage() {
           aria-hidden="true"
           className={`flex items-center gap-4 motion-safe:transition-all motion-safe:duration-500 ${hasResults || isNoResults || loading || error ? "opacity-0 h-0 overflow-hidden" : "opacity-100 h-auto mt-4"}`}
         >
-          <span className="text-[11px] text-gray-600 tracking-wide">
+          <span className="text-[11px] text-gray-500 tracking-[-0.01em]">
             Weltraumrecht durchsuchen
           </span>
           <span className="text-[4px] text-gray-400" aria-hidden="true">
             &#9679;
           </span>
-          <span className="text-[11px] text-gray-600 tracking-wide">
+          <span className="text-[11px] text-gray-500 tracking-[-0.01em]">
             Gesetze &amp; Verordnungen
           </span>
           <span className="text-[4px] text-gray-400" aria-hidden="true">
             &#9679;
           </span>
-          <span className="text-[11px] text-gray-600 tracking-wide">
+          <span className="text-[11px] text-gray-500 tracking-[-0.01em]">
             mehrere Jurisdiktionen
           </span>
         </div>
@@ -347,7 +347,7 @@ export default function ScholarSearchPage() {
         <div className="mt-10 space-y-8">
           {/* Example search chips */}
           <div>
-            <p className="text-[10px] font-semibold text-gray-500 tracking-[0.15em] uppercase mb-3">
+            <p className="text-[13px] font-semibold text-gray-900 tracking-[-0.01em] mb-3">
               Beispielsuchen
             </p>
             <div className="flex flex-wrap gap-2">
@@ -369,7 +369,7 @@ export default function ScholarSearchPage() {
 
           {/* Entry cards — Jurisdictions / Library / Cases */}
           <div>
-            <p className="text-[10px] font-semibold text-gray-500 tracking-[0.15em] uppercase mb-3">
+            <p className="text-[13px] font-semibold text-gray-900 tracking-[-0.01em] mb-3">
               Erkunden
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -377,7 +377,7 @@ export default function ScholarSearchPage() {
                 <Link
                   key={href}
                   href={href}
-                  className="group flex items-start gap-3 bg-white border border-gray-100 rounded-xl p-4 hover:border-gray-300 hover:shadow-sm motion-safe:transition-all motion-safe:duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
+                  className="group flex items-start gap-3 bg-white border border-gray-200/70 rounded-2xl p-5 hover:border-gray-300 hover:shadow-sm motion-safe:transition-all motion-safe:duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
                 >
                   <Icon
                     size={16}
@@ -415,7 +415,7 @@ export default function ScholarSearchPage() {
                 WCAG 1.3.1: h2 provides heading structure for results section.
                 WCAG 1.4.3: gray-600 (#4B5563) on #F7F8FA ≈ 6.0:1 ✓
               */}
-              <h2 className="text-[10px] font-semibold text-gray-600 tracking-[0.2em] uppercase">
+              <h2 className="text-[12px] font-semibold text-gray-500 tracking-[-0.01em]">
                 Rechtsquellen
               </h2>
             </div>
@@ -481,8 +481,8 @@ export default function ScholarSearchPage() {
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             {/* WCAG 1.4.3: gray-600 on white ≈ 5.7:1 ✓ */}
-            <span className="text-[10px] font-semibold text-gray-600 tracking-wider">
-              SCHOLAR
+            <span className="text-[10px] font-semibold text-gray-600 tracking-[-0.01em]">
+              Scholar
             </span>
             <span className="text-[9px] text-gray-600">by Caelex</span>
           </div>

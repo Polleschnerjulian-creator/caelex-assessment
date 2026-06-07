@@ -83,13 +83,13 @@ import type { TabDefinition } from "./_components/SettingsTabs";
 // ─── Shared panel styles ──────────────────────────────────────────────────────
 
 const PANEL_HEADING_CLS =
-  "text-[18px] font-semibold text-gray-900 leading-tight";
-const PANEL_DESC_CLS = "mt-1 text-[13px] text-gray-500 leading-relaxed";
+  "text-[22px] font-semibold text-gray-900 tracking-[-0.02em] leading-[1.1]";
+const PANEL_DESC_CLS = "mt-2 text-[13px] text-gray-500 leading-relaxed";
 const CARD_CLS =
-  "bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden";
+  "bg-white border border-gray-200/70 rounded-2xl shadow-sm overflow-hidden";
 const SECTION_LABEL_CLS =
-  "text-[11px] font-semibold text-gray-500 tracking-[0.18em] uppercase mb-2";
-const DIVIDER_CLS = "border-t border-gray-100 my-6";
+  "text-[13px] font-semibold text-gray-900 tracking-[-0.01em] mb-2";
+const DIVIDER_CLS = "border-t border-gray-100 my-8";
 
 // ─── Jurisdiction helpers ─────────────────────────────────────────────────────
 
@@ -335,7 +335,7 @@ export default async function SettingsPage() {
         Institutsangaben werden von deiner Hochschule verwaltet.
       </p>
 
-      <div className={`${CARD_CLS} mt-5`}>
+      <div className={`${CARD_CLS} mt-6`}>
         {/* Name (editable) */}
         <NameForm action={handleUpdateName} defaultValue={user?.name ?? ""} />
 
@@ -398,7 +398,7 @@ export default async function SettingsPage() {
       </p>
 
       {/* Research prefs */}
-      <div className={`${CARD_CLS} mt-5 px-5 py-5`}>
+      <div className={`${CARD_CLS} mt-6 px-6 py-6`}>
         <p className={SECTION_LABEL_CLS}>Suchverhalten</p>
         <p className="text-[12px] text-gray-500 mb-4 leading-relaxed">
           Diese Einstellungen gelten für alle Recherchen in der
@@ -419,7 +419,7 @@ export default async function SettingsPage() {
       <hr className={DIVIDER_CLS} />
 
       {/* Source language */}
-      <div className={`${CARD_CLS} px-5 py-5`}>
+      <div className={`${CARD_CLS} px-6 py-6`}>
         <p className={SECTION_LABEL_CLS}>Quellsprache</p>
         <p className="text-[12px] text-gray-500 mb-4 leading-relaxed">
           Bestimmt, in welcher Sprache Quelltexte angezeigt werden, sofern
@@ -453,7 +453,7 @@ export default async function SettingsPage() {
         Kontos einsehen.
       </p>
 
-      <div className={`${CARD_CLS} mt-5`}>
+      <div className={`${CARD_CLS} mt-6`}>
         {/* Password / SSO note */}
         {credentialsAccount ? (
           <div className="px-5 py-5 border-b border-gray-100">
@@ -516,7 +516,7 @@ export default async function SettingsPage() {
             >
               <div
                 role="row"
-                className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-x-4 pb-2 border-b border-gray-100 text-[11px] font-semibold text-gray-500 tracking-wide uppercase"
+                className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-x-4 pb-2 border-b border-gray-100 text-[11px] font-semibold text-gray-500 tracking-[-0.01em]"
               >
                 <span role="columnheader">Zeitpunkt</span>
                 <span role="columnheader">Gerät / Browser</span>
@@ -591,7 +591,7 @@ export default async function SettingsPage() {
         20 DSGVO) oder beantrage die Löschung deines Kontos (Art. 17 DSGVO).
       </p>
 
-      <div className={`${CARD_CLS} mt-5`}>
+      <div className={`${CARD_CLS} mt-6`}>
         {/* Search history list */}
         <div className="px-5 py-5 border-b border-gray-100">
           <div className="flex items-center gap-2 mb-2">
@@ -705,7 +705,7 @@ export default async function SettingsPage() {
         Scholar-Plattform.
       </p>
 
-      <div className={`${CARD_CLS} mt-5`}>
+      <div className={`${CARD_CLS} mt-6`}>
         {/* Powered by */}
         <div className="px-5 py-5 border-b border-gray-100">
           <p className={`${SECTION_LABEL_CLS} mb-3`}>Plattform</p>
@@ -830,8 +830,8 @@ export default async function SettingsPage() {
       <footer className="mt-20 pt-8 border-t border-gray-100 pb-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold text-gray-600 tracking-wider">
-              SCHOLAR
+            <span className="text-[10px] font-semibold text-gray-600 tracking-[-0.01em]">
+              Scholar
             </span>
             <span className="text-[9px] text-gray-600">by Caelex</span>
           </div>
