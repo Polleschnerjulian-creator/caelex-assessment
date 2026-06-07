@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ChevronDown, Eye, EyeOff } from "lucide-react";
 import Navigation from "@/components/landing/Navigation";
+import Logo from "@/components/ui/Logo";
 import { analytics } from "@/lib/analytics";
 import { safeScholarUrl } from "@/lib/safe-redirect";
 import { translateAuthError } from "@/lib/auth-errors";
@@ -242,7 +243,7 @@ function LoginForm() {
         Continue with Google
       </button>
 
-      <p className="pt-1 text-[11px] leading-relaxed text-white/40">
+      <p className="pt-1 text-[11px] leading-relaxed text-white/50">
         University not on Scholar yet?{" "}
         <Link
           href="/scholar-access"
@@ -342,32 +343,56 @@ export default function ScholarLoginPage() {
       {/* ── Section 2: sign-in (revealed on scroll) ─────────────────────── */}
       <section
         id="login"
-        className="relative flex min-h-screen w-full flex-col items-center justify-center bg-black px-6 py-28"
+        className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-black px-6 py-28"
       >
-        <div className="w-full max-w-sm">
+        {/* Ambient depth — soft spotlight + faded dot grid, monochrome to match
+            the grayscale hero. Decorative only. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+        >
+          <div className="absolute left-1/2 top-1/2 h-[820px] w-[820px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.07),transparent_62%)] blur-2xl" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.05)_1px,transparent_0)] [background-size:26px_26px] [mask-image:radial-gradient(ellipse_55%_50%_at_50%_45%,#000,transparent)] [-webkit-mask-image:radial-gradient(ellipse_55%_50%_at_50%_45%,#000,transparent)]" />
+        </div>
+
+        <div className="relative w-full max-w-md">
+          {/* Brand mark */}
+          <div className="mb-7 flex justify-center">
+            <Logo size={40} className="text-white" />
+          </div>
+
           <div className="mb-7 text-center">
-            <h2 className="text-[24px] font-semibold tracking-[-0.02em] text-white">
+            <div className="mb-5 flex justify-center">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-medium text-white/60 backdrop-blur-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                Free for universities &amp; research
+              </span>
+            </div>
+            <h2 className="text-[28px] font-semibold leading-[1.1] tracking-[-0.025em] text-white">
               Sign in to Scholar
             </h2>
-            <p className="mx-auto mt-2 max-w-xs text-[14px] leading-relaxed text-white/55">
+            <p className="mx-auto mt-2.5 max-w-xs text-[14px] leading-relaxed text-white/55">
               The searchable space-law database for universities and research.
             </p>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl backdrop-blur-xl sm:p-7">
-            <Suspense
-              fallback={
-                <div
-                  aria-hidden="true"
-                  className="h-[340px] animate-pulse rounded-lg bg-white/[0.03]"
-                />
-              }
-            >
-              <LoginForm />
-            </Suspense>
+          {/* Card — hairline gradient border (light from above) + soft glow */}
+          <div className="rounded-[20px] bg-gradient-to-b from-white/[0.18] to-white/[0.04] p-px shadow-[0_30px_80px_-24px_rgba(0,0,0,0.85)]">
+            <div className="rounded-[19px] bg-[#0A0A0C]/85 p-6 backdrop-blur-2xl sm:p-8">
+              <Suspense
+                fallback={
+                  <div
+                    aria-hidden="true"
+                    className="h-[340px] animate-pulse rounded-lg bg-white/[0.03]"
+                  />
+                }
+              >
+                <LoginForm />
+              </Suspense>
+            </div>
           </div>
 
-          <p className="mt-6 text-center text-[11px] tracking-[0.04em] text-white/35">
+          <p className="mt-7 text-center text-[11px] tracking-[0.06em] text-white/50">
             Caelex Scholar · Powered by Atlas
           </p>
         </div>
