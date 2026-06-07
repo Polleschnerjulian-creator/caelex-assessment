@@ -116,8 +116,7 @@ export function NameForm({ action, defaultValue }: NameFormProps) {
 
 type PrefsFormProps = {
   action: (prev: ActionResult, formData: FormData) => Promise<ActionResult>;
-  jurisdictionCodes: string[];
-  jurisdictionLabel: (code: string) => string;
+  jurisdictions: { code: string; label: string }[];
   defaultJurisdiction: string | null;
   citationFormat: string;
   semanticSearch: boolean;
@@ -126,8 +125,7 @@ type PrefsFormProps = {
 
 export function PrefsForm({
   action,
-  jurisdictionCodes,
-  jurisdictionLabel,
+  jurisdictions,
   defaultJurisdiction,
   citationFormat,
   semanticSearch,
@@ -156,9 +154,9 @@ export function PrefsForm({
           className={INPUT_CLS}
         >
           <option value="">Keine (alle Jurisdiktionen)</option>
-          {jurisdictionCodes.map((code) => (
-            <option key={code} value={code}>
-              {code} — {jurisdictionLabel(code)}
+          {jurisdictions.map((j) => (
+            <option key={j.code} value={j.code}>
+              {j.code} — {j.label}
             </option>
           ))}
         </select>

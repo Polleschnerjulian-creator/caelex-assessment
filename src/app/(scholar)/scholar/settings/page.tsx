@@ -302,6 +302,13 @@ export default async function SettingsPage() {
     return jurisdictionLabel(a).localeCompare(jurisdictionLabel(b), "de");
   });
 
+  // Pre-compute serialisable {code,label} pairs — never pass a function to a
+  // client component (RSC: "Functions cannot be passed to Client Components").
+  const jurisdictions = jurisdictionCodes.map((code) => ({
+    code,
+    label: jurisdictionLabel(code),
+  }));
+
   // Pre-fill deletion mailto body
   const deletionMailto = `mailto:cs@caelex.eu?subject=${encodeURIComponent(
     "Löschantrag – Caelex Scholar",
@@ -387,8 +394,7 @@ export default async function SettingsPage() {
           <div className={`${CARD_CLS} px-5 py-5`}>
             <PrefsForm
               action={handleSavePrefs}
-              jurisdictionCodes={jurisdictionCodes}
-              jurisdictionLabel={jurisdictionLabel}
+              jurisdictions={jurisdictions}
               defaultJurisdiction={prefs?.defaultJurisdiction ?? null}
               citationFormat={prefs?.citationFormat ?? "din"}
               semanticSearch={prefs?.semanticSearch !== false}
