@@ -78,8 +78,13 @@ export function SourceRow({
       {/* Relevance — monochrome bars + sr-only label (WCAG 1.4.1 / 1.4.11) */}
       <RelevanceGlyph level={source.relevanceLevel ?? "low"} locale={locale} />
 
-      {/* Type label — shared monochrome eyebrow token (text-micro, gray-500) */}
-      <Eyebrow className="w-12 flex-shrink-0">{typeLabel}</Eyebrow>
+      {/* Type label — shared monochrome eyebrow token (text-micro, gray-500).
+          Fixed-width column so titles align across rows. w-24 fits the longest
+          localized labels ("Regulation"/"Standard"/"Regolamento" …) on one line;
+          `truncate` (nowrap + clip + ellipsis) is the safety net so a label can
+          never overflow into the title (the w-12 here was too narrow — long
+          types like "Regulation" spilled past the box). */}
+      <Eyebrow className="w-24 flex-shrink-0 truncate">{typeLabel}</Eyebrow>
 
       {/* Title + official reference / scope */}
       <div className="flex-1 min-w-0">
