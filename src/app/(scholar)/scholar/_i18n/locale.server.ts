@@ -9,6 +9,7 @@
  * LocaleProvider via useScholarLocale().
  */
 import "server-only";
+import { cache } from "react";
 import { getScholarPreferences } from "@/lib/scholar/preferences.server";
 import {
   DEFAULT_SCHOLAR_LOCALE,
@@ -26,14 +27,14 @@ import {
  *   - the stored value is somehow invalid,
  *   - or the read throws (never let i18n break a page render).
  */
-export async function getScholarLocale(
-  userId: string | null | undefined,
-): Promise<ScholarLocale> {
-  if (!userId) return DEFAULT_SCHOLAR_LOCALE;
-  try {
-    const prefs = await getScholarPreferences(userId);
-    return toScholarLocale(prefs.uiLanguage);
-  } catch {
-    return DEFAULT_SCHOLAR_LOCALE;
-  }
-}
+export const getScholarLocale = cache(
+  async (userId: string | null | undefined): Promise<ScholarLocale> => {
+    if (!userId) return DEFAULT_SCHOLAR_LOCALE;
+    try {
+      const prefs = await getScholarPreferences(userId);
+      return toScholarLocale(prefs.uiLanguage);
+    } catch {
+      return DEFAULT_SCHOLAR_LOCALE;
+    }
+  },
+);

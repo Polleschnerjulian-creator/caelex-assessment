@@ -46,6 +46,14 @@ export default async function ScholarLayout({
     redirect("/auth/mfa-challenge?callbackUrl=%2Fscholar");
   }
 
+  // Kick off locale resolution (needs only the user id) so it overlaps with the
+  // entitlement DB checks below instead of running serially after them.
+  // getScholarLocale never rejects (it catches and falls back to "en"), so it is
+  // safe in flight across a redirect. With getScholarPreferences now cache()d,
+  // the page's own locale/preferences reads downstream become cache hits — one
+  // prefs query per request instead of 3–4.
+  const localePromise = getScholarLocale(session.user.id);
+
   // Super-admins (platform owners) reach Scholar regardless of entitlement.
   if (!isSuperAdmin(session.user.email)) {
     const org = await getCurrentOrganization(session.user.id);
@@ -55,7 +63,7 @@ export default async function ScholarLayout({
     if (!ok) redirect("/scholar-no-access");
   }
 
-  const locale = await getScholarLocale(session.user.id);
+  const locale = await localePromise;
 
   // ScholarShell is a client component; it reads the locale from context via
   // useScholarLocale() (per the wiring contract: client comps use the hook, not

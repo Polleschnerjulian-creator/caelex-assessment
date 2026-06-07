@@ -13,6 +13,7 @@
  * Any other patch field is passed through; unknown fields are ignored by Prisma.
  */
 import "server-only";
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -163,15 +164,21 @@ function validateAndSanitizePatch(
  * Read preferences for a user. Returns in-memory defaults when no row exists —
  * does NOT insert a row on read.
  */
-export async function getScholarPreferences(
-  userId: string,
-): Promise<ScholarPreferences> {
-  const row = await prisma.scholarUserPreferences.findUnique({
-    where: { userId },
-  });
-  if (!row) return { ...DEFAULTS };
-  return rowToPrefs(row);
-}
+// Wrapped in React cache(): deduped per server request. The layout, the page,
+// and getScholarLocale all read prefs for the same user in one render — without
+// this they each fire a separate Neon round-trip (3–4× per page). cache()
+// collapses them to a single query, cutting TTFB/stream time. Per-request only,
+// so a write via updateScholarPreferences (separate request + revalidate) is
+// always read fresh afterwards.
+export const getScholarPreferences = cache(
+  async (userId: string): Promise<ScholarPreferences> => {
+    const row = await prisma.scholarUserPreferences.findUnique({
+      where: { userId },
+    });
+    if (!row) return { ...DEFAULTS };
+    return rowToPrefs(row);
+  },
+);
 
 /**
  * Upsert preferences for a user. Only the supplied patch fields are updated.
