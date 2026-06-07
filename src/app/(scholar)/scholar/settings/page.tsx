@@ -2,15 +2,17 @@
  * Caelex Scholar — Einstellungen (Settings) page.
  *
  * Server Component: reads session, org data, and user preferences server-side.
- * Organised into clear sections with Server Actions for mutating state.
+ * Organised into clear sections. Form islands delegate to SettingsForms.tsx
+ * (client components) which use useActionState for inline success/error feedback.
  *
  * Sections:
  *   1. Konto            — Name (editable), E-Mail (read-only), Hochschule, Rolle
  *   2. Recherche        — Standard-Jurisdiktion, Zitationsformat, Semantische Suche,
  *                         Treffer pro Seite
  *   3. Quellsprache     — sourceLanguage preference
- *   4. Sicherheit       — stub (Wave 2)
- *   5. Datenschutz      — stub (Wave 3)
+ *   4. Sicherheit       — password change, active sessions note, login history
+ *   5. Datenschutz      — search history (log/view/clear/toggle), GDPR export,
+ *                         account deletion request
  *   6. Über Scholar     — existing info + legal links
  *
  * WCAG 2.2 AA:
@@ -22,6 +24,8 @@
  *               gray-600 on white ≥5.7:1 ✓; submit-button bg-gray-900 on white ✓
  *   - Target size ≥24px on all inputs/buttons via py-2/py-2.5 (WCAG 2.5.8)
  *   - External links with visible underline + focus ring (WCAG 2.4.7)
+ *   - Status messages: role="status" aria-live="polite" (SettingsForms.tsx)
+ *   - Error messages: role="alert" (SettingsForms.tsx)
  */
 
 export const dynamic = "force-dynamic";
@@ -31,13 +35,15 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import {
   Settings,
-  Building2,
   User,
   Info,
   BookOpen,
   Globe2,
   Shield,
   Lock,
+  Download,
+  History,
+  Mail,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
@@ -52,12 +58,25 @@ import {
   isCredentialsAccount,
   getLoginHistory,
 } from "@/lib/scholar/account-security.server";
+import {
+  getSearchHistory,
+  clearSearchHistory,
+} from "@/lib/scholar/search-history.server";
 import { getAvailableJurisdictions } from "@/data/legal-sources";
 import { getCountryName } from "@/data/iso-3166-countries";
 import { ScholarPage } from "../_components/ScholarPage";
 import { PageHeader } from "../_components/PageHeader";
+import type { ActionResult } from "../_components/SettingsForms";
+import {
+  NameForm,
+  PrefsForm,
+  SourceLangForm,
+  PasswordForm,
+  HistoryToggleForm,
+  ClearHistoryForm,
+} from "../_components/SettingsForms";
 
-// ─── Shared styles (typed constants avoid inline repetition) ──────────────────
+// ─── Shared styles ────────────────────────────────────────────────────────────
 
 const SECTION_LABEL_CLS =
   "flex items-center gap-2 text-[11px] font-semibold text-gray-500 tracking-[0.18em] uppercase mb-3";
@@ -67,14 +86,6 @@ const CARD_CLS =
 
 const FIELD_LABEL_CLS =
   "block text-[11px] font-semibold text-gray-700 tracking-wide uppercase mb-1";
-
-const INPUT_CLS =
-  "w-full text-[13px] text-gray-900 bg-white border border-gray-200 rounded-lg px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 motion-safe:transition-colors hover:border-gray-300";
-
-const SELECT_CLS = INPUT_CLS;
-
-const SAVE_BTN_CLS =
-  "text-[12px] font-medium text-white bg-gray-900 hover:bg-gray-700 rounded-lg px-4 py-2.5 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2";
 
 // ─── Jurisdiction helpers ─────────────────────────────────────────────────────
 
@@ -118,53 +129,53 @@ function formatLoginDate(date: Date): string {
   }).format(date);
 }
 
+function formatSearchDate(date: Date): string {
+  return new Intl.DateTimeFormat("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
 // ─── Server Actions ───────────────────────────────────────────────────────────
 
-// ─── Password change result cookie (simple flash) ─────────────────────────────
-// We encode the result as a URL search-param via redirect so the page
-// can render inline feedback without useState.  The result key is
-// short-lived — the page reads it once and the URL is cleaned up by
-// the browser on hard-refresh.
-
-async function handlePasswordChange(formData: FormData) {
+async function handleUpdateName(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
   "use server";
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) return;
-
-  const current = (formData.get("currentPassword") as string) ?? "";
-  const next = (formData.get("newPassword") as string) ?? "";
-  const confirm = (formData.get("confirmPassword") as string) ?? "";
-
-  if (next !== confirm) {
-    revalidatePath("/scholar/settings");
-    return;
-  }
-
-  await changePassword(userId, current, next);
-  revalidatePath("/scholar/settings");
-}
-
-async function updateName(formData: FormData) {
-  "use server";
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) return;
+  if (!userId) return { ok: false, message: "Nicht angemeldet." };
 
   const raw = formData.get("name");
-  if (typeof raw !== "string") return;
+  if (typeof raw !== "string")
+    return { ok: false, message: "Ungültige Eingabe." };
   const name = raw.trim().slice(0, 100);
-  if (!name) return; // reject empty
+  if (!name) return { ok: false, message: "Name darf nicht leer sein." };
 
-  await prisma.user.update({ where: { id: userId }, data: { name } });
-  revalidatePath("/scholar/settings");
+  try {
+    await prisma.user.update({ where: { id: userId }, data: { name } });
+    revalidatePath("/scholar/settings");
+    return { ok: true };
+  } catch {
+    return {
+      ok: false,
+      message: "Speichern fehlgeschlagen. Bitte erneut versuchen.",
+    };
+  }
 }
 
-async function savePrefs(formData: FormData) {
+async function handleSavePrefs(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
   "use server";
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) return;
+  if (!userId) return { ok: false, message: "Nicht angemeldet." };
 
   const defaultJurisdiction =
     (formData.get("defaultJurisdiction") as string | null) || null;
@@ -183,11 +194,84 @@ async function savePrefs(formData: FormData) {
 
   try {
     await updateScholarPreferences(userId, patch);
-  } catch {
-    // Validation errors are swallowed for now — Wave 2 will add error feedback
+    revalidatePath("/scholar/settings");
+    return { ok: true };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Speichern fehlgeschlagen.";
+    return { ok: false, message: msg };
+  }
+}
+
+async function handlePasswordChange(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  "use server";
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return { ok: false, message: "Nicht angemeldet." };
+
+  const current = (formData.get("currentPassword") as string) ?? "";
+  const next = (formData.get("newPassword") as string) ?? "";
+  const confirm = (formData.get("confirmPassword") as string) ?? "";
+
+  if (next !== confirm) {
+    return { ok: false, message: "Die Passwörter stimmen nicht überein." };
   }
 
-  revalidatePath("/scholar/settings");
+  const result = await changePassword(userId, current, next);
+  if (result.success) {
+    revalidatePath("/scholar/settings");
+    return { ok: true, message: "✓ Passwort geändert" };
+  }
+  return { ok: false, message: result.message };
+}
+
+async function handleToggleHistory(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  "use server";
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return { ok: false, message: "Nicht angemeldet." };
+
+  const val = formData.get("searchHistoryEnabled");
+  const searchHistoryEnabled = val === "on";
+
+  try {
+    await updateScholarPreferences(userId, { searchHistoryEnabled });
+    revalidatePath("/scholar/settings");
+    return {
+      ok: true,
+      message: searchHistoryEnabled
+        ? "✓ Suchverlauf aktiviert"
+        : "✓ Suchverlauf deaktiviert",
+    };
+  } catch {
+    return { ok: false, message: "Speichern fehlgeschlagen." };
+  }
+}
+
+async function handleClearHistory(
+  _prev: ActionResult,
+  _formData: FormData,
+): Promise<ActionResult> {
+  "use server";
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return { ok: false, message: "Nicht angemeldet." };
+
+  try {
+    await clearSearchHistory(userId);
+    revalidatePath("/scholar/settings");
+    return { ok: true, message: "✓ Suchverlauf gelöscht" };
+  } catch {
+    return {
+      ok: false,
+      message: "Löschen fehlgeschlagen. Bitte erneut versuchen.",
+    };
+  }
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -203,16 +287,13 @@ export default async function SettingsPage() {
     orgName = org?.organization?.name ?? null;
   }
 
-  // Load saved preferences (returns in-memory defaults when no row yet)
   const prefs = user?.id ? await getScholarPreferences(user.id) : null;
-
-  // Security section data (Wave 2)
   const credentialsAccount = user?.id
     ? await isCredentialsAccount(user.id)
     : false;
   const loginHistory = user?.id ? await getLoginHistory(user.id, 10) : [];
+  const searchHistory = user?.id ? await getSearchHistory(user.id, 20) : [];
 
-  // Available jurisdictions for the default-jurisdiction selector
   const jurisdictionCodes = getAvailableJurisdictions().sort((a, b) => {
     if (a === "INT") return -1;
     if (b === "INT") return 1;
@@ -221,12 +302,19 @@ export default async function SettingsPage() {
     return jurisdictionLabel(a).localeCompare(jurisdictionLabel(b), "de");
   });
 
+  // Pre-fill deletion mailto body
+  const deletionMailto = `mailto:cs@caelex.eu?subject=${encodeURIComponent(
+    "Löschantrag – Caelex Scholar",
+  )}&body=${encodeURIComponent(
+    `Sehr geehrtes Caelex-Team,\n\nhiermit beantrage ich die Löschung meines Caelex Scholar-Kontos.\n\nE-Mail-Adresse: ${user?.email ?? "(bitte eintragen)"}\n\nMit freundlichen Grüßen`,
+  )}`;
+
   return (
     <ScholarPage>
       <PageHeader
         eyebrow="Caelex Scholar"
         title="Einstellungen"
-        subtitle="Konto, Recherche-Präferenzen und Quellsprache verwalten."
+        subtitle="Konto, Recherche-Präferenzen und Datenschutz verwalten."
         icon={Settings}
       />
 
@@ -239,42 +327,11 @@ export default async function SettingsPage() {
           </h2>
 
           <div className={CARD_CLS}>
-            {/* Name edit form */}
-            <form
-              action={updateName}
-              aria-label="Name ändern"
-              className="px-5 py-4 border-b border-gray-100"
-            >
-              <div className="flex items-end gap-3">
-                <div className="flex-1">
-                  <label htmlFor="settings-name" className={FIELD_LABEL_CLS}>
-                    Name
-                  </label>
-                  <input
-                    id="settings-name"
-                    name="name"
-                    type="text"
-                    defaultValue={user?.name ?? ""}
-                    maxLength={100}
-                    required
-                    autoComplete="name"
-                    className={INPUT_CLS}
-                    aria-describedby="settings-name-hint"
-                  />
-                  <p
-                    id="settings-name-hint"
-                    className="mt-1 text-[11px] text-gray-500"
-                  >
-                    Maximal 100 Zeichen, darf nicht leer sein.
-                  </p>
-                </div>
-                <button type="submit" className={SAVE_BTN_CLS}>
-                  Speichern
-                </button>
-              </div>
-            </form>
+            <NameForm
+              action={handleUpdateName}
+              defaultValue={user?.name ?? ""}
+            />
 
-            {/* E-Mail (read-only) */}
             <dl className="divide-y divide-gray-100">
               <div className="flex items-baseline gap-4 px-5 py-4">
                 <dt className="w-32 flex-shrink-0 text-[12px] text-gray-500">
@@ -285,7 +342,6 @@ export default async function SettingsPage() {
                 </dd>
               </div>
 
-              {/* Hochschule / Rolle */}
               {superAdmin ? (
                 <div className="flex items-baseline gap-4 px-5 py-4">
                   <dt className="w-32 flex-shrink-0 text-[12px] text-gray-500">
@@ -329,95 +385,15 @@ export default async function SettingsPage() {
           </h2>
 
           <div className={`${CARD_CLS} px-5 py-5`}>
-            <form
-              action={savePrefs}
-              aria-label="Recherche-Präferenzen speichern"
-              className="space-y-5"
-            >
-              {/* Standard-Jurisdiktion */}
-              <div>
-                <label htmlFor="pref-jurisdiction" className={FIELD_LABEL_CLS}>
-                  Standard-Jurisdiktion
-                </label>
-                <select
-                  id="pref-jurisdiction"
-                  name="defaultJurisdiction"
-                  defaultValue={prefs?.defaultJurisdiction ?? ""}
-                  className={SELECT_CLS}
-                >
-                  <option value="">Keine (alle Jurisdiktionen)</option>
-                  {jurisdictionCodes.map((code) => (
-                    <option key={code} value={code}>
-                      {code} — {jurisdictionLabel(code)}
-                    </option>
-                  ))}
-                </select>
-                <p className="mt-1 text-[11px] text-gray-500">
-                  Wird in der Bibliothek als vorausgewählter Filter verwendet.
-                </p>
-              </div>
-
-              {/* Zitationsformat */}
-              <div>
-                <label htmlFor="pref-citation" className={FIELD_LABEL_CLS}>
-                  Zitationsformat
-                </label>
-                <select
-                  id="pref-citation"
-                  name="citationFormat"
-                  defaultValue={prefs?.citationFormat ?? "din"}
-                  className={SELECT_CLS}
-                >
-                  <option value="din">Deutsche Zitierweise (DIN 1505)</option>
-                  <option value="oscola">OSCOLA</option>
-                  <option value="bluebook">Bluebook</option>
-                </select>
-              </div>
-
-              {/* Semantische Suche */}
-              <div>
-                <label htmlFor="pref-semantic" className={FIELD_LABEL_CLS}>
-                  Semantische Suche
-                </label>
-                <select
-                  id="pref-semantic"
-                  name="semanticSearch"
-                  defaultValue={prefs?.semanticSearch !== false ? "on" : "off"}
-                  className={SELECT_CLS}
-                >
-                  <option value="on">Aktiviert</option>
-                  <option value="off">Deaktiviert (nur Keyword-Suche)</option>
-                </select>
-                <p className="mt-1 text-[11px] text-gray-500">
-                  Semantische Suche nutzt Embeddings für kontextbezogene
-                  Ergebnisse.
-                </p>
-              </div>
-
-              {/* Treffer pro Seite */}
-              <div>
-                <label htmlFor="pref-results" className={FIELD_LABEL_CLS}>
-                  Treffer pro Seite
-                </label>
-                <select
-                  id="pref-results"
-                  name="resultsPerPage"
-                  defaultValue={String(prefs?.resultsPerPage ?? 20)}
-                  className={SELECT_CLS}
-                >
-                  <option value="10">10</option>
-                  <option value="20">20</option>
-                  <option value="30">30</option>
-                  <option value="50">50</option>
-                </select>
-              </div>
-
-              <div className="pt-1">
-                <button type="submit" className={SAVE_BTN_CLS}>
-                  Einstellungen speichern
-                </button>
-              </div>
-            </form>
+            <PrefsForm
+              action={handleSavePrefs}
+              jurisdictionCodes={jurisdictionCodes}
+              jurisdictionLabel={jurisdictionLabel}
+              defaultJurisdiction={prefs?.defaultJurisdiction ?? null}
+              citationFormat={prefs?.citationFormat ?? "din"}
+              semanticSearch={prefs?.semanticSearch !== false}
+              resultsPerPage={prefs?.resultsPerPage ?? 20}
+            />
           </div>
         </section>
 
@@ -429,67 +405,14 @@ export default async function SettingsPage() {
           </h2>
 
           <div className={`${CARD_CLS} px-5 py-5`}>
-            <form
-              action={savePrefs}
-              aria-label="Quellsprache speichern"
-              className="space-y-4"
-            >
-              {/* Hidden fields to carry other prefs when only language changes.
-                  The savePrefs action reads all fields so we send placeholders
-                  that repeat the saved value — on missing fields the action
-                  skips them cleanly. We use the saved value as default. */}
-              <input
-                type="hidden"
-                name="defaultJurisdiction"
-                value={prefs?.defaultJurisdiction ?? ""}
-              />
-              <input
-                type="hidden"
-                name="citationFormat"
-                value={prefs?.citationFormat ?? "din"}
-              />
-              <input
-                type="hidden"
-                name="semanticSearch"
-                value={prefs?.semanticSearch !== false ? "on" : "off"}
-              />
-              <input
-                type="hidden"
-                name="resultsPerPage"
-                value={String(prefs?.resultsPerPage ?? 20)}
-              />
-
-              <div>
-                <label htmlFor="pref-source-lang" className={FIELD_LABEL_CLS}>
-                  Quellsprache
-                </label>
-                <select
-                  id="pref-source-lang"
-                  name="sourceLanguage"
-                  defaultValue={prefs?.sourceLanguage ?? "original"}
-                  className={SELECT_CLS}
-                >
-                  <option value="original">
-                    Original (Sprache des Dokuments)
-                  </option>
-                  <option value="de">Deutsch</option>
-                  <option value="fr">Français</option>
-                  <option value="en">English</option>
-                </select>
-                <p className="mt-2 text-[12px] text-gray-600 leading-relaxed">
-                  Bestimmt, in welcher Sprache Quelltexte angezeigt werden,
-                  sofern Übersetzungen vorliegen. Auf Quelldetailseiten und in
-                  der Bibliothek werden Titel und Beschreibungen entsprechend
-                  angepasst.
-                </p>
-              </div>
-
-              <div className="pt-1">
-                <button type="submit" className={SAVE_BTN_CLS}>
-                  Sprache speichern
-                </button>
-              </div>
-            </form>
+            <SourceLangForm
+              action={handleSavePrefs}
+              defaultJurisdiction={prefs?.defaultJurisdiction ?? null}
+              citationFormat={prefs?.citationFormat ?? "din"}
+              semanticSearch={prefs?.semanticSearch !== false}
+              resultsPerPage={prefs?.resultsPerPage ?? 20}
+              sourceLanguage={prefs?.sourceLanguage ?? "original"}
+            />
           </div>
         </section>
 
@@ -501,72 +424,12 @@ export default async function SettingsPage() {
           </h2>
 
           <div className={CARD_CLS}>
-            {/* ── 4a. Passwort ändern / SSO-Hinweis ── */}
             {credentialsAccount ? (
               <div className="px-5 py-4 border-b border-gray-100">
                 <p className="text-[12px] font-semibold text-gray-700 tracking-wide uppercase mb-3">
                   Passwort ändern
                 </p>
-                <form
-                  action={handlePasswordChange}
-                  aria-label="Passwort ändern"
-                  className="space-y-3"
-                >
-                  <div>
-                    <label htmlFor="sec-current-pw" className={FIELD_LABEL_CLS}>
-                      Aktuelles Passwort
-                    </label>
-                    <input
-                      id="sec-current-pw"
-                      name="currentPassword"
-                      type="password"
-                      required
-                      autoComplete="current-password"
-                      className={INPUT_CLS}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="sec-new-pw" className={FIELD_LABEL_CLS}>
-                      Neues Passwort
-                    </label>
-                    <input
-                      id="sec-new-pw"
-                      name="newPassword"
-                      type="password"
-                      required
-                      minLength={8}
-                      autoComplete="new-password"
-                      className={INPUT_CLS}
-                      aria-describedby="sec-new-pw-hint"
-                    />
-                    <p
-                      id="sec-new-pw-hint"
-                      className="mt-1 text-[11px] text-gray-500"
-                    >
-                      Mindestens 8 Zeichen, muss sich vom aktuellen
-                      unterscheiden.
-                    </p>
-                  </div>
-                  <div>
-                    <label htmlFor="sec-confirm-pw" className={FIELD_LABEL_CLS}>
-                      Passwort bestätigen
-                    </label>
-                    <input
-                      id="sec-confirm-pw"
-                      name="confirmPassword"
-                      type="password"
-                      required
-                      minLength={8}
-                      autoComplete="new-password"
-                      className={INPUT_CLS}
-                    />
-                  </div>
-                  <div className="pt-1">
-                    <button type="submit" className={SAVE_BTN_CLS}>
-                      Passwort speichern
-                    </button>
-                  </div>
-                </form>
+                <PasswordForm action={handlePasswordChange} />
               </div>
             ) : (
               <div className="px-5 py-4 border-b border-gray-100 flex gap-3">
@@ -583,7 +446,7 @@ export default async function SettingsPage() {
               </div>
             )}
 
-            {/* ── 4b. Aktive Sitzungen — honest JWT note ── */}
+            {/* Active sessions note */}
             <div className="px-5 py-4 border-b border-gray-100">
               <p className="text-[12px] font-semibold text-gray-700 tracking-wide uppercase mb-2">
                 Aktive Sitzungen
@@ -597,7 +460,7 @@ export default async function SettingsPage() {
               </p>
             </div>
 
-            {/* ── 4c. Login-Verlauf ── */}
+            {/* Login history */}
             <div className="px-5 py-4">
               <p className="text-[12px] font-semibold text-gray-700 tracking-wide uppercase mb-3">
                 Login-Verlauf
@@ -612,7 +475,6 @@ export default async function SettingsPage() {
                   aria-label="Login-Verlauf"
                   className="w-full text-[12px]"
                 >
-                  {/* Header row */}
                   <div
                     role="row"
                     className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-x-4 pb-2 border-b border-gray-100 text-[11px] font-semibold text-gray-500 tracking-wide uppercase"
@@ -681,18 +543,120 @@ export default async function SettingsPage() {
           </div>
         </section>
 
-        {/* ── 5. Datenschutz (stub, Wave 3) ─────────────────────────────── */}
+        {/* ── 5. Datenschutz ────────────────────────────────────────────── */}
         <section aria-labelledby="section-datenschutz">
           <h2 id="section-datenschutz" className={SECTION_LABEL_CLS}>
             <Lock size={13} className="text-gray-400" aria-hidden="true" />
             Datenschutz
           </h2>
 
-          <div className={`${CARD_CLS} px-5 py-4`}>
-            <p className="text-[13px] text-gray-500">
-              Suchverlauf, Datenexport und Löschoptionen folgen in Kürze (Wave
-              3).
-            </p>
+          <div className={CARD_CLS}>
+            {/* 5a. Search history list */}
+            <div className="px-5 py-4 border-b border-gray-100">
+              <div className="flex items-center gap-2 mb-3">
+                <History
+                  size={13}
+                  className="text-gray-400"
+                  aria-hidden="true"
+                />
+                <p className="text-[12px] font-semibold text-gray-700 tracking-wide uppercase">
+                  Suchverlauf
+                </p>
+              </div>
+
+              {searchHistory.length === 0 ? (
+                <p className="text-[13px] text-gray-400 mb-4">
+                  Kein Suchverlauf gespeichert.
+                </p>
+              ) : (
+                <ul
+                  aria-label="Gespeicherte Suchen"
+                  className="space-y-1 mb-4 max-h-48 overflow-y-auto"
+                >
+                  {searchHistory.map((entry) => (
+                    <li
+                      key={entry.id}
+                      className="flex items-baseline justify-between gap-3 py-1 border-b border-gray-50 last:border-0"
+                    >
+                      <span className="text-[13px] text-gray-800 truncate flex-1">
+                        {entry.query}
+                        {entry.jurisdiction && (
+                          <span className="ml-1.5 text-[11px] text-gray-400">
+                            [{entry.jurisdiction}]
+                          </span>
+                        )}
+                      </span>
+                      <span className="flex-shrink-0 text-[11px] text-gray-400 tabular-nums">
+                        {formatSearchDate(entry.createdAt)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {/* Clear history */}
+              <ClearHistoryForm
+                action={handleClearHistory}
+                hasHistory={searchHistory.length > 0}
+              />
+            </div>
+
+            {/* 5b. History toggle */}
+            <div className="px-5 py-4 border-b border-gray-100">
+              <HistoryToggleForm
+                action={handleToggleHistory}
+                enabled={prefs?.searchHistoryEnabled !== false}
+              />
+            </div>
+
+            {/* 5c. GDPR data export */}
+            <div className="px-5 py-4 border-b border-gray-100">
+              <div className="flex items-center gap-2 mb-2">
+                <Download
+                  size={13}
+                  className="text-gray-400"
+                  aria-hidden="true"
+                />
+                <p className="text-[12px] font-semibold text-gray-700 tracking-wide uppercase">
+                  Meine Daten exportieren
+                </p>
+              </div>
+              <p className="text-[13px] text-gray-600 leading-relaxed mb-3">
+                Lade eine JSON-Datei mit deinem Konto, deinen Einstellungen und
+                deinem Suchverlauf herunter (Art. 20 DSGVO).
+              </p>
+              <a
+                href="/api/scholar/account/export"
+                download="caelex-scholar-data.json"
+                className="inline-flex items-center gap-1.5 text-[12px] font-medium text-gray-900 border border-gray-300 hover:border-gray-500 rounded-lg px-4 py-2 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
+              >
+                <Download size={12} aria-hidden="true" />
+                Daten herunterladen
+              </a>
+            </div>
+
+            {/* 5d. Account deletion request */}
+            <div className="px-5 py-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Mail size={13} className="text-gray-400" aria-hidden="true" />
+                <p className="text-[12px] font-semibold text-gray-700 tracking-wide uppercase">
+                  Konto-Löschung anfragen
+                </p>
+              </div>
+              <p className="text-[13px] text-gray-600 leading-relaxed mb-3">
+                Da dein Zugang über deine Hochschule bereitgestellt wird,
+                erfolgt die Kontolöschung über den Support deiner Institution.
+                Schreibe uns eine E-Mail — wir koordinieren die Löschung mit
+                deiner Hochschule (Art. 17 DSGVO).
+              </p>
+              <a
+                href={deletionMailto}
+                className="inline-flex items-center gap-1.5 text-[12px] font-medium text-gray-600 hover:text-gray-900 border border-gray-200 hover:border-gray-400 rounded-lg px-4 py-2 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
+              >
+                <Mail size={12} aria-hidden="true" />
+                Löschung anfragen (cs@caelex.eu)
+              </a>
+            </div>
           </div>
         </section>
 
