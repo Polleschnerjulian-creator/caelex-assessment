@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useState } from "react";
 import { getSession, signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -9,56 +9,41 @@ import { Eye, EyeOff } from "lucide-react";
 import { analytics } from "@/lib/analytics";
 import { safeScholarUrl } from "@/lib/safe-redirect";
 import { translateAuthError } from "@/lib/auth-errors";
-import styles from "./scholar-login.module.css";
 
 /**
- * Official brand assets. Drop the authoritative PNGs at these paths
- * in /public/brand/ — see the note at the top of page.tsx for the
- * expected sizes and background treatment.
+ * Caelex Scholar — Login.
+ *
+ * Cinematic full-bleed hero (Apollo 17 lunar-rover photograph, NASA /
+ * public domain) with a huge tight-set "SCHOLAR" wordmark lower-left, a
+ * glass login panel beneath it, and a Palantir-style meta-label column
+ * bottom-right. Layered gradients double as the contrast scrim so text
+ * stays legible over the photo (WCAG 1.4.3).
+ *
+ * Auth is unchanged from the previous build: NextAuth credentials +
+ * Google providers, MFA hand-off, callbackUrl + email prefill. The
+ * destination is the Scholar surface; safeScholarUrl rejects callbacks
+ * outside /scholar so `?callbackUrl=https://evil.com` (or /dashboard)
+ * can't smuggle the session anywhere else.
+ *
+ * WCAG 2.2 AA:
+ *   - lang="de" inherited from <html>; copy is German to match the app
+ *   - decorative hero image has alt="" (1.1.1)
+ *   - <h1> = product name (sr-only "Caelex " prefix for full context)
+ *   - every input has an associated <label>; show/hide toggle is labelled
+ *   - focus-visible rings on all interactive elements (2.4.7)
+ *   - target size ≥24px via py-2.5 on inputs/buttons (2.5.8)
+ *   - error region uses role="alert" (4.1.3)
  */
-const CAELEX_ICON_SRC = "/brand/caelex-icon.png";
+
 const CAELEX_WORDMARK_SRC = "/brand/caelex-wordmark.png";
-
-/**
- * Scholar-branded login.
- *
- * Full-viewport dark stage with animated light bars, stars, vignette +
- * a glass card on the right. Uses the existing NextAuth credentials +
- * Google providers. Preserves callbackUrl + email prefill so the
- * /accept-invite flow can deep-link people straight here with their
- * invited address already filled.
- *
- * Mirrors atlas-login/page.tsx with Scholar-specific branding.
- * safeScholarUrl restricts callbacks to the /scholar surface.
- */
+const HERO_SRC = "/scholar-hero.jpg";
 
 interface SignInResult {
   error?: string;
 }
 
-/**
- * Caelex brand icon — renders the official PNG at /public/brand/caelex-icon.png.
- * We fetch it through next/image so the CDN caches + optimises it per
- * viewport. size prop drives both the rendered box and the optimised
- * source (next/image picks the closest srcset width).
- */
-function CaelexMark({ size, className }: { size: number; className?: string }) {
-  return (
-    <Image
-      src={CAELEX_ICON_SRC}
-      alt="Caelex"
-      width={size}
-      height={size}
-      priority
-      className={className}
-    />
-  );
-}
-
-function CaelexWordmark({ height = 22 }: { height?: number }) {
-  // Wordmark is wider than tall — width is fluid, height is the anchor.
-  // Using a generous width budget (height × 5) covers the "caelex"
-  // aspect without cropping on common render sizes.
+/** Caelex wordmark — official PNG, optimised + cached via next/image. */
+function CaelexWordmark({ height = 24 }: { height?: number }) {
   return (
     <Image
       src={CAELEX_WORDMARK_SRC}
@@ -71,91 +56,17 @@ function CaelexWordmark({ height = 22 }: { height?: number }) {
   );
 }
 
-/**
- * Generates the animated light bars once on mount. Seeded RNG so the
- * layout is deterministic — important for SSR/CSR parity and for
- * visual continuity between reloads (users don't see the bars
- * jumping around).
- */
-function LightBars() {
-  const containerRef = useRef<HTMLDivElement>(null);
+// ─── Shared field styles ────────────────────────────────────────────────────
 
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const COUNT = 100;
-    const W_MIN = 1;
-    const W_MAX = 2.4;
-    const H_MIN = 15;
-    const H_MAX = 62;
-    const O_MIN = 0.25;
-    const O_MAX = 0.92;
-    const HEIGHT_DUR_MIN = 4;
-    const HEIGHT_DUR_MAX = 9;
-    const LIFE_DUR_MIN = 10;
-    const LIFE_DUR_MAX = 22;
-    const DELAY_MAX = 16;
-
-    // Seeded pseudo-random — same layout every render. Using a plain
-    // LCG instead of crypto because we want deterministic output, not
-    // cryptographic strength.
-    let seed = 42;
-    const rnd = () => {
-      seed = (seed * 9301 + 49297) % 233280;
-      return seed / 233280;
-    };
-
-    container.innerHTML = "";
-    for (let i = 0; i < COUNT; i++) {
-      const bar = document.createElement("span");
-      bar.className = styles.bar;
-
-      const w = W_MIN + rnd() * (W_MAX - W_MIN);
-      const h = H_MIN + rnd() * (H_MAX - H_MIN);
-      const t = rnd() * (100 - h);
-      const l = rnd() * 100;
-      const o = O_MIN + rnd() * (O_MAX - O_MIN);
-      const heightDur =
-        HEIGHT_DUR_MIN + rnd() * (HEIGHT_DUR_MAX - HEIGHT_DUR_MIN);
-      const lifeDur = LIFE_DUR_MIN + rnd() * (LIFE_DUR_MAX - LIFE_DUR_MIN);
-      const delay = rnd() * DELAY_MAX;
-
-      bar.style.setProperty("--w", `${w.toFixed(2)}px`);
-      bar.style.setProperty("--h", `${h.toFixed(1)}%`);
-      bar.style.setProperty("--t", `${t.toFixed(1)}%`);
-      bar.style.setProperty("--l", `${l.toFixed(2)}%`);
-      bar.style.setProperty("--o", o.toFixed(3));
-      bar.style.setProperty("--dur", `${heightDur.toFixed(2)}s`);
-      bar.style.setProperty("--life", `${lifeDur.toFixed(2)}s`);
-      bar.style.setProperty("--delay", `-${delay.toFixed(2)}s`);
-
-      container.appendChild(bar);
-    }
-
-    return () => {
-      if (container) container.innerHTML = "";
-    };
-  }, []);
-
-  return <div ref={containerRef} className={styles.bars} />;
-}
+const INPUT_CLS =
+  "w-full rounded-lg border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[14px] text-white placeholder-white/35 outline-none transition-colors hover:border-white/25 focus-visible:border-white/40 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-0";
+const LABEL_CLS = "mb-1.5 block text-[12px] font-medium text-white/70";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  // Whitelist: only same-origin relative paths. Absolute URLs like
-  // `?callbackUrl=https://evil.com` would otherwise cause router.push
-  // to do a full-document navigation to the attacker's origin with
-  // the session cookie live. Audit C-2.
-  // Default post-login destination for the SCHOLAR-branded login is the
-  // SCHOLAR app, not the Caelex compliance dashboard. safeScholarUrl
-  // keeps us safe from `?callbackUrl=https://evil.com` since
-  // router.push with an absolute URL would do a full-document
-  // navigation that middleware can't intercept.
-  // safeScholarUrl rejects callbacks outside the Scholar surface (e.g.
-  // ?callbackUrl=/dashboard) so we can't accidentally smuggle a user
-  // into Caelex from the Scholar login.
+  // safeScholarUrl restricts callbacks to the Scholar surface — an
+  // absolute or off-surface callbackUrl falls back to "/scholar".
   const callbackUrl = safeScholarUrl(
     searchParams.get("callbackUrl"),
     "/scholar",
@@ -165,9 +76,6 @@ function LoginForm() {
   const [email, setEmail] = useState(prefilledEmail);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  // Pre-fill from server-side error redirects (OAuth rejection,
-  // deactivated account, etc.) — see translateAuthError in
-  // src/lib/auth-errors.ts for the code → message mapping.
   const initialError = translateAuthError(
     searchParams.get("code") || searchParams.get("error"),
   );
@@ -187,9 +95,6 @@ function LoginForm() {
       })) as SignInResult | undefined;
 
       if (result?.error) {
-        // result.code is the static `code` from the CredentialsSignin
-        // subclass thrown in authorize(). Falls back to the generic
-        // type so unknown errors still get the canonical message.
         const code =
           (result as { code?: string }).code ??
           result.error ??
@@ -205,36 +110,33 @@ function LoginForm() {
         { category: "conversion" },
       );
 
-      // MFA-required accounts go through the challenge first, carrying
-      // the same callbackUrl so the final destination is preserved.
+      // MFA-required accounts go through the challenge first, carrying the
+      // same callbackUrl so the final destination is preserved.
       const session = await getSession();
       if (session?.user?.mfaRequired && !session?.user?.mfaVerified) {
         router.push(
           `/auth/mfa-challenge?callbackUrl=${encodeURIComponent(callbackUrl)}`,
         );
       } else {
-        // Hard nav — same fix as /login. router.push races the cookie
-        // write on slow connections and leaves the user stuck on
-        // /scholar-login with a valid session they can't see.
+        // Hard nav — router.push races the cookie write on slow links and
+        // can leave the user stuck on /scholar-login with a live session.
         window.location.assign(callbackUrl);
       }
     } catch {
-      setError("Something went wrong");
+      setError("Etwas ist schiefgelaufen. Bitte erneut versuchen.");
       setLoading(false);
     }
   };
 
   const handleGoogleSignIn = () => {
-    // Google OAuth — can't carry MFA state through the redirect, so we
-    // just let NextAuth handle the full flow back to callbackUrl.
     signIn("google", { callbackUrl });
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
-      <div className={styles.field}>
-        <label className={styles.fieldLabel} htmlFor="login-email">
-          Email
+    <form onSubmit={handleSubmit} noValidate className="space-y-4">
+      <div>
+        <label className={LABEL_CLS} htmlFor="login-email">
+          E-Mail
         </label>
         <input
           id="login-email"
@@ -242,17 +144,26 @@ function LoginForm() {
           autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@university.eu"
+          placeholder="du@universitaet.eu"
           required
+          className={INPUT_CLS}
         />
       </div>
 
-      <div className={styles.field}>
-        <label className={styles.fieldLabel} htmlFor="login-password">
-          <span>Password</span>
-          <Link href="/forgot-password">Forgot password?</Link>
+      <div>
+        <label
+          className="mb-1.5 flex items-center justify-between text-[12px] font-medium text-white/70"
+          htmlFor="login-password"
+        >
+          <span>Passwort</span>
+          <Link
+            href="/forgot-password"
+            className="font-normal text-white/50 transition-colors hover:text-white/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded"
+          >
+            Passwort vergessen?
+          </Link>
         </label>
-        <div className={styles.passwordWrap}>
+        <div className="relative">
           <input
             id="login-password"
             type={showPassword ? "text" : "password"}
@@ -261,47 +172,68 @@ function LoginForm() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
             required
+            className={`${INPUT_CLS} pr-10`}
           />
           <button
             type="button"
             onClick={() => setShowPassword((v) => !v)}
-            aria-label={showPassword ? "Hide password" : "Show password"}
+            aria-label={
+              showPassword ? "Passwort verbergen" : "Passwort anzeigen"
+            }
+            className="absolute right-2 top-1/2 -translate-y-1/2 grid h-7 w-7 place-items-center rounded text-white/40 transition-colors hover:text-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
           >
             {showPassword ? (
-              <EyeOff size={14} strokeWidth={1.5} />
+              <EyeOff size={15} strokeWidth={1.5} />
             ) : (
-              <Eye size={14} strokeWidth={1.5} />
+              <Eye size={15} strokeWidth={1.5} />
             )}
           </button>
         </div>
       </div>
 
       {error && (
-        <div className={styles.errorBanner} role="alert">
-          <span className={styles.errorDot} />
+        <div
+          role="alert"
+          className="flex items-center gap-2 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2.5 text-[13px] text-red-200"
+        >
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-red-400" />
           <span>{error}</span>
         </div>
       )}
 
-      <button type="submit" className={styles.btn} disabled={loading}>
+      <button
+        type="submit"
+        disabled={loading}
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-[14px] font-semibold text-gray-900 transition-colors hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+      >
         {loading ? (
           <>
-            <span className={styles.spinner} />
-            Signing in…
+            <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-900/30 border-t-gray-900" />
+            Anmeldung…
           </>
         ) : (
-          "Continue"
+          "Anmelden"
         )}
       </button>
 
-      <div className={styles.divider}>or</div>
+      <div className="flex items-center gap-3 py-0.5 text-[11px] text-white/35">
+        <span className="h-px flex-1 bg-white/10" />
+        oder
+        <span className="h-px flex-1 bg-white/10" />
+      </div>
 
       <button
         type="button"
-        className={styles.btnSecondary}
         onClick={handleGoogleSignIn}
+        className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-white/15 bg-white/[0.04] px-4 py-2.5 text-[14px] font-medium text-white transition-colors hover:bg-white/[0.09] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
       >
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          viewBox="0 0 24 24"
+          className="h-[18px] w-[18px]"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
           <path
             d="M21.6 12.23c0-.75-.07-1.48-.2-2.18H12v4.13h5.39c-.23 1.24-.94 2.29-2 2.99v2.48h3.24c1.9-1.75 2.97-4.32 2.97-7.42z"
             fill="#f5f5f4"
@@ -319,69 +251,124 @@ function LoginForm() {
             fill="#f5f5f4"
           />
         </svg>
-        Continue with Google
+        Mit Google fortfahren
       </button>
 
-      <p className={styles.tiny}>
-        University not on Scholar yet?{" "}
-        <Link href="/scholar-access">Request access for your institution</Link>
-        <br />
-        By continuing you agree to our <Link href="/legal/terms">
-          Terms
+      <p className="pt-1 text-[11px] leading-relaxed text-white/40">
+        Universität noch nicht dabei?{" "}
+        <Link
+          href="/scholar-access"
+          className="text-white/65 underline-offset-2 transition-colors hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded"
+        >
+          Zugang für deine Institution anfragen
+        </Link>
+        . Mit der Anmeldung stimmst du unseren{" "}
+        <Link
+          href="/legal/terms"
+          className="text-white/65 underline-offset-2 transition-colors hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded"
+        >
+          Nutzungsbedingungen
         </Link>{" "}
-        and <Link href="/legal/privacy">Privacy Policy</Link>.
+        und{" "}
+        <Link
+          href="/legal/privacy"
+          className="text-white/65 underline-offset-2 transition-colors hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded"
+        >
+          Datenschutzhinweisen
+        </Link>{" "}
+        zu.
       </p>
     </form>
   );
 }
 
+/** Palantir-style meta label: a thin left rule + 1–2 small lines. */
+function MetaItem({ lines }: { lines: string[] }) {
+  return (
+    <div className="border-l border-white/25 pl-3 leading-[1.35]">
+      {lines.map((line, i) => (
+        <p
+          key={i}
+          className="text-[10px] font-medium uppercase tracking-[0.08em] text-white/55"
+        >
+          {line}
+        </p>
+      ))}
+    </div>
+  );
+}
+
 export default function ScholarLoginPage() {
   return (
-    <div className={styles.root}>
-      <div className={styles.stage}>
-        <div className={styles.atmosphere} />
-        <div className={styles.stars} />
-        <LightBars />
-        <div className={styles.slats} />
-        <div className={styles.vignette} />
-      </div>
+    <div className="relative min-h-screen w-full overflow-x-hidden bg-black text-white antialiased">
+      {/* ── Cinematic hero (decorative) ─────────────────────────────────── */}
+      <Image
+        src={HERO_SRC}
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover object-[center_42%] grayscale"
+      />
+      {/* Contrast scrims — bottom + left fade to near-black so all copy is
+          legible over the photo (WCAG 1.4.3). */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/20"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/25 to-transparent"
+      />
 
-      <main className={styles.content}>
+      {/* ── Top bar ─────────────────────────────────────────────────────── */}
+      <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-6 py-6 sm:px-10 lg:px-16">
         <Link
-          className={styles.brandLockup}
           href="https://www.caelex.eu"
-          aria-label="Caelex home"
+          aria-label="Caelex Startseite"
+          className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
         >
-          {/* Wordmark carries the brand on its own — no icon in the
-              top-left lockup. Height 28 keeps a strong presence next
-              to the headline without competing with it. */}
-          <CaelexWordmark height={28} />
+          <CaelexWordmark height={26} />
         </Link>
+        <Link
+          href="/scholar-access"
+          className="group inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.04] px-4 py-2 text-[12px] font-medium text-white/80 backdrop-blur-sm transition-colors hover:bg-white/[0.1] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+        >
+          Für Universitäten
+          <span
+            aria-hidden="true"
+            className="transition-transform group-hover:translate-x-0.5"
+          >
+            →
+          </span>
+        </Link>
+      </header>
 
-        <div className={styles.center}>
-          <div className={styles.headline}>
-            <h1>
-              Research
-              <br />
-              space law
-              <br />
-              smarter.
-            </h1>
-            <p>
-              Caelex Scholar — the searchable space law database for
-              universities and research institutions. Continuously updated,
-              always current.
-            </p>
-          </div>
+      {/* ── Main: wordmark + tagline + login, anchored lower-left ────────── */}
+      <main className="relative z-10 flex min-h-screen flex-col justify-end px-6 pb-14 pt-28 sm:px-10 lg:px-16">
+        <div className="w-full max-w-6xl">
+          <h1 className="font-semibold leading-[0.85] tracking-[-0.045em] text-white text-[clamp(60px,12vw,168px)]">
+            <span className="sr-only">Caelex </span>SCHOLAR
+          </h1>
+          <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-white/70 sm:text-[17px]">
+            Die durchsuchbare Weltraumrecht-Datenbank für Universitäten und
+            Forschung. Laufend gepflegt, immer auf dem aktuellen Stand.
+          </p>
 
-          <div>
-            <div className={styles.card}>
-              <h2>Sign in to Scholar</h2>
-              <p className={styles.kicker}>Continue to your workspace.</p>
-
+          <div className="mt-8 w-full max-w-sm">
+            <div className="rounded-2xl border border-white/10 bg-black/45 p-6 shadow-2xl backdrop-blur-xl sm:p-7">
+              <h2 className="text-[16px] font-semibold tracking-[-0.01em] text-white">
+                Anmelden
+              </h2>
+              <p className="mb-5 mt-1 text-[12px] text-white/50">
+                Weiter zu deinem Arbeitsbereich.
+              </p>
               <Suspense
                 fallback={
-                  <div style={{ height: 320, opacity: 0.4 }}>Loading…</div>
+                  <div
+                    aria-hidden="true"
+                    className="h-[340px] animate-pulse rounded-lg bg-white/[0.03]"
+                  />
                 }
               >
                 <LoginForm />
@@ -389,17 +376,15 @@ export default function ScholarLoginPage() {
             </div>
           </div>
         </div>
-
-        <div className={styles.productLockup}>
-          <CaelexMark size={22} className={styles.caelexMark} />
-          <span className={styles.atlasName}>SCHOLAR</span>
-          <span className={styles.sep} />
-          {/* 'by Caelex' text replaced with the actual wordmark so the
-              whole lockup reads as one branded unit. */}
-          <span className={styles.attribution}>by</span>
-          <CaelexWordmark height={14} />
-        </div>
       </main>
+
+      {/* ── Bottom-right meta labels (Palantir-style) ───────────────────── */}
+      <div className="pointer-events-none absolute bottom-14 right-6 z-10 hidden flex-col items-start gap-4 md:flex lg:right-16">
+        <MetaItem lines={["Durchsuchbare", "Rechtsdatenbank"]} />
+        <MetaItem lines={["Für Universitäten", "& Forschung"]} />
+        <MetaItem lines={["Powered by Atlas"]} />
+        <MetaItem lines={["© 2026 Caelex", "Technologies"]} />
+      </div>
     </div>
   );
 }
