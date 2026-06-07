@@ -1,0 +1,141 @@
+/**
+ * Scholar user preferences — server-only data layer.
+ *
+ * Reads and writes ScholarUserPreferences rows. The getScholarPreferences
+ * function never auto-creates a row on read (defaults are returned in-memory);
+ * updateScholarPreferences uses an upsert so callers don't need a prior row.
+ *
+ * Validation:
+ *   - sourceLanguage  ∈ { original, de, fr, en }
+ *   - citationFormat  ∈ { din, oscola, bluebook }
+ *   - resultsPerPage  clamped to [10, 50]
+ * Any other patch field is passed through; unknown fields are ignored by Prisma.
+ */
+import "server-only";
+import { prisma } from "@/lib/prisma";
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+export interface ScholarPreferences {
+  sourceLanguage: string;
+  defaultJurisdiction: string | null;
+  citationFormat: string;
+  semanticSearch: boolean;
+  resultsPerPage: number;
+  searchHistoryEnabled: boolean;
+}
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const VALID_SOURCE_LANGUAGES = ["original", "de", "fr", "en"] as const;
+const VALID_CITATION_FORMATS = ["din", "oscola", "bluebook"] as const;
+const RESULTS_PER_PAGE_MIN = 10;
+const RESULTS_PER_PAGE_MAX = 50;
+
+const DEFAULTS: ScholarPreferences = {
+  sourceLanguage: "original",
+  defaultJurisdiction: null,
+  citationFormat: "din",
+  semanticSearch: true,
+  resultsPerPage: 20,
+  searchHistoryEnabled: true,
+};
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function rowToPrefs(row: {
+  sourceLanguage: string;
+  defaultJurisdiction: string | null;
+  citationFormat: string;
+  semanticSearch: boolean;
+  resultsPerPage: number;
+  searchHistoryEnabled: boolean;
+}): ScholarPreferences {
+  return {
+    sourceLanguage: row.sourceLanguage,
+    defaultJurisdiction: row.defaultJurisdiction,
+    citationFormat: row.citationFormat,
+    semanticSearch: row.semanticSearch,
+    resultsPerPage: row.resultsPerPage,
+    searchHistoryEnabled: row.searchHistoryEnabled,
+  };
+}
+
+function validateAndSanitizePatch(
+  patch: Partial<ScholarPreferences>,
+): Partial<ScholarPreferences> {
+  const sanitized: Partial<ScholarPreferences> = { ...patch };
+
+  if ("sourceLanguage" in patch) {
+    if (
+      !VALID_SOURCE_LANGUAGES.includes(
+        patch.sourceLanguage as (typeof VALID_SOURCE_LANGUAGES)[number],
+      )
+    ) {
+      throw new Error(
+        `Invalid sourceLanguage "${patch.sourceLanguage}". Must be one of: ${VALID_SOURCE_LANGUAGES.join(", ")}`,
+      );
+    }
+  }
+
+  if ("citationFormat" in patch) {
+    if (
+      !VALID_CITATION_FORMATS.includes(
+        patch.citationFormat as (typeof VALID_CITATION_FORMATS)[number],
+      )
+    ) {
+      throw new Error(
+        `Invalid citationFormat "${patch.citationFormat}". Must be one of: ${VALID_CITATION_FORMATS.join(", ")}`,
+      );
+    }
+  }
+
+  if ("resultsPerPage" in patch && patch.resultsPerPage !== undefined) {
+    sanitized.resultsPerPage = Math.min(
+      RESULTS_PER_PAGE_MAX,
+      Math.max(RESULTS_PER_PAGE_MIN, Math.round(patch.resultsPerPage)),
+    );
+  }
+
+  return sanitized;
+}
+
+// ─── Public API ───────────────────────────────────────────────────────────────
+
+/**
+ * Read preferences for a user. Returns in-memory defaults when no row exists —
+ * does NOT insert a row on read.
+ */
+export async function getScholarPreferences(
+  userId: string,
+): Promise<ScholarPreferences> {
+  const row = await prisma.scholarUserPreferences.findUnique({
+    where: { userId },
+  });
+  if (!row) return { ...DEFAULTS };
+  return rowToPrefs(row);
+}
+
+/**
+ * Upsert preferences for a user. Only the supplied patch fields are updated.
+ * Validates enum fields and clamps resultsPerPage before writing.
+ * Returns the full updated preferences object.
+ */
+export async function updateScholarPreferences(
+  userId: string,
+  patch: Partial<ScholarPreferences>,
+): Promise<ScholarPreferences> {
+  const sanitized = validateAndSanitizePatch(patch);
+
+  const row = await prisma.scholarUserPreferences.upsert({
+    where: { userId },
+    create: {
+      userId,
+      ...DEFAULTS,
+      ...sanitized,
+    },
+    update: sanitized,
+  });
+
+  return rowToPrefs(row);
+}
