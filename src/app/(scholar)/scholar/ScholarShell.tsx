@@ -9,6 +9,7 @@ import {
   BookOpen,
   Scale,
   LogOut,
+  Settings,
   type LucideIcon,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
@@ -112,7 +113,15 @@ export default function ScholarShell({
           willChange: "width",
         }}
         onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onMouseLeave={() => {
+          setHovered(false);
+          // Also clear focus so a mouse click on a nav link (which leaves DOM
+          // focus on the link element) doesn't pin the sidebar open after the
+          // pointer leaves. Keyboard users are unaffected: onMouseLeave never
+          // fires for them, so onFocusCapture/onBlurCapture still govern their
+          // expand/collapse.
+          setFocused(false);
+        }}
         onFocusCapture={() => setFocused(true)}
         onBlurCapture={(e) => {
           // Only collapse when focus leaves the sidebar entirely
@@ -191,6 +200,7 @@ export default function ScholarShell({
                       href={item.href}
                       aria-label={item.label}
                       aria-current={active ? "page" : undefined}
+                      onClick={(e) => (e.currentTarget as HTMLElement).blur()}
                       className={[
                         "group relative flex items-center justify-center",
                         "h-8 w-8 rounded-lg mb-0.5",
@@ -230,6 +240,7 @@ export default function ScholarShell({
                     <Link
                       href={item.href}
                       aria-current={active ? "page" : undefined}
+                      onClick={(e) => (e.currentTarget as HTMLElement).blur()}
                       className={[
                         "flex items-center gap-3 h-9 px-3 rounded-xl whitespace-nowrap",
                         "transition-all duration-150",
@@ -256,7 +267,7 @@ export default function ScholarShell({
           )}
         </nav>
 
-        {/* ── Bottom: sign-out ── */}
+        {/* ── Bottom: settings + sign-out ── */}
         <div
           className={[
             "flex flex-col flex-shrink-0 py-2",
@@ -266,9 +277,31 @@ export default function ScholarShell({
           ].join(" ")}
         >
           {!expanded ? (
-            /* Collapsed: sign-out icon pill
+            /* Collapsed: settings + sign-out icon pills
                WCAG 2.5.8: h-9 w-9 = 36px × 36px > 24px ✓ */
             <div className="flex flex-col items-center gap-1.5">
+              {/* Settings */}
+              <Link
+                href="/scholar/settings"
+                aria-label="Einstellungen"
+                title="Einstellungen"
+                onClick={(e) => (e.currentTarget as HTMLElement).blur()}
+                className={[
+                  "flex items-center justify-center h-9 w-9 rounded-xl",
+                  "bg-[#1a1a1a] transition-all duration-150",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-[#1a1a1a]",
+                  isActive("/scholar/settings")
+                    ? "text-white bg-white/[0.12]"
+                    : "text-white/70 hover:text-white hover:bg-[#2a2a2a]",
+                ].join(" ")}
+              >
+                <Settings
+                  className="h-[15px] w-[15px]"
+                  strokeWidth={isActive("/scholar/settings") ? 2 : 1.5}
+                  aria-hidden={true}
+                />
+              </Link>
+              {/* Sign out */}
               <button
                 type="button"
                 aria-label="Abmelden"
@@ -284,20 +317,43 @@ export default function ScholarShell({
               </button>
             </div>
           ) : (
-            /* Expanded: sign-out with label */
-            <button
-              type="button"
-              aria-label="Abmelden"
-              onClick={() => signOut({ callbackUrl: "/scholar-login" })}
-              className="flex items-center gap-3 h-9 px-3 rounded-xl transition-all duration-150 whitespace-nowrap text-white/60 hover:text-white/70 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-[#1a1a1a]"
-            >
-              <LogOut
-                className="h-4 w-4"
-                strokeWidth={1.5}
-                aria-hidden={true}
-              />
-              <span className="text-[12px] tracking-wide">Abmelden</span>
-            </button>
+            /* Expanded: settings + sign-out with labels */
+            <div className="flex flex-col gap-0.5">
+              {/* Settings */}
+              <Link
+                href="/scholar/settings"
+                aria-label="Einstellungen"
+                onClick={(e) => (e.currentTarget as HTMLElement).blur()}
+                className={[
+                  "flex items-center gap-3 h-9 px-3 rounded-xl transition-all duration-150 whitespace-nowrap",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-[#1a1a1a]",
+                  isActive("/scholar/settings")
+                    ? "bg-white/[0.12] text-white font-medium"
+                    : "text-white/60 hover:text-white/70 hover:bg-white/[0.06]",
+                ].join(" ")}
+              >
+                <Settings
+                  className="h-4 w-4"
+                  strokeWidth={isActive("/scholar/settings") ? 2 : 1.5}
+                  aria-hidden={true}
+                />
+                <span className="text-[12px] tracking-wide">Einstellungen</span>
+              </Link>
+              {/* Sign out */}
+              <button
+                type="button"
+                aria-label="Abmelden"
+                onClick={() => signOut({ callbackUrl: "/scholar-login" })}
+                className="flex items-center gap-3 h-9 px-3 rounded-xl transition-all duration-150 whitespace-nowrap text-white/60 hover:text-white/70 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-[#1a1a1a]"
+              >
+                <LogOut
+                  className="h-4 w-4"
+                  strokeWidth={1.5}
+                  aria-hidden={true}
+                />
+                <span className="text-[12px] tracking-wide">Abmelden</span>
+              </button>
+            </div>
           )}
         </div>
       </div>
