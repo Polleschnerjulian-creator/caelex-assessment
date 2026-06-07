@@ -1,69 +1,68 @@
 /**
- * /scholar/library — Browse all legal sources with optional filters.
+ * /scholar/library — Faceted browse over the full legal-source corpus.
  *
- * Server Component — corpus read server-side; zero corpus bytes reach
- * the client bundle. Filters are applied server-side via searchParams.
+ * Server Component — the corpus is read + filtered + counted server-side; zero
+ * corpus bytes reach the client bundle. Every facet is URL-driven via
+ * searchParams, so each filtered view is server-rendered AND shareable.
+ *
+ * Facet model (see src/lib/scholar/browse-facets.server.ts):
+ *   • Quellentyp (type)          — OR within group
+ *   • Jurisdiktion               — OR within group
+ *   • Thema (compliance_areas)   — OR within group
+ *   • Chronologie (decade)       — OR within group, + a date/relevance sort
+ *   Groups combine with AND. Counts per option exclude that option's own group
+ *   (standard faceted-search behaviour), so the corpus stays explorable.
  *
  * Next.js 15: searchParams is a Promise — await it.
  *
  * WCAG 2.2 AA:
- *   - <main> landmark provided by ScholarPage; <h1> via PageHeader
- *   - Filter form with labelled <select>s
- *   - Source rows rendered via shared SourceRow (focus ring, gray-700+ on white)
- *   - lang="de" on root element (ScholarPage)
- *   - Submit button has accessible name
+ *   - <main> landmark + <h1> via ScholarPage / PageHeader
+ *   - Facet groups are <nav> regions with headings; each option is a Link
+ *     (≥24px target, focus-visible ring, selection announced via sr-only)
+ *   - Active filters are removable chips (each a Link to the URL minus that param)
+ *   - Result count uses aria-live; sources rendered via the monochrome SourceRow
+ *   - Strictly monochrome: black / white / gray-* only — zero other hue
+ *   - No ad-hoc text-[Npx]: all type from SCHOLAR_TYPE tokens / Eyebrow
  */
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 import Link from "next/link";
-import { BookOpen, Scale } from "lucide-react";
-import {
-  ALL_SOURCES,
-  getAvailableJurisdictions,
-  getTranslatedSource,
-} from "@/data/legal-sources";
+import { BookOpen, Check, X } from "lucide-react";
+import { getTranslatedSource } from "@/data/legal-sources";
 import { getCountryName } from "@/data/iso-3166-countries";
-import type { LegalSourceType } from "@/data/legal-sources";
 import { auth } from "@/lib/auth";
 import { getScholarPreferences } from "@/lib/scholar/preferences.server";
+import {
+  buildBrowse,
+  parseBrowseSelection,
+  selectionToQuery,
+  selectionToggle,
+  selectionWithout,
+  selectionWithSort,
+  hasActiveFilters,
+  labelForValue,
+  GROUP_HEADINGS,
+  type BrowseSelection,
+  type FacetGroup,
+  type FacetGroupKey,
+  type SortKey,
+} from "@/lib/scholar/browse-facets.server";
 import { ScholarPage } from "../_components/ScholarPage";
 import { PageHeader } from "../_components/PageHeader";
 import { SourceRow } from "../_components/SourceRow";
 import type { SourceRowData } from "../_components/SourceRow";
+import { SCHOLAR_TYPE } from "../_components/scholar-type";
+import { Eyebrow } from "../_components/Eyebrow";
 
 // Hard upper cap — safety rail regardless of user pref.
 const HARD_CAP = 200;
 
-// Human-readable type labels for the filter <select>
-const TYPE_DISPLAY_NAMES: Record<string, string> = {
-  international_treaty: "Internationaler Vertrag",
-  federal_law: "Bundesgesetz",
-  federal_regulation: "Bundesverordnung",
-  technical_standard: "Technischer Standard",
-  eu_regulation: "EU-Verordnung",
-  eu_directive: "EU-Richtlinie",
-  policy_document: "Politikdokument",
-  draft_legislation: "Gesetzentwurf",
-  certification_standard: "Zertifizierungsstandard",
-  industry_guideline: "Branchenrichtlinie",
-  insurance_clause: "Versicherungsklausel",
-  scientific_protocol: "Wissenschaftliches Protokoll",
-  soft_law_resolution: "Soft-Law-Resolution",
-  national_security_doctrine: "Nationale Sicherheitsdoktrin",
-  bilateral_agreement: "Bilaterales Abkommen",
-  multilateral_agreement: "Multilaterales Abkommen",
-  case_law: "Rechtsprechung",
-  procurement_framework: "Beschaffungsrahmen",
-  safety_regulation: "Sicherheitsvorschrift",
-  tax_treaty: "Doppelbesteuerungsabkommen",
-};
-
-// Special jurisdiction display names not in ISO-3166
+// Special jurisdiction display names not in ISO-3166.
 const SPECIAL_NAMES: Record<string, string> = {
   INT: "International",
-  EU: "European Union",
+  EU: "Europäische Union",
 };
 
 function getJurisdictionLabel(code: string): string {
@@ -74,8 +73,15 @@ interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
+// ─── Sort control options ─────────────────────────────────────────────────────
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: "relevance", label: "Relevanz" },
+  { value: "date_desc", label: "Neueste zuerst" },
+  { value: "date_asc", label: "Älteste zuerst" },
+];
+
 export default async function LibraryPage({ searchParams }: Props) {
-  // Next.js 15: searchParams is a Promise
+  // Next.js 15: searchParams is a Promise.
   const sp = await searchParams;
 
   // Load user preferences for default jurisdiction + results-per-page cap.
@@ -85,16 +91,21 @@ export default async function LibraryPage({ searchParams }: Props) {
     ? await getScholarPreferences(session.user.id)
     : null;
 
-  const typeFilter = typeof sp.type === "string" && sp.type ? sp.type : "";
+  // Parse the URL-driven facet selection.
+  const selection = parseBrowseSelection(sp);
 
-  // URL param takes precedence; fall back to saved defaultJurisdiction pref.
-  const rawJurisdiction =
-    typeof sp.jurisdiction === "string" && sp.jurisdiction
-      ? sp.jurisdiction.toUpperCase()
-      : (prefs?.defaultJurisdiction?.toUpperCase() ?? "");
-  const jurisdictionFilter = rawJurisdiction;
+  // Seed the jurisdiction facet from the saved defaultJurisdiction pref ONLY
+  // when the URL specifies no jurisdiction (preserves pre-facet behaviour
+  // without overriding an explicit, shareable URL).
+  if (
+    selection.jurisdictions.length === 0 &&
+    prefs?.defaultJurisdiction &&
+    typeof sp.jurisdiction === "undefined"
+  ) {
+    selection.jurisdictions = [prefs.defaultJurisdiction.toUpperCase()];
+  }
 
-  // Effective results-per-page: URL ?limit param > saved pref > default 20.
+  // Effective results-per-page: URL ?limit > saved pref > default 20.
   const prefLimit = prefs?.resultsPerPage ?? 20;
   const urlLimit = typeof sp.limit === "string" ? parseInt(sp.limit, 10) : NaN;
   const DISPLAY_CAP = Math.min(
@@ -102,216 +113,352 @@ export default async function LibraryPage({ searchParams }: Props) {
     isNaN(urlLimit) ? prefLimit : urlLimit,
   );
 
-  // Derive distinct filter options from the full corpus (sorted alphabetically)
-  const allTypes = Array.from(
-    new Set(ALL_SOURCES.map((s) => s.type)),
-  ).sort() as LegalSourceType[];
+  // Build facet groups (with counts) + the filtered, sorted result list.
+  const { groups, sources, totalCount } = buildBrowse(
+    selection,
+    getJurisdictionLabel,
+  );
 
-  // Use getAvailableJurisdictions() for the ordered list of valid codes
-  const allCodes = getAvailableJurisdictions().sort((a, b) => {
-    if (a === "INT") return -1;
-    if (b === "INT") return 1;
-    if (a === "EU") return -1;
-    if (b === "EU") return 1;
-    return getJurisdictionLabel(a).localeCompare(getJurisdictionLabel(b), "de");
-  });
-
-  // Apply server-side filters
-  const filtered = ALL_SOURCES.filter((s) => {
-    if (typeFilter && s.type !== typeFilter) return false;
-    if (jurisdictionFilter && s.jurisdiction !== jurisdictionFilter)
-      return false;
-    return true;
-  });
-
-  const totalCount = filtered.length;
-  const capped = filtered.slice(0, DISPLAY_CAP);
+  const capped = sources.slice(0, DISPLAY_CAP);
   const isCapped = totalCount > DISPLAY_CAP;
+  const filtersActive = hasActiveFilters(selection);
 
-  // Resolve display language for source titles.
-  // "original" → no translation overlay (title_local ?? title_en).
+  // Resolve display language for source titles (mirror previous behaviour).
   const sourceLanguage = prefs?.sourceLanguage ?? "original";
   const displayLang = sourceLanguage === "original" ? "en" : sourceLanguage;
+
+  // ── Active-filter chips (every active facet value across all groups) ──────
+  const activeChips: {
+    group: FacetGroupKey;
+    value: string;
+    label: string;
+  }[] = [];
+  for (const group of groups) {
+    const field =
+      group.key === "type"
+        ? selection.types
+        : group.key === "jurisdiction"
+          ? selection.jurisdictions
+          : group.key === "area"
+            ? selection.areas
+            : selection.decades;
+    for (const value of field) {
+      activeChips.push({
+        group: group.key,
+        value,
+        label: labelForValue(group.key, value, getJurisdictionLabel),
+      });
+    }
+  }
 
   return (
     <ScholarPage>
       <PageHeader
         eyebrow="Caelex Scholar"
         title="Bibliothek"
-        subtitle="Alle Rechtsquellen durchsuchen und filtern"
+        subtitle="Den gesamten Rechtsquellen-Korpus nach Typ, Jurisdiktion, Thema und Zeitraum durchsuchen"
         icon={BookOpen}
       />
 
-      {/* ─── Filter bar (accessible form, GET method) ─── */}
-      {/*
-        WCAG 1.3.1 / 3.3.2: each <select> has an associated <label>.
-        WCAG 2.4.7: focus-visible ring on selects and button.
-      */}
-      <form
-        method="get"
-        action="/scholar/library"
-        aria-label="Rechtsquellen filtern"
-        className="flex flex-wrap items-end gap-4 mb-8 pb-8 border-b border-gray-100"
-      >
-        {/* Type filter */}
-        <div className="flex flex-col gap-1">
-          {/*
-            WCAG 1.4.3: label text gray-700 on #F7F8FA ≈ 7.0:1 ✓
-          */}
-          <label
-            htmlFor="library-type"
-            className="text-[12px] font-semibold text-gray-700 tracking-[-0.01em]"
-          >
-            Quellentyp
-          </label>
-          <select
-            id="library-type"
-            name="type"
-            defaultValue={typeFilter}
-            className="text-[12px] text-gray-800 bg-white border border-gray-200 rounded-lg px-3 py-2 min-w-[180px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA] motion-safe:transition-colors hover:border-gray-300"
-          >
-            <option value="">Alle Typen</option>
-            {allTypes.map((t) => (
-              <option key={t} value={t}>
-                {TYPE_DISPLAY_NAMES[t] ?? t}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Jurisdiction filter */}
-        <div className="flex flex-col gap-1">
-          <label
-            htmlFor="library-jurisdiction"
-            className="text-[12px] font-semibold text-gray-700 tracking-[-0.01em]"
-          >
-            Jurisdiktion
-          </label>
-          <select
-            id="library-jurisdiction"
-            name="jurisdiction"
-            defaultValue={jurisdictionFilter}
-            className="text-[12px] text-gray-800 bg-white border border-gray-200 rounded-lg px-3 py-2 min-w-[200px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA] motion-safe:transition-colors hover:border-gray-300"
-          >
-            <option value="">Alle Jurisdiktionen</option>
-            {allCodes.map((code) => (
-              <option key={code} value={code}>
-                {code} — {getJurisdictionLabel(code)}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/*
-          WCAG 2.5.8: button height ≥44px via py-2.5 ✓
-          WCAG 2.4.7: focus-visible ring ✓
-          Accessible name provided by button text content.
-        */}
-        <button
-          type="submit"
-          className="text-[12px] font-medium text-white bg-gray-900 hover:bg-gray-700 rounded-lg px-4 py-2.5 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
+      {/* ─────────────────────────────────────────────────────────────────
+          Two-column layout: facet rail (left) + results (right).
+          Stacks to a single column below lg.
+         ───────────────────────────────────────────────────────────────── */}
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* ─── Facet rail ─────────────────────────────────────────────── */}
+        <aside
+          className="lg:w-72 lg:flex-shrink-0"
+          aria-label="Filter nach Facetten"
         >
-          Filtern
-        </button>
+          <div className="rounded-2xl bg-white border border-gray-200/70 shadow-sm p-5 lg:sticky lg:top-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className={SCHOLAR_TYPE.sectionHeading}>Filter</h2>
+              {filtersActive && (
+                <Link
+                  href="/scholar/library"
+                  className="text-small text-gray-700 hover:text-gray-900 underline underline-offset-2 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA] rounded px-1 py-1"
+                >
+                  Zurücksetzen
+                </Link>
+              )}
+            </div>
 
-        {/* Clear filters link — only shown when a filter is active */}
-        {(typeFilter || jurisdictionFilter) && (
-          <Link
-            href="/scholar/library"
-            className="text-[11px] text-gray-600 hover:text-gray-900 underline underline-offset-2 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA] rounded py-1"
-          >
-            Filter zurücksetzen
-          </Link>
-        )}
-      </form>
+            <div className="space-y-6">
+              {groups.map((group) => (
+                <FacetGroupBlock
+                  key={group.key}
+                  group={group}
+                  selection={selection}
+                />
+              ))}
+            </div>
+          </div>
+        </aside>
 
-      {/* Result count */}
-      <div
-        className="flex items-center gap-3 mb-4"
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        <span className="text-[11px] text-gray-600">
-          {totalCount} {totalCount === 1 ? "Quelle" : "Quellen"}
-          {typeFilter || jurisdictionFilter ? " (gefiltert)" : ""}
-        </span>
-        {isCapped && (
-          <span className="text-[10px] text-gray-500">
-            — Es werden die ersten {DISPLAY_CAP} angezeigt. Bitte Filter
-            verwenden.
-          </span>
-        )}
+        {/* ─── Results column ─────────────────────────────────────────── */}
+        <section className="flex-1 min-w-0" aria-label="Suchergebnisse">
+          {/* Active-filter chips */}
+          {activeChips.length > 0 && (
+            <div className="mb-5">
+              <h3 className="sr-only">Aktive Filter</h3>
+              <ul className="flex flex-wrap items-center gap-2" role="list">
+                {activeChips.map((chip) => {
+                  const without = selectionWithout(
+                    selection,
+                    chip.group,
+                    chip.value,
+                  );
+                  return (
+                    <li key={`${chip.group}:${chip.value}`}>
+                      <Link
+                        href={`/scholar/library${selectionToQuery(without)}`}
+                        className="inline-flex items-center gap-1.5 border border-gray-300 rounded-full pl-3 pr-2 py-1 bg-white text-gray-900 hover:bg-gray-50 hover:border-gray-400 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
+                      >
+                        <span className="text-small">
+                          <span className="text-gray-600">
+                            {GROUP_HEADINGS[chip.group]}:
+                          </span>{" "}
+                          <span className="font-medium text-gray-900">
+                            {chip.label}
+                          </span>
+                        </span>
+                        <X
+                          size={13}
+                          strokeWidth={2}
+                          className="text-gray-600"
+                          aria-hidden={true}
+                        />
+                        <span className="sr-only">
+                          Filter „{chip.label}“ entfernen
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+
+          {/* Count + sort row */}
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div aria-live="polite" aria-atomic="true">
+              <span className={SCHOLAR_TYPE.meta}>
+                <span className="font-semibold text-gray-900">
+                  {totalCount}
+                </span>{" "}
+                {totalCount === 1 ? "Quelle" : "Quellen"}
+                {filtersActive ? " (gefiltert)" : ""}
+              </span>
+            </div>
+            <SortControl selection={selection} />
+          </div>
+
+          {/* Cap notice */}
+          {isCapped && (
+            <p
+              className="mb-4 rounded-xl bg-gray-50 border-l-2 border-gray-400 px-3 py-2 text-small text-gray-700"
+              role="note"
+            >
+              Es werden die ersten{" "}
+              <span className="font-semibold text-gray-900">{DISPLAY_CAP}</span>{" "}
+              von {totalCount} Quellen angezeigt — verfeinere die Filter, um die
+              übrigen zu sehen.
+            </p>
+          )}
+
+          {/* Results list */}
+          {capped.length === 0 ? (
+            <p className={`${SCHOLAR_TYPE.bodyMuted} py-10`}>
+              Keine Quellen für die gewählten Filter gefunden. Entferne einen
+              Filter oder setze die Auswahl zurück.
+            </p>
+          ) : (
+            <ul className="space-y-1" role="list">
+              {capped.map((source) => {
+                // Apply source-language translation if user opted in.
+                // When sourceLanguage == "original", use title_local (if set)
+                // then title_en — preserving pre-facet behaviour.
+                const tx = getTranslatedSource(source, displayLang);
+                const displayTitle =
+                  sourceLanguage === "original"
+                    ? (source.title_local ?? source.title_en)
+                    : tx.title;
+                const displayScope =
+                  tx.scopeDescription ?? source.scope_description ?? null;
+
+                const rowData: SourceRowData = {
+                  id: source.id,
+                  jurisdiction: source.jurisdiction,
+                  type: source.type,
+                  status: source.status,
+                  title: displayTitle,
+                  officialReference: source.official_reference ?? null,
+                  relevanceLevel: source.relevance_level ?? null,
+                  scopeDescription: displayScope,
+                };
+                return (
+                  <li key={source.id}>
+                    <SourceRow source={rowData} />
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
       </div>
 
-      {/* Sources list */}
-      <section aria-labelledby="library-sources-heading">
-        <div className="flex items-center gap-2 mb-2">
-          <Scale
-            size={13}
-            className="text-gray-500"
-            strokeWidth={1.5}
-            aria-hidden={true}
-          />
-          <h2
-            id="library-sources-heading"
-            className="text-[12px] font-semibold text-gray-500 tracking-[-0.01em]"
-          >
-            Rechtsquellen
-          </h2>
-        </div>
-
-        {capped.length === 0 ? (
-          <p className="text-[13px] text-gray-600 py-8">
-            Keine Quellen für die gewählten Filter gefunden.
-          </p>
-        ) : (
-          <ul className="space-y-1" role="list">
-            {capped.map((source) => {
-              // Apply source-language translation if user opted in.
-              // When sourceLanguage == "original", use title_local (if set)
-              // then title_en — preserving pre-Wave-1 behaviour.
-              const tx = getTranslatedSource(source, displayLang);
-              const displayTitle =
-                sourceLanguage === "original"
-                  ? (source.title_local ?? source.title_en)
-                  : tx.title;
-              const displayScope =
-                tx.scopeDescription ?? source.scope_description ?? null;
-
-              const rowData: SourceRowData = {
-                id: source.id,
-                jurisdiction: source.jurisdiction,
-                type: source.type,
-                status: source.status,
-                title: displayTitle,
-                officialReference: source.official_reference ?? null,
-                relevanceLevel: source.relevance_level ?? null,
-                scopeDescription: displayScope,
-              };
-              return (
-                <li key={source.id}>
-                  <SourceRow source={rowData} />
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
-
       {/* Footer */}
-      <footer className="mt-20 pt-8 border-t border-gray-100 pb-10">
+      <footer className="mt-20 pt-8 border-t border-gray-200 pb-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold text-gray-600 tracking-[-0.01em]">
+            <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-600">
               Scholar
             </span>
-            <span className="text-[9px] text-gray-600">by Caelex</span>
+            <span className="text-caption text-gray-600">by Caelex</span>
           </div>
-          <span className="text-[9px] text-gray-600">
+          <span className="text-caption text-gray-600">
             © {new Date().getFullYear()} Caelex
           </span>
         </div>
       </footer>
     </ScholarPage>
+  );
+}
+
+// ─── Facet group block (one column of toggleable options) ─────────────────────
+
+function FacetGroupBlock({
+  group,
+  selection,
+}: {
+  group: FacetGroup;
+  selection: BrowseSelection;
+}) {
+  if (group.options.length === 0) return null;
+
+  // The currently-selected values for THIS group.
+  const selected =
+    group.key === "type"
+      ? selection.types
+      : group.key === "jurisdiction"
+        ? selection.jurisdictions
+        : group.key === "area"
+          ? selection.areas
+          : selection.decades;
+
+  const headingId = `facet-${group.key}`;
+
+  return (
+    <nav aria-labelledby={headingId}>
+      <Eyebrow className="mb-2">
+        <span id={headingId}>{group.heading}</span>
+      </Eyebrow>
+      <ul className="space-y-0.5" role="list">
+        {group.options.map((opt) => {
+          const isOn = selected.includes(opt.value);
+          const next = selectionToggle(selection, group.key, opt.value);
+          return (
+            <li key={opt.value}>
+              <Link
+                href={`/scholar/library${selectionToQuery(next)}`}
+                className={
+                  "group flex items-center gap-2 min-h-[28px] px-2 py-1 rounded-lg motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA] " +
+                  (isOn ? "bg-gray-900" : "hover:bg-gray-100")
+                }
+              >
+                {/* Checkbox-style indicator (shape, not colour, conveys state) */}
+                <span
+                  className={
+                    "flex items-center justify-center w-4 h-4 flex-shrink-0 rounded border " +
+                    (isOn
+                      ? "bg-white border-white"
+                      : "bg-white border-gray-400 group-hover:border-gray-600")
+                  }
+                  aria-hidden={true}
+                >
+                  {isOn && (
+                    <Check
+                      size={11}
+                      strokeWidth={3}
+                      className="text-gray-900"
+                    />
+                  )}
+                </span>
+
+                {/* Option label */}
+                <span
+                  className={
+                    "flex-1 min-w-0 truncate text-small " +
+                    (isOn
+                      ? "font-medium text-white"
+                      : "text-gray-700 group-hover:text-gray-900")
+                  }
+                >
+                  {opt.label}
+                </span>
+
+                {/* Count */}
+                <span
+                  className={
+                    "flex-shrink-0 text-caption tabular-nums " +
+                    (isOn ? "text-gray-300" : "text-gray-500")
+                  }
+                >
+                  {opt.count}
+                </span>
+
+                {/* Screen-reader selection state */}
+                <span className="sr-only">
+                  {isOn
+                    ? `, ausgewählt — entfernen`
+                    : `, ${opt.count} Quellen — auswählen`}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  );
+}
+
+// ─── Sort control (URL-driven segmented links) ────────────────────────────────
+
+function SortControl({ selection }: { selection: BrowseSelection }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span
+        className={`${SCHOLAR_TYPE.metaLabel} hidden sm:inline`}
+        id="sort-label"
+      >
+        Sortieren:
+      </span>
+      <div
+        className="inline-flex items-center rounded-lg border border-gray-300 bg-white p-0.5"
+        role="group"
+        aria-labelledby="sort-label"
+      >
+        {SORT_OPTIONS.map((opt) => {
+          const isActive = selection.sort === opt.value;
+          const next = selectionWithSort(selection, opt.value);
+          return (
+            <Link
+              key={opt.value}
+              href={`/scholar/library${selectionToQuery(next)}`}
+              aria-current={isActive ? "true" : undefined}
+              className={
+                "px-2.5 py-1 rounded-md text-small motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA] " +
+                (isActive
+                  ? "bg-gray-900 text-white font-medium"
+                  : "text-gray-700 hover:text-gray-900 hover:bg-gray-100")
+              }
+            >
+              {opt.label}
+              {isActive && <span className="sr-only"> (aktiv)</span>}
+            </Link>
+          );
+        })}
+      </div>
+    </div>
   );
 }

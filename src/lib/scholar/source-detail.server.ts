@@ -1,10 +1,18 @@
 import "server-only";
 import { getLegalSourceById, getTranslatedSource } from "@/data/legal-sources";
+import { getCasesApplyingSource } from "@/data/legal-cases";
 
 // Mirrors PARAGRAPH_TEXT_CAP in the Atlas korpus engine (IP guardrail: closed-licence
 // normative text must never be served verbatim in full). Keep the two in sync.
 const PARAGRAPH_TEXT_CAP = 600;
 const TRUNCATION_SUFFIX = " […] (truncated — see paragraph_url for full text)";
+
+// Cross-reference fan-out caps (concept §2d). Keeps the "Verwandte Quellen" and
+// "Fälle, die diese Quelle anwenden" blocks scannable rather than dumping a long
+// tail of weakly-related refs. The richest sources cross-reference a handful of
+// instruments; these caps comfortably cover the real data while bounding the UI.
+const RELATED_SOURCES_CAP = 12;
+const CITING_CASES_CAP = 12;
 
 export interface ScholarProvision {
   section: string;
@@ -14,6 +22,21 @@ export interface ScholarProvision {
   paragraphText?: string;
   paragraphTextTruncated: boolean;
   paragraphUrl?: string;
+}
+
+/** Resolved cross-reference to another legal source — enough to render a
+ *  link to /scholar/sources/{id} with a title and a small type eyebrow. */
+export interface ScholarRelatedSource {
+  id: string;
+  title: string;
+  type: string;
+}
+
+/** Resolved reverse-link: a case that applies this source. Enough to render
+ *  a link to /scholar/cases/{id} with its caption. */
+export interface ScholarCitingCase {
+  id: string;
+  title: string;
 }
 
 export interface ScholarSourceDetail {
@@ -74,6 +97,25 @@ export interface ScholarSourceDetail {
    * the type has no obvious applicability band.
    */
   appliesToType?: string;
+
+  // ─── Phase-3 cross-reference graph (concept §2d) ────────────────────
+  // Resolved (not raw-ID) so the reading UI links straight through without
+  // a second lookup. Both turn dead-ends into a navigable graph.
+
+  /**
+   * Resolved related sources for the cross-reference block: the union of
+   * `related_sources` and the legal-basis chain (`amends`, `implements`,
+   * `superseded_by`), each resolved to {id,title,type}. De-duped, self
+   * excluded, capped. Omitted (undefined) when nothing resolves, so the UI
+   * renders the block only when there is something to show.
+   */
+  resolvedRelatedSources?: ScholarRelatedSource[];
+
+  /**
+   * Reverse lookup: cases whose `applied_sources` include this source id,
+   * resolved to {id,title}. De-duped, capped. Omitted when none apply.
+   */
+  citingCases?: ScholarCitingCase[];
 }
 
 /**
@@ -120,6 +162,53 @@ export function getScholarSourceDetail(
   const lang = language && language !== "original" ? language : "en";
   const translated = getTranslatedSource(s, lang);
 
+  // ─── Resolve the cross-reference graph (concept §2d) ────────────────
+  // Title for a related source, resolved in the same language as the host
+  // document so the cross-ref block reads consistently. "original" keeps the
+  // pre-Wave-1 behaviour (title_local → title_en).
+  const resolveTitle = (rel: ReturnType<typeof getLegalSourceById>): string => {
+    if (!rel) return "";
+    return language === "original" || !language
+      ? (rel.title_local ?? rel.title_en)
+      : getTranslatedSource(rel, lang).title;
+  };
+
+  // Related = related_sources ∪ legal-basis chain (amends/implements/
+  // superseded_by). Resolve each id, drop self + unresolved + dupes, cap.
+  // (amended_by is intentionally left to the dedicated dates/amendment surface;
+  // the basis chain here is the "what this is built on / replaced by" trio.)
+  const relatedIds: string[] = [
+    ...(s.related_sources ?? []),
+    ...(s.amends ? [s.amends] : []),
+    ...(s.implements ? [s.implements] : []),
+    ...(s.superseded_by ? [s.superseded_by] : []),
+  ];
+  const seenRelated = new Set<string>();
+  const resolvedRelatedSources: ScholarRelatedSource[] = [];
+  for (const relId of relatedIds) {
+    if (relId === s.id || seenRelated.has(relId)) continue;
+    seenRelated.add(relId);
+    const rel = getLegalSourceById(relId);
+    if (!rel) continue; // never invent a link to a non-existent source
+    resolvedRelatedSources.push({
+      id: rel.id,
+      title: resolveTitle(rel),
+      type: rel.type,
+    });
+    if (resolvedRelatedSources.length >= RELATED_SOURCES_CAP) break;
+  }
+
+  // Reverse lookup: cases that apply this source. De-dupe by id (corpus is
+  // already unique, but be defensive) and cap.
+  const seenCases = new Set<string>();
+  const citingCases: ScholarCitingCase[] = [];
+  for (const c of getCasesApplyingSource(s.id)) {
+    if (seenCases.has(c.id)) continue;
+    seenCases.add(c.id);
+    citingCases.push({ id: c.id, title: c.title });
+    if (citingCases.length >= CITING_CASES_CAP) break;
+  }
+
   return {
     id: s.id,
     jurisdiction: s.jurisdiction,
@@ -162,6 +251,13 @@ export function getScholarSourceDetail(
     implements: s.implements,
     supersededBy: s.superseded_by,
     appliesToType: deriveAppliesToType(s.type),
+
+    // Phase-3 cross-reference graph: attach only when non-empty so the UI can
+    // gate the block on presence (concept §2d — turn dead-ends into a graph).
+    resolvedRelatedSources: resolvedRelatedSources.length
+      ? resolvedRelatedSources
+      : undefined,
+    citingCases: citingCases.length ? citingCases : undefined,
 
     keyProvisions: s.key_provisions.map((p) => {
       const full = p.paragraph_text;

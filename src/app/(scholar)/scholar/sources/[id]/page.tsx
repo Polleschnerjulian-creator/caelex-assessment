@@ -20,7 +20,11 @@
  * <details> below the substantive articles. National laws add nothing beyond
  * the shell (authorities already render in the MetadataStrip).
  *
- * The cross-reference link block is still deliberately OUT of scope — Phase 3.
+ * The cross-reference graph (concept §2d) renders after "Schlüsselbestimmungen"
+ * via <CrossRefBlock>: "Verwandte Quellen" (related sources + legal-basis chain,
+ * resolved in source-detail.server.ts) and the reverse "Fälle, die diese Quelle
+ * anwenden" lookup. The block is self-gating — it returns null when neither
+ * list has entries, so a source with no graph shows nothing extra.
  *
  * STRICTLY MONOCHROME: black / white / gray-* only — zero other hues anywhere.
  * Every reading size comes from the shared SCHOLAR_TYPE tokens — no text-[Npx].
@@ -57,6 +61,7 @@ import { Eyebrow } from "../../_components/Eyebrow";
 import { MetadataStrip } from "../../_components/MetadataStrip";
 import { InDocTOC } from "../../_components/InDocTOC";
 import { ProvisionCard } from "../../_components/ProvisionCard";
+import { CrossRefBlock } from "../../_components/CrossRefBlock";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -457,6 +462,17 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
             </aside>
           </div>
         ) : null}
+
+        {/*
+          ─── Cross-reference graph (concept §2d) ─────────────────────
+          "Verwandte Quellen" + "Fälle, die diese Quelle anwenden". The DTO
+          attaches these only when non-empty; CrossRefBlock self-gates to null
+          when both lists are empty, so a graph-less source shows nothing here.
+        */}
+        <CrossRefBlock
+          related={source.resolvedRelatedSources ?? []}
+          citingCases={source.citingCases ?? []}
+        />
 
         {/* ─── Footer: last-verified + disclaimer ──────────────────── */}
         <footer className="space-y-1 border-t border-gray-200 pt-6">
