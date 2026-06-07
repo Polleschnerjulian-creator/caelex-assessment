@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ChevronDown, Eye, EyeOff } from "lucide-react";
 import Navigation from "@/components/landing/Navigation";
+import Footer from "@/components/landing/Footer";
 import Logo from "@/components/ui/Logo";
 import { analytics } from "@/lib/analytics";
 import { safeScholarUrl } from "@/lib/safe-redirect";
@@ -289,7 +290,7 @@ function MetaItem({ lines }: { lines: string[] }) {
 
 export default function ScholarLoginPage() {
   return (
-    <div className="bg-black text-white antialiased">
+    <div className="scholar-auth bg-black text-white antialiased">
       {/* Shared landing-page navigation — edge-to-edge, transparent, ghost
           buttons (floats over the hero like Palantir). */}
       <Navigation theme="dark" fullWidth ghost />
@@ -362,12 +363,6 @@ export default function ScholarLoginPage() {
           </div>
 
           <div className="mb-7 text-center">
-            <div className="mb-5 flex justify-center">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-medium text-white/60 backdrop-blur-sm">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                Free for universities &amp; research
-              </span>
-            </div>
             <h2 className="text-[28px] font-semibold leading-[1.1] tracking-[-0.025em] text-white">
               Sign in to Scholar
             </h2>
@@ -397,6 +392,9 @@ export default function ScholarLoginPage() {
           </p>
         </div>
       </section>
+
+      {/* Full landing-page footer, dark/inverted to match the Scholar theme. */}
+      <Footer theme="dark" />
     </div>
   );
 }

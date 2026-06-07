@@ -1664,6 +1664,15 @@ html:not(.dark) ::-webkit-scrollbar-thumb:hover {
   box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.15);
 }
 
+/* Caelex Scholar — neutral (white) focus ring. Green is not the Scholar
+   accent, so override the global emerald focus for this surface only.
+   !important beats the unlayered global rules above without touching the
+   rest of the app. */
+.scholar-auth *:focus-visible {
+  outline-color: rgba(255, 255, 255, 0.7) !important;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12) !important;
+}
+
 /* Reduced motion — WCAG 2.3.3 */
 @media (prefers-reduced-motion: reduce) {
   *,
