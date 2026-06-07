@@ -25,14 +25,13 @@ import {
   type ReactNode,
   type KeyboardEvent,
 } from "react";
-import type { LucideIcon } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type TabDefinition = {
   id: string;
   label: string;
-  Icon: LucideIcon;
+  icon: ReactNode; // pre-rendered icon element — valid across RSC boundary (not a function)
   content: ReactNode; // server-rendered panel — valid as ReactNode prop
 };
 
@@ -153,11 +152,12 @@ export function SettingsTabs({ tabs, defaultTab }: Props) {
                   isActive ? "bg-gray-800" : "bg-transparent",
                 ].join(" ")}
               />
-              <tab.Icon
-                size={14}
+              <span
                 aria-hidden="true"
                 className={isActive ? "text-gray-800" : "text-gray-400"}
-              />
+              >
+                {tab.icon}
+              </span>
               <span>{tab.label}</span>
             </button>
           );

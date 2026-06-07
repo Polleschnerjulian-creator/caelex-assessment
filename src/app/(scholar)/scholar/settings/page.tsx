@@ -783,31 +783,31 @@ export default async function SettingsPage() {
     {
       id: "konto",
       label: "Konto",
-      Icon: User,
+      icon: <User size={14} />,
       content: kontoPanel,
     },
     {
       id: "recherche",
       label: "Recherche & Sprache",
-      Icon: BookOpen,
+      icon: <BookOpen size={14} />,
       content: recherchePanel,
     },
     {
       id: "sicherheit",
       label: "Sicherheit",
-      Icon: Shield,
+      icon: <Shield size={14} />,
       content: sicherheitPanel,
     },
     {
       id: "datenschutz",
       label: "Datenschutz",
-      Icon: Lock,
+      icon: <Lock size={14} />,
       content: datenschutzPanel,
     },
     {
       id: "uber",
       label: "Über Scholar",
-      Icon: Info,
+      icon: <Info size={14} />,
       content: uberPanel,
     },
   ];
