@@ -10,6 +10,8 @@ import { Menu, X, ArrowRight, Search } from "lucide-react";
 
 interface NavigationProps {
   theme?: "light" | "dark";
+  /** Full-bleed header bar (edge-to-edge) instead of the centered floating bar. */
+  fullWidth?: boolean;
 }
 
 // ─── Navigation Structure (Palantir-style multi-section) ────────────────────
@@ -209,7 +211,10 @@ const SEARCH_PAGES = [
   { title: "Careers", href: "/careers", category: "Company" },
 ];
 
-export default function Navigation({ theme = "dark" }: NavigationProps) {
+export default function Navigation({
+  theme = "dark",
+  fullWidth = false,
+}: NavigationProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -391,11 +396,17 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
         className={`fixed top-0 left-0 right-0 z-50 ${showDarkText ? "" : "dark-section"}`}
         aria-label="Main navigation"
       >
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-          <div className="flex items-center justify-between h-20">
+        <div
+          className={
+            fullWidth ? "w-full" : "max-w-[1400px] mx-auto px-6 md:px-12"
+          }
+        >
+          <div
+            className={`flex justify-between h-20 ${fullWidth ? "items-stretch" : "items-center"}`}
+          >
             {/* Glass Bar */}
             <div
-              className={`flex items-center justify-between w-full rounded-xl px-5 py-2.5 transition-all duration-700 ${
+              className={`flex items-center justify-between w-full ${fullWidth ? "rounded-none px-6 md:px-10" : "rounded-xl px-5"} py-2.5 transition-all duration-700 ${
                 isLight
                   ? scrolled
                     ? // Palantir-style near-invisible glass: the bar itself

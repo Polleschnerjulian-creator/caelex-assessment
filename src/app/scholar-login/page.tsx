@@ -16,15 +16,16 @@ import { translateAuthError } from "@/lib/auth-errors";
  *
  * Two-section page in the spirit of palantir.com/platforms/aip:
  *
- *   1. Hero (100vh): the shared landing-page <Navigation> (liquid-glass bar,
- *      Caelex logo) floating over a full-bleed Apollo 17 lunar-rover photo
- *      (NASA / public domain). A giant tight-set SCHOLAR wordmark sits at the
- *      bottom-left, a Palantir-style meta-label column at the bottom-right,
+ *   1. Hero (100vh): the shared landing-page <Navigation fullWidth> (edge-to-edge
+ *      liquid-glass bar, Caelex logo) over a full-bleed Apollo 17 lunar-rover
+ *      photo (NASA / public domain). A large tight-set SCHOLAR wordmark sits at
+ *      the bottom-left, a Palantir-style meta-label column at the bottom-right,
  *      and a "scroll to sign in" cue.
- *   2. Login (scroll down): the actual sign-in form on a navy backdrop.
+ *   2. Sign-in (scroll down): the actual form on a black backdrop that matches
+ *      the grayscale hero — no colour shift.
  *
  * The fixed Navigation keeps a white logo in dark mode, so BOTH sections are
- * dark — that's why the login section uses navy-950, not white (WCAG 1.4.3).
+ * dark/black (WCAG 1.4.3).
  *
  * Auth is unchanged: NextAuth credentials + Google, MFA hand-off, callbackUrl
  * + email prefill. safeScholarUrl rejects callbacks outside /scholar so
@@ -33,11 +34,10 @@ import { translateAuthError } from "@/lib/auth-errors";
  * WCAG 2.2 AA:
  *   - decorative hero image has alt="" (1.1.1)
  *   - single <h1> = product name (sr-only "Caelex " for full context)
- *   - login section uses <h2>; every input has an associated <label>
+ *   - sign-in section uses <h2>; every input has an associated <label>
  *   - focus-visible rings on all interactive elements (2.4.7)
  *   - target size ≥24px via py-2.5 on inputs/buttons (2.5.8)
  *   - error region uses role="alert" (4.1.3)
- *   - gradients keep all copy ≥4.5:1 over the photo (1.4.3)
  */
 
 const HERO_SRC = "/scholar-hero.jpg";
@@ -113,7 +113,7 @@ function LoginForm() {
         window.location.assign(callbackUrl);
       }
     } catch {
-      setError("Etwas ist schiefgelaufen. Bitte erneut versuchen.");
+      setError("Something went wrong. Please try again.");
       setLoading(false);
     }
   };
@@ -126,7 +126,7 @@ function LoginForm() {
     <form onSubmit={handleSubmit} noValidate className="space-y-4">
       <div>
         <label className={LABEL_CLS} htmlFor="login-email">
-          E-Mail
+          Email
         </label>
         <input
           id="login-email"
@@ -134,7 +134,7 @@ function LoginForm() {
           autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="du@universitaet.eu"
+          placeholder="you@university.edu"
           required
           className={INPUT_CLS}
         />
@@ -145,12 +145,12 @@ function LoginForm() {
           className="mb-1.5 flex items-center justify-between text-[12px] font-medium text-white/70"
           htmlFor="login-password"
         >
-          <span>Passwort</span>
+          <span>Password</span>
           <Link
             href="/forgot-password"
             className="rounded font-normal text-white/50 transition-colors hover:text-white/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
           >
-            Passwort vergessen?
+            Forgot password?
           </Link>
         </label>
         <div className="relative">
@@ -167,9 +167,7 @@ function LoginForm() {
           <button
             type="button"
             onClick={() => setShowPassword((v) => !v)}
-            aria-label={
-              showPassword ? "Passwort verbergen" : "Passwort anzeigen"
-            }
+            aria-label={showPassword ? "Hide password" : "Show password"}
             className="absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded text-white/40 transition-colors hover:text-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
           >
             {showPassword ? (
@@ -194,28 +192,28 @@ function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-[14px] font-semibold text-gray-900 transition-colors hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0F1E] disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-[14px] font-semibold text-gray-900 transition-colors hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-60"
       >
         {loading ? (
           <>
             <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-900/30 border-t-gray-900" />
-            Anmeldung…
+            Signing in…
           </>
         ) : (
-          "Anmelden"
+          "Sign in"
         )}
       </button>
 
       <div className="flex items-center gap-3 py-0.5 text-[11px] text-white/35">
         <span className="h-px flex-1 bg-white/10" />
-        oder
+        or
         <span className="h-px flex-1 bg-white/10" />
       </div>
 
       <button
         type="button"
         onClick={handleGoogleSignIn}
-        className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-white/15 bg-white/[0.04] px-4 py-2.5 text-[14px] font-medium text-white transition-colors hover:bg-white/[0.09] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0F1E]"
+        className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-white/15 bg-white/[0.04] px-4 py-2.5 text-[14px] font-medium text-white transition-colors hover:bg-white/[0.09] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
       >
         <svg
           viewBox="0 0 24 24"
@@ -241,32 +239,32 @@ function LoginForm() {
             fill="#f5f5f4"
           />
         </svg>
-        Mit Google fortfahren
+        Continue with Google
       </button>
 
       <p className="pt-1 text-[11px] leading-relaxed text-white/40">
-        Universität noch nicht dabei?{" "}
+        University not on Scholar yet?{" "}
         <Link
           href="/scholar-access"
           className="rounded text-white/65 underline-offset-2 transition-colors hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
         >
-          Zugang für deine Institution anfragen
+          Request access for your institution
         </Link>
-        . Mit der Anmeldung stimmst du unseren{" "}
+        . By signing in you agree to our{" "}
         <Link
           href="/legal/terms"
           className="rounded text-white/65 underline-offset-2 transition-colors hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
         >
-          Nutzungsbedingungen
+          Terms
         </Link>{" "}
-        und{" "}
+        and{" "}
         <Link
           href="/legal/privacy"
           className="rounded text-white/65 underline-offset-2 transition-colors hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
         >
-          Datenschutzhinweisen
-        </Link>{" "}
-        zu.
+          Privacy Policy
+        </Link>
+        .
       </p>
     </form>
   );
@@ -291,8 +289,8 @@ function MetaItem({ lines }: { lines: string[] }) {
 export default function ScholarLoginPage() {
   return (
     <div className="bg-black text-white antialiased">
-      {/* Shared landing-page navigation — liquid-glass bar, white logo. */}
-      <Navigation theme="dark" />
+      {/* Shared landing-page navigation — edge-to-edge liquid-glass bar. */}
+      <Navigation theme="dark" fullWidth />
 
       {/* ── Section 1: cinematic hero (full viewport) ───────────────────── */}
       <section className="relative h-screen w-full overflow-hidden">
@@ -302,20 +300,21 @@ export default function ScholarLoginPage() {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[center_42%] grayscale"
+          className="object-cover object-[center_36%] grayscale"
         />
-        {/* Contrast scrims: darken top (nav) + bottom (wordmark/labels). */}
+        {/* Contrast scrims: light touch at top (nav) + bottom (wordmark/labels)
+            so the photograph stays visible through the middle. */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-transparent"
+          className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-transparent"
         />
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-transparent"
+          className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"
         />
 
         {/* Giant wordmark — bottom-left, tight-set (Palantir "AIP" style). */}
-        <h1 className="absolute bottom-7 left-0 z-10 px-5 font-semibold leading-[0.78] tracking-[-0.05em] text-white text-[clamp(76px,17vw,300px)] sm:bottom-9 sm:px-10 lg:px-14">
+        <h1 className="absolute bottom-7 left-0 z-10 px-5 font-semibold leading-[0.8] tracking-[-0.05em] text-white text-[clamp(56px,12vw,210px)] sm:bottom-9 sm:px-10 lg:px-14">
           <span className="sr-only">Caelex </span>SCHOLAR
         </h1>
 
@@ -325,15 +324,15 @@ export default function ScholarLoginPage() {
             href="#login"
             className="group flex items-center gap-2 rounded text-[11px] font-medium uppercase tracking-[0.1em] text-white/75 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
           >
-            Zum Anmelden
+            Sign in
             <ChevronDown
               size={14}
               className="motion-safe:animate-bounce"
               aria-hidden="true"
             />
           </a>
-          <MetaItem lines={["Durchsuchbare", "Rechtsdatenbank"]} />
-          <MetaItem lines={["Für Universitäten", "& Forschung"]} />
+          <MetaItem lines={["Searchable", "legal database"]} />
+          <MetaItem lines={["For universities", "& research"]} />
           <MetaItem lines={["Powered by Atlas"]} />
           <MetaItem lines={["© 2026 Caelex", "Technologies"]} />
         </div>
@@ -342,16 +341,15 @@ export default function ScholarLoginPage() {
       {/* ── Section 2: sign-in (revealed on scroll) ─────────────────────── */}
       <section
         id="login"
-        className="relative flex min-h-screen w-full flex-col items-center justify-center bg-[#0A0F1E] px-6 py-28"
+        className="relative flex min-h-screen w-full flex-col items-center justify-center bg-black px-6 py-28"
       >
         <div className="w-full max-w-sm">
           <div className="mb-7 text-center">
             <h2 className="text-[24px] font-semibold tracking-[-0.02em] text-white">
-              Bei Scholar anmelden
+              Sign in to Scholar
             </h2>
             <p className="mx-auto mt-2 max-w-xs text-[14px] leading-relaxed text-white/55">
-              Die durchsuchbare Weltraumrecht-Datenbank für Universitäten und
-              Forschung.
+              The searchable space-law database for universities and research.
             </p>
           </div>
 
