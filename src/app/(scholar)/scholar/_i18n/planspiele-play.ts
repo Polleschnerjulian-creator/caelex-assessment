@@ -10,6 +10,12 @@
  * EN is the source of truth. FR/ES are MVP stubs ({}) — t() falls back to EN.
  */
 import type { ScholarLocale, ScholarNamespace } from "./core";
+import { DE_LEO_EO_PLAY } from "./scenarios/de-leo-eo";
+import { NIS2_INCIDENT_PLAY } from "./scenarios/nis2-orbit-cyber-incident";
+import { INSURANCE_PLAY } from "./scenarios/insurance-placement-claim";
+import { DUALUSE_PLAY } from "./scenarios/de-bafa-dualuse-export";
+import { TCO_PLAY } from "./scenarios/tco-equivalence-eu";
+import { ITU_PLAY } from "./scenarios/itu-leo-coordination";
 
 export const PLANSPIELE_PLAY = {
   en: {
@@ -115,6 +121,12 @@ export const PLANSPIELE_PLAY = {
     "play.completeBanner": "Planspiel complete — see your debrief below.",
     "play.requiredCitation": "Cite at least {n} provisions.",
     "play.startFailed": "Could not start — please try again.",
+    ...DE_LEO_EO_PLAY.en,
+    ...NIS2_INCIDENT_PLAY.en,
+    ...INSURANCE_PLAY.en,
+    ...DUALUSE_PLAY.en,
+    ...TCO_PLAY.en,
+    ...ITU_PLAY.en,
   },
 
   de: {
@@ -218,6 +230,12 @@ export const PLANSPIELE_PLAY = {
     "play.requiredCitation": "Zitiere mindestens {n} Vorschriften.",
     "play.startFailed":
       "Konnte nicht gestartet werden — bitte erneut versuchen.",
+    ...DE_LEO_EO_PLAY.de,
+    ...NIS2_INCIDENT_PLAY.de,
+    ...INSURANCE_PLAY.de,
+    ...DUALUSE_PLAY.de,
+    ...TCO_PLAY.de,
+    ...ITU_PLAY.de,
   },
 
   it: {
