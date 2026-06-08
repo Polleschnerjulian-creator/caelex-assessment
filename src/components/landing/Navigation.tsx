@@ -409,7 +409,7 @@ export default function Navigation({
           <div className="flex items-center justify-between h-20">
             {/* Glass Bar */}
             <div
-              className={`flex items-center justify-between w-full ${fullWidth ? "rounded-2xl px-6 md:px-8" : "rounded-xl px-5"} py-2.5 transition-all duration-700 ${
+              className={`flex items-center justify-between w-full ${fullWidth ? "rounded-none px-6 md:px-8" : "rounded-none px-5"} py-2.5 transition-all duration-700 ${
                 ghost
                   ? "bg-white/[0.08] backdrop-blur-xl backdrop-saturate-150"
                   : isLight
@@ -447,10 +447,13 @@ export default function Navigation({
                 {/* Get Started CTA — white bg, subtle border, soft radius */}
                 <Link
                   href="/get-started"
-                  className={`hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-lg transition-all duration-300 ${
+                  style={{
+                    fontFamily: "var(--font-geist), system-ui, sans-serif",
+                  }}
+                  className={`hidden sm:inline-flex items-center justify-center h-10 px-4 text-[16px] font-normal rounded-none border transition-colors duration-200 ${
                     ghost
-                      ? "border border-white/30 bg-transparent text-white backdrop-blur-sm hover:bg-white/10"
-                      : "bg-white text-[#111827] border border-[#E5E7EB] hover:bg-[#F9FAFB]"
+                      ? "border-white/40 bg-transparent text-white hover:bg-white/10"
+                      : "bg-white text-[#1E1F2B] border-[#1E1F2B] hover:bg-[#1E1F2B] hover:text-white"
                   }`}
                 >
                   Get Started
@@ -458,10 +461,10 @@ export default function Navigation({
 
                 {/* Search + Hamburger — white bg, subtle border, soft radius */}
                 <div
-                  className={`flex items-center overflow-hidden rounded-lg ${
+                  className={`flex items-center overflow-hidden rounded-none ${
                     ghost
-                      ? "border border-white/30 bg-transparent backdrop-blur-sm"
-                      : "bg-white border border-[#E5E7EB]"
+                      ? "border border-white/40 bg-transparent"
+                      : "bg-white border border-[#1E1F2B]"
                   }`}
                 >
                   <button
