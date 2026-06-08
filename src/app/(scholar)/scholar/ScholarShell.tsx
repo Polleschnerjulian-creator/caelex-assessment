@@ -8,6 +8,7 @@ import {
   Globe2,
   BookOpen,
   Scale,
+  Swords,
   Bookmark,
   LogOut,
   Settings,
@@ -51,6 +52,11 @@ const MAIN_NAV: NavItem[] = [
     labelKey: "caseLaw",
     href: "/scholar/cases",
     icon: Scale,
+  },
+  {
+    labelKey: "planspiele",
+    href: "/scholar/planspiele",
+    icon: Swords,
   },
   {
     labelKey: "watchlist",

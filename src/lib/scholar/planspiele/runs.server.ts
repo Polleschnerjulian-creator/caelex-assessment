@@ -185,3 +185,60 @@ export async function saveReflection(
   });
   return true;
 }
+
+export interface InstructorRunRow extends RunSummary {
+  studentName: string;
+}
+
+/**
+ * Instructor cohort view: runs owned by any member of the instructor's org.
+ * The caller MUST verify instructor-tier role first (the page does). Student
+ * names are resolved from User for display only (same-org classroom context).
+ */
+export async function listOrgRunsForInstructor(
+  organizationId: string,
+): Promise<InstructorRunRow[]> {
+  const members = await prisma.organizationMember.findMany({
+    where: { organizationId },
+    select: { userId: true },
+  });
+  const ids = members.map((m) => m.userId);
+  if (ids.length === 0) return [];
+
+  const [runs, users] = await Promise.all([
+    prisma.scholarPlanspielRun.findMany({
+      where: { ownerUserId: { in: ids } },
+      orderBy: { startedAt: "desc" },
+      take: 500,
+      select: {
+        id: true,
+        scenarioId: true,
+        status: true,
+        currentPhase: true,
+        mode: true,
+        startedAt: true,
+        completedAt: true,
+        ownerUserId: true,
+      },
+    }),
+    prisma.user.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, name: true, email: true },
+    }),
+  ]);
+
+  const nameById = new Map(
+    users.map((u) => [u.id, u.name ?? u.email ?? "Student"]),
+  );
+
+  return runs.map((r) => ({
+    id: r.id,
+    scenarioId: r.scenarioId,
+    status: r.status,
+    currentPhase: r.currentPhase,
+    mode: r.mode,
+    startedAt: r.startedAt,
+    completedAt: r.completedAt,
+    studentName: nameById.get(r.ownerUserId) ?? "Student",
+  }));
+}
