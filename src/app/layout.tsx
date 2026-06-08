@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Geist } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import PublicLayout from "@/components/layout/PublicLayout";
@@ -20,6 +20,15 @@ const inter = Inter({
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-jetbrains",
+  display: "swap",
+});
+
+// Geist — Vercel's neo-grotesk, self-hosted at build time via next/font/google
+// (no runtime Google connection, same as Inter above). Drives the `font-display`
+// Tailwind family used by the landing display headings (Palantir-style look).
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist",
   display: "swap",
 });
 
@@ -173,7 +182,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrainsMono.variable}`}
+      className={`${inter.variable} ${jetbrainsMono.variable} ${geist.variable}`}
       suppressHydrationWarning
     >
       <head>

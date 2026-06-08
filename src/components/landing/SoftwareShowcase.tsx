@@ -4,48 +4,49 @@ import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import Link from "next/link";
 
+// Geist (Vercel's neo-grotesk) is injected as a CSS variable by next/font in the
+// root layout. We reference it directly so the font is independent of Tailwind's
+// theme resolution (which the multi-root workspace can mis-resolve in dev).
+const GEIST = "var(--font-geist), system-ui, sans-serif";
+const INK = "#1E1F2B"; // Palantir's near-black ink
+
+// The five public Caelex products, in order, Palantir-style: a big name, a small
+// version tag, and one sharp line. Descriptions are intentionally terse.
 const PRODUCTS = [
   {
-    name: "Comply",
-    tagline: "Navigate regulation,\nfrom authorization to audit.",
-    description:
-      "The regulatory command center. Real-time compliance posture across space law, cybersecurity directives, and national regulations — for every operator type, every jurisdiction, every mission phase.",
-    href: "/platform",
-  },
-  {
-    name: "Trade",
-    tagline: "Classify, screen, license —\nfrom export desk to shipment.",
-    description:
-      "Export-compliance engine for operators in the space sector. Multi-jurisdiction classification (ECCN, USML, EU Annex I, MTCR), counterparty screening against five sanctions lists, and automated license determination across BIS, DDTC, BAFA, and EU competent authorities.",
-    href: "/trade-access",
-  },
-  {
     name: "Atlas",
-    tagline: "Search space law,\nfrom UN treaty to national code.",
+    version: "/0.1",
     description:
-      "The searchable space-law database built for law firms. Instant access to UN treaties, EU instruments, and national legislation across 10 jurisdictions — deep-linked to official sources, with shared annotations and AI-assisted research.",
+      "The workspace that runs a space-law practice — research, draft, and advise, end to end.",
     href: "/atlas-access",
   },
   {
-    name: "Sentinel",
-    tagline: "Collect compliance evidence,\nfrom orbit to ground.",
+    name: "Comply",
+    version: "/0.2",
     description:
-      "Autonomous evidence agents deployed at operator premises. Cryptographically signed hash chains, tamper-evident audit trails, and cross-verification against public orbital data.",
-    href: "/sentinel",
+      "Total regulatory command — every obligation, from authorization to audit.",
+    href: "/platform",
+  },
+  {
+    name: "Passage",
+    version: "/0.3",
+    description:
+      "Export control on autopilot — classify, screen, and clear every shipment.",
+    href: "/trade-access",
   },
   {
     name: "Ephemeris",
-    tagline: "Predict compliance risk,\nfrom today to end-of-life.",
+    version: "/0.4",
     description:
-      "Forward-looking risk engine. Models regulatory change propagation, deadline cascades, and compliance decay trajectories across your entire mission lifecycle.",
+      "See compliance risk before it arrives — forecast every deadline to end-of-life.",
     href: "/systems/ephemeris",
   },
   {
-    name: "Verity",
-    tagline: "Prove compliance without\nrevealing what you know.",
+    name: "Scholar",
+    version: "/0.5",
     description:
-      "Zero-knowledge compliance attestation. Cryptographic proofs that demonstrate regulatory adherence to auditors without exposing proprietary operational data.",
-    href: "/verity",
+      "Space law for the next generation — built for students, academics, and universities.",
+    href: "/scholar",
   },
 ];
 
@@ -65,11 +66,7 @@ function AnimatedRow({
       ref={ref}
       initial={{ opacity: 0, y: 20 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-      transition={{
-        duration: 0.7,
-        delay,
-        ease: [0.25, 0.1, 0.25, 1],
-      }}
+      transition={{ duration: 0.7, delay, ease: [0.25, 0.1, 0.25, 1] }}
       className={className}
     >
       {children}
@@ -80,23 +77,31 @@ function AnimatedRow({
 export default function SoftwareShowcase() {
   return (
     <section className="bg-white py-32 md:py-44">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-        {/* Header */}
+      <div className="max-w-[1500px] mx-auto px-6 md:px-12">
+        {/* Section label — 20px, regular, dark (matches Palantir) */}
         <AnimatedRow>
-          <h2 className="text-[clamp(1.75rem,3.5vw,2.5rem)] font-medium tracking-[-0.02em] text-[#111827]">
+          <h2
+            style={{
+              fontFamily: GEIST,
+              fontSize: "20px",
+              fontWeight: 400,
+              letterSpacing: "-0.02em",
+              color: INK,
+            }}
+          >
             Our Software
           </h2>
         </AnimatedRow>
 
         {/* Product rows */}
-        <div className="mt-20">
+        <div className="mt-8 md:mt-10">
           {PRODUCTS.map((product, i) => (
             <AnimatedRow key={product.name} delay={i * 0.06}>
               <ProductRow product={product} />
             </AnimatedRow>
           ))}
-          {/* Bottom border */}
-          <div className="border-t border-[#E5E7EB]" />
+          {/* Closing divider */}
+          <div className="border-t" style={{ borderColor: "#ECECEC" }} />
         </div>
       </div>
     </section>
@@ -104,45 +109,61 @@ export default function SoftwareShowcase() {
 }
 
 function ProductRow({ product }: { product: (typeof PRODUCTS)[number] }) {
-  const isClickable = product.href !== "#";
+  return (
+    <Link
+      href={product.href}
+      className="group block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1d1d1f] focus-visible:ring-offset-2"
+    >
+      <div
+        className="border-t transition-colors group-hover:!border-[#D8D8D8]"
+        style={{
+          borderColor: "#ECECEC",
+          paddingTop: "16px",
+          paddingBottom: "32px",
+        }}
+      >
+        {/* Big name (left) + version tag (top-right) */}
+        <div className="flex items-start justify-between gap-6">
+          <h3
+            className="select-none transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:translate-x-2"
+            style={{
+              fontFamily: GEIST,
+              fontSize: "clamp(2.75rem, 7.5vw, 80px)",
+              fontWeight: 400,
+              letterSpacing: "-0.05em",
+              lineHeight: 1,
+              color: INK,
+            }}
+          >
+            {product.name}
+          </h3>
+          <span
+            className="whitespace-nowrap tabular-nums"
+            style={{
+              fontFamily: GEIST,
+              fontSize: "18px",
+              fontWeight: 400,
+              color: "#AAAAAA",
+            }}
+          >
+            {product.version}
+          </span>
+        </div>
 
-  const inner = (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6 lg:gap-12 py-12 md:py-16 lg:py-20 border-t border-[#E5E7EB] group-hover:border-[#D1D5DB] transition-colors">
-      {/* Left: product name + tagline */}
-      <div>
-        <motion.h3
-          className={`text-[clamp(2.5rem,7vw,6rem)] font-normal leading-[0.9] tracking-[-0.04em] select-none transition-colors duration-500 mb-4 ${
-            isClickable ? "text-[#111827]" : "text-[#E5E7EB]"
-          }`}
-          whileHover={isClickable ? { x: 8 } : undefined}
-          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+        {/* One sharp line — 20px, regular, dark */}
+        <p
+          className="mt-4 max-w-none"
+          style={{
+            fontFamily: GEIST,
+            fontSize: "20px",
+            fontWeight: 400,
+            lineHeight: 1.15,
+            color: INK,
+          }}
         >
-          {product.name}
-        </motion.h3>
-        <p className="text-[clamp(0.875rem,1.5vw,1.125rem)] font-normal text-[#6B7280] leading-[1.4] whitespace-pre-line tracking-[-0.01em]">
-          {product.tagline}
-        </p>
-      </div>
-
-      {/* Right: description */}
-      <div className="flex items-end">
-        <p className="text-body-lg text-[#9CA3AF] leading-relaxed max-w-xl group-hover:text-[#4B5563] transition-colors duration-500">
           {product.description}
         </p>
       </div>
-    </div>
+    </Link>
   );
-
-  if (isClickable) {
-    return (
-      <Link
-        href={product.href}
-        className="group block focus-visible:ring-2 focus-visible:ring-[#1d1d1f] focus-visible:ring-offset-2 rounded-lg"
-      >
-        {inner}
-      </Link>
-    );
-  }
-
-  return <div className="group block">{inner}</div>;
 }
