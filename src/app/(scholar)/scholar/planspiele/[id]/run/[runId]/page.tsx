@@ -30,7 +30,7 @@ import { PLANSPIELE } from "../../../../_i18n/planspiele";
 import { PLANSPIELE_PLAY, playT } from "../../../../_i18n/planspiele-play";
 import { Cockpit } from "../../../_components/Cockpit";
 import { CorpusRail } from "../../../_components/CorpusRail";
-import { PhaseProgress } from "../../../_components/PhaseProgress";
+import { PhaseStepper } from "../../../_components/PhaseStepper";
 
 interface PageProps {
   params: Promise<{ id: string; runId: string }>;
@@ -54,6 +54,19 @@ export default async function RunPage({ params }: PageProps) {
   const phases = [...scenario.phases].sort((a, b) => a.order - b.order);
   const currentIndex = phases.findIndex((p) => p.phaseKey === run.currentPhase);
   const currentPhase = currentIndex >= 0 ? phases[currentIndex] : null;
+
+  // PhaseStepper steps: label pre-resolved via playT; state by order vs the
+  // current phase's order (before → done, == → current, after → upcoming).
+  // A terminal/unknown phase (currentIndex < 0) marks every step done.
+  const currentOrder = currentPhase?.order ?? Number.POSITIVE_INFINITY;
+  const stepperSteps = phases.map((p) => ({
+    label: playT(locale, p.titleKey),
+    state: (p.order < currentOrder
+      ? "done"
+      : p.order === currentOrder
+        ? "current"
+        : "upcoming") as "done" | "current" | "upcoming",
+  }));
 
   const runData = {
     id: run.id,
@@ -87,12 +100,8 @@ export default async function RunPage({ params }: PageProps) {
         </h1>
       </div>
 
-      <div className="mt-5">
-        <PhaseProgress
-          total={phases.length}
-          current={currentIndex >= 0 ? currentIndex + 1 : phases.length}
-          locale={locale}
-        />
+      <div className="mt-6">
+        <PhaseStepper steps={stepperSteps} locale={locale} />
       </div>
 
       <Cockpit
