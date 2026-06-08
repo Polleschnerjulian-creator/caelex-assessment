@@ -15234,3 +15234,116 @@ model ScholarReadingListItem {
   @@unique([listId, itemType, itemId])
   @@index([listId, position])
 }
+
+// ─── Scholar Planspiele (role-play simulations) ──────────────────────
+// User-DECOUPLED like the other Scholar* models (bare userId, no User relation).
+// Child rows (roleAssignments/submissions/events) relate to the RUN, not the User.
+
+enum ScholarSimMode {
+  SOLO
+  CLASSROOM
+}
+
+enum ScholarPlanspielRunStatus {
+  briefing
+  in_progress
+  submitted
+  under_review
+  completed
+  abandoned
+}
+
+model ScholarClassroom {
+  id                  String   @id @default(cuid())
+  instructorId        String
+  organizationId      String
+  name                String
+  joinCode            String   @unique
+  assignedScenarioIds String[]
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([instructorId, createdAt])
+  @@index([organizationId])
+}
+
+model ScholarPlanspielRun {
+  id           String                    @id @default(cuid())
+  scenarioId   String
+  classroomId  String?
+  mode         ScholarSimMode            @default(SOLO)
+  ownerUserId  String
+  status       ScholarPlanspielRunStatus @default(briefing)
+  currentPhase String
+  version      Int                       @default(0)
+  startedAt    DateTime                  @default(now())
+  completedAt  DateTime?
+
+  roleAssignments ScholarPlanspielRoleAssignment[]
+  submissions     ScholarPlanspielSubmission[]
+  events          ScholarPlanspielEvent[]
+
+  @@index([ownerUserId, startedAt])
+  @@index([classroomId])
+  @@index([scenarioId])
+}
+
+model ScholarPlanspielRoleAssignment {
+  id             String              @id @default(cuid())
+  runId          String
+  run            ScholarPlanspielRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  roleKey        String
+  assignedUserId String?
+  isAI           Boolean             @default(false)
+  createdAt      DateTime            @default(now())
+
+  submissions ScholarPlanspielSubmission[]
+
+  @@unique([runId, roleKey])
+  @@index([assignedUserId])
+}
+
+model ScholarPlanspielSubmission {
+  id               String                         @id @default(cuid())
+  runId            String
+  run              ScholarPlanspielRun            @relation(fields: [runId], references: [id], onDelete: Cascade)
+  roleAssignmentId String
+  roleAssignment   ScholarPlanspielRoleAssignment @relation(fields: [roleAssignmentId], references: [id], onDelete: Cascade)
+  phaseKey         String
+  artifactType     String
+  contentJson      Json
+  engineScore      Float?
+  engineFeedback   Json?
+  aiRubricJson     Json?
+  instructorScore  Float?
+  instructorNote   String?
+  submittedAt      DateTime                       @default(now())
+  updatedAt        DateTime                       @updatedAt
+
+  @@unique([runId, phaseKey, roleAssignmentId])
+  @@index([roleAssignmentId])
+}
+
+model ScholarPlanspielEvent {
+  id          String              @id @default(cuid())
+  runId       String
+  run         ScholarPlanspielRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  actorUserId String?
+  kind        String
+  payload     Json
+  createdAt   DateTime            @default(now())
+
+  @@index([runId, createdAt])
+}
+
+model ScholarPlanspielBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeKey String
+  earnedAt DateTime @default(now())
+  metadata Json?
+
+  @@unique([userId, badgeKey])
+  @@index([userId, earnedAt])
+}
