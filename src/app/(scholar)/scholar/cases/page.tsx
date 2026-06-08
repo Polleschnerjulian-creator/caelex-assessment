@@ -248,7 +248,7 @@ export default async function CasesPage({ searchParams }: Props) {
   };
 
   const fieldClass =
-    "w-full bg-white border border-gray-300 rounded-lg px-3 py-2 motion-safe:transition-colors hover:border-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA] " +
+    "w-full bg-white border border-gray-300 rounded-lg pl-3 pr-9 py-2 motion-safe:transition-colors hover:border-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA] appearance-none bg-no-repeat [background-position:right_0.7rem_center] [background-size:14px] bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22%236b7280%22%20stroke-width=%222%22%3E%3Cpath%20d=%22m6%209%206%206%206-6%22/%3E%3C/svg%3E')] " +
     SCHOLAR_TYPE.body;
 
   return (

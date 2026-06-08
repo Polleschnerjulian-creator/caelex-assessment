@@ -437,7 +437,7 @@ export default function ScholarSearchPage() {
             value={jurisdiction}
             onChange={(e) => setJurisdiction(e.target.value)}
             placeholder={t(locale, SEARCH, "jurisdictionPlaceholder")}
-            className="bg-transparent border-0 border-b border-gray-300 outline-none text-[12px] text-gray-600 placeholder:text-gray-500 focus-visible:border-gray-700 focus-visible:ring-1 focus-visible:ring-gray-700 focus-visible:ring-offset-1 focus-visible:ring-offset-[#F7F8FA] transition-colors w-24 pb-0.5"
+            className="bg-transparent border-0 border-b border-gray-300 outline-none text-[12px] text-gray-600 placeholder:text-gray-500 focus-visible:border-gray-700 transition-colors w-24 pb-0.5"
             style={{ boxShadow: "none" }}
           />
         </div>

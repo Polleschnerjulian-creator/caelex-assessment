@@ -281,7 +281,7 @@ export default async function LibraryPage({ searchParams }: Props) {
           {/* Cap notice — render {n} (bold) and {total} from the localised template */}
           {isCapped && (
             <p
-              className="mb-4 rounded-xl bg-gray-50 border-l-2 border-gray-400 px-3 py-2 text-small text-gray-700"
+              className="mb-4 rounded-xl bg-gray-50 px-3 py-2 text-small text-gray-700"
               role="note"
             >
               <CapNotice

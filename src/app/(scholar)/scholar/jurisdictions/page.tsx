@@ -97,12 +97,12 @@ export default async function JurisdictionsPage() {
                 {/* Country code badge */}
                 <div className="flex items-start justify-between gap-2">
                   <span
-                    className="text-[10px] font-bold tracking-[-0.01em] text-gray-500"
+                    className="text-[10px] font-semibold uppercase tracking-[0.06em] text-gray-400"
                     aria-hidden="true"
                   >
                     {code}
                   </span>
-                  <span className="text-[9px] text-gray-500 tabular-nums flex-shrink-0">
+                  <span className="text-[11px] text-gray-500 tabular-nums flex-shrink-0">
                     {sourceCount}{" "}
                     {sourceCount === 1
                       ? t(locale, COMMON, "source")
@@ -111,9 +111,9 @@ export default async function JurisdictionsPage() {
                 </div>
 
                 {/*
-                  Country name — WCAG 1.4.3: gray-800 on white = 8.6:1 ✓
+                  Country name — the card hero. WCAG 1.4.3: gray-900 on white ✓
                 */}
-                <span className="mt-2 text-[13px] font-medium text-gray-800 leading-snug group-hover:text-black motion-safe:transition-colors">
+                <span className="mt-3 text-[15px] font-semibold text-gray-900 leading-snug group-hover:text-black motion-safe:transition-colors">
                   {label}
                 </span>
               </Link>
