@@ -5,6 +5,7 @@ import Providers from "@/components/Providers";
 import PublicLayout from "@/components/layout/PublicLayout";
 import CookieConsent from "@/components/CookieConsent";
 import ConditionalAnalytics from "@/components/ConditionalAnalytics";
+import AnalyticsProvider from "@/lib/analytics/AnalyticsProvider";
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/JsonLd";
 import { siteConfig } from "@/lib/seo";
 
@@ -208,6 +209,12 @@ export default function RootLayout({
         </Providers>
         <ConditionalAnalytics />
         <CookieConsent />
+        {/* Cross-product behavioural tracker — ONE shared, consent-gated client
+            sibling that instruments ALL five products from this single unguarded
+            file. Fixes the V2-shell regression that silently killed Comply
+            page-view tracking and left Atlas/Pharos/Trade/Scholar dark. Renders
+            no UI; wraps its own SessionProvider for identity stitching. */}
+        <AnalyticsProvider />
       </body>
     </html>
   );

@@ -4699,6 +4699,15 @@ model AnalyticsEvent {
   eventCategory String @default("general") // navigation, engagement, conversion, error
   eventData     Json? // Flexible payload for event-specific data
 
+  // Cross-product dimension (additive — nullable for backfill safety).
+  // Derived from the URL path prefix at the shared <AnalyticsProvider/> /
+  // at ingestion (comply|trade|atlas|pharos|scholar|marketing). Mirrors the
+  // `product` field also carried inside eventData; this column makes the
+  // per-product passes index-driven instead of Json-scanning. The 5 product
+  // codes line up (uppercased) with ProductCode / OrganizationProductAccess;
+  // "marketing" has no ProductCode and is stored lowercase like the rest.
+  product String? // comply | trade | atlas | pharos | scholar | marketing
+
   // Context
   path      String? // URL path
   referrer  String? // Referrer URL
@@ -4719,6 +4728,11 @@ model AnalyticsEvent {
   @@index([timestamp])
   @@index([userId, timestamp])
   @@index([eventType, timestamp])
+  // Per-product feature/DAU rollup passes scan by product first.
+  @@index([product, eventType, timestamp])
+  // Ordered-within-session scans for path reconstruction + funnel step
+  // ordering. The bare [sessionId] index above cannot serve these.
+  @@index([sessionId, timestamp])
 }
 
 // Pre-aggregated daily metrics for fast dashboard loading
@@ -4967,6 +4981,98 @@ model ApiEndpointMetrics {
   @@index([date])
   @@index([path])
   @@index([errorRate])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ANALYTICS ROLLUP TABLES (Admin/Analytics Center — Phase 2 storage)
+// Thin, date-keyed, bounded-cardinality pre-aggregations computed by the
+// nightly analytics rollup cron from the raw AnalyticsEvent stream so the
+// /admin cockpit never re-scans raw events. All counts/edges are PII-free
+// (no userId, pathname-only), so they inherit a longer retention window than
+// the 90-day raw event sweep (argued in the LIA). Plain Prisma models →
+// `prisma db push`-safe; all fields nullable or defaulted, no renames/drops.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Per-day funnel step transitions (acquisition→signup→activation→paid,
+// the Trade classify→licence→ship funnel, per-product activation funnels).
+// One row per (date, funnelId, step). Powers the Funnels explorer + the
+// growth funnel on the cockpit. medianMsToNext = median time-to-next-step
+// for the cohort that advanced (null for the terminal step / no transitions).
+model AnalyticsFunnelDaily {
+  id   String   @id @default(cuid())
+  date DateTime @db.Date @default(now())
+
+  // Funnel identification
+  product  String? // comply | trade | atlas | pharos | scholar | marketing — null for cross-product funnels
+  funnelId String @default("") // e.g. "growth", "trade_classify_to_license", "comply_activation"
+  step     Int    @default(0) // 0-based ordinal position of this step within the funnel
+  stepKey  String? // optional human-readable step token (eventType / status), e.g. "signup_completed"
+
+  // Step metrics
+  usersEntered   Int  @default(0) // distinct users/sessions that reached this step
+  usersCompleted Int  @default(0) // of those, how many advanced to the next step
+  medianMsToNext Float? // median ms from this step to the next (null for terminal step)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([date, funnelId, step])
+  @@index([date])
+  @@index([funnelId])
+  @@index([date, funnelId])
+  @@index([product])
+}
+
+// Signup-week × return-week retention cohort grid — the curve the existing
+// cron does NOT compute today (it only does point-in-time DAU/WAU/MAU).
+// cohortWeek/activityWeek are the Monday (ISO week-start) DATE of each week.
+// productScope = a product code or the "all" sentinel (deterministic, part
+// of the unique key) so per-product retention toggles share one table.
+model AnalyticsRetentionCohort {
+  id String @id @default(cuid())
+
+  cohortWeek   DateTime @db.Date @default(now()) // ISO week-start (Mon) the cohort signed up
+  productScope String   @default("all") // ProductCode (lowercase) or "all" — never null (unique-key member)
+  activityWeek DateTime @db.Date @default(now()) // ISO week-start (Mon) of the return activity
+
+  // Grid cell
+  cohortSize    Int @default(0) // total users in the signup cohort (stable across activityWeek rows)
+  returnedUsers Int @default(0) // of the cohort, how many were active in activityWeek
+
+  // weeksSince = whole weeks between cohortWeek and activityWeek (0 = signup week);
+  // stored for cheap grid pivoting without date math at read time.
+  weeksSince Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([cohortWeek, productScope, activityWeek])
+  @@index([cohortWeek])
+  @@index([productScope])
+  @@index([cohortWeek, productScope])
+}
+
+// Bounded next-page edge counts (NOT raw session replays) for the Path/Flow
+// Sankey. Reconstructed from consecutive page_view pairs over the ordered
+// (sessionId, timestamp) stream. Pathname-only on both ends → PII-free and
+// small (bounded by the route table). One row per (date, product, edge).
+model AnalyticsPathEdge {
+  id   String   @id @default(cuid())
+  date DateTime @db.Date @default(now())
+
+  product  String @default("") // comply | trade | atlas | pharos | scholar | marketing (unique-key member)
+  fromPath String @default("") // pathname-only (no query/hash); "(entry)" sentinel for session-start edges
+  toPath   String @default("") // pathname-only (no query/hash); "(exit)" sentinel for session-end edges
+
+  transitions Int @default(0) // count of from→to transitions observed that day
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([date, product, fromPath, toPath])
+  @@index([date])
+  @@index([product])
+  @@index([date, product])
 }
 
 // ============================================

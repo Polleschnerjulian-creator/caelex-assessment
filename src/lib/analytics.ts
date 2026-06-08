@@ -8,7 +8,26 @@
  *   import { analytics } from "@/lib/analytics";
  *   analytics.track("feature_use", { feature: "eu_space_act", action: "opened" });
  *   analytics.page("/dashboard");
+ *
+ * ── BATCHED EMITTER (cross-product spine, added 2026-06-08) ──────────────────
+ * The legacy `analytics.*` API above sends ONE POST per call. The cross-product
+ * `<AnalyticsProvider/>` instead routes high-frequency events (page_viewed,
+ * screen_dwelled, element_clicked, scroll) through {@link emitEvent}, which
+ * buffers them in an in-memory {@link BatchEmitter} and flushes an ARRAY via
+ * `sendBeacon` on size/interval/pagehide — cutting ingestion writes ~5–20×
+ * (spec §5.1.2). The taxonomy + PII boundary live in `./analytics/events.ts`.
+ * The legacy single-event API is UNCHANGED (reuse, not rebuild); the route
+ * accepts both a single body and a `{ events, _consent }` array body.
  */
+
+import {
+  type WireEvent,
+  type EventType,
+  type Product,
+  buildEventData,
+  isEssentialEventType,
+} from "./analytics/events";
+import { BatchEmitter, type BatchSink } from "./analytics/batch-emitter";
 
 type EventCategory =
   | "navigation"
@@ -71,19 +90,63 @@ function getSessionId(): string {
     currentSessionId = sessionStorage.getItem("caelex_session_id");
 
     if (!currentSessionId) {
-      // Prefer crypto.randomUUID() (modern browsers + Node 19+) for
-      // CSPRNG-grade session IDs; fall back to Math.random only if
-      // the API is unavailable (very old browsers). Audit L-1.
-      const uuid =
+      // Session id shape is `sess_<timestamp>_<random>` (timestamp FIRST) — a
+      // stable, sortable contract relied on across the analytics pipeline and
+      // the unit suite (`/^sess_\d+_/`). The RANDOM suffix prefers a
+      // CSPRNG-grade source (crypto.randomUUID on modern browsers + Node 19+),
+      // falling back to Math.random only when the API is unavailable (very old
+      // browsers). Audit L-1: keep CSPRNG entropy WITHOUT dropping the leading
+      // millisecond timestamp that the id format guarantees.
+      const random =
         typeof crypto !== "undefined" && "randomUUID" in crypto
-          ? crypto.randomUUID()
-          : `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
-      currentSessionId = `sess_${uuid}`;
+          ? crypto.randomUUID().replace(/-/g, "")
+          : Math.random().toString(36).substring(2, 15);
+      currentSessionId = `sess_${Date.now()}_${random}`;
       sessionStorage.setItem("caelex_session_id", currentSessionId);
     }
   }
 
   return currentSessionId;
+}
+
+/**
+ * Read the browser-stored cookie-consent decision and coarsen it to the wire
+ * consent string the ingestion route understands ("analytics" | "necessary" |
+ * "none"). Centralised here (single client reader) so the legacy `sendEvent`
+ * path AND the new batched emitter agree on the exact same parse — matching the
+ * conservative "no record → none" default of every existing reader.
+ *
+ * NOTE: this reads the RAW `caelex-cookie-consent` shape (incl. the legacy
+ * "all"/"necessary" strings and the current versioned record) so it never
+ * accidentally diverges from `CookieConsent.getPreferences()`. It is only the
+ * transport hint; the server re-checks consent via the ConsentRecord resolver.
+ */
+export function readClientConsentString(): "analytics" | "necessary" | "none" {
+  if (typeof window === "undefined") return "none";
+  try {
+    const raw = localStorage.getItem("caelex-cookie-consent");
+    if (!raw) return "none";
+    // Legacy plain values.
+    if (raw === "all") return "analytics";
+    if (raw === "necessary") return "necessary";
+    const parsed = JSON.parse(raw);
+    // Versioned record shape ({ preferences: { analytics } }) OR legacy plain
+    // prefs ({ analytics }). Either way, analytics === true ⇒ "analytics".
+    const analyticsOn =
+      parsed?.preferences?.analytics === true || parsed?.analytics === true;
+    return analyticsOn ? "analytics" : "necessary";
+  } catch {
+    return "none";
+  }
+}
+
+/**
+ * Expose the current browser session id so the shared `<AnalyticsProvider/>`
+ * stamps the SAME `sess_…` id the legacy emitter uses (consistent funnels +
+ * path reconstruction). Returns "server" under SSR.
+ */
+export function getAnalyticsSessionId(): string {
+  return getSessionId();
 }
 
 function sendEvent(
@@ -111,18 +174,7 @@ function sendEvent(
   };
 
   // Read cookie consent status to pass to server for GDPR validation
-  let consentStatus = "none";
-  if (typeof window !== "undefined") {
-    try {
-      const raw = localStorage.getItem("caelex-cookie-consent");
-      if (raw) {
-        const prefs = raw === "all" ? { analytics: true } : JSON.parse(raw);
-        consentStatus = prefs.analytics ? "analytics" : "necessary";
-      }
-    } catch {
-      // Ignore
-    }
-  }
+  const consentStatus = readClientConsentString();
 
   // Use sendBeacon for reliability (survives page unload)
   if (typeof navigator !== "undefined" && navigator.sendBeacon) {
@@ -144,6 +196,164 @@ function sendEvent(
     });
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Batched cross-product emitter (used by <AnalyticsProvider/> / useTracking)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Browser transport for a batch of wire events. Sends ONE array body
+ * `{ events, _consent }` to `/api/analytics/track` via `sendBeacon` (which
+ * survives page unload), with a `fetch(..., { keepalive })` fallback. The
+ * out-of-band `_consent` rides as a sibling field (NOT inside any event) so it
+ * can never pollute the typed taxonomy. Returns true if the transport accepted
+ * the payload so the {@link BatchEmitter} can clear it.
+ */
+const browserBatchSink: BatchSink = (events) => {
+  if (events.length === 0) return true;
+  if (typeof window === "undefined") return false;
+
+  const consent = readClientConsentString();
+  const body = JSON.stringify({ events, _consent: consent });
+
+  // Prefer sendBeacon — reliable on unload, no custom headers (consent embedded).
+  if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+    try {
+      // sendBeacon returns false if the UA refused to queue the payload
+      // (e.g. it exceeded the per-origin beacon byte budget) — surface that so
+      // the emitter re-buffers and retries via fetch on the next flush.
+      return navigator.sendBeacon("/api/analytics/track", body);
+    } catch {
+      // fall through to fetch
+    }
+  }
+
+  if (typeof fetch !== "undefined") {
+    try {
+      void fetch("/api/analytics/track", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-cookie-consent": consent,
+        },
+        body,
+        keepalive: true,
+      }).catch(() => {
+        // Silently fail — analytics must never break the app.
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  return false;
+};
+
+/** Lazily-constructed singleton batch emitter (one per browser tab). */
+let batchEmitter: BatchEmitter | null = null;
+function getBatchEmitter(): BatchEmitter {
+  if (!batchEmitter) {
+    batchEmitter = new BatchEmitter({ sink: browserBatchSink });
+  }
+  return batchEmitter;
+}
+
+/** Options accepted by {@link emitEvent}. */
+export interface EmitEventOptions {
+  /** Cross-product dimension (derived from the path by the provider). */
+  product: Product;
+  /** Route-group / named feature area (slug). */
+  surface: string;
+  /** Named action area (slug). */
+  feature: string;
+  /** Optional normalised topic id/hash (slug) — NEVER raw query text. */
+  topic?: string;
+  /** Pathname ONLY (no query string) — the provider strips it. */
+  path?: string | null;
+  /** Optional foreground duration for timed events (screen_dwelled etc.). */
+  durationMs?: number | null;
+  /** Coarse legacy category mirror for the existing column default. */
+  category?: EventCategory;
+  /** Override the buffered userId/orgId (defaults to the identified user). */
+  userId?: string | null;
+  organizationId?: string | null;
+}
+
+/**
+ * Build + buffer one TYPED cross-product event. This is the single entry point
+ * the shared `<AnalyticsProvider/>` uses. It:
+ *   1. stamps the envelope (schemaVersion + product + surface/feature/topic) and
+ *      validates the typed payload via {@link buildEventData} (throws in dev on a
+ *      taxonomy violation; swallowed here so analytics never breaks the app);
+ *   2. wraps it in a {@link WireEvent} (path is pathname-only, query rejected);
+ *   3. enqueues it on the micro-batch emitter (flushes on size/interval/unload).
+ *
+ * Consent is the PROVIDER's responsibility (it gates before calling this, and
+ * the essential signup/login allow-list is honoured there + re-checked at the
+ * route). The {@link isEssentialEventType} seam is re-exported for the provider.
+ */
+export function emitEvent(
+  eventType: EventType,
+  payload: Record<string, unknown> | undefined,
+  options: EmitEventOptions,
+): void {
+  if (typeof window === "undefined") return;
+
+  let eventData: Record<string, unknown>;
+  try {
+    eventData = buildEventData(
+      eventType,
+      {
+        product: options.product,
+        surface: options.surface,
+        feature: options.feature,
+        ...(options.topic !== undefined ? { topic: options.topic } : {}),
+      },
+      payload,
+    );
+  } catch {
+    // Taxonomy violation — drop rather than write junk or crash the UI. In dev,
+    // buildEventData's throw still surfaces at the (separate) test boundary.
+    return;
+  }
+
+  const wireEvent: WireEvent = {
+    eventType,
+    eventData,
+    category: options.category ?? "general",
+    sessionId: getSessionId(),
+    userId: options.userId !== undefined ? options.userId : currentUserId,
+    organizationId:
+      options.organizationId !== undefined
+        ? options.organizationId
+        : currentOrgId,
+    path:
+      options.path ??
+      (typeof window !== "undefined" ? window.location.pathname : undefined),
+    durationMs: options.durationMs ?? undefined,
+    timestamp: new Date().toISOString(),
+  };
+
+  getBatchEmitter().enqueue(wireEvent);
+}
+
+/** Flush one batch now (size-bounded). Used by the interval/idle path. */
+export function flushAnalytics(): void {
+  if (typeof window === "undefined") return;
+  getBatchEmitter().flush();
+}
+
+/**
+ * Drain the WHOLE buffer immediately — for `pagehide` / visibility-hidden so no
+ * buffered event is lost on unload. Safe to call repeatedly.
+ */
+export function flushAllAnalytics(): void {
+  if (typeof window === "undefined") return;
+  getBatchEmitter().flushAll();
+}
+
+/** Re-export the consent-gate seam so the provider imports one analytics module. */
+export { isEssentialEventType };
 
 export const analytics: AnalyticsClient = {
   /**

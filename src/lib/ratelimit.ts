@@ -153,6 +153,23 @@ export const rateLimiters = redis
         prefix: "ratelimit:widget",
       }),
 
+      // Behavioural analytics ingestion (/api/analytics/track): 120 per minute.
+      // This is a PUBLIC, unauthenticated, high-volume POST — the cross-product
+      // event spine. The key is getIdentifier(request) + the client sessionId
+      // (see the route) so one tab cannot flood, while a shared NAT/IP still
+      // gets generous per-session headroom. The emitter micro-batches up to
+      // MAX_BATCH_EVENTS (50) events per request, so 120 req/min already
+      // accommodates ~6000 events/min/session of legitimate dwell/scroll/click
+      // traffic; anything above is spam / cost-DoS and is shed here. This is the
+      // one true infra hard-requirement from the spec — before this tier the
+      // route had ONLY a consent gate and no rate limit at all.
+      analytics: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(120, "1 m"),
+        analytics: true,
+        prefix: "ratelimit:analytics",
+      }),
+
       // Pulse public detection: 3 per hour per IP. Strict because each call
       // hits 4 external public sources (VIES + GLEIF + UNOOSA + CelesTrak)
       // and stores a PulseLead. Funnel-stage-1 — operator types VAT-ID once,
@@ -474,6 +491,7 @@ const fallbackLimiters = {
   nca_package: new InMemoryRateLimiter(3, 3600000), // 3/hr vs 10/hr (Redis)
   public_api: new InMemoryRateLimiter(2, 3600000), // 2/hr vs 5/hr (Redis)
   widget: new InMemoryRateLimiter(10, 3600000), // 10/hr vs 30/hr (Redis)
+  analytics: new InMemoryRateLimiter(60, 60000), // 60/min dev vs 120/min (Redis)
   pulse: new InMemoryRateLimiter(1, 3600000), // 1/hr vs 3/hr (Redis)
   mfa: new InMemoryRateLimiter(3, 60000), // 3/min vs 5/min (Redis)
   generate2: new InMemoryRateLimiter(150, 3600000), // 150/hr vs 300/hr (Redis)
@@ -518,6 +536,7 @@ export type RateLimitType =
   | "nca_package"
   | "public_api"
   | "widget"
+  | "analytics"
   | "pulse"
   | "generate2"
   | "mfa"
