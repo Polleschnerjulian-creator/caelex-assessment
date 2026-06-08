@@ -121,6 +121,34 @@ export const PLANSPIELE_PLAY = {
     "play.completeBanner": "Planspiel complete — see your debrief below.",
     "play.requiredCitation": "Cite at least {n} provisions.",
     "play.startFailed": "Could not start — please try again.",
+
+    // ── Redesign chrome (generic, derived) — added by the UI redesign ────────
+    // Live requirement checklist (deriveRequirements → resolved here).
+    "play.req.fieldPresent": "{field} included",
+    "play.req.fieldChosen": "{field} chosen",
+    "play.req.cited": "At least {n} provisions cited",
+    "play.req.substance": "Draft has substance",
+    "play.req.revision": "Revision written",
+    "play.req.addresses": "Addresses the notice",
+    // Phase stepper — done / current / upcoming state, announced to AT.
+    "play.step.done": "Done",
+    "play.step.current": "Current step",
+    "play.step.upcoming": "Upcoming",
+    // Score reveal.
+    "play.overallScore": "Overall score",
+    // Model-answer comparison (results / debrief).
+    "play.youChose": "You",
+    "play.modelAnswer2": "Model",
+    // Catalog status.
+    "play.status.notStarted": "Not started",
+    "play.status.inProgress": "In progress",
+    "play.status.completed": "Completed",
+    // Phase objective scaffolding.
+    "play.objective": "Objective",
+    "play.gradedOn": "Graded on",
+    // Cockpit dossier / role identity.
+    "play.yourDossier": "Your dossier",
+    "play.youAre": "You are",
     ...DE_LEO_EO_PLAY.en,
     ...NIS2_INCIDENT_PLAY.en,
     ...INSURANCE_PLAY.en,
@@ -230,6 +258,27 @@ export const PLANSPIELE_PLAY = {
     "play.requiredCitation": "Zitiere mindestens {n} Vorschriften.",
     "play.startFailed":
       "Konnte nicht gestartet werden — bitte erneut versuchen.",
+
+    // ── Redesign-Chrome (generisch, abgeleitet) — UI-Redesign ────────────────
+    "play.req.fieldPresent": "{field} enthalten",
+    "play.req.fieldChosen": "{field} gewählt",
+    "play.req.cited": "Mindestens {n} Vorschriften zitiert",
+    "play.req.substance": "Entwurf hat Substanz",
+    "play.req.revision": "Überarbeitung verfasst",
+    "play.req.addresses": "Geht auf den Bescheid ein",
+    "play.step.done": "Erledigt",
+    "play.step.current": "Aktueller Schritt",
+    "play.step.upcoming": "Ausstehend",
+    "play.overallScore": "Gesamtpunktzahl",
+    "play.youChose": "Du",
+    "play.modelAnswer2": "Muster",
+    "play.status.notStarted": "Nicht begonnen",
+    "play.status.inProgress": "In Bearbeitung",
+    "play.status.completed": "Abgeschlossen",
+    "play.objective": "Ziel",
+    "play.gradedOn": "Bewertet nach",
+    "play.yourDossier": "Dein Dossier",
+    "play.youAre": "Du bist",
     ...DE_LEO_EO_PLAY.de,
     ...NIS2_INCIDENT_PLAY.de,
     ...INSURANCE_PLAY.de,
