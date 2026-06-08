@@ -91,6 +91,29 @@ export interface ScholarOperatorProfile {
   offersEUServices?: boolean;
 }
 
+/**
+ * A single engine-track grading rule, keyed by the rubric criterion key it grades.
+ * Data-driven so NEW scenarios need ZERO scorer code — just an answerKey entry:
+ *   - exactMatch: answer[field] === expected (selects / booleans)
+ *   - allOf:      ratio of present booleans in fields[] × weight (dossier completeness)
+ *   - timing:     each part on-time contributes an equal share of the weight
+ */
+export type ScholarAnswerKeyEntry =
+  | {
+      type: "exactMatch";
+      field: string;
+      expected: string | boolean;
+      okNote: string;
+      wrongNote: string;
+    }
+  | { type: "allOf"; fields: string[]; okNote: string; partialNote: string }
+  | {
+      type: "timing";
+      parts: { field: string; expected: string }[];
+      okNote: string;
+      partialNote: string;
+    };
+
 export interface ScholarPlanspielScenario {
   id: string;
   titleKey: string;
@@ -104,4 +127,6 @@ export interface ScholarPlanspielScenario {
   aiRoles: ScholarRoleKey[]; // roles the AI plays in solo mode
   phases: ScholarPlanspielPhase[];
   operatorProfile: ScholarOperatorProfile;
+  /** Engine-track grading rules, keyed by rubric criterion key. Pure data. */
+  answerKey?: Record<string, ScholarAnswerKeyEntry>;
 }

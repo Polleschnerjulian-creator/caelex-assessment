@@ -46,6 +46,28 @@ export const ASI_REENTRY: ScholarPlanspielScenario = {
     hasPostLaunchAssets: true,
     offersEUServices: true,
   },
+  answerKey: {
+    authority_correct: {
+      type: "exactMatch",
+      field: "authority",
+      expected: "ASI",
+      okNote: "asi.fb.authority.ok",
+      wrongNote: "asi.fb.authority.wrong",
+    },
+    mandatory_modules: {
+      type: "allOf",
+      fields: ["insurance", "debrisPlan", "disposalPlan"],
+      okNote: "asi.fb.modules.ok",
+      partialNote: "asi.fb.modules.partial",
+    },
+    casualty_threshold: {
+      type: "exactMatch",
+      field: "casualtyRisk",
+      expected: "<1e-4",
+      okNote: "asi.fb.casualty.ok",
+      wrongNote: "asi.fb.casualty.wrong",
+    },
+  },
   phases: [
     {
       phaseKey: "authority",

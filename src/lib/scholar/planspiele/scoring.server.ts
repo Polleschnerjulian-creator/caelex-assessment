@@ -18,77 +18,73 @@ export interface RubricLine {
 }
 
 /**
- * The model answer key per scenario. Track-1 grades objective artifacts against
- * this deterministically (free, reproducible). Extend one entry per scenario.
- *
- * NOTE: for the MVP the answer key is declarative. Sprint 8 additionally wires the
- * real EU Space Act engine (calculateCompliance, READ-ONLY) into the cockpit's live
- * completeness readout; the unit-tested scorer here stays pure + DB-free.
- */
-const ANSWER_KEY: Record<string, Record<string, unknown>> = {
-  "asi-reentry-it": {
-    authority: "ASI",
-    mandatoryModules: ["insurance", "debrisPlan", "disposalPlan"],
-    casualtyRisk: "<1e-4",
-  },
-};
-
-/**
  * Track-1 — deterministic engine/answer-key scoring for a phase's objective
  * (track === "engine") rubric criteria. Free, reproducible, no external cost.
+ *
+ * Fully DATA-DRIVEN: every grading rule comes from `scenario.answerKey[crit.key]`,
+ * so adding a new scenario needs ZERO code here — just data. Three rule types
+ * (exactMatch / allOf / timing) cover the whole slate; an unknown/missing entry
+ * scores 0 defensively (never throws).
  */
 export function scorePhaseEngine(
   scenario: ScholarPlanspielScenario,
   phase: ScholarPlanspielPhase,
   answer: Record<string, unknown>,
 ): RubricLine[] {
-  const key = ANSWER_KEY[scenario.id] ?? {};
+  const ak = scenario.answerKey ?? {};
   const lines: RubricLine[] = [];
 
   for (const crit of phase.rubric) {
     if (crit.track !== "engine") continue;
+    const entry = ak[crit.key];
 
-    if (crit.key === "authority_correct") {
-      const correct = answer.authority === key.authority;
-      lines.push({
-        category: crit.key,
-        weight: crit.weight,
-        earned: correct ? crit.weight : 0,
-        correct,
-        note: correct ? "asi.fb.authority.ok" : "asi.fb.authority.wrong",
-      });
-    } else if (crit.key === "mandatory_modules") {
-      const required = (key.mandatoryModules as string[]) ?? [];
-      const present = required.filter((m) => answer[m] === true).length;
-      const ratio = required.length ? present / required.length : 0;
-      const earned = Math.round(ratio * crit.weight);
-      lines.push({
-        category: crit.key,
-        weight: crit.weight,
-        earned,
-        correct: required.length > 0 && present === required.length,
-        note:
-          present === required.length
-            ? "asi.fb.modules.ok"
-            : "asi.fb.modules.partial",
-      });
-    } else if (crit.key === "casualty_threshold") {
-      const correct = answer.casualtyRisk === key.casualtyRisk;
-      lines.push({
-        category: crit.key,
-        weight: crit.weight,
-        earned: correct ? crit.weight : 0,
-        correct,
-        note: correct ? "asi.fb.casualty.ok" : "asi.fb.casualty.wrong",
-      });
-    } else {
-      // Unknown engine criterion — score 0 but never crash (defensive).
+    if (!entry) {
       lines.push({
         category: crit.key,
         weight: crit.weight,
         earned: 0,
         correct: false,
         note: "",
+      });
+      continue;
+    }
+
+    if (entry.type === "exactMatch") {
+      const correct = answer[entry.field] === entry.expected;
+      lines.push({
+        category: crit.key,
+        weight: crit.weight,
+        earned: correct ? crit.weight : 0,
+        correct,
+        note: correct ? entry.okNote : entry.wrongNote,
+      });
+    } else if (entry.type === "allOf") {
+      const present = entry.fields.filter((f) => answer[f] === true).length;
+      const ratio = entry.fields.length ? present / entry.fields.length : 0;
+      const correct =
+        entry.fields.length > 0 && present === entry.fields.length;
+      lines.push({
+        category: crit.key,
+        weight: crit.weight,
+        earned: Math.round(ratio * crit.weight),
+        correct,
+        note: correct ? entry.okNote : entry.partialNote,
+      });
+    } else {
+      // timing: each on-time part contributes an equal share of the weight.
+      const share = entry.parts.length ? crit.weight / entry.parts.length : 0;
+      let raw = 0;
+      let allOk = true;
+      for (const p of entry.parts) {
+        if (answer[p.field] === p.expected) raw += share;
+        else allOk = false;
+      }
+      lines.push({
+        category: crit.key,
+        weight: crit.weight,
+        earned: Math.round(raw),
+        correct: allOk,
+        note: allOk ? entry.okNote : entry.partialNote,
       });
     }
   }
