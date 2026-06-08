@@ -9,7 +9,7 @@
  * Resolve with: t(locale, PLANSPIELE_PLAY, "key").
  * EN is the source of truth. FR/ES are MVP stubs ({}) — t() falls back to EN.
  */
-import type { ScholarNamespace } from "./core";
+import type { ScholarLocale, ScholarNamespace } from "./core";
 
 export const PLANSPIELE_PLAY = {
   en: {
@@ -114,6 +114,7 @@ export const PLANSPIELE_PLAY = {
       "Feedback is generated to support learning and is not legal advice.",
     "play.completeBanner": "Planspiel complete — see your debrief below.",
     "play.requiredCitation": "Cite at least {n} provisions.",
+    "play.startFailed": "Could not start — please try again.",
   },
 
   de: {
@@ -215,6 +216,8 @@ export const PLANSPIELE_PLAY = {
       "Das Feedback wird zur Lernunterstützung erzeugt und ist keine Rechtsberatung.",
     "play.completeBanner": "Planspiel abgeschlossen — siehe Debrief unten.",
     "play.requiredCitation": "Zitiere mindestens {n} Vorschriften.",
+    "play.startFailed":
+      "Konnte nicht gestartet werden — bitte erneut versuchen.",
   },
 
   it: {
@@ -318,8 +321,19 @@ export const PLANSPIELE_PLAY = {
     "play.completeBanner":
       "Simulazione completata — vedi il debriefing qui sotto.",
     "play.requiredCitation": "Cita almeno {n} disposizioni.",
+    "play.startFailed": "Impossibile avviare — riprova.",
   },
 
   fr: {},
   es: {},
 } as const satisfies ScholarNamespace;
+
+/**
+ * Loose resolver for SCENARIO-DRIVEN dynamic keys (titleKey / briefKey / labelKey /
+ * rubric notes) whose value is a bare `string` and therefore can't satisfy the
+ * strict `keyof NS["en"]` parameter of t(). Same fallback chain: locale → EN → key.
+ */
+export function playT(locale: ScholarLocale, key: string): string {
+  const ns = PLANSPIELE_PLAY as Record<string, Record<string, string>>;
+  return ns[locale]?.[key] ?? ns.en?.[key] ?? key;
+}
