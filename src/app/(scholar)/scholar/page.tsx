@@ -438,7 +438,10 @@ export default function ScholarSearchPage() {
             onChange={(e) => setJurisdiction(e.target.value)}
             placeholder={t(locale, SEARCH, "jurisdictionPlaceholder")}
             className="bg-transparent border-0 border-b border-gray-300 outline-none text-[12px] text-gray-600 placeholder:text-gray-500 focus-visible:border-gray-700 transition-colors w-24 pb-0.5"
-            style={{ boxShadow: "none" }}
+            // outline:none inline beats the global emerald `*:focus-visible`
+            // outline (globals.css) so NO box appears on focus; the bottom
+            // border darkening (focus-visible:border-gray-700) stays as the cue.
+            style={{ boxShadow: "none", outline: "none" }}
           />
         </div>
 
