@@ -130,8 +130,50 @@ export const LEGAL_SOURCES_EU: LegalSource[] = [
         summary:
           "Space-specific cybersecurity measures building on NIS2. Covers space segment, ground segment, and communication links.",
       },
+      {
+        section: "Safety pillar",
+        title:
+          "Space tracking, collision avoidance & space-traffic coordination",
+        summary:
+          "Core 'safety' pillar: operators must keep space objects trackable, run conjunction assessment and collision-avoidance manoeuvres, and follow EU-coordinated space-traffic rules — building an EU space-traffic-management capability on top of the EU-SST partnership.",
+      },
+      {
+        section: "Registration",
+        title: "Registration of space objects",
+        summary:
+          "Operators must register authorised space objects; the EU regime complements the national registries maintained under the UN Registration Convention with EU-level information requirements.",
+      },
+      {
+        section: "Authorisation conditions",
+        title: "Insurance & financial security",
+        summary:
+          "Authorisation is conditioned on adequate insurance / financial guarantees for third-party liability, proportionate to the risk profile of the activity.",
+        complianceImplication:
+          "Operators in Member States without a national insurance mandate (e.g. Germany pre-Weltraumgesetz) would face a harmonised EU insurance obligation for the first time.",
+      },
+      {
+        section: "Sustainability pillar",
+        title: "Environmental footprint & lifecycle sustainability",
+        summary:
+          "Introduces space-specific environmental-footprint requirements — lifecycle declarations spanning manufacture, launch, operations and disposal — a novel sustainability dimension beyond classic debris mitigation.",
+      },
+      {
+        section: "Final provisions",
+        title: "Supervision, enforcement & penalties",
+        summary:
+          "National competent authorities supervise compliance, conduct inspections and may suspend or withdraw authorisations; Member States must lay down effective, proportionate and dissuasive penalties for breaches.",
+      },
     ],
-    related_sources: ["INT-OST-1967", "EU-NIS2-2022", "EU-CRA-2024"],
+    related_sources: [
+      "INT-OST-1967",
+      "EU-NIS2-2022",
+      "EU-CRA-2024",
+      "EU-SPACE-PROG-2021",
+      "EU-SST-DECISION",
+      "EU-STM-STRATEGY-2022",
+      "EU-IRIS2-CONCESSION-2024",
+      "EU-ZERO-DEBRIS-CHARTER-2023",
+    ],
     caelex_engine_mapping: ["engine.server"],
     caelex_data_file_mapping: [
       "articles.ts",
