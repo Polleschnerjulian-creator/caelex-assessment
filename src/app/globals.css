@@ -728,6 +728,24 @@ body:has(.scholar-surface) {
   background-color: #f7f8fa !important;
 }
 
+/* Scholar print / "Save as PDF": drop interactive chrome (sidebar, action
+   buttons marked .scholar-noprint) and let the content flow as one clean
+   column instead of staying clipped inside the h-screen/overflow shell. */
+@media print {
+  .scholar-noprint {
+    display: none !important;
+  }
+  .scholar-surface {
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .scholar-surface main {
+    margin-left: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+}
+
 /* Override the global dark heading/text rules inside .landing-light */
 .dark .landing-light h1,
 .dark .landing-light h2,

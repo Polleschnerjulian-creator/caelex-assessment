@@ -48,6 +48,11 @@ export const BROWSE = {
     // "Showing the first {n} of {total} sources — refine the filters to see the rest."
     capNotice:
       "Showing the first {n} of {total} sources — refine the filters to see the rest.",
+    paginationRange: "Showing {from}–{to} of {total}",
+    paginationLabel: "Pagination",
+    paginationPrev: "Previous",
+    paginationNext: "Next",
+    paginationStatus: "Page {page} of {total}",
     emptyFilters:
       "No sources found for the selected filters. Remove a filter or reset the selection.",
 
@@ -173,6 +178,11 @@ export const BROWSE = {
     filteredSuffix: " (gefiltert)",
     capNotice:
       "Es werden die ersten {n} von {total} Quellen angezeigt — verfeinere die Filter, um die übrigen zu sehen.",
+    paginationRange: "Zeige {from}–{to} von {total}",
+    paginationLabel: "Seitennavigation",
+    paginationPrev: "Zurück",
+    paginationNext: "Weiter",
+    paginationStatus: "Seite {page} von {total}",
     emptyFilters:
       "Keine Quellen für die gewählten Filter gefunden. Entferne einen Filter oder setze die Auswahl zurück.",
 

@@ -97,6 +97,10 @@ export const SOURCE = {
 
     // ── Action row + provenance ──
     viewOfficialSource: "View official source →",
+    copyBibtex: "Copy BibTeX",
+    copyRis: "Copy RIS",
+    print: "Print",
+    copied: "Copied",
     caelexTranslationNote: "Caelex translation — not the official wording",
 
     // ── ProvisionCard ──
@@ -215,6 +219,10 @@ export const SOURCE = {
 
     // ── Action row + provenance ──
     viewOfficialSource: "Amtliche Quelle ansehen →",
+    copyBibtex: "BibTeX kopieren",
+    copyRis: "RIS kopieren",
+    print: "Drucken",
+    copied: "Kopiert",
     caelexTranslationNote: "Caelex-Übersetzung — nicht der amtliche Wortlaut",
 
     // ── ProvisionCard ──

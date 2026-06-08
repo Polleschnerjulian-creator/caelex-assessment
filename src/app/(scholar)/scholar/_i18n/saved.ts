@@ -52,6 +52,7 @@ export const SAVED = {
     backToSaved: "Back to saved",
     listEyebrow: "Reading list",
     itemsHeading: "Entries",
+    exportList: "Export list",
     listEmpty:
       "This list is empty. Open a source or decision and add it to this list to assemble your required reading.",
 
@@ -138,6 +139,7 @@ export const SAVED = {
     backToSaved: "Zurück zur Merkliste",
     listEyebrow: "Leseliste",
     itemsHeading: "Einträge",
+    exportList: "Liste exportieren",
     listEmpty:
       "Diese Liste ist noch leer. Öffne eine Quelle oder Entscheidung und füge sie dieser Liste hinzu, um deine Pflichtlektüre zusammenzustellen.",
 

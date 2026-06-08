@@ -68,6 +68,7 @@ import { ProvisionCard } from "../../_components/ProvisionCard";
 import { CrossRefBlock } from "../../_components/CrossRefBlock";
 import { BookmarkButton } from "../../_components/BookmarkButton";
 import { AddToListMenu } from "../../_components/AddToListMenu";
+import { CiteExport } from "../../_components/CiteExport";
 import { t, type ScholarLocale } from "../../_i18n/core";
 import { SOURCE } from "../../_i18n/source";
 import { getScholarLocale } from "../../_i18n/locale.server";
@@ -358,6 +359,19 @@ export default async function ScholarSourceDetailPage({ params }: PageProps) {
                 lists={readingLists}
               />
             </div>
+            {/* Cite / export — BibTeX, RIS, print (academic workflow). */}
+            <CiteExport
+              citation={{
+                id: source.id,
+                title: source.title,
+                kind: "source",
+                jurisdiction: source.jurisdiction,
+                reference: source.officialReference ?? identifier,
+                year: String(source.dateEnacted ?? source.dateInForce ?? ""),
+                url: source.sourceUrl,
+                authority: source.issuingBody,
+              }}
+            />
             {isTranslated && (
               <p className="text-small text-gray-600">
                 {t(locale, SOURCE, "caelexTranslationNote")}

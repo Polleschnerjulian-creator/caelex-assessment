@@ -41,6 +41,7 @@ import {
   RemoveFromListButton,
   ListManageControls,
 } from "../../saved/SavedControls";
+import { DownloadButton } from "../../_components/DownloadButton";
 import { t, type ScholarLocale } from "../../_i18n/core";
 import { SAVED } from "../../_i18n/saved";
 import { getScholarLocale } from "../../_i18n/locale.server";
@@ -62,6 +63,25 @@ export default async function ReadingListPage({ params }: PageProps) {
   // a defensive fallback that never leaks another user's list).
   const list = userId ? await getReadingList(userId, id) : null;
   if (!list) notFound();
+
+  // Plain-text export (title + link per item) so a lecturer can share the
+  // course reading list with students. Uses only already-resolved item data.
+  const exportText =
+    `${list.name}\n` +
+    (list.description ? `${list.description}\n` : "") +
+    "\n" +
+    list.items
+      .map(
+        (it, i) => `${i + 1}. ${it.title}\n   https://www.caelex.eu${it.href}`,
+      )
+      .join("\n") +
+    "\n";
+  const exportName =
+    list.name
+      .replace(/[^a-z0-9]+/gi, "-")
+      .replace(/^-+|-+$/g, "")
+      .toLowerCase()
+      .slice(0, 48) || "reading-list";
 
   return (
     <ScholarPage>
@@ -89,12 +109,21 @@ export default async function ReadingListPage({ params }: PageProps) {
           <h2 id="list-items-heading" className={SCHOLAR_TYPE.sectionHeading}>
             {t(locale, SAVED, "itemsHeading")}
           </h2>
-          <span className={`tabular-nums ${SCHOLAR_TYPE.meta}`}>
-            {list.items.length}{" "}
-            {list.items.length === 1
-              ? t(locale, SAVED, "entryOne")
-              : t(locale, SAVED, "entryOther")}
-          </span>
+          <div className="flex items-center gap-3">
+            {list.items.length > 0 && (
+              <DownloadButton
+                content={exportText}
+                filename={`${exportName}.txt`}
+                label={t(locale, SAVED, "exportList")}
+              />
+            )}
+            <span className={`tabular-nums ${SCHOLAR_TYPE.meta}`}>
+              {list.items.length}{" "}
+              {list.items.length === 1
+                ? t(locale, SAVED, "entryOne")
+                : t(locale, SAVED, "entryOther")}
+            </span>
+          </div>
         </div>
 
         {list.items.length === 0 ? (

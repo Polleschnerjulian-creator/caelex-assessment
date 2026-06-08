@@ -113,7 +113,7 @@ export default function ScholarShell({
       */}
       <div
         className={[
-          "fixed z-40 top-0 left-0 bottom-0",
+          "fixed z-40 top-0 left-0 bottom-0 scholar-noprint",
           "bg-white border-r border-gray-200",
           "flex flex-col",
           "transition-opacity duration-300",

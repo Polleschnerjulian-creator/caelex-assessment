@@ -119,12 +119,12 @@ export default async function LibraryPage({ searchParams }: Props) {
     selection.jurisdictions = [prefs.defaultJurisdiction.toUpperCase()];
   }
 
-  // Effective results-per-page: URL ?limit > saved pref > default 20.
+  // Page size: URL ?limit > saved pref > default 20 (clamped to a sane range).
   const prefLimit = prefs?.resultsPerPage ?? 20;
   const urlLimit = typeof sp.limit === "string" ? parseInt(sp.limit, 10) : NaN;
-  const DISPLAY_CAP = Math.min(
+  const pageSize = Math.min(
     HARD_CAP,
-    isNaN(urlLimit) ? prefLimit : urlLimit,
+    Math.max(10, isNaN(urlLimit) ? prefLimit : urlLimit),
   );
 
   // Build facet groups (with counts) + the filtered, sorted result list.
@@ -134,9 +134,30 @@ export default async function LibraryPage({ searchParams }: Props) {
     locale,
   );
 
-  const capped = sources.slice(0, DISPLAY_CAP);
-  const isCapped = totalCount > DISPLAY_CAP;
+  // Pagination — URL-driven (?page), so each page is server-rendered + shareable
+  // and the WHOLE corpus is reachable (not just the first 20).
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const pageRaw = typeof sp.page === "string" ? parseInt(sp.page, 10) : 1;
+  const page = Math.min(totalPages, Math.max(1, isNaN(pageRaw) ? 1 : pageRaw));
+  const pageStart = (page - 1) * pageSize;
+  const paged = sources.slice(pageStart, pageStart + pageSize);
+  const rangeFrom = totalCount === 0 ? 0 : pageStart + 1;
+  const rangeTo = Math.min(pageStart + pageSize, totalCount);
   const filtersActive = hasActiveFilters(selection);
+
+  // Build a /scholar/library URL for page `p`, preserving all current filters +
+  // sort (everything in searchParams except `page`).
+  const buildPageUrl = (p: number): string => {
+    const params = new URLSearchParams();
+    for (const [k, v] of Object.entries(sp)) {
+      if (k === "page" || v == null) continue;
+      if (Array.isArray(v)) v.forEach((x) => params.append(k, x));
+      else params.set(k, v);
+    }
+    if (p > 1) params.set("page", String(p));
+    const qs = params.toString();
+    return `/scholar/library${qs ? `?${qs}` : ""}`;
+  };
 
   // Resolve display language for source titles (mirror previous behaviour).
   const sourceLanguage = prefs?.sourceLanguage ?? "original";
@@ -278,28 +299,24 @@ export default async function LibraryPage({ searchParams }: Props) {
             <SortControl selection={selection} locale={locale} />
           </div>
 
-          {/* Cap notice — render {n} (bold) and {total} from the localised template */}
-          {isCapped && (
-            <p
-              className="mb-4 rounded-xl bg-gray-50 px-3 py-2 text-small text-gray-700"
-              role="note"
-            >
-              <CapNotice
-                template={t(locale, BROWSE, "capNotice")}
-                displayCap={DISPLAY_CAP}
-                total={totalCount}
-              />
+          {/* Range indicator — which slice of the corpus this page shows. */}
+          {totalCount > 0 && (
+            <p className={`mb-4 ${SCHOLAR_TYPE.meta}`} role="note">
+              {t(locale, BROWSE, "paginationRange")
+                .replace("{from}", String(rangeFrom))
+                .replace("{to}", String(rangeTo))
+                .replace("{total}", String(totalCount))}
             </p>
           )}
 
           {/* Results list */}
-          {capped.length === 0 ? (
+          {paged.length === 0 ? (
             <p className={`${SCHOLAR_TYPE.bodyMuted} py-10`}>
               {t(locale, BROWSE, "emptyFilters")}
             </p>
           ) : (
             <ul className="space-y-1" role="list">
-              {capped.map((source) => {
+              {paged.map((source) => {
                 // Apply source-language translation if user opted in.
                 // When sourceLanguage == "original", use title_local (if set)
                 // then title_en — preserving pre-facet behaviour.
@@ -328,6 +345,48 @@ export default async function LibraryPage({ searchParams }: Props) {
                 );
               })}
             </ul>
+          )}
+
+          {/* Pagination — reach the whole corpus; filters + sort preserved. */}
+          {totalPages > 1 && (
+            <nav
+              className="mt-6 flex items-center justify-between gap-3"
+              aria-label={t(locale, BROWSE, "paginationLabel")}
+            >
+              {page > 1 ? (
+                <Link
+                  href={buildPageUrl(page - 1)}
+                  rel="prev"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-small text-gray-800 hover:border-gray-400 hover:bg-gray-50 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
+                >
+                  ← {t(locale, BROWSE, "paginationPrev")}
+                </Link>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-small text-gray-300 select-none">
+                  ← {t(locale, BROWSE, "paginationPrev")}
+                </span>
+              )}
+
+              <span className={SCHOLAR_TYPE.meta} aria-live="polite">
+                {t(locale, BROWSE, "paginationStatus")
+                  .replace("{page}", String(page))
+                  .replace("{total}", String(totalPages))}
+              </span>
+
+              {page < totalPages ? (
+                <Link
+                  href={buildPageUrl(page + 1)}
+                  rel="next"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-small text-gray-800 hover:border-gray-400 hover:bg-gray-50 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F8FA]"
+                >
+                  {t(locale, BROWSE, "paginationNext")} →
+                </Link>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-small text-gray-300 select-none">
+                  {t(locale, BROWSE, "paginationNext")} →
+                </span>
+              )}
+            </nav>
           )}
         </section>
       </div>
@@ -502,38 +561,5 @@ function SortControl({
         })}
       </div>
     </div>
-  );
-}
-
-// ─── Cap notice (renders a localised template with a bold {n} and plain {total}) ─
-// The template carries {n} and {total} placeholders (any order). We tokenise on
-// both, render {n} inside a bold span (matching the previous emphasis) and
-// {total} as plain text, so the sentence stays correct in every locale.
-function CapNotice({
-  template,
-  displayCap,
-  total,
-}: {
-  template: string;
-  displayCap: number;
-  total: number;
-}) {
-  const parts = template.split(/(\{n\}|\{total\})/g);
-  return (
-    <>
-      {parts.map((part, i) => {
-        if (part === "{n}") {
-          return (
-            <span key={i} className="font-semibold text-gray-900">
-              {displayCap}
-            </span>
-          );
-        }
-        if (part === "{total}") {
-          return <span key={i}>{total}</span>;
-        }
-        return <span key={i}>{part}</span>;
-      })}
-    </>
   );
 }
