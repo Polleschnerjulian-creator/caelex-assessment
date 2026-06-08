@@ -589,7 +589,23 @@ export default async function middleware(req: NextRequest) {
   // /dashboard by typing the URL directly — bypassing the MFA
   // challenge. Now we read the token's `mfaVerified` flag and force
   // the user back through /auth/mfa-challenge if it's missing.
-  if (pathname.startsWith("/dashboard")) {
+  // Legacy → /admin permanent move (308, method-preserving). Must run BEFORE
+  // the gate below, since the old path starts with /dashboard and would
+  // otherwise be auth-gated and then served the old page.
+  if (pathname === "/dashboard/admin/analytics") {
+    return applySecurityHeaders(
+      NextResponse.redirect(new URL("/admin", req.url), 308),
+      pathname,
+      nonce,
+    );
+  }
+
+  // /admin (the cross-product Admin/Analytics Center) inherits the SAME session
+  // + MFA gate as /dashboard. This is only the coarse, defence-in-depth layer:
+  // the authoritative super-admin allowlist check lives in the (admin) server
+  // layout (requireSuperAdminPage) and in every /api/admin/v2 route
+  // (requireSuperAdminApi). Middleware just bounces anonymous visitors early.
+  if (pathname.startsWith("/dashboard") || pathname.startsWith("/admin")) {
     const hasSession =
       req.cookies.has("__Secure-authjs.session-token") ||
       req.cookies.has("authjs.session-token");
