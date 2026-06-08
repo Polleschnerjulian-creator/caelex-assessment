@@ -717,6 +717,17 @@ body {
   color-scheme: light;
 }
 
+/* Caelex Scholar is a LIGHT surface even when the global theme is dark. Force
+   the document background light whenever the Scholar shell is mounted, so the
+   dark theme's navy <body>/<html> (dark:bg-[#0a0f1e]) can NEVER bleed through on
+   overscroll, rubber-band, or a paint gap — the "blue flash" reported while
+   scrolling Scholar pages. !important beats the Tailwind dark utility on <body>.
+   Covers every /scholar/* page at once (they all render inside ScholarShell). */
+html:has(.scholar-surface),
+body:has(.scholar-surface) {
+  background-color: #f7f8fa !important;
+}
+
 /* Override the global dark heading/text rules inside .landing-light */
 .dark .landing-light h1,
 .dark .landing-light h2,

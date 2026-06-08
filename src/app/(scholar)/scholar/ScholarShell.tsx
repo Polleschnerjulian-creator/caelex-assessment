@@ -98,7 +98,7 @@ export default function ScholarShell({
     // WCAG 3.1.1: lang reflects the active Scholar UI locale (root layout is en).
     <div
       lang={locale}
-      className="antialiased landing-light h-screen w-screen overflow-hidden bg-[#F7F8FA]"
+      className="antialiased landing-light scholar-surface h-screen w-screen overflow-hidden overscroll-none bg-[#F7F8FA]"
       style={{ colorScheme: "light" }}
     >
       {/* ─── Sidebar ─── */}
