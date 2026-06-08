@@ -110,7 +110,10 @@ describe("GET /api/cron/analytics-aggregate", () => {
       mockPrisma.analyticsDailyAggregate.findFirst.mockResolvedValue(null);
       mockPrisma.analyticsDailyAggregate.create.mockResolvedValue({});
 
-      // Module usage (empty — no feature usage)
+      // Feature usage — the generalised pass groups by [product, path] over
+      // page_viewed/page_view rows. Returning [] means no features accumulate,
+      // so the per-feature unique-user groupBy never runs and this stays a
+      // single mock in the ordered chain (4th groupBy after DAU/WAU/MAU).
       mockPrisma.analyticsEvent.groupBy.mockResolvedValueOnce([]);
 
       // Organizations for health scores (empty — no orgs)

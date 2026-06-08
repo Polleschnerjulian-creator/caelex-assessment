@@ -34,6 +34,9 @@ function isValidCronSecret(header: string, secret: string): boolean {
  *   - AcquisitionEvent (anonymous rows)          → deleted after    180 days
  *   - FeatureUsageDaily (aggregate, no userId)   → deleted after    730 days
  *   - CustomerHealthScore (org rollup, stale)    → deleted after    730 days
+ *   - AnalyticsFunnelDaily (PII-free rollup)     → deleted after    730 days
+ *   - AnalyticsPathEdge (PII-free, normalized)   → deleted after    730 days
+ *   - AnalyticsRetentionCohort (PII-free rollup) → deleted after    730 days
  *   - LoginAttempt (brute-force buffer)          → deleted after     90 days
  *   - LoginEvent (security telemetry)            → deleted after    365 days
  *   - SecurityEvent (resolved, low/medium)       → deleted after    365 days
@@ -101,6 +104,9 @@ export async function GET(req: Request) {
     oldAcquisitionEvents: 0,
     oldFeatureUsageDaily: 0,
     oldCustomerHealthScores: 0,
+    oldFunnelDaily: 0,
+    oldPathEdges: 0,
+    oldRetentionCohorts: 0,
     oldLoginAttempts: 0,
     oldLoginEvents: 0,
     oldSecurityEvents: 0,
@@ -202,6 +208,42 @@ export async function GET(req: Request) {
       deletedAcquisition: oldAcquisition.count,
       deletedFeatureUsage: oldFeatureUsage.count,
       deletedHealthScores: oldHealthScores.count,
+    });
+
+    // Batch 2c: Cross-product analytics rollup retention (privacy § 3(3)).
+    //
+    // The Phase-3 analytics taxonomy added three derived rollup tables fed by
+    // the nightly analytics-rollup cron: AnalyticsFunnelDaily (per-day funnel
+    // step counts), AnalyticsPathEdge (route→route transition counts) and
+    // AnalyticsRetentionCohort (weekly cohort×activity grid). These are
+    // PII-free by construction — they carry NO userId, and every path is stored
+    // as a normalized, low-cardinality ROUTE PATTERN (ids replaced with ":id"),
+    // never a raw URL. They are therefore pseudonymity-preserving aggregate
+    // counts, so they inherit the SAME 24-month aggregate window as
+    // FeatureUsageDaily (argued in the LIA) rather than the 90-day raw-event
+    // sweep that governs AnalyticsEvent. We reuse the existing `twoYearsAgo`
+    // (730d) horizon. AnalyticsFunnelDaily/AnalyticsPathEdge are keyed by their
+    // `date` column; AnalyticsRetentionCohort by `cohortWeek` (no `date`
+    // column), so the cohort sweep ages out by the week the cohort was formed.
+    const [oldFunnelDaily, oldPathEdges, oldRetentionCohorts] =
+      await prisma.$transaction([
+        prisma.analyticsFunnelDaily.deleteMany({
+          where: { date: { lt: twoYearsAgo } },
+        }),
+        prisma.analyticsPathEdge.deleteMany({
+          where: { date: { lt: twoYearsAgo } },
+        }),
+        prisma.analyticsRetentionCohort.deleteMany({
+          where: { cohortWeek: { lt: twoYearsAgo } },
+        }),
+      ]);
+    results.oldFunnelDaily = oldFunnelDaily.count;
+    results.oldPathEdges = oldPathEdges.count;
+    results.oldRetentionCohorts = oldRetentionCohorts.count;
+    logger.info("Analytics rollup-table retention cleanup", {
+      funnelDaily: oldFunnelDaily.count,
+      pathEdges: oldPathEdges.count,
+      retentionCohorts: oldRetentionCohorts.count,
     });
 
     // 4. Delete old ASTRA conversations older than 6 months
@@ -355,6 +397,9 @@ export async function GET(req: Request) {
       results.oldAcquisitionEvents +
       results.oldFeatureUsageDaily +
       results.oldCustomerHealthScores +
+      results.oldFunnelDaily +
+      results.oldPathEdges +
+      results.oldRetentionCohorts +
       results.oldLoginAttempts +
       results.oldLoginEvents +
       results.oldSecurityEvents +

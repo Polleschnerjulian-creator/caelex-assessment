@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/prisma";
-import { subDays, startOfDay, endOfDay, subMonths } from "date-fns";
+import { subDays, startOfDay, endOfDay } from "date-fns";
 import { logger } from "@/lib/logger";
+import { productFromPath, type Product } from "@/lib/analytics/events";
+import { deriveFeature } from "@/lib/analytics/feature-map";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -102,10 +104,13 @@ export async function GET(request: Request) {
     results.dailyAggregates++;
 
     // 5. Daily page views
+    // EVENT-TYPE DUALITY: the new analytics provider emits "page_viewed" while
+    // legacy code still emits "page_view". Match BOTH so this top-line metric
+    // does not progressively undercount as the new provider rolls out.
     const pageViews = await prisma.analyticsEvent.count({
       where: {
         timestamp: { gte: dayStart, lte: dayEnd },
-        eventType: "page_view",
+        eventType: { in: ["page_viewed", "page_view"] },
       },
     });
 
@@ -124,40 +129,81 @@ export async function GET(request: Request) {
     await upsertAggregate(dayStart, "revenue", dailyRevenue._sum.amount || 0);
     results.dailyAggregates++;
 
-    // 7. Feature usage per module
-    const moduleUsage = await prisma.analyticsEvent.groupBy({
-      by: ["path"],
+    // 7. Feature usage — ALL products, driven by deriveFeature.
+    //
+    // Generalised from the old `/dashboard/modules/*`-only pass: we now bucket
+    // EVERY page-view path into a BOUNDED feature descriptor via deriveFeature,
+    // so Atlas / Trade / Scholar / Pharos / Comply all show feature usage, not
+    // just the 8 Comply modules. Cardinality stays bounded because featureId is
+    // `<product>:<area>` (area = first path segment after the product root, never
+    // a record id) — see src/lib/analytics/feature-map.ts.
+    //
+    // EVENT-TYPE DUALITY: the new analytics provider emits "page_viewed" while
+    // legacy code still emits "page_view". We must match BOTH or we'd silently
+    // drop one population's views.
+    const pageViewRows = await prisma.analyticsEvent.groupBy({
+      by: ["product", "path"],
       _count: { _all: true },
       where: {
         timestamp: { gte: dayStart, lte: dayEnd },
-        path: { startsWith: "/dashboard/modules/" },
-        eventType: "page_view",
+        eventType: { in: ["page_viewed", "page_view"] },
+        path: { not: null },
       },
     });
 
-    for (const m of moduleUsage) {
-      const featureId = m.path?.split("/").pop() || "unknown";
-      const moduleNames: Record<string, string> = {
-        authorization: "Authorization",
-        registration: "Registration",
-        cybersecurity: "Cybersecurity",
-        debris: "Debris Management",
-        environmental: "Environmental",
-        insurance: "Insurance",
-        nis2: "NIS2",
-        supervision: "Supervision",
-      };
+    // Fold raw (product, path) rows into bounded features. We keep the set of
+    // distinct source paths per feature so the unique-user query below can scope
+    // to exactly the rows that fed this feature.
+    const featureAcc = new Map<
+      string,
+      {
+        featureName: string;
+        moduleCategory: string;
+        totalActions: number;
+        paths: Set<string>;
+      }
+    >();
 
-      // Count unique users per module
+    for (const row of pageViewRows) {
+      const path = row.path;
+      if (!path) continue; // defensive — where-clause already excludes null
+      // Trust the persisted product column; fall back to deriving it from the
+      // path for legacy rows where product is null (pre-taxonomy backfill gap).
+      const prod = (row.product as Product | null) ?? productFromPath(path);
+      const f = deriveFeature(prod, path);
+      if (!f) continue; // non-feature path (api / _next / static asset)
+
+      const existing = featureAcc.get(f.featureId);
+      if (existing) {
+        existing.totalActions += row._count._all;
+        existing.paths.add(path);
+      } else {
+        featureAcc.set(f.featureId, {
+          featureName: f.featureName,
+          moduleCategory: f.moduleCategory,
+          totalActions: row._count._all,
+          paths: new Set([path]),
+        });
+      }
+    }
+
+    for (const [featureId, agg] of featureAcc) {
+      // Unique users per feature. This is one extra groupBy per FEATURE, not per
+      // raw path — bounded by the app's route map (~30–50 features), so the N+1
+      // is a small constant for a once-daily cron. We scope by the exact source
+      // paths that built this feature (route patterns collapse many ids into one
+      // feature, but the underlying rows still carry the raw paths we matched).
       const uniqueUsers = await prisma.analyticsEvent.groupBy({
         by: ["userId"],
         where: {
           timestamp: { gte: dayStart, lte: dayEnd },
-          path: m.path || undefined,
           userId: { not: null },
+          path: { in: [...agg.paths] },
         },
       });
 
+      // avgDurationSecs is intentionally NOT set here — the rollup cron's dwell
+      // pass fills it from screen_dwelled samples. We only own the count columns.
       await prisma.featureUsageDaily.upsert({
         where: {
           date_featureId: {
@@ -166,18 +212,20 @@ export async function GET(request: Request) {
           },
         },
         update: {
+          featureName: agg.featureName,
+          moduleCategory: agg.moduleCategory,
           uniqueUsers: uniqueUsers.length,
-          totalSessions: m._count._all,
-          totalActions: m._count._all,
+          totalSessions: agg.totalActions,
+          totalActions: agg.totalActions,
         },
         create: {
           date: dayStart,
           featureId,
-          featureName: moduleNames[featureId] || featureId,
-          moduleCategory: "compliance",
+          featureName: agg.featureName,
+          moduleCategory: agg.moduleCategory,
           uniqueUsers: uniqueUsers.length,
-          totalSessions: m._count._all,
-          totalActions: m._count._all,
+          totalSessions: agg.totalActions,
+          totalActions: agg.totalActions,
         },
       });
       results.featureUsage++;
@@ -203,11 +251,14 @@ export async function GET(request: Request) {
 
       // Run all 3 independent queries in parallel (avoid sequential N+1)
       const [loginEvents, activeFeatures, sessions] = await Promise.all([
-        // Login frequency: events in last 30 days
+        // Login frequency: events in last 30 days.
+        // DUALITY: match the new "page_viewed" alongside legacy "page_view" so an
+        // org whose users are on the new provider is not scored as inactive (which
+        // would mislabel a healthy org as churn-risk).
         prisma.analyticsEvent.count({
           where: {
             userId: { in: userIds },
-            eventType: { in: ["page_view", "login"] },
+            eventType: { in: ["page_viewed", "page_view", "login"] },
             timestamp: { gte: thirtyDaysAgo },
           },
         }),
