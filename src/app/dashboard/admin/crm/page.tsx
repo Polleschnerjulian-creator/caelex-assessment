@@ -15,6 +15,7 @@ import {
   Command,
   Mail,
   ChevronRight,
+  ClipboardPaste,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { csrfHeaders } from "@/lib/csrf-client";
@@ -23,6 +24,7 @@ import CommandPalette from "@/components/crm/CommandPalette";
 import LeadScoreBadge from "@/components/crm/LeadScoreBadge";
 import { DealStageBadge, LifecycleBadge } from "@/components/crm/StageBadge";
 import ActivityTimeline from "@/components/crm/ActivityTimeline";
+import MeetingImport from "@/components/crm/MeetingImport";
 import type { DealCardData } from "@/components/crm/DealCard";
 import type {
   CrmDealStage,
@@ -73,6 +75,7 @@ function CrmPageContent() {
   const [tab, setTab] = useState<Tab>(initialTab);
   const [stats, setStats] = useState<Stats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [showImport, setShowImport] = useState(false);
 
   const changeTab = useCallback(
     (newTab: Tab) => {
@@ -109,6 +112,7 @@ function CrmPageContent() {
   return (
     <div className="space-y-6">
       <CommandPalette />
+      {showImport && <MeetingImport onClose={() => setShowImport(false)} />}
 
       {/* Header */}
       <div className="flex items-start justify-between">
@@ -131,31 +135,41 @@ function CrmPageContent() {
           </div>
         </div>
 
-        <button
-          onClick={() => {
-            // Trigger Cmd+K by dispatching a keyboard event
-            const e = new KeyboardEvent("keydown", {
-              key: "k",
-              metaKey: true,
-              bubbles: true,
-            });
-            window.dispatchEvent(e);
-          }}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-small text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-          style={{
-            background: "var(--surface-raised)",
-            borderColor: "var(--border-default)",
-          }}
-        >
-          <Command size={12} />
-          <span>Search</span>
-          <kbd
-            className="text-[10px] font-semibold border rounded px-1 py-0.5"
-            style={{ borderColor: "var(--border-default)" }}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowImport(true)}
+            className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-small font-medium text-white"
+            style={{ background: "var(--accent-primary)" }}
           >
-            ⌘K
-          </kbd>
-        </button>
+            <ClipboardPaste size={13} />
+            <span>Import meeting</span>
+          </button>
+          <button
+            onClick={() => {
+              // Trigger Cmd+K by dispatching a keyboard event
+              const e = new KeyboardEvent("keydown", {
+                key: "k",
+                metaKey: true,
+                bubbles: true,
+              });
+              window.dispatchEvent(e);
+            }}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-small text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+            style={{
+              background: "var(--surface-raised)",
+              borderColor: "var(--border-default)",
+            }}
+          >
+            <Command size={12} />
+            <span>Search</span>
+            <kbd
+              className="text-[10px] font-semibold border rounded px-1 py-0.5"
+              style={{ borderColor: "var(--border-default)" }}
+            >
+              ⌘K
+            </kbd>
+          </button>
+        </div>
       </div>
 
       {/* KPI Cards */}
