@@ -1,5 +1,8 @@
 import DealDetail from "@/components/crm/DealDetail";
 
+export const dynamic = "force-dynamic";
+export const metadata = { title: "Deal | Caelex Admin" };
+
 export default async function Page({
   params,
 }: {

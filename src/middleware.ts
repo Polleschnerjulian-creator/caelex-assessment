@@ -600,6 +600,26 @@ export default async function middleware(req: NextRequest) {
     );
   }
 
+  // Legacy CRM → /admin/crm permanent move (308, method-preserving). The full
+  // CRM — master lists AND record-detail pages — now lives in the light /admin
+  // center; every old dark /dashboard/admin/crm[/...] path (including ?tab= and
+  // the /contacts|/companies|/deals/[id] detail routes) redirects into the light
+  // surface, preserving sub-path + query string. Must run BEFORE the gate below
+  // (the old path starts with /dashboard and would otherwise be auth-gated then
+  // served the old page).
+  if (
+    pathname === "/dashboard/admin/crm" ||
+    pathname.startsWith("/dashboard/admin/crm/")
+  ) {
+    const dest = req.nextUrl.clone();
+    dest.pathname = pathname.replace("/dashboard/admin/crm", "/admin/crm");
+    return applySecurityHeaders(
+      NextResponse.redirect(dest, 308),
+      pathname,
+      nonce,
+    );
+  }
+
   // /admin (the cross-product Admin/Analytics Center) inherits the SAME session
   // + MFA gate as /dashboard. This is only the coarse, defence-in-depth layer:
   // the authoritative super-admin allowlist check lives in the (admin) server

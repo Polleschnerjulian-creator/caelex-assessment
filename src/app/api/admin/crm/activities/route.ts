@@ -15,6 +15,7 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { requireRole } from "@/lib/dal";
+import { isSuperAdmin } from "@/lib/super-admin";
 import { getSafeErrorMessage, parsePaginationLimit } from "@/lib/validations";
 import { logger } from "@/lib/logger";
 import { ACTIVITY_TYPE_CATEGORY } from "@/lib/crm/types";
@@ -26,7 +27,11 @@ export async function GET(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    await requireRole(["admin"]);
+    // Super-admins (platform owners) are always authorized. Everyone else must
+    // hold the DB "admin" role (requireRole throws ForbiddenError → 403 below).
+    if (!isSuperAdmin(session.user.email)) {
+      await requireRole(["admin"]);
+    }
 
     const { searchParams } = new URL(request.url);
     const contactId = searchParams.get("contactId") || undefined;

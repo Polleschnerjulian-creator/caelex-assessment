@@ -22,6 +22,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
+  Contact2,
   Users,
   Filter,
   GitBranch,
@@ -43,6 +44,11 @@ const NAV: NavLink[] = [
     label: "Cockpit",
     icon: <LayoutDashboard size={18} strokeWidth={1.5} />,
     exact: true,
+  },
+  {
+    href: "/admin/crm",
+    label: "CRM",
+    icon: <Contact2 size={18} strokeWidth={1.5} />,
   },
   {
     href: "/admin/retention",

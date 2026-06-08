@@ -118,22 +118,22 @@ export default function CommandPalette() {
     {
       label: "Go to Pipeline",
       hint: "G P",
-      run: () => router.push("/dashboard/admin/crm"),
+      run: () => router.push("/admin/crm"),
     },
     {
       label: "Go to Contacts",
       hint: "G C",
-      run: () => router.push("/dashboard/admin/crm?tab=contacts"),
+      run: () => router.push("/admin/crm?tab=contacts"),
     },
     {
       label: "Go to Companies",
       hint: "G O",
-      run: () => router.push("/dashboard/admin/crm?tab=companies"),
+      run: () => router.push("/admin/crm?tab=companies"),
     },
     {
       label: "Go to Activities",
       hint: "G A",
-      run: () => router.push("/dashboard/admin/crm?tab=activities"),
+      run: () => router.push("/admin/crm?tab=activities"),
     },
   ];
 
@@ -146,7 +146,7 @@ export default function CommandPalette() {
         items.push({
           type: "contact",
           action: () => {
-            router.push(`/dashboard/admin/crm/contacts/${c.id}`);
+            router.push(`/admin/crm/contacts/${c.id}`);
             setOpen(false);
           },
         });
@@ -155,7 +155,7 @@ export default function CommandPalette() {
         items.push({
           type: "company",
           action: () => {
-            router.push(`/dashboard/admin/crm/companies/${c.id}`);
+            router.push(`/admin/crm/companies/${c.id}`);
             setOpen(false);
           },
         });
@@ -164,7 +164,7 @@ export default function CommandPalette() {
         items.push({
           type: "deal",
           action: () => {
-            router.push(`/dashboard/admin/crm/deals/${d.id}`);
+            router.push(`/admin/crm/deals/${d.id}`);
             setOpen(false);
           },
         });
@@ -315,7 +315,7 @@ export default function CommandPalette() {
                     key={c.id}
                     type="button"
                     onClick={() => {
-                      router.push(`/dashboard/admin/crm/contacts/${c.id}`);
+                      router.push(`/admin/crm/contacts/${c.id}`);
                       setOpen(false);
                     }}
                     onMouseEnter={() => setActiveIndex(thisIdx)}
@@ -357,7 +357,7 @@ export default function CommandPalette() {
                     key={c.id}
                     type="button"
                     onClick={() => {
-                      router.push(`/dashboard/admin/crm/companies/${c.id}`);
+                      router.push(`/admin/crm/companies/${c.id}`);
                       setOpen(false);
                     }}
                     onMouseEnter={() => setActiveIndex(thisIdx)}
@@ -400,7 +400,7 @@ export default function CommandPalette() {
                     key={d.id}
                     type="button"
                     onClick={() => {
-                      router.push(`/dashboard/admin/crm/deals/${d.id}`);
+                      router.push(`/admin/crm/deals/${d.id}`);
                       setOpen(false);
                     }}
                     onMouseEnter={() => setActiveIndex(thisIdx)}

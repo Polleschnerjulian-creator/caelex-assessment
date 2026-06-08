@@ -15,6 +15,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { requireRole } from "@/lib/dal";
+import { isSuperAdmin } from "@/lib/super-admin";
 import { getSafeErrorMessage } from "@/lib/validations";
 import { logger } from "@/lib/logger";
 import { DEAL_STAGE_PROBABILITY, KANBAN_STAGES } from "@/lib/crm/types";
@@ -26,7 +27,11 @@ export async function GET() {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    await requireRole(["admin"]);
+    // Super-admins (platform owners) are always authorized. Everyone else must
+    // hold the DB "admin" role (requireRole throws ForbiddenError → 403 below).
+    if (!isSuperAdmin(session.user.email)) {
+      await requireRole(["admin"]);
+    }
 
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);

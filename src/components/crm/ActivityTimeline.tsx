@@ -204,7 +204,7 @@ export default function ActivityTimeline({
                           <>
                             <span>·</span>
                             <a
-                              href={`/dashboard/admin/crm/contacts/${activity.contact.id}`}
+                              href={`/admin/crm/contacts/${activity.contact.id}`}
                               className="text-[var(--accent-primary)] hover:underline"
                             >
                               {activity.contact.firstName ||
@@ -216,7 +216,7 @@ export default function ActivityTimeline({
                           <>
                             <span>·</span>
                             <a
-                              href={`/dashboard/admin/crm/companies/${activity.company.id}`}
+                              href={`/admin/crm/companies/${activity.company.id}`}
                               className="text-[var(--accent-primary)] hover:underline"
                             >
                               {activity.company.name}

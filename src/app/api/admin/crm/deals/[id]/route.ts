@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { requireRole } from "@/lib/dal";
+import { isSuperAdmin } from "@/lib/super-admin";
 import { getSafeErrorMessage } from "@/lib/validations";
 import { logger } from "@/lib/logger";
 import { DEAL_LIST_INCLUDE, serializeDeal } from "@/lib/crm/queries.server";
@@ -26,7 +27,11 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    await requireRole(["admin"]);
+    // Super-admins (platform owners) are always authorized. Everyone else must
+    // hold the DB "admin" role (requireRole throws ForbiddenError → 403 below).
+    if (!isSuperAdmin(session.user.email)) {
+      await requireRole(["admin"]);
+    }
 
     const { id } = await params;
 
@@ -134,7 +139,11 @@ export async function PATCH(
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    await requireRole(["admin"]);
+    // Super-admins (platform owners) are always authorized. Everyone else must
+    // hold the DB "admin" role (requireRole throws ForbiddenError → 403 below).
+    if (!isSuperAdmin(session.user.email)) {
+      await requireRole(["admin"]);
+    }
 
     const { id } = await params;
 
@@ -241,7 +250,11 @@ export async function DELETE(
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    await requireRole(["admin"]);
+    // Super-admins (platform owners) are always authorized. Everyone else must
+    // hold the DB "admin" role (requireRole throws ForbiddenError → 403 below).
+    if (!isSuperAdmin(session.user.email)) {
+      await requireRole(["admin"]);
+    }
 
     const { id } = await params;
 

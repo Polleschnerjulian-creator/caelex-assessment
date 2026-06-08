@@ -105,7 +105,7 @@ export default function DealCard({
       >
         {/* Title */}
         <Link
-          href={`/dashboard/admin/crm/deals/${deal.id}`}
+          href={`/admin/crm/deals/${deal.id}`}
           onClick={(e) => e.stopPropagation()}
           className="block mb-2"
         >
