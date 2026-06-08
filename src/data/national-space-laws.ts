@@ -1470,18 +1470,19 @@ const IT: JurisdictionLaw = {
   flagEmoji: "\u{1F1EE}\u{1F1F9}",
 
   legislation: {
-    // 2025 refresh: Italy enacted a comprehensive new space economy law on 25
-    // June 2025 that replaces the earlier policy-framework Law 7/2018. The
-    // earlier law remains relevant for historical context but the operative
-    // authorization regime is now Law 89/2025.
+    // 2025: Italy enacted its first comprehensive space-economy law — LEGGE
+    // 13 giugno 2025, n. 89 (approved by Parliament 11 June 2025, published in
+    // Gazzetta Ufficiale Serie Generale n. 144 of 24 June 2025). It replaces the
+    // earlier policy-framework Law 7/2018; the operative authorization regime is
+    // now Law 89/2025.
     name: "Italian Space Economy Act — Law 89/2025",
     nameLocal: "Legge 89/2025 \u2014 Legge sull'Economia dello Spazio",
     yearEnacted: 2025,
     status: "enacted",
     officialUrl:
-      "https://www.gazzettaufficiale.it/eli/id/2025/06/25/25G00089/sg",
+      "https://www.gazzettaufficiale.it/eli/id/2025/06/24/25G00095/SG",
     keyArticles:
-      "Articles 1-47 (authorization Art. 10-22, supervision Art. 23-31, registration Art. 32-36, debris Art. 37-41)",
+      "Articles 1-31 across 5 Titles (operator authorization Art. 3-14, registration of space objects Art. 15-17, operator/State responsibility Art. 18-21, space-economy measures Art. 22-31)",
   },
 
   licensingAuthority: {
